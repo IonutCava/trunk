@@ -33,46 +33,46 @@ class Kernel;
 DEFINE_SINGLETON( Application )
 
 public:
-	///Startup and shutdown
-	I8 Initialize(const std::string& entryPoint,I32 argc, char **argv);
-	void Deinitialize();
-	void run();
+    ///Startup and shutdown
+    I8 Initialize(const std::string& entryPoint,I32 argc, char **argv);
+    void Deinitialize();
+    void run();
 
-	///Application resolution (either fullscreen resolution or window dimensions)
-	inline const vec2<U16>& getResolution() const {return _resolution;}
-	inline void setResolutionWidth(U16 w)         {_resolution.x = w;}
-	inline void setResolutionHeight(U16 h)        {_resolution.y = h;}
-	inline void RequestShutdown()                 {_requestShutdown = true;}
-	inline void CancelShutdown()                  {_requestShutdown = false;}
-	inline bool ShutdownRequested()         const {return _requestShutdown;}
-	///Application window ID
-	inline I8            getMainWindowId()  const {return _mainWindowId;}
-	inline Kernel* const getKernel()        const {return _kernel;}
+    ///Application resolution (either fullscreen resolution or window dimensions)
+    inline const vec2<U16>& getResolution() const {return _resolution;}
+    inline void setResolutionWidth(U16 w)         {_resolution.x = w;}
+    inline void setResolutionHeight(U16 h)        {_resolution.y = h;}
+    inline void RequestShutdown()                 {_requestShutdown = true;}
+    inline void CancelShutdown()                  {_requestShutdown = false;}
+    inline bool ShutdownRequested()         const {return _requestShutdown;}
+    ///Application window ID
+    inline I8            getMainWindowId()  const {return _mainWindowId;}
+    inline Kernel* const getKernel()        const {return _kernel;}
 
-	inline const boost::thread::id&  getMainThreadId()               const {return _threadId;}
-	inline bool isMainThread()                                       const {return (_threadId == boost::this_thread::get_id());}
-	inline void setMemoryLogFile(const std::string& fileName)              {_memLogBuffer.open(fileName.c_str());}
-	///Append to "_memLogBuffer" the string contained in "logMsg" and update _totalMemoryOcuppied with "size" accordingly based on the "allocation" flag
-	void logMemoryOperation(bool allocation, const char* logMsg, size_t size);
+    inline const boost::thread::id&  getMainThreadId()               const {return _threadId;}
+    inline bool isMainThread()                                       const {return (_threadId == boost::this_thread::get_id());}
+    inline void setMemoryLogFile(const std::string& fileName)              {_memLogBuffer.open(fileName.c_str());}
+    ///Append to "_memLogBuffer" the string contained in "logMsg" and update _totalMemoryOcuppied with "size" accordingly based on the "allocation" flag
+    void logMemoryOperation(bool allocation, const char* logMsg, size_t size);
 
 protected:
-	friend class InputInterface;
-	void setMousePosition(D32 x, D32 y) const;
+    friend class InputInterface;
+    void setMousePosition(D32 x, D32 y) const;
 
 private:
-	Application();
-	~Application();
+    Application();
+    ~Application();
 
 private:
-	I8        _mainWindowId;
-	bool      _requestShutdown;
-	/// size in bytes of currently allocated memory by the "New" override (delete calls are taken in consideration)
-	size_t    _totalMemoryOcuppied;
-	vec2<U16> _resolution;
-	Kernel*   _kernel;
-	///buffer to register all of the memory allocations recorded via "New"
-	std::ofstream _memLogBuffer;
-	///Main application thread id
+    I8        _mainWindowId;
+    bool      _requestShutdown;
+    /// size in bytes of currently allocated memory by the "New" override (delete calls are taken in consideration)
+    size_t    _totalMemoryOcuppied;
+    vec2<U16> _resolution;
+    Kernel*   _kernel;
+    ///buffer to register all of the memory allocations recorded via "New"
+    std::ofstream _memLogBuffer;
+    ///Main application thread id
     boost::thread::id _threadId;
 
 END_SINGLETON

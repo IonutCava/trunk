@@ -22,46 +22,46 @@ uniform mat4 dvd_ModelViewMatrix;
 layout(std140) uniform dvd_MatrixBlock
 {
     mat4 dvd_ProjectionMatrix;
-	mat4 dvd_ViewMatrix;
+    mat4 dvd_ViewMatrix;
 };
 
 void computeData(void){
 
-	dvd_Vertex = vec4(inVertexData,1.0);
-	_texCoord       = inTexCoordData;
+    dvd_Vertex = vec4(inVertexData,1.0);
+    _texCoord       = inTexCoordData;
 
 #if defined(USE_GPU_SKINNING)
-	dvd_BoneWeight = inBoneWeightData;
-	dvd_BoneIndice = inBoneIndiceData;
+    dvd_BoneWeight = inBoneWeightData;
+    dvd_BoneIndice = inBoneIndiceData;
 #endif
 }
 
 #if defined(USE_GPU_SKINNING)
 void applyBoneTransforms(inout vec4 position){
-	if(hasAnimations) {
-	 // ///w - weight value
-	  dvd_BoneWeight.w = 1.0 - dot(dvd_BoneWeight.xyz, vec3(1.0, 1.0, 1.0));
+    if(hasAnimations) {
+     // ///w - weight value
+      dvd_BoneWeight.w = 1.0 - dot(dvd_BoneWeight.xyz, vec3(1.0, 1.0, 1.0));
 
-	   vec4 newPosition  = dvd_BoneWeight.x * boneTransforms[dvd_BoneIndice.x] * position;
-		    newPosition += dvd_BoneWeight.y * boneTransforms[dvd_BoneIndice.y] * position;
-		    newPosition += dvd_BoneWeight.z * boneTransforms[dvd_BoneIndice.z] * position;
-		    newPosition += dvd_BoneWeight.w * boneTransforms[dvd_BoneIndice.w] * position;
+       vec4 newPosition  = dvd_BoneWeight.x * boneTransforms[dvd_BoneIndice.x] * position;
+            newPosition += dvd_BoneWeight.y * boneTransforms[dvd_BoneIndice.y] * position;
+            newPosition += dvd_BoneWeight.z * boneTransforms[dvd_BoneIndice.z] * position;
+            newPosition += dvd_BoneWeight.w * boneTransforms[dvd_BoneIndice.w] * position;
 
-	  position = newPosition;
-	}
+      position = newPosition;
+    }
 }
 #endif
 
 void main(void){
 
-	computeData();
+    computeData();
 #if defined(USE_GPU_SKINNING)
-	applyBoneTransforms(dvd_Vertex);
+    applyBoneTransforms(dvd_Vertex);
 #endif
-	// Transformed position 
-	_vertexMV = dvd_ModelViewMatrix * dvd_Vertex;
-	//Compute the final vert position
-	gl_Position = dvd_ProjectionMatrix * _vertexMV;
+    // Transformed position 
+    _vertexMV = dvd_ModelViewMatrix * dvd_Vertex;
+    //Compute the final vert position
+    gl_Position = dvd_ProjectionMatrix * _vertexMV;
 }
 
 -- Fragment
@@ -78,17 +78,17 @@ uniform sampler2D texOpacityMap;
 
 void main(){
 
-	float opacityValue = opacity;
+    float opacityValue = opacity;
 #if defined(USE_OPACITY_MAP)
-	opacityValue = 1.1 - texture(texOpacityMap, _texCoord).a;
+    opacityValue = 1.1 - texture(texOpacityMap, _texCoord).a;
 #endif
 
-	/*if(opacityValue < ALPHA_DISCARD_THRESHOLD)
-		gl_FragDepth = 1.0; //Discard for depth, basically*/
+    /*if(opacityValue < ALPHA_DISCARD_THRESHOLD)
+        gl_FragDepth = 1.0; //Discard for depth, basically*/
 
-	float depth = (_vertexMV.z / _vertexMV.w) * 0.5 + 0.5;
-	// Adjusting moments (this is sort of bias per pixel) using partial derivative
-	float dx = dFdx(depth);
-	float dy = dFdy(depth);
-	_colorOut =  vec4(depth , (depth * depth) + 0.25 * (dx * dx + dy * dy), 0.0, 0.0);
+    float depth = (_vertexMV.z / _vertexMV.w) * 0.5 + 0.5;
+    // Adjusting moments (this is sort of bias per pixel) using partial derivative
+    float dx = dFdx(depth);
+    float dy = dFdy(depth);
+    _colorOut =  vec4(depth , (depth * depth) + 0.25 * (dx * dx + dy * dy), 0.0, 0.0);
 }

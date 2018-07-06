@@ -9,18 +9,18 @@ Box3D* ImplResourceLoader<Box3D>::operator()(){
         size = atof(_descriptor.getPropertyListString().c_str());//<should work
     }
 
-	Box3D* ptr = New Box3D(size);
+    Box3D* ptr = New Box3D(size);
 
     if(!load(ptr,_descriptor.getName())){
         SAFE_DELETE(ptr);
     }else{
-    	if(_descriptor.getFlag()){
-	    	ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-		    ptr->setMaterial(NULL);
-	    }
+        if(_descriptor.getFlag()){
+            ptr->getSceneNodeRenderState().useDefaultMaterial(false);
+            ptr->setMaterial(NULL);
+        }
     }
 
-	return ptr;
+    return ptr;
 }
 
 DEFAULT_LOADER_IMPL(Box3D)

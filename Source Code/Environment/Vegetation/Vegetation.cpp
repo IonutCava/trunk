@@ -12,83 +12,83 @@
 #include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 
 Vegetation::~Vegetation(){
-	PRINT_FN(Locale::get("UNLOAD_VEGETATION_BEGIN"),_terrain->getName().c_str());
-	SAFE_DELETE(_grassVBO);
+    PRINT_FN(Locale::get("UNLOAD_VEGETATION_BEGIN"),_terrain->getName().c_str());
+    SAFE_DELETE(_grassVBO);
 
-	RemoveResource(_grassShader);
-	for(U8 i = 0; i < _grassBillboards.size(); i++){
-		RemoveResource(_grassBillboards[i]);
-	}
+    RemoveResource(_grassShader);
+    for(U8 i = 0; i < _grassBillboards.size(); i++){
+        RemoveResource(_grassBillboards[i]);
+    }
 
-	SAFE_DELETE(_grassStateBlock);
+    SAFE_DELETE(_grassStateBlock);
 
-	PRINT_FN(Locale::get("UNLOAD_VEGETATION_END"));
+    PRINT_FN(Locale::get("UNLOAD_VEGETATION_END"));
 }
 
 void Vegetation::initialize(const std::string& grassShader, Terrain* const terrain, SceneGraphNode* const terrainSGN) {
-	assert(terrain);
-	_grassShader  = CreateResource<ShaderProgram>(ResourceDescriptor(grassShader));
-	_grassDensity = _grassDensity/_billboardCount;
-	_terrain = terrain;
-	_terrainSGN = terrainSGN;
+    assert(terrain);
+    _grassShader  = CreateResource<ShaderProgram>(ResourceDescriptor(grassShader));
+    _grassDensity = _grassDensity/_billboardCount;
+    _terrain = terrain;
+    _terrainSGN = terrainSGN;
     _grassVBO = GFX_DEVICE.newVBO(QUADS);
-	_grassVBO->useHWIndices(false);//<Use custom LOD indices;
-	_grassVBO->useLargeIndices(true);
-	_grassVBO->computeTriangles(false);
+    _grassVBO->useHWIndices(false);//<Use custom LOD indices;
+    _grassVBO->useLargeIndices(true);
+    _grassVBO->computeTriangles(false);
     U32 size = (U32) _grassDensity * _billboardCount * 12;
-	_grassVBO->reservePositionCount( size );
-	_grassVBO->reserveNormalCount( size );
-	_grassVBO->getTexcoord().reserve( size );
+    _grassVBO->reservePositionCount( size );
+    _grassVBO->reserveNormalCount( size );
+    _grassVBO->getTexcoord().reserve( size );
     _grassVBOBillboardIndice.resize(_billboardCount,0);
 
     assert(_map.data() != NULL);
-	_success = generateGrass(_billboardCount,size);
+    _success = generateGrass(_billboardCount,size);
 
-	_grassShader->Uniform("lod_metric", 100.0f);
+    _grassShader->Uniform("lod_metric", 100.0f);
     _grassShader->Uniform("dvd_lightCount", 1);
-	_grassShader->Uniform("grassScale", _grassScale);
-	_grassShader->UniformTexture("texDiffuse", 0);
+    _grassShader->Uniform("grassScale", _grassScale);
+    _grassShader->UniformTexture("texDiffuse", 0);
 
-	_grassVBO->setShaderProgram(_grassShader);
-	if(_success) _success = generateTrees();
+    _grassVBO->setShaderProgram(_grassShader);
+    if(_success) _success = generateTrees();
 
-	RenderStateBlockDescriptor transparent;
+    RenderStateBlockDescriptor transparent;
     transparent.setCullMode(CULL_MODE_NONE);
     transparent.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
     _grassStateBlock = GFX_DEVICE.createStateBlock( transparent );
 
-	_render = true;
+    _render = true;
 }
 
 void Vegetation::sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState){
-	if(!_render || !_success) return;
-	///Query shadow state every "_stateRefreshInterval" milliseconds
-	if (sceneTime - _stateRefreshIntervalBuffer >= _stateRefreshInterval){
-		_windX = sceneState.getWindDirX();
-		_windZ = sceneState.getWindDirZ();
-		_windS = sceneState.getWindSpeed();
-		_shadowMapped = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
+    if(!_render || !_success) return;
+    ///Query shadow state every "_stateRefreshInterval" milliseconds
+    if (sceneTime - _stateRefreshIntervalBuffer >= _stateRefreshInterval){
+        _windX = sceneState.getWindDirX();
+        _windZ = sceneState.getWindDirZ();
+        _windS = sceneState.getWindSpeed();
+        _shadowMapped = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
         _grassShader->bind();
         _grassShader->Uniform("windDirection",vec2<F32>(_windX,_windZ));
-	    _grassShader->Uniform("windSpeed", _windS);
-    	_grassShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
+        _grassShader->Uniform("windSpeed", _windS);
+        _grassShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
         _grassShader->Uniform("worldHalfExtent", GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getWidth() * 0.5f);
         _grassShader->unbind();
-		_stateRefreshIntervalBuffer += _stateRefreshInterval;
-	}
+        _stateRefreshIntervalBuffer += _stateRefreshInterval;
+    }
 }
 
 void Vegetation::draw(const RenderStage& currentStage, Transform* const parentTransform){
-	if(!_render || !_success) return;
-	if(GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)) return;
+    if(!_render || !_success) return;
+    if(GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)) return;
 
      SET_STATE_BLOCK(_grassStateBlock);
 
-	_grassShader->bind();
+    _grassShader->bind();
 
-	_grassShader->uploadModelMatrices();
+    _grassShader->uploadModelMatrices();
 
-	for(U32 index = 0; index < _billboardCount; index++){
+    for(U32 index = 0; index < _billboardCount; index++){
         _grassBillboards[index]->Bind(0);
 
         _terrain->getQuadtree().DrawGrass(index,parentTransform);
@@ -98,65 +98,65 @@ void Vegetation::draw(const RenderStage& currentStage, Transform* const parentTr
 }
 
 bool Vegetation::generateGrass(U32 billboardCount, U32 size){
-	PRINT_FN(Locale::get("CREATE_GRASS_BEGIN"), (U32)_grassDensity * billboardCount);
-	vec2<F32> pos0(cosf(RADIANS(0.0f)), sinf(RADIANS(0.0f)));
-	vec2<F32> pos120(cosf(RADIANS(120.0f)), sinf(RADIANS(120.0f)));
-	vec2<F32> pos240(cosf(RADIANS(240.0f)), sinf(RADIANS(240.0f)));
+    PRINT_FN(Locale::get("CREATE_GRASS_BEGIN"), (U32)_grassDensity * billboardCount);
+    vec2<F32> pos0(cosf(RADIANS(0.0f)), sinf(RADIANS(0.0f)));
+    vec2<F32> pos120(cosf(RADIANS(120.0f)), sinf(RADIANS(120.0f)));
+    vec2<F32> pos240(cosf(RADIANS(240.0f)), sinf(RADIANS(240.0f)));
 
-	vec3<F32> tVertices[] = {
-		vec3<F32>(-pos0.x,   -pos0.y,   0.0f),	vec3<F32>(-pos0.x,   -pos0.y,   1.0f),	vec3<F32>(pos0.x,   pos0.y,   1.0f),	vec3<F32>(pos0.x,   pos0.y,   0.0f),
-		vec3<F32>(-pos120.x, -pos120.y, 0.0f),	vec3<F32>(-pos120.x, -pos120.y, 1.0f),	vec3<F32>(pos120.x, pos120.y, 1.0f),	vec3<F32>(pos120.x, pos120.y, 0.0f),
-		vec3<F32>(-pos240.x, -pos240.y, 0.0f),	vec3<F32>(-pos240.x, -pos240.y, 1.0f),	vec3<F32>(pos240.x, pos240.y, 1.0f),	vec3<F32>(pos240.x, pos240.y, 0.0f)
-	};
-	vec2<F32> tTexcoords[] = {
-		vec2<F32>(0.0f, 0.49f), vec2<F32>(0.0f, 0.01f), vec2<F32>(1.0f, 0.01f), vec2<F32>(1.0f, 0.49f),
-		vec2<F32>(0.0f, 0.49f), vec2<F32>(0.0f, 0.01f), vec2<F32>(1.0f, 0.01f), vec2<F32>(1.0f, 0.49f),
-		vec2<F32>(0.0f, 0.49f), vec2<F32>(0.0f, 0.01f), vec2<F32>(1.0f, 0.01f), vec2<F32>(1.0f, 0.49f)
-	};
+    vec3<F32> tVertices[] = {
+        vec3<F32>(-pos0.x,   -pos0.y,   0.0f),	vec3<F32>(-pos0.x,   -pos0.y,   1.0f),	vec3<F32>(pos0.x,   pos0.y,   1.0f),	vec3<F32>(pos0.x,   pos0.y,   0.0f),
+        vec3<F32>(-pos120.x, -pos120.y, 0.0f),	vec3<F32>(-pos120.x, -pos120.y, 1.0f),	vec3<F32>(pos120.x, pos120.y, 1.0f),	vec3<F32>(pos120.x, pos120.y, 0.0f),
+        vec3<F32>(-pos240.x, -pos240.y, 0.0f),	vec3<F32>(-pos240.x, -pos240.y, 1.0f),	vec3<F32>(pos240.x, pos240.y, 1.0f),	vec3<F32>(pos240.x, pos240.y, 0.0f)
+    };
+    vec2<F32> tTexcoords[] = {
+        vec2<F32>(0.0f, 0.49f), vec2<F32>(0.0f, 0.01f), vec2<F32>(1.0f, 0.01f), vec2<F32>(1.0f, 0.49f),
+        vec2<F32>(0.0f, 0.49f), vec2<F32>(0.0f, 0.01f), vec2<F32>(1.0f, 0.01f), vec2<F32>(1.0f, 0.49f),
+        vec2<F32>(0.0f, 0.49f), vec2<F32>(0.0f, 0.01f), vec2<F32>(1.0f, 0.01f), vec2<F32>(1.0f, 0.49f)
+    };
 
     for(U8 index = 0; index < billboardCount; index++){
         _grassVBOBillboardIndice[index] = _grassVBO->getPosition().size();
 
-		mat3<F32> matRot;
-		vec2<F32> uv_offset(0,0);
-		vec3<I32> map_color;
-		vec3<F32> data;
-		vec3<F32> currentVertex;
-		F32 grassScaleFactor = 256/_grassScale;
+        mat3<F32> matRot;
+        vec2<F32> uv_offset(0,0);
+        vec3<I32> map_color;
+        vec3<F32> data;
+        vec3<F32> currentVertex;
+        F32 grassScaleFactor = 256/_grassScale;
 
         for(U32 k=0; k<(U32)_grassDensity; k++) {
-		    F32 x = random(1.0f);
-		    F32 y = random(1.0f);
+            F32 x = random(1.0f);
+            F32 y = random(1.0f);
 
-			const vec3<F32>& P = _terrain->getPosition(x, y);
-		    if(P.y < GET_ACTIVE_SCENE()->state().getWaterLevel()){
-			    k--;
-			    continue;
-		    }
+            const vec3<F32>& P = _terrain->getPosition(x, y);
+            if(P.y < GET_ACTIVE_SCENE()->state().getWaterLevel()){
+                k--;
+                continue;
+            }
 
-		    uv_offset.y = random(3)==0 ? 0.0f : 0.5f;
-		    map_color.set(_map.getColor((U16)(x * _map.dimensions().width), (U16)(y * _map.dimensions().height)));
+            uv_offset.y = random(3)==0 ? 0.0f : 0.5f;
+            map_color.set(_map.getColor((U16)(x * _map.dimensions().width), (U16)(y * _map.dimensions().height)));
 
-		    if(map_color.g < 150) {
-    			k--;
-	    		continue;
-		    }
+            if(map_color.g < 150) {
+                k--;
+                continue;
+            }
 
-		    _grassSize = (F32)(map_color.g+1) / grassScaleFactor;
+            _grassSize = (F32)(map_color.g+1) / grassScaleFactor;
 
-		    const vec3<F32>& N = _terrain->getNormal(x, y);
-		    if(N.y < 0.8f) {
-			    k--;
-			    continue;
-		    }
+            const vec3<F32>& N = _terrain->getNormal(x, y);
+            if(N.y < 0.8f) {
+                k--;
+                continue;
+            }
 
-			matRot.identity();
-			matRot.rotate_z(random(360.0f));
+            matRot.identity();
+            matRot.rotate_z(random(360.0f));
 
-			QuadtreeNode* node = _terrain->getQuadtree().FindLeaf(vec2<F32>(P.x, P.z));
-			assert(node);
-			TerrainChunk* chunk = node->getChunk();
-			assert(chunk);
+            QuadtreeNode* node = _terrain->getQuadtree().FindLeaf(vec2<F32>(P.x, P.z));
+            assert(node);
+            TerrainChunk* chunk = node->getChunk();
+            assert(chunk);
             ChunkGrassData& chunkGrassData = chunk->getGrassData();
 
             if(chunkGrassData.empty()){
@@ -166,76 +166,76 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
 
             U32 idx = (U32)_grassVBOBillboardIndice[index] + chunkGrassData._grassIndice[index].size();
 
-			const vec3<F32>& T = _terrain->getTangent(x, y);
-		    const vec3<F32>& B = _terrain->getBiTangent(x, y);
+            const vec3<F32>& T = _terrain->getTangent(x, y);
+            const vec3<F32>& B = _terrain->getBiTangent(x, y);
 
-    		for(U8 i=0; i < 12 /*3 * 4 */; i++)	{
-    			data.set(matRot*(tVertices[i]*_grassSize));
-	    		currentVertex.set(P);
-		    	currentVertex.x += Dot(data, T);
-			   	currentVertex.y += Dot(data, B) - 0.075f;
-			    currentVertex.z += Dot(data, N);
+            for(U8 i=0; i < 12 /*3 * 4 */; i++)	{
+                data.set(matRot*(tVertices[i]*_grassSize));
+                currentVertex.set(P);
+                currentVertex.x += Dot(data, T);
+                currentVertex.y += Dot(data, B) - 0.075f;
+                currentVertex.z += Dot(data, N);
 
-			    _grassVBO->addPosition(currentVertex);
-			    _grassVBO->addNormal( tTexcoords[i].t < 0.2f ? N : -N );
-			    _grassVBO->getTexcoord().push_back( uv_offset + tTexcoords[i] );
-				_grassVBO->addIndex(idx+i);
-			    chunkGrassData._grassIndice[index].push_back(idx+i);
- 			}
+                _grassVBO->addPosition(currentVertex);
+                _grassVBO->addNormal( tTexcoords[i].t < 0.2f ? N : -N );
+                _grassVBO->getTexcoord().push_back( uv_offset + tTexcoords[i] );
+                _grassVBO->addIndex(idx+i);
+                chunkGrassData._grassIndice[index].push_back(idx+i);
+            }
         }
-	}
+    }
     _grassVBO->Create();
-	PRINT_FN(Locale::get("CREATE_GRASS_END"));
-	return true;
+    PRINT_FN(Locale::get("CREATE_GRASS_END"));
+    return true;
 }
 
 bool Vegetation::generateTrees(){
-	//--> Unique position generation
-	vectorImpl<vec3<F32> > positions;
-	//<-- End unique position generation
-	vectorImpl<FileData>& DA = GET_ACTIVE_SCENE()->getVegetationDataArray();
-	if(DA.empty()){
-		ERROR_FN(Locale::get("ERROR_CREATE_TREE_NO_GEOM"));
-		return true;
-	}
-	PRINT_FN(Locale::get("CREATE_TREE_START"), _treeDensity);
+    //--> Unique position generation
+    vectorImpl<vec3<F32> > positions;
+    //<-- End unique position generation
+    vectorImpl<FileData>& DA = GET_ACTIVE_SCENE()->getVegetationDataArray();
+    if(DA.empty()){
+        ERROR_FN(Locale::get("ERROR_CREATE_TREE_NO_GEOM"));
+        return true;
+    }
+    PRINT_FN(Locale::get("CREATE_TREE_START"), _treeDensity);
 
-	for(U16 k=0; k<(U16)_treeDensity; k++) {
-		I16 map_x = (I16)random((F32)_map.dimensions().width);
-		I16 map_y = (I16)random((F32)_map.dimensions().height);
-		vec3<I32> map_color = _map.getColor(map_x, map_y);
-		if(map_color.g < 55) {
-			k--;
-			continue;
-		}
+    for(U16 k=0; k<(U16)_treeDensity; k++) {
+        I16 map_x = (I16)random((F32)_map.dimensions().width);
+        I16 map_y = (I16)random((F32)_map.dimensions().height);
+        vec3<I32> map_color = _map.getColor(map_x, map_y);
+        if(map_color.g < 55) {
+            k--;
+            continue;
+        }
 
-		vec3<F32> P = _terrain->getPosition(((F32)map_x)/_map.dimensions().width, ((F32)map_y)/_map.dimensions().height);
-		P.y -= 0.2f;
-		if(P.y < GET_ACTIVE_SCENE()->state().getWaterLevel()){
-			k--;
-			continue;
-		}
-		bool continueLoop = true;
-		for_each(vec3<F32>& it, positions){
-			if(it.compare(P) || (it.distance(P) < 0.02f)){
-				k--;
-				continueLoop = false;
-				break; //iterator for
-			}
-		}
-		if(!continueLoop) continue;
-		positions.push_back(P);
-		QuadtreeNode* node = _terrain->getQuadtree().FindLeaf(vec2<F32>(P.x, P.z));
-		assert(node);
-		TerrainChunk* chunk = node->getChunk();
-		assert(chunk);
+        vec3<F32> P = _terrain->getPosition(((F32)map_x)/_map.dimensions().width, ((F32)map_y)/_map.dimensions().height);
+        P.y -= 0.2f;
+        if(P.y < GET_ACTIVE_SCENE()->state().getWaterLevel()){
+            k--;
+            continue;
+        }
+        bool continueLoop = true;
+        for_each(vec3<F32>& it, positions){
+            if(it.compare(P) || (it.distance(P) < 0.02f)){
+                k--;
+                continueLoop = false;
+                break; //iterator for
+            }
+        }
+        if(!continueLoop) continue;
+        positions.push_back(P);
+        QuadtreeNode* node = _terrain->getQuadtree().FindLeaf(vec2<F32>(P.x, P.z));
+        assert(node);
+        TerrainChunk* chunk = node->getChunk();
+        assert(chunk);
 
-		U16 index = rand() % DA.size();
-		chunk->addTree(vec4<F32>(P, random(360.0f)),_treeScale,DA[index],_terrainSGN);
-	}
+        U16 index = rand() % DA.size();
+        chunk->addTree(vec4<F32>(P, random(360.0f)),_treeScale,DA[index],_terrainSGN);
+    }
 
-	positions.clear();
-	PRINT_FN(Locale::get("CREATE_TREE_END"));
-	DA.empty();
-	return true;
+    positions.clear();
+    PRINT_FN(Locale::get("CREATE_TREE_END"));
+    DA.empty();
+    return true;
 }

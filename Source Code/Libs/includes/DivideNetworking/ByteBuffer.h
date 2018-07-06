@@ -25,11 +25,11 @@
 #include <map>
 
 namespace DivideNetworking{
-	class vector3 {
-	public:
-		vector3(F32 x, F32 y, F32 z) : _x(x), _y(y), _z(z) {}
-		F32 _x, _y, _z;
-	};
+    class vector3 {
+    public:
+        vector3(F32 x, F32 y, F32 z) : _x(x), _y(y), _z(z) {}
+        F32 _x, _y, _z;
+    };
 };
 
 class ByteBufferException
@@ -439,10 +439,10 @@ inline ByteBuffer &operator<<(ByteBuffer &b, DivideNetworking::vector3 const& v)
 template <typename T>
 inline ByteBuffer &operator>>(ByteBuffer &b, DivideNetworking::vector3 &v)
 {
-	b >> v.x;
-	b >> v.y;
-	b >> v.z;
-	return b;
+    b >> v.x;
+    b >> v.y;
+    b >> v.z;
+    return b;
 }
 
 template <typename T>

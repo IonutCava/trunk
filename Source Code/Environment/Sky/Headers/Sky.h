@@ -38,37 +38,37 @@ enum RenderStage;
 
 class Sky : public SceneNode {
 public:
-	Sky(const std::string& name);
-	~Sky();
+    Sky(const std::string& name);
+    ~Sky();
 
     void onDraw(const RenderStage& currentStage);
-	void render(SceneGraphNode* const sgn);
-	void setRenderingOptions(bool drawSun = true, bool drawSky = true) ;
-	void prepareMaterial(SceneGraphNode* const sgn);
-	void releaseMaterial();
+    void render(SceneGraphNode* const sgn);
+    void setRenderingOptions(bool drawSun = true, bool drawSky = true) ;
+    void prepareMaterial(SceneGraphNode* const sgn);
+    void releaseMaterial();
 
     void setSunVector(const vec3<F32>& sunVect);
 
-	void addToDrawExclusionMask(I32 stageMask);
-	void removeFromDrawExclusionMask(I32 stageMask);
-	///Draw states are used to test if the current object should be drawn depending on the current render pass
-	bool getDrawState(const RenderStage& currentStage) const;
-	///Skies are always visible (for now. Interiors will change that. Windows will reuqire a occlusion querry(?))
-	bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) {return true;}
-	void postLoad(SceneGraphNode* const sgn);
+    void addToDrawExclusionMask(I32 stageMask);
+    void removeFromDrawExclusionMask(I32 stageMask);
+    ///Draw states are used to test if the current object should be drawn depending on the current render pass
+    bool getDrawState(const RenderStage& currentStage) const;
+    ///Skies are always visible (for now. Interiors will change that. Windows will reuqire a occlusion querry(?))
+    bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) {return true;}
+    void postLoad(SceneGraphNode* const sgn);
 
 private:
-	bool load();
+    bool load();
 
 private:
-	bool			  _init,_drawSky,_drawSun;
-	ShaderProgram*	  _skyShader;
-	TextureCubemap*	  _skybox;
-	vec3<F32>		  _sunVect;
-	Sphere3D          *_sky,*_sun;
-	SceneGraphNode    *_sunNode, *_skyGeom;
-	U8				  _exclusionMask;
-	RenderStateBlock* _skyboxRenderState;
+    bool			  _init,_drawSky,_drawSun;
+    ShaderProgram*	  _skyShader;
+    TextureCubemap*	  _skybox;
+    vec3<F32>		  _sunVect;
+    Sphere3D          *_sky,*_sun;
+    SceneGraphNode    *_sunNode, *_skyGeom;
+    U8				  _exclusionMask;
+    RenderStateBlock* _skyboxRenderState;
 };
 
 #endif

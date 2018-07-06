@@ -5,17 +5,17 @@ out vec3 position;
 out mat4 TBN;
 
 void main( void ){
-	computeData();
-	gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
+    computeData();
+    gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
 
-	position = vec3(transpose(dvd_ModelViewMatrix) * dvd_Vertex);
-	normals = normalize(dvd_NormalMatrix * dvd_Normal);
+    position = vec3(transpose(dvd_ModelViewMatrix) * dvd_Vertex);
+    normals = normalize(dvd_NormalMatrix * dvd_Normal);
 
-	vec3 t = normalize(dvd_NormalMatrix * dvd_Tangent);
-	vec3 n = normalize(dvd_NormalMatrix * dvd_Normal);
-	vec3 b = cross(n, t);
+    vec3 t = normalize(dvd_NormalMatrix * dvd_Tangent);
+    vec3 n = normalize(dvd_NormalMatrix * dvd_Normal);
+    vec3 b = cross(n, t);
 
-	
+    
    TBN = mat4( t.x, b.x, n.x, 0,
                t.y, b.y, n.y, 0,
                t.z, b.z, n.z, 0,
@@ -38,7 +38,7 @@ in mat4 TBN;
 
 void main( void ){
 
-	vec4 color = material[1]; //diffuse
+    vec4 color = material[1]; //diffuse
     if(color.a < ALPHA_DISCARD_THRESHOLD) discard;
 
     diffuseOutput = color;
@@ -114,13 +114,13 @@ out vec3 normals;
 out vec3 position;
 
 void main( void ){
-	vec4 dvd_Vertex     = vec4(inVertexData,1.0);
-	vec3 dvd_Normal     = inNormalData;
+    vec4 dvd_Vertex     = vec4(inVertexData,1.0);
+    vec3 dvd_Normal     = inNormalData;
 
-	gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
+    gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
 
-	position = vec3(transpose(dvd_ModelViewMatrix) * dvd_Vertex);
-	normals = normalize(dvd_NormalMatrix * dvd_Normal);
+    position = vec3(transpose(dvd_ModelViewMatrix) * dvd_Vertex);
+    normals = normalize(dvd_NormalMatrix * dvd_Normal);
 } 
 
 -- Fragment.Impostor
@@ -140,9 +140,9 @@ void main( void )
     vec4 color = material[1]; //diffuse
     if(color.a < ALPHA_DISCARD_THRESHOLD) discard;
 
-	diffuseOutput	= color;
-	posOutput  		= vec4(position,1);
-	normOutput    	= vec4(normals,1);
+    diffuseOutput	= color;
+    posOutput  		= vec4(position,1);
+    normOutput    	= vec4(normals,1);
     blendOutput.rgb = color.rgb * color.a; // Pre multiplied alpha
     blendOutput.a   = color.a;
 }

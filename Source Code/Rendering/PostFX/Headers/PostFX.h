@@ -40,65 +40,65 @@ typedef Texture Texture2D;
 DEFINE_SINGLETON( PostFX )
 
 public:
-	FrameBufferObject* _screenFBO;
-	FrameBufferObject* _depthFBO;
+    FrameBufferObject* _screenFBO;
+    FrameBufferObject* _depthFBO;
 
-	/// Anaglyph (a second "screen" fbo, for the other "eye")
-	FrameBufferObject* _anaglyphFBO;
+    /// Anaglyph (a second "screen" fbo, for the other "eye")
+    FrameBufferObject* _anaglyphFBO;
 
-	/// Bloom
-	FrameBufferObject* _bloomFBO;
-	PreRenderOperator* _bloomOP;
+    /// Bloom
+    FrameBufferObject* _bloomFBO;
+    PreRenderOperator* _bloomOP;
 
-	/// SSAO
-	FrameBufferObject* _SSAO_FBO;
+    /// SSAO
+    FrameBufferObject* _SSAO_FBO;
 
-	/// FXAA
-	PreRenderOperator* _fxaaOP;
+    /// FXAA
+    PreRenderOperator* _fxaaOP;
 
-	/// DoF
-	PreRenderOperator* _dofOP;
+    /// DoF
+    PreRenderOperator* _dofOP;
 
-	/// Screen Border
-	Texture2D*	_screenBorder;
+    /// Screen Border
+    Texture2D*	_screenBorder;
 
-	/// Noise
-	Texture2D*	_noise;
+    /// Noise
+    Texture2D*	_noise;
 
-	F32 _randomNoiseCoefficient, _randomFlashCoefficient;
-	F32 _timer, _tickInterval;
-	F32 _eyeOffset;
+    F32 _randomNoiseCoefficient, _randomFlashCoefficient;
+    F32 _timer, _tickInterval;
+    F32 _eyeOffset;
 
-	Quad3D*	_renderQuad;
-	ShaderProgram* _anaglyphShader;
-	ShaderProgram* _postProcessingShader;
-	Texture2D* _underwaterTexture;
-	GFXDevice& _gfx;
-	///Update the current camera at every render loop
-	Camera*   _currentCamera;
+    Quad3D*	_renderQuad;
+    ShaderProgram* _anaglyphShader;
+    ShaderProgram* _postProcessingShader;
+    Texture2D* _underwaterTexture;
+    GFXDevice& _gfx;
+    ///Update the current camera at every render loop
+    Camera*   _currentCamera;
 
 private:
-	void displaySceneWithoutAnaglyph(bool deferred);
-	void displaySceneWithAnaglyph(bool deferred);
-	void createOperators();
-	~PostFX();
-	PostFX();
+    void displaySceneWithoutAnaglyph(bool deferred);
+    void displaySceneWithAnaglyph(bool deferred);
+    void createOperators();
+    ~PostFX();
+    PostFX();
 
-	bool _enablePostProcessing;
-	bool _enableAnaglyph;
-	bool _enableBloom;
-	bool _enableDOF;
-	bool _enableNoise;
-	bool _enableSSAO;
-	bool _enableFXAA;
+    bool _enablePostProcessing;
+    bool _enableAnaglyph;
+    bool _enableBloom;
+    bool _enableDOF;
+    bool _enableNoise;
+    bool _enableSSAO;
+    bool _enableFXAA;
     bool _enableHDR;
-	bool _underwater;
+    bool _underwater;
 
 public:
-	void init(const vec2<U16>& resolution);
-	void idle();
-	void render();
-	void reshapeFBO(I32 newwidth , I32 newheight);
+    void init(const vec2<U16>& resolution);
+    void idle();
+    void render();
+    void reshapeFBO(I32 newwidth , I32 newheight);
 
 END_SINGLETON
 

@@ -36,7 +36,6 @@ bool EventHandler::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID
 
 // Variable force "Force" + optional "AttackFactor" constant, on a OIS::ConstantEffect
 void forceVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect){
-
   D32 dForce = mapVars["Force"]->getValue();
   D32 dAttackFactor = 1.0;
   if (mapVars.find("AttackFactor") != mapVars.end())
@@ -50,7 +49,6 @@ void forceVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect){
 
 // Variable "Period" on an OIS::PeriodicEffect
 void periodVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect){
-
   D32 dPeriod = mapVars["Period"]->getValue();
 
   OIS::PeriodicEffect* pPeriodForce = dynamic_cast<OIS::PeriodicEffect*>(pEffect->getForceEffect());

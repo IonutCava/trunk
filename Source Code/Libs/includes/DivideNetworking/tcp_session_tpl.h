@@ -99,9 +99,9 @@ private:
 
 protected:
 
-	//Define this functions to implement various packet handling (a switch statement for example)
-	//switch(p.getOpcode()) { case SMSG_XXXXX: bla bla bla break; case MSG_HEARTBEAT: break;}
-	virtual void handlePacket(WorldPacket& p) = 0;
+    //Define this functions to implement various packet handling (a switch statement for example)
+    //switch(p.getOpcode()) { case SMSG_XXXXX: bla bla bla break; case MSG_HEARTBEAT: break;}
+    virtual void handlePacket(WorldPacket& p) = 0;
 
 private:
   size_t header;

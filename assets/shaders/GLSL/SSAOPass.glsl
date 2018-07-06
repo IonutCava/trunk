@@ -3,7 +3,7 @@
 
 void main(void)
 {
-	computeData();
+    computeData();
 }
 
 -- Fragment
@@ -93,5 +93,5 @@ void main(void) {
     dif  += (max(dif1, 0.0) + max(dif3, 0.0) + max(dif5, 0.0)) * 0.5;
 
     _colorOut.rgb = vec3(1.0 - dif * (dvd_zPlanes.y + dvd_zPlanes.x) * 255);
-	_colorOut.a = 1.0;
+    _colorOut.a = 1.0;
 }

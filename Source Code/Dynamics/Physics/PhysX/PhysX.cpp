@@ -6,8 +6,8 @@
 using namespace physx;
 
 PhysX::PhysX() : _gPhysicsSDK(NULL),
-				 _foundation(NULL),
-				 _pvdConnection(NULL),
+                 _foundation(NULL),
+                 _pvdConnection(NULL),
                  _targetScene(NULL){}
 
 I8 PhysX::initPhysics(U8 targetFrameRate){
@@ -17,19 +17,19 @@ I8 PhysX::initPhysics(U8 targetFrameRate){
   _foundation = PxCreateFoundation(PX_PHYSICS_VERSION,_gDefaultAllocatorCallback,_gDefaultErrorCallback);
   _gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *_foundation , PxTolerancesScale() );
    if(_gPhysicsSDK == NULL) {
-	   ERROR_FN(Locale::get("ERROR_START_PHYSX_API"));
-	   return PHYSX_INIT_ERROR;
+       ERROR_FN(Locale::get("ERROR_START_PHYSX_API"));
+       return PHYSX_INIT_ERROR;
    }
    if(!PxInitExtensions(*_gPhysicsSDK)){
-	   ERROR_FN(Locale::get("ERROR_EXTENSION_PHYSX_API"));
-	   return PHYSX_EXTENSION_ERROR;
+       ERROR_FN(Locale::get("ERROR_EXTENSION_PHYSX_API"));
+       return PHYSX_EXTENSION_ERROR;
    }
 #ifdef _DEBUG
    _pvdConnection = _gPhysicsSDK->getPvdConnectionManager();
    if(_pvdConnection != NULL){
-	   if(PxVisualDebuggerExt::createConnection(_pvdConnection,"localhost",5425, 10000) != NULL){
-			D_PRINT_FN(Locale::get("CONNECT_PVD_OK"));
-	   }
+       if(PxVisualDebuggerExt::createConnection(_pvdConnection,"localhost",5425, 10000) != NULL){
+            D_PRINT_FN(Locale::get("CONNECT_PVD_OK"));
+       }
    }
 #endif
    updateTimeStep(targetFrameRate);
@@ -38,36 +38,36 @@ I8 PhysX::initPhysics(U8 targetFrameRate){
 }
 
 bool PhysX::exitPhysics(){
-	if(_gPhysicsSDK != NULL){
-		PRINT_FN(Locale::get("STOP_PHYSX_API"));
-		 PxCloseExtensions();
+    if(_gPhysicsSDK != NULL){
+        PRINT_FN(Locale::get("STOP_PHYSX_API"));
+         PxCloseExtensions();
        _gPhysicsSDK->release();
-	   _foundation->release();
-	}else{
-		return false;
-	}
-	return true;
+       _foundation->release();
+    }else{
+        return false;
+    }
+    return true;
 }
 
 ///Process results
 void PhysX::process(){
-	if(_targetScene){
-		_targetScene->process(_timeStep);
-	}
+    if(_targetScene){
+        _targetScene->process(_timeStep);
+    }
 }
 
 ///Update actors
 void PhysX::update(){
-	if(_targetScene){
-		_targetScene->update();
-	}
+    if(_targetScene){
+        _targetScene->update();
+    }
 }
 
 void PhysX::idle(){
 }
 
 PhysicsSceneInterface* PhysX::NewSceneInterface(Scene* scene) {
-	return New PhysXSceneInterface(scene);
+    return New PhysXSceneInterface(scene);
 }
 
 void PhysX::initScene(){
@@ -76,23 +76,23 @@ void PhysX::initScene(){
 }
 
 bool PhysX::createActor(SceneGraphNode* const node, PhysicsActorMask mask,PhysicsCollisionGroup group){
-	assert(node != NULL);
-	assert(_targetScene != NULL);
-	PxTransform transform(PxVec3(node->getTransform()->getPosition().x,
-								 node->getTransform()->getPosition().y,
-								 node->getTransform()->getPosition().z),
-						  PxQuat(node->getTransform()->getOrientation().getX(),
-						    	 node->getTransform()->getOrientation().getY(),
-								 node->getTransform()->getOrientation().getZ(),
-								 node->getTransform()->getOrientation().getW()));
-	switch(mask){
-		default:
-		case MASK_RIGID_STATIC:
-			dynamic_cast<PhysXSceneInterface* >(_targetScene)->addRigidStaticActor(NULL);
-			break;
-		case MASK_RIGID_DYNAMIC:
-			dynamic_cast<PhysXSceneInterface* >(_targetScene)->addRigidDynamicActor(NULL);
-			break;
-	};
-	return true;
+    assert(node != NULL);
+    assert(_targetScene != NULL);
+    PxTransform transform(PxVec3(node->getTransform()->getPosition().x,
+                                 node->getTransform()->getPosition().y,
+                                 node->getTransform()->getPosition().z),
+                          PxQuat(node->getTransform()->getOrientation().getX(),
+                                 node->getTransform()->getOrientation().getY(),
+                                 node->getTransform()->getOrientation().getZ(),
+                                 node->getTransform()->getOrientation().getW()));
+    switch(mask){
+        default:
+        case MASK_RIGID_STATIC:
+            dynamic_cast<PhysXSceneInterface* >(_targetScene)->addRigidStaticActor(NULL);
+            break;
+        case MASK_RIGID_DYNAMIC:
+            dynamic_cast<PhysXSceneInterface* >(_targetScene)->addRigidDynamicActor(NULL);
+            break;
+    };
+    return true;
 };

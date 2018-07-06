@@ -74,7 +74,6 @@ void Texture::Bind(U16 unit)  {
 }
 
 void Texture::Unbind() const {
-
 }
 
 void Texture::Unbind(U16 unit) {

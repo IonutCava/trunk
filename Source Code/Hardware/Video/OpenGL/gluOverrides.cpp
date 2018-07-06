@@ -88,10 +88,10 @@ namespace Divide {
 			if(!FLOAT_COMPARE(_anaglyphIOD,IOD)){
 				static const GLdouble DTR = 0.0174532925;
 				static const GLdouble screenZ = 10.0;
-				
+
 				//sets top of frustum based on fovy and near clipping plane
-				GLdouble top = zNear*tan(DTR*fovy/2);            
-				GLdouble right = aspect*top;                           
+				GLdouble top = zNear*tan(DTR*fovy/2);
+				GLdouble right = aspect*top;
 				//sets right of frustum based on aspect ratio
 				GLdouble frustumshift = (IOD/2)*zNear/screenZ;
 
@@ -121,8 +121,8 @@ namespace Divide {
 												   zNear,
 												   zFar);
 			//translate to cancel parallax
-			glm::translate(_projectionMatrix.top(), glm::vec3(tempCamera.modeltranslation, 0.0, 0.0)); 
-		
+			glm::translate(_projectionMatrix.top(), glm::vec3(tempCamera.modeltranslation, 0.0, 0.0));
+
 			GL_API::getInstance().updateProjectionMatrix();
 			_PDirty = true;
 
@@ -149,7 +149,7 @@ namespace Divide {
 		void _pushMatrix(){
 			if(_currentMatrixMode == PROJECTION_MATRIX) {
 				_projectionMatrix.push(_projectionMatrix.top());
-			}else if(_currentMatrixMode == VIEW_MATRIX){   
+			}else if(_currentMatrixMode == VIEW_MATRIX){
 				_viewMatrix.push(_viewMatrix.top());
 				_currentViewDirection.push(_currentViewDirection.top());
 			}else if(_currentMatrixMode == TEXTURE_MATRIX) {
@@ -194,11 +194,11 @@ namespace Divide {
 		}
 
 		void _queryMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat){
-			if(mode == VIEW_MATRIX)            
+			if(mode == VIEW_MATRIX)
 				mat.set(glm::value_ptr(_viewMatrix.top()));
 			else if(mode == PROJECTION_MATRIX)
 				mat.set(glm::value_ptr(_projectionMatrix.top()));
-			else if(mode == TEXTURE_MATRIX)   
+			else if(mode == TEXTURE_MATRIX)
 				mat.set(glm::value_ptr(_textureMatrix.top()));
 			else
 				assert(mode == -1);
@@ -239,21 +239,20 @@ namespace Divide {
 			assert(mode == NORMAL_MATRIX /*|| mode == ... */);
 			_clean();
 			// Normal Matrix
-		   _isUniformScaled ? mat.set(glm::value_ptr(glm::mat3(_MVCachedMatrix))) : 
+		   _isUniformScaled ? mat.set(glm::value_ptr(glm::mat3(_MVCachedMatrix))) :
 							  mat.set(glm::value_ptr(glm::inverseTranspose(glm::mat3(_MVCachedMatrix))));
 		}
 
 		 void _clean(){
-			if(_resetModelMatrixFlag) 
+			if(_resetModelMatrixFlag)
 				_resetModelMatrix(true);
 
 			bool MVDirty = (_MDirty || _VDirty);
 
-			if(MVDirty)	            
+			if(MVDirty)
 				_MVCachedMatrix = _viewMatrix.top() * _modelMatrix;
-			if(_PDirty || MVDirty)	
+			if(_PDirty || MVDirty)
 				_MVPCachedMatrix = _projectionMatrix.top() * _MVCachedMatrix;
-		
 
 			_MDirty = _VDirty = _PDirty = false;
 		}

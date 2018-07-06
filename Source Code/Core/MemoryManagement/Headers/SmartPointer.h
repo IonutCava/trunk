@@ -99,11 +99,11 @@ private:
   inline void subRef() {
         // Only change if non-null
         if (obj) {
-			// Subtract and test if this was the last pointer.
-			if (obj->subRef()) {
-				delete obj;
-				obj=0;
-			}
+            // Subtract and test if this was the last pointer.
+            if (obj->subRef()) {
+                delete obj;
+                obj=0;
+            }
         }
   }
 

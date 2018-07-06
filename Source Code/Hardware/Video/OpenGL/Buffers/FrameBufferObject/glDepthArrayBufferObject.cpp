@@ -7,19 +7,19 @@
 
 glDepthArrayBufferObject::glDepthArrayBufferObject() : glFrameBufferObject(FBO_2D_ARRAY_DEPTH)
 {
-	if(!glewIsSupported("GL_EXT_texture_array") && !glewIsSupported("GL_MESA_texture_array"))
-		ERROR_FN(Locale::get("ERROR_GL_NO_TEXTURE_ARRAY"));
-	_textureType = GL_TEXTURE_2D_ARRAY_EXT;
+    if(!glewIsSupported("GL_EXT_texture_array") && !glewIsSupported("GL_MESA_texture_array"))
+        ERROR_FN(Locale::get("ERROR_GL_NO_TEXTURE_ARRAY"));
+    _textureType = GL_TEXTURE_2D_ARRAY_EXT;
 }
 
 void glDepthArrayBufferObject::DrawToLayer(GLubyte face, GLubyte layer) const {
-	GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthId, 0, layer));
-	if(_clearBuffersState)
-		GLCheck(glClear( _clearBufferMask ));
+    GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthId, 0, layer));
+    if(_clearBuffersState)
+        GLCheck(glClear( _clearBufferMask ));
 }
 
 void glDepthArrayBufferObject::Bind(GLubyte unit, GLubyte texture) const {
-	FrameBufferObject::Bind(unit);
+    FrameBufferObject::Bind(unit);
     GL_API::setActiveTextureUnit(unit);
-	GLCheck(glBindTexture(_textureType, _depthId));
+    GLCheck(glBindTexture(_textureType, _depthId));
 }

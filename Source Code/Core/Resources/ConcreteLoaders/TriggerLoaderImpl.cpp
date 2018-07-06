@@ -3,16 +3,16 @@
 #include "Dynamics/Entities/Triggers/Headers/Trigger.h"
 
 Trigger* ImplResourceLoader<Trigger>::operator()(){
-	Trigger* ptr = New Trigger();
+    Trigger* ptr = New Trigger();
 
     if(!load(ptr,_descriptor.getName())){
         SAFE_DELETE(ptr);
     }else{
-	    ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-	    ptr->setMaterial(NULL);
+        ptr->getSceneNodeRenderState().useDefaultMaterial(false);
+        ptr->setMaterial(NULL);
     }
 
-	return ptr;
+    return ptr;
 }
 
 DEFAULT_LOADER_IMPL(Trigger)

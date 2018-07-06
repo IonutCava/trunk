@@ -3,19 +3,19 @@
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
    and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
    subject to the following conditions:
 
    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -30,8 +30,8 @@
 
 ///Fixed pipeline functionality should be avoided. Both D3D and OGL should have these matrices
 enum MATRIX_MODE{
-	VIEW_MATRIX = 0,
-	PROJECTION_MATRIX = 1,
+    VIEW_MATRIX = 0,
+    PROJECTION_MATRIX = 1,
     TEXTURE_MATRIX = 2
 };
 
@@ -49,8 +49,8 @@ enum EXTENDED_MATRIX{
 ///cause problems with libraries such as ASSIMP or with the scenegraph. Having 2 rendering contexts with a single
 ///display list, one for rendering and one for loading seems the best approach (for now)
 enum CurrentContext {
-	GFX_RENDERING_CONTEXT = 0,
-	GFX_LOADING_CONTEXT
+    GFX_RENDERING_CONTEXT = 0,
+    GFX_LOADING_CONTEXT
 };
 
 enum FogMode {
@@ -66,84 +66,84 @@ enum RenderStage {
     REFLECTION_STAGE		   = toBit(3),
     SSAO_STAGE				   = toBit(4),
     BLOOM_STAGE                = toBit(5),
-	DOF_STAGE                  = toBit(6),
-	LIGHT_SHAFT_STAGE          = toBit(7),
+    DOF_STAGE                  = toBit(6),
+    LIGHT_SHAFT_STAGE          = toBit(7),
     FINAL_STAGE				   = toBit(8),
-	ENVIRONMENT_MAPPING_STAGE  = toBit(9),
-	FXAA_STAGE                 = toBit(10),
-	DISPLAY_STAGE              = DEFERRED_STAGE | FINAL_STAGE,
-	POSTFX_STAGE               = SSAO_STAGE | BLOOM_STAGE | DOF_STAGE | LIGHT_SHAFT_STAGE,
+    ENVIRONMENT_MAPPING_STAGE  = toBit(9),
+    FXAA_STAGE                 = toBit(10),
+    DISPLAY_STAGE              = DEFERRED_STAGE | FINAL_STAGE,
+    POSTFX_STAGE               = SSAO_STAGE | BLOOM_STAGE | DOF_STAGE | LIGHT_SHAFT_STAGE,
     DEPTH_STAGE                = SSAO_STAGE | DOF_STAGE | SHADOW_STAGE,
-	//Place all stages above this
-	INVALID_STAGE		       = toBit(11)
+    //Place all stages above this
+    INVALID_STAGE		       = toBit(11)
 };
 
 enum PBOType {
-	PBO_TEXTURE_1D,
-	PBO_TEXTURE_2D,
-	PBO_TEXTURE_3D
+    PBO_TEXTURE_1D,
+    PBO_TEXTURE_2D,
+    PBO_TEXTURE_3D
 };
 
 enum FBOType {
-	FBO_PLACEHOLDER,
-	FBO_2D_COLOR,
-	FBO_2D_ARRAY_COLOR, ///<FBO that uses texture arrays
-	FBO_2D_COLOR_MS,///<Multisampled FBO with fallback to FBO_2D_COLOR
-	FBO_CUBE_COLOR,
-	FBO_CUBE_COLOR_ARRAY,
-	FBO_CUBE_DEPTH_ARRAY,
-	FBO_2D_DEPTH,  ///< This is the same as 2D_COLOR with color writes disabled.
-	FBO_2D_ARRAY_DEPTH, ///< This is the same as 2D_DEPTH but uses array textures
-	FBO_CUBE_DEPTH,
-	FBO_2D_DEFERRED
+    FBO_PLACEHOLDER,
+    FBO_2D_COLOR,
+    FBO_2D_ARRAY_COLOR, ///<FBO that uses texture arrays
+    FBO_2D_COLOR_MS,///<Multisampled FBO with fallback to FBO_2D_COLOR
+    FBO_CUBE_COLOR,
+    FBO_CUBE_COLOR_ARRAY,
+    FBO_CUBE_DEPTH_ARRAY,
+    FBO_2D_DEPTH,  ///< This is the same as 2D_COLOR with color writes disabled.
+    FBO_2D_ARRAY_DEPTH, ///< This is the same as 2D_DEPTH but uses array textures
+    FBO_CUBE_DEPTH,
+    FBO_2D_DEFERRED
 };
 
 enum RenderAPI {
-	OpenGL,
-	OpenGLES,
-	Direct3D,///< not supported yet
-	Software,///< not supported yet
-	None,    ///< not supported yet
-	GFX_RENDER_API_PLACEHOLDER
+    OpenGL,
+    OpenGLES,
+    Direct3D,///< not supported yet
+    Software,///< not supported yet
+    None,    ///< not supported yet
+    GFX_RENDER_API_PLACEHOLDER
 };
 
 enum RenderAPIVersion{
-	OpenGL1x,  ///< support dropped
-	OpenGL2x,  ///< support dropped
-	OpenGL3x,
-	OpenGL4x,  ///< not supported yet
-	Direct3D8, ///< support dropped
-	Direct3D9, ///< support dropped
-	Direct3D10,///< not supported yet
-	Direct3D11,///< not supported yet
-	GFX_RENDER_API_VER_PLACEHOLDER
+    OpenGL1x,  ///< support dropped
+    OpenGL2x,  ///< support dropped
+    OpenGL3x,
+    OpenGL4x,  ///< not supported yet
+    Direct3D8, ///< support dropped
+    Direct3D9, ///< support dropped
+    Direct3D10,///< not supported yet
+    Direct3D11,///< not supported yet
+    GFX_RENDER_API_VER_PLACEHOLDER
 };
 
 enum PrimitiveType {
-	API_POINTS      = 0x0000,
-	LINES           = 0x0001,
-	LINE_LOOP       = 0x0002,
-	LINE_STRIP      = 0x0003,
-	TRIANGLES       = 0x0004,
-	TRIANGLE_STRIP  = 0x0005,
-	TRIANGLE_FAN    = 0x0006,
-	QUADS           = 0x0007,
-	QUAD_STRIP      = 0x0008,
-	POLYGON         = 0x0009,
-	PrimitiveType_PLACEHOLDER = 0x0010
+    API_POINTS      = 0x0000,
+    LINES           = 0x0001,
+    LINE_LOOP       = 0x0002,
+    LINE_STRIP      = 0x0003,
+    TRIANGLES       = 0x0004,
+    TRIANGLE_STRIP  = 0x0005,
+    TRIANGLE_FAN    = 0x0006,
+    QUADS           = 0x0007,
+    QUAD_STRIP      = 0x0008,
+    POLYGON         = 0x0009,
+    PrimitiveType_PLACEHOLDER = 0x0010
 };
 
 enum RenderDetailLevel{
-	DETAIL_LOW = 0,
-	DETAIL_MEDIUM = 1,
-	DETAIL_HIGH = 2
+    DETAIL_LOW = 0,
+    DETAIL_MEDIUM = 1,
+    DETAIL_HIGH = 2
 };
 
 enum FullScreenAntiAliasingMethod{
-	FS_MSAA = 1,
-	FS_FXAA = 2,
-	FS_SMAA = 3,
-	FS_MSwFXAA = 4 ///<MSAA rendering + FXAA post processing if possible
+    FS_MSAA = 1,
+    FS_FXAA = 2,
+    FS_SMAA = 3,
+    FS_MSwFXAA = 4 ///<MSAA rendering + FXAA post processing if possible
 };
 
 /// Specifies how the red, green, blue, and alpha source blending factors are computed.
@@ -254,98 +254,98 @@ enum FillMode {
 };
 
 enum TextureType {
-	TEXTURE_1D = 0,
-	TEXTURE_2D,
+    TEXTURE_1D = 0,
+    TEXTURE_2D,
     TEXTURE_3D,
     TEXTURE_CUBE_MAP,
-	TEXTURE_2D_ARRAY,
-	TEXTURE_CUBE_ARRAY,
-	TEXTURE_2D_MS,
-	TEXTURE_2D_ARRAY_MS,
-	TextureType_PLACEHOLDER
+    TEXTURE_2D_ARRAY,
+    TEXTURE_CUBE_ARRAY,
+    TEXTURE_2D_MS,
+    TEXTURE_2D_ARRAY_MS,
+    TextureType_PLACEHOLDER
 };
 
 enum TextureFilter{
-	TEXTURE_FILTER_LINEAR	= 0x0000,
-	TEXTURE_FILTER_NEAREST   = 0x0001,
-	TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST = 0x0002,
-	TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST  = 0x0003,
-	TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR  = 0x0004,
-	TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR   = 0x0005,
-	TextureFilter_PLACEHOLDER            = 0x0006
+    TEXTURE_FILTER_LINEAR	= 0x0000,
+    TEXTURE_FILTER_NEAREST   = 0x0001,
+    TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST = 0x0002,
+    TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST  = 0x0003,
+    TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR  = 0x0004,
+    TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR   = 0x0005,
+    TextureFilter_PLACEHOLDER            = 0x0006
 };
 
 enum TextureWrap {
-	/** Texture coordinates outside [0...1] are clamped to the nearest valid value.	 */
-	TEXTURE_CLAMP = 0x0,
-	TEXTURE_CLAMP_TO_EDGE = 0x1,
-	TEXTURE_CLAMP_TO_BORDER = 0x2,
-	/** If the texture coordinates for a pixel are outside [0...1] the texture is not applied to that pixel */
-	TEXTURE_DECAL = 0x3,
-	TEXTURE_REPEAT = 0x4,
-	TextureWrap_PLACEHOLDER = 0x5
+    /** Texture coordinates outside [0...1] are clamped to the nearest valid value.	 */
+    TEXTURE_CLAMP = 0x0,
+    TEXTURE_CLAMP_TO_EDGE = 0x1,
+    TEXTURE_CLAMP_TO_BORDER = 0x2,
+    /** If the texture coordinates for a pixel are outside [0...1] the texture is not applied to that pixel */
+    TEXTURE_DECAL = 0x3,
+    TEXTURE_REPEAT = 0x4,
+    TextureWrap_PLACEHOLDER = 0x5
 };
 
 enum GFXImageFormat{
-	LUMINANCE = 0,
-	LUMINANCE_ALPHA,
-	INTENSITY,
-	ALPHA,
-	RED,
-	RED8,
-	RED16,
-	RED16F,
-	RED32,
-	RED32F,
-	BLUE,
-	GREEN,
-	RG,
-	RG8,
-	RG16,
-	RG16F,
-	RG32,
-	RG32F,
-	BGR,
-	RGB,
-	RGB8,
-	RGB8I,
-	RGB16,
-	RGB16F,
-	BGRA,
-	RGBA,
-	RGBA4,
-	RGBA8,
-	RGBA8I,
-	RGBA16F,
-	RGBA32F,
-	DEPTH_COMPONENT,
+    LUMINANCE = 0,
+    LUMINANCE_ALPHA,
+    INTENSITY,
+    ALPHA,
+    RED,
+    RED8,
+    RED16,
+    RED16F,
+    RED32,
+    RED32F,
+    BLUE,
+    GREEN,
+    RG,
+    RG8,
+    RG16,
+    RG16F,
+    RG32,
+    RG32F,
+    BGR,
+    RGB,
+    RGB8,
+    RGB8I,
+    RGB16,
+    RGB16F,
+    BGRA,
+    RGBA,
+    RGBA4,
+    RGBA8,
+    RGBA8I,
+    RGBA16F,
+    RGBA32F,
+    DEPTH_COMPONENT,
     DEPTH_COMPONENT16,
-	DEPTH_COMPONENT24,
+    DEPTH_COMPONENT24,
     DEPTH_COMPONENT32,
-	IMAGE_FORMAT_PLACEHOLDER
+    IMAGE_FORMAT_PLACEHOLDER
 };
 
 enum GFXDataFormat{
-	UNSIGNED_BYTE    = 0x0000,
-	UNSIGNED_SHORT   = 0x0001,
-	UNSIGNED_INT     = 0x0002,
-	SIGNED_BYTE      = 0x0003,
-	SIGNED_SHORT     = 0x0004,
-	SIGNED_INT       = 0x0005,
-	FLOAT_16         = 0x0006,
-	FLOAT_32         = 0x0008,
-	GDF_PLACEHOLDER
+    UNSIGNED_BYTE    = 0x0000,
+    UNSIGNED_SHORT   = 0x0001,
+    UNSIGNED_INT     = 0x0002,
+    SIGNED_BYTE      = 0x0003,
+    SIGNED_SHORT     = 0x0004,
+    SIGNED_INT       = 0x0005,
+    FLOAT_16         = 0x0006,
+    FLOAT_32         = 0x0008,
+    GDF_PLACEHOLDER
 };
 
 enum GPUVendor {
-	GPU_VENDOR_NVIDIA = 0,
-	GPU_VENDOR_AMD,
-	GPU_VENDOR_INTEL,
-	GPU_VENDOR_OTHER,
-	GPU_VENDOR_PLACEHOLDER
+    GPU_VENDOR_NVIDIA = 0,
+    GPU_VENDOR_AMD,
+    GPU_VENDOR_INTEL,
+    GPU_VENDOR_OTHER,
+    GPU_VENDOR_PLACEHOLDER
 };
 
 enum GPURenderer{
-	GPU_RENDERER_PLACEHOLDER
+    GPU_RENDERER_PLACEHOLDER
 };
 #endif

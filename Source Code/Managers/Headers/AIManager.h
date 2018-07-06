@@ -29,42 +29,42 @@
 
 #include <boost/atomic.hpp>
 DEFINE_SINGLETON(AIManager)
-	typedef Unordered_map<I64, AIEntity*> AIEntityMap;
+    typedef Unordered_map<I64, AIEntity*> AIEntityMap;
 
 public:
-	U8 tick();
+    U8 tick();
     ///Handle any debug information rendering (nav meshes, AI paths, etc);
     ///Called by Scene::postRender after depth map preview call
     void debugDraw(bool forceAll = true);
-	///Add an AI Entity from the manager
-	bool addEntity(AIEntity* entity);
-	///Remove an AI Entity from the manager
-	void destroyEntity(U32 guid);
+    ///Add an AI Entity from the manager
+    bool addEntity(AIEntity* entity);
+    ///Remove an AI Entity from the manager
+    void destroyEntity(U32 guid);
     ///Add a nav mesh
     bool addNavMesh(Navigation::NavigationMesh* const navMesh);
     ///Remove a nav mesh
     void destroyNavMesh(Navigation::NavigationMesh* const navMesh);
-	/// Destroy all entities
-	void Destroy();
-	inline void setSceneCallback(boost::function0<void> callback) {WriteLock w_lock(_updateMutex); _sceneCallback = callback;}
-	inline void pauseUpdate(bool state) {_pauseUpdate = state;}
-	///Toggle NavMesh debugDraw
+    /// Destroy all entities
+    void Destroy();
+    inline void setSceneCallback(boost::function0<void> callback) {WriteLock w_lock(_updateMutex); _sceneCallback = callback;}
+    inline void pauseUpdate(bool state) {_pauseUpdate = state;}
+    ///Toggle NavMesh debugDraw
     void toggleNavMeshDebugDraw(bool state);
 
 protected:
     AIManager();
 private:
-	void processInput();  ///< sensors
-	void processData();   ///< think
-	void updateEntities();///< react
+    void processInput();  ///< sensors
+    void processData();   ///< think
+    void updateEntities();///< react
 
 private:
     boost::atomic<bool> _navMeshDebugDraw;
-	boost::atomic<bool> _pauseUpdate;
-	AIEntityMap _aiEntities;
-	mutable SharedLock _updateMutex;
+    boost::atomic<bool> _pauseUpdate;
+    AIEntityMap _aiEntities;
+    mutable SharedLock _updateMutex;
     mutable SharedLock _navMeshMutex;
-	boost::function0<void> _sceneCallback;
+    boost::function0<void> _sceneCallback;
     vectorImpl<Navigation::NavigationMesh* > _navMeshes;
 END_SINGLETON
 

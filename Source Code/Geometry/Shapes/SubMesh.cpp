@@ -11,7 +11,7 @@ SubMesh::~SubMesh(){
 
 bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
 	BoundingBox& bb = sgn->getBoundingBox();
-	if(bb.isComputed()) 
+	if(bb.isComputed())
 		return true;
 
 	bb.set(getGeometryVBO()->getMinPosition(),getGeometryVBO()->getMaxPosition());

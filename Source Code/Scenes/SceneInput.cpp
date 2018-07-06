@@ -4,12 +4,12 @@
 #include "Rendering/Headers/Frustum.h"
 
 void Scene::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
-	F32 value_fov = tan(RADIANS(_paramHandler.getParam<F32>("runtime.verticalFOV")) * 0.5f);
+    F32 value_fov = tan(RADIANS(_paramHandler.getParam<F32>("runtime.verticalFOV")) * 0.5f);
     F32 value_aspect = _paramHandler.getParam<F32>("runtime.aspectRatio");
-	F32 half_resolution_width = renderState()._cachedResolution.width * 0.5f;
-	F32 half_resolution_height = renderState()._cachedResolution.height * 0.5f;
+    F32 half_resolution_width = renderState()._cachedResolution.width * 0.5f;
+    F32 half_resolution_height = renderState()._cachedResolution.height * 0.5f;
 
-	//mathematical handling of the difference between
+    //mathematical handling of the difference between
     //your mouse position and the 'center' of the window
     F32 modifier_x, modifier_y;
 
@@ -35,7 +35,7 @@ void Scene::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
     //to throw out a point in space that lies on the point_dist plane.
     //If we were using completely untransformed, untranslated space,
     //this would be fine - but we're not :)
-	//the untransformed ray will be put here
+    //the untransformed ray will be put here
     vec3<F32> point(modifier_x * point_dist, modifier_y * point_dist, point_dist);
 
     //Next we make a call to grab our MODELVIEW_MATRIX -
@@ -78,109 +78,109 @@ void Scene::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
 
     final_point = point_xformed + camera_origin;
 
-	vec3<F32> origin(camOrigin);
-	vec3<F32> dir = origin.direction(final_point);
+    vec3<F32> origin(camOrigin);
+    vec3<F32> dir = origin.direction(final_point);
 
-	Ray r(origin,dir);
-	SceneGraphNode* previousSelection = _currentSelection;
-	_currentSelection = _sceneGraph->Intersect(r,Frustum::getInstance().getZPlanes().x,
-												 Frustum::getInstance().getZPlanes().y/2.0f);
-	if(previousSelection) previousSelection->setSelected(false);
-	if(_currentSelection) _currentSelection->setSelected(true);
+    Ray r(origin,dir);
+    SceneGraphNode* previousSelection = _currentSelection;
+    _currentSelection = _sceneGraph->Intersect(r,Frustum::getInstance().getZPlanes().x,
+                                                 Frustum::getInstance().getZPlanes().y/2.0f);
+    if(previousSelection) previousSelection->setSelected(false);
+    if(_currentSelection) _currentSelection->setSelected(true);
 }
 
 void Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
-	_mousePressed[button] = true;
+    _mousePressed[button] = true;
 }
 
 void Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
-	_mousePressed[button] = false;
+    _mousePressed[button] = false;
 }
 
 void Scene::onKeyDown(const OIS::KeyEvent& key){
-	switch(key.key){
-		default: break;
-		case OIS::KC_LEFT  : state()._angleLR = -1; break;
-		case OIS::KC_RIGHT : state()._angleLR =  1; break;
-		case OIS::KC_UP    : state()._angleUD = -1; break;
-		case OIS::KC_DOWN  : state()._angleUD =  1; break;
-		case OIS::KC_END   : deleteSelection(); break;
-		case OIS::KC_ADD   : {
-			Camera& cam = renderState().getCamera();
-			F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
-			if (currentCamMoveSpeedFactor < 5){
-				cam.setMoveSpeedFactor( currentCamMoveSpeedFactor + 0.1f);
-				cam.setTurnSpeedFactor( cam.getTurnSpeedFactor() + 0.1f);
-			}
-		}break;
-		case OIS::KC_SUBTRACT :	{
-			Camera& cam = renderState().getCamera();
-			F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
-			if (currentCamMoveSpeedFactor > 0.2f){
-				cam.setMoveSpeedFactor( currentCamMoveSpeedFactor - 0.1f);
-				cam.setTurnSpeedFactor( cam.getTurnSpeedFactor() - 0.1f);
-			}
-		}break;
-		case OIS::KC_F2:{
-			D_PRINT_FN(Locale::get("TOGGLE_SCENE_SKELETONS"));
-			renderState().toggleSkeletons();
-			}break;
-		case OIS::KC_B:{
-			D_PRINT_FN(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
-			renderState().toggleBoundingBoxes();
-			}break;
-		case OIS::KC_F8:
-			_paramHandler.setParam("postProcessing.enablePostFX",!_paramHandler.getParam<bool>("postProcessing.enablePostFX"));
-			break;
-		case OIS::KC_F10:
-			LightManager::getInstance().togglePreviewShadowMaps();
-			break;
-		case OIS::KC_F12:
-			GFX_DEVICE.Screenshot("screenshot_",vec4<F32>(0,0,renderState()._cachedResolution.x,renderState()._cachedResolution.y));
-			break;
-	}
+    switch(key.key){
+        default: break;
+        case OIS::KC_LEFT  : state()._angleLR = -1; break;
+        case OIS::KC_RIGHT : state()._angleLR =  1; break;
+        case OIS::KC_UP    : state()._angleUD = -1; break;
+        case OIS::KC_DOWN  : state()._angleUD =  1; break;
+        case OIS::KC_END   : deleteSelection(); break;
+        case OIS::KC_ADD   : {
+            Camera& cam = renderState().getCamera();
+            F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
+            if (currentCamMoveSpeedFactor < 5){
+                cam.setMoveSpeedFactor( currentCamMoveSpeedFactor + 0.1f);
+                cam.setTurnSpeedFactor( cam.getTurnSpeedFactor() + 0.1f);
+            }
+        }break;
+        case OIS::KC_SUBTRACT :	{
+            Camera& cam = renderState().getCamera();
+            F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
+            if (currentCamMoveSpeedFactor > 0.2f){
+                cam.setMoveSpeedFactor( currentCamMoveSpeedFactor - 0.1f);
+                cam.setTurnSpeedFactor( cam.getTurnSpeedFactor() - 0.1f);
+            }
+        }break;
+        case OIS::KC_F2:{
+            D_PRINT_FN(Locale::get("TOGGLE_SCENE_SKELETONS"));
+            renderState().toggleSkeletons();
+            }break;
+        case OIS::KC_B:{
+            D_PRINT_FN(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
+            renderState().toggleBoundingBoxes();
+            }break;
+        case OIS::KC_F8:
+            _paramHandler.setParam("postProcessing.enablePostFX",!_paramHandler.getParam<bool>("postProcessing.enablePostFX"));
+            break;
+        case OIS::KC_F10:
+            LightManager::getInstance().togglePreviewShadowMaps();
+            break;
+        case OIS::KC_F12:
+            GFX_DEVICE.Screenshot("screenshot_",vec4<F32>(0,0,renderState()._cachedResolution.x,renderState()._cachedResolution.y));
+            break;
+    }
 }
 
 void Scene::onKeyUp(const OIS::KeyEvent& key){
-	switch( key.key ){
-		case OIS::KC_LEFT :
-		case OIS::KC_RIGHT:	state()._angleLR = 0; break;
-		case OIS::KC_UP   :
-		case OIS::KC_DOWN : state()._angleUD = 0; break;
-		case OIS::KC_F3:
-			_paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField"));
-			break;
+    switch( key.key ){
+        case OIS::KC_LEFT :
+        case OIS::KC_RIGHT:	state()._angleLR = 0; break;
+        case OIS::KC_UP   :
+        case OIS::KC_DOWN : state()._angleUD = 0; break;
+        case OIS::KC_F3:
+            _paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField"));
+            break;
         case OIS::KC_F4:
             _paramHandler.setParam("postProcessing.enableBloom", !_paramHandler.getParam<bool>("postProcessing.enableBloom"));
             break;
         case OIS::KC_F5:
             GFX_DEVICE.drawDebugAxis(!GFX_DEVICE.drawDebugAxis());
             break;
-		default:
-			break;
-	}
+        default:
+            break;
+    }
 }
 
 void Scene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone){
-	if(key.device->getID() != InputInterface::JOY_1) return;
+    if(key.device->getID() != InputInterface::JOY_1) return;
 
-	I32 axisABS = key.state.mAxes[axis].abs;
+    I32 axisABS = key.state.mAxes[axis].abs;
 
-	if(axis == 1){
-		if(axisABS > deadZone)   	 state()._angleLR = 1;
-		else if(axisABS < -deadZone) state()._angleLR = -1;
-		else 			             state()._angleLR = 0;
-	}else if(axis == 0){
-		if(axisABS > deadZone)       state()._angleUD = 1;
-		else if(axisABS < -deadZone) state()._angleUD = -1;
-		else 			             state()._angleUD = 0;
-	}else if(axis == 2){
-		if(axisABS < -deadZone)  	 state()._moveFB = 1;
-		else if(axisABS > deadZone)  state()._moveFB = -1;
-		else			             state()._moveFB = 0;
-	}else if(axis == 3){
-		if(axisABS < -deadZone)      state()._moveLR = -1;
-		else if(axisABS > deadZone)  state()._moveLR = 1;
-		else                         state()._moveLR = 0;
-	}
+    if(axis == 1){
+        if(axisABS > deadZone)   	 state()._angleLR = 1;
+        else if(axisABS < -deadZone) state()._angleLR = -1;
+        else 			             state()._angleLR = 0;
+    }else if(axis == 0){
+        if(axisABS > deadZone)       state()._angleUD = 1;
+        else if(axisABS < -deadZone) state()._angleUD = -1;
+        else 			             state()._angleUD = 0;
+    }else if(axis == 2){
+        if(axisABS < -deadZone)  	 state()._moveFB = 1;
+        else if(axisABS > deadZone)  state()._moveFB = -1;
+        else			             state()._moveFB = 0;
+    }else if(axis == 3){
+        if(axisABS < -deadZone)      state()._moveLR = -1;
+        else if(axisABS > deadZone)  state()._moveLR = 1;
+        else                         state()._moveLR = 0;
+    }
 }

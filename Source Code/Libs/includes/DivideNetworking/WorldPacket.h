@@ -30,14 +30,14 @@ class WorldPacket : public ByteBuffer
 
         void SetOpcode(U16 opcode) { m_opcode = opcode; }
 
-		template <class Archive>
-		void serialize(Archive& ar,  unsigned int version  )
-		{
-			ar & _rpos;
-			ar & _wpos;
-			ar & m_opcode;
-			ar & _storage;
-		}
+        template <class Archive>
+        void serialize(Archive& ar,  unsigned int version  )
+        {
+            ar & _rpos;
+            ar & _wpos;
+            ar & m_opcode;
+            ar & _storage;
+        }
 
    protected:
         U16 m_opcode;

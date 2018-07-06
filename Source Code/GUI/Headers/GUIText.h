@@ -27,29 +27,29 @@
 class GUIText : public GUIElement{
 friend class GUI;
 public:
-	GUIText(const std::string& id,
-		    const std::string& text,
-			const vec2<I32>& position,
-			const std::string& font,
-			const vec3<F32>& color,
+    GUIText(const std::string& id,
+            const std::string& text,
+            const vec2<I32>& position,
+            const std::string& font,
+            const vec3<F32>& color,
             CEGUI::Window* parent,
-			U32 textHeight = 16) : GUIElement(parent,GUI_TEXT,position),
+            U32 textHeight = 16) : GUIElement(parent,GUI_TEXT,position),
       _width(1.0f),
-	  _text(text),
-	  _font(font),
-	  _height(textHeight),
-	  _color(color){}
+      _text(text),
+      _font(font),
+      _height(textHeight),
+      _color(color){}
 
-	std::string _text;
-	std::string _font;
-	U32         _height;
+    std::string _text;
+    std::string _font;
+    U32         _height;
     U32         _width;
-	vec4<F32>   _color;
+    vec4<F32>   _color;
 
      void onMouseMove(const GUIEvent &event);
      void onMouseUp(const GUIEvent &event);
      void onMouseDown(const GUIEvent &event);
-	 void onResize(const vec2<I32>& newSize);
+     void onResize(const vec2<I32>& newSize);
 /*   void onRightMouseUp(const GUIEvent &event);
      void onRightMouseDown(const GUIEvent &event);
      bool onKeyUp(const GUIEvent &event);

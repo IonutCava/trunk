@@ -3,8 +3,7 @@
 #include "core.h"
 
 namespace Navigation {
-
-	void rcContextDivide::doLog(const rcLogCategory category, const char* msg, const I32 len){
+    void rcContextDivide::doLog(const rcLogCategory category, const char* msg, const I32 len){
         switch(category){
             default:
             case RC_LOG_PROGRESS:
@@ -19,26 +18,25 @@ namespace Navigation {
         }
     }
 
-	void rcContextDivide::doResetTimers() {
-		for (I32 i = 0; i < RC_MAX_TIMERS; ++i)
-			_accTime[i] = -1;
-	}
+    void rcContextDivide::doResetTimers() {
+        for (I32 i = 0; i < RC_MAX_TIMERS; ++i)
+            _accTime[i] = -1;
+    }
 
-	void rcContextDivide::doStartTimer(const rcTimerLabel label){
-		_startTime[label] = GETMSTIME();
-	}
+    void rcContextDivide::doStartTimer(const rcTimerLabel label){
+        _startTime[label] = GETMSTIME();
+    }
 
-	void rcContextDivide::doStopTimer(const rcTimerLabel label){
-		const U32 endTime = GETMSTIME();
-		const I32 deltaTime = (I32)(endTime - _startTime[label]);
-		if (_accTime[label] == -1)
-			_accTime[label] = deltaTime;
-		else
-			_accTime[label] += deltaTime;
-	}
+    void rcContextDivide::doStopTimer(const rcTimerLabel label){
+        const U32 endTime = GETMSTIME();
+        const I32 deltaTime = (I32)(endTime - _startTime[label]);
+        if (_accTime[label] == -1)
+            _accTime[label] = deltaTime;
+        else
+            _accTime[label] += deltaTime;
+    }
 
-	I32 rcContextDivide::doGetAccumulatedTime(const rcTimerLabel label) const {
-		return _accTime[label];
-	}
-
+    I32 rcContextDivide::doGetAccumulatedTime(const rcTimerLabel label) const {
+        return _accTime[label];
+    }
 };

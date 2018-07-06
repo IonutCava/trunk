@@ -3,15 +3,15 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleEmitter.h"
 
 ParticleEmitter* ImplResourceLoader<ParticleEmitter>::operator()(){
-	ParticleEmitter* ptr = New ParticleEmitter();
+    ParticleEmitter* ptr = New ParticleEmitter();
 
     if(!load(ptr,_descriptor.getName())){
         SAFE_DELETE(ptr);
     }else{
-    	ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-    	ptr->setMaterial(NULL);
+        ptr->getSceneNodeRenderState().useDefaultMaterial(false);
+        ptr->setMaterial(NULL);
     }
-	return ptr;
+    return ptr;
 }
 
 DEFAULT_LOADER_IMPL(ParticleEmitter)

@@ -3,19 +3,19 @@
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
    and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
    subject to the following conditions:
 
    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -61,28 +61,27 @@
 class SceneGraphNode;
 
 namespace Navigation {
+    static const I32 NAVMESHSET_MAGIC = 'M'<<24 | 'S'<<16 | 'E'<<8 | 'T'; //'MSET';
+    static const I32 NAVMESHSET_VERSION = 1;
 
-	static const I32 NAVMESHSET_MAGIC = 'M'<<24 | 'S'<<16 | 'E'<<8 | 'T'; //'MSET';
-	static const I32 NAVMESHSET_VERSION = 1;
+    struct NavMeshSetHeader {
+        I32 magic;
+        I32 version;
+        I32 numTiles;
+        dtNavMeshParams params;
+    };
 
-	struct NavMeshSetHeader {
-		I32 magic;
-		I32 version;
-		I32 numTiles;
-		dtNavMeshParams params;
-	};
-
-	struct NavMeshTileHeader {
-		dtTileRef tileRef;
-		I32 dataSize;
-	};
+    struct NavMeshTileHeader {
+        dtTileRef tileRef;
+        I32 dataSize;
+    };
 
     /// @class NavigationMesh
-	/// Represents a set of bounds within which a Recast navigation mesh is generated.
-	class NavMeshDebugDraw;
+    /// Represents a set of bounds within which a Recast navigation mesh is generated.
+    class NavMeshDebugDraw;
 
-	class NavigationMesh : public GUIDWrapper/*,public SceneObject */{
-	      friend class NavigationPath;
+    class NavigationMesh : public GUIDWrapper/*,public SceneObject */{
+          friend class NavigationPath;
     protected:
 
          enum RenderMode {
@@ -93,15 +92,15 @@ namespace Navigation {
             RENDER_PORTALS,
         };
 
-	public:
+    public:
         inline void setFileName(const std::string& fileName) {_fileName.append(fileName);}
-		/// Initiates the NavigationMesh build process, which includes notifying the
-		/// clients and posting a task.
-		bool build(SceneGraphNode* const sgn, bool threaded = true);
-		/// Save the NavigationMesh to a file.
-		bool save();
-		/// Load a saved NavigationMesh from a file.
-		bool load(SceneGraphNode* const node);
+        /// Initiates the NavigationMesh build process, which includes notifying the
+        /// clients and posting a task.
+        bool build(SceneGraphNode* const sgn, bool threaded = true);
+        /// Save the NavigationMesh to a file.
+        bool save();
+        /// Load a saved NavigationMesh from a file.
+        bool load(SceneGraphNode* const node);
 
         void render();
         inline void debugDraw(bool state) {_debugDraw = state;}
@@ -109,74 +108,74 @@ namespace Navigation {
 
         inline void setRenderMode(const RenderMode& mode) {_renderMode = mode;}
         inline void setRenderConnections(bool state)      {_renderConnections = state;}
-		
-		NavigationMesh();
-		~NavigationMesh();
 
-	protected:
+        NavigationMesh();
+        ~NavigationMesh();
 
-		dtNavMesh const* getNavigationMesh() { return _navMesh; }
+    protected:
 
-	private:
+        dtNavMesh const* getNavigationMesh() { return _navMesh; }
 
-		/// Initiates the build process in a separate thread.
-		bool buildThreaded();
-		/// Runs the build process. Not threadsafe,. so take care to synchronise
-		/// calls to this method properly!
-		bool buildProcess();
-		/// Generates a navigation mesh for the collection of objects in this
-		/// mesh. Returns true if successful. Stores the created mesh in tnm.
-		bool generateMesh();
-		/// Performs the Recast part of the build process.
-		bool createPolyMesh(rcConfig &cfg, NavModelData &data, rcContextDivide *ctx);
-		/// Performs the Detour part of the build process.
-		bool createNavigationMesh(dtNavMeshCreateParams &params);
-		/// Load nav mesh configuration from file
-		bool loadConfigFromFile();
+    private:
 
-	private:
-		bool _saveIntermediates;
-		NavigationMeshConfig _configParams;
-		/// @name NavigationMesh build
-		/// @{
-		/// Do we build in a separate thread?
-		bool _buildThreaded;
-		/// @name Intermediate data
-		/// @{
-		rcHeightfield        *_heightField;
-		rcCompactHeightfield *_compactHeightField;
-		rcContourSet         *_countourSet;
-		rcPolyMesh           *_polyMesh;
-		rcPolyMeshDetail     *_polyMeshDetail;
-		dtNavMesh            *_navMesh;
-		dtNavMesh            *_tempNavMesh;
-		/// Free all stored working data.
-		/// @param freeAll Force all data to be freed, retain none.
-		void freeIntermediates(bool freeAll);
-		/// @}
+        /// Initiates the build process in a separate thread.
+        bool buildThreaded();
+        /// Runs the build process. Not threadsafe,. so take care to synchronise
+        /// calls to this method properly!
+        bool buildProcess();
+        /// Generates a navigation mesh for the collection of objects in this
+        /// mesh. Returns true if successful. Stores the created mesh in tnm.
+        bool generateMesh();
+        /// Performs the Recast part of the build process.
+        bool createPolyMesh(rcConfig &cfg, NavModelData &data, rcContextDivide *ctx);
+        /// Performs the Detour part of the build process.
+        bool createNavigationMesh(dtNavMeshCreateParams &params);
+        /// Load nav mesh configuration from file
+        bool loadConfigFromFile();
 
-		/// A thread for us to update in.
-		std::tr1::shared_ptr<Task> _buildThread;
-		/// A mutex for NavigationMesh builds.
-		boost::mutex _buildLock;
-		/// A mutex for accessing our actual NavigationMesh.
-		boost::mutex _navigationMeshLock;
-		/// A simple flag to say we are building.
+    private:
+        bool _saveIntermediates;
+        NavigationMeshConfig _configParams;
+        /// @name NavigationMesh build
+        /// @{
+        /// Do we build in a separate thread?
+        bool _buildThreaded;
+        /// @name Intermediate data
+        /// @{
+        rcHeightfield        *_heightField;
+        rcCompactHeightfield *_compactHeightField;
+        rcContourSet         *_countourSet;
+        rcPolyMesh           *_polyMesh;
+        rcPolyMeshDetail     *_polyMeshDetail;
+        dtNavMesh            *_navMesh;
+        dtNavMesh            *_tempNavMesh;
+        /// Free all stored working data.
+        /// @param freeAll Force all data to be freed, retain none.
+        void freeIntermediates(bool freeAll);
+        /// @}
+
+        /// A thread for us to update in.
+        std::tr1::shared_ptr<Task> _buildThread;
+        /// A mutex for NavigationMesh builds.
+        boost::mutex _buildLock;
+        /// A mutex for accessing our actual NavigationMesh.
+        boost::mutex _navigationMeshLock;
+        /// A simple flag to say we are building.
         boost::atomic<bool> _building;
-		/// Thread launch function.
-		static void launchThreadedBuild(void *data);
+        /// Thread launch function.
+        static void launchThreadedBuild(void *data);
         /// Data file to store this nav mesh in. (From engine executable dir.)
-		std::string _fileName;
-		/// Configuration file
-		std::string _configFile;
-		///SceneGraphNode from which to build
-		SceneGraphNode* _sgn;
+        std::string _fileName;
+        /// Configuration file
+        std::string _configFile;
+        ///SceneGraphNode from which to build
+        SceneGraphNode* _sgn;
         boost::atomic<bool> _debugDraw;
         bool _renderConnections;
         RenderMode _renderMode;
-		///DebugDraw interface
-		NavMeshDebugDraw *_debugDrawInterface;
-	};
+        ///DebugDraw interface
+        NavMeshDebugDraw *_debugDrawInterface;
+    };
 };
 
 #endif

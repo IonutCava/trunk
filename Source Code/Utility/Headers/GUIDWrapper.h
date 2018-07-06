@@ -21,7 +21,7 @@
  */
 
 /*Code references:
-	http://www.cplusplus.com/forum/lounge/27570/
+    http://www.cplusplus.com/forum/lounge/27570/
 */
 #ifndef _GUID_WRAPPER_H_
 #define _GUID_WRAPPER_H_
@@ -46,9 +46,9 @@ public:
     inline I64  getGUID()   const  {return _GUID;}
 
 private:
-	void operator=(const GUIDWrapper& old)
-	{
-	}
+    void operator=(const GUIDWrapper& old)
+    {
+    }
 
 protected:
     const  I64 _GUID;

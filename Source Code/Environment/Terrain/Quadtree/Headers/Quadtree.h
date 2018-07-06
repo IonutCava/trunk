@@ -33,28 +33,28 @@ class ShaderProgram;
 class VertexBufferObject;
 class Quadtree {
 public:
-	void Build(BoundingBox& terrainBBox, vec2<U32>& HMSize, U32 minHMSize, VertexBufferObject* const groundVBO);
-	BoundingBox& computeBoundingBox(const vectorImpl<vec3<F32> >& vertices);
-	void Destroy();
+    void Build(BoundingBox& terrainBBox, vec2<U32>& HMSize, U32 minHMSize, VertexBufferObject* const groundVBO);
+    BoundingBox& computeBoundingBox(const vectorImpl<vec3<F32> >& vertices);
+    void Destroy();
 
-	inline void setParentShaderProgram(ShaderProgram* const shaderProgram) {_parentShaderProgram = shaderProgram;}
+    inline void setParentShaderProgram(ShaderProgram* const shaderProgram) {_parentShaderProgram = shaderProgram;}
     inline void setParentVBO(VertexBufferObject* const vbo) {_parentVBO = vbo;}
 
-	void DrawGround(bool drawInReflection);
-	void DrawGrass(U32 geometryIndex, Transform* const parentTransform);
-	void DrawBBox();
+    void DrawGround(bool drawInReflection);
+    void DrawGrass(U32 geometryIndex, Transform* const parentTransform);
+    void DrawBBox();
 
-	QuadtreeNode*	FindLeaf(const vec2<F32>& pos);
+    QuadtreeNode*	FindLeaf(const vec2<F32>& pos);
 
-	Quadtree()	{_root = NULL; _parentShaderProgram = NULL; _parentVBO = NULL;}
-	~Quadtree()	{Destroy();}
+    Quadtree()	{_root = NULL; _parentShaderProgram = NULL; _parentVBO = NULL;}
+    ~Quadtree()	{Destroy();}
 
 protected:
-	void GenerateIndexBuffer(vec2<U32>& HMsize, VertexBufferObject* const groundVBO);
+    void GenerateIndexBuffer(vec2<U32>& HMsize, VertexBufferObject* const groundVBO);
 
 private:
-	QuadtreeNode*	     _root;
-	ShaderProgram*       _parentShaderProgram; //<Pointer to the terrain shader
+    QuadtreeNode*	     _root;
+    ShaderProgram*       _parentShaderProgram; //<Pointer to the terrain shader
     VertexBufferObject*  _parentVBO; //<Pointer to the terrain VBO
 };
 

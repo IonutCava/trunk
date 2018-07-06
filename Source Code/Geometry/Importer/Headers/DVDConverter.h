@@ -3,19 +3,19 @@
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
    and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
    subject to the following conditions:
 
    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -56,37 +56,37 @@ enum   aiTextureOp;
 enum   aiTextureMapMode;
 
 namespace Assimp {
-	class Importer;
+    class Importer;
 };
 
 DEFINE_SINGLETON( DVDConverter )
 
 public:
     Mesh* load(const std::string& file);
-	bool init();
+    bool init();
 private:
-	DVDConverter();
-	~DVDConverter();
-	SubMesh* loadSubMeshGeometry(const aiMesh* source, U8 count);
-	Material* loadSubMeshMaterial(const aiMaterial* source, const std::string& materialName);
+    DVDConverter();
+    ~DVDConverter();
+    SubMesh* loadSubMeshGeometry(const aiMesh* source, U8 count);
+    Material* loadSubMeshMaterial(const aiMaterial* source, const std::string& materialName);
 
 private:
-	struct vertexWeight {
-		U8  _boneId;
-		F32 _boneWeight;
-		vertexWeight(U8 id, F32 weight) : _boneId(id), _boneWeight(weight) {}
-	};
+    struct vertexWeight {
+        U8  _boneId;
+        F32 _boneWeight;
+        vertexWeight(U8 id, F32 weight) : _boneId(id), _boneWeight(weight) {}
+    };
 
-	Assimp::Importer* importer;
-	const aiScene* _aiScenePointer;
-	U32   _ppsteps;
-	U32   _loadcount; ///<keep track of the number of imported meshes
-	std::string _fileLocation;
-	std::string _modelName;
-	bool _init;
-	TextureWrap                aiTextureMapModeTable[4];
-	Material::ShadingMode      aiShadingModeInternalTable[10];
-	Material::TextureOperation aiTextureOperationTable[8];
+    Assimp::Importer* importer;
+    const aiScene* _aiScenePointer;
+    U32   _ppsteps;
+    U32   _loadcount; ///<keep track of the number of imported meshes
+    std::string _fileLocation;
+    std::string _modelName;
+    bool _init;
+    TextureWrap                aiTextureMapModeTable[4];
+    Material::ShadingMode      aiShadingModeInternalTable[10];
+    Material::TextureOperation aiTextureOperationTable[8];
 END_SINGLETON
 
 #endif

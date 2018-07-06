@@ -7,153 +7,153 @@ REGISTER_SCENE(PhysXScene);
 
 //begin copy-paste
 void PhysXScene::preRender(){
-	getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
+    getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 //<<end copy-paste
 
 void PhysXScene::processTasks(const U32 time){
-	F32 FpsDisplay = 0.3f;
-	if (time - _taskTimers[0] >= FpsDisplay){
-		GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
-		GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
-		_taskTimers[0] += FpsDisplay;
-	}
+    F32 FpsDisplay = 0.3f;
+    if (time - _taskTimers[0] >= FpsDisplay){
+        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
+        GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
+        _taskTimers[0] += FpsDisplay;
+    }
 }
 
 void PhysXScene::processInput(){
-	if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
-	if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
-	if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
-	if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
+    if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
+    if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
+    if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
+    if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 }
 
 bool PhysXScene::load(const std::string& name, CameraManager* const cameraMgr){
-	//Load scene resources
-	bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
-	//Add a light
-	vec2<F32> sunAngle(0.0f, RADIANS(45.0f));
-	_sunvector = vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y));
-	Light* light = addDefaultLight();
-	light->setPosition(_sunvector);
-	light->setLightProperties(LIGHT_PROPERTY_AMBIENT,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
-	light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
-	light->setLightProperties(LIGHT_PROPERTY_SPECULAR,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
-	addDefaultSky();
-	return loadState;
+    //Load scene resources
+    bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
+    //Add a light
+    vec2<F32> sunAngle(0.0f, RADIANS(45.0f));
+    _sunvector = vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y));
+    Light* light = addDefaultLight();
+    light->setPosition(_sunvector);
+    light->setLightProperties(LIGHT_PROPERTY_AMBIENT,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
+    light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
+    light->setLightProperties(LIGHT_PROPERTY_SPECULAR,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
+    addDefaultSky();
+    return loadState;
 }
 
 bool PhysXScene::loadResources(bool continueOnErrors){
-	GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec2<I32>(60,20),          //Position
-							    Font::DIVIDE_DEFAULT,    //Font
-							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
-							   "FPS: %s",0);    //Text and arguments
-	GUI::getInstance().addText("RenderBinCount",
-								vec2<I32>(60,30),
-								 Font::DIVIDE_DEFAULT,
-								vec3<F32>(0.6f,0.2f,0.2f),
-								"Number of items in Render Bin: %d",0);
+    GUI::getInstance().addText("fpsDisplay",           //Unique ID
+                               vec2<I32>(60,20),          //Position
+                                Font::DIVIDE_DEFAULT,    //Font
+                               vec3<F32>(0.0f,0.2f, 1.0f),  //Color
+                               "FPS: %s",0);    //Text and arguments
+    GUI::getInstance().addText("RenderBinCount",
+                                vec2<I32>(60,30),
+                                 Font::DIVIDE_DEFAULT,
+                                vec3<F32>(0.6f,0.2f,0.2f),
+                                "Number of items in Render Bin: %d",0);
 
-	_taskTimers.push_back(0.0f); //Fps
-	renderState().getCamera().setRotation(25/*yaw*/,-75/*pitch*/);
-	renderState().getCamera().setEye(vec3<F32>(0,30,-40));
+    _taskTimers.push_back(0.0f); //Fps
+    renderState().getCamera().setRotation(25/*yaw*/,-75/*pitch*/);
+    renderState().getCamera().setEye(vec3<F32>(0,30,-40));
     _addingActors = false;
     ParamHandler::getInstance().setParam("rendering.enableFog",false);
     ParamHandler::getInstance().setParam("postProcessing.bloomFactor",0.1f);
-	return true;
+    return true;
 }
 
 bool PhysXScene::unload(){
-	return Scene::unload();
+    return Scene::unload();
 }
 
 void PhysXScene::createStack(U32 size){
-	F32 stackSize = size;
-	F32 CubeSize = 1.0f;
-	F32 Spacing = 0.0001f;
-	vec3<F32> Pos(0, 10 + CubeSize,0);
-	F32 Offset = -stackSize * (CubeSize * 2.0f + Spacing) * 0.5f + 0;
+    F32 stackSize = size;
+    F32 CubeSize = 1.0f;
+    F32 Spacing = 0.0001f;
+    vec3<F32> Pos(0, 10 + CubeSize,0);
+    F32 Offset = -stackSize * (CubeSize * 2.0f + Spacing) * 0.5f + 0;
     while(_addingActors){}
     _addingActors = true;
-	while(stackSize){
-		for(U16 i=0;i<stackSize;i++){
-			Pos.x = Offset + i * (CubeSize * 2.0f + Spacing);
-			PHYSICS_DEVICE.createBox(Pos,CubeSize);
-		}
-		Offset += CubeSize;
-		Pos.y += (CubeSize * 2.0f + Spacing);
-		stackSize--;
-	}
+    while(stackSize){
+        for(U16 i=0;i<stackSize;i++){
+            Pos.x = Offset + i * (CubeSize * 2.0f + Spacing);
+            PHYSICS_DEVICE.createBox(Pos,CubeSize);
+        }
+        Offset += CubeSize;
+        Pos.y += (CubeSize * 2.0f + Spacing);
+        stackSize--;
+    }
     _addingActors = false;
 }
 
 void PhysXScene::createTower(U32 size){
     while(_addingActors){}
     _addingActors = true;
-	for(U8 i = 0 ; i < size; i++){
-		PHYSICS_DEVICE.createBox(vec3<F32>(0,5.0f+5*i,0),0.5f);
-	}
+    for(U8 i = 0 ; i < size; i++){
+        PHYSICS_DEVICE.createBox(vec3<F32>(0,5.0f+5*i,0),0.5f);
+    }
     _addingActors = false;
 }
 
 void PhysXScene::onKeyDown(const OIS::KeyEvent& key){
-	Scene::onKeyDown(key);
-	switch(key.key)	{
-		default: break;
-		case OIS::KC_W: state()._moveFB =  1; break;
-		case OIS::KC_A:	state()._moveLR = -1; break;
-		case OIS::KC_S:	state()._moveFB = -1; break;
-		case OIS::KC_D:	state()._moveLR =  1; break;
-	}
+    Scene::onKeyDown(key);
+    switch(key.key)	{
+        default: break;
+        case OIS::KC_W: state()._moveFB =  1; break;
+        case OIS::KC_A:	state()._moveLR = -1; break;
+        case OIS::KC_S:	state()._moveFB = -1; break;
+        case OIS::KC_D:	state()._moveLR =  1; break;
+    }
 }
 
 void PhysXScene::onKeyUp(const OIS::KeyEvent& key){
-	Scene::onKeyUp(key);
-	switch(key.key)	{
-		default: break;
-		case OIS::KC_W:
-		case OIS::KC_S:	state()._moveFB = 0; break;
-		case OIS::KC_A:
-		case OIS::KC_D:	state()._moveLR = 0; break;
-		case OIS::KC_F1: _sceneGraph->print(); break;
+    Scene::onKeyUp(key);
+    switch(key.key)	{
+        default: break;
+        case OIS::KC_W:
+        case OIS::KC_S:	state()._moveFB = 0; break;
+        case OIS::KC_A:
+        case OIS::KC_D:	state()._moveLR = 0; break;
+        case OIS::KC_F1: _sceneGraph->print(); break;
         case OIS::KC_1:
-			PHYSICS_DEVICE.createPlane(vec3<F32>(0,0,0),random(0.5f,2.0f));
-			break;
-		case OIS::KC_2:
-			PHYSICS_DEVICE.createBox(vec3<F32>(0,random(10,30),0),random(0.5f,2.0f));
-			break;
+            PHYSICS_DEVICE.createPlane(vec3<F32>(0,0,0),random(0.5f,2.0f));
+            break;
+        case OIS::KC_2:
+            PHYSICS_DEVICE.createBox(vec3<F32>(0,random(10,30),0),random(0.5f,2.0f));
+            break;
         case OIS::KC_3:{
             Kernel* kernel = Application::getInstance().getKernel();
             Task_ptr e(New Task(kernel->getThreadPool(),0,true,true,DELEGATE_BIND(&PhysXScene::createTower, DELEGATE_REF(*this),(U32)random(5,20))));
             addTask(e);
             }break;
-		case OIS::KC_4:{
-			Kernel* kernel = Application::getInstance().getKernel();
-			Task_ptr e(New Task(kernel->getThreadPool(),0,true,true,DELEGATE_BIND(&PhysXScene::createStack, DELEGATE_REF(*this),(U32)random(5,10))));
-			addTask(e);
-		} break;
-	}
+        case OIS::KC_4:{
+            Kernel* kernel = Application::getInstance().getKernel();
+            Task_ptr e(New Task(kernel->getThreadPool(),0,true,true,DELEGATE_BIND(&PhysXScene::createStack, DELEGATE_REF(*this),(U32)random(5,10))));
+            addTask(e);
+        } break;
+    }
 }
 
 void PhysXScene::onMouseMove(const OIS::MouseEvent& key){
-	if(_mousePressed[OIS::MB_Right]){
-		if(_previousMousePos.x - key.state.X.abs > 1 )		 state()._angleLR = -1;
-		else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
-		else			                                     state()._angleLR =  0;
+    if(_mousePressed[OIS::MB_Right]){
+        if(_previousMousePos.x - key.state.X.abs > 1 )		 state()._angleLR = -1;
+        else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
+        else			                                     state()._angleLR =  0;
 
-		if(_previousMousePos.y - key.state.Y.abs > 1 )		 state()._angleUD = -1;
-		else if(_previousMousePos.y - key.state.Y.abs < -1 ) state()._angleUD =  1;
-		else 			                                     state()._angleUD =  0;
-	}
+        if(_previousMousePos.y - key.state.Y.abs > 1 )		 state()._angleUD = -1;
+        else if(_previousMousePos.y - key.state.Y.abs < -1 ) state()._angleUD =  1;
+        else 			                                     state()._angleUD =  0;
+    }
 
-	_previousMousePos.x = key.state.X.abs;
-	_previousMousePos.y = key.state.Y.abs;
+    _previousMousePos.x = key.state.X.abs;
+    _previousMousePos.y = key.state.Y.abs;
 }
 
 void PhysXScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
-	Scene::onMouseClickUp(key,button);
-	if(!_mousePressed[OIS::MB_Right]){
-		state()._angleUD = 0;
-		state()._angleLR = 0;
-	}
+    Scene::onMouseClickUp(key,button);
+    if(!_mousePressed[OIS::MB_Right]){
+        state()._angleUD = 0;
+        state()._angleLR = 0;
+    }
 }

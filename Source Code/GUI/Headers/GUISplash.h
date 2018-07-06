@@ -34,13 +34,13 @@ class vec2;
 typedef Texture Texture2D;
 class GUISplash {
 public:
-	GUISplash(const std::string& splashImageName,const vec2<U16>& dimensions);
-	~GUISplash();
-	void render();
+    GUISplash(const std::string& splashImageName,const vec2<U16>& dimensions);
+    ~GUISplash();
+    void render();
 
 private:
-	Quad3D* 	   _renderQuad;
-	Texture2D*     _splashImage;
+    Quad3D* 	   _renderQuad;
+    Texture2D*     _splashImage;
     ShaderProgram* _splashShader;
 };
 

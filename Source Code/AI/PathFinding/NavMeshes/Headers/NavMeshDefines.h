@@ -3,19 +3,19 @@
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
    and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
    subject to the following conditions:
 
    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -35,45 +35,44 @@
 
 #define MAX_PATHSLOT      128 // how many paths we can store
 #define MAX_PATHPOLY      256 // max number of polygons in a path
-#define MAX_PATHVERT      512 // most verts in a path 
+#define MAX_PATHVERT      512 // most verts in a path
 
 // Extra padding added to the border size of tiles (together with agent radius)
 const F32 BORDER_PADDING = 3;
 
 namespace Navigation {
-		/// These are just sample areas to use consistent values across the samples.
-	/// The use should specify these base on his needs.
-	enum SamplePolyAreas
-	{
-		SAMPLE_POLYAREA_GROUND,
-		SAMPLE_POLYAREA_WATER,
-		SAMPLE_POLYAREA_ROAD,
-		SAMPLE_POLYAREA_DOOR,
-		SAMPLE_POLYAREA_GRASS,
-		SAMPLE_POLYAREA_JUMP,
+        /// These are just sample areas to use consistent values across the samples.
+    /// The use should specify these base on his needs.
+    enum SamplePolyAreas
+    {
+        SAMPLE_POLYAREA_GROUND,
+        SAMPLE_POLYAREA_WATER,
+        SAMPLE_POLYAREA_ROAD,
+        SAMPLE_POLYAREA_DOOR,
+        SAMPLE_POLYAREA_GRASS,
+        SAMPLE_POLYAREA_JUMP,
         SAMPLE_AREA_OBSTACLE
-	};
+    };
 
-	enum SamplePolyFlags
-	{
-		SAMPLE_POLYFLAGS_WALK		= 0x01,		// Ability to walk (ground, grass, road)
-		SAMPLE_POLYFLAGS_SWIM		= 0x02,		// Ability to swim (water).
-		SAMPLE_POLYFLAGS_DOOR		= 0x04,		// Ability to move through doors.
-		SAMPLE_POLYFLAGS_JUMP		= 0x08,		// Ability to jump.
-		SAMPLE_POLYFLAGS_DISABLED	= 0x10,		// Disabled polygon
-		SAMPLE_POLYFLAGS_ALL		= 0xffff	// All abilities.
-	};
+    enum SamplePolyFlags
+    {
+        SAMPLE_POLYFLAGS_WALK		= 0x01,		// Ability to walk (ground, grass, road)
+        SAMPLE_POLYFLAGS_SWIM		= 0x02,		// Ability to swim (water).
+        SAMPLE_POLYFLAGS_DOOR		= 0x04,		// Ability to move through doors.
+        SAMPLE_POLYFLAGS_JUMP		= 0x08,		// Ability to jump.
+        SAMPLE_POLYFLAGS_DISABLED	= 0x10,		// Disabled polygon
+        SAMPLE_POLYFLAGS_ALL		= 0xffff	// All abilities.
+    };
 
-	// structure for storing output straight line paths
-	typedef struct
-	{
-		F32 PosX[MAX_PATHVERT] ;
-		F32 PosY[MAX_PATHVERT] ;
-		F32 PosZ[MAX_PATHVERT] ;
-		I32 MaxVertex ;
-		I32 Target ;
-	} PATHDATA ;
-
+    // structure for storing output straight line paths
+    typedef struct
+    {
+        F32 PosX[MAX_PATHVERT] ;
+        F32 PosY[MAX_PATHVERT] ;
+        F32 PosZ[MAX_PATHVERT] ;
+        I32 MaxVertex ;
+        I32 Target ;
+    } PATHDATA ;
 };
 
 #endif

@@ -39,7 +39,7 @@
 template<class T>
 class Plane {
 public:
-	/** From Ogre3D: The "positive side" of the plane is the half space to which the
+    /** From Ogre3D: The "positive side" of the plane is the half space to which the
         plane normal points. The "negative side" is the other half
         space. The flag "no side" indicates the plane itself.
     */
@@ -50,47 +50,47 @@ public:
         BOTH_SIDE
     };
 
-	Plane() : _distance(0), _active(true) {}
-	Plane(const Plane& rhs) : _normal(rhs._normal), _distance(rhs._distance), _active(true) {}
-	///distance is stored as the negative of the specified value
-	Plane(const vec3<T>& normal, T distance) : _normal(normal), _distance(-distance), _active(true) {}
-	///distance is stored as the negative of the specified value
-	Plane(T a, T b, T c, T distance) : _normal(a, b, c), _distance(distance), _active(true){}
-	Plane(const vec3<T>& normal, const vec3<T>& point) : _active(true)
-	{
-		redefine(normal, point);
-	}
-	Plane (const vec3<T>& point0, const vec3<T>& point1, const vec3<T>& point2) : _active(true)
-	{
-		redefine(point0, point1, point2);
-	}
+    Plane() : _distance(0), _active(true) {}
+    Plane(const Plane& rhs) : _normal(rhs._normal), _distance(rhs._distance), _active(true) {}
+    ///distance is stored as the negative of the specified value
+    Plane(const vec3<T>& normal, T distance) : _normal(normal), _distance(-distance), _active(true) {}
+    ///distance is stored as the negative of the specified value
+    Plane(T a, T b, T c, T distance) : _normal(a, b, c), _distance(distance), _active(true){}
+    Plane(const vec3<T>& normal, const vec3<T>& point) : _active(true)
+    {
+        redefine(normal, point);
+    }
+    Plane (const vec3<T>& point0, const vec3<T>& point1, const vec3<T>& point2) : _active(true)
+    {
+        redefine(point0, point1, point2);
+    }
 
-	inline T getDistance(const vec3<T>& point) const{	return _normal.dot(point) + _distance; }
+    inline T getDistance(const vec3<T>& point) const{	return _normal.dot(point) + _distance; }
 
-	inline void set(const vec3<T>& normal, T distance) {_normal = normal; _distance = -distance;}
+    inline void set(const vec3<T>& normal, T distance) {_normal = normal; _distance = -distance;}
 
-	inline void redefine(const vec3<T>& point0, const vec3<T>& point1, const vec3<T>& point2) {
-		vec3<T> edge1 = point1 - point0;
-		vec3<T> edge2 = point2 - point0;
-		_normal = edge1.cross(edge2);
-		_normal.normalize();
-		_distance = -_normal.dot(point0);
-	}
+    inline void redefine(const vec3<T>& point0, const vec3<T>& point1, const vec3<T>& point2) {
+        vec3<T> edge1 = point1 - point0;
+        vec3<T> edge2 = point2 - point0;
+        _normal = edge1.cross(edge2);
+        _normal.normalize();
+        _distance = -_normal.dot(point0);
+    }
 
-	inline void redefine(const vec3<T>& normal, const vec3<T>& point) {
-		_normal = normal;
-		_distance = -_normal.dot(point);
-	}
-	inline vec4<T> getEquation() const {return vec4<T>(_normal,_distance);}
+    inline void redefine(const vec3<T>& normal, const vec3<T>& point) {
+        _normal = normal;
+        _distance = -_normal.dot(point);
+    }
+    inline vec4<T> getEquation() const {return vec4<T>(_normal,_distance);}
 
-	/// active plane state. used by rendering API's when the plane is considered a clipplane
-	inline bool active()           const {return _active;}
-	inline void active(bool state)       {_active = state;}
-	/// Comparison operator
+    /// active plane state. used by rendering API's when the plane is considered a clipplane
+    inline bool active()           const {return _active;}
+    inline void active(bool state)       {_active = state;}
+    /// Comparison operator
     bool operator==(const Plane& rhs) const { return (rhs._distance == _distance && rhs._normal == _normal); }
     bool operator!=(const Plane& rhs) const { return (rhs._distance != _distance || rhs._normal != _normal); }
 
-	T normalize() {
+    T normalize() {
         T length = _normal.length();
         if ( length > F32(0.0f) ) {
             T invLength = 1.0f / length;
@@ -101,9 +101,9 @@ public:
     }
 
 protected:
-	vec3<T> _normal;
+    vec3<T> _normal;
     T _distance;
-	bool _active;
+    bool _active;
 };
 
 typedef vectorImpl<Plane<F32> > PlaneList;

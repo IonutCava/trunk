@@ -27,28 +27,28 @@
 
 class PhysXScene : public Scene {
 public:
-	PhysXScene() : Scene()
-	{
-	}
+    PhysXScene() : Scene()
+    {
+    }
 
-	void preRender();
+    void preRender();
 
-	bool load(const std::string& name, CameraManager* const cameraMgr);
-	bool loadResources(bool continueOnErrors);
-	bool unload();
-	void processInput();
-	void processTasks(const U32 time);
-	void onKeyDown(const OIS::KeyEvent& key);
-	void onKeyUp(const OIS::KeyEvent& key);
-	void onMouseMove(const OIS::MouseEvent& key);
-	void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    bool load(const std::string& name, CameraManager* const cameraMgr);
+    bool loadResources(bool continueOnErrors);
+    bool unload();
+    void processInput();
+    void processTasks(const U32 time);
+    void onKeyDown(const OIS::KeyEvent& key);
+    void onKeyUp(const OIS::KeyEvent& key);
+    void onMouseMove(const OIS::MouseEvent& key);
+    void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
-	void createStack(U32 size = 10);
+    void createStack(U32 size = 10);
     void createTower(U32 size = 10);
 
 private:
-	vec3<F32> _sunvector;
+    vec3<F32> _sunvector;
     boost::atomic<bool> _addingActors;
 };
 

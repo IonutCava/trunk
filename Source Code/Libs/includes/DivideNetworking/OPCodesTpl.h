@@ -8,10 +8,10 @@
 ///Packet handling requires OPCodes to be defined. Use the following enum structure to define them in each app:
 enum OPCodes
 {
-   	MSG_HEARTBEAT							 = 0x000,
-	SMSG_SEND_FILE                           = 0x001,
-	SMSG_DISCONNECT                          = 0x002,
-	CMSG_REQUEST_DISCONNECT                  = 0x003
+    MSG_HEARTBEAT							 = 0x000,
+    SMSG_SEND_FILE                           = 0x001,
+    SMSG_DISCONNECT                          = 0x002,
+    CMSG_REQUEST_DISCONNECT                  = 0x003
 };
 
 #define FIRST_FREE_OPCODE 0x004
@@ -22,10 +22,10 @@ enum OPCodes
 #include <DivideNetworking/Utility/InheritEnum.h>
 
 enum OPCodesEx { //<Or whaterver name you wish
-	CMSG_EXAMPLE  = OPCODE_ID(1),
-	SMSG_EXAMPLE2 = OPCODE_ID(2),
-				.....
-	LAST_OPCODE
+    CMSG_EXAMPLE  = OPCODE_ID(1),
+    SMSG_EXAMPLE2 = OPCODE_ID(2),
+                .....
+    LAST_OPCODE
 };
 
 typedef InheritEnum< OPCodesEx, OPCodes > OPCodesImpl;

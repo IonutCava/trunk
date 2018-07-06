@@ -5,7 +5,7 @@
 
 #if defined(_MSC_VER)
 #	pragma warning( push )
-#		pragma warning(disable:4244) 
+#		pragma warning(disable:4244)
 #elif defined(__GNUC__)
 #	pragma GCC diagnostic push
 #		//pragma GCC diagnostic ignored "-Wall"

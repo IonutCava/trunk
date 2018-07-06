@@ -3,12 +3,12 @@
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
 TerrainDescriptor* ImplResourceLoader<TerrainDescriptor>::operator()(){
-	TerrainDescriptor* ptr = New TerrainDescriptor();
+    TerrainDescriptor* ptr = New TerrainDescriptor();
     if(!load(ptr,_descriptor.getName())){
         SAFE_DELETE(ptr);
     }
 
-	return ptr;
+    return ptr;
 }
 
 DEFAULT_LOADER_IMPL(TerrainDescriptor)

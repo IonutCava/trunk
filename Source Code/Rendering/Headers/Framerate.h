@@ -50,26 +50,26 @@ DEFINE_SINGLETON(Framerate)
 #if defined( OS_WINDOWS )
   typedef LARGE_INTEGER LI;
 #elif defined( OS_APPLE ) // Apple OS X
-	//??
+    //??
 #else //Linux
   typedef timeval LI;
 #endif
 
 private:
-	Framerate() : _targetFrameRate(60),
-				  _ticksPerMillisecond(0),
-				  _speedfactor(1.0f),
-		          _init(false),
-		          _benchmark(false)
-	{
-	}
+    Framerate() : _targetFrameRate(60),
+                  _ticksPerMillisecond(0),
+                  _speedfactor(1.0f),
+                  _init(false),
+                  _benchmark(false)
+    {
+    }
 
     U8   _targetFrameRate;
     F32  _frameTime;
     LI	 _ticksPerSecond; //Processor's ticks per second
     LI	 _frameDelay;     //Previous frame's number of ticks
     LI	 _startupTicks;   //Ticks at class initialization
-	LI   _currentTicks;
+    LI   _currentTicks;
     bool _benchmark;      //Measure average FPS and output max/min/average fps to console
 
     boost::atomic_bool _init;
@@ -81,18 +81,18 @@ public:
     void Init(U8 targetFrameRate);
     void SetSpeedFactor();
 
-	inline void benchmark(bool state)  {_benchmark = state;}
-	inline bool benchmark()      const {return _benchmark;}
+    inline void benchmark(bool state)  {_benchmark = state;}
+    inline bool benchmark()      const {return _benchmark;}
     inline F32  getFps()         const {return _fps;}
     inline F32  getFrameTime()   const {return _frameTime;}
     inline F32  getSpeedfactor() const {return _speedfactor;}
 
     inline U32 getElapsedTime(){ //in milliseconds
-	    if(!_init)
-			return 0;
+        if(!_init)
+            return 0;
 
-	    QueryPerformanceCounter(&_currentTicks);
-	    return (_currentTicks.QuadPart-_startupTicks.QuadPart) / _ticksPerMillisecond;
+        QueryPerformanceCounter(&_currentTicks);
+        return (_currentTicks.QuadPart-_startupTicks.QuadPart) / _ticksPerMillisecond;
   }
 
 protected:

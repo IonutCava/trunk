@@ -26,31 +26,31 @@ const int REPLACE    = 9;
 void applyTexture(in sampler2D texUnit, in int type, in int index, in vec2 uv, inout vec4 color){
 
     // Read from the texture
-	switch(type) {
-		case REPLACE    : color  = texture(texUnit,uv);         break;
-		case MODULATE   : color *= texture(texUnit,uv);         break;
-		case SIGNED_ADD : color += (texture(texUnit,uv) - 0.5); break;
-		case DIVIDE     : color /= texture(texUnit,uv);		    break;
-		case SUBSTRACT  : color -= texture(texUnit,uv); 	    break;
-		case DECAL      : {
-			vec4 temp = texture(texUnit,uv);
-			color = vec4(mix(color.rgb, temp.rgb, temp.a), color.a);
-		}break;
-		case BLEND      : {
-			vec4 tex = texture(texUnit,uv);
-			color = vec4(mix(color.rgb, gl_TextureEnvColor[index].rgb, tex.rgb), color.a * tex.a);
-		}break;
-		case ADD        : {
-			vec4 tex = texture(texUnit,uv);
-			color.rgb += tex.rgb;
-			color.a   *= tex.a;
-			color = clamp(color, 0.0, 1.0);
-		}break;
-    	case SMOOTH_ADD : {
-			vec4 tex = texture(texUnit,uv);
-			color = (color + tex) - (color * tex);
-		}break;
-		
-		default         : color = clamp(texture(texUnit,uv) * color, 0.0, 1.0); break;
+    switch(type) {
+        case REPLACE    : color  = texture(texUnit,uv);         break;
+        case MODULATE   : color *= texture(texUnit,uv);         break;
+        case SIGNED_ADD : color += (texture(texUnit,uv) - 0.5); break;
+        case DIVIDE     : color /= texture(texUnit,uv);		    break;
+        case SUBSTRACT  : color -= texture(texUnit,uv); 	    break;
+        case DECAL      : {
+            vec4 temp = texture(texUnit,uv);
+            color = vec4(mix(color.rgb, temp.rgb, temp.a), color.a);
+        }break;
+        case BLEND      : {
+            vec4 tex = texture(texUnit,uv);
+            color = vec4(mix(color.rgb, gl_TextureEnvColor[index].rgb, tex.rgb), color.a * tex.a);
+        }break;
+        case ADD        : {
+            vec4 tex = texture(texUnit,uv);
+            color.rgb += tex.rgb;
+            color.a   *= tex.a;
+            color = clamp(color, 0.0, 1.0);
+        }break;
+        case SMOOTH_ADD : {
+            vec4 tex = texture(texUnit,uv);
+            color = (color + tex) - (color * tex);
+        }break;
+        
+        default         : color = clamp(texture(texUnit,uv) * color, 0.0, 1.0); break;
     }
 }

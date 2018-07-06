@@ -6,22 +6,22 @@
 #include <boost/algorithm/string.hpp>
 
 ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
-	ParamHandler& par = ParamHandler::getInstance();
-	ShaderProgram* ptr = GFX_DEVICE.newShaderProgram();
+    ParamHandler& par = ParamHandler::getInstance();
+    ShaderProgram* ptr = GFX_DEVICE.newShaderProgram();
 
     ptr->setState(RES_LOADING);
-	ptr->enableThreadedLoading(_descriptor.getThreaded());
+    ptr->enableThreadedLoading(_descriptor.getThreaded());
     if(_descriptor.getResourceLocation().compare("default") == 0){
-		ptr->setResourceLocation(par.getParam<std::string>("assetsLocation") + "/" +
-							     par.getParam<std::string>("shaderLocation") + "/" );
+        ptr->setResourceLocation(par.getParam<std::string>("assetsLocation") + "/" +
+                                 par.getParam<std::string>("shaderLocation") + "/" );
     }else{
-		ptr->setResourceLocation(_descriptor.getResourceLocation());
+        ptr->setResourceLocation(_descriptor.getResourceLocation());
     }
 
     ///get all of the preprocessor defines
     if(!_descriptor.getPropertyListString().empty()){
-	    vectorImpl<std::string> defines;
-	    boost::split(defines, _descriptor.getPropertyListString(), boost::is_any_of(","), boost::token_compress_on);
+        vectorImpl<std::string> defines;
+        boost::split(defines, _descriptor.getPropertyListString(), boost::is_any_of(","), boost::token_compress_on);
         for(U8 i = 0; i < defines.size(); i++){
             if(!defines[i].empty())ptr->addShaderDefine(defines[i]);
         }
@@ -37,7 +37,7 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
         ShaderManager::getInstance().registerShaderProgram(ptr->getName(), ptr);
     }
 
-	return ptr;
+    return ptr;
 }
 
 DEFAULT_HW_LOADER_IMPL(ShaderProgram)

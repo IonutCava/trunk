@@ -6,12 +6,12 @@
 #define SHOULD_TOGGLE(state) (!oldState || oldState->_descriptor.state != _descriptor.state)
 
 #define TOGGLE_NO_CHECK(state, enumValue) if(_descriptor.state) GLCheck(glEnable(enumValue));  \
-									      else GLCheck(glDisable(enumValue));
+                                          else GLCheck(glDisable(enumValue));
 
 #define TOGGLE_WITH_CHECK(state, enumValue) if(!oldState || oldState->_descriptor.state != _descriptor.state) { \
-											    if(_descriptor.state) GLCheck(glEnable(enumValue));  \
-											    else GLCheck(glDisable(enumValue)); \
-											}
+                                                if(_descriptor.state) GLCheck(glEnable(enumValue));  \
+                                                else GLCheck(glDisable(enumValue)); \
+                                            }
 glRenderStateBlock::glRenderStateBlock(const RenderStateBlockDescriptor& descriptor) : RenderStateBlock(),
    _descriptor(descriptor),
    _hashValue(descriptor.getGUID())
@@ -37,13 +37,13 @@ void glRenderStateBlock::activate(glRenderStateBlock* oldState){
    }
 
    if(SHOULD_TOGGLE(_writeRedChannel) ||
-	  SHOULD_TOGGLE(_writeBlueChannel) ||
-	  SHOULD_TOGGLE(_writeGreenChannel) ||
-	  SHOULD_TOGGLE(_writeAlphaChannel)) {
-		GLCheck(glColorMask(_descriptor._writeRedChannel,
-							_descriptor._writeBlueChannel,
-							_descriptor._writeGreenChannel,
-							_descriptor._writeAlphaChannel));
+      SHOULD_TOGGLE(_writeBlueChannel) ||
+      SHOULD_TOGGLE(_writeGreenChannel) ||
+      SHOULD_TOGGLE(_writeAlphaChannel)) {
+        GLCheck(glColorMask(_descriptor._writeRedChannel,
+                            _descriptor._writeBlueChannel,
+                            _descriptor._writeGreenChannel,
+                            _descriptor._writeAlphaChannel));
    }
 
    if(SHOULD_TOGGLE(_cullMode)) {
@@ -59,7 +59,7 @@ void glRenderStateBlock::activate(glRenderStateBlock* oldState){
          GLCheck(glDisable(GL_POLYGON_OFFSET_FILL));
       } else {
          GLfloat units  = _descriptor._zUnits;
-		 GLfloat factor = _descriptor._zBias;
+         GLfloat factor = _descriptor._zBias;
          GLCheck(glEnable(GL_POLYGON_OFFSET_FILL));
          GLCheck(glPolygonOffset( factor, units));
       }
@@ -70,19 +70,19 @@ void glRenderStateBlock::activate(glRenderStateBlock* oldState){
    }
 
    if(SHOULD_TOGGLE(_stencilFunc) ||
-	  SHOULD_TOGGLE(_stencilRef)  ||
-	  SHOULD_TOGGLE(_stencilMask)) {
+      SHOULD_TOGGLE(_stencilRef)  ||
+      SHOULD_TOGGLE(_stencilMask)) {
       GLCheck(glStencilFunc(glCompareFuncTable[_descriptor._stencilFunc],
-		            _descriptor._stencilRef,
-					_descriptor._stencilMask));
+                    _descriptor._stencilRef,
+                    _descriptor._stencilMask));
    }
 
    if(SHOULD_TOGGLE(_stencilFailOp)  ||
-	  SHOULD_TOGGLE(_stencilZFailOp) ||
-	  SHOULD_TOGGLE(_stencilPassOp)) {
+      SHOULD_TOGGLE(_stencilZFailOp) ||
+      SHOULD_TOGGLE(_stencilPassOp)) {
       GLCheck(glStencilOp(glStencilOpTable[_descriptor._stencilFailOp],
-		                  glStencilOpTable[_descriptor._stencilZFailOp],
-						  glStencilOpTable[_descriptor._stencilPassOp]));
+                          glStencilOpTable[_descriptor._stencilZFailOp],
+                          glStencilOpTable[_descriptor._stencilPassOp]));
    }
 
    if(SHOULD_TOGGLE(_stencilWriteMask)){

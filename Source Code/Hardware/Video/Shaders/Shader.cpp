@@ -3,7 +3,7 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
-Shader::Shader(const std::string& name, const ShaderType& type,const bool optimise) : _shader(std::numeric_limits<U32>::max()), 
+Shader::Shader(const std::string& name, const ShaderType& type,const bool optimise) : _shader(std::numeric_limits<U32>::max()),
 																					  _name(name),
 																				      _type(type),
 																					  _compiled(false),

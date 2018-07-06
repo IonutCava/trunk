@@ -43,37 +43,37 @@ enum ResourceState{
 
 class Resource : public TrackedObject {
 public:
-	Resource() : TrackedObject(),  _name("default"),
-								   _threadedLoading(true),
-								   _threadedLoadComplete(false),
-								   _resourceState(RES_CREATED)
+    Resource() : TrackedObject(),  _name("default"),
+                                   _threadedLoading(true),
+                                   _threadedLoadComplete(false),
+                                   _resourceState(RES_CREATED)
     {
     }
 
-	Resource(const std::string& name) : TrackedObject(),
+    Resource(const std::string& name) : TrackedObject(),
                                        _name(name),
-									   _threadedLoading(true),
-									   _threadedLoadComplete(false),
-							   		   _resourceState(RES_CREATED)
+                                       _threadedLoading(true),
+                                       _threadedLoadComplete(false),
+                                       _resourceState(RES_CREATED)
     {
     }
 
-	virtual ~Resource() {}
+    virtual ~Resource() {}
 
-	///Loading and unloading interface
-	virtual bool unload() = 0;
+    ///Loading and unloading interface
+    virtual bool unload() = 0;
 
-	///Name management
-	const  std::string& getName()                       const {return _name;}
-	inline void         setName(const std::string& name)      {_name = name;}
-	///Physical file location
-	const std::string& getResourceLocation()                                   const {return _resourceLocation;}
-	      void         setResourceLocation(const std::string& resourceLocation)      {_resourceLocation = resourceLocation;}
+    ///Name management
+    const  std::string& getName()                       const {return _name;}
+    inline void         setName(const std::string& name)      {_name = name;}
+    ///Physical file location
+    const std::string& getResourceLocation()                                   const {return _resourceLocation;}
+          void         setResourceLocation(const std::string& resourceLocation)      {_resourceLocation = resourceLocation;}
 
     inline ResourceState getState() const {return _resourceState;}
-	///Toggle loading in background thread
-	inline void enableThreadedLoading(const bool enableThreadedLoading) {_threadedLoading = enableThreadedLoading;}
-	virtual void threadedLoad(const std::string& name)                  {_threadedLoadComplete = true;}
+    ///Toggle loading in background thread
+    inline void enableThreadedLoading(const bool enableThreadedLoading) {_threadedLoading = enableThreadedLoading;}
+    virtual void threadedLoad(const std::string& name)                  {_threadedLoadComplete = true;}
 
 protected:
     friend class DVDConverter;
@@ -84,49 +84,49 @@ protected:
     inline void setState(const ResourceState& currentState) {_resourceState = currentState;}
 
 protected:
-	std::string	  _name;
-	std::string   _resourceLocation; ///< Physical file location
+    std::string	  _name;
+    std::string   _resourceLocation; ///< Physical file location
     boost::atomic<ResourceState> _resourceState;
-	///Should load resource in a background thread
-	boost::atomic_bool _threadedLoading;
-	///Becomes true when background thread finishes loading
-	boost::atomic_bool _threadedLoadComplete;
+    ///Should load resource in a background thread
+    boost::atomic_bool _threadedLoading;
+    ///Becomes true when background thread finishes loading
+    boost::atomic_bool _threadedLoadComplete;
 };
 
 enum GeometryType {
-	VEGETATION,  ///< For special rendering subroutines
-	PRIMITIVE,   ///< Simple objects: Boxes, Spheres etc
-	GEOMETRY     ///< All other forms of geometry
+    VEGETATION,  ///< For special rendering subroutines
+    PRIMITIVE,   ///< Simple objects: Boxes, Spheres etc
+    GEOMETRY     ///< All other forms of geometry
 };
 
 struct FileData {
-	std::string ItemName;
-	std::string ModelName;
-	vec3<F32> scale;
-	vec3<F32> position;
-	vec3<F32> orientation;
-	vec3<F32> color;
-	GeometryType type;
-	F32 data; ///< general purpose
-	std::string data2;
-	std::string data3;
-	F32 version;
+    std::string ItemName;
+    std::string ModelName;
+    vec3<F32> scale;
+    vec3<F32> position;
+    vec3<F32> orientation;
+    vec3<F32> color;
+    GeometryType type;
+    F32 data; ///< general purpose
+    std::string data2;
+    std::string data3;
+    F32 version;
     bool staticUsage; //<Used to determine if it's a static object or dynamic. Affects lighting, navigation, etc.
     bool navigationUsage; //< Used to determine if the object should be added to the nav mesh generation process or not
-	bool useHighDetailNavMesh; //< Used to force a geometry level parsing for nav mesh creation instead of the default bounding-box level
+    bool useHighDetailNavMesh; //< Used to force a geometry level parsing for nav mesh creation instead of the default bounding-box level
 };
 
 struct TerrainInfo {
-	TerrainInfo(){position.set(0,0,0);}
-	///"variables" contains the various strings needed for each terrain such as texture names, terrain name etc.
-	Unordered_map<std::string,std::string> variables;
-	U32  grassDensity;
-	U16  treeDensity;
-	F32  grassScale;
-	F32  treeScale;
-	vec3<F32>   position;
-	vec2<F32>   scale;
-	bool   active;
+    TerrainInfo(){position.set(0,0,0);}
+    ///"variables" contains the various strings needed for each terrain such as texture names, terrain name etc.
+    Unordered_map<std::string,std::string> variables;
+    U32  grassDensity;
+    U16  treeDensity;
+    F32  grassScale;
+    F32  treeScale;
+    vec3<F32>   position;
+    vec2<F32>   scale;
+    bool   active;
 };
 
 #endif

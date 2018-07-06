@@ -3,19 +3,19 @@
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
    and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
    subject to the following conditions:
 
    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -47,10 +47,10 @@ class Variable
 
     virtual std::string toString() const
     {
-	  std::ostringstream oss;
-	  oss << _dValue;
-	  return oss.str();
-	}
+      std::ostringstream oss;
+      oss << _dValue;
+      return oss.str();
+    }
 
     virtual void update() {};
 };
@@ -74,25 +74,25 @@ class LimitedVariable : public Variable
   public:
 
     LimitedVariable(D32 dInitValue, D32 dMinValue, D32 dMaxValue)
-	: _dMinValue(dMinValue), _dMaxValue(dMaxValue), Variable(dInitValue)
+    : _dMinValue(dMinValue), _dMaxValue(dMaxValue), Variable(dInitValue)
     {}
 
     virtual void setValue(D32 dValue)
     {
-	  _dValue = dValue;
-	  if (_dValue > _dMaxValue)
-		_dValue = _dMaxValue;
-	  else if (_dValue < _dMinValue)
-		_dValue = _dMinValue;
-	}
+      _dValue = dValue;
+      if (_dValue > _dMaxValue)
+        _dValue = _dMaxValue;
+      else if (_dValue < _dMinValue)
+        _dValue = _dMinValue;
+    }
 
 /*    virtual string toString() const
     {
-	  ostringstream oss;
-	  oss << setiosflags(ios_base::right) << setw(4)
-	      << (I32)(200.0 * getValue()/(_dMaxValue - _dMinValue)); // [-100%, +100%]
-	  return oss.str();
-	}*/
+      ostringstream oss;
+      oss << setiosflags(ios_base::right) << setw(4)
+          << (I32)(200.0 * getValue()/(_dMaxValue - _dMinValue)); // [-100%, +100%]
+      return oss.str();
+    }*/
 };
 
 class TriangleVariable : public LimitedVariable
@@ -104,26 +104,26 @@ class TriangleVariable : public LimitedVariable
   public:
 
     TriangleVariable(D32 dInitValue, D32 dDeltaValue, D32 dMinValue, D32 dMaxValue)
-	: LimitedVariable(dInitValue, dMinValue, dMaxValue), _dDeltaValue(dDeltaValue) {};
+    : LimitedVariable(dInitValue, dMinValue, dMaxValue), _dDeltaValue(dDeltaValue) {};
 
     virtual void update()
     {
-	  D32 dValue = getValue() + _dDeltaValue;
-	  if (dValue > _dMaxValue)
-	  {
-		dValue = _dMaxValue;
-		_dDeltaValue = -_dDeltaValue;
-		//cout << "Decreasing variable towards " << _dMinValue << endl;
-	  }
-	  else if (dValue < _dMinValue)
-	  {
-		dValue = _dMinValue;
-		_dDeltaValue = -_dDeltaValue;
-		//cout << "Increasing variable towards " << _dMaxValue << endl;
-	  }
-	  setValue(dValue);
+      D32 dValue = getValue() + _dDeltaValue;
+      if (dValue > _dMaxValue)
+      {
+        dValue = _dMaxValue;
+        _dDeltaValue = -_dDeltaValue;
+        //cout << "Decreasing variable towards " << _dMinValue << endl;
+      }
+      else if (dValue < _dMinValue)
+      {
+        dValue = _dMinValue;
+        _dDeltaValue = -_dDeltaValue;
+        //cout << "Increasing variable towards " << _dMaxValue << endl;
+      }
+      setValue(dValue);
       //cout << "TriangleVariable::update : delta=" << _dDeltaValue << ", value=" << dValue << endl;
-	}
+    }
 };
 
 //////////// Variable effect class //////////////////////////////////////////////////////////
@@ -153,55 +153,55 @@ class VariableEffect
   public:
 
     VariableEffect(const char* pszDesc, OIS::Effect* pEffect,
-				   const MapVariables& mapVars, const EffectVariablesApplier pfApplyVars)
-	: _pszDesc(pszDesc), _pEffect(pEffect),
-	  _mapVariables(mapVars), _pfApplyVariables(pfApplyVars), _bActive(false)
+                   const MapVariables& mapVars, const EffectVariablesApplier pfApplyVars)
+    : _pszDesc(pszDesc), _pEffect(pEffect),
+      _mapVariables(mapVars), _pfApplyVariables(pfApplyVars), _bActive(false)
     {}
 
     ~VariableEffect()
     {
-	  SAFE_DELETE(_pEffect);
-	  MapVariables::iterator iterVars;
-	  for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
-		  SAFE_DELETE(iterVars->second);
-	}
+      SAFE_DELETE(_pEffect);
+      MapVariables::iterator iterVars;
+      for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
+          SAFE_DELETE(iterVars->second);
+    }
 
     inline void setActive(bool bActive = true) { reset(); _bActive = bActive; }
     inline bool isActive(){  return _bActive; }
-	inline OIS::Effect* getFFEffect()  { return _pEffect; }
+    inline OIS::Effect* getFFEffect()  { return _pEffect; }
 
-	const char* getDescription() const { return _pszDesc; }
+    const char* getDescription() const { return _pszDesc; }
 
     void update()
     {
-	  if (isActive())
-	  {
-		// Update the variables.
-		MapVariables::iterator iterVars;
-		for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
-		  iterVars->second->update();
+      if (isActive())
+      {
+        // Update the variables.
+        MapVariables::iterator iterVars;
+        for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
+          iterVars->second->update();
 
-		// Apply the updated variable values to the effect.
-		_pfApplyVariables(_mapVariables, _pEffect);
-	  }
+        // Apply the updated variable values to the effect.
+        _pfApplyVariables(_mapVariables, _pEffect);
+      }
     }
 
     void reset()
     {
-	  MapVariables::iterator iterVars;
-	  for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
-		iterVars->second->reset();
-	  _pfApplyVariables(_mapVariables, _pEffect);
+      MapVariables::iterator iterVars;
+      for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
+        iterVars->second->reset();
+      _pfApplyVariables(_mapVariables, _pEffect);
     }
 
     std::string toString() const
     {
-	  std::string str;
-	  MapVariables::const_iterator iterVars;
-	  for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
-		str += iterVars->first + ":" + iterVars->second->toString() + " ";
-	  return str;
-	}
+      std::string str;
+      MapVariables::const_iterator iterVars;
+      for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
+        str += iterVars->first + ":" + iterVars->second->toString() + " ";
+      return str;
+    }
 };
 
 #endif

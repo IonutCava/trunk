@@ -26,11 +26,11 @@
 #include "Managers/Headers/FrameListenerManager.h"
 
 enum ReflectorType{
-	TYPE_MIRROR,
-	TYPE_WATER_SURFACE,
-	TYPE_PORTAL,
-	TYPE_MATERIAL,
-	TYPE_REFLECTOR_PLACEHOLDER
+    TYPE_MIRROR,
+    TYPE_WATER_SURFACE,
+    TYPE_PORTAL,
+    TYPE_MATERIAL,
+    TYPE_REFLECTOR_PLACEHOLDER
 };
 
 class Quad3D;
@@ -39,58 +39,58 @@ class FrameBufferObject;
 /// Virtual interface for reflective surfaces
 class Reflector : public FrameListener{
 public:
-	Reflector(ReflectorType type,const vec2<U16>& resolution);
-	virtual ~Reflector();
+    Reflector(ReflectorType type,const vec2<U16>& resolution);
+    virtual ~Reflector();
 
-	///This function should be unique to every reflector. Portals may need special effects, mirrors some special lighting, etc
-	virtual void updateReflection() = 0;
-	///Each reflector has a certain plane equation. Update this after each transform to obtain proper reflections
-	virtual void updatePlaneEquation() = 0;
-	///Retrieves the reflection texture
-	inline FrameBufferObject* getReflectionFBO()   {return _reflectedTexture;}
-	inline const Plane<F32>&  getReflectionPlane() {return _reflectionPlane;}
-	///Rendering callback is that function in the scene used to render the reflection
-	///The SceneGraph is not the default rendering class for reflections as some elements (i.e. Sky) are not part of it
-	///As the sky and other elements should be included in the reflection, we should set a custom callback
-	///Another example would be the player model. It is not rendered when in First Person, but it should show up in reflections
-	inline void setRenderCallback(boost::function0<void> callback) {_renderCallback = callback;}
+    ///This function should be unique to every reflector. Portals may need special effects, mirrors some special lighting, etc
+    virtual void updateReflection() = 0;
+    ///Each reflector has a certain plane equation. Update this after each transform to obtain proper reflections
+    virtual void updatePlaneEquation() = 0;
+    ///Retrieves the reflection texture
+    inline FrameBufferObject* getReflectionFBO()   {return _reflectedTexture;}
+    inline const Plane<F32>&  getReflectionPlane() {return _reflectionPlane;}
+    ///Rendering callback is that function in the scene used to render the reflection
+    ///The SceneGraph is not the default rendering class for reflections as some elements (i.e. Sky) are not part of it
+    ///As the sky and other elements should be included in the reflection, we should set a custom callback
+    ///Another example would be the player model. It is not rendered when in First Person, but it should show up in reflections
+    inline void setRenderCallback(boost::function0<void> callback) {_renderCallback = callback;}
 
     void togglePreviewReflection() {_previewReflection = !_previewReflection;}
     ///Draw a small quad with our reflection buffer as a texture
     void previewReflection();
 
 private:
-	/// Create FBO
-	bool  build();
+    /// Create FBO
+    bool  build();
 
 protected:
-	///This is inherited from FrameListener and is used to queue upreflection on every frame start
-	bool framePreRenderEnded(const FrameEvent& evt);
+    ///This is inherited from FrameListener and is used to queue upreflection on every frame start
+    bool framePreRenderEnded(const FrameEvent& evt);
 
 protected:
 
-	ReflectorType _type;
-	/// How often do we need to update this instance's reflection?
-	U32 _updateInterval;
-	/// What is our current tick count
-	F32 _updateTimer;
-	/// What resolution should the generated texture have?
-	vec2<U16> _resolution;
-	/// Use this to force current reflector to draw itself in reflection
-	bool _excludeSelfReflection;
+    ReflectorType _type;
+    /// How often do we need to update this instance's reflection?
+    U32 _updateInterval;
+    /// What is our current tick count
+    F32 _updateTimer;
+    /// What resolution should the generated texture have?
+    vec2<U16> _resolution;
+    /// Use this to force current reflector to draw itself in reflection
+    bool _excludeSelfReflection;
     bool _previewReflection;
 
-	boost::function0<void> _renderCallback;
-	FrameBufferObject* _reflectedTexture;
+    boost::function0<void> _renderCallback;
+    FrameBufferObject* _reflectedTexture;
     Quad3D*    _renderQuad;
-	Plane<F32> _reflectionPlane;
-	ShaderProgram* _previewReflectionShader;
-	/// used for render exclusion. Do not render self in own reflection
-	bool _updateSelf;
-	/// Have we initialized our FBO?
-	bool _createdFBO;
-	/// does the reflector plane need updating?
-	bool _planeDirty;
+    Plane<F32> _reflectionPlane;
+    ShaderProgram* _previewReflectionShader;
+    /// used for render exclusion. Do not render self in own reflection
+    bool _updateSelf;
+    /// Have we initialized our FBO?
+    bool _createdFBO;
+    /// does the reflector plane need updating?
+    bool _planeDirty;
 };
 
 #endif

@@ -30,9 +30,9 @@
 #include <boost/function.hpp>
 
 namespace Font {
-	const static std::string	DIVIDE_DEFAULT ("Test.ttf");
-	const static std::string	BATANG ("Batang.ttf");
-	const static std::string	DEJA_VU("DejaVuSans.ttf");
+    const static std::string	DIVIDE_DEFAULT ("Test.ttf");
+    const static std::string	BATANG ("Batang.ttf");
+    const static std::string	DEJA_VU("DejaVuSans.ttf");
 };
 
 class GUIConsole;
@@ -41,73 +41,73 @@ class ShaderProgram;
 class RenderStateBlock;
 
 namespace CEGUI{
-	class Renderer;
+    class Renderer;
 };
 
 namespace OIS {
-	class KeyEvent;
-	class MouseEvent;
-	class JoyStickEvent;
-	enum MouseButtonID;
+    class KeyEvent;
+    class MouseEvent;
+    class JoyStickEvent;
+    enum MouseButtonID;
 }
 
 #define CEGUI_DEFAULT_CONTEXT CEGUI::System::getSingleton().getDefaultGUIContext()
 
 /// Grafical User Interface
 DEFINE_SINGLETON( GUI )
-	typedef Unordered_map<std::string, GUIElement*> guiMap;
-	typedef boost::function0<void> ButtonCallback;
+    typedef Unordered_map<std::string, GUIElement*> guiMap;
+    typedef boost::function0<void> ButtonCallback;
 
 public:
-	/// Main display call
-	void draw(U32 timeElapsed = 0);
-	/// Destroy items and close the GUI
-	void close();
-	/// Add a text label
-	GUIElement* addText(const std::string& id,const vec2<I32>& position, const std::string& font,const vec3<F32>& color, char* format, ...);
-	/// Add a button with a specific callback. The root of the window positioning system is bottom left, so 100,60 will place the button 100 pixels to the right and 60 up from the bottom
+    /// Main display call
+    void draw(U32 timeElapsed = 0);
+    /// Destroy items and close the GUI
+    void close();
+    /// Add a text label
+    GUIElement* addText(const std::string& id,const vec2<I32>& position, const std::string& font,const vec3<F32>& color, char* format, ...);
+    /// Add a button with a specific callback. The root of the window positioning system is bottom left, so 100,60 will place the button 100 pixels to the right and 60 up from the bottom
     GUIElement* addButton(const std::string& id,const std::string& text,const vec2<I32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,ButtonCallback callback,const std::string& rootSheetId = "");
-	/// Add a flash element -DEPRECATED-
-	GUIElement* addFlash(const std::string& id, std::string movie, const vec2<U32>& position, const vec2<U32>& extent);
-	/// Modify a text label
-	GUIElement* modifyText(const std::string& id, char* format, ...);
-	/// Called on window resize to adjust the dimensions of all the GUI elements
-	void onResize(const vec2<U16>& newResolution);
-	/// Mouse Button Up/Down callback
-	bool clickCheck(OIS::MouseButtonID button, bool pressed);
-	/// Key Press/Release callback
-	bool keyCheck(OIS::KeyEvent key, bool pressed);
-	/// Mouse move / scroll callback
-	bool checkItem(const OIS::MouseEvent& arg);
-	/// Get a pointer to our console window
-	inline GUIConsole* const getConsole() {return _console;}
-	inline const GUIEditor&  getEditor()  {return GUIEditor::getInstance(); }
-	/// Get a const pointer to an element by name/id
-	inline GUIElement* const getItem(const std::string& id) {return _guiStack[id];}
-	/// Get a pointer to an element by name/id
-	inline GUIElement* getGuiElement(const std::string& id){return _guiStack[id];}
-	/// Update internal resolution cache
-	inline void cacheResolution(const vec2<U16>& resolution) {_cachedResolution = resolution;}
-	/// Create the GUI
-	bool init();
-	/// Used by CEGUI to setup rendering (D3D/OGL/OGRE/etc)
-	bool bindRenderer(CEGUI::Renderer& renderer);
+    /// Add a flash element -DEPRECATED-
+    GUIElement* addFlash(const std::string& id, std::string movie, const vec2<U32>& position, const vec2<U32>& extent);
+    /// Modify a text label
+    GUIElement* modifyText(const std::string& id, char* format, ...);
+    /// Called on window resize to adjust the dimensions of all the GUI elements
+    void onResize(const vec2<U16>& newResolution);
+    /// Mouse Button Up/Down callback
+    bool clickCheck(OIS::MouseButtonID button, bool pressed);
+    /// Key Press/Release callback
+    bool keyCheck(OIS::KeyEvent key, bool pressed);
+    /// Mouse move / scroll callback
+    bool checkItem(const OIS::MouseEvent& arg);
+    /// Get a pointer to our console window
+    inline GUIConsole* const getConsole() {return _console;}
+    inline const GUIEditor&  getEditor()  {return GUIEditor::getInstance(); }
+    /// Get a const pointer to an element by name/id
+    inline GUIElement* const getItem(const std::string& id) {return _guiStack[id];}
+    /// Get a pointer to an element by name/id
+    inline GUIElement* getGuiElement(const std::string& id){return _guiStack[id];}
+    /// Update internal resolution cache
+    inline void cacheResolution(const vec2<U16>& resolution) {_cachedResolution = resolution;}
+    /// Create the GUI
+    bool init();
+    /// Used by CEGUI to setup rendering (D3D/OGL/OGRE/etc)
+    bool bindRenderer(CEGUI::Renderer& renderer);
 
 private:
-	GUI();               //< Constructor
-	~GUI();              //< Destructor
-	void drawText();     //< TextLabel rendering
+    GUI();               //< Constructor
+    ~GUI();              //< Destructor
+    void drawText();     //< TextLabel rendering
 
 private:
-	bool _init;                     //< Set to true when the GUI has finished loading
+    bool _init;                     //< Set to true when the GUI has finished loading
     bool _enableCEGUIRendering;     //< Toggle CEGUI rendering on/off (e.g. to check raw application rendering performance)
-	U32 _prevElapsedTime;           //< Time when the GUI was last rendered. Used to calculate frametime
-	GUIInput    _input;             //< Used to implement key repeat
-	GUIConsole* _console;           //< Pointer to the GUIConsole object
-	guiMap      _guiStack;          //< All the GUI elements created
-	vec2<U16>   _cachedResolution;  //< We keep a cache of the current resolution to avoid useless queries
-	/// Used to check if we need to add a new GUIElement or modify an existing one
-	std::pair<guiMap::iterator, bool > _resultGuiElement;
+    U32 _prevElapsedTime;           //< Time when the GUI was last rendered. Used to calculate frametime
+    GUIInput    _input;             //< Used to implement key repeat
+    GUIConsole* _console;           //< Pointer to the GUIConsole object
+    guiMap      _guiStack;          //< All the GUI elements created
+    vec2<U16>   _cachedResolution;  //< We keep a cache of the current resolution to avoid useless queries
+    /// Used to check if we need to add a new GUIElement or modify an existing one
+    std::pair<guiMap::iterator, bool > _resultGuiElement;
     CEGUI::Window* _rootSheet; //< gui root Window
     std::string _defaultGUIScheme;
     ShaderProgram* _guiShader;//<Used to apply color for text for now

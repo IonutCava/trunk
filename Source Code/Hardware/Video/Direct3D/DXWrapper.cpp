@@ -8,11 +8,11 @@
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
 I8 DX_API::initHardware(const vec2<U16>& resolution, I32 argc, char **argv){
-	PRINT_FN(Locale::get("START_D3D_API"));
-	D3D_ENUM_TABLE::fill();
-	//CEGUI::Direct3D10Renderer& renderer = CEGUI::Direct3D10Renderer::create( /*myD3D10Device*/NULL );
-	//GUI::getInstance().bindRenderer(renderer);
-	return DX_INIT_ERROR;
+    PRINT_FN(Locale::get("START_D3D_API"));
+    D3D_ENUM_TABLE::fill();
+    //CEGUI::Direct3D10Renderer& renderer = CEGUI::Direct3D10Renderer::create( /*myD3D10Device*/NULL );
+    //GUI::getInstance().bindRenderer(renderer);
+    return DX_INIT_ERROR;
 }
 
 void DX_API::exitRenderLoop(const bool killCommand)
@@ -39,7 +39,7 @@ void DX_API::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection)
 {
 }
 
-void DX_API::lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up) 
+void DX_API::lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up)
 {
 }
 
@@ -129,7 +129,7 @@ void DX_API::renderInstance(RenderInstance* const instance)
 
 void DX_API::renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform)
 {
-	vbo->DrawRange();
+    vbo->DrawRange();
 }
 
 void DX_API::initDevice(U32 targetFrameRate)
@@ -152,7 +152,7 @@ void DX_API::Screenshot(char *filename, const vec4<F32>& rect)
 
 RenderStateBlock* DX_API::newRenderStateBlock(const RenderStateBlockDescriptor& descriptor)
 {
-	return NULL;
+    return NULL;
 }
 
 void DX_API::updateStateInternal(RenderStateBlock* block, bool force)
@@ -161,11 +161,11 @@ void DX_API::updateStateInternal(RenderStateBlock* block, bool force)
 
 bool DX_API::loadInContext(const CurrentContext& context, boost::function0<void> callback)
 {
-	switch(context){
-		case GFX_RENDERING_CONTEXT:
-			break;
-		case GFX_LOADING_CONTEXT:
-			break;
-	};
-	return false;
+    switch(context){
+        case GFX_RENDERING_CONTEXT:
+            break;
+        case GFX_LOADING_CONTEXT:
+            break;
+    };
+    return false;
 }

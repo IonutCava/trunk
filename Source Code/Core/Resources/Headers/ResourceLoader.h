@@ -29,33 +29,33 @@ class Resource;
 class HardwareResource;
 class ResourceLoader : private boost::noncopyable {
 public:
-	ResourceLoader(const ResourceDescriptor& descriptor) : _descriptor(descriptor) {}
+    ResourceLoader(const ResourceDescriptor& descriptor) : _descriptor(descriptor) {}
 
-	virtual Resource* operator()() = 0;
+    virtual Resource* operator()() = 0;
 
 protected:
-	ResourceDescriptor _descriptor;
+    ResourceDescriptor _descriptor;
 };
 
 template<typename ResourceType>
 class ImplResourceLoader : public ResourceLoader {
 public:
-	ImplResourceLoader(const ResourceDescriptor& descriptor)  : ResourceLoader(descriptor) {}
-	ResourceType* operator()();
+    ImplResourceLoader(const ResourceDescriptor& descriptor)  : ResourceLoader(descriptor) {}
+    ResourceType* operator()();
 
 protected:
-	virtual bool load(ResourceType* const res, const std::string& name);
+    virtual bool load(ResourceType* const res, const std::string& name);
 };
 
 #define DEFAULT_LOADER_IMPL(X)	template<> \
-								bool ImplResourceLoader<X>::load(X* const res, const std::string& name){ \
+                                bool ImplResourceLoader<X>::load(X* const res, const std::string& name){ \
                                     res->setState(RES_LOADING); \
-									return ResourceCache::getInstance().load(res, name);\
-								}
+                                    return ResourceCache::getInstance().load(res, name);\
+                                }
 
 #define DEFAULT_HW_LOADER_IMPL(X) template<> \
-								  bool ImplResourceLoader<X>::load(X* const res, const std::string& name){ \
+                                  bool ImplResourceLoader<X>::load(X* const res, const std::string& name){ \
                                     res->setState(RES_LOADING); \
-  									return ResourceCache::getInstance().loadHW(res, name);\
-								  }
+                                    return ResourceCache::getInstance().loadHW(res, name);\
+                                  }
 #endif

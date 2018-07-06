@@ -54,27 +54,27 @@ struct ChunkGrassData{
 
 class TerrainChunk{
 public:
-	void Destroy();
-	I32 DrawGround(I8 lod,ShaderProgram* const program, VertexBufferObject* const vbo);
-	void DrawGrass(I8 lod, F32 d,U32 geometryIndex, Transform* const parentTransform);
-	void Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize);
+    void Destroy();
+    I32 DrawGround(I8 lod,ShaderProgram* const program, VertexBufferObject* const vbo);
+    void DrawGrass(I8 lod, F32 d,U32 geometryIndex, Transform* const parentTransform);
+    void Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize);
 
-	inline vectorImpl<U32>&			getIndiceArray(I8 lod)		   {return _indice[lod];}
+    inline vectorImpl<U32>&			getIndiceArray(I8 lod)		   {return _indice[lod];}
 
     ChunkGrassData& getGrassData() {return _grassData;}
-	void addObject(Mesh* obj);
-	void addTree(const vec4<F32>& pos,F32 scale, const FileData& tree,SceneGraphNode* parentNode);
+    void addObject(Mesh* obj);
+    void addTree(const vec4<F32>& pos,F32 scale, const FileData& tree,SceneGraphNode* parentNode);
 
-	TerrainChunk() {}
-	~TerrainChunk() {Destroy();}
-
-private:
-	void ComputeIndicesArray(I8 lod, U8 depth,const vec2<U32>& position,const vec2<U32>& heightMapSize);
+    TerrainChunk() {}
+    ~TerrainChunk() {Destroy();}
 
 private:
-	vectorImpl<U32> 	_indice[Config::TERRAIN_CHUNKS_LOD];
-	U16					_indOffsetW[Config::TERRAIN_CHUNKS_LOD];
-	U16  				_indOffsetH[Config::TERRAIN_CHUNKS_LOD];
+    void ComputeIndicesArray(I8 lod, U8 depth,const vec2<U32>& position,const vec2<U32>& heightMapSize);
+
+private:
+    vectorImpl<U32> 	_indice[Config::TERRAIN_CHUNKS_LOD];
+    U16					_indOffsetW[Config::TERRAIN_CHUNKS_LOD];
+    U16  				_indOffsetH[Config::TERRAIN_CHUNKS_LOD];
     ChunkGrassData      _grassData;
 };
 

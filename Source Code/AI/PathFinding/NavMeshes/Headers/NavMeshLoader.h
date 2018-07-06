@@ -3,19 +3,19 @@
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
    and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
    subject to the following conditions:
 
    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -49,92 +49,88 @@
 #include <functional>
 
 namespace Navigation {
+    // This struct contains the vertices and triangles in recast coords
+    class NavModelData {
+    public:
+        NavModelData() : _vertices(0),
+                         _vertexCount(0),
+                         _vertexCapacity(0),
+                         _normals(0),
+                         _triangleCount(0),
+                         _triangleCapacity(0),
+                         _triangles(0),
+                         _valid(false)
+        {
+        }
 
-	// This struct contains the vertices and triangles in recast coords
-	class NavModelData {
-
-	public:
-		NavModelData() : _vertices(0),
-						 _vertexCount(0),
-						 _vertexCapacity(0),
-						 _normals(0),
-						 _triangleCount(0),
-						 _triangleCapacity(0),
-						 _triangles(0),
-						 _valid(false)
-		{
-		}
-
-		void clear(bool del = true)  {
+        void clear(bool del = true)  {
             _valid = false;
 
-			_vertexCount = _triangleCount = 0;
-			_vertexCapacity = _vertexCount = 0;
-			_triangleCapacity = _triangleCount = 0;
+            _vertexCount = _triangleCount = 0;
+            _vertexCapacity = _vertexCount = 0;
+            _triangleCapacity = _triangleCount = 0;
 
-			if(del)	SAFE_DELETE_ARRAY(_vertices)
-			else	_vertices = 0;
-    		
-			if(del)	SAFE_DELETE_ARRAY(_triangles)
-			else    _triangles = 0;
-			
-			if(del)	SAFE_DELETE_ARRAY(_normals)
-			else _normals = 0;
+            if(del)	SAFE_DELETE_ARRAY(_vertices)
+            else	_vertices = 0;
+
+            if(del)	SAFE_DELETE_ARRAY(_triangles)
+            else    _triangles = 0;
+
+            if(del)	SAFE_DELETE_ARRAY(_normals)
+            else _normals = 0;
 
             _triangleAreaType.clear();
             _navMeshName = "";
-		}
+        }
 
-		inline bool  isValid()           const {return _valid;}
-		inline void  isValid(bool state)       {_valid = state;}
+        inline bool  isValid()           const {return _valid;}
+        inline void  isValid(bool state)       {_valid = state;}
 
         inline void  setName(const std::string& name)      {_navMeshName = name;}
         inline const std::string& getName()          const {return _navMeshName;}
 
-		inline const F32* getVerts()     const { return _vertices; }
-		inline const F32* getNormals()   const { return _normals; }
-		inline const I32* getTris()      const { return _triangles; }
-		inline       U32  getVertCount() const { return _vertexCount; }
-		inline       U32  getTriCount()  const { return _triangleCount; }
+        inline const F32* getVerts()     const { return _vertices; }
+        inline const F32* getNormals()   const { return _normals; }
+        inline const I32* getTris()      const { return _triangles; }
+        inline       U32  getVertCount() const { return _vertexCount; }
+        inline       U32  getTriCount()  const { return _triangleCount; }
 
         inline vectorImpl<SamplePolyAreas >& getAreaTypes() {return _triangleAreaType;}
-	
-		F32* _vertices;
-		F32* _normals;
-		I32* _triangles;
 
-		U32  _vertexCapacity;
-		U32  _vertexCount;
-		U32  _triangleCount;
-		U32  _triangleCapacity;
+        F32* _vertices;
+        F32* _normals;
+        I32* _triangles;
 
-	private:
+        U32  _vertexCapacity;
+        U32  _vertexCount;
+        U32  _triangleCount;
+        U32  _triangleCapacity;
+
+    private:
         bool _valid;
-		std::string _navMeshName;
-		vectorImpl<SamplePolyAreas > _triangleAreaType;
-	};
+        std::string _navMeshName;
+        vectorImpl<SamplePolyAreas > _triangleAreaType;
+    };
 
+    namespace NavigationMeshLoader {
+        enum MeshDetailLevel {
+            DETAIL_ABSOLUTE    = 0,
+            DETAIL_BOUNDINGBOX = 1
+        };
 
-	namespace NavigationMeshLoader {
+        ///Load the input geometry from file (Wavefront OBJ format) and save it in 'outData'
+        bool loadMeshFile(NavModelData& outData, const char* fileName);
+        ///Save the navigation input geometry in Wavefront OBJ format
+        bool saveMeshFile(const NavModelData& inData, const char* filename);
+        ///Merge the data from two navigation geometry sources
+        NavModelData mergeModels(NavModelData& a,NavModelData& b, bool delOriginals = false);
+        ///Parsing method that calls itself recursively untill all geometry has been parsed
+        bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn);
 
-		enum MeshDetailLevel {
-			DETAIL_ABSOLUTE    = 0,
-			DETAIL_BOUNDINGBOX = 1
-		};
-
-		///Load the input geometry from file (Wavefront OBJ format) and save it in 'outData'
-		bool loadMeshFile(NavModelData& outData, const char* fileName);
-		///Save the navigation input geometry in Wavefront OBJ format
-		bool saveMeshFile(const NavModelData& inData, const char* filename);
-		///Merge the data from two navigation geometry sources
-		NavModelData mergeModels(NavModelData& a,NavModelData& b, bool delOriginals = false);
-		///Parsing method that calls itself recursively untill all geometry has been parsed
-		bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn);
-
-		void addVertex(NavModelData* modelData, const vec3<F32>& vertex);
-		void addTriangle(NavModelData* modelData,const vec3<U32>& triangleIndices, U32 triangleIndexOffset = 0, const SamplePolyAreas& areaType = SAMPLE_POLYAREA_GROUND);
-		char* parseRow(char* buf, char* bufEnd, char* row, I32 len);
-		I32 parseFace(char* row, I32* data, I32 n, I32 vcnt);
-	};
+        void addVertex(NavModelData* modelData, const vec3<F32>& vertex);
+        void addTriangle(NavModelData* modelData,const vec3<U32>& triangleIndices, U32 triangleIndexOffset = 0, const SamplePolyAreas& areaType = SAMPLE_POLYAREA_GROUND);
+        char* parseRow(char* buf, char* bufEnd, char* row, I32 len);
+        I32 parseFace(char* row, I32* data, I32 n, I32 vcnt);
+    };
 };
 #endif

@@ -24,8 +24,8 @@
 #define _GUI_EDITOR_H_
 
 namespace CEGUI{
-	class Window;
-	class Font;
+    class Window;
+    class Font;
     class EventArgs;
 };
 
@@ -34,19 +34,19 @@ namespace CEGUI{
 
 ///Our world editor interface
 DEFINE_SINGLETON( GUIEditor )
-	public:
-		bool init();
-		void setVisible(bool visible); //< Hide or show the editor
+    public:
+        bool init();
+        void setVisible(bool visible); //< Hide or show the editor
         bool isVisible();              //< Return true if editor is visible, false if is hidden
-		bool tick(U32 deltaMsTime);    //< Used to update time dependent elements
-	private:
-		GUIEditor();
-		~GUIEditor();
-		void RegisterHandlers();       //< Register our handler functions
+        bool tick(U32 deltaMsTime);    //< Used to update time dependent elements
+    private:
+        GUIEditor();
+        ~GUIEditor();
+        void RegisterHandlers();       //< Register our handler functions
 
-	private:
-		bool _init;
-		CEGUI::Window *_editorWindow;  //< This will be a pointer to the EditorRoot window.
+    private:
+        bool _init;
+        CEGUI::Window *_editorWindow;  //< This will be a pointer to the EditorRoot window.
 
 END_SINGLETON
 

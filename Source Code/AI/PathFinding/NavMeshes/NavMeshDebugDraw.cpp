@@ -14,8 +14,8 @@ namespace Navigation {
     NavMeshDebugDraw::NavMeshDebugDraw() : _overrideColor(false), _dirty(true), _color(0), _primitive(NULL)
     {
         ///Generate a render state
-	    RenderStateBlockDescriptor navigationDebugDesc;
-    	navigationDebugDesc.setCullMode(CULL_MODE_NONE);
+        RenderStateBlockDescriptor navigationDebugDesc;
+        navigationDebugDesc.setCullMode(CULL_MODE_NONE);
         navigationDebugDesc.setBlend(true);
         _navMeshStateBlock = GFX_DEVICE.createStateBlock(navigationDebugDesc);
     }
@@ -23,8 +23,8 @@ namespace Navigation {
    NavMeshDebugDraw::~NavMeshDebugDraw()
    {
        SAFE_DELETE(_navMeshStateBlock);
-	   //Allow the primitive to be deleted
-	   _primitive->_canZombify = true;
+       //Allow the primitive to be deleted
+       _primitive->_canZombify = true;
    }
 
    void NavMeshDebugDraw::depthMask(bool state){
@@ -42,8 +42,8 @@ namespace Navigation {
    }
 
    void NavMeshDebugDraw::beginBatch(){
-	  if(!_primitive){
-		  _dirty = true;
+      if(!_primitive){
+          _dirty = true;
           _primitive = GFX_DEVICE.createPrimitive(false);
           _primitive->setRenderStates(DELEGATE_BIND(&NavMeshDebugDraw::prepareMaterial,this),
                                       DELEGATE_BIND(&NavMeshDebugDraw::releaseMaterial,this));
@@ -53,24 +53,24 @@ namespace Navigation {
    }
 
    void NavMeshDebugDraw::endBatch(){
-	  if(_dirty) { 
-		  _primitive->endBatch();
-		  _dirty = false;
-	  }
+      if(_dirty) {
+          _primitive->endBatch();
+          _dirty = false;
+      }
    }
 
    void NavMeshDebugDraw::begin(duDebugDrawPrimitives prim, F32 size){
-		if(!_dirty) return;
+        if(!_dirty) return;
 
-		switch(prim){
-			default : 
-		    case DU_DRAW_TRIS:   _primType = TRIANGLES;  break;
-			case DU_DRAW_POINTS: _primType = API_POINTS; break;
-			case DU_DRAW_LINES:  _primType = LINES;      break;
-			case DU_DRAW_QUADS:  _primType = QUADS;
-		}
-		
-		_primitive->attribute4ub("inColorData",vec4<U8>(255,255,255,128));
+        switch(prim){
+            default :
+            case DU_DRAW_TRIS:   _primType = TRIANGLES;  break;
+            case DU_DRAW_POINTS: _primType = API_POINTS; break;
+            case DU_DRAW_LINES:  _primType = LINES;      break;
+            case DU_DRAW_QUADS:  _primType = QUADS;
+        }
+
+        _primitive->attribute4ub("inColorData",vec4<U8>(255,255,255,128));
         _primitive->begin(_primType);
    }
 
@@ -79,13 +79,13 @@ namespace Navigation {
    }
 
    void NavMeshDebugDraw::vertex(const F32 x, const F32 y, const F32 z, U32 color){
-	   if(!_dirty) return;
+       if(!_dirty) return;
        if(_overrideColor)  color = _color;
 
        vec4<U8> colorVec;
        vec3<F32> vert(x,y,z);
        rcCol(color, colorVec.r, colorVec.g, colorVec.b, colorVec.a);
-	   colorVec.a = 64;
+       colorVec.a = 64;
 
        _primitive->attribute4ub("inColorData",colorVec);
        _primitive->vertex(vert);

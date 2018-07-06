@@ -65,11 +65,11 @@ static void __glsw__FreeList(glswList* pNode)
 
 static int glswClear(glswContext* gc)
 {
-	__glsw__FreeList(gc->ShaderMap);
-	__glsw__FreeList(gc->LoadedEffects);
-	gc->ShaderMap = NULL;
-	gc->LoadedEffects = NULL;
-	return 0;
+    __glsw__FreeList(gc->ShaderMap);
+    __glsw__FreeList(gc->LoadedEffects);
+    gc->ShaderMap = NULL;
+    gc->LoadedEffects = NULL;
+    return 0;
 }
 
 int glswInit()
@@ -98,9 +98,9 @@ int glswShutdown()
     bdestroy(gc->PathPrefix);
     bdestroy(gc->PathSuffix);
     bdestroy(gc->ErrorMessage);
-	glswClear(gc);
-	__glsw__FreeList(gc->TokenMap);
-	gc->TokenMap = NULL;
+    glswClear(gc);
+    __glsw__FreeList(gc->TokenMap);
+    gc->TokenMap = NULL;
     free(gc);
     __glsw__Context = 0;
 
@@ -138,8 +138,8 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
     {
         return 0;
     }else{
-		if(recompile)	glswClear(gc);
-	}
+        if(recompile)	glswClear(gc);
+    }
 
     // Extract the effect name from the effect key
     effectKey = bfromcstr(pEffectKey);
@@ -258,7 +258,7 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
                         gc->ShaderMap = (glswList*) calloc(sizeof(glswList), 1);
                         gc->ShaderMap->Key = bstrcpy(shaderKey);
                         gc->ShaderMap->Next = temp;
-						gc->ShaderMap->Value = bformat("#line %d\n", offset);
+                        gc->ShaderMap->Value = bformat("#line %d\n", offset);
 
                         binsertch(gc->ShaderMap->Key, 0, 1, '.');
                         binsert(gc->ShaderMap->Key, 0, effectName, '?');

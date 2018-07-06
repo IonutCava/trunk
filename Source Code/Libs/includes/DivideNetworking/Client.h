@@ -28,8 +28,8 @@ class Client
 public:
   Client(ASIO* asioPointer, boost::asio::io_service& io_service, bool debugOutput)
     : _asioPointer(asioPointer),
-	  stopped_(false),
-	  _debugOutput(debugOutput),
+      stopped_(false),
+      _debugOutput(debugOutput),
       socket_(io_service),
       deadline_(io_service),
       heartbeat_timer_(io_service)

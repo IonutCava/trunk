@@ -11,293 +11,293 @@ REGISTER_SCENE(PingPongScene);
 
 //begin copy-paste
 void PingPongScene::preRender(){
-	vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
-	_sunvector = vec3<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
-							-cosf(_sunAngle.y),
-							-sinf(_sunAngle.x) * sinf(_sunAngle.y));
+    vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+    _sunvector = vec3<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+                            -cosf(_sunAngle.y),
+                            -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-	LightManager::getInstance().getLight(0)->setPosition(_sunvector);
-	getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
+    LightManager::getInstance().getLight(0)->setPosition(_sunvector);
+    getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 //<<end copy-paste
 
 void PingPongScene::processTasks(const U32 time){
-	F32 FpsDisplay = 0.3f;
-	if (time - _taskTimers[0] >= FpsDisplay){
-		GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
-		_taskTimers[0] += FpsDisplay;
-	}
+    F32 FpsDisplay = 0.3f;
+    if (time - _taskTimers[0] >= FpsDisplay){
+        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
+        _taskTimers[0] += FpsDisplay;
+    }
 }
 
 void PingPongScene::resetGame(){
-	_directionTowardsAdversary = true;
-	_upwardsDirection = false;
-	_touchedAdversaryTableHalf = false;
-	_touchedOwnTableHalf = false;
-	_lost = false;
-	_sideDrift = 0;
-	clearTasks();
-	_ballSGN->getTransform()->setPosition(vec3<F32>(0, 2 ,2));
+    _directionTowardsAdversary = true;
+    _upwardsDirection = false;
+    _touchedAdversaryTableHalf = false;
+    _touchedOwnTableHalf = false;
+    _lost = false;
+    _sideDrift = 0;
+    clearTasks();
+    _ballSGN->getTransform()->setPosition(vec3<F32>(0, 2 ,2));
 }
 
 void PingPongScene::serveBall(){
-	GUI::getInstance().modifyText("insults","");
-	resetGame();
+    GUI::getInstance().modifyText("insults","");
+    resetGame();
 
-	if(getTasks().empty()){//A maximum of 1 Tasks allowed
-		Kernel* kernel = Application::getInstance().getKernel();
-		Task_ptr newGame(New Task(kernel->getThreadPool(),30,true,false,DELEGATE_BIND(&PingPongScene::test,this,rand() % 5,TYPE_INTEGER)));
-		addTask(newGame);
-	}
+    if(getTasks().empty()){//A maximum of 1 Tasks allowed
+        Kernel* kernel = Application::getInstance().getKernel();
+        Task_ptr newGame(New Task(kernel->getThreadPool(),30,true,false,DELEGATE_BIND(&PingPongScene::test,this,rand() % 5,TYPE_INTEGER)));
+        addTask(newGame);
+    }
 }
 
 void PingPongScene::test(boost::any a, CallbackParam b){
-	if(getTasks().empty()) return;
-	bool updated = false;
-	std::string message;
-	Transform* ballTransform = _ballSGN->getTransform();
-	vec3<F32> ballPosition  = ballTransform->getPosition();
+    if(getTasks().empty()) return;
+    bool updated = false;
+    std::string message;
+    Transform* ballTransform = _ballSGN->getTransform();
+    vec3<F32> ballPosition  = ballTransform->getPosition();
 
-	SceneGraphNode* table = _sceneGraph->findNode("table");
-	SceneGraphNode* net = _sceneGraph->findNode("net");
-	SceneGraphNode* opponent = _sceneGraph->findNode("opponent");
-	SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
-	vec3<F32> paddlePosition   = paddle->getTransform()->getPosition();
-	vec3<F32> opponentPosition = opponent->getTransform()->getPosition();
-	vec3<F32> tablePosition     = table->getTransform()->getPosition();
+    SceneGraphNode* table = _sceneGraph->findNode("table");
+    SceneGraphNode* net = _sceneGraph->findNode("net");
+    SceneGraphNode* opponent = _sceneGraph->findNode("opponent");
+    SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
+    vec3<F32> paddlePosition   = paddle->getTransform()->getPosition();
+    vec3<F32> opponentPosition = opponent->getTransform()->getPosition();
+    vec3<F32> tablePosition     = table->getTransform()->getPosition();
 
-	//Is the ball coming towards us or towards the opponent?
-	_directionTowardsAdversary ? ballPosition.z -= 0.11f : ballPosition.z += 0.11f;
-	//Up or down?
-	_upwardsDirection ? 	ballPosition.y += 0.084f : 	ballPosition.y -= 0.084f;
+    //Is the ball coming towards us or towards the opponent?
+    _directionTowardsAdversary ? ballPosition.z -= 0.11f : ballPosition.z += 0.11f;
+    //Up or down?
+    _upwardsDirection ? 	ballPosition.y += 0.084f : 	ballPosition.y -= 0.084f;
 
-	//Is the ball moving to the right or to the left?
-	ballPosition.x += _sideDrift*0.15f;
-	if(opponentPosition.x != ballPosition.x)
-		opponent->getTransform()->translateX(ballPosition.x - opponentPosition.x);
+    //Is the ball moving to the right or to the left?
+    ballPosition.x += _sideDrift*0.15f;
+    if(opponentPosition.x != ballPosition.x)
+        opponent->getTransform()->translateX(ballPosition.x - opponentPosition.x);
 
-	ballTransform->translate(ballPosition - ballTransform->getPosition());
+    ballTransform->translate(ballPosition - ballTransform->getPosition());
 
-	//Did we hit the table? Bounce then ...
-	if(table->getBoundingBox().Collision(_ballSGN->getBoundingBox())){
-		if(ballPosition.z > tablePosition.z){
-			_touchedOwnTableHalf = true;
-			_touchedAdversaryTableHalf = false;
-		}else{
-			_touchedOwnTableHalf = false;
-			_touchedAdversaryTableHalf = true;
-		}
-		_upwardsDirection = true;
-	}
-	//Kinetic  energy depletion
-	if(ballPosition.y > 2.1f) _upwardsDirection = false;
+    //Did we hit the table? Bounce then ...
+    if(table->getBoundingBox().Collision(_ballSGN->getBoundingBox())){
+        if(ballPosition.z > tablePosition.z){
+            _touchedOwnTableHalf = true;
+            _touchedAdversaryTableHalf = false;
+        }else{
+            _touchedOwnTableHalf = false;
+            _touchedAdversaryTableHalf = true;
+        }
+        _upwardsDirection = true;
+    }
+    //Kinetic  energy depletion
+    if(ballPosition.y > 2.1f) _upwardsDirection = false;
 
-	//Did we hit the paddle?
-	if(_ballSGN->getBoundingBox().Collision(paddle->getBoundingBox())){
-		_sideDrift = ballPosition.x - paddlePosition.x;
-		//If we hit the ball with the upper margin of the paddle, add a slight impuls to the ball
-		if(ballPosition.y >= paddlePosition.y) ballPosition.z -= 0.12f;
+    //Did we hit the paddle?
+    if(_ballSGN->getBoundingBox().Collision(paddle->getBoundingBox())){
+        _sideDrift = ballPosition.x - paddlePosition.x;
+        //If we hit the ball with the upper margin of the paddle, add a slight impuls to the ball
+        if(ballPosition.y >= paddlePosition.y) ballPosition.z -= 0.12f;
 
-		_directionTowardsAdversary = true;
-	}
-
-	if(ballPosition.y + 0.75f < table->getBoundingBox().getMax().y){
-		//If we hit the ball and it landed on the opponent's table half
-		//Or if the opponent hit the ball and it landed on our table half
-		if((_touchedAdversaryTableHalf && _directionTowardsAdversary) ||
-		   (!_directionTowardsAdversary && !_touchedOwnTableHalf))
-			_lost = false;
-		else
-			_lost = true;
-
-		updated = true;
-	}
-	//Did we win or lose?
-	if(ballPosition.z >= paddlePosition.z){
-		_lost = true;
-		updated = true;
-	}
-	if(ballPosition.z <= opponentPosition.z){
-		_lost = false;
-		updated = true;
-	}
-
-	if(_ballSGN->getBoundingBox().Collision(net->getBoundingBox())){
-		if(_directionTowardsAdversary){
-			//Did we hit the net?
-			_lost = true;
-		}else{
-			//Did the opponent hit the net?
-			_lost = false;
-		}
-		updated = true;
+        _directionTowardsAdversary = true;
     }
 
-	//Did we hit the opponent? Then change ball direction ... BUT ...
-	//Add a small chance that we win
-	if(random(30) != 2)
-	if(_ballSGN->getBoundingBox().Collision(opponent->getBoundingBox())){
-		_sideDrift = ballPosition.x - opponent->getTransform()->getPosition().x;
-		_directionTowardsAdversary = false;
-	}
-	//Add a spin effect to the ball
-	ballTransform->rotateEuler(vec3<F32>(ballPosition.z,1,1));
+    if(ballPosition.y + 0.75f < table->getBoundingBox().getMax().y){
+        //If we hit the ball and it landed on the opponent's table half
+        //Or if the opponent hit the ball and it landed on our table half
+        if((_touchedAdversaryTableHalf && _directionTowardsAdversary) ||
+           (!_directionTowardsAdversary && !_touchedOwnTableHalf))
+            _lost = false;
+        else
+            _lost = true;
 
-	if(updated){
-		if(_lost){
-			message = "You lost!";
-			_score--;
+        updated = true;
+    }
+    //Did we win or lose?
+    if(ballPosition.z >= paddlePosition.z){
+        _lost = true;
+        updated = true;
+    }
+    if(ballPosition.z <= opponentPosition.z){
+        _lost = false;
+        updated = true;
+    }
 
-			if(b == TYPE_INTEGER){
-				I32 quote = boost::any_cast<I32>(a);
-				if(_score % 3 == 0 ) GUI::getInstance().modifyText("insults",(char*)_quotes[quote].c_str());
-			}
-		}else{
-			message = "You won!";
-			_score++;
-		}
+    if(_ballSGN->getBoundingBox().Collision(net->getBoundingBox())){
+        if(_directionTowardsAdversary){
+            //Did we hit the net?
+            _lost = true;
+        }else{
+            //Did the opponent hit the net?
+            _lost = false;
+        }
+        updated = true;
+    }
 
-		GUI::getInstance().modifyText("Score","Score: %d",_score);
-		GUI::getInstance().modifyText("Message",(char*)message.c_str());
-		resetGame();
-	}
+    //Did we hit the opponent? Then change ball direction ... BUT ...
+    //Add a small chance that we win
+    if(random(30) != 2)
+    if(_ballSGN->getBoundingBox().Collision(opponent->getBoundingBox())){
+        _sideDrift = ballPosition.x - opponent->getTransform()->getPosition().x;
+        _directionTowardsAdversary = false;
+    }
+    //Add a spin effect to the ball
+    ballTransform->rotateEuler(vec3<F32>(ballPosition.z,1,1));
+
+    if(updated){
+        if(_lost){
+            message = "You lost!";
+            _score--;
+
+            if(b == TYPE_INTEGER){
+                I32 quote = boost::any_cast<I32>(a);
+                if(_score % 3 == 0 ) GUI::getInstance().modifyText("insults",(char*)_quotes[quote].c_str());
+            }
+        }else{
+            message = "You won!";
+            _score++;
+        }
+
+        GUI::getInstance().modifyText("Score","Score: %d",_score);
+        GUI::getInstance().modifyText("Message",(char*)message.c_str());
+        resetGame();
+    }
 }
 
 void PingPongScene::processInput(){
-	//Move FB = Forward/Back = up/down
-	//Move LR = Left/Right
-	static F32 paddleMovementDivisor = 10;
-	//Camera controls
-	if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
-	if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
+    //Move FB = Forward/Back = up/down
+    //Move LR = Left/Right
+    static F32 paddleMovementDivisor = 10;
+    //Camera controls
+    if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
+    if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
 
-	SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
+    SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
 
-	vec3<F32> pos = paddle->getTransform()->getPosition();
+    vec3<F32> pos = paddle->getTransform()->getPosition();
 
-	//Paddle movement is limited to the [-3,3] range except for Y-descent
-	if(state()._moveFB){
-		if((state()._moveFB > 0 && pos.y >= 3) || (state()._moveFB < 0 && pos.y <= 0.5f)) return;
-		paddle->getTransform()->translateY(state()._moveFB / paddleMovementDivisor);
-	}
+    //Paddle movement is limited to the [-3,3] range except for Y-descent
+    if(state()._moveFB){
+        if((state()._moveFB > 0 && pos.y >= 3) || (state()._moveFB < 0 && pos.y <= 0.5f)) return;
+        paddle->getTransform()->translateY(state()._moveFB / paddleMovementDivisor);
+    }
 
-	if(state()._moveLR){
-		//Left/right movement is flipped for proper control
-		if((state()._moveLR < 0 && pos.x >= 3) || (state()._moveLR > 0 && pos.x <= -3)) return;
-		paddle->getTransform()->translateX(state()._moveLR / paddleMovementDivisor);
-	}
+    if(state()._moveLR){
+        //Left/right movement is flipped for proper control
+        if((state()._moveLR < 0 && pos.x >= 3) || (state()._moveLR > 0 && pos.x <= -3)) return;
+        paddle->getTransform()->translateX(state()._moveLR / paddleMovementDivisor);
+    }
 }
 
 bool PingPongScene::load(const std::string& name, CameraManager* const cameraMgr){
-	//Load scene resources
-	bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
-	//Add a light
-	addDefaultLight();
-	addDefaultSky();
-	//Position the camera
-	renderState().getCamera().setPitch(-90);
-	renderState().getCamera().setEye(vec3<F32>(0,2.5f,6.5f));
+    //Load scene resources
+    bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
+    //Add a light
+    addDefaultLight();
+    addDefaultSky();
+    //Position the camera
+    renderState().getCamera().setPitch(-90);
+    renderState().getCamera().setEye(vec3<F32>(0,2.5f,6.5f));
 
-	return loadState;
+    return loadState;
 }
 
 bool PingPongScene::loadResources(bool continueOnErrors){
-	//Create a ball
-	ResourceDescriptor minge("Ping Pong Ball");
-	_ball = CreateResource<Sphere3D>(minge);
-	_ballSGN = addGeometry(_ball,"PingPongBallSGN");
-	_ball->setResolution(16);
-	_ball->setRadius(0.1f);
-	_ballSGN->getTransform()->translate(vec3<F32>(0, 2 ,2));
-	_ball->getMaterial()->setDiffuse(vec4<F32>(0.4f,0.4f,0.4f,1.0f));
-	_ball->getMaterial()->setAmbient(vec4<F32>(0.25f,0.25f,0.25f,1.0f));
-	_ball->getMaterial()->setShininess(36.8f);
-	_ball->getMaterial()->setSpecular(vec4<F32>(0.774597f,0.774597f,0.774597f,1.0f));
+    //Create a ball
+    ResourceDescriptor minge("Ping Pong Ball");
+    _ball = CreateResource<Sphere3D>(minge);
+    _ballSGN = addGeometry(_ball,"PingPongBallSGN");
+    _ball->setResolution(16);
+    _ball->setRadius(0.1f);
+    _ballSGN->getTransform()->translate(vec3<F32>(0, 2 ,2));
+    _ball->getMaterial()->setDiffuse(vec4<F32>(0.4f,0.4f,0.4f,1.0f));
+    _ball->getMaterial()->setAmbient(vec4<F32>(0.25f,0.25f,0.25f,1.0f));
+    _ball->getMaterial()->setShininess(36.8f);
+    _ball->getMaterial()->setSpecular(vec4<F32>(0.774597f,0.774597f,0.774597f,1.0f));
 
-	ResourceDescriptor tempLight("Light Omni");
-	tempLight.setId(2);
-	tempLight.setEnumValue(LIGHT_TYPE_POINT);
-	Light* light = CreateResource<Light>(tempLight);
-	light->setRange(30);
-	light->setCastShadows(false);
-	light->setPosition(vec3<F32>(0, 6 ,2));
-	_sceneGraph->getRoot()->addNode(light);
-	addLight(light);
-	//Buttons and text labels
-	GUI::getInstance().addButton("Serve", "Serve", vec2<I32>(renderState().cachedResolution().width-120 ,
-															 renderState().cachedResolution().height/1.1f),
-													    	 vec2<U32>(100,25),vec3<F32>(0.65f),
-															 DELEGATE_BIND(&PingPongScene::serveBall,this));
+    ResourceDescriptor tempLight("Light Omni");
+    tempLight.setId(2);
+    tempLight.setEnumValue(LIGHT_TYPE_POINT);
+    Light* light = CreateResource<Light>(tempLight);
+    light->setRange(30);
+    light->setCastShadows(false);
+    light->setPosition(vec3<F32>(0, 6 ,2));
+    _sceneGraph->getRoot()->addNode(light);
+    addLight(light);
+    //Buttons and text labels
+    GUI::getInstance().addButton("Serve", "Serve", vec2<I32>(renderState().cachedResolution().width-120 ,
+                                                             renderState().cachedResolution().height/1.1f),
+                                                             vec2<U32>(100,25),vec3<F32>(0.65f),
+                                                             DELEGATE_BIND(&PingPongScene::serveBall,this));
 
-	GUI::getInstance().addText("Score",vec2<I32>(renderState().cachedResolution().width - 120, renderState().cachedResolution().height/1.3f),
-							    Font::DIVIDE_DEFAULT,vec3<F32>(1,0,0), "Score: %d",0);
+    GUI::getInstance().addText("Score",vec2<I32>(renderState().cachedResolution().width - 120, renderState().cachedResolution().height/1.3f),
+                                Font::DIVIDE_DEFAULT,vec3<F32>(1,0,0), "Score: %d",0);
 
-	GUI::getInstance().addText("Message",vec2<I32>(renderState().cachedResolution().width - 120, renderState().cachedResolution().height/1.5f),
-							    Font::DIVIDE_DEFAULT,vec3<F32>(1,0,0), "");
-	GUI::getInstance().addText("insults",vec2<I32>(renderState().cachedResolution().width/4, renderState().cachedResolution().height/3),
-							    Font::DIVIDE_DEFAULT,vec3<F32>(0,1,0), "");
-	GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec2<I32>(60,60),          //Position
-							    Font::DIVIDE_DEFAULT,    //Font
-							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
-							   "FPS: %s",0);    //Text and arguments
-	//Add some taunts
-	_quotes.push_back("Ha ha ... even Odin's laughin'!");
-	_quotes.push_back("If you're a ping-pong player, I'm Jimmy Page");
-	_quotes.push_back("Ooolee, ole ole ole, see the ball? ... It's past your end");
-	_quotes.push_back("You're lucky the room's empty. I'd be so ashamed otherwise if I were you");
-	_quotes.push_back("It's not the hard. Even a monkey can do it.");
+    GUI::getInstance().addText("Message",vec2<I32>(renderState().cachedResolution().width - 120, renderState().cachedResolution().height/1.5f),
+                                Font::DIVIDE_DEFAULT,vec3<F32>(1,0,0), "");
+    GUI::getInstance().addText("insults",vec2<I32>(renderState().cachedResolution().width/4, renderState().cachedResolution().height/3),
+                                Font::DIVIDE_DEFAULT,vec3<F32>(0,1,0), "");
+    GUI::getInstance().addText("fpsDisplay",           //Unique ID
+                               vec2<I32>(60,60),          //Position
+                                Font::DIVIDE_DEFAULT,    //Font
+                               vec3<F32>(0.0f,0.2f, 1.0f),  //Color
+                               "FPS: %s",0);    //Text and arguments
+    //Add some taunts
+    _quotes.push_back("Ha ha ... even Odin's laughin'!");
+    _quotes.push_back("If you're a ping-pong player, I'm Jimmy Page");
+    _quotes.push_back("Ooolee, ole ole ole, see the ball? ... It's past your end");
+    _quotes.push_back("You're lucky the room's empty. I'd be so ashamed otherwise if I were you");
+    _quotes.push_back("It's not the hard. Even a monkey can do it.");
 
-	_taskTimers.push_back(0.0f); //Fps
-	_taskTimers.push_back(0.0f); //Light
-	return true;
+    _taskTimers.push_back(0.0f); //Fps
+    _taskTimers.push_back(0.0f); //Light
+    return true;
 }
 
 void PingPongScene::onKeyDown(const OIS::KeyEvent& key){
-	Scene::onKeyDown(key);
-	switch(key.key){
-		default: break;
-		case OIS::KC_W: state()._moveFB =  1; break;
-		case OIS::KC_A:	state()._moveLR = -1; break;
-		case OIS::KC_S:	state()._moveFB = -1; break;
-		case OIS::KC_D:	state()._moveLR =  1; break;
-	}
+    Scene::onKeyDown(key);
+    switch(key.key){
+        default: break;
+        case OIS::KC_W: state()._moveFB =  1; break;
+        case OIS::KC_A:	state()._moveLR = -1; break;
+        case OIS::KC_S:	state()._moveFB = -1; break;
+        case OIS::KC_D:	state()._moveLR =  1; break;
+    }
 }
 
 void PingPongScene::onKeyUp(const OIS::KeyEvent& key){
-	Scene::onKeyUp(key);
-	switch(key.key)	{
-		default: break;
-		case OIS::KC_W:
-		case OIS::KC_S:	state()._moveFB = 0; break;
-		case OIS::KC_A:
-		case OIS::KC_D:	state()._moveLR = 0; break;
-	}
+    Scene::onKeyUp(key);
+    switch(key.key)	{
+        default: break;
+        case OIS::KC_W:
+        case OIS::KC_S:	state()._moveFB = 0; break;
+        case OIS::KC_A:
+        case OIS::KC_D:	state()._moveLR = 0; break;
+    }
 }
 
 void PingPongScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
-	Scene::onJoystickMovePOV(key,pov);
-	if( key.state.mPOV[pov].direction & OIS::Pov::North ) //Going up
-		state()._moveFB = 1;
-	else if( key.state.mPOV[pov].direction & OIS::Pov::South ) //Going down
-		state()._moveFB = -1;
+    Scene::onJoystickMovePOV(key,pov);
+    if( key.state.mPOV[pov].direction & OIS::Pov::North ) //Going up
+        state()._moveFB = 1;
+    else if( key.state.mPOV[pov].direction & OIS::Pov::South ) //Going down
+        state()._moveFB = -1;
 
-	if( key.state.mPOV[pov].direction & OIS::Pov::East ) //Going right
-		state()._moveLR = 1;
+    if( key.state.mPOV[pov].direction & OIS::Pov::East ) //Going right
+        state()._moveLR = 1;
 
-	else if( key.state.mPOV[pov].direction & OIS::Pov::West ) //Going left
-		state()._moveLR = -1;
+    else if( key.state.mPOV[pov].direction & OIS::Pov::West ) //Going left
+        state()._moveLR = -1;
 
-	if( key.state.mPOV[pov].direction == OIS::Pov::Centered ){ //stopped/centered out
-		state()._moveLR = 0;
-		state()._moveFB = 0;
-	}
+    if( key.state.mPOV[pov].direction == OIS::Pov::Centered ){ //stopped/centered out
+        state()._moveLR = 0;
+        state()._moveFB = 0;
+    }
 }
 
 void PingPongScene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone){
-	Scene::onJoystickMoveAxis(key,axis,deadZone);
+    Scene::onJoystickMoveAxis(key,axis,deadZone);
 }
 
 void PingPongScene::onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){
-	if(button == 0 && key.device->getID() != InputInterface::JOY_1)  serveBall();
+    if(button == 0 && key.device->getID() != InputInterface::JOY_1)  serveBall();
 }

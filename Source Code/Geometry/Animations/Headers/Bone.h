@@ -21,7 +21,7 @@
  */
 
 /*Code references:
-	http://nolimitsdesigns.com/game-design/open-asset-import-library-animation-loader/
+    http://nolimitsdesigns.com/game-design/open-asset-import-library-animation-loader/
 */
 
 #ifndef BONE_H_
@@ -32,20 +32,20 @@
 class Bone {
 public:
 
-	std::string _name;
+    std::string _name;
 
-	aiMatrix4x4 _offsetMatrix;
-	aiMatrix4x4 _localTransform;
-	aiMatrix4x4 _globalTransform;
-	aiMatrix4x4 _originalLocalTransform;
+    aiMatrix4x4 _offsetMatrix;
+    aiMatrix4x4 _localTransform;
+    aiMatrix4x4 _globalTransform;
+    aiMatrix4x4 _originalLocalTransform;
 
-	Bone* _parent;
-	vectorImpl<Bone*> _children;
+    Bone* _parent;
+    vectorImpl<Bone*> _children;
 
     //index in the current animation's channel array.
-	Bone(const std::string& name) : _name(name), _parent(0){}
-	Bone() : _parent(0){ }
-	~Bone(){SAFE_DELETE_vector(_children); }
+    Bone(const std::string& name) : _name(name), _parent(0){}
+    Bone() : _parent(0){ }
+    ~Bone(){SAFE_DELETE_vector(_children); }
 };
 
 #endif

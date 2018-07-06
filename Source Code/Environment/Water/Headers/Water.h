@@ -36,70 +36,70 @@ typedef Texture Texture2D;
 
 class WaterPlane : public SceneNode, public Reflector{
 public:
-	WaterPlane();
-	~WaterPlane(){}
+    WaterPlane();
+    ~WaterPlane(){}
 
-	/// Resource inherited "unload"
-	bool unload();
+    /// Resource inherited "unload"
+    bool unload();
 
-	/// General SceneNode stuff
-	void onDraw(const RenderStage& currentStage);
+    /// General SceneNode stuff
+    void onDraw(const RenderStage& currentStage);
     void postDraw(const RenderStage& currentStage);
-	void render(SceneGraphNode* const sgn);
-	void postLoad(SceneGraphNode* const sgn);
-	void prepareMaterial(SceneGraphNode* const sgn);
-	void releaseMaterial();
+    void render(SceneGraphNode* const sgn);
+    void postLoad(SceneGraphNode* const sgn);
+    void prepareMaterial(SceneGraphNode* const sgn);
+    void releaseMaterial();
     void prepareDepthMaterial(SceneGraphNode* const sgn){}
     void releaseDepthMaterial(){}
-	bool getDrawState(const RenderStage& currentStage)  const;
+    bool getDrawState(const RenderStage& currentStage)  const;
 
-	bool isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
+    bool isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
 
-	void setParams(F32 shininess, const vec2<F32>& noiseTile, const vec2<F32>& noiseFactor, F32 transparency);
-	inline Quad3D*     getQuad()    {return _plane;}
+    void setParams(F32 shininess, const vec2<F32>& noiseTile, const vec2<F32>& noiseFactor, F32 transparency);
+    inline Quad3D*     getQuad()    {return _plane;}
 
-	/// Reflector overwrite
-	void updateReflection();
-	void updatePlaneEquation();
-	/// Used for many things, such as culling switches, and underwater effects
-	inline bool isPointUnderWater(const vec3<F32>& pos) { return (pos.y < _waterLevel); }
+    /// Reflector overwrite
+    void updateReflection();
+    void updatePlaneEquation();
+    /// Used for many things, such as culling switches, and underwater effects
+    inline bool isPointUnderWater(const vec3<F32>& pos) { return (pos.y < _waterLevel); }
 
 protected:
-	template<typename T>
-	friend class ImplResourceLoader;
-	inline void setWaterNormalMap(Texture2D* const waterNM){_texture = waterNM;}
-	inline void setShaderProgram(ShaderProgram* const shaderProg){_shader = shaderProg;}
-	inline void setGeometry(Quad3D* const waterPlane){_plane = waterPlane;}
+    template<typename T>
+    friend class ImplResourceLoader;
+    inline void setWaterNormalMap(Texture2D* const waterNM){_texture = waterNM;}
+    inline void setShaderProgram(ShaderProgram* const shaderProg){_shader = shaderProg;}
+    inline void setGeometry(Quad3D* const waterPlane){_plane = waterPlane;}
 
 private:
-	/// Bounding Box computation overwrite from SceneNode
-	bool computeBoundingBox(SceneGraphNode* const sgn);
+    /// Bounding Box computation overwrite from SceneNode
+    bool computeBoundingBox(SceneGraphNode* const sgn);
 
 private:
-	/// number of lights in the scene
-	U8                 _lightCount;
-	/// the hw clip-plane index for the water
-	I32                _clippingPlaneID;
-	/// cached far plane value
-	F32				   _farPlane;
-	/// cached water level
-	F32                _waterLevel;
-	/// cached water depth
-	F32                _waterDepth;
-	/// Last known camera position
-	vec3<F32>          _eyePos;
-	/// Camera's position delta from the previous frame only on the XY plane
-	vec2<F32>          _eyeDiff;
-	/// The plane's transformed normal
-	vec3<F32>          _absNormal;
-	/// the water's "geometry"
-	Quad3D*			   _plane;
-	Texture2D*		   _texture;
-	ShaderProgram* 	   _shader;
-	Transform*         _planeTransform;
-	SceneGraphNode*    _node;
-	SceneGraphNode*    _planeSGN;
-	bool               _reflectionRendering;
+    /// number of lights in the scene
+    U8                 _lightCount;
+    /// the hw clip-plane index for the water
+    I32                _clippingPlaneID;
+    /// cached far plane value
+    F32				   _farPlane;
+    /// cached water level
+    F32                _waterLevel;
+    /// cached water depth
+    F32                _waterDepth;
+    /// Last known camera position
+    vec3<F32>          _eyePos;
+    /// Camera's position delta from the previous frame only on the XY plane
+    vec2<F32>          _eyeDiff;
+    /// The plane's transformed normal
+    vec3<F32>          _absNormal;
+    /// the water's "geometry"
+    Quad3D*			   _plane;
+    Texture2D*		   _texture;
+    ShaderProgram* 	   _shader;
+    Transform*         _planeTransform;
+    SceneGraphNode*    _node;
+    SceneGraphNode*    _planeSGN;
+    bool               _reflectionRendering;
 };
 
 #endif

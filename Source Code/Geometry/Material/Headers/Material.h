@@ -56,48 +56,48 @@ public:
     };
 
   enum BumpMethod {
-	  BUMP_NONE = 0,   //<Use phong
-	  BUMP_NORMAL = 1, //<Normal mapping
-	  BUMP_PARALLAX = 2,
-	  BUMP_RELIEF = 3,
-	  BUMP_PLACEHOLDER = 4
+      BUMP_NONE = 0,   //<Use phong
+      BUMP_NORMAL = 1, //<Normal mapping
+      BUMP_PARALLAX = 2,
+      BUMP_RELIEF = 3,
+      BUMP_PLACEHOLDER = 4
   };
 
   enum TextureUsage {
-	  TEXTURE_NORMALMAP = 0,
-	  TEXTURE_OPACITY = 1,
-	  TEXTURE_SPECULAR = 2,
-	  TEXTURE_UNIT0 = 3
+      TEXTURE_NORMALMAP = 0,
+      TEXTURE_OPACITY = 1,
+      TEXTURE_SPECULAR = 2,
+      TEXTURE_UNIT0 = 3
   };
 
   /// How should each texture be added
   enum TextureOperation {
-	TextureOperation_Multiply    = 0x0,
-	TextureOperation_Add         = 0x1,
-	TextureOperation_Subtract    = 0x2,
-	TextureOperation_Divide      = 0x3,
-	TextureOperation_SmoothAdd   = 0x4,
-	TextureOperation_SignedAdd   = 0x5,
-	TextureOperation_Combine     = 0x6,
-	TextureOperation_Decal       = 0x7,
-	TextureOperation_Blend       = 0x8,
-	TextureOperation_Replace     = 0x9,
-	TextureOperation_PLACEHOLDER = 0x10
+    TextureOperation_Multiply    = 0x0,
+    TextureOperation_Add         = 0x1,
+    TextureOperation_Subtract    = 0x2,
+    TextureOperation_Divide      = 0x3,
+    TextureOperation_SmoothAdd   = 0x4,
+    TextureOperation_SignedAdd   = 0x5,
+    TextureOperation_Combine     = 0x6,
+    TextureOperation_Decal       = 0x7,
+    TextureOperation_Blend       = 0x8,
+    TextureOperation_Replace     = 0x9,
+    TextureOperation_PLACEHOLDER = 0x10
   };
 
   /// Not used yet but implemented for shading model selection in shaders
   /// This enum matches the ASSIMP one on a 1-to-1 basis
   enum ShadingMode {
-	SHADING_FLAT          = 0x1,
+    SHADING_FLAT          = 0x1,
     SHADING_GOURAUD       = 0x2,
-	SHADING_PHONG         = 0x3,
-	SHADING_BLINN         = 0x4,
-	SHADING_TOON          = 0x5,
+    SHADING_PHONG         = 0x3,
+    SHADING_BLINN         = 0x4,
+    SHADING_TOON          = 0x5,
     SHADING_OREN_NAYAR    = 0x6,
-	SHADING_MINNAERT      = 0x7,
+    SHADING_MINNAERT      = 0x7,
     SHADING_COOK_TORRANCE = 0x8,
-	SHADING_NONE          = 0x9,
-	SHADING_FRESNEL       = 0xa
+    SHADING_NONE          = 0x9,
+    SHADING_FRESNEL       = 0xa
   };
 
 public:
@@ -113,7 +113,7 @@ public:
   inline void setEmissive(const vec3<F32>& value)       {_dirty = true; _shaderData._emissive = value; _materialMatrix.setCol(3,vec4<F32>(_shaderData._shininess,value.x,value.y,value.z));}
   inline void setOpacity(F32 value)                     {_dirty = true;  _shaderData._opacity = value;}
   inline void setShininess(F32 value) {
-	  _dirty = true;
+      _dirty = true;
       _shaderData._shininess = value;
       _materialMatrix.setCol(3,vec4<F32>(value,
                                          _shaderData._emissive.x,
@@ -122,35 +122,35 @@ public:
   }
 
  inline void setShadingMode(const ShadingMode& mode) {_shadingMode = mode;}
-		void setCastsShadows(const bool state);
-		void setReceivesShadows(const bool state);
-  		void setDoubleSided(const bool state);
-		void setTexture(U32 textureUsageSlot,
-					    Texture2D* const texture,
-				        const TextureOperation& op = TextureOperation_Replace);
-		///Set the desired bump mapping method. If force == true, the shader is updated immediately
-		void setBumpMethod(const BumpMethod& newBumpMethod,const bool force = false);
-		void setBumpMethod(U32 newBumpMethod,const bool force = false);
-		///Shader modifiers add tokens to the end of the shader name.
-		///Add as many tokens as needed but separate them with a ".". i.e: "Tree.NoWind.Glow"
-		void addShaderModifier(const std::string& shaderModifier,const bool force = false);
-		///Shader defines, separated by commas, are added to the generated shader
-		///The shader generator appends "#define " to the start of each define
-		///For example, to define max light count and max shadow casters add this string:
-		///"MAX_LIGHT_COUNT 4, MAX_SHADOW_CASTERS 2"
-		///The above strings becomes, in the shader:
-		///#define MAX_LIGHT COUNT 4
-		///#define MAX_SHADOW_CASTERS 2
-		void addShaderDefines(U8 shaderId, const std::string& shaderDefines,const bool force = false);
-		inline void addShaderDefines(const std::string& shaderDefines,const bool force = false)	{
-			addShaderDefines(0, shaderDefines,force);
-			addShaderDefines(1, shaderDefines,force);
-		}
+        void setCastsShadows(const bool state);
+        void setReceivesShadows(const bool state);
+        void setDoubleSided(const bool state);
+        void setTexture(U32 textureUsageSlot,
+                        Texture2D* const texture,
+                        const TextureOperation& op = TextureOperation_Replace);
+        ///Set the desired bump mapping method. If force == true, the shader is updated immediately
+        void setBumpMethod(const BumpMethod& newBumpMethod,const bool force = false);
+        void setBumpMethod(U32 newBumpMethod,const bool force = false);
+        ///Shader modifiers add tokens to the end of the shader name.
+        ///Add as many tokens as needed but separate them with a ".". i.e: "Tree.NoWind.Glow"
+        void addShaderModifier(const std::string& shaderModifier,const bool force = false);
+        ///Shader defines, separated by commas, are added to the generated shader
+        ///The shader generator appends "#define " to the start of each define
+        ///For example, to define max light count and max shadow casters add this string:
+        ///"MAX_LIGHT_COUNT 4, MAX_SHADOW_CASTERS 2"
+        ///The above strings becomes, in the shader:
+        ///#define MAX_LIGHT COUNT 4
+        ///#define MAX_SHADOW_CASTERS 2
+        void addShaderDefines(U8 shaderId, const std::string& shaderDefines,const bool force = false);
+        inline void addShaderDefines(const std::string& shaderDefines,const bool force = false)	{
+            addShaderDefines(0, shaderDefines,force);
+            addShaderDefines(1, shaderDefines,force);
+        }
 
-		///toggle multi-threaded shader loading on or off for this material
-		inline void setShaderLoadThreaded(const bool state) {_shaderThreadedLoad = state;}
-		ShaderProgram*    setShaderProgram(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE);
-	    RenderStateBlock* setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage);
+        ///toggle multi-threaded shader loading on or off for this material
+        inline void setShaderLoadThreaded(const bool state) {_shaderThreadedLoad = state;}
+        ShaderProgram*    setShaderProgram(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE);
+        RenderStateBlock* setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage);
 
   inline const mat4<F32>& getMaterialMatrix()  const {return _materialMatrix;}
 
@@ -165,7 +165,7 @@ public:
          ShaderProgram*    const getShaderProgram(RenderStage renderStage = FINAL_STAGE);
 
   inline const TextureOperation& getTextureOperation(U32 textureUsage)   const {
-	  return _operations[textureUsage >= TEXTURE_UNIT0 ? textureUsage - TEXTURE_UNIT0 : 0];
+      return _operations[textureUsage >= TEXTURE_UNIT0 ? textureUsage - TEXTURE_UNIT0 : 0];
   }
 
   inline const ShaderData&       getShaderData()                         const {return _shaderData;}

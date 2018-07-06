@@ -10,7 +10,7 @@
 
 //! Do not remove the following license without express permission granted bu DIVIDE-Studio
 void Console::printCopyrightNotice() const {
-	std::cout << "------------------------------------------------------------------------------" << std::endl;
+    std::cout << "------------------------------------------------------------------------------" << std::endl;
     std::cout << "Copyright (c) 2013 DIVIDE-Studio" << std::endl;
     std::cout << "Copyright (c) 2009 Ionut Cava" << std::endl;
     std::cout << std::endl;
@@ -30,118 +30,118 @@ void Console::printCopyrightNotice() const {
     std::cout << "WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE" << std::endl;
     std::cout << "OR THE USE OR OTHER DEALINGS IN THE SOFTWARE." << std::endl;
     std::cout << std::endl;
-	std::cout << "For any problems or licensing issues I may have overlooked, please contact: " << std::endl;
-	std::cout << "E-mail: ionut.cava@divide-studio.com | Website: http://wwww.divide-studio.com" << std::endl;
-	std::cout << "-------------------------------------------------------------------------------" << std::endl;
-	std::cout << std::endl;
+    std::cout << "For any problems or licensing issues I may have overlooked, please contact: " << std::endl;
+    std::cout << "E-mail: ionut.cava@divide-studio.com | Website: http://wwww.divide-studio.com" << std::endl;
+    std::cout << "-------------------------------------------------------------------------------" << std::endl;
+    std::cout << std::endl;
 }
 
 #ifdef _DEBUG
 void Console::d_printfn(const char* format, ...) const {
-	va_list args;
-	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
-	va_start(args, format);
-	assert(_vscprintf(format, args) - 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-	vsprintf_s(text, sizeof(text), format, args);
-	strcat(text, "\n");
-	va_end(args);
-	output(text);
+    va_list args;
+    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
+    va_start(args, format);
+    assert(_vscprintf(format, args) - 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
+    vsprintf_s(text, sizeof(text), format, args);
+    strcat(text, "\n");
+    va_end(args);
+    output(text);
 }
 
 void Console::d_printf(const char* format, ...) const {
-	va_list args;
-	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
-	va_start(args, format);
-	assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-	vsprintf_s(text, sizeof(text), format, args);
-	va_end(args);
-	output(text);
+    va_list args;
+    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
+    va_start(args, format);
+    assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
+    vsprintf_s(text, sizeof(text), format, args);
+    va_end(args);
+    output(text);
 }
 
 void Console::d_errorfn(const char* format, ...) const {
-	va_list args;
-	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
-	va_start(args, format);
-	assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
-	vsprintf_s(text, sizeof(text), format, args);
-	strcat(text, "\n");
-	va_end(args);
-	output(text,true);
+    va_list args;
+    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
+    va_start(args, format);
+    assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
+    vsprintf_s(text, sizeof(text), format, args);
+    strcat(text, "\n");
+    va_end(args);
+    output(text,true);
 }
 
 void Console::d_errorf(const char* format, ...) const {
-	va_list args;
-	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
-	va_start(args, format);
-	assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-	vsprintf_s(text, sizeof(text), format, args);
-	va_end(args);
-	output(text,true);
+    va_list args;
+    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
+    va_start(args, format);
+    assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
+    vsprintf_s(text, sizeof(text), format, args);
+    va_end(args);
+    output(text,true);
 }
 
 #endif
 void Console::printfn(const char* format, ...) const {
-	va_list args;
-	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
-	va_start(args, format);
-	assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
-	vsprintf_s(text, sizeof(text), format, args);
-	strcat(text, "\n");
-	va_end(args);
-	output(text);
+    va_list args;
+    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
+    va_start(args, format);
+    assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
+    vsprintf_s(text, sizeof(text), format, args);
+    strcat(text, "\n");
+    va_end(args);
+    output(text);
 }
 
 void Console::printf(const char* format, ...) const {
-	va_list args;
-	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
-	va_start(args, format);
-	assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-	vsprintf_s(text, sizeof(text), format, args);
-	va_end(args);
-	output(text);
+    va_list args;
+    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
+    va_start(args, format);
+    assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
+    vsprintf_s(text, sizeof(text), format, args);
+    va_end(args);
+    output(text);
 }
 
 void Console::errorfn(const char* format, ...) const {
-	va_list args;
-	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
-	va_start(args, format);
-	assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
-	vsprintf_s(text, sizeof(text), format, args);
-	strcat(text, "\n");
-	va_end(args);
-	output(text,true);
+    va_list args;
+    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
+    va_start(args, format);
+    assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
+    vsprintf_s(text, sizeof(text), format, args);
+    strcat(text, "\n");
+    va_end(args);
+    output(text,true);
 }
 
 void Console::errorf(const char* format, ...) const {
-	va_list args;
-	char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
-	va_start(args, format);
-	assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-	vsprintf_s(text, sizeof(text), format, args);
-	va_end(args);
-	output(text,true);
+    va_list args;
+    char text[CONSOLE_OUTPUT_BUFFER_SIZE] = {};
+    va_start(args, format);
+    assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
+    vsprintf_s(text, sizeof(text), format, args);
+    va_end(args);
+    output(text,true);
 }
 
 void Console::output(const char* output, const bool error) const {
-	if(!_guiConsoleCallback.empty()){
-		if(error){
-			std::string outputString("Error: ");
-			outputString.append(output);
-			_guiConsoleCallback(outputString.c_str(),error);
-		}else{
-			_guiConsoleCallback(output,error);
-		}
-	}
+    if(!_guiConsoleCallback.empty()){
+        if(error){
+            std::string outputString("Error: ");
+            outputString.append(output);
+            _guiConsoleCallback(outputString.c_str(),error);
+        }else{
+            _guiConsoleCallback(output,error);
+        }
+    }
 
-	boost::mutex::scoped_lock lock(io_mutex);
+    boost::mutex::scoped_lock lock(io_mutex);
 
-	std::ostream& outputStream = error ? std::cerr : std::cout;
+    std::ostream& outputStream = error ? std::cerr : std::cout;
 
-	if(_timestamps)
-		outputStream << "[ " << std::setprecision(4) << GETTIME() << " ] ";
+    if(_timestamps)
+        outputStream << "[ " << std::setprecision(4) << GETTIME() << " ] ";
 
-	if(error)
-		outputStream << " Error: ";
+    if(error)
+        outputStream << " Error: ";
 
-	outputStream << output << std::flush;
+    outputStream << output << std::flush;
 }

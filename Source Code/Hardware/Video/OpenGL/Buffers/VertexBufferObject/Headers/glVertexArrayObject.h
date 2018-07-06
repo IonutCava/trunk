@@ -3,19 +3,19 @@
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
    and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
    subject to the following conditions:
 
    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -38,47 +38,47 @@
 
 class glVertexArrayObject : public VertexBufferObject {
 public:
-	glVertexArrayObject(const PrimitiveType& type);
-	virtual ~glVertexArrayObject();
+    glVertexArrayObject(const PrimitiveType& type);
+    virtual ~glVertexArrayObject();
 
     //Shader manipulation to replace the fixed pipeline. Always specify a shader before the draw calls!
     void setShaderProgram(ShaderProgram* const shaderProgram);
 
-	virtual bool Create(bool staticDraw = true);
-	virtual void Destroy();
+    virtual bool Create(bool staticDraw = true);
+    virtual void Destroy();
 
-	virtual bool SetActive();
+    virtual bool SetActive();
 
-	virtual void Draw(const U8 LODindex = 0);
+    virtual void Draw(const U8 LODindex = 0);
     virtual void DrawRange();
 
     ///Never call Refresh() just queue it and the data will update before drawing
-	inline bool queueRefresh() {_refreshQueued = true; return true;}
+    inline bool queueRefresh() {_refreshQueued = true; return true;}
 
 protected:
     virtual bool computeTriangleList();
-	/// If we have a shader, we create a VAO, if not, we use simple VBO + IBO. If that fails, use VA
-	virtual bool Refresh();
-	/// Internally create the VBO
-	virtual bool CreateInternal();
-	/// Enable full VAO based VBO (all pointers are tracked by VAO's)
-	virtual void Upload_VBO_Attributes();
-	virtual void Upload_VBO_Depth_Attributes();
-	/// Integrity checks
-	void checkStatus();
+    /// If we have a shader, we create a VAO, if not, we use simple VBO + IBO. If that fails, use VA
+    virtual bool Refresh();
+    /// Internally create the VBO
+    virtual bool CreateInternal();
+    /// Enable full VAO based VBO (all pointers are tracked by VAO's)
+    virtual void Upload_VBO_Attributes();
+    virtual void Upload_VBO_Depth_Attributes();
+    /// Integrity checks
+    void checkStatus();
 
 protected:
 
-	GLuint _VAOid;
+    GLuint _VAOid;
     GLuint _DepthVAOid;
-	GLuint _usage;
-	GLuint _indexDelimiterCache; ///<Used to avoid calling glPrimitiveRestartIndex if the index value requested is the same as last time
-	bool _primitiveRestartEnabled; ///<Used to toggle primitive restart on or off and avoid useless state changes
-	bool _animationData;     ///< Used to bind an extra set of vertex attributes for bone indices and bone weights
-	bool _refreshQueued;     ///< A refresh call might be called before "Create()". This should help with that
- 	vectorImpl<vec4<GLhalf> >  _normalsSmall;
-	vectorImpl<vec4<GLshort> > _tangentSmall;
-	vectorImpl<vec4<GLshort> > _bitangentSmall;
+    GLuint _usage;
+    GLuint _indexDelimiterCache; ///<Used to avoid calling glPrimitiveRestartIndex if the index value requested is the same as last time
+    bool _primitiveRestartEnabled; ///<Used to toggle primitive restart on or off and avoid useless state changes
+    bool _animationData;     ///< Used to bind an extra set of vertex attributes for bone indices and bone weights
+    bool _refreshQueued;     ///< A refresh call might be called before "Create()". This should help with that
+    vectorImpl<vec4<GLhalf> >  _normalsSmall;
+    vectorImpl<vec4<GLshort> > _tangentSmall;
+    vectorImpl<vec4<GLshort> > _bitangentSmall;
 };
 
 #endif

@@ -7,7 +7,7 @@
 #if defined(_MSC_VER)
 #	pragma warning( push )
 // user defined binary operator ',' exists but no overload could convert all operands, default built-in binary operator ',' used
-#		pragma warning(disable:4913) 
+#		pragma warning(disable:4913)
 #elif defined(__GNUC__)
 #	pragma GCC diagnostic push
 #		//pragma GCC diagnostic ignored "-Wall"

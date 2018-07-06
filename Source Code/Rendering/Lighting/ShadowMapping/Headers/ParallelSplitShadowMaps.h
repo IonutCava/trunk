@@ -30,30 +30,30 @@ class PixelBufferObject;
 ///Directional lights can't deliver good quality shadows using a single shadow map. This tehnique offers an implementation of the PSSM method
 class PSShadowMaps : public ShadowMap {
 public:
-	PSShadowMaps(Light* light);
-	~PSShadowMaps();
-	void render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction);
-	///Get the current shadow mapping tehnique
-	ShadowType getShadowMapType() const {return SHADOW_TYPE_PSSM;}
-	///Update depth maps
-	void resolution(U16 resolution, const SceneRenderState& renderState);
-	void previewShadowMaps();
+    PSShadowMaps(Light* light);
+    ~PSShadowMaps();
+    void render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction);
+    ///Get the current shadow mapping tehnique
+    ShadowType getShadowMapType() const {return SHADOW_TYPE_PSSM;}
+    ///Update depth maps
+    void resolution(U16 resolution, const SceneRenderState& renderState);
+    void previewShadowMaps();
 protected:
-	void renderInternal(const SceneRenderState& renderState) const;
-	void createJitterTexture(I32 size, I32 samples_u, I32 samples_v);
+    void renderInternal(const SceneRenderState& renderState) const;
+    void createJitterTexture(I32 size, I32 samples_u, I32 samples_v);
     //OGRE! I know .... sorry -Ionut
     void calculateSplitPoints(U8 splitCount, F32 nearDist, F32 farDist, F32 lambda = 0.95);
     //
     void setOptimalAdjustFactor(U8 index, F32 value);
 
 protected:
-	U8  _numSplits;
+    U8  _numSplits;
     U8  _splitPadding; //<Avoid artifacts;
-	Quad3D* _renderQuad;
-	ShaderProgram*  _previewDepthMapShader;
+    Quad3D* _renderQuad;
+    ShaderProgram*  _previewDepthMapShader;
     vectorImpl<F32> _splitPoints;
     vectorImpl<F32> _optAdjustFactor;
     vectorImpl<F32> _orthoPerPass;
-	PixelBufferObject* _jitterTexture; ///<For blurring
+    PixelBufferObject* _jitterTexture; ///<For blurring
 };
 #endif 

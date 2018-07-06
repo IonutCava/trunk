@@ -30,41 +30,41 @@ class WaterPlane;
 
 class MainScene : public Scene {
 public:
-	MainScene() : Scene(),
-				  _waterGraphNode(NULL),
-				  _water(NULL),
-				  _beep(NULL),
+    MainScene() : Scene(),
+                  _waterGraphNode(NULL),
+                  _water(NULL),
+                  _beep(NULL),
                   _freeflyCamera(false){}
 
-	/*General Scene Requirement*/
-	void preRender();
+    /*General Scene Requirement*/
+    void preRender();
     void postRender();
-	bool load(const std::string& name, CameraManager* const cameraMgr);
-	bool unload();
-	bool loadResources(bool continueOnErrors);
+    bool load(const std::string& name, CameraManager* const cameraMgr);
+    bool unload();
+    bool loadResources(bool continueOnErrors);
 
 private:
-	/*Specific Scene Requirement*/
-	void renderEnvironment(bool waterReflection);
-	bool updateLights();
-	void processInput();
-	void processTasks(const U32 time);
-	void test(boost::any a, CallbackParam b);
-	void onKeyDown(const OIS::KeyEvent& key);
-	void onKeyUp(const OIS::KeyEvent& key);
-	void onMouseMove(const OIS::MouseEvent& key);
-	void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    /*Specific Scene Requirement*/
+    void renderEnvironment(bool waterReflection);
+    bool updateLights();
+    void processInput();
+    void processTasks(const U32 time);
+    void test(boost::any a, CallbackParam b);
+    void onKeyDown(const OIS::KeyEvent& key);
+    void onKeyUp(const OIS::KeyEvent& key);
+    void onMouseMove(const OIS::MouseEvent& key);
+    void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
 
-	vec2<F32> _sunAngle;
-	vec4<F32> _sunvector,_sunColor;
-	F32  _sun_cosy;
+    vec2<F32> _sunAngle;
+    vec4<F32> _sunvector,_sunColor;
+    F32  _sun_cosy;
     bool _freeflyCamera;
-	AudioDescriptor* _beep;
-	vectorImpl<Terrain*> _visibleTerrains;
-	WaterPlane* _water;
-	SceneGraphNode* _waterGraphNode;
+    AudioDescriptor* _beep;
+    vectorImpl<Terrain*> _visibleTerrains;
+    WaterPlane* _water;
+    SceneGraphNode* _waterGraphNode;
 };
 
 #endif;

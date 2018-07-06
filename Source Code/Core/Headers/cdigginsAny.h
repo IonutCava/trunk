@@ -31,7 +31,7 @@ namespace anyimpl
         virtual void clone(void* const* src, void** dest) = 0;
         virtual void move(void* const* src, void** dest) = 0;
         virtual const void* get_value_const(void *const *src) const = 0;
-		virtual       void* get_value(void **src) = 0;
+        virtual       void* get_value(void **src) = 0;
         virtual size_t get_size() = 0;
     };
 
@@ -50,7 +50,7 @@ namespace anyimpl
         virtual void clone(void* const* src, void** dest) { *dest = *src; }
         virtual void move(void* const* src, void** dest) { *dest = *src; }
         virtual const void* get_value_const(void *const *src) const { return reinterpret_cast<const void*>(src); }
-		virtual       void* get_value(void **src) { return reinterpret_cast<void*>(src); }
+        virtual       void* get_value(void **src) { return reinterpret_cast<void*>(src); }
     };
 
     template<typename T>
@@ -66,7 +66,7 @@ namespace anyimpl
           (*reinterpret_cast<T**>(dest))->~T();
           **reinterpret_cast<T**>(dest) = **reinterpret_cast<T* const*>(src); }
         virtual const void* get_value_const(void *const *src) const { return *src; }
-		virtual       void* get_value(void **src) { return *src; }
+        virtual       void* get_value(void **src) { return *src; }
     };
 
     template<typename T>
@@ -200,7 +200,7 @@ public:
         return *(reinterpret_cast<const T*>(policy->get_value_const(&object)));
     }
 
-	template<typename T>
+    template<typename T>
     T& cast() {
         if (policy != anyimpl::get_policy<T>())
             throw anyimpl::bad_any_cast();
@@ -223,7 +223,7 @@ public:
         return policy == x.policy;
     }
 
-	template<typename T>
+    template<typename T>
     bool isType() {
       T temp;
       return compatible(temp);

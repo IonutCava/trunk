@@ -3,24 +3,24 @@
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 
 SubMesh* ImplResourceLoader<SubMesh>::operator()(){
-	SubMesh* ptr = NULL;
+    SubMesh* ptr = NULL;
 
-	if(_descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED){
-		ptr = New SkinnedSubMesh(_descriptor.getName());
-	}else{
-		ptr = New SubMesh(_descriptor.getName());
-	}
+    if(_descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED){
+        ptr = New SkinnedSubMesh(_descriptor.getName());
+    }else{
+        ptr = New SubMesh(_descriptor.getName());
+    }
 
     if(!load(ptr,_descriptor.getName())){
         SAFE_DELETE(ptr);
     }else{
-	    if(_descriptor.getFlag()){
-		    ptr->getSceneNodeRenderState().useDefaultMaterial(false);
-		    ptr->setMaterial(NULL);
-	    }
-	    ptr->setId(_descriptor.getId());
+        if(_descriptor.getFlag()){
+            ptr->getSceneNodeRenderState().useDefaultMaterial(false);
+            ptr->setMaterial(NULL);
+        }
+        ptr->setId(_descriptor.getId());
     }
-	return ptr;
+    return ptr;
 }
 
 DEFAULT_LOADER_IMPL(SubMesh)

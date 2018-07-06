@@ -29,20 +29,20 @@ class ShaderProgram;
 ///A single shadow map system. Used, for example, by spot lights.
 class SingleShadowMap : public ShadowMap {
 public:
-	SingleShadowMap(Light* light);
-	~SingleShadowMap();
-	void render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction);
-	///Get the current shadow mapping tehnique
-	ShadowType getShadowMapType() const {return SHADOW_TYPE_Single;}
-	///Update depth maps
-	void resolution(U16 resolution, const SceneRenderState& renderState);
-	void previewShadowMaps();
+    SingleShadowMap(Light* light);
+    ~SingleShadowMap();
+    void render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction);
+    ///Get the current shadow mapping tehnique
+    ShadowType getShadowMapType() const {return SHADOW_TYPE_Single;}
+    ///Update depth maps
+    void resolution(U16 resolution, const SceneRenderState& renderState);
+    void previewShadowMaps();
 
 protected:
-	void renderInternal(const SceneRenderState& renderState) const;
+    void renderInternal(const SceneRenderState& renderState) const;
 
 private:
-	Quad3D* _renderQuad;
+    Quad3D* _renderQuad;
     ShaderProgram* _previewDepthMapShader;
 };
 

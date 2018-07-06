@@ -6,29 +6,29 @@
 #include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
 
 Texture* ImplResourceLoader<Texture>::operator()(){
-	Texture* ptr = NULL;
+    Texture* ptr = NULL;
 
     if(_descriptor.getEnumValue() == TEXTURE_CUBE_MAP){
-		ptr = GFX_DEVICE.newTextureCubemap(_descriptor.getFlag());
+        ptr = GFX_DEVICE.newTextureCubemap(_descriptor.getFlag());
     }else{
-		ptr = GFX_DEVICE.newTexture2D(_descriptor.getFlag());
-	}
+        ptr = GFX_DEVICE.newTexture2D(_descriptor.getFlag());
+    }
 
-	ptr->enableThreadedLoading(_descriptor.getThreaded());
+    ptr->enableThreadedLoading(_descriptor.getThreaded());
 
-	//Add the specified sampler, if any o
-	if(_descriptor.hasPropertyDescriptor()){
-		//cast back to a SamplerDescriptor from a PropertyDescriptor
-		const SamplerDescriptor* sampler = dynamic_cast<const SamplerDescriptor*>(_descriptor.getPropertyDescriptor<SamplerDescriptor>());
-		ptr->setCurrentSampler(*sampler);
-	}
+    //Add the specified sampler, if any o
+    if(_descriptor.hasPropertyDescriptor()){
+        //cast back to a SamplerDescriptor from a PropertyDescriptor
+        const SamplerDescriptor* sampler = dynamic_cast<const SamplerDescriptor*>(_descriptor.getPropertyDescriptor<SamplerDescriptor>());
+        ptr->setCurrentSampler(*sampler);
+    }
 
-	if(!load(ptr,_descriptor.getResourceLocation())){
-		ERROR_FN(Locale::get("ERROR_TEXTURE_LOADER_FILE"),_descriptor.getResourceLocation().c_str(), _descriptor.getName().c_str());
+    if(!load(ptr,_descriptor.getResourceLocation())){
+        ERROR_FN(Locale::get("ERROR_TEXTURE_LOADER_FILE"),_descriptor.getResourceLocation().c_str(), _descriptor.getName().c_str());
         SAFE_DELETE(ptr)
-	}
+    }
 
-	return ptr;
+    return ptr;
 }
 
 DEFAULT_HW_LOADER_IMPL(Texture)

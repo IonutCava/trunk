@@ -21,9 +21,9 @@
  */
 
 /*Code references:
-	Matrix inverse: http://www.devmaster.net/forums/showthread.php?t=14569
-	Matrix multiply:  http://fhtr.blogspot.com/2010/02/4x4-float-matrix-multiplication-using.html
-	Square root: http://www.codeproject.com/KB/cpp/Sqrt_Prec_VS_Speed.aspx
+    Matrix inverse: http://www.devmaster.net/forums/showthread.php?t=14569
+    Matrix multiply:  http://fhtr.blogspot.com/2010/02/4x4-float-matrix-multiplication-using.html
+    Square root: http://www.codeproject.com/KB/cpp/Sqrt_Prec_VS_Speed.aspx
 */
 
 #ifndef _MATH_HELPER_H_
@@ -95,78 +95,78 @@ namespace Util {
         }
     }
 
-	inline void swap(char* first, char* second){
-		char temp = *first;
-		*first  = *second;
-		*second = temp;
-	}
+    inline void swap(char* first, char* second){
+        char temp = *first;
+        *first  = *second;
+        *second = temp;
+    }
 
-	inline void permute(char* input, U32 startingIndex, U32 stringLength, vectorImpl<std::string>& container){
-		if(startingIndex == stringLength -1){
-			container.push_back(input);
-		}else{
-			for(U32 i = startingIndex; i < stringLength; i++){
-				swap(&input[startingIndex], &input[i]);
-				permute(input,startingIndex+1,stringLength,container);
-				swap(&input[startingIndex], &input[i]);
-			}
-		}
-	}
+    inline void permute(char* input, U32 startingIndex, U32 stringLength, vectorImpl<std::string>& container){
+        if(startingIndex == stringLength -1){
+            container.push_back(input);
+        }else{
+            for(U32 i = startingIndex; i < stringLength; i++){
+                swap(&input[startingIndex], &input[i]);
+                permute(input,startingIndex+1,stringLength,container);
+                swap(&input[startingIndex], &input[i]);
+            }
+        }
+    }
 
-	inline vectorImpl<std::string> getPermutations(const std::string& inputString){
-		vectorImpl<std::string> permutationContainer;
-		permute((char*)inputString.c_str(), 0, inputString.length()-1, permutationContainer);
-		return permutationContainer;
-	}
+    inline vectorImpl<std::string> getPermutations(const std::string& inputString){
+        vectorImpl<std::string> permutationContainer;
+        permute((char*)inputString.c_str(), 0, inputString.length()-1, permutationContainer);
+        return permutationContainer;
+    }
 
-	inline bool isNumber(const std::string& s){
-		std::stringstream ss;
-		ss << s;
-		F32 number;
-	    ss >> number;
-	    if(ss.good()) return false;
+    inline bool isNumber(const std::string& s){
+        std::stringstream ss;
+        ss << s;
+        F32 number;
+        ss >> number;
+        if(ss.good()) return false;
         else if(number == 0 && s[0] != 0) return false;
-		return true;
-	}
+        return true;
+    }
 
-	template<class T>
-	inline std::string toString(const T& data){
-		std::stringstream s;
-		s << data;
-		return s.str();
-	}
+    template<class T>
+    inline std::string toString(const T& data){
+        std::stringstream s;
+        s << data;
+        return s.str();
+    }
 
-	//U = to data type, T = from data type
-	template<class U, class T>
-	inline U convertData(const T& data){
-		std::istringstream  iStream(data);
-		U floatValue;
-		iStream >> floatValue;
-		return floatValue;
-	}
+    //U = to data type, T = from data type
+    template<class U, class T>
+    inline U convertData(const T& data){
+        std::istringstream  iStream(data);
+        U floatValue;
+        iStream >> floatValue;
+        return floatValue;
+    }
 
-	inline F32 max(const F32& a, const F32& b){
-		return (a<b) ? b : a;
-	}
+    inline F32 max(const F32& a, const F32& b){
+        return (a<b) ? b : a;
+    }
 
-	inline F32 min(const F32& a, const F32& b){
-		return (a<b) ? a : b;
-	}
+    inline F32 min(const F32& a, const F32& b){
+        return (a<b) ? a : b;
+    }
 
-	inline F32 xfov_to_yfov(F32 xfov, F32 aspect) {
-		return DEGREES(2.0f * atan(tan(RADIANS(xfov) * 0.5f) / aspect));
-	}
+    inline F32 xfov_to_yfov(F32 xfov, F32 aspect) {
+        return DEGREES(2.0f * atan(tan(RADIANS(xfov) * 0.5f) / aspect));
+    }
 
-	inline F32 yfov_to_xfov(F32 yfov, F32 aspect) {
-		return DEGREES(2.0f * atan(tan(RADIANS(yfov) * 0.5f) * aspect));
-	}
-	namespace Mat4{
-		// ----------------------------------------------------------------------------------------
-		template<class Type>
-		void decompose (const mat4<Type>& matrix, vec3<Type>& scale, Quaternion<Type>& rotation, vec3<Type>& position);
-		template<class Type>
-		void decomposeNoScaling(const mat4<Type>& matrix, Quaternion<Type>& rotation,	vec3<Type>& position);
-	}
+    inline F32 yfov_to_xfov(F32 yfov, F32 aspect) {
+        return DEGREES(2.0f * atan(tan(RADIANS(yfov) * 0.5f) * aspect));
+    }
+    namespace Mat4{
+        // ----------------------------------------------------------------------------------------
+        template<class Type>
+        void decompose (const mat4<Type>& matrix, vec3<Type>& scale, Quaternion<Type>& rotation, vec3<Type>& position);
+        template<class Type>
+        void decomposeNoScaling(const mat4<Type>& matrix, Quaternion<Type>& rotation,	vec3<Type>& position);
+    }
 }
 
 #endif

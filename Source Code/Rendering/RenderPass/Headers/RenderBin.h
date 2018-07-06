@@ -37,75 +37,75 @@ class SceneGraphNode;
 #include <assert.h>
 
 struct RenderBinItem{
-	SceneGraphNode  *_node;
-	P32              _sortKey;
-	I64              _stateHash;
+    SceneGraphNode  *_node;
+    P32              _sortKey;
+    I64              _stateHash;
 
-	RenderBinItem() : _node(NULL){}
-	RenderBinItem(P32 sortKey, SceneGraphNode *node );
+    RenderBinItem() : _node(NULL){}
+    RenderBinItem(P32 sortKey, SceneGraphNode *node );
 };
 
 struct RenderingOrder{
-	enum List{
-		NONE = 0,
-		FRONT_TO_BACK = 1,
-		BACK_TO_FRONT = 2,
-		BY_STATE = 3,
-		ORDER_PLACEHOLDER = 4
-	};
+    enum List{
+        NONE = 0,
+        FRONT_TO_BACK = 1,
+        BACK_TO_FRONT = 2,
+        BY_STATE = 3,
+        ORDER_PLACEHOLDER = 4
+    };
 };
 
 ///This class contains a list of "RenderBinItem"'s and stores them sorted depending on the desired designation
 class RenderBin {
-	typedef vectorImpl< RenderBinItem > RenderBinStack;
+    typedef vectorImpl< RenderBinItem > RenderBinStack;
 public:
-	enum RenderBinType {
-		RBT_MESH = 0,
-		RBT_DELEGATE,
-		RBT_TRANSLUCENT,
-		RBT_SKY,
-		RBT_WATER,
-		RBT_TERRAIN,
+    enum RenderBinType {
+        RBT_MESH = 0,
+        RBT_DELEGATE,
+        RBT_TRANSLUCENT,
+        RBT_SKY,
+        RBT_WATER,
+        RBT_TERRAIN,
         RBT_IMPOSTOR,
-		RBT_FOLIAGE,
-		RBT_PARTICLES,
-		RBT_DECALS,
-		RBT_SHADOWS,
-		RBT_PLACEHOLDER
-	};
+        RBT_FOLIAGE,
+        RBT_PARTICLES,
+        RBT_DECALS,
+        RBT_SHADOWS,
+        RBT_PLACEHOLDER
+    };
 
-	std::string renderBinTypeToNameMap[RBT_PLACEHOLDER+1];
+    std::string renderBinTypeToNameMap[RBT_PLACEHOLDER+1];
 
-	friend class RenderQueue;
+    friend class RenderQueue;
 
-	RenderBin(const RenderBinType& rbType = RBT_PLACEHOLDER,
-			  const RenderingOrder::List& renderOrder = RenderingOrder::ORDER_PLACEHOLDER,
-		      D32 drawKey = -1);
+    RenderBin(const RenderBinType& rbType = RBT_PLACEHOLDER,
+              const RenderingOrder::List& renderOrder = RenderingOrder::ORDER_PLACEHOLDER,
+              D32 drawKey = -1);
 
-	virtual ~RenderBin()
-	{
-	}
+    virtual ~RenderBin()
+    {
+    }
 
-	virtual void sort();
-	virtual void preRender();
-	virtual void render(const RenderStage& currentRenderStage);
-	virtual void postRender();
-	virtual void refresh();
+    virtual void sort();
+    virtual void preRender();
+    virtual void render(const RenderStage& currentRenderStage);
+    virtual void postRender();
+    virtual void refresh();
 
-	virtual void addNodeToBin(SceneGraphNode* const sgn);
-	inline  const RenderBinItem& getItem(U16 index) const {assert(index < _renderBinStack.size());	return _renderBinStack[index]; }
+    virtual void addNodeToBin(SceneGraphNode* const sgn);
+    inline  const RenderBinItem& getItem(U16 index) const {assert(index < _renderBinStack.size());	return _renderBinStack[index]; }
 
-	inline U16 getBinSize()   const {return _renderBinStack.size();}
-	inline D32 getSortOrder() const {return _drawKey;}
+    inline U16 getBinSize()   const {return _renderBinStack.size();}
+    inline D32 getSortOrder() const {return _drawKey;}
 
-	inline const RenderBinType&  getType() const {return _rbType;}
+    inline const RenderBinType&  getType() const {return _rbType;}
 
 private:
-	//mutable SharedLock _renderBinGetMutex;
-	D32 _drawKey;
-	RenderBinType _rbType;
-	RenderBinStack _renderBinStack;
-	RenderingOrder::List _renderOrder;
+    //mutable SharedLock _renderBinGetMutex;
+    D32 _drawKey;
+    RenderBinType _rbType;
+    RenderBinStack _renderBinStack;
+    RenderingOrder::List _renderOrder;
 };
 
 #endif

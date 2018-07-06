@@ -57,7 +57,7 @@ Sizef FormattedListboxTextItem::getPixelSize(void) const
         setupStringFormatter();
 
     // get size of render area from target Window, to see if we need to reformat
-	const Sizef area_sz(static_cast<const Listbox*>(d_owner)->
+    const Sizef area_sz(static_cast<const Listbox*>(d_owner)->
         getListRenderArea().getSize());
     if (area_sz != d_formattingAreaSize)
     {
@@ -92,7 +92,7 @@ void FormattedListboxTextItem::draw(GeometryBuffer& buffer, const Rectf& targetR
 
     // draw selection imagery
     if (d_selected && d_selectBrush != 0)
-		d_selectBrush->render(buffer, targetRect, clipper,
+        d_selectBrush->render(buffer, targetRect, clipper,
                             getModulateAlphaColourRect(d_selectCols, alpha));
 
     // factor the Window alpha into our colours.

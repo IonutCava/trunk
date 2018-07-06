@@ -83,6 +83,6 @@ void main(){
     float lumaB = dot(rgbB, luma);
     if((lumaB < lumaMin) || (lumaB > lumaMax)) c.rgb = rgbA;
     else c.rgb = rgbB; 
-	
-	_colorOut = c;
+    
+    _colorOut = c;
 }

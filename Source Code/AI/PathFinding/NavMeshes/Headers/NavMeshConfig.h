@@ -3,19 +3,19 @@
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
    and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
    subject to the following conditions:
 
    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -32,30 +32,30 @@ class NavigationMeshConfig
 {
 public:
     NavigationMeshConfig() : _cellSize(0.3f),
-						     _cellHeight(0.2f),
-							 _tileSize(48),
-							 _agentMaxSlope(20),
-							 _agentHeight(2.5f),
-							 _agentMaxClimb(1),
-							 _agentRadius(0.5f),
-							 _edgeMaxLen(12),
-							 _edgeMaxError(1.3f),
-							 _regionMinSize(50),
-							 _regionMergeSize(20),
-							 _vertsPerPoly(DT_VERTS_PER_POLYGON),   // (=6)
-							 _detailSampleDist(6),
-							 _detailSampleMaxError(1),
-							 _keepInterResults(false)
-    { 
-		eval();
-	}
+                             _cellHeight(0.2f),
+                             _tileSize(48),
+                             _agentMaxSlope(20),
+                             _agentHeight(2.5f),
+                             _agentMaxClimb(1),
+                             _agentRadius(0.5f),
+                             _edgeMaxLen(12),
+                             _edgeMaxError(1.3f),
+                             _regionMinSize(50),
+                             _regionMergeSize(20),
+                             _vertsPerPoly(DT_VERTS_PER_POLYGON),   // (=6)
+                             _detailSampleDist(6),
+                             _detailSampleMaxError(1),
+                             _keepInterResults(false)
+    {
+        eval();
+    }
 
     /*****************
       * Rasterization
      *****************/
     inline void setCellSize(F32 cellSize)     { this->_cellSize = cellSize; eval(); }
     inline void setCellHeight(F32 cellHeight) { this->_cellHeight = cellHeight; eval(); }
-	inline void setTileSize(I32 tileSize)     { this->_tileSize = tileSize;}
+    inline void setTileSize(I32 tileSize)     { this->_tileSize = tileSize;}
     /*****************
       * Agent
      *****************/
@@ -81,9 +81,9 @@ public:
     inline void setDetailSampleMaxError(F32 detailSampleMaxError)  { this->_detailSampleMaxError = detailSampleMaxError; eval(); }
     inline void setKeepInterResults(bool keepInterResults)         { this->_keepInterResults = keepInterResults; }
 
-	/*********************************************************************
-	  * Override derived parameters (params set in the eval function)
-	 *********************************************************************/
+    /*********************************************************************
+      * Override derived parameters (params set in the eval function)
+     *********************************************************************/
 
     inline void base_setWalkableHeight(I32 walkableHeight)             { this->_walkableHeight = walkableHeight; }
     inline void base_setWalkableClimb(I32 walkableClimb)               { this->_walkableClimb = walkableClimb; }
@@ -96,7 +96,7 @@ public:
 
     inline F32 getCellSize()              { return _cellSize; }
     inline F32 getCellHeight()            { return _cellHeight; }
-	inline I32 getTileSize()              { return _tileSize; }
+    inline I32 getTileSize()              { return _tileSize; }
     inline F32 getAgentMaxSlope()         { return _agentMaxSlope; }
     inline F32 getAgentHeight()           { return _agentHeight; }
     inline F32 getAgentMaxClimb()         { return _agentMaxClimb; }
@@ -136,9 +136,9 @@ private:
         _base_detailSampleMaxError = _cellHeight * _detailSampleMaxError;
     }
 
-	/** Tilesize is the number of (recast) cells per tile. (a multiple of 8 between 16 and 128) */
+    /** Tilesize is the number of (recast) cells per tile. (a multiple of 8 between 16 and 128) */
 
-	I32 _tileSize;
+    I32 _tileSize;
 
     /**
       * Cellsize (cs) is the width and depth resolution used when sampling the source geometry.
@@ -282,7 +282,6 @@ private:
       **/
     bool _keepInterResults;
 
-
     /**
       * Minimum height in number of (voxel) cells that the ceiling needs to be
       * for an agent to be able to walk under. Related to cellHeight (ch) and
@@ -323,7 +322,6 @@ private:
       * The actual border area will be larger if smoothingTreshold is > 0. See the smoothingThreshold parameter for more information.
       **/
     I32 _walkableRadius;
-
 
     /**
       * The maximum allowed length for contour edges along the border of the mesh.

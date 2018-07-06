@@ -4,16 +4,16 @@
 
 template<>
 AudioDescriptor* ImplResourceLoader<AudioDescriptor>::operator()(){
-	AudioDescriptor* ptr = New AudioDescriptor(_descriptor.getResourceLocation());
-	assert(ptr != NULL);
+    AudioDescriptor* ptr = New AudioDescriptor(_descriptor.getResourceLocation());
+    assert(ptr != NULL);
 
     if(!load(ptr,_descriptor.getName())){
         SAFE_DELETE(ptr);
     }else{
-    	ptr->isLooping() = _descriptor.getFlag();
+        ptr->isLooping() = _descriptor.getFlag();
     }
 
-	return ptr;
+    return ptr;
 }
 
 DEFAULT_LOADER_IMPL(AudioDescriptor)

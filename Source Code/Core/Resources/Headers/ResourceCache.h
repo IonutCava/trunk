@@ -33,65 +33,65 @@
 DEFINE_SINGLETON( ResourceCache )
 
 public:
-	///Each resource entity should have a 'resource name'Loader implementation.
-	template<class T>
-	inline T* loadResource(const ResourceDescriptor& descriptor) {
-		///Check cache first to avoit loading the same resource twice
-		T* ptr = dynamic_cast<T*>(loadResource(descriptor.getName()));
-		///If the cache did not contain our resource ...
-		if(!ptr){
-			/// ...aquire the resource's loader
-			ImplResourceLoader<T> assetLoader(descriptor);
-			/// and get our resource as the loader creates it
-			ptr = assetLoader();
+    ///Each resource entity should have a 'resource name'Loader implementation.
+    template<class T>
+    inline T* loadResource(const ResourceDescriptor& descriptor) {
+        ///Check cache first to avoit loading the same resource twice
+        T* ptr = dynamic_cast<T*>(loadResource(descriptor.getName()));
+        ///If the cache did not contain our resource ...
+        if(!ptr){
+            /// ...aquire the resource's loader
+            ImplResourceLoader<T> assetLoader(descriptor);
+            /// and get our resource as the loader creates it
+            ptr = assetLoader();
             if(ptr){
                 ptr->setState(RES_LOADED);
-			    /// validate it's integrity and add it to the cache
-			    add(descriptor.getName(),ptr);
+                /// validate it's integrity and add it to the cache
+                add(descriptor.getName(),ptr);
             }
-		}
-		return ptr;
-	}
+        }
+        return ptr;
+    }
 
-	Resource* const find(const std::string& name);
-	bool scheduleDeletion(Resource* resource, bool force = false);
-	void add(const std::string& name, Resource* const resource);
-	bool load(Resource* const res, const std::string& name);
-	bool loadHW(Resource* const res, const std::string& name);
+    Resource* const find(const std::string& name);
+    bool scheduleDeletion(Resource* resource, bool force = false);
+    void add(const std::string& name, Resource* const resource);
+    bool load(Resource* const res, const std::string& name);
+    bool loadHW(Resource* const res, const std::string& name);
 
 protected:
-	ResourceCache();
-	~ResourceCache();
-	///Empty the entire cache of resources
-	void Destroy();
-	///this method handles cache lookups and reference counting
-	Resource* loadResource(const std::string& name);
-	///unload a single resource and pend deletion
-	bool remove(Resource* const resource,bool force);
-	///multithreaded resource creation
-	SharedLock _creationMutex;
+    ResourceCache();
+    ~ResourceCache();
+    ///Empty the entire cache of resources
+    void Destroy();
+    ///this method handles cache lookups and reference counting
+    Resource* loadResource(const std::string& name);
+    ///unload a single resource and pend deletion
+    bool remove(Resource* const resource,bool force);
+    ///multithreaded resource creation
+    SharedLock _creationMutex;
 
-	typedef Unordered_map<std::string, Resource*> ResourceMap;
-	ResourceMap _resDB;
-	//boost::threadpool::pool* _loadingPool;
+    typedef Unordered_map<std::string, Resource*> ResourceMap;
+    ResourceMap _resDB;
+    //boost::threadpool::pool* _loadingPool;
 
 END_SINGLETON
 
 template<class T>
 inline void RemoveResource(T*& resource, bool force = false){
-	if(ResourceCache::getInstance().scheduleDeletion(resource,force)){
-		SAFE_DELETE(resource);
-	}
+    if(ResourceCache::getInstance().scheduleDeletion(resource,force)){
+        SAFE_DELETE(resource);
+    }
 }
 
 template<class T>
 inline T* CreateResource(const ResourceDescriptor& descriptor){
-	return ResourceCache::getInstance().loadResource<T>(descriptor);
+    return ResourceCache::getInstance().loadResource<T>(descriptor);
 }
 
 template<class T>
 inline T* const FindResource(const std::string& name){
-	return static_cast<T*>(ResourceCache::getInstance().find(name));
+    return static_cast<T*>(ResourceCache::getInstance().find(name));
 }
 
 #endif
