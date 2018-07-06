@@ -105,7 +105,7 @@ void SceneAnimator::ExtractAnimations(const aiScene* pScene){
     }
     // get all the animation names so I can reference them by name and get the correct id
     U16 i = 0;
-    FOR_EACH(AnimEvaluator& animation, _animations){
+    for(AnimEvaluator& animation : _animations){
         _animationNameToId.insert(Unordered_map<std::string, U32>::value_type(animation._name, i++));
     }
 }
@@ -145,7 +145,7 @@ Bone* SceneAnimator::CreateBoneTree( aiNode* pNode, Bone* parent){
 void SceneAnimator::UpdateTransforms(Bone* pNode) {
     CalculateBoneToWorldTransform( pNode);// update global transform as well
     /// continue for all children
-    FOR_EACH(Bone* bone, pNode->_children){
+    for(Bone* bone : pNode->_children){
         UpdateTransforms( bone );
     }
 }
@@ -233,7 +233,7 @@ I32 SceneAnimator::CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vecto
     }
 
     // render all child nodes
-    FOR_EACH(Bone* bone, piNode->_children){
+    for(Bone* bone : piNode->_children){
         CreateSkeleton(bone, me, pointsA, pointsB, colors);
     }
 

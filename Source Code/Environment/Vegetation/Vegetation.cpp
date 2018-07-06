@@ -24,8 +24,6 @@ Vegetation::~Vegetation(){
         RemoveResource(_grassBillboards[i]);
     }
 
-    SAFE_DELETE(_grassStateBlock);
-
     PRINT_FN(Locale::get("UNLOAD_VEGETATION_END"));
 }
 
@@ -45,7 +43,7 @@ void Vegetation::initialize(const std::string& grassShader, Terrain* const terra
     RenderStateBlockDescriptor transparent;
     transparent.setCullMode(CULL_MODE_CW);
     transparent.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
-    _grassStateBlock = GFX_DEVICE.createStateBlock( transparent );
+    _grassStateBlock = GFX_DEVICE.getOrCreateStateBlock( transparent );
 
     Kernel* kernel = Application::getInstance().getKernel();
     New Task(kernel->getThreadPool(), 0, true, true, DELEGATE_BIND(&Vegetation::generateGrass, this, _billboardCount, size));
@@ -226,7 +224,7 @@ bool Vegetation::generateTrees(){
             continue;
         }
         bool continueLoop = true;
-        FOR_EACH(vec3<F32>& it, positions){
+        for(vec3<F32>& it : positions){
             if(it.compare(P) || (it.distance(P) < 0.02f)){
                 k--;
                 continueLoop = false;

@@ -28,7 +28,6 @@ U64 Kernel::_currentTimeDelta = 0ULL;
 D32 Kernel::_nextGameTick = 0.0;
 
 bool Kernel::_keepAlive = true;
-bool Kernel::_applicationReady = false;
 bool Kernel::_renderingPaused = false;
 bool Kernel::_freezeLoopTime = false;
 bool Kernel::_freezeGUITime = false;
@@ -323,30 +322,26 @@ bool Kernel::presentToScreen(FrameEvent& evt, const D32 interpolationFactor){
 }
 
 void Kernel::firstLoop(){
-    static bool first = true;
-
     ParamHandler& par = ParamHandler::getInstance();
-    static bool shadowMappingEnabled = par.getParam<bool>("rendering.enableShadows");
-    //Skip one frame so all resources can be built while the splash screen is displayed
-    if(first){
-        par.setParam("rendering.enableShadows",false);
+    bool shadowMappingEnabled = par.getParam<bool>("rendering.enableShadows");
+    //Skip two frames, one without and one with shadows, so all resources can be built while the splash screen is displayed
+    par.setParam("freezeGUITime", true);
+    par.setParam("freezeLoopTime", true);
+    par.setParam("rendering.enableShadows",false);
+    mainLoopApp();
+    if (shadowMappingEnabled){
+        par.setParam("rendering.enableShadows", true);
         mainLoopApp();
-        Kernel::_applicationReady = true;
-        //Hide splash screen
-        GFX_DEVICE.changeResolution(par.getParam<U16>("runtime.resolutionWidth"),
-                                    par.getParam<U16>("runtime.resolutionHeight"));
-        GFX_DEVICE.setWindowPos(10,50);
-        first = false;
-    }else{// skip another frame so all buffers and shaders are refreshed
-        par.setParam("rendering.enableShadows", shadowMappingEnabled);
-        mainLoopApp();
-        _mainLoopCallback = DELEGATE_REF(Kernel::mainLoopApp);
-        Application::getInstance().mainLoopActive(true);
-#if defined(_DEBUG) || defined(_PROFILE)
-        ApplicationTimer::getInstance().benchmark(true);
-#endif
     }
-
+    GFX_DEVICE.setWindowPos(150, 350);
+    par.setParam("freezeGUITime", false);
+    par.setParam("freezeLoopTime", false);
+    Application::getInstance().mainLoopActive(true);
+    _mainLoopCallback = DELEGATE_REF(Kernel::mainLoopApp);
+    GFX_DEVICE.changeResolution(Application::getInstance().getResolution() * 2);
+#if defined(_DEBUG) || defined(_PROFILE)
+    ApplicationTimer::getInstance().benchmark(true);
+#endif
     _currentTime = _nextGameTick = GETUSTIME();
 }
 
@@ -363,7 +358,6 @@ void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& 
 }
 
 I8 Kernel::initialize(const std::string& entryPoint) {
-    I8 windowId = -1;
     I8 returnCode = 0;
     ParamHandler& par = ParamHandler::getInstance();
 
@@ -382,11 +376,10 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
 
     PRINT_FN(Locale::get("START_RENDER_INTERFACE"));
-    vec2<U16> resolution(par.getParam<U16>("runtime.resolutionWidth"),
-                         par.getParam<U16>("runtime.resolutionHeight"));
+    vec2<U16> resolution = _APP.getResolution();
 
     _GFX.registerKernel(this);
-    windowId = _GFX.initHardware(resolution/2,_argc,_argv);
+    I8 windowId = _GFX.initHardware(resolution/2, _argc, _argv);
 
     //If we could not initialize the graphics device, exit
     if(windowId < 0) return windowId;
@@ -397,7 +390,7 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     //Load and render the splash screen
     _GFX.setRenderStage(FINAL_STAGE);
     _GFX.beginFrame();
-    GUISplash("divideLogo.jpg",vec2<U16>(400,300)).render();
+    GUISplash("divideLogo.jpg", resolution / 2).render();
     _GFX.endFrame();
 
     LightManager::getInstance().init();
@@ -410,15 +403,11 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     if((returnCode =_PFX.initPhysics(Config::TARGET_FRAME_RATE)) != NO_ERR)
         return returnCode;
 
-    PostFX::getInstance().init(resolution);
-
     //Bind the kernel with the input interface
     InputInterface::getInstance().init(this, par.getParam<std::string>("appTitle"));
 
     //Initialize GUI with our current resolution
-    _GUI.init();
-    _GUI.cacheResolution(resolution);
-
+    _GUI.init(resolution);
     _sceneMgr.init(&_GUI);
 
     if(!_sceneMgr.load(startupScene, resolution, _cameraMgr)){       //< Load the scene
@@ -445,10 +434,9 @@ void Kernel::beginLogicLoop(){
     Kernel::_nextGameTick = GETUSTIME();
     //lock the scene
     GET_ACTIVE_SCENE()->state().toggleRunningState(true);
-    //The first loop compiles all the textures, so, do not render the first frame
+    //The first loops compiles all the visible data, so do not render the first couple of frames
     _mainLoopCallback = DELEGATE_REF(Kernel::firstLoop);
     //Target FPS is define in "config.h". So all movement is capped around that value
-    //start rendering
     GFX_DEVICE.initDevice(Config::TARGET_FRAME_RATE);
 }
 
@@ -456,15 +444,12 @@ void Kernel::shutdown(){
     _keepAlive = false;
     //release the scene
     GET_ACTIVE_SCENE()->state().toggleRunningState(false);
-    PRINT_FN(Locale::get("STOP_GUI"));
     Console::getInstance().bindConsoleOutput(boost::function2<void, const char*, bool>());
     _GUI.destroyInstance(); ///Deactivate GUI
-    PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
     _sceneMgr.unloadCurrentScene();
     _sceneMgr.deinitializeAI(true);
     _sceneMgr.destroyInstance();
     _GFX.closeRenderer();
-    PRINT_FN(Locale::get("STOP_RESOURCE_CACHE"));
     ResourceCache::getInstance().destroyInstance();
     LightManager::getInstance().destroyInstance();
     PRINT_FN(Locale::get("STOP_ENGINE_OK"));
@@ -481,23 +466,22 @@ void Kernel::shutdown(){
 }
 
 void Kernel::updateResolutionCallback(I32 w, I32 h){
-    if(!_applicationReady) return;
     Application& app = Application::getInstance();
-    //minimized
-    _renderingPaused = (w == 0 || h == 0);
-    app.setResolutionWidth(w);
-    app.setResolutionHeight(h);
-    app.isFullScreen(!ParamHandler::getInstance().getParam<bool>("runtime.windowedMode"));
-    vec2<U16> newResolution(w,h);
-    //Update the graphical user interface
-    GUI::getInstance().onResize(newResolution);
-    // Cache resolution for faster access
-    SceneManager::getInstance().cacheResolution(newResolution);
-    // Update internal resolution tracking (used for joysticks and mouse)
-    InputInterface::getInstance().updateResolution(w,h);
-    //Update post-processing render targets and buffers
-    PostFX::getInstance().reshapeFB(w, h);
-    ShaderManager::getInstance().refresh();
+    app.setResolution(w, h);
+    if (app.mainLoopActive()){
+        //minimized
+        _renderingPaused = (w == 0 || h == 0);
+        app.isFullScreen(!ParamHandler::getInstance().getParam<bool>("runtime.windowedMode"));
+        vec2<U16> newResolution(w, h);
+        //Update the graphical user interface
+        GUI::getInstance().onResize(newResolution);
+        // Update light manager so that all shadow maps and other render targets match our needs
+        LightManager::getInstance().updateResolution(w, h);
+        // Cache resolution for faster access
+        SceneManager::getInstance().cacheResolution(newResolution);
+        // Update internal resolution tracking (used for joysticks and mouse)
+        InputInterface::getInstance().updateResolution(w,h);
+    }
 }
 
 ///--------------------------Input Management-------------------------------------///

@@ -24,60 +24,49 @@
 #define _C_SM_H_
 
 #include "ShadowMap.h"
+
 class Quad3D;
 class Camera;
+class GFXDevice;
 class IMPrimitive;
 class ShaderProgram;
 class SceneGraphNode;
-///Directional lights can't deliver good quality shadows using a single shadow map. This tehnique offers an implementation of the CSM method
+class DirectionalLight;
+///Directional lights can't deliver good quality shadows using a single shadow map. This technique offers an implementation of the CSM method
 class CascadedShadowMaps : public ShadowMap {
 public:
-    CascadedShadowMaps(Light* light, F32 numSplits, F32 splitLogFactor);
+    CascadedShadowMaps(Light* light, F32 numSplits);
     ~CascadedShadowMaps();
     void render(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction);
     void postRender();
     ///Update depth maps
-    void resolution(U16 resolution, F32 resolutionFactor);
+    void resolution(U16 resolution, U8 resolutionFactor);
     void previewShadowMaps();
     void togglePreviewShadowMaps(bool state);
     void init(ShadowMapInfo* const smi);
 
 protected:
-    ///Simple frustum representation (no ratio or fov needed for now)
-    struct frustum {
-        vec3<F32> wsPoints[8];
-        vec3<F32> lsPoints[8];
-    };
-
-#if defined(CSM_USE_LAYERED_RENDERING)
-    void extractShadowCastersAndReceivers(const SceneRenderState& renderState);
-#endif
-
-    void prepareDebugView();
-    void releaseDebugView();
-    void drawFrustum(bool lightFrustum);
-
-    void CalculateSplitDepths(const Camera& cam, const vec2<F32>& zPlanes);
-    void ApplyFrustumSplit(U8 pass, const vec2<F32>& zPlanes);
+    void CalculateSplitDepths(const Camera& cam);
+    void ApplyFrustumSplit(U8 pass);
+    void updateResolution(I32 newWidth, I32 newHeight);
 
 protected:
     U8  _numSplits;
-    U8  _splitPadding; //<Avoid artifacts;
     F32 _splitLogFactor;
-    bool _updateFrustum;
+    F32 _nearClipOffset;
+    vec2<F32> _sceneZPlanes;
     mat4<F32> _viewMatrixCache;
     mat4<F32> _viewInvMatrixCache;
+    mat4<F32> _shadowViewMatrices[Config::MAX_SPLITS_PER_LIGHT];
+    mat4<F32> _shadowProjMatrices[Config::MAX_SPLITS_PER_LIGHT];
     Quad3D* _renderQuad;
     ShaderProgram*  _previewDepthMapShader;
     ShaderProgram*  _blurDepthMapShader;
-    vectorImpl<frustum >   _frustum;
-    vectorImpl<const SceneGraphNode* > _casters;
-    vectorImpl<const SceneGraphNode* > _receivers;
-    ///The blur buffer
-    FrameBuffer*        _blurBuffer;
-    ///For frusta preview
-    IMPrimitive*        _primitive;
-
+    FrameBuffer::FrameBufferTarget* _renderPolicy;
+    ///Shortcut for the owning directional light
+    DirectionalLight*  _dirLight;
+    FrameBuffer*       _blurBuffer;
+    GFXDevice&         _gfxDevice;
     vectorImpl<vec3<F32> > _frustumCornersVS;
     vectorImpl<vec3<F32> > _frustumCornersWS;
     vectorImpl<vec3<F32> > _frustumCornersLS;

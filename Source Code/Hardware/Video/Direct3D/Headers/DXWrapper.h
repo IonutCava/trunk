@@ -37,14 +37,14 @@
 
 DEFINE_SINGLETON_EXT1(DX_API,RenderAPIWrapper)
 
-private:
+protected:
     DX_API() : RenderAPIWrapper() {}
 
     I8   initHardware(const vec2<U16>& resolution, I32 argc, char **argv);
     void exitRenderLoop(bool killCommand = false);
     void closeRenderingApi();
     void initDevice(U32 targetFrameRate);
-    void changeResolution(U16 w, U16 h);
+    void changeResolutionInternal(U16 w, U16 h);
     void setMousePosition(U16 x, U16 y) const;
     ///Change the window's position
     void setWindowPos(U16 w, U16 h)  const;
@@ -59,7 +59,7 @@ private:
     void clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll) {}
     void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
 
-    inline FrameBuffer*        newFB(const FBType& type)                      {return New d3dRenderTarget(type); }
+    inline FrameBuffer*        newFB(bool multisampled)                       {return New d3dRenderTarget(multisampled); }
     inline GenericVertexData*  newGVD()                                       {return New d3dGenericVertexData(); }
     inline VertexBuffer*       newVB(const PrimitiveType& type)               {return New d3dVertexBuffer(type);}
     inline PixelBuffer*        newPB(const PBType& type)                      {return New d3dPixelBuffer(type);}
@@ -100,12 +100,13 @@ private:
     void setLight(Light* const light){};
 
     void Screenshot(char *filename, const vec4<F32>& rect);
-    RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor);
-    void updateStateInternal(RenderStateBlock* block, bool force = false);
 
     bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
 
     U64 getFrameDurationGPU() const { return 0; }
+
+    void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock);
+
 END_SINGLETON
 
 #endif

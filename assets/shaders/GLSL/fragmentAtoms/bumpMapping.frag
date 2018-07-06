@@ -1,6 +1,5 @@
 //Normal or BumpMap
 uniform sampler2D texNormalMap;
-uniform vec2 dvd_zPlanes;
 uniform float parallax_factor = 1.0f;
 uniform float relief_factor = 1.0f;
 uniform int bumpMapLightId = 0;
@@ -75,7 +74,7 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
     
     vec2 uv_offset = h * AB;
     
-    vec3 p = _vertexWV.xyz;
+    vec3 p = (dvd_ViewMatrix * _vertexW).xyz;
     vec3 v = normalize(p);
     //Compute light direction
     p += v*h*viewVecTBN.z;	

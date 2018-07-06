@@ -9,9 +9,10 @@ FXAAPreRenderOperator::FXAAPreRenderOperator(Quad3D* target,
                                              FrameBuffer* result,
                                              const vec2<U16>& resolution,
                                              SamplerDescriptor* const sampler) : PreRenderOperator(FXAA_STAGE,target,resolution,sampler),
-                                                                                 _outputFB(result)
+                                                                                 _outputFB(result),
+                                                                                 _ready(false)
 {
-    _samplerCopy = GFX_DEVICE.newFB(FB_2D_COLOR);
+    _samplerCopy = GFX_DEVICE.newFB();
     TextureDescriptor fxaaDescriptor(TEXTURE_2D,
                                      RGBA,
                                      RGBA8,
@@ -20,10 +21,11 @@ FXAAPreRenderOperator::FXAAPreRenderOperator(Quad3D* target,
 
     _samplerCopy->AddAttachment(fxaaDescriptor,TextureDescriptor::Color0);
     _samplerCopy->toggleDepthBuffer(false);
-    _samplerCopy->Create(resolution.width,resolution.height);
     ResourceDescriptor fxaa("FXAA");
     fxaa.setThreadedLoading(false);
     _fxaa = CreateResource<ShaderProgram>(fxaa);
+    _fxaa->UniformTexture("texScreen", 0);
+    reshape(resolution.width, resolution.height);
 }
 
 FXAAPreRenderOperator::~FXAAPreRenderOperator(){
@@ -33,12 +35,17 @@ FXAAPreRenderOperator::~FXAAPreRenderOperator(){
 
 void FXAAPreRenderOperator::reshape(I32 width, I32 height){
     _samplerCopy->Create(width,height);
+    _fxaa->Uniform("size", vec2<F32>(_outputFB->getWidth(), _outputFB->getHeight()));
 }
 
 ///This is tricky as we use our screen as both input and output
 void FXAAPreRenderOperator::operation(){
-    if(!_enabled) return;
-    if(!_renderQuad) return;
+    if (!_ready){
+        if (!_enabled) return;
+        if (!_renderQuad) return;
+        _ready = true;
+        return;
+    }
 
     GFXDevice& gfx = GFX_DEVICE;
 
@@ -48,8 +55,6 @@ void FXAAPreRenderOperator::operation(){
     _outputFB->Begin(FrameBuffer::defaultPolicy());
         _samplerCopy->Bind(0);
         _fxaa->bind();
-        _fxaa->UniformTexture("texScreen", 0);
-        _fxaa->Uniform("size", vec2<F32>(_outputFB->getWidth(), _outputFB->getHeight()));
             gfx.toggle2D(true);
             _renderQuad->setCustomShader(_fxaa);//<Render quad is shared, so update internal shader
             gfx.renderInstance(_renderQuad->renderInstance());

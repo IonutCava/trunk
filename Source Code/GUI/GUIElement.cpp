@@ -13,9 +13,8 @@ GUIElement::GUIElement(CEGUI::Window*const  parent,const GUIType& type,const vec
     d.setCullMode(CULL_MODE_NONE);
     d.setZEnable(false);
     d.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
-    _guiSB = GFX_DEVICE.createStateBlock(d);
+    _guiSB = GFX_DEVICE.getOrCreateStateBlock(d);
 }
 
 GUIElement::~GUIElement(){
-    SAFE_DELETE(_guiSB);
 }

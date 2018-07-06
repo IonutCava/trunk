@@ -34,6 +34,7 @@ enum SceneNodeType;
 
 class Light;
 class Camera;
+class PostFX;
 class Quad3D;
 class Object3D;
 class ApplicationTimer;
@@ -66,7 +67,7 @@ public:
     inline void      exitRenderLoop(bool killCommand = false)       {_api.exitRenderLoop(killCommand);}
            void      closeRenderingApi();
            void      changeResolution(U16 w, U16 h);
-
+    inline void      changeResolution(const vec2<U16>& resolution) {changeResolution(resolution.width, resolution.height);}
     inline void beginFrame() {_api.beginFrame();}
     inline void endFrame()   {_api.endFrame();  }
            void flush();
@@ -74,7 +75,7 @@ public:
     /// Rendering buffer management
     inline FrameBuffer*  getRenderTarget(RenderTarget target) const  {return _renderTarget[target];}
 
-    inline FrameBuffer*        newFB(const FBType& type = FB_2D_COLOR)                {return _api.newFB(type); }
+    inline FrameBuffer*        newFB(bool multisampled = false)                       {return _api.newFB(multisampled); }
     inline VertexBuffer*       newVB(const PrimitiveType& type = TRIANGLES)           {return _api.newVB(type); }
     inline PixelBuffer*        newPB(const PBType& type = PB_TEXTURE_2D)              {return _api.newPB(type); }
     inline GenericVertexData*  newGVD()                                               {return _api.newGVD();     }
@@ -193,19 +194,17 @@ public:
     /// Some Scene Node Types are excluded from certain operations (lights triggers, etc)
     bool excludeFromStateChange(const SceneNodeType& currentType);
     ///Creates a new API dependend stateblock based on the received description
-    ///Calls newRenderStateBlock and also saves the new block in the state block map
-    RenderStateBlock* createStateBlock(const RenderStateBlockDescriptor& descriptor);
     ///Sets the current state block to the one passed as a param
     ///It is not set immediately, but a call to "updateStates" is required
     RenderStateBlock* setStateBlock(RenderStateBlock* block, bool forceUpdate = false);
-    ///Same as setStateBlock(RenderStateBlock* block), but uses a blank description
-    RenderStateBlock* setStateBlockByDesc(const RenderStateBlockDescriptor &desc);
+    /// Return or create a new state block using the given descritpor. DO NOT DELETE THE RETURNED STATE BLOCK! GFXDevice handles that!
+    RenderStateBlock* getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor);
     ///Set previous state block - (deep, I know -Ionut)
-    inline RenderStateBlock* setPreviousStateBlock(bool forceUpdate = false) {assert(_previousStateBlock != nullptr);return setStateBlock(_previousStateBlock,forceUpdate);}
+    inline RenderStateBlock* setPreviousStateBlock(bool forceUpdate = false) {return setStateBlock(_previousStateBlock, forceUpdate);}
     ///Sets a standard state block
-    inline RenderStateBlock* setDefaultStateBlock(bool forceUpdate = false) {assert(_defaultStateBlock != nullptr);return setStateBlock(_defaultStateBlock,forceUpdate);}
+    inline RenderStateBlock* setDefaultStateBlock(bool forceUpdate = false)  {return setStateBlock(_defaultStateBlock, forceUpdate);}
     ///Update the graphics pipeline using the current rendering API with the state block passed
-    inline void updateStateInternal(RenderStateBlock* block, bool force = false) {_api.updateStateInternal(block,force);}
+    inline void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) { _api.activateStateBlock(newBlock, oldBlock); }
     ///If a new state has been set, update the Graphics pipeline
            void updateStates(bool force = false);
     /*//Render State Management */
@@ -237,24 +236,41 @@ public:
 
     inline U64 getFrameDurationGPU() const { return _api.getFrameDurationGPU(); }
 
-    void previewDepthBuffer();
+    inline void togglePreviewDepthBuffer() { _previewDepthBuffer = !_previewDepthBuffer; }
+
+    inline bool MSAAEnabled() const { return _MSAASamples > 0; }
+    inline U8   MSAASamples() const { return _MSAASamples; }
+    inline bool FXAAEnabled() const { return _FXAASamples > 0; }
+    inline U8   FXAASamples() const { return _FXAASamples; }
+
+    inline void initAA(U8 fxaaSamples, U8 msaaSamples){
+        _FXAASamples = fxaaSamples;
+        _MSAASamples = msaaSamples;
+    }
+
+    RenderDetailLevel generalDetailLevel()                             const { return _generalDetailLevel; }
+    void              generalDetailLevel(RenderDetailLevel detailLevel)      { _generalDetailLevel = detailLevel; }
+    RenderDetailLevel shadowDetailLevel()                              const { return _shadowDetailLevel; }
+    void              shadowDetailLevel(RenderDetailLevel detailLevel)       { _shadowDetailLevel = detailLevel; }
 
 protected:
     friend class Kernel;
     friend class Application;
     inline void setMousePosition(U16 x, U16 y) const {_api.setMousePosition(x,y);}
-
+    inline void changeResolutionInternal(U16 width, U16 height) { _api.changeResolutionInternal(width, height); }
 private:
 
     GFXDevice();
     ~GFXDevice();
 
-    ///Returns an API dependend stateblock based on the description
-    inline RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor) { return _api.newRenderStateBlock(descriptor); }
+    ///Returns an API dependent stateblock based on the description
     inline void drawText(const TextLabel& textLabel, const vec2<I32>& position) {_api.drawText(textLabel, position);}
-           void previewDepthBufferInternal();
+           void previewDepthBuffer();
 
 private:
+    PostFX&           _postFX;
+    Frustum&          _frustum;
+    ShaderManager&    _shaderManager;
     RenderAPIWrapper& _api;
     bool _deviceStateDirty;
     RenderStage _renderStage, _prevRenderStage;
@@ -305,6 +321,12 @@ protected:
     ///getMatrix cache
     mat4<F32> _mat4Cache;
     mat3<F32> _mat3Cache;
+    /// AA system
+    U8        _MSAASamples;
+    U8        _FXAASamples;
+    /// Quality settings
+    RenderDetailLevel _generalDetailLevel;
+    RenderDetailLevel _shadowDetailLevel;
 
 END_SINGLETON
 

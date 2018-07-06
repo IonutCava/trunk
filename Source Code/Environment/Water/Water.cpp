@@ -2,6 +2,7 @@
 
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -18,7 +19,7 @@ void WaterPlane::postLoad(SceneGraphNode* const sgn){
     assert(_texture && _shader && _plane);
     _node = sgn;
 
-    _farPlane = 2.0f * ParamHandler::getInstance().getParam<F32>("runtime.zFar");
+    _farPlane = 2.0f * Frustum::getInstance().getZPlanes().y;
     _plane->setCorner(Quad3D::TOP_LEFT,     vec3<F32>(-_farPlane, 0, -_farPlane));
     _plane->setCorner(Quad3D::TOP_RIGHT,    vec3<F32>( _farPlane, 0, -_farPlane));
     _plane->setCorner(Quad3D::BOTTOM_LEFT,  vec3<F32>(-_farPlane, 0,  _farPlane));

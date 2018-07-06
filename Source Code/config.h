@@ -97,10 +97,6 @@ namespace Config
     #define HIDE_DEBUG_CONSOLE
 #endif //HIDE_DEBUG_CONSOLE
 
-/// Comment this to use regular multi-pass rendering for CSM instead of the geometry shader approach
-#ifndef CSM_USE_LAYERED_RENDERING
-//#define CSM_USE_LAYERED_RENDERING
-#endif
 ///OS specific stuff
 #if defined( _WIN32 )
     #define OS_WINDOWS

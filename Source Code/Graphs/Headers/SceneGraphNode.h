@@ -134,10 +134,12 @@ public:
     inline void  setBoundingBoxDirty() {_boundingBoxDirty = true;}
 
            const BoundingBox&     getBoundingBoxTransformed();
-    inline       BoundingBox&     getBoundingBox()               {ReadLock r_lock(_queryLock); return _boundingBox;}
-    inline const BoundingBox&     getBoundingBoxConst()   const  {ReadLock r_lock(_queryLock); return _boundingBox;}
-    inline const BoundingBox&     getInitialBoundingBox() const  {ReadLock r_lock(_queryLock); return _initialBoundingBox;}
-    inline const BoundingSphere&  getBoundingSphere()     const  {ReadLock r_lock(_queryLock); return _boundingSphere;}
+    inline       BoundingBox&     getBoundingBox()                {ReadLock r_lock(_queryLock); return _boundingBox;}
+    inline const BoundingBox&     getBoundingBoxConst()    const  {ReadLock r_lock(_queryLock); return _boundingBox;}
+    inline       BoundingSphere&  getBoundingSphere()             {ReadLock r_lock(_queryLock); return _boundingSphere;}
+    inline const BoundingSphere&  getBoundingSphereConst() const  {ReadLock r_lock(_queryLock); return _boundingSphere; }
+    inline const BoundingBox&     getInitialBoundingBox()  const  { ReadLock r_lock(_queryLock); return _initialBoundingBox; }
+
     void getBBoxes(vectorImpl<BoundingBox >& boxes) const;
     /*Bounding Box Management*/
 

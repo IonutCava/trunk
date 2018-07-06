@@ -39,6 +39,8 @@ public:
 	~DeferredShadingRenderer();
 	void render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState);
 	void toggleDebugView();
+    void updateResolution(U16 width, U16 height);
+
 private:
 	void firstPass(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState);
 	void secondPass(const SceneRenderState& sceneRenderState);

@@ -63,7 +63,11 @@ public:
 
 	inline U32 GetFrameIndex() const {return _lastFrameIndex;}
 	inline U32 GetFrameCount() const {return (U32)_transforms.size();}
-	inline vectorImpl<mat4<F32> >& GetTransforms(const D32 elapsedTime){ return _transforms[GetFrameIndexAt(elapsedTime)]; }
+	inline vectorImpl<mat4<F32> >& GetTransforms(const D32 elapsedTime) {
+        U32 frameIndex = GetFrameIndexAt(elapsedTime);
+        assert(frameIndex < _transforms.size());
+         return _transforms[frameIndex];
+    }
 
 protected:
 	friend class SceneAnimator;

@@ -40,6 +40,8 @@ void ResourceCache::Destroy(){
     if(_resDB.empty())
         return;
 
+    PRINT_FN(Locale::get("STOP_RESOURCE_CACHE"));
+
     FOR_EACH(ResourceMap::value_type& it, _resDB){
         if(remove(it.second, true)){
             SAFE_DELETE(it.second);

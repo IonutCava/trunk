@@ -243,9 +243,6 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glImmediateModeEmulation.h">
       <Filter>Video\OpenGL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glRenderStateBlock.h">
-      <Filter>Video\OpenGL\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glResources.h">
       <Filter>Video\OpenGL\Headers</Filter>
     </ClInclude>
@@ -274,9 +271,6 @@
       <Filter>Video\Direct3D\Shaders\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dEnumTable.h">
-      <Filter>Video\Direct3D\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dRenderStateBlock.h">
       <Filter>Video\Direct3D\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dResources.h">
@@ -449,9 +443,6 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glImmediateModeEmulation.cpp">
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glRenderStateBlock.cpp">
-      <Filter>Video\OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLStates.cpp">
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
@@ -483,9 +474,6 @@
       <Filter>Video\OpenGL\Textures</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.cpp">
-      <Filter>Video\Direct3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dRenderStateBlock.cpp">
       <Filter>Video\Direct3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\DXWrapper.cpp">

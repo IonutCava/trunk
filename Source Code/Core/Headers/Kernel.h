@@ -138,7 +138,6 @@ private:
     CameraManager* _cameraMgr;
 
     static bool   _keepAlive;
-    static bool   _applicationReady;
     static bool   _renderingPaused;
     static bool   _freezeLoopTime;
     static bool   _freezeGUITime;

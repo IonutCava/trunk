@@ -16,48 +16,14 @@
 #		pragma GCC diagnostic ignored "-Wall"
 #endif
 
-#include <boost/lockfree/queue.hpp>
-
 namespace {
 #	ifndef CEGUI_DEFAULT_CONTEXT
 #		define CEGUI_DEFAULT_CONTEXT CEGUI::System::getSingleton().getDefaultGUIContext()
 #	endif
      
-    static const I32 messageQueueCapacity = 512;
     static const I32 messageQueueTimeoutInSec = 3;
     static vectorImpl<CEGUI::FormattedListboxTextItem* > _newItem;
-
-    class MessageStruct {
-    public:
-        MessageStruct(const char* msg, bool error) : _error(error)
-        {
-            _msg = _strdup(msg);
-        }
-        ~MessageStruct()
-        {
-            SAFE_DELETE(_msg);
-        }
-
-        const char* msg()   const {return _msg;}
-              bool  error() const {return _error;}
-    private:
-        char* _msg;
-        bool  _error;
-    };
-
-    /// Used to queue output text to be displayed when '_init' becomes true
-    static boost::lockfree::queue<MessageStruct* , boost::lockfree::capacity<messageQueueCapacity> >  _outputBuffer;
-    static vectorImpl<std::pair<std::string, bool > > _outputTempBuffer;
-
-    void PushText(MessageStruct* msg){
-        U64 startTimer = GETUSTIME(true);
-        while (!_outputBuffer.push(msg)){
-            if (getUsToSec(GETUSTIME(true) - startTimer) > messageQueueTimeoutInSec){
-                break;
-            }
-        }
-    }
-};
+}
 
 #if defined(_MSC_VER)
 #	pragma warning( pop )
@@ -65,12 +31,16 @@ namespace {
 #	pragma GCC diagnostic pop
 #endif
 
-static U64 _totalTime = 0ULL;
+U64 GUIConsole::_totalTime = 0ULL;
+I32 GUIConsole::_currentItem = 0;
+boost::lockfree::queue<MessageStruct*, boost::lockfree::capacity<GUIConsole::_messageQueueCapacity> >  GUIConsole::_outputBuffer;
+vectorImpl<std::pair<std::string, bool > > GUIConsole::_outputTempBuffer;
 
 GUIConsole::GUIConsole() : _consoleWindow(nullptr),
                            _editBox(nullptr),
                            _outputWindow(nullptr),
                            _init(false),
+                           _closing(false),
                            _inputHistoryIndex(0)
 {
     // we need a default command parser, so just create it here
@@ -88,9 +58,13 @@ GUIConsole::GUIConsole() : _consoleWindow(nullptr),
 
 GUIConsole::~GUIConsole()
 {
+    _closing = true;
     setVisible(false);
 
     _init = false;
+
+    _outputTempBuffer.clear();
+
     if (_consoleWindow)
         CEGUI_DEFAULT_CONTEXT.getRootWindow()->removeChild(_consoleWindow);
 
@@ -100,6 +74,7 @@ GUIConsole::~GUIConsole()
         SAFE_DELETE(_newItem[i]);
     }
     _newItem.clear();
+
 }
 
 void GUIConsole::CreateCEGUIWindow(){
@@ -211,34 +186,44 @@ bool GUIConsole::isVisible(){
 
 void GUIConsole::printText(const char* output, bool error){
 
-    if (!_init){
-        _outputTempBuffer.push_back(std::make_pair(std::string(output), error));
+    if (!_init && !_closing){
+        std::string outString(output);
+        assert(!outString.empty());
+        _outputTempBuffer.push_back(std::make_pair(outString, error));
         return;
     }
 
     PushText(New MessageStruct(output, error));
  }
 
-static I32 currentItem = 0;
+void GUIConsole::PushText(MessageStruct* msg){
+    U64 startTimer = GETUSTIME(true);
+    while (!_outputBuffer.push(msg)){
+        if (getUsToSec(GETUSTIME(true) - startTimer) > messageQueueTimeoutInSec){
+            break;
+        }
+    }
+}
+
 void GUIConsole::OutputText(const char* inMsg, const bool error){
     // Create a new List Box item that uses wordwrap. This will hold the output from the command
-    // Append the response with left wordwrap alignement
+    // Append the response with left wordwrap alignment
     //CEGUI::FormattedListboxTextItem *newItem = New CEGUI::FormattedListboxTextItem(inMsg,CEGUI::HTF_WORDWRAP_LEFT_ALIGNED);
-    _newItem[currentItem]->setText(inMsg);
+    _newItem[_currentItem]->setText(inMsg);
     // Set the correct color (e.g. red for errors)
-    _newItem[currentItem]->setTextColours(error ? CEGUI::Colour(1.0f,0.0f,0.0f) : CEGUI::Colour(0.4f,0.4f,0.3f));
+    _newItem[_currentItem]->setTextColours(error ? CEGUI::Colour(1.0f, 0.0f, 0.0f) : CEGUI::Colour(0.4f, 0.4f, 0.3f));
     // Add the new ListBoxTextItem to the ListBox
-    _outputWindow->removeItem(_newItem[currentItem]);
-    _outputWindow->addItem(_newItem[currentItem]);
+    _outputWindow->removeItem(_newItem[_currentItem]);
+    _outputWindow->addItem(_newItem[_currentItem]);
     // Always make sure the last item is visible (auto-scroll)
-    _outputWindow->ensureItemIsVisible(_newItem[currentItem]);
+    _outputWindow->ensureItemIsVisible(_newItem[_currentItem]);
 
-    currentItem = ++currentItem % _CEGUI_MAX_CONSOLE_ENTRIES;
+    _currentItem = ++_currentItem % _CEGUI_MAX_CONSOLE_ENTRIES;
 }
 
 void GUIConsole::update(const U64 deltaTime){
     _totalTime += deltaTime;
-    if(!_init || !Application::getInstance().isMainThread()){
+    if(!_init || !Application::getInstance().isMainThread() || _closing){
         return;
     }
 
@@ -248,6 +233,7 @@ void GUIConsole::update(const U64 deltaTime){
     for (std::pair<std::string, bool> message : _outputTempBuffer){
         if (lastMsgError != message.second){
             lastMsgError = message.second;
+            assert(!message.first.empty());
             OutputText(message.first.c_str(), lastMsgError);
             lastMsg.clear();
         }

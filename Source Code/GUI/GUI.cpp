@@ -34,7 +34,9 @@ void GUI::onResize(const vec2<U16>& newResolution){
     //CEGUI handles it's own init checks
     CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(newResolution.width,newResolution.height));
 
-    if(!_init) return;
+    if (!_init || _cachedResolution == newResolution)
+        return;
+
     vec2<I32> difDimensions(_cachedResolution.width - newResolution.width,
                             _cachedResolution.height - newResolution.height);
 
@@ -77,11 +79,13 @@ void GUI::draw(const U64 deltaTime, const D32 interpolationFactor){
     }
 }
 
-bool GUI::init(){
+bool GUI::init(const vec2<U16>& resolution){
     if(_init) {
         D_ERROR_FN(Locale::get("ERROR_GUI_DOUBLE_INIT"));
         return false;
     }
+    _cachedResolution = resolution;
+
 #ifdef _DEBUG
     CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Insane);
 #endif
@@ -134,6 +138,7 @@ bool GUI::init(){
 }
 
 void GUI::close(){
+    PRINT_FN(Locale::get("STOP_GUI"));
     SAFE_DELETE(_console);
     RemoveResource(_guiShader);
     FOR_EACH(guiMap::value_type it, _guiStack) {

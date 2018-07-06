@@ -3,6 +3,7 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIText.h"
 #include "Scenes/Headers/SceneState.h"
+#include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -21,7 +22,7 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
     ResourceDescriptor deferred("DeferredShadingPass2");
     deferred.setThreadedLoading(false);
     _deferredShader = CreateResource<ShaderProgram>(deferred);
-    _deferredBuffer = GFX_DEVICE.newFB(FB_2D_DEFERRED);
+    _deferredBuffer = GFX_DEVICE.newFB();
 
     ResourceDescriptor deferredPreview("deferredPreview");
     deferredPreview.setThreadedLoading(false);
@@ -77,7 +78,7 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
     _renderQuads.push_back(CreateResource<Quad3D>(mrt3));
     _renderQuads.push_back(CreateResource<Quad3D>(mrt4));
     _renderQuads.push_back(CreateResource<Quad3D>(mrtPreviewSmall));
-    FOR_EACH(Quad3D* renderQuad, _renderQuads){
+    for(Quad3D* renderQuad : _renderQuads){
         assert(renderQuad);
         renderQuad->setCustomShader(_previewDeferredShader);
         renderQuad->renderInstance()->preDraw(true);
@@ -88,22 +89,11 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
     ParamHandler& par = ParamHandler::getInstance();
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
     par.setParam("rendering.enableShadows",false);
-    F32 width  = (F32)par.getParam<U16>("runtime.resolutionWidth");
-    F32 height = (F32)par.getParam<U16>("runtime.resolutionHeight");
-    _deferredBuffer->Create(width,height);
+    F32 width  = Application::getInstance().getResolution().width;
+    F32 height = Application::getInstance().getResolution().height;
+    
+    updateResolution(width, height);
 
-    _renderQuads[0]->setDimensions(vec4<F32>(0,0,width,height));
-    _renderQuads[1]->setDimensions(vec4<F32>(width/2,0,width,height/2));
-    _renderQuads[2]->setCorner(Quad3D::TOP_LEFT, vec3<F32>(0, height, 0));
-    _renderQuads[2]->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(width/2, height, 0));
-    _renderQuads[2]->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(0,height/2,0));
-    _renderQuads[2]->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(width/2, height/2, 0));
-    _renderQuads[3]->setCorner(Quad3D::TOP_LEFT, vec3<F32>(width/2, height, 0));
-    _renderQuads[3]->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(width, height, 0));
-    _renderQuads[3]->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(width/2,height/2,0));
-    _renderQuads[3]->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(width, height/2, 0));
-    //Using a separate, smaller render quad for debug view because it's faster than resizing a quad back and forth -Ionut
-    _renderQuads[4]->setDimensions(vec4<F32>(0,0,width/2,height/2));
     GUI& gui = GUI::getInstance();
     gui.addText("PositionData",           //Unique ID
                 vec2<I32>(60,60),          //Position
@@ -234,6 +224,23 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     if(guiElement){
         guiElement->setVisible(_debugView);
     }
+}
+
+void DeferredShadingRenderer::updateResolution(U16 width, U16 height){
+    _deferredBuffer->Create(width, height);
+
+    _renderQuads[0]->setDimensions(vec4<F32>(0, 0, width, height));
+    _renderQuads[1]->setDimensions(vec4<F32>(width / 2, 0, width, height / 2));
+    _renderQuads[2]->setCorner(Quad3D::TOP_LEFT, vec3<F32>(0, height, 0));
+    _renderQuads[2]->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(width / 2, height, 0));
+    _renderQuads[2]->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(0, height / 2, 0));
+    _renderQuads[2]->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(width / 2, height / 2, 0));
+    _renderQuads[3]->setCorner(Quad3D::TOP_LEFT, vec3<F32>(width / 2, height, 0));
+    _renderQuads[3]->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(width, height, 0));
+    _renderQuads[3]->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(width / 2, height / 2, 0));
+    _renderQuads[3]->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(width, height / 2, 0));
+    //Using a separate, smaller render quad for debug view because it's faster than resizing a quad back and forth -Ionut
+    _renderQuads[4]->setDimensions(vec4<F32>(0, 0, width / 2, height / 2));
 }
 
 void DeferredShadingRenderer::toggleDebugView(){

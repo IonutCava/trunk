@@ -103,15 +103,13 @@ protected:
     virtual void idle() = 0;
     virtual void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) = 0;
 
-    ///Change the resolution and reshape all graphics data
-    virtual void changeResolution(U16 w, U16 h) = 0;
     ///Change the window's position
     virtual void setWindowPos(U16 w, U16 h) const = 0;
     ///Unproject the give windows space coords to object space (use z - to determine depth [0,1])
     virtual vec3<F32> unproject(const vec3<F32>& windowCoord) const = 0;
     ///Platform specific cursor manipulation. Set's the cursor's location to the specified X and Y relative to the edge of the window
     virtual void setMousePosition(U16 x, U16 y) const = 0;
-    virtual FrameBuffer*        newFB(const FBType& type = FB_2D_COLOR) = 0;
+    virtual FrameBuffer*        newFB(bool multisampled) = 0;
     virtual VertexBuffer*       newVB(const PrimitiveType& type = TRIANGLES) = 0;
     virtual GenericVertexData*  newGVD() = 0;
     virtual PixelBuffer*        newPB(const PBType& type = PB_TEXTURE_2D) = 0;
@@ -169,10 +167,11 @@ protected:
 
     virtual U64 getFrameDurationGPU() const = 0;
 
-public: //RenderAPIWrapper global
+    virtual void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) = 0;
 
-    virtual void updateStateInternal(RenderStateBlock* block, bool force = false) = 0;
-    virtual RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor) = 0;
+protected:
+    ///Change the resolution and reshape all graphics data
+    virtual void changeResolutionInternal(U16 w, U16 h) = 0;
 
 private:
     RenderAPI        _apiId;

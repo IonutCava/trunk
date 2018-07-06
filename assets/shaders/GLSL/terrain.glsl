@@ -48,9 +48,7 @@ void main (void)
 -- Fragment
 
 //based on: http://yannick.gerometta.free.fr/base.php?id=glsldemo
-in vec3 _viewDirection;
 in vec2 _texCoord;
-in vec3 _normalMV;
 in vec4 _vertexW;
 
 #include "lightInput.cmn"

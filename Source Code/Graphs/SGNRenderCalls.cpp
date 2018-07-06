@@ -59,16 +59,15 @@ void SceneGraphNode::checkBoundingBoxes(){
 }
 
 void SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform){
-    if(!getParent())
-        return;
-
-    //Transform the bounding box if we have a new transform
-    WriteLock w_lock(_queryLock);
-    //if(_boundingBox.Transform(_initialBoundingBox, transform)){
-    _boundingBox.Transform(_initialBoundingBox, transform);
-        //Update the bounding sphere
-        _boundingSphere.fromBoundingBox(_boundingBox);
-    //}
+    if(getParent()) {//< root
+        //Transform the bounding box if we have a new transform
+        WriteLock w_lock(_queryLock);
+        //if(_boundingBox.Transform(_initialBoundingBox, transform)){
+        _boundingBox.Transform(_initialBoundingBox, transform);
+    }
+    
+    //Update the bounding sphere
+    _boundingSphere.fromBoundingBox(_boundingBox);
 }
 
 void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox){

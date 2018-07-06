@@ -38,20 +38,24 @@ Material::Material() : Resource("temp_material"),
 
    /// Normal state for final rendering
    RenderStateBlockDescriptor stateDescriptor;
-   _defaultRenderStates.insert(std::make_pair(FINAL_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
+   _defaultRenderStates.insert(std::make_pair(FINAL_STAGE, GFX_DEVICE.getOrCreateStateBlock(stateDescriptor)));
    /// the reflection descriptor is the same as the normal descriptor
-   _defaultRenderStates.insert(std::make_pair(REFLECTION_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
+   RenderStateBlockDescriptor reflectorDescriptor(stateDescriptor);
+   _defaultRenderStates.insert(std::make_pair(REFLECTION_STAGE, GFX_DEVICE.getOrCreateStateBlock(reflectorDescriptor)));
    /// the z-pre-pass descriptor does not process colors
-   stateDescriptor.setColorWrites(false,false,false,false);
-   _defaultRenderStates.insert(std::make_pair(Z_PRE_PASS_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
+   RenderStateBlockDescriptor zPrePassDescriptor(stateDescriptor);
+   zPrePassDescriptor.setColorWrites(false, false, false, false);
+   _defaultRenderStates.insert(std::make_pair(Z_PRE_PASS_STAGE, GFX_DEVICE.getOrCreateStateBlock(zPrePassDescriptor)));
    /// A descriptor used for rendering to depth map
-   stateDescriptor.setCullMode(CULL_MODE_CCW);
+   RenderStateBlockDescriptor shadowDescriptor(stateDescriptor);
+   shadowDescriptor.setCullMode(CULL_MODE_CCW);
    /// set a polygon offset
-   stateDescriptor._zBias = 1.1f;
+   shadowDescriptor._zBias = 1.0f;
    /// ignore colors - Some shadowing techniques require drawing to the a color buffer
-   stateDescriptor.setColorWrites(true,false,false,false);
-   _defaultRenderStates.insert(std::make_pair(SHADOW_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
+   shadowDescriptor.setColorWrites(true, true, false, false);
+   _defaultRenderStates.insert(std::make_pair(SHADOW_STAGE, GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor)));
    
+  
     assert(_defaultRenderStates[FINAL_STAGE] != nullptr);
     assert(_defaultRenderStates[Z_PRE_PASS_STAGE] != nullptr);
     assert(_defaultRenderStates[SHADOW_STAGE] != nullptr);
@@ -61,10 +65,6 @@ Material::Material() : Resource("temp_material"),
 }
 
 Material::~Material(){
-    SAFE_DELETE(_defaultRenderStates[FINAL_STAGE]);
-    SAFE_DELETE(_defaultRenderStates[Z_PRE_PASS_STAGE]);
-    SAFE_DELETE(_defaultRenderStates[SHADOW_STAGE]);
-    SAFE_DELETE(_defaultRenderStates[REFLECTION_STAGE]);
     _defaultRenderStates.clear();
 }
 
@@ -74,13 +74,11 @@ void Material::update(const U64 deltaTime){
 }
 
 RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage){
-    if(descriptor.getGUID() == _defaultRenderStates[renderStage]->getDescriptor().getGUID()){
+    if(descriptor.getHash() == _defaultRenderStates[renderStage]->getDescriptor().getHash()){
         return _defaultRenderStates[renderStage];
     }
 
-    SAFE_DELETE(_defaultRenderStates[renderStage]);
-
-    _defaultRenderStates[renderStage] = GFX_DEVICE.createStateBlock(descriptor);
+    _defaultRenderStates[renderStage] = GFX_DEVICE.getOrCreateStateBlock(descriptor);
     return _defaultRenderStates[renderStage];
 }
 
@@ -131,7 +129,7 @@ void Material::setShaderProgram(const std::string& shader, const RenderStage& re
     ResourceDescriptor shaderDescriptor(_shaderInfo[renderStage]._shader);
     std::stringstream ss;
     if (!_shaderInfo[renderStage]._shaderDefines.empty()){
-        FOR_EACH(std::string& shaderDefine, _shaderInfo[renderStage]._shaderDefines){
+        for(std::string& shaderDefine : _shaderInfo[renderStage]._shaderDefines){
             ss << shaderDefine;
             ss << ",";
         }
@@ -139,14 +137,7 @@ void Material::setShaderProgram(const std::string& shader, const RenderStage& re
     ss << "DEFINE_PLACEHOLDER";
     shaderDescriptor.setPropertyList(ss.str());
     shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
-    P32 mask;
-    mask.i = 0;
-    mask.b.b0 = 1;
-    mask.b.b1 = 1;
-#if defined(CSM_USE_LAYERED_RENDERING)
-    mask.b.b2 = (renderStage == SHADOW_STAGE) ? 1 : 0;
-#endif
-    shaderDescriptor.setBoolMask(mask);
+
     _computedShaderTextures = true;
 
     _shaderComputeQueue.push(std::make_pair(renderStage, shaderDescriptor));
@@ -178,16 +169,7 @@ bool Material::computeShader(bool force, const RenderStage& renderStage){
         //the base shader is either for a Deferred Renderer or a Forward  one ...
         std::string shader = (deferredPassShader ? "DeferredShadingPass1" : (depthPassShader ? "depthPass" : "lighting"));
   
-        if (depthPassShader){
-            if (renderStage == Z_PRE_PASS_STAGE){
-                shader += ".PrePass";
-            }else{
-                shader += ".Shadow";
-#if defined(CSM_USE_LAYERED_RENDERING)
-                addShaderDefines(renderStage, "CSM_USE_LAYERED_RENDERING");
-#endif
-            }
-        }
+        if (depthPassShader) renderStage == Z_PRE_PASS_STAGE ? shader += ".PrePass" :  shader += ".Shadow";
  
         //What kind of effects do we need?
         if (_textures[TEXTURE_UNIT0]){
@@ -327,8 +309,8 @@ void Material::setDoubleSided(bool state) {
     if(_doubleSided){
         typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
         FOR_EACH(stateValue& it, _defaultRenderStates){
-            RenderStateBlockDescriptor& desc =  it.second->getDescriptor();
-            desc.setCullMode(CULL_MODE_NONE);
+            if (it.first != SHADOW_STAGE)
+                it.second->getDescriptor().setCullMode(CULL_MODE_NONE);
         }
     }
 
@@ -369,7 +351,7 @@ bool Material::isTranslucent(U8 index) {
     if(state && !_translucencyCheck){
         typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
         FOR_EACH(stateValue& it, _defaultRenderStates){
-            it.second->getDescriptor().setCullMode(CULL_MODE_NONE);
+            if (it.first != SHADOW_STAGE) it.second->getDescriptor().setCullMode(CULL_MODE_NONE);
             if(!_useAlphaTest) it.second->getDescriptor().setBlend(true);
         }
         _translucencyCheck = true;

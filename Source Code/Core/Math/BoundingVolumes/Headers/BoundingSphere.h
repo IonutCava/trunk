@@ -42,6 +42,11 @@ public:
 	{
 	}
 
+    BoundingSphere(vectorImpl<vec3<F32> >& points) : BoundingSphere()
+    {
+        createFromPoints(points);
+    }
+
 	BoundingSphere(const BoundingSphere& s){
 		//WriteLock w_lock(_lock);
 		this->_computed = s._computed;
@@ -60,13 +65,76 @@ public:
 		this->_radius = s._radius;
 	}
 
-	void fromBoundingBox(const BoundingBox& bBox){
+	inline void fromBoundingBox(const BoundingBox& bBox){
 		_center = bBox.getCenter();
 		_radius = (bBox.getMax()-_center).length();
 	}
 
-	const vec3<F32>& getCenter() const {return _center;}
-	F32              getRadius() const {return _radius;}
+    //https://code.google.com/p/qe3e/source/browse/trunk/src/BoundingSphere.h?r=28
+    void add(const BoundingSphere& bSphere){
+        F32 dist = (bSphere._center - _center).length();
+
+        if (_radius >= dist + bSphere._radius)
+            return;
+
+        if (bSphere._radius >= dist + _radius) {
+            _center = bSphere._center;
+            _radius = bSphere._radius;
+        }
+
+        F32 nRadius = (_radius + dist + bSphere._radius)*0.5;
+        F32 ratio = (nRadius - _radius) / dist;
+
+        _center += (bSphere._center - _center) * ratio;
+
+        _radius = nRadius;
+    }
+
+    void addRadius(const BoundingSphere& bSphere){
+        F32 dist = (bSphere._center - _center).length() + bSphere._radius;
+        if (_radius < dist)
+            _radius = dist;
+    }
+
+    void add(const vec3<F32>& point){
+        vec3<F32> diff = point - _center;
+        F32 dist = diff.length();
+        if (_radius < dist) {
+            F32 nRadius = (dist - _radius) * 0.5f;
+            _center += diff*(nRadius / dist);
+            _radius += nRadius;
+       }
+    }
+
+    void addRadius(const vec3<F32>& point){
+        F32 dist = (point - _center).length();
+        if (_radius < dist)
+            _radius = dist;
+    }
+
+    void createFromPoints(vectorImpl<vec3<F32>>& points)  {
+        _radius = 0;
+        I32 numPoints = (I32)points.size();
+
+        for(vec3<F32> p : points) {
+            _center += p / numPoints;
+        }
+
+        for (vec3<F32> p : points) {
+            F32 distance = (p - _center).length();
+
+            if (distance > _radius)
+                _radius = distance;
+        }
+    }
+
+
+    inline void setRadius(F32 radius) {_radius = radius;}
+    inline void setCenter(const vec3<F32>& center) {_center = center;}
+
+	inline const vec3<F32>& getCenter()   const {return _center;}
+	inline F32              getRadius()   const {return _radius;}
+    inline F32              getDiameter() const {return _radius * 2;}
 
 private:
 	bool _computed, _visibility,_dirty;

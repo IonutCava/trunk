@@ -19,7 +19,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(Quad3D* target,
     F32 width = _resolution.width;
     F32 height = _resolution.height;
 
-    _tempBloomFB = GFX_DEVICE.newFB(FB_2D_COLOR);
+    _tempBloomFB = GFX_DEVICE.newFB();
 
     TextureDescriptor tempBloomDescriptor(TEXTURE_2D,
                                           RGB,
@@ -28,21 +28,20 @@ BloomPreRenderOperator::BloomPreRenderOperator(Quad3D* target,
     tempBloomDescriptor.setSampler(*_internalSampler);
 
     _tempBloomFB->AddAttachment(tempBloomDescriptor,TextureDescriptor::Color0);
-    _tempBloomFB->Create(width/4,height/4);
     _outputFB->AddAttachment(tempBloomDescriptor, TextureDescriptor::Color0);
-    _outputFB->Create(width, height);
     ResourceDescriptor bright("bright");
     bright.setThreadedLoading(false);
     ResourceDescriptor blur("blur");
     blur.setThreadedLoading(false);
     _bright = CreateResource<ShaderProgram>(bright);
     _blur = CreateResource<ShaderProgram>(blur);
-    _blur->Uniform("size", vec2<F32>(_outputFB->getWidth(), _outputFB->getHeight()));
     _bright->UniformTexture("texScreen", 0);
     _bright->UniformTexture("texExposure", 1);
     _bright->UniformTexture("texPrevExposure", 2);
     _blur->UniformTexture("texScreen", 0);
     _blur->Uniform("kernelSize", 10);
+
+    reshape(width, height);
 }
 
 BloomPreRenderOperator::~BloomPreRenderOperator(){
@@ -70,7 +69,7 @@ void BloomPreRenderOperator::reshape(I32 width, I32 height){
     I32 w = width / 4;
     I32 h = height / 4;
     _tempBloomFB->Create(w,h);
-    _outputFB->Create(w, h);
+    _outputFB->Create(width, height);
     if(_genericFlag && _tempHDRFB){
         _tempHDRFB->Create(width, height);
         U32 lumaRez = nextPOW2(width / 3);
@@ -141,7 +140,7 @@ void BloomPreRenderOperator::toneMapScreen()
         return;
 
     if(!_tempHDRFB){
-        _tempHDRFB = GFX_DEVICE.newFB(FB_2D_COLOR_MS);
+        _tempHDRFB = GFX_DEVICE.newFB();
         TextureDescriptor hdrDescriptor(TEXTURE_2D,
                                         RGBA,
                                         RGBA16F,
@@ -150,18 +149,15 @@ void BloomPreRenderOperator::toneMapScreen()
         _tempHDRFB->AddAttachment(hdrDescriptor, TextureDescriptor::Color0);
         _tempHDRFB->Create(_inputFB[0]->getWidth(), _inputFB[0]->getHeight());
 
-        _luminaFB[0] = GFX_DEVICE.newFB(FB_2D_COLOR);
-        _luminaFB[1] = GFX_DEVICE.newFB(FB_2D_COLOR);
+        _luminaFB[0] = GFX_DEVICE.newFB();
+        _luminaFB[1] = GFX_DEVICE.newFB();
 
         SamplerDescriptor lumaSampler;
         lumaSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
         lumaSampler.setMinFilter(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR);
         lumaSampler.toggleMipMaps(true);
 
-        TextureDescriptor lumaDescriptor(TEXTURE_2D,
-                                         RED,
-                                         RED16F,
-                                         FLOAT_16);
+        TextureDescriptor lumaDescriptor(TEXTURE_2D, RED, RED16F, FLOAT_16);
         lumaDescriptor.setSampler(lumaSampler);
         _luminaFB[0]->AddAttachment(lumaDescriptor, TextureDescriptor::Color0);
         U32 lumaRez = nextPOW2(_inputFB[0]->getWidth() / 3);

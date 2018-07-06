@@ -97,20 +97,6 @@ enum PBType {
     PB_TEXTURE_3D
 };
 
-enum FBType {
-    FB_PLACEHOLDER,
-    FB_2D_COLOR,
-    FB_2D_ARRAY_COLOR, ///<FB that uses texture arrays
-    FB_2D_COLOR_MS,    ///<Multisampled FB with fallback to FB_2D_COLOR
-    FB_CUBE_COLOR,
-    FB_CUBE_COLOR_ARRAY,
-    FB_CUBE_DEPTH_ARRAY,
-    FB_2D_DEPTH,  ///< This is the same as 2D_COLOR with color writes disabled.
-    FB_2D_ARRAY_DEPTH, ///< This is the same as 2D_DEPTH but uses array textures
-    FB_CUBE_DEPTH,
-    FB_2D_DEFERRED
-};
-
 enum RenderAPI {
     OpenGL,  ///< 4.x+
     OpenGLES,///< 3.x+
@@ -136,14 +122,8 @@ enum PrimitiveType {
 enum RenderDetailLevel{
     DETAIL_LOW = 0,
     DETAIL_MEDIUM = 1,
-    DETAIL_HIGH = 2
-};
-
-enum FullScreenAntiAliasingMethod{
-    FS_MSAA = 1,
-    FS_FXAA = 2,
-    FS_SMAA = 3,
-    FS_MSwFXAA = 4 ///<MSAA rendering + FXAA post processing if possible
+    DETAIL_HIGH = 2,
+    DETAIL_ULTRA = 3
 };
 
 /// Specifies how the red, green, blue, and alpha source blending factors are computed.

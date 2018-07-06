@@ -42,6 +42,7 @@ U32 AnimEvaluator::GetFrameIndexAt(const D32 elapsedTime){
         percent= (percent-1.0f)*-1.0f;// this will invert the percent so the animation plays backwards
 
 	_lastFrameIndex = static_cast<U32>(_transforms.size() * percent);
+
 	return _lastFrameIndex;
 }
 

@@ -49,7 +49,7 @@ public:
 
     void init(const vec2<U16>& resolution);
     void idle();
-    void reshapeFB(I32 newwidth , I32 newheight);
+    void updateResolution(I32 newWidth, I32 newHeight);
 
     inline void toggleDepthPreview(const bool state) {_depthPreview = state;}
 
@@ -98,8 +98,8 @@ private:
     ShaderProgram* _anaglyphShader;
     ShaderProgram* _postProcessingShader;
     Texture2D* _underwaterTexture;
-    GFXDevice& _gfx;
-
+    GFXDevice* _gfx;
+    vec2<U16>  _resolutionCache;
 END_SINGLETON
 
 #endif

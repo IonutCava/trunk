@@ -51,8 +51,8 @@ bool glSamplerObject::Create(const SamplerDescriptor& descriptor) {
     }
 
     if (descriptor.anisotropyLevel() > 1 && descriptor.generateMipMaps()) {
-         U8 anisoLevel = std::min<I32>((I32)descriptor.anisotropyLevel(), ParamHandler::getInstance().getParam<U8>("rendering.anisotropicFilteringLevel"));
-         glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoLevel);
+        GLint anisoLevel = std::min<I32>((GLint)descriptor.anisotropyLevel(), ParamHandler::getInstance().getParam<GLint>("rendering.anisotropicFilteringLevel"));
+        glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoLevel);
     }
     //glSamplerParameterfv(_samplerID, GL_TEXTURE_BORDER_COLOR, &glm::vec4(0.0f)[0]));
     return true;

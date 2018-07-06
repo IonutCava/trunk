@@ -30,6 +30,7 @@
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include "Hardware/Platform/Headers/SharedMutex.h"           //For multi-threading
 #include <deque>
+#include <boost/lockfree/queue.hpp>
 
     ///Maximum number of lines to display in the console Window
 #ifdef _DEBUG
@@ -37,6 +38,24 @@
 #else
 #   define _CEGUI_MAX_CONSOLE_ENTRIES  128
 #endif
+
+class MessageStruct {
+public:
+    MessageStruct(const char* msg, bool error) : _error(error)
+    {
+        _msg = _strdup(msg);
+    }
+    ~MessageStruct()
+    {
+        SAFE_DELETE(_msg);
+    }
+
+    const char* msg()   const { return _msg; }
+    bool  error() const { return _error; }
+private:
+    char* _msg;
+    bool  _error;
+};
 
 class GUIConsoleCommandParser;
 ///GUIConsole implementation, CEGUI based, as in the practical tutorial series
@@ -63,8 +82,10 @@ class GUIConsole{
        void CreateCEGUIWindow(); //< The function which will load in the CEGUI Window and register event handlers
        // Post the message to the ChatHistory listbox with a white color default
        void OutputText(const char* inMsg, const bool error = false);
+       static void PushText(MessageStruct* msg);
 
     protected:
+        bool _closing;
         bool _init;                          //< used to check if the console is ready
         CEGUI::Editbox* _editBox;            //< pointer to the editBox to reduce typing and casting
         CEGUI::Listbox* _outputWindow;       //< pointer to the listbox that will contain all of the text we output to the console
@@ -73,6 +94,13 @@ class GUIConsole{
         std::string _inputBuffer;            //< Used to check the text we are typing so that we don't close the console in the middle of a sentence/command
         std::deque<std::string >_inputHistory; //< Used to manage the input history
         I16 _inputHistoryIndex;                //< Used to cycle through history
+
+        /// Used to queue output text to be displayed when '_init' becomes true
+        static I32 _currentItem;
+        static U64 _totalTime;
+        static const I32 _messageQueueCapacity = 512;
+        static boost::lockfree::queue<MessageStruct*, boost::lockfree::capacity<_messageQueueCapacity> >  _outputBuffer;
+        static vectorImpl<std::pair<std::string, bool > > _outputTempBuffer;
 };
 
 #endif

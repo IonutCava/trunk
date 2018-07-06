@@ -80,6 +80,16 @@ protected:
     vectorImpl<vec4<GLhalf> >  _normalsSmall;
     vectorImpl<vec4<GLshort> > _tangentSmall;
     vectorImpl<vec4<GLshort> > _bitangentSmall;
+
+    GLsizei _prevSizePosition;
+    GLsizei _prevSizeColor;
+    GLsizei _prevSizeNormal;
+    GLsizei _prevSizeTexcoord;
+    GLsizei _prevSizeTangent;
+    GLsizei _prevSizeBiTangent;
+    GLsizei _prevSizeBoneWeights;
+    GLsizei _prevSizeBoneIndices;
+    GLsizei _prevSizeIndices;
 };
 
 #endif

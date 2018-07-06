@@ -1,10 +1,6 @@
 
-void phong_directionalLight(in int light, 
-							in float iSpecular,
-							in float NdotL,
-							in vec4 specularIn,
-							inout MaterialProperties materialProp)
-{
+void phong_directionalLight(in int light, in float iSpecular, in float NdotL, in vec4 specularIn, inout MaterialProperties materialProp) { 
+
     int lightIndex = dvd_lightIndex[light];
 	//add the lighting contributions
 	materialProp.ambient  += material[0] * dvd_LightSource[lightIndex]._diffuse.w;

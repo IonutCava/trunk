@@ -28,45 +28,47 @@
 
 class glFrameBuffer : public FrameBuffer {
 public:
-
-    glFrameBuffer(FBType type);
+    /// if resolveBuffer is not null, we add all of our attachments to it and initialize it with this buffer
+    glFrameBuffer(glFrameBuffer* resolveBuffer = nullptr);
     ~glFrameBuffer();
 
-    bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
+    bool Create(GLushort width, GLushort height);
     void Destroy();
-    void DrawToLayer(TextureDescriptor::AttachmentType slot, GLubyte layer, bool includeDepth = true) const; ///<Use by multilayerd FB's
-    void DrawToFace(TextureDescriptor::AttachmentType slot, GLubyte nFace, bool includeDepth = true) const;
+    void DrawToLayer(TextureDescriptor::AttachmentType slot, GLubyte layer, bool includeDepth = true) const;
     void AddDepthBuffer();
 
     void Begin(const FrameBufferTarget& drawPolicy);
     void End();
 
-    void Bind(GLubyte unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) const;
+    void Bind(GLubyte unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0);
     void Unbind(GLubyte unit=0) const;
 
-    void BlitFrom(FrameBuffer* inputFB);
+    void BlitFrom(FrameBuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false);
 
-    void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const ;
+    void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const;
 
 protected:
+    void resolve();
     bool checkStatus() const;
     void InitAttachment(TextureDescriptor::AttachmentType type, const TextureDescriptor& texDescriptor);
-    bool CreateDeferred();
 
 protected:
     GLuint _textureId[5];  ///<4 color attachments and 1 depth
-    GLuint _imageLayers;
+    GLuint _textureType[5];
     GLuint _clearBufferMask;
+    GLuint _totalLayerCount;
     bool   _mipMapEnabled[5]; ///< depth may have mipmaps if needed, too
     bool   _hasDepth;
     bool   _hasColor;
+    bool   _resolved;
+    bool   _isLayeredDepth;
     static bool         _viewportChanged;
     vectorImpl<GLenum > _colorBuffers;
     bool _colorMaskChanged;
     bool _depthMaskChanged;
     static bool _mipMapsDirty;
-
-    TextureWrap _color0WrapMode[3];
+    static GLint _maxColorAttachments;
+    glFrameBuffer* _resolveBuffer;
 };
 
 #endif

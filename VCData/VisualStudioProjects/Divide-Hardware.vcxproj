@@ -331,7 +331,6 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBuffer\Headers\d3dGenericVertexData.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBuffer\Headers\d3dVertexBuffer.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dEnumTable.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dRenderStateBlock.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dResources.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\DXWrapper.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\Headers\d3dShader.h" />
@@ -353,7 +352,6 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\glsw.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glEnumTable.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glImmediateModeEmulation.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glRenderStateBlock.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glResources.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\GLWrapper.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShader.h" />
@@ -387,7 +385,6 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\PixelBuffer\d3dPixelBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBuffer\d3dVertexBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dRenderStateBlock.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\DXWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\d3dShader.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\d3dShaderProgram.cpp" />
@@ -403,7 +400,6 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLError.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLFWWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glImmediateModeEmulation.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glRenderStateBlock.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLStates.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\bstrlib.c" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.c" />

@@ -2,6 +2,7 @@
 
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -225,59 +226,37 @@ namespace XML {
         par.setParam("defaultTextureLocation",pt.get("defaultTextureLocation","textures/"));
         par.setParam("shaderLocation",pt.get("defaultShadersLocation","shaders/"));
 
-        U8 shadowDetailLevel = pt.get<U8>("rendering.shadowDetailLevel",DETAIL_HIGH);
-        U8 shadowResolutionFactor = 1;
-        switch(shadowDetailLevel){
-            default:
-            case DETAIL_HIGH:
-                shadowResolutionFactor = 4;
-                break;
-            case DETAIL_MEDIUM:
-                shadowResolutionFactor = 2;
-                break;
-            case DETAIL_LOW:
-                shadowResolutionFactor = 2;
-                break;
-        };
-        U8 aaMethod = pt.get<U8>("rendering.FSAAmethod",FS_MSAA);
-        U8 aaSamples = pt.get<U8>("rendering.FSAAsamples",2);
-        bool postProcessing = pt.get("rendering.enablePostFX",false);
-        if(aaMethod == FS_FXAA && !postProcessing) aaMethod = FS_MSAA;
-        GFX_DEVICE.postProcessingEnabled(postProcessing);
+        I32 shadowDetailLevel = pt.get<I32>("rendering.shadowDetailLevel", 2);
+        if (shadowDetailLevel <= 0){
+            GFX_DEVICE.shadowDetailLevel(DETAIL_LOW);
+            par.setParam("rendering.enableShadows", false);
+        }else{
+            GFX_DEVICE.shadowDetailLevel(static_cast<RenderDetailLevel>(std::min(shadowDetailLevel, 3) - 1));
+            par.setParam("rendering.enableShadows", true);
+        }
+
+        U8 msaaSamples = (U8)std::max(pt.get<I32>("rendering.MSAAsamples", 2), 0);
+        U8 fxaaSamples = (U8)std::max(pt.get<I32>("rendering.FXAAsamples", 2), 0);
+        GFX_DEVICE.postProcessingEnabled(pt.get("rendering.enablePostFX", false));
         GFX_DEVICE.anaglyphEnabled(pt.get("rendering.enable3D",false));
         GFX_DEVICE.hdrEnabled(pt.get("rendering.enableHDR",false));
-        par.setParam("postProcessing.enableFXAA",((aaMethod == FS_FXAA || aaMethod == FS_MSwFXAA) && aaSamples > 0));
+        GFX_DEVICE.initAA(fxaaSamples, msaaSamples);
         par.setParam("GUI.CEGUI.ExtraStates",pt.get("GUI.CEGUI.ExtraStates",false));
         par.setParam("GUI.CEGUI.SkipRendering",pt.get("GUI.CEGUI.SkipRendering",false));
         par.setParam("GUI.defaultScheme",pt.get("GUI.defaultGUIScheme","GWEN"));
         par.setParam("GUI.consoleLayout",pt.get("GUI.consoleLayoutFile","console.layout"));
         par.setParam("GUI.editorLayout",pt.get("GUI.editorLayoutFile","editor.layout"));
-        par.setParam("rendering.FSAAsamples",aaSamples);
-        par.setParam("rendering.FSAAmethod",aaMethod);
         par.setParam("rendering.detailLevel",pt.get<U8>("rendering.detailLevel",DETAIL_HIGH));
-        par.setParam("rendering.anisotropicFilteringLevel",pt.get<U8>("rendering.anisotropicFilteringLevel",1));
+        par.setParam("rendering.anisotropicFilteringLevel", std::min(pt.get<GLint>("rendering.anisotropicFilteringLevel", 1), 0));
         par.setParam("rendering.fogDetailLevel",pt.get<U8>("rendering.fogDetailLevel",DETAIL_HIGH));
         par.setParam("rendering.mipMapDetailLevel",pt.get<U8>("rendering.mipMapDetailLevel",DETAIL_HIGH));
         par.setParam("rendering.shadowDetailLevel",shadowDetailLevel);
-        par.setParam("rendering.shadowResolutionFactor", shadowResolutionFactor);
-        par.setParam("rendering.enableShadows",pt.get("rendering.enableShadows", true));
         par.setParam("rendering.enableFog", pt.get("rendering.enableFog",true));
-        U16 resWidth = pt.get("runtime.resolutionWidth",1024);
-        U16 resHeight = pt.get("runtime.resolutionHeight",768);
-        par.setParam("runtime.overrideRefreshRate",pt.get<bool>("runtime.overrideRefreshRate",false));
-        par.setParam("runtime.targetRefreshRate",pt.get<U8>("runtime.targetRefreshRate",75));
-        par.setParam("runtime.zNear",(F32)pt.get("runtime.zNear",0.1f));
-        par.setParam("runtime.zFar",(F32)pt.get("runtime.zFar",1200.0f));
-        par.setParam("runtime.verticalFOV",(F32)pt.get("runtime.verticalFOV",60));
-        par.setParam("runtime.aspectRatio",1.0f * (I32)resWidth / (I32)resHeight);
-        par.setParam("runtime.resolutionWidth",resWidth);
-        par.setParam("runtime.resolutionHeight",resHeight);
+        vec2<U16> resolution(pt.get("runtime.resolutionWidth",1024), pt.get("runtime.resolutionHeight",768));
         par.setParam("runtime.windowedMode",pt.get("rendering.windowedMode",true));
         par.setParam("runtime.allowWindowResize",pt.get("runtime.allowWindowResize",false));
         par.setParam("runtime.enableVSync",pt.get("runtime.enableVSync",false));
         par.setParam("runtime.groundPos", pt.get("runtime.groundPos",-2000.0f)); ///<Safety net for physics actors
-        Application::getInstance().setResolutionHeight(resHeight);
-        Application::getInstance().setResolutionWidth(resWidth);
         par.setParam("postProcessing.anaglyphOffset",pt.get("rendering.anaglyphOffset",0.16f));
         par.setParam("postProcessing.enableNoise",pt.get("rendering.enableNoise",false));
         par.setParam("postProcessing.enableDepthOfField",pt.get("rendering.enableDepthOfField",false));
@@ -285,6 +264,11 @@ namespace XML {
         par.setParam("postProcessing.enableSSAO",pt.get("rendering.enableSSAO",false));
         par.setParam("postProcessing.bloomFactor",pt.get("rendering.bloomFactor",0.4f));
         par.setParam("mesh.playAnimations",pt.get("mesh.playAnimations",true));
+
+        Application::getInstance().setResolution(resolution.width, resolution.height);
+        Frustum::getInstance().setProjection((F32)resolution.width / (F32)resolution.height,  // aspect ratio
+                                              pt.get("runtime.verticalFOV", 60.0f),  // vertical FoV
+                                              vec2<F32>(pt.get("runtime.zNear", 0.1f), pt.get("runtime.zFar", 700.0f))); // near/far planes
 
         //global fog values
         par.setParam("rendering.sceneState.fogStart",   pt.get("rendering.fogStartDistance",300.0f));

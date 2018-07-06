@@ -2,6 +2,7 @@
 #include "Headers/TerrainDescriptor.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Rendering/Headers/Frustum.h"
 #include "Quadtree/Headers/Quadtree.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -15,9 +16,6 @@
 bool Terrain::unload(){
     SAFE_DELETE(_terrainQuadtree);
     SAFE_DELETE(_groundVB);
-    SAFE_DELETE(_terrainRenderState);
-    SAFE_DELETE(_terrainDepthRenderState);
-    SAFE_DELETE(_terrainReflectionRenderState);
 
     assert(!_terrainTextures.empty());
     FOR_EACH(TerrainTextureMap::value_type& it, _terrainTextures){
@@ -37,11 +35,11 @@ void Terrain::loadVisualResources(){
     //Generate a render state
     RenderStateBlockDescriptor terrainDesc;
     terrainDesc.setCullMode(CULL_MODE_CW);
-    _terrainRenderState = GFX_DEVICE.createStateBlock(terrainDesc);
-    _terrainReflectionRenderState = GFX_DEVICE.createStateBlock(terrainDesc);
+    _terrainRenderState = GFX_DEVICE.getOrCreateStateBlock(terrainDesc);
+    _terrainReflectionRenderState = GFX_DEVICE.getOrCreateStateBlock(terrainDesc);
     //Generate a shadow render state
     terrainDesc.setCullMode(CULL_MODE_CCW);
-    _terrainDepthRenderState = GFX_DEVICE.createStateBlock(terrainDesc);
+    _terrainDepthRenderState = GFX_DEVICE.getOrCreateStateBlock(terrainDesc);
 }
 
 bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
@@ -168,7 +166,7 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
     _plane = CreateResource<Quad3D>(infinitePlane);
     F32 depth = GET_ACTIVE_SCENE()->state().getWaterDepth();
     F32 height = GET_ACTIVE_SCENE()->state().getWaterLevel()- depth;
-    _farPlane = 2.0f * ParamHandler::getInstance().getParam<F32>("runtime.zFar");
+    _farPlane = 2.0f * Frustum::getInstance().getZPlanes().y;
     _plane->setCorner(Quad3D::TOP_LEFT, vec3<F32>(   -_farPlane, height, -_farPlane));
     _plane->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(   _farPlane, height, -_farPlane));
     _plane->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(-_farPlane, height,  _farPlane));

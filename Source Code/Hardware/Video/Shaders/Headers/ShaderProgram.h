@@ -104,7 +104,7 @@ public:
     //calling recompile will re-create the marked shaders from source files and update them in the ShaderManager if needed
            void recompile(const bool vertex, const bool fragment, const bool geometry = false, const bool tessellation = false, const bool compute = false);
     //calling refresh will force an update on default shader uniforms
-           void refresh() {_dirty = true;}
+           void refresh() { _dirty = true; _extendedMatricesDirty = true;}
     //add global shader defines
     inline void addShaderDefine(const std::string& define) {_definesList.push_back(define);}
            void removeShaderDefine(const std::string& define);
@@ -186,9 +186,6 @@ private:
     bool _extendedMatricesDirty;
 
     ///Various uniform/attribute locations
-#if defined(CSM_USE_LAYERED_RENDERING)
-    I32 _shadowCPV[Config::MAX_SPLITS_PER_LIGHT];
-#endif
     I32 _timeLoc;
     I32 _cameraLocationLoc;
     I32 _clipPlanesLoc;

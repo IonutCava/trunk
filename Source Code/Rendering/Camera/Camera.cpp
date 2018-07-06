@@ -247,7 +247,7 @@ void Camera::updateViewMatrix(){
 }
 
 void Camera::updateListeners(){
-    FOR_EACH(const DELEGATE_CBK& listener, _listeners){
+    for(const DELEGATE_CBK& listener : _listeners){
         listener();
     }
 }

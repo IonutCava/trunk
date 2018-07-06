@@ -160,7 +160,7 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
             }break;
         case OIS::KC_F10:
             LightManager::getInstance().togglePreviewShadowMaps();
-            SceneManager::getInstance().togglePreviewDepthBuffer();
+            GFX_DEVICE.togglePreviewDepthBuffer();
             break;
         case OIS::KC_F12:
             GFX_DEVICE.Screenshot("screenshot_",vec4<F32>(0,0,renderState()._cachedResolution.x,renderState()._cachedResolution.y));

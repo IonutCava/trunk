@@ -53,12 +53,9 @@ namespace Util {
 		U32         mCrc;
 		static U32  mTable[0x100];
 
-		static const U32        POLYNOMIAL = 0x04C11DB7;
-
 	private:
 		//=========================================
 		// internal support
-		static void         BuildTable();
 		static U32          Reflect(U32 v,I32 bits);
 	};
 };

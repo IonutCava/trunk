@@ -23,7 +23,7 @@ bool MainScene::updateLights(){
     light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,_sunColor);
     light->setLightProperties(LIGHT_PROPERTY_SPECULAR,_sunColor);
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
-    FOR_EACH(Terrain* ter, _visibleTerrains){
+    for(Terrain* ter : _visibleTerrains){
         ter->getMaterial()->setAmbient(_sunColor);
     }
     return true;
@@ -54,7 +54,7 @@ void MainScene::renderEnvironment(bool waterReflection){
         renderState().getCamera().renderLookAtReflected(_water->getReflectionPlane());
     }
 
-    FOR_EACH(Terrain* ter, _visibleTerrains){
+    for(Terrain* ter : _visibleTerrains){
         ter->toggleReflection(waterReflection);
     }
 
@@ -71,7 +71,7 @@ void MainScene::processInput(const U64 deltaTime){
         if(!_freeflyCamera){
             F32 terrainHeight = 0.0f;
             vec3<F32> eyePosition = cam.getEye();
-            FOR_EACH(Terrain* ter, _visibleTerrains){
+            for(Terrain* ter : _visibleTerrains){
                 terrainHeight = ter->getPositionFromGlobal(eyePosition.x,eyePosition.z).y;
                 if(!IS_ZERO(terrainHeight)){
                     eyePosition.y = terrainHeight + 0.45f;
@@ -287,7 +287,7 @@ bool MainScene::onKeyUp(const OIS::KeyEvent& key){
             _sceneGraph->print();
             break;
         case OIS::KC_T:
-            FOR_EACH(Terrain* ter, _visibleTerrains){
+            for(Terrain* ter : _visibleTerrains){
                 ter->toggleBoundingBoxes();
             }
             break;

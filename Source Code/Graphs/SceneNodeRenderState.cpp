@@ -3,15 +3,13 @@
 
 SceneNodeRenderState::~SceneNodeRenderState()
 {
-    SAFE_DELETE(_depthStateBlock);
-    SAFE_DELETE(_shadowStateBlock);
 }
 
 RenderStateBlock* SceneNodeRenderState::getDepthStateBlock(){
     if(!_depthStateBlock){
         RenderStateBlockDescriptor depthDesc;
         depthDesc.setColorWrites(false,false,false,false);
-        _depthStateBlock = GFX_DEVICE.createStateBlock(depthDesc);
+        _depthStateBlock = GFX_DEVICE.getOrCreateStateBlock(depthDesc);
     }
     return _depthStateBlock;
 }
@@ -21,9 +19,9 @@ RenderStateBlock* SceneNodeRenderState::getShadowStateBlock(){
         RenderStateBlockDescriptor depthDesc;
         /// Cull back faces for shadow rendering
         depthDesc.setCullMode(CULL_MODE_CCW);
-        depthDesc._zBias = 1.1f;
+        depthDesc._zBias = 1.0f;
         depthDesc.setColorWrites(true,true,false,false);
-        _shadowStateBlock = GFX_DEVICE.createStateBlock(depthDesc);
+        _shadowStateBlock = GFX_DEVICE.getOrCreateStateBlock(depthDesc);
     }
     return _shadowStateBlock;
 }

@@ -41,7 +41,8 @@ public:
         _lampLightNode(nullptr),
         _lampTransform(nullptr),
         _lampTransformNode(nullptr),
-        _sceneReady(false)
+        _sceneReady(false),
+        _sun(nullptr)
     {
         _scorTeam1 = 0;
         _scorTeam2 = 0;
@@ -72,6 +73,7 @@ private:
     I8 _score;
     vec4<F32> _sunvector;
     SceneGraphNode* _groundPlaceholder;
+    DirectionalLight *_sun;
 
 private: //Game
     bool _sceneReady;
@@ -90,6 +92,7 @@ private: //Game
     SceneGraphNode *_lampLightNode;
     SceneGraphNode *_lampTransformNode;
     SceneNode      *_lampTransform;
+    
 };
 
 #endif

@@ -64,7 +64,7 @@ bool ParticleEmitter::initData(){
     RenderStateBlockDescriptor particleStateDesc;
     particleStateDesc.setCullMode(CULL_MODE_NONE);
     particleStateDesc.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
-    _particleStateBlock = GFX_DEVICE.createStateBlock(particleStateDesc);
+    _particleStateBlock = GFX_DEVICE.getOrCreateStateBlock(particleStateDesc);
 
     ResourceDescriptor particleShaderDescriptor("particles");
     _particleShader = CreateResource<ShaderProgram>(particleShaderDescriptor);
@@ -95,7 +95,6 @@ bool ParticleEmitter::unload(){
     RemoveResource(_particleDepthShader);
    
     SAFE_DELETE(_particleGPUBuffer);
-    SAFE_DELETE(_particleStateBlock);
     
     _particles.clear();
     _particlePositionData.clear();

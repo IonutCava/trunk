@@ -23,7 +23,7 @@ void DX_API::closeRenderingApi()
 {
 }
 
-void DX_API::changeResolution(U16 w, U16 h)
+void DX_API::changeResolutionInternal(U16 w, U16 h)
 {
 }
 
@@ -148,15 +148,6 @@ void DX_API::Screenshot(char *filename, const vec4<F32>& rect)
 {
 }
 
-RenderStateBlock* DX_API::newRenderStateBlock(const RenderStateBlockDescriptor& descriptor)
-{
-    return nullptr;
-}
-
-void DX_API::updateStateInternal(RenderStateBlock* block, bool force)
-{
-}
-
 bool DX_API::loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback)
 {
     switch(context){
@@ -166,4 +157,9 @@ bool DX_API::loadInContext(const CurrentContext& context, const DELEGATE_CBK& ca
             break;
     };
     return false;
+}
+
+void DX_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock)
+{
+
 }

@@ -91,10 +91,8 @@ public:
     inline GUIElement* const getItem(const std::string& id) {return _guiStack[id];}
     /// Get a pointer to an element by name/id
     inline GUIElement* getGuiElement(const std::string& id){return _guiStack[id];}
-    /// Update internal resolution cache
-    inline void cacheResolution(const vec2<U16>& resolution) {_cachedResolution = resolution;}
     /// Create the GUI
-    bool init();
+    bool init(const vec2<U16>& resolution);
     /// Used by CEGUI to setup rendering (D3D/OGL/OGRE/etc)
     bool bindRenderer(CEGUI::Renderer& renderer);
     /// Used to prevent text updating every frame

@@ -22,7 +22,7 @@ float filterFinalShadow(in sampler2DShadow depthMap, in vec3 vPosInDM){
 }
 
 void applyShadowSpot(in int shadowIndex, inout float shadow) {
-    vec4 shadow_coord = getCoord(dvd_LightSource[dvd_lightIndex[shadowIndex]], 0);
-    shadow_coord.xyz = shadow_coord.xyz / shadow_coord.w;
+    vec4 shadow_coord = ((dvd_LightSource[dvd_lightIndex[shadowIndex]]._lightVP0 * _vertexW) + 1.0) * 0.5;
+    shadow_coord.xy = shadow_coord.xy / shadow_coord.w;
     shadow = filterFinalShadow(texDepthMapFromLight[shadowIndex], shadow_coord.xyz);
 }

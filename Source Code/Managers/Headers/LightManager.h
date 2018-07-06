@@ -59,6 +59,9 @@ public:
 
     inline Light*    getCurrentLight()             const { return _currLight; }
     inline void      setCurrentLight(Light* light)       { _currLight = light; }
+
+    void updateResolution(I32 newWidth, I32 newHeight);
+
     ///shadow mapping
     void bindDepthMaps(Light* light,U8 lightIndex, U8 offset = Config::MAX_TEXTURE_STORAGE, bool overrideDominant = false);
     void unbindDepthMaps(Light* light, U8 offset = Config::MAX_TEXTURE_STORAGE, bool overrideDominant = false);

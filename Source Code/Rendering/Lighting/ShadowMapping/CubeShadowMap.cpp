@@ -10,9 +10,6 @@
 
 CubeShadowMap::CubeShadowMap(Light* light) : ShadowMap(light, SHADOW_TYPE_CubeMap)
 {
-	_maxResolution = 0;
-	_resolutionFactor = ParamHandler::getInstance().getParam<U8>("rendering.shadowResolutionFactor");
-	CLAMP<F32>(_resolutionFactor,0.001f, 1.0f);
 	PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getId(), "Single Shadow Map");
 	TextureDescriptor depthMapDescriptor(TEXTURE_CUBE_MAP,
 										 DEPTH_COMPONENT,
@@ -26,7 +23,7 @@ CubeShadowMap::CubeShadowMap(Light* light) : ShadowMap(light, SHADOW_TYPE_CubeMa
 	depthMapSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
 	depthMapDescriptor.setSampler(depthMapSampler);
 
-	_depthMap = GFX_DEVICE.newFB(FB_CUBE_DEPTH);
+	_depthMap = GFX_DEVICE.newFB();
 	_depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::Depth);
 	_depthMap->toggleColorWrites(false);
 }
@@ -36,21 +33,17 @@ CubeShadowMap::~CubeShadowMap()
 }
 
 void CubeShadowMap::init(ShadowMapInfo* const smi){
-    resolution(smi->resolution(), smi->resolutionFactor());
+    resolution(smi->resolution(), _light->shadowMapResolutionFactor());
     _init = true;
 }
 
-void CubeShadowMap::resolution(U16 resolution, F32 resolutionFactor){
-    U8 resolutionFactorTemp = resolutionFactor;
-	CLAMP<U8>(resolutionFactorTemp, 1, 4);
-	U16 maxResolutionTemp = resolution;
-	if(resolutionFactorTemp != _resolutionFactor || _maxResolution != maxResolutionTemp){
-		_resolutionFactor = resolutionFactorTemp;
-		_maxResolution = maxResolutionTemp;
+void CubeShadowMap::resolution(U16 resolution, U8 resolutionFactor){
+    U16 resolutionTemp = resolution * resolutionFactor;
+    if (resolutionTemp != _resolution){
+        _resolution = resolutionTemp;
 		///Initialize the FB's with a variable resolution
 		PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FB"), _light->getId());
-		U16 shadowMapDimension = _maxResolution/_resolutionFactor;
-		_depthMap->Create(shadowMapDimension,shadowMapDimension);
+        _depthMap->Create(_resolution, _resolution);
 	}
     ShadowMap::resolution(resolution, resolutionFactor);
 }

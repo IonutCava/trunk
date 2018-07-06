@@ -36,6 +36,7 @@ public:
 	void reshape(I32 width, I32 height);
 
 private:
+    bool           _ready;
 	ShaderProgram* _fxaa;
 	FrameBuffer*   _outputFB;
 	FrameBuffer*   _samplerCopy;

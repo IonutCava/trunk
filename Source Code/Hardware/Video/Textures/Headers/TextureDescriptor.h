@@ -148,13 +148,8 @@ public:
         Depth
     };
 
-    TextureDescriptor() : PropertyDescriptor(DESCRIPTOR_TEXTURE),
-                          _type(TextureType_PLACEHOLDER),
-                          _format(IMAGE_FORMAT_PLACEHOLDER),
-                          _internalFormat(IMAGE_FORMAT_PLACEHOLDER),
-                          _dataType(GDF_PLACEHOLDER)
+    TextureDescriptor() : TextureDescriptor(TextureType_PLACEHOLDER, IMAGE_FORMAT_PLACEHOLDER, IMAGE_FORMAT_PLACEHOLDER, GDF_PLACEHOLDER)
     {
-        setDefaultValues();
     }
 
     TextureDescriptor(TextureType type,
@@ -175,6 +170,7 @@ public:
     inline void setDefaultValues(){
         setAlignment();
         setMipLevels();
+        _layerCount = 1;
     }
 
     inline void setAlignment(U8 packAlignment = 1, U8 unpackAlignment = 1) {
@@ -184,12 +180,22 @@ public:
     inline void setMipLevels(U16 mipMinLevel = 0, U16 mipMaxLevel = 1000) {
         _mipMinLevel = mipMinLevel; _mipMaxLevel = mipMaxLevel;
     }
+    
+    inline void setLayerCount(U8 layerCount){
+        _layerCount = layerCount;
+    }
+    
+    inline bool isCubeTexture() const {
+        return (_type == TEXTURE_CUBE_MAP || _type == TEXTURE_CUBE_ARRAY);
+    }
+
     ///A TextureDescriptor will always have a sampler, even if it is the default one
     inline       void               setSampler(const SamplerDescriptor& descriptor) {_samplerDescriptor = descriptor;}
     inline const SamplerDescriptor& getSampler()                              const {return _samplerDescriptor;}
 
-    U8                _packAlignment, _unpackAlignment; ///<Pixel stor information
-    U16               _mipMinLevel, _mipMaxLevel;       ///<MipMap interval selection
+    U8  _layerCount;
+    U8  _packAlignment, _unpackAlignment; ///<Pixel store information
+    U16 _mipMinLevel, _mipMaxLevel;       ///<MipMap interval selection
 
     ///Texture data information
     GFXImageFormat    _format;

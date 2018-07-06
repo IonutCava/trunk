@@ -15,7 +15,7 @@ RenderPassManager::RenderPassManager() : _renderPassesLocked(false), _renderPass
 
 RenderPassManager::~RenderPassManager()
 {
-    FOR_EACH(RenderPassItem& rpi, _renderPasses){
+    for(RenderPassItem& rpi : _renderPasses){
         SAFE_DELETE(rpi._rp);
     }
     _renderPasses.clear();
@@ -34,7 +34,7 @@ void RenderPassManager::unlock(bool resetNodes) {
 }
 
 void RenderPassManager::render(const SceneRenderState& sceneRenderState, SceneGraph* activeSceneGraph) {
-    FOR_EACH(RenderPassItem& rpi, _renderPasses){
+    for(RenderPassItem& rpi : _renderPasses){
         rpi._rp->render(sceneRenderState, activeSceneGraph);
     }
 }

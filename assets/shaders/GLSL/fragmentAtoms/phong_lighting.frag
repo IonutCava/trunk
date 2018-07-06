@@ -1,8 +1,7 @@
 in vec2 _texCoord;
-in vec3 _normalWV;
-in vec4 _vertexWV;
 in vec4 _vertexW;
 
+uniform vec2  dvd_zPlanes;
 uniform mat4  material;
 uniform int   isSelected = 0;
 uniform int   lodLevel = 0;
@@ -78,15 +77,15 @@ vec4 Phong(in vec2 texCoord, in vec3 normal){
 //	linearColor.rgb = pow(linearColor.rgb, gamma);
 #if defined(_DEBUG)
     if (dvd_showShadowSplits){
-        if (dvd_shadowMappingTempInt == -1)
+        if (_shadowTempInt == -1)
             linearColor = vec4(1.0);
-        if (dvd_shadowMappingTempInt == 0)
+        if (_shadowTempInt == 0)
             linearColor.r += 0.15;
-        if (dvd_shadowMappingTempInt == 1)
+        if (_shadowTempInt == 1)
             linearColor.g += 0.25;
-        if(dvd_shadowMappingTempInt == 2)
+        if (_shadowTempInt == 2)
             linearColor.b += 0.40;
-        if (dvd_shadowMappingTempInt == 3)
+        if (_shadowTempInt == 3)
             linearColor.rgb += vec3(0.15, 0.25, 0.40);
     }
 #endif

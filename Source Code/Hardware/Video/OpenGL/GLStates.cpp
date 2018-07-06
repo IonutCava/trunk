@@ -1,6 +1,5 @@
 //OpenGL state management: Lights, matrices, viewport, bound objects etc
 #include "Headers/GLWrapper.h"
-#include "Headers/glRenderStateBlock.h"
 
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/ShaderManager.h"
@@ -12,15 +11,17 @@
 #include <gtc/type_ptr.hpp>
 #include <gtc/matrix_transform.hpp>
 
+
+
 glShaderProgram* GL_API::_activeShaderProgram = nullptr;
 GLuint GL_API::_activeVAOId = 0;
+GLuint GL_API::_activeFBId = 0;
 GLuint GL_API::_activeVBId = 0;
 GLuint GL_API::_activeTextureUnit = 0;
 vec4<GLfloat> GL_API::_prevClearColor = DefaultColors::DIVIDE_BLUE();
 
 bool GL_API::_viewportForced = false;
 bool GL_API::_viewportUpdateGL = false;
-bool GL_API::_useMSAA = false;
 
 void GL_API::clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll){
     if(!skipShader || forceAll) {
@@ -48,18 +49,6 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
 
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
     
-}
-
-void GL_API::updateStateInternal(RenderStateBlock* block, bool force){
-    assert(block != nullptr);
-
-    glRenderStateBlock* glBlock = static_cast<glRenderStateBlock*>(block);
-    glRenderStateBlock* glCurrent = nullptr;
-    if(!force){
-        glCurrent = static_cast<glRenderStateBlock*>(GFX_DEVICE._currentStateBlock);
-    }
-    glBlock->activate(glCurrent);
-   _currentGLRenderStateBlock = glBlock;
 }
 
 void GL_API::toggle2D(bool state){
@@ -237,11 +226,9 @@ GLfloat* GL_API::setPerspectiveProjection(GLfloat FoV,GLfloat aspectRatio, const
 }
 
 void GL_API::setAnaglyphFrustum(GLfloat camIOD, bool rightFrustum){
-    ParamHandler& par = ParamHandler::getInstance();
-    const vec2<GLfloat>& zPlanes = Frustum::getInstance().getZPlanes();
-    GLfloat fov    = par.getParam<GLfloat>("runtime.verticalFOV");
-    GLfloat ratio  = par.getParam<GLfloat>("runtime.aspectRatio");
-    Divide::GL::_anaglyph(camIOD,(GLdouble)zPlanes.x, (GLdouble)zPlanes.y,ratio,fov,rightFrustum);
+    Frustum& frust = Frustum::getInstance();
+    const vec2<GLfloat>& zPlanes = frust.getZPlanes();
+    Divide::GL::_anaglyph(camIOD, (GLdouble)zPlanes.x, (GLdouble)zPlanes.y, frust.getAspectRatio(), frust.getVerticalFoV(), rightFrustum);
 }
 
 void GL_API::updateClipPlanes(){
@@ -274,7 +261,22 @@ bool GL_API::setActiveTextureUnit(GLuint unit,const bool force){
     return true;
 }
 
-bool GL_API::setActiveVAO(GLuint id,const bool force){
+bool GL_API::setActiveFB(GLuint id, const bool read, const bool write, const bool force){
+    if (_activeFBId == id && !force)
+        return false; //<prevent double bind
+
+    _activeFBId = id;
+    if (read && write)
+        glBindFramebuffer(GL_FRAMEBUFFER, id);
+    else if(read && !write)
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, id);
+    else
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id);
+
+    return true;
+}
+
+bool GL_API::setActiveVAO(GLuint id, const bool force){
     if(_activeVAOId == id && !force)
         return false; //<prevent double bind
         
@@ -341,4 +343,84 @@ vec4<GLint> GL_API::setViewport(const vec4<GLint>& viewport, bool force){
     }
     
     return Divide::GL::_viewport.top();
+}
+
+#define SHOULD_TOGGLE(state) (!oldBlock || oldBlock->getDescriptorConst().state != newBlock.getDescriptorConst().state)
+
+#define TOGGLE_NO_CHECK(state, enumValue) newBlock.getDescriptorConst().state ? glEnable(enumValue) : glDisable(enumValue);
+
+#define TOGGLE_WITH_CHECK(state, enumValue) if(!oldBlock || oldBlock->getDescriptorConst().state != newBlock.getDescriptorConst().state) { \
+                                                newBlock.getDescriptorConst().state ? glEnable(enumValue) : glDisable(enumValue); \
+                                            }
+void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock){
+    // ------------------- PASS INDEPENDENT STATES -------------------------------------- //
+
+    TOGGLE_WITH_CHECK(_blendEnable, GL_BLEND);
+    TOGGLE_WITH_CHECK(_cullMode, GL_CULL_FACE);
+
+    if (SHOULD_TOGGLE(_blendSrc) || SHOULD_TOGGLE(_blendDest)){
+        glBlendFuncSeparate(glBlendTable[newBlock.getDescriptorConst()._blendSrc], glBlendTable[newBlock.getDescriptorConst()._blendDest], GL_ONE, GL_ZERO);
+    }
+
+    if (SHOULD_TOGGLE(_blendOp)){
+        glBlendEquation(glBlendOpTable[newBlock.getDescriptorConst()._blendOp]);
+    }
+
+    if (SHOULD_TOGGLE(_cullMode)) {
+        glCullFace(glCullModeTable[newBlock.getDescriptorConst()._cullMode]);
+    }
+
+    if (SHOULD_TOGGLE(_zBias)){
+        if (IS_ZERO(newBlock.getDescriptorConst()._zBias)){
+            glDisable(GL_POLYGON_OFFSET_FILL);
+        }
+        else {
+            glEnable(GL_POLYGON_OFFSET_FILL);
+            glPolygonOffset(newBlock.getDescriptorConst()._zBias, newBlock.getDescriptorConst()._zUnits);
+        }
+    }
+
+    if (SHOULD_TOGGLE(_fillMode)){
+        glPolygonMode(GL_FRONT_AND_BACK, glFillModeTable[newBlock.getDescriptorConst()._fillMode]);
+    }
+
+    // ------------------- DEPTH PASS DEPENDENT STATES -------------------------------------- //
+
+    //if(!GFX_DEVICE.isDepthPrePass()) {
+    TOGGLE_WITH_CHECK(_stencilEnable, GL_STENCIL_TEST);
+
+    TOGGLE_WITH_CHECK(_zEnable, GL_DEPTH_TEST);
+
+    if (SHOULD_TOGGLE(_writeRedChannel) || SHOULD_TOGGLE(_writeBlueChannel) || 
+        SHOULD_TOGGLE(_writeGreenChannel) || SHOULD_TOGGLE(_writeAlphaChannel)) {
+        glColorMask(newBlock.getDescriptorConst()._writeRedChannel,
+                    newBlock.getDescriptorConst()._writeBlueChannel,
+                    newBlock.getDescriptorConst()._writeGreenChannel,
+                    newBlock.getDescriptorConst()._writeAlphaChannel);
+    }
+
+    if (SHOULD_TOGGLE(_zFunc)){
+        glDepthFunc(glCompareFuncTable[newBlock.getDescriptorConst()._zFunc]);
+    }
+    if (SHOULD_TOGGLE(_zWriteEnable)){
+        glDepthMask(newBlock.getDescriptorConst()._zWriteEnable);
+    }
+
+
+    if (SHOULD_TOGGLE(_stencilFunc) || SHOULD_TOGGLE(_stencilRef) || SHOULD_TOGGLE(_stencilMask)) {
+        glStencilFunc(glCompareFuncTable[newBlock.getDescriptorConst()._stencilFunc],
+                                         newBlock.getDescriptorConst()._stencilRef,
+                                         newBlock.getDescriptorConst()._stencilMask);
+    }
+
+    if (SHOULD_TOGGLE(_stencilFailOp) || SHOULD_TOGGLE(_stencilZFailOp) || SHOULD_TOGGLE(_stencilPassOp)) {
+        glStencilOp(glStencilOpTable[newBlock.getDescriptorConst()._stencilFailOp],
+                    glStencilOpTable[newBlock.getDescriptorConst()._stencilZFailOp],
+                    glStencilOpTable[newBlock.getDescriptorConst()._stencilPassOp]);
+    }
+
+    if (SHOULD_TOGGLE(_stencilWriteMask)){
+        glStencilMask(newBlock.getDescriptorConst()._stencilWriteMask);
+    }
+    //}
 }

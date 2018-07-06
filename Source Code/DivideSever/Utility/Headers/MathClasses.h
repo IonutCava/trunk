@@ -102,6 +102,7 @@ public:
 //	F32 &operator[](I32 _i) { return this->v[_i]; }
 //	const F32 &operator[](I32 _i) const { return this->v[_i]; }
 
+    void set(F32 value) {this->x = value; this->y = value;}
     void set(F32 _x,F32 _y) { this->x = _x; this->y = _y; }
     void reset(void) { this->x = this->y = 0; }
     F32 length(void) const { return sqrtf(this->x * this->x + this->y * this->y); }
@@ -181,6 +182,7 @@ public:
     operator F32*() { return this->v; }
     operator const F32*() const { return this->v; }
 
+    void set(F32 value) { this->x = value; this->y = value; this->z = value;}
     void set(F32 _x,F32 _y,F32 _z) { this->x = _x; this->y = _y; this->z = _z; }
     void reset(void) { this->x = this->y = this->z = 0; }
     F32 length(void) const { return sqrtf(this->x * this->x + this->y * this->y + this->z * this->z); }
@@ -307,6 +309,7 @@ public:
 //	F32 &operator[](I32 _i) { return this->v[_i]; }
 //	const F32 &operator[](I32 _i) const { return this->v[_i]; }
 
+    void set(F32 value) { this->x = value; this->y = value; this->z = value; this->w = value;}
     void set(F32 _x,F32 _y,F32 _z,F32 _w) { this->x=_x; this->y=_y; this->z=_z; this->w=_w; }
     void reset(void) { this->x = this->y = this->z = this->w = 0; }
     bool compare(const vec4 &_v,F32 epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi && fabs(this->z - _v.z) < epsi && fabs(this->w - _v.w) < epsi); }

@@ -5,7 +5,6 @@
 #include "lightInput.cmn"
 
 in  vec3 dvd_cameraPosition;
-out vec3 _normalWV;
 out vec4 _grassColor;
 
 uniform int dvd_lightCount;
@@ -47,7 +46,6 @@ void main(void){
 -- Fragment
 
 in vec2 _texCoord;
-in vec3 _normalWV;
 in vec4 _grassColor;
 in vec4 _vertexW;
 

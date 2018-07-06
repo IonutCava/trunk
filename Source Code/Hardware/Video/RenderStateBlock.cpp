@@ -18,7 +18,7 @@ RenderStateBlockDescriptor::RenderStateBlockDescriptor() : GUIDWrapper(),
                                                            _zWriteEnable(true),
                                                            _zFunc(CMP_FUNC_LEQUAL),
                                                            _zBias(0.0f),
-                                                           _zUnits(4.0f),
+                                                           _zUnits(2.0f),
                                                            _stencilDefined(false),
                                                            _stencilEnable(false),
                                                            _stencilFailOp(STENCIL_OPERATION_KEEP),
@@ -65,6 +65,15 @@ void RenderStateBlockDescriptor::fromDescriptor(const RenderStateBlockDescriptor
    }
 
    _fillMode = descriptor._fillMode;
+}
+
+void RenderStateBlockDescriptor::flipCullMode(){
+    _cullDefined = true;
+
+    if (_cullMode == CULL_MODE_NONE) _cullMode = CULL_MODE_ALL;
+    if (_cullMode == CULL_MODE_ALL)  _cullMode = CULL_MODE_NONE;
+    if (_cullMode == CULL_MODE_CW)   _cullMode = CULL_MODE_CCW;
+    if (_cullMode == CULL_MODE_CCW)  _cullMode = CULL_MODE_CW;
 }
 
 void RenderStateBlockDescriptor::setCullMode( CullMode mode ) {

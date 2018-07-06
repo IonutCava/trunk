@@ -1,5 +1,4 @@
-﻿#include "Headers/glRenderStateBlock.h"
-#include "Headers/glImmediateModeEmulation.h"
+﻿#include "Headers/glImmediateModeEmulation.h"
 
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIText.h"
@@ -139,15 +138,8 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 
     Divide::GL::_initStacks();
 
-    GLubyte msaaSamples = par.getParam<GLubyte>("rendering.FSAAsamples",2);
-    GLubyte msaaMethod  = par.getParam<GLubyte>("rendering.FSAAmethod",FS_MSAA);
-    _useMSAA = (msaaMethod == FS_MSAA || msaaMethod == FS_MSwFXAA) && (msaaSamples > 1);
-
-    if(_useMSAA)	glfwWindowHint(GLFW_SAMPLES, msaaSamples);
-
-    if(par.getParam<bool>("runtime.overrideRefreshRate",false)){
-        //glfwWindowHint(GLFW_REFRESH_RATE,par.getParam<GLubyte>("runtime.targetRefreshRate",75));
-    }
+    if(GFX_DEVICE.MSAAEnabled())
+        glfwWindowHint(GLFW_SAMPLES, GFX_DEVICE.MSAASamples());
 
     glfwWindowHint(GLFW_RESIZABLE,par.getParam<bool>("runtime.allowWindowResize",false));
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,4);
@@ -164,8 +156,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     //Store the main window ID for future reference
     // Open an OpenGL window; resolution is specified in the external XML files
     bool window = par.getParam<bool>("runtime.windowedMode",true);
-    Divide::GL::_mainWindow = glfwCreateWindow( resolution.width,
-                                                resolution.height,
+    Divide::GL::_mainWindow = glfwCreateWindow( resolution.width, resolution.height,
                                                 par.getParam<std::string>("appTitle").c_str(),
                                                 window ? nullptr : glfwGetPrimaryMonitor(),
                                                 nullptr);
@@ -248,8 +239,8 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     par.setParam("shaderDetailToken",par.getParam<GLubyte>("rendering.detailLevel"));
     par.setParam("GFX_DEVICE.maxTextureCombinedUnits",max_texture_units);
     //Cap max aniso to what the hardware supports
-    if(maxAnisotropy < par.getParam<GLubyte>("rendering.anisotropicFilteringLevel",1)){
-        par.setParam("rendering.anisotropicFilteringLevel",maxAnisotropy);
+    if (maxAnisotropy < par.getParam<GLint>("rendering.anisotropicFilteringLevel", 1)){
+        par.setParam("rendering.anisotropicFilteringLevel", maxAnisotropy);
     }
     //Time to select our shaders.
     //We do not support OpenGL version lower than 3.0;
@@ -281,13 +272,9 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 
     //Set the clear color to a nice blue
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
-    if(glewIsSupported("GL_seamless_cube_map")){
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-    }
 
-    if(_useMSAA){
-        glEnable(GL_MULTISAMPLE);
-    }
+    if(glewIsSupported("GL_seamless_cube_map")) glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    if(GFX_DEVICE.MSAAEnabled()) glEnable(GL_MULTISAMPLE);
 
     if(Config::USE_HARDWARE_AA_LINES){
         glEnable(GL_LINE_SMOOTH);
@@ -352,20 +339,14 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     //That's it. Everything should be ready for draw calls
     PRINT_FN(Locale::get("START_OGL_API_OK"));
 
-    RenderStateBlockDescriptor defaultGLStateDescriptor;
-    GFX_DEVICE._defaultStateBlock = GFX_DEVICE.createStateBlock(defaultGLStateDescriptor);
-
     RenderStateBlockDescriptor defaultGLStateDescriptorNoDepth;
     defaultGLStateDescriptorNoDepth.setZReadWrite(false,false);
-    _defaultStateNoDepth = GFX_DEVICE.createStateBlock(defaultGLStateDescriptorNoDepth);
+    _defaultStateNoDepth = GFX_DEVICE.getOrCreateStateBlock(defaultGLStateDescriptorNoDepth);
 
     RenderStateBlockDescriptor state2DRenderingDesc;
     state2DRenderingDesc.setCullMode(CULL_MODE_NONE);
     state2DRenderingDesc.setZReadWrite(false,true);
-    _state2DRendering = GFX_DEVICE.createStateBlock(state2DRenderingDesc);
-
-    SET_DEFAULT_STATE_BLOCK(true);
-
+    _state2DRendering = GFX_DEVICE.getOrCreateStateBlock(state2DRenderingDesc);
     //Create an immediate mode shader
     ShaderManager::getInstance().init();
     _imShader = ShaderManager::getInstance().getDefaultShader();
@@ -379,7 +360,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     GUIGLrenderer.enableExtraStateSettings(par.getParam<bool>("GUI.CEGUI.ExtraStates"));
     GUI::getInstance().bindRenderer(GUIGLrenderer);
 
-    GFX_DEVICE.changeResolution(resolution.width,resolution.height);
+    GFX_DEVICE.changeResolution(resolution);
 
      _fonsContext = glfonsCreate(512, 512, FONS_ZERO_BOTTOMLEFT);
     if (_fonsContext == nullptr) {
@@ -410,7 +391,7 @@ void GL_API::closeRenderingApi(){
     try { CEGUI::System::destroy();}
     catch( ... ){ D_ERROR_FN(Locale::get("ERROR_CEGUI_DESTROY")); }
 
-    FOR_EACH(glIMPrimitive* priv, _glimInterfaces){
+    for(glIMPrimitive*& priv : _glimInterfaces){
         SAFE_DELETE(priv);
     }
     for(GLubyte i = 0; i < UBO_PLACEHOLDER; i++){
@@ -420,7 +401,6 @@ void GL_API::closeRenderingApi(){
     _fonts.clear();
     _glimInterfaces.clear(); //<Should call all destructors
     //SAFE_DELETE(_prevPointString);
-    SAFE_DELETE(_state2DRendering);
     glfwDestroyWindow(Divide::GL::_loaderWindow);
     boost::this_thread::sleep(boost::posix_time::milliseconds(20));
     glfwDestroyWindow(Divide::GL::_mainWindow);
@@ -464,11 +444,11 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("", std::string("#define MAX_SHADOW_CASTING_LIGHTS " + Util::toString(Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE)).c_str());
     glswAddDirectiveToken("", std::string("#define MAX_SPLITS_PER_LIGHT " + Util::toString(Config::MAX_SPLITS_PER_LIGHT)).c_str());
     glswAddDirectiveToken("", std::string("const int MAX_LIGHTS_PER_SCENE = " + Util::toString(Config::MAX_LIGHTS_PER_SCENE) + ";").c_str());
-    glswAddDirectiveToken("", "const int DEPTH_EXP_WARP = 32;");
     glswAddDirectiveToken("", "const float Z_TEST_SIGMA = 0.0001;");
     glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.2;");
     glswAddDirectiveToken("","//__CUSTOM_DEFINES__");
     glswAddDirectiveToken("Fragment","//__CUSTOM_FRAGMENT_UNIFORMS__");
+    glswAddDirectiveToken("Fragment", "const int DEPTH_EXP_WARP = 32;");
     glswAddDirectiveToken("Vertex","//__CUSTOM_VERTEX_UNIFORMS__");
     glswAddDirectiveToken("Vertex",   "#define VERT_SHADER");
     // GLSL <-> VBO intercommunication 
@@ -498,17 +478,14 @@ bool GL_API::deInitShaders(){
 }
 
 void GL_API::changeResolutionInternal(GLushort w, GLushort h){
-    glfwSetWindowSize(Divide::GL::_mainWindow,w,h);
+    glfwSetWindowSize(Divide::GL::_mainWindow, w, h);
 
-    ParamHandler& par = ParamHandler::getInstance();
-    GLfloat zNear  = par.getParam<GLfloat>("runtime.zNear");
-    GLfloat zFar   = par.getParam<GLfloat>("runtime.zFar");
-    GLfloat fov    = par.getParam<GLfloat>("runtime.verticalFOV");
-    GLfloat ratio  = par.getParam<GLfloat>("runtime.aspectRatio");
-    par.setParam("runtime.horizontalFOV", Util::yfov_to_xfov((GLfloat)fov, ratio));
-    // Reset the coordinate system before modifying
-    Divide::GL::_matrixMode(PROJECTION_MATRIX);
-    Divide::GL::_loadIdentity();
+    Frustum& frust = Frustum::getInstance();
+    GLfloat zNear = frust.getZPlanes().x;
+    GLfloat zFar  = frust.getZPlanes().y;
+    GLfloat fov   = Frustum::getInstance().getVerticalFoV();
+    GLfloat ratio = (GLfloat)w / (GLfloat)h;
+
     // Set the viewport to be the entire window
     GL_API::setViewport(vec4<GLint>(0,0,w,h), true);
     // Set the clipping volume
@@ -521,7 +498,6 @@ void GL_API::changeResolutionInternal(GLushort w, GLushort h){
     _cachedResolution.height = h;
     //Update view frustum
     Frustum::getInstance().setProjection(ratio, fov, vec2<GLfloat>(zNear, zFar));
-
     //Inform the Kernel
     Kernel::updateResolutionCallback(w,h);
 }

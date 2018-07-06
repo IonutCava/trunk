@@ -154,7 +154,12 @@ public:
     inline void setVPMatrix(U8 index, const mat4<F32>& newValue)   { _properties._lightVP[index].set(newValue);  _dirty = true;}
     inline void setFloatValue(U8 index, F32 newValue)              { _properties._floatValues[index] = newValue; _dirty = true;}
 
+    inline void shadowMapResolutionFactor(U8 factor)       {_resolutionFactor = factor;}
+    inline U8   shadowMapResolutionFactor()          const {return _resolutionFactor;}
+
 protected:
+    friend class LightManager;
+
     ///When the SceneGraph calls the light's render function, we draw the impostor if needed
     virtual void render(SceneGraphNode* const sgn);
     void postLoad(SceneGraphNode* const sgn);
@@ -164,7 +169,8 @@ protected:
     ///Set light mode
     ///@param mode Togglable, Movable, Simple, Dominant (see LightMode enum)
     void setLightMode(const LightMode& mode);
-
+    ///Called when the rendering resolution changes
+    void updateResolution(I32 newWidth, I32 newHeight);
 private:
     ///Enum to char* translation for vector properties
     const char* LightEnum(const LightPropertiesV& key) const;
@@ -180,8 +186,8 @@ protected:
     LightMode _mode;
 
 private:
-
-    U8   _slot;
+    U8   _resolutionFactor;
+    U8   _slot; 
     bool _drawImpostor;
     bool _castsShadows;
     bool _updateLightBB;

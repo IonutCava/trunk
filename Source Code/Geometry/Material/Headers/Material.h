@@ -196,8 +196,8 @@ public:
     inline F32   getOpacityValue(U8 index = 0)    const {return _shaderData[index]._opacity;}
     inline U8    getTextureCount(U8 index = 0)    const {return _shaderData[index]._textureCount;}
 
-    inline RenderStateBlock*       getRenderState(RenderStage currentStage)       {return _defaultRenderStates[currentStage];}
-    inline Texture2D*	     const getTexture(U32 textureUsage)                   {return _textures[textureUsage];}
+    inline RenderStateBlock* getRenderState(RenderStage currentStage) { return _defaultRenderStates[currentStage]; }
+    inline Texture2D*	     const getTexture(U32 textureUsage) {return _textures[textureUsage];}
            ShaderProgram*    const getShaderProgram(RenderStage renderStage = FINAL_STAGE);
 
     inline const TextureOperation& getTextureOperation(U32 textureUsage)   const {

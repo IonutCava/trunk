@@ -1,7 +1,7 @@
 //Creation and management of new OpenGL related entities: GL fonts, FB's, VB's etc
 #include "Headers/GLWrapper.h"
-#include "Headers/glRenderStateBlock.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Headers/glImmediateModeEmulation.h"
 
 #include "Hardware/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
@@ -37,12 +37,16 @@ glIMPrimitive* GL_API::getOrCreateIMPrimitive(bool allowPrimitiveRecycle){
     return tempPriv;
 }
 
-RenderStateBlock* GL_API::newRenderStateBlock(const RenderStateBlockDescriptor& descriptor){
-    return New glRenderStateBlock(descriptor);
-}
-
-FrameBuffer* GL_API::newFB(const FBType& type)  {
-    return New glFrameBuffer(type);
+/// Creates a new frame buffer
+FrameBuffer* GL_API::newFB(bool multisampled)  {
+    // if MSAA is disabled, this will be a simple color / depth buffer
+    if (!GFX_DEVICE.MSAAEnabled()){
+        multisampled = false;
+    }
+    // if we requested a MSFB and msaa is enabled, create a resolve buffer
+    // and create our FB adding the resolve buffer as it's child
+    // else, return a regular frame buffer
+     return New glFrameBuffer(multisampled ? New glFrameBuffer() : nullptr);
 }
 
 VertexBuffer* GL_API::newVB(const PrimitiveType& type) {

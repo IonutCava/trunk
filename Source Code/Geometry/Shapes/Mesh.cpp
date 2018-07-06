@@ -42,7 +42,7 @@ void Mesh::addSubMesh(SubMesh* const subMesh){
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void Mesh::postLoad(SceneGraphNode* const sgn){
-    FOR_EACH(std::string& it, _subMeshes){
+    for(std::string& it : _subMeshes){
         ResourceDescriptor subMesh(it);
         // Find the SubMesh resource
         SubMesh* s = FindResourceImpl<SubMesh>(it);

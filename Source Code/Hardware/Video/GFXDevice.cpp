@@ -28,14 +28,20 @@ extern "C" {
 }
 #endif
 
-GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) //<Defaulting to OpenGL if no api has been defined
+GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
+                         _postFX(PostFX::getOrCreateInstance()),
+                         _frustum(Frustum::getOrCreateInstance()),
+                         _shaderManager(ShaderManager::getOrCreateInstance()) //<Defaulting to OpenGL if no api has been defined
 {
    _prevShaderId = 0;
    _prevTextureId = 0;
    _interpolationFactor = 1.0;
+   _MSAASamples = 0;
+   _FXAASamples = 0;
+   _defaultStateBlock = nullptr;
+   _previousStateBlock = nullptr;
    _currentStateBlock = nullptr;
    _newStateBlock = nullptr;
-   _previousStateBlock = nullptr;
    _previewDepthMapShader = nullptr;
    _renderQuad = nullptr;
    _stateBlockDirty = false;
@@ -47,6 +53,8 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) //<Defaulting to Op
    _isDepthPrePass = false;
    _previewDepthBuffer = false;
    _renderer = nullptr;
+   _generalDetailLevel = DETAIL_HIGH;
+   _shadowDetailLevel = DETAIL_HIGH;
    _renderStage = INVALID_STAGE;
    _worldMatrices.push(mat4<F32>(/*identity*/));
    _isUniformedScaled = true;
@@ -57,7 +65,6 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) //<Defaulting to Op
    for (FrameBuffer*& renderTarget : _renderTarget)
        renderTarget = nullptr;
 
-   Frustum::createInstance();
    RenderPass* diffusePass = New RenderPass("diffusePass");
    RenderPassManager::getOrCreateInstance().addRenderPass(diffusePass,1);
    //RenderPassManager::getInstance().addRenderPass(shadowPass,2);
@@ -68,16 +75,17 @@ GFXDevice::~GFXDevice()
 }
 
 I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
-    
-    PostFX::createInstance();
-    ShaderManager::createInstance();
+    RenderStateBlockDescriptor defaultStateDescriptor;
+    _defaultStateBlock = getOrCreateStateBlock(defaultStateDescriptor);
+    _previousStateBlock = getOrCreateStateBlock(defaultStateDescriptor);
 
     I8 hardwareState = _api.initHardware(resolution,argc,argv);
 
     if(hardwareState == NO_ERR){
+        SET_DEFAULT_STATE_BLOCK(true);
         //Screen FB should use MSAA if available, else fallback to normal color FB (no AA or FXAA)
-        _renderTarget[RENDER_TARGET_SCREEN] = newFB(FB_2D_COLOR_MS);
-        _renderTarget[RENDER_TARGET_DEPTH]  = newFB(FB_2D_DEPTH);
+        _renderTarget[RENDER_TARGET_SCREEN] = newFB(true);
+        _renderTarget[RENDER_TARGET_DEPTH]  = newFB(true);
 
         SamplerDescriptor screenSampler;
         TextureDescriptor screenDescriptor(TEXTURE_2D,
@@ -102,20 +110,21 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
 
         _renderTarget[RENDER_TARGET_DEPTH]->AddAttachment(depthDescriptor, TextureDescriptor::Depth);
         _renderTarget[RENDER_TARGET_DEPTH]->toggleColorWrites(false);
+        _renderTarget[RENDER_TARGET_DEPTH]->Create(resolution.width, resolution.height);
 
         _renderTarget[RENDER_TARGET_SCREEN]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
         _renderTarget[RENDER_TARGET_SCREEN]->toggleDepthBuffer(true);
+        _renderTarget[RENDER_TARGET_SCREEN]->Create(resolution.width, resolution.height);
+
         if(_enableAnaglyph){
-            _renderTarget[RENDER_TARGET_ANAGLYPH] = newFB(FB_2D_COLOR_MS);
+            _renderTarget[RENDER_TARGET_ANAGLYPH] = newFB(true);
             _renderTarget[RENDER_TARGET_ANAGLYPH]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
             _renderTarget[RENDER_TARGET_ANAGLYPH]->toggleDepthBuffer(true);
-        }
-
-        for (FrameBuffer* renderTarget : _renderTarget){
-            if (renderTarget)
-                renderTarget->Create(resolution.width, resolution.height);
+            _renderTarget[RENDER_TARGET_ANAGLYPH]->Create(resolution.width, resolution.height);
         }
     }
+
+    _postFX.init(resolution);
 
     return hardwareState;
 }
@@ -134,13 +143,14 @@ void GFXDevice::setApi(const RenderAPI& api){
 }
 
 void GFXDevice::closeRenderingApi(){
-    ShaderManager::getInstance().destroyInstance();
+    _shaderManager.destroyInstance();
     _api.closeRenderingApi();
     FOR_EACH(RenderStateMap::value_type& it, _stateBlockMap){
         SAFE_DELETE(it.second);
     }
     _stateBlockMap.clear();
-    Frustum::destroyInstance();
+
+    _frustum.destroyInstance();
     //Destroy all rendering Passes
     RenderPassManager::getInstance().destroyInstance();
 
@@ -150,15 +160,15 @@ void GFXDevice::closeRenderingApi(){
 
 void GFXDevice::closeRenderer(){
     PRINT_FN(Locale::get("STOP_POST_FX"));
-    PostFX::getInstance().destroyInstance();
-    ShaderManager::getInstance().Destroy();
+    _postFX.destroyInstance();
+    _shaderManager.Destroy();
     PRINT_FN(Locale::get("CLOSING_RENDERER"));
     SAFE_DELETE(_renderer);
 }
 
 void GFXDevice::idle() {
-    PostFX::getInstance().idle();
-    ShaderManager::getInstance().idle();
+    _postFX.idle();
+    _shaderManager.idle();
     _api.idle();
 }
 
@@ -271,12 +281,8 @@ void  GFXDevice::generateCubeMap(FrameBuffer& cubeMap,
                                  const DELEGATE_CBK& callback,
                                  const RenderStage& renderStage){
     //Only use cube map FB's
-    if(cubeMap.getType() != FB_CUBE_COLOR && cubeMap.getType() != FB_CUBE_DEPTH){
-        if(cubeMap.getType() != FB_CUBE_COLOR) {
-            ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP"));
-        }else{
-            ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP_SHADOW"));
-        }
+    if (cubeMap.GetAttachment(TextureDescriptor::Color0)._type != TEXTURE_CUBE_MAP) {
+        ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP"));
         return;
     }
 
@@ -302,7 +308,7 @@ void  GFXDevice::generateCubeMap(FrameBuffer& cubeMap,
     //And save all camera transform matrices
     lockMatrices(PROJECTION_MATRIX,true,true);
     //set a 90 degree vertical FoV perspective projection
-    setPerspectiveProjection(90.0f,1.0f,Frustum::getInstance().getZPlanes());
+    setPerspectiveProjection(90.0f,1.0f,_frustum.getZPlanes());
     //And set the current render stage to
     setRenderStage(renderStage);
     //Bind our FB
@@ -318,7 +324,7 @@ void  GFXDevice::generateCubeMap(FrameBuffer& cubeMap,
         GFX_DEVICE.lookAt(pos,TabCenter[i],TabUp[i]);
         GET_ACTIVE_SCENE()->renderState().getCamera().updateListeners();
         ///Extract the view frustum associated with this face
-        Frustum::getInstance().Extract(pos);
+        _frustum.Extract(pos);
             //draw our scene
             render(callback, GET_ACTIVE_SCENE()->renderState());
     }
@@ -330,12 +336,13 @@ void  GFXDevice::generateCubeMap(FrameBuffer& cubeMap,
     releaseMatrices();
 }
 
-RenderStateBlock* GFXDevice::createStateBlock(const RenderStateBlockDescriptor& descriptor){
-   I64 hashValue = descriptor.getGUID();
-   if (_stateBlockMap[hashValue])
+RenderStateBlock* GFXDevice::getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor){
+   size_t hashValue = descriptor.getHash();
+
+   if (_stateBlockMap.find(hashValue) != _stateBlockMap.end())
       return _stateBlockMap[hashValue];
 
-   RenderStateBlock* result = newRenderStateBlock(descriptor);
+   RenderStateBlock* result = New RenderStateBlock(descriptor);
    _stateBlockMap.insert(std::make_pair(hashValue,result));
 
    return result;
@@ -344,38 +351,33 @@ RenderStateBlock* GFXDevice::createStateBlock(const RenderStateBlockDescriptor& 
 RenderStateBlock* GFXDevice::setStateBlock(RenderStateBlock* block, bool forceUpdate) {
    assert(block != nullptr);
 
-   if (block != _currentStateBlock) {
-      _deviceStateDirty = true;
-      _stateBlockDirty = true;
-      _previousStateBlock = _newStateBlock;
-      _newStateBlock = block;
-      if(forceUpdate)  updateStates();//<there is no need to force a internal update of stateblocks if nothing changed
+   if (!_currentStateBlock || !block->Compare(*_currentStateBlock)) {
+       _deviceStateDirty = _stateBlockDirty = true;
+       _previousStateBlock = _newStateBlock;
+       _newStateBlock = block;
+       if(forceUpdate)  updateStates();//<there is no need to force a internal update of stateblocks if nothing changed
    } else {
-      _stateBlockDirty = false;
-     _newStateBlock = _currentStateBlock;
+       _stateBlockDirty = false;
+       _newStateBlock = _currentStateBlock;
    }
-   return _previousStateBlock;
-}
 
-RenderStateBlock* GFXDevice::setStateBlockByDesc( const RenderStateBlockDescriptor &desc ){
-   RenderStateBlock *block = createStateBlock( desc );
-   _stateBlockByDescription = true;
-   return SET_STATE_BLOCK( block );
+   return _previousStateBlock;
 }
 
 void GFXDevice::updateStates(bool force) {
     //Verify render states
     if(force){
         if ( _newStateBlock )
-            updateStateInternal(_newStateBlock, true);
+            activateStateBlock(*_newStateBlock, nullptr);
 
         _currentStateBlock = _newStateBlock;
+    }else{
+        if (_stateBlockDirty) {
+            activateStateBlock(*_newStateBlock, _currentStateBlock);
+            _currentStateBlock = _newStateBlock;
+        }
     }
 
-    if (_stateBlockDirty && !force) {
-        updateStateInternal(_newStateBlock);
-        _currentStateBlock = _newStateBlock;
-    }
     _stateBlockDirty = false;
 
    LightManager::getInstance().update();
@@ -397,13 +399,17 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
         }
     }
 
-    _api.changeResolution(w,h);
+    changeResolutionInternal(w,h);
+
+    //Update post-processing render targets and buffers
+    _postFX.updateResolution(w, h);
+    //Refresh shader programs
+    _shaderManager.refresh();
 }
 
 void GFXDevice::setHorizontalFoV(I32 newFoV){
-    F32 ratio  = ParamHandler::getInstance().getParam<F32>("runtime.aspectRatio");
-    ParamHandler::getInstance().setParam("runtime.verticalFOV", Util::xfov_to_yfov((F32)newFoV,ratio));
-    changeResolution(Application::getInstance().getResolution().width,Application::getInstance().getResolution().height);
+    Frustum::getInstance().setHorizontalFoV(newFoV);
+    changeResolution(Application::getInstance().getResolution());
 }
 
 void GFXDevice::enableFog(FogMode mode, F32 density, const vec3<F32>& color, F32 startDist, F32 endDist){
@@ -415,22 +421,20 @@ void GFXDevice::enableFog(FogMode mode, F32 density, const vec3<F32>& color, F32
     par.setParam("rendering.sceneState.fogStart",startDist);
     par.setParam("rendering.sceneState.fogEnd",endDist);
     par.setParam("rendering.sceneState.fogMode",mode);
-    ShaderManager::getInstance().refresh();
+    _shaderManager.refresh();
 }
 
  void GFXDevice::popWorldMatrix(){
      _worldMatrices.pop();
      _isUniformedScaled = _WDirty = true;
-
-     ShaderManager::getInstance().setMatricesDirty();
+     _shaderManager.setMatricesDirty();
 }
 
 void GFXDevice::pushWorldMatrix(const mat4<F32>& worldMatrix, const bool isUniformedScaled){
     _worldMatrices.push(worldMatrix);
     _isUniformedScaled = isUniformedScaled;
     _WDirty = true;
-
-    ShaderManager::getInstance().setMatricesDirty();
+    _shaderManager.setMatricesDirty();
 }
        
 void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat){
@@ -438,13 +442,7 @@ void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat){
      cleanMatrices();
             
      // Normal Matrix
-     if(!_isUniformedScaled){
-         mat4<F32> temp;
-         _WVCachedMatrix.inverse(temp);
-         mat.set(temp.transpose());
-     }else{
-         mat.set(_WVCachedMatrix);
-     }
+     mat.set(_isUniformedScaled ? _WVCachedMatrix : _WVCachedMatrix.inverseTranspose());
 }
 
 void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat) {
@@ -463,28 +461,23 @@ void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat) {
 }
 
 void GFXDevice::cleanMatrices(){
-    assert(!_worldMatrices.empty());
-    if(_WDirty){
-        if (_VDirty) 	       {
-            _api.getMatrix(VIEW_MATRIX, _viewCacheMatrix);
-        }
-        if (_VDirty || _PDirty) {
-            _api.getMatrix(VIEW_PROJECTION_MATRIX, _VPCachedMatrix);
-        }
-        // we transpose the matrices when we use them in the shader
-        _WVCachedMatrix.set(_worldMatrices.top() * _viewCacheMatrix);
-        _WVPCachedMatrix.set(_worldMatrices.top() * _VPCachedMatrix);
+    if(!_WDirty)
+        return;
 
-        _VDirty = _PDirty = _WDirty = false;
-    }
+    assert(!_worldMatrices.empty());
+
+    if (_VDirty) 	        _api.getMatrix(VIEW_MATRIX, _viewCacheMatrix);
+    if (_VDirty || _PDirty) _api.getMatrix(VIEW_PROJECTION_MATRIX, _VPCachedMatrix);
+
+    // we transpose the matrices when we use them in the shader
+    _WVCachedMatrix.set(_worldMatrices.top() * _viewCacheMatrix);
+    _WVPCachedMatrix.set(_worldMatrices.top() * _VPCachedMatrix);
+
+    _VDirty = _PDirty = _WDirty = false;
 }
 
 void GFXDevice::previewDepthBuffer(){
-    _previewDepthBuffer = true;
-}
-
-void GFXDevice::previewDepthBufferInternal(){
-    if(!_previewDepthBuffer)
+    if (!_previewDepthBuffer)
         return;
 
     if(!_previewDepthMapShader){
@@ -514,11 +507,9 @@ void GFXDevice::previewDepthBufferInternal(){
                                             _renderQuad->renderInstance()));
     toggle2D(false);
     _renderTarget[RENDER_TARGET_DEPTH]->Unbind(0);
-
-    _previewDepthBuffer = false;
 }
 
 void GFXDevice::flush(){
-    previewDepthBufferInternal();
+    previewDepthBuffer();
     _api.flush();
 }

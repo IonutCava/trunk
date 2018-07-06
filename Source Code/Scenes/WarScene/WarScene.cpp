@@ -64,7 +64,7 @@ void WarScene::processTasks(const U64 deltaTime){
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-    LightManager::getInstance().getLight(0)->setDirection(_sunvector);
+    _sun->setDirection(_sunvector);
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 
     D32 BobTimer = getSecToMs(5);
@@ -168,13 +168,13 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
     //renderState().drawDebugLines(true);
 
     U32 count = 0;
-    FOR_EACH(AIEntity* character, _army1){
+    for(AIEntity* character : _army1){
         _pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
         _pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
         count++;
     }
     
-    FOR_EACH(AIEntity* character, _army2){
+    for(AIEntity* character : _army2){
        _pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
        _pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
         count++;
@@ -187,14 +187,15 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     //Add a light
-    addDefaultLight();
+    _sun = addDefaultLight();
     //Add a skybox
     addDefaultSky();
     //Position camera
     renderState().getCamera().setEye(vec3<F32>(54.5f, 25.5f, 1.5f));
     renderState().getCamera().setGlobalRotation(-90/*yaw*/,35/*pitch*/);
-    renderState().csmSplitCount(3); // 3 splits
-    renderState().shadowMapResolutionFactor(4.0f); //2048x2048 per split
+    _sun->csmSplitCount(3); // 3 splits
+    _sun->csmSplitLogFactor(0.925f);
+    _sun->csmNearClipOffset(25.0f);
     // Add some obstacles
     SceneGraphNode* cylinderNW = _sceneGraph->findNode("cylinderNW");
     SceneGraphNode* cylinderNE = _sceneGraph->findNode("cylinderNE");
@@ -251,7 +252,7 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
         currentNode->getComponent<NavigationComponent>()->setNavigationDetailOverride(baseNode->getComponent<NavigationComponent>()->getNavMeshDetailOverride());
         
         currentNode->getTransform()->scale(baseNode->getTransform()->getScale());
-        currentNode->getTransform()->setPosition(vec3<F32>(currentPos.first, 0, currentPos.second));
+        currentNode->getTransform()->setPosition(vec3<F32>(currentPos.first, -0.01f, currentPos.second));
     }
 
     /*_bobNode = _sceneGraph->findNode("Soldier3");
@@ -348,10 +349,14 @@ bool WarScene::initializeAI(bool continueOnErrors){
             currentNode->setSelectable(true);
             I8 side = k == 0 ? -1 : 1;
 
-            currentNode->getTransform()->setPosition(vec3<F32>(-125 + 25*(i%5), 0, 200 * side + 25*zFactor*side));
-            if(side == 1)
-                currentNode->getTransform()->rotateY(180);
-            
+            currentNode->getTransform()->setPosition(vec3<F32>(-125 + 25*(i%5), -0.01f, 200 * side + 25*zFactor*side));
+            if (side == 1) {
+                 currentNode->getTransform()->rotateY(180);
+                 currentNode->getTransform()->translateX(100);
+            }
+          
+            currentNode->getTransform()->translateX(25 * side);
+
             aiSoldier = New AIEntity(currentNode->getTransform()->getPosition(), currentNode->getName());
             aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
             aiSoldier->setComInterface();

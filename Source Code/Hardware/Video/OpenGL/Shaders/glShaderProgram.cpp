@@ -251,9 +251,9 @@ bool glShaderProgram::generateHWResource(const std::string& name){
         //Use the specified shader path
         glswSetPath(std::string(getResourceLocation() + "GLSL/").c_str(), ".glsl");
         //Mirror initial shader defines to match line count
-        GLint lineCountOffset = 15;
-        GLint lineCountOffsetFrag = 1;
-        GLint lineCountOffsetVert = 1;
+        GLint lineCountOffset = 8;
+        GLint lineCountOffsetFrag = 0;
+        GLint lineCountOffsetVert = 15;
         if (GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA){ //nVidia specific
             lineCountOffset += 6;
         }

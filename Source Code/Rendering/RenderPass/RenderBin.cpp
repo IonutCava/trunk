@@ -44,7 +44,7 @@ RenderBinItem::RenderBinItem(P32 sortKey, SceneGraphNode* const node ) : _node( 
         assert(currentStateBlock != nullptr);
     }
     // Save the render state hash value for sorting
-    _stateHash = currentStateBlock->getGUID();
+    _stateHash = currentStateBlock->getDescriptorConst().getHash();
 }
 
 /// Sorting opaque items is a 2 step process:

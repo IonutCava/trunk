@@ -55,11 +55,6 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _fogEndLoc         = -1;
     _fogModeLoc        = -1;
     _fogDetailLevelLoc = -1;
-#if defined(CSM_USE_LAYERED_RENDERING)
-    for (U8 i = 0; i < Config::MAX_SPLITS_PER_LIGHT; ++i){
-        _shadowCPV[i] = -1;
-    }
-#endif
     U32 i = 0, j = 0;
     for (; i < Material::TEXTURE_UNIT0; ++i)
         sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", Material::TEXTURE_UNIT0 + i);
@@ -94,8 +89,8 @@ U8 ShaderProgram::update(const U64 deltaTime){
     this->Uniform(_lightAmbientLoc, LightManager::getInstance().getAmbientLight());
 
     if(_dirty){
-        this->Uniform(_zPlanesLoc, Frustum::getInstance().getZPlanes());
         this->Uniform(_screenDimensionLoc, Application::getInstance().getResolution());
+
         U8 shadowMapSlot = Config::MAX_TEXTURE_STORAGE;
         //Apply global shader values valid throughout application runtime:
         char depthMapSampler[32];
@@ -172,11 +167,6 @@ bool ShaderProgram::generateHWResource(const std::string& name){
     _fogEndLoc         = this->cachedLoc("fogEnd");
     _fogModeLoc        = this->cachedLoc("fogMode");
     _fogDetailLevelLoc = this->cachedLoc("fogDetailLevel");
-#if defined(CSM_USE_LAYERED_RENDERING)
-    for (U32 i = 0; i < Config::MAX_SPLITS_PER_LIGHT; ++i){
-        _shadowCPV[i] = this->cachedLoc(std::string("dvd_shadowCPV[" + Util::toString(i) + "]"));
-    }
-#endif
     _dirty = true;
 
     return true;
@@ -189,6 +179,7 @@ bool ShaderProgram::bind(){
         return false;
 
     this->Attribute(_cameraLocationLoc, Frustum::getInstance().getEyePos());
+    this->Uniform(_zPlanesLoc, Frustum::getInstance().getZPlanes());
     return true;
 }
 

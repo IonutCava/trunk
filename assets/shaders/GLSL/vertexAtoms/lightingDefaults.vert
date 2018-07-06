@@ -4,20 +4,14 @@
 
 #include "lightInput.cmn"
 
-out vec4 _vertexWV;
-out vec3 _normalWV;
-out vec3 _viewDirection;
-
 const float pidiv180 = 0.0174532777777778; //3.14159 / 180.0; // 36 degrees
 
+vec4 _vertexWV;
 void loopNormalLOD(in vec3 T, in vec3 B) {
 
     vec3 lightDirection; 
-    vec3 lightPos;
-
     float distance = 1.0;
     float lightType = 0.0;
-    float lightTypeInit = 0.0;
     Light currentLight;
 
     int currentLightCount = int(ceil(dvd_lightCount / (lodLevel+1.0f)));
@@ -28,46 +22,37 @@ void loopNormalLOD(in vec3 T, in vec3 B) {
         currentLight = dvd_LightSource[dvd_lightIndex[i]];
 
         //Directional light => lightType == 0; Spot or Omni => lightType == 1
-        lightTypeInit = currentLight._position.w;
-        lightType = clamp(lightTypeInit, 0.0, 1.0);
-        lightPos  = currentLight._position.xyz;
+        lightType = clamp(currentLight._position.w, 0.0, 1.0);
 
         //lightPosMV.w will be 0 for Directional Lights and 1 for Spot or Omni, so this avoids an "if/else"
-        lightDirection = mix(-lightPos, normalize(_vertexWV.xyz - lightPos), lightType);
+        lightDirection = mix(-currentLight._position.xyz, normalize(_vertexWV.xyz - currentLight._position.xyz), lightType);
 
         distance = length(lightDirection);
         //either _attenuation == 1 if light is directional or we compute the actual value for omni and spot
-        _attenuation[i] = mix(1.0,max(1.0/(currentLight._attenuation.x + 
-                                           currentLight._attenuation.y * distance + 
-                                           currentLight._attenuation.z * distance * distance),
-                                      0.0),//max
-                              lightType);//mix
-
+        _lightInfo[i]._attenuation = mix(1.0, max(1.0 / (currentLight._attenuation.x + currentLight._attenuation.y * distance + currentLight._attenuation.z * distance * distance), 0.0), lightType);
         // spotlight
-        if (lightTypeInit > 1.5){
+        if (currentLight._position.w > 1.5){
             float clampedCosine = max(0.0, dot(-lightDirection, normalize(currentLight._direction.rgb)));
             if (clampedCosine < cos(currentLight._attenuation.w * pidiv180)){ // outside of spotlight cone
-                _attenuation[i] = 0.0;
+                _lightInfo[i]._attenuation = 0.0;
             }else{
-                _attenuation[i] = _attenuation[i] * pow(clampedCosine, currentLight._direction.w);
+                _lightInfo[i]._attenuation = _lightInfo[i]._attenuation * pow(clampedCosine, currentLight._direction.w);
             }
         }
 
 #if defined(COMPUTE_TBN)
-        _lightDirection[i] = vec3(dot(lightDirection, T), dot(lightDirection, B), dot(lightDirection, _normalWV));
+        _lightInfo[i]._lightDirection = vec3(dot(lightDirection, T), dot(lightDirection, B), dot(lightDirection, _normalWV));
 #else
-        _lightDirection[i] = lightDirection;
+        _lightInfo[i]._lightDirection = lightDirection;
 #endif
     }
 }
 
 void loopLowLOD() {
     vec3 lightDirection; 
-    vec3 lightPos;
 
     float distance = 1.0;
     float lightType = 0.0;
-    float lightTypeInit = 0.0;
     Light currentLight;
 
     int currentLightCount = int(ceil(dvd_lightCount / (lodLevel+1.0f)));
@@ -78,32 +63,26 @@ void loopLowLOD() {
         currentLight = dvd_LightSource[dvd_lightIndex[i]];
 
         //Directional light => lightType == 0; Spot or Omni => lightType == 1
-        lightTypeInit = currentLight._position.w;
-        lightType = clamp(lightTypeInit, 0.0, 1.0);
-        lightPos  = currentLight._position.xyz;
+        lightType = clamp(currentLight._position.w, 0.0, 1.0);
 
         //lightPosMV.w will be 0 for Directional Lights and 1 for Spot or Omni, so this avoids an "if/else"
-        lightDirection = mix(-lightPos, normalize(_vertexWV.xyz - lightPos), lightType);
+        lightDirection = mix(-currentLight._position.xyz, normalize(_vertexWV.xyz - currentLight._position.xyz), lightType);
 
         distance = length(lightDirection);
         //either _attenuation == 1 if light is directional or we compute the actual value for omni and spot
-        _attenuation[i] = mix(1.0,max(1.0/(currentLight._attenuation.x + 
-                                           currentLight._attenuation.y * distance + 
-                                           currentLight._attenuation.z * distance * distance),
-                                      0.0),//max
-                              lightType);//mix
+        _lightInfo[i]._attenuation = mix(1.0, max(1.0 / (currentLight._attenuation.x + currentLight._attenuation.y * distance + currentLight._attenuation.z * distance * distance), 0.0), lightType);
 
         // spotlight
-        if (lightTypeInit > 1.5){
+        if (currentLight._position.w > 1.5){
             float clampedCosine = max(0.0, dot(-lightDirection, normalize(currentLight._direction.rgb)));
             if (clampedCosine < cos(currentLight._attenuation.w * pidiv180)){ // outside of spotlight cone
-                _attenuation[i] = 0.0;
+                _lightInfo[i]._attenuation = 0.0;
             }else{
-                _attenuation[i] = _attenuation[i] * pow(clampedCosine, currentLight._direction.w);
+                _lightInfo[i]._attenuation = _lightInfo[i]._attenuation * pow(clampedCosine, currentLight._direction.w);
             }
         }
 
-        _lightDirection[i] = lightDirection;
+        _lightInfo[i]._lightDirection = lightDirection;
     }
 }
 
@@ -130,5 +109,4 @@ void computeLightVectors(){
         _viewDirection = -_vertexWV.xyz;
         loopLowLOD();
     #endif
-   
 }

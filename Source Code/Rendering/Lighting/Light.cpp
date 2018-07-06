@@ -20,6 +20,7 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
                                                    _lightSGN(nullptr),
                                                    _impostor(nullptr),
                                                    _id(0),
+                                                   _resolutionFactor(1),
                                                    _impostorSGN(nullptr),
                                                    _castsShadows(true),
                                                    _par(ParamHandler::getInstance()),
@@ -290,6 +291,14 @@ void Light::addShadowMapInfo(ShadowMapInfo* shadowMapInfo){
 bool Light::removeShadowMapInfo(){
     SAFE_DELETE(_shadowMapInfo);
     return true;
+}
+void Light::updateResolution(I32 newWidth, I32 newHeight){
+    ShadowMap* sm = _shadowMapInfo->getShadowMap();
+
+    if (!sm)
+        return;
+
+    sm->updateResolution(newWidth, newHeight);
 }
 
 void Light::generateShadowMaps(const SceneRenderState& sceneRenderState){

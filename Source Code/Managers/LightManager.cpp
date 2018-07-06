@@ -99,11 +99,16 @@ void LightManager::idle(){
     s_shadowPassTimer->pause(!_shadowMapsEnabled);
 }
 
+void LightManager::updateResolution(I32 newWidth, I32 newHeight){
+    for(Light* light : _currLightsPerNode)
+        light->updateResolution(newWidth, newHeight);
+}
+
 ///Check light properties for every light (this is bound to the camera change listener group
 ///Update only if needed. Get projection and view matrices if they changed
 ///Also, search for the dominant light if any
 void LightManager::update(const bool force){
-    FOR_EACH(Light* light, _currLightsPerNode){
+    for(Light* light : _currLightsPerNode){
         light->updateState(force);
         if(!_dominantLight){ //if we do not have a dominant light registered, search for one
             if(light->getLightMode() == LIGHT_MODE_DOMINANT){
@@ -279,7 +284,7 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
             luminace  = light->getVProperty(LIGHT_PROPERTY_DIFFUSE).dot(lumDot);
             luminace *= light->getFProperty(LIGHT_PROPERTY_BRIGHTNESS);
 
-            F32 radiusSq = squared(light->getFProperty(LIGHT_PROPERTY_BRIGHTNESS) + node->getBoundingSphere().getRadius());
+            F32 radiusSq = squared(light->getFProperty(LIGHT_PROPERTY_BRIGHTNESS) + node->getBoundingSphereConst().getRadius());
             // get the distance to the light... score it 1 to 0 near to far.
             vec3<F32> distToLight(node->getBoundingBoxConst().getCenter() - light->getPosition());
             F32 distSq = radiusSq - distToLight.lengthSquared();

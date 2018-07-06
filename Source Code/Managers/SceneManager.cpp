@@ -13,7 +13,6 @@ SceneManager::SceneManager() : FrameListener(),
                                _renderPassManager(nullptr),
                                _defaultMaterial(nullptr),
                                _init(false),
-                               _previewDepthBuffer(false),
                                _frameCount(0)
 {
     DVDConverter::createInstance();
@@ -21,9 +20,10 @@ SceneManager::SceneManager() : FrameListener(),
 }
 
 SceneManager::~SceneManager(){
+    PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
     //PRINT_FN(Locale::get("SCENE_MANAGER_DELETE"));
     PRINT_FN(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
-    FOR_EACH(SceneMap::value_type& it, _sceneMap){
+    for(SceneMap::value_type& it : _sceneMap){
         SAFE_DELETE(it.second);
     }
     SAFE_DELETE(_renderPassCuller);
@@ -131,9 +131,6 @@ void SceneManager::postRender(){
     _activeScene->postRender();
     // Preview depthmaps if needed
     LightManager::getInstance().previewShadowMaps();
-    if(_previewDepthBuffer)
-        GFX_DEVICE.previewDepthBuffer();
-
     _frameCount++;
 }
 

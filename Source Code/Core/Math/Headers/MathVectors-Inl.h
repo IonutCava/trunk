@@ -147,6 +147,12 @@ inline T vec2<T>::dot(const vec2 &v) const {
     return ((this->x*v.x) + (this->y*v.y));
 }
 
+/// round both values
+template<class T>
+inline void vec2<T>::round(){
+    set((T)std::roundf(this->x), (T)std::roundf(this->y));
+}
+
 template<class T>
 inline vec2<T>::vec2(const vec3<T> &v) {
     this->x = v.x;
@@ -321,6 +327,12 @@ inline void vec3<T>::rotateZ(D32 radians){
     this->y = (T)(-sin(radians)*this->x + cos(radians)*this->y);
 }
 
+/// round all three values
+template<class T>
+inline void vec3<T>::round(){
+    set((T)std::roundf(this->x), (T)std::roundf(this->y), (T)std::roundf(this->z));
+}
+
 /// swap the components  of this vector with that of the specified one
 template<class T>
 inline void vec3<T>::swap(vec3 &iv) {
@@ -375,6 +387,12 @@ inline bool vec4<T>::compare(const vec4 &v,F32 epsi = EPSILON) const {
 template<class T>
 inline vec4<T> vec4<T>::lerp(const vec4 &u, const vec4 &v, T factor) const {
     return ((u * (1 - factor)) + (v * factor));
+}
+
+/// round all four values
+template<class T>
+inline void vec4<T>::round(){
+    set((T)std::roundf(this->x), (T)std::roundf(this->y), (T)std::roundf(this->z), (T)std::roundf(this->w));
 }
 
 /// lerp between the 2 specified vectors by the specified amount for each component

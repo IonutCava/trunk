@@ -75,7 +75,7 @@ bool Reflector::build(){
 
     reflectionDescriptor.setSampler(reflectionSampler);
 
-    _reflectedTexture = GFX_DEVICE.newFB(FB_2D_COLOR);
+    _reflectedTexture = GFX_DEVICE.newFB();
     _reflectedTexture->AddAttachment(reflectionDescriptor,TextureDescriptor::Color0);
     _reflectedTexture->toggleDepthBuffer(true);
     if(!_reflectedTexture->Create(_resolution.x, _resolution.y)){

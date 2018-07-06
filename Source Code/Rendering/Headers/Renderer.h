@@ -41,6 +41,8 @@ public:
 	virtual void toggleDebugView() = 0;
 	inline RendererType getType() {return _type;}
 
+    virtual void updateResolution(U16 width, U16 height) = 0;
+
 protected:
 	RendererType _type;
 };

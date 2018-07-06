@@ -1,4 +1,3 @@
-in vec3 _viewDirection;
 
 struct MaterialProperties {
     vec4 ambient;
@@ -54,88 +53,23 @@ void applyLight(const in int index, const in int type, const in bool castsShadow
 void phong_loop(in vec2 texCoord, in vec3 normal, inout MaterialProperties materialProp){
     int currentLightCount = int(ceil(dvd_lightCount / (lodLevel + 1.0f)));
 
-    vec3 L; vec3 R;
-
+    vec3 L; 
+    vec3 R;
     vec3 viewDirection = normalize(_viewDirection);
 #if defined(USE_SPECULAR_MAP)
     vec4 specularValue = texture(texSpecularMap, texCoord);
 #else
     vec4 specularValue = material[2];
 #endif
-     
-    if(currentLightCount == 0)  return;
-    L = normalize(_lightDirection[0]);
-    R = normalize(-reflect(L,normal));    //Specular intensity based on material shininess
-    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
-    NdotL = max(dot(normal, L), 0.0);
-    applyLight(0, dvd_lightType[0], dvd_lightCastsShadows[0], specularValue, materialProp);
 
-#if MAX_LIGHTS_PER_NODE >= 2
-    if(currentLightCount == 1)  return;
-    L = normalize(_lightDirection[1]);
-    R = normalize(-reflect(L,normal)); 
-    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
-    NdotL = max(dot(normal, L), 0.0);
-    applyLight(1, dvd_lightType[1], dvd_lightCastsShadows[1], specularValue, materialProp);
-#endif
-#if MAX_LIGHTS_PER_NODE >= 3
-    if(currentLightCount == 2)  return;
-    L = normalize(_lightDirection[2]);
-    R = normalize(-reflect(L,normal)); 
-    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
-    NdotL = max(dot(normal, L), 0.0);
-    applyLight(2, dvd_lightType[2], dvd_lightCastsShadows[2], specularValue, materialProp);
-#endif
-#if MAX_LIGHTS_PER_NODE >= 4
-    if(currentLightCount == 3) return;
-    L = normalize(_lightDirection[3]);
-    R = normalize(-reflect(L,normal)); 
-    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
-    NdotL = max(dot(normal, L), 0.0);
-    applyLight(3, dvd_lightType[3], dvd_lightCastsShadows[3], specularValue, materialProp);
-#endif
-#if MAX_LIGHTS_PER_NODE >= 5
-    if(currentLightCount == 4) return;
-    L = normalize(_lightDirection[4]);
-    R = normalize(-reflect(L,normal)); 
-    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
-    NdotL = max(dot(normal, L), 0.0);
-    applyLight(4, dvd_lightType[4], dvd_lightCastsShadows[4], specularValue, materialProp);
-#endif
-#if MAX_LIGHTS_PER_NODE >= 6
-    if(currentLightCount == 5) return;
-    L = normalize(_lightDirection[5]);
-    R = normalize(-reflect(L,normal)); 
-    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
-    NdotL = max(dot(normal, L), 0.0);
-    applyLight(5, dvd_lightType[5], dvd_lightCastsShadows[5], specularValue, materialProp);
-#endif
-#if MAX_LIGHTS_PER_NODE >= 7
-    if(currentLightCount == 6) return;
-    L = normalize(_lightDirection[6]);
-    R = normalize(-reflect(L,normal)); 
-    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
-    NdotL = max(dot(normal, L), 0.0);
-    applyLight(6, dvd_lightType[6], dvd_lightCastsShadows[6], specularValue, materialProp);
-#endif
-#if MAX_LIGHTS_PER_NODE == 8
-    if(currentLightCount == 7) return;
-    L = normalize(_lightDirection[7]);
-    R = normalize(-reflect(L,normal)); 
-    iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
-    NdotL = max(dot(normal, L), 0.0);
-    applyLight(7, dvd_lightType[7], dvd_lightCastsShadows[7], specularValue, materialProp);
-#endif
-#if MAX_LIGHTS_PER_NODE > 8
-    //Apply the rest of the lights
-    for(int i = 8; i <= MAX_LIGHTS_PER_NODE; i++){
+    for(int i = 0; i < MAX_LIGHTS_PER_NODE; i++){
         if(currentLightCount == i) return;
-        L = normalize(_lightDirection[i]);
-        R = normalize(-reflect(L,normal)); 
+
+        L = normalize(_lightInfo[i]._lightDirection);
+        R = normalize(-reflect(L, normal)); 
         iSpecular = clamp(pow(max(dot(R, viewDirection), 0.0), material[3].x ), 0.0, 1.0);
         NdotL = max(dot(normal, L), 0.0);
-        applyLight(i, dvd_lightType[i], dvd_lightCastsShadows[i], specularValue, materialProp);
+        applyLight(i, dvd_lightType[dvd_lightIndex[i]], dvd_lightCastsShadows[dvd_lightIndex[i]], specularValue, materialProp);
     }
-#endif
-    
+ 
 }

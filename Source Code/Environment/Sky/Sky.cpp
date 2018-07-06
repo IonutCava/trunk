@@ -24,14 +24,12 @@ Sky::Sky(const std::string& name) : SceneNode(name, TYPE_SKY),
     RenderStateBlockDescriptor skyboxDesc;
     skyboxDesc.setCullMode(CULL_MODE_CCW);
     //skyboxDesc.setZReadWrite(false, false); - not needed anymore. Using gl_Position.z = gl_Position.w - 0.0001 in GLSL -Ionut
-    _skyboxRenderState = GFX_DEVICE.createStateBlock(skyboxDesc);
+    _skyboxRenderState = GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
     skyboxDesc.setCullMode(CULL_MODE_CW);
-    _skyboxRenderStateReflected = GFX_DEVICE.createStateBlock(skyboxDesc);
+    _skyboxRenderStateReflected = GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
 }
 
 Sky::~Sky(){
-    SAFE_DELETE(_skyboxRenderState);
-    SAFE_DELETE(_skyboxRenderStateReflected);
     RemoveResource(_skyShader);
     RemoveResource(_skybox);
 }

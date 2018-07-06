@@ -32,6 +32,8 @@ public:
 	~ForwardRenderer();
 	void render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState);
 	void toggleDebugView() {_debugView = !_debugView;}
+    void updateResolution(U16 width, U16 height);
+
 private:
 	bool _debugView;
 };

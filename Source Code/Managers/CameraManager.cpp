@@ -43,7 +43,7 @@ void CameraManager::setActiveCamera(const std::string& name) {
 
     _camera->onActivate();
 
-    FOR_EACH(const DELEGATE_CBK& listener, _changeCameralisteners){
+    for(const DELEGATE_CBK& listener : _changeCameralisteners){
         listener();
     }
 }
@@ -56,7 +56,7 @@ void CameraManager::addNewCamera(const std::string& cameraName, Camera* const ca
     camera->setIOD(ParamHandler::getInstance().getParam<F32>("postProcessing.anaglyphOffset"));
     camera->setName(cameraName);
 
-    FOR_EACH(const DELEGATE_CBK& listener, _updateCameralisteners){
+    for(const DELEGATE_CBK& listener : _updateCameralisteners){
         camera->addUpdateListener(listener);
     }
     _cameraPool.insert(make_pair(cameraName,camera));

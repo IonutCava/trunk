@@ -25,81 +25,105 @@
 
 #include "RenderAPIEnums.h"
 #include "Utility/Headers/GUIDWrapper.h"
+#include "Utility/Headers/CRC.h"
 
 class RenderStateBlockDescriptor : public GUIDWrapper {
-protected:
-   friend class glRenderStateBlock;
-   friend class d3dRenderStateBlock;
-   /// Color Writes
-   bool _enableColorWrite;
-   bool _writeRedChannel;
-   bool _writeBlueChannel;
-   bool _writeGreenChannel;
-   bool _writeAlphaChannel;
 
-   // Blending
-   bool _blendDefined;
-   bool _blendEnable;
-   BlendProperty _blendSrc;
-   BlendProperty _blendDest;
-   BlendOperation _blendOp;
+protected:
+    friend class GL_API;
+    friend class DX_API;
+    /// Color Writes
+    bool _enableColorWrite;
+    bool _writeRedChannel;
+    bool _writeBlueChannel;
+    bool _writeGreenChannel;
+    bool _writeAlphaChannel;
+
+    // Blending
+    bool _blendDefined;
+    bool _blendEnable;
+    BlendProperty _blendSrc;
+    BlendProperty _blendDest;
+    BlendOperation _blendOp;
 
     /// Rasterizer
-   bool _cullDefined;
-   CullMode _cullMode;
+    bool _cullDefined;
+    CullMode _cullMode;
 
-   /// Depth
-   bool _zDefined;
-   bool _zEnable;
-   bool _zWriteEnable;
+    /// Depth
+    bool _zDefined;
+    bool _zEnable;
+    bool _zWriteEnable;
 
-   /// Stencil
-   bool _stencilDefined;
-   bool _stencilEnable;
-   StencilOperation _stencilFailOp;
-   StencilOperation _stencilZFailOp;
-   StencilOperation _stencilPassOp;
-   ComparisonFunction  _stencilFunc;
-   U32 _stencilRef;
-   U32 _stencilMask;
-   U32 _stencilWriteMask;
+    /// Stencil
+    bool _stencilDefined;
+    bool _stencilEnable;
+    StencilOperation _stencilFailOp;
+    StencilOperation _stencilZFailOp;
+    StencilOperation _stencilPassOp;
+    ComparisonFunction  _stencilFunc;
+    U32 _stencilRef;
+    U32 _stencilMask;
+    U32 _stencilWriteMask;
 
-   FillMode   _fillMode;
+    FillMode   _fillMode;
 
 public:
-   ComparisonFunction _zFunc;
-   F32 _zBias;
-   F32 _zUnits;
+    ComparisonFunction _zFunc;
+    F32 _zBias;
+    F32 _zUnits;
 
-   RenderStateBlockDescriptor();
+    RenderStateBlockDescriptor();
 
-   void fromDescriptor( const RenderStateBlockDescriptor& descriptor );
+    void fromDescriptor( const RenderStateBlockDescriptor& descriptor );
 
-   inline void setFillMode(FillMode mode)      { _fillMode = mode;  }
+    inline void setFillMode(FillMode mode)      { _fillMode = mode;  }
 
-   void setCullMode(CullMode mode );
-   void setZEnable(bool enable);
-   void setZReadWrite(bool read, bool write = true);
+    void flipCullMode();
+    void setCullMode(CullMode mode );
+    void setZEnable(bool enable);
+    void setZReadWrite(bool read, bool write = true);
 
-   void setBlend( bool enable,
-                  BlendProperty src = BLEND_PROPERTY_SRC_ALPHA,
-                  BlendProperty dest = BLEND_PROPERTY_INV_SRC_ALPHA,
-                  BlendOperation op = BLEND_OPERATION_ADD );
+    void setBlend( bool enable,
+                    BlendProperty src = BLEND_PROPERTY_SRC_ALPHA,
+                    BlendProperty dest = BLEND_PROPERTY_INV_SRC_ALPHA,
+                    BlendOperation op = BLEND_OPERATION_ADD );
 
-   void setColorWrites( bool red, bool green, bool blue, bool alpha );
+    void setColorWrites( bool red, bool green, bool blue, bool alpha );
+
+    inline U32 getHash() const { return Util::CRC32(this, sizeof(RenderStateBlockDescriptor)); }
+    inline U32 getGUID() const { return getGUID(); }
 };
 
-class RenderStateBlock{
+class RenderStateBlock : public GUIDWrapper {
 public:
-   virtual ~RenderStateBlock() { }
+    RenderStateBlock(const RenderStateBlockDescriptor& descriptor) : GUIDWrapper(),
+                                                                     _descriptor(descriptor)
+    {
+    }
 
-   virtual I64 getGUID() const = 0;
+    virtual ~RenderStateBlock() 
+    {
+    }
 
-   virtual RenderStateBlockDescriptor& getDescriptor() = 0;
+    RenderStateBlockDescriptor& getDescriptor() {return _descriptor;}
 
-   bool operator == (RenderStateBlock& RSB){return Compare(RSB);}
-   bool operator != (RenderStateBlock& RSB){return !Compare(RSB);}
-   inline bool Compare(const RenderStateBlock& RSB) const {return getGUID() == RSB.getGUID();}
+    const RenderStateBlockDescriptor& getDescriptorConst() const { return _descriptor; }
+
+    bool operator == (RenderStateBlock& RSB) const {
+        return Compare(RSB);
+    }
+
+    bool operator != (RenderStateBlock& RSB) const {
+        return !Compare(RSB);
+    }
+
+    inline bool Compare(const RenderStateBlock& RSB) const { 
+        return getDescriptorConst().getHash() == RSB.getDescriptorConst().getHash();
+    }
+
+    protected:
+    RenderStateBlockDescriptor _descriptor;
 };
 
 #endif

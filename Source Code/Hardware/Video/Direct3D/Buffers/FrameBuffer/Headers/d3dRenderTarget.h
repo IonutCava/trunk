@@ -29,20 +29,19 @@ class d3dRenderTarget : public FrameBuffer
 {
 public:
 
-    d3dRenderTarget(FBType type);
+    d3dRenderTarget(bool multisampled);
     ~d3dRenderTarget();
 
-    bool Create(U16 width, U16 height, U8 imageLayers = 0);
+    bool Create(U16 width, U16 height);
 
     void Destroy();
-    void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth = true) const; ///<Use by multilayerd FB's
-    void DrawToFace(TextureDescriptor::AttachmentType slot, U8 nFace, bool includeDepth = true) const;
+    void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth = true) const;
     void Begin(const FrameBufferTarget& drawPolicy);
     void End();
 
-    void Bind(U8 unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) const;
+    void Bind(U8 unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0);
     void Unbind(U8 unit=0) const;
-    void BlitFrom(FrameBuffer* inputFB);
+    void BlitFrom(FrameBuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false);
 
     void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const;
 

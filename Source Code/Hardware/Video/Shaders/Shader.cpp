@@ -13,7 +13,7 @@ Shader::Shader(const std::string& name, const ShaderType& type,const bool optimi
 
 Shader::~Shader(){
 	D_PRINT_FN(Locale::get("SHADER_DELETE"),getName().c_str());
-	FOR_EACH(ShaderProgram* shaderPtr, _parentShaderPrograms){
+	for(ShaderProgram* shaderPtr : _parentShaderPrograms){
 		shaderPtr->detachShader(this);
 	}
 	_parentShaderPrograms.clear();

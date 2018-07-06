@@ -1,21 +1,20 @@
 -- Vertex.Shadow
 
-uniform mat4 dvd_WorldMatrix;//[MAX_INSTANCES];
-#ifndef CSM_USE_LAYERED_RENDERING
-
-out vec4 _vertexWVP;
-#endif
 #include "clippingPlanes.vert"
 #if defined(USE_GPU_SKINNING)
 #include "boneTransforms.vert"
 #endif
+
 layout(std140) uniform dvd_MatrixBlock
 {
     mat4 dvd_ProjectionMatrix;
     mat4 dvd_ViewMatrix;
     mat4 dvd_ViewProjectionMatrix;
 };
-out vec2 texCoord;
+
+uniform mat4 dvd_WorldMatrix;//[MAX_INSTANCES];
+out float depth;
+out vec2 _texCoord;
 
 void main(void){
     vec4 dvd_Vertex = vec4(inVertexData, 1.0);
@@ -25,48 +24,11 @@ void main(void){
     applyBoneTransforms(dvd_Vertex, dvd_Normal, 2);
 #endif
 
-    texCoord = inTexCoordData;
+    _texCoord = inTexCoordData;
     vec4 wVertex = dvd_WorldMatrix * dvd_Vertex;
-    //setClipPlanes(wVertex);
-#ifdef CSM_USE_LAYERED_RENDERING
-    gl_Position = wVertex;
-#else
+    setClipPlanes(wVertex);
     gl_Position = dvd_ViewProjectionMatrix * wVertex;
-    _vertexWVP = gl_Position;
-#endif
-}
-
--- Geometry.Shadow
-
-precision highp int;
-
-layout(triangles, invocations = MAX_SPLITS_PER_LIGHT) in;
-layout(triangle_strip, max_vertices = 9) out;
-
-uniform mat4 dvd_shadowCPV[MAX_SPLITS_PER_LIGHT]; //Should contain Crop * Projection * View
-uniform int  dvd_currentSplitCount = 4;
-
-in  vec2 texCoord[];
-out vec2 _texCoord;
-out vec4 _vertexWVP;
-
-void main(){
-
-    int layer = gl_InvocationID;
- 
-    if (layer == dvd_currentSplitCount) 
-       return;
-
-    gl_Layer = layer;
-    mat4 shadowMatrix = dvd_shadowCPV[layer];
-    for (int vertIdx = 0; vertIdx < 3; vertIdx++) {
-        _texCoord = texCoord[vertIdx];
-        gl_Position = shadowMatrix * gl_in[vertIdx].gl_Position;
-        _vertexWVP = gl_Position;
-        EmitVertex();
-    }
-        
-    EndPrimitive();
+    depth = (gl_Position.z / gl_Position.w);
 }
 
 -- Fragment.Shadow
@@ -85,8 +47,8 @@ uniform sampler2D texDiffuse0;
 uniform mat4      material;
 #endif
 
-in  vec4 _vertexWVP;
-out float _colorOut;
+in  float depth;
+out vec2 _colorOut;
 
 void main(){
 
@@ -100,8 +62,10 @@ void main(){
 #elif defined(USE_OPACITY_DIFFUSE_MAP)
     if (texture(texDiffuse0, _texCoord).a < ALPHA_DISCARD_THRESHOLD) discard;
 #endif
-
-    _colorOut = _vertexWVP.z / _vertexWVP.w;;
+    // Adjusting moments (this is sort of bias per pixel) using partial derivative
+    float dx = dFdx(depth);
+    float dy = dFdy(depth);
+    _colorOut = vec2(depth, (depth * depth) + 0.25*(dx*dx + dy*dy));
 }
 
 -- Vertex.PrePass
@@ -138,4 +102,51 @@ void main(){
 #endif
 
     _colorOut = vec4(gl_FragCoord.w, 0.0, 0.0, 0.0);
+}
+
+-- Vertex.GaussBlur
+
+#include "vertexDefault.vert"
+
+void main(void)
+{
+    computeData();
+}
+
+-- Fragment.GaussBlur
+
+in vec2 _texCoord;
+out vec2 _outColor;
+
+uniform sampler2DArray shadowMap;
+uniform float blurSize; 
+uniform bool horizontal = true;
+uniform int layer;
+
+void main(void)
+{
+    vec2 sum = vec2(0.0);
+    if (horizontal){
+        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y - 4.0*blurSize, layer)).rg * 0.05;
+        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y - 3.0*blurSize, layer)).rg * 0.09;
+        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y - 2.0*blurSize, layer)).rg * 0.12;
+        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y - blurSize, layer)).rg * 0.15;
+        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y, layer)).rg * 0.16;
+        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y + blurSize, layer)).rg * 0.15;
+        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y + 2.0*blurSize, layer)).rg * 0.12;
+        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y + 3.0*blurSize, layer)).rg * 0.09;
+        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y + 4.0*blurSize, layer)).rg * 0.05;
+    }else{
+        sum += texture(shadowMap, vec3(_texCoord.x - 4.0*blurSize, _texCoord.y, layer)).rg * 0.05;
+        sum += texture(shadowMap, vec3(_texCoord.x - 3.0*blurSize, _texCoord.y, layer)).rg * 0.09;
+        sum += texture(shadowMap, vec3(_texCoord.x - 2.0*blurSize, _texCoord.y, layer)).rg * 0.12;
+        sum += texture(shadowMap, vec3(_texCoord.x - blurSize, _texCoord.y, layer)).rg * 0.15;
+        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y, layer)).rg * 0.16;
+        sum += texture(shadowMap, vec3(_texCoord.x + blurSize,     _texCoord.y, layer)).rg * 0.15;
+        sum += texture(shadowMap, vec3(_texCoord.x + 2.0*blurSize, _texCoord.y, layer)).rg * 0.12;
+        sum += texture(shadowMap, vec3(_texCoord.x + 3.0*blurSize, _texCoord.y, layer)).rg * 0.09;
+        sum += texture(shadowMap, vec3(_texCoord.x + 4.0*blurSize, _texCoord.y, layer)).rg * 0.05;
+    }
+
+    _outColor = sum;
 }

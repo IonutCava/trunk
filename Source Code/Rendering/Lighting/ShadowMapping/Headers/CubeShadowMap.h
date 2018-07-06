@@ -32,7 +32,7 @@ public:
 	void render(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction);
 
 	///Update depth maps
-	void resolution(U16 resolution, F32 resolutionFactor);
+	void resolution(U16 resolution, U8 resolutionFactor);
 	void previewShadowMaps() {}
     void init(ShadowMapInfo* const smi);
 };

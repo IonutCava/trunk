@@ -35,8 +35,8 @@ public:
                     _visibility(false),
                     _pointsDirty(true)
     {
-        _min.set(100000.0f, 100000.0f, 100000.0f);
-        _max.set(-100000.0f, -100000.0f, -100000.0f);
+        _min.set(std::numeric_limits<F32>::max());
+        _max.set(std::numeric_limits<F32>::min());
         _points = new vec3<F32>[8];
     }
 
@@ -48,6 +48,11 @@ public:
                                                               _max(max)
     {
         _points = new vec3<F32>[8];
+    }
+
+    BoundingBox(vectorImpl<vec3<F32> >& points) : BoundingBox()
+    {
+        createFromPoints(points);
     }
 
     ~BoundingBox()
@@ -133,6 +138,12 @@ public:
         if (tz_max < t_max) t_max = tz_max;
 
         return ( (t_min < t1) && (t_max > t0) );
+    }
+
+    inline void createFromPoints(vectorImpl<vec3<F32>>& points)  {
+        for (vec3<F32> p : points) {
+            Add(p);
+        }
     }
 
     inline void Add(const vec3<F32>& v)	{

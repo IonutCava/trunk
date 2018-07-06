@@ -17,12 +17,11 @@ namespace Navigation {
         RenderStateBlockDescriptor navigationDebugDesc;
         navigationDebugDesc.setCullMode(CULL_MODE_NONE);
         navigationDebugDesc.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
-        _navMeshStateBlock = GFX_DEVICE.createStateBlock(navigationDebugDesc);
+        _navMeshStateBlock = GFX_DEVICE.getOrCreateStateBlock(navigationDebugDesc);
     }
 
    NavMeshDebugDraw::~NavMeshDebugDraw()
    {
-       SAFE_DELETE(_navMeshStateBlock);
        //Allow the primitive to be deleted
        if(_primitive)
            _primitive->_canZombify = true;

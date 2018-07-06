@@ -177,14 +177,14 @@ public:
     mat3 &operator+=(const mat3 &m) { return *this = *this + m; }
     mat3 &operator-=(const mat3 &m) { return *this = *this - m; }
 
-    bool operator == (mat3& B){
+    bool operator == (mat3& B) const {
         for (I32 i = 0; i < 9; i++){
             if (!FLOAT_COMPARE(this->m[i] + EPSILON , B[i] + EPSILON)) return false;
         }
         return true;
     }
 
-    bool operator != (mat3& B){ return !(*this == B);}
+    bool operator != (mat3& B) const { return !(*this == B);}
 
     operator T*()             { return this->mat; }
     operator const T*() const { return this->mat; }
@@ -401,7 +401,7 @@ public:
     {
     }
 
-    mat4(T translationX, T translationY, T translationZ)
+    mat4(T translationX, T translationY, T translationZ) : mat4()
     {
         setTranslation(translationX, translationY, translationZ);
     }
@@ -410,7 +410,7 @@ public:
     {
     }
 
-    mat4(T x,T y,T z,T angle, bool inDegrees = true)
+    mat4(T x, T y, T z, T angle, bool inDegrees = true) : mat4()
     {
         rotate(x,y,z,angle,inDegrees);
     }
@@ -580,8 +580,10 @@ public:
 
     inline T det(void)             const { return Util::Mat4::det(this->mat); }
     inline void inverse(mat4& ret) const { Util::Mat4::Inverse(this->mat, ret.mat); }
-    inline void inverse()                { mat4 ret; this->inverse(ret); this->set(ret.mat);}
+    inline void inverse()                { mat4 ret; this->inverse(ret); this->set(ret.mat); }
     inline void zero()                   { memset(this->mat, 0.0, sizeof(T) * 16); }
+    inline mat4 inverseTranspose() const { mat4 ret; this->inverse(ret); return ret.transpose(); }
+    inline void inverseTranspose(mat4& ret) const { ret.set(inverseTranspose()); }
 
     inline void identity() {
         zero();
@@ -598,12 +600,18 @@ public:
             0.5, 0.5, 0.5, 1.0);
     }
 
-    void rotate(const vec3<T> &axis,T angle, bool inDegrees = true) {
-        if(inDegrees) DegToRad(angle);
+    inline void setTranslation(const vec3<T> &v)                            { setTranslation(v.x, v.y, v.z); }
+    inline void setScale(const vec3<T> &v)                                  { setScale(v.x, v.y, v.z); }
+    inline void scale(const vec3<T> &v)                                     { scale(v.x, v.y, v.z); }
+    inline void translate(const vec3<T> &v)                                 { translate(v.x, v.y, v.z); }
+    inline void rotate(const vec3<T> &axis, T angle, bool inDegrees = true) { rotate(axis.x, axis.y, axis.z, angle, inDegrees); }
+
+    inline void rotate(T x,T y,T z,T angle, bool inDegrees = true) {
+        if (inDegrees) DegToRad(angle);
 
         T c = (T)cos(angle);
         T s = (T)sin(angle);
-        vec3<T> v = axis;
+        vec3<T> v(x,y,z);
         v.normalize();
         T xx = v.x * v.x;
         T yy = v.y * v.y;
@@ -614,13 +622,9 @@ public:
         T xs = v.x * s;
         T ys = v.y * s;
         T zs = v.z * s;
-        this->mat[0] = (1 - c) * xx + c;  this->mat[4] = (1 - c) * xy - zs; this->mat[8]  = (1 - c) * zx + ys;
-        this->mat[1] = (1 - c) * xy + zs; this->mat[5] = (1 - c) * yy + c;  this->mat[9]  = (1 - c) * yz - xs;
+        this->mat[0] = (1 - c) * xx + c;  this->mat[4] = (1 - c) * xy - zs; this->mat[8] = (1 - c) * zx + ys;
+        this->mat[1] = (1 - c) * xy + zs; this->mat[5] = (1 - c) * yy + c;  this->mat[9] = (1 - c) * yz - xs;
         this->mat[2] = (1 - c) * zx - ys; this->mat[6] = (1 - c) * yz + xs; this->mat[10] = (1 - c) * zz + c;
-    }
-
-    inline void rotate(T x,T y,T z,T angle, bool inDegrees = true) {
-        rotate(vec3<T>(x,y,z),angle,inDegrees);
     }
 
     inline void rotate_x(T angle, bool inDegrees = true) {
@@ -650,45 +654,29 @@ public:
         this->mat[1] =  s;  this->mat[5] =  c;
     }
 
-    inline void setScale(const vec3<T> &v){
-        this->mat[0]  = v.x;
-        this->mat[5]  = v.y;
-        this->mat[10] = v.z;
-    }
-
     inline void setScale(T x, T y, T z) {
-        setScale(vec3<T>(x,y,z));
-    }
-
-    inline void scale(const vec3<T> &v) {
-        this->mat[0] *= v.x; this->mat[4] *= v.y; this->mat[ 8] *= v.z;
-        this->mat[1] *= v.x; this->mat[5] *= v.y; this->mat[ 9] *= v.z;
-        this->mat[2] *= v.x; this->mat[6] *= v.y; this->mat[10] *= v.z;
-        this->mat[3] *= v.x; this->mat[7] *= v.y; this->mat[11] *= v.z;
+        this->mat[0]  = x;
+        this->mat[5]  = y;
+        this->mat[10] = z;
     }
 
     inline void scale(T x,T y,T z) {
-        scale(vec3<T>(x,y,z));
-    }
-
-    inline void setTranslation(const vec3<T> &v){
-        this->mat[12] = v.x;
-        this->mat[13] = v.y;
-        this->mat[14] = v.z;
+        this->mat[0] *= x; this->mat[4] *= y; this->mat[8]  *= z;
+        this->mat[1] *= x; this->mat[5] *= y; this->mat[9]  *= z;
+        this->mat[2] *= x; this->mat[6] *= y; this->mat[10] *= z;
+        this->mat[3] *= x; this->mat[7] *= y; this->mat[11] *= z;
     }
 
     inline void setTranslation(T x, T y, T z) {
-        setTranslation(vec3<T>(x,y,z));
-    }
-
-    inline void translate(const vec3<T> &v) {
-        this->mat[12] += v.x;
-        this->mat[13] += v.y;
-        this->mat[14] += v.z;
+        this->mat[12] = x;
+        this->mat[13] = y;
+        this->mat[14] = z;
     }
 
     inline void translate(T x,T y,T z) {
-        translate(vec3<T>(x,y,z));
+        this->mat[12] += x;
+        this->mat[13] += y;
+        this->mat[14] += z;
     }
 
     void reflect(const Plane<T>& plane) {

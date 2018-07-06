@@ -50,7 +50,6 @@ protected:
 
 private:
     void Destroy();
-    void reserveStorage(GLint w, GLint h);
     void createSampler();
     inline static bool checkBinding(U16 unit, U32 handle) { return textureBoundMap[unit].first != handle; }
 

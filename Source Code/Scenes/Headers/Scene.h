@@ -47,6 +47,7 @@ class TerrainDescriptor;
 //Scene Elements
 #include "Environment/Sky/Headers/Sky.h"
 #include "Rendering/Lighting/Headers/Light.h"
+#include "Rendering/Lighting/Headers/DirectionalLight.h"
 #include "Dynamics/Physics/Headers/PXDevice.h"
 #include "Dynamics/Entities/Particles/Headers/ParticleEmitter.h"
 //GUI
@@ -200,9 +201,10 @@ protected:
     // returns true if the camera was moved/rotated/etc
     bool defaultCameraControls();
 
-    Light*  addDefaultLight();
-    Sky*    addDefaultSky();
-    Camera* addDefaultCamera();//Default camera
+    Sky*               addDefaultSky();
+    Camera*            addDefaultCamera();//Default camera
+    DirectionalLight*  addDefaultLight();
+    
     ///simple function to load the scene elements.
     inline bool SCENE_LOAD(const std::string& name, CameraManager* const cameraMgr, GUI* const gui, const bool contOnErrorRes, const bool contOnErrorTasks){
         if(!Scene::load(name,cameraMgr,gui)) {

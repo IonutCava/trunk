@@ -237,13 +237,13 @@ Camera* Scene::addDefaultCamera(){
     return camera;
 }
 
-Light* Scene::addDefaultLight(){
+DirectionalLight* Scene::addDefaultLight(){
     std::stringstream ss; ss << LightManager::getInstance().getLights().size();
     ResourceDescriptor defaultLight("Default directional light "+ss.str());
     defaultLight.setId(0); //descriptor ID is not the same as light ID. This is the light's slot!!
     defaultLight.setResourceLocation("root");
     defaultLight.setEnumValue(LIGHT_TYPE_DIRECTIONAL);
-    Light* l = CreateResource<Light>(defaultLight);
+    DirectionalLight* l = dynamic_cast<DirectionalLight*>(CreateResource<Light>(defaultLight));
     addLight(l);
     vec4<F32> ambientColor(0.1f, 0.1f, 0.1f, 1.0f);
     LightManager::getInstance().setAmbientLight(ambientColor);
@@ -277,7 +277,6 @@ bool Scene::preLoad() {
                    _sceneState.getFogDesc()._fogColor,
                    _sceneState.getFogDesc()._fogStartDist,
                    _sceneState.getFogDesc()._fogEndDist);
-    renderState().shadowMapResolutionFactor(_paramHandler.getParam<U8>("rendering.shadowResolutionFactor"));
     return true;
 }
 
@@ -429,7 +428,7 @@ void Scene::addTask(Task_ptr taskItem) {
 
 void Scene::clearTasks(){
     PRINT_FN(Locale::get("STOP_SCENE_TASKS"));
-    FOR_EACH(Task_ptr& task, _tasks){
+    for(Task_ptr& task : _tasks){
         task->stopTask();
     }
     _tasks.clear();

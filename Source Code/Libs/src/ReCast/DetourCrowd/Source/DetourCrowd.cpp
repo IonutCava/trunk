@@ -923,7 +923,7 @@ void dtCrowd::checkPathValidity(dtCrowdAgent** agents, const int nagents, const 
 		bool replan = false;
 
 		// First check that the current location is valid.
-		const int idx = getAgentIndex(ag);
+		const __int64 idx = getAgentIndex(ag);
 		float agentPos[3];
 		dtPolyRef agentRef = ag->corridor.getFirstPoly();
 		dtVcopy(agentPos, ag->npos);
@@ -1109,7 +1109,7 @@ void dtCrowd::update(const float dt, dtCrowdAgentDebugInfo* debug)
 		if (overOffmeshConnection(ag, triggerRadius))
 		{
 			// Prepare to off-mesh connection.
-			const int idx = ag - m_agents;
+			const __int64 idx = ag - m_agents;
 			dtCrowdAgentAnimation* anim = &m_agentAnims[idx];
 
 			// Adjust the path over the off-mesh connection.

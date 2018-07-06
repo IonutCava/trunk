@@ -32,15 +32,12 @@ uniform bool dvd_enableShadowMapping = false;
 #define VARYING in
 #endif
 
-flat VARYING vec3 _lightDirection[MAX_LIGHTS_PER_NODE];
-smooth VARYING float _attenuation[MAX_LIGHTS_PER_NODE];
+/// Light Info is used internally to communicate between vertex and fragment shaders
+VARYING LightInfo {
+    flat vec3  _lightDirection;
+    smooth float _attenuation;
+} _lightInfo[MAX_LIGHTS_PER_NODE];
 
-#if defined(FRAG_SHADER)
-vec4 getCoord(in Light currentLight, in int index){
-    if (index == 0) return currentLight._lightVP0 * _vertexW;
-    if (index == 1) return currentLight._lightVP1 * _vertexW;
-    if (index == 2) return currentLight._lightVP2 * _vertexW;
-    
-    return currentLight._lightVP3 * _vertexW;
-}
-#endif
+
+VARYING vec3 _normalWV;
+VARYING vec3 _viewDirection;

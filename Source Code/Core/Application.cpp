@@ -7,7 +7,8 @@ Application::Application() : _kernel(nullptr),
                              _mainWindowId(-1),
                              _totalMemoryOcuppied(0),
                              _requestShutdown(false),
-                             _hasFocus(true)
+                             _hasFocus(true),
+                             _mainLoopActive(false)
 {
     _threadId = boost::this_thread::get_id();
     ParamHandler::createInstance();

@@ -102,13 +102,15 @@ public:
      /// set the 2 components of the vector manually using a source pointer to a (large enough) array
     inline void setV(const T* v)           { this->x = v[0]; this->y = v[1]; }
     /// set the 2 components of the vector manually
+    inline void set(T value)               { this->x = value; this->y = value;}
+    /// set the 2 components of the vector manually
     inline void set(T _x,T _y)             { this->x = _x; this->y = _y; }
     /// set the 2 components of the vector using a source vector
-    inline void set(const vec2<T> v)    { this->x = v.x; this->y =v.y; }
+    inline void set(const vec2<T> v)       { this->x = v.x; this->y =v.y; }
      /// set the 2 components of the vector using the first 2 components of the source vector
-    inline void set(const vec3<T>& v)   { this->set(t.xy()); }
+    inline void set(const vec3<T>& v)      { this->set(t.xy()); }
      /// set the 2 components of the vector using the first 2 components of the source vector
-    inline void set(const vec4<T>& v)   { this->set(t.xy()); }
+    inline void set(const vec4<T>& v)      { this->set(t.xy()); }
     /// set the 2 components of the vector back to 0
     inline void reset()                    { this->x = this->y = 0; }
     /// return the vector's length
@@ -119,6 +121,8 @@ public:
     inline T    angle(const vec2 &v) const { return (T)atan2(v.y-this->y,v.x-this->x); }
     /// convert the vector to unit length
     inline T    normalize();
+    /// round both values
+    inline void round();
     /// calculate the dot product between this vector and the specified one
     inline T    dot(const vec2 &v) const;
     /// project this vector on the line defined by the 2 points(A, B)
@@ -195,6 +199,8 @@ public:
     /// set the 3 components of the vector manually using a source pointer to a (large enough) array
     inline void setV(const T* v)        { this->x = v[0]; this->y = v[1]; this->z = v[2]; }
     /// set the 3 components of the vector manually
+    inline void set(T value)           { this->x = value; this->y = value; this->z = value;}
+    /// set the 3 components of the vector manually
     inline void set(T _x, T _y, T _z)   { this->x = _x;  this->y = _y;  this->z = _z; }
     /// set the 3 components of the vector using a smaller source vector
     inline void set(const vec2<T>& v)   { this->x = v.x; this->y = v.y; this->z = 0.0;}
@@ -224,6 +230,8 @@ public:
     inline T    distanceSquared(const vec3 &v) const;
     /// transform the vector to unit length
     inline T    normalize();
+    /// round all three values
+    inline void round();
     /// project this vector on the line defined by the 2 points(A, B)
     inline T    projectionOnLine(const vec3 &vA, const vec3 &vB) const;
     /// get the direction vector to the specified point
@@ -327,6 +335,8 @@ public:
     /// set the 4 components of the vector manually using a source pointer to a (large enough) array
     inline void setV(const T* v)         { this->x = v[0]; this->y = v[1]; this->z = v[2]; if(v[3]) this->w = v[3]; else this->w = 1.0f; }
     /// set the 4 components of the vector manually
+    inline void set(T value)             { this->x = value; this->y = value; this->z = value; this->w = value; }
+    /// set the 4 components of the vector manually
     inline void set(T _x,T _y,T _z,T _w) { this->x = _x;  this->y =_y;   this->z =_z;   this->w =_w;}
     /// set the 4 components of the vector using a source vector
     inline void set(const vec4& v)       { this->x = v.x; this->y = v.y; this->z = v.z; this->w = v.w;}
@@ -352,6 +362,8 @@ public:
     inline T    length()    const {return square_root_tpl(lengthSquared()); }
     /// return the squared distance of the vector
     inline T    lengthSquared() const;
+    /// round all four values
+    inline void round();
 
     union {
         struct {T x,y,z,w;};

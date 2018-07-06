@@ -36,7 +36,6 @@
 class Text3D;
 class glIMPrimitive;
 class glUniformBufferObject;
-class glRenderStateBlock;
 
 struct glslopt_ctx;
 
@@ -44,10 +43,9 @@ DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
     typedef Unordered_map<std::string, SceneGraphNode*> sceneGraphMap;
     typedef void (*callback)();	void glCommand(callback f){f();}
 
-private:
+protected:
 
     GL_API() : RenderAPIWrapper(),
-               _currentGLRenderStateBlock(nullptr),
                _state2DRendering(nullptr),
                _defaultStateNoDepth(nullptr),
                 _2DRendering(false),
@@ -65,7 +63,6 @@ private:
     GLbyte initHardware(const vec2<GLushort>& resolution, GLint argc, char **argv);
     void closeRenderingApi();
     void initDevice(GLuint targetFrameRate);
-    inline void changeResolution(GLushort w, GLushort h) {changeResolutionInternal(w,h);}
     ///Change the window's position
     void      setWindowPos(GLushort w, GLushort h) const;
     void      setMousePosition(GLushort x, GLushort y) const;
@@ -82,7 +79,7 @@ private:
 
     void getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat);
 
-    FrameBuffer*        newFB(const FBType& type);
+    FrameBuffer*        newFB(bool multisampled);
     VertexBuffer*       newVB(const PrimitiveType& type);
     PixelBuffer*        newPB(const PBType& type);
     GenericVertexData*  newGVD();
@@ -126,9 +123,6 @@ private:
 
     void Screenshot(char *filename, const vec4<GLfloat>& rect);
 
-    RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor);
-    void updateStateInternal(RenderStateBlock* block, bool force = false);
-
     bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
 
     inline GLuint64 getFrameDurationGPU() const {
@@ -145,13 +139,14 @@ protected:
 
 protected:
     friend class glFrameBuffer;
-    inline static bool useMSAA() {return _useMSAA; }
-           static void restoreViewport();
-           static vec4<GLint> setViewport(const vec4<GLint>& viewport, bool force = false);
-           static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force = false);
-           inline static void clearColor(const vec4<GLfloat>& color,bool force = false) {
-               clearColor(color.r,color.g,color.b,color.a,force);
-           }
+    static void restoreViewport();
+    static vec4<GLint> setViewport(const vec4<GLint>& viewport, bool force = false);
+    static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force = false);
+    inline static void clearColor(const vec4<GLfloat>& color,bool force = false) {
+        clearColor(color.r,color.g,color.b,color.a,force);
+    }
+    inline static GLuint getActiveFB() { return _activeFBId; }
+
 protected:
     friend class glShader;
     friend class glShaderProgram;
@@ -165,13 +160,15 @@ protected:
 public:
 
     static bool setActiveTextureUnit(GLuint unit,const bool force = false);
-    static bool setActiveVAO(GLuint id,const bool force = false);
-    static bool setActiveVB(GLuint id,const bool force = false);
+    static bool setActiveVAO(GLuint id, const bool force = false);
+    static bool setActiveVB(GLuint id, const bool force = false);
+    static bool setActiveFB(GLuint id, const bool read = true, const bool write = true, const bool force = false);
     static bool setActiveProgram(glShaderProgram* const program,const bool force = false);
            void updateProjectionMatrix();
            void updateViewMatrix();
-private:
+           void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock);
 
+protected:
     void loadInContextInternal();
     boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<15> > _loadQueue;
     boost::thread *_loaderThread;
@@ -203,7 +200,6 @@ private: //OpenGL specific:
     ///Window management:
     vec2<GLushort> _cachedResolution; ///<Current window resolution
     //Render state specific:
-    glRenderStateBlock*   _currentGLRenderStateBlock; //<Currently active rendering states used by OpenGL
     RenderStateBlock*     _state2DRendering;    //<Special render state for 2D rendering
     RenderStateBlock*     _defaultStateNoDepth; //<The default render state buth with GL_DEPTH_TEST false
     bool                  _2DRendering;
@@ -227,12 +223,12 @@ private: //OpenGL specific:
     static glslopt_ctx* _GLSLOptContex;
     static glShaderProgram* _activeShaderProgram;
     static GLuint _activeVAOId;
+    static GLuint _activeFBId;
     static GLuint _activeVBId;
     static GLuint _activeTextureUnit;
     static vec4<GLfloat> _prevClearColor;
     static bool _viewportForced;
     static bool _viewportUpdateGL;
-    static bool _useMSAA;
     bool _activeClipPlanes[Config::MAX_CLIP_PLANES];
 
     /// performance counters

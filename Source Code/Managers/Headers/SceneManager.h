@@ -78,7 +78,6 @@ public:
         _sceneFactory.insert(std::make_pair(sceneName,boost::factory<DerivedScene*>()));
         return true;
     }
-    inline void togglePreviewDepthBuffer() {_previewDepthBuffer = !_previewDepthBuffer;}
    
 public: ///Input
     ///Key pressed
@@ -114,7 +113,6 @@ private:
 private:
     typedef Unordered_map<std::string, Scene*> SceneMap;
     bool _init;
-    bool _previewDepthBuffer;
     U32  _frameCount;
     ///Pointer to the currently active scene
     Scene* _activeScene;

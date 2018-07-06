@@ -27,7 +27,7 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneSt
 
     assert(_visibleNodes.empty());
     cullSceneGraphCPU(currentNode, sceneState.getRenderState());
-    FOR_EACH(SceneGraphNode* node, _visibleNodes){
+    for(SceneGraphNode* node : _visibleNodes){
         RenderQueue::getInstance().addNodeToQueue(node);
     }
     cullSceneGraphGPU(sceneState);
@@ -56,7 +56,7 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, Scen
         }else{
             if(currentStage != SHADOW_STAGE || (currentStage == SHADOW_STAGE && currentNode->getCastsShadows())){
                 //Perform visibility test on current node
-                if (node->isInView(currentNode->getBoundingBoxConst(), currentNode->getBoundingSphere(), currentStage == SHADOW_STAGE ? false : true)){
+                if (node->isInView(currentNode->getBoundingBoxConst(), currentNode->getBoundingSphereConst(), currentStage == SHADOW_STAGE ? false : true)){
                     //If the current node is visible, add it to the render queue
                     _visibleNodes.push_back(currentNode);
                     currentNode->inView(true);

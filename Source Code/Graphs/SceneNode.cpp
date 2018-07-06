@@ -66,8 +66,8 @@ bool SceneNode::isInView(const BoundingBox& boundingBox, const BoundingSphere& s
 
     const vec3<F32>& eye = frust.getEyePos();
     const vec3<F32>& center  = sphere.getCenter();
-    F32  cameraDistance = center.distanceSquared(eye);
-    F32 visibilityDistance = pow(GET_ACTIVE_SCENE()->state().getGeneralVisibility(),2);
+    F32  cameraDistance = center.distance(eye);
+    F32 visibilityDistance = GET_ACTIVE_SCENE()->state().getGeneralVisibility() + sphere.getRadius();
     if(distanceCheck && cameraDistance > visibilityDistance){
         if(boundingBox.nearestDistanceFromPointSquared(eye) > visibilityDistance)
             return false;

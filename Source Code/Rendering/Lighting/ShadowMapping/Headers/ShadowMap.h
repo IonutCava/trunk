@@ -23,7 +23,7 @@
 #ifndef _SHADOW_MAP_H_
 #define _SHADOW_MAP_H_
 
-#include "core.h"
+#include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
 
 enum ShadowType{
     SHADOW_TYPE_NONE = -1,
@@ -36,8 +36,8 @@ enum ShadowType{
 class Light;
 class ParamHandler;
 class ShadowMapInfo;
-class FrameBuffer;
 class SceneRenderState;
+
 ///All the information needed for a single light's shadowmap
 class ShadowMap {
 public:
@@ -57,21 +57,20 @@ public:
     inline  bool isBound() {return _isBound;}
 
             U16  resolution();
-    virtual void resolution(U16 resolution, F32 resolutionFactor) {}
+    virtual void resolution(U16 resolution, U8 resolutionFactor) {}
 
     virtual void init(ShadowMapInfo* const smi) = 0;
     virtual bool Bind(U8 offset);
     virtual bool Unbind(U8 offset);
     virtual void previewShadowMaps() = 0;
     virtual void togglePreviewShadowMaps(bool state) {}
+    virtual void updateResolution(I32 newWidth, I32 newHeight) {}
 
 protected:
     ShadowType _shadowMapType;
     ///The depth maps. Number depends on the current method
     FrameBuffer* _depthMap;
-    ///A global resolution factor for all methods (higher = better quality)
-    F32 _resolutionFactor;
-    U16 _maxResolution;
+    U16 _resolution;
     ///Internal pointer to the parent light
     Light* _light;
     ParamHandler& _par;
@@ -89,21 +88,14 @@ public:
     inline ShadowMap* getShadowMap() {return _shadowMap;}
            ShadowMap* getOrCreateShadowMap(const SceneRenderState& sceneRenderState);
     inline U16  resolution()       const {return _resolution;}
-    inline F32  resolutionFactor() const {return _resolutionFactor;}
-    inline void resolution(U16 resolution, F32 resolutionFactor) {
-        _resolution = resolution;
-        _resolutionFactor = resolutionFactor;
-        if(_shadowMap)
-            _shadowMap->resolution(_resolution, _resolutionFactor);
-    }
+           void resolution(U16 resolution);
 
-    inline U8   numLayers()              const {return _numLayers;}
-    inline void numLayers(U8 layerCount)       { _numLayers = std::min(std::abs(layerCount), Config::MAX_SPLITS_PER_LIGHT); }
+    inline U8    numLayers()              const {return _numLayers;}
+    inline  void numLayers(U8 layerCount)       { _numLayers = std::min(std::abs(layerCount), Config::MAX_SPLITS_PER_LIGHT); }
 
 private:
     U8         _numLayers;
     U16        _resolution;
-    F32        _resolutionFactor;
     ShadowMap* _shadowMap;
     Light*     _light;
 };

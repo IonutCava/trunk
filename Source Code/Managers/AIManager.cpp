@@ -18,7 +18,7 @@ void AIManager::Destroy(){
         SAFE_DELETE(entity.second);
     }
     _aiEntities.clear();
-    FOR_EACH(Navigation::NavigationMesh* navMesh, _navMeshes){
+    for(Navigation::NavigationMesh*& navMesh : _navMeshes){
          SAFE_DELETE(navMesh);
     }
     _navMeshes.clear();
@@ -144,7 +144,7 @@ void AIManager::toggleNavMeshDebugDraw(Navigation::NavigationMesh* navMesh, bool
 
 void AIManager::toggleNavMeshDebugDraw(bool state) {
     WriteLock w_lock(_navMeshMutex);
-    FOR_EACH(Navigation::NavigationMesh* navMesh, _navMeshes){
+    for(Navigation::NavigationMesh* navMesh : _navMeshes){
         navMesh->debugDraw(state);
     }
     _navMeshDebugDraw = state;
@@ -152,7 +152,7 @@ void AIManager::toggleNavMeshDebugDraw(bool state) {
 
 void AIManager::debugDraw(bool forceAll){
     ReadLock r_lock(_navMeshMutex);
-    FOR_EACH(Navigation::NavigationMesh* navMesh, _navMeshes){
+    for(Navigation::NavigationMesh* navMesh : _navMeshes){
         navMesh->update(_deltaTime);
         if(forceAll || navMesh->debugDraw()){
             navMesh->render();
