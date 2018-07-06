@@ -61,8 +61,6 @@ public:
         this->_visibility = b._visibility;
         this->_min = b._min;
         this->_max = b._max;
-        this->_center = b._center;
-        this->_extent = b._extent;
         this->_oldMatrix = b._oldMatrix;
         this->_points = new vec3<F32>[8];
         this->_pointsDirty = true;
@@ -75,8 +73,6 @@ public:
         this->_visibility = b._visibility;
         this->_min = b._min;
         this->_max = b._max;
-        this->_center = b._center;
-        this->_extent = b._extent;
         this->_oldMatrix = b._oldMatrix;
         this->_pointsDirty = true;
         memcpy(_points, b._points, sizeof(vec3<F32>) * 8);
@@ -201,36 +197,40 @@ public:
         _min.z *= v.z;
         _pointsDirty = true;
     }
-
-    void Transform(const BoundingBox& initialBoundingBox, const mat4<F32>& mat){
+   
+    bool Transform(const BoundingBox& initialBoundingBox, const mat4<F32>& mat){
         //UpgradableReadLock ur_lock(_lock);
         if(_oldMatrix == mat)
-            return;
+            return false;
 
-        _oldMatrix = mat;
+        _oldMatrix.set(mat);
 
         const F32* oldMin = &initialBoundingBox._min[0];
         const F32* oldMax = &initialBoundingBox._max[0];
 
         //UpgradeToWriteLock uw_lock(ur_lock);
-        _min = _max =  vec3<F32>(mat[12],mat[13],mat[14]);
+        _min.set(mat[12],mat[13],mat[14]);
+        _max.set(mat[12],mat[13],mat[14]);
 
         F32 a, b;
-        for (U8 i = 0; i < 3; ++i)		{
-            for (U8 j = 0; j < 3; ++j)			{
+        for (U8 i = 0; i < 3; ++i)	{
+            F32& min = _min[i];
+            F32& max = _max[i];
+            for (U8 j = 0; j < 3; ++j)	{
                 a = mat.m[j][i] * oldMin[j];
-                b = mat.m[j][i] * oldMax[j]; /// Transforms are usually row major
+                b = mat.m[j][i] * oldMax[j]; // Transforms are usually row major
 
                 if (a < b) {
-                    _min[i] += a;
-                    _max[i] += b;
+                    min += a;
+                    max += b;
                 } else {
-                    _min[i] += b;
-                    _max[i] += a;
+                    min += b;
+                    max += a;
                 }
             }
         }
         _pointsDirty = true;
+        return true;
     }
 
     inline void  setComputed(bool state) {
@@ -326,10 +326,10 @@ public:
     inline F32 nearestDistanceFromPoint( const vec3<F32> &pos) const {
         const vec3<F32>& center = getCenter();
         const vec3<F32>& hextent = getHalfExtent();
-
-        return vec3<F32>(Util::max( 0.0f, fabsf( pos.x - center.x ) - hextent.x ),
+        _cacheVector.set(Util::max( 0.0f, fabsf( pos.x - center.x ) - hextent.x ),
                          Util::max( 0.0f, fabsf( pos.y - center.y ) - hextent.y ),
-                         Util::max( 0.0f, fabsf( pos.z - center.z ) - hextent.z )).length();
+                         Util::max( 0.0f, fabsf( pos.z - center.z ) - hextent.z ));
+        return _cacheVector.length();
     }
 
 protected:
@@ -352,12 +352,12 @@ protected:
 private:
     bool _computed, _visibility;
     vec3<F32> _min, _max;
-    vec3<F32> _center, _extent;
     mat4<F32> _oldMatrix;
 
     // This is is very limited in scope so mutable should be ok
     mutable bool _pointsDirty;
     mutable vec3<F32> *_points;
+    mutable vec3<F32> _cacheVector;
     //mutable SharedLock _lock;
 };
 

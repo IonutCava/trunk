@@ -257,18 +257,19 @@ public:
     }
 
     inline bool isIdentity() const{
-           return  (FLOAT_COMPARE(mat[0],1.0) && IS_ZERO(mat[1])           && IS_ZERO(mat[2])            && IS_ZERO(mat[3])  &&
-                    IS_ZERO(mat[4])           && FLOAT_COMPARE(mat[5],1.0) && IS_ZERO(mat[6])            && IS_ZERO(mat[7])  &&
-                    IS_ZERO(mat[8])           && IS_ZERO(mat[9])           && FLOAT_COMPARE(mat[10],1.0) && IS_ZERO(mat[11]) &&
-                    IS_ZERO(mat[12])          && IS_ZERO(mat[13])          && IS_ZERO(mat[14])           && FLOAT_COMPARE(mat[15],1.0));
+        return (FLOAT_COMPARE(mat[0],1.0) && IS_ZERO(mat[1])           && IS_ZERO(mat[2])            && IS_ZERO(mat[3])  &&
+                IS_ZERO(mat[4])           && FLOAT_COMPARE(mat[5],1.0) && IS_ZERO(mat[6])            && IS_ZERO(mat[7])  &&
+                IS_ZERO(mat[8])           && IS_ZERO(mat[9])           && FLOAT_COMPARE(mat[10],1.0) && IS_ZERO(mat[11]) &&
+                IS_ZERO(mat[12])          && IS_ZERO(mat[13])          && IS_ZERO(mat[14])           && FLOAT_COMPARE(mat[15],1.0));
     }
 
-    inline void rotate(const vec3<T> &v,T angle) {
-        rotate(v.x,v.y,v.z,angle);
+    inline void rotate(const vec3<T> &v,T angle, bool inDegrees = true) {
+        rotate(v.x,v.y,v.z,angle,inDegrees);
     }
 
-    void rotate(T x,T y,T z,T angle) {
-        DegToRad(angle);
+    void rotate(T x,T y,T z,T angle, bool inDegrees = true) {
+        if(inDegrees) DegToRad(angle);
+
         T c = (T)cos(angle);
         T s = (T)sin(angle);
         T l = square_root_tpl(x * x + y * y + z * z);
@@ -289,8 +290,9 @@ public:
         mat[2] = c1 * zx - ys;		mat[5] = c1 * yz + xs;		mat[8] = c1 * z * z + c;
     }
 
-    inline void rotate_x(T angle) {
-        DegToRad(angle);
+    inline void rotate_x(T angle, bool inDegrees = true) {
+        if(inDegrees) DegToRad(angle);
+
         T c = (T)cos(angle);
         T s = (T)sin(angle);
         mat[0] = 1; mat[3] = 0; mat[6] = 0;
@@ -298,8 +300,9 @@ public:
         mat[2] = 0; mat[5] = s; mat[8] = c;
     }
 
-    inline void rotate_y(T angle) {
-        DegToRad(angle);
+    inline void rotate_y(T angle, bool inDegrees = true) {
+        if(inDegrees) DegToRad(angle);
+
         T c = (T)cos(angle);
         T s = (T)sin(angle);
         mat[0] = c;  mat[3] = 0; mat[6] = s;
@@ -307,8 +310,9 @@ public:
         mat[2] = -s; mat[5] = 0; mat[8] = c;
     }
 
-    inline void rotate_z(T angle) {
-        DegToRad(angle);
+    inline void rotate_z(T angle, bool inDegrees = true) {
+        if(inDegrees) DegToRad(angle);
+
         T c = (T)cos(angle);
         T s = (T)sin(angle);
         mat[0] = c; mat[3] = -s; mat[6] = 0;
@@ -397,14 +401,14 @@ public:
         setTranslation(x,y,z);
     }
 
-    mat4(const vec3<T> &axis,T angle)/* : mat(NULL)*/{
+    mat4(const vec3<T> &axis,T angle, bool inDegrees = true)/* : mat(NULL)*/{
         allocateMem();
-        rotate(axis,angle);
+        rotate(axis,angle,inDegrees);
     }
 
-    mat4(T x,T y,T z,T angle)/* : mat(NULL)*/{
+    mat4(T x,T y,T z,T angle, bool inDegrees = true)/* : mat(NULL)*/{
         allocateMem();
-        rotate(x,y,z,angle);
+        rotate(x,y,z,angle,inDegrees);
     }
 
     mat4(const mat3<T> &m)/* : mat(NULL)*/{
@@ -583,12 +587,18 @@ public:
                     this->mat[8], this->mat[9], this->mat[10], 0,
                     0,            0,            0,             1);
     }
-
+   
     inline void transpose(mat4& out) const {
+        out.set(this->mat[0],  this->mat[1],  this->mat[2],  this->mat[3],
+                this->mat[4],  this->mat[5],  this->mat[6],  this->mat[7],
+                this->mat[8],  this->mat[9],  this->mat[10], this->mat[11],
+                this->mat[12], this->mat[13], this->mat[14], this->mat[15]);
+        /*
         out = mat4(this->mat[0], this->mat[4], this->mat[8],  this->mat[12],
                    this->mat[1], this->mat[5], this->mat[9],  this->mat[13],
                    this->mat[2], this->mat[6], this->mat[10], this->mat[14],
                    this->mat[3], this->mat[7], this->mat[11], this->mat[15]);
+        */
     }
 
     inline mat4 transpose() const {
@@ -630,8 +640,9 @@ public:
         this->mat[3] = 0.5; this->mat[7] = 0.5; this->mat[11] = 0.5; this->mat[15] = 1.0;
     }
 
-    void rotate(const vec3<T> &axis,T angle) {
-        DegToRad(angle);
+    void rotate(const vec3<T> &axis,T angle, bool inDegrees = true) {
+        if(inDegrees) DegToRad(angle);
+
         T c = (T)cos(angle);
         T s = (T)sin(angle);
         vec3<T> v = axis;
@@ -650,28 +661,31 @@ public:
         this->mat[2] = (1 - c) * zx - ys; this->mat[6] = (1 - c) * yz + xs; this->mat[10] = (1 - c) * zz + c;
     }
 
-    inline void rotate(T x,T y,T z,T angle) {
-        rotate(vec3<T>(x,y,z),angle);
+    inline void rotate(T x,T y,T z,T angle, bool inDegrees = true) {
+        rotate(vec3<T>(x,y,z),angle,inDegrees);
     }
 
-    inline void rotate_x(T angle) {
-        DegToRad(angle);
+    inline void rotate_x(T angle, bool inDegrees = true) {
+        if(inDegrees) DegToRad(angle);
+
         T c = (T)cos(angle);
         T s = (T)sin(angle);
         this->mat[5] =  c;  this->mat[9]  = -s;
         this->mat[6] =  s;  this->mat[10] =  c;
     }
 
-    inline void rotate_y(T angle) {
-        DegToRad(angle);
+    inline void rotate_y(T angle, bool inDegrees = true) {
+        if(inDegrees) DegToRad(angle);
+
         T c = (T)cos(angle);
         T s = (T)sin(angle);
         this->mat[0] =  c; this->mat[8]  =  s;
         this->mat[2] = -s; this->mat[10] =  c;
     }
 
-    inline void rotate_z(T angle) {
-        DegToRad(angle);
+    inline void rotate_z(T angle, bool inDegrees = true) {
+        if(inDegrees) DegToRad(angle);
+
         T c = (T)cos(angle);
         T s = (T)sin(angle);
         this->mat[0] =  c;  this->mat[4] = -s;

@@ -74,18 +74,18 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
             case RenderBin::RBT_DECALS:
                 temp = New RenderBinMesh(RenderBin::RBT_DECALS,RenderingOrder::FRONT_TO_BACK, 4.0f);
                 break;
-			case RenderBin::RBT_SKY:
-				//Draw sky after opaque but before translucent to prevent overdraw
+            case RenderBin::RBT_SKY:
+                //Draw sky after opaque but before translucent to prevent overdraw
                 temp = New RenderBinDelegate(RenderBin::RBT_SKY,RenderingOrder::NONE, 5.0f);
                 break;
             case RenderBin::RBT_WATER:
-				//Water does not count as translucency, because rendering is very specific
+                //Water does not count as translucency, because rendering is very specific
                 temp = New RenderBinDelegate(RenderBin::RBT_WATER,RenderingOrder::BACK_TO_FRONT, 6.0f);
                 break;
             case RenderBin::RBT_VEGETATION_GRASS:
                 temp = New RenderBinDelegate(RenderBin::RBT_VEGETATION_GRASS,RenderingOrder::BACK_TO_FRONT, 7.0f);
                 break;
-			case RenderBin::RBT_VEGETATION_TREES:
+            case RenderBin::RBT_VEGETATION_TREES:
                 temp = New RenderBinDelegate(RenderBin::RBT_VEGETATION_TREES,RenderingOrder::BACK_TO_FRONT, 7.5f);
                 break;
             case RenderBin::RBT_PARTICLES:
@@ -95,7 +95,7 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
                 ///When rendering translucent objects, we should also sort each object's polygons depending on it's distance from the camera
                 temp = New RenderBinTranslucent(RenderBin::RBT_TRANSLUCENT,RenderingOrder::BACK_TO_FRONT, 9.0f);
                 break;
-			case RenderBin::RBT_IMPOSTOR:
+            case RenderBin::RBT_IMPOSTOR:
                 temp = New RenderBinDelegate(RenderBin::RBT_IMPOSTOR,RenderingOrder::FRONT_TO_BACK, 9.9f);
                 break;
             default:
@@ -117,8 +117,8 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
         case TYPE_LIGHT            : return getOrCreateBin(RenderBin::RBT_IMPOSTOR);
         case TYPE_WATER            : return getOrCreateBin(RenderBin::RBT_WATER);
         case TYPE_PARTICLE_EMITTER : return getOrCreateBin(RenderBin::RBT_PARTICLES);
-		case TYPE_VEGETATION_GRASS : return getOrCreateBin(RenderBin::RBT_VEGETATION_GRASS);
-		case TYPE_VEGETATION_TREES : return getOrCreateBin(RenderBin::RBT_VEGETATION_TREES);
+        case TYPE_VEGETATION_GRASS : return getOrCreateBin(RenderBin::RBT_VEGETATION_GRASS);
+        case TYPE_VEGETATION_TREES : return getOrCreateBin(RenderBin::RBT_VEGETATION_TREES);
         case TYPE_SKY              : return getOrCreateBin(RenderBin::RBT_SKY);
         case TYPE_OBJECT3D         : { 
             //Check if the object has a material with translucency
@@ -136,13 +136,8 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
 
 void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn){
     assert(sgn != NULL);
-    SceneNode* sn = sgn->getNode<SceneNode>();
-    if(sn != NULL){
-        RenderBin* rb = getBinForNode(sn);
-        if(rb){
-            rb->addNodeToBin(sgn);
-        }
-    }
+    RenderBin* rb = getBinForNode(sgn->getSceneNode());
+    if(rb) rb->addNodeToBin(sgn);
 }
 
 void RenderQueue::sort(){

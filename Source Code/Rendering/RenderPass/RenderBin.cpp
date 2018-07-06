@@ -12,7 +12,7 @@ RenderBinItem::RenderBinItem(P32 sortKey, SceneGraphNode* const node ) : _node( 
                                                                          _stateHash(0)//< Defaulting to a null state hash
 {
     RenderStateBlock* currentStateBlock = NULL;
-    Material* mat = _node->getNode<SceneNode>()->getMaterial();
+    Material* mat = _node->getSceneNode()->getMaterial();
     // If we do not have a material, no need to continue
     if(!mat) return;
 
@@ -92,8 +92,8 @@ RenderBin::RenderBin(const RenderBinType& rbType,const RenderingOrder::List& ren
     renderBinTypeToNameMap[RBT_WATER]       = "Water Bin";
     renderBinTypeToNameMap[RBT_TERRAIN]     = "Terrain Bin";
     renderBinTypeToNameMap[RBT_PARTICLES]   = "Particle Bin";
-	renderBinTypeToNameMap[RBT_VEGETATION_GRASS]   = "Grass Bin";
-	renderBinTypeToNameMap[RBT_VEGETATION_TREES]   = "Trees Bin";
+    renderBinTypeToNameMap[RBT_VEGETATION_GRASS]   = "Grass Bin";
+    renderBinTypeToNameMap[RBT_VEGETATION_TREES]   = "Trees Bin";
     renderBinTypeToNameMap[RBT_DECALS]      = "Decals Bin";
     renderBinTypeToNameMap[RBT_SHADOWS]     = "Shadow Bin";
 }
@@ -127,7 +127,7 @@ void RenderBin::refresh(){
 }
 
 void RenderBin::addNodeToBin(SceneGraphNode* const sgn){
-    SceneNode* sn = sgn->getNode<SceneNode>();
+    SceneNode* sn = sgn->getSceneNode();
     P32 key;
     key.i = _renderBinStack.size() + 1;
     Material* nodeMaterial = sn->getMaterial();
@@ -154,8 +154,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
         sgn = getItem(j)._node;
         assert(sgn);
         //And get it's attached SceneNode and validate it
-        sn = sgn->getNode<SceneNode>();
-        assert(sn);
+        sn = sgn->getSceneNode();
 
         //Call any pre-draw operations on the SceneNode (refresh VBO, update materials, etc)
         sn->onDraw(currentRenderStage);
@@ -214,6 +213,6 @@ void RenderBin::postRender(){
     for(U16 j = 0; j < getBinSize(); j++){
         sgn = getItem(j)._node;
         //Perform any last updates before the preFrameDrawEnd
-        sgn->getNode<SceneNode>()->preFrameDrawEnd(sgn);
+        sgn->getSceneNode()->preFrameDrawEnd(sgn);
     }
 }

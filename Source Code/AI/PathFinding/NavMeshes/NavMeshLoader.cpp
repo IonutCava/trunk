@@ -284,8 +284,7 @@ namespace Navigation {
             //Skip small objects
             if(box.getHeight() < 0.05f)  goto next;
 
-            SceneNode* sn = sgn->getNode<SceneNode>();
-            assert(sn != NULL);
+            SceneNode* sn = sgn->getSceneNode();
 
             SceneNodeType nodeType = sn->getType();
             U32 ignoredNodeType = TYPE_LIGHT | TYPE_ROOT | TYPE_PARTICLE_EMITTER | TYPE_TRIGGER | TYPE_SKY | TYPE_VEGETATION_GRASS;

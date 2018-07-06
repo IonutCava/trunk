@@ -206,10 +206,10 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
     SceneGraphNode* cylinderSE = _sceneGraph->findNode("cylinderSE");
 
     assert(cylinderNW && cylinderNE && cylinderSW && cylinderSE);
-    SceneNode* cylinderMeshNW = cylinderNW->getNode<SceneNode>();
-    SceneNode* cylinderMeshNE = cylinderNE->getNode<SceneNode>();
-    SceneNode* cylinderMeshSW = cylinderSW->getNode<SceneNode>();
-    SceneNode* cylinderMeshSE = cylinderSE->getNode<SceneNode>();
+    SceneNode* cylinderMeshNW = cylinderNW->getSceneNode();
+    SceneNode* cylinderMeshNE = cylinderNE->getSceneNode();
+    SceneNode* cylinderMeshSW = cylinderSW->getSceneNode();
+    SceneNode* cylinderMeshSE = cylinderSE->getSceneNode();
 
     std::string currentName;
     SceneNode* currentMesh = NULL;
@@ -278,7 +278,7 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
     }*/
     //------------------------ The rest of the scene elements -----------------------------///
 //	_groundPlaceholder = _sceneGraph->findNode("Ground_placeholder");
-//	_groundPlaceholder->getNode<SceneNode>()->getMaterial()->setCastsShadows(false);
+//	_groundPlaceholder->getSceneNode()->getMaterial()->setCastsShadows(false);
     _sceneReady = true;
     return loadState;
 }
@@ -297,9 +297,9 @@ bool WarScene::initializeAI(bool continueOnErrors){
     SceneGraphNode* soldierNode1 = _sceneGraph->findNode("Soldier1");
     SceneGraphNode* soldierNode2 = _sceneGraph->findNode("Soldier2");
     SceneGraphNode* soldierNode3 = _sceneGraph->findNode("Soldier3");
-    SceneNode* soldierMesh1 = soldierNode1->getNode<SceneNode>();
-    SceneNode* soldierMesh2 = soldierNode2->getNode<SceneNode>();
-    SceneNode* soldierMesh3 = soldierNode3->getNode<SceneNode>();
+    SceneNode* soldierMesh1 = soldierNode1->getSceneNode();
+    SceneNode* soldierMesh2 = soldierNode2->getSceneNode();
+    SceneNode* soldierMesh3 = soldierNode3->getSceneNode();
     assert(soldierMesh1 && soldierMesh2 && soldierMesh3);
 
     vec3<F32> currentScale;

@@ -63,7 +63,7 @@ public:
 	void fromBoundingBox(const BoundingBox& bBox){
 		_center = bBox.getCenter();
 		_radius = (bBox.getMax()-_center).length();
-	};
+	}
 
 	const vec3<F32>& getCenter() const {return _center;}
 	F32              getRadius() const {return _radius;}

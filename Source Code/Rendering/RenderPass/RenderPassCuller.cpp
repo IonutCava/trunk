@@ -33,13 +33,12 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, Scen
     if(!sceneState.getRenderState().drawObjects() && !sceneState.getRenderState().drawBBox())
         return;
 
-    SceneNode* node = currentNode->getNode<SceneNode>();
-    assert(node != NULL);
-
     //Bounding Boxes should be updated, so we can early cull now.
     bool skipChildren = false;
     //Skip all of this for inactive nodes.
     if(currentNode->isActive() && currentNode->getParent()) {
+        SceneNode* node = currentNode->getSceneNode();
+
         //If this node isn't render-disabled, check if it is visible
         //Skip expensive frustum culling if we shouldn't draw the node in the first place
         if(!node->getSceneNodeRenderState().getDrawState()){

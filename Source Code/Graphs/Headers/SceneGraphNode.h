@@ -104,6 +104,8 @@ public:
     ///Always use the level of redirection needed to reduce virtual function overhead
     ///Use getNode<SceneNode> if you need material properties for ex. or getNode<SubMesh> for animation transforms
     inline T* getNode() const {assert(_node != NULL); return dynamic_cast<T*>(_node);}
+    ///Use getSceneNode() instead of getNode when you only need SceneNode properties and want to avoid a dynamic cast
+    inline SceneNode* getSceneNode() const {assert(_node != NULL); return _node;}
 
     SceneGraphNode* addNode(SceneNode* const node,const std::string& name = "");
     void			removeNode(SceneGraphNode* node);

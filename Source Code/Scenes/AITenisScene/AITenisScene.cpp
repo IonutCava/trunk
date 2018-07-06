@@ -260,10 +260,10 @@ bool AITenisScene::load(const std::string& name, CameraManager* const cameraMgr,
     //------------------------ Load up game elements -----------------------------///
     _net = _sceneGraph->findNode("Net");
     for_each(SceneGraphNode::NodeChildren::value_type& it, _net->getChildren()){
-        it.second->getNode<SceneNode>()->getMaterial()->setReceivesShadows(false);
+        it.second->getSceneNode()->getMaterial()->setReceivesShadows(false);
     }
     _floor = _sceneGraph->findNode("Floor");
-    _floor->getNode<SceneNode>()->getMaterial()->setCastsShadows(false);
+    _floor->getSceneNode()->getMaterial()->setCastsShadows(false);
 
     AIManager::getInstance().pauseUpdate(false);
     return loadState;

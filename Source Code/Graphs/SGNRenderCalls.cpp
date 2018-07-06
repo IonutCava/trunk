@@ -11,7 +11,7 @@
 bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
     sgn->getBoundingBox().reset();
     for_each(SceneGraphNode::NodeChildren::value_type& s, sgn->getChildren()){
-        sgn->addBoundingBox(s.second->getBoundingBoxTransformed(), s.second->getNode<SceneNode>()->getType());
+        sgn->addBoundingBox(s.second->getBoundingBoxTransformed(), s.second->getSceneNode()->getType());
     }
     sgn->getBoundingBox().setComputed(true);
     return true;
@@ -67,9 +67,11 @@ void SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform){
 
     //Transform the bounding box if we have a new transform
     WriteLock w_lock(_queryLock);
+    //if(_boundingBox.Transform(_initialBoundingBox, transform)){
     _boundingBox.Transform(_initialBoundingBox, transform);
-    //Update the bounding sphere
-    _boundingSphere.fromBoundingBox(_boundingBox);
+        //Update the bounding sphere
+        _boundingSphere.fromBoundingBox(_boundingBox);
+    //}
 }
 
 void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox){
