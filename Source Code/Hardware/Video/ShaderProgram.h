@@ -56,8 +56,6 @@ public:
 	virtual I32 getUniformLocation(const std::string& name) = 0;
 
 	virtual ~ShaderProgram();
-	virtual void createCopy() {incRefCount();}
-	virtual void removeCopy() {decRefCount();}
 
 	inline void commit() {if(!_compiled) {link(); validate();}}
 

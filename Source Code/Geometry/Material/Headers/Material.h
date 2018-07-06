@@ -134,8 +134,6 @@ public:
   TextureOperation getTextureOperation(U32 op);
 
   void computeLightShaders(); //Set shaders;
-  void createCopy();
-  void removeCopy();
   void dumpToXML();
 
 private:

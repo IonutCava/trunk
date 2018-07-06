@@ -419,6 +419,12 @@
     <Filter Include="Core\Resources\ConcreteLoaders">
       <UniqueIdentifier>{15778bdd-402a-40b2-98a6-a2b2e3459b3f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\MemoryManagement">
+      <UniqueIdentifier>{04a1cc64-4022-48c8-b62c-4cd9b996c927}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\MemoryManagement\Headers">
+      <UniqueIdentifier>{a9ba85e3-526e-4399-9e00-713c4e5de039}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -907,6 +913,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\BaseCache.cpp">
       <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\MemoryManagement\TrackedObject.cpp">
+      <Filter>Core\MemoryManagement</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1447,6 +1456,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Managers\Headers\BaseCache.h">
       <Filter>Managers\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\SmartPointer.h">
+      <Filter>Core\MemoryManagement\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\TrackedObject.h">
+      <Filter>Core\MemoryManagement\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -22,8 +22,8 @@
 #include "Hardware/Video/GFXDevice.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 
-enum PrimitiveType
-{
+enum PrimitiveType {
+
 	OBJECT_3D,
 	SPHERE_3D,
 	BOX_3D,
@@ -37,8 +37,7 @@ enum PrimitiveType
 
 class BoundingBox;
 
-class Object3D : public SceneNode
-{
+class Object3D : public SceneNode {
 public:
 	Object3D(PrimitiveType type = OBJECT_3D) : SceneNode(TYPE_OBJECT3D),
 											  _update(false),
@@ -77,8 +76,8 @@ protected:
 	virtual void computeTangents();
 
 protected:
-	bool		   _update, _refreshVBO;
-	PrimitiveType  _geometryType;
+	bool		          _update, _refreshVBO;
+	PrimitiveType         _geometryType;
 	VertexBufferObject*   _geometry;
 	vec2<U16>             _indiceLimits;
 };

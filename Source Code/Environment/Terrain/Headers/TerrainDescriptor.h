@@ -58,9 +58,6 @@ public:
 		return var;
 
 	}
-	void createCopy(){incRefCount();}
-	void removeCopy(){decRefCount();}
-	
 private:
 	unordered_map<std::string,std::string> _variables;
 	U32    _grassDensity;

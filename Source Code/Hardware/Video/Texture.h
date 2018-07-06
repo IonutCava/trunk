@@ -65,8 +65,6 @@ protected:
 	virtual void Unbind() const;
 
 public:
-	virtual void createCopy() {incRefCount();}
-	virtual void removeCopy(){decRefCount();}
 
 	void resize(U16 width, U16 height);
 

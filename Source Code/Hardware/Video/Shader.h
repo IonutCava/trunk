@@ -19,6 +19,7 @@
 #define _SHADER_H_
 
 #include "core.h"
+#include "Core/MemoryManagement/Headers/TrackedObject.h"
 
 enum SHADER_TYPE {
 	FRAGMENT_SHADER,
@@ -27,7 +28,7 @@ enum SHADER_TYPE {
 	TESSELATION_SHADER
 };
 
-class Shader {
+class Shader : public TrackedObject{
 public:
 	Shader(const std::string& name, SHADER_TYPE type);
 	virtual ~Shader();
@@ -35,9 +36,6 @@ public:
 	virtual bool load(const std::string& name) = 0;
 
 	inline U16          getShaderId() {return _shader;}
-	inline void         incRefCount() {_refCount++;}
-	inline void         decRefCount() {_refCount--;}
-	inline U32          getRefCount() {return _refCount;}
 	inline SHADER_TYPE  getType()     {return _type;}
 	inline std::string& getName()     {return _name;}
 
@@ -48,7 +46,6 @@ protected:
 	std::string _name;
 	bool _compiled;
 	U16 _shader;
-	U32 _refCount;
 	SHADER_TYPE _type;
 };
 

@@ -88,8 +88,6 @@ public:
 	inline  void    useDefaultMaterial(bool state) {_noDefaultMaterial = !state;}
 	inline 	void	setSelected(bool state)  {_selected = state;}
 	inline 	bool    isSelected()	const	 {return _selected;}
-	virtual void    createCopy();
-	virtual void    removeCopy();
 
 	inline SCENE_NODE_TYPE getType()					  {return _type;}
 	inline void            setType(SCENE_NODE_TYPE type) {_type = type;}

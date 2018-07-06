@@ -17,7 +17,8 @@ Resource* ResourceCache::loadResource(const std::string& name){
 	Resource* value = NULL;
 	if(_resDB.find(name) != _resDB.end()){
 		value = _resDB[name];
-		value->createCopy(); 
+		///Increase ref count. Should update all dependencies
+		value->AddRef();
 		D_PRINT_FN("ResourceCache: returning resource [ %s ]. Ref count: %d",name.c_str(),value->getRefCount());
 	}else{
 		PRINT_FN("ResourceCache: loading resource [ %s ]",name.c_str());

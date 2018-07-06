@@ -956,6 +956,26 @@
 					</File>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="MemoryManagement"
+				>
+				<File
+					RelativePath="..\..\Source Code\Core\MemoryManagement\TrackedObject.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Core\MemoryManagement\Headers\SmartPointer.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\MemoryManagement\Headers\TrackedObject.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Scenes"

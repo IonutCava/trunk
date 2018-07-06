@@ -8,7 +8,7 @@ void BaseCache::add(const std::string& name, Resource* const res){
 		remove((result.first)->second);
 		(result.first)->second = res;
 	}
-	res->incRefCount();
+	res->AddRef();
 }
 
 void BaseCache::Destroy(){
@@ -42,7 +42,7 @@ bool BaseCache::remove(Resource* const resource,bool force){
 
 	if(find(name)){
 		if(resource->getRefCount() > 1 && !force) {
-			resource->removeCopy();
+			resource->Release();
 			D_PRINT_FN("Removing resource: [ %s ]. New ref count: [ %d ]",name.c_str(),resource->getRefCount());
 			return false; //do not delete pointer
 		}else{

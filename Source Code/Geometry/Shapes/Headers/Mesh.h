@@ -60,8 +60,6 @@ public:
 
 	void postLoad(SceneGraphNode* const sgn);
 	inline void render(SceneGraphNode* const sgn){};
-	void createCopy();
-	inline void removeCopy(){ 	SceneNode::removeCopy(); }
 
 	void onDraw();
 

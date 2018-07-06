@@ -61,8 +61,6 @@ public:
 	bool removeGeometry(SceneNode* node);
 
 	virtual bool unload();
-	virtual void createCopy(){} ///< tough one ...
-	virtual void removeCopy(){}
 	virtual void render() = 0;
 	virtual void preRender() = 0;
 	virtual bool load(const std::string& name);

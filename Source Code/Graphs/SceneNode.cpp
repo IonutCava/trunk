@@ -16,7 +16,8 @@ SceneNode::SceneNode(SCENE_NODE_TYPE type) : Resource(),
 											 _selected(false),
 											 _shadowStateBlock(NULL),
 											 _type(type)
-{}
+{
+}
 
 SceneNode::SceneNode(std::string name, SCENE_NODE_TYPE type) : Resource(name),
 															   _material(NULL),
@@ -26,26 +27,11 @@ SceneNode::SceneNode(std::string name, SCENE_NODE_TYPE type) : Resource(name),
 															   _selected(false),
 															   _shadowStateBlock(NULL),
 															   _type(type)
-{}
+{
+}
 
 SceneNode::~SceneNode() {
 	SAFE_DELETE(_shadowStateBlock);
-}
-
-void SceneNode::removeCopy(){
-  decRefCount();
-  Material* mat = getMaterial();
-  if(mat){
-	mat->removeCopy();
-  }
-}
-
-void SceneNode::createCopy(){
-  incRefCount();
-  Material* mat = getMaterial();
-  if(mat){
-	mat->createCopy();
-  }
 }
 
 void SceneNode::onDraw(){
@@ -94,6 +80,7 @@ Material* SceneNode::getMaterial(){
 		if(!_noDefaultMaterial){
 			ResourceDescriptor defaultMat("defaultMaterial");
 			_material = CreateResource<Material>(defaultMat);
+			REGISTER_TRACKED_DEPENDENCY(_material);
 		}
 	}
 	return _material;
@@ -105,13 +92,15 @@ void SceneNode::setMaterial(Material* m){
 			if(_material->getMaterialId().i != m->getMaterialId().i){ //if the old material isn't the same as the new one
 				PRINT_FN("Replacing material [ %s ] with material  [ %s ]",_material->getName().c_str(),m->getName().c_str());
 				RemoveResource(_material);			//remove the old material
+				UNREGISTER_TRACKED_DEPENDENCY(_material);
 			}
 		}
 		_material = m;				   //set the new material
+		REGISTER_TRACKED_DEPENDENCY(_material);
 	}else{ //if we receive a null material, the we need to remove this node's material
 		if(_material){
-			PRINT_FN("Removing material [ %s ]",_material->getName().c_str());
 			RemoveResource(_material);
+			UNREGISTER_TRACKED_DEPENDENCY(_material);
 		}
 	}
 }

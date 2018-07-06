@@ -50,9 +50,6 @@ public:
 	inline void setChannel(I8 id)		 {_channelId = id;}
 	inline I8   getChannel()			 {return _channelId;}
 
-	inline void createCopy()             {incRefCount();}
-	inline void removeCopy()             {decRefCount();}
-
 private:
 	bool _isLooping, _is3D;
 	F32 _frequency;

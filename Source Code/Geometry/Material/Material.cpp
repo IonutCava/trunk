@@ -42,6 +42,7 @@ Material::Material() : Resource(),
    _textures[TEXTURE_SECOND] = NULL;
    _textures[TEXTURE_OPACITY] = NULL;
    _textures[TEXTURE_SPECULAR] = NULL;
+
    _matId.i = 0;
    /// Normal state for final rendering
    RenderStateBlockDescriptor normalStateDescriptor;
@@ -93,26 +94,6 @@ RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor
 	return _defaultRenderStates[renderStage];
 }
 
-void Material::removeCopy(){
-	decRefCount();
-	for_each(textureMap::value_type& iter , _textures){
-		if(iter.second){
-			PRINT_FN("Removing texture [ %s ] new ref count: %d",iter.second->getName().c_str(),iter.second->getRefCount());
-			iter.second->removeCopy();
-		}
-	}
-}
-void Material::createCopy(){
-	//increment all dependencies;
-	incRefCount();
-	for_each(textureMap::value_type& iter , _textures){
-		if(iter.second){
-			PRINT_FN("Adding texture [ %s ] new ref count: %d",iter.second->getName().c_str(),iter.second->getRefCount());
-			iter.second->createCopy();
-		}
-	}
-}
-
 //base = base texture
 //second = second texture used for multitexturing
 //bump = bump map
@@ -120,13 +101,14 @@ void Material::setTexture(TextureUsage textureUsage, Texture2D* const texture, T
 	boost::unique_lock< boost::mutex > lock_access_here(_materialMutex);
 	if(_textures[textureUsage]){
 		RemoveResource(_textures[textureUsage]);
+		UNREGISTER_TRACKED_DEPENDENCY(_textures[textureUsage]);
 	}else{
 		//if we add a new type of texture
 		_computedLightShaders = false; //recompute shaders on texture change
 	}
 	_textures[textureUsage] = texture;
 	_operations[textureUsage] = op;
-
+	REGISTER_TRACKED_DEPENDENCY(_textures[textureUsage]);
 	_dirty = true;
 }
 
@@ -242,6 +224,7 @@ bool Material::unload(){
 	for_each(textureMap::value_type& iter , _textures){
 		if(iter.second){
 			RemoveResource(iter.second);
+			UNREGISTER_TRACKED_DEPENDENCY(iter.second);
 		}
 	}
 	_textures.clear();

@@ -46,7 +46,7 @@ public:
 	const vec2<F32>& getWindowDimensions() const {return _dimensions;}
 	inline void setWindowWidth(U16 w){_dimensions.x = w;}
 	inline void setWindowHeight(U16 h){_dimensions.y = h;}
-	inline void killApplication() {_keepAlive = false;}
+	void killApplication();
 	F32 moveFB,moveLR,angleUD,angleLR;
 
 	void Initialize(); ///< Set up the rendering platform

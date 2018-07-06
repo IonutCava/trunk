@@ -4,14 +4,6 @@
 
 using namespace std;
 
-void Mesh::createCopy(){
-	SceneNode::createCopy();
-	for_each(std::string& it, _subMeshes){
-		Resource* s = FindResource(it);
-		if(s) s->createCopy();
-	}
-}
-
 void Mesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 	if(!ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")) return;
 	if(sgn->updateBB()){
@@ -43,6 +35,8 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
 		/// Find the SubMesh resource
 		SubMesh* s = dynamic_cast<SubMesh*>(FindResource(it));
 		if(!s) continue;
+		REGISTER_TRACKED_DEPENDENCY(s);
+
 		/// Add the SubMesh resource as a child
 		SceneGraphNode* subMeshSGN  = sgn->addNode(s,sgn->getName()+"_"+it);
 		///Set SubMesh transform to this transform - HACK. ToDo <- Fix this. Use parent matrix

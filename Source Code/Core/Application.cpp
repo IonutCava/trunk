@@ -45,31 +45,31 @@ Application::Application() :
 void Application::DrawSceneStatic(){
 	/// Update time at every render loop
 	Application::getInstance()._currentTime += clock()/ D32( CLOCKS_PER_SEC);
-	if(_keepAlive){
-		GFX_DEVICE.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
-		SET_DEFAULT_STATE_BLOCK();
-		Framerate::getInstance().SetSpeedFactor();
-		FrameEvent evt;
-		FrameListenerManager::getInstance().createEvent(FRAME_EVENT_STARTED,evt);
-		_keepAlive = FrameListenerManager::getInstance().frameStarted(evt);
-
-		PHYSICS_DEVICE.process();
-
-		_keepAlive = Application::getInstance().DrawScene();
-
-		FrameListenerManager::getInstance().createEvent(FRAME_EVENT_PROCESS,evt);
-		_keepAlive = FrameListenerManager::getInstance().frameRenderingQueued(evt);
-
-		GFX_DEVICE.swapBuffers();
-
-		FrameListenerManager::getInstance().createEvent(FRAME_EVENT_ENDED,evt);
-		_keepAlive = FrameListenerManager::getInstance().frameEnded(evt);
-
-	}else{
-		Application::getInstance().Deinitialize(); ///Destroy platform
-		Guardian::getInstance().TerminateApplication(); ///Free resources
+	if(!_keepAlive) {
+		Application::getInstance().killApplication(); 
+		return;
 	}
+
+	GFX_DEVICE.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+	SET_DEFAULT_STATE_BLOCK();
+	Framerate::getInstance().SetSpeedFactor();
+	FrameEvent evt;
+	FrameListenerManager::getInstance().createEvent(FRAME_EVENT_STARTED,evt);
+	_keepAlive = FrameListenerManager::getInstance().frameStarted(evt);
+
+	PHYSICS_DEVICE.process();
+
+	_keepAlive = Application::getInstance().DrawScene();
+
+	FrameListenerManager::getInstance().createEvent(FRAME_EVENT_PROCESS,evt);
+	_keepAlive = FrameListenerManager::getInstance().frameRenderingQueued(evt);
+
+	GFX_DEVICE.swapBuffers();
+
+	FrameListenerManager::getInstance().createEvent(FRAME_EVENT_ENDED,evt);
+	_keepAlive = FrameListenerManager::getInstance().frameEnded(evt);
 }
+
 
 bool Application::DrawScene(){
 	_camera->RenderLookAt();	
@@ -110,6 +110,12 @@ void Application::Initialize(){
 	PostFX::getInstance().init();
 	PHYSICS_DEVICE.initPhysics();
 	_gui.createConsole();
+
+}
+
+void Application::killApplication() {
+	_keepAlive = false;
+	Application::getInstance().Deinitialize(); ///Destroy platform
 }
 
 void Application::Deinitialize(){
@@ -117,11 +123,10 @@ void Application::Deinitialize(){
 	PRINT_FN("Closing application!");
 	PHYSICS_DEVICE.exitPhysics();
 	PostFX::getInstance().DestroyInstance();
-	
+	Guardian::getInstance().TerminateApplication(); ///Free resources
 	PRINT_FN("Closing hardware interface(GFX,SFX,PhysX, input,network) engine ...");
 	_SFX.closeAudioApi();
 	_SFX.DestroyInstance();
 	_GFX.closeRenderingApi();
 	_GFX.DestroyInstance();
-
 }

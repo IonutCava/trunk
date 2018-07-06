@@ -54,8 +54,6 @@ public:
 
 	virtual bool load(const std::string& name) {return true;}
 	virtual bool unload() {return true;}
-	virtual void createCopy() {incRefCount();}
-	virtual void removeCopy() {decRefCount();}
 
 	///Add an event listener called after every RenderLookAt or RenderLookAtCube call
 	virtual void addUpdateListener(boost::function0<void> f) {_listeners.push_back(f);}

@@ -33,8 +33,6 @@ public:
 	void onDraw() {};
 	bool computeBoundingBox(SceneGraphNode* const sgn){return true;}
 	void updateTransform(SceneGraphNode* const sgn) {}
-	void createCopy(){}
-	void removeCopy(){}
 };
 
 class SceneGraphNode{

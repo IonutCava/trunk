@@ -60,7 +60,7 @@ I8  ShaderManager::shaderFileWrite(char *atomName, char *s){
 void ShaderManager::removeShader(Shader* s){
 	std::string name = s->getName();
 	if(_shaders.find(name) != _shaders.end()){
-		s->decRefCount();
+		s->Release();
 		if(s->getRefCount() == 0){
 			SAFE_DELETE(_shaders[name]);
 			_shaders.erase(name);
@@ -70,7 +70,7 @@ void ShaderManager::removeShader(Shader* s){
 
 Shader* ShaderManager::findShader(const std::string& name){
 	if(_shaders.find(name) != _shaders.end()){
-		_shaders[name]->incRefCount();
+		_shaders[name]->AddRef();
 		D_PRINT_FN("ShaderManager: returning shader [ %s ]. New ref count [ %d ]",name.c_str(),_shaders[name]->getRefCount());
 		return _shaders[name];
 	}
