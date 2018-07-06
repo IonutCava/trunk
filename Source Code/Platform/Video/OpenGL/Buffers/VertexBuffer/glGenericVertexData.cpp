@@ -201,7 +201,9 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
     if (_persistentMapped) {
         vectorAlg::vecSize bufferCount = _bufferObjects.size();
         for(vectorAlg::vecSize i = 0; i < bufferCount; ++i) {
-            _lockManagers[i]->WaitForLockedRange();
+            if (_bufferPersistent[i]) {
+                _lockManagers[i]->WaitForLockedRange();
+            }
         }
     }
     // Check if we are rendering to the screen or to a buffer
@@ -280,6 +282,15 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
         glEndTransformFeedback();
         // Mark the current query as completed and ready to be retrieved
         _resultAvailable[_currentWriteQuery][command.queryID()] = true;
+    }
+
+    if (_persistentMapped) {
+        vectorAlg::vecSize bufferCount = _bufferObjects.size();
+        for (vectorAlg::vecSize i = 0; i < bufferCount; ++i) {
+            if (_bufferPersistent[i]) {
+                _lockManagers[i]->LockRange(_readOffset[i], _elementCount[i] * _elementSize[i]);
+            }
+        }
     }
 }
 

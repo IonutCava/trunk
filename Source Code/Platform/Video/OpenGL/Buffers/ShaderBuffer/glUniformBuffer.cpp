@@ -28,7 +28,7 @@ glUniformBuffer::glUniformBuffer(const stringImpl& bufferName, bool unbound,
     }
     if (ShaderBuffer::_targetDataAlignment[1] == -1) {
         ShaderBuffer::_targetDataAlignment[1] = 
-            ParamHandler::getInstance().getParam<I32>("rendering.UBOAligment", 256);
+            ParamHandler::getInstance().getParam<I32>("rendering.UBOAligment", 32);
     }
 }
 
@@ -53,6 +53,7 @@ void glUniformBuffer::Create(U32 primitiveCount, U32 sizeFactor, ptrdiff_t primi
     ShaderBuffer::Create(primitiveCount, sizeFactor, primitiveSize);
 
     I32 remainder = _bufferSize % ShaderBuffer::getTargetDataAlignment(_unbound);
+    STUBBED("THIS IS WRONG! Fix it! -Ionut");
     if (remainder > 0) {
         _primitiveCount += to_uint(
             (ShaderBuffer::getTargetDataAlignment(_unbound) - remainder) /
@@ -169,6 +170,11 @@ bool glUniformBuffer::BindRange(U32 bindIndex, U32 offsetElementCount,
         }
 
         glBindBufferRange(_target, bindIndex, _UBOid, offset, range);
+
+        if (_persistentMapped) {
+            _lockManager->LockRange(offset, range);
+        }
+
         return true;
     }
 
