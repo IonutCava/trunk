@@ -34,20 +34,16 @@
 #define _CAMERA_H
 
 #include "Frustum.h"
+#include "CameraSnapshot.h"
+
 #include "Core/Math/Headers/Quaternion.h"
 #include "Core/Resources/Headers/Resource.h"
 #include "Platform/Input/Headers/EventHandler.h"
 
 namespace Divide {
 
-namespace Attorney {
-    class CameraGFXDevice;
-}
-
 class GFXDevice;
 class Camera : public Resource {
-    friend class Attorney::CameraGFXDevice;
-
    public:
     enum class CameraType : U8 {
         FREE_FLY = 0,
@@ -70,6 +66,8 @@ class Camera : public Resource {
 
     virtual void fromCamera(Camera& camera);
 
+    const CameraSnapshot& snapshot();
+
     // Return true if the cached camera state wasn't up-to-date
     bool updateLookAt();
 
@@ -86,14 +84,19 @@ class Camera : public Resource {
     const mat4<F32>& lookAt(const mat4<F32>& viewMatrix);
     /// Sets the camera's position, target and up directions
     const mat4<F32>& lookAt(const vec3<F32>& eye,
-                            const vec3<F32>& direction = WORLD_Z_NEG_AXIS,
-                            const vec3<F32>& up = WORLD_Y_AXIS);
+                            const vec3<F32>& direction,
+                            const vec3<F32>& up);
     /// Rotates the camera (changes its orientation) by the specified quaternion
     /// (_orientation *= q)
     void rotate(const Quaternion<F32>& q);
     /// Sets the camera to point at the specified target point
     inline const mat4<F32>& lookAt(const vec3<F32>& target) {
-        return lookAt(_eye, target, getUpDir());
+        return lookAt(_data._eye, target);
+    }
+
+    inline const mat4<F32>& lookAt(const vec3<F32>& eye,
+                                   const vec3<F32>& target) {
+        return lookAt(eye, target, getUpDir());
     }
     /// Sets the camera's orientation to match the specified yaw, pitch and roll
     /// values;
@@ -161,12 +164,12 @@ class Camera : public Resource {
     }
 
     inline void setEye(F32 x, F32 y, F32 z) {
-        _eye.set(x, y, z);
+        _data._eye.set(x, y, z);
         _viewMatrixDirty = true;
     }
 
     inline void setEye(const vec3<F32>& position) {
-        _eye = position;
+        _data._eye = position;
         _viewMatrixDirty = true;
     }
 
@@ -217,7 +220,7 @@ class Camera : public Resource {
     inline const CameraType& getType() const { return _type; }
 
     inline const vec3<F32>& getEye() const {
-        return _eye;
+        return _data._eye;
     }
 
     inline vec3<F32> getUpDir() const {
@@ -242,39 +245,39 @@ class Camera : public Resource {
         setRotation(euler.yaw, euler.pitch, euler.roll);
     }
 
-    inline const vec2<F32>& getZPlanes() const { return _zPlanes; }
+    inline const vec2<F32>& getZPlanes() const { return _data._zPlanes; }
 
     inline const vec4<F32>& orthoRect() const { return _orthoRect; }
 
     inline bool isOrthoProjected() const { return _isOrthoCamera; }
 
-    inline const Angle::DEGREES<F32> getVerticalFoV() const { return _verticalFoV; }
+    inline const Angle::DEGREES<F32> getVerticalFoV() const { return _data._FoV; }
 
     inline const Angle::DEGREES<F32> getHorizontalFoV() const {
-        Angle::RADIANS<F32> halfFoV = Angle::to_RADIANS(_verticalFoV) * 0.5f;
-        return Angle::to_DEGREES(2.0f * std::atan(tan(halfFoV) * _aspectRatio));
+        Angle::RADIANS<F32> halfFoV = Angle::to_RADIANS(_data._FoV) * 0.5f;
+        return Angle::to_DEGREES(2.0f * std::atan(tan(halfFoV) * _data._aspectRatio));
     }
 
     inline const F32 getAspectRatio() const {
-        return _aspectRatio;
+        return _data._aspectRatio;
     }
 
     inline const mat4<F32>& getViewMatrix() const {
-        return _viewMatrix;
+        return _data._viewMatrix;
     }
 
     inline const mat4<F32>& getViewMatrix() {
         updateViewMatrix();
-        return _viewMatrix;
+        return _data._viewMatrix;
     }
 
     inline const mat4<F32>& getProjectionMatrix() {
         updateProjection();
-        return _projectionMatrix;
+        return _data._projectionMatrix;
     }
 
     inline const mat4<F32>& getProjectionMatrix() const {
-        return _projectionMatrix;
+        return _data._projectionMatrix;
     }
 
     inline mat4<F32> getWorldMatrix() {
@@ -332,8 +335,6 @@ class Camera : public Resource {
     virtual bool updateProjection();
     /// Inject mouse events
     virtual void updateInternal(const U64 deltaTimeUS);
-    /// Called when the camera becomes active/ is deactivated
-    virtual void setActiveInternal(bool state);
 
    protected:
     SET_DELETE_FRIEND
@@ -342,18 +343,14 @@ class Camera : public Resource {
     virtual ~Camera();
 
    protected:
-    mat4<F32> _viewMatrix;
-    mat4<F32> _projectionMatrix;
+    CameraSnapshot _data;
     Quaternion<F32> _orientation;
-    vec3<F32> _eye, _fixedYawAxis;
-    vec2<F32> _zPlanes;
+    vec3<F32> _fixedYawAxis;
     vec4<F32> _orthoRect;
 
     vec3<Angle::DEGREES<F32>> _euler;
-    Angle::DEGREES<F32> _verticalFoV;
     Angle::DEGREES<F32> _accumPitchDegrees;
 
-    F32 _aspectRatio;
     F32 _turnSpeedFactor;
     F32 _moveSpeedFactor;
     F32 _mouseSensitivity;
@@ -362,7 +359,6 @@ class Camera : public Resource {
     F32 _cameraTurnSpeed;
     F32 _cameraZoomSpeed;
     CameraType _type;
-
 
     bool _projectionDirty;
     bool _viewMatrixDirty;
@@ -373,7 +369,6 @@ class Camera : public Resource {
     bool _isOrthoCamera;
     bool _frustumDirty;
     Frustum* _frustum;
-
 
     // Since quaternion reflection is complicated and not really needed now, 
     // handle reflections a-la Ogre -Ionut
@@ -402,15 +397,8 @@ class Camera : public Resource {
        static bool removeUpdateListener(U32 id);
        static U32 addUpdateListener(const DELEGATE_CBK<void, const Camera& /*updated camera*/>& f);
 
-    protected:
-      // Returns true if the camera was changed. False if the camera is already active
-      static bool activeCamera(Camera* camera);
-      static bool activeCamera(U64 camera);
-
     private:
       typedef hashMap<U64, Camera*> CameraPool;
-
-      static Camera* s_activeCamera;
 
       static std::array<Camera*, to_base(UtilityCamera::COUNT)> _utilityCameras;
 
@@ -426,20 +414,6 @@ class Camera : public Resource {
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Camera);
-
-namespace Attorney {
-    class CameraGFXDevice {
-      private:
-        static bool SetActiveCamera(Camera* camera) {
-            return Camera::activeCamera(camera);
-        }
-        static bool SetActiveCamera(U64 camera) {
-            return Camera::activeCamera(camera);
-        }
-
-        friend class Divide::GFXDevice;
-    };
-};
 
 };  // namespace Divide
 #endif

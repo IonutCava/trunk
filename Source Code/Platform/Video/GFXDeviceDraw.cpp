@@ -51,7 +51,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
 
     const vectorEASTL<GFX::CommandBuffer::CommandEntry>& commands = commandBuffer();
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
-        switch (cmd.type<GFX::CommandType>()) {
+        switch (cmd.type<GFX::CommandType::_enumerated>()) {
             case GFX::CommandType::BLIT_RT: {
                 const GFX::BlitRenderTargetCommand& crtCmd = commandBuffer.getCommand<GFX::BlitRenderTargetCommand>(cmd);
                 RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
@@ -72,7 +72,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 setViewport(commandBuffer.getCommand<GFX::SetViewportCommand>(cmd)._viewport);
                 break;
             case GFX::CommandType::SET_CAMERA:
-                renderFromCamera(*commandBuffer.getCommand<GFX::SetCameraCommand>(cmd)._camera);
+                renderFromCamera(commandBuffer.getCommand<GFX::SetCameraCommand>(cmd)._cameraSnapshot);
                 break;
             case GFX::CommandType::SET_CLIP_PLANES:
                 setClipPlanes(commandBuffer.getCommand<GFX::SetClipPlanesCommand>(cmd)._clippingPlanes);
@@ -149,7 +149,7 @@ void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& buff
     drawTextCommand._batch = batch;
 
     GFX::SetCameraCommand setCameraCommand;
-    setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
+    setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
     
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
@@ -197,7 +197,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     GFX::SetCameraCommand setCameraCommand;
-    setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
+    setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
     GFX::BindPipelineCommand bindPipelineCmd;

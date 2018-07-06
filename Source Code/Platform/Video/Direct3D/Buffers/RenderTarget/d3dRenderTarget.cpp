@@ -16,10 +16,7 @@ d3dRenderTarget::~d3dRenderTarget()
 
 bool d3dRenderTarget::resize(U16 width, U16 height) { return true; }
 
-void d3dRenderTarget::drawToLayer(RTAttachmentType type,
-                                  U8 index,
-                                  U16 layer,
-                                  bool includeDepth) {}
+void d3dRenderTarget::drawToLayer(const DrawLayerParams& params) {}
 
 void d3dRenderTarget::setMipLevel(U16 writeLevel) {}
 

@@ -21,23 +21,30 @@ Camera::Camera(const stringImpl& name, const CameraType& type, const vec3<F32>& 
       _cameraMoveSpeed(35.0f),
       _cameraZoomSpeed(35.0f),
       _cameraTurnSpeed(35.0f),
-      _aspectRatio(1.77f),
-      _verticalFoV(60.0f),
       _type(type)
 {
-    _eye.set(eye);
-    _fixedYawAxis.set(WORLD_Y_AXIS);
-    _accumPitchDegrees = 0.0f;
-    _orientation.identity();
-    _viewMatrix.identity();
     _yawFixed = false;
-    _zPlanes.set(0.1f, 1.0f);
+    _fixedYawAxis.set(WORLD_Y_AXIS);
+    _orientation.identity();
+    _accumPitchDegrees = 0.0f;
+    _data._eye.set(eye);
+    _data._FoV = 60.0f;
+    _data._aspectRatio = 1.77f;
+    _data._viewMatrix.identity();
+    _data._projectionMatrix.identity();
+    _data._zPlanes.set(0.1f, 1.0f);
     _frustum = MemoryManager_NEW Frustum(*this);
 }
 
 Camera::~Camera()
 {
     MemoryManager::DELETE(_frustum);
+}
+
+const CameraSnapshot& Camera::snapshot() {
+    updateLookAt();
+
+    return _data;
 }
 
 void Camera::fromCamera(Camera& camera) {
@@ -84,12 +91,6 @@ void Camera::updateInternal(const U64 deltaTimeUS) {
     _cameraTurnSpeed = _turnSpeedFactor * timeFactor;
     _cameraZoomSpeed = _zoomSpeedFactor * timeFactor;
 }
-
-void Camera::setActiveInternal(bool state) {
-    // nothing yet;
-    ACKNOWLEDGE_UNUSED(state);
-}
-
 
 void Camera::setGlobalRotation(F32 yaw, F32 pitch, F32 roll) {
     if (_rotationLocked) {
@@ -188,8 +189,8 @@ void Camera::move(F32 dx, F32 dy, F32 dz) {
     dy *= _cameraMoveSpeed;
     dz *= _cameraMoveSpeed;
 
-    _eye += getRightDir() * dx;
-    _eye += WORLD_Y_AXIS * dy;
+    _data._eye += getRightDir() * dx;
+    _data._eye += WORLD_Y_AXIS * dy;
 
     if (_type == CameraType::FIRST_PERSON) {
         // Calculate the forward direction. Can't just use the camera's local
@@ -198,9 +199,9 @@ void Camera::move(F32 dx, F32 dy, F32 dz) {
         vec3<F32> forward;
         forward.cross(WORLD_Y_AXIS, getRightDir());
         forward.normalize();
-        _eye += forward * dz;
+        _data._eye += forward * dz;
     } else {
-        _eye += getForwardDir() * dz;
+        _data._eye += getForwardDir() * dz;
     }
 
     _viewMatrixDirty = true;
@@ -240,7 +241,7 @@ vec3<F32> ExtractCameraPos2(const mat4<F32>& a_modelView)
     return top / -denom;
 }
 const mat4<F32>& Camera::lookAt(const mat4<F32>& viewMatrix) {
-    _eye.set(ExtractCameraPos2(viewMatrix));
+    _data._eye.set(ExtractCameraPos2(viewMatrix));
     _orientation.fromMatrix(viewMatrix);
     _viewMatrixDirty = true;
     _frustumDirty = true;
@@ -252,10 +253,8 @@ const mat4<F32>& Camera::lookAt(const mat4<F32>& viewMatrix) {
 const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
                                 const vec3<F32>& direction,
                                 const vec3<F32>& up) {
-    _eye.set(eye);
-    vec3<F32> target(eye + direction);
-
-    _orientation.fromLookAt(direction, up);
+    _data._eye.set(eye);
+    _orientation.fromMatrix(mat4<F32>(eye, direction, up));
     _viewMatrixDirty = true;
     _frustumDirty = true;
 
@@ -291,17 +290,17 @@ void Camera::clearReflection() {
 bool Camera::updateProjection() {
     if (_projectionDirty) {
         if (_isOrthoCamera) {
-            _projectionMatrix.ortho(_orthoRect.x,
-                                    _orthoRect.y,
-                                    _orthoRect.z,
-                                    _orthoRect.w,
-                                    _zPlanes.x,
-                                    _zPlanes.y);
+            _data._projectionMatrix.ortho(_orthoRect.x,
+                                          _orthoRect.y,
+                                          _orthoRect.z,
+                                          _orthoRect.w,
+                                          _data._zPlanes.x,
+                                          _data._zPlanes.y);
         } else {
-            _projectionMatrix.perspective(_verticalFoV,
-                                          _aspectRatio,
-                                          _zPlanes.x,
-                                          _zPlanes.y);
+            _data._projectionMatrix.perspective(_data._FoV,
+                                                _data._aspectRatio,
+                                                _data._zPlanes.x,
+                                                _data._zPlanes.y);
         }
 
         _frustumDirty = true;
@@ -313,10 +312,10 @@ bool Camera::updateProjection() {
 }
 
 const mat4<F32>& Camera::setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes) {
-    setAspectRatio(_aspectRatio);
+    setAspectRatio(_data._aspectRatio);
     setVerticalFoV(verticalFoV);
 
-    _zPlanes = zPlanes;
+    _data._zPlanes = zPlanes;
     _isOrthoCamera = false;
     _projectionDirty = true;
     updateProjection();
@@ -325,7 +324,7 @@ const mat4<F32>& Camera::setProjection(F32 aspectRatio, F32 verticalFoV, const v
 }
 
 const mat4<F32>& Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes) {
-    _zPlanes = zPlanes;
+    _data._zPlanes = zPlanes;
     _orthoRect = rect;
     _isOrthoCamera = true;
     _projectionDirty = true;
@@ -335,17 +334,17 @@ const mat4<F32>& Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& z
 }
 
 void Camera::setAspectRatio(F32 ratio) {
-    _aspectRatio = ratio;
+    _data._aspectRatio = ratio;
     _projectionDirty = true;
 }
 
 void Camera::setVerticalFoV(Angle::DEGREES<F32> verticalFoV) {
-    _verticalFoV = verticalFoV;
+    _data._FoV = verticalFoV;
     _projectionDirty = true;
 }
 
 void Camera::setHorizontalFoV(Angle::DEGREES<F32> horizontalFoV) {
-    _verticalFoV = Angle::to_DEGREES(2.0f * std::atan(tan(Angle::to_RADIANS(horizontalFoV) * 0.5f) / _aspectRatio));
+    _data._FoV = Angle::to_DEGREES(2.0f * std::atan(tan(Angle::to_RADIANS(horizontalFoV) * 0.5f) / _data._aspectRatio));
     _projectionDirty = true;
 }
 
@@ -357,24 +356,22 @@ bool Camera::updateViewMatrix() {
     _orientation.normalize();
 
     // Reconstruct the view matrix.
-    mat3<F32> rotation;
-    _orientation.getMatrix(rotation);
     vec3<F32> xAxis = _orientation.xAxis();
     vec3<F32> yAxis = _orientation.yAxis();
     vec3<F32> zAxis = _orientation.zAxis();
 
-    vec3<F32> target = -zAxis + _eye;
+    vec3<F32> target = -zAxis + _data._eye;
 
-    _viewMatrix.set(rotation);
-    _viewMatrix.setRow(3, -xAxis.dot(_eye), -yAxis.dot(_eye), -zAxis.dot(_eye), 1.0f);
+    _data._viewMatrix.set(GetMatrix(_orientation));
+    _data._viewMatrix.setRow(3, -xAxis.dot(_data._eye), -yAxis.dot(_data._eye), -zAxis.dot(_data._eye), 1.0f);
     _orientation.getEuler(_euler);
     _euler = Angle::to_DEGREES(_euler);
     // Extract the pitch angle from the view matrix.
     _accumPitchDegrees = Angle::to_DEGREES(std::asinf(getForwardDir().y));
 
     if (_reflectionActive) {
-        _viewMatrix.reflect(_reflectionPlane);
-        _eye.set(mat4<F32>(_reflectionPlane).transformNonHomogeneous(_eye));
+        _data._viewMatrix.reflect(_reflectionPlane);
+        _data._eye.set(mat4<F32>(_reflectionPlane).transformNonHomogeneous(_data._eye));
     }
 
     _viewMatrixDirty = false;

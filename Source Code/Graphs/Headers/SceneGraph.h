@@ -116,7 +116,6 @@ class SceneGraph : private NonCopyable,
     const vectorEASTL<SceneGraphNode*>& getNodesByType(SceneNodeType type) const;
 
     void onCameraUpdate(const Camera& camera);
-    void onCameraChange(const Camera& camera);
     void onNetworkSend(U32 frameCount);
 
     void postLoad();

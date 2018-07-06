@@ -165,13 +165,9 @@ inline vec3<T> Inverse(const vec3<T> &v) {
 }
 
 template <typename T>
-inline void OrthoNormalize(vec3<T> &v1, vec3<T> &v2) {
-    vec3<T>& n(v1); vec3<T>& u(v2);
-
+inline void OrthoNormalize(vec3<T> &n, vec3<T> &u) {
     n.normalize();
-    vec3<T> v(Cross(n, u));
-    v.normalize();
-    u.set(Cross(v, n));
+    u.set(Cross(Normalize((Cross(n, u))), n));
 }
 
 /// min/max functions

@@ -480,12 +480,12 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const vector<RTAtt
     }
 }
 
-void glFramebuffer::drawToLayer(RTAttachmentType type,
-                                U8 index,
-                                U16 layer,
-                                bool includeDepth) {
+void glFramebuffer::drawToLayer(const DrawLayerParams& params) {
+    if (params._type == RTAttachmentType::COUNT) {
+        return;
+    }
 
-    const RTAttachment_ptr& att = _attachmentPool->get(type, index);
+    const RTAttachment_ptr& att = _attachmentPool->get(params._type, params._index);
 
     GLenum textureType = GLUtil::glTextureTypeTable[to_U32(att->texture()->getTextureType())];
     // only for array textures (it's better to simply ignore the command if the format isn't supported (debugging reasons)
@@ -495,27 +495,32 @@ void glFramebuffer::drawToLayer(RTAttachmentType type,
         return;
     }
 
-    bool useDepthLayer =  (hasDepth()  && includeDepth) ||
-                          (hasDepth()  && type == RTAttachmentType::Depth);
-    bool useColourLayer = (hasColour() && type == RTAttachmentType::Colour);
+    bool useDepthLayer =  (hasDepth()  && params._includeDepth) ||
+                          (hasDepth()  && params._type == RTAttachmentType::Depth);
+    bool useColourLayer = (hasColour() && params._type == RTAttachmentType::Colour);
 
     if (useDepthLayer && _isLayeredDepth) {
         const RTAttachment_ptr& attDepth = _attachmentPool->get(RTAttachmentType::Depth, 0);
         const BindingState& state = getAttachmentState(static_cast<GLenum>(attDepth->binding()));
-        attDepth->writeLayer(layer);
-        toggleAttachment(attDepth, state._attState);
+        if (attDepth->writeLayer(params._layer)) {
+            toggleAttachment(attDepth, state._attState);
+        }
     }
 
     if (useColourLayer) {
         const BindingState& state = getAttachmentState(static_cast<GLenum>(att->binding()));
-        att->writeLayer(layer);
-        toggleAttachment(att, state._attState);
+        if (att->writeLayer(params._layer)) {
+            toggleAttachment(att, state._attState);
+        }
     }
 
     checkStatus();
 }
 
 void glFramebuffer::setMipLevel(U16 writeLevel) {
+    if (writeLevel == std::numeric_limits<U16>::max()) {
+        return;
+    }
 
     // This is needed because certain drivers need all attachments to use the same mip level
     // This is also VERY SLOW so it might be worth optimising it per-driver version / IHV

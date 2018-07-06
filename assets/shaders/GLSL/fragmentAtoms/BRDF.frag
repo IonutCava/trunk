@@ -50,11 +50,10 @@ vec4 getPixelColour(const in vec2 texCoord) {
         float reflectivity = getReflectivity();
         vec3 lightColour = vec3(0.0);
         // Apply all lighting contributions
-        uint lightIdx;
         
         // Directional lights
-        for (lightIdx = 0; lightIdx < DIRECTIONAL_LIGHT_COUNT; ++lightIdx) {
-            getBRDFFactors(int(lightIdx), processedNormal, albedo.rgb, specular, reflectivity, lightColour, reflectionCoeff);
+        for (int lightIdx = 0; lightIdx < DIRECTIONAL_LIGHT_COUNT; ++lightIdx) {
+            getBRDFFactors(lightIdx, processedNormal, albedo.rgb, specular, reflectivity, lightColour, reflectionCoeff);
         }
 
         uint offset = DIRECTIONAL_LIGHT_COUNT;
@@ -94,6 +93,7 @@ vec4 getPixelColour(const in vec2 texCoord) {
 #endif
 
     colour *= mix(mix(1.0, 2.0, dvd_isHighlighted), 3.0, dvd_isSelected);
+
     // Apply shadowing
 #if !defined(DISABLE_SHADOW_MAPPING)
     colour *= mix(1.0, shadow_loop(), dvd_shadowMapping);
@@ -118,7 +118,6 @@ vec4 getPixelColour(const in vec2 texCoord) {
     }
 #endif
 #endif
-
     return vec4(colour, albedo.a);
 }
 

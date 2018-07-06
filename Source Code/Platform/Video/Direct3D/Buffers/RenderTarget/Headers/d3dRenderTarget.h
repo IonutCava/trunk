@@ -45,10 +45,8 @@ class d3dRenderTarget : public RenderTarget {
     
     bool resize(U16 width, U16 height) override;
 
-    void drawToLayer(RTAttachmentType type,
-                     U8 index,
-                     U16 layer,
-                     bool includeDepth = true) override;
+    void drawToLayer(const DrawLayerParams& params) override;
+
     void setMipLevel(U16 writeLevel) override;
 
     void readData(const vec4<U16>& rect,

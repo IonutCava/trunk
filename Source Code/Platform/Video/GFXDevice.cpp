@@ -235,17 +235,26 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     params._target = cubeMap;
     // We do our own binding
     params._bindTargets = false;
+
+    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
+    GFX::EndRenderSubPassCommand endRenderSubPassCommand;
+    RenderTarget::DrawLayerParams drawParams;
+    drawParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
+    drawParams._index = 0;
+    drawParams._isCubeFace = true;
+
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
-        cubeMapTarget.drawToFace(hasColour ? RTAttachmentType::Colour
-                                           : RTAttachmentType::Depth,
-                                 0,
-                                 i + arrayOffset);
+        drawParams._layer = i + arrayOffset;
+        beginRenderSubPassCmd._writeLayers.resize(1, drawParams);
+        GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
+
         // Point our camera to the correct face
         camera->lookAt(pos, TabCenter[i], TabUp[i]);
         // Pass our render function to the renderer
         params._pass = passIndex + i;
         passMgr.doCustomPass(params, bufferInOut);
+        GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
     }
 
     // Resolve our render target
@@ -305,17 +314,25 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     beginRenderPassCmd._name = "GENERATE_DUAL_PARABOLOID_MAP";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
+    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
+    GFX::EndRenderSubPassCommand endRenderSubPassCommand;
+
+    RenderTarget::DrawLayerParams drawParams;
+    drawParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
+    drawParams._index = 0;
+
     for (U8 i = 0; i < 2; ++i) {
-            paraboloidTarget.drawToLayer(hasColour ? RTAttachmentType::Colour
-                                                   : RTAttachmentType::Depth,
-                                         0,
-                                         i + arrayOffset);
+            drawParams._layer = i + arrayOffset;
+            beginRenderSubPassCmd._writeLayers.resize(1, drawParams);
+            GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
+
             // Point our camera to the correct face
             camera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS));
             // And generated required matrices
             // Pass our render function to the renderer
             params._pass = passIndex + i;
             passMgr.doCustomPass(params, bufferInOut);
+            GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
         }
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
@@ -478,35 +495,30 @@ void GFXDevice::setSceneZPlanes(const vec2<F32>& zPlanes) {
     _gpuBlock._needsUpload = true;
 }
 
-void GFXDevice::renderFromCamera(Camera& camera) {
-    bool cameraChanged = Attorney::CameraGFXDevice::SetActiveCamera(&camera);
-
+void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
     // Tell the Rendering API to draw from our desired PoV
-    if (camera.updateLookAt() || cameraChanged) {
-        const mat4<F32>& viewMatrix = camera.getViewMatrix();
-        const mat4<F32>& projMatrix = camera.getProjectionMatrix();
+    if (_activeCameraSnapshot != cameraSnapshot) {
+        _activeCameraSnapshot = cameraSnapshot;
 
         GFXShaderData::GPUData& data = _gpuBlock._data;
-
-        if (viewMatrix != data._ViewMatrix) {
-            data._ViewMatrix.set(viewMatrix);
+        if (cameraSnapshot._viewMatrix != data._ViewMatrix) {
+            data._ViewMatrix.set(cameraSnapshot._viewMatrix);
             data._ViewMatrix.getInverse(_gpuBlock._viewMatrixInv);
         }
 
-        if (projMatrix != data._ProjectionMatrix) {
-            data._ProjectionMatrix.set(projMatrix);
+        if (cameraSnapshot._projectionMatrix != data._ProjectionMatrix) {
+            data._ProjectionMatrix.set(cameraSnapshot._projectionMatrix);
             data._ProjectionMatrix.getInverse(data._InvProjectionMatrix);
         }
 
-        F32 FoV = camera.getVerticalFoV();
-        data._cameraPosition.set(camera.getEye(), camera.getAspectRatio());
+        F32 FoV = cameraSnapshot._FoV;
+        data._cameraPosition.set(cameraSnapshot._eye, cameraSnapshot._aspectRatio);
         data._renderProperties.zw(FoV, std::tan(FoV * 0.5f));
-        data._ZPlanesCombined.xy(camera.getZPlanes());
+        data._ZPlanesCombined.xy(cameraSnapshot._zPlanes);
         mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
         data._ViewProjectionMatrix.getInverse(_gpuBlock._viewProjMatrixInv);
         Frustum::computePlanes(_gpuBlock._viewProjMatrixInv, data._frustumPlanes);
         _gpuBlock._needsUpload = true;
-        
     }
 }
 

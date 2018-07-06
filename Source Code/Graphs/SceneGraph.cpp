@@ -212,10 +212,6 @@ void SceneGraph::onCameraUpdate(const Camera& camera) {
     _root->onCameraUpdate(_ID_RT(camera.name()), camera.getEye(), camera.getViewMatrix());
 }
 
-void SceneGraph::onCameraChange(const Camera& camera) {
-    ACKNOWLEDGE_UNUSED(camera);
-}
-
 void SceneGraph::onNetworkSend(U32 frameCount) {
     _root->onNetworkSend(frameCount);
 }

@@ -398,7 +398,7 @@ private:
     /// Upload draw related data to the GPU (view & projection matrices, viewport settings, etc)
     void uploadGPUBlock();
     void setClipPlanes(const FrustumClipPlanes& clipPlanes);
-    void renderFromCamera(Camera& camera);
+    void renderFromCamera(const CameraSnapshot& cameraSnapshot);
 
     ErrorCode createAPIInstance();
 
@@ -416,7 +416,7 @@ private:
 
     Frustum         *_debugFrustum;
     IMPrimitive     *_debugFrustumPrimitive;
-
+    CameraSnapshot  _activeCameraSnapshot;
 protected:
     RenderAPI _API_ID;
     GPUState _state;

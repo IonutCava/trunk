@@ -36,16 +36,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "GenericDrawCommand.h"
 #include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
+#include "Rendering/Camera/Headers/CameraSnapshot.h"
 
 #include <MemoryPool/StackAlloc.h>
 #include <MemoryPool/C-11/MemoryPool.h>
+#include <BetterEnums/include/enum.h>
 
 struct ImDrawData;
 
 namespace Divide {
 namespace GFX {
 
-enum class CommandType : U8 {
+BETTER_ENUM(CommandType, U8,
     BEGIN_RENDER_PASS = 0,
     END_RENDER_PASS,
     BEGIN_PIXEL_BUFFER,
@@ -71,28 +73,27 @@ enum class CommandType : U8 {
     SWITCH_WINDOW,
     EXTERNAL,
     COUNT
-};
+);
 
 class CommandBuffer;
 
 struct CommandBase
 {
-    CommandBase() : CommandBase(CommandType::COUNT, "null") {}
-    CommandBase(CommandType type, const char* typeName) : _type(type), _typeName(typeName) {}
+    CommandBase() : CommandBase(CommandType::COUNT) {}
+    CommandBase(CommandType type) : _type(type) {}
 
     virtual ~CommandBase() = default;
 
     virtual void addToBuffer(CommandBuffer& buffer) const = 0;
 
-    virtual const char* toString() const { return _typeName; }
+    virtual stringImpl toString() const { return stringImpl(_type._to_string()); }
 
     CommandType _type = CommandType::COUNT;
-    const char* _typeName = nullptr;
 };
 
-template<typename T, CommandType enumVal>
+template<typename T, CommandType::_enumerated EnumVal>
 struct Command : public CommandBase {
-    Command() : CommandBase(enumVal, TO_STRING(enumVal)) { }
+    Command() : CommandBase(EnumVal) { }
     
     virtual ~Command() = default;
 
@@ -134,8 +135,8 @@ END_COMMAND();
 BEGIN_COMMAND(SetViewportCommand, CommandType::SET_VIEWPORT, 4096);
     Rect<I32> _viewport;
 
-    const char* toString() const override {
-        return (_typeName + Util::StringFormat("[%d, %d, %d, %d]", _viewport.x, _viewport.y, _viewport.z, _viewport.w)).c_str();
+    stringImpl toString() const override {
+        return CommandBase::toString() + Util::StringFormat(" [%d, %d, %d, %d]", _viewport.x, _viewport.y, _viewport.z, _viewport.w);
     }
 END_COMMAND();
 
@@ -144,8 +145,8 @@ BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS, 4096);
     RTDrawDescriptor _descriptor;
     eastl::fixed_string<char, 128 + 1, true> _name = "";
 
-    const char* toString() const override {
-        return (stringImpl(_typeName) + _name.c_str()).c_str();
+    stringImpl toString() const override {
+        return CommandBase::toString() + ": " + stringImpl(_name.c_str());
     }
  END_COMMAND();
 
@@ -161,7 +162,8 @@ BEGIN_COMMAND(EndPixelBufferCommand, CommandType::END_PIXEL_BUFFER, 4096);
 END_COMMAND();
 
 BEGIN_COMMAND(BeginRenderSubPassCommand, CommandType::BEGIN_RENDER_SUB_PASS, 4096);
-    U16 _mipWriteLevel = 0u;
+    U16 _mipWriteLevel = std::numeric_limits<U16>::max();
+    vectorEASTL<RenderTarget::DrawLayerParams> _writeLayers;
 END_COMMAND();
 
 BEGIN_COMMAND(EndRenderSubPassCommand, CommandType::END_RENDER_SUB_PASS, 4096);
@@ -183,7 +185,7 @@ BEGIN_COMMAND(SetBlendCommand, CommandType::SET_BLEND, 4096);
 END_COMMAND();
 
 BEGIN_COMMAND(SetCameraCommand, CommandType::SET_CAMERA, 4096);
-    Camera* _camera = nullptr;
+    CameraSnapshot _cameraSnapshot;
 END_COMMAND();
 
 BEGIN_COMMAND(SetClipPlanesCommand, CommandType::SET_CLIP_PLANES, 4096);
@@ -198,8 +200,8 @@ BEGIN_COMMAND(BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE, 4096);
     eastl::fixed_string<char, 128 + 1, true> _scopeName;
     I32 _scopeID = -1;
 
-    const char* toString() const override {
-        return (stringImpl(_typeName) + _scopeName.c_str()).c_str();
+    stringImpl toString() const override {
+        return CommandBase::toString() + ": " + stringImpl(_scopeName.c_str());
     }
 END_COMMAND();
 

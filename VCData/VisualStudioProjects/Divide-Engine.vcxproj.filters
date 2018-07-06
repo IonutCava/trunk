@@ -592,6 +592,9 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\UnityBuildEngine.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\CameraSnapshot.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\../Source Code/Rendering\Camera\Headers\Camera.h">
@@ -1045,6 +1048,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\ECS\Events\Headers\BoundsEvents.h">
       <Filter>ECS\Events\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\CameraSnapshot.h">
+      <Filter>Rendering\Camera\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

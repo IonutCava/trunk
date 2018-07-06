@@ -31,12 +31,13 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
       _renderMask(0),
       _depthStateBlockHash(0),
       _shadowStateBlockHash(0),
-      _renderPackagesDirty(true),
       _descriptorSetCache(_context.newDescriptorSet()),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
 {
+    _renderPackagesDirty.fill(true);
+
     toggleRenderOption(RenderOptions::RENDER_GEOMETRY, true);
     toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
     toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, true);
@@ -483,11 +484,12 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     RenderPackage& pkg = getDrawPackage(renderStagePass);
     if (canDraw(renderStagePass)) {
 
-        if (_renderPackagesDirty) {
-            for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-                rebuildDrawCommands(RenderStagePass::stagePass(i));
+        if (_renderPackagesDirty[to_base(renderStagePass._stage)]) {
+            for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
+                rebuildDrawCommands(RenderStagePass(renderStagePass._stage, static_cast<RenderPassType>(i)));
             }
-            _renderPackagesDirty = false;
+
+            _renderPackagesDirty[to_base(renderStagePass._stage)] = false;
         }
 
         if (_parentSGN.prepareRender(sceneRenderState, renderStagePass)) {

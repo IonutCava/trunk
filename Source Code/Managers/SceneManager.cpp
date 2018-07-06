@@ -53,8 +53,7 @@ SceneManager::SceneManager(Kernel& parentKernel)
       _activePlayerCount(0),
       _currentPlayerPass(0),
       _saveTimer(0ULL),
-      _camUpdateListenerID(0),
-      _camChangeListenerID(0)
+      _camUpdateListenerID(0)
 {
     I64 group = _parent.platformContext().debug().addDebugGroup("SceneManager", -1);
 
@@ -214,13 +213,6 @@ void SceneManager::setActiveScene(Scene* const scene) {
     }
     _camUpdateListenerID = Camera::addUpdateListener([this](const Camera& cam) {
         onCameraUpdate(cam);
-    });
-
-    if (_camChangeListenerID != 0) {
-        Camera::removeUpdateListener(_camChangeListenerID);
-    }
-    _camChangeListenerID = Camera::addChangeListener([this](const Camera& cam) {
-        onCameraChange(cam);
     });
 }
 
@@ -391,13 +383,6 @@ bool SceneManager::frameEnded(const FrameEvent& evt) {
 
 void SceneManager::onCameraUpdate(const Camera& camera) {
     getActiveScene().sceneGraph().onCameraUpdate(camera);
-}
-
-void SceneManager::onCameraChange(const Camera& camera) {
-    getActiveScene().sceneGraph().onCameraChange(camera);
-    if (camera.getType() == Camera::CameraType::THIRD_PERSON) {
-        _platformContext->app().windowManager().snapCursorToCenter();
-    }
 }
 
 void SceneManager::updateSceneState(const U64 deltaTimeUS) {
@@ -622,8 +607,10 @@ RenderPassCuller::VisibleNodeList& SceneManager::getVisibleNodesCache(RenderStag
 }
 
 void SceneManager::prepareLightData(RenderStage stage, const Camera& camera) {
-    LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
-    lightPool->prepareLightData(stage, camera.getEye(), camera.getViewMatrix());
+    if (stage != RenderStage::SHADOW) {
+        LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
+        lightPool->prepareLightData(stage, camera.getEye(), camera.getViewMatrix());
+    }
 }
 
 void SceneManager::onLostFocus() {

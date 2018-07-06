@@ -139,17 +139,38 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     params._pass = passIdx;
     params._bindTargets = false;
 
-    RenderTarget& target = _context.renderTargetPool().renderTarget(params._target);
-
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = params._target;
     beginRenderPassCmd._name = "DO_CSM_PASS";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+
+    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
+    GFX::EndRenderSubPassCommand endRenderSubPassCommand;
+
+    GFX::BeginDebugScopeCommand beginDebugScopeCommand;
+    GFX::EndDebugScopeCommand endDebugScopeCommand;
+
+    RenderTarget::DrawLayerParams drawParams;
+    drawParams._type = RTAttachmentType::Colour;
+    drawParams._index = 0;
+    
+    RenderPassManager& rpm = _context.parent().renderPassManager();
     for (U8 i = 0; i < _numSplits; ++i) {
-        target.drawToLayer(RTAttachmentType::Colour, 0, to_U16(i + getArrayOffset()));
+        beginDebugScopeCommand._scopeName = Util::StringFormat("CSM_PASS_%d", i).c_str();
+        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCommand);
+
+        drawParams._layer = to_U16(i + getArrayOffset());
+        beginRenderSubPassCmd._writeLayers.resize(1, drawParams);
+        GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
+
+        params._pass += i;
         params._camera = _shadowCameras[i];
-        _context.parent().renderPassManager().doCustomPass(params, bufferInOut);
+        rpm.doCustomPass(params, bufferInOut);
+
+        GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
+        GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
     }
+    
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
@@ -211,7 +232,7 @@ void CascadedShadowMaps::applyFrustumSplits() {
     
         vec3<F32> currentEye = frustumCentroid - (_lightPosition * distFromCentroid);
 
-        const mat4<F32>& viewMatrix = _shadowCameras[pass]->lookAt(currentEye, frustumCentroid - currentEye);
+        const mat4<F32>& viewMatrix = _shadowCameras[pass]->lookAt(currentEye, Normalize(frustumCentroid - currentEye));
         // Determine the position of the frustum corners in light space
         for (U8 i = 0; i < 8; ++i) {
             _frustumCornersLS[i].set(viewMatrix.transformHomogeneous(_frustumCornersWS[i]));

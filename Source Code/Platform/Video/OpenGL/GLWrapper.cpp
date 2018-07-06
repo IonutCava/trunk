@@ -952,7 +952,7 @@ void GL_API::popDebugMessage() {
 }
 
 void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
-    switch (entry.type<GFX::CommandType>()) {
+    switch (entry.type<GFX::CommandType::_enumerated>()) {
         case GFX::CommandType::BEGIN_RENDER_PASS: {
             const GFX::BeginRenderPassCommand& crtCmd = commandBuffer.getCommand<GFX::BeginRenderPassCommand>(entry);
             glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd._target));
@@ -980,6 +980,14 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
             assert(s_activeRenderTarget != nullptr);
             const GFX::BeginRenderSubPassCommand& crtCmd = commandBuffer.getCommand<GFX::BeginRenderSubPassCommand>(entry);
+            for (const RenderTarget::DrawLayerParams& params : crtCmd._writeLayers) {
+                if (params._isCubeFace) {
+                    GL_API::s_activeRenderTarget->drawToLayer(params);
+                } else {
+                    GL_API::s_activeRenderTarget->drawToFace(params);
+                }
+            }
+
             GL_API::s_activeRenderTarget->setMipLevel(crtCmd._mipWriteLevel);
         }break;
         case GFX::CommandType::END_RENDER_SUB_PASS: {

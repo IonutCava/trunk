@@ -297,9 +297,11 @@ void Material::recomputeShaders() {
 }
 
 bool Material::canDraw(RenderStagePass renderStage) {
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        if (_shaderInfo[i].computeStage() != ShaderProgramInfo::BuildStage::READY) {
-            computeShader(RenderStagePass::stagePass(i), _highPriority);
+    for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
+        U8 passIndex = RenderStagePass::index(renderStage._stage, static_cast<RenderPassType>(i));
+
+        if (_shaderInfo[passIndex].computeStage() != ShaderProgramInfo::BuildStage::READY) {
+            computeShader(RenderStagePass::stagePass(passIndex), _highPriority);
             return false;
         }
     }
@@ -485,6 +487,11 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
     if (isReflective()) {
         shader += ".Reflective";
         setShaderDefines(renderStagePass, "IS_REFLECTIVE");
+    }
+
+    if (_context.shadowDetailLevel() == RenderDetailLevel::OFF) {
+        shader += ".NoShadows";
+        setShaderDefines(renderStagePass, "DISABLE_SHADOW_MAPPING");
     }
 
     // Add the GPU skinning module to the vertex shader?

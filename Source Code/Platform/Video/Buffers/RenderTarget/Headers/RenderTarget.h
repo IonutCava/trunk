@@ -99,6 +99,14 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
         RT_WRITE_ONLY = 2
     };
 
+    struct DrawLayerParams {
+        RTAttachmentType _type = RTAttachmentType::COUNT;
+        U8 _index = 0;
+        U16 _layer = 0;
+        bool _includeDepth = true;
+        bool _isCubeFace = false;
+    };
+
    protected:
     explicit RenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor);
 
@@ -118,7 +126,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     virtual const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const;
 
     /// Use by multilayered FB's
-    virtual void drawToLayer(RTAttachmentType type, U8 index, U16 layer, bool includeDepth = true) = 0;
+    virtual void drawToLayer(const DrawLayerParams& params) = 0;
     // This call sets the target mip level to write to
     // If an attachment does not support the specified mip level, it will be DISABLED to avoid completeness errors
     virtual void setMipLevel(U16 writeLevel) = 0;
@@ -128,7 +136,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     virtual void blitFrom(RenderTarget* inputFB, U8 index, bool blitColour = true, bool blitDepth = false) = 0;
 
     /// Used by cubemap FB's
-    void drawToFace(RTAttachmentType type, U8 index, U16 nFace, bool includeDepth = true);
+    void drawToFace(const DrawLayerParams& params);
 
     void readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData);
 

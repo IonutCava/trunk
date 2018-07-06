@@ -497,6 +497,7 @@
     <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\SystemManager.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\util\FamilyTypeID.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\util\Timer.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\CameraSnapshot.cpp" />
     <ClCompile Include="..\..\Source Code\UnityBuildEngine.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -657,6 +658,7 @@
     <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\FamilyTypeID.h" />
     <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\Handle.h" />
     <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\Timer.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\CameraSnapshot.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini" />
