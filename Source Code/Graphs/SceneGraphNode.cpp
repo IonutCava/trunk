@@ -480,10 +480,12 @@ void SceneGraphNode::onCollision(SceneGraphNode_cwptr collider) {
 }
 
 bool SceneGraphNode::cullNode(const Camera& currentCamera,
-                              Frustum::FrustCollision& collisionType,
-                              RenderStage currentStage) const {
+                              F32 maxDistanceFromCamera,
+                              RenderStage currentStage,
+                              Frustum::FrustCollision& collisionTypeOut) const {
+
+    collisionTypeOut = Frustum::FrustCollision::FRUSTUM_IN;
     if (visibilityLocked()) {
-        collisionType = Frustum::FrustCollision::FRUSTUM_IN;
         return false;
     }
 
@@ -491,37 +493,27 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
     const BoundingBox& boundingBox = getBoundingBoxConst();
     const BoundingSphere& sphere = getBoundingSphereConst();
 
-    const vec3<F32>& eye = currentCamera.getEye();
-    const Frustum& frust = currentCamera.getFrustumConst();
     F32 radius = sphere.getRadius();
+    const vec3<F32>& eye = currentCamera.getEye();
     const vec3<F32>& center = sphere.getCenter();
-    F32 cameraDistanceSq = center.distanceSquared(eye);
-    F32 visibilityDistanceSq = GET_ACTIVE_SCENE().state().generalVisibility() + radius;
-    visibilityDistanceSq *= visibilityDistanceSq;
+    F32 visibilityDistanceSq = std::pow(maxDistanceFromCamera + radius, 2);
 
-    if (distanceCheck && cameraDistanceSq > visibilityDistanceSq) {
+    if (distanceCheck && center.distanceSquared(eye) > visibilityDistanceSq) {
         if (boundingBox.nearestDistanceFromPointSquared(eye) >
-            std::min(visibilityDistanceSq, currentCamera.getZPlanes().y)) {
+            std::min(visibilityDistanceSq, std::pow(currentCamera.getZPlanes().y, 2))) {
             return true;
         }
     }
 
     if (!boundingBox.containsPoint(eye)) {
-        collisionType = frust.ContainsSphere(center, radius);
-        switch (collisionType) {
-            case Frustum::FrustCollision::FRUSTUM_OUT: {
-                return true;
-            } break;
-            case Frustum::FrustCollision::FRUSTUM_INTERSECT: {
-                collisionType = frust.ContainsBoundingBox(boundingBox);
-                if (collisionType == Frustum::FrustCollision::FRUSTUM_OUT) {
-                    return true;
-                }
-            } break;
+        const Frustum& frust = currentCamera.getFrustumConst();
+        collisionTypeOut = frust.ContainsSphere(center, radius);
+        if (collisionTypeOut == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
+            collisionTypeOut = frust.ContainsBoundingBox(boundingBox);
         }
     }
 
-    return false;
+    return collisionTypeOut == Frustum::FrustCollision::FRUSTUM_OUT;
 }
 
 };

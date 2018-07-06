@@ -105,21 +105,15 @@ class BoundingBox : public GUIDWrapper {
 
     void reset();
 
-    const vec3<F32>* getPoints() const;
+    std::array<vec3<F32>, 8> getPoints() const;
 
     F32 nearestDistanceFromPointSquared(const vec3<F32>& pos) const;
     F32 nearestDistanceFromPoint(const vec3<F32>& pos) const;
 
-   protected:
-    void ComputePoints() const;
-
+    inline vec3<F32> getPVertex(const vec3<F32>& normal) const;
+    inline vec3<F32> getNVertex(const vec3<F32>& normal) const;
    private:
     vec3<F32> _min, _max;
-
-    // This is is very limited in scope so mutable should be ok
-    mutable bool _pointsDirty;
-    mutable vec3<F32> _points[8];
-    mutable vec3<F32> _cacheVector;
 };
 
 };  // namespace Divide

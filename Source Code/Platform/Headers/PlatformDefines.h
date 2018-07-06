@@ -445,6 +445,37 @@ inline bool COMPARE(D32 X, D32 Y) {
     return COMPARE_TOLERANCE(X, Y, EPSILON_D32);
 }
 
+template <typename T>
+inline bool IS_GEQUAL(T X, T Y) {
+    return X >= Y;
+}
+
+template <>
+/// should be fast enough as the first condition is almost always true
+inline bool IS_GEQUAL(F32 X, F32 Y) {
+    return X > Y || COMPARE(X, Y);
+}
+
+template <>
+inline bool IS_GEQUAL(D32 X, D32 Y) {
+    return X > Y || COMPARE(X, Y);
+}
+
+template <typename T>
+inline bool IS_LEQUAL(T X, T Y) {
+    return X <= Y;
+}
+
+template <>
+inline bool IS_LEQUAL(F32 X, F32 Y) {
+    return X < Y || COMPARE(X, Y);
+}
+
+template <>
+inline bool IS_LEQUAL(D32 X, D32 Y) {
+    return X < Y || COMPARE(X, Y);
+}
+
 /// Performes extra asserts steps (logging, message boxes, etc). 
 /// Returns true if the assert should be processed.
 bool preAssert(const bool expression, const char* failMessage);

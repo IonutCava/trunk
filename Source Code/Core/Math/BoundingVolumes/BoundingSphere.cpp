@@ -39,7 +39,7 @@ void BoundingSphere::operator=(const BoundingSphere& s) {
 
 bool BoundingSphere::containsBoundingBox(const BoundingBox& AABB) const {
     bool inside = true;
-    const vec3<F32>* points = AABB.getPoints();
+    std::array<vec3<F32>, 8> points = AABB.getPoints();
 
     for (U8 i = 0; i < 8; ++i) {
         if (containsPoint(points[i]))

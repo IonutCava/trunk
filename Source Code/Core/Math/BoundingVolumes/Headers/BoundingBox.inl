@@ -36,8 +36,8 @@ namespace Divide {
 
 inline bool BoundingBox::containsPoint(const vec3<F32>& point) const {
     // const ReadLock r_lock(_lock);
-    return (point.x >= _min.x && point.y >= _min.y && point.z >= _min.z &&
-            point.x <= _max.x && point.y <= _max.y && point.z <= _max.z);
+    return (IS_GEQUAL(point.x, _min.x) && IS_GEQUAL(point.y, _min.y) && IS_GEQUAL(point.z, _min.z) &&
+            IS_LEQUAL(point.x, _max.x) && IS_LEQUAL(point.y, _max.y) && IS_LEQUAL(point.z, _max.z));
 }
 
 inline bool BoundingBox::compare(const BoundingBox& bb) const {
@@ -61,13 +61,24 @@ inline void BoundingBox::createFromPoints(const vectorImpl<vec3<F32>>& points) {
 
 inline void BoundingBox::add(const vec3<F32>& v) {
     // WriteLock w_lock(_lock);
-    if (v.x > _max.x) _max.x = v.x;
-    if (v.x < _min.x) _min.x = v.x;
-    if (v.y > _max.y) _max.y = v.y;
-    if (v.y < _min.y) _min.y = v.y;
-    if (v.z > _max.z) _max.z = v.z;
-    if (v.z < _min.z) _min.z = v.z;
-    _pointsDirty = true;
+    if (v.x > _max.x) {
+        _max.x = v.x;
+    }
+    if (v.x < _min.x) {
+        _min.x = v.x;
+    }
+    if (v.y > _max.y) {
+        _max.y = v.y;
+    }
+    if (v.y < _min.y) {
+        _min.y = v.y;
+    }
+    if (v.z > _max.z) {
+        _max.z = v.z;
+    }
+    if (v.z < _min.z) {
+        _min.z = v.z;
+    }
 };
 
 inline void BoundingBox::add(const BoundingBox& bb) {
@@ -79,22 +90,18 @@ inline void BoundingBox::add(const BoundingBox& bb) {
     _min.set(std::min(bb._min.x, _min.x),
              std::min(bb._min.y, _min.y),
              std::min(bb._min.z, _min.z));
-
-    _pointsDirty = true;
 }
 
 inline void BoundingBox::translate(const vec3<F32>& v) {
     // WriteLock w_lock(_lock);
     _min += v;
     _max += v;
-    _pointsDirty = true;
 }
 
 inline void BoundingBox::multiply(F32 factor) {
     // WriteLock w_lock(_lock);
     _min *= factor;
     _max *= factor;
-    _pointsDirty = true;
 }
 
 inline void BoundingBox::multiply(const vec3<F32>& v) {
@@ -105,7 +112,6 @@ inline void BoundingBox::multiply(const vec3<F32>& v) {
     _max.x *= v.x;
     _max.y *= v.y;
     _max.z *= v.z;
-    _pointsDirty = true;
 }
 
 inline void BoundingBox::multiplyMax(const vec3<F32>& v) {
@@ -113,7 +119,6 @@ inline void BoundingBox::multiplyMax(const vec3<F32>& v) {
     _max.x *= v.x;
     _max.y *= v.y;
     _max.z *= v.z;
-    _pointsDirty = true;
 }
 
 inline void BoundingBox::multiplyMin(const vec3<F32>& v) {
@@ -121,7 +126,6 @@ inline void BoundingBox::multiplyMin(const vec3<F32>& v) {
     _min.x *= v.x;
     _min.y *= v.y;
     _min.z *= v.z;
-    _pointsDirty = true;
 }
 
 inline const vec3<F32>& BoundingBox::getMin() const {
@@ -179,73 +183,69 @@ inline void BoundingBox::set(const BoundingBox& bb) {
 inline void BoundingBox::set(F32 min, F32 max) {
     _min.set(min);
     _max.set(max);
-    _pointsDirty = true;
 }
 
 inline void BoundingBox::set(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) {
     _min.set(minX, minY, minZ);
     _max.set(maxX, maxY, maxZ);
-    _pointsDirty = true;
 }
 
 inline void BoundingBox::setMin(F32 min) {
     _min.set(min);
-    _pointsDirty = true;
 }
 
 inline void BoundingBox::setMin(F32 minX, F32 minY, F32 minZ) {
     _min.set(minX, minY, minZ);
-    _pointsDirty = true;
 }
 
 inline void BoundingBox::setMax(F32 max) {
     _max.set(max);
-    _pointsDirty = true;
 }
 
 inline void BoundingBox::setMax(F32 maxX, F32 maxY, F32 maxZ) {
     _max.set(maxX, maxY, maxZ);
-    _pointsDirty = true;
 }
 
 inline void BoundingBox::set(const vec3<F32>& min, const vec3<F32>& max) {
     /*WriteLock w_lock(_lock);*/
     _min = min;
     _max = max;
-    _pointsDirty = true;
 }
 
 inline void BoundingBox::reset() {
     /*WriteLock w_lock(_lock);*/
     _min.set( std::numeric_limits<F32>::max());
     _max.set(-std::numeric_limits<F32>::max());
-    _pointsDirty = true;
 }
 
-inline const vec3<F32>* BoundingBox::getPoints() const {
-    ComputePoints();
-    return _points;
+inline std::array<vec3<F32>, 8> BoundingBox::getPoints() const {
+    return std::array<vec3<F32>, 8>
+    {
+        (_min.x, _min.y, _min.z),
+        (_min.x, _min.y, _max.z),
+        (_min.x, _max.y, _min.z),
+        (_min.x, _max.y, _max.z),
+        (_max.x, _min.y, _min.z),
+        (_max.x, _min.y, _max.z),
+        (_max.x, _max.y, _min.z),
+        (_max.x, _max.y, _max.z)
+    };
 }
 
 inline F32 BoundingBox::nearestDistanceFromPoint(const vec3<F32>& pos) const {
     return std::sqrt(nearestDistanceFromPointSquared(pos));
 }
 
-inline void BoundingBox::ComputePoints() const {
-    if (!_pointsDirty) {
-        return;
-    }
+inline vec3<F32> BoundingBox::getPVertex(const vec3<F32>& normal) const {
+    return vec3<F32>(IS_GEQUAL(normal.x, 0.0f) ? _max.x : _min.x,
+                     IS_GEQUAL(normal.y, 0.0f) ? _max.y : _min.y,
+                     IS_GEQUAL(normal.z, 0.0f) ? _max.z : _min.z);
+}
 
-    /*WriteLock w_lock(_lock);*/
-    _points[0].set(_min.x, _min.y, _min.z);
-    _points[1].set(_min.x, _min.y, _max.z);
-    _points[2].set(_min.x, _max.y, _min.z);
-    _points[3].set(_min.x, _max.y, _max.z);
-    _points[4].set(_max.x, _min.y, _min.z);
-    _points[5].set(_max.x, _min.y, _max.z);
-    _points[6].set(_max.x, _max.y, _min.z);
-    _points[7].set(_max.x, _max.y, _max.z);
-    _pointsDirty = false;
+inline vec3<F32> BoundingBox::getNVertex(const vec3<F32>& normal) const {
+    return vec3<F32>(IS_GEQUAL(normal.x, 0.0f) ? _min.x : _max.x,
+                     IS_GEQUAL(normal.y, 0.0f) ? _min.y : _max.y,
+                     IS_GEQUAL(normal.z, 0.0f) ? _min.z : _max.z);
 }
 
 };  // namespace Divide

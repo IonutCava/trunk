@@ -438,7 +438,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
                             areaType);
             }
         } else if (level == MeshDetailLevel::BOUNDINGBOX) {
-            const vec3<F32>* vertices = box.getPoints();
+            std::array<vec3<F32>, 8> vertices = box.getPoints();
 
             for (U32 i = 0; i < 8; i++) {
                 addVertex(&outData, (vertices[i]));

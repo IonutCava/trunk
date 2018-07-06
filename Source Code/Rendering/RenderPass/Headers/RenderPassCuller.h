@@ -77,6 +77,7 @@ class RenderPassCuller {
     void frustumCullNode(const SceneGraphNode& node,
                          const Camera& currentCamera,
                          RenderStage currentStage,
+                         F32 cullMaxDistance,
                          U32 nodeListIndex,
                          bool clearList);
     void addAllChildren(const SceneGraphNode& currentNode,

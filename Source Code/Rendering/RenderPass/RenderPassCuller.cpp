@@ -84,6 +84,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
         U32 childCount = root.getChildCount();
         _perThreadNodeList.resize(childCount);
         const Camera& camera = renderState.getCameraConst();
+        F32 cullMaxDistance = sceneState.generalVisibility();
         std::launch launchPolicy = async ? std::launch::async | std::launch::deferred :
                                            std::launch::deferred;
 
@@ -96,6 +97,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
                 std::cref(child),
                 std::cref(camera),
                 stage,
+                cullMaxDistance,
                 i,
                 true));
         }
@@ -117,6 +119,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
 void RenderPassCuller::frustumCullNode(const SceneGraphNode& currentNode,
                                        const Camera& currentCamera,
                                        RenderStage currentStage,
+                                       F32 cullMaxDistance,
                                        U32 nodeListIndex,
                                        bool clearList)
 {
@@ -132,7 +135,7 @@ void RenderPassCuller::frustumCullNode(const SceneGraphNode& currentNode,
     isVisible = isVisible &&
                 currentNode.isActive() &&
                 !_cullingFunction(currentNode) &&
-                !currentNode.cullNode(currentCamera, collisionResult, currentStage);
+                !currentNode.cullNode(currentCamera, cullMaxDistance, currentStage, collisionResult);
 
     if (isVisible) {
         vectorAlg::emplace_back(nodes, 0, currentNode.shared_from_this());
@@ -143,6 +146,7 @@ void RenderPassCuller::frustumCullNode(const SceneGraphNode& currentNode,
                 frustumCullNode(currentNode.getChild(i, childCount),
                                 currentCamera,
                                 currentStage,
+                                cullMaxDistance,
                                 nodeListIndex,
                                 false);
             }

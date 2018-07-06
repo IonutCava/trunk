@@ -34,18 +34,12 @@ BoundingBox::BoundingBox(const BoundingBox& b) : GUIDWrapper() {
     // WriteLock w_lock(_lock);
     this->_min.set(b._min);
     this->_max.set(b._max);
-    for (U8 i = 0; i < 8; ++i) {
-        this->_points[i].set(b._points[i]);
-    }
-    this->_pointsDirty = true;
 }
 
 void BoundingBox::operator=(const BoundingBox& b) {
     // WriteLock w_lock(_lock);
     this->_min.set(b._min);
     this->_max.set(b._max);
-    this->_pointsDirty = true;
-    memcpy(_points, b._points, sizeof(vec3<F32>) * 8);
 }
 
 bool BoundingBox::containsBox(const BoundingBox& AABB2) const {
@@ -155,16 +149,14 @@ void BoundingBox::transform(const BoundingBox& initialBoundingBox,
             }
         }
     }
-    _pointsDirty = true;
 }
 
 F32 BoundingBox::nearestDistanceFromPointSquared(const vec3<F32>& pos) const {
     const vec3<F32>& center = getCenter();
     const vec3<F32>& hextent = getHalfExtent();
-    _cacheVector.set(std::max(0.0f, std::fabsf(pos.x - center.x) - hextent.x),
+    return vec3<F32>(std::max(0.0f, std::fabsf(pos.x - center.x) - hextent.x),
                      std::max(0.0f, std::fabsf(pos.y - center.y) - hextent.y),
-                     std::max(0.0f, std::fabsf(pos.z - center.z) - hextent.z));
-    return _cacheVector.lengthSquared();
+                     std::max(0.0f, std::fabsf(pos.z - center.z) - hextent.z)).lengthSquared();
 }
 
 };  // namespace Divide

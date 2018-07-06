@@ -40,31 +40,34 @@ Frustum::FrustCollision Frustum::ContainsSphere(const vec3<F32>& center,
 }
 
 Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox) const {
-    const vec3<F32>* boxCorners = bbox.getPoints();
-
-    I32 iPtIn = 1, iTotalIn = 0, iInCount = 8;
-
+    const vec3<F32>* box[] = {&bbox.getMin(), &bbox.getMax()};
+    vec3<F32> vmin, vmax;
+    vec3<F32> bmin = bbox.getMin();
+    vec3<F32> bmax = bbox.getMax();
+    FrustCollision ret = FrustCollision::FRUSTUM_IN;
     for (const Plane<F32>& frustumPlane : _frustumPlanes) {
-        iInCount = 8;
-        iPtIn = 1;
+        // p-vertex selection (with the index trick)
+        // According to the plane normal we can know the
+        // indices of the positive vertex
+        const vec3<F32>& normal = frustumPlane.getNormal();
+        /*const I32 px = static_cast<I32>(p.x < 0.0f);
+        const I32 py = static_cast<I32>(p.y < 0.0f);
+        const I32 pz = static_cast<I32>(p.z < 0.0f);
 
-        for (U8 c = 0; c < 8; ++c) {
-            if (frustumPlane.classifyPoint(boxCorners[c]) ==
-                Plane<F32>::Side::NEGATIVE_SIDE) {
-                iPtIn = 0;
-                iInCount--;
-            }
-        }
+        vmin.set(box[1 - px]->x, box[1 - py]->y, box[1 - pz]->z);
+        vmax.set(box[px]->x, box[py]->y, box[pz]->z);*/
 
-        if (iInCount == 0) {
+
+        if (frustumPlane.getDistance(bbox.getPVertex(normal)) < 0) {
             return FrustCollision::FRUSTUM_OUT;
         }
 
-        iTotalIn += iPtIn;
+        if (frustumPlane.getDistance(bbox.getNVertex(normal)) < 0) {
+            ret = FrustCollision::FRUSTUM_INTERSECT;
+        }
     }
 
-    return iTotalIn == 6 ? FrustCollision::FRUSTUM_IN
-                         : FrustCollision::FRUSTUM_INTERSECT;
+    return ret;
 }
 
 void Frustum::Extract() {
