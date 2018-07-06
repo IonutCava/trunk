@@ -551,7 +551,6 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             textureSampler.toggleSRGBColorSpace(true);
             ResourceDescriptor texture(img_name);
             texture.setResourceLocation(path);
-            texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
             assert(tempMaterial != nullptr);
@@ -600,7 +599,6 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             textureSampler.toggleSRGBColorSpace(false);
             ResourceDescriptor texture(img_name);
             texture.setResourceLocation(path);
-            texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
             tempMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP,
@@ -632,7 +630,6 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             textureSampler.toggleSRGBColorSpace(false);
             ResourceDescriptor texture(img_name);
             texture.setResourceLocation(path);
-            texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
             tempMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP,
@@ -665,7 +662,6 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             textureSampler.toggleSRGBColorSpace(false);
             ResourceDescriptor texture(img_name);
             texture.setResourceLocation(path);
-            texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
             tempMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, textureRes,
@@ -717,7 +713,6 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             textureSampler.toggleSRGBColorSpace(false);
             ResourceDescriptor texture(img_name);
             texture.setResourceLocation(path);
-            texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
             tempMaterial->setTexture(ShaderProgram::TextureUsage::SPECULAR,

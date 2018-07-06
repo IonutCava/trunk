@@ -344,6 +344,9 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
     return false;
 }
 
+void GFXDevice::drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport) {
+}
+
 /// This is just a short-circuit system (hack) to send a list of points to the
 /// shader
 /// It's used, mostly, to draw full screen quads using geometry shaders

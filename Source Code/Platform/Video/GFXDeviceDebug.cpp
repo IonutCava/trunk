@@ -79,6 +79,9 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         prim->render(prim->forceWireframe(), 1);
         // Call any "postDraw" function the primitive may have attached
         prim->resetStates();
+        if (prim->_canZombify) {
+            prim->paused(true);
+        }
     }
 }
 

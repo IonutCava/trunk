@@ -85,6 +85,8 @@ GFXDevice::GFXDevice()
     for (Framebuffer*& renderTarget : _renderTarget) {
         renderTarget = nullptr;
     }
+    // To allow calls to "setBaseViewport"
+    _viewport.push(vec4<I32>(-1));
     // Add our needed app-wide render passes. RenderPassManager is responsible
     // for deleting these!
     RenderPassManager::getInstance().addRenderPass("diffusePass", 1);
@@ -308,22 +310,11 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
         }
     }
 
-    // Set the viewport to be the entire window. Force the update so we don't
-    // push a new value (we replace the old)
-    forceViewportInternal(vec4<I32>(0, 0, w, h));
-
     Application& app = Application::getInstance();
     WindowType windowType = app.getWindowManager().mainWindowType();
-    // Inform the Kernel
-    app.getKernel().changeResolution(w, h);
     // Update post-processing render targets and buffers
     PostFX::getInstance().updateResolution(w, h);
-
     app.getWindowManager().setResolution(vec2<U16>(w, h));
-    
-    // Update the 2D camera so it matches our new rendering viewport
-    _2DCamera->setProjection(vec4<F32>(0, w, 0, h), vec2<F32>(-1, 1));
-
     // Refresh shader programs
     ShaderManager::getInstance().refreshShaderData();
 
@@ -509,21 +500,6 @@ void GFXDevice::toggle2D(bool state) {
     }
 }
 
-/// Toggle post-processing on or off
-void GFXDevice::postProcessingEnabled(const bool state) {
-    // Avoid double toggle to same state
-    if (_enablePostProcessing != state) {
-        _enablePostProcessing = state;
-        // If we enable post-processing, we must call idle() once to make sure
-        // it pulled updated values
-        if (state) {
-            // If idle isn't called before rendering, outdated data may cause a
-            // crash or rendering artifacts
-            PostFX::getInstance().idle();
-        }
-    }
-}
-
 /// Update the rendering viewport
 void GFXDevice::setViewport(const vec4<I32>& viewport) {
     // Avoid redundant changes
@@ -551,18 +527,21 @@ void GFXDevice::restoreViewport() {
 }
 
 /// Set a new viewport clearing the previous stack first
-void GFXDevice::forceViewportInternal(const vec4<I32>& viewport) {
-    // Clear the viewport stack
-    while (!_viewport.empty()) {
-        _viewport.pop();
-    }
+void GFXDevice::setBaseViewport(const vec4<I32>& viewport) {
+    assert(_viewport.size() == 1);
+    _viewport.top().set(viewport);
+
     // Set the new viewport
-    _viewport.push(viewport);
     updateViewportInternal(viewport);
     // The forced viewport can't be popped
     _viewportUpdate = false;
 }
-
+  
+bool GFXDevice::postProcessingEnabled() const {
+    return _enablePostProcessing && 
+            //HACK: postprocessing not working with deffered rendering! -Ionut
+            getRenderer().getType() != RendererType::RENDERER_DEFERRED_SHADING;
+}
 
 /// Depending on the context, either immediately call the function, or pass it
 /// to the loading thread via a queue

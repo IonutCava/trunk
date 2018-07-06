@@ -716,20 +716,20 @@ ShaderBuffer* GL_API::newSB(const stringImpl& bufferName, const bool unbound,
 
 /// Create and return a new texture array (optionally, flipped vertically). The
 /// callee is responsible for it's deletion!
-Texture* GL_API::newTextureArray(const bool flipped) const {
-    return MemoryManager_NEW glTexture(TextureType::TEXTURE_2D_ARRAY, flipped);
+Texture* GL_API::newTextureArray() const {
+    return MemoryManager_NEW glTexture(TextureType::TEXTURE_2D_ARRAY);
 }
 
 /// Create and return a new 2D texture (optionally, flipped vertically). The
 /// callee is responsible for it's deletion!
-Texture* GL_API::newTexture2D(const bool flipped) const {
-    return MemoryManager_NEW glTexture(TextureType::TEXTURE_2D, flipped);
+Texture* GL_API::newTexture2D() const {
+    return MemoryManager_NEW glTexture(TextureType::TEXTURE_2D);
 }
 
 /// Create and return a new cube texture (optionally, flipped vertically). The
 /// callee is responsible for it's deletion!
-Texture* GL_API::newTextureCubemap(const bool flipped) const {
-    return MemoryManager_NEW glTexture(TextureType::TEXTURE_CUBE_MAP, flipped);
+Texture* GL_API::newTextureCubemap() const {
+    return MemoryManager_NEW glTexture(TextureType::TEXTURE_CUBE_MAP);
 }
 
 /// Create and return a new shader program (optionally, post load optimised).

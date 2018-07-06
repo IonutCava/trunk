@@ -88,16 +88,16 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
         return MemoryManager_NEW d3dPixelBuffer(type);
     }
 
-    inline Texture* newTextureArray(const bool flipped = false) const override {
-        return MemoryManager_NEW d3dTexture(TextureType::TEXTURE_2D_ARRAY, flipped);
+    inline Texture* newTextureArray() const override {
+        return MemoryManager_NEW d3dTexture(TextureType::TEXTURE_2D_ARRAY);
     }
 
-    inline Texture* newTexture2D(const bool flipped = false) const override {
-        return MemoryManager_NEW d3dTexture(TextureType::TEXTURE_2D, flipped);
+    inline Texture* newTexture2D() const override {
+        return MemoryManager_NEW d3dTexture(TextureType::TEXTURE_2D);
     }
 
-    inline Texture* newTextureCubemap(const bool flipped = false) const override {
-        return MemoryManager_NEW d3dTexture(TextureType::TEXTURE_CUBE_MAP, flipped);
+    inline Texture* newTextureCubemap() const override {
+        return MemoryManager_NEW d3dTexture(TextureType::TEXTURE_CUBE_MAP);
     }
 
     inline ShaderProgram* newShaderProgram() const override {

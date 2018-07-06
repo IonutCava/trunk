@@ -6,9 +6,8 @@
 
 namespace Divide {
 
-Texture::Texture(TextureType type, const bool flipped)
+Texture::Texture(TextureType type)
     : HardwareResource("temp_texture"),
-      _flipped(flipped),
       _bitDepth(0),
       _numLayers(1),
       _samplerDirty(true),
@@ -88,7 +87,7 @@ bool Texture::LoadFile(U32 target, const stringImpl& name) {
     // Create a new imageData object
     ImageTools::ImageData img;
     // Flip image if needed
-    img.flip(_flipped);
+    img.flip(true);
     // Save file contents in  the "img" object
     ImageTools::ImageDataInterface::CreateImageData(name, img);
 

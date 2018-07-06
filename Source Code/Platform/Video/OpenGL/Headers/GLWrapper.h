@@ -109,13 +109,13 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
                         const bool persistentMapped = true) const override;
     /// Create and return a new texture array (optionally, flipped vertically). The
     /// callee is responsible for it's deletion!
-    Texture* newTextureArray(const bool flipped = false) const override;
+    Texture* newTextureArray() const override;
     /// Create and return a new 2D texture (optionally, flipped vertically). The
     /// callee is responsible for it's deletion!
-    Texture* newTexture2D(const bool flipped = false) const override;
+    Texture* newTexture2D() const override;
     /// Create and return a new cube texture (optionally, flipped vertically). The
     /// callee is responsible for it's deletion!
-    Texture* newTextureCubemap(const bool flipped = false) const override;
+    Texture* newTextureCubemap() const override;
     /// Create and return a new shader program.
     /// The callee is responsible for it's deletion!
     ShaderProgram* newShaderProgram() const override;
@@ -170,6 +170,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     }
     /// Try to find the requested font in the font cache. Load on cache miss.
     I32 getFont(const stringImpl& fontName);
+    /// Internally change window size
+    void changeWindowSize(U16 w, U16 h);
     /// Change rendering resolution
     void changeResolution(U16 w, U16 h) override;
     /// Change the current viewport area. Redundancy check is performed in GFXDevice

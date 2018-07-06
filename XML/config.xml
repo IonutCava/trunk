@@ -1,11 +1,12 @@
 <!-- DEBUG: General purpose settings needed while the application is loading -->
 <debug>
-	<!-- showPhysXErrors: Should the nVidia PhysX engine print warnings/errors in the log file? -->
-    <showPhysXErrors>true</showPhysXErrors>
 	<!-- logFile / memFile: file names that the application should use to write output / memory allocation info -->
 	<!-- leave empty for none! -->
 	<logFile>console.log</logFile>
 	<memFile>mem.log</memFile>
+	<mesh>
+		<playAnimations>true</playAnimations>
+	</mesh>
 </debug>
 
 <language>enGB</language>
@@ -13,7 +14,7 @@
 <!-- RUNTIME: Values use by the application after loading is complete -->
 <runtime>
 	<!-- 1 = primary display, 0 = secondary display, etc. Value is clamped between [1, LAST_DISPLAY] -->
-	<targetDisplay>2</targetDisplay>
+	<targetDisplay>1</targetDisplay>
 	<!-- set to true to start the application in windowed mode -->
 	<windowedMode>true</windowedMode>
 	<!-- toggle Vsync on or off. This can be overridden by the display driver! -->
@@ -59,11 +60,7 @@
 	<enableBloom>true</enableBloom>
 	<bloomFactor>0.8</bloomFactor>
 	<enableSSAO>false</enableSSAO>
-</rendering>
-    
-<mesh>
-	<playAnimations>true</playAnimations>
-</mesh>
+</rendering>  
 
 <title>DIVIDE Framework - (C) Ionut Cava 2015</title>
 <defaultTextureLocation>textures</defaultTextureLocation>

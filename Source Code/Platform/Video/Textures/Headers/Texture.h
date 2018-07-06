@@ -50,11 +50,16 @@ class NOINITVTABLE Texture : public HardwareResource {
     virtual void Bind(U8 slot) = 0;
     /// Change the texture's mip levels. This can be called at any time
     virtual void setMipMapRange(U16 base = 0, U16 max = 1000) = 0;
+    /// Resize the texture to the specified dimensions and upload the new data
+    virtual void resize(const U8* const ptr,
+                        const vec2<U16>& dimensions,
+                        const vec2<U16>& mipLevels) = 0;
     // API-dependent loading function that uploads ptr data to the GPU using the
     // specified parameters
     virtual void loadData(U32 target, const U8* const ptr,
                           const vec2<U16>& dimensions,
-                          const vec2<U16>& mipLevels, GFXImageFormat format,
+                          const vec2<U16>& mipLevels, 
+                          GFXImageFormat format,
                           GFXImageFormat internalFormat) = 0;
 
     /// Specify the sampler descriptor used to sample from this texture in the
@@ -91,8 +96,6 @@ class NOINITVTABLE Texture : public HardwareResource {
     /// A rendering API level handle used to uniquely identify this texture
     /// (e.g. for OpenGL, it's the texture object)
     inline U32 getHandle() const { return _textureData.getHandleHigh(); }
-    /// Simple flag to check if the texture was flipped vertically
-    inline bool isVerticallyFlipped() const { return _flipped; }
     /// If the texture has an alpha channel and at least one pixel is
     /// translucent, return true
     inline bool hasTransparency() const { return _hasTransparency; }
@@ -111,7 +114,7 @@ class NOINITVTABLE Texture : public HardwareResource {
     /// Force a refresh of the entire mipmap chain
     virtual void updateMipMaps() = 0;
 
-    explicit Texture(TextureType type, const bool flipped = false);
+    explicit Texture(TextureType type);
     virtual ~Texture();
 
    protected:
@@ -119,7 +122,6 @@ class NOINITVTABLE Texture : public HardwareResource {
     U8 _numLayers;
     U16 _width;
     U16 _height;
-    bool _flipped;
     bool _mipMapsDirty;
     bool _samplerDirty;
     bool _hasTransparency;

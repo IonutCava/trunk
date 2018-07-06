@@ -49,6 +49,7 @@ namespace Divide {
 enum class RenderStage : U32;
 enum class RendererType : U32;
 enum class SceneNodeType : U32;
+enum class WindowEvent : U32;
 
 class GUI;
 class GUIText;
@@ -176,6 +177,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void idle();
     void beginFrame() override;
     void endFrame() override;
+    void handleWindowEvent(WindowEvent event, I32 data1, I32 data2);
 
     void enableFog(F32 density, const vec3<F32>& color);
     /// Set all of the needed API specific settings for 2D (Ortho) / 3D
@@ -185,7 +187,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline void toggleRasterization(bool state) override;
     /// Query rasterization state
     inline bool rasterizationState();
-    void postProcessingEnabled(const bool state);
     /**
      *@brief Returns an immediate mode emulation buffer that can be used to
      *construct geometry in a vertex by vertex manner.
@@ -204,10 +205,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
                    const mat4<F32>& globalOffset,
                    const vec4<I32>& viewport,  //<only for ortho mode
                    const bool inViewport = false);
-
     void drawPoints(U32 numPoints, size_t stateHash,
                     ShaderProgram* const shaderProgram);
-    
+
+    void drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport);
+
     void submitRenderCommand(const GenericDrawCommand& cmd);
     void submitRenderCommands(const vectorImpl<GenericDrawCommand>& cmds);
     void submitIndirectRenderCommand(const GenericDrawCommand& cmd);
@@ -301,7 +303,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline bool is2DRendering() const { return _2DRendering; }
 
     /// Post Processing state
-    inline bool postProcessingEnabled() const { return _enablePostProcessing; }
+    bool postProcessingEnabled() const;
+    /// Toggle post processing on or off
+    void postProcessingEnabled(const bool state);
 
     /// Anaglyph rendering state
     inline bool anaglyphEnabled() const { return _enableAnaglyph; }
@@ -354,16 +358,16 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         return _api->newGVD(persistentMapped);
     }
 
-    inline Texture* newTextureArray(const bool flipped = false) const override {
-        return _api->newTextureArray(flipped);
+    inline Texture* newTextureArray() const override {
+        return _api->newTextureArray();
     }
 
-    inline Texture* newTexture2D(const bool flipped = false) const override {
-        return _api->newTexture2D(flipped);
+    inline Texture* newTexture2D() const override {
+        return _api->newTexture2D();
     }
 
-    inline Texture* newTextureCubemap(const bool flipped = false) const override {
-        return _api->newTextureCubemap(flipped);
+    inline Texture* newTextureCubemap() const override {
+        return _api->newTextureCubemap();
     }
 
     inline ShaderProgram* newShaderProgram() const override {
@@ -403,6 +407,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     }
 
   protected:
+    void setBaseViewport(const vec4<I32>& viewport);
+
     inline void changeViewport(const vec4<I32>& newViewport) const override {
         _api->changeViewport(newViewport);
     }
@@ -443,7 +449,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     void previewDepthBuffer();
     void updateViewportInternal(const vec4<I32>& viewport);
-    void forceViewportInternal(const vec4<I32>& viewport);
     void processCommand(const GenericDrawCommand& cmd);
     void processCommands(const vectorImpl<GenericDrawCommand>& cmds);
     /// returns false if there was an invalid state detected that could prevent

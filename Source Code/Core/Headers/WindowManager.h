@@ -44,6 +44,18 @@ enum class WindowType : U32 {
     COUNT
 };
 
+enum class WindowEvent : U32 {
+    HIDDEN = 0,
+    SHOWN = 1,
+    MINIMIZED = 2,
+    MAXIMIZED = 3,
+    LOST_FOCUS = 4,
+    GAINED_FOCUS = 5,
+    RESIZED_INTERNAL = 6,
+    RESIZED_EXTERNAL = 7,
+    MOVED = 8
+};
+
 class WindowManager {
 public:
     WindowManager();
@@ -65,8 +77,8 @@ public:
     inline void setResolutionHeight(U16 h);
     inline void setResolution(const vec2<U16>& resolution);
 
-    inline void setSplashScreenDimensions(const vec2<U16>& dimensions);
-    inline const vec2<U16>& getSplashScreenDimensions() const;
+    inline void setWindowDimensions(WindowType windowType, const vec2<U16>& dimensions);
+    inline const vec2<U16>& getWindowDimensions(WindowType windowType) const;
 
     inline void setWindowPosition(const vec2<U16>& position);
     inline const vec2<U16>& getWindowPosition() const;
@@ -77,10 +89,10 @@ protected:
     bool _hasFocus;
     I32  _displayIndex;
     WindowType _activeWindowType;
-    vec2<U16> _resolution;
     vec2<U16> _prevResolution;
-    vec2<U16> _splashScreenDimensions;
     vec2<U16> _windowPosition;
+
+    std::array<vec2<U16>, to_const_uint(WindowType::COUNT)> _windowDimensions;
 };
 }; //namespace Divide
 #endif //_CORE_WINDOW_MANAGER_H_

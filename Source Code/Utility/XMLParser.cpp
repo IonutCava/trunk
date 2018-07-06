@@ -151,7 +151,6 @@ void saveTextureXML(const std::string &textureNode, Texture *texture,
 
     tree.put(textureNode + ".file",
              stringAlg::fromBase(texture->getResourceLocation()));
-    tree.put(textureNode + ".flip", texture->isVerticallyFlipped());
     tree.put(textureNode + ".MapU", getWrapModeName(sampler.wrapU()));
     tree.put(textureNode + ".MapV", getWrapModeName(sampler.wrapV()));
     tree.put(textureNode + ".MapW", getWrapModeName(sampler.wrapW()));
@@ -190,7 +189,6 @@ Texture *loadTextureXML(const std::string &textureNode,
 
     ResourceDescriptor texture(stringAlg::toBase(img_name));
     texture.setResourceLocation(stringAlg::toBase(pathName + img_name));
-    texture.setFlag(pt.get(textureNode + ".flip", true));
     texture.setPropertyDescriptor<SamplerDescriptor>(sampDesc);
 
     return CreateResource<Texture>(texture);
@@ -242,6 +240,7 @@ void loadConfig(const std::string &file) {
     par.setParam("memFile", pt.get("debug.memFile", "none"));
     par.setParam("simSpeed", pt.get("runtime.simSpeed", 1.0f));
     par.setParam("appTitle", pt.get("title", "DIVIDE Framework"));
+    par.setParam("mesh.playAnimations", pt.get("debug.mesh.playAnimations", true));
     par.setParam("defaultTextureLocation",
                  pt.get("defaultTextureLocation", "textures/"));
     par.setParam("shaderLocation",
@@ -298,7 +297,6 @@ void loadConfig(const std::string &file) {
                  pt.get("rendering.enableSSAO", false));
     par.setParam("postProcessing.bloomFactor",
                  pt.get("rendering.bloomFactor", 0.4f));
-    par.setParam("mesh.playAnimations", pt.get("mesh.playAnimations", true));
     par.setParam("rendering.verticalFOV", pt.get("runtime.verticalFOV", 60.0f));
     par.setParam("rendering.zNear", pt.get("runtime.zNear", 0.1f));
     par.setParam("rendering.zFar", pt.get("runtime.zFar", 700.0f));
@@ -307,7 +305,7 @@ void loadConfig(const std::string &file) {
     WindowManager& windowManager = Application::getInstance().getWindowManager();
     windowManager.targetDisplay(targetDisplay - 1);
     windowManager.setResolution(resolution);
-    windowManager.setSplashScreenDimensions(splashScreenDimensions);
+    windowManager.setWindowDimensions(WindowType::SPLASH, splashScreenDimensions);
     windowManager.mainWindowType(startFullScreen ? WindowType::FULLSCREEN
                                                  : WindowType::WINDOW);
 

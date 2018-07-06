@@ -134,34 +134,60 @@ void GL_API::pollWindowEvents() {
                 SDL_HideWindow(GLUtil::_mainWindow);
                 Application::getInstance().RequestShutdown();
             } break;
-            case SDL_RENDER_TARGETS_RESET: {
-                // Something;
-            } break;
             case SDL_WINDOWEVENT:  {
                 switch (event.window.event) {
                     case SDL_WINDOWEVENT_ENTER:
                     case SDL_WINDOWEVENT_FOCUS_GAINED: {
-                        Application::getInstance().getWindowManager().hasFocus(true);
+                        GFX_DEVICE.handleWindowEvent(WindowEvent::GAINED_FOCUS,
+                                                     event.window.data1,
+                                                     event.window.data2);
                     } break;
                     case SDL_WINDOWEVENT_LEAVE:
                     case SDL_WINDOWEVENT_FOCUS_LOST: {
-                        Application::getInstance().getWindowManager().hasFocus(false);
+                        GFX_DEVICE.handleWindowEvent(WindowEvent::LOST_FOCUS,
+                                                     event.window.data1,
+                                                     event.window.data2);
                     } break;
                     case SDL_WINDOWEVENT_RESIZED: {
-                        //Something
+                        GFX_DEVICE.handleWindowEvent(WindowEvent::RESIZED_EXTERNAL,
+                                                     event.window.data1,
+                                                     event.window.data2);
                     }break;
                     case SDL_WINDOWEVENT_SIZE_CHANGED: {
-                        //Something
+                        GFX_DEVICE.handleWindowEvent(WindowEvent::RESIZED_INTERNAL,
+                                                     event.window.data1,
+                                                     event.window.data2);
                     } break;
                     case SDL_WINDOWEVENT_MOVED: {
+                        GFX_DEVICE.handleWindowEvent(WindowEvent::MOVED,
+                                                     event.window.data1,
+                                                     event.window.data2);
+
                         if (!_internalMoveEvent) {
                             setWindowPosition(static_cast<U16>(event.window.data1),
                                               static_cast<U16>(event.window.data2));
                             _internalMoveEvent = false;
                         }
                     } break;
-                    case SDL_WINDOWEVENT_RESTORED: {
-                        //Something;
+                    case SDL_WINDOWEVENT_SHOWN: {
+                        GFX_DEVICE.handleWindowEvent(WindowEvent::SHOWN,
+                                                     event.window.data1,
+                                                     event.window.data2);
+                    } break;
+                    case SDL_WINDOWEVENT_HIDDEN: {
+                        GFX_DEVICE.handleWindowEvent(WindowEvent::HIDDEN,
+                                                     event.window.data1,
+                                                     event.window.data2);
+                    } break;
+                    case SDL_WINDOWEVENT_MINIMIZED: {
+                        GFX_DEVICE.handleWindowEvent(WindowEvent::MAXIMIZED,
+                                                     event.window.data1,
+                                                     event.window.data2);
+                    } break;
+                    case SDL_WINDOWEVENT_MAXIMIZED: {
+                        GFX_DEVICE.handleWindowEvent(WindowEvent::MAXIMIZED,
+                                                     event.window.data1,
+                                                     event.window.data2);
                     } break;
                 };
             } break;
@@ -190,7 +216,11 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     SDL_GetCurrentDisplayMode(winManager.targetDisplay(), &displayMode);
     systemInfo._systemResolutionWidth = displayMode.w;
     systemInfo._systemResolutionHeight = displayMode.h;
-    
+    winManager.setWindowDimensions(WindowType::FULLSCREEN,
+                                   vec2<U16>(displayMode.w, displayMode.h));
+    winManager.setWindowDimensions(WindowType::FULLSCREEN_WINDOWED,
+                                   vec2<U16>(displayMode.w, displayMode.h));
+
     ErrorCode errorState = createWindow();
     if (errorState != ErrorCode::NO_ERR) {
         return errorState;
@@ -368,6 +398,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
                 tempDisplayMode._bitDepth = SDL_BITSPERPIXEL(displayMode.format);
                 tempDisplayMode._formatName = SDL_GetPixelFormatName(displayMode.format);
                 tempDisplayMode._refreshRate.push_back(static_cast<U8>(displayMode.refresh_rate));
+                Util::ReplaceStringInPlace(tempDisplayMode._formatName, "SDL_PIXELFORMAT_", "");
                 GFX_DEVICE.gpuState().registerDisplayMode(static_cast<U8>(display), tempDisplayMode);
                 tempDisplayMode._refreshRate.clear();
             }
@@ -461,39 +492,36 @@ void GL_API::handleChangeWindowType(WindowType newWindowType) {
     WindowType crtWindowType = _crtWindowType;
 
     _crtWindowType = newWindowType;
-    vec2<U16> newResolution(winManager.getResolution());
-    I32 test = 0;
+    I32 switchState = 0;
     switch (newWindowType) {
         case WindowType::SPLASH: {
             SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_FALSE);
             SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_FALSE);
-            test = SDL_SetWindowFullscreen(GLUtil::_mainWindow, 0);
-            assert(test >= 0);
-            newResolution.set(winManager.getSplashScreenDimensions());
+            switchState = SDL_SetWindowFullscreen(GLUtil::_mainWindow, 0);
+            assert(switchState >= 0);
         } break;
         case WindowType::WINDOW: {
             SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_TRUE);
             SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_FALSE);
-            test = SDL_SetWindowFullscreen(GLUtil::_mainWindow, 0);
-            assert(test >= 0);
+            switchState = SDL_SetWindowFullscreen(GLUtil::_mainWindow, 0);
+            assert(switchState >= 0);
         } break;
         case WindowType::FULLSCREEN_WINDOWED: {
             SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_FALSE);
             SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_FALSE);
-            test = SDL_SetWindowFullscreen(GLUtil::_mainWindow, 0);
-            assert(test >= 0);
-            const SysInfo& info = Application::getInstance().getSysInfo();
-            newResolution.set(info._systemResolutionWidth, info._systemResolutionHeight);
+            switchState = SDL_SetWindowFullscreen(GLUtil::_mainWindow, 0);
+            assert(switchState >= 0);
         } break;
         case WindowType::FULLSCREEN: {
             SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_FALSE);
             SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_TRUE);
-            test = SDL_SetWindowFullscreen(GLUtil::_mainWindow, SDL_WINDOW_FULLSCREEN);
-            assert(test >= 0);
+            switchState = SDL_SetWindowFullscreen(GLUtil::_mainWindow, SDL_WINDOW_FULLSCREEN);
+            assert(switchState >= 0);
         } break;
     };
 
-    changeResolution(newResolution.width, newResolution.height);
+    const vec2<U16>& dimensions = winManager.getWindowDimensions(newWindowType);
+    changeWindowSize(dimensions.width, dimensions.height);
 
     centerWindowPosition();
 
@@ -503,7 +531,7 @@ void GL_API::handleChangeWindowType(WindowType newWindowType) {
 
 }
 
-void GL_API::changeResolution(GLushort w, GLushort h) {
+void GL_API::changeWindowSize(U16 w, U16 h) {
     const WindowManager& winManager = Application::getInstance().getWindowManager();
     if (winManager.mainWindowType() == WindowType::FULLSCREEN) {
         SDL_DisplayMode mode, closesMode;
@@ -514,6 +542,13 @@ void GL_API::changeResolution(GLushort w, GLushort h) {
         SDL_SetWindowDisplayMode(GLUtil::_mainWindow, &closesMode);
     } else {
         SDL_SetWindowSize(GLUtil::_mainWindow, w, h);
+    }
+}
+
+void GL_API::changeResolution(GLushort w, GLushort h) {
+    const WindowManager& winManager = Application::getInstance().getWindowManager();
+    if (winManager.mainWindowType() == WindowType::WINDOW) {
+        changeWindowSize(w, h);
     }
 }
 

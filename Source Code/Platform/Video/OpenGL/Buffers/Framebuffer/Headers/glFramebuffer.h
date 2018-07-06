@@ -56,7 +56,7 @@ class glFramebuffer : public Framebuffer {
                      TextureDescriptor::AttachmentType slot);
     void ResetMipLevel(TextureDescriptor::AttachmentType slot);
     void AddDepthBuffer();
-
+    void RemoveDepthBuffer();
     void Begin(const FramebufferTarget& drawPolicy);
     void End();
 
@@ -75,12 +75,14 @@ class glFramebuffer : public Framebuffer {
                         const TextureDescriptor& texDescriptor);
     void ResetMipMaps(FramebufferTarget::BufferMask mask);
     void clearColor();
+    void Resize(U16 width, U16 height);
 
    protected:
     ClearBufferMask _clearBufferMask;
     bool _hasDepth;
     bool _hasColor;
     bool _resolved;
+    bool _isCreated;
     bool _isLayeredDepth;
     static bool _viewportChanged;
     static bool _bufferBound;

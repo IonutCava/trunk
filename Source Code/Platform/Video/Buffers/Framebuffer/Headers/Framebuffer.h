@@ -77,9 +77,15 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
 
     virtual bool AddAttachment(const TextureDescriptor& descriptor,
                                TextureDescriptor::AttachmentType slot);
+
+    /// If the FB is not initialized, it gets created, otherwise
+    /// the attachements get resized.
+    /// If any internal state was changed between calls (_shouldRebuild == true),
+    /// the entire FB is recreated with the new state.
     virtual bool Create(U16 width, U16 height) = 0;
 
     virtual void Destroy() = 0;
+
     /// Use by multilayered FB's
     virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer,
                              bool includeDepth = true) = 0;
@@ -91,9 +97,11 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
 
     virtual void SetMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel,
                              TextureDescriptor::AttachmentType slot) = 0;
+
     virtual void ResetMipLevel(TextureDescriptor::AttachmentType slot) = 0;
 
     virtual void Begin(const FramebufferTarget& drawPolicy) = 0;
+
     virtual void End() = 0;
 
     virtual void Bind(U8 unit = 0,
@@ -102,6 +110,7 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
 
     virtual void ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat,
                           GFXDataFormat dataType, void* outData) = 0;
+
     inline void ReadData(GFXImageFormat imageFormat, GFXDataFormat dataType,
                          void* outData) {
         ReadData(vec4<U16>(0, 0, _width, _height), imageFormat, dataType,
@@ -115,14 +124,17 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
     // If true, array texture and/or cubemaps are bound to a single attachment
     // and shader based layered rendering should be used
     virtual void toggleLayeredRendering(const bool state) {
+        _shouldRebuild = (_layeredRendering != state);
         _layeredRendering = state;
     }
     // Enable/Disable color writes
     virtual void toggleColorWrites(const bool state) {
+        _shouldRebuild = (_disableColorWrites == state);
         _disableColorWrites = !state;
     }
     // Enable/Disable the presence of a depth renderbuffer
     virtual void toggleDepthBuffer(const bool state) {
+        _shouldRebuild = (_useDepthBuffer != state);
         _useDepthBuffer = state;
     }
     // Set the color the FB will clear to when drawing to it
@@ -130,7 +142,9 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
         _clearColor.set(clearColor);
     }
 
-    inline bool isMultisampled() const { return _multisampled; }
+    inline bool isMultisampled() const {
+        return _multisampled;
+    }
 
     inline U16 getWidth()  const { return _width; }
     inline U16 getHeight() const { return _height; }
@@ -140,8 +154,13 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
         return vec2<U16>(_width, _height);
     }
 
-    inline void clearBuffers(bool state) { _clearBuffersState = state; }
-    inline bool clearBuffers() const { return _clearBuffersState; }
+    inline void clearBuffers(bool state) {
+        _clearBuffersState = state;
+    }
+
+    inline bool clearBuffers() const {
+        return _clearBuffersState;
+    }
 
     Framebuffer(bool multiSample);
     virtual ~Framebuffer();
@@ -150,6 +169,7 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
     virtual bool checkStatus() const = 0;
 
    protected:
+    bool _shouldRebuild;
     bool _layeredRendering;
     bool _clearBuffersState;
     bool _useDepthBuffer;

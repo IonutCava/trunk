@@ -44,6 +44,11 @@ inline bool GFXDevice::rasterizationState() {
     return _rasterizationEnabled; 
 }
 
+/// Toggle post processing on or off
+inline void GFXDevice::postProcessingEnabled(const bool state) {
+    _enablePostProcessing = state;
+}
+
 /// Toggle hardware rasterization on or off.
 inline void GFXDevice::toggleRasterization(bool state) {
     if (_rasterizationEnabled == state) {

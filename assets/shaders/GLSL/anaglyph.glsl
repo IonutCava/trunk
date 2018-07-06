@@ -1,5 +1,7 @@
 -- Vertex
+
 #include "vertexDefault.vert"
+#include "nodeBufferedInput.cmn"
 
 void main(void)
 {

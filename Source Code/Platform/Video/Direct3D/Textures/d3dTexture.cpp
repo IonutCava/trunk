@@ -3,8 +3,8 @@
 
 namespace Divide {
 
-d3dTexture::d3dTexture(TextureType type, bool flipped)
-    : Texture(type, flipped) {
+d3dTexture::d3dTexture(TextureType type)
+    : Texture(type) {
     _type = d3dTextureTypeTable[to_uint(type)];
 }
 };

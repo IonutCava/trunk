@@ -35,7 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 inline const vec2<U16>& WindowManager::getResolution() const {
-    return _resolution;
+    return _windowDimensions[to_uint(WindowType::WINDOW)];
 }
 
 inline const vec2<U16>& WindowManager::getPreviousResolution() const {
@@ -43,26 +43,26 @@ inline const vec2<U16>& WindowManager::getPreviousResolution() const {
 }
 
 inline void WindowManager::setResolutionWidth(U16 w) {
-    _prevResolution.set(_resolution);
-    _resolution.width = w;
+    _prevResolution.set(_windowDimensions[to_uint(WindowType::WINDOW)]);
+    _windowDimensions[to_uint(WindowType::WINDOW)].width = w;
 }
 
 inline void WindowManager::setResolutionHeight(U16 h) {
-    _prevResolution.set(_resolution);
-    _resolution.height = h;
+    _prevResolution.set(_windowDimensions[to_uint(WindowType::WINDOW)]);
+    _windowDimensions[to_uint(WindowType::WINDOW)].height = h;
 }
 
 inline void WindowManager::setResolution(const vec2<U16>& resolution) {
-    _prevResolution.set(_resolution);
-    _resolution.set(resolution);
+    _prevResolution.set(_windowDimensions[to_uint(WindowType::WINDOW)]);
+    _windowDimensions[to_uint(WindowType::WINDOW)].set(resolution);
 }
 
-inline void WindowManager::setSplashScreenDimensions(const vec2<U16>& dimensions) {
-    _splashScreenDimensions.set(dimensions);
+inline void WindowManager::setWindowDimensions(WindowType windowType, const vec2<U16>& dimensions) {
+    _windowDimensions[to_uint(windowType)].set(dimensions);
 }
 
-inline const vec2<U16>& WindowManager::getSplashScreenDimensions() const {
-    return _splashScreenDimensions;
+inline const vec2<U16>& WindowManager::getWindowDimensions(WindowType windowType) const {
+    return _windowDimensions[to_uint(windowType)];
 }
 
 inline void WindowManager::setWindowPosition(const vec2<U16>& position) {
@@ -72,7 +72,6 @@ inline void WindowManager::setWindowPosition(const vec2<U16>& position) {
 inline const vec2<U16>& WindowManager::getWindowPosition() const {
     return _windowPosition;
 }
-
 
 inline bool WindowManager::hasFocus() const {
     return _hasFocus;

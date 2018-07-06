@@ -18,7 +18,7 @@ IMPrimitive::IMPrimitive()
 
 IMPrimitive::~IMPrimitive() 
 {
-    clear(); 
+    clear();
 }
 
 void IMPrimitive::clear() {

@@ -31,7 +31,7 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
             Util::Split(_descriptor.getPropertyListString(), ',');
         for (U8 i = 0; i < defines.size(); i++) {
             if (!defines[i].empty()) {
-                ptr->addShaderDefine(defines[i]);
+                ptr->addShaderDefine(Util::Trim(defines[i]));
             }
         }
     }

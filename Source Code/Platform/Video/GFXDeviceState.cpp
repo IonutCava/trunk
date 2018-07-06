@@ -79,6 +79,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // Resize our window to the target resolution
     const vec2<U16>& resolution = winManager.getResolution();
     changeResolution(resolution.width, resolution.height);
+    setBaseViewport(vec4<I32>(0, 0, resolution.width, resolution.height));
+
     // Create general purpose render state blocks
     RenderStateBlock defaultState;
     _defaultStateBlockHash = defaultState.getHash();
@@ -164,11 +166,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->Create(
             resolution.width, resolution.height);
     }
+
     // If render targets ready, we initialize our post processing system
     PostFX::getInstance().init(resolution);
+
     // We also add a couple of useful cameras used by this class. One for
     // rendering in 2D and one for generating cube maps
-
     Application::getInstance().getKernel().getCameraMgr().addNewCamera(
         "2DRenderCamera", _2DCamera);
     Application::getInstance().getKernel().getCameraMgr().addNewCamera(
@@ -327,6 +330,37 @@ void GFXDevice::endFrame() {
     // Unbind shaders
     ShaderManager::getInstance().unbind();
     _api->endFrame();
+}
+
+void GFXDevice::handleWindowEvent(WindowEvent event, I32 data1, I32 data2) {
+    switch (event) {
+        case WindowEvent::HIDDEN:{
+        } break;
+        case WindowEvent::SHOWN:{
+        } break;
+        case WindowEvent::MINIMIZED:{
+            Application::getInstance().mainLoopPaused(true);
+        } break;
+        case WindowEvent::MAXIMIZED:{
+        } break;
+        case WindowEvent::LOST_FOCUS:{
+            Application::getInstance().getWindowManager().hasFocus(false);
+        } break;
+        case WindowEvent::GAINED_FOCUS:{
+            Application::getInstance().getWindowManager().hasFocus(true);
+        } break;
+        case WindowEvent::RESIZED_INTERNAL:{
+            U16 width = static_cast<U16>(data1);
+            U16 height = static_cast<U16>(data2);
+            setBaseViewport(vec4<I32>(0, 0, width, height));
+            // Update the 2D camera so it matches our new rendering viewport
+            _2DCamera->setProjection(vec4<F32>(0, width, 0, height),
+                                     vec2<F32>(-1, 1));
+            Application::getInstance().getKernel().onChangeWindowSize(width, height);
+        } break;
+        case WindowEvent::RESIZED_EXTERNAL:{
+        } break;
+    };
 }
 
 Renderer& GFXDevice::getRenderer() const {

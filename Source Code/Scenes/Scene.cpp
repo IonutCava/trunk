@@ -93,7 +93,7 @@ bool Scene::idle() {  // Called when application is idle
 
     Attorney::SceneRenderStateScene::playAnimations(
         renderState(),
-        ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"));
+        ParamHandler::getInstance().getParam<bool>("mesh.playAnimations", true));
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (GFX_DEVICE.getFrameCount() > 1) {

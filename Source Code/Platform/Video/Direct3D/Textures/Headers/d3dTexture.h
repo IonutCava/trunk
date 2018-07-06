@@ -38,7 +38,7 @@ namespace Divide {
 
 class d3dTexture : public Texture {
    public:
-    d3dTexture(TextureType type, bool flipped = false);
+    d3dTexture(TextureType type);
     ~d3dTexture() {}
 
     bool generateHWResource(const stringImpl& name) { return true; }
@@ -47,6 +47,9 @@ class d3dTexture : public Texture {
     void Bind(U8 unit) {}
 
     void setMipMapRange(U16 base = 0, U16 max = 1000) {}
+    void resize(const U8* const ptr,
+                const vec2<U16>& dimensions,
+                const vec2<U16>& mipLevels) {}
     void updateMipMaps() {}
     void loadData(U32 target, const U8* const ptr, const vec2<U16>& dimensions,
                   const vec2<U16>& mipLevels, GFXImageFormat format,

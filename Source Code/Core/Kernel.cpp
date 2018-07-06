@@ -271,39 +271,27 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
 }
 
 void Kernel::renderScene() {
-    //HACK: postprocessing not working with deffered rendering! -Ionut
-    bool postProcessing = _GFX.getRenderer().getType() != RendererType::RENDERER_DEFERRED_SHADING &&
-                          _GFX.postProcessingEnabled();
+    bool postProcessing = _GFX.postProcessingEnabled();
 
     if (_GFX.anaglyphEnabled() && postProcessing) {
         renderSceneAnaglyph();
     } else {
-
         Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
-        depthPassPolicy._drawMask =
-            Framebuffer::FramebufferTarget::BufferMask::DEPTH;
-        colorPassPolicy._drawMask =
-            Framebuffer::FramebufferTarget::BufferMask::COLOR;
+        depthPassPolicy._drawMask = Framebuffer::FramebufferTarget::BufferMask::DEPTH;
+        //colorPassPolicy._drawMask = Framebuffer::FramebufferTarget::BufferMask::COLOR;
 
         // Z-prePass
-        _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
-            ->Begin(depthPassPolicy);
-        _sceneMgr.render(RenderStage::Z_PRE_PASS, *this);
+        _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->Begin(depthPassPolicy);
+            _sceneMgr.render(RenderStage::Z_PRE_PASS, *this);
         _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->End();
 
         _GFX.ConstructHIZ();
 
-        if (postProcessing) {
-            _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)
-                ->Begin(colorPassPolicy);
-        }
+        _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->Begin(colorPassPolicy);
+            _sceneMgr.render(RenderStage::DISPLAY, *this);
+        _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->End();
 
-        _sceneMgr.render(RenderStage::DISPLAY, *this);
-
-        if (postProcessing) {
-            _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->End();
-            PostFX::getInstance().displayScene();
-        }
+        PostFX::getInstance().displayScene(postProcessing);
     }
 }
 
@@ -319,13 +307,11 @@ void Kernel::renderSceneAnaglyph() {
     currentCamera->setAnaglyph(true);
     currentCamera->renderLookAt();
     // Z-prePass
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
-        ->Begin(depthPassPolicy);
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->Begin(depthPassPolicy);
     SceneManager::getInstance().render(RenderStage::Z_PRE_PASS, *this);
     _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->End();
     // first screen buffer
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)
-        ->Begin(colorPassPolicy);
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->Begin(colorPassPolicy);
     SceneManager::getInstance().render(RenderStage::DISPLAY, *this);
     _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->End();
 
@@ -333,17 +319,15 @@ void Kernel::renderSceneAnaglyph() {
     currentCamera->setAnaglyph(false);
     currentCamera->renderLookAt();
     // Z-prePass
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
-        ->Begin(depthPassPolicy);
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->Begin(depthPassPolicy);
     SceneManager::getInstance().render(RenderStage::Z_PRE_PASS, *this);
     _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->End();
     // second screen buffer
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::ANAGLYPH)
-        ->Begin(colorPassPolicy);
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::ANAGLYPH)->Begin(colorPassPolicy);
     SceneManager::getInstance().render(RenderStage::DISPLAY, *this);
     _GFX.getRenderTarget(GFXDevice::RenderTarget::ANAGLYPH)->End();
 
-    PostFX::getInstance().displayScene();
+    PostFX::getInstance().displayScene(_GFX.postProcessingEnabled());
 }
 
 bool Kernel::presentToScreen(FrameEvent& evt) {
@@ -476,7 +460,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // Load and render the splash screen
     _GFX.setRenderStage(RenderStage::DISPLAY);
     _GFX.beginFrame();
-    GUISplash("divideLogo.jpg", winManager.getSplashScreenDimensions()).render();
+    GUISplash("divideLogo.jpg", winManager.getWindowDimensions(WindowType::SPLASH)).render();
     _GFX.endFrame();
 
     winManager.mainWindowType(windowType);
@@ -583,7 +567,7 @@ void Kernel::shutdown() {
     Time::REMOVE_TIMER(s_appLoopTimer);
 }
 
-void Kernel::changeResolution(U16 w, U16 h) {
+void Kernel::onChangeWindowSize(U16 w, U16 h) {
     // minimized
     _renderingPaused = (w == 0 || h == 0);
 
@@ -594,7 +578,7 @@ void Kernel::changeResolution(U16 w, U16 h) {
     }
 
     CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
-    
+
     if (_mainCamera) {
         _mainCamera->setAspectRatio(to_float(w) / to_float(h));
     }

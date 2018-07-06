@@ -31,7 +31,6 @@ void main() {
     EndPrimitive();
 }
 
-
 -- Fragment
 
 in  vec2 _texCoord;
@@ -70,13 +69,11 @@ vec4 LevelOfGrey(in vec4 colorIn) {
     return vec4(colorIn.r * 0.299, colorIn.g * 0.587, colorIn.b * 0.114, colorIn.a);
 }
 
-
 subroutine(VignetteRoutineType)
 vec4 Vignette(in vec4 colorIn){
     vec4 colorOut = colorIn - (vec4(1,1,1,2) - texture(texVignette, _texCoord));
     return vec4(clamp(colorOut.rgb,0.0,1.0), colorOut.a);
 }
-
 
 subroutine(NoiseRoutineType)
 vec4 Noise(in vec4 colorIn){
@@ -84,12 +81,10 @@ vec4 Noise(in vec4 colorIn){
                vec4(1.0), randomCoeffFlash) / 3.0 + 2.0 * LevelOfGrey(colorIn) / 3.0;
 }
 
-
 subroutine(BloomRoutineType)
 vec4 Bloom(in vec4 colorIn){
     return colorIn + bloomFactor * texture(texBloom, _texCoord);
 }
-
 
 subroutine(SSAORoutineType)
 vec4 SSAO(in vec4 colorIn){

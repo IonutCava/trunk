@@ -121,7 +121,6 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
             ParamHandler::getInstance().getParam<stringImpl>(
                 "defaultTextureLocation") +
             "/" + _particles->_textureFileName);
-        texture.setFlag(true);
         texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
 
         _particleTexture = CreateResource<Texture>(texture);

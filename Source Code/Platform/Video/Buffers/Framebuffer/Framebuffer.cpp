@@ -14,7 +14,8 @@ Framebuffer::Framebuffer(bool multiSampled)
       _useDepthBuffer(false),
       _disableColorWrites(false),
       _clearBuffersState(true),
-      _layeredRendering(false)
+      _layeredRendering(false),
+      _shouldRebuild(true)
 {
     _clearColor.set(DefaultColors::WHITE());
     for (U8 i = 0; i < to_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
@@ -31,6 +32,7 @@ bool Framebuffer::AddAttachment(const TextureDescriptor& descriptor,
                                 TextureDescriptor::AttachmentType slot) {
     _attachmentDirty[to_uint(slot)] = true;
     _attachment[to_uint(slot)] = descriptor;
+    _shouldRebuild = true;
 
     return true;
 }

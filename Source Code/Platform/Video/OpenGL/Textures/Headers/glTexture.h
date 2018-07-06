@@ -38,7 +38,7 @@ namespace Divide {
 class glLockManager;
 class glTexture : public Texture {
    public:
-    glTexture(TextureType type, bool flipped = false);
+    glTexture(TextureType type);
     ~glTexture();
 
     bool unload();
@@ -47,9 +47,14 @@ class glTexture : public Texture {
 
     void setMipMapRange(GLushort base = 0, GLushort max = 1000);
 
+    void resize(const U8* const ptr,
+                const vec2<U16>& dimensions,
+                const vec2<U16>& mipLevels);
+
     void loadData(GLuint target, const GLubyte* const ptr,
                   const vec2<GLushort>& dimensions,
-                  const vec2<GLushort>& mipLevels, GFXImageFormat format,
+                  const vec2<GLushort>& mipLevels,
+                  GFXImageFormat format,
                   GFXImageFormat internalFormat);
 
    protected:
@@ -61,8 +66,8 @@ class glTexture : public Texture {
 
    private:
     GLenum _type;
-    GLenum _format;
-    GLenum _internalFormat;
+    GFXImageFormat _format;
+    GFXImageFormat _internalFormat;
     std::atomic_bool _allocatedStorage;
     GLushort _mipMaxLevel;
     GLushort _mipMinLevel;

@@ -50,10 +50,11 @@ DEFINE_SINGLETON(PostFX)
   private:
     ~PostFX();
     PostFX();
-    void createOperators();
+    void updateOperators();
+    void updateShaderStates(bool applyFilters);
 
   public:
-    void displayScene();
+    void displayScene(bool applyFilters);
 
     void init(const vec2<U16>& resolution);
     void idle();

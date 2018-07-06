@@ -16,7 +16,6 @@ GUISplash::GUISplash(const stringImpl& splashImageName,
     splashSampler.setAnisotropy(0);
     splashSampler.setWrapMode(TextureWrap::CLAMP);
     ResourceDescriptor splashImage("SplashScreen Texture");
-    splashImage.setFlag(true);
     splashImage.setThreadedLoading(false);
     splashImage.setPropertyDescriptor<SamplerDescriptor>(splashSampler);
     stringImpl splashImageLocation = stringAlg::toBase(

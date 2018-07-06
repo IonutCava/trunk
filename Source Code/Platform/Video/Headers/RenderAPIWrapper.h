@@ -337,9 +337,9 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual GenericVertexData* newGVD(
         const bool persistentMapped = false) const = 0;
     virtual PixelBuffer* newPB(const PBType& type = PBType::PB_TEXTURE_2D) const = 0;
-    virtual Texture* newTextureArray(const bool flipped = false) const = 0;
-    virtual Texture* newTexture2D(const bool flipped = false) const = 0;
-    virtual Texture* newTextureCubemap(const bool flipped = false) const = 0;
+    virtual Texture* newTextureArray() const = 0;
+    virtual Texture* newTexture2D() const = 0;
+    virtual Texture* newTextureCubemap() const = 0;
     virtual ShaderProgram* newShaderProgram() const = 0;
     virtual Shader* newShader(const stringImpl& name, const ShaderType& type,
                               const bool optimise = false) const = 0;
