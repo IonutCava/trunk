@@ -442,9 +442,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     // Match initial rendering resolution to window/screen size
     const DisplayWindow& mainWindow  = winManager.getActiveWindow();
-
-    initError = _GFX.initRenderingAPI(_argc, _argv, startFullScreen ? mainWindow.getDimensions(WindowType::FULLSCREEN)
-                                                                    : mainWindow.getDimensions(WindowType::WINDOW));
+    vec2<U16> renderResolution(startFullScreen ? mainWindow.getDimensions(WindowType::FULLSCREEN)
+                                               : mainWindow.getDimensions(WindowType::WINDOW));
+    initError = _GFX.initRenderingAPI(_argc, _argv, renderResolution);
 
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {
@@ -465,7 +465,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
     _cameraMgr->pushActiveCamera(_cameraMgr->createCamera("defaultCamera", Camera::CameraType::FREE_FLY));
     _cameraMgr->getActiveCamera().setFixedYawAxis(true);
-
+    _cameraMgr->getActiveCamera().setProjection(to_float(renderResolution.width) / to_float(renderResolution.height),
+                                                par.getParam<F32>("rendering.verticalFOV"),
+                                                vec2<F32>(par.getParam<F32>("rendering.zNear"),
+                                                          par.getParam<F32>("rendering.zFar")));
     // We start of with a forward plus renderer
     _sceneMgr.setRenderer(RendererType::RENDERER_FORWARD_PLUS);
 
@@ -490,15 +493,16 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     // Bind the kernel with the input interface
-    initError = Input::InputInterface::getInstance().init(*this, winManager.getActiveWindow().getDimensions());
+    initError = Input::InputInterface::getInstance().init(*this, renderResolution);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
 
+    // Initialize GUI with our current resolution
+    _GUI.init(renderResolution);
+
     LightManager::getInstance().init();
 
-    // Initialize GUI with our current resolution
-    _GUI.init();
     _sceneMgr.init(&_GUI);
 
     if (!_sceneMgr.load(startupScene)) {  //< Load the scene
@@ -532,12 +536,6 @@ void Kernel::shutdown() {
     GUI::destroyInstance();  /// Deactivate GUI
     _sceneMgr.unloadCurrentScene();
     SceneManager::destroyInstance();
-    // Close CEGUI
-    try {
-        CEGUI::System::destroy();
-    } catch (...) {
-        Console::d_errorfn(Locale::get(_ID("ERROR_CEGUI_DESTROY")));
-    }
     _cameraMgr.reset(nullptr);
     LightManager::destroyInstance();
     Console::printfn(Locale::get(_ID("STOP_ENGINE_OK")));
@@ -568,20 +566,21 @@ void Kernel::onChangeWindowSize(U16 w, U16 h) {
         ms.height = h;
     }
 
-    CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
+    _GUI.onChangeResolution(w, h);
 }
 
 void Kernel::onChangeRenderResolution(U16 w, U16 h) const {
     Attorney::GFXDeviceKernel::onChangeRenderResolution(w, h);
+    _GUI.onChangeResolution(w, h);
 
 
-    CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
     Camera* mainCamera = _cameraMgr->findCamera(_ID_RT("defaultCamera"));
     if (mainCamera) {
         const ParamHandler& par = ParamHandler::getInstance();
         mainCamera->setProjection(to_float(w) / to_float(h),
                                   par.getParam<F32>("rendering.verticalFOV"),
-                                  vec2<F32>(par.getParam<F32>("rendering.zNear")));
+                                  vec2<F32>(par.getParam<F32>("rendering.zNear"),
+                                            par.getParam<F32>("rendering.zFar")));
     }
 }
 

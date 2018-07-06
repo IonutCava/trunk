@@ -73,6 +73,9 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     typedef DELEGATE_CBK<> ButtonCallback;
 
   public:
+    /// Create the GUI
+    bool init(const vec2<U16>& renderResolution);
+    void onChangeResolution(U16 w, U16 h);
     /// Main update call
     void update(const U64 deltaTime);
     /// Add a text label
@@ -102,8 +105,6 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     inline GUIElement* const getItem(const stringImpl& id) { return _guiStack[_ID_RT(id)]; }
     /// Get a pointer to an element by name/id
     inline GUIElement* getGuiElement(const stringImpl& id) { return _guiStack[_ID_RT(id)]; }
-    /// Create the GUI
-    bool init();
     /// Used by CEGUI to setup rendering (D3D/OGL/OGRE/etc)
     bool bindRenderer(CEGUI::Renderer& renderer);
     void selectionChangeCallback(Scene* const activeScene);
@@ -162,6 +163,7 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     stringImpl _defaultGUIScheme;
     ShaderProgram* _guiShader;  //<Used to apply color for text for now
 
+    vec2<U16> _resolutionCache;
     bool _enableCEGUIRendering;
 
 END_SINGLETON

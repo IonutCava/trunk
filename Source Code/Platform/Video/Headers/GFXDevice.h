@@ -484,10 +484,10 @@ DEFINE_SINGLETON(GFXDevice)
 
     inline void drawText(const TextLabel& text,
                          U32 stateHash,
-                         const vec2<F32>& relativeOffset) {
+                         const vec2<F32>& position) {
         uploadGPUBlock();
         setStateBlock(stateHash);
-        _api->drawText(text, relativeOffset);
+        _api->drawText(text, position);
     }
 
     void drawDebugAxis(const SceneRenderState& sceneRenderState);
@@ -643,8 +643,8 @@ namespace Attorney {
     private:
         static void drawText(const TextLabel& text,
                              U32 stateHash,
-                             const vec2<F32>& relativeOffset) {
-            return GFXDevice::getInstance().drawText(text, stateHash, relativeOffset);
+                             const vec2<F32>& position) {
+            return GFXDevice::getInstance().drawText(text, stateHash, position);
         }
 
         friend class Divide::GUI;

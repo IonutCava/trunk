@@ -490,7 +490,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual void toggleDepthWrites(bool state) = 0;
     virtual void toggleRasterization(bool state) = 0;
     virtual void drawText(const TextLabel& textLabel,
-                          const vec2<F32>& relativeOffset) = 0;
+                          const vec2<F32>& position) = 0;
 
     virtual void updateClipPlanes() = 0;
     virtual U64  getFrameDurationGPU() = 0;

@@ -676,7 +676,8 @@ bool WarScene::loadResources(bool continueOnErrors) {
 
     _GUI->addButton("Simulate", "Simulate",
                     vec2<I32>(resolution.width - 220, 60),
-                    vec2<U32>(100, 25), vec3<F32>(0.65f),
+                    vec2<U32>(100, 25), 
+                    vec3<F32>(0.65f),
                     DELEGATE_BIND(&WarScene::startSimulation, this));
 
     _GUI->addText("fpsDisplay",  // Unique ID

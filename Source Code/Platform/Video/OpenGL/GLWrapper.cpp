@@ -653,7 +653,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 /// Text rendering is handled exclusively by Mikko Mononen's FontStash library
 /// (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
-void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffset) {
+void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {
     /*glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 2, -1,
                     "OpenGL render text start!");*/
     // Retrieve the font from the font cache
@@ -687,15 +687,6 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffse
         if (textLabel._alignFlag != 0) {
             fonsSetAlign(_fonsContext, textLabel._alignFlag);
         }
-
-        const vec2<U16>& displaySize
-            = Application::getInstance()
-                .getWindowManager()
-                .getActiveWindow()
-                .getDimensions();
-
-        vec2<F32> position((relativeOffset.x * displaySize.x) / 100.0f,
-                           (relativeOffset.y * displaySize.y) / 100.0f);
 
         if (textLabel._multiLine) {
             lines.resize(0);

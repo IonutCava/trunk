@@ -48,9 +48,11 @@ class GUIText : public GUIElement, public TextLabel {
     void mouseMoved(const GUIEvent& event);
     void onMouseUp(const GUIEvent& event);
     void onMouseDown(const GUIEvent& event);
+    void onChangeResolution(U16 w, U16 h);
 
 protected:
-    vec2<F32> _relativePosition;
+    F32 _heightCache;
+    vec2<F32> _position;
 };
 
 };  // namespace Divide

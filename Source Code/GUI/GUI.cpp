@@ -45,6 +45,14 @@ GUI::~GUI() {
     RemoveResource(_guiShader);
     MemoryManager::DELETE_HASHMAP(_guiStack);
     _defaultMsgBox = nullptr;
+
+    // Close CEGUI
+    try {
+        CEGUI::System::destroy();
+    }
+    catch (...) {
+        Console::d_errorfn(Locale::get(_ID("ERROR_CEGUI_DESTROY")));
+    }
 }
 
 void GUI::draw() const {
@@ -94,11 +102,13 @@ void GUI::update(const U64 deltaTime) {
     GUIEditor::getInstance().update(deltaTime);
 }
 
-bool GUI::init() {
+bool GUI::init(const vec2<U16>& renderResolution) {
     if (_init) {
         Console::d_errorfn(Locale::get(_ID("ERROR_GUI_DOUBLE_INIT")));
         return false;
     }
+    _resolutionCache.set(renderResolution);
+
     _enableCEGUIRendering = !(ParamHandler::getInstance().getParam<bool>("GUI.CEGUI.SkipRendering"));
 #ifdef _DEBUG
     CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
@@ -174,6 +184,16 @@ bool GUI::init() {
 
     _init = true;
     return true;
+}
+
+void GUI::onChangeResolution(U16 w, U16 h) {
+    _resolutionCache.set(w, h);
+    CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
+
+
+    for (const guiMap::value_type& guiStackIterator : _guiStack) {
+        guiStackIterator.second->onChangeResolution(w, h);
+    }
 }
 
 void GUI::selectionChangeCallback(Scene* const activeScene) {
@@ -303,18 +323,11 @@ GUIButton* GUI::addButton(const stringImpl& ID,
                           const vec3<F32>& color,
                           ButtonCallback callback,
                           const stringImpl& rootSheetID) {
+    vec2<F32> relOffset(((_resolutionCache.width - position.x) * 100.0f) / _resolutionCache.width,
+                        (position.y * 100.0f) / _resolutionCache.height);
 
-    const vec2<U16>& displaySize
-        = Application::getInstance()
-            .getWindowManager()
-            .getActiveWindow()
-            .getDimensions();
-
-    vec2<F32> relOffset((position.x * 100.0f) / displaySize.x,
-                        (position.y * 100.0f) / displaySize.y);
-
-    vec2<F32> relDim((dimensions.x * 100.0f) / displaySize.x,
-                     (dimensions.y * 100.0f) / displaySize.y);
+    vec2<F32> relDim((dimensions.x * 100.0f) / _resolutionCache.width,
+                     (dimensions.y * 100.0f) / _resolutionCache.height);
 
     CEGUI::Window* parent = nullptr;
     if (!rootSheetID.empty()) {
@@ -357,14 +370,6 @@ GUIText* GUI::addText(const stringImpl& ID, const vec2<I32>& position,
                       const stringImpl& font, const vec3<F32>& color,
                       const char* format, ...) {
     ULL idHash = _ID_RT(ID);
-    const vec2<U16>& displaySize
-        = Application::getInstance()
-            .getWindowManager()
-            .getActiveWindow()
-            .getDimensions();
-
-    vec2<F32> relOffset((position.x * 100.0f) / displaySize.x,
-                        ((displaySize.y - position.y) * 100.0f) / displaySize.y);
 
     va_list args;
     stringImpl fmt_text;
@@ -377,7 +382,7 @@ GUIText* GUI::addText(const stringImpl& ID, const vec2<I32>& position,
     MemoryManager::DELETE_ARRAY(text);
     va_end(args);
 
-    GUIText* t = MemoryManager_NEW GUIText(ID, fmt_text, relOffset, font, color, _rootSheet);
+    GUIText* t = MemoryManager_NEW GUIText(ID, fmt_text, vec2<F32>(position.width, position.height), font, color, _rootSheet);
     guiMap::iterator it = _guiStack.find(idHash);
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, t);

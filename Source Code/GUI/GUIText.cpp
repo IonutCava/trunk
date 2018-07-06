@@ -11,7 +11,8 @@ GUIText::GUIText(const stringImpl& id,
                  U32 textHeight)
     : GUIElement(parent, GUIType::GUI_TEXT),
       TextLabel(text, font, color, textHeight),
-    _relativePosition(relativePosition)
+      _heightCache(0.0f),
+      _position(relativePosition)
 {
 }
 
@@ -19,7 +20,11 @@ GUIText::GUIText(const stringImpl& id,
 void GUIText::draw() const {
     Attorney::GFXDeviceGUI::drawText(*this,
                                      getStateBlockHash(),
-                                     _relativePosition);
+                                     vec2<F32>(_position.width, _heightCache - _position.height));
+}
+
+void GUIText::onChangeResolution(U16 w, U16 h) {
+    _heightCache = h;
 }
 
 void GUIText::mouseMoved(const GUIEvent &event) {}

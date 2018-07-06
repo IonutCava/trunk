@@ -88,9 +88,11 @@ class GUIElement {
     virtual void setTooltip(const stringImpl& tooltipText) {}
 
     inline void lastDrawTimer(const U64 time) { _lastDrawTimer = time; }
-    virtual void mouseMoved(const GUIEvent& event){};
-    virtual void onMouseUp(const GUIEvent& event){};
-    virtual void onMouseDown(const GUIEvent& event){};
+    virtual void mouseMoved(const GUIEvent& event){}
+    virtual void onMouseUp(const GUIEvent& event){}
+    virtual void onMouseDown(const GUIEvent& event){}
+
+    virtual void onChangeResolution(U16 w, U16 h) {}
 
    protected:
     GUIType _guiType;

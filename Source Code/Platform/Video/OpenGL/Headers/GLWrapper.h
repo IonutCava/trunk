@@ -177,7 +177,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Text rendering is handled exclusively by Mikko Mononen's FontStash library
     /// (https://github.com/memononen/fontstash)
     /// with his OpenGL frontend adapted for core context profiles
-    void drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffset) override;
+    void drawText(const TextLabel& textLabel, const vec2<F32>& position) override;
     /// Rendering points is universally useful, so we have a function, and a VAO,
     /// dedicated to this process
     void drawPoints(U32 numPoints) override;

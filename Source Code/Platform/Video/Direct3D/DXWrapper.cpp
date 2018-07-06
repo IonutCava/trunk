@@ -43,7 +43,7 @@ void DX_API::toggleRasterization(bool state) {}
 
 void DX_API::updateClipPlanes() {}
 
-void DX_API::drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffset) {}
+void DX_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {}
 
 void DX_API::drawPoints(U32 numPoints) {}
 
