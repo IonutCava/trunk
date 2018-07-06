@@ -43,7 +43,7 @@ namespace Divide {
 class Bone {
    protected:
        stringImpl _name;
-       ULL        _nameKey;
+       U64        _nameKey;
    public:
     I32 _boneID;
     aiMatrix4x4 _offsetMatrix;
@@ -85,7 +85,7 @@ class Bone {
         return find(_ID_RT(name));
     }
 
-    inline Bone* find(ULL nameKey) {
+    inline Bone* find(U64 nameKey) {
         if (_nameKey == nameKey) {
             return this;
         }

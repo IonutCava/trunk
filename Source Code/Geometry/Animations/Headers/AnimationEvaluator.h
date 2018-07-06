@@ -55,7 +55,7 @@ class AnimationChannel {
     {
     }
 
-    ULL _nameKey;
+    U64 _nameKey;
     stringImpl _name;
     vectorImpl<aiVectorKey> _positionKeys;
     vectorImpl<aiQuatKey> _rotationKeys;

@@ -268,13 +268,14 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     //           minimum required alignment for uniform buffer sizes and offset
     GLint uboffset = GLUtil::getIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT);
     GLint uboSize = GLUtil::getIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE);
-
     Console::printfn(Locale::get(_ID("GL_UBO_INFO")),
                      GLUtil::getIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS),
                      uboSize / 1024,
                      uboffset);
     par.setParam<I32>(_ID("rendering.UBOAligment"), uboffset);
     par.setParam<U32>(_ID("rendering.UBOSize"), to_uint(uboSize));
+    par.setParam<I32>(_ID("rendering.UBOMaxSize"), uboSize);
+
     // In order: Maximum number of shader storage buffer binding points,
     //           maximum size in basic machine units of a shader storage block,
     //           maximum total number of active shader storage blocks that may
@@ -282,6 +283,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     //           minimum required alignment for shader storage buffer sizes and
     //           offset.
     GLint sboffset = GLUtil::getIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT);
+    GLint maxSSBOSize = GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE);
     Console::printfn(
         Locale::get(_ID("GL_SSBO_INFO")),
         GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS),
@@ -289,6 +291,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
         GLUtil::getIntegerv(GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS),
         sboffset);
     par.setParam<I32>(_ID("rendering.SSBOAligment"), sboffset);
+    par.setParam<I32>(_ID("rendering.SSBOMaxSize"), maxSSBOSize);
     // Maximum number of subroutines and maximum number of subroutine uniform
     // locations usable in a shader
     Console::printfn(Locale::get(_ID("GL_SUBROUTINE_INFO")),

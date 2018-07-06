@@ -69,6 +69,10 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     _updated = false;
     _alignmentRequirement = _unbound ? ParamHandler::instance().getParam<I32>(_ID("rendering.SSBOAligment"), 32)
                                      : ParamHandler::instance().getParam<I32>(_ID("rendering.UBOAligment"), 32);
+
+    _maxSize = _unbound ? ParamHandler::instance().getParam<I32>(_ID("rendering.SSBOMaxSize"), 2 * 1024 * 1024)
+                        : ParamHandler::instance().getParam<I32>(_ID("rendering.UBOMaxSize"), 64 * 1024);
+
     if (persistentMapped) {
         _buffer = MemoryManager_NEW glPersistentBuffer(_target);
     } else {
@@ -146,6 +150,10 @@ bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 range
     GLuint range = static_cast<GLuint>(rangeElementCount * _primitiveSize);
     GLuint offset = static_cast<GLuint>(offsetElementCount * _primitiveSize);
     offset += static_cast<GLuint>(queueReadIndex() * _allignedBufferSize);
+
+
+    assert(range <= _maxSize &&
+           "glUniformBuffer::bindRange: attempted to bind a larger shader block than is allowed on the current platform");
 
     return _buffer->bindRange(bindIndex, offset, range);
 }

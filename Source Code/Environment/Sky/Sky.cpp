@@ -46,7 +46,7 @@ bool Sky::load() {
     skyboxSampler.toggleMipMaps(false);
     skyboxSampler.setFilters(TextureFilter::LINEAR);
     skyboxSampler.toggleSRGBColourSpace(true);
-    skyboxSampler.setAnisotropy(16);
+    skyboxSampler.setAnisotropy(0);
     skyboxSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
 
     ResourceDescriptor skyboxTextures("SkyboxTextures");
@@ -56,7 +56,6 @@ bool Sky::load() {
         location + "skybox_5.jpg," + location + "skybox_6.jpg");
     skyboxTextures.setEnumValue(to_const_uint(TextureType::TEXTURE_CUBE_MAP));
     skyboxTextures.setPropertyDescriptor<SamplerDescriptor>(skyboxSampler);
-    skyboxTextures.setThreadedLoading(false);
     _skybox = CreateResource<Texture>(skyboxTextures);
 
     F32 radius = _diameter * 0.5f;
@@ -75,7 +74,6 @@ bool Sky::load() {
     _skyShaderPrePass = CreateResource<ShaderProgram>(skyShaderPrePassDescriptor);
 
     assert(_skyShader && _skyShaderPrePass);
-    _skyShader->Uniform("texSky", ShaderProgram::TextureUsage::UNIT0);
     _skyShader->Uniform("enable_sun", true);
     _boundingBox.set(vec3<F32>(-radius), vec3<F32>(radius));
     Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));

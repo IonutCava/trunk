@@ -439,7 +439,7 @@ bool GUI::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
 }
 
 
-GUIElement* GUI::getGUIElementImpl(I64 sceneID, ULL elementName) const {
+GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName) const {
     if (sceneID != 0) {
         ReadLock r_lock(_guiStackLock);
         GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);

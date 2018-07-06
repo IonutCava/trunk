@@ -61,7 +61,7 @@ class GUIText : public GUIElement, public TextLabel {
     friend class GUIInterface;
 
    public:
-    GUIText(ULL guiID,
+    GUIText(U64 guiID,
             const stringImpl& text,
             const vec2<F32>& relativePosition,
             const stringImpl& font,

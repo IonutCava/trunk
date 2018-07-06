@@ -144,7 +144,7 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
 /// Open the file found at 'location' matching 'atomName' and return it's source
 /// code
 const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& atomName, const stringImpl& location) {
-    ULL atomNameHash = _ID_RT(atomName);
+    U64 atomNameHash = _ID_RT(atomName);
     // See if the atom was previously loaded and still in cache
     AtomMap::iterator it = _atoms.find(atomNameHash);
     // If that's the case, return the code from cache

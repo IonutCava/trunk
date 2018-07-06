@@ -223,11 +223,13 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
     U16 mipMaxLevel = to_ushort(img.mipCount());
     
     if (!_descriptor._compressed) {
-        if (_descriptor._samplerDescriptor.generateMipMaps() && mipMaxLevel <= 1) {
-            mipMaxLevel = to_ushort(floorf(log2f(fmaxf(width, height))));
+        if (_descriptor._samplerDescriptor.generateMipMaps()) {
+            if (mipMaxLevel <= 1) {
+                mipMaxLevel = computeMipCount(width, height);
+            }
+
+            mipMaxLevel += 1;
         }
-         
-        mipMaxLevel += 1;
     }
     // Uploading to the GPU dependents on the rendering API
     loadData(info,
@@ -237,5 +239,9 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
 
     // We will always return true because we load the "missing_texture.jpg" in case of errors
     return true;
+}
+
+U16 Texture::computeMipCount(U16 width, U16 height) {
+    return to_ushort(std::floorf(std::log2f(std::fmaxf(to_float(width), to_float(height)))));
 }
 };

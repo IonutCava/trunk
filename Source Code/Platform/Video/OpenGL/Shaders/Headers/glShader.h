@@ -43,7 +43,7 @@ namespace Divide {
 class glShader : protected GraphicsResource, public TrackedObject {
     USE_CUSTOM_ALLOCATOR
    public:
-    typedef hashMapImpl<ULL, glShader*> ShaderMap;
+    typedef hashMapImpl<U64, glShader*> ShaderMap;
 
     static const char* CACHE_LOCATION_TEXT;
     static const char* CACHE_LOCATION_BIN;

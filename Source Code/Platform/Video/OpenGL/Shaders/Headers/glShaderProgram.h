@@ -172,7 +172,7 @@ class glShaderProgram final : public ShaderProgram {
     void detachShader(glShader* const shader);
 
    private:
-    typedef hashMapImpl<ULL, I32> ShaderVarMap;
+    typedef hashMapImpl<U64, I32> ShaderVarMap;
     typedef hashMapImpl<I32, U32> ShaderVarU32Map;
     typedef hashMapImpl<I32, I32> ShaderVarI32Map;
     typedef hashMapImpl<I32, F32> ShaderVarF32Map;

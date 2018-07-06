@@ -11,13 +11,14 @@ namespace Divide {
 
 namespace {
     // these must match the last 4 characters of the atom file
-    ULL fragAtomExt = _ID("frag");
-    ULL vertAtomExt = _ID("vert");
-    ULL geomAtomExt = _ID("geom");
-    ULL tescAtomExt = _ID("tesc");
-    ULL teseAtomExt = _ID("tese");
-    ULL compAtomExt = _ID(".cpt");
-    ULL comnAtomExt = _ID(".cmn");
+    constexpr char* fragAtomExt = "frag";
+    constexpr char* vertAtomExt = "vert";
+    constexpr char* geomAtomExt = "geom";
+    constexpr char* tescAtomExt = "tesc";
+    constexpr char* teseAtomExt = "tese";
+    constexpr char* compAtomExt = ".cpt";
+    constexpr char* comnAtomExt = ".cmn";
+
     // Shader subfolder name that contains shader files for OpenGL
     const char* parentShaderLoc = "GLSL";
     // Atom folder names in parent shader folder
@@ -180,22 +181,16 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
 
             I32 index = -1;
             // switch will throw warnings due to promotion to int
-            ULL extHash = _ID_RT(Util::GetTrailingCharacters(include_file, 4));
-            if (extHash == fragAtomExt) {
-                index = to_const_int(ShaderType::FRAGMENT);
-            } else if (extHash == vertAtomExt) {
-                index = to_const_int(ShaderType::VERTEX); 
-            } else if (extHash == geomAtomExt) {
-                index = to_const_int(ShaderType::GEOMETRY);
-            } else if (extHash == tescAtomExt) {
-                index = to_const_int(ShaderType::TESSELATION_CTRL);
-            } else if (extHash == teseAtomExt) {
-                index = to_const_int(ShaderType::TESSELATION_EVAL);
-            } else if (extHash == compAtomExt) {
-                index = to_const_int(ShaderType::COMPUTE);
-            } else if (extHash == comnAtomExt) {
-                index = to_const_int(ShaderType::COUNT);
-            }
+            switch(_ID_RT(Util::GetTrailingCharacters(include_file, 4)))
+            {
+                case _ID(fragAtomExt): index = to_const_int(ShaderType::FRAGMENT); break;
+                case _ID(vertAtomExt): index = to_const_int(ShaderType::VERTEX);  break;
+                case _ID(geomAtomExt): index = to_const_int(ShaderType::GEOMETRY); break;
+                case _ID(tescAtomExt): index = to_const_int(ShaderType::TESSELATION_CTRL); break;
+                case _ID(teseAtomExt): index = to_const_int(ShaderType::TESSELATION_EVAL); break;
+                case _ID(compAtomExt): index = to_const_int(ShaderType::COMPUTE); break;
+                case _ID(comnAtomExt): index = to_const_int(ShaderType::COUNT); break;
+            };
 
             assert(index != -1);
 
@@ -224,7 +219,7 @@ void glShader::removeShader(glShader* s) {
     // Keep a copy of it's name
     stringImpl name(s->getName());
     // Try to find it
-    ULL nameHash = _ID_RT(name);
+    U64 nameHash = _ID_RT(name);
     UpgradableReadLock ur_lock(_shaderNameLock);
     ShaderMap::iterator it = _shaderNameMap.find(nameHash);
     if (it != std::end(_shaderNameMap)) {
@@ -275,7 +270,7 @@ glShader* glShader::loadShader(const stringImpl& name,
         }
     } else {
         if (newShader) {
-            ULL nameHash = _ID_RT(name);
+            U64 nameHash = _ID_RT(name);
             // If we loaded the source code successfully,  register it
             WriteLock w_lock(_shaderNameLock);
             hashAlg::emplace(_shaderNameMap, nameHash, shader);

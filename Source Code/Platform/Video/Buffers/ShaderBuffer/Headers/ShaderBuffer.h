@@ -97,6 +97,7 @@ class NOINITVTABLE ShaderBuffer : protected GraphicsResource,
     size_t _bufferSize;
     size_t _primitiveSize;
     size_t _alignmentRequirement;
+    size_t _maxSize;
     U32 _primitiveCount;
     U32 _sizeFactor;
 

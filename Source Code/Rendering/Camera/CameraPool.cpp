@@ -12,7 +12,7 @@
 namespace Divide {
 
 const char* Camera::DefaultCamera = "defaultCamera";
-const ULL Camera::DefaultCameraHash = _ID(Camera::DefaultCamera);
+const U64 Camera::DefaultCameraHash = _ID(Camera::DefaultCamera);
 
 bool Camera::_addNewListener = false;
 Camera* Camera::_activeCamera = nullptr;
@@ -64,7 +64,7 @@ void Camera::activeCamera(Camera* cam) {
     }
 }
 
-void Camera::activeCamera(ULL cam) {
+void Camera::activeCamera(U64 cam) {
     activeCamera(findCamera(cam));
 }
 
@@ -144,7 +144,7 @@ bool Camera::destroyCamera(Camera*& camera) {
     return false;
 }
 
-Camera* Camera::findCamera(ULL nameHash) {
+Camera* Camera::findCamera(U64 nameHash) {
     ReadLock r_lock(_cameraPoolLock);
     const CameraPool::const_iterator& it = _cameraPool.find(nameHash);
     if (it != std::end(_cameraPool)) {

@@ -81,7 +81,7 @@ DEFINE_SINGLETON(GUI, GUIInterface, Input::InputAggregatorInterface)
     void update(const U64 deltaTime);
 
     template<typename T = GUIElement>
-    inline T* getGUIElement(I64 sceneID, ULL elementName) {
+    inline T* getGUIElement(I64 sceneID, U64 elementName) {
         static_assert(std::is_base_of<GUIElement, T>::value,
             "getGuiElement error: Target is not a valid GUI item");
 
@@ -146,7 +146,7 @@ DEFINE_SINGLETON(GUI, GUIInterface, Input::InputAggregatorInterface)
         return _activeScene;
     }
   protected:
-    GUIElement* getGUIElementImpl(I64 sceneID, ULL elementName) const;
+    GUIElement* getGUIElementImpl(I64 sceneID, U64 elementName) const;
     GUIElement* getGUIElementImpl(I64 sceneID, I64 elementID) const;
 
   protected:

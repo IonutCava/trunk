@@ -11,7 +11,7 @@
 
 namespace Divide {
 
-GUIButton::GUIButton(ULL guiID,
+GUIButton::GUIButton(U64 guiID,
                      const stringImpl& text,
                      const stringImpl& guiScheme,
                      const vec2<F32>& relativeOffset,

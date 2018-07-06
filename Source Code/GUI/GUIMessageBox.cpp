@@ -7,7 +7,7 @@
 
 namespace Divide {
 
-GUIMessageBox::GUIMessageBox(ULL guiID,
+GUIMessageBox::GUIMessageBox(U64 guiID,
                              const stringImpl& title,
                              const stringImpl& message,
                              const vec2<I32>& offsetFromCentre,

@@ -148,6 +148,8 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
         return _descriptor;
     }
 
+
+    static U16 computeMipCount(U16 width, U16 height);
    protected:
     /// Use STB/NV_DDS to load a file into a Texture Object
     bool loadFile(const TextureLoadInfo& info, const stringImpl& name);

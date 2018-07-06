@@ -85,7 +85,7 @@ DEFINE_SINGLETON(ResourceCache)
   protected:
     /// multithreaded resource creation
     SharedLock _creationMutex;
-    typedef hashMapImpl<ULL, Resource_wptr> ResourceMap;
+    typedef hashMapImpl<U64, Resource_wptr> ResourceMap;
     ResourceMap _resDB;
 
 END_SINGLETON

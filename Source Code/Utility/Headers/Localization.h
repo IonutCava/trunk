@@ -44,7 +44,7 @@ namespace Locale {
 /// each string value in the map matches the value in the ini file for the given key
 /// Basicly, the hashMapImpl is a direct copy of the [language] section of the
 /// give ini file
-static hashMapImpl<ULL, stringImpl> g_languageTable;
+static hashMapImpl<U64, stringImpl> g_languageTable;
 /// Default language can be set at compile time
 static stringImpl g_localeFile = DEFAULT_LANG;
 /// Reset everything and load the specified language file.
@@ -59,8 +59,8 @@ inline const stringImpl& currentLanguage() { return g_localeFile; }
 /// usage: Locale::get(_ID("A_B_C")) or Locale::get(_ID("A_B_C"),"X") where "A_B_C" is the
 /// language key we want
 /// and "X" is a default string in case the key does not exist in the INI file
-const char* get(ULL key, const char* defaultValue);
-const char* get(ULL key);
+const char* get(U64 key, const char* defaultValue);
+const char* get(U64 key);
 };  // namespace Locale
 };  // namespace Divide
 

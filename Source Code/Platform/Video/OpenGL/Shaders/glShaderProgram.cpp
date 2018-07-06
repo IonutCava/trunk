@@ -331,7 +331,7 @@ bool glShaderProgram::loadFromBinary() {
                 // binary code as it's useless without a proper format
                 inFile = nullptr;
             }
-            if (inFile && _binaryFormat != GL_ZERO && _binaryFormat != GL_NONE) {
+            if (inFile && _binaryFormat != GL_ZERO/* && _binaryFormat != GL_NONE*/) {
                 // Jump to the end of the file
                 fseek(inFile, 0, SEEK_END);
                 // And get the file's content size
@@ -571,7 +571,7 @@ I32 glShaderProgram::getUniformLocation(const char* name) {
     }
 
     // Check the cache for the location
-    ULL nameHash = _ID_RT(name);
+    U64 nameHash = _ID_RT(name);
     ShaderVarMap::const_iterator it = _shaderVarLocation.find(nameHash);
     if (it != std::end(_shaderVarLocation)) {
         return it->second;

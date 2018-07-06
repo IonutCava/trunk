@@ -32,7 +32,7 @@ void GUIInterface::onChangeResolution(U16 w, U16 h) {
 }
 
 
-void GUIInterface::addElement(ULL id, GUIElement* element) {
+void GUIInterface::addElement(U64 id, GUIElement* element) {
     assert(Application::instance().isMainThread());
 
     GUIMap::iterator it = _guiElements.find(id);
@@ -44,7 +44,7 @@ void GUIInterface::addElement(ULL id, GUIElement* element) {
     }
 }
 
-GUIElement* GUIInterface::getGUIElementImpl(ULL elementName) const {
+GUIElement* GUIInterface::getGUIElementImpl(U64 elementName) const {
     GUIElement* ret = nullptr;
     GUIMap::const_iterator it = _guiElements.find(elementName);
     if (it != std::cend(_guiElements)) {
@@ -89,7 +89,7 @@ void GUIInterface::onMouseDown(const GUIEvent& event) {
 }
 
 
-GUIButton* GUIInterface::addButton(ULL guiID,
+GUIButton* GUIInterface::addButton(U64 guiID,
                                    const stringImpl& text,
                                    const vec2<I32>& position,
                                    const vec2<U32>& dimensions,
@@ -121,7 +121,7 @@ GUIButton* GUIInterface::addButton(ULL guiID,
     return btn;
 }
 
-GUIMessageBox* GUIInterface::addMsgBox(ULL guiID,
+GUIMessageBox* GUIInterface::addMsgBox(U64 guiID,
                                        const stringImpl& title,
                                        const stringImpl& message,
                                        const vec2<I32>& offsetFromCentre) {
@@ -133,7 +133,7 @@ GUIMessageBox* GUIInterface::addMsgBox(ULL guiID,
     return box;
 }
 
-GUIText* GUIInterface::addText(ULL guiID,
+GUIText* GUIInterface::addText(U64 guiID,
                                const vec2<I32>& position,
                                const stringImpl& font,
                                const vec4<U8>& colour,
@@ -155,7 +155,7 @@ GUIText* GUIInterface::addText(ULL guiID,
     return t;
 }
 
-GUIFlash* GUIInterface::addFlash(ULL guiID,
+GUIFlash* GUIInterface::addFlash(U64 guiID,
                                  stringImpl movie,
                                  const vec2<U32>& position,
                                  const vec2<U32>& extent) {
@@ -167,7 +167,7 @@ GUIFlash* GUIInterface::addFlash(ULL guiID,
     return flash;
 }
 
-GUIText* GUIInterface::modifyText(ULL guiID, const stringImpl& text) {
+GUIText* GUIInterface::modifyText(U64 guiID, const stringImpl& text) {
     GUIMap::iterator it = _guiElements.find(guiID);
 
     if (it == std::cend(_guiElements)) {

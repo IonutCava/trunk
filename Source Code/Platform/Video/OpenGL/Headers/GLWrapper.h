@@ -240,7 +240,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Used to store all of the indirect draw commands
     static GLuint _indirectDrawBuffer;
     /// A cache of all fonts used
-    typedef hashMapImpl<ULL, I32> FontCache;
+    typedef hashMapImpl<U64, I32> FontCache;
     FontCache _fonts;
     hashAlg::pair<stringImpl, I32> _fontCache;
     /// Current active vertex array object's handle

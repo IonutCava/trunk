@@ -75,7 +75,6 @@ typedef int64_t I64;
 typedef float F32;
 typedef double D64;
 typedef void* bufferPtr;
-typedef unsigned long long ULL;
 
 enum class CallbackParam : U32 {
     TYPE_SMALL_INTEGER = 0,
@@ -162,22 +161,22 @@ do {                                                \
 
 namespace Divide {
 
-constexpr ULL basis = 14695981039346656037ULL;
-constexpr ULL prime = 1099511628211ULL;
+constexpr U64 basis = UINT64_C(14695981039346656037);
+constexpr U64 prime = UINT64_C(1099511628211);
 
-constexpr ULL hash_one(char c, const char* remain, ULL value)
+constexpr U64 hash_one(char c, const char* remain, const U64 value)
 {
     return c == 0 ? value : hash_one(remain[0], remain + 1, (value ^ c) * prime);
 }
 
-constexpr ULL _ID(const char* str)
+constexpr U64 _ID(const char* str)
 {
     return hash_one(str[0], str + 1, basis);
 }
 
-FORCE_INLINE ULL _ID_RT(const char* str)
+FORCE_INLINE U64 _ID_RT(const char* str)
 {
-    ULL hash = basis;
+    U64 hash = basis;
     while (*str != 0) {
         hash ^= str[0];
         hash *= prime;
@@ -186,7 +185,7 @@ FORCE_INLINE ULL _ID_RT(const char* str)
     return hash;
 }
 
-FORCE_INLINE ULL _ID_RT(const stringImpl& str) {
+FORCE_INLINE U64 _ID_RT(const stringImpl& str) {
     return _ID_RT(str.c_str());
 }
 

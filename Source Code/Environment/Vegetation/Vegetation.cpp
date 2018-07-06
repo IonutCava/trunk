@@ -412,9 +412,6 @@ void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
     buffer->attribDescriptor(scaleLocation).offset(_instanceCountGrass * queryID);
     buffer->attribDescriptor(instLocation).offset(_instanceCountGrass * queryID);
 
-    RenderingComponent* const renderable = sgn.get<RenderingComponent>();
-    assert(renderable != nullptr);
-
     GenericDrawCommand& cmd = drawCommandsOut.front();
     cmd.cmd().primCount = buffer->getFeedbackPrimitiveCount(to_ubyte(queryID));
     cmd.sourceBuffer(buffer);

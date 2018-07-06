@@ -11,6 +11,14 @@ void main(void){
     gl_Position.w += 0.0001;
 }
 
+/*-- Fragment.PrePass
+
+layout(location = 0) out vec4 _skyColour;
+
+void main() {
+    _skyColour = vec4(1.0);
+}*/
+
 -- Fragment.Display
 
 layout(location = 0) out vec4 _skyColour;
@@ -41,8 +49,10 @@ vec3 sunColour(){
 }
 
 void main() {
-    vec3 sky_colour = texture(texSky, vec4(f_in._vertexW.xyz, 0)).rgb;
+    vec3 sky_colour = textureLod(texSky, vec4(VAR._vertexW.xyz, 0), 0).rgb;
     _skyColour = vec4(ToSRGB(enable_sun ? sky_colour * sunColour() : sky_colour), 1.0);
-    _normalOut = packNormal(normalize(f_in._normalWV));
+    _normalOut = packNormal(normalize(VAR._normalWV));
     _velocityOut = VAR._vertexVelocity;
+
+    //_skyColour = vec4(VAR._vertexW.xyz, 1.0);//textureLod(texSky, vec4(0, 1, 0, 0), 0).rgb
 }

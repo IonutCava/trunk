@@ -104,7 +104,7 @@ void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index ) {
 
     attachment->mipMapLevel(0,
                             texDescriptor.getSampler().generateMipMaps()
-                                ? 1 + (I16)floorf(log2f(fmaxf(to_float(_width), to_float(_height))))
+                                ? 1 + Texture::computeMipCount(_width, _height)
                                 : 1);
 
     // check if we have a valid attachment

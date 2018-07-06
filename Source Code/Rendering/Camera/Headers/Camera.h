@@ -361,10 +361,10 @@ class Camera : public Resource {
        static Camera* activeCamera();
        static Camera* previousCamera();
        static void    activeCamera(Camera* cam);
-       static void    activeCamera(ULL cam);
+       static void    activeCamera(U64 cam);
        static Camera* createCamera(const stringImpl& cameraName, CameraType type);
        static bool    destroyCamera(Camera*& camera);
-       static Camera* findCamera(ULL nameHash);
+       static Camera* findCamera(U64 nameHash);
 
        static bool mouseMoved(const Input::MouseEvent& arg);
        static void addChangeListener(const DELEGATE_CBK_PARAM<Camera&>& f);
@@ -372,10 +372,10 @@ class Camera : public Resource {
 
     public:
       static const char* DefaultCamera;
-      static const ULL DefaultCameraHash;
+      static const U64 DefaultCameraHash;
 
     private:
-      typedef hashMapImpl<ULL, Camera*> CameraPool;
+      typedef hashMapImpl<U64, Camera*> CameraPool;
       typedef hashMapImpl<I64, Camera*> CameraPoolGUID;
 
       static Camera* _activeCamera;

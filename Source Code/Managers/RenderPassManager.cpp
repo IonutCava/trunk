@@ -182,8 +182,8 @@ void RenderPassManager::doCustomPass(PassParams& params) {
         bool drawToDepth = true;
         if (params.stage != RenderStage::SHADOW) {
             Attorney::SceneManagerRenderPass::preRender(mgr, *params.camera, GFX.renderTarget(params.target));
-            if (params.doPrePass && !Config::DEBUG_HIZ_CULLING) {
-                drawToDepth = false;
+            if (params.doPrePass) {
+                drawToDepth = Config::DEBUG_HIZ_CULLING;
             }
         }
 

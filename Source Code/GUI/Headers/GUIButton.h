@@ -60,7 +60,7 @@ class GUIButton : public GUIElement {
     void setOnClickSound(const AudioDescriptor_ptr& onClickSound);
 
    protected:
-    GUIButton(ULL guiID,
+    GUIButton(U64 guiID,
               const stringImpl& text,
               const stringImpl& guiScheme, 
               const vec2<F32>& relativeOffset,

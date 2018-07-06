@@ -2,7 +2,7 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
-GUIText::GUIText(ULL guiID,
+GUIText::GUIText(U64 guiID,
                  const stringImpl& text,
                  const vec2<F32>& relativePosition,
                  const stringImpl& font,

@@ -46,41 +46,41 @@ namespace Divide {
 
 DEFINE_SINGLETON(ParamHandler)
 #if !defined(CPP_17_SUPPORT)
-    typedef hashMapImpl<ULL, cdiggins::any> ParamMap;
+    typedef hashMapImpl<U64, cdiggins::any> ParamMap;
 #else
-    typedef hashMapImpl<ULL, std::any> ParamMap;
+    typedef hashMapImpl<U64, std::any> ParamMap;
 #endif
     /// A special map for string types (small perf. optimization for add/retrieve)
-    typedef hashMapImpl<ULL, stringImpl> ParamStringMap;
+    typedef hashMapImpl<U64, stringImpl> ParamStringMap;
     /// A special map for boolean types (small perf. optimization for add/retrieve)
     /// Used a lot as option toggles
-    typedef hashMapImpl<ULL, bool> ParamBoolMap;
+    typedef hashMapImpl<U64, bool> ParamBoolMap;
     /// Floats are also used often
-    typedef hashMapImpl<ULL, F32> ParamFloatMap;
+    typedef hashMapImpl<U64, F32> ParamFloatMap;
 
   public:
     void setDebugOutput(bool logState);
 
     template <typename T>
-    T getParam(ULL paramID, T defaultValue = T()) const;
+    T getParam(U64 paramID, T defaultValue = T()) const;
 
     template <typename T>
     T getParam(const char* name, T defaultValue = T()) const;
 
     template <typename T>
-    void setParam(ULL paramID, const T& value);
+    void setParam(U64 paramID, const T& value);
 
     template <typename T>
     void setParam(const char* name, const T& value);
 
     template <typename T>
-    void delParam(ULL paramID);
+    void delParam(U64 paramID);
 
     template <typename T>
     void delParam(const char* name);
 
     template <typename T>
-    bool isParam(ULL paramID) const;
+    bool isParam(U64 paramID) const;
 
     template <typename T>
     bool isParam(const char* param) const;

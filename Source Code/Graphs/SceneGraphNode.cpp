@@ -227,6 +227,7 @@ bool SceneGraphNode::removeNode(SceneGraphNode& node, bool recursive) {
                         if (child.removeNode(node)) {
                             return false;
                         }
+                        return true;
                     });
     }
 

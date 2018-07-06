@@ -155,7 +155,7 @@ struct TerrainInfo {
     /// "variables" contains the various strings needed for each terrain such as
     /// texture names,
     /// terrain name etc.
-    hashMapImpl<ULL, stringImpl> variables;
+    hashMapImpl<U64, stringImpl> variables;
     F32 grassDensity;
     F32 treeDensity;
     F32 grassScale;

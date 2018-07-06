@@ -29,9 +29,6 @@ SubMesh::~SubMesh()
 void SubMesh::initialiseDrawCommands(SceneGraphNode& sgn,
                                      RenderStage renderStage,
                                      GenericDrawCommands& drawCommandsInOut) {
-    RenderingComponent* const renderable = sgn.get<RenderingComponent>();
-    assert(renderable != nullptr);
-
     GenericDrawCommand cmd(PrimitiveType::TRIANGLES,
         getGeometryVB()->getPartitionOffset(_geometryPartitionID),
         getGeometryVB()->getPartitionIndexCount(_geometryPartitionID));

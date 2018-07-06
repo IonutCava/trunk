@@ -355,14 +355,15 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
 }
 
 bool glTexture::flushTextureState() {
-    if (getState() == ResourceState::RES_LOADED) {
-        if (_lockManager) {
-            _lockManager->Wait(true);
-            MemoryManager::DELETE(_lockManager);
-        }
-        updateSampler();
-        updateMipMaps();
+    if (_lockManager) {
+        _lockManager->Wait(true);
+        MemoryManager::DELETE(_lockManager);
     }
+
+    assert(getState() == ResourceState::RES_LOADED);
+
+    updateSampler();
+    updateMipMaps();
 
     return true;
 }

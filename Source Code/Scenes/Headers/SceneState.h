@@ -176,7 +176,7 @@ class SceneState : public SceneComponent {
 
    public:
     /// Background music map : trackName - track
-    typedef hashMapImpl<ULL, AudioDescriptor_ptr> MusicPlaylist;
+    typedef hashMapImpl<U64, AudioDescriptor_ptr> MusicPlaylist;
 
     SceneState(Scene& parentScene)
         : SceneComponent(parentScene),

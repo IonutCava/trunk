@@ -620,7 +620,7 @@ bool GL_API::deInitShaders() {
 I32 GL_API::getFont(const stringImpl& fontName) {
     if (_fontCache.first.compare(fontName) != 0) {
         _fontCache.first = fontName;
-        ULL fontNameHash = _ID_RT(fontName);
+        U64 fontNameHash = _ID_RT(fontName);
         // Search for the requested font by name
         FontCache::const_iterator it = _fonts.find(fontNameHash);
         // If we failed to find it, it wasn't loaded yet

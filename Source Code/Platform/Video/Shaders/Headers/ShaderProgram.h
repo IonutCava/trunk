@@ -53,8 +53,8 @@ class NOINITVTABLE ShaderProgram : public Resource,
                                    protected GraphicsResource,
                                    public std::enable_shared_from_this<ShaderProgram> {
    public:
-    typedef hashMapImpl<ULL, ShaderProgram_ptr> ShaderProgramMap;
-    typedef hashMapImpl<ULL, stringImpl> AtomMap;
+    typedef hashMapImpl<U64, ShaderProgram_ptr> ShaderProgramMap;
+    typedef hashMapImpl<U64, stringImpl> AtomMap;
     typedef std::stack<ShaderProgram_ptr, vectorImpl<ShaderProgram_ptr> > ShaderQueue;
     /// A list of built-in sampler slots. Use these if possible
     enum class TextureUsage : U32 {

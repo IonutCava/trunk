@@ -100,7 +100,7 @@ class TerrainDescriptor : public PropertyDescriptor {
     const vec2<F32>& getScale() const { return _scale; }
 
     stringImpl getVariable(const stringImpl& name) const {
-        hashMapImpl<ULL, stringImpl>::const_iterator it =
+        hashMapImpl<U64, stringImpl>::const_iterator it =
             _variables.find(_ID_RT(name));
         if (it != std::end(_variables)) {
             return it->second;
@@ -109,7 +109,7 @@ class TerrainDescriptor : public PropertyDescriptor {
     }
 
     F32 getVariablef(const stringImpl& name) const {
-        hashMapImpl<ULL, F32>::const_iterator it =
+        hashMapImpl<U64, F32>::const_iterator it =
             _variablesf.find(_ID_RT(name));
         if (it != std::end(_variablesf)) {
             return it->second;
@@ -118,8 +118,8 @@ class TerrainDescriptor : public PropertyDescriptor {
     }
 
    private:
-    hashMapImpl<ULL, stringImpl> _variables;
-    hashMapImpl<ULL, F32> _variablesf;
+    hashMapImpl<U64, stringImpl> _variables;
+    hashMapImpl<U64, F32> _variablesf;
     F32 _grassDensity;
     U32 _chunkSize;
     F32 _treeDensity;

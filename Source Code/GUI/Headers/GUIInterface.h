@@ -43,7 +43,7 @@ class GUIMessageBox;
 
 class GUIInterface {
 public:
-    typedef hashMapImpl<ULL, std::pair<GUIElement*, bool/*last state*/>> GUIMap;
+    typedef hashMapImpl<U64, std::pair<GUIElement*, bool/*last state*/>> GUIMap;
     typedef DELEGATE_CBK_PARAM<I64> ButtonCallback;
 
 public:
@@ -55,7 +55,7 @@ public:
 
     /// Get a pointer to an element by name/id
     template<typename T = GUIElement>
-    inline T* getGUIElement(ULL elementName) const {
+    inline T* getGUIElement(U64 elementName) const {
         static_assert(std::is_base_of<GUIElement, T>::value,
             "getGuiElement error: Target is not a valid GUI item");
 
@@ -70,29 +70,29 @@ public:
         return static_cast<T*>(getGUIElementImpl(elementID));
     }
 
-    virtual GUIText* addText(ULL guiID,
+    virtual GUIText* addText(U64 guiID,
                              const vec2<I32>& position,
                              const stringImpl& font,
                              const vec4<U8>& colour,
                              const stringImpl& text,
                              U32 fontSize = 16);
 
-    virtual GUIText* modifyText(ULL guiID,
+    virtual GUIText* modifyText(U64 guiID,
                                 const stringImpl& text);
 
-    virtual GUIMessageBox* addMsgBox(ULL guiID,
+    virtual GUIMessageBox* addMsgBox(U64 guiID,
                                      const stringImpl& title,
                                      const stringImpl& message,
                                      const vec2<I32>& offsetFromCentre = vec2<I32>(0));
 
-    virtual GUIButton* addButton(ULL guiID,
+    virtual GUIButton* addButton(U64 guiID,
                                  const stringImpl& text,
                                  const vec2<I32>& position,
                                  const vec2<U32>& dimensions,
                                  ButtonCallback callback,
                                  const stringImpl& rootSheetID = "");
 
-    virtual GUIFlash* addFlash(ULL guiID,
+    virtual GUIFlash* addFlash(U64 guiID,
                                stringImpl movie,
                                const vec2<U32>& position,
                                const vec2<U32>& extent);
@@ -102,8 +102,8 @@ public:
     virtual void onMouseDown(const GUIEvent& event);
 
 protected:
-    void addElement(ULL id, GUIElement* element);
-    virtual GUIElement* getGUIElementImpl(ULL elementName) const;
+    void addElement(U64 id, GUIElement* element);
+    virtual GUIElement* getGUIElementImpl(U64 elementName) const;
     virtual GUIElement* getGUIElementImpl(I64 elementID) const;
 
 protected:

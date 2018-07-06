@@ -57,9 +57,9 @@ void changeLanguage(const stringImpl& newLanguage) {
     clear();
 }
 
-const char* get(ULL key, const char* defaultValue) {
+const char* get(U64 key, const char* defaultValue) {
     if (g_initialized) {
-        typedef hashMapImpl<ULL, stringImpl>::const_iterator citer;
+        typedef hashMapImpl<U64, stringImpl>::const_iterator citer;
         // When we ask for a string for the given key, we check our language cache first
         citer entry = g_languageTable.find(key);
         if (entry != std::cend(g_languageTable)) {
@@ -72,7 +72,7 @@ const char* get(ULL key, const char* defaultValue) {
     return defaultValue;
 }
 
-const char* get(ULL key) {
+const char* get(U64 key) {
     return get(key, "key not found");
 }
 
