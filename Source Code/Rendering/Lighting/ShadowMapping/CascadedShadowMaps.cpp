@@ -36,7 +36,8 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     _vertBlur = 0;
     _renderPolicy = MemoryManager_NEW Framebuffer::FramebufferTarget(Framebuffer::defaultPolicy());
     // We clear the FB on each face draw call, not on Begin()
-    _renderPolicy->_clearBuffersOnBind = false;
+    _renderPolicy->_clearDepthBufferOnBind = false;
+    _renderPolicy->_clearColorBuffersOnBind = false;
 
     ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
     shadowPreviewShader.setThreadedLoading(false);

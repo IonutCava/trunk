@@ -26,13 +26,17 @@ Framebuffer::~Framebuffer()
 {
 }
 
-bool Framebuffer::addAttachment(const TextureDescriptor& descriptor,
-                                TextureDescriptor::AttachmentType slot) {
-    _attachmentChanged[to_uint(slot)] = true;
-    _attachment[to_uint(slot)] = descriptor;
+void Framebuffer::addAttachment(const TextureDescriptor& descriptor,
+                                TextureDescriptor::AttachmentType type) {
+    _attachmentChanged[to_uint(type)] = true;
+    _attachment[to_uint(type)] = descriptor;
     _shouldRebuild = true;
+}
 
-    return true;
+void Framebuffer::addAttachment(Texture& texture,
+                                TextureDescriptor::AttachmentType type) {
+    addAttachment(texture.getDescriptor(), type);
+    _attachmentTexture[to_uint(type)] = &texture;
 }
 
 Texture* Framebuffer::getAttachment(TextureDescriptor::AttachmentType slot,

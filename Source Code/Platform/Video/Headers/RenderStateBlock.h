@@ -90,8 +90,8 @@ class RenderStateBlock : public GUIDWrapper {
     void setZFunc(ComparisonFunction zFunc = ComparisonFunction::LEQUAL);
     void flipCullMode();
     void setCullMode(CullMode mode);
-    void setZEnable(bool enable);
-    void setZReadWrite(bool read, bool write = true);
+    void setZRead(const bool enable);
+    void setZWrite(const bool enable);
 
     void setBlend(
         bool enable,

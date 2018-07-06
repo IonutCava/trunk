@@ -58,8 +58,7 @@ const char* get(ULL key, const stringImpl& defaultValue) {
     assert(g_initialized == true &&
            "Locale::get error: Get() called without initializing the language "
            "subsytem");
-    // When we ask for a string for the given key, we check our language cache
-    // first
+    // When we ask for a string for the given key, we check our language cache first
     citer entry = g_languageTable.find(key);
     if (entry != std::cend(g_languageTable)) {
         // Usually, the entire language table is loaded.

@@ -14,7 +14,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(Framebuffer* hdrTarget, Framebu
 {
     _samplerCopy = GFX_DEVICE.newFB();
     _samplerCopy->addAttachment(_ldrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
-    _samplerCopy->toggleDepthBuffer(false);
+    _samplerCopy->useAutoDepthBuffer(false);
 
     ResourceDescriptor fxaa("FXAA");
     fxaa.setThreadedLoading(false);

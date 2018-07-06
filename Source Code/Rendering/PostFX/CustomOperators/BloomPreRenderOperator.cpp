@@ -15,13 +15,13 @@ BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* hdrTarget, Framebuff
     for (U8 i = 0; i < 2; ++i) {
         _bloomBlurBuffer[i] = GFX_DEVICE.newFB();
         _bloomBlurBuffer[i]->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
-        _bloomBlurBuffer[i]->toggleDepthBuffer(false);
+        _bloomBlurBuffer[i]->useAutoDepthBuffer(false);
         _bloomBlurBuffer[i]->setClearColor(DefaultColors::BLACK());
     }
 
     _bloomOutput = GFX_DEVICE.newFB();
     _bloomOutput->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
-    _bloomOutput->toggleDepthBuffer(false);
+    _bloomOutput->useAutoDepthBuffer(false);
     _bloomOutput->setClearColor(DefaultColors::BLACK());
 
     ResourceDescriptor bloomCalc("bloom.BloomCalc");

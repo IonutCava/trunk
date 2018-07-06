@@ -123,6 +123,7 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
     if (img.alpha()) {
         // Each pixel is independent so this is a brilliant place to parallelize work
         I32 i = 0;
+        ACKNOWLEDGE_UNUSED(i);
         bool abort = false;
 #       pragma omp parallel for
         for (i = 0; i < width; ++i) {

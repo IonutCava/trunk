@@ -60,7 +60,7 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     _deferredBuffer->addAttachment(gBuffer[1], TextureDescriptor::AttachmentType::Color1);
     _deferredBuffer->addAttachment(gBuffer[2], TextureDescriptor::AttachmentType::Color2);
     _deferredBuffer->addAttachment(gBuffer[3], TextureDescriptor::AttachmentType::Color3);
-    _deferredBuffer->toggleDepthBuffer(true);
+    _deferredBuffer->useAutoDepthBuffer(true);
     _deferredBuffer->setClearColor(DefaultColors::BLACK());
     ResourceDescriptor mrtPreviewSmall("MRT RenderQuad SmallPreview");
     mrtPreviewSmall.setFlag(true);  // no default material

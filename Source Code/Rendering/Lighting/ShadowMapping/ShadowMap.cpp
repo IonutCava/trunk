@@ -110,7 +110,7 @@ void ShadowMap::bindShadowMaps() {
 
 void ShadowMap::clearShadowMapBuffers() {
     for (U8 i = 0; i < to_ubyte(ShadowType::COUNT); ++i) {
-        _depthMaps[i]->clear();
+        _depthMaps[i]->clear(Framebuffer::defaultPolicy());
     }
 }
 

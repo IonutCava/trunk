@@ -29,7 +29,9 @@ Sky::Sky(const stringImpl& name)
     // Generate a render state
     RenderStateBlock skyboxRenderState;
     skyboxRenderState.setCullMode(CullMode::CCW);
+    skyboxRenderState.setZWrite(false);
     _skyboxRenderStateHash = skyboxRenderState.getHash();
+    
     skyboxRenderState.setCullMode(CullMode::CCW);
     _skyboxRenderStateReflectedHash = skyboxRenderState.getHash();
 }

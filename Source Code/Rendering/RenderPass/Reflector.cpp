@@ -82,7 +82,7 @@ bool Reflector::build() {
     _reflectedTexture = GFX_DEVICE.newFB();
     _reflectedTexture->addAttachment(reflectionDescriptor,
                                      TextureDescriptor::AttachmentType::Color0);
-    _reflectedTexture->toggleDepthBuffer(true);
+    _reflectedTexture->useAutoDepthBuffer(true);
     _createdFB = _reflectedTexture->create(_resolution.x, _resolution.y);
 
     return _createdFB;

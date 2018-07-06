@@ -48,7 +48,7 @@ class RenderPass {
     RenderPass(stringImpl name, U8 sortKey, std::initializer_list<RenderStage> passStageFlags);
     ~RenderPass();
 
-    void render(SceneRenderState& renderState, bool anaglyph = false);
+    void render(SceneRenderState& renderState, bool anaglyph);
     inline U8 sortKey() const { return _sortKey; }
     inline U16 getLastTotalBinSize() const { return _lastTotalBinSize; }
     inline const stringImpl& getName() const { return _name; }

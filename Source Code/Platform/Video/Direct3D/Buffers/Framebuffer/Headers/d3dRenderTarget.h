@@ -62,11 +62,8 @@ class d3dRenderTarget : public Framebuffer {
                   TextureDescriptor::AttachmentType slot =
                       TextureDescriptor::AttachmentType::Color0,
                   bool blitColor = true, bool blitDepth = false);
-    void clear() const override;
+    void clear(const FramebufferTarget& drawPolicy) const override;
 
-    void initAttachment(TextureDescriptor::AttachmentType type,
-                        Texture& texture,
-                        bool resize) override;
    protected:
     bool checkStatus() const;
 };

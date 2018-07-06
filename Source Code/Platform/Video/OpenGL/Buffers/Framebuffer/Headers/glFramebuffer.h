@@ -56,7 +56,6 @@ class glFramebuffer : public Framebuffer {
                      TextureDescriptor::AttachmentType slot);
     void resetMipLevel(TextureDescriptor::AttachmentType slot);
     void addDepthBuffer();
-    void removeDepthBuffer();
     void begin(const FramebufferTarget& drawPolicy);
     void end();
 
@@ -72,24 +71,26 @@ class glFramebuffer : public Framebuffer {
 
    protected:
     void resolve();
-    void clear() const override;
+    void clear(const FramebufferTarget& drawPolicy) const override;
     bool checkStatus() const;
     void setInitialAttachments();
 
     void initAttachment(TextureDescriptor::AttachmentType type,
-                        Texture& texture,
-                        bool resize) override;
-
-    void initAttachment(TextureDescriptor::AttachmentType type,
                         TextureDescriptor& texDescriptor,
                         bool resize);
-    void resetMipMaps(FramebufferTarget::BufferMask mask);
+    void resetMipMaps(FramebufferTarget::FBOBufferMask mask);
 
     void toggleAttachment(TextureDescriptor::AttachmentType type, bool state);
 
+    inline bool hasDepth() const {
+        return _attachmentTexture[to_uint(TextureDescriptor::AttachmentType::Depth)] != nullptr;
+    }
+
+    inline bool hasColor() const {
+        return !_colorBuffers.empty();
+    }
+
    protected:
-    bool _hasDepth;
-    bool _hasColor;
     bool _resolved;
     bool _isCreated;
     bool _isLayeredDepth;
@@ -106,8 +107,7 @@ class glFramebuffer : public Framebuffer {
     std::array<std::pair<GLenum, U32>, to_const_uint(AttType::COUNT)> _attachments;
     std::array<bool, to_const_uint(AttType::COUNT)> _attachmentState;
     std::array<vec2<U16>, to_const_uint(AttType::COUNT)> _mipMapLevel;
-    FramebufferTarget::BufferMask _previousMask;
-    FramebufferTarget::ColorMask  _previousColorMask;
+    FramebufferTarget::FBOBufferMask _previousMask;
 };
 
 };  // namespace Divide

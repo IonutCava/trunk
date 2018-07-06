@@ -67,7 +67,7 @@ WaterPlane::WaterPlane()
     _refractionTexture = GFX_DEVICE.newFB();
     _refractionTexture->addAttachment(refractionDescriptor,
                                       TextureDescriptor::AttachmentType::Color0);
-    _refractionTexture->toggleDepthBuffer(true);
+    _refractionTexture->useAutoDepthBuffer(true);
     _refractionTexture->create(_resolution.x, _resolution.y);
     computeBoundingBox();
 }

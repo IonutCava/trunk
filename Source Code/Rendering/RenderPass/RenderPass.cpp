@@ -85,9 +85,12 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
             _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
             bindShadowMaps = true;
             GFX.occlusionCull(0);
+
+            Framebuffer::FramebufferTarget noDepthClear;
+            noDepthClear._clearDepthBufferOnBind = false;
             GFXDevice::RenderTarget eyeTarget = anaglyph ? GFXDevice::RenderTarget::ANAGLYPH
                                                          : GFXDevice::RenderTarget::SCREEN;
-            GFX.getRenderTarget(eyeTarget)->begin(Framebuffer::defaultPolicy());
+            GFX.getRenderTarget(eyeTarget)->begin(noDepthClear);
         } break;
         case RenderStage::REFLECTION: {
             bindShadowMaps = true;

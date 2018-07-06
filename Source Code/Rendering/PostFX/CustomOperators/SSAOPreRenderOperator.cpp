@@ -14,7 +14,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer
 
     _samplerCopy = GFX_DEVICE.newFB();
     _samplerCopy->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
-    _samplerCopy->toggleDepthBuffer(false);
+    _samplerCopy->useAutoDepthBuffer(false);
 
     U16 ssaoNoiseSize = 4;
     U16 noiseDataSize = ssaoNoiseSize * ssaoNoiseSize;

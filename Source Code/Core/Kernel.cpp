@@ -327,11 +327,8 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
         return false;
     }
 
-    RenderPassManager::getInstance().render(_sceneMgr.getActiveScene().renderState());
-
-    if (_GFX.anaglyphEnabled()) {
-        RenderPassManager::getInstance().render(_sceneMgr.getActiveScene().renderState(), true);
-    }
+    RenderPassManager::getInstance().render(_sceneMgr.getActiveScene().renderState(), false);
+    RenderPassManager::getInstance().render(_sceneMgr.getActiveScene().renderState(), true);
 
     PostFX::getInstance().displayScene();
 

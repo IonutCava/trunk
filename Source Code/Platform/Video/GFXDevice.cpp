@@ -20,7 +20,7 @@ namespace Divide {
 std::array<VertexBuffer::AttribFlags, to_const_uint(RenderStage::COUNT)> VertexBuffer::_attribMaskPerStage;
 
 namespace {
-/// Used for anaglyph rendering
+/// Used for %anaglyph rendering
 struct CameraFrustum {
     D32 leftfrustum;
     D32 rightfrustum;
@@ -634,10 +634,12 @@ void GFXDevice::constructHIZ() {
     // render to the buffer
     Framebuffer::FramebufferTarget hizTarget;
     // We want to process the data already in the buffer
-    hizTarget._clearBuffersOnBind = false;
+    hizTarget._clearDepthBufferOnBind = false;
+    hizTarget._clearColorBuffersOnBind = false;
     // And we calculate the target viewport for each loop
     hizTarget._changeViewport = false;
-    hizTarget._drawMask = Framebuffer::FramebufferTarget::BufferMask::DEPTH;
+    hizTarget._drawMask.fill(false);
+    hizTarget._drawMask[to_uint(TextureDescriptor::AttachmentType::Depth)] = true;
     // The depth buffer's resolution should be equal to the screen's resolution
     vec2<U16> resolution =
         _renderTarget[to_uint(RenderTarget::SCREEN)]

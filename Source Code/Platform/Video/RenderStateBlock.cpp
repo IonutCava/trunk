@@ -62,15 +62,14 @@ void RenderStateBlock::setCullMode(CullMode mode) {
     clean();
 }
 
-void RenderStateBlock::setZEnable(const bool enable) {
+void RenderStateBlock::setZRead(const bool enable) {
     _zEnable = enable;
 
     clean();
 }
 
-void RenderStateBlock::setZReadWrite(bool read, bool write) {
-    _zEnable = read;
-    _zWriteEnable = write;
+void RenderStateBlock::setZWrite(const bool enable) {
+    _zWriteEnable = enable;
 
     clean();
 }
@@ -149,7 +148,8 @@ void RenderStateBlock::setDefaultValues() {
     setBlend(false, BlendProperty::ONE,
              BlendProperty::ONE,
              BlendOperation::ADD);
-    setZReadWrite(true, true);
+    setZRead(true);
+    setZWrite(true);
     setCullMode(CullMode::CW);
     setFillMode(FillMode::SOLID);
     setStencilReadWriteMask(0xFFFFFFFF, 0xFFFFFFFF);
