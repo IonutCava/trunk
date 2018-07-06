@@ -209,6 +209,17 @@ TEST(TestFilePathSplit) {
     CHECK_EQUAL(fileResult._fileName, result1);
 }
 
+TEST(TestLineCount) {
+
+    const stringImpl input1("bla");
+    const stringImpl input2("bla\nbla");
+    const stringImpl input3("bla\nbla\nbla");
+
+    CHECK_EQUAL(Util::LineCount(input1), 1u);
+    CHECK_EQUAL(Util::LineCount(input2), 2u);
+    CHECK_EQUAL(Util::LineCount(input3), 3u);
+}
+
 TEST(TestStringTrim) {
     const stringImpl input1("  abc");
     const stringImpl input2("abc  ");

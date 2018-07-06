@@ -21,6 +21,15 @@ namespace {
 std::array<U32, to_base(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glShaderProgram, 0, 0);
+
+void glShaderProgram::initStaticData() {
+    glShader::initStaticData();
+}
+
+void glShaderProgram::destroyStaticData() {
+    glShader::destroyStaticData();
+}
+
 glShaderProgram::glShaderProgram(GFXDevice& context,
                                  size_t descriptorHash,
                                  const stringImpl& name,
@@ -411,8 +420,6 @@ std::pair<bool, stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
         if (!sourceCode.second.empty()) {
             // And replace in place with our program's headers created earlier
             Util::ReplaceStringInPlace(sourceCode.second, "//__CUSTOM_DEFINES__", header);
-            Util::ReplaceStringInPlace(sourceCode.second, "//__LINE_OFFSET_",
-                Util::StringFormat("#line %d\n", 1 + _lineOffset[to_U32(stage)] + to_U32(_definesList.size())));
         }
     }
 
@@ -473,7 +480,12 @@ void glShaderProgram::reloadShaders(bool reparseShaderSource) {
             std::pair<bool, stringImpl> sourceCode = loadSourceCode(type, shaderCompileName, info._header, reparseShaderSource);
             if (!sourceCode.second.empty()) {
                 // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
-                shader = glShader::loadShader(_context, shaderCompileName, sourceCode.second, type, sourceCode.first);
+                shader = glShader::loadShader(_context,
+                                              shaderCompileName,
+                                              sourceCode.second,
+                                              type,
+                                              sourceCode.first,
+                                              _lineOffset[i] + to_U32(_definesList.size()) - 1);
                 if (shader) {
                     // Try to compile the shader (it doesn't double compile shaders, so it's safe to call it multiple times)
                     if (!shader->compile()) {

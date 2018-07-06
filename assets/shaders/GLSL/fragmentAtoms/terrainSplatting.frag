@@ -13,6 +13,7 @@ uniform vec4 detailScale[MAX_TEXTURE_LAYERS];
 layout(binding = TEXTURE_UNIT0)     uniform sampler2D texWaterCaustics;
 layout(binding = TEXTURE_UNIT1)     uniform sampler2D texUnderwaterAlbedo;
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texUnderwaterDetail;
+layout(binding = TEXTURE_OPACITY)   uniform sampler2D texHeightMap;
 
 uniform float underwaterDiffuseScale;
 

@@ -71,6 +71,8 @@ namespace Divide {
         //ref: http://codereview.stackexchange.com/questions/115760/use-va-list-to-format-a-string
         stringImpl StringFormat(const char *const format, ...);
 
+        U32 LineCount(const stringImpl& str);
+
         void CStringRemoveChar(char* str, char charToRemove);
     }; //namespace Util
 }; //namespace Divide

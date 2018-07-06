@@ -54,7 +54,7 @@ class glShader : public GraphicsResource, public TrackedObject {
              const bool optimise = false);
     ~glShader();
 
-    bool load(const stringImpl& source);
+    bool load(const stringImpl& source, U32 lineOffset);
     bool compile();
     bool validate();
 
@@ -68,6 +68,8 @@ class glShader : public GraphicsResource, public TrackedObject {
 
    public:
     // ======================= static data ========================= //
+    static void initStaticData();
+    static void destroyStaticData();
     /// Remove a shader from the cache
     static void removeShader(glShader* s);
     /// Return a new shader reference
@@ -77,10 +79,17 @@ class glShader : public GraphicsResource, public TrackedObject {
                                 const stringImpl& name,
                                 const stringImpl& location,
                                 const ShaderType& type,
-                                const bool parseCode);
+                                const bool parseCode,
+                                U32 lineOffset);
+
+    static stringImpl preprocessIncludes(const stringImpl& name,
+                                         const stringImpl& source,
+                                         GLint level,
+                                         vectorImpl<stringImpl>& foundAtoms);
+
    private:
     friend class glShaderProgram;
-    stringImpl preprocessIncludes(const stringImpl& source, GLint level /*= 0 */);
+    
 
     inline void skipIncludes(bool state) {
         _skipIncludes = state;

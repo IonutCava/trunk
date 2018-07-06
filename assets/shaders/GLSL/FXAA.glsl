@@ -14,19 +14,19 @@ out vec4 _posPos;
 void main() {
 
     gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
-    g_out._texCoord = vec2(1.0, 1.0);
+    _out._texCoord = vec2(1.0, 1.0);
     EmitVertex();
 
     gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
-    g_out._texCoord = vec2(0.0, 1.0);
+    _out._texCoord = vec2(0.0, 1.0);
     EmitVertex();
 
     gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
-    g_out._texCoord = vec2(1.0, 0.0);
+    _out._texCoord = vec2(1.0, 0.0);
     EmitVertex();
 
     gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
-    g_out._texCoord = vec2(0.0, 0.0);
+    _out._texCoord = vec2(0.0, 0.0);
     EmitVertex();
 
     EndPrimitive();

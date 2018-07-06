@@ -51,10 +51,19 @@ public:
                     descriptorHash,
                     name,
                     ObjectType::PATCH_3D,
-                    ObjectFlag::OBJECT_FLAG_NONE)
+                    ObjectFlag::OBJECT_FLAG_NONE),
+        _dimensions(dim)
+
     {
-        U16 width = dim.w;
-        U16 height = dim.h;
+    }
+
+    void build(const DELEGATE_CBK<void, const vec2<U16>&, VertexBuffer*>& buildFunction) {
+        buildFunction(_dimensions, getGeometryVB());
+    }
+
+    void build() {
+        U16 width = _dimensions.w;
+        U16 height = _dimensions.h;
 
         VertexBuffer* vb = getGeometryVB();
         vb->setVertexCount(width * height);
@@ -66,9 +75,8 @@ public:
             for (U16 x = 0; x < width; ++x) {
                 vb->modifyPositionValue(vert,
                                         x * width_factor,
-                                        y * height_factor,
-                                        0.0f);
-                vb->modifyNormalValue(vert, 0, 1, 0);
+                                        0.0f,
+                                        y * height_factor);
                 vert++;
             }
         }
@@ -108,6 +116,8 @@ public:
         Object3D::updateBoundsInternal(sgn);
     }
 
+protected:
+    vec2<U16> _dimensions;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(Patch3D);

@@ -16,6 +16,23 @@ glShader::ShaderMap glShader::_shaderNameMap;
 stringImpl glShader::shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glShader, 0, 0);
+
+void glShader::initStaticData() {
+    stringImpl locPrefix(Paths::g_assetsLocation + Paths::g_shadersLocation + Paths::Shaders::GLSL::g_parentShaderLoc);
+
+    shaderAtomLocationPrefix[to_base(ShaderType::FRAGMENT)] = locPrefix + Paths::Shaders::GLSL::g_fragAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::VERTEX)] = locPrefix + Paths::Shaders::GLSL::g_vertAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::GEOMETRY)] = locPrefix + Paths::Shaders::GLSL::g_geomAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::TESSELATION_CTRL)] = locPrefix + Paths::Shaders::GLSL::g_tescAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::TESSELATION_EVAL)] = locPrefix + Paths::Shaders::GLSL::g_teseAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::COMPUTE)] = locPrefix + Paths::Shaders::GLSL::g_compAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::COUNT)] = locPrefix + Paths::Shaders::GLSL::g_comnAtomLoc;
+}
+
+void glShader::destroyStaticData() {
+
+}
+
 glShader::glShader(GFXDevice& context,
                    const stringImpl& name,
                    const ShaderType& type,
@@ -52,18 +69,6 @@ glShader::glShader(GFXDevice& context,
             _shader = glCreateShader(GL_COMPUTE_SHADER);
             break;
     };
-
-    if (shaderAtomLocationPrefix[to_base(ShaderType::VERTEX)].empty()) {
-        stringImpl locPrefix(Paths::g_assetsLocation + Paths::g_shadersLocation + Paths::Shaders::GLSL::g_parentShaderLoc);
-
-        shaderAtomLocationPrefix[to_base(ShaderType::FRAGMENT)] = locPrefix + Paths::Shaders::GLSL::g_fragAtomLoc;
-        shaderAtomLocationPrefix[to_base(ShaderType::VERTEX)] = locPrefix + Paths::Shaders::GLSL::g_vertAtomLoc;
-        shaderAtomLocationPrefix[to_base(ShaderType::GEOMETRY)] = locPrefix + Paths::Shaders::GLSL::g_geomAtomLoc;
-        shaderAtomLocationPrefix[to_base(ShaderType::TESSELATION_CTRL)] = locPrefix + Paths::Shaders::GLSL::g_tescAtomLoc;
-        shaderAtomLocationPrefix[to_base(ShaderType::TESSELATION_EVAL)] = locPrefix + Paths::Shaders::GLSL::g_teseAtomLoc;
-        shaderAtomLocationPrefix[to_base(ShaderType::COMPUTE)] = locPrefix + Paths::Shaders::GLSL::g_compAtomLoc;
-        shaderAtomLocationPrefix[to_base(ShaderType::COUNT)] = locPrefix + Paths::Shaders::GLSL::g_comnAtomLoc;
-    }
 }
 
 glShader::~glShader() {
@@ -71,7 +76,7 @@ glShader::~glShader() {
     glDeleteShader(_shader);
 }
 
-bool glShader::load(const stringImpl& source) {
+bool glShader::load(const stringImpl& source, U32 lineOffset) {
     if (source.empty()) {
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_NOT_FOUND")), getName().c_str());
         return false;
@@ -79,7 +84,10 @@ bool glShader::load(const stringImpl& source) {
 
     _usedAtoms.clear();
     stringImpl parsedSource = _skipIncludes ? source
-                                            : preprocessIncludes(source, 0);
+                                            : preprocessIncludes(getName(), source, 0, _usedAtoms);
+
+    Util::ReplaceStringInPlace(parsedSource, "//__LINE_OFFSET_",
+                               Util::StringFormat("#line %d", lineOffset));
 
     const char* src = parsedSource.c_str();
 
@@ -131,7 +139,10 @@ bool glShader::validate() {
     return true;
 }
 
-stringImpl glShader::preprocessIncludes(const stringImpl& source, I32 level /*= 0 */) {
+stringImpl glShader::preprocessIncludes(const stringImpl& name,
+                                        const stringImpl& source,
+                                        I32 level,
+                                        vectorImpl<stringImpl>& foundAtoms) {
     if (level > 32) {
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_INCLUD_LIMIT")));
     }
@@ -147,7 +158,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source, I32 level /*= 
     while (std::getline(input, line)) {
         if (std::regex_search(line, matches, Paths::g_includePattern)) {
             include_file = Util::Trim(matches[1].str().c_str());
-            _usedAtoms.push_back(include_file);
+            foundAtoms.push_back(include_file);
 
             ShaderType typeIndex = ShaderType::COUNT;
             // switch will throw warnings due to promotion to int
@@ -171,14 +182,14 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source, I32 level /*= 
             }
 
             include_string = ShaderProgram::shaderFileRead(include_file, shaderAtomLocationPrefix[to_U32(typeIndex)]);
-            
             if (include_string.empty()) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")),
-                                 getName().c_str(),
+                                 name.c_str(),
                                  line_number,
                                  include_file.c_str());
             }
-            output.append(preprocessIncludes(include_string, level + 1));
+
+            output.append(preprocessIncludes(name, include_string, level + 1, foundAtoms));
         } else {
             output.append(line);
         }
@@ -226,7 +237,8 @@ glShader* glShader::loadShader(GFXDevice& context,
                                const stringImpl& name,
                                const stringImpl& source,
                                const ShaderType& type,
-                               const bool parseCode) {
+                               const bool parseCode,
+                               U32 lineOffset) {
     // See if we have the shader already loaded
     glShader* shader = getShader(name);
     
@@ -240,7 +252,7 @@ glShader* glShader::loadShader(GFXDevice& context,
 
     shader->skipIncludes(!parseCode);
     // At this stage, we have a valid Shader object, so load the source code
-    if (!shader->load(source)) {
+    if (!shader->load(source, lineOffset)) {
         // If loading the source code failed, delete it
         if (newShader) {
             MemoryManager::DELETE(shader);

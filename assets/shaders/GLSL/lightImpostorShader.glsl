@@ -46,29 +46,29 @@ void main()
     // a: left-bottom 
     vec2 va = pos.xy + vec2(-0.5, -0.5) * size;
     gl_Position = dvd_ProjectionMatrix * vec4(va, pos.zw);
-    g_out._texCoord = vec2(0.0 + (texCoordOffset[0].x * 0.5),
+    _out._texCoord = vec2(0.0 + (texCoordOffset[0].x * 0.5),
                           (0.0 + (texCoordOffset[0].y * 0.5)));
     EmitVertex();
 
     // d: right-bottom
     vec2 vd = pos.xy + vec2(0.5, -0.5) * size;
     gl_Position = dvd_ProjectionMatrix * vec4(vd, pos.zw);
-    g_out._texCoord = vec2(0.5 + (texCoordOffset[0].x * 0.5),
-                          (0.0 + (texCoordOffset[0].y * 0.5)));
+    _out._texCoord = vec2(0.5 + (texCoordOffset[0].x * 0.5),
+                         (0.0 + (texCoordOffset[0].y * 0.5)));
     EmitVertex();
 
     // b: left-top
     vec2 vb = pos.xy + vec2(-0.5, 0.5) * size;
     gl_Position = dvd_ProjectionMatrix * vec4(vb, pos.zw);
-    g_out._texCoord = vec2(0.0 + (texCoordOffset[0].x * 0.5), 
-                          (0.5 + (texCoordOffset[0].y * 0.5)));
+    _out._texCoord = vec2(0.0 + (texCoordOffset[0].x * 0.5), 
+                         (0.5 + (texCoordOffset[0].y * 0.5)));
     EmitVertex();
     
     // c: right-top
     vec2 vc = pos.xy + vec2(0.5, 0.5) * size;
     gl_Position = dvd_ProjectionMatrix * vec4(vc, pos.zw);
-    g_out._texCoord = vec2(0.5 + (texCoordOffset[0].x * 0.5),
-                          (0.5 + (texCoordOffset[0].y * 0.5)));
+    _out._texCoord = vec2(0.5 + (texCoordOffset[0].x * 0.5),
+                         (0.5 + (texCoordOffset[0].y * 0.5)));
     EmitVertex();
 
     EndPrimitive();

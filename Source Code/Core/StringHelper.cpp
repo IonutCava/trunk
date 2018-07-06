@@ -72,6 +72,11 @@ stringImpl StringFormat(const char *const format, ...) {
     return stringImpl(temp.data(), length);
 }
 
+
+U32 LineCount(const stringImpl& str) {
+    return to_U32(std::count(std::cbegin(str), std::cend(str), '\n')) + 1;
+}
+
 bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b) {
     if (a.length() == b.length()) {
         return std::equal(std::cbegin(b),

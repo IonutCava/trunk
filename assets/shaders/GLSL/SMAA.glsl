@@ -17,23 +17,23 @@ void main() {
     vec2 offset = dvd_invScreenDimensions() * (0.5 + dvd_fxaaSubpixShift);
 
     gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
-    g_out._texCoord = vec2(1.0, 1.0);
-    _posPos = vec4(g_out._texCoord, g_out._texCoord - offset);
+    _out._texCoord = vec2(1.0, 1.0);
+    _posPos = vec4(_out._texCoord, _out._texCoord - offset);
     EmitVertex();
 
     gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
-    g_out._texCoord = vec2(0.0, 1.0);
-    _posPos = vec4(g_out._texCoord, g_out._texCoord - offset);
+    _out._texCoord = vec2(0.0, 1.0);
+    _posPos = vec4(_out._texCoord, _out._texCoord - offset);
     EmitVertex();
 
     gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
-    g_out._texCoord = vec2(1.0, 0.0);
-    _posPos = vec4(g_out._texCoord, g_out._texCoord - offset);
+    _out._texCoord = vec2(1.0, 0.0);
+    _posPos = vec4(_out._texCoord, _out._texCoord - offset);
     EmitVertex();
 
     gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
-    g_out._texCoord = vec2(0.0, 0.0);
-    _posPos = vec4(g_out._texCoord, g_out._texCoord - offset);
+    _out._texCoord = vec2(0.0, 0.0);
+    _posPos = vec4(_out._texCoord, _out._texCoord - offset);
     EmitVertex();
 
     EndPrimitive();

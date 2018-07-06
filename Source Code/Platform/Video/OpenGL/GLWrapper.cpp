@@ -143,7 +143,8 @@ void GL_API::popDebugMessage() {
     glPopDebugGroup();
 }
 
-void GL_API::appendToShaderHeader(ShaderType type, const stringImpl& entry,
+void GL_API::appendToShaderHeader(ShaderType type,
+                                  const stringImpl& entry,
                                   ShaderOffsetArray& inOutOffset) {
     GLuint index = to_U32(type);
     stringImpl stage;
@@ -182,21 +183,51 @@ void GL_API::appendToShaderHeader(ShaderType type, const stringImpl& entry,
     }
 
     glswAddDirectiveToken(stage.c_str(), entry.c_str());
-    inOutOffset[index]++;
+
+    // include directives are handles differently
+    if (entry.find("#include") == std::string::npos) {
+        inOutOffset[index] += Util::LineCount(entry);
+    } else {
+        vectorImpl<stringImpl> tempAtoms;
+        inOutOffset[index] += Util::LineCount(glShader::preprocessIncludes("header", entry, 0, tempAtoms));
+    }
 }
 
 /// Prepare our shader loading system
 bool GL_API::initShaders() {
-    static const stringImpl shaderVaryings[] = { "flat uint dvd_drawID;",
-                                                 "vec2 _texCoord;",
-                                                 "vec4 _vertexW;",
-                                                 "vec4 _vertexWV;",
-                                                 "vec3 _normalWV;",
-                                                 "vec3 _tangentWV;",
-                                                 "vec3 _bitangentWV;"
-                                                };
+
+    
+    static const std::pair<stringImpl, stringImpl>  shaderVaryings[] =
+    { {"flat uint" , "dvd_drawID"},
+      { "vec2" , "_texCoord"},
+      { "vec4" , "_vertexW"},
+      { "vec4" , "_vertexWV"},
+      { "vec3" , "_normalWV"},
+      { "vec3" , "_tangentWV"},
+      { "vec3" , "_bitangentWV"}
+    };
+
+    auto getPassData = [](ShaderType type) -> stringImpl {
+        stringImpl baseString = "     _out.%s = _in[index].%s;";
+        if (type == ShaderType::TESSELATION_CTRL) {
+            baseString = "    _out[gl_InvocationID].%s = _in[index].%s;";
+        }
+
+        stringImpl passData("void PassData(in int index) {");
+        passData.append("\n");
+        for (const std::pair<stringImpl, stringImpl>& var : shaderVaryings) {
+            passData.append(Util::StringFormat(baseString.c_str(), var.second.c_str(), var.second.c_str()));
+            passData.append("\n");
+        }
+        passData.append("}\n");
+
+        return passData;
+    };
+
     // Initialize GLSW
     GLint glswState = glswInit();
+
+    glShaderProgram::initStaticData();
 
     ShaderOffsetArray lineOffsets = {0};
   
@@ -572,41 +603,70 @@ bool GL_API::initShaders() {
             ") in uint inLineWidthData;",
         lineOffsets);
 
-    // INTERFACE BLOCKS BEGIN
-    appendToShaderHeader(ShaderType::COUNT, "", lineOffsets);
-    appendToShaderHeader(ShaderType::VERTEX, "out PerVertexData{", lineOffsets);
-    appendToShaderHeader(ShaderType::FRAGMENT, "in  PerVertexData{", lineOffsets);
-    appendToShaderHeader(ShaderType::GEOMETRY, "in  PerVertexData{", lineOffsets);
-    for (const stringImpl& entry : shaderVaryings) {
-        appendToShaderHeader(ShaderType::VERTEX, "    " + entry, lineOffsets);
-        appendToShaderHeader(ShaderType::FRAGMENT, "    " + entry, lineOffsets);
-        appendToShaderHeader(ShaderType::GEOMETRY, "    " + entry, lineOffsets);
-    }
-    appendToShaderHeader(ShaderType::GEOMETRY, "} v_in[];", lineOffsets);
-    appendToShaderHeader(ShaderType::GEOMETRY, "out  PerVertexData{", lineOffsets);
-    for (const stringImpl& entry : shaderVaryings) {
-        appendToShaderHeader(ShaderType::GEOMETRY, "    " + entry, lineOffsets);
-    }
-    appendToShaderHeader(ShaderType::GEOMETRY, "} g_out;", lineOffsets);
-    appendToShaderHeader(ShaderType::FRAGMENT, "} f_in;", lineOffsets);
-    appendToShaderHeader(ShaderType::VERTEX, "} v_out;", lineOffsets);
-    appendToShaderHeader(ShaderType::VERTEX, "#define VAR v_out", lineOffsets);
-    appendToShaderHeader(ShaderType::GEOMETRY, "#define VAR v_in", lineOffsets);
-    appendToShaderHeader(ShaderType::FRAGMENT, "#define VAR f_in", lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, "", lineOffsets);
-    // INTERFACE BLOCKS END
 
-    appendToShaderHeader(ShaderType::GEOMETRY,
-                         "#include \"inOut.geom\"",
-                         lineOffsets);
-    lineOffsets[to_base(ShaderType::GEOMETRY)] += 18;
+    auto addVaryings = [&](ShaderType type, ShaderOffsetArray& lineOffsets) {
+        for (const std::pair<stringImpl, stringImpl>& entry : shaderVaryings) {
+            appendToShaderHeader(type, Util::StringFormat("    %s %s;", entry.first.c_str(), entry.second.c_str()), lineOffsets);
+        }
+    };
+
+    // Vertex shader output
+    appendToShaderHeader(ShaderType::VERTEX, "out Data {", lineOffsets);
+        addVaryings(ShaderType::VERTEX, lineOffsets);
+    appendToShaderHeader(ShaderType::VERTEX, "} _out;\n", lineOffsets);
+
+    // Tessellation Control shader input
+    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "in Data {", lineOffsets);
+        addVaryings(ShaderType::TESSELATION_CTRL, lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "} _in[];\n", lineOffsets);
+
+    // Tessellation Control shader output
+    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "out Data {", lineOffsets);
+        addVaryings(ShaderType::TESSELATION_CTRL, lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "} _out[];\n", lineOffsets);
+
+    appendToShaderHeader(ShaderType::TESSELATION_CTRL, getPassData(ShaderType::TESSELATION_CTRL), lineOffsets);
+
+    // Tessellation Eval shader input
+    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "in Data {", lineOffsets);
+        addVaryings(ShaderType::TESSELATION_EVAL, lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "} _in[];\n", lineOffsets);
+
+    // Tessellation Eval shader output
+    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "out Data {", lineOffsets);
+        addVaryings(ShaderType::TESSELATION_EVAL, lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "} _out;\n", lineOffsets);
+
+    appendToShaderHeader(ShaderType::TESSELATION_EVAL, getPassData(ShaderType::TESSELATION_EVAL), lineOffsets);
+
+    // Geometry shader input
+    appendToShaderHeader(ShaderType::GEOMETRY, "in Data {", lineOffsets);
+        addVaryings(ShaderType::GEOMETRY, lineOffsets);
+    appendToShaderHeader(ShaderType::GEOMETRY, "} _in[];\n", lineOffsets);
+
+    // Geometry shader output
+    appendToShaderHeader(ShaderType::GEOMETRY, "out Data {", lineOffsets);
+        addVaryings(ShaderType::GEOMETRY, lineOffsets);
+    appendToShaderHeader(ShaderType::GEOMETRY, "} _out;\n", lineOffsets);
+
+    appendToShaderHeader(ShaderType::GEOMETRY, getPassData(ShaderType::GEOMETRY), lineOffsets);
+
+    // Fragment shader input
+    appendToShaderHeader(ShaderType::FRAGMENT, "in Data {", lineOffsets);
+        addVaryings(ShaderType::FRAGMENT, lineOffsets);
+    appendToShaderHeader(ShaderType::FRAGMENT, "} _in;\n", lineOffsets);
+        
+    appendToShaderHeader(ShaderType::VERTEX, "#define VAR _out", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "#define VAR _in[gl_InvocationID]", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "#define VAR _in", lineOffsets);
+    appendToShaderHeader(ShaderType::GEOMETRY, "#define VAR _in", lineOffsets);
+    appendToShaderHeader(ShaderType::FRAGMENT, "#define VAR _in", lineOffsets);
 
     // GPU specific data, such as GFXDevice's main uniform block and clipping
     // planes are defined in an external file included in every shader
     appendToShaderHeader(ShaderType::COUNT,
                         "#include \"nodeDataInput.cmn\"",
                          lineOffsets);
-    lineOffsets[to_base(ShaderType::COUNT)] += 55;
 
     Attorney::GLAPIShaderProgram::setGlobalLineOffset(
         lineOffsets[to_base(ShaderType::COUNT)]);
@@ -637,6 +697,8 @@ bool GL_API::initShaders() {
 
 /// Revert everything that was set up in "initShaders()"
 bool GL_API::deInitShaders() {
+    glShaderProgram::destroyStaticData();
+
     // Shutdown GLSW
     return (glswShutdown() == 1);
 }

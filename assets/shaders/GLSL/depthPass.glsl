@@ -36,7 +36,7 @@ void main()
         mat4 vp = _lightVP[gl_InvocationID];
         for (int i = 0; i < gl_in.length(); ++i)
         {
-            passVertex(i);
+            PassData(i);
             geom_vertexWVP = vp * gl_in[i].gl_Position;
             gl_Layer = gl_InvocationID + dvd_shadowArrayOffset;
             gl_Position = geom_vertexWVP;

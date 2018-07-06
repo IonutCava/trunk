@@ -64,6 +64,9 @@ class glShaderProgram final : public ShaderProgram {
                              bool asyncLoad);
     ~glShaderProgram();
 
+    static void initStaticData();
+    static void destroyStaticData();
+
     /// Make sure this program is ready for deletion
     bool unload() override;
     /// Bind this shader program

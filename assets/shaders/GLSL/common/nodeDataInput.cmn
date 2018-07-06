@@ -47,7 +47,7 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 };
 
 vec2 dvd_invScreenDimensions() {
-    return 1.0 / dvd_ViewPort.zw;
+    return dvd_ViewPort.zw * 0.5;
 }
 
 #define dvd_shadowArrayOffset int(dvd_renderProperties.x)

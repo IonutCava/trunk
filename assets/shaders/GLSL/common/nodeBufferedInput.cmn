@@ -33,12 +33,16 @@ mat4 dvd_WorldMatrix(in uint index) {
     return dvd_Matrices[index]._worldMatrix;
 }
 
+mat4 dvd_WorldViewMatrix(in uint index) {
+    return dvd_ViewMatrix * dvd_WorldMatrix(index);
+}
+
 mat3 dvd_NormalMatrixWV(in uint index) {
     return mat3(dvd_Matrices[index]._normalMatrixWV);
 }
 
-ivec4 dvd_BufferIntegerValues() {
-    return ivec4(dvd_Matrices[VAR.dvd_drawID]._properties);
+ivec4 dvd_BufferIntegerValues(in uint index) {
+    return ivec4(dvd_Matrices[index]._properties);
 }
 
 
@@ -47,7 +51,7 @@ ivec4 dvd_BufferIntegerValues() {
 #endif
 
 // x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - occlusion cull data
-#define dvd_lodLevel dvd_BufferIntegerValues().z
+#define dvd_lodLevel(X) dvd_BufferIntegerValues(X).z
 #define dvd_customData dvd_Matrices[VAR.dvd_drawID]._properties.w
 #define dvd_reflectionIndex uint(dvd_Matrices[VAR.dvd_drawID]._normalMatrixWV[1][3])
 #define dvd_refractionIndex uint(dvd_Matrices[VAR.dvd_drawID]._normalMatrixWV[2][3])
@@ -56,9 +60,9 @@ ivec4 dvd_BufferIntegerValues() {
 // x - useAlphaTest; y - textureOperation; z - parallax/relief mapping factor, w - reserved
 #define buffer_matProperties dvd_Matrices[VAR.dvd_drawID]._colourMatrix[3]
 
-#define dvd_isSelected     (dvd_BufferIntegerValues().x < -0.5)
-#define dvd_isHighlighted  (dvd_BufferIntegerValues().x >  0.5)
-#define dvd_shadowMapping  (dvd_BufferIntegerValues().y > 0.0)
+#define dvd_isSelected     (dvd_BufferIntegerValues(VAR.dvd_drawID).x < -0.5)
+#define dvd_isHighlighted  (dvd_BufferIntegerValues(VAR.dvd_drawID).x >  0.5)
+#define dvd_shadowMapping  (dvd_BufferIntegerValues(VAR.dvd_drawID).y > 0.0)
 #define dvd_useAlphaTest   (buffer_matProperties.x > 0.0)
 #define dvd_texOperation   uint(buffer_matProperties.y)
 #define dvd_parallaxFactor buffer_matProperties.z

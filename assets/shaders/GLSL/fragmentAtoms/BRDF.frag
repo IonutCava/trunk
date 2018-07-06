@@ -42,7 +42,7 @@ uint GetNumLightsInThisTile(uint nTileIndex)
 }
 
 bool isReflective(float specularCoeff) {
-    return specularCoeff > 0.75 && dvd_lodLevel < 1;
+    return specularCoeff > 0.75 && dvd_lodLevel(VAR.dvd_drawID) < 1;
 }
 
 vec4 getPixelColour(const in vec2 texCoord) {

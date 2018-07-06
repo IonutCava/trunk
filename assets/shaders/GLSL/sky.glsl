@@ -27,7 +27,7 @@ uniform vec3 sun_colour;
 #include "utility.frag"
 
 vec3 sunColour(){
-    vec3 vert = normalize(f_in._vertexW.xyz);
+    vec3 vert = normalize(_in._vertexW.xyz);
     vec3 sun = normalize(sun_vector);
         
     float day_factor = max(-sun.y, 0.0);
