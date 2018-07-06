@@ -1,5 +1,5 @@
 /**************************************************************************************************************\
-*                             Welcome to <ToDo> Engine's config settings!                                     *
+*                             Welcome to DIVIDE Engine's config settings!                                     *
 * From here you can decide how you want to build your release of the code.
 * - Configure if you want to you a PhysX generated terrain or an openGl generated one
 * - Decide how many threads your application can use (maximum upper limit).

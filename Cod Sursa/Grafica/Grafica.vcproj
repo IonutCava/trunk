@@ -61,7 +61,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/Y3"
-				AdditionalDependencies="glew32d.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib VCOMP.lib"
+				AdditionalDependencies="glew32d.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib VCOMP.lib ILU.lib ILUT.lib"
 				ShowProgress="0"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90_dbg.exe"
 				AdditionalLibraryDirectories="&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\boost&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\physx&quot;"
@@ -141,7 +141,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib VCOMP.lib"
+				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib VCOMP.lib ILU.lib ILUT.lib"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90.exe"
 				AdditionalLibraryDirectories="&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\boost&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\physx&quot;"
 				IgnoreDefaultLibraryNames="LIBCMTD.lib"
@@ -459,6 +459,22 @@
 			Name="Terrain"
 			>
 			<File
+				RelativePath="..\Terrain\Quadtree.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Terrain\Quadtree.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Terrain\QuadtreeNode.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Terrain\QuadtreeNode.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Terrain\Sky.cpp"
 				>
 			</File>
@@ -510,14 +526,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Utility\Quadtree.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Utility\QuadtreeNode.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\Utility\XMLParser.cpp"
 				>
 			</File>
@@ -554,14 +562,6 @@
 				</File>
 				<File
 					RelativePath="..\Utility\Headers\ParamHandler.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Utility\Headers\Quadtree.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Utility\Headers\QuadtreeNode.h"
 					>
 				</File>
 				<File
@@ -678,6 +678,14 @@
 				</File>
 				<File
 					RelativePath="..\Hardware\Video\GFXDevice.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Hardware\Video\Light.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Hardware\Video\Light.h"
 					>
 				</File>
 				<File

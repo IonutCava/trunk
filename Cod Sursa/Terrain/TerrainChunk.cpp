@@ -2,6 +2,7 @@
 #include "Utility/Headers/Guardian.h"
 #include "Utility/Headers/ParamHandler.h"
 #include "Managers/SceneManager.h"
+#include "Managers/TerrainManager.h"
 
 void TerrainChunk::Load(U32 depth, ivec2 pos, ivec2 HMsize)
 {
@@ -16,50 +17,23 @@ void TerrainChunk::addObject(ImportedModel* obj)
 
 void TerrainChunk::addTree(vec3 pos,F32 rotation,F32 scale)
 {
-	vector<FileData> DA = Guardian::getInstance().getModelDataArray();
+	vector<FileData> DA = SceneManager::getInstance().getVegetationDataArray();
+	int i = random((int)DA.size() - 1);
+	
+	cout << "Adding tree [ " << i <<  " ] : " << DA[i].ModelName << endl;
 	Tree t;
-    ImportedModel *temp = NULL;
-	int numberOfMeshes = SceneManager::getInstance().getNumberOfObjects();
-	if (numberOfMeshes < 1) return;
-	int i = random(numberOfMeshes);
+	t.geometry = ResourceManager::getInstance().LoadResource<ImportedModel>(DA[i].ModelName);
 
-	while(!DA[i].Vegetation)	i = random(numberOfMeshes);	
-
-
-	cout << "Adding tree: " << DA[i].ModelName << endl;
-	if(!SceneManager::getInstance().getModelArray().empty())
+	if(t.geometry)
 	{
-		temp = SceneManager::getInstance().findObject(DA.at(i).ModelName);
-		if(temp != NULL)
-		{
-			glmSetPosition(temp,pos);
-			glmSetRotation(temp,vec3(0,rotation,0));
-			//glmSetScale(temp,scale*DA[i].ScaleFactor);
-		}
-		else
-		{
-			temp = ReadOBJ(DA[i].ModelName.c_str(),
-					       pos,
-						   (/*scale**/DA[i].ScaleFactor),
-						   vec3(0,rotation,0),
-						   true);
-			SceneManager::getInstance().getModelArray().push_back(temp);
-
-		}
+		t.position = pos;
+		t.orientation = vec3(0,rotation,0);
+		t.scale = scale*DA[i].scale;
+		t.name = "Tree " + m_tTrees.size();
+		((ImportedModel*)t.geometry)->setShader(ResourceManager::getInstance().LoadResource<Shader>("terrain_tree"));
 	}
-	else
-	{
-		temp = ReadOBJ(DA[i].ModelName.c_str(),
-				       pos,
-					  (/*scale**/DA[i].ScaleFactor),
-					   vec3(0,rotation,0),
-					   true);
-		SceneManager::getInstance().getModelArray().push_back(temp);
-	}
-	t.ID = glmList(temp, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL | GLM_2_SIDED);
-	t.name = temp->ModelName;
 	m_tTrees.push_back(t);
-	//delete temp;
+
 }
 
 void TerrainChunk::ComputeIndicesArray(U32 lod, U32 depth, ivec2 pos, ivec2 HMsize)
@@ -116,19 +90,35 @@ int TerrainChunk::DrawObjects(GLuint lod)
 	assert(lod < TERRAIN_CHUNKS_LOD);
 
 	for(int i=0; i<(int)m_tObject.size(); i++)
-		glCallList(m_tObject[i]->ListID);
+		m_tObject[i]->Draw();
 
 	return (int)m_tObject.size();
 }
 
 void TerrainChunk::DrawTrees(GLuint lod, F32 d)
 {
+	if(d > SceneManager::getInstance().getTerrainManager()->getTreeVisibility()) return;
+	F32 _windX = SceneManager::getInstance().getTerrainManager()->getWindDirX();
+	F32 _windZ = SceneManager::getInstance().getTerrainManager()->getWindDirX();
+	F32 _windS = SceneManager::getInstance().getTerrainManager()->getWindSpeed();
 	
 	assert(lod < TERRAIN_CHUNKS_LOD);
-	if(d > TerrainManager::getInstance().getTreeVisibility()) return;
+	
 	for(int i=0; i<(int)m_tTrees.size(); i++)
 	{
-		glCallList(m_tTrees[i].ID);
+		GFXDevice::getInstance().pushMatrix();
+		GFXDevice::getInstance().translate(m_tTrees[i].position);
+		GFXDevice::getInstance().rotate(m_tTrees[i].orientation);
+		GFXDevice::getInstance().scale(m_tTrees[i].scale);
+		((ImportedModel*)m_tTrees[i].geometry)->getShader()->bind();
+		((ImportedModel*)m_tTrees[i].geometry)->getShader()->Uniform("time", GETTIME());
+		((ImportedModel*)m_tTrees[i].geometry)->getShader()->Uniform("scale", m_tTrees[i].scale.y);
+		((ImportedModel*)m_tTrees[i].geometry)->getShader()->Uniform("windDirectionX", _windX);
+		((ImportedModel*)m_tTrees[i].geometry)->getShader()->Uniform("windDirectionZ", _windZ);
+		((ImportedModel*)m_tTrees[i].geometry)->getShader()->Uniform("windSpeed", _windS);
+			((ImportedModel*)m_tTrees[i].geometry)->Draw();
+		((ImportedModel*)m_tTrees[i].geometry)->getShader()->unbind();
+		GFXDevice::getInstance().popMatrix();
 	}
 }
 
@@ -146,7 +136,7 @@ int TerrainChunk::DrawGround(GLuint lod)
 void  TerrainChunk::DrawGrass(GLuint lod, F32 d)
 {
 	
-	F32 grassVisibility = TerrainManager::getInstance().getGrassVisibility();
+	F32 grassVisibility = SceneManager::getInstance().getTerrainManager()->getGrassVisibility();
 	assert(lod < TERRAIN_CHUNKS_LOD);
 	if(lod != 0) return;
 	if(d > grassVisibility) return;

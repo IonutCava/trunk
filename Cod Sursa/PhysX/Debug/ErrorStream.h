@@ -1,7 +1,7 @@
 #ifndef _ERROR_STREAM_H
 #define _ERROR_STREAM_H
 
-#ifdef WIN32
+#ifdef _WIN32
 #define NOMINMAX
 #include <windows.h>
 #endif

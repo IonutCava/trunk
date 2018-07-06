@@ -1,6 +1,7 @@
 #include "pxDebugRenderer.h"
 #include "NxDebugRenderable.h"
-#include "Rendering/common.h"
+#include "resource.h"
+#include "Hardware/Video/GFXDevice.h"
 
 void DebugRenderer::renderBuffer(F32* pVertList, F32* pColorList, int type, int num)
 {

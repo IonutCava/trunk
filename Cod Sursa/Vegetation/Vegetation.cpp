@@ -1,27 +1,23 @@
-#include "Terrain/Terrain.h"
 #include "Vegetation.h"
 
 #include "Utility/Headers/Guardian.h"
 #include "Rendering/Frustum.h"
-#include "Utility/Headers/Quadtree.h"
-#include "Utility/Headers/QuadtreeNode.h"
+#include "Terrain/Quadtree.h"
+#include "Terrain/QuadtreeNode.h"
 #include "Terrain/TerrainChunk.h"
 #include "Hardware/Video/VertexBufferObject.h"
 #include "PhysX/PhysX.h"
+#include "Managers/SceneManager.h"
+#include "Hardware/Video/GFXDevice.h"
 
-
-
-void Vegetation::initialize(string grassShader, string treeShader)
+void Vegetation::initialize(string grassShader)
 {
-	_grassShader  = ResourceManager::getInstance().LoadResource<Shader>(grassShader);
-    _treeShader   = ResourceManager::getInstance().LoadResource<Shader>(treeShader+".vert");
+	_grassShader  = _res.LoadResource<Shader>(grassShader);
 	_grassDensity = _grassDensity/_billboardCount;
-
 	
 	for(U32 i = 0 ; i < _billboardCount; i++) _success = generateGrass(i);
 	if(_success) _success = generateTrees();
 
-	//_map.Destroy();
 	_render = true;
 
 }
@@ -29,18 +25,21 @@ void Vegetation::initialize(string grassShader, string treeShader)
 void Vegetation::draw(bool drawInReflexion)
 {
 	if(!_render || !_success) return;
-
 	glEnable(GL_BLEND);
 	_grassShader->bind();
+	_windX = SceneManager::getInstance().getTerrainManager()->getWindDirX();
+	_windZ = SceneManager::getInstance().getTerrainManager()->getWindDirZ();
+	_windS = SceneManager::getInstance().getTerrainManager()->getWindSpeed();
+	_time = GETTIME();
 	for(int index = 0; index < _billboardCount; index++)
 	{
 			_grassBillboards[index]->Bind(0);
 			_grassShader->UniformTexture("texDiffuse", 0);
 			_grassShader->Uniform("depth_map_size", 1024);
-			_grassShader->Uniform("time", GETTIME());
-			_grassShader->Uniform("windDirectionX", TerrainManager::getInstance().getWindDirX());
-			_grassShader->Uniform("windDirectionZ", TerrainManager::getInstance().getWindDirZ());
-			_grassShader->Uniform("windSpeed", TerrainManager::getInstance().getWindSpeed());
+			_grassShader->Uniform("time", _time);
+			_grassShader->Uniform("windDirectionX",_windX);
+			_grassShader->Uniform("windDirectionZ",_windZ);
+			_grassShader->Uniform("windSpeed", _windS);
 			_grassShader->Uniform("lod_metric", 1000.0f);
 			_grassShader->Uniform("scale", _grassScale);
 				DrawGrass(index,drawInReflexion);
@@ -51,22 +50,17 @@ void Vegetation::draw(bool drawInReflexion)
 	_grassShader->unbind();
 	glDisable(GL_BLEND);
 
-	_treeShader->bind();
-	_treeShader->Uniform("time", GETTIME());
-	_treeShader->Uniform("windDirectionX", TerrainManager::getInstance().getWindDirX());
-	_treeShader->Uniform("windDirectionZ",TerrainManager::getInstance().getWindDirZ());
-	_treeShader->Uniform("windSpeed", TerrainManager::getInstance().getWindSpeed());
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 		DrawTrees(drawInReflexion);
 	glPopAttrib();
-	_treeShader->unbind();
+
 }
 
 
 
 bool Vegetation::generateGrass(int index)
 {
-	std::cout << "Generating Grass...[" << _grassDensity << "]" << std::endl;
+	cout << "Generating Grass...[" << _grassDensity << "]" << endl;
 	assert(_map.data);
 	vec2 pos0(cosf(RADIANS(0.0f)), sinf(RADIANS(0.0f)));
 	vec2 pos120(cosf(RADIANS(120.0f)), sinf(RADIANS(120.0f)));
@@ -149,6 +143,11 @@ bool Vegetation::generateGrass(int index)
 
 bool Vegetation::generateTrees()
 {
+	if(SceneManager::getInstance().getActiveScene().getVegetationDataArray().size() < 1)
+	{
+		cout << "Vegetation: Insufficient base geometry for tree generation. Skipping!" << endl;
+		return true;
+	}
 	std::cout << "Generating Vegetation... [" << _treeDensity << "]" << std::endl;
 	
 	for(int k=0; k<(int)_treeDensity; k++) {
@@ -169,7 +168,7 @@ bool Vegetation::generateTrees()
 		TerrainChunk* chunk = node->getChunk();
 		assert(chunk);
 		P.y -= 0.2f;
-		chunk->addTree(P, random(360.0f),random(_treeScale - 0.5f , _treeScale));
+		chunk->addTree(P, random(360.0f),random(_treeScale/2 , _treeScale));
 
 
 	}

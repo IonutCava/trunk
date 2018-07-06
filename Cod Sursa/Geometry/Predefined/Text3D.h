@@ -7,6 +7,9 @@ class Text3D : public Object3D
 public:
 	Text3D(){};
 	~Text3D(){};
+	bool load(const std::string &name) {_text = name; return true;}
+	bool unload() {_text.clear(); return true;}
+	string& getText() {return _text;}
 private:
 	string _text;
 };

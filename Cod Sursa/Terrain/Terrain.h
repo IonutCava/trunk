@@ -6,13 +6,12 @@
 #include "Utility/Headers/DataTypes.h"
 #include "TextureManager/ImageTools.h"
 #include "Hardware/Video/FrameBufferObject.h"
-#include "Vegetation/Vegetation.h"
 #include "Managers/ResourceManager.h"
+#include "Vegetation/Vegetation.h"
 
 class Shader;
 class Quadtree;
 class Texture2D;
-class Vegetation;
 class VertexBufferObject;
 
 class Terrain : public GraphicResource
@@ -28,7 +27,6 @@ public:
 	bool computeBoundingBox();
 	
 	void destroy();
-	bool genLightMap();
 	int  drawGround(bool drawInReflexion) const;
 	void draw() const;
 	int  drawObjects() const;
@@ -48,8 +46,8 @@ public:
 	void setDiffuse(Texture2D *t){m_pTerrainDiffuseMap = t;}
 	void setLoaded(bool loaded){if(!_loaded) _wasLoaded = _loaded; _loaded = loaded;} 
 	void restoreLoaded(){_loaded = _wasLoaded;}
-	void addVegetation(Vegetation* veg, string grassShader, string treeShader){_veg = veg; _grassShader = grassShader; _treeShader = treeShader;} 
-	void initializeVegetation() { _veg->initialize(_grassShader, _treeShader);}
+	void addVegetation(Vegetation* veg, string grassShader){_veg = veg; _grassShader = grassShader;} 
+	void initializeVegetation() { _veg->initialize(_grassShader);}
 	void toggleVegetation(bool state){ _veg->toggleRendering(state); }
 	void toggleReflexionRendering(bool state){_drawInReflexion = state; }
 	bool postLoad();
@@ -69,10 +67,10 @@ private:
 
 
 	Shader *terrainShader;
-	std::vector<Texture2D*>	m_tTextures;
+	vector<Texture2D*>	m_tTextures;
 	Texture2D*				m_pTerrainDiffuseMap;
-	Vegetation              *_veg;
-	string                  _grassShader,_treeShader;
+	Vegetation*             _veg;
+	string                  _grassShader;
 	
 };
 

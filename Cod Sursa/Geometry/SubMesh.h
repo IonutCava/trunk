@@ -1,5 +1,6 @@
 #ifndef _SUB_MESH_H_
 #define _SUB_MESH_H_
+#include "Object3D.h"
 
 /*
 DIVIDE-Engine: 21.10.2010 (Ionut Cava)
@@ -16,19 +17,28 @@ and a name.
 
 #include "resource.h"
 #include "Hardware/Video/VertexBufferObject.h"
+#include "Hardware/Video/GFXDevice.h"
+#include "Utility/Headers/BoundingBox.h"
 
-class SubMesh
+class SubMesh : public Object3D
 {
 
 public:
-	SubMesh(const string& name) : _name(name) {}
-	VertexBufferObject* getGeometryVBO() {return _geometry;} 
-	string& getName() {return _name;}
+	SubMesh(const std::string& name) : Object3D(name),
+									  _geometry(GFXDevice::getInstance().newVBO()){}
+
+	bool load(const std::string& name) { computeBoundingBox(); return true;}
+	bool unload() {return true;}
+
+	inline VertexBufferObject* getGeometryVBO() {return _geometry;} 
+	inline BoundingBox&	       getBoundingBox() {return _boundingBox;}
+	inline string&             getName() {return _name;}
+
 private:
-	string _name;
-	vec3 _position,_rotation,_scale;
+	void computeBoundingBox();
 	bool _visibleToNetwork, _render;
 	VertexBufferObject* _geometry;
+	BoundingBox			_boundingBox;
 	//vector<Materials> _materials;
 	
 };

@@ -18,9 +18,9 @@ int Frustum::ContainsSphere(const vec3& center, float radius) const
 	for(int p = 0; p < 6; p++)
 	{
 		F32 t =	m_tFrustumPlanes[p][0] * center.x +
-					m_tFrustumPlanes[p][1] * center.y +
-					m_tFrustumPlanes[p][2] * center.z +
-					m_tFrustumPlanes[p][3];
+				m_tFrustumPlanes[p][1] * center.y +
+				m_tFrustumPlanes[p][2] * center.z +
+				m_tFrustumPlanes[p][3];
 
 		if( t < -radius)
 			return FRUSTUM_OUT;
@@ -52,9 +52,9 @@ int Frustum::ContainsBoundingBox(const BoundingBox& bbox) const
 		for(int c=0; c<8; c++)
 		{
 			F32 side =	m_tFrustumPlanes[p][0] * tCorners[c].x +
-							m_tFrustumPlanes[p][1] * tCorners[c].y +
-							m_tFrustumPlanes[p][2] * tCorners[c].z +
-							m_tFrustumPlanes[p][3];
+						m_tFrustumPlanes[p][1] * tCorners[c].y +
+						m_tFrustumPlanes[p][2] * tCorners[c].z +
+						m_tFrustumPlanes[p][3];
 			if(side < 0) {
 				iPtIn = 0;
 				iInCount--;
@@ -159,7 +159,7 @@ void Frustum::Extract(const vec3& eye)
 	m_tFrustumPlanes[4][3] /= t;
 
 	
-	m_tFrustumPlanes[5][0] = m_mtxMVProj[ 3] + m_mtxMVProj[ 2];
+	m_tFrustumPlanes[5][0] = m_mtxMVProj[3] + m_mtxMVProj[ 2];
 	m_tFrustumPlanes[5][1] = m_mtxMVProj[ 7] + m_mtxMVProj[ 6];
 	m_tFrustumPlanes[5][2] = m_mtxMVProj[11] + m_mtxMVProj[10];
 	m_tFrustumPlanes[5][3] = m_mtxMVProj[15] + m_mtxMVProj[14];
@@ -170,7 +170,8 @@ void Frustum::Extract(const vec3& eye)
 	m_tFrustumPlanes[5][1] /= t;
 	m_tFrustumPlanes[5][2] /= t;
 	m_tFrustumPlanes[5][3] /= t;
-	
+
+
 }
 
 

@@ -1,5 +1,7 @@
 #include "Managers/ResourceManager.h"
 #include "Utility/Headers/Guardian.h"
+#include "Hardware/Video/GFXDevice.h"
+#include "Terrain/Terrain.h"
 
 U32 maxAlloc = 0;
 char* zMaxFile = "";
@@ -54,6 +56,21 @@ T* ResourceManager::LoadResource(const std::string& name)
 }
 
 template<>
+Texture2DFliped* ResourceManager::LoadResource<Texture2DFliped>(const string& name)
+{
+	Resource* ptr = LoadResource(TEXTURE2D,name);
+
+	ptr = new Texture2DFliped();
+	((Texture2DFliped*)ptr)->loadFlipedVertically(name);
+
+	if(!ptr) return NULL;
+
+	_resDB[name] = ptr;
+
+	return (Texture2DFliped*)ptr;
+}
+
+template<>
 Texture2D* ResourceManager::LoadResource<Texture2D>(const string& name)
 {
 	Resource* ptr = LoadResource(TEXTURE2D,name);
@@ -95,7 +112,7 @@ Shader* ResourceManager::LoadResource<Shader>(const string& name)
 
 	return (Shader*)ptr;
 }
-/*
+
 template<>
 ImportedModel* ResourceManager::LoadResource<ImportedModel>(const string& name)
 {
@@ -109,16 +126,14 @@ ImportedModel* ResourceManager::LoadResource<ImportedModel>(const string& name)
 
 	return (ImportedModel*)ptr;
 }
-*/
+
 
 Resource* ResourceManager::LoadResource(RES_TYPE type, const string& name)
 {
-	if(_resDB.find(name) != _resDB.end())
-		return _resDB.find(name)->second;
+	if(_resDB.find(name) != _resDB.end())	return _resDB[name];
 
 	cout << "Resource Manager: Loading resource of type \"";
 		  
-
 	Resource* ptr = NULL;
 
 	switch(type) {
@@ -138,7 +153,7 @@ Resource* ResourceManager::LoadResource(RES_TYPE type, const string& name)
 			ptr = new Terrain();
 			cout << "Terrain";
 			break;
-		case MESH: 
+		case MODEL: 
 			ptr = new ImportedModel();
 			cout << "Mesh";
 			break;

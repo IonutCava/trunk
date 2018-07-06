@@ -15,10 +15,10 @@ private:
 	void closeRenderingApi();
 	void initDevice();
 
-	FrameBufferObject* newFBO(){return new glFrameBufferObject(); }
-	VertexBufferObject* newVBO(){return new glVertexBufferObject(); }
-	Shader* newShader(const char *vsFile, const char *fsFile){return new glShader(vsFile,fsFile); }
-	Shader* newShader(){return new glShader(); }
+	FrameBufferObject* newFBO(){return New glFrameBufferObject(); }
+	VertexBufferObject* newVBO(){return New glVertexBufferObject(); }
+	Shader* newShader(const char *vsFile, const char *fsFile){return New glShader(vsFile,fsFile); }
+	Shader* newShader(){return New glShader(); }
 
 	typedef void (*callback)();	void glCommand(callback f){f();}
 
@@ -60,6 +60,8 @@ private:
 	void setColor(D32 *v);
 	void setColor(int *v);
 
+	void setLight(U32 slot, tr1::unordered_map<string,vec4>& properties);
+	void createLight(U32 slot);
 	~GL_API(){};
 
 SINGLETON_END()

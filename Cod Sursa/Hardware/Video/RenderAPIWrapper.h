@@ -2,24 +2,35 @@
 #define _RENDER_API_H
 
 #include <string>
-#include "FrameBufferObject.h"
-#include "VertexBufferObject.h"
-#include "ShaderHandler.h"
-#include "Geometry/Mesh.h"
-#include "GUI/GUI.h"
+#include "Utility/Headers/DataTypes.h"
+#include <unordered_map>
 
 using namespace std;
 
 enum GraphicsAPI
 {
 	OpenGL10,
+	OpenGL12,
+	OpenGL20,
 	OpenGL21,
+	OpenGL22,
+	OpenGL30,
 	OpenGL32,
 	Direct3D8,
 	Direct3D9,
 	Direct3D10
 };
 
+//Forward declarations
+class Mesh;
+class Text;
+class Shader;
+class Button;
+class SubMesh;
+class FrameBufferObject;
+class VertexBufferObject;
+
+//Renderer Programming Interface
 class RenderAPI
 {
 
@@ -86,6 +97,9 @@ protected:
 	virtual void setColor(D32 *v) = 0;
 	virtual void setColor(int *v) = 0;
 	/*Color Management*/
+
+	virtual void setLight(U32 slot, tr1::unordered_map<string,vec4>& properties) = 0;
+	virtual void createLight(U32 slot) = 0;
 
 	virtual ~RenderAPI(){};
 

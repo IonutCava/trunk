@@ -3,11 +3,12 @@
 
 #include "Utility/Headers/ParamHandler.h"
 #include "Managers/ResourceManager.h"
+#include "TextureManager/ImageTools.h"
 
 using namespace std;
 
-class Terrain;
 class VertexBufferObject;
+class Terrain;
 
 class Vegetation
 {
@@ -23,10 +24,10 @@ public:
       _grassBillboards(grassBillboards),
 	  _render(false),
 	  _success(false),
-	  res(ResourceManager::getInstance()),
-	  par(ParamHandler::getInstance()){}
+	  _res(ResourceManager::getInstance()),
+	  _par(ParamHandler::getInstance()){}
 
-	void initialize(string grassShader, string treeShader);
+	void initialize(string grassShader);
 	void toggleRendering(bool state){_render = state;}
 	void draw(bool drawInReflexion);
 
@@ -36,11 +37,12 @@ private:
 	Terrain& _terrain;
 	D32 _grassDensity, _treeDensity, _billboardCount;          //Vegetation cumulated density
 	F32 _grassScale, _treeScale;
-	ParamHandler& par;
-	ResourceManager& res;
+	F32 _windX, _windZ, _windS, _time;
+	ParamHandler& _par;
+	ResourceManager& _res;
 	ImageTools::ImageData _map;  //Dispersion map for vegetation placement
 	vector<Texture2D*>	_grassBillboards;
-	Shader *_grassShader, *_treeShader;
+	Shader *_grassShader;
 
 	bool generateTrees();			   //True = Everything OK, False = Error. Check _errorCode
 	bool generateGrass(int index);     //index = current grass type (billboard, vbo etc)

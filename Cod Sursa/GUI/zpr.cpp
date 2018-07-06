@@ -4,6 +4,7 @@
 #include "Utility/Headers/MathHelper.h"
 #include "Utility/Headers/Guardian.h"
 #include "Utility/Headers/ParamHandler.h"
+#include "Rendering/common.h"
 
 namespace ZPR
 {
@@ -14,7 +15,7 @@ D32 _left   = 0.0;
 D32 _right  = 0.0;
 D32 _bottom = 0.0;
 D32 _top    = 0.0;
-D32 _zNear  = 0.1f;
+D32 _zNear  = 0.01f;
 D32 _zFar   = 7000.0f;
 
 static int		gMouseX = 0;
@@ -44,6 +45,7 @@ void Init()
 	getMatrix();
     glutMotionFunc(Motion);
 	glutKeyboardFunc(Keyboard);
+	glutKeyboardUpFunc(KeyboardUp);
     glutMouseFunc(Mouse);
     glutReshapeFunc(Reshape);
 	glutIgnoreKeyRepeat(1);

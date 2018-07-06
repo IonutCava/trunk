@@ -12,8 +12,11 @@
 class Tree
 {
 public:
-	GLuint ID;
-	std::string name;
+	Object3D* geometry;
+	vec3 scale;
+	vec3 position;
+	vec3 orientation;
+	string name;
 };
 
 class TerrainChunk
@@ -29,8 +32,9 @@ public:
 	inline vector<GLuint>&				getIndiceArray(GLuint lod)	{return m_tIndice[lod];}
 	inline vector<GLuint>&				getGrassIndiceArray()		{return m_tGrassIndice;}
 	inline vector<ImportedModel*>&		getObjectsArray()			{return m_tObject;}
-	void									addObject(ImportedModel* obj);
-	void									addTree(vec3 pos, F32 rotation, F32 scale);
+	inline vector<Tree >&               getTreeArray()              {return m_tTrees;}
+	void								addObject(ImportedModel* obj);
+	void								addTree(vec3 pos, F32 rotation, F32 scale);
 	TerrainChunk() {}
 	~TerrainChunk() {Destroy();}
 
@@ -39,13 +43,16 @@ private:
 	void loadTrees();
 
 private:
-	vector<GLuint>		m_tIndice[TERRAIN_CHUNKS_LOD];
+	vector<U32>  		m_tIndice[TERRAIN_CHUNKS_LOD];
 	U32					m_tIndOffsetW[TERRAIN_CHUNKS_LOD];
 	U32					m_tIndOffsetH[TERRAIN_CHUNKS_LOD];
 
-	vector<GLuint>	      m_tGrassIndice;
-	vector<Tree>           m_tTrees;
-	vector<Tree>::iterator m_tTreesIterator;
+	vector<U32>	        m_tGrassIndice;
+
+	//ToDo: Eliminate this hack. Trees hold a pointer to an Object3D object that represents the tree's geometry,
+	//      and has a position, orientation and scale different from that of the object itself.
+	vector<Tree >           m_tTrees;
+	vector<Tree >::iterator m_tTreesIterator;
 
 	vector<ImportedModel*>	m_tObject;
 	string				    previousModel;

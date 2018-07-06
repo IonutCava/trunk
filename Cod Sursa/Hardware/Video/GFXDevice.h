@@ -23,13 +23,25 @@ public:
 	void dxCommand(callback f){DX_API::getInstance().dxCommand(f);}
 	*/
 
+	
 	void translate(F32 x, F32 y, F32 z){_api.translate(x,y,z);}
 	void translate(D32 x, D32 y, D32 z){_api.translate(x,y,z);} 
+	void translate(vec3 trans){_api.translate(trans.x,trans.y,trans.z);}
+
 	void rotate(F32 angle, F32 x, F32 y, F32 z){_api.rotate(angle,x,y,z);}
 	void rotate(D32 angle, D32 x, D32 y, D32 z){_api.rotate(angle,x,y,z);}
+
+	void rotate(vec3 rot)
+	{
+		_api.rotate(rot.x,1.0f,0.0f,0.0f); 
+		_api.rotate(rot.y,0.0f,1.0f,0.0f);
+		_api.rotate(rot.z,0.0f,0.0f,1.0f);
+	}
+
 	void scale(F32 x, F32 y, F32 z){_api.scale(x,y,z);}
 	void scale(D32 x, D32 y, D32 z){_api.scale(x,y,z);}
 	void scale(int x, int y, int z){_api.scale(x,y,z);}
+	void scale(vec3 scale){_api.scale(scale.x,scale.y,scale.z);}
 
 	void clearBuffers(int buffer_mask){_api.clearBuffers(buffer_mask);}
 	void swapBuffers(){_api.swapBuffers();}
@@ -60,6 +72,9 @@ public:
 	void setColor(F32 *v){_api.setColor(v);}
 	void setColor(D32 *v){_api.setColor(v);}
 	void setColor(int *v){_api.setColor(v);}
+
+	void setLight(U32 slot, tr1::unordered_map<string,vec4>& properties){_api.setLight(slot,properties);}
+	void createLight(U32 slot){_api.createLight(slot);}
 
 private:
 	GFXDevice() :

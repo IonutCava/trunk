@@ -1,8 +1,9 @@
 #ifndef _OBJECT_3D_H
 #define _OBJECT_3D_H
 #include "resource.h"
+#include "Utility/Headers/BaseClasses.h"
 
-class Object3D
+class Object3D : public Resource
 {
 public:
 	~Object3D(){}
@@ -10,16 +11,8 @@ public:
 		         _scale(1,1,1),
 				 _orientation(0,0,-1),
 				 _name("default"){};
-	
-	Object3D(vec3& position) : _position(position),
-						      _scale(1,1,1),
-							  _orientation(0,0,-1),
-							  _name("default"){};
-	
-	Object3D(vec3& position, vec3& scale) : _position(position),
-											_scale(scale),
-											_orientation(0,0,-1),
-										    _name("default") {};
+
+	Object3D(const std::string& name) : _name(name) {}
 
 	Object3D(vec3& position, vec3& scale, vec3& orientation) : _position(position),
 															   _scale(scale),
@@ -37,8 +30,6 @@ public:
 
 protected:
 	vec3 _position, _orientation, _scale;
-
-private:
 	string _name;
 };
 

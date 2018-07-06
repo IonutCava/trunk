@@ -3,7 +3,10 @@
 
 #include "Utility/Headers/DataTypes.h"
 #include "Utility/Headers/Singleton.h"
+
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 
 //Code from http://www.gamedev.net/reference/articles/article1382.asp

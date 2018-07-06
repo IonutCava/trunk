@@ -51,6 +51,3 @@ bool TextureCubemap::load(const std::string& name)
 
 	return true;
 }
-
-
-

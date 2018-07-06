@@ -1,19 +1,17 @@
 #include "GLUIManager.h"
-#include "Rendering/common.h"
 #include "Utility/Headers/Guardian.h"
 #include "Utility/Headers/ParamHandler.h"
-
+#include "Managers/SceneManager.h"
 using namespace std;
 
 F32 x = 0, y = 20, z = 0;
-F32 treeviz= 100, grassviz = 100,windspeed = 1;
+F32 treeviz= 100, grassviz = 100, windspeed = 1;
 
 void glui_cb(int control)
 {
    ParamHandler &par = ParamHandler::getInstance();
    switch (control)
    {
-    //  Color Listbox item changed
     case QUIT_ID:
 		Guardian::getInstance().TerminateApplication();
     break;
@@ -36,19 +34,16 @@ void glui_cb(int control)
 		PhysX::getInstance().setDebugRender(!PhysX::getInstance().getDebugRender());
 	break;
 	case ACTOR_POSITION:
-		PhysX::getInstance().setActorDefaultPos(x,y,z);
+		PhysX::getInstance().setActorDefaultPos(vec3(x,y,z));
 	break;
 	case GRASS_VISIBILITY:
-		//par.setParam("grassVisibility",grassviz);
-		TerrainManager::getInstance().setGrassVisibility(grassviz);
+		SceneManager::getInstance().getTerrainManager()->getGrassVisibility() = grassviz;
 	break;
 	case TREE_VISIBILITY:
-		//par.setParam("treeVisibility",treeviz);
-		TerrainManager::getInstance().setTreeVisibility(treeviz);
+		SceneManager::getInstance().getTerrainManager()->getTreeVisibility() = treeviz;
 	break;
 	case WIND_SPEED:
-		//par.setParam("windSpeed",windspeed);
-		TerrainManager::getInstance().setWindSpeed(windspeed);
+		SceneManager::getInstance().getTerrainManager()->getWindSpeed() = windspeed;
 	break;
    }
 }

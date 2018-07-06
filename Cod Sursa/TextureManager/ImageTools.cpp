@@ -2,12 +2,14 @@
 #include "ImageTools.h"
 
 #undef _UNICODE
-#include "il.h"
-
+#include "IL/il.h"
+#include "IL/ilu.h"
+#include "IL/ilut.h"
+#include "Hardware/Video/GFXDevice.h"
 
 namespace ImageTools {
 
-GLubyte* OpenImagePPM(const std::string& filename, U32& w, U32& h, U32& d)
+unsigned char* OpenImagePPM(const std::string& filename, U32& w, U32& h, U32& d, U32& t,bool flip)
 {
 
 	char head[70];
@@ -51,24 +53,28 @@ GLubyte* OpenImagePPM(const std::string& filename, U32& w, U32& h, U32& d)
 	else{
 		fclose(f);
 	}
-	
+	t = 0;
 	return img;
 }
 
-
-GLubyte* OpenImageDevIL(const std::string& filename, U32& w, U32& h, U32& d)
+unsigned char* OpenImageDevIL(const std::string& filename, U32& w, U32& h, U32& d, U32& t,bool flip)
 {
 	static bool first = true;
+
+
 	if(first) {
 		first = false;
 		ilInit();
-		ilOriginFunc(IL_ORIGIN_UPPER_LEFT);
+	}
+	if(flip) ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
+	else ilOriginFunc(IL_ORIGIN_UPPER_LEFT);
 		ilEnable(IL_ORIGIN_SET);
 		ilEnable(IL_TYPE_SET);
 		ilTypeFunc(IL_UNSIGNED_BYTE);
-	}
+	//}
 
-    
+	
+
     ILuint ilTexture;
     ilGenImages(1, &ilTexture);
     ilBindImage(ilTexture);
@@ -77,23 +83,21 @@ GLubyte* OpenImageDevIL(const std::string& filename, U32& w, U32& h, U32& d)
 	if (!ilLoadImage(filename.c_str()))
 		return false;
 
-
    
 	w = ilGetInteger(IL_IMAGE_WIDTH);
 	h = ilGetInteger(IL_IMAGE_HEIGHT);
 	d = ilGetInteger(IL_IMAGE_BPP);
+	t = ilGetInteger(IL_IMAGE_TYPE);
 
 
-	if(d==4)
-		ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+	if(d==4) ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
 
    
     const UBYTE* Pixels = ilGetData();
 
-	GLubyte* img = new GLubyte[(size_t)(w) * (size_t)(h) * (size_t)(d)];
+	unsigned char* img = new unsigned char[(size_t)(w) * (size_t)(h) * (size_t)(d)];
 	memcpy(img, Pixels, (size_t)(w) * (size_t)(h) * (size_t)(d));
 
-   
     ilBindImage(0);
     ilDeleteImages(1, &ilTexture);
 
@@ -101,28 +105,19 @@ GLubyte* OpenImageDevIL(const std::string& filename, U32& w, U32& h, U32& d)
 }
 
 
-GLubyte* OpenImage(const std::string& filename, U32& w, U32& h, U32& d,bool terrain)
+unsigned char* OpenImage(const std::string& filename, U32& w, U32& h, U32& d, U32& t,bool flip)
 {
-	
-	if(filename.find(".ppm") != std::string::npos){
-		return OpenImagePPM("assets/misc_images/"+filename, w, h, d);
-	}
-	else {
-		if(terrain)
-		{
-			cout << "Loading image: " << "assets/teren/"+filename << endl;
-			return OpenImageDevIL("assets/teren/"+filename,w,h,d);
-		}
-		else
-			return OpenImageDevIL("assets/misc_images/"+filename, w, h, d);
-	}
-	std::cout << "Erreur de chargement de l'image " << filename << std::endl;
+	if(filename.find(".ppm") != std::string::npos)
+		return OpenImagePPM(filename, w, h, d,t,flip);
+	else 
+		return OpenImageDevIL(filename,w,h,d,t,flip);
 	return NULL;
 }
 
 void OpenImage(const std::string& filename, ImageData& img)
 {
-	img.data = OpenImage(filename, img.w, img.h, img.d);
+	img.name = filename;
+	img.data = OpenImage(filename, img.w, img.h, img.d, img.type,img._flip);
 }
 
 

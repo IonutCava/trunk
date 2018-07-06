@@ -18,14 +18,4 @@
 	<windowHeight>768</windowHeight>
 </runtime>	
 
-<vegetation>
-	<grassVisibility>40000</grassVisibility>
-	<treeVisibility>40000</treeVisibility>
-</vegetation>
-
-<wind>
-	<windDirX>1</windDirX>
-	<windDirZ>-1</windDirZ>
-	<windSpeed>1</windSpeed>
-</wind>
     

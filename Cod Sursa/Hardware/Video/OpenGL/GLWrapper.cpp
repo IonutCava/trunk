@@ -2,6 +2,7 @@
 #include "Utility/Headers/DataTypes.h"
 #include "Rendering/common.h"
 #include "Utility/Headers/Guardian.h"
+#include "GUI/GUI.h"
 
 #define USE_FREEGLUT
 
@@ -111,11 +112,13 @@ void GL_API::swapBuffers()
 
 void GL_API::enableFog(F32 density, F32* color)
 {
-	glEnable (GL_FOG);
 	glFogi (GL_FOG_MODE, GL_EXP2); 
 	glFogfv (GL_FOG_COLOR, color); 
 	glFogf (GL_FOG_DENSITY, density); 
 	glHint (GL_FOG_HINT, GL_NICEST); 
+	glFogf (GL_FOG_START,  0.05f);
+	glFogf (GL_FOG_END,    200.0f);
+	glEnable(GL_FOG);
 }
 
 void GL_API::pushMatrix()
@@ -160,7 +163,7 @@ void GL_API::drawTextToScreen(Text* text)
 #else
 		//nothing yet
 #endif
-		popMatrix();
+	popMatrix();
 }
 
 void GL_API::drawCharacterToScreen(void* font,char text)
@@ -175,7 +178,7 @@ void GL_API::drawCharacterToScreen(void* font,char text)
 void GL_API::drawButton(Button* button)
 {
 	pushMatrix();
-		glTranslatef(button->_position.x,button->_position.y,button->_position.z);
+		glTranslatef(button->_position.x,button->_position.y,0);
 		glColor3f(button->_color.x,button->_color.y,button->_color.z);
 		glBegin(GL_TRIANGLE_STRIP );
 			glVertex2f( 0, 0 );
@@ -276,4 +279,19 @@ void GL_API::setColor(int *v)
 void GL_API::initDevice()
 {
 	glutMainLoop();
+}
+
+void GL_API::setLight(U32 slot, tr1::unordered_map<string,vec4>& properties)
+{
+	glLightfv(GL_LIGHT0+slot, GL_SPOT_DIRECTION, properties["spotDirection"]);
+	glLightfv(GL_LIGHT0+slot, GL_POSITION, properties["position"]);
+	glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  properties["ambient"]);
+	glLightfv(GL_LIGHT0+slot, GL_DIFFUSE,  properties["diffuse"]);
+	glLightfv(GL_LIGHT0+slot, GL_SPECULAR, properties["diffuse"]);
+}
+
+void GL_API::createLight(U32 slot)
+{
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0+slot);
 }

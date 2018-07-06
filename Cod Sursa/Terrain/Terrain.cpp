@@ -3,8 +3,8 @@
 #include "Importer/OBJ.h"
 #include "Managers/ResourceManager.h"
 #include "Managers/TerrainManager.h"
-#include "Utility/Headers/Quadtree.h"
-#include "Utility/Headers/QuadtreeNode.h"
+#include "Quadtree.h"
+#include "QuadtreeNode.h"
 #include "TerrainChunk.h"
 #include "Hardware/Video/VertexBufferObject.h"
 #include "Rendering/Camera.h"
@@ -82,8 +82,8 @@ bool Terrain::load(const string& heightmap)
 	std::vector<vec3>&		tNormal		= m_pGroundVBO->getNormal();
 	std::vector<vec3>&		tTangent	= m_pGroundVBO->getTangent();
 
-	U32 d;
-	GLubyte* data = ImageTools::OpenImage(heightmap, terrainWidth, terrainHeight, d,true);
+	U32 d,t;
+	unsigned char* data = ImageTools::OpenImage(heightmap, terrainWidth, terrainHeight, d, t);
 	assert(data!=NULL);
 
 	U32 nIMGWidth  = terrainWidth;
@@ -166,7 +166,6 @@ bool Terrain::load(const string& heightmap)
 			tTangent[idx0] = tTangent[idx1];
 		}
 	}
-	//m_pGroundVBO->Create(GL_STATIC_DRAW);
 
 	terrain_Quadtree->Build(&terrain_BBox, ivec2(terrainWidth, terrainHeight), chunkSize);
 
@@ -178,7 +177,8 @@ bool Terrain::postLoad()
 {
 	_postLoaded = m_pGroundVBO->Create(GL_STATIC_DRAW);
 	cout << "Generating lightmap!" << endl;
-	_postLoaded = genLightMap();
+	m_fboDepthMapFromLight[0]->Create(FrameBufferObject::FBO_2D_DEPTH, 2048, 2048);
+	m_fboDepthMapFromLight[1]->Create(FrameBufferObject::FBO_2D_DEPTH, 2048, 2048);
 	cout << "Loading Terrain OK" << endl;
 	if(!_postLoaded) _loaded = false;
 	return _postLoaded;
@@ -187,15 +187,6 @@ bool Terrain::postLoad()
 bool Terrain::computeBoundingBox()
 {
 	terrain_Quadtree->ComputeBoundingBox( &(m_pGroundVBO->getPosition()[0]) );
-	vec3 fogColor(0.7f, 0.7f, 0.9f);
-	terrainShader->bind();
-		terrainShader->Uniform("bbox_min", terrain_BBox.min);
-		terrainShader->Uniform("bbox_max", terrain_BBox.max);
-		terrainShader->Uniform("fog_color", fogColor);
-	terrainShader->unbind();
-	m_fboDepthMapFromLight[0]->Create(FrameBufferObject::FBO_2D_DEPTH, 2048, 2048);
-	m_fboDepthMapFromLight[1]->Create(FrameBufferObject::FBO_2D_DEPTH, 2048, 2048);
-
 	return true;
 }
 
@@ -270,25 +261,18 @@ int Terrain::drawObjects() const
 
 void Terrain::draw() const
 {
-	//if(currentTime - lastTime > diffTime)
-	//	_lightmap = genLightMap();
-
 	if(!_loaded) return;
-	GFXDevice::getInstance().enable_TEXTURE(0);
-	GFXDevice::getInstance().enable_MODELVIEW();
-		GLuint idx=0;
-		for(GLuint i=0; i<m_tTextures.size(); i++)
+		U32 idx=0;
+		for(U32 i=0; i<m_tTextures.size(); i++)
 			m_tTextures[i]->Bind(idx++);
 		m_pTerrainDiffuseMap->Bind(idx++);
-		//_lightmap->Bind(idx++);
-
 		terrainShader->bind();
 		{
 			terrainShader->Uniform("detail_scale", 120.0f);
 			terrainShader->Uniform("diffuse_scale", 70.0f);
 
 			terrainShader->Uniform("water_height", 1);
-			terrainShader->Uniform("water_reflection_rendering", false);
+			terrainShader->Uniform("water_reflection_rendering", _drawInReflexion);
 
 			terrainShader->Uniform("time", GETTIME());
 
@@ -298,14 +282,14 @@ void Terrain::draw() const
 			terrainShader->UniformTexture("texDiffuse2", 3);
 			terrainShader->UniformTexture("texWaterCaustics", 4);
 			terrainShader->UniformTexture("texDiffuseMap", 5);
-			//terrainShader->UniformTexture("shadowMap",6);
-
+			terrainShader->Uniform("bbox_min", terrain_BBox.min);
+			terrainShader->Uniform("bbox_max", terrain_BBox.max);
+			terrainShader->Uniform("fog_color", vec3(0.7f, 0.7f, 0.9f));
 			terrainShader->Uniform("depth_map_size", 512);
 			drawGround(_drawInReflexion);
 		}
 		terrainShader->unbind();
 
-		//_lightmap->Unbind(--idx);
 		m_pTerrainDiffuseMap->Unbind(--idx);
 		for(int i=(GLint)m_tTextures.size()-1; i>=0; i--)
 			m_tTextures[i]->Unbind(--idx);
@@ -325,204 +309,5 @@ int Terrain::drawGround(bool drawInReflexion) const
 	m_pGroundVBO->Disable();
 
 	return ret;
-}
-
-
-
-bool Terrain::genLightMap()
-{
-	_lightmap = new Texture2D();
-	int size = terrainWidth;
-	UBYTE *lightmap = (UBYTE*)malloc(size*size*sizeof(UBYTE));
-	
-	std::vector<vec3>&		tPosition	= m_pGroundVBO->getPosition();
-	F32 lightDir[3];
-	lightDir[0] = Sky::getInstance().getSunVector().x;
-	lightDir[1] = Sky::getInstance().getSunVector().y;
-	lightDir[2] = Sky::getInstance().getSunVector().z;
-	// create flag buffer to indicate where we've been
-	F32 *flagMap = new F32[size*size];
-	for(int i = 0; i < size*size; i++) 
-		flagMap[i] = 0;
- 
- 
-	// calculate absolute values for light direction
-	F32 lightDirXMagnitude = lightDir[0];
-	F32 lightDirZMagnitude = lightDir[2];
-	if(lightDirXMagnitude < 0) lightDirXMagnitude *= -1;
-	if(lightDirZMagnitude < 0) lightDirZMagnitude *= -1;
- 
-	F32 distanceStep = sqrtf(lightDir[0] * lightDir[0] + lightDir[1] * lightDir[1]);
- 
-	// decide which loop will come first, the y loop or x loop
-	// based on direction of light, makes calculations faster
- 
-	// outer loop
-	//
-
-	//#pragma omp parallel for firstprivate(distanceStep, lightDirXMagnitude, \
-	//      lightDirZMagnitude, lightmap, flagMap, size, lightDir) schedule(static,4)
-		int *X, *Y;
-		int iX, iY;
-		int dirX, dirY;
- 
-		// this might seem like a waste, why calculate it here? you can calculate it before... 
-		// that's because threading is really picky about sharing variables. the less you share, 
-		// the faster it goes.
-		if(lightDirXMagnitude > lightDirZMagnitude)
-		{
-			Y = &iX;
-			X = &iY;
- 
-			if(lightDir[0] < 0)
-				dirY = -1;
-			else
-				dirY = 1;
- 
-			if(lightDir[2] < 0)
-				dirX = -1;
-			else
-				dirX = 1;
-		}
-		else
-		{
-			Y = &iY;
-			X = &iX;
- 
-			if(lightDir[0] < 0)
-				dirX = -1;
-			else
-				dirX = 1;
- 
-			if(lightDir[2] < 0)
-				dirY = -1;
-			else
-				dirY = 1;
-		}
-	for(int y=0; y<size; y++)
-	{
-
-        // if you decide to just do it single-threaded, 
-		// just copy the previous block back just above the for loop 
- 
-		if(dirY < 0)
-			iY = size - y - 1;
-		else
-			iY = y;
- 
-		// inner loop
-		for(int x=0; x<size; x++)
-		{
-			continue;
-			if(dirX < 0)
-				iX = size - x - 1;
-			else
-				iX = x;
- 
-			F32 px, py, height, distance, origX, origY;
-			int index;
- 
-			// travel along the terrain until we:
-			// (1) intersect another point
-			// (2) find another point with previous collision data
-			// (3) or reach the edge of the map
-			px = (F32)*X;
-			py = (F32)*Y;
-			origX = px;
-			origY = py;
-			index = (*Y) * size + (*X);
-			distance = 0.0f;
- 
-			// travel along ray
-			while(1)
-			{
-				px -= lightDir[0];
-				py -= lightDir[2];
- 
-				// check if we've reached the boundary
-				if(px < 0 || px >= size || py < 0 || py >= size)
-				{  
-					flagMap[index] = -1;
-					break;
-				}
- 
-				// calculate interpolated values
-				int x0, x1, y0, y1;
-				F32 du, dv;
-				F32 interpolatedHeight, interpolatedFlagMap;
-				//F32 heights[4];
-				//F32 pixels[4];
-				F32 invdu, invdv;
-				F32 w0, w1, w2, w3;
- 
-				x0 = int(px);
-				//x1 = ceilf(px);
-				y0 = int(py);
-				//y1 = ceilf(py);
- 
-				x1 = x0 + 1;
-				y1 = y0 + 1;
- 
-				du = px - x0;
-				dv = py - y0;
- 
-				invdu = 1.0f - du;
-				invdv = 1.0f - dv;
-				w0 = invdu * invdv;
-				w1 = invdu * dv;
-				w2 = du * invdv;
-				w3 = du * dv;
- 
-				// compute interpolated height value from the heightmap direction below ray
-				interpolatedHeight = w0*tPosition[COORD(x0,	y0,	size)].y + w1*tPosition[COORD(x0,	y1,	size)].y + 
-				    w2*tPosition[COORD(x1,	y0,	size)].y + w3*tPosition[COORD(x1,	y1,	size)].y;
- 
-				// compute interpolated flagmap value from point directly below ray
-				interpolatedFlagMap = w0*flagMap[y0*size+x0] + w1*flagMap[y1*size+x0] + 
-				    w2*flagMap[y0*size+x1] + w3*flagMap[y1*size+x1];
- 
-				// get distance from original point to current point
-				//distance = sqrtf( (px-origX)*(px-origX) + (py-origY)*(py-origY) );
-				distance += distanceStep;
- 
-				// get height at current point while traveling along light ray
-				height = tPosition[index].y + lightDir[1]*distance;
- 
-				// check intersection with either terrain or flagMap
-				// if interpolatedHeight is less than interpolatedFlagMap that means 
-				// we need to use the flagMap value instead
-				// else use the height value
-				F32 val;
-				if(interpolatedHeight < interpolatedFlagMap) val = interpolatedFlagMap;
-				else val = interpolatedHeight;
- 
-				if(height < val)
-				{
-					flagMap[index] = val - height;
- 
-					lightmap[index] = 0;
- 
-					break;
-				}
- 
-				// check if pixel we've moved to is unshadowed
-				// since the flagMap value we're using is interpolated, we will be in 
-				// between shadowed and unshadowed areas
-				// to compensate for this, simply define some epsilon value and use 
-				// this as an offset from -1 to decide
-				// if current point under the ray is unshadowed
-				static F32 epsilon = 0.5f;
-				if(interpolatedFlagMap < -1.0f+epsilon && interpolatedFlagMap > -1.0f-epsilon)
-				{
-					flagMap[index] = -1.0f;
-					break;
-				}   
-			}
-		}
-	}
- 
-	delete [] flagMap;
-	//_lightmap->load(lightmap,terrainWidth,terrainHeight,3);
-	return true;
 }
 

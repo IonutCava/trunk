@@ -15,16 +15,22 @@ class GraphicResource : public Resource
 	virtual void draw() const = 0;
 };
 
+enum GEOMETRY_TYPE
+{
+	MESH,
+	VEGETATION,
+	PLACEHOLDER
+};
+
 class FileData
 {
 public:
 	string ModelName;
-	F32 ScaleFactor;
+	vec3 scale;
 	vec3 position;
-	vec3 rotation;
-	string PhysXCook;
-	string NormalMap;
-	bool Vegetation;
+	vec3 orientation;
+	string format;
+	GEOMETRY_TYPE type;
 };
 
 class TerrainInfo

@@ -79,7 +79,7 @@ public:
 	void setParameters(F32 gravity,bool ShowErrors,F32 scale);
 	void setSimSpeed(F32 mult);
 	//modificam pozitia la care cream actorii
-	void setActorDefaultPos(F32 x,F32 y,F32 z);
+	void setActorDefaultPos(vec3 position);
 	NxScene *getScene(){return gScene;}      //Returnam scena creata de instanta actuala de PhysX              
 	//------------------------------------------------------------------------------------------------------------------------------------------
 	//Pentru a asigura asincronicitatea, urmatoarele functii tebuiesc apelate in ordinea urmatoare:

@@ -1,8 +1,11 @@
+#ifndef _EVENT_H_
+#define _EVENT_H_
+
 #include "resource.h"
 #include <boost/any.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread.hpp>
+//#include <boost/thread.hpp>
 #include <unordered_map>
+#include  "MultiThreading/threadHandler.h"
 
 using boost::any_cast;
 
@@ -19,7 +22,6 @@ enum CallbackParam
 
 class Event
 {
-typedef void (*callback)(boost::any a, CallbackParam b);
 public:
 	/// <summary>
 	/// Creates a new event that runs in a separate thread
@@ -37,50 +39,45 @@ public:
 	Event(F32 tickInterval, 
 		  bool startOnCreate,
 		  U32 numberOfTicks,
-		  callback f,
-		  boost::any data,
-		  CallbackParam param):
+		  boost::function0<void> f):
 
 	  _tickInterval(tickInterval),
 	  _numberOfTicks(numberOfTicks),
-	  _callback(f),
-	  _data(data),
-	  _paramType(param)
+	  _callback(f)
 	  {
 		  if(startOnCreate) startEvent();
 	  }
 
 	Event(F32 tickInterval,
 	      bool startOnCreate,
-	      callback f,
-		  boost::any data,
-		  CallbackParam param):
+		  bool runOnce,
+	      boost::function0<void> f):
 
 	  _tickInterval(tickInterval),
       _numberOfTicks(1),
-	  _callback(f),
-	  _data(data),
-	  _paramType(param)
+	  _callback(f)
 	  {
+		  //If runOnce is true, then we only run the event once (# of ticks is 1)
+		  //If runOnce is false, then we run the event untill stopEvent() is called
+		  runOnce? _numberOfTicks = 1 : _numberOfTicks = -1;
 		  if(startOnCreate) startEvent();
 	  }
 	
 	void updateTickInterval(F32 tickInterval){_tickInterval = tickInterval;}
 	void updateTickCounter(U32 numberOfTicks){_numberOfTicks = numberOfTicks;}
 	void startEvent();
+	void stopEvent(){_end = true;};
 	
 
 private:
 	string _name;
 	F32 _tickInterval;
 	U32 _numberOfTicks;
-	boost::thread *_thrd;
-	boost::any _data;
-	CallbackParam _paramType;
-
+	Thread _thrd;
+	bool _end;
 	void eventThread();
-	callback _callback;
+	boost::function0<void> _callback;
 
 };
 
-
+#endif

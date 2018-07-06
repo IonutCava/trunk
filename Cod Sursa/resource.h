@@ -6,7 +6,11 @@
 #endif
  
 #define GETTIME() ((F32)glutGet(GLUT_ELAPSED_TIME)/1000.0f)
+
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
+
 #include <windows.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,7 +23,6 @@
 #include <memory.h>
 #include <malloc.h>
 #include <map>
-#include <hash_map>
 #include <gl/glew.h>
 #include <gl/freeglut.h> 
 #include <math.h>

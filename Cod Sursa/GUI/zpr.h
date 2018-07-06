@@ -67,6 +67,7 @@ static void Reshape(int w,int h);
 static void Mouse(int button, int state, int x, int y);
 static void Motion(int x, int y);
 void Keyboard(UBYTE Key,int x,int y);
+void KeyboardUp(UBYTE Key,int x,int y);
 static void Pick(D32 x, D32 y,D32 delX, D32 delY);
 static void ProcessHits (int hits, int buffer[]);
 static void StopPicking();

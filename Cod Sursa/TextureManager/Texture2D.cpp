@@ -1,13 +1,12 @@
 #include "resource.h"
 #include "Texture2D.h"
 #include "Hardware/Video/FrameBufferObject.h"
-
+#include "ImageTools.h"
 
 bool Texture2D::load(const std::string& name)
 {
 	if(!Texture::load(name))
 		return false;
-
 	
 	Bind();
 
@@ -27,7 +26,6 @@ bool Texture2D::load(const std::string& name)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-
 	if(!LoadFile(GL_TEXTURE_2D, name))
 		return false;
 
@@ -36,7 +34,13 @@ bool Texture2D::load(const std::string& name)
 	return true;
 }
 
-bool Texture2D::load(GLubyte* ptr, U32 w, U32 h, U32 d)
+bool Texture2D::loadFlipedVertically(const std::string& name)
+{
+	img._flip = true;
+	return load(name);
+}
+
+bool Texture2D::load(GLubyte* ptr, U32& w, U32& h, U32 d)
 {
 	if(!Texture::load(""))
 		return false;
@@ -55,14 +59,13 @@ bool Texture2D::load(GLubyte* ptr, U32 w, U32 h, U32 d)
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 	}
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	LoadData(GL_TEXTURE_2D, ptr, w, h, d);
 
 	Unbind();
-
+	
 	return true;
 }
 

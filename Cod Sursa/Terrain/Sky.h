@@ -18,10 +18,10 @@ public:
 private:
 	Sky();
 
-	bool      _init,_invert,_drawSky,_drawSun;
-	Shader*   _skyShader;
-	U32		  _skybox;
-	vec3      _sunVect,	_eyePos;
+	bool			  _init,_invert,_drawSky,_drawSun;
+	Shader*			  _skyShader;
+	TextureCubemap*	  _skybox;
+	vec3			  _sunVect,	_eyePos;
 	
 
 	void drawSky() const;

@@ -17,9 +17,8 @@ void TerrainManager::createThreadedTerrains(vector<TerrainInfo>& terrains)
 	ResourceManager& res = ResourceManager::getInstance();
 	for(_terrainIter = terrains.begin(); _terrainIter != terrains.end(); ++_terrainIter)
 	{
-		_terrain = new Terrain((*_terrainIter).position,(*_terrainIter).scale);
+		_terrain = New Terrain((*_terrainIter).position,(*_terrainIter).scale);
 		_terrain->load((*_terrainIter).variables["heightmap"]);
-		_terrain->setShader(res.LoadResource<Shader>("terrain_ground"));
 		_terrain->addTexture(res.LoadResource<Texture2D>((*_terrainIter).variables["normalMap"]));
 		_terrain->addTexture(res.LoadResource<Texture2D>((*_terrainIter).variables["redTexture"]));
 		_terrain->addTexture(res.LoadResource<Texture2D>((*_terrainIter).variables["greenTexture"]));
@@ -27,8 +26,8 @@ void TerrainManager::createThreadedTerrains(vector<TerrainInfo>& terrains)
 		//_terrain.addTexture(res.LoadResource<Texture2D>((*_terrainIter).variables["alphaTexture"]));
 		_terrain->addTexture(res.LoadResource<Texture2D>((*_terrainIter).variables["waterCaustics"]));
 		_terrain->setDiffuse(res.LoadResource<Texture2D>((*_terrainIter).variables["textureMap"]));
+		_terrain->setShader(res.LoadResource<Shader>("terrain_ground"));
 		_terrain->postLoad();
-		_terrain->computeBoundingBox();
 		_terrain->setLoaded((*_terrainIter).active);
 		ImageTools::ImageData img;
 		ImageTools::OpenImage((*_terrainIter).variables["grassMap"],img);
@@ -44,13 +43,11 @@ void TerrainManager::createThreadedTerrains(vector<TerrainInfo>& terrains)
 											 (*_terrainIter).treeScale,
 											 img,
 											 grass),
-								"terrain_grass",
-								"terrain_tree");
+								             "terrain_grass");
 		_terrain->toggleVegetation(true);
 		_terrain->initializeVegetation();
-		
+		_terrain->computeBoundingBox();
 		add((*_terrainIter).variables["terrainName"],_terrain);
-		//img.Destroy();
 	}
 	terrains.clear();
 	//joinThread();
@@ -61,15 +58,20 @@ void TerrainManager::drawTerrains(bool drawInactive, bool drawInReflexion)
 {
 	if(!_loaded) return;
 	if(_resDB.size() > 1)
+	{
 		for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
 		{
 			_terrain = (Terrain*)_resDBiter->second;
 			drawTerrain(drawInactive,drawInReflexion);
 			
 		}
-	else
+	}
+	else if(_resDB.size() == 1)
+	{
 		_terrain = (Terrain*)_resDB.begin()->second;
 		drawTerrain(drawInactive,drawInReflexion);
+	}
+	else return;
 }
 
 void TerrainManager::drawTerrain(bool drawInactive, bool drawInReflexion)
@@ -102,7 +104,7 @@ void TerrainManager::initialize()
 {
 	 ResourceManager& res = ResourceManager::getInstance();
 	_waterShader = res.LoadResource<Shader>("water");
-	_texWater = res.LoadResource<Texture2D>("terrain_water_NM.jpg");
+	_texWater = res.LoadResource<Texture2D>(ParamHandler::getInstance().getParam<string>("assetsLocation")+"/misc_images/terrain_water_NM.jpg");
 	_computedMinHeight = false;
 	_loaded = true;
 }
@@ -129,11 +131,10 @@ void TerrainManager::drawInfinitePlane(const vec3& eye, F32 max_distance,FrameBu
 
 	
 	glPushAttrib(GL_ENABLE_BIT);
+
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
 
-	GFXDevice::getInstance().enable_TEXTURE(0);
-	GFXDevice::getInstance().enable_MODELVIEW();
 	_fbo.Bind(0);
 	_texWater->Bind(1);
 	_waterShader->bind();
@@ -156,12 +157,8 @@ void TerrainManager::drawInfinitePlane(const vec3& eye, F32 max_distance,FrameBu
 			glVertex3f(eye.x + max_distance, _minHeight, eye.z - max_distance);
 		glEnd();
 	_waterShader->unbind();
-	_fbo.Unbind(0);
 	_texWater->Unbind(1);
-
-	GFXDevice::getInstance().enable_TEXTURE(0);
-	GFXDevice::getInstance().loadIdentityMatrix();
-	GFXDevice::getInstance().enable_MODELVIEW();
+	_fbo.Unbind(0);
 
 	glPopAttrib();
 }

@@ -4,6 +4,8 @@
 
 #include "Manager.h"
 #include "Scenes/Scene.h"
+#include "Scenes/MainScene.h"
+#include "Scenes/CubeScene.h"
 #include "Utility/Headers/Singleton.h"
 
 SINGLETON_BEGIN_EXT1(SceneManager,Manager)
@@ -15,27 +17,36 @@ public:
 	/*Base Scene Operations*/
 	void render() {_scene->render();}
 	void preRender() {_scene->preRender();}
-	bool load(const string& name) {return _scene->load(name);}
+	bool load(const string& name) {_scene->setInitialData(); return _scene->load(name);}
 	bool unload() {return _scene->unload();}
 	void processInput(){_scene->processInput();}
 	void processEvents(F32 time){_scene->processEvents(time);}
 	/*Base Scene Operations*/
 
 	inline vector<ImportedModel*>& getModelArray(){return _scene->getModelArray();}
+
+	inline vector<FileData>& getModelDataArray() {return _scene->getModelDataArray();}
+	inline vector<FileData>& getVegetationDataArray() {return _scene->getVegetationDataArray();}
+
 	int getNumberOfObjects(){return _scene->getNumberOfObjects();}
     int getNumberOfTerrains(){return _scene->getNumberOfTerrains();}
-    void setNumberOfObjects(int nr){_scene->setNumberOfObjects(nr);}
-    void setNumberOfTerrains(int nr){_scene->setNumberOfTerrains(nr);}
-    void incNumberOfObjects(){_scene->incNumberOfObjects();}
-    void incNumberOfTerrains(){_scene->incNumberOfTerrains();}
-	ImportedModel* findObject(string& name){return _scene->findObject(name);}
-	void setInitialData(const vector<FileData>& models){_scene->setInitialData(models);}
+	TerrainManager* getTerrainManager() {return _scene->getTerrainManager();}
+   
+	Scene* findScene(const std::string& name);
 
-	
+	void addModel(FileData& model){_scene->addModel(model);}
+	void addTerrain(const TerrainInfo& ter) {_scene->addTerrain(ter);}
+	void toggleBoundingBoxes();
 
 private:
-	SceneManager(){}
+	SceneManager()
+	{
+		_scenes.insert(make_pair("MainScene", New MainScene()));
+		_scenes.insert(make_pair("CubeScene", New CubeScene()));
+	}
 	Scene* _scene;
+	map<string, Scene*> _scenes;
+	map<string, Scene*>::iterator _sceneIter;
 
 SINGLETON_END()
 

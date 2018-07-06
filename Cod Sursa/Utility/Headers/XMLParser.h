@@ -4,9 +4,15 @@
 namespace XML
 {
 
-	void loadConfig(const std::string &file);
-	void loadTerrain(const std::string &file);
+	//Parent Function
 	void loadScripts(const std::string &file);
-	//....... Add more
+
+	//Child Functions
+	void loadConfig(const std::string& file);
+	void loadScene(const std::string& sceneName);
+	void loadGeometry(const std::string& file);
+	void loadTerrain(const std::string& file);
+	
+	//ToDo: ....... Add more
 
 }

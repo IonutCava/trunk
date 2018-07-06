@@ -3,13 +3,17 @@
 
 #include "resource.h"
 #include "GUI/zpr.h"
-#include "Terrain/Terrain.h"
-#include "Vegetation/Vegetation.h"
 #include "Utility/Headers/Singleton.h"
-#include "Managers/TerrainManager.h"
 #include "Hardware/Video/GFXDevice.h"
+#include "Vegetation/Vegetation.h"
+
 using namespace std;
 
+class PhysX;
+class Camera;
+class SceneManager;
+class GUI;
+class Terrain;
 
 SINGLETON_BEGIN( Engine )
 
@@ -31,7 +35,12 @@ private:
 	void ProcessRenderingInput();
 	D32 fps;
 	int width, height;
-	GFXDevice& _GFX;
+
+	GFXDevice&    _GFX;
+    PhysX&        _px;
+	SceneManager& _scene;
+	Camera&       _camera;
+	GUI&          _gui;
 
 public:
 	int getWindowWidth(){return width;}
@@ -39,11 +48,10 @@ public:
 	void setWindowWidth(int w){width = w;}
 	void setWindowHeight(int h){height = h;}
    void toggleFirstPerson(){firstPersonCamera = !firstPersonCamera;}
-   F32 moveFB,angleUD,angleLR,tip, turn;
+   F32 moveFB,moveLR,angleUD,angleLR,tip, turn;
    void LoadControls();
    //rendering functions
    void Initialize(int w, int h); //Set up the rendering platform
-   void setInitialData(FileData* models);
    static void Pick(GLint name){}
    static void DrawSceneStatic();
    string text;
@@ -59,6 +67,7 @@ public:
 
    void Screenshot(char *filename, int xmin, int ymin, int xmax, int ymax);
    void ToggleWireframeRendering();
+   bool isWireframeRendering() {return m_bWireframe;}
    
    SINGLETON_END()
 

@@ -4,6 +4,7 @@
 #include "Debug/ErrorStream.h"
 #include "Utility/Headers/Guardian.h"
 #include "Managers/TextureManager.h"
+#include "Hardware/Video/GFXDevice.h"
 
 PhysX::PhysX()
 {
@@ -26,10 +27,9 @@ PhysX::PhysX()
 	speedMult = 1;
 }
 
-void PhysX::setActorDefaultPos(F32 x,F32 y,F32 z)
+void PhysX::setActorDefaultPos(vec3 position)
 {
-	defaultPosition.x = x;defaultPosition.y = y;defaultPosition.z = z;
-	cout << "Actor default position changed to: x = "<< x <<" , y = " << y <<", z = "<< z << endl;
+	defaultPosition = (NxVec3)position;
 }
 
 void PhysX::setParameters(F32 gravity,bool ShowErrors,F32 scale)
@@ -64,11 +64,11 @@ NxReal PhysX::UpdateTime()
 bool PhysX::InitNx()
 {
 	if (gPhysicsSDK) return false; //Daca am initializat SDK-ul deja, renuntam la initializare
-	/*if (mErrorReport)//Ori afisam erori ori ... nu. In functie de asta initializam SDK-ul cu parametri diferiti.
+	if (mErrorReport)//Ori afisam erori ori ... nu. In functie de asta initializam SDK-ul cu parametri diferiti.
 		gPhysicsSDK = NxCreatePhysicsSDK(NX_PHYSICS_SDK_VERSION, NULL, new ErrorStream(), desc, &errorCode);
 	else
 		gPhysicsSDK = NxCreatePhysicsSDK(NX_PHYSICS_SDK_VERSION);
-*/
+
 	if(gPhysicsSDK == NULL) 
 	{
 		//E posibil sa nu gasim driverul necesar instalat, asa ca anuntam utilizatorul
@@ -76,6 +76,7 @@ bool PhysX::InitNx()
 		cout << "Please visit http://www.nividia.com/object/physx_new.html for more details!\n" << endl;
 		return false;
 	}
+
 	gPhysicsSDK->setParameter(NX_SKIN_WIDTH, 0.015f*(1.0f/scale)); //Cu cat sa fie invelisul actorului mai mare decat invelisul meshei
 	gPhysicsSDK->setParameter(NX_DEFAULT_SLEEP_LIN_VEL_SQUARED, 0.15f*0.15f);
 	gPhysicsSDK->setParameter(NX_BOUNCE_THRESHOLD, -20*(1.0f/scale));
@@ -229,37 +230,19 @@ bool PhysX::AddShape(ImportedModel *mesh,bool convex/*,string cook*/)
 
 bool PhysX::AddConvexShape(ImportedModel *mesh)
 {
-	NxVec3 *normals = new NxVec3[mesh->normals.size()];
-	for (U32 i = 0; i < mesh->normals.size(); i++)
-	{
-		normals[i].x = mesh->normals[i].x;
-	    normals[i].y = mesh->normals[i].y;
-	    normals[i].z = mesh->normals[i].z;
-	}
-	NxVec3 objectLocation = NxVec3(mesh->position[0],mesh->position[1],mesh->position[2]);
-	
-	vertex* verts = new vertex[mesh->vertices.size()];
-	for(U32 i = 0; i < mesh->vertices.size(); i++)
-	{
-		verts[i] = mesh->vertices[i];
-	}
-	simpletriangle* triangles = new simpletriangle[mesh->SimpleFaceArray.size()];
-	for(U32 i = 0; i < mesh->SimpleFaceArray.size(); i++)
-	{
-		triangles[i] = mesh->SimpleFaceArray[i];
-	}
+	NxVec3 objectLocation = NxVec3(mesh->getPosition());
 
-	NxBuildSmoothNormals(mesh->triangles.size(), mesh->vertices.size(),
-		                 (const NxVec3*)verts,
-						 (const NxU32*)triangles,
+	NxBuildSmoothNormals(mesh->SimpleFaceArray.size(), mesh->vertices.size(),
+		                 (const NxVec3*)&mesh->vertices[0],
+						 (const NxU32*)&mesh->SimpleFaceArray[0],
 						  NULL,
-						  normals,
+						  (NxVec3*) &mesh->normals[0],
 						  true);
 
     NxInitCooking();
 	NxConvexMesh *mConvexMesh = NULL; 
 
-	PendingActor *Actor = new PositionDecorator(new BodyDecorator
+	PendingActor *Actor = New PositionDecorator(new BodyDecorator
 		                                       (new ConvexShapeDecorator
 											   (new ConcretePendingActor()
 												                              )
@@ -272,8 +255,8 @@ bool PhysX::AddConvexShape(ImportedModel *mesh)
 	meshDesc.numTriangles = mesh->triangles.size();
 	meshDesc.pointStrideBytes = sizeof(vertex);
 	meshDesc.triangleStrideBytes = sizeof(simpletriangle);
-	meshDesc.points = verts;
-	meshDesc.triangles = triangles;
+	meshDesc.points = &mesh->vertices[0];
+	meshDesc.triangles = &mesh->SimpleFaceArray[0];
 	meshDesc.flags = 0;
 
 	// cook it
@@ -302,7 +285,6 @@ bool PhysX::AddConvexShape(ImportedModel *mesh)
 	else
 	{
 		cout << "PhysX error: SetupConvexCollision - COOKING FAILED*****\n";
-		delete[] verts;
 		NxCloseCooking();
 		return true;
 	}
@@ -317,42 +299,25 @@ bool PhysX::AddConvexShape(ImportedModel *mesh)
 	}
 	else
 		cout << "PhysX error: SetupConvexCollision - ACTOR NOT ACTIVE!\n";
-
-	delete[] verts;
+	delete Actor;
 	return true;
 
 }
 
 bool PhysX::AddTriangleShape(ImportedModel *mesh)
 {
-	NxVec3 *normals = new NxVec3[mesh->normals.size()];
-	for (U32 i = 0; i < mesh->normals.size(); i++)
-	{
-		normals[i].x = mesh->normals[i].x;
-	    normals[i].y = mesh->normals[i].y;
-	    normals[i].z = mesh->normals[i].z;
-	}
-	NxVec3 objectLocation = NxVec3(mesh->position[0],mesh->position[1],mesh->position[2]);
-	vertex* verts = new vertex[mesh->vertices.size()];
-	for(U32 i = 0; i < mesh->vertices.size(); i++)
-	{
-		verts[i] = mesh->vertices[i];
-	}
-	simpletriangle* triangles = new simpletriangle[mesh->SimpleFaceArray.size()];
-	for(U32 i = 0; i < mesh->SimpleFaceArray.size(); i++)
-	{
-		triangles[i] = mesh->SimpleFaceArray[i];
-	}
-	/*NxBuildSmoothNormals(mesh->nFaces, mesh->nVertex, 
-		                 (const NxVec3*)mesh->VertexArray,
-						 (const NxU32*)mesh->SimpleFaceArray,
+	NxVec3 objectLocation = NxVec3(mesh->getPosition());
+
+	NxBuildSmoothNormals(mesh->SimpleFaceArray.size(), mesh->vertices.size(), 
+		                 (const NxVec3*)&mesh->vertices[0],
+						 (const NxU32*)&mesh->SimpleFaceArray[0],
 						  NULL,
-						  normals,
-						  true);*/
+						  (NxVec3*)&mesh->normals[0],
+						  true);
 
 	NxInitCooking();
 	NxTriangleMesh *mTriangleMesh = NULL;
-	PendingActor *Actor = new PositionDecorator(new BodyDecorator
+	PendingActor *Actor = New PositionDecorator(new BodyDecorator
 		                                       (new TriangleShapeDecorator
 											   (new ConcretePendingActor()
 												                              )
@@ -367,8 +332,8 @@ bool PhysX::AddTriangleShape(ImportedModel *mesh)
 	triangleDesc.numTriangles           = mesh->triangles.size();
 	triangleDesc.pointStrideBytes       = sizeof(vertex);
 	triangleDesc.triangleStrideBytes	= sizeof(simpletriangle);
-	triangleDesc.points			        = verts;
-    triangleDesc.triangles              = triangles;
+	triangleDesc.points			        = &mesh->vertices[0];
+	triangleDesc.triangles              = &mesh->SimpleFaceArray[0];
 	triangleDesc.flags		     	    = 0;
 
 	// cook it
@@ -397,7 +362,6 @@ bool PhysX::AddTriangleShape(ImportedModel *mesh)
 	{
 		cout << "PhysX error: SetupTriangleCollision - COOKING FAILED*****\n";
 		NxCloseCooking();
-		delete[] verts;
 		return true;
 	}
     gShape = this->AddActor(Actor->createActor());
@@ -409,7 +373,7 @@ bool PhysX::AddTriangleShape(ImportedModel *mesh)
 	}
 	else
 		cout << "PhysX error: SetupTriangleCollision - ACTOR NOT ACTIVE!\n";
-	delete[] verts;
+	delete Actor;
 	return true;
 }
 
@@ -464,9 +428,6 @@ void PhysX::RenderActors()
     }
 }
 
-
-
-
 void PhysX::DrawObjects(NxShape *obj)
 {
 	F32 *orient = new F32[16];
@@ -477,7 +438,12 @@ void PhysX::DrawObjects(NxShape *obj)
     orient[3] = orient[7] = orient[11] = 0.0f;
     orient[15] = 1.0f;
     glMultMatrixf(&(orient[0]));
-	glCallList(((ImportedModel*)obj->getActor().userData)->ListID);
+	GFXDevice::getInstance().translate(((ImportedModel*)obj->getActor().userData)->getPosition());
+	GFXDevice::getInstance().rotate(((ImportedModel*)obj->getActor().userData)->getOrientation());
+	//GFXDevice::getInstance().scale(((ImportedModel*)obj->getActor().userData)->getScale());
+	((ImportedModel*)obj->getActor().userData)->getShader()->bind();
+	((ImportedModel*)obj->getActor().userData)->Draw();
+	((ImportedModel*)obj->getActor().userData)->getShader()->unbind();
 	GFXDevice::getInstance().popMatrix();
 	delete orient;
 }

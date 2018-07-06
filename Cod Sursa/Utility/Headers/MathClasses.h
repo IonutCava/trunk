@@ -38,7 +38,10 @@
 #include <math.h>
 
 #define EPSILON				0.000001f
+#ifndef M_PI
 #define M_PI				3.141592653589793238462643383279f		// PI
+#endif
+
 #define M_PIDIV2			1.570796326794896619231321691639f		// PI / 2
 #define M_2PI				6.283185307179586476925286766559f		// 2 * PI
 #define M_PI2				9.869604401089358618834490999876f		// PI ^ 2
@@ -151,11 +154,6 @@ inline vec2 operator*(float fl, const vec2& v)	{ return vec2(v.x*fl, v.y*fl);}
 
 inline float Dot(const vec2& a, const vec2& b) { return(a.x*b.x+a.y*b.y); }
 
-/*****************************************************************************/
-/*                                                                           */
-/* vec3                          -Included In GLUI                           */
-/*                                                                           */
-/*****************************************************************************/
 
 class vec3 {
 public:
@@ -190,8 +188,6 @@ public:
 
 	operator float*() { return this->v; }
 	operator const float*() const { return this->v; }
-//	float &operator[](int _i) { return this->v[_i]; }
-//	const float &operator[](int _i) const { return this->v[_i]; }
 
 	void set(float _x,float _y,float _z) { this->x = _x; this->y = _y; this->z = _z; }
 	void reset(void) { this->x = this->y = this->z = 0; }
@@ -219,28 +215,28 @@ public:
 		this->y = y;
 		this->x = x;
 	}
-	float dot(const vec3 &v) { return ((this->x*v.x) + (this->y*v.y) + (this->z*v.z)); } // Produit scalaire
+
+	float dot(const vec3 &v) { return ((this->x*v.x) + (this->y*v.y) + (this->z*v.z)); }
 	bool compare(const vec3 &_v,float epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi && fabs(this->z - _v.z) < epsi); }
-	float angle(vec3 &v) { // retourne l'angle en radians entre *this et v
+
+	//Returns the angle in radians between '*this' and 'v'
+	float angle(vec3 &v) { 
 		float angle = (float)fabs(acos(this->dot(v)/(this->length()*v.length())));
 		if(angle < EPSILON) return 0;
 		return angle;
 	}
-	// retourne les coordonnée du point le plus proche de *this sur la droite passant par vA et vB
+	
 	vec3 closestPointOnLine(const vec3 &vA, const vec3 &vB) { return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA); }
-	// retourne les coordonnée du point le plus proche de *this sur le segment vA,vB
 	vec3 closestPointOnSegment(const vec3 &vA, const vec3 &vB) {
 		float factor = this->projectionOnLine(vA, vB);
 		if (factor <= 0.0f) return vA;
 		if (factor >= 1.0f) return vB;
 		return (((vB-vA) * factor) + vA);
 	}
-	// retourne le facteur de la projection de *this sur la droite passant par vA et vB
 	float projectionOnLine(const vec3 &vA, const vec3 &vB) {
 		vec3 v(vB - vA);
 		return v.dot(*this - vA) / v.dot(v);
 	}
-	// Fonction d'interpolation linéaire entre 2 vecteurs
 	vec3 lerp(vec3 &u, vec3 &v, float factor) { return ((u * (1 - factor)) + (v * factor)); }
 	vec3 lerp(vec3 &u, vec3 &v, vec3& factor) { return (vec3(	(u.x * (1 - factor.x)) + (v.x * factor.x),
 																(u.y * (1 - factor.y)) + (v.y * factor.y),
@@ -1156,3 +1152,5 @@ inline long ivec3::operator*(const ivec4 &iv) const {
 }
 
 #endif
+
+

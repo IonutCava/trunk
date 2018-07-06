@@ -1,4 +1,5 @@
 uniform float time;
+uniform float scale;
 uniform float windDirectionX;
 uniform float windDirectionZ;
 uniform float windSpeed;
@@ -14,29 +15,27 @@ void main(void)
 	
 	vec4 vertexM = gl_TextureMatrix[0] * gl_ModelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
 	
-	// Animarea copacilor
-	float move_speed = (float(int(vertexM.y*vertexM.z) % 50)/85.0 + 0.5);
-     move_speed *= windSpeed;
+	float move_speed = (float(int(vertexM.y*vertexM.z) % 50)/50.0 + 0.5);
+	float move_offset = vertexM.x;
+	//vertex.x += 0.01 * pow(vertex.y, 2.0) * cos(time * move_speed + move_offset);
+
+	vertex.x += 0.003 * pow(vertex.y, 2.0) * scale * cos(time + move_offset);
 	
-	if(windDirectionX == 1 || windDirectionX == -1)
-     {
-           float move_offset = vertexM.x;
-		vertex.x += (0.008 * pow(vertex.y, 2.0) * cos(time * move_speed + move_offset))*windDirectionX;
-     }
-     if(windDirectionZ == 1 || windDirectionZ == -1)
-     {
-           float move_offset = vertexM.z;
-		vertex.z += (0.008 * pow(vertex.y, 2.0) * cos(time * move_speed + move_offset))*windDirectionZ;
-     }
 	
-	vec4 vLightPosMV = -gl_LightSource[0].position;		
+	vec4 vLightPosMV = -gl_LightSource[0].position;
 	float intensity = dot(vLightPosMV.xyz, normalMV);
 	gl_FrontColor = vec4(intensity, intensity, intensity, 1.0);
 	gl_FrontColor.a = 1.0 - clamp(length(vertexMV)/120.0, 0.0, 1.0);
 		
+		
 	gl_Position = gl_ModelViewProjectionMatrix * vertex;
-
 }
+
+
+
+
+
+
 
 
 

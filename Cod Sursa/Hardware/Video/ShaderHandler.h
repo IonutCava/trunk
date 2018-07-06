@@ -10,7 +10,7 @@ class Shader : public Resource
 public:
 	
     virtual void init(const string &vsFile, const string &fsFile) = 0;
-	bool unload(){return true;}
+	bool unload(){unbind(); return true;}
 
     virtual bool loadVertOnly(const string& name) = 0;
 	virtual bool loadFragOnly(const string& name) = 0;
@@ -19,6 +19,7 @@ public:
 	virtual void unbind() = 0;
 	
 	virtual U32 getId() = 0;
+	virtual string& getName() = 0;
 
 	virtual void Uniform(const string& ext, int value) = 0;
 	virtual void Uniform(const string& ext, F32 value) = 0 ;

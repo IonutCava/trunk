@@ -4,11 +4,14 @@
 #include "GUI/GLUIManager.h"
 #include "GUI/zpr.h"
 #include "Utility/Headers/ParamHandler.h"
+#include "Rendering/common.h"
+#include "Managers/SceneManager.h"
 
 namespace ZPR
 {
 	UBYTE prevKey;
 	static F32 speedFactor = 3;
+
 	void SpecialUpKeyboard(int Key,int x, int y)
 	{
 		switch( Key )
@@ -19,10 +22,6 @@ namespace ZPR
 				break;
 			case GLUT_KEY_UP:
 			case GLUT_KEY_DOWN:
-				Engine::getInstance().moveFB = 0.0f;
-				break;
-			case GLUT_KEY_PAGE_UP:
-			case GLUT_KEY_PAGE_DOWN:
 				Engine::getInstance().angleUD = 0.0f;
 				break;
 		}
@@ -42,80 +41,103 @@ namespace ZPR
 					Engine::getInstance().turn += 5.0f;
 					break;
 				case GLUT_KEY_UP : 
-					Engine::getInstance().moveFB = speedFactor;
-					break;
-				case GLUT_KEY_DOWN : 
-					Engine::getInstance().moveFB = -speedFactor;
-					break;
-				case GLUT_KEY_PAGE_UP :
 					Engine::getInstance().angleUD = -(0.007f + speedFactor/100);
 					Engine::getInstance().tip  -= 5.0f;
 					break;
-				case GLUT_KEY_PAGE_DOWN : 
+				case GLUT_KEY_DOWN : 
 					Engine::getInstance().angleUD = 0.007f + speedFactor/100;
 					Engine::getInstance().tip  += 5.0f;
 					break;
 			}
 	}
-	
+
+	void KeyboardUp(UBYTE Key, int x, int y)
+	{
+		if(prevKey != Key)	prevKey = Key;
+		switch( Key)
+			{
+			case 'a':
+				Engine::getInstance().moveLR = 0.0f;
+				break;
+			case 'd':
+				Engine::getInstance().moveLR = 0.0f;
+				break;
+			case 'w':
+				Engine::getInstance().moveFB = 0.0f;
+				break;
+			case 's':
+				Engine::getInstance().moveFB = 0.0f;
+				break;
+		}
+	}
+
 	void Keyboard(UBYTE Key, int x, int y)
 	{
 		ParamHandler &par = ParamHandler::getInstance();
 		//Acest simplu check verifica daca am apasat o alta tasta fata de cea precedenta
 		//Clauza asta "if" a fost implementata pentru a evita spamul in consola daca tinem o tasta apasata
-		if(prevKey != Key)
-		{
-			prevKey = Key;
-			cout << "Received key: " << Key << endl;
-		}
+		if(prevKey != Key)	prevKey = Key;
+
 		switch ( Key)
 		{
-
-		case 'r':
-			Guardian::getInstance().ReloadEngine();
-			break;
-		case 'p':
-			Guardian::getInstance().RestartPhysX();
-			break;
-		case 'n':
-			Engine::getInstance().ToggleWireframeRendering();
-			break;
-		case '+':
-			if (speedFactor < 10)
-				speedFactor += 0.1f;
-			break;
-		case '-':
-			if (speedFactor > 0)
-				speedFactor -= 0.1f;
-			break;
-		case 'f':
-			Engine::getInstance().toggleFirstPerson();
-			break;
-		//1+2+3+4 = cream diversi actori prin scena
-		case '1':
-			glui_cb(10);
-			break;
-		case '2':
-			glui_cb(30);
-			break;
-		case '3':
-		    glui_cb(50);
-			break;
-		case '4':
-			glui_cb(40);
-			break;
-		case '5':
-			glui_cb(60);
-			break;
-		case '6':
-			PhysX::getInstance().ApplyForceToActor(PhysX::getInstance().GetSelectedActor(), NxVec3(+1,0,0), 3000); 
-			break;
-		case 'z':
-		    glui_cb(QUIT_ID);
-			break;
-		default: 
-			break;
-		}
+			case 'w':
+				Engine::getInstance().moveFB = speedFactor;
+				break;
+			case 'a':
+				Engine::getInstance().moveLR = speedFactor;
+				break;
+			case 's':
+				Engine::getInstance().moveFB = -speedFactor;
+				break;
+			case 'd':
+				Engine::getInstance().moveLR = -speedFactor;
+				break;
+			case 'r':
+				Guardian::getInstance().ReloadEngine();
+				break;
+			case 'p':
+				Guardian::getInstance().RestartPhysX();
+				break;
+			case 'n':
+				Engine::getInstance().ToggleWireframeRendering();
+				break;
+			case 'b':
+				SceneManager::getInstance().toggleBoundingBoxes();
+				break;
+			case '+':
+				if (speedFactor < 10)  speedFactor += 0.1f;
+				break;
+			case '-':
+				if (speedFactor > 0.1f)   speedFactor -= 0.1f;
+				break;
+			case 'f':
+				Engine::getInstance().toggleFirstPerson();
+				break;
+			//1+2+3+4 = cream diversi actori prin scena
+			case '1':
+				glui_cb(10);
+				break;
+			case '2':
+				glui_cb(30);
+				break;
+			case '3':
+				glui_cb(50);
+				break;
+			case '4':
+				glui_cb(40);
+				break;
+			case '5':
+				glui_cb(60);
+				break;
+			case '6':
+				PhysX::getInstance().ApplyForceToActor(PhysX::getInstance().GetSelectedActor(), NxVec3(+1,0,0), 3000); 
+				break;
+			case 'z':
+				glui_cb(QUIT_ID);
+				break;
+			default: 
+				break;
+			}
 
 	}
 }

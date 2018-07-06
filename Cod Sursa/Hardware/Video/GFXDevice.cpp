@@ -2,7 +2,7 @@
 
 void GFXDevice::setApi(GraphicsAPI api)
 {
-	if(api <= 2)
+	if(api <= 6)
 	{
 		_api = GL_API::getInstance();
 	}

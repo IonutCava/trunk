@@ -18,18 +18,24 @@ Note: all transformations applied to the mesh affect every submesh that compose 
 #include "SubMesh.h"
 #include <unordered_map>
 
-class Mesh
+class Mesh : public Object3D
 {
+	typedef tr1::unordered_map<string, SubMesh*> subMeshMap;
 public:
-	Mesh(const string& name) : _name(name)
-	{}
-	void addSubMesh(SubMesh* subMesh){_subMeshes.insert(pair<string,SubMesh*>(subMesh->getName(),subMesh));}
+	Mesh() : Object3D() {}
+	Mesh(vec3& position, vec3& scale, vec3& orientation)
+		: Object3D(position,scale,orientation) {}
 
-private:
-	string _name;
-	vec3 _position,_rotation,_scale;
+	void addSubMesh(SubMesh* subMesh){_subMeshes.insert(pair<string,SubMesh*>(subMesh->getName(),subMesh));}
+	SubMesh* getSubMesh(const std::string& name) {return _subMeshes[name];}
+	SubMesh* getSubMesh(U32 index){_subMeshIterator = _subMeshes.begin(); advance(_subMeshIterator,index); return (*_subMeshIterator).second;}
+	subMeshMap& getSubMeshes() {return _subMeshes;}
+	void render();
+
+protected:
 	bool _visibleToNetwork, _render;
-	tr1::unordered_map<string, SubMesh*> _subMeshes;
+	subMeshMap _subMeshes;
+	subMeshMap::iterator _subMeshIterator;
 };
 
 #endif

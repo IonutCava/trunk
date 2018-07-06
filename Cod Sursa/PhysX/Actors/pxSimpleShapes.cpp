@@ -1,6 +1,7 @@
 #include "PhysX/PhysX.h"
 #include "Rendering/Frustum.h"
 #include "Utility/Headers/BoundingBox.h"
+#include "Hardware/Video/GFXDevice.h"
 
 void PhysX::CreateCube(int size=2)
 {

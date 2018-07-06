@@ -1,0 +1,17 @@
+<terrain>terrain.xml</terrain>
+<assets>assets.xml</assets>
+
+<vegetation>
+	<grassVisibility>4000</grassVisibility>
+	<treeVisibility>4000</treeVisibility>
+</vegetation>
+
+<wind>
+	<windDirX>1</windDirX>
+	<windDirZ>-1</windDirZ>
+	<windSpeed>1</windSpeed>
+</wind>
+
+<options>
+	<visibility>2000</visibility>
+</options>

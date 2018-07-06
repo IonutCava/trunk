@@ -1,9 +1,9 @@
 #include "DXWrapper.h"
 #include "Utility/Headers/DataTypes.h"
-
+#include <iostream>
 void DX_API::initHardware()
 {
-	cout << "Initializing Direct3D rendering API! " << endl;
+	std::cout << "Initializing Direct3D rendering API! " << endl;
 }
 
 void DX_API::closeRenderingApi()

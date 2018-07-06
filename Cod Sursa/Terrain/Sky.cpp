@@ -1,5 +1,6 @@
 #include "Sky.h"
 
+#include "Utility/Headers/ParamHandler.h"
 #include "Managers/ResourceManager.h"
 #include "Rendering/Camera.h"
 #include "Hardware/Video/GFXDevice.h"
@@ -7,9 +8,14 @@
 Sky::Sky()
 {
 	_init = false;
-
-	_skybox = ( ResourceManager::getInstance().LoadResource<TextureCubemap>(
-				"skybox_2.jpg skybox_1.jpg skybox_5.jpg skybox_6.jpg skybox_3.jpg skybox_4.jpg"))->getHandle();
+   	string location = ParamHandler::getInstance().getParam<string>("assetsLocation")+"/misc_images/";
+	_skybox =  ResourceManager::getInstance().LoadResource<TextureCubemap>(
+				location+"skybox_2.jpg "+
+				location+"skybox_1.jpg "+
+				location+"skybox_5.jpg "+
+				location+"skybox_6.jpg "+ 
+				location+"skybox_3.jpg "+
+				location+"skybox_4.jpg");
 	_skyShader = ResourceManager::getInstance().LoadResource<Shader>("sky");
 	assert(_skyShader);
 	_init = true;
@@ -32,7 +38,6 @@ void Sky::setParams(const vec3& eyePos, const vec3& sunVect, bool invert, bool d
 void Sky::drawSkyAndSun() const
 {
 	if(!_init) return;
-
 	GFXDevice::getInstance().enable_MODELVIEW();
 	GFXDevice::getInstance().pushMatrix();
 	GFXDevice::getInstance().translate(_eyePos.x, _eyePos.y, _eyePos.z);
@@ -40,8 +45,7 @@ void Sky::drawSkyAndSun() const
 
 	glPushAttrib(GL_ENABLE_BIT);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, _skybox);
+	_skybox->Bind(0);
 	_skyShader->bind();
 	{
 		_skyShader->UniformTexture("texSky", 0);
@@ -51,10 +55,10 @@ void Sky::drawSkyAndSun() const
 
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_LIGHTING);
-		glutSolidSphere (0.25, 4, 4);
+		glutSolidSphere (1.0, 4, 4);
 	}
 	_skyShader->unbind();
-
+	_skybox->Unbind(0);
 	glPopAttrib();
 
 	GFXDevice::getInstance().popMatrix();
@@ -67,28 +71,25 @@ void Sky::drawSky() const
 
 	if(!_init) return;
 
-	GFXDevice::getInstance().enable_MODELVIEW();
 	GFXDevice::getInstance().pushMatrix();
 	GFXDevice::getInstance().translate(_eyePos.x, _eyePos.y, _eyePos.z);
 	if(_invert)	GFXDevice::getInstance().scale(1.0f, -1.0f, 1.0f);
 
 	glPushAttrib(GL_ENABLE_BIT);
 
-	glActiveTexture(GL_TEXTURE0);
-	glEnable(GL_TEXTURE_CUBE_MAP);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, _skybox);
+	_skybox->Bind(0);
 	_skyShader->bind();
 	{
 		_skyShader->UniformTexture("texSky", 0);
 		_skyShader->Uniform("enable_sun", false);
 		_skyShader->Uniform("view_vector", Camera::getInstance().getViewDir());
+
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_LIGHTING);
 		glutSolidSphere (1.0, 4, 4);
 	}
 	_skyShader->unbind();
-	glDisable(GL_TEXTURE_CUBE_MAP);
-
+	_skybox->Unbind(0);
 	glPopAttrib();
 
 	GFXDevice::getInstance().popMatrix();

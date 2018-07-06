@@ -7,12 +7,14 @@
 
 class MainScene : public Scene
 {
+
 public:
 	/*General Scene Requirement*/
-	MainScene(string name, string mainScript);
 	void render();
 	void preRender();
 	bool load(const string& name);
+	bool loadResources(bool continueOnErrors);
+	bool loadEvents(bool continueOnErrors){return true;}
 	bool unload();
 	void processEvents(F32 time);
 
@@ -22,12 +24,13 @@ public:
 	void processKey(int Key);
 	
 private:
+	void test(boost::any a, CallbackParam b);
 	FrameBufferObject*     _skyFBO;
+	Shader* _geometryShader;
 	vec2 _sunAngle;
 	vec4 _sunVector;
-	vec3 _cameraEye;
 	mat4 _matSunModelviewProj;
-	F32 angleLR,angleUD,moveFB;
+	F32 angleLR,angleUD,moveFB,moveLR;
 	vector<F32> _eventTimers;
 
 };

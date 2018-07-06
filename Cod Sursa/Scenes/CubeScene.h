@@ -6,18 +6,20 @@
 class CubeScene : public Scene
 {
 public:
-	CubeScene(string name, string mainScript);
 	void render();
 	void preRender();
 	bool load(const string& name);
+	bool loadResources(bool continueOnErrors);
+	bool loadEvents(bool continueOnErrors){return true;}
 	bool unload();
 	void processInput();
 	void processEvents(F32 time){}
 
 private:
-	GFXDevice& _GFX;
-	vec3 _cameraEye;
-	F32 angleLR,angleUD,moveFB,update_time;
+	F32 i ;
+	vec2 _sunAngle;
+	vec4 _sunVector;
+	F32 angleLR,angleUD,moveFB,moveLR,update_time;
 };
 
 #endif

@@ -255,9 +255,10 @@ enum NxSDKCreateError
 #if _MSC_VER
 	#include <malloc.h>
 	#define NxAlloca(x)	_alloca(x)
-#else
+/*#else
 	#include <alloca.h>
 	#define NxAlloca(x)	alloca(x)
+*/
 #endif
 
 /**

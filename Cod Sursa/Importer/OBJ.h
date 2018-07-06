@@ -19,6 +19,9 @@
 #include "Utility/Headers/MathClasses.h"
 #include "Utility/Headers/DataTypes.h"
 #include "Utility/Headers/BaseClasses.h"
+#include "TextureManager/Texture2D.h"
+#include "Geometry/Mesh.h"
+#include <unordered_map>
 
 using namespace std;
 
@@ -28,92 +31,24 @@ using namespace std;
 #define GLM_TEXTURE  (1 << 2)       /* render with texture coords */
 #define GLM_COLOR    (1 << 3)       /* render with colors */
 #define GLM_MATERIAL (1 << 4)       /* render with materials */
-#define GLM_2_SIDED  (1 << 5)       /* AVL Draw two sided normals */
 
-static int GLM_BLENDING;   //AVL Blending flag 
+class ImportedModel;
 
-enum MeshType
+namespace OBJ
 {
-	MESH_CONVEX,
-	MESH_TRIANGLE
-};
-
-/* ImportedModel: Structure that defines a model.
- */
-class Shader;
-class SubMesh;
-class ImportedModel : public Resource {
-public:
-	~ImportedModel(){unload();}
-	ImportedModel(){}
-	bool load(const string &name) {return true;}
-	bool unload();
-  char*    pathname;            /* path to this model */
-  char*    mtllibname;          /* name of the material library */
-
-  vector<vertex> vertices;      /* array of vertices  */
-  vector<normal> normals;       /* array of normals */
-  vector<texCoord> texcoords;   /* array of texture coordinates */
-  vector<vertex> facetnorms;          /* array of facetnorms */
-  vector<triangle> triangles;          /* array of triangles */ 
-  vector<simpletriangle> SimpleFaceArray; /*array of simple triangles*/
-  vector<Material>    materials;       /* array of materials */
-  vector<Group>       groups;          /* linked list of groups */ 
-  vector<TextureInfo>  textures;
-  vector<TextureInfo>::iterator TextureIterator;
-  F32 ScaleFactor;
-  vec3 rotation;                      /*(X degrees, Y degrees, Z degrees)*/
-  vec3 position;                      /* position of the model */
-  string ModelName;
-  string NormalMapName;
-  int IdNormalMap;
-  bool vegetation;
-  Shader* shader;
-  U32 ListID;
-};
-
-class mycallback
-{
-public:
-	void (*loadcallback)(F32,char *);
-	int start; 
-	int end;
-	char *text;
-};
 
 void glmDraw(ImportedModel* model, U32 mode,char *drawonly, U32 ListID);
 
-F32 glmDot(F32* u, F32* v);
 void  glmFirstPass(ImportedModel* model, FILE* file); 
 void  glmSecondPass(ImportedModel* model, FILE* file);
-F32 glmUnitize(ImportedModel* model); //redimensioneaza modelul si il muta in origine
+F32   glmUnitize(ImportedModel* model); //redimensioneaza modelul si il muta in origine
 void  glmDimensions(ImportedModel* model, F32* dimensions);
 void  glmScale(ImportedModel* model, F32 scale);
 void  glmReverseWinding(ImportedModel* model);
 void  glmFacetNormals(ImportedModel* model);
-void  glmSetScale(ImportedModel* model,F32 ScaleFactor);
-void  glmSetPosition(ImportedModel* model,vec3 position);
-void  glmSetRotation(ImportedModel* model,vec3 rotation);
-void  glmSetNormalMap(ImportedModel* model, std::string NormalMap);
-static GLuint glmFindOrAddTexture(ImportedModel* model, std::string name);
-/* glmVertexNormals: Generates smooth vertex normals for a model.
- * First builds a list of all the triangles each vertex is in.  Then
- * loops through each vertex in the the list averaging all the facet
- * normals of the triangles each vertex is in.  Finally, sets the
- * normal index in the triangle for the vertex to the generated smooth
- * normal.  If the dot product of a facet normal and the facet normal
- * associated with the first triangle in the list of triangles the
- * current vertex is in is greater than the cosine of the angle
- * parameter to the function, that facet normal is not added into the
- * average normal calculation and the corresponding vertex is given
- * the facet normal.  This tends to preserve hard edges.  The angle to
- * use depends on the model, but 90 degrees is usually a good start.
- *
- * model - initialized ImportedModel structure
- * angle - maximum angle (in degrees) to smooth across
- */
-void
-glmVertexNormals(ImportedModel* model, F32 angle);
+
+static U32 glmFindOrAddTexture(ImportedModel* model, std::string name);
+void  glmVertexNormals(ImportedModel* model, F32 angle);
 
 /* glmLinearTexture: Generates texture coordinates according to a
  * linear projection of the texture map.  It generates these by
@@ -174,22 +109,10 @@ glmWriteOBJ(ImportedModel* model, char* filename, U32 mode);
  *            GLM_FLAT and GLM_SMOOTH should not both be specified.
  */
 void
-glmDraw(ImportedModel* model, U32 mode, U32 ListID);
+glmDraw(ImportedModel* model, U32 mode);
 
-/* glmList: Generates and returns a display list for the model using
- * the mode specified.
- *
- * model    - initialized ImportedModel structure
- * mode     - a bitwise OR of values describing what is to be rendered.
- *            GLM_NONE    -  render with only vertices
- *            GLM_FLAT    -  render with facet normals
- *            GLM_SMOOTH  -  render with vertex normals
- *            GLM_TEXTURE -  render with texture coords
- *            GLM_FLAT and GLM_SMOOTH should not both be specified.  
- */
 U32
-glmList(ImportedModel* model, U32 mode);
-
+glmList(ImportedModel* model, GLuint mode);
 /* glmWeld: eliminate (weld) vectors that are within an epsilon of
  * each other.
  *
@@ -242,4 +165,66 @@ GLvoid glmFlipTexture(UBYTE* texture, int width, int height);
 
 //AVL Flip Model Textures
 GLvoid glmFlipModelTextures(ImportedModel* model);
+}
+
+/* ImportedModel: Structure that defines a model.
+ */
+typedef struct _GLMtexture {
+  string name;
+  GLuint id;                    /* OpenGL texture ID */
+  GLfloat width;		/* width and height for texture coordinates */
+  GLfloat height;
+} GLMtexture;
+
+class Shader;
+class SubMesh;
+class ImportedModel : public Mesh {
+public:
+
+	ImportedModel() : Mesh(), _loaded(false) {}
+
+	ImportedModel(vec3& position, vec3& scale, vec3& orientation) 
+		: Mesh(position,scale,orientation) , _loaded(false) {}
+
+	~ImportedModel(){unload();}
+
+	bool load(const string &name) {	if(!_loaded) _loaded = ReadOBJ(name); return _loaded;}
+	bool unload();
+	void setPosition(vec3 position);
+
+	inline Shader* getShader()  { return _shader;}
+	inline void    setShader(Shader* shader)  { _shader = shader;}
+	bool IsInView();
+	void Draw();
+	void DrawBBox();
+
+	string    pathname;            /* path to this model */
+	string    mtllibname;          /* name of the material library */
+
+  vector<vertex> vertices;      /* array of vertices  */
+  vector<normal> normals;       /* array of normals */
+  vector<texCoord> texcoords;   /* array of texture coordinates */
+  vector<vertex> facetnorms;          /* array of facetnorms */
+  vector<triangle> triangles;          /* array of triangles */ 
+  vector<simpletriangle> SimpleFaceArray; /*array of simple triangles*/
+  vector<Material>    materials;       /* array of materials */
+  vector<Group*>       groups;          /* linked list of groups */ 
+
+  tr1::unordered_map<int, Texture2D*>  textures;
+  tr1::unordered_map<int, Texture2D*>::iterator textureIterator;
+
+  string ModelName;
+
+  BoundingBox&                getBoundingBox(){return _bb;}
+  
+  //ToDo: remove this:
+  U32 ListID;
+
+private:
+	bool ReadOBJ(const std::string& filename);
+	bool _loaded;
+	BoundingBox _bb;
+	Shader* _shader;
+};
+
 #endif

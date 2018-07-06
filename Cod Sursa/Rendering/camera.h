@@ -10,7 +10,6 @@ SINGLETON_BEGIN( Camera)
 public:	enum TYPE {FREE, DRIVEN};
 private:
 	vec3	vEye;
-	vec3	vPrevEye;
 	vec3	vCenter;
 	vec3	vViewDir;
 	vec3	vLeftDir;	
@@ -29,7 +28,6 @@ private:
 public:
 	inline TYPE  getType()				const	{return eType;}
 	inline const vec3& getEye()			const	{return vEye;}
-	inline const vec3& getPrevEye()		const	{return vPrevEye;}
 	inline const vec3& getCenter()		const	{return vCenter;}
 	inline const vec3& getViewDir()		const	{return vViewDir;}
 	inline F32 getAngleX()			const	{return fAngleX;}

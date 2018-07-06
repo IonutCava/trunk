@@ -1,6 +1,7 @@
 #include "Camera.h"
 #include "Rendering/Frustum.h"
 #include "Hardware/Video/GFXDevice.h"
+#include "Managers/SceneManager.h"
 
 void Camera::SaveCamera()
 {
@@ -40,28 +41,21 @@ Camera::Camera() {
 
 	vUp			= vec3(0.0f, 1.0f, 0.0f);
 	vEye		= vec3(0.0f, 0.0f, 0.0f);
-	vPrevEye = vEye;
 	eType = FREE;
 	bSaved = false;
-	//terHeightMin = Engine::getInstance().getTerrain()->getBoundingBox().min.y;
 	Refresh();
 }
 
 
 void Camera::Refresh()
-{
-	//vec2 terrainDim = Engine::getInstance().getTerrain()->getDimensions();
-	//F32 terrainCurrentY = Engine::getInstance().getTerrain()->getPosition(vEye.x/terrainDim.x,vEye.z/terrainDim.y).y;
+{	
+
 	switch(eType) {
 	case FREE:
 		vViewDir.x = cosf(fAngleX) * sinf(fAngleY);
 		vViewDir.y = cosf(fAngleY);
 		vViewDir.z = sinf(fAngleX) * sinf(fAngleY);
 		vCenter = vEye + vViewDir;
-	/*	if (vEye.y <= terHeightMin)
-			vEye.y += (terHeightMin - vEye.y)+3;
-		if (vEye.y <= terrainCurrentY)
-			vEye.y += (terrainCurrentY - vEye.y)+3;*/
 		vLeftDir.cross(vUp, vViewDir);
 		vLeftDir.normalize();
 		break;
@@ -73,6 +67,7 @@ void Camera::Refresh()
 		vLeftDir.normalize();
 		break;
 	}
+
 
 }
 
@@ -97,7 +92,6 @@ void Camera::RenderLookAt(bool inverty, F32 planey) {
 
 
 void Camera::PlayerMoveForward(F32 factor)	{	
-	vPrevEye = vEye;
 	vEye += vViewDir * factor;
 
 	Refresh();
@@ -110,7 +104,6 @@ void Camera::TranslateForward(F32 factor)	{
 }
 
 void Camera::PlayerMoveStrafe(F32 factor)	{
-
 	vEye += vLeftDir * factor;
 
 	Refresh();
@@ -156,6 +149,7 @@ void Camera::RenderLookAtToCubeMap(const vec3& eye, U32 nFace)
 
 	GFXDevice::getInstance().enable_MODELVIEW();
 	GFXDevice::getInstance().loadIdentityMatrix();
+
 	gluLookAt(	eye.x,						eye.y,						eye.z,
 				TabCenter[nFace].x,	TabCenter[nFace].y,	TabCenter[nFace].z,
 				TabUp[nFace].x,				TabUp[nFace].y,				TabUp[nFace].z		);

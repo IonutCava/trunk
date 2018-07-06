@@ -54,7 +54,7 @@ bool glVertexBufferObject::Create(U32 usage)
 
 
 	_VBOoffsetPosition	= 0;
-	_VBOoffsetNormal		= _VBOoffsetPosition + nSizePosition;
+	_VBOoffsetNormal	= _VBOoffsetPosition + nSizePosition;
 	_VBOoffsetTexcoord	= _VBOoffsetNormal + nSizeNormal;
 	_VBOoffsetTangent	= _VBOoffsetTexcoord + nSizeTexcoord;
 
@@ -86,7 +86,7 @@ bool glVertexBufferObject::Create(U32 usage)
 
 void glVertexBufferObject::Enable()
 {
-	if(_VBOid)	Enable_VBO();		
+	if(_VBOid)	    Enable_VBO();		
 	else			Enable_VA();		
 }
 

@@ -34,6 +34,7 @@ public:
 		min += v;
 		max += v;
 	}
+
 	inline void Multiply(const vec3& v){
 		min.x *= v.x;
 		min.y *= v.y;
