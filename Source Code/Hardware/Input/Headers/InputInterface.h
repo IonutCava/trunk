@@ -388,7 +388,11 @@ public:
         return _nStatus;
     }
 
-    inline bool setMousePosition(D32 x, D32 y) const{
+    inline bool setMousePosition(const vec2<U16>& pos) const {
+        return setMousePosition(pos.x, pos.y);
+    }
+
+    inline bool setMousePosition(U16 x, U16 y) const {
         Application::getInstance().setMousePosition(x, y);
         return true;
     }

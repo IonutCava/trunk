@@ -212,6 +212,15 @@ namespace Util {
         return DEGREES(2.0f * atan(tan(RADIANS(yfov) * 0.5f) * aspect));
     }
 
+    /** Ogre3D
+    @brief Normalise the selected rotations to be within the +/-180 degree range.
+    @details The normalise uses a wrap around, so for example a yaw of 360 degrees becomes 0 degrees, and -190 degrees becomes 170.
+    @param normYaw If false, the yaw isn't normalized.
+    @param normPitch If false, the pitch isn't normalized.
+    @param normRoll If false, the roll isn't normalized.
+    */
+    void normalize(vec3<F32>& inputRotation, bool degrees = false, bool normYaw = true, bool normPitch = true, bool normRoll = true);
+
     namespace Mat4 {
         // ----------------------------------------------------------------------------------------
         template<class T>

@@ -68,7 +68,7 @@ private:
     inline void changeResolution(GLushort w, GLushort h) {changeResolutionInternal(w,h);}
     ///Change the window's position
     void      setWindowPos(GLushort w, GLushort h) const;
-    void      setMousePosition(GLdouble x, GLdouble y) const;
+    void      setMousePosition(GLushort x, GLushort y) const;
     vec3<GLfloat> unproject(const vec3<GLfloat>& windowCoord) const;
     void lookAt(const vec3<GLfloat>& eye, const vec3<GLfloat>& target, const vec3<GLfloat>& up);
     void lookAt(const mat4<GLfloat>& viewMatrix, const vec3<GLfloat>& viewDirection);

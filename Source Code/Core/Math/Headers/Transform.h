@@ -36,17 +36,19 @@ public:
 
     ~Transform();
 
+    /// Call once per frame to keep track of frame by frame changes to transforms
+    void update(const U64 deltaTime);
     void translate(const vec3<F32>& position)          { WriteLock w_lock(_lock); setDirty(); _translation += position; }
     void setPosition(const vec3<F32>& position)        { WriteLock w_lock(_lock); setDirty(); _translation = position;  }
     void scale(const vec3<F32>& scale)                 { WriteLock w_lock(_lock); setDirty(); _scale = scale;                           rebuildMatrix(); }
-    void rotate(const vec3<F32>& axis, F32 degrees)    { WriteLock w_lock(_lock); setDirty(); _orientation.fromAxisAngle(axis,degrees); rebuildMatrix(); }
-    void rotateEuler(const vec3<F32>& euler)           { WriteLock w_lock(_lock); setDirty(); _orientation.fromEuler(euler);            rebuildMatrix(); }
+    void rotate(const vec3<F32>& axis, F32 degrees)    { WriteLock w_lock(_lock); setDirty(); _orientation.fromAxisAngle(axis,degrees); _orientation.normalize(); rebuildMatrix(); }
+    void rotateEuler(const vec3<F32>& euler)           { WriteLock w_lock(_lock); setDirty(); _orientation.fromEuler(euler); _orientation.normalize();            rebuildMatrix(); }
 
-    void rotate(Quaternion<F32> quat) {
+    void rotate(const Quaternion<F32>& quat) {
         WriteLock w_lock(_lock); 
         setDirty(); 
-        quat.normalize();
         _orientation = _orientation * quat;
+        _orientation.normalize();
         rebuildMatrix();
     }
 
@@ -54,18 +56,25 @@ public:
         WriteLock w_lock(_lock); 
         setDirty(); 
         _orientation.slerp(quat, deltaTime); 
+        _orientation.normalize();
         rebuildMatrix();
     }
 
     ///Helper functions
-    inline bool isDirty()         const {
+    inline bool isDirty()          const {
         if(hasParentTransform())
             return _dirty || _parentTransform->isDirty();
 
         return  _dirty;
     }
 
-    
+    /*inline bool changedLastFrame() const {
+        if(hasParentTransform())
+            return (_changedLastFrame != _changedLastFramePrevious) || _parentTransform->changedLastFrame();
+
+        return (_changedLastFrame != _changedLastFramePrevious);
+    }*/
+
     inline bool isUniformScaled() const {
         if(hasParentTransform()){
             ReadLock r_lock(_parentLock);
@@ -199,7 +208,7 @@ public:
 private:
     
     inline void clean()         {_dirty = false; _rebuildMatrix = false;}
-    inline void setDirty()      {_dirty = true; _physicsDirty = true;}
+    inline void setDirty()      {_dirty = true; _physicsDirty = true; /*_changedLastFrame = true;*/}
     inline void rebuildMatrix() {_rebuildMatrix = true;}
     inline bool hasParentTransform() const {
 #ifdef _DEBUG
@@ -222,6 +231,9 @@ private:
     Quaternion<F32> _orientation;
     ///_dirty is set to true whenever a translation, rotation or scale is applied
     boost::atomic_bool _dirty;
+    ///_changedLastFrame is set to false only if nothing changed within the transform during the last frame
+    //boost::atomic_bool _changedLastFrame;
+    //boost::atomic_bool _changedLastFramePrevious;
     ///_physicsDirty is a hack flag to sync SGN transform with physics actor's pose
     boost::atomic_bool _physicsDirty;
     ///_rebuildMatrix is set to true only when a rotation or scale is applied to avoid rebuilding matrices on translation only

@@ -44,7 +44,7 @@ private:
     void closeRenderingApi();
     void initDevice(U32 targetFrameRate);
     void changeResolution(U16 w, U16 h);
-    void setMousePosition(D32 x, D32 y) const;
+    void setMousePosition(U16 x, U16 y) const;
     ///Change the window's position
     void setWindowPos(U16 w, U16 h)  const;
     vec3<F32> unproject(const vec3<F32>& windowCoord) const;

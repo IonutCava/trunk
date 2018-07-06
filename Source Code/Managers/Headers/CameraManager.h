@@ -33,23 +33,25 @@ class CameraManager : private boost::noncopyable {
 typedef Unordered_map<std::string, Camera*> CameraPool;
 
 public:
-	CameraManager();
-	~CameraManager();
+    CameraManager();
+    ~CameraManager();
 
-	Camera* const getActiveCamera();
-	void setActiveCamera(const std::string& name);
-	void addNewCamera(const std::string& cameraName, Camera* const camera);
+    Camera* const getActiveCamera();
+    void setActiveCamera(const std::string& name);
+    void addNewCamera(const std::string& cameraName, Camera* const camera);
 
-	void addCameraChangeListener(const DELEGATE_CBK& f) {_changeCameralisteners.push_back(f);}
-	void addCameraUpdateListener(const DELEGATE_CBK& f) {_updateCameralisteners.push_back(f);}
+    void addCameraChangeListener(const DELEGATE_CBK& f) {_changeCameralisteners.push_back(f);}
+    void addCameraUpdateListener(const DELEGATE_CBK& f) {_updateCameralisteners.push_back(f);}
 
-	void update(const U64 deltaTime);
+    bool onMouseMove(const OIS::MouseEvent& arg);
+
+    void update(const U64 deltaTime);
 
 private:
-	Camera* _camera;
-	CameraPool _cameraPool;
-	vectorImpl<DELEGATE_CBK > _changeCameralisteners;
-	vectorImpl<DELEGATE_CBK > _updateCameralisteners;
+    Camera* _camera;
+    CameraPool _cameraPool;
+    vectorImpl<DELEGATE_CBK > _changeCameralisteners;
+    vectorImpl<DELEGATE_CBK > _updateCameralisteners;
 };
 
 #endif

@@ -36,7 +36,7 @@ vec3<F32> DX_API::unproject(const vec3<F32>& windowCoord)  const
     return vec3<F32>();
 }
 
-void DX_API::setMousePosition(D32 x, D32 y) const
+void DX_API::setMousePosition(U16 x, U16 y) const
 {
 }
 

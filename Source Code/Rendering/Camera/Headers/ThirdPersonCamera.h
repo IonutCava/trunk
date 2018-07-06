@@ -25,10 +25,13 @@
 
 #include "OrbitCamera.h"
 
-///Movable camera that orbits a certain point
+/// A camera that always looks at a given target and orbits around it. It's position / direction can be changed by user input
 class ThirdPersonCamera : public OrbitCamera {
 public:
-	ThirdPersonCamera(const vec3<F32>& eye = VECTOR3_ZERO);
+    ThirdPersonCamera(const vec3<F32>& eye = VECTOR3_ZERO);
+
+    bool onMouseMove(const OIS::MouseEvent& arg);
+    void onActivate();
 };
 
 #endif

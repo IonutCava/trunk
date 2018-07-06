@@ -27,6 +27,11 @@
 
 #include "Core/Math/Headers/Quaternion.h"
 #include "Core/Resources/Headers/Resource.h"
+ 
+namespace OIS {
+    class MouseEvent;
+    enum MouseButtonID;
+}
 
 class SceneGraphNode;
 class Camera : public Resource {
@@ -59,7 +64,7 @@ public:
     ///rightEye = false => left eye's frustum+view; rightEye = true => right eye's frustum + view.
     void setAnaglyph(bool rightEye = false);
     ///Moves the camera by the specified offsets in each direction
-    void move(F32 dx, F32 dy, F32 dz);
+    virtual void move(F32 dx, F32 dy, F32 dz);
     ///Global rotations are applied relative to the world axis, not the camera's
     void setGlobalRotation(F32 yaw, F32 pitch, F32 roll = 0.0f);
     ///Sets the camera's position, target and up directions
@@ -70,7 +75,7 @@ public:
     inline void lookAt(const vec3<F32>& target) { lookAt(_eye, target, _yAxis); }
     ///Sets the camera's orientation to match the specified yaw, pitch and roll values;
     ///Creates a quaternion based on the specified euler angles and calls "rotate" to change the orientation
-    void rotate(F32 yaw, F32 pitch, F32 roll);
+    virtual void rotate(F32 yaw, F32 pitch, F32 roll);
     ///Creates a quaternion based on the specified axis-angle and calls "rotate" to change the orientation
     inline void rotate(const vec3<F32>& axis, F32 angle) { rotate(Quaternion<F32>(axis,angle * _cameraTurnSpeed)); }
     ///Change camera's pitch - Yaw, Pitch and Roll call "rotate" with a apropriate quaternion for each rotation.
@@ -105,6 +110,7 @@ public:
     inline void setEye(const vec3<F32>& position)                { _eye = position;  _viewMatrixDirty = true; }
     inline void setRotation(const Quaternion<F32>& q)            { _orientation = q; _viewMatrixDirty = true; }
     inline void setRotation(F32 yaw, F32 pitch, F32 roll = 0.0f) { setRotation(Quaternion<F32>(-pitch,-yaw,-roll)); }
+    ///Mouse sensitivity: amount of pixels per radian
     inline void setMouseSensitivity(F32 sensitivity)             {_mouseSensitivity = sensitivity;}
     inline void setMoveSpeedFactor(F32 moveSpeedFactor)          {_moveSpeedFactor = moveSpeedFactor;}
     inline void setTurnSpeedFactor(F32 turnSpeedFactor)          {_turnSpeedFactor = turnSpeedFactor;}
@@ -129,7 +135,12 @@ public:
     virtual void addUpdateListener(const DELEGATE_CBK& f) {_listeners.push_back(f);}
     ///Informs all listeners of a new event
     virtual void updateListeners();
-
+    ///Inject mouse events
+    virtual bool onMouseMove(const OIS::MouseEvent& arg) {return true;}
+    ///Called when the camera becomes active
+    virtual void onActivate() {}
+    ///Called when the camera becomes inactive
+    virtual void onDectivate() {}
 protected:
     void updateViewMatrix();
 

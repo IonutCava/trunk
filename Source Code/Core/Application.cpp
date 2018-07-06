@@ -40,7 +40,7 @@ I8 Application::initialize(const std::string& entryPoint, I32 argc, char **argv)
     return _mainWindowId;
 }
 
-void Application::setMousePosition(D32 x, D32 y) const {
+void Application::setMousePosition(U16 x, U16 y) const {
     _kernel->getGFXDevice().setMousePosition(x,y);
 }
 

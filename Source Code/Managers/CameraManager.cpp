@@ -18,9 +18,13 @@ CameraManager::~CameraManager() {
 }
 
 void CameraManager::update(const U64 deltaTime){
-    for_each(CameraPool::value_type& it, _cameraPool){
-        it.second->update(deltaTime);
-    }
+    _camera->update(deltaTime);
+}
+
+bool CameraManager::onMouseMove(const OIS::MouseEvent& arg){
+    _camera->onMouseMove(arg);
+
+    return true;
 }
 
 Camera* const CameraManager::getActiveCamera() {
@@ -31,8 +35,13 @@ Camera* const CameraManager::getActiveCamera() {
 
 void CameraManager::setActiveCamera(const std::string& name) {
     assert(!_cameraPool.empty());
+
+    if(_camera) _camera->onDectivate();
+
     if(_cameraPool.find(name) != _cameraPool.end()) 	_camera = _cameraPool[name];
     else  		                                        _camera = _cameraPool.begin()->second;
+
+    _camera->onActivate();
 
     for_each(const DELEGATE_CBK& listener, _changeCameralisteners){
         listener();
@@ -47,8 +56,8 @@ void CameraManager::addNewCamera(const std::string& cameraName, Camera* const ca
     camera->setIOD(ParamHandler::getInstance().getParam<F32>("postProcessing.anaglyphOffset"));
     camera->setName(cameraName);
 
-	for_each(const DELEGATE_CBK& listener, _updateCameralisteners){
-		camera->addUpdateListener(listener);
-	}
+    for_each(const DELEGATE_CBK& listener, _updateCameralisteners){
+        camera->addUpdateListener(listener);
+    }
     _cameraPool.insert(make_pair(cameraName,camera));
 }

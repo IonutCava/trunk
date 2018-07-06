@@ -252,7 +252,7 @@ public:
 protected:
     friend class Kernel;
     friend class Application;
-    inline void setMousePosition(D32 x, D32 y) const {_api.setMousePosition(x,y);}
+    inline void setMousePosition(U16 x, U16 y) const {_api.setMousePosition(x,y);}
 
 private:
 

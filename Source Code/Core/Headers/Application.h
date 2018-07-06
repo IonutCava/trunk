@@ -65,7 +65,7 @@ public:
 
 protected:
     friend class InputInterface;
-    void setMousePosition(D32 x, D32 y) const;
+    void setMousePosition(U16 x, U16 y) const;
 
 private:
     Application();

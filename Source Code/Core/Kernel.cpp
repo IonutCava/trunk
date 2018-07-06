@@ -485,6 +485,7 @@ bool Kernel::onKeyUp(const OIS::KeyEvent& key) {
 }
 
 bool Kernel::onMouseMove(const OIS::MouseEvent& arg) {
+    _cameraMgr->onMouseMove(arg);
     return _sceneMgr.onMouseMove(arg);
 }
 

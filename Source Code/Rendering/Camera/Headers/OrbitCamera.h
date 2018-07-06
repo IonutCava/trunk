@@ -25,10 +25,40 @@
 
 #include "Camera.h"
 
-///Fixed camera that orbits a certain point. It's position can't change.
+/// A camera that always looks at a given target and orbits around it. It's position / direction can't be changed by user input
 class OrbitCamera : public Camera {
 public:
-	OrbitCamera(const CameraType& type = ORBIT, const vec3<F32>& eye = VECTOR3_ZERO);
+    OrbitCamera(const CameraType& type = ORBIT, const vec3<F32>& eye = VECTOR3_ZERO);
+        
+    void setTarget(SceneGraphNode* const sgn, const vec3<F32>& offsetDirection = vec3<F32>(0, 0.75, 1.0));
+
+    inline void maxRadius(F32 radius)       {_maxRadius = radius;}
+    inline F32  maxRadius()           const {return _maxRadius;}
+
+    inline void minRadius(F32 radius)       {_minRadius = radius;}
+    inline F32  minRadius()           const {return _minRadius;}
+
+    inline void curRadius(F32 radius)       {_curRadius = radius; CLAMP<F32>(_curRadius, _minRadius, _maxRadius);}
+    inline F32  curRadius()           const {return _curRadius;}
+
+    virtual void update(const U64 deltaTime);
+    virtual void move(F32 dx, F32 dy, F32 dz);
+    virtual void rotate(F32 yaw, F32 pitch, F32 roll);
+    virtual bool onMouseMove(const OIS::MouseEvent& arg);
+    virtual void onActivate();
+    virtual void onDeactivate();
+
+protected:
+    F32             _maxRadius;
+    F32             _minRadius;
+    F32             _curRadius;
+    F32             _currentRotationX;
+    F32             _currentRotationY;
+    bool            _rotationDirty;
+    vec3<F32>       _offsetDir;
+    vec3<F32>       _cameraRotation;
+    SceneGraphNode* _targetNode;
+    
 };
 
 #endif

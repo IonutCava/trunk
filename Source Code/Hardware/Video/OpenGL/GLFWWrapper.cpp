@@ -561,8 +561,8 @@ void GL_API::setWindowPos(GLushort w, GLushort h) const {
     glfwSetWindowPos(Divide::GL::_mainWindow,w,h);
 }
 
-void GL_API::setMousePosition(GLdouble x, GLdouble y) const {
-    glfwSetCursorPos(Divide::GL::_mainWindow,x,y);
+void GL_API::setMousePosition(GLushort x, GLushort y) const {
+    glfwSetCursorPos(Divide::GL::_mainWindow,(GLdouble)x,(GLdouble)y);
 }
 
 I32 GL_API::getFont(const std::string& fontName){

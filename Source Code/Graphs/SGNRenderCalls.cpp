@@ -92,6 +92,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
         it.second->sceneUpdate(deltaTime, sceneState);
     }
     _elapsedTime += deltaTime;
+    if(_transform)    _transform->update(deltaTime);
     if(_node)         _node->sceneUpdate(deltaTime, this, sceneState);
     if(_shouldDelete) GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
 }

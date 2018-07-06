@@ -36,7 +36,7 @@ public:
     Quaternion(T x, T y, T z, T w) : _x(x), _y(y), _z(z), _w(w),_dirty(true){}
     Quaternion() : _x(0), _y(0), _z(0), _w(1),_dirty(true) {}
     Quaternion(const mat3<T>& rotationMatrix) : _dirty(true){fromMatrix(rotationMatrix);}
-    Quaternion(const vec3<T>& axis, T angle) : _dirty(true) {fromAxisAngle(axis, angle);}
+    Quaternion(const vec3<T>& axis, T angle,bool inDegrees = true) : _dirty(true) {fromAxisAngle(axis, angle,inDegrees);}
     Quaternion(T pitch, T yaw, T roll,bool inDegrees = true) : _dirty(true) {fromEuler(pitch,yaw,roll,inDegrees);}
     Quaternion(const Quaternion& q) : _dirty(true) { set(q); }
 
@@ -211,10 +211,13 @@ public:
     }
 
     //! Convert from Axis Angle
-    void fromAxisAngle(const vec3<T>& v, T angle){
+    void fromAxisAngle(const vec3<T>& v, T angle, bool inDegrees = true){
         _dirty = true;
         T sinAngle;
-        angle = RADIANS(angle);
+
+        if(inDegrees)
+            angle = RADIANS(angle);
+
         angle *= 0.5f;
         vec3<T> vn(v);
         vn.normalize();

@@ -140,7 +140,7 @@ protected:
     ///Unproject the give windows space coords to object space (use z - to determine depth [0,1])
     virtual vec3<F32> unproject(const vec3<F32>& windowCoord) const = 0;
     ///Platform specific cursor manipulation. Set's the cursor's location to the specified X and Y relative to the edge of the window
-    virtual void setMousePosition(D32 x, D32 y) const = 0;
+    virtual void setMousePosition(U16 x, U16 y) const = 0;
     virtual FrameBufferObject*  newFBO(const FBOType& type = FBO_2D_COLOR) = 0;
     virtual VertexBufferObject* newVBO(const PrimitiveType& type = TRIANGLES) = 0;
     virtual PixelBufferObject*  newPBO(const PBOType& type = PBO_TEXTURE_2D) = 0;

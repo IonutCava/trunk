@@ -490,6 +490,7 @@ bool WarScene::onKeyUp(const OIS::KeyEvent& key){
                 }else if(fpsCameraActive){*/
                 if(flyCameraActive){
                     _cameraMgr->setActiveCamera("tpsCamera");
+                    static_cast<ThirdPersonCamera*>(_cameraMgr->getActiveCamera())->setTarget(_currentSelection);
                     /*fpsCameraActive*/flyCameraActive = false; tpsCameraActive = true;
                 }else if(tpsCameraActive){
                     _cameraMgr->setActiveCamera("defaultCamera");

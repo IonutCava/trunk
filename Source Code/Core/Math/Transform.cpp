@@ -5,6 +5,8 @@ Transform::Transform()	: GUIDWrapper(),
                           _physicsDirty(true),
                           _rebuildMatrix(true),
                           _hasParentTransform(false),
+                          /*_changedLastFrame(false),
+                          /_changedLastFramePrevious(false),*/
                           _scale(vec3<F32>(1.0f)),
                           _translation(vec3<F32>())
 
@@ -24,7 +26,9 @@ Transform::Transform(const Quaternion<F32>& orientation,
                                                 _dirty(true),
                                                 _physicsDirty(true),
                                                 _rebuildMatrix(true),
-                                                _hasParentTransform(false)
+                                                _hasParentTransform(false)/*,
+                                                _changedLastFrame(false),
+                                                _changedLastFramePrevious(false)*/
 {
     _worldMatrix.identity();
     WriteLock w_lock(_parentLock);
@@ -89,4 +93,9 @@ void Transform::identity() {
     _orientation.identity();
     _worldMatrix.identity();
     clean();
+}
+
+void Transform::update(const U64 deltaTime) {
+    //_changedLastFramePrevious = (_changedLastFrame == true);
+    //_changedLastFrame = false;
 }
