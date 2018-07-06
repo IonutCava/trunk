@@ -62,8 +62,14 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, Camera*
     _blurBuffer._rt->addAttachment(blurMapDescriptor, RTAttachment::Type::Colour, 0);
     _blurBuffer._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 
-    _shadowMatricesBuffer = _context.newSB(1, false, false, BufferUpdateFrequency::OFTEN);
-    _shadowMatricesBuffer->create(Config::Lighting::MAX_SPLITS_PER_LIGHT, sizeof(mat4<F32>));
+    ShaderBufferParams params;
+    params._primitiveCount = Config::Lighting::MAX_SPLITS_PER_LIGHT;
+    params._primitiveSizeInBytes = sizeof(mat4<F32>);
+    params._ringBufferLength = 1;
+    params._unbound = false;
+    params._updateFrequency = BufferUpdateFrequency::OFTEN;
+
+    _shadowMatricesBuffer = _context.newSB(params);
 
     STUBBED("Migrate to this: http://www.ogldev.org/www/tutorial49/tutorial49.html");
 }

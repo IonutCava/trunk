@@ -157,7 +157,11 @@ class SceneRenderState : public SceneComponent {
     inline void treeVisibility(F32 distance) { _treeVisibility = distance; }
     inline F32  treeVisibility()       const { return _treeVisibility; }
 
+    inline void playerPass(U8 pass) { _playerPass = pass; }
+    inline U8   playerPass()  const { return _playerPass; }
+
    protected:
+    U8  _playerPass;
     U32 _stateMask;
     GizmoState _gizmoState;
     F32 _grassVisibility;

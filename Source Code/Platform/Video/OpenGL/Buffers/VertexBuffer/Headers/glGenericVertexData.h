@@ -96,8 +96,7 @@ class glGenericVertexData : public GenericVertexData {
                    bool useRingBuffer,
                    const bufferPtr data,
                    bool dynamic,
-                   bool stream,
-                   bool persistentMapped = false) override;
+                   bool stream) override;
 
     void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset, const bufferPtr data) override;
 

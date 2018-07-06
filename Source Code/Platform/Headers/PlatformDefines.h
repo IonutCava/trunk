@@ -43,7 +43,6 @@
 #include "Core/Headers/NonCopyable.h"
 #include "Core/Headers/GUIDWrapper.h"
 #include "Platform/Threading/Headers/SharedMutex.h"
-
 #include "ConditionalWait.h"
 
 #ifndef _USE_MATH_DEFINES
@@ -170,6 +169,25 @@ bool PlatformClose();
 bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info);
 
 bool PlatformPostInit();
+
+template <typename T>
+struct synchronized {
+public:
+    synchronized& operator=(T const& newval) {
+        ReadLock lock(mutex);
+        value = newval;
+        return *this;
+    }
+
+    operator T() const {
+        WriteLock lock(mutex);
+        return value;
+    }
+
+private:
+    T value;
+    SharedLock mutex;
+};
 
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 template<typename T>

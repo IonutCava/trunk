@@ -37,22 +37,34 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+struct ShaderBufferParams {
+    ShaderBufferParams()
+        : _ringBufferLength(1),
+          _primitiveCount(0),
+          _primitiveSizeInBytes(0),
+          _unbound(false),
+          _initialData(nullptr),
+          _updateFrequency(BufferUpdateFrequency::ONCE)
+    {
+    }
+
+    U32 _ringBufferLength;
+    U32 _primitiveCount;
+    size_t _primitiveSizeInBytes;
+    bool _unbound;
+    BufferUpdateFrequency _updateFrequency;
+    bufferPtr _initialData;
+};
+
 class ShaderProgram;
 class NOINITVTABLE ShaderBuffer : public GraphicsResource,
                                   public RingBuffer,
                                   public GUIDWrapper {
     USE_CUSTOM_ALLOCATOR
    public:
-    explicit ShaderBuffer(GFXDevice& context,
-                          const U32 ringBufferLength,
-                          bool unbound,
-                          bool persistentMapped,
-                          BufferUpdateFrequency frequency);
+    explicit ShaderBuffer(GFXDevice& context, const ShaderBufferParams& params);
 
     virtual ~ShaderBuffer();
-
-    /// Create a new buffer to hold our shader data
-    virtual void create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor = 1);
 
     virtual void updateData(ptrdiff_t offsetElementCount,
                             ptrdiff_t rangeElementCount,
@@ -85,25 +97,27 @@ class NOINITVTABLE ShaderBuffer : public GraphicsResource,
 
     inline size_t getPrimitiveSize() const { return _primitiveSize; }
     inline U32 getPrimitiveCount() const { return _primitiveCount; }
-    inline size_t getAlignmentRequirement() const { return _alignmentRequirement; }
 
     virtual void addAtomicCounter(U32 sizeFactor = 1) = 0;
     virtual U32  getAtomicCounter(U32 counterIndex = 0) = 0;
     virtual void bindAtomicCounter(U32 counterIndex = 0, U32 bindIndex = 0) = 0;
     virtual void resetAtomicCounter(U32 counterIndex = 0) = 0;
 
+    static size_t alignmentRequirement(bool unbound);
+
    protected:
     size_t _bufferSize;
     size_t _primitiveSize;
-    size_t _alignmentRequirement;
     size_t _maxSize;
     U32 _primitiveCount;
-    U32 _sizeFactor;
+
+    static size_t _boundAlignmentRequirement;
+    static size_t _unboundAlignmentRequirement;
 
     const bool _unbound;
-    const bool _persistentMapped;
     const BufferUpdateFrequency _frequency;
 };
+
 
 };  // namespace Divide
 #endif //_SHADER_BUFFER_H_

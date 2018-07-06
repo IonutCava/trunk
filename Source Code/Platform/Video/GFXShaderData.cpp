@@ -3,8 +3,7 @@
 namespace Divide {
 
 GFXShaderData::GFXShaderData()
-    : _needsUpload(true),
-      _data(GPUData())
+    : _needsUpload(true)
 {
 }
 

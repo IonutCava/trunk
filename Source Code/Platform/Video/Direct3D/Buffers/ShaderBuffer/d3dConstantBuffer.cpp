@@ -6,21 +6,13 @@ namespace Divide {
 IMPLEMENT_CUSTOM_ALLOCATOR(d3dConstantBuffer, 0, 0)
 
 d3dConstantBuffer::d3dConstantBuffer(GFXDevice& context,
-                                     const U32 ringBufferLength,
-                                     bool unbound,
-                                     bool persistentMapped,
-                                     BufferUpdateFrequency frequency)
-    : ShaderBuffer(context, ringBufferLength, unbound, persistentMapped, frequency)
-
+                                     const ShaderBufferParams& params)
+    : ShaderBuffer(context, params)
 {
 }
 
 d3dConstantBuffer::~d3dConstantBuffer()
 {
-}
-
-void d3dConstantBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor) {
-    ShaderBuffer::create(primitiveCount, primitiveSize, sizeFactor);
 }
 
 void d3dConstantBuffer::getData(ptrdiff_t offsetElementCount,

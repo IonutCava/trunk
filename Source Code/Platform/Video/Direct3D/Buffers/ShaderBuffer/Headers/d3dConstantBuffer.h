@@ -40,16 +40,9 @@ class d3dConstantBuffer final : public ShaderBuffer {
     USE_CUSTOM_ALLOCATOR
    public:
     d3dConstantBuffer(GFXDevice& context,
-                      const U32 ringBufferLength,
-                      bool unbound,
-                      bool persistentMapped,
-                      BufferUpdateFrequency frequency);
+                      const ShaderBufferParams& params);
 
     ~d3dConstantBuffer();
-
-    /// Reserve primitiveCount * implementation specific primitive size of space
-    /// in the buffer and fill it with NULL values
-    void create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor = 1) override;
 
     void getData(ptrdiff_t offsetElementCount,
                  ptrdiff_t rangeElementCount,

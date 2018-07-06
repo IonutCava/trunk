@@ -83,6 +83,9 @@ class VertexBuffer;
 class SceneGraphNode;
 class SceneRenderState;
 class ShaderComputeQueue;
+
+struct ShaderBufferParams;
+
 FWD_DECLARE_MANAGED_CLASS(Texture);
 
 namespace Time {
@@ -324,11 +327,7 @@ public:
     ShaderProgram*     newShaderProgram(const stringImpl& name,
                                         const stringImpl& resourceLocation,
                                         bool asyncLoad) const;
-    ShaderBuffer*      newSB(const U32 ringBufferLength = 1,
-                             const bool unbound = false,
-                             const bool persistentMapped = true,
-                             BufferUpdateFrequency frequency =
-                             BufferUpdateFrequency::ONCE) const;
+    ShaderBuffer*      newSB(const ShaderBufferParams& params) const;
 
 public:  // Direct API calls
 

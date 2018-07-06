@@ -2,18 +2,31 @@
 #include "Platform/Video/OpenGL/Buffers/Headers/glBufferImpl.h"
 
 namespace Divide {
-glGenericBuffer::glGenericBuffer(GLenum usage,
-                                 bool persistentMapped,
-                                 GLuint ringSizeFactor)
-    : _elementCount(0),
-      _elementSize(0),
+glGenericBuffer::glGenericBuffer(const BufferParams& params)
+    : _elementCount(params._elementCount),
+      _elementSize(params._elementSizeInBytes),
       _elementCountBindOffset(0),
-      _ringSizeFactor(ringSizeFactor)
+      _ringSizeFactor(params._ringSizeFactor)
 {
-    if (persistentMapped) {
-        _buffer = MemoryManager_NEW glPersistentBuffer(usage);
-    } else {
-        _buffer = MemoryManager_NEW glRegularBuffer(usage);
+    size_t bufferSize = _elementCount * _elementSize;
+    size_t totalSize = bufferSize * _ringSizeFactor;
+    
+    BufferImplParams implParams;
+    implParams._dataSizeInBytes = totalSize;
+    implParams._frequency = params._frequency;
+    implParams._target = params._usage;
+    implParams._name = params._name;
+    if (_ringSizeFactor == 1) {
+        implParams._initialData = params._data;
+    }
+
+    _buffer = MemoryManager_NEW glBufferImpl(implParams);
+
+    // Create sizeFactor copies of the data and store them in the buffer
+    if (params._data != nullptr && _ringSizeFactor > 1) {
+        for (U8 i = 0; i < _ringSizeFactor; ++i) {
+            _buffer->updateData(i * bufferSize, bufferSize, params._data);
+        }
     }
 }
 
@@ -24,30 +37,6 @@ glGenericBuffer::~glGenericBuffer()
 
 GLuint glGenericBuffer::bufferHandle() const {
     return _buffer->bufferID();
-}
-
-void glGenericBuffer::create(GLuint elementCount,
-                             size_t elementSize,
-                             BufferUpdateFrequency frequency,
-                             const bufferPtr data,
-                             const char* name)
-{
-    // Remember the element count and size for the current buffer
-    _elementCount = elementCount;
-    _elementSize = elementSize;
-
-    size_t bufferSize = elementCount * elementSize;
-    size_t totalSize = bufferSize * _ringSizeFactor;
-
-    _buffer->create(frequency, totalSize, name);
-
-    // Create sizeFactor copies of the data and store them in the buffer
-    if (data != nullptr) {
-        for (U8 i = 0; i < _ringSizeFactor; ++i) {
-            _buffer->updateData(i * bufferSize, bufferSize, data);
-        }
-    }
-
 }
 
 void glGenericBuffer::updateData(GLuint elementCount,

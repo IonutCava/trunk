@@ -14,10 +14,6 @@
 
 namespace Divide {
 
-namespace {
-    const bool g_usePersistentMapping = false;
-};
-
 std::array<U8, to_const_uint(ShadowType::COUNT)> LightPool::_shadowLocation = { {
     to_const_ubyte(ShaderProgram::TextureUsage::COUNT) + 2u, //Single
     to_const_ubyte(ShaderProgram::TextureUsage::COUNT) + 3u, //Layered
@@ -71,24 +67,23 @@ void LightPool::init() {
     }
 
     _context.add2DRenderFunction(_previewShadowMapsCBK, 1);
+
+    ShaderBufferParams params;
+    params._primitiveCount = Config::Lighting::MAX_POSSIBLE_LIGHTS;
+    params._primitiveSizeInBytes = sizeof(LightProperties);
+    params._ringBufferLength = 1;
+    params._unbound = true;
+    params._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+
     // NORMAL holds general info about the currently active lights: position, colour, etc.
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = _context.newSB(1,
-                                                                                 true,
-                                                                                 g_usePersistentMapping,
-                                                                                 BufferUpdateFrequency::OCASSIONAL);
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = _context.newSB(params);
+
     // SHADOWS holds info about the currently active shadow casting lights:
     // ViewProjection Matrices, View Space Position, etc
     // Should be SSBO (not UBO) to use std430 alignment. Structures should not be padded
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = _context.newSB(1,
-                                                                                 true,
-                                                                                 g_usePersistentMapping,
-                                                                                 BufferUpdateFrequency::OCASSIONAL);
-
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]
-        ->create(Config::Lighting::MAX_POSSIBLE_LIGHTS, sizeof(LightProperties));
-
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]
-        ->create(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS, sizeof(Light::ShadowProperties));
+    params._primitiveCount = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
+    params._primitiveSizeInBytes = sizeof(Light::ShadowProperties);
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = _context.newSB(params);
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
     lightImpostorShader.setThreadedLoading(false);
@@ -169,7 +164,6 @@ bool LightPool::removeLight(I64 lightGUID, LightType type) {
 void LightPool::idle() {
     _shadowMapsEnabled = ParamHandler::instance().getParam<bool>(_ID("rendering.enableShadows"));
 }
-
 
 /// When pre-rendering is done, the Light Manager will generate the shadow maps
 /// Returning false in any of the FrameListener methods will exit the entire
@@ -332,14 +326,11 @@ void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewM
             ++_activeLightCount[typeIndex];
         }
         _buffersUpdated = false;
-        if (g_usePersistentMapping) {
-            uploadLightBuffers();
-        }
     };
 
     // Sort all lights (Sort in parallel by type)
     _lightUpdateTask.emplace_back(CreateTask(Application::instance().kernel().taskPool(), lightUpdate));
-    _lightUpdateTask.back().startTask(Task::TaskPriority::LOW, to_uint(Task::TaskFlags::SYNC_WITH_GPU));
+    _lightUpdateTask.back().startTask(Task::TaskPriority::LOW, 0);
 }
 
 void LightPool::uploadLightData(ShaderBufferLocation lightDataLocation,

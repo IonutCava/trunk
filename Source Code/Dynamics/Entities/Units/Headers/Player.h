@@ -50,6 +50,10 @@ class Player : public Character {
     const Camera& getCamera() const;
 
     inline const U8 index() const { return _index; }
+
+   protected:
+       void setParentNode(SceneGraphNode_ptr node) override;
+
    private:
     U8 _index;
     vec3<F32> _extents;

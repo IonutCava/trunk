@@ -29,11 +29,12 @@
 
  */
 
-#ifndef _SHARED_MUTEX_X_
-#define _SHARED_MUTEX_X_
+#ifndef _SHARED_MUTEX_BOOST_H_
+#define _SHARED_MUTEX_BOOST_H_
 
-#include "Thread.h"
-#include <mutex>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/locks.hpp>
+#include <shared_mutex>
 
 namespace Divide {
 
@@ -44,25 +45,6 @@ typedef boost::shared_lock<SharedLock> ReadLock;
 typedef boost::upgrade_lock<SharedLock> UpgradableReadLock;
 typedef boost::upgrade_to_unique_lock<SharedLock> UpgradeToWriteLock;
 
-template <typename T>
-struct synchronized {
-   public:
-    synchronized& operator=(T const& newval) {
-        ReadLock lock(mutex);
-        value = newval;
-        return *this;
-    }
-
-    operator T() const {
-        WriteLock lock(mutex);
-        return value;
-    }
-
-   private:
-    T value;
-    SharedLock mutex;
-};
-
 };  // namespace Divide
 
-#endif
+#endif //_SHARED_MUTEX_BOOST_H_

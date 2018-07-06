@@ -224,6 +224,13 @@ protected:
     static GLint s_maxTextureUnits;
     /// Number of available attribute binding indices
     static GLint s_maxAttribBindings;
+
+public:
+    /// Shader block data
+    static GLuint s_UBOffsetAlignment;
+    static GLuint s_UBMaxSize;
+    static GLuint s_SSBOffsetAlignment;
+    static GLuint s_SSBMaxSize;
 private:
     GFXDevice& _context;
     const DisplayWindow* _mainRenderWindow;
@@ -236,7 +243,7 @@ private:
     /// The previous plain text string's line width
     GLfloat _prevWidthString;
     /// Line width limit (hardware upper limit)
-    GLint _lineWidthLimit;
+    static GLint s_lineWidthLimit;
     /// Used to render points (e.g. to render full screen quads with geometry shaders)
     static GLuint s_dummyVAO;
     /// Used to store all of the indirect draw commands

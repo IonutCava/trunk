@@ -25,6 +25,7 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
       _drawOrder(0),
       _commandIndex(0),
       _commandOffset(0),
+      _preDrawPass(false),
       _castsShadows(true),
       _receiveShadows(true),
       _renderWireframe(false),
@@ -561,11 +562,15 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStage render
     }
 }
 
+void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderState, RenderStage renderStage) {
+    _preDrawPass = canDraw(renderStage) && _parentSGN.prepareDraw(sceneRenderState, renderStage);
+}
+
 RenderPackage&
 RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, RenderStage renderStage) {
     RenderPackage& pkg = _renderData[to_uint(renderStage)];
     pkg.isRenderable(false);
-    if (canDraw(renderStage) && _parentSGN.prepareDraw(sceneRenderState, renderStage))
+    if (_preDrawPass)
     {
         for (GenericDrawCommand& cmd : pkg._drawCommands) {
             cmd.renderMask(renderMask());

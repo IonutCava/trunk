@@ -118,10 +118,11 @@ bool Unit::moveToX(const F32 targetPosition) {
     if (!sgn) {
         return false;
     }
-    /// Update current position
-    WriteLock w_lock(_unitUpdateMutex);
-    _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
-    w_lock.unlock();
+    {
+        /// Update current position
+        WriteLock w_lock(_unitUpdateMutex);
+        _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
+    }
     return moveTo(vec3<F32>(targetPosition,
                             _currentPosition.y,
                             _currentPosition.z));
@@ -133,10 +134,11 @@ bool Unit::moveToY(const F32 targetPosition) {
     if (!sgn) {
         return false;
     }
-    /// Update current position
-    WriteLock w_lock(_unitUpdateMutex);
-    _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
-    w_lock.unlock();
+    {
+        /// Update current position
+        WriteLock w_lock(_unitUpdateMutex);
+        _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
+    }
     return moveTo(vec3<F32>(_currentPosition.x,
                             targetPosition,
                             _currentPosition.z));
@@ -148,10 +150,11 @@ bool Unit::moveToZ(const F32 targetPosition) {
     if (!sgn) {
         return false;
     }
-    /// Update current position
-    WriteLock w_lock(_unitUpdateMutex);
-    _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
-    w_lock.unlock();
+    {
+        /// Update current position
+        WriteLock w_lock(_unitUpdateMutex);
+        _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
+    }
     return moveTo(vec3<F32>(_currentPosition.x,
                             _currentPosition.y,
                             targetPosition));

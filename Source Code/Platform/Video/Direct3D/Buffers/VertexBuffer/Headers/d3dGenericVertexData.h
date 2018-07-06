@@ -54,8 +54,7 @@ class d3dGenericVertexData : public GenericVertexData {
                    bool useRingBuffer,
                    const bufferPtr data,
                    bool dynamic,
-                   bool stream,
-                   bool persistentMapped = false) override {}
+                   bool stream) override {}
 
     void bindFeedbackBufferRange(U32 buffer,
                                  U32 elementCountOffset,

@@ -36,12 +36,31 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+struct BufferParams {
+    BufferParams()
+        : _usage(GL_NONE),
+          _ringSizeFactor(1),
+          _elementCount(0),
+          _elementSizeInBytes(0),
+          _frequency(BufferUpdateFrequency::ONCE),
+          _data(nullptr),
+          _name("")
+    {
+    }
+
+    GLenum _usage;
+    GLuint _ringSizeFactor;
+    GLuint _elementCount;
+    size_t _elementSizeInBytes;
+    BufferUpdateFrequency _frequency;
+    bufferPtr   _data;
+    const char* _name;
+};
+
 class glBufferImpl;
 class glGenericBuffer {
   public:
-      glGenericBuffer(GLenum usage,
-                      bool persistentMapped,
-                      GLuint ringSizeFactor);
+      glGenericBuffer(const BufferParams& params);
       ~glGenericBuffer();
 
       inline glBufferImpl* impl() const { return _buffer; }
@@ -50,13 +69,6 @@ class glGenericBuffer {
 
       GLuint bufferHandle() const;
       
-
-      void create(GLuint elementCount, 
-                  size_t elementSize,
-                  BufferUpdateFrequency frequency,
-                  const bufferPtr data,
-                  const char* name = nullptr);
-
       void updateData(GLuint elementCount,
                       GLuint elementOffset,
                       GLuint ringWriteOffset,
@@ -74,6 +86,7 @@ class glGenericBuffer {
        GLintptr getBindOffset(GLuint ringReadOffset);
 
        void     setBindOffset(GLuint elementCountOffset);
+
   protected:
       GLuint _elementCount;
       size_t _elementSize;

@@ -12,6 +12,11 @@
 namespace Divide {
 
 /// The following static variables are used to remember the current OpenGL state
+GLuint GL_API::s_UBOffsetAlignment = 0;
+GLuint GL_API::s_UBMaxSize = 0;
+GLuint GL_API::s_SSBOffsetAlignment = 0;
+GLuint GL_API::s_SSBMaxSize = 0;
+GLint  GL_API::s_lineWidthLimit = 1;
 GLuint GL_API::s_dummyVAO = 0;
 GLint  GL_API::s_maxTextureUnits = 0;
 GLint  GL_API::s_maxAttribBindings = 0;

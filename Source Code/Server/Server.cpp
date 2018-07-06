@@ -2,6 +2,9 @@
 
 // TODO: make this scene independent! -Ionut
 #include "Scenes/NetworkScene/Headers/tcp_session_impl.h"
+
+#include <iostream>
+
 using namespace boost::asio;
 
 namespace Divide {

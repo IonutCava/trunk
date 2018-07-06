@@ -70,6 +70,7 @@
 
 #include <windows.h>
 #include <limits.h>
+#include <xmmintrin.h>
 
 #ifdef DELETE
 #undef DELETE

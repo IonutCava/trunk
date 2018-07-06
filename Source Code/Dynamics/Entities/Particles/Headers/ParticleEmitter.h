@@ -91,9 +91,15 @@ class ParticleEmitter : public SceneNode {
                             const SceneRenderState& sceneRenderState,
                             GenericDrawCommands& drawCommandsInOut) override;
 
-    void prepareForRender();
+    void prepareForRender(RenderStage renderStage, const Camera& crtCamera);
+
+    U32 getIndexForStage(RenderStage stage) const;
+
+    GenericVertexData& getDataBuffer(RenderStage stage, U8 playerIndex);
 
    private:
+    static const U8 s_MaxPlayerBuffers = 4;
+
     GFXDevice& _context;
     std::shared_ptr<ParticleData> _particles;
 
@@ -105,13 +111,16 @@ class ParticleEmitter : public SceneNode {
     /// draw the impostor?
     bool _drawImpostor;
 
-    GenericVertexData* _particleGPUBuffer;
+    typedef std::array<GenericVertexData*, to_const_uint(RenderStage::COUNT) -1> BuffersPerStage;
+    typedef std::array<BuffersPerStage, s_MaxPlayerBuffers> BuffersPerPlayer;
+    BuffersPerPlayer _particleGPUBuffers;
+    std::array<bool, to_const_uint(RenderStage::COUNT) - 1> _buffersDirty;
 
     size_t _particleStateBlockHash;
     size_t _particleStateBlockHashDepth;
-    U64 _lastUpdateTimer;
 
-    std::atomic_bool _needsUpdate;
+    vectorImpl<TaskHandle> _bufferUpdate;
+    vectorImpl<TaskHandle> _bbUpdate;
     ShaderProgram_ptr _particleShader;
     ShaderProgram_ptr _particleDepthShader;
     Texture_ptr _particleTexture;

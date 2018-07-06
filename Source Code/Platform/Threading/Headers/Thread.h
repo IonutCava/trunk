@@ -32,11 +32,7 @@
 #ifndef _THREAD_H_
 #define _THREAD_H_
 
-#include <boost/thread/locks.hpp>
 #include <Threadpool/include/threadpool.hpp>
-
-#include <exception>
-#include <thread>
 
 typedef boost::threadpool::prio_pool ThreadPool;
 typedef boost::threadpool::prio_task_func PoolTask;

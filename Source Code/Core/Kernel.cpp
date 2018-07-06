@@ -215,13 +215,15 @@ if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_P
         }
 
         Arena::Statistics stats = _platformContext->gfx().getObjectAllocStats();
+        F32 gpuAllocatedKB = stats.bytes_allocated_ / 1024.0f;
+
         profileData.append("\n");
-        profileData.append(Util::StringFormat("GPU Objects: %5.5f Kb (%5.5f Mb),\n"
+        profileData.append(Util::StringFormat("GPU Objects: %5.2f Kb (%5.2f Mb),\n"
                                               "             %d allocs,\n"
                                               "             %d blocks,\n"
                                               "             %d destructors",
-                                              (to_float(stats.bytes_allocated_) / 1024),
-                                              (to_float(stats.bytes_allocated_) / 1024) / 1024,
+                                              gpuAllocatedKB,
+                                              gpuAllocatedKB / 1024,
                                               stats.num_of_allocs_,
                                               stats.num_of_blocks_,
                                               stats.num_of_dtros_));

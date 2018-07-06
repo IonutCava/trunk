@@ -133,8 +133,7 @@ namespace Attorney {
         static void lockGroups(bool write) {
             if (write) {
                 DebugInterface::instance()._groupMutex.lock();
-            }
-            else {
+            } else {
                 DebugInterface::instance()._groupMutex.lock_shared();
             }
         }

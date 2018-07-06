@@ -196,10 +196,20 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
         }
     }
 
+    std::for_each(std::begin(visibleNodes), std::end(visibleNodes),
+                 [&](RenderPassCuller::VisibleNode& node) -> void
+    {
+
+        const SceneGraphNode* nodeRef = node.second;
+        RenderingComponent* renderable = nodeRef->get<RenderingComponent>();
+        Attorney::RenderingCompGFXDevice::prepareDrawPackage(*renderable, sceneRenderState, currentStage);
+    });
+
     U32 nodeCount = 0;
     U32 cmdCount = 0;
     std::for_each(std::begin(visibleNodes), std::end(visibleNodes),
-        [&](RenderPassCuller::VisibleNode& node) -> void {
+        [&](RenderPassCuller::VisibleNode& node) -> void
+    {
         const SceneGraphNode* nodeRef = node.second;
 
         RenderingComponent* renderable = nodeRef->get<RenderingComponent>();

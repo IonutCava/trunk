@@ -5,41 +5,35 @@
 
 namespace Divide {
 
-    ShaderBuffer::ShaderBuffer(GFXDevice& context,
-                               const U32 ringBufferLength,
-                               bool unbound,
-                               bool persistentMapped,
-                               BufferUpdateFrequency frequency)
-                                                      : GUIDWrapper(),
-                                                        GraphicsResource(context, getGUID()),
-                                                        RingBuffer(ringBufferLength),
-                                                        _sizeFactor(1),
-                                                        _bufferSize(0),
-                                                        _primitiveSize(0),
-                                                        _primitiveCount(0),
-                                                        _alignmentRequirement(0),
-                                                        _maxSize(0),
-                                                        _frequency(frequency),
-                                                        _unbound(unbound),
-                                                        _persistentMapped(persistentMapped && !Config::Profile::DISABLE_PERSISTENT_BUFFER)
-    {
-    }
+size_t ShaderBuffer::_boundAlignmentRequirement = 0;
+size_t ShaderBuffer::_unboundAlignmentRequirement = 0;
 
-    ShaderBuffer::~ShaderBuffer()
-    {
-    }
+ShaderBuffer::ShaderBuffer(GFXDevice& context,
+                            const ShaderBufferParams& params)
+    : GUIDWrapper(),
+        GraphicsResource(context, getGUID()),
+        RingBuffer(params._ringBufferLength),
+        _primitiveSize(params._primitiveSizeInBytes),
+        _primitiveCount(params._primitiveCount),
+        _frequency(params._updateFrequency),
+        _unbound(params._unbound),
+        _bufferSize(0),
+        _maxSize(0)
+{
+    _bufferSize = _primitiveSize * _primitiveCount;
+    assert(_bufferSize > 0 && "ShaderBuffer::Create error: Invalid buffer size!");
+}
 
-    void ShaderBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor) {
-        _primitiveCount = primitiveCount;
-        _primitiveSize = primitiveSize;
-        _bufferSize = primitiveSize * primitiveCount;
-        _sizeFactor = sizeFactor;
-        assert(_bufferSize > 0 && "ShaderBuffer::Create error: Invalid buffer size!");
-    }
+ShaderBuffer::~ShaderBuffer()
+{
+}
 
-    void ShaderBuffer::setData(const bufferPtr data) {
-        assert(_bufferSize > 0 && "ShaderBuffer::SetData error: Invalid buffer size!");
-        updateData(0, _primitiveCount, data);
-    }
+void ShaderBuffer::setData(const bufferPtr data) {
+    assert(_bufferSize > 0 && "ShaderBuffer::SetData error: Invalid buffer size!");
+    updateData(0, _primitiveCount, data);
+}
 
+size_t ShaderBuffer::alignmentRequirement(bool unbound) {
+    return unbound ? _unboundAlignmentRequirement : _boundAlignmentRequirement;
+}
 }; //namespace Divide;

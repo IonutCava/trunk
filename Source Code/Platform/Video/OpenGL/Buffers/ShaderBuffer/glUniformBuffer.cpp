@@ -1,6 +1,7 @@
 #include "Headers/glUniformBuffer.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glBufferImpl.h"
@@ -34,19 +35,24 @@ namespace {
 class AtomicCounter : public RingBuffer
 {
 public:
-    AtomicCounter(U32 sizeFactor, bool persistenMapped, const char* name);
+    AtomicCounter(U32 sizeFactor, const char* name);
     ~AtomicCounter();
     glGenericBuffer* _buffer;
 };
 
-AtomicCounter::AtomicCounter(U32 sizeFactor, bool persistenMapped, const char* name)
+AtomicCounter::AtomicCounter(U32 sizeFactor, const char* name)
     : RingBuffer(sizeFactor)
 {
-    _buffer = MemoryManager_NEW glGenericBuffer(GL_ATOMIC_COUNTER_BUFFER,
-                                                persistenMapped,
-                                                sizeFactor);
+    BufferParams params;
+    params._usage = GL_ATOMIC_COUNTER_BUFFER;
+    params._elementCount = 1;
+    params._elementSizeInBytes = sizeof(GLuint);
+    params._frequency = BufferUpdateFrequency::ONCE;
+    params._name = name;
+    params._ringSizeFactor = sizeFactor;
+    params._data = NULL;
 
-    _buffer->create(1, sizeof(GLuint), BufferUpdateFrequency::ONCE, NULL, name);
+    _buffer = MemoryManager_NEW glGenericBuffer(params);
 }
 
 AtomicCounter::~AtomicCounter()
@@ -56,27 +62,22 @@ AtomicCounter::~AtomicCounter()
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glUniformBuffer, 0, 0)
 glUniformBuffer::glUniformBuffer(GFXDevice& context,
-                                 const U32 ringBufferLength,
-                                 bool unbound,
-                                 bool persistentMapped,
-                                 BufferUpdateFrequency frequency)
-    : ShaderBuffer(context, ringBufferLength, unbound, persistentMapped, frequency),
-      _alignment(0),
-      _allignedBufferSize(0),
-      _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER)
+                                 const ShaderBufferParams& params)
+    : ShaderBuffer(context, params)
 {
-    _updated = false;
-    _alignmentRequirement = _unbound ? ParamHandler::instance().getParam<I32>(_ID("rendering.SSBOAligment"), 32)
-                                     : ParamHandler::instance().getParam<I32>(_ID("rendering.UBOAligment"), 32);
+    _maxSize = _unbound ? GL_API::s_SSBMaxSize : GL_API::s_UBMaxSize;
 
-    _maxSize = _unbound ? ParamHandler::instance().getParam<I32>(_ID("rendering.SSBOMaxSize"), 2 * 1024 * 1024)
-                        : ParamHandler::instance().getParam<I32>(_ID("rendering.UBOMaxSize"), 64 * 1024);
+    _allignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(_unbound));
 
-    if (persistentMapped) {
-        _buffer = MemoryManager_NEW glPersistentBuffer(_target);
-    } else {
-        _buffer = MemoryManager_NEW glRegularBuffer(_target);
-    }
+    assert(_allignedBufferSize < _maxSize);
+
+    BufferImplParams implParams;
+    implParams._dataSizeInBytes = _allignedBufferSize * queueLength();
+    implParams._frequency = _frequency;
+    implParams._initialData = params._initialData;
+    implParams._target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
+
+    _buffer = MemoryManager_NEW glBufferImpl(implParams);
 }
 
 glUniformBuffer::~glUniformBuffer() 
@@ -87,12 +88,6 @@ glUniformBuffer::~glUniformBuffer()
 
 GLuint glUniformBuffer::bufferID() const {
     return _buffer->bufferID();
-}
-
-void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor) {
-    ShaderBuffer::create(primitiveCount, primitiveSize, sizeFactor);
-    _allignedBufferSize = realign_offset(_bufferSize, _alignmentRequirement);
-    _buffer->create(_frequency, _allignedBufferSize * sizeFactor * queueLength());
 }
 
 void glUniformBuffer::getData(ptrdiff_t offsetElementCount,
@@ -155,7 +150,7 @@ bool glUniformBuffer::bind(U32 bindIndex) {
 
 void glUniformBuffer::addAtomicCounter(U32 sizeFactor) {
     const char* name = Util::StringFormat("DVD_ATOMIC_BUFFER_%d_%d", getGUID(), _atomicCounters.size()).c_str();
-    _atomicCounters.emplace_back(MemoryManager_NEW AtomicCounter(std::max(sizeFactor, 1u), true || _persistentMapped, name));
+    _atomicCounters.emplace_back(MemoryManager_NEW AtomicCounter(std::max(sizeFactor, 1u), name));
 }
 
 U32 glUniformBuffer::getAtomicCounter(U32 counterIndex) {
@@ -282,6 +277,11 @@ void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram,
          detail != std::end(uniform_details); ++detail) {
         Console::printfn("%s", (*detail).c_str());
     }
+}
+
+void glUniformBuffer::onGLInit() {
+    ShaderBuffer::_boundAlignmentRequirement = GL_API::s_UBOffsetAlignment;
+    ShaderBuffer::_unboundAlignmentRequirement = GL_API::s_SSBOffsetAlignment;
 }
 
 };  // namespace Divide

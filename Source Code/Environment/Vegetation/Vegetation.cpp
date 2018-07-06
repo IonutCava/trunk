@@ -233,8 +233,7 @@ void Vegetation::uploadGrassData() {
         buffer->setFeedbackBuffer(to_const_uint(BufferUsage::CulledInstanceBuffer), 2);
 
         buffer->setBuffer(to_const_uint(BufferUsage::UnculledPositionBuffer), _instanceCountGrass,
-                          sizeof(vec4<F32>), true, &_grassPositions[0], false,
-                          false);
+                          sizeof(vec4<F32>), true, &_grassPositions[0], false, false);
         buffer->setBuffer(to_const_uint(BufferUsage::UnculledSizeBuffer), _instanceCountGrass,
                           sizeof(F32), true, &_grassScales[0], false, false);
         buffer->setBuffer(to_const_uint(BufferUsage::CulledPositionBuffer), _instanceCountGrass * 3,

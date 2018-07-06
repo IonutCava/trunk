@@ -35,53 +35,45 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 namespace Divide {
 
+struct BufferImplParams {
+    BufferImplParams()
+        : _target(GL_NONE),
+          _frequency(BufferUpdateFrequency::ONCE),
+          _dataSizeInBytes(0),
+          _initialData(NULL),
+          _name("")
+    {
+    }
+
+    GLenum _target;
+    BufferUpdateFrequency _frequency;
+    size_t _dataSizeInBytes;
+    bufferPtr _initialData;
+    const char* _name;
+};
+
 class glBufferLockManager;
 class glBufferImpl {
 public:
-    glBufferImpl(GLenum target);
+    glBufferImpl(const BufferImplParams& params);
     virtual ~glBufferImpl();
 
     GLuint bufferID() const;
 
-    virtual void create(BufferUpdateFrequency frequency, size_t size, const char* name = nullptr);
-    virtual bool bindRange(GLuint bindIndex, size_t offset, size_t range);
-    virtual void lockRange(size_t offset, size_t range);
-    virtual void updateData(size_t offset, size_t range, const bufferPtr data) = 0;
-    virtual void readData(size_t offset, size_t range, const bufferPtr data) = 0;
+    bool bindRange(GLuint bindIndex, size_t offset, size_t range);
+    void lockRange(size_t offset, size_t range);
+    void waitRange(size_t offset, size_t range, bool blockClient);
+
+    void updateData(size_t offset, size_t range, const bufferPtr data);
+    void readData(size_t offset, size_t range, const bufferPtr data);
 
 protected:
     GLenum _target;
     GLuint _handle;
     size_t _alignedSize;
-    BufferUpdateFrequency _updateFrequency;
-};
-
-class glRegularBuffer : public glBufferImpl {
-public:
-    glRegularBuffer(GLenum target);
-    ~glRegularBuffer();
-
-    void create(BufferUpdateFrequency frequency, size_t size, const char* name = nullptr) override;
-    void updateData(size_t offset, size_t range, const bufferPtr data) override;
-    void readData(size_t offset, size_t range, const bufferPtr data) override;
-private:
     GLenum _usage;
-};
-
-class glPersistentBuffer : public glBufferImpl {
-public:
-    glPersistentBuffer(GLenum target);
-    ~glPersistentBuffer();
-
-    void create(BufferUpdateFrequency frequency, size_t size, const char* name = nullptr) override;
-    void updateData(size_t offset, size_t range, const bufferPtr data) override;
-    void readData(size_t offset, size_t range, const bufferPtr data) override;
-    bool bindRange(GLuint bindIndex, size_t offset, size_t range) override;
-    void lockRange(size_t offset, size_t range) override;
-    void waitRange(size_t offset, size_t range, bool blockClient);
-
-private:
     bufferPtr _mappedBuffer;
+    BufferUpdateFrequency _updateFrequency;
     glBufferLockManager* _lockManager;
 };
 }; //namespace Divide

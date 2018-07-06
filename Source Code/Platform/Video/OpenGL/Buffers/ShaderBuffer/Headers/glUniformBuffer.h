@@ -48,14 +48,8 @@ class glUniformBuffer final : public ShaderBuffer {
     USE_CUSTOM_ALLOCATOR
    public:
      glUniformBuffer(GFXDevice& context,
-                     const U32 ringBufferLength,
-                     bool unbound,
-                     bool persistentMapped,
-                     BufferUpdateFrequency frequency);
+                     const ShaderBufferParams& params);
     ~glUniformBuffer();
-
-    /// Create a new buffer object to hold our uniform shader data
-    void create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor = 1) override;
 
     void getData(ptrdiff_t offsetElementCount,
                  ptrdiff_t rangeElementCount,
@@ -81,15 +75,14 @@ class glUniformBuffer final : public ShaderBuffer {
 
     void resetAtomicCounter(U32 counterIndex = 0) override;
 
+    static void onGLInit();
+
    protected:
     void printInfo(const ShaderProgram *shaderProgram, U32 bindIndex);
 
    protected:
     glBufferImpl* _buffer;
-    size_t     _allignedBufferSize;
-    GLsizeiptr _alignment;
-    bool _updated;
-    const GLenum _target;
+    size_t _allignedBufferSize;
     vectorImpl<AtomicCounter*> _atomicCounters;
 };
 

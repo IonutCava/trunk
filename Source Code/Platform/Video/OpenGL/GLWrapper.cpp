@@ -52,7 +52,6 @@ GL_API::GL_API(GFXDevice& context)
       _prevSizeString(0),
       _prevWidthNode(0),
       _prevWidthString(0),
-      _lineWidthLimit(1),
       _currentStateBlockHash(0),
       _previousStateBlockHash(0),
       _fonsContext(nullptr),

@@ -80,8 +80,14 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     EnvironmentProbe::onStartup(*this);
     PostFX::createInstance();
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
-    _gfxDataBuffer = newSB(1, false, true, BufferUpdateFrequency::OFTEN);
-    _gfxDataBuffer->create(1, sizeof(GFXShaderData::GPUData));
+    ShaderBufferParams params;
+    params._primitiveCount = 1;
+    params._primitiveSizeInBytes = sizeof(GFXShaderData::GPUData);
+    params._ringBufferLength = 1;
+    params._unbound = false;
+    params._updateFrequency = BufferUpdateFrequency::OFTEN;
+    params._initialData = &_gpuBlock._data;
+    _gfxDataBuffer = newSB(params);
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
 

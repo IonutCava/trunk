@@ -207,10 +207,7 @@ ShaderProgram* GFXDevice::newShaderProgram(const stringImpl& name,
     return temp;
 }
 
-ShaderBuffer* GFXDevice::newSB(const U32 ringBufferLength,
-                               const bool unbound,
-                               const bool persistentMapped ,
-                               BufferUpdateFrequency frequency) const {
+ShaderBuffer* GFXDevice::newSB(const ShaderBufferParams& params) const {
     std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
 
     ShaderBuffer* temp = nullptr;
@@ -221,18 +218,10 @@ ShaderBuffer* GFXDevice::newSB(const U32 ringBufferLength,
             /// The OpenGL implementation creates either an 'Uniform Buffer Object' if unbound is false
             /// or a 'Shader Storage Block Object' otherwise
             // The shader buffer can also be persistently mapped, if requested
-            temp = new (_gpuObjectArena) glUniformBuffer(refThis(this),
-                                                         ringBufferLength,
-                                                         unbound,
-                                                         persistentMapped,
-                                                         frequency);
+            temp = new (_gpuObjectArena) glUniformBuffer(refThis(this), params);
         } break;
         case RenderAPI::Direct3D: {
-            temp = new (_gpuObjectArena) d3dConstantBuffer(refThis(this),
-                                                           ringBufferLength,
-                                                           unbound,
-                                                           persistentMapped,
-                                                           frequency);
+            temp = new (_gpuObjectArena) d3dConstantBuffer(refThis(this), params);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));

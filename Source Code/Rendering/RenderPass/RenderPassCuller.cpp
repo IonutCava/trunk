@@ -123,6 +123,10 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
     if (clearList) {
         nodes.resize(0);
     }
+    if (currentNode.getNode()->getType() == SceneNodeType::TYPE_PARTICLE_EMITTER) {
+        int a;
+        a = 5;
+    }
     // Early out for inactive nodes
     if (!currentNode.isActive()) {
         return;

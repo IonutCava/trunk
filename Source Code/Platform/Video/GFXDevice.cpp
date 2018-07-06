@@ -412,14 +412,14 @@ void GFXDevice::setSceneZPlanes(const vec2<F32>& zPlanes) {
 
 void GFXDevice::renderFromCamera(Camera& camera) {
     Camera::activeCamera(&camera);
-
-    camera.updateLookAt();
     // Tell the Rendering API to draw from our desired PoV
-    GFXShaderData::GPUData& data = _gpuBlock._data;
+    camera.updateLookAt();
+    
 
     const mat4<F32>& viewMatrix = camera.getViewMatrix();
     const mat4<F32>& projMatrix = camera.getProjectionMatrix();
 
+    GFXShaderData::GPUData& data = _gpuBlock._data;
     bool viewMatUpdated = viewMatrix != data._ViewMatrix;
     bool projMatUpdated = projMatrix != data._ProjectionMatrix;
     if (viewMatUpdated) {

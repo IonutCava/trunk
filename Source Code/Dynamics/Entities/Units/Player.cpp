@@ -10,7 +10,7 @@ Player::Player(U8 index)
 {
      _lockedControls = false;
 
-     _playerCam = Camera::createCamera(Util::StringFormat("Player_%d_Cam", getGUID()), Camera::CameraType::FREE_FLY);
+     _playerCam = Camera::createCamera(Util::StringFormat("Player_Cam_%d", getGUID()), Camera::CameraType::FREE_FLY);
 }
 
 Player::~Player()
@@ -24,6 +24,10 @@ Camera& Player::getCamera() {
 
 const Camera& Player::getCamera() const {
     return *_playerCam;
+}
+
+void Player::setParentNode(SceneGraphNode_ptr node) {
+    Character::setParentNode(node);
 }
 
 };

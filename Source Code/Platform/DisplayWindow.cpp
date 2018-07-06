@@ -43,7 +43,6 @@ ErrorCode DisplayWindow::destroyWindow() {
 
 ErrorCode DisplayWindow::init(U32 windowFlags, WindowType initialType, const ResolutionByType& initialResolutions) {
     ParamHandler& par = ParamHandler::instance();
-    Application& app = Application::instance();
 
     _type = initialType;
 

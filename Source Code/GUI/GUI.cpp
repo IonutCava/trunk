@@ -86,7 +86,10 @@ void GUI::onChangeScene(Scene* newScene) {
 void GUI::onUnloadScene(Scene* scene) {
     assert(scene != nullptr);
     WriteLock w_lock(_guiStackLock);
-    _guiStack.erase(_guiStack.find(scene->getGUID()));
+    GUIMapPerScene::const_iterator it = _guiStack.find(scene->getGUID());
+    if (it != std::cend(_guiStack)) {
+        _guiStack.erase(it);
+    }
 }
 
 void GUI::draw(GFXDevice& context) const {

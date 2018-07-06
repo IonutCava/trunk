@@ -33,6 +33,9 @@
 namespace Divide {
 
 namespace {
+
+vec3<F32> g_PlayerExtents(1.0f, 1.82f, 0.75f);
+
 struct selectionQueueDistanceFrontToBack {
     selectionQueueDistanceFrontToBack(const vec3<F32>& eyePos)
         : _eyePos(eyePos) {}
@@ -719,6 +722,8 @@ stringImpl Scene::getPlayerSGNName(U8 playerIndex) {
 }
 
 void Scene::currentPlayerPass(U8 playerIndex) {
+    renderState().playerPass(playerIndex);
+
     if (state().playerState(playerIndex).cameraUnderwater()) {
         PostFX::instance().pushFilter(FilterType::FILTER_UNDERWATER);
     } else {
@@ -764,7 +769,7 @@ void Scene::addPlayerInternal(bool queue) {
     SceneGraphNode_ptr playerSGN(_sceneGraph->findNode(playerName).lock());
     if (!playerSGN) {
         SceneGraphNode& root = _sceneGraph->getRoot();
-        playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache)),
+        playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache, g_PlayerExtents)),
                                 to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                 to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                 to_const_uint(SGNComponent::ComponentType::BOUNDS) |

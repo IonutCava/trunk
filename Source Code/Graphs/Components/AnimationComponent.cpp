@@ -147,10 +147,9 @@ bool AnimationComponent::onRender(RenderStage currentStage) {
     }
 
     if (_previousAnimationIndex != -1) {
-        ShaderBuffer& boneBuffer = getAnimationByIndex(_previousAnimationIndex).getBoneBuffer();
         _parentSGN.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::BONE_TRANSFORMS,
                                                                    vec2<U32>(_previousFrameIndex, 1),
-                                                                   boneBuffer);
+                                                                   getAnimationByIndex(_previousAnimationIndex).getBoneBuffer());
     }
 
     return true;

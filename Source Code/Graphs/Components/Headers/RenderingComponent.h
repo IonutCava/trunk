@@ -177,9 +177,12 @@ class RenderingComponent : public SGNComponent {
                     RenderStage renderStage,
                     RenderSubPassCmds& subPassesInOut);
 
+    void prepareDrawPackage(const SceneRenderState& sceneRenderState, RenderStage renderStage);
+
     RenderPackage& getDrawPackage(const SceneRenderState& sceneRenderState, RenderStage renderStage);
 
     RenderPackage& getDrawPackage(RenderStage renderStage);
+
 
     inline void drawOrder(U32 index) { _drawOrder = index; }
 
@@ -212,6 +215,7 @@ class RenderingComponent : public SGNComponent {
     U32 _drawOrder;
     U32 _commandIndex;
     U32 _commandOffset;
+    bool _preDrawPass;
     bool _castsShadows;
     bool _receiveShadows;
     bool _renderGeometry;
@@ -299,6 +303,12 @@ class RenderingCompSceneNode {
 
 class RenderingCompGFXDevice {
    private:
+    static void prepareDrawPackage(RenderingComponent& renderable,
+                                             const SceneRenderState& sceneRenderState,
+                                             RenderStage renderStage) {
+        renderable.prepareDrawPackage(sceneRenderState, renderStage);
+    }
+
     static RenderPackage& getDrawPackage(RenderingComponent& renderable,
                                          const SceneRenderState& sceneRenderState,
                                          RenderStage renderStage,

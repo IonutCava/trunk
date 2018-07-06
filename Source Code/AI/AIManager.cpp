@@ -148,17 +148,18 @@ void AIManager::unregisterEntity(U32 teamID, AIEntity* entity) {
 
 bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius,
                            Navigation::NavigationMesh* const navMesh) {
-    WriteLock w_lock(_navMeshMutex);
-    NavMeshMap::iterator it = _navMeshes.find(radius);
-    DIVIDE_ASSERT(it == std::end(_navMeshes),
-                  "AIManager error: NavMesh for specified dimensions already "
-                  "exists. Remove it first!");
-    DIVIDE_ASSERT(navMesh != nullptr,
-                  "AIManager error: Invalid navmesh specified!");
+    {
+        WriteLock w_lock(_navMeshMutex);
+        NavMeshMap::iterator it = _navMeshes.find(radius);
+        DIVIDE_ASSERT(it == std::end(_navMeshes),
+                      "AIManager error: NavMesh for specified dimensions already "
+                      "exists. Remove it first!");
+        DIVIDE_ASSERT(navMesh != nullptr,
+                      "AIManager error: Invalid navmesh specified!");
 
-    navMesh->debugDraw(_navMeshDebugDraw);
-    hashAlg::emplace(_navMeshes, radius, navMesh);
-    w_lock.unlock();
+        navMesh->debugDraw(_navMeshDebugDraw);
+        hashAlg::emplace(_navMeshes, radius, navMesh);
+    }
 
     WriteLock w_lock2(_updateMutex);
     for (AITeamMap::value_type& team : _aiTeams) {
@@ -169,14 +170,15 @@ bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius,
 }
 
 void AIManager::destroyNavMesh(AIEntity::PresetAgentRadius radius) {
-    WriteLock w_lock(_navMeshMutex);
-    NavMeshMap::iterator it = _navMeshes.find(radius);
-    DIVIDE_ASSERT(it != std::end(_navMeshes),
-                  "AIManager error: Can't destroy NavMesh for specified radius "
-                  "(NavMesh not found)!");
-    MemoryManager::DELETE(it->second);
-    _navMeshes.erase(it);
-    w_lock.unlock();
+    {
+        WriteLock w_lock(_navMeshMutex);
+        NavMeshMap::iterator it = _navMeshes.find(radius);
+        DIVIDE_ASSERT(it != std::end(_navMeshes),
+                      "AIManager error: Can't destroy NavMesh for specified radius "
+                      "(NavMesh not found)!");
+        MemoryManager::DELETE(it->second);
+        _navMeshes.erase(it);
+    }
 
     WriteLock w_lock2(_updateMutex);
     for (AITeamMap::value_type& team : _aiTeams) {

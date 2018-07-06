@@ -71,8 +71,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
                            bool useRingBuffer,
                            const bufferPtr data,
                            bool dynamic,
-                           bool stream,
-                           bool persistentMapped = false) = 0;
+                           bool stream) = 0;
 
     virtual void updateBuffer(U32 buffer,
                               U32 elementCount,

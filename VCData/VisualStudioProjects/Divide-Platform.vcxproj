@@ -82,7 +82,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Input\Headers\InputVariables.h" />
     <ClInclude Include="..\..\Source Code\Platform\Input\Headers\JoystickInterface.h" />
     <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\SharedMutex.h" />
-    <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\SimpleMutex.h" />
     <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\Task.h" />
     <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\Thread.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\PixelBuffer\Headers\PixelBuffer.h" />

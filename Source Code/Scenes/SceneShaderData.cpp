@@ -7,8 +7,15 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
     : _context(context),
       _sceneShaderData(nullptr)
 {
-    _sceneShaderData = _context.newSB(1, false, false, BufferUpdateFrequency::OFTEN);
-    _sceneShaderData->create(1, sizeof(SceneShaderData));
+    ShaderBufferParams params;
+    params._primitiveCount = 1;
+    params._primitiveSizeInBytes = sizeof(SceneShaderBufferData);
+    params._ringBufferLength = 1;
+    params._unbound = false;
+    params._initialData = &_bufferData;
+    params._updateFrequency = BufferUpdateFrequency::OFTEN;
+
+    _sceneShaderData = _context.newSB(params);
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
     shadowingSettings(0.0000002f, 0.0002f, 200.0f, 350.0f);
 }
@@ -19,6 +26,7 @@ SceneShaderData::~SceneShaderData()
 
 void SceneShaderData::uploadToGPU() {
     _sceneShaderData->setData(&_bufferData);
+    _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
 }
 
 }; //namespace Divide

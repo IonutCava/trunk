@@ -32,6 +32,7 @@
 #ifndef _TASKS_H_
 #define _TASKS_H_
 
+#include "Platform/Threading/Headers/Thread.h"
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {

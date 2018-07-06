@@ -5,6 +5,8 @@
 
 #include "Scenes/NetworkScene/Network/Headers/OPCodesImpl.h"
 
+#include <iostream>
+
 namespace Divide {
 
 tcp_session_impl::tcp_session_impl(boost::asio::io_service& io_service,

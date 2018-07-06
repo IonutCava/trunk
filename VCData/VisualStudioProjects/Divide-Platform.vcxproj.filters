@@ -46,12 +46,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\Task.h">
       <Filter>Threading\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\SimpleMutex.h">
-      <Filter>Threading\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\SharedMutex.h">
-      <Filter>Threading\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXDevice.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
@@ -345,6 +339,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Headers\PlatformDataTypes.h">
       <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Threading\Headers\SharedMutex.h">
+      <Filter>Threading\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

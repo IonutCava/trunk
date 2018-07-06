@@ -5,6 +5,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
+#include "Platform/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 
 #ifndef CEGUI_STATIC
@@ -162,7 +163,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
 
     Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS_FRAG")), s_maxTextureUnits);
     
-    par.setParam<I32>(_ID("rendering.maxTextureSlots"), s_maxTextureUnits);
     // Maximum number of colour attachments per framebuffer
     par.setParam<I32>(_ID("rendering.maxRenderTargetOutputs"),
                       GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
@@ -259,7 +259,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // Maximum number of texture units we can address in shaders
     Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS")),
                      GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS),
-                     par.getParam<I32>(_ID("rendering.maxTextureSlots"), 16));
+                     GL_API::s_maxTextureUnits);
     // Query shading language version support
     Console::printfn(Locale::get(_ID("GL_GLSL_SUPPORT")),
                      glGetString(GL_SHADING_LANGUAGE_VERSION));
@@ -269,15 +269,12 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // In order: Maximum number of uniform buffer binding points,
     //           maximum size in basic machine units of a uniform block and
     //           minimum required alignment for uniform buffer sizes and offset
-    GLint uboffset = GLUtil::getIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT);
-    GLint uboSize = GLUtil::getIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE);
+    GL_API::s_UBOffsetAlignment = GLUtil::getIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT);
+    GL_API::s_UBMaxSize = GLUtil::getIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE);
     Console::printfn(Locale::get(_ID("GL_UBO_INFO")),
                      GLUtil::getIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS),
-                     uboSize / 1024,
-                     uboffset);
-    par.setParam<I32>(_ID("rendering.UBOAligment"), uboffset);
-    par.setParam<U32>(_ID("rendering.UBOSize"), to_uint(uboSize));
-    par.setParam<I32>(_ID("rendering.UBOMaxSize"), uboSize);
+                     GL_API::s_UBMaxSize / 1024,
+                     GL_API::s_UBOffsetAlignment);
 
     // In order: Maximum number of shader storage buffer binding points,
     //           maximum size in basic machine units of a shader storage block,
@@ -285,16 +282,15 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     //           be accessed by all active shaders and
     //           minimum required alignment for shader storage buffer sizes and
     //           offset.
-    GLint sboffset = GLUtil::getIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT);
-    GLint maxSSBOSize = GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE);
+    GL_API::s_SSBOffsetAlignment = GLUtil::getIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT);
+    GL_API::s_SSBMaxSize = GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE);
     Console::printfn(
         Locale::get(_ID("GL_SSBO_INFO")),
         GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS),
         (GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / 1024) / 1024,
         GLUtil::getIntegerv(GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS),
-        sboffset);
-    par.setParam<I32>(_ID("rendering.SSBOAligment"), sboffset);
-    par.setParam<I32>(_ID("rendering.SSBOMaxSize"), maxSSBOSize);
+        GL_API::s_SSBOffsetAlignment);
+
     // Maximum number of subroutines and maximum number of subroutine uniform
     // locations usable in a shader
     Console::printfn(Locale::get(_ID("GL_SUBROUTINE_INFO")),
@@ -310,9 +306,9 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // Line smoothing should almost always be used
     if (Config::USE_HARDWARE_AA_LINES) {
         glEnable(GL_LINE_SMOOTH);
-        glGetIntegerv(GL_SMOOTH_LINE_WIDTH_RANGE, &_lineWidthLimit);
+        glGetIntegerv(GL_SMOOTH_LINE_WIDTH_RANGE, &s_lineWidthLimit);
     } else {
-        glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, &_lineWidthLimit);
+        glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, &s_lineWidthLimit);
     }
 
     // Culling is enabled by default, but RenderStateBlocks can toggle it on a
@@ -329,6 +325,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     NS_GLIM::glim.SetVertexAttribLocation(to_const_uint(AttribLocation::VERTEX_POSITION));
     // Initialize our VAO pool
     GLUtil::_vaoPool.init(g_maxVAOS);
+    // Initialize shader buffers
+    glUniformBuffer::onGLInit();
     // We need a dummy VAO object for point rendering
     s_dummyVAO = GLUtil::_vaoPool.allocate();
 

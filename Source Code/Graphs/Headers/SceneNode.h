@@ -99,8 +99,7 @@ class NOINITVTABLE SceneNode : public Resource {
     explicit SceneNode(ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceLocation, const SceneNodeType& type);
     virtual ~SceneNode();
 
-    /// Perform any pre-draw operations (this is after sort and transform
-    /// updates)
+    /// Perform any pre-draw operations (this is after sort and transform updates)
     /// If the node isn't ready for rendering and should be skipped this frame,
     /// the return value is false
     virtual bool onRender(RenderStage currentStage) = 0;

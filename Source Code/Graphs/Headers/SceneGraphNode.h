@@ -52,7 +52,8 @@ class SceneState;
 // This is the scene root node. All scene node's are added to it as child nodes
 class SceneRoot : public SceneNode {
    public:
-    SceneRoot(ResourceCache& parentCache) : SceneNode(parentCache, "root", SceneNodeType::TYPE_ROOT)
+    SceneRoot(ResourceCache& parentCache)
+        : SceneNode(parentCache, "root", SceneNodeType::TYPE_ROOT)
     {
         _renderState.useDefaultMaterial(false);
         setState(ResourceState::RES_LOADED);
@@ -78,7 +79,10 @@ TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneRoot);
 // to create complex transforms in the scene
 class SceneTransform : public SceneNode {
    public:
-    SceneTransform(ResourceCache& parentCache) : SceneNode(parentCache, "TransformNode", SceneNodeType::TYPE_TRANSFORM) {
+    SceneTransform(ResourceCache& parentCache, vec3<F32> extents) 
+        : SceneNode(parentCache, "TransformNode", SceneNodeType::TYPE_TRANSFORM),
+          _extents(extents)
+    {
         _renderState.useDefaultMaterial(false);
         setState(ResourceState::RES_LOADED);
     }
@@ -88,6 +92,14 @@ class SceneTransform : public SceneNode {
     void postLoad(SceneGraphNode& sgn) { return; }
     bool unload() { return true; }
     bool load() override { return true; }
+
+    inline void updateBoundsInternal(SceneGraphNode& sgn) override {
+        _boundingBox.setMin(-_extents * 0.5f);
+        _boundingBox.setMax( _extents * 0.5f);
+    }
+
+  protected:
+    vec3<F32> _extents;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneTransform);

@@ -37,9 +37,8 @@
 
 #include "Core/Headers/Singleton.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
-#include "Platform/Threading/Headers/SharedMutex.h"
-
 #include "Rendering/Headers/FrameListener.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

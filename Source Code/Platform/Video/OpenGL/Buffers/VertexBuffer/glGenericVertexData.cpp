@@ -207,32 +207,25 @@ void glGenericVertexData::setBuffer(U32 buffer,
                                     bool useRingBuffer,
                                     const bufferPtr data,
                                     bool dynamic,
-                                    bool stream,
-                                    bool persistentMapped) {
+                                    bool stream) {
     // Make sure the buffer exists
     assert(buffer >= 0 && buffer < _bufferObjects.size() &&
            "glGenericVertexData error: set buffer called for invalid buffer index!");
-    // Make sure we allow persistent mapping
-    if (persistentMapped) {
-        persistentMapped = !Config::Profile::DISABLE_PERSISTENT_BUFFER;
-    }
 
     assert(_bufferObjects[buffer] == nullptr &&
            "glGenericVertexData::setBuffer : buffer repurposing is not supported at the moment");
 
-    glGenericBuffer* tempBuffer =
-        MemoryManager_NEW glGenericBuffer(isFeedbackBuffer(buffer) ? GL_TRANSFORM_FEEDBACK
-                                                                   : GL_ARRAY_BUFFER,
-                                          persistentMapped,
-                                          useRingBuffer ? queueLength()
-                                                        : 1);
+    BufferParams params;
+    params._usage = isFeedbackBuffer(buffer) ? GL_TRANSFORM_FEEDBACK : GL_ARRAY_BUFFER;
+    params._elementCount = elementCount;
+    params._elementSizeInBytes = elementSize;
+    params._frequency = dynamic ? stream ? BufferUpdateFrequency::OFTEN
+                                         : BufferUpdateFrequency::OCASSIONAL
+                                : BufferUpdateFrequency::ONCE;
+    params._ringSizeFactor = useRingBuffer ? queueLength() : 1;
+    params._data = data;
 
-    BufferUpdateFrequency frequency = dynamic ? stream ? BufferUpdateFrequency::OFTEN 
-                                                       : BufferUpdateFrequency::OCASSIONAL
-                                              : BufferUpdateFrequency::ONCE;
-
-    tempBuffer->create(elementCount, elementSize, frequency, data);
-
+    glGenericBuffer* tempBuffer = MemoryManager_NEW glGenericBuffer(params);
     _bufferObjects[buffer] = tempBuffer;
 
     // if "setFeedbackBuffer" was called before "create"

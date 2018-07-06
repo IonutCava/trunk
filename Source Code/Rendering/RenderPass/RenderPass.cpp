@@ -65,13 +65,19 @@ RenderPass::BufferData::BufferData(GFXDevice& context)
   : _lastCommandCount(0),
     _lasNodeCount(0)
 {
+    ShaderBufferParams params;
+    params._primitiveCount = Config::MAX_VISIBLE_NODES;
+    params._primitiveSizeInBytes = sizeof(GFXDevice::NodeData);
+    params._ringBufferLength = 1;
+    params._unbound = true;
+    params._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+
     // This do not need to be persistently mapped as, hopefully, they will only be update once per frame
     // Each pass should have its own set of buffers (shadows, reflection, etc)
-    _renderData = context.newSB(1, true, false, BufferUpdateFrequency::OCASSIONAL);
-    _renderData->create(to_uint(Config::MAX_VISIBLE_NODES), sizeof(GFXDevice::NodeData));
+    _renderData = context.newSB(params);
 
-    _cmdBuffer = context.newSB(1, true, false, BufferUpdateFrequency::OCASSIONAL);
-    _cmdBuffer->create(Config::MAX_VISIBLE_NODES, sizeof(IndirectDrawCommand));
+    params._primitiveSizeInBytes = sizeof(IndirectDrawCommand);
+    _cmdBuffer = context.newSB(params);
     _cmdBuffer->addAtomicCounter(3);
 }
 
