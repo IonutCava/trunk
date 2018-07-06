@@ -29,7 +29,7 @@ namespace Divide {
 
 class PointLight : public Light{
 public:
-	PointLight(U8 slot,F32 range = 2);
+	PointLight(F32 range = 2);
 
 private:
     vec3<F32> _direction[6];

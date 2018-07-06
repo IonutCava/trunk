@@ -25,8 +25,8 @@ void TenisScene::preRender(){
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-    //LightManager::getInstance().getLight(0)->setDirection(_sunvector);
-    getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
+    _sun->setDirection(_sunvector);
+	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sun->getDiffuseColor());
 }
 
 void TenisScene::processGUI(const U64 deltaTime){
@@ -79,8 +79,9 @@ void TenisScene::resetGame(){
 void TenisScene::startGame(){
     resetGame();
     Kernel* kernel = Application::getInstance().getKernel();
-    Task_ptr newGame(kernel->AddTask(15, true, false, DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, TYPE_INTEGER)));
-    addTask(newGame);
+	Task_ptr newGame(kernel->AddTask(getMsToUs(15), 0, DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, TYPE_INTEGER)));
+	registerTask(newGame);
+	newGame->startTask();
     _gameGUID = newGame->getGUID();
 }
 
@@ -247,11 +248,10 @@ bool TenisScene::load(const stringImpl& name, CameraManager* const cameraMgr, GU
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
 
     //Add a light
-    addDefaultLight();
-    addDefaultSky();
+	_sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
+	_currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
 
 //	ResourceDescriptor tempLight1("Light omni");
-//	tempLight1.setId(0);
 //	tempLight1.setEnumValue(LIGHT_TYPE_POINT);
 //	light1 = CreateResource<Light>(tempLight1);
 //	addLight(light1);
@@ -262,7 +262,7 @@ bool TenisScene::load(const stringImpl& name, CameraManager* const cameraMgr, GU
 
     //------------------------ Load up game elements -----------------------------///
     _net = _sceneGraph->findNode("Net");
-    //for(SceneGraphNode::NodeChildren::value_type it : _net->getChildren()){
+    //for(SceneGraphNode::NodeChildren::value_type& it : _net->getChildren()){
         //it.second->setReceivesShadows(false);
     //}
     _floor = _sceneGraph->findNode("Floor");

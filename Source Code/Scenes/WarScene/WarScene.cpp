@@ -86,7 +86,7 @@ void WarScene::processTasks(const U64 deltaTime){
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
     _sun->setDirection(_sunvector);
-    getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
+	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sun->getDiffuseColor());
 
     D32 BobTimer = getSecToMs(5);
     D32 DwarfTimer = getSecToMs(8);
@@ -220,9 +220,9 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     //Add a light
-    _sun = addDefaultLight();
+	_sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
     //Add a skybox
-    addDefaultSky();
+	_currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     //Position camera
     renderState().getCamera().setEye(vec3<F32>(54.5f, 25.5f, 1.5f));
     renderState().getCamera().setGlobalRotation(-90/*yaw*/,35/*pitch*/);
@@ -313,7 +313,6 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     _lampLightNode = nullptr;
     if(_bobNodeBody != nullptr){
         ResourceDescriptor tempLight("Light_lamp");
-        tempLight.setId(2);
         tempLight.setEnumValue(LIGHT_TYPE_POINT);
         // Create a point light for Bob's lamp
         /*Light* light = CreateResource<Light>(tempLight);

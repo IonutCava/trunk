@@ -34,6 +34,8 @@
 
 namespace Divide {
 namespace Config {
+	/// if this is false, a variable timestep will be used for the game loop
+	const bool USE_FIXED_TIMESTEP = true;
     /// How many textures to store per material. bump(0) + opacity(1) + spec(2) + tex[3..MAX_TEXTURE_STORAGE - 1]
     const unsigned int MAX_TEXTURE_STORAGE = 6;
     /// Application desired framerate for physics simulations
@@ -44,6 +46,7 @@ namespace Config {
     const unsigned int TICKS_PER_SECOND = TARGET_FRAME_RATE / TICK_DIVISOR;
     /// Maximum frameskip
     const unsigned int MAX_FRAMESKIP = 5;
+	const unsigned long long SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
     /// AI update frequency
     const unsigned int AI_THREAD_UPDATE_FREQUENCY = TICKS_PER_SECOND;
     /// Maximum number of instances of a single mesh with a single draw call
@@ -132,14 +135,6 @@ namespace Config {
 }; //namespace Config
 }; //namespace Divide
 
-/// if this is 0, a variable timestep will be used for the game loop
-#define USE_FIXED_TIMESTEP 1
-
-///Comment this out to show the debug console
-#ifndef HIDE_DEBUG_CONSOLE
-    #define HIDE_DEBUG_CONSOLE
-#endif //HIDE_DEBUG_CONSOLE
-
 ///OS specific stuff
 #if defined( _WIN32 )
     #define OS_WINDOWS
@@ -165,12 +160,6 @@ namespace Config {
     #define OS_APPLE
 #else //Linux is the only other OS supported
     #define OS_NIX
-#endif
-
-//#define HAVE_POSIX_MEMALIGN
-#define HAVE_ALIGNED_MALLOC
-    #ifdef HAVE_ALIGNED_MALLOC
-    //#define __GNUC__
 #endif
 
 ///Please enter the desired log file name
@@ -203,16 +192,5 @@ namespace Config {
 #ifndef HASH_MAP_IMP
     #define HASH_MAP_IMP 1
 #endif //HASH_MAP_IMP
-
-
-///Disable the use of the PhysXAPI
-#ifndef _USE_PHYSX_API_
-    #define _USE_PHYSX_API_
-#endif
-
-///Maximum number of joysticks to use. Remeber to update the "Joystics" enum from InputInterface.h
-#ifndef MAX_ALLOWED_JOYSTICKS
-    #define MAX_ALLOWED_JOYSTICKS 4
-#endif
 
 #endif //_CONFIG_HEADER

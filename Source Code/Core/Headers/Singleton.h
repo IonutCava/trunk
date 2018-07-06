@@ -67,8 +67,8 @@ protected :
     }
 
 private:
-    Singleton(Singleton&);
-    void operator =(Singleton&);
+	Singleton(Singleton&) = delete;
+	void operator =(Singleton&) = delete;
 
 private :
     /// C++11 standard assures a static instance should be thread safe:

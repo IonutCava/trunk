@@ -24,7 +24,7 @@ bool Mesh::computeBoundingBox(SceneGraphNode* const sgn){
     BoundingBox& bb = sgn->getBoundingBox();
 
     bb.reset();
-    for (SceneGraphNode::NodeChildren::value_type s : sgn->getChildren() ) {
+    for (const SceneGraphNode::NodeChildren::value_type& s : sgn->getChildren() ) {
         bb.Add( s.second->getInitialBoundingBox() );
     }
     bb.setComputed(true);
@@ -41,7 +41,7 @@ void Mesh::addSubMesh(SubMesh* const subMesh){
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void Mesh::postLoad(SceneGraphNode* const sgn){
-    for (SubMeshRefMap::value_type it : _subMeshRefMap ) {
+	for (SubMeshRefMap::value_type& it : _subMeshRefMap) {
         sgn->addNode(it.second, sgn->getName() + "_" + stringAlg::toBase(Util::toString(it.first)));
     }
 
@@ -54,13 +54,13 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneStat
     if ( bitCompare( getFlagMask(), OBJECT_FLAG_SKINNED ) ) {
         bool playAnimation = ( _playAnimations && ParamHandler::getInstance().getParam<bool>( "mesh.playAnimations" ) );
         if ( playAnimation != _playAnimationsCurrent ) {
-            for ( SceneGraphNode::NodeChildren::value_type it : sgn->getChildren() ) {
+			for (SceneGraphNode::NodeChildren::value_type& it : sgn->getChildren()) {
                 it.second->getComponent<AnimationComponent>()->playAnimation( playAnimation );
             }
             _playAnimationsCurrent = playAnimation;
         }
     }
-
+	clearDrawCommands();
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 

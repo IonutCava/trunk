@@ -42,7 +42,7 @@ namespace ImageTools {
 			ERROR_FN(Locale::get("ERROR_IMAGETOOLS_DEVIL"), iluErrorString(error));
 		}
 
-		ilDeleteImages(1, &_ilTexture);
+		ilDeleteImage(_ilTexture);
 		_ilTexture = 0;
 	}
 
@@ -132,7 +132,8 @@ namespace ImageTools {
 	}
 
     void ImageData::destroy() {
-        ilDeleteImages( 1, &_ilTexture );
+        ilDeleteImage( _ilTexture );
+		_ilTexture = 0;
         MemoryManager::SAFE_DELETE_ARRAY( _data );
     }
 

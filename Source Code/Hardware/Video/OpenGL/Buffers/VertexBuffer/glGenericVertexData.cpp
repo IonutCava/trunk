@@ -309,7 +309,7 @@ void glGenericVertexData::SetAttributes(bool feedbackPass) {
     // Get the appropriate list of attributes
     attributeMap& map = feedbackPass ? _attributeMapFdbk : _attributeMapDraw;
     // And update them in turn
-    for ( attributeMap::value_type it : map ) {
+    for (attributeMap::value_type& it : map ) {
         SetAttributeInternal( it.second );
     }
 }

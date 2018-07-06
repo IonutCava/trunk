@@ -42,6 +42,7 @@ public:
 		_ball = nullptr;
         _freeFlyCam = nullptr;
         _paddleCam = nullptr;
+		_sun = nullptr;
 	}
 
 	~PingPongScene() {}
@@ -70,6 +71,8 @@ private:
 	SceneGraphNode* _ballSGN;
     Camera*         _freeFlyCam;
     Camera*         _paddleCam;
+	DirectionalLight* _sun;
+
 private: //Game stuff:
 	bool _directionTowardsAdversary;
 	bool _upwardsDirection;

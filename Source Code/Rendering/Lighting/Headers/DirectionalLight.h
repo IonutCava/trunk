@@ -30,7 +30,7 @@ namespace Divide {
 
 class DirectionalLight : public Light {
 public:
-	DirectionalLight(U8 slot);
+	DirectionalLight();
 	~DirectionalLight();
 
     inline U8   csmSplitCount()               const { return _csmSplitCount; }

@@ -24,8 +24,6 @@
 #define PHYSX_H_
 #include "config.h"
 
-#ifdef _USE_PHYSX_API_
-
 #ifndef _PHYSICS_API_FOUND_
 #define _PHYSICS_API_FOUND_
 #endif
@@ -93,6 +91,7 @@ public:
     ~PhysXActor() 
     {
     }
+
 protected:
     friend class PhysX;
     friend class PhysXSceneInterface;
@@ -171,7 +170,6 @@ private:
     static physx::PxDefaultErrorCallback          _gDefaultErrorCallback;
 
 END_SINGLETON
-#endif
 
 }; //namespace Divide
 

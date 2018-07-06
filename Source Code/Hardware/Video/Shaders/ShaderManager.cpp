@@ -75,7 +75,7 @@ void ShaderManager::unregisterShaderProgram(const stringImpl& name) {
 /// Called once per frame
 bool ShaderManager::update(const U64 deltaTime) {
     // Pass the update call to all registered programs
-    for ( ShaderProgramMap::value_type it : _shaderPrograms ) {
+    for ( ShaderProgramMap::value_type& it : _shaderPrograms ) {
         if ( !it.second->update( deltaTime ) ) {
             // If an update call fails, stop updating
             return false;
@@ -119,53 +119,53 @@ void ShaderManager::idle(){
 
 /// Pass uniform data update call to every registered program
 void ShaderManager::refreshShaderData() {
-    for ( ShaderProgramMap::value_type it : _shaderPrograms ) {
+	for (ShaderProgramMap::value_type& it : _shaderPrograms) {
         it.second->refreshShaderData();
     }
 }
 
 /// Pass scene data update call to every registered program
 void ShaderManager::refreshSceneData() {
-    for ( ShaderProgramMap::value_type it : _shaderPrograms ) {
+	for (ShaderProgramMap::value_type& it : _shaderPrograms) {
         it.second->refreshSceneData();
     }
 }
 
 /// Open the file found at 'location' matching 'atomName' and return it's source code
-const char* ShaderManager::shaderFileRead(const stringImpl &atomName, const stringImpl& location) {
+const stringImpl& ShaderManager::shaderFileRead(const stringImpl &atomName, const stringImpl& location) {
     // See if the atom was previously loaded and still in cache
     AtomMap::iterator it = _atoms.find(atomName);
     // If that's the case, return the code from cache
     if (it != _atoms.end()) {
-        return (char*)(it->second);
+        return it->second;
     }
     // If we forgot to specify an atom location, we have nothing to return
-    if (location.empty()) {
-        return nullptr;
-    }
+	assert(!location.empty());
+
     // Open the atom file
     stringImpl file = location+"/"+atomName;
     FILE *fp = nullptr;
     fopen_s(&fp,file.c_str(),"r");
+	assert(fp != nullptr);
+
     // Read the contents
-    const char* retContent = "";
-    if (fp != nullptr) {
-        fseek(fp, 0, SEEK_END);
-        I32 count = ftell(fp);
-        rewind(fp);
-        if (count > 0) {
-            char* content = New char[count+1];
-            count = (I32)(fread(content,sizeof(char),count,fp));
-            content[count] = '\0';
-            retContent = strdup(content);
-            // Add the code to the atom cache for future reference
-            hashAlg::emplace(_atoms, atomName, retContent);
-            MemoryManager::SAFE_DELETE_ARRAY( content );
-        }
-        fclose(fp);
-    }
+    fseek(fp, 0, SEEK_END);
+    I32 count = ftell(fp);
+    rewind(fp);
+	assert(count > 0);
+
+    char* content = New char[count+1];
+    count = (I32)(fread(content,sizeof(char),count,fp));
+    content[count] = '\0';
+	fclose(fp);
+
+    // Add the code to the atom cache for future reference
+	hashAlg::pair<AtomMap::iterator, bool> result = hashAlg::emplace(_atoms, atomName, stringImpl(content));
+	assert(result.second);
+    MemoryManager::SAFE_DELETE_ARRAY( content );
+    
     // Return the source code
-    return retContent;
+	return result.first->second;
 }
 
 /// Dump the source code 's' of atom file 'atomName' to file

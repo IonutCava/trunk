@@ -36,10 +36,6 @@ SharedLock Kernel::_threadedCallbackLock;
 vectorImpl<U64> Kernel::_threadedCallbackBuffer;
 hashMapImpl<U64, DELEGATE_CBK<> > Kernel::_threadedCallbackFunctions;
 
-#if defined(USE_FIXED_TIMESTEP)
-static const U64 SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
-#endif
-
 Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
                     _argc(argc),
                     _argv(argv),
@@ -74,6 +70,9 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
 
 Kernel::~Kernel()
 {
+	_mainTaskPool->clear();
+	while (_mainTaskPool->active() > 0) {
+	}
     MemoryManager::SAFE_DELETE( _mainTaskPool );
     REMOVE_TIMER(s_appLoopTimer);
 }
@@ -185,12 +184,8 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
 
     U8 loops = 0;
 
-#if !defined(USE_FIXED_TIMESTEP)
-    U64 deltaTime = _currentTimeDelta;
-#else
-    U64 deltaTime = SKIP_TICKS;
+	U64 deltaTime = Config::USE_FIXED_TIMESTEP ? Config::SKIP_TICKS : _currentTimeDelta;
     while (_currentTime > _nextGameTick && loops < Config::MAX_FRAMESKIP) {    
-#endif
 
         if (!_freezeGUITime) {
             _sceneMgr.processGUI(deltaTime);
@@ -206,14 +201,18 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
         _nextGameTick += deltaTime;
         loops++;
 
-#if defined(USE_FIXED_TIMESTEP)
-        if (loops == Config::MAX_FRAMESKIP && _currentTime > _nextGameTick) {
-            _nextGameTick = _currentTime;
-        }
+		if (Config::USE_FIXED_TIMESTEP) {
+			if (loops == Config::MAX_FRAMESKIP && _currentTime > _nextGameTick) {
+				_nextGameTick = _currentTime;
+			}
+		}else {
+			_nextGameTick = _currentTime;
+		}
     } // while
 
-    _GFX.setInterpolation(std::min(static_cast<D32>((_currentTime + deltaTime - _nextGameTick)) / static_cast<D32>(deltaTime), 1.0));
-#endif
+	if (Config::USE_FIXED_TIMESTEP) {
+		_GFX.setInterpolation(std::min(static_cast<D32>((_currentTime + deltaTime - _nextGameTick)) / static_cast<D32>(deltaTime), 1.0));
+	}
     
     // Get input events
     _APP.hasFocus() ? _input.update(deltaTime) : _sceneMgr.onLostFocus();
@@ -491,6 +490,7 @@ void Kernel::shutdown() {
     PRINT_FN(Locale::get("STOP_ENGINE_OK"));
     PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
     _PFX.closePhysicsApi();
+	PXDevice::destroyInstance();
     PRINT_FN(Locale::get("STOP_HARDWARE"));
     _SFX.closeAudioApi();
     _GFX.closeRenderingApi();

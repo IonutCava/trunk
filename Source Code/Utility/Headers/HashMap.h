@@ -23,7 +23,7 @@
 #ifndef _HASH_MAP_H_
 #define _HASH_MAP_H_
 
-#include "config.h"
+#include "String.h"
 
 #if defined(HASH_MAP_IMP) && HASH_MAP_IMP == 0
     #include <boost/Unordered_Map.hpp>
@@ -36,7 +36,15 @@
     namespace boost {
 		template<typename T1, typename T2>
 		using pair = std::pair<T1, T2>;
-
+#if defined(STRING_IMP) && STRING_IMP == 0
+		template<>
+		struct hash<stringImpl>
+		{
+			size_t operator()(const stringImpl& v) const {
+				return std::hash<std::string>()(v.c_str());
+			}
+		};
+#endif
         template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
         inline std::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool> emplace(hashMapImpl<K, V, HashFun>& map, K key, const V& val){
             return map.emplace(key, val);
@@ -90,8 +98,16 @@
     
         template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
         inline void fastClear(hashMapImpl<K, V, HashFun>& map) {
-            map.reset();
+            //map.reset(); <- leaks memory -Ionut
+			map.clear();
         }
+		template <> struct hash<std::string>
+		{
+			size_t operator()(const std::string & x) const
+			{
+				return std::hash<std::string>()(x);
+			}
+		};
 #	ifndef EASTL_PAIR_FUNCS
 #	define EASTL_PAIR_FUNCS
 			template<typename K, typename V>

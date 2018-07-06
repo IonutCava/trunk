@@ -49,15 +49,14 @@ public:
     /// <summary>
     /// Creates a new Task that runs in a separate thread
     /// </summary>
-    /// <param name="tickInterval">The delay (in milliseconds) between each callback</param>
-    /// <param name="startOnCreate">The Task begins processing as soon as it is created (no need to call 'startTask()')</param>
-    /// <param name="numberOfTicks">The number of times to call the callback function before the Task is deleted</param>
+    /// <param name="tickInterval">The delay (in microseconds) between each callback</param>
+    /// <param name="numberOfTicks">The number of times to call the callback function before the Task is deleted. 0 = run forever</param>
     /// <param name="*f">The callback function</param>
-    Task(boost::threadpool::pool* tp, U64 tickIntervalMs, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK<>& f);
-	Task(boost::threadpool::pool* tp, U64 tickIntervalMS, bool startOnCreate, bool runOnce, const DELEGATE_CBK<>& f);
+    Task(boost::threadpool::pool* tp, U64 tickInterval, I32 numberOfTicks, const DELEGATE_CBK<>& f);
     ~Task();
-    void updateTickInterval(U64 tickIntervalMs) {_tickIntervalMS = tickIntervalMs;}
-    void updateTickCounter(I32 numberOfTicks)   {_numberOfTicks = numberOfTicks;}
+
+    void updateTickInterval(U64 tickInterval)  {_tickInterval = tickInterval;}
+    void updateTickCounter(I32 numberOfTicks)  {_numberOfTicks = numberOfTicks;}
     void startTask();
     void stopTask();
     void pauseTask(bool state);
@@ -71,7 +70,7 @@ public:
 
 private:
     mutable SharedLock _lock;
-    mutable std::atomic<U64> _tickIntervalMS;
+    mutable std::atomic<U64> _tickInterval;
     mutable std::atomic<I32> _numberOfTicks;
     mutable std::atomic<bool> _end;
     mutable std::atomic<bool> _paused;

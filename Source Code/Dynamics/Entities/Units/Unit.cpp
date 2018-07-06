@@ -26,42 +26,42 @@ Unit::~Unit()
 
 /// Pathfinding, collision detection, animation playback should all be controlled from here
 bool Unit::moveTo(const vec3<F32>& targetPosition) {
-    // We should always have a node
-    if(!_node) {
-        return false;
-    }
-    WriteLock w_lock(_unitUpdateMutex);
-    // We receive move request every frame for now (or every task tick)
-    // Start plotting a course from our current position
-    _currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
-    _currentTargetPosition = targetPosition;
+	// We should always have a node
+	if (!_node) {
+		return false;
+	}
+	WriteLock w_lock(_unitUpdateMutex);
+	// We receive move request every frame for now (or every task tick)
+	// Start plotting a course from our current position
+	_currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
+	_currentTargetPosition = targetPosition;
 
-    if (_prevTime <= 0) {
-        _prevTime = GETMSTIME();
-    }
-    // get current time in ms
-    D32 currentTime = GETMSTIME();
-    // figure out how many milliseconds have elapsed since last move time
-    D32 timeDif = currentTime - _prevTime;
-    CLAMP<D32>(timeDif, 0, timeDif);
-    // update previous time
-    _prevTime = currentTime;
-    // 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms
-    // distance = timeDif * 0.001 * moveSpeed
-    F32 moveDistance = std::min((F32)(_moveSpeed * (getMsToSec(timeDif))), 0.0f);
+	if (_prevTime <= 0) {
+		_prevTime = GETMSTIME();
+	}
+	// get current time in ms
+	D32 currentTime = GETMSTIME();
+	// figure out how many milliseconds have elapsed since last move time
+	D32 timeDif = currentTime - _prevTime;
+	CLAMP<D32>(timeDif, 0, timeDif);
+	// update previous time
+	_prevTime = currentTime;
+	// 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms
+	// distance = timeDif * 0.001 * moveSpeed
+	F32 moveDistance = std::min((F32)(_moveSpeed * (getMsToSec(timeDif))), 0.0f);
 
-    bool returnValue = IS_TOLERANCE(moveDistance, centimetre(1));
-    if (!returnValue) {
-        F32 xDelta = _currentTargetPosition.x - _currentPosition.x;
-        F32 yDelta = _currentTargetPosition.y - _currentPosition.y;
-        F32 zDelta = _currentTargetPosition.z - _currentPosition.z;
-        bool xTolerance = IS_TOLERANCE(xDelta, _moveTolerance);
-        bool yTolerance = IS_TOLERANCE(yDelta, _moveTolerance);
-        bool zTolerance = IS_TOLERANCE(zDelta, _moveTolerance);
-        // apply framerate variance
-#       if !USE_FIXED_TIMESTEP
-            //moveDistance *= FRAME_SPEED_FACTOR;
-#       endif
+	bool returnValue = IS_TOLERANCE(moveDistance, centimetre(1));
+	if (!returnValue) {
+		F32 xDelta = _currentTargetPosition.x - _currentPosition.x;
+		F32 yDelta = _currentTargetPosition.y - _currentPosition.y;
+		F32 zDelta = _currentTargetPosition.z - _currentPosition.z;
+		bool xTolerance = IS_TOLERANCE(xDelta, _moveTolerance);
+		bool yTolerance = IS_TOLERANCE(yDelta, _moveTolerance);
+		bool zTolerance = IS_TOLERANCE(zDelta, _moveTolerance);
+		// apply framerate variance
+		if (Config::USE_FIXED_TIMESTEP) {
+			moveDistance *= FRAME_SPEED_FACTOR();
+		}
         // Compute the destination point for current frame step
         vec3<F32> interpPosition;
         if (!yTolerance && !IS_ZERO( yDelta ) ) {

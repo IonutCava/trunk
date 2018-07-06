@@ -3,7 +3,6 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/LightManager.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -82,7 +81,6 @@ void Sky::postLoad( SceneGraphNode* const sgn ) {
 }
 
 void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
-    _skyShader->Uniform("sun_color", LightManager::getInstance().getLight(0)->getDiffuseColor());
 }
 
 bool Sky::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
@@ -100,8 +98,9 @@ void Sky::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderS
     GFX_DEVICE.submitRenderCommand(_sky->getGeometryVB(), cmd);
 }
 
-void Sky::setSunVector(const vec3<F32>& sunVect) {
+void Sky::setSunProperties(const vec3<F32>& sunVect, const vec4<F32>& sunColor) {
     _skyShader->Uniform("sun_vector", sunVect);
+	_skyShader->Uniform("sun_color", sunColor.rgb());
 }
 
 };

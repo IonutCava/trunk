@@ -240,6 +240,13 @@ Divide::I32 Vsnprintf8( char* pDestination, size_t n, const char* pFormat, va_li
 namespace Divide {
     namespace MemoryManager {
 
+	template<class T>
+	inline void SAFE_FREE(T*& ptr){
+		if (ptr) {
+			free(ptr);
+			ptr = nullptr;
+		}
+	}
     template<class T>
     /// Deletes and nullifies the specified pointer only if it's not null
     inline void SAFE_DELETE( T*& ptr ) {

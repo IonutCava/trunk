@@ -171,7 +171,7 @@ void Material::clean() {
 }
 
 void Material::recomputeShaders() {
-    for ( shaderInfoMap::value_type it : _shaderInfo ) {
+	for (shaderInfoMap::value_type& it : _shaderInfo) {
         if ( !it.second._isCustomShader ) {
             it.second._computedShader = false;
             computeShader( it.first );
@@ -329,7 +329,7 @@ bool Material::unload(){
         }
     }
     _customTextures.clear();
-    for ( shaderInfoMap::value_type it : _shaderInfo ) {
+	for (shaderInfoMap::value_type& it : _shaderInfo) {
         ShaderProgram* shader = FindResourceImpl<ShaderProgram>( it.second._shader );
         if ( shader != nullptr ) {
             UNREGISTER_TRACKED_DEPENDENCY( shader );
@@ -348,7 +348,7 @@ void Material::setDoubleSided(bool state, const bool useAlphaTest) {
     _useAlphaTest = useAlphaTest;
     // Update all render states for this item
     if ( _doubleSided ) {
-        for ( renderStateBlockMap::value_type it : _defaultRenderStates ) {
+		for (renderStateBlockMap::value_type& it : _defaultRenderStates) {
             RenderStateBlockDescriptor descriptor( GFX_DEVICE.getStateBlockDescriptor( it.second ) );
             descriptor.setCullMode( CULL_MODE_NONE );
             if ( !_translucencySource.empty() ) {

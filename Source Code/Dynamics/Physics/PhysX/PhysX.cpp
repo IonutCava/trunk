@@ -108,8 +108,10 @@ bool PhysX::closePhysicsApi() {
     if (_cooking) {
         _cooking->release();
     }
-
     PxCloseExtensions();
+	if (_zoneManager) {
+		//_zoneManager->release();
+	}
     _gPhysicsSDK->release();
     _foundation->release();
 

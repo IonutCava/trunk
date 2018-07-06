@@ -12,6 +12,15 @@ VisualSensor::VisualSensor(AIEntity* const parentEntity) : Sensor(parentEntity, 
 {
 }
 
+VisualSensor::~VisualSensor()
+{
+	for (NodeContainerMap::value_type& container : _nodeContainerMap) {
+		container.second.clear();
+	}
+	_nodeContainerMap.clear();
+	_nodePositionsMap.clear();
+}
+
 void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* const node) {
     DIVIDE_ASSERT(node != nullptr, "VisualSensor error: Invalid node specified for follow function");
 	NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
@@ -51,9 +60,9 @@ void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
 
 
 void VisualSensor::update( const U64 deltaTime ) {
-    for ( NodeContainerMap::value_type container : _nodeContainerMap ) {
+    for (const NodeContainerMap::value_type& container : _nodeContainerMap ) {
         NodePositions& positions = _nodePositionsMap[container.first];
-        for ( NodeContainer::value_type entry : container.second ) {
+        for (const NodeContainer::value_type& entry : container.second ) {
             positions[entry.first] = entry.second->getComponent<PhysicsComponent>()->getPosition();
         }
     }
@@ -68,7 +77,7 @@ SceneGraphNode* const VisualSensor::getClosestNode(U32 containerID) {
             const vec3<F32>& currentPosition = unit->getCurrentPosition();
             U64 currentNearest = 0;
             U32 currentDistanceSq = 0;
-            for ( NodePositions::value_type entry : positions ) {
+            for (const NodePositions::value_type& entry : positions ) {
                 U32 temp = currentPosition.distanceSquared( entry.second );
                 if ( temp < currentDistanceSq ) {
                     currentDistanceSq = temp;

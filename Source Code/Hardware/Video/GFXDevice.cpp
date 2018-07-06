@@ -600,7 +600,7 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
     // The first entry has identity values (e.g. for rendering points)
     _matricesData.resize(nodeCount + 1);
     // Non SGN entries point to the identity values in the buffer
-    _sgnToDrawIDMap[0] = 0;
+    hashAlg::emplace(_sgnToDrawIDMap, static_cast<I64>(0), 0);
     // Loop over the list of nodes
     for (vectorAlg::vecSize i = 0; i < nodeCount; ++i) {
         SceneGraphNode* const crtNode = visibleNodes[i];
@@ -633,7 +633,7 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
         // Get the material property matrix (alpha test, texture count, texture operation, etc.)
         temp._matrix[3].set(crtNode->getMaterialPropertyMatrix());
         // Register the node in the GUID<->Data map
-        _sgnToDrawIDMap[crtNode->getGUID()] = static_cast<I32>(i + 1);
+        hashAlg::emplace(_sgnToDrawIDMap, crtNode->getGUID(), static_cast<I32>(i + 1));
     }
     // Once the CPU-side buffer is filled, upload the buffer to the GPU, flushing the old data
     _nodeBuffer->UpdateData(0, (nodeCount + 1) * sizeof(NodeData), _matricesData.data(), true);

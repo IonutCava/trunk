@@ -8,6 +8,11 @@
 
 namespace Divide {
 
+ProfileTimer::~ProfileTimer()
+{
+	ApplicationTimer::getInstance().removeTimer(this);
+}
+
 #if defined(_DEBUG) || defined(_PROFILE)
 ProfileTimer::ProfileTimer()
 {
@@ -18,58 +23,56 @@ ProfileTimer::ProfileTimer()
 	_timerCounter = 0;
 }
 
-ProfileTimer::~ProfileTimer()
-{
-    ApplicationTimer::getInstance().removeTimer(this);
-    MemoryManager::SAFE_DELETE( _name );
-}
-
 void ProfileTimer::reset() {
     _timerAverage = 0.0;
     _timerCounter = 0;
 }
 
-void ProfileTimer::start(){
+void ProfileTimer::start() {
     _timer = getUsToMs(ApplicationTimer::getInstance().getElapsedTime(true));
 }
 
-void ProfileTimer::stop(){
+void ProfileTimer::stop() {
     if(_paused) {
         reset();
         return;
     }
+
     _timer = getUsToMs(ApplicationTimer::getInstance().getElapsedTime(true)) - _timer;
     _timerAverage = _timerAverage + _timer;
     _timerCounter++;
 }
 
-void ProfileTimer::create(const char* name){
-    if(_init) return;
+void ProfileTimer::create(const stringImpl& name){
+	if (_init) {
+		return;
+	}
 
-    _name = strdup(name);
+    _name = name;
     _init = true;
     // should never be called twice for the same object
     ApplicationTimer::getInstance().addTimer(this);
 }
 
 void ProfileTimer::print() const {
-    if(!_paused)
-        PRINT_FN("[ %s ] : [ %5.3f ms]", _name, _timerAverage / _timerCounter);
+	if (!_paused) {
+		PRINT_FN("[ %s ] : [ %5.3f ms]", _name.c_str(), _timerAverage / _timerCounter);
+	}
 }
+
+#endif
 
 void ApplicationTimer::addTimer(ProfileTimer* const timer) {
     _profileTimers.push_back(timer);
 }
 
 void ApplicationTimer::removeTimer(ProfileTimer* const timer) {
-    for(vectorImpl<ProfileTimer* >::iterator it = _profileTimers.begin(); it != _profileTimers.end(); ++it){
-        if(strcmp((*it)->name(), timer->name()) == 0){
-            _profileTimers.erase(it);
-            return;
-        }
-    }
+	const stringImpl& timerName = timer->name();
+	_profileTimers.erase(std::remove_if(_profileTimers.begin(), _profileTimers.end(), [&timerName](ProfileTimer* tTimer)->bool {
+																							return tTimer->name().compare(timerName) == 0;
+																						}),
+						_profileTimers.end());
 }
-#endif
 
 ApplicationTimer::ApplicationTimer() : _targetFrameRate(Config::TARGET_FRAME_RATE),
                                        _ticksPerMicrosecond(0.0),
@@ -81,12 +84,8 @@ ApplicationTimer::ApplicationTimer() : _targetFrameRate(Config::TARGET_FRAME_RAT
     _ticksPerSecond.QuadPart = 0LL;
     _frameDelay.QuadPart = 0LL;
     _startupTicks.QuadPart = 0LL;
-    _currentTicks.QuadPart = 0LL;
 }
-#ifdef min
-#undef min
-#undef max
-#endif
+
 ///No need for init to be threadsafe
 void ApplicationTimer::init(U8 targetFrameRate) {
     assert(!_init);//<prevent double init
@@ -94,12 +93,11 @@ void ApplicationTimer::init(U8 targetFrameRate) {
     _targetFrameRate = static_cast<U32>(targetFrameRate);
 
 #if defined( OS_WINDOWS )
-    if(!QueryPerformanceFrequency(&_ticksPerSecond))
-        assert(false && "Current system does not support 'QueryPerformanceFrequency calls!");
-
+	bool queryAvailable = QueryPerformanceFrequency(&_ticksPerSecond) != 0;
+	DIVIDE_ASSERT(queryAvailable, "Current system does not support 'QueryPerformanceFrequency calls!");
     QueryPerformanceCounter(&_startupTicks);
 #else
-    gettimeofday(&_startupTicks,nullptr);
+    gettimeofday(&_startupTicks, nullptr);
 #endif
 
     _ticksPerMicrosecond = static_cast<D32>(_ticksPerSecond.QuadPart / 1000000.0);
@@ -107,66 +105,77 @@ void ApplicationTimer::init(U8 targetFrameRate) {
     _init = true;
 }
 
+ApplicationTimer::LI ApplicationTimer::getCurrentTicksInternal() const {
+	LI currentTicks;
+	currentTicks.QuadPart = 0;
+#if defined( OS_WINDOWS )
+	QueryPerformanceCounter(&currentTicks);
+#else
+	gettimeofday(&currentTicks,nullptr);
+#endif
+	return currentTicks;
+}
+
+U64 ApplicationTimer::getElapsedTimeInternal(LI currentTicks) const {
+	return static_cast<U64>((currentTicks.QuadPart - _startupTicks.QuadPart) / _ticksPerMicrosecond);
+}
+
+void ApplicationTimer::update(U32 frameCount) {
+	LI currentTicks = getCurrentTicksInternal();
+	_elapsedTimeUs = getElapsedTimeInternal(currentTicks);
+
+	_speedfactor = static_cast<F32>((currentTicks.QuadPart - _frameDelay.QuadPart) / (_ticksPerSecond.QuadPart / static_cast<F32>(_targetFrameRate)));
+	_frameDelay = currentTicks;
+
+	if (_speedfactor <= 0.0f) {
+		_speedfactor = 1.0f;
+	}
+
+	_fps = _targetFrameRate / _speedfactor;
+	_frameTime = 1000.0 / _fps;
+
+	benchmarkInternal(frameCount);
+}
+
 namespace {
-    static U32 averageCount = 0;
-    static F32 maxFps = std::numeric_limits<F32>::min();
-    static F32 minFps = std::numeric_limits<F32>::max();
-    static F32 averageFps = 0.0f;
-    static F32 averageFpsTotal = 0.0f;
+	static U32 g_averageCount = 0;
+	static F32 g_maxFps = std::numeric_limits<F32>::min();
+	static F32 g_minFps = std::numeric_limits<F32>::max();
+	static F32 g_averageFps = 0.0f;
+	static F32 g_averageFpsTotal = 0.0f;
 };
 
-U64 ApplicationTimer::getElapsedTimeInternal() {
-#if defined( OS_WINDOWS )
-    QueryPerformanceCounter(&_currentTicks);
-#else
-    gettimeofday(&_currentTicks,nullptr);
-#endif
-
-    return static_cast<U64>((_currentTicks.QuadPart -_startupTicks.QuadPart) / _ticksPerMicrosecond);
-}
-
-void ApplicationTimer::update(U32 frameCount){
-    _elapsedTimeUs = getElapsedTimeInternal();
-
-    _speedfactor = static_cast<F32>((_currentTicks.QuadPart - _frameDelay.QuadPart) / 
-                                    (_ticksPerSecond.QuadPart / static_cast<F32>(_targetFrameRate)));
-    _frameDelay = _currentTicks;
-
-    if(_speedfactor <= 0.0f)
-       _speedfactor = 1.0f;
-
-    _fps = _targetFrameRate / _speedfactor;
-    _frameTime = 1000.0 / _fps;
-
-    if (_benchmark) benchmarkInternal(frameCount);
-}
-
 void ApplicationTimer::benchmarkInternal(U32 frameCount){
+	if (!_benchmark) {
+		return;
+	}
+
     //Average FPS
-    averageFps += _fps;
-    averageCount++;
+    g_averageFps += _fps;
+	g_averageCount++;
 
     //Min/Max FPS (after every target second)
-    if(frameCount % _targetFrameRate == 0){
-        maxFps = std::max(maxFps, _fps);
-        minFps = std::min(minFps, _fps);
-    }
-
+	if (frameCount % _targetFrameRate == 0) {
+		g_maxFps = std::max(g_maxFps, _fps);
+		g_minFps = std::min(g_minFps, _fps);
+	}
+	
     //Every 10 seconds (targeted)
-    if(frameCount % (_targetFrameRate * 10) == 0){
-        averageFpsTotal += averageFps;
+	if (frameCount % (_targetFrameRate * 10) == 0) {
+		g_averageFpsTotal += g_averageFps;
 
-        F32 avgFPS = averageFpsTotal / averageCount;
-        PRINT_FN(Locale::get("FRAMERATE_FPS_OUTPUT"), avgFPS, maxFps, minFps, 1000.0f / avgFPS);
-#if defined(_DEBUG) || defined(_PROFILE)
-        for(vectorImpl<ProfileTimer* >::iterator it = _profileTimers.begin(); it != _profileTimers.end(); ++it){
-            (*it)->print();
-            (*it)->reset();
-        }
+		F32 avgFPS = g_averageFpsTotal / g_averageCount;
+		PRINT_FN(Locale::get("FRAMERATE_FPS_OUTPUT"), avgFPS, g_maxFps, g_minFps, 1000.0f / avgFPS);
 
-#endif
-        averageFps = 0;
-    }
+#		if defined(_DEBUG) || defined(_PROFILE)
+			for (ProfileTimer* const timer : _profileTimers) {
+				timer->print();
+				timer->reset();
+			}
+
+#	endif
+		g_averageFps = 0;
+	}
 }
 
 };

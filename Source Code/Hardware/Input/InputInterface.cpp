@@ -45,7 +45,7 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
     }
 
     // Limit max joysticks to MAX_ALLOWED_JOYSTICKS
-    U32 numJoysticks = std::min(_pInputInterface->getNumberOfDevices(OIS::OISJoyStick), MAX_ALLOWED_JOYSTICKS);
+	I32 numJoysticks = std::min(_pInputInterface->getNumberOfDevices(OIS::OISJoyStick), static_cast<I32>(Joystick_PLACEHOLDER));
 
     if (numJoysticks > 0) {
         _pJoysticks.resize(numJoysticks);

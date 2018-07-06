@@ -31,13 +31,10 @@ namespace Divide {
     ///Points to the position of said joystick in the vector
     enum Joystick {
         JOYSTICK_1 = 0,
-        JOYSTICK_2,
-        JOYSTICK_3,
-        JOYSTICK_4,
-        JOYSTICK_5,
-        JOYSTICK_6,
-        JOYSTICK_7,
-        JOYSTICK_8
+        JOYSTICK_2 = 1,
+        JOYSTICK_3 = 2,
+        JOYSTICK_4 = 3,
+        Joystick_PLACEHOLDER = 4
     };
 
     typedef OIS::KeyCode            KeyCode;

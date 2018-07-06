@@ -26,14 +26,14 @@ AIManager::~AIManager()
 void AIManager::Destroy() {
     {
         WriteLock w_lock(_updateMutex);
-        for ( AITeamMap::value_type entity : _aiTeams ) {
+		for (AITeamMap::value_type& entity : _aiTeams) {
             MemoryManager::SAFE_DELETE( entity.second );
         }
         _aiTeams.clear();
     }
     {
         WriteLock w_lock(_navMeshMutex);
-        for ( NavMeshMap::value_type it : _navMeshes ) {
+		for (NavMeshMap::value_type& it : _navMeshes) {
             MemoryManager::SAFE_DELETE( it.second );
         }
         _navMeshes.clear();
@@ -42,17 +42,16 @@ void AIManager::Destroy() {
     }
 }
 
-void AIManager::update(){
+void AIManager::update() {
     ///Lock the entities during update() adding or deleting entities is suspended until this returns
     ReadLock r_lock(_updateMutex);
     /// use internal delta time calculations
     _previousTime = _currentTime;
     _currentTime  = GETUSTIME();
     _deltaTime = _currentTime - _previousTime;
-    if(_aiTeams.empty() || _pauseUpdate){
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        return; //nothing to do
-    }
+	if (_aiTeams.empty() || _pauseUpdate) {
+		return; //nothing to do
+	}
     _updating = true;
     if (_sceneCallback) {
         _sceneCallback();
@@ -68,28 +67,28 @@ void AIManager::update(){
 
 void AIManager::signalInit() {
     ReadLock r_lock(_updateMutex);
-    for ( AITeamMap::value_type team : _aiTeams ) {
+	for (AITeamMap::value_type& team : _aiTeams) {
         team.second->init();
     }
 }
 
 void AIManager::processInput(const U64 deltaTime) {  //sensors
     ReadLock r_lock(_updateMutex);
-    for ( AITeamMap::value_type team : _aiTeams ) {
+	for (AITeamMap::value_type& team : _aiTeams) {
         team.second->processInput( deltaTime );
     }
 }
 
 void AIManager::processData(const U64 deltaTime) {   //think
     ReadLock r_lock(_updateMutex);
-    for ( AITeamMap::value_type team : _aiTeams ) {
+	for (AITeamMap::value_type& team : _aiTeams) {
         team.second->processData( deltaTime );
     }
 }
 
 void AIManager::updateEntities(const U64 deltaTime){//react
     ReadLock r_lock(_updateMutex);
-    for ( AITeamMap::value_type team : _aiTeams ) {
+	for (AITeamMap::value_type& team : _aiTeams) {
         team.second->update( deltaTime );
     }
 }
@@ -103,7 +102,7 @@ bool AIManager::registerEntity(U32 teamId, AIEntity* entity) {
 }
 
 void AIManager::unregisterEntity(AIEntity* entity) { 
-    for ( AITeamMap::value_type team : _aiTeams ) {
+	for (AITeamMap::value_type& team : _aiTeams) {
         unregisterEntity( team.second->getTeamID(), entity );
     }
 }
@@ -126,7 +125,7 @@ bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::Navig
     w_lock.unlock();
 
     WriteLock w_lock2(_updateMutex);
-    for ( AITeamMap::value_type team : _aiTeams ) {
+	for (AITeamMap::value_type& team : _aiTeams) {
         team.second->addCrowd( radius, navMesh );
     }
 
@@ -142,7 +141,7 @@ void AIManager::destroyNavMesh(AIEntity::PresetAgentRadius radius) {
     w_lock.unlock();
     
     WriteLock w_lock2(_updateMutex);
-    for ( AITeamMap::value_type team : _aiTeams ) {
+	for (AITeamMap::value_type& team : _aiTeams) {
         team.second->removeCrowd( radius );
     }
 }
@@ -165,7 +164,7 @@ void AIManager::unregisterTeam(AITeam* const team) {
 
 void AIManager::toggleNavMeshDebugDraw(bool state) {
     WriteLock w_lock(_navMeshMutex);
-    for ( NavMeshMap::value_type it : _navMeshes ) {
+	for (NavMeshMap::value_type& it : _navMeshes) {
         it.second->debugDraw( state );
     }
 
@@ -174,7 +173,7 @@ void AIManager::toggleNavMeshDebugDraw(bool state) {
 
 void AIManager::debugDraw(bool forceAll) {
     WriteLock w_lock(_navMeshMutex);
-    for ( NavMeshMap::value_type it : _navMeshes ) {
+	for (NavMeshMap::value_type& it : _navMeshes) {
         it.second->update( _deltaTime );
         if ( forceAll || it.second->debugDraw() ) {
             it.second->render();

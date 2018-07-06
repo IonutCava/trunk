@@ -38,7 +38,9 @@ public:
 		DESCRIPTOR_PARTICLE = 2
     };
 
-    explicit PropertyDescriptor(const DescriptorType& type) : _type(type) {}
+    explicit PropertyDescriptor(const DescriptorType& type) : _type(type)
+	{
+	}
 
 protected:
     friend class ResourceDescriptor;
@@ -58,14 +60,14 @@ public:
                                 const stringImpl& resourceLocation = "default",
                                 bool flag = false, U32 id = 0, U8 enumValue = 0);
 
-    ~ResourceDescriptor();
+    virtual ~ResourceDescriptor();
 
     ResourceDescriptor(const ResourceDescriptor& old);
     ResourceDescriptor& operator= (ResourceDescriptor const& old);
 
     inline const  stringImpl&         getPropertyListString()  const {return _properties;}
     inline const  stringImpl&         getResourceLocation()    const {return _resourceLocation;}
-    inline const  stringImpl&         getName()			    const {return _name;}
+    inline const  stringImpl&         getName()			       const {return _name;}
 
     template<typename T>
     inline const T* getPropertyDescriptor() const {
@@ -81,16 +83,16 @@ public:
 
     inline void setPropertyList(const stringImpl& propertyListString)    {_properties = propertyListString;}
     inline void setResourceLocation(const stringImpl& resourceLocation)  {_resourceLocation = resourceLocation;}
-    inline void setEnumValue(U8 enumValue)                                {_enumValue = enumValue;}
-    inline void setName(const stringImpl& name)					      {_name = name;}
-    inline void setFlag(bool flag)				                          {_flag = flag;}
-    inline void setId(U32 id)					                          {_id = id;}
-    inline void setBoolMask(P32 mask)                                     {_mask = mask;}
-    inline void setThreadedLoading(const bool threaded)                   {_threaded = threaded;}
+    inline void setEnumValue(U8 enumValue)                               {_enumValue = enumValue;}
+    inline void setName(const stringImpl& name)					         {_name = name;}
+    inline void setFlag(bool flag)				                         {_flag = flag;}
+    inline void setId(U32 id)					                         {_id = id;}
+    inline void setBoolMask(P32 mask)                                    {_mask = mask;}
+    inline void setThreadedLoading(const bool threaded)                  {_threaded = threaded;}
 
     template<typename T>
     inline void setPropertyDescriptor(const T& descriptor) {
-        _propertyDescriptor = New T(descriptor);
+		MemoryManager::SAFE_UPDATE(_propertyDescriptor, New T(descriptor));
     }
 
 private:

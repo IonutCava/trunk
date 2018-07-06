@@ -80,20 +80,18 @@ namespace Divide {
             inline void Add( void * p, size_t size, char const * file, I32 line ) {
                 if ( _locked ) {
                     return;
-                } else {
-                    WriteLock w_lock( _mutex );
-                }
+                } 
+				WriteLock w_lock(_mutex);
                 MemoryTracker::Lock lock( *this );
-                hashAlg::insert( _map, hashAlg::makePair( p, Entry( file, line, size ) ) );
+                hashAlg::insert( _map, hashAlg::makePair(p, Entry( file, line, size )) );
             }
 
             inline void Remove( void * p ) {
                 if ( _locked ) {
                     return;
-                } else {
-                    WriteLock w_lock( _mutex );
                 }
 
+				WriteLock w_lock(_mutex);
                 MemoryTracker::Lock lock( *this );
                 iterator it = _map.find( p );
                 if ( it != _map.end() ) {

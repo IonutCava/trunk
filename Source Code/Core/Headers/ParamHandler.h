@@ -196,6 +196,17 @@ public:
 		return _paramBool.find(param) != _paramBool.end();
 	}
 
+protected:
+	ParamHandler()
+	{
+	}
+
+	~ParamHandler()
+	{
+		_params.clear();
+		_paramBool.clear();
+		_paramsStr.clear();
+	}
 private:
 	ParamMap _params;
 	ParamBoolMap _paramBool;

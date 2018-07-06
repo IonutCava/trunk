@@ -40,31 +40,6 @@
 
 namespace Divide {
 
-inline U64 GETUSTIME() {
-    return ApplicationTimer::getInstance().getElapsedTime();
-}
-
-inline D32 GETTIME() {
-    return getUsToSec(GETUSTIME());
-}
-
-inline D32 GETMSTIME() {
-    return getUsToMs(GETUSTIME());
-}
-
-/// The following functions force a timer update (a call to query performance timer. Use these for profiling!
-inline U64 GETUSTIME(bool state) {
-    return ApplicationTimer::getInstance().getElapsedTime(state);
-}
-
-inline D32 GETTIME(bool state) {
-    return getUsToSec(GETUSTIME(state));
-}
-
-inline D32 GETMSTIME(bool state) {
-    return getUsToMs(GETUSTIME(state));
-}
-
 #ifdef _DEBUG
 #define STUBBED(x) \
 do {\

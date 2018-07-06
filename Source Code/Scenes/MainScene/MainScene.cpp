@@ -17,16 +17,15 @@ void MainScene::updateLights(){
     if (!_updateLights)
         return;
 
-    Light* light = LightManager::getInstance().getLight(0);
     _sun_cosy = cosf(_sunAngle.y);
     _sunColor = lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
                      vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
                      0.25f + _sun_cosy * 0.75f);
 
-    light->setDirection(_sunvector);
-    light->setDiffuseColor(_sunColor);
-    light->setSpecularColor(_sunColor);
-    getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
+    _sun->setDirection(_sunvector);
+	_sun->setDiffuseColor(_sunColor);
+	_sun->setSpecularColor(_sunColor);
+	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sunColor);
     for(Terrain* ter : _visibleTerrains){
         ter->getMaterial()->setAmbient(_sunColor);
     }
@@ -104,11 +103,11 @@ bool MainScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     renderState().getCamera().setMoveSpeedFactor(10.0f);
 
-    DirectionalLight* sun = addDefaultLight();
-    sun->csmSplitCount(3); // 3 splits
-    sun->csmSplitLogFactor(0.965f);
-    sun->csmNearClipOffset(25.0f);
-    addDefaultSky();
+	_sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
+    _sun->csmSplitCount(3); // 3 splits
+    _sun->csmSplitLogFactor(0.965f);
+    _sun->csmNearClipOffset(25.0f);
+	_currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
 
     for(U8 i = 0; i < _terrainInfoArray.size(); i++){
         SceneGraphNode* terrainNode = _sceneGraph->findNode(_terrainInfoArray[i]->getVariable("terrainName"));
@@ -211,8 +210,11 @@ bool MainScene::loadResources(bool continueOnErrors){
                             0.0f );
 
     Kernel* kernel = Application::getInstance().getKernel();
-    Task_ptr boxMove(kernel->AddTask(30, true, false, DELEGATE_BIND(&MainScene::test, this, stringImpl("test"), TYPE_STRING)));
-    addTask(boxMove);
+
+    Task_ptr boxMove(kernel->AddTask(getMsToUs(30), 0, DELEGATE_BIND(&MainScene::test, this, stringImpl("test"), TYPE_STRING)));
+	registerTask(boxMove);
+	boxMove->startTask();
+
     ResourceDescriptor backgroundMusic("background music");
 	backgroundMusic.setResourceLocation(_paramHandler.getParam<stringImpl>("assetsLocation") + "/music/background_music.ogg");
     backgroundMusic.setFlag(true);

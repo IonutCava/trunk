@@ -76,17 +76,17 @@ namespace Divide {
 		void destroyGlew() {
 #ifdef GLEW_MX
 			if ( _GLEWContextPtr.get() != nullptr ) {
-				_GLEWContextPtr.release();
+				_GLEWContextPtr.reset(nullptr);
 			}
 #   if defined( OS_WINDOWS )
 			/// Same as for normal GLEW initialization, but this time, init platform specific pointers
 			if ( _WGLEWContextPtr.get() != nullptr ) {
-				_WGLEWContextPtr.release();
+				_WGLEWContextPtr.reset(nullptr);
 			}
 #	else //! OS_WINDOWS
 			/// Same as for normal GLEW initialization, but this time, init platform specific pointers
 			if ( _GLXEWContextPtr.get() != nullptr ) {
-				_GLXEWContextPtr.release();
+				_GLXEWContextPtr.reset(nullptr);
 			}
 
 			err = glxewInit();

@@ -97,7 +97,7 @@ void SceneGraph::printInternal(SceneGraphNode* const sgn){
         depthShader.c_str());
     //Repeat for each child, but prefix it with the appropriate number of dashes
     //Based on our ancestor counting earlier
-    for ( SceneGraphNode::NodeChildren::value_type it : parent->getChildren() ) {
+	for (SceneGraphNode::NodeChildren::value_type& it : parent->getChildren()) {
         for ( U8 j = 0; j < i; j++ ) {
             PRINT_F( "-" );
         }

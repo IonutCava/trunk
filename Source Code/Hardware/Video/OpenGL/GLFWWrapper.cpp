@@ -48,7 +48,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     } else {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, Config::Profile::DISABLE_PERSISTENT_BUFFER ? 3 : 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
     }
 
     // I REALLY think re-sizable windows are a bad idea. Increase the resolution instead of messing up render targets
@@ -144,7 +144,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
         ERROR_FN(Locale::get("ERROR_GFX_DEVICE"), Locale::get("ERROR_GL_OLD_VERSION"));
         return GLEW_OLD_HARDWARE;
     } else {
-        PRINT_FN(Locale::get("GL_MAX_VERSION"), 4, GLEW_VERSION_4_4 ? 4 : 3);
+        PRINT_FN( Locale::get( "GL_MAX_VERSION" ), 4, /*GLEW_VERSION_4_5 ? 5 : */GLEW_VERSION_4_4 ? 4 : GLEW_VERSION_4_3 ? 3 : GLEW_VERSION_4_2 ? 2 : GLEW_VERSION_4_1 ? 1 : 0 );
     }
 
     // Number of sample buffers associated with the framebuffer & MSAA sample count
@@ -268,9 +268,9 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
 
     // Once OpenGL is ready for rendering, init CEGUI
     _enableCEGUIRendering =  !(ParamHandler::getInstance().getParam<bool>("GUI.CEGUI.SkipRendering"));
-    CEGUI::OpenGL3Renderer& GUIGLrenderer = CEGUI::OpenGL3Renderer::create();
-    GUIGLrenderer.enableExtraStateSettings(par.getParam<bool>("GUI.CEGUI.ExtraStates"));
-    CEGUI::System::create(GUIGLrenderer);
+	_GUIGLrenderer = &CEGUI::OpenGL3Renderer::create();
+    _GUIGLrenderer->enableExtraStateSettings(par.getParam<bool>("GUI.CEGUI.ExtraStates"));
+    CEGUI::System::create(*_GUIGLrenderer);
 
 	Application::getInstance().registerShutdownCallback( DELEGATE_BIND(&GLUtil::destroyGlew ) );
     return NO_ERR;
@@ -278,14 +278,16 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
 
 /// Clear everything that was setup in initRenderingApi()
 void GL_API::closeRenderingApi() {
+	CEGUI::OpenGL3Renderer::destroy(*_GUIGLrenderer);
+	_GUIGLrenderer = nullptr;
     // Close the loading thread 
     _closeLoadingThread = true;
     while ( GFX_DEVICE.loadingThreadAvailable() ) {
-        std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );//<Avoid burning the CPU - Ionut
+        std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );
     }
 
     // Destroy sampler objects
-    for ( samplerObjectMap::value_type it : _samplerMap ) {
+    for (samplerObjectMap::value_type& it : _samplerMap ) {
         MemoryManager::SAFE_DELETE( it.second );
     }
     _samplerMap.clear();
@@ -334,8 +336,7 @@ void GL_API::createLoaderThread() {
 #   endif
 
     // This will be our target container for new items pulled from the queue
-			DELEGATE_CBK<> callback;
-
+    DELEGATE_CBK<> callback;
     // Delay startup of the thread by a 1/4 of a second. No real reason
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     // Use an atomic bool to check if the thread is still active (cheap and easy)
@@ -349,9 +350,10 @@ void GL_API::createLoaderThread() {
             glFlush();
         } else {  // If there are no new items to process in the queue, just stall
             // Avoid burning the CPU - Ionut
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
+	GLUtil::destroyGlew();
     // If we close the loading thread, update our atomic bool to make sure the application isn't using it anymore
     GFX_DEVICE.loadingThreadAvailable(false);
 }

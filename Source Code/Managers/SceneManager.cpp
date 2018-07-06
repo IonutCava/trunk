@@ -30,7 +30,7 @@ SceneManager::~SceneManager()
     PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
     //PRINT_FN(Locale::get("SCENE_MANAGER_DELETE"));
     PRINT_FN(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
-    for ( SceneMap::value_type it : _sceneMap ) {
+	for (SceneMap::value_type& it : _sceneMap) {
         MemoryManager::SAFE_DELETE( it.second );
     }
     MemoryManager::SAFE_DELETE( _renderPassCuller );

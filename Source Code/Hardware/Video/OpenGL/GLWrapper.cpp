@@ -32,6 +32,7 @@ GL_API::GL_API() : RenderAPIWrapper(),
                    _prevSizeString(0),
                    _lineWidthLimit(1),
                    _pointDummyVAO(0),
+				   _GUIGLrenderer(nullptr),
                    _fonsContext(nullptr),
                    _GLSLOptContex(nullptr),
                    _enableCEGUIRendering(false)
@@ -211,12 +212,13 @@ I32 GL_API::getFont(const stringImpl& fontName) {
         I32 tempFont = fonsAddFont(_fonsContext, fontName.c_str(), fontPath.c_str());
         // If the font is invalid, inform the user, but map it anyway, to avoid loading an invalid font file on every request
         if (tempFont == FONS_INVALID) {
-            ERROR_FN(Locale::get("ERROR_FONT_FILE"),fontName.c_str());
+            ERROR_FN(Locale::get("ERROR_FONT_FILE"), fontName.c_str());
         }
         // Save the font in the font cache
-        hashAlg::emplace(_fonts, fontName, tempFont);
+        hashAlg::pair<FontCache::iterator, bool> result = hashAlg::emplace(_fonts, fontName, tempFont);
+		assert(result.second);
         // Return the font
-        return tempFont;
+		return result.first->second;
     }
     // We found the font in cache, so return it
     return it->second;

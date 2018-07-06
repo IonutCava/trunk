@@ -25,7 +25,6 @@
 
 #define DEFAULT_LANG "enGB"
 
-#include "String.h"
 #include "HashMap.h"
 
 namespace Divide {

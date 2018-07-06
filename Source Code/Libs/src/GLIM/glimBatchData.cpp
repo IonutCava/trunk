@@ -22,8 +22,8 @@ namespace NS_GLIM
     {
         m_DataType = GLIM_NODATA;
         m_ArrayData.clear ();
-        m_ArrayData.reserve (256);
-
+		m_ArrayData.reserve(256);
+		
         m_CurrentValue[0].Int = 0;
         m_CurrentValue[1].Int = 0;
         m_CurrentValue[2].Int = 0;
@@ -120,7 +120,7 @@ namespace NS_GLIM
 
     glimBatchData::~glimBatchData ()
     {
-        Reset ();
+        Reset (false);
 
 #ifdef AE_RENDERAPI_OPENGL
         if (m_bCreatedVBOs)
@@ -137,22 +137,17 @@ namespace NS_GLIM
 #endif
     }
 
-    void glimBatchData::Reset (void)
+    void glimBatchData::Reset (bool reserve)
     {
         m_State = STATE_EMPTY;
 
         m_Attributes.clear ();
         m_PositionData.clear ();
-        m_PositionData.reserve (64 * 3);
 
         m_IndexBuffer_Points.clear ();
-        m_IndexBuffer_Points.reserve (16);
         m_IndexBuffer_Lines.clear ();
-        m_IndexBuffer_Lines.reserve (32);
         m_IndexBuffer_Triangles.clear ();
-        m_IndexBuffer_Triangles.reserve (128);
         m_IndexBuffer_Wireframe.clear ();
-        m_IndexBuffer_Wireframe.reserve (128);
 
         m_bUploadedToGPU = false;
 
@@ -163,6 +158,13 @@ namespace NS_GLIM
         m_fMinZ = 99999999.0f;
         m_fMaxZ =-99999999.0f;
 
+		if (reserve) {
+			m_PositionData.reserve (64 * 3);
+			m_IndexBuffer_Points.reserve (16);
+			m_IndexBuffer_Lines.reserve (32);
+			m_IndexBuffer_Triangles.reserve (128);
+			m_IndexBuffer_Wireframe.reserve (128);
+		}
 #ifdef AE_RENDERAPI_D3D11
         if (m_pVertexBuffer)
         {

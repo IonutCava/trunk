@@ -47,7 +47,7 @@ public:
     ///Add a new light to the manager
     bool addLight(Light* const light);
     ///remove a light from the manager
-    bool removeLight(U32 lightId);
+	bool removeLight(I64 lightGUID);
     ///Update the ambient light values used in shader programs
     inline void setAmbientLight(const vec3<F32>& light){_ambientLight = light;}
     ///Retrieve the current ambient light values
@@ -57,7 +57,7 @@ public:
     void idle();
     void onCameraChange();
     inline Light::LightMap& getLights() {return _lights;}
-           Light* getLight(U32 slot);
+	Light* getLight(I64 lightGUID);
 
     inline Light*    getCurrentLight()             const { return _currLight; }
     inline void      setCurrentLight(Light* light)       { _currLight = light; _currentShadowPass = 0; }

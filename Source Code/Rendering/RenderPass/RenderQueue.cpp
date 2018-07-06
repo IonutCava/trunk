@@ -18,7 +18,7 @@ RenderQueue::RenderQueue() : _renderQueueLocked(false), _isSorted(false)
 
 RenderQueue::~RenderQueue()
 {
-    for ( RenderBinMap::value_type renderBins : _renderBins ) {
+	for (RenderBinMap::value_type& renderBins : _renderBins) {
         MemoryManager::SAFE_DELETE( renderBins.second );
     }
     _renderBins.clear();
@@ -26,7 +26,7 @@ RenderQueue::~RenderQueue()
 
 U16 RenderQueue::getRenderQueueStackSize() const {
     U16 temp = 0;
-    for ( const RenderBinMap::value_type renderBins : _renderBins ) {
+	for (const RenderBinMap::value_type& renderBins : _renderBins) {
         temp += ( renderBins.second )->getBinSize();
     }
     return temp;
@@ -160,7 +160,7 @@ void RenderQueue::sort(const RenderStage& currentRenderStage){
         return;
     }*/
 
-    for ( RenderBinMap::value_type renderBin : _renderBins ) {
+	for (RenderBinMap::value_type& renderBin : _renderBins) {
         assert( renderBin.second );
         renderBin.second->sort( currentRenderStage );
     }
@@ -172,7 +172,7 @@ void RenderQueue::refresh(bool force){
     if ( _renderQueueLocked && !force ) {
         return;
     }
-    for ( RenderBinMap::value_type renderBin : _renderBins ) {
+	for (RenderBinMap::value_type& renderBin : _renderBins) {
         assert( renderBin.second );
         renderBin.second->refresh();
     }

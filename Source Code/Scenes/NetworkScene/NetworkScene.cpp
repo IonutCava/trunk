@@ -18,7 +18,7 @@ void NetworkScene::preRender(){
     light->setDiffuseColor(vSunColor);
     light->setSpecularColor(vSunColor);
 
-    getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
+	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, vSunColor);
 }
 
 void NetworkScene::processInput(const U64 deltaTime){
@@ -70,8 +70,8 @@ bool NetworkScene::load(const stringImpl& name, CameraManager* const cameraMgr, 
     bool loadState = SCENE_LOAD(name, cameraMgr, gui, true, true);
 
     _paramHandler.setParam("serverResponse", "waiting");
-    addDefaultLight();
-    addDefaultSky();
+	addLight(LIGHT_TYPE_DIRECTIONAL);
+	_currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     renderState().getCamera().setEye(vec3<F32>(0,30,-30));
 
     return loadState;

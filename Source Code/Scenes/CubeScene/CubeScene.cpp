@@ -74,7 +74,6 @@ bool CubeScene::loadResources(bool continueOnErrors){
             U8 lightId = (U8)(row*10+col);
             std::stringstream ss; ss << (U32)lightId;
             ResourceDescriptor tempLight(stringAlg::toBase("Light Deferred " + ss.str()));
-            tempLight.setId(lightId);
             tempLight.setEnumValue(LIGHT_TYPE_POINT);
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(true);

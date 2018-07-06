@@ -2,6 +2,7 @@
 
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Utility/Headers/Localization.h"
 
 #include <chrono>
@@ -9,31 +10,24 @@
 
 namespace Divide {
 
-Task::Task(boost::threadpool::pool* tp, U64 tickIntervalMS, bool startOnCreate, bool runOnce, const DELEGATE_CBK<>& f) : Task(tp, tickIntervalMS, startOnCreate, runOnce ? 0 : -1, f)
+Task::Task(boost::threadpool::pool* tp, U64 tickInterval, I32 numberOfTicks, const DELEGATE_CBK<>& f) : GUIDWrapper(),
+                                                                                                        _tp(tp), 
+                                                                                                        _tickInterval(tickInterval),
+                                                                                                        _numberOfTicks(numberOfTicks),
+                                                                                                        _callback(f),
+                                                                                                        _end(false),
+                                                                                                        _paused(false),
+                                                                                                        _done(false)
 {
 }
 
-Task::Task(boost::threadpool::pool* tp, U64 tickIntervalMs, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK<>& f) : GUIDWrapper(),
-                                                                                                                            _tp(tp), 
-                                                                                                                            _tickIntervalMS(tickIntervalMs),
-                                                                                                                            _numberOfTicks(numberOfTicks),
-                                                                                                                            _callback(f),
-                                                                                                                            _end(false),
-                                                                                                                            _paused(false),
-                                                                                                                            _done(false)
+Task::~Task()
 {
-    if (startOnCreate) {
-        startTask();
-    }
-}
-
-Task::~Task(){
     if (_end != true) {
         ERROR_FN(Locale::get("TASK_DELETE_ACTIVE"));
     }
-    while (!_done) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    }
+    while (!_done) { 
+	}
 }
 
 void Task::startTask(){
@@ -53,25 +47,33 @@ void Task::pauseTask(bool state){
 
 void Task::run(){
     D_PRINT_FN(Locale::get("TASK_START_THREAD"), std::this_thread::get_id());
+	U64 lastCallTime = GETTIME();
+
+	// 0 == run forever
+	if (_numberOfTicks == 0){
+		_numberOfTicks = -1;
+	}
+
     while(true) {
-		U64 interval = _tickIntervalMS;
+		if (_numberOfTicks == 0) {
+			_end = true;
+		}
+
 		while ((_paused && !_end) || (Application::getInstance().mainLoopPaused() && !Application::getInstance().ShutdownRequested())) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(interval > 0 ? interval : 10));
+			continue;
         }
         if (_end || Application::getInstance().ShutdownRequested()) {
             break;
         }
 
-		if (interval > 0) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-        }
-
-        _callback();
+		U64 nowTime = GETUSTIME(true);
+		if (nowTime > (lastCallTime + _tickInterval)) {
+			_callback();
+			lastCallTime = GETUSTIME(true);
+		}
 
         if (_numberOfTicks > 0) {
             _numberOfTicks--;
-        } else if(_numberOfTicks == 0) {
-            _end = true;
         }
     }
 

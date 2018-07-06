@@ -1,7 +1,6 @@
 #ifndef _COMMAND_PARSER_H_
 #define _COMMAND_PARSER_H_
 
-#include "String.h"
 #include "HashMap.h"
 #include <functional>
 

@@ -108,8 +108,8 @@ using vectorImpl = vectorAlg::vector<Type>;
 namespace std {
     typedef size_t vecSize;
 
-	template<typename T1, typename T2>
-	using pair = std::pair<T1, T2>;
+	//template<typename T1, typename T2>
+	//using pair = std::pair<T1, T2>;
 
     template<typename T>
     inline void shrinkToFit(vectorImpl<T>& inputVector) {

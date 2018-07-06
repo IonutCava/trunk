@@ -32,7 +32,7 @@ void ResourceCache::Destroy() {
 
     PRINT_FN( Locale::get( "STOP_RESOURCE_CACHE" ) );
 
-    for ( ResourceMap::value_type it : _resDB ) {
+	for (ResourceMap::value_type& it : _resDB) {
         while ( it.second->GetRef() > 1 ) {
             it.second->SubRef();
         }

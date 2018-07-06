@@ -84,7 +84,7 @@ void PhysXSceneInterface::release() {
 	_sceneRigidActors.clear();
 
 	if ( _cpuDispatcher ) {
-		//_cpuDispatcher->release();
+		_cpuDispatcher->release();
 	}
 	_gScene->release();
 	_gScene = nullptr;

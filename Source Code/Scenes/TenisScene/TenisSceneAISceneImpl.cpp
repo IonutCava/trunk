@@ -45,7 +45,7 @@ void TenisSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg, const cd
         case ATTACK_BALL:
             currentTeam = _entity->getTeam();
             assert(currentTeam);
-            for ( const AITeam::TeamMap::value_type member : currentTeam->getTeamMembers() ) {
+			for (const AITeam::TeamMap::value_type& member : currentTeam->getTeamMembers()) {
                 if ( _entity->getGUID() != member.second->getGUID() ) {
                     _entity->sendMessage( member.second, DONT_ATTACK_BALL, 0 );
                 }
@@ -92,7 +92,7 @@ void TenisSceneAISceneImpl::processInput(const U64 deltaTime){
     AITeam* currentTeam = _entity->getTeam();
     assert(currentTeam != nullptr);
     _entity->getTeam()->getMemberVariable()[_entity] = distanceToBall(_initialPosition,_ballPosition);
-    for ( const AITeam::TeamMap::value_type member : currentTeam->getTeamMembers() ) {
+	for (const AITeam::TeamMap::value_type& member : currentTeam->getTeamMembers()) {
         ///Ask all of our team-mates to send us their distance to the ball
         if ( _entity->getGUID() != member.second->getGUID() ) {
             _entity->sendMessage( member.second, REQUEST_DISTANCE_TO_TARGET, 0 );
@@ -104,7 +104,7 @@ void TenisSceneAISceneImpl::processData(const U64 deltaTime){
     AIEntity* nearestEntity = _entity;
     F32 distance = _entity->getTeam()->getMemberVariable()[_entity];
     typedef hashMapImpl<AIEntity*, F32 > memberVariable;
-    for ( memberVariable::value_type member : _entity->getTeam()->getMemberVariable() ) {
+	for (memberVariable::value_type& member : _entity->getTeam()->getMemberVariable()) {
         if ( member.second < distance && member.first->getGUID() != _entity->getGUID() ) {
             distance = member.second;
             nearestEntity = member.first;

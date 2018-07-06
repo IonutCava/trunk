@@ -80,7 +80,7 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, Scen
 
     //If we don't need to skip child testing
     if ( !skipChildren ) {
-		for (SceneGraphNode::NodeChildren::value_type it : currentNode->getChildren()) {
+		for (SceneGraphNode::NodeChildren::value_type& it : currentNode->getChildren()) {
             cullSceneGraphCPU(it.second, sceneRenderState);
         }
     }

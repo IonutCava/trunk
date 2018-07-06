@@ -63,10 +63,15 @@ public:
     }
 
 private:
-    PXDevice() :
-       _api(PhysX::getOrCreateInstance()) //Defaulting to nothing if no api has been defined
-       {
-       }
+    PXDevice() : _api(PhysX::getOrCreateInstance()) //Defaulting to nothing if no api has been defined
+    {
+    }
+
+	~PXDevice()
+	{
+		PhysX::destroyInstance();
+	}
+
     PhysicsAPIWrapper& _api;
 
 END_SINGLETON

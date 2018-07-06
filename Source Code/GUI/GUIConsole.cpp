@@ -45,13 +45,13 @@ GUIConsole::GUIConsole() : _init(false),
 
 GUIConsole::~GUIConsole()
 {
-    _closing = true;
-    setVisible(false);
-
-    _init = false;
+	_closing = true;
 
     if (_consoleWindow) {
+		setVisible(false);
+		_init = false;
         CEGUI_DEFAULT_CONTEXT.getRootWindow()->removeChild(_consoleWindow);
+		MemoryManager::SAFE_DELETE(_consoleWindow);
     }
     MemoryManager::SAFE_DELETE( _cmdParser );
 
@@ -135,13 +135,13 @@ bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs &e){
 }
 
 void GUIConsole::setVisible(bool visible){
-    if (!_init)
-        CreateCEGUIWindow();
-    
+	if (!_init) {
+		CreateCEGUIWindow();
+	}
     //if it's not the first key (e.g., if the toggle key is "~", then "lorem~ipsum" should not close the Window)
-    if(!_inputBuffer.empty())
-        return;
-
+	if (!_inputBuffer.empty()){
+		return;
+	}
     assert(_editBox != nullptr);
     _consoleWindow->setVisible(visible);
 
@@ -176,7 +176,7 @@ void GUIConsole::OutputText(const char* inMsg, const bool error) {
     }
 
     CEGUI::FormattedListboxTextItem* crtItem = nullptr;
-    crtItem = New CEGUI::FormattedListboxTextItem(CEGUI::String(inMsg), 
+    crtItem = new CEGUI::FormattedListboxTextItem(CEGUI::String(inMsg), 
                                                   error ? CEGUI::Colour(1.0f, 0.0f, 0.0f) : 
                                                           CEGUI::Colour(0.4f, 0.4f, 0.3f), 
                                                   CEGUI::HTF_WORDWRAP_LEFT_ALIGNED);

@@ -38,7 +38,7 @@ DEFINE_SINGLETON(ShaderManager)
 
 typedef hashMapImpl<stringImpl, Shader* >        ShaderMap;
 typedef hashMapImpl<stringImpl, ShaderProgram* > ShaderProgramMap;
-typedef hashMapImpl<stringImpl, const char* >    AtomMap;
+typedef hashMapImpl<stringImpl, stringImpl >     AtomMap;
 typedef std::stack<ShaderProgram*, vectorImpl<ShaderProgram* > > ShaderQueue;
 
 private:
@@ -71,7 +71,7 @@ public:
     /// Queue a shaderProgram recompile request
     bool recompileShaderProgram(const stringImpl& name);
     /// Load a shader from file
-    const char* shaderFileRead(const stringImpl &atomName, const stringImpl& location);
+    const stringImpl& shaderFileRead(const stringImpl &atomName, const stringImpl& location);
     /// Save a shader to file
     I8 shaderFileWrite(char *atomName, const char *s);
     /// Bind the null shader

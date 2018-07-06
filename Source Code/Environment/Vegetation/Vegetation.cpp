@@ -60,16 +60,18 @@ Vegetation::Vegetation(const VegetationDetails& details) : SceneNode(details.nam
     _cullShader = CreateResource<ShaderProgram>(instanceCullShader);
 }
 
-Vegetation::~Vegetation(){
+Vegetation::~Vegetation() {
     PRINT_FN(Locale::get("UNLOAD_VEGETATION_BEGIN"), getName().c_str());
     _stopLoadingRequest = true;
     U32 timer = 0;
-    while(!_threadedLoadComplete){
-        // wait for the loading thread to finish first;
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        timer += 10;
-        if (timer > 1500) break;
-    }
+	while (!_threadedLoadComplete){
+		// wait for the loading thread to finish first;
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		timer += 10;
+		if (timer > 3000) {
+			break;
+		}
+	}
     assert(_threadedLoadComplete);
     _grassPositions.clear();
     RemoveResource(_cullShader);
@@ -116,7 +118,8 @@ void Vegetation::initialize( TerrainChunk* const terrainChunk ) {
     setMaterial(vegMaterial);
 
     Kernel* kernel = Application::getInstance().getKernel();
-    _generateVegetation.reset(kernel->AddTask(0, true, true, DELEGATE_BIND(&Vegetation::generateGrass, this), DELEGATE_BIND(&Vegetation::uploadGrassData, this)));
+    _generateVegetation.reset(kernel->AddTask(0, 1, DELEGATE_BIND(&Vegetation::generateGrass, this), DELEGATE_BIND(&Vegetation::uploadGrassData, this)));
+	_generateVegetation->startTask();
     setState(RES_LOADED);
 }
 
@@ -367,9 +370,9 @@ void Vegetation::generateGrass(){
         densityFactor += 0.1f;
         for (F32 width = 0; width < chunkSize.x - densityFactor; width += densityFactor){
             for (F32 height = 0; height < chunkSize.y - densityFactor; height += densityFactor){
-                if (_stopLoadingRequest)
-                    continue;
-                
+				if (_stopLoadingRequest) {
+					continue;
+				}
                 F32 x = width  + random(densityFactor) + chunkPos.x;
                 F32 y = height + random(densityFactor) + chunkPos.y;
                 CLAMP<F32>(x, 0.0f, (F32)mapWidth  - 1.0f);
@@ -378,14 +381,17 @@ void Vegetation::generateGrass(){
                 F32 y_fac = y  / _map.dimensions().height;
 
                 I32 map_color = _map.getColor((U16)x, (U16)y)[index];
-                if (map_color < 150) continue;
-
+				if (map_color < 150) {
+					continue;
+				}
                 const vec3<F32>& P = _terrain->getPosition(x_fac, y_fac);
-                if (P.y < waterLevel) continue;
-
+				if (P.y < waterLevel) {
+					continue;
+				}
                 const vec3<F32>& N = _terrain->getNormal(x_fac, y_fac);
-                if (N.y < 0.7f) continue;
-                    
+				if (N.y < 0.7f) {
+					continue;
+				}
                 #pragma omp critical 
                 {
                     /*position.set(P);

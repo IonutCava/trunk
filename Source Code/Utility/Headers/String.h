@@ -43,6 +43,7 @@ namespace eastl {
     inline const char* fromBase(const eastl::string& input) {
         return input.c_str();
     }
+
 };
     
 #else //defined(STRING_IMP) && STRING_IMP == 1

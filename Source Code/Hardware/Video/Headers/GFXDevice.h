@@ -398,7 +398,7 @@ protected:
 
     vectorImpl<NodeData >     _matricesData;
     vectorImpl<GPUVideoMode > _supportedDislpayModes;
-    hashMapImpl<I64, I32>   _sgnToDrawIDMap;
+    hashMapImpl<I64, I32>     _sgnToDrawIDMap;
 
     ShaderBuffer*  _gfxDataBuffer;
     ShaderBuffer*  _nodeBuffer;

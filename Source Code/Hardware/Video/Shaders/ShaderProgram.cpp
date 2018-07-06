@@ -39,7 +39,7 @@ ShaderProgram::~ShaderProgram()
 {
     D_PRINT_FN(Locale::get("SHADER_PROGRAM_REMOVE"), getName().c_str());
     // Remove every shader attached to this program
-    for ( ShaderIdMap::value_type it : _shaderIdMap ) {
+	for (ShaderIdMap::value_type& it : _shaderIdMap) {
         ShaderManager::getInstance().removeShader( it.second );
     }
     // Unregister the program from the manager

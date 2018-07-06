@@ -9,6 +9,9 @@
 
 namespace Divide {
 
+stringImpl glShaderProgram::_lastPathPrefix;
+stringImpl glShaderProgram::_lastPathSuffix;
+
 glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
                                                         _loadedFromBinary(false),
                                                         _validated(false),
@@ -36,7 +39,7 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
 glShaderProgram::~glShaderProgram()
 {
     // remove shader stages
-    for ( ShaderIdMap::value_type it : _shaderIdMap ) {
+    for (ShaderIdMap::value_type& it : _shaderIdMap ) {
         detachShader( it.second );
     }
     // delete shader program
@@ -312,8 +315,19 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
 #   endif
     // The program wasn't loaded from binary, so process shaders
     if (!_loadedFromBinary) {
+		bool updatePath = false;
         // Use the specified shader path
-        glswSetPath((getResourceLocation() + "GLSL/").c_str(), ".glsl");
+		if (_lastPathPrefix.compare(getResourceLocation() + "GLSL/") != 0) {
+			_lastPathPrefix = getResourceLocation() + "GLSL/";
+			updatePath = true;
+		}
+		if (_lastPathSuffix.compare(".glsl") != 0) {
+			_lastPathSuffix = ".glsl";
+			updatePath = true;
+		}
+		if (updatePath){
+			glswSetPath(_lastPathPrefix.c_str(), _lastPathSuffix.c_str());
+		}
         // Mirror initial shader defines to match line count
         GLint initialOffset = 19;
         if (GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) { //nVidia specific

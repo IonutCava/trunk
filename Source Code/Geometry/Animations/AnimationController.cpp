@@ -7,8 +7,8 @@
 namespace Divide {
 
 void SceneAnimator::Release(){// this should clean everything up
-    for ( LineCollection::value_type it : _skeletonLines ) {
-        for ( LineMap::value_type it2 : it.second ) {
+	for (LineCollection::value_type& it : _skeletonLines) {
+		for (LineMap::value_type& it2 : it.second) {
             it2.second.clear();
         }
     }

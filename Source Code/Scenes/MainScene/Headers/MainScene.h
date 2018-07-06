@@ -37,7 +37,8 @@ public:
                   _water(nullptr),
                   _beep(nullptr),
                   _freeflyCamera(false),
-                  _updateLights(true)
+                  _updateLights(true),
+				  _sun(nullptr)
     {
     }
 
@@ -67,6 +68,7 @@ private:
     AudioDescriptor* _beep;
     vectorImpl<Terrain*> _visibleTerrains;
     WaterPlane* _water;
+	DirectionalLight* _sun;
     SceneGraphNode* _waterGraphNode;
 };
 

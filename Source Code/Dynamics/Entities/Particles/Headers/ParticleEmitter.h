@@ -62,7 +62,9 @@ public:
 		_textureFileName = "particle.DDS";
 	}
 
-	ParticleEmitterDescriptor* clone() const { return New ParticleEmitterDescriptor( *this ); }
+	ParticleEmitterDescriptor* clone() const { 
+		return New ParticleEmitterDescriptor( *this ); 
+	}
 };
 
 class Texture;

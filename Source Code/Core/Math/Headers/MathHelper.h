@@ -70,17 +70,17 @@ inline D32 getMsToSec(T a) { return a*0.001; }
 template<typename T>
 inline D32 getSecToMs(T a) { return a*1000.0; }
 template<typename T>
-inline D32 getSecToUs(T a) { return a * 1000000.0;}
+inline U64 getSecToUs(T a) { return static_cast<U64>(a * 1000000); }
 template<typename T>
-inline D32 getMsToUs(T a)  { return getSecToMs(a);}
+inline U64 getMsToUs(T a)  { return static_cast<U64>(getSecToMs(a)); }
 template<typename T>
 inline void MsToSec(T& a)  { a*=0.001; }
 template<typename T>
-inline void SecToMs(T& a)  { a*=1000.0; }
+inline void SecToMs(T& a)  { a*=1000; }
 template<typename T>
 inline void UsToSec(T& a)  { a*=0.000001; }
 template<typename T>
-inline void SecToUs(T& a)  { a*=1000000.0; }
+inline void SecToUs(T& a)  { a*=1000000; }
 template<typename T>
 inline void UsToMs(T& a)   { MsToSec(a); }
 template<typename T>

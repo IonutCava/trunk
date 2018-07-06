@@ -51,6 +51,11 @@ private:
 	{
 	}
 
+	~SFXDevice()
+	{
+		SDL_API::destroyInstance();
+	}
+
 	AudioAPIWrapper& _api;
 
 END_SINGLETON

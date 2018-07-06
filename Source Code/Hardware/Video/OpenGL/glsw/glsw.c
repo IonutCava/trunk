@@ -116,7 +116,9 @@ int glswSetPath(const char* pathPrefix, const char* pathSuffix)
         return 0;
     }
 
+	bdestroy(gc->PathPrefix);
     gc->PathPrefix = bfromcstr(pathPrefix);
+	bdestroy(gc->PathSuffix);
     gc->PathSuffix = bfromcstr(pathSuffix);
 
     return 1;

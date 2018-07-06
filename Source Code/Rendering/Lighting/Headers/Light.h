@@ -78,15 +78,13 @@ public:
     ///Create a new light assigned to the specified slot with the specified range
     /// @param slot = the slot the light is assigned to (as in OpenGL slot for example)
     /// @param range = the light influence range (for spot/point lights)
-    Light(const U8 slot,const F32 range,const LightType& type);
+    Light(const F32 range,const LightType& type);
     virtual ~Light();
 
     ///Light score determines the importance of this light for the current node queries
     inline F32  getScore()                const {return _score;}
     inline void setScore(const F32 score)       {_score = score;}
 
-    ///Get light slot
-    inline U8    getSlot() const {return _slot;}
     ///Is the light a shadow caster?
     inline bool  castsShadows() const {return _properties._options.x == 1;}
     ///Get the entire property block
@@ -170,9 +168,6 @@ protected:
     void updateResolution(I32 newWidth, I32 newHeight);
     ///Get a ref to the shadow camera used by this light
     Camera* const shadowCamera() const {return _shadowCamera;}
-    ///Set the light slot.
-    ///Slot is used by the rendering API internally
-    inline void  setSlot(const U8 slot) { _slot = slot;}
 
 protected:
     LightProperties       _properties;
@@ -184,7 +179,6 @@ protected:
 
 private:
     U8   _resolutionFactor;
-    U8   _slot; 
     bool _drawImpostor;
     bool _updateLightBB;
     Impostor* _impostor; ///< Used for debug rendering -Ionut

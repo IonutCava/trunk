@@ -102,22 +102,13 @@ public:
     ///Mouse button released
     bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button);
 
-	inline Task* AddTask(U64 tickIntervalMS, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK<>& threadedFunction, const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>()) {
-         Task* taskPtr = New Task(getThreadPool(), tickIntervalMS, startOnCreate, numberOfTicks, threadedFunction);
+	inline Task* AddTask(U64 tickInterval, I32 numberOfTicks, const DELEGATE_CBK<>& threadedFunction, const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>()) {
+         Task* taskPtr = New Task(getThreadPool(), tickInterval, numberOfTicks, threadedFunction);
          taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, std::placeholders::_1));
          if (!onCompletionFunction){
             emplace(_threadedCallbackFunctions, static_cast<U64>(taskPtr->getGUID()), onCompletionFunction);
          }
          return taskPtr;
-    }
-
-	inline Task* AddTask(U64 tickIntervalMS, bool startOnCreate, bool runOnce, const DELEGATE_CBK<>& threadedFunction, const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>()) {
-        Task* taskPtr = New Task(getThreadPool(), tickIntervalMS, startOnCreate, runOnce, threadedFunction);
-		taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, std::placeholders::_1));
-        if (!onCompletionFunction){
-            emplace(_threadedCallbackFunctions, static_cast<U64>(taskPtr->getGUID()), onCompletionFunction);
-        }
-        return taskPtr;
     }
 
 private:

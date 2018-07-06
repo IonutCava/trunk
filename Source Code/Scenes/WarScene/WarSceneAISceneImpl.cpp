@@ -68,11 +68,11 @@ void WarSceneAISceneImpl::init() {
     const AITeam::TeamMap& teamAgents = currentTeam->getTeamMembers();
     const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
 
-    for ( const AITeam::TeamMap::value_type member : teamAgents ) {
+	for (const AITeam::TeamMap::value_type& member : teamAgents) {
         _visualSensor->followSceneGraphNode( g_myTeamContainer, member.second->getUnitRef()->getBoundNode() );
     }
 
-    for ( const AITeam::TeamMap::value_type enemy : enemyMembers ) {
+	for (const AITeam::TeamMap::value_type& enemy : enemyMembers) {
         _visualSensor->followSceneGraphNode( g_enemyTeamContainer, enemy.second->getUnitRef()->getBoundNode() );
     }
         
@@ -223,11 +223,11 @@ bool WarSceneAISceneImpl::postAction(ActionType type, const WarSceneAction* warA
             pComp->setScale(prevScale / targetNode->getComponent<PhysicsComponent>()->getScale());
 
 			_workingMemory._hasEnemyFlag.value(true);
-            for ( const AITeam::TeamMap::value_type member : currentTeam->getTeamMembers() ) {
+			for (const AITeam::TeamMap::value_type& member : currentTeam->getTeamMembers()) {
                 _entity->sendMessage( member.second, HAVE_FLAG, _entity );
             }
 			const AITeam* const enemyTeam = AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
-            for ( const AITeam::TeamMap::value_type enemy : enemyTeam->getTeamMembers() ) {
+			for (const AITeam::TeamMap::value_type& enemy : enemyTeam->getTeamMembers()) {
                 _entity->sendMessage( enemy.second, ENEMY_HAS_FLAG, _entity );
             }
         } break;

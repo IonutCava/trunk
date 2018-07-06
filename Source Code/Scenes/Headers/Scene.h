@@ -89,20 +89,25 @@ public:
     void updateSceneState(const U64 deltaTime);
     /// Override this for Scene specific updates
     virtual void updateSceneStateInternal(const U64 deltaTime)  {}
-    inline SceneGraphNode*                 getSkySGN(I32 index)     {if(_skiesSGN.empty()) {return nullptr;} CLAMP<I32>(index,0,(I32)_skiesSGN.size() - 1); return _skiesSGN[index];}
     inline const vectorImpl<Task_ptr>&     getTasks()               {return _tasks;}
     inline SceneState&                     state()                  {return _sceneState;}
     inline SceneRenderState&               renderState()            {return _sceneState.getRenderState();}
     inline SceneGraph*					   getSceneGraph()	        {return _sceneGraph;}
 
-           void clearTasks();
-           void removeTask(Task_ptr taskItem);
-           void removeTask(U32 guid);
-           void addTask(Task_ptr taskItem);
+	void registerTask(Task_ptr taskItem);
+    void clearTasks();
+    void removeTask(I64 taskGUID);
+	inline void removeTask(Task_ptr taskItem) {
+		removeTask(taskItem->getGUID());
+	}
+
     inline void addModel(FileData& model)              {_modelDataArray.push(model);}
     inline void addTerrain(TerrainDescriptor* ter)     {_terrainInfoArray.push_back(ter);}
            void addPatch(vectorImpl<FileData>& data);
-           SceneGraphNode* addLight(Light* const lightItem, SceneGraphNode* const parentNode = nullptr);
+
+    SceneGraphNode* addLight(Light* const lightItem, SceneGraphNode* const parentNode = nullptr);
+	SceneGraphNode* addLight(LightType type, SceneGraphNode* const parentNode = nullptr);
+	SceneGraphNode* addSky(Sky* const skyItem);
 
     inline void cacheResolution(const vec2<U16>& newResolution) {
         _sceneState.getRenderState()._cachedResolution = newResolution;
@@ -145,7 +150,7 @@ protected:
     F32                            _LRSpeedFactor;
     ///Current selection
     SceneGraphNode* _currentSelection;
-
+	SceneGraphNode* _currentSky;
     ///This is the rendering function used to override the default one for the renderer.
     ///If this is empty, the renderer will use the scene's scenegraph render function
 	DELEGATE_CBK<> _renderCallback;
@@ -162,7 +167,6 @@ private:
     vectorImpl<Task_ptr> _tasks;
     ///Contains all game related info for the scene (wind speed, visibility ranges, etc)
     SceneState       _sceneState;
-    vectorImpl<SceneGraphNode* >   _skiesSGN;///<Add multiple skies that you can toggle through
 	vectorImpl<DELEGATE_CBK<> > _selectionChangeCallbacks;
 
 protected:
@@ -203,9 +207,7 @@ protected:
     /// Draw debug entities
     void debugDraw(const RenderStage& stage);
 
-    void               addDefaultSky();
-    DirectionalLight*  addDefaultLight();
-    
+   
     ///simple function to load the scene elements.
     inline bool SCENE_LOAD(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui, const bool contOnErrorRes, const bool contOnErrorTasks){
         if(!Scene::load(name,cameraMgr,gui)) {

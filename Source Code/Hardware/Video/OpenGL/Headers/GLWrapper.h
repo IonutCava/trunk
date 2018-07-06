@@ -240,6 +240,7 @@ private:
     /// /*sampler hash value*/ /*sampler object*/
     typedef hashMapImpl<size_t, glSamplerObject* > samplerObjectMap;
     static samplerObjectMap _samplerMap;
+	CEGUI::OpenGL3Renderer* _GUIGLrenderer;
 
 END_SINGLETON
 

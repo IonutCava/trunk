@@ -132,6 +132,7 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
 
 /// Revert everything that was set up in initRenderingAPI()
 void GFXDevice::closeRenderingApi() {
+	_sgnToDrawIDMap.clear();
     // Delete the internal shader
     RemoveResource(_HIZConstructProgram);
 	// Destroy our post processing system
@@ -141,7 +142,7 @@ void GFXDevice::closeRenderingApi() {
     PRINT_FN(Locale::get("CLOSING_RENDERER"));
     MemoryManager::SAFE_DELETE( _renderer );
     // Delete our default render state blocks
-    for ( RenderStateMap::value_type it : _stateBlockMap ) {
+	for (RenderStateMap::value_type& it : _stateBlockMap) {
         MemoryManager::SAFE_DELETE( it.second );
     }
     _stateBlockMap.clear();
@@ -188,8 +189,8 @@ void GFXDevice::closeRenderingApi() {
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to the screen, so we try to do some processing
 void GFXDevice::idle() {
     // Update the zPlanes if needed
-    _gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
-    _gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
+	_gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
+	_gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
     // Pass the idle call to the post processing system
     PostFX::getInstance().idle();
     // And to the shader manager

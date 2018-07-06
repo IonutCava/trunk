@@ -6,7 +6,7 @@
 
 namespace Divide {
 
-PointLight::PointLight(U8 slot, F32 range) : Light(slot,range,LIGHT_TYPE_POINT) 
+PointLight::PointLight(F32 range) : Light(range, LIGHT_TYPE_POINT) 
 {
 	_properties._position = vec4<F32>(0,0,0,1.0f);
     // +x

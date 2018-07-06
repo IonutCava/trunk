@@ -23,15 +23,11 @@ namespace Locale {
         }
         //Load all key-value pairs for the "language" section
         const CSimpleIni::TKeyVal * keyValue = ini.GetSection("language");
-        const TCHAR *keyName = 0;
-        const TCHAR *value = 0;
         if (keyValue) {
             //And add all pairs to the language table
             CSimpleIni::TKeyVal::const_iterator keyValuePairIt = keyValue->begin();
             for ( ;keyValuePairIt != keyValue->end(); ++keyValuePairIt) {
-                keyName = keyValuePairIt->first.pItem;
-                value   = keyValuePairIt->second;
-                hashAlg::emplace(_languageTable, stringImpl(keyName), stringImpl(value));
+				hashAlg::emplace(_languageTable, stringImpl(keyValuePairIt->first.pItem), stringImpl(keyValuePairIt->second));
             }
         }else{
             _languageTable[key] = defaultValue;

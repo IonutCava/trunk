@@ -34,6 +34,7 @@ Scene::Scene() :  Resource("temp_scene"),
                  _cookCollisionMeshesScheduled(false),
                  _paramHandler(ParamHandler::getInstance()),
                  _currentSelection(nullptr),
+				 _currentSky(nullptr),
                  _sceneGraph(New SceneGraph())
 {
     _mousePressed[OIS::MB_Left]    = false;
@@ -222,6 +223,10 @@ SceneGraphNode* const Scene::addParticleEmitter( const stringImpl& name, const P
 }
 
 SceneGraphNode* Scene::addLight( Light* const lightItem, SceneGraphNode* const parentNode ) {
+	assert(lightItem != nullptr);
+
+	lightItem->setCastShadows(lightItem->getType() != LIGHT_TYPE_POINT);
+
     SceneGraphNode* returnNode = nullptr;
     if ( parentNode ) {
         returnNode = parentNode->addNode( lightItem );
@@ -231,23 +236,22 @@ SceneGraphNode* Scene::addLight( Light* const lightItem, SceneGraphNode* const p
     return returnNode;
 }
 
-DirectionalLight* Scene::addDefaultLight() {
-    std::stringstream ss; ss << LightManager::getInstance().getLights().size();
-    ResourceDescriptor defaultLight( stringAlg::toBase( "Default directional light " + ss.str() ) );
-    defaultLight.setId( 0 ); //descriptor ID is not the same as light ID. This is the light's slot!!
-    defaultLight.setResourceLocation( "root" );
-    defaultLight.setEnumValue( LIGHT_TYPE_DIRECTIONAL );
-    DirectionalLight* l = dynamic_cast<DirectionalLight*>( CreateResource<Light>( defaultLight ) );
-    l->setCastShadows( true );
-    addLight( l );
-    vec3<F32> ambientColor( 0.1f, 0.1f, 0.1f );
-    LightManager::getInstance().setAmbientLight( ambientColor );
-    return l;
+SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode* const parentNode) {
+	const char* lightType = "";
+	switch (type) {
+		case LIGHT_TYPE_DIRECTIONAL: lightType = "Default_directional_light "; break;
+		case LIGHT_TYPE_POINT: lightType = "Default_point_light_"; break;
+		case LIGHT_TYPE_SPOT: lightType = "Default_spot_light_"; break;
+	}
+
+	ResourceDescriptor defaultLight(stringAlg::toBase(lightType + Util::toString(LightManager::getInstance().getLights().size())));
+	defaultLight.setEnumValue(type);
+	return addLight(CreateResource<Light>(defaultLight), parentNode);
 }
 
-void Scene::addDefaultSky() {
-    STUBBED( "ToDo: load skyboxes from XML" )
-    _skiesSGN.push_back( _sceneGraph->getRoot()->createNode( CreateResource<Sky>( ResourceDescriptor( "Default Sky" ) ) ) );
+SceneGraphNode* Scene::addSky(Sky* const skyItem) {
+	assert(skyItem != nullptr);
+	return _sceneGraph->getRoot()->createNode(skyItem);
 }
 
 bool Scene::preLoad() {
@@ -257,6 +261,7 @@ bool Scene::preLoad() {
 }
 
 bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const guiInterface){
+	STUBBED("ToDo: load skyboxes from XML")
     _GUI = guiInterface;
     _name = name;
     renderState()._cameraMgr = cameraMgr;
@@ -287,10 +292,12 @@ bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* co
         renderState().getCamera().setEye( vec3<F32>( 0, 50, 0 ) );
     }
 
+	vec3<F32> ambientColor(0.1f, 0.1f, 0.1f);
+	LightManager::getInstance().setAmbientLight(ambientColor);
+
     //Create an AI thread, but start it only if needed
     Kernel* kernel = Application::getInstance().getKernel();
-    _aiTask.reset(kernel->AddTask(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY, false, false,
-                                  DELEGATE_BIND(&AI::AIManager::update, &AI::AIManager::getInstance())));
+	_aiTask.reset(kernel->AddTask(getMsToUs(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY), 0, DELEGATE_BIND(&AI::AIManager::update, &AI::AIManager::getInstance())));
 
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &GUI::getInstance(), this));
     _loadComplete = true;
@@ -351,7 +358,6 @@ void Scene::clearObjects(){
     for ( U8 i = 0; i < _terrainInfoArray.size(); ++i ) {
         RemoveResource( _terrainInfoArray[i] );
     }
-    _skiesSGN.clear(); //< Skies are cleared in the SceneGraph
     _terrainInfoArray.clear();
     while ( !_modelDataArray.empty() ) {
         _modelDataArray.pop();
@@ -405,7 +411,7 @@ void Scene::deleteSelection(){
     }
 }
 
-void Scene::addTask(Task_ptr taskItem) {
+void Scene::registerTask(Task_ptr taskItem) {
     _tasks.push_back(taskItem);
 }
 
@@ -417,20 +423,9 @@ void Scene::clearTasks() {
     _tasks.clear();
 }
 
-void Scene::removeTask( Task_ptr taskItem ) {
-    taskItem->stopTask();
-
-    for ( vectorImpl<Task_ptr>::iterator it = _tasks.begin(); it != _tasks.end(); it++ ) {
-        if ( ( *it )->getGUID() == taskItem->getGUID() ) {
-            _tasks.erase( it );
-            return;
-        }
-    }
-}
-
-void Scene::removeTask( U32 guid ) {
-    for ( vectorImpl<Task_ptr>::iterator it = _tasks.begin(); it != _tasks.end(); it++ ) {
-        if ( ( *it )->getGUID() == guid ) {
+void Scene::removeTask(I64 taskGUID) {
+    for ( vectorImpl<Task_ptr>::iterator it = _tasks.begin(); it != _tasks.end(); ++it ) {
+		if ((*it)->getGUID() == taskGUID) {
             ( *it )->stopTask();
             _tasks.erase( it );
             return;

@@ -33,9 +33,10 @@ GUI::GUI() : _init(false),
 GUI::~GUI()
 {
     PRINT_FN(Locale::get("STOP_GUI"));
+	GUIEditor::destroyInstance();
     MemoryManager::SAFE_DELETE( _console );
     RemoveResource(_guiShader);
-	for (guiMap::value_type it : _guiStack) {
+	for (guiMap::value_type& it : _guiStack) {
         MemoryManager::SAFE_DELETE( it.second );
     }
     _guiStack.clear();
@@ -52,7 +53,7 @@ void GUI::onResize(const vec2<U16>& newResolution) {
 
     vec2<I32> difDimensions((I32)_cachedResolution.width - newResolution.width, (I32)_cachedResolution.height - newResolution.height);
 
-    for ( guiMap::value_type guiStackIterator : _guiStack ) {
+	for (guiMap::value_type& guiStackIterator : _guiStack) {
         guiStackIterator.second->onResize( difDimensions );
     }
 
@@ -67,7 +68,7 @@ void GUI::draw2D() {
     _guiShader->bind();
 
     GFXDevice& gfx = GFX_DEVICE;
-    for ( guiMap::value_type guiStackIterator : _guiStack ) {
+	for (const guiMap::value_type& guiStackIterator : _guiStack) {
         gfx.drawGUIElement( guiStackIterator.second );
     }
     const OIS::MouseState& mouseState = Input::InputInterface::getInstance().getMouse()->getMouseState();
@@ -203,7 +204,7 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     event.mousePoint.x = arg.state.X.abs;
     event.mousePoint.y = arg.state.Y.abs;
 
-    for ( guiMap::value_type guiStackIterator : _guiStack ) {
+	for (guiMap::value_type& guiStackIterator : _guiStack) {
         guiStackIterator.second->mouseMoved( event );
     }
 
@@ -219,7 +220,7 @@ bool GUI::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton bu
         if ( button == Input::MouseButton::MB_Left ) {
             GUIEvent event;
             event.mouseClickCount = 0;
-            for ( guiMap::value_type guiStackIterator : _guiStack ) {
+			for (guiMap::value_type& guiStackIterator : _guiStack) {
                 guiStackIterator.second->onMouseDown( event );
             }
         }
@@ -237,7 +238,7 @@ bool GUI::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton b
         if ( button == Input::MouseButton::MB_Left ) {
             GUIEvent event;
             event.mouseClickCount = 1;
-            for ( guiMap::value_type guiStackIterator : _guiStack ) {
+			for (guiMap::value_type& guiStackIterator : _guiStack) {
                 guiStackIterator.second->onMouseUp( event );
             }
         }
@@ -340,8 +341,9 @@ GUIFlash* GUI::addFlash(const stringImpl& id, stringImpl movie, const vec2<U32>&
 }
 
 GUIText* GUI::modifyText(const stringImpl& id, char* format, ...){
-    if(_guiStack.find(id) == _guiStack.end()) return nullptr;
-
+	if (_guiStack.find(id) == _guiStack.end()) {
+		return nullptr;
+	}
     va_list args;
     stringImpl fmt_text;
 
@@ -352,10 +354,10 @@ GUIText* GUI::modifyText(const stringImpl& id, char* format, ...){
     fmt_text.append(text);
     MemoryManager::SAFE_DELETE_ARRAY( text );
     va_end(args);
-
+	
     GUIElement* element = _guiStack[id];
     assert(element->getType() == GUI_TEXT);
-
+	
     GUIText* textElement = dynamic_cast<GUIText*>(element);
     textElement->_text = fmt_text;
     fmt_text.empty();

@@ -17,9 +17,15 @@ AnimEvaluator::AnimEvaluator( const aiAnimation* pAnim) {
 	_channels.resize(pAnim->mNumChannels);
 	for( U32 a = 0; a < pAnim->mNumChannels; a++){
 		_channels[a]._name = pAnim->mChannels[a]->mNodeName.data;
-		for(U32 i(0); i< pAnim->mChannels[a]->mNumPositionKeys; i++) _channels[a]._positionKeys.push_back(pAnim->mChannels[a]->mPositionKeys[i]);
-		for(U32 i(0); i< pAnim->mChannels[a]->mNumRotationKeys; i++) _channels[a]._rotationKeys.push_back(pAnim->mChannels[a]->mRotationKeys[i]);
-		for(U32 i(0); i< pAnim->mChannels[a]->mNumScalingKeys;  i++) _channels[a]._scalingKeys.push_back(pAnim->mChannels[a]->mScalingKeys[i]);
+		for (U32 i(0); i < pAnim->mChannels[a]->mNumPositionKeys; i++) {
+			_channels[a]._positionKeys.push_back(pAnim->mChannels[a]->mPositionKeys[i]);
+		}
+		for (U32 i(0); i < pAnim->mChannels[a]->mNumRotationKeys; i++) {
+			_channels[a]._rotationKeys.push_back(pAnim->mChannels[a]->mRotationKeys[i]);
+		}
+		for (U32 i(0); i < pAnim->mChannels[a]->mNumScalingKeys; i++) {
+			_channels[a]._scalingKeys.push_back(pAnim->mChannels[a]->mScalingKeys[i]);
+		}
 		_channels[a]._numPositionKeys = pAnim->mChannels[a]->mNumPositionKeys;
 		_channels[a]._numRotationKeys = pAnim->mChannels[a]->mNumRotationKeys;
 		_channels[a]._numScalingKeys  = pAnim->mChannels[a]->mNumScalingKeys;

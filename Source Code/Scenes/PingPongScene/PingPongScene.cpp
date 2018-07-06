@@ -19,7 +19,7 @@ void PingPongScene::preRender(){
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
     LightManager::getInstance().getLight(0)->setDirection(_sunvector);
-    getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
+	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, vec4<F32>(1.0f));
 }
 //<<end copy-paste
 
@@ -50,10 +50,10 @@ void PingPongScene::processTasks(const U64 deltaTime){
     _sunvector = vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y),
         -cosf(_sunAngle.y),
         -sinf(_sunAngle.x) * sinf(_sunAngle.y));
-    /*
-    LightManager::getInstance().getLight(0)->setDirection(_sunvector);
-    getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
-*/
+    
+    _sun->setDirection(_sunvector);
+    _currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sun->getDiffuseColor());
+
 
     Scene::processTasks(deltaTime);
 }
@@ -75,8 +75,9 @@ void PingPongScene::serveBall(){
 
     if(getTasks().empty()){//A maximum of 1 Tasks allowed
         Kernel* kernel = Application::getInstance().getKernel();
-        Task_ptr newGame(kernel->AddTask(30, true, false, DELEGATE_BIND(&PingPongScene::test, this, rand() % 5, TYPE_INTEGER)));
-        addTask(newGame);
+		Task_ptr newGame(kernel->AddTask(getMsToUs(30), 0, DELEGATE_BIND(&PingPongScene::test, this, rand() % 5, TYPE_INTEGER)));
+		registerTask(newGame);
+		newGame->startTask();
     }
 }
 
@@ -236,8 +237,8 @@ bool PingPongScene::load(const stringImpl& name, CameraManager* const cameraMgr,
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     //Add a light
-    addDefaultLight();
-    addDefaultSky();
+	_sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
+	_currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     _freeFlyCam = &renderState().getCamera();
     _paddleCam = New FreeFlyCamera();
     _paddleCam->fromCamera(*_freeFlyCam);
@@ -264,7 +265,6 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     _ball->getMaterial()->setSpecular(vec4<F32>(0.774597f,0.774597f,0.774597f,1.0f));
 
     /*ResourceDescriptor tempLight("Light Omni");
-    tempLight.setId(2);
     tempLight.setEnumValue(LIGHT_TYPE_POINT);
     Light* light = CreateResource<Light>(tempLight);
     addLight(light, _sceneGraph->getRoot());

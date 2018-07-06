@@ -13,13 +13,13 @@ Light* ImplResourceLoader<Light>::operator()(){
         case -1:
         case LIGHT_TYPE_POINT:
         default:
-            ptr = New PointLight(_descriptor.getId());
+            ptr = New PointLight();
         break;
         case LIGHT_TYPE_DIRECTIONAL:
-            ptr = New DirectionalLight(_descriptor.getId());
+            ptr = New DirectionalLight();
             break;
         case LIGHT_TYPE_SPOT:
-            ptr = New SpotLight(_descriptor.getId());
+            ptr = New SpotLight();
             break;
     };
     assert(ptr != nullptr);

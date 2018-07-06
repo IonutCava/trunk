@@ -1,9 +1,8 @@
 #include "core.h"
 #include "Core/Headers/Application.h"
 
-#ifdef HIDE_DEBUG_CONSOLE
-    #pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
-#endif
+///Comment this out to show the debug console
+#pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 
 int main(int argc, char **argv) {
 

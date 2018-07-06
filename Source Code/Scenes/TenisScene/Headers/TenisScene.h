@@ -49,7 +49,9 @@ public:
         _floor(nullptr),
         _net(nullptr),
         _ballSGN(nullptr),
-        _ball(nullptr){
+        _ball(nullptr),
+		_sun(nullptr)
+	{
         _sideImpulseFactor = 0;
         _directionTeam1ToTeam2 = true;
         _upwardsDirection = true;
@@ -89,6 +91,7 @@ private:
     SceneGraphNode* _ballSGN;
     SceneGraphNode* _net;
     SceneGraphNode* _floor;
+	DirectionalLight* _sun;
 
 private: //Game stuff
     mutable SharedLock _gameLock;

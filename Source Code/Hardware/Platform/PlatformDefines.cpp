@@ -11,7 +11,7 @@ namespace Divide {
         void log_new( void* p, size_t size, const char* zFile, I32 nLine ) {
 #       if defined(_DEBUG)
             if ( MemoryTracker::Ready ) {
-                AllocTracer.Add( p, size, zFile, nLine );
+                //AllocTracer.Add( p, size, zFile, nLine );
             }
 #       endif
         }
@@ -19,7 +19,7 @@ namespace Divide {
         void log_delete( void* p ) {
 #       if defined(_DEBUG)
             if ( MemoryTracker::Ready ) {
-                AllocTracer.Remove( p );
+                //AllocTracer.Remove( p );
             }
 #       endif
         }
