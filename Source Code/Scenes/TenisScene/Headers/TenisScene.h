@@ -67,10 +67,10 @@ class TenisScene : public Scene {
    private:
     vec3<F32> _sunvector;
     std::shared_ptr<Sphere3D> _ball;
-    SceneGraphNode_wptr _ballSGN;
-    SceneGraphNode_wptr _net;
-    SceneGraphNode_wptr _floor;
-    SceneGraphNode_wptr _sun;
+    SceneGraphNode* _ballSGN;
+    SceneGraphNode* _net;
+    SceneGraphNode* _floor;
+    SceneGraphNode* _sun;
 
    private:  // Game stuff
     mutable SharedLock _gameLock;
@@ -91,7 +91,7 @@ class TenisScene : public Scene {
     mutable std::atomic_int _scoreTeam2;
     F32 _sideImpulseFactor;
     
-    SceneGraphNode_wptr _aiPlayer[4];
+    SceneGraphNode* _aiPlayer[4];
     /// Team's are factions for AIEntites so they can manage friend/foe
     /// situations
     AI::AITeam* _team1, *_team2;

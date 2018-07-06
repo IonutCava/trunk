@@ -28,7 +28,7 @@ void BoundsComponent::onBoundsChange(const BoundingBox& nodeBounds) {
 
 void BoundsComponent::update(const U64 deltaTimeUS) {
     if (_boundingBoxDirty) {
-        SceneGraphNode_ptr parent = _parentSGN.getParent().lock();
+        SceneGraphNode* parent = _parentSGN.getParent();
         if (parent) {
             parent->get<BoundsComponent>()->flagBoundingBoxDirty();
         }

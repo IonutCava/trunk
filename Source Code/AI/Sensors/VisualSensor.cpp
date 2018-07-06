@@ -25,32 +25,31 @@ VisualSensor::~VisualSensor()
     _nodePositionsMap.clear();
 }
 
-void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode_wptr node) {
+void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* node) {
 
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
 
-    SceneGraphNode_ptr sgnNode(node.lock());
-    assert(sgnNode);
+    assert(node);
 
     if (container != std::end(_nodeContainerMap)) {
         std::pair<NodeContainer::const_iterator, bool> result;
         result = hashAlg::insert(container->second,
-                                 sgnNode->getGUID(),
+                                 node->getGUID(),
                                  node);
         if (!result.second) {
             Console::errorfn("VisualSensor: Added the same node to follow twice!");
         }
     } else {
         hashAlg::insert(_nodeContainerMap[containerID],
-                        sgnNode->getGUID(),
+                        node->getGUID(),
                         node);
        
     }
 
     NodePositions& positions = _nodePositionsMap[containerID];
     hashAlg::insert(positions,
-                    sgnNode->getGUID(),
-                    sgnNode->get<TransformComponent>()->getPosition());
+                    node->getGUID(),
+                    node->get<TransformComponent>()->getPosition());
 }
 
 void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
@@ -76,7 +75,7 @@ void VisualSensor::update(const U64 deltaTimeUS) {
     for (const NodeContainerMap::value_type& container : _nodeContainerMap) {
         NodePositions& positions = _nodePositionsMap[container.first];
         for (const NodeContainer::value_type& entry : container.second) {
-            SceneGraphNode_ptr sgn(entry.second.lock());
+            SceneGraphNode* sgn(entry.second);
             if (sgn) {
                 positions[entry.first] = sgn->get<TransformComponent>()->getPosition();
             }
@@ -84,7 +83,7 @@ void VisualSensor::update(const U64 deltaTimeUS) {
     }
 }
 
-SceneGraphNode_wptr VisualSensor::getClosestNode(U32 containerID) {
+SceneGraphNode* VisualSensor::getClosestNode(U32 containerID) {
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
     if (container != std::end(_nodeContainerMap)) {
         NodePositions& positions = _nodePositionsMap[container->first];
@@ -110,7 +109,7 @@ SceneGraphNode_wptr VisualSensor::getClosestNode(U32 containerID) {
         }
     }
 
-    return SceneGraphNode_wptr();
+    return nullptr;
 }
 
 F32 VisualSensor::getDistanceToNodeSq(U32 containerID, U64 nodeGUID) {

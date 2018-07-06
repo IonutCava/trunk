@@ -55,6 +55,7 @@ namespace Divide {
         static const char* ToggleWindowNames[] = { "Toggle Window 1","Toggle Window 2","Toggle Window 3","Toggle Window 4" };
 
         void TabContentProvider(ImGui::TabWindow::TabLabel* tab, ImGui::TabWindow& parent, void* userPtr) {
+            ACKNOWLEDGE_UNUSED(parent);
             PanelManager* mgr = reinterpret_cast<PanelManager*>(userPtr);
             DisplayWindow& appWindow = mgr->context().activeWindow();
 
@@ -284,6 +285,8 @@ namespace Divide {
         }
 
         void TabLabelPopupMenuProvider(ImGui::TabWindow::TabLabel* tab, ImGui::TabWindow& parent, void* userPtr) {
+            ACKNOWLEDGE_UNUSED(parent);
+            ACKNOWLEDGE_UNUSED(userPtr);
             if (ImGui::BeginPopup(ImGui::TabWindow::GetTabLabelPopupMenuName())) {
                 ImGui::PushID(tab);
                 ImGui::Text("\"%.*s\" Menu", (int)(strlen(tab->getLabel()) - (tab->getModified() ? 1 : 0)), tab->getLabel());
@@ -771,17 +774,17 @@ namespace Divide {
     }
 
     void  PanelManager::setPanelManagerBoundsToIncludeMainMenuIfPresent(int displayX, int displayY) {
-        if (displayX <= 0) displayX = ImGui::GetIO().DisplaySize.x;
-        if (displayY <= 0) displayY = ImGui::GetIO().DisplaySize.y;
+        if (displayX <= 0) displayX = (int)ImGui::GetIO().DisplaySize.x;
+        if (displayY <= 0) displayY = (int)ImGui::GetIO().DisplaySize.y;
         ImVec4 bounds(0, 0, (float)displayX, (float)displayY);   // (0,0,-1,-1) defaults to (0,0,io.DisplaySize.x,io.DisplaySize.y)
         const float mainMenuHeight = calcMainMenuHeight();
-        bounds = ImVec4(0, mainMenuHeight, displayX, displayY - mainMenuHeight);
+        bounds = ImVec4(0, mainMenuHeight, to_F32(displayX), to_F32(displayY) - mainMenuHeight);
         
         _manager->setDisplayPortion(bounds);
     }
 
     void PanelManager::resize(int w, int h) {
-        static ImVec2 initialSize(w, h);
+        static ImVec2 initialSize((float)w, (float)h);
         _manager->setToolbarsScaling((float)w / initialSize.x, (float)h / initialSize.y);  // Scales the PanelManager bounmds based on the initialSize
         setPanelManagerBoundsToIncludeMainMenuIfPresent(w, h);                  // This line is only necessary if we have a global menu bar
     }

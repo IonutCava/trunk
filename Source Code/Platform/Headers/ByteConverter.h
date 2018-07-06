@@ -35,9 +35,9 @@ inline void convert(char *val) {
 }
 
 template <>
-inline void convert<0>(char *) {}
+inline void convert<0>(char *) noexcept {}
 template <>
-inline void convert<1>(char *) {}  // ignore central byte
+inline void convert<1>(char *) noexcept {}  // ignore central byte
 
 template <typename T>
 inline void apply(T *val) {
@@ -66,10 +66,10 @@ void EndianConvert(T *);  // will generate link error
 template <typename T>
 void EndianConvertReverse(T *);  // will generate link error
 
-inline void EndianConvert(U8 &) {}
-inline void EndianConvert(I8 &) {}
-inline void EndianConvertReverse(U8 &) {}
-inline void EndianConvertReverse(I8 &) {}
+inline void EndianConvert(U8 &) noexcept {}
+inline void EndianConvert(I8 &) noexcept {}
+inline void EndianConvertReverse(U8 &) noexcept {}
+inline void EndianConvertReverse(I8 &) noexcept {}
 
 };  // namespace Divide
 #endif

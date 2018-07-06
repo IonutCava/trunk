@@ -33,7 +33,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
                                 to_base(SGNComponent::ComponentType::BOUNDS);
 
     REGISTER_FRAME_LISTENER(this, 1);
-    _root = std::make_shared<SceneGraphNode>(*this, PhysicsGroup::GROUP_IGNORE, _rootNode, "ROOT", rootMask);
+    _root = SceneGraphNode::CreateSceneGraphNode(*this, PhysicsGroup::GROUP_IGNORE, _rootNode, "ROOT", rootMask);
     _root->get<BoundsComponent>()->lockBBTransforms(true);
     Attorney::SceneNodeSceneGraph::postLoad(*_rootNode, *_root);
     onNodeAdd(*_root);
@@ -73,6 +73,8 @@ void SceneGraph::unload()
     }
 
     _root->processDeleteQueue();
+
+    ECS::ECS_Engine->GetEntityManager()->RemoveDestroyedEntities();
 }
 
 
@@ -92,13 +94,12 @@ void SceneGraph::unregisterNode(I64 guid, SceneGraphNode::UsageContext usage) {
 void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
     I64 guid = oldNode.getGUID();
 
-    vectorImpl<SceneGraphNode_wptr>& nodesByType = _nodesByType[to_base(oldNode.getNode()->getType())];
+    vectorImpl<SceneGraphNode*>& nodesByType = _nodesByType[to_base(oldNode.getNode()->getType())];
 
     nodesByType.erase(std::remove_if(std::begin(nodesByType), std::end(nodesByType), 
-                                     [guid](SceneGraphNode_wptr node)-> bool
+                                     [guid](SceneGraphNode* node)-> bool
                                      {
-                                         SceneGraphNode_ptr nodePtr = node.lock();
-                                         return nodePtr && nodePtr->getGUID() == guid;
+                                         return node && node->getGUID() == guid;
                                      }),
                       std::end(nodesByType));
 
@@ -109,23 +110,22 @@ void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
     Attorney::SceneGraph::onNodeDestroy(_parentScene, oldNode);
 
     _allNodes.erase(std::remove_if(std::begin(_allNodes), std::end(_allNodes),
-                                   [guid](SceneGraphNode_wptr node)-> bool 
+                                   [guid](SceneGraphNode* node)-> bool 
                                    {
-                                       SceneGraphNode_ptr nodePtr = node.lock();
-                                       return nodePtr && nodePtr->getGUID() == guid;
+                                       return node && node->getGUID() == guid;
                                    }),
                     std::end(_allNodes));
 }
 
 void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
-    SceneGraphNode_ptr newNodePtr(newNode.shared_from_this());
+    SceneGraphNode* newNodePtr = &newNode;
 
     _allNodes.push_back(newNodePtr);
     _nodesByType[to_base(newNodePtr->getNode()->getType())].push_back(newNodePtr);
     
     if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);
-        _octreeChanged = _octree->addNode(newNode.shared_from_this());
+        _octreeChanged = _octree->addNode(newNodePtr);
     }
 }
 
@@ -143,18 +143,15 @@ bool SceneGraph::removeNodesByType(SceneNodeType nodeType) {
     return getRoot().removeNodesByType(nodeType);
 }
 
-bool SceneGraph::removeNode(SceneGraphNode_wptr node) {
-    SceneGraphNode_ptr sgn = node.lock();
-    if (sgn) {
-        SceneGraphNode_ptr parent = sgn->getParent().lock();
+bool SceneGraph::removeNode(SceneGraphNode* node) {
+    if (node) {
+        SceneGraphNode* parent = node->getParent();
         if (parent) {
-            if (!parent->removeNode(*sgn)) {
+            if (!parent->removeNode(*node)) {
                 return false;
             }
         }
 
-        assert(sgn.unique());
-        sgn.reset();
         return true;
     }
 
@@ -232,7 +229,7 @@ void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<I64>& 
     /*if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);
         U32 filter = to_base(SceneNodeType::TYPE_OBJECT3D);
-        SceneGraphNode_ptr collision = _octree->nearestIntersection(ray, start, end, filter)._intersectedObject1.lock();
+        SceneGraphNode* collision = _octree->nearestIntersection(ray, start, end, filter)._intersectedObject1.lock();
         if (collision) {
             Console::d_printfn("Octree ray cast [ %s ]", collision->getName().c_str());
         }
@@ -246,7 +243,7 @@ void SceneGraph::postLoad() {
 }
 
 
-const vectorImpl<SceneGraphNode_wptr>& SceneGraph::getNodesByType(SceneNodeType type) const {
+const vectorImpl<SceneGraphNode*>& SceneGraph::getNodesByType(SceneNodeType type) const {
     return _nodesByType[to_base(type)];
 }
 

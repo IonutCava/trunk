@@ -82,7 +82,7 @@ constexpr U64 _ID(const char* str)
     return hash_one(str[0], str + 1, basis);
 }
 
-FORCE_INLINE U64 _ID_RT(const char* str)
+FORCE_INLINE U64 _ID_RT(const char* str) noexcept
 {
     U64 hash = basis;
     while (*str != 0) {
@@ -97,7 +97,7 @@ FORCE_INLINE U64 _ID_RT(const stringImpl& str) {
     return _ID_RT(str.c_str());
 }
 
-FORCE_INLINE bufferPtr bufferOffset(size_t offset) {
+FORCE_INLINE bufferPtr bufferOffset(size_t offset) noexcept {
     return ((char *)NULL + (offset));
 }
 
@@ -170,7 +170,7 @@ constexpr T toBit(const T X) {
     return 1 << X;
 }
 
-inline U32 powerOfTwo(U32 X) {
+inline U32 powerOfTwo(U32 X) noexcept {
     U32 r = 0;
     while (X >>= 1) {
         r++;
@@ -178,20 +178,13 @@ inline U32 powerOfTwo(U32 X) {
     return r;
 }
 
-inline bool isPowerOfTwo(U32 x) {
+constexpr bool isPowerOfTwo(U32 x) noexcept {
     return !(x == 0) && !(x & (x - 1));
 }
 
-static inline size_t realign_offset(size_t offset, size_t align) {
+constexpr size_t realign_offset(size_t offset, size_t align) noexcept {
     return (offset + align - 1) & ~(align - 1);
 }
-
-#if !defined(CPP_11_SUPPORT)
-template<typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args) {
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
-#endif
 
 template<class T>
 std::unique_ptr<T> to_unique(T*&& t) {
@@ -205,90 +198,6 @@ std::unique_ptr<T> to_unique(std::unique_ptr<T> t) {
     return std::move(t);
 
 }
-#if !defined(CPP_14_SUPPORT)
-template <bool B, class T = void>
-using enable_if_t = typename enable_if<B, T>::type;
-
-namespace std {
-    // TEMPLATE FUNCTIONS cbegin AND cend
-    template<class _Container>
-    auto inline cbegin(const _Container& _Cont) -> decltype(::std::begin(_Cont))
-    {   / get beginning of sequence
-        return (::std::begin(_Cont));
-    }
-
-    template<class _Container>
-    auto inline cend(const _Container& _Cont) -> decltype(::std::end(_Cont))
-    {   // get end of sequence
-        return (::std::end(_Cont));
-    }
-
-    // TEMPLATE FUNCTIONS rbegin AND rend
-    template<class _Container>
-    auto inline rbegin(_Container& _Cont) -> decltype(_Cont.rbegin())
-    {   // get beginning of reversed sequence
-        return (_Cont.rbegin());
-    }
-
-    template<class _Container>
-    auto inline rbegin(const _Container& _Cont) -> decltype(_Cont.rbegin())
-    {   // get beginning of reversed sequence
-        return (_Cont.rbegin());
-    }
-
-    template<class _Container>
-    auto inline rend(_Container& _Cont) -> decltype(_Cont.rend())
-    {   // get end of reversed sequence
-        return (_Cont.rend());
-    }
-
-    template<class _Container>
-    auto inline rend(const _Container& _Cont) -> decltype(_Cont.rend())
-    {   // get end of reversed sequence
-        return (_Cont.rend());
-    }
-
-    template<class _Ty,
-        size_t _Size> inline
-        reverse_iterator<_Ty *> rbegin(_Ty(&_Array)[_Size])
-    {   // get beginning of reversed array
-        return (reverse_iterator<_Ty *>(_Array + _Size));
-    }
-
-    template<class _Ty,
-        size_t _Size> inline
-        reverse_iterator<_Ty *> rend(_Ty(&_Array)[_Size])
-    {   // get end of reversed array
-        return (reverse_iterator<_Ty *>(_Array));
-    }
-
-    template<class _Elem> inline
-        reverse_iterator<const _Elem *> rbegin(initializer_list<_Elem> _Ilist)
-    {   // get beginning of reversed sequence
-        return (reverse_iterator<const _Elem *>(_Ilist.end()));
-    }
-
-    template<class _Elem> inline
-        reverse_iterator<const _Elem *> rend(initializer_list<_Elem> _Ilist)
-    {   // get end of reversed sequence
-        return (reverse_iterator<const _Elem *>(_Ilist.begin()));
-    }
-
-    // TEMPLATE FUNCTIONS crbegin AND crend
-    template<class _Container>
-    auto inline crbegin(const _Container& _Cont) -> decltype(::std::rbegin(_Cont))
-    {   // get beginning of reversed sequence
-        return (::std::rbegin(_Cont));
-    }
-
-    template<class _Container>
-    auto inline crend(const _Container& _Cont) -> decltype(::std::rend(_Cont))
-    {   // get end of reversed sequence
-        return (::std::rend(_Cont));
-    }
-
-}; //namespace std
-#endif
 
 template <typename T>
 struct reversion_wrapper { T& iterable; };
@@ -386,22 +295,22 @@ http://randomascii.wordpress.com/2012/01/11/tricks-with-the-floating-point-forma
 for the potential portability problems with the union and bit-fields below.
 */
 union Float_t {
-    Float_t(F32 num = 0.0f) : f(num) {}
+    Float_t(F32 num = 0.0f) noexcept : f(num) {}
     // Portable extraction of components.
-    bool Negative() const { return (i >> 31) != 0; }
-    I32 RawMantissa() const { return i & ((1 << 23) - 1); }
-    I32 RawExponent() const { return (i >> 23) & 0xFF; }
+    bool Negative() const noexcept { return (i >> 31) != 0; }
+    I32 RawMantissa() const noexcept { return i & ((1 << 23) - 1); }
+    I32 RawExponent() const noexcept { return (i >> 23) & 0xFF; }
 
     I32 i;
     F32 f;
 };
 
 union Double_t {
-    Double_t(D64 num = 0.0) : d(num) {}
+    Double_t(D64 num = 0.0) noexcept : d(num) {}
     // Portable extraction of components.
-    bool Negative() const { return (i >> 63) != 0; }
-    I64 RawMantissa() const { return i & ((1LL << 52) - 1); }
-    I64 RawExponent() const { return (i >> 52) & 0x7FF; }
+    bool Negative() const noexcept { return (i >> 63) != 0; }
+    I64 RawMantissa() const noexcept { return i & ((1LL << 52) - 1); }
+    I64 RawExponent() const noexcept { return (i >> 52) & 0x7FF; }
 
     I64 i;
     D64 d;
@@ -409,13 +318,13 @@ union Double_t {
 
 inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
-    F32 absDiff = std::fabs(A - B);
+    const F32 absDiff = std::fabs(A - B);
     if (absDiff <= maxDiff) {
         return true;
     }
 
-    Float_t uA(A);
-    Float_t uB(B);
+    const Float_t uA(A);
+    const Float_t uB(B);
 
     // Different signs means they do not match.
     if (uA.Negative() != uB.Negative()) {
@@ -428,13 +337,13 @@ inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) {
 
 inline bool AlmostEqualUlpsAndAbs(D64 A, D64 B, D64 maxDiff, I32 maxUlpsDiff) {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
-    D64 absDiff = std::fabs(A - B);
+    const D64 absDiff = std::fabs(A - B);
     if (absDiff <= maxDiff) {
         return true;
     }
 
-    Double_t uA(A);
-    Double_t uB(B);
+    const Double_t uA(A);
+    const Double_t uB(B);
 
     // Different signs means they do not match.
     if (uA.Negative() != uB.Negative()) {
@@ -445,30 +354,30 @@ inline bool AlmostEqualUlpsAndAbs(D64 A, D64 B, D64 maxDiff, I32 maxUlpsDiff) {
     return (std::abs(uA.i - uB.i) <= maxUlpsDiff);
 }
 
-inline bool AlmostEqualRelativeAndAbs(F32 A, F32 B, F32 maxDiff, F32 maxRelDiff) {
+inline bool AlmostEqualRelativeAndAbs(F32 A, F32 B, F32 maxDiff, F32 maxRelDiff)  noexcept {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
-    F32 diff = std::fabs(A - B);
+    const F32 diff = std::fabs(A - B);
     if (diff <= maxDiff) {
         return true;
     }
 
     A = std::fabs(A);
     B = std::fabs(B);
-    F32 largest = (B > A) ? B : A;
+    const F32 largest = (B > A) ? B : A;
 
     return (diff <= largest * maxRelDiff);
 }
 
-inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, D64 maxDiff, D64 maxRelDiff) {
+inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, D64 maxDiff, D64 maxRelDiff) noexcept {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
-    D64 diff = std::fabs(A - B);
+    const D64 diff = std::fabs(A - B);
     if (diff <= maxDiff) {
         return true;
     }
 
     A = std::fabs(A);
     B = std::fabs(B);
-    D64 largest = (B > A) ? B : A;
+    const D64 largest = (B > A) ? B : A;
 
     return (diff <= largest * maxRelDiff);
 }
@@ -511,24 +420,24 @@ inline bool IS_ZERO(T X) {
     return X == 0;
 }
 template <>
-inline bool IS_ZERO(F32 X) {
+inline bool IS_ZERO(F32 X) noexcept {
     return (std::fabs(X) < EPSILON_F32);
 }
 template <>
-inline bool IS_ZERO(D64 X) {
+inline bool IS_ZERO(D64 X) noexcept {
     return (std::fabs(X) < EPSILON_D64);
 }
 
 template <typename T>
-inline bool IS_TOLERANCE(T X, T TOLERANCE) {
+inline bool IS_TOLERANCE(T X, T TOLERANCE) noexcept {
     return (std::abs(X) <= TOLERANCE);
 }
 template <>
-inline bool IS_TOLERANCE(F32 X, F32 TOLERANCE) {
+inline bool IS_TOLERANCE(F32 X, F32 TOLERANCE) noexcept {
     return (std::fabs(X) <= TOLERANCE);
 }
 template <>
-inline bool IS_TOLERANCE(D64 X, D64 TOLERANCE) {
+inline bool IS_TOLERANCE(D64 X, D64 TOLERANCE) noexcept {
     return (std::fabs(X) <= TOLERANCE);
 }
 
@@ -706,7 +615,7 @@ FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "") {
     DIVIDE_ASSERT(false, failMessage);
 }
 
-FORCE_INLINE void DIVIDE_ASSERT(const bool expression) {
+FORCE_INLINE void DIVIDE_ASSERT(const bool expression) noexcept {
     if (Config::Build::IS_DEBUG_BUILD) {
         assert(expression);
     }
@@ -714,27 +623,21 @@ FORCE_INLINE void DIVIDE_ASSERT(const bool expression) {
 }
 
 template <typename... Args>
-#if defined(CPP_14_SUPPORT)
 [[deprecated("Please use lambda expressions instead!")]]
-#endif
 auto DELEGATE_BIND(Args&&... args)
     -> decltype(std::bind(std::forward<Args>(args)...)) {
     return std::bind(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-#if defined(CPP_14_SUPPORT)
 [[deprecated("Please use lambda expressions instead!")]]
-#endif
 auto DELEGATE_REF(Args&&... args)
     -> decltype(std::ref(std::forward<Args>(args)...)) {
     return std::ref(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-#if defined(CPP_14_SUPPORT)
 [[deprecated("Please use lambda expressions instead!")]]
-#endif
 auto DELEGATE_CREF(Args&&... args)
     -> decltype(std::cref(std::forward<Args>(args)...)) {
     return std::cref(std::forward<Args>(args)...);

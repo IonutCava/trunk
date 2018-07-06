@@ -64,7 +64,7 @@ class TaskPool {
     void setTaskCallback(const TaskHandle& handle,
                          const DELEGATE_CBK<void>& callback);
 
-    inline U32 workerThreadCount() const {
+    inline U32 workerThreadCount() const noexcept {
         return _workerThreadCount;
     }
 

@@ -41,7 +41,7 @@ namespace ECS
 
 		namespace Internal
 		{
-#if !ECS_DISABLE_LOGGING
+#if !defined(ECS_DISABLE_LOGGING)
 
 			class  LoggerManager;
 			extern LoggerManager*				ECSLoggerManager;

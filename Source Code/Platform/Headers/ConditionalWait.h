@@ -124,7 +124,7 @@ namespace Divide {
     assert_type<D64>(timeoutMS);                                               \
                                                                                \
     if (timeoutMS >= 0.0) {                                                    \
-        D64 start = Time::ElapsedMilliseconds(true);                           \
+        const D64 start = Time::ElapsedMilliseconds(true);                     \
                                                                                \
         while (!(condition)) {                                                 \
             cbk();                                                             \

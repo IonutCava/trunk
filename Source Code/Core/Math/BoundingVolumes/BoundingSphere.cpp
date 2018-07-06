@@ -3,13 +3,13 @@
 #include "Headers/BoundingSphere.h"
 
 namespace Divide {
-BoundingSphere::BoundingSphere()
+BoundingSphere::BoundingSphere() noexcept
     : _visibility(false), _dirty(true), _radius(0.0f)
 {
     _center.reset();
 }
 
-BoundingSphere::BoundingSphere(const vec3<F32>& center, F32 radius)
+BoundingSphere::BoundingSphere(const vec3<F32>& center, F32 radius) noexcept
     : _visibility(false),
       _dirty(true),
       _center(center),
@@ -17,13 +17,13 @@ BoundingSphere::BoundingSphere(const vec3<F32>& center, F32 radius)
 {
 }
 
-BoundingSphere::BoundingSphere(const vectorImpl<vec3<F32> >& points)
+BoundingSphere::BoundingSphere(const vectorImpl<vec3<F32> >& points) noexcept
     : BoundingSphere()
 {
     createFromPoints(points);
 }
 
-BoundingSphere::BoundingSphere(const BoundingSphere& s) {
+BoundingSphere::BoundingSphere(const BoundingSphere& s) noexcept {
     // WriteLock w_lock(_lock);
     this->_visibility = s._visibility;
     this->_dirty = s._dirty;
@@ -31,7 +31,7 @@ BoundingSphere::BoundingSphere(const BoundingSphere& s) {
     this->_radius = s._radius;
 }
 
-void BoundingSphere::operator=(const BoundingSphere& s) {
+void BoundingSphere::operator=(const BoundingSphere& s) noexcept {
     // WriteLock w_lock(_lock);
     this->_visibility = s._visibility;
     this->_dirty = s._dirty;
@@ -56,7 +56,7 @@ bool BoundingSphere::containsBoundingBox(const BoundingBox& AABB) const {
 }
 
 bool BoundingSphere::containsPoint(const vec3<F32>& point) const {
-    F32 distanceSQ = _center.distanceSquared(point);
+    const F32 distanceSQ = _center.distanceSquared(point);
     return distanceSQ <= (_radius * _radius);
 }
 

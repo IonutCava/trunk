@@ -8,7 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
-#if !ECS_DISABLE_LOGGING
+#if !defined(ECS_DISABLE_LOGGING)
 
 #ifndef __LOGGER_H__
 #define __LOGGER_H__

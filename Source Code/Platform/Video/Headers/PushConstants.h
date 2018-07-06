@@ -83,7 +83,8 @@ struct PushConstant {
                  bool flag = false)
         : _binding(binding),
           _type(type),
-          _flag(flag)
+          _flag(flag),
+          _transpose(false)
     {
         _values.push_back(value);
     }
@@ -95,7 +96,8 @@ struct PushConstant {
         : _binding(binding),
           _type(type),
           _values(values),
-          _flag(flag)
+          _flag(flag),
+          _transpose(false)
     {
     }
 

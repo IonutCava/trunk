@@ -40,9 +40,10 @@ inline bool BoundingBox::containsPoint(const vec3<F32>& point) const {
             IS_LEQUAL(point.x, _max.x) && IS_LEQUAL(point.y, _max.y) && IS_LEQUAL(point.z, _max.z));
 }
 
-inline bool BoundingBox::compare(const BoundingBox& bb) const {
+inline bool BoundingBox::compare(const BoundingBox& bb) const  noexcept {
     /*ReadLock r_lock(_lock);*/
-    return _GUID == bb._GUID;
+    return _min == bb._min &&
+           _max == bb._max;
 }
 
 inline bool BoundingBox::operator==(const BoundingBox& B) const {
@@ -54,7 +55,7 @@ inline bool BoundingBox::operator!=(const BoundingBox& B) const {
 }
 
 inline void BoundingBox::createFromPoints(const vectorImpl<vec3<F32>>& points) {
-    for (vec3<F32> p : points) {
+    for (const vec3<F32>& p : points) {
         add(p);
     }
 }
@@ -64,7 +65,7 @@ inline void BoundingBox::createFromSphere(const vec3<F32>& center, F32 radius) {
     _min.set(center - radius);
 }
 
-inline void BoundingBox::add(const vec3<F32>& v) {
+inline void BoundingBox::add(const vec3<F32>& v) noexcept {
     // WriteLock w_lock(_lock);
     if (v.x > _max.x) {
         _max.x = v.x;
@@ -86,7 +87,7 @@ inline void BoundingBox::add(const vec3<F32>& v) {
     }
 };
 
-inline void BoundingBox::add(const BoundingBox& bb) {
+inline void BoundingBox::add(const BoundingBox& bb) noexcept {
     // WriteLock w_lock(_lock);
     _max.set(std::max(bb._max.x, _max.x),
              std::max(bb._max.y, _max.y),
@@ -97,19 +98,19 @@ inline void BoundingBox::add(const BoundingBox& bb) {
              std::min(bb._min.z, _min.z));
 }
 
-inline void BoundingBox::translate(const vec3<F32>& v) {
+inline void BoundingBox::translate(const vec3<F32>& v) noexcept {
     // WriteLock w_lock(_lock);
     _min += v;
     _max += v;
 }
 
-inline void BoundingBox::multiply(F32 factor) {
+inline void BoundingBox::multiply(F32 factor) noexcept {
     // WriteLock w_lock(_lock);
     _min *= factor;
     _max *= factor;
 }
 
-inline void BoundingBox::multiply(const vec3<F32>& v) {
+inline void BoundingBox::multiply(const vec3<F32>& v) noexcept {
     // WriteLock w_lock(_lock);
     _min.x *= v.x;
     _min.y *= v.y;
@@ -119,111 +120,111 @@ inline void BoundingBox::multiply(const vec3<F32>& v) {
     _max.z *= v.z;
 }
 
-inline void BoundingBox::multiplyMax(const vec3<F32>& v) {
+inline void BoundingBox::multiplyMax(const vec3<F32>& v) noexcept {
     // WriteLock w_lock(_lock);
     _max.x *= v.x;
     _max.y *= v.y;
     _max.z *= v.z;
 }
 
-inline void BoundingBox::multiplyMin(const vec3<F32>& v) {
+inline void BoundingBox::multiplyMin(const vec3<F32>& v) noexcept {
     // WriteLock w_lock(_lock);
     _min.x *= v.x;
     _min.y *= v.y;
     _min.z *= v.z;
 }
 
-inline const vec3<F32>& BoundingBox::getMin() const {
+inline const vec3<F32>& BoundingBox::getMin() const noexcept {
     /*ReadLock r_lock(_lock);*/
     return _min;
 }
 
-inline const vec3<F32>& BoundingBox::getMax() const {
+inline const vec3<F32>& BoundingBox::getMax() const noexcept {
     /*ReadLock r_lock(_lock);*/
     return _max;
 }
 
-inline vec3<F32> BoundingBox::getCenter() const {
+inline vec3<F32> BoundingBox::getCenter() const noexcept {
     /*ReadLock r_lock(_lock);*/
     return (_max + _min) * 0.5f;
 }
 
-inline vec3<F32> BoundingBox::getExtent() const {
+inline vec3<F32> BoundingBox::getExtent() const noexcept {
     /*ReadLock r_lock(_lock);*/
     return _max - _min;
 }
 
-inline vec3<F32> BoundingBox::getHalfExtent() const {
+inline vec3<F32> BoundingBox::getHalfExtent() const noexcept {
     /*ReadLock r_lock(_lock);*/
     return (_max - _min) * 0.5f;
 }
 
-inline F32 BoundingBox::getWidth() const {
+inline F32 BoundingBox::getWidth() const noexcept {
     /*ReadLock r_lock(_lock);*/
     return _max.x - _min.x;
 }
 
-inline F32 BoundingBox::getHeight() const {
+inline F32 BoundingBox::getHeight() const noexcept {
     /*ReadLock r_lock(_lock);*/
     return _max.y - _min.y;
 }
 
-inline F32 BoundingBox::getDepth() const {
+inline F32 BoundingBox::getDepth() const noexcept {
     /*ReadLock r_lock(_lock);*/
     return _max.z - _min.z;
 }
 
-inline void BoundingBox::setMin(const vec3<F32>& min) {
+inline void BoundingBox::setMin(const vec3<F32>& min) noexcept {
     setMin(min.x, min.y, min.z);
 }
 
-inline void BoundingBox::setMax(const vec3<F32>& max) {
+inline void BoundingBox::setMax(const vec3<F32>& max) noexcept {
     setMax(max.x, max.y, max.z);
 }
 
-inline void BoundingBox::set(const BoundingBox& bb) { 
+inline void BoundingBox::set(const BoundingBox& bb) noexcept {
     set(bb._min, bb._max); 
 }
 
-inline void BoundingBox::set(F32 min, F32 max) {
+inline void BoundingBox::set(F32 min, F32 max) noexcept {
     _min.set(min);
     _max.set(max);
 }
 
-inline void BoundingBox::set(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) {
+inline void BoundingBox::set(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) noexcept {
     _min.set(minX, minY, minZ);
     _max.set(maxX, maxY, maxZ);
 }
 
-inline void BoundingBox::setMin(F32 min) {
+inline void BoundingBox::setMin(F32 min) noexcept {
     _min.set(min);
 }
 
-inline void BoundingBox::setMin(F32 minX, F32 minY, F32 minZ) {
+inline void BoundingBox::setMin(F32 minX, F32 minY, F32 minZ) noexcept {
     _min.set(minX, minY, minZ);
 }
 
-inline void BoundingBox::setMax(F32 max) {
+inline void BoundingBox::setMax(F32 max) noexcept {
     _max.set(max);
 }
 
-inline void BoundingBox::setMax(F32 maxX, F32 maxY, F32 maxZ) {
+inline void BoundingBox::setMax(F32 maxX, F32 maxY, F32 maxZ) noexcept {
     _max.set(maxX, maxY, maxZ);
 }
 
-inline void BoundingBox::set(const vec3<F32>& min, const vec3<F32>& max) {
+inline void BoundingBox::set(const vec3<F32>& min, const vec3<F32>& max) noexcept {
     /*WriteLock w_lock(_lock);*/
     _min = min;
     _max = max;
 }
 
-inline void BoundingBox::reset() {
+inline void BoundingBox::reset() noexcept {
     /*WriteLock w_lock(_lock);*/
     _min.set( std::numeric_limits<F32>::max());
     _max.set(-std::numeric_limits<F32>::max());
 }
 
-inline std::array<vec3<F32>, 8> BoundingBox::getPoints() const {
+inline std::array<vec3<F32>, 8> BoundingBox::getPoints() const noexcept {
     return std::array<vec3<F32>, 8>
     {
         (_min.x, _min.y, _min.z),

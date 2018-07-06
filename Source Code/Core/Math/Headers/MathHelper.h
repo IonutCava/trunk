@@ -87,17 +87,17 @@ using DefaultDistribution = typename std::conditional<std::is_integral<T>::value
 template <typename T, 
           typename Engine = std::mt19937_64,
           typename Distribution = DefaultDistribution<T>>
-T Random(T min, T max);
+T Random(T min, T max) noexcept;
 
 template <typename T,
           typename Engine = std::mt19937_64,
           typename Distribution = DefaultDistribution<T>>
-T Random(T max);
+T Random(T max) noexcept;
 
 template <typename T,
           typename Engine = std::mt19937_64,
           typename Distribution = DefaultDistribution<T>>
-T Random();
+T Random() noexcept;
 
 template<typename Engine = std::mt19937_64>
 void SeedRandom();
@@ -117,9 +117,9 @@ template<typename Type>
 inline typename std::enable_if<std::is_enum<Type>::value, void>::type
 ClearBit(U32& bitMask, const Type bit);
 
-bool BitCompare(const U32 bitMask, const U32 bit);
-inline void SetBit(U32& bitMask, const U32 bit);
-inline void ClearBit(U32& bitMask, const U32 bit);
+constexpr bool BitCompare(const U32 bitMask, const U32 bit) noexcept;
+constexpr void SetBit(U32& bitMask, const U32 bit) noexcept;
+constexpr void ClearBit(U32& bitMask, const U32 bit) noexcept;
 
 /// Clamps value n between min and max
 template <typename T>
@@ -151,32 +151,32 @@ bool COORDS_IN_RECT(T input_x, T input_y, const Rect<T>& rect);
 template<typename T>
 bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect);
 
-U32 nextPOW2(U32 n);
+constexpr U32 nextPOW2(U32 n) noexcept;
 
 // Calculate the smalles NxN matrix that can hold the specified
 // number of elements. Returns N
-U32 minSquareMatrixSize(U32 elementCount);
+constexpr U32 minSquareMatrixSize(U32 elementCount) noexcept;
 
 template <typename T, typename U>
 T Lerp(const T v1, const T v2, const U t);
 
 template <typename T>
-T Sqrt(T input);
+T Sqrt(T input) noexcept;
 
 template <typename T, typename U>
 T Sqrt(U input);
 
 ///Helper methods to go from a float to packed char and back
-U8 FLOAT_TO_CHAR(const F32 value);
-U8 FLOAT_TO_CHAR_SNORM(const F32 value);
-F32 CHAR_TO_FLOAT(const U8 value);
-F32 CHAR_TO_FLOAT_SNORM(const U8 value);
+constexpr U8 FLOAT_TO_CHAR(const F32 value) noexcept;
+constexpr U8 FLOAT_TO_CHAR_SNORM(const F32 value) noexcept;
+constexpr F32 CHAR_TO_FLOAT(const U8 value) noexcept;
+constexpr F32 CHAR_TO_FLOAT_SNORM(const U8 value) noexcept;
 
 /// Helper method to emulate GLSL
-F32 FRACT(const F32 floatValue);
+F32 FRACT(const F32 floatValue) noexcept;
 
 // Pack 3 values into 1 float
-F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z);
+F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z) noexcept;
 
 // UnPack 3 values from 1 float
 void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b);
@@ -317,32 +317,32 @@ template <typename T, typename U>
 T Nanoseconds(const U a);
 
 template <typename T = D64, typename U>
-T NanosecondsToSeconds(const U a);
+T NanosecondsToSeconds(const U a) noexcept;
 template <typename T = D64, typename U>
-T NanosecondsToMilliseconds(const U a);
+T NanosecondsToMilliseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T NanosecondsToMicroseconds(const U a);
+T NanosecondsToMicroseconds(const U a) noexcept;
 
 template <typename T = D64, typename U>
-T MicrosecondsToSeconds(const U a);
+T MicrosecondsToSeconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T MicrosecondsToMilliseconds(const U a);
+T MicrosecondsToMilliseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T MicrosecondsToNanoseconds(const U a);
+T MicrosecondsToNanoseconds(const U a) noexcept;
 
 template <typename T = D64, typename U>
-T MillisecondsToSeconds(const U a);
+T MillisecondsToSeconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T MillisecondsToMicroseconds(const U a);
+T MillisecondsToMicroseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T MillisecondsToNanoseconds(const U a);
+T MillisecondsToNanoseconds(const U a) noexcept;
 
 template <typename T = D64, typename U>
-T SecondsToMilliseconds(const U a);
+T SecondsToMilliseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T SecondsToMicroseconds(const U a);
+T SecondsToMicroseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T SecondsToNanoseconds(const U a);
+T SecondsToNanoseconds(const U a) noexcept;
 
 };  // namespace Time
 
@@ -395,7 +395,7 @@ becomes 170.
 */
 void Normalize(vec3<F32>& inputRotation, bool degrees = false,
                bool normYaw = true, bool normPitch = true,
-               bool normRoll = true);
+               bool normRoll = true) noexcept;
 
 vec4<U8>  ToByteColour(const vec4<F32>& floatColour);
 vec3<U8>  ToByteColour(const vec3<F32>& floatColour);

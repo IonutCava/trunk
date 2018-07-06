@@ -94,13 +94,8 @@ protected:
     }
 
    protected:
-    Singleton()
-    {
-    }
-
-    virtual ~Singleton() 
-    {
-    }
+    Singleton() = default;
+    virtual ~Singleton() = default;
 
    private:
     Singleton(Singleton&) = delete;

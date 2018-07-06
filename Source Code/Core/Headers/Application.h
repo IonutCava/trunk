@@ -39,7 +39,7 @@ namespace Divide {
 class Task;
 class Kernel;
 class Configuration;
-const char* getErrorCodeName(ErrorCode code);
+const char* getErrorCodeName(ErrorCode code) noexcept;
   
 namespace Attorney {
     class ApplicationTask;

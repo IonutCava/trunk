@@ -76,12 +76,12 @@ void TenisScene::processTasks(const U64 deltaTimeUS) {
         vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-    _sun.lock()->get<TransformComponent>()->setPosition(_sunvector);
+    _sun->get<TransformComponent>()->setPosition(_sunvector);
 
-    PushConstants& constants = _currentSky.lock()->get<RenderingComponent>()->pushConstants();
+    PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
     constants.set("enable_sun", PushConstantType::BOOL, true);
     constants.set("sun_vector", PushConstantType::VEC3, _sunvector);
-    constants.set("sun_colour", PushConstantType::VEC3, _sun.lock()->getNode<Light>()->getDiffuseColour());
+    constants.set("sun_colour", PushConstantType::VEC3, _sun->getNode<Light>()->getDiffuseColour());
 }
 
 void TenisScene::resetGame() {
@@ -99,7 +99,7 @@ void TenisScene::resetGame() {
     _applySideImpulse = false;
     _sideImpulseFactor = 0;
     WriteLock w_lock(_gameLock);
-    _ballSGN.lock()->get<TransformComponent>()->setPosition(vec3<F32>(
+    _ballSGN->get<TransformComponent>()->setPosition(vec3<F32>(
         (Random(0, 10) >= 5) ? 3.0f : -3.0f, 0.2f, _lostTeam1 ? -7.0f : 7.0f));
     _directionTeam1ToTeam2 = !_lostTeam1;
     _lostTeam1 = false;
@@ -119,15 +119,15 @@ void TenisScene::startGame(I64 btnGUID) {
 }
 
 void TenisScene::checkCollisions() {
-    BoundingBox ballBB = _ballSGN.lock()->get<BoundsComponent>()->getBoundingBox();
-    BoundingBox floorBB = _floor.lock()->get<BoundsComponent>()->getBoundingBox();
+    BoundingBox ballBB = _ballSGN->get<BoundsComponent>()->getBoundingBox();
+    BoundingBox floorBB = _floor->get<BoundsComponent>()->getBoundingBox();
 
     WriteLock w_lock(_gameLock);
-    _collisionPlayer1 = ballBB.collision(_aiPlayer[0].lock()->get<BoundsComponent>()->getBoundingBox());
-    _collisionPlayer2 = ballBB.collision(_aiPlayer[1].lock()->get<BoundsComponent>()->getBoundingBox());
-    _collisionPlayer3 = ballBB.collision(_aiPlayer[2].lock()->get<BoundsComponent>()->getBoundingBox());
-    _collisionPlayer4 = ballBB.collision(_aiPlayer[3].lock()->get<BoundsComponent>()->getBoundingBox());
-    _collisionNet = ballBB.collision(_net.lock()->get<BoundsComponent>()->getBoundingBox());
+    _collisionPlayer1 = ballBB.collision(_aiPlayer[0]->get<BoundsComponent>()->getBoundingBox());
+    _collisionPlayer2 = ballBB.collision(_aiPlayer[1]->get<BoundsComponent>()->getBoundingBox());
+    _collisionPlayer3 = ballBB.collision(_aiPlayer[2]->get<BoundsComponent>()->getBoundingBox());
+    _collisionPlayer4 = ballBB.collision(_aiPlayer[3]->get<BoundsComponent>()->getBoundingBox());
+    _collisionNet = ballBB.collision(_net->get<BoundsComponent>()->getBoundingBox());
     _collisionFloor = floorBB.collision(ballBB);
 }
 
@@ -144,14 +144,14 @@ void TenisScene::playGame(const Task& parentTask, AnyParam a, CallbackParam b) {
         UpgradableReadLock ur_lock(_gameLock);
         // Store by copy (thread-safe) current ball position (getPosition()) should
         // be threadsafe
-        vec3<F32> netPosition = _net.lock()->get<TransformComponent>()->getPosition();
-        vec3<F32> ballPosition = _ballSGN.lock()->get<TransformComponent>()->getPosition();
-        vec3<F32> player1Pos = _aiPlayer[0].lock()->get<TransformComponent>()->getPosition();
-        vec3<F32> player2Pos = _aiPlayer[1].lock()->get<TransformComponent>()->getPosition();
-        vec3<F32> player3Pos = _aiPlayer[2].lock()->get<TransformComponent>()->getPosition();
-        vec3<F32> player4Pos = _aiPlayer[3].lock()->get<TransformComponent>()->getPosition();
-        vec3<F32> netBBMax = _net.lock()->get<BoundsComponent>()->getBoundingBox().getMax();
-        vec3<F32> netBBMin = _net.lock()->get<BoundsComponent>()->getBoundingBox().getMin();
+        vec3<F32> netPosition = _net->get<TransformComponent>()->getPosition();
+        vec3<F32> ballPosition = _ballSGN->get<TransformComponent>()->getPosition();
+        vec3<F32> player1Pos = _aiPlayer[0]->get<TransformComponent>()->getPosition();
+        vec3<F32> player2Pos = _aiPlayer[1]->get<TransformComponent>()->getPosition();
+        vec3<F32> player3Pos = _aiPlayer[2]->get<TransformComponent>()->getPosition();
+        vec3<F32> player4Pos = _aiPlayer[3]->get<TransformComponent>()->getPosition();
+        vec3<F32> netBBMax = _net->get<BoundsComponent>()->getBoundingBox().getMax();
+        vec3<F32> netBBMin = _net->get<BoundsComponent>()->getBoundingBox().getMin();
 
         UpgradeToWriteLock uw_lock(ur_lock);
         // Is the ball traveling from team 1 to team 2?
@@ -164,9 +164,9 @@ void TenisScene::playGame(const Task& parentTask, AnyParam a, CallbackParam b) {
 
         // After we finish our computations, apply the new transform
         // setPosition/getPosition should be thread-safe
-        _ballSGN.lock()->get<TransformComponent>()->setPosition(ballPosition);
+        _ballSGN->get<TransformComponent>()->setPosition(ballPosition);
         // Add a spin to the ball just for fun ...
-        _ballSGN.lock()->get<TransformComponent>()->rotate(
+        _ballSGN->get<TransformComponent>()->rotate(
             vec3<F32>(ballPosition.z, 1, 1));
 
         //----------------------COLLISIONS------------------------------//
@@ -302,7 +302,7 @@ bool TenisScene::load(const stringImpl& name) {
     //});
 
     _floor = _sceneGraph->findNode("Floor");
-    _floor.lock()->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, false);
+    _floor->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, false);
 
     _aiManager->pauseUpdate(false);
     return loadState;
@@ -310,12 +310,12 @@ bool TenisScene::load(const stringImpl& name) {
 
 bool TenisScene::initializeAI(bool continueOnErrors) {
     bool state = false;
-    SceneGraphNode_ptr player[4];
+    SceneGraphNode* player[4];
     //----------------------------ARTIFICIAL INTELLIGENCE------------------------------//
     AI::AIEntity* aiPlayer[4];
     for (U8 i = 0; i < 4; ++i) {
         stringImpl nodeName = Util::StringFormat("Player%d", i);
-        player[i] = _sceneGraph->findNode(nodeName).lock();
+        player[i] = _sceneGraph->findNode(nodeName);
         player[i]->setSelectable(true);
         UnitComponent* unitComp = player[i]->get<UnitComponent>();
 
@@ -356,7 +356,7 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
 bool TenisScene::deinitializeAI(bool continueOnErrors) {
     _aiManager->pauseUpdate(true);
     for (U8 i = 0; i < 4; ++i) {
-        _aiManager->unregisterEntity(_aiPlayer[i].lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity());
+        _aiManager->unregisterEntity(_aiPlayer[i]->get<UnitComponent>()->getUnit<NPC>()->getAIEntity());
     }
     MemoryManager::DELETE(_team1);
     MemoryManager::DELETE(_team2);
@@ -380,9 +380,8 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
     _ballSGN = _sceneGraph->getRoot().addNode(_ball, normalMask, PhysicsGroup::GROUP_KINEMATIC, "TenisBallSGN");
-    _ballSGN.lock()->get<TransformComponent>()->translate(
-        vec3<F32>(3.0f, 0.2f, 7.0f));
-    _ballSGN.lock()->setSelectable(true);
+    _ballSGN->get<TransformComponent>()->translate(vec3<F32>(3.0f, 0.2f, 7.0f));
+    _ballSGN->setSelectable(true);
 
 
     _guiTimersMS.push_back(0.0);  // Fps

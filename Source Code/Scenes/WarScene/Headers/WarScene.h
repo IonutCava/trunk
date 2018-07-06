@@ -72,14 +72,14 @@ class WarScene : public Scene {
     bool resetUnits();
     void checkGameCompletion();
     void weaponCollision(const RigidBodyComponent& collider);
-    AI::AIEntity* findAI(SceneGraphNode_cptr node);
+    AI::AIEntity* findAI(SceneGraphNode* node);
 
    private:
-    SceneGraphNode_wptr _sun;
+    SceneGraphNode* _sun;
     GUIMessageBox* _infoBox;
-    vectorImpl<SceneGraphNode_wptr> _lightNodes;
-    vectorImpl<std::pair<SceneGraphNode_wptr, bool>> _lightNodes2;
-    vectorImpl<SceneGraphNode_wptr> _lightNodes3;
+    vectorImpl<SceneGraphNode*> _lightNodes;
+    vectorImpl<std::pair<SceneGraphNode*, bool>> _lightNodes2;
+    vectorImpl<SceneGraphNode*> _lightNodes3;
 
    private:  // Game
     U32  _timeLimitMinutes;
@@ -90,11 +90,11 @@ class WarScene : public Scene {
     bool _resetUnits;
     U64 _lastNavMeshBuildTime;
     /// NPC's are the actual game entities
-    vectorImpl<SceneGraphNode_wptr> _armyNPCs[2];
+    vectorImpl<SceneGraphNode*> _armyNPCs[2];
     IMPrimitive* _targetLines;
-    SceneGraphNode_wptr _flag[2];
-    SceneGraphNode_wptr _particleEmitter;
-    SceneGraphNode_wptr _firstPersonWeapon;
+    SceneGraphNode* _flag[2];
+    SceneGraphNode* _particleEmitter;
+    SceneGraphNode* _firstPersonWeapon;
     /// Teams are factions for AIEntites so they can manage friend/foe situations
     AI::AITeam* _faction[2];
 };

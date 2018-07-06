@@ -186,7 +186,7 @@ class Terrain : public Object3D {
     ShaderProgram_ptr _planeShader;
     ShaderProgram_ptr _planeDepthShader;
     vec2<F32> _terrainScaleFactor;
-    SceneGraphNode_wptr _vegetationGrassNode;
+    SceneGraphNode* _vegetationGrassNode;
     vectorImpl<TerrainChunk*> _terrainChunks;
     TerrainTextureLayer* _terrainTextures;
 };

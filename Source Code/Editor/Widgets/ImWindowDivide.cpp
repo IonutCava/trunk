@@ -88,7 +88,8 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* parent)
 ImVec2 ImwWindowDivide::GetPosition() const
 {
     if (_pWindow != nullptr) {
-        return ImVec2(_pWindow->getPosition().x, _pWindow->getPosition().y);
+        return ImVec2(to_F32(_pWindow->getPosition().x),
+                      to_F32(_pWindow->getPosition().y));
     }
     return ImVec2(1.0f, 1.0f);
 }

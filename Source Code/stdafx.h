@@ -60,8 +60,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #   endif
 #endif 
 
-#if !defined(CPP_11_SUPPORT)
-#error "Divide Framework requires C++11 support at a minimum!."
+#if !defined(CPP_14_SUPPORT)
+#error "Divide Framework requires C++14 support at a minimum!."
 #endif 
 
 #ifndef _USE_MATH_DEFINES
@@ -102,6 +102,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <array>
 #include <set>
 #include <new>
+#include <gsl/gsl>
 
 #if !defined(CPP_17_SUPPORT)
 #include "Core/Headers/cdigginsAny.h"

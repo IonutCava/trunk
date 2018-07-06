@@ -241,7 +241,7 @@ class Light : public SceneNode {
     bool _drawImpostor;
     /// Used for debug rendering
     std::shared_ptr<ImpostorSphere> _impostor;
-    SceneGraphNode_wptr _impostorSGN;
+    SceneGraphNode* _impostorSGN;
     ShadowCameraPool _shadowCameras;
     LightPool& _parentPool;
     bool _enabled;

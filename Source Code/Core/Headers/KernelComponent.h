@@ -40,16 +40,14 @@ class Kernel;
 class KernelComponent : public NonCopyable {
 
 public:
-    KernelComponent(Kernel& parent) : _parent(parent)
+    KernelComponent(Kernel& parent) noexcept : _parent(parent)
     {
     }
 
-    virtual ~KernelComponent()
-    {
-    }
+    virtual ~KernelComponent() = default;
 
-    inline Kernel& parent() { return _parent; }
-    inline const Kernel& parent() const { return _parent; }
+    inline Kernel& parent()  noexcept { return _parent; }
+    inline const Kernel& parent() const  noexcept { return _parent; }
 
 protected:
     Kernel& _parent;

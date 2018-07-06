@@ -36,21 +36,21 @@ namespace Divide {
 
 namespace {
     //ref: http://stackoverflow.com/questions/18542894/how-to-multiply-two-quaternions-with-minimal-instructions?lq=1
-    inline static __m128 multiplynew(__m128 xyzw, __m128 abcd) {
+    inline static __m128 multiplynew(__m128 xyzw, __m128 abcd) noexcept {
         /* The product of two quaternions is:                                 */
         /* (X,Y,Z,W) = (xd+yc-zb+wa, -xc+yd+za+wb, xb-ya+zd+wc, -xa-yb-zc+wd) */
-        __m128 wzyx = _mm_shuffle_ps(xyzw, xyzw, _MM_SHUFFLE(0, 1, 2, 3));
-        __m128 baba = _mm_shuffle_ps(abcd, abcd, _MM_SHUFFLE(0, 1, 0, 1));
-        __m128 dcdc = _mm_shuffle_ps(abcd, abcd, _MM_SHUFFLE(2, 3, 2, 3));
+        const __m128 wzyx = _mm_shuffle_ps(xyzw, xyzw, _MM_SHUFFLE(0, 1, 2, 3));
+        const __m128 baba = _mm_shuffle_ps(abcd, abcd, _MM_SHUFFLE(0, 1, 0, 1));
+        const __m128 dcdc = _mm_shuffle_ps(abcd, abcd, _MM_SHUFFLE(2, 3, 2, 3));
 
         /* variable names below are for parts of componens of result (X,Y,Z,W) */
 
         /* nX stands for -X and similarly for the other components             */
         /* znxwy  = (xb - ya, zb - wa, wd - zc, yd - xc) */
-        __m128 ZnXWY = _mm_hsub_ps(_mm_mul_ps(xyzw, baba), _mm_mul_ps(wzyx, dcdc));
+        const __m128 ZnXWY = _mm_hsub_ps(_mm_mul_ps(xyzw, baba), _mm_mul_ps(wzyx, dcdc));
 
         /* xzynw  = (xd + yc, zd + wc, wb + za, yb + xa) */
-        __m128 XZYnW = _mm_hadd_ps(_mm_mul_ps(xyzw, dcdc), _mm_mul_ps(wzyx, baba));
+        const __m128 XZYnW = _mm_hadd_ps(_mm_mul_ps(xyzw, dcdc), _mm_mul_ps(wzyx, baba));
 
         /* _mm_shuffle_ps(XZYnW, ZnXWY, _MM_SHUFFLE(3,2,1,0)) */
         /*      = (xd + yc, zd + wc, wd - zc, yd - xc)        */
@@ -60,8 +60,8 @@ namespace {
         /* _mm_addsub_ps adds elements 1 and 3 and subtracts elements 0 and 2, so we get: */
         /* _mm_addsub_ps(*, *) = (xd+yc-zb+wa, xb-ya+zd+wc, wd-zc+yb+xa, yd-xc+wb+za)     */
 
-        __m128 XZWY = _mm_addsub_ps(_mm_shuffle_ps(XZYnW, ZnXWY, _MM_SHUFFLE(3, 2, 1, 0)),
-                                    _mm_shuffle_ps(ZnXWY, XZYnW, _MM_SHUFFLE(2, 3, 0, 1)));
+        const __m128 XZWY = _mm_addsub_ps(_mm_shuffle_ps(XZYnW, ZnXWY, _MM_SHUFFLE(3, 2, 1, 0)),
+                                          _mm_shuffle_ps(ZnXWY, XZYnW, _MM_SHUFFLE(2, 3, 0, 1)));
 
         /* now we only need to shuffle the components in place and return the result      */
         return _mm_shuffle_ps(XZWY, XZWY, _MM_SHUFFLE(2, 1, 3, 0));
@@ -69,50 +69,50 @@ namespace {
 };
 
 template <typename T>
-Quaternion<T>::Quaternion()
+Quaternion<T>::Quaternion() noexcept
 {
     identity();
 }
 
 template <typename T>
-Quaternion<T>::Quaternion(T x, T y, T z, T w)
+Quaternion<T>::Quaternion(T x, T y, T z, T w) noexcept
     : _elements(x, y, z, w)
 {
 }
 
 template <typename T>
-Quaternion<T>::Quaternion(const vec4<T>& values)
+Quaternion<T>::Quaternion(const vec4<T>& values) noexcept
     : _elements(values)
 {
 }
 
 template <typename T>
 template <typename U>
-Quaternion<T>::Quaternion(__m128 reg, typename std::enable_if<std::is_same<U, F32>::value>::type*)
+Quaternion<T>::Quaternion(__m128 reg, typename std::enable_if<std::is_same<U, F32>::value>::type*) noexcept
     : _elements(reg)
 {
 }
 
 template <typename T>
-Quaternion<T>::Quaternion(const mat3<T>& rotationMatrix)
+Quaternion<T>::Quaternion(const mat3<T>& rotationMatrix) noexcept
 {
     fromMatrix(rotationMatrix);
 }
 
 template <typename T>
-Quaternion<T>::Quaternion(const vec3<T>& axis, Angle::DEGREES<T> angle)
+Quaternion<T>::Quaternion(const vec3<T>& axis, Angle::DEGREES<T> angle) noexcept
 {
     fromAxisAngle(axis, angle);
 }
 
 template <typename T>
-Quaternion<T>::Quaternion(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, Angle::DEGREES<T> roll)
+Quaternion<T>::Quaternion(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, Angle::DEGREES<T> roll) noexcept
 {
     fromEuler(pitch, yaw, roll);
 }
 
 template <typename T>
-Quaternion<T>::Quaternion(const Quaternion& q)
+Quaternion<T>::Quaternion(const Quaternion& q) noexcept
     : _elements(q._elements)
 {
 }
@@ -141,7 +141,7 @@ inline T Quaternion<T>::magnituteSq() const {
 template <typename T>
 inline bool Quaternion<T>::compare(const Quaternion<T>& rq, Angle::DEGREES<T> tolerance) const {
     T angleRad = Angle::to_RADIANS((T)std::acos(to_D64(dot(rq))));
-    F32 toleranceRad = Angle::to_RADIANS(tolerance);
+    const F32 toleranceRad = Angle::to_RADIANS(tolerance);
 
     return IS_TOLERANCE(angleRad, toleranceRad) || COMPARE_TOLERANCE(angleRad, to_F32(M_PI), toleranceRad);
 }
@@ -282,7 +282,7 @@ inline void Quaternion<T>::slerp(const Quaternion<T>& q, F32 t) {
 
 template <typename T>
 void Quaternion<T>::slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 t) {
-    F32 k0, k1;
+    F32 k0 = 0.0f, k1 = 0.0f;
     T cosomega = q0.dot(q1);
     Quaternion<T> q;
     if (cosomega < 0.0) {
@@ -293,8 +293,8 @@ void Quaternion<T>::slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 
     }
 
     if (1.0 - cosomega > 1e-6) {
-        F32 omega = to_F32(std::acos(cosomega));
-        F32 sinomega = to_F32(std::sin(omega));
+        const F32 omega = to_F32(std::acos(cosomega));
+        const F32 sinomega = to_F32(std::sin(omega));
         k0 = to_F32(std::sin((1.0f - t) * omega) / sinomega);
         k1 = to_F32(std::sin(t * omega) / sinomega);
     } else {
@@ -306,7 +306,7 @@ void Quaternion<T>::slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 
 
 template <typename T>
 void Quaternion<T>::fromAxisAngle(const vec3<T>& v, Angle::DEGREES<T> angle) {
-    Angle::RADIANS<T> angleHAlfRad = Angle::to_RADIANS(angle) * 0.5f;
+    const Angle::RADIANS<T> angleHAlfRad = Angle::to_RADIANS(angle) * 0.5f;
 
     vec3<T> vn(v);
     vn.normalize();
@@ -321,19 +321,19 @@ inline void Quaternion<T>::fromEuler(const vec3<Angle::DEGREES<T>>& v) {
 
 template <typename T>
 void Quaternion<T>::fromEuler(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, Angle::DEGREES<T> roll) {
-    Angle::RADIANS<T> attitude = Angle::to_RADIANS(pitch);
-    Angle::RADIANS<T> heading = Angle::to_RADIANS(yaw);
-    Angle::RADIANS<T> bank = Angle::to_RADIANS(roll);
+    const Angle::RADIANS<T> attitude = Angle::to_RADIANS(pitch);
+    const Angle::RADIANS<T> heading = Angle::to_RADIANS(yaw);
+    const Angle::RADIANS<T> bank = Angle::to_RADIANS(roll);
 
-    D64 c1 = std::cos(heading * 0.5);
-    D64 s1 = std::sin(heading * 0.5);
-    D64 c2 = std::cos(attitude * 0.5);
-    D64 s2 = std::sin(attitude * 0.5);
-    D64 c3 = std::cos(bank * 0.5);
-    D64 s3 = std::sin(bank * 0.5);
+    const D64 c1 = std::cos(heading * 0.5);
+    const D64 s1 = std::sin(heading * 0.5);
+    const D64 c2 = std::cos(attitude * 0.5);
+    const D64 s2 = std::sin(attitude * 0.5);
+    const D64 c3 = std::cos(bank * 0.5);
+    const D64 s3 = std::sin(bank * 0.5);
 
-    D64 c1c2 = c1 * c2;
-    D64 s1s2 = s1 * s2;
+    const D64 c1c2 = c1 * c2;
+    const D64 s1s2 = s1 * s2;
 
     W(static_cast<T>(c1c2 * c3 - s1s2 * s3));
     X(static_cast<T>(c1c2 * s3 + s1s2 * c3));
@@ -378,7 +378,7 @@ void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
 
     T fTrace = rotationMatrix.m[0][0] + rotationMatrix.m[1][1] +
                rotationMatrix.m[2][2];
-    T fRoot;
+    T fRoot = 0.0f;
 
     if (fTrace > 0.0) {
         // |w| > 1/2, may as well choose w > 1/2
@@ -589,42 +589,42 @@ vec3<T> Quaternion<T>::zAxis() const {
 }
 
 template <typename T>
-inline F32 Quaternion<T>::X() const {
+inline F32 Quaternion<T>::X() const noexcept {
     return _elements.x;
 }
 
 template <typename T>
-inline F32 Quaternion<T>::Y() const {
+inline F32 Quaternion<T>::Y() const noexcept {
     return _elements.y;
 }
 
 template <typename T>
-inline F32 Quaternion<T>::Z() const {
+inline F32 Quaternion<T>::Z() const noexcept {
     return _elements.z;
 }
 
 template <typename T>
-inline F32 Quaternion<T>::W() const {
+inline F32 Quaternion<T>::W() const noexcept {
     return _elements.w;
 }
 
 template <typename T>
-inline void Quaternion<T>::X(F32 x) {
+inline void Quaternion<T>::X(F32 x) noexcept {
     _elements.x = x;
 }
 
 template <typename T>
-inline void Quaternion<T>::Y(F32 y) {
+inline void Quaternion<T>::Y(F32 y) noexcept {
     _elements.y = y;
 }
 
 template <typename T>
-inline void Quaternion<T>::Z(F32 z) {
+inline void Quaternion<T>::Z(F32 z) noexcept {
     _elements.z = z;
 }
 
 template <typename T>
-inline void Quaternion<T>::W(F32 w) {
+inline void Quaternion<T>::W(F32 w) noexcept {
     _elements.w = w;
 }
 

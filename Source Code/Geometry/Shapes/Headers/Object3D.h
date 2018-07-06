@@ -134,7 +134,7 @@ class Object3D : public SceneNode {
     // Create a list of triangles from the vertices + indices lists based on primitive type
     bool computeTriangleList(bool force = false);
 
-    static vectorImpl<SceneGraphNode_wptr> filterByType(const vectorImpl<SceneGraphNode_wptr>& nodes, ObjectType filter);
+    static vectorImpl<SceneGraphNode*> filterByType(const vectorImpl<SceneGraphNode*>& nodes, ObjectType filter);
 
    protected:
     void rebuild();

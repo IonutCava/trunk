@@ -47,8 +47,8 @@ WarSceneAIProcessor::WarSceneAIProcessor(AIType type, AIManager& parentManager)
 WarSceneAIProcessor::~WarSceneAIProcessor()
 {
     if (_visualSensor) {
-        SceneGraphNode_ptr flag0(_globalWorkingMemory._flags[0].value().lock());
-        SceneGraphNode_ptr flag1(_globalWorkingMemory._flags[1].value().lock());
+        SceneGraphNode* flag0(_globalWorkingMemory._flags[0].value());
+        SceneGraphNode* flag1(_globalWorkingMemory._flags[1].value());
         if (flag0) {
             _visualSensor->unfollowSceneGraphNode(
                 g_flagContainer,
@@ -76,14 +76,14 @@ void WarSceneAIProcessor::invalidateCurrentPlan() {
     worldState().setVariable(GOAPFact(Fact::ENEMY_HAS_FLAG), GOAPValue(_globalWorkingMemory._flagCarriers[enemyTeamID].value() != nullptr));
     worldState().setVariable(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(_globalWorkingMemory._flagCarriers[ownTeamID].value() != nullptr));
     worldState().setVariable(GOAPFact(Fact::IDLING), GOAPValue(false));
-    _localWorkingMemory._currentTarget.value(SceneGraphNode_wptr());
+    _localWorkingMemory._currentTarget.value(nullptr);
     AIProcessor::invalidateCurrentPlan();
 }
 
 void WarSceneAIProcessor::reset()
 {
-    _globalWorkingMemory._flags[0].value(SceneGraphNode_wptr());
-    _globalWorkingMemory._flags[1].value(SceneGraphNode_wptr());
+    _globalWorkingMemory._flags[0].value(nullptr);
+    _globalWorkingMemory._flags[1].value(nullptr);
     _globalWorkingMemory._flagCarriers[0].value(nullptr);
     _globalWorkingMemory._flagCarriers[1].value(nullptr);
     _globalWorkingMemory._flagsAtBase[0].value(true);
@@ -110,16 +110,16 @@ void WarSceneAIProcessor::initInternal() {
     const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
 
     for (const AITeam::TeamMap::value_type& member : teamAgents) {
-        SceneGraphNode_wptr node = member.second->getUnitRef()->getBoundNode();
+        SceneGraphNode* node = member.second->getUnitRef()->getBoundNode();
         hashAlg::insert(_nodeToUnitMap[g_myTeamContainer],
-                        std::make_pair(node.lock()->getGUID(), member.second));
+                        std::make_pair(node->getGUID(), member.second));
         _visualSensor->followSceneGraphNode(g_myTeamContainer, node);
     }
 
     for (const AITeam::TeamMap::value_type& enemy : enemyMembers) {
-        SceneGraphNode_wptr node = enemy.second->getUnitRef()->getBoundNode();
+        SceneGraphNode* node = enemy.second->getUnitRef()->getBoundNode();
         hashAlg::insert(_nodeToUnitMap[g_enemyTeamContainer],
-                        std::make_pair(node.lock()->getGUID(), enemy.second));
+                        std::make_pair(node->getGUID(), enemy.second));
         _visualSensor->followSceneGraphNode(g_enemyTeamContainer, node);
     }
 
@@ -129,11 +129,11 @@ void WarSceneAIProcessor::initInternal() {
         g_flagContainer, _globalWorkingMemory._flags[1].value());
 
     _initialFlagPositions[0].set(_globalWorkingMemory._flags[0]
-                                     .value().lock()
+                                     .value()
                                      ->get<TransformComponent>()
                                      ->getPosition());
     _initialFlagPositions[1].set(_globalWorkingMemory._flags[1]
-                                     .value().lock()
+                                     .value()
                                      ->get<TransformComponent>()
                                      ->getPosition());
 
@@ -157,9 +157,9 @@ bool WarSceneAIProcessor::DIE() {
 
     bool hadFlag = _localWorkingMemory._hasEnemyFlag.value();
     if (hadFlag == true) {
-        _globalWorkingMemory._flags[enemyTeamID].value().lock()->setParent(_parentManager.parentScene().sceneGraph().getRoot());
+        _globalWorkingMemory._flags[enemyTeamID].value()->setParent(_parentManager.parentScene().sceneGraph().getRoot());
         TransformComponent* tComp = _globalWorkingMemory._flags[enemyTeamID]
-                                  .value().lock()
+                                  .value()
                                   ->get<TransformComponent>();
         tComp->popTransforms();
         tComp->pushTransforms();
@@ -175,10 +175,10 @@ bool WarSceneAIProcessor::DIE() {
 
     _visualSensor->unfollowSceneGraphNode(
         g_flagContainer,
-        _globalWorkingMemory._flags[0].value().lock()->getGUID());
+        _globalWorkingMemory._flags[0].value()->getGUID());
     _visualSensor->unfollowSceneGraphNode(
         g_flagContainer,
-        _globalWorkingMemory._flags[1].value().lock()->getGUID());
+        _globalWorkingMemory._flags[1].value()->getGUID());
 
     AITeam* enemyTeam = _parentManager.getTeamByID(currentTeam->getEnemyTeamID(0));
     const AITeam::TeamMap& teamAgents = currentTeam->getTeamMembers();
@@ -194,13 +194,13 @@ bool WarSceneAIProcessor::DIE() {
 
     currentTeam->removeTeamMember(_entity);
 
-    _entity->getUnitRef()->getBoundNode().lock()->setActive(false);
+    _entity->getUnitRef()->getBoundNode()->setActive(false);
     
     return true;
 }
 
-AIEntity* WarSceneAIProcessor::getUnitForNode(U32 teamID, SceneGraphNode_wptr node) const {
-    SceneGraphNode_ptr sgnNode(node.lock());
+AIEntity* WarSceneAIProcessor::getUnitForNode(U32 teamID, SceneGraphNode* node) const {
+    SceneGraphNode* sgnNode(node);
     if (sgnNode) {
         NodeToUnitMap::const_iterator it =
             _nodeToUnitMap[g_enemyTeamContainer].find(sgnNode->getGUID());
@@ -294,7 +294,7 @@ void WarSceneAIProcessor::requestOrders() {
             } break;
 
             case WarSceneOrder::WarOrder::KILL_ENEMY: {
-                if (_localWorkingMemory._currentTarget.value().lock() != nullptr) {
+                if (_localWorkingMemory._currentTarget.value() != nullptr) {
                     prio = PriorityLevel::VERY_HIGH_PRIORITY;
                 }
                 if (_globalWorkingMemory._teamAliveCount[enemyTeamID].value() > 0) {
@@ -392,28 +392,28 @@ bool WarSceneAIProcessor::preAction(ActionType type,
         } break;
         case ActionType::ATTACK_ENEMY: {
             PRINT("Starting attack enemy action");
-            if (_localWorkingMemory._currentTarget.value().lock() == nullptr &&
+            if (_localWorkingMemory._currentTarget.value() == nullptr &&
                 _globalWorkingMemory._teamAliveCount[enemyTeamID].value() > 0) {
 
                 if (_localWorkingMemory._isFlagRetriever.value() == false) {
-                    SceneGraphNode_wptr enemy = _visualSensor->getClosestNode(g_enemyTeamContainer);
-                    _entity->updateDestination(enemy.lock()->get<TransformComponent>()->getPosition(), true);
+                    SceneGraphNode* enemy = _visualSensor->getClosestNode(g_enemyTeamContainer);
+                    _entity->updateDestination(enemy->get<TransformComponent>()->getPosition(), true);
                     _localWorkingMemory._currentTarget.value(enemy);
                 } else {
                     if (_globalWorkingMemory._flagCarriers[enemyTeamID].value() == nullptr) {
                         invalidateCurrentPlan();
                         return false;
                     }
-                    SceneGraphNode_wptr enemy =
+                    SceneGraphNode* enemy =
                         _globalWorkingMemory._flagCarriers[enemyTeamID]
                             .value()
                             ->getUnitRef()
                             ->getBoundNode();
-                    _entity->updateDestination(enemy.lock()->get<TransformComponent>()->getPosition(), true);
+                    _entity->updateDestination(enemy->get<TransformComponent>()->getPosition(), true);
                     _localWorkingMemory._currentTarget.value(enemy);
                 }
             } else {
-                _entity->updateDestination(_localWorkingMemory._currentTarget.value().lock()->get<TransformComponent>()->getPosition());
+                _entity->updateDestination(_localWorkingMemory._currentTarget.value()->get<TransformComponent>()->getPosition());
             }
         } break;
         case ActionType::RECOVER_FLAG: {
@@ -451,10 +451,10 @@ bool WarSceneAIProcessor::postAction(ActionType type,
             assert(_localWorkingMemory._hasEnemyFlag.value());
             _localWorkingMemory._hasEnemyFlag.value(false);
 
-            _globalWorkingMemory._flags[enemyTeamID].value().lock()->setParent(
+            _globalWorkingMemory._flags[enemyTeamID].value()->setParent(
                 _parentManager.parentScene().sceneGraph().getRoot());
             TransformComponent* tComp = _globalWorkingMemory._flags[enemyTeamID]
-                                  .value().lock()
+                                  .value()
                                   ->get<TransformComponent>();
             tComp->popTransforms();
 
@@ -470,11 +470,11 @@ bool WarSceneAIProcessor::postAction(ActionType type,
 
             // Attach flag to entity
             {
-                SceneGraphNode_wptr targetNode = _entity->getUnitRef()->getBoundNode();
-                SceneGraphNode_ptr flag = _globalWorkingMemory._flags[enemyTeamID].value().lock();
+                SceneGraphNode* targetNode = _entity->getUnitRef()->getBoundNode();
+                SceneGraphNode* flag = _globalWorkingMemory._flags[enemyTeamID].value();
                 TransformComponent* tComp = flag->get<TransformComponent>();
-                TransformComponent* parenttComp = targetNode.lock()->get<TransformComponent>();
-                flag->setParent(*targetNode.lock());
+                TransformComponent* parenttComp = targetNode->get<TransformComponent>();
+                flag->setParent(*targetNode);
                 vec3<F32> prevScale(tComp->getLocalScale());
                 vec3<F32> parentScale(parenttComp->getLocalScale());
                 vec3<F32> parentPos(parenttComp->getPosition());
@@ -506,7 +506,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
         } break;
         case ActionType::ATTACK_ENEMY: {
             PRINT("Attack enemy action over");
-            _localWorkingMemory._currentTarget.value(SceneGraphNode_wptr());
+            _localWorkingMemory._currentTarget.value(nullptr);
         } break;
         case ActionType::RECOVER_FLAG: {
             PRINT("Recover flag action over");
@@ -542,8 +542,8 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
     U32 ownTeamID = currentTeam->getTeamID();
     U32 enemyTeamID = 1 - ownTeamID;
 
-    SceneGraphNode_ptr currentNode(_entity->getUnitRef()->getBoundNode().lock());
-    SceneGraphNode_ptr enemyFlag(_globalWorkingMemory._flags[enemyTeamID].value().lock());
+    //SceneGraphNode* currentNode(_entity->getUnitRef()->getBoundNode());
+    //SceneGraphNode* enemyFlag(_globalWorkingMemory._flags[enemyTeamID].value());
 
     bool state = false;
     switch (type) {
@@ -579,7 +579,7 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
             }
         } break;
         case ActionType::ATTACK_ENEMY: {
-            SceneGraphNode_ptr enemy(_localWorkingMemory._currentTarget.value().lock());
+            SceneGraphNode* enemy(_localWorkingMemory._currentTarget.value());
             if (!enemy) {
                 state = true;
             } else {
@@ -612,7 +612,7 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
 
 void WarSceneAIProcessor::processMessage(AIEntity& sender, AIMsg msg,
                                          const AnyParam& msg_content) {
-    SceneGraphNode_ptr senderNode(sender.getUnitRef()->getBoundNode().lock());
+    SceneGraphNode* senderNode(sender.getUnitRef()->getBoundNode());
     switch (msg) {
         case AIMsg::RETURNED_FLAG:
         case AIMsg::HAVE_FLAG: {
@@ -623,7 +623,7 @@ void WarSceneAIProcessor::processMessage(AIEntity& sender, AIMsg msg,
             worldState().setVariable(GOAPFact(Fact::ENEMY_HAS_FLAG), GOAPValue(true));
         } break;
         case AIMsg::ATTACK: {
-            SceneGraphNode_ptr target(_localWorkingMemory._currentTarget.value().lock());
+            SceneGraphNode* target(_localWorkingMemory._currentTarget.value());
             if (!target || 
                 target->getGUID() != senderNode->getGUID())
             {
@@ -648,10 +648,10 @@ void WarSceneAIProcessor::processMessage(AIEntity& sender, AIMsg msg,
 
             _visualSensor->unfollowSceneGraphNode(g_myTeamContainer, senderNode->getGUID());
             _visualSensor->unfollowSceneGraphNode(g_enemyTeamContainer, senderNode->getGUID());
-            SceneGraphNode_ptr target(_localWorkingMemory._currentTarget.value().lock());
+            SceneGraphNode* target(_localWorkingMemory._currentTarget.value());
             if (target &&
                 target->getGUID() == senderNode->getGUID()) {
-                _localWorkingMemory._currentTarget.value(SceneGraphNode_wptr());
+                _localWorkingMemory._currentTarget.value(nullptr);
                 invalidateCurrentPlan();
             }
         } break;
@@ -682,12 +682,12 @@ void WarSceneAIProcessor::updatePositions() {
     _globalWorkingMemory._teamFlagPosition[0].value(
         _visualSensor->getNodePosition(
             g_flagContainer,
-            _globalWorkingMemory._flags[0].value().lock()->getGUID()));
+            _globalWorkingMemory._flags[0].value()->getGUID()));
 
     _globalWorkingMemory._teamFlagPosition[1].value(
         _visualSensor->getNodePosition(
             g_flagContainer,
-            _globalWorkingMemory._flags[1].value().lock()->getGUID()));
+            _globalWorkingMemory._flags[1].value()->getGUID()));
 
     _globalWorkingMemory._flagsAtBase[0].value(
         _globalWorkingMemory._teamFlagPosition[0].value().distanceSquared(
@@ -707,11 +707,11 @@ void WarSceneAIProcessor::updatePositions() {
     if (!_localWorkingMemory._enemyHasFlag.value()) {
         if (!_globalWorkingMemory._flagsAtBase[teamID].value()) {
             if (nearOwnFlag() && !atHome) {
-                _globalWorkingMemory._flags[teamID].value().lock()->setParent(
+                _globalWorkingMemory._flags[teamID].value()->setParent(
                     _parentManager.parentScene().sceneGraph().getRoot());
                 TransformComponent* tComp =
                     _globalWorkingMemory._flags[teamID]
-                        .value().lock()
+                        .value()
                         ->get<TransformComponent>();
                 tComp->popTransforms();
                 _globalWorkingMemory._flagsAtBase[teamID].value(true);
@@ -729,11 +729,11 @@ void WarSceneAIProcessor::updatePositions() {
     }
 
     if (_type != AIType::HEAVY) {
-        BoundingSphere boundingSphere(_entity->getUnitRef()->getBoundNode().lock()->get<BoundsComponent>()->getBoundingSphere());
+        BoundingSphere boundingSphere(_entity->getUnitRef()->getBoundNode()->get<BoundsComponent>()->getBoundingSphere());
         const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
         for (const AITeam::TeamMap::value_type& enemy : enemyMembers) {
-            if (boundingSphere.collision(enemy.second->getUnitRef()->getBoundNode().lock()->get<BoundsComponent>()->getBoundingSphere())) {
-                SceneGraphNode_ptr currentTarget(_localWorkingMemory._currentTarget.value().lock());
+            if (boundingSphere.collision(enemy.second->getUnitRef()->getBoundNode()->get<BoundsComponent>()->getBoundingSphere())) {
+                SceneGraphNode* currentTarget(_localWorkingMemory._currentTarget.value());
                 if (!currentTarget ||
                     currentTarget->getGUID() != enemy.second->getGUID()) {
                     invalidateCurrentPlan();
@@ -787,7 +787,7 @@ bool WarSceneAIProcessor::processData(const U64 deltaTimeUS) {
 
     _attackTimer += deltaTimeUS;
 
-    SceneGraphNode_ptr enemy(_localWorkingMemory._currentTarget.value().lock());
+    SceneGraphNode* enemy(_localWorkingMemory._currentTarget.value());
     if (enemy != nullptr) {
         AIEntity* targetUnit = getUnitForNode(g_enemyTeamContainer, enemy);
         if (targetUnit != nullptr) {
@@ -933,7 +933,7 @@ stringImpl WarSceneAIProcessor::toString(bool state) const {
         }
     }
 
-    SceneGraphNode_ptr enemy(_localWorkingMemory._currentTarget.value().lock());
+    SceneGraphNode* enemy(_localWorkingMemory._currentTarget.value());
     if (enemy) {
         ret.append("Active target: ");
         ret.append(enemy->getName());

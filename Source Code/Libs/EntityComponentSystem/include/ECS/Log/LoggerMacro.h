@@ -8,9 +8,9 @@
 #ifndef __LOGGER_MACRO_H__
 #define __LOGGER_MACRO_H__
 
-//#define ECS_DISABLE_LOGGING 1
+//#define ECS_DISABLE_LOGGING
 
-#if !ECS_DISABLE_LOGGING
+#if !defined(ECS_DISABLE_LOGGING)
 	#define DECLARE_LOGGER									Log::Logger* LOGGER;
 	#define DECLARE_STATIC_LOGGER							static Log::Logger* LOGGER;
 

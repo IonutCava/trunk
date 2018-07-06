@@ -35,19 +35,19 @@ namespace Divide {
 
 namespace {
     //ref: http://stackoverflow.com/questions/6042399/how-to-compare-m128-types
-    bool fneq128(__m128 const& a, __m128 const& b)
+    bool fneq128(__m128 const& a, __m128 const& b) noexcept
     {
         // returns true if at least one element in a is not equal to 
         // the corresponding element in b
         return _mm_movemask_ps(_mm_cmpeq_ps(a, b)) != 0xF;
     }
 
-    bool fneq128(__m128 const& a, __m128 const& b, F32 epsilon)
+    bool fneq128(__m128 const& a, __m128 const& b, F32 epsilon) noexcept
     {
         // epsilon vector
-        auto eps = _mm_set1_ps(epsilon);
+        const auto eps = _mm_set1_ps(epsilon);
         // absolute of difference of a and b
-        auto abd = _mm_andnot_ps(_mm_set1_ps(-0.0f), _mm_sub_ps(a, b));
+        const auto abd = _mm_andnot_ps(_mm_set1_ps(-0.0f), _mm_sub_ps(a, b));
         // compare abd to eps
         // returns true if one of the elements in abd is not less than 
         // epsilon
@@ -55,7 +55,7 @@ namespace {
     }
 
     //ref: https://www.opengl.org/discussion_boards/showthread.php/159586-my-SSE-code-is-slower-than-normal-why
-    inline __m128 DOT_SIMD(const __m128 &a, const __m128 &b)
+    inline __m128 DOT_SIMD(const __m128 &a, const __m128 &b) noexcept
     {
         __m128 r;
 
@@ -66,7 +66,7 @@ namespace {
         return r;
     }
 
-    inline __m128 SIMPLE_DOT(__m128 a, __m128 b)
+    inline __m128 SIMPLE_DOT(__m128 a, __m128 b) noexcept
     {
         a = _mm_mul_ps(a, b);
         b = _mm_hadd_ps(a, a);
@@ -362,7 +362,7 @@ inline bool vec3<T>::isUniform() const {
 
 /// return the squared distance of the vector
 template <typename T>
-inline T vec3<T>::lengthSquared() const {
+inline T vec3<T>::lengthSquared() const noexcept {
     return this->x * this->x + this->y * this->y + this->z * this->z;
 }
 
@@ -409,7 +409,7 @@ inline T vec3<T>::distance(const vec3 &v, bool absolute) const {
 
 /// compute the vector's squared distance to another specified vector
 template <typename T>
-inline T vec3<T>::distanceSquared(const vec3 &v) const {
+inline T vec3<T>::distanceSquared(const vec3 &v) const noexcept {
     return ((v.x - this->x) * (v.x - this->x)) +
            ((v.y - this->y) * (v.y - this->y)) +
            ((v.z - this->z) * (v.z - this->z));
@@ -561,42 +561,42 @@ inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) {
 */
 
 template<>
-const vec4<F32> vec4<F32>::operator-(F32 _f) const {
+const vec4<F32> vec4<F32>::operator-(F32 _f) const noexcept {
     return vec4<F32>(_mm_sub_ps(_reg._reg, _mm_set1_ps(_f)));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator+(F32 _f) const {
+const vec4<F32> vec4<F32>::operator+(F32 _f) const noexcept {
     return vec4<F32>(_mm_add_ps(_reg._reg, _mm_set1_ps(_f)));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator*(F32 _f) const {
+const vec4<F32> vec4<F32>::operator*(F32 _f) const noexcept {
     return vec4<F32>(_mm_mul_ps(_reg._reg, _mm_set1_ps(_f)));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator/(F32 _f) const {
+const vec4<F32> vec4<F32>::operator/(F32 _f) const noexcept {
     return vec4<F32>(_mm_div_ps(_reg._reg, _mm_set1_ps(_f)));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator+(const vec4<F32> &v) const {
+const vec4<F32> vec4<F32>::operator+(const vec4<F32> &v) const noexcept {
     return vec4<F32>(_mm_add_ps(_reg._reg, v._reg._reg));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator-(const vec4<F32> &v) const {
+const vec4<F32> vec4<F32>::operator-(const vec4<F32> &v) const noexcept {
     return vec4<F32>(_mm_sub_ps(_reg._reg, v._reg._reg));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator/(const vec4<F32> &v) const {
+const vec4<F32> vec4<F32>::operator/(const vec4<F32> &v) const noexcept {
     return vec4<F32>(_mm_div_ps(_reg._reg, v._reg._reg));
 }
 
 template<>
-const vec4<F32> vec4<F32>::operator*(const vec4<F32>& v) const {
+const vec4<F32> vec4<F32>::operator*(const vec4<F32>& v) const noexcept {
     return vec4<F32>(_mm_mul_ps(_reg._reg, v._reg._reg));
 }
 
@@ -641,7 +641,7 @@ inline void vec4<T>::round() {
 
 /// swap this vector's values with that of the specified vector
 template <typename T>
-inline void vec4<T>::swap(vec4 *iv) {
+inline void vec4<T>::swap(vec4 *iv) noexcept {
     std::swap(this->x, iv->x);
     std::swap(this->y, iv->y);
     std::swap(this->z, iv->z);
@@ -649,13 +649,13 @@ inline void vec4<T>::swap(vec4 *iv) {
 }
 
 template <>
-inline void vec4<F32>::swap(vec4<F32> *iv) {
+inline void vec4<F32>::swap(vec4<F32> *iv) noexcept {
     std::swap(_reg._reg, iv->_reg._reg);
 }
 
 /// swap this vector's values with that of the specified vector
 template <typename T>
-inline void vec4<T>::swap(vec4 &iv) {
+inline void vec4<T>::swap(vec4 &iv) noexcept {
     swap(&iv);
 }
 

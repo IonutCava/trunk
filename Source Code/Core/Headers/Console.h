@@ -48,7 +48,7 @@ class Console : private NonCopyable {
 
    
     struct OutputEntry {
-        OutputEntry() : _type(EntryType::Info)
+        OutputEntry() noexcept : _type(EntryType::Info)
         {
         }
 
@@ -121,17 +121,17 @@ class Console : private NonCopyable {
     template <typename... T>
     inline static void d_errorf(std::ofstream& outStream, const char* format, T&&... args);
 
-    static bool timeStampsEnabled() { return _timestamps; }
-    static void toggleTimeStamps(const bool state) { _timestamps = state; }
+    static bool timeStampsEnabled() noexcept { return _timestamps; }
+    static void toggleTimeStamps(const bool state) noexcept { _timestamps = state; }
 
-    static bool threadIDEnabled() { return _threadID; }
-    static void togglethreadID(const bool state) { _threadID = state; }
+    static bool threadIDEnabled() noexcept { return _threadID; }
+    static void togglethreadID(const bool state) noexcept { _threadID = state; }
 
-    static bool enabled() { return _enabled; }
-    static void toggle(const bool state) { _enabled = state; }
+    static bool enabled() noexcept { return _enabled; }
+    static void toggle(const bool state) noexcept { _enabled = state; }
 
-    static bool errorStreamEnabled() { return _errorStreamEnabled; }
-    static void toggleErrorStream(const bool state) { _errorStreamEnabled = state; }
+    static bool errorStreamEnabled() noexcept { return _errorStreamEnabled; }
+    static void toggleErrorStream(const bool state) noexcept { _errorStreamEnabled = state; }
     static size_t bindConsoleOutput(const ConsolePrintCallback& guiConsoleCallback) {
         _guiConsoleCallbacks.push_back(guiConsoleCallback);
         return _guiConsoleCallbacks.size() - 1;
@@ -145,7 +145,7 @@ class Console : private NonCopyable {
         return false;
     }
    protected:
-    static const char* formatText(const char* format, ...);
+    static const char* formatText(const char* format, ...) noexcept;
     static void output(const char* text, const bool newline, const EntryType type);
     static void output(std::ostream& outStream, const char* text, const bool newline, const EntryType type);
     static void decorate(std::ostream& outStream, const char* text, const bool newline, const EntryType type);

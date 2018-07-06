@@ -45,7 +45,7 @@ namespace Attorney {
 };
 
 /// SGN GUID, SGN pointer
-typedef hashMapImpl<I64, SceneGraphNode_wptr> NodeContainer;
+typedef hashMapImpl<I64, SceneGraphNode*> NodeContainer;
 /// Container ID, NodeContainer
 typedef hashMapImpl<U32, NodeContainer> NodeContainerMap;
 /// SGN GUID, Last position
@@ -60,7 +60,7 @@ class VisualSensor : public Sensor {
 
     void update(const U64 deltaTimeUS);
 
-    void followSceneGraphNode(U32 containerID, SceneGraphNode_wptr node);
+    void followSceneGraphNode(U32 containerID, SceneGraphNode* node);
     void unfollowSceneGraphNode(U32 containerID, U64 nodeGUID);
 
     F32 getDistanceToNodeSq(U32 containerID, U64 nodeGUID);
@@ -73,7 +73,7 @@ class VisualSensor : public Sensor {
     }
 
     vec3<F32> getNodePosition(U32 containerID, U64 nodeGUID);
-    SceneGraphNode_wptr getClosestNode(U32 containerID);
+    SceneGraphNode* getClosestNode(U32 containerID);
 
    protected:
     VisualSensor(AIEntity* const parentEntity);

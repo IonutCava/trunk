@@ -346,7 +346,7 @@ class vec2 {
     /// set the 2 components of the vector manually
     inline void set(T value) { this->set(value, value); }
     /// set the 2 components of the vector manually
-    inline void set(T _x, T _y) {
+    inline void set(T _x, T _y) noexcept {
         this->x = _x;
         this->y = _y;
     }
@@ -475,9 +475,10 @@ class vec3 {
     }
 
     template <typename U>
-    vec3(U _x, U _y, U _z) : x(static_cast<T>(_x)),
-                             y(static_cast<T>(_y)),
-                             z(static_cast<T>(_z))
+    vec3(U _x, U _y, U _z)  noexcept 
+        : x(static_cast<T>(_x)),
+          y(static_cast<T>(_y)),
+          z(static_cast<T>(_z))
     {
     }
     template <typename U, typename V>
@@ -532,13 +533,13 @@ class vec3 {
     {
     }
 
-    bool operator>(const vec3 &v) const { return x > v.x && y > v.y && z > v.z; }
-    bool operator<(const vec3 &v) const { return x < v.x && y < v.y && z < v.z; }
-    bool operator<=(const vec3 &v) const { return *this < v || *this == v; }
-    bool operator>=(const vec3 &v) const { return *this > v || *this == v; }
+    bool operator>(const vec3 &v) const noexcept { return x > v.x && y > v.y && z > v.z; }
+    bool operator<(const vec3 &v) const noexcept { return x < v.x && y < v.y && z < v.z; }
+    bool operator<=(const vec3 &v) const noexcept { return *this < v || *this == v; }
+    bool operator>=(const vec3 &v) const noexcept { return *this > v || *this == v; }
     
-    bool operator!=(const vec3 &v) const { return !this->compare(v); }
-    bool operator==(const vec3 &v) const { return this->compare(v); }
+    bool operator!=(const vec3 &v) const noexcept { return !this->compare(v); }
+    bool operator==(const vec3 &v) const noexcept { return this->compare(v); }
 
     template<typename U>
     bool operator!=(const vec3<U> &v) const { return !this->compare(v); }
@@ -555,7 +556,7 @@ class vec3 {
         return (*this);
     }
 
-    const vec3 operator*(T _f) const {
+    const vec3 operator*(T _f) const noexcept {
         return vec3(this->x * _f, this->y * _f, this->z * _f);
     }
     const vec3 operator/(T _f) const {
@@ -563,10 +564,10 @@ class vec3 {
         _f = 1.0f / _f;
         return (*this) * _f;
     }
-    const vec3 operator+(const vec3 &v) const {
+    const vec3 operator+(const vec3 &v) const noexcept {
         return vec3(this->x + v.x, this->y + v.y, this->z + v.z);
     }
-    const vec3 operator-(T _f) const {
+    const vec3 operator-(T _f) const noexcept {
         return vec3(this->x - _f, this->y - _f, this->z - _f);
     }
 
@@ -606,11 +607,11 @@ class vec3 {
         return vec3(this->x - _f, this->y - _f, this->z - _f);
     }
 
-    const vec3 operator-() const { return vec3(-this->x, -this->y, -this->z); }
-    const vec3 operator-(const vec3 &v) const {
+    const vec3 operator-() const  noexcept { return vec3(-this->x, -this->y, -this->z); }
+    const vec3 operator-(const vec3 &v) const  noexcept {
         return vec3(this->x - v.x, this->y - v.y, this->z - v.z);
     }
-    const vec3 operator*(const vec3 &v) const {
+    const vec3 operator*(const vec3 &v) const noexcept {
         return vec3(this->x * v.x, this->y * v.y, this->z * v.z);
     }
     vec3 &operator*=(T _f) {
@@ -639,14 +640,14 @@ class vec3 {
     }
     //    T     operator*(const vec3 &v)   const { return this->x * v.x +
     //    this->y * v.y + this->z * v.z; }
-    T &operator[](const I32 i) { return this->_v[i]; }
+    T &operator[](const I32 i)  noexcept { return this->_v[i]; }
     const vec3 operator/(const vec3 &v) const {
         return vec3(IS_ZERO(v.x) ? this->x : this->x / v.x,
                     IS_ZERO(v.y) ? this->y : this->y / v.y,
                     IS_ZERO(v.z) ? this->z : this->z / v.z);
     }
-    operator T *() { return this->_v; }
-    operator const T *() const { return this->_v; }
+    operator T *()  noexcept { return this->_v; }
+    operator const T *() const  noexcept { return this->_v; }
 
     /// GLSL like accessors (const to prevent erroneous usage like .xy() += n)
     inline const vec2<T> rg() const { return vec2<T>(this->r, this->g); }
@@ -676,17 +677,17 @@ class vec3 {
     }
 
     /// set the 3 components of the vector manually using a source pointer to a (large enough) array
-    inline void set(const T* v) { std::memcpy(&_v[0], &v[0], sizeof(T) * 3); }
+    inline void set(const T* v) noexcept { std::memcpy(&_v[0], &v[0], sizeof(T) * 3); }
     /// set the 3 components of the vector manually
     inline void set(T value) { this->set(value, value, value); }
     /// set the 3 components of the vector manually
-    inline void set(T _x, T _y, T _z) {
+    inline void set(T _x, T _y, T _z)  noexcept {
         this->x = _x;
         this->y = _y;
         this->z = _z;
     }
     template <typename U> 
-    inline void set(U _x, U _y, U _z) {
+    inline void set(U _x, U _y, U _z) noexcept {
         this->x = static_cast<T>(_x);
         this->y = static_cast<T>(_y);
         this->z = static_cast<T>(_z);
@@ -713,7 +714,7 @@ class vec3 {
     /// uniform vector: x = y = z
     inline bool isUniform() const;
     /// return the squared distance of the vector
-    inline T lengthSquared() const;
+    inline T lengthSquared() const noexcept;
     /// calculate the dot product between this vector and the specified one
     inline T dot(const vec3 &v) const;
     /// returns the angle in radians between '*this' and 'v'
@@ -721,7 +722,7 @@ class vec3 {
     /// compute the vector's distance to another specified vector
     inline T distance(const vec3 &v, bool absolute = true) const;
     /// compute the vector's squared distance to another specified vector
-    inline T distanceSquared(const vec3 &v) const;
+    inline T distanceSquared(const vec3 &v) const noexcept;
     /// transform the vector to unit length
     inline void normalize();
     /// round all three values
@@ -918,19 +919,19 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
 
     vec4 &operator=(const vec4& other) noexcept { this->set(other); return *this; }
 
-    const vec4 operator-(T _f) const {
+    const vec4 operator-(T _f) const noexcept {
         return vec4(this->x - _f, this->y - _f, this->z - _f, this->w - _f);
     }
 
-    const vec4 operator+(T _f) const {
+    const vec4 operator+(T _f) const noexcept {
         return vec4(this->x + _f, this->y + _f, this->z + _f, this->w + _f);
     }
 
-    const vec4 operator*(T _f) const {
+    const vec4 operator*(T _f) const noexcept {
         return vec4(this->x * _f, this->y * _f, this->z * _f, this->w * _f);
     }
 
-    const vec4 operator/(T _f) const {
+    const vec4 operator/(T _f) const noexcept {
         if (IS_ZERO(_f)) {
             return *this;
         }
@@ -975,24 +976,24 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
             static_cast<T>(this->w * (1.0f / _f)));
     }
 
-    const vec4 operator-() const { return vec4(-x, -y, -z, -w); }
+    const vec4 operator-() const noexcept { return vec4(-x, -y, -z, -w); }
 
-    const vec4 operator+(const vec4 &v) const {
+    const vec4 operator+(const vec4 &v) const noexcept {
         return vec4(this->x + v.x, this->y + v.y, this->z + v.z, this->w + v.w);
     }
 
-    const vec4 operator-(const vec4 &v) const {
+    const vec4 operator-(const vec4 &v) const noexcept {
         return vec4(this->x - v.x, this->y - v.y, this->z - v.z, this->w - v.w);
     }
 
-    const vec4 operator/(const vec4 &v) const {
+    const vec4 operator/(const vec4 &v) const noexcept {
         return vec4(IS_ZERO(v.x) ? this->x : this->x / v.x,
             IS_ZERO(v.y) ? this->y : this->y / v.y,
             IS_ZERO(v.z) ? this->z : this->z / v.z,
             IS_ZERO(v.w) ? this->w : this->w / v.w);
     }
 
-    const vec4 operator*(const vec4& v) const {
+    const vec4 operator*(const vec4& v) const noexcept {
         return vec4(this->x * v.x,
                     this->y * v.y,
                     this->z * v.z,
@@ -1171,11 +1172,11 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         this->xyz(xyzw.x, xyzw.y, xyzw.z);
     }
     /// set the 4 components of the vector manually using a source pointer to a (large enough) array
-    inline void set(const T* v) { std::memcpy(&_v[0], &v[0], sizeof(T) * 4); }
+    inline void set(const T* v) noexcept { std::memcpy(&_v[0], &v[0], sizeof(T) * 4); }
     /// set the 4 components of the vector manually
     inline void set(T value) { this->set(value, value, value, value); }
     /// set the 4 components of the vector manually
-    inline void set(T _x, T _y, T _z, T _w) {
+    inline void set(T _x, T _y, T _z, T _w) noexcept {
         this->x = _x;
         this->y = _y;
         this->z = _z;
@@ -1208,9 +1209,9 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     inline bool compare(const vec4<U> &v, U epsi) const;
     /// swap the components  of this vector with that of the specified one
-    inline void swap(vec4 *iv);
+    inline void swap(vec4 *iv) noexcept;
     /// swap the components  of this vector with that of the specified one
-    inline void swap(vec4 &iv);
+    inline void swap(vec4 &iv) noexcept;
     /// transform the vector to unit length
     inline void normalize();
     /// calculate the dot product between this vector and the specified one

@@ -182,7 +182,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
         MemoryManager_NEW PxShape * [actor._actor->getNbShapes()];
     actor._actor->getShapes(shapes, actor._actor->getNbShapes());
 
-    SceneGraphNode_ptr targetNode;
+    SceneGraphNode* targetNode;
     stringImpl sgnName = "";
     bool shadowState = true;
     switch (actor._type) {

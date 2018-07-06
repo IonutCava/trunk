@@ -48,10 +48,10 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NETWORKING);
 
-    SceneGraphNode_ptr planeSGN(sgn.addNode(_plane, normalMask, PhysicsGroup::GROUP_STATIC));
+    SceneGraphNode* planeSGN(sgn.addNode(_plane, normalMask, PhysicsGroup::GROUP_STATIC));
     planeSGN->setActive(false);
     //for (TerrainChunk* chunk : _terrainChunks) {
-        //SceneGraphNode_ptr vegetation = sgn.addNode(Attorney::TerrainChunkTerrain::getVegetation(*chunk), normalMask);
+        //SceneGraphNode* vegetation = sgn.addNode(Attorney::TerrainChunkTerrain::getVegetation(*chunk), normalMask);
         //vegetation->lockVisibility(true);
     //}
     // Skip Object3D::load() to avoid triangle list computation (extremely expensive)!!!

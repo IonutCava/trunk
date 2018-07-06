@@ -30,7 +30,7 @@ const Camera& Player::getCamera() const {
     return *_playerCam;
 }
 
-void Player::setParentNode(SceneGraphNode_ptr node) {
+void Player::setParentNode(SceneGraphNode* node) {
     Character::setParentNode(node);
 }
 

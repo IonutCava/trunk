@@ -92,13 +92,12 @@ class SceneTransform : public SceneNode {
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneTransform);
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
 
 class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
                        protected ECS::Event::IEventListener,
                        public GUIDWrapper,
-                       private NonCopyable,
-                       public std::enable_shared_from_this<SceneGraphNode> {
+                       private NonCopyable
+{
     static const size_t INITIAL_CHILD_COUNT = 128;
    public:
     /// Usage context affects lighting, navigation, physics, etc
@@ -133,10 +132,27 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
                       "SceneGraphNode::getNode error: Invalid target node type!");
         return std::static_pointer_cast<T>(_node);
     }
+
+    template<class... ARGS>
+    static SceneGraphNode* CreateSceneGraphNode(ARGS&&... args) {
+        ECS::EntityId nodeID = ECS::ECS_Engine->GetEntityManager()->CreateEntity<SceneGraphNode>(std::forward<ARGS>(args)...);
+        return static_cast<SceneGraphNode*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(nodeID));
+    }
+
+    static void DestroySceneGraphNode(SceneGraphNode*& node, bool inPlace = true) {
+        if (node) {
+            ECS::ECS_Engine->GetEntityManager()->DestroyEntity(node->GetEntityID());
+            if (inPlace) {
+                ECS::ECS_Engine->GetEntityManager()->RemoveDestroyedEntities();
+            }
+            node = nullptr;
+        }
+    }
+
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
-    SceneGraphNode_ptr addNode(const SceneNode_ptr& node, U32 componentMask, PhysicsGroup physicsGroup, const stringImpl& name = "");
-    SceneGraphNode_ptr registerNode(SceneGraphNode_ptr node);
+    SceneGraphNode* addNode(const SceneNode_ptr& node, U32 componentMask, PhysicsGroup physicsGroup, const stringImpl& name = "");
+    SceneGraphNode* registerNode(SceneGraphNode* node);
 
     /// If this function returns true, the node will no longer be part of the scene hierarchy.
     /// If the node is not a child of the calling node, we will recursively look in all of its children for a match
@@ -145,9 +161,9 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     bool removeNodesByType(SceneNodeType nodeType);
 
     /// Find a child Node using the given name (either SGN name or SceneNode name)
-    SceneGraphNode_wptr findChild(const stringImpl& name, bool sceneNodeName = false, bool recursive = false) const;
+    SceneGraphNode* findChild(const stringImpl& name, bool sceneNodeName = false, bool recursive = false) const;
     /// Find a child using the give GUID
-    SceneGraphNode_wptr findChild(I64 GUID, bool recursive = false) const;
+    SceneGraphNode* findChild(I64 GUID, bool recursive = false) const;
 
     /// Find the graph nodes whom's bounding boxes intersects the given ray
     void intersect(const Ray& ray, F32 start, F32 end,
@@ -168,7 +184,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     /*Node Management*/
 
     /*Parent <-> Children*/
-    inline SceneGraphNode_wptr getParent() const {
+    inline SceneGraphNode* getParent() const {
         return _parent;
     }
 
@@ -217,17 +233,13 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     inline SceneGraphNode& getChild(U32 idx) {
         ReadLock r_lock(_childLock);
         assert(idx <  getChildCountLocked());
-        const SceneGraphNode_ptr& child = _children.at(idx);
-        assert(child);
-        return *child;
+        return *_children.at(idx);
     }
 
     inline const SceneGraphNode& getChild(U32 idx) const {
         ReadLock r_lock(_childLock);
         assert(idx <  getChildCountLocked());
-        const SceneGraphNode_ptr& child = _children.at(idx);
-        assert(child);
-        return *child;
+        return *_children.at(idx);
     }
 
     inline U32 getChildCount() const {
@@ -247,11 +259,11 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         _updateFlags[to_U32(flag)] = false;
     }
 
-    bool operator==(const SceneGraphNode_ptr& other) const {
+    bool operator==(SceneGraphNode* other) const {
         return this->getGUID() == other->getGUID();
     }
 
-    bool operator!=(const SceneGraphNode_ptr& other) const {
+    bool operator!=(SceneGraphNode* other) const {
         return this->getGUID() != other->getGUID();
     }
 
@@ -359,8 +371,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     U64 _elapsedTimeUS;
     stringImpl _name;
     SceneNode_ptr _node;
-    SceneGraphNode_wptr _parent;
-    vectorImpl<SceneGraphNode_ptr> _children;
+    SceneGraphNode* _parent;
+    vectorImpl<SceneGraphNode*> _children;
     mutable SharedLock _childLock;
     std::atomic<bool> _active;
     std::atomic<bool> _visibilityLocked;

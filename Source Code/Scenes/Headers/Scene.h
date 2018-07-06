@@ -140,11 +140,11 @@ class Scene : public Resource, public PlatformContextComponent {
     void addPatch(vectorImpl<FileData>& data);
 
     // DIRECTIONAL lights have shadow mapping enabled automatically
-    SceneGraphNode_ptr addLight(LightType type, SceneGraphNode& parentNode);
-    SceneGraphNode_ptr addSky(const stringImpl& nodeName = "");
+    SceneGraphNode* addLight(LightType type, SceneGraphNode& parentNode);
+    SceneGraphNode* addSky(const stringImpl& nodeName = "");
 
     /// Object picking
-    inline SceneGraphNode_wptr getCurrentSelection(U8 index) {
+    inline SceneGraphNode* getCurrentSelection(U8 index) {
         return _currentSelection[index];
     }
 
@@ -154,7 +154,7 @@ class Scene : public Resource, public PlatformContextComponent {
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
 
-    SceneGraphNode_ptr addParticleEmitter(const stringImpl& name,
+    SceneGraphNode* addParticleEmitter(const stringImpl& name,
                                           std::shared_ptr<ParticleData> data,
                                           SceneGraphNode& parentNode);
 
@@ -274,7 +274,7 @@ class Scene : public Resource, public PlatformContextComponent {
        AI::AIManager* _aiManager;
        SceneGUIElements* _GUI;
 
-       SceneGraphNode_wptr _sun;
+       SceneGraphNode* _sun;
 
        vectorImpl<Player_ptr> _scenePlayers;
        U64 _sceneTimerUS;
@@ -288,11 +288,11 @@ class Scene : public Resource, public PlatformContextComponent {
        vectorImpl<std::shared_ptr<TerrainDescriptor>> _terrainInfoArray;
        F32 _LRSpeedFactor;
        /// Current selection
-       hashMapImpl<U8 /*player index*/, SceneGraphNode_wptr> _currentSelection;
+       hashMapImpl<U8 /*player index*/, SceneGraphNode*> _currentSelection;
        hashMapImpl<U8 /*player index*/, I64> _currentHoverTarget;
 
-       SceneGraphNode_wptr _currentSky;
-       hashMapImpl<U8, SceneGraphNode_ptr> _flashLight;
+       SceneGraphNode* _currentSky;
+       hashMapImpl<U8, SceneGraphNode*> _flashLight;
 
        /// Scene::load must be called by every scene. Add a load flag to make sure!
        bool _loadComplete;
@@ -423,8 +423,8 @@ class SceneLoadSave {
 class SceneGraph {
 private:
     static void onNodeDestroy(Scene& scene, SceneGraphNode& node) {
-        if (!scene.getCurrentSelection(0).expired() &&
-            scene.getCurrentSelection(0).lock()->getGUID() == node.getGUID())
+        if (scene.getCurrentSelection(0) &&
+            scene.getCurrentSelection(0)->getGUID() == node.getGUID())
         {
             scene.resetSelection();
         }

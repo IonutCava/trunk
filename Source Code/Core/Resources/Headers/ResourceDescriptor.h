@@ -48,7 +48,7 @@ class NOINITVTABLE PropertyDescriptor : public Hashable {
         DESCRIPTOR_COUNT
     };
 
-    explicit PropertyDescriptor(const DescriptorType& type) : _type(type)
+    explicit PropertyDescriptor(const DescriptorType& type) noexcept : _type(type)
     {
     }
 

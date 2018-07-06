@@ -91,13 +91,13 @@ void WarScene::checkGameCompletion() {
         if (timeReason) {
             _resetUnits = true;
             for (U8 i = 0; i < 2; ++i) {
-                TransformComponent* flagtComp = _flag[i].lock()->get<TransformComponent>();
+                TransformComponent* flagtComp = _flag[i]->get<TransformComponent>();
                 flagtComp->popTransforms();
-                _flag[i].lock()->setParent(_sceneGraph->getRoot());
+                _flag[i]->setParent(_sceneGraph->getRoot());
                 flagtComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
             }
             AI::WarSceneAIProcessor::reset();
-            AI::WarSceneAIProcessor::registerFlags(_flag[0].lock(), _flag[1].lock());
+            AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);
         }
     }
 }
@@ -107,14 +107,14 @@ void WarScene::registerPoint(U16 teamID, const stringImpl& unitName) {
         _resetUnits = true;
 
         for (U8 i = 0; i < 2; ++i) {
-            TransformComponent* flagtComp = _flag[i].lock()->get<TransformComponent>();
+            TransformComponent* flagtComp = _flag[i]->get<TransformComponent>();
             WAIT_FOR_CONDITION(!flagtComp->popTransforms());
-            _flag[i].lock()->setParent(_sceneGraph->getRoot());
+            _flag[i]->setParent(_sceneGraph->getRoot());
             flagtComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
         }
         AI::WarSceneAIProcessor::reset();
         AI::WarSceneAIProcessor::incrementScore(teamID);
-        AI::WarSceneAIProcessor::registerFlags(_flag[0].lock(), _flag[1].lock());
+        AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);
 
         U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
         U32 elapsedTimeSeconds = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) % 60;
@@ -138,9 +138,9 @@ bool WarScene::initializeAI(bool continueOnErrors) {
         Scene::initializeAI(continueOnErrors);
     }
 
-    _sceneGraph->findNode("Soldier1").lock()->setActive(false);
-    _sceneGraph->findNode("Soldier2").lock()->setActive(false);
-    _sceneGraph->findNode("Soldier3").lock()->setActive(false);
+    _sceneGraph->findNode("Soldier1")->setActive(false);
+    _sceneGraph->findNode("Soldier2")->setActive(false);
+    _sceneGraph->findNode("Soldier3")->setActive(false);
 
     return state;
 }
@@ -148,8 +148,8 @@ bool WarScene::initializeAI(bool continueOnErrors) {
 bool WarScene::removeUnits() {
     WAIT_FOR_CONDITION(!_aiManager->updating());
     for (U8 i = 0; i < 2; ++i) {
-        for (SceneGraphNode_wptr npc : _armyNPCs[i]) {
-            _aiManager->unregisterEntity(npc.lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity());
+        for (SceneGraphNode* npc : _armyNPCs[i]) {
+            _aiManager->unregisterEntity(npc->get<UnitComponent>()->getUnit<NPC>()->getAIEntity());
             _sceneGraph->removeNode(npc);
         }
         _armyNPCs[i].clear();
@@ -260,9 +260,9 @@ bool WarScene::addUnits() {
     heavyPackage._goalList.push_back(protectFlagCarrier);
     lightPackage._goalList.push_back(protectFlagCarrier);
 
-    SceneGraphNode_cptr lightNode(_sceneGraph->findNode("Soldier1").lock());
-    SceneGraphNode_cptr animalNode(_sceneGraph->findNode("Soldier2").lock());
-    SceneGraphNode_cptr heavyNode(_sceneGraph->findNode("Soldier3").lock());
+    SceneGraphNode* lightNode(_sceneGraph->findNode("Soldier1"));
+    SceneGraphNode* animalNode(_sceneGraph->findNode("Soldier2"));
+    SceneGraphNode* heavyNode(_sceneGraph->findNode("Soldier3"));
 
     std::shared_ptr<SceneNode> lightNodeMesh = lightNode->getNode();
     std::shared_ptr<SceneNode> animalNodeMesh = animalNode->getNode();
@@ -323,7 +323,7 @@ bool WarScene::addUnits() {
                 damage = 15;
             }
 
-            SceneGraphNode_ptr currentNode = root.addNode(currentMesh, normalMask, PhysicsGroup::GROUP_KINEMATIC, currentName);
+            SceneGraphNode* currentNode = root.addNode(currentMesh, normalMask, PhysicsGroup::GROUP_KINEMATIC, currentName);
             currentNode->setSelectable(true);
 
             TransformComponent* tComp =
@@ -374,13 +374,13 @@ bool WarScene::addUnits() {
     return !(_armyNPCs[0].empty() || _armyNPCs[1].empty());
 }
 
-AI::AIEntity* WarScene::findAI(SceneGraphNode_cptr node) {
+AI::AIEntity* WarScene::findAI(SceneGraphNode* node) {
     I64 targetGUID = node->getGUID();
 
     for (U8 i = 0; i < 2; ++i) {
-        for (SceneGraphNode_cwptr npc : _armyNPCs[i]) {
-            if (npc.lock()->getGUID() == targetGUID) {
-                return npc.lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity();
+        for (SceneGraphNode* npc : _armyNPCs[i]) {
+            if (npc->getGUID() == targetGUID) {
+                return npc->get<UnitComponent>()->getUnit<NPC>()->getAIEntity();
             }
         }
     }
@@ -425,7 +425,7 @@ void WarScene::startSimulation(I64 btnGUID) {
     U64 currentTime = Time::ElapsedMicroseconds(true);
     U64 diffTime = currentTime - _lastNavMeshBuildTime;
 
-    AI::AIEntity* aiEntity = _armyNPCs[0][0].lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity();
+    AI::AIEntity* aiEntity = _armyNPCs[0][0]->get<UnitComponent>()->getUnit<NPC>()->getAIEntity();
     if (_lastNavMeshBuildTime == 0UL ||
         diffTime > Time::SecondsToMicroseconds(10)) {
         AI::Navigation::NavigationMesh* navMesh = 

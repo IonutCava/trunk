@@ -35,20 +35,20 @@ namespace Divide {
 
 namespace {
     //Ref: http://stackoverflow.com/questions/18499971/efficient-4x4-matrix-multiplication-c-vs-assembly
-    void M4x4_SSE(const F32 *A, const F32 *B, F32 *C) {
-        __m128 row1 = _mm_load_ps(&B[0]);
-        __m128 row2 = _mm_load_ps(&B[4]);
-        __m128 row3 = _mm_load_ps(&B[8]);
-        __m128 row4 = _mm_load_ps(&B[12]);
+    void M4x4_SSE(const F32 *A, const F32 *B, F32 *C) noexcept {
+        const __m128 row1 = _mm_load_ps(&B[0]);
+        const __m128 row2 = _mm_load_ps(&B[4]);
+        const __m128 row3 = _mm_load_ps(&B[8]);
+        const __m128 row4 = _mm_load_ps(&B[12]);
         for (U8 i = 0; i < 4; ++i) {
-            __m128 brod1 = _mm_set1_ps(A[4 * i + 0]);
-            __m128 brod2 = _mm_set1_ps(A[4 * i + 1]);
-            __m128 brod3 = _mm_set1_ps(A[4 * i + 2]);
-            __m128 brod4 = _mm_set1_ps(A[4 * i + 3]);
-            __m128 row = _mm_add_ps(_mm_add_ps(_mm_mul_ps(brod1, row1),
-                                               _mm_mul_ps(brod2, row2)),
-                                    _mm_add_ps(_mm_mul_ps(brod3, row3),
-                                               _mm_mul_ps(brod4, row4)));
+            const __m128 brod1 = _mm_set1_ps(A[4 * i + 0]);
+            const __m128 brod2 = _mm_set1_ps(A[4 * i + 1]);
+            const __m128 brod3 = _mm_set1_ps(A[4 * i + 2]);
+            const __m128 brod4 = _mm_set1_ps(A[4 * i + 3]);
+            const __m128 row = _mm_add_ps(_mm_add_ps(_mm_mul_ps(brod1, row1),
+                                                     _mm_mul_ps(brod2, row2)),
+                                          _mm_add_ps(_mm_mul_ps(brod3, row3),
+                                                     _mm_mul_ps(brod4, row4)));
            _mm_store_ps(&C[4 * i], row);
         }
     }
@@ -860,7 +860,7 @@ T& mat3<T>::operator[](I32 i) {
 }
 
 template<typename T>
-const T mat3<T>::operator[](I32 i) const {
+const T mat3<T>::operator[](I32 i) const noexcept {
     return mat[i];
 }
 
@@ -1625,12 +1625,12 @@ mat4<T>::operator const T *() const {
 }
 
 template<typename T>
-T& mat4<T>::operator[](I32 i) {
+T& mat4<T>::operator[](I32 i) noexcept {
     return mat[i];
 }
 
 template<typename T>
-const T& mat4<T>::operator[](I32 i) const {
+const T& mat4<T>::operator[](I32 i) const noexcept {
     return mat[i];
 }
 
@@ -1646,7 +1646,7 @@ const T& mat4<T>::element(I8 row, I8 column) const {
 
 template<typename T>
 template<typename U>
-void mat4<T>::set(U m0, U m1, U m2, U m3, U m4, U m5, U m6, U m7, U m8, U m9, U m10, U m11, U m12, U m13, U m14, U m15) {
+void mat4<T>::set(U m0, U m1, U m2, U m3, U m4, U m5, U m6, U m7, U m8, U m9, U m10, U m11, U m12, U m13, U m14, U m15) noexcept {
     mat[0]  = static_cast<T>(m0);
     mat[4]  = static_cast<T>(m4);
     mat[8]  = static_cast<T>(m8);
@@ -1817,7 +1817,7 @@ void mat4<T>::swap(mat4 &B) {
 }
 
 template<typename T>
-T mat4<T>::det() const {
+T mat4<T>::det() const noexcept {
     return ((mat[0] * mat[5] * mat[10]) + (mat[4] * mat[9] * mat[2]) +
             (mat[8] * mat[1] * mat[6])  - (mat[8] * mat[5] * mat[2]) -
             (mat[4] * mat[1] * mat[10]) - (mat[0] * mat[9] * mat[6]));
@@ -1985,7 +1985,7 @@ void mat4<T>::setTranslation(const vec3<U> &v) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::setTranslation(U x, U y, U z) {
+void mat4<T>::setTranslation(U x, U y, U z) noexcept {
     mat[12] = static_cast<T>(x);
     mat[13] = static_cast<T>(y);
     mat[14] = static_cast<T>(z);
@@ -1993,7 +1993,7 @@ void mat4<T>::setTranslation(U x, U y, U z) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::setScale(U x, U y, U z) {
+void mat4<T>::setScale(U x, U y, U z) noexcept {
     mat[0]  = static_cast<T>(x);
     mat[5]  = static_cast<T>(y);
     mat[10] = static_cast<T>(z);

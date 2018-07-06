@@ -42,10 +42,10 @@ void MainScene::updateLights() {
         Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
              vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + _sun_cosy * 0.75f);
 
-    _sun.lock()->get<TransformComponent>()->setPosition(_sunvector);
-    _sun.lock()->getNode<Light>()->setDiffuseColour(_sunColour);
+    _sun->get<TransformComponent>()->setPosition(_sunvector);
+    _sun->getNode<Light>()->setDiffuseColour(_sunColour);
 
-    PushConstants& constants = _currentSky.lock()->get<RenderingComponent>()->pushConstants();
+    PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
     constants.set("enable_sun", PushConstantType::BOOL, true);
     constants.set("sun_vector", PushConstantType::VEC3, _sunvector);
     constants.set("sun_colour", PushConstantType::VEC3, _sunColour.rgb());
@@ -63,10 +63,10 @@ void MainScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
             F32 terrainHeight = 0.0f;
             vec3<F32> eyePosition = cam.getEye();
 
-            vectorImpl<SceneGraphNode_wptr> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), Object3D::ObjectType::TERRAIN);
+            vectorImpl<SceneGraphNode*> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), Object3D::ObjectType::TERRAIN);
 
-            for (SceneGraphNode_wptr terrainNode : terrains) {
-                const std::shared_ptr<Terrain>& ter = terrainNode.lock()->getNode<Terrain>();
+            for (SceneGraphNode* terrainNode : terrains) {
+                const std::shared_ptr<Terrain>& ter = terrainNode->getNode<Terrain>();
                 assert(ter != nullptr);
                 CLAMP<F32>(eyePosition.x,
                            ter->getDimensions().width * 0.5f * -1.0f,
@@ -75,7 +75,7 @@ void MainScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
                            ter->getDimensions().height * 0.5f * -1.0f,
                            ter->getDimensions().height * 0.5f);
 
-                vec3<F32> position = terrainNode.lock()->get<TransformComponent>()->getWorldMatrix() *
+                vec3<F32> position = terrainNode->get<TransformComponent>()->getWorldMatrix() *
                                      ter->getPositionFromGlobal(eyePosition.x, eyePosition.z);
                 terrainHeight = position.y;
                 if (!IS_ZERO(terrainHeight)) {
@@ -138,11 +138,11 @@ void MainScene::processTasks(const U64 deltaTimeUS) {
         _updateLights = true;
 
 
-        vectorImpl<SceneGraphNode_wptr> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), Object3D::ObjectType::TERRAIN);
+        vectorImpl<SceneGraphNode*> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), Object3D::ObjectType::TERRAIN);
 
-        for (SceneGraphNode_wptr terrainNode : terrains) {
+        //for (SceneGraphNode* terrainNode : terrains) {
             //terrainNode.lock()->get<TransformComponent>()->setPositionY(terrainNode.lock()->get<TransformComponent>()->getPosition().y - 0.5f);
-        }
+        //}
     }
 
     Scene::processTasks(deltaTimeUS);
@@ -155,9 +155,9 @@ bool MainScene::load(const stringImpl& name) {
     baseCamera->setMoveSpeedFactor(10.0f);
 
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
-    _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
-    _sun.lock()->getNode<DirectionalLight>()->csmSplitLogFactor(0.965f);
-    _sun.lock()->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
+    _sun->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
+    _sun->getNode<DirectionalLight>()->csmSplitLogFactor(0.965f);
+    _sun->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     _currentSky = addSky();
 
     static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
@@ -171,7 +171,7 @@ bool MainScene::load(const stringImpl& name) {
     ResourceDescriptor infiniteWater("waterEntity");
     infiniteWater.setUserPtr(g_waterDimensions);
     WaterPlane_ptr water = CreateResource<WaterPlane>(_resCache, infiniteWater);
-    SceneGraphNode_ptr waterGraphNode = _sceneGraph->getRoot().addNode(water, normalMask, PhysicsGroup::GROUP_IGNORE);
+    SceneGraphNode* waterGraphNode = _sceneGraph->getRoot().addNode(water, normalMask, PhysicsGroup::GROUP_IGNORE);
     waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     waterGraphNode->get<TransformComponent>()->setPositionY(state().waterLevel());
@@ -220,10 +220,10 @@ U16 MainScene::registerInputActions() {
     actionID++;
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
-        vectorImpl<SceneGraphNode_wptr> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), Object3D::ObjectType::TERRAIN);
+        vectorImpl<SceneGraphNode*> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), Object3D::ObjectType::TERRAIN);
 
-        for (SceneGraphNode_wptr terrainNode : terrains) {
-            terrainNode.lock()->getNode<Terrain>()->toggleBoundingBoxes();
+        for (SceneGraphNode* terrainNode : terrains) {
+            terrainNode->getNode<Terrain>()->toggleBoundingBoxes();
         }
     });
     actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
@@ -244,7 +244,7 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
     if(!parentTask.stopRequested()) {
         static bool switchAB = false;
         vec3<F32> pos;
-        SceneGraphNode_cptr boxNode(_sceneGraph->findNode("box").lock());
+        SceneGraphNode* boxNode(_sceneGraph->findNode("box"));
 
         std::shared_ptr<Object3D> box;
         if (boxNode) {

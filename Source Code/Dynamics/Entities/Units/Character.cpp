@@ -21,7 +21,7 @@ Character::~Character()
 {
 }
 
-void Character::setParentNode(SceneGraphNode_ptr node) {
+void Character::setParentNode(SceneGraphNode* node) {
     Unit::setParentNode(node);
     TransformComponent* const transform = node->get<TransformComponent>();
     if (transform) {
@@ -33,7 +33,7 @@ void Character::setParentNode(SceneGraphNode_ptr node) {
 }
 
 void Character::update(const U64 deltaTimeUS) {
-    assert(_node.lock() != nullptr);
+    assert(_node != nullptr);
 
     if (_positionDirty) {
         _curPosition.lerp(_newPosition,
@@ -51,7 +51,7 @@ void Character::update(const U64 deltaTimeUS) {
     }
 
     TransformComponent* const nodeTransformComponent =
-        getBoundNode().lock()->get<TransformComponent>();
+        getBoundNode()->get<TransformComponent>();
     
     vec3<F32> sourceDirection(getLookingDirection());
     sourceDirection.y = 0.0f;
@@ -67,7 +67,7 @@ void Character::update(const U64 deltaTimeUS) {
 
 /// Just before we render the frame
 bool Character::frameRenderingQueued(const FrameEvent& evt) {
-    if (!getBoundNode().lock()) {
+    if (!getBoundNode()) {
         return false;
     }
 
@@ -89,7 +89,7 @@ vec3<F32> Character::getPosition() const {
 }
 
 vec3<F32> Character::getLookingDirection() {
-    SceneGraphNode_ptr node(getBoundNode().lock());
+    SceneGraphNode* node(getBoundNode());
 
     if (node) {
         return node->get<TransformComponent>()->getOrientation() *
@@ -100,7 +100,7 @@ vec3<F32> Character::getLookingDirection() {
 }
 
 void Character::lookAt(const vec3<F32>& targetPos) {
-    SceneGraphNode_ptr node(getBoundNode().lock());
+    SceneGraphNode* node(getBoundNode());
 
     if (!node) {
         return;
@@ -113,7 +113,7 @@ void Character::lookAt(const vec3<F32>& targetPos) {
 }
 
 void Character::playAnimation(I32 index) {
-    SceneGraphNode_ptr node(getBoundNode().lock());
+    SceneGraphNode* node(getBoundNode());
     if (node) {
         AnimationComponent* anim = node->get<AnimationComponent>();
         if (anim) {
@@ -130,7 +130,7 @@ void Character::playAnimation(I32 index) {
 }
 
 void Character::playNextAnimation() {
-    SceneGraphNode_ptr node(getBoundNode().lock());
+    SceneGraphNode* node(getBoundNode());
     if (node) {
         AnimationComponent* anim = node->get<AnimationComponent>();
         if (anim) {
@@ -147,7 +147,7 @@ void Character::playNextAnimation() {
 }
 
 void Character::playPreviousAnimation() {
-    SceneGraphNode_ptr node(getBoundNode().lock());
+    SceneGraphNode* node(getBoundNode());
     if (node) {
         AnimationComponent* anim = node->get<AnimationComponent>();
         if (anim) {
@@ -164,7 +164,7 @@ void Character::playPreviousAnimation() {
 }
 
 void Character::pauseAnimation(bool state) {
-    SceneGraphNode_ptr node(getBoundNode().lock());
+    SceneGraphNode* node(getBoundNode());
     if (node) {
         AnimationComponent* anim = node->get<AnimationComponent>();
         if (anim) {

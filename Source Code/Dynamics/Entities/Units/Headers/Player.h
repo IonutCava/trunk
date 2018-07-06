@@ -52,7 +52,7 @@ class Player : public Character {
     inline const U8 index() const { return _index; }
 
    protected:
-       void setParentNode(SceneGraphNode_ptr node) override;
+       void setParentNode(SceneGraphNode* node) override;
 
    private:
     U8 _index;

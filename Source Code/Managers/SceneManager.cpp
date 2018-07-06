@@ -111,7 +111,7 @@ void SceneManager::idle() {
         PostFX::instance().setFadeIn(2750.0);
     } else {
         while (!_playerAddQueue.empty()) {
-            std::pair<Scene*, SceneGraphNode_cptr>& playerToAdd = _playerAddQueue.front();
+            std::pair<Scene*, SceneGraphNode*>& playerToAdd = _playerAddQueue.front();
             addPlayerInternal(*playerToAdd.first, playerToAdd.second);
             _playerAddQueue.pop();
         }
@@ -330,7 +330,7 @@ void SceneManager::onSizeChange(const SizeChangeParams& params) {
     }
 }
 
-void SceneManager::addPlayer(Scene& parentScene, const SceneGraphNode_cptr& playerNode, bool queue) {
+void SceneManager::addPlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue) {
     if (queue) {
         _playerAddQueue.push(std::make_pair(&parentScene, playerNode));
     } else {
@@ -338,10 +338,10 @@ void SceneManager::addPlayer(Scene& parentScene, const SceneGraphNode_cptr& play
     }
 }
 
-void SceneManager::addPlayerInternal(Scene& parentScene, const SceneGraphNode_cptr& playerNode) {
+void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerNode) {
     I64 sgnGUID = playerNode->getGUID();
     for (const Player_ptr& crtPlayer : _players) {
-        if (crtPlayer->getBoundNode().lock()->getGUID() == sgnGUID) {
+        if (crtPlayer->getBoundNode()->getGUID() == sgnGUID) {
             return;
         }
     }
@@ -448,11 +448,11 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
                             activeSceneState.windDirZ(),
                             activeSceneState.windSpeed());
 
-    const vectorImpl<SceneGraphNode_wptr>& waterBodies = activeScene.sceneGraph().getNodesByType(SceneNodeType::TYPE_WATER);
+    const vectorImpl<SceneGraphNode*>& waterBodies = activeScene.sceneGraph().getNodesByType(SceneNodeType::TYPE_WATER);
     if (!waterBodies.empty()) {
         U8 index = 0;
-        for (SceneGraphNode_wptr body : waterBodies) {
-            const SceneGraphNode_ptr water(body.lock());
+        for (SceneGraphNode* body : waterBodies) {
+            const SceneGraphNode* water(body);
             
             _sceneData->waterDetails(index,
                                      water->get<TransformComponent>()->getPosition(),

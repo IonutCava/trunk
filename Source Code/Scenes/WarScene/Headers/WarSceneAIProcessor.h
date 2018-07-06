@@ -102,7 +102,7 @@ class WorkingMemoryFact {
 };
 
 typedef WorkingMemoryFact<AIEntity*, FactType::AI_NODE> AINodeFact;
-typedef WorkingMemoryFact<SceneGraphNode_wptr, FactType::SGN_NODE> SGNNodeFact;
+typedef WorkingMemoryFact<SceneGraphNode*, FactType::SGN_NODE> SGNNodeFact;
 typedef WorkingMemoryFact<vec3<F32>, FactType::POSITION> PositionFact;
 typedef WorkingMemoryFact<U8, FactType::COUNTER_SMALL> SmallCounterFact;
 typedef WorkingMemoryFact<U16, FactType::COUNTER_MEDIUM> MediumCounterFact;
@@ -113,8 +113,8 @@ class GlobalWorkingMemory {
 public:
     GlobalWorkingMemory()
     {
-        _flags[0].value(SceneGraphNode_wptr());
-        _flags[1].value(SceneGraphNode_wptr());
+        _flags[0].value(nullptr);
+        _flags[1].value(nullptr);
         _flagCarriers[0].value(nullptr);
         _flagCarriers[1].value(nullptr);
         _flagsAtBase[0].value(true);
@@ -137,7 +137,7 @@ class LocalWorkingMemory {
         _hasEnemyFlag.value(false);
         _enemyHasFlag.value(false);
        _isFlagRetriever.value(false);
-       _currentTarget.value(SceneGraphNode_wptr());
+       _currentTarget.value(nullptr);
     }
 
     SGNNodeFact _currentTarget;
@@ -198,7 +198,7 @@ class WarSceneAIProcessor : public AIProcessor {
     bool update(const U64 deltaTimeUS, NPC* unitRef = nullptr);
     void processMessage(AIEntity& sender, AIMsg msg, const AnyParam& msg_content);
 
-    static void registerFlags(SceneGraphNode_wptr flag1, SceneGraphNode_wptr flag2) {
+    static void registerFlags(SceneGraphNode* flag1, SceneGraphNode* flag2) {
         _globalWorkingMemory._flags[0].value(flag1);
         _globalWorkingMemory._flags[1].value(flag2);
     }
@@ -240,7 +240,7 @@ class WarSceneAIProcessor : public AIProcessor {
     void printWorkingMemory();
     void initInternal();
     void beginPlan(const GOAPGoal& currentGoal);
-    AIEntity* getUnitForNode(U32 teamID, SceneGraphNode_wptr node) const;
+    AIEntity* getUnitForNode(U32 teamID, SceneGraphNode* node) const;
 
     template <typename... T>
     void PRINT(const char* format, T&&... args) const;

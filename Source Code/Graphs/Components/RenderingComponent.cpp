@@ -212,7 +212,7 @@ void RenderingComponent::update(const U64 deltaTimeUS) {
     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
     if (type == Object3D::ObjectType::SUBMESH)
     {
-        StateTracker<bool>& parentStates = _parentSGN.getParent().lock()->getTrackedBools();
+        StateTracker<bool>& parentStates = _parentSGN.getParent()->getTrackedBools();
         parentStates.setTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED, false);
 
         if (_parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
@@ -371,7 +371,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
         }
     }
 
-    SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+    SceneGraphNode* grandParent = _parentSGN.getParent();
     StateTracker<bool>& parentStates = grandParent->getTrackedBools();
 
     // Draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts

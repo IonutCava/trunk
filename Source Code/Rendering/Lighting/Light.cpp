@@ -144,10 +144,10 @@ bool Light::onRender(SceneGraphNode& sgn,
         _impostor->setRadius(_positionAndRange.w);
         _impostor->renderState().setDrawState(true);
         _impostorSGN = sgn.addNode(_impostor, normalMask, PhysicsGroup::GROUP_IGNORE);
-        _impostorSGN.lock()->setActive(true);
+        _impostorSGN->setActive(true);
     }
 
-    _impostorSGN.lock()->get<RenderingComponent>()->getMaterialInstance()->setDiffuse(getDiffuseColour());
+    _impostorSGN->get<RenderingComponent>()->getMaterialInstance()->setDiffuse(getDiffuseColour());
 
     updateImpostor();
 
@@ -166,7 +166,7 @@ void Light::updateImpostor() {
             // Spot light's bounding sphere extends from the middle of the light's range outwards,
             // touching the light's position on one end and the cone at the other
             // so we need to offest the impostor's position a bit
-            TransformComponent* tComp = _impostorSGN.lock()->get<TransformComponent>();
+            TransformComponent* tComp = _impostorSGN->get<TransformComponent>();
             tComp->setPosition(getSpotDirection() * range);
         }
         _impostor->setRadius(range);

@@ -59,7 +59,7 @@ public:
 
     class DebugGroup : public GUIDWrapper {
     public:
-        DebugGroup();
+        DebugGroup() noexcept;
         stringImpl _name;
         I64 _parentGroup;
         vectorImpl<I64> _childGroupsGUID;
@@ -82,11 +82,11 @@ public:
     }
 
 protected:
-    inline hashMapImpl<I64, DebugVar>& getDebugVariables() {
+    inline hashMapImpl<I64, DebugVar>& getDebugVariables() noexcept {
         return _debugVariables;
     }
 
-    inline hashMapImpl<I64, DebugGroup>& getDebugGroups() {
+    inline hashMapImpl<I64, DebugGroup>& getDebugGroups() noexcept {
         return _debugGroups;
     }
 

@@ -47,17 +47,17 @@ class Quaternion {
                   !std::is_same<T, bool>::value,
                   "non-arithmetic quaternion type");
    public:
-    Quaternion();
-    Quaternion(T x, T y, T z, T w);
-    Quaternion(const vec4<T>& values);
+    Quaternion() noexcept;
+    Quaternion(T x, T y, T z, T w) noexcept;
+    Quaternion(const vec4<T>& values) noexcept;
 
     template <typename U = T>
-    Quaternion(__m128 reg, typename std::enable_if<std::is_same<U, F32>::value>::type* = nullptr);
+    Quaternion(__m128 reg, typename std::enable_if<std::is_same<U, F32>::value>::type* = nullptr) noexcept;
 
-    Quaternion(const mat3<T>& rotationMatrix);
-    Quaternion(const vec3<T>& axis, Angle::DEGREES<T> angle);
-    Quaternion(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, Angle::DEGREES<T> roll);
-    Quaternion(const Quaternion& q);
+    Quaternion(const mat3<T>& rotationMatrix) noexcept;
+    Quaternion(const vec3<T>& axis, Angle::DEGREES<T> angle) noexcept;
+    Quaternion(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, Angle::DEGREES<T> roll) noexcept;
+    Quaternion(const Quaternion& q) noexcept;
 
     Quaternion& operator=(const Quaternion& q);
 
@@ -152,15 +152,15 @@ class Quaternion {
     vec3<T> yAxis() const;
     vec3<T> zAxis() const;
 
-    inline F32 X() const;
-    inline F32 Y() const;
-    inline F32 Z() const;
-    inline F32 W() const;
+    inline F32 X() const noexcept;
+    inline F32 Y() const noexcept;
+    inline F32 Z() const noexcept;
+    inline F32 W() const noexcept;
 
-    inline void X(F32 x);
-    inline void Y(F32 y);
-    inline void Z(F32 z);
-    inline void W(F32 w);
+    inline void X(F32 x) noexcept;
+    inline void Y(F32 y) noexcept;
+    inline void Z(F32 z) noexcept;
+    inline void W(F32 w) noexcept;
 
     inline void identity();
 

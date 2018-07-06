@@ -108,7 +108,7 @@ class Unit : public FrameListener {
     /// Get unit type
     inline UnitType getUnitType() const { return _type; }
     /// Get bound node
-    inline SceneGraphNode_wptr getBoundNode() const {
+    inline SceneGraphNode* getBoundNode() const {
         return _node;
     }
     /// Just before we render the frame
@@ -118,7 +118,7 @@ class Unit : public FrameListener {
     virtual I32 getAttribute(U32 attributeID) const;
 
    protected:
-    virtual void setParentNode(SceneGraphNode_ptr node);
+    virtual void setParentNode(SceneGraphNode* node);
 
    protected:
     /// Unit type
@@ -135,14 +135,14 @@ class Unit : public FrameListener {
     vec3<F32> _currentPosition;
     /// Current destination point cached
     vec3<F32> _currentTargetPosition;
-    SceneGraphNode_wptr _node;
+    SceneGraphNode* _node;
     AttributeMap _attributes;
     mutable SharedLock _unitUpdateMutex;
 };
 namespace Attorney {
     class UnitComponent {
     private:
-        static void setParentNode(Unit& unit, SceneGraphNode_ptr node) {
+        static void setParentNode(Unit& unit, SceneGraphNode* node) {
             unit.setParentNode(node);
         }
         friend class Divide::UnitComponent;

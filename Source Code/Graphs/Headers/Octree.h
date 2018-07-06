@@ -43,13 +43,13 @@ class Octree : public std::enable_shared_from_this<Octree> {
     public:
         Octree(U32 nodeMask);
         Octree(U32 nodeMask, const BoundingBox& rootAABB);
-        Octree(U32 nodeMask, const BoundingBox& rootAABB, const vectorImpl<SceneGraphNode_wptr>& nodes);
+        Octree(U32 nodeMask, const BoundingBox& rootAABB, const vectorImpl<SceneGraphNode*>& nodes);
 
         ~Octree();
 
         void update(const U64 deltaTimeUS);
-        bool addNode(SceneGraphNode_wptr node);
-        bool addNodes(const vectorImpl<SceneGraphNode_wptr>& nodes);
+        bool addNode(SceneGraphNode* node);
+        bool addNodes(const vectorImpl<SceneGraphNode*>& nodes);
         void getAllRegions(vectorImpl<BoundingBox>& regionsOut) const;
 
         inline const BoundingBox& getRegion() const {
@@ -66,21 +66,21 @@ class Octree : public std::enable_shared_from_this<Octree> {
     private:
         U8 activeNodes() const;
         void buildTree();
-        void insert(SceneGraphNode_wptr object);
+        void insert(SceneGraphNode* object);
         void findEnclosingBox();
         void findEnclosingCube();
         std::shared_ptr<Octree>
-        createNode(const BoundingBox& region, const vectorImpl<SceneGraphNode_wptr>& objects);
+        createNode(const BoundingBox& region, const vectorImpl<SceneGraphNode*>& objects);
 
         std::shared_ptr<Octree>
-        createNode(const BoundingBox& region, SceneGraphNode_wptr object);
+        createNode(const BoundingBox& region, SceneGraphNode* object);
 
         bool isStatic(const SceneGraphNode& node) const;
         vectorImpl<IntersectionRecord> getIntersection(const Frustum& frustum, U32 typeFilterMask) const;
         vectorImpl<IntersectionRecord> getIntersection(const Ray& intersectRay, F32 start, F32 end, U32 typeFilterMask) const;
 
         size_t getTotalObjectCount() const;
-        void updateIntersectionCache(vectorImpl<SceneGraphNode_wptr>& parentObjects, U32 typeFilterMask);
+        void updateIntersectionCache(vectorImpl<SceneGraphNode*>& parentObjects, U32 typeFilterMask);
         
         void handleIntersection(const IntersectionRecord& intersection) const;
         bool getIntersection(SceneGraphNode& node, const Frustum& frustum, IntersectionRecord& irOut) const;
@@ -96,14 +96,14 @@ class Octree : public std::enable_shared_from_this<Octree> {
         BoundingBox _region;
         std::shared_ptr<Octree> _parent;
         std::array<bool, 8> _activeNodes;
-        vectorImpl<SceneGraphNode_wptr> _objects;
+        vectorImpl<SceneGraphNode*> _objects;
         std::array<std::shared_ptr<Octree>, 8> _childNodes;
-        vectorImpl<SceneGraphNode_wptr> _movedObjects;
+        vectorImpl<SceneGraphNode*> _movedObjects;
 
         vectorImpl<IntersectionRecord> _intersectionsCache;
 
-        static vectorImpl<SceneGraphNode_wptr> s_intersectionsObjectCache;
-        static std::queue<SceneGraphNode_wptr> s_pendingInsertion;
+        static vectorImpl<SceneGraphNode*> s_intersectionsObjectCache;
+        static std::queue<SceneGraphNode*> s_pendingInsertion;
         static SharedLock s_pendingInsertLock;
         static bool s_treeReady;
         static bool s_treeBuilt;

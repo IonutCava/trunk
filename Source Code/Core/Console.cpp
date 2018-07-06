@@ -22,7 +22,7 @@ vectorImpl<Console::ConsolePrintCallback> Console::_guiConsoleCallbacks;
 //Use moodycamel's implementation of a concurent queue due to its "Knock-your-socks-off blazing fast performance."
 //https://github.com/cameron314/concurrentqueue
 namespace {
-    std::mutex& condMutex() {
+    std::mutex& condMutex() noexcept {
         static std::mutex condMutex;
         return condMutex;
     }
@@ -32,7 +32,7 @@ namespace {
         return entryEnqueCV;
     }
 
-    std::atomic_bool& entryAdded() {
+    std::atomic_bool& entryAdded() noexcept {
         static std::atomic_bool entryAdded;
         return entryAdded;
     }
@@ -66,7 +66,7 @@ void Console::printCopyrightNotice() {
               << "-------------------------------------------------------------------------------\n\n";
 }
 
-const char* Console::formatText(const char* format, ...) {
+const char* Console::formatText(const char* format, ...) noexcept {
     static thread_local char textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE + 1];
     va_list args;
     va_start(args, format);

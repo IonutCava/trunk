@@ -24,23 +24,22 @@ Unit::~Unit()
     UNREGISTER_FRAME_LISTENER(this);
 }
 
-void Unit::setParentNode(SceneGraphNode_ptr node) {
+void Unit::setParentNode(SceneGraphNode* node) {
     _node = node;
-    _currentPosition = _node.lock()->get<TransformComponent>()->getPosition();
+    _currentPosition = _node->get<TransformComponent>()->getPosition();
 }
 
 /// Pathfinding, collision detection, animation playback should all be
 /// controlled from here
 bool Unit::moveTo(const vec3<F32>& targetPosition) {
     // We should always have a node
-    SceneGraphNode_ptr sgn = _node.lock();
-    if (!sgn) {
+    if (!_node) {
         return false;
     }
     WriteLock w_lock(_unitUpdateMutex);
     // We receive move request every frame for now (or every task tick)
     // Start plotting a course from our current position
-    _currentPosition = sgn->get<TransformComponent>()->getPosition();
+    _currentPosition = _node->get<TransformComponent>()->getPosition();
     _currentTargetPosition = targetPosition;
 
     if (_prevTime <= 0) {
@@ -107,7 +106,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
                          : moveDistance);
             }
             // commit transformations
-            sgn->get<TransformComponent>()->translate(interpPosition);
+            _node->get<TransformComponent>()->translate(interpPosition);
         }
     }
 
@@ -116,14 +115,13 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
 
 /// Move along the X axis
 bool Unit::moveToX(const F32 targetPosition) {
-    SceneGraphNode_ptr sgn = _node.lock();
-    if (!sgn) {
+    if (!_node) {
         return false;
     }
     {
         /// Update current position
         WriteLock w_lock(_unitUpdateMutex);
-        _currentPosition = sgn->get<TransformComponent>()->getPosition();
+        _currentPosition = _node->get<TransformComponent>()->getPosition();
     }
     return moveTo(vec3<F32>(targetPosition,
                             _currentPosition.y,
@@ -132,14 +130,13 @@ bool Unit::moveToX(const F32 targetPosition) {
 
 /// Move along the Y axis
 bool Unit::moveToY(const F32 targetPosition) {
-    SceneGraphNode_ptr sgn = _node.lock();
-    if (!sgn) {
+    if (!_node) {
         return false;
     }
     {
         /// Update current position
         WriteLock w_lock(_unitUpdateMutex);
-        _currentPosition = sgn->get<TransformComponent>()->getPosition();
+        _currentPosition = _node->get<TransformComponent>()->getPosition();
     }
     return moveTo(vec3<F32>(_currentPosition.x,
                             targetPosition,
@@ -148,14 +145,13 @@ bool Unit::moveToY(const F32 targetPosition) {
 
 /// Move along the Z axis
 bool Unit::moveToZ(const F32 targetPosition) {
-    SceneGraphNode_ptr sgn = _node.lock();
-    if (!sgn) {
+    if (!_node) {
         return false;
     }
     {
         /// Update current position
         WriteLock w_lock(_unitUpdateMutex);
-        _currentPosition = sgn->get<TransformComponent>()->getPosition();
+        _currentPosition = _node->get<TransformComponent>()->getPosition();
     }
     return moveTo(vec3<F32>(_currentPosition.x,
                             _currentPosition.y,
@@ -165,8 +161,7 @@ bool Unit::moveToZ(const F32 targetPosition) {
 /// Further improvements may imply a cooldown and collision detection at
 /// destination (thus the if-check at the end)
 bool Unit::teleportTo(const vec3<F32>& targetPosition) {
-    SceneGraphNode_ptr sgn = _node.lock();
-    if (!sgn) {
+    if (!_node) {
         return false;
     }
     WriteLock w_lock(_unitUpdateMutex);
@@ -177,7 +172,7 @@ bool Unit::teleportTo(const vec3<F32>& targetPosition) {
         _currentTargetPosition = targetPosition;
     }
     TransformComponent* nodeTransformComponent =
-        sgn->get<TransformComponent>();
+        _node->get<TransformComponent>();
     /// Start plotting a course from our current position
     _currentPosition = nodeTransformComponent->getPosition();
     /// teleport to desired position

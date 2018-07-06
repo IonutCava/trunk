@@ -10,7 +10,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
-#if !ECS_DISABLE_LOGGING
+#if !defined(ECS_DISABLE_LOGGING)
 
 #include "Log/Logger.h"
 

@@ -46,7 +46,7 @@ enum class AIMsg : U32 {
 
 class TenisSceneAIProcessor : public AIProcessor {
    public:
-    TenisSceneAIProcessor(SceneGraphNode_wptr target, AIManager& parentManager);
+    TenisSceneAIProcessor(SceneGraphNode* target, AIManager& parentManager);
     bool processData(const U64 deltaTimeUS);
     bool processInput(const U64 deltaTimeUS);
     bool update(const U64 deltaTimeUS, NPC* unitRef = nullptr);
@@ -64,7 +64,7 @@ class TenisSceneAIProcessor : public AIProcessor {
     bool performAction(const GOAPAction& planStep) { return true; }
 
    private:
-       SceneGraphNode_wptr _target;
+       SceneGraphNode* _target;
     vec3<F32> _ballPosition, _prevBallPosition, _entityPosition,
         _initialPosition;
     bool _attackBall, _ballToTeam2, _gameStop;

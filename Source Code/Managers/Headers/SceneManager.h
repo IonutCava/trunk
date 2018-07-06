@@ -91,7 +91,7 @@ public:
     void destroy();
 
     // Add a new player to the simulation
-    void addPlayer(Scene& parentScene, const SceneGraphNode_cptr& playerNode, bool queue);
+    void addPlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue);
     // Removes the specified player from the active simulation
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
@@ -178,7 +178,7 @@ protected:
     bool   unloadScene(Scene* scene);
 
     // Add a new player to the simulation
-    void addPlayerInternal(Scene& parentScene, const SceneGraphNode_cptr& playerNode);
+    void addPlayerInternal(Scene& parentScene, SceneGraphNode* playerNode);
     // Removes the specified player from the active simulation
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
@@ -224,7 +224,7 @@ private:
     std::array<CullTimersPerPass, to_base(RenderPassType::COUNT)> _sceneGraphCullTimers;
     PlayerList _players;
 
-    std::queue<std::pair<Scene*, SceneGraphNode_cptr>>  _playerAddQueue;
+    std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerAddQueue;
     std::queue<std::pair<Scene*, Player_ptr>>  _playerRemoveQueue;
 
     struct SwitchSceneTarget {

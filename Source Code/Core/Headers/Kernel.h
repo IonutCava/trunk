@@ -303,7 +303,7 @@ namespace Attorney {
             kernel.shutdown();
         }
 
-        static void onSizeChange(Kernel& kernel, const SizeChangeParams& params) {
+        static void onSizeChange(const Kernel& kernel, const SizeChangeParams& params) {
             kernel.onSizeChange(params);
         }
 

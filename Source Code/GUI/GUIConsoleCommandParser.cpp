@@ -163,7 +163,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
 void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
     SceneGraph& sceneGraph = _context.gui().activeScene()->sceneGraph();
     if (!args.empty()) {
-        SceneGraphNode_cptr sgn = sceneGraph.findNode("args").lock();
+        SceneGraphNode* sgn = sceneGraph.findNode(args);
         if (!sgn) {
             Console::errorfn(Locale::get(_ID("CONSOLE_NAVMESH_NO_NODE")), args.c_str());
             return;

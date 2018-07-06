@@ -38,10 +38,10 @@ namespace Divide {
 
 class Transform : public TransformInterface, public GUIDWrapper, private NonCopyable {
    public:
-    Transform();
+    Transform() noexcept;
     Transform(const Quaternion<F32>& orientation,
               const vec3<F32>& translation,
-              const vec3<F32>& scale);
+              const vec3<F32>& scale) noexcept;
 
     ~Transform();
 

@@ -42,19 +42,19 @@ namespace {
     }
 
     void TW_CALL SetCB(const void *value, void *clientData) {
-        I64 variableGUID = *(I64*)&clientData;
+        const I64 variableGUID = *(I64*)&clientData;
         auto result = g_varToCallbackMap.find(variableGUID);
         if (result != std::cend(g_varToCallbackMap)) {
-            DELEGATE_CBK<void, void*>& cbk = result->second;
+            const DELEGATE_CBK<void, void*>& cbk = result->second;
             cbk(const_cast<void*>(value));
         }
     }
 
     void TW_CALL GetCB(void *value, void *clientData) {
-        I64 variableGUID = *(I64*)&clientData;
+        const I64 variableGUID = *(I64*)&clientData;
         auto result = g_varToCallbackMap.find(variableGUID);
         if (result != std::cend(g_varToCallbackMap)) {
-            DELEGATE_CBK<void, void*>& cbk = result->second;
+            const DELEGATE_CBK<void, void*>& cbk = result->second;
             cbk(value);
         }
     }
@@ -78,7 +78,7 @@ DebugInterface::DebugVar::DebugVar(const DebugVarDescriptor& descriptor)
 {
 }
 
-DebugInterface::DebugGroup::DebugGroup()
+DebugInterface::DebugGroup::DebugGroup() noexcept
     : GUIDWrapper(),
     _parentGroup(-1)
 {
@@ -103,7 +103,7 @@ void DebugInterface::idle() {
                 // Not the fastest, but meh ... debug stuff -Ionut
                 for (hashMapImpl<I64, DebugVar>::value_type& var : _debugVariables) {
                     DebugVar& variable = var.second;
-                    DebugVarDescriptor& descriptor = variable._descriptor;
+                    const DebugVarDescriptor& descriptor = variable._descriptor;
 
                     TwBar* targetBar = getBar(descriptor._debugGroup);
                     assert(targetBar != nullptr);

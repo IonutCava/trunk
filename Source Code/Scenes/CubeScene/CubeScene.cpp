@@ -35,8 +35,8 @@ void CubeScene::processTasks(const U64 deltaTimeUS) {
                 F32 g = 1.0f - (row / 3.0f);
                 F32 b = col / (_lightNodes.size() / 3.0f);
 
-                _lightNodes[row * 10 + col].lock()->getNode<Light>()->setDiffuseColour(vec3<F32>(r, g, b));
-                _lightNodes[row * 10 + col].lock()->get<TransformComponent>()->setPosition(vec3<F32>(x, y, z));
+                _lightNodes[row * 10 + col]->getNode<Light>()->setDiffuseColour(vec3<F32>(r, g, b));
+                _lightNodes[row * 10 + col]->get<TransformComponent>()->setPosition(vec3<F32>(x, y, z));
             }
 
         _taskTimers[0] = 0.0;
@@ -61,10 +61,10 @@ void CubeScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
 
     g_i >= 180 ? g_j = -1 : g_j = 1;
 
-    SceneGraphNode_cptr cutia1(_sceneGraph->findNode("Cutia1").lock());
-    SceneGraphNode_cptr hellotext(_sceneGraph->findNode("HelloText").lock());
-    SceneGraphNode_cptr bila(_sceneGraph->findNode("Bila").lock());
-    SceneGraphNode_cptr dwarf(_sceneGraph->findNode("dwarf").lock());
+    SceneGraphNode* cutia1(_sceneGraph->findNode("Cutia1"));
+    SceneGraphNode* hellotext(_sceneGraph->findNode("HelloText"));
+    SceneGraphNode* bila(_sceneGraph->findNode("Bila"));
+    SceneGraphNode* dwarf(_sceneGraph->findNode("dwarf"));
 
     cutia1->get<TransformComponent>()->rotate(
         0.3f * g_i, 0.6f * g_i, 0);

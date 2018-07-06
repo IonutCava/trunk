@@ -47,7 +47,7 @@ class OrbitCamera : public Camera {
                          const CameraType& type = CameraType::ORBIT,
                          const vec3<F32>& eye = VECTOR3_ZERO);
   public:
-    void setTarget(SceneGraphNode_cwptr sgn,
+    void setTarget(SceneGraphNode* sgn,
                    const vec3<F32>& offsetDirection = vec3<F32>(0, 0.75, 1.0));
 
     void fromCamera(Camera& camera) override;
@@ -84,7 +84,7 @@ class OrbitCamera : public Camera {
     vec3<F32> _offsetDir;
     vec3<F32> _cameraRotation;
     vec3<F32> _newEye;
-    SceneGraphNode_cwptr _targetNode;
+    SceneGraphNode* _targetNode;
 };
 
 };  // namespace Divide

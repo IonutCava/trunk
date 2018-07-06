@@ -46,7 +46,7 @@ inline void BoundingSphere::fromBoundingSphere(const BoundingSphere& bSphere) {
 
 // https://code.google.com/p/qe3e/source/browse/trunk/src/BoundingSphere.h?r=28
 inline void BoundingSphere::add(const BoundingSphere& bSphere) {
-    F32 dist = (bSphere._center - _center).length();
+    const F32 dist = (bSphere._center - _center).length();
 
     if (_radius >= dist + bSphere._radius) {
         return;
@@ -58,8 +58,8 @@ inline void BoundingSphere::add(const BoundingSphere& bSphere) {
     }
 
     if (dist > EPSILON_F32) {
-        F32 nRadius = (_radius + dist + bSphere._radius) * 0.5f;
-        F32 ratio = (nRadius - _radius) / dist;
+        const F32 nRadius = (_radius + dist + bSphere._radius) * 0.5f;
+        const F32 ratio = (nRadius - _radius) / dist;
         _center += (bSphere._center - _center) * ratio;
 
         _radius = nRadius;
@@ -67,24 +67,24 @@ inline void BoundingSphere::add(const BoundingSphere& bSphere) {
 }
 
 inline void BoundingSphere::addRadius(const BoundingSphere& bSphere) {
-    F32 dist = (bSphere._center - _center).length() + bSphere._radius;
+    const F32 dist = (bSphere._center - _center).length() + bSphere._radius;
     if (_radius < dist) {
         _radius = dist;
     }
 }
 
 inline void BoundingSphere::add(const vec3<F32>& point) {
-    vec3<F32> diff = point - _center;
-    F32 dist = diff.length();
+    const vec3<F32> diff(point - _center);
+    const F32 dist = diff.length();
     if (_radius < dist) {
-        F32 nRadius = (dist - _radius) * 0.5f;
+        const F32 nRadius = (dist - _radius) * 0.5f;
         _center += diff * (nRadius / dist);
         _radius += nRadius;
     }
 }
 
 inline void BoundingSphere::addRadius(const vec3<F32>& point) {
-    F32 dist = (point - _center).length();
+    const F32 dist = (point - _center).length();
     if (_radius < dist) {
         _radius = dist;
     }
@@ -92,14 +92,14 @@ inline void BoundingSphere::addRadius(const vec3<F32>& point) {
 
 inline void BoundingSphere::createFromPoints(const vectorImpl<vec3<F32>>& points) {
     _radius = 0;
-    F32 numPoints = to_F32(points.size());
+    const F32 numPoints = to_F32(points.size());
 
     for (const vec3<F32>& p : points) {
         _center += p / numPoints;
     }
 
     for (const vec3<F32>& p : points) {
-        F32 distance = (p - _center).length();
+        const F32 distance = (p - _center).length();
 
         if (distance > _radius) {
             _radius = distance;
@@ -112,17 +112,17 @@ inline void BoundingSphere::reset() {
     _radius = 0.0f;
 }
 
-inline void BoundingSphere::setRadius(F32 radius) { _radius = radius; }
+inline void BoundingSphere::setRadius(F32 radius) noexcept { _radius = radius; }
 
-inline void BoundingSphere::setCenter(const vec3<F32>& center) {
+inline void BoundingSphere::setCenter(const vec3<F32>& center) noexcept {
     _center = center;
 }
 
-inline const vec3<F32>& BoundingSphere::getCenter() const { return _center; }
+inline const vec3<F32>& BoundingSphere::getCenter() const noexcept { return _center; }
 
-inline F32 BoundingSphere::getRadius() const { return _radius; }
+inline F32 BoundingSphere::getRadius() const noexcept { return _radius; }
 
-inline F32 BoundingSphere::getDiameter() const { return _radius * 2; }
+inline F32 BoundingSphere::getDiameter() const noexcept { return _radius * 2; }
 
 inline F32 BoundingSphere::getDistanceFromPoint(const vec3<F32>& point) const {
     return getCenter().distance(point) - getRadius();

@@ -48,17 +48,12 @@ class ByteBuffer {
     const static size_t DEFAULT_SIZE = 0x1000;
 
     // constructor
-    ByteBuffer();
+    ByteBuffer() noexcept;
 
     // constructor
     ByteBuffer(size_t res);
 
-    // copy constructor
-    ByteBuffer(const ByteBuffer &buf);
-
-    ByteBuffer& operator=(const ByteBuffer &buf);
-
-    void clear();
+    void clear() noexcept;
 
     template <typename T>
     void put(size_t pos, const T& value);
@@ -100,16 +95,16 @@ class ByteBuffer {
     void appendPackGUID(U64 guid);
 
     Byte operator[](size_t pos) const;
-    size_t rpos() const;
-    size_t rpos(size_t rpos_);
-    size_t wpos() const;
-    size_t wpos(size_t wpos_);
-    size_t size() const;
-    bool empty() const;
+    size_t rpos() const noexcept;
+    size_t rpos(size_t rpos_) noexcept;
+    size_t wpos() const noexcept;
+    size_t wpos(size_t wpos_) noexcept;
+    size_t size() const noexcept;
+    bool empty() const noexcept;
     void resize(size_t newsize);
     void reserve(size_t ressize);
 
-    const Byte* contents() const;
+    const Byte* contents() const noexcept;
 
     void put(size_t pos, const Byte *src, size_t cnt);
 

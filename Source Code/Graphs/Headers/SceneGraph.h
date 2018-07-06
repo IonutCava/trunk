@@ -64,7 +64,7 @@ class SceneGraph : private NonCopyable,
         return *_root;
     }
 
-    inline SceneGraphNode_wptr findNode(const stringImpl& name, bool sceneNodeName = false) const {
+    inline SceneGraphNode* findNode(const stringImpl& name, bool sceneNodeName = false) const {
         if (sceneNodeName ? _root->getNode()->getName().compare(name) == 0
                           : _root->getName().compare(name) == 0) {
             return _root;
@@ -73,7 +73,7 @@ class SceneGraph : private NonCopyable,
         return _root->findChild(name, sceneNodeName, true);
     }
 
-    inline SceneGraphNode_wptr findNode(I64 guid) const {
+    inline SceneGraphNode* findNode(I64 guid) const {
         if (_root->getGUID() == guid) {
             return _root;
         }
@@ -97,7 +97,7 @@ class SceneGraph : private NonCopyable,
     void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<I64>& selectionHits) const;
 
     // If this function returns true, the node was successfully removed (or queued for removal)
-    bool removeNode(SceneGraphNode_wptr node);
+    bool removeNode(SceneGraphNode* node);
     // If this function returns true, nodes of the specified type were successfully removed (or queued for removal)
     bool removeNodesByType(SceneNodeType nodeType);
 
@@ -107,7 +107,7 @@ class SceneGraph : private NonCopyable,
 
     void postLoad();
 
-    const vectorImpl<SceneGraphNode_wptr>& getNodesByType(SceneNodeType type) const;
+    const vectorImpl<SceneGraphNode*>& getNodesByType(SceneNodeType type) const;
 
    protected:
     void onNodeDestroy(SceneGraphNode& oldNode);
@@ -123,13 +123,13 @@ class SceneGraph : private NonCopyable,
     bool _loadComplete;
     bool _octreeChanged;
     SceneRoot_ptr _rootNode;
-    SceneGraphNode_ptr _root;
+    SceneGraphNode* _root;
     std::shared_ptr<Octree> _octree;
     std::atomic_bool _octreeUpdating;
-    vectorImpl<SceneGraphNode_wptr> _allNodes;
+    vectorImpl<SceneGraphNode*> _allNodes;
     vectorImpl<SceneGraphNode*> _orderedNodeList;
 
-    std::array<vectorImpl<SceneGraphNode_wptr>, to_base(SceneNodeType::COUNT)> _nodesByType;
+    std::array<vectorImpl<SceneGraphNode*>, to_base(SceneNodeType::COUNT)> _nodesByType;
 };
 
 namespace Attorney {

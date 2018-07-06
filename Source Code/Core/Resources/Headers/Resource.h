@@ -189,13 +189,13 @@ struct TerrainInfo {
     /// texture names,
     /// terrain name etc.
     hashMapImpl<U64, stringImpl> variables;
-    F32 grassDensity;
-    F32 treeDensity;
-    F32 grassScale;
-    F32 treeScale;
+    F32 grassDensity = 1.0f;
+    F32 treeDensity = 1.0f;
+    F32 grassScale = 1.0f;
+    F32 treeScale = 1.0f;
     vec3<F32> position;
     vec2<F32> scale;
-    bool active;
+    bool active = false;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(Resource);

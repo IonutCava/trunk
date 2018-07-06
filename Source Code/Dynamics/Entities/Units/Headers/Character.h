@@ -135,7 +135,7 @@ class Character : public Unit {
     void pauseAnimation(bool state);
 
    protected:
-    void setParentNode(SceneGraphNode_ptr node) override;
+    void setParentNode(SceneGraphNode* node) override;
 
    private:
     CharacterType _type;

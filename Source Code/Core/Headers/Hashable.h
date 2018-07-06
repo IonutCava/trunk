@@ -36,6 +36,7 @@ namespace Divide {
 
 class Hashable {
   public:
+    virtual ~Hashable() = default;
     virtual size_t getHash() const {
         return _hash;
     }

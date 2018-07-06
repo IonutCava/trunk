@@ -357,7 +357,7 @@ class mat3 {
     operator const T *() const;
 
     T &operator[](I32 i);
-    const T operator[](I32 i) const;
+    const T operator[](I32 i) const noexcept;
 
     T &element(I8 row, I8 column);
     const T &element(I8 row, I8 column) const;
@@ -545,14 +545,14 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     operator T *();
     operator const T *() const;
 
-    T &operator[](I32 i);
-    const T &operator[](I32 i) const;
+    T &operator[](I32 i) noexcept;
+    const T &operator[](I32 i) const noexcept;
 
     T &element(I8 row, I8 column);
     const T &element(I8 row, I8 column) const;
 
     template<typename U>
-    void set(U m0, U m1, U m2, U m3, U m4, U m5, U m6, U m7, U m8, U m9, U m10, U m11, U m12, U m13, U m14, U m15);
+    void set(U m0, U m1, U m2, U m3, U m4, U m5, U m6, U m7, U m8, U m9, U m10, U m11, U m12, U m13, U m14, U m15) noexcept;
     template<typename U>
     void set(U const *matrix);
     template<typename U>
@@ -587,7 +587,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     bool isIdentity() const;
     void swap(mat4 &B);
 
-    T det() const;
+    T det() const noexcept;
     T elementSum() const;
     void inverse();
     void transpose();
@@ -618,10 +618,10 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     void setTranslation(const vec3<U> &v);
     template<typename U>
-    void setTranslation(U x, U y, U z);
+    void setTranslation(U x, U y, U z) noexcept;
 
     template<typename U>
-    void setScale(U x, U y, U z);
+    void setScale(U x, U y, U z) noexcept;
     template<typename U>
     void setScale(const vec3<U> &v);
     

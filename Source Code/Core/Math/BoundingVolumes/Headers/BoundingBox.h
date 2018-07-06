@@ -37,12 +37,12 @@
 namespace Divide {
 
 class BoundingSphere;
-class BoundingBox : public GUIDWrapper {
+class BoundingBox {
    public:
-    BoundingBox();
-    BoundingBox(const vec3<F32>& min, const vec3<F32>& max);
-    BoundingBox(const vectorImpl<vec3<F32>>& points);
-    BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ);
+    BoundingBox() noexcept;
+    BoundingBox(const vec3<F32>& min, const vec3<F32>& max) noexcept;
+    BoundingBox(const vectorImpl<vec3<F32>>& points) noexcept;
+    BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) noexcept;
     ~BoundingBox();
 
     BoundingBox(const BoundingBox& b);
@@ -55,57 +55,57 @@ class BoundingBox : public GUIDWrapper {
     bool collision(const BoundingBox& AABB2) const;
     bool collision(const BoundingSphere& bSphere) const;
 
-    bool compare(const BoundingBox& bb) const;
+    bool compare(const BoundingBox& bb) const noexcept;
     bool operator==(const BoundingBox& B) const;
     bool operator!=(const BoundingBox& B) const;
 
     /// Optimized method
-    bool intersect(const Ray& r, F32 t0, F32 t1) const;
+    bool intersect(const Ray& r, F32 t0, F32 t1) const noexcept;
 
     void createFromPoints(const vectorImpl<vec3<F32>>& points);
     void createFromSphere(const vec3<F32>& center, F32 radius);
 
-    void add(const vec3<F32>& v);
-    void add(const BoundingBox& bb);
+    void add(const vec3<F32>& v) noexcept;
+    void add(const BoundingBox& bb) noexcept;
 
-    void translate(const vec3<F32>& v);
+    void translate(const vec3<F32>& v) noexcept;
 
-    void multiply(F32 factor);
-    void multiply(const vec3<F32>& v);
-    void multiplyMax(const vec3<F32>& v);
-    void multiplyMin(const vec3<F32>& v);
+    void multiply(F32 factor) noexcept;
+    void multiply(const vec3<F32>& v) noexcept;
+    void multiplyMax(const vec3<F32>& v) noexcept;
+    void multiplyMin(const vec3<F32>& v) noexcept;
 
     void transform(const BoundingBox& initialBoundingBox,
                    const mat4<F32>& mat);
 
     void transform(const mat4<F32>& mat);
 
-    const vec3<F32>& getMin() const;
-    const vec3<F32>& getMax() const;
+    const vec3<F32>& getMin() const noexcept;
+    const vec3<F32>& getMax() const noexcept;
 
-    vec3<F32> getCenter() const;
-    vec3<F32> getExtent() const;
-    vec3<F32> getHalfExtent() const;
+    vec3<F32> getCenter() const noexcept;
+    vec3<F32> getExtent() const noexcept;
+    vec3<F32> getHalfExtent() const noexcept;
 
-    F32 getWidth() const;
-    F32 getHeight() const;
-    F32 getDepth() const;
+    F32 getWidth() const noexcept;
+    F32 getHeight() const noexcept;
+    F32 getDepth() const noexcept;
 
-    void set(const BoundingBox& bb);
-    void set(const vec3<F32>& min, const vec3<F32>& max);
-    void setMin(const vec3<F32>& min);
-    void setMax(const vec3<F32>& max);
+    void set(const BoundingBox& bb) noexcept;
+    void set(const vec3<F32>& min, const vec3<F32>& max) noexcept;
+    void setMin(const vec3<F32>& min) noexcept;
+    void setMax(const vec3<F32>& max) noexcept;
 
-    void set(F32 min, F32 max);
-    void set(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ);
-    void setMin(F32 min);
-    void setMin(F32 minX, F32 minY, F32 minZ);
-    void setMax(F32 max);
-    void setMax(F32 maxX, F32 maxY, F32 maxZ);
+    void set(F32 min, F32 max) noexcept;
+    void set(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) noexcept;
+    void setMin(F32 min) noexcept;
+    void setMin(F32 minX, F32 minY, F32 minZ) noexcept;
+    void setMax(F32 max) noexcept;
+    void setMax(F32 maxX, F32 maxY, F32 maxZ) noexcept;
 
-    void reset();
+    void reset() noexcept;
 
-    std::array<vec3<F32>, 8> getPoints() const;
+    std::array<vec3<F32>, 8> getPoints() const noexcept;
 
     F32 nearestDistanceFromPointSquared(const vec3<F32>& pos) const;
     F32 nearestDistanceFromPoint(const vec3<F32>& pos) const;

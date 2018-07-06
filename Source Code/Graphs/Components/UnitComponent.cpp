@@ -19,7 +19,7 @@ UnitComponent::~UnitComponent()
 bool UnitComponent::setUnit(Unit_ptr unit) {
     if (!_unit) {
         _unit = unit;
-        Attorney::UnitComponent::setParentNode(*_unit, _parentSGN.shared_from_this());
+        Attorney::UnitComponent::setParentNode(*_unit, &_parentSGN);
         return true;
     }
 

@@ -63,7 +63,7 @@ namespace detail {
     /// @author Christophe Riccio
     ///////////////////////////////////////////////////////////////////////////////////
 
-    inline U32 float2packed11(U32 const & f)
+    inline U32 float2packed11(U32 const & f) noexcept
     {
         // 10 bits    =>                         EE EEEFFFFF
         // 11 bits    =>                        EEE EEFFFFFF
@@ -81,7 +81,7 @@ namespace detail {
             ((f >> 17) & 0x003f); // Mantissa
     }
 
-    inline U32 packed11ToFloat(U32 const & p)
+    inline U32 packed11ToFloat(U32 const & p) noexcept
     {
         // 10 bits    =>                         EE EEEFFFFF
         // 11 bits    =>                        EEE EEFFFFFF
@@ -99,7 +99,7 @@ namespace detail {
             ((p & 0x003f) << 17); // Mantissa
     }
 
-    inline U32 float2packed10(U32 const & f)
+    inline U32 float2packed10(U32 const & f) noexcept
     {
         // 10 bits    =>                         EE EEEFFFFF
         // 11 bits    =>                        EEE EEFFFFFF
@@ -120,7 +120,7 @@ namespace detail {
             ((f >> 18) & 0x001f); // Mantissa
     }
 
-    inline U32 packed10ToFloat(U32 const & p)
+    inline U32 packed10ToFloat(U32 const & p) noexcept
     {
         // 10 bits    =>                         EE EEEFFFFF
         // 11 bits    =>                        EEE EEFFFFFF
@@ -234,7 +234,7 @@ namespace customRNG
 template <typename T,
           typename Engine,
           typename Distribution>
-T Random(T min, T max) {
+T Random(T min, T max) noexcept {
     static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be randomized!");
 
     if (min > max) {
@@ -247,7 +247,7 @@ T Random(T min, T max) {
 template <typename T,
           typename Engine,
           typename Distribution>
-T Random(T max) {
+T Random(T max) noexcept {
     static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be randomized!");
 
     return Random<T, Engine, Distribution>(max < 0 ? std::numeric_limits<T>::min() : 0, max);
@@ -256,7 +256,7 @@ T Random(T max) {
 template <typename T,
           typename Engine,
           typename Distribution>
-T Random() {
+T Random() noexcept {
     static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be randomized!");
 
     return Random<T, Engine, Distribution>(std::numeric_limits<T>::max());
@@ -328,15 +328,15 @@ ClearBit(U32& bitMask, const Type bit) {
     ClearBit(bitMask, to_base(bit));
 }
 
-inline bool BitCompare(const U32 bitMask, const U32 bit) {
+constexpr bool BitCompare(const U32 bitMask, const U32 bit) noexcept {
     return ((bitMask & bit) == bit);
 }
 
-inline void SetBit(U32& bitMask, const U32 bit) {
+constexpr void SetBit(U32& bitMask, const U32 bit) noexcept {
     bitMask |= bit;
 }
 
-inline void ClearBit(U32& bitMask, const U32 bit) {
+constexpr void ClearBit(U32& bitMask, const U32 bit) noexcept {
     bitMask &= ~(bit);
 }
 
@@ -352,7 +352,7 @@ constexpr T roundup(T value,
                 : roundup(((value - 1) | ((value - 1) >> curb)) + 1, maxb, curb << 1);
 }
 
-inline U32 nextPOW2(U32 n) {
+constexpr U32 nextPOW2(U32 n) noexcept {
     n--;
     n |= n >> 1;
     n |= n >> 2;
@@ -363,7 +363,7 @@ inline U32 nextPOW2(U32 n) {
     return ++n;
 }
 
-inline U32 minSquareMatrixSize(U32 elementCount) {
+constexpr U32 minSquareMatrixSize(U32 elementCount) noexcept {
     U32 result = 1;
     while (result * result < elementCount) {
         ++result;
@@ -377,7 +377,7 @@ inline T Lerp(const T v1, const T v2, const U t) {
 }
 
 template <typename T>
-inline T Sqrt(T input) {
+inline T Sqrt(T input) noexcept {
     return (T)std::sqrt(input);
 }
 
@@ -387,48 +387,48 @@ inline T Sqrt(U input) {
 }
 
 template <>
-inline F32 Sqrt(__m128 input) {
+inline F32 Sqrt(__m128 input) noexcept {
     return _mm_cvtss_f32(_mm_sqrt_ss(input));
 }
 ///(thx sqrt[-1] and canuckle of opengl.org forums)
 
 // Helper method to emulate GLSL
-inline F32 FRACT(const F32 floatValue) {
+inline F32 FRACT(const F32 floatValue) noexcept {
     return to_F32(fmod(floatValue, 1.0f));
 }
 
 ///Helper methods to go from a float [0 ... 1] to packed char and back
-inline I8 FLOAT_TO_SCHAR_SNORM(const F32 value) {
+inline I8 FLOAT_TO_SCHAR_SNORM(const F32 value) noexcept {
     assert(value > 0.0f);
     return to_I8(std::min(255, (I32)(value * 256.0f)));
 }
 
-inline I8 FLOAT_TO_SCHAR(const F32 value) {
+inline I8 FLOAT_TO_SCHAR(const F32 value) noexcept {
     assert(value > 0.0f);
     return to_I8(((value + 1.0f) * 0.5f) * 255.0f);
 }
 
-inline U8 FLOAT_TO_CHAR_SNORM(const F32 value) {
+constexpr U8 FLOAT_TO_CHAR_SNORM(const F32 value) noexcept {
     return to_U8(std::min(255, (I32)(value * 256.0f)));
 }
 
-inline U8 FLOAT_TO_CHAR(const F32 value) {
+constexpr U8 FLOAT_TO_CHAR(const F32 value) noexcept {
     return to_U8(((value + 1.0f) * 0.5f) * 255.0f);
 }
 
-inline F32 CHAR_TO_FLOAT(const U8 value) {
+constexpr F32 CHAR_TO_FLOAT(const U8 value) noexcept {
     return ((value / 255.0f) * 2.0f) - 1.0f;
 }
 
-inline F32 CHAR_TO_FLOAT_SNORM(const U8 value) {
+constexpr F32 CHAR_TO_FLOAT_SNORM(const U8 value)noexcept {
     return value / 256.0f;
 }
 
 // Pack 3 values into 1 float
-inline F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z) {
+inline F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z) noexcept {
     static const D64 offset = to_D64(1 << 24);
 
-    U32 packed = (x << 16) | (y << 8) | z;
+    const U32 packed = (x << 16) | (y << 8) | z;
     return to_F32(to_D64(packed) / offset);
 }
 
@@ -698,62 +698,62 @@ T Nanoseconds(const U a) {
 }
 
 template <typename T, typename U>
-T NanosecondsToSeconds(const U a) {
+T NanosecondsToSeconds(const U a) noexcept {
     return Metric::Nano<T, U>(a);
 }
 
 template <typename T, typename U>
-T NanosecondsToMilliseconds(const U a) {
+T NanosecondsToMilliseconds(const U a) noexcept {
     return Metric::Micro<T, U>(a);
 }
 
 template <typename T, typename U>
-T NanosecondsToMicroseconds(const U a) {
+T NanosecondsToMicroseconds(const U a) noexcept {
     return Metric::Milli<T, U>(a);
 }
 
 template <typename T, typename U>
-T MicrosecondsToSeconds(const U a) {
+T MicrosecondsToSeconds(const U a) noexcept {
     return Metric::Micro<T, U>(a);
 }
 
 template <typename T, typename U>
-T MicrosecondsToMilliseconds(const U a) {
+T MicrosecondsToMilliseconds(const U a) noexcept {
     return Metric::Milli<T, U>(a);
 }
 
 template <typename T, typename U>
-T MicrosecondsToNanoseconds(const U a) {
+T MicrosecondsToNanoseconds(const U a) noexcept {
     return Metric::Kilo<T, U>(a);
 }
 
 template <typename T, typename U>
-T MillisecondsToSeconds(const U a) {
+T MillisecondsToSeconds(const U a) noexcept {
     return Metric::Milli<T, U>(a);
 }
 
 template <typename T, typename U>
-T MillisecondsToMicroseconds(const U a) {
+T MillisecondsToMicroseconds(const U a) noexcept {
     return Metric::Kilo<T, U>(a);
 }
 
 template <typename T, typename U>
-T MillisecondsToNanoseconds(const U a) {
+T MillisecondsToNanoseconds(const U a) noexcept {
     return Metric::Mega<T, U>(a);
 }
 
 template <typename T, typename U>
-T SecondsToMilliseconds(const U a) {
+T SecondsToMilliseconds(const U a) noexcept {
     return Metric::Kilo<T, U>(a);
 }
 
 template <typename T, typename U>
-T SecondsToMicroseconds(const U a) {
+T SecondsToMicroseconds(const U a) noexcept {
     return Metric::Mega<T, U>(a);
 }
 
 template <typename T, typename U>
-T SecondsToNanoseconds(const U a) {
+T SecondsToNanoseconds(const U a) noexcept {
     return Metric::Giga<T, U>(a);
 }
 

@@ -76,20 +76,20 @@ class Task : public GUIDWrapper, protected NonCopyable {
 
     bool isRunning() const;
 
-    inline TaskPool& getOwningPool() {
+    inline TaskPool& getOwningPool() noexcept {
         assert(_tp != nullptr);
         return *_tp;
     }
 
-    inline I64 jobIdentifier() const {
+    inline I64 jobIdentifier() const noexcept {
         return _jobIdentifier;
     }
 
-    inline U32 poolIndex() const {
+    inline U32 poolIndex() const noexcept {
         return _poolIndex;
     }
 
-    inline bool stopRequested() const {
+    inline bool stopRequested() const noexcept {
         return _stopRequested;
     }
 
@@ -104,7 +104,7 @@ class Task : public GUIDWrapper, protected NonCopyable {
 
    protected:
     friend class TaskPool;
-    inline void setPoolIndex(TaskPool* const pool, U32 index) {
+    inline void setPoolIndex(TaskPool* const pool, U32 index) noexcept {
         _tp = pool;
         _poolIndex = index;
     }
@@ -140,7 +140,7 @@ class Task : public GUIDWrapper, protected NonCopyable {
 
 // A task object may be used for multiple jobs
 struct TaskHandle {
-    explicit TaskHandle(Task* task, I64 id) 
+    explicit TaskHandle(Task* task, I64 id)  noexcept
         : _task(task),
           _jobIdentifier(id)
     {

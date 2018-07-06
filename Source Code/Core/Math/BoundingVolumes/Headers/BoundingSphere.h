@@ -40,12 +40,12 @@ namespace Divide {
 
 class BoundingSphere {
    public:
-    BoundingSphere();
-    BoundingSphere(const vec3<F32>& center, F32 radius);
-    BoundingSphere(const vectorImpl<vec3<F32>>& points);
+    BoundingSphere() noexcept;
+    BoundingSphere(const vec3<F32>& center, F32 radius) noexcept;
+    BoundingSphere(const vectorImpl<vec3<F32>>& points) noexcept;
 
-    BoundingSphere(const BoundingSphere& s);
-    void operator=(const BoundingSphere& s);
+    BoundingSphere(const BoundingSphere& s) noexcept;
+    void operator=(const BoundingSphere& s) noexcept;
 
     void fromBoundingBox(const BoundingBox& bBox);
     void fromBoundingSphere(const BoundingSphere& bSphere);
@@ -60,12 +60,12 @@ class BoundingSphere {
 
     void createFromPoints(const vectorImpl<vec3<F32>>& points);
 
-    void setRadius(F32 radius);
-    void setCenter(const vec3<F32>& center);
+    void setRadius(F32 radius) noexcept;
+    void setCenter(const vec3<F32>& center) noexcept;
 
-    const vec3<F32>& getCenter() const;
-    F32 getRadius() const;
-    F32 getDiameter() const;
+    const vec3<F32>& getCenter() const noexcept;
+    F32 getRadius() const noexcept;
+    F32 getDiameter() const noexcept;
 
     F32 getDistanceFromPoint(const vec3<F32>& point) const;
 

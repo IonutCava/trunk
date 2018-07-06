@@ -50,7 +50,7 @@ class IntersectionRecord
                        const Ray& ray,
                        D64 distance);
     /// Creates a new intersection record indicating whether there was a hit or not and the object which was hit.
-    IntersectionRecord(SceneGraphNode_wptr hitObject);
+    IntersectionRecord(SceneGraphNode* hitObject);
 
     /// Reset all information contained by this record
     void reset();
@@ -62,9 +62,9 @@ class IntersectionRecord
     /// This is the ray which caused the intersection
     Ray _ray;
     /// This is the object which is being intersected
-    SceneGraphNode_wptr _intersectedObject1;
+    SceneGraphNode* _intersectedObject1;
     /// This is the other object being intersected (may be null, as in the case of a ray-object intersection)
-    SceneGraphNode_wptr _intersectedObject2;
+    SceneGraphNode* _intersectedObject2;
 
     /// this is a reference to the current node within the octree for where the collision occurred. In some cases, the collision handler
     /// will want to be able to spawn new objects and insert them into the tree. This node is a good starting place for inserting these objects
@@ -80,8 +80,7 @@ class IntersectionRecord
     bool operator==(const IntersectionRecord& otherRecord);
 
     inline bool isEmpty() const {
-        return !_intersectedObject1.lock() &&
-               !_intersectedObject2.lock();
+        return _intersectedObject1 == nullptr && _intersectedObject2 == nullptr;
     }
 };
 }; //namespace Divide

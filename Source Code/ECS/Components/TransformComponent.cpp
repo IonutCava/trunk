@@ -366,12 +366,12 @@ namespace Divide {
                       _parentDirty);
 
         if (dirty) {
-            SceneGraphNode_wptr grandParentPtr = _parentSGN.getParent();
+            SceneGraphNode* grandParentPtr = _parentSGN.getParent();
             _worldMatrixInterp.set(getLocalPosition(interpolationFactor),
                                    getLocalScale(interpolationFactor),
                                    mat4<F32>(GetMatrix(getLocalOrientation(interpolationFactor)), false));
-            if (!grandParentPtr.expired()) {
-                _worldMatrixInterp *= grandParentPtr.lock()->get<TransformComponent>()->getWorldMatrix(interpolationFactor);
+            if (grandParentPtr) {
+                _worldMatrixInterp *= grandParentPtr->get<TransformComponent>()->getWorldMatrix(interpolationFactor);
             }
             clean(true);
         }
@@ -387,9 +387,9 @@ namespace Divide {
         if (_dirty || _parentDirty) {
             _worldMatrix.set(getMatrix());
 
-            SceneGraphNode_wptr grandParentPtr = _parentSGN.getParent();
-            if (!grandParentPtr.expired()) {
-                _worldMatrix *= grandParentPtr.lock()->get<TransformComponent>()->getWorldMatrix();
+            SceneGraphNode* grandParentPtr = _parentSGN.getParent();
+            if (grandParentPtr) {
+                _worldMatrix *= grandParentPtr->get<TransformComponent>()->getWorldMatrix();
             }
             clean(false);
         }
@@ -405,7 +405,7 @@ namespace Divide {
     vec3<F32> TransformComponent::getPosition() const {
         vec3<F32> position(getLocalPosition());
 
-        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        SceneGraphNode* grandParent = _parentSGN.getParent();
         if (grandParent) {
             position += grandParent->get<TransformComponent>()->getPosition();
         }
@@ -423,7 +423,7 @@ namespace Divide {
     vec3<F32> TransformComponent::getPosition(D64 interpolationFactor) const {
         vec3<F32> position(getLocalPosition(interpolationFactor));
 
-        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        SceneGraphNode* grandParent = _parentSGN.getParent();
         if (grandParent) {
             position += grandParent->get<TransformComponent>()->getPosition(interpolationFactor);
         }
@@ -440,7 +440,7 @@ namespace Divide {
     vec3<F32> TransformComponent::getScale() const {
         vec3<F32> scale(getLocalScale());
 
-        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        SceneGraphNode* grandParent = _parentSGN.getParent();
         if (grandParent) {
             scale *= grandParent->get<TransformComponent>()->getScale();
         }
@@ -458,7 +458,7 @@ namespace Divide {
     vec3<F32> TransformComponent::getScale(D64 interpolationFactor) const {
         vec3<F32> scale(getLocalScale(interpolationFactor));
 
-        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        SceneGraphNode* grandParent = _parentSGN.getParent();
         if (grandParent) {
             scale *= grandParent->get<TransformComponent>()->getScale(interpolationFactor);
         }
@@ -476,7 +476,7 @@ namespace Divide {
     Quaternion<F32> TransformComponent::getOrientation() const {
         Quaternion<F32> orientation(getLocalOrientation());
 
-        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        SceneGraphNode* grandParent = _parentSGN.getParent();
         if (grandParent) {
             orientation.set(grandParent->get<TransformComponent>()->getOrientation() * orientation);
         }
@@ -493,7 +493,7 @@ namespace Divide {
     Quaternion<F32> TransformComponent::getOrientation(D64 interpolationFactor) const {
         Quaternion<F32> orientation(getLocalOrientation(interpolationFactor));
 
-        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        SceneGraphNode* grandParent = _parentSGN.getParent();
         if (grandParent) {
             orientation.set(grandParent->get<TransformComponent>()->getOrientation(interpolationFactor) * orientation);
         }

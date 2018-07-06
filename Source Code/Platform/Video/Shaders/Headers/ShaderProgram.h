@@ -148,7 +148,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
                                  U8 LoD,
                                  U32 index,
                                  U32 functionEntry) {
-        U32 shaderTypeValue = to_U32(shader);
+        const U32 shaderTypeValue = to_U32(shader);
 
         if (_functionIndex[shaderTypeValue][LoD].empty()) {
             return;

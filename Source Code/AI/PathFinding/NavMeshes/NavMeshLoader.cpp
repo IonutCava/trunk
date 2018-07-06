@@ -376,9 +376,9 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         };
 
         // I should remove this hack - Ionut
-        SceneGraphNode_ptr nodeSGN = sgn.shared_from_this();
+        SceneGraphNode* nodeSGN = &sgn;
         if (nodeType == SceneNodeType::TYPE_WATER) {
-            nodeSGN = sgn.findChild("waterPlane").lock();
+            nodeSGN = sgn.findChild("waterPlane");
         }
 
         Console::d_printfn(Locale::get(_ID("NAV_MESH_CURRENT_NODE")),

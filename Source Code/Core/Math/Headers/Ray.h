@@ -48,11 +48,11 @@ namespace Divide {
 
 class Ray {
    public:
-    Ray() : Ray(VECTOR3_ZERO, WORLD_Y_AXIS)
+    Ray()  noexcept : Ray(VECTOR3_ZERO, WORLD_Y_AXIS)
     {
     }
 
-    Ray(const vec3<F32> &o, const vec3<F32> &d)
+    Ray(const vec3<F32> &o, const vec3<F32> &d) noexcept
         : origin(o),
           direction(d),
           inv_direction(1.0f / d.x, 1.0f / d.y, 1.0f / d.z),

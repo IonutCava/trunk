@@ -59,7 +59,7 @@ class PhysXScene : public Scene {
    private:
     bool _hasGroundPlane;
     vec3<F32> _sunvector;
-    SceneGraphNode_wptr _sun;
+    SceneGraphNode* _sun;
 };
 
 };  // namespace Divide

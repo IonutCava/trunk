@@ -44,10 +44,9 @@ class SceneRenderState;
 class Task;
 class Camera;
 class SceneGraph;
+class SceneGraphNode;
 class PlatformContext;
 enum class RenderStage : U32;
-
-FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 class RenderPassCuller {
    public:

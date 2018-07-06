@@ -19,13 +19,13 @@ namespace ECS
 
 		namespace Internal {
 
-#if !ECS_DISABLE_LOGGING
+#if !defined(ECS_DISABLE_LOGGING)
 
 			LoggerManager*				ECSLoggerManager = new LoggerManager();
 
 			Log::Logger* GetLogger(const char* logger)
 			{
-				return ECSLoggerManager->GetLogger(logger);
+                return ECSLoggerManager != nullptr ? ECSLoggerManager->GetLogger(logger) : nullptr;
 			}
 #endif
 		}

@@ -26,7 +26,7 @@ void ByteBufferException::printPosError() const {
                      _size);
 }
 
-ByteBuffer::ByteBuffer() : ByteBuffer(DEFAULT_SIZE)
+ByteBuffer::ByteBuffer() noexcept : ByteBuffer(DEFAULT_SIZE)
 {
 }
 
@@ -36,21 +36,7 @@ ByteBuffer::ByteBuffer(size_t res) : _rpos(0), _wpos(0)
     _storage.reserve(res);
 }
 
-// copy constructor
-ByteBuffer::ByteBuffer(const ByteBuffer &buf)
-    : _rpos(buf._rpos), _wpos(buf._wpos), _storage(buf._storage)
-{
-}
-
-ByteBuffer& ByteBuffer::operator=(const ByteBuffer &buf) {
-    _rpos = buf._rpos;
-    _wpos = buf._rpos;
-    _storage = buf._storage;
-
-    return *this;
-}
-
-void ByteBuffer::clear() {
+void ByteBuffer::clear() noexcept {
     _storage.clear();
     _rpos = _wpos = 0;
 }

@@ -62,9 +62,9 @@ class PingPongScene : public Scene {
     vectorImpl<stringImpl> _quotes;
     vec3<F32> _sunvector;
     std::shared_ptr<Sphere3D> _ball;
-    SceneGraphNode_wptr _ballSGN;
+    SceneGraphNode* _ballSGN;
     Camera* _paddleCam;
-    SceneGraphNode_wptr _sun;
+    SceneGraphNode* _sun;
 
    private:  // Game stuff:
     bool _directionTowardsAdversary;

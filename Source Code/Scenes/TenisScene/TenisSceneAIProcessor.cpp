@@ -13,7 +13,7 @@ namespace Divide {
 
 using namespace AI;
 
-TenisSceneAIProcessor::TenisSceneAIProcessor(SceneGraphNode_wptr target, AIManager& parentManager)
+TenisSceneAIProcessor::TenisSceneAIProcessor(SceneGraphNode* target, AIManager& parentManager)
     : AIProcessor(parentManager),
       _target(target),
       _attackBall(false),
@@ -85,7 +85,7 @@ void TenisSceneAIProcessor::updatePositions() {
         _prevBallPosition = _ballPosition;
         _tickCount = 0;
     }
-    _ballPosition = _target.lock()->get<TransformComponent>()->getPosition();
+    _ballPosition = _target->get<TransformComponent>()->getPosition();
     _entityPosition = _entity->getUnitRef()->getCurrentPosition();
     if (_prevBallPosition.z != _ballPosition.z) {
         _prevBallPosition.z < _ballPosition.z ? _ballToTeam2 = false

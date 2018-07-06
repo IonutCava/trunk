@@ -63,7 +63,7 @@ inline ByteBuffer& ByteBuffer::operator>>(stringImpl& value) {
     value.clear();
     // prevent crash at wrong string format in packet
     while (rpos() < size()) {
-        char c = read<char>();
+        const char c = read<char>();
         if (c == to_U8(0)) {
             break;
         }
@@ -203,29 +203,29 @@ inline Byte ByteBuffer::operator[](size_t pos) const {
     return read<Byte>(pos);
 }
 
-inline size_t ByteBuffer::rpos() const {
+inline size_t ByteBuffer::rpos() const noexcept {
     return _rpos;
 }
 
-inline size_t ByteBuffer::rpos(size_t rpos_) {
+inline size_t ByteBuffer::rpos(size_t rpos_) noexcept {
     _rpos = rpos_;
     return _rpos;
 }
 
-inline size_t ByteBuffer::wpos() const {
+inline size_t ByteBuffer::wpos() const noexcept {
     return _wpos;
 }
 
-inline size_t ByteBuffer::wpos(size_t wpos_) {
+inline size_t ByteBuffer::wpos(size_t wpos_) noexcept {
     _wpos = wpos_;
     return _wpos;
 }
 
-inline size_t ByteBuffer::size() const {
+inline size_t ByteBuffer::size() const noexcept {
     return _storage.size();
 }
 
-inline bool ByteBuffer::empty() const {
+inline bool ByteBuffer::empty() const noexcept {
     return _storage.empty();
 }
 
@@ -241,7 +241,7 @@ inline void ByteBuffer::reserve(size_t ressize) {
     }
 }
 
-inline const Byte* ByteBuffer::contents() const {
+inline const Byte* ByteBuffer::contents() const noexcept {
     return _storage.data();
 }
 

@@ -34,7 +34,7 @@
 
 namespace Divide {
 
-inline const char* getErrorCodeName(ErrorCode code) {
+inline const char* getErrorCodeName(ErrorCode code) noexcept {
     switch (code) {
         default: {
             return "Unknown error.";

@@ -232,12 +232,12 @@ bool Object3D::computeTriangleList(bool force) {
     return true;
 }
 
-vectorImpl<SceneGraphNode_wptr> Object3D::filterByType(const vectorImpl<SceneGraphNode_wptr>& nodes, ObjectType filter) {
-    vectorImpl<SceneGraphNode_wptr> result;
+vectorImpl<SceneGraphNode*> Object3D::filterByType(const vectorImpl<SceneGraphNode*>& nodes, ObjectType filter) {
+    vectorImpl<SceneGraphNode*> result;
     result.reserve(nodes.size());
 
-    for (SceneGraphNode_wptr ptr : nodes) {
-        if (!ptr.expired() && ptr.lock()->getNode<Object3D>()->getObjectType() == filter) {
+    for (SceneGraphNode* ptr : nodes) {
+        if (!ptr && ptr->getNode<Object3D>()->getObjectType() == filter) {
             result.push_back(ptr);
         }
     };

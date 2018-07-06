@@ -36,8 +36,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 struct TransformValues {
-    TransformValues();
-    TransformValues(const TransformValues& other);
+    TransformValues() noexcept;
+    TransformValues(const TransformValues& other) noexcept;
     /// The object's position in the world as a 3 component vector
     vec3<F32> _translation;
     /// Scaling is stored as a 3 component vector.

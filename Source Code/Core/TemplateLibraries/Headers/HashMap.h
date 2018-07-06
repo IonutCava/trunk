@@ -82,7 +82,7 @@ using hashPairReturnFast = std::pair<typename hashMapImplFast<K, V, HashFun>::it
 
 template<class T, bool>
 struct hasher {
-    inline size_t operator() (const T& elem) {
+    inline size_t operator() (const T& elem) noexcept {
         return std::hash<T>()(elem);
     }
 };

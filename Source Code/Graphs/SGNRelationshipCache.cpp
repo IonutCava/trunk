@@ -61,9 +61,9 @@ void SGNRelationshipCache::updateChildren(U8 level, vectorImpl<std::pair<I64, U8
 }
 
 void SGNRelationshipCache::updateParents(U8 level, vectorImpl<std::pair<I64, U8>>& cache) const {
-    SceneGraphNode_ptr parent = _parentNode.getParent().lock();
+    SceneGraphNode* parent = _parentNode.getParent();
     // We ignore the root note when considering grandparent status
-    if (parent && parent->getParent().lock()) {
+    if (parent && parent->getParent()) {
         cache.push_back(std::make_pair(parent->getGUID(), level));
         parent->relationshipCache().updateParents(level + 1, cache);
     }

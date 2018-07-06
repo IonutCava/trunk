@@ -40,10 +40,10 @@ void PhysXScene::processGUI(const U64 deltaTimeUS) {
 }
 
 void PhysXScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
-    PushConstants& constants = _currentSky.lock()->get<RenderingComponent>()->pushConstants();
+    PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
     constants.set("enable_sun", PushConstantType::BOOL, true);
     constants.set("sun_vector", PushConstantType::VEC3, _sunvector);
-    constants.set("sun_colour", PushConstantType::VEC3, _sun.lock()->getNode<Light>()->getDiffuseColour());
+    constants.set("sun_colour", PushConstantType::VEC3, _sun->getNode<Light>()->getDiffuseColour());
 
     Scene::processInput(idx, deltaTimeUS);
 }
@@ -58,7 +58,7 @@ bool PhysXScene::load(const stringImpl& name) {
         vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y), -cosf(sunAngle.y),
                   -sinf(sunAngle.x) * sinf(sunAngle.y));
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
-    _sun.lock()->get<TransformComponent>()->setPosition(_sunvector);
+    _sun->get<TransformComponent>()->setPosition(_sunvector);
     _currentSky = addSky();
 
     s_sceneState = PhysXState::STATE_IDLE;

@@ -221,7 +221,7 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Configuration)_Editor\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(Configuration)_Editor\</IntDir>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ExtendedCorrectnessRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -252,7 +252,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/SimpleCL/Include/;$(SolutionDir)../Source Code/Libs/ImWindow/ImWindow/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL/;$(SolutionDir)../3rdParty/Zlib\include/;$(SolutionDir)../3rdParty/glbinding/include/;$(SolutionDir)../3rdParty/freetype/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/chaiscript/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../Source Code/Editor;$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/SimpleCL/Include/;$(SolutionDir)../Source Code/Libs/ImWindow/ImWindow/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL/;$(SolutionDir)../3rdParty/Zlib\include/;$(SolutionDir)../3rdParty/glbinding/include/;$(SolutionDir)../3rdParty/freetype/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/chaiscript/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/;</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>

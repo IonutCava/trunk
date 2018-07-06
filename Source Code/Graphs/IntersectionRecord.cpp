@@ -24,10 +24,10 @@ IntersectionRecord::IntersectionRecord(const vec3<F32>& hitPos,
 }
 
 /// Creates a new intersection record indicating whether there was a hit or not and the object which was hit.
-IntersectionRecord::IntersectionRecord(SceneGraphNode_wptr hitObject) :
+IntersectionRecord::IntersectionRecord(SceneGraphNode* hitObject) :
     _intersectedObject1(hitObject),
     _distance(0.0),
-    _hasHit(hitObject.lock() != nullptr)
+    _hasHit(hitObject != nullptr)
 {
 }
 
@@ -36,16 +36,16 @@ void IntersectionRecord::reset()
     _ray.identity();
     _hasHit = false;
     _distance = std::numeric_limits<D64>::max();
-    _intersectedObject1.reset();
-    _intersectedObject2.reset();
+    _intersectedObject1 = nullptr;
+    _intersectedObject2 = nullptr;
 }
 
 bool IntersectionRecord::operator==(const IntersectionRecord& otherRecord)
 {
-    SceneGraphNode_ptr node11 = _intersectedObject1.lock();
-    SceneGraphNode_ptr node12 = _intersectedObject2.lock();
-    SceneGraphNode_ptr node21 = otherRecord._intersectedObject1.lock();
-    SceneGraphNode_ptr node22 = otherRecord._intersectedObject2.lock();
+    SceneGraphNode* node11 = _intersectedObject1;
+    SceneGraphNode* node12 = _intersectedObject2;
+    SceneGraphNode* node21 = otherRecord._intersectedObject1;
+    SceneGraphNode* node22 = otherRecord._intersectedObject2;
 
     if (node11 && node12 && node21 && node22) {
         if (node21->getGUID() == node11->getGUID() && node22->getGUID() == node12->getGUID()) {

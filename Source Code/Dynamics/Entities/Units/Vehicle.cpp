@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-Vehicle::Vehicle(SceneGraphNode_ptr node)
+Vehicle::Vehicle(SceneGraphNode* node)
     : Unit(Unit::UnitType::UNIT_TYPE_VEHICLE),
       _vehicleTypeMask(0)
 {

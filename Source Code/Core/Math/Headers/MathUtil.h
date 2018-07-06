@@ -48,28 +48,30 @@ struct NOINITVTABLE GraphPlot {
     explicit GraphPlot(const stringImpl& name) : _plotName(name)
     {
     }
+    virtual ~GraphPlot() = default;
 
     stringImpl _plotName;
     virtual bool empty() const = 0;
 };
 
 struct GraphPlot2D : public GraphPlot {
-    GraphPlot2D() : GraphPlot2D("UNNAMED_PLOT_2D")
+    GraphPlot2D()  noexcept: GraphPlot2D("UNNAMED_PLOT_2D")
     {
     }
+
     GraphPlot2D(const stringImpl& name) : GraphPlot(name)
     {
     }
 
     vectorImpl<vec2<F32>> _coords;
      
-    bool empty() const {
+    bool empty() const  noexcept {
         return _coords.empty();
     }
 };
 
 struct GraphPlot3D : public GraphPlot {
-    GraphPlot3D() : GraphPlot3D("UNNAMED_PLOT_3D")
+    GraphPlot3D() noexcept : GraphPlot3D("UNNAMED_PLOT_3D")
     {
     }
     GraphPlot3D(const stringImpl& name) : GraphPlot(name)
@@ -78,7 +80,7 @@ struct GraphPlot3D : public GraphPlot {
 
     vectorImpl<vec3<F32>> _coords;
 
-    bool empty() const {
+    bool empty() const noexcept {
         return _coords.empty();
     }
 };

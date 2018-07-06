@@ -40,16 +40,14 @@ class PlatformContext;
 class PlatformContextComponent : public NonCopyable {
 
   public:
-    PlatformContextComponent(PlatformContext& context) : _context(context)
+    PlatformContextComponent(PlatformContext& context) noexcept : _context(context)
     {
     }
 
-    virtual ~PlatformContextComponent()
-    {
-    }
+    virtual ~PlatformContextComponent() = default;
 
-    inline PlatformContext& context() { return _context; }
-    inline const PlatformContext& context() const { return _context; }
+    inline PlatformContext& context()  noexcept { return _context; }
+    inline const PlatformContext& context() const noexcept { return _context; }
 
   protected:
     PlatformContext& _context;

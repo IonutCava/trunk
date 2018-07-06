@@ -65,8 +65,8 @@ public:
     void terminate();
 
     
-    inline Application& app() { return _app; }
-    inline const Application& app() const { return _app; }
+    inline Application& app()  noexcept { return _app; }
+    inline const Application& app() const noexcept { return _app; }
 
     inline GFXDevice& gfx() { return *_gfx; }
     inline const GFXDevice& gfx() const { return *_gfx; }

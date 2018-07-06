@@ -54,8 +54,8 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
     _resetUnits = false;
 
     addSelectionCallback([&](PlayerIndex idx) {
-        if (!_currentSelection[idx].expired()) {
-            _GUI->modifyText(_ID("entityState"), _currentSelection[idx].lock()->getName().c_str());
+        if (_currentSelection[idx]) {
+            _GUI->modifyText(_ID("entityState"), _currentSelection[idx]->getName().c_str());
         } else {
             _GUI->modifyText(_ID("entityState"), "");
         }
@@ -97,8 +97,8 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
     }
 
     if (_guiTimersMS[1] >= Time::SecondsToMilliseconds(1)) {
-        if (!_currentSelection[0].expired()) {
-            AI::AIEntity* entity = findAI(_currentSelection[0].lock());
+        if (_currentSelection[0]) {
+            AI::AIEntity* entity = findAI(_currentSelection[0]);
             if (entity) {
                 _GUI->modifyText(_ID("entityState"), entity->toString().c_str());
             }
@@ -174,41 +174,41 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
                             -cosf(g_sunAngle.y),
                             -sinf(g_sunAngle.x) * sinf(g_sunAngle.y));
 
-        _sun.lock()->get<TransformComponent>()->setPosition(sunVector);
+        _sun->get<TransformComponent>()->setPosition(sunVector);
         vec4<F32> sunColour = vec4<F32>(1.0f, 1.0f, 0.2f, 1.0f);
 
-        _sun.lock()->getNode<Light>()->setDiffuseColour(sunColour);
+        _sun->getNode<Light>()->setDiffuseColour(sunColour);
 
-        PushConstants& constants = _currentSky.lock()->get<RenderingComponent>()->pushConstants();
+        PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
         constants.set("enable_sun", PushConstantType::BOOL, true);
         constants.set("sun_vector", PushConstantType::VEC3, sunVector);
-        constants.set("sun_colour", PushConstantType::VEC3, _sun.lock()->getNode<Light>()->getDiffuseColour());
+        constants.set("sun_colour", PushConstantType::VEC3, _sun->getNode<Light>()->getDiffuseColour());
 
         _taskTimers[0] = 0.0;
     }
 
     if (_taskTimers[1] >= AnimationTimer1) {
-        for (SceneGraphNode_wptr npc : _armyNPCs[0]) {
-            assert(npc.lock());
-            npc.lock()->get<UnitComponent>()->getUnit<NPC>()->playNextAnimation();
+        for (SceneGraphNode* npc : _armyNPCs[0]) {
+            assert(npc);
+            npc->get<UnitComponent>()->getUnit<NPC>()->playNextAnimation();
         }
         _taskTimers[1] = 0.0;
     }
 
     if (_taskTimers[2] >= AnimationTimer2) {
-        for (SceneGraphNode_wptr npc : _armyNPCs[1]) {
-            assert(npc.lock());
-            npc.lock()->get<UnitComponent>()->getUnit<NPC>()->playNextAnimation();
+        for (SceneGraphNode* npc : _armyNPCs[1]) {
+            assert(npc);
+            npc->get<UnitComponent>()->getUnit<NPC>()->playNextAnimation();
         }
         _taskTimers[2] = 0.0;
     }
 
     if (!initPosSetLight) {
         for (U8 i = 0; i < 16; ++i) {
-            initPosLight[i].set(_lightNodes[i].lock()->get<TransformComponent>()->getPosition());
+            initPosLight[i].set(_lightNodes[i]->get<TransformComponent>()->getPosition());
         }
         for (U8 i = 0; i < 80; ++i) {
-            initPosLight2[i].set(_lightNodes2[i].first.lock()->get<TransformComponent>()->getPosition());
+            initPosLight2[i].set(_lightNodes2[i].first->get<TransformComponent>()->getPosition());
         }
         initPosSetLight = true;
     }
@@ -227,7 +227,7 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
         for (U8 i = 0; i < 16; ++i) {
             F32 c = i % 2 == 0 ? c1 : c2;
             F32 s = i % 2 == 0 ? s1 : s2;
-            SceneGraphNode_ptr light = _lightNodes[i].lock();
+            SceneGraphNode* light = _lightNodes[i];
             TransformComponent* tComp = light->get<TransformComponent>();
             tComp->setPositionX(radius * c + initPosLight[i].x);
             tComp->setPositionZ(radius * s + initPosLight[i].z);
@@ -235,7 +235,7 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
         }
 
         for (U8 i = 0; i < 80; ++i) {
-            SceneGraphNode_ptr light = _lightNodes2[i].first.lock();
+            SceneGraphNode* light = _lightNodes2[i].first;
             TransformComponent* tComp = light->get<TransformComponent>();
             F32 angle = _lightNodes2[i].second ? std::fmod(phiLight + 45.0f, 360.0f) : phiLight;
             vec2<F32> position(rotatePoint(vec2<F32>(0.0f), angle, initPosLight2[i].xz()));
@@ -244,7 +244,7 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
         }
 
         for (U8 i = 0; i < 40; ++i) {
-            SceneGraphNode_ptr light = _lightNodes3[i].lock();
+            SceneGraphNode* light = _lightNodes3[i];
             TransformComponent* tComp = light->get<TransformComponent>();
             tComp->rotateY(phiLight);
         }
@@ -272,10 +272,10 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
 
     _targetLines->paused(!renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_DEBUG_TARGET_LINES));
 
-    SceneGraphNode_ptr particles = _particleEmitter.lock();
+    SceneGraphNode* particles = _particleEmitter;
     const F32 radius = 20;
     
-    if (particles.get()) {
+    if (particles) {
         phi += 0.01f;
         if (phi > 360.0f) {
             phi = 0.0f;
@@ -293,7 +293,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
         tComp->rotateY(phi);*/
     }
 
-    if (!_aiManager->getNavMesh(_armyNPCs[0][0].lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity()->getAgentRadiusCategory())) {
+    if (!_aiManager->getNavMesh(_armyNPCs[0][0]->get<UnitComponent>()->getUnit<NPC>()->getAIEntity()->getAgentRadiusCategory())) {
         return;
     }
 
@@ -304,9 +304,9 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
     vectorImpl<Line> paths;
     paths.reserve(_armyNPCs[0].size() + _armyNPCs[1].size());
     for (U8 i = 0; i < 2; ++i) {
-        for (SceneGraphNode_wptr node : _armyNPCs[i]) {
-            AI::AIEntity* const character = node.lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity();
-            if (!node.lock()->isActive()) {
+        for (SceneGraphNode* node : _armyNPCs[i]) {
+            AI::AIEntity* const character = node->get<UnitComponent>()->getUnit<NPC>()->getAIEntity();
+            if (!node->isActive()) {
                 continue;
             }
             tempDestination.set(character->getDestination());
@@ -347,16 +347,16 @@ bool WarScene::load(const stringImpl& name) {
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setGlobalRotation(-90.0f /*yaw*/, 59.21f /*pitch*/);
 
-    _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
-    _sun.lock()->getNode<DirectionalLight>()->csmSplitLogFactor(0.85f);
-    _sun.lock()->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
+    _sun->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
+    _sun->getNode<DirectionalLight>()->csmSplitLogFactor(0.85f);
+    _sun->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     // Add some obstacles
-    SceneGraphNode_ptr cylinder[5];
-    cylinder[0] = _sceneGraph->findNode("cylinderC").lock();
-    cylinder[1] = _sceneGraph->findNode("cylinderNW").lock();
-    cylinder[2] = _sceneGraph->findNode("cylinderNE").lock();
-    cylinder[3] = _sceneGraph->findNode("cylinderSW").lock();
-    cylinder[4] = _sceneGraph->findNode("cylinderSE").lock();
+    SceneGraphNode* cylinder[5];
+    cylinder[0] = _sceneGraph->findNode("cylinderC");
+    cylinder[1] = _sceneGraph->findNode("cylinderNW");
+    cylinder[2] = _sceneGraph->findNode("cylinderNE");
+    cylinder[3] = _sceneGraph->findNode("cylinderSW");
+    cylinder[4] = _sceneGraph->findNode("cylinderSE");
 
     for (U8 i = 0; i < 5; ++i) {
         RenderingComponent* const renderable = cylinder[i]->getChild(0).get<RenderingComponent>();
@@ -375,7 +375,7 @@ bool WarScene::load(const stringImpl& name) {
 
     stringImpl currentName;
     std::shared_ptr<SceneNode> currentMesh;
-    SceneGraphNode_ptr baseNode;
+    SceneGraphNode* baseNode;
 
     U8 locationFlag = 0;
     std::pair<I32, I32> currentPos;
@@ -412,7 +412,7 @@ bool WarScene::load(const stringImpl& name) {
             locationFlag = 3;
         }
 
-        SceneGraphNode_ptr crtNode = _sceneGraph->getRoot().addNode(currentMesh, normalMask, baseNode->get<RigidBodyComponent>()->physicsGroup(), currentName);
+        SceneGraphNode* crtNode = _sceneGraph->getRoot().addNode(currentMesh, normalMask, baseNode->get<RigidBodyComponent>()->physicsGroup(), currentName);
         crtNode->setSelectable(true);
         crtNode->usageContext(baseNode->usageContext());
         TransformComponent* tComp = crtNode->get<TransformComponent>();
@@ -437,7 +437,7 @@ bool WarScene::load(const stringImpl& name) {
             //light->setCastShadows(i == 0 ? true : false);
             light->setCastShadows(false);
             light->setDiffuseColour(DefaultColours::RANDOM());
-            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
+            SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<TransformComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, false));
         }
@@ -450,7 +450,7 @@ bool WarScene::load(const stringImpl& name) {
             light->setRange(35.0f);
             light->setCastShadows(false);
             light->setDiffuseColour(DefaultColours::RANDOM());
-            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
+            SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<TransformComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, true));
         }
@@ -464,15 +464,15 @@ bool WarScene::load(const stringImpl& name) {
             //light->setCastShadows(i == 1 ? true : false);
             light->setCastShadows(false);
             light->setDiffuseColour(DefaultColours::RANDOM());
-            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
+            SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<TransformComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));
             lightSGN->get<TransformComponent>()->rotateX(-20);
             _lightNodes3.push_back(lightSGN);
         }
     }
 
-    SceneGraphNode_ptr flag;
-    flag = _sceneGraph->findNode("flag").lock();
+    SceneGraphNode* flag;
+    flag = _sceneGraph->findNode("flag");
     RenderingComponent* const renderable = flag->getChild(0).get<RenderingComponent>();
     renderable->getMaterialInstance()->setDoubleSided(true);
     const Material_ptr& mat = flag->getChild(0).getNode()->getMaterialTpl();
@@ -482,7 +482,7 @@ bool WarScene::load(const stringImpl& name) {
 
     _flag[0] = _sceneGraph->getRoot().addNode(flagNode, normalMask, flag->get<RigidBodyComponent>()->physicsGroup(), "Team1Flag");
 
-    SceneGraphNode_ptr flag0(_flag[0].lock());
+    SceneGraphNode* flag0(_flag[0]);
     flag0->setSelectable(false);
     flag0->usageContext(flag->usageContext());
     TransformComponent* flagtComp = flag0->get<TransformComponent>();
@@ -497,7 +497,7 @@ bool WarScene::load(const stringImpl& name) {
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::BLUE);
 
     _flag[1] = _sceneGraph->getRoot().addNode(flagNode, normalMask, flag->get<RigidBodyComponent>()->physicsGroup(), "Team2Flag");
-    SceneGraphNode_ptr flag1(_flag[1].lock());
+    SceneGraphNode* flag1(_flag[1]);
     flag1->setSelectable(false);
     flag1->usageContext(flag->usageContext());
 
@@ -512,7 +512,7 @@ bool WarScene::load(const stringImpl& name) {
 
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::RED);
 
-    SceneGraphNode_ptr firstPersonFlag = _sceneGraph->getRoot().addNode(flagNode, normalMask, PhysicsGroup::GROUP_KINEMATIC, "FirstPersonFlag");
+    SceneGraphNode* firstPersonFlag = _sceneGraph->getRoot().addNode(flagNode, normalMask, PhysicsGroup::GROUP_KINEMATIC, "FirstPersonFlag");
     firstPersonFlag->lockVisibility(true);
     firstPersonFlag->usageContext(SceneGraphNode::UsageContext::NODE_DYNAMIC);
     flagtComp = firstPersonFlag->get<TransformComponent>();
@@ -574,7 +574,7 @@ bool WarScene::load(const stringImpl& name) {
     particleSource->addGenerator(timeGenerator);
 
     _particleEmitter = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
-    SceneGraphNode_ptr testSGN = _particleEmitter.lock();
+    SceneGraphNode* testSGN = _particleEmitter;
     std::shared_ptr<ParticleEmitter> test = testSGN->getNode<ParticleEmitter>();
     testSGN->get<TransformComponent>()->translateY(10);
     test->setDrawImpostor(true);
@@ -604,7 +604,7 @@ bool WarScene::load(const stringImpl& name) {
             light->setRange(20.0f);
             light->setCastShadows(false);
             light->setDiffuseColour(DefaultColours::RANDOM());
-            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
+            SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<TransformComponent>()->setPosition(vec3<F32>(-215.0f + (115 * row), 15.0f, (-215.0f + (115 * col))));
             _lightNodes.push_back(lightSGN);
         }
@@ -685,7 +685,7 @@ void WarScene::toggleCamera(InputParams param) {
     }
 
     PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
-    if (!_currentSelection[idx].expired()) {
+    if (_currentSelection[idx]) {
         if (flyCameraActive) {
             state().playerState(idx).overrideCamera(tpsCamera);
             static_cast<ThirdPersonCamera&>(*tpsCamera).setTarget(_currentSelection[idx]);
