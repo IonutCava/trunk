@@ -77,7 +77,7 @@ class Vegetation : public SceneNode {
     inline void toggleRendering(bool state) { _render = state; }
     void getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
-                         SceneRenderState& sceneRenderState,
+                         const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
     inline bool isInView(const SceneRenderState& sceneRenderState,
                          SceneGraphNode& sgn,

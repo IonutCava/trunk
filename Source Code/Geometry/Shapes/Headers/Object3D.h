@@ -112,7 +112,7 @@ class Object3D : public SceneNode {
    protected:
     virtual void getDrawCommands(SceneGraphNode& sgn,
                                  RenderStage renderStage,
-                                 SceneRenderState& sceneRenderState,
+                                 const SceneRenderState& sceneRenderState,
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut);
     virtual void computeNormals();
     virtual void computeTangents();

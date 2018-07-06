@@ -145,13 +145,6 @@ class NOINITVTABLE Scene : public Resource {
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
 
-    /// Call this function if you want to use a more complex rendering callback
-    /// other than "SceneGraph::render()"
-    void renderCallback(const DELEGATE_CBK<>& renderCallback) {
-        _renderCallback = renderCallback;
-    }
-    const DELEGATE_CBK<>& renderCallback() { return _renderCallback; }
-
     /// Override this if you need a custom physics implementation
     /// (idle,update,process,etc)
     virtual PhysicsSceneInterface* createPhysicsImplementation();
@@ -183,11 +176,6 @@ class NOINITVTABLE Scene : public Resource {
     /// Current selection
     std::weak_ptr<SceneGraphNode> _currentSelection;
     std::weak_ptr<SceneGraphNode> _currentSky;
-    /// This is the rendering function used to override the default one for the
-    /// renderer.
-    /// If this is empty, the renderer will use the scene's scenegraph render
-    /// function
-    DELEGATE_CBK<> _renderCallback;
 
     /// Scene::load must be called by every scene. Add a load flag to make sure!
     bool _loadComplete;

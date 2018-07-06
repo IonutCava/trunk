@@ -60,10 +60,10 @@ VertexBuffer* const Object3D::getGeometryVB() const {
 
 void Object3D::getDrawCommands(SceneGraphNode& sgn,
                                RenderStage renderStage,
-                               SceneRenderState& sceneRenderState,
+                               const SceneRenderState& sceneRenderState,
                                vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-    RenderingComponent* const renderable =
-        sgn.getComponent<RenderingComponent>();
+
+    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
     VertexBuffer* const vb = getGeometryVB();

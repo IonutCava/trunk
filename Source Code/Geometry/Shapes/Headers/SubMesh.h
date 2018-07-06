@@ -85,7 +85,7 @@ class SubMesh : public Object3D {
 
     void getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
-                         SceneRenderState& sceneRenderState,
+                         const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
 
    protected:

@@ -238,9 +238,10 @@ class Light : public SceneNode {
     bool load(const stringImpl& name);
 
     virtual void getDrawCommands(
-        SceneGraphNode& sgn, RenderStage renderStage,
-        SceneRenderState& sceneRenderState,
-        vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
+                        SceneGraphNode& sgn,
+                        RenderStage renderStage,
+                        const SceneRenderState& sceneRenderState,
+                        vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
 
     void postLoad(SceneGraphNode& sgn);
 

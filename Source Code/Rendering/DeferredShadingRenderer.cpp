@@ -125,9 +125,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer() {
     MemoryManager::DELETE(_lightTexture);
 }
 
-void DeferredShadingRenderer::processVisibleNodes(
-    const GFXDevice::VisibleNodeList& visibleNodes,
-    const GFXDevice::GPUBlock& gpuBlock) {
+void DeferredShadingRenderer::preRender(const GFXDevice::GPUBlock& gpuBlock) {
 
     Light::LightList& lights = LightManager::getInstance().getLights();
     if (lights.size() != _cachedLightCount) {

@@ -406,7 +406,7 @@ void Vegetation::gpuCull() {
 
 void Vegetation::getDrawCommands(SceneGraphNode& sgn,
                                  RenderStage renderStage,
-                                 SceneRenderState& sceneRenderState,
+                                 const SceneRenderState& sceneRenderState,
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut) {
 
     GenericVertexData* buffer = _grassGPUBuffer[_readBuffer];

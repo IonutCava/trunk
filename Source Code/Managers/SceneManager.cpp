@@ -68,9 +68,6 @@ bool SceneManager::load(const stringImpl& sceneName,
         return false;
     }
 
-    _activeScene->renderCallback(
-        DELEGATE_BIND(&SceneManager::renderScene, this));
-
     return Attorney::SceneManager::load(*_activeScene, sceneName, _GUI);
 }
 
@@ -209,24 +206,20 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         }
 
         // Generate and upload all lighting data
-        LightManager::getInstance().updateAndUploadLightData(
-            GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
+        LightManager::getInstance().updateAndUploadLightData(GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
     }
 
     _renderPassCuller->cullSpecial(nodes, meshCullingFunction);
 
     GFX_DEVICE.buildDrawCommands(nodes._visibleNodes,
                                  _activeScene->renderState(),
-                                nodes._locked,
+                                !refreshNodeData,
                                 false);
 }
 
 void SceneManager::renderVisibleNodes(bool flushCache) {
     updateVisibleNodes(flushCache);
-
-    assert(_activeScene->renderCallback());
-
-    _activeScene->renderCallback()();
+    renderScene();
 }
 
 void SceneManager::renderScene() {

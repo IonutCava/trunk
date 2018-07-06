@@ -163,81 +163,81 @@ namespace NS_GLIM
     }
 
 
-    GLIM_ATTRIBUTE GLIM_BATCH::Attribute1f (const char* szAttribute, float a1)
+    GLIM_ATTRIBUTE GLIM_BATCH::Attribute1f (unsigned int attribLocation, float a1)
     {
-        GlimArrayData& Data = m_Data.m_Attributes[szAttribute];
+        GlimArrayData& Data = m_Data.m_Attributes[attribLocation];
 
         Attribute1f (Data, a1);
 
         return (Data);
     }
 
-    GLIM_ATTRIBUTE GLIM_BATCH::Attribute2f (const char* szAttribute, float a1, float a2)
+    GLIM_ATTRIBUTE GLIM_BATCH::Attribute2f (unsigned int attribLocation, float a1, float a2)
     {
-        GlimArrayData& Data = m_Data.m_Attributes[szAttribute];
+        GlimArrayData& Data = m_Data.m_Attributes[attribLocation];
 
         Attribute2f (Data, a1, a2);
 
         return (Data);
     }
 
-    GLIM_ATTRIBUTE GLIM_BATCH::Attribute3f (const char* szAttribute, float a1, float a2, float a3)
+    GLIM_ATTRIBUTE GLIM_BATCH::Attribute3f (unsigned int attribLocation, float a1, float a2, float a3)
     {
-        GlimArrayData& Data = m_Data.m_Attributes[szAttribute];
+        GlimArrayData& Data = m_Data.m_Attributes[attribLocation];
 
         Attribute3f (Data, a1, a2, a3);
 
         return (Data);
     }
 
-    GLIM_ATTRIBUTE GLIM_BATCH::Attribute4f (const char* szAttribute, float a1, float a2, float a3, float a4)
+    GLIM_ATTRIBUTE GLIM_BATCH::Attribute4f (unsigned int attribLocation, float a1, float a2, float a3, float a4)
     {
-        GlimArrayData& Data = m_Data.m_Attributes[szAttribute];
+        GlimArrayData& Data = m_Data.m_Attributes[attribLocation];
 
         Attribute4f (Data, a1, a2, a3, a4);
 
         return (Data);
     }
 
-    GLIM_ATTRIBUTE GLIM_BATCH::Attribute1i (const char* szAttribute, int a1)
+    GLIM_ATTRIBUTE GLIM_BATCH::Attribute1i (unsigned int attribLocation, int a1)
     {
-        GlimArrayData& Data = m_Data.m_Attributes[szAttribute];
+        GlimArrayData& Data = m_Data.m_Attributes[attribLocation];
 
         Attribute1i (Data, a1);
 
         return (Data);
     }
 
-    GLIM_ATTRIBUTE GLIM_BATCH::Attribute2i (const char* szAttribute, int a1, int a2)
+    GLIM_ATTRIBUTE GLIM_BATCH::Attribute2i (unsigned int attribLocation, int a1, int a2)
     {
-        GlimArrayData& Data = m_Data.m_Attributes[szAttribute];
+        GlimArrayData& Data = m_Data.m_Attributes[attribLocation];
 
         Attribute2i (Data, a1, a2);
 
         return (Data);
     }
 
-    GLIM_ATTRIBUTE GLIM_BATCH::Attribute3i (const char* szAttribute, int a1, int a2, int a3)
+    GLIM_ATTRIBUTE GLIM_BATCH::Attribute3i (unsigned int attribLocation, int a1, int a2, int a3)
     {
-        GlimArrayData& Data = m_Data.m_Attributes[szAttribute];
+        GlimArrayData& Data = m_Data.m_Attributes[attribLocation];
 
         Attribute3i (Data, a1, a2, a3);
 
         return (Data);
     }
 
-    GLIM_ATTRIBUTE GLIM_BATCH::Attribute4i (const char* szAttribute, int a1, int a2, int a3, int a4)
+    GLIM_ATTRIBUTE GLIM_BATCH::Attribute4i (unsigned int attribLocation, int a1, int a2, int a3, int a4)
     {
-        GlimArrayData& Data = m_Data.m_Attributes[szAttribute];
+        GlimArrayData& Data = m_Data.m_Attributes[attribLocation];
 
         Attribute4i (Data, a1, a2, a3, a4);
 
         return (Data);
     }
 
-    GLIM_ATTRIBUTE GLIM_BATCH::Attribute4ub (const char* szAttribute, unsigned char a1, unsigned char a2, unsigned char a3, unsigned char a4)
+    GLIM_ATTRIBUTE GLIM_BATCH::Attribute4ub (unsigned int attribLocation, unsigned char a1, unsigned char a2, unsigned char a3, unsigned char a4)
     {
-        GlimArrayData& Data = m_Data.m_Attributes[szAttribute];
+        GlimArrayData& Data = m_Data.m_Attributes[attribLocation];
 
         Attribute4ub (Data, a1, a2, a3, a4);
 

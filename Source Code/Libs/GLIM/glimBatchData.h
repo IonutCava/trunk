@@ -104,7 +104,7 @@ namespace NS_GLIM
         GLIM_BATCH_STATE m_State;
 
         // All attributes accessible by name.
-        hashMapImpl<stringImpl, GlimArrayData> m_Attributes;
+        hashMapImpl<unsigned int, GlimArrayData> m_Attributes;
 
         // Position data is stored separately, not as an attribute.
         vectorImpl<Glim4ByteData> m_PositionData;

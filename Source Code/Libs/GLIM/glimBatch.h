@@ -41,25 +41,25 @@ namespace NS_GLIM
         //! Specifies a new vertex of a primitive.
         virtual void Vertex (float x, float y, float z = 0.0f);
         //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute1f (const char* szAttribute, float a1);
+        virtual GLIM_ATTRIBUTE Attribute1f (unsigned int attribLocation, float a1);
         //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute2f (const char* szAttribute, float a1, float a2);
+        virtual GLIM_ATTRIBUTE Attribute2f (unsigned int attribLocation, float a1, float a2);
         //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute3f (const char* szAttribute, float a1, float a2, float a3);
+        virtual GLIM_ATTRIBUTE Attribute3f (unsigned int attribLocation, float a1, float a2, float a3);
         //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute4f (const char* szAttribute, float a1, float a2, float a3, float a4);
+        virtual GLIM_ATTRIBUTE Attribute4f (unsigned int attribLocation, float a1, float a2, float a3, float a4);
+
+        //! Specifies a new value for the attribute with the given location.
+        virtual GLIM_ATTRIBUTE Attribute1i (unsigned int attribLocation, int a1);
+        //! Specifies a new value for the attribute with the given name.
+        virtual GLIM_ATTRIBUTE Attribute2i (unsigned int attribLocation, int a1, int a2);
+        //! Specifies a new value for the attribute with the given name.
+        virtual GLIM_ATTRIBUTE Attribute3i (unsigned int attribLocation, int a1, int a2, int a3);
+        //! Specifies a new value for the attribute with the given name.
+        virtual GLIM_ATTRIBUTE Attribute4i (unsigned int attribLocation, int a1, int a2, int a3, int a4);
 
         //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute1i (const char* szAttribute, int a1);
-        //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute2i (const char* szAttribute, int a1, int a2);
-        //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute3i (const char* szAttribute, int a1, int a2, int a3);
-        //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute4i (const char* szAttribute, int a1, int a2, int a3, int a4);
-
-        //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute4ub (const char* szAttribute, unsigned char a1, unsigned char a2, unsigned char a3, unsigned char a4 = 255);
+        virtual GLIM_ATTRIBUTE Attribute4ub (unsigned int attribLocation, unsigned char a1, unsigned char a2, unsigned char a3, unsigned char a4 = 255);
 
 
         //! Specifies a new value for the attribute with the given name.

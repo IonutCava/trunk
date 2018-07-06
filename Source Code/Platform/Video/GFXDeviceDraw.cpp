@@ -232,7 +232,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
 
     if (refreshNodeData) {
         // Pass the list of nodes to the renderer for a pre-render pass
-        getRenderer().processVisibleNodes(visibleNodes, _gpuBlock);
+        getRenderer().preRender(_gpuBlock);
     }
 
     vectorAlg::vecSize nodeCount = visibleNodes.size();
@@ -379,7 +379,7 @@ void GFXDevice::drawBox3D(IMPrimitive& primitive,
     // Create the object
     primitive.beginBatch(true, 16);
     // Set it's color
-    primitive.attribute4ub("inColorData", color);
+    primitive.attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), color);
     // Draw the bottom loop
     primitive.begin(PrimitiveType::LINE_LOOP);
     primitive.vertex(min.x, min.y, min.z);
@@ -432,14 +432,14 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
         }
         // Create the object containing all of the lines
         primitive.beginBatch(true, to_uint(lines.size()) * 2);
-        primitive.attribute4ub("inColorData", lines[0]._colorStart);
+        primitive.attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), lines[0]._colorStart);
         // Set the mode to line rendering
         primitive.begin(PrimitiveType::LINES);
         // Add every line in the list to the batch
         for (const Line& line : lines) {
-            primitive.attribute4ub("inColorData", line._colorStart);
+            primitive.attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), line._colorStart);
             primitive.vertex(line._startPoint);
-            primitive.attribute4ub("inColorData", line._colorEnd);
+            primitive.attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), line._colorEnd);
             primitive.vertex(line._endPoint);
         }
         primitive.end();

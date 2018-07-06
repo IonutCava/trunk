@@ -94,7 +94,7 @@ class ParticleEmitter : public SceneNode {
 
     void getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
-                         SceneRenderState& sceneRenderState,
+                         const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
     void onCameraUpdate(SceneGraphNode& sgn, Camera& camera);
 

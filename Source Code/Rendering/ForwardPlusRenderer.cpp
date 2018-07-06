@@ -55,9 +55,7 @@ ForwardPlusRenderer::~ForwardPlusRenderer() {
     RemoveResource(_depthRangesConstructProgram);
 }
 
-void ForwardPlusRenderer::processVisibleNodes(
-    const GFXDevice::VisibleNodeList& visibleNodes,
-    const GFXDevice::GPUBlock& gpuBlock) {
+void ForwardPlusRenderer::preRender(const GFXDevice::GPUBlock& gpuBlock) {
     buildLightGrid(gpuBlock);
 }
 

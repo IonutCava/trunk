@@ -150,7 +150,7 @@ void Terrain::sceneUpdate(const U64 deltaTime,
 
 void Terrain::getDrawCommands(SceneGraphNode& sgn,
                               RenderStage renderStage,
-                              SceneRenderState& sceneRenderState,
+                              const SceneRenderState& sceneRenderState,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     size_t drawStateHash = 0;
 

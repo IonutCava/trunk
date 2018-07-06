@@ -63,11 +63,11 @@ class glIMPrimitive : public IMPrimitive {
     /// Specify each attribute at least once(even with dummy values) before
     /// calling begin!
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute1i(const stringImpl& attribName, I32 value);
+    void attribute1i(U32 attribLocation, I32 value);
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute4ub(const stringImpl& attribName, U8 x, U8 y, U8 z, U8 w);
+    void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w);
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute4f(const stringImpl& attribName, F32 x, F32 y, F32 z, F32 w);
+    void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w);
     /// Submit the created batch to the GPU for rendering
     void render(bool forceWireframe = false, U32 instanceCount = 1);
 

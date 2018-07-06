@@ -74,7 +74,7 @@ class Trigger : public SceneNode {
 
     void getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
-                         SceneRenderState& sceneRenderState,
+                         const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
     /// SceneNode test
     bool isInView(const SceneRenderState& sceneRenderState,

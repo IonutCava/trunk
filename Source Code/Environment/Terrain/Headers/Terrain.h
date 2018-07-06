@@ -133,7 +133,7 @@ class Terrain : public Object3D {
    protected:
     void getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
-                         SceneRenderState& sceneRenderState,
+                         const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,

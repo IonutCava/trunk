@@ -199,10 +199,12 @@ unsigned int glimBatchData::AddVertex(float x, float y, float z) {
     m_PositionData.push_back(Glim4ByteData(y));
     m_PositionData.push_back(Glim4ByteData(z));
 
-    hashMapImpl<stringImpl, GlimArrayData>::iterator it, itend;
+    hashMapImpl<unsigned int, GlimArrayData>::iterator it, itend;
     itend = m_Attributes.end();
 
-    for (it = m_Attributes.begin(); it != itend; ++it) it->second.PushElement();
+    for (it = m_Attributes.begin(); it != itend; ++it) {
+        it->second.PushElement();
+    }
 
     return ((unsigned int)(m_PositionData.size() / 3) - 1);
 }
@@ -299,7 +301,7 @@ void glimBatchData::GenerateSignature(void) {
 unsigned int glimBatchData::getVertexDataSize(void) const {
     unsigned int uiVertexDataSize = sizeof(float) * 3;
 
-    hashMapImpl<stringImpl, GlimArrayData>::const_iterator it, itend;
+    hashMapImpl<unsigned int, GlimArrayData>::const_iterator it, itend;
     itend = m_Attributes.end();
 
     for (it = m_Attributes.begin(); it != itend; ++it) {
@@ -357,21 +359,18 @@ void glimBatchData::BindOGL(unsigned int uiCurrentProgram) {
     Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
     Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    hashMapImpl<stringImpl, GlimArrayData>::iterator it, itend;
+    hashMapImpl<unsigned int, GlimArrayData>::iterator it, itend;
     itend = m_Attributes.end();
 
     for (it = m_Attributes.begin(); it != itend; ++it) {
         int iAttributeArray = 0;
-        GlimArrayData::AttributeLocationMap& attribs =
-            it->second.m_programAttribLocation;
-        GlimArrayData::AttributeLocationMap::const_iterator it2 =
-            attribs.find(uiCurrentProgram);
+        GlimArrayData::AttributeLocationMap& attribs = it->second.m_programAttribLocation;
+        GlimArrayData::AttributeLocationMap::const_iterator it2 = attribs.find(uiCurrentProgram);
 
         if (it2 != std::cend(attribs)) {
             iAttributeArray = it2->second;
         } else {
-            iAttributeArray =
-                glGetAttribLocation(uiCurrentProgram, it->first.c_str());
+            iAttributeArray = it->first;
             hashAlg::insert(attribs, std::make_pair(uiCurrentProgram, iAttributeArray));
         }
 
@@ -461,7 +460,7 @@ void glimBatchData::UploadOGL(unsigned int uiCurrentProgram) {
 
     // space reservation pre-pass;
     size_t bufferSize = m_PositionData.size();
-    hashMapImpl<stringImpl, GlimArrayData>::iterator it, itend;
+    hashMapImpl<unsigned int, GlimArrayData>::iterator it, itend;
     it = std::begin(m_Attributes);
     itend = std::end(m_Attributes);
     for (; it != itend; ++it) {

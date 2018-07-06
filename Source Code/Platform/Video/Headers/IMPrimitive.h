@@ -78,18 +78,14 @@ class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
     inline void vertex(const vec3<F32>& vert) {
         vertex(vert.x, vert.y, vert.z);
     }
-    virtual void attribute1i(const stringImpl& attribName, I32 value) = 0;
-    virtual void attribute4ub(const stringImpl& attribName, U8 x, U8 y, U8 z,
-                              U8 w) = 0;
-    virtual void attribute4f(const stringImpl& attribName, F32 x, F32 y, F32 z,
-                             F32 w) = 0;
-    inline void attribute4ub(const stringImpl& attribName,
-                             const vec4<U8>& value) {
-        attribute4ub(attribName, value.x, value.y, value.z, value.w);
+    virtual void attribute1i(U32 attribLocation, I32 value) = 0;
+    virtual void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z,  U8 w) = 0;
+    virtual void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) = 0;
+    inline void attribute4ub(U32 attribLocation, const vec4<U8>& value) {
+        attribute4ub(attribLocation, value.x, value.y, value.z, value.w);
     }
-    inline void attribute4f(const stringImpl& attribName,
-                            const vec4<F32>& value) {
-        attribute4f(attribName, value.x, value.y, value.z, value.w);
+    inline void attribute4f(U32 attribLocation, const vec4<F32>& value) {
+        attribute4f(attribLocation, value.x, value.y, value.z, value.w);
     }
 
     virtual void end() = 0;

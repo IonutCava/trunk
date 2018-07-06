@@ -76,7 +76,7 @@ class Mesh : public Object3D {
                              SceneState& sceneState);
     virtual void getDrawCommands(SceneGraphNode& sgn,
                                  RenderStage renderStage,
-                                 SceneRenderState& sceneRenderState,
+                                 const SceneRenderState& sceneRenderState,
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
 
    protected:

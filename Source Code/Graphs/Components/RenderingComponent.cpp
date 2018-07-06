@@ -68,12 +68,12 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     _axisGizmo->paused(true);
     // Create the object containing all of the lines
     _axisGizmo->beginBatch(true, to_uint(_axisLines.size()) * 2);
-    _axisGizmo->attribute4ub("inColorData", _axisLines[0]._colorStart);
+    _axisGizmo->attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), _axisLines[0]._colorStart);
     // Set the mode to line rendering
     _axisGizmo->begin(PrimitiveType::LINES);
     // Add every line in the list to the batch
     for (const Line& line : _axisLines) {
-        _axisGizmo->attribute4ub("inColorData", line._colorStart);
+        _axisGizmo->attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), line._colorStart);
         _axisGizmo->vertex(line._startPoint);
         _axisGizmo->vertex(line._endPoint);
     }
@@ -412,7 +412,7 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
 }
 
 vectorImpl<GenericDrawCommand>&
-RenderingComponent::getDrawCommands(SceneRenderState& sceneRenderState,
+RenderingComponent::getDrawCommands(const SceneRenderState& sceneRenderState,
                                     RenderStage renderStage) {
 
     _renderData._drawCommands.clear();
@@ -429,7 +429,7 @@ RenderingComponent::getDrawCommands(SceneRenderState& sceneRenderState,
     return _renderData._drawCommands;
 }
 
-bool RenderingComponent::getImpostorDrawCommand(SceneRenderState& sceneRenderState,
+bool RenderingComponent::getImpostorDrawCommand(const SceneRenderState& sceneRenderState,
                                                 RenderStage renderStage,
                                                 GenericDrawCommand& commandOut){
     if (canDraw(sceneRenderState, renderStage) &&

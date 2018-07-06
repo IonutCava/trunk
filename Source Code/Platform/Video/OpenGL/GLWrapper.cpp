@@ -584,7 +584,7 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffse
             for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
                 fonsDrawText(_fonsContext,
                              position.x,
-                             to_float(position.y + (lh * (1 + i))),
+                             to_float(position.y - (lh * (1 + i))),
                              lines[i].c_str(),
                              nullptr);
             }

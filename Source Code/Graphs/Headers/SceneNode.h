@@ -87,9 +87,10 @@ class NOINITVTABLE SceneNode : public Resource {
     /// render itself in REFLECTION
     virtual bool getDrawState(RenderStage currentStage);
     virtual void getDrawCommands(
-        SceneGraphNode& sgn, RenderStage renderStage,
-        SceneRenderState& sceneRenderState,
-        vectorImpl<GenericDrawCommand>& drawCommandsOut) = 0;
+                        SceneGraphNode& sgn,
+                        RenderStage renderStage,
+                        const SceneRenderState& sceneRenderState,
+                        vectorImpl<GenericDrawCommand>& drawCommandsOut) = 0;
     virtual bool isInView(const SceneRenderState& sceneRenderState,
                           SceneGraphNode& sgn,
                           const bool distanceCheck = true);

@@ -133,12 +133,15 @@ class RenderingComponent : public SGNComponent {
 
     bool preDraw(const SceneRenderState& renderState,
                  RenderStage renderStage) const;
+
     /// Called after the parent node was rendered
     void postDraw(const SceneRenderState& sceneRenderState,
                   RenderStage renderStage);
-    vectorImpl<GenericDrawCommand>& getDrawCommands(SceneRenderState& sceneRenderState,
+
+    vectorImpl<GenericDrawCommand>& getDrawCommands(const SceneRenderState& sceneRenderState,
                                                     RenderStage renderStage);
-    bool getImpostorDrawCommand(SceneRenderState& sceneRenderState,
+
+    bool getImpostorDrawCommand(const SceneRenderState& sceneRenderState,
                                 RenderStage renderStage,
                                 GenericDrawCommand& commandOut);
     inline void drawOrder(U32 index) { _drawOrder = index; }
@@ -175,14 +178,17 @@ namespace Attorney {
 class RenderingCompGFXDevice {
    private:
     static vectorImpl<GenericDrawCommand>& getDrawCommands(
-        RenderingComponent& renderable, SceneRenderState& sceneRenderState,
-        RenderStage renderStage) {
+                                                RenderingComponent& renderable,
+                                                const SceneRenderState& sceneRenderState,
+                                                RenderStage renderStage) {
         return renderable.getDrawCommands(sceneRenderState, renderStage);
     }
 
     static bool getImpostorDrawCommand(
-        RenderingComponent& renderable, SceneRenderState& sceneRenderState,
-        RenderStage renderStage, GenericDrawCommand& commandOut) {
+                                RenderingComponent& renderable,
+                                const SceneRenderState& sceneRenderState,
+                                RenderStage renderStage,
+                                GenericDrawCommand& commandOut) {
 
         return renderable.getImpostorDrawCommand(sceneRenderState, renderStage, commandOut);
     }

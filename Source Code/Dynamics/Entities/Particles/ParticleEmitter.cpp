@@ -216,9 +216,10 @@ void ParticleEmitter::onCameraUpdate(SceneGraphNode& sgn, Camera& camera) {
 }
 
 void ParticleEmitter::getDrawCommands(
-    SceneGraphNode& sgn, RenderStage renderStage,
-    SceneRenderState& sceneRenderState,
-    vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+                            SceneGraphNode& sgn,
+                            RenderStage renderStage,
+                            const SceneRenderState& sceneRenderState,
+                            vectorImpl<GenericDrawCommand>& drawCommandsOut) {
 
     U32 particleCount = getAliveParticleCount();
     if (!_enabled || particleCount == 0) {

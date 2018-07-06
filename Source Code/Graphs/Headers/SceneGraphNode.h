@@ -66,7 +66,7 @@ class SceneRoot : public SceneNode {
     void postLoad(SceneGraphNode& sgn) { SceneNode::postLoad(sgn); }
     void getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
-                         SceneRenderState& sceneRenderState,
+                         const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
 };
 

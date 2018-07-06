@@ -105,7 +105,7 @@ bool Sky::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
 
 void Sky::getDrawCommands(SceneGraphNode& sgn,
                           RenderStage renderStage,
-                          SceneRenderState& sceneRenderState,
+                          const SceneRenderState& sceneRenderState,
                           vectorImpl<GenericDrawCommand>& drawCommandsOut) {
 
     RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();

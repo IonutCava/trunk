@@ -29,18 +29,16 @@ void glIMPrimitive::vertex(F32 x, F32 y, F32 z) {
     _imInterface->Vertex(x, y, z);
 }
 
-void glIMPrimitive::attribute4ub(const stringImpl& attribName, U8 x, U8 y, U8 z,
-                                 U8 w) {
-    _imInterface->Attribute4ub(attribName.c_str(), x, y, z, w);
+void glIMPrimitive::attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w) {
+    _imInterface->Attribute4ub(attribLocation, x, y, z, w);
 }
 
-void glIMPrimitive::attribute4f(const stringImpl& attribName, F32 x, F32 y,
-                                F32 z, F32 w) {
-    _imInterface->Attribute4f(attribName.c_str(), x, y, z, w);
+void glIMPrimitive::attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) {
+    _imInterface->Attribute4f(attribLocation, x, y, z, w);
 }
 
-void glIMPrimitive::attribute1i(const stringImpl& attribName, I32 value) {
-    _imInterface->Attribute1i(attribName.c_str(), value);
+void glIMPrimitive::attribute1i(U32 attribLocation, I32 value) {
+    _imInterface->Attribute1i(attribLocation, value);
 }
 
 void glIMPrimitive::end() {
