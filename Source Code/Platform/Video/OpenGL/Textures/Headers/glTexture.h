@@ -36,40 +36,45 @@
 
 namespace Divide {
 class glLockManager;
-class glTexture : public Texture {
+class glTexture final : public Texture {
    public:
     glTexture(TextureType type);
     ~glTexture();
 
-    bool unload();
+    bool unload() override;
 
-    void Bind(U8 unit, bool flushStateOnRequest = true);
+    void Bind(U8 unit, bool flushStateOnRequest = true) override;
 
-    void setMipMapRange(GLushort base = 0, GLushort max = 1000);
+    void BindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest = true) override;
+
+    void setMipMapRange(GLushort base = 0, GLushort max = 1000) override;
 
     void resize(const U8* const ptr,
                 const vec2<U16>& dimensions,
-                const vec2<U16>& mipLevels);
+                const vec2<U16>& mipLevels) override;
 
     void loadData(const TextureLoadInfo& info,
                   const GLubyte* const ptr,
                   const vec2<GLushort>& dimensions,
                   const vec2<GLushort>& mipLevels,
                   GFXImageFormat format,
-                  GFXImageFormat internalFormat);
+                  GFXImageFormat internalFormat) override;
 
-    bool flushTextureState();
+    bool flushTextureState() override;
+
+    inline GFXImageFormat getInternalFormat() const {
+        return _internalFormat;
+    }
 
    protected:
-    bool generateHWResource(const stringImpl& name);
-    void threadedLoad(const stringImpl& name);
+    bool generateHWResource(const stringImpl& name) override;
+    void threadedLoad(const stringImpl& name) override;
     void reserveStorage(const TextureLoadInfo& info);
     void updateMipMaps();
     void updateSampler();
 
    private:
     GLenum _type;
-    GFXImageFormat _format;
     GFXImageFormat _internalFormat;
     std::atomic_bool _allocatedStorage;
     GLushort _mipMaxLevel;

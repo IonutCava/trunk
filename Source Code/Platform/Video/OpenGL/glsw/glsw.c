@@ -145,7 +145,7 @@ int glswSetPath(const char* pathPrefix, const char* pathSuffix)
     return 1;
 }
 
-const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
+const char* glswGetShader(const char* pEffectKey, int recompile)
 {
     glswContext* gc = __glsw__Context;
 
@@ -280,7 +280,7 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
                         gc->ShaderMap = (glswList*) calloc(sizeof(glswList), 1);
                         gc->ShaderMap->Key = bstrcpy(shaderKey);
                         gc->ShaderMap->Next = temp;
-                        gc->ShaderMap->Value = bformat("#line %d\n", offset);
+                        gc->ShaderMap->Value = bformat("//__LINE_OFFSET_");
 
                         binsertch(gc->ShaderMap->Key, 0, 1, '.');
                         binsert(gc->ShaderMap->Key, 0, effectName, '?');

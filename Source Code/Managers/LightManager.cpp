@@ -260,7 +260,7 @@ void LightManager::previewShadowMaps(Light* light) {
 }
 
 // If we have computed shadowmaps, bind them before rendering any geometry;
-void LightManager::bindDepthMaps() {
+void LightManager::bindShadowMaps() {
     // Skip applying shadows if we are rendering to depth map, or we have
     // shadows disabled
     if (!_shadowMapsEnabled) {
@@ -274,7 +274,7 @@ void LightManager::bindDepthMaps() {
             if (light->castsShadows()) {
                 ShadowMap* sm = light->getShadowMapInfo()->getShadowMap();
                 DIVIDE_ASSERT(sm != nullptr,
-                    "LightManager::bindDepthMaps error: Shadow casting light "
+                    "LightManager::bindShadowMaps error: Shadow casting light "
                     "with no shadow map found!");
                 sm->Bind(getShadowBindSlotOffset(light->getLightType()) + idx++);
 

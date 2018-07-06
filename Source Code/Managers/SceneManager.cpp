@@ -184,7 +184,7 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
 
     GFX_DEVICE.buildDrawCommands(nodes._visibleNodes,
                                  _activeScene->renderState(),
-                                refreshNodeData);
+                                 refreshNodeData);
 }
 
 void SceneManager::renderVisibleNodes(bool flushCache) {

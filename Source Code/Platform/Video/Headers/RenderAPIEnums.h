@@ -50,11 +50,12 @@ enum class AttribLocation : U32 {
 
 enum class ShaderBufferLocation : U32 {
     GPU_BLOCK = 0,
-    LIGHT_NORMAL = 1,
-    LIGHT_SHADOW = 2,
-    NODE_INFO = 3,
-    BONE_TRANSFORMS = 4,
-    UNIFORMS = 5,
+    GPU_COMMANDS = 1,
+    LIGHT_NORMAL = 2,
+    LIGHT_SHADOW = 3,
+    NODE_INFO = 4,
+    BONE_TRANSFORMS = 5,
+    UNIFORMS = 6,
     COUNT
 };
 

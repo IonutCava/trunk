@@ -81,6 +81,10 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public RingBuffer, public
     inline U32 getPrimitiveCount() const { return _primitiveCount; }
     inline size_t getAlignmentRequirement() const { return _alignmentRequirement; }
 
+    virtual void AddAtomicCounter(U32 sizeFactor = 1) = 0;
+    virtual U32  GetAtomicCounter(U32 counterIndex = 0) = 0;
+    virtual void BindAtomicCounter(U32 counterIndex = 0, U32 bindIndex = 0) = 0;
+
    protected:
     size_t _bufferSize;
     size_t _primitiveSize;

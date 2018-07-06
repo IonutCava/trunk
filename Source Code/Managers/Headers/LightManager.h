@@ -64,7 +64,7 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     Light* getLight(I64 lightGUID, LightType type);
 
     /// shadow mapping
-    void bindDepthMaps();
+    void bindShadowMaps();
     bool shadowMappingEnabled() const;
 
     /// shadow mapping

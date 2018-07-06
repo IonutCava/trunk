@@ -7,7 +7,7 @@ extern "C" {
 int  glswInit();
 int  glswShutdown();
 int  glswSetPath(const char* pathPrefix, const char* pathSuffix);
-const char* glswGetShader(const char* effectKey, int offset, int recompile);
+const char* glswGetShader(const char* effectKey, int recompile);
 const char* glswGetError();
 int glswAddDirectiveToken(const char* token, const char* directive);
 

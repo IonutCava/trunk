@@ -72,6 +72,15 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // Shader Storage Buffer that's persistently and coherently mapped
     _nodeBuffer.reset(newSB("dvd_MatrixBlock", 1, true, true, BufferUpdateFrequency::OFTEN));
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
+    // Create a shader buffer to hold all of our indirect draw commands
+    // Usefull if we need access to the buffer in GLSL/Compute programs
+    // ToDo: Might need to be unbound for access in compute shaders! -Ionut
+    _indirectCommandBuffer.reset(newSB("dvd_GPUCmds", 1, true, false, BufferUpdateFrequency::OFTEN));
+    _indirectCommandBuffer->Create(Config::MAX_VISIBLE_NODES + 1, sizeof(IndirectDrawCommand));
+#if defined(_DEBUG)
+    _indirectCommandBuffer->AddAtomicCounter();
+#endif
+    registerCommandBuffer(*_indirectCommandBuffer);
     // Resize our window to the target resolution
     const vec2<U16>& resolution = winManager.getResolution();
     changeResolution(resolution.width, resolution.height);
@@ -174,6 +183,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _HIZConstructProgram =
         CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
     _HIZConstructProgram->Uniform("LastMip", ShaderProgram::TextureUsage::UNIT0);
+    _HIZCullProgram = 
+        CreateResource<ShaderProgram>(ResourceDescriptor("HiZOcclusionCull"));
     // Store our target z distances
     _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
         ParamHandler::getInstance().getParam<F32>("rendering.zNear"),
@@ -221,6 +232,7 @@ void GFXDevice::closeRenderingAPI() {
     _axisGizmo->_canZombify = true;
     // Delete the internal shader
     RemoveResource(_HIZConstructProgram);
+    RemoveResource(_HIZCullProgram);
     // Destroy our post processing system
     Console::printfn(Locale::get("STOP_POST_FX"));
     PostFX::destroyInstance();
@@ -233,6 +245,7 @@ void GFXDevice::closeRenderingAPI() {
     MemoryManager::DELETE_VECTOR(_imInterfaces);
     _gfxDataBuffer->Destroy();
     _nodeBuffer->Destroy();
+    _indirectCommandBuffer->Destroy();
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
     // Delete all of our rendering targets

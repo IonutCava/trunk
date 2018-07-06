@@ -410,7 +410,7 @@ void _sclCreateQueues( sclHard* hardList, int found ) {
 #else
 	for ( i = 0; i < found; ++i ) {
 		hardList[i].queue = 
-		clCreateCommandQueue( hardList[i].context, hardList[i].device, NULL, NULL );
+		clCreateCommandQueue( hardList[i].context, hardList[i].device, 0, NULL );
 	}
 #endif
 
@@ -923,15 +923,13 @@ void sclRead( sclHard hardware, size_t size, cl_mem buffer, void *hostPointer ) 
 
 cl_int sclFinish( sclHard hardware ){
 #ifdef _DEBUG
-	cl_int err;
-
-	err = clFinish( hardware.queue );
+    cl_int err = clFinish( hardware.queue );
 	if ( err != CL_SUCCESS ) {
 		clPrint( stderr,  "\nError clFinish\n" );
 		sclPrintErrorFlags( err );
 	}
 #else
-	clFinish( hardware.queue );
+    cl_int err = clFinish( hardware.queue );
 #endif
 
 	return err;

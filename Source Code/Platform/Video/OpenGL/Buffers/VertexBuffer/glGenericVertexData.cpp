@@ -224,6 +224,8 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
         if (!useCmdBuffer) {
             GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
             offset = (bufferPtr)(&command.cmd());
+        } else {
+            GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, GL_API::_indirectDrawBuffer);
         }
 
         U16 drawCount = command.drawCount();

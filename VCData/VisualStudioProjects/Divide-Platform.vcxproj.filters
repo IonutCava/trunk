@@ -880,5 +880,8 @@
     <None Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glResources.inl">
       <Filter>Video\OpenGL\Headers</Filter>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\HiZOcclusionCull.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
   </ItemGroup>
 </Project>

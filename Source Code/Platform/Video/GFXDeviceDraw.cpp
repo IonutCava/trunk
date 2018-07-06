@@ -70,6 +70,7 @@ void GFXDevice::uploadGPUBlock() {
         _gpuBlock._updated = false;
     }
 
+    // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
     _gfxDataBuffer->Bind(ShaderBufferLocation::GPU_BLOCK);
     _nodeBuffer->Bind(ShaderBufferLocation::NODE_INFO);
 }
@@ -284,14 +285,16 @@ vec2<U32> GFXDevice::processNodeBucket(VisibleNodeList::iterator nodeIt,
     return retValue;
 }
 
-void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
-                                  SceneRenderState& sceneRenderState,
-                                  bool refreshNodeData) {
+vec2<U32> GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
+                                       SceneRenderState& sceneRenderState,
+                                       bool refreshNodeData) {
     Time::ScopedTimer timer(*_commandBuildTimer);
+    vec2<U32> parsedValues;
     // If there aren't any nodes visible in the current pass, don't update
     // anything (but clear the render queue
     if (visibleNodes.empty()) {
-        return;
+        _lastCommandCount = _lastNodeCount = 0;
+        return parsedValues;
     }
     vectorAlg::vecSize nodeCount = visibleNodes.size();
 
@@ -310,8 +313,6 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     const U32 taskCount = std::min(coreCount, to_uint(nodeCount));
     U32 startOffset = 0;
     U32 endOffset = 0;
-
-    vec2<U32> parsedValues;
 
     if (useThreadedCommands) {
         vectorImpl<Task_ptr> cmds;
@@ -353,10 +354,35 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
 
     if (refreshNodeData) {
         _nodeBuffer->UpdateData(0, parsedValues.x, _matricesData.data());
+        _lastNodeCount = parsedValues.x;
     }
 
-    uploadDrawCommands(_drawCommandsCache, parsedValues.y);
+    _indirectCommandBuffer->UpdateData(0, parsedValues.y, _drawCommandsCache.data());
+
+    if (!refreshNodeData) {
+        occlusionCull();
+    }
+
+    _lastCommandCount = parsedValues.y;
     
+    return parsedValues;
+}
+
+void GFXDevice::occlusionCull() {
+    static const U32 GROUP_SIZE_AABB = 64;
+    _HIZCullProgram->bind();
+    _HIZCullProgram->Uniform("dvd_numEntities", _lastCommandCount);
+    getRenderTarget(RenderTarget::DEPTH)->Bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
+                                               TextureDescriptor::AttachmentType::Depth);
+    uploadGPUBlock();
+    _indirectCommandBuffer->Bind(ShaderBufferLocation::GPU_COMMANDS);
+    _indirectCommandBuffer->BindAtomicCounter();
+    _HIZCullProgram->DispatchCompute((_lastCommandCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
+    _HIZCullProgram->SetMemoryBarrier();
+    U32 cullCount = _indirectCommandBuffer->GetAtomicCounter();
+    if (cullCount > 0) {
+        Console::d_printfn("Culled %d objects", cullCount);
+    }
 }
 
 bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
@@ -394,6 +420,29 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
 }
 
 void GFXDevice::drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport) {
+}
+
+void GFXDevice::postProcessRenderTarget(RenderTarget renderTarget) {
+    static ShaderProgram* testCompute = nullptr;
+    if (testCompute == nullptr) {
+        ResourceDescriptor computeDescriptor("testComputeShader");
+        computeDescriptor.setThreadedLoading(false);
+        testCompute = CreateResource<ShaderProgram>(computeDescriptor);
+    }
+
+    switch(renderTarget) {
+        case RenderTarget::DEPTH: 
+            constructHIZ();
+            break;
+        case RenderTarget::ANAGLYPH:
+        case RenderTarget::SCREEN: {
+            /*getRenderTarget(renderTarget)->GetAttachment()->BindLayer(0, 0, 0, false, false, true);
+            testCompute->bind();
+            testCompute->Uniform("roll", GFX_DEVICE.getFrameCount()*0.05f);
+            testCompute->DispatchCompute(512 / 16, 512 / 16, 1);*/
+        }
+            break;
+    }
 }
 
 /// This is just a short-circuit system (hack) to send a list of points to the

@@ -435,7 +435,6 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
                 // based on the specified stage and properties
                 const char* sourceCodeStr = glswGetShader(
                     shaderCompileName.c_str(),
-                    _lineOffset[i] + to_uint(_definesList.size()),
                     _refreshStage[i]);
                 stringImpl sourceCode(sourceCodeStr ? sourceCodeStr : "");
                 // GLSW may fail for various reasons (not a valid effect stage,
@@ -445,6 +444,9 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
                     // earlier
                     Util::ReplaceStringInPlace(
                         sourceCode, "//__CUSTOM_DEFINES__", shaderSourceHeader);
+                    Util::ReplaceStringInPlace(
+                        sourceCode, "//__LINE_OFFSET_", 
+                        Util::StringFormat("#line %d\n", 1 + _lineOffset[i] + to_uint(_definesList.size())));
                     // Load our shader from the final string and save it in the
                     // manager in case a new Shader Program needs it
                     _shaderStage[i] = ShaderManager::getInstance().loadShader(
@@ -774,4 +776,13 @@ void glShaderProgram::Uniform(GLint location, U8 slot) {
         glProgramUniform1i(_shaderProgramID, location, to_int(slot));
     }
 }
+
+void glShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) {
+    glDispatchCompute(xGroups, yGroups, zGroups);
+}
+
+void glShaderProgram::SetMemoryBarrier() {
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
+}
+
 };

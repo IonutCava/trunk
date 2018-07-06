@@ -13,7 +13,7 @@ glTexture::glTexture(TextureType type)
     : Texture(type),
     _lockManager(new glLockManager(true))
 {
-    _format = _internalFormat = GFXImageFormat::COUNT;
+    _internalFormat = GFXImageFormat::COUNT;
     _allocatedStorage = false;
 
     _type = GLUtil::glTextureTypeTable[to_uint(type)];
@@ -81,7 +81,7 @@ void glTexture::resize(const U8* const ptr,
     _textureData.setHandleHigh(tempHandle);
     _allocatedStorage = false;
     TextureLoadInfo info;
-    loadData(info, ptr, dimensions, mipLevels, _format, _internalFormat);
+    loadData(info, ptr, dimensions, mipLevels, _textureData._textureFormat, _internalFormat);
 }
 
 void glTexture::updateMipMaps() {
@@ -185,7 +185,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
                          const vec2<GLushort>& mipLevels,
                          GFXImageFormat format,
                          GFXImageFormat internalFormat) {
-    _format = format;
+    _textureData._textureFormat = format;
     _internalFormat = internalFormat;
     GLenum glFormat = GLUtil::glImageFormatTable[to_uint(format)];
 
@@ -300,4 +300,14 @@ void glTexture::Bind(U8 unit, bool flushStateOnRequest) {
                             _textureData._samplerHash);
     }
 }
+
+void glTexture::BindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest) {
+    if ((flushStateOnRequest && flushTextureState()) || !flushStateOnRequest) {
+        GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
+                             : (write ? GL_WRITE_ONLY : GL_NONE);
+        GL_API::bindTextureImage(slot, _textureData.getHandleHigh(), level, layered, layer, access, 
+                                 GLUtil::glImageFormatTable[to_uint(_internalFormat)]);
+    }
+}
+
 };

@@ -47,7 +47,8 @@ class glFramebuffer : public Framebuffer {
     bool Create(U16 width, U16 height);
     void Destroy();
 
-    Texture* GetAttachment(TextureDescriptor::AttachmentType slot, bool flushStateOnRequest = true);
+    Texture* GetAttachment(TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0,
+                           bool flushStateOnRequest = true);
 
     void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer,
                      bool includeDepth = true);

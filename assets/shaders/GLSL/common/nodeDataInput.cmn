@@ -1,6 +1,21 @@
 #ifndef _NODE_DATA_INPUT_CMN_
 #define _NODE_DATA_INPUT_CMN_
 
+#if defined(COMPUTE_SHADER)
+struct IndirectDrawCommand {
+    uint count;
+    uint instanceCount;
+    uint firstIndex;
+    uint baseVertex;
+    uint baseInstance;
+};
+
+layout(binding = BUFFER_GPU_COMMANDS, std430) coherent buffer dvd_GPUCmds
+{
+    IndirectDrawCommand dvd_drawCommands[MAX_VISIBLE_NODES + 1];
+};
+#endif
+
 layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 {
     mat4 dvd_ProjectionMatrix;

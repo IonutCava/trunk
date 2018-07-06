@@ -42,109 +42,113 @@ namespace Attorney {
     class GLAPIShaderProgram;
 };
 /// OpenGL implementation of the Shader entity
-class glShaderProgram : public ShaderProgram {
+class glShaderProgram final : public ShaderProgram {
     friend class Attorney::GLAPIShaderProgram;
    public:
     glShaderProgram();
     ~glShaderProgram();
 
     /// Make sure this program is ready for deletion
-    inline bool unload() {
+    inline bool unload() override {
         return ShaderProgram::unload();
     }
     /// Bind this shader program
-    bool bind();
+    bool bind() override;
     /// Returns true if the shader is currently active
-    bool isBound() const;
+    bool isBound() const override;
     /// Check every possible combination of flags to make sure this program can
     /// be used for rendering
-    bool isValid() const;
+    bool isValid() const override;
     /// Called once per frame. Used to update internal state
-    bool update(const U64 deltaTime);
+    bool update(const U64 deltaTime) override;
     /// Add a new shader stage to this program
-    void attachShader(Shader* const shader, const bool refresh = false);
+    void attachShader(Shader* const shader, const bool refresh = false) override;
     /// Remove a shader stage from this program
-    void detachShader(Shader* const shader);
+    void detachShader(Shader* const shader) override;
     /// Register a shader buffer to be used every time the shader is
     /// used to render. Makes sure the buffer is bound to the proper location
-    void registerShaderBuffer(ShaderBuffer& buffer);
+    void registerShaderBuffer(ShaderBuffer& buffer) override;
     /// This is used to set all of the subroutine indices for the specified
     /// shader stage for this program
-    void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const;
+    void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const override;
     /// This works exactly like SetSubroutines, but for a single index.
-    void SetSubroutine(ShaderType type, U32 index) const;
+    void SetSubroutine(ShaderType type, U32 index) const override;
     /// Get the index of the specified subroutine name for the specified stage.
     /// Not cached!
-    U32 GetSubroutineIndex(ShaderType type, const stringImpl& name) const;
+    U32 GetSubroutineIndex(ShaderType type, const stringImpl& name) const override;
     /// Get the uniform location of the specified subroutine uniform for the
     /// specified stage. Not cached!
     U32 GetSubroutineUniformLocation(ShaderType type,
-                                     const stringImpl& name) const;
-    U32 GetSubroutineUniformCount(ShaderType type) const;
+                                     const stringImpl& name) const override;
+    U32 GetSubroutineUniformCount(ShaderType type) const override;
     /// Set an uniform value
-    inline void Uniform(const stringImpl& ext, U8 slot);
-    inline void Uniform(const stringImpl& ext, U32 value);
-    inline void Uniform(const stringImpl& ext, I32 value);
-    inline void Uniform(const stringImpl& ext, F32 value);
-    inline void Uniform(const stringImpl& ext, const vec2<F32>& value);
-    inline void Uniform(const stringImpl& ext, const vec2<I32>& value);
-    inline void Uniform(const stringImpl& ext, const vec2<U16>& value);
-    inline void Uniform(const stringImpl& ext, const vec3<F32>& value);
-    inline void Uniform(const stringImpl& ext, const vec4<F32>& value);
+    inline void Uniform(const stringImpl& ext, U8 slot) override;
+    inline void Uniform(const stringImpl& ext, U32 value) override;
+    inline void Uniform(const stringImpl& ext, I32 value) override;
+    inline void Uniform(const stringImpl& ext, F32 value) override;
+    inline void Uniform(const stringImpl& ext, const vec2<F32>& value) override;
+    inline void Uniform(const stringImpl& ext, const vec2<I32>& value) override;
+    inline void Uniform(const stringImpl& ext, const vec2<U16>& value) override;
+    inline void Uniform(const stringImpl& ext, const vec3<F32>& value) override;
+    inline void Uniform(const stringImpl& ext, const vec4<F32>& value) override;
     inline void Uniform(const stringImpl& ext,
                         const mat3<F32>& value,
-                        bool rowMajor = false);
+                        bool rowMajor = false) override;
     inline void Uniform(const stringImpl& ext,
                         const mat4<F32>& value,
-                        bool rowMajor = false);
-    inline void Uniform(const stringImpl& ext, const vectorImpl<I32>& values);
-    inline void Uniform(const stringImpl& ext, const vectorImpl<F32>& values);
+                        bool rowMajor = false) override;
+    inline void Uniform(const stringImpl& ext, const vectorImpl<I32>& values) override;
+    inline void Uniform(const stringImpl& ext, const vectorImpl<F32>& values) override;
     inline void Uniform(const stringImpl& ext,
-                        const vectorImpl<vec2<F32>>& values);
+                        const vectorImpl<vec2<F32>>& values) override;
     inline void Uniform(const stringImpl& ext,
-                        const vectorImpl<vec3<F32>>& values);
+                        const vectorImpl<vec3<F32>>& values) override;
     inline void Uniform(const stringImpl& ext,
-                        const vectorImpl<vec4<F32>>& values);
+                        const vectorImpl<vec4<F32>>& values) override;
     inline void Uniform(const stringImpl& ext,
                         const vectorImpl<mat3<F32>>& values,
-                        bool rowMajor = false);
+                        bool rowMajor = false) override;
     inline void Uniform(const stringImpl& ext,
                         const vectorImpl<mat4<F32>>& values,
-                        bool rowMajor = false);
+                        bool rowMajor = false) override;
 
-    void Uniform(I32 location, U8 slot);
-    void Uniform(I32 location, U32 value);
-    void Uniform(I32 location, I32 value);
-    void Uniform(I32 location, F32 value);
-    void Uniform(I32 location, const vec2<F32>& value);
-    void Uniform(I32 location, const vec2<I32>& value);
-    void Uniform(I32 location, const vec2<U16>& value);
-    void Uniform(I32 location, const vec3<F32>& value);
-    void Uniform(I32 location, const vec4<F32>& value);
-    void Uniform(I32 location, const mat3<F32>& value, bool rowMajor = false);
-    void Uniform(I32 location, const mat4<F32>& value, bool rowMajor = false);
-    void Uniform(I32 location, const vectorImpl<I32>& values);
-    void Uniform(I32 location, const vectorImpl<F32>& values);
-    void Uniform(I32 location, const vectorImpl<vec2<F32>>& values);
-    void Uniform(I32 location, const vectorImpl<vec3<F32>>& values);
-    void Uniform(I32 location, const vectorImpl<vec4<F32>>& values);
+    void Uniform(I32 location, U8 slot) override;
+    void Uniform(I32 location, U32 value) override;
+    void Uniform(I32 location, I32 value) override;
+    void Uniform(I32 location, F32 value) override;
+    void Uniform(I32 location, const vec2<F32>& value) override;
+    void Uniform(I32 location, const vec2<I32>& value) override;
+    void Uniform(I32 location, const vec2<U16>& value) override;
+    void Uniform(I32 location, const vec3<F32>& value) override;
+    void Uniform(I32 location, const vec4<F32>& value) override;
+    void Uniform(I32 location, const mat3<F32>& value, bool rowMajor = false) override;
+    void Uniform(I32 location, const mat4<F32>& value, bool rowMajor = false) override;
+    void Uniform(I32 location, const vectorImpl<I32>& values) override;
+    void Uniform(I32 location, const vectorImpl<F32>& values) override;
+    void Uniform(I32 location, const vectorImpl<vec2<F32>>& values) override;
+    void Uniform(I32 location, const vectorImpl<vec3<F32>>& values) override;
+    void Uniform(I32 location, const vectorImpl<vec4<F32>>& values) override;
     void Uniform(I32 location,
                  const vectorImpl<mat3<F32>>& values,
-                 bool rowMajor = false);
+                 bool rowMajor = false) override;
     void Uniform(I32 location,
                  const vectorImpl<mat4<F32>>& values,
-                 bool rowMajor = false);
+                 bool rowMajor = false) override;
+
+    void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) override;
+
+    void SetMemoryBarrier() override;
 
    protected:
     /// Creation of a new shader program. Pass in a shader token and use glsw to
     /// load the corresponding effects
-    bool generateHWResource(const stringImpl& name);
+    bool generateHWResource(const stringImpl& name) override;
     /// Linking a shader program also sets up all pre-link properties for the
     /// shader (varying locations, attrib bindings, etc)
     void link();
     /// This should be called in the loading thread, but some issues are still
     /// present, and it's not recommended (yet)
-    void threadedLoad(const stringImpl& name);
+    void threadedLoad(const stringImpl& name) override;
     /// Cache uniform/attribute locations for shader programs
     GLint cachedLocation(const stringImpl& name);
 

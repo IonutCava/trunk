@@ -59,6 +59,12 @@ class d3dConstantBuffer final : public ShaderBuffer {
                    U32 rangeElementCount);
 
     bool Bind(U32 bindIndex);
+
+    void AddAtomicCounter(U32 sizeFactor = 1);
+
+    U32  GetAtomicCounter(U32 counterIndex = 0);
+
+    void BindAtomicCounter(U32 counterIndex = 0, U32 bindIndex = 0);
 };
 
 };  // namespace Divide

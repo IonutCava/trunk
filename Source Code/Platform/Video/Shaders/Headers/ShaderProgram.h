@@ -54,6 +54,7 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
         OPACITY = 3,
         SPECULAR = 4,
         PROJECTION = 5,
+        DEPTH = 6,
         GLOSS = SPECULAR,
         ROUGHNESS = GLOSS,
         COUNT
@@ -158,6 +159,10 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
                          const vectorImpl<mat4<F32> >& values,
                          bool rowMajor = false) = 0;
     virtual void Uniform(I32 location, U8 slot) = 0;
+
+    virtual void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) = 0;
+
+    virtual void SetMemoryBarrier() = 0; 
 
     inline void Uniform(I32 location, TextureUsage slot) {
         Uniform(location, to_ubyte(slot));

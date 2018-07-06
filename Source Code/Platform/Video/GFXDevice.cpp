@@ -43,13 +43,17 @@ GFXDevice::GFXDevice()
     _imShaderLines = nullptr;
     _nodeBuffer = nullptr;
     _gfxDataBuffer = nullptr;
+    _indirectCommandBuffer = nullptr;
     _HIZConstructProgram = nullptr;
+    _HIZCullProgram = nullptr;
     _previewDepthMapShader = nullptr;
     _commandBuildTimer = nullptr;
     // Integers
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
+    _lastCommandCount = 0;
+    _lastNodeCount = 0;
     // Floats
     _interpolationFactor = 1.0;
     // Booleans
@@ -580,7 +584,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
 }
 
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries)
-void GFXDevice::ConstructHIZ() {
+void GFXDevice::constructHIZ() {
     // We don't want to change the viewport or clear the buffer when starting to
     // render to the buffer
     Framebuffer::FramebufferTarget hizTarget;

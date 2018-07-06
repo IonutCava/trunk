@@ -273,7 +273,8 @@ class TextureData {
     TextureData()
         : _textureType(TextureType::TEXTURE_2D),
           _samplerHash(0),
-          _textureHandle(0)
+          _textureHandle(0),
+          _textureFormat(GFXImageFormat::COUNT)
     {
     }
 
@@ -281,6 +282,7 @@ class TextureData {
         _textureHandle = other._textureHandle;
         _textureType = other._textureType;
         _samplerHash = other._samplerHash;
+        _textureFormat = other._textureFormat;
     }
 
     inline void setHandleHigh(U32 handle) {
@@ -315,18 +317,27 @@ class TextureData {
         handle = _textureHandle;
     }
 
+    inline void setFormat(GFXImageFormat format) {
+        _textureFormat = format;
+    }
+
+    inline GFXImageFormat getFormat() const {
+        return _textureFormat;
+    }
+
     // No need to cache this as it should already be pretty fast
     inline size_t getHash() const {
         size_t hash = 0;
         Util::Hash_combine(hash, to_uint(_textureType));
         Util::Hash_combine(hash, _samplerHash);
         Util::Hash_combine(hash, _textureHandle);
+        Util::Hash_combine(hash, to_uint(_textureFormat));
         return hash;
     }
 
     TextureType _textureType;
     size_t _samplerHash;
-
+    GFXImageFormat _textureFormat;
 private:
     U64  _textureHandle;
 };
@@ -445,15 +456,13 @@ class NOINITVTABLE RenderAPIWrapper {
                                     RenderStateBlock* const oldBlock) const = 0;
 
     virtual void drawPoints(U32 numPoints) = 0;
-
     virtual void drawTriangle() = 0;
 
    protected:
     virtual void changeResolution(U16 w, U16 h) = 0;
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
     virtual void threadedLoadCallback() = 0;
-    virtual void uploadDrawCommands(const DrawCommandList& drawCommands,
-                                    U32 commandCount) const = 0;
+    virtual void registerCommandBuffer(const ShaderBuffer& commandBuffer) const = 0;
 
     virtual bool makeTexturesResident(const TextureDataContainer& textureData) = 0;
     virtual bool makeTextureResident(const TextureData& textureData) = 0;

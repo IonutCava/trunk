@@ -63,17 +63,33 @@ class glUniformBuffer final : public ShaderBuffer {
 
     bool Bind(U32 bindIndex);
 
+    GLuint getBufferID() const { return _UBOid; }
+
+    void AddAtomicCounter(U32 sizeFactor = 1);
+
+    U32  GetAtomicCounter(U32 counterIndex = 0);
+
+    void BindAtomicCounter(U32 counterIndex = 0, U32 bindIndex = 0);
 
    protected:
     void PrintInfo(const ShaderProgram *shaderProgram, U32 bindIndex);
 
    protected:
+
+    struct AtomicCounter {
+        GLuint _handle;
+        GLuint _sizeFactor;
+        GLuint _writeHead;
+        GLuint _readHead;
+    };
+
     GLuint _UBOid;
     GLsizeiptr _alignmentPadding;
     bufferPtr _mappedBuffer;
     bool _updated;
     const GLenum _target;
     const std::unique_ptr<glBufferLockManager> _lockManager;
+    vectorImpl<AtomicCounter> _atomicCounters;
 };
 
 };  // namespace Divide

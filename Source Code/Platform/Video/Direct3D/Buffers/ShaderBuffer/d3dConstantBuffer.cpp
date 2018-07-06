@@ -37,4 +37,14 @@ bool d3dConstantBuffer::Bind(U32 bindIndex) {
     return false;
 }
 
+void d3dConstantBuffer::AddAtomicCounter(U32 sizeFactor) {
+}
+
+U32 d3dConstantBuffer::GetAtomicCounter(U32 counterIndex) {
+    return 0;
+}
+
+void d3dConstantBuffer::BindAtomicCounter(U32 counterIndex, U32 bindIndex) {
+}
+
 };//namespace Divide

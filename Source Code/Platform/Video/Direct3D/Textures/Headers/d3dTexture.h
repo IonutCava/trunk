@@ -36,28 +36,35 @@
 
 namespace Divide {
 
-class d3dTexture : public Texture {
+class d3dTexture final : public Texture {
    public:
     d3dTexture(TextureType type);
     ~d3dTexture() {}
 
-    bool generateHWResource(const stringImpl& name) { return true; }
-    bool unload() { return true; }
+    bool generateHWResource(const stringImpl& name) override { return Texture::generateHWResource(name); }
 
-    void Bind(U8 unit, bool flushStateOnRequest = true) {}
+    bool unload() override { return true; }
 
-    void setMipMapRange(U16 base = 0, U16 max = 1000) {}
+    void Bind(U8 unit, bool flushStateOnRequest = true) override {}
+    
+    void BindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest = true) override {};
+
+    void setMipMapRange(U16 base = 0, U16 max = 1000) override {}
+
     void resize(const U8* const ptr,
                 const vec2<U16>& dimensions,
-                const vec2<U16>& mipLevels) {}
-    void updateMipMaps() {}
-    bool flushTextureState() { return true; }
+                const vec2<U16>& mipLevels) override {}
+
+    void updateMipMaps() override {}
+
+    bool flushTextureState() override { return true; }
+
     void loadData(const TextureLoadInfo& info,
                   const U8* const ptr,
                   const vec2<U16>& dimensions,
                   const vec2<U16>& mipLevels,
                   GFXImageFormat format,
-                  GFXImageFormat internalFormat) {}
+                  GFXImageFormat internalFormat) override {}
 
    private:
     U32 _type;

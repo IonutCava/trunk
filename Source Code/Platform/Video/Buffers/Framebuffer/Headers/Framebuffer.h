@@ -73,7 +73,8 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
         return _defaultPolicy;
     }
 
-    virtual Texture* GetAttachment(TextureDescriptor::AttachmentType slot, bool flushStateOnRequest = true);
+    virtual Texture* GetAttachment(TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0,
+                                   bool flushStateOnRequest = true);
 
     virtual bool AddAttachment(const TextureDescriptor& descriptor,
                                TextureDescriptor::AttachmentType slot);

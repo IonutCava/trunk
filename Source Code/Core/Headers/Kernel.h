@@ -151,7 +151,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     static void firstLoop();
     void shutdown();
     void renderScene();
-    void renderSceneAnaglyph();
     bool mainLoopScene(FrameEvent& evt);
     bool presentToScreen(FrameEvent& evt);
     void threadPoolCompleted(I64 onExitTaskID);

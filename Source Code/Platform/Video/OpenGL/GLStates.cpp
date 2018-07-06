@@ -34,6 +34,7 @@ GL_API::VAOBufferData GL_API::_vaoBufferData;
 bool GL_API::_primitiveRestartEnabled = false;
 vec4<GLfloat> GL_API::_prevClearColor;
 GL_API::textureBoundMapDef GL_API::_textureBoundMap;
+GL_API::imageBoundMapDef GL_API::_imageBoundMap;
 GL_API::samplerBoundMapDef GL_API::_samplerBoundMap;
 GL_API::samplerObjectMap GL_API::_samplerMap;
 
@@ -292,6 +293,21 @@ bool GL_API::bindTexture(GLushort unit,
     return false;
 }
 
+bool GL_API::bindTextureImage(GLushort unit, GLuint handle, GLint level,
+                              bool layered, GLint layer, GLenum access,
+                              GLenum format) {
+    static ImageBindSettings tempSettings;
+    tempSettings = {handle, level, layered ? GL_TRUE : GL_FALSE, layer, access, format};
+
+    ImageBindSettings& settings = _imageBoundMap[unit];
+    if (settings != tempSettings) {
+        glBindImageTexture(unit, handle, level, layered ? GL_TRUE : GL_FALSE, layer, access, format);
+        settings = tempSettings;
+        return true;
+    }
+
+    return false;
+}
 /// Single place to change buffer objects for every target available
 bool GL_API::bindActiveBuffer(GLuint vaoID, GLuint location, GLuint bufferID, GLintptr offset, GLsizei stride) {
     BufferBindingParams currentParams(location, bufferID, offset, stride);

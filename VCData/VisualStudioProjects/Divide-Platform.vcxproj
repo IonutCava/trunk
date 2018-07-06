@@ -215,6 +215,7 @@
     <None Include="..\..\assets\shaders\GLSL\geometryAtoms\inOut.geom" />
     <None Include="..\..\assets\shaders\GLSL\grass.glsl" />
     <None Include="..\..\assets\shaders\GLSL\HiZConstruct.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\HiZOcclusionCull.glsl" />
     <None Include="..\..\assets\shaders\GLSL\ImmediateModeEmulation.glsl" />
     <None Include="..\..\assets\shaders\GLSL\instanceCull.glsl" />
     <None Include="..\..\assets\shaders\GLSL\lighting.glsl" />

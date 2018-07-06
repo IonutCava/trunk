@@ -63,7 +63,7 @@ GL_API::GL_API()
       _prevWidthNode(0),
       _prevWidthString(0),
       _lineWidthLimit(1),
-    _dummyVAO(0),
+      _dummyVAO(0),
       _enableCEGUIRendering(false),
       _internalMoveEvent(false),
       _externalResizeEvent(false),
@@ -297,6 +297,11 @@ bool GL_API::initShaders() {
         "#define BUFFER_GPU_BLOCK " +
             std::to_string(to_uint(ShaderBufferLocation::GPU_BLOCK)),
         lineOffsets);
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_GPU_COMMANDS " +
+        std::to_string(to_uint(ShaderBufferLocation::GPU_COMMANDS)),
+        lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
@@ -367,6 +372,13 @@ bool GL_API::initShaders() {
             std::to_string(to_uint(ShaderProgram::TextureUsage::PROJECTION)),
         lineOffsets);
 
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define TEXTURE_DEPTH_MAP " +
+        std::to_string(
+            to_uint(ShaderProgram::TextureUsage::DEPTH)),
+        lineOffsets);
+    
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_CUBE_START " +
@@ -469,9 +481,10 @@ bool GL_API::initShaders() {
 
     // GPU specific data, such as GFXDevice's main uniform block and clipping
     // planes are defined in an external file included in every shader
-    appendToShaderHeader(ShaderType::COUNT, "#include \"nodeDataInput.cmn\"",
+    appendToShaderHeader(ShaderType::COUNT,
+                        "#include \"nodeDataInput.cmn\"",
                          lineOffsets);
-    lineOffsets[to_const_uint(ShaderType::COUNT)] += 41;
+    lineOffsets[to_const_uint(ShaderType::COUNT)] += 55;
 
     Attorney::GLAPIShaderProgram::setGlobalLineOffset(
         lineOffsets[to_uint(ShaderType::COUNT)]);
@@ -624,15 +637,9 @@ void GL_API::drawTriangle() {
     GFX_DEVICE.registerDrawCall();
 }
 
-void GL_API::uploadDrawCommands(const DrawCommandList& drawCommands,
-                                U32 commandCount) const {
-    if (commandCount > 0) {
-        GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
-        glNamedBufferSubData(_indirectDrawBuffer,
-                             0,
-                             commandCount * sizeof(IndirectDrawCommand),
-                             (bufferPtr)drawCommands.data());
-    }
+void GL_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
+    _indirectDrawBuffer = static_cast<const glUniformBuffer&>(commandBuffer).getBufferID();
+    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {

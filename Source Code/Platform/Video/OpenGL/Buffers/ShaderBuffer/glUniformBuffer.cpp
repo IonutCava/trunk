@@ -155,6 +155,35 @@ bool glUniformBuffer::Bind(U32 bindIndex) {
     return BindRange(bindIndex, 0, _primitiveCount);
 }
 
+void glUniformBuffer::AddAtomicCounter(U32 sizeFactor) {
+    vectorImpl<GLuint> data(sizeFactor, 0);
+
+    GLuint atomicsBuffer;
+    glCreateBuffers(1, &atomicsBuffer);
+    glNamedBufferData(atomicsBuffer, sizeof(GLuint) * sizeFactor, data.data(), GL_DYNAMIC_COPY);
+
+    _atomicCounters.push_back({atomicsBuffer, sizeFactor, 0, 1 % sizeFactor});
+}
+
+U32 glUniformBuffer::GetAtomicCounter(U32 counterIndex) {
+    if (counterIndex > to_uint(_atomicCounters.size())) {
+        return 0;
+    }
+
+    GLuint result = 0;
+    AtomicCounter& counter = _atomicCounters.at(counterIndex);
+    glGetNamedBufferSubData(counter._handle, counter._readHead * sizeof(GLuint), sizeof(GLuint), &result);
+    return result;
+}
+
+void glUniformBuffer::BindAtomicCounter(U32 counterIndex, U32 bindIndex) {
+    if (counterIndex > to_uint(_atomicCounters.size())) {
+        return;
+    }
+    AtomicCounter& counter = _atomicCounters.at(counterIndex);
+    glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, bindIndex, counter._handle);
+}
+
 void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram,
                                 U32 bindIndex) {
     GLuint prog = shaderProgram->getID();

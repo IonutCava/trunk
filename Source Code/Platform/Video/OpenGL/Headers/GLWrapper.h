@@ -65,6 +65,28 @@ private:
     U32 _queryID;
 };
 
+struct ImageBindSettings {
+    GLuint _texture;
+    GLint  _level;
+    GLboolean _layered;
+    GLint _layer;
+    GLenum _access;
+    GLenum _format;
+
+    bool operator==(const ImageBindSettings& other) const {
+        return _texture == other._texture &&
+               _level == other._level &&
+               _layered == other._layered &&
+               _layer == other._layer &&
+               _access == other._access &&
+               _format == other._format;
+    }
+
+    bool operator!=(const ImageBindSettings& other) const {
+        return !(*this == other);
+    }
+};
+
 /// OpenGL implementation of the RenderAPIWrapper
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     friend class glShader;
@@ -206,8 +228,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     void clearStates(const bool skipTextures,
                      const bool skipBuffers,
                      const bool skipScissor);
-    void uploadDrawCommands(const DrawCommandList& drawCommands,
-                            U32 commandCount) const override;
+    void registerCommandBuffer(const ShaderBuffer& commandBuffer) const override;
 
     bool makeTexturesResident(const TextureDataContainer& textureData) override;
     bool makeTextureResident(const TextureData& textureData) override;
@@ -263,6 +284,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// using the sampler object defined by hash value
     static bool bindTexture(GLushort unit, GLuint handle, GLenum target,
                             size_t samplerHash = 0);
+    static bool bindTextureImage(GLushort unit, GLuint handle, GLint level,
+                                 bool layered, GLint layer, GLenum access,
+                                 GLenum format);
     /// Bind multiple textures specified by an array of handles and an offset
     /// unit
     static bool bindTextures(GLushort unitOffset, GLuint textureCount,
@@ -369,6 +393,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// /*texture slot*/ /*<texture handle , texture type>*/
     typedef std::array<std::pair<GLuint, GLenum>, MAX_ACTIVE_TEXTURE_SLOTS> textureBoundMapDef;
     static textureBoundMapDef _textureBoundMap;
+
+    typedef std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS> imageBoundMapDef;
+    static imageBoundMapDef _imageBoundMap;
+
     /// /*texture slot*/ /*sampler hash value*/
     typedef std::array<size_t, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;
     static samplerBoundMapDef _samplerBoundMap;

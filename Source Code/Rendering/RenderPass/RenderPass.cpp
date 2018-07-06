@@ -33,7 +33,9 @@ void RenderPass::render(const SceneRenderState& renderState) {
         if ((currentStage == RenderStage::DISPLAY ||
              currentStage == RenderStage::REFLECTION) &&
             renderBinCount > 0) {
-            LightManager::getInstance().bindDepthMaps();
+            LightManager::getInstance().bindShadowMaps();
+            GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->Bind(0, 
+                TextureDescriptor::AttachmentType::Depth);
         }
 
         for (U16 i = 0; i < renderBinCount; ++i) {

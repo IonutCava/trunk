@@ -65,6 +65,7 @@ void main()
 in vec2 _texCoord;
 out vec4 _colorOut;
 
+
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform int layer;
 

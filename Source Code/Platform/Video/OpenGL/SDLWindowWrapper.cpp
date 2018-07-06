@@ -433,13 +433,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     NS_GLIM::glim.SetVertexAttribLocation(to_uint(AttribLocation::VERTEX_POSITION));
     // We need a dummy VAO object for point rendering
     glCreateVertexArrays(1, &_dummyVAO);
-    // Allocate a buffer for indirect draw used to store the query results
-    // without a round-trip to the CPU
-    glCreateBuffers(1, &_indirectDrawBuffer);
-    glNamedBufferData(_indirectDrawBuffer,
-                      Config::MAX_VISIBLE_NODES * sizeof(IndirectDrawCommand),
-                      NULL,
-                      GL_DYNAMIC_DRAW);
+
     // In debug, we also have various performance counters to profile GPU rendering
     // operations
 #ifdef _DEBUG
@@ -465,7 +459,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
 
     _queryBackBuffer = PERFORMANCE_COUNTER_BUFFERS - 1;
 #endif
-
+    
     // Once OpenGL is ready for rendering, init CEGUI
     _enableCEGUIRendering = !(ParamHandler::getInstance().getParam<bool>("GUI.CEGUI.SkipRendering"));
     _GUIGLrenderer = &CEGUI::OpenGL3Renderer::create();

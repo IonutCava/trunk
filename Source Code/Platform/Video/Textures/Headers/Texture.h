@@ -61,6 +61,8 @@ class NOINITVTABLE Texture : public HardwareResource {
     public:
     /// Bind the texture to the specified texture unit
     virtual void Bind(U8 slot, bool flushStateOnRequest = true) = 0;
+    /// Bind a single level
+    virtual void BindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest = true) = 0;
     /// Change the texture's mip levels. This can be called at any time
     virtual void setMipMapRange(U16 base = 0, U16 max = 1000) = 0;
     /// Resize the texture to the specified dimensions and upload the new data
@@ -108,6 +110,8 @@ class NOINITVTABLE Texture : public HardwareResource {
     /// A rendering API level handle used to uniquely identify this texture
     /// (e.g. for OpenGL, it's the texture object)
     inline U32 getHandle() const { return _textureData.getHandleHigh(); }
+    /// Return the texture format used by this entity
+    inline GFXImageFormat getFormat() const { return _textureData._textureFormat; }
     /// If the texture has an alpha channel and at least one pixel is
     /// translucent, return true
     inline bool hasTransparency() const { return _hasTransparency; }

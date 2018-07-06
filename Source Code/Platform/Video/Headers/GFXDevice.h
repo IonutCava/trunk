@@ -253,6 +253,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
                       ShaderProgram* const shaderProgram);
     void drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport);
 
+    void postProcessRenderTarget(RenderTarget renderTarget);
     void addToRenderQueue(const RenderPackage& package);
     void flushRenderQueue();
     /// Sets the current render stage.
@@ -305,7 +306,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     bool loadInContext(const CurrentContext& context,
                        const DELEGATE_CBK<>& callback);
 
-    void ConstructHIZ();
     /// Save a screenshot in TGA format
     void Screenshot(const stringImpl& filename);
 
@@ -431,9 +431,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         return _api->getFrameDurationGPU();
     }
 
-    inline void uploadDrawCommands(const DrawCommandList& drawCommands,
-                                   U32 commandCount) const override {
-        _api->uploadDrawCommands(drawCommands, commandCount);
+    inline void registerCommandBuffer(const ShaderBuffer& commandBuffer) const override {
+        _api->registerCommandBuffer(commandBuffer);
     }
 
     inline bool makeTexturesResident(const TextureDataContainer& textureData) override {
@@ -501,9 +500,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
    protected:
     friend class SceneManager;
-    void buildDrawCommands(VisibleNodeList& visibleNodes,
-                           SceneRenderState& sceneRenderState,
-                           bool refreshNodeData);
+    void occlusionCull();
+    vec2<U32> buildDrawCommands(VisibleNodeList& visibleNodes,
+                                SceneRenderState& sceneRenderState,
+                                bool refreshNodeData);
     bool batchCommands(GenericDrawCommand& previousIDC,
                        GenericDrawCommand& currentIDC) const;
 
@@ -511,6 +511,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     GFXDevice();
     ~GFXDevice();
 
+    void constructHIZ();
     void previewDepthBuffer();
     void updateViewportInternal(const vec4<I32>& viewport);
     void processCommand(const GenericDrawCommand& cmd,
@@ -588,6 +589,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// shader used to preview the depth buffer
     ShaderProgram* _previewDepthMapShader;
     ShaderProgram* _HIZConstructProgram;
+    ShaderProgram* _HIZCullProgram;
     /// getMatrix cache
     mat4<F32> _mat4Cache;
     /// Quality settings
@@ -607,11 +609,14 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     DrawCommandList _drawCommandsCache;
     std::array<NodeData, Config::MAX_VISIBLE_NODES + 1> _matricesData;
+    U32 _lastCommandCount;
+    U32 _lastNodeCount;
     RenderQueue _renderQueue;
     Time::ProfileTimer* _commandBuildTimer;
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     std::unique_ptr<ShaderBuffer> _nodeBuffer;
+    std::unique_ptr<ShaderBuffer> _indirectCommandBuffer;
     GenericDrawCommand _defaultDrawCmd;
 END_SINGLETON
 
