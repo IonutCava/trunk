@@ -7,7 +7,7 @@
 #include "glimBatchData.h"
 #include "glimInterface.h"
 
-#include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
+#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 

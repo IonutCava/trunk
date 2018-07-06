@@ -193,6 +193,21 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Shaders\Headers\ShaderProgram.h">
       <Filter>Video\Shaders\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\Declarations.h">
+      <Filter>Video\OpenGL\GLIM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glim.h">
+      <Filter>Video\OpenGL\GLIM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimBatch.h">
+      <Filter>Video\OpenGL\GLIM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimBatchData.h">
+      <Filter>Video\OpenGL\GLIM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimInterface.h">
+      <Filter>Video\OpenGL\GLIM</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -329,6 +344,21 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\Shaders\ShaderProgram.cpp">
       <Filter>Video\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimBatch.cpp">
+      <Filter>Video\OpenGL\GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimBatchAttributes.cpp">
+      <Filter>Video\OpenGL\GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimBatchData.cpp">
+      <Filter>Video\OpenGL\GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimD3D11.cpp">
+      <Filter>Video\OpenGL\GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\Stuff.cpp">
+      <Filter>Video\OpenGL\GLIM</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -559,6 +589,9 @@
     </Filter>
     <Filter Include="Video\ShaderSource\GLSL\fragmentAtoms">
       <UniqueIdentifier>{80d2f2dd-63b7-4bb8-bb09-f5bc3d5f2f0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Video\OpenGL\GLIM">
+      <UniqueIdentifier>{aa487790-99b3-4ca1-b6e9-bfaf77071aa3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

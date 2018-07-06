@@ -27,6 +27,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\Declarations.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glim.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimBatch.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimBatchData.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimInterface.h" />
     <ClInclude Include="..\..\Source Code\Platform\Audio\fmod\Headers\FmodWrapper.h" />
     <ClInclude Include="..\..\Source Code\Platform\Audio\Headers\AudioAPIWrapper.h" />
     <ClInclude Include="..\..\Source Code\Platform\Audio\Headers\AudioDescriptor.h" />
@@ -93,6 +98,11 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Textures\Headers\TextureDescriptor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimBatch.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimBatchAttributes.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimBatchData.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimD3D11.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\GLIM\Stuff.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\openAl\ALWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\sdl_mixer\SDLWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\DataTypes\PlatformDefines.cpp" />
@@ -260,7 +270,7 @@
     <OutDir>$(ProjectDir)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(ProjectDir)</OutDir>
+    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IntDir>$(Configuration)_Hardware\</IntDir>
@@ -277,13 +287,13 @@
     <OutDir>$(ProjectDir)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(ProjectDir)</OutDir>
+    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
     <OutDir>$(ProjectDir)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <OutDir>$(ProjectDir)</OutDir>
+    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>$(Configuration)_Hardwae\</IntDir>
@@ -300,7 +310,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <IntDir>$(Configuration)_Platform\</IntDir>
-    <TargetName>$(ProjectName)</TargetName>
+    <TargetName>$(ProjectName)_p</TargetName>
     <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -354,7 +364,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <OutputFile>$(TargetPath)</OutputFile>
+      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_d$(TargetExt)</OutputFile>
       <AdditionalDependencies>
       </AdditionalDependencies>
       <AdditionalLibraryDirectories>
@@ -413,7 +423,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <OutputFile>$(TargetPath)</OutputFile>
+      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)$(TargetExt)</OutputFile>
       <AdditionalDependencies>
       </AdditionalDependencies>
     </Lib>
@@ -471,7 +481,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <OutputFile>$(TargetPath)</OutputFile>
+      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

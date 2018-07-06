@@ -44,7 +44,7 @@
 #include "Environment/Sky/Headers/Sky.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Rendering/Lighting/Headers/DirectionalLight.h"
-#include "Dynamics/Physics/Headers/PXDevice.h"
+#include "Physics/Headers/PXDevice.h"
 #include "Dynamics/Entities/Particles/Headers/ParticleEmitter.h"
 //GUI
 #include "GUI/Headers/GUI.h"

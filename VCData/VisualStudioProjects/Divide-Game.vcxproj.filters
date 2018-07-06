@@ -1,0 +1,367 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Environment">
+      <UniqueIdentifier>{92804e68-1e17-40b0-907b-c8d3dcaaea1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Environment\Terrain">
+      <UniqueIdentifier>{da18255f-12cd-4fce-af23-3851bc04b3e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Environment\Terrain\Quadtree">
+      <UniqueIdentifier>{bbcf8f59-43c2-43c1-bc82-220e4320b49b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Environment\Terrain\Quadtree\Headers">
+      <UniqueIdentifier>{37e85268-2752-46c7-91fe-2a394d55b870}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Environment\Terrain\Headers">
+      <UniqueIdentifier>{bf008771-abc3-4828-bdef-ddd36ee75021}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Environment\Sky">
+      <UniqueIdentifier>{ce4560e4-20ab-4129-9532-1131e99983b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Environment\Sky\Headers">
+      <UniqueIdentifier>{e08c8f7f-1204-4c63-b367-3802bc3710d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Environment\Water">
+      <UniqueIdentifier>{bfea41c4-e034-4826-b663-50f1c9551e66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Environment\Water\Headers">
+      <UniqueIdentifier>{d1155022-de4c-434d-8444-5804a6e94630}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Environment\Vegetation">
+      <UniqueIdentifier>{db728c40-4354-4511-b6a3-560b86ee9111}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Environment\Vegetation\Headers">
+      <UniqueIdentifier>{a7bd6a19-1e11-486a-9070-e2593c060781}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes">
+      <UniqueIdentifier>{c769cc43-0736-4d23-95ee-43f0ad174897}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\CubeScene">
+      <UniqueIdentifier>{c172e7fe-f6b7-44b7-aae7-2c51390d2553}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\CubeScene\Headers">
+      <UniqueIdentifier>{9817d7fa-f233-4825-ab98-cde0256efb0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\FlashScene">
+      <UniqueIdentifier>{8259d39c-c656-4a23-87bd-7f1b21ce8159}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\FlashScene\Headers">
+      <UniqueIdentifier>{0f8773c2-e468-4227-9414-2f0f2809ee27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\MainScene">
+      <UniqueIdentifier>{c6a6cab8-7402-4840-a7e0-eb91073086ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\MainScene\Headers">
+      <UniqueIdentifier>{7cf04de6-7deb-45f5-ae3b-12780c2f2ec0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\PhysXScene">
+      <UniqueIdentifier>{70642e7e-1037-4cad-9a2e-60ed25e4d96b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\PhysXScene\Headers">
+      <UniqueIdentifier>{c188a5d7-88bc-4135-b31b-5562388d3f5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\NetworkScene">
+      <UniqueIdentifier>{e3cbd413-8cbd-4ded-8cf1-a38fa3e3443f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\NetworkScene\Headers">
+      <UniqueIdentifier>{fee21603-4dd6-4eda-b3be-b9db6b06bf90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\NetworkScene\Network">
+      <UniqueIdentifier>{8987fcd7-1334-45a8-9772-e39c0534a7c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\NetworkScene\Network\Headers">
+      <UniqueIdentifier>{92cff04b-4695-4d85-8068-89e54dd1e89c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\PingPongScene">
+      <UniqueIdentifier>{0f266677-885d-4d8d-8329-8364476051e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\PingPongScene\Headers">
+      <UniqueIdentifier>{1434db96-9eec-43aa-8be8-db466dfbb1a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\Headers">
+      <UniqueIdentifier>{0286e629-230b-435f-9564-61afd4bf6dae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene">
+      <UniqueIdentifier>{17f7c49d-e878-4d4b-84e1-baca7d636a13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Headers">
+      <UniqueIdentifier>{62fd2e3e-9b1b-4473-a78f-48bfbf5f20bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\AESOPActions">
+      <UniqueIdentifier>{2548cd9a-d73c-407a-b960-862c8c114c6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\AESOPActions\Headers">
+      <UniqueIdentifier>{9f7f74bc-65b4-4e99-842c-09e63d6a3bbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\TenisScene">
+      <UniqueIdentifier>{d5d6663f-03de-47f7-a089-94fbd157e7ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\TenisScene\Headers">
+      <UniqueIdentifier>{476d9ace-8fde-481d-84ed-44ca0c927b3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics">
+      <UniqueIdentifier>{a4be32ae-c915-4c6d-9abf-69f62edcb620}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities">
+      <UniqueIdentifier>{61c6016a-6cb1-45e6-a021-7d9d031280ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Headers">
+      <UniqueIdentifier>{d183a80a-0e5d-46e6-950a-5ecd710cb814}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Particles">
+      <UniqueIdentifier>{01faca08-48fa-4913-b41b-6695774527ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Particles\Headers">
+      <UniqueIdentifier>{b6f9f9dc-7ad7-488e-9988-9a51a3023b73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Triggers">
+      <UniqueIdentifier>{34959809-7bbd-49e7-be31-4253641502c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Triggers\Headers">
+      <UniqueIdentifier>{59c593d7-6b73-427d-abce-4a65c37570df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Units">
+      <UniqueIdentifier>{1989b609-d850-4196-bd80-3356882187df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\Entities\Units\Headers">
+      <UniqueIdentifier>{fabb2c75-e00b-41fa-8765-4527a7b9d1c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem">
+      <UniqueIdentifier>{e0afdef0-a183-4911-b3e9-d667738a6d44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem\Ammunition">
+      <UniqueIdentifier>{c673a65e-f30a-4665-8fdc-65d95252c2cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem\Ammunition\Headers">
+      <UniqueIdentifier>{df30013c-5e0d-40d6-bb0d-e6d5f6b035c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem\Projectile">
+      <UniqueIdentifier>{b0a9359d-13b7-43e9-bb58-47654d9eaad1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem\Projectile\Headers">
+      <UniqueIdentifier>{be27db44-c122-4efc-b3a7-075300a20e0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem\Weapons">
+      <UniqueIdentifier>{9068eb79-002a-48ef-8edf-c57f528b43bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dynamics\WeaponSystem\Weapons\Headers">
+      <UniqueIdentifier>{9278ee80-fccd-4905-a4e5-5da1c6c66461}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainLoader.cpp">
+      <Filter>Environment\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\Terrain.cpp">
+      <Filter>Environment\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainChunk.cpp">
+      <Filter>Environment\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\Quadtree\Quadtree.cpp">
+      <Filter>Environment\Terrain\Quadtree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\Quadtree\QuadtreeNode.cpp">
+      <Filter>Environment\Terrain\Quadtree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Environment\Sky\Sky.cpp">
+      <Filter>Environment\Sky</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Environment\Water\Water.cpp">
+      <Filter>Environment\Water</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Environment\Vegetation\Vegetation.cpp">
+      <Filter>Environment\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\SceneInput.cpp">
+      <Filter>Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\Scene.cpp">
+      <Filter>Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\CubeScene\CubeScene.cpp">
+      <Filter>Scenes\CubeScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\FlashScene\FlashScene.cpp">
+      <Filter>Scenes\FlashScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\MainScene\MainScene.cpp">
+      <Filter>Scenes\MainScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\PhysXScene\PhysXScene.cpp">
+      <Filter>Scenes\PhysXScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\NetworkScene.cpp">
+      <Filter>Scenes\NetworkScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\Network\ASIOImpl.cpp">
+      <Filter>Scenes\NetworkScene\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp">
+      <Filter>Scenes\PingPongScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarScene.cpp">
+      <Filter>Scenes\WarScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAISceneImpl.cpp">
+      <Filter>Scenes\WarScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\AESOPActions\WarSceneActions.cpp">
+      <Filter>Scenes\WarScene\AESOPActions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisScene.cpp">
+      <Filter>Scenes\TenisScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAISceneImpl.cpp">
+      <Filter>Scenes\TenisScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Impostor.cpp">
+      <Filter>Dynamics\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\Particle.cpp">
+      <Filter>Dynamics\Entities\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleEmitter.cpp">
+      <Filter>Dynamics\Entities\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Triggers\Trigger.cpp">
+      <Filter>Dynamics\Entities\Triggers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Character.cpp">
+      <Filter>Dynamics\Entities\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\NPC.cpp">
+      <Filter>Dynamics\Entities\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Player.cpp">
+      <Filter>Dynamics\Entities\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Unit.cpp">
+      <Filter>Dynamics\Entities\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Vehicle.cpp">
+      <Filter>Dynamics\Entities\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Ammunition\Ammunition.cpp">
+      <Filter>Dynamics\WeaponSystem\Ammunition</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Projectile.cpp">
+      <Filter>Dynamics\WeaponSystem\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Weapon.cpp">
+      <Filter>Dynamics\WeaponSystem\Weapons</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\Quadtree.h">
+      <Filter>Environment\Terrain\Quadtree\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\QuadtreeNode.h">
+      <Filter>Environment\Terrain\Quadtree\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\TerrainLoader.h">
+      <Filter>Environment\Terrain\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\Terrain.h">
+      <Filter>Environment\Terrain\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\TerrainChunk.h">
+      <Filter>Environment\Terrain\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\TerrainDescriptor.h">
+      <Filter>Environment\Terrain\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Environment\Sky\Headers\Sky.h">
+      <Filter>Environment\Sky\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Environment\Water\Headers\Water.h">
+      <Filter>Environment\Water\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Environment\Vegetation\Headers\Vegetation.h">
+      <Filter>Environment\Vegetation\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\CubeScene\Headers\CubeScene.h">
+      <Filter>Scenes\CubeScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\FlashScene\Headers\FlashScene.h">
+      <Filter>Scenes\FlashScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\MainScene\Headers\MainScene.h">
+      <Filter>Scenes\MainScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\PhysXScene\Headers\PhysXScene.h">
+      <Filter>Scenes\PhysXScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Headers\NetworkScene.h">
+      <Filter>Scenes\NetworkScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Network\Headers\ASIOImpl.h">
+      <Filter>Scenes\NetworkScene\Network\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Network\Headers\OPCodesImpl.h">
+      <Filter>Scenes\NetworkScene\Network\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\PingPongScene\Headers\PingPongScene.h">
+      <Filter>Scenes\PingPongScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h">
+      <Filter>Scenes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\Scene.h">
+      <Filter>Scenes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarScene.h">
+      <Filter>Scenes\WarScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAISceneImpl.h">
+      <Filter>Scenes\WarScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h">
+      <Filter>Scenes\WarScene\AESOPActions\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisScene.h">
+      <Filter>Scenes\TenisScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisSceneAISceneImpl.h">
+      <Filter>Scenes\TenisScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\SceneList.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Headers\Impostor.h">
+      <Filter>Dynamics\Entities\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\Particle.h">
+      <Filter>Dynamics\Entities\Particles\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleEmitter.h">
+      <Filter>Dynamics\Entities\Particles\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Triggers\Headers\Trigger.h">
+      <Filter>Dynamics\Entities\Triggers\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Character.h">
+      <Filter>Dynamics\Entities\Units\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\NPC.h">
+      <Filter>Dynamics\Entities\Units\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Player.h">
+      <Filter>Dynamics\Entities\Units\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Unit.h">
+      <Filter>Dynamics\Entities\Units\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Vehicle.h">
+      <Filter>Dynamics\Entities\Units\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Ammunition\Headers\Ammunition.h">
+      <Filter>Dynamics\WeaponSystem\Ammunition\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Headers\Projectile.h">
+      <Filter>Dynamics\WeaponSystem\Projectile\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Headers\Weapon.h">
+      <Filter>Dynamics\WeaponSystem\Weapons\Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

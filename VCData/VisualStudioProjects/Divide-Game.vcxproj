@@ -1,0 +1,398 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|Win32">
+      <Configuration>Profile</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|x64">
+      <Configuration>Profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Impostor.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\Particle.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleEmitter.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Triggers\Trigger.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Character.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\NPC.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Player.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Unit.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Vehicle.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Ammunition\Ammunition.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Projectile.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Weapon.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Sky\Sky.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\Quadtree\Quadtree.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\Quadtree\QuadtreeNode.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\Terrain.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainChunk.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainLoader.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Vegetation\Vegetation.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Water\Water.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\CubeScene\CubeScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\FlashScene\FlashScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\MainScene\MainScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\NetworkScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\Network\ASIOImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\PhysXScene\PhysXScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\Scene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\SceneInput.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAISceneImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\AESOPActions\WarSceneActions.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAISceneImpl.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Headers\Impostor.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\Particle.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleEmitter.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Triggers\Headers\Trigger.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Character.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\NPC.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Player.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Unit.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Vehicle.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Ammunition\Headers\Ammunition.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Headers\Projectile.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Headers\Weapon.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Sky\Headers\Sky.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\Terrain.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\TerrainChunk.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\TerrainDescriptor.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\TerrainLoader.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\Quadtree.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\QuadtreeNode.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Vegetation\Headers\Vegetation.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Water\Headers\Water.h" />
+    <ClInclude Include="..\..\Source Code\SceneList.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\CubeScene\Headers\CubeScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\FlashScene\Headers\FlashScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\Scene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\MainScene\Headers\MainScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Headers\NetworkScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Network\Headers\ASIOImpl.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Network\Headers\OPCodesImpl.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\PhysXScene\Headers\PhysXScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\PingPongScene\Headers\PingPongScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisSceneAISceneImpl.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAISceneImpl.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{87F22E92-2988-41FA-9E23-00033408A869}</ProjectGuid>
+    <RootNamespace>DivideHardware</RootNamespace>
+    <ProjectName>Divide-Game</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IntDir>$(Configuration)_Game\</IntDir>
+    <TargetName>$(ProjectName)_d</TargetName>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IntDir>$(Configuration)_Game\</IntDir>
+    <TargetName>$(ProjectName)_d</TargetName>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IntDir>$(Configuration)_Game\</IntDir>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IntDir>$(Configuration)_Game\</IntDir>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <IntDir>$(Configuration)_Game\</IntDir>
+    <TargetName>$(ProjectName)_p</TargetName>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <IntDir>$(Configuration)_Game\</IntDir>
+    <TargetName>$(ProjectName)_p</TargetName>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/includes/;$(SolutionDir)../Source Code/Libs/src/;$(SolutionDir)../Source Code/Libs/src/ReCast/;$(EngineLibraries)\boost\;$(EngineLibraries)\EASTL\include\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\SimpleINI\include\;$(EngineLibraries)\Threadpool\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\GLEW\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_WIN32_WINNT=0x0601;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>NDEBUG</UndefinePreprocessorDefinitions>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>true</SmallerTypeCheck>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <ShowIncludes>false</ShowIncludes>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_d$(TargetExt)</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/includes/;$(SolutionDir)../Source Code/Libs/src/;$(SolutionDir)../Source Code/Libs/src/ReCast/;$(EngineLibraries)\boost\;$(EngineLibraries)\EASTL\include\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\SimpleINI\include\;$(EngineLibraries)\Threadpool\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\GLEW\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_DEBUG;_WIN32_WINNT=0x0601;NOMINMAX;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>NDEBUG</UndefinePreprocessorDefinitions>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503;4127;4996</DisableSpecificWarnings>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>true</OpenMPSupport>
+      <ShowIncludes>false</ShowIncludes>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_d$(TargetExt)</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/includes/;$(SolutionDir)../Source Code/Libs/src/;$(SolutionDir)../Source Code/Libs/src/ReCast/;$(EngineLibraries)\boost\;$(EngineLibraries)\EASTL\include\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\SimpleINI\include\;$(EngineLibraries)\Threadpool\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\GLEW\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_WIN32_WINNT=0x0601;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)$(TargetExt)</OutputFile>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/includes/;$(SolutionDir)../Source Code/Libs/src/;$(SolutionDir)../Source Code/Libs/src/ReCast/;$(EngineLibraries)\boost\;$(EngineLibraries)\EASTL\include\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\SimpleINI\include\;$(EngineLibraries)\Threadpool\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\GLEW\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SCL_SECURE=0;NDEBUG;_WIN32_WINNT=0x0601;_SECURE_SCL=0;NOMINMAX;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ShowIncludes>false</ShowIncludes>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)$(TargetExt)</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/includes/;$(SolutionDir)../Source Code/Libs/src/;$(SolutionDir)../Source Code/Libs/src/ReCast/;$(EngineLibraries)\boost\;$(EngineLibraries)\EASTL\include\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\SimpleINI\include\;$(EngineLibraries)\Threadpool\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\GLEW\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/includes/;$(SolutionDir)../Source Code/Libs/src/;$(SolutionDir)../Source Code/Libs/src/ReCast/;$(EngineLibraries)\boost\;$(EngineLibraries)\EASTL\include\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\SimpleINI\include\;$(EngineLibraries)\Threadpool\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\GLEW\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;_SECURE_SCL=0;NOMINMAX;CEGUI_STATIC</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <EnablePREfast>true</EnablePREfast>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

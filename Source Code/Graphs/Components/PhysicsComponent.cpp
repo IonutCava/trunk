@@ -4,8 +4,8 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
-#include "Dynamics/Physics/Headers/PXDevice.h"
-#include "Dynamics/Physics/Headers/PhysicsAPIWrapper.h"
+#include "Physics/Headers/PXDevice.h"
+#include "Physics/Headers/PhysicsAPIWrapper.h"
 
 namespace Divide {
 

@@ -12,7 +12,7 @@
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Dynamics/Physics/Headers/PXDevice.h"
+#include "Physics/Headers/PXDevice.h"
 #include "Platform/Input/Headers/InputInterface.h"
 #include "Managers/Headers/FrameListenerManager.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
