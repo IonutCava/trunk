@@ -139,6 +139,16 @@ F32 PACK_VEC3(const vec3<F32>& value) {
     return PACK_VEC3(value.x, value.y, value.z);
 }
 
+void UNPACK_VEC3(const F32 src, vec3<F32>& res) {
+    UNPACK_FLOAT(src, res.x, res.y, res.z);
+}
+
+vec3<F32> UNPACK_VEC3(const F32 src) {
+    vec3<F32> res;
+    UNPACK_VEC3(src, res);
+    return res;
+}
+
 void Normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw,
                bool normPitch, bool normRoll) {
     if (normYaw) {

@@ -19,7 +19,7 @@ flat out int _arrayLayer;
 
 void main()
 {
-    VAR.dvd_drawID = gl_BaseInstanceARB;
+    VAR.dvd_instanceID = gl_BaseInstanceARB;
     vec3 posOffset = positionOffsets[gl_VertexID];
     _arrayLayer = int(instanceData.w);
     VAR._texCoord = texCoordOffsets[gl_VertexID];
@@ -31,7 +31,7 @@ void main()
                     1.0);
 
     dvd_Normal = vec3(1.0, 1.0, 1.0);
-    VAR._normalWV = dvd_NormalMatrixWV(VAR.dvd_drawID) * dvd_Normal;
+    VAR._normalWV = dvd_NormalMatrixWV(VAR.dvd_instanceID) * dvd_Normal;
 
     if (posOffset.y > 0.75) {
         computeFoliageMovementGrass(VAR._vertexW);

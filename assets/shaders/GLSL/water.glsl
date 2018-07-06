@@ -65,7 +65,7 @@ void main (void)
     vec2 uvFinalReflect = uvReflection.xy + _noiseFactor * normal.xy;
     vec2 uvFinalRefract = uvReflection.xy + _noiseFactor * normal.xy;
 
-    vec3 N = normalize(dvd_NormalMatrixWV(VAR.dvd_drawID) * normal);
+    vec3 N = normalize(dvd_NormalMatrixWV(VAR.dvd_instanceID) * normal);
     vec3 L = normalize(-(dvd_LightSource[0]._positionWV.xyz));
     vec3 V = normalize(_pixToEye);
 

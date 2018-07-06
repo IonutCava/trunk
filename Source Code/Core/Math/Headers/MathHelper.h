@@ -333,6 +333,11 @@ F32 PACK_VEC3(const vec3<F32>& value);
 inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) {
     UNPACK_FLOAT(src, x, y, z);
 }
+
+void UNPACK_VEC3(const F32 src, vec3<F32>& res);
+
+vec3<F32> UNPACK_VEC3(const F32 src);
+
 };  // namespace Util
 };  // namespace Divide
 

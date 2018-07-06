@@ -12,23 +12,347 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
+#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
-
 
 namespace {
     size_t g_PlaneCommandIndex = 0;
 };
 
+namespace Test {
+    bool treeDirty = true;
+
+    typedef struct terrainNode_t terrainNode_t;
+    struct terrainNode_t {
+        vec3<F32> origin;
+        vec2<F32> dimensions;
+        U8 type; // 1, 2, 3, 4 -- the child # relative to its parent. (0 == root)
+
+        // Tessellation scale
+        F32 tscale_negx; // negative x edge
+        F32 tscale_posx; // Positive x edge
+        F32 tscale_negz; // Negative z edge
+        F32 tscale_posz; // Positive z edge
+
+        terrainNode_t *p;  // Parent
+        terrainNode_t *c1; // Children
+        terrainNode_t *c2;
+        terrainNode_t *c3;
+        terrainNode_t *c4;
+
+        terrainNode_t *n; // Neighbor to north
+        terrainNode_t *s; // Neighbor to south
+        terrainNode_t *e; // Neighbor to east
+        terrainNode_t *w; // Neighbor to west
+    };
+
+    // The size of a patch in meters at which point to
+    // stop subdividing a terrain patch once it's width is
+    // less than the cutoff
+    #define VMB_TERRAIN_REC_CUTOFF 10
+    #define MAX_TERRAIN_NODES 500
+
+    terrainNode_t *terrainTree;
+    terrainNode_t *terrainTreeTail;
+    I32 numTerrainNodes = 0;
+
+    /**
+    * Allocates a new node in the terrain quadtree with the specified parameters.
+    */
+    terrainNode_t* createNode(terrainNode_t *parent, U8 type, F32 x, F32 y, F32 z, F32 width, F32 height)
+    {
+        if (numTerrainNodes >= MAX_TERRAIN_NODES)
+            return NULL;
+        numTerrainNodes++;
+
+        terrainTreeTail++;
+        terrainTreeTail->type = type;
+        terrainTreeTail->origin.set(x, y, z);
+        terrainTreeTail->dimensions.set(width, height);
+        terrainTreeTail->tscale_negx = 1.0;
+        terrainTreeTail->tscale_negz = 1.0;
+        terrainTreeTail->tscale_posx = 1.0;
+        terrainTreeTail->tscale_posz = 1.0;
+        terrainTreeTail->p = parent;
+        terrainTreeTail->n = NULL;
+        terrainTreeTail->s = NULL;
+        terrainTreeTail->e = NULL;
+        terrainTreeTail->w = NULL;
+        return terrainTreeTail;
+    }
+
+    /**
+    * Resets the terrain quadtree.
+    */
+    void terrain_clearTree()
+    {
+        terrainTreeTail = terrainTree;
+        memset(terrainTree, 0, MAX_TERRAIN_NODES * sizeof(terrainNode_t));
+        numTerrainNodes = 0;
+    }
+
+    /**
+    * Determines whether a node should be subdivided based on its distance to the camera.
+    * Returns true if the node should be subdivided.
+    */
+    bool checkDivide(const vec3<F32>& camPos, terrainNode_t *node)
+    {
+        // Distance from current origin to camera
+        F32 d = std::abs(std::sqrtf(std::pow(camPos.x - node->origin[0], 2.0f) + std::pow(camPos.z - node->origin[2], 2.0f)));
+
+        // Check base case:
+        // Distance to camera is greater than twice the length of the diagonal
+        // from current origin to corner of current square.
+        // OR
+        // Max recursion level has been hit
+        if (d > 2.5f * std::sqrtf(std::pow(0.5f * node->dimensions.width, 2.0f) + 
+                                  std::pow(0.5f * node->dimensions.height, 2.0f)) ||
+            node->dimensions.width < VMB_TERRAIN_REC_CUTOFF)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+    * Returns true if node is sub-divided. False otherwise.
+    */
+    bool terrain_divideNode(const vec3<F32>& camPos, terrainNode_t *node)
+    {
+        // Subdivide
+        F32 w_new = 0.5f * node->dimensions.width;
+        F32 h_new = 0.5f * node->dimensions.height;
+
+        // Create the child nodes
+        node->c1 = createNode(node, 1u, node->origin.x - 0.5f * w_new, node->origin.y, node->origin.z - 0.5f * h_new, w_new, h_new);
+        node->c2 = createNode(node, 2u, node->origin.x + 0.5f * w_new, node->origin.y, node->origin.z - 0.5f * h_new, w_new, h_new);
+        node->c3 = createNode(node, 3u, node->origin.x + 0.5f * w_new, node->origin.y, node->origin.z + 0.5f * h_new, w_new, h_new);
+        node->c4 = createNode(node, 4u, node->origin.x - 0.5f * w_new, node->origin.y, node->origin.z + 0.5f * h_new, w_new, h_new);
+
+        // Assign neighbors
+        if (node->type == 1)
+        {
+            node->e = node->p->c2;
+            node->n = node->p->c4;
+        }
+        else if (node->type == 2)
+        {
+            node->w = node->p->c1;
+            node->n = node->p->c3;
+        }
+        else if (node->type == 3)
+        {
+            node->s = node->p->c2;
+            node->w = node->p->c4;
+        }
+        else if (node->type == 4)
+        {
+            node->s = node->p->c1;
+            node->e = node->p->c3;
+        }
+
+        // Check if each of these four child nodes will be subdivided.
+        bool div1, div2, div3, div4;
+        div1 = checkDivide(camPos, node->c1);
+        div2 = checkDivide(camPos, node->c2);
+        div3 = checkDivide(camPos, node->c3);
+        div4 = checkDivide(camPos, node->c4);
+
+        if (div1) {
+            terrain_divideNode(camPos, node->c1);
+        }
+        if (div2) {
+            terrain_divideNode(camPos, node->c2);
+        }
+        if (div3) {
+            terrain_divideNode(camPos, node->c3);
+        }
+        if (div4) {
+            terrain_divideNode(camPos, node->c4);
+        }
+
+        return div1 || div2 || div3 || div4;
+    }
+
+    /**
+    * Builds a terrain quadtree based on specified parameters and current camera position.
+    */
+    void terrain_createTree(const vec3<F32>& camPos, const vec3<F32>& origin, const vec2<U16>& terrainDimensions)
+    {
+        terrain_clearTree();
+
+        terrainTree->type = 0u; // Root node
+        terrainTree->origin.set(origin);
+        terrainTree->dimensions.set(terrainDimensions.width, terrainDimensions.height);
+        terrainTree->tscale_negx = 1.0;
+        terrainTree->tscale_negz = 1.0;
+        terrainTree->tscale_posx = 1.0;
+        terrainTree->tscale_posz = 1.0;
+        terrainTree->p = NULL;
+        terrainTree->n = NULL;
+        terrainTree->s = NULL;
+        terrainTree->e = NULL;
+        terrainTree->w = NULL;
+
+        // Recursively subdivide the terrain
+        terrain_divideNode(camPos, terrainTree);
+    }
+
+    /**
+    * Reserves memory for the terrrain quadtree and initializes the data structure.
+    */
+    void terrain_init()
+    {
+        terrainTree = (terrainNode_t*)malloc(MAX_TERRAIN_NODES * sizeof(terrainNode_t));
+        terrain_clearTree();
+    }
+
+    /**
+    * Frees memory for the terrain quadtree.
+    */
+    void terrain_shutdown()
+    {
+        free(terrainTree);
+        terrainTree = NULL;
+        terrainTreeTail = NULL;
+    }
+
+    /**
+    * Search for a node in the tree.
+    * x, z == the point we are searching for (trying to find the node with an origin closest to that point)
+    * n = the current node we are testing
+    */
+    terrainNode_t *find(terrainNode_t* n, F32 x, F32 z)
+    {
+        if (n->origin[0] == x && n->origin[2] == z)
+            return n;
+
+        if (n->c1 == NULL && n->c2 == NULL && n->c3 == NULL && n->c4 == NULL)
+            return n;
+
+        if (n->origin[0] >= x && n->origin[2] >= z && n->c1)
+            return find(n->c1, x, z);
+        else if (n->origin[0] <= x && n->origin[2] >= z && n->c2)
+            return find(n->c2, x, z);
+        else if (n->origin[0] <= x && n->origin[2] <= z && n->c3)
+            return find(n->c3, x, z);
+        else if (n->origin[0] >= x && n->origin[2] <= z && n->c4)
+            return find(n->c4, x, z);
+
+        return n;
+    }
+
+    /**
+    * Calculate the tessellation scale factor for a node depending on the neighboring patches.
+    */
+    void calcTessScale(terrainNode_t *node)
+    {
+        terrainNode_t *t;
+
+        // Positive Z (north)
+        t = find(terrainTree, node->origin.x, node->origin.z + 1 + node->dimensions.width / 2.0f);
+        if (t->dimensions.width > node->dimensions.width) {
+            node->tscale_posz = 2.0;
+        }
+
+        // Positive X (east)
+        t = find(terrainTree, node->origin.x + 1 + node->dimensions.width / 2.0f, node->origin.z);
+        if (t->dimensions.width > node->dimensions.width) {
+            node->tscale_posx = 2.0;
+        }
+
+        // Negative Z (south)
+        t = find(terrainTree, node->origin.x, node->origin.z - 1 - node->dimensions.width / 2.0f);
+        if (t->dimensions.width > node->dimensions.width) {
+            node->tscale_negz = 2.0;
+        }
+
+        // Negative X (west)
+        t = find(terrainTree, node->origin.x - 1 - node->dimensions.width / 2.0f, node->origin.z);
+        if (t->dimensions.width > node->dimensions.width) {
+            node->tscale_negx = 2.0;
+        }
+    }
+
+    /**
+    * Pushes a node (patch) to the GPU to be drawn.
+    * note: height parameter is here but not used. currently only dealing with square terrains (width is used only)
+    */
+
+    struct NodeData {
+        vec4<F32> _positionAndTileScale;
+        vec4<F32> _tScale;
+    };
+
+    void terrain_renderNode(terrainNode_t *node, vectorImpl<NodeData>& data)
+    {
+        // Calculate the tess scale factor
+        calcTessScale(node);
+
+        data.push_back({ vec4<F32>(node->origin,
+                                   0.5f * node->dimensions.width),
+                         vec4<F32>(node->tscale_negx,
+                                   node->tscale_negz,
+                                   node->tscale_posx,
+                                   node->tscale_posz)});
+    }
+
+    I32 maxRenderDepth = 1;
+    I32 renderDepth = 0;
+
+    /**
+    * Traverses the terrain quadtree to draw nodes with no children.
+    */
+    void terrain_renderRecursive(terrainNode_t *node, vectorImpl<NodeData>& data)
+    {
+        //if (renderDepth >= maxRenderDepth)
+        //	return;
+
+        // If all children are null, render this node
+        if (!node->c1 && !node->c2 && !node->c3 && !node->c4)
+        {
+            terrain_renderNode(node, data);
+            renderDepth++;
+            return;
+        }
+
+        // Otherwise, recruse to the children.
+        // Note: we're checking if the child exists. Theoretically, with our algorithm,
+        // either all the children are null or all the children are not null.
+        // There shouldn't be any other cases, but we check here for safety.
+        if (node->c1)
+            terrain_renderRecursive(node->c1, data);
+        if (node->c2)
+            terrain_renderRecursive(node->c2, data);
+        if (node->c3)
+            terrain_renderRecursive(node->c3, data);
+        if (node->c4)
+            terrain_renderRecursive(node->c4, data);
+    }
+
+    /**
+    * Draw the terrrain.
+    */
+    void terrain_render(vectorImpl<NodeData>& data)
+    {
+        renderDepth = 0;
+
+        terrain_renderRecursive(terrainTree, data);
+    }
+
+};
+
 Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
     : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN, ObjectFlag::OBJECT_FLAG_NONE),
       _plane(nullptr),
+      _shaderData(nullptr),
       _drawBBoxes(false),
       _underwaterDiffuseScale(100.0f),
       _chunkSize(1),
       _waterHeight(0.0f)
 {
-    getGeometryVB()->useLargeIndices(true);  //<32bit indices
 }
 
 Terrain::~Terrain()
@@ -37,6 +361,7 @@ Terrain::~Terrain()
 
 bool Terrain::unload() {
     MemoryManager::DELETE_VECTOR(_terrainTextures);
+    Test::terrain_shutdown();
     return Object3D::unload();
 }
 
@@ -55,6 +380,19 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     }*/
     // Skip Object3D::load() to avoid triangle list computation (extremely expensive)!!!
 
+    ShaderBufferParams params;
+    params._primitiveCount = MAX_TERRAIN_NODES;
+    params._primitiveSizeInBytes = sizeof(Test::NodeData);
+    params._ringBufferLength = 1;
+    params._unbound = true;
+    params._updateFrequency = BufferUpdateFrequency::OFTEN;
+
+    _shaderData = _context.newSB(params);
+    sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
+                                                        vec2<U32>(0, 1),
+                                                        *_shaderData);
+
+    Test::terrain_init();
     SceneNode::postLoad(sgn);
 }
 
@@ -118,22 +456,42 @@ void Terrain::sceneUpdate(const U64 deltaTime,
     Object3D::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
+void Terrain::onCameraUpdate(SceneGraphNode& sgn,
+                             const I64 cameraGUID,
+                             const vec3<F32>& posOffset,
+                             const mat4<F32>& rotationOffset) {
+    ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(cameraGUID);
+    ACKNOWLEDGE_UNUSED(posOffset);
+    ACKNOWLEDGE_UNUSED(rotationOffset);
+
+    Test::treeDirty = true;
+}
+
+void Terrain::onCameraChange(SceneGraphNode& sgn,
+                             const Camera& cam) {
+    ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(cam);
+
+    Test::treeDirty = true;
+}
+
 void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
                                      const RenderStagePass& renderStagePass,
                                      GenericDrawCommands& drawCommandsInOut) {
-
+   
     GenericDrawCommand cmd;
+    cmd.primitiveType(PrimitiveType::PATCH);
+    cmd.enableOption(GenericDrawCommand::RenderOptions::RENDER_TESSELLATED);
     cmd.sourceBuffer(getGeometryVB());
-    cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
+    cmd.cmd().indexCount = getGeometryVB()->getIndexCount();
     drawCommandsInOut.push_back(cmd);
-
-    size_t chunkCount = static_cast<size_t>(_terrainQuadtree.getChunkCount());
-    for (U32 i = 0; i < chunkCount; ++i) {
-        drawCommandsInOut.push_back(cmd);
-    }
 
     g_PlaneCommandIndex = drawCommandsInOut.size();
     if (renderStagePass._stage == RenderStage::DISPLAY) {
+
+        cmd.primitiveType(PrimitiveType::TRIANGLES);
+        cmd.disableOption(GenericDrawCommand::RenderOptions::RENDER_TESSELLATED);
         //infinite plane
         VertexBuffer* const vb = _plane->getGeometryVB();
         cmd.cmd().firstIndex = 0;
@@ -144,7 +502,7 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
 
         //BoundingBoxes
         GenericDrawCommands commands;
-        commands.reserve(chunkCount);
+        commands.reserve(getQuadtree().getChunkCount());
         _terrainQuadtree.drawBBox(_context, commands);
         for (const GenericDrawCommand& crtCmd : commands) {
             drawCommandsInOut.push_back(crtCmd);
@@ -159,46 +517,36 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
                                  const SceneRenderState& sceneRenderState,
                                  GenericDrawCommands& drawCommandsInOut) {
 
-    _context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, Plane<F32>(WORLD_Y_AXIS, _waterHeight));
+    //_context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, Plane<F32>(WORLD_Y_AXIS, _waterHeight));
 
-    drawCommandsInOut.front().shaderProgram()->Uniform("dvd_waterHeight", _waterHeight);
-    vectorImpl<vec3<U32>> chunkData;
-    size_t chunkCount = static_cast<size_t>(_terrainQuadtree.getChunkCount());
-    chunkData.reserve(chunkCount);
-    _terrainQuadtree.getChunkBufferData(renderStagePass._stage, sceneRenderState, chunkData);
-
-    std::sort(std::begin(chunkData), std::end(chunkData),
-                [](const vec3<U32>& a, const vec3<U32>& b) {
-                    // LoD comparison
-                    return a.z < b.z; 
-                });
-
-    size_t i = 0; 
-    size_t dataCount = chunkData.size();
-
-    GenericDrawCommands::iterator cmdIter = std::begin(drawCommandsInOut) + 1;
-    for (;i < chunkCount; ++i, ++cmdIter) {
-        GenericDrawCommand& cmd = (*cmdIter);
-        if (i < dataCount) {
-            const vec3<U32>& cmdData = chunkData[i];
-            cmd.cmd().firstIndex = cmdData.x;
-            cmd.cmd().indexCount = cmdData.y;
-            cmd.LoD(to_I8(cmdData.z));
-            cmd.drawCount(1);
-        }  else {
-            cmd.drawCount(0);
-        }
+    //drawCommandsInOut.front().shaderProgram()->Uniform("dvd_waterHeight", _waterHeight);
+    drawCommandsInOut.front().shaderProgram()->Uniform("TerrainOrigin", vec3<F32>(-to_F32(_terrainDimensions.width) / 2.0f, -1024.0f / 2.0f, -to_F32(_terrainDimensions.height) / 2.0f));
+    drawCommandsInOut.front().shaderProgram()->Uniform("TerrainHeightOffset", 1024.0f);
+    drawCommandsInOut.front().shaderProgram()->Uniform("TerrainLength", to_F32(_terrainDimensions.height));
+    drawCommandsInOut.front().shaderProgram()->Uniform("TerrainWidth", to_F32(_terrainDimensions.width));
+    if (Test::treeDirty) {
+        Test::terrain_createTree(Camera::activeCamera()->getEye(),
+                                 vec3<F32>(0),
+                                 _terrainDimensions);
+        Test::treeDirty = false;
     }
+
+    vectorImpl<Test::NodeData> data;
+    Test::terrain_render(data);
+    drawCommandsInOut.front().drawCount(data.size());
+
+    _shaderData->updateData(0, data.size(), data.data());
 
     if (renderStagePass._stage == RenderStage::DISPLAY) {
         // draw infinite plane
-        assert(drawCommandsInOut[g_PlaneCommandIndex].drawCount() == 1);
+        drawCommandsInOut[g_PlaneCommandIndex].drawCount(0);
+        //assert(drawCommandsInOut[g_PlaneCommandIndex].drawCount() == 1);
 
-        i = g_PlaneCommandIndex + 1;
+        size_t i = g_PlaneCommandIndex + 1;
 
         if (_drawBBoxes) {
             GenericDrawCommands commands;
-            commands.reserve(chunkCount);
+            commands.reserve(getQuadtree().getChunkCount());
             _terrainQuadtree.drawBBox(_context, commands);
 
             for (const GenericDrawCommand& cmd : commands) {
@@ -254,16 +602,17 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
         _boundingBox.getMin().z +
             z_clampf * (_boundingBox.getMax().z - _boundingBox.getMin().z));
 
+    auto height = [&](U32 index) -> F32 {
+        return _physicsVerts[index]._position.y;
+    };
 
-    const VertexBuffer* const vb = getGeometryVB();
-
-    pos.y = (vb->getPosition(TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x))).y) *
+    pos.y = height(TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x))) *
             (1.0f - posD.x) * (1.0f - posD.y) + 
-            (vb->getPosition(TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x))).y) *
+            height(TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x))) *
             posD.x * (1.0f - posD.y) +
-            (vb->getPosition(TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x))).y) *
+            height(TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x))) *
             (1.0f - posD.x) * posD.y +
-            (vb->getPosition(TER_COORD(posI.x + 1, posI.y + 1,to_I32(_terrainDimensions.x))).y) *
+            height(TER_COORD(posI.x + 1, posI.y + 1,to_I32(_terrainDimensions.x))) *
             posD.x * posD.y;
 
     return pos;
@@ -288,13 +637,11 @@ vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const {
     assert(posI.x >= 0 && posI.x < to_I32(_terrainDimensions.x) - 1 &&
            posI.y >= 0 && posI.y < to_I32(_terrainDimensions.y) - 1);
 
-    const VertexBuffer* const vb = getGeometryVB();
     vec3<F32> normals[4];
-
-    vb->getNormal(TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x)), normals[0]);
-    vb->getNormal(TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x)), normals[1]);
-    vb->getNormal(TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x)), normals[2]);
-    vb->getNormal(TER_COORD(posI.x + 1, posI.y + 1, to_I32(_terrainDimensions.x)), normals[3]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x))]._normal, normals[0]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x))]._normal, normals[1]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x))]._normal, normals[2]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y + 1, to_I32(_terrainDimensions.x))]._normal, normals[3]);
 
     return normals[0] * (1.0f - posD.x) * (1.0f - posD.y) +
            normals[1] * posD.x * (1.0f - posD.y) +
@@ -321,14 +668,12 @@ vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const {
     assert(posI.x >= 0 && posI.x < to_I32(_terrainDimensions.x) - 1 &&
            posI.y >= 0 && posI.y < to_I32(_terrainDimensions.y) - 1);
 
-    const VertexBuffer* const vb = getGeometryVB();
+    
     vec3<F32> tangents[4];
-
-
-    vb->getTangent(TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x)), tangents[0]);
-    vb->getTangent(TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x)), tangents[1]);
-    vb->getTangent(TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x)), tangents[2]);
-    vb->getTangent(TER_COORD(posI.x + 1, posI.y + 1, to_I32(_terrainDimensions.x)), tangents[3]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x))]._tangent, tangents[0]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x))]._tangent, tangents[1]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x))]._tangent, tangents[2]);
+    Util::UNPACK_VEC3(_physicsVerts[TER_COORD(posI.x + 1, posI.y + 1, to_I32(_terrainDimensions.x))]._tangent, tangents[3]);
 
     return tangents[0] * (1.0f - posD.x) * (1.0f - posD.y) +
            tangents[1] * posD.x * (1.0f - posD.y) +

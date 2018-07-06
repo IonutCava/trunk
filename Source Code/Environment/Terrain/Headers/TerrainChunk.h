@@ -61,8 +61,6 @@ class TerrainChunk {
 
     void load(U8 depth, const vec2<U32>& pos, U32 targetChunkDimension, const vec2<U32>& HMsize);
 
-    vec3<U32> getBufferOffsetAndSize(I8 targetLoD) const;
-
     inline F32 getMinHeight() const { return _heightBounds.x; }
     inline F32 getMaxHeight() const { return _heightBounds.y; }
 
@@ -78,13 +76,13 @@ class TerrainChunk {
     Vegetation* const getVegetation() const { return _vegetation; }
 
    private:
-    void ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position,
+    void ComputeIndicesArray(U8 depth, const vec2<U32>& position,
                              const vec2<U32>& heightMapSize);
 
    private:
-    vectorImpl<U32> _indice[Config::TERRAIN_CHUNKS_LOD];
-    std::array<U32, Config::TERRAIN_CHUNKS_LOD> _lodIndOffset;
-    std::array<U32, Config::TERRAIN_CHUNKS_LOD> _lodIndCount;
+    U32 _ID;
+    U32 _lodIndOffset;
+    U32 _lodIndCount;
     U32 _chunkIndOffset;
     F32 _xOffset;
     F32 _yOffset;
@@ -92,7 +90,7 @@ class TerrainChunk {
     F32 _sizeY;
     F32 _waterHeight;
     vec2<F32> _heightBounds;  //< 0 = minHeight, 1 = maxHeight
-    VertexBuffer* _terrainVB;
+    Terrain* _terrain;
     QuadtreeNode* _parentNode;
     Vegetation* _vegetation;
     Terrain* _parentTerrain;

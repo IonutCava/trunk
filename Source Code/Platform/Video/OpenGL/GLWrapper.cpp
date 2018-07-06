@@ -198,7 +198,8 @@ bool GL_API::initShaders() {
 
     
     static const std::pair<stringImpl, stringImpl>  shaderVaryings[] =
-    { {"flat uint" , "dvd_drawID"},
+    { {"flat uint" , "dvd_instanceID"},
+      {"flat uint" , "dvd_drawID"},
       { "vec2" , "_texCoord"},
       { "vec4" , "_vertexW"},
       { "vec4" , "_vertexWV"},
@@ -243,6 +244,8 @@ bool GL_API::initShaders() {
     appendToShaderHeader(ShaderType::COUNT,
                          "#extension GL_ARB_gpu_shader5 : require",
                          lineOffsets);
+    appendToShaderHeader(ShaderType::VERTEX, "invariant gl_Position;", lineOffsets);
+
     appendToShaderHeader(ShaderType::COUNT,
                          Util::StringFormat("#define GPU_VENDOR_AMD %d", to_base(GPUVendor::AMD)),
                          lineOffsets);
@@ -342,6 +345,12 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(ShaderType::FRAGMENT, "const uint DEPTH_EXP_WARP = 32;", lineOffsets);
 
+    // GLSL <-> VBO intercommunication
+    appendToShaderHeader(ShaderType::VERTEX,
+                        "const uint MAX_BONE_COUNT_PER_NODE = " +
+                            to_stringImpl(Config::MAX_BONE_COUNT_PER_NODE) +
+                        ";",
+                        lineOffsets);
     if (Config::USE_HIZ_CULLING) {
         appendToShaderHeader(ShaderType::COUNT, "#define USE_HIZ_CULLING", lineOffsets);
     }
@@ -525,14 +534,11 @@ bool GL_API::initShaders() {
             to_stringImpl( to_U32(ShaderProgram::TextureUsage::SHADOW_LAYERED)),
         lineOffsets);
 
-    appendToShaderHeader(ShaderType::VERTEX, "invariant gl_Position;", lineOffsets);
-
-    // GLSL <-> VBO intercommunication
-    appendToShaderHeader(ShaderType::VERTEX,
-                         "const uint MAX_BONE_COUNT_PER_NODE = " +
-                             to_stringImpl(Config::MAX_BONE_COUNT_PER_NODE) +
-                             ";",
-                         lineOffsets);
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_TERRAIN_DATA " +
+            to_stringImpl(to_base(ShaderBufferLocation::TERRAIN_DATA)),
+        lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,

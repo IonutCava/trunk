@@ -12,6 +12,39 @@
 
 namespace Divide {
 
+namespace Test {
+
+void init(VertexBuffer* vb) {
+    vb->resizeVertexCount(4);
+    vb->modifyPositionValue(0, -1.0f, 0.0f, -1.0f);
+    vb->modifyPositionValue(1,  1.0f, 0.0f, -1.0f);
+    vb->modifyPositionValue(2,  1.0f, 0.0f,  1.0f);
+    vb->modifyPositionValue(3, -1.0f, 0.0f,  1.0f);
+
+    vb->modifyColourValue(0, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));
+    vb->modifyColourValue(1, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));
+    vb->modifyColourValue(2, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));
+    vb->modifyColourValue(3, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));
+
+    vb->modifyNormalValue(0, 0.0f, 1.0f, 0.0f);
+    vb->modifyNormalValue(1, 0.0f, 1.0f, 0.0f);
+    vb->modifyNormalValue(2, 0.0f, 1.0f, 0.0f);
+    vb->modifyNormalValue(3, 0.0f, 1.0f, 0.0f);
+    
+    vb->modifyTexCoordValue(0, 0.0f, 2.0f);
+    vb->modifyTexCoordValue(1, 2.0f, 2.0f);
+    vb->modifyTexCoordValue(2, 2.0f, 0.0f);
+    vb->modifyTexCoordValue(3, 0.0f, 0.0f);
+
+    vb->addIndex(0);
+    vb->addIndex(1);
+    vb->addIndex(2);
+    vb->addIndex(3);
+};
+
+};
+
+
 bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
                                 const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
                                 PlatformContext& context,
@@ -185,9 +218,9 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainMaterial->setShaderDefines("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)));
     terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " + to_stringImpl(textureCount));
 
-    terrainMaterial->setShaderProgram("terrain", true);
-    terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", RenderStage::SHADOW, true);
-    terrainMaterial->setShaderProgram("depthPass.PrePass.Terrain", RenderPassType::DEPTH_PASS, true);
+    terrainMaterial->setShaderProgram("terrainTess", true);
+    terrainMaterial->setShaderProgram("terrainTess.Shadow", RenderStage::SHADOW, true);
+    terrainMaterial->setShaderProgram("terrainTess.PrePass", RenderPassType::DEPTH_PASS, true);
 
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.setResourceLocation(terrainMapLocation);
@@ -210,6 +243,13 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     underwaterDetailTexture.setEnumValue(to_base(TextureType::TEXTURE_2D));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP, CreateResource<Texture>(terrain->parentResourceCache(), underwaterDetailTexture));
 
+    ResourceDescriptor heightMapTexture("Terrain Underwater Detail_" + name);
+    heightMapTexture.setResourceLocation(terrainDescriptor->getVariable("heightmapLocation"));
+    heightMapTexture.setResourceName(terrainDescriptor->getVariable("heightmap"));
+    heightMapTexture.setPropertyDescriptor(albedoSampler);
+    heightMapTexture.setEnumValue(to_base(TextureType::TEXTURE_2D));
+
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
     terrainMaterial->setShaderLoadThreaded(false);
     terrainMaterial->dumpToFile(false);
     terrain->setMaterialTpl(terrainMaterial);
@@ -285,14 +325,11 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     const vec3<F32>& bMax = terrainBB.getMax();
     F32 yOffset = terrainDescriptor->getPosition().y;
 
-    VertexBuffer* groundVB = terrain->getGeometryVB();
-
     stringImpl cacheLocation(terrainMapLocation + terrainRawFile + ".cache");
-
     STUBBED("ToDo: Move image data into the ByteBuffer as well to avoid reading height data from images each time we load the terrain! -Ionut");
 
     ByteBuffer terrainCache;
-    if (!terrainCache.loadFromFile(cacheLocation) || !groundVB->deserialize(terrainCache)) {
+    if (!terrainCache.loadFromFile(cacheLocation)) {
         F32 altitudeRange = maxAltitude - minAltitude;
         F32 yScaleFactor = terrainScaleFactor.y;
 
@@ -326,7 +363,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
             heightValues.insert(std::end(heightValues), &data[0], &data[img.imageLayers().front()._data.size()]);
         }
 
-        groundVB->resizeVertexCount(terrainWidth * terrainHeight);
+        terrain->_physicsVerts.resize(terrainWidth * terrainHeight);
         // scale and translate all height by half to convert from 0-255 (0-65335) to -127 - 128 (-32767 - 32768)
         if (terrainDescriptor->is16Bit()) {
             const F32 fMax = to_F32(std::numeric_limits<U16>::max() + 1);
@@ -345,7 +382,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                                         bMin.z + (to_F32(j)) * (bMax.z - bMin.z) / (terrainHeight - 1));                          // Z
                     #pragma omp critical
                     {
-                        groundVB->modifyPositionValue(idxHM, vertexData);
+                        terrain->_physicsVerts[idxHM]._position.set(vertexData);
                     }
                 }
             }
@@ -372,7 +409,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                     
                     #pragma omp critical
                     {
-                        groundVB->modifyPositionValue(idxHM, vertexData);
+                        terrain->_physicsVerts[idxHM]._position.set(vertexData);
                     }
                 }
             }
@@ -390,18 +427,18 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
 
                 idx = TER_COORD(i, j, terrainWidth);
 
-                vU.set(groundVB->getPosition(TER_COORD(i + offset, j + 0, terrainWidth)) -
-                       groundVB->getPosition(TER_COORD(i - offset, j + 0, terrainWidth)));
-                vV.set(groundVB->getPosition(TER_COORD(i + 0, j + offset, terrainWidth)) -
-                       groundVB->getPosition(TER_COORD(i + 0, j - offset, terrainWidth)));
+                vU.set(terrain->_physicsVerts[TER_COORD(i + offset, j + 0, terrainWidth)]._position -
+                       terrain->_physicsVerts[TER_COORD(i - offset, j + 0, terrainWidth)]._position);
+                vV.set(terrain->_physicsVerts[TER_COORD(i + 0, j + offset, terrainWidth)]._position -
+                       terrain->_physicsVerts[TER_COORD(i + 0, j - offset, terrainWidth)]._position);
                 vUV.cross(vV, vU);
                 vUV.normalize();
                 vU = -vU;
                 vU.normalize();
                 #pragma omp critical
                 {
-                    groundVB->modifyNormalValue(idx, vUV);
-                    groundVB->modifyTangentValue(idx, vU);
+                    terrain->_physicsVerts[idx]._normal = Util::PACK_VEC3(vUV);
+                    terrain->_physicsVerts[idx]._tangent = Util::PACK_VEC3(vU);
                 }
             }
         }
@@ -412,20 +449,20 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                 idx0 = TER_COORD(i, j, terrainWidth);
                 idx1 = TER_COORD(i, offset, terrainWidth);
 
-                normal.set(groundVB->getNormal(idx1));
-                tangent.set(groundVB->getTangent(idx1));
+                normal.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._normal));
+                tangent.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._tangent));
 
-                groundVB->modifyNormalValue(idx0, normal);
-                groundVB->modifyTangentValue(idx0, tangent);
+                terrain->_physicsVerts[idx0]._normal = Util::PACK_VEC3(normal);
+                terrain->_physicsVerts[idx0]._tangent = Util::PACK_VEC3(tangent);
 
                 idx0 = TER_COORD(i, terrainHeight - 1 - j, terrainWidth);
                 idx1 = TER_COORD(i, terrainHeight - 1 - offset, terrainWidth);
 
-                normal.set(groundVB->getNormal(idx1));
-                tangent.set(groundVB->getTangent(idx1));
+                normal.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._normal));
+                tangent.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._tangent));
 
-                groundVB->modifyNormalValue(idx0, normal);
-                groundVB->modifyTangentValue(idx0, tangent);
+                terrain->_physicsVerts[idx0]._normal = Util::PACK_VEC3(normal);
+                terrain->_physicsVerts[idx0]._tangent = Util::PACK_VEC3(tangent);
             }
         }
 
@@ -434,29 +471,30 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                 idx0 = TER_COORD(i, j, terrainWidth);
                 idx1 = TER_COORD(offset, j, terrainWidth);
 
-                normal.set(groundVB->getNormal(idx1));
-                tangent.set(groundVB->getTangent(idx1));
+                normal.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._normal));
+                tangent.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._tangent));
 
-                groundVB->modifyNormalValue(idx0, normal);
-                groundVB->modifyTangentValue(idx0, tangent);
+                terrain->_physicsVerts[idx0]._normal = Util::PACK_VEC3(normal);
+                terrain->_physicsVerts[idx0]._tangent = Util::PACK_VEC3(tangent);
 
                 idx0 = TER_COORD(terrainWidth - 1 - i, j, terrainWidth);
                 idx1 = TER_COORD(terrainWidth - 1 - offset, j, terrainWidth);
 
-                normal.set(groundVB->getNormal(idx1));
-                tangent.set(groundVB->getTangent(idx1));
+                normal.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._normal));
+                tangent.set(Util::UNPACK_VEC3(terrain->_physicsVerts[idx1]._tangent));
 
-                groundVB->modifyNormalValue(idx0, normal);
-                groundVB->modifyTangentValue(idx0, tangent);
+                terrain->_physicsVerts[idx0]._normal = Util::PACK_VEC3(normal);
+                terrain->_physicsVerts[idx0]._tangent = Util::PACK_VEC3(tangent);
             }
         }
-        if (groundVB->serialize(terrainCache)) {
-            terrainCache.dumpToFile(cacheLocation);
-        }
+        terrainCache << terrain->_physicsVerts;
+        terrainCache.dumpToFile(cacheLocation);
+    } else {
+        terrainCache >> terrain->_physicsVerts;
     }
 
-    groundVB->keepData(true);
-    groundVB->create();
+    Test::init(terrain->getGeometryVB());
+
     initializeVegetation(terrain, terrainDescriptor);
     Attorney::TerrainLoader::buildQuadtree(*terrain);
 

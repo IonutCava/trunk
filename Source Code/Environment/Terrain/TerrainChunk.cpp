@@ -21,13 +21,14 @@ TerrainChunk::TerrainChunk(GFXDevice& context,
       _parentTerrain(parentTerrain),
       _vegetation(nullptr)
 {
-    _chunkID++;
+    _ID = _chunkID++;
+
     _xOffset = _yOffset = _sizeX = _sizeY = 0;
     _chunkIndOffset = 0;
-    _lodIndOffset.fill(0);
-    _lodIndCount.fill(0);
+    _lodIndOffset = 0;
+    _lodIndCount = 0;
 
-    _terrainVB = parentTerrain->getGeometryVB();
+    _terrain = parentTerrain;
 
     VegetationDetails& vegDetails =  Attorney::TerrainChunk::vegetationDetails(*parentTerrain);
     vegDetails.name += "_chunk_" + to_stringImpl(_chunkID);
@@ -40,38 +41,32 @@ TerrainChunk::TerrainChunk(GFXDevice& context,
 
 TerrainChunk::~TerrainChunk()
 {
-    for (U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++) {
-        _indice[i].clear();
-    }
-
-    _lodIndOffset.fill(0);
-    _lodIndCount.fill(0);
+    _lodIndOffset = 0;
+    _lodIndCount = 0;
     _chunkIndOffset = 0;
-    _terrainVB = nullptr;
+    _terrain = nullptr;
     MemoryManager::DELETE(_vegetation);
 }
 
 void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimension, const vec2<U32>& HMsize) {
-    _chunkIndOffset = _terrainVB->getIndexCount();
+    vectorImpl<U32>& indices = _terrain->_physicsIndices[_ID];
+    _chunkIndOffset = to_U32(indices.size());
 
     _xOffset = to_F32(pos.x);
     _yOffset = to_F32(pos.y);
     _sizeX = _sizeY = to_F32(_targetChunkDimension);
 
-    for (U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++) {
-        ComputeIndicesArray(i, depth, pos, HMsize);
-        _terrainVB->addIndices(_indice[i], true);
-    }
+    ComputeIndicesArray(depth, pos, HMsize);
 
     F32 height = 0.0f;
     F32 tempMin = std::numeric_limits<F32>::max();
     F32 tempMax = std::numeric_limits<F32>::min();
-    for (U32 i = 0; i < _lodIndCount[0]; ++i) {
-        U32 idx = _indice[0][i];
+    for (U32 i = 0; i < _lodIndCount; ++i) {
+        U32 idx = indices[i];
         if (idx == Config::PRIMITIVE_RESTART_INDEX_L) {
             continue;
         }
-        height = _terrainVB->getPosition(idx).y;
+        height = _terrain->_physicsVerts[idx]._position.y;
 
         if (height > tempMax) {
             tempMax = height;
@@ -83,23 +78,16 @@ void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimensio
 
     _heightBounds.set(tempMin, tempMax);
 
-    for (U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++) {
-        _indice[i].clear();
-    }
-
     _vegetation->initialize(this);
 
     Attorney::TerrainChunk::registerTerrainChunk(*_parentTerrain, this);
 }
 
-void TerrainChunk::ComputeIndicesArray(I8 lod,
-                                       U8 depth,
+void TerrainChunk::ComputeIndicesArray(U8 depth,
                                        const vec2<U32>& position,
                                        const vec2<U32>& heightMapSize) {
-    assert(lod < Config::TERRAIN_CHUNKS_LOD);
-
-    U32 offset = to_U32(std::pow(2.0f, to_F32(lod)));
-    U32 div = to_U32(std::pow(2.0f, to_F32(depth + lod)));
+    U32 offset = to_U32(std::pow(2.0f, to_F32(0.0f)));
+    U32 div = to_U32(std::pow(2.0f, to_F32(depth)));
     vec2<U32> heightmapDataSize = heightMapSize / (div);
 
     U32 nHMWidth = heightmapDataSize.x + 1;
@@ -107,10 +95,12 @@ void TerrainChunk::ComputeIndicesArray(I8 lod,
     U32 nHMOffsetX = position.x;
     U32 nHMOffsetY = position.y;
 
+    vectorImpl<U32>& indices = _terrain->_physicsIndices[_ID];
+
     U32 nHMTotalWidth = heightMapSize.x;
     U32 nIndice = (nHMWidth) * (nHMHeight - 1) * 2;
     nIndice += (nHMHeight - 1);  //<Restart indices
-    _indice[lod].reserve(nIndice);
+    indices.reserve(nIndice);
 
     U32 iOffset = 0;
     U32 jOffset = 0;
@@ -118,30 +108,15 @@ void TerrainChunk::ComputeIndicesArray(I8 lod,
         jOffset = j * (offset) + nHMOffsetY;
         for (U16 i = 0; i < nHMWidth; i++) {
             iOffset = i * (offset) + nHMOffsetX;
-            _indice[lod].push_back(iOffset + jOffset * nHMTotalWidth);
-            _indice[lod].push_back(iOffset + (jOffset + (offset)) * nHMTotalWidth);
+            indices.push_back(iOffset + jOffset * nHMTotalWidth);
+            indices.push_back(iOffset + (jOffset + (offset)) * nHMTotalWidth);
         }
-        _indice[lod].push_back(Config::PRIMITIVE_RESTART_INDEX_L);
+        indices.push_back(Config::PRIMITIVE_RESTART_INDEX_L);
     }
 
-    if (lod > 0) {
-        _lodIndOffset[lod] =
-            to_U32(_indice[lod - 1].size() + _lodIndOffset[lod - 1]);
-    }
-
-    _lodIndCount[lod] = to_U32(_indice[lod].size());
-    assert(nIndice == _lodIndCount[lod]);
+    _lodIndCount = to_U32(indices.size());
+    assert(nIndice == _lodIndCount);
 }
-
-vec3<U32> TerrainChunk::getBufferOffsetAndSize(I8 targetLoD) const {
-    assert(targetLoD < Config::TERRAIN_CHUNKS_LOD);
-    if (targetLoD > 0) {
-        targetLoD--;
-    }
-    return vec3<U32>(_lodIndOffset[targetLoD] + _chunkIndOffset, _lodIndCount[targetLoD], to_U32(targetLoD));
-
-}
-
 
 U8 TerrainChunk::getLoD(const SceneRenderState& sceneRenderState) const {
     return _parentNode->getLoD(sceneRenderState);

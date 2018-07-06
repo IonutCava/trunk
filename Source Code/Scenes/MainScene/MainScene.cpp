@@ -23,7 +23,7 @@ namespace {
 MainScene::MainScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
    : Scene(context, cache, parent, name),
     _beep(nullptr),
-    _freeflyCamera(false),
+    _freeflyCamera(true),
     _updateLights(true),
     _musicPlaying(false),
     _sun_cosy(0.0f)

@@ -79,9 +79,6 @@ class QuadtreeNode {
 
     bool computeBoundingBox();
     
-    void getBufferOffsetAndSize(U32 options,
-                                const SceneRenderState& sceneRenderState,
-                                vectorImpl<vec3<U32>>& chunkBufferData) const;
     void drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut);
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,

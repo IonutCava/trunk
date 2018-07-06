@@ -276,6 +276,7 @@
     <None Include="..\..\assets\shaders\GLSL\SSAOPass.glsl" />
     <None Include="..\..\assets\shaders\GLSL\terrain.glsl" />
     <None Include="..\..\assets\shaders\GLSL\terrainPlane.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\terrainTess.glsl" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert" />

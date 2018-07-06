@@ -198,23 +198,4 @@ void QuadtreeNode::drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut
         getChild(ChildPosition::CHILD_SE).drawBBox(context, commandsOut);
     }
 }
-
-void QuadtreeNode::getBufferOffsetAndSize(U32 options,
-                                          const SceneRenderState& sceneRenderState,
-                                          vectorImpl<vec3<U32>>& chunkBufferData) const {
-    if (isInView(options, sceneRenderState)) {
-        if (isALeaf()) {
-            assert(_terrainChunk);
-            I8 LoD = BitCompare(options, to_base(ChunkBit::CHUNK_BIT_WATERREFLECTION)) ? Config::TERRAIN_CHUNKS_LOD - 1 : getLoD(sceneRenderState);
-            chunkBufferData.push_back(_terrainChunk->getBufferOffsetAndSize(LoD));
-        } else {
-            const QuadtreeChildren::QuadtreeNodes& childNodes = (*_children)();
-
-            childNodes[to_base(ChildPosition::CHILD_NW)].getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
-            childNodes[to_base(ChildPosition::CHILD_NE)].getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
-            childNodes[to_base(ChildPosition::CHILD_SW)].getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
-            childNodes[to_base(ChildPosition::CHILD_SE)].getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
-        }
-    }
-}
 };

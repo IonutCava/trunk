@@ -1098,5 +1098,8 @@
     <None Include="..\..\assets\shaders\GLSL\terrainPlane.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\terrainTess.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
   </ItemGroup>
 </Project>

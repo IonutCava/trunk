@@ -9,7 +9,7 @@ void main() {
     gl_Position = VAR._vertexW;
 #else
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
-    VAR._normalWV = dvd_NormalMatrixWV(VAR.dvd_drawID) * dvd_Normal;
+    VAR._normalWV = dvd_NormalMatrixWV(VAR.dvd_instanceID) * dvd_Normal;
 #endif
 }
 

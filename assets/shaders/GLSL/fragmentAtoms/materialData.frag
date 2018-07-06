@@ -169,7 +169,7 @@ float getReflectivity() {
 vec4 private_getDiffuseColour() {
 
 #   if defined(SKIP_TEXTURES)
-        return dvd_Matrices[VAR.dvd_drawID]._colourMatrix[0];
+        return dvd_Matrices[VAR.dvd_instanceID]._colourMatrix[0];
 #   else
         return getTextureColour(VAR._texCoord);
 #       endif
@@ -186,7 +186,7 @@ float private_getOpacity() {
 #if defined(HAS_TRANSPARENCY)
 
 #   if defined(USE_OPACITY_DIFFUSE)
-    return dvd_Matrices[VAR.dvd_drawID]._colourMatrix[0].a;
+    return dvd_Matrices[VAR.dvd_instanceID]._colourMatrix[0].a;
 #   endif
 
 #   if defined(USE_OPACITY_MAP)
@@ -226,19 +226,19 @@ vec4 private_getAlbedo() {
 }
 
 vec3 private_getEmissive() {
-    return dvd_Matrices[VAR.dvd_drawID]._colourMatrix[2].rgb;
+    return dvd_Matrices[VAR.dvd_instanceID]._colourMatrix[2].rgb;
 }
 
 vec3 private_getSpecular() {
 #if defined(USE_SPECULAR_MAP)
     return texture(texSpecularMap, VAR._texCoord).rgb;
 #else
-    return dvd_Matrices[VAR.dvd_drawID]._colourMatrix[1].rgb;
+    return dvd_Matrices[VAR.dvd_instanceID]._colourMatrix[1].rgb;
 #endif
 }
 
 float private_getShininess() {
-    return dvd_Matrices[VAR.dvd_drawID]._colourMatrix[2].w;
+    return dvd_Matrices[VAR.dvd_instanceID]._colourMatrix[2].w;
 }
 
 #endif //_MATERIAL_DATA_FRAG_

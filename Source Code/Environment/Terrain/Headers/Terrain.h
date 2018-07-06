@@ -135,10 +135,24 @@ class Terrain : public Object3D {
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
 
+    void onCameraUpdate(SceneGraphNode& sgn,
+                        const I64 cameraGUID,
+                        const vec3<F32>& posOffset,
+                        const mat4<F32>& rotationOffset);
+    void onCameraChange(SceneGraphNode& sgn,
+                        const Camera& cam);
+
     void buildQuadtree();
     void postLoad(SceneGraphNode& sgn);
 
+   public:
+    //indices per chunk
+    hashMapImpl<U32, vectorImpl<U32>> _physicsIndices;
+    vectorImpl<VertexBuffer::Vertex> _physicsVerts;
+
    protected:
+    ShaderBuffer* _shaderData;
+
     VegetationDetails _vegDetails;
 
     U32 _chunkSize;

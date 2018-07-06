@@ -79,6 +79,7 @@ enum class ShaderBufferLocation : U32 {
     NODE_INFO = 5,
     BONE_TRANSFORMS = 6,
     SCENE_DATA = 7,
+    TERRAIN_DATA = 8,
     COUNT
 };
 
