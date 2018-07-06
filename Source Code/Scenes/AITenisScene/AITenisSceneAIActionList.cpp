@@ -1,6 +1,7 @@
 #include "Headers/AITenisSceneAIActionList.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
+#include "Dynamics/Entities/Units/Headers/NPC.h"
 
 AITenisSceneAIActionList::AITenisSceneAIActionList(SceneGraphNode* target) : ActionList(),
 																			 _node(NULL),
@@ -105,22 +106,23 @@ void AITenisSceneAIActionList::processData(){
 	_entity->sendMessage(celMaiApropiat, LOVESTE_MINGEA, distanta);
 }
 
-void AITenisSceneAIActionList::update(SceneGraphNode* node){
+void AITenisSceneAIActionList::update(SceneGraphNode* node, NPC* unitRef){
 	if(!_node){
 		_node = node;
 	}
 	
-	Sensor* visualSensor = _entity->getSensor(VISUAL_SENSOR);
 	updatePositions();
 
 	if(_atacaMingea && !_stopJoc){
-		node->getTransform()->translateX((_pozitieMinge.x - _pozitieEntitate.x)/100.0f);
-		//node->getTransform()->translateZ((_pozitieMinge.z - _pozitieEntitate.z)/5250.0f);
+		/// Incearca sa interceptezi mingea
+		unitRef->moveToX(_pozitieMinge.x);
 	}else{
-		node->getTransform()->translateX((_pozitieInitiala.x - _pozitieEntitate.x)/100.0f);
-		//node->getTransform()->translateZ((_pozitieInitiala.z - _pozitieEntitate.z)/1200.0f);
+		/// Incearca sa te intorci la pozitia originala
+		unitRef->moveToX(_pozitieInitiala.x);
 	}
 
+	/// Updateaza informatia senzorilor
+	Sensor* visualSensor = _entity->getSensor(VISUAL_SENSOR);
 	if(visualSensor){
 		visualSensor->updatePosition(node->getTransform()->getPosition());
 	}

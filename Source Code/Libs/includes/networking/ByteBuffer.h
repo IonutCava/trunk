@@ -430,7 +430,7 @@ class ByteBuffer
 };
 
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, vec3 const& v)
+inline ByteBuffer &operator<<(ByteBuffer &b, vec3<F32> const& v)
 {
    b << v.x;
    b << v.y;
@@ -439,7 +439,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, vec3 const& v)
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, vec3 &v)
+inline ByteBuffer &operator>>(ByteBuffer &b, vec3<F32> &v)
 {
 	b >> v.x;
 	b >> v.y;

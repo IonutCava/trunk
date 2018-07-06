@@ -4,8 +4,7 @@
 #include "Hardware/Video/GFXDevice.h"
 #include "Utility/Headers/BoundingBox.h"
 
-bool Frustum::ContainsPoint(const vec3& point) const
-{
+bool Frustum::ContainsPoint(const vec3<F32>& point) const {
    for(I8 p = 0; p < 6; p++)	
       if(	_frustumPlanes[p][0] * point.x +
 			_frustumPlanes[p][1] * point.y +
@@ -16,10 +15,8 @@ bool Frustum::ContainsPoint(const vec3& point) const
    return true;
 }
 
-I8 Frustum::ContainsSphere(const vec3& center, F32 radius) const
-{
-	for(I8 p = 0; p < 6; p++)
-	{
+I8 Frustum::ContainsSphere(const vec3<F32>& center, F32 radius) const {
+	for(I8 p = 0; p < 6; p++) {
 		F32 t =	_frustumPlanes[p][0] * center.x +
 				_frustumPlanes[p][1] * center.y +
 				_frustumPlanes[p][2] * center.z +
@@ -35,22 +32,21 @@ I8 Frustum::ContainsSphere(const vec3& center, F32 radius) const
 }
 
 
-I8 Frustum::ContainsBoundingBox(BoundingBox& bbox) const
-{
-	vec3& min = bbox.getMin();
-	vec3& max = bbox.getMax();
-	vec3 tCorners[8] = {	vec3(min.x, min.y, min.z),
-							vec3(max.x, min.y, min.z),
-							vec3(min.x, max.y, min.z),
-							vec3(min.x, min.y, max.z),
-							vec3(max.x, max.y, min.z),
-							vec3(min.x, max.y, max.z),
-							vec3(max.x, min.y, max.z),
-							vec3(max.x, max.y, max.z)};
+I8 Frustum::ContainsBoundingBox(BoundingBox& bbox) const {
+
+	vec3<F32>& min = bbox.getMin();
+	vec3<F32>& max = bbox.getMax();
+	vec3<F32> tCorners[8] = {	vec3<F32>(min.x, min.y, min.z),
+							    vec3<F32>(max.x, min.y, min.z),
+							    vec3<F32>(min.x, max.y, min.z),
+							    vec3<F32>(min.x, min.y, max.z),
+							    vec3<F32>(max.x, max.y, min.z),
+							    vec3<F32>(min.x, max.y, max.z),
+							    vec3<F32>(max.x, min.y, max.z),
+							    vec3<F32>(max.x, max.y, max.z)};
 	I32 iTotalIn = 0;
 
-	for(I8 p=0; p<6; p++)
-	{
+	for(I8 p=0; p<6; p++){
 		I32 iInCount = 8;
 		I32 iPtIn = 1;
 
@@ -82,7 +78,7 @@ I8 Frustum::ContainsBoundingBox(BoundingBox& bbox) const
 
 
 
-void Frustum::Extract(const vec3& eye){
+void Frustum::Extract(const vec3<F32>& eye){
 
 	_eyePos = eye;
 	F32 t;

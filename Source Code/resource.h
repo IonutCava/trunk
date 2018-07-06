@@ -77,6 +77,13 @@
 
 
 #endif
+#define tuple_get_impl  std::tr1::get
+#define make_tuple_impl std::tr1::make_tuple
+#define tuple_impl      std::tr1::tuple
+
+//#define tuple_get_impl  std::get
+//#define make_tuple_impl std::make_tuple
+//#define tuple_impl std::tuple
 
 #include "Hardware/Platform/PlatformDefines.h" //For data types
 #include "Core/Math/Headers/MathClasses.h"     //For math classes (mat3,mat4,vec2,vec3,vec4 etc)
@@ -98,8 +105,8 @@ void operator delete(void * pxData ,char* zFile, int nLine);
 
 /// Clamps value n between min and max
 template <class T>
-inline void CLAMP(T& n, T& min, T& max){
-	((n)<(min))?(min):(((n)>(max))?(max):(n))
+inline void CLAMP(T& n, T min, T max){
+	n = ((n)<(min))?(min):(((n)>(max))?(max):(n));
 }
 
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
@@ -107,14 +114,14 @@ inline void CLAMP(T& n, T& min, T& max){
 
 /// Converts a point from world coordinates to projection coordinates
 ///(from Y = depth, Z = up to Y = up, Z = depth)
-inline void projectPoint(const vec3& position,vec3& output){
+inline void projectPoint(const vec3<F32>& position,vec3<F32>& output){
 	output.x = position.x;
 	output.y = position.z;
 	output.z = position.y;
 }
 /// Converts a point from world coordinates to projection coordinates
 ///(from Y = depth, Z = up to Y = up, Z = depth)
-inline void projectPoint(const ivec3& position, ivec3& output){
+inline void projectPoint(const vec3<I32>& position, vec3<I32>& output){
 	output.x = position.x;
 	output.y = position.z;
 	output.z = position.y;

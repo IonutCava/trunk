@@ -2,14 +2,16 @@
 #define _PLATFORM_DEFINES_H_
 
 ///Data Types
-#define U8  unsigned char
-#define U16 unsigned short
-#define U32 unsigned int
-#define U64 unsigned long long
+#define U8   unsigned char
+#define U16  unsigned short
+#define U32  unsigned int
+#define UL32 unsigned long
+#define U64  unsigned long long
 
 #define I8  signed char
 #define I16 signed short
 #define I32 signed int
+#define L32 signed long
 #define I64 signed long long
 #define _I64 __int64
 
@@ -17,8 +19,9 @@
 #define D32 double
 
 #define TEST_EPSILON std::numeric_limits<float>::epsilon()
-
+#define IS_ZERO(X)  (fabs(X) < TEST_EPSILON)
 #define FLOAT_COMPARE(X,Y) (fabs(X - Y) < TEST_EPSILON)
+#define FLOAT_COMPARE_TOLERANCE(X,Y,TOLERANCE) (fabs(X - Y) < TOLERANCE)
 
 #ifdef _DEBUG
 #define SAFE_DELETE(R)	     	if(R){ delete R; R=NULL; }

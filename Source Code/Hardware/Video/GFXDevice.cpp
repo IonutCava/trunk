@@ -25,25 +25,19 @@ void GFXDevice::setApi(RENDER_API api){
 
 	switch(api)	{
 
-	case 0: //OpenGL 1.0
-	case 1: //OpenGL 1.2
-	case 2: //OpenGL 2.0
-	case 3: //OpenGL 2.1
-	case 4: //OpenGL 2.2
-	case 5: //OpenGL 3.0
-	case 6: //OpenGL 3.2
+	case OpenGL:
 	default:
 		_api = GL_API::getInstance();
 		break;
-
-	case 7: //DX 8
-	case 8: //DX 9
-	case 9: ///<DX 10
+	case Direct3D:
 		_api = DX_API::getInstance();
 		break;
-	case 10: ///< Placeholder
+	case Software:
+	case None:
+	case GFX_RENDER_API_PLACEHOLDER: ///< Placeholder
+		///Ionut: OpenGL 4.0 and DX 11 in another life maybe :)
+		ERROR_FN("Invalid Render API selected!")
 		break;
-	///Ionut: OpenGL 4.0 and DX 11 in another life maybe :)
 	};
 	_api.setId(api);
 }
@@ -84,7 +78,7 @@ void GFXDevice::renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count
 	_api.renderElements(t,f,count,first_element);
 }
 
-void GFXDevice::drawBox3D(vec3 min, vec3 max){
+void GFXDevice::drawBox3D(vec3<F32> min, vec3<F32> max){
 	if(_stateBlockDirty){
 		updateStates();
 	}
@@ -149,11 +143,17 @@ void GFXDevice::processRenderQueue(){
 			assert(sn);
 			///Call any pre-draw operations on the SceneNode (refresh VBO, update materials, etc)
 			sn->onDraw();
+			///Try to see if we need a shader transform or a fixed pipeline one
+			ShaderProgram* s = NULL;
+			Material* m = sn->getMaterial();
+			if(m){
+				s = m->getShaderProgram();
+			}
 			///Check if we should draw the node. (only after onDraw as it may contain exclusion mask changes before draw)
 			if(sn->getDrawState(getRenderStage())){
 				///Transform the Object (Rot, Trans, Scale)
 				if(!excludeFromStateChange(sn->getType())){ ///< only if the node is not in the exclusion mask
-					setObjectState(t);
+					setObjectState(t,false,s);
 				}
 				///setup materials and render the node
 				///As nodes are sorted, this should be very fast
@@ -169,8 +169,7 @@ void GFXDevice::processRenderQueue(){
 						sn->prepareShadowMaterial(sgn);
 							break;
 				}
-				///Call the rendering interface for the current SceneNode
-				///The stage exclusion mask should do the rest
+				///Call taage exclusion mask should do the rest
 				sn->render(sgn); 
 				///Unbind current material properties
 				///ToDo: Optimize this!!!! -Ionut
@@ -187,7 +186,7 @@ void GFXDevice::processRenderQueue(){
 				}
 				///Drop all applied transformations so that they do not affect the next node
 				if(!excludeFromStateChange(sn->getType())){
-					releaseObjectState(t);
+					releaseObjectState(t,s);
 				}
 			}
 			/// Perform any post draw operations regardless of the draw state
@@ -219,11 +218,11 @@ void GFXDevice::processRenderQueue(){
 }
 
 
-void GFXDevice::renderInViewport(const vec4& rect, boost::function0<void> callback){
+void GFXDevice::renderInViewport(const vec4<F32>& rect, boost::function0<void> callback){
 	_api.renderInViewport(rect,callback);
 }
 
-void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap, const vec3& pos, boost::function0<void> callback){
+void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap, const vec3<F32>& pos, boost::function0<void> callback){
 	///Don't need to override cubemap rendering callback
 	if(callback.empty()){
 		SceneGraph* sg = SceneManager::getInstance().getActiveScene()->getSceneGraph();
@@ -246,7 +245,7 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap, const vec3& pos, bo
 	lockModelView();
 	lockProjection();
 	///set a 90 degree vertical FoV perspective projection
-	setPerspectiveProjection(90.0,1,vec2(zNear,zFar));
+	setPerspectiveProjection(90.0,1,vec2<F32>(zNear,zFar));
 	///Save our old rendering stage
 	RENDER_STAGE prev = getRenderStage();
 	///And set the current render stage to 

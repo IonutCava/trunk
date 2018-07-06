@@ -40,8 +40,8 @@ Camera::Camera() : Resource() {
 	fAngleX	=	3.0f;
 	fAngleY	=	M_PI/2;
 
-	vUp			= vec3(0.0f, 1.0f, 0.0f);
-	vEye		= vec3(0.0f, 0.0f, 0.0f);
+	vUp			= vec3<F32>(0.0f, 1.0f, 0.0f);
+	vEye		= vec3<F32>(0.0f, 0.0f, 0.0f);
 	bSaved = false;
 	Refresh();
 }
@@ -74,9 +74,9 @@ void Camera::RenderLookAt(bool invertx, bool inverty, F32 planey) {
 	///Tell the Rendering API to draw from our desired PoV
 	if(inverty){							 
 		///If we need to flip the camera upside down (ex: for reflections)
-		GFX_DEVICE.lookAt(vec3(vEye.x,2.0f*planey-vEye.y,vEye.z),
-										vec3(vCenter.x,2.0f*planey-vCenter.y,vCenter.z),
-										vec3(-vUp.x,-vUp.y,-vUp.z),invertx);
+		GFX_DEVICE.lookAt(vec3<F32>(vEye.x,2.0f*planey-vEye.y,vEye.z),
+						  vec3<F32>(vCenter.x,2.0f*planey-vCenter.y,vCenter.z),
+						  vec3<F32>(-vUp.x,-vUp.y,-vUp.z),invertx);
 	}else{
 		GFX_DEVICE.lookAt(vEye,vCenter,vUp);
 	}
@@ -117,28 +117,26 @@ void Camera::MoveAnaglyph(F32 factor){
 	vCenter += vLeftDir * factor;
 }
 
-void Camera::RenderLookAtToCubeMap(const vec3& eye, U8 nFace){
+void Camera::RenderLookAtToCubeMap(const vec3<F32>& eye, U8 nFace){
 
 	assert(nFace < 6);
 	///Get the center and up vectors for each cube face
-	vec3 TabCenter[6] = {	vec3(eye.x+1.0f,	eye.y,		eye.z),
-							vec3(eye.x-1.0f,	eye.y,		eye.z),
-
-							vec3(eye.x,			eye.y+1.0f,	eye.z),
-							vec3(eye.x,			eye.y-1.0f,	eye.z),
-
-							vec3(eye.x,			eye.y,		eye.z+1.0f),
-							vec3(eye.x,			eye.y,		eye.z-1.0f) };
+	vec3<F32> TabCenter[6] = {	vec3<F32>(eye.x+1.0f,	eye.y,		eye.z),
+							    vec3<F32>(eye.x-1.0f,	eye.y,		eye.z),
+							    vec3<F32>(eye.x,		eye.y+1.0f,	eye.z),
+							    vec3<F32>(eye.x,		eye.y-1.0f,	eye.z),
+      							vec3<F32>(eye.x,		eye.y,		eye.z+1.0f),
+							    vec3<F32>(eye.x,		eye.y,		eye.z-1.0f) };
 
 
-	static vec3 TabUp[6] = {	vec3(0.0f,	-1.0f,	0.0f),
-								vec3(0.0f,	-1.0f,	0.0f),
+	static vec3<F32> TabUp[6] = {	vec3<F32>(0.0f,	-1.0f,	0.0f),
+									vec3<F32>(0.0f,	-1.0f,	0.0f),
 
-								vec3(0.0f,	0.0f,	1.0f),
-								vec3(0.0f,	0.0f,	-1.0f),
+									vec3<F32>(0.0f,	0.0f,	1.0f),
+									vec3<F32>(0.0f,	0.0f,	-1.0f),
 
-								vec3(0.0f,	-1.0f,	0.0f),
-								vec3(0.0f,	-1.0f,	0.0f) };
+									vec3<F32>(0.0f,	-1.0f,	0.0f),
+									vec3<F32>(0.0f,	-1.0f,	0.0f) };
 	///Set our eye position
 	setEye( eye );
 	///Set our Rendering API to render the desired face

@@ -145,11 +145,11 @@ namespace XML
 			ter->setGrassScale(pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale"));
 			ter->setTreeScale(pt.get<F32>(name + ".vegetation.<xmlattr>.treeScale"));
 
-			ter->setPosition(vec3(pt.get<F32>(name + ".position.<xmlattr>.x"),
-								  pt.get<F32>(name + ".position.<xmlattr>.y"),
-								  pt.get<F32>(name + ".position.<xmlattr>.z")));
-			ter->setScale(vec2(pt.get<F32>(name + ".scale"), //width / length
-							   pt.get<F32>(name + ".heightFactor"))); //height
+			ter->setPosition(vec3<F32>(pt.get<F32>(name + ".position.<xmlattr>.x"),
+								       pt.get<F32>(name + ".position.<xmlattr>.y"),
+								       pt.get<F32>(name + ".position.<xmlattr>.z")));
+			ter->setScale(vec2<F32>(pt.get<F32>(name + ".scale"), //width / length
+							        pt.get<F32>(name + ".heightFactor"))); //height
 							   
 
 			ter->setActive(pt.get<bool>(name + ".active"));
@@ -280,21 +280,21 @@ namespace XML
 		if(FindResource(materialName)) skip = true;
 		Material* mat = CreateResource<Material>(ResourceDescriptor(materialName));
 		if(skip) return mat;
-		mat->setDiffuse(vec4(pt.get<F32>("material.diffuse.<xmlattr>.r",0.6f),
-							 pt.get<F32>("material.diffuse.<xmlattr>.g",0.6f),
-							 pt.get<F32>("material.diffuse.<xmlattr>.b",0.6f),
-							 pt.get<F32>("material.diffuse.<xmlattr>.a",1.f)));
-		mat->setAmbient(vec4(pt.get<F32>("material.ambient.<xmlattr>.r",0.6f),
-						     pt.get<F32>("material.ambient.<xmlattr>.g",0.6f),
-							 pt.get<F32>("material.ambient.<xmlattr>.b",0.6f),
-							 pt.get<F32>("material.ambient.<xmlattr>.a",1.f)));
-		mat->setSpecular(vec4(pt.get<F32>("material.specular.<xmlattr>.r",1.f),
-			                  pt.get<F32>("material.specular.<xmlattr>.g",1.f),
-							  pt.get<F32>("material.specular.<xmlattr>.b",1.f),
-							  pt.get<F32>("material.specular.<xmlattr>.a",1.f)));
-		mat->setEmissive(vec3(pt.get<F32>("material.emissive.<xmlattr>.r",1.f),
-			                  pt.get<F32>("material.emissive.<xmlattr>.g",1.f),
-							  pt.get<F32>("material.emissive.<xmlattr>.b",1.f)));
+		mat->setDiffuse(vec4<F32>(pt.get<F32>("material.diffuse.<xmlattr>.r",0.6f),
+								  pt.get<F32>("material.diffuse.<xmlattr>.g",0.6f),
+								  pt.get<F32>("material.diffuse.<xmlattr>.b",0.6f),
+								  pt.get<F32>("material.diffuse.<xmlattr>.a",1.f)));
+		mat->setAmbient(vec4<F32>(pt.get<F32>("material.ambient.<xmlattr>.r",0.6f),
+								  pt.get<F32>("material.ambient.<xmlattr>.g",0.6f),
+								  pt.get<F32>("material.ambient.<xmlattr>.b",0.6f),
+								  pt.get<F32>("material.ambient.<xmlattr>.a",1.f)));
+		mat->setSpecular(vec4<F32>(pt.get<F32>("material.specular.<xmlattr>.r",1.f),
+								   pt.get<F32>("material.specular.<xmlattr>.g",1.f),
+								   pt.get<F32>("material.specular.<xmlattr>.b",1.f),
+								   pt.get<F32>("material.specular.<xmlattr>.a",1.f)));
+		mat->setEmissive(vec3<F32>(pt.get<F32>("material.emissive.<xmlattr>.r",1.f),
+			                       pt.get<F32>("material.emissive.<xmlattr>.g",1.f),
+							       pt.get<F32>("material.emissive.<xmlattr>.b",1.f)));
 		mat->setShininess(pt.get<F32>("material.shininess.<xmlattr>.v",50.f));
 		mat->setDoubleSided(pt.get<bool>("material.doubleSided",false));
 		if(boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture1")){

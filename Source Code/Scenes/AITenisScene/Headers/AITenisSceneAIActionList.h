@@ -32,7 +32,7 @@ public:
 	AITenisSceneAIActionList(SceneGraphNode* target);
 	void processData();
 	void processInput();
-	void update(SceneGraphNode* node);
+	void update(SceneGraphNode* node = NULL, NPC* unitRef = NULL);
 	void addEntityRef(AIEntity* entity);
 	void processMessage(AIEntity* sender, AI_MSG msg,const boost::any& msg_content);
 
@@ -42,7 +42,7 @@ private:
 private:
 	SceneGraphNode* _node;
 	SceneGraphNode* _target;
-	vec3 _pozitieMinge, _pozitieMingeAnterioara, _pozitieEntitate, _pozitieInitiala;
+	vec3<F32> _pozitieMinge, _pozitieMingeAnterioara, _pozitieEntitate, _pozitieInitiala;
 	membruDistantaMap _membruDistanta;
 	bool _atacaMingea, _mingeSpreEchipa2,_stopJoc;
 	U16 _tickCount;

@@ -9,16 +9,16 @@ Light::Light(U8 slot, F32 radius) : SceneNode(TYPE_LIGHT),    _slot(slot),
 													_id(0),			 _impostorSGN(NULL),
 													_castsShadows(true),_resolutionFactor(1)
 {
-	vec4 _white(1.0f,1.0f,1.0f,1.0f);
-	vec2 angle = vec2(0.0f, RADIANS(45.0f));
-	vec4 position = vec4(-cosf(angle.x) * sinf(angle.y),-cosf(angle.y),	-sinf(angle.x) * sinf(angle.y),	0.0f );
-	vec4 diffuse = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + cosf(angle.y) * 0.75f);
+	vec4<F32> _white(1.0f,1.0f,1.0f,1.0f);
+	vec2<F32> angle = vec2<F32>(0.0f, RADIANS(45.0f));
+	vec4<F32> position = vec4<F32>(-cosf(angle.x) * sinf(angle.y),-cosf(angle.y),	-sinf(angle.x) * sinf(angle.y),	0.0f );
+	vec4<F32> diffuse = _white.lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f), vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + cosf(angle.y) * 0.75f);
 	
 	_lightProperties_v[LIGHT_POSITION] = position;
-	_lightProperties_v[LIGHT_AMBIENT] = vec4(0.1f,0.1f,0.1f,1.0f);
+	_lightProperties_v[LIGHT_AMBIENT] = vec4<F32>(0.1f,0.1f,0.1f,1.0f);
 	_lightProperties_v[LIGHT_DIFFUSE] = diffuse;
 	_lightProperties_v[LIGHT_SPECULAR] = diffuse;
-	_lightProperties_v[LIGHT_SPOT_DIRECTION] = vec4(0,0,0,0);
+	_lightProperties_v[LIGHT_SPOT_DIRECTION] = vec4<F32>(0,0,0,0);
 	_type = LIGHT_DIRECTIONAL;
 
 	_lightProperties_f[LIGHT_SPOT_EXPONENT] = 1;
@@ -85,7 +85,7 @@ void Light::updateState(bool force){
 	}
 }
 
-void Light::setLightProperties(const LIGHT_V_PROPERTIES& propName, const vec4& value){
+void Light::setLightProperties(const LIGHT_V_PROPERTIES& propName, const vec4<F32>& value){
 	if (_lightProperties_v.find(propName) != _lightProperties_v.end()){
 		_lightProperties_v[propName] = value;
 		_dirty = true;

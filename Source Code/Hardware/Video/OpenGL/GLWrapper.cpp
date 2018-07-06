@@ -14,15 +14,20 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
+#include "Managers/Headers/CameraManager.h"
+#include "Rendering/Headers/Frustum.h"
 using namespace std;
 
 #define USE_FREEGLUT
-void GLCheckError(const std::string& File, U32 Line) {
-
+bool _applicationClosing = false;
+void GLCheckError(const std::string& File, U32 Line,char* operation) {
     // Get the last error
     GLenum ErrorCode = glGetError();
+	while (ErrorCode != GL_NO_ERROR && !_applicationClosing) {
 
-    if (ErrorCode != GL_NO_ERROR)  {
+		ErrorCode = glGetError();
+
+		if(ErrorCode == GL_NO_ERROR) return;
         std::string Error = "unknown error";
         std::string Desc  = "no description";
 
@@ -83,8 +88,8 @@ void GLCheckError(const std::string& File, U32 Line) {
         ss << File.substr(File.find_last_of("\\/") + 1) << " (" << Line << ") : "
            << Error << ", " 
 		   << Desc;
-        ERROR_FN("An internal OpenGL call failed: [ %s ]", ss.str().c_str());
-    }
+        ERROR_FN("An internal OpenGL call failed on call [ %s ]: [ %s ]",operation, ss.str().c_str());
+	}
 }
 
 void resizeWindowCallback(I32 w, I32 h){
@@ -149,7 +154,8 @@ void GL_API::initHardware(){
 	}else if(major == 2){
 		//If we do start a 2.0 context, use only basic shaders
 		par.setParam("shaderDetailToken",std::string("low"));
-	}else{
+		setVersionId(OpenGL2x);
+	}else if(major == 3 || major == 4){
 		//OpenGL 3.1 introduced v140 for GLSL, so use a maximum of "medium" shaders
 		//some "high" shaders need v150
 		if(minor < 2){
@@ -179,7 +185,11 @@ void GL_API::initHardware(){
 				break;
 			};
 		}
-		
+		if(major == 3){
+			setVersionId(OpenGL3x);
+		}else{
+			setVersionId(OpenGL4x);
+		}
 	}
 	//Print all of the OpenGL functionality info to the console
 	PRINT_FN("Max GLSL fragment uniform components supported: %d",max_frag_uniform);
@@ -238,6 +248,7 @@ void GL_API::initHardware(){
 
 void GL_API::closeApplication(){
 	//glutLeaveMainLoop();
+	_applicationClosing = true;
 	Guardian::getInstance().TerminateApplication();
 	
 }
@@ -282,11 +293,11 @@ void GL_API::idle(){
 }
 
 //ToDo: convert to OpenGL 3.3 and GLSL 1.5 standards. No more matrix queries to GPU - Ionut
-void GL_API::getProjectionMatrix(mat4& projMat){
+void GL_API::getProjectionMatrix(mat4<F32>& projMat){
 	glGetFloatv( GL_PROJECTION_MATRIX, projMat.mat );	
 }
 
-void GL_API::getModelViewMatrix(mat4& mvMat){
+void GL_API::getModelViewMatrix(mat4<F32>& mvMat){
 	glGetFloatv( GL_MODELVIEW_MATRIX, mvMat.mat );	
 }
 
@@ -428,18 +439,18 @@ void GL_API::drawButton(GuiElement* const button){
 		 *	If the cursor is currently over the button we offset the text string and draw a shadow
 		 */
 		if(!t){/* delete t;*/
-			t = new Text(string("1"),b->_text,vec2(fontx,fonty),GLUT_BITMAP_HELVETICA_10,vec3(0,0,0));
+			t = new Text(string("1"),b->_text,vec2<F32>(fontx,fonty),GLUT_BITMAP_HELVETICA_10,vec3<F32>(0,0,0));
 		}
 		t->_text = b->_text;
 		if(b->_highlight){
 			fontx--;
 			fonty--;
-			t->_color = vec3(0,0,0);
+			t->_color = vec3<F32>(0,0,0);
 		}else{
-			t->_color = vec3(1,1,1);
+			t->_color = vec3<F32>(1,1,1);
 		}
 		
-		t->setPosition(vec2(fontx,fonty));
+		t->setPosition(vec2<F32>(fontx,fonty));
 		drawTextToScreen(t);
 		glPopAttrib();
 	}
@@ -473,11 +484,15 @@ void GL_API::updateStateInternal(RenderStateBlock* block, bool force){
    _currentGLRenderStateBlock = glBlock;
 }
 
-
-void GL_API::setObjectState(Transform* const transform, bool force){
+/// Applies matrix transformations to the vertices that are about to be drawn
+/// If now shader is specified, fixed function multiplication are used for compatibility
+void GL_API::setObjectState(Transform* const transform, bool force, ShaderProgram* const shader){
 	if(transform){
-		///ToDo: Create separate shaders for this!!!! -Ionut 
-		//Performance is abismal
+		if(shader){
+			shader->Uniform("transformMatrix",transform->getMatrix());
+			shader->Uniform("parentTransformMatrix",transform->getParentMatrix());
+		}
+			
 		glPushMatrix();
 		if(force){
 			glLoadIdentity();
@@ -487,8 +502,10 @@ void GL_API::setObjectState(Transform* const transform, bool force){
 	}
 }
 
-void GL_API::releaseObjectState(Transform* const transform){
-	if(transform) glPopMatrix();
+void GL_API::releaseObjectState(Transform* const transform, ShaderProgram* const shader){
+	if(transform){
+		glPopMatrix();
+	}
 }
 
 void GL_API::setMaterial(Material* mat){
@@ -496,10 +513,10 @@ void GL_API::setMaterial(Material* mat){
 	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mat->getMaterialMatrix().getCol(0));
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mat->getMaterialMatrix().getCol(2));
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS,mat->getMaterialMatrix().getCol(3).x);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,vec4(mat->getMaterialMatrix().getCol(3).y,mat->getMaterialMatrix().getCol(3).z,mat->getMaterialMatrix().getCol(3).w,1.0f));
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,vec4<F32>(mat->getMaterialMatrix().getCol(3).y,mat->getMaterialMatrix().getCol(3).z,mat->getMaterialMatrix().getCol(3).w,1.0f));
 }
  
-void GL_API::renderInViewport(const vec4& rect, boost::function0<void> callback){
+void GL_API::renderInViewport(const vec4<F32>& rect, boost::function0<void> callback){
 	
 	glPushAttrib(GL_VIEWPORT_BIT);
     glViewport(rect.x, rect.y, rect.z, rect.w);
@@ -508,7 +525,7 @@ void GL_API::renderInViewport(const vec4& rect, boost::function0<void> callback)
 
 }
 
-void GL_API::drawBox3D(vec3 min, vec3 max){
+void GL_API::drawBox3D(vec3<F32> min, vec3<F32> max){
 
 	glBegin(GL_LINE_LOOP);
 		glVertex3f( min.x, min.y, min.z );
@@ -627,7 +644,7 @@ void GL_API::toggle2D(bool state){
 	}
 }
 
-void GL_API::setAmbientLight(const vec4& light){
+void GL_API::setAmbientLight(const vec4<F32>& light){
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, light);
 }
 
@@ -667,7 +684,7 @@ void GL_API::setLight(Light* const light){
 // -set the current matrix to GL_MODELVIEW
 // -reset it to identity
 // -invert the scene if needed by using, the now deprecated, I know, glScalef (but hey, so is gluLookAt)
-void GL_API::lookAt(const vec3& eye,const vec3& center,const vec3& up, bool invertx, bool inverty){
+void GL_API::lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up, bool invertx, bool inverty){
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
 	if(invertx){
@@ -703,7 +720,7 @@ void GL_API::releaseModelView(){
 // -resets it to identity
 // -sets an ortho perspective based on the input rect and limits
 // -and sets the matrix mode back to GL_MODELVIEW
-void GL_API::setOrthoProjection(const vec4& rect, const vec2& planes){
+void GL_API::setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes){
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
@@ -715,7 +732,7 @@ void GL_API::setOrthoProjection(const vec4& rect, const vec2& planes){
 // -resets it to identity
 // -sets a perspective projection based on the input FoV, aspect ration and limits
 // -and sets the matrix mode back to GL_MODELVIEW
-void GL_API::setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2& planes){
+void GL_API::setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes){
 	glMatrixMode (GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity ();
@@ -724,7 +741,7 @@ void GL_API::setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2& plane
 }
 
 //Save the area designated by the rectangle "rect" to a TGA file
-void GL_API::Screenshot(char *filename, const vec4& rect){
+void GL_API::Screenshot(char *filename, const vec4<F32>& rect){
 	// compute width and heidth of the image
 	U16 w = rect.z - rect.x; //maxX - minX
 	U16 h = rect.w - rect.y; //maxY - minY
@@ -751,8 +768,8 @@ F32 GL_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph){
     F32 minY =  1000.0f;
 	F32 minZ;
 
-	mat4 nv_mvp;
-	vec4 transf;	
+	mat4<F32> nv_mvp;
+	vec4<F32> transf;	
 	
 	// find the z-range of the current frustum as seen from the light
 	// in order to increase precision
@@ -761,11 +778,11 @@ F32 GL_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph){
 	// note that only the z-component is need and thus
 	// the multiplication can be simplified
 	// transf.z = shad_modelview[2] * f.point[0].x + shad_modelview[6] * f.point[0].y + shad_modelview[10] * f.point[0].z + shad_modelview[14];
-	transf = nv_mvp*vec4(f.point[0], 1.0f);
+	transf = nv_mvp*vec4<F32>(f.point[0], 1.0f);
 	minZ = transf.z;
 	maxZ = transf.z;
 	for(U8 i=1; i<8; i++){
-		transf = nv_mvp*vec4(f.point[i], 1.0f);
+		transf = nv_mvp*vec4<F32>(f.point[i], 1.0f);
 		if(transf.z > maxZ) maxZ = transf.z;
 		if(transf.z < minZ) minZ = transf.z;
 	}
@@ -774,7 +791,7 @@ F32 GL_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph){
 		//Unload every sub node recursively
 
 	for_each(BoundingBox& b, sceneGraph->getBBoxes()){
-		transf = nv_mvp*vec4(b.getCenter(), 1.0f);
+		transf = nv_mvp*vec4<F32>(b.getCenter(), 1.0f);
 		if(transf.z + b.getHalfExtent().z > maxZ) maxZ = transf.z + b.getHalfExtent().z;
 	//	if(transf.z - b.radius < minZ) minZ = transf.z - b.radius;
 	}
@@ -793,7 +810,7 @@ F32 GL_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph){
 
 	// find the extends of the frustum slice as projected in light's homogeneous coordinates
 	for(U8 i=0; i<8; i++){
-		transf = nv_mvp*vec4(f.point[i], 1.0f);
+		transf = nv_mvp*vec4<F32>(f.point[i], 1.0f);
 
 		transf.x /= transf.w;
 		transf.y /= transf.w;

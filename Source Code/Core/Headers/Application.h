@@ -32,7 +32,7 @@ DEFINE_SINGLETON( Application )
 private:
 	Application();
 	I8 mainWindowId;
-	vec2 _dimensions;
+	vec2<F32> _dimensions;
 
 	GFXDevice&    _GFX;
 	SFXDevice&    _SFX;
@@ -43,7 +43,7 @@ private:
 	static bool   _keepAlive;
 
 public:
-	const vec2& getWindowDimensions() const {return _dimensions;}
+	const vec2<F32>& getWindowDimensions() const {return _dimensions;}
 	inline void setWindowWidth(U16 w){_dimensions.x = w;}
 	inline void setWindowHeight(U16 h){_dimensions.y = h;}
 
@@ -57,8 +57,13 @@ public:
 	inline I8 const&  getMainWindowId() {return mainWindowId;}
 	inline void setMainWindowId(U8 id)  {mainWindowId = id;}
 	void   togglePreviewDepthMaps() {_previewDepthMaps = !_previewDepthMaps;}
+
+	/// get elapsed time since application start
+	inline D32 getCurrentTime() {return _currentTime;}
+
 private:
-	bool DrawScene();
+   bool DrawScene();
+   D32 _currentTime;
    END_SINGLETON
 
 #endif

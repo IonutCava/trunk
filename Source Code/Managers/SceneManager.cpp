@@ -90,20 +90,20 @@ void SceneManager::findSelection(U32 x, U32 y){
         //mathematical handling of the difference between
         //your mouse position and the 'center' of the window
 
-    vec3 point;
+    vec3<F32> point;
         //the untransformed ray will be put here
 
     F32 point_dist = par.getParam<F32>("zFar");
         //it'll be put this far on the Z plane
 
-    vec3 camera_origin;
+    vec3<F32> camera_origin;
         //this is where the camera sits, in 3dspace
 
-    vec3 point_xformed;
+    vec3<F32> point_xformed;
         //this is the transformed point
 
-    vec3 final_point;
-    vec4 color(0.0, 1.0, 0.0, 1.0);
+    vec3<F32> final_point;
+    vec4<F32> color(0.0, 1.0, 0.0, 1.0);
 
     //These lines are the biggest part of this function.
     //This is where the mouse position is turned into a mathematical
@@ -124,7 +124,7 @@ void SceneManager::findSelection(U32 x, U32 y){
     //Next we make an openGL call to grab our MODELVIEW_MATRIX -
     //This is the matrix that rasters 3d points to 2d space - which is
     //kinda what we're doing, in reverse
-	mat4 temp = Frustum::getInstance().getModelviewMatrix();
+	mat4<F32> temp = Frustum::getInstance().getModelviewMatrix();
 	
     //Some folks would then invert the matrix - I invert the results.
 
@@ -161,8 +161,8 @@ void SceneManager::findSelection(U32 x, U32 y){
 
     final_point = point_xformed + camera_origin;
 
-	vec3 origin(CameraManager::getInstance().getActiveCamera()->getEye());
-	vec3 dir = origin.direction(final_point);
+	vec3<F32> origin(CameraManager::getInstance().getActiveCamera()->getEye());
+	vec3<F32> dir = origin.direction(final_point);
 	
 	//ToDo: fix this!!!!! -Ionut
 	/*Ray r(origin,dir);

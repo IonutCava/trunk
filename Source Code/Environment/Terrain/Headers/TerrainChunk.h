@@ -37,18 +37,18 @@ public:
 	void Destroy();
 	int  DrawGround(I8 lod, bool drawInReflection = false);
 	void DrawGrass(I8 lod, F32 d);
-	void Load(U8 depth, ivec2 pos, ivec2 HMsize);
+	void Load(U8 depth, vec2<U32> pos, vec2<U32> HMsize);
 
 	inline std::vector<U32>&			getIndiceArray(I8 lod)		   {return _indice[lod];}
 	inline std::vector<U16>&			getGrassIndiceArray()		   {return _grassIndice;}
 
 	void								addObject(Mesh* obj);
-	void								addTree(const vec4& pos,F32 scale, const FileData& tree,SceneGraphNode* parentNode);
+	void								addTree(const vec4<F32>& pos,F32 scale, const FileData& tree,SceneGraphNode* parentNode);
 	TerrainChunk() {}
 	~TerrainChunk() {Destroy();}
 
 private:
-	void ComputeIndicesArray(I8 lod, U8 depth, ivec2 pos, ivec2 HMsize);
+	void ComputeIndicesArray(I8 lod, U8 depth, vec2<U32> pos, vec2<U32> HMsize);
 
 private:
 	///ToDo: U16 doesn't work for terrain. Find out why. -Ionut

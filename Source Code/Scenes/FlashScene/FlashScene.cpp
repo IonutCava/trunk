@@ -50,15 +50,15 @@ bool FlashScene::load(const string& name){
 
 bool FlashScene::loadResources(bool continueOnErrors){
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
-	_sunAngle = vec2(0.0f, RADIANS(45.0f));
-	_sunVector = vec4(-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+	_sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+	_sunVector = vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 							-cosf(_sunAngle.y),
 							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
 							0.0f );
 		GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec3(60,60,0),          //Position
+		                       vec3<F32>(60,60,0),          //Position
 							   BITMAP_8_BY_13,    //Font
-							   vec3(0.0f,0.2f, 1.0f),  //Color
+							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
 		_eventTimers.push_back(0.0f);
     i = 0;

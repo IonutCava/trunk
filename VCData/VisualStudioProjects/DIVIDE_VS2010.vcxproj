@@ -129,6 +129,7 @@
     <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Projectile.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Weapon.cpp" />
     <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainLoader.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationController.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SGNRenderCalls.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dFrameBufferObject.cpp" />
@@ -207,8 +208,6 @@
     <ClCompile Include="..\..\Source Code\Managers\ResourceManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\SceneManager.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Material\Material.cpp" />
-    <ClCompile Include="..\..\Source Code\Geometry\Animations\Bones.cpp" />
-    <ClCompile Include="..\..\Source Code\Geometry\Animations\cAnimationController.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Importer\DVDConverter.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Shapes\Mesh.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Shapes\Object3D.cpp" />
@@ -240,6 +239,8 @@
     <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Ammunition\Headers\Ammunition.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Headers\Projectile.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Headers\Weapon.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationController.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\Bone.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dFrameBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dPixelBufferObject.h" />
@@ -345,8 +346,6 @@
     <ClInclude Include="..\..\Source Code\Managers\Headers\ResourceManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\SceneManager.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\Material.h" />
-    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\Bones.h" />
-    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\cAnimationController.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\DVDConverter.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Mesh.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Object3D.h" />

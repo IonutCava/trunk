@@ -36,14 +36,17 @@ and a name.
 #include "resource.h"
 #include "Hardware/Video/VertexBufferObject.h"
 
-class SubMesh : public Object3D
-{
+class Mesh;
+class SubMesh : public Object3D {
 
 public:
 	SubMesh(const std::string& name) : Object3D(name,SUBMESH),
 									   _visibleToNetwork(true),
-									   _render(true)
+									   _render(true),
+									   _id(0),
+									   _parentMesh(NULL)
 	{
+		/// 3D objects usually requires the VBO to be recomputed on creation. mesh objects do not.
 		_refreshVBO = false;
 	}
 
@@ -54,9 +57,22 @@ public:
 	bool load(const std::string& name) {return true;}
 	bool unload();
 	bool computeBoundingBox(SceneGraphNode* const sgn);
+	inline U32  getId() {return _id;}
+	/// When loading a submesh, the ID is the node index from the imported scene
+	/// scene->mMeshes[n] == (SubMesh with _id == n)
+	inline void setId(U32 id) {_id = id;}
+
+	inline Mesh* getParentMesh() {return _parentMesh;}
+
+	void onDraw();
+protected:
+	friend class Mesh;
+	inline void setParentMesh(Mesh* const parentMesh) {_parentMesh = parentMesh;}
 
 private:
 	bool _visibleToNetwork, _render;
+	U32 _id;
+	Mesh* _parentMesh;
 };
 
 #endif

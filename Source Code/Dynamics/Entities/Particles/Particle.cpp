@@ -13,17 +13,17 @@ ParticleDescriptor::ParticleDescriptor(){
    _spinSpeedMax        = 0.0;
 
    for(U8 i=0; i<NUM_PARTICLE_STATES; i++ ) {
-      _color[i] = vec4( 1.0f, 1.0f, 1.0f, 1.0f );
+      _color[i] = vec4<F32>( 1.0f, 1.0f, 1.0f, 1.0f );
       _size[i] = 1.0;
    }
 
-   _texCoords[0] = vec2(0.0,0.0);
-   _texCoords[1] = vec2(0.0,1.0); 
-   _texCoords[2] = vec2(1.0,1.0);
-   _texCoords[3] = vec2(1.0,0.0);
+   _texCoords[0] = vec2<F32>(0.0,0.0);
+   _texCoords[1] = vec2<F32>(0.0,1.0); 
+   _texCoords[2] = vec2<F32>(1.0,1.0);
+   _texCoords[3] = vec2<F32>(1.0,0.0);
 }
 
-bool Particle::build(ParticleDescriptor* const descriptor, const vec3& inheritedVelocity){
+bool Particle::build(ParticleDescriptor* const descriptor, const vec3<F32>& inheritedVelocity){
 
    _velocity += inheritedVelocity * (descriptor->_velocityFactor);
    _acceleration = _acceleration * (descriptor->_cAcceleration);
@@ -31,4 +31,5 @@ bool Particle::build(ParticleDescriptor* const descriptor, const vec3& inherited
    /// add a random variance (lifetime variance should always be less than totalLifetime)
    _totalLifetime += random(-descriptor->_lifetimeVariance ,descriptor->_lifetimeVariance);
    _spinSpeed = descriptor->_spinSpeed * random(descriptor->_spinSpeedMin, descriptor->_spinSpeedMax );
+   return true;
 }

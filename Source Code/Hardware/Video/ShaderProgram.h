@@ -36,18 +36,18 @@ public:
 	///Attributes
 	virtual void Attribute(const std::string& ext, D32 value) = 0;
 	virtual void Attribute(const std::string& ext, F32 value) = 0 ;
-	virtual void Attribute(const std::string& ext, const vec2& value) = 0;
-	virtual void Attribute(const std::string& ext, const vec3& value) = 0;
-	virtual void Attribute(const std::string& ext, const vec4& value) = 0;
+	virtual void Attribute(const std::string& ext, const vec2<F32>& value) = 0;
+	virtual void Attribute(const std::string& ext, const vec3<F32>& value) = 0;
+	virtual void Attribute(const std::string& ext, const vec4<F32>& value) = 0;
 	///Uniforms
 	virtual void Uniform(const std::string& ext, I32 value) = 0;
 	virtual void Uniform(const std::string& ext, F32 value) = 0 ;
-	virtual void Uniform(const std::string& ext, const vec2& value) = 0;
-	virtual void Uniform(const std::string& ext, const vec3& value) = 0;
-	virtual void Uniform(const std::string& ext, const vec4& value) = 0;
-	virtual void Uniform(const std::string& ext, const mat3& value) = 0;
-	virtual void Uniform(const std::string& ext, const mat4& value) = 0;
-	virtual void Uniform(const std::string& ext, const std::vector<mat4>& values) = 0;
+	virtual void Uniform(const std::string& ext, const vec2<F32>& value) = 0;
+	virtual void Uniform(const std::string& ext, const vec3<F32>& value) = 0;
+	virtual void Uniform(const std::string& ext, const vec4<F32>& value) = 0;
+	virtual void Uniform(const std::string& ext, const mat3<F32>& value) = 0;
+	virtual void Uniform(const std::string& ext, const mat4<F32>& value) = 0;
+	virtual void Uniform(const std::string& ext, const std::vector<mat4<F32> >& values) = 0;
 	///Uniform Texture
 	virtual void UniformTexture(const std::string& ext, U16 slot) = 0;
 

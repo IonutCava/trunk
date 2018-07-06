@@ -31,15 +31,15 @@ enum SENSOR_TYPE{
 class Sensor{
 public:
 	Sensor(SENSOR_TYPE type){_type = type;}
-	virtual void updatePosition(const vec3& newPosition) {_position = newPosition;}
+	virtual void updatePosition(const vec3<F32>& newPosition) {_position = newPosition;}
 	/// return the coordinates at which the sensor is found (or the entity it's attached to)
-	vec3& getSpatialPosition()                    {return _position;}  
+	vec3<F32>& getSpatialPosition()                    {return _position;}  
 	SENSOR_TYPE getSensorType() {return _type;}
 	
 protected:
 
-	vec3 _position;
-	vec2 _range; ///< min/max
+	vec3<F32> _position;
+	vec2<F32> _range; ///< min/max
 	SENSOR_TYPE _type;
 };
 

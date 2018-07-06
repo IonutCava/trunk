@@ -18,7 +18,7 @@
 #ifndef _CHARACTER_H_
 #define _CHARACTER_H_
 
-#include "Headers/Unit.h"
+#include "Unit.h"
 
 /// Basic character class
 class Character : public Unit {

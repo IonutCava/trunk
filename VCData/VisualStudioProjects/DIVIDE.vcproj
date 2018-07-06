@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)../Source Code\Libs\includes\MultiModalInput&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\foundation&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\extensions&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\common&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation\internal\include&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation&quot;;&quot;$(EngineLibraries)\physx\include\PxTask\include&quot;;&quot;$(EngineLibraries)\physx\include\SampleFramework\framework\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code\Libs\includes\MultiModalInput&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\foundation&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\extensions&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\common&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation\internal\include&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation&quot;;&quot;$(EngineLibraries)\physx\include\PxTask\include&quot;;&quot;$(EngineLibraries)\physx\include\SampleFramework\framework\include&quot;"
 				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32; _DEBUG; FREEGLUT_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -1412,22 +1412,18 @@
 				Name="Animations"
 				>
 				<File
-					RelativePath="..\..\Source Code\Geometry\Animations\Bones.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Geometry\Animations\cAnimationController.cpp"
+					RelativePath="..\..\Source Code\Geometry\Animations\AnimationController.cpp"
 					>
 				</File>
 				<Filter
 					Name="Headers"
 					>
 					<File
-						RelativePath="..\..\Source Code\Geometry\Animations\Headers\Bones.h"
+						RelativePath="..\..\Source Code\Geometry\Animations\Headers\AnimationController.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Geometry\Animations\Headers\cAnimationController.h"
+						RelativePath="..\..\Source Code\Geometry\Animations\Headers\Bone.h"
 						>
 					</File>
 				</Filter>

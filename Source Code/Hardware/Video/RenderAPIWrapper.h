@@ -28,12 +28,11 @@ struct frustum{
 	F32 fard;
 	F32 fov;
 	F32 ratio;
-	vec3 point[8];
+	vec3<F32> point[8];
 };
 
 //FWD DECLARE CLASSES
 
-class mat4;
 class Light;
 class Shader;
 class SubMesh;
@@ -61,20 +60,23 @@ typedef Texture TextureCubemap;
 struct RenderStateBlockDescriptor;
 
 ///Renderer Programming Interface
-class RenderAPIWrapper
-{
+class RenderAPIWrapper {
 
 protected:
-	RenderAPIWrapper() : _apiId(GFX_PLACEHOLDER){}
+	RenderAPIWrapper() : _apiId(GFX_RENDER_API_PLACEHOLDER),_apiVersionId(GFX_RENDER_API_VER_PLACEHOLDER) {}
 
 	friend class GFXDevice;
 	
-	void setId(RENDER_API api) {_apiId = api;}
-	RENDER_API getId() { return _apiId;}
-	virtual void lookAt(const vec3& eye,const vec3& center,const vec3& up = vec3(0,1,0), bool invertx = false, bool inverty = false) = 0;
+	void setId(RENDER_API apiId)                        {_apiId = apiId;}
+	void setVersionId(RENDER_API_VERSION apiVersionId)  {_apiVersionId = apiVersionId;}
+
+	RENDER_API         getId()        { return _apiId;}
+	RENDER_API_VERSION getVersionId() { return _apiVersionId;}
+
+	virtual void lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up = vec3<F32>(0,1,0), bool invertx = false, bool inverty = false) = 0;
 	virtual void idle() = 0;
-	virtual void getModelViewMatrix(mat4& mvMat) = 0;
-	virtual void getProjectionMatrix(mat4& projMat) = 0;
+	virtual void getModelViewMatrix(mat4<F32>& mvMat) = 0;
+	virtual void getProjectionMatrix(mat4<F32>& projMat) = 0;
 	
 	virtual void resizeWindow(U16 w, U16 h) = 0;
 
@@ -97,8 +99,8 @@ protected:
 	/*Rendering States*/
 
 	/*State Matrix Manipulation*/
-	virtual void setOrthoProjection(const vec4& rect, const vec2& planes) = 0;
-	virtual void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2& planes) = 0;
+	virtual void setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes) = 0;
+	virtual void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes) = 0;
 	virtual void lockProjection() = 0;
 	virtual void releaseProjection() = 0;
 	virtual void lockModelView() = 0;
@@ -115,11 +117,11 @@ protected:
 	/*GUI Rendering*/
 
 	/*Object viewing*/
-	virtual void renderInViewport(const vec4& rect, boost::function0<void> callback) = 0;
+	virtual void renderInViewport(const vec4<F32>& rect, boost::function0<void> callback) = 0;
 	/*Object viewing*/
 
 	/*Primitives Rendering*/
-	virtual void drawBox3D(vec3 min, vec3 max) = 0;
+	virtual void drawBox3D(vec3<F32> min, vec3<F32> max) = 0;
 	/*Primitives Rendering*/
 
 	/*Mesh Rendering*/
@@ -132,15 +134,15 @@ protected:
 	/*Color Management*/
 
 	/*Light Management*/
-	virtual void setAmbientLight(const vec4& light) = 0;
+	virtual void setAmbientLight(const vec4<F32>& light) = 0;
 	virtual void setLight(Light* const light) = 0;
 	/*Light Management*/
 
 	virtual void toggleDepthMapRendering(bool state) = 0;
-	virtual void Screenshot(char *filename, const vec4& rect) = 0;
+	virtual void Screenshot(char *filename, const vec4<F32>& rect) = 0;
 	virtual ~RenderAPIWrapper(){};
-	virtual void setObjectState(Transform* const transform, bool force = false) = 0;
-	virtual void releaseObjectState(Transform* const transform) = 0;
+	virtual void setObjectState(Transform* const transform, bool force = false, ShaderProgram* const shader = NULL) = 0;
+	virtual void releaseObjectState(Transform* const transform, ShaderProgram* const shader = NULL) = 0;
 
 	virtual F32 applyCropMatrix(frustum &f,SceneGraph* sceneGraph) = 0;
 
@@ -150,7 +152,8 @@ public: //RenderAPIWrapper global
 	virtual RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor) = 0;
 	
 private:
-	RENDER_API _apiId;
+	RENDER_API         _apiId;
+	RENDER_API_VERSION _apiVersionId;
 };
 
 #endif

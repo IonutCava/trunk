@@ -29,10 +29,10 @@ public:
 		_scaleMatrix.identity();
 		_translationMatrix.identity();
 		_parentMatrix.identity();
-		_scale = vec3(1,1,1);
+		_scale = vec3<F32>(1,1,1);
 	}
 
-	Transform(const Quaternion& orientation, const vec3& translation, const vec3& scale) : 
+	Transform(const Quaternion& orientation, const vec3<F32>& translation, const vec3<F32>& scale) : 
 			  _orientation(orientation), _translation(translation), _scale(scale), _dirty(true){
 		_worldMatrix.identity();
 		_rotationMatrix.identity();
@@ -41,7 +41,7 @@ public:
 		_parentMatrix.identity();
 	}
 
-	void setPosition(const vec3& position){
+	void setPosition(const vec3<F32>& position){
 		_translation = position;
 		_translationMatrix.identity();
 		_translationMatrix.translate(_translation);
@@ -69,7 +69,7 @@ public:
 		_dirty = true;
 	}
 
-	void translate(const vec3& position){
+	void translate(const vec3<F32>& position){
 		_translation  += position;
 		_translationMatrix.translate(_translation);
 		_dirty = true;
@@ -93,18 +93,18 @@ public:
 		_dirty = true;
 	}
 
-	void scale(const vec3& scale){
+	void scale(const vec3<F32>& scale){
 		_scaleMatrix.scale(scale);
 		_scale = scale; 
 		_dirty = true;
 	}
 
-	void scale(const F32 scale)  {this->scale(vec3(scale,scale,scale)); }
-	void scaleX(const F32 scale) {this->scale(vec3(scale,_scale.y,_scale.z));}
-	void scaleY(const F32 scale) {this->scale(vec3(_scale.x,scale,_scale.z));}
-	void scaleZ(const F32 scale) {this->scale(vec3(_scale.x,_scale.y,scale));}
+	inline void scale(const F32 scale)  {this->scale(vec3<F32>(scale,scale,scale)); }
+	inline void scaleX(const F32 scale) {this->scale(vec3<F32>(scale,_scale.y,_scale.z));}
+	inline void scaleY(const F32 scale) {this->scale(vec3<F32>(_scale.x,scale,_scale.z));}
+	inline void scaleZ(const F32 scale) {this->scale(vec3<F32>(_scale.x,_scale.y,scale));}
 
-	void rotate(const vec3& axis, F32 degrees){
+	void rotate(const vec3<F32>& axis, F32 degrees){
 		_orientation.FromAxis(axis,degrees);
 		_rotationMatrix = _orientation.getMatrix();
 		_axis = axis;
@@ -112,7 +112,7 @@ public:
 		_dirty = true;
 	}
 
-	void rotateEuler(const vec3& euler){
+	void rotateEuler(const vec3<F32>& euler){
 		_orientation.FromEuler(euler);
 		_orientation.getAxisAngle(&_axis,&_angle,true);
 		_rotationMatrix = _orientation.getMatrix();
@@ -125,18 +125,18 @@ public:
 		_dirty = true;
 	}
 
-	void rotateX(F32 angle){this->rotate(vec3(1,0,0),angle);}
-	void rotateY(F32 angle){this->rotate(vec3(0,1,0),angle);}
-	void rotateZ(F32 angle){this->rotate(vec3(0,0,1),angle);}
+	inline void rotateX(F32 angle){this->rotate(vec3<F32>(1,0,0),angle);}
+	inline void rotateY(F32 angle){this->rotate(vec3<F32>(0,1,0),angle);}
+	inline void rotateZ(F32 angle){this->rotate(vec3<F32>(0,0,1),angle);}
 
-	mat4 const& getRotationMatrix() {return _orientation.getMatrix();}
+	inline mat4<F32> const& getRotationMatrix() {return _orientation.getMatrix();}
 
-	mat4 const& getParentMatrix()   const {return _parentMatrix;}
-	vec3 const& getPosition()       const {return _translation;}
-	vec3 const& getScale()          const {return _scale;}
+	inline mat4<F32> const& getParentMatrix()   const {return _parentMatrix;}
+	inline vec3<F32> const& getPosition()       const {return _translation;}
+	inline vec3<F32> const& getScale()          const {return _scale;}
 
-	Quaternion const& getOrientation() const {return _orientation;}
-	mat4 const& getMatrix() {this->applyTransforms(); return _worldMatrix;}
+	inline Quaternion const& getOrientation() const {return _orientation;}
+	mat4<F32> const& getMatrix() {this->applyTransforms(); return _worldMatrix;}
 
 	void applyTransforms(){
 		if(isDirty()){
@@ -148,12 +148,12 @@ public:
 		}
 	}
 
-	void setTransforms(const mat4& transform){
+	void setTransforms(const mat4<F32>& transform){
 		_worldMatrix = transform;
 		this->clean();
 	}
 
-	void setParentMatrix(const mat4& transform){
+	void setParentMatrix(const mat4<F32>& transform){
 		_dirty = true;
 		_parentMatrix = transform;
 	}
@@ -169,17 +169,18 @@ public:
 		return result;
 	}
 
-	bool isDirty() {return _dirty;}
+	inline bool isDirty() {return _dirty;}
+
 private:
-	void clean()   {_dirty = false;} 
+	inline void clean()   {_dirty = false;} 
 
 private:
 	Quaternion _orientation;
-	vec3 _axis;
+	vec3<F32> _axis;
 	F32 _angle;
-	vec3 _translation;
-	vec3 _scale;
-	mat4 _worldMatrix,_scaleMatrix,_rotationMatrix,_translationMatrix,_parentMatrix;
+	vec3<F32> _translation;
+	vec3<F32> _scale;
+	mat4<F32> _worldMatrix,_scaleMatrix,_rotationMatrix,_translationMatrix,_parentMatrix;
 	bool _dirty;
 };
 

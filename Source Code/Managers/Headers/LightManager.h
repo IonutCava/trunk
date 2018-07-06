@@ -27,7 +27,7 @@ public:
 
 	bool addLight(Light* const light);
 	bool removeLight(U32 lightId);
-	void setAmbientLight(const vec4& light);
+	void setAmbientLight(const vec4<F32>& light);
 
 	bool clear();
 	U32  generateNewID();

@@ -222,21 +222,21 @@ void glShaderProgram::Attribute(const std::string& ext, F32 value){
 	}
 }
 
-void glShaderProgram::Attribute(const std::string& ext, const vec2& value){
+void glShaderProgram::Attribute(const std::string& ext, const vec2<F32>& value){
 	I32 loc = cachedLoc(ext,false);
 	if(loc != -1){
 		glVertexAttrib2fv(loc,value);
 	}
 }
 
-void glShaderProgram::Attribute(const std::string& ext, const vec3& value){
+void glShaderProgram::Attribute(const std::string& ext, const vec3<F32>& value){
 	I32 loc = cachedLoc(ext,false);
 	if(loc != -1){
 		glVertexAttrib3fv(loc,value);
 	}
 }
 
-void glShaderProgram::Attribute(const std::string& ext, const vec4& value){
+void glShaderProgram::Attribute(const std::string& ext, const vec4<F32>& value){
 	I32 loc = cachedLoc(ext,false);
 	if(loc != -1){
 		glVertexAttrib4fv(loc,value);
@@ -258,42 +258,42 @@ void glShaderProgram::Uniform(const string& ext, F32 value){
 	}
 }
 
-void glShaderProgram::Uniform(const string& ext, const vec2& value){
+void glShaderProgram::Uniform(const string& ext, const vec2<F32>& value){
 	I32 loc = cachedLoc(ext);
 	if(loc != -1){
 		glUniform2fv(loc, 1, value);
 	}
 }
 
-void glShaderProgram::Uniform(const string& ext, const vec3& value){
+void glShaderProgram::Uniform(const string& ext, const vec3<F32>& value){
 	I32 loc = cachedLoc(ext);
 	if(loc != -1){
 		glUniform3fv(loc, 1, value);
 	}
 }
 
-void glShaderProgram::Uniform(const string& ext, const vec4& value){
+void glShaderProgram::Uniform(const string& ext, const vec4<F32>& value){
 	I32 loc = cachedLoc(ext);
 	if(loc != -1){
 		glUniform4fv(loc, 1, value);
 	}
 }
 
-void glShaderProgram::Uniform(const std::string& ext, const mat3& value){
+void glShaderProgram::Uniform(const std::string& ext, const mat3<F32>& value){
 I32 loc = cachedLoc(ext);
 	if(loc != -1){
 		glUniformMatrix3fv(loc, 1,false, value);
 	}
 }
 
-void glShaderProgram::Uniform(const std::string& ext, const mat4& value){
+void glShaderProgram::Uniform(const std::string& ext, const mat4<F32>& value){
 	I32 loc = cachedLoc(ext);
 	if(loc != -1){
 		glUniformMatrix4fv(loc, 1,false, value);
 	}
 }
 
-void glShaderProgram::Uniform(const std::string& ext, const vector<mat4>& values){
+void glShaderProgram::Uniform(const std::string& ext, const vector<mat4<F32> >& values){
 	I32 loc = cachedLoc(ext);
 	if(loc != -1){
 		glUniformMatrix4fv(loc,values.size(),true, values[0]);

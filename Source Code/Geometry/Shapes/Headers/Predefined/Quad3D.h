@@ -26,25 +26,25 @@ class Quad3D : public Object3D {
 public:
 	Quad3D() :  Object3D(QUAD_3D){
 
-		vec3 vertices[] = {vec3(-1.0f,  1.0f, 0.0f),   //TOP LEFT
-						   vec3( 1.0f,  1.0f, 0.0f),   //TOP RIGHT
-						   vec3(-1.0f, -1.0f, 0.0f),   //BOTTOM LEFT
-						   vec3( 1.0f, -1.0f, 0.0f)};  //BOTTOM RIGHT
+		vec3<F32> vertices[] = {vec3<F32>(-1.0f,  1.0f, 0.0f),   //TOP LEFT
+						        vec3<F32>( 1.0f,  1.0f, 0.0f),   //TOP RIGHT
+						        vec3<F32>(-1.0f, -1.0f, 0.0f),   //BOTTOM LEFT
+						        vec3<F32>( 1.0f, -1.0f, 0.0f)};  //BOTTOM RIGHT
 
-		vec3 normals[] = {vec3(0.0f, 0.0f, 1.0f), 
-						  vec3(0.0f, 0.0f, 1.0f), 
-						  vec3(0.0f, 0.0f, 1.0f),
-						  vec3(0.0f, 0.0f, 1.0f)};
+		vec3<F32> normals[] = {vec3<F32>(0.0f, 0.0f, 1.0f), 
+						       vec3<F32>(0.0f, 0.0f, 1.0f), 
+						       vec3<F32>(0.0f, 0.0f, 1.0f),
+						       vec3<F32>(0.0f, 0.0f, 1.0f)};
 
-		vec3 tangents[] = {vec3(0.0f, 1.0f, 0.0f), 
-						   vec3(0.0f, 1.0f, 0.0f), 
-				           vec3(0.0f, 1.0f, 0.0f),
-				           vec3(0.0f, 1.0f, 0.0f)};
+		vec3<F32> tangents[] = {vec3<F32>(0.0f, 1.0f, 0.0f), 
+						        vec3<F32>(0.0f, 1.0f, 0.0f), 
+				                vec3<F32>(0.0f, 1.0f, 0.0f),
+				                vec3<F32>(0.0f, 1.0f, 0.0f)};
 
-		vec2 texcoords[] = {vec2(0,0),
-							vec2(1,0),
-							vec2(0,1),
-							vec2(1,1)};
+		vec2<F32> texcoords[] = {vec2<F32>(0,0),
+							     vec2<F32>(1,0),
+							     vec2<F32>(0,1),
+							     vec2<F32>(1,1)};
 
 		_geometry->getPosition().reserve(4);
 		_geometry->getNormal().reserve(4);
@@ -80,7 +80,7 @@ public:
 		BOTTOM_RIGHT
 	};
 
-	vec3 getCorner(CornerLocation corner){
+	vec3<F32> getCorner(CornerLocation corner){
 		//In 2D mode, Quad's are flipped!!!!
 		switch(corner){
 			case TOP_LEFT: return _geometry->getPosition()[0];
@@ -92,7 +92,7 @@ public:
 		return _geometry->getPosition()[0]; //default returns top left corner. Why? Don't care ... seems like a good idea. - Ionut
 	}
 
-	void setCorner(CornerLocation corner, const vec3& value){
+	void setCorner(CornerLocation corner, const vec3<F32>& value){
 		//In 2D mode, Quad's are flipped!!!!
 		switch(corner){
 	     	case TOP_LEFT:     _geometry->getPosition()[0] = value; break;
@@ -107,11 +107,11 @@ public:
 
 	//rect.xy = Top Left; rect.zw = Bottom right
 	//Remember to invert for 2D mode
-	void setDimensions(const vec4& rect){
-		_geometry->getPosition()[0] = vec3(rect.x, rect.w, 0);
-		_geometry->getPosition()[1] = vec3(rect.z, rect.w, 0);
-		_geometry->getPosition()[2] = vec3(rect.x,rect.y,0);
-		_geometry->getPosition()[3] = vec3(rect.z, rect.y, 0);
+	void setDimensions(const vec4<F32>& rect){
+		_geometry->getPosition()[0] = vec3<F32>(rect.x, rect.w, 0);
+		_geometry->getPosition()[1] = vec3<F32>(rect.z, rect.w, 0);
+		_geometry->getPosition()[2] = vec3<F32>(rect.x,rect.y,0);
+		_geometry->getPosition()[3] = vec3<F32>(rect.z, rect.y, 0);
 		_refreshVBO = true;
 	}
 

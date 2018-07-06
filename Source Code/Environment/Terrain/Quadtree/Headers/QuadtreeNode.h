@@ -40,8 +40,8 @@ class ShaderProgram;
 class QuadtreeNode {
 public:
 	///recursive node building function
-	void Build(U8 depth, ivec2 pos, ivec2 HMsize, U32 minHMSize);
-	bool computeBoundingBox(const std::vector<vec3>& vertices);
+	void Build(U8 depth, vec2<U32> pos, vec2<U32> HMsize, U32 minHMSize);
+	bool computeBoundingBox(const std::vector<vec3<F32> >& vertices);
 	void Destroy();
 
 	inline ShaderProgram*     const     getParentShaderProgram()       {return _parentShaderProgram;}

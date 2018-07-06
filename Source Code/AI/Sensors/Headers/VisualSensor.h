@@ -31,10 +31,10 @@ public:
 	U32  getNearbyHostileEntityCount(U32 range)  {}  ///< lookup hostile entity count in range (only visible ones)
 	U32  getNearbyFriendlyEntityCount(U32 range) {}  ///< lookup friendly entity count in range (only visible ones)
 
-	U32   getDistanceToEntity(AIEntity* target)   {}
-	vec3  getPositionOfObject(SceneGraphNode* node);    
-	AIEntity* getNearestFriendlyEntity()         {}  ///< get closest visible friendly entity
-	AIEntity* getNearestHostileEntity()          {}  ///< get closest visible hostile entity
+	U32        getDistanceToEntity(AIEntity* target)   {}
+	vec3<F32>  getPositionOfObject(SceneGraphNode* node);    
+	AIEntity*  getNearestFriendlyEntity()         {}  ///< get closest visible friendly entity
+	AIEntity*  getNearestHostileEntity()          {}  ///< get closest visible hostile entity
 
 };
 

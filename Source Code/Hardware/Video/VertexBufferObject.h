@@ -20,39 +20,69 @@
 
 #include <iostream>
 #include "resource.h"
-
-struct vertexWeight {
-	U32 _vertexId;
-	F32 _weight;
-
-#ifdef __cplusplus
-
-	vertexWeight() { }
-	vertexWeight( U32 vID, F32 vWeight) 
-		: _vertexId( vID), _weight( vWeight) 
-	{ }
-
-#endif
-};
-
+/// Vertex Buffer Object interface class  to allow API-independent implementation of data
+/// This class allow Vertex Array fallback if a VBO could not be generated
 class VertexBufferObject {
 
 public:
-	virtual bool Create() = 0;
+	virtual bool Create(bool staticDraw = true) = 0;
 	virtual bool Create(U32 usage) = 0;
 	virtual void Destroy() = 0;
 	
 	virtual void Enable() = 0;
 	virtual void Disable() = 0;
 
-	
-	inline std::vector<vec3>&	getPosition()	{return _dataPosition;}
-	inline std::vector<vec3>&	getNormal()		{return _dataNormal;}
-	inline std::vector<vec2>&	getTexcoord()	{return _dataTexcoord;}
-	inline std::vector<vec3>&	getTangent()	{return _dataTangent;}
-	inline std::vector<vec3>&	getBiTangent()	{return _dataBiTangent;}
-	inline std::vector<std::vector<U8>>& getBoneIndices() {return _boneIndices;}
-	inline std::vector<std::vector<U8>>& getBoneWeights() {return _boneWeights;}
+	virtual bool Refresh() = 0;
+
+	inline std::vector<vec3<F32> >&  getPosition()	  { _positionDirty  = true; return _dataPosition;}
+	inline std::vector<vec3<F32> >&  getNormal()	  { _normalDirty    = true; return _dataNormal;}
+	inline std::vector<vec2<F32> >&  getTexcoord()    { _texcoordDirty  = true; return _dataTexcoord;}
+	inline std::vector<vec3<F32> >&  getTangent()	  { _tangentDirty   = true; return _dataTangent;}
+	inline std::vector<vec3<F32> >&  getBiTangent()   { _bitangentDirty = true; return _dataBiTangent;}
+	inline std::vector<vec4<I16> >&  getBoneIndices() { _indicesDirty   = true; return _boneIndices;}
+	inline std::vector<vec4<F32> >&  getBoneWeights() { _weightsDirty   = true; return _boneWeights;}
+
+	/*inline void updatePosition(const std::vector<vec3<F32> >& newPositionData) {
+		_dataPosition.clear(); 
+		_dataPosition = newPositionData;
+		_positionDirty = true;
+	}
+
+	inline void updateNormal(const std::vector<vec3<F32> >& newNormalData) {
+		_dataNormal.clear(); 
+		_dataNormal = newNormalData;
+		_normalDirty = true;
+	}
+
+	inline void updateTexcoord(const std::vector<vec2<F32> >& newTexcoordData) {
+		_dataTexcoord.clear(); 
+		_dataTexcoord = newTexcoordData;
+		_texcoordDirty = true;
+	}
+
+	inline void updateTangent(const std::vector<vec3<F32> >& newTangentData) {
+		_dataTangent.clear(); 
+		_dataTangent = newTangentData;
+		_tangentDirty = true;
+	}
+
+	inline void updateBitangent(const std::vector<vec3<F32> >& newBiTangentData) {
+		_dataBiTangent.clear(); 
+		_dataBiTangent = newBiTangentData;
+		_bitangentDirty = true;
+	}
+
+	inline void updateBoneIndices(const std::vector<vec4<U8> >& newBoneIndicesData) {
+		_boneIndices.clear(); 
+		_boneIndices = newBoneIndicesData;
+		_indicesDirty = true;
+	}
+
+	inline void updateBoneWeights(const std::vector<vec4<U8> >& newBoneWeightsData) {
+		_boneWeights.clear(); 
+		_boneWeights = newBoneWeightsData;
+		_weightsDirty = true;
+	}*/
 
 	virtual ~VertexBufferObject() {
 		_VBOid = 0;
@@ -66,13 +96,29 @@ public:
 		_dataTexcoord.clear();
 		_dataTangent.clear();
 		_dataBiTangent.clear();
-		for(U16 i = 0; i < _boneIndices.size(); i++)
-			_boneIndices[i].clear();
 		_boneIndices.clear();
-		for(U16 i = 0; i < _boneWeights.size(); i++)
-			_boneWeights[i].clear();
 		_boneWeights.clear();
 	};
+
+	VertexBufferObject() : 	_positionDirty(true),
+							_normalDirty(true),
+							_texcoordDirty(true),
+							_tangentDirty(true),
+							_bitangentDirty(true),
+							_indicesDirty(true),
+							_weightsDirty(true),
+							_staticDraw(true),
+							_VBOid(0)
+	{
+		_VBOoffsetPosition = 0;
+		_VBOoffsetNormal = 0;
+		_VBOoffsetTexcoord = 0;
+		_VBOoffsetTangent = 0;
+		_VBOoffsetBiTangent = 0;
+	    _VBOoffsetBoneIndices = 0;
+	    _VBOoffsetBoneWeights = 0;
+	}
+
 
 protected:
 	
@@ -89,16 +135,30 @@ protected:
 	ptrdiff_t	_VBOoffsetTexcoord;
 	ptrdiff_t	_VBOoffsetTangent;
 	ptrdiff_t	_VBOoffsetBiTangent;
+	ptrdiff_t   _VBOoffsetBoneIndices;
+	ptrdiff_t   _VBOoffsetBoneWeights;
 
 	
-	std::vector<vec3>	_dataPosition;
-	std::vector<vec3>	_dataNormal;
-	std::vector<vec2>	_dataTexcoord;
-	std::vector<vec3>	_dataTangent;
-	std::vector<vec3>	_dataBiTangent;
-	std::vector<std::vector<U8>> _boneIndices;
-	std::vector<std::vector<U8>> _boneWeights;
+	std::vector<vec3<F32> >	_dataPosition;
+	std::vector<vec3<F32> >	_dataNormal;
+	std::vector<vec2<F32> >	_dataTexcoord;
+	std::vector<vec3<F32> >	_dataTangent;
+	std::vector<vec3<F32> >	_dataBiTangent;
+	std::vector<vec4<I16> > _boneIndices; ///< ToDo: use U8 data pointers here -Ionut
+	std::vector<vec4<F32> > _boneWeights; ///< ToDo: use U8 data pointers here -Ionut
 
+	/// To change this, call Create again on the VBO
+	/// Update calls use this as reference!
+	bool _staticDraw;
+
+	/// Cache system to update only required data
+	bool _positionDirty;
+	bool _normalDirty;
+	bool _texcoordDirty;
+	bool _tangentDirty;
+	bool _bitangentDirty;
+	bool _indicesDirty;
+	bool _weightsDirty;
 	
 };
 

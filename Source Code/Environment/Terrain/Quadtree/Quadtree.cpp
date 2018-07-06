@@ -19,8 +19,7 @@ void Quadtree::DrawBBox() {
 }
 
 
-QuadtreeNode* Quadtree::FindLeaf(vec2& pos)
-{
+QuadtreeNode* Quadtree::FindLeaf(vec2<F32>& pos) {
 	assert(_root);
 	QuadtreeNode* node = _root;
 
@@ -28,7 +27,7 @@ QuadtreeNode* Quadtree::FindLeaf(vec2& pos)
 		int i=0;
 		for(i=0; i<4; i++) {
 			QuadtreeNode* child = &(node->getChildren()[i]);
-			if(child->getBoundingBox().ContainsPoint( vec3(pos.x, child->getBoundingBox().getCenter().y, pos.y) ))
+			if(child->getBoundingBox().ContainsPoint( vec3<F32>(pos.x, child->getBoundingBox().getCenter().y, pos.y) ))
 			{
 				node = child;
 				break;
@@ -45,7 +44,7 @@ QuadtreeNode* Quadtree::FindLeaf(vec2& pos)
 
 
 void Quadtree::Build(BoundingBox& terrainBBox,		
-					 ivec2 HMsize,				
+					 vec2<U32> HMsize,				
 					 U32 minHMSize)	
 {
 	
@@ -54,10 +53,10 @@ void Quadtree::Build(BoundingBox& terrainBBox,
 	_root->setParentShaderProgram(_parentShaderProgram);
 
 	
-	_root->Build(0, ivec2(0,0), HMsize, minHMSize);
+	_root->Build(0, vec2<U32>(0,0), HMsize, minHMSize);
 }
 
-BoundingBox& Quadtree::computeBoundingBox(const std::vector<vec3>& vertices){
+BoundingBox& Quadtree::computeBoundingBox(const std::vector<vec3<F32> >& vertices){
 	assert(_root);
 	assert(!vertices.empty());
 	 _root->computeBoundingBox(vertices);

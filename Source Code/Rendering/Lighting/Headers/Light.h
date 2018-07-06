@@ -60,13 +60,13 @@ public:
 	///Light radius controls the distance in which all contained objects are lit by it
 	void setRadius(F32 radius);
 	///Set all light vector-properties
-	void setLightProperties(const LIGHT_V_PROPERTIES& propName, const vec4& value);
+	void setLightProperties(const LIGHT_V_PROPERTIES& propName, const vec4<F32>& value);
 	///Set all light float-properties
 	void setLightProperties(const LIGHT_F_PROPERTIES& propName, F32 value);
 	///Set the function used to generate shadows for this light (usually _scenegraph->render)
 	void setShadowMappingCallback(boost::function0<void> callback);
 	///Get light vector properties 
-    inline vec4& getVProperty(const LIGHT_V_PROPERTIES& key){
+    inline vec4<F32>& getVProperty(const LIGHT_V_PROPERTIES& key){
 		return _lightProperties_v[key];
 	}
 	///Get light floating point properties 
@@ -79,9 +79,9 @@ public:
 	///Get light slot
 	inline U8    getSlot() {return _slot;}
 	///Get light diffuse color
-	inline vec4& getDiffuseColor() {return _lightProperties_v[LIGHT_DIFFUSE];}
+	inline vec4<F32>& getDiffuseColor() {return _lightProperties_v[LIGHT_DIFFUSE];}
 	///Get light position (or direction for directional lights)
-	inline vec4& getPosition() {return  _lightProperties_v[LIGHT_POSITION];}
+	inline vec4<F32>& getPosition() {return  _lightProperties_v[LIGHT_POSITION];}
 	///Light effect radius
 	inline F32   getRadius()   {return _radius;}
 	///Light state (on/off)
@@ -142,7 +142,7 @@ protected:
 	LIGHT_TYPE _type;
 
 private:
-	unordered_map<LIGHT_V_PROPERTIES,vec4> _lightProperties_v;
+	unordered_map<LIGHT_V_PROPERTIES,vec4<F32>> _lightProperties_v;
 	unordered_map<LIGHT_F_PROPERTIES,F32> _lightProperties_f;
 	U8   _slot;
 	U32  _id;
@@ -161,9 +161,9 @@ private: //Shadow Mapping
 	std::vector<FrameBufferObject* > _depthMaps;
 	F32 _resolutionFactor;
 	///Temp variables used for caching data between function calls
-	vec3 _lightPos;
-	vec2 _zPlanes;
-	vec3 _eyePos;
+	vec3<F32> _lightPos;
+	vec2<F32> _zPlanes;
+	vec3<F32> _eyePos;
 };
 
 #endif

@@ -87,11 +87,11 @@ public:
   bool load(const std::string& name) {_name = name; return true;}
   bool unload();
 
-  inline void setAmbient(const vec4& value) {_ambient = value; _materialMatrix.setCol(0,value);}
-  inline void setDiffuse(const vec4& value) {_diffuse = value; _materialMatrix.setCol(1,value);}
-  inline void setSpecular(const vec4& value) {_specular = value; _materialMatrix.setCol(2,value);}
-  inline void setEmissive(const vec3& value) {_emissive = value; _materialMatrix.setCol(3,vec4(_shininess,value.x,value.y,value.z));}
-  inline void setShininess(F32 value) {_shininess = value; _materialMatrix.setCol(3,vec4(value,_emissive.x,_emissive.y,_emissive.z));}
+  inline void setAmbient(const vec4<F32>& value) {_ambient = value; _materialMatrix.setCol(0,value);}
+  inline void setDiffuse(const vec4<F32>& value) {_diffuse = value; _materialMatrix.setCol(1,value);}
+  inline void setSpecular(const vec4<F32>& value) {_specular = value; _materialMatrix.setCol(2,value);}
+  inline void setEmissive(const vec3<F32>& value) {_emissive = value; _materialMatrix.setCol(3,vec4<F32>(_shininess,value.x,value.y,value.z));}
+  inline void setShininess(F32 value) {_shininess = value; _materialMatrix.setCol(3,vec4<F32>(value,_emissive.x,_emissive.y,_emissive.z));}
   inline void setOpacityValue(F32 value) {_opacity = value;}
   inline void setCastsShadows(bool state) {_castsShadows = state;}
   inline void setReceivesShadows(bool state) {_receiveShadows = state;}
@@ -102,7 +102,8 @@ public:
   ShaderProgram*    setShaderProgram(const std::string& shader);
   RenderStateBlock* setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, RENDER_STAGE renderStage);
 
-  inline mat4& getMaterialMatrix()  {return _materialMatrix;}
+  inline mat4<F32>& getMaterialMatrix()  {return _materialMatrix;}
+
          P32   getMaterialId();
   inline bool  getCastsShadows()    {return _castsShadows;}
   inline bool  getReceivesShadows() {return _receiveShadows;}
@@ -127,13 +128,13 @@ public:
   void dumpToXML();
 
 private:
-  vec4 _diffuse;           /* diffuse component */
-  vec4 _ambient;           /* ambient component */
-  vec4 _specular;          /* specular component */
-  vec3 _emissive;          /* emissive component */
+  vec4<F32> _diffuse;           /* diffuse component */
+  vec4<F32> _ambient;           /* ambient component */
+  vec4<F32> _specular;          /* specular component */
+  vec3<F32> _emissive;          /* emissive component */
   F32 _shininess;          /* specular exponent */
   F32 _opacity;			   /* material opacity value*/
-  mat4 _materialMatrix; /* all properties bundled togheter */
+  mat4<F32> _materialMatrix; /* all properties bundled togheter */
   ShadingMode _shadingMode;
   std::string _shader; /*shader name*/
   bool _computedLightShaders;

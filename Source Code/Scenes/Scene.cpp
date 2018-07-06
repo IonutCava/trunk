@@ -121,13 +121,13 @@ bool Scene::loadGeometry(const FileData& data){
 			dynamic_cast<Sphere3D*>(thisObj)->setRadius(data.data);
 
 	} else if(data.ModelName.compare("Quad3D") == 0)	{
-			vec3 scale = data.scale;
-			vec3 position = data.position;
+			vec3<F32> scale = data.scale;
+			vec3<F32> position = data.position;
 			thisObj = CreateResource<Quad3D>(item);
-			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::TOP_LEFT,vec3(0,1,0));
-			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::TOP_RIGHT,vec3(1,1,0));
-			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::BOTTOM_LEFT,vec3(0,0,0));
-			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::BOTTOM_RIGHT,vec3(1,0,0));
+			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::TOP_LEFT,vec3<F32>(0,1,0));
+			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::TOP_RIGHT,vec3<F32>(1,1,0));
+			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::BOTTOM_LEFT,vec3<F32>(0,0,0));
+			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::BOTTOM_RIGHT,vec3<F32>(1,0,0));
 	} else if(data.ModelName.compare("Text3D") == 0) {
 		
 			thisObj =CreateResource<Text3D>(item);
@@ -166,7 +166,7 @@ Light* Scene::addDefaultLight(){
 	l->setLightType(LIGHT_DIRECTIONAL);
 	_sceneGraph->getRoot()->addNode(l);
 	addLight(l);
-	vec4 ambientColor(0.1f, 0.1f, 0.1f, 1.0f);
+	vec4<F32> ambientColor(0.1f, 0.1f, 0.1f, 1.0f);
 	LightManager::getInstance().setAmbientLight(ambientColor);
 	return l;	
 }
@@ -345,7 +345,7 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 			Application::getInstance().togglePreviewDepthMaps();
 			break;
 		case OIS::KC_F12:
-			GFX_DEVICE.Screenshot("screenshot_",vec4(0,0,Application::getInstance().getWindowDimensions().x,Application::getInstance().getWindowDimensions().y));
+			GFX_DEVICE.Screenshot("screenshot_",vec4<F32>(0,0,Application::getInstance().getWindowDimensions().x,Application::getInstance().getWindowDimensions().y));
 			break;
 		default:
 			break;

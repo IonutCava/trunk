@@ -19,6 +19,7 @@ uniform mat4 lightProjectionMatrix;
 #define MODE_BUMP		1
 #define MODE_PARALLAX	2
 #define MODE_RELIEF		3
+#define MODE_SHADOW		4
 
 void computeLightVectors(){
 	texCoord[0] = gl_MultiTexCoord0;

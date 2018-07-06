@@ -26,19 +26,11 @@ void SceneGraphNode::updateTransforms(){
 	//update every ten milliseconds - DISABLED. 
 	//Better version: move to new thread with DoubleBuffering?
 	//if(GETMSTIME() - _updateTimer  < 10) return; 
-
-	for_each(NodeChildren::value_type& it, _children){
-		it.second->updateTransforms();
-	}
 	
-	// don't update root;
-	if(!getParent()) return; 
-
-
 	//Get our transform and our parent's as well
 	Transform* transform = getTransform();
-	Transform* parentTransform = getParent()->getTransform();
-	if(transform){
+	if(transform && getParent()){
+		Transform* parentTransform = getParent()->getTransform();
 		if(parentTransform){
 			//If we have a transform and a parent's transform 
 			//Update the relationship between the two
@@ -50,6 +42,9 @@ void SceneGraphNode::updateTransforms(){
 		}
 	}
 
+	for_each(NodeChildren::value_type& it, _children){
+		it.second->updateTransforms();
+	}
 	//update every ten milliseconds - DISABLED. 
 	//_updateTimer = GETMSTIME();
 }

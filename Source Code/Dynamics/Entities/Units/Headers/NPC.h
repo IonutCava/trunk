@@ -19,12 +19,18 @@
 #define _NON_PLAYER_CHARACTER_H_
 
 #include "Character.h"
+class AIEntity;
 /// NPC base class. Every character in the game is an NPC by default except the Player
 class NPC : public Character {
 
 public: 
+	/// NPC's don't need AI by default
 	NPC(SceneGraphNode* const node);
+	NPC(AIEntity* const aiEntity);
 	~NPC();
+
+protected:
+	AIEntity* _aiUnit;
 };
 
 #endif

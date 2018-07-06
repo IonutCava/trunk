@@ -28,7 +28,7 @@ public:
 	ActionList() : _entity(NULL){};
 	virtual void processData() = 0;
 	virtual void processInput() = 0;
-	virtual void update(SceneGraphNode* node) = 0;
+	virtual void update(SceneGraphNode* node = NULL, NPC* unitRef = NULL) = 0;
 	virtual void addEntityRef(AIEntity* entity) = 0;
 	virtual void processMessage(AIEntity* sender, AI_MSG msg, const boost::any& msg_content) = 0;
 protected:

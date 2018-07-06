@@ -81,11 +81,11 @@ void PhysXSceneInterface::updateShape(PxShape* shape, Transform* t){
 	if(shape->getGeometryType() == PxGeometryType::ePLANE){
 		t->scale(shape->getActor().getObjectSize());
 		//ToDo: Remove hack! Find out why plane isn't rotating - Ionut
-		t->rotate(vec3(1,0,0),90);
+		t->rotate(vec3<F32>(1,0,0),90);
 	}else{
 		t->rotateQuaternion(Quaternion(pT.q.x,pT.q.y,pT.q.z,pT.q.w));
 	}
-	t->setPosition(vec3(pT.p.x,pT.p.y,pT.p.z));
+	t->setPosition(vec3<F32>(pT.p.x,pT.p.y,pT.p.z));
 	
 	
 }

@@ -56,13 +56,13 @@ bool PhysXScene::load(const string& name){
 	setInitialData();
 	bool state = false;
 	//Adaugam o lumina
-	vec2 sunAngle(0.0f, RADIANS(45.0f));
-	_sunVector = vec4(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y),0.0f );
+	vec2<F32> sunAngle(0.0f, RADIANS(45.0f));
+	_sunVector = vec4<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y),0.0f );
 	Light* light = addDefaultLight();
 	light->setLightProperties(LIGHT_POSITION,_sunVector);
-	light->setLightProperties(LIGHT_AMBIENT,vec4(1.0f,1.0f,1.0f,1.0f));
-	light->setLightProperties(LIGHT_DIFFUSE,vec4(1.0f,1.0f,1.0f,1.0f));
-	light->setLightProperties(LIGHT_SPECULAR,vec4(1.0f,1.0f,1.0f,1.0f));
+	light->setLightProperties(LIGHT_AMBIENT,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
+	light->setLightProperties(LIGHT_DIFFUSE,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
+	light->setLightProperties(LIGHT_SPECULAR,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
 	//Incarcam resursele scenei
 	state = loadResources(true);	
 	state = loadEvents(true);
@@ -74,14 +74,14 @@ bool PhysXScene::loadResources(bool continueOnErrors){
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
 
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec3(60,20,0),          //Position
+		                       vec3<F32>(60,20,0),          //Position
 							   BITMAP_8_BY_13,    //Font
-							   vec3(0.0f,0.2f, 1.0f),  //Color
+							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
 	GUI::getInstance().addText("RenderBinCount",
-								vec3(60,30,0),
+								vec3<F32>(60,30,0),
 								BITMAP_8_BY_13,
-								vec3(0.6f,0.2f,0.2f),
+								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
 
 	
@@ -92,7 +92,7 @@ bool PhysXScene::loadResources(bool continueOnErrors){
 	_physx->init();
 	CameraManager::getInstance().getActiveCamera()->RotateX(RADIANS(-75));
 	CameraManager::getInstance().getActiveCamera()->RotateY(RADIANS(25));
-	CameraManager::getInstance().getActiveCamera()->setEye(vec3(0,30,-40));
+	CameraManager::getInstance().getActiveCamera()->setEye(vec3<F32>(0,30,-40));
 	return true;
 }
 
@@ -109,7 +109,7 @@ void PhysXScene::createStack(){
 	F32 stackSize = 10;
 	F32 CubeSize = 1.0f;
 	F32 Spacing = 0.0001f;
-	vec3 Pos(0, 10 + CubeSize,0);
+	vec3<F32> Pos(0, 10 + CubeSize,0);
 	F32 Offset = -stackSize * (CubeSize * 2.0f + Spacing) * 0.5f + 0;
 	while(stackSize){
 		for(U16 i=0;i<stackSize;i++){
@@ -138,15 +138,15 @@ void PhysXScene::onKeyDown(const OIS::KeyEvent& key){
 			Application::getInstance().moveLR = -0.25f;
 			break;
 		case OIS::KC_1:
-			PHYSICS_DEVICE.createPlane(_physx,vec3(0,0,0),random(0.5f,2.0f));
+			PHYSICS_DEVICE.createPlane(_physx,vec3<F32>(0,0,0),random(0.5f,2.0f));
 			break;
 		case OIS::KC_2:
-			PHYSICS_DEVICE.createBox(_physx,vec3(0,random(10,30),0),random(0.5f,2.0f));
+			PHYSICS_DEVICE.createBox(_physx,vec3<F32>(0,random(10,30),0),random(0.5f,2.0f));
 			break;
 		case OIS::KC_3:
 			//create tower of 10 boxes
 			for(U8 i = 0 ; i < 10; i++){
-				PHYSICS_DEVICE.createBox(_physx,vec3(0,5.0f+5*i,0),0.5f);
+				PHYSICS_DEVICE.createBox(_physx,vec3<F32>(0,5.0f+5*i,0),0.5f);
 			}
 			break;
 		case OIS::KC_4:{
@@ -155,7 +155,7 @@ void PhysXScene::onKeyDown(const OIS::KeyEvent& key){
 			/*F32 stackSize = 50;
 			F32 CubeSize = 1.0f;
 			F32 Spacing = 0.0001f;
-			vec3 Pos(0, 10 + CubeSize,0);
+			vec3<F32> Pos(0, 10 + CubeSize,0);
 		    F32 Offset = -stackSize * (CubeSize * 2.0f + Spacing) * 0.5f + 0;
 			while(stackSize){
 				for(U16 i=0;i<stackSize;i++){

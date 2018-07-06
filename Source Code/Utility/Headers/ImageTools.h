@@ -31,7 +31,7 @@ namespace ImageTools {
 		U32 ilTexture;
 		std::string name;
 		bool _flip;
-		ivec3	getColor(U16 x, U16 y) const;
+		vec3<I32>	getColor(U16 x, U16 y) const;
 
 		ImageData() {w = h = d = 0; data = NULL;_flip = false;}
 		~ImageData() {Destroy();}

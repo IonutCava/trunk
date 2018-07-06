@@ -78,19 +78,19 @@ void Vegetation::draw(bool drawInReflection){
 bool Vegetation::generateGrass(U32 index){
 	PRINT_FN("Generating Grass...[ %d ]", (U32)_grassDensity);
 	assert(_map.data);
-	vec2 pos0(cosf(RADIANS(0.0f)), sinf(RADIANS(0.0f)));
-	vec2 pos120(cosf(RADIANS(120.0f)), sinf(RADIANS(120.0f)));
-	vec2 pos240(cosf(RADIANS(240.0f)), sinf(RADIANS(240.0f)));
+	vec2<F32> pos0(cosf(RADIANS(0.0f)), sinf(RADIANS(0.0f)));
+	vec2<F32> pos120(cosf(RADIANS(120.0f)), sinf(RADIANS(120.0f)));
+	vec2<F32> pos240(cosf(RADIANS(240.0f)), sinf(RADIANS(240.0f)));
 
-	vec3 tVertices[] = {
-		vec3(-pos0.x,   -pos0.y,   0.0f),	vec3(-pos0.x,   -pos0.y,   1.0f),	vec3(pos0.x,   pos0.y,   1.0f),	vec3(pos0.x,   pos0.y,   0.0f),
-		vec3(-pos120.x, -pos120.y, 0.0f),	vec3(-pos120.x, -pos120.y, 1.0f),	vec3(pos120.x, pos120.y, 1.0f),	vec3(pos120.x, pos120.y, 0.0f),
-		vec3(-pos240.x, -pos240.y, 0.0f),	vec3(-pos240.x, -pos240.y, 1.0f),	vec3(pos240.x, pos240.y, 1.0f),	vec3(pos240.x, pos240.y, 0.0f)
+	vec3<F32> tVertices[] = {
+		vec3<F32>(-pos0.x,   -pos0.y,   0.0f),	vec3<F32>(-pos0.x,   -pos0.y,   1.0f),	vec3<F32>(pos0.x,   pos0.y,   1.0f),	vec3<F32>(pos0.x,   pos0.y,   0.0f),
+		vec3<F32>(-pos120.x, -pos120.y, 0.0f),	vec3<F32>(-pos120.x, -pos120.y, 1.0f),	vec3<F32>(pos120.x, pos120.y, 1.0f),	vec3<F32>(pos120.x, pos120.y, 0.0f),
+		vec3<F32>(-pos240.x, -pos240.y, 0.0f),	vec3<F32>(-pos240.x, -pos240.y, 1.0f),	vec3<F32>(pos240.x, pos240.y, 1.0f),	vec3<F32>(pos240.x, pos240.y, 0.0f)
 	};
-	vec2 tTexcoords[] = {
-		vec2(0.0f, 0.49f), vec2(0.0f, 0.01f), vec2(1.0f, 0.01f), vec2(1.0f, 0.49f),
-		vec2(0.0f, 0.49f), vec2(0.0f, 0.01f), vec2(1.0f, 0.01f), vec2(1.0f, 0.49f),
-		vec2(0.0f, 0.49f), vec2(0.0f, 0.01f), vec2(1.0f, 0.01f), vec2(1.0f, 0.49f)
+	vec2<F32> tTexcoords[] = {
+		vec2<F32>(0.0f, 0.49f), vec2<F32>(0.0f, 0.01f), vec2<F32>(1.0f, 0.01f), vec2<F32>(1.0f, 0.49f),
+		vec2<F32>(0.0f, 0.49f), vec2<F32>(0.0f, 0.01f), vec2<F32>(1.0f, 0.01f), vec2<F32>(1.0f, 0.49f),
+		vec2<F32>(0.0f, 0.49f), vec2<F32>(0.0f, 0.01f), vec2<F32>(1.0f, 0.01f), vec2<F32>(1.0f, 0.49f)
 	};
 
 	_grassVBO.push_back(GFX_DEVICE.newVBO());
@@ -103,44 +103,44 @@ bool Vegetation::generateGrass(U32 index){
 		F32 y = random(1.0f);
 		U16 map_x = (U16)(x * _map.w);
 		U16 map_y = (U16)(y * _map.h);
-		vec2 uv_offset = vec2(0.0f, random(3)==0 ? 0.0f : 0.5f);
+		vec2<F32> uv_offset = vec2<F32>(0.0f, random(3)==0 ? 0.0f : 0.5f);
 		F32 size = random(0.5f);
-		ivec3 map_color = _map.getColor(map_x, map_y);
-		if(map_color.green < 150) {
+		vec3<I32> map_color = _map.getColor(map_x, map_y);
+		if(map_color.g < 150) {
 			k--;
 			continue;
 		}
 
-		_grassSize = (F32)(map_color.green+1) / (256 / _grassScale);
-		vec3 P = _terrain->getNode<Terrain>()->getPosition(x, y);
+		_grassSize = (F32)(map_color.g+1) / (256 / _grassScale);
+		vec3<F32> P = _terrain->getNode<Terrain>()->getPosition(x, y);
 		P.y -= 0.075f;
 		if(P.y < SceneManager::getInstance().getActiveScene()->getWaterLevel()){
 			k--;
 			continue;
 		}
 
-		vec3 N = _terrain->getNode<Terrain>()->getNormal(x, y);
-		vec3 T = _terrain->getNode<Terrain>()->getTangent(x, y);
-		vec3 B = Cross(N, T);
+		vec3<F32> N = _terrain->getNode<Terrain>()->getNormal(x, y);
+		vec3<F32> T = _terrain->getNode<Terrain>()->getTangent(x, y);
+		vec3<F32> B = Cross(N, T);
 	
 		if(N.y < 0.8f) {
 			k--;
 			continue;
 		} else {
-			mat3 matRot;
+			mat3<F32> matRot;
 			matRot.rotate_z(random(360.0f));
 
 			U32 idx = (U32)_grassVBO[index]->getPosition().size();
 
-			QuadtreeNode* node = _terrain->getNode<Terrain>()->getQuadtree().FindLeaf(vec2(P.x, P.z));
+			QuadtreeNode* node = _terrain->getNode<Terrain>()->getQuadtree().FindLeaf(vec2<F32>(P.x, P.z));
 			assert(node);
 			TerrainChunk* chunk = node->getChunk();
 			assert(chunk);
 
-			for(U8 i=0; i<3*4; i++)
-			{
-				vec3 data = matRot*(tVertices[i]*_grassSize);
-				vec3 vertex = P;
+			for(U8 i=0; i<3*4; i++)	{
+
+				vec3<F32> data = matRot*(tVertices[i]*_grassSize);
+				vec3<F32> vertex = P;
 				vertex.x += Dot(data, T);
 				vertex.y += Dot(data, B);
 				vertex.z += Dot(data, N);
@@ -167,7 +167,7 @@ bool Vegetation::generateGrass(U32 index){
 
 bool Vegetation::generateTrees(){
 	//--> Unique position generation
-	vector<vec3> positions;
+	vector<vec3<F32> > positions;
 	//<-- End unique position generation
 	vector<FileData>& DA = SceneManager::getInstance().getActiveScene()->getVegetationDataArray();
 	if(DA.empty()){
@@ -179,20 +179,20 @@ bool Vegetation::generateTrees(){
 	for(U16 k=0; k<(U16)_treeDensity; k++) {
 		I16 map_x = (I16)random((F32)_map.w);
 		I16 map_y = (I16)random((F32)_map.h);
-		ivec3 map_color = _map.getColor(map_x, map_y);
-		if(map_color.green < 55) {
+		vec3<I32> map_color = _map.getColor(map_x, map_y);
+		if(map_color.g < 55) {
 			k--;
 			continue;
 		}
 		
-		vec3 P = _terrain->getNode<Terrain>()->getPosition(((F32)map_x)/_map.w, ((F32)map_y)/_map.h);
+		vec3<F32> P = _terrain->getNode<Terrain>()->getPosition(((F32)map_x)/_map.w, ((F32)map_y)/_map.h);
 		P.y -= 0.2f;
 		if(P.y < SceneManager::getInstance().getActiveScene()->getWaterLevel()){
 			k--;
 			continue;
 		}
 		bool continueLoop = true;
-		for_each(vec3& it, positions){
+		for_each(vec3<F32>& it, positions){
 			if(it.compare(P) || (it.distance(P) < 0.02f)){
 				k--;
 				continueLoop = false;
@@ -202,13 +202,13 @@ bool Vegetation::generateTrees(){
 		}
 		if(!continueLoop) continue;
 		positions.push_back(P);
-		QuadtreeNode* node = _terrain->getNode<Terrain>()->getQuadtree().FindLeaf(vec2(P.x, P.z));
+		QuadtreeNode* node = _terrain->getNode<Terrain>()->getQuadtree().FindLeaf(vec2<F32>(P.x, P.z));
 		assert(node);
 		TerrainChunk* chunk = node->getChunk();
 		assert(chunk);
 		
 		U16 index = rand() % DA.size();
-		chunk->addTree(vec4(P, random(360.0f)),_treeScale,DA[index],_terrain);
+		chunk->addTree(vec4<F32>(P, random(360.0f)),_treeScale,DA[index],_terrain);
 	}
 	
 	positions.clear();

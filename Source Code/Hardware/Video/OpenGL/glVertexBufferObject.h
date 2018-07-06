@@ -23,8 +23,7 @@
 class glVertexBufferObject : public VertexBufferObject {
 
 public:
-	bool        Create();
-	bool		Create(U32 usage);
+	bool        Create(bool staticDraw = true);
 
 	void		Destroy();
 
@@ -32,7 +31,8 @@ public:
 	void		Enable();
 	void		Disable();
 
-	
+	bool Refresh();
+
 	glVertexBufferObject();
 	~glVertexBufferObject() {Destroy();}
 
@@ -41,6 +41,9 @@ private:
 	void Enable_VBO();	
 	void Disable_VA();	
 	void Disable_VBO();
+
+	/// Internally create the VBO
+	bool Create(U32 usage);
 
 private:
 	bool _created; ///< VBO's can be auto-created as GL_STATIC_DRAW if Enable() is called before Create();

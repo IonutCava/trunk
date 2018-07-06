@@ -14,7 +14,7 @@ LightManager::~LightManager(){
 	clear();
 }
 
-void LightManager::setAmbientLight(const vec4& light){
+void LightManager::setAmbientLight(const vec4<F32>& light){
 	GFX_DEVICE.setAmbientLight(light);
 }
 
@@ -102,9 +102,9 @@ void LightManager::generateShadowMaps(){
 
 void LightManager::previewDepthMaps(){
 	GFX_DEVICE.toggle2D(true);
-	GFX_DEVICE.renderInViewport(vec4(0,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,0));
-	GFX_DEVICE.renderInViewport(vec4(260,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,1));
-	GFX_DEVICE.renderInViewport(vec4(520,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,2));
+	GFX_DEVICE.renderInViewport(vec4<F32>(0,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,0));
+	GFX_DEVICE.renderInViewport(vec4<F32>(260,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,1));
+	GFX_DEVICE.renderInViewport(vec4<F32>(520,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,2));
 	GFX_DEVICE.toggle2D(false);
 }
 
@@ -113,7 +113,7 @@ void LightManager::drawDepthMap(U8 light, U8 index){
 	std::stringstream ss;
 	ss << "Light " << (U32)light << " viewport " << (U32)index;
 	renderQuad.setName(ss.str());
-	renderQuad.setDimensions(vec4(0,0,_lights[0]->getDepthMaps()[index]->getWidth(),
+	renderQuad.setDimensions(vec4<F32>(0,0,_lights[0]->getDepthMaps()[index]->getWidth(),
 		                              _lights[0]->getDepthMaps()[index]->getHeight()));
 	_lights[0]->getDepthMaps()[index]->Bind(0);
 	GFX_DEVICE.renderModel(&renderQuad);

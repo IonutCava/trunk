@@ -44,10 +44,10 @@ private:
 private:
 	std::vector<F32> _eventTimers;
 	F32 angleLR,angleUD,moveFB,moveLR;
-	vec4 _sunVector;
+	vec4<F32> _sunVector;
 	PhysXImplementation* _physx;
 	bool _mousePressed;
-	vec2 _prevMouse;
+	vec2<F32> _prevMouse;
 };
 
 #endif

@@ -27,7 +27,7 @@ GuiElement::~GuiElement(){
 
 void GUI::onResize(F32 newWidth, F32 newHeight){
 
-	vec2 difDimensions = Application::getInstance().getWindowDimensions() - vec2(newWidth,newHeight);
+	vec2<F32> difDimensions = Application::getInstance().getWindowDimensions() - vec2<F32>(newWidth,newHeight);
 	for_each(guiMap::value_type& guiStackIterator,_guiStack){
 		guiStackIterator.second->onResize(difDimensions);
 	}
@@ -155,12 +155,12 @@ void GUI::clickReleaseCheck()
 	
 }
 
-void GUI::addButton(const string& id, string text,const vec2& position,const vec2& dimensions,const vec3& color,ButtonCallback callback){
+void GUI::addButton(const string& id, string text,const vec2<F32>& position,const vec2<F32>& dimensions,const vec3<F32>& color,ButtonCallback callback){
 
 	_guiStack[id] = New Button(id,text,position,dimensions,color,callback);
 }
 
-void GUI::addText(const string& id,const vec3 &position, Font font,const vec3 &color, char* format, ...){
+void GUI::addText(const string& id,const vec3<F32> &position, Font font,const vec3<F32> &color, char* format, ...){
 
 	va_list args;
 	string fmt_text;
@@ -179,7 +179,7 @@ void GUI::addText(const string& id,const vec3 &position, Font font,const vec3 &c
 	fmt_text.empty();
 }
 
-void GUI::addFlash(const string& id, string movie, const vec2& position, const vec2& extent){
+void GUI::addFlash(const string& id, string movie, const vec2<F32>& position, const vec2<F32>& extent){
 
 	GuiFlash *flash = New GuiFlash();
 	_resultGuiElement = _guiStack.insert(make_pair(id,dynamic_cast<GuiElement*>(flash)));

@@ -21,24 +21,22 @@
 #include "resource.h"
 #include "Core/Headers/BaseClasses.h"
 
-class vec3;
-
 class Camera : public Resource {
 
 public:	enum TYPE {FREE_FLY, FIRST_PERSON, THIRD_PERSON, ORBIT,SCRIPTED};
 protected:
-	vec3	vEye;
-	vec3	vCenter;
-	vec3	vViewDir;
-	vec3	vLeftDir;	
-	vec3	vUp;
+	vec3<F32>	vEye;
+	vec3<F32>	vCenter;
+	vec3<F32>	vViewDir;
+	vec3<F32>	vLeftDir;	
+	vec3<F32>	vUp;
 
 	F32		fAngleX;
 	F32		fAngleY;	
 	TYPE	eType;
 
 
-	vec3	tSaveVectors[5];
+	vec3<F32>	tSaveVectors[5];
 	F32	tSaveFloats[2];
 	bool	bSaved;
 	F32   terHeightMin;
@@ -47,12 +45,12 @@ protected:
 public:
 	Camera();
 	virtual ~Camera() {}
-	inline TYPE  getType()				const	{return eType;}
-	inline const vec3& getEye()			const	{return vEye;}
-	inline const vec3& getCenter()		const	{return vCenter;}
-	inline const vec3& getViewDir()		const	{return vViewDir;}
-	inline F32 getAngleX()				const	{return fAngleX;}
-	inline F32 getAngleY()				const	{return fAngleY;}
+	inline TYPE  getType()				 const	{return eType;}
+	inline const vec3<F32>& getEye()	 const	{return vEye;}
+	inline const vec3<F32>& getCenter()	 const	{return vCenter;}
+	inline const vec3<F32>& getViewDir() const	{return vViewDir;}
+	inline F32 getAngleX()				 const	{return fAngleX;}
+	inline F32 getAngleY()				 const	{return fAngleY;}
 
 	virtual bool load(const std::string& name) {return true;}
 	virtual bool unload() {return true;}
@@ -71,8 +69,8 @@ public:
 	void Refresh();
 
 	void setType(TYPE t)				{ eType = t;		Refresh(); }
-	void setEye(vec3 vPos)				{ vEye = vPos;		Refresh(); }
-	void setCenter(vec3 vPos)			{ vCenter = vPos;	Refresh(); }
+	void setEye(vec3<F32> vPos)			{ vEye = vPos;		Refresh(); }
+	void setCenter(vec3<F32> vPos)		{ vCenter = vPos;	Refresh(); }
 	void setAngleX(F32 Angle)			{ fAngleX = Angle;	Refresh(); }
 	void setAngleY(F32 Angle)			{ fAngleY = Angle;	Refresh(); }
 	void setAngle(F32 AngleX, F32 AngleY)	{
@@ -81,7 +79,7 @@ public:
 		Refresh();
 	}
 
-	void Translate(vec3 vector)	{ vEye += vector;	Refresh(); }
+	void Translate(vec3<F32> vector)	{ vEye += vector;	Refresh(); }
 	void RotateX(F32 AngleX)		{
 		fAngleX += AngleX;
 				if(fAngleX<0.0f)	fAngleX += M_PI*2;
@@ -110,7 +108,7 @@ public:
 
 	void RenderLookAt(bool invertx = false, bool inverty=false, F32 planey=0.0f);
 
-	void RenderLookAtToCubeMap(const vec3& eye, U8 nFace);
+	void RenderLookAtToCubeMap(const vec3<F32>& eye, U8 nFace);
 
 	inline F32 xfov_to_yfov(F32 xfov, F32 aspect) {
 		xfov = RADIANS(xfov);

@@ -54,7 +54,8 @@ private:
 		_averageFps(0),
 		_maxFps(1.175494351e-38F),
 		_minFps(3.402823466e+38F),
-		_targetFps(60) {}
+		_targetFps(60),
+		_speedfactor(1){}
   F32           _targetFps;
   F32           _fps;
   F32           _speedfactor;

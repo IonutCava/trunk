@@ -59,7 +59,7 @@ private:
 	F32 angleLR,angleUD,moveFB,moveLR;
 	I8 _scor;
 	std::vector<std::string> _quotes;
-	vec4 _sunVector;
+	vec4<F32> _sunVector;
 	Sphere3D* _minge;
 	SceneGraphNode* _mingeSGN;
 

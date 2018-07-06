@@ -84,8 +84,8 @@ void CubeScene::processEvents(F32 time){
 				F32 g = 1.0f-(row/3.0f);
 				F32 b = col/(lights.size()/3.0f);
 	
-				lights[row*10+col]->setLightProperties(LIGHT_POSITION,vec4(x,y,z,1));
-				lights[row*10+col]->setLightProperties(LIGHT_DIFFUSE,vec4(r,g,b,1));
+				lights[row*10+col]->setLightProperties(LIGHT_POSITION,vec4<F32>(x,y,z,1));
+				lights[row*10+col]->setLightProperties(LIGHT_DIFFUSE,vec4<F32>(r,g,b,1));
 			}
 
 		_eventTimers[0] += updateLights;
@@ -112,10 +112,10 @@ void CubeScene::preRender() {
 	SceneGraphNode* hellotext = _sceneGraph->findNode("HelloText");
 	SceneGraphNode* bila = _sceneGraph->findNode("Bila");
 	SceneGraphNode* dwarf = _sceneGraph->findNode("dwarf");
-	cutia1->getTransform()->rotateEuler(vec3(0.3f*i, 0.6f*i,0));
-	hellotext->getTransform()->rotate(vec3(0.6f,0.2f,0.4f),i);
+	cutia1->getTransform()->rotateEuler(vec3<F32>(0.3f*i, 0.6f*i,0));
+	hellotext->getTransform()->rotate(vec3<F32>(0.6f,0.2f,0.4f),i);
 	bila->getTransform()->translateY(j*0.25f);
-	dwarf->getTransform()->rotate(vec3(0,1,0),i);
+	dwarf->getTransform()->rotate(vec3<F32>(0,1,0),i);
 
 	U8 index = 0;
 	F32* pixels = (F32*)_lightTexture->Begin();
@@ -202,53 +202,53 @@ bool CubeScene::loadResources(bool continueOnErrors){
 	_renderQuad = CreateResource<Quad3D>(mrt);
 	assert(_renderQuad);
 	//In 2D mode, Quad's are flipped!!!!
-	_renderQuad->setDimensions(vec4(0,0,width,height));
+	_renderQuad->setDimensions(vec4<F32>(0,0,width,height));
 
 	ResourceDescriptor mrt2("MRT RenderQuad2");
 	mrt2.setFlag(true); //no default material
 	_renderQuad2 = CreateResource<Quad3D>(mrt2);
 	assert(_renderQuad2);
-	_renderQuad2->setDimensions(vec4(width/2,0,width,height/2));
+	_renderQuad2->setDimensions(vec4<F32>(width/2,0,width,height/2));
 
 	ResourceDescriptor mrt3("MRT RenderQuad3");
 	mrt3.setFlag(true); //no default material
 	_renderQuad3 = CreateResource<Quad3D>(mrt3);
 	assert(_renderQuad3);
-	_renderQuad3->setCorner(Quad3D::TOP_LEFT, vec3(0, height, 0));
-	_renderQuad3->setCorner(Quad3D::TOP_RIGHT, vec3(width/2, height, 0));
-	_renderQuad3->setCorner(Quad3D::BOTTOM_LEFT, vec3(0,height/2,0));
-	_renderQuad3->setCorner(Quad3D::BOTTOM_RIGHT, vec3(width/2, height/2, 0));
+	_renderQuad3->setCorner(Quad3D::TOP_LEFT, vec3<F32>(0, height, 0));
+	_renderQuad3->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(width/2, height, 0));
+	_renderQuad3->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(0,height/2,0));
+	_renderQuad3->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(width/2, height/2, 0));
 
 	ResourceDescriptor mrt4("MRT RenderQuad4");
 	mrt4.setFlag(true); //no default material
 	_renderQuad4 = CreateResource<Quad3D>(mrt4);
 	assert(_renderQuad4);
-	_renderQuad4->setCorner(Quad3D::TOP_LEFT, vec3(width/2, height, 0));
-	_renderQuad4->setCorner(Quad3D::TOP_RIGHT, vec3(width, height, 0));
-	_renderQuad4->setCorner(Quad3D::BOTTOM_LEFT, vec3(width/2,height/2,0));
-	_renderQuad4->setCorner(Quad3D::BOTTOM_RIGHT, vec3(width, height/2, 0));
+	_renderQuad4->setCorner(Quad3D::TOP_LEFT, vec3<F32>(width/2, height, 0));
+	_renderQuad4->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(width, height, 0));
+	_renderQuad4->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(width/2,height/2,0));
+	_renderQuad4->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(width, height/2, 0));
 
 	_eventTimers.push_back(0.0f);
 	GUI& gui = GUI::getInstance();
 	gui.addText("FinalImage",           //Unique ID
-		        vec3(60,60,0),          //Position
+		        vec3<F32>(60,60,0),          //Position
 				BITMAP_9_BY_15,		    //Font
-				vec3(0.0f,0.2f, 1.0f),  //Color
+				vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 				"FINAL IMAGE",0);    //Text and arguments
 	gui.addText("LightTexture",           //Unique ID
-		        vec3(60+width/2,60,0),          //Position
+		        vec3<F32>(60+width/2,60,0),          //Position
 				BITMAP_9_BY_15,		    //Font
-				vec3(0.0f,0.2f, 1.0f),  //Color
+				vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 				"LIGHT TEXTURE",0);    //Text and arguments
 	gui.addText("PositionData",           //Unique ID
-				vec3(60,60+height/2,0),  //Position
+				vec3<F32>(60,60+height/2,0),  //Position
 				BITMAP_9_BY_15,		    //Font
-				vec3(0.0f,0.2f, 1.0f),  //Color
+				vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 				"POSITION DATA",0);    //Text and arguments
 	gui.addText("NormalData",           //Unique ID
-	        vec3(60+width/2,60+height/2,0),          //Position
+	        vec3<F32>(60+width/2,60+height/2,0),          //Position
 			BITMAP_9_BY_15,		    //Font
-			vec3(0.0f,0.2f, 1.0f),  //Color
+			vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 			"NORMAL DATA",0);    //Text and arguments
 	return true;
 }
@@ -282,15 +282,15 @@ void CubeScene::onKeyDown(const OIS::KeyEvent& key)
 			F32 height = Application::getInstance().getWindowDimensions().height;
 			_showTextures = !_showTextures;
 			if(!_showTextures){
-				_renderQuad->setCorner(Quad3D::TOP_LEFT, vec3(0, height, 0));
-				_renderQuad->setCorner(Quad3D::TOP_RIGHT, vec3(width, height, 0));
-				_renderQuad->setCorner(Quad3D::BOTTOM_LEFT, vec3(0,0,0));
-				_renderQuad->setCorner(Quad3D::BOTTOM_RIGHT, vec3(width, 0, 0));
+				_renderQuad->setCorner(Quad3D::TOP_LEFT, vec3<F32>(0, height, 0));
+				_renderQuad->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(width, height, 0));
+				_renderQuad->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(0,0,0));
+				_renderQuad->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(width, 0, 0));
 			}else{
-				_renderQuad->setCorner(Quad3D::TOP_LEFT, vec3(0, height/2, 0));
-				_renderQuad->setCorner(Quad3D::TOP_RIGHT, vec3(width/2, height/2, 0));
-				_renderQuad->setCorner(Quad3D::BOTTOM_LEFT, vec3(0,0,0));
-				_renderQuad->setCorner(Quad3D::BOTTOM_RIGHT, vec3(width/2, 0, 0));
+				_renderQuad->setCorner(Quad3D::TOP_LEFT, vec3<F32>(0, height/2, 0));
+				_renderQuad->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(width/2, height/2, 0));
+				_renderQuad->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(0,0,0));
+				_renderQuad->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(width/2, 0, 0));
 			}
 			}break;
 		default:

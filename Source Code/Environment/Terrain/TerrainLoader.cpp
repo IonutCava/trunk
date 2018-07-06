@@ -64,8 +64,8 @@ bool Terrain::load(const string& name){
 bool Terrain::loadVisualResources(TerrainDescriptor* const terrain){
 	ResourceDescriptor terrainMaterial("terrainMaterial");
 	setMaterial(CreateResource<Material>(terrainMaterial));
-	getMaterial()->setDiffuse(vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	getMaterial()->setSpecular(vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	getMaterial()->setDiffuse(vec4<F32>(1.0f, 1.0f, 1.0f, 1.0f));
+	getMaterial()->setSpecular(vec4<F32>(1.0f, 1.0f, 1.0f, 1.0f));
 	getMaterial()->setShininess(50.0f);
 	getMaterial()->setShaderProgram("terrain");
 
@@ -127,16 +127,16 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 
 	_terrainHeightScaleFactor = terrain->getScale().y;
 
-	_boundingBox.set(vec3(-300,  0.0f, -300),
-					 vec3( 300, 40.0f,  300));
+	_boundingBox.set(vec3<F32>(-300,  0.0f, -300),
+					 vec3<F32>( 300, 40.0f,  300));
 	_boundingBox.Translate(terrain->getPosition());
-	_boundingBox.Multiply(vec3(terrain->getScale().x,1,terrain->getScale().x));
-	_boundingBox.MultiplyMax(vec3(1,_terrainHeightScaleFactor,1));
+	_boundingBox.Multiply(vec3<F32>(terrain->getScale().x,1,terrain->getScale().x));
+	_boundingBox.MultiplyMax(vec3<F32>(1,_terrainHeightScaleFactor,1));
 
 	_groundVBO = GFX_DEVICE.newVBO();
-	std::vector<vec3>&		vertexData	= _groundVBO->getPosition();
-	std::vector<vec3>&		normalData	= _groundVBO->getNormal();
-	std::vector<vec3>&		tangentData	= _groundVBO->getTangent();
+	std::vector<vec3<F32> >&		vertexData	= _groundVBO->getPosition();
+	std::vector<vec3<F32> >&		normalData	= _groundVBO->getNormal();
+	std::vector<vec3<F32> >&		tangentData	= _groundVBO->getTangent();
 
 	U8 d; U32 t, id;
 	bool alpha = false;
@@ -187,8 +187,8 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 
 			U32 idx = COORD(i,j,_terrainWidth);
 			
-			vec3 vU = vertexData[COORD(i+offset, j+0, _terrainWidth)] - vertexData[COORD(i-offset, j+0, _terrainWidth)];
-			vec3 vV = vertexData[COORD(i+0, j+offset, _terrainWidth)] - vertexData[COORD(i+0, j-offset, _terrainWidth)];
+			vec3<F32> vU = vertexData[COORD(i+offset, j+0, _terrainWidth)] - vertexData[COORD(i-offset, j+0, _terrainWidth)];
+			vec3<F32> vV = vertexData[COORD(i+0, j+offset, _terrainWidth)] - vertexData[COORD(i+0, j-offset, _terrainWidth)];
 
 			normalData[idx].cross(vV, vU);
 			normalData[idx].normalize();
@@ -232,7 +232,7 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 
 	U32 chunkSize = 16;
 	_terrainQuadtree->setParentShaderProgram(getMaterial()->getShaderProgram());
-	_terrainQuadtree->Build(_boundingBox, ivec2(_terrainWidth, _terrainHeight), chunkSize);
+	_terrainQuadtree->Build(_boundingBox, vec2<U32>(_terrainWidth, _terrainHeight), chunkSize);
 
 	
 	ResourceDescriptor infinitePlane("infinitePlane");
@@ -241,12 +241,12 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 
 	F32 depth = SceneManager::getInstance().getActiveScene()->getWaterDepth();
 	F32 height = SceneManager::getInstance().getActiveScene()->getWaterLevel()- depth;
-	const vec3& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
+	const vec3<F32>& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
 	_farPlane = 2.0f * ParamHandler::getInstance().getParam<F32>("zFar");
-	_plane->setCorner(Quad3D::TOP_LEFT, vec3(eyePos.x - _farPlane, height, eyePos.z - _farPlane));
-	_plane->setCorner(Quad3D::TOP_RIGHT, vec3(eyePos.x + _farPlane, height, eyePos.z - _farPlane));
-	_plane->setCorner(Quad3D::BOTTOM_LEFT, vec3(eyePos.x - _farPlane, height, eyePos.z + _farPlane));
-	_plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3(eyePos.x + _farPlane, height, eyePos.z + _farPlane));
+	_plane->setCorner(Quad3D::TOP_LEFT, vec3<F32>(eyePos.x - _farPlane, height, eyePos.z - _farPlane));
+	_plane->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(eyePos.x + _farPlane, height, eyePos.z - _farPlane));
+	_plane->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(eyePos.x - _farPlane, height, eyePos.z + _farPlane));
+	_plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(eyePos.x + _farPlane, height, eyePos.z + _farPlane));
 
 	return true;
 }

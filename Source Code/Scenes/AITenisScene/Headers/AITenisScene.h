@@ -22,6 +22,7 @@
 
 class AIEntity;
 class Sphere3D;
+class NPC;
 
 class AITenisScene : public Scene {
 
@@ -31,6 +32,10 @@ public:
 		_aiPlayer2(NULL),
 		_aiPlayer3(NULL),
 		_aiPlayer4(NULL),
+		_player1(NULL),
+		_player2(NULL),
+		_player3(NULL),
+		_player4(NULL),
 		_podea(NULL),
 		_fileu(NULL),
 		_mingeSGN(NULL),
@@ -69,12 +74,12 @@ private:
 	std::vector<F32> _eventTimers;
 	F32 angleLR,angleUD,moveFB,moveLR;
 	I8 _scor;
-	vec4 _sunVector;
+	vec4<F32> _sunVector;
 	Sphere3D* _minge;
 	SceneGraphNode* _mingeSGN;
 	SceneGraphNode* _fileu;
 	SceneGraphNode* _podea;
-	vec2 _prevMouse;
+	vec2<F32> _prevMouse;
 	bool _mousePressed;
 
 private: //Joc
@@ -88,6 +93,7 @@ private: //Joc
 	I8 _scorEchipa1;
 	I8 _scorEchipa2;
 	AIEntity *_aiPlayer1, *_aiPlayer2, *_aiPlayer3, *_aiPlayer4;
+	NPC *_player1, *_player2, *_player3, *_player4;
 };
 
 #endif

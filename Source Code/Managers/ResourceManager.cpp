@@ -4,6 +4,7 @@
 #include "Hardware/Audio/AudioDescriptor.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
+#include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Environment/Water/Headers/Water.h"
 #include "Dynamics/Entities/Triggers/Headers/Trigger.h"
@@ -13,6 +14,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
+
 using namespace std;
 
 U32 maxAlloc = 0;
@@ -199,7 +201,7 @@ SubMesh* ResourceManager::loadResource<SubMesh>(const ResourceDescriptor& descri
 			ptr->useDefaultMaterial(false);
 			ptr->setMaterial(NULL);
 		}
-
+		ptr->setId(descriptor.getId());
 		add(descriptor.getName(),ptr);
 	}
 	return ptr;

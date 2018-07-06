@@ -14,8 +14,8 @@ using namespace std;
 bool MainScene::updateLights(){
 	Light* light = LightManager::getInstance().getLight(0);
 	_sun_cosy = cosf(_sunAngle.y);
-	_sunColor = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f),
-								0.25f + _sun_cosy * 0.75f);
+	_sunColor = _white.lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f), vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
+									  0.25f + _sun_cosy * 0.75f);
 
 	light->setLightProperties(LIGHT_POSITION,_sunVector);
 	light->setLightProperties(LIGHT_DIFFUSE,_sunColor);
@@ -50,7 +50,7 @@ void MainScene::renderEnvironment(bool waterReflection){
 		ter->getMaterial()->setAmbient(_sunColor/1.5f);
 	}
 
-	Sky::getInstance().setParams(cam->getEye(),vec3(_sunVector),waterReflection,true,true);
+	Sky::getInstance().setParams(cam->getEye(),vec3<F32>(_sunVector),waterReflection,true,true);
 	Sky::getInstance().draw();
 
 	if(waterReflection){
@@ -85,10 +85,10 @@ void MainScene::processEvents(F32 time){
 	F32 TimeDisplay = 0.01f;
 	if (time - _eventTimers[0] >= SunDisplay){
 		_sunAngle.y += 0.0005f;
-		_sunVector = vec4(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
-							-cosf(_sunAngle.y),
-							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
-							0.0f );
+		_sunVector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+								-cosf(_sunAngle.y),
+								-sinf(_sunAngle.x) * sinf(_sunAngle.y),
+								0.0f );
 		_eventTimers[0] += SunDisplay;
 	}
 
@@ -162,7 +162,7 @@ bool MainScene::unload(){
 bool _switchAB = false;
 void MainScene::test(boost::any a, CallbackParam b){
 
-	vec3 pos;
+	vec3<F32> pos;
 	SceneGraphNode* boxNode = _sceneGraph->findNode("box");
 	Object3D* box = NULL;
 	if(boxNode) box = boxNode->getNode<Object3D>();
@@ -199,38 +199,38 @@ bool MainScene::loadResources(bool continueOnErrors){
 
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f;
 	gui.addText("fpsDisplay",           //Unique ID
-		                       vec3(60,60,0),          //Position
+		                       vec3<F32>(60,60,0),          //Position
 							   BITMAP_8_BY_13,    //Font
-							   vec3(0.0f,0.2f, 1.0f),  //Color
+							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 							   "HELLO! FPS: %s",0);    //Text and arguments
 
 	gui.addText("timeDisplay",
-								vec3(60,70,0),
+								vec3<F32>(60,70,0),
 								BITMAP_8_BY_13,
-								vec3(0.6f,0.2f,0.2f),
+								vec3<F32>(0.6f,0.2f,0.2f),
 								"Elapsed time: %5.0f",GETTIME());
 	gui.addText("camPosition",
-								vec3(60,80,0),
+								vec3<F32>(60,80,0),
 								BITMAP_8_BY_13,
-								vec3(0.2f,0.8f,0.2f),
+								vec3<F32>(0.2f,0.8f,0.2f),
 								"Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ]",0.0f,0.0f,0.0f);
 	gui.addText("underwater",
-								vec3(60,90,0),
+								vec3<F32>(60,90,0),
 								BITMAP_8_BY_13,
-								vec3(0.2f,0.8f,0.2f),
+								vec3<F32>(0.2f,0.8f,0.2f),
 								"Underwater [ %s ] | WaterLevel [%f] ]","false", 0);
 	gui.addText("RenderBinCount",
-								vec3(60,100,0),
+								vec3<F32>(60,100,0),
 								BITMAP_8_BY_13,
-								vec3(0.6f,0.2f,0.2f),
+								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
 	_eventTimers.push_back(0.0f); //Sun
 	_eventTimers.push_back(0.0f); //Fps
 	_eventTimers.push_back(0.0f); //Time
 
 
-	_sunAngle = vec2(0.0f, RADIANS(45.0f));
-	_sunVector = vec4(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+	_sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+	_sunVector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 							-cosf(_sunAngle.y),
 							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
 							0.0f );

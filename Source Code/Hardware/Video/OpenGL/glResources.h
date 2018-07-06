@@ -22,7 +22,7 @@
 #include <gl/freeglut.h> 
 
 #ifdef _DEBUG
-#define GLCheck(Func) ((Func), GLCheckError(__FILE__, __LINE__))
+#define GLCheck(Func) ((Func), GLCheckError(__FILE__, __LINE__,#Func))
 #else
  #define GLCheck(Func) (Func)
 #endif

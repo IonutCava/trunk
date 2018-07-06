@@ -26,12 +26,16 @@ uniform float opacity;
 uniform bool hasOpacity;
 //true -> use specular map 
 uniform bool hasSpecular;
+
 //Opacity and specular maps
 uniform sampler2D opacityMap;
 uniform sampler2D specularMap;
+uniform int mode;
+#define MODE_SHADOW 4
 
 vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN){
 	if(opacity < 0.2) discard;
+	//if(mode == MODE_SHADOW) return vec4(0,0,0,0);
 	float att = 1.0;
 	//If the light isn't directional, compute attenuation
 	if(vLightTBN.w != LIGHT_DIRECTIONAL) {

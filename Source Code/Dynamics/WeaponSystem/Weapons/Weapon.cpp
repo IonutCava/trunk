@@ -13,4 +13,5 @@ Weapon::~Weapon()
 bool Weapon::addProperties(U8 propertyMask){
 	assert((propertyMask & ~(WEAPON_PROPERTY_PLACEHOLDER-1)) == 0);
 	_properyMask |= static_cast<WEAPON_PROPERTY>(propertyMask);
+	return true;
 }

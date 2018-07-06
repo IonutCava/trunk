@@ -107,7 +107,7 @@ protected:
 	bool _bound;
 	bool _hasTransparency;
 	static bool _generateMipmaps;	
-	mat4  _transformMatrix;
+	mat4<F32>  _transformMatrix;
 	U32  _wrapU, _wrapV, _wrapW;
 	U8 _minFilter,_magFilter;
 	static unordered_map<U8/*slot*/, U32/*textureHandle*/> textureBoundMap;

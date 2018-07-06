@@ -34,8 +34,8 @@ public:
 		_variables.insert(make_pair(name,value));
 	}
 
-	void setPosition(const vec3& position) {_position = position;}
-	void setScale(const vec2& scale)	   {_scale = scale;}
+	void setPosition(const vec3<F32>& position) {_position = position;}
+	void setScale(const vec2<F32>& scale)	    {_scale = scale;}
 	void setGrassDensity(U32 grassDensity) {_grassDensity = grassDensity;}
 	void setTreeDensity(U16 treeDensity)   {_treeDensity = treeDensity;}
 	void setGrassScale(F32 grassScale)     {_grassScale = grassScale;}
@@ -46,9 +46,11 @@ public:
 	U16   getTreeDensity()  {return _treeDensity;}
 	F32   getGrassScale()   {return _grassScale;}
 	F32   getTreeScale()    {return _treeScale;}
-	vec3& getPosition()	    {return _position;}
-	vec2& getScale()        {return _scale;}
 	bool  getActive()       {return _active;}
+
+	vec3<F32>& getPosition()	 {return _position;}
+	vec2<F32>& getScale()        {return _scale;}
+	
 
 	std::string& getVariable(const std::string& name) {
 		std::string& var = _variables.find(name)->second;
@@ -65,8 +67,8 @@ private:
 	U16    _treeDensity;
 	F32	   _grassScale;
 	F32    _treeScale;
-	vec3   _position;
-	vec2   _scale;
 	bool   _active;
+	vec3<F32>   _position;
+	vec2<F32>   _scale;
 };
 #endif

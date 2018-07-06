@@ -67,7 +67,8 @@ public:
 
 	inline VertexBufferObject* const getGeometryVBO() {return _geometry;}
 	inline std::vector<U16>&   getIndices()     {return _indices; }
-	void onDraw();
+	virtual void onDraw();
+
 protected:
 	virtual void computeNormals() {};
 	virtual void computeTangents();

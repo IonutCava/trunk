@@ -26,7 +26,7 @@
 /// Descriptor used to build particles
 class ParticleDescriptor {
 public:
-   vec4 _color[ NUM_PARTICLE_STATES ];
+   vec4<F32> _color[ NUM_PARTICLE_STATES ];
    F32  _size[ NUM_PARTICLE_STATES ];
    F32  _time[ NUM_PARTICLE_STATES ];
    
@@ -48,7 +48,7 @@ public:
    F32 _spinSpeedMin;
    F32 _spinSpeedMax;
    ///Default quad texture coordinates
-   vec2  _texCoords[4];
+   vec2<F32>  _texCoords[4];
 
 public:
 	ParticleDescriptor();
@@ -58,18 +58,18 @@ public:
 
 /// The structure of each particle
 struct Particle {
-   vec3 _position;  
-   vec3 _velocity;
-   vec3 _acceleration;
-   vec3 _orientation;
+   vec3<F32> _position;  
+   vec3<F32> _velocity;
+   vec3<F32> _acceleration;
+   vec3<F32> _orientation;
    U32  _totalLifetime;
    U32  _currentLifetime;
-   vec3 _color;
+   vec3<F32> _color;
    F32  _size;
    F32  _spinSpeed;
    Particle *  _next;
 
-   bool build(ParticleDescriptor* const descriptor, const vec3& inheritedVelocity);
+   bool build(ParticleDescriptor* const descriptor, const vec3<F32>& inheritedVelocity);
 };
 
 

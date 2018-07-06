@@ -49,8 +49,8 @@ public:
 	  _inputManager(InputManagerInterface::getInstance()),
 	  _sceneGraph(New SceneGraph())
 	  {
-		  _white = vec4(1.0f,1.0f,1.0f,1.0f);
-		  _black = vec4(0.0f,0.0f,0.0f,0.0f);
+		  _white = vec4<F32>(1.0f,1.0f,1.0f,1.0f);
+		  _black = vec4<F32>(0.0f,0.0f,0.0f,0.0f);
 	  };
 
 	virtual ~Scene() {
@@ -120,7 +120,7 @@ protected:
 	bool _drawBB,_drawObjects;
 	boost::mutex _mutex;
 
-	vec4 _white, _black;
+	vec4<F32> _white, _black;
 	InputManagerInterface& _inputManager;
 
 	///Deferred rendering

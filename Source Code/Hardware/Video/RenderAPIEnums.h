@@ -64,18 +64,23 @@ enum TEXTURE_FORMAT_INTERNAL {
 };
 
 enum RENDER_API {
+	OpenGL,
+	Direct3D,///< not supported yet
+	Software,///< not supported yet
+	None,    ///< not supported yet
+	GFX_RENDER_API_PLACEHOLDER
+};
 
-	OpenGL10,
-	OpenGL12,
-	OpenGL20,
-	OpenGL21,
-	OpenGL22,
-	OpenGL30,
-	OpenGL32,
-	Direct3D8,
-	Direct3D9,
-	Direct3D10,
-	GFX_PLACEHOLDER
+enum RENDER_API_VERSION{
+	OpenGL1x,  ///< not supported yet
+	OpenGL2x,
+	OpenGL3x,
+	OpenGL4x,  ///< not supported yet
+	Direct3D8, ///< not supported yet
+	Direct3D9, ///< not supported yet
+	Direct3D10,///< not supported yet
+	Direct3D11,///< not supported yet
+	GFX_RENDER_API_VER_PLACEHOLDER
 };
 
 enum PRIMITIVE_TYPE {

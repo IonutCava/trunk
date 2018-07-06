@@ -2,7 +2,6 @@
 uniform sampler2D texBump;
 uniform float parallax_factor;
 uniform float relief_factor;
-uniform int mode;
 uniform float zNear;
 uniform float zFar;
 

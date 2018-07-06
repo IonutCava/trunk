@@ -46,15 +46,15 @@ public:
 	void postDraw();
 	void prepareMaterial(SceneGraphNode* const sgn);
 	void releaseMaterial();
+
 	void drawBoundingBox(SceneGraphNode* const sgn);
 
 	inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }
 
-
-	vec3  getPosition(F32 x_clampf, F32 z_clampf) const;
-	vec3  getNormal(F32 x_clampf, F32 z_clampf) const;
-	vec3  getTangent(F32 x_clampf, F32 z_clampf) const;
-	vec2  getDimensions(){return vec2((F32)_terrainWidth, (F32)_terrainHeight);}
+	vec3<F32>  getPosition(F32 x_clampf, F32 z_clampf) const;
+	vec3<F32>  getNormal(F32 x_clampf, F32 z_clampf) const;
+	vec3<F32>  getTangent(F32 x_clampf, F32 z_clampf) const;
+	vec2<F32>  getDimensions(){return vec2<F32>((F32)_terrainWidth, (F32)_terrainHeight);}
 
 	void  setLoaded(bool state) {_loaded = state;}
 	void  postLoad(SceneGraphNode* const sgn);	

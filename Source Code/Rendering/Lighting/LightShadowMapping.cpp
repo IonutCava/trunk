@@ -117,10 +117,10 @@ void Light::setCameraToLightViewOmni(){
 
 void Light::setCameraToLightViewSpot(){
 	///Trim the w parameter from the position
-	vec3 lightPosition = vec3(_lightProperties_v[LIGHT_POSITION]);
-	vec3 spotTarget = vec3(_lightProperties_v[LIGHT_SPOT_DIRECTION]);
+	vec3<F32> lightPosition = vec3<F32>(_lightProperties_v[LIGHT_POSITION]);
+	vec3<F32> spotTarget = vec3<F32>(_lightProperties_v[LIGHT_SPOT_DIRECTION]);
 	///A spot light has a target and a position
-	_lightPos = vec3(lightPosition);
+	_lightPos = vec3<F32>(lightPosition);
 	///Tell our rendering API to move the camera
 	GFX_DEVICE.lookAt(_lightPos,    //the light's  position
 					  spotTarget);  //the light's target
@@ -131,15 +131,15 @@ I8 cur_num_splits = 3;
 /// updateSplitDist computes the near and far distances for every frustum slice
 /// in camera eye space - that is, at what distance does a slice start and end
 /// Compute the 8 corner points of the current view frustum
-void updateFrustumPoints(frustum &f, vec3 &center, vec3 &view_dir){
-	vec3 up(0.0f, 1.0f, 0.0f);
-	vec3 view_dir_temp = view_dir;
+void updateFrustumPoints(frustum &f, vec3<F32> &center, vec3<F32> &view_dir){
+	vec3<F32> up(0.0f, 1.0f, 0.0f);
+	vec3<F32> view_dir_temp = view_dir;
 	view_dir_temp.cross(up);
-	vec3 right = view_dir_temp;
+	vec3<F32> right = view_dir_temp;
 	right.normalize();
-	vec3 right_temp = right;
-	vec3 fc = center + view_dir*f.fard;
-	vec3 nc = center + view_dir*f.neard;
+	vec3<F32> right_temp = right;
+	vec3<F32> fc = center + view_dir*f.fard;
+	vec3<F32> nc = center + view_dir*f.neard;
 
 	
 	right_temp.cross(view_dir);
@@ -180,14 +180,14 @@ void updateSplitDist(frustum f[3], F32 nd, F32 fd){
 
 void Light::setCameraToLightViewDirectional(){
 	///Trim the w parameter from the position
-	vec3 lightPosition = vec3(_lightProperties_v[LIGHT_POSITION]);
+	vec3<F32> lightPosition = vec3<F32>(_lightProperties_v[LIGHT_POSITION]);
 	///Set the virtual light position 500 units above our eye position
 	///This is one example why we have different setup functions for each light type
 	///This isn't valid for omni or spot
-	_lightPos = vec3(_eyePos.x - 500*lightPosition.x,	
-					 _eyePos.y - 500*lightPosition.y,
-					 _eyePos.z - 500*lightPosition.z);
-	
+	_lightPos = vec3<F32>(_eyePos.x - 500*lightPosition.x,	
+					      _eyePos.y - 500*lightPosition.y,
+					      _eyePos.z - 500*lightPosition.z);
+	  
 	///Tell our rendering API to move the camera
 	GFX_DEVICE.lookAt(_lightPos,    //the light's virtual position
 									_eyePos);     //the light's target
@@ -220,7 +220,7 @@ void Light::setCameraToSceneView(){
 	GFXDevice& gfx = GFX_DEVICE;
 	Frustum& frust = Frustum::getInstance();
 	///Set the ortho projection so that it encompasses the entire scene
-	gfx.setOrthoProjection(vec4(-1.0, 1.0, -1.0, 1.0), _zPlanes);
+	gfx.setOrthoProjection(vec4<F32>(-1.0, 1.0, -1.0, 1.0), _zPlanes);
 	///Extract the view frustum from this projection mode
 	frust.Extract(_eyePos - _lightPos);
 	///get the MVP from the new Frustum as this is the light's full MVP
@@ -230,11 +230,11 @@ void Light::setCameraToSceneView(){
 
 
 void Light::renderFromLightViewOmni(U8 depthPass){
-	GFX_DEVICE.lookAt(_lightPos,vec3(0,0,0));
+	GFX_DEVICE.lookAt(_lightPos,vec3<F32>(0,0,0));
 }
 
 void Light::renderFromLightViewSpot(U8 depthPass){
-	GFX_DEVICE.lookAt(_lightPos,vec3(0,0,0)/*target*/);
+	GFX_DEVICE.lookAt(_lightPos,vec3<F32>(0,0,0)/*target*/);
 }
 
 void Light::renderFromLightViewDirectional(U8 depthPass){
@@ -242,9 +242,9 @@ void Light::renderFromLightViewDirectional(U8 depthPass){
 	///Some ortho values to create closer and closer light views
 	D32 lightOrtho[3] = {5.0, 10.0, 50.0};
 	///ToDo: Near and far planes. Should optimize later! -Ionut
-	_zPlanes = vec2(par.getParam<F32>("zNear"),par.getParam<F32>("zFar"));
+	_zPlanes = vec2<F32>(par.getParam<F32>("zNear"),par.getParam<F32>("zFar"));
 	///Set the current projection depending on the current depth pass
-	GFX_DEVICE.setOrthoProjection(vec4(-lightOrtho[depthPass], 
+	GFX_DEVICE.setOrthoProjection(vec4<F32>(-lightOrtho[depthPass], 
 													  lightOrtho[depthPass],
 													 -lightOrtho[depthPass], 
 													  lightOrtho[depthPass]),

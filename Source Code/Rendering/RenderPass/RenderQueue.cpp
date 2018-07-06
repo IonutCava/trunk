@@ -68,7 +68,7 @@ struct RenderQueueKeyCompare{
 
 struct RenderQueueDistanceBacktoFront{
 	bool operator()( const RenderQueueItem &a, const RenderQueueItem &b) const {
-		const vec3& eye = Frustum::getInstance().getEyePos();
+		const vec3<F32>& eye = Frustum::getInstance().getEyePos();
 		F32 dist_a = a._node->getBoundingBox().nearestDistanceFromPoint(eye);
 		F32 dist_b = b._node->getBoundingBox().nearestDistanceFromPoint(eye);
 		///ToDo: REMOVE WATER DISTANCE CHECK HACK!!!!!!
@@ -80,7 +80,7 @@ struct RenderQueueDistanceBacktoFront{
 
 struct RenderQueueDistanceFrontToBack{
 	bool operator()( const RenderQueueItem &a, const RenderQueueItem &b) const {
-		const vec3& eye = Frustum::getInstance().getEyePos();
+		const vec3<F32>& eye = Frustum::getInstance().getEyePos();
 		F32 dist_a = a._node->getBoundingBox().nearestDistanceFromPoint(eye);
 		F32 dist_b = b._node->getBoundingBox().nearestDistanceFromPoint(eye);
 		return dist_a > dist_b;
@@ -88,7 +88,7 @@ struct RenderQueueDistanceFrontToBack{
 };
 
 void RenderQueue::sort(){
-	const vec3& eye = Frustum::getInstance().getEyePos();
+	const vec3<F32>& eye = Frustum::getInstance().getEyePos();
 	std::sort( _translucentStack.begin(), _translucentStack.end(), RenderQueueDistanceBacktoFront());
 	std::sort( _opaqueStack.begin(), _opaqueStack.end(), RenderQueueKeyCompare()  );
 	//Render opaque items first

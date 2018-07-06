@@ -8,7 +8,7 @@
 
 using namespace std;
 
-WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,ivec2(2048,2048)), 
+WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<I32>(2048,2048)), 
 						   _plane(NULL),_texture(NULL), _shader(NULL),_planeTransform(NULL),
 						   _node(NULL),_planeSGN(NULL),_waterStateBlock(NULL),_waterLevel(0){}
 
@@ -43,11 +43,11 @@ bool WaterPlane::load(const std::string& name){
 	_shader->unbind();
 
 	_farPlane = 2.0f * ParamHandler::getInstance().getParam<F32>("zFar");
-	const vec3& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
-	_plane->setCorner(Quad3D::TOP_LEFT, vec3(eyePos.x - _farPlane, 0, eyePos.z - _farPlane));
-	_plane->setCorner(Quad3D::TOP_RIGHT, vec3(eyePos.x + _farPlane, 0, eyePos.z - _farPlane));
-	_plane->setCorner(Quad3D::BOTTOM_LEFT, vec3(eyePos.x - _farPlane, 0, eyePos.z + _farPlane));
-	_plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3(eyePos.x + _farPlane, 0, eyePos.z + _farPlane));
+	const vec3<F32>& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
+	_plane->setCorner(Quad3D::TOP_LEFT, vec3<F32>(eyePos.x - _farPlane, 0, eyePos.z - _farPlane));
+	_plane->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(eyePos.x + _farPlane, 0, eyePos.z - _farPlane));
+	_plane->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(eyePos.x - _farPlane, 0, eyePos.z + _farPlane));
+	_plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(eyePos.x + _farPlane, 0, eyePos.z + _farPlane));
 	_plane->setDrawState(false);
 	
 	return true;
@@ -67,7 +67,7 @@ bool WaterPlane::computeBoundingBox(SceneGraphNode* const sgn){
 	if(bb.isComputed()) return true;
 	_waterLevel = SceneManager::getInstance().getActiveScene()->getWaterLevel();
 	F32 waterDepth = SceneManager::getInstance().getActiveScene()->getWaterDepth();
-	bb.set(vec3(-_farPlane,_waterLevel - waterDepth, -_farPlane),vec3(_farPlane, _waterLevel, _farPlane));
+	bb.set(vec3<F32>(-_farPlane,_waterLevel - waterDepth, -_farPlane),vec3<F32>(_farPlane, _waterLevel, _farPlane));
 	_planeSGN->getBoundingBox().Add(bb);
 	PRINT_FN("Water plane height placement: %f", bb.getMax().y);
 	PRINT_FN("Water plane depth level: %f", bb.getMin().y);
@@ -97,9 +97,9 @@ void WaterPlane::setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 tr
 }
 
 void WaterPlane::onDraw(){
-	const vec3& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
+	const vec3<F32>& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
 	BoundingBox& bb = _node->getBoundingBox();
-	_planeTransform->setPosition(vec3(eyePos.x,bb.getMax().y,eyePos.z));
+	_planeTransform->setPosition(vec3<F32>(eyePos.x,bb.getMax().y,eyePos.z));
 }
 
 void WaterPlane::prepareMaterial(SceneGraphNode* const sgn){

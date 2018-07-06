@@ -22,7 +22,7 @@ SceneGraphNode::SceneGraphNode(SceneNode* node) : _node(node),
 {
 }
 
-//If we are destroyng the current graph node
+///If we are destroyng the current graph node
 SceneGraphNode::~SceneGraphNode(){
 	//delete children nodes recursively
 	for_each(NodeChildren::value_type& it, _children){
@@ -34,6 +34,7 @@ SceneGraphNode::~SceneGraphNode(){
 	_children.clear();
 
 }
+
 std::vector<BoundingBox >&  SceneGraphNode::getBBoxes(std::vector<BoundingBox >& boxes ){
 	//Unload every sub node recursively
 	for_each(NodeChildren::value_type& it, _children){
@@ -43,7 +44,7 @@ std::vector<BoundingBox >&  SceneGraphNode::getBBoxes(std::vector<BoundingBox >&
 	return boxes;
 }
 
-//When unloading the current graph node
+///When unloading the current graph node
 bool SceneGraphNode::unload(){
 	//Unload every sub node recursively
 	for_each(NodeChildren::value_type& it, _children){
@@ -98,7 +99,7 @@ void SceneGraphNode::print(){
 	}
 }
 
-//Change current SceneGraphNode's parent
+///Change current SceneGraphNode's parent
 void SceneGraphNode::setParent(SceneGraphNode* parent) {
 	if(_parent){
 		//Remove us from the old parent's children map
@@ -122,7 +123,7 @@ void SceneGraphNode::setParent(SceneGraphNode* parent) {
 	//That's it. Parent Transforms will be updated in the next render pass;
 }
 
-//Add a new SceneGraphNode to the current node's child list based on a SceneNode
+///Add a new SceneGraphNode to the current node's child list based on a SceneNode
 SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string& name){
 	//Create a new SceneGraphNode with the SceneNode's info
 	SceneGraphNode* sceneGraphNode = New SceneGraphNode(node);
@@ -149,9 +150,7 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string&
 	//Update the relationship between the 2
 	if(nodeTransform && getTransform()){
 		//The child node's parentMatrix is our current transform matrix
-		if(parentNode){
-			nodeTransform->setParentMatrix(getTransform()->getMatrix());
-		}
+		nodeTransform->setParentMatrix(getTransform()->getMatrix());
 	}
 
 	//Set the current node as the new node's parrent	

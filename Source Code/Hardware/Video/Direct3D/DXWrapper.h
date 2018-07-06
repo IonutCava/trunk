@@ -38,11 +38,11 @@ private:
 	void closeRenderingApi();
 	void initDevice();
 	void resizeWindow(U16 w, U16 h) {}
-	void lookAt(const vec3& eye,const vec3& center,const vec3& up = vec3(0,1,0), bool invertx = false, bool inverty = false);
+	void lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up = vec3<F32>(0,1,0), bool invertx = false, bool inverty = false);
 	void idle();
 
-	void getModelViewMatrix(mat4& mvMat);
-	void getProjectionMatrix(mat4& projMat);
+	void getModelViewMatrix(mat4<F32>& mvMat);
+	void getProjectionMatrix(mat4<F32>& projMat);
 
 	FrameBufferObject*  newFBO(){return New d3dFrameBufferObject();}
 	VertexBufferObject* newVBO(){return New d3dVertexBufferObject();}
@@ -61,8 +61,8 @@ private:
 	void releaseProjection();
 	void lockModelView();
 	void releaseModelView();
-	void setOrthoProjection(const vec4& rect, const vec2& planes);
-	void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2& planes);
+	void setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes);
+	void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes);
 
 	void toggle2D(bool _2D);
 
@@ -71,12 +71,12 @@ private:
 	void drawButton(GuiElement* const);
 	void drawFlash(GuiElement* const);
 
-	void drawBox3D(vec3 min, vec3 max);
+	void drawBox3D(vec3<F32> min, vec3<F32> max);
 
 	void renderModel(Object3D* const model);
 	void renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count, const void* first_element);
 
-	void renderInViewport(const vec4& rect, boost::function0<void> callback);
+	void renderInViewport(const vec4<F32>& rect, boost::function0<void> callback);
 
 	void setMaterial(Material* mat);
 
@@ -84,16 +84,16 @@ private:
 	typedef void (*callback)();
 	void dxCommand(callback f){(*f)();};
 
-	void setAmbientLight(const vec4& light){}
+	void setAmbientLight(const vec4<F32>& light){}
 	void setLight(Light* const light){};
 
-	void Screenshot(char *filename, const vec4& rect);
+	void Screenshot(char *filename, const vec4<F32>& rect);
 	RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor);
 	void updateStateInternal(RenderStateBlock* block, bool force = false);
 	void toggleDepthMapRendering(bool state){};
 
-	void setObjectState(Transform* const transform, bool force = false);
-	void releaseObjectState(Transform* const transform);
+	void setObjectState(Transform* const transform, bool force = false, ShaderProgram* const shader = NULL);
+	void releaseObjectState(Transform* const transform, ShaderProgram* const shader = NULL);
 
 
 	F32 applyCropMatrix(frustum &f,SceneGraph* sceneGraph);

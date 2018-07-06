@@ -10,6 +10,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
+#include "Dynamics/Entities/Units/Headers/NPC.h"
 
 using namespace std;
 
@@ -25,11 +26,11 @@ void AITenisScene::render(){
 //end copy-paste
 
 void AITenisScene::preRender(){
-	vec2 _sunAngle = vec2(0.0f, RADIANS(45.0f));
-	_sunVector = vec4(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
-						-cosf(_sunAngle.y),
-						-sinf(_sunAngle.x) * sinf(_sunAngle.y),
-						0.0f );
+	vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+	_sunVector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+							-cosf(_sunAngle.y),
+							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
+							0.0f );
 
 	LightManager::getInstance().getLight(0)->setLightProperties(LIGHT_POSITION,_sunVector);
 
@@ -53,7 +54,7 @@ void AITenisScene::reseteazaJoc(){
 	_pierdutEchipa1 = false;
 	_aplicaImpulsLateral = false;
 	_impulsLateral = 0;
-	_mingeSGN->getTransform()->setPosition(vec3(3.0f, 0.2f ,7.0f));
+	_mingeSGN->getTransform()->setPosition(vec3<F32>(3.0f, 0.2f ,7.0f));
 }
 
 void AITenisScene::startJoc(){
@@ -88,8 +89,8 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 
 	//Memoram (prin copie. thread-safe) pozitia actuala a mingii
 	Transform* mingeT = _mingeSGN->getTransform();
-	vec3 pozitieMinge = mingeT->getPosition();
-	vec3 pozitieFileu  = _fileu->getTransform()->getPosition();
+	vec3<F32> pozitieMinge = mingeT->getPosition();
+	vec3<F32> pozitieFileu  = _fileu->getTransform()->getPosition();
 	//Mingea se deplaseaza de la Echipa 1 la Echipa 2?
 	_directieEchipa1SpreEchipa2 ? pozitieMinge.z -= 0.123f : pozitieMinge.z += 0.123f;
 	//Mingea se deplaseaza de jos in sus sau e in cadere?
@@ -102,7 +103,7 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 	//ToDo: mutex aici!;
 	mingeT->translate(pozitieMinge - mingeT->getPosition());
 	//Rotim mingea doar de efect ...
-	mingeT->rotateEuler(vec3(pozitieMinge.z,1,1));
+	mingeT->rotateEuler(vec3<F32>(pozitieMinge.z,1,1));
 
 	//----------------------COLIZIUNI------------------------------//
 	//z = adancime. Descendent spre orizont;
@@ -238,7 +239,7 @@ bool AITenisScene::load(const string& name){
 	//Pozitionam camera
 	CameraManager::getInstance().getActiveCamera()->RotateX(RADIANS(45));
 	CameraManager::getInstance().getActiveCamera()->RotateY(RADIANS(25));
-	CameraManager::getInstance().getActiveCamera()->setEye(vec3(14,5.5f,11.5f));
+	CameraManager::getInstance().getActiveCamera()->setEye(vec3<F32>(14,5.5f,11.5f));
 	
 	//----------------------------INTELIGENTA ARTIFICIALA------------------------------//
     _aiPlayer1 = New AIEntity("Player1");
@@ -282,6 +283,19 @@ bool AITenisScene::load(const string& name){
 	AIManager::getInstance().addEntity(_aiPlayer2);
 	AIManager::getInstance().addEntity(_aiPlayer3);
 	AIManager::getInstance().addEntity(_aiPlayer4);
+
+	//----------------------- Unitati ce vor fi controlate de AI ---------------------//
+	_player1 = New NPC(_aiPlayer1);
+	_player2 = New NPC(_aiPlayer2);
+	_player3 = New NPC(_aiPlayer3);
+	_player4 = New NPC(_aiPlayer4);
+
+	_player1->setMovementSpeed(2); /// 2 m/s
+	_player2->setMovementSpeed(2); /// 2 m/s
+	_player3->setMovementSpeed(2); /// 2 m/s
+	_player4->setMovementSpeed(2); /// 2 m/s
+
+	//------------------------ Restul elementelor jocului -----------------------------///
 	_fileu = _sceneGraph->findNode("Fileu");
 	_podea = _sceneGraph->findNode("Podea");
 	_podea->getNode()->getMaterial()->setCastsShadows(false);
@@ -299,32 +313,32 @@ bool AITenisScene::loadResources(bool continueOnErrors){
 	_mingeSGN = addGeometry(_minge);
 	_minge->setResolution(16);
 	_minge->setRadius(0.3f);
-	_mingeSGN->getTransform()->translate(vec3(3.0f, 0.2f ,7.0f));
-	_minge->getMaterial()->setDiffuse(vec4(0.4f,0.5f,0.5f,1.0f));
-	_minge->getMaterial()->setAmbient(vec4(0.5f,0.5f,0.5f,1.0f));
+	_mingeSGN->getTransform()->translate(vec3<F32>(3.0f, 0.2f ,7.0f));
+	_minge->getMaterial()->setDiffuse(vec4<F32>(0.4f,0.5f,0.5f,1.0f));
+	_minge->getMaterial()->setAmbient(vec4<F32>(0.5f,0.5f,0.5f,1.0f));
 	_minge->getMaterial()->setShininess(0.2f);
-	_minge->getMaterial()->setSpecular(vec4(0.7f,0.7f,0.7f,1.0f));
+	_minge->getMaterial()->setSpecular(vec4<F32>(0.7f,0.7f,0.7f,1.0f));
 
-	GUI::getInstance().addButton("Serveste", "Serveste", vec2(Application::getInstance().getWindowDimensions().width-220 ,
+	GUI::getInstance().addButton("Serveste", "Serveste", vec2<F32>(Application::getInstance().getWindowDimensions().width-220 ,
 															 Application::getInstance().getWindowDimensions().height/1.1f),
-													    	 vec2(100,25),vec3(0.65f,0.65f,0.65f),
+													    	 vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 															 boost::bind(&AITenisScene::startJoc,this));
 
-	GUI::getInstance().addText("ScorEchipa1",vec3(Application::getInstance().getWindowDimensions().width - 250, Application::getInstance().getWindowDimensions().height/1.3f, 0),
-								BITMAP_8_BY_13,vec3(0,0.8f,0.8f), "Scor Echipa 1: %d",0);
-	GUI::getInstance().addText("ScorEchipa2",vec3(Application::getInstance().getWindowDimensions().width - 250, Application::getInstance().getWindowDimensions().height/1.5f, 0),
-								BITMAP_8_BY_13,vec3(0.2f,0.8f,0), "Scor Echipa 2: %d",0);
-	GUI::getInstance().addText("Mesaj",vec3(Application::getInstance().getWindowDimensions().width - 250, Application::getInstance().getWindowDimensions().height/1.7f, 0),
-							   BITMAP_8_BY_13,vec3(0,1,0), "");
+	GUI::getInstance().addText("ScorEchipa1",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250, Application::getInstance().getWindowDimensions().height/1.3f, 0),
+								BITMAP_8_BY_13,vec3<F32>(0,0.8f,0.8f), "Scor Echipa 1: %d",0);
+	GUI::getInstance().addText("ScorEchipa2",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250, Application::getInstance().getWindowDimensions().height/1.5f, 0),
+								BITMAP_8_BY_13,vec3<F32>(0.2f,0.8f,0), "Scor Echipa 2: %d",0);
+	GUI::getInstance().addText("Mesaj",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250, Application::getInstance().getWindowDimensions().height/1.7f, 0),
+							   BITMAP_8_BY_13,vec3<F32>(0,1,0), "");
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec3(60,60,0),          //Position
+		                       vec3<F32>(60,60,0),          //Position
 							   BITMAP_8_BY_13,    //Font
-							   vec3(0.0f,0.2f, 1.0f),  //Color
+							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
 	GUI::getInstance().addText("RenderBinCount",
-								vec3(60,70,0),
+								vec3<F32>(60,70,0),
 								BITMAP_8_BY_13,
-								vec3(0.6f,0.2f,0.2f),
+								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
 
 	

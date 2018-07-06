@@ -72,7 +72,7 @@ void Sky::draw() const{
 	GFX_DEVICE.clearBuffers(GFXDevice::DEPTH_BUFFER);
 }
 
-void Sky::setParams(const vec3& eyePos, const vec3& sunVect, bool invert, bool drawSun, bool drawSky) {
+void Sky::setParams(const vec3<F32>& eyePos, const vec3<F32>& sunVect, bool invert, bool drawSun, bool drawSky) {
 	if(!_init) load();
 	_eyePos = eyePos;	_sunVect = sunVect;
 	_invert = invert;	_drawSun = drawSun;
@@ -120,7 +120,7 @@ void Sky::drawSun() const {
 	if(l){
 		_sun->getMaterial()->setDiffuse(l->getDiffuseColor());
 	}
-	_sunNode->getTransform()->setPosition(vec3(_eyePos.x-_sunVect.x,_eyePos.y-_sunVect.y,_eyePos.z-_sunVect.z));
+	_sunNode->getTransform()->setPosition(vec3<F32>(_eyePos.x-_sunVect.x,_eyePos.y-_sunVect.y,_eyePos.z-_sunVect.z));
 
 	GFX_DEVICE.setMaterial(_sun->getMaterial());
 	GFX_DEVICE.setObjectState(_sunNode->getTransform());

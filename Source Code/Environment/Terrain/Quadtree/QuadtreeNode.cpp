@@ -7,17 +7,17 @@
 #include "Managers/Headers/CameraManager.h"
 
 void QuadtreeNode::Build(U8 depth,		
-						 ivec2 pos,					
-						 ivec2 HMsize,				
+						 vec2<U32> pos,					
+						 vec2<U32> HMsize,				
 						 U32 minHMSize)	
 {
 	_LOD = 0;
 
 	U32 div = (U32)pow(2.0f, (F32)depth);
-	ivec2 nodesize = HMsize/(div);
+	vec2<U32> nodesize = HMsize/(div);
 	if(nodesize.x%2==0) nodesize.x++;
 	if(nodesize.y%2==0) nodesize.y++;
-	ivec2 newsize = nodesize/2;
+	vec2<U32> newsize = nodesize/2;
 
 
 	
@@ -34,18 +34,18 @@ void QuadtreeNode::Build(U8 depth,
 	_children = New QuadtreeNode[4];
 
 	// Compute children bounding boxes
-	vec3 center = _boundingBox.getCenter();
+	vec3<F32> center = _boundingBox.getCenter();
 	_children[CHILD_NW].setBoundingBox( BoundingBox(_boundingBox.getMin(), center) );
-	_children[CHILD_NE].setBoundingBox( BoundingBox(vec3(center.x, 0.0f, _boundingBox.getMin().z), vec3(_boundingBox.getMax().x, 0.0f, center.z)) );
-	_children[CHILD_SW].setBoundingBox( BoundingBox(vec3(_boundingBox.getMin().x, 0.0f, center.z), vec3(center.x, 0.0f, _boundingBox.getMax().z)) );
+	_children[CHILD_NE].setBoundingBox( BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z), vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)) );
+	_children[CHILD_SW].setBoundingBox( BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z), vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)) );
 	_children[CHILD_SE].setBoundingBox( BoundingBox(center, _boundingBox.getMax()) );
 
 	// Compute children positions
-	ivec2 tNewHMpos[4];
-	tNewHMpos[CHILD_NW] = pos + ivec2(0, 0);
-	tNewHMpos[CHILD_NE] = pos + ivec2(newsize.x, 0);
-	tNewHMpos[CHILD_SW] = pos + ivec2(0, newsize.y);
-	tNewHMpos[CHILD_SE] = pos + ivec2(newsize.x, newsize.y);
+	vec2<U32> tNewHMpos[4];
+	tNewHMpos[CHILD_NW] = pos + vec2<U32>(0, 0);
+	tNewHMpos[CHILD_NE] = pos + vec2<U32>(newsize.x, 0);
+	tNewHMpos[CHILD_SW] = pos + vec2<U32>(0, newsize.y);
+	tNewHMpos[CHILD_SE] = pos + vec2<U32>(newsize.x, newsize.y);
 
 
 	
@@ -55,7 +55,7 @@ void QuadtreeNode::Build(U8 depth,
 	}
 }
 
-bool QuadtreeNode::computeBoundingBox(const std::vector<vec3>& vertices){
+bool QuadtreeNode::computeBoundingBox(const std::vector<vec3<F32> >& vertices){
 	assert(!vertices.empty());
 
 	if(_terrainChunk != NULL) {
@@ -70,8 +70,8 @@ bool QuadtreeNode::computeBoundingBox(const std::vector<vec3>& vertices){
 			if(y < tempMin) tempMin = y;
 		}
 
-		_boundingBox.setMin(vec3(_boundingBox.getMin().x, tempMin,_boundingBox.getMin().z));
-		_boundingBox.setMax(vec3(_boundingBox.getMax().x, tempMax,_boundingBox.getMax().z));
+		_boundingBox.setMin(vec3<F32>(_boundingBox.getMin().x, tempMin,_boundingBox.getMin().z));
+		_boundingBox.setMax(vec3<F32>(_boundingBox.getMax().x, tempMax,_boundingBox.getMax().z));
 
 	}
 
@@ -81,9 +81,9 @@ bool QuadtreeNode::computeBoundingBox(const std::vector<vec3>& vertices){
 			_children[i].computeBoundingBox(vertices);
 
 			if(_boundingBox.getMin().y > _children[i]._boundingBox.getMin().y)	
-				_boundingBox.setMin(vec3(_boundingBox.getMin().x,_children[i]._boundingBox.getMin().y,_boundingBox.getMin().z));
+				_boundingBox.setMin(vec3<F32>(_boundingBox.getMin().x,_children[i]._boundingBox.getMin().y,_boundingBox.getMin().z));
 			if(_boundingBox.getMax().y < _children[i]._boundingBox.getMax().y)	
-				_boundingBox.setMax(vec3(_boundingBox.getMax().x,_children[i]._boundingBox.getMax().y,_boundingBox.getMax().z));
+				_boundingBox.setMax(vec3<F32>(_boundingBox.getMax().x,_children[i]._boundingBox.getMax().y,_boundingBox.getMax().z));
 		}
 	}
 	_boundingBox.isComputed() = true;
@@ -128,7 +128,7 @@ void QuadtreeNode::DrawGround(I32 options)
 {
 	_LOD = -1;
 	Frustum& pFrust = Frustum::getInstance();
-	vec3 center = _boundingBox.getCenter();				
+	vec3<F32> center = _boundingBox.getCenter();				
 	F32 radius = (_boundingBox.getMax()-center).length();	
 
 	if(options & CHUNK_BIT_TESTCHILDREN) {
@@ -162,7 +162,7 @@ void QuadtreeNode::DrawGround(I32 options)
 		}
 		else {
 			
-			vec3 vEyeToChunk = this->getBoundingBox().getCenter() - pFrust.getEyePos();
+			vec3<F32> vEyeToChunk = this->getBoundingBox().getCenter() - pFrust.getEyePos();
 			_camDistance = vEyeToChunk.length();
 			I8 lod = 0;
 			if(_camDistance > TERRAIN_CHUNK_LOD1)		lod = 2;

@@ -1,12 +1,13 @@
 #include "Headers/DVDConverter.h"
 
-#include <aiScene.h> 
-#include <assimp.hpp>      // C++ importer interface
-#include <aiPostProcess.h> // Post processing flags
+#include <assimp/scene.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
 #include "Managers/Headers/ResourceManager.h"
 #include "Utility/Headers/XMLParser.h"
-#include "Geometry/Animations/Headers/cAnimationController.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
+#include "Geometry/Shapes/Headers/SubMesh.h"
 
 using namespace std;
 
@@ -16,38 +17,28 @@ Mesh* DVDConverter::load(const string& file){
 	_modelName = _fileLocation.substr( _fileLocation.find_last_of( '/' ) + 1 );
 	tempMesh->setName(_modelName);
 	tempMesh->setResourceLocation(_fileLocation);
-	_ppsteps = aiProcess_CalcTangentSpace         | // calculate tangents and bitangents if possible
-			   aiProcess_JoinIdenticalVertices    | // join identical vertices/ optimize indexing
-			   aiProcess_ValidateDataStructure    | // perform a full validation of the loader's output
-			   aiProcess_ImproveCacheLocality     | // improve the cache locality of the output vertices
-			   aiProcess_RemoveRedundantMaterials | // remove redundant materials
-			   aiProcess_FindDegenerates          | // remove degenerated polygons from the import
-			   aiProcess_FindInvalidData          | // detect invalid model data, such as invalid normal vectors
-			   aiProcess_GenUVCoords              | // convert spherical, cylindrical, box and planar mapping to proper UVs
-			   aiProcess_TransformUVCoords        | // preprocess UV transformations (scaling, translation ...)
+	_ppsteps = aiProcess_TransformUVCoords        | // preprocess UV transformations (scaling, translation ...)
 			   aiProcess_FindInstances            | // search for instanced meshes and remove them by references to one master
-			   aiProcess_LimitBoneWeights         | // limit bone weights to 4 per vertex
 			   aiProcess_OptimizeMeshes	          | // join small meshes, if possible;
 			   aiProcess_OptimizeGraph            | // Nodes with no animations, bones, lights or cameras assigned are collapsed and joined.
+			   aiProcessPreset_TargetRealtime_Quality |
 			   0;
+
 	bool removeLinesAndPoints = true;
 	Assimp::Importer importer;
 	importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE , removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT : 0 );
 
-	if(GFX_DEVICE.getApi() > 6)
+	if(GFX_DEVICE.getApi() != OpenGL)
 		_ppsteps |= aiProcess_ConvertToLeftHanded;
 
-	scene = importer.ReadFile( file, _ppsteps                    |
-								aiProcess_Triangulate            |
-								aiProcess_SplitLargeMeshes	     |
-								aiProcess_SortByPType            |
-								aiProcess_GenSmoothNormals);
+	scene = importer.ReadFile( file, _ppsteps );
 
 	if( !scene){
 		ERROR_FN("DVDFile::load( %s ): %s", file.c_str(), importer.GetErrorString());
 		return false;
 	}
-
+	// create animator
+	tempMesh->createAnimatorFromScene(scene);
 	for(U16 n = 0; n < scene->mNumMeshes; n++){
 		
 		//Skip points and lines ... for now -Ionut
@@ -62,7 +53,8 @@ Mesh* DVDConverter::load(const string& file){
 				Material* m = loadSubMeshMaterial(scene->mMaterials[scene->mMeshes[n]->mMaterialIndex],string(s->getName()+ "_material"));
 				s->setMaterial(m);
 			}//else the Resource manager created a copy of the material
-			s->getGeometryVBO()->Create();
+			/// If the mesh has animation data, use dynamic VBO's
+			s->getGeometryVBO()->Create(!scene->mMeshes[n]->HasBones());
 			tempMesh->addSubMesh(s->getName());
 		}
 			
@@ -85,10 +77,10 @@ SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
 		sprintf(number,"%d",count);
 		temp = _fileLocation.substr(_fileLocation.rfind("/")+1,_fileLocation.length())+"-submesh-"+number;
 	}
-
 	//Submesh is created as a resource when added to the scenegraph
 	ResourceDescriptor submeshdesc(temp);
 	submeshdesc.setFlag(true);
+	submeshdesc.setId(count);
 	SubMesh* tempSubMesh = CreateResource<SubMesh>(submeshdesc);
 
 	if(!tempSubMesh->getGeometryVBO()->getPosition().empty()){
@@ -100,17 +92,21 @@ SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
 	tempSubMesh->getGeometryVBO()->getNormal().reserve(source->mNumVertices);
 	tempSubMesh->getGeometryVBO()->getTangent().reserve(source->mNumVertices);
 	tempSubMesh->getGeometryVBO()->getBiTangent().reserve(source->mNumVertices);
-	std::vector< std::vector<vertexWeight> >   weightsPerVertex(source->mNumVertices);
-/*
+	tempSubMesh->getGeometryVBO()->getBoneIndices().reserve(source->mNumVertices);
+	tempSubMesh->getGeometryVBO()->getBoneWeights().resize(source->mNumVertices,vec4<F32>(0.0f,0.0f,0.0f,0.0f));
+
+	std::vector< std::vector<aiVertexWeight> >   weightsPerVertex(source->mNumVertices);
+
 	if(source->HasBones()){
-	
-		for(U16 b = 0; b < source->mNumBones; b++){
-			const aiBone* bone = source->mBones[b];
-			for( U16 bi = 0; bi < bone->mNumWeights; bi++)
-				weightsPerVertex[bone->mWeights[bi].mVertexId].push_back(vertexWeight( b, bone->mWeights[bi].mWeight));
+		for(U16 a = 0; a < source->mNumBones; a++){
+			const aiBone* bone = source->mBones[a];
+			for( U16 b = 0; b < bone->mNumWeights; b++)
+				weightsPerVertex[bone->mWeights[b].mVertexId].push_back(aiVertexWeight( a, bone->mWeights[b].mWeight));
 		}
 	}
-*/	bool processTangents = true;
+
+
+	bool processTangents = true;
 	if(!source->mTangents){
         processTangents = false;
 		PRINT_FN("DVDConverter: SubMesh [ %s ] does not have tangent & biTangent data!", tempSubMesh->getName().c_str());
@@ -118,44 +114,45 @@ SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
 
 	for(U32 j = 0; j < source->mNumVertices; j++){
 			
-		tempSubMesh->getGeometryVBO()->getPosition().push_back(vec3(source->mVertices[j].x,
-															        source->mVertices[j].y,
-																	source->mVertices[j].z));
-		tempSubMesh->getGeometryVBO()->getNormal().push_back(vec3(source->mNormals[j].x,
-																  source->mNormals[j].y,
-																  source->mNormals[j].z));
+		tempSubMesh->getGeometryVBO()->getPosition().push_back(vec3<F32>(source->mVertices[j].x,
+															             source->mVertices[j].y,
+																	     source->mVertices[j].z));
+		tempSubMesh->getGeometryVBO()->getNormal().push_back(vec3<F32>(source->mNormals[j].x,
+																       source->mNormals[j].y,
+																       source->mNormals[j].z));
 		if(processTangents){
-			tempSubMesh->getGeometryVBO()->getTangent().push_back(vec3(source->mTangents[j].x,
-																	   source->mTangents[j].y,
-																	   source->mTangents[j].z));
-			tempSubMesh->getGeometryVBO()->getBiTangent().push_back(vec3(source->mBitangents[j].x,
-																	     source->mBitangents[j].y,
-																		 source->mBitangents[j].z));
+			tempSubMesh->getGeometryVBO()->getTangent().push_back(vec3<F32>(source->mTangents[j].x,
+																	        source->mTangents[j].y,
+																	        source->mTangents[j].z));
+			tempSubMesh->getGeometryVBO()->getBiTangent().push_back(vec3<F32>(source->mBitangents[j].x,
+																	          source->mBitangents[j].y,
+																		      source->mBitangents[j].z));
 		}
-/*		vector<U8> boneIndices, boneWeights;
-		boneIndices.push_back(0);boneWeights.push_back(0);
-		boneIndices.push_back(0);boneWeights.push_back(0);
-		boneIndices.push_back(0);boneWeights.push_back(0);
-		boneIndices.push_back(0);boneWeights.push_back(0);
+		
+		vec4<U8> boneIndices( 0, 0, 0, 0 );
+		vec4<F32> boneWeights( 0, 0, 0, 0 );
 
 		if( source->HasBones())	{
-			ai_assert( weightsPerVertex[x].size() <= 4);
+			ai_assert( weightsPerVertex[j].size() <= 4);
+
 			for( U8 a = 0; a < weightsPerVertex[j].size(); a++){
-				boneIndices.push_back(weightsPerVertex[j][a]._vertexId);
-				boneWeights.push_back((U8) (weightsPerVertex[j][a]._weight * 255.0f));
+
+				boneIndices[a] = weightsPerVertex[j][a].mVertexId;
+				boneWeights[a] = weightsPerVertex[j][a].mWeight;
 			}
 		}
 
-		tempSubMesh->getGeometryVBO()->getBoneIndices().push_back(boneIndices);
-		tempSubMesh->getGeometryVBO()->getBoneWeights().push_back(boneWeights);
-*/
+		tempSubMesh->getGeometryVBO()->getBoneIndices().push_back(vec4<I16>(boneIndices[0],boneIndices[1],boneIndices[2],boneIndices[3]));
+		tempSubMesh->getGeometryVBO()->getBoneWeights()[j] = boneWeights;
+
+
 	}//endfor
 
 	if(source->mTextureCoords[0] != NULL){
 		tempSubMesh->getGeometryVBO()->getTexcoord().reserve(source->mNumVertices);
 		for(U32 j = 0; j < source->mNumVertices; j++){
-			tempSubMesh->getGeometryVBO()->getTexcoord().push_back(vec2(source->mTextureCoords[0][j].x,
-																		source->mTextureCoords[0][j].y));
+			tempSubMesh->getGeometryVBO()->getTexcoord().push_back(vec2<F32>(source->mTextureCoords[0][j].x,
+																		     source->mTextureCoords[0][j].y));
 		}//endfor
 	}//endif
 
@@ -187,7 +184,7 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 	aiReturn result = AI_SUCCESS; 
 	
 	/// default diffuse color
-	vec4 tempColorVec4(0.8f, 0.8f, 0.8f,1.0f);
+	vec4<F32> tempColorVec4(0.8f, 0.8f, 0.8f,1.0f);
 
 	/// Load diffuse color
 	aiColor4D diffuse;

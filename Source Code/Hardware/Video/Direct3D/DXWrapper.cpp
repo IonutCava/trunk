@@ -16,7 +16,7 @@ void DX_API::closeRenderingApi()
 {
 }
 
-void DX_API::lookAt(const vec3& eye,const vec3& center,const vec3& up, bool invertx, bool inverty)
+void DX_API::lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up, bool invertx, bool inverty)
 {
 }
 
@@ -24,11 +24,11 @@ void DX_API::idle()
 {
 }
 
-void DX_API::getModelViewMatrix(mat4& mvMat)
+void DX_API::getModelViewMatrix(mat4<F32>& mvMat)
 {
 }
 
-void DX_API::getProjectionMatrix(mat4& projMat)
+void DX_API::getProjectionMatrix(mat4<F32>& projMat)
 {
 
 }
@@ -65,10 +65,10 @@ void DX_API::releaseModelView()
 {
 }
 
-void DX_API::setOrthoProjection(const vec4& rect, const vec2& planes)
+void DX_API::setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes)
 {
 }
-void DX_API::setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2& planes)
+void DX_API::setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes)
 {
 }
 void DX_API::drawTextToScreen(GuiElement* const text)
@@ -86,11 +86,11 @@ void DX_API::drawButton(GuiElement* const button)
 void DX_API::drawFlash(GuiElement* const flash)
 {
 }
-void DX_API::drawBox3D(vec3 min, vec3 max)
+void DX_API::drawBox3D(vec3<F32> min, vec3<F32> max)
 {
 }
 
-void DX_API::renderInViewport(const vec4& rect, boost::function0<void> callback){
+void DX_API::renderInViewport(const vec4<F32>& rect, boost::function0<void> callback){
 }
 
 void DX_API::renderModel(Object3D* const model)
@@ -139,15 +139,15 @@ void DX_API::initDevice()
 {
 }
 
-void DX_API::Screenshot(char *filename, const vec4& rect)
+void DX_API::Screenshot(char *filename, const vec4<F32>& rect)
 {
 }
 
-void DX_API::setObjectState(Transform* const transform, bool force)
+void DX_API::setObjectState(Transform* const transform, bool force, ShaderProgram* const shader)
 {
 }
 
-void DX_API::releaseObjectState(Transform* const transform)
+void DX_API::releaseObjectState(Transform* const transform, ShaderProgram* const shader)
 {
 }
 

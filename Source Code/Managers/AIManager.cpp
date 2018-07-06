@@ -36,6 +36,11 @@ void AIManager::updateEntities(){//react
 	}
 }
 
+void AIManager::destroyEntity(U32 guid){
+	SAFE_DELETE(_aiEntities[guid]);
+	_aiEntities.erase(guid);
+}
+
 void AIManager::Destroy(){
 	_updateMutex.lock();
 	for_each(AIEntityMap::value_type& entity, _aiEntities){

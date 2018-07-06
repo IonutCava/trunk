@@ -16,15 +16,15 @@ void NetworkScene::render(){
 
 void NetworkScene::preRender(){
 	Light* light = LightManager::getInstance().getLight(0);
-	vec4 vSunColor = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f),
-								0.25f + cosf(_sunAngle.y) * 0.75f);
+	vec4<F32> vSunColor = _white.lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f), vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
+												0.25f + cosf(_sunAngle.y) * 0.75f);
 
 	light->setLightProperties(LIGHT_POSITION,_sunVector);
 	light->setLightProperties(LIGHT_AMBIENT,_white);
 	light->setLightProperties(LIGHT_DIFFUSE,vSunColor);
 	light->setLightProperties(LIGHT_SPECULAR,vSunColor);
 
-	Sky::getInstance().setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3(_sunVector),false,true,false);
+	Sky::getInstance().setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3<F32>(_sunVector),false,true,false);
 	Sky::getInstance().draw();
 
 }
@@ -96,7 +96,7 @@ bool NetworkScene::load(const string& name){
 	bool state = loadResources(true);
 	_paramHandler.setParam("serverResponse",string("waiting"));
 	addDefaultLight();
-	CameraManager::getInstance().getActiveCamera()->setEye(vec3(0,30,-30));
+	CameraManager::getInstance().getActiveCamera()->setEye(vec3<F32>(0,30,-30));
 	return state;
 }
 
@@ -127,8 +127,8 @@ void NetworkScene::disconnect()
 
 bool NetworkScene::loadResources(bool continueOnErrors)
 {
-	_sunAngle = vec2(0.0f, RADIANS(45.0f));
-	_sunVector = vec4(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+	_sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+	_sunVector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 							-cosf(_sunAngle.y),
 							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
 							0.0f );
@@ -136,42 +136,42 @@ bool NetworkScene::loadResources(bool continueOnErrors)
 	GUI& gui = GUI::getInstance();
 
 	gui.addText("fpsDisplay",           //Unique ID
-		                       vec3(60,60,0),          //Position
+		                       vec3<F32>(60,60,0),          //Position
 							   BITMAP_8_BY_13,    //Font
-							   vec3(0.0f,0.6f, 1.0f),  //Color
+							   vec3<F32>(0.0f,0.6f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
 	gui.addText("timeDisplay",
-								vec3(60,70,0),
+								vec3<F32>(60,70,0),
 								BITMAP_8_BY_13,
-								vec3(0.6f,0.2f,0.2f),
+								vec3<F32>(0.6f,0.2f,0.2f),
 								"Elapsed time: %5.0f",GETTIME());
 
 	gui.addText("serverMessage",
-								vec3(Application::getInstance().getWindowDimensions().width / 4.0f,
+								vec3<F32>(Application::getInstance().getWindowDimensions().width / 4.0f,
 								     Application::getInstance().getWindowDimensions().height / 1.6f,
 									 0),
 								BITMAP_8_BY_13,
-								vec3(0.5f,0.5f,0.2f),
+								vec3<F32>(0.5f,0.5f,0.2f),
 								"Server says: %s", "<< nothing yet >>");
 	gui.addText("statusText",
-								vec3(Application::getInstance().getWindowDimensions().width / 3.0f,
+								vec3<F32>(Application::getInstance().getWindowDimensions().width / 3.0f,
 								     Application::getInstance().getWindowDimensions().height / 1.2f,
 									 0),
 								BITMAP_HELVETICA_12,
-								vec3(0.2f,0.5f,0.2f),
+								vec3<F32>(0.2f,0.5f,0.2f),
 								"");
 
-	gui.addButton("getPing", "ping me", vec2(60 , Application::getInstance().getWindowDimensions().height/1.1f),
-										vec2(100,25),vec3(0.6f,0.6f,0.6f),
+	gui.addButton("getPing", "ping me", vec2<F32>(60 , Application::getInstance().getWindowDimensions().height/1.1f),
+										vec2<F32>(100,25),vec3<F32>(0.6f,0.6f,0.6f),
 										boost::bind(&NetworkScene::test,this));
-	gui.addButton("disconnect", "disconnect", vec2(180 , Application::getInstance().getWindowDimensions().height/1.1f),
-										vec2(100,25),vec3(0.5f,0.5f,0.5f),
+	gui.addButton("disconnect", "disconnect", vec2<F32>(180 , Application::getInstance().getWindowDimensions().height/1.1f),
+										vec2<F32>(100,25),vec3<F32>(0.5f,0.5f,0.5f),
 										boost::bind(&NetworkScene::disconnect,this));
-	gui.addButton("connect", "connect", vec2(300 , Application::getInstance().getWindowDimensions().height/1.1f),
-										vec2(100,25),vec3(0.65f,0.65f,0.65f),
+	gui.addButton("connect", "connect", vec2<F32>(300 , Application::getInstance().getWindowDimensions().height/1.1f),
+										vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 										boost::bind(&NetworkScene::connect,this));
-	gui.addButton("patch", "patch",     vec2(420 , Application::getInstance().getWindowDimensions().height/1.1f),
-										vec2(100,25),vec3(0.65f,0.65f,0.65f),
+	gui.addButton("patch", "patch",     vec2<F32>(420 , Application::getInstance().getWindowDimensions().height/1.1f),
+										vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 										boost::bind(&NetworkScene::checkPatches,this));
 		
 

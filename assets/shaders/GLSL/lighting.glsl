@@ -1,15 +1,18 @@
 -- Vertex
 uniform float time;
+
 uniform mat4 modelViewInvMatrix;
 uniform mat4 modelViewProjectionMatrix;
-
+uniform mat4 transformMatrix;
+uniform mat4 parentTransformMatrix;
 #include "lightingDefaults.vert"
 #include "boneTransforms.vert"
 
 void main(void){
 	
-	vec4 position = gl_Vertex;
-	applyBoneTransforms(position);
+	vec4 position = gl_Vertex ;
+	vec4 normal = vec4(normalize(gl_NormalMatrix * gl_Normal),0);
+	//applyBoneTransforms(position,normal);
 	//Compute the final vert position
 	gl_Position = gl_ModelViewProjectionMatrix * position;
 	

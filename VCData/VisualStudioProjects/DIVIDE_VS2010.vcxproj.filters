@@ -475,12 +475,6 @@
     <ClCompile Include="..\..\Source Code\Geometry\Material\Material.cpp">
       <Filter>Geometry\Material</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Geometry\Animations\Bones.cpp">
-      <Filter>Geometry\Animations</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Geometry\Animations\cAnimationController.cpp">
-      <Filter>Geometry\Animations</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Geometry\Importer\DVDConverter.cpp">
       <Filter>Geometry\Importer</Filter>
     </ClCompile>
@@ -658,6 +652,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Projectile.cpp">
       <Filter>Dynamics\WeaponSystem\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationController.cpp">
+      <Filter>Geometry\Animations</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -883,12 +880,6 @@
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\Material.h">
       <Filter>Geometry\Material\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\Bones.h">
-      <Filter>Geometry\Animations\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\cAnimationController.h">
-      <Filter>Geometry\Animations\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\DVDConverter.h">
       <Filter>Geometry\Importer\Headers</Filter>
     </ClInclude>
@@ -1093,6 +1084,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Headers\Projectile.h">
       <Filter>Dynamics\WeaponSystem\Projectile\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationController.h">
+      <Filter>Geometry\Animations\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\Bone.h">
+      <Filter>Geometry\Animations\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

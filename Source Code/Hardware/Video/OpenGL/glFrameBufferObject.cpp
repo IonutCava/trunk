@@ -24,10 +24,10 @@ glFrameBufferObject::glFrameBufferObject() : FrameBufferObject() {
 void glFrameBufferObject::Destroy() {
 	if(_textureType != 0) Unbind();
 	if(!_textureId.empty() && _textureId[0] > 0){
-		GLCheck(glDeleteTextures(_textureId.size(), &_textureId[0]));
+		/*GLCheck(*/glDeleteTextures(_textureId.size(), &_textureId[0])/*)*/;
 	}
 	if(_frameBufferHandle > 0){
-		GLCheck(glDeleteFramebuffers(1, &_frameBufferHandle));
+		/*GLCheck(*/glDeleteFramebuffers(1, &_frameBufferHandle)/*)*/;
 	}
 
 	if(_useDepthBuffer && _depthBufferHandle > 0){
@@ -48,26 +48,25 @@ void glFrameBufferObject::Destroy() {
 
 void glFrameBufferObject::Begin(U8 nFace) const {
 	assert(nFace<6);
-	GLCheck(glPushAttrib(GL_VIEWPORT_BIT));
-	GLCheck(glViewport(0, 0, _width, _height));
-
-		if(_useFBO) {
-			GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle));
-			if(_fboType == FBO_2D_DEFERRED){
-				GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,  GL_COLOR_ATTACHMENT2 };
-				GLCheck(glDrawBuffers(3, buffers));
-			}
-			else if(_textureType == GL_TEXTURE_CUBE_MAP) {
-				GLCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, _attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X+nFace, _textureId[0], 0));
-			}
-
-		}else {
-			GLCheck(glPushAttrib(GL_COLOR_BUFFER_BIT | GL_PIXEL_MODE_BIT));
-			GLCheck(glDrawBuffer(GL_BACK));
-			GLCheck(glReadBuffer(GL_BACK));
+	glPushAttrib(GL_VIEWPORT_BIT);
+	glViewport(0, 0, _width, _height);
+ 
+	if(_useFBO) {
+		glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle);
+		if(_fboType == FBO_2D_DEFERRED){
+			GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,  GL_COLOR_ATTACHMENT2 };
+			GLCheck(glDrawBuffers(3, buffers));
 		}
-	GLCheck(glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ));
-	GLCheck(glClearColor( 0.0f, 0.0f, 0.0f, 1.0f ));
+		else if(_textureType == GL_TEXTURE_CUBE_MAP) {
+			GLCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, _attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X+nFace, _textureId[0], 0));
+		}
+	}else {
+		glPushAttrib(GL_COLOR_BUFFER_BIT | GL_PIXEL_MODE_BIT);
+		GLCheck(glDrawBuffer(GL_BACK));
+		GLCheck(glReadBuffer(GL_BACK));
+	}
+	/*GLCheck(*/glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )/*)*/;
+	/*GLCheck(*/glClearColor( 0.0f, 0.0f, 0.0f, 1.0f )/*)*/;
 }
 
 void glFrameBufferObject::End(U8 nFace) const {
@@ -87,7 +86,7 @@ void glFrameBufferObject::End(U8 nFace) const {
 
 void glFrameBufferObject::Bind(U8 unit, U8 texture) {
 	//if(_bound) return;
-	GLCheck(glActiveTexture(GL_TEXTURE0 + unit));
+	glActiveTexture(GL_TEXTURE0 + (U32)unit);
 	GLCheck(glEnable(_textureType));
 	GLCheck(glBindTexture(_textureType, _textureId[texture]));
 	//GLCheck(glEnable(_textureType));
@@ -96,7 +95,7 @@ void glFrameBufferObject::Bind(U8 unit, U8 texture) {
 
 void glFrameBufferObject::Unbind(U8 unit) {
 	//if(!_bound) return; //If it's already bound on any slot, including this one
-	GLCheck(glActiveTexture(GL_TEXTURE0 + unit));
+	glActiveTexture(GL_TEXTURE0 + (U32)unit);
 	glBindTexture(_textureType, 0 );
 	glDisable(_textureType);
 	_bound = false;

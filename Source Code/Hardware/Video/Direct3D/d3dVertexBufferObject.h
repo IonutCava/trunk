@@ -23,7 +23,7 @@
 class d3dVertexBufferObject : public VertexBufferObject {
 
 public:
-	bool        Create() {return true;}
+	bool        Create(bool staticDraw = true) {return true;}
 	bool		Create(U32 usage) {return true;}
 
 	void		Destroy() {}
@@ -32,8 +32,9 @@ public:
 	void		Enable() {}
 	void		Disable() {}
 
-	
-	d3dVertexBufferObject(){}
+	bool Refresh() {return true;}
+
+	d3dVertexBufferObject() : VertexBufferObject(), _created(false) {}
 	~d3dVertexBufferObject() {Destroy();}
 
 private:

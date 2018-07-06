@@ -29,6 +29,7 @@ Application::Application() :
 	_SFX(SFXDevice::getInstance()), //Audio
 	_scene(SceneManager::getInstance()),
 	_gui(GUI::getInstance()),
+	_currentTime(0),
 	_camera(New FreeFlyCamera()){
 	 angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
 	 mainWindowId = -1;
@@ -42,11 +43,12 @@ Application::Application() :
 
 
 void Application::DrawSceneStatic(){
+	/// Update time at every render loop
+	Application::getInstance()._currentTime += clock()/ D32( CLOCKS_PER_SEC);
 	if(_keepAlive){
-
 		GFX_DEVICE.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 		SET_DEFAULT_STATE_BLOCK();
-
+		Framerate::getInstance().SetSpeedFactor();
 		FrameEvent evt;
 		FrameListenerManager::getInstance().createEvent(FRAME_EVENT_STARTED,evt);
 		_keepAlive = FrameListenerManager::getInstance().frameStarted(evt);
@@ -55,7 +57,6 @@ void Application::DrawSceneStatic(){
 
 		_keepAlive = Application::getInstance().DrawScene();
 
-		Framerate::getInstance().SetSpeedFactor();
 		FrameListenerManager::getInstance().createEvent(FRAME_EVENT_PROCESS,evt);
 		_keepAlive = FrameListenerManager::getInstance().frameRenderingQueued(evt);
 
@@ -96,10 +97,10 @@ bool Application::DrawScene(){
 }
 
 void Application::Initialize(){    
-	_GFX.setApi(OpenGL32);
+	_GFX.setApi(OpenGL);
 	_GFX.initHardware();
 	_SFX.initHardware();
-	_camera->setEye(vec3(0,50,0));
+	_camera->setEye(vec3<F32>(0,50,0));
 	F32 fogColor[4] = {0.2f, 0.2f, 0.4f, 1.0}; 
 	_GFX.enableFog(0.01f,fogColor);
 	PostFX::getInstance().init();

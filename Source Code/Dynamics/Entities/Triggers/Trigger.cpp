@@ -14,7 +14,7 @@ Trigger::~Trigger()
 
 }
 
-void Trigger::setParams( Event_ptr triggeredEvent, const vec3& triggerPosition, F32 radius){
+void Trigger::setParams( Event_ptr triggeredEvent, const vec3<F32>& triggerPosition, F32 radius){
 	/// Check if position has changed
    if(!_triggerPosition.compare(triggerPosition)){
 	   _triggerPosition = triggerPosition;
@@ -65,7 +65,7 @@ void Trigger::render(SceneGraphNode* const sgn){
 bool Trigger::check(Unit* const unit){
 	if(!_enabled) return false;
 
-	vec3 position;
+	vec3<F32> position;
 	if(!unit){ ///< use camera position
 		position = CameraManager::getInstance().getActiveCamera()->getEye();
 	}else{ ///< use unit position

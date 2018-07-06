@@ -68,7 +68,7 @@ void BloomPreRenderOperator::operation(){
 		
 			_outputFBO->Bind(0);
 				_blur->UniformTexture("texScreen", 0);
-				_blur->Uniform("size", vec2((F32)_outputFBO->getWidth(), (F32)_outputFBO->getHeight()));
+				_blur->Uniform("size", vec2<F32>((F32)_outputFBO->getWidth(), (F32)_outputFBO->getHeight()));
 				_blur->Uniform("horizontal", true);
 				_blur->Uniform("kernel_size", 10);
 
@@ -88,7 +88,7 @@ void BloomPreRenderOperator::operation(){
 			_tempBloomFBO->Bind(0);
 
 				_blur->UniformTexture("texScreen", 0);
-				_blur->Uniform("size", vec2((F32)_tempBloomFBO->getWidth(), (F32)_tempBloomFBO->getHeight()));
+				_blur->Uniform("size", vec2<F32>((F32)_tempBloomFBO->getWidth(), (F32)_tempBloomFBO->getHeight()));
 				_blur->Uniform("horizontal", false);
 
 				gfx.renderModel(_renderQuad);

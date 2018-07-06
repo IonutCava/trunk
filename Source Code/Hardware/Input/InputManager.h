@@ -113,7 +113,7 @@ class EffectManager{
 	  pEffect->direction = OIS::Effect::North;
 	  pEffect->trigger_button = 0;
 	  pEffect->trigger_interval = 0;
-	  pEffect->replay_length = OIS::Effect::OIS_INFINITE; //(unsigned int)(1000000.0/_nUpdateFreq); // Linux: Does not work.
+	  pEffect->replay_length = OIS::Effect::OIS_INFINITE; //(U32)(1000000.0/_nUpdateFreq); // Linux: Does not work.
 	  pEffect->replay_delay = 0;
 	  pEffect->setNumAxes(1);
 	  pConstForce = dynamic_cast<OIS::ConstantEffect*>(pEffect->getForceEffect());
@@ -350,10 +350,11 @@ public:
 #endif
 
 	  _pInputMgr = OIS::InputManager::createInputSystem(pl);
-	  PRINT_F("InputManager: %s created.\n",_pInputMgr->inputSystemName().c_str());
+	  PRINT_FN("InputManager: %s created.",_pInputMgr->inputSystemName().c_str());
 
 	  // Create the event handler.
 	  _pEventHdlr = new EventHandler(this);
+
 	  try{
 		// Create a simple keyboard
 		_pKeyboard = (OIS::Keyboard*)_pInputMgr->createInputObject( OIS::OISKeyboard, true );
@@ -366,7 +367,9 @@ public:
 
 	  try{
 			_pJoystick = (OIS::JoyStick*) _pInputMgr->createInputObject(OIS::OISJoyStick, true);
-			_pJoystick->setEventCallback( _pEventHdlr );
+			if(_pJoystick){
+				_pJoystick->setEventCallback( _pEventHdlr );
+			}
 	  }
 	  catch(OIS::Exception &ex)
 	  {

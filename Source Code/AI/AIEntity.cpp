@@ -4,7 +4,9 @@
 
 AIEntity::AIEntity(const std::string& name) : _name(name),
 											  _coordination(New AICoordination()),
-											  _actionProcessor(NULL) {
+											  _actionProcessor(NULL),
+											  _unitRef(NULL)
+{
 	_GUID = GETMSTIME() * random(55);
 	_coordination->addTeamMember(this);
 }
@@ -85,7 +87,7 @@ void AIEntity::processData(){
 void AIEntity::update(){
 	if(!_actionProcessor) return;
 	_updateMutex.lock();
-	_actionProcessor->update(_node);
+	_actionProcessor->update(_node, _unitRef);
 	_updateMutex.unlock();
 }
 

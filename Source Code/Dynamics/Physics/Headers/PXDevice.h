@@ -32,8 +32,8 @@ public:
 	inline void idle() {_api.idle();}
 	inline PhysicsSceneInterface* NewSceneInterface(Scene* scene) {return _api.NewSceneInterface(scene);}
 
-	inline bool createPlane(PhysicsSceneInterface* targetScene,const vec3& position = vec3(0,0,0), U32 size = 1){return _api.createPlane(targetScene,position,size);}
-	inline bool createBox(PhysicsSceneInterface* targetScene,const vec3& position = vec3(0,0,0), F32 size = 1){return _api.createBox(targetScene,position,size);}
+	inline bool createPlane(PhysicsSceneInterface* targetScene,const vec3<F32>& position = vec3<F32>(0,0,0), U32 size = 1){return _api.createPlane(targetScene,position,size);}
+	inline bool createBox(PhysicsSceneInterface* targetScene,const vec3<F32>& position = vec3<F32>(0,0,0), F32 size = 1){return _api.createBox(targetScene,position,size);}
 	inline bool createActor(PhysicsSceneInterface* targetScene, SceneGraphNode* node, PhysicsActorMask mask,PhysicsCollisionGroup group){return _api.createActor(targetScene, node,mask,group);}
 private:
 	PXDevice() :

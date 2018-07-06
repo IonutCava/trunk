@@ -29,27 +29,27 @@ class BoundingBox;
 DEFINE_SINGLETON( Frustum )
 
 public:
-	void Extract(const vec3& eye);
+	void Extract(const vec3<F32>& eye);
 
-	bool ContainsPoint(const vec3& point) const;
+	bool ContainsPoint(const vec3<F32>& point) const;
 	I8  ContainsBoundingBox(BoundingBox& bbox) const;
-	I8  ContainsSphere(const vec3& center, F32 radius) const;
+	I8  ContainsSphere(const vec3<F32>& center, F32 radius) const;
 
 
-	inline       vec3& getEyePos()					          {return _eyePos;}
-	inline const mat4& getModelviewMatrix()		              {return _modelViewMatrix;}
-	inline const mat4& getModelviewInvMatrix() 		          {return _modelViewMatrixInv;}
-	inline const mat4& getProjectionMatrix()		 	      {return _projectionMatrix;}
-	inline const mat4& getModelViewProjectionMatrix()         {return _modelViewProjectionMatrix;}
-	inline const mat4& getInverseModelViewProjectionMatrix()  {return _inverseModelViewProjectionMatrix;}
+	inline       vec3<F32>& getEyePos()					           {return _eyePos;}
+	inline const mat4<F32>& getModelviewMatrix()		           {return _modelViewMatrix;}
+	inline const mat4<F32>& getModelviewInvMatrix() 		       {return _modelViewMatrixInv;}
+	inline const mat4<F32>& getProjectionMatrix()		 	       {return _projectionMatrix;}
+	inline const mat4<F32>& getModelViewProjectionMatrix()         {return _modelViewProjectionMatrix;}
+	inline const mat4<F32>& getInverseModelViewProjectionMatrix()  {return _inverseModelViewProjectionMatrix;}
 
 private:
-	vec3	_eyePos;
-	vec4	_frustumPlanes[6];	
-	mat4	_modelViewMatrix, _modelViewMatrixInv;	///< Modelview Matrix and it's inverse
-	mat4	_projectionMatrix; 				        ///< Projection Matrix
-	mat4	_modelViewProjectionMatrix;			    ///< Modelview * Projection
-	mat4    _inverseModelViewProjectionMatrix;      ///< Projection * inverse(ModelView)
+	vec3<F32> _eyePos;
+	vec4<F32> _frustumPlanes[6];	
+	mat4<F32> _modelViewMatrix, _modelViewMatrixInv;	///< Modelview Matrix and it's inverse
+	mat4<F32> _projectionMatrix; 				        ///< Projection Matrix
+	mat4<F32> _modelViewProjectionMatrix;			    ///< Modelview * Projection
+	mat4<F32> _inverseModelViewProjectionMatrix;      ///< Projection * inverse(ModelView)
 
 END_SINGLETON
 

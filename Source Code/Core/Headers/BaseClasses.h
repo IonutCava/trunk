@@ -100,10 +100,10 @@ class FileData
 public:
 	std::string ItemName;
 	std::string ModelName;
-	vec3 scale;
-	vec3 position;
-	vec3 orientation;
-	vec3 color;
+	vec3<F32> scale;
+	vec3<F32> position;
+	vec3<F32> orientation;
+	vec3<F32> color;
 	GEOMETRY_TYPE type;
 	F32 data; ///< general purpose
 	std::string data2;
@@ -120,8 +120,8 @@ public:
 	U16    treeDensity;
 	F32  grassScale;
 	F32  treeScale;
-	vec3   position;
-	vec2   scale;
+	vec3<F32>   position;
+	vec2<F32>   scale;
 	bool   active;
 
 };

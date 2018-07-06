@@ -88,7 +88,7 @@ void PostFX::init(){
 	mrt.setFlag(true); //No default Material;
 	_renderQuad = CreateResource<Quad3D>(mrt);
 	assert(_renderQuad);
-	_renderQuad->setDimensions(vec4(0,0,width,height));
+	_renderQuad->setDimensions(vec4<F32>(0,0,width,height));
 
 	if(_enablePostProcessing){
 		_postProcessingShader = CreateResource<ShaderProgram>(ResourceDescriptor("postProcessing"));
@@ -150,7 +150,7 @@ void PostFX::reshapeFBO(I32 width , I32 height){
 
 	_screenFBO->Create(FBO_2D_COLOR, width, height);
 	_depthFBO->Create(FBO_2D_DEPTH, width, height);
-	_renderQuad->setDimensions(vec4(0,0,width,height));
+	_renderQuad->setDimensions(vec4<F32>(0,0,width,height));
 
 	if(!_enablePostProcessing) return;
 	if(_enableAnaglyph){

@@ -32,7 +32,7 @@ class FrameBufferObject;
 /// Virtual interface for reflective surfaces
 class Reflector : public FrameListener{
 public:
-	Reflector(REFLECTOR_TYPE type,const ivec2& resolution);
+	Reflector(REFLECTOR_TYPE type,const vec2<I32>& resolution);
 	virtual ~Reflector();
 
 	///This function should be unique to every reflector. Portals may need special effects, mirrors some special lighting, etc
@@ -57,7 +57,7 @@ private:
 	/// What is our current tick count
 	F32 _updateTimer;
 	/// What resolution should the generated texture have?
-	ivec2 _resolution;
+	vec2<I32> _resolution;
 	/// Use this to force current reflector to draw itself in reflection
 	bool _excludeSelfReflection;
 

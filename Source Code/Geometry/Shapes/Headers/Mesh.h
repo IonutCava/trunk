@@ -32,14 +32,22 @@ Note: all transformations applied to the mesh affect every submesh that compose 
 */
 
 #include "resource.h"
-#include "SubMesh.h"
+#include "Object3D.h"
+
+class  AnimationController;
+struct aiScene;
 
 class Mesh : public Object3D {
 
 	typedef unordered_map<std::string, SceneGraphNode*> childrenNodes;
 
 public:
-	Mesh() : Object3D(MESH), _visibleToNetwork(true), _loaded(false) { _refreshVBO = false;}
+	Mesh() : Object3D(MESH), _visibleToNetwork(true),
+							 _loaded(false),
+							 _animator(NULL),
+							 _playAnimations(true)
+							 { _refreshVBO = false;}
+	~Mesh();
 	inline void addSubMesh(const std::string& subMesh){_subMeshes.push_back(subMesh);}
 
 	bool computeBoundingBox(SceneGraphNode* const sgn);
@@ -51,11 +59,21 @@ public:
 	void createCopy();
 	void removeCopy();
 
+	bool createAnimatorFromScene(const aiScene* scene);
+	void onDraw();
+	inline std::vector<mat4<F32> >& GetTransforms(){ return _transforms; }
+
 protected:
 	void computeNormals(){}
 	void computeTangents(){}	
 	bool						 _visibleToNetwork, _loaded;
+	bool                         _playAnimations;
 	std::vector<std::string >	 _subMeshes;
+	unordered_map<U32, SubMesh*> _subMeshRefMap;
+	/// Animation player to animate the mesh if necessary
+	AnimationController* _animator;
+	/// bone transforms for the entire mesh
+	std::vector<mat4<F32> > _transforms;
 };
 
 #endif

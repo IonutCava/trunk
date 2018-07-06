@@ -36,7 +36,7 @@ DEFINE_SINGLETON( Sky )
 
 public:
 	void draw() const;
-	void setParams(const vec3& eyePos,const vec3& sunVect, bool invert, bool drawSun, bool drawSky) ;
+	void setParams(const vec3<F32>& eyePos,const vec3<F32>& sunVect, bool invert, bool drawSun, bool drawSky) ;
 
 	void addToDrawExclusionMask(U8 stageMask);
 	void removeFromDrawExclusionMask(U8 stageMask);
@@ -50,7 +50,7 @@ private:
 	bool			  _init,_invert,_drawSky,_drawSun;
 	ShaderProgram*	  _skyShader;
 	TextureCubemap*	  _skybox;
-	vec3			  _sunVect,	_eyePos;
+	vec3<F32>			  _sunVect,	_eyePos;
 	Sphere3D          *_sky,*_sun;
 	SceneGraphNode    *_skyNode, *_sunNode;
 	U8				  _exclusionMask;

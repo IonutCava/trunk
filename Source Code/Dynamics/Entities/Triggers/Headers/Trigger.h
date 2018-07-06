@@ -46,7 +46,7 @@ public:
 	///Enable or disable the trigger
 	inline void  setEnabled(bool state) {_enabled = state;}
     /// Set the callback, the position and the radius of the trigger
-	void setParams(Event_ptr triggeredEvent, const vec3& triggerPosition, F32 radius);
+	void setParams(Event_ptr triggeredEvent, const vec3<F32>& triggerPosition, F32 radius);
 	/// Just update the callback
 	inline void setParams(Event_ptr triggeredEvent) {setParams(triggeredEvent,_triggerPosition,_radius);}
 
@@ -68,7 +68,7 @@ private:
 	/// The event to be launched when triggered
 	Event_ptr _triggeredEvent;
 	/// The trigger circle's center position
-	vec3 _triggerPosition;
+	vec3<F32> _triggerPosition;
 	/// The trigger's radius
 	F32 _radius;
 	/// Draw the impostor?

@@ -34,15 +34,18 @@ friend class Frustum; ///< For matrix recovery operations
 
 public:
 	void setApi(RENDER_API api);
-	RENDER_API  getApi(){return _api.getId(); }
+
+	RENDER_API         getApi()        {return _api.getId(); }
+	RENDER_API_VERSION getApiVersion() {return _api.getVersionId();}
+
 	void initHardware(){_api.initHardware();}
 	void initDevice(){_api.initDevice();}
 	void resizeWindow(U16 w, U16 h);
-	inline void lookAt(const vec3& eye,const vec3& center,const vec3& up = vec3(0,1,0), bool invertx = false, bool inverty = false){_api.lookAt(eye,center,up,invertx,inverty);}
+	inline void lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up = vec3<F32>(0,1,0), bool invertx = false, bool inverty = false){_api.lookAt(eye,center,up,invertx,inverty);}
 	inline void idle() {_api.idle();}
 
-	inline mat4& getLightProjectionMatrix() {return _currentLightProjectionMatrix;}
-	inline void setLightProjectionMatrix(const mat4& lightMatrix){_currentLightProjectionMatrix = lightMatrix;}
+	inline mat4<F32>& getLightProjectionMatrix() {return _currentLightProjectionMatrix;}
+	inline void       setLightProjectionMatrix(const mat4<F32>& lightMatrix){_currentLightProjectionMatrix = lightMatrix;}
 
 	void closeRenderingApi();
 	inline FrameBufferObject* newFBO(){return _api.newFBO(); }
@@ -65,19 +68,19 @@ public:
 	inline void releaseProjection(){_api.releaseProjection();}
 	inline void lockModelView(){_api.lockModelView();}
 	inline void releaseModelView(){_api.releaseModelView();}
-	inline void setOrthoProjection(const vec4& rect, const vec2& planes){_api.setOrthoProjection(rect,planes);}
-	inline void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2& planes){_api.setPerspectiveProjection(FoV,aspectRatio,planes);}
+	inline void setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes){_api.setOrthoProjection(rect,planes);}
+	inline void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes){_api.setPerspectiveProjection(FoV,aspectRatio,planes);}
 
-	void renderInViewport(const vec4& rect, boost::function0<void> callback);
+	void renderInViewport(const vec4<F32>& rect, boost::function0<void> callback);
 
-	void drawBox3D(vec3 min, vec3 max);
+	void drawBox3D(vec3<F32> min, vec3<F32> max);
 	void renderModel(Object3D* const model);
 	void renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count, const void* first_element);
 	void renderGUIElement(GuiElement* const guiElement);
 	inline void setMaterial(Material* mat){_api.setMaterial(mat);}
 	
 	///Instruct the Rendering API to modify the ambient light
-	void setAmbientLight(const vec4& light){_api.setAmbientLight(light);}
+	void setAmbientLight(const vec4<F32>& light){_api.setAmbientLight(light);}
 	///Update light properties internally in the Rendering API
 	inline void setLight(Light* const light){_api.setLight(light);}
 	///Set internal API states for proper depthmap rendering (rember to use RenderStateBlocks for objects as well
@@ -90,7 +93,7 @@ public:
 	inline void  setDeferredRendering(bool state) {_deferredRendering = state;} 
 	inline bool  getDeferredRendering() {return _deferredRendering;}
 
-	inline void Screenshot(char *filename, const vec4& rect){_api.Screenshot(filename,rect);}
+	inline void Screenshot(char *filename, const vec4<F32>& rect){_api.Screenshot(filename,rect);}
 
 	inline void setPrevShaderId(const U32& id) {_prevShaderId = id;}
 	inline const U32& getPrevShaderId() {return _prevShaderId;}
@@ -132,14 +135,14 @@ public:
 	inline void updateStateInternal(RenderStateBlock* block, bool force = false) {_api.updateStateInternal(block,force);}
 	/*//Render State Management */
 
-	void setObjectState(Transform* const transform, bool force = false){_api.setObjectState(transform,force); }
-	void releaseObjectState(Transform* const transform){_api.releaseObjectState(transform); }
+	void setObjectState(Transform* const transform, bool force = false, ShaderProgram* const shader = NULL){_api.setObjectState(transform,force,shader); }
+	void releaseObjectState(Transform* const transform, ShaderProgram* const shader = NULL){_api.releaseObjectState(transform,shader); }
 	F32 applyCropMatrix(frustum &f,SceneGraph* sceneGraph){return _api.applyCropMatrix(f,sceneGraph); }
 
 	///Generate a cubemap from the given position
 	///It renders the entire scene graph (with culling) as default
 	///use the callback param to override the draw function
-	void  generateCubeMap(FrameBufferObject& cubeMap, const vec3& pos, boost::function0<void> callback = 0);
+	void  generateCubeMap(FrameBufferObject& cubeMap, const vec3<F32>& pos, boost::function0<void> callback = 0);
 
 public:
 	enum BufferType
@@ -149,8 +152,8 @@ public:
 		STENCIL_BUFFER = 0x0100
 	};
 private:
-	inline void getModelViewMatrix(mat4& mvMat){_api.getModelViewMatrix(mvMat);}
-	inline void getProjectionMatrix(mat4& projMat){_api.getProjectionMatrix(projMat);}
+	inline void getModelViewMatrix(mat4<F32>& mvMat){_api.getModelViewMatrix(mvMat);}
+	inline void getProjectionMatrix(mat4<F32>& projMat){_api.getProjectionMatrix(projMat);}
 
 private:
 	GFXDevice() :
@@ -167,7 +170,7 @@ private:
 	bool _deferredRendering;
 	bool _deviceStateDirty;
 	RENDER_STAGE _renderStage;
-	mat4 _currentLightProjectionMatrix;
+	mat4<F32> _currentLightProjectionMatrix;
     U32  _prevShaderId, _prevTextureId;
 
 protected:

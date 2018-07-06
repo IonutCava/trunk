@@ -25,23 +25,23 @@ class Box3D : public Object3D
 public:
 	Box3D(F32 size) :  Object3D(BOX_3D), _size(size){
 	
-		vec3 vertices[] = {vec3(-1.0f, -1.0f, 1.0f), 
-						   vec3(1.0f, -1.0f, 1.0f), 
-						   vec3(1.0f, 1.0f, 1.0f), 
-						   vec3(-1.0f, 1.0f, 1.0f), 
-					       vec3(-1.0f, -1.0f, -1.0f), 
-					       vec3(1.0f, -1.0f, -1.0f), 
-						   vec3(1.0f, 1.0f, -1.0f), 
-						   vec3(-1.0f, 1.0f, -1.0f)};
+		vec3<F32> vertices[] = {vec3<F32>(-1.0f, -1.0f, 1.0f), 
+							    vec3<F32>(1.0f, -1.0f, 1.0f), 
+							    vec3<F32>(1.0f, 1.0f, 1.0f), 
+							    vec3<F32>(-1.0f, 1.0f, 1.0f), 
+							    vec3<F32>(-1.0f, -1.0f, -1.0f), 
+							    vec3<F32>(1.0f, -1.0f, -1.0f), 
+							    vec3<F32>(1.0f, 1.0f, -1.0f), 
+							    vec3<F32>(-1.0f, 1.0f, -1.0f)};
 
-		vec3 normals[] = {vec3(-1.0f, -1.0f, 1.0f), 
-						  vec3(1.0f, -1.0f, 1.0f), 
-						  vec3(1.0f, 1.0f, 1.0f), 
-						  vec3(-1.0f, 1.0f, 1.0f), 
-						  vec3(-1.0f, -1.0f, -1.0f), 
-						  vec3(1.0f, -1.0f, -1.0f), 
-						  vec3(1.0f, 1.0f, -1.0f), 
-						  vec3(-1.0f, 1.0f, -1.0f)};
+		vec3<F32> normals[] = {vec3<F32>(-1.0f, -1.0f, 1.0f), 
+							   vec3<F32>(1.0f, -1.0f, 1.0f), 
+							   vec3<F32>(1.0f, 1.0f, 1.0f), 
+							   vec3<F32>(-1.0f, 1.0f, 1.0f), 
+							   vec3<F32>(-1.0f, -1.0f, -1.0f), 
+							   vec3<F32>(1.0f, -1.0f, -1.0f), 
+							   vec3<F32>(1.0f, 1.0f, -1.0f), 
+							   vec3<F32>(-1.0f, 1.0f, -1.0f)};
 
 		U16 indices[] = {0, 1, 2, 2, 3, 0, 
 						 3, 2, 6, 6, 7, 3, 
@@ -89,7 +89,7 @@ public:
 
 	virtual bool computeBoundingBox(SceneGraphNode* const sgn){
 		if(sgn->getBoundingBox().isComputed()) return true;
-		sgn->getBoundingBox().set(vec3(-_size,-_size,-_size),vec3(_size,_size,_size));
+		sgn->getBoundingBox().set(vec3<F32>(-_size,-_size,-_size),vec3<F32>(_size,_size,_size));
 		sgn->getBoundingBox().Multiply(0.5f);
 		return SceneNode::computeBoundingBox(sgn);
 	}

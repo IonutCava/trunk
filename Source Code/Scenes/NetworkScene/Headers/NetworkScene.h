@@ -41,8 +41,8 @@ private:
 	void checkPatches();
 
 private:
-	vec2 _sunAngle;
-	vec4 _sunVector;
+	vec2<F32> _sunAngle;
+	vec4<F32> _sunVector;
 	std::vector<F32> _eventTimers;
 	F32 angleLR,angleUD,moveFB,moveLR;
 };

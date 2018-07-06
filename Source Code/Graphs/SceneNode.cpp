@@ -3,6 +3,9 @@
 #include "Managers/Headers/CameraManager.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Hardware/Video/RenderStateBlock.h"
+#include "Geometry/Shapes/Headers/Object3D.h"
+#include "Geometry/Shapes/Headers/Mesh.h" 
+#include "Geometry/Shapes/Headers/SubMesh.h"
 
 SceneNode::SceneNode(SCENE_NODE_TYPE type) : Resource(),
 											 _material(NULL),
@@ -56,14 +59,15 @@ void SceneNode::postDraw(){
 }
 
 bool SceneNode::isInView(bool distanceCheck,BoundingBox& boundingBox){
+
 	Frustum& frust = Frustum::getInstance();
 	Scene* activeScene = SceneManager::getInstance().getActiveScene();
-	vec3 center = boundingBox.getCenter();
+	vec3<F32> center = boundingBox.getCenter();
 	F32 radius = (boundingBox.getMax()-center).length();	
 	F32 halfExtent = boundingBox.getHalfExtent().length();
 
 	if(distanceCheck){
-		vec3 vEyeToChunk = center - frust.getEyePos();
+		vec3<F32> vEyeToChunk = center - frust.getEyePos();
 		if((vEyeToChunk.length() + halfExtent) > activeScene->getGeneralVisibility()){
 			return false;
 		}
@@ -148,16 +152,24 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 	
 
 	s->bind();
-	//The idea here is simple. Stop using glMultMatrixf for transforms
-	//Move transformation calculations to shader. If no transform matrix is available,
-	//revert to a legacy mode or legacy shader. 
-	//ToDo: implement and test this! -Ionut
 
-	/*Transform* t = sgn->getTransform();
-	if(t){
-		s->Uniform("transformMatrix",t->getMatrix());
-		s->Uniform("parentTransformMatrix",t->getParentMatrix());
-	}*/
+	s->Uniform("hasAnimations",false);
+	/// For 3D objects
+	if(getType() == TYPE_OBJECT3D){
+		Object3D* obj = dynamic_cast<Object3D* >(this);
+		/// For Mesh objects
+		if(obj->getType() == SUBMESH){
+			/// Apply bone transforms
+			SubMesh* submesh = dynamic_cast<SubMesh* >(obj);
+			Mesh* mesh = submesh->getParentMesh();
+			std::vector<mat4<F32> >& transforms = mesh->GetTransforms();
+			if(!transforms.empty()){
+				s->Uniform("hasAnimations",	true);	
+				s->Uniform("boneTransforms", transforms);
+			}
+		}
+	}
+	
 	if(baseTexture)   {
 		s->UniformTexture("texDiffuse0",0);
 		s->Uniform("texDiffuse0Op", (I32)_material->getTextureOperation(Material::TEXTURE_BASE));
@@ -232,6 +244,25 @@ void SceneNode::prepareShadowMaterial(SceneGraphNode* const sgn){
 	}else{
 		SET_STATE_BLOCK(_material->getRenderState(SHADOW_STAGE));
 		GFX_DEVICE.setMaterial(_material);
+
+		/// For 3D objects: Animate them so shadows are also updated
+//		if(getType() == TYPE_OBJECT3D){
+//			Object3D* obj = dynamic_cast<Object3D* >(this);
+//			/// For Mesh objects
+//			if(obj->getType() == SUBMESH){
+//				/// Apply bone transforms
+//				SubMesh* submesh = dynamic_cast<SubMesh* >(obj);
+//				Mesh* mesh = submesh->getParentMesh();
+//				std::vector<mat4<F32> >& transforms = mesh->GetTransforms();
+//				if(!transforms.empty()){
+//					ShaderProgram* s = _material->getShaderProgram();
+//					s->bind();
+//					s->Uniform("hasAnimations",	true);	
+//					s->Uniform("boneTransforms", transforms);
+//					s->Uniform("mode", 4);
+//				}
+//			}
+//		}
 	}
 }
 

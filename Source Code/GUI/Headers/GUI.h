@@ -38,7 +38,7 @@ struct GuiEvent
    U16                  ascii;            ///< ascii character code 'a', 'A', 'b', '*', etc (if device==keyboard) - possibly a uchar or something
    U8                   modifier;         ///< SI_LSHIFT, etc
    U16                  keyCode;          ///< for unprintables, 'tab', 'return', ...
-   vec2                 mousePoint;       ///< for mouse events
+   vec2<F32>            mousePoint;       ///< for mouse events
    U8                   mouseClickCount;
 };
 
@@ -51,8 +51,8 @@ public:
 	GuiElement() ;
 	virtual ~GuiElement();
 	inline const std::string& getName() const {return _name;}
-	inline const vec2&   getPosition()  const {return _position;}
-	inline void  setPosition(vec2& pos)        {_position = pos;}
+	inline const vec2<F32>&   getPosition()  const {return _position;}
+	inline void  setPosition(vec2<F32>& pos)        {_position = pos;}
 	inline const GuiType getGuiType()   const {return _guiType;}
 
 	inline const bool isActive()  const {return _active;}
@@ -64,7 +64,7 @@ public:
 
 	inline void    addChildElement(GuiElement* child)    {}
 
-	virtual void onResize(const vec2& newSize){_position -= newSize;}
+	virtual void onResize(const vec2<F32>& newSize){_position -= newSize;}
 
 	virtual void onMouseMove(const GuiEvent &event){};
 	virtual void onMouseUp(const GuiEvent &event){};
@@ -75,9 +75,9 @@ public:
     virtual bool onKeyDown(const GuiEvent &event);
 */
 protected:
-	vec2	_position;
-	GuiType _guiType;
-	Parent* _parent;
+	vec2<F32> _position;
+	GuiType   _guiType;
+	Parent*   _parent;
 
 private:
 	std::string _name;
@@ -90,19 +90,19 @@ class Text : public GuiElement
 {
 friend class GUI;
 public:
-	Text(const std::string& id,std::string& text,const vec2& position, void* font,const vec3& color) : GuiElement(),
+	Text(const std::string& id,std::string& text,const vec2<F32>& position, void* font,const vec3<F32>& color) : GuiElement(),
 	  _text(text),
 	  _font(font),
 	  _color(color){_position = position; _guiType = GUI_TEXT;};
 
 	std::string _text;
 	void*		_font;
-	vec3		_color;
+	vec3<F32>   _color;
 
      void onMouseMove(const GuiEvent &event);
      void onMouseUp(const GuiEvent &event);
      void onMouseDown(const GuiEvent &event);
-	 void onResize(const vec2& newSize){}
+	 void onResize(const vec2<F32>& newSize){}
 /*   void onRightMouseUp(const GuiEvent &event);
      void onRightMouseDown(const GuiEvent &event);
      bool onKeyUp(const GuiEvent &event);
@@ -115,7 +115,7 @@ class Button : public GuiElement
 
 friend class GUI;
 public:
-	Button(const std::string& id,std::string& text,const vec2& position,const vec2& dimensions,const vec3& color/*, Texture2D& image*/,ButtonCallback callback)  : GuiElement(),
+	Button(const std::string& id,std::string& text,const vec2<F32>& position,const vec2<F32>& dimensions,const vec3<F32>& color/*, Texture2D& image*/,ButtonCallback callback)  : GuiElement(),
 		_text(text),
 		_dimensions(dimensions),
 		_color(color),
@@ -125,14 +125,14 @@ public:
 		/*_image(image)*/{_position = position;_guiType = GUI_BUTTON; setActive(true);}
 
 	std::string _text;
-	vec2		_dimensions;
-	vec3		_color;
+	vec2<F32>	_dimensions;
+	vec3<F32>	_color;
 	bool		_pressed;
 	bool		_highlight;
 	ButtonCallback _callbackFunction;	/* A pointer to a function to call if the button is pressed */
 	//Texture2D image;
 
-	void onResize(const vec2& newSize){
+	void onResize(const vec2<F32>& newSize){
 		if(_dimensions.x - newSize.x/_dimensions.x > 0.075f &&
 		   _dimensions.y - newSize.y/_dimensions.y > 0.05f){
 			_position -= newSize;
@@ -176,9 +176,9 @@ DEFINE_SINGLETON( GUI )
 public:
 	void draw();
 	void close();
-	void addText(const std::string& id,const vec3& position, Font font,const vec3& color, char* format, ...);
-	void addButton(const std::string& id, std::string text,const vec2& position,const vec2& dimensions,const vec3& color,ButtonCallback callback);
-	void addFlash(const std::string& id, std::string movie, const vec2& position, const vec2& extent);
+	void addText(const std::string& id,const vec3<F32>& position, Font font,const vec3<F32>& color, char* format, ...);
+	void addButton(const std::string& id, std::string text,const vec2<F32>& position,const vec2<F32>& dimensions,const vec3<F32>& color,ButtonCallback callback);
+	void addFlash(const std::string& id, std::string movie, const vec2<F32>& position, const vec2<F32>& extent);
 	void modifyText(const std::string& id, char* format, ...);
 	inline GuiElement* const getItem(const std::string& id) {return _guiStack[id];}
 	void onResize(F32 newWidth, F32 newHeight);

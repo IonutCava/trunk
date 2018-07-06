@@ -10,13 +10,13 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 using namespace std;
 
-//vec4 _lightPosition(0,16,6,0.0);
+//vec4<F32> _lightPosition(0,16,6,0.0);
 
 //begin copy-paste: randarea scenei
 void PingPongScene::render(){
 	Sky& sky = Sky::getInstance();
 
-	sky.setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3(_sunVector),false,true,true);
+	sky.setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3<F32>(_sunVector),false,true,true);
 	sky.draw();
 
 	_sceneGraph->render();
@@ -25,11 +25,11 @@ void PingPongScene::render(){
 
 //begin copy-paste: Desenam un cer standard
 void PingPongScene::preRender(){
-	vec2 _sunAngle = vec2(0.0f, RADIANS(45.0f));
-	_sunVector = vec4(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
-						-cosf(_sunAngle.y),
-						-sinf(_sunAngle.x) * sinf(_sunAngle.y),
-						0.0f );
+	vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+	_sunVector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+							-cosf(_sunAngle.y),
+							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
+							0.0f );
 
 	LightManager::getInstance().getLight(0)->setLightProperties(LIGHT_POSITION,_sunVector);
 }
@@ -52,7 +52,7 @@ void PingPongScene::reseteazaJoc(){
 	_pierdut = false;
 	_miscareLaterala = 0;
 	getEvents().clear();
-	_mingeSGN->getTransform()->setPosition(vec3(0, 2 ,2));
+	_mingeSGN->getTransform()->setPosition(vec3<F32>(0, 2 ,2));
 }
 
 void PingPongScene::servesteMingea(){
@@ -70,16 +70,16 @@ void PingPongScene::test(boost::any a, CallbackParam b){
 	bool updated = false;
 	string mesaj;
 	Transform* mingeT = _mingeSGN->getTransform();
-	vec3 pozitieMinge  = mingeT->getPosition();
+	vec3<F32> pozitieMinge  = mingeT->getPosition();
 
 	
 	SceneGraphNode* masa = _sceneGraph->findNode("masa");
 	SceneGraphNode* plasa = _sceneGraph->findNode("plasa");
 	SceneGraphNode* perete = _sceneGraph->findNode("perete");
 	SceneGraphNode* paleta = _sceneGraph->findNode("paleta");
-	vec3 pozitiePaleta   = paleta->getTransform()->getPosition();
-	vec3 pozitieAdversar = perete->getTransform()->getPosition();
-	vec3 pozitieMasa     = masa->getTransform()->getPosition();
+	vec3<F32> pozitiePaleta   = paleta->getTransform()->getPosition();
+	vec3<F32> pozitieAdversar = perete->getTransform()->getPosition();
+	vec3<F32> pozitieMasa     = masa->getTransform()->getPosition();
 	//Miscare minge si detectie coliziuni
 
 
@@ -160,7 +160,7 @@ void PingPongScene::test(boost::any a, CallbackParam b){
 		_directieAdversar = false;
 	}
 	//Rotim mingea doar de efect ...
-	mingeT->rotateEuler(vec3(pozitieMinge.z,1,1));
+	mingeT->rotateEuler(vec3<F32>(pozitieMinge.z,1,1));
 
 	if(updated){
 		if(_pierdut){
@@ -200,7 +200,7 @@ void PingPongScene::processInput(){
 
 	SceneGraphNode* paleta = _sceneGraph->findNode("paleta");
 
-	vec3 pos = paleta->getTransform()->getPosition();
+	vec3<F32> pos = paleta->getTransform()->getPosition();
 
 	//Miscarea pe ambele directii de deplasare este limitata in intervalul [-3,3] cu exceptia coborarii pe Y;
 	if(moveFB){
@@ -225,7 +225,7 @@ bool PingPongScene::load(const string& name){
 	state = loadEvents(true);
 	//Pozitionam camera
 	CameraManager::getInstance().getActiveCamera()->setAngleX(RADIANS(-90));
-	CameraManager::getInstance().getActiveCamera()->setEye(vec3(0,2.5f,6.5f));
+	CameraManager::getInstance().getActiveCamera()->setEye(vec3<F32>(0,2.5f,6.5f));
 	
 	return state;
 }
@@ -240,29 +240,29 @@ bool PingPongScene::loadResources(bool continueOnErrors){
 	_mingeSGN = addGeometry(_minge);
 	_minge->setResolution(16);
 	_minge->setRadius(0.1f);
-	_mingeSGN->getTransform()->translate(vec3(0, 2 ,2));
-	_minge->getMaterial()->setDiffuse(vec4(0.4f,0.4f,0.4f,1.0f));
-	_minge->getMaterial()->setAmbient(vec4(0.25f,0.25f,0.25f,1.0f));
+	_mingeSGN->getTransform()->translate(vec3<F32>(0, 2 ,2));
+	_minge->getMaterial()->setDiffuse(vec4<F32>(0.4f,0.4f,0.4f,1.0f));
+	_minge->getMaterial()->setAmbient(vec4<F32>(0.25f,0.25f,0.25f,1.0f));
 	_minge->getMaterial()->setShininess(36.8f);
-	_minge->getMaterial()->setSpecular(vec4(0.774597f,0.774597f,0.774597f,1.0f));
+	_minge->getMaterial()->setSpecular(vec4<F32>(0.774597f,0.774597f,0.774597f,1.0f));
 
 	//Adaugam butoane si text labels
-	GUI::getInstance().addButton("Serveste", "Serveste", vec2(Application::getInstance().getWindowDimensions().width-120 ,
+	GUI::getInstance().addButton("Serveste", "Serveste", vec2<F32>(Application::getInstance().getWindowDimensions().width-120 ,
 															 Application::getInstance().getWindowDimensions().height/1.1f),
-													    	 vec2(100,25),vec3(0.65f,0.65f,0.65f),
+													    	 vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 															 boost::bind(&PingPongScene::servesteMingea,this));
 
-	GUI::getInstance().addText("Scor",vec3(Application::getInstance().getWindowDimensions().width - 120, Application::getInstance().getWindowDimensions().height/1.3f, 0),
-							   BITMAP_8_BY_13,vec3(1,0,0), "Scor: %d",0);
+	GUI::getInstance().addText("Scor",vec3<F32>(Application::getInstance().getWindowDimensions().width - 120, Application::getInstance().getWindowDimensions().height/1.3f, 0),
+							   BITMAP_8_BY_13,vec3<F32>(1,0,0), "Scor: %d",0);
 
-	GUI::getInstance().addText("Mesaj",vec3(Application::getInstance().getWindowDimensions().width - 120, Application::getInstance().getWindowDimensions().height/1.5f, 0),
-							   BITMAP_8_BY_13,vec3(1,0,0), "");
-	GUI::getInstance().addText("insulte",vec3(Application::getInstance().getWindowDimensions().width/4, Application::getInstance().getWindowDimensions().height/3, 0),
-							   BITMAP_TIMES_ROMAN_24,vec3(0,1,0), "");
+	GUI::getInstance().addText("Mesaj",vec3<F32>(Application::getInstance().getWindowDimensions().width - 120, Application::getInstance().getWindowDimensions().height/1.5f, 0),
+							   BITMAP_8_BY_13,vec3<F32>(1,0,0), "");
+	GUI::getInstance().addText("insulte",vec3<F32>(Application::getInstance().getWindowDimensions().width/4, Application::getInstance().getWindowDimensions().height/3, 0),
+							   BITMAP_TIMES_ROMAN_24,vec3<F32>(0,1,0), "");
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec3(60,60,0),          //Position
+		                       vec3<F32>(60,60,0),          //Position
 							   BITMAP_8_BY_13,    //Font
-							   vec3(0.0f,0.2f, 1.0f),  //Color
+							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
 	//Cateva replici motivationale
 	_quotes.push_back("Ha ha ... pana si Odin rade de tine!");

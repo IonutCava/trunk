@@ -3,7 +3,7 @@
 #include "glEnumTable.h"
 #include "Core\Headers\Console.h"
 
-void GLCheckError(const std::string& File, unsigned int Line);
+void GLCheckError(const std::string& File, unsigned int Line, char* operation);
 
 #define SHOULD_TOGGLE(state) (!oldState || oldState->_descriptor.state != _descriptor.state)
 

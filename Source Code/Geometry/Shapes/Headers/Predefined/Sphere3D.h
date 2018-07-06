@@ -39,7 +39,7 @@ public:
 
 	virtual bool computeBoundingBox(SceneGraphNode* const sgn){
 		if(sgn->getBoundingBox().isComputed()) return true;
-		sgn->getBoundingBox().set(vec3(- _radius,- _radius,- _radius), vec3( _radius, _radius, _radius));
+		sgn->getBoundingBox().set(vec3<F32>(- _radius,- _radius,- _radius), vec3<F32>( _radius, _radius, _radius));
 		return SceneNode::computeBoundingBox(sgn);
 	}
 
@@ -75,9 +75,9 @@ private:
                 F32 const x = cos(2*M_PI * s * S) * sin( M_PI * r * R );
                 F32 const z = sin(2*M_PI * s * S) * sin( M_PI * r * R );
 
-				_geometry->getTexcoord().push_back(vec2(s*S,r*R));
-                _geometry->getPosition().push_back(vec3(x * _radius,y * _radius, z * _radius));
-				_geometry->getNormal().push_back(vec3(x,y,z));
+				_geometry->getTexcoord().push_back(vec2<F32>(s*S,r*R));
+                _geometry->getPosition().push_back(vec3<F32>(x * _radius,y * _radius, z * _radius));
+				_geometry->getNormal().push_back(vec3<F32>(x,y,z));
 			}
 		}
 

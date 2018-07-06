@@ -171,9 +171,9 @@ void ImageData::Destroy(){
 	SAFE_DELETE_ARRAY(data);
 }
 
-ivec3 ImageData::getColor(U16 x, U16 y) const {
+vec3<I32> ImageData::getColor(U16 x, U16 y) const {
 	I32 idx = (y * w + x) * d;
-	return ivec3( data[idx+0], data[idx+1], data[idx+2]);
+	return vec3<I32>( data[idx+0], data[idx+1], data[idx+2]);
 }
 
 void ImageData::resize(U16 width, U16 height){

@@ -25,9 +25,11 @@
 
 class ActionList;
 class SceneGraphNode;
+class NPC;
 
 class AIEntity{
 	friend class AIManager;
+
 public:
 	AIEntity(const std::string& name);
 	
@@ -35,7 +37,8 @@ public:
 	void processData();
 	void update();
 
-	bool attachNode(SceneGraphNode* const sgn) {_node = sgn; return true;}
+	inline SceneGraphNode* getBoundNode() {return _node;}
+	inline bool attachNode(SceneGraphNode* const sgn) {_node = sgn; return true;}
 	bool addSensor(SENSOR_TYPE type, Sensor* sensor);
 	bool addFriend(AIEntity* entity);
 	bool addEnemyTeam(AICoordination::teamMap& enemyTeam);
@@ -50,6 +53,9 @@ public:
 	void receiveMessage(AIEntity* sender, AI_MSG msg,const boost::any& msg_content);
 	void processMessage(AIEntity* sender, AI_MSG msg, const boost::any& msg_content);
 	const std::string& getName() {return _name;}
+
+	inline void addUnitRef(NPC* const npc) {_unitRef = npc;}
+	inline NPC* getUnitRef()               {return _unitRef;}
 private:
 	std::string     _name;
 	U32             _GUID;
@@ -59,6 +65,7 @@ private:
 	boost::mutex    _updateMutex;
 
 	unordered_map<SENSOR_TYPE, Sensor*> _sensorList;
+	NPC* _unitRef;
 	
 };
 

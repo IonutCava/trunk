@@ -26,7 +26,11 @@ DEFINE_SINGLETON(AIManager)
 
 public:
 	U8 tick();
+	///Add an AI Entity from the manager
 	bool addEntity(AIEntity* entity);
+	///Remove an AI Entity from the manager
+	void destroyEntity(U32 guid);
+	/// Destroy all entities
 	void Destroy();
 
 private:

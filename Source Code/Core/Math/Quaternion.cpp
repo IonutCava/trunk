@@ -34,8 +34,8 @@ Quaternion Quaternion::operator* (const Quaternion &rq) const{
 }
 
 //! Multiplying a quaternion q with a vector v applies the q-rotation to v
-vec3 Quaternion::operator* (const vec3 &vec) const{
-	vec3 vn(vec);
+vec3<F32> Quaternion::operator* (const vec3<F32> &vec) const{
+	vec3<F32> vn(vec);
 	vn.normalize();
  
 	Quaternion vecQuat, resQuat;
@@ -47,16 +47,16 @@ vec3 Quaternion::operator* (const vec3 &vec) const{
 	resQuat = vecQuat * getConjugate();
 	resQuat = *this * resQuat;
  
-	return (vec3(resQuat._x, resQuat._y, resQuat._z));
+	return (vec3<F32>(resQuat._x, resQuat._y, resQuat._z));
 }
 
 //! Convert from Axis Angle
-void Quaternion::FromAxis(const vec3 &v, F32 angle){
+void Quaternion::FromAxis(const vec3<F32> &v, F32 angle){
 	_dirty = true;
 	F32 sinAngle;
 	angle = RADIANS(angle);
 	angle *= 0.5f;
-	vec3 vn(v);
+	vec3<F32> vn(v);
 	vn.normalize();
  
 	sinAngle = sin(angle);
@@ -95,7 +95,7 @@ void Quaternion::FromEuler(F32 pitch, F32 yaw, F32 roll){
 }
 
 //! Convert to Matrix
-mat4 const& Quaternion::getMatrix(){
+mat4<F32> const& Quaternion::getMatrix(){
 	if(_dirty) {
 		F32 x2 =  _x + _x;
 		F32 y2 = _y + _y;
@@ -111,17 +111,17 @@ mat4 const& Quaternion::getMatrix(){
 		F32 wy = _w * y2;	
 		F32 wz = _w * z2;
 
-		_mat = mat4(1.0f-(yy + zz),  xy + wz,        xz - wy,        0.0f,
-		    		xy - wz,         1.0f-(xx + zz), yz + wx,        0.0f,
-		  			xz + wy,         yz - wx,        1.0f-(xx + yy), 0.0f,
-					0.0f,            0.0f,           0.0f,           1.0f);
+		_mat = mat4<F32>(1.0f-(yy + zz),  xy + wz,        xz - wy,        0.0f,
+		    			 xy - wz,         1.0f-(xx + zz), yz + wx,        0.0f,
+		  				 xz + wy,         yz - wx,        1.0f-(xx + yy), 0.0f,
+						 0.0f,            0.0f,           0.0f,           1.0f);
 		_dirty = false;
 	}
 	return _mat;
 }
 
 //! Convert to Axis/Angles
-void Quaternion::getAxisAngle(vec3 *axis, F32 *angle,bool inDegrees){
+void Quaternion::getAxisAngle(vec3<F32> *axis, F32 *angle,bool inDegrees){
 	F32 scale = Util::square_root(_x * _x + _y * _y + _z * _z);
 	axis->x = _x / scale;
 	axis->y = _y / scale;
@@ -133,8 +133,8 @@ void Quaternion::getAxisAngle(vec3 *axis, F32 *angle,bool inDegrees){
 }
 
 bool Quaternion::compare(Quaternion& q){
-	vec4 thisQ(_x,_y,_z,_w);
-	vec4 otherQ(q._x,q._y,q._z,q._w);
+	vec4<F32> thisQ(_x,_y,_z,_w);
+	vec4<F32> otherQ(q._x,q._y,q._z,q._w);
 
 	return thisQ.compare(otherQ);
 }
