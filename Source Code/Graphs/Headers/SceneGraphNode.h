@@ -182,11 +182,8 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     }
 
     /*Node State*/
-    inline void setActive(const bool state) {
-        _wasActive = _active;
-        _active = state;
-    }
-    inline void restoreActive() { _active = _wasActive; }
+    void setActive(const bool state);
+    void restoreActive();
     inline void scheduleDeletion() { _shouldDelete = true; }
 
     inline bool inView() const { return _inView; }

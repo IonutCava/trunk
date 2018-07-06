@@ -260,6 +260,21 @@ void SceneGraphNode::setSelected(const bool state) {
     }
 }
 
+void SceneGraphNode::setActive(const bool state) {
+    _wasActive = _active;
+    _active = state;
+    for (NodeChildren::value_type& it : _children) {
+        it.second->setActive(state);
+    }
+}
+
+void SceneGraphNode::restoreActive() { 
+    _active = _wasActive;
+     for (NodeChildren::value_type& it : _children) {
+        it.second->restoreActive();
+    }
+}
+
 bool SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform) {
     if (_boundingBox.Transform(
             _initialBoundingBox, transform,

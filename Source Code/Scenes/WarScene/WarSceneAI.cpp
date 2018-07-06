@@ -217,7 +217,6 @@ bool WarScene::initializeAI(bool continueOnErrors) {
             brain->registerGOAPPackage(goapPackages[to_uint(type)]);
             aiSoldier->addAISceneImpl(brain);
             soldier = MemoryManager_NEW NPC(currentNode, aiSoldier);
-            soldier->setMovementSpeed(speed * 2);
             soldier->setAttribute(to_uint(AI::UnitAttributes::HEALTH_POINTS), 100);
             soldier->setAttribute(to_uint(AI::UnitAttributes::DAMAGE), damage);
             soldier->setAttribute(to_uint(AI::UnitAttributes::ALIVE_FLAG), 1);

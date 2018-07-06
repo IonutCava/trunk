@@ -236,13 +236,19 @@ void AIEntity::updatePosition(const U64 deltaTime) {
         _distanceToTarget = _currentPosition.distanceSquared(_destination);
 
         // if we are walking but did not change distance
-        if (std::abs(_previousDistanceToTarget - _distanceToTarget) <
-            DESTINATION_RADIUS) {
+        if (std::abs(_previousDistanceToTarget - _distanceToTarget) < DESTINATION_RADIUS) {
             _moveWaitTimer += deltaTime;
             if (Time::MicrosecondsToSeconds<D32>(_moveWaitTimer) > 5) {
                 _moveWaitTimer = 0;
-                // updateDestination(_detourCrowd->getNavMesh().getRandomPosition());
-                // return;
+                stop();
+                if (_detourCrowd) {
+                    vec3<F32> result;
+                    _unitRef->moveTo(
+                        _detourCrowd->getNavMesh().getRandomPositionInCircle(
+                            _currentPosition, DESTINATION_RADIUS, vec3<F32>(5),
+                            result, 10));
+                }
+                return;
             }
         } else {
             _moveWaitTimer = 0;
@@ -278,7 +284,9 @@ bool AIEntity::updateDestination(const vec3<F32>& destination,
     return true;
 }
 
-const vec3<F32>& AIEntity::getPosition() const { return _currentPosition; }
+const vec3<F32>& AIEntity::getPosition() const {
+    return _currentPosition;
+}
 
 const vec3<F32>& AIEntity::getDestination() const {
     if (isAgentLoaded()) return _destination;
@@ -287,7 +295,9 @@ const vec3<F32>& AIEntity::getDestination() const {
 }
 
 bool AIEntity::destinationReached() {
-    if (!isAgentLoaded()) return false;
+    if (!isAgentLoaded()) {
+        return false;
+    }
 
     if (_currentPosition.distanceSquared(getDestination()) <=
         DESTINATION_RADIUS)
@@ -297,7 +307,9 @@ bool AIEntity::destinationReached() {
 }
 
 void AIEntity::setDestination(const vec3<F32>& destination) {
-    if (!isAgentLoaded()) return;
+    if (!isAgentLoaded()) {
+        return;
+    }
 
     _destination = destination;
     _stopped = false;

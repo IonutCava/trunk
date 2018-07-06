@@ -112,7 +112,7 @@ bool WarSceneAISceneImpl::DIE() {
     currentTeam->removeTeamMember(_entity);
 
     _entity->getUnitRef()->getBoundNode()->setActive(false);
-
+    _entity->getUnitRef()->getBoundNode()->getComponent<PhysicsComponent>()->scale(3);
     return true;
 }
 
@@ -144,7 +144,9 @@ void WarSceneAISceneImpl::requestOrders() {
         U32 weight = 0;
         switch (orderID) {
             case WarSceneOrder::WarOrder::ORDER_CAPTURE_ENEMY_FLAG: {
-                if (!_localWorkingMemory._hasEnemyFlag.value()) {
+                if (!_localWorkingMemory._hasEnemyFlag.value() &&
+                    _globalWorkingMemory._flagCarriers[ownTeamID].value() == nullptr)
+                {
                     weight = 3;
                 }
             } break;
@@ -260,7 +262,8 @@ bool WarSceneAISceneImpl::preAction(ActionType type,
         } break;
         case ActionType::ACTION_ATTACK_ENEMY: {
             Console::d_printfn(_WarAIOutputStream, "Starting attack enemy action");
-            if (_localWorkingMemory._currentTarget.value() == nullptr) {
+            if (_localWorkingMemory._currentTarget.value() == nullptr &&
+                _globalWorkingMemory._teamAliveCount[g_enemyTeamContainer].value() > 0) {
                 SceneGraphNode* enemy = _visualSensor->getClosestNode(g_enemyTeamContainer);
                 assert(enemy);
                 _entity->updateDestination(enemy->getComponent<PhysicsComponent>()->getPosition(), true);
@@ -408,14 +411,16 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction& planStep)
         } break;
         case ActionType::ACTION_ATTACK_ENEMY: {
             SceneGraphNode* enemy = _localWorkingMemory._currentTarget.value();
-            assert(enemy != nullptr);
-            AIEntity* targetUnit = getUnitForNode(g_enemyTeamContainer, enemy);
-            assert(targetUnit != nullptr);
-            NPC* targetNPC = targetUnit->getUnitRef();
-            state =  targetNPC->getAttribute(to_uint(UnitAttributes::ALIVE_FLAG)) == 0;
-
-             if (!state && _entity->destinationReached()) {
-                _entity->updateDestination(targetNPC->getPosition());
+            if (!enemy) {
+                state = true;
+            } else {
+                AIEntity* targetUnit = getUnitForNode(g_enemyTeamContainer, enemy);
+                assert(targetUnit != nullptr);
+                NPC* targetNPC = targetUnit->getUnitRef();
+                state = targetNPC->getAttribute(to_uint(UnitAttributes::ALIVE_FLAG)) == 0;
+                if (!state) {
+                    _entity->updateDestination(targetNPC->getPosition(), true);
+                }
             }
         } break;
         default: {
@@ -504,6 +509,7 @@ void WarSceneAISceneImpl::processData(const U64 deltaTime) {
     updatePositions();
 
     _attackTimer += deltaTime;
+
     SceneGraphNode* enemy = _localWorkingMemory._currentTarget.value();
     if (enemy != nullptr) {
         AIEntity* targetUnit = getUnitForNode(g_enemyTeamContainer, enemy);
@@ -511,8 +517,8 @@ void WarSceneAISceneImpl::processData(const U64 deltaTime) {
             NPC* targetNPC = targetUnit->getUnitRef();
             bool alive = targetNPC->getAttribute(to_uint(UnitAttributes::ALIVE_FLAG)) > 0;
             if (alive && _entity->getPosition().distanceSquared(targetNPC->getPosition()) < g_ATTACK_RADIUS_SQ) {
+                _entity->stop();
                 _entity->getUnitRef()->lookAt(targetNPC->getPosition());
-                
                 if (_attackTimer >= Time::SecondsToMicroseconds(0.5)) {
                     I32 HP = targetNPC->getAttribute(to_uint(UnitAttributes::HEALTH_POINTS));
                     I32 Damage = _entity->getUnitRef()->getAttribute(to_uint(UnitAttributes::DAMAGE));

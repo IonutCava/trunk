@@ -426,8 +426,8 @@ void glimBatchData::BindOGL(unsigned int uiCurrentProgram) {
                     BUFFER_OFFSET(it->second.m_uiBufferOffset));
                 break;
             case GLIM_ENUM::GLIM_4UB:
-                glVertexAttribPointer(
-                    iAttributeArray, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0,
+                glVertexAttribIPointer(
+                    iAttributeArray, 4, GL_UNSIGNED_BYTE, 0,
                     BUFFER_OFFSET(it->second.m_uiBufferOffset));
                 break;
         }

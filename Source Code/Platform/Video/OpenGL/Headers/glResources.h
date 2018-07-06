@@ -45,8 +45,8 @@
 #define GLFW_INCLUDE_NONE
 #endif
 
-//#define GL_VERSION_4_4
-#define GL_VERSION_4_5
+#define GL_VERSION_4_4
+//#define GL_VERSION_4_5
 
 #ifdef GL_VERSION_4_5
 #include <glbinding/gl/gl45.h>

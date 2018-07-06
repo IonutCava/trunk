@@ -216,12 +216,12 @@ template <typename T>
 
 template <typename T>
 /*constexpr*/ U64 SecondsToMicroseconds(T a) {
-    return Metric::Mega(static_cast<U64>(a));
+    return static_cast<U64>(Metric::Mega(a));
 }
 
 template <typename T>
 /*constexpr*/ U64 MillisecondsToMicroseconds(T a) {
-    return Metric::Kilo(static_cast<U64>(a));
+    return static_cast<U64>(Metric::Kilo(a));
 }
 
 template <typename T>

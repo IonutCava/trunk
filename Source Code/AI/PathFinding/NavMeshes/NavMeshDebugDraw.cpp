@@ -93,7 +93,7 @@ void NavMeshDebugDraw::begin(duDebugDrawPrimitives prim, F32 size) {
             assert(prim == DU_DRAW_QUADS);
     }
 
-    _primitive->attribute4ub("inColorData", vec4<U8>(255, 255, 255, 64));
+    _primitive->attribute4ub("inColorData", vec4<U8>(255, 255, 255, 128));
     _primitive->begin(_primType);
 }
 
