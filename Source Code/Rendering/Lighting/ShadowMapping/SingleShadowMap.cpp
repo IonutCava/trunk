@@ -30,7 +30,7 @@ SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera)
 
     depthMapDescriptor.setSampler(depthMapSampler);
     _depthMap = GFX_DEVICE.newFB();
-    _depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
+    _depthMap->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
     _depthMap->toggleColorWrites(false);
 }
 
@@ -48,7 +48,7 @@ void SingleShadowMap::resolution(U16 resolution, U8 resolutionFactor) {
         // Initialize the FB's with a variable resolution
         Console::printfn(Locale::get("LIGHT_INIT_SHADOW_FB"),
                          _light->getGUID());
-        _depthMap->Create(_resolution, _resolution);
+        _depthMap->create(_resolution, _resolution);
     }
 
     ShadowMap::resolution(resolution, resolutionFactor);
@@ -77,15 +77,15 @@ void SingleShadowMap::renderInternal(
                                  vec2<F32>(1.0, _light->getRange()));
     _shadowCamera->renderLookAt();
 
-    _depthMap->Begin(Framebuffer::defaultPolicy());
+    _depthMap->begin(Framebuffer::defaultPolicy());
     // draw the scene
     GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
     // unbind the associated depth map
-    _depthMap->End();
+    _depthMap->end();
 }
 
 void SingleShadowMap::previewShadowMaps() {
-    _depthMap->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    _depthMap->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
     GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
                             _previewDepthMapShader);
 }

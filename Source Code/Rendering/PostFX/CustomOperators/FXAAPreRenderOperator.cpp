@@ -19,7 +19,7 @@ FXAAPreRenderOperator::FXAAPreRenderOperator(Framebuffer* result,
                                      GFXDataFormat::UNSIGNED_BYTE);
     fxaaDescriptor.setSampler(*_internalSampler);
 
-    _samplerCopy->AddAttachment(fxaaDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _samplerCopy->addAttachment(fxaaDescriptor, TextureDescriptor::AttachmentType::Color0);
     _samplerCopy->toggleDepthBuffer(false);
     ResourceDescriptor fxaa("FXAA");
     fxaa.setThreadedLoading(false);
@@ -34,7 +34,7 @@ FXAAPreRenderOperator::~FXAAPreRenderOperator() {
 }
 
 void FXAAPreRenderOperator::reshape(U16 width, U16 height) {
-    _samplerCopy->Create(width, height);
+    _samplerCopy->create(width, height);
     _fxaa->Uniform("dvd_fxaaSpanMax", 8.0f);
     _fxaa->Uniform("dvd_fxaaReduceMul", 1.0f / 8.0f);
     _fxaa->Uniform("dvd_fxaaReduceMin", 1.0f / 128.0f);
@@ -50,12 +50,12 @@ void FXAAPreRenderOperator::operation() {
     }
 
     // Copy current screen
-    _samplerCopy->BlitFrom(_inputFB[0]);
+    _samplerCopy->blitFrom(_inputFB[0]);
     // Apply FXAA to the output screen using the sampler copy as the texture
     // input
-    _outputFB->Begin(Framebuffer::defaultPolicy());
-    _samplerCopy->Bind(0);
+    _outputFB->begin(Framebuffer::defaultPolicy());
+    _samplerCopy->bind(0);
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _fxaa);
-    _outputFB->End();
+    _outputFB->end();
 }
 };

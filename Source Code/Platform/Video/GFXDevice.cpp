@@ -106,9 +106,9 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
     // Only the first color attachment or the depth attachment is used for now
     // and it must be a cube map texture
     Texture* colorAttachment =
-        cubeMap.GetAttachment(TextureDescriptor::AttachmentType::Color0);
+        cubeMap.getAttachment(TextureDescriptor::AttachmentType::Color0);
     Texture* depthAttachment =
-        cubeMap.GetAttachment(TextureDescriptor::AttachmentType::Depth);
+        cubeMap.getAttachment(TextureDescriptor::AttachmentType::Depth);
     // Color attachment takes precedent over depth attachment
     bool hasColor = (colorAttachment != nullptr);
     bool hasDepth = (depthAttachment != nullptr);
@@ -156,11 +156,11 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
     // Set the desired render stage, remembering the previous one
     RenderStage prevRenderStage = setRenderStage(renderStage);
     // Enable our render target
-    cubeMap.Begin(Framebuffer::defaultPolicy());
+    cubeMap.begin(Framebuffer::defaultPolicy());
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
-        cubeMap.DrawToFace(hasColor ? TextureDescriptor::AttachmentType::Color0
+        cubeMap.drawToFace(hasColor ? TextureDescriptor::AttachmentType::Color0
                                     : TextureDescriptor::AttachmentType::Depth,
                            i);
         // Point our camera to the correct face
@@ -171,7 +171,7 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
         getRenderer().render(renderFunction, GET_ACTIVE_SCENE().renderState());
     }
     // Resolve our render target
-    cubeMap.End();
+    cubeMap.end();
     // Return to our previous rendering stage
     setRenderStage(prevRenderStage);
     // Restore our previous camera
@@ -294,7 +294,7 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
         // Update render targets with the new resolution
         for (Framebuffer* renderTarget : _renderTarget) {
             if (renderTarget) {
-                renderTarget->Create(w, h);
+                renderTarget->create(w, h);
             }
         }
     }
@@ -599,11 +599,10 @@ void GFXDevice::constructHIZ() {
     // only a depth image,
     // disables depth testing but allows depth writes
     // Set the depth buffer as the currently active render target
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->Begin(hizTarget);
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->begin(hizTarget);
     // Bind the depth texture to the first texture unit
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->Bind(
-        to_ubyte(ShaderProgram::TextureUsage::UNIT0),
-        TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
+                                                      TextureDescriptor::AttachmentType::Depth);
     // Calculate the number of mipmap levels we need to generate
     U32 numLevels = 1 + to_uint(floorf(log2f(fmaxf(to_float(resolution.width),
                                                    to_float(resolution.height)))));
@@ -626,7 +625,7 @@ void GFXDevice::constructHIZ() {
         updateViewportInternal(vec4<I32>(0, 0, currentWidth, currentHeight));
         // Bind next mip level for rendering but first restrict fetches only to
         // previous level
-        _renderTarget[to_uint(RenderTarget::DEPTH)]->SetMipLevel(
+        _renderTarget[to_uint(RenderTarget::DEPTH)]->setMipLevel(
             i - 1, i - 1, i, TextureDescriptor::AttachmentType::Depth);
         // Dummy draw command as the full screen quad is generated completely in the vertex shader
         drawTriangle(_stateDepthOnlyRenderingHash, _HIZConstructProgram);
@@ -634,9 +633,9 @@ void GFXDevice::constructHIZ() {
     updateViewportInternal(previousViewport);
     // Reset mipmap level range for the depth buffer
     _renderTarget[to_uint(RenderTarget::DEPTH)]
-        ->ResetMipLevel(TextureDescriptor::AttachmentType::Depth);
+        ->resetMipLevel(TextureDescriptor::AttachmentType::Depth);
     // Unbind the render target
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->End();
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->end();
 }
 
 /// Find an unused primitive object or create a new one and return it
@@ -678,7 +677,7 @@ void GFXDevice::Screenshot(const stringImpl& filename) {
     U32 bufferSize = resolution.width * resolution.height * 4;
     U8* imageData = MemoryManager_NEW U8[bufferSize];
     // Read the pixels from the main render target (RGBA16F)
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->ReadData(
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->readData(
         GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, imageData);
     // Save to file
     ImageTools::SaveSeries(filename,

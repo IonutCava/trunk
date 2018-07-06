@@ -59,17 +59,19 @@ glUniformBuffer::~glUniformBuffer()
 }
 
 void glUniformBuffer::destroy() {
-    if (_persistentMapped) {
-        _lockManager->WaitForLockedRange(0, _allignedBufferSize, false);
-    } else {
-        glInvalidateBufferData(_UBOid);
-    }
-    GLUtil::freeBuffer(_UBOid, _mappedBuffer);
+    if (_UBOId > 0) {
+        if (_persistentMapped) {
+            _lockManager->WaitForLockedRange(0, _allignedBufferSize, false);
+        } else {
+            glInvalidateBufferData(_UBOid);
+        }
+        GLUtil::freeBuffer(_UBOid, _mappedBuffer);
 
-    for (AtomicCounter& counter : _atomicCounters) {
-        glDeleteBuffers(1, &counter._handle);
+        for (AtomicCounter& counter : _atomicCounters) {
+            glDeleteBuffers(1, &counter._handle);
+        }
+        _atomicCounters.clear();
     }
-    _atomicCounters.clear();
 }
 
 void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor) {

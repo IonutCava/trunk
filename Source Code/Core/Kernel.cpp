@@ -316,17 +316,17 @@ void Kernel::renderScene() {
             currentCamera->setAnaglyph(renderPasses == 1 ? true : false);
         }
 
-        _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->Begin(depthPassPolicy);
+        _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->begin(depthPassPolicy);
             _sceneMgr.render(RenderStage::Z_PRE_PASS, *this);
-        _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->End();
+        _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->end();
         _GFX.postProcessRenderTarget(GFXDevice::RenderTarget::DEPTH);
 
         GFXDevice::RenderTarget eyeTarget = renderPasses == 1 ? GFXDevice::RenderTarget::ANAGLYPH
                                                               : GFXDevice::RenderTarget::SCREEN;
 
-        _GFX.getRenderTarget(eyeTarget)->Begin(colorPassPolicy);
+        _GFX.getRenderTarget(eyeTarget)->begin(colorPassPolicy);
             _sceneMgr.render(RenderStage::DISPLAY, *this);
-        _GFX.getRenderTarget(eyeTarget)->End();
+        _GFX.getRenderTarget(eyeTarget)->end();
         _GFX.postProcessRenderTarget(eyeTarget);
     }
 

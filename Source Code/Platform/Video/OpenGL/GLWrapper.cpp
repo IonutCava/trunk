@@ -199,15 +199,10 @@ bool GL_API::initShaders() {
     GLint glswState = glswInit();
 
     ShaderOffsetArray lineOffsets = {0};
-    // This hack is here to avoid bad driver updates that sometimes forget to 
-    // update GLSL version support with the main GL version updates (i.e. AMD)
-    bool glsl45Supported = 
-        stringImpl((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)).find("4.5") != stringImpl::npos;
-    
+  
     // Add our engine specific defines and various code pieces to every GLSL shader
     // Add version as the first shader statement, followed by copyright notice
-    appendToShaderHeader(ShaderType::COUNT,
-                         Util::StringFormat("#version %d core", glsl45Supported ? 450 : 440), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, "#version 450 core", lineOffsets);
 
     appendToShaderHeader(ShaderType::COUNT,
                          "/*Copyright 2009-2015 DIVIDE-Studio*/", lineOffsets);

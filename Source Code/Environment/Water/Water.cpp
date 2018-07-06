@@ -65,10 +65,10 @@ WaterPlane::WaterPlane()
     refractionDescriptor.setSampler(refractionSampler);
 
     _refractionTexture = GFX_DEVICE.newFB();
-    _refractionTexture->AddAttachment(refractionDescriptor,
+    _refractionTexture->addAttachment(refractionDescriptor,
                                       TextureDescriptor::AttachmentType::Color0);
     _refractionTexture->toggleDepthBuffer(true);
-    _refractionTexture->Create(_resolution.x, _resolution.y);
+    _refractionTexture->create(_resolution.x, _resolution.y);
 }
 
 WaterPlane::~WaterPlane()
@@ -153,10 +153,10 @@ bool WaterPlane::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
             TextureDescriptor::AttachmentType::Color0;
         RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
         renderable->makeTextureResident(
-            *(_reflectedTexture->GetAttachment(att)), 1, currentStage);
+            *(_reflectedTexture->getAttachment(att)), 1, currentStage);
         if (!_cameraUnderWater) {
             renderable->makeTextureResident(
-                *(_refractionTexture->GetAttachment(att)), 2, currentStage);
+                *(_refractionTexture->getAttachment(att)), 2, currentStage);
         }
     }
 
@@ -221,10 +221,10 @@ void WaterPlane::updateRefraction() {
     GFX_DEVICE.toggleClipPlane(_refractionPlaneID, true);
     _cameraMgr.getActiveCamera()->renderLookAt();
     // bind the refractive texture
-    _refractionTexture->Begin(Framebuffer::defaultPolicy());
+    _refractionTexture->begin(Framebuffer::defaultPolicy());
     // render to the reflective texture
     _refractionCallback();
-    _refractionTexture->End();
+    _refractionTexture->end();
 
     GFX_DEVICE.toggleClipPlane(_refractionPlaneID, false);
     GFX_DEVICE.setRenderStage(prevRenderStage);
@@ -248,9 +248,9 @@ void WaterPlane::updateReflection() {
                         : _cameraMgr.getActiveCamera()->renderLookAtReflected(
                             getReflectionPlane());
 
-    _reflectedTexture->Begin(Framebuffer::defaultPolicy());
+    _reflectedTexture->begin(Framebuffer::defaultPolicy());
     _renderCallback();  //< render to the reflective texture
-    _reflectedTexture->End();
+    _reflectedTexture->end();
 
     GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, false);
     GFX_DEVICE.setRenderStage(prevRenderStage);
@@ -282,7 +282,7 @@ void WaterPlane::previewReflection() {
 #ifdef _DEBUG
     if (_previewReflection) {
         F32 height = _resolution.y * 0.333f;
-        _refractionTexture->Bind();
+        _refractionTexture->bind();
         GFX::ScopedViewport viewport(to_int(_resolution.x * 0.333f),
                                      to_int(GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution().y - height),
                                      to_int(_resolution.x * 0.666f), 

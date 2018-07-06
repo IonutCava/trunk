@@ -44,29 +44,29 @@ class glFramebuffer : public Framebuffer {
     glFramebuffer(bool useResolveBuffer = false);
     ~glFramebuffer();
 
-    bool Create(U16 width, U16 height);
-    void Destroy();
+    bool create(U16 width, U16 height);
+    void destroy();
 
-    Texture* GetAttachment(TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0,
+    Texture* getAttachment(TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0,
                            bool flushStateOnRequest = true);
 
-    void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer,
+    void drawToLayer(TextureDescriptor::AttachmentType slot, U8 layer,
                      bool includeDepth = true);
-    void SetMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
+    void setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
                      TextureDescriptor::AttachmentType slot);
-    void ResetMipLevel(TextureDescriptor::AttachmentType slot);
-    void AddDepthBuffer();
-    void RemoveDepthBuffer();
-    void Begin(const FramebufferTarget& drawPolicy);
-    void End();
+    void resetMipLevel(TextureDescriptor::AttachmentType slot);
+    void addDepthBuffer();
+    void removeDepthBuffer();
+    void begin(const FramebufferTarget& drawPolicy);
+    void end();
 
-    void Bind(U8 unit = 0,
+    void bind(U8 unit = 0,
               TextureDescriptor::AttachmentType slot =
                          TextureDescriptor::AttachmentType::Color0,
               bool flushStateOnRequest = true);
-    void ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat,
+    void readData(const vec4<U16>& rect, GFXImageFormat imageFormat,
                   GFXDataFormat dataType, void* outData);
-    void BlitFrom(Framebuffer* inputFB, TextureDescriptor::AttachmentType slot =
+    void blitFrom(Framebuffer* inputFB, TextureDescriptor::AttachmentType slot =
                                             TextureDescriptor::AttachmentType::Color0,
                   bool blitColor = true, bool blitDepth = false);
 
@@ -74,10 +74,11 @@ class glFramebuffer : public Framebuffer {
     void resolve();
     void clearBuffers() const;
     bool checkStatus() const;
-    void InitAttachment(TextureDescriptor::AttachmentType type,
+    void setInitialAttachments();
+    void initAttachment(TextureDescriptor::AttachmentType type,
                         const TextureDescriptor& texDescriptor,
                         bool resize);
-    void ResetMipMaps(FramebufferTarget::BufferMask mask);
+    void resetMipMaps(FramebufferTarget::BufferMask mask);
 
    protected:
     bool _hasDepth;
@@ -85,6 +86,7 @@ class glFramebuffer : public Framebuffer {
     bool _resolved;
     bool _isCreated;
     bool _isLayeredDepth;
+    
     static bool _viewportChanged;
     static bool _bufferBound;
     vectorImpl<GLenum> _colorBuffers;
@@ -94,6 +96,8 @@ class glFramebuffer : public Framebuffer {
 
     using AttType = TextureDescriptor::AttachmentType;
     std::array<I32, to_const_uint(AttType::COUNT)> _attOffset;
+    std::array<bool, to_const_uint(AttType::COUNT)> _attDirty;
+    std::array<std::pair<GLenum, U32>, to_const_uint(AttType::COUNT)> _attachments;
     std::array<vec2<U16>, to_const_uint(AttType::COUNT)> _mipMapLevel;
 };
 

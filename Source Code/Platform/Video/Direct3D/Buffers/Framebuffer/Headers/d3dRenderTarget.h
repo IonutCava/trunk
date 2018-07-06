@@ -41,24 +41,24 @@ class d3dRenderTarget : public Framebuffer {
     d3dRenderTarget(bool multisampled);
     ~d3dRenderTarget();
 
-    bool Create(U16 width, U16 height);
+    bool create(U16 width, U16 height);
 
-    void Destroy();
-    void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer,
+    void destroy();
+    void drawToLayer(TextureDescriptor::AttachmentType slot, U8 layer,
                      bool includeDepth = true);
-    void SetMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
+    void setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
                      TextureDescriptor::AttachmentType slot);
-    void ResetMipLevel(TextureDescriptor::AttachmentType slot);
-    void Begin(const FramebufferTarget& drawPolicy);
-    void End();
+    void resetMipLevel(TextureDescriptor::AttachmentType slot);
+    void begin(const FramebufferTarget& drawPolicy);
+    void end();
 
-    void Bind(U8 unit = 0,
+    void bind(U8 unit = 0,
               TextureDescriptor::AttachmentType slot =
                 TextureDescriptor::AttachmentType::Color0,
               bool flushStateOnRequest = true);
-    void ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat,
+    void readData(const vec4<U16>& rect, GFXImageFormat imageFormat,
                   GFXDataFormat dataType, void* outData);
-    void BlitFrom(Framebuffer* inputFB,
+    void blitFrom(Framebuffer* inputFB,
                   TextureDescriptor::AttachmentType slot =
                       TextureDescriptor::AttachmentType::Color0,
                   bool blitColor = true, bool blitDepth = false);

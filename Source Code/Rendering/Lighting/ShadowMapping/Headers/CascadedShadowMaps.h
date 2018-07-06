@@ -38,9 +38,9 @@ namespace Divide {
 class Quad3D;
 class Camera;
 class GFXDevice;
+class ShaderBuffer;
 class ShaderProgram;
 class SceneGraphNode;
-
 class DirectionalLight;
 /// Directional lights can't deliver good quality shadows using a single shadow
 /// map.
@@ -58,9 +58,9 @@ class CascadedShadowMaps : public ShadowMap {
     void init(ShadowMapInfo* const smi);
 
    protected:
-    bool BindInternal(U8 offset);
-    void CalculateSplitDepths(const Camera& cam);
-    void ApplyFrustumSplit(U8 pass);
+    bool bindInternal(U8 offset);
+    void calculateSplitDepths(const Camera& cam);
+    void applyFrustumSplit(U8 pass);
 
    protected:
     U8 _numSplits;
@@ -82,6 +82,9 @@ class CascadedShadowMaps : public ShadowMap {
     vectorImpl<vec3<F32> > _frustumCornersLS;
     vectorImpl<vec3<F32> > _splitFrustumCornersVS;
     vectorImpl<F32> _splitDepths;
+
+    std::array<mat4<F32>, Config::Lighting::MAX_SPLITS_PER_LIGHT> _shadowMatrices;
+    std::unique_ptr<ShaderBuffer> _shadowMatricesBuffer;
 };
 
 };  // namespace Divide

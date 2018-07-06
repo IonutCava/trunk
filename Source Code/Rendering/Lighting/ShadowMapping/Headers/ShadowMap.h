@@ -76,13 +76,13 @@ class NOINITVTABLE ShadowMap {
     virtual void resolution(U16 resolution, U8 resolutionFactor) {}
 
     virtual void init(ShadowMapInfo* const smi) = 0;
-    virtual bool Bind(U8 offset);
+    virtual bool bind(U8 offset);
     virtual void previewShadowMaps() = 0;
     
     virtual void onCameraUpdate(Camera& camera) {}
 
    protected:
-    virtual bool BindInternal(U8 offset);
+    virtual bool bindInternal(U8 offset);
 
    protected:
     ShadowType _shadowMapType;

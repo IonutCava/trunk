@@ -286,7 +286,7 @@ void GFXDevice::occlusionCull() {
 
     _HIZCullProgram->bind();
     _HIZCullProgram->Uniform("dvd_numEntities", _lastCommandCount);
-    getRenderTarget(RenderTarget::DEPTH)->Bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
+    getRenderTarget(RenderTarget::DEPTH)->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
                                                TextureDescriptor::AttachmentType::Depth);
 
     RenderStage currentStage = getRenderStage();

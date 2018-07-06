@@ -27,7 +27,7 @@ CubeShadowMap::CubeShadowMap(Light* light, Camera* shadowCamera)
     depthMapDescriptor.setSampler(depthMapSampler);
 
     _depthMap = GFX_DEVICE.newFB();
-    _depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
+    _depthMap->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
     _depthMap->toggleColorWrites(false);
 }
 
@@ -45,7 +45,7 @@ void CubeShadowMap::resolution(U16 resolution, U8 resolutionFactor) {
         // Initialize the FB's with a variable resolution
         Console::printfn(Locale::get("LIGHT_INIT_SHADOW_FB"),
                          _light->getGUID());
-        _depthMap->Create(_resolution, _resolution);
+        _depthMap->create(_resolution, _resolution);
     }
     ShadowMap::resolution(resolution, resolutionFactor);
 }

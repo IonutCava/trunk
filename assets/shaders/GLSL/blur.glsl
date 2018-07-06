@@ -109,19 +109,22 @@ void main(void)
 
 --Geometry.GaussBlur
 
-layout(points) in;
+#define GS_MAX_INVOCATIONS 4
+
+layout(points, invocations = GS_MAX_INVOCATIONS) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-uniform int layer;
 uniform vec2 blurSize;
+uniform int layerCount;
+uniform int layerOffset;
 
 out vec3 _blurCoords[7];
 
-subroutine void BlurRoutineType(in float texCoordX, in float texCoordY);
+subroutine void BlurRoutineType(in float texCoordX, in float texCoordY, in int layer);
 subroutine uniform BlurRoutineType BlurRoutine;
 
 subroutine(BlurRoutineType)
-void computeCoordsH(in float texCoordX, in float texCoordY){
+void computeCoordsH(in float texCoordX, in float texCoordY, in int layer){
     _blurCoords[0] = vec3(texCoordX, texCoordY - 3.0 * blurSize.x, layer);
     _blurCoords[1] = vec3(texCoordX, texCoordY - 2.0 * blurSize.x, layer);
     _blurCoords[2] = vec3(texCoordX, texCoordY - 1.0 * blurSize.x, layer);
@@ -132,7 +135,7 @@ void computeCoordsH(in float texCoordX, in float texCoordY){
 }
 
 subroutine(BlurRoutineType)
-void computeCoordsV(in float texCoordX, in float texCoordY){
+void computeCoordsV(in float texCoordX, in float texCoordY, in int layer){
     _blurCoords[0] = vec3(texCoordX - 3.0*blurSize.y, texCoordY, layer);
     _blurCoords[1] = vec3(texCoordX - 2.0*blurSize.y, texCoordY, layer);
     _blurCoords[2] = vec3(texCoordX - 1.0*blurSize.y, texCoordY, layer);
@@ -143,23 +146,29 @@ void computeCoordsV(in float texCoordX, in float texCoordY){
 }
 
 void main() {
-    gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
-    BlurRoutine(1.0, 1.0);
-    EmitVertex();
+    if (gl_InvocationID >= layerOffset && gl_InvocationID < layerCount) {
+        gl_Layer = gl_InvocationID;
+        gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
+        BlurRoutine(1.0, 1.0, gl_Layer);
+        EmitVertex();
 
-    gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
-    BlurRoutine(0.0, 1.0);
-    EmitVertex();
+        gl_Layer = gl_InvocationID;
+        gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
+        BlurRoutine(0.0, 1.0, gl_Layer);
+        EmitVertex();
 
-    gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
-    BlurRoutine(1.0, 0.0);
-    EmitVertex();
+        gl_Layer = gl_InvocationID;
+        gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
+        BlurRoutine(1.0, 0.0, gl_Layer);
+        EmitVertex();
 
-    gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
-    BlurRoutine(0.0, 0.0);
-    EmitVertex();
+        gl_Layer = gl_InvocationID;
+        gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
+        BlurRoutine(0.0, 0.0, gl_Layer);
+        EmitVertex();
 
-    EndPrimitive();
+        EndPrimitive();
+    }
 }
 
 --Fragment.GaussBlur
@@ -168,7 +177,7 @@ in vec3 _blurCoords[7];
 
 out vec2 _outColor;
 
-uniform sampler2DArray texScreen;
+layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texScreen;
 
 void main(void)
 {

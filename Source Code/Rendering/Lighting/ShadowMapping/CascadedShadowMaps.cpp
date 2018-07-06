@@ -49,9 +49,11 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     blurDepthMapShader.setThreadedLoading(false);
     _blurDepthMapShader = CreateResource<ShaderProgram>(blurDepthMapShader);
     _blurDepthMapShader->Uniform("texScreen", ShaderProgram::TextureUsage::UNIT0);
+    _blurDepthMapShader->Uniform("layerCount", (I32)_numSplits);
+    _blurDepthMapShader->Uniform("layerOffset", (I32)0);
 
-    Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(),
-                     "EVCSM");
+    Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(), "EVCSM");
+
     SamplerDescriptor depthMapSampler;
     depthMapSampler.setFilters(TextureFilter::LINEAR_MIPMAP_LINEAR);
     depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
@@ -63,9 +65,8 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     depthMapDescriptor.setSampler(depthMapSampler);
 
     _depthMap = GFX_DEVICE.newFB(false);
-    _depthMap->AddAttachment(depthMapDescriptor,
+    _depthMap->addAttachment(depthMapDescriptor,
                              TextureDescriptor::AttachmentType::Color0);
-    //_depthMap->toggleDepthBuffer(true);  //<create a floating point depth buffer
     _depthMap->setClearColor(DefaultColors::WHITE());
 
     SamplerDescriptor blurMapSampler;
@@ -79,10 +80,12 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     blurMapDescriptor.setSampler(blurMapSampler);
 
     _blurBuffer = GFX_DEVICE.newFB(false);
-    _blurBuffer->AddAttachment(blurMapDescriptor,
+    _blurBuffer->addAttachment(depthMapDescriptor,
                                TextureDescriptor::AttachmentType::Color0);
-    _blurBuffer->toggleDepthBuffer(false);
     _blurBuffer->setClearColor(DefaultColors::WHITE());
+
+    _shadowMatricesBuffer.reset(GFX_DEVICE.newSB("dvd_shadowMatrices", 1, false, false, BufferUpdateFrequency::OFTEN));
+    _shadowMatricesBuffer->create(Config::Lighting::MAX_SPLITS_PER_LIGHT, sizeof(mat4<F32>));
 }
 
 CascadedShadowMaps::~CascadedShadowMaps()
@@ -104,20 +107,13 @@ void CascadedShadowMaps::resolution(U16 resolution, U8 resolutionFactor) {
     if (_resolution != tempResolution) {
         _resolution = tempResolution;
         // Initialize the FB's with a variable resolution
-        Console::printfn(Locale::get("LIGHT_INIT_SHADOW_FB"),
-                         _light->getGUID());
-        _depthMap->Create(_resolution, _resolution);
-        vec2<U16> screenResolution =
-            GFX_DEVICE.getRenderTarget(
-                           GFXDevice::RenderTarget::SCREEN)
-                ->getResolution();
+        Console::printfn(Locale::get("LIGHT_INIT_SHADOW_FB"), _light->getGUID());
+        _depthMap->create(_resolution, _resolution);
+        _blurBuffer->create(_resolution, _resolution);
 
         _blurDepthMapShader->bind();
-        _horizBlur = _blurDepthMapShader->GetSubroutineIndex(
-            ShaderType::GEOMETRY, "computeCoordsH");
-        _vertBlur = _blurDepthMapShader->GetSubroutineIndex(
-            ShaderType::GEOMETRY, "computeCoordsV");
-        _blurBuffer->Create(_resolution, _resolution);
+        _horizBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsH");
+        _vertBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsV");
 
         _blurDepthMapShader->Uniform("blurSize", vec2<F32>(1.0f / (_depthMap->getWidth() * 1.0f),
                                                            1.0f / (_depthMap->getHeight() * 1.0f)));
@@ -130,8 +126,7 @@ void CascadedShadowMaps::render(SceneRenderState& renderState,
                                 const DELEGATE_CBK<>& sceneRenderFunction) {
     // Only if we have a valid callback;
     if (!sceneRenderFunction) {
-        Console::errorfn(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"),
-                         _light->getGUID());
+        Console::errorfn(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getGUID());
         return;
     }
 
@@ -141,22 +136,28 @@ void CascadedShadowMaps::render(SceneRenderState& renderState,
 
     Camera& camera = renderState.getCamera();
     _sceneZPlanes.set(camera.getZPlanes());
-    CalculateSplitDepths(camera);
+    calculateSplitDepths(camera);
     camera.getWorldMatrix(_viewInvMatrixCache);
     camera.getFrustum().getCornersWorldSpace(_frustumCornersWS);
     camera.getFrustum().getCornersViewSpace(_frustumCornersVS);
+
+    renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
     for (U8 i = 0; i < _numSplits; ++i) {
-        ApplyFrustumSplit(i);
+        applyFrustumSplit(i);
     }
 
-    _depthMap->Begin(Framebuffer::defaultPolicy());
-        renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
-            GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
-        renderState.getCameraMgr().popActiveCamera();
-    _depthMap->End();
+    _shadowMatricesBuffer->setData(_shadowMatrices.data());
+    _shadowMatricesBuffer->bind(ShaderBufferLocation::LIGHT_SHADOW);
+    _shadowMatricesBuffer->incQueue();
+
+    _depthMap->begin(Framebuffer::defaultPolicy());
+        _shadowCamera->renderLookAt();
+        GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
+    _depthMap->end();
+    renderState.getCameraMgr().popActiveCamera();
 }
 
-void CascadedShadowMaps::CalculateSplitDepths(const Camera& cam) {
+void CascadedShadowMaps::calculateSplitDepths(const Camera& cam) {
     const mat4<F32>& projMatrixCache = cam.getProjectionMatrix();
 
     F32 N = _numSplits;
@@ -180,7 +181,7 @@ void CascadedShadowMaps::CalculateSplitDepths(const Camera& cam) {
     }
 }
 
-void CascadedShadowMaps::ApplyFrustumSplit(U8 pass) {
+void CascadedShadowMaps::applyFrustumSplit(U8 pass) {
     F32 minZ = _splitDepths[pass];
     F32 maxZ = _splitDepths[pass + 1];
 
@@ -243,57 +244,42 @@ void CascadedShadowMaps::ApplyFrustumSplit(U8 pass) {
 
     _shadowCamera->setProjection(clipRect, clipPlanes, true);
 
-    mat4<F32> lightViewProj = viewMatrix * _shadowCamera->getProjectionMatrix();
+    _shadowMatrices[pass].set(viewMatrix * _shadowCamera->getProjectionMatrix());
 
     // http://www.gamedev.net/topic/591684-xna-40---shimmering-shadow-maps/
     F32 halfShadowMapSize = (_resolution)*0.5f;
-    vec3<F32> testPoint =
-        lightViewProj.transform(VECTOR3_ZERO) * halfShadowMapSize;
+    vec3<F32> testPoint = _shadowMatrices[pass].transform(VECTOR3_ZERO) * halfShadowMapSize;
     vec3<F32> testPointRounded(testPoint);
     testPointRounded.round();
     vec3<F32> rounding = (testPointRounded - testPoint) / halfShadowMapSize;
 
-    _light->setShadowVPMatrix(
-        pass, mat4<F32>(rounding.x, rounding.y, 0.0f) * lightViewProj * _bias);
+    _light->setShadowVPMatrix(pass, mat4<F32>(rounding.x, rounding.y, 0.0f) * _shadowMatrices[pass] * _bias);
     _light->setShadowLightPos(pass, currentEye);
-    _shadowCamera->renderLookAt();
 }
 
 void CascadedShadowMaps::postRender() {
-    //if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::LOW) {
+    if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::LOW) {
         return;
-    //}
+    }
+    _blurDepthMapShader->bind();
 
     // Blur horizontally
-    _blurDepthMapShader->bind();
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
-    _blurBuffer->Begin(*_renderPolicy);
-    _depthMap->Bind(0, TextureDescriptor::AttachmentType::Color0, false);
-    for (U8 i = 0; i < _numSplits - 1; ++i) {
-        _blurDepthMapShader->Uniform("layer", (I32)i);
-        _blurBuffer->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i, false);
-        GFX_DEVICE.drawPoints(1, 
-                              GFX_DEVICE.getDefaultStateBlock(true),
-                              _blurDepthMapShader);
-    }
-    _blurBuffer->End();
+    _blurBuffer->begin(Framebuffer::defaultPolicy());
+    _depthMap->bind(0, TextureDescriptor::AttachmentType::Color0, false);
+        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _blurDepthMapShader);
+    _blurBuffer->end();
 
     // Blur vertically
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _vertBlur);
-    _depthMap->Begin(*_renderPolicy);
-    _blurBuffer->Bind();
-    for (U8 i = 0; i < _numSplits - 1; ++i) {
-        _blurDepthMapShader->Uniform("layer", (I32)i);
-        _depthMap->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i, false);
-        GFX_DEVICE.drawPoints(1, 
-                              GFX_DEVICE.getDefaultStateBlock(true),
-                              _blurDepthMapShader);
-    }
-    _depthMap->End();
+    _depthMap->begin(Framebuffer::defaultPolicy());
+    _blurBuffer->bind();
+        GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _blurDepthMapShader);
+    _depthMap->end();
 }
 
-bool CascadedShadowMaps::BindInternal(U8 offset) {
-    _depthMap->Bind(offset);
+bool CascadedShadowMaps::bindInternal(U8 offset) {
+    _depthMap->bind(offset);
     return true;
 }
 
@@ -303,7 +289,7 @@ void CascadedShadowMaps::previewShadowMaps() {
     }
 
     size_t stateHash = GFX_DEVICE.getDefaultStateBlock(true);
-    _depthMap->Bind();
+    _depthMap->bind();
     for (U32 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i);
         _previewDepthMapShader->Uniform("dvd_zPlanes", vec2<F32>(_splitDepths[i], _splitDepths[i + 1]));

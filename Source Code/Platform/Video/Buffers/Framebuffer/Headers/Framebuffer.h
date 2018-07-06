@@ -71,53 +71,52 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
         return _defaultPolicy;
     }
 
-    virtual Texture* GetAttachment(TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0,
+    virtual Texture* getAttachment(TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0,
                                    bool flushStateOnRequest = true);
 
-    virtual bool AddAttachment(const TextureDescriptor& descriptor,
-                               TextureDescriptor::AttachmentType slot);
+    virtual bool addAttachment(const TextureDescriptor& descriptor, TextureDescriptor::AttachmentType slot);
 
     /// If the FB is not initialized, it gets created, otherwise
     /// the attachements get resized.
     /// If any internal state was changed between calls (_shouldRebuild == true),
     /// the entire FB is recreated with the new state.
-    virtual bool Create(U16 width, U16 height) = 0;
+    virtual bool create(U16 width, U16 height) = 0;
 
-    virtual void Destroy() = 0;
+    virtual void destroy() = 0;
 
     /// Use by multilayered FB's
-    virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer,
+    virtual void drawToLayer(TextureDescriptor::AttachmentType slot, U8 layer,
                              bool includeDepth = true) = 0;
     /// Used by cubemap FB's
-    inline void DrawToFace(TextureDescriptor::AttachmentType slot, U8 nFace,
+    inline void drawToFace(TextureDescriptor::AttachmentType slot, U8 nFace,
                            bool includeDepth = true) {
-        DrawToLayer(slot, nFace, includeDepth);
+        drawToLayer(slot, nFace, includeDepth);
     }
 
-    virtual void SetMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel,
+    virtual void setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel,
                              TextureDescriptor::AttachmentType slot) = 0;
 
-    virtual void ResetMipLevel(TextureDescriptor::AttachmentType slot) = 0;
+    virtual void resetMipLevel(TextureDescriptor::AttachmentType slot) = 0;
 
-    virtual void Begin(const FramebufferTarget& drawPolicy) = 0;
+    virtual void begin(const FramebufferTarget& drawPolicy) = 0;
 
-    virtual void End() = 0;
+    virtual void end() = 0;
 
-    virtual void Bind(U8 unit = 0,
+    virtual void bind(U8 unit = 0,
                       TextureDescriptor::AttachmentType
                           slot = TextureDescriptor::AttachmentType::Color0,
                       bool flushStateOnRequest = true) = 0;
 
-    virtual void ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat,
+    virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat,
                           GFXDataFormat dataType, void* outData) = 0;
 
-    inline void ReadData(GFXImageFormat imageFormat, GFXDataFormat dataType,
+    inline void readData(GFXImageFormat imageFormat, GFXDataFormat dataType,
                          void* outData) {
-        ReadData(vec4<U16>(0, 0, _width, _height), imageFormat, dataType,
+        readData(vec4<U16>(0, 0, _width, _height), imageFormat, dataType,
                  outData);
     }
 
-    virtual void BlitFrom(Framebuffer* inputFB,
+    virtual void blitFrom(Framebuffer* inputFB,
                           TextureDescriptor::AttachmentType
                               slot = TextureDescriptor::AttachmentType::Color0,
                           bool blitColor = true, bool blitDepth = false) = 0;
@@ -167,14 +166,9 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
     U32 _framebufferHandle;
     F32 _depthValue;
     vec4<F32> _clearColor;
-    std::array<TextureDescriptor,
-               to_const_uint(TextureDescriptor::AttachmentType::COUNT)>
-        _attachment;
-    std::array<Texture*,
-               to_const_uint(TextureDescriptor::AttachmentType::COUNT)>
-        _attachmentTexture;
-    std::array<bool, to_const_uint(TextureDescriptor::AttachmentType::COUNT)>
-        _attachmentDirty;
+    std::array<TextureDescriptor, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachment;
+    std::array<Texture*, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachmentTexture;
+    std::array<bool, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachmentChanged;
 };
 
 };  // namespace Divide

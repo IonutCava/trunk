@@ -17,8 +17,8 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* result,
                                        GFXImageFormat::RGB8,
                                        GFXDataFormat::UNSIGNED_BYTE);
     outputDescriptor.setSampler(*_internalSampler);
-    _outputFB->AddAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _outputFB->Create(_resolution.width, _resolution.height);
+    _outputFB->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _outputFB->create(_resolution.width, _resolution.height);
     ResourceDescriptor ssao("SSAOPass");
     ssao.setThreadedLoading(false);
     _ssaoShader = CreateResource<ShaderProgram>(ssao);
@@ -32,17 +32,17 @@ SSAOPreRenderOperator::~SSAOPreRenderOperator()
 }
 
 void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
-    _outputFB->Create(width, height);
+    _outputFB->create(width, height);
 }
 
 void SSAOPreRenderOperator::operation() {
     if (!_enabled) return;
 
-    _outputFB->Begin(Framebuffer::defaultPolicy());
-    _inputFB[0]->Bind(0);                            // screen
-    _inputFB[1]->Bind(1, TextureDescriptor::AttachmentType::Depth);  // depth
+    _outputFB->begin(Framebuffer::defaultPolicy());
+    _inputFB[0]->bind(0);                            // screen
+    _inputFB[1]->bind(1, TextureDescriptor::AttachmentType::Depth);  // depth
     GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
                             _ssaoShader);
-    _outputFB->End();
+    _outputFB->end();
 }
 };

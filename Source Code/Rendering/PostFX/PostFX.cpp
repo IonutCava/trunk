@@ -206,10 +206,10 @@ void PostFX::displayScene(bool applyFilters) {
 
         drawShader = _anaglyphShader;
         _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)
-            ->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));
+            ->bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));
 
         _gfx->getRenderTarget(GFXDevice::RenderTarget::ANAGLYPH)
-            ->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));
+            ->bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));
     } else {
         if (applyFilters) {
             PreRenderStageBuilder::getInstance().getPreRenderBatch()->execute();
@@ -223,22 +223,22 @@ void PostFX::displayScene(bool applyFilters) {
         _gfx->getRenderTarget(
                   _depthPreview ? GFXDevice::RenderTarget::DEPTH
                                 : GFXDevice::RenderTarget::SCREEN)
-            ->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
+            ->bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
                    _depthPreview ? TextureDescriptor::AttachmentType::Depth
                                  : TextureDescriptor::AttachmentType::Color0);
 #else
         _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)
-            ->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
+            ->bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
 #endif
         if (applyFilters) {
             _underwaterTexture->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
             _noise->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
             _screenBorder->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
             if (_bloomFB) {
-                _bloomFB->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BLOOM));
+                _bloomFB->bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BLOOM));
             }
             if (_SSAO_FB) {
-                _SSAO_FB->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SSAO));
+                _SSAO_FB->bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SSAO));
             }
         }
     }

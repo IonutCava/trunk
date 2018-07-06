@@ -87,12 +87,12 @@ void ShadowMapInfo::resolution(U16 resolution) {
     }
 }
 
-bool ShadowMap::Bind(U8 offset) {
-    return _depthMap ? BindInternal(offset) : false;
+bool ShadowMap::bind(U8 offset) {
+    return _depthMap ? bindInternal(offset) : false;
 }
 
-bool ShadowMap::BindInternal(U8 offset) {
-    _depthMap->Bind(offset, TextureDescriptor::AttachmentType::Depth);
+bool ShadowMap::bindInternal(U8 offset) {
+    _depthMap->bind(offset, TextureDescriptor::AttachmentType::Depth);
     return true;
 }
 

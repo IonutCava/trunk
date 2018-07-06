@@ -201,10 +201,6 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt) {
     for (Light::LightList& lights : _lights) {
         for (Light* light : lights) {
             _currentShadowCastingLight = light;
-            I32 shadowPropertiesOffset = light->getProperties()._options.z;
-            if (shadowPropertiesOffset >= 0) {
-                _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->bindRange(ShaderBufferLocation::LIGHT_SHADOW, shadowPropertiesOffset, 1);
-            }
             light->generateShadowMaps(GET_ACTIVE_SCENE().renderState());
         }
     }
@@ -282,7 +278,7 @@ void LightManager::bindShadowMaps() {
                 DIVIDE_ASSERT(sm != nullptr,
                     "LightManager::bindShadowMaps error: Shadow casting light "
                     "with no shadow map found!");
-                sm->Bind(getShadowBindSlotOffset(light->getLightType()) + idx++);
+                sm->bind(getShadowBindSlotOffset(light->getLightType()) + idx++);
 
                 if (idx >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE) {
                     break;

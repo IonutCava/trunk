@@ -17,9 +17,10 @@ DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* result,
                                     GFXDataFormat::UNSIGNED_BYTE);
     dofDescriptor.setSampler(*_internalSampler);
 
-    _samplerCopy->AddAttachment(dofDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _samplerCopy = GFX_DEVICE.newFB();
+    _samplerCopy->addAttachment(dofDescriptor, TextureDescriptor::AttachmentType::Color0);
     _samplerCopy->toggleDepthBuffer(false);
-    _samplerCopy->Create(resolution.width, resolution.height);
+    _samplerCopy->create(resolution.width, resolution.height);
     ResourceDescriptor dof("DepthOfField");
     dof.setThreadedLoading(false);
     _dofShader = CreateResource<ShaderProgram>(dof);
@@ -34,7 +35,7 @@ DoFPreRenderOperator::~DoFPreRenderOperator()
 }
 
 void DoFPreRenderOperator::reshape(U16 width, U16 height) {
-    _samplerCopy->Create(width, height);
+    _samplerCopy->create(width, height);
 }
 
 void DoFPreRenderOperator::operation() {
@@ -48,12 +49,12 @@ void DoFPreRenderOperator::operation() {
     }
 
     // Copy current screen
-    _samplerCopy->BlitFrom(_inputFB[0]);
+    _samplerCopy->blitFrom(_inputFB[0]);
 
-    _outputFB->Begin(Framebuffer::defaultPolicy());
-    _samplerCopy->Bind(0);  // screenFB
-    _inputFB[1]->Bind(1, TextureDescriptor::AttachmentType::Depth);  // depthFB
+    _outputFB->begin(Framebuffer::defaultPolicy());
+    _samplerCopy->bind(0);  // screenFB
+    _inputFB[1]->bind(1, TextureDescriptor::AttachmentType::Depth);  // depthFB
     GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _dofShader);
-    _outputFB->End();
+    _outputFB->end();
 }
 };

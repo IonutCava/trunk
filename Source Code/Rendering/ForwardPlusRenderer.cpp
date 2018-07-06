@@ -37,7 +37,7 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     // Forward+ rendering algorithm.
     // It's only updated on demand.
     _depthRanges = GFX_DEVICE.newFB(false);
-    _depthRanges->AddAttachment(depthRangesDescriptor,
+    _depthRanges->addAttachment(depthRangesDescriptor,
                                 TextureDescriptor::AttachmentType::Color0);
     _depthRanges->toggleDepthBuffer(false);
     _depthRanges->setClearColor(vec4<F32>(0.0f, 1.0f, 0.0f, 1.0f));
@@ -47,7 +47,7 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X,
                        Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
     vec2<U16> resTemp(screenRes + tileSize);
-    _depthRanges->Create(resTemp.x / tileSize.x - 1,
+    _depthRanges->create(resTemp.x / tileSize.x - 1,
                          resTemp.y / tileSize.y - 1);
 }
 
@@ -72,7 +72,7 @@ void ForwardPlusRenderer::updateResolution(U16 width, U16 height) {
         GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
             ->getResolution() +
         tileSize);
-    _depthRanges->Create(resTemp.x / tileSize.x - 1,
+    _depthRanges->create(resTemp.x / tileSize.x - 1,
                          resTemp.y / tileSize.y - 1);
 }
 
@@ -155,21 +155,21 @@ void ForwardPlusRenderer::downSampleDepthBuffer(
     vectorImpl<vec2<F32>>& depthRanges) {
     depthRanges.resize(_depthRanges->getWidth() * _depthRanges->getHeight());
 
-    _depthRanges->Begin(Framebuffer::defaultPolicy());
+    _depthRanges->begin(Framebuffer::defaultPolicy());
     {
         _depthRangesConstructProgram->Uniform("dvd_ProjectionMatrixInverse",
                                               GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION_INV));
 
         GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
-            ->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
+            ->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
                    TextureDescriptor::AttachmentType::Depth);
 
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
                                 _depthRangesConstructProgram);
 
-        _depthRanges->ReadData(GFXImageFormat::RG, GFXDataFormat::FLOAT_32,
+        _depthRanges->readData(GFXImageFormat::RG, GFXDataFormat::FLOAT_32,
                                &depthRanges[0]);
     }
-    _depthRanges->End();
+    _depthRanges->end();
 }
 };

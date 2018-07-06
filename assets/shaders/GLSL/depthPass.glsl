@@ -17,8 +17,6 @@ void main() {
 layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 {
     mat4  _lightVP[MAX_SPLITS_PER_LIGHT];
-    vec4  _floatValues;
-    vec4  _lightPosition[MAX_SPLITS_PER_LIGHT];
 };
 
 in Inputs{

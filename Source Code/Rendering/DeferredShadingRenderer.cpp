@@ -54,10 +54,10 @@ DeferredShadingRenderer::DeferredShadingRenderer()
 
     for (U8 i = 0; i < 4; i++) gBuffer[i].setSampler(gBufferSampler);
 
-    _deferredBuffer->AddAttachment(gBuffer[0], TextureDescriptor::AttachmentType::Color0);
-    _deferredBuffer->AddAttachment(gBuffer[1], TextureDescriptor::AttachmentType::Color1);
-    _deferredBuffer->AddAttachment(gBuffer[2], TextureDescriptor::AttachmentType::Color2);
-    _deferredBuffer->AddAttachment(gBuffer[3], TextureDescriptor::AttachmentType::Color3);
+    _deferredBuffer->addAttachment(gBuffer[0], TextureDescriptor::AttachmentType::Color0);
+    _deferredBuffer->addAttachment(gBuffer[1], TextureDescriptor::AttachmentType::Color1);
+    _deferredBuffer->addAttachment(gBuffer[2], TextureDescriptor::AttachmentType::Color2);
+    _deferredBuffer->addAttachment(gBuffer[3], TextureDescriptor::AttachmentType::Color3);
     _deferredBuffer->toggleDepthBuffer(true);
     _deferredBuffer->setClearColor(DefaultColors::BLACK());
     ResourceDescriptor mrtPreviewSmall("MRT RenderQuad SmallPreview");
@@ -164,9 +164,9 @@ void DeferredShadingRenderer::firstPass(
     const SceneRenderState& sceneRenderState) {
     // Pass 1
     // Draw the geometry, saving parameters into the buffer
-    _deferredBuffer->Begin(Framebuffer::defaultPolicy());
+    _deferredBuffer->begin(Framebuffer::defaultPolicy());
     renderCallback();
-    _deferredBuffer->End();
+    _deferredBuffer->end();
 }
 
 void DeferredShadingRenderer::secondPass(
@@ -176,10 +176,10 @@ void DeferredShadingRenderer::secondPass(
     // textures bound to that shader
     GFX::Scoped2DRendering scoped2D(true);
 
-    _deferredBuffer->Bind(0, TextureDescriptor::AttachmentType::Color0);
-    _deferredBuffer->Bind(1, TextureDescriptor::AttachmentType::Color1);
-    _deferredBuffer->Bind(2, TextureDescriptor::AttachmentType::Color2);
-    _deferredBuffer->Bind(3, TextureDescriptor::AttachmentType::Color3);
+    _deferredBuffer->bind(0, TextureDescriptor::AttachmentType::Color0);
+    _deferredBuffer->bind(1, TextureDescriptor::AttachmentType::Color1);
+    _deferredBuffer->bind(2, TextureDescriptor::AttachmentType::Color2);
+    _deferredBuffer->bind(3, TextureDescriptor::AttachmentType::Color3);
     _lightTexture->Bind(4);
 
     GenericDrawCommand cmd;
@@ -231,7 +231,7 @@ void DeferredShadingRenderer::secondPass(
 }
 
 void DeferredShadingRenderer::updateResolution(U16 width, U16 height) {
-    _deferredBuffer->Create(width, height);
+    _deferredBuffer->create(width, height);
 
     F32 widthF = to_float(width);
     F32 heightF = to_float(height);

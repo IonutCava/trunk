@@ -87,20 +87,18 @@ bool glShaderProgram::update(const U64 deltaTime) {
             GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
             STUBBED(
                 "GLSL binary dump/load is only enabled for nVidia GPUS. "
-                "Catalyst 14.x destroys uniforms on shader dump, for whatever "
+                "Catalyst 13.x  - 15.x destroys uniforms on shader dump, for whatever "
                 "reason. - Ionut")
             // Get the size of the binary code
             GLint binaryLength = 0;
-            glGetProgramiv(_shaderProgramID, GL_PROGRAM_BINARY_LENGTH,
-                           &binaryLength);
+            glGetProgramiv(_shaderProgramID, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
             // allocate a big enough buffer to hold it
             void* binary = (void*)malloc(binaryLength);
             DIVIDE_ASSERT(binary != NULL,
                           "glShaderProgram error: could not allocate memory "
                           "for the program binary!");
             // and fill the buffer with the binary code
-            glGetProgramBinary(_shaderProgramID, binaryLength, NULL,
-                               &_binaryFormat, binary);
+            glGetProgramBinary(_shaderProgramID, binaryLength, NULL, &_binaryFormat, binary);
             if (_binaryFormat != GL_NONE) {
                 // dump the buffer to file
                 stringImpl outFileName("shaderCache/Binary/" + getName() + ".bin");
@@ -109,8 +107,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
                     fwrite(binary, binaryLength, 1, outFile);
                     fclose(outFile);
                 }
-                // dump the format to a separate file (highly non-optimised. Should
-                // dump formats to a database instead)
+                // dump the format to a separate file (highly non-optimised. Should dump formats to a database instead)
                 outFileName += ".fmt";
                 outFile = fopen(outFileName.c_str(), "wb");
                 if (outFile != NULL) {

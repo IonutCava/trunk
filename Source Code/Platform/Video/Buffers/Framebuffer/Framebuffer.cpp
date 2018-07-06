@@ -17,26 +17,24 @@ Framebuffer::Framebuffer(bool multiSampled)
       _framebufferHandle(0)
 {
     _clearColor.set(DefaultColors::WHITE());
-    for (U8 i = 0; i < to_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
-        _attachmentDirty[i] = false;
-        _attachmentTexture[i] = nullptr;
-    }
+    _attachmentChanged.fill(false);
+    _attachmentTexture.fill(nullptr);
 }
 
 Framebuffer::~Framebuffer()
 {
 }
 
-bool Framebuffer::AddAttachment(const TextureDescriptor& descriptor,
+bool Framebuffer::addAttachment(const TextureDescriptor& descriptor,
                                 TextureDescriptor::AttachmentType slot) {
-    _attachmentDirty[to_uint(slot)] = true;
+    _attachmentChanged[to_uint(slot)] = true;
     _attachment[to_uint(slot)] = descriptor;
     _shouldRebuild = true;
 
     return true;
 }
 
-Texture* Framebuffer::GetAttachment(TextureDescriptor::AttachmentType slot,
+Texture* Framebuffer::getAttachment(TextureDescriptor::AttachmentType slot,
                                     bool flushStateOnRequest) {
     Texture* tex = _attachmentTexture[to_uint(slot)];
     if (tex && ((flushStateOnRequest && tex->flushTextureState())  || !flushStateOnRequest)) {

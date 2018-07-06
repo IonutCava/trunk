@@ -100,10 +100,9 @@ void fillEnumTables() {
     glTextureTypeTable[to_const_uint(TextureType::TEXTURE_1D)] = GL_TEXTURE_1D;
     glTextureTypeTable[to_const_uint(TextureType::TEXTURE_2D)] = GL_TEXTURE_2D;
     glTextureTypeTable[to_const_uint(TextureType::TEXTURE_3D)] = GL_TEXTURE_3D;
-
-    STUBBED("Consider ALL CUBE_MAPS as CUBE_MAP_ARRAYS in OpenGL for simplicity and compatibility with AMD -Ionut")
-    glTextureTypeTable[to_const_uint(TextureType::TEXTURE_CUBE_MAP)] =
-        GL_TEXTURE_CUBE_MAP_ARRAY;//GL_TEXTURE_CUBE_MAP;
+    // Modern OpenGL shouldn't distinguish between cube maps and cube map arrays.
+    // A cube map is a cube map array of size 1
+    glTextureTypeTable[to_const_uint(TextureType::TEXTURE_CUBE_MAP)] = GL_TEXTURE_CUBE_MAP_ARRAY;
 
     glTextureTypeTable[to_const_uint(TextureType::TEXTURE_2D_ARRAY)] =
         GL_TEXTURE_2D_ARRAY;

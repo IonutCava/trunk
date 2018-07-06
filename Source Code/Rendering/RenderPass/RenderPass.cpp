@@ -34,7 +34,7 @@ void RenderPass::render(const SceneRenderState& renderState) {
              currentStage == RenderStage::REFLECTION) &&
             renderBinCount > 0) {
             LightManager::getInstance().bindShadowMaps();
-            GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->Bind(0, 
+            GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->bind(0, 
                 TextureDescriptor::AttachmentType::Depth);
         }
 

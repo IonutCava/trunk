@@ -77,10 +77,10 @@ bool Reflector::build() {
     reflectionDescriptor.setSampler(reflectionSampler);
 
     _reflectedTexture = GFX_DEVICE.newFB();
-    _reflectedTexture->AddAttachment(reflectionDescriptor,
+    _reflectedTexture->addAttachment(reflectionDescriptor,
                                      TextureDescriptor::AttachmentType::Color0);
     _reflectedTexture->toggleDepthBuffer(true);
-    _createdFB = _reflectedTexture->Create(_resolution.x, _resolution.y);
+    _createdFB = _reflectedTexture->create(_resolution.x, _resolution.y);
 
     return _createdFB;
 }
@@ -89,7 +89,7 @@ void Reflector::previewReflection() {
 #ifdef _DEBUG
     if (_previewReflection) {
         F32 height = _resolution.y * 0.333f;
-        _reflectedTexture->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+        _reflectedTexture->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
         GFX::ScopedViewport viewport(0,
                                      to_int(GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution().y - height),
                                      to_int(_resolution.x * 0.333f),
