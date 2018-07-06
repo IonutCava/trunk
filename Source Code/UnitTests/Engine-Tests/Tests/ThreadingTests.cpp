@@ -160,7 +160,7 @@ TEST(TaskSpeedTest)
     }
 
     job.startTask().wait();
-    F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop());
+    F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
     std::cout << "Threading speed test: 60K tasks completed in: " << durationMS << " ms." << std::endl;
 }
 

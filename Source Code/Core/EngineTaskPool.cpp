@@ -7,45 +7,26 @@
 
 namespace Divide {
 
- TaskHandle CreateTask(PlatformContext& context,
-     const DELEGATE_CBK<void, const Task&>& threadedFunction,
-     const DELEGATE_CBK<void>& onCompletionFunction)
-{
-    return CreateTask(context, -1, threadedFunction, onCompletionFunction);
-}
-
- TaskHandle CreateTask(PlatformContext& context,
-                       TaskHandle* parentTask,
-                       const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                       const DELEGATE_CBK<void>& onCompletionFunction)
- {
-     return CreateTask(context, parentTask , -1, threadedFunction, onCompletionFunction);
- }
-
 /**
 * @brief Creates a new Task that runs in a separate thread
-* @param jobIdentifier A unique identifier that gets reset when the job finishes.
-*                      Used to check if the local task handle is still valid
 * @param threadedFunction The callback function to call in a separate thread = the job to execute
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
 TaskHandle CreateTask(PlatformContext& context, 
-                      I64 jobIdentifier,
                       const DELEGATE_CBK<void, const Task&>& threadedFunction,
                       const DELEGATE_CBK<void>& onCompletionFunction)
 {
     TaskPool& pool = context.taskPool();
-    return CreateTask(pool, jobIdentifier, threadedFunction, onCompletionFunction);
+    return CreateTask(pool, threadedFunction, onCompletionFunction);
 }
 
 TaskHandle CreateTask(PlatformContext& context,
                      TaskHandle* parentTask,
-                     I64 jobIdentifier,
                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
                      const DELEGATE_CBK<void>& onCompletionFunction)
 {
     TaskPool& pool = context.taskPool();
-    return CreateTask(pool, parentTask, jobIdentifier, threadedFunction, onCompletionFunction);
+    return CreateTask(pool, parentTask, threadedFunction, onCompletionFunction);
 }
 
 void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear) {

@@ -73,14 +73,13 @@ bool Finished(const Task *task);
 // A task object may be used for multiple jobs
 struct TaskHandle {
     explicit TaskHandle() noexcept
-        : TaskHandle(nullptr, nullptr, -1)
+        : TaskHandle(nullptr, nullptr)
     {
     }
 
-    explicit TaskHandle(Task* task, TaskPool* tp, I64 id)  noexcept
+    explicit TaskHandle(Task* task, TaskPool* tp)  noexcept
         : _task(task),
-          _tp(tp),
-          _jobIdentifier(id)
+          _tp(tp)
     {
     }
 
@@ -93,10 +92,6 @@ struct TaskHandle {
         return *this;
     }
 
-    inline I64 jobIdentifier() const {
-        return _jobIdentifier;
-    }
-
     inline TaskPool& getOwningPool() {
         return *_tp;
     }
@@ -105,9 +100,22 @@ struct TaskHandle {
         return !Finished(_task);
     }
 
+    inline bool operator()() const{
+        return _task != nullptr;
+    }
+
+    inline void clear() {
+        _task = nullptr;
+        _tp = nullptr;
+    }
+
+    bool operator==(const TaskHandle& other) const;
+
+    inline bool operator!=(const TaskHandle& other) const {
+        return !(*this == other);
+    }
     Task* _task;
     TaskPool* _tp;
-    I64 _jobIdentifier;
 };
 
 

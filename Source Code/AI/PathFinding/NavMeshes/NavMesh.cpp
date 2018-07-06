@@ -187,10 +187,9 @@ bool NavigationMesh::buildThreaded() {
     stopThreadedBuild();
 
     _buildTask = CreateTask(_context,
-               getGUID(),
-               [this](const Task& parentTask) {
-                   buildInternal(parentTask);
-               }).startTask();
+                            [this](const Task& parentTask) {
+                                buildInternal(parentTask);
+                            }).startTask();
 
     return true;
 }

@@ -131,9 +131,9 @@ class Scene : public Resource, public PlatformContextComponent {
     inline const SceneInput& input() const { return *_input; }
 
     inline SceneGraph& sceneGraph() { return *_sceneGraph; }
-    I64 registerTask(const TaskHandle& taskItem, bool start = true, U32 flags = 0, TaskPriority priority = TaskPriority::DONT_CARE);
+    void registerTask(const TaskHandle& taskItem, bool start = true, U32 flags = 0, TaskPriority priority = TaskPriority::DONT_CARE);
     void clearTasks();
-    void removeTask(I64 jobIdentifier);
+    void removeTask(TaskHandle& task);
 
     inline void addModel(FileData& model) { _modelDataArray.push(model); }
     inline void addTerrain(const std::shared_ptr<TerrainDescriptor>& ter) { _terrainInfoArray.push_back(ter); }

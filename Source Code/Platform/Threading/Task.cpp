@@ -44,19 +44,21 @@ void run(Task* task, const OnFinishCbk& onFinish) {
     finish(task);
 }
 
+PoolTask getRunTask(Task* task, const OnFinishCbk& onFinish, U32 taskFlags) {
 
-void runTaskWithDebugInfo(Task* task, const OnFinishCbk& onFinish) {
-    Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), task->_id, std::this_thread::get_id());
-    run(task, onFinish);
-    Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), task->_id, std::this_thread::get_id());
-}
-
-PoolTask getRunTask(Task* task, const OnFinishCbk& onFinish, TaskPriority priority, U32 taskFlags) {
-    if (BitCompare(taskFlags, to_base(TaskFlags::PRINT_DEBUG_INFO))) {
-        return PoolTask([task, onFinish]() { runTaskWithDebugInfo(task, onFinish); });
+    if (g_DebugTaskStartStop) {
+        if (BitCompare(taskFlags, to_base(TaskFlags::PRINT_DEBUG_INFO))) {
+            return PoolTask([task, onFinish]() { 
+                Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), task->_id, std::this_thread::get_id());
+                run(task, onFinish);
+                Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), task->_id, std::this_thread::get_id());
+            });
+        }
     }
 
-    return PoolTask([task, onFinish]() { run(task, onFinish); });
+    return PoolTask([task, onFinish]() {
+        run(task, onFinish);
+    });
 }
 
 void Start(Task* task, TaskPool& pool, TaskPriority priority, U32 taskFlags) {
@@ -73,11 +75,10 @@ void Start(Task* task, TaskPool& pool, TaskPriority priority, U32 taskFlags) {
     }
 
     bool runCallback = priority == TaskPriority::REALTIME;
-    OnFinishCbk onFinish = [&pool, runCallback](U32 index) {
-        pool.taskCompleted(index, runCallback);
-    };
-
-    PoolTask wrappedTask(getRunTask(task, onFinish, priority, taskFlags));
+    PoolTask wrappedTask(getRunTask(task,
+                                    [&pool, runCallback](U32 index) {
+                                        pool.taskCompleted(index, runCallback);
+                                    }, taskFlags));
 
     if (priority != TaskPriority::REALTIME) {
         while (!pool.enqueue(wrappedTask)) {
@@ -119,4 +120,24 @@ TaskHandle& TaskHandle::startTask(TaskPriority prio, U32 taskFlags) {
     return *this;
 }
 
+bool TaskHandle::operator==(const TaskHandle& other) const {
+    if (_tp != nullptr) {
+        if (other._tp == nullptr) {
+            return false;
+        }
+    }
+    else if (other._tp != nullptr) {
+        return false;
+    }
+    if (_task != nullptr) {
+        if (other._task == nullptr) {
+            return false;
+        }
+    }
+    else if (other._task != nullptr) {
+        return false;
+    }
+
+    return *_tp == *other._tp && _task->_id == other._task->_id;
+}
 };

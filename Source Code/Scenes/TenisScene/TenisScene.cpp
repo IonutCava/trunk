@@ -19,7 +19,7 @@
 namespace Divide {
 
 namespace {
-    I64 g_gameTaskID = 0;
+    TaskHandle g_gameTaskID;
     std::atomic_bool s_gameStarted;
 };
 
@@ -108,13 +108,12 @@ void TenisScene::resetGame() {
 void TenisScene::startGame(I64 btnGUID) {
     resetGame();
 
-    TaskHandle newGame(CreateTask(context(),
-                                  getGUID(),
-                               DELEGATE_BIND(&TenisScene::playGame, this,
-                                             std::placeholders::_1,
-                                             Random(4),
-                                             CallbackParam::TYPE_INTEGER)));
-    g_gameTaskID = registerTask(newGame);
+    g_gameTaskID = CreateTask(context(),
+                              DELEGATE_BIND(&TenisScene::playGame, this,
+                                            std::placeholders::_1,
+                                            Random(4),
+                                            CallbackParam::TYPE_INTEGER));
+    registerTask(g_gameTaskID);
 }
 
 void TenisScene::checkCollisions() {

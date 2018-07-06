@@ -41,7 +41,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class TaskPool {
+class TaskPool : public GUIDWrapper {
   public:
 
     explicit TaskPool();
@@ -54,12 +54,19 @@ class TaskPool {
     void waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear = false);
 
     Task* createTask(Task* parentTask,
-                     I64 jobIdentifier,
                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
                      const DELEGATE_CBK<void>& onCompletionFunction);
 
     inline U32 workerThreadCount() const noexcept {
         return _workerThreadCount;
+    }
+
+    inline bool operator==(const TaskPool& other) const {
+        return getGUID() == other.getGUID();
+    }
+
+    inline bool operator!=(const TaskPool& other) const {
+        return getGUID() != other.getGUID();
     }
 
   private:
@@ -96,17 +103,6 @@ TaskHandle CreateTask(TaskPool& pool,
 
 TaskHandle CreateTask(TaskPool& pool,
                       TaskHandle* parentTask,
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                      const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
-
-TaskHandle CreateTask(TaskPool& pool,
-                     I64 jobIdentifier,
-                     const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                     const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
-
-TaskHandle CreateTask(TaskPool& pool,
-                      TaskHandle* parentTask,
-                      I64 jobIdentifier,
                       const DELEGATE_CBK<void, const Task&>& threadedFunction,
                       const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
 

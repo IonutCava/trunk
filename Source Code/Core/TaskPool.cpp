@@ -12,7 +12,8 @@ namespace {
 };
 
 TaskPool::TaskPool()
-    : _threadedCallbackBuffer(Config::MAX_POOLED_TASKS),
+    : GUIDWrapper(),
+      _threadedCallbackBuffer(Config::MAX_POOLED_TASKS),
       _taskCallbacks(Config::MAX_POOLED_TASKS),
       _runningTaskCount(0u),
       _workerThreadCount(0u),
@@ -111,7 +112,6 @@ void TaskPool::taskCompleted(U32 taskIndex, bool runCallback) {
 }
 
 Task* TaskPool::createTask(Task* parentTask,
-                           I64 jobIdentifier,
                            const DELEGATE_CBK<void, const Task&>& threadedFunction,
                            const DELEGATE_CBK<void>& onCompletionFunction) 
 {
@@ -177,36 +177,18 @@ TaskHandle CreateTask(TaskPool& pool,
                       const DELEGATE_CBK<void, const Task&>& threadedFunction,
                       const DELEGATE_CBK<void>& onCompletionFunction)
 {
-    return CreateTask(pool, -1, threadedFunction, onCompletionFunction);
+    return CreateTask(pool, nullptr, threadedFunction, onCompletionFunction);
 }
 
 TaskHandle CreateTask(TaskPool& pool,
                       TaskHandle* parentTask,
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                      const DELEGATE_CBK<void>& onCompletionFunction)
-{
-    return CreateTask(pool, parentTask , -1, threadedFunction, onCompletionFunction);
-}
-
-TaskHandle CreateTask(TaskPool& pool,
-                      I64 jobIdentifier,
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                      const DELEGATE_CBK<void>& onCompletionFunction)
-{
-    return CreateTask(pool, nullptr, jobIdentifier, threadedFunction, onCompletionFunction);
-}
-
-TaskHandle CreateTask(TaskPool& pool,
-                      TaskHandle* parentTask,
-                      I64 jobIdentifier,
                       const DELEGATE_CBK<void, const Task&>& threadedFunction,
                       const DELEGATE_CBK<void>& onCompletionFunction)
 {
     Task* freeTask = pool.createTask(parentTask ? parentTask->_task : nullptr,
-                                     jobIdentifier,
                                      threadedFunction,
                                      onCompletionFunction);
-    return TaskHandle(freeTask, &pool, jobIdentifier);
+    return TaskHandle(freeTask, &pool);
 }
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear) {

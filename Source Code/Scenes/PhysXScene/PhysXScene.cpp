@@ -91,7 +91,7 @@ U16 PhysXScene::registerInputActions() {
 
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
-        TaskHandle e(CreateTask(context(), getGUID(), DELEGATE_BIND(&PhysXScene::createTower, this, std::placeholders::_1, to_U32(Random(5, 20)))));
+        TaskHandle e(CreateTask(context(), DELEGATE_BIND(&PhysXScene::createTower, this, std::placeholders::_1, to_U32(Random(5, 20)))));
         registerTask(e);
     });
     actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
@@ -99,7 +99,7 @@ U16 PhysXScene::registerInputActions() {
     actionID++;
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
-        TaskHandle e(CreateTask(context(), getGUID(), DELEGATE_BIND(&PhysXScene::createStack, this, std::placeholders::_1, to_U32(Random(5, 10)))));
+        TaskHandle e(CreateTask(context(), DELEGATE_BIND(&PhysXScene::createStack, this, std::placeholders::_1, to_U32(Random(5, 10)))));
         registerTask(e);
     });
     actions.actionID(PressReleaseActions::Action::RELEASE, actionID);

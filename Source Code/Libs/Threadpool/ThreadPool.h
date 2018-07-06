@@ -39,7 +39,6 @@ public:
                     job();
 
                     _jobsLeft.fetch_sub(1);
-                    _waitVar.notify_one();
                 }
             }));
         }
@@ -62,7 +61,6 @@ public:
     {
         _queue.enqueue(job);
         _jobsLeft.fetch_add(1);
-        _jobAvailableVar.notify_one();
     }
 
     /**
@@ -90,8 +88,6 @@ public:
 
         // note that we're done, and wake up any thread that's
         // waiting for a new job
-        _jobAvailableVar.notify_all();
-
         for (std::thread& thread : _threads)
         {
             if (thread.joinable())
@@ -108,13 +104,8 @@ public:
      */
     void WaitAll()
     {
-        if (_jobsLeft.load() > 0)
-        {
-            std::unique_lock<std::mutex> lock(_jobsLeftMutex);
-            _waitVar.wait(lock, [&]
-            {
-                return _jobsLeft.load() == 0;
-            });
+        while (_jobsLeft.load() > 0) {
+            std::this_thread::yield();
         }
     }
 
@@ -139,20 +130,14 @@ public:
         }
 
         _jobsLeft.fetch_sub(1);
-        _waitVar.notify_one();
-
         return job;
     }
 
 private:
+    bool _isRunning;
+    std::atomic_int _jobsLeft;
     std::vector<std::thread> _threads;
     moodycamel::BlockingConcurrentQueue<Job> _queue;
-
-    std::atomic_int _jobsLeft;
-    bool _isRunning;
-    std::condition_variable _jobAvailableVar;
-    std::condition_variable _waitVar;
-    std::mutex _jobsLeftMutex;
 };
 
 #undef CONTIGUOUS_JOBS_MEMORY

@@ -59,24 +59,6 @@ TaskHandle CreateTask(PlatformContext& context,
                       const DELEGATE_CBK<void, const Task&>& threadedFunction,
                       const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
 
-/**
-* @brief Creates a new Task that runs in a separate thread
-* @param jobIdentifier A unique identifier that gets reset when the job finishes.
-*                      Used to check if the local task handle is still valid
-* @param threadedFunction The callback function to call in a separate thread = the job to execute
-* @param onCompletionFunction The callback function to call when the thread finishes
-*/
-TaskHandle CreateTask(PlatformContext& context, 
-                      I64 jobIdentifier,
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                      const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
-
-TaskHandle CreateTask(PlatformContext& context,
-                      TaskHandle* parentTask,
-                      I64 jobIdentifier,
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                      const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
-
 TaskHandle parallel_for(PlatformContext& context,
                         const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,

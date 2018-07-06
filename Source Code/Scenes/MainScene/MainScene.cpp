@@ -20,7 +20,7 @@ namespace Divide {
 
 namespace {
     vec3<F32> g_waterDimensions(500, 500, 500);
-    I64 g_boxMoveTaskID = 0;
+    TaskHandle g_boxMoveTaskID;
 };
 
 MainScene::MainScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
@@ -245,7 +245,7 @@ U16 MainScene::registerInputActions() {
 bool MainScene::unload() {
     _context.sfx().stopMusic();
     _context.sfx().stopAllSounds();
-    g_boxMoveTaskID = 0;
+    g_boxMoveTaskID.clear();
 
     return Scene::unload();
 }
@@ -286,15 +286,16 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
         if (box) boxNode->get<TransformComponent>()->setPosition(pos);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
-        if (g_boxMoveTaskID != 0) {
+        if (g_boxMoveTaskID()) {
             if (!StopRequested(&parentTask)) {
-                g_boxMoveTaskID = registerTask(CreateTask(context(), 
-                                               getGUID(),
-                                               DELEGATE_BIND(&MainScene::test,
-                                                             this,
-                                                             std::placeholders::_1,
-                                                             stringImpl("test"),
-                                                             CallbackParam::TYPE_STRING)));
+                g_boxMoveTaskID = CreateTask(context(), 
+                                             DELEGATE_BIND(&MainScene::test,
+                                                            this,
+                                                            std::placeholders::_1,
+                                                            stringImpl("test"),
+                                                            CallbackParam::TYPE_STRING));
+
+                registerTask(g_boxMoveTaskID);
             }
         }
     }
@@ -311,13 +312,13 @@ bool MainScene::loadResources(bool continueOnErrors) {
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
     removeTask(g_boxMoveTaskID);
-    g_boxMoveTaskID = registerTask(CreateTask(context(),
-                                              getGUID(),
-                                              DELEGATE_BIND(&MainScene::test,
-                                              this,
-                                              std::placeholders::_1,
-                                              stringImpl("test"),
-                                              CallbackParam::TYPE_STRING)));
+    g_boxMoveTaskID = CreateTask(context(),
+                                 DELEGATE_BIND(&MainScene::test,
+                                               this,
+                                               std::placeholders::_1,
+                                               stringImpl("test"),
+                                               CallbackParam::TYPE_STRING));
+    registerTask(g_boxMoveTaskID);
 
     ResourceDescriptor beepSound("beep sound");
     beepSound.setResourceName("beep.wav");

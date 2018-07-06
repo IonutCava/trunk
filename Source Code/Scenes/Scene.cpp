@@ -1132,13 +1132,12 @@ void Scene::onLostFocus() {
     //_paramHandler.setParam(_ID("freezeLoopTime"), true);
 }
 
-I64 Scene::registerTask(const TaskHandle& taskItem, bool start, U32 flags, TaskPriority priority) {
+void Scene::registerTask(const TaskHandle& taskItem, bool start, U32 flags, TaskPriority priority) {
     WriteLock w_lock(_tasksMutex);
     _tasks.push_back(taskItem);
     if (start) {
         _tasks.back().startTask(priority, flags);
     }
-    return taskItem._jobIdentifier;
 }
 
 void Scene::clearTasks() {
@@ -1153,18 +1152,17 @@ void Scene::clearTasks() {
     _tasks.clear();
 }
 
-void Scene::removeTask(I64 jobIdentifier) {
+void Scene::removeTask(TaskHandle& task) {
     WriteLock w_lock(_tasksMutex);
     vector<TaskHandle>::iterator it;
     for (it = std::begin(_tasks); it != std::end(_tasks); ++it) {
-        if ((*it).jobIdentifier() == jobIdentifier) {
+        if ((*it) == task) {
             Stop((*it)._task);
             _tasks.erase(it);
             (*it).wait();
             return;
         }
     }
-
 }
 
 void Scene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
