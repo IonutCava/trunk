@@ -208,9 +208,7 @@ class TerrainLoader {
         return terrain._boundingBox.first;
     }
     static F32& farPlane(Terrain& terrain) { return terrain._farPlane; }
-
     static void plane(Terrain& terrain, Quad3D* plane) { terrain._plane = plane; }
-
     static vec2<U16>& dimensions(Terrain& terrain) {
         return terrain._terrainDimensions;
     }

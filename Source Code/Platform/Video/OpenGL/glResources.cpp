@@ -260,8 +260,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool useIndirectBuffer,
                          GLenum internalFormat,
                          GLuint indexBuffer) {
-    
-    assert(drawCommand.commandOffset() == drawCommand.cmd().baseInstance);
+
     if (useIndirectBuffer) {
         // Don't trust the driver to optimize the loop. Do it here so we know the cost upfront
         if (drawCommand.drawCount() > 1) {

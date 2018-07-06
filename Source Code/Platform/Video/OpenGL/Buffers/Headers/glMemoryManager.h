@@ -60,6 +60,8 @@ namespace GLUtil {
 
         bool allocateChunks(U32 count, GLenum usage, U32& offsetOut);
 
+        bool allocateWhole(U32 count, GLenum usage);
+
         void releaseChunks(U32 offset);
 
         U32 getMemUsage();
@@ -67,6 +69,7 @@ namespace GLUtil {
     private:
         GLuint _handle;
         GLenum _usage;
+        bool   _filledManually;
     };
 
     struct AllocationHandle {

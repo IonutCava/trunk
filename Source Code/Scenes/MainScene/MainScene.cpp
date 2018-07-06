@@ -138,7 +138,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
         }
     }
 
-    ResourceDescriptor infiniteWater("waterEntity");
+    /*ResourceDescriptor infiniteWater("waterEntity");
     _water = CreateResource<WaterPlane>(infiniteWater);
     _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),
                       0.34f);
@@ -154,7 +154,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
                                                 RenderStage::REFLECTION, true, 0));
     _water->setRefractionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
                                                 &SceneManager::getInstance(),
-                                                RenderStage::DISPLAY, true, 0));
+                                                RenderStage::DISPLAY, true, 0));*/
 
     SceneInput::PressReleaseActions cbks;
     cbks.second = [this]() {

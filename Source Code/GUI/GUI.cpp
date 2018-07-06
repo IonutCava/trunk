@@ -389,7 +389,7 @@ GUIFlash* GUI::addFlash(const stringImpl& ID, stringImpl movie,
     return flash;
 }
 
-GUIText* GUI::modifyText(const stringImpl& ID, const char* format, ...) {
+GUIText* GUI::modifyText(const char* ID, const char* format, ...) {
     ULL idHash = _ID_RT(ID);
     
     guiMap::iterator it = _guiStack.find(idHash);

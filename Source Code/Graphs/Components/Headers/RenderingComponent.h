@@ -195,14 +195,9 @@ class RenderingCompGFXDevice {
                                                     RenderStage renderStage,
                                                     U32 cmdOffset,
                                                     U32 cmdIndex) {
-
-        commandIndex(renderable, cmdOffset, cmdIndex);
+        renderable.commandIndex(cmdIndex);
+        renderable.commandOffset(cmdOffset);
         return getDrawPackage(renderable, sceneRenderState, renderStage);
-    }
-
-    static void commandIndex(RenderingComponent& renderable, U32 index, U32 offset) {
-        renderable.commandIndex(index);
-        renderable.commandOffset(index);
     }
 
     friend class Divide::GFXDevice;

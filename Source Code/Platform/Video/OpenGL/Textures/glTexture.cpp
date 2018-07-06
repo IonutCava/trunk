@@ -233,6 +233,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 
     assert(_allocatedStorage);
 
+    bool generateMipMaps = false;
     if (ptr) {
         GL_API::setPixelPackUnpackAlignment();
         switch (_textureData._textureType) {
@@ -245,6 +246,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
                     glFormat,
                     dataType,
                     ptr);
+                generateMipMaps = true;
             } break;
             case TextureType::TEXTURE_2D:
             case TextureType::TEXTURE_2D_MS: {
@@ -258,6 +260,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
                     glFormat,
                     dataType,
                     ptr);
+                generateMipMaps = true;
             } break;
 
             case TextureType::TEXTURE_3D:
@@ -277,11 +280,15 @@ void glTexture::loadData(const TextureLoadInfo& info,
                     glFormat,
                     dataType,
                     ptr);
-                
+                generateMipMaps = info._layerIndex == _numLayers;
             } break;
         }
     }
-    
+
+    if (generateMipMaps) {
+        glGenerateTextureMipmap(_textureData.getHandleHigh());
+    }
+
     _mipMapsDirty = false;
 
     DIVIDE_ASSERT(_width > 0 && _height > 0,

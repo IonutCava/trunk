@@ -161,7 +161,7 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
         }
     }
 
-    if (_staticBuffer) {
+    if (_staticBuffer && !keepData()) {
         _data.clear();
     } else {
         vectorAlg::shrinkToFit(_data);

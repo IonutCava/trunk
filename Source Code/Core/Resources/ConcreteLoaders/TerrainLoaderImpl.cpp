@@ -10,12 +10,12 @@ namespace Divide {
 template<>
 Terrain* ImplResourceLoader<Terrain>::operator()() {
     Terrain* ptr = MemoryManager_NEW Terrain();
+
     ptr->setState(ResourceState::RES_LOADING);
-    const stringImpl& name = _descriptor.getName();
-    Console::printfn(Locale::get(_ID("TERRAIN_LOAD_START")), name.c_str());
-    TerrainDescriptor* terrain = GET_ACTIVE_SCENE().getTerrainInfo(name);
-    if (!terrain || !TerrainLoader::loadTerrain(ptr, terrain)) {
-        Console::errorfn(Locale::get(_ID("ERROR_TERRAIN_LOAD")), name.c_str());
+    Console::printfn(Locale::get(_ID("TERRAIN_LOAD_START")), _descriptor.getName().c_str());
+    TerrainDescriptor* terrain = GET_ACTIVE_SCENE().getTerrainInfo(_descriptor.getName());
+    if (!ptr || !TerrainLoader::loadTerrain(ptr, terrain)) {
+        Console::errorfn(Locale::get(_ID("ERROR_TERRAIN_LOAD")), _descriptor.getName().c_str());
         MemoryManager::DELETE(ptr);
     }
 

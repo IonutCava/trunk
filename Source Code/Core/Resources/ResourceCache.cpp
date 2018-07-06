@@ -16,9 +16,11 @@ ResourceCache::~ResourceCache() {
 }
 
 void ResourceCache::Destroy() {
-    WriteLock w_lock(_creationMutex);
-    if (_resDB.empty()) {
-        return;
+    {
+        ReadLock r_lock(_creationMutex);
+        if (_resDB.empty()) {
+            return;
+        }
     }
 
     Console::printfn(Locale::get(_ID("STOP_RESOURCE_CACHE")));
@@ -30,7 +32,10 @@ void ResourceCache::Destroy() {
         removeInternal(it.second);
     }
 
-    MemoryManager::DELETE_HASHMAP(_resDB);
+    {
+        WriteLock w_lock(_creationMutex);
+        MemoryManager::DELETE_HASHMAP(_resDB);
+    }
 }
 
 void ResourceCache::add(const stringImpl& name, Resource* const res) {

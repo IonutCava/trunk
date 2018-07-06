@@ -125,7 +125,7 @@ void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args) {
-    if (ParamHandler::getInstance().isParam<stringImpl>(args)) {
+    if (ParamHandler::getInstance().isParam<stringImpl>(args.c_str())) {
         Console::printfn(Locale::get(_ID("CONSOLE_EDITPARAM_FOUND")), args.c_str(),
                          "N/A", "N/A", "N/A");
     } else {

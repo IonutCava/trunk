@@ -110,7 +110,7 @@ class GUIConsole {
     /// Used to cycle through history
     I16 _inputHistoryIndex;
     SharedLock _outputLock;
-    boost::circular_buffer<std::pair<CEGUI::String, bool>> _outputBuffer;
+    boost::circular_buffer<std::pair<stringImpl, bool>> _outputBuffer;
 };
 
 };  // namespace Divide

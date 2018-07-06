@@ -72,42 +72,30 @@ class glShaderProgram final : public ShaderProgram {
     void SetSubroutine(ShaderType type, U32 index) const override;
     /// Get the index of the specified subroutine name for the specified stage.
     /// Not cached!
-    U32 GetSubroutineIndex(ShaderType type, const stringImpl& name) const override;
+    U32 GetSubroutineIndex(ShaderType type, const char* name) const override;
     /// Get the uniform location of the specified subroutine uniform for the
     /// specified stage. Not cached!
-    U32 GetSubroutineUniformLocation(ShaderType type,
-                                     const stringImpl& name) const override;
+    U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const override;
     U32 GetSubroutineUniformCount(ShaderType type) const override;
     /// Set an uniform value
-    inline void Uniform(const stringImpl& ext, U32 value) override;
-    inline void Uniform(const stringImpl& ext, I32 value) override;
-    inline void Uniform(const stringImpl& ext, F32 value) override;
-    inline void Uniform(const stringImpl& ext, const vec2<F32>& value) override;
-    inline void Uniform(const stringImpl& ext, const vec2<I32>& value) override;
-    inline void Uniform(const stringImpl& ext, const vec3<F32>& value) override;
-    inline void Uniform(const stringImpl& ext, const vec3<I32>& value) override;
-    inline void Uniform(const stringImpl& ext, const vec4<F32>& value) override;
-    inline void Uniform(const stringImpl& ext, const vec4<I32>& value) override;
-    inline void Uniform(const stringImpl& ext,
-                        const mat3<F32>& value,
-                        bool transpose = false) override;
-    inline void Uniform(const stringImpl& ext,
-                        const mat4<F32>& value,
-                        bool transpose = false) override;
-    inline void Uniform(const stringImpl& ext, const vectorImpl<I32>& values) override;
-    inline void Uniform(const stringImpl& ext, const vectorImpl<F32>& values) override;
-    inline void Uniform(const stringImpl& ext,
-                        const vectorImpl<vec2<F32>>& values) override;
-    inline void Uniform(const stringImpl& ext,
-                        const vectorImpl<vec3<F32>>& values) override;
-    inline void Uniform(const stringImpl& ext,
-                        const vectorImpl<vec4<F32>>& values) override;
-    inline void Uniform(const stringImpl& ext,
-                        const vectorImpl<mat3<F32>>& values,
-                        bool transpose = false) override;
-    inline void Uniform(const stringImpl& ext,
-                        const vectorImpl<mat4<F32>>& values,
-                        bool transpose = false) override;
+    inline void Uniform(const char* ext, U32 value) override;
+    inline void Uniform(const char* ext, I32 value) override;
+    inline void Uniform(const char* ext, F32 value) override;
+    inline void Uniform(const char* ext, const vec2<F32>& value) override;
+    inline void Uniform(const char* ext, const vec2<I32>& value) override;
+    inline void Uniform(const char* ext, const vec3<F32>& value) override;
+    inline void Uniform(const char* ext, const vec3<I32>& value) override;
+    inline void Uniform(const char* ext, const vec4<F32>& value) override;
+    inline void Uniform(const char* ext, const vec4<I32>& value) override;
+    inline void Uniform(const char* ext, const mat3<F32>& value, bool transpose = false) override;
+    inline void Uniform(const char* ext, const mat4<F32>& value, bool transpose = false) override;
+    inline void Uniform(const char* ext, const vectorImpl<I32>& values) override;
+    inline void Uniform(const char* ext, const vectorImpl<F32>& values) override;
+    inline void Uniform(const char* ext, const vectorImpl<vec2<F32>>& values) override;
+    inline void Uniform(const char* ext, const vectorImpl<vec3<F32>>& values) override;
+    inline void Uniform(const char* ext, const vectorImpl<vec4<F32>>& values) override;
+    inline void Uniform(const char* ext, const vectorImpl<mat3<F32>>& values, bool transpose = false) override;
+    inline void Uniform(const char* ext, const vectorImpl<mat4<F32>>& values, bool transpose = false) override;
 
     void Uniform(I32 location, U32 value) override;
     void Uniform(I32 location, I32 value) override;
@@ -147,7 +135,7 @@ class glShaderProgram final : public ShaderProgram {
     /// present, and it's not recommended (yet)
     void threadedLoad(const stringImpl& name) override;
     /// Cache uniform/attribute locations for shader programs
-    I32 getUniformLocation(const stringImpl& name) override;
+    I32 getUniformLocation(const char* name) override;
 
     struct fake_dependency: public std::false_type {};
     template <typename T>

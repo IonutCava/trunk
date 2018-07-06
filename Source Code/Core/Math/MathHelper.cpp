@@ -29,16 +29,20 @@ bool IsNumber(const stringImpl& s) {
 
 vectorImpl<stringImpl>& Split(const stringImpl& input, char delimiter,
                               vectorImpl<stringImpl>& elems) {
-    std::stringstream ss(input);
-    stringImpl item;
+    static stringImpl item;
+    item.resize(0);
+    elems.resize(0);
+    std::istringstream ss(input);
     while (std::getline(ss, item, delimiter)) {
-        elems.push_back(item);
+        vectorAlg::emplace_back(elems, item);
     }
     return elems;
+
 }
 
 vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter) {
-    vectorImpl<stringImpl> elems;
+    static vectorImpl<stringImpl> elems;
+    elems.resize(0);
     Split(input, delimiter, elems);
     return elems;
 }
@@ -190,7 +194,7 @@ void FlushFloatEvents() {
     vec->clear();
 }
 
-void RecordFloatEvent(const stringImpl& eventName, F32 eventValue, U64 timestamp) {
+void RecordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp) {
     vectorImpl<GlobalFloatEvent>* vec = _globalFloatEvents.get();
     if( !vec ) {
         vec = new vectorImpl<GlobalFloatEvent>();
@@ -209,13 +213,13 @@ const vectorImpl<GlobalFloatEvent>& GetFloatEvents() {
     return *vec;
 }
 
-void PlotFloatEvents(const stringImpl& eventName,
+void PlotFloatEvents(const char* eventName,
                      vectorImpl<GlobalFloatEvent> eventsCopy,
                      GraphPlot2D& targetGraph) {
     targetGraph._plotName = eventName;
     targetGraph._coords.clear();
     for (GlobalFloatEvent& crtEvent : eventsCopy) {
-        if (eventName.compare(crtEvent._eventName) == 0) {
+        if (std::strcmp(eventName, crtEvent._eventName.c_str()) == 0) {
             vectorAlg::emplace_back(
                 targetGraph._coords,
                 Time::MicrosecondsToMilliseconds<F32>(crtEvent._timeStamp),

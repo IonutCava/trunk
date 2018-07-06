@@ -348,7 +348,7 @@ bool TerrainLoader::loadThreadedResources(
         // scale and translate all height by half to convert from 0-255 (0-65335) to
         // -127 - 128 (-32767 - 32768)
         if (terrainDescriptor->is16Bit()) {
-    #pragma omp parallel for
+        #pragma omp parallel for
             for (I32 j = 0; j < terrainHeight; j++) {
                 for (I32 i = 0; i < terrainWidth; i++) {
                     U32 idxHM = TER_COORD(i, j, terrainWidth);
@@ -363,12 +363,12 @@ bool TerrainLoader::loadThreadedResources(
                     F32 y = minAltitude + altitudeRange * to_float(heightValues[idxIMG]) / 65536.0f;
                     y *= yScaleFactor;
                     y += yOffset;
-    #pragma omp critical
+        #pragma omp critical
                     { groundVB->modifyPositionValue(idxHM, x, y, z); }
                 }
             }
         } else {
-    #pragma omp parallel for
+        #pragma omp parallel for
             for (I32 j = 0; j < terrainHeight; j++) {
                 for (I32 i = 0; i < terrainWidth; i++) {
                     U32 idxHM = TER_COORD(i, j, terrainWidth);
@@ -391,7 +391,7 @@ bool TerrainLoader::loadThreadedResources(
                     vertexData.y = minAltitude + altitudeRange * h / 255.0f;
                     vertexData.y *= yScaleFactor;
                     vertexData.y += yOffset;
-    #pragma omp critical
+        #pragma omp critical
                     { groundVB->modifyPositionValue(idxHM, vertexData); }
                 }
             }
@@ -467,6 +467,8 @@ bool TerrainLoader::loadThreadedResources(
             terrainCache.dumpToFile(cacheLocation);
         }
     }
+
+    groundVB->keepData(true);
     groundVB->create();
     initializeVegetation(terrain, terrainDescriptor);
     Attorney::TerrainLoader::buildQuadtree(*terrain);

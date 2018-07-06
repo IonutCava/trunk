@@ -54,8 +54,8 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     SceneGraphNode_ptr planeSGN(sgn.addNode(*_plane));
     planeSGN->setActive(false);
     for (TerrainChunk* chunk : _terrainChunks) {
-        SceneGraphNode_ptr vegetation = sgn.addNode(*Attorney::TerrainChunkTerrain::getVegetation(*chunk));
-        vegetation->lockVisibility(true);
+        /*SceneGraphNode_ptr vegetation = sgn.addNode(*Attorney::TerrainChunkTerrain::getVegetation(*chunk));
+        vegetation->lockVisibility(true);*/
     }
     SceneNode::postLoad(sgn);
 }
@@ -93,10 +93,10 @@ void Terrain::buildQuadtree() {
             layerOffset = k * 3 + textureOffset;
             layerIndex = std::to_string(k);
             TerrainTextureLayer* textureLayer = _terrainTextures[k];
-            drawShader->Uniform("texBlend[" + layerIndex + "]", layerOffset);
-            drawShader->Uniform("texTileMaps[" + layerIndex + "]",
+            drawShader->Uniform(("texBlend[" + layerIndex + "]").c_str(), layerOffset);
+            drawShader->Uniform(("texTileMaps[" + layerIndex + "]").c_str(),
                                 layerOffset + 1);
-            drawShader->Uniform("texNormalMaps[" + layerIndex + "]",
+            drawShader->Uniform(("texNormalMaps[" + layerIndex + "]").c_str(),
                                 layerOffset + 2);
 
             getMaterialTpl()->addCustomTexture(textureLayer->blendMap(),
@@ -106,9 +106,9 @@ void Terrain::buildQuadtree() {
             getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(),
                                                layerOffset + 2);
 
-            drawShader->Uniform("diffuseScale[" + layerIndex + "]",
+            drawShader->Uniform(("diffuseScale[" + layerIndex + "]").c_str(),
                                 textureLayer->getDiffuseScales());
-            drawShader->Uniform("detailScale[" + layerIndex + "]",
+            drawShader->Uniform(("detailScale[" + layerIndex + "]").c_str(),
                                 textureLayer->getDetailScales());
         }
     }
@@ -138,22 +138,21 @@ bool Terrain::getDrawCommands(SceneGraphNode& sgn,
     cmd.stateHash(_terrainStateHash[to_uint(renderStage)]);
     cmd.shaderProgram(renderable->getDrawShader(renderStage));
     cmd.sourceBuffer(getGeometryVB());
-
-    
+        
     vectorImpl<vec3<U32>> chunkData;
     chunkData.reserve(_terrainQuadtree.getChunkCount());
     _terrainQuadtree.getChunkBufferData(sceneRenderState, chunkData);
-    std::sort(std::begin(chunkData), std::end(chunkData),
-                [](const vec3<U32>& a, const vec3<U32>& b) {
-                    // LoD comparison
-                    return a.z < b.z; 
-                });
-    for (vec3<U32>& cmdData : chunkData) {
-        cmd.cmd().firstIndex = cmdData.x;
-        cmd.cmd().indexCount = cmdData.y;
-        cmd.LoD(to_byte(cmdData.z));
-        drawCommandsOut.push_back(cmd);
-    }
+        std::sort(std::begin(chunkData), std::end(chunkData),
+                  [](const vec3<U32>& a, const vec3<U32>& b) {
+                      // LoD comparison
+                      return a.z < b.z; 
+                  });
+        for (vec3<U32>& cmdData : chunkData) {
+            cmd.cmd().firstIndex = cmdData.x;
+            cmd.cmd().indexCount = cmdData.y;
+            cmd.LoD(to_byte(cmdData.z));
+            drawCommandsOut.push_back(cmd);
+        }
     
 
     // draw infinite plane

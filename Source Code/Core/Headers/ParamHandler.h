@@ -58,25 +58,25 @@ DEFINE_SINGLETON(ParamHandler)
     T getParam(ULL paramID, T defaultValue = T()) const;
 
     template <typename T>
-    T getParam(const stringImpl& name, T defaultValue = T()) const;
+    T getParam(const char* name, T defaultValue = T()) const;
 
     template <typename T>
     void setParam(ULL paramID, const T& value);
 
     template <typename T>
-    void setParam(const stringImpl& name, const T& value);
+    void setParam(const char* name, const T& value);
 
     template <typename T>
     void delParam(ULL paramID);
 
     template <typename T>
-    void delParam(const stringImpl& name);
+    void delParam(const char* name);
 
     template <typename T>
     bool isParam(ULL paramID) const;
 
     template <typename T>
-    bool isParam(const stringImpl& param) const;
+    bool isParam(const char* param) const;
 
   private:
     ParamMap _params;

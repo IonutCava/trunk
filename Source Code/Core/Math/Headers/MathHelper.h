@@ -205,7 +205,7 @@ namespace Util {
 struct GraphPlot2D;
 struct GraphPlot3D;
 struct GlobalFloatEvent {
-    explicit GlobalFloatEvent(const stringImpl& name,
+    explicit GlobalFloatEvent(const char* name,
                               const F32 eventValue,
                               const U64 timeStamp)
         : _eventName(name),
@@ -221,7 +221,7 @@ struct GlobalFloatEvent {
 
 void FlushFloatEvents();
 
-void RecordFloatEvent(const stringImpl& eventName, F32 eventValue, U64 timestamp);
+void RecordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp);
 
 const vectorImpl<GlobalFloatEvent>& GetFloatEvents();
 

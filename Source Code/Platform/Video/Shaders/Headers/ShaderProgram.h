@@ -87,61 +87,39 @@ class NOINITVTABLE ShaderProgram : public Resource, protected GraphicsResource {
 
     /// Uniforms (update constant buffer for D3D. Use index as location in
     /// buffer)
-    virtual void Uniform(const stringImpl& ext, U32 value) = 0;
-    virtual void Uniform(const stringImpl& ext, I32 value) = 0;
-    virtual void Uniform(const stringImpl& ext, F32 value) = 0;
-    virtual void Uniform(const stringImpl& ext, const vec2<F32>& value) = 0;
+    virtual void Uniform(const char* ext, U32 value) = 0;
+    virtual void Uniform(const char* ext, I32 value) = 0;
+    virtual void Uniform(const char* ext, F32 value) = 0;
+    virtual void Uniform(const char* ext, const vec2<F32>& value) = 0;
+    virtual void Uniform(const char* ext, const vec2<I32>& value) = 0;
+    virtual void Uniform(const char* ext, const vec3<F32>& value) = 0;
+    virtual void Uniform(const char* ext, const vec3<I32>& value) = 0;
+    virtual void Uniform(const char* ext, const vec4<F32>& value) = 0;
+    virtual void Uniform(const char* ext, const vec4<I32>& value) = 0;
+    virtual void Uniform(const char* ext, const mat3<F32>& value, bool rowMajor = false) = 0;
+    virtual void Uniform(const char* ext, const mat4<F32>& value, bool rowMajor = false) = 0;
+    virtual void Uniform(const char* ext, const vectorImpl<I32>& values) = 0;
+    virtual void Uniform(const char* ext, const vectorImpl<F32>& values) = 0;
+    virtual void Uniform(const char* ext, const vectorImpl<vec2<F32> >& values) = 0;
+    virtual void Uniform(const char* ext, const vectorImpl<vec3<F32> >& values) = 0;
+    virtual void Uniform(const char* ext, const vectorImpl<vec4<F32> >& values) = 0;
+    virtual void Uniform(const char* ext, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) = 0;
+    virtual void Uniform(const char* ext, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) = 0;
 
-    virtual void Uniform(const stringImpl& ext, const vec2<I32>& value) = 0;
-
-    virtual void Uniform(const stringImpl& ext, const vec3<F32>& value) = 0;
-
-    virtual void Uniform(const stringImpl& ext, const vec3<I32>& value) = 0;
-
-    virtual void Uniform(const stringImpl& ext, const vec4<F32>& value) = 0;
-
-    virtual void Uniform(const stringImpl& ext, const vec4<I32>& value) = 0;
-
-    virtual void Uniform(const stringImpl& ext,
-                         const mat3<F32>& value,
-                         bool rowMajor = false) = 0;
-    virtual void Uniform(const stringImpl& ext,
-                         const mat4<F32>& value,
-                         bool rowMajor = false) = 0;
-    virtual void Uniform(const stringImpl& ext,
-                         const vectorImpl<I32>& values) = 0;
-    virtual void Uniform(const stringImpl& ext,
-                         const vectorImpl<F32>& values) = 0;
-    virtual void Uniform(const stringImpl& ext,
-                         const vectorImpl<vec2<F32> >& values) = 0;
-    virtual void Uniform(const stringImpl& ext,
-                         const vectorImpl<vec3<F32> >& values) = 0;
-    virtual void Uniform(const stringImpl& ext,
-                         const vectorImpl<vec4<F32> >& values) = 0;
-    virtual void Uniform(const stringImpl& ext,
-                         const vectorImpl<mat3<F32> >& values,
-                         bool rowMajor = false) = 0;
-    virtual void Uniform(const stringImpl& ext,
-                         const vectorImpl<mat4<F32> >& values,
-                         bool rowMajor = false) = 0;
-
-    inline void Uniform(const stringImpl& ext, TextureUsage slot) {
-        Uniform(ext, to_ubyte(slot));
+    inline void Uniform(const char* ext, TextureUsage slot) {
+        Uniform(ext, to_int(slot));
     }
-    
-    inline void Uniform(const stringImpl& ext, bool value) {
+        
+    inline void Uniform(const char* ext, bool value) {
         Uniform(ext, value ? 1 : 0);
     }
 
-    virtual I32 getUniformLocation(const stringImpl& name) = 0;
+    virtual I32 getUniformLocation(const char* name) = 0;
     /// Subroutine
-    virtual void SetSubroutines(ShaderType type,
-                                const vectorImpl<U32>& indices) const = 0;
+    virtual void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const = 0;
     virtual void SetSubroutine(ShaderType type, U32 index) const = 0;
-    virtual U32 GetSubroutineIndex(ShaderType type,
-                                   const stringImpl& name) const = 0;
-    virtual U32 GetSubroutineUniformLocation(ShaderType type,
-                                             const stringImpl& name) const = 0;
+    virtual U32 GetSubroutineIndex(ShaderType type, const char* name) const = 0;
+    virtual U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const = 0;
     virtual U32 GetSubroutineUniformCount(ShaderType type) const = 0;
     /// Uniform+UniformTexture implementation
     virtual void Uniform(I32 location, U32 value) = 0;

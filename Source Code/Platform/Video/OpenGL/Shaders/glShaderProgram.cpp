@@ -487,7 +487,7 @@ bool glShaderProgram::isBound() const {
 /// queried the location before
 /// If we didn't, ask the GPU to give us the variables address and save it for
 /// later use
-I32 glShaderProgram::getUniformLocation(const stringImpl& name) {
+I32 glShaderProgram::getUniformLocation(const char* name) {
     // If the shader can't be used for rendering, just return an invalid address
     if (!isValid() || _shaderProgramID == 0) {
         return -1;
@@ -504,7 +504,7 @@ I32 glShaderProgram::getUniformLocation(const stringImpl& name) {
     }
 
     // Cache miss. Query OpenGL for the location
-    GLint location = glGetUniformLocation(_shaderProgramID, name.c_str());
+    GLint location = glGetUniformLocation(_shaderProgramID, name);
 
     // Save it for later reference
     hashAlg::emplace(_shaderVarLocation, nameHash, location);
@@ -580,27 +580,27 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) const {
 /// Get the uniform location of the specified subroutine uniform for the
 /// specified stage. Not cached!
 U32 glShaderProgram::GetSubroutineUniformLocation(
-    ShaderType type, const stringImpl& name) const {
+    ShaderType type, const char* name) const {
     DIVIDE_ASSERT(isValid(),
                   "glShaderProgram error: tried to query subroutines on an "
                   "invalid program!");
 
     return glGetSubroutineUniformLocation(
         _shaderProgramID, GLUtil::glShaderStageTable[to_uint(type)],
-        name.c_str());
+        name);
 }
 
 /// Get the index of the specified subroutine name for the specified stage. Not
 /// cached!
 U32 glShaderProgram::GetSubroutineIndex(ShaderType type,
-                                        const stringImpl& name) const {
+                                        const char* name) const {
     DIVIDE_ASSERT(isValid(),
                   "glShaderProgram error: tried to query subroutines on an "
                   "invalid program!");
 
     return glGetSubroutineIndex(_shaderProgramID,
                                 GLUtil::glShaderStageTable[to_uint(type)],
-                                name.c_str());
+                                name);
 }
 
 /// Set an uniform value

@@ -45,13 +45,13 @@ inline bool ParamHandler::isParam(ULL paramID) const {
 }
 
 template <typename T>
-inline bool ParamHandler::isParam(const stringImpl& param) const {
-    return isParam<T>(_ID_RT(param.c_str()));
+inline bool ParamHandler::isParam(const char* param) const {
+    return isParam<T>(_ID_RT(param));
 }
 
 template <typename T>
-inline T ParamHandler::getParam(const stringImpl& name, T defaultValue) const {
-    return getParam<T>(_ID_RT(name.c_str()));
+inline T ParamHandler::getParam(const char* name, T defaultValue) const {
+    return getParam<T>(_ID_RT(name));
 }
 
 template <typename T>
@@ -78,7 +78,7 @@ inline T ParamHandler::getParam(ULL nameID, T defaultValue) const {
 }
 
 template <typename T>
-inline void ParamHandler::setParam(const stringImpl& name, const T& value) {
+inline void ParamHandler::setParam(const char* name, const T& value) {
     setParam<T>(_ID_RT(name), value);
 }
 
@@ -95,7 +95,7 @@ inline void ParamHandler::setParam(ULL nameID, const T& value) {
 }
 
 template <typename T>
-inline void ParamHandler::delParam(const stringImpl& name) {
+inline void ParamHandler::delParam(const char* name) {
     delParam<T>(_ID_RT(name));
 }
 

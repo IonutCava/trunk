@@ -215,7 +215,7 @@ const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderSta
 
     visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
                                       std::end(visibleNodes),
-                                       meshCullingFunction),
+                                      meshCullingFunction),
                        std::end(visibleNodes));
 
     if (stage == RenderStage::SHADOW) {

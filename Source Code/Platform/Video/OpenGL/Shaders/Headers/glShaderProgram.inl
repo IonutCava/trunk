@@ -258,94 +258,75 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const mat4<F32>& va
 }
 
 
-void glShaderProgram::Uniform(const stringImpl& ext, U32 value) {
+void glShaderProgram::Uniform(const char* ext, U32 value) {
     Uniform(getUniformLocation(ext), value);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext, I32 value) {
+void glShaderProgram::Uniform(const char* ext, I32 value) {
     Uniform(getUniformLocation(ext), value);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext, F32 value) {
+void glShaderProgram::Uniform(const char* ext, F32 value) {
     Uniform(getUniformLocation(ext), value);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vec2<F32>& value) {
+void glShaderProgram::Uniform(const char* ext, const vec2<F32>& value) {
     Uniform(getUniformLocation(ext), value);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vec2<I32>& value) {
+void glShaderProgram::Uniform(const char* ext, const vec2<I32>& value) {
     Uniform(getUniformLocation(ext), value);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vec3<F32>& value) {
+void glShaderProgram::Uniform(const char* ext, const vec3<F32>& value) {
     Uniform(getUniformLocation(ext), value);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vec3<I32>& value) {
+void glShaderProgram::Uniform(const char* ext, const vec3<I32>& value) {
     Uniform(getUniformLocation(ext), value);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vec4<F32>& value) {
+void glShaderProgram::Uniform(const char* ext, const vec4<F32>& value) {
     Uniform(getUniformLocation(ext), value);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vec4<I32>& value) {
+void glShaderProgram::Uniform(const char* ext, const vec4<I32>& value) {
     Uniform(getUniformLocation(ext), value);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const mat3<F32>& value,
-                              bool transpose) {
+void glShaderProgram::Uniform(const char* ext, const mat3<F32>& value, bool transpose) {
     Uniform(getUniformLocation(ext), value, transpose);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const mat4<F32>& value,
-                              bool transpose) {
+void glShaderProgram::Uniform(const char* ext, const mat4<F32>& value, bool transpose) {
     Uniform(getUniformLocation(ext), value, transpose);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vectorImpl<I32>& values) {
+void glShaderProgram::Uniform(const char* ext, const vectorImpl<I32>& values) {
     Uniform(getUniformLocation(ext), values);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vectorImpl<F32>& values) {
+void glShaderProgram::Uniform(const char* ext, const vectorImpl<F32>& values) {
     Uniform(getUniformLocation(ext), values);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vectorImpl<vec2<F32> >& values) {
+void glShaderProgram::Uniform(const char* ext, const vectorImpl<vec2<F32> >& values) {
     Uniform(getUniformLocation(ext), values);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vectorImpl<vec3<F32> >& values) {
+void glShaderProgram::Uniform(const char* ext, const vectorImpl<vec3<F32> >& values) {
     Uniform(getUniformLocation(ext), values);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vectorImpl<vec4<F32> >& values) {
+void glShaderProgram::Uniform(const char* ext, const vectorImpl<vec4<F32> >& values) {
     Uniform(getUniformLocation(ext), values);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vectorImpl<mat3<F32> >& values,
-                              bool transpose) {
+void glShaderProgram::Uniform(const char* ext, const vectorImpl<mat3<F32> >& values, bool transpose) {
     Uniform(getUniformLocation(ext), values, transpose);
 }
 
-void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vectorImpl<mat4<F32> >& values,
-                              bool transpose) {
+void glShaderProgram::Uniform(const char* ext, const vectorImpl<mat4<F32> >& values, bool transpose) {
     Uniform(getUniformLocation(ext), values, transpose);
 }
 

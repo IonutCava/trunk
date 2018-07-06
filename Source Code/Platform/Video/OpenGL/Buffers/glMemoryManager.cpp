@@ -14,7 +14,8 @@ U32 VBO::getChunkCountForSize(size_t sizeInBytes) {
 }
 
 VBO::VBO() : _handle(0),
-             _usage(GL_NONE)
+             _usage(GL_NONE),
+             _filledManually(false)
 {
 }
 
@@ -53,8 +54,6 @@ bool VBO::checkChunksAvailability(U32 offset, U32 count) {
 }
 
 bool VBO::allocateChunks(U32 count, GLenum usage, U32& offsetOut) {
-    assert(count < MAX_VBO_CHUNK_COUNT);
-
     if (_usage == GL_NONE || _usage == usage) {
         for (U32 i = 0; i < MAX_VBO_CHUNK_COUNT; ++i) {
             if (checkChunksAvailability(i, count)) {
@@ -76,7 +75,22 @@ bool VBO::allocateChunks(U32 count, GLenum usage, U32& offsetOut) {
     return false;
 }
 
+bool VBO::allocateWhole(U32 count, GLenum usage) {
+    assert(_handle == 0);
+    GLUtil::createAndAllocBuffer(count * MAX_VBO_CHUNK_SIZE_BYTES, usage, _handle);
+    _usage = usage;
+    _chunkUsageState.fill(std::make_pair(true, 0));
+    _chunkUsageState[0].second = count;
+    _filledManually = true;
+    return true;
+}
+
 void VBO::releaseChunks(U32 offset) {
+    if (_filledManually) {
+        _chunkUsageState.fill(std::make_pair(false, 0));
+        return;
+    }
+
     assert(offset < MAX_VBO_CHUNK_COUNT);
     assert(_chunkUsageState[offset].second != 0);
     U32 childCount = _chunkUsageState[offset].second;
@@ -100,18 +114,28 @@ U32 VBO::getMemUsage() {
 }
 
 bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, U32& offsetOut) {
-    for (VBO& vbo : g_globalVBOs) {
+    if (chunkCount < VBO::MAX_VBO_CHUNK_COUNT) {
+        for (VBO& vbo : g_globalVBOs) {
+            if (vbo.allocateChunks(chunkCount, usage, offsetOut)) {
+                handleOut = vbo.handle();
+                return true;
+            }
+        }
+
+        VBO vbo;
         if (vbo.allocateChunks(chunkCount, usage, offsetOut)) {
             handleOut = vbo.handle();
+            g_globalVBOs.push_back(vbo);
             return true;
         }
-    }
-
-    VBO vbo;
-    if (vbo.allocateChunks(chunkCount, usage, offsetOut)) {
-        handleOut = vbo.handle();
-        g_globalVBOs.push_back(vbo);
-        return true;
+    } else {
+        VBO vbo;
+        if (vbo.allocateWhole(chunkCount, usage)) {
+            offsetOut = 0;
+            handleOut = vbo.handle();
+            g_globalVBOs.push_back(vbo);
+            return true;
+        }
     }
 
     return false;

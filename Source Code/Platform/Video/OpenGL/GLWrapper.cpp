@@ -704,8 +704,8 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffse
                            (relativeOffset.y * displaySize.y) / 100.0f);
 
         if (textLabel._multiLine) {
-            lines.clear();
-            lines = Util::Split(textLabel.text(), '\n');
+            lines.resize(0);
+            Util::Split(textLabel.text(), '\n', lines);
             vectorAlg::vecSize lineCount = lines.size();
             for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
                 fonsDrawText(_fonsContext,

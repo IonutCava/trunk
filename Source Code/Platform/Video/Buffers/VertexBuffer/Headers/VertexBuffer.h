@@ -75,7 +75,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         : VertexDataInterface(context),
           _format(GFXDataFormat::UNSIGNED_SHORT),
           _primitiveRestartEnabled(false),
-          _staticBuffer(false)
+          _staticBuffer(false),
+          _keepDataInMemory(false)
     {
         reset();
     }
@@ -388,6 +389,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         U32 format, data1, data2, count;
 
         dataIn >> _staticBuffer;
+        dataIn >> _keepDataInMemory;
         dataIn >> format;
         _format = static_cast<GFXDataFormat>(format);
 
@@ -427,6 +429,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         if (!_data.empty()) {
             dataOut << stringImpl("VB");
             dataOut << _staticBuffer;
+            dataOut << _keepDataInMemory;
             dataOut << to_uint(_format);
             dataOut << to_uint(_partitions.size());
             for (const std::pair<U32, U32>& partition : _partitions) {
@@ -469,6 +472,10 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         _attribMaskPerStage[to_uint(stage)] = flagMask;
     }
 
+    inline void keepData(const bool state) {
+        _keepDataInMemory = state;
+    }
+
    protected:
     static std::array<AttribFlags, to_const_uint(RenderStage::COUNT)> _attribMaskPerStage;
 
@@ -476,7 +483,13 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
     virtual bool refresh() = 0;
     virtual bool createInternal() = 0;
 
+    inline bool keepData() const {
+        return _keepDataInMemory;
+    }
+
    protected:
+    /// Flag used to prevent clearing of the _data vector for static buffers
+    bool _keepDataInMemory;
     /// If this flag is true, no further modification are allowed on the buffer (static geometry)
     bool _staticBuffer;
     /// The format of the buffer data

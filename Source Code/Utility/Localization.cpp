@@ -53,7 +53,7 @@ void changeLanguage(const stringImpl& newLanguage) {
     clear();
 }
 
-const char* get(ULL key, const stringImpl& defaultValue) {
+const char* get(ULL key, const char* defaultValue) {
     typedef hashMapImpl<ULL, stringImpl>::const_iterator citer;
     assert(g_initialized == true &&
            "Locale::get error: Get() called without initializing the language "
@@ -65,8 +65,13 @@ const char* get(ULL key, const stringImpl& defaultValue) {
         return entry->second.c_str();
     }
     assert(false && "Locale error: INVALID STRING KEY!");
-    return const_cast<char*>(defaultValue.c_str());
+    return defaultValue;
 }
+
+const char* get(ULL key) {
+    return get(key, "\0");
+}
+
 
 };  // namespace Locale
 };  // namespace Divide

@@ -256,8 +256,8 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
             refreshNodeData ? Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable,
                                                                                sceneRenderState,
                                                                                currentStage,
-                                                                               nodeCount,
-                                                                               cmdCount)
+                                                                               cmdCount,
+                                                                               nodeCount)
                             : Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable,
                                                                                sceneRenderState,
                                                                                currentStage);
