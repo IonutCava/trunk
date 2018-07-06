@@ -3,22 +3,57 @@
 #include "Core/Headers/ErrorCodes.h"
 #include <SimpleINI/include/SimpleIni.h>
 
+#include "simplefilewatcher/includes/FileWatcher.h"
+
 namespace Divide {
 namespace Locale {
+
+namespace {
+    constexpr char* g_languageFileExtension = ".ini";
+
+    class UpdateListener : public FW::FileWatchListener
+    {
+    public:
+        UpdateListener()
+        {
+        }
+
+        void handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename, FW::Action action)
+        {
+            switch (action)
+            {
+            case FW::Actions::Add: break;
+            case FW::Actions::Delete: break;
+            case FW::Actions::Modified:
+                onLanguageFileModify(filename.c_str());
+                break;
+
+            default:
+                DIVIDE_UNEXPECTED_CALL("Unknown file event!");
+            }
+        };
+    } s_fileWatcherListener;
+};
 
 static CSimpleIni g_languageFile;
 /// Is everything loaded and ready for use?
 static bool g_initialized = false;
 
+static std::unique_ptr<FW::FileWatcher> g_LanguageFileWatcher = nullptr;
+
 ErrorCode init(const stringImpl& newLanguage) {
     clear();
+    if (!g_LanguageFileWatcher) {
+        g_LanguageFileWatcher.reset(new FW::FileWatcher());
+        g_LanguageFileWatcher->addWatch(Paths::g_LocalisationPath.c_str(), &s_fileWatcherListener);
+    }
 
     g_localeFile = newLanguage;
     // Use SimpleIni library for cross-platform INI parsing
     g_languageFile.SetUnicode();
     g_languageFile.SetMultiLine(true);
 
-    stringImpl file = "localisation/" + g_localeFile + ".ini";
+    stringImpl file = Paths::g_LocalisationPath + g_localeFile + g_languageFileExtension;
 
     if (g_languageFile.LoadFile(file.c_str()) != SI_OK) {
         return ErrorCode::NO_LANGUAGE_INI;
@@ -49,6 +84,12 @@ void clear() {
     g_initialized = false;
 }
 
+void idle() {
+    if (g_LanguageFileWatcher) {
+        g_LanguageFileWatcher->update();
+    }
+}
+
 /// Altough the language can be set at compile time, in-game options may support
 /// language changes
 void changeLanguage(const stringImpl& newLanguage) {
@@ -75,6 +116,12 @@ const char* get(U64 key) {
     return get(key, "key not found");
 }
 
+void onLanguageFileModify(const char* languageFile) {
+    // If we modify our currently active language, reinit the Locale system
+    if (strcmp((g_localeFile + g_languageFileExtension).c_str(), languageFile) == 0) {
+        init(g_localeFile);
+    }
+}
 
 };  // namespace Locale
 };  // namespace Divide

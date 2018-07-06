@@ -50,6 +50,7 @@ const SysInfo& const_sysInfo() {
 
 bool PlatformPostInit(int argc, char** argv) {
     SeedRandom();
+    Paths::initPaths();
     InitSysInfo(sysInfo(), argc, argv);
 
     return true;

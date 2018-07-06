@@ -102,6 +102,7 @@ void Kernel::idle() {
 
     _platformContext->idle();
     _sceneManager->idle();
+    Locale::idle();
 
     FrameListenerManager::instance().idle();
 

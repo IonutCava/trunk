@@ -432,51 +432,7 @@ bool glShaderProgram::load() {
     _linked = false;
 
     if (!loadFromBinary()) {
-        glShaderProgramLoadInfo info = buildLoadInfo();
-        // The program wasn't loaded from binary, so process shaders
-        // Use the specified shader path
-        glswSetPath(info._resourcePath.c_str(), ".glsl");
-
-        registerAtomFile(info._programName + ".glsl");
-
-        // For every stage
-        for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
-            // Brute force conversion to an enum
-            ShaderType type = static_cast<ShaderType>(i);
-            stringImpl shaderCompileName(info._programName +
-                                         "." +
-                                         GLUtil::glShaderStageNameTable[to_uint(type)] +
-                                         info._vertexStageProperties);
-
-            // We ask the shader manager to see if it was previously loaded elsewhere
-            _shaderStage[i] = glShader::getShader(shaderCompileName);
-
-            // If this is the first time this shader is loaded ...
-            if (!_shaderStage[i]) {
-                std::pair<bool, stringImpl> sourceCode = loadSourceCode(type, shaderCompileName, info._header, false);
-                if (!sourceCode.second.empty()){
-                    // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
-                    _shaderStage[i] = glShader::loadShader(_context, shaderCompileName, sourceCode.second, type, sourceCode.first);
-                }
-            } else {
-                _shaderStage[i]->AddRef();
-                Console::d_printfn(Locale::get(_ID("SHADER_MANAGER_GET_INC")), _shaderStage[i]->getName().c_str(), _shaderStage[i]->GetRef());
-            }
-
-            // Show a message, in debug, if we don't have a shader for this stage
-            if (!_shaderStage[i]) {
-                Console::d_printfn(Locale::get(_ID("WARN_GLSL_LOAD")), shaderCompileName.c_str());
-            } else {
-                // Try to compile the shader (it doesn't double compile shaders, so it's safe to call it multiple times)
-                if (!_shaderStage[i]->compile()) {
-                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _shaderStage[i]->getShaderID(), shaderCompileName.c_str());
-                }
-
-                for (const stringImpl& atoms : _shaderStage[i]->usedAtoms()) {
-                    registerAtomFile(atoms);
-                }
-            }
-        }
+        reloadShaders(false);
     }
 
     // try to link the program in a separate thread
@@ -487,6 +443,55 @@ bool glShaderProgram::load() {
         [&](const Task& parent){
             threadedLoad(false);
         });
+}
+
+void glShaderProgram::reloadShaders(bool reparseShaderSource) {
+    glShaderProgramLoadInfo info = buildLoadInfo();
+    registerAtomFile(info._programName + ".glsl");
+
+    glswClearCurrentContext();
+    // The program wasn't loaded from binary, so process shaders
+    // Use the specified shader path
+    glswSetPath(info._resourcePath.c_str(), ".glsl");
+
+    // For every stage
+    for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
+        // Brute force conversion to an enum
+        ShaderType type = static_cast<ShaderType>(i);
+        stringImpl shaderCompileName(info._programName +
+                                     "." +
+                                     GLUtil::glShaderStageNameTable[i] +
+                                     info._vertexStageProperties);
+        glShader*& shader = _shaderStage[i];
+
+        // We ask the shader manager to see if it was previously loaded elsewhere
+        shader = glShader::getShader(shaderCompileName);
+        // If this is the first time this shader is loaded ...
+        if (!shader || reparseShaderSource) {
+            std::pair<bool, stringImpl> sourceCode = loadSourceCode(type, shaderCompileName, info._header, reparseShaderSource);
+            if (!sourceCode.second.empty()) {
+                // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
+                shader = glShader::loadShader(_context, shaderCompileName, sourceCode.second, type, sourceCode.first);
+                if (shader) {
+                    // Try to compile the shader (it doesn't double compile shaders, so it's safe to call it multiple times)
+                    if (!shader->compile()) {
+                        Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), shader->getShaderID(), shaderCompileName.c_str());
+                    }
+                }
+            }
+        } else {
+            shader->AddRef();
+            Console::d_printfn(Locale::get(_ID("SHADER_MANAGER_GET_INC")), shader->getName().c_str(), shader->GetRef());
+        }
+
+        if (shader) {
+            for (const stringImpl& atoms : shader->usedAtoms()) {
+                registerAtomFile(atoms);
+            }
+        } else {
+            Console::d_printfn(Locale::get(_ID("WARN_GLSL_LOAD")), shaderCompileName.c_str());
+        }
+    }
 }
 
 bool glShaderProgram::recompileInternal() {
@@ -500,39 +505,8 @@ bool glShaderProgram::recompileInternal() {
         MemoryManager::DELETE(_lockManager);
     }
 
-    glShaderProgramLoadInfo info = buildLoadInfo();
-    glswClearCurrentContext();
-    // The program wasn't loaded from binary, so process shaders
-    // Use the specified shader path
-    glswSetPath(info._resourcePath.c_str(), ".glsl");
-
-    for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
-        // Brute force conversion to an enum
-        ShaderType type = static_cast<ShaderType>(i);
-        stringImpl shaderCompileName(info._programName +
-                                     "." +
-                                     GLUtil::glShaderStageNameTable[to_uint(type)] +
-                                     info._vertexStageProperties);
-
-        // We ask the shader manager to see if it was previously loaded elsewhere
-        _shaderStage[i] = glShader::getShader(shaderCompileName);
-        if (_shaderStage[i]) {
-            std::pair<bool, stringImpl> sourceCode = loadSourceCode(type, shaderCompileName, info._header, true);
-            if (!sourceCode.second.empty()) {
-                // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
-                _shaderStage[i] = glShader::loadShader(_context, shaderCompileName, sourceCode.second, type, sourceCode.first);
-                if (!_shaderStage[i]->compile()) {
-                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _shaderStage[i]->getShaderID(), shaderCompileName.c_str());
-                }
-                for (const stringImpl& atoms : _shaderStage[i]->usedAtoms()) {
-                    registerAtomFile(atoms);
-                }
-            }
-        }
-    }
-
+    reloadShaders(true);
     threadedLoad(true);
-
     return true;
 }
 

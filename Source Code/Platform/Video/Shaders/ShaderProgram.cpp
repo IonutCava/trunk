@@ -184,6 +184,7 @@ const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& atomName, cons
     if (it != std::cend(_atoms)) {
         return it->second;
     }
+
     // If we forgot to specify an atom location, we have nothing to return
     assert(!location.empty());
 
@@ -315,6 +316,16 @@ void ShaderProgram::rebuildAllShaders() {
 }
 
 void ShaderProgram::onAtomChange(const stringImpl& atomName) {
+    // Clear the atom from the cache
+    AtomMap::iterator it = _atoms.find(_ID_RT(atomName));
+    if (it != std::cend(_atoms)) {
+        it = _atoms.erase(it);
+    } else {
+        // Early return here because the _atom cache should contain ALL know atoms
+        // If the atom is not found, it may just be a temporary file
+        return;
+    }
+
     //Get list of shader programs that use the atom and rebuild all shaders in list;
     for (ShaderProgramMap::value_type& it : _shaderPrograms) {
         for (const stringImpl& atom : it.second->_usedAtoms) {

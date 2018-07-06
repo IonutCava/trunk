@@ -20,6 +20,7 @@ namespace Paths {
     stringImpl g_saveLocation;
     stringImpl g_GUILocation;
     stringImpl g_FontsPath;
+    stringImpl g_LocalisationPath;
 
     namespace Shaders {
         stringImpl g_CacheLocation;
@@ -54,15 +55,13 @@ namespace Paths {
     };
     std::regex g_includePattern;
 
-    void updatePaths(const PlatformContext& context) {
-        const Configuration& config = context.config();
-        const XMLEntryData& entryData = context.entryData();
-        
-        g_assetsLocation = entryData.assetsLocation + "/";
-        g_shadersLocation = config.defaultShadersLocation + "/";
-        g_texturesLocation = config.defaultTextureLocation + "/";
-        g_xmlDataLocation = entryData.scriptLocation + "/";
-        g_scenesLocation = entryData.scenesLocation + "/";
+    void initPaths() {
+        g_assetsLocation = "assets/";
+        g_shadersLocation = "shaders/";
+        g_texturesLocation = "textures/";
+        g_xmlDataLocation = "XML/";
+        g_scenesLocation = "Scenes/";
+
         g_saveLocation = "SaveData/";
         g_imagesLocation = "misc_images/";
         g_materialsLocation = "materials/";
@@ -70,6 +69,7 @@ namespace Paths {
         g_GUILocation = "GUI/";
         g_FontsPath = "fonts/";
         g_soundsLocation = "sounds/";
+        g_LocalisationPath = "localisation/";
 
         Shaders::g_CacheLocation = "shaderCache/";
         Shaders::g_CacheLocationText = Shaders::g_CacheLocation + "Text/";
@@ -95,6 +95,17 @@ namespace Paths {
         Shaders::HLSL::g_parentShaderLoc = "HLSL/";
 
         g_includePattern = std::regex("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
+    }
+
+    void updatePaths(const PlatformContext& context) {
+        const Configuration& config = context.config();
+        const XMLEntryData& entryData = context.entryData();
+        
+        g_assetsLocation = entryData.assetsLocation + "/";
+        g_shadersLocation = config.defaultShadersLocation + "/";
+        g_texturesLocation = config.defaultTextureLocation + "/";
+        g_xmlDataLocation = entryData.scriptLocation + "/";
+        g_scenesLocation = entryData.scenesLocation + "/";
     }
 
 }; //namespace Paths

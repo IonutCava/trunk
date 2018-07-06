@@ -52,6 +52,8 @@ static stringImpl g_localeFile = DEFAULT_LANG;
 ErrorCode init(const stringImpl& newLanguage = DEFAULT_LANG);
 /// clear the language table
 void clear();
+/// perform maintnance tasks
+void idle();
 /// Altough the language can be set at compile time, in-game options may support
 /// language changes
 void changeLanguage(const stringImpl& newLanguage);
@@ -62,6 +64,10 @@ inline const stringImpl& currentLanguage() { return g_localeFile; }
 /// and "X" is a default string in case the key does not exist in the INI file
 const char* get(U64 key, const char* defaultValue);
 const char* get(U64 key);
+
+/// Callback for external file changes. 
+void onLanguageFileModify(const char* languageFile);
+
 };  // namespace Locale
 };  // namespace Divide
 
