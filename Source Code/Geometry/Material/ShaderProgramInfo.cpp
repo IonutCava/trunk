@@ -4,7 +4,7 @@ namespace Divide {
 
 ShaderProgramInfo::ShaderProgramInfo()
     : _customShader(false),
-      _shaderRef(nullptr),
+      _shaderRef(ShaderProgram::defaultShader()),
       _shaderCompStage(BuildStage::COUNT)
 {
 }
@@ -39,8 +39,7 @@ bool ShaderProgramInfo::update() {
 }
 
 const ShaderProgram_ptr& ShaderProgramInfo::getProgram() const {
-    return _shaderRef == nullptr ? ShaderProgram::defaultShader()
-                                 : _shaderRef;
+    return _shaderRef;
 }
 
 ShaderProgramInfo::BuildStage ShaderProgramInfo::computeStage() const {

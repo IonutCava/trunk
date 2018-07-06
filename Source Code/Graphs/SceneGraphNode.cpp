@@ -21,6 +21,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
                                const stringImpl& name,
                                U32 componentMask)
     : GUIDWrapper(),
+      _frustPlaneCache(-1),
       _sceneGraph(sceneGraph),
       _updateTimer(Time::ElapsedMilliseconds()),
       _elapsedTime(0ULL),
@@ -581,9 +582,9 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
 
     if (!boundingBox.containsPoint(eye)) {
         const Frustum& frust = currentCamera.getFrustum();
-        collisionTypeOut = frust.ContainsSphere(center, radius);
+        collisionTypeOut = frust.ContainsSphere(center, radius, _frustPlaneCache);
         if (collisionTypeOut == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
-            collisionTypeOut = frust.ContainsBoundingBox(boundingBox);
+            collisionTypeOut = frust.ContainsBoundingBox(boundingBox, _frustPlaneCache);
         }
     }
 

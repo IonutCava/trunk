@@ -173,9 +173,12 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
                     return a.z < b.z; 
                 });
 
-    size_t i = 0; size_t dataCount = chunkData.size();
-    for (;i < chunkCount; ++i) {
-        GenericDrawCommand& cmd = drawCommandsInOut[i + 1];
+    size_t i = 0; 
+    size_t dataCount = chunkData.size();
+
+    GenericDrawCommands::iterator cmdIter = std::begin(drawCommandsInOut) + 1;
+    for (;i < chunkCount; ++i, ++cmdIter) {
+        GenericDrawCommand& cmd = (*cmdIter);
         if (i < dataCount) {
             const vec3<U32>& cmdData = chunkData[i];
             cmd.cmd().firstIndex = cmdData.x;

@@ -522,9 +522,10 @@ void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
 }
 
 ShaderProgram_ptr RenderingComponent::getDrawShader(const RenderStagePass& renderStagePass) {
-    return (getMaterialInstance()
-                ? _materialInstance->getShaderInfo(renderStagePass).getProgram()
-                : _customShaders[to_U32(renderStagePass._passType)][to_U32(renderStagePass._stage)]);
+    const ShaderProgram_ptr& customShader = _customShaders[to_U32(renderStagePass._passType)][to_U32(renderStagePass._stage)];
+    return customShader != nullptr
+                         ? customShader
+                         : _materialInstance->getShaderInfo(renderStagePass).getProgram();
 }
 
 size_t RenderingComponent::getDrawStateHash(const RenderStagePass& renderStagePass) {

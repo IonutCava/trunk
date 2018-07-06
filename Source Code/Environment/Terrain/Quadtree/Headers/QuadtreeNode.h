@@ -61,6 +61,8 @@ class ShaderProgram;
 class SceneGraphNode;
 class SceneRenderState;
 
+class QuadtreeChildren;
+
 class QuadtreeNode {
    public:
      QuadtreeNode();
@@ -85,28 +87,52 @@ class QuadtreeNode {
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
 
-    inline bool isALeaf() const { return !_children[0]; }
+    inline bool isALeaf() const { return _children == nullptr; }
 
     inline BoundingBox& getBoundingBox() { return _boundingBox; }
     inline void setBoundingBox(const BoundingBox& bbox) { _boundingBox = bbox; }
     inline TerrainChunk* getChunk() { return _terrainChunk; }
 
-    inline QuadtreeNode* getChild(ChildPosition pos) const { return getChild(to_U32(pos)); }
-    inline QuadtreeNode* getChild(U32 index) const { return _children[index]; }
-
+    inline QuadtreeNode& getChild(ChildPosition pos) const;
+    inline QuadtreeNode& getChild(U32 index) const;
+    
     U8 getLoD(const SceneRenderState& sceneState) const;
 
    protected:
     bool isInView(U32 options, const SceneRenderState& sceneState) const;
 
    private:
+    mutable I8 _frustPlaneCache;
     U32 _targetChunkDimension;
     BoundingBox _boundingBox;        ///< Node BoundingBox
     BoundingSphere _boundingSphere;  ///< Node BoundingSphere
-    QuadtreeNode* _children[4];      ///< Node children
+    QuadtreeChildren* _children;     ///< Node children
     TerrainChunk* _terrainChunk;     ///< Terrain Chunk contained in node
     IMPrimitive*  _bbPrimitive;
 };
+
+class QuadtreeChildren {
+private:
+    friend class QuadtreeNode;
+
+    typedef std::array<QuadtreeNode, 4> QuadtreeNodes;
+
+    inline QuadtreeNodes& operator()() { return _nodes; }
+    inline QuadtreeNode& operator[](ChildPosition pos) { return _nodes[to_U32(pos)]; }
+
+    inline const QuadtreeNodes& operator()() const { return _nodes; }
+    inline const QuadtreeNode& operator[](ChildPosition pos) const { return _nodes[to_U32(pos)]; }
+
+    QuadtreeNodes _nodes;
+};
+
+inline QuadtreeNode& QuadtreeNode::getChild(ChildPosition pos) const {
+    return (*_children)[pos];
+}
+
+inline QuadtreeNode& QuadtreeNode::getChild(U32 index) const {
+    return (*_children)[static_cast<ChildPosition>(index)];
+}
 
 };  // namespace Divide
 

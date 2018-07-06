@@ -12,23 +12,17 @@ namespace Divide {
 
 QuadtreeNode::QuadtreeNode()
     : _terrainChunk(nullptr),
-      _bbPrimitive(nullptr)
+      _bbPrimitive(nullptr),
+      _children(nullptr),
+      _frustPlaneCache(-1)
 {
-    _children[to_base(ChildPosition::CHILD_NW)] = nullptr;
-    _children[to_base(ChildPosition::CHILD_NE)] = nullptr;
-    _children[to_base(ChildPosition::CHILD_SW)] = nullptr;
-    _children[to_base(ChildPosition::CHILD_SE)] = nullptr;
-
     _targetChunkDimension = 0;
 }
 
 QuadtreeNode::~QuadtreeNode()
 {
     MemoryManager::DELETE(_terrainChunk);
-    MemoryManager::DELETE(_children[to_base(ChildPosition::CHILD_NW)]);
-    MemoryManager::DELETE(_children[to_base(ChildPosition::CHILD_NE)]);
-    MemoryManager::DELETE(_children[to_base(ChildPosition::CHILD_SW)]);
-    MemoryManager::DELETE(_children[to_base(ChildPosition::CHILD_SE)]);
+    MemoryManager::DELETE(_children);
 }
 
 void QuadtreeNode::Build(GFXDevice& context,
@@ -56,17 +50,16 @@ void QuadtreeNode::Build(GFXDevice& context,
         chunkCount++;
     } else {
         // Create 4 children
-        _children[to_base(ChildPosition::CHILD_NW)] = MemoryManager_NEW QuadtreeNode();
-        _children[to_base(ChildPosition::CHILD_NE)] = MemoryManager_NEW QuadtreeNode();
-        _children[to_base(ChildPosition::CHILD_SW)] = MemoryManager_NEW QuadtreeNode();
-        _children[to_base(ChildPosition::CHILD_SE)] = MemoryManager_NEW QuadtreeNode();
+        _children = MemoryManager_NEW QuadtreeChildren();
+
+        QuadtreeChildren::QuadtreeNodes& childNodes = (*_children)();
 
         // Compute children bounding boxes
         const vec3<F32>& center = _boundingBox.getCenter();
-        _children[to_base(ChildPosition::CHILD_NW)]->setBoundingBox(BoundingBox(_boundingBox.getMin(), center));
-        _children[to_base(ChildPosition::CHILD_NE)]->setBoundingBox(BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z), vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)));
-        _children[to_base(ChildPosition::CHILD_SW)]->setBoundingBox(BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z), vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)));
-        _children[to_base(ChildPosition::CHILD_SE)]->setBoundingBox(BoundingBox(center, _boundingBox.getMax()));
+        childNodes[to_base(ChildPosition::CHILD_NW)].setBoundingBox(BoundingBox(_boundingBox.getMin(), center));
+        childNodes[to_base(ChildPosition::CHILD_NE)].setBoundingBox(BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z), vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)));
+        childNodes[to_base(ChildPosition::CHILD_SW)].setBoundingBox(BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z), vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)));
+        childNodes[to_base(ChildPosition::CHILD_SE)].setBoundingBox(BoundingBox(center, _boundingBox.getMax()));
 
         // Compute children positions
         vec2<U32> tNewHMpos[4];
@@ -75,10 +68,10 @@ void QuadtreeNode::Build(GFXDevice& context,
         tNewHMpos[to_base(ChildPosition::CHILD_SW)] = pos + vec2<U32>(0, newsize.y);
         tNewHMpos[to_base(ChildPosition::CHILD_SE)] = pos + vec2<U32>(newsize.x, newsize.y);
 
-        _children[to_base(ChildPosition::CHILD_NW)]->Build(context, depth + 1, tNewHMpos[to_U32(ChildPosition::CHILD_NW)], HMsize, _targetChunkDimension, terrain, chunkCount);
-        _children[to_base(ChildPosition::CHILD_NE)]->Build(context, depth + 1, tNewHMpos[to_U32(ChildPosition::CHILD_NE)], HMsize, _targetChunkDimension, terrain, chunkCount);
-        _children[to_base(ChildPosition::CHILD_SW)]->Build(context, depth + 1, tNewHMpos[to_U32(ChildPosition::CHILD_SW)], HMsize, _targetChunkDimension, terrain, chunkCount);
-        _children[to_base(ChildPosition::CHILD_SE)]->Build(context, depth + 1, tNewHMpos[to_U32(ChildPosition::CHILD_SE)], HMsize, _targetChunkDimension, terrain, chunkCount);
+        childNodes[to_base(ChildPosition::CHILD_NW)].Build(context, depth + 1, tNewHMpos[to_base(ChildPosition::CHILD_NW)], HMsize, _targetChunkDimension, terrain, chunkCount);
+        childNodes[to_base(ChildPosition::CHILD_NE)].Build(context, depth + 1, tNewHMpos[to_base(ChildPosition::CHILD_NE)], HMsize, _targetChunkDimension, terrain, chunkCount);
+        childNodes[to_base(ChildPosition::CHILD_SW)].Build(context, depth + 1, tNewHMpos[to_base(ChildPosition::CHILD_SW)], HMsize, _targetChunkDimension, terrain, chunkCount);
+        childNodes[to_base(ChildPosition::CHILD_SE)].Build(context, depth + 1, tNewHMpos[to_base(ChildPosition::CHILD_SE)], HMsize, _targetChunkDimension, terrain, chunkCount);
     }
 }
 
@@ -94,21 +87,23 @@ bool QuadtreeNode::computeBoundingBox() {
 
     if (!isALeaf()) {
         for (I8 i = 0; i < 4; i++) {
-            _children[i]->computeBoundingBox();
+            QuadtreeNode& child = getChild(i);
+
+            child.computeBoundingBox();
 
             if (_boundingBox.getMin().y >
-                _children[i]->_boundingBox.getMin().y) {
+                child._boundingBox.getMin().y) {
                 _boundingBox.setMin(
                     vec3<F32>(_boundingBox.getMin().x,
-                              _children[i]->_boundingBox.getMin().y,
+                              child._boundingBox.getMin().y,
                               _boundingBox.getMin().z));
             }
 
             if (_boundingBox.getMax().y <
-                _children[i]->_boundingBox.getMax().y) {
+                child._boundingBox.getMax().y) {
                 _boundingBox.setMax(
                     vec3<F32>(_boundingBox.getMax().x,
-                              _children[i]->_boundingBox.getMax().y,
+                              child._boundingBox.getMax().y,
                               _boundingBox.getMax().z));
             }
         }
@@ -130,11 +125,15 @@ U8 QuadtreeNode::getLoD(const SceneRenderState& state) const {
 }
 
 void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sceneState) {
-    if (!isALeaf()) {
-        _children[to_base(ChildPosition::CHILD_NW)]->sceneUpdate(deltaTime, sgn, sceneState);
-        _children[to_base(ChildPosition::CHILD_NE)]->sceneUpdate(deltaTime, sgn, sceneState);
-        _children[to_base(ChildPosition::CHILD_SW)]->sceneUpdate(deltaTime, sgn, sceneState);
-        _children[to_base(ChildPosition::CHILD_SE)]->sceneUpdate(deltaTime, sgn, sceneState);
+    if (isALeaf()) {
+        ACKNOWLEDGE_UNUSED(deltaTime);
+        ACKNOWLEDGE_UNUSED(sgn);
+        ACKNOWLEDGE_UNUSED(sceneState);
+    } else {
+        getChild(ChildPosition::CHILD_NW).sceneUpdate(deltaTime, sgn, sceneState);
+        getChild(ChildPosition::CHILD_NE).sceneUpdate(deltaTime, sgn, sceneState);
+        getChild(ChildPosition::CHILD_SW).sceneUpdate(deltaTime, sgn, sceneState);
+        getChild(ChildPosition::CHILD_SE).sceneUpdate(deltaTime, sgn, sceneState);
     }
 }
 
@@ -157,14 +156,14 @@ bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderStat
         if (!_boundingBox.containsPoint(cam.getEye())) {
 
             const Frustum& frust = cam.getFrustum();
-            switch (frust.ContainsSphere(boundingCenter, boundingRadius)) {
+            switch (frust.ContainsSphere(boundingCenter, boundingRadius, _frustPlaneCache)) {
                 case Frustum::FrustCollision::FRUSTUM_OUT:
                     return false;
                 case Frustum::FrustCollision::FRUSTUM_IN:
                     options &= ~to_base(ChunkBit::CHUNK_BIT_TESTCHILDREN);
                     break;
                 case Frustum::FrustCollision::FRUSTUM_INTERSECT: {
-                    switch (frust.ContainsBoundingBox(_boundingBox)) {
+                    switch (frust.ContainsBoundingBox(_boundingBox, _frustPlaneCache)) {
                         case Frustum::FrustCollision::FRUSTUM_IN:
                             options &= ~to_base(ChunkBit::CHUNK_BIT_TESTCHILDREN);
                             break;
@@ -193,10 +192,10 @@ void QuadtreeNode::drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut
     commandsOut.push_back(_bbPrimitive->toDrawCommand());
 
     if (!isALeaf()) {
-        _children[to_base(ChildPosition::CHILD_NW)]->drawBBox(context, commandsOut);
-        _children[to_base(ChildPosition::CHILD_NE)]->drawBBox(context, commandsOut);
-        _children[to_base(ChildPosition::CHILD_SW)]->drawBBox(context, commandsOut);
-        _children[to_base(ChildPosition::CHILD_SE)]->drawBBox(context, commandsOut);
+        getChild(ChildPosition::CHILD_NW).drawBBox(context, commandsOut);
+        getChild(ChildPosition::CHILD_NE).drawBBox(context, commandsOut);
+        getChild(ChildPosition::CHILD_SW).drawBBox(context, commandsOut);
+        getChild(ChildPosition::CHILD_SE).drawBBox(context, commandsOut);
     }
 }
 
@@ -209,10 +208,12 @@ void QuadtreeNode::getBufferOffsetAndSize(U32 options,
             I8 LoD = BitCompare(options, to_base(ChunkBit::CHUNK_BIT_WATERREFLECTION)) ? Config::TERRAIN_CHUNKS_LOD - 1 : getLoD(sceneRenderState);
             chunkBufferData.push_back(_terrainChunk->getBufferOffsetAndSize(LoD));
         } else {
-            _children[to_base(ChildPosition::CHILD_NW)]->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
-            _children[to_base(ChildPosition::CHILD_NE)]->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
-            _children[to_base(ChildPosition::CHILD_SW)]->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
-            _children[to_base(ChildPosition::CHILD_SE)]->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
+            const QuadtreeChildren::QuadtreeNodes& childNodes = (*_children)();
+
+            childNodes[to_base(ChildPosition::CHILD_NW)].getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
+            childNodes[to_base(ChildPosition::CHILD_NE)].getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
+            childNodes[to_base(ChildPosition::CHILD_SW)].getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
+            childNodes[to_base(ChildPosition::CHILD_SE)].getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
         }
     }
 }

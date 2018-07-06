@@ -341,6 +341,7 @@ class SceneGraphNode : public GUIDWrapper,
     // An SGN doesn't exist outside of a scene graph
     SceneGraph& _sceneGraph;
 
+    mutable I8 _frustPlaneCache;
     D64 _updateTimer;
     U64 _elapsedTime;
     stringImpl _name;

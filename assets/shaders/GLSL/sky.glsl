@@ -6,8 +6,8 @@ void main(void){
     computeData();
     VAR._normalWV = normalize(dvd_NormalMatrixWV(VAR.dvd_drawID) * dvd_Normal);
 
-    gl_Position = vec4(dvd_ViewProjectionMatrix * VAR._vertexW).xyzz;
-    gl_Position.w += 0.0001;
+    gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
+    gl_Position.z = gl_Position.w - 0.0001;
 }
 
 /*-- Fragment.PrePass

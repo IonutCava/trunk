@@ -75,9 +75,9 @@ class Frustum {
     };
 
    public:
-    FrustCollision ContainsPoint(const vec3<F32>& point) const;
-    FrustCollision ContainsBoundingBox(const BoundingBox& bbox) const;
-    FrustCollision ContainsSphere(const vec3<F32>& center, F32 radius) const;
+    FrustCollision ContainsPoint(const vec3<F32>& point, I8& lastPlaneCache) const;
+    FrustCollision ContainsBoundingBox(const BoundingBox& bbox, I8& lastPlaneCache) const;
+    FrustCollision ContainsSphere(const vec3<F32>& center, F32 radius, I8& lastPlaneCache) const;
 
     // Get the frustum corners in WorldSpace. cornerWS must be a vector with at
     // least 8 allocated slots
@@ -92,6 +92,14 @@ class Frustum {
     static void computePlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut);
 
    private:
+     FrustCollision PlaneBoundingBoxIntersect(const Plane<F32>& frustumPlane,
+                                              const BoundingBox& bbox) const;
+     FrustCollision PlanePointIntersect(const Plane<F32>& frustumPlane, 
+                                        const vec3<F32>& point) const;
+     FrustCollision PlaneSphereIntersect(const Plane<F32>& frustumPlane,
+                                         const vec3<F32>& center,
+                                         F32 radius) const;
+
     /// Get the point where the 3 specified planes intersect
     void intersectionPoint(const Plane<F32>& a, const Plane<F32>& b,
                            const Plane<F32>& c, vec3<F32>& outResult);

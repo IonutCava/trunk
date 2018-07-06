@@ -18,7 +18,8 @@ vectorImpl<SceneGraphNode_wptr> Octree::s_intersectionsObjectCache;
 Octree::Octree(U32 nodeMask)
     : _nodeMask(nodeMask),
       _maxLifespan(MAX_LIFE_SPAN_LIMIT / 8),
-      _curLife(-1)
+      _curLife(-1),
+      _frustPlaneCache(-1)
 {
     _region.set(VECTOR3_ZERO, VECTOR3_ZERO);
     _activeNodes.fill(false);
@@ -493,8 +494,9 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U
 
     //test each object in the list for intersection
     for (I32 i = 0; i < 8; ++i) {
-        if (_childNodes[i] != nullptr && 
-            frustum.ContainsBoundingBox(_childNodes[i]->_region) != Frustum::FrustCollision::FRUSTUM_OUT)
+        if (_childNodes[i] != nullptr &&
+            frustum.ContainsBoundingBox(_childNodes[i]->_region,
+                                        _childNodes[i]->_frustPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT)
         {
             vectorImpl<IntersectionRecord> hitList = _childNodes[i]->getIntersection(frustum, typeFilterMask);
             ret.insert(std::cend(ret), std::cbegin(hitList), std::cend(hitList));
@@ -688,7 +690,7 @@ bool Octree::isStatic(const SceneGraphNode& node) const {
 bool Octree::getIntersection(SceneGraphNode& node, const Frustum& frustum, IntersectionRecord& irOut) const {
     const BoundingBox& bb = node.get<BoundsComponent>()->getBoundingBox();
 
-    if (frustum.ContainsBoundingBox(bb) != Frustum::FrustCollision::FRUSTUM_OUT) {
+    if (frustum.ContainsBoundingBox(bb, _frustPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT) {
         irOut.reset();
         irOut._intersectedObject1 = node.shared_from_this();
         irOut._treeNode = shared_from_this();

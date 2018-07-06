@@ -12,60 +12,131 @@ Frustum::Frustum(Camera& parentCamera)
 {
 }
 
-Frustum::FrustCollision Frustum::ContainsPoint(const vec3<F32>& point) const {
-    for (const Plane<F32>& frustumPlane : _frustumPlanes) {
-        if (frustumPlane.classifyPoint(point) != Plane<F32>::Side::POSITIVE_SIDE) {
-            return FrustCollision::FRUSTUM_OUT;
-        }
-    }
-
-    return FrustCollision::FRUSTUM_IN;
-}
-
-Frustum::FrustCollision Frustum::ContainsSphere(const vec3<F32>& center,
-                                                F32 radius) const {
-    F32 distance = 0.0f;
-
-    for (const Plane<F32>& frustumPlane : _frustumPlanes) {
-        distance = frustumPlane.signedDistanceToPoint(center);
-
-        if (distance < -radius) {
-            return FrustCollision::FRUSTUM_OUT;
-        }
-
-        if (std::fabs(distance) < radius) {
+Frustum::FrustCollision Frustum::PlanePointIntersect(const Plane<F32>& frustumPlane,
+                                                     const vec3<F32>& point) const {
+    switch (frustumPlane.classifyPoint(point)) {
+        case Plane<F32>::Side::NO_SIDE: 
             return FrustCollision::FRUSTUM_INTERSECT;
-        }
+
+        case Plane<F32>::Side::NEGATIVE_SIDE:
+            return FrustCollision::FRUSTUM_OUT;
     }
 
     return FrustCollision::FRUSTUM_IN;
 }
 
-Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox) const {
-    //const vec3<F32>* box[] = {&bbox.getMin(), &bbox.getMax()};
-    vec3<F32> vmin, vmax;
-    vec3<F32> bmin = bbox.getMin();
-    vec3<F32> bmax = bbox.getMax();
-    FrustCollision ret = FrustCollision::FRUSTUM_IN;
-    for (const Plane<F32>& frustumPlane : _frustumPlanes) {
-        // p-vertex selection (with the index trick)
-        // According to the plane normal we can know the
-        // indices of the positive vertex
-        const vec3<F32>& normal = frustumPlane.getNormal();
-        if (frustumPlane.signedDistanceToPoint(bbox.getPVertex(normal)) < 0) {
-            return FrustCollision::FRUSTUM_OUT;
-        }
-
-        if (frustumPlane.signedDistanceToPoint(bbox.getNVertex(normal)) < 0) {
-            ret = FrustCollision::FRUSTUM_INTERSECT;
+Frustum::FrustCollision Frustum::ContainsPoint(const vec3<F32>& point, I8& lastPlaneCache) const {
+    Frustum::FrustCollision res = FrustCollision::FRUSTUM_IN;
+    I8 planeToSkip = -1;
+    if (lastPlaneCache != -1) {
+        res = PlanePointIntersect(_frustumPlanes[lastPlaneCache], point);
+        if (res == FrustCollision::FRUSTUM_IN) {
+            // reset cache if it's no longer valid
+            planeToSkip = lastPlaneCache;
+            lastPlaneCache = -1;
         }
     }
 
-    return ret;
+    // Cache miss: check all planes
+    if (lastPlaneCache == -1) {
+        for (I8 i = 0; i < to_I8(FrustPlane::COUNT); ++i) {
+            if (i != planeToSkip) {
+                res = PlanePointIntersect(_frustumPlanes[i], point);
+                if (res != FrustCollision::FRUSTUM_IN) {
+                    lastPlaneCache = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    return res;
+}
+
+Frustum::FrustCollision Frustum::PlaneSphereIntersect(const Plane<F32>& frustumPlane, const vec3<F32>& center, F32 radius) const {
+    F32 distance = frustumPlane.signedDistanceToPoint(center);
+    if (distance < -radius) {
+        return FrustCollision::FRUSTUM_OUT;
+    }
+
+    if (std::fabs(distance) < radius) {
+        return FrustCollision::FRUSTUM_INTERSECT;
+    }
+
+    return  FrustCollision::FRUSTUM_IN;
+}
+
+Frustum::FrustCollision Frustum::ContainsSphere(const vec3<F32>& center, F32 radius, I8& lastPlaneCache) const {
+    Frustum::FrustCollision res = FrustCollision::FRUSTUM_IN;
+    I8 planeToSkip = -1;
+    if (lastPlaneCache != -1) {
+        res = PlaneSphereIntersect(_frustumPlanes[lastPlaneCache], center, radius);
+        if (res == FrustCollision::FRUSTUM_IN) {
+            // reset cache if it's no longer valid
+            planeToSkip = lastPlaneCache;
+            lastPlaneCache = -1;
+        }
+    }
+
+    // Cache miss: check all planes
+    if (lastPlaneCache == -1) {
+        for (I8 i = 0; i < to_I8(FrustPlane::COUNT); ++i) {
+            if (i != planeToSkip) {
+                res = PlaneSphereIntersect(_frustumPlanes[i], center, radius);
+                if (res != FrustCollision::FRUSTUM_IN) {
+                    lastPlaneCache = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    return res;
+}
+
+Frustum::FrustCollision Frustum::PlaneBoundingBoxIntersect(const Plane<F32>& frustumPlane,
+                                                           const BoundingBox& bbox) const {
+    const vec3<F32>& normal = frustumPlane.getNormal();
+    if (frustumPlane.signedDistanceToPoint(bbox.getPVertex(normal)) < 0) {
+        return FrustCollision::FRUSTUM_OUT;
+    }
+    if (frustumPlane.signedDistanceToPoint(bbox.getNVertex(normal)) < 0) {
+        return FrustCollision::FRUSTUM_INTERSECT;
+    }
+
+    return FrustCollision::FRUSTUM_IN;
+}
+
+
+Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox, I8& lastPlaneCache) const {
+    Frustum::FrustCollision res = FrustCollision::FRUSTUM_IN;
+    I8 planeToSkip = -1;
+    if (lastPlaneCache != -1) {
+        res = PlaneBoundingBoxIntersect(_frustumPlanes[lastPlaneCache], bbox);
+        if (res == FrustCollision::FRUSTUM_IN) {
+            // reset cache if it's no longer valid
+            planeToSkip = lastPlaneCache;
+            lastPlaneCache = -1;
+        }
+    }
+
+    // Cache miss: check all planes
+    if (lastPlaneCache == -1) {
+        for (I8 i = 0; i < to_I8(FrustPlane::COUNT); ++i) {
+            if (i != planeToSkip) {
+                res = PlaneBoundingBoxIntersect(_frustumPlanes[i], bbox);
+                if (res != FrustCollision::FRUSTUM_IN) {
+                    lastPlaneCache = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    return res;
 }
 
 void Frustum::Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix) {
-
     mat4<F32>::Multiply(viewMatrix, projectionMatrix, _viewProjectionMatrixCache);
 
     computePlanes(_viewProjectionMatrixCache);
