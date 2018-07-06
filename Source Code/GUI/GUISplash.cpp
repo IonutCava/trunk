@@ -55,7 +55,7 @@ void GUISplash::render(GFXDevice& context) {
     GFX::CommandBuffer& buffer = sBuffer();
 
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = &context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(buffer, pipelineCmd);
 
 

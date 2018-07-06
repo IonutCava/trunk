@@ -224,9 +224,8 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     pipelineDescriptor._stateHash = _context.gfx().getDefaultStateBlock(true);
     pipelineDescriptor._shaderProgram = _previewDeferredShader;
 
-    Pipeline pipeline = _context.gfx().newPipeline(pipelineDescriptor);
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = pipeline;
+    pipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDescriptor);;
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
@@ -260,8 +259,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     }
 
     pipelineDescriptor._shaderProgram = _deferredShader;
-    pipeline = _context.gfx().newPipeline(pipelineDescriptor);
-    pipelineCmd._pipeline = pipeline;
+    pipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
     pushConstantsCommand._constants.set("lightCount", PushConstantType::INT, (I32)_cachedLightCount);

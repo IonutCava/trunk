@@ -26,6 +26,7 @@ PostFX::PostFX()
       _postProcessingShader(nullptr),
       _underwaterTexture(nullptr),
       _gfx(nullptr),
+      _drawPipeline(nullptr),
       _filtersDirty(true),
       _currentFadeTimeMS(0.0),
       _targetFadeTimeMS(0.0),
@@ -111,7 +112,7 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
 
      _drawCommand.primitiveType(PrimitiveType::TRIANGLES);
      _drawCommand.drawCount(1);
-     _drawPipeline = context.newPipeline(pipelineDescriptor);
+     _drawPipeline = &context.newPipeline(pipelineDescriptor);
 
      _preRenderBatch->init(RenderTargetID(RenderTargetUsage::SCREEN));
 
@@ -144,9 +145,9 @@ void PostFX::apply() {
         _shaderFunctionSelection[1] = _shaderFunctionList[getFilterState(FilterType::FILTER_NOISE) ? 1 : 4];
         _shaderFunctionSelection[2] = _shaderFunctionList[getFilterState(FilterType::FILTER_UNDERWATER) ? 2 : 3];
 
-        PipelineDescriptor desc = _drawPipeline.toDescriptor();
+        PipelineDescriptor desc = _drawPipeline->descriptor();
         desc._shaderFunctions[ShaderType::FRAGMENT] = _shaderFunctionSelection;
-        _drawPipeline.fromDescriptor(desc);
+        _drawPipeline = &_gfx->newPipeline(desc);
         _filtersDirty = false;
     }
 

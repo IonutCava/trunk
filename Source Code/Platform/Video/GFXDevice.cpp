@@ -112,6 +112,7 @@ GFXDevice::GFXDevice(Kernel& parent)
     _debugFrustumPrimitive = nullptr;
     _renderDocManager = nullptr;
     _rtPool = nullptr;
+    _textRenderPipeline = nullptr;
 
     // Integers
     _historyIndex = 0;
@@ -601,7 +602,7 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     static RTDrawDescriptor depthOnlyTarget;
     static PipelineDescriptor pipelineDesc;
     static GenericDrawCommand triangleCmd;
-    static Pipeline pipeline;
+    static Pipeline* pipeline;
     static PushConstants constants;
 
     if (firstRun) {
@@ -623,7 +624,7 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
 
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
-        pipeline = newPipeline(pipelineDesc);
+        pipeline = &newPipeline(pipelineDesc);
         firstRun = false;
     }
 

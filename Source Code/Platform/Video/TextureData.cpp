@@ -9,11 +9,10 @@
 namespace Divide {
 
 size_t TextureData::getHash() const {
-    size_t hash = 0;
-    Util::Hash_combine(hash, to_U32(_textureType));
-    Util::Hash_combine(hash, _samplerHash);
-    Util::Hash_combine(hash, _textureHandle);
-    return hash;
+    Util::Hash_combine(_hash, to_U32(_textureType));
+    Util::Hash_combine(_hash, _samplerHash);
+    Util::Hash_combine(_hash, _textureHandle);
+    return _hash;
 }
 
 TextureDataContainer::TextureDataContainer()

@@ -139,7 +139,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     I32 cachedValueUpdate(const PushConstant& constant);
 
-    inline void Uniform(I32 binding, PushConstantType type, const vectorImplFast<AnyParam>& values, bool flag) const;
+    inline void Uniform(I32 binding, PushConstantType type, const vectorImpl<AnyParam>& values, bool flag) const;
 
     inline bool comparePushConstants(const PushConstant& lhs, const PushConstant& rhs) const;
 

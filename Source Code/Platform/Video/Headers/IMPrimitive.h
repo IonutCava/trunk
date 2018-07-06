@@ -75,7 +75,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
         }
     }
 
-    inline const Pipeline& pipeline() const {
+    inline const Pipeline* pipeline() const {
         return _pipeline;
     }
 
@@ -157,8 +157,8 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 
    public:
 
-    Pipeline _pipeline;
-    Texture* _texture;
+    const Pipeline* _pipeline;
+    const Texture* _texture;
 
    protected:
     // render in wireframe mode

@@ -231,7 +231,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     GFX::BindPipelineCommand bindPipelineCmd;
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._shaderProgram = _HIZCullProgram;
-    bindPipelineCmd._pipeline = newPipeline(pipelineDescriptor);
+    bindPipelineCmd._pipeline = &newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, bindPipelineCmd);
 
     ShaderBufferBinding shaderBuffer;
@@ -329,7 +329,7 @@ void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
     GFX::SetCamera(buffer, setCameraCommand);
 
     GFX::BindPipelineCommand bindPipelineCmd;
-    bindPipelineCmd._pipeline = newPipeline(pipelineDescriptor);
+    bindPipelineCmd._pipeline = &newPipeline(pipelineDescriptor);
     GFX::BindPipeline(buffer, bindPipelineCmd);
 
     RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));

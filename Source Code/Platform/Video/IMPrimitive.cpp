@@ -11,6 +11,7 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
     : VertexDataInterface(context),
       _forceWireframe(false),
       _paused(true),
+      _pipeline(nullptr),
       _texture(nullptr)
 {
     _cmdBuffer = GFX::allocateCommandBuffer();
@@ -197,7 +198,7 @@ void IMPrimitive::fromLines(const vectorImpl<Line>& lines,
 }
 
 void IMPrimitive::pipeline(const Pipeline& pipeline) {
-    _pipeline = pipeline;
+    _pipeline = &pipeline;
 }
 
 };

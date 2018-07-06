@@ -16,7 +16,7 @@
   </Options>
   <Inject>false</Inject>
   <AutoStart>false</AutoStart>
-  <Executable>H:\Divide-Framework\Divide-Executable_d.exe</Executable>
+  <Executable>C:\Users\Crys\Desktop\Divide-Framework\Divide-Executable_d.exe</Executable>
   <WorkingDir />
   <CmdLine>--enableGPUMessageGroups</CmdLine>
   <Environment />

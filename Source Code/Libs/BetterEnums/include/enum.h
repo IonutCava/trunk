@@ -344,7 +344,7 @@ BETTER_ENUMS__CONSTEXPR static T* _or_null(optional<T*> maybe)
 
 template <typename T, typename U>
 BETTER_ENUMS__CONSTEXPR U
-continue_with(T BETTER_ENUMS__UNUSED(ignored), U value) { return value; }
+continue_with(T BETTER_ENUMS__UNUSED(ignored), U value) { (void)ignored; return value; }
 
 
 
@@ -357,7 +357,7 @@ struct _eat_assign {
 
     template <typename Any>
     BETTER_ENUMS__CONSTEXPR const _eat_assign&
-    operator =(Any BETTER_ENUMS__UNUSED(dummy)) const { return *this; }
+    operator =(Any BETTER_ENUMS__UNUSED(dummy)) const { (void)dummy; return *this; }
 
     BETTER_ENUMS__CONSTEXPR operator EnumType () const { return _value; }
 

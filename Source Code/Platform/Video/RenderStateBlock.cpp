@@ -11,13 +11,12 @@ SharedLock RenderStateBlock::s_stateBlockMapMutex;
 size_t RenderStateBlock::s_defaultCacheValue = 0;
 
 RenderStateBlock::RenderStateBlock()
-    : GUIDWrapper(), 
-     _cachedHash(0)
+    : GUIDWrapper()
 {
     setDefaultValues();
     clean();
     if (s_defaultCacheValue == 0) {
-        s_defaultCacheValue = _cachedHash;
+        s_defaultCacheValue = getHash();
     }
 }
 
@@ -38,9 +37,10 @@ RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
      _stencilZFailOp(other._stencilZFailOp),
      _stencilPassOp(other._stencilPassOp),
      _stencilFunc(other._stencilFunc),
-     _fillMode(other._fillMode),
-     _cachedHash(other._cachedHash)
+     _fillMode(other._fillMode)
 {
+
+    _hash = other._hash;
 }
 
 void RenderStateBlock::flipCullMode() {
@@ -142,37 +142,37 @@ void RenderStateBlock::setDefaultValues() {
     _stencilZFailOp = StencilOperation::KEEP;
     _stencilPassOp = StencilOperation::KEEP;
     _stencilFunc = ComparisonFunction::NEVER;
-    _cachedHash = s_defaultCacheValue;
+    _hash = s_defaultCacheValue;
 }
 
 void RenderStateBlock::clean() {
-    size_t previousCache = _cachedHash;
+    size_t previousCache = getHash();
 
     // Avoid small float rounding errors offsetting the general hash value
     U32 zBias = to_U32(std::floor((_zBias * 1000.0f) + 0.5f));
     U32 zUnits = to_U32(std::floor((_zUnits * 1000.0f) + 0.5f));
 
-    _cachedHash = 0;
-    Util::Hash_combine(_cachedHash, _colourWrite.i);
-    Util::Hash_combine(_cachedHash, to_U32(_cullMode));
-    Util::Hash_combine(_cachedHash, _cullEnabled);
-    Util::Hash_combine(_cachedHash, _zEnable);
-    Util::Hash_combine(_cachedHash, to_U32(_zFunc));
-    Util::Hash_combine(_cachedHash, zBias);
-    Util::Hash_combine(_cachedHash, zUnits);
-    Util::Hash_combine(_cachedHash, _stencilEnable);
-    Util::Hash_combine(_cachedHash, _stencilRef);
-    Util::Hash_combine(_cachedHash, _stencilMask);
-    Util::Hash_combine(_cachedHash, _stencilWriteMask);
-    Util::Hash_combine(_cachedHash, to_U32(_stencilFailOp));
-    Util::Hash_combine(_cachedHash, to_U32(_stencilZFailOp));
-    Util::Hash_combine(_cachedHash, to_U32(_stencilPassOp));
-    Util::Hash_combine(_cachedHash, to_U32(_stencilFunc));
-    Util::Hash_combine(_cachedHash, to_U32(_fillMode));
+    _hash = 0;
+    Util::Hash_combine(_hash, _colourWrite.i);
+    Util::Hash_combine(_hash, to_U32(_cullMode));
+    Util::Hash_combine(_hash, _cullEnabled);
+    Util::Hash_combine(_hash, _zEnable);
+    Util::Hash_combine(_hash, to_U32(_zFunc));
+    Util::Hash_combine(_hash, zBias);
+    Util::Hash_combine(_hash, zUnits);
+    Util::Hash_combine(_hash, _stencilEnable);
+    Util::Hash_combine(_hash, _stencilRef);
+    Util::Hash_combine(_hash, _stencilMask);
+    Util::Hash_combine(_hash, _stencilWriteMask);
+    Util::Hash_combine(_hash, to_U32(_stencilFailOp));
+    Util::Hash_combine(_hash, to_U32(_stencilZFailOp));
+    Util::Hash_combine(_hash, to_U32(_stencilPassOp));
+    Util::Hash_combine(_hash, to_U32(_stencilFunc));
+    Util::Hash_combine(_hash, to_U32(_fillMode));
 
-    if (previousCache != _cachedHash) {
+    if (previousCache != _hash) {
         WriteLock w_lock(s_stateBlockMapMutex);
-        hashAlg::insert(s_stateBlockMap, _cachedHash, *this);
+        hashAlg::insert(s_stateBlockMap, _hash, *this);
     }
 }
 

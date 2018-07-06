@@ -33,10 +33,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _TEXTURE_DATA_H_
 
 #include "RenderAPIEnums.h"
+#include "Core/Headers/Hashable.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
 
 namespace Divide {
-class TextureData {
+class TextureData : public Hashable {
 public:
     TextureData() : TextureData(TextureType::TEXTURE_2D, 0u)
     {
@@ -98,7 +99,7 @@ public:
     }
 
     // No need to cache this as it should already be pretty fast
-    size_t getHash() const;
+    size_t getHash() const override;
 
     TextureType _textureType;
     size_t _samplerHash;

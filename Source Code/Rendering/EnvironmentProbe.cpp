@@ -159,7 +159,7 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
     pipelineDescriptor._shaderProgram = _impostorShader;
 
     GFX::BindPipelineCommand bindPipelineCmd;
-    bindPipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    bindPipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, bindPipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;

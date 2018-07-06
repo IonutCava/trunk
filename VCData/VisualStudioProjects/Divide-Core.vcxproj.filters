@@ -409,5 +409,8 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\RingBuffer.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\Hashable.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

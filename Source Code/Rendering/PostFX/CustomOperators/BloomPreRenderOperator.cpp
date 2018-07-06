@@ -95,7 +95,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
 
     pipelineDescriptor._shaderProgram = _bloomCalc;
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
      // Step 1: generate bloom
@@ -122,7 +122,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     // Blur horizontally
     pipelineDescriptor._shaderProgram = _blur;
     pipelineDescriptor._shaderFunctions[ShaderType::FRAGMENT].push_back(_horizBlur);
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
     data = _bloomOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
@@ -144,7 +144,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     // Blur vertically (recycle the render target. We have a copy)
     pipelineDescriptor._shaderProgram = _blur;
     pipelineDescriptor._shaderFunctions[ShaderType::FRAGMENT].front() = _vertBlur;
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
     data = _bloomBlurBuffer[0]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
@@ -176,7 +176,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
 
     pipelineDescriptor._shaderProgram = _bloomApply;
     pipelineDescriptor._shaderFunctions.clear();
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
     pushConstantsCommand._constants = _bloomApplyConstants;

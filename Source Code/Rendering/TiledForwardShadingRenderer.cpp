@@ -54,7 +54,7 @@ void TiledForwardShadingRenderer::preRender(RenderTarget& target,
     GFX::BindPipelineCommand bindPipelineCmd;
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._shaderProgram = _lightCullComputeShader;
-    bindPipelineCmd._pipeline = _context.gfx().newPipeline(pipelineDescriptor);
+    bindPipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, bindPipelineCmd);
 
     TextureData data = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();

@@ -997,7 +997,9 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 }
             }break;
             case GFX::CommandType::BIND_PIPELINE: {
-                bindPipeline(static_cast<GFX::BindPipelineCommand*>(cmd.get())->_pipeline);
+                const Pipeline* pipeline = static_cast<GFX::BindPipelineCommand*>(cmd.get())->_pipeline;
+                assert(pipeline != nullptr);
+                bindPipeline(*pipeline);
             } break;
             case GFX::CommandType::SEND_PUSH_CONSTANTS: {
                 sendPushConstants(static_cast<GFX::SendPushConstantsCommand*>(cmd.get())->_constants);

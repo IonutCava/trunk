@@ -353,7 +353,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     PipelineDescriptor descriptor;
     descriptor._shaderProgram = _textRenderShader;
     descriptor._stateHash = get2DStateBlock();
-    _textRenderPipeline = newPipeline(descriptor);
+    _textRenderPipeline = &newPipeline(descriptor);
 
 
     // Create initial buffers, cameras etc for this resolution. It should match window size

@@ -131,7 +131,7 @@ void GFXDevice::renderDebugViews() {
                 DebugView& view = *_debugViews[viewIndex];
                 pipelineDesc._shaderProgram = view._shader;
 
-                bindPipeline._pipeline = newPipeline(pipelineDesc);
+                bindPipeline._pipeline = &newPipeline(pipelineDesc);
                 GFX::BindPipeline(buffer, bindPipeline);
 
                 pushConstants._constants = view._shaderData;

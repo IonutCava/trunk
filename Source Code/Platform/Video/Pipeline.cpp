@@ -2,74 +2,44 @@
 
 #include "Headers/Pipeline.h"
 
-namespace Divide
-{
+namespace Divide {
 
-Pipeline::Pipeline()
-    : _stateHash(0)
-    , _multiSampleCount(0)
-{
-}
-
-Pipeline::Pipeline(const PipelineDescriptor& descriptor)
-    : _stateHash(descriptor._stateHash)
-    , _shaderProgram(descriptor._shaderProgram)
-    , _multiSampleCount(descriptor._multiSampleCount)
-    , _shaderFunctions(descriptor._shaderFunctions)
-{
-}
-
-Pipeline::~Pipeline()
-{
-}
-
-void Pipeline::fromDescriptor(const PipelineDescriptor& descriptor) {
-    _stateHash = descriptor._stateHash;
-    _shaderProgram = descriptor._shaderProgram;
-    _multiSampleCount = descriptor._multiSampleCount;
-    _shaderFunctions = descriptor._shaderFunctions;
-}
-
-PipelineDescriptor Pipeline::toDescriptor() const {
-    PipelineDescriptor desc;
-    desc._multiSampleCount = _multiSampleCount;
-    desc._shaderProgram = _shaderProgram;
-    desc._stateHash = _stateHash;
-    desc._shaderFunctions = _shaderFunctions;
-
-    return desc;
-}
-
-bool Pipeline::operator==(const Pipeline &other) const {
-    return _stateHash == other._stateHash &&
-           _multiSampleCount == other._multiSampleCount &&
-           _shaderFunctions == other._shaderFunctions &&
-           (_shaderProgram.expired() ? 0 : _shaderProgram.lock()->getID())
-                    == (other._shaderProgram.expired() ? 0 : other._shaderProgram.lock()->getID());
-}
-
-bool Pipeline::operator!=(const Pipeline &other) const {
-    return _stateHash != other._stateHash ||
-           _multiSampleCount != other._multiSampleCount ||
-           _shaderFunctions != other._shaderFunctions ||
-            (_shaderProgram.expired() ? 0 : _shaderProgram.lock()->getID())
-                    != (other._shaderProgram.expired() ? 0 : other._shaderProgram.lock()->getID());
-}
-
-size_t Pipeline::getHash() const {
-    size_t hash = _stateHash;
-    Util::Hash_combine(hash, _multiSampleCount);
+size_t PipelineDescriptor::getHash() const {
+    _hash = _stateHash;
+    Util::Hash_combine(_hash, _multiSampleCount);
     if (!_shaderProgram.expired()) {
-        Util::Hash_combine(hash, _shaderProgram.lock()->getID());
+        Util::Hash_combine(_hash, _shaderProgram.lock()->getID());
     }
 
     for (const ShaderFunctions::value_type& functions : _shaderFunctions) {
-        Util::Hash_combine(hash, functions.first);
+        Util::Hash_combine(_hash, functions.first);
         for (U32 function : functions.second) {
-            Util::Hash_combine(hash, function);
+            Util::Hash_combine(_hash, function);
         }
     }
-    
-    return hash;
+
+    return _hash;
 }
+
+Pipeline::Pipeline(const PipelineDescriptor& descriptor)
+    : _descriptor(descriptor)
+{
+}
+
+bool Pipeline::operator==(const Pipeline &other) const {
+    return _descriptor._stateHash == other._descriptor._stateHash &&
+           _descriptor._multiSampleCount == other._descriptor._multiSampleCount &&
+           _descriptor._shaderFunctions == other._descriptor._shaderFunctions &&
+           (_descriptor._shaderProgram.expired() ? 0 : _descriptor._shaderProgram.lock()->getID())
+                    == (other._descriptor._shaderProgram.expired() ? 0 : other._descriptor._shaderProgram.lock()->getID());
+}
+
+bool Pipeline::operator!=(const Pipeline &other) const {
+    return _descriptor._stateHash != other._descriptor._stateHash ||
+           _descriptor._multiSampleCount != other._descriptor._multiSampleCount ||
+           _descriptor._shaderFunctions != other._descriptor._shaderFunctions ||
+            (_descriptor._shaderProgram.expired() ? 0 : _descriptor._shaderProgram.lock()->getID())
+                    != (other._descriptor._shaderProgram.expired() ? 0 : other._descriptor._shaderProgram.lock()->getID());
+}
+
 }; //namespace Divide

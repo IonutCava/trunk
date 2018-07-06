@@ -33,12 +33,13 @@
 #define RESOURCE_DESCRIPTOR_H_
 
 #include "Platform/Headers/PlatformDefines.h"
+#include "Core/Headers/Hashable.h"
 
 namespace Divide {
 
 /// Dummy class so that resource loaders can have fast access to extra
 /// information in a general format
-class NOINITVTABLE PropertyDescriptor {
+class NOINITVTABLE PropertyDescriptor : public Hashable {
    public:
     enum class DescriptorType : U32 {
         DESCRIPTOR_TEXTURE = 0,
@@ -55,7 +56,7 @@ class NOINITVTABLE PropertyDescriptor {
     {
     }
 
-    virtual size_t getHash() const;
+    virtual size_t getHash() const override;
 
    protected:
     friend class ResourceDescriptor;
@@ -72,7 +73,7 @@ class NOINITVTABLE PropertyDescriptor {
 class CachedResource;
 FWD_DECLARE_MANAGED_CLASS(CachedResource);
 
-class ResourceDescriptor {
+class ResourceDescriptor : public Hashable {
    public:
     explicit ResourceDescriptor(const stringImpl& resourceName);
 
@@ -143,7 +144,7 @@ class ResourceDescriptor {
         _onLoadCallback = callback;
     }
 
-    size_t getHash() const;
+    size_t getHash() const override;
 
    private:
     /// Item name

@@ -350,7 +350,7 @@ public:
                                         bool asyncLoad) const;
     ShaderBuffer*      newSB(const ShaderBufferDescriptor& descriptor) const;
 
-    Pipeline           newPipeline(const PipelineDescriptor& descriptor) const;
+    Pipeline&          newPipeline(const PipelineDescriptor& descriptor) const;
 
 public:  // Direct API calls
     inline U32 getFrameDurationGPU() {
@@ -460,7 +460,7 @@ protected:
     ShaderProgram_ptr _displayShader;
     ShaderProgram_ptr _textRenderShader;
     PushConstants _textRenderConstants;
-    Pipeline _textRenderPipeline;
+    Pipeline* _textRenderPipeline = nullptr;
 
     /// Quality settings
     RenderDetailLevel _shadowDetailLevel;
@@ -502,6 +502,7 @@ protected:
 
     GFXConfig _config;
 
+    mutable hashMapImpl<size_t, Pipeline> _pipelineCache;
     std::shared_ptr<RenderDocManager> _renderDocManager;
     mutable std::mutex _gpuObjectArenaMutex;
     mutable MyArena<Config::REQUIRED_RAM_SIZE / 4> _gpuObjectArena;

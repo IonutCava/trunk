@@ -52,7 +52,7 @@ void RenderPackage::set(const RenderPackage& other) {
 
 size_t RenderPackage::getSortKeyHash() const {
     if (!_pipelines.empty()) {
-        return _pipelines.front()._pipeline.getHash();
+        return _pipelines.front()._pipeline->getHash();
     }
 
     return 0;
@@ -94,14 +94,14 @@ void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
     _drawCommands.push_back(cmd);
 }
 
-const Pipeline& RenderPackage::pipeline(I32 index) const {
+const Pipeline* RenderPackage::pipeline(I32 index) const {
     DIVIDE_ASSERT(index < to_I32(_pipelines.size()), "RenderPackage::pipeline error: Invalid pipeline index!");
     return _pipelines[index]._pipeline;
 }
 
 void RenderPackage::pipeline(I32 index, const Pipeline& pipeline) {
     DIVIDE_ASSERT(index < to_I32(_pipelines.size()), "RenderPackage::pipeline error: Invalid pipeline index!");
-    _pipelines[index]._pipeline.fromDescriptor(pipeline.toDescriptor());
+    _pipelines[index]._pipeline = &pipeline;
     SetBit(_dirtyFlags, CommandType::PIPELINE);
 }
 

@@ -75,10 +75,54 @@ enum class PushConstantType : U8 {
 };
 
 struct PushConstant {
+    PushConstant() = default;
+
+    PushConstant(const stringImplFast& binding,
+                 PushConstantType type,
+                 const AnyParam& value,
+                 bool flag = false)
+        : _binding(binding),
+          _type(type),
+          _flag(flag)
+    {
+        _values.push_back(value);
+    }
+
+    PushConstant(const stringImplFast& binding,
+                 PushConstantType type,
+                 const vectorImpl<AnyParam>& values,
+                 bool flag = false)
+        : _binding(binding),
+          _type(type),
+          _values(values),
+          _flag(flag)
+    {
+    }
+
+    PushConstant(const PushConstant& other)
+    {
+        assign(other);
+    }
+
+    PushConstant& operator=(const PushConstant& other) {
+        return assign(other);
+    }
+
+    PushConstant& assign(const PushConstant& other) {
+        _binding = other._binding;
+        _type = other._type;
+        _flag = other._flag;
+        _values.clear();
+        for (const AnyParam& param : other._values) {
+            _values.push_back(param);
+        }
+        return *this;
+    }
+
     //I32              _binding = -1;
     stringImplFast   _binding;
     PushConstantType _type = PushConstantType::COUNT;
-    vectorImplFast<AnyParam> _values;
+    vectorImpl<AnyParam> _values;
     union {
         bool _flag = false;
         bool _transpose;
@@ -107,15 +151,15 @@ public:
                     PushConstantType type,
                     const AnyParam& value,
                     bool flag = false) {
-        vectorImplFast<AnyParam> values{ value };
-        _data[_ID_RT(binding.c_str())] = { binding, type, values, flag };
+        vectorImpl<AnyParam> values{ value };
+        _data[_ID_RT(binding.c_str())] = PushConstant { binding, type, values, flag };
     }
 
     inline void set(const stringImplFast& binding,
                     PushConstantType type,
-                    const vectorImplFast<AnyParam>& values,
+                    const vectorImpl<AnyParam>& values,
                     bool flag = false) {
-        _data[_ID_RT(binding.c_str())] = { binding, type, values, flag };
+        _data[_ID_RT(binding.c_str())] = PushConstant { binding, type, values, flag };
     }
 
     inline bool empty() const { return _data.empty(); }

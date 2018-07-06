@@ -203,7 +203,7 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
         GFX::BeginRenderPass(buffer, beginRenderPassCmd);
 
         GFX::BindPipelineCommand pipelineCmd;
-        pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+        pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
         GFX::BindPipeline(buffer, pipelineCmd);
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
@@ -234,7 +234,7 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
 
     pipelineDescriptor._shaderProgram = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap);
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(buffer, pipelineCmd);
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)

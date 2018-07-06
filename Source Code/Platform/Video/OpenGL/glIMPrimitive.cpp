@@ -97,7 +97,7 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
     if (!paused()) {
         _cmdBuffer->clear();
 
-        DIVIDE_ASSERT(_pipeline.shaderProgram() != nullptr,
+        DIVIDE_ASSERT(_pipeline->shaderProgram() != nullptr,
                       "glIMPrimitive error: Draw call received without a valid shader defined!");
 
         GenericDrawCommand cmd;

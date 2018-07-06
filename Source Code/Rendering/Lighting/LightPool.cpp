@@ -345,7 +345,7 @@ void LightPool::drawLightImpostors(GFX::CommandBuffer& bufferInOut) const {
         pointsCmd.drawCount(to_U16(totalLightCount));
 
         GFX::BindPipelineCommand bindPipeline;
-        bindPipeline._pipeline = _context.newPipeline(pipelineDescriptor);
+        bindPipeline._pipeline = &_context.newPipeline(pipelineDescriptor);
         GFX::BindPipeline(bufferInOut, bindPipeline);
         
         GFX::BindDescriptorSetsCommand descriptorSetCmd;

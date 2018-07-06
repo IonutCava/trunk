@@ -157,8 +157,8 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         // draw infinite plane
         assert(pkg.drawCommand(1, 0).drawCount() == 1u);
 
-        const Pipeline& pipeline = pkg.pipeline(1);
-        PipelineDescriptor descriptor = pipeline.toDescriptor();
+        const Pipeline* pipeline = pkg.pipeline(1);
+        PipelineDescriptor descriptor = pipeline->descriptor();
         descriptor._shaderProgram = (renderStagePass.pass() == RenderPassType::DEPTH_PASS
                                      ? _planeDepthShader
                                      : _planeShader);
@@ -217,7 +217,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
                                      : _planeShader);
         {
             GFX::BindPipelineCommand pipelineCommand;
-            pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
+            pipelineCommand._pipeline = &_context.newPipeline(pipelineDescriptor);
             pkgInOut.addPipelineCommand(pipelineCommand);
         }
         //infinite plane

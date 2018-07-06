@@ -33,11 +33,12 @@
 #define _RENDER_STATE_BLOCK_H
 
 #include "RenderAPIEnums.h"
+#include "Core/Headers/Hashable.h"
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 
-class RenderStateBlock : public GUIDWrapper {
+class RenderStateBlock : public GUIDWrapper, public Hashable {
    public:
       typedef hashMapImpl<size_t, RenderStateBlock> RenderStateMap;
       static RenderStateMap s_stateBlockMap;
@@ -77,8 +78,6 @@ class RenderStateBlock : public GUIDWrapper {
     ComparisonFunction _stencilFunc;
 
     FillMode _fillMode;
-
-    size_t _cachedHash;
 
     static size_t s_defaultCacheValue;
 
@@ -159,14 +158,12 @@ class RenderStateBlock : public GUIDWrapper {
     inline FillMode fillMode() const {
         return _fillMode;
     }
-    inline size_t getHash() const {
-        return _cachedHash;
-    }
+
     bool operator==(const RenderStateBlock& RSBD) const {
-        return _cachedHash == RSBD._cachedHash;
+        return getHash() == RSBD.getHash();
     }
     bool operator!=(const RenderStateBlock& RSBD) const {
-        return _cachedHash != RSBD._cachedHash;
+        return getHash() != RSBD.getHash();
     }
 };
 

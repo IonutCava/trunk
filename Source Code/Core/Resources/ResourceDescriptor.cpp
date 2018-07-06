@@ -8,9 +8,8 @@ namespace Divide {
 
 
 size_t PropertyDescriptor::getHash() const {
-    size_t hash = 0;
-    Util::Hash_combine(hash, to_U32(_type));
-    return hash;
+    Util::Hash_combine(_hash, to_U32(_type));
+    return _hash;
 }
 
 ResourceDescriptor::ResourceDescriptor(const stringImpl& resourceName)
@@ -83,23 +82,22 @@ ResourceDescriptor::ResourceDescriptor(ResourceDescriptor&& old) noexcept
 }
 
 size_t ResourceDescriptor::getHash() const {
-    size_t hash = 0;
-    Util::Hash_combine(hash, _name);
-    Util::Hash_combine(hash, _resourceName);
-    Util::Hash_combine(hash, _resourceLocation);
-    Util::Hash_combine(hash, _properties);
-    Util::Hash_combine(hash, _flag);
-    //Util::Hash_combine(hash, _threaded); //Loading specific
-    Util::Hash_combine(hash, _ID);
-    Util::Hash_combine(hash, _mask.i);
-    Util::Hash_combine(hash, _enumValue);
-    //Util::Hash_combine(hash, _userPtr); //Loading specific
-    //Util::Hash_combine(hash, _onLoadCallback); //Loading specific
+    Util::Hash_combine(_hash, _name);
+    Util::Hash_combine(_hash, _resourceName);
+    Util::Hash_combine(_hash, _resourceLocation);
+    Util::Hash_combine(_hash, _properties);
+    Util::Hash_combine(_hash, _flag);
+    //Util::Hash_combine(_hash, _threaded); //Loading specific
+    Util::Hash_combine(_hash, _ID);
+    Util::Hash_combine(_hash, _mask.i);
+    Util::Hash_combine(_hash, _enumValue);
+    //Util::Hash_combine(_hash, _userPtr); //Loading specific
+    //Util::Hash_combine(_hash, _onLoadCallback); //Loading specific
     if (_propertyDescriptor) {
-        Util::Hash_combine(hash, _propertyDescriptor->getHash());
+        Util::Hash_combine(_hash, _propertyDescriptor->getHash());
     }
 
-    return hash;
+    return _hash;
 }
 
 };

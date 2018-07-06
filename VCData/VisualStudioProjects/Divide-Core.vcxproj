@@ -71,6 +71,7 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\Console.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\ErrorCodes.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\GUIDWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\Hashable.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\NonCopyable.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\NonMovable.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\ParamHandler.h" />

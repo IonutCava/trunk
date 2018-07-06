@@ -352,7 +352,7 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState, const Camera&
         GFX::BindDescriptorSets(cmdBuffer, descriptorSetCmd);
 
         GFX::BindPipelineCommand pipelineCmd;
-        pipelineCmd._pipeline = _context.newPipeline(pipeDesc);
+        pipelineCmd._pipeline = &_context.newPipeline(pipeDesc);
         GFX::BindPipeline(cmdBuffer, pipelineCmd);
 
         GFX::SendPushConstantsCommand pushConstantsCommand;
@@ -385,8 +385,8 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
     drawCommand._drawCommands.push_back(cmd);
     pkgInOut.addDrawCommand(drawCommand);
 
-    const Pipeline& pipeline = pkgInOut.pipeline(0);
-    PipelineDescriptor pipeDesc = pipeline.toDescriptor();
+    const Pipeline* pipeline = pkgInOut.pipeline(0);
+    PipelineDescriptor pipeDesc = pipeline->descriptor();
     pipeDesc._stateHash = _grassStateBlockHash;
     pkgInOut.pipeline(0, _context.newPipeline(pipeDesc));
 

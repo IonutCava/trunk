@@ -188,9 +188,15 @@ Texture* GFXDevice::newTexture(size_t descriptorHash,
     return temp;
 }
 
-Pipeline GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
-    // Hack for now. Cache and lookup later (e.g. for Vulkan/D3D12)
-    return Pipeline(descriptor);
+Pipeline& GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
+    size_t hash = descriptor.getHash();
+    hashMapImpl<size_t, Pipeline>::iterator it = _pipelineCache.find(hash);
+
+    if (it == std::cend(_pipelineCache)) {
+        return hashAlg::insert(_pipelineCache, hash, Pipeline(descriptor)).first->second;
+    }
+
+    return it->second;
 }
 
 ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,

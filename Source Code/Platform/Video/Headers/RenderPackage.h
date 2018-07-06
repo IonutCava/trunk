@@ -88,7 +88,7 @@ public:
 
     const GFX::DrawCommand& drawCommand(I32 index) const;
 
-    const Pipeline& pipeline(I32 index) const;
+    const Pipeline* pipeline(I32 index) const;
     void pipeline(I32 index, const Pipeline& pipeline);
 
     const ClipPlaneList& clipPlanes(I32 index) const;

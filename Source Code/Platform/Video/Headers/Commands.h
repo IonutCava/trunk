@@ -76,7 +76,7 @@ struct BindPipelineCommand : Command {
     {
     }
 
-    Pipeline _pipeline;
+    const Pipeline* _pipeline = nullptr;
 };
 
 struct SendPushConstantsCommand : Command {

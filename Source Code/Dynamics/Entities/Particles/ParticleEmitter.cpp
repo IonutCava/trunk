@@ -214,8 +214,8 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
     drawCommand._drawCommands.push_back(cmd);
     pkgInOut.addDrawCommand(drawCommand);
 
-    const Pipeline& pipeline = pkgInOut.pipeline(0);
-    PipelineDescriptor pipeDesc = pipeline.toDescriptor();
+    const Pipeline* pipeline = pkgInOut.pipeline(0);
+    PipelineDescriptor pipeDesc = pipeline->descriptor();
 
     pipeDesc._stateHash = (_context.isDepthStage(renderStagePass) ? _particleStateBlockHashDepth
                                                                   : _particleStateBlockHash); 

@@ -187,7 +187,7 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
     pipelineDescriptor._shaderProgram = getDrawShader(stagePass);
 
     GFX::BindPipelineCommand pipelineCommand;
-    pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
+    pipelineCommand._pipeline = &_context.newPipeline(pipelineDescriptor);
     pkg->addPipelineCommand(pipelineCommand);
     
     GFX::SendPushConstantsCommand pushConstantsCommand;

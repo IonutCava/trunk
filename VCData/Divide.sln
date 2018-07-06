@@ -58,9 +58,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Editor", "VisualStud
 		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB} = {3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CEGUIOpenGLRenderer-0_Static", "VisualStudioProjects\CEGUIOpenGLRenderer-0_Static.vcxproj", "{F85687BA-FB44-3120-993D-3266FD9CF9BA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CEGUIOpenGLRenderer", "VisualStudioProjects\CEGUIOpenGLRenderer-0_Static.vcxproj", "{F85687BA-FB44-3120-993D-3266FD9CF9BA}"
 EndProject
 Global
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Profile|x64 = Profile|x64

@@ -135,7 +135,7 @@ DEFINE_SINGLETON(PostFX)
     bool _filtersDirty;
 
     GenericDrawCommand _drawCommand;
-    Pipeline _drawPipeline;
+    Pipeline* _drawPipeline = nullptr;
     PushConstants _drawConstants;
 END_SINGLETON
 

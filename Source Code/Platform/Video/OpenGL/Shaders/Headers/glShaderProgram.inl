@@ -35,7 +35,7 @@
 
 namespace Divide {
     namespace {
-        bool compare(PushConstantType type, const vectorImplFast<AnyParam>& lhsVec, const vectorImplFast<AnyParam>& rhsVec) {
+        bool compare(PushConstantType type, const vectorImpl<AnyParam>& lhsVec, const vectorImpl<AnyParam>& rhsVec) {
             for (vectorAlg::vecSize i = 0; i < lhsVec.size(); ++i) {
                 const AnyParam& lhs = lhsVec[i];
                 const AnyParam& rhs = rhsVec[i];
@@ -78,7 +78,7 @@ namespace Divide {
 
         template<typename T>
         typename std::enable_if<!std::is_same<T, bool>::value, void>::type
-        convert(const vectorImplFast<AnyParam>& valuesIn, vectorImpl<T>& valuesOut) {
+        convert(const vectorImpl<AnyParam>& valuesIn, vectorImpl<T>& valuesOut) {
             std::transform(std::cbegin(valuesIn), std::cend(valuesIn), std::begin(valuesOut), [](const AnyParam& val)
             {
                 return val.constant_cast<T>();
@@ -87,7 +87,7 @@ namespace Divide {
 
         template<typename T>
         typename std::enable_if<std::is_same<T, bool>::value, void>::type
-        convert(const vectorImplFast<AnyParam>& valuesIn, vectorImpl<T>& valuesOut) {
+        convert(const vectorImpl<AnyParam>& valuesIn, vectorImpl<T>& valuesOut) {
             std::transform(std::cbegin(valuesIn), std::cend(valuesIn), std::begin(valuesOut), [](const AnyParam& val)
             {
                 return val.constant_cast<bool>() ? 1 : 0;
@@ -97,7 +97,7 @@ namespace Divide {
         //ToDo: REALLY SLOW! Find a faster way of handling this! -Ionut
         template<typename T_out, typename T_in>
         struct castData {
-            castData(const vectorImplFast<AnyParam>& values)
+            castData(const vectorImpl<AnyParam>& values)
                 : _convertedData(values.size()),
                   _values(values)
             {
@@ -111,7 +111,7 @@ namespace Divide {
             using vectorType = typename std::conditional<std::is_same<T_in, bool>::value, I32, T_in>::type;
             vectorImpl<vectorType> _convertedData;
 
-            const vectorImplFast<AnyParam>& _values;
+            const vectorImpl<AnyParam>& _values;
         };
     };
 
@@ -127,7 +127,7 @@ namespace Divide {
         return false;
     }
 
-    void glShaderProgram::Uniform(I32 binding, PushConstantType type, const vectorImplFast<AnyParam>& values, bool flag) const {
+    void glShaderProgram::Uniform(I32 binding, PushConstantType type, const vectorImpl<AnyParam>& values, bool flag) const {
         GLsizei count = (GLsizei)values.size();
         switch (type) {
             case PushConstantType::BOOL:

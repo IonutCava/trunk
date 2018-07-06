@@ -39,7 +39,7 @@
 namespace Divide {
 /// This class is used to define all of the sampler settings needed to use a texture
 /// We do not define copy constructors as we must define descriptors only with POD
-class SamplerDescriptor {
+class SamplerDescriptor : public Hashable {
    public:
     /// The constructor specifies the type so it can be used later for
     /// down-casting if needed
@@ -145,26 +145,25 @@ class SamplerDescriptor {
 
     inline void toggleSRGBColourSpace(const bool state) { _srgb = state; }
 
-    inline size_t getHash() const {
-        size_t hash = 0;
-        Util::Hash_combine(hash, to_U32(_cmpFunc));
-        Util::Hash_combine(hash, _useRefCompare);
-        Util::Hash_combine(hash, _srgb);
-        Util::Hash_combine(hash, to_U32(_wrapU));
-        Util::Hash_combine(hash, to_U32(_wrapV));
-        Util::Hash_combine(hash, to_U32(_wrapW));
-        Util::Hash_combine(hash, to_U32(_minFilter));
-        Util::Hash_combine(hash, to_U32(_magFilter));
-        Util::Hash_combine(hash, _minLOD);
-        Util::Hash_combine(hash, _maxLOD);
-        Util::Hash_combine(hash, _biasLOD);
-        Util::Hash_combine(hash, _anisotropyLevel);
-        Util::Hash_combine(hash, _borderColour.r);
-        Util::Hash_combine(hash, _borderColour.g);
-        Util::Hash_combine(hash, _borderColour.b);
-        Util::Hash_combine(hash, _borderColour.a);
-        Util::Hash_combine(hash, _msaaSamples);
-        return hash;
+    inline size_t getHash() const override {
+        Util::Hash_combine(_hash, to_U32(_cmpFunc));
+        Util::Hash_combine(_hash, _useRefCompare);
+        Util::Hash_combine(_hash, _srgb);
+        Util::Hash_combine(_hash, to_U32(_wrapU));
+        Util::Hash_combine(_hash, to_U32(_wrapV));
+        Util::Hash_combine(_hash, to_U32(_wrapW));
+        Util::Hash_combine(_hash, to_U32(_minFilter));
+        Util::Hash_combine(_hash, to_U32(_magFilter));
+        Util::Hash_combine(_hash, _minLOD);
+        Util::Hash_combine(_hash, _maxLOD);
+        Util::Hash_combine(_hash, _biasLOD);
+        Util::Hash_combine(_hash, _anisotropyLevel);
+        Util::Hash_combine(_hash, _borderColour.r);
+        Util::Hash_combine(_hash, _borderColour.g);
+        Util::Hash_combine(_hash, _borderColour.b);
+        Util::Hash_combine(_hash, _borderColour.a);
+        Util::Hash_combine(_hash, _msaaSamples);
+        return _hash;
     }
     /*
     *  "Internal" data

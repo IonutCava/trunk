@@ -158,7 +158,7 @@ void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     // Generate AO
     pipelineDescriptor._shaderProgram = _ssaoGenerateShader;
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
@@ -190,7 +190,7 @@ void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
 
     // Blur AO
     pipelineDescriptor._shaderProgram = _ssaoBlurShader;
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
     descriptorSetCmd._set._textureData.clear();
@@ -216,7 +216,7 @@ void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     GFX::BlitRenderTarget(bufferInOut, blitRTCommand);
 
     pipelineDescriptor._shaderProgram = _ssaoApplyShader;
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
     descriptorSetCmd._set._textureData.clear();
@@ -228,7 +228,7 @@ void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
 
     pipelineDescriptor._shaderProgram = _ssaoApplyShader;
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
     beginRenderPassCmd._target = screen._targetID;

@@ -69,7 +69,7 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* pMain)
     }
 
 
-    m_pWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) { OnClose();});
+    m_pWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); OnClose();});
     m_pWindow->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) { OnFocus(args._flag);});
     m_pWindow->addEventListener(WindowEvent::RESIZED_EXTERNAL, [this](const DisplayWindow::WindowEventArgs& args) { OnSize(args.x, args.y);});
     m_pWindow->addEventListener(WindowEvent::MOUSE_BUTTON, [this](const DisplayWindow::WindowEventArgs& args) { OnMouseButton(args.id, args._flag);});
@@ -245,6 +245,7 @@ void ImwWindowDivide::OnFocus(bool bHasFocus)
 
 void ImwWindowDivide::OnSize(int iWidth, int iHeight)
 {
+    (void)iWidth; (void)iHeight;
     /*if (m_hDC != NULL && m_hRC != NULL)
     {
         wglMakeCurrent(m_hDC, m_hRC);

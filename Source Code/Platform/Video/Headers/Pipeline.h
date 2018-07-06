@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "PushConstants.h"
 #include "DescriptorSets.h"
+#include "Core/Headers/Hashable.h"
 #include "Utility/Headers/TextLabel.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
@@ -58,7 +59,10 @@ struct ComputeParams {
 
 typedef hashMapImpl<ShaderType, vectorImpl<U32>> ShaderFunctions;
 
-struct PipelineDescriptor {
+class PipelineDescriptor : public Hashable {
+  public:
+    size_t getHash() const override;
+
     U8 _multiSampleCount = 0;
     size_t _stateHash = 0;
     ShaderProgram_wptr _shaderProgram;
@@ -67,40 +71,38 @@ struct PipelineDescriptor {
 
 class Pipeline {
 public:
-    Pipeline();
     Pipeline(const PipelineDescriptor& descriptor);
-    ~Pipeline();
-
-    void fromDescriptor(const PipelineDescriptor& descriptor);
-    PipelineDescriptor toDescriptor() const;
 
     inline ShaderProgram* shaderProgram() const {
-        return _shaderProgram.expired() ? nullptr : _shaderProgram.lock().get();
+        return _descriptor._shaderProgram.expired() ? nullptr : _descriptor._shaderProgram.lock().get();
+    }
+
+    inline const PipelineDescriptor& descriptor() const {
+        return _descriptor;
     }
 
     inline size_t stateHash() const {
-        return _stateHash;
+        return _descriptor._stateHash;
     }
 
     inline U8 multiSampleCount() const{
-        return _multiSampleCount;
+        return _descriptor._multiSampleCount;
     }
 
 
     inline const ShaderFunctions& shaderFunctions() const {
-        return _shaderFunctions;
+        return _descriptor._shaderFunctions;
+    }
+
+    inline size_t getHash() const {
+        return _descriptor.getHash();
     }
 
     bool operator==(const Pipeline &other) const;
     bool operator!=(const Pipeline &other) const;
 
-    size_t getHash() const;
-
 private: //data
-    size_t _stateHash;
-    U8 _multiSampleCount;
-    ShaderProgram_wptr _shaderProgram;
-    ShaderFunctions _shaderFunctions;
+    PipelineDescriptor _descriptor;
 
 }; //class Pipeline
 
