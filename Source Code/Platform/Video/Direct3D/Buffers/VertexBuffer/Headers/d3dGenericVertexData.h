@@ -54,7 +54,7 @@ class d3dGenericVertexData : public GenericVertexData {
     void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
                                  size_t elementCount) {}
     void UpdateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset,
-                      void* data, bool invalidateRange = false) {}
+                      void* data) {}
     void SetFeedbackBuffer(U32 buffer, U32 bindPoint) {}
     U32 GetFeedbackPrimitiveCount(U8 queryID) { return 0; }
 };

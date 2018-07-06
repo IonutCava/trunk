@@ -23,10 +23,7 @@ glUniformBuffer::glUniformBuffer(const stringImpl& bufferName, bool unbound,
 
 glUniformBuffer::~glUniformBuffer() 
 {
-    if (_UBOid > 0) {
-        DiscardAllData();
-        GLUtil::freeBuffer(_UBOid, _mappedBuffer);
-    }
+    GLUtil::freeBuffer(_UBOid, _mappedBuffer);
 }
 
 void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
@@ -53,9 +50,11 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
     }
 }
 
-void glUniformBuffer::DiscardAllData() { glInvalidateBufferData(_UBOid); }
+void glUniformBuffer::DiscardAllData() const {
+    glInvalidateBufferData(_UBOid);
+}
 
-void glUniformBuffer::DiscardSubData(ptrdiff_t offset, ptrdiff_t size) {
+void glUniformBuffer::DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const {
     DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize,
                   "glUniformBuffer error: DiscardSubData was called with an "
                   "invalid range (buffer overflow)!");
@@ -63,8 +62,8 @@ void glUniformBuffer::DiscardSubData(ptrdiff_t offset, ptrdiff_t size) {
 }
 
 void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
-                                 const bufferPtr data,
-                                 const bool invalidateBuffer) const {
+                                 const bufferPtr data) const {
+
     DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize,
                    "glUniformBuffer::UpdateData error: was called with an "
                   "invalid range (buffer overflow)!");
@@ -83,12 +82,7 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
         memcpy(dst, data, size);
         _lockManager->LockRange(offset, size);
     } else {
-        if (invalidateBuffer) {
-            //glNamedBufferSubData(_UBOid, 0, _bufferSize, NULL);
-            gl45ext::glNamedBufferSubDataEXT(_UBOid, 0, _bufferSize, NULL);
-        }
-        //glNamedBufferSubData(_UBOid, offset, size, data);
-        gl45ext::glNamedBufferSubDataEXT(_UBOid, offset, size, data);
+        GLUtil::updateBuffer(_UBOid, offset, size, data);
     }
 }
 

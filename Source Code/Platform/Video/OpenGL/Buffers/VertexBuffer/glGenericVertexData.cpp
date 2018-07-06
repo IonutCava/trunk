@@ -70,9 +70,8 @@ glGenericVertexData::~glGenericVertexData() {
             MemoryManager::DELETE_ARRAY(_resultAvailable[i]);
         }
     }
-    if (_indexBuffer > 0) {
-        glDeleteBuffers(1, &_indexBuffer);
-    }
+    GLUtil::freeBuffer(_indexBuffer);
+
     // Delete the rest of the data
     MemoryManager::DELETE_ARRAY(_prevResult);
     MemoryManager::DELETE_ARRAY(_bufferSet);
@@ -147,7 +146,7 @@ void glGenericVertexData::Create(U8 numBuffers, U8 numQueries) {
     _bufferPersistent = MemoryManager_NEW bool[numBuffers];
     memset(_bufferPersistent, false, numBuffers * sizeof(bool));
     // Persistently mapped data (array of void* pointers)
-    _bufferPersistentData = (bufferPtr*)malloc(sizeof(bufferPtr) * numBuffers);
+    _bufferPersistentData = (GLUtil::bufferPtr*)malloc(sizeof(GLUtil::bufferPtr) * numBuffers);
 }
 
 /// Called at the beginning of each frame to update the currently used queries
@@ -217,7 +216,7 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
                           : GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable
                                 [command.primitiveType()];
 
-        if (_hasIndexBuffer) {
+        if (_indexBuffer > 0) {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
             glDrawElementsIndirect(
                 type, GL_UNSIGNED_INT,
@@ -244,27 +243,19 @@ void glGenericVertexData::SetIndexBuffer(const vectorImpl<U32>& indices,
     bool addBuffer = !indices.empty();
 
     if (addBuffer) {
-        if (!_hasIndexBuffer) {
+        GLenum mask = dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW)
+                              : GL_STATIC_DRAW;
+        if (_indexBuffer == 0) {
             // Generate an "Index Buffer Object"
-            glGenBuffers(1, &_indexBuffer);
-            // Assert if the IB creation failed
-            DIVIDE_ASSERT(_indexBuffer != 0, Locale::get("ERROR_IB_INIT"));
+            GLUtil::allocBuffer(
+                static_cast<GLsizeiptr>(indices.size() * sizeof(GLuint)), mask,
+                _indexBuffer, 
+                (GLUtil::bufferPtr)indices.data());
         }
-        //glNamedBufferData(
-        gl45ext::glNamedBufferDataEXT(
-            _indexBuffer, indices.size() * sizeof(GLuint), indices.data(),
-            dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW)
-                    : GL_STATIC_DRAW);
-
-        _hasIndexBuffer = true;
+        // Assert if the IB creation failed
+        DIVIDE_ASSERT(_indexBuffer != 0, Locale::get("ERROR_IB_INIT"));
     } else {
-        if (!_hasIndexBuffer) {
-            return;
-        }
-        glInvalidateBufferData(_indexBuffer);
-        glDeleteBuffers(1, &_indexBuffer);
-        _indexBuffer = 0;
-        _hasIndexBuffer = false;
+        GLUtil::freeBuffer(_indexBuffer);
     }
 }
 
@@ -327,16 +318,11 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount,
                            : GL_STATIC_DRAW);
         // If the buffer is not persistently mapped, allocate storage the
         // classic way
-        //glNamedBufferData(
-        gl45ext::glNamedBufferDataEXT(
-                          currentBuffer, bufferSize * sizeFactor, NULL,
-                             flag);
+        GLUtil::allocBuffer(currentBuffer, bufferSize * sizeFactor, flag);
         // And upload sizeFactor copies of the data
         for (U8 i = 0; i < sizeFactor; ++i) {
-            //glNamedBufferSubData(
-            gl45ext::glNamedBufferSubDataEXT(
-                                 currentBuffer, i * bufferSize, bufferSize,
-                                    data);
+            GLUtil::updateBuffer(currentBuffer, i * bufferSize, bufferSize,
+                                 data);
         }
     }
     _bufferSet[buffer] = true;
@@ -346,27 +332,18 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount,
 /// Update the elementCount worth of data contained in the buffer starting from
 /// elementCountOffset size offset
 void glGenericVertexData::UpdateBuffer(U32 buffer, U32 elementCount,
-                                       U32 elementCountOffset, void* data,
-                                       bool invalidateRange) {
+                                       U32 elementCountOffset, void* data) {
     // Calculate the size of the data that needs updating
     size_t dataCurrentSize = elementCount * _elementSize[buffer];
     // Calculate the offset in the buffer in bytes from which to start writing
     size_t offset = elementCountOffset * _elementSize[buffer];
     // Calculate the entire buffer size
     size_t bufferSize = _elementCount[buffer] * _elementSize[buffer];
-    // If requested we can invalidate the data in the specified range to hint at
-    // the driver to discard the old data
-    if (invalidateRange) {
-        glInvalidateBufferSubData(_bufferObjects[buffer], offset,
-                                  dataCurrentSize);
-    }
 
     if (!_bufferPersistent[buffer]) {
         // Update part of the data in the buffer at the specified buffer in the
         // copy that's ready for writing
-        //glNamedBufferSubData(
-        gl45ext::glNamedBufferSubDataEXT(
-                             _bufferObjects[buffer],
+        GLUtil::updateBuffer(_bufferObjects[buffer],
                              _startDestOffset[buffer] + offset,
                              dataCurrentSize, data);
     } else {

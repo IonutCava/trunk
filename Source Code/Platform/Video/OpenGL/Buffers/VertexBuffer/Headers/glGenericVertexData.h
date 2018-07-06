@@ -62,7 +62,7 @@ class glGenericVertexData : public GenericVertexData {
                    bool persistentMapped = false);
 
     void UpdateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset,
-                      void* data, bool invalidateRange = false);
+                      void* data);
 
     void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
                                  size_t elementCount);
@@ -114,7 +114,7 @@ class glGenericVertexData : public GenericVertexData {
     GLuint* _sizeFactor;
     size_t* _readOffset;
     size_t* _elementSize;
-    bufferPtr* _bufferPersistentData;
+    GLUtil::bufferPtr* _bufferPersistentData;
     GLuint* _prevResult;
     GLuint* _feedbackQueries[2];
     bool* _resultAvailable[2];

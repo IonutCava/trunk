@@ -4,6 +4,7 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 
 namespace Divide {
 
@@ -50,10 +51,8 @@ void glPixelBuffer::Destroy() {
         _textureID = 0;
     }
 
-    if (_pixelBufferHandle > 0) {
-        glDeleteBuffers(1, &_pixelBufferHandle);
-        _pixelBufferHandle = 0;
-    }
+    GLUtil::freeBuffer(_pixelBufferHandle);
+
     _width = 0;
     _height = 0;
     _depth = 0;
@@ -81,25 +80,18 @@ void* glPixelBuffer::Begin(GLubyte nFace) const {
             break;
     };
 
-    GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
+    GLsizeiptr bufferSize = (_width * 4) * sizeOf(_dataType);
     switch (_pbtype) {
-        case PB_TEXTURE_1D:
-            glBufferData(GL_PIXEL_UNPACK_BUFFER,
-                         (_width * 4) * sizeOf(_dataType), NULL,
-                         GL_STREAM_DRAW);
-            break;
         case PB_TEXTURE_2D:
-            glBufferData(GL_PIXEL_UNPACK_BUFFER,
-                         (_width * _height * 4) * sizeOf(_dataType), NULL,
-                         GL_STREAM_DRAW);
+            bufferSize *= _height;
             break;
         case PB_TEXTURE_3D:
-            glBufferData(GL_PIXEL_UNPACK_BUFFER,
-                         (_width * _height * _depth * 4) * sizeOf(_dataType),
-                         NULL, GL_STREAM_DRAW);
+            bufferSize *= _height * _depth;
             break;
     };
 
+    GLUtil::allocBuffer(_pixelBufferHandle, bufferSize, GL_STREAM_DRAW);
+    GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     return glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
 }
 
@@ -201,14 +193,9 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
             break;
     };
     MemoryManager::DELETE_ARRAY(pixels);
-
-    glGenBuffers(1, &_pixelBufferHandle);
-    GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, size * sizeOf(_dataType), NULL,
-                 GL_STREAM_DRAW);
-
     GL_API::unbindTexture(0, textureTypeEnum);
-    GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+    GLUtil::allocBuffer(size * sizeOf(_dataType), GL_STREAM_DRAW, _pixelBufferHandle);
     return true;
 }
 

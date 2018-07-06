@@ -183,10 +183,18 @@ class VertexBuffer : public VertexDataInterface {
                              : _hardwareIndicesS[index];
     }
 
-    inline const vectorImpl<U32>& getIndicesL() const {
+    template<typename T>
+    const vectorImpl<T>& getIndices() const {
+        static_assert(false, "VertexBuffer::getIndices error: Need valid index data type!");
+    }
+
+    template<>
+    const vectorImpl<U32>& getIndices() const {
         return _hardwareIndicesL;
     }
-    inline const vectorImpl<U16>& getIndicesS() const {
+
+    template<>
+    inline const vectorImpl<U16>& getIndices() const {
         return _hardwareIndicesS;
     }
 

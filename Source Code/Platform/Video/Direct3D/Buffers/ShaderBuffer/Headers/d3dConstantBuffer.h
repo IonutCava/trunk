@@ -45,10 +45,11 @@ class d3dConstantBuffer : public ShaderBuffer {
     /// Reserve primitiveCount * implementation specific primitive size of space
     /// in the buffer and fill it with NULL values
     virtual void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
-    virtual void DiscardAllData();
-    virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size);
-    virtual void UpdateData(ptrdiff_t offset, ptrdiff_t size, const bufferPtr data,
-                            const bool invalidateBuffer = false) const;
+    virtual void DiscardAllData() const;
+    virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const;
+    virtual void UpdateData(ptrdiff_t offset,
+                            ptrdiff_t size,
+                            const bufferPtr data) const;
     virtual bool BindRange(ShaderBufferLocation bindIndex,
                            U32 offsetElementCount, U32 rangeElementCount) const;
     virtual bool Bind(ShaderBufferLocation bindIndex) const;

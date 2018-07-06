@@ -126,7 +126,7 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
         _animator->GetTransforms(_currentAnimIndex, _currentTimeStamp);
     _boneTransformBuffer[_writeBuffer]->UpdateData(
         0, animationTransforms.size() * sizeof(mat4<F32>),
-        animationTransforms.data(), true);
+        animationTransforms.data());
     _boneTransformBuffer[_readBuffer]->Bind(SHADER_BUFFER_BONE_TRANSFORMS);
 
     if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE) || !_playAnimations ||

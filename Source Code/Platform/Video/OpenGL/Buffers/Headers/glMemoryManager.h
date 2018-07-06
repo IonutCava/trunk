@@ -35,27 +35,37 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 
 namespace Divide {
-    namespace GLUtil {
-        typedef void* bufferPtr;
+namespace GLUtil {
+    void allocBuffer(GLuint bufferId,
+                     GLsizeiptr bufferSize,
+                     GLenum usageMask,
+                     const bufferPtr data = NULL);
 
-        static void allocBuffer(GLuint bufferId, GLsizeiptr bufferSize,
-                                GLenum usageMask);
+    void allocBuffer(GLsizeiptr bufferSize,
+                     GLenum usageMask,
+                     GLuint& bufferIdOut,
+                     const bufferPtr data = NULL);
 
-        static void allocBuffer(GLsizeiptr bufferSize,
-                                GLenum usageMask,
-                                GLuint& bufferIdOut);
+    bufferPtr allocPersistentBuffer(GLuint bufferId,
+                                    GLsizeiptr bufferSize,
+                                    MapBufferUsageMask usageMask,
+                                    BufferAccessMask accessMask,
+                                    const bufferPtr data = NULL);
 
-        static bufferPtr allocPersistentBuffer(GLuint bufferId,
-                                               GLsizeiptr bufferSize,
-                                               MapBufferUsageMask usageMask,
-                                               BufferAccessMask accessMask);
-        static bufferPtr allocPersistentBuffer(GLsizeiptr bufferSize,
-                                               MapBufferUsageMask usageMask,
-                                               BufferAccessMask accessMask,
-                                               GLuint& bufferIdOut);
+    bufferPtr allocPersistentBuffer(GLsizeiptr bufferSize,
+                                    MapBufferUsageMask usageMask,
+                                    BufferAccessMask accessMask,
+                                    GLuint& bufferIdOut,
+                                    const bufferPtr data = NULL);
 
-        static void freeBuffer(GLuint& bufferId, bufferPtr mappedPtr = nullptr);
-    }; //namespace GLUtil
+    void updateBuffer(GLuint bufferId,
+                      GLintptr offset,
+                      GLsizeiptr size,
+                      const bufferPtr data);
+
+    void freeBuffer(GLuint &bufferId, bufferPtr mappedPtr = nullptr);
+
+}; //namespace GLUtil
 }; //namespace Divide
 
 #endif //_GL_MEMORY_MANAGER_H_

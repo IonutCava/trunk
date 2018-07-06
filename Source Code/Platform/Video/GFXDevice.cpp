@@ -695,10 +695,9 @@ void GFXDevice::processVisibleNodes(
             renderable->getMaterialPropertyMatrix(temp._matrix[3]);
         }
     }
-    // Once the CPU-side buffer is filled, upload the buffer to the GPU,
-    // flushing the old data
+    // Once the CPU-side buffer is filled, upload the buffer to the GPU
     _nodeBuffer->UpdateData(0, (nodeCount + 1) * sizeof(NodeData),
-                            _matricesData.data(), true);
+                            _matricesData.data());
 }
 
 void GFXDevice::buildDrawCommands(

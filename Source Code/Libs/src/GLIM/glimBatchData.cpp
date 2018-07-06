@@ -8,6 +8,7 @@
 #include "glimInterface.h"
 
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
+#include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -218,9 +219,9 @@ namespace NS_GLIM
         if (z > m_fMaxZ)
             m_fMaxZ = z;
 
-        m_PositionData.push_back (x);
-        m_PositionData.push_back (y);
-        m_PositionData.push_back (z);
+        m_PositionData.push_back (Glim4ByteData(x));
+        m_PositionData.push_back (Glim4ByteData(y));
+        m_PositionData.push_back (Glim4ByteData(z));
 
         std::map<stringImpl, GlimArrayData>::iterator it, itend;
         itend = m_Attributes.end ();
@@ -464,42 +465,39 @@ namespace NS_GLIM
             glGenBuffers (1, &m_uiElementBufferID_Triangles);
             glGenBuffers (1, &m_uiElementBufferID_Wireframe);
         }
-            
-        Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
-        glBufferData (GL_ARRAY_BUFFER, uiVertices * uiVertexDataSize, NULL, GL_STREAM_DRAW);
-
-        // first upload the position data
-        unsigned int uiOffset = uiVertices * sizeof (float) * 3;
-
-        // offset is zero, but can use uiOffset as size
-        glBufferSubData (GL_ARRAY_BUFFER, 0, uiOffset, m_PositionData.data());
-        // the buffer in RAM can be cleared now
-        m_PositionData.clear ();
         
+        std::vector<Glim4ByteData> bufferData;
+        bufferData.insert(bufferData.end(), m_PositionData.begin(), m_PositionData.end());
+        m_PositionData.clear();
+
+        unsigned int uiOffset = uiVertices * sizeof(Glim4ByteData) * 3;
+
         // now upload each attribute array one after another
-
         std::map<stringImpl, GlimArrayData>::iterator it, itend;
-        itend = m_Attributes.end ();
+        it = m_Attributes.begin();
+        itend = m_Attributes.end();
 
-        for (it = m_Attributes.begin (); it != itend; ++it)
-        {
-            const unsigned int uiAttributeSize = (unsigned int) (it->second.m_ArrayData.size ()) * sizeof(int); // already includes the number of vertices
+        for (; it != itend; ++it) {
+            bufferData.insert(bufferData.end(), it->second.m_ArrayData.begin(),
+                              it->second.m_ArrayData.end());
+            const unsigned int uiAttributeSize =
+                (unsigned int)(it->second.m_ArrayData.size()) *
+                sizeof(Glim4ByteData); // already includes the number of vertices
 
-            // upload the data
-            glBufferSubData (GL_ARRAY_BUFFER, uiOffset, uiAttributeSize, &it->second.m_ArrayData[0].Float);
-
-            // free the temporary buffer in RAM, the data is now in a better place (the VRAM)
-            it->second.m_ArrayData.clear ();
-
+            // free the temporary buffer in RAM
+            it->second.m_ArrayData.clear();
             it->second.m_uiBufferStride = uiAttributeSize / uiVertices;
-
             // store the buffer offset for later use
             it->second.m_uiBufferOffset = uiOffset;
-
             // increase the buffer offset
             uiOffset += uiAttributeSize;
         }
-        Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
+
+        Divide::GLUtil::allocBuffer(m_uiVertexBufferID,
+                                    uiVertices * uiVertexDataSize,
+                                    GL_STREAM_DRAW, bufferData.data());
+        // the buffer in RAM can be cleared now
+        bufferData.clear();
 
         m_uiWireframeElements = (unsigned int) m_IndexBuffer_Wireframe.size();
         m_uiPointElements = (unsigned int) m_IndexBuffer_Points.size ();
@@ -508,31 +506,38 @@ namespace NS_GLIM
 
         // upload the index buffer for the points
         if (m_uiPointElements > 0) {
-            //glNamedBufferData(
-            gl45ext::glNamedBufferDataEXT(
-                m_uiElementBufferID_Points, m_uiPointElements * sizeof(unsigned int), m_IndexBuffer_Points.data(), GL_STATIC_DRAW);
-            m_IndexBuffer_Points.clear ();
+            Divide::GLUtil::allocBuffer(
+                m_uiElementBufferID_Points,
+                m_uiPointElements * sizeof(unsigned int), GL_STATIC_DRAW,
+                m_IndexBuffer_Points.data());
+            m_IndexBuffer_Points.clear();
         }
-            
+
         // upload the index buffer for the lines
         if (m_uiLineElements > 0) {
-            //glNamedBufferData(
-            gl45ext::glNamedBufferDataEXT(m_uiElementBufferID_Lines, m_uiLineElements * sizeof(unsigned int), m_IndexBuffer_Lines.data(), GL_STATIC_DRAW);
-            m_IndexBuffer_Lines.clear ();
+            Divide::GLUtil::allocBuffer(m_uiElementBufferID_Lines,
+                                        m_uiLineElements * sizeof(unsigned int),
+                                        GL_STATIC_DRAW,
+                                        m_IndexBuffer_Lines.data());
+            m_IndexBuffer_Lines.clear();
         }
 
         // upload the index buffer for the triangles
         if (m_uiTriangleElements > 0) {
-            //glNamedBufferData(
-            gl45ext::glNamedBufferDataEXT(m_uiElementBufferID_Triangles, m_uiTriangleElements * sizeof(unsigned int), m_IndexBuffer_Triangles.data(), GL_STATIC_DRAW);
-            m_IndexBuffer_Triangles.clear ();
+            Divide::GLUtil::allocBuffer(
+                m_uiElementBufferID_Triangles,
+                m_uiTriangleElements * sizeof(unsigned int), GL_STATIC_DRAW,
+                m_IndexBuffer_Triangles.data());
+            m_IndexBuffer_Triangles.clear();
         }
 
         // upload the index buffer for the wireframe
         if (m_uiWireframeElements > 0) {
-            //glNamedBufferData(
-            gl45ext::glNamedBufferDataEXT(m_uiElementBufferID_Wireframe, m_uiWireframeElements * sizeof(unsigned int), m_IndexBuffer_Wireframe.data(), GL_STATIC_DRAW);
-            m_IndexBuffer_Wireframe.clear ();
+            Divide::GLUtil::allocBuffer(
+                m_uiElementBufferID_Wireframe,
+                m_uiWireframeElements * sizeof(unsigned int), GL_STATIC_DRAW,
+                m_IndexBuffer_Wireframe.data());
+            m_IndexBuffer_Wireframe.clear();
         }
     }
 #endif

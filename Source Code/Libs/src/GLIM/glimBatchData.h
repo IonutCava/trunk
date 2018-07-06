@@ -18,6 +18,8 @@ namespace NS_GLIM
     union Glim4ByteData
     {
         Glim4ByteData () : Int (0) {}
+        Glim4ByteData(int Int_) : Int(Int_) {}
+        Glim4ByteData(float Float_) : Float(Float_) {}
 
         int Int;
         float Float;
@@ -102,7 +104,7 @@ namespace NS_GLIM
         std::map<stringImpl, GlimArrayData> m_Attributes;
 
         // Position data is stored separately, not as an attribute.
-        vectorImpl<float> m_PositionData;
+        vectorImpl<Glim4ByteData> m_PositionData;
 
         // Index Buffer for points.
         vectorImpl<unsigned int> m_IndexBuffer_Points;

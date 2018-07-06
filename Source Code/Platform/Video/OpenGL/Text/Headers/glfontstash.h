@@ -21,6 +21,7 @@
 #define GLFONTSTASH_H
 
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
+#include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 
 struct FONScontext* glfonsCreate(int width, int height, int flags);
 void glfonsDelete(struct FONScontext* ctx);
@@ -73,12 +74,20 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
     Divide::GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
     Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     GLuint vertDataSize = sizeof(float) * 2 * nverts;
-    Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
-    glBufferData(GL_ARRAY_BUFFER, 2 * vertDataSize + sizeof(unsigned char) * 4 * nverts, NULL, GL_STREAM_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0,                vertDataSize,                       verts);
-    glBufferSubData(GL_ARRAY_BUFFER, vertDataSize,     vertDataSize,                       tcoords);
-    glBufferSubData(GL_ARRAY_BUFFER, 2 * vertDataSize, sizeof(unsigned char) * 4 * nverts, colors);
 
+    GLuint bufferID = gl->glfons_vboID;
+    Divide::GLUtil::allocBuffer(
+        bufferID, 2 * vertDataSize + sizeof(unsigned char) * 4 * nverts,
+        GL_STREAM_DRAW);
+    Divide::GLUtil::updateBuffer(bufferID, 0, vertDataSize,
+                                 (const Divide::GLUtil::bufferPtr)verts);
+    Divide::GLUtil::updateBuffer(bufferID, vertDataSize, vertDataSize,
+                                 (const Divide::GLUtil::bufferPtr)tcoords);
+    Divide::GLUtil::updateBuffer(bufferID, 2 * vertDataSize,
+                                 sizeof(unsigned char) * 4 * nverts,
+                                 (const Divide::GLUtil::bufferPtr)colors);
+
+    Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2,GL_FLOAT,GL_FALSE, sizeof(float)*2, (void*)(0));
     glEnableVertexAttribArray(3);

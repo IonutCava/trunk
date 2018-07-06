@@ -69,6 +69,9 @@ enum GLIM_ENUM : GLint;
 
 namespace Divide {
 namespace GLUtil {
+
+typedef void* bufferPtr;
+
 /// Wrapper for glGetIntegerv
 GLint getIntegerv(GLenum param);
 /// This function is called when the window's close button is pressed

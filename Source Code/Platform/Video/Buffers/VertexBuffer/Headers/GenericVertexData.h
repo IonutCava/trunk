@@ -144,7 +144,6 @@ class GenericVertexData : public VertexDataInterface {
           _persistentMapped(persistentMapped &&
                             !Config::Profile::DISABLE_PERSISTENT_BUFFER)
     {
-        _hasIndexBuffer = false;
         _doubleBufferedQuery = true;
     }
 
@@ -177,8 +176,7 @@ class GenericVertexData : public VertexDataInterface {
                            bool persistentMapped = false) = 0;
 
     virtual void UpdateBuffer(U32 buffer, U32 elementCount,
-                              U32 elementCountOffset, void* data,
-                              bool invalidateRange = false) = 0;
+                              U32 elementCountOffset, void* data) = 0;
 
     virtual void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
                                          size_t elementCount) = 0;
@@ -205,7 +203,6 @@ class GenericVertexData : public VertexDataInterface {
 
    protected:
     typedef hashMapImpl<U32, AttributeDescriptor> attributeMap;
-    bool _hasIndexBuffer;
     bool _doubleBufferedQuery;
     vectorImpl<U32> _feedbackBuffers;
     vectorImpl<U32> _bufferObjects;

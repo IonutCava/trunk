@@ -64,12 +64,13 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
         _bufferSize = primitiveSize * primitiveCount;
     }
 
-    virtual void DiscardAllData() = 0;
-    virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size) = 0;
-    virtual void UpdateData(ptrdiff_t offset, ptrdiff_t size, const bufferPtr data,
-                            const bool invalidateBuffer = false) const = 0;
+    virtual void DiscardAllData() const = 0;
+    virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const = 0;
+    virtual void UpdateData(ptrdiff_t offset,
+                            ptrdiff_t size,
+                            const bufferPtr data) const = 0;
     inline void SetData(const bufferPtr data) {
-        UpdateData(0, _bufferSize, data, true);
+        UpdateData(0, _bufferSize, data);
     }
 
     virtual bool BindRange(ShaderBufferLocation bindIndex,
