@@ -238,7 +238,7 @@ Pipeline* GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
 
 DescriptorSet_ptr GFXDevice::newDescriptorSet() const {
     WriteLock w_lock(_descriptorSetPoolLock);
-    std::shared_ptr<DescriptorSet> ptr(_descriptorSetPool.newElement(), DeleteDescriptorSet(_descriptorSetPool));
+    std::shared_ptr<DescriptorSet> ptr(_descriptorSetPool.newElement(), DeleteDescriptorSet(_descriptorSetPoolLock, _descriptorSetPool));
     return ptr;
 }
 

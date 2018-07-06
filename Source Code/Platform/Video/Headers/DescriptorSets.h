@@ -107,15 +107,18 @@ namespace Divide {
     typedef MemoryPool<DescriptorSet, 1024> DescriptorSetPool;
 
     struct DeleteDescriptorSet {
-        DeleteDescriptorSet(DescriptorSetPool& context)
-            : _context(context)
+        DeleteDescriptorSet(SharedLock& lock, DescriptorSetPool& context)
+            : _lock(lock),
+              _context(context)
         {
         }
 
         inline void operator()(DescriptorSet* res) {
+            WriteLock w_lock(_lock);
             _context.deleteElement(res);
         }
 
+        SharedLock& _lock;
         DescriptorSetPool& _context;
     };
 

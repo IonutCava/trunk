@@ -80,7 +80,7 @@ constexpr unsigned int MAX_POOLED_TASKS = 16384;
 /// Toggle multi-threaded resource loading on or off
 constexpr bool USE_GPU_THREADED_LOADING = true;
 /// Toggle multi-threaded command generation
-constexpr bool USE_THREADED_COMMAND_GENERATION = false;
+constexpr bool USE_THREADED_COMMAND_GENERATION = true;
 /// Run all threaded tasks in a serial fashion. (used to debug multi-threaded related bugs)
 constexpr bool USE_SINGLE_THREADED_TASK_POOLS = false;
 /// Maximum number of bones available per node

@@ -51,6 +51,7 @@ CommandBuffer::add(const T* command) {
                                                 {
                                                     WriteLock w_lock(T::s_PoolMutex);
                                                     T::s_Pool.deleteElement(cmd);
+                                                    cmd = nullptr;
                                                 })));
 }
 
