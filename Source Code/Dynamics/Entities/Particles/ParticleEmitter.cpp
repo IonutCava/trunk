@@ -167,8 +167,8 @@ bool ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn){
 ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
 void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
     if(_particlesCurrentCount > 0 && _enabled && _created){
-        GFX_DEVICE.updateStates();
-        _particleGPUBuffer->DrawInstanced(TRIANGLE_STRIP, _particlesCurrentCount, 0, 4);
+		GFX_DEVICE.updateStates();
+        _particleGPUBuffer->Draw(GenericVertexData::GenericDrawCommand(TRIANGLE_STRIP, _particleStateBlockHash, 0, 4, _particlesCurrentCount));
     }
 
     /*if(_drawImpostor)

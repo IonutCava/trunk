@@ -47,7 +47,6 @@ Vegetation::Vegetation(const VegetationDetails& details) : SceneNode(details.nam
     _treeGPUBuffer[0] = GFX_DEVICE.newGVD(false);
     _treeGPUBuffer[1] = GFX_DEVICE.newGVD(false);
     _grassMatrices = GFX_DEVICE.newSB(true);
-    _grassMatrices->Create(false, false);
 
     memset(_instanceRoutineIdx, 0, CullType_PLACEHOLDER * sizeof(U32));
 
@@ -88,6 +87,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk, SceneGraphNode* co
     
     _cullShader->Uniform("ObjectExtent", vec3<F32>(1.0f, 1.0f, 1.0f));
     _cullShader->UniformTexture("HiZBuffer", 0);
+    _cullShader->Uniform("dvd_frustumBias", 12.5f);
     _instanceRoutineIdx[PASS_THROUGH]             = _cullShader->GetSubroutineIndex(VERTEX_SHADER, "PassThrough");
     _instanceRoutineIdx[INSTANCE_CLOUD_REDUCTION] = _cullShader->GetSubroutineIndex(VERTEX_SHADER, "InstanceCloudReduction");
     _instanceRoutineIdx[HI_Z_CULL]                = _cullShader->GetSubroutineIndex(VERTEX_SHADER, "HiZOcclusionCull");
@@ -216,8 +216,8 @@ bool Vegetation::uploadGrassData(){
         buffer->getFdbkAttribDescriptor(scaleLocation).set(UnculledSizeBuffer,   instanceDiv, 1, false, 0, 0, FLOAT_32);
 
         /*
-        _grassMatrices->ReserveBuffer((I32)_grassMatricesTemp.size(), sizeof(_grassMatricesTemp[0]));
-        _grassMatrices->ChangeSubData(0, _grassMatricesTemp.size() * sizeof(_grassMatricesTemp[0]), &_grassMatricesTemp[0]);
+        _grassMatrices->Create(false, false, (I32)_grassMatricesTemp.size(), sizeof(_grassMatricesTemp[0]));
+        _grassMatrices->UpdateData(0, _grassMatricesTemp.size() * sizeof(_grassMatricesTemp[0]), &_grassMatricesTemp[0]);
         _grassMatrices->bind(10);
         _grassMatricesTemp.clear();
         */
@@ -298,7 +298,7 @@ void Vegetation::gpuCull(){
         GenericVertexData* buffer = _grassGPUBuffer[_writeBuffer];
         _cullShader->bind();
         //_cullShader->SetSubroutine(VERTEX_SHADER, _instanceRoutineIdx[HI_Z_CULL]);
-        _cullShader->Uniform("cullType", /*queryId*/0);
+        _cullShader->Uniform("cullType", /*queryId*/(U32)0);
         _cullShader->uploadNodeMatrices();
         GFX_DEVICE.toggleRasterization(false);
         GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(0, TextureDescriptor::Depth);
@@ -306,8 +306,8 @@ void Vegetation::gpuCull(){
         buffer->BindFeedbackBufferRange(CulledSizeBuffer,     _instanceCountGrass * queryId, _instanceCountGrass);
         buffer->BindFeedbackBufferRange(CulledInstanceBuffer, _instanceCountGrass * queryId, _instanceCountGrass);
 
-        buffer->DrawInstanced(API_POINTS, _instanceCountGrass, 0, 1, queryId, true);
-        //_treeGPUBuffer->DrawInstanced(API_POINTS,  _instanceCountTrees, 0, 1, queryId, true);
+        buffer->Draw(GenericVertexData::GenericDrawCommand(API_POINTS, 0, 0, 1, _instanceCountGrass, queryId, true));
+        //_treeGPUBuffer->Draw(GenericVertexData::GenericDrawCommand(API_POINTS, 0, 0, 1, _instanceCountTrees, queryId, true));
         GFX_DEVICE.toggleRasterization(true);
     }
 }
@@ -350,7 +350,7 @@ void Vegetation::render(SceneGraphNode* const sgn, const SceneRenderState& scene
         buffer->getDrawAttribDescriptor(posLocation).setOffset(_instanceCountGrass * queryId);
         buffer->getDrawAttribDescriptor(scaleLocation).setOffset(_instanceCountGrass * queryId);
         buffer->getDrawAttribDescriptor(instLocation).setOffset(_instanceCountGrass * queryId);
-        buffer->DrawInstanced(TRIANGLES, instanceCount, 0, 12 * 3);
+        buffer->Draw(GenericVertexData::GenericDrawCommand(TRIANGLES, _grassStateBlockHash, 0, 12 * 3, instanceCount));
     }
 }
 

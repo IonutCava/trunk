@@ -55,19 +55,13 @@ bool Sky::load() {
     skybox.setFlag(true); //no default material;
     _sky = CreateResource<Sphere3D>(skybox);
 
-    ResourceDescriptor sun("Sun");
-    sun.setFlag(true);
-    _sun = CreateResource<Sphere3D>(sun);
-
     ResourceDescriptor skyShaderDescriptor("sky");
     _skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
 
     assert(_skyShader);
     _skyShader->UniformTexture("texSky", 0);
+    _skyShader->Uniform("enable_sun", true);
     _sky->setResolution(4);
-    _sun->setResolution(16);
-    _sun->setRadius(0.1f);
-    setRenderingOptions(true,true);
     PRINT_FN(Locale::get("CREATE_SKY_RES_OK"));
     setState(RES_LOADED);
     return true;
@@ -76,60 +70,33 @@ bool Sky::load() {
 void Sky::postLoad(SceneGraphNode* const sgn){
     if(getState() != RES_LOADED) load();
 
-    _sunNode = sgn->addNode(_sun);
     _skyGeom = sgn->addNode(_sky);
     _sky->getSceneNodeRenderState().setDrawState(false);
-    _sun->getSceneNodeRenderState().setDrawState(false);
     _sky->setCustomShader(_skyShader);
-    _sun->setCustomShader(_skyShader);
 
     SceneNode::postLoad(sgn);
 }
 
 bool Sky::prepareMaterial(SceneGraphNode* const sgn) {
-    SET_STATE_BLOCK(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);
-
-    _skyShader->Uniform("sun_color", LightManager::getInstance().getLight(0)->getDiffuseColor());
-    return true;
+    _sky->renderInstance()->stateHash(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);
+	SET_STATE_BLOCK(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);    return true;
 }
 
 void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
-    if (!_drawSky && _drawSun){
-        Light* l = LightManager::getInstance().getLight(0);
-        if (l && _sun->getMaterial()) _sun->getMaterial()->setDiffuse(l->getDiffuseColor());
-    }
+    _skyShader->Uniform("sun_color", LightManager::getInstance().getLight(0)->getDiffuseColor());
 }
 
 bool Sky::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
-    if(!_drawSky && _drawSun) _sun->onDraw(sgn, currentStage);
     return _sky->onDraw(sgn, currentStage);
 }
 
 void Sky::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
-     const vec3<F32>& eyeTemp = sceneRenderState.getCameraConst().getEye();
-     sgn->getTransform()->setPosition(eyeTemp);
-    _sunNode->getTransform()->setPosition(eyeTemp - _sunVect);
-    if (_drawSky){
-        _sky->renderInstance()->transform(sgn->getTransform());
-
-        _skyShader->bind();
-        _skybox->Bind(0);
-        GFX_DEVICE.renderInstance(_sky->renderInstance());
-    }else{
-        if (_drawSun){
-            _sun->renderInstance()->transform(_sunNode->getTransform());
-            GFX_DEVICE.renderInstance(_sun->renderInstance());
-        }
-    }
-}
-
-void Sky::setRenderingOptions(bool drawSun, bool drawSky) {
-    _drawSun = drawSun;
-    _drawSky = drawSky;
-    _skyShader->Uniform("enable_sun", _drawSun);
+    sgn->getTransform()->setPosition(sceneRenderState.getCameraConst().getEye());
+    _skyShader->bind();
+    _skybox->Bind(0);
+    GFX_DEVICE.renderInstance(_sky->renderInstance());
 }
 
 void Sky::setSunVector(const vec3<F32>& sunVect) {
-    _sunVect = sunVect;
-    _skyShader->Uniform("sun_vector", _sunVect);
+    _skyShader->Uniform("sun_vector", sunVect);
 }

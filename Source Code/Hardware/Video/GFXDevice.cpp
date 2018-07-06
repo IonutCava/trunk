@@ -113,9 +113,8 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
 
     if(hardwareState == NO_ERR){
         _matricesBuffer = newSB();
-        _matricesBuffer->Create(true, false);
-        _matricesBuffer->ReserveBuffer(3 * 16 + 4, sizeof(F32)); //View, Projection, ViewProjection and Viewport 3 x 16 + 4 float values
-        _matricesBuffer->bind(Divide::SHADER_BUFFER_CAM_MATRICES);
+        _matricesBuffer->Create(true, false, 3 * 16 + 4, sizeof(F32)); //View, Projection, ViewProjection and Viewport 3 x 16 + 4 float values
+        _matricesBuffer->Bind(Divide::SHADER_BUFFER_CAM_MATRICES);
         changeResolution(resolution);
 
         RenderStateBlockDescriptor defaultStateDescriptor;
@@ -131,6 +130,7 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
         stateDepthOnlyRendering.setColorWrites(false, false, false, false);
         stateDepthOnlyRendering.setZFunc(CMP_FUNC_ALWAYS);
         _stateDepthOnlyRenderingHash = getOrCreateStateBlock(stateDepthOnlyRendering);
+        _stateBlockMap[0] = nullptr;
 
         SET_DEFAULT_STATE_BLOCK(true);
         //Screen FB should use MSAA if available, else fallback to normal color FB (no AA or FXAA)
@@ -260,7 +260,7 @@ void GFXDevice::drawPoints(U32 numPoints) {
     _api.drawPoints(numPoints); 
 }
 
-void GFXDevice::renderInstanceCmd(RenderInstance* const instance, const VertexBuffer::DeferredDrawCommand& cmd){
+void GFXDevice::renderInstance(RenderInstance* const instance){
     //All geometry is stored in VB format
     assert(instance->object3D() != nullptr);
     Object3D* model = instance->object3D();
@@ -295,20 +295,11 @@ void GFXDevice::renderInstanceCmd(RenderInstance* const instance, const VertexBu
     if(!modelVB) modelVB = model->getGeometryVB();
 
     assert(modelVB != nullptr);
-    if (cmd._cmd.count == 0){
-        //Render our current vertex array object
-        modelVB->Draw(false, model->getCurrentLOD());
-    }else{
-        modelVB->setRangeCount(cmd._cmd.count);
-        modelVB->setFirstElement(cmd._cmd.firstIndex);
-        modelVB->DrawRange();
-    }
+
+    //Render our current vertex array object
+    modelVB->Draw(instance->deferredDrawCommand() , false);
 
     if (transform) popWorldMatrix();
-}
-
-void GFXDevice::renderInstance(RenderInstance* const instance){
-    renderInstanceCmd(instance, VertexBuffer::DeferredDrawCommand());
 }
 
 void GFXDevice::render(const DELEGATE_CBK& renderFunction, const SceneRenderState& sceneRenderState){
@@ -376,7 +367,7 @@ void  GFXDevice::generateCubeMap(FrameBuffer& cubeMap, const vec3<F32>& pos, con
     _kernel->getCameraMgr().popActiveCamera();
 }
 
-I64 GFXDevice::getOrCreateStateBlock(RenderStateBlockDescriptor& descriptor){
+I64 GFXDevice::getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor){
    size_t hashValue = descriptor.getHash();
 
    if (_stateBlockMap.find(hashValue) == _stateBlockMap.end())
@@ -410,7 +401,7 @@ void GFXDevice::updateStates(bool force) {
     }
 
     if (_newStateBlockHash && _stateBlockDirty){
-        activateStateBlock(*_stateBlockMap[_newStateBlockHash], oldStateBlockHash == 0 ? nullptr : _stateBlockMap[oldStateBlockHash]);
+        activateStateBlock(*_stateBlockMap[_newStateBlockHash], _stateBlockMap[oldStateBlockHash]);
         _stateBlockDirty = false;
     }
 
@@ -570,14 +561,14 @@ void GFXDevice::postProcessingEnabled(const bool state) {
 void GFXDevice::updateViewMatrix(const F32* viewMatrixData)  {
     const size_t mat4Size = 16 * sizeof(F32);
 
-    _matricesBuffer->ChangeSubData(mat4Size, 2 * mat4Size, viewMatrixData);
+    _matricesBuffer->UpdateData(mat4Size, 2 * mat4Size, viewMatrixData);
      _VDirty = true;
 }
 
 void GFXDevice::updateProjMatrix(const F32* projMatrixData)  { 
     const size_t mat4Size = 16 * sizeof(F32);
 
-    _matricesBuffer->ChangeSubData(0, 3 * mat4Size, projMatrixData);
+    _matricesBuffer->UpdateData(0, 3 * mat4Size, projMatrixData);
     _PDirty = true; 
 }
 
@@ -609,7 +600,7 @@ void GFXDevice::updateViewportInternal(const vec4<I32>& viewport){
     const size_t mat4Size = 16 * sizeof(F32);
     viewportF.set(viewport.x, viewport.y, viewport.z, viewport.w);
     changeViewport(viewport);
-    _matricesBuffer->ChangeSubData(3 * mat4Size, vec4Size, &viewportF[0]);
+    _matricesBuffer->UpdateData(3 * mat4Size, vec4Size, &viewportF[0]);
 }
 
 bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) {

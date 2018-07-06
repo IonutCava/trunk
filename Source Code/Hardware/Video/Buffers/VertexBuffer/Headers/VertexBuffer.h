@@ -38,7 +38,7 @@ class ShaderProgram;
 class VertexBuffer : public GUIDWrapper {
 protected:
     struct IndirectDrawCommand {
-        IndirectDrawCommand() : count(0), instanceCount(0), firstIndex(0), baseVertex(0), baseInstance(0) {}
+        IndirectDrawCommand() : count(0), instanceCount(1), firstIndex(0), baseVertex(0), baseInstance(0) {}
         U32  count;
         U32  instanceCount;
         U32  firstIndex;
@@ -59,12 +59,13 @@ protected:
     };
 public:
     struct DeferredDrawCommand {
-        DeferredDrawCommand() : _signedData(0), _unsignedData(0), _floatData(0.0f) {}
+        DeferredDrawCommand() : _signedData(0), _unsignedData(0), _floatData(0.0f), _lodIndex(0) {}
 
         IndirectDrawCommand _cmd;
         I32                 _signedData;
         U32                 _unsignedData;
         F32                 _floatData;
+        U8                  _lodIndex;
     };
 
     VertexBuffer(const PrimitiveType& type) : GUIDWrapper(),
@@ -74,13 +75,10 @@ public:
                             _format(UNSIGNED_SHORT),
                             _currentShader(nullptr),
                             _primitiveRestartEnabled(false),
-                            _firstElement(0),
-                            _instanceCount(1),
-                            _indexDelimiter(0)
+                            _indexDelimiter(0),
+                            _currentPartitionIndex(0)
     {
-        _depthPass = _forceOptimizeForDepth = false;
-        _LODcount = _rangeCount = 0;
-        _optimizeForDepth = true;
+        _LODcount = 0;
         Reset();
     }
 
@@ -97,18 +95,14 @@ public:
     virtual bool computeTriangleList() = 0;
     virtual bool SetActive() = 0;
 
-    virtual void Draw(bool skipBind = false, const U8 LODindex = 0) = 0;
-    virtual void DrawRange(bool skipBind = false) = 0;
-    virtual void DrawCommands(const vectorImpl<DeferredDrawCommand>& commands, bool skipBind = false) = 0;
+    virtual void Draw(const DeferredDrawCommand& command, bool skipBind = false) = 0;
+    virtual void Draw(const vectorImpl<DeferredDrawCommand>& commands, bool skipBind = false) = 0;
 
-    virtual void setShaderProgram(ShaderProgram* const shaderProgram) = 0;
+    inline void setShaderProgram(ShaderProgram* const shaderProgram) { _currentShader = shaderProgram; }
+
     inline ShaderProgram* const currentShader()  {return _currentShader;}
 
     inline void setLODCount(const U8 LODcount)               {_LODcount = LODcount;}
-    inline void setInstanceCount(const U32 instanceCount)    {_instanceCount = instanceCount;}
-    inline void setRangeCount(const U32 rangeCount)          {_rangeCount = rangeCount;}
-    inline void setFirstElement(U32 firstElement)            {_firstElement = firstElement;}
-    inline void setDepthPass(bool state = false)             {if(_optimizeForDepth) _depthPass = state;}
     inline void useLargeIndices(bool state = true)           {
         DIVIDE_ASSERT(!_created, "VertexBuffer error: Indice format type specified before buffer creation!");
         _largeIndices = state; _format = _largeIndices ? UNSIGNED_INT : UNSIGNED_SHORT;
@@ -147,8 +141,6 @@ public:
     inline vectorImpl<vec4<F32> >&  getBoneWeights() { _attribDirty[ATTRIB_BONE_WEIGHT] = true; return _boneWeights; }
 
     inline const vectorImpl<vec3<U32> >&  getTriangles()   const {return _dataTriangles;}
-    inline const vec3<F32>&               getMinPosition() const {return _minPosition;}
-    inline const vec3<F32>&               getMaxPosition() const {return _maxPosition;}
     inline const vectorImpl<vec3<F32> >&  getPosition()	   const {return _dataPosition;}
     inline const vectorImpl<vec3<U8>  >&  getColor()       const {return _dataColor;}
     inline const vectorImpl<vec3<F32> >&  getNormal()	   const {return _dataNormal;}
@@ -164,39 +156,6 @@ public:
     inline bool usesLargeIndices()  const { return _largeIndices;}
     inline U32  getIndexCount()     const { return (U32)(_largeIndices ? _hardwareIndicesL.size() : _hardwareIndicesS.size());}
     inline U32  getIndex(U32 index) const { return _largeIndices ? _hardwareIndicesL[index] : _hardwareIndicesS[index];}
-
-
-    inline U32 addBuffer(const VertexBuffer& buf){
-        U32 currentOffset = getIndexCount();
-
-        _largeIndices = buf._largeIndices;
-
-        for (U32 index : buf._hardwareIndicesL) _hardwareIndicesL.push_back(index);
-        for (U16 index : buf._hardwareIndicesS) _hardwareIndicesS.push_back(index);
-        
-        for (const vec3<F32>& pos   : buf._dataPosition)  _dataPosition.push_back(pos);
-        for (const vec2<F32>& coord : buf._dataTexcoord)  _dataTexcoord.push_back(coord);
-        for (const vec3<U8>&  col   : buf._dataColor)     _dataColor.push_back(col);
-        for (const vec3<F32>& norm  : buf._dataNormal)    _dataNormal.push_back(norm);
-        for (const vec3<F32>& tan   : buf._dataTangent)   _dataTangent.push_back(tan);
-        for (const vec3<F32>& biTan : buf._dataBiTangent) _dataBiTangent.push_back(biTan);
-        for (const vec4<U8>&  idx   : buf._boneIndices)   _boneIndices.push_back(idx);
-        for (const vec4<F32>& wgh   : buf._boneWeights)   _boneWeights.push_back(wgh);
-        for (const vec3<U32>& tri   : buf._dataTriangles) _dataTriangles.push_back(tri);
-
-        setMinMaxPosition(buf.getMinPosition());
-        setMinMaxPosition(buf.getMaxPosition());
-
-        for (U8 i = 0; i < Config::SCENE_NODE_LOD; ++i){
-            vec2<U32>& limits = _indiceLimits[i];
-            limits.y = std::max(buf._indiceLimits[i].y, limits.y);
-            limits.x = std::min(buf._indiceLimits[i].x, limits.x);
-        }
-
-        memset(_attribDirty, true, VertexAttribute_PLACEHOLDER * sizeof(bool));
-
-        return currentOffset;
-    }
 
     inline void addIndex(U32 index){
         _largeIndices ? addIndexL(index) : addIndexS(static_cast<U16>(index));
@@ -261,8 +220,8 @@ public:
     }
 
     inline void setIndiceLimits(const vec2<U32>& indiceLimits, U8 LODindex = 0) {
-        DIVIDE_ASSERT(LODindex < _indiceLimits.size(), "VertexBuffer error: Invalid LOD passed for indices limits creation");
-        vec2<U32>& limits = _indiceLimits[LODindex];
+        DIVIDE_ASSERT(LODindex < Config::SCENE_NODE_LOD, "VertexBuffer error: Invalid LOD passed for indices limits creation");
+        vec2<U32>& limits = _indiceLimits[LODindex][_currentPartitionIndex];
         limits.y = std::max(indiceLimits.y, limits.y);
         limits.x = std::min(indiceLimits.x, limits.x);
     }
@@ -297,14 +256,15 @@ public:
         _attribDirty[ATTRIB_BITANGENT] = true;
     }
 
-    inline void optimizeForDepth(bool state = true,bool force = false) {
-        _optimizeForDepth = state;
-        _forceOptimizeForDepth = force;
-    }
-
     inline size_t partitionBuffer(U32 currentIndexCount){
         _partitions.push_back(std::make_pair(getIndexCount() - currentIndexCount, currentIndexCount));
-        return _partitions.size() - 1;
+        _currentPartitionIndex = (U32)_partitions.size();
+        _minPosition.push_back(vec3<F32>(std::numeric_limits<F32>::max()));
+        _maxPosition.push_back(vec3<F32>(std::numeric_limits<F32>::min()));
+        for(U8 i = 0; i < Config::SCENE_NODE_LOD; ++i){
+            _indiceLimits[i].push_back(vec2<U32>(0,0));
+        }
+        return _currentPartitionIndex - 1;
     }
 
     inline U32 getPartitionCount(U16 partitionIdx){
@@ -337,11 +297,14 @@ public:
         _hardwareIndicesL.clear();
         _hardwareIndicesS.clear();
         _dataTriangles.clear();
-        _indiceLimits.resize(Config::SCENE_NODE_LOD, vec2<U32>(std::numeric_limits<U32>::max(), 0));
+        for(U8 i = 0; i < Config::SCENE_NODE_LOD; ++i){
+            _indiceLimits[i].resize(1, vec2<U32>(0,0));
+        }
         memset(_attribDirty, true, VertexAttribute_PLACEHOLDER * sizeof(bool));
         memset(_VBoffset, 0, VertexAttribute_PLACEHOLDER * sizeof(ptrdiff_t));
-        _minPosition = vec3<F32>(10000.0f);
-        _maxPosition = vec3<F32>(-10000.0f);
+        _minPosition.resize(1, vec3<F32>(std::numeric_limits<F32>::max()));
+        _maxPosition.resize(1, vec3<F32>(std::numeric_limits<F32>::min()));
+        
     }
 
 protected:
@@ -350,30 +313,30 @@ protected:
     virtual bool CreateInternal() = 0;
 
     inline void setMinMaxPosition(const vec3<F32>& pos){
-        if (pos.x > _maxPosition.x)	_maxPosition.x = pos.x;
-        if (pos.x < _minPosition.x)	_minPosition.x = pos.x;
-        if (pos.y > _maxPosition.y)	_maxPosition.y = pos.y;
-        if (pos.y < _minPosition.y)	_minPosition.y = pos.y;
-        if (pos.z > _maxPosition.z)	_maxPosition.z = pos.z;
-        if (pos.z < _minPosition.z)	_minPosition.z = pos.z;
+        vec3<F32>& min = _minPosition[_currentPartitionIndex];
+        vec3<F32>& max = _maxPosition[_currentPartitionIndex];
+
+        if (pos.x > max.x)	max.x = pos.x;
+        if (pos.x < min.x)	min.x = pos.x;
+        if (pos.y > max.y)	max.y = pos.y;
+        if (pos.y < min.y)	min.y = pos.y;
+        if (pos.z > max.z)	max.z = pos.z;
+        if (pos.z < min.z)	min.z = pos.z;
     }
+
 protected:
 
     ///Number of LOD nodes in this buffer
     U8          _LODcount; 
-    ///How many elements should we actually render when using "DrawRange"
-    U32         _rangeCount;
     ///The format of the buffer data
     GFXDataFormat _format;
-    ///Number of instances to draw
-    U32         _instanceCount;
     ///An index value that separates ojects (OGL: primitive restart index)
     U32         _indexDelimiter;
     ptrdiff_t	_VBoffset[VertexAttribute_PLACEHOLDER];
         
     // first: offset, second: count
     vectorImpl<std::pair<U32, U32> >   _partitions;
-    vectorImpl<vec2<U32> > _indiceLimits;
+    vectorImpl<vec2<U32> > _indiceLimits[Config::SCENE_NODE_LOD];
     ///Used for creating an "IB". If it's empty, then an outside source should provide the indices
     vectorImpl<U32>        _hardwareIndicesL;
     vectorImpl<U16>        _hardwareIndicesS;
@@ -386,27 +349,24 @@ protected:
     vectorImpl<vec4<U8>  > _boneIndices;
     vectorImpl<vec4<F32> > _boneWeights;
     vectorImpl<vec3<U32> > _dataTriangles;	//< 3 indices, pointing to position values, that form a triangle in the mesh.
-    vec3<F32> _minPosition,  _maxPosition;
+    vectorImpl<vec3<F32> > _minPosition;
+    vectorImpl<vec3<F32> > _maxPosition;
     ///Use either U32 or U16 indices. Always prefer the later
     bool _largeIndices;
     ///Some objects need triangle data in order for other parts of the engine to take advantage of direct data (physics, navmeshes, etc)
     bool _computeTriangles;
     /// Cache system to update only required data
     bool _attribDirty[VertexAttribute_PLACEHOLDER];
-    ///Set this to FALSE if you need bump/normal/parallax mapping in depth pass (normal mapped object casts correct shadows)
-    bool _optimizeForDepth;
-    bool _forceOptimizeForDepth; //<Override vb requirements for optimization
     bool _primitiveRestartEnabled;
-    ///If it's true, use depth only VB/VAO else use the regular buffers
-    bool _depthPass;
     ///Was the data submited to the GPU?
     bool _created;
     ///Used for VertexAttribPointer data.
     ShaderProgram* _currentShader;
-    ///Offset to the first element in the buffer
-    U32 _firstElement;
     ///The format the data is in (TRIANGLES, TRIANGLE_STRIP,QUADS,etc)
     PrimitiveType  _type;
+
+private:
+    U32 _currentPartitionIndex;
 };
 
 #endif

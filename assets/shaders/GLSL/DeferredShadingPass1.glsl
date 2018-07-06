@@ -4,15 +4,16 @@ out vec3 normals;
 out vec3 position;
 out mat4 TBN;
 
+uniform mat4 dvd_WorldViewMatrix;
+
 void main( void ){
     computeData();
     gl_Position = dvd_ViewProjectionMatrix * _vertexW;
 
     position = vec3(transpose(dvd_WorldViewMatrix) * dvd_Vertex);
-    normals = normalize(dvd_NormalMatrix * dvd_Normal);
-
-    vec3 t = normalize(dvd_NormalMatrix * dvd_Tangent);
-    vec3 n = normalize(dvd_NormalMatrix * dvd_Normal);
+    normals = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Normal);
+    vec3 t = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Tangent);
+    vec3 n = normals;
     vec3 b = cross(n, t);
 
     
@@ -46,7 +47,7 @@ void main( void ){
     gl_Position = dvd_ProjectionMatrix * dvd_WorldViewMatrix * dvd_Vertex;
 
     position = vec3(transpose(dvd_WorldViewMatrix) * dvd_Vertex);
-    normals = normalize(dvd_NormalMatrix * dvd_Normal);
+    normals = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Normal);
 } 
 
 -- Fragment

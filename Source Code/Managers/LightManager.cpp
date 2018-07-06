@@ -70,21 +70,17 @@ LightManager::~LightManager()
 void LightManager::init(){
     REGISTER_FRAME_LISTENER(&(this->getInstance()), 2);
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
-    _lightShaderBuffer[SHADER_BUFFER_VISUAL]->Create(true, false);
-    _lightShaderBuffer[SHADER_BUFFER_VISUAL]->ReserveBuffer(Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightVisualProperties));
-    _lightShaderBuffer[SHADER_BUFFER_VISUAL]->bind(Divide::SHADER_BUFFER_LIGHT_COLOR);
+    _lightShaderBuffer[SHADER_BUFFER_VISUAL]->Create(true, false, Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightVisualProperties));
+    _lightShaderBuffer[SHADER_BUFFER_VISUAL]->Bind(Divide::SHADER_BUFFER_LIGHT_COLOR);
 
-    _lightShaderBuffer[SHADER_BUFFER_PHYSICAL]->Create(true, false);
-    _lightShaderBuffer[SHADER_BUFFER_PHYSICAL]->ReserveBuffer(Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightPhysicalProperties));
-    _lightShaderBuffer[SHADER_BUFFER_PHYSICAL]->bind(Divide::SHADER_BUFFER_LIGHT_NORMAL);
+    _lightShaderBuffer[SHADER_BUFFER_PHYSICAL]->Create(true, false, Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightPhysicalProperties));
+    _lightShaderBuffer[SHADER_BUFFER_PHYSICAL]->Bind(Divide::SHADER_BUFFER_LIGHT_NORMAL);
 
-    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Create(true, false);
-    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->ReserveBuffer(Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightShadowProperties));
-    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->bind(Divide::SHADER_BUFFER_LIGHT_SHADOW);
+    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Create(true, false, Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightShadowProperties));
+    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Bind(Divide::SHADER_BUFFER_LIGHT_SHADOW);
 
-    _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->Create(true, true);
-    _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->ReserveBuffer(Config::Lighting::MAX_LIGHTS_PER_SCENE_NODE, sizeof(PerNodeLightData));
-    _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->bind(Divide::SHADER_BUFFER_LIGHT_PER_NODE);
+    _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->Create(true, true, Config::Lighting::MAX_LIGHTS_PER_SCENE_NODE, sizeof(PerNodeLightData));
+    _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->Bind(Divide::SHADER_BUFFER_LIGHT_PER_NODE);
 
     perNodeLights.resize(Config::Lighting::MAX_LIGHTS_PER_SCENE_NODE);
 
@@ -356,7 +352,7 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
         }
     }
 
-    _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->ChangeSubData(0, perNodeLights.size() * sizeof(PerNodeLightData), &perNodeLights.front(), true);
+    _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->UpdateData(0, perNodeLights.size() * sizeof(PerNodeLightData), &perNodeLights.front(), true);
 
     return (U8)maxLights;
 }
@@ -384,7 +380,7 @@ void LightManager::updatePhysicalLightProperties(Light* const light){
     else if (light->getLightType() == LIGHT_TYPE_SPOT){
         temp._direction.set(vec3<F32>(_viewMatrixCache * temp._direction), temp._direction.w);
     }
-    _lightShaderBuffer[SHADER_BUFFER_PHYSICAL]->ChangeSubData(light->getSlot() * sizeof(LightPhysicalProperties), sizeof(LightPhysicalProperties), (GLvoid*)&temp);
+    _lightShaderBuffer[SHADER_BUFFER_PHYSICAL]->UpdateData(light->getSlot() * sizeof(LightPhysicalProperties), sizeof(LightPhysicalProperties), (GLvoid*)&temp);
     light->_dirty[Light::PROPERTY_TYPE_PHYSICAL] = false;
 }
 
@@ -392,7 +388,7 @@ void LightManager::updateVisualLightProperties(Light* const light){
     assert(light != nullptr);
     if (!light->_dirty[Light::PROPERTY_TYPE_VISUAL])
         return;
-    _lightShaderBuffer[SHADER_BUFFER_VISUAL]->ChangeSubData(light->getSlot() * sizeof(LightVisualProperties), sizeof(LightVisualProperties), (void*)&light->getVisualProperties());
+    _lightShaderBuffer[SHADER_BUFFER_VISUAL]->UpdateData(light->getSlot() * sizeof(LightVisualProperties), sizeof(LightVisualProperties), (void*)&light->getVisualProperties());
     light->_dirty[Light::PROPERTY_TYPE_VISUAL] = false;
 
 }
@@ -401,6 +397,6 @@ void LightManager::updateShadowLightProperties(Light* const light){
     assert(light != nullptr);
     if (!light->_dirty[Light::PROPERTY_TYPE_SHADOW])
         return;
-    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->ChangeSubData(light->getSlot() * sizeof(LightShadowProperties), sizeof(LightShadowProperties), (void*)&light->getShadowProperties());
+    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->UpdateData(light->getSlot() * sizeof(LightShadowProperties), sizeof(LightShadowProperties), (void*)&light->getShadowProperties());
     light->_dirty[Light::PROPERTY_TYPE_SHADOW] = false;
 }

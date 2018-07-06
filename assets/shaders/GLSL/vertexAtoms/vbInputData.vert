@@ -4,11 +4,9 @@ out vec4 _vertexW;
 out vec2 _texCoord;
 
 uniform int lodLevel = 0;
-
-uniform mat4 dvd_WorldMatrix;//[MAX_INSTANCES];
-uniform mat3 dvd_NormalMatrix;
-uniform mat4 dvd_WorldViewMatrix;
-uniform mat4 dvd_WorldViewMatrixInverse;
+uniform int  dvd_drawID = 0;
+uniform mat4 dvd_WorldMatrix[MAX_INSTANCES];
+uniform mat3 dvd_NormalMatrix[MAX_INSTANCES];
 uniform mat4 dvd_WorldViewProjectionMatrix;
 
 
@@ -44,7 +42,7 @@ void computeData(){
     #endif
 
     _texCoord = inTexCoordData;
-    _vertexW  = dvd_WorldMatrix * dvd_Vertex;
+    _vertexW  = dvd_WorldMatrix[dvd_drawID] * dvd_Vertex;
 
     setClipPlanes(_vertexW);
 }

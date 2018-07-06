@@ -23,12 +23,9 @@
 #ifndef _RENDER_INSTANCE_H_
 #define _RENDER_INSTANCE_H_
 
-#include "Hardware/Platform/Headers/PlatformDefines.h"
 #include <boost/noncopyable.hpp>
+#include "Geometry/Shapes/Headers/Object3D.h"
 
-class Object3D;
-class Transform;
-class VertexBuffer;
 ///Wraps geometry with transform and additional rendering params. Pass to the rendering API for presenting to screen
 class RenderInstance : private boost::noncopyable{
 public:
@@ -36,7 +33,8 @@ public:
                                                _buffer(nullptr),
                                                _transform(nullptr),
                                                _prevTransform(nullptr),
-                                               _preDraw(false)
+                                               _preDraw(false),
+                                               _stateHash(0)
     {
     }
 
@@ -52,14 +50,22 @@ public:
     Transform* prevTransform()                           const {return _prevTransform;}
     void       prevTransform(Transform* const transform)       {_prevTransform = transform;}
     ///Geometry manipulation
-    Object3D* const object3D()                         const { return _model; }
-    void            object3D(Object3D* const geometry)       { _model = geometry; }
+    Object3D* const object3D()                           const { return _model; }
+    void            object3D(Object3D* const geometry)         { _model = geometry; }
     ///Buffer Data
     VertexBuffer* const buffer()                           const { return _buffer; }
     void                buffer(VertexBuffer* const buffer)       { _buffer = buffer; }
     ///PreDraw checks
     bool preDraw()                   const {return _preDraw;}
     void preDraw(const bool preDraw)       {_preDraw = preDraw;}
+    ///Draw Command
+    inline void deferredDrawCommand(const VertexBuffer::DeferredDrawCommand& drawCommand)       { _drawCommand = drawCommand;}
+    inline const VertexBuffer::DeferredDrawCommand& deferredDrawCommand()                 const { return _drawCommand; }
+    ///LoD management
+    inline void lodIndex(U8 currentLod) { _drawCommand._lodIndex = currentLod; }
+    ///State management
+    inline I64  stateHash()              const { return _stateHash; }
+    inline void stateHash(I64 hashValue)       { _stateHash = hashValue; }
 
 private:
     ///The actual geometry wrapper
@@ -72,6 +78,10 @@ private:
     Transform* _prevTransform;
     ///Perform a preDraw operation on the model
     bool       _preDraw;
+    ///The draw command associated with this render instance
+    VertexBuffer::DeferredDrawCommand _drawCommand;
+    ///The state hash associated with this render instance
+    I64       _stateHash;
 };
 
 #endif

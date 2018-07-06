@@ -82,7 +82,7 @@ I64 Material::getRenderStateBlock(RenderStage currentStage) {
     return it->second;
 }
 
-I64 Material::setRenderStateBlock(RenderStateBlockDescriptor& descriptor, const RenderStage& renderStage){
+I64 Material::setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, const RenderStage& renderStage){
     renderStateBlockMap::iterator it = _defaultRenderStates.find(renderStage);
     I64 stateBlockHash = GFX_DEVICE.getOrCreateStateBlock(descriptor);
     if(it == _defaultRenderStates.end()){

@@ -191,7 +191,7 @@ public:
     ///toggle multi-threaded shader loading on or off for this material
     inline void setShaderLoadThreaded(const bool state) {_shaderThreadedLoad = state;}
     void setShaderProgram(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE, const bool computeOnAdd = false);
-    I64 setRenderStateBlock(RenderStateBlockDescriptor& descriptor, const RenderStage& renderStage);
+    I64 setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, const RenderStage& renderStage);
 
     void getSortKeys(I32& shaderKey, I32& textureKey) const;
 

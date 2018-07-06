@@ -16,7 +16,7 @@ void main(void){
     
     computeLightVectors();
     //Compute the final vert position
-    gl_Position = dvd_WorldViewProjectionMatrix * dvd_Vertex;
+    gl_Position = dvd_ViewProjectionMatrix * _vertexW;
 }
 
 -- Fragment

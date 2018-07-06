@@ -178,13 +178,13 @@ void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
 
     if (!_drawCommands[0].empty()){
         _groundVB->currentShader()->SetLOD(0);
-        _groundVB->DrawCommands(_drawCommands[0], true);
+        _groundVB->Draw(_drawCommands[0], true);
         _drawCommands[0].resize(0);
     }
 
     if (!_drawCommands[1].empty()){
         _groundVB->currentShader()->SetLOD(1);
-        _groundVB->DrawCommands(_drawCommands[1], true);
+        _groundVB->Draw(_drawCommands[1], true);
         _drawCommands[1].resize(0);
     }
     // draw infinite plane

@@ -29,6 +29,9 @@ void Object3D::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRe
     if(!GFX_DEVICE.excludeFromStateChange(SceneNode::getType())){
         _renderInstance->transform(sgn->getTransform());
     }
+    _renderInstance->lodIndex(getCurrentLOD());
+    _renderInstance->stateHash(_drawStateHash);
+
     GFX_DEVICE.renderInstance(_renderInstance);
 }
 

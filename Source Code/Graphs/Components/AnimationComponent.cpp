@@ -17,7 +17,10 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator, SceneGraphNode* 
 
     _animationTransforms.clear();
     _animationTransforms.reserve(40);
-    _boneTransformBuffer = animator->getBoneDataBuffer();
+    _readBuffer  = 1;
+    _writeBuffer = 0;
+    _boneTransformBuffer[0] = animator->getBoneDataBuffer(0);
+    _boneTransformBuffer[1] = animator->getBoneDataBuffer(1);
 }
 
 AnimationComponent::~AnimationComponent()
@@ -27,8 +30,27 @@ AnimationComponent::~AnimationComponent()
 void AnimationComponent::update(const U64 deltaTime) {
     SGNComponent::update(deltaTime);
     
+    D32 timeStamp = _playAnimations ? getUsToSec(_elapsedTime) : 0.0;
+
+    if(DOUBLE_COMPARE(timeStamp, _currentTimeStamp)) return;
+
+    _readBuffer  = (_readBuffer + 1) % 2;
+    _writeBuffer = (_writeBuffer + 1) % 2;
+
+    _currentTimeStamp = timeStamp;
+
+    _animationTransforms = _animator->GetTransforms(_currentAnimIndex, _currentTimeStamp);
+        
+    size_t animationDataSize = _animationTransforms.size() * sizeof(mat4<F32>);
+    _boneTransformBuffer[_writeBuffer]->UpdateData(_instanceID * animationDataSize, animationDataSize, &_animationTransforms[0][0]);
+
     Object3D* node = _parentSGN->getNode<Object3D>();
     node->updateAnimations(_parentSGN);
+}
+
+void AnimationComponent::reset(){
+    _currentTimeStamp = -1.0;
+    SGNComponent::reset();
 }
 
 /// Select an animation by name
@@ -73,21 +95,14 @@ void AnimationComponent::renderSkeleton(){
 void AnimationComponent::onDraw(RenderStage currentStage) {
     _skeletonAvailable = false;
 
-    if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE) || !_playAnimations)
+    size_t animationDataSize = _animationTransforms.size() * sizeof(mat4<F32>);
+    _boneTransformBuffer[_readBuffer]->Bind(Divide::SHADER_BUFFER_BONE_TRANSFORMS);
+
+    if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE) || !_playAnimations || _currentTimeStamp < 0.0)
         return;
 
     //All animation data is valid, so we have a skeleton to render if needed
     _skeletonAvailable = true;
-    D32 timeStamp = _playAnimations ? getUsToSec(_elapsedTime) : 0.0;
-
-    if(DOUBLE_COMPARE(timeStamp, _currentTimeStamp)) return;
-
-    _currentTimeStamp = timeStamp;
-    _animationTransforms = _animator->GetTransforms(_currentAnimIndex, _currentTimeStamp);
-    
-    size_t animationDataSize = _animationTransforms.size() * sizeof(mat4<F32>);
-    _boneTransformBuffer->bind(Divide::SHADER_BUFFER_BONE_TRANSFORMS);
-    _boneTransformBuffer->ChangeSubData(_instanceID * animationDataSize, animationDataSize, &_animationTransforms[0][0]);
 }
 
 I32 AnimationComponent::frameIndex() const {
@@ -113,6 +128,7 @@ const mat4<F32>& AnimationComponent::getBoneTransform(const std::string& name) {
 
     return currentBoneTransform(name);
 }
+
 const mat4<F32>& AnimationComponent::currentBoneTransform(const std::string& name){
     assert(_animator != nullptr);
     I32 boneIndex = _animator->GetBoneIndex(name);
@@ -123,6 +139,7 @@ const mat4<F32>& AnimationComponent::currentBoneTransform(const std::string& nam
 
     return _animationTransforms[boneIndex];
 }
+
 Bone* AnimationComponent::getBoneByName(const std::string& bname) const {
     return _animator ? _animator->GetBoneByName(bname) : nullptr;
 }

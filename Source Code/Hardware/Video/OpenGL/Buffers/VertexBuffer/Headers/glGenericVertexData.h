@@ -48,13 +48,7 @@ public:
 
     void BindFeedbackBufferRange(U32 buffer, size_t elementCountOffset, size_t elementCount);
 
-    inline void Draw(const PrimitiveType& type, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false) {
-        DrawInternal(type, min, max, 1, queryID, drawToBuffer);
-    }
-
-    inline void DrawInstanced(const PrimitiveType& type, U32 count, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false) {
-        DrawInternal(type, min, max, count, queryID, drawToBuffer);
-    }
+    void Draw(const GenericDrawCommand& command);
 
     inline void SetFeedbackBuffer(U32 buffer, U32 bindPoint) {
         if (!isFeedbackBuffer(buffer)){
@@ -69,7 +63,6 @@ public:
 protected:
     void SetAttributes(bool feedbackPass);
     void SetAttributeInternal(AttributeDescriptor& descriptor);
-    void DrawInternal(const PrimitiveType& type, U32 min, U32 max, U32 instanceCount, U8 queryID = 0, bool drawToBuffer = false);
 
     inline bool isFeedbackBuffer(U32 index){
         for (U32 handle : _feedbackBuffers)

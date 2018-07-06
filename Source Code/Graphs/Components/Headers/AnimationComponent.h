@@ -70,6 +70,8 @@ public:
 
     inline boundingBoxPerFrame& getBBoxesForAnimation(U32 animationId) { return _boundingBoxes[animationId]; }
 
+    void reset();
+
 protected:
     /// Pointer to the mesh's animator. Owned by the mesh!
     SceneAnimator* _animator;
@@ -88,12 +90,17 @@ protected:
     bool _skeletonAvailable; 
     /// Animation playback toggle
     bool _playAnimations;
+    /// Animation timestamp changed
+    bool _updateAnimations;
     ///BoundingBoxes for every frame
     boundingBoxPerFrame _bbsPerFrame;
     ///store a map of bounding boxes for every animation at every frame
     boundingBoxPerAnimation _boundingBoxes;
     ///used to upload bone data to the gpu
-    ShaderBuffer* _boneTransformBuffer;
+    ShaderBuffer* _boneTransformBuffer[2];
+    ///used to switch bone buffers around per frame
+    U32 _readBuffer;
+    U32 _writeBuffer;
 };
 
 #endif

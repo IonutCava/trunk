@@ -1,6 +1,6 @@
 uniform vec2  dvd_zPlanes;
 uniform mat4  material;
-uniform int   dvd_isSelected = 0;
+uniform bool  dvd_isSelected;
 uniform int   lodLevel = 0;
 
 #include "lightInput.cmn"
@@ -58,16 +58,16 @@ vec4 Phong(const in vec2 texCoord, const in vec3 normal, const in vec4 textureCo
 #endif
 
     //Add global ambient value and selection ambient value
-    materialProp.ambient += dvd_isSelected ? vec4(1.0) : dvd_lightAmbient * material[0];
+    materialProp.ambient += dvd_lightAmbient * material[0] + materialProp.diffuse + (dvd_isSelected ? vec4(1.0) : vec4(0.0));
     //Add material color terms to the final color
-    vec4 linearColor = vec4(((materialProp.ambient.rgb + materialProp.diffuse.rgb) * textureColor.rgb) + materialProp.specular.rgb, alpha);
-
+    vec4 linearColor = vec4((materialProp.ambient.rgb * textureColor.rgb) + materialProp.specular.rgb, alpha);
     // Gama correction
     // vec3 gamma = vec3(1.0/2.2);
     // linearColor.rgb = pow(linearColor.rgb, gamma);
 
     //Apply shadowing
     linearColor.rgb *= shadow_loop();
+
 #if defined(_DEBUG)
     _shadowTempInt = dvd_showShadowSplits ? _shadowTempInt : -2;
 

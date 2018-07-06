@@ -46,10 +46,6 @@ namespace Config
     const unsigned int MAX_FRAMESKIP = 5;
     /// AI update frequency
     const unsigned int AI_THREAD_UPDATE_FREQUENCY = TICKS_PER_SECOND;
-    /// Minimum triangle count for a mesh to apply depth rendering optimisations
-    const unsigned int DEPTH_VB_MIN_TRIANGLES = 1000;
-    /// Minimum vb size in bytes for a mesh to apply depth rendering optimisations (4MB default)
-    const unsigned int DEPTH_VB_MIN_BYTES = 4 * 1024 * 1024;
     /// Maximum number of instances of a single mesh with a single draw call
     const unsigned int MAX_INSTANCE_COUNT = 512;
     /// How many clip planes should the shaders us

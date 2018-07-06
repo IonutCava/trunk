@@ -4,10 +4,8 @@ layout(location = 10) in vec4 intanceData;
 layout(location = 11) in float instanceData2;
 
 uniform vec3 ObjectExtent;
-
-uniform mat4 dvd_WorldViewMatrix;
-uniform mat4 dvd_WorldViewProjectionMatrix;
 uniform float dvd_visibilityDistance;
+uniform float dvd_frustumBias = 0.01;
 
 layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
 {
@@ -41,8 +39,8 @@ int PassThrough(const in vec3 position) {
 //subroutine(CullRoutineType)
 int InstanceCloudReduction(const in vec3 position) {
 
-    //mat4 finalTransform = dvd_WorldViewProjectionMatrix * transform[gl_InstanceID];
-    mat4 finalTransform = dvd_WorldViewProjectionMatrix;
+    //mat4 finalTransform = dvd_ViewProjectionMatrix * transform[gl_InstanceID];
+    mat4 finalTransform = dvd_ViewProjectionMatrix;
     // create the bounding box of the object 
     BoundingBox[0] = finalTransform * vec4(position + vec3( ObjectExtent.x,  ObjectExtent.y,  ObjectExtent.z), 1.0);
     BoundingBox[1] = finalTransform * vec4(position + vec3(-ObjectExtent.x,  ObjectExtent.y,  ObjectExtent.z), 1.0);
@@ -57,24 +55,20 @@ int InstanceCloudReduction(const in vec3 position) {
     uint outOfBound[6] = uint[6](0, 0, 0, 0, 0, 0);
 
     vec4 crtBB;
+    float frustumLimit = 0.0;
     for (uint i = 0; i < 8; i++)  {
         crtBB = BoundingBox[i];
-        if (crtBB.x >  crtBB.w) outOfBound[0]++;
-        if (crtBB.x < -crtBB.w) outOfBound[1]++;
-        if (crtBB.y >  crtBB.w) outOfBound[2]++;
-        if (crtBB.y < -crtBB.w) outOfBound[3]++;
-        if (crtBB.z >  crtBB.w) outOfBound[4]++;
-        if (crtBB.z < -crtBB.w) outOfBound[5]++;
+        frustumLimit = crtBB.w + dvd_frustumBias;
+        if (crtBB.x >  frustumLimit) outOfBound[0]++;
+        if (crtBB.x < -frustumLimit) outOfBound[1]++;
+        if (crtBB.y >  frustumLimit) outOfBound[2]++;
+        if (crtBB.y < -frustumLimit) outOfBound[3]++;
+        if (crtBB.z >  frustumLimit) outOfBound[4]++;
+        if (crtBB.z < -frustumLimit) outOfBound[5]++;
     }
 
-    if (outOfBound[0] == 8 ||
-        outOfBound[1] == 8 ||
-        outOfBound[2] == 8 ||
-        outOfBound[3] == 8 ||
-        outOfBound[4] == 8 ||
-        outOfBound[5] == 8) return 0;
-
-    return 1;
+    return (outOfBound[0] == 8 || outOfBound[1] == 8 || outOfBound[2] == 8 ||
+            outOfBound[3] == 8 || outOfBound[4] == 8 || outOfBound[5] == 8) ? 0 : 1;
 }
 
 //subroutine(CullRoutineType)
@@ -82,7 +76,7 @@ int HiZOcclusionCull(const in vec3 position) {
     /* first do instance cloud reduction */
     if (InstanceCloudReduction(position) == 0) return 0;
 
-    if (distance(dvd_WorldViewMatrix * vec4(position, 1.0), vec4(0.0, 0.0, 0.0, 1.0)) > dvd_visibilityDistance)
+    if (distance(dvd_ViewMatrix * vec4(position, 1.0), vec4(0.0, 0.0, 0.0, 1.0)) > dvd_visibilityDistance)
         return 0;
     
     /* perform perspective division for the bounding box */

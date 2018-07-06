@@ -47,12 +47,10 @@ void SubMesh::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
     VertexBuffer::DeferredDrawCommand drawCmd;
     drawCmd._cmd.count = vb->getPartitionCount(_geometryPartitionId);
     drawCmd._cmd.firstIndex = vb->getPartitionOffset(_geometryPartitionId);
+    drawCmd._unsignedData = _geometryPartitionId;
 
     _parentMesh->addDrawCommand(drawCmd, _drawShader);
+    _renderInstance->deferredDrawCommand(drawCmd);
 
-    if (!GFX_DEVICE.excludeFromStateChange(SceneNode::getType())){
-        _renderInstance->transform(sgn->getTransform());
-    }
-
-    GFX_DEVICE.renderInstanceCmd(_renderInstance, drawCmd);
+    Object3D::render(sgn, sceneRenderState);
 }

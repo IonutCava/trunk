@@ -38,10 +38,7 @@ public:
     void Create(U8 numBuffers = 1, U8 numQueries = 1)
     {
     }
-    void Draw(const PrimitiveType& type, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false)
-    {
-    }
-    void DrawInstanced(const PrimitiveType& type, U32 count, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false)
+    void Draw(const GenericDrawCommand& command) 
     {
     }
     void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false)

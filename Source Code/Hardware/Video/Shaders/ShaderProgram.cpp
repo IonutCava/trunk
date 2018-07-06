@@ -150,11 +150,11 @@ bool ShaderProgram::generateHWResource(const std::string& name){
 
     DIVIDE_ASSERT(isHWInitComplete(), "ShaderProgram error: hardware initialization failed!");
 
-    _extendedMatrixEntry[WORLD_MATRIX]  = this->cachedLoc("dvd_WorldMatrix");
+    _extendedMatrixEntry[WORLD_MATRIX]  = this->cachedLoc("dvd_WorldMatrix[0]");
     _extendedMatrixEntry[WV_MATRIX]     = this->cachedLoc("dvd_WorldViewMatrix");
     _extendedMatrixEntry[WV_INV_MATRIX] = this->cachedLoc("dvd_WorldViewMatrixInverse");
     _extendedMatrixEntry[WVP_MATRIX]    = this->cachedLoc("dvd_WorldViewProjectionMatrix");
-    _extendedMatrixEntry[NORMAL_MATRIX] = this->cachedLoc("dvd_NormalMatrix");
+    _extendedMatrixEntry[NORMAL_MATRIX] = this->cachedLoc("dvd_NormalMatrix[0]");
     _invProjMatrixEntry  = this->cachedLoc("dvd_ProjectionMatrixInverse");
     _timeLoc             = this->cachedLoc("dvd_time");
     _cameraLocationLoc   = this->cachedLoc("dvd_cameraPosition");
@@ -227,7 +227,10 @@ void ShaderProgram::uploadNodeMatrices(){
         }
         _extendedMatricesDirty = false;
     }
+
     /*Get and upload clip plane data*/
+    //GFX_DEVICE.updateClipPlanes();
+
     if (_clipPlanesDirty == true){
         _clipPlanesDirty = false;
         _clipPlanes.resize(0);

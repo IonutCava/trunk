@@ -1,4 +1,5 @@
 #include "Headers/glGenericVertexData.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 
 glGenericVertexData::glGenericVertexData(bool persistentMapped) : GenericVertexData(persistentMapped), _prevResult(nullptr),
                                                                                                        _bufferSet(nullptr),
@@ -124,10 +125,12 @@ void glGenericVertexData::BindFeedbackBufferRange(U32 buffer, size_t elementCoun
     glBindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, getBindPoint(_bufferObjects[buffer]), _bufferObjects[buffer], elementCountOffset * _elementSize[buffer], elementCount * _elementSize[buffer]);
 }
 
-void glGenericVertexData::DrawInternal(const PrimitiveType& type, U32 min, U32 max, U32 instanceCount, U8 queryID, bool drawToBuffer) {
-    if (instanceCount == 0) return;
+void glGenericVertexData::Draw(const GenericDrawCommand& command) {
+    if (command._instanceCount == 0) return;
 
-    bool feedbackActive = (drawToBuffer && !_feedbackBuffers.empty());
+    GFX_DEVICE.setStateBlock(command._stateHash);
+
+    bool feedbackActive = (command._drawToBuffer && !_feedbackBuffers.empty());
 
     GL_API::setActiveVAO(_vertexArray[feedbackActive ? GVD_USAGE_FDBCK : GVD_USAGE_DRAW]);
 
@@ -135,18 +138,19 @@ void glGenericVertexData::DrawInternal(const PrimitiveType& type, U32 min, U32 m
 
     if (feedbackActive){
        GL_API::setActiveTransformFeedback(_transformFeedback);
-       glBeginTransformFeedback(glPrimitiveTypeTable[type]);
-       glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][queryID]);
+       glBeginTransformFeedback(glPrimitiveTypeTable[command._type]);
+       glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][command._queryID]);
     } 
-    
-    glDrawArraysInstanced(glPrimitiveTypeTable[type], min, max, instanceCount);
+
+    if(command._instanceCount > 1) glDrawArraysInstanced(glPrimitiveTypeTable[command._type], command._min, command._max, command._instanceCount);
+    else                           glDrawArrays(glPrimitiveTypeTable[command._type], command._min, command._max);
 
     GL_API::registerDrawCall();
 
     if (feedbackActive) {
         glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
         glEndTransformFeedback();
-        _resultAvailable[_currentWriteQuery][queryID] = true;
+        _resultAvailable[_currentWriteQuery][command._queryID] = true;
     }
 }
 

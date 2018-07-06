@@ -33,6 +33,27 @@
 
 class GenericVertexData : private boost::noncopyable, public FrameListener {
 public:
+    struct GenericDrawCommand {
+        U32 _min;
+        U32 _max;
+        U8  _queryID;
+        I64 _stateHash;
+        U32 _instanceCount;
+        bool _drawToBuffer;
+        PrimitiveType _type;
+
+        GenericDrawCommand(const PrimitiveType& type, I64 stateHash, U32 min, U32 max, U32 instanceCount = 1,
+                           U8 queryID = 0, bool drawToBuffer = false) : _type(type),
+                                                                        _stateHash(stateHash),
+                                                                        _min(min),
+                                                                        _max(max),
+                                                                        _queryID(queryID),
+                                                                        _drawToBuffer(drawToBuffer),                         
+                                                                        _instanceCount(instanceCount)
+                                                                    
+        {
+        }
+    };
 
     struct AttributeDescriptor {
         AttributeDescriptor() : _index(0), _divisor(0), _parentBuffer(0), 
@@ -90,8 +111,7 @@ public:
     virtual void Create(U8 numBuffers = 1, U8 numQueries = 1) = 0;
     virtual void SetFeedbackBuffer(U32 buffer, U32 bindPoint) = 0;
 
-    virtual void Draw(const PrimitiveType& type, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false) = 0;
-    virtual void DrawInstanced(const PrimitiveType& type, U32 count, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false) = 0;
+    virtual void Draw(const GenericDrawCommand& command) = 0;
 
     virtual void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false) = 0;
     virtual void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 offset, bool dynamic, bool steam) = 0;

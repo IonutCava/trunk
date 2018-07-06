@@ -205,7 +205,7 @@ public:
     ///It is not set immediately, but a call to "updateStates" is required
     I64 setStateBlock(I64 stateBlockHash, bool forceUpdate = false);
     /// Return or create a new state block using the given descriptor. DO NOT DELETE THE RETURNED STATE BLOCK! GFXDevice handles that!
-    I64 getOrCreateStateBlock(RenderStateBlockDescriptor& descriptor);
+    I64 getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor);
     const RenderStateBlockDescriptor& getStateBlockDescriptor(I64 renderStateBlockHash) const;
     ///Sets a standard state block
     inline I64 setDefaultStateBlock(bool forceUpdate = false)  {return setStateBlock(_defaultStateBlockHash, forceUpdate);}

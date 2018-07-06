@@ -169,7 +169,6 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
 
 bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* terrainDescriptor){
     VertexBuffer* groundVB = terrain->_groundVB;
-    groundVB->optimizeForDepth(false);
 
     terrain->_chunkSize = terrainDescriptor->getChunkSize();
     terrain->_terrainScaleFactor.y = terrainDescriptor->getScale().y;

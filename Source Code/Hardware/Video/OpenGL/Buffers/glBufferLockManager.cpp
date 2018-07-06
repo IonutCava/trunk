@@ -69,8 +69,7 @@ void glBufferLockManager::wait(GLsync* _syncObj)
             waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;
             waitDuration = kOneSecondInNanoSeconds;
         }
-    }
-    else {
+    } else {
         glWaitSync(*_syncObj, 0, GL_TIMEOUT_IGNORED);
     }
 }

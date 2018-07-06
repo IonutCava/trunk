@@ -15,7 +15,7 @@ void main(void)
     _pixToEye = -vec3(dvd_ViewMatrix * _vertexW);
 
     _vertexWVP = dvd_ViewProjectionMatrix * _vertexW;
-    _normalWV = normalize(dvd_NormalMatrix * dvd_Normal);
+    _normalWV = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Normal);
 
 
     gl_Position = _vertexWVP;
@@ -35,7 +35,7 @@ uniform vec2 _noiseFactor;
 uniform float _waterShininess;
 uniform float _transparencyBias;
 uniform bool  underwater;
-
+uniform int   dvd_drawID = 0;
 uniform sampler2D texWaterReflection;
 uniform sampler2D texWaterRefraction;
 uniform sampler2D texWaterNoiseNM;
@@ -43,7 +43,7 @@ uniform sampler2D texWaterNoiseDUDV;
 
 uniform mat4  material;
 uniform float dvd_time;
-uniform mat3  dvd_NormalMatrix;
+uniform mat3  dvd_NormalMatrix[MAX_INSTANCES];
 uniform ivec2 screenDimension;
 uniform ivec2 invScreenDimension;
 #include "lightInput.cmn"
@@ -77,7 +77,7 @@ void main (void)
     vec2 uvFinalReflect = uvReflection.xy + _noiseFactor * normal.xy;
     vec2 uvFinalRefract = uvReflection.xy + _noiseFactor * normal.xy;
 
-    vec3 N = normalize(dvd_NormalMatrix * normal);
+    vec3 N = normalize(dvd_NormalMatrix[dvd_drawID] * normal);
     vec3 L = normalize(_pixToLight);
     vec3 V = normalize(_pixToEye);
 

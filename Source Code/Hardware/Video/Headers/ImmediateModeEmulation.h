@@ -57,6 +57,10 @@ public:
     inline bool forceWireframe()             const {return _forceWireframe; }
     inline bool hasRenderStates()            const {return (!_setupStates.empty() && !_resetStates.empty());}
 
+    ///State management
+    inline I64  stateHash()              const { return _stateHash; }
+    inline void stateHash(I64 hashValue)       { _stateHash = hashValue;}
+
 protected:
     IMPrimitive();
     virtual ~IMPrimitive();
@@ -84,6 +88,8 @@ protected:
     ///2 functions used to setup or reset states
     DELEGATE_CBK _setupStates;
     DELEGATE_CBK _resetStates;
+    ///The state hash associated with this render instance
+    I64       _stateHash;
 };
 
 #endif

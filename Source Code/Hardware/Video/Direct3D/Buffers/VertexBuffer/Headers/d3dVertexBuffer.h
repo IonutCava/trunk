@@ -32,15 +32,13 @@ public:
     void Destroy() {}
 
     bool SetActive() {return true;}
-    void Draw(bool skipBind = false, const U8 LODindex = 0) {}
-    void DrawRange(bool skipBind = false){}
-    void DrawCommands(const vectorImpl<DeferredDrawCommand>& commands, bool skipBind = false) {}
+    void Draw(const DeferredDrawCommand& command, bool skipBind = false) {};
+    void Draw(const vectorImpl<DeferredDrawCommand>& commands, bool skipBind = false) {};
+
     bool queueRefresh() {return Refresh();}
 
     d3dVertexBuffer(PrimitiveType type) : VertexBuffer(type) {}
     ~d3dVertexBuffer() {Destroy();}
-
-     void setShaderProgram(ShaderProgram* const shaderProgram);
 
 private:
     bool CreateInternal() {return true;}

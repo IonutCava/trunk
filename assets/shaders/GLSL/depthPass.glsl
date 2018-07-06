@@ -13,7 +13,8 @@ layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
     vec4 dvd_ViewPort;
 };
 
-uniform mat4 dvd_WorldMatrix;//[MAX_INSTANCES];
+uniform int  dvd_drawID = 0;
+uniform mat4 dvd_WorldMatrix[MAX_INSTANCES];
 
 out vec2 _texCoord;
 
@@ -27,7 +28,7 @@ void main(void){
 #endif
 
     _texCoord = inTexCoordData;
-    vec4 wVertex = dvd_WorldMatrix * dvd_Vertex;
+    vec4 wVertex = dvd_WorldMatrix[dvd_drawID] * dvd_Vertex;
     setClipPlanes(wVertex);
     gl_Position = dvd_ViewProjectionMatrix * wVertex;
 }
@@ -94,7 +95,9 @@ void main(){
 
 void main() {
 
-    computeData();    gl_Position = dvd_ViewProjectionMatrix * _vertexW;}
+    computeData();
+    gl_Position = dvd_ViewProjectionMatrix * _vertexW;
+}
 
 -- Fragment.PrePass
 

@@ -37,8 +37,9 @@ class ShaderBuffer;
 class SceneAnimator{
 public:
 
-    SceneAnimator(): _skeleton(0), _boneTransformBuffer(nullptr)
+    SceneAnimator(): _skeleton(0)
     {
+        _boneTransformBuffer[0] = _boneTransformBuffer[1] = nullptr;
     }
 
     ~SceneAnimator()
@@ -107,7 +108,8 @@ public:
 
     size_t GetBoneCount() const { return _bones.size(); }
 
-    ShaderBuffer* getBoneDataBuffer() const { return _boneTransformBuffer; }
+    ShaderBuffer* getBoneDataBuffer(U8 index) const { return _boneTransformBuffer[index]; }
+
 private:
 
     ///I/O operations
@@ -146,7 +148,7 @@ private:
     mat4<F32>  _cacheIdentity;
     mat4<F32>  _rootTransformRender;
 
-    ShaderBuffer* _boneTransformBuffer;
+    ShaderBuffer* _boneTransformBuffer[2];
 };
 
 #endif

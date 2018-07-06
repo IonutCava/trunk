@@ -161,13 +161,11 @@ void PostFX::updateResolution(I32 width, I32 height){
 }
 
 void PostFX::displaySceneAnaglyph(){
-    _gfx->toggle2D(true);
     _anaglyphShader->bind();
     _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Bind(TEX_BIND_POINT_RIGHT_EYE); //right eye buffer
     _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->Bind(TEX_BIND_POINT_LEFT_EYE); //left eye buffer
 
     _gfx->drawPoints(1);
-    _gfx->toggle2D(false);
 }
 
 void PostFX::displayScene(){

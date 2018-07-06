@@ -153,7 +153,7 @@ bool WaterPlane::getDrawState(const RenderStage& currentStage)  const {
     // Wait for the Reflector to update
     if(!_createdFB) return false;
 
-    // Make sure we are not drawing ourself unless this is desired
+    // Make sure we are not drawing our self unless this is desired
     if((currentStage == REFLECTION_STAGE || _reflectionRendering || _refractionRendering) && !_updateSelf)	return false;
 
     // Else, process normal exclusion

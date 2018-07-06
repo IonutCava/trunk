@@ -20,6 +20,7 @@ SceneNode::SceneNode(const std::string& name, const SceneNodeType& type) : Resou
                                                              _nodeReady(false),
                                                              _type(type),
                                                              _lodLevel(0),
+                                                             _drawStateHash(0),
                                                              _LODcount(1), ///<Defaults to 1 LOD level
                                                              _sgnReferenceCount(0),
                                                              _physicsAsset(nullptr)
@@ -152,7 +153,7 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     bool temp = sgn->isSelected();
     if(shaderInfo.getTrackedBool(0) != temp){
         shaderInfo.setTrackedBool(0, temp);
-        _drawShader->Uniform("dvd_isSelected", temp ? 1 : 0);
+        _drawShader->Uniform("dvd_isSelected", temp);
     }
     
     temp = lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows();

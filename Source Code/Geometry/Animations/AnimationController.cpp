@@ -35,7 +35,8 @@ void SceneAnimator::Release(){// this should clean everything up
     _transforms.clear();
     // This node will delete all children recursivly
     SAFE_DELETE(_skeleton);
-    SAFE_DELETE(_boneTransformBuffer);
+    SAFE_DELETE(_boneTransformBuffer[0]);
+    SAFE_DELETE(_boneTransformBuffer[1]);
 }
 
 bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will build the skeleton based on the scene passed to it and CLEAR EVERYTHING
@@ -93,9 +94,11 @@ bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
         }
     }
 
-    _boneTransformBuffer = GFX_DEVICE.newSB(true);
-    _boneTransformBuffer->Create(true, false);
-    _boneTransformBuffer->ReserveBuffer(Config::MAX_INSTANCE_COUNT, _bones.size() * sizeof(mat4<F32>));
+    _boneTransformBuffer[0] = GFX_DEVICE.newSB(true);
+    _boneTransformBuffer[0]->Create(true, true, Config::MAX_INSTANCE_COUNT, _bones.size() * sizeof(mat4<F32>));
+
+    _boneTransformBuffer[1] = GFX_DEVICE.newSB(true);
+    _boneTransformBuffer[1]->Create(true, true, Config::MAX_INSTANCE_COUNT, _bones.size() * sizeof(mat4<F32>));
 
     D_PRINT_FN(Locale::get("LOAD_ANIMATIONS_END"), _bones.size());
     return !_transforms.empty();

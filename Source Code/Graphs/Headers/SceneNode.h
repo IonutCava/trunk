@@ -124,6 +124,8 @@ protected:
     ShaderProgram*        _customShader;
     /// This is the currently active shader at the time onDraw() / render() is called
     ShaderProgram*        _drawShader;
+    /// This is the currently active state block's hash value at the time onDraw() / render() is called
+    I64                   _drawStateHash;
     ///The various states needed for rendering
     SceneNodeRenderState  _renderState;
     ///Attach a physics asset to the node to make it physics enabled

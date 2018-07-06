@@ -27,7 +27,7 @@ void computeLightInfoLOD0(in vec3 vertexWV){
 
 #if defined(COMPUTE_TBN)
     vec3 n = _normalWV;
-    vec3 t = normalize(dvd_NormalMatrix * dvd_Tangent);
+    vec3 t = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Tangent);
     vec3 b = normalize(cross(n, t));
     
     vec3 tmpVec = -vertexWV;
@@ -104,6 +104,6 @@ void computeLightInfoLOD1(in vec3 vertexWV){
 }
 
 void computeLightVectors(){
-    _normalWV = normalize(dvd_NormalMatrix * dvd_Normal); //<ModelView Normal 
+    _normalWV = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Normal); //<ModelView Normal 
     LightInfoRoutine(vec3(dvd_ViewMatrix * _vertexW));
 }

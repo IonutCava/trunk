@@ -41,17 +41,13 @@ public:
     glVertexArray(const PrimitiveType& type);
     ~glVertexArray();
 
-    //Shader manipulation to replace the fixed pipeline. Always specify a shader before the draw calls!
-    void setShaderProgram(ShaderProgram* const shaderProgram);
-
     bool Create(bool staticDraw = true);
     void Destroy();
 
     virtual bool SetActive();
 
-    void Draw(bool skipBind = false, const U8 LODindex = 0);
-    void DrawRange(bool skipBind = false);
-    void DrawCommands(const vectorImpl<DeferredDrawCommand>& commands, bool skipBind = false);
+    void Draw(const DeferredDrawCommand& command, bool skipBind = false);
+    void Draw(const vectorImpl<DeferredDrawCommand>& commands, bool skipBind = false);
 
     ///Never call Refresh() just queue it and the data will update before drawing
     inline bool queueRefresh() {_refreshQueued = true; return true;}
@@ -63,7 +59,7 @@ protected:
     /// Internally create the VB
     bool CreateInternal();
     /// Enable full VAO based VB (all pointers are tracked by VAO's)
-    void Upload_VB_Attributes(bool depthPass = false);
+    void Upload_VB_Attributes();
     /// Integrity checks
     void checkStatus();
 
@@ -72,7 +68,7 @@ protected:
     GLenum _typeInternal;
     GLuint _IBid;
     GLuint _VBid;
-    GLuint _VAOid[2];
+    GLuint _VAOid;
     GLuint _usage;
     bool _animationData;     ///< Used to bind an extra set of vertex attributes for bone indices and bone weights
     bool _refreshQueued;     ///< A refresh call might be called before "Create()". This should help with that
