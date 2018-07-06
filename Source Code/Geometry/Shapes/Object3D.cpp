@@ -33,7 +33,7 @@ void Object3D::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRe
     if(drawCommands().empty()){
         GenericDrawCommand drawCmd;
         drawCmd.setStateHash(getDrawStateHash(currentRenderStage));
-        drawCmd.setDrawIDs(GFX_DEVICE.getDrawIDs(sgn->getGUID()));
+        drawCmd.setDrawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
         drawCmd.setShaderProgram(drawShader);
         GFX_DEVICE.submitRenderCommand(getGeometryVB(), drawCmd);
     }else{

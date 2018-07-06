@@ -8,7 +8,7 @@
 
 RenderPassCuller::RenderPassCuller()
 {
-    _visibleNodes.reserve(250);
+    _visibleNodes.reserve(Config::MAX_VISIBLE_NODES);
 }
 
 RenderPassCuller::~RenderPassCuller()
@@ -19,24 +19,25 @@ RenderPassCuller::~RenderPassCuller()
 /// This method performs the visibility check on the given node and all of it's children and adds them to the RenderQueue
 void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneState& sceneState) {
     bool renderingLocked = RenderPassManager::getInstance().isLocked();
-    bool refreshQueued = RenderPassManager::getInstance().isResetQueued();
+
     if(!_visibleNodes.empty()){
+        bool refreshQueued = RenderPassManager::getInstance().isResetQueued();
         if(renderingLocked && !refreshQueued) return;
         else refreshNodeList();
     }
 
-    const vec3<F32>& eyePos = sceneState.getRenderState().getCameraConst().getEye();
-
-    assert(_visibleNodes.empty());
     cullSceneGraphCPU(currentNode, sceneState.getRenderState());
-    for(SceneGraphNode* node : _visibleNodes){
+
+    const vec3<F32>& eyePos = sceneState.getRenderState().getCameraConst().getEye();
+    for(SceneGraphNode* node : _visibleNodes)
         RenderQueue::getInstance().addNodeToQueue(node, eyePos);
-    }
+    
     cullSceneGraphGPU(sceneState);
 
     currentNode->getRoot()->inView(true);
 
     GFX_DEVICE.processVisibleNodes(_visibleNodes);
+
     if(!renderingLocked) refreshNodeList();
 }
 
@@ -45,6 +46,7 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, Scen
     //or rendering of their bounding boxes
     if(!sceneRenderState.drawObjects() && !sceneRenderState.drawBBox())
         return;
+
     currentNode->inView(false);
     //Bounding Boxes should be updated, so we can early cull now.
     bool skipChildren = false;
@@ -136,8 +138,8 @@ void RenderPassCuller::cullSceneGraphGPU(SceneState& sceneState) {
 }
 
 void RenderPassCuller::refreshNodeList() {
-    _visibleNodes.resize(0);
-    _visibleNodes.reserve(250);
+    _visibleNodes.clear();
+    _visibleNodes.reserve(Config::MAX_VISIBLE_NODES);
     RenderPassManager::getInstance().isResetQueued(false);
 }
 

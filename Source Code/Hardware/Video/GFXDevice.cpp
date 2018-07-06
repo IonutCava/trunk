@@ -39,7 +39,7 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _MSAASamples = _FXAASamples = 0;
    _previousLineWidth = _currentLineWidth = 1.0;
    _prevTextureId = _stateExclusionMask = _prevShaderId = 0;
-   _gfxDataBuffer = _nodeMaterialsBuffer = _nodeMatricesBuffer = nullptr;
+   _gfxDataBuffer = _nodeBuffer = nullptr;
    _isDepthPrePass = _previewDepthBuffer = _viewportUpdate = false;
    _2DRendering = _drawDebugAxis = _enablePostProcessing = _enableAnaglyph = _enableHDR = false;
    _previewDepthMapShader = _imShader = _activeShaderProgram = nullptr;
@@ -71,19 +71,14 @@ void GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     DIVIDE_ASSERT(cmd._shaderProgram && cmd._shaderProgram->getId() != 0,
                   "GFXDevice error: Draw shader state is not valid for the current draw operation!");
 
-#ifdef _DEBUG
-    assert(cmd._shaderProgram->bind());
-#else
     cmd._shaderProgram->bind();
-#endif
-
-    cmd._shaderProgram->Uniform("dvd_drawIDs", cmd._drawIDs);
-    cmd._shaderProgram->UpdateDrawCommand(cmd._lodIndex);
+    cmd._shaderProgram->Uniform("lodLevel", (I32)cmd._lodIndex);
     
-    if(cmd._drawIDs.y > -1){
-        _nodeMaterialsBuffer->BindRange(Divide::SHADER_BUFFER_NODE_MATERIAL, cmd._drawIDs.y, 1);
-    }
+    assert(cmd._drawID < (I32)_matricesData.size());
 
+    if(cmd._drawID > -1)
+        _nodeBuffer->BindRange(Divide::SHADER_BUFFER_NODE_INFO, cmd._drawID, 1);
+        
     setStateBlock(cmd._stateHash);
 }
 
@@ -91,7 +86,7 @@ void GFXDevice::drawPoints(U32 numPoints, size_t stateHash) {
     if(numPoints == 0)
         return;
 
-    _defaultDrawCmd.setDrawIDs(vec2<I32>(-1));
+    _defaultDrawCmd.setDrawID(-1);
     _defaultDrawCmd.setStateHash(stateHash);
     _defaultDrawCmd.setShaderProgram(activeShaderProgram());
 
@@ -261,90 +256,59 @@ void GFXDevice::enableFog(F32 density, const vec3<F32>& color){
 }
 
 void GFXDevice::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) {
-    if (mode == VIEW_PROJECTION_MATRIX)          mat.set(_viewProjectionMatrix);
-    else if (mode == VIEW_MATRIX)                mat.set(_viewMatrix);
-    else if (mode == PROJECTION_MATRIX)          mat.set(_projectionMatrix);
+    if (mode == VIEW_PROJECTION_MATRIX)          mat.set(_gpuBlock._ViewProjectionMatrix);
+    else if (mode == VIEW_MATRIX)                mat.set(_gpuBlock._ViewMatrix);
+    else if (mode == PROJECTION_MATRIX)          mat.set(_gpuBlock._ProjectionMatrix);
     else if (mode == TEXTURE_MATRIX)             mat.set(_textureMatrix);
-    else if (mode == VIEW_INV_MATRIX)            _viewMatrix.inverse(mat);
-    else if (mode == PROJECTION_INV_MATRIX)      _projectionMatrix.inverse(mat);
-    else if(mode == VIEW_PROJECTION_INV_MATRIX)  _viewProjectionMatrix.inverse(mat);
+    else if (mode == VIEW_INV_MATRIX)            _gpuBlock._ViewMatrix.inverse(mat);
+    else if (mode == PROJECTION_INV_MATRIX)      _gpuBlock._ProjectionMatrix.inverse(mat);
+    else if(mode == VIEW_PROJECTION_INV_MATRIX)  _gpuBlock._ViewProjectionMatrix.inverse(mat);
     else { DIVIDE_ASSERT(mode == -1, "GFXDevice error: attempted to query an invalid matrix target!"); }
 }
 
 void GFXDevice::updateClipPlanes(){
-    const size_t vec4Size = 4 * sizeof(F32);
-    const size_t mat4Size = 4 * vec4Size;
-
-    vectorImpl<vec4<F32> > clipPlanes(Config::MAX_CLIP_PLANES, vec4<F32>());
     for(U8 i = 0 ; i < Config::MAX_CLIP_PLANES; ++i)
-        clipPlanes[i] = _clippingPlanes[i].getEquation();
+        _gpuBlock._clipPlanes[i] = _clippingPlanes[i].getEquation();
 
-    _gfxDataBuffer->UpdateData(3 * mat4Size + 3 * vec4Size, Config::MAX_CLIP_PLANES * vec4Size, &clipPlanes.front());
-}
-
-void GFXDevice::updateProjectionMatrix(const vec2<F32>& zPlanes){
-    const size_t vec4Size = 4 * sizeof(F32);
-    const size_t mat4Size = 4 * vec4Size;
-
-    _cachedZPlanes.set(zPlanes);
-    F32 zPlaneData[4]; zPlanes.get(zPlaneData);
-    zPlaneData[2] = _cachedSceneZPlanes.x;
-    zPlaneData[3] = _cachedSceneZPlanes.y;
-    F32 matrixDataProjection[3 * 16];
-
-    _viewProjectionMatrix.set(_viewMatrix * _projectionMatrix);
-
-    memcpy(matrixDataProjection,      _projectionMatrix.mat,     mat4Size);
-    memcpy(matrixDataProjection + 16, _viewMatrix.mat,           mat4Size);
-    memcpy(matrixDataProjection + 32, _viewProjectionMatrix.mat, mat4Size);
-
-    _gfxDataBuffer->UpdateData(0, 3 * mat4Size, matrixDataProjection);
-    _gfxDataBuffer->UpdateData(3 * mat4Size + 2 * vec4Size, vec4Size, zPlaneData);
-}
-
-void GFXDevice::updateViewMatrix(const vec3<F32>& eyePos){
-    const size_t vec4Size = 4 * sizeof(F32);
-    const size_t mat4Size = 4 * vec4Size;
-    F32 camPos[4]; eyePos.get(camPos);
-
-    F32 matrixDataView[2 * 16 + 4];
-
-    _viewProjectionMatrix.set(_viewMatrix * _projectionMatrix);
-
-    memcpy(matrixDataView,      _viewMatrix.mat,           mat4Size);
-    memcpy(matrixDataView + 16, _viewProjectionMatrix.mat, mat4Size);
-    memcpy(matrixDataView + 32, eyePos,                    vec4Size);
-
-    _gfxDataBuffer->UpdateData(mat4Size, 2 * mat4Size + vec4Size, matrixDataView);
+    _gfxDataBuffer->UpdateData(0, sizeof(GPUBlock), &_gpuBlock, true);
 }
 
 void GFXDevice::updateViewportInternal(const vec4<I32>& viewport){
-    const size_t vec4Size = 4 * sizeof(F32);
-    const size_t mat4Size = 16 * sizeof(F32);
     changeViewport(viewport);
+    _gpuBlock._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
 
-    vec4<F32> viewportFloat(viewport.x, viewport.y, viewport.z, viewport.w);
-    _gfxDataBuffer->UpdateData(3 * mat4Size + vec4Size, vec4Size, &viewportFloat[0]);
+    _gfxDataBuffer->UpdateData(0, sizeof(GPUBlock), &_gpuBlock);
 }
 
 F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
-    _viewMatrix.set(viewMatrix);
-    updateViewMatrix(eyePos);
-    return _viewMatrix.mat;
+    _gpuBlock._ViewMatrix.set(viewMatrix);
+    _gpuBlock._cameraPosition.set(eyePos);
+    _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix * _gpuBlock._ProjectionMatrix);
+    _gfxDataBuffer->UpdateData(0, sizeof(GPUBlock), &_gpuBlock);
+
+    return _gpuBlock._ViewMatrix.mat;
 }
 
 //Setting ortho projection:
 F32* GFXDevice::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
-    _projectionMatrix.ortho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
-    updateProjectionMatrix(planes);
-    return _projectionMatrix.mat;
+    _gpuBlock._ProjectionMatrix.ortho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
+    _gpuBlock._ZPlanesCombined.x = planes.x;
+    _gpuBlock._ZPlanesCombined.y = planes.y;
+    _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix * _gpuBlock._ProjectionMatrix);
+    _gfxDataBuffer->UpdateData(0, sizeof(GPUBlock), &_gpuBlock);
+
+    return _gpuBlock._ProjectionMatrix.mat;
 }
 
 //Setting perspective projection:
 F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) {
-    _projectionMatrix.perspective(RADIANS(FoV), aspectRatio, planes.x, planes.y);
-    updateProjectionMatrix(planes);
-    return _projectionMatrix.mat;
+    _gpuBlock._ProjectionMatrix.perspective(RADIANS(FoV), aspectRatio, planes.x, planes.y);
+    _gpuBlock._ZPlanesCombined.x = planes.x;
+    _gpuBlock._ZPlanesCombined.y = planes.y;
+    _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix * _gpuBlock._ProjectionMatrix);
+    _gfxDataBuffer->UpdateData(0, sizeof(GPUBlock), &_gpuBlock);
+
+    return _gpuBlock._ProjectionMatrix.mat;
 }
 
 namespace {
@@ -389,14 +353,18 @@ void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 asp
 
     CameraFrustum& tempCamera = rightFrustum ? _rightCam : _leftCam;
 
-    _projectionMatrix.frustum(tempCamera.leftfrustum,   tempCamera.rightfrustum,
-                              tempCamera.bottomfrustum, tempCamera.topfrustum,
-                              zPlanes.x, zPlanes.y);
+    _gpuBlock._ProjectionMatrix.frustum(tempCamera.leftfrustum,   tempCamera.rightfrustum,
+                                        tempCamera.bottomfrustum, tempCamera.topfrustum,
+                                        zPlanes.x, zPlanes.y);
 
     //translate to cancel parallax
-    _projectionMatrix.translate(tempCamera.modeltranslation, 0.0, 0.0);
+    _gpuBlock._ProjectionMatrix.translate(tempCamera.modeltranslation, 0.0, 0.0);
 
-    updateProjectionMatrix(zPlanes);
+    _gpuBlock._ZPlanesCombined.x = zPlanes.x;
+    _gpuBlock._ZPlanesCombined.y = zPlanes.y;
+    _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix * _gpuBlock._ProjectionMatrix);
+
+    _gfxDataBuffer->UpdateData(0, sizeof(GPUBlock), &_gpuBlock);
 }
 
 void GFXDevice::toggle2D(bool state) {
@@ -455,50 +423,46 @@ void GFXDevice::forceViewportInternal(const vec4<I32>& viewport){
 
 void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes){
     // Generate and upload all lighting data
-    //LightManager::getInstance().buildLightGrid(_viewMatrix, _projectionMatrix, _cachedZPlanes);
-    LightManager::getInstance().updateAndUploadLightData(_viewMatrix);
+    
+    //LightManager::getInstance().buildLightGrid(_viewMatrix, _projectionMatrix, _gpuBlock._ZPlanesCombined.xy());
+    LightManager::getInstance().updateAndUploadLightData(_gpuBlock._ViewMatrix);
 
     // Generate and upload per node data
     _sgnToDrawIDMap.clear();
-    
-    _matricesData.resize(0);
-    _materialData.resize(0);
+    _matricesData.clear();
 
-    if(visibleNodes.empty())
+    if(visibleNodes.empty()){
+        _nodeBuffer->SetData(NULL);
         return;
-
+    }
     _matricesData.reserve(visibleNodes.size());
-    _materialData.reserve(visibleNodes.size());
 
-    NodeData2 temp2; 
-    NodeData4 temp4; 
+    NodeData temp; 
     for(U16 i = 0; i < visibleNodes.size(); ++i){
         SceneGraphNode* crtNode = visibleNodes[i];
         Transform* transform = crtNode->getTransform();
         if (transform) {
-            temp2._matrix1.set(transform->interpolate(crtNode->getPrevTransform(), _interpolationFactor));
-            temp2._matrix2.set(temp2._matrix1 * _viewMatrix);
+            temp._matrix[0].set(crtNode->getWorldMatrix(_interpolationFactor));
+            temp._matrix[1].set(temp._matrix[0] * _gpuBlock._ViewMatrix);
             if(!transform->isUniformScaled())
-                temp2._matrix2.inverseTranspose();
+                temp._matrix[1].inverseTranspose();
         }else{
-            temp2._matrix1.identity();
-            temp2._matrix2.identity();
+            temp._matrix[0].identity();
+            temp._matrix[1].identity();
         }
     
-        temp2._matrix2.element(3,2,true) = (F32)LightManager::getInstance().getLights().size();
-        temp2._matrix2.element(3,3,true) = (F32)(crtNode->getComponent<AnimationComponent>() ? crtNode->getComponent<AnimationComponent>()->boneCount() : 0);
+        temp._matrix[1].element(3,2,true) = (F32)LightManager::getInstance().getLights().size();
+        temp._matrix[1].element(3,3,true) = (F32)(crtNode->getComponent<AnimationComponent>() ? crtNode->getComponent<AnimationComponent>()->boneCount() : 0);
         
-        temp4._matrix1.set(crtNode->getMaterialColorMatrix());
-        temp4._matrix2.set(crtNode->getMaterialPropertyMatrix());
+        temp._matrix[2].set(crtNode->getMaterialColorMatrix());
+        temp._matrix[3].set(crtNode->getMaterialPropertyMatrix());
 
-        _matricesData.push_back(temp2);
-        _materialData.push_back(temp4);
+        _matricesData.push_back(temp);
 
-        _sgnToDrawIDMap[crtNode->getGUID()] = vec2<I32>((I32)_matricesData.size() - 1, (I32)_materialData.size() - 1);
+        _sgnToDrawIDMap[crtNode->getGUID()] = (I32)_matricesData.size() - 1;
     }
 
-    _nodeMatricesBuffer->UpdateData(0,  _matricesData.size() * sizeof(NodeData2), &_matricesData.front(), true);
-    _nodeMaterialsBuffer->UpdateData(0, _materialData.size() * sizeof(NodeData4), &_materialData.front(), true);
+    _nodeBuffer->UpdateData(0,  _matricesData.size() * sizeof(NodeData), &_matricesData.front(), true);
 }
 
 bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) {
@@ -669,3 +633,4 @@ void GFXDevice::drawLines(const vectorImpl<Line >& lines,
     priv->end();
     priv->endBatch();
 }
+

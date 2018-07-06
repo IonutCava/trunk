@@ -65,8 +65,6 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         if(priv->_canZombify)
             priv->inUse(false);
     }
-    
-    _imShader->unbind();
 }
 
 void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
@@ -85,5 +83,5 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
 
     mat4<F32> offset(- cam.getViewDir() * 2, VECTOR3_ZERO, cam.getUpDir());
 
-    drawLines(_axisLines, offset * _viewMatrix.getInverse(), vec4<I32>(_renderTarget[RENDER_TARGET_SCREEN]->getWidth() - 128, 0, 128, 128), true, true);
+    drawLines(_axisLines, offset * _gpuBlock._ViewMatrix.getInverse(), vec4<I32>(_renderTarget[RENDER_TARGET_SCREEN]->getWidth() - 128, 0, 128, 128), true, true);
 }

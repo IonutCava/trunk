@@ -36,6 +36,7 @@
 class Transform;
 class SceneGraph;
 class SceneState;
+struct TransformValues;
 // This is the scene root node. All scene node's are added to it as child nodes
 class SceneRoot : public SceneNode{
 public:
@@ -143,12 +144,10 @@ public:
     Transform* const getTransform();
                void	 setTransform(Transform* const t);
 
-    Transform* const getPrevTransform();
-               void  setPrevTransform(Transform* const t);
-
     inline     void  silentDispose(const bool state)       {_silentDispose = state;}
     inline     void  useDefaultTransform(const bool state) {_noDefaultTransform = !state;}
 
+    const mat4<F32>& getWorldMatrix(D32 interpolationFactor = 1.0);
     /*Transform management*/
 
     /*Node State*/
@@ -239,9 +238,11 @@ private:
     BoundingBox _boundingBox;
     BoundingSphere _boundingSphere; ///<For faster visibility culling
 
-    Transform*	_transform;
-    Transform*  _transformPrevious;
-    mat4<F32>   _transformGlobalMatrixCache;
+    Transform*	     _transform;
+    TransformValues* _prevTransformValues;
+
+    ///The interpolated matrix cache. Represents an intermediate matrix between the current matrix and another, external matrix, interpolated by the given factor
+    mat4<F32> _worldMatrixInterp;
 
     U32 _instanceID;
     U32 _childQueue;

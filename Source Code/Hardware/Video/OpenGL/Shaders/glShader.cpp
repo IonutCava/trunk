@@ -8,6 +8,8 @@
 #include "Managers/Headers/ShaderManager.h"
 #include "Core/Headers/ParamHandler.h"
 
+#define _COMPILE_SHADER_OUTPUT_IN_RELEASE
+
 glShader::glShader(const std::string& name, const ShaderType& type, const bool optimise) : Shader(name, type, optimise)
 {
     switch (type) {
@@ -71,7 +73,7 @@ bool glShader::compile(){
 }
 
 void glShader::validate() {
-#if defined(_DEBUG) || defined(_PROFILE)
+#if defined(_DEBUG) || defined(_PROFILE) || defined(COMPILE_SHADER_OUTPUT_IN_RELEASE)
     GLint length = 0, status = 0;
 
     glGetShaderiv(_shader, GL_COMPILE_STATUS, &status);

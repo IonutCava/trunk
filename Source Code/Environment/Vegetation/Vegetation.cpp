@@ -338,7 +338,7 @@ void Vegetation::render(SceneGraphNode* const sgn, const SceneRenderState& scene
     _renderDrawCommand.setStateHash(_grassStateBlockHash);
     _renderDrawCommand.setInstanceCount(instanceCount);
     _renderDrawCommand.setLoD(1);
-    _renderDrawCommand.setDrawIDs(GFX_DEVICE.getDrawIDs(sgn->getGUID()));
+    _renderDrawCommand.setDrawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
     _renderDrawCommand.setShaderProgram(getDrawShader(currentRenderStage));
     buffer->getDrawAttribDescriptor(posLocation).setOffset(_instanceCountGrass * queryId);
     buffer->getDrawAttribDescriptor(scaleLocation).setOffset(_instanceCountGrass * queryId);

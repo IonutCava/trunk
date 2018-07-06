@@ -9,7 +9,7 @@ GLuint64 kOneSecondInNanoSeconds = 1000000000;
 glBufferLockManager::glBufferLockManager(bool _cpuUpdates)
 : mCPUUpdates(_cpuUpdates)
 {
-
+    _lastLockOffset = _lastLockRange = 0;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -32,8 +32,7 @@ void glBufferLockManager::WaitForLockedRange(size_t _lockBeginBytes, size_t _loc
         if (testRange.Overlaps(it->mRange)) {
             wait(&it->mSyncObj);
             cleanup(&*it);
-        }
-        else {
+        } else {
             swapLocks.push_back(*it);
         }
     }
@@ -49,6 +48,9 @@ void glBufferLockManager::LockRange(size_t _lockBeginBytes, size_t _lockLength)
     BufferLock newLock = { newRange, syncName };
 
     mBufferLocks.push_back(newLock);
+
+    _lastLockOffset = _lockBeginBytes;
+    _lastLockRange = _lockLength;
 }
 
 // --------------------------------------------------------------------------------------------------------------------

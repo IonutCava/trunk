@@ -56,12 +56,19 @@ public:
     void WaitForLockedRange(size_t _lockBeginBytes, size_t _lockLength);
     void LockRange(size_t _lockBeginBytes, size_t _lockLength);
 
+    inline void glBufferLockManager::WaitForLockedRange() {
+        if(_lastLockRange != 0)
+            WaitForLockedRange(_lastLockOffset, _lastLockRange);
+    }
+
 private:
     void wait(GLsync* _syncObj);
     void cleanup(BufferLock* _bufferLock);
 
     vectorImpl<BufferLock> mBufferLocks;
 
+    size_t _lastLockOffset;
+    size_t _lastLockRange;
     // Whether it's the CPU (true) that updates, or the GPU (false)
     bool mCPUUpdates;
 };

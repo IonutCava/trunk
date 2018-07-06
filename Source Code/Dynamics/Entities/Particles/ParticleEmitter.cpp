@@ -147,7 +147,7 @@ void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& 
 
         _drawCommand.setStateHash(_particleStateBlockHash);
         _drawCommand.setInstanceCount(_particlesCurrentCount);
-        _drawCommand.setDrawIDs(GFX_DEVICE.getDrawIDs(sgn->getGUID()));
+        _drawCommand.setDrawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
         _drawCommand.setShaderProgram(getDrawShader(currentRenderStage));
         GFX_DEVICE.submitRenderCommand(_particleGPUBuffer, _drawCommand);
     }
@@ -225,7 +225,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn
         return;
 
     if (_updateParticleEmitterBB) {
-        sgn->updateBoundingBoxTransform(sgn->getTransform()->getGlobalMatrix());
+        sgn->updateBoundingBoxTransform(sgn->getWorldMatrix());
         _updateParticleEmitterBB = false;
     }
 

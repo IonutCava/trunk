@@ -83,8 +83,8 @@ namespace Config
         const bool USE_2x2_TEXTURES = false;
     };
     namespace Lighting {
-        /// How many lights total to use in the application (8 should be enough)
-        const unsigned int MAX_LIGHTS_PER_SCENE = 8;
+        /// How many lights total to use in the application (4 should be enough)
+        const unsigned int MAX_LIGHTS_PER_SCENE = 4;
         /// How many lights (in order as passed to the shader for the node) should cast shadows
         const unsigned int MAX_SHADOW_CASTING_LIGHTS_PER_NODE = 2;
         /// Used for CSM or PSSM to determine the maximum number of frustum splits

@@ -118,7 +118,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 
     if( !glfwInit() )	return GLFW_INIT_ERROR;
 
-#if defined(_DEBUG) || defined(_PROFILE)
+#if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
 #if defined(_DEBUG)
     glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, GLFW_LOSE_CONTEXT_ON_RESET);
 #endif
@@ -177,7 +177,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
         return( GLFW_WINDOW_INIT_ERROR );
     }
 
-#if defined(_DEBUG) || defined(_PROFILE)
+#if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(&Divide::GLUtil::DebugCallback, (GLvoid*)(0));
     //Disable shader compiler errors (shader class handles that)
@@ -246,7 +246,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
         par.setParam("rendering.anisotropicFilteringLevel", maxAnisotropy);
     }
     //Time to select our shaders.
-    //We do not support OpenGL version lower than 3.0;
+    //We do not support OpenGL version lower than 4.0;
     if(major < 4){
         ERROR_FN(Locale::get("ERROR_OPENGL_NOT_SUPPORTED"));
         PRINT_FN(Locale::get("WARN_SWITCH_D3D"));

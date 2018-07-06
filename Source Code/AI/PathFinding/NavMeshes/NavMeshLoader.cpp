@@ -343,7 +343,7 @@ namespace Navigation {
                 dynamic_cast<Object3D* >(sn)->computeTriangleList();
                 const vectorImpl<vec3<U32> >& triangles = dynamic_cast<Object3D* >(sn)->getTriangles();
                 if(nodeType != TYPE_OBJECT3D || (nodeType == TYPE_OBJECT3D && dynamic_cast<Object3D* >(sn)->getType() != Object3D::TERRAIN)){
-                    mat4<F32> nodeTransform = sgn->getTransform()->getGlobalMatrix();
+                    mat4<F32> nodeTransform = sgn->getWorldMatrix();
                     for (U32 i = 0; i < vertices.size(); ++i ){
                         //Apply the node's transform and add the vertex to the NavMesh
                         addVertex(&outData, nodeTransform * (vertices[i]));

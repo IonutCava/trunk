@@ -42,8 +42,6 @@ public:
     virtual void unbind(bool resetActiveProgram = true);
     virtual U8   update(const U64 deltaTime);
 
-    void UpdateDrawCommand(U8 LoD);
-
     ///Attributes
     inline void Attribute(const std::string& ext, D32 value) { Attribute(cachedLoc(ext,false), value); }
     inline void Attribute(const std::string& ext, F32 value) { Attribute(cachedLoc(ext, false), value); }
@@ -191,8 +189,6 @@ protected:
     ///ID<->shaders pair
     typedef Unordered_map<U32, Shader* > ShaderIdMap;
     ShaderIdMap _shaderIdMap;
-    vectorImpl<U32> _lodVertLight;
-    vectorImpl<U32> _lodFragLight;
 
 private:
     Camera* _activeCamera;

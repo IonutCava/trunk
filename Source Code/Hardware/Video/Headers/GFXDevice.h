@@ -49,29 +49,28 @@ DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
     typedef Unordered_map<size_t, RenderStateBlock* > RenderStateMap;
     typedef boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<15> > LoadQueue;
 public:
-    struct NodeData2{
-        mat4<F32> _matrix1;
-        mat4<F32> _matrix2;
+    struct NodeData{
+        mat4<F32> _matrix[4];
 
-        NodeData2()
+        NodeData()
         {
-            _matrix1.zero();
-            _matrix2.zero();
+            _matrix[0].identity();
+            _matrix[1].identity();
+            _matrix[2].zero();
+            _matrix[3].zero();
         }
     };
-    struct NodeData4{
-        mat4<F32> _matrix1;
-        mat4<F32> _matrix2;
-        mat4<F32> _matrix3;
-        mat4<F32> _matrix4;
-        NodeData4()
-        {
-            _matrix1.zero();
-            _matrix2.zero();
-            _matrix3.zero();
-            _matrix4.zero();
-        }
+
+    struct GPUBlock {
+        mat4<F32> _ProjectionMatrix;
+        mat4<F32> _ViewMatrix;
+        mat4<F32> _ViewProjectionMatrix;
+        vec4<F32> _cameraPosition;
+        vec4<F32> _ViewPort;
+        vec4<F32> _ZPlanesCombined; //xy - current, zw - main scene 
+        vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
     };
+
     enum RenderTarget {
         RENDER_TARGET_SCREEN = 0,
         RENDER_TARGET_ANAGLYPH = 1,
@@ -156,7 +155,7 @@ public:
     void submitRenderCommand(GenericVertexData* const buffer, const GenericDrawCommand& cmd);
     void setBufferData(const GenericDrawCommand& cmd);
 
-    inline const vec2<I32>& getDrawIDs(I64 drawIDIndex) {
+    inline I32 getDrawID(I64 drawIDIndex) {
         assert(_sgnToDrawIDMap.find(drawIDIndex) != _sgnToDrawIDMap.end());
         return _sgnToDrawIDMap[drawIDIndex];
     }
@@ -235,7 +234,7 @@ public:
     /// Return or create a new state block using the given descriptor. DO NOT DELETE THE RETURNED STATE BLOCK! GFXDevice handles that!
     size_t getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor);
     const RenderStateBlockDescriptor& getStateBlockDescriptor(size_t renderStateBlockHash) const;
-    ///returs the standard state block
+    ///returns the standard state block
     inline size_t getDefaultStateBlock(bool noDepth = false)      { return noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash; } 
     /*//Render State Management */
 
@@ -315,9 +314,6 @@ protected:
     ///sets the view frustum to either the left or right eye position for anaglyph rendering
     void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false);
 
-    void updateViewMatrix(const vec3<F32>& eyePos);
-    void updateProjectionMatrix(const vec2<F32>& zPlanes);
-
 private:
 
     GFXDevice();
@@ -365,9 +361,6 @@ protected:
     size_t _state2DRenderingHash;    //<Special render state for 2D rendering
     size_t _stateDepthOnlyRenderingHash;
     mat4<F32> _textureMatrix;
-    mat4<F32> _viewMatrix;
-    mat4<F32> _projectionMatrix;
-    mat4<F32> _viewProjectionMatrix;
     ///The interpolation factor between the current and the last frame
     D32       _interpolationFactor;
     ///Line width management 
@@ -392,10 +385,6 @@ protected:
     bool    _previewDepthBuffer;
     ///getMatrix cache
     mat4<F32> _mat4Cache;
-    ///Default camera's cached zPlanes
-    vec2<F32> _cachedSceneZPlanes;
-    ///Current zPlanes
-    vec2<F32> _cachedZPlanes;
     /// AA system
     U8        _MSAASamples;
     U8        _FXAASamples;
@@ -413,13 +402,12 @@ protected:
     typedef std::stack<vec4<I32>, vectorImpl<vec4<I32> > > viewportStack;
     viewportStack _viewport;
 
-    vectorImpl<NodeData2 > _matricesData;
-    vectorImpl<NodeData4 > _materialData;
-    Unordered_map<I64, vec2<I32> > _sgnToDrawIDMap;
+    GPUBlock                _gpuBlock;
+    vectorImpl<NodeData >   _matricesData;
+    Unordered_map<I64, I32> _sgnToDrawIDMap;
 
     ShaderBuffer*  _gfxDataBuffer;
-    ShaderBuffer*  _nodeMaterialsBuffer;
-    ShaderBuffer*  _nodeMatricesBuffer;
+    ShaderBuffer*  _nodeBuffer;
   
     GenericDrawCommand _defaultDrawCmd;
 

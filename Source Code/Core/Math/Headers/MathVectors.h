@@ -129,15 +129,7 @@ public:
     inline T    projectionOnLine(const vec2 &vA, const vec2 &vB) const;
     /// compare 2 vectors within the specified tolerance
     inline bool compare(const vec2 &_v,F32 epsi = EPSILON_F32) const;
-    /// return the closest point on the line defined by the 2 points (A, B) and this vector
-    inline vec2 closestPointOnLine(const vec2 &vA, const vec2 &vB) const;
-    /// return the closest point on the line segment defined between the 2 points (A, B) and this vector
-    inline vec2 closestPointOnSegment(const vec2 &vA, const vec2 &vB) const;
-    /// lerp between the 2 specified vectors by the specified amount
-    inline vec2 lerp(const vec2 &u, const vec2 &v, T factor) const;
-    /// lerp between the 2 specified vectors by the specified amount for each component
-    inline vec2 lerp(const vec2 &u, const vec2 &v, const vec2& factor) const;
-     /// export the vector's components in the first 2 positions of the specified array
+    /// export the vector's components in the first 2 positions of the specified array
     inline void get(T * v) const;
 
     union {
@@ -148,6 +140,19 @@ public:
         T _v[2];
     };
 };
+
+/// return the closest point on the line defined by the 2 points (A, B) and this vector
+template <class T>
+inline vec2<T> closestPointOnLine(const vec2<T> &vA, const vec2<T> &vB);
+/// return the closest point on the line segment defined between the 2 points (A, B) and this vector
+template <class T>
+inline vec2<T> closestPointOnSegment(const vec2<T> &vA, const vec2<T> &vB);
+/// lerp between the 2 specified vectors by the specified amount
+template <class T>
+inline vec2<T> lerp(const vec2<T> &u, const vec2<T> &v, T factor);
+/// lerp between the 2 specified vectors by the specified amount for each component
+template <class T>
+inline vec2<T> lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T>& factor);
 
 template <class T>
 inline vec2<T> normalize(vec2<T>& vector) {
@@ -238,14 +243,6 @@ public:
     inline T    projectionOnLine(const vec3 &vA, const vec3 &vB) const;
     /// get the direction vector to the specified point
     inline vec3 direction(const vec3& u) const;
-    /// return the closest point on the line defined by the 2 points (A, B) and this vector
-    inline vec3 closestPointOnLine(const vec3 &vA, const vec3 &vB) const;
-    /// return the closest point on the line segment created between the 2 points (A, B) and this vector
-    inline vec3 closestPointOnSegment(const vec3 &vA, const vec3 &vB) const;
-    /// lerp between the 2 specified vectors by the specified amount
-    inline vec3 lerp(const vec3 &u, const vec3 &v, T factor) const;
-    /// lerp between the 2 specified vectors by the specified amount for each component
-    inline vec3 lerp(const vec3 &u, const vec3 &v, const vec3& factor) const;
     /// lerp between this and the specified vector by the specified amount
     inline void lerp(const vec3 &v, T factor);
     /// lerp between this and the specified vector by the specified amount for each component
@@ -279,7 +276,20 @@ public:
     };
 };
 
+/// return the closest point on the line defined by the 2 points (A, B) and this vector
 template <class T>
+inline vec3<T> closestPointOnLine(const vec3<T> &vA, const vec3<T> &vB);
+/// return the closest point on the line segment created between the 2 points (A, B) and this vector
+template <class T>
+inline vec3<T> closestPointOnSegment(const vec3<T> &vA, const vec3<T> &vB);
+/// lerp between the 2 specified vectors by the specified amount
+template <class T>
+inline vec3<T> lerp(const vec3<T> &u, const vec3<T> &v, T factor);
+/// lerp between the 2 specified vectors by the specified amount for each component
+template <class T>
+inline vec3<T> lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T>& factor);
+template <class T>
+
 inline vec3<T> normalize(vec3<T>& vector) {
     vector.normalize();
     return vector;
@@ -363,19 +373,12 @@ public:
     inline void reset()                  { this->x = this->y = this->z = this->w = 0;}
     /// compare 2 vectors within the specified tolerance
     inline bool compare(const vec4 &v,F32 epsi = EPSILON_F32) const;
-    /// lerp between the 2 specified vectors by the specified amount
-    inline vec4 lerp(const vec4 &u, const vec4 &v, T factor) const;
-    /// lerp between the 2 specified vectors by the specified amount for each component
-    inline vec4 lerp(const vec4 &u, const vec4 &v, const vec4& factor) const;
     /// swap the components  of this vector with that of the specified one
     inline void swap(vec4 *iv);
     /// swap the components  of this vector with that of the specified one
     inline void swap(vec4 &iv);
     /// transform the vector to unit length
     inline T    normalize();
-    /// min/max functions
-    inline vec4 min(const vec4 &v1, const vec4 &v2) { return vec4(std::min(v1.x, v2.x), std::min(v1.y, v2.y), std::min(v1.z, v2.z), std::min(v1.w, v2.w)); }
-    inline vec4 max(const vec4 &v1, const vec4 &v2) { return vec4(std::max(v1.x, v2.x), std::max(v1.y, v2.y), std::max(v1.z, v2.z), std::max(v1.w, v2.w)); }
     /// return the vector's length
     inline T    length()    const {return square_root_tpl(lengthSquared()); }
     /// return the squared distance of the vector
@@ -393,6 +396,21 @@ public:
     };
 };
 
+/// lerp between the 2 specified vectors by the specified amount
+template <class T>
+inline vec4<T> lerp(const vec4<T> &u, const vec4<T> &v, T factor);
+/// lerp between the 2 specified vectors by the specified amount for each component
+template <class T>
+inline vec4<T> lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T>& factor);
+/// min/max functions
+template <class T>
+inline vec4<T> min(const vec4<T> &v1, const vec4<T> &v2) {
+    return vec4<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y), std::min(v1.z, v2.z), std::min(v1.w, v2.w)); 
+}
+template <class T>
+inline vec4<T> max(const vec4<T> &v1, const vec4<T> &v2) { 
+    return vec4<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y), std::max(v1.z, v2.z), std::max(v1.w, v2.w));
+}
 template <class T>
 inline vec4<T> normalize(vec4<T>& vector) {
     vector.normalize();

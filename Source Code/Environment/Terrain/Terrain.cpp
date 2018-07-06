@@ -142,7 +142,7 @@ ShaderProgram* const Terrain::getDrawShader(RenderStage renderStage){
 void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     size_t drawStateHash = getDrawStateHash(currentRenderStage);
     ShaderProgram* drawShader = getDrawShader(currentRenderStage);
-    const vec2<I32>& drawIDs = GFX_DEVICE.getDrawIDs(sgn->getGUID());
+    I32 drawID = GFX_DEVICE.getDrawID(sgn->getGUID());
 
     if(_terrainInView){
         // draw ground
@@ -157,7 +157,7 @@ void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
         for(GenericDrawCommand& cmd : _drawCommands){
             cmd.setStateHash(drawStateHash);
             cmd.setShaderProgram(drawShader);
-            cmd.setDrawIDs(drawIDs);
+            cmd.setDrawID(drawID);
         }
 
         GFX_DEVICE.submitRenderCommand(getGeometryVB(), drawCommands());
@@ -169,7 +169,7 @@ void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
     if (GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE | Z_PRE_PASS_STAGE) && _planeInView){
         GenericDrawCommand cmd(TRIANGLE_STRIP, 0, 0);
         cmd.setStateHash(drawStateHash);
-        cmd.setDrawIDs(drawIDs);
+        cmd.setDrawID(drawID);
         cmd.setShaderProgram(drawShader);
         GFX_DEVICE.submitRenderCommand(_plane->getGeometryVB(), cmd);
     }

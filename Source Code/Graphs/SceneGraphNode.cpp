@@ -20,7 +20,6 @@ SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GU
                                                   _elapsedTime(0ULL),
                                                   _parent(nullptr),
                                                   _transform(nullptr),
-                                                  _transformPrevious(nullptr),
                                                   _loaded(true),
                                                   _wasActive(true),
                                                   _active(true),
@@ -41,6 +40,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GU
                                                   _usageContext(NODE_DYNAMIC)
 {
     assert(_node != nullptr);
+    _prevTransformValues = New TransformValues();
 
     _components[SGNComponent::SGN_COMP_ANIMATION]  = nullptr;
     _components[SGNComponent::SGN_COMP_NAVIGATION] = New NavigationComponent(this);
@@ -62,6 +62,7 @@ SceneGraphNode::~SceneGraphNode(){
     }
     //and delete the transform bound to this node
     SAFE_DELETE(_transform);
+    SAFE_DELETE(_prevTransformValues);
     _children.clear();
     _components.clear();
 }
@@ -206,7 +207,7 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
             return this;
         }
 
-        //The current node isn't the one we wan't, so recursively check all children
+        //The current node isn't the one we want, so recursively check all children
         FOR_EACH(NodeChildren::value_type& it, _children){
             returnValue = it.second->findNode(name);
             // if it is not nullptr it is the node we are looking for so just pass it through
@@ -240,32 +241,6 @@ void SceneGraphNode::setTransform(Transform* const t) {
     }
 }
 
-void SceneGraphNode::setPrevTransform(Transform* const t) {
-    if(!t && _transformPrevious) {
-        SAFE_DELETE(_transformPrevious);
-        return;
-    }
-
-    if(!t) return;
-
-    if(!_transformPrevious){
-        _transformPrevious = New Transform();
-        assert(_transformPrevious);
-    }
-
-    _transformPrevious->clone(t);
-}
-
-Transform* const SceneGraphNode::getPrevTransform(){
-    if(!_noDefaultTransform && !_transformPrevious){
-        _transformPrevious = New Transform();
-        assert(_transformPrevious);
-        _transformPrevious->clone(getTransform());
-    }
-
-    return _transformPrevious;
-}
-
 //Get the node's transform
 Transform* const SceneGraphNode::getTransform(){
     //A node does not necessarily have a transform. If this is the case, we can either create a default one or return nullptr.
@@ -276,4 +251,13 @@ Transform* const SceneGraphNode::getTransform(){
         _isReady = true;
     }
     return _transform;
+}
+
+const mat4<F32>& SceneGraphNode::getWorldMatrix(D32 interpolationFactor){
+    if(getTransform()){
+        _worldMatrixInterp.set(_transform->interpolate(*_prevTransformValues, interpolationFactor));
+        _transform->getValues(*_prevTransformValues);
+    }
+
+    return _worldMatrixInterp;
 }

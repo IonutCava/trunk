@@ -65,11 +65,9 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _elapsedTime += deltaTime;
 
     // update transform
-    if (getTransform()) {
+    if (getTransform())
         _transform->setParentTransform(_parent ? _parent->getTransform() : nullptr);
-        _transform->update(deltaTime);
-    }
-    
+        
     // update all of the internal components (animation, physics, etc)
     FOR_EACH(NodeComponents::value_type& it, _components)
         if (it.second) it.second->update(deltaTime);
@@ -85,7 +83,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     }
 
     if (_boundingBoxDirty){
-        if (_transform) updateBoundingBoxTransform(_transform->getGlobalMatrix());
+        if (_transform) updateBoundingBoxTransform(getWorldMatrix());
         if (_parent)    _parent->getBoundingBox().setComputed(false);
 
         _boundingBoxDirty = false;

@@ -46,7 +46,7 @@ void SubMesh::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
     assert(_parentMesh != nullptr);
 
     _drawCmd.setLoD(getCurrentLOD());
-    _drawCmd.setDrawIDs(GFX_DEVICE.getDrawIDs(sgn->getGUID()));
+    _drawCmd.setDrawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
     _drawCmd.setStateHash(getDrawStateHash(currentRenderStage));
     _drawCmd.setShaderProgram(getDrawShader(currentRenderStage));
     _parentMesh->addDrawCommand(_drawCmd);

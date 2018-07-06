@@ -1,7 +1,8 @@
+#if defined(FRAG_SHADER)
+
 const int LIGHT_DIRECTIONAL = 0;
 const int LIGHT_OMNIDIRECTIONAL = 1;
 const int LIGHT_SPOT = 2;
-
 
 struct Light {
     vec4   _diffuse;     //< rgb = diffuse,  w = ambientFactor;
@@ -16,8 +17,6 @@ layout(binding = SHADER_BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock
 {
     Light dvd_LightSource[MAX_LIGHTS_PER_SCENE];
 };
-
-#if defined(FRAG_SHADER)
 
 struct Shadow {
     mat4  _lightVP0;
@@ -36,18 +35,10 @@ layout(binding = SHADER_BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 uniform vec3 dvd_lightAmbient;
 #endif
 
-#if defined(VERT_SHADER)
-#define VARYING out
-#elif defined(FRAG_SHADER)
-#define VARYING in
-#endif
-
-/// Light Info is used internally to communicate between vertex and fragment shaders
-VARYING LightInfo {
-    vec3  _lightDirection;
-    smooth float _attenuation;
-} _lightInfo[MAX_LIGHTS_PER_SCENE];
-
 VARYING vec3 _normalWV;
+#if defined(COMPUTE_TBN)
+VARYING vec3 _tangentWV;
+VARYING vec3 _bitangentWV;
+#endif
 VARYING vec3 _viewDirection;
 flat VARYING uint _lightCount;

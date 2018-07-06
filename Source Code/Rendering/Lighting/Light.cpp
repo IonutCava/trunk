@@ -103,7 +103,7 @@ void Light::onCameraChange(){
         }
 
         if(_updateLightBB)
-            _lightSGN->updateBoundingBoxTransform(_lightSGN->getTransform()->getGlobalMatrix());
+            _lightSGN->updateBoundingBoxTransform(_lightSGN->getWorldMatrix());
     }
 
     _updateLightBB = false;

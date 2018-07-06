@@ -89,7 +89,7 @@ void Sky::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderS
 
     GenericDrawCommand cmd;
     cmd.setStateHash(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);
-    cmd.setDrawIDs(GFX_DEVICE.getDrawIDs(sgn->getGUID()));
+    cmd.setDrawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
     cmd.setShaderProgram(_skyShader);
     GFX_DEVICE.submitRenderCommand(_sky->getGeometryVB(), cmd);
 }

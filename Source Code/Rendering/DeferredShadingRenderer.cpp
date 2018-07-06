@@ -164,7 +164,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
 
     GenericDrawCommand cmd;
     cmd.setStateHash(GFX_DEVICE.getDefaultStateBlock(true));
-    cmd.setDrawIDs(GFX_DEVICE.getDrawIDs(0));
+    cmd.setDrawID(GFX_DEVICE.getDrawID(0));
     cmd.setShaderProgram(_previewDeferredShader);
     if(_debugView){
         _previewDeferredShader->bind();

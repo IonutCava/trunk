@@ -628,8 +628,8 @@ namespace XML {
     Material* loadMaterial(const std::string &file){
         ParamHandler &par = ParamHandler::getInstance();
         std::string location = par.getParam<std::string>("scriptLocation") + "/" +
-                                    par.getParam<std::string>("scenesLocation") + "/" +
-                                    par.getParam<std::string>("currentScene") + "/materials/";
+                               par.getParam<std::string>("scenesLocation") + "/" +
+                               par.getParam<std::string>("currentScene") + "/materials/";
 
         return loadMaterialXML(location+file);
     }
@@ -708,6 +708,7 @@ namespace XML {
 
     void dumpMaterial(Material& mat){
         if(!mat.isDirty()) return;
+
         ptree pt_writer;
         ParamHandler &par = ParamHandler::getInstance();
         std::string file = mat.getName();

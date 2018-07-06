@@ -4,25 +4,19 @@ Transform::Transform()	: GUIDWrapper(),
                           _dirty(true),
                           _physicsDirty(true),
                           _rebuildMatrix(true),
-                          _hasParentTransform(false),
-                          /*_changedLastFrame(false),
-                          /_changedLastFramePrevious(false),*/
-                          _scale(vec3<F32>(1.0f)),
-                          _translation(vec3<F32>())
+                          _hasParentTransform(false)
 
 {
-    _orientation.identity();
+    _transformValues._scale.set(1.0f);
+    _transformValues._translation.set(0.0f);
+    _transformValues._orientation.identity();
     _worldMatrix.identity();
-    WriteLock w_lock(_parentLock);
     _parentTransform = nullptr;
 }
 
 Transform::Transform(const Quaternion<F32>& orientation,
                      const vec3<F32>& translation,
                      const vec3<F32>& scale) :  GUIDWrapper(),
-                                                _orientation(orientation),
-                                                _translation(translation),
-                                                _scale(scale),
                                                 _dirty(true),
                                                 _physicsDirty(true),
                                                 _rebuildMatrix(true),
@@ -30,8 +24,10 @@ Transform::Transform(const Quaternion<F32>& orientation,
                                                 _changedLastFrame(false),
                                                 _changedLastFramePrevious(false)*/
 {
+    _transformValues._scale.set(scale);
+    _transformValues._translation.set(translation);
+    _transformValues._orientation.set(orientation);
     _worldMatrix.identity();
-    WriteLock w_lock(_parentLock);
     _parentTransform = nullptr;
 }
 
@@ -46,12 +42,12 @@ const mat4<F32>& Transform::applyTransforms(){
             // Ordering - a la Ogre:
             _worldMatrix.identity();
             //    1. Scale
-            _worldMatrix.setScale(_scale);
+            _worldMatrix.setScale(_transformValues._scale);
             //    2. Rotate
-            _worldMatrix *= _orientation.getMatrix();
+            _worldMatrix *= _transformValues._orientation.getMatrix();
         }
         //    3. Translate
-        _worldMatrix.setTranslation(_translation);
+        _worldMatrix.setTranslation(_transformValues._translation);
 
         this->clean();
     }
@@ -59,47 +55,41 @@ const mat4<F32>& Transform::applyTransforms(){
     return _worldMatrix;
 }
 
-const mat4<F32>& Transform::interpolate(Transform* const transform, const D32 factor){
-   if(transform && factor < 0.99){
-      /*mat4<F32> prevMatrix = transform->getGlobalMatrix().transpose();
-        vec3<F32> scale, translation;
-        Quaternion<F32> orientation;
-        Util::Mat4::decompose(prevMatrix, scale, orientation, translation);
+mat4<F32> Transform::interpolate(const TransformValues& prevTransforms, const D32 factor){
+   if(factor < 0.95 && false){
+        mat4<F32> interpMatrix;
+        Quaternion<F32> prevOrientation(prevTransforms._orientation);
 
-        scale.lerp(getScale(), factor);
-        translation.lerp(getPosition(), factor);
-        orientation.slerp(getOrientation(), factor);
-    
-        _worldMatrixInterp.identity();
-        _worldMatrix.setScale(scale);
-        _worldMatrixInterp *= orientation.getMatrix();
-        _worldMatrixInterp.setTranslation(translation);
+        prevOrientation.slerp(getOrientation(), (F32)factor);
 
-        return _worldMatrixInterp;*/
-        _worldMatrixInterp.set(getGlobalMatrix());
+        interpMatrix.setScale(lerp(prevTransforms._scale, getLocalScale(), (F32)factor));
+        interpMatrix *= prevOrientation.getMatrix();
+        interpMatrix.setTranslation(lerp(prevTransforms._translation, getLocalPosition(), (F32)factor));
+
+        return interpMatrix * getParentMatrix();
     }
-    _worldMatrixInterp.set(getGlobalMatrix());
 
-    return _worldMatrixInterp;
+    return getGlobalMatrix();
+}
+
+void Transform::getValues(TransformValues& transforms) {
+    transforms._scale.set(getLocalScale());
+    transforms._orientation.set(getLocalOrientation());
+    transforms._translation.set(getLocalPosition());
 }
 
 bool Transform::compare(const Transform* const t){
     ReadLock r_lock(_lock);
-    return (_scale.compare(t->_scale) &&
-            _orientation.compare(t->_orientation) &&
-            _translation.compare(t->_translation));
+    return (_transformValues._scale.compare(t->_transformValues._scale) &&
+            _transformValues._orientation.compare(t->_transformValues._orientation) &&
+            _transformValues._translation.compare(t->_transformValues._translation));
 }
 
 void Transform::identity() {
     WriteLock w_lock(_lock);
-    _scale = vec3<F32>(1.0f);
-    _translation.reset();
-    _orientation.identity();
+    _transformValues._scale = vec3<F32>(1.0f);
+    _transformValues._translation.reset();
+    _transformValues._orientation.identity();
     _worldMatrix.identity();
     clean();
-}
-
-void Transform::update(const U64 deltaTime) {
-    //_changedLastFramePrevious = (_changedLastFrame == true);
-    //_changedLastFrame = false;
 }

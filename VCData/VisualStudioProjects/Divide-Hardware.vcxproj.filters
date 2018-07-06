@@ -441,6 +441,9 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\Framebuffer\Headers\glFramebuffer.h">
       <Filter>Video\OpenGL\Buffers\Framebuffer\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBuffer\Headers\VertexDataInterface.h">
+      <Filter>Video\Buffers\VertexBuffer\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.cpp">

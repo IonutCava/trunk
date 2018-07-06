@@ -56,12 +56,14 @@ enum MATRIX_MODE;
 #		//pragma GCC diagnostic ignored "-Wall"
 #endif
 
+//#define _GLDEBUG_IN_RELEASE
+
 namespace Divide {
     namespace GLUtil {
         void glfw_focus_callback(GLFWwindow *window, I32);
         void glfw_error_callback(GLint error, const char* description);
         void initGlew();
-#if defined(_DEBUG) || defined(_PROFILE)
+#if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
         ///from: https://sites.google.com/site/opengltutorialsbyaks/introduction-to-opengl-4-1---tutorial-05
         ///Check the current operation for errors
         void APIENTRY CALLBACK DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);

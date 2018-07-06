@@ -324,8 +324,13 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, Mesh* parentMes
 Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* source, const std::string& materialName) {
     // See if the material already exists in a cooked state (XML file)
     STUBBED("LOADING MATERIALS FROM XML IS DISABLED FOR NOW! - Ionut")
-    Material* tempMaterial = nullptr;//XML::loadMaterial(materialName);
-    if(tempMaterial) return tempMaterial;
+    const bool DISABLE_MAT_FROM_FILE = true;
+
+    Material* tempMaterial = nullptr;
+    if(!DISABLE_MAT_FROM_FILE){
+        tempMaterial = XML::loadMaterial(materialName);
+        if(tempMaterial) return tempMaterial;
+    }
 
     // If it's not defined in an XML File, see if it was previously loaded by the Resource Cache
     bool skip = (FindResourceImpl<Material>(materialName) != nullptr);

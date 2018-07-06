@@ -329,6 +329,7 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\ShaderBuffer\Headers\ShaderBuffer.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBuffer\Headers\GenericVertexData.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBuffer\Headers\VertexBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBuffer\Headers\VertexDataInterface.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBuffer\Headers\d3dRenderTarget.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\PixelBuffer\Headers\d3dPixelBuffer.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\ShaderBuffer\Headers\d3dConstantBuffer.h" />

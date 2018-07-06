@@ -3,7 +3,6 @@
 #include "vbInputData.vert"
 #include "lightInput.cmn"
 
-out vec3 _pixToLight;		
 out vec3 _pixToEye;
 out vec4 _vertexWVP;
 
@@ -11,7 +10,6 @@ void main(void)
 {
     computeData();
 
-    _pixToLight = -(dvd_LightSource[0]._position.xyz);
     _pixToEye   = -vec3(dvd_ViewMatrix * _vertexW);
 
     _vertexWVP = dvd_ViewProjectionMatrix * _vertexW;
@@ -24,7 +22,6 @@ void main(void)
 
 in vec4 _vertexWVP;
 
-in vec3 _pixToLight;
 in vec3 _pixToEye;
 
 out vec4 _colorOut;
@@ -74,7 +71,7 @@ void main (void)
     vec2 uvFinalRefract = uvReflection.xy + _noiseFactor * normal.xy;
 
     vec3 N = normalize(dvd_NormalMatrix * normal);
-    vec3 L = normalize(_pixToLight);
+    vec3 L = normalize(-(dvd_LightSource[0]._position.xyz));
     vec3 V = normalize(_pixToEye);
 
     float iSpecular = pow(clamp(dot(normalize(reflect(-L, N)), V), 0.0, 1.0), _waterShininess);

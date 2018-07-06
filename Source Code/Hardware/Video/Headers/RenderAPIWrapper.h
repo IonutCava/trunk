@@ -51,21 +51,21 @@ struct IndirectDrawCommand {
 };
 
 struct GenericDrawCommand {
-    U8  _queryID;
-    U8  _lodIndex;
+    U8     _queryID;
+    U8     _lodIndex;
+    bool   _drawToBuffer;
+    I32    _drawID;
     size_t _stateHash;
-    bool _drawToBuffer;
-    vec2<I32> _drawIDs;
     PrimitiveType _type;
     IndirectDrawCommand _cmd;
     ShaderProgram*      _shaderProgram;
 
-    inline void setLoD(U8 lod)                       { _lodIndex = lod; }
-    inline void setQueryID(U8 queryID)               { _queryID = queryID; }
-    inline void setStateHash(size_t hashValue)       { _stateHash = hashValue; }
-    inline void setDrawToBuffer(bool state)          { _drawToBuffer = state; }
-    inline void setInstanceCount(U32 count)          { _cmd.instanceCount = count; }
-    inline void setDrawIDs(const vec2<I32>& drawIDs) { _drawIDs.set(drawIDs); }
+    inline void setLoD(U8 lod)                 { _lodIndex = lod; }
+    inline void setQueryID(U8 queryID)         { _queryID = queryID; }
+    inline void setStateHash(size_t hashValue) { _stateHash = hashValue; }
+    inline void setDrawToBuffer(bool state)    { _drawToBuffer = state; }
+    inline void setInstanceCount(U32 count)    { _cmd.instanceCount = count; }
+    inline void setDrawID(I32 drawID)          { _drawID = drawID; }
 
     inline void setShaderProgram(ShaderProgram* const program) { _shaderProgram = program; }
 
@@ -77,13 +77,13 @@ struct GenericDrawCommand {
                                                                                                       _lodIndex(0),
                                                                                                       _stateHash(0),
                                                                                                       _queryID(0),
+                                                                                                      _drawID(-1),
                                                                                                       _drawToBuffer(false),
                                                                                                       _shaderProgram(nullptr)
     {
         _cmd.count = count;
         _cmd.firstIndex = firstIndex;
         _cmd.instanceCount = instanceCount;
-        _drawIDs.set(-1);
     }
 };
 

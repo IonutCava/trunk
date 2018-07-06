@@ -33,8 +33,9 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
 
     GL_API::setActiveBuffer(_target, _UBOid);
     if(_persistentMapped) {
-        glBufferStorage(_target, primitiveSize * primitiveCount, NULL, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT | GL_DYNAMIC_STORAGE_BIT);
-        _mappedBuffer = glMapBufferRange(_target, 0, primitiveSize * primitiveCount, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+        GLenum usageFlag = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+        glBufferStorage(_target, primitiveSize * primitiveCount, NULL, usageFlag | GL_DYNAMIC_STORAGE_BIT);
+        _mappedBuffer = glMapBufferRange(_target, 0, primitiveSize * primitiveCount, usageFlag);
     }else{
         glBufferData(_target, primitiveSize * primitiveCount, NULL, GL_DYNAMIC_DRAW);
     }
@@ -46,8 +47,8 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size, const GLvoid 
 
     if(invalidateBuffer)
         glInvalidateBufferData(_UBOid);
-
-    if(size == 0)
+    
+    if(size == 0 || !data)
         return;
 
     if(_persistentMapped) {
@@ -63,12 +64,16 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size, const GLvoid 
 
 bool glUniformBuffer::BindRange(Divide::ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const {
     DIVIDE_ASSERT(_UBOid != 0, "glUniformBuffer error: Tried to bind an uninitialized UBO");
+    if(_persistentMapped)
+        _lockManager->WaitForLockedRange();
     glBindBufferRange(_target, bindIndex, _UBOid, _primitiveSize * offsetElementCount, _primitiveSize * rangeElementCount);
     return true;
 }
 
 bool glUniformBuffer::Bind(Divide::ShaderBufferLocation bindIndex) const {
     DIVIDE_ASSERT(_UBOid != 0, "glUniformBuffer error: Tried to bind an uninitialized UBO");
+    if(_persistentMapped)
+        _lockManager->WaitForLockedRange();
     glBindBufferBase(_target, bindIndex, _UBOid);
     return true;
 }

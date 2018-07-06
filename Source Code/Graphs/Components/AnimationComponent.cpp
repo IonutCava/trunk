@@ -92,7 +92,7 @@ bool AnimationComponent::playNextAnimation() {
 void AnimationComponent::renderSkeleton(){
     if (!_skeletonAvailable || !GET_ACTIVE_SCENE()->renderState().drawSkeletons()) return;
     // update possible animation
-    _animator->setGlobalMatrix(_parentSGN->getTransform()->getGlobalMatrix());
+    _animator->setGlobalMatrix(_parentSGN->getWorldMatrix());
     _animator->RenderSkeleton(_currentAnimIndex, _currentTimeStamp);
 }
 

@@ -35,8 +35,6 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _fogColorLoc       = -1;
     _fogDensityLoc     = -1;
     _prevLOD           = 250;
-    _lodVertLight.resize(2);
-    _lodFragLight.resize(2);
 }
 
 ShaderProgram::~ShaderProgram()
@@ -123,11 +121,6 @@ bool ShaderProgram::generateHWResource(const std::string& name){
     _fogColorLoc         = this->cachedLoc("fogColor");
     _fogDensityLoc       = this->cachedLoc("fogDensity");
 
-    _lodVertLight[0] = GetSubroutineIndex(VERTEX_SHADER, "computeLightInfoLOD0");
-    _lodVertLight[1] = GetSubroutineIndex(VERTEX_SHADER, "computeLightInfoLOD1");
-
-    _lodFragLight[0] = GetSubroutineIndex(FRAGMENT_SHADER, "computeLightInfoLOD0Frag");
-    _lodFragLight[1] = GetSubroutineIndex(FRAGMENT_SHADER, "computeLightInfoLOD1Frag");
     _dirty = true;
 
     return true;
@@ -136,16 +129,6 @@ bool ShaderProgram::generateHWResource(const std::string& name){
 bool ShaderProgram::bind(){
     _bound = _wasBound = true;
     return _shaderProgramId != 0;
-}
-
-void ShaderProgram::UpdateDrawCommand(U8 LoD) {
-    SetSubroutine(VERTEX_SHADER,   LoD == 0 ? _lodVertLight[0] : _lodVertLight[1]);
-    SetSubroutine(FRAGMENT_SHADER, LoD == 0 ? _lodFragLight[0] : _lodFragLight[1]);
-
-    if (LoD != _prevLOD){
-        Uniform("lodLevel", (I32)LoD);
-        _prevLOD = LoD;
-    }
 }
 
 void ShaderProgram::unbind(bool resetActiveProgram){

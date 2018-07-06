@@ -101,44 +101,11 @@ inline bool vec2<T>::compare(const vec2 &_v,F32 epsi = EPSILON_F32) const {
             FLOAT_COMPARE_TOLERANCE(this->y,_v.y,epsi));
 }
 
-/// return the coordinates of the closest point from *this to the line determined by points vA and vB
-template<class T>
-inline vec2<T> vec2<T>::closestPointOnLine(const vec2 &vA, const vec2 &vB) const {
-    return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA);
-}
-
-/// return the coordinates of the closest point from *this to the segment determined by points vA and vB
-template<class T>
-inline vec2<T> vec2<T>::closestPointOnSegment(const vec2 &vA, const vec2 &vB) const {
-    T factor = this->projectionOnLine(vA, vB);
-
-    if (factor <= 0)
-        return vA;
-
-    if (factor >= 1)
-        return vB;
-
-    return (((vB-vA) * factor) + vA);
-}
-
 /// return the projection factor from *this to the line determined by points vA and vB
 template<class T>
 inline T vec2<T>::projectionOnLine(const vec2 &vA, const vec2 &vB) const {
     vec2 v(vB - vA);
     return v.dot(*this - vA) / v.dot(v);
-}
-
-/// linear interpolation between 2 vectors
-template<class T>
-inline vec2<T> vec2<T>::lerp(const vec2 &u, const vec2 &v, T factor) const {
-    return ((u * (1 - factor)) + (v * factor));
-}
-
-/// linear interpolation between 2 vectors based on separate x and y factors
-template<class T>
-inline vec2<T> vec2<T>::lerp(const vec2 &u, const vec2 &v, const vec2& factor) const {
-    return (vec2((u.x * (1 - factor.x)) + (v.x * factor.x),
-                 (u.y * (1 - factor.y)) + (v.y * factor.y)));
 }
 
 /// get the dot product between this vector and the specified one
@@ -170,6 +137,38 @@ template<class T>
 inline void vec2<T>::get(T * v) const {
     v[0] = (T)this->_v[0];
     v[1] = (T)this->_v[1];
+}
+
+/// return the coordinates of the closest point from *this to the line determined by points vA and vB
+template<class T>
+inline vec2<T> closestPointOnLine(const vec2<T>  &vA, const vec2<T>  &vB) {
+    return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA);
+}
+
+/// return the coordinates of the closest point from *this to the segment determined by points vA and vB
+template<class T>
+inline vec2<T> closestPointOnSegment(const vec2<T>  &vA, const vec2<T>  &vB) {
+    T factor = this->projectionOnLine(vA, vB);
+
+    if (factor <= 0)
+        return vA;
+
+    if (factor >= 1)
+        return vB;
+
+    return (((vB-vA) * factor) + vA);
+}
+/// linear interpolation between 2 vectors
+template<class T>
+inline vec2<T> lerp(const vec2<T> &u, const vec2<T>  &v, T factor) {
+    return ((u * (1 - factor)) + (v * factor));
+}
+
+/// linear interpolation between 2 vectors based on separate x and y factors
+template<class T>
+inline vec2<T> lerp(const vec2<T>  &u, const vec2<T> &v, const vec2<T> & factor) {
+    return (vec2((u.x * (1 - factor.x)) + (v.x * factor.x),
+                 (u.y * (1 - factor.y)) + (v.y * factor.y)));
 }
 
 /*
@@ -260,26 +259,6 @@ inline vec3<T> vec3<T>::direction(const vec3& u) const {
     return vector;
 }
 
-/// return the closest point on the line defined by the 2 points (A, B) and this vector
-template<class T>
-inline vec3<T> vec3<T>::closestPointOnLine(const vec3 &vA, const vec3 &vB) const {
-    return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA);
-}
-
-/// return the closest point on the line segment created between the 2 points (A, B) and this vector
-template<class T>
-inline vec3<T> vec3<T>::closestPointOnSegment(const vec3 &vA, const vec3 &vB) const {
-    T factor = this->projectionOnLine(vA, vB);
-
-    if (factor <= 0.0f)
-        return vA;
-
-    if (factor >= 1.0f)
-        return vB;
-
-    return (((vB-vA) * factor) + vA);
-}
-
 /// project this vector on the line defined by the 2 points(A, B)
 template<class T>
 inline T vec3<T>::projectionOnLine(const vec3 &vA, const vec3 &vB) const {
@@ -287,21 +266,7 @@ inline T vec3<T>::projectionOnLine(const vec3 &vA, const vec3 &vB) const {
     return vector.dot(*this - vA) / vector.dot(vector);
 }
 
-/// lerp between the 2 specified vectors by the specified amount
-template<class T>
-inline vec3<T> vec3<T>::lerp(const vec3 &u, const vec3 &v, T factor) const {
-    return ((u * (1 - factor)) + (v * factor));
-}
-
-/// lerp between the 2 specified vectors by the specified amount for each component
-template<class T>
-inline vec3<T> vec3<T>::lerp(const vec3 &u, const vec3 &v, const vec3& factor) const {
-    return (vec3((u.x * (1 - factor.x)) + (v.x * factor.x),
-                 (u.y * (1 - factor.y)) + (v.y * factor.y),
-                 (u.z * (1 - factor.z)) + (v.z * factor.z)));
-}
-
- /// lerp between this and the specified vector by the specified amount
+/// lerp between this and the specified vector by the specified amount
 template<class T>
 inline void vec3<T>::lerp(const vec3 &v, T factor) {
     set((*this * (1 - factor)) + (v * factor));
@@ -377,6 +342,39 @@ inline vec3<T>::vec3(const vec4<T> &v) {
     this->z = v.z;
 }
 
+/// return the closest point on the line defined by the 2 points (A, B) and this vector
+template<class T>
+inline vec3<T> closestPointOnLine(const vec3<T> &vA, const vec3<T> &vB) {
+    return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA);
+}
+
+/// return the closest point on the line segment created between the 2 points (A, B) and this vector
+template<class T>
+inline vec3<T> closestPointOnSegment(const vec3<T>  &vA, const vec3<T>  &vB) {
+    T factor = this->projectionOnLine(vA, vB);
+
+    if (factor <= 0.0f)
+        return vA;
+
+    if (factor >= 1.0f)
+        return vB;
+
+    return (((vB-vA) * factor) + vA);
+}
+
+/// lerp between the 2 specified vectors by the specified amount
+template<class T>
+inline vec3<T> lerp(const vec3<T>  &u, const vec3<T>  &v, T factor) {
+    return ((u * (1 - factor)) + (v * factor));
+}
+
+/// lerp between the 2 specified vectors by the specified amount for each component
+template<class T>
+inline vec3<T> lerp(const vec3<T>  &u, const vec3<T>  &v, const vec3<T> & factor) {
+    return (vec3<T> ((u.x * (1 - factor.x)) + (v.x * factor.x),
+                     (u.y * (1 - factor.y)) + (v.y * factor.y),
+                     (u.z * (1 - factor.z)) + (v.z * factor.z)));
+}
 /*
 *  vec4 inline definitions
 */
@@ -390,25 +388,10 @@ inline bool vec4<T>::compare(const vec4 &v,F32 epsi = EPSILON_F32) const {
             FLOAT_COMPARE_TOLERANCE((F32)this->w, (F32)v.w, epsi));
 }
 
-/// lerp between the 2 vectors by the specified amount
-template<class T>
-inline vec4<T> vec4<T>::lerp(const vec4 &u, const vec4 &v, T factor) const {
-    return ((u * (1 - factor)) + (v * factor));
-}
-
 /// round all four values
 template<class T>
 inline void vec4<T>::round(){
     set((T)std::roundf(this->x), (T)std::roundf(this->y), (T)std::roundf(this->z), (T)std::roundf(this->w));
-}
-
-/// lerp between the 2 specified vectors by the specified amount for each component
-template<class T>
-inline vec4<T> vec4<T>::lerp(const vec4 &u, const vec4 &v, const vec4& factor) const {
-    return (vec4((u.x * (1 - factor.x)) + (v.x * factor.x),
-                 (u.y * (1 - factor.y)) + (v.y * factor.y),
-                 (u.z * (1 - factor.z)) + (v.z * factor.z),
-                 (u.w * (1 - factor.w)) + (v.w * factor.w)));
 }
 
 /// swap this vector's values with that of the specified vector
@@ -446,6 +429,21 @@ inline T vec4<T>::normalize() {
     *this *= (1.0f / l);
 
     return l;
+}
+
+/// lerp between the 2 vectors by the specified amount
+template<class T>
+inline vec4<T> lerp(const vec4<T>  &u, const vec4<T>  &v, T factor) {
+    return ((u * (1 - factor)) + (v * factor));
+}
+
+/// lerp between the 2 specified vectors by the specified amount for each component
+template<class T>
+inline vec4<T> lerp(const vec4<T>  &u, const vec4<T> &v, const vec4<T> & factor) {
+    return (vec4<T> ((u.x * (1 - factor.x)) + (v.x * factor.x),
+                     (u.y * (1 - factor.y)) + (v.y * factor.y),
+                     (u.z * (1 - factor.z)) + (v.z * factor.z),
+                     (u.w * (1 - factor.w)) + (v.w * factor.w)));
 }
 
 #endif

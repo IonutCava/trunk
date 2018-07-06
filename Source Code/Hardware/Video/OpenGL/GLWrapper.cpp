@@ -96,6 +96,11 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("Vertex",   "#define VERT_SHADER");
     glswAddDirectiveToken("Geometry", "#define GEOM_SHADER");
     glswAddDirectiveToken("Fragment", "#define FRAG_SHADER");
+    glswAddDirectiveToken("TessellationE", "#define TESS_EVAL_SHADER");
+    glswAddDirectiveToken("TessellationC", "#define TESS_CTRL_SHADER");
+    glswAddDirectiveToken("Compute",  "#define COMPUTE_SHADER");
+
+    glswAddDirectiveToken("", "//__CUSTOM_DEFINES__");
 
     if(getGPUVendor() == GPU_VENDOR_NVIDIA){ //nVidia specific
         glswAddDirectiveToken("","#pragma optionNV(fastmath on)");
@@ -114,24 +119,23 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("", std::string("#define MAX_LIGHTS_PER_SCENE_NODE 3").c_str());
     glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_LIGHT_NORMAL " + Util::toString(Divide::SHADER_BUFFER_LIGHT_NORMAL)).c_str());
     glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_GPU_BLOCK " + Util::toString(Divide::SHADER_BUFFER_GPU_BLOCK)).c_str());
-    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_NODE_MATERIAL " + Util::toString(Divide::SHADER_BUFFER_NODE_MATERIAL)).c_str());
-    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_NODE_TRANSFORMS " + Util::toString(Divide::SHADER_BUFFER_NODE_TRANSFORMS)).c_str());
+    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_NODE_INFO " + Util::toString(Divide::SHADER_BUFFER_NODE_INFO)).c_str());
     glswAddDirectiveToken("", "const float Z_TEST_SIGMA = 0.0001;");
     glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.25;");
-    glswAddDirectiveToken("", "//__CUSTOM_DEFINES__");
-    glswAddDirectiveToken("", "//__CUSTOM_UNIFORMS__");
-    glswAddDirectiveToken("Vertex",   std::string("#define MAX_BONE_COUNT_PER_NODE " + Util::toString(Config::MAX_BONE_COUNT_PER_NODE)).c_str());
-    glswAddDirectiveToken("Vertex",   std::string("#define SHADER_BUFFER_BONE_TRANSFORMS " + Util::toString(Divide::SHADER_BUFFER_BONE_TRANSFORMS)).c_str());
+   
+    glswAddDirectiveToken("Fragment", std::string("#define VARYING in").c_str()); 
     glswAddDirectiveToken("Fragment", std::string("#define SHADER_BUFFER_LIGHT_SHADOW " + Util::toString(Divide::SHADER_BUFFER_LIGHT_SHADOW)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT0 " + Util::toString(Material::TEXTURE_UNIT0)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT1 " + Util::toString(Material::TEXTURE_UNIT1)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_NORMALMAP " + Util::toString(Material::TEXTURE_NORMALMAP)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_OPACITY " + Util::toString(Material::TEXTURE_OPACITY)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_SPECULAR " + Util::toString(Material::TEXTURE_SPECULAR)).c_str());
-
     glswAddDirectiveToken("Fragment", "const uint DEPTH_EXP_WARP = 32;");
     
     // GLSL <-> VBO intercommunication 
+    glswAddDirectiveToken("Vertex", std::string("#define VARYING out").c_str());
+    glswAddDirectiveToken("Vertex", std::string("#define MAX_BONE_COUNT_PER_NODE " + Util::toString(Config::MAX_BONE_COUNT_PER_NODE)).c_str());
+    glswAddDirectiveToken("Vertex", std::string("#define SHADER_BUFFER_BONE_TRANSFORMS " + Util::toString(Divide::SHADER_BUFFER_BONE_TRANSFORMS)).c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_POSITION_LOCATION) + ") in vec3  inVertexData;").c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_COLOR_LOCATION) + ") in vec4  inColorData;").c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_NORMAL_LOCATION) + ") in vec3  inNormalData;").c_str());
@@ -142,6 +146,9 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BONE_INDICE_LOCATION) + ") in ivec4 inBoneIndiceData;").c_str());
 
     glswAddDirectiveToken("", std::string("#include \"nodeDataInput.cmn\"").c_str());
+
+    glswAddDirectiveToken("", "//__CUSTOM_UNIFORMS__");
+
     GL_API::_GLSLOptContex = glslopt_initialize(GFX_DEVICE.getApi() == OpenGLES ? kGlslTargetOpenGLES30 : kGlslTargetOpenGL);
 
     return glswState == 1 && GL_API::_GLSLOptContex != nullptr;

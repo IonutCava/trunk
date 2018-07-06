@@ -21,19 +21,14 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
     DIVIDE_ASSERT(_imShader != nullptr, "GFXDevice error: No immediate mode emulation shader available!");
     _imShader->Uniform("tex",0);
 
-    //View, Projection, ViewProjection, Camera Position, Viewport, 
-    //zPlanes and ClipPlanes[MAX_CLIP_PLANES] 3 x 16 + 4 + 4 + 4 + 4 * MAX_CLIP_PLANES float values
+    //View, Projection, ViewProjection, Camera Position, Viewport, zPlanes and ClipPlanes[MAX_CLIP_PLANES]
     _gfxDataBuffer = newSB(false, false);
-    _gfxDataBuffer->Create((3 * 16) + 4 + 4 + 4 + (4 * Config::MAX_CLIP_PLANES), sizeof(F32)); 
+    _gfxDataBuffer->Create(1, sizeof(GPUBlock)); 
     _gfxDataBuffer->Bind(Divide::SHADER_BUFFER_GPU_BLOCK);
 
-    _nodeMatricesBuffer = newSB(true);
-    _nodeMatricesBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData2));
-    _nodeMatricesBuffer->Bind(Divide::SHADER_BUFFER_NODE_TRANSFORMS);
-
-    _nodeMaterialsBuffer = newSB(true);
-    _nodeMaterialsBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData4)); 
-    _nodeMaterialsBuffer->BindRange(Divide::SHADER_BUFFER_NODE_MATERIAL, 0, Config::MAX_VISIBLE_NODES);
+    _nodeBuffer = newSB(true);
+    _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
+    _nodeBuffer->Bind(Divide::SHADER_BUFFER_NODE_INFO);
 
     changeResolution(resolution);
 
@@ -129,7 +124,8 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
     _depthRangesConstructProgram = CreateResource<ShaderProgram>(rangesDesc);
     _depthRangesConstructProgram->UniformTexture("depthTex", 0);
 
-    _cachedSceneZPlanes.set(ParamHandler::getInstance().getParam<F32>("rendering.zNear"), ParamHandler::getInstance().getParam<F32>("rendering.zFar"));
+    _gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
+    _gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
     
     return NO_ERR;
 }
@@ -156,8 +152,7 @@ void GFXDevice::closeRenderingApi(){
         SAFE_DELETE(renderTarget);
 
     SAFE_DELETE(_gfxDataBuffer);
-    SAFE_DELETE(_nodeMaterialsBuffer);
-    SAFE_DELETE(_nodeMatricesBuffer);
+    SAFE_DELETE(_nodeBuffer);
 }
 
 void GFXDevice::closeRenderer(){
@@ -173,8 +168,8 @@ void GFXDevice::closeRenderer(){
 void GFXDevice::idle() {
     if (!_renderer) return;
 
-    _cachedSceneZPlanes.set(ParamHandler::getInstance().getParam<F32>("rendering.zNear"), 
-                            ParamHandler::getInstance().getParam<F32>("rendering.zFar"));
+    _gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
+    _gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
 
     _postFX.idle();
     _shaderManager.idle();

@@ -18,7 +18,7 @@ namespace Divide {
             ERROR_FN(Locale::get("GLFW_ERROR"), errorDesc, msg);
         }
 
-#if defined(_DEBUG) || defined(_PROFILE)
+#if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
 
         void APIENTRY CALLBACK DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam){
             static std::string gl_source;
