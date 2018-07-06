@@ -45,7 +45,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
         SceneRenderState& renderState = sceneState.renderState();
         // No point in updating visual information if the scene disabled object
         // rendering or rendering of their bounding boxes
-        SceneGraphNode& root = *sceneGraph.getRoot();
+        SceneGraphNode& root = sceneGraph.getRoot();
         U32 childCount = root.getChildCount();
         _cullingTasks.resize(0);
         _perThreadNodeList.resize(childCount);

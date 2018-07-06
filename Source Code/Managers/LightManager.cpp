@@ -90,25 +90,21 @@ bool LightManager::clear() {
         return true;
     }
 
-    bool success = true;
+    SceneGraph& sceneGraph = GET_ACTIVE_SCENEGRAPH();
     for (Light::LightList& lightList : _lights) {
         // Lights are removed by the sceneGraph
         // (range_based for-loops will fail due to iterator invalidation
         vectorAlg::vecSize lightCount = lightList.size();
-        for (U32 i = 0; i < lightCount; ++i) {
-            // in case we had some light hanging
-            if (!RemoveResource(lightList[i])) {
-                success = false;
-            }
+        for (vectorAlg::vecSize i = lightCount; i--> 0;) {
+            Light* crtLight = lightList[i];
+            sceneGraph.getRoot().removeNode(*crtLight->getSGN(), true);
+
         }
         lightList.clear();
     }
-
-    if (success) {
-        _init = false;
-    }
-
-    return success;
+    _init = false;
+    
+    return true;
 }
 
 bool LightManager::addLight(Light& light) {

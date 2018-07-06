@@ -67,8 +67,6 @@ class ParticleData {
     vectorImpl<vec4<F32>> _startColor;
     /// r,g,b,a = color and transparency
     vectorImpl<vec4<F32>> _endColor;
-    /// Alive flags
-    vectorImpl<bool> _alive;
     /// Location of the texture file. Leave blank for color only
     stringImpl _textureFileName;
 

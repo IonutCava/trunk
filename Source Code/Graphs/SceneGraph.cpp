@@ -16,13 +16,12 @@ namespace {
 };
 
 SceneGraph::SceneGraph() : FrameListener(),
-                           _root(nullptr)
+                           _rootNode(MemoryManager_NEW SceneRoot()),
+                           _root(*_rootNode, "ROOT")
 {
     REGISTER_FRAME_LISTENER(this, 1);
 
-    SceneNode* rootNode = MemoryManager_NEW SceneRoot();
-    _root = std::make_shared<SceneGraphNode>(*rootNode, "ROOT");
-    _root->setBBExclusionMask(
+    _root.setBBExclusionMask(
         to_uint(SceneNodeType::TYPE_SKY) |
         to_uint(SceneNodeType::TYPE_LIGHT) |
         to_uint(SceneNodeType::TYPE_TRIGGER) |
@@ -37,8 +36,15 @@ SceneGraph::~SceneGraph()
     UNREGISTER_FRAME_LISTENER(this);
     Console::d_printfn(Locale::get(_ID("DELETE_SCENEGRAPH")));
     // Should recursively delete the entire scene graph
-    assert(_root.unique());
-    _root.reset();
+    unload();
+}
+
+void SceneGraph::unload()
+{
+    U32 childCount = 0;
+    while((childCount = _root.getChildCount()) != 0) {
+        _root.removeNode(_root.getChild(childCount - 1, childCount), true);
+    }
 }
 
 bool SceneGraph::frameStarted(const FrameEvent& evt) {
@@ -46,26 +52,11 @@ bool SceneGraph::frameStarted(const FrameEvent& evt) {
 }
 
 bool SceneGraph::frameEnded(const FrameEvent& evt) {
-    _root->frameEnded();
+    _root.frameEnded();
     return true;
 }
 
 void SceneGraph::unregisterNode(I64 guid, SceneGraphNode::UsageContext usage) {
-    /*if (usage == SceneGraphNode::UsageContext::NODE_DYNAMIC) {
-        _dynamicNodes.erase(
-            std::remove_if(std::begin(_dynamicNodes), std::end(_dynamicNodes),
-                [&guid](SceneGraphNode_wptr node) -> bool {
-                    return node.lock() && node.lock()->getGUID() == guid;
-                }),
-            std::end(_dynamicNodes));
-    } else {
-        _staticNodes.erase(
-            std::remove_if(std::begin(_staticNodes), std::end(_staticNodes),
-                [&guid](SceneGraphNode_wptr node) -> bool {
-                    return node.lock() && node.lock()->getGUID() == guid;
-                }),
-            std::end(_staticNodes));
-    }*/
 }
 
 void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
@@ -77,13 +68,8 @@ void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
     Attorney::SceneGraph::onNodeDestroy(GET_ACTIVE_SCENE(), oldNode);
 }
 
-void SceneGraph::onNodeAdd(SceneGraphNode_ptr newNode) {
-    if (!BitCompare(ignoredNodeType, to_uint(newNode->getNode<>()->getType()))) {
-        /*if (newNode->usageContext() == SceneGraphNode::UsageContext::NODE_DYNAMIC) {
-            _dynamicNodes.push_back(newNode);
-        } else {
-            _staticNodes.push_back(newNode);
-        }*/
+void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
+    if (!BitCompare(ignoredNodeType, to_uint(newNode.getNode<>()->getType()))) {
     }
 }
 
@@ -104,7 +90,7 @@ void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
         return;
     }
     if (deleteOnAdd) {
-        SceneGraphNode_ptr parent = sgn->getParent().lock();
+        SceneGraphNode* parent = sgn->getParent();
         if (parent) {
             parent->removeNode(sgn->getName(), false);
         }
@@ -117,11 +103,11 @@ void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
 }
 
 void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
-    _root->sceneUpdate(deltaTime, sceneState);
+    _root.sceneUpdate(deltaTime, sceneState);
 }
 
 void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_wptr>& selectionHits) {
-    _root->intersect(ray, start, end, selectionHits);
+    _root.intersect(ray, start, end, selectionHits);
 }
 
 };

@@ -107,7 +107,6 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
     for (U32 i = 0; i < particleCount; ++i) {
         // Distance to camera (squared)
         _particles->_misc[i].w = -1.0f;
-        _particles->_alive[i] = false;
     }
 
     if (_particleTexture) {

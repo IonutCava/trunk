@@ -366,7 +366,7 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix(bool& matrixRebuilt,
     }
 
     if (!local) {
-        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        SceneGraphNode* grandParent = _parentSGN.getParent();
         if (grandParent) {
             PhysicsComponent* pComp = grandParent->getComponent<PhysicsComponent>();
             _worldMatrix *= pComp->getWorldMatrix(interpolationFactor, local);
@@ -393,7 +393,7 @@ const vec3<F32>& PhysicsComponent::getScale(D32 interpolationFactor,
     }
 
     if (!local) {
-        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        SceneGraphNode* grandParent = _parentSGN.getParent();
         if (grandParent) {
             scale *= grandParent->getComponent<PhysicsComponent>()->getScale(
                 interpolationFactor, local);
@@ -420,7 +420,7 @@ const vec3<F32>& PhysicsComponent::getPosition(D32 interpolationFactor,
     }
 
     if (!local) {
-        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        SceneGraphNode* grandParent = _parentSGN.getParent();
         if (grandParent) {
             position += grandParent->getComponent<PhysicsComponent>()->getPosition(
                 interpolationFactor, local);
@@ -445,7 +445,7 @@ const Quaternion<F32>& PhysicsComponent::getOrientation(D32 interpolationFactor,
         orientation.identity();
     }
 
-    SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+    SceneGraphNode* grandParent = _parentSGN.getParent();
     if (!local && grandParent) {
         orientation.set(grandParent->getComponent<PhysicsComponent>()
                             ->getOrientation(interpolationFactor, local)

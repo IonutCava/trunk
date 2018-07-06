@@ -96,10 +96,10 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
         _ballSGN.lock()->getComponent<PhysicsComponent>();
     vec3<F32> ballPosition = ballTransform->getPosition();
 
-    SceneGraphNode_ptr table(_sceneGraph->findNode("table").lock());
-    SceneGraphNode_ptr net(_sceneGraph->findNode("net").lock());
-    SceneGraphNode_ptr opponent(_sceneGraph->findNode("opponent").lock());
-    SceneGraphNode_ptr paddle(_sceneGraph->findNode("paddle").lock());
+    SceneGraphNode_ptr table(_sceneGraph.findNode("table").lock());
+    SceneGraphNode_ptr net(_sceneGraph.findNode("net").lock());
+    SceneGraphNode_ptr opponent(_sceneGraph.findNode("opponent").lock());
+    SceneGraphNode_ptr paddle(_sceneGraph.findNode("paddle").lock());
 
     vec3<F32> paddlePosition =
         paddle->getComponent<PhysicsComponent>()->getPosition();
@@ -234,7 +234,7 @@ void PingPongScene::processInput(const U64 deltaTime) {
         _paddleCam->rotatePitch(to_float(state().angleUD()));
     }
 
-    SceneGraphNode_ptr paddle(_sceneGraph->findNode("paddle").lock());
+    SceneGraphNode_ptr paddle(_sceneGraph.findNode("paddle").lock());
 
     vec3<F32> pos = paddle->getComponent<PhysicsComponent>()->getPosition();
 
@@ -262,7 +262,7 @@ bool PingPongScene::load(const stringImpl& name, GUI* const gui) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name, gui, true, true);
     // Add a light
-    _sun = addLight(LightType::DIRECTIONAL, GET_ACTIVE_SCENEGRAPH().getRoot());
+    _sun = addLight(LightType::DIRECTIONAL, _sceneGraph.getRoot());
     _currentSky = addSky();
     _freeFlyCam = &renderState().getCamera();
     _paddleCam = MemoryManager_NEW FreeFlyCamera();
@@ -298,7 +298,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setShininess(36.8f);
     _ball->getMaterialTpl()->setSpecular(
         vec4<F32>(0.774597f, 0.774597f, 0.774597f, 1.0f));
-    _ballSGN = _sceneGraph->getRoot()->addNode(*_ball, "PingPongBallSGN");
+    _ballSGN = _sceneGraph.getRoot().addNode(*_ball, "PingPongBallSGN");
     _ballSGN.lock()->getComponent<PhysicsComponent>()->translate(vec3<F32>(0, 2, 2));
 
     /*ResourceDescriptor tempLight("Light Omni");

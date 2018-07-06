@@ -22,7 +22,6 @@ void ParticleData::generateParticles(U32 particleCount, U32 optionsMask) {
     _color.clear();
     _startColor.clear();
     _endColor.clear();
-    _alive.clear();
 
     if (_totalCount > 0) {
         if (BitCompare(_optionsMask,
@@ -47,7 +46,6 @@ void ParticleData::generateParticles(U32 particleCount, U32 optionsMask) {
             _endColor.resize(_totalCount);
         }
         _misc.resize(_totalCount);
-        _alive.resize(_totalCount);
     }
 }
 
@@ -57,7 +55,6 @@ void ParticleData::kill(U32 index) {
     DIVIDE_ASSERT(_aliveCount > 0,
                   "ParticleData::kill error : No alive particles found!");
 
-    _alive[index] = false;
     swapData(index, _aliveCount - 1);
     _aliveCount--;
 }
@@ -68,8 +65,7 @@ void ParticleData::wake(U32 index) {
     DIVIDE_ASSERT(_aliveCount < _totalCount,
                   "ParticleData::wake error : No dead particles found!");
 
-    _alive[index] = true;
-    // swapData(index, _aliveCount);
+    swapData(index, _aliveCount);
     _aliveCount++;
 }
 
@@ -128,7 +124,5 @@ void ParticleData::swapData(U32 indexA, U32 indexB) {
     }
     // std::swap(_misc[indexA], _misc[indexB]);
     _misc[indexA] = _misc[indexB];
-    // std::swap(_alive[indexA], _alive[indexB]);
-    //_alive[indexA] = _alive[indexB];
 }
 };

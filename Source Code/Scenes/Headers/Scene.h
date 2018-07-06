@@ -112,7 +112,7 @@ class NOINITVTABLE Scene : public Resource {
     inline SceneRenderState& renderState() { return _sceneState.renderState(); }
     inline SceneInput& input() { return *_input; }
 
-    inline SceneGraph& getSceneGraph() { return *_sceneGraph; }
+    inline SceneGraph& getSceneGraph() { return _sceneGraph; }
     void registerTask(Task_ptr taskItem);
     void clearTasks();
     void removeTask(I64 taskGUID);
@@ -127,7 +127,7 @@ class NOINITVTABLE Scene : public Resource {
     void addPatch(vectorImpl<FileData>& data);
 
     // DIRECTIONAL lights have shadow mapping enabled automatically
-    SceneGraphNode_ptr addLight(LightType type, SceneGraphNode_ptr parentNode);
+    SceneGraphNode_ptr addLight(LightType type, SceneGraphNode& parentNode);
     SceneGraphNode_ptr addSky();
     SceneGraphNode_ptr addSky(Sky& skyItem);
 
@@ -139,7 +139,6 @@ class NOINITVTABLE Scene : public Resource {
         return  _currentHoverTarget;
     }
     void findSelection();
-    void deleteSelection();
 
     inline void addSelectionCallback(const DELEGATE_CBK<>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
@@ -151,7 +150,7 @@ class NOINITVTABLE Scene : public Resource {
 
     SceneGraphNode_ptr addParticleEmitter(const stringImpl& name,
                                           std::shared_ptr<ParticleData> data,
-                                          SceneGraphNode_ptr parentNode);
+                                          SceneGraphNode& parentNode);
 
     TerrainDescriptor* getTerrainInfo(const stringImpl& terrainName);
     inline vectorImpl<FileData>& getVegetationDataArray() {
@@ -163,7 +162,7 @@ class NOINITVTABLE Scene : public Resource {
     GFXDevice& _GFX;
     GUI* _GUI;
     ParamHandler& _paramHandler;
-    std::unique_ptr<SceneGraph> _sceneGraph;
+    SceneGraph _sceneGraph;
 
     U64 _sceneTimer;
     vectorImpl<D32> _taskTimers;
@@ -223,10 +222,6 @@ class NOINITVTABLE Scene : public Resource {
     bool checkLoadFlag() const { return _loadComplete; }
     /// Unload scenegraph
     void clearObjects();
-    /// Destroy lights
-    void clearLights();
-    /// Destroy physics (:D)
-    void clearPhysics();
     /**End loading and unloading logic*/
     /// This is a camera listener. Do not call directly.
     void onCameraUpdate(Camera& camera);

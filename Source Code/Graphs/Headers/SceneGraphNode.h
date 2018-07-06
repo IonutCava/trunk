@@ -102,8 +102,6 @@ class SceneGraphNode : public GUIDWrapper,
         SELECTION_COUNT
     };
 
-    /// Update bounding boxes
-    void checkBoundingBoxes();
     /// Apply current transform to the node's BB. Return true if the bounding
     /// extents changed
     bool updateBoundingBoxTransform(const mat4<F32>& transform);
@@ -135,8 +133,8 @@ class SceneGraphNode : public GUIDWrapper,
     SceneGraphNode_ptr addNode(SceneNode& node, const stringImpl& name = "");
     SceneGraphNode_ptr addNode(SceneGraphNode_ptr node);
     void removeNode(const stringImpl& nodeName, bool recursive = true);
-    inline void removeNode(SceneGraphNode_ptr node, bool recursive = true) {
-        removeNode(node->getName(), recursive);
+    inline void removeNode(const SceneGraphNode& node, bool recursive = true) {
+        removeNode(node.getName(), recursive);
     }    
     
     /// Find a node in the graph based on the SceneGraphNode's name
@@ -159,11 +157,11 @@ class SceneGraphNode : public GUIDWrapper,
     /*Node Management*/
 
     /*Parent <-> Children*/
-    inline SceneGraphNode_wptr getParent() const {
+    inline SceneGraphNode* getParent() const {
         return _parent;
     }
 
-    void setParent(SceneGraphNode_ptr parent);
+    void setParent(SceneGraphNode& parent);
 
     /*Parent <-> Children*/
 
@@ -188,7 +186,6 @@ class SceneGraphNode : public GUIDWrapper,
     /*Node State*/
     void setActive(const bool state);
     void restoreActive();
-    inline void scheduleDeletion() { _shouldDelete = true; }
     
     inline bool isActive() const { return _active; }
 
@@ -285,7 +282,7 @@ class SceneGraphNode : public GUIDWrapper,
 
    private:
     SceneNode* _node;
-    std::weak_ptr<SceneGraphNode> _parent;
+    SceneGraphNode* _parent;
     std::atomic<bool> _active;
     std::atomic<bool> _boundingBoxDirty;
     U32 _bbAddExclusionList;
@@ -293,7 +290,6 @@ class SceneGraphNode : public GUIDWrapper,
     bool _isSelectable;
     bool _wasActive;
     bool _sorted;
-    bool _shouldDelete;
     ///_initialBoundingBox is a copy of the initialy calculate BB for
     ///transformation
     /// it should be copied in every computeBoungingBox call;

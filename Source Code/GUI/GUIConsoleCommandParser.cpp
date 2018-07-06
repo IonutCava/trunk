@@ -194,7 +194,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
     if (!loaded) {
         // If we failed to load it from file, we need to build it first
         loaded = temp->build(
-            GET_ACTIVE_SCENEGRAPH().getRoot(), 
+            GET_ACTIVE_SCENEGRAPH().getRoot(),
             AI::Navigation::NavigationMesh::CreationCallback(), false);
         // Then save it to file
         temp->save(GET_ACTIVE_SCENEGRAPH().getRoot());

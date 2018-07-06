@@ -306,8 +306,7 @@ GUIButton* GUI::addButton(const stringImpl& ID,
 
     CEGUI::Window* parent = nullptr;
     if (!rootSheetID.empty()) {
-        parent = CEGUI_DEFAULT_CTX.getRootWindow()->getChild(
-            rootSheetID.c_str());
+        parent = CEGUI_DEFAULT_CTX.getRootWindow()->getChild(rootSheetID.c_str());
     }
     if (!parent) {
         parent = _rootSheet;

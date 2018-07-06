@@ -53,7 +53,6 @@ Scene::Scene()
       _paramHandler(ParamHandler::getInstance())
 {
     _sceneTimer = 0UL;
-    _sceneGraph.reset(new SceneGraph());
     _input.reset(new SceneInput(*this));
 
 #ifdef _DEBUG
@@ -82,11 +81,11 @@ bool Scene::idle() {  // Called when application is idle
         loadXMLAssets(true);
     }
 
-    if (!_sceneGraph->getRoot()->hasChildren()) {
+    if (!_sceneGraph.getRoot().hasChildren()) {
         return false;
     }
 
-    _sceneGraph->idle();
+    _sceneGraph.idle();
 
     Attorney::SceneRenderStateScene::playAnimations(
         renderState(),
@@ -94,8 +93,8 @@ bool Scene::idle() {  // Called when application is idle
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (GFX_DEVICE.getFrameCount() > 1) {
-            _sceneGraph->getRoot()
-                ->getComponent<PhysicsComponent>()
+            _sceneGraph.getRoot()
+                .getComponent<PhysicsComponent>()
                 ->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
         }
@@ -105,7 +104,7 @@ bool Scene::idle() {  // Called when application is idle
 }
 
 void Scene::onCameraUpdate(Camera& camera) {
-    _sceneGraph->getRoot()->onCameraUpdate(camera);
+    _sceneGraph.getRoot().onCameraUpdate(camera);
 }
 
 void Scene::addPatch(vectorImpl<FileData>& data) {
@@ -142,7 +141,7 @@ bool Scene::loadModel(const FileData& data) {
     }
 
     SceneGraphNode_ptr meshNode =
-        _sceneGraph->getRoot()->createNode(*thisObj, data.ItemName);
+        _sceneGraph.getRoot().createNode(*thisObj, data.ItemName);
     meshNode->getComponent<RenderingComponent>()->castsShadows(
         data.castsShadows);
     meshNode->getComponent<RenderingComponent>()->receivesShadows(
@@ -217,7 +216,7 @@ bool Scene::loadGeometry(const FileData& data) {
     }
 
     thisObj->setMaterialTpl(tempMaterial);
-    SceneGraphNode_ptr thisObjSGN = _sceneGraph->getRoot()->createNode(*thisObj);
+    SceneGraphNode_ptr thisObjSGN = _sceneGraph.getRoot().createNode(*thisObj);
     thisObjSGN->getComponent<PhysicsComponent>()->setScale(data.scale);
     thisObjSGN->getComponent<PhysicsComponent>()->setRotation(data.orientation);
     thisObjSGN->getComponent<PhysicsComponent>()->setPosition(data.position);
@@ -246,7 +245,7 @@ bool Scene::loadGeometry(const FileData& data) {
 
 SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
                                              std::shared_ptr<ParticleData> data,
-                                             SceneGraphNode_ptr parentNode) {
+                                             SceneGraphNode& parentNode) {
     DIVIDE_ASSERT(!name.empty(),
                   "Scene::addParticleEmitter error: invalid name specified!");
 
@@ -258,12 +257,12 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
 
     emitter->initData(data);
 
-    return parentNode->addNode(*emitter);
+    return parentNode.addNode(*emitter);
 }
 
 
 SceneGraphNode_ptr Scene::addLight(LightType type,
-                                SceneGraphNode_ptr parentNode) {
+                                SceneGraphNode& parentNode) {
     const char* lightType = "";
     switch (type) {
         case LightType::DIRECTIONAL:
@@ -286,7 +285,7 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
     if (type == LightType::DIRECTIONAL) {
         light->setCastShadows(true);
     }
-    return parentNode->addNode(*light);
+    return parentNode.addNode(*light);
 }
 
 void Scene::toggleFlashlight() {
@@ -298,7 +297,7 @@ void Scene::toggleFlashlight() {
         tempLight->setRange(30.0f);
         tempLight->setCastShadows(false);
         tempLight->setDiffuseColor(DefaultColors::WHITE());
-        _flashLight = _sceneGraph->getRoot()->addNode(*tempLight);
+        _flashLight = _sceneGraph.getRoot().addNode(*tempLight);
     }
 
     _flashLight.lock()->getNode<Light>()->setEnabled(!_flashLight.lock()->getNode<Light>()->getEnabled());
@@ -311,7 +310,7 @@ SceneGraphNode_ptr Scene::addSky() {
 }
 
 SceneGraphNode_ptr Scene::addSky(Sky& skyItem) {
-    return _sceneGraph->getRoot()->createNode(skyItem);
+    return _sceneGraph.getRoot().createNode(skyItem);
 }
 
 bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
@@ -323,13 +322,13 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
                                           _sceneState.fogDescriptor()._fogColor);
 
     loadXMLAssets();
-    SceneGraphNode_ptr root = _sceneGraph->getRoot();
+    SceneGraphNode& root = _sceneGraph.getRoot();
     // Add terrain from XML
     if (!_terrainInfoArray.empty()) {
         for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
             Terrain* temp = CreateResource<Terrain>(terrain);
-            SceneGraphNode_ptr terrainTemp = root->createNode(*temp);
+            SceneGraphNode_ptr terrainTemp = root.createNode(*temp);
             terrainTemp->setActive(terrainInfo->getActive());
             terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
 
@@ -381,7 +380,9 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     };
     _input->addMouseMapping(Input::MouseButton::MB_Right, cbks);
     
-    cbks.first = DELEGATE_BIND(&Scene::deleteSelection, this);
+    cbks.first = [this](){
+        _sceneGraph.deleteNode(_currentSelection, false);
+    };
     cbks.second = [](){};
     _input->addKeyMapping(Input::KeyCode::KC_END, cbks);
 
@@ -530,9 +531,10 @@ bool Scene::unload() {
         return false;
     }
     clearTasks();
-    clearPhysics();
+    /// Destroy physics (:D)
+    PHYSICS_DEVICE.setPhysicsScene(nullptr);
+    LightManager::getInstance().clear();
     clearObjects();
-    clearLights();
     _loadComplete = false;
     return true;
 }
@@ -553,8 +555,6 @@ bool Scene::loadPhysics(bool continueOnErrors) {
     }
     return true;
 }
-
-void Scene::clearPhysics() { PHYSICS_DEVICE.setPhysicsScene(nullptr); }
 
 bool Scene::initializeAI(bool continueOnErrors) {
     _aiTask->startTask(Task::TaskPriority::MAX);
@@ -583,10 +583,8 @@ void Scene::clearObjects() {
     }
     _vegetationDataArray.clear();
 
-    _sceneGraph.reset(nullptr);
+    _sceneGraph.unload();
 }
-
-void Scene::clearLights() { LightManager::getInstance().clear(); }
 
 bool Scene::updateCameraControls() {
     Camera& cam = renderState().getCamera();
@@ -626,7 +624,7 @@ void Scene::updateSceneState(const U64 deltaTime) {
     updateSceneStateInternal(deltaTime);
     state().cameraUnderwater(renderState().getCamera().getEye().y <
                              state().waterLevel());
-    _sceneGraph->sceneUpdate(deltaTime, _sceneState);
+    _sceneGraph.sceneUpdate(deltaTime, _sceneState);
     findHoverTarget();
     SceneGraphNode_ptr flashLight = _flashLight.lock();
 
@@ -637,13 +635,6 @@ void Scene::updateSceneState(const U64 deltaTime) {
     }
 }
 
-void Scene::deleteSelection() {
-    SceneGraphNode_ptr selection(_currentSelection.lock());
-    if (selection != nullptr) {
-        selection->scheduleDeletion();
-    }
-}
-
 void Scene::onLostFocus() {
     state().resetMovement();
 #ifndef _DEBUG
@@ -651,7 +642,9 @@ void Scene::onLostFocus() {
 #endif
 }
 
-void Scene::registerTask(Task_ptr taskItem) { _tasks.push_back(taskItem); }
+void Scene::registerTask(Task_ptr taskItem) { 
+    _tasks.push_back(taskItem);
+}
 
 void Scene::clearTasks() {
     Console::printfn(Locale::get(_ID("STOP_SCENE_TASKS")));
@@ -734,7 +727,7 @@ void Scene::findHoverTarget() {
     _sceneSelectionCandidates.clear();
     // Cast the picking ray and find items between the nearPlane (with an
     // offset) and limit the range to half of the far plane
-    _sceneGraph->intersect(Ray(startRay, startRay.direction(endRay)),
+    _sceneGraph.intersect(Ray(startRay, startRay.direction(endRay)),
                           zPlanes.x + 0.5f,
                           zPlanes.y * 1.5f,
                           _sceneSelectionCandidates);

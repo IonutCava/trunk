@@ -284,7 +284,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name, gui, true, true);
     // Add a light
-    _sun = addLight(LightType::DIRECTIONAL, GET_ACTIVE_SCENEGRAPH().getRoot());
+    _sun = addLight(LightType::DIRECTIONAL, _sceneGraph.getRoot());
     // Add a skybox
     _currentSky = addSky();
     // Position camera
@@ -296,11 +296,11 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     _sun.lock()->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     // Add some obstacles
     SceneGraphNode_ptr cylinder[5];
-    cylinder[0] = _sceneGraph->findNode("cylinderC").lock();
-    cylinder[1] = _sceneGraph->findNode("cylinderNW").lock();
-    cylinder[2] = _sceneGraph->findNode("cylinderNE").lock();
-    cylinder[3] = _sceneGraph->findNode("cylinderSW").lock();
-    cylinder[4] = _sceneGraph->findNode("cylinderSE").lock();
+    cylinder[0] = _sceneGraph.findNode("cylinderC").lock();
+    cylinder[1] = _sceneGraph.findNode("cylinderNW").lock();
+    cylinder[2] = _sceneGraph.findNode("cylinderNE").lock();
+    cylinder[3] = _sceneGraph.findNode("cylinderSW").lock();
+    cylinder[4] = _sceneGraph.findNode("cylinderSE").lock();
 
     U32 temp = 0;
     for (U8 i = 0; i < 5; ++i) {
@@ -354,8 +354,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             currentPos.second = 200 - 40 * (i % 30) - 50;
         }
 
-        SceneGraphNode_ptr crtNode = _sceneGraph->getRoot()->addNode(*currentMesh,
-            currentName);
+        SceneGraphNode_ptr crtNode = _sceneGraph.getRoot().addNode(*currentMesh, currentName);
         crtNode->setSelectable(true);
         crtNode->usageContext(baseNode->usageContext());
         PhysicsComponent* pComp = crtNode->getComponent<PhysicsComponent>();
@@ -375,7 +374,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     }
 
     SceneGraphNode_ptr flag;
-    flag = _sceneGraph->findNode("flag").lock();
+    flag = _sceneGraph.findNode("flag").lock();
     RenderingComponent* const renderable = flag->getChild(0, temp).getComponent<RenderingComponent>();
     renderable->getMaterialInstance()->setDoubleSided(true);
     Material* mat = flag->getChild(0, temp).getNode()->getMaterialTpl();
@@ -383,7 +382,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     flag->setActive(false);
     SceneNode* flagNode = flag->getNode();
 
-    _flag[0] = _sceneGraph->getRoot()->addNode(*flagNode, "Team1Flag");
+    _flag[0] = _sceneGraph.getRoot().addNode(*flagNode, "Team1Flag");
 
     SceneGraphNode_ptr flag0(_flag[0].lock());
     flag0->setSelectable(false);
@@ -401,7 +400,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     flagRComp->getMaterialInstance()->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
 
-    _flag[1] = _sceneGraph->getRoot()->addNode(*flagNode, "Team2Flag");
+    _flag[1] = _sceneGraph.getRoot().addNode(*flagNode, "Team2Flag");
     SceneGraphNode_ptr flag1(_flag[1].lock());
     flag1->setSelectable(false);
     flag1->usageContext(flag->usageContext());
@@ -469,7 +468,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     timeGenerator->_maxTime = 20.5f;
     particleSource->addGenerator(timeGenerator);
 
-    _particleEmitter = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
+    _particleEmitter = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph.getRoot());
     SceneGraphNode_ptr testSGN = _particleEmitter.lock();
     ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
     testSGN->getComponent<PhysicsComponent>()->translateY(10);
@@ -499,7 +498,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             light->setRange(20.0f);
             light->setCastShadows(false);
             light->setDiffuseColor(DefaultColors::RANDOM());
-            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot()->addNode(*light);
+            SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light);
             lightSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(-215.0f + (115 * row), 15.0f, (-215.0f + (115 * col))));
             _lightNodes.push_back(lightSGN);
         }

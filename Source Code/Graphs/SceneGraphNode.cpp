@@ -34,7 +34,7 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
       _isSelectable(false),
       _sorted(false),
       _boundingBoxDirty(true),
-      _shouldDelete(false),
+      _parent(nullptr),
       _updateTimer(Time::ElapsedMilliseconds()),
       _bbAddExclusionList(0),
       _usageContext(UsageContext::NODE_DYNAMIC),
@@ -64,7 +64,7 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
 
 void SceneGraphNode::usageContext(const UsageContext& newContext) {
     Attorney::SceneGraphSGN::onNodeUsageChange(GET_ACTIVE_SCENEGRAPH(),
-                                               shared_from_this(),
+                                               *this,
                                                _usageContext,
                                                newContext);
     _usageContext = newContext;
@@ -73,7 +73,9 @@ void SceneGraphNode::usageContext(const UsageContext& newContext) {
 /// If we are destroying the current graph node
 SceneGraphNode::~SceneGraphNode()
 {
-    Attorney::SceneGraphSGN::onNodeDestroy(GET_ACTIVE_SCENEGRAPH(), *this);
+    if (getParent()) {
+        Attorney::SceneGraphSGN::onNodeDestroy(GET_ACTIVE_SCENEGRAPH(), *this);
+    }
     Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")),
                      getName().c_str(), _node->getName().c_str());
 
@@ -94,9 +96,8 @@ void SceneGraphNode::addBoundingBox(const BoundingBox& bb,
                                     const SceneNodeType& type) {
     if (!BitCompare(_bbAddExclusionList, to_uint(type))) {
         _boundingBox.add(bb);
-        SceneGraphNode_ptr parent = _parent.lock();
-        if (parent) {
-            parent->getBoundingBox().setComputed(false);
+        if (_parent) {
+            _parent->getBoundingBox().setComputed(false);
         }
     }
 }
@@ -106,20 +107,19 @@ void SceneGraphNode::useDefaultTransform(const bool state) {
 }
 
 /// Change current SceneGraphNode's parent
-void SceneGraphNode::setParent(SceneGraphNode_ptr parent) {
-    assert(parent->getGUID() != getGUID());
-    SceneGraphNode_ptr parentSGN = _parent.lock();
-    if (parentSGN) {
-        if (*parentSGN.get() == *parent.get()) {
+void SceneGraphNode::setParent(SceneGraphNode& parent) {
+    assert(parent.getGUID() != getGUID());
+    if (_parent) {
+        if (*_parent == parent) {
             return;
         }
         // Remove us from the old parent's children map
-        parentSGN->removeNode(getName(), false);
+        _parent->removeNode(getName(), false);
     }
     // Set the parent pointer to the new parent
-    _parent = parent;
+    _parent = &parent;
     // Add ourselves in the new parent's children map
-    parent->addNode(shared_from_this());
+    _parent->addNode(shared_from_this());
     // That's it. Parent Transforms will be updated in the next render pass;
 }
 
@@ -127,9 +127,11 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneGraphNode_ptr node) {
     // Time to add it to the children vector
     SceneGraphNode_ptr child = findChild(node->getName()).lock();
     if (child) {
-        removeNode(child, true);
+        removeNode(*child, true);
     }
-    Attorney::SceneGraphSGN::onNodeAdd(GET_ACTIVE_SCENEGRAPH(), node);
+    
+    Attorney::SceneGraphSGN::onNodeAdd(GET_ACTIVE_SCENEGRAPH(), *node);
+    
     if (_childCount == _children.size()) {
         _children.push_back(node);
     } else {
@@ -162,7 +164,7 @@ SceneGraphNode_ptr SceneGraphNode::createNode(SceneNode& node, const stringImpl&
                                                             : name);
 
     // Set the current node as the new node's parent
-    sceneGraphNode->setParent(shared_from_this());
+    sceneGraphNode->setParent(*this);
     // Do all the post load operations on the SceneNode
     // Pass a reference to the newly created SceneGraphNode in case we need
     // transforms or bounding boxes
@@ -377,9 +379,8 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
               bbUpdated = updateBoundingBoxTransform(pComp->getWorldMatrix());
         //}
         if (bbUpdated) {
-            SceneGraphNode_ptr parent = _parent.lock();
-            if (parent) {
-                parent->getBoundingBox().setComputed(false);
+            if (_parent) {
+                _parent->getBoundingBox().setComputed(false);
             }
         }
         RenderingComponent* renderComp = getComponent<RenderingComponent>();
@@ -393,10 +394,6 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     		                                   deltaTime,
     		                                   *this,
     		                                   sceneState);
-
-    if (_shouldDelete) {
-        GET_ACTIVE_SCENEGRAPH().deleteNode(shared_from_this(), false);
-    }
 }
 
 bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,

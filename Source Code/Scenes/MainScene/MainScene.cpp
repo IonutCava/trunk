@@ -116,14 +116,14 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
     renderState().getCamera().setMoveSpeedFactor(10.0f);
 
-    _sun = addLight(LightType::DIRECTIONAL, GET_ACTIVE_SCENEGRAPH().getRoot());
+    _sun = addLight(LightType::DIRECTIONAL, _sceneGraph.getRoot());
     _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
     _sun.lock()->getNode<DirectionalLight>()->csmSplitLogFactor(0.965f);
     _sun.lock()->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     _currentSky = addSky();
 
     for (U8 i = 0; i < _terrainInfoArray.size(); i++) {
-        SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(
+        SceneGraphNode_ptr terrainNode(_sceneGraph.findNode(
             _terrainInfoArray[i]->getVariable("terrainName")).lock());
         if (terrainNode) {  // We might have an unloaded terrain in the Array,
                             // and thus, not present in the graph
@@ -142,7 +142,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     _water = CreateResource<WaterPlane>(infiniteWater);
     _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),
                       0.34f);
-    _waterGraphNode = _sceneGraph->getRoot()->addNode(*_water);
+    _waterGraphNode = _sceneGraph.getRoot().addNode(*_water);
     SceneGraphNode_ptr waterGraphNode(_waterGraphNode.lock());
 
     waterGraphNode->useDefaultTransform(false);
@@ -210,7 +210,7 @@ bool MainScene::unload() {
 void MainScene::test(cdiggins::any a, CallbackParam b) {
     static bool switchAB = false;
     vec3<F32> pos;
-    SceneGraphNode_ptr boxNode(_sceneGraph->findNode("box").lock());
+    SceneGraphNode_ptr boxNode(_sceneGraph.findNode("box").lock());
 
     Object3D* box = nullptr;
     if (boxNode) {

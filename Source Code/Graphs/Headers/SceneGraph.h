@@ -51,12 +51,18 @@ class SceneGraph : private NonCopyable, public FrameListener {
     SceneGraph();
     ~SceneGraph();
 
-    inline SceneGraphNode_ptr getRoot() const {
+    void unload();
+
+    inline const SceneGraphNode& getRoot() const {
+        return _root;
+    }
+
+    inline SceneGraphNode& getRoot() {
         return _root;
     }
 
     inline SceneGraphNode_wptr findNode(const stringImpl& name, bool sceneNodeName = false) {
-        return _root->findNode(name, sceneNodeName);
+        return _root.findNode(name, sceneNodeName);
     }
 
     /// Update all nodes. Called from "updateSceneState" from class Scene
@@ -70,23 +76,22 @@ class SceneGraph : private NonCopyable, public FrameListener {
 
    protected:
     void onNodeDestroy(SceneGraphNode& oldNode);
-    void onNodeAdd(SceneGraphNode_ptr newNode);
+    void onNodeAdd(SceneGraphNode& newNode);
     void unregisterNode(I64 guid, SceneGraphNode::UsageContext usage);
 
     bool frameStarted(const FrameEvent& evt);
     bool frameEnded(const FrameEvent& evt);
 
    private:
-    SceneGraphNode_ptr _root;
+    SceneRoot* _rootNode;
+    SceneGraphNode _root;
     vectorImpl<SceneGraphNode_wptr> _pendingDeletionNodes;
-    vectorImpl<SceneGraphNode_wptr> _dynamicNodes;
-    vectorImpl<SceneGraphNode_wptr> _staticNodes;
 };
 
 namespace Attorney {
 class SceneGraphSGN {
    private:
-    static void onNodeAdd(SceneGraph& sceneGraph, SceneGraphNode_ptr newNode) {
+    static void onNodeAdd(SceneGraph& sceneGraph, SceneGraphNode& newNode) {
         sceneGraph.onNodeAdd(newNode);
     }
 
@@ -95,16 +100,11 @@ class SceneGraphSGN {
     }
 
     static void onNodeUsageChange(SceneGraph& sceneGraph, 
-                                  SceneGraphNode_ptr node,
+                                  SceneGraphNode& node,
                                   SceneGraphNode::UsageContext oldUsage,
                                   SceneGraphNode::UsageContext newUsage)
     {
-        sceneGraph.unregisterNode(node->getGUID(), node->usageContext());
-        /*if (node->usageContext() == SceneGraphNode::UsageContext::NODE_DYNAMIC) {
-            sceneGraph._dynamicNodes.push_back(node);
-        } else {
-            sceneGraph._staticNodes.push_back(node);
-        }*/
+        sceneGraph.unregisterNode(node.getGUID(), node.usageContext());
 
     }
     friend class Divide::SceneGraphNode;

@@ -271,13 +271,13 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
 
     // Add a light
-    _sun = addLight(LightType::DIRECTIONAL, GET_ACTIVE_SCENEGRAPH().getRoot());
+    _sun = addLight(LightType::DIRECTIONAL, _sceneGraph.getRoot());
     _currentSky = addSky();
 
     //    ResourceDescriptor tempLight1("Light omni");
     //    tempLight1.setEnumValue(LIGHT_TYPE_POINT);
     //    light1 = CreateResource<Light>(tempLight1);
-    //    _sceneGraph->getRoot()->addNode(*light1);
+    //    _sceneGraph->getRoot().addNode(*light1);
 
     // Position camera
     // renderState().getCamera().setEye(vec3<F32>(14,5.5f,11.5f));
@@ -285,13 +285,13 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
 
     //------------------------ Load up game elements
     //-----------------------------///
-    _net = _sceneGraph->findNode("Net");
+    _net = _sceneGraph.findNode("Net");
     //U32 childCount = _net->getChildCount();
     //for (U32 i = 0; i < childCount; ++i) {
     //    SceneGraphNode& child = _net->getChild(i);
     //    child.setReceivesShadows(false);
     //}
-    _floor = _sceneGraph->findNode("Floor");
+    _floor = _sceneGraph.findNode("Floor");
     _floor.lock()->getComponent<RenderingComponent>()->castsShadows(false);
 
     AI::AIManager::getInstance().pauseUpdate(false);
@@ -303,10 +303,10 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
     SceneGraphNode_ptr player[4];
     //----------------------------ARTIFICIAL
     //INTELLIGENCE------------------------------//
-    player[0] = _sceneGraph->findNode("Player1").lock();
-    player[1] = _sceneGraph->findNode("Player2").lock();
-    player[2] = _sceneGraph->findNode("Player3").lock();
-    player[3] = _sceneGraph->findNode("Player4").lock();
+    player[0] = _sceneGraph.findNode("Player1").lock();
+    player[1] = _sceneGraph.findNode("Player2").lock();
+    player[2] = _sceneGraph.findNode("Player3").lock();
+    player[3] = _sceneGraph.findNode("Player4").lock();
     player[0]->setSelectable(true);
     player[1]->setSelectable(true);
     player[2]->setSelectable(true);
@@ -396,7 +396,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setSpecular(vec4<F32>(0.7f, 0.7f, 0.7f, 1.0f));
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
-    _ballSGN = _sceneGraph->getRoot()->addNode(*_ball, "TenisBallSGN");
+    _ballSGN = _sceneGraph.getRoot().addNode(*_ball, "TenisBallSGN");
     _ballSGN.lock()->getComponent<PhysicsComponent>()->translate(
         vec3<F32>(3.0f, 0.2f, 7.0f));
     _ballSGN.lock()->setSelectable(true);

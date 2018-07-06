@@ -122,12 +122,12 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     }
     /// Initiates the NavigationMesh build process, which includes notifying the
     /// clients and posting a task.
-    bool build(SceneGraphNode_ptr sgn,
+    bool build(SceneGraphNode& sgn,
                CreationCallback creationCompleteCallback, bool threaded = true);
     /// Save the NavigationMesh to a file.
-    bool save(SceneGraphNode_ptr sgn);
+    bool save(SceneGraphNode& sgn);
     /// Load a saved NavigationMesh from a file.
-    bool load(SceneGraphNode_ptr sgn);
+    bool load(SceneGraphNode& sgn);
     /// Unload the navmesh reverting the instance to an empty container
     bool unload();
     /// Called once per frame with the time diff between this and the last frame
@@ -178,7 +178,7 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     /// Create a navigation mesh query to help in pathfinding.
     bool createNavigationQuery(U32 maxNodes = 2048);
     /// Create a unique mesh name using the given root node
-    stringImpl generateMeshName(SceneGraphNode_ptr sgn);
+    stringImpl generateMeshName(SceneGraphNode& sgn);
    private:
     bool _saveIntermediates;
     NavigationMeshConfig _configParams;
@@ -219,7 +219,7 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     ///  Query object used for this mesh
     dtNavMeshQuery* _navQuery;
     /// SceneGraphNode from which to build
-    SceneGraphNode_wptr _sgn;
+    SceneGraphNode* _sgn;
     std::atomic<bool> _debugDraw;
     bool _renderConnections;
     RenderMode _renderMode;

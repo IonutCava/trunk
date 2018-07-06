@@ -122,7 +122,7 @@ void RenderingComponent::update(const U64 deltaTime) {
     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
     // Continue only for skinned submeshes
     if (type == Object3D::ObjectType::SUBMESH && _nodeSkinned) {
-        _parentSGN.getParent().lock()->getTrackedBools().setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
+        _parentSGN.getParent()->getTrackedBools().setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
         _skeletonPrimitive->paused(true);
     }
 }
@@ -378,7 +378,7 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState, Rend
     if (_renderSkeleton || sceneRenderState.drawSkeletons()) {
         // Continue only for skinned submeshes
         if (_isSubMesh && _nodeSkinned) {
-            SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+            SceneGraphNode* grandParent = _parentSGN.getParent();
             StateTracker<bool>& parentStates = grandParent->getTrackedBools();
             bool renderSkeletonFlagInitialized = false;
             bool renderSkeleton = parentStates.getTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED,

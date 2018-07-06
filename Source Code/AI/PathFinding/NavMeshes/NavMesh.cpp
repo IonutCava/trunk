@@ -40,6 +40,7 @@ NavigationMesh::NavigationMesh() : GUIDWrapper()
     _tempNavMesh = nullptr;
     _navQuery = nullptr;
     _building = false;
+    _sgn = nullptr;
 }
 
 NavigationMesh::~NavigationMesh()
@@ -152,7 +153,7 @@ bool NavigationMesh::loadConfigFromFile() {
     return true;
 }
 
-bool NavigationMesh::build(SceneGraphNode_ptr sgn,
+bool NavigationMesh::build(SceneGraphNode& sgn,
                            CreationCallback creationCompleteCallback,
                            bool threaded) {
     if (!loadConfigFromFile()) {
@@ -160,7 +161,7 @@ bool NavigationMesh::build(SceneGraphNode_ptr sgn,
         return false;
     }
 
-    _sgn = sgn;
+    _sgn = &sgn;
     _loadCompleteClbk = creationCompleteCallback;
 
     if (_buildThreaded && threaded) {
@@ -273,11 +274,9 @@ bool NavigationMesh::buildProcess() {
 }
 
 bool NavigationMesh::generateMesh() {
-    SceneGraphNode_ptr sgn = _sgn.lock();
+    assert(_sgn != nullptr);
 
-    assert(sgn != nullptr);
-
-    stringImpl nodeName(generateMeshName(sgn));
+    stringImpl nodeName(generateMeshName(*_sgn));
 
     // Parse objects from level into RC-compatible format
     _fileName.append(nodeName);
@@ -293,7 +292,7 @@ bool NavigationMesh::generateMesh() {
     data.setName(nodeName);
 
     if (!NavigationMeshLoader::loadMeshFile(data, geometrySaveFile.c_str())) {
-        if (!NavigationMeshLoader::parse(sgn->getBoundingBoxConst(), data, *sgn)) {
+        if (!NavigationMeshLoader::parse(_sgn->getBoundingBoxConst(), data, *_sgn)) {
             Console::errorfn(Locale::get(_ID("ERROR_NAV_PARSE_FAILED")),
                              nodeName.c_str());
         }
@@ -380,7 +379,7 @@ bool NavigationMesh::generateMesh() {
         dtFreeNavMesh(_navMesh);
     }
 
-    load(sgn);
+    load(*_sgn);
     if (_navMesh == nullptr) {
         createNavigationMesh(params);
     }
@@ -391,7 +390,7 @@ bool NavigationMesh::generateMesh() {
     }
 
     data.isValid(true);
-    save(sgn);
+    save(*_sgn);
 
     return NavigationMeshLoader::saveMeshFile(
         data, geometrySaveFile.c_str());  // input geometry;
@@ -637,7 +636,7 @@ void NavigationMesh::render() {
 }
 
 
-bool NavigationMesh::load(SceneGraphNode_ptr sgn) {
+bool NavigationMesh::load(SceneGraphNode& sgn) {
     if (!_fileName.length()) {
         return false;
     }
@@ -712,7 +711,7 @@ bool NavigationMesh::load(SceneGraphNode_ptr sgn) {
     return createNavigationQuery();
 }
 
-bool NavigationMesh::save(SceneGraphNode_ptr sgn) {
+bool NavigationMesh::save(SceneGraphNode& sgn) {
     if (!_fileName.length() || !_navMesh) {
         return false;
     }
@@ -773,9 +772,9 @@ bool NavigationMesh::save(SceneGraphNode_ptr sgn) {
     return true;
 }
 
-stringImpl NavigationMesh::generateMeshName(SceneGraphNode_ptr sgn) {
-    return (sgn->getNode()->getType() != SceneNodeType::TYPE_ROOT)
-               ? "_node_[_" + sgn->getName() + "_]"
+stringImpl NavigationMesh::generateMeshName(SceneGraphNode& sgn) {
+    return (sgn.getNode()->getType() != SceneNodeType::TYPE_ROOT)
+               ? "_node_[_" + sgn.getName() + "_]"
                : "_root_node";
 }
 

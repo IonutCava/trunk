@@ -40,17 +40,19 @@ WarSceneAIProcessor::WarSceneAIProcessor(AIType type)
 
 WarSceneAIProcessor::~WarSceneAIProcessor()
 {
-    SceneGraphNode_ptr flag0(_globalWorkingMemory._flags[0].value().lock());
-    SceneGraphNode_ptr flag1(_globalWorkingMemory._flags[1].value().lock());
-    if (flag0) {
-        _visualSensor->unfollowSceneGraphNode(
-            g_flagContainer,
-            flag0->getGUID());
-    }
-    if (flag1) {
-        _visualSensor->unfollowSceneGraphNode(
-            g_flagContainer,
-            flag1->getGUID());
+    if (_visualSensor) {
+        SceneGraphNode_ptr flag0(_globalWorkingMemory._flags[0].value().lock());
+        SceneGraphNode_ptr flag1(_globalWorkingMemory._flags[1].value().lock());
+        if (flag0) {
+            _visualSensor->unfollowSceneGraphNode(
+                g_flagContainer,
+                flag0->getGUID());
+        }
+        if (flag1) {
+            _visualSensor->unfollowSceneGraphNode(
+                g_flagContainer,
+                flag1->getGUID());
+        }
     }
 #if defined(PRINT_AI_TO_FILE)
     _WarAIOutputStream.close();
@@ -149,8 +151,7 @@ bool WarSceneAIProcessor::DIE() {
 
     bool hadFlag = _localWorkingMemory._hasEnemyFlag.value();
     if (hadFlag == true) {
-        _globalWorkingMemory._flags[enemyTeamID].value().lock()->setParent(
-        GET_ACTIVE_SCENEGRAPH().getRoot());
+        _globalWorkingMemory._flags[enemyTeamID].value().lock()->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
         PhysicsComponent* pComp = _globalWorkingMemory._flags[enemyTeamID]
                                   .value().lock()
                                   ->getComponent<PhysicsComponent>();
@@ -467,7 +468,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
                 SceneGraphNode_ptr flag = _globalWorkingMemory._flags[enemyTeamID].value().lock();
                 PhysicsComponent* pComp = flag->getComponent<PhysicsComponent>();
                 PhysicsComponent* parentPComp = targetNode.lock()->getComponent<PhysicsComponent>();
-                flag->setParent(targetNode.lock());
+                flag->setParent(*targetNode.lock());
                 vec3<F32> prevScale(pComp->getScale(1.0, true));
                 vec3<F32> parentScale(parentPComp->getScale(1.0, true));
                 vec3<F32> parentPos(parentPComp->getPosition());

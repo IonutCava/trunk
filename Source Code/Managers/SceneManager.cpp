@@ -99,9 +99,9 @@ Scene* SceneManager::createScene(const stringImpl& name) {
 bool SceneManager::unloadCurrentScene() {
     AI::AIManager::getInstance().pauseUpdate(true);
     RemoveResource(_defaultMaterial);
-    bool state = Attorney::SceneManager::unload(*_activeScene);
+    bool state = Attorney::SceneManager::deinitializeAI(*_activeScene);
     if (state) {
-        state = Attorney::SceneManager::deinitializeAI(*_activeScene);
+        state = Attorney::SceneManager::unload(*_activeScene);
         _sceneMap.erase(_sceneMap.find(_ID_RT(_activeScene->getName())));
         _activeScene.reset(nullptr);
     }
@@ -138,7 +138,7 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     _sceneData.lightCount(LightType::POINT, lightMgr.getActiveLightCount(LightType::POINT));
     _sceneData.lightCount(LightType::SPOT, lightMgr.getActiveLightCount(LightType::SPOT));
 
-    _sceneData._otherData.w = getRenderer().getFlag();
+    _sceneData._otherData.w = to_float(getRenderer().getFlag());
 
     _sceneData.toggleShadowMapping(lightMgr.shadowMappingEnabled());
 
