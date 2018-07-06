@@ -135,7 +135,7 @@ void SceneGraphNode::setParent(SceneGraphNode* const parent) {
         }
         //Remove us from the old parent's children map
         NodeChildren::iterator it = _parent->getChildren().find( getName() );
-        if ( it != _parent->getChildren().end() ) {
+        if ( it != std::end(_parent->getChildren()) ) {
             _parent->getChildren().erase( it );
         }
     }
@@ -187,7 +187,7 @@ void SceneGraphNode::removeNode(SceneGraphNode* node) {
     //find the node in the children map
     NodeChildren::iterator it = _children.find(node->getName());
     //If we found the node we are looking for
-    if ( it != _children.end() ) {
+    if ( it != std::end(_children) ) {
         //Remove it from the map
         _children.erase( it );
     } else {

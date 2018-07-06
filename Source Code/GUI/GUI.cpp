@@ -282,7 +282,7 @@ GUIButton* GUI::addButton(const stringImpl& id, const stringImpl& text,
     }
     GUIButton* btn = MemoryManager_NEW GUIButton(id, text, _defaultGUIScheme, position, dimensions, color, parent, callback);
     guiMap::iterator it = _guiStack.find(id);
-    if (it != _guiStack.end()) {
+    if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE( it->second, btn );
     }else {
         hashAlg::insert(_guiStack, hashAlg::makePair(id,  btn));
@@ -297,7 +297,7 @@ GUIMessageBox* GUI::addMsgBox(const stringImpl& id,
                               const vec2<I32>& offsetFromCentre ) {
     GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(id, title, message, offsetFromCentre, _rootSheet);
     guiMap::iterator it = _guiStack.find(id);
-    if (it != _guiStack.end()) {
+    if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE( it->second, box );
     }else {
         hashAlg::insert(_guiStack, hashAlg::makePair(id,  box));
@@ -325,7 +325,7 @@ GUIText* GUI::addText(const stringImpl& id,
 
     GUIText *t = MemoryManager_NEW GUIText(id, fmt_text, position, font, color, _rootSheet);
     guiMap::iterator it = _guiStack.find(id);
-    if (it != _guiStack.end()) {
+    if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE( it->second, t );
     }else {
         hashAlg::insert(_guiStack, hashAlg::makePair(id, t));
@@ -339,7 +339,7 @@ GUIText* GUI::addText(const stringImpl& id,
 GUIFlash* GUI::addFlash(const stringImpl& id, stringImpl movie, const vec2<U32>& position, const vec2<U32>& extent){
     GUIFlash *flash = MemoryManager_NEW GUIFlash(_rootSheet);
     guiMap::iterator it = _guiStack.find(id);
-    if (it != _guiStack.end()) {
+    if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE( it->second, flash );
     }else {
         hashAlg::insert(_guiStack, hashAlg::makePair(id, flash));
@@ -348,7 +348,7 @@ GUIFlash* GUI::addFlash(const stringImpl& id, stringImpl movie, const vec2<U32>&
 }
 
 GUIText* GUI::modifyText(const stringImpl& id, char* format, ...){
-    if (_guiStack.find(id) == _guiStack.end()) {
+    if (_guiStack.find(id) == std::end(_guiStack)) {
         return nullptr;
     }
     va_list args;

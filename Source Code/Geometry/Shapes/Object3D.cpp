@@ -211,10 +211,10 @@ bool Object3D::computeTriangleList(bool force){
     }
 
     //Check for degenerate triangles
-    _geometryTriangles.erase(std::partition(_geometryTriangles.begin(), _geometryTriangles.end(),
+    _geometryTriangles.erase(std::partition(std::begin(_geometryTriangles), std::end(_geometryTriangles),
                             [](const vec3<U32>& triangle) -> bool {
                             return (triangle.x != triangle.y && triangle.x != triangle.z && triangle.y != triangle.z);
-                        }), _geometryTriangles.end());
+                        }), std::end(_geometryTriangles));
 
     DIVIDE_ASSERT(!_geometryTriangles.empty(), "Object3D error: computeTriangleList() failed to generate any triangles!");
     return true;

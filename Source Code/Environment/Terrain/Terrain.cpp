@@ -157,7 +157,7 @@ void Terrain::getDrawCommands(SceneGraphNode* const sgn,
         // draw ground
         _terrainQuadtree->createDrawCommands(sceneRenderState, tempCommands);
 
-        std::sort(tempCommands.begin(), tempCommands.end(),
+        std::sort(std::begin(tempCommands), std::end(tempCommands),
             [](const GenericDrawCommand& a, const GenericDrawCommand& b) {
             return a.LoD() < b.LoD();
         });

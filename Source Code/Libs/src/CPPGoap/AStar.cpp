@@ -14,10 +14,10 @@ int goap::AStar::calculateHeuristic(const WorldState& now, const WorldState& goa
 
 void goap::AStar::addToOpenList(Node&& n) {
     // insert maintaining sort order
-    auto it = std::lower_bound(open_.begin(),
-                               open_.end(),
-                               n);
-    open_.insert(it, std::move(n));
+    open_.insert(std::lower_bound(std::begin(open_),
+                                  std::end(open_),
+                                  n),
+                 std::move(n));
 }
 
 goap::Node& goap::AStar::popAndClose() {
@@ -27,13 +27,13 @@ goap::Node& goap::AStar::popAndClose() {
     assert(!open_.empty() && "You cannot call popAndClose on an empty open-list!");
 
     closed_.push_back(std::move(open_.front()));
-    open_.erase(open_.begin());
+    open_.erase(std::begin(open_));
 
     return closed_.back();
 }
 
 bool goap::AStar::memberOfClosed(const WorldState& ws) const {
-    if ( vectorAlg::find_if( closed_.begin(), closed_.end(), [&]( const Node& n )->bool { return n.ws_ == ws; } ) == closed_.end() ) {
+    if ( vectorAlg::find_if(std::begin(closed_), std::end(closed_), [&]( const Node& n )->bool { return n.ws_ == ws; } ) == std::end(closed_) ) {
         return false;
     } else {
         return true;
@@ -41,7 +41,7 @@ bool goap::AStar::memberOfClosed(const WorldState& ws) const {
 }
 
 vectorImpl<goap::Node>::iterator goap::AStar::memberOfOpen(const WorldState& ws) {
-    return vectorAlg::find_if( open_.begin(), open_.end(), [&]( const Node& n )->bool { return n.ws_ == ws; } );
+    return vectorAlg::find_if(std::begin(open_), std::end(open_), [&]( const Node& n )->bool { return n.ws_ == ws; } );
 }
 
 bool goap::AStar::plan(const WorldState& start, const WorldState& goal, const vectorImpl<Action*>& actions, vectorImpl<const Action*>& plan) {
@@ -94,8 +94,8 @@ bool goap::AStar::plan(const WorldState& start, const WorldState& goal, const ve
                     continue;
                 }
 
-                auto needle = memberOfOpen(possibility);
-                if (needle==open_.end()) { // not a member of open list
+                vectorImpl<goap::Node>::iterator needle = memberOfOpen(possibility);
+                if (needle==std::end(open_)) { // not a member of open list
                     // Make a new node, with current as its parent, recording G & H
                     Node found(possibility, current.g_ + action->cost(), calculateHeuristic(possibility, goal), current.id_, action);
                     known_nodes_[found.id_] = found;
@@ -109,7 +109,7 @@ bool goap::AStar::plan(const WorldState& start, const WorldState& goal, const ve
                         needle->parent_id_ = current.id_;                     // make current its parent
                         needle->g_ = current.g_ + action->cost();              // recalc G & H
                         needle->h_ = calculateHeuristic(possibility, goal);
-                        std::sort(open_.begin(), open_.end());                // resort open list to account for the new F
+                        std::sort(std::begin(open_), std::end(open_));                // resort open list to account for the new F
                     }
                 }
             }

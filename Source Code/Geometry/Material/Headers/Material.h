@@ -204,12 +204,13 @@ public:
 
     /// Remove the custom texture assigned to the specified offset
     inline bool removeCustomTexture(U32 index) {
-        vectorImpl<std::pair<Texture*, U32 > >::iterator it = std::find_if(_customTextures.begin(), _customTextures.end(), 
+        vectorImpl<std::pair<Texture*, U32 > >::iterator it = std::find_if(std::begin(_customTextures), std::end(_customTextures), 
                                                                             [&index]( const std::pair<Texture*, U32>& tex )->bool {
                                                                                 return tex.second == index;
                                                                             });
-        if(it == _customTextures.end())
+        if (it == std::end(_customTextures)) {
             return false;
+        }
 
         _customTextures.erase(it);
 

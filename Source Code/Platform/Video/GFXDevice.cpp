@@ -292,7 +292,7 @@ size_t GFXDevice::getOrCreateStateBlock(const RenderStateBlockDescriptor& descri
     // Each combination of render states has a unique hash value
     size_t hashValue = descriptor.getHash();
     // Find the corresponding render state block
-    if (_stateBlockMap.find(hashValue) == _stateBlockMap.end()) {
+    if (_stateBlockMap.find(hashValue) == std::end(_stateBlockMap)) {
         // Create a new one if none are found. The GFXDevice class is responsible for deleting these!
         hashAlg::emplace(_stateBlockMap, hashValue, MemoryManager_NEW RenderStateBlock(descriptor));
     }
@@ -312,7 +312,7 @@ size_t GFXDevice::setStateBlock(size_t stateBlockHash) {
         _currentStateBlockHash = stateBlockHash;
         RenderStateMap::const_iterator currentStateIt = _stateBlockMap.find(_currentStateBlockHash);
         RenderStateMap::const_iterator previousStateIt = _stateBlockMap.find(_previousStateBlockHash);
-        DIVIDE_ASSERT(currentStateIt != _stateBlockMap.end() && previousStateIt != _stateBlockMap.end(),
+        DIVIDE_ASSERT(currentStateIt != std::end(_stateBlockMap) && previousStateIt != std::end(_stateBlockMap),
                       "GFXDevice error: Invalid state blocks detected on activation!");
         // Activate the new render state block in an rendering API dependent way
         activateStateBlock(*currentStateIt->second, previousStateIt->second);
@@ -327,7 +327,7 @@ const RenderStateBlockDescriptor& GFXDevice::getStateBlockDescriptor(size_t rend
     // Find the render state block associated with the received hash value
     RenderStateMap ::const_iterator it = _stateBlockMap.find(renderStateBlockHash);
     // Assert if it doesn't exist. Avoids programming errors.
-    DIVIDE_ASSERT(it != _stateBlockMap.end(), 
+    DIVIDE_ASSERT(it != std::end(_stateBlockMap), 
                   "GFXDevice error: Invalid render state block hash specified for getStateBlockDescriptor!");
     // Return the state block's descriptor
     return it->second->getDescriptor(); 
@@ -727,12 +727,12 @@ void GFXDevice::ConstructHIZ() {
 IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
     IMPrimitive* tempPriv = nullptr;
     // Find an available and unused primitive (a zombie primitive)
-    vectorImpl<IMPrimitive* >::iterator it = std::find_if(_imInterfaces.begin(),_imInterfaces.end(), 
+    vectorImpl<IMPrimitive* >::iterator it = std::find_if(std::begin(_imInterfaces),std::end(_imInterfaces), 
                                                           [](IMPrimitive* const priv) { 
                                                             return (priv && !priv->inUse());
                                                           });
     // If we allow resurrected primitives check if we have one available
-    if (allowPrimitiveRecycle && it != _imInterfaces.end()) {
+    if (allowPrimitiveRecycle && it != std::end(_imInterfaces)) {
         tempPriv = *it;
         // If we have a valid zombie, resurrect it
         tempPriv->clear();

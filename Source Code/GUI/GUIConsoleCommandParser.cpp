@@ -61,7 +61,7 @@ bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString){
             for(stringImpl::size_type i=0; i < command.length(); i++){
                 command[i] = tolower(command[i]);
             }
-            if(_commandMap.find(command) != _commandMap.end()){
+            if(_commandMap.find(command) != std::end(_commandMap)){
                 //we have a valid command
                 _commandMap[command](commandArgs);
             }else{
@@ -96,7 +96,7 @@ void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args){
             }
         }
     } else {
-        if ( _commandHelp.find( args ) != _commandHelp.end() ) {
+        if ( _commandHelp.find( args ) != std::end(_commandHelp) ) {
             Console::printfn( "%s", _commandHelp[args] );
         } else {
             Console::printfn( "%s", _commandHelp["invalidhelp"] );

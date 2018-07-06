@@ -19,17 +19,17 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener, U32 ca
 
     _listeners.push_back(listener);
 
-    std::sort(_listeners.begin(), _listeners.end());
+    std::sort(std::begin(_listeners), std::end(_listeners));
 }
 
 ///Remove an existent Frame Listener from our collection
 void FrameListenerManager::removeFrameListener(FrameListener* listener) {
     stringImpl name = listener->getName();
     vectorImpl<FrameListener* >::iterator it;
-    it = std::find_if( _listeners.begin(), _listeners.end(), [&name]( FrameListener const* fl )->bool {
-                                                                return fl->getName().compare(name) == 0; 
-                                                            });
-    if (it != _listeners.end()) {
+    it = std::find_if(std::begin(_listeners), std::end(_listeners), [&name]( FrameListener const* fl )->bool {
+                                                                        return fl->getName().compare(name) == 0; 
+                                                                    });
+    if (it != std::end(_listeners)) {
         _listeners.erase(it);
     } else {
         Console::errorfn(Locale::get("ERROR_FRAME_LISTENER_REMOVE"), listener->getName().c_str());
@@ -138,8 +138,8 @@ D32 FrameListenerManager::calculateEventTime(const D32 currentTime, FrameEventTy
         return 0.0;
     }
 
-    EventTimeMap::iterator it  = times.begin();
-    EventTimeMap::iterator end = times.end() - 2;
+    EventTimeMap::iterator it  = std::begin(times);
+    EventTimeMap::iterator end = std::end(times) - 2;
 
     while (it != end) {
         if (currentTime - *it > 0) {
@@ -149,7 +149,7 @@ D32 FrameListenerManager::calculateEventTime(const D32 currentTime, FrameEventTy
         }
     }
 
-    times.erase(times.begin(), it);
+    times.erase(std::begin(times), it);
     return (times.back() - times.front()) / Time::SecondsToMilliseconds(times.size() - 1);
 }
 

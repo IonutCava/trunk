@@ -127,7 +127,7 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
 
 I32 AnimationComponent::frameIndex(U32 animationID) const {
     frameIndexes::const_iterator it = _lastFrameIndexes.find(animationID);
-    if (it != _lastFrameIndexes.end()){
+    if (it != std::end(_lastFrameIndexes)){
         return it->second;
     }
 

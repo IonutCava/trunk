@@ -23,7 +23,7 @@ namespace XML
         std::cout << "XML: Loading Geometry: [ " << stringAlg::fromBase(file) << " ] " << std::endl;
         read_xml(stringAlg::fromBase(file), pt);
         ptree::iterator it;
-        for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); ++it )
+        for (it = std::begin(pt.get_child("geometry")); it != std::end(pt.get_child("geometry")); ++it )
         {
             std::string name(it->second.data());
             std::string format(it->first.data());
@@ -49,7 +49,7 @@ namespace XML
             model.version = pt.get<F32>(name + ".version");
             Patch::getInstance().addGeometry(model);
         }
-        for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); ++it )
+        for (it = std::begin(pt.get_child("vegetation")); it != std::end(pt.get_child("vegetation")); ++it )
         {
             std::string name(it->second.data());
             std::string format(it->first.data());
@@ -75,7 +75,7 @@ namespace XML
         }
 
         if(boost::optional<ptree &> primitives = pt.get_child_optional("primitives"))
-        for (it = pt.get_child("primitives").begin(); it != pt.get_child("primitives").end(); ++it )
+        for (it = std::begin(pt.get_child("primitives")); it != std::end(pt.get_child("primitives")); ++it )
         {
             std::string name(it->second.data());
             std::string format(it->first.data());

@@ -15,13 +15,13 @@ namespace Navigation {
     }
 
     void WaypointGraph::addWaypoint(Waypoint* wp){
-        if(_waypoints.find(wp->getID()) != _waypoints.end()) return;
+        if(_waypoints.find(wp->getID()) != std::end(_waypoints)) return;
         hashAlg::emplace(_waypoints, wp->getID(), wp);
         updateGraph();
     }
 
     void WaypointGraph::removeWaypoint(Waypoint* wp){
-        if(_waypoints.find(wp->getID()) != _waypoints.end()){
+        if(_waypoints.find(wp->getID()) != std::end(_waypoints)){
             _waypoints.erase(wp->getID());
             updateGraph();
         }else{

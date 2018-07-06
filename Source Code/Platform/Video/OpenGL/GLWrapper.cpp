@@ -239,7 +239,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
     // Search for the requested font by name
     FontCache::const_iterator it = _fonts.find(fontName);
     // If we failed to find it, it wasn't loaded yet
-    if (it == _fonts.end()) {
+    if (it == std::end(_fonts)) {
         // Fonts are stored in the general asset directory
         stringImpl fontPath(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation", "assets") + "/");
         // In the GUI subfolder
@@ -324,7 +324,7 @@ size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
     // Try to find the hash value in the sampler object map
     samplerObjectMap::const_iterator it = _samplerMap.find(hashValue);
     // If we fail to find it, we need to create a new sampler object
-    if (it == _samplerMap.end()) {
+    if (it == std::end(_samplerMap)) {
         // Create and store the newly created sample object. GL_API is responsible for deleting these!
         hashAlg::emplace(_samplerMap, hashValue, MemoryManager_NEW glSamplerObject(descriptor));
     }
@@ -340,7 +340,7 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
     }
     // If we fail to find the sampler object for the given hash, we print an error and return the default OpenGL handle
     samplerObjectMap::const_iterator it = _samplerMap.find(samplerHash);
-    if (it == _samplerMap.end()) {
+    if (it == std::end(_samplerMap)) {
         Console::errorfn(Locale::get("ERROR_NO_SAMPLER_OBJECT_FOUND"), samplerHash);
         return 0;
     }

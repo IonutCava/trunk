@@ -218,17 +218,17 @@ void GFXDevice::endFrame() {
 
         //Remove dead primitives in 3 steps (or we could automate this with shared_ptr?):
         //1) Partition the vector in 2 parts: valid objects first, zombie objects second
-        vectorImpl<IMPrimitive* >::iterator zombie = std::partition(_imInterfaces.begin(), _imInterfaces.end(),
+        vectorImpl<IMPrimitive* >::iterator zombie = std::partition(std::begin(_imInterfaces), std::end(_imInterfaces),
                                                                     [](IMPrimitive* const priv){
                                                                         if(!priv->_canZombify) return true;
                                                                         return priv->zombieCounter() < IM_MAX_FRAMES_ZOMBIE_COUNT;
                                                                     });
         //2) For every zombie object, free the memory it's using
-        for ( vectorImpl<IMPrimitive *>::iterator i = zombie ; i != _imInterfaces.end(); ++i ) {
+        for ( vectorImpl<IMPrimitive *>::iterator i = zombie ; i != std::end(_imInterfaces); ++i ) {
             MemoryManager::DELETE( *i );
         }
         //3) Remove all the zombie objects once the memory is freed
-        _imInterfaces.erase(zombie, _imInterfaces.end());
+        _imInterfaces.erase(zombie, std::end(_imInterfaces));
     
         FRAME_COUNT++;
         FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;

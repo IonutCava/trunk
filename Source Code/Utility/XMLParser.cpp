@@ -374,8 +374,8 @@ namespace XML {
         ptree::iterator itTexture;
         stringImpl assetLocation(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/");
 
-        for (itTerrain = pt.get_child("terrainList").begin(); 
-             itTerrain != pt.get_child("terrainList").end(); 
+        for (itTerrain = std::begin(pt.get_child("terrainList")); 
+             itTerrain != std::end(pt.get_child("terrainList")); 
              ++itTerrain) {
             //The actual terrain name
             std::string name = itTerrain->second.data(); 
@@ -404,8 +404,8 @@ namespace XML {
             I32 i = 0;
             stringImpl temp;
             stringImpl layerOffsetStr;
-            for (itTexture = pt.get_child(name + ".textureLayers").begin(); 
-                 itTexture != pt.get_child(name + ".textureLayers").end(); 
+            for (itTexture = std::begin(pt.get_child(name + ".textureLayers")); 
+                 itTexture != std::end(pt.get_child(name + ".textureLayers")); 
                  ++itTexture, ++i) {
 
                 std::string layerName(itTexture->second.data());
@@ -518,7 +518,7 @@ namespace XML {
         std::string assetLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/";
 
         if(boost::optional<ptree &> geometry = pt.get_child_optional("geometry")) {
-            for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); ++it ) {
+            for (it = std::begin(pt.get_child("geometry")); it != std::end(pt.get_child("geometry")); ++it ) {
                 std::string name(it->second.data());
                 std::string format(it->first.data());
                 if(format.find("<xmlcomment>") != std::string::npos) continue;
@@ -574,7 +574,7 @@ namespace XML {
         }
 
         if(boost::optional<ptree &> vegetation = pt.get_child_optional("vegetation")) {
-            for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); ++it ) {
+            for (it = std::begin(pt.get_child("vegetation")); it != std::end(pt.get_child("vegetation")); ++it ) {
                 std::string name = it->second.data();
                 std::string format = it->first.data();
                 if(format.find("<xmlcomment>") != std::string::npos) continue;
@@ -627,7 +627,7 @@ namespace XML {
         }
 
         if(boost::optional<ptree &> primitives = pt.get_child_optional("primitives")) {
-            for (it = pt.get_child("primitives").begin(); it != pt.get_child("primitives").end(); ++it ) {
+            for (it = std::begin(pt.get_child("primitives")); it != std::end(pt.get_child("primitives")); ++it ) {
                 std::string name(it->second.data());
                 std::string format(it->first.data());
                 if(format.find("<xmlcomment>") != std::string::npos) {

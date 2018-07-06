@@ -33,7 +33,7 @@ bool TrackedObject::SubRef() {
 
     /// For each object in our dependency map
     std::list<TrackedObject *>::iterator it;
-    for ( it = _dependencyList.begin(); it != _dependencyList.end(); ) {
+    for ( it = std::begin(_dependencyList); it != std::end(_dependencyList); ) {
         /// We should never have a null object in our dependency map
         assert( *it != nullptr );
         /// substract ref count for every sub object
@@ -57,11 +57,11 @@ void TrackedObject::REGISTER_TRACKED_DEPENDENCY( TrackedObject* const obj ) {
 
 void TrackedObject::UNREGISTER_TRACKED_DEPENDENCY( TrackedObject* const obj ) {
     I64 targetGUID = obj->getGUID();
-    _dependencyList.erase(std::remove_if(_dependencyList.begin(), _dependencyList.end(),
+    _dependencyList.erase(std::remove_if(std::begin(_dependencyList), std::end(_dependencyList),
                                          [&targetGUID]( TrackedObject* tObj )->bool {
                                             return tObj->getGUID() == targetGUID;
                                          } ),
-                          _dependencyList.end() );
+                         std::end(_dependencyList));
 }
 
 }; //namespace Divide

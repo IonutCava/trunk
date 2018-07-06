@@ -52,7 +52,7 @@ bool ShaderManager::init() {
 void ShaderManager::registerShaderProgram(const stringImpl& name, ShaderProgram* const shaderProgram) {
     ShaderProgramMap::iterator it = _shaderPrograms.find(name);
     // Either update an existing shader
-    if (it != _shaderPrograms.end()) {
+    if (it != std::end(_shaderPrograms)) {
         MemoryManager::SAFE_UPDATE( it->second, shaderProgram );
     } else {
         // Or register a new one
@@ -64,7 +64,7 @@ void ShaderManager::registerShaderProgram(const stringImpl& name, ShaderProgram*
 void ShaderManager::unregisterShaderProgram(const stringImpl& name) {
     // The shader program must be registered in order to unregister it
     ShaderProgramMap::iterator it = _shaderPrograms.find(name);
-    if (it != _shaderPrograms.end()) {
+    if (it != std::end(_shaderPrograms)) {
         _shaderPrograms.erase(it);
     } else {
         // Show an error if this isn't the case
@@ -136,7 +136,7 @@ const stringImpl& ShaderManager::shaderFileRead(const stringImpl &atomName, cons
     // See if the atom was previously loaded and still in cache
     AtomMap::iterator it = _atoms.find(atomName);
     // If that's the case, return the code from cache
-    if (it != _atoms.end()) {
+    if (it != std::end(_atoms)) {
         return it->second;
     }
     // If we forgot to specify an atom location, we have nothing to return
@@ -194,7 +194,7 @@ void ShaderManager::removeShader(Shader* s) {
     stringImpl name(s->getName());
     // Try to find it
     ShaderMap::iterator it = _shaderNameMap.find(name);
-    if (it != _shaderNameMap.end()) {
+    if (it != std::end(_shaderNameMap)) {
         // Subtract one reference from it. 
         if (s->SubRef()) {
             // If the new reference count is 0, delete the shader
@@ -208,7 +208,7 @@ void ShaderManager::removeShader(Shader* s) {
 Shader* ShaderManager::getShader(const stringImpl& name, const bool recompile) {
     // Try to find the shader
     ShaderMap::iterator it = _shaderNameMap.find(name);
-    if (it != _shaderNameMap.end()) {
+    if (it != std::end(_shaderNameMap)) {
         if (!recompile) {
             // We don't need a ref count increase if we just recompile the shader
             it->second->AddRef();

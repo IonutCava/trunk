@@ -12,7 +12,7 @@ bool Patch::compareData(const PatchData& data)
 {
     bool updated = true;
     XML::loadScene(data.sceneName);
-    for(vectorImpl<FileData>::iterator _iter = ModelData.begin(); _iter != ModelData.end(); _iter++)
+    for(vectorImpl<FileData>::iterator _iter = std::begin(ModelData); _iter != std::end(ModelData); _iter++)
         for(U32 i = 0; i < data.size; i++)
         {
             if(data.name[i] == (*_iter).ItemName) // for each item in the scene

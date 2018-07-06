@@ -92,7 +92,7 @@ bool LightManager::clear(){
 bool LightManager::addLight(Light* const light){
     light->addShadowMapInfo(MemoryManager_NEW ShadowMapInfo(light));
 
-    if(_lights.find(light->getGUID()) != _lights.end()){
+    if(_lights.find(light->getGUID()) != std::end(_lights)){
         Console::errorfn(Locale::get("ERROR_LIGHT_MANAGER_DUPLICATE"), light->getGUID());
         return false;
     }
@@ -109,7 +109,7 @@ bool LightManager::removeLight(I64 lightGUID) {
 
     Light::LightMap::iterator it = _lights.find(lightGUID);
 
-    if(it == _lights.end()){
+    if (it == std::end(_lights)){
         Console::errorfn(Locale::get("ERROR_LIGHT_MANAGER_REMOVE_LIGHT"), lightGUID);
         return false;
     }
@@ -204,7 +204,7 @@ void LightManager::previewShadowMaps(Light* light) {
             return;
         }
         if ( !light ) {
-            light = _lights.begin()->second;
+            light = std::begin(_lights)->second;
         }
         if ( !light->castsShadows() ) {
             return;
@@ -262,11 +262,11 @@ bool LightManager::shadowMappingEnabled() const {
 }
 
 Light* LightManager::getLight(I64 lightGUID) {
-    Light::LightMap::const_iterator it = std::find_if(_lights.begin(), _lights.end(),
+    Light::LightMap::const_iterator it = std::find_if(std::begin(_lights), std::end(_lights),
                                                       [&lightGUID](const Light::LightMap::value_type vt)->bool {
                                                         return vt.second->getGUID() == lightGUID; 
                                                       });
-    assert(it != _lights.end());
+    assert(it != std::end(_lights));
     return it->second;
 }
 

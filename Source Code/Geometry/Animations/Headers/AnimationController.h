@@ -98,7 +98,7 @@ public:
     }
     inline bool GetAnimationID(const stringImpl& animationName, U32& id){
         hashMapImpl<stringImpl, U32>::iterator itr = _animationNameToId.find(animationName);
-        if (itr != _animationNameToId.end()) {
+        if (itr != std::end(_animationNameToId)) {
             id = itr->second;
             return true;
         }

@@ -33,7 +33,7 @@ template<typename T>
 T ParamHandler::getParam(const stringImpl& name, T defaultValue) const {
     ReadLock r_lock(_mutex);
     ParamMap::const_iterator it = _params.find(name);
-    if(it != _params.end()) {
+    if(it != std::end(_params)) {
         bool success = false;
         const T& ret = it->second.constant_cast<T>(success);
 #           ifdef _DEBUG        
@@ -55,7 +55,7 @@ template<typename T>
 void ParamHandler::setParam(const stringImpl& name, const T& value) {
     WriteLock w_lock(_mutex);
     ParamMap::iterator it = _params.find(name); 
-    if (it == _params.end()) {
+    if (it == std::end(_params)) {
         DIVIDE_ASSERT(emplace(_params, name, cdiggins::any(value)).second,
                         "ParamHandler error: can't add specified value to map!");
     } else {
@@ -79,14 +79,14 @@ void ParamHandler::delParam(const stringImpl& name) {
 template<typename T>
 bool ParamHandler::isParam(const stringImpl& param) const {
     ReadLock r_lock(_mutex);
-    return _params.find(param) != _params.end();
+    return _params.find(param) != std::end(_params);
 }
 
 template<>
 stringImpl ParamHandler::getParam(const stringImpl& name, stringImpl defaultValue) const {
     ReadLock r_lock(_mutex);
     ParamStringMap::const_iterator it = _paramsStr.find(name);
-    if (it != _paramsStr.end()) {
+    if (it != std::end(_paramsStr)) {
         return it->second;
     }
 
@@ -98,7 +98,7 @@ template<>
 void ParamHandler::setParam(const stringImpl& name, const stringImpl& value) {
     WriteLock w_lock(_mutex);
     ParamStringMap::iterator it = _paramsStr.find(name);
-    if (it == _paramsStr.end()) {
+    if (it == std::end(_paramsStr)) {
         DIVIDE_ASSERT(emplace(_paramsStr, name, value).second, 
                         "ParamHandler error: can't add specified value to map!");
     } else {
@@ -139,14 +139,14 @@ void ParamHandler::delParam<stringImpl>(const stringImpl& name) {
 template<>
 bool ParamHandler::isParam<stringImpl>(const stringImpl& param) const {
     ReadLock r_lock(_mutex);
-    return _paramsStr.find(param) != _paramsStr.end();
+    return _paramsStr.find(param) != std::end(_paramsStr);
 }
 
 template<>
 bool ParamHandler::getParam(const stringImpl& name, bool defaultValue) const {
     ReadLock r_lock(_mutex);
     ParamBoolMap::const_iterator it = _paramBool.find(name);
-    if (it != _paramBool.end()) {
+    if (it != std::end(_paramBool)) {
         return it->second;
     }
 
@@ -158,7 +158,7 @@ template<>
 void ParamHandler::setParam(const stringImpl& name, const bool& value) {
     WriteLock w_lock(_mutex);
     ParamBoolMap::iterator it = _paramBool.find(name);
-    if (it == _paramBool.end()) {
+    if (it == std::end(_paramBool)) {
         DIVIDE_ASSERT(emplace(_paramBool, name, value).second,
                         "ParamHandler error: can't add specified value to map!");
     } else {
@@ -182,7 +182,7 @@ inline void ParamHandler::delParam<bool>(const stringImpl& name) {
 template<>
 bool ParamHandler::isParam<bool>(const stringImpl& param) const {
     ReadLock r_lock(_mutex);
-    return _paramBool.find(param) != _paramBool.end();
+    return _paramBool.find(param) != std::end(_paramBool);
 }
 
 }; //namespace Divide

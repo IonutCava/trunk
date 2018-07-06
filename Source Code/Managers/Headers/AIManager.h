@@ -50,7 +50,7 @@ public:
     inline AITeam* const getTeamByID(I32 AITeamID) {
         if (AITeamID != -1) {
             AITeamMap::const_iterator it = _aiTeams.find(AITeamID);
-            if (it != _aiTeams.end()) {
+            if (it != std::end(_aiTeams)) {
                 return it->second;
             }
         }
@@ -60,7 +60,7 @@ public:
     bool addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* const navMesh);
     Navigation::NavigationMesh* getNavMesh(AIEntity::PresetAgentRadius radius) const { 
         NavMeshMap::const_iterator it = _navMeshes.find(radius);
-        if (it != _navMeshes.end()) {
+        if (it != std::end(_navMeshes)) {
             return it->second;
         }
         return nullptr;

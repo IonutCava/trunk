@@ -66,7 +66,7 @@ namespace goap {
 
     inline std::ostream& operator<<(std::ostream& out, const WorldState& n) {
         out << "WorldState { ";
-        for (const auto& kv : n.vars_) {
+        for (const std::pair<const int, bool>& kv : n.vars_) {
             out << kv.second << " ";
         }
         out << "}";

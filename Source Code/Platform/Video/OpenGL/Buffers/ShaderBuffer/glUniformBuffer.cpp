@@ -184,11 +184,11 @@ void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram, ShaderBuffer
     // Sort uniform detail string alphabetically. (Since the detail strings 
     // start with the uniform's byte offset, this will order the uniforms in 
     // the order they are laid out in memory:
-    std::sort(uniform_details.begin(), uniform_details.end());
+    std::sort(std::begin(uniform_details), std::end(uniform_details));
 
     // Output details:
     Console::printfn("%s ( %d )", block_name.c_str(), block_size);
-    for (auto detail = uniform_details.begin(); detail != uniform_details.end(); ++detail) {
+    for (vectorImpl<stringImpl>::iterator detail = std::begin(uniform_details); detail != std::end(uniform_details); ++detail) {
         Console::printfn("%s", (*detail).c_str());
     }
 }

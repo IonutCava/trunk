@@ -91,7 +91,7 @@ void AIEntity::processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& 
 
 Sensor* AIEntity::getSensor(SensorType type) {
     ReadLock r_lock(_updateMutex);
-    if (_sensorList.find(type) != _sensorList.end()) {
+    if (_sensorList.find(type) != std::end(_sensorList)) {
         return _sensorList[type];
     }
     return nullptr;
@@ -111,7 +111,7 @@ bool AIEntity::addSensor(SensorType type) {
 
     if (sensor) {
         SensorMap::iterator it = _sensorList.find(type);
-        if (it != _sensorList.end()) {
+        if (it != std::end(_sensorList)) {
             MemoryManager::SAFE_UPDATE( it->second, sensor );
         } else {
             hashAlg::emplace(_sensorList, type, sensor);

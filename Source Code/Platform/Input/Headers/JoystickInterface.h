@@ -88,7 +88,7 @@ public:
                 if (lstFFEffects.size() > 0) {
                     Console::printf(Locale::get("INPUT_JOY_SUPPORTED_EFFECTS"));
                     OIS::ForceFeedback::SupportedEffectList::const_iterator itFFEff;
-                    for(itFFEff = lstFFEffects.begin(); itFFEff != lstFFEffects.end(); ++itFFEff)
+                    for(itFFEff = std::begin(lstFFEffects); itFFEff != std::end(lstFFEffects); ++itFFEff)
                         Console::printf(" %s\n",OIS::Effect::getEffectTypeName(itFFEff->second));
                 }else{
                     Console::d_printfn(Locale::get("WARN_INPUT_NO_SUPPORTED_EFFECTS"));

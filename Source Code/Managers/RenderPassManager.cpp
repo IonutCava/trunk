@@ -55,14 +55,14 @@ void RenderPassManager::addRenderPass(const stringImpl& renderPassName, U8 order
     assert(!renderPassName.empty());
 
     _renderPasses.push_back(RenderPassItem(renderPassName, orderKey));
-    std::sort(_renderPasses.begin(), _renderPasses.end(), 
+    std::sort(std::begin(_renderPasses), std::end(_renderPasses), 
               [](const RenderPassItem& a, const RenderPassItem& b) -> bool { 
                 return a.sortKey() < b.sortKey(); 
               });
 }
 
 void RenderPassManager::removeRenderPass( const stringImpl& name) {
-    for (std::vector<RenderPassItem >::iterator it = _renderPasses.begin(); it != _renderPasses.end(); it++ ) {
+    for (std::vector<RenderPassItem >::iterator it = std::begin(_renderPasses); it != std::end(_renderPasses); ++it ) {
         if ( it->renderPass().getName().compare( name ) == 0 ) {
             _renderPasses.erase( it );
             break;

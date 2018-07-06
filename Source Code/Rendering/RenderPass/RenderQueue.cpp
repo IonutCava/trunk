@@ -35,7 +35,7 @@ U16 RenderQueue::getRenderQueueStackSize() const {
 RenderBin* RenderQueue::getBin(RenderBin::RenderBinType rbType) {
     RenderBin* temp = nullptr;
     RenderBinMap::const_iterator binMapiter = _renderBins.find(rbType);
-    if(binMapiter != _renderBins.end()){
+    if(binMapiter != std::end(_renderBins)){
         temp = binMapiter->second;
     }
     return temp;
@@ -54,7 +54,7 @@ SceneGraphNode* RenderQueue::getItem(U16 renderBin, U16 index){
 
 RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
     RenderBinMap::const_iterator binMapiter = _renderBins.find(rbType);
-    if(binMapiter != _renderBins.end()){
+    if(binMapiter != std::end(_renderBins)){
         return binMapiter->second;
     }
 
@@ -110,8 +110,8 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
     hashAlg::emplace(_renderBins, rbType, temp);
     hashAlg::emplace(_renderBinId, static_cast<U16>(_renderBins.size() - 1),  rbType);
 
-    _sortedRenderBins.insert(std::lower_bound(_sortedRenderBins.begin(), 
-                                              _sortedRenderBins.end(), 
+    _sortedRenderBins.insert(std::lower_bound(std::begin(_sortedRenderBins), 
+                                              std::end(_sortedRenderBins), 
                                               temp,
                                               [](RenderBin* const a, const RenderBin* const b) -> bool {
                                                   return a->getSortOrder() < b->getSortOrder();

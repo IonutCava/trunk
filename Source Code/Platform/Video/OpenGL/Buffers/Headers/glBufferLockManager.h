@@ -68,12 +68,12 @@ private:
     void wait(GLsync* _syncObj);
     void cleanup(BufferLock* _bufferLock);
 
-    vectorImpl<BufferLock> mBufferLocks;
+    vectorImpl<BufferLock> _bufferLocks;
 
     size_t _lastLockOffset;
     size_t _lastLockRange;
     // Whether it's the CPU (true) that updates, or the GPU (false)
-    bool mCPUUpdates;
+    bool _CPUUpdates;
 };
 
 }; //namespace Divide

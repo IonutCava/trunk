@@ -33,11 +33,11 @@ void ApplicationTimer::addTimer(ProfileTimer* const timer) {
 
 void ApplicationTimer::removeTimer(ProfileTimer* const timer) {
     const stringImpl& timerName = timer->name();
-    _profileTimers.erase(std::remove_if(_profileTimers.begin(), _profileTimers.end(),
-        [&timerName](ProfileTimer* tTimer)->bool {
-        return tTimer->name().compare(timerName) == 0;
-    }),
-        _profileTimers.end());
+    _profileTimers.erase(std::remove_if(std::begin(_profileTimers), std::end(_profileTimers),
+                                        [&timerName](ProfileTimer* tTimer)->bool {
+                                            return tTimer->name().compare(timerName) == 0;
+                                        }),
+                        std::end(_profileTimers));
 }
 
 ///No need for init to be threadsafe

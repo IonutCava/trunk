@@ -8,7 +8,7 @@ GLuint64 kOneSecondInNanoSeconds = 1000000000;
 // --------------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------
 glBufferLockManager::glBufferLockManager(bool _cpuUpdates)
-: mCPUUpdates(_cpuUpdates)
+: _CPUUpdates(_cpuUpdates)
 {
     _lastLockOffset = _lastLockRange = 0;
 }
@@ -16,11 +16,11 @@ glBufferLockManager::glBufferLockManager(bool _cpuUpdates)
 // --------------------------------------------------------------------------------------------------------------------
 glBufferLockManager::~glBufferLockManager()
 {
-    for (auto it = mBufferLocks.begin(); it != mBufferLocks.end(); ++it) {
+    for (vectorImpl<BufferLock>::iterator it = std::begin(_bufferLocks); it != std::end(_bufferLocks); ++it) {
         cleanup(&*it);
     }
 
-    mBufferLocks.clear();
+    _bufferLocks.clear();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ void glBufferLockManager::WaitForLockedRange(size_t _lockBeginBytes, size_t _loc
 {
     BufferRange testRange = { _lockBeginBytes, _lockLength };
     vectorImpl<BufferLock> swapLocks;
-    for (auto it = mBufferLocks.begin(); it != mBufferLocks.end(); ++it)
+    for (vectorImpl<BufferLock>::iterator it = std::begin(_bufferLocks); it != std::end(_bufferLocks); ++it)
     {
         if (testRange.Overlaps(it->mRange)) {
             wait(&it->mSyncObj);
@@ -38,7 +38,7 @@ void glBufferLockManager::WaitForLockedRange(size_t _lockBeginBytes, size_t _loc
         }
     }
 
-    mBufferLocks.swap(swapLocks);
+    _bufferLocks.swap(swapLocks);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ void glBufferLockManager::LockRange(size_t _lockBeginBytes, size_t _lockLength)
     GLsync syncName = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     BufferLock newLock = { newRange, syncName };
 
-    mBufferLocks.push_back(newLock);
+    _bufferLocks.push_back(newLock);
 
     _lastLockOffset = _lockBeginBytes;
     _lastLockRange = _lockLength;
@@ -57,7 +57,7 @@ void glBufferLockManager::LockRange(size_t _lockBeginBytes, size_t _lockLength)
 // --------------------------------------------------------------------------------------------------------------------
 void glBufferLockManager::wait(GLsync* _syncObj)
 {
-    if (mCPUUpdates) {
+    if (_CPUUpdates) {
         GLbitfield waitFlags = 0;
         GLuint64 waitDuration = 0;
         while (1) {

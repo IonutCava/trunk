@@ -84,7 +84,7 @@ bool EventHandler::keyReleased( const OIS::KeyEvent &arg ) {
 void forceVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect){
   D32 dForce = mapVars["Force"]->getValue();
   D32 dAttackFactor = 1.0;
-  if (mapVars.find("AttackFactor") != mapVars.end())
+  if (mapVars.find("AttackFactor") != std::end(mapVars))
     dAttackFactor = mapVars["AttackFactor"]->getValue();
 
   OIS::ConstantEffect* pConstForce = dynamic_cast<OIS::ConstantEffect*>(pEffect->getForceEffect());

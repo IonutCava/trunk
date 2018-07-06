@@ -98,7 +98,7 @@ void AIManager::updateEntities(const U64 deltaTime){//react
 bool AIManager::registerEntity(U32 teamId, AIEntity* entity) {
     WriteLock w_lock(_updateMutex);
     AITeamMap::const_iterator it = _aiTeams.find(teamId);
-    DIVIDE_ASSERT(it != _aiTeams.end(), "AIManager error: attempt to register an AI Entity to a non-existent team!");
+    DIVIDE_ASSERT(it != std::end(_aiTeams), "AIManager error: attempt to register an AI Entity to a non-existent team!");
     it->second->addTeamMember(entity);
     return true;
 }
@@ -112,14 +112,14 @@ void AIManager::unregisterEntity(AIEntity* entity) {
 void AIManager::unregisterEntity(U32 teamId, AIEntity* entity) {
     WriteLock w_lock(_updateMutex);
     AITeamMap::const_iterator it = _aiTeams.find(teamId);
-    DIVIDE_ASSERT(it != _aiTeams.end(), "AIManager error: attempt to remove an AI Entity from a non-existent team!");
+    DIVIDE_ASSERT(it != std::end(_aiTeams), "AIManager error: attempt to remove an AI Entity from a non-existent team!");
     it->second->removeTeamMember(entity);
 }
 
 bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* const navMesh) {
     WriteLock w_lock(_navMeshMutex);
     NavMeshMap::iterator it = _navMeshes.find(radius);
-    DIVIDE_ASSERT(it == _navMeshes.end(), "AIManager error: NavMesh for specified dimensions already exists. Remove it first!");
+    DIVIDE_ASSERT(it == std::end(_navMeshes), "AIManager error: NavMesh for specified dimensions already exists. Remove it first!");
     DIVIDE_ASSERT(navMesh != nullptr, "AIManager error: Invalid navmesh specified!");
 
     navMesh->debugDraw(_navMeshDebugDraw);
@@ -137,7 +137,7 @@ bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::Navig
 void AIManager::destroyNavMesh(AIEntity::PresetAgentRadius radius) {
     WriteLock w_lock(_navMeshMutex);
     NavMeshMap::iterator it = _navMeshes.find(radius);
-    DIVIDE_ASSERT(it != _navMeshes.end(), "AIManager error: Can't destroy NavMesh for specified radius (NavMesh not found)!");
+    DIVIDE_ASSERT(it != std::end(_navMeshes), "AIManager error: Can't destroy NavMesh for specified radius (NavMesh not found)!");
     MemoryManager::DELETE( it->second );
     _navMeshes.erase(it);
     w_lock.unlock();
@@ -151,7 +151,7 @@ void AIManager::destroyNavMesh(AIEntity::PresetAgentRadius radius) {
 void AIManager::registerTeam(AITeam* const team) {
     WriteLock w_lock(_updateMutex);
     U32 teamID = team->getTeamID();
-    DIVIDE_ASSERT(_aiTeams.find(teamID) == _aiTeams.end(), "AIManager error: attempt to double register an AI team!");
+    DIVIDE_ASSERT(_aiTeams.find(teamID) == std::end(_aiTeams), "AIManager error: attempt to double register an AI team!");
 
     hashAlg::insert(_aiTeams, hashAlg::makePair(teamID, team));
 }
@@ -160,7 +160,7 @@ void AIManager::unregisterTeam(AITeam* const team) {
     WriteLock w_lock(_updateMutex);
     U32 teamID = team->getTeamID();
     AITeamMap::iterator it = _aiTeams.find(teamID);
-    DIVIDE_ASSERT(it != _aiTeams.end(), "AIManager error: attempt to unregister an invalid AI team!");
+    DIVIDE_ASSERT(it != std::end(_aiTeams), "AIManager error: attempt to unregister an invalid AI team!");
     _aiTeams.erase(it);
 }
 

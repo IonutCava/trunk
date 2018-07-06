@@ -102,7 +102,7 @@ EffectManager::~EffectManager()
 
 void EffectManager::updateActiveEffects() {
     vectorImpl<VariableEffect*>::iterator iterEffs;;
-    for (iterEffs = _vecEffects.begin(); iterEffs != _vecEffects.end(); ++iterEffs) {
+    for (iterEffs = std::begin(_vecEffects); iterEffs != std::end(_vecEffects); ++iterEffs) {
         if ((*iterEffs)->isActive()){
             (*iterEffs)->update();
             _pJoystickInterface->getCurrentFFDevice()->modify((*iterEffs)->getFFEffect());

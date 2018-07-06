@@ -140,9 +140,9 @@ void ShaderProgram::unbind(bool resetActiveProgram) {
 /// Add a define to the shader. The defined must not have been added previously
 void ShaderProgram::addShaderDefine(const stringImpl& define) {
     // Find the string in the list of program defines
-    vectorImpl<stringImpl >::iterator it = find(_definesList.begin(), _definesList.end(), define);
+    vectorImpl<stringImpl >::iterator it = std::find(std::begin(_definesList), std::end(_definesList), define);
     // If we can't find it, we add it
-    if (it == _definesList.end()) {
+    if (it == std::end(_definesList)) {
         _definesList.push_back(define);
     } else {
         // If we did find it, we'll show an error message in debug builds about double add
@@ -154,9 +154,9 @@ void ShaderProgram::addShaderDefine(const stringImpl& define) {
 /// Remove a define from the shader. The defined must have been added previously
 void ShaderProgram::removeShaderDefine(const stringImpl& define) {
     // Find the string in the list of program defines
-    vectorImpl<stringImpl >::iterator it = find(_definesList.begin(), _definesList.end(), define);
+    vectorImpl<stringImpl >::iterator it = std::find(std::begin(_definesList), std::end(_definesList), define);
     // If we find it, we remove it
-    if (it != _definesList.end()) {
+    if (it != std::end(_definesList)) {
         _definesList.erase(it);
     } else {
         // If we did not find it, we'll show an error message in debug builds
@@ -166,9 +166,9 @@ void ShaderProgram::removeShaderDefine(const stringImpl& define) {
 
 void ShaderProgram::addShaderUniform(const stringImpl& uniform, const ShaderType& type) {
     // Find the string in the list of uniforms
-    vectorImpl<stringImpl >::iterator it = find(_customUniforms[type].begin(), _customUniforms[type].end(), uniform);
+    vectorImpl<stringImpl >::iterator it = std::find(std::begin(_customUniforms[type]), std::end(_customUniforms[type]), uniform);
     // If we can't find it, we add it
-    if (it == _definesList.end()) {
+    if (it == std::end(_definesList)) {
         _customUniforms[type].push_back(uniform);
     } else {
         // If we did find it, we'll show an error message in debug builds about double add
@@ -179,9 +179,9 @@ void ShaderProgram::addShaderUniform(const stringImpl& uniform, const ShaderType
 /// Remove an uniform from the shader. The uniform must have been added previously for the specified shader type
 void ShaderProgram::removeUniform(const stringImpl& uniform, const ShaderType& type) {
     // Find the string in the list of uniforms
-    vectorImpl<stringImpl >::iterator it = find(_customUniforms[type].begin(), _customUniforms[type].end(), uniform);
+    vectorImpl<stringImpl >::iterator it = std::find(std::begin(_customUniforms[type]), std::end(_customUniforms[type]), uniform);
     // If we find it, we remove it
-    if (it != _customUniforms[type].end()) {
+    if (it != std::end(_customUniforms[type])) {
         _customUniforms[type].erase(it);
     } else {
         // If we did find it, we'll show an error message in debug builds about double add

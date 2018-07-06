@@ -50,7 +50,7 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
     if (numJoysticks > 0) {
         _pJoysticks.resize(numJoysticks);
         try {
-            for (vectorImpl<OIS::JoyStick* >::iterator it = _pJoysticks.begin(); it != _pJoysticks.end(); ++it) {
+            for (vectorImpl<OIS::JoyStick* >::iterator it = std::begin(_pJoysticks); it != std::end(_pJoysticks); ++it) {
                 (*it) = static_cast<OIS::JoyStick*>(_pInputInterface->createInputObject(OIS::OISJoyStick, true));
                 (*it)->setEventCallback(_pEventHdlr);
             }
@@ -117,7 +117,7 @@ U8 InputInterface::update(const U64 deltaTime) {
         _pMouse->capture();
     }
     if (_pJoysticks.size() > 0) {
-        for (vectorImpl<OIS::JoyStick* >::iterator it = _pJoysticks.begin(); it != _pJoysticks.end(); ++it) {
+        for (vectorImpl<OIS::JoyStick* >::iterator it = std::begin(_pJoysticks); it != std::end(_pJoysticks); ++it) {
             (*it)->capture();
         }
 
@@ -146,7 +146,7 @@ void InputInterface::terminate() {
         _pMouse = nullptr;
 
         if (_pJoysticks.size() > 0) {
-            for (vectorImpl<OIS::JoyStick* >::iterator it = _pJoysticks.begin(); it != _pJoysticks.end(); ++it) {
+            for (vectorImpl<OIS::JoyStick* >::iterator it = std::begin(_pJoysticks); it != std::end(_pJoysticks); ++it) {
                 _pInputInterface->destroyInputObject(*it);
             }
             _pJoysticks.clear();

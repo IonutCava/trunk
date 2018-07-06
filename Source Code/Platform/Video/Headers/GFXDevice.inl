@@ -60,8 +60,8 @@ inline void GFXDevice::toggleRasterization(bool state) {
 inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 callOrder) {
     _2dRenderQueue.push_back(std::make_pair(callOrder, callback));
 
-    std::sort(_2dRenderQueue.begin(), 
-              _2dRenderQueue.end(), 
+    std::sort(std::begin(_2dRenderQueue), 
+              std::end(_2dRenderQueue), 
               [](const std::pair<U32, DELEGATE_CBK<> > & a, const std::pair<U32, DELEGATE_CBK<> > & b) -> bool {
                     return a.first < b.first;
               });

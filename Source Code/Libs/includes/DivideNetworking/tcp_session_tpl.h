@@ -52,7 +52,7 @@ public:
 
   void sendPacket(const WorldPacket& p)
   {
-    std::for_each(subscribers_.begin(), subscribers_.end(),
+    std::for_each(std::begin(subscribers_), std::end(subscribers_),
         boost::bind(&subscriber::sendPacket, _1, boost::ref(p)));
   }
 

@@ -158,7 +158,7 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh){
     if (refresh) {
         // Find the previous iteration (and print an error if not found)
         ShaderIdMap::iterator it = _shaderIdMap.find(shaderId);
-        if(it != _shaderIdMap.end()){
+        if(it != std::end(_shaderIdMap)){
             // Update the internal pointer
             _shaderIdMap[shaderId] = shader;
             // and detach the shader
@@ -471,7 +471,7 @@ GLint glShaderProgram::cachedLoc(const stringImpl& name, const bool uniform) {
 
     // Check the cache for the location
     ShaderVarMap::const_iterator it = _shaderVars.find(name);
-    if (it != _shaderVars.end()) {
+    if (it != std::end(_shaderVars)) {
         return it->second;
     }
 
@@ -847,7 +847,7 @@ void glShaderProgram::UniformTexture(GLint location, GLushort slot) {
 bool glShaderProgram::checkSlotUsage(GLint location, GLushort slot) {
 #ifdef _DEBUG
     const TextureSlotMap::const_iterator& it = _textureSlots.find(slot);
-    if (it == _textureSlots.end() || it->second == location){
+    if (it == std::end(_textureSlots) || it->second == location){
         _textureSlots[slot] = location;
         return true;
     }

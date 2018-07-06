@@ -94,7 +94,7 @@ namespace Divide {
                 WriteLock w_lock(_mutex);
                 MemoryTracker::Lock lock( *this );
                 iterator it = _map.find( p );
-                if ( it != _map.end() ) {
+                if ( it != std::end(_map) ) {
                     _map.erase( it );
                 }
             }
@@ -108,7 +108,7 @@ namespace Divide {
                 WriteLock w_lock( _mutex );
                 if ( !_map.empty() ) {
                     output.append(Util::toString( _map.size() ) + " memory leaks detected\n");
-                    for ( iterator it = _map.begin(); it != _map.end(); ++it ) {
+                    for ( iterator it = std::begin(_map); it != std::end(_map); ++it ) {
                         const Entry& entry = it->second;
                         output.append( entry.File() );
                         output.append( ", " );

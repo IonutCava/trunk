@@ -122,7 +122,7 @@ void Material::update(const U64 deltaTime){
 
 size_t Material::getRenderStateBlock(RenderStage currentStage) {
     const renderStateBlockMap::const_iterator& it = _defaultRenderStates.find(currentStage);
-    if (it == _defaultRenderStates.end()) {
+    if (it == std::end(_defaultRenderStates)) {
         return _defaultRenderStates[FINAL_STAGE];
     }
     return it->second;
@@ -131,7 +131,7 @@ size_t Material::getRenderStateBlock(RenderStage currentStage) {
 size_t Material::setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, const RenderStage& renderStage){
     renderStateBlockMap::iterator it = _defaultRenderStates.find(renderStage);
     size_t stateBlockHash = GFX_DEVICE.getOrCreateStateBlock(descriptor);
-    if(it == _defaultRenderStates.end()){
+    if(it == std::end(_defaultRenderStates)){
         hashAlg::insert(_defaultRenderStates, hashAlg::makePair(renderStage, stateBlockHash));
         return stateBlockHash;
     }
@@ -421,7 +421,7 @@ ShaderProgram* const Material::ShaderInfo::getProgram() const {
 Material::ShaderInfo& Material::getShaderInfo(RenderStage renderStage) {
     shaderInfoMap::iterator it = _shaderInfo.find(renderStage);
 
-    return (it == _shaderInfo.end() ? _shaderInfo[FINAL_STAGE] : it->second);
+    return (it == std::end(_shaderInfo) ? _shaderInfo[FINAL_STAGE] : it->second);
 }
 
 void Material::setBumpMethod(const BumpMethod& newBumpMethod){
@@ -507,8 +507,8 @@ bool Material::isTranslucent() {
 void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
     shaderInfoMap::const_iterator it = _shaderInfo.find(FINAL_STAGE);
 
-    shaderKey  = (it != _shaderInfo.end() && it->second._shaderRef) ? it->second._shaderRef->getId() :
-                                                                      -std::numeric_limits<I8>::max();
+    shaderKey  = (it != std::end(_shaderInfo) && it->second._shaderRef) ? it->second._shaderRef->getId() :
+                                                                          -std::numeric_limits<I8>::max();
     textureKey = _textures[ShaderProgram::TEXTURE_UNIT0] ? _textures[ShaderProgram::TEXTURE_UNIT0]->getHandle() : 
                                                            -std::numeric_limits<I8>::max();
 }

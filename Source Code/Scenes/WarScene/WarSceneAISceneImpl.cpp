@@ -276,7 +276,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type, const WarSceneAction* warA
     };
 
     Console::printfn("   %s [ %d ]", warAction->name().c_str(), _entity->getGUID());
-    for(GOAPAction::operationsIterator o = warAction->effects().begin(); o != warAction->effects().end(); o++) {
+    for(GOAPAction::operationsIterator o = std::begin(warAction->effects()); o != std::end(warAction->effects()); o++) {
         performActionStep(o);
     }
     Console::printf("\n");

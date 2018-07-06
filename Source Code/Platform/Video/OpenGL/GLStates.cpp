@@ -178,7 +178,7 @@ bool GL_API::setActiveTextureUnit(GLuint unit) {
 /// Bind the sampler object described by the hash value to the specified unit
 bool GL_API::bindSampler(GLuint unit, size_t samplerHash) {
     samplerBoundMapDef::iterator it = _samplerBoundMap.find(unit);
-    if ( it == _samplerBoundMap.end() ) {
+    if ( it == std::end(_samplerBoundMap) ) {
         hashAlg::emplace( _samplerBoundMap, static_cast<GLushort>( unit ), samplerHash );
     } else {
         // Prevent double bind

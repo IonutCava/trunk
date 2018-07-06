@@ -36,7 +36,7 @@ bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){
     for (U32 n = 0; n < mesh->mNumBones;++n){
         const aiBone* bone = mesh->mBones[n];
         hashMapImpl<stringImpl, Bone*>::iterator found = _bonesByName.find(bone->mName.data);
-        if(found != _bonesByName.end()){// FOUND IT!!! woohoo, make sure its not already in the bone list
+        if(found != std::end(_bonesByName)){// FOUND IT!!! woohoo, make sure its not already in the bone list
             bool skip = false;
             for(vectorAlg::vecSize j(0); j< _bones.size(); j++){
                 stringImpl bname = bone->mName.data;
@@ -139,7 +139,7 @@ void SceneAnimator::UpdateTransforms(Bone* pNode) {
 
 Bone* SceneAnimator::GetBoneByName(const stringImpl& bname) const {
     hashMapImpl<stringImpl, Bone*>::const_iterator found = _bonesByName.find(bname);
-    if ( found != _bonesByName.end() ) {
+    if ( found != std::end(_bonesByName) ) {
         return found->second;
     } else {
         return nullptr;
@@ -148,7 +148,7 @@ Bone* SceneAnimator::GetBoneByName(const stringImpl& bname) const {
 
 I32 SceneAnimator::GetBoneIndex(const stringImpl& bname) const {
     hashMapImpl<stringImpl, U32>::const_iterator found = _bonesToIndex.find(bname);
-    if ( found != _bonesToIndex.end() ) {
+    if ( found != std::end(_bonesToIndex) ) {
         return found->second;
     } else {
         return -1;
@@ -187,7 +187,7 @@ const vectorImpl<Line >& SceneAnimator::getSkeletonLines(I32 animationIndex, con
     LineMap& lineMap = _skeletonLines[animationIndex];
     LineMap::iterator it = lineMap.find(frameIndex);
 
-    if (it == lineMap.end()) {
+    if (it == std::end(lineMap)) {
         vectorAlg::vecSize lineEntry = static_cast<vectorAlg::vecSize>(_skeletonLinesContainer.size());
         it = hashAlg::insert(lineMap, hashAlg::makePairCpy(frameIndex, lineEntry)).first;
 

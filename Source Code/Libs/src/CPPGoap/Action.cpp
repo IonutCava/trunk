@@ -15,7 +15,7 @@ bool goap::Action::eligibleFor(const WorldState& ws) const {
         return false;
     }
 
-    for (const auto& precond : preconditions_) {
+    for (const hashAlg::pair<int, bool>& precond : preconditions_) {
         try {
             if (ws.vars_.at(precond.first) != precond.second) {
                 return false;
@@ -31,7 +31,7 @@ bool goap::Action::eligibleFor(const WorldState& ws) const {
 goap::WorldState goap::Action::actOn(const WorldState& ws) const {
     goap::WorldState tmp(ws);
     if (eligibleFor(ws)) {
-        for (const auto& effect : effects_) {
+        for (const hashAlg::pair<int, bool>& effect : effects_) {
             tmp.setVariable(effect.first, effect.second);
         }
     }

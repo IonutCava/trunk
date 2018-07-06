@@ -85,17 +85,17 @@ public:
 
     stringImpl getVariable(const stringImpl& name) {
         hashMapImpl<stringImpl, stringImpl>::const_iterator it = _variables.find(name);
-        if (it != _variables.end())
+        if (it != std::end(_variables)) {
             return it->second;
-
+        }
         return "";
     }
 
     F32 getVariablef(const stringImpl& name){
         hashMapImpl<stringImpl, F32>::const_iterator it = _variablesf.find(name);
-        if (it != _variablesf.end())
+        if (it != std::end(_variablesf)) {
             return it->second;
-
+        }
         return 0.0f;
     }
 

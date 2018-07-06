@@ -50,7 +50,7 @@ void Scene::findSelection(F32 mouseX, F32 mouseY) {
                            _sceneSelectionCandidates); 
 
     if(!_sceneSelectionCandidates.empty()){
-        std::sort(_sceneSelectionCandidates.begin(), _sceneSelectionCandidates.end(), 
+        std::sort(std::begin(_sceneSelectionCandidates), std::end(_sceneSelectionCandidates), 
                   selectionQueueDistanceFrontToBack(renderState().getCameraConst().getEye()));
         _currentSelection = _sceneSelectionCandidates[0];
         // set it's state to selected

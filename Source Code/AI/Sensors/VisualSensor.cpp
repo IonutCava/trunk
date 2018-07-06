@@ -26,9 +26,9 @@ void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* const n
     DIVIDE_ASSERT(node != nullptr, "VisualSensor error: Invalid node specified for follow function");
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
 
-    if (container != _nodeContainerMap.end()) {
+    if (container != std::end(_nodeContainerMap)) {
         NodeContainer::const_iterator nodeEntry = container->second.find(node->getGUID());
-        if (nodeEntry == container->second.end()) {
+        if (nodeEntry == std::end(container->second)) {
             hashAlg::emplace(container->second, node->getGUID(), node);
             node->registerDeletionCallback(DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode,
                                                          this,
@@ -54,9 +54,9 @@ void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* const n
 void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
     DIVIDE_ASSERT(nodeGUID != 0, "VisualSensor error: Invalid node GUID specified for unfollow function");
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
-    if (container != _nodeContainerMap.end()) {
+    if (container != std::end(_nodeContainerMap)) {
         NodeContainer::iterator nodeEntry = container->second.find(nodeGUID);
-        if (nodeEntry != container->second.end()) {
+        if (nodeEntry != std::end(container->second)) {
             container->second.erase(nodeEntry);
         } else {
             Console::errorfn("VisualSensor: Specified node does not exist in specified container!");
@@ -78,7 +78,7 @@ void VisualSensor::update( const U64 deltaTime ) {
 
 SceneGraphNode* const VisualSensor::getClosestNode(U32 containerID) {
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
-    if ( container != _nodeContainerMap.end() ) {
+    if ( container != std::end(_nodeContainerMap) ) {
         NodePositions& positions = _nodePositionsMap[container->first];
         NPC* const unit = _parentEntity->getUnitRef();
         if ( unit ) {
@@ -94,7 +94,7 @@ SceneGraphNode* const VisualSensor::getClosestNode(U32 containerID) {
             }
             if ( currentNearest != 0 ) {
                 NodeContainer::const_iterator nodeEntry = container->second.find( currentNearest );
-                if ( nodeEntry != container->second.end() ) {
+                if ( nodeEntry != std::end(container->second) ) {
                     return nodeEntry->second;
                 }
             }
@@ -116,10 +116,10 @@ F32 VisualSensor::getDistanceToNodeSq(U32 containerID, U64 nodeGUID) {
 vec3<F32> VisualSensor::getNodePosition(U32 containerID, U64 nodeGUID) {
     DIVIDE_ASSERT(nodeGUID != 0, "VisualSensor error: Invalid node GUID specified for position request");
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
-    if (container != _nodeContainerMap.end()) {
+    if (container != std::end(_nodeContainerMap)) {
         NodePositions& positions = _nodePositionsMap[container->first];
         NodePositions::iterator it = positions.find(nodeGUID);
-        if (it != positions.end()) {
+        if (it != std::end(positions)) {
             return it->second;          
         }
     }

@@ -258,14 +258,15 @@ namespace Util {
 
     /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
     inline stringImpl& ltrim( stringImpl& s ) {
-        s.erase( s.begin(), std::find_if(s.begin(), s.end(), 
-                                         std::not1( std::ptr_fun<int, int>( std::isspace ) ) ) );
+        s.erase(std::begin(s), std::find_if(std::begin(s), std::end(s), 
+                                            std::not1(std::ptr_fun<int, int>(std::isspace))));
         return s;
     }
 
     inline stringImpl& rtrim(stringImpl& s) {
-        s.erase(std::find_if(s.rbegin(), s.rend(), 
-                std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+        s.erase(std::find_if(std::rbegin(s), std::rend(s), 
+                             std::not1(std::ptr_fun<int, int>(std::isspace))).base(),
+                std::end(s));
         return s;
     }
 
@@ -339,8 +340,7 @@ namespace Util {
 
         template<typename T>
         T* Multiply(const T *a, const T *b, T *r) {
-            static T temp[16];
-            r = temp;
+            memset(r, 0, sizeof( T ) * 16 );
             U32 row, row_offset;
             for ( row = 0, row_offset = row * 4; row < 4; ++row, row_offset = row * 4 ) {
                 r[row_offset + 0] = ( a[row_offset + 0] * b[0 + 0]  ) +

@@ -33,14 +33,14 @@ AITeam::~AITeam()
 }
 
 void AITeam::addCrowd(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* navMesh) {
-    DIVIDE_ASSERT(_aiTeamCrowd.find(radius) == _aiTeamCrowd.end(), 
+    DIVIDE_ASSERT(_aiTeamCrowd.find(radius) == std::end(_aiTeamCrowd), 
                   "AITeam error: DtCrowd already existed for new navmesh!");
     hashAlg::emplace(_aiTeamCrowd, radius, MemoryManager_NEW Navigation::DivideDtCrowd(navMesh));
 }
 
 void AITeam::removeCrowd(AIEntity::PresetAgentRadius radius) {
     AITeamCrowd::iterator it =  _aiTeamCrowd.find(radius);
-    DIVIDE_ASSERT(it != _aiTeamCrowd.end(), 
+    DIVIDE_ASSERT(it != std::end(_aiTeamCrowd), 
                   "AITeam error: DtCrowd does not exist for specified navmesh!");
     MemoryManager::DELETE( it->second );
     _aiTeamCrowd.erase(it);
@@ -93,7 +93,7 @@ bool AITeam::addTeamMember(AIEntity* entity) {
         return false;
     }
     /// If entity already belongs to this team, no need to do anything
-    if(_team.find(entity->getGUID()) != _team.end()){
+    if (_team.find(entity->getGUID()) != std::end(_team)){
         return true;
     }
     UpgradeToWriteLock uw_lock(ur_lock);
@@ -108,7 +108,7 @@ bool AITeam::removeTeamMember(AIEntity* entity) {
     if (!entity) {
         return false;
     }
-    if(_team.find(entity->getGUID()) != _team.end()){
+    if(_team.find(entity->getGUID()) != std::end(_team)){
         UpgradeToWriteLock uw_lock(ur_lock);
         _team.erase(entity->getGUID());
     }
@@ -117,7 +117,7 @@ bool AITeam::removeTeamMember(AIEntity* entity) {
 }
 
 bool AITeam::addEnemyTeam(U32 enemyTeamID) {
-    if (findEnemyTeamEntry(enemyTeamID) == _enemyTeams.end()) {
+    if (findEnemyTeamEntry(enemyTeamID) == std::end(_enemyTeams)) {
         WriteLock w_lock(_updateMutex); 
         _enemyTeams.push_back(enemyTeamID);
         return true;
@@ -127,7 +127,7 @@ bool AITeam::addEnemyTeam(U32 enemyTeamID) {
 
 bool AITeam::removeEnemyTeam(U32 enemyTeamID) {
     vectorImpl<U32>::iterator it = findEnemyTeamEntry(enemyTeamID);
-    if (it != _enemyTeams.end()) {
+    if (it != std::end(_enemyTeams)) {
         WriteLock w_lock(_updateMutex); 
         _enemyTeams.erase(it);
         return true;

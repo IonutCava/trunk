@@ -93,7 +93,7 @@ void tcp_session_impl::HandleGeometryListOpCode(WorldPacket& p)
 
         vectorImpl<FileData> PatchData = Patch::getInstance().updateClient();
         r << PatchData.size();
-        for(vectorImpl<FileData>::iterator _iter = PatchData.begin(); _iter != PatchData.end(); _iter++)
+        for(vectorImpl<FileData>::iterator _iter = std::begin(PatchData); _iter != std::end(PatchData); _iter++)
         {
             r << (*_iter).ItemName;
             r << (*_iter).ModelName;

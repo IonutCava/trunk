@@ -105,19 +105,19 @@ void RenderBin::sort(const RenderStage& currentRenderStage){
         default :
         case RenderingOrder::BY_STATE : {
             if (GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
-                std::sort(_renderBinStack.begin(), _renderBinStack.end(), 
+                std::sort(std::begin(_renderBinStack), std::end(_renderBinStack), 
                           RenderQueueDistanceFrontToBack());
             } else {
-                std::sort(_renderBinStack.begin(), _renderBinStack.end(),
+                std::sort(std::begin(_renderBinStack), std::end(_renderBinStack),
                           RenderQueueKeyCompare());
             }
         } break;
         case RenderingOrder::BACK_TO_FRONT : {
-            std::sort(_renderBinStack.begin(), _renderBinStack.end(),
+            std::sort(std::begin(_renderBinStack), std::end(_renderBinStack),
                       RenderQueueDistanceBacktoFront());
         } break;
         case RenderingOrder::FRONT_TO_BACK : {
-            std::sort(_renderBinStack.begin(), _renderBinStack.end(),
+            std::sort(std::begin(_renderBinStack), std::end(_renderBinStack),
                       RenderQueueDistanceFrontToBack());
         } break;
         case RenderingOrder::NONE : {

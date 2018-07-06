@@ -51,7 +51,7 @@ void NetworkScene::checkPatches(){
     p << stringImpl("NetworkScene");
     p << _modelDataArray.size();
 
-    /*for(vectorImpl<FileData>::iterator _iter = _modelDataArray.begin(); _iter != _modelDataArray.end(); ++_iter)    {
+    /*for(vectorImpl<FileData>::iterator _iter = std::begin(_modelDataArray); _iter != std::end(_modelDataArray); ++_iter)    {
         p << (*_iter).ItemName;
         p << (*_iter).ModelName;
         p << (*_iter).version;

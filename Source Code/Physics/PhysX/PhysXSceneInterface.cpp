@@ -105,7 +105,7 @@ void PhysXSceneInterface::update(const U64 deltaTime){
         return;
     }
     SceneGraphNode* newNode = nullptr;
-    for(RigidMap::iterator it = _sceneRigidActors.begin(); it != _sceneRigidActors.end(); ++it){
+    for(RigidMap::iterator it = std::begin(_sceneRigidActors); it != std::end(_sceneRigidActors); ++it){
         PhysXActor& crtActor = *(*it);
 
         if (!crtActor._isInScene) {
@@ -182,7 +182,7 @@ PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(const stringImpl& actorNa
         return nullptr;
     }
 
-    for(RigidMap::iterator it = _sceneRigidActors.begin(); it != _sceneRigidActors.end(); ++it) {
+    for(RigidMap::iterator it = std::begin(_sceneRigidActors); it != std::end(_sceneRigidActors); ++it) {
         if ( ( *it )->_actorName.compare( actorName ) == 0 ) {
             return ( *it );
         }

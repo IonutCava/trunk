@@ -255,9 +255,9 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     cylinder[4] = _sceneGraph->findNode("cylinderSE");
 
     for (U8 i = 0; i < 5; ++i) {
-        RenderingComponent* const renderable = (*cylinder[i]->getChildren().begin()).second->getComponent<RenderingComponent>();
+        RenderingComponent* const renderable = std::begin(cylinder[i]->getChildren())->second->getComponent<RenderingComponent>();
         renderable->getMaterialInstance()->setDoubleSided(true);
-        (*cylinder[i]->getChildren().begin()).second->getNode()->getMaterialTpl()->setDoubleSided(true);
+        std::begin(cylinder[i]->getChildren())->second->getNode()->getMaterialTpl()->setDoubleSided(true);
     }
 
     SceneNode* cylinderMeshNW = cylinder[1]->getNode();

@@ -196,7 +196,7 @@ void Vegetation::uploadGrassData(){
         angles.resize(18, 0.0f);
         for (U8 i = 0; i < 18; ++i){
             F32 temp = random(360.0f);
-            while (std::find(angles.begin(), angles.end(), temp) != angles.end()){
+            while (std::find(std::begin(angles), std::end(angles), temp) != std::end(angles)){
                 temp = random(360.0f);
             }
             angles[i] = temp;

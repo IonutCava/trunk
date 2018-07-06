@@ -77,7 +77,7 @@ void AnimEvaluator::Evaluate(const D32 dt, hashMapImpl<stringImpl, Bone*>& bones
         const AnimationChannel* channel = &_channels[a];
         bonenode = bones.find(channel->_name);
 
-        if(bonenode == bones.end()) {
+        if(bonenode == std::end(bones)) {
             Console::d_errorfn(Locale::get("ERROR_BONE_FIND"),channel->_name.c_str());
             continue;
         }

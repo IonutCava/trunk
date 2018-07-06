@@ -49,7 +49,7 @@ namespace Locale {
     char* get(const stringImpl& key, const stringImpl& defaultValue) {
         assert(g_initialized == true && "Locale::get error: Get() called without initializing the language subsytem");
         //When we ask for a string for the given key, we check our language cache first
-        if(g_languageTable.find(key) != g_languageTable.end()){
+        if(g_languageTable.find(key) != std::end(g_languageTable)){
             //Usually, the entire language table is loaded.
             return const_cast<char*>(g_languageTable[key].c_str());
         }

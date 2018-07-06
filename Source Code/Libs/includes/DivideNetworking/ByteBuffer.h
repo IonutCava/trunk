@@ -478,7 +478,7 @@ template<typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::vector<T> const& v)
 {
     b << (U32)v.size();
-    for (typename std::vector<T>::iterator i = v.begin(); i != v.end(); ++i)
+    for (typename std::vector<T>::iterator i = std::begin(v); i != std::end(v); ++i)
     {
         b << *i;
     }
@@ -504,7 +504,7 @@ template<typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::list<T> const& v)
 {
     b << (U32)v.size();
-    for (typename std::list<T>::iterator i = v.begin(); i != v.end(); ++i)
+    for (typename std::list<T>::iterator i = std::begin(v); i != std::end(v); ++i)
     {
         b << *i;
     }
@@ -530,7 +530,7 @@ template<typename K, typename V>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::map<K, V> &m)
 {
     b << (U32)m.size();
-    for (typename std::map<K, V>::iterator i = m.begin(); i != m.end(); ++i)
+    for (typename std::map<K, V>::iterator i = std::begin(m); i != std::end(m); ++i)
     {
         b << i->first << i->second;
     }

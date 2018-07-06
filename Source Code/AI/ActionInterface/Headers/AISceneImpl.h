@@ -68,12 +68,12 @@ public:
 
     virtual GOAPGoal* findGoal(const stringImpl& goalName) {
         vectorImpl<GOAPGoal >::iterator it;
-        it = std::find_if(_goals.begin(), _goals.end(), 
+        it = std::find_if(std::begin(_goals), std::end(_goals), 
                           [&goalName]( const GOAPGoal& goal )->bool {
                             return goal.getName().compare(goalName.c_str()) == 0; 
                           });
 
-        if (it != _goals.end()) {
+        if (it != std::end(_goals)) {
             return &(*it);
         }
     
@@ -111,7 +111,7 @@ protected:
             return nullptr;
         }
 
-        std::sort(_activeGoals.begin(), _activeGoals.end(), 
+        std::sort(std::begin(_activeGoals), std::end(_activeGoals), 
                   [](GOAPGoal const* a, GOAPGoal const* b) {
                     return a->relevancy() < b->relevancy();
                   });
@@ -129,12 +129,12 @@ protected:
             return false;
         }
         vectorImpl<GOAPGoal* >::iterator it;
-        it = vectorAlg::find_if(_activeGoals.begin(), _activeGoals.end(),
+        it = vectorAlg::find_if(std::begin(_activeGoals), std::end(_activeGoals),
                                 [goal](GOAPGoal const* actGoal) { 
                                     return actGoal->getName().compare(goal->getName()) == 0; 
                                 });
 
-        if (it == _activeGoals.end()) {
+        if (it == std::end(_activeGoals)) {
             return false;
         }
 

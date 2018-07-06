@@ -63,7 +63,7 @@ public:
     inline CrowdPtr const getCrowd(AIEntity::PresetAgentRadius radius) const {
         ReadLock r_lock(_crowdMutex);
         AITeamCrowd::const_iterator it = _aiTeamCrowd.find(radius);
-        if (it != _aiTeamCrowd.end()) {
+        if (it != std::end(_aiTeamCrowd)) {
             return it->second;
         }
         return nullptr;
@@ -94,7 +94,7 @@ public:
     inline void addOrder(Order* const order) {
         assert(order != nullptr);
         WriteLock w_lock(_orderMutex);
-        if (findOrder(order) == _orders.end()){
+        if (findOrder(order) == std::end(_orders)){
             _orders.push_back(order);
         }
     }
@@ -103,7 +103,7 @@ public:
         assert(order != nullptr);
         WriteLock w_lock(_orderMutex);
         vectorImpl<Order* >::iterator it = findOrder(order);
-        if (it != _orders.end()){
+        if (it != std::end(_orders)){
             _orders.erase(it);
         }
     }
@@ -126,7 +126,7 @@ protected:
     inline vectorImpl<Order* >::iterator findOrder(Order* const order) {
         assert(order != nullptr);
         U32 orderId = order->getId();
-        return vectorAlg::find_if(_orders.begin(), _orders.end(), 
+        return vectorAlg::find_if(std::begin(_orders), std::end(_orders), 
                                   [&orderId]( Order* const order )->bool {
                                     return orderId == order->getId(); 
                                   });
@@ -134,7 +134,7 @@ protected:
 
     inline vectorImpl<U32 >::iterator AITeam::findEnemyTeamEntry(U32 enemyTeamID) {
         ReadLock r_lock(_enemyTeamLock);
-        return vectorAlg::find_if(_enemyTeams.begin(), _enemyTeams.end(),
+        return vectorAlg::find_if(std::begin(_enemyTeams), std::end(_enemyTeams),
                                   [&enemyTeamID]( U32 id )->bool {
                                     return id == enemyTeamID; 
                                   });

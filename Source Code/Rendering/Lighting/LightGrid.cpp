@@ -201,12 +201,12 @@ void LightGrid::pruneFarOnly(F32 aNear, const vectorImpl<vec2<F32> >& gridMinMax
     m_gridMinMaxZ = gridMinMaxZ;
     m_minMaxGridValid = !gridMinMaxZ.empty();
 
-    if (!m_minMaxGridValid || m_tileLightIndexLists.empty())
+    if (!m_minMaxGridValid || m_tileLightIndexLists.empty()){
         return;
-
-    for (vectorImpl<vec2<F32> >::iterator it = m_gridMinMaxZ.begin(); it != m_gridMinMaxZ.end(); ++it)
+    }
+    for (vectorImpl<vec2<F32> >::iterator it = std::begin(m_gridMinMaxZ); it != std::end(m_gridMinMaxZ); ++it) {
         it->x = -aNear;
-
+    }
     const vec2<F32> *gridMinMaxZPtr = m_minMaxGridValid ? &m_gridMinMaxZ[0] : nullptr;
     I32 *lightInds = &m_tileLightIndexLists[0];
 

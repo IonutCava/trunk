@@ -184,7 +184,7 @@ void SceneAnimator::SaveSkeleton(std::ofstream& file, Bone* parent) {
     // the number of children
     file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));
     // continue for all children
-    for (vectorImpl<Bone*>::iterator it = parent->_children.begin(); it != parent->_children.end(); ++it) {
+    for (vectorImpl<Bone*>::iterator it = std::begin(parent->_children); it != std::end(parent->_children); ++it) {
         SaveSkeleton(file, *it);
     }
 }

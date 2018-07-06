@@ -66,7 +66,7 @@ Resource* const ResourceCache::find( const stringImpl& name ) {
     ///Search in our resource cache
     ReadLock r_lock( _creationMutex );
     ResourceMap::const_iterator it = _resDB.find(name);
-    if(it != _resDB.end()){
+    if(it != std::end(_resDB)){
         return it->second;
     }
     return nullptr;
@@ -103,7 +103,7 @@ bool ResourceCache::removeInternal(Resource* const resource){
     stringImpl nameCpy( resource->getName() );
     DIVIDE_ASSERT( !nameCpy.empty(), Locale::get( "ERROR_RESOURCE_CACHE_INVALID_NAME" ) );
     ResourceMap::iterator it = _resDB.find( nameCpy );
-    DIVIDE_ASSERT( it != _resDB.end(), Locale::get( "ERROR_RESOURCE_CACHE_UNKNOWN_RESOURCE" ) );
+    DIVIDE_ASSERT( it != std::end(_resDB), Locale::get( "ERROR_RESOURCE_CACHE_UNKNOWN_RESOURCE" ) );
     
     U32 refCount = resource->GetRef();
     if ( refCount > 1 ) {

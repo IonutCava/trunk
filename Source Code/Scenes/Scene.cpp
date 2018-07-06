@@ -442,7 +442,7 @@ void Scene::clearTasks() {
 }
 
 void Scene::removeTask(I64 taskGUID) {
-    for ( vectorImpl<Task_ptr>::iterator it = _tasks.begin(); it != _tasks.end(); ++it ) {
+    for (vectorImpl<Task_ptr>::iterator it = std::begin(_tasks); it != std::end(_tasks); ++it ) {
         if ((*it)->getGUID() == taskGUID) {
             ( *it )->stopTask();
             _tasks.erase( it );
