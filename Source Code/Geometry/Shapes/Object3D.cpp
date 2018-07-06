@@ -215,7 +215,7 @@ vectorImpl<SceneGraphNode_wptr> Object3D::filterByType(const vectorImpl<SceneGra
     result.reserve(nodes.size());
 
     for (SceneGraphNode_wptr ptr : nodes) {
-        if (ptr.expired() && ptr.lock()->getNode<Object3D>()->getObjectType() == filter) {
+        if (!ptr.expired() && ptr.lock()->getNode<Object3D>()->getObjectType() == filter) {
             result.push_back(ptr);
         }
     };

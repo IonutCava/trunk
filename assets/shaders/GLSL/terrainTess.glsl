@@ -341,6 +341,8 @@ void main()
 
 --Geometry
 
+#include "nodeBufferedInput.cmn"
+
 uniform float ToggleWireframe = 0.0;
 
 layout(triangles) in;
@@ -350,8 +352,9 @@ in float tes_tessLevel[];
 layout(triangle_strip, max_vertices = 4) out;
 
 out vec4 _scrollingUV;
-smooth out float _waterDistance;
-smooth out float _waterDepth;
+
+// x = distance, y = depth
+smooth out vec2 _waterDetails;
 
 #if defined(_DEBUG)
 out vec4 gs_wireColor;
@@ -362,18 +365,40 @@ noperspective out vec3 gs_edgeDist;
 out vec4 geom_vertexWVP;
 #endif
 
-float waterDepth(int index) {
-    return 1.0 - (dvd_clip_plane[0].w - VAR[index]._vertexW.y);
+void waterDetails(in int index, in mat4 worldMat) {
+    vec3 vertexW = VAR[index]._vertexW.xyz;
+
+    float maxDistance = 0.0;
+    float minDepth = 1.0;
+
+    float minHeight = (worldMat * vec4(0.0, TERRAIN_MIN_HEIGHT, 0.0, 1.0)).y;
+
+    //for (int i = 0; i < MAX_WATER_BODIES; ++i) {
+        float waterWidth = dvd_waterDetails/*[i]*/.x + dvd_waterPositionsW/*[i]*/.x;
+        float waterLength = dvd_waterDetails/*[i]*/.y + dvd_waterPositionsW/*[i]*/.z;
+        float halfWidth = waterWidth * 0.5;
+        float halfLength = waterLength * 0.5;
+        if (vertexW.x >= -halfWidth && vertexW.x <= halfWidth &&
+            vertexW.z >= -halfLength && vertexW.z <= halfLength) {
+
+            // Distance
+            maxDistance = max(maxDistance, 1.0 - clamp(gl_ClipDistance[0], 0.0, 1.0));
+
+            // Current water depth in relation to the minimum possible depth
+            minDepth = min(minDepth, clamp(1.0 - (dvd_waterPositionsW.y - vertexW.y) / (dvd_waterPositionsW.y - minHeight), 0.0, 1.0));
+        }
+    //}
+        
+    _waterDetails = vec2(maxDistance, minDepth);
 }
 
-vec4 getScrollingUV(int index) {
+void scrollingUV(int index) {
     float time2 = float(dvd_time) * 0.0001;
     vec2 noiseUV = VAR[index]._texCoord * UNDERWATER_DIFFUSE_SCALE;
-    vec4 scrollingUV;
-    scrollingUV.st = noiseUV;
-    scrollingUV.pq = noiseUV + time2;
-    scrollingUV.s -= time2;
-    return scrollingUV;
+    
+    _scrollingUV.st = noiseUV;
+    _scrollingUV.pq = noiseUV + time2;
+    _scrollingUV.s -= time2;
 }
 
 vec4 wireframeColor()
@@ -395,12 +420,42 @@ vec4 getWVPPositon(int index) {
     return dvd_ViewProjectionMatrix * gl_in[index].gl_Position;
 }
 
+void PerVertex(in int i, in vec3 edge_dist, in vec4 wireColor, in mat4 worldMat) {
+    PassData(i);
+#if defined(SHADOW_PASS)
+    geom_vertexWVP = gl_in[i].gl_Position;
+#endif
+
+    gl_Position = getWVPPositon(i);
+
+#if !defined(SHADOW_PASS)
+    setClipPlanes(gl_in[i].gl_Position);
+
+
+    waterDetails(i, worldMat);
+    scrollingUV(i);
+
+#   if defined(_DEBUG)
+    gs_wireColor = wireColor;
+
+    if (i == 0) {
+        gs_edgeDist = vec3(edge_dist.x, 0, 0);
+    } else if (i == 1) {
+        gs_edgeDist = vec3(0, edge_dist.y, 0);
+    } else {
+        gs_edgeDist = vec3(0, 0, edge_dist.z);
+    }
+#   endif
+#endif
+}
+
 void main(void)
 {
     vec4 wireColor = wireframeColor();
+    mat4 worldMat = dvd_WorldMatrix(VAR[0].dvd_instanceID);
 
     // Calculate edge distances for wireframe
-    float ha, hb, hc;
+    vec3 edge_dist = vec3(0.0);
 #if defined(_DEBUG)
     if (ToggleWireframe == 1.0)
     {
@@ -417,67 +472,21 @@ void main(void)
         float c = length(p1 - p0);
         float alpha = acos((b*b + c*c - a*a) / (2.0*b*c));
         float beta = acos((a*a + c*c - b*b) / (2.0*a*c));
-        ha = abs(c * sin(beta));
-        hb = abs(c * sin(alpha));
-        hc = abs(b * sin(alpha));
+        edge_dist.x = abs(c * sin(beta));
+        edge_dist.y = abs(c * sin(alpha));
+        edge_dist.z = abs(b * sin(alpha));
     }
-    else
 #endif
-    {
-        ha = hb = hc = 0.0;
-    }
 
     // Output verts
     for (int i = 0; i < gl_in.length(); ++i)
     {
-        PassData(i);
-
-    #if defined(SHADOW_PASS)
-        geom_vertexWVP = gl_in[i].gl_Position;
-    #endif
-
-        gl_Position = getWVPPositon(i);
-
-#if !defined(SHADOW_PASS)
-        setClipPlanes(VAR[i]._vertexW);
-        _waterDistance = gl_ClipDistance[0];
-        _waterDepth = waterDepth(i);
-
-        _scrollingUV = getScrollingUV(i);
-
-#   if defined(_DEBUG)
-        gs_wireColor = wireColor;
-
-        if (i == 0) {
-            gs_edgeDist = vec3(ha, 0, 0);
-        } else if (i == 1) {
-            gs_edgeDist = vec3(0, hb, 0);
-        } else {
-            gs_edgeDist = vec3(0, 0, hc);
-        }
-#   endif
-#endif
+        PerVertex(i, edge_dist, wireColor, worldMat);
         EmitVertex();
     }
 
-    PassData(0);
-#if defined(SHADOW_PASS)
-    geom_vertexWVP = gl_in[0].gl_Position;
-#endif
-
     // This closes the triangle
-    gl_Position = getWVPPositon(0);
-
-#if !defined(SHADOW_PASS)
-    setClipPlanes(VAR[0]._vertexW);
-    _waterDistance = gl_ClipDistance[0];
-    _scrollingUV = getScrollingUV(0);
-    _waterDepth = waterDepth(0);
-#   if defined(_DEBUG)
-    gs_edgeDist = vec3(ha, 0, 0);
-    gs_wireColor = wireColor;
-#   endif
-#endif
+    PerVertex(0, edge_dist, wireColor, worldMat);
     EmitVertex();
 
     EndPrimitive();
@@ -490,7 +499,6 @@ layout(early_fragment_tests) in;
 void main()
 {
 }
-
 
 --Fragment.Shadow
 
@@ -527,8 +535,8 @@ void main()
 uniform float ToggleWireframe = 0.0;
 
 in vec4 _scrollingUV;
-smooth in float _waterDistance;
-smooth in float _waterDepth;
+// x = distance, y = depth
+smooth in vec2 _waterDetails;
 
 #if defined(_DEBUG)
 in vec4 gs_wireColor;
@@ -583,7 +591,7 @@ vec4 UnderwaterColour() {
 }
 
 vec4 UnderwaterMappingRoutine() {
-    return mix(CausticsColour(), UnderwaterColour(), _waterDepth + 1.5);
+    return mix(CausticsColour(), UnderwaterColour(), _waterDetails.y);
 }
 
 vec4 TerrainMappingRoutine() {
@@ -598,7 +606,7 @@ void main(void)
 
     setProcessedNormal(getTerrainNormal());
 
-    vec4 colour = ToSRGB(applyFog(mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), min(_waterDistance, 0.0))));
+    vec4 colour = ToSRGB(applyFog(mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x)));
     
 #if defined(_DEBUG)
     float d = min(gs_edgeDist.x, gs_edgeDist.y);

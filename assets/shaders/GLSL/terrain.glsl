@@ -16,7 +16,10 @@ void main(void){
     computeData();
 
     VAR._texCoord = vec3((VAR._vertexW.xyz - bbox_min) / bbox_extent).sp;
-    _waterDepth = 1.0 - (dvd_clip_plane[0].w - VAR._vertexW.y) / (dvd_waterHeight - bbox_min.y);
+
+    float minHeight = (worldMat * vec4(0.0, TERRAIN_MIN_HEIGHT, 0.0, 1.0)).y;
+    _waterDepth = clamp(1.0 - (dvd_waterPositionsW.y - VAR[index]._vertexW.y) / (dvd_waterPositionsW.y - minHeight), 0.0, 1.0);
+
     computeLightVectors();
 
     float time2 = float(dvd_time) * 0.0001;

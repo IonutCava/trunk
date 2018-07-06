@@ -44,7 +44,7 @@ class SceneShaderData {
         vec4<F32> _otherData;
         vec4<F32> _otherData2;
         vec4<U32> _lightCountPerType;
-        vec4<F32> _waterPositions/*[MAX_WATER_BODIES]*/;
+        vec4<F32> _waterPositionsW/*[MAX_WATER_BODIES]*/;
         vec4<F32> _waterDetails/*[MAX_WATER_BODIES]*/;
     };
 
@@ -97,9 +97,9 @@ class SceneShaderData {
         _bufferData._otherData2.z = to_F32(shadowDetailLevel);
     }
 
-    inline void waterDetails(U8 index, const vec3<F32>& position, const vec3<F32>& dimensions) {
+    inline void waterDetails(U8 index, const vec3<F32>& positionW, const vec3<F32>& dimensions) {
         ACKNOWLEDGE_UNUSED(index);
-        _bufferData._waterPositions/*[index]*/.set(position);
+        _bufferData._waterPositionsW/*[index]*/.set(positionW);
         _bufferData._waterDetails/*[index]*/.set(dimensions);
     }
 

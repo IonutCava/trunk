@@ -5,8 +5,8 @@ struct NodeData {
     mat4 _worldMatrix;
     // [0][0] ... [2][2] = normal matrix
     // [0][3] = bone count
-	// [1][3] = reflection index
-	// [2][3] = refraction index
+    // [1][3] = reflection index
+    // [2][3] = refraction index
     // [3][0] ... [3][3] = bounding sphere
     mat4 _normalMatrixWV;
     // [0][0] ... [0][3] = albedo

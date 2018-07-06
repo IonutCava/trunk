@@ -64,7 +64,7 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
     vec4   dvd_otherData;
     vec4   dvd_otherData2;
     uvec4  dvd_lightCountPerType;
-    vec4   dvd_waterPositions/*[MAX_WATER_BODIES]*/;
+    vec4   dvd_waterPositionsW/*[MAX_WATER_BODIES]*/;
     //x = width, y = length, z = depth
     vec4   dvd_waterDetails/*[MAX_WATER_BODIES]*/;
 };
