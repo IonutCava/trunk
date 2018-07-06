@@ -15,7 +15,7 @@
 glShaderProgram* GL_API::_activeShaderProgram = NULL;
 GLuint GL_API::_activeVAOId = 0;
 GLuint GL_API::_activeTextureUnit = 0;
-vec4<GLfloat> GL_API::_prevClearColor = DIVIDE_BLUE();
+vec4<GLfloat> GL_API::_prevClearColor = DefaultColors::DIVIDE_BLUE();
 
 void GL_API::clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll){
     if(!skipShader || forceAll) {
@@ -32,7 +32,7 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
         GLCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
     }
 
-    GL_API::clearColor(DIVIDE_BLUE());
+    GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
 }
 
 void GL_API::updateStateInternal(RenderStateBlock* block, bool force){

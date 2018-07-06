@@ -5,12 +5,7 @@
 #include "Headers/glImmediateModeEmulation.h"
 
 #include "Hardware/Video/OpenGL/Buffers/VertexBufferObject/Headers/glVertexArrayObject.h"
-#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glTextureArrayBufferObject.h"
-#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glDepthArrayBufferObject.h"
 #include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glMSTextureBufferObject.h"
-#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glTextureBufferObject.h"
-#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glDeferredBufferObject.h"
-#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glDepthBufferObject.h"
 #include "Hardware/Video/OpenGL/Buffers/PixelBufferObject/Headers/glPixelBufferObject.h"
 
 #ifndef FTGL_LIBRARY_STATIC
@@ -68,33 +63,14 @@ RenderStateBlock* GL_API::newRenderStateBlock(const RenderStateBlockDescriptor& 
 }
 
 FrameBufferObject* GL_API::newFBO(const FBOType& type)  {
-    switch(type){
-        case FBO_2D_DEFERRED:
-            return New glDeferredBufferObject();
-        case FBO_2D_DEPTH:
-            return New glDepthBufferObject();
-        case FBO_2D_ARRAY_DEPTH:
-            return New glDepthArrayBufferObject();
-        case FBO_CUBE_COLOR:
-            return New glTextureBufferObject(true);
-        case FBO_CUBE_DEPTH:
-            return New glTextureBufferObject(true,true);
-        case FBO_CUBE_COLOR_ARRAY:
-            return New glTextureArrayBufferObject(true);
-        case FBO_CUBE_DEPTH_ARRAY:
-            return New glTextureArrayBufferObject(true,true);
-        case FBO_2D_ARRAY_COLOR:
-            return New glTextureArrayBufferObject();
-        case FBO_2D_COLOR_MS:{
-            if(_msaaSamples > 1 && _useMSAA)
-                return New glMSTextureBufferObject(); ///<No MS cube support yet
-            else
-                return New glTextureBufferObject();
-        }
-        default:
-        case FBO_2D_COLOR:
-            return New glTextureBufferObject();
+    if(type == FBO_2D_COLOR_MS){
+        if(_msaaSamples > 1 && _useMSAA)
+            return New glMSTextureBufferObject(); ///<No MS cube support yet
+      
+        return New glFrameBufferObject(FBO_2D_COLOR);
     }
+
+    return New glFrameBufferObject(type);
 }
 
 VertexBufferObject* GL_API::newVBO(const PrimitiveType& type) {

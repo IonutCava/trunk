@@ -29,40 +29,35 @@
 class glFrameBufferObject : public FrameBufferObject {
 public:
 
-	glFrameBufferObject(FBOType type) : FrameBufferObject(type)
-	{
-		memset(_textureId, 0, 4 * sizeof(GLuint));
-		_depthId = _imageLayers = 0;
-	}
+    glFrameBufferObject(FBOType type);
+    virtual ~glFrameBufferObject();
 
-	virtual ~glFrameBufferObject()
-	{
-	}
+    virtual bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
+    virtual void Destroy();
+    virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, GLubyte layer) const; ///<Use by multilayerd FBO's
+    virtual void AddDepthBuffer();
 
-	virtual bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
-	virtual void Destroy();
-	virtual void DrawToLayer(GLubyte face, GLubyte layer) const
-	{
-	} ///<Use by multilayerd FBO's
+    virtual void Begin(GLubyte nFace=0) const;
+    virtual void End(GLubyte nFace=0) const;
+    virtual void Bind(GLubyte unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) const;
+    virtual void Unbind(GLubyte unit=0) const;
 
-	virtual void Begin(GLubyte nFace=0) const;
-	virtual void End(GLubyte nFace=0) const;
-	virtual void Bind(GLubyte unit=0, GLubyte texture = 0) const;
-	virtual void Unbind(GLubyte unit=0) const;
+    void BlitFrom(FrameBufferObject* inputFBO) const;
 
-	void BlitFrom(FrameBufferObject* inputFBO) const;
-
-	void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const ;
+    void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const ;
 
 protected:
-	bool checkStatus() const;
+    bool checkStatus() const;
+    void InitAttachement(TextureDescriptor::AttachmentType type, const TextureDescriptor& texDescriptor);
+    bool CreateDeferred();
 
 protected:
-	GLuint _textureId[4];  ///<Color attachements
-	GLuint _depthId;      ///<Depth attachement
-	GLuint _imageLayers;
-	GLuint _clearBufferMask;
-	bool   _mipMapEnabled[4];
+    GLuint _textureId[5];  ///<4 color attachements and 1 depth
+    GLuint _imageLayers;
+    GLuint _clearBufferMask;
+    bool   _mipMapEnabled[5]; ///< depth may have mipmaps if needed, too
+    bool   _hasDepth;
+    bool   _hasColor;
 };
 
 #endif

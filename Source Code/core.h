@@ -24,7 +24,7 @@
 #define CORE_H_
 
 #ifdef HIDE_DEBUG_CONSOLE
-	#pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
+    #pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 #endif
 
 #define NEW_PARAM (__FILE__, __LINE__)
@@ -64,18 +64,18 @@ void free_simd(void * pxData);
 #include "Utility/Headers/Vector.h"
 
 inline D32 GETMSTIME() {
-	return Framerate::getInstance().getElapsedTime();
+    return Framerate::getInstance().getElapsedTime();
 }
 
 inline D32 GETTIME() {
-	return getMsToSec(GETMSTIME());
+    return getMsToSec(GETMSTIME());
 }
 
 //Helper method to emulate GLSL
 inline F32 fract(F32 floatValue){  return (F32)fmod(floatValue, 1.0f); }
 ///Packs a floating point value into the [0...255] range (thx sqrt[-1] of opengl.org forums)
 inline U8 PACK_FLOAT(F32 floatValue){
-	//Scale and bias
+    //Scale and bias
   floatValue = (floatValue + 1.0f) * 0.5f;
   return (U8)(floatValue*255.0f);
 }
@@ -99,29 +99,48 @@ inline void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b){
 }
 
 enum ErrorCodes {
-	NO_ERR = 0,
-	MISSING_SCENE_DATA = -1,
-	MISSING_SCENE_LOAD_CALL = -2,
-	GLFW_INIT_ERROR = -3,
-	GLFW_WINDOW_INIT_ERROR = -4,
-	GLEW_INIT_ERROR = -5,
-	GLEW_OLD_HARDWARE = -6,
-	DX_INIT_ERROR = -7,
-	DX_OLD_HARDWARE = -8,
-	SDL_AUDIO_INIT_ERROR = -9,
-	FMOD_AUDIO_INIT_ERROR = -10,
-	OAL_INIT_ERROR = -11,
-	PHYSX_INIT_ERROR = -12,
-	PHYSX_EXTENSION_ERROR = -13,
-	NO_LANGUAGE_INI = -14
+    NO_ERR = 0,
+    MISSING_SCENE_DATA = -1,
+    MISSING_SCENE_LOAD_CALL = -2,
+    GLFW_INIT_ERROR = -3,
+    GLFW_WINDOW_INIT_ERROR = -4,
+    GLEW_INIT_ERROR = -5,
+    GLEW_OLD_HARDWARE = -6,
+    DX_INIT_ERROR = -7,
+    DX_OLD_HARDWARE = -8,
+    SDL_AUDIO_INIT_ERROR = -9,
+    FMOD_AUDIO_INIT_ERROR = -10,
+    OAL_INIT_ERROR = -11,
+    PHYSX_INIT_ERROR = -12,
+    PHYSX_EXTENSION_ERROR = -13,
+    NO_LANGUAGE_INI = -14
 };
 
-///Random stuff added for convenience
-#define WHITE() vec4<F32>(1.0f,1.0f,1.0f,1.0f)
-#define BLACK() vec4<F32>(0.0f,0.0f,0.0f,1.0f)
-#define RED()   vec4<F32>(1.0f,0.0f,0.0f,1.0f)
-#define GREEN() vec4<F32>(0.0f,1.0f,0.0f,1.0f)
-#define BLUE()  vec4<F32>(0.0f,0.0f,1.0f,1.0f)
-#define DIVIDE_BLUE() vec4<F32>(0.1f,0.1f,0.8f,1.0f)
+namespace DefaultColors {
+    ///Random stuff added for convenience
+    inline vec4<F32> WHITE() { 
+        return vec4<F32>(1.0f,1.0f,1.0f,1.0f); 
+    }
+
+    inline vec4<F32> BLACK() { 
+        return vec4<F32>(0.0f,0.0f,0.0f,1.0f);
+    }
+
+    inline vec4<F32> RED()   { 
+        return vec4<F32>(1.0f,0.0f,0.0f,1.0f);
+    }
+
+    inline vec4<F32> GREEN() { 
+        return vec4<F32>(0.0f,1.0f,0.0f,1.0f); 
+    }
+
+    inline vec4<F32> BLUE()  { 
+        return vec4<F32>(0.0f,0.0f,1.0f,1.0f);
+    }
+
+    inline vec4<F32> DIVIDE_BLUE() { 
+        return vec4<F32>(0.1f,0.1f,0.8f,1.0f);
+    }
+};
 
 #endif

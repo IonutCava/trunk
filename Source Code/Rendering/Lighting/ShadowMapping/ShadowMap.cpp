@@ -6,11 +6,11 @@
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
 
-ShadowMap::ShadowMap(Light* light) : _resolutionFactor(1),
-                                     _init(false),
-                                     _isBound(false),
-                                     _light(light),
-                                     _par(ParamHandler::getInstance())
+ShadowMap::ShadowMap(Light* light, ShadowType type) : _resolutionFactor(1),
+                                                      _init(false),
+                                                      _isBound(false),
+                                                      _light(light),
+                                                      _par(ParamHandler::getInstance())
 {
 }
 
@@ -56,8 +56,9 @@ bool ShadowMap::Bind(U8 offset){
 
     _isBound = true;
 
-    if(_depthMap)
-        _depthMap->Bind(offset);
+    if(_depthMap){
+        _depthMap->Bind(offset,getShadowMapType() == SHADOW_TYPE_PSSM ? TextureDescriptor::Depth : TextureDescriptor::Depth);
+    }
 
     return true;
 }

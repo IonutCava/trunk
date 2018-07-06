@@ -40,7 +40,7 @@ class SceneRenderState;
 ///All the information needed for a single light's shadowmap
 class ShadowMap {
 public:
-    ShadowMap(Light* light);
+    ShadowMap(Light* light, ShadowType type);
     virtual ~ShadowMap();
     ///Render the scene and save the frame to the shadow map
     virtual void render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction) = 0;
@@ -49,7 +49,7 @@ public:
     ///Setup needed after rendering the light
     void postRender();
     ///Get the current shadow mapping tehnique
-    virtual ShadowType getShadowMapType() const = 0;
+    inline ShadowType getShadowMapType() const {return _shadowMapType;};
 
     inline  FrameBufferObject* getDepthMap() {return _depthMap;}
     inline  bool isBound() {return _isBound;}
@@ -63,6 +63,7 @@ protected:
     virtual void renderInternal(const SceneRenderState& renderState) const = 0;
 
 protected:
+    ShadowType _shadowMapType;
     ///The depth maps. Number depends on the current method
     FrameBufferObject*  _depthMap;
     ///A global resolution factor for all methods (higher = better quality)

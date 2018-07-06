@@ -243,9 +243,9 @@ bool AITenisScene::load(const std::string& name, CameraManager* const cameraMgr)
 
     //Add a light
     Light* light = addDefaultLight();
-    light->setLightProperties(LIGHT_PROPERTY_AMBIENT,WHITE());
-    light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,WHITE());
-    light->setLightProperties(LIGHT_PROPERTY_SPECULAR,WHITE());
+    light->setLightProperties(LIGHT_PROPERTY_AMBIENT,DefaultColors::WHITE());
+    light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,DefaultColors::WHITE());
+    light->setLightProperties(LIGHT_PROPERTY_SPECULAR,DefaultColors::WHITE());
     addDefaultSky();
 
 //	ResourceDescriptor tempLight1("Light omni");

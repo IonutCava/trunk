@@ -93,7 +93,7 @@ public:
             return 0;
 
         QueryPerformanceCounter(&_currentTicks);
-        return (D32)(_currentTicks.QuadPart-_startupTicks.QuadPart) / _ticksPerMillisecond;
+        return (_currentTicks.QuadPart-_startupTicks.QuadPart) / static_cast<D32>(_ticksPerMillisecond);
   }
 
 protected:
@@ -128,8 +128,9 @@ public:
 protected:
     const char*        _name;
     boost::atomic_bool _init;
-    boost::atomic<D32> _timer;
-    boost::atomic<D32> _timerSaved;
+    D32 _timer;
+    D32 _timerAverage;
+    boost::atomic_int  _timerCounter;
 };
 
     inline ProfileTimer* ADD_TIMER(const char* timerName) {

@@ -12,7 +12,7 @@
 
 #define JITTER_SIZE  16
 
-PSShadowMaps::PSShadowMaps(Light* light) : ShadowMap(light)
+PSShadowMaps::PSShadowMaps(Light* light) : ShadowMap(light, SHADOW_TYPE_PSSM)
 {
     _maxResolution = 0;
     _resolutionFactor = ParamHandler::getInstance().getParam<U8>("rendering.shadowResolutionFactor");
@@ -35,23 +35,25 @@ PSShadowMaps::PSShadowMaps(Light* light) : ShadowMap(light)
 
     createJitterTexture(JITTER_SIZE,8,8);
 
-    _depthMap = GFX_DEVICE.newFBO(FBO_2D_ARRAY_DEPTH);
-
     SamplerDescriptor depthMapSampler;
+    //depthMapSampler.setFilters(TEXTURE_FILTER_NEAREST, TEXTURE_FILTER_NEAREST);
     depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     depthMapSampler.toggleMipMaps(false);
     depthMapSampler._useRefCompare = true; //< Use compare function
     depthMapSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
     depthMapSampler._depthCompareMode = INTENSITY;
-
+    
     TextureDescriptor depthMapDescriptor(TEXTURE_2D_ARRAY,
-                                         DEPTH_COMPONENT,
-                                         DEPTH_COMPONENT24,
+                                         DEPTH_COMPONENT,//LUMINANCE_ALPHA,
+                                         DEPTH_COMPONENT24,//LUMINANCE_ALPHA32F,
                                          UNSIGNED_BYTE); ///Default filters, LINEAR is OK for this
     depthMapDescriptor.setSampler(depthMapSampler);
+
+    _depthMap = GFX_DEVICE.newFBO(FBO_2D_ARRAY_DEPTH);
     _depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::Depth);
     _depthMap->toggleColorWrites(false); //<do not draw colors
-    _depthMap->toggleDepthBuffer(false); //<do not create a depth buffer
+    _depthMap->toggleDepthBuffer(false); //<create a depth buffer
+    _depthMap->setClearColor(DefaultColors::WHITE());
 }
 
 void PSShadowMaps::createJitterTexture(I32 size, I32 samples_u, I32 samples_v) {
@@ -131,6 +133,7 @@ void PSShadowMaps::render(const SceneRenderState& renderState, boost::function0<
         ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getId());
         return;
     }
+
     F32 ortho = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getWidth() * 0.5f;
     CLAMP<F32>(ortho, 1.0f, (F32)Config::DIRECTIONAL_LIGHT_DISTANCE);
     for(U8 i = 0; i < _numSplits; i++){
@@ -180,10 +183,11 @@ void PSShadowMaps::renderInternal(const SceneRenderState& renderState) const {
     //bind the associated depth map
     _depthMap->Begin();
     //For each depth pass
-    for(U8 i = 0; i < _numSplits; i++){
+    for(U8 i = 0; i < _numSplits; i++)
+    {
         //Set the appropriate projection
         _light->renderFromLightView(i, _orthoPerPass[i]);
-        _depthMap->DrawToLayer(0,i);
+        _depthMap->DrawToLayer(TextureDescriptor::Depth, i);
             //draw the scene
             GFX_DEVICE.render(renderFunction, renderState);
     }
@@ -203,7 +207,7 @@ void PSShadowMaps::previewShadowMaps(){
 
     _previewDepthMapShader->bind();
     _previewDepthMapShader->UniformTexture("tex",0);
-    _depthMap->Bind(0,1);
+    _depthMap->Bind(0, TextureDescriptor::Depth);
     GFX_DEVICE.toggle2D(true);
         _previewDepthMapShader->Uniform("layer",0);
         GFX_DEVICE.renderInViewport(vec4<U32>(0,0,128,128),

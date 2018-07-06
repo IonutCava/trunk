@@ -28,19 +28,20 @@
 class glMSTextureBufferObject : public glFrameBufferObject {
 public:
 
-	glMSTextureBufferObject();
-	~glMSTextureBufferObject() {Destroy();}
+    glMSTextureBufferObject();
+    ~glMSTextureBufferObject();
 
-	bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
+    bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
 
-	void Destroy();
+    void Destroy();
 
-	void End(GLubyte nFace=0) const;
+    void End(GLubyte nFace=0) const;
 
 private:
-	GLuint _colorBufferHandle;
-	GLuint _msaaBufferResolver;
-	GLuint _msaaSamples;
+    GLuint _depthBufferHandle;
+    GLuint _colorBufferHandle;
+    GLuint _msaaBufferResolver;
+    GLuint _msaaSamples;
 };
 
 #endif

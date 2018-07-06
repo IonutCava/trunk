@@ -8,7 +8,7 @@
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-CubeShadowMap::CubeShadowMap(Light* light) : ShadowMap(light)
+CubeShadowMap::CubeShadowMap(Light* light) : ShadowMap(light, SHADOW_TYPE_CubeMap)
 {
 	_maxResolution = 0;
 	_resolutionFactor = ParamHandler::getInstance().getParam<U8>("rendering.shadowResolutionFactor");
@@ -16,7 +16,7 @@ CubeShadowMap::CubeShadowMap(Light* light) : ShadowMap(light)
 	PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FBO"), light->getId(), "Single Shadow Map");
 	TextureDescriptor depthMapDescriptor(TEXTURE_2D,
 										 DEPTH_COMPONENT,
-										 DEPTH_COMPONENT,
+										 DEPTH_COMPONENT24,
 										 UNSIGNED_BYTE); ///Default filters, LINEAR is OK for this
 
 	SamplerDescriptor depthMapSampler;

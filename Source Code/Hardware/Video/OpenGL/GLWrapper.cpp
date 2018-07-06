@@ -36,7 +36,7 @@ namespace IMPrimitiveValidation{
 
 void GL_API::beginFrame(){
     GLCheck(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
-    GL_API::clearColor(DIVIDE_BLUE());
+    GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
     SET_DEFAULT_STATE_BLOCK();
 }
 

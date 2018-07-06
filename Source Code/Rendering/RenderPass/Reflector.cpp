@@ -90,12 +90,12 @@ void Reflector::previewReflection(){
 
     _previewReflectionShader->bind();
     _previewReflectionShader->UniformTexture("tex",0);
-    _reflectedTexture->Bind(0);
+    _reflectedTexture->Bind();
     GFX_DEVICE.toggle2D(true);
         GFX_DEVICE.renderInViewport(vec4<U32>(128,128,256,256),
                                     DELEGATE_BIND(&GFXDevice::renderInstance,
                                                 DELEGATE_REF(GFX_DEVICE),
                                                 DELEGATE_REF(_renderQuad->renderInstance())));
     GFX_DEVICE.toggle2D(false);
-    _reflectedTexture->Unbind(0);
+    _reflectedTexture->Unbind();
 }

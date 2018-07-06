@@ -15,9 +15,9 @@ REGISTER_SCENE(MainScene);
 bool MainScene::updateLights(){
     Light* light = LightManager::getInstance().getLight(0);
     _sun_cosy = cosf(_sunAngle.y);
-    _sunColor = WHITE().lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
-                             vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
-                             0.25f + _sun_cosy * 0.75f);
+    _sunColor = DefaultColors::WHITE().lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
+                                            vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
+                                            0.25f + _sun_cosy * 0.75f);
 
     light->setPosition(_sunvector);
     light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,_sunColor);
@@ -146,9 +146,9 @@ bool MainScene::load(const std::string& name, CameraManager* const cameraMgr){
 
     if(state().getWaterLevel() == RAND_MAX) computeWaterHeight = true;
     Light* light = addDefaultLight();
-    light->setLightProperties(LIGHT_PROPERTY_AMBIENT,WHITE());
-    light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,WHITE());
-    light->setLightProperties(LIGHT_PROPERTY_SPECULAR,WHITE());
+    light->setLightProperties(LIGHT_PROPERTY_AMBIENT,DefaultColors::WHITE());
+    light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,DefaultColors::WHITE());
+    light->setLightProperties(LIGHT_PROPERTY_SPECULAR,DefaultColors::WHITE());
     addDefaultSky();
 
     for(U8 i = 0; i < _terrainInfoArray.size(); i++){

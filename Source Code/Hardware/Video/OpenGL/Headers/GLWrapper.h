@@ -152,6 +152,7 @@ protected:
 protected:
     friend class glFrameBufferObject;
     friend class glDeferredBufferObject;
+    friend class glTextureArrayBufferObject;
            static void restoreViewport();
            static vec4<GLuint> setViewport(const vec4<GLuint>& viewport ,bool force = false);
            static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force = false);

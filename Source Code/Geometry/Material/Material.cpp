@@ -147,7 +147,7 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader, const Rende
         shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
         shaderReference = CreateResource<ShaderProgram>(shaderDescriptor);
         if(id == 1){//depth shader
-            shaderReference->setMatrixMask(false,false,true,false);
+            shaderReference->setMatrixMask(false,false,true,true);
         }
     }
     _dirty = true;

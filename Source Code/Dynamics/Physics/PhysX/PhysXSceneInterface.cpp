@@ -244,6 +244,7 @@ SceneGraphNode* PhysXSceneInterface::addToScene(PhysXActor& actor){
 
     if(actor._type != PxGeometryType::eTRIANGLEMESH) {
         if(sceneNode){
+            sceneNode->getSceneNodeRenderState().setDrawState(true);
             tempNode = _parentScene->addGeometry(sceneNode,sgnName);
         }
         if(!tempNode){

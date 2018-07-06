@@ -9,7 +9,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
-SingleShadowMap::SingleShadowMap(Light* light) : ShadowMap(light)
+SingleShadowMap::SingleShadowMap(Light* light) : ShadowMap(light, SHADOW_TYPE_Single)
 {
     _maxResolution = 0;
     _resolutionFactor = ParamHandler::getInstance().getParam<U8>("rendering.shadowResolutionFactor");

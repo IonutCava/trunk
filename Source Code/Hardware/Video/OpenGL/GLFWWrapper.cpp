@@ -300,7 +300,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     GL_ENUM_TABLE::fill();
 
     //Set the clear color to a nice blue
-    GL_API::clearColor(DIVIDE_BLUE());
+    GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
     if(glewIsSupported("GL_ARB_seamless_cube_map")){
         GLCheck(glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS));
     }

@@ -29,8 +29,8 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
     setLightMode(LIGHT_MODE_MOVABLE);
 
     _properties._ambient = vec4<F32>(0.1f,0.1f,0.1f,1.0f);
-    _properties._diffuse = WHITE();
-    _properties._specular = WHITE();
+    _properties._diffuse = DefaultColors::WHITE();
+    _properties._specular = DefaultColors::WHITE();
     _properties._spotExponent;
     _properties._spotCutoff;
     _properties._attenuation = vec4<F32>(1.0f, 0.1f, 0.0f, range); //constAtt, linearAtt, quadAtt, range

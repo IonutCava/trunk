@@ -26,9 +26,7 @@
 #include "Hardware/Video/Headers/RenderAPIWrapper.h"
 
 #include "core.h"
-#include "Hardware/Video/Direct3D/Buffers/FrameBufferObject/Headers/d3dTextureBufferObject.h"
-#include "Hardware/Video/Direct3D/Buffers/FrameBufferObject/Headers/d3dDeferredBufferObject.h"
-#include "Hardware/Video/Direct3D/Buffers/FrameBufferObject/Headers/d3dDepthBufferObject.h"
+#include "Hardware/Video/Direct3D/Buffers/FrameBufferObject/Headers/d3dFrameBufferObject.h"
 #include "Hardware/Video/Direct3D/Buffers/VertexBufferObject/Headers/d3dVertexBufferObject.h"
 #include "Hardware/Video/Direct3D/Buffers/PixelBufferObject/Headers/d3dPixelBufferObject.h"
 #include "Hardware/Video/Direct3D/Shaders/Headers/d3dShaderProgram.h"
@@ -61,19 +59,7 @@ private:
     void getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat);
     void getMatrix(const EXTENDED_MATRIX& mode, mat3<F32>& mat);
 
-    inline FrameBufferObject*  newFBO(const FBOType& type)  {
-        switch(type){
-            case FBO_2D_DEFERRED:
-                return New d3dDeferredBufferObject();
-            case FBO_2D_DEPTH:
-                return New d3dDepthBufferObject();
-            case FBO_CUBE_COLOR:
-                return New d3dTextureBufferObject(true);
-            default:
-            case FBO_2D_COLOR:
-                return New d3dTextureBufferObject();
-        }
-    }
+    inline FrameBufferObject*  newFBO(const FBOType& type)  { return New d3dFrameBufferObject(type); }
 
     inline VertexBufferObject* newVBO(const PrimitiveType& type)                    {return New d3dVertexBufferObject(type);}
     inline PixelBufferObject*  newPBO(const PBOType& type)                          {return New d3dPixelBufferObject(type);}

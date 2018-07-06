@@ -7,10 +7,19 @@
 
 glMSTextureBufferObject::glMSTextureBufferObject() : glFrameBufferObject(FBO_2D_COLOR_MS),
                                                      _msaaBufferResolver(0),
+                                                     _depthBufferHandle(0),
                                                      _colorBufferHandle(0)
 {
     _msaaSamples = ParamHandler::getInstance().getParam<U8>("rendering.FSAAsamples",2);
-    _textureType = GL_TEXTURE_2D;
+}
+
+glMSTextureBufferObject::~glMSTextureBufferObject()
+{
+    Destroy();
+    if(_depthBufferHandle > 0){
+        GLCheck(glDeleteFramebuffers(1, &_depthBufferHandle));
+        _depthBufferHandle = 0;
+    }
 }
 
 bool glMSTextureBufferObject::Create(GLushort width, GLushort height, GLubyte imageLayers){
@@ -40,8 +49,8 @@ bool glMSTextureBufferObject::Create(GLushort width, GLushort height, GLubyte im
     _height = height;
     _useDepthBuffer = true;
 
-    GLCheck(glGenTextures(1, &_textureId[0]));
-    GLCheck(glBindTexture(_textureType, _textureId[0]));
+    GLCheck(glGenTextures(1, &_textureId[TextureDescriptor::Color0]));
+    GLCheck(glBindTexture(_textureType, _textureId[TextureDescriptor::Color0]));
 
     ///General texture parameters for either color or depth
     if(sampler.generateMipMaps()){

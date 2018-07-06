@@ -75,9 +75,9 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
     bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
     //Add a light
     Light* light = addDefaultLight();
-    light->setLightProperties(LIGHT_PROPERTY_AMBIENT,WHITE());
-    light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,WHITE());
-    light->setLightProperties(LIGHT_PROPERTY_SPECULAR,WHITE());
+    light->setLightProperties(LIGHT_PROPERTY_AMBIENT,DefaultColors::WHITE());
+    light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,DefaultColors::WHITE());
+    light->setLightProperties(LIGHT_PROPERTY_SPECULAR,DefaultColors::WHITE());
     //Add a skybox
     addDefaultSky();
     //Position camera

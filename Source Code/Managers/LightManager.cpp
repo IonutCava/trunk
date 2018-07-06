@@ -8,16 +8,20 @@
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 #include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
 
+ProfileTimer* s_shadowPassTimer = NULL;
+
 LightManager::LightManager() : FrameListener(),
                                _shadowMapsEnabled(true),
                                _previewShadowMaps(false),
                                _dominantLight(NULL)
 {
+    s_shadowPassTimer = ADD_TIMER("ShadowPassTimer");
 }
 
 LightManager::~LightManager()
 {
     clear();
+    REMOVE_TIMER(s_shadowPassTimer);
 }
 
 void LightManager::init(){
@@ -106,6 +110,8 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt){
     if(!_shadowMapsEnabled)
         return true;
 
+    START_TIMER(s_shadowPassTimer);
+
     //Stop if we have shadows disabled
     _lightProjectionMatricesCache.resize(Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
     //Tell the engine that we are drawing to depth maps
@@ -124,6 +130,8 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt){
     }
     //Revert back to the previous stage
     GFX_DEVICE.setRenderStage(previousRS);
+
+    STOP_TIMER(s_shadowPassTimer);
 
     return true;
 }

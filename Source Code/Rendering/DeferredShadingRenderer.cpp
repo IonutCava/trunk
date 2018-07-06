@@ -182,10 +182,10 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     //Draw a 2D fullscreen quad that has the lighting shader applied to it and all generated textures bound to that shader
     GFX_DEVICE.toggle2D(true);
 
-    _deferredBuffer->Bind(0,0);
-    _deferredBuffer->Bind(1,1);
-    _deferredBuffer->Bind(2,2);
-    _deferredBuffer->Bind(3,3);
+    _deferredBuffer->Bind(0, TextureDescriptor::Color0);
+    _deferredBuffer->Bind(1, TextureDescriptor::Color1);
+    _deferredBuffer->Bind(2, TextureDescriptor::Color2);
+    _deferredBuffer->Bind(3, TextureDescriptor::Color3);
     _lightTexture->Bind(4);
         if(_debugView){
             _previewDeferredShader->bind();

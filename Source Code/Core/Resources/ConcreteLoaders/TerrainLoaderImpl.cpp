@@ -35,8 +35,8 @@ bool ImplResourceLoader<Terrain>::load(Terrain* const res, const std::string& na
 
     ResourceDescriptor terrainMaterial("terrainMaterial");
     res->setMaterial(CreateResource<Material>(terrainMaterial));
-    res->getMaterial()->setDiffuse(WHITE());
-    res->getMaterial()->setAmbient(WHITE() / 3);
+    res->getMaterial()->setDiffuse(DefaultColors::WHITE());
+    res->getMaterial()->setAmbient(DefaultColors::WHITE() / 3);
     res->getMaterial()->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     res->getMaterial()->setShininess(20.0f);
     res->getMaterial()->addShaderDefines("COMPUTE_TBN");

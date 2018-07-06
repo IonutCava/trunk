@@ -29,24 +29,24 @@ class d3dFrameBufferObject : public FrameBufferObject
 {
 public:
 
-	d3dFrameBufferObject(FBOType type) : FrameBufferObject(type) {}
-	virtual ~d3dFrameBufferObject() {}
+    d3dFrameBufferObject(FBOType type);
+    virtual ~d3dFrameBufferObject();
 
-	virtual bool Create(U16 width, U16 height, U8 imageLayers = 0) = 0;
+    virtual bool Create(U16 width, U16 height, U8 imageLayers = 0);
 
-	virtual void Destroy() = 0;
+    virtual void Destroy();
+    virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer) const; ///<Use by multilayerd FBO's
+    virtual void Begin(U8 nFace=0) const;
+    virtual void End(U8 nFace=0) const;
 
-	virtual void Begin(U8 nFace=0) const = 0;
-	virtual void End(U8 nFace=0) const  = 0;
+    virtual void Bind(U8 unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) const;
+    virtual void Unbind(U8 unit=0) const;
+    void BlitFrom(FrameBufferObject* inputFBO) const;
 
-	virtual void Bind(U8 unit=0, U8 texture = 0) const = 0;
-	virtual void Unbind(U8 unit=0) const = 0;
-	void BlitFrom(FrameBufferObject* inputFBO) const;
-
-	void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const;
+    void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const;
 
 protected:
-	bool checkStatus() const;
+    bool checkStatus() const;
 };
 
 #endif

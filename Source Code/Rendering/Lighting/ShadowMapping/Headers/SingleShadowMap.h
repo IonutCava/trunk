@@ -32,8 +32,6 @@ public:
     SingleShadowMap(Light* light);
     ~SingleShadowMap();
     void render(const SceneRenderState& renderState, boost::function0<void> sceneRenderFunction);
-    ///Get the current shadow mapping tehnique
-    ShadowType getShadowMapType() const {return SHADOW_TYPE_Single;}
     ///Update depth maps
     void resolution(U16 resolution, const SceneRenderState& renderState);
     void previewShadowMaps();

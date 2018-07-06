@@ -290,6 +290,8 @@ enum TextureWrap {
 enum GFXImageFormat{
     LUMINANCE = 0,
     LUMINANCE_ALPHA,
+    LUMINANCE_ALPHA16F,
+    LUMINANCE_ALPHA32F,
     INTENSITY,
     ALPHA,
     RED,
