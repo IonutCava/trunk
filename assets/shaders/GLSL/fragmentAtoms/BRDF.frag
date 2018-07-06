@@ -20,6 +20,7 @@ void getBRDFFactors(const in LightPropertiesFrag lightProp, inout MaterialProper
 }
 
 vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor) {
+    
 #if defined(HAS_TRANSPARENCY)
 #   if defined(USE_OPACITY_DIFFUSE_MAP)
         float alpha = textureColor.a;

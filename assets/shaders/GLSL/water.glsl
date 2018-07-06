@@ -37,7 +37,6 @@ uniform sampler2D texWaterNoiseDUDV;
 uniform sampler2D texWaterReflection;
 uniform sampler2D texWaterRefraction;
 
-uniform float dvd_time;
 uniform ivec2 dvd_invScreenDimension;
 
 #include "lightInput.cmn"

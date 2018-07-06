@@ -786,7 +786,7 @@ void glShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) {
 }
 
 void glShaderProgram::SetMemoryBarrier() {
-    glMemoryBarrier(GL_ALL_BARRIER_BITS);
+    glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
 }
 
 };

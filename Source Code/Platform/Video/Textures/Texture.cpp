@@ -15,6 +15,7 @@ Texture::Texture(TextureType type)
       _power2Size(true)
 {
     _width = _height = 0;
+    _mipMaxLevel = _mipMinLevel = 0;
     _textureData._textureType = type;
     _textureData._samplerHash = _samplerDescriptor.getHash();
 }

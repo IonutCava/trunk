@@ -203,54 +203,85 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
     bool feedbackActive = (command.drawToBuffer() && !_feedbackBuffers.empty());
     // Activate the appropriate vertex array object for the type of rendering we
     // requested
-    GL_API::setActiveVAO(_vertexArray[to_uint(
-        feedbackActive ? GVDUsage::FDBCK : GVDUsage::DRAW)]);
+    GL_API::setActiveVAO(_vertexArray[to_uint(feedbackActive ? GVDUsage::FDBCK : GVDUsage::DRAW)]);
     // Update vertex attributes if needed (e.g. if offsets changed)
     setAttributes(feedbackActive);
 
     // Activate transform feedback if needed
     if (feedbackActive) {
         GL_API::setActiveTransformFeedback(_transformFeedback);
-        glBeginTransformFeedback(
-            GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())]);
+        glBeginTransformFeedback(GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())]);
         // Count the number of primitives written to the buffer
-        glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN,
-                     _feedbackQueries[_currentWriteQuery][command.queryID()]);
+        glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][command.queryID()]);
     }
 
     // Submit the draw command
     if (!Config::Profile::DISABLE_DRAWS) {
         static const size_t cmdSize = sizeof(IndirectDrawCommand);
-        bufferPtr offset = (bufferPtr)(command.drawID() * cmdSize);
-        if (!useCmdBuffer) {
-            GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-            offset = (bufferPtr)(&command.cmd());
-        } else {
-            GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, GL_API::_indirectDrawBuffer);
-        }
-
-        U16 drawCount = command.drawCount();
         GLenum mode = GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())];
-
-        if (command.renderGeometry()) {
+        GLuint drawCount = command.drawCount();
+        if (useCmdBuffer) {
+            bufferPtr offset = (bufferPtr)(command.drawID() * cmdSize);
             if (_indexBuffer > 0) {
                 GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-                glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, offset, drawCount, cmdSize);
-             } else {
-                glMultiDrawArraysIndirect(mode, offset, drawCount, cmdSize);
+                if (command.renderGeometry()) {
+                    glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, offset, drawCount, cmdSize);
+                }
+                if (command.renderWireframe()) {
+                    glMultiDrawElementsIndirect(GL_LINE_LOOP, GL_UNSIGNED_INT, offset, drawCount, cmdSize);
+                }
+            } else {
+                if (command.renderGeometry()) {
+                    glMultiDrawArraysIndirect(mode, offset, drawCount, cmdSize);
+                }
+                if (command.renderWireframe()) {
+                    glMultiDrawArraysIndirect(GL_LINE_LOOP, offset, drawCount, cmdSize);
+                }
             }
-            // Count the draw call
-            GFX_DEVICE.registerDrawCall();
+        } else {
+            if (drawCount > 1) {
+                vectorImpl<GLsizei> count(drawCount, cmd.indexCount);
+                if (_indexBuffer > 0) {
+                    vectorImpl<U32> indices(drawCount, cmd.baseInstance);
+                    if (command.renderGeometry()) {
+                        glMultiDrawElements(mode, count.data(), GL_UNSIGNED_INT, (bufferPtr*)(indices.data()), drawCount);
+                    }
+                    if (command.renderWireframe()) {
+                        glMultiDrawElements(GL_LINE_LOOP, count.data(), GL_UNSIGNED_INT, (bufferPtr*)(indices.data()), drawCount);
+                    }
+                } else {
+                    vectorImpl<I32> first(drawCount, cmd.firstIndex);
+                    if (command.renderGeometry()) {
+                        glMultiDrawArrays(mode, first.data(), count.data(), drawCount);
+                    }
+                    if (command.renderWireframe()) {
+                        glMultiDrawArrays(GL_LINE_LOOP, first.data(), count.data(), drawCount);
+                    }
+                }
+            } else {
+                if (_indexBuffer > 0) {
+                    if (command.renderGeometry()) {
+                        glDrawElements(mode, cmd.indexCount, GL_UNSIGNED_INT, (bufferPtr)(cmd.firstIndex));
+                    }
+                    if (command.renderWireframe()) {
+                        glDrawElements(GL_LINE_LOOP, cmd.indexCount, GL_UNSIGNED_INT, (bufferPtr)(cmd.firstIndex));
+                    }
+                } else {
+                    if (command.renderGeometry()) {
+                        glDrawArrays(mode, cmd.firstIndex, cmd.indexCount);
+                    }
+                    if (command.renderWireframe()) {
+                        glDrawArrays(GL_LINE_LOOP, cmd.firstIndex, cmd.indexCount);
+                    }
+                }
+            }
         }
 
+        // Count the draw calls
+        if (command.renderGeometry()) {
+            GFX_DEVICE.registerDrawCall();
+        }
         if (command.renderWireframe()) {
-             if (_indexBuffer > 0) {
-                GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-                glMultiDrawElementsIndirect(GL_LINE_LOOP, GL_UNSIGNED_INT, offset, drawCount, 0);
-            } else {
-                glMultiDrawArraysIndirect(GL_LINE_LOOP, offset, drawCount, 0);
-            }
-            // Count the draw call
             GFX_DEVICE.registerDrawCall();
         }
     }

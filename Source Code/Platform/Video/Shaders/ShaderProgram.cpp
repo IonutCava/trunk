@@ -16,7 +16,7 @@ ShaderProgram::ShaderProgram()
     : HardwareResource("temp_shader_program"),
       _dirty(true),
       _elapsedTime(0ULL),
-      _elapsedTimeMS(0.0f)
+      _elapsedTimeMS(0)
 {
     _linked = false;
     // Override in concrete implementations with appropriate invalid values
@@ -46,7 +46,7 @@ bool ShaderProgram::update(const U64 deltaTime) {
 
     // Update internal timers
     _elapsedTime += deltaTime;
-    _elapsedTimeMS = Time::MicrosecondsToMilliseconds<F32>(_elapsedTime);
+    _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
     // Skip programs that aren't fully loaded
     if (!isHWInitComplete()) {
         return false;

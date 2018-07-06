@@ -77,8 +77,6 @@ class glTexture final : public Texture {
     GLenum _type;
     GFXImageFormat _internalFormat;
     std::atomic_bool _allocatedStorage;
-    GLushort _mipMaxLevel;
-    GLushort _mipMinLevel;
     std::unique_ptr<glLockManager> _lockManager;
 };
 

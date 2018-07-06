@@ -6,7 +6,6 @@
 uniform vec3 bbox_min;
 uniform vec3 bbox_extent;
 uniform float dvd_waterHeight;
-uniform float dvd_time;
 uniform float underwaterDiffuseScale;
 
 out vec2 _uv0;

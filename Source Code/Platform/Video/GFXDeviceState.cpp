@@ -77,9 +77,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // ToDo: Might need to be unbound for access in compute shaders! -Ionut
     _indirectCommandBuffer.reset(newSB("dvd_GPUCmds", 1, true, false, BufferUpdateFrequency::OFTEN));
     _indirectCommandBuffer->create(Config::MAX_VISIBLE_NODES + 1, sizeof(IndirectDrawCommand));
-#if defined(_DEBUG)
+//#if defined(_DEBUG)
     _indirectCommandBuffer->addAtomicCounter(3);
-#endif
+//#endif
     registerCommandBuffer(*_indirectCommandBuffer);
     // Resize our window to the target resolution
     const vec2<U16>& resolution = winManager.getResolution();

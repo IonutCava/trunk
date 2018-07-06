@@ -64,7 +64,10 @@ class NOINITVTABLE Texture : public HardwareResource {
     /// Bind a single level
     virtual void BindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest = true) = 0;
     /// Change the texture's mip levels. This can be called at any time
-    virtual void setMipMapRange(U16 base = 0, U16 max = 1000) = 0;
+    virtual void setMipMapRange(U16 base = 0, U16 max = 1000) {
+        _mipMinLevel = base;
+        _mipMaxLevel = max;
+    }
     /// Resize the texture to the specified dimensions and upload the new data
     virtual void resize(const U8* const ptr,
                         const vec2<U16>& dimensions,
@@ -107,6 +110,10 @@ class NOINITVTABLE Texture : public HardwareResource {
     inline U16 getWidth() const { return _width; }
     /// Texture height depth as returned by DevIL
     inline U16 getHeight() const { return _height; }
+    /// Texture min mip level
+    inline U16 getMinMipLevel() const { return _mipMinLevel; }
+    /// Texture ax mip level
+    inline U16 getMaxMipLevel() const { return _mipMaxLevel; }
     /// A rendering API level handle used to uniquely identify this texture
     /// (e.g. for OpenGL, it's the texture object)
     inline U32 getHandle() const { return _textureData.getHandleHigh(); }
@@ -139,6 +146,8 @@ class NOINITVTABLE Texture : public HardwareResource {
     U8 _numLayers;
     U16 _width;
     U16 _height;
+    U16 _mipMaxLevel;
+    U16 _mipMinLevel;
     bool _mipMapsDirty;
     bool _samplerDirty;
     bool _hasTransparency;

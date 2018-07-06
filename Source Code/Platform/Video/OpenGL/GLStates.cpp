@@ -46,7 +46,9 @@ void GL_API::clearStates(const bool skipTextures,
     if (!skipTextures) {
         for(U16 i = 0; i < to_ushort(GL_API::_maxTextureUnits); ++i) {
             std::pair<GLuint, GLenum>& it  = _textureBoundMap[i];
-            GL_API::bindTexture(i, 0, it.second);
+            if (it.second != GL_ZERO) {
+                GL_API::bindTexture(i, 0, it.second);
+            }
         }
 
         setActiveTextureUnit(0);

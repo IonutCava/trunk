@@ -24,7 +24,6 @@ glTexture::glTexture(TextureType type)
     DIVIDE_ASSERT(tempHandle != 0,
                   "glTexture error: failed to generate new texture handle!");
     _textureData.setHandleHigh(tempHandle);
-    _mipMaxLevel = _mipMinLevel = 0;
 }
 
 glTexture::~glTexture()
@@ -60,8 +59,7 @@ void glTexture::setMipMapRange(GLushort base, GLushort max) {
         return;
     }
 
-    _mipMinLevel = base;
-    _mipMaxLevel = max;
+    Texture::setMipMapRange(base, max);
 
     glTextureParameteri(_textureData.getHandleHigh(), GL_TEXTURE_BASE_LEVEL, base);
     glTextureParameteri(_textureData.getHandleHigh(), GL_TEXTURE_MAX_LEVEL, max);

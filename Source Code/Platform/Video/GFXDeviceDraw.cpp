@@ -238,19 +238,27 @@ void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
     renderable->getMaterialPropertyMatrix(dataOut._matrix[3]);
 }
 
-vec2<U32> GFXDevice::processNodeBucket(VisibleNodeList::iterator nodeIt,
-                                       SceneRenderState& sceneRenderState,
-                                       vec2<U32> offset,
-                                       bool refreshNodeData) {
+void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
+                                  SceneRenderState& sceneRenderState,
+                                  bool refreshNodeData) {
+    Time::ScopedTimer timer(*_commandBuildTimer);
+    // If there aren't any nodes visible in the current pass, don't update
+    // anything (but clear the render queue
+    if (visibleNodes.empty()) {
+        _lastCommandCount = _lastNodeCount = 0;
+    }
 
-    vec2<U32> retValue(offset.x);
-    U32& intNodeCount = retValue.x;
-    U32& intCmdCount = retValue.y;
+    if (refreshNodeData) {
+        // Pass the list of nodes to the renderer for a pre-render pass
+        getRenderer().preRender(_gpuBlock);
+    }
 
-    // Loop over the list of nodes to generate a new command list
+    _drawCommandsCache[0].set(_defaultDrawCmd.cmd());
+
     RenderStage currentStage = getRenderStage();
 
-    std::for_each(nodeIt + offset.x, nodeIt + offset.y,
+    U32 nodeCount = 1; U32 cmdCount = 1;
+    std::for_each(std::begin(visibleNodes), std::end(visibleNodes),
         [&](GFXDevice::VisibleNodeList::value_type& node) -> void {
         SceneGraphNode& nodeRef = *node._visibleNode;
 
@@ -262,125 +270,56 @@ vec2<U32> GFXDevice::processNodeBucket(VisibleNodeList::iterator nodeIt,
 
         if (pkg._isRenderable) {
             if (refreshNodeData) {
-                processVisibleNode(node, _matricesData[intNodeCount]);
+                processVisibleNode(node, _matricesData[nodeCount]);
             }
 
             for (GenericDrawCommand& cmd : pkg._drawCommands) {
                 IndirectDrawCommand& iCmd = cmd.cmd();
-                iCmd.baseInstance = intNodeCount;
-
-                cmd.drawID(intNodeCount);
+                iCmd.baseInstance = nodeCount;
+                cmd.drawID(nodeCount);
                 cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
                 // Extract the specific rendering commands from the draw commands
                 // Rendering commands are stored in GPU memory. Draw commands are not.
-                _drawCommandsCache[intCmdCount].set(iCmd);
-                intCmdCount++;
+                _drawCommandsCache[nodeCount].set(iCmd);
+                cmdCount++;
             }
-            intNodeCount++;
+            nodeCount++;
         }
     });
-
-    return retValue;
-}
-
-vec2<U32> GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
-                                       SceneRenderState& sceneRenderState,
-                                       bool refreshNodeData) {
-    Time::ScopedTimer timer(*_commandBuildTimer);
-    vec2<U32> parsedValues;
-    // If there aren't any nodes visible in the current pass, don't update
-    // anything (but clear the render queue
-    if (visibleNodes.empty()) {
-        _lastCommandCount = _lastNodeCount = 0;
-        return parsedValues;
-    }
-    vectorAlg::vecSize nodeCount = visibleNodes.size();
-
-    if (refreshNodeData) {
-        // Pass the list of nodes to the renderer for a pre-render pass
-        getRenderer().preRender(_gpuBlock);
-    }
-
-    _drawCommandsCache[0].set(_defaultDrawCmd.cmd());
-
-    //Use up to half of our physical cores for command generation
-    //(leave some cores available for other thread pools)
-    static const bool useThreadedCommands = false;
-    static const U32 coreCount = HARDWARE_THREAD_COUNT() / 2;
-    const U32 bucketSize = to_uint(std::ceil(to_float(nodeCount) / coreCount));
-    const U32 taskCount = std::min(coreCount, to_uint(nodeCount));
-    U32 startOffset = 0;
-    U32 endOffset = 0;
-
-    if (useThreadedCommands) {
-        vectorImpl<Task_ptr> cmds;
-        cmds.reserve(taskCount);
-        for (U32 i = 0; i < taskCount; ++i) {
-            startOffset = std::min(i * bucketSize, to_uint(nodeCount));
-            endOffset = std::min(startOffset + bucketSize, to_uint(nodeCount));
-
-
-            cmds.push_back(
-            std::make_shared<Task>(_state.getRenderingPool(), 1, 1,
-                                    [&](){
-                                        /// Add proper locking/atomics here
-                                        parsedValues += processNodeBucket(std::begin(visibleNodes),
-                                                                          sceneRenderState,
-                                                                          vec2<U32>(startOffset, endOffset),
-                                                                          refreshNodeData);
-                                    }));
-       
-        }
     
-        for(Task_ptr& cmd : cmds) {
-            cmd->startTask();
-        }
+    
 
-        _state.getRenderingPool().wait();
-
-    } else {
-        for (U32 i = 0; i < taskCount; ++i) {
-            startOffset = std::min(i * bucketSize, to_uint(nodeCount));
-            endOffset = std::min(startOffset + bucketSize, to_uint(nodeCount));
-
-            parsedValues += processNodeBucket(std::begin(visibleNodes),
-                                              sceneRenderState,
-                                              vec2<U32>(startOffset, endOffset),
-                                              refreshNodeData);
-        }
-    }
+    _indirectCommandBuffer->updateData(0, cmdCount, _drawCommandsCache.data());
+    _lastCommandCount = cmdCount;
 
     if (refreshNodeData) {
-        _nodeBuffer->updateData(0, parsedValues.x, _matricesData.data());
-        _lastNodeCount = parsedValues.x;
-    }
-
-    _indirectCommandBuffer->updateData(0, parsedValues.y, _drawCommandsCache.data());
-
-    if (!refreshNodeData) {
+        _nodeBuffer->updateData(0, nodeCount, _matricesData.data());
+        _lastNodeCount = nodeCount;
+    } else {
         occlusionCull();
     }
-
-    _lastCommandCount = parsedValues.y;
-    
-    return parsedValues;
 }
 
 void GFXDevice::occlusionCull() {
     static const U32 GROUP_SIZE_AABB = 64;
+    uploadGPUBlock();
+
     _HIZCullProgram->bind();
     _HIZCullProgram->Uniform("dvd_numEntities", _lastCommandCount);
     getRenderTarget(RenderTarget::DEPTH)->Bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
                                                TextureDescriptor::AttachmentType::Depth);
-    uploadGPUBlock();
     _indirectCommandBuffer->bind(ShaderBufferLocation::GPU_COMMANDS);
     _indirectCommandBuffer->bindAtomicCounter();
     _HIZCullProgram->DispatchCompute((_lastCommandCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
     _HIZCullProgram->SetMemoryBarrier();
-    _lastCullCount = _indirectCommandBuffer->getAtomicCounter();
-    if (_lastCullCount > 0) {
+}
+
+U32 GFXDevice::getLastCullCount() const {
+    U32 cullCount = _indirectCommandBuffer->getAtomicCounter();
+    if (cullCount > 0) {
         _indirectCommandBuffer->resetAtomicCounter();
     }
+    return cullCount;
 }
 
 bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,

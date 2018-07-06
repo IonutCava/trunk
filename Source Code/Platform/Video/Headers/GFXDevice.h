@@ -335,7 +335,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline const PlaneList& getClippingPlanes() const { return _clippingPlanes; }
 
     /// Return the last number of HIZ culled items
-    inline U32 getLastCullCount() const { return _lastCullCount; }
+    U32 getLastCullCount() const;
 
     /// 2D rendering enabled
     inline bool is2DRendering() const { return _2DRendering; }
@@ -504,9 +504,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
    protected:
     friend class SceneManager;
     void occlusionCull();
-    vec2<U32> buildDrawCommands(VisibleNodeList& visibleNodes,
-                                SceneRenderState& sceneRenderState,
-                                bool refreshNodeData);
+    void buildDrawCommands(VisibleNodeList& visibleNodes,
+                           SceneRenderState& sceneRenderState,
+                           bool refreshNodeData);
     bool batchCommands(GenericDrawCommand& previousIDC,
                        GenericDrawCommand& currentIDC) const;
 
@@ -543,11 +543,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     void processVisibleNode(const RenderPassCuller::RenderableNode& node,
                             NodeData& dataOut);
-    vec2<U32> processNodeBucket(VisibleNodeList::iterator nodeIt,
-                                SceneRenderState& sceneRenderState,
-                                vec2<U32> offset,
-                                bool refreshNodeData);
-
   private:
     Camera* _cubeCamera;
     Camera* _2DCamera;
@@ -614,7 +609,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     std::array<NodeData, Config::MAX_VISIBLE_NODES + 1> _matricesData;
     U32 _lastCommandCount;
     U32 _lastNodeCount;
-    U32 _lastCullCount;
     RenderQueue _renderQueue;
     Time::ProfileTimer* _commandBuildTimer;
     std::unique_ptr<Renderer> _renderer;

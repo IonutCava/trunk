@@ -189,6 +189,7 @@
     <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl" />
     <None Include="..\..\assets\shaders\GLSL\blur.glsl" />
     <None Include="..\..\assets\shaders\GLSL\bright.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\common\HiZCullingAlgorithm.cmn" />
     <None Include="..\..\assets\shaders\GLSL\common\lightInput.cmn" />
     <None Include="..\..\assets\shaders\GLSL\common\nodeBufferedInput.cmn" />
     <None Include="..\..\assets\shaders\GLSL\common\nodeDataInput.cmn" />

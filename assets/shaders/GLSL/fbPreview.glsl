@@ -21,12 +21,13 @@ void main(void)
 
 in vec2 _texCoord;
 out vec4 _colorOut;
+uniform float lodLevel = 0;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
-    _colorOut = texture(texDiffuse0, _texCoord);
+    _colorOut = textureLod(texDiffuse0, _texCoord, lodLevel);
     _colorOut.a = 1.0;
 }
 
@@ -34,6 +35,7 @@ void main()
 
 in vec2 _texCoord;
 out vec4 _colorOut;
+uniform float lodLevel = 0;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
@@ -47,7 +49,7 @@ void main()
     float f = dvd_ZPlanesCombined.y * 0.5;
 #endif
 
-    float depth = texture(texDiffuse0, _texCoord).r;
+    float depth = textureLod(texDiffuse0, _texCoord, lodLevel).r;
     float linearDepth = (2 * n) / (f + n - (depth) * (f - n));
     _colorOut = vec4(vec3(linearDepth), 1.0);
 }
@@ -56,13 +58,14 @@ void main()
 
 in vec2 _texCoord;
 out vec4 _colorOut;
+uniform float lodLevel = 0;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform int layer;
 
 void main()
 {
-    _colorOut = texture(texDiffuse0, vec3(_texCoord, layer));
+    _colorOut = textureLod(texDiffuse0, vec3(_texCoord, layer), lodLevel);
 }
 
 -- Fragment.Layered.LinearDepth
@@ -73,6 +76,7 @@ out vec4 _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform int layer;
+uniform float lodLevel = 0;
 
 void main()
 {
@@ -84,7 +88,7 @@ void main()
     float f = dvd_ZPlanesCombined.y * 0.5;
 #endif
 
-    float depth = texture(texDiffuse0, vec3(_texCoord, layer)).r;
+    float depth = textureLod(texDiffuse0, vec3(_texCoord, layer), lodLevel).r;
 	float linearDepth = (2 * n) / (f + n - (depth) * (f - n));
     _colorOut = vec4(vec3(linearDepth), 1.0);
 }
@@ -96,6 +100,7 @@ out vec4 _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform int layer;
+uniform float lodLevel = 0;
 
 #if !defined(USE_SCENE_ZPLANES)
 uniform vec2 dvd_zPlanes;
@@ -111,7 +116,7 @@ void main()
     float f = dvd_zPlanes.y * 0.5;
 #endif
 
-    float depth = texture(texDiffuse0, vec3(_texCoord, layer)).r;
+    float depth = textureLod(texDiffuse0, vec3(_texCoord, layer), lodLevel).r;
     //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
     
 	float linearDepth = (2 * n) / (f + n - (depth) * (f - n));

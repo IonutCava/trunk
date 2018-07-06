@@ -4,6 +4,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Managers/Headers/CameraManager.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 namespace Divide {
@@ -31,10 +32,9 @@ void GFXDevice::previewDepthBuffer() {
         return;
     }
 
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->Bind(
-        to_ubyte(ShaderProgram::TextureUsage::UNIT0),
-        TextureDescriptor::AttachmentType::Depth);
-
+    Texture* depthTex = _renderTarget[to_uint(RenderTarget::DEPTH)]->GetAttachment(TextureDescriptor::AttachmentType::Depth);
+    _previewDepthMapShader->Uniform("lodLevel", to_float(to_uint((Time::ElapsedMilliseconds() / 750.0)) % (depthTex->getMaxMipLevel() - 1)));
+    depthTex->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
     GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::DEPTH)]->getResolution().width - 256, 0,256, 256);
     drawTriangle(_defaultStateNoDepthHash, _previewDepthMapShader);
 #endif

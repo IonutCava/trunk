@@ -269,7 +269,7 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
     U32 _shaderProgramID;  //<not thread-safe. Make sure assignment is protected
     // with a mutex or something
     U64 _elapsedTime;
-    F32 _elapsedTimeMS;
+    U32 _elapsedTimeMS;
     /// A list of preprocessor defines
     vectorImpl<stringImpl> _definesList;
     /// ID<->shaders pair

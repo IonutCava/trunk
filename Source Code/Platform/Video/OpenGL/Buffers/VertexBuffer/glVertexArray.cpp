@@ -299,29 +299,40 @@ void glVertexArray::draw(const GenericDrawCommand& command,
     static const size_t cmdSize = sizeof(IndirectDrawCommand);
 
     bufferPtr offset = (bufferPtr)(command.drawID() * cmdSize);
-    if (!useCmdBuffer) {
-        GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-        offset = (bufferPtr)(&command.cmd());
-    } else {
-        GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, GL_API::_indirectDrawBuffer);
-    }
-
     U16 drawCount = command.drawCount();
+    GLenum mode = GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())];
+
+    if (useCmdBuffer) {
+        if (command.renderGeometry()) {
+            glMultiDrawElementsIndirect(mode, _formatInternal, offset, drawCount, cmdSize);
+        }
+        if (command.renderWireframe()) {
+            glMultiDrawElementsIndirect(GL_LINE_LOOP, _formatInternal, offset, drawCount, cmdSize);
+        }
+    } else {
+        if (drawCount > 1) {
+            vectorImpl<GLsizei> count(drawCount, command.cmd().indexCount);
+            vectorImpl<U32> indices(drawCount, command.cmd().firstIndex);
+            if (command.renderGeometry()) {
+                glMultiDrawElements(mode, count.data(), _formatInternal, (bufferPtr*)indices.data(), drawCount);
+            }
+            if (command.renderWireframe()) {
+                glMultiDrawElements(GL_LINE_LOOP, count.data(), _formatInternal, (bufferPtr*)indices.data(), drawCount);
+            }
+        } else {
+            if (command.renderGeometry()) {
+                glDrawElements(mode, command.cmd().indexCount, _formatInternal, (bufferPtr)command.cmd().firstIndex);
+            }
+            if (command.renderWireframe()) {
+                glDrawElements(GL_LINE_LOOP, command.cmd().indexCount, _formatInternal, (bufferPtr)command.cmd().firstIndex);
+            }
+        }
+    }
     if (command.renderGeometry()) {
-        GLenum mode = GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())];
-        // Submit the draw command
-        glMultiDrawElementsIndirect(mode, _formatInternal, offset, drawCount, cmdSize);
-        // Always update draw call counter after draw calls
         GFX_DEVICE.registerDrawCall();
     }
 
     if (command.renderWireframe()) {
-        if (drawCount > 1) {
-            glMultiDrawElementsIndirect(GL_LINE_LOOP, _formatInternal, offset, drawCount, cmdSize);
-        } else {
-            glDrawElementsIndirect(GL_LINE_LOOP, _formatInternal, offset);
-        }
-        // Always update draw call counter after draw calls
         GFX_DEVICE.registerDrawCall();
     }
 }

@@ -1,6 +1,8 @@
 #ifndef _NODE_DATA_INPUT_CMN_
 #define _NODE_DATA_INPUT_CMN_
 
+uniform uint dvd_time;
+
 #if defined(COMPUTE_SHADER)
 struct IndirectDrawCommand {
     uint count;
