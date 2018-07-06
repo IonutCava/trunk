@@ -35,6 +35,9 @@
 #include "AI/Headers/AIEntity.h"
 
 namespace Divide {
+
+class TaskPool;
+
 namespace AI {
 
 class AIManager;
@@ -121,9 +124,9 @@ class AITeam : public GUIDWrapper {
     friend class AIManager;
     /// Update the crowding system
     void resetCrowd();
-    bool processInput(const U64 deltaTime);
-    bool processData(const U64 deltaTime);
-    bool update(const U64 deltaTime);
+    bool processInput(TaskPool& parentPool, const U64 deltaTime);
+    bool processData(TaskPool& parentPool, const U64 deltaTime);
+    bool update(TaskPool& parentPool, const U64 deltaTime);
     void addCrowd(AIEntity::PresetAgentRadius radius,
                   Navigation::NavigationMesh* crowd);
     void removeCrowd(AIEntity::PresetAgentRadius radius);

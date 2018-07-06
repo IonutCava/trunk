@@ -38,6 +38,8 @@
 namespace Divide {
 
 class Scene;
+class Task;
+class TaskPool;
 struct RenderSubPassCmd;
 typedef vectorImpl<RenderSubPassCmd> RenderSubPassCmds;
 
@@ -54,13 +56,14 @@ class AIManager : public SceneComponent
     typedef hashMapImpl<AIEntity::PresetAgentRadius,
                         Navigation::NavigationMesh*> NavMeshMap;
 
-    explicit AIManager(Scene& parentScene);
+    explicit AIManager(Scene& parentScene, TaskPool& pool);
     ~AIManager();
 
+    void initialize();
     /// Clear all AI related data (teams, entities, NavMeshes, etc);
     void destroy();
     /// Called at a fixed interval (preferably in a separate thread);
-    void update();
+    void update(const U64 deltaTime);
     /// Add an AI Entity to a specific team.
     /// Entities can be added to multiple teams. Caller is responsible for the
     /// lifetime of entity
@@ -124,12 +127,16 @@ class AIManager : public SceneComponent
     /// Unregister an AI Team
     void unregisterTeam(AITeam* const team);
 
+    bool shouldStop() const;
+
   private:
     bool processInput(const U64 deltaTime);    ///< sensors
     bool processData(const U64 deltaTime);     ///< think
     bool updateEntities(const U64 deltaTime);  ///< react
 
   private:
+    TaskPool& _parentPool;
+    Task* _activeTask;
     U64 _deltaTime, _currentTime, _previousTime;
     std::atomic<bool> _navMeshDebugDraw;
     std::atomic<bool> _pauseUpdate;

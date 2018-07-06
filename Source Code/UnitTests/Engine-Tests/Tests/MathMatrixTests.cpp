@@ -433,7 +433,7 @@ TEST_MEMBER_FUNCTION(mat4, Reflect, Plane)
 
     reflectMat.reflect(reflectPlane2);
 
-    CHECK_TRUE(result == reflectMat * input);
+    CHECK_TRUE(input == reflectMat * input);
 }
 
 TEST_MEMBER_FUNCTION(matN, multiplyOperator, matN)

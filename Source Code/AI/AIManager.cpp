@@ -12,8 +12,10 @@ namespace Divide {
 
 using namespace AI;
 
-AIManager::AIManager(Scene& parentScene)
+AIManager::AIManager(Scene& parentScene, TaskPool& pool)
     : SceneComponent(parentScene),
+      _parentPool(pool),
+      _activeTask(nullptr),
       _navMeshDebugDraw(false),
       _pauseUpdate(true),
       _updating(false),
@@ -28,6 +30,10 @@ AIManager::AIManager(Scene& parentScene)
 AIManager::~AIManager()
 {
     destroy();
+}
+
+void AIManager::initialize() {
+
 }
 
 /// Clear up any remaining AIEntities
@@ -48,55 +54,41 @@ void AIManager::destroy() {
     }
 }
 
-void AIManager::update() {
+void AIManager::update(const U64 deltaTime) {
     static const U64 updateFreq = Time::MillisecondsToMicroseconds(Config::AI_THREAD_UPDATE_FREQUENCY);
-    _previousTime = Time::ElapsedMicroseconds(true);
-    _running = true;
 
-    while(true) {
-        if (_shouldStop) {
-            break;
-        }
-
-        _currentTime = Time::ElapsedMicroseconds(true);
-        if (_currentTime >= _previousTime + updateFreq) {
-            
-            /// use internal delta time calculations
-            _deltaTime = _currentTime - _previousTime;
-            {
-                /// Lock the entities during update() adding or deleting entities is
-                /// suspended until this returns
-                ReadLock r_lock(_updateMutex);
-                if (!_aiTeams.empty() && !_pauseUpdate) {
-                    _updating = true;
-                    if (_sceneCallback) {
-                        _sceneCallback();
-                    }
-
-                    if (processInput(_deltaTime)) {  // sensors
-                        if (processData(_deltaTime)) {  // think
-                            updateEntities(_deltaTime);  // react
-                        }
-                    }
-    
-                    _updating = false;
+    _currentTime += deltaTime;
+    if (_currentTime >= _previousTime + updateFreq && !shouldStop()) {
+        _running = true;
+        /// use internal delta time calculations
+        _deltaTime = _currentTime - _previousTime;
+        {
+            /// Lock the entities during update() adding or deleting entities is
+            /// suspended until this returns
+            ReadLock r_lock(_updateMutex);
+            if (!_aiTeams.empty() && !_pauseUpdate) {
+                _updating = true;
+                if (_sceneCallback) {
+                    _sceneCallback();
                 }
-            }
-            _previousTime = Time::ElapsedMicroseconds(true);
 
-            if (Config::AI_THREAD_UPDATE_FREQUENCY > Config::MIN_SLEEP_THRESHOLD_MS) {
-                //ToDo: this needs adjustment to account for AI execution time
-                std::this_thread::sleep_for(std::chrono::microseconds(updateFreq));
+                if (processInput(_deltaTime)) {  // sensors
+                    if (processData(_deltaTime)) {  // think
+                        updateEntities(_deltaTime);  // react
+                    }
+                }
+
+                _updating = false;
             }
         }
+        _previousTime = _currentTime;
+        _running = false;
     }
-
-    _running = false;
 }
 
 bool AIManager::processInput(const U64 deltaTime) {  // sensors
     for (AITeamMap::value_type& team : _aiTeams) {
-        if (!team.second->processInput(deltaTime)) {
+        if (!team.second->processInput(_parentPool, deltaTime)) {
             return false;
         }
     }
@@ -105,7 +97,7 @@ bool AIManager::processInput(const U64 deltaTime) {  // sensors
 
 bool AIManager::processData(const U64 deltaTime) {  // think
     for (AITeamMap::value_type& team : _aiTeams) {
-        if (!team.second->processData(deltaTime)) {
+        if (!team.second->processData(_parentPool, deltaTime)) {
             return false;
         }
     }
@@ -114,7 +106,7 @@ bool AIManager::processData(const U64 deltaTime) {  // think
 
 bool AIManager::updateEntities(const U64 deltaTime) {  // react
     for (AITeamMap::value_type& team : _aiTeams) {
-        if (!team.second->update(deltaTime)) {
+        if (!team.second->update(_parentPool, deltaTime)) {
             return false;
         }
     }
@@ -223,4 +215,11 @@ void AIManager::debugDraw(RenderSubPassCmds& subPassesInOut, bool forceAll) {
     }
 }
 
+bool AIManager::shouldStop() const {
+    if (_activeTask != nullptr) {
+        _activeTask->stopTask();
+        _activeTask->wait();
+    }
+    return _shouldStop;
+}
 };  // namespace Divide

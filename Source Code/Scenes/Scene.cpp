@@ -74,7 +74,7 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
     _sceneState = MemoryManager_NEW SceneState(*this);
     _input = MemoryManager_NEW SceneInput(*this, _context.input());
     _sceneGraph = MemoryManager_NEW SceneGraph(*this);
-    _aiManager = MemoryManager_NEW AI::AIManager(*this);
+    _aiManager = MemoryManager_NEW AI::AIManager(*this, _context.input().parent().taskPool());
     _lightPool = MemoryManager_NEW LightPool(*this, _context.gfx());
     _envProbePool = MemoryManager_NEW SceneEnvironmentProbePool(*this);
 
@@ -919,8 +919,7 @@ bool Scene::loadPhysics(bool continueOnErrors) {
 }
 
 bool Scene::initializeAI(bool continueOnErrors) {
-    _aiTask = std::thread(DELEGATE_BIND(&AI::AIManager::update, _aiManager));
-    setThreadName(&_aiTask, Util::StringFormat("AI_THREAD_SCENE_%s", getName().c_str()).c_str());
+    _aiManager->initialize();
     return true;
 }
 
@@ -928,8 +927,7 @@ bool Scene::initializeAI(bool continueOnErrors) {
 bool Scene::deinitializeAI(bool continueOnErrors) { 
     _aiManager->stop();
     WAIT_FOR_CONDITION(!_aiManager->running());
-    _aiTask.join();
-        
+
     return true;
 }
 
@@ -994,6 +992,7 @@ void Scene::updateSceneState(const U64 deltaTime) {
     _sceneTimer += deltaTime;
     updateSceneStateInternal(deltaTime);
     _sceneGraph->sceneUpdate(deltaTime, *_sceneState);
+    _aiManager->update(deltaTime);
     for (U8 i = 0; i < to_U8(_scenePlayers.size()); ++i) {
         U8 playerIndex = _scenePlayers[i]->index();
         findHoverTarget(playerIndex);

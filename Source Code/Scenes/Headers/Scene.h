@@ -304,9 +304,6 @@ class Scene : public Resource {
        /// Schedule a scene graph parse with the physics engine to recreate/recheck
        /// the collision meshes used by each node
        bool _cookCollisionMeshesScheduled;
-       ///_aiTask is the thread handling the AIManager. It is started before each scene's "initializeAI" is called
-       /// It is destroyed after each scene's "deinitializeAI" is called
-       std::thread _aiTask;
 
    private:
        SharedLock _tasksMutex;

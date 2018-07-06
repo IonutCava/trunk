@@ -3,6 +3,8 @@
 #include "AI/Headers/AIEntity.h"
 #include "AI/Headers/AIManager.h"
 #include "AI/PathFinding/Headers/DivideCrowd.h"
+
+#include "Core/Headers/TaskPool.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
 namespace Divide {
@@ -62,7 +64,7 @@ vectorImpl<AIEntity*> AITeam::getEntityList() const {
     return entities;
 }
 
-bool AITeam::update(const U64 deltaTime) {
+bool AITeam::update(TaskPool& parentPool, const U64 deltaTime) {
     // Crowds
     ReadLock r1_lock(_crowdMutex);
     for (AITeamCrowd::value_type& it : _aiTeamCrowd) {
@@ -77,27 +79,59 @@ bool AITeam::update(const U64 deltaTime) {
         }
     }
 
+    TaskHandle updateTask = CreateTask(parentPool, DELEGATE_CBK<void, const Task&>());
+    for (AIEntity* entity : entities) {
+        updateTask.addChildTask(CreateTask(parentPool,
+                                [entity, deltaTime](const Task& parentTask)
+                                {
+                                    if (!Attorney::AIEntityAITeam::update(*entity, deltaTime)) {
+                                        //print error;
+                                    }
+                                })._task)->startTask(Task::TaskPriority::HIGH);
+    }
+
+    updateTask.startTask(Task::TaskPriority::MAX);
+    updateTask.wait();
+
     return true;
 }
 
-bool AITeam::processInput(const U64 deltaTime) {
+bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTime) {
    vectorImpl<AIEntity*> entities = AITeam::getEntityList();
+
+   TaskHandle inputTask = CreateTask(parentPool, DELEGATE_CBK<void, const Task&>());
     for (AIEntity* entity : entities) {
-        if (!Attorney::AIEntityAITeam::processInput(*entity, deltaTime)) {
-            return false;
-        }
+        inputTask.addChildTask(CreateTask(parentPool,
+                               [entity, deltaTime](const Task& parentTask)
+                               {
+                                   if (!Attorney::AIEntityAITeam::processInput(*entity, deltaTime)) {
+                                       //print error;
+                                   }
+                               })._task)->startTask(Task::TaskPriority::HIGH);
     }
+
+    inputTask.startTask(Task::TaskPriority::MAX);
+    inputTask.wait();
 
     return true;
 }
 
-bool AITeam::processData(const U64 deltaTime) {
+bool AITeam::processData(TaskPool& parentPool, const U64 deltaTime) {
     vectorImpl<AIEntity*> entities = AITeam::getEntityList();
+
+    TaskHandle dataTask = CreateTask(parentPool, DELEGATE_CBK<void, const Task&>());
     for (AIEntity* entity : entities) {
-        if (!Attorney::AIEntityAITeam::processData(*entity, deltaTime)) {
-            return false;
-        }
+        dataTask.addChildTask(CreateTask(parentPool,
+                              [entity, deltaTime](const Task& parentTask)
+                              {
+                                  if (!Attorney::AIEntityAITeam::processData(*entity, deltaTime)) {
+                                      //print error;
+                                  }
+                              })._task)->startTask(Task::TaskPriority::HIGH);
     }
+
+    dataTask.startTask(Task::TaskPriority::MAX);
+    dataTask.wait();
 
     return true;
 }
