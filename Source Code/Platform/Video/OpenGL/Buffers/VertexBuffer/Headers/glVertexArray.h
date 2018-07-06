@@ -104,6 +104,7 @@ class glVertexArray : public VertexBuffer {
     bool _refreshQueued;  
     GLsizei _prevSize;
     GLsizei _prevSizeIndices;
+    GLsizei _effectiveEntrySize;
     ByteBuffer _smallData;
     AttribFlags _useAttribute;
     typedef std::array<GLuint, to_const_uint(VertexAttribute::COUNT)> AttribValues;

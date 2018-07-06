@@ -62,6 +62,7 @@ glVertexArray::glVertexArray(GFXDevice& context)
     _usage = GL_STATIC_DRAW;
     _prevSize = -1;
     _prevSizeIndices = -1;
+    _effectiveEntrySize = -1;
     _IBid = 0;
     _vaoCaches.fill(0);
     _vaoHashes.fill(0);
@@ -127,14 +128,12 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
         prevOffset += sizeof(U32);
     }
 
-    _effectiveEntrySize = to_uint(prevOffset);
+    _effectiveEntrySize = static_cast<GLsizei>(prevOffset);
 
     _smallData.reserve(_data.size() * _effectiveEntrySize);
 
     for (const Vertex& data : _data) {
-        _smallData << data._position.x;
-        _smallData << data._position.y;
-        _smallData << data._position.z;
+        _smallData << data._position;
 
         if (useNormals) {
             _smallData << data._normal;
@@ -277,8 +276,6 @@ bool glVertexArray::refresh() {
                            countRequirement * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
                            GLUtil::getVBOMemUsage(_VBHandle._id),
                            GLUtil::getVBOCount());
-
-        _effectiveEntryOffset = _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES;
     }
 
     // Allocate sufficient space in our buffer
@@ -340,6 +337,7 @@ void glVertexArray::draw(const GenericDrawCommand& command, bool useCmdBuffer) {
             return;
         }
     }
+
     // Check if we have a refresh request queued up
     if (_refreshQueued) {
         if (!refresh()) {
@@ -353,6 +351,7 @@ void glVertexArray::draw(const GenericDrawCommand& command, bool useCmdBuffer) {
         // If this is the first time the VAO is bound in the current loop, check
         // for primitive restart requests
         GL_API::togglePrimitiveRestart(_primitiveRestartEnabled);
+        g_currentBindConfig.reset();
     }
 
     // Bind the the vertex buffer and index buffer

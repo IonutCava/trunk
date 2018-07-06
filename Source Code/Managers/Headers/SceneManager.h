@@ -38,6 +38,12 @@
 
 namespace Divide {
 
+class LoadSave {
+public:
+    static bool loadScene(Scene& activeScene);
+    static bool saveScene(const Scene& activeScene);
+};
+
 struct SceneShaderData {
     SceneShaderData()
     {
@@ -228,6 +234,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     Time::ProfileTimer* _sceneGraphCullTimer;
     U64 _elapsedTime;
     U32 _elapsedTimeMS;
+    U64 _saveTimer;
     std::unique_ptr<Renderer> _renderer;
 
 END_SINGLETON
@@ -244,12 +251,6 @@ class SceneManagerKernel {
     friend class Divide::Kernel;
 };
 };  // namespace Attorney
-
-class LoadSave {
- public:
-    static bool loadScene(const stringImpl& sceneName);
-    static bool saveScene(const stringImpl& sceneName);
-};
 
 /// Return a pointer to the currently active scene
 inline Scene& GET_ACTIVE_SCENE() {

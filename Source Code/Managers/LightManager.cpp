@@ -388,6 +388,10 @@ void LightManager::uploadLightData(LightType lightsByType, ShaderBufferLocation 
 }
 
 void LightManager::drawLightImpostors() const {
+    if (!_previewShadowMaps) {
+        return;
+    }
+
     assert(_lightImpostorShader);
     const U32 directionalLightCount = _activeLightCount[to_uint(LightType::DIRECTIONAL)];
     const U32 pointLightCount = _activeLightCount[to_uint(LightType::POINT)];

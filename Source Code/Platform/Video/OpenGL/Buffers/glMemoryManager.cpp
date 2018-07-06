@@ -43,8 +43,7 @@ bool VBO::checkChunksAvailability(U32 offset, U32 count) {
             std::pair<bool, U32>& chunkChild = _chunkUsageState[offset + j];
             if (chunkChild.first) {
                 break;
-            }
-            else {
+            } else {
                 freeChunkCount++;
             }
         }

@@ -2,33 +2,33 @@
 
 #include "vbInputData.vert"
 
-out vec4 _vertex;
-out vec3 _normal;
-
 void main(void){
     computeData();
-    _normal = dvd_Normal;
-    _vertex = dvd_Vertex;
-    gl_Position = dvd_ViewProjectionMatrix * vec4(_vertex.xyz + dvd_cameraPosition.xyz, 1.0);
-    gl_Position.z = gl_Position.w -0.00001; //fix to far plane.
+    VAR._normalWV = normalize(dvd_NormalMatrixWV() * dvd_Normal);
+    gl_Position = vec4(dvd_ViewProjectionMatrix * VAR._vertexW).xyzz;
+    gl_Position.w += 0.01;
 }
 
 -- Fragment
 
-in vec4 _vertex;
-in vec3 _normal;
-out vec4 _skyColor;
 
-uniform bool isDepthPass;
+#if defined (IS_PRE_PASS)
+layout(location = 1) out vec3 _normalWV;
+#else
+layout(location = 0) out vec4 _skyColor;
+#endif
+
+layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texSky;
+
+#if !defined (IS_PRE_PASS)
 uniform bool enable_sun;
 uniform vec3 sun_vector;
 uniform vec3 sun_color;
-uniform samplerCubeArray texSky;
 
 #include "utility.frag"
 
 vec3 sunColor(){
-    vec3 vert = normalize(_vertex.xyz);
+    vec3 vert = normalize(f_in._vertexW.xyz);
     vec3 sun = normalize(sun_vector);
         
     float day_factor = max(-sun.y, 0.0);
@@ -41,14 +41,13 @@ vec3 sunColor(){
         
     return day_factor + sun_color * sun_factor;
 }
+#endif
 
 void main (void){
-
-    if (isDepthPass) {
-        _skyColor.rgb = normalize(dvd_NormalMatrixWV() * _normal);
-        _skyColor.a = 1.0;
-    } else {
-        vec3 sky_color = textureLod(texSky, vec4(_vertex.xyz, 0), 0).rgb;
-        _skyColor = vec4(ToSRGB(enable_sun ? sky_color * sunColor() : sky_color), 1.0);
-    }
+#if defined (IS_PRE_PASS)
+    _normalWV = normalize(f_in._normalWV);
+#else
+    vec3 sky_color = texture(texSky, vec4(f_in._vertexW.xyz, 0)).rgb;
+    _skyColor = vec4(ToSRGB(enable_sun ? sky_color * sunColor() : sky_color), 1.0);
+#endif
 }

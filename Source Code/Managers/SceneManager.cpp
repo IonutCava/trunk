@@ -27,7 +27,8 @@ SceneManager::SceneManager()
       _processInput(false),
       _init(false),
       _elapsedTime(0ULL),
-      _elapsedTimeMS(0)
+      _elapsedTimeMS(0),
+      _saveTimer(0ULL)
 
 {
     AI::AIManager::createInstance();
@@ -82,7 +83,7 @@ bool SceneManager::load(const stringImpl& sceneName,
 
     bool state = Attorney::SceneManager::load(*_activeScene, sceneName, _GUI);
     if (state) {
-        state = LoadSave::loadScene(sceneName);
+        state = LoadSave::loadScene(*_activeScene);
     }
     return state;
 }
@@ -158,6 +159,13 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
                            activeSceneState.windSpeed());
 
     _activeScene->updateSceneState(deltaTime);
+
+    _saveTimer += deltaTime;
+
+    if (_saveTimer >= Time::SecondsToMicroseconds(5)) {
+        LoadSave::saveScene(*_activeScene);
+        _saveTimer = 0ULL;
+    }
 }
 
 /// Update fog values
@@ -380,12 +388,58 @@ bool SceneManager::joystickVector3DMoved(const Input::JoystickEvent& arg,
     return _activeScene->input().joystickVector3DMoved(arg, index);
 }
 
-bool LoadSave::loadScene(const stringImpl& sceneName) {
-    return true;
+bool LoadSave::loadScene(Scene& activeScene) {
+    const stringImpl& sceneName = activeScene.getName();
+
+    stringImpl path = Util::StringFormat("SaveData/%s_", sceneName.c_str());
+    stringImpl savePath = path + "current_save.sav";
+    stringImpl bakSavePath = path + "save.bak";
+
+    std::ifstream src(savePath, std::ios::binary);
+    if (src.eof() || src.fail())
+    {
+        src.close();
+        std::ifstream srcBak(bakSavePath, std::ios::binary);
+        if(srcBak.eof() || srcBak.fail()) {
+            srcBak.close();
+            return true;
+        } else {
+            std::ofstream dst(savePath, std::ios::binary);
+            dst << srcBak.rdbuf();
+            dst.close();
+            srcBak.close();
+        }
+    }
+
+    ByteBuffer save;
+    save.loadFromFile(savePath);
+
+    return Attorney::SceneLoadSave::load(activeScene, save);
 }
 
-bool LoadSave::saveScene(const stringImpl& sceneName) {
-    return true;
+bool LoadSave::saveScene(const Scene& activeScene) {
+    const stringImpl& sceneName = activeScene.getName();
+    stringImpl path = Util::StringFormat("SaveData/%s_", sceneName.c_str());
+    stringImpl savePath = path + "current_save.sav";
+    stringImpl bakSavePath = path + "save.bak";
+
+    std::ifstream src(savePath, std::ios::binary);
+    if (!src.eof() && !src.fail())
+    {
+        std::ofstream dst(bakSavePath, std::ios::out | std::ios::binary);
+        dst.clear();
+        dst << src.rdbuf();
+        dst.close();
+    }
+    src.close();
+
+    ByteBuffer save;
+    if (Attorney::SceneLoadSave::save(activeScene, save)) {
+        save.dumpToFile(savePath);
+        return true;
+    }
+
+    return false;
 }
 
 };

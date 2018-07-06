@@ -1,5 +1,5 @@
 uniform float dvd_frustumBias = 0.5;
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D HiZBuffer;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D HiZBuffer;
 
 vec4 BoundingBox[8];
 int PassThrough(const in vec3 position, const in vec3 extents) {
@@ -80,8 +80,8 @@ int HiZOcclusionCull(const in vec3 position, const in vec3 extents) {
 
     /* finally fetch the depth texture using explicit LOD lookups */
     /* if the instance depth is bigger than the depth in the texture discard the instance */
-    return (InstanceDepth > max(max(textureLod(HiZBuffer, vec2(BoundingRect[0].x, BoundingRect[0].y), LOD).x,
-                                    textureLod(HiZBuffer, vec2(BoundingRect[0].x, BoundingRect[1].y), LOD).x),
-                             max(textureLod(HiZBuffer, vec2(BoundingRect[1].x, BoundingRect[1].y), LOD).x,
-                                 textureLod(HiZBuffer, vec2(BoundingRect[1].x, BoundingRect[0].y), LOD).x))) ? 0 : 1;
+    return (InstanceDepth > max(max(textureLod(HiZBuffer, vec2(BoundingRect[0].x, BoundingRect[0].y), LOD).r,
+                                    textureLod(HiZBuffer, vec2(BoundingRect[0].x, BoundingRect[1].y), LOD).r),
+                             max(textureLod(HiZBuffer, vec2(BoundingRect[1].x, BoundingRect[1].y), LOD).r,
+                                 textureLod(HiZBuffer, vec2(BoundingRect[1].x, BoundingRect[0].y), LOD).r))) ? 0 : 1;
 }

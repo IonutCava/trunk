@@ -66,6 +66,7 @@ namespace Divide {
 class Sky;
 class Light;
 class Object3D;
+class LoadSave;
 class TerrainDescriptor;
 class ParticleEmitter;
 class PhysicsSceneInterface;
@@ -74,6 +75,7 @@ namespace Attorney {
     class SceneManager;
     class SceneGraph;
     class SceneRenderPass;
+    class SceneLoadSave;
 };
 
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2
@@ -83,6 +85,7 @@ class NOINITVTABLE Scene : public Resource {
     friend class Attorney::SceneManager;
     friend class Attorney::SceneGraph;
     friend class Attorney::SceneRenderPass;
+    friend class Attorney::SceneLoadSave;
 
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
@@ -109,6 +112,7 @@ class NOINITVTABLE Scene : public Resource {
     virtual void updateSceneStateInternal(const U64 deltaTime) {}
     inline const vectorImpl<Task_ptr>& getTasks() { return _tasks; }
     inline SceneState& state() { return _sceneState; }
+    inline const SceneState& state() const { return _sceneState; }
     inline SceneRenderState& renderState() { return _sceneState.renderState(); }
     inline const SceneRenderState& renderState() const { return _sceneState.renderState(); }
     inline SceneInput& input() { return *_input; }
@@ -201,6 +205,9 @@ class NOINITVTABLE Scene : public Resource {
     void resetSelection();
     void findHoverTarget();
     void toggleFlashlight();
+
+    virtual bool save(ByteBuffer& outputBuffer) const;
+    virtual bool load(ByteBuffer& inputBuffer);
 
     virtual bool frameStarted();
     virtual bool frameEnded();
@@ -301,6 +308,18 @@ class SceneRenderPass {
     friend class Divide::RenderPass;
 };
 
+class SceneLoadSave {
+ private:
+    static bool save(const Scene& scene, ByteBuffer& outputBuffer) {
+        return scene.save(outputBuffer);
+    }
+
+    static bool load(Scene& scene, ByteBuffer& inputBuffer) {
+        return scene.load(inputBuffer);
+    }
+
+    friend class Divide::LoadSave;
+};
 
 class SceneGraph {
 private:

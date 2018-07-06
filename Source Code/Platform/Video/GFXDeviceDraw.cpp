@@ -309,14 +309,13 @@ void GFXDevice::occlusionCull(U32 pass) {
     static const U32 GROUP_SIZE_AABB = 64;
     uploadGPUBlock();
 
-    _HIZCullProgram->bind();
-    _HIZCullProgram->Uniform("dvd_numEntities", _lastCommandCount);
-    getRenderTarget(RenderTarget::SCREEN)->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
-                                                TextureDescriptor::AttachmentType::Depth);
-
     RenderStage currentStage = getRenderStage();
     getCommandBuffer(currentStage, pass).bind(ShaderBufferLocation::GPU_COMMANDS);
     getCommandBuffer(currentStage, pass).bindAtomicCounter();
+
+    _hiZDepthBuffer->bind();
+    _HIZCullProgram->bind();
+    _HIZCullProgram->Uniform("dvd_numEntities", _lastCommandCount);
     _HIZCullProgram->DispatchCompute((_lastCommandCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
     _HIZCullProgram->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::COUNTER);
 }

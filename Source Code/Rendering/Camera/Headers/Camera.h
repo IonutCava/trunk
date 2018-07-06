@@ -73,6 +73,9 @@ class Camera : public Resource {
     /// Global rotations are applied relative to the world axis, not the
     /// camera's
     void setGlobalRotation(F32 yaw, F32 pitch, F32 roll = 0.0f);
+    inline void setGlobalRotation(const vec3<F32>& euler) {
+        setGlobalRotation(euler.yaw, euler.pitch, euler.roll);
+    }
     /// Sets the camera's position, target and up directions
     const mat4<F32>& lookAt(const vec3<F32>& eye, const vec3<F32>& target,
                             const vec3<F32>& up = WORLD_Y_AXIS);

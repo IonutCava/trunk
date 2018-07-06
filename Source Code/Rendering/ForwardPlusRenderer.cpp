@@ -40,9 +40,7 @@ void ForwardPlusRenderer::preRender() {
     lightMgr.uploadLightData(LightType::POINT, ShaderBufferLocation::LIGHT_CULL_POINT);
     lightMgr.uploadLightData(LightType::SPOT, ShaderBufferLocation::LIGHT_CULL_SPOT);
 
-    Framebuffer* depthBuffer = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN);
-    Texture* depthTexture = depthBuffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
-    depthTexture->Bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH));
+    GFX_DEVICE.getHiZBuffer()->bind();
 
     _flag = getMaxNumLightsPerTile();
     _lightCullComputeShader->bind();
@@ -50,30 +48,6 @@ void ForwardPlusRenderer::preRender() {
     _lightCullComputeShader->Uniform("maxNumLightsPerTile", _flag);
     _lightCullComputeShader->DispatchCompute(getNumTilesX(), getNumTilesY(), 1);
     _lightCullComputeShader->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::SHADER_BUFFER);
-
-    if (false)  {
-        const U32 numTiles = getNumTilesX() * getNumTilesY();
-        const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
-
-        vectorImpl<U32> data;
-        data.resize(numTiles * maxNumLightsPerTile);
-        _perTileLightIndexBuffer->getData(0, data.size(), &data[0]);
-
-        U32 tileCount = 0;
-        Console::togglethreadID(false);
-        Console::toggleTimeStamps(false);
-        Console::printfn("\n ------------ START TILE %d -------------", tileCount);
-        U32 count = 0;
-        for (U32 c : data) {
-            Console::printf("%d ", c);
-            if (count++ % 50 == 0) {
-                Console::printfn("\n");
-            }
-        }
-        Console::printfn("\n -------------------- END TILE %d ---------------", tileCount++);
-        Console::toggleTimeStamps(true);
-        Console::togglethreadID(true);
-    }
 }
 
 void ForwardPlusRenderer::render(const DELEGATE_CBK<>& renderCallback,

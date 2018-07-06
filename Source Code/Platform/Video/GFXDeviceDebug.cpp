@@ -30,29 +30,33 @@ void GFXDevice::previewDepthBuffer() {
         fbPreview.setPropertyList("USE_SCENE_ZPLANES");
         _previewDepthMapShader = CreateResource<ShaderProgram>(fbPreview);
         assert(_previewDepthMapShader != nullptr);
-
-        ResourceDescriptor previewNormalsShader("fbPreview");
-        previewNormalsShader.setThreadedLoading(false);
-        _previewNormalsShader = CreateResource<ShaderProgram>(previewNormalsShader);
-        assert(_previewNormalsShader != nullptr);
     }
 
     if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
         return;
     }
 
-    { //Depth preview
+    {   
+        //Depth preview
         Texture* depthTex = _renderTarget[to_uint(RenderTarget::SCREEN)]->getAttachment(TextureDescriptor::AttachmentType::Depth);
+        _previewDepthMapShader->Uniform("lodLevel", to_float(0));
+        depthTex->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+        GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::SCREEN)]->getResolution().width - 256, 0, 256, 256);
+        drawTriangle(_defaultStateNoDepthHash, _previewDepthMapShader);
+    }
+    {
+        //HiZ preview
+        Texture* depthTex = _hiZDepthBuffer->getAttachment(TextureDescriptor::AttachmentType::Color0);
         _previewDepthMapShader->Uniform("lodLevel", to_float(to_uint((Time::ElapsedMilliseconds() / 750.0)) % (depthTex->getMaxMipLevel() - 1)));
         depthTex->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
-        GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::SCREEN)]->getResolution().width - 256, 0,256, 256);
+        GFX::ScopedViewport viewport(_hiZDepthBuffer->getResolution().width - 512, 0, 256, 256);
         drawTriangle(_defaultStateNoDepthHash, _previewDepthMapShader);
     }
     { //Normals preview
-        Texture* normalsPreview = _renderTarget[to_uint(RenderTarget::SCREEN)]->getAttachment(TextureDescriptor::AttachmentType::Color1);
-        normalsPreview->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
-        GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::SCREEN)]->getResolution().width - 512, 0, 256, 256);
-        drawTriangle(_defaultStateNoDepthHash, _previewNormalsShader);
+        _renderTarget[to_uint(RenderTarget::SCREEN)]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0), TextureDescriptor::AttachmentType::Color1);
+        GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::SCREEN)]->getResolution().width - 768, 0, 256, 256);
+        _framebufferDraw->Uniform("linearSpace", false);
+        drawTriangle(_defaultStateNoDepthHash, _framebufferDraw);
     }
 #endif
 }

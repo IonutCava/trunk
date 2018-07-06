@@ -75,6 +75,12 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
                 RenderBin::RenderBinType::RBT_DELEGATE,
                 RenderingOrder::List::FRONT_TO_BACK, 2.0f);
         } break;
+        case RenderBin::RenderBinType::RBT_SKY: {
+            // Draw sky after opaque but before translucent to prevent overdraw
+            temp = MemoryManager_NEW RenderBinDelegate(
+                RenderBin::RenderBinType::RBT_SKY,
+                RenderingOrder::List::NONE, 2.5f);
+        } break;
         case RenderBin::RenderBinType::RBT_DECALS: {
             temp = MemoryManager_NEW RenderBinMesh(
                 RenderBin::RenderBinType::RBT_DECALS,
@@ -113,12 +119,6 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
             temp = MemoryManager_NEW RenderBinTranslucent(
                 RenderBin::RenderBinType::RBT_TRANSLUCENT,
                 RenderingOrder::List::BACK_TO_FRONT, 9.0f);
-        } break;
-        case RenderBin::RenderBinType::RBT_SKY: {
-            // Draw sky after opaque but before translucent to prevent overdraw
-            temp = MemoryManager_NEW RenderBinDelegate(
-                RenderBin::RenderBinType::RBT_SKY, 
-                RenderingOrder::List::NONE, 10.0f);
         } break;
         default:
         case RenderBin::RenderBinType::COUNT: {

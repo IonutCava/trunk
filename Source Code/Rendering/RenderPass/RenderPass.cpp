@@ -48,7 +48,9 @@ void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
 
         // Actual render
         switch(stageFlag) {
-            default: {
+            case RenderStage::Z_PRE_PASS:
+            case RenderStage::DISPLAY: 
+            {
                 renderer.render(
                     [stageFlag, refreshNodeData, idx]() {
                         SceneManager::getInstance().renderVisibleNodes(stageFlag, refreshNodeData);
@@ -107,8 +109,6 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
 
     if (bindShadowMaps) {
         LightManager::getInstance().bindShadowMaps();
-        GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                                                                   TextureDescriptor::AttachmentType::Depth);
     }
 
     return true;

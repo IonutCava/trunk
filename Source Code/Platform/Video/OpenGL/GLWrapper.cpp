@@ -408,7 +408,7 @@ bool GL_API::initShaders() {
         lineOffsets);
 
     appendToShaderHeader(
-        ShaderType::FRAGMENT,
+        ShaderType::COUNT,
         "#define TEXTURE_UNIT0 " +
             std::to_string(to_uint(ShaderProgram::TextureUsage::UNIT0)),
         lineOffsets);

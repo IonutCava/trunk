@@ -148,47 +148,50 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _renderTarget[to_uint(RenderTarget::SCREEN)] = newFB(true);
     // This is an environment cube map centered around the camera
     _renderTarget[to_uint(RenderTarget::ENVIRONMENT)] = newFB(false);
+    // Hold the HiZ buffer somewhere separate from the main render target
+    _hiZDepthBuffer = newFB(false);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
     TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS,
                                        GFXImageFormat::RGBA16F,
                                        GFXDataFormat::FLOAT_16);
-    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS,
-                                      GFXImageFormat::DEPTH_COMPONENT32F,
-                                      GFXDataFormat::FLOAT_32);
+    TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D,
+                                    GFXImageFormat::RED32F,
+                                    GFXDataFormat::FLOAT_32);
+
+    SamplerDescriptor hiZSampler;
+    hiZSampler.setFilters(TextureFilter::NEAREST);
+    hiZSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    hiZSampler.toggleMipMaps(true);
+    hiZDescriptor.setSampler(hiZSampler);
+
     SamplerDescriptor screenSampler;
     screenSampler.setFilters(TextureFilter::NEAREST);
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.toggleMipMaps(false);
     screenDescriptor.setSampler(screenSampler);
-    // Next, create a depth attachment for the screen render target.
-    // Must also multisampled. Use full float precision for long view distances
-    SamplerDescriptor depthSampler;
-    depthSampler.setFilters(TextureFilter::NEAREST_MIPMAP_NEAREST, 
-                            TextureFilter::NEAREST);
-    depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    // Use greater or equal depth compare function, but depth comparison is disabled, anyway.
-    depthSampler._cmpFunc = ComparisonFunction::GEQUAL;
-    depthSampler.toggleMipMaps(true);
-    depthDescriptor.setSampler(depthSampler);
 
     TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_MS,
                                        GFXImageFormat::RGB16F,
                                        GFXDataFormat::FLOAT_16);
     normalDescriptor.setSampler(screenSampler);
     
+    _hiZDepthBuffer->addAttachment(hiZDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _hiZDepthBuffer->useAutoDepthBuffer(false);
+    _hiZDepthBuffer->create(resolution.width, resolution.height);
+    _hiZDepthBuffer->setClearColor(DefaultColors::DIVIDE_BLUE());
+    Texture* hizTexture = _hiZDepthBuffer->getAttachment(TextureDescriptor::AttachmentType::Color0);
+    hizTexture->lockAutomaticMipMapGeneration(true);
+
     // Add the attachments to the render targets
     _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(depthDescriptor, TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->useAutoDepthBuffer(true);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->create(resolution.width, resolution.height);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->setClearColor(DefaultColors::DIVIDE_BLUE());
 
-    Texture* depthAttchment = _renderTarget[to_uint(RenderTarget::SCREEN)]->getAttachment(TextureDescriptor::AttachmentType::Depth);
-    depthAttchment->lockAutomaticMipMapGeneration(true);
-    // If we enabled anaglyph rendering, we need a second target, identical to
-    // the screen target
+    // If we enabled anaglyph rendering, we need a second target, identical to the screen target
     // used to render the scene at an offset
     _renderTarget[to_uint(RenderTarget::ANAGLYPH)] = newFB(true);
     _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
@@ -244,6 +247,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     RenderStateBlock primitiveDescriptor(getRenderStateBlock(getDefaultStateBlock(true)));
     _axisGizmo->stateHash(primitiveDescriptor.getHash());
 
+    ResourceDescriptor previewNormalsShader("fbPreview");
+    previewNormalsShader.setThreadedLoading(false);
+    _framebufferDraw = CreateResource<ShaderProgram>(previewNormalsShader);
+    assert(_framebufferDraw != nullptr);
+
     // Resize our window to the target resolution
     changeResolution(resolution.width, resolution.height);
 
@@ -293,6 +301,8 @@ void GFXDevice::closeRenderingAPI() {
     for (Framebuffer*& renderTarget : _renderTarget) {
         MemoryManager::DELETE(renderTarget);
     }
+    MemoryManager::DELETE(_hiZDepthBuffer);
+
     // Close the shader manager
     ShaderManager::getInstance().destroy();
     // Close the rendering API

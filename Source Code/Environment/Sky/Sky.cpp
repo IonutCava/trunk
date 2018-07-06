@@ -13,10 +13,9 @@ Sky::Sky(const stringImpl& name)
     : SceneNode(name, SceneNodeType::TYPE_SKY),
       _sky(nullptr),
       _skyShader(nullptr),
+      _skyShaderPrePass(nullptr),
       _skybox(nullptr)
 {
-    // The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't
-    // have real "depth"
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
 
     _farPlane = 2.0f *
@@ -26,19 +25,23 @@ Sky::Sky(const stringImpl& name)
         .getCameraConst()
         .getZPlanes()
         .y;
+
     // Generate a render state
     RenderStateBlock skyboxRenderState;
     skyboxRenderState.setCullMode(CullMode::CCW);
+    skyboxRenderState.setZFunc(ComparisonFunction::LEQUAL);
+    skyboxRenderState.setZWrite(true);
+    _skyboxRenderStateHashPrePass = skyboxRenderState.getHash();
+
     skyboxRenderState.setZWrite(false);
-    _skyboxRenderStateHash = skyboxRenderState.getHash();
-    
-    skyboxRenderState.setCullMode(CullMode::CCW);
     _skyboxRenderStateReflectedHash = skyboxRenderState.getHash();
+    _skyboxRenderStateHash = skyboxRenderState.getHash();
 }
 
 Sky::~Sky()
 {
     RemoveResource(_skyShader);
+    RemoveResource(_skyShaderPrePass);
     RemoveResource(_skybox);
 }
 
@@ -76,10 +79,14 @@ bool Sky::load() {
     ResourceDescriptor skyShaderDescriptor("sky");
     _skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
 
-    assert(_skyShader);
+    ResourceDescriptor skyShaderPrePassDescriptor("sky.PrePass");
+    skyShaderPrePassDescriptor.setPropertyList("IS_PRE_PASS");
+    _skyShaderPrePass = CreateResource<ShaderProgram>(skyShaderPrePassDescriptor);
+
+    assert(_skyShader && _skyShaderPrePass);
     _skyShader->Uniform("texSky", ShaderProgram::TextureUsage::UNIT0);
     _skyShader->Uniform("enable_sun", true);
-    _boundingBox.first.set(vec3<F32>(-_farPlane / 4), vec3<F32>(_farPlane / 4));
+    _boundingBox.first.set(vec3<F32>(-_farPlane / 2), vec3<F32>(_farPlane / 2));
     _boundingBox.second = true;
     Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));
     return true;
@@ -100,7 +107,6 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     GenericDrawCommand cmd;
     cmd.sourceBuffer(_sky->getGeometryVB());
     cmd.cmd().indexCount = _sky->getGeometryVB()->getIndexCount();
-    cmd.shaderProgram(_skyShader);
 
     for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
         GFXDevice::RenderPackage& pkg = 
@@ -116,11 +122,16 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
-                      SceneState& sceneState) {}
+void Sky::sceneUpdate(const U64 deltaTime,
+                       SceneGraphNode& sgn,
+                      SceneState& sceneState) {
+
+    sgn.getComponent<PhysicsComponent>()->setPosition(sceneState.renderState().getCameraConst().getEye());
+
+    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
+}
 
 bool Sky::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
-    _skyShader->Uniform("isDepthPass", currentStage == RenderStage::Z_PRE_PASS);
     return _sky->onDraw(sgn, currentStage);
 }
 
@@ -136,8 +147,10 @@ bool Sky::getDrawCommands(SceneGraphNode& sgn,
     cmd.renderWireframe(renderable->renderWireframe());
     cmd.stateHash(renderStage == RenderStage::REFLECTION
                               ? _skyboxRenderStateReflectedHash
-                              : _skyboxRenderStateHash);
-
+                              : renderStage == RenderStage::Z_PRE_PASS
+                                             ? _skyboxRenderStateHashPrePass
+                                             : _skyboxRenderStateHash);
+    cmd.shaderProgram(renderStage == RenderStage::Z_PRE_PASS ? _skyShaderPrePass : _skyShader);
     return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 

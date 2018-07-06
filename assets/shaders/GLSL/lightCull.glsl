@@ -13,7 +13,7 @@ shared uint ldsLightIdx[MAX_NUM_LIGHTS_PER_TILE];
 shared uint ldsZMax;
 shared uint ldsZMin;
 
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D HiZBuffer;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D HiZBuffer;
 
 vec4 ConvertProjToView(in mat4 invProjection, vec4 p)
 {
@@ -48,7 +48,7 @@ float GetSignedDistanceFromPlane(in vec4 p, in vec4 eqn)
 
 void CalculateMinMaxDepthInLds(uvec3 globalThreadIdx)
 {
-    float depth = textureLod(HiZBuffer, globalThreadIdx.xy, 0).x;
+    float depth = textureLod(HiZBuffer, globalThreadIdx.xy, 0).r;
     uint z = floatBitsToUint(depth);
 
     if (depth != 0.f)

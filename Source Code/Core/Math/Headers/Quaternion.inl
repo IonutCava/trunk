@@ -379,8 +379,8 @@ void Quaternion<T>::getEuler(vec3<T>* euler, bool toDegrees) const {
     T sqz = z * z;
     T sqw = w * w;
     T test = x * y + z * w;
-    T unit = sqx + sqy + sqz +
-             sqw;  // if normalized is one, otherwise is correction factor
+    // if normalized is one, otherwise is correction factor
+    T unit = sqx + sqy + sqz + sqw;  
 
     if (test > (0.5f - EPSILON_F32) * unit) {  // singularity at north pole
         heading = 2 * std::atan2(x, w);

@@ -378,6 +378,10 @@ DEFINE_SINGLETON(GFXDevice)
         return _renderTarget[to_uint(target)];
     }
 
+    inline Framebuffer* getHiZBuffer() const {
+        return _hiZDepthBuffer;
+    }
+
     RenderDetailLevel shadowDetailLevel() const { return _shadowDetailLevel; }
 
     void shadowDetailLevel(RenderDetailLevel detailLevel) {
@@ -557,6 +561,7 @@ DEFINE_SINGLETON(GFXDevice)
     GPUState _state;
     /* Rendering buffers*/
     std::array<Framebuffer*, to_const_uint(RenderTarget::COUNT)> _renderTarget;
+    Framebuffer* _hiZDepthBuffer;
     /*State management */
     RenderStateMap _stateBlockMap;
     bool _stateBlockByDescription;
@@ -580,7 +585,7 @@ DEFINE_SINGLETON(GFXDevice)
     U32 FRAME_COUNT;
     /// shader used to preview the depth buffer
     ShaderProgram* _previewDepthMapShader;
-    ShaderProgram* _previewNormalsShader;
+    ShaderProgram* _framebufferDraw;
     ShaderProgram* _HIZConstructProgram;
     ShaderProgram* _HIZCullProgram;
     ShaderProgram* _displayShader;

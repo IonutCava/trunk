@@ -17,10 +17,6 @@
 
 namespace Divide {
 
-namespace {
-    Framebuffer::FramebufferTarget _hizTarget;
-};
-
 std::array<VertexBuffer::AttribFlags, to_const_uint(RenderStage::COUNT)> VertexBuffer::_attribMaskPerStage;
 
 namespace {
@@ -54,7 +50,7 @@ GFXDevice::GFXDevice()
     _gfxDataBuffer = nullptr;
     _HIZConstructProgram = nullptr;
     _HIZCullProgram = nullptr;
-    _previewNormalsShader = nullptr;
+    _framebufferDraw = nullptr;
     _previewDepthMapShader = nullptr;
     _displayShader = nullptr;
     _commandBuildTimer = nullptr;
@@ -86,6 +82,7 @@ GFXDevice::GFXDevice()
     for (Framebuffer*& renderTarget : _renderTarget) {
         renderTarget = nullptr;
     }
+    _hiZDepthBuffer = nullptr;
     // To allow calls to "setBaseViewport"
     
     _viewport.push(vec4<I32>(-1));
@@ -110,15 +107,6 @@ GFXDevice::GFXDevice()
     VertexBuffer::setAttribMask(RenderStage::Z_PRE_PASS, flags);
     flags[to_uint(VertexBuffer::VertexAttribute::ATTRIB_NORMAL)] = false;
     VertexBuffer::setAttribMask(RenderStage::SHADOW, flags);
-
-    // We don't want to change the viewport or clear the buffer when starting to render to the buffer
-    // We want to process the data already in the buffer
-    _hizTarget._clearDepthBufferOnBind = false;
-    _hizTarget._clearColorBuffersOnBind = false;
-    // And we calculate the target viewport for each loop
-    _hizTarget._changeViewport = false;
-    _hizTarget._drawMask.fill(false);
-    _hizTarget._drawMask[to_uint(TextureDescriptor::AttachmentType::Depth)] = true;
 }
 
 GFXDevice::~GFXDevice()
@@ -358,9 +346,7 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
     if (_renderTarget[to_uint(RenderTarget::SCREEN)] != nullptr) {
         // Update resolution only if it's different from the current one.
         // Avoid resolution change on minimize so we don't thrash render targets
-        if (vec2<U16>(w, h) ==  _renderTarget[to_uint(RenderTarget::SCREEN)]
-                    ->getResolution() ||
-            !(w > 1 && h > 1)) {
+        if (vec2<U16>(w, h) ==  _renderTarget[to_uint(RenderTarget::SCREEN)]->getResolution() ||  !(w > 1 && h > 1)) {
             return;
         }
         // Update render targets with the new resolution
@@ -370,6 +356,7 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
                 renderTarget->create(w, h);
             }
         }
+        _hiZDepthBuffer->create(w, h);
     }
 
     Application& app = Application::getInstance();
@@ -645,18 +632,19 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries)
 void GFXDevice::constructHIZ() {
     // The depth buffer's resolution should be equal to the screen's resolution
-    vec2<U16> resolution =
-        _renderTarget[to_uint(RenderTarget::SCREEN)]
-            ->getResolution();
+    vec2<U16> resolution = _hiZDepthBuffer->getResolution();
+    // Bind the depth texture to the first texture unit
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
+                                                       TextureDescriptor::AttachmentType::Depth);
     // We use a special shader that downsamples the buffer
     // We will use a state block that disables color writes as we will render
     // only a depth image,
     // disables depth testing but allows depth writes
     // Set the depth buffer as the currently active render target
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->begin(_hizTarget);
-    // Bind the depth texture to the first texture unit
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                                                       TextureDescriptor::AttachmentType::Depth);
+    _hiZDepthBuffer->begin(Framebuffer::defaultPolicy());
+    _displayShader->Uniform("anaglyphEnabled", false);
+    drawTriangle(_stateDepthOnlyRenderingHash, _displayShader);
+
     // Calculate the number of mipmap levels we need to generate
     U32 numLevels = 1 + to_uint(floorf(log2f(fmaxf(to_float(resolution.width),
                                                    to_float(resolution.height)))));
@@ -677,17 +665,15 @@ void GFXDevice::constructHIZ() {
         // Update the viewport with the new resolution
         updateViewportInternal(vec4<I32>(0, 0, currentWidth, currentHeight));
         // Bind next mip level for rendering but first restrict fetches only to previous level
-        _renderTarget[to_uint(RenderTarget::SCREEN)]->setMipLevel(
-            i - 1, i - 1, i, TextureDescriptor::AttachmentType::Depth);
+        _hiZDepthBuffer->setMipLevel(i - 1, i - 1, i, TextureDescriptor::AttachmentType::Color0);
         // Dummy draw command as the full screen quad is generated completely in the vertex shader
         drawTriangle(_stateDepthOnlyRenderingHash, _HIZConstructProgram);
     }
     updateViewportInternal(previousViewport);
     // Reset mipmap level range for the depth buffer
-    _renderTarget[to_uint(RenderTarget::SCREEN)]
-        ->resetMipLevel(TextureDescriptor::AttachmentType::Depth);
+    _hiZDepthBuffer->resetMipLevel(TextureDescriptor::AttachmentType::Color0);
     // Unbind the render target
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->end();
+    _hiZDepthBuffer->end();
     
 }
 

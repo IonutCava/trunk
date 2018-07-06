@@ -362,8 +362,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         _hardwareIndicesL.clear();
         _hardwareIndicesS.clear();
         _attribDirty.fill(false);
-        _effectiveEntrySize = 0;
-        _effectiveEntryOffset = 0;
     }
 
     void fromBuffer(VertexBuffer& other) {
@@ -376,8 +374,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         _data = other._data;
         _primitiveRestartEnabled = other._primitiveRestartEnabled;
         _attribDirty = other._attribDirty;
-        _effectiveEntrySize = other._effectiveEntrySize;
-        _effectiveEntryOffset = other._effectiveEntryOffset;
     }
 
     bool deserialize(ByteBuffer& dataIn) {
@@ -463,14 +459,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         return false;
     }
 
-    inline U32 effectiveEntrySize() const {
-        return _effectiveEntrySize;
-    }
-
-    inline U32 effectiveEntryOffset() const {
-        return _effectiveEntryOffset;
-    }
-
     static void setAttribMasks(AttribFlags flagMask) {
         for (AttribFlags& flags : _attribMaskPerStage) {
             flags = flagMask;
@@ -491,8 +479,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
    protected:
     /// If this flag is true, no further modification are allowed on the buffer (static geometry)
     bool _staticBuffer;
-    U32  _effectiveEntrySize;
-    U32  _effectiveEntryOffset;
     /// The format of the buffer data
     GFXDataFormat _format;
     // first: offset, second: count

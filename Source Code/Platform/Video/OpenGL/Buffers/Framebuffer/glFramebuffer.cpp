@@ -194,9 +194,10 @@ void glFramebuffer::addDepthBuffer() {
                          : GFXImageFormat::DEPTH_COMPONENT,
         fpDepth ? dataType : GFXDataFormat::UNSIGNED_INT);
 
-    screenSampler._useRefCompare = true;  //< Use compare function
-    screenSampler._cmpFunc =
-        ComparisonFunction::LEQUAL;  //< Use less or equal
+    //screenSampler._useRefCompare = true;  //< Use compare function
+    screenSampler._cmpFunc = ComparisonFunction::LEQUAL;  //< Use less or equal
+    screenSampler.toggleMipMaps(desc.getSampler().generateMipMaps());
+
     depthDescriptor.setSampler(screenSampler);
     depthDescriptor.setLayerCount(desc._layerCount);
     _attachmentChanged[to_uint(AttachmentType::Depth)] = true;
@@ -303,7 +304,7 @@ void glFramebuffer::blitFrom(Framebuffer* inputFB,
     if (!inputFB || (!blitColor && !blitDepth)) {
         return;
     }
-
+    
     glFramebuffer* input = static_cast<glFramebuffer*>(inputFB);
 
     // prevent stack overflow
@@ -387,36 +388,19 @@ void glFramebuffer::begin(const FramebufferTarget& drawPolicy) {
 
     if (_previousMask != drawPolicy._drawMask) {
         // handle color buffers first
-        bool allBuffersActive = true;
-        for (U8 i = 0; i < to_uint(AttachmentType::COUNT) - 1; ++i) {
-            bool state = drawPolicy._drawMask[i];
-            if (!state) {
-                allBuffersActive = false;
-                break;
-            }
-        }
-
-        if (allBuffersActive) {
-            glNamedFramebufferDrawBuffers(_framebufferHandle,
-                                          static_cast<GLsizei>(_colorBuffers.size()),
-                                          _colorBuffers.data());
-
-        } else {
-            vectorImpl<GLenum> colorBuffers;
-            size_t bufferCount = _colorBuffers.size();
-            colorBuffers.reserve(bufferCount);
+        vectorImpl<GLenum> colorBuffers;
+        size_t bufferCount = _colorBuffers.size();
+        colorBuffers.reserve(bufferCount);
             
-            for (size_t i = 0; i < bufferCount; ++i) {
-                _colorBufferEnabled[i] = drawPolicy._drawMask[i];
-                if (_colorBufferEnabled[i]) {
-                    colorBuffers.push_back(_colorBuffers[i]);
-                }
+        for (size_t i = 0; i < bufferCount; ++i) {
+            _colorBufferEnabled[i] = drawPolicy._drawMask[i];
+            if (_colorBufferEnabled[i]) {
+                colorBuffers.push_back(_colorBuffers[i]);
             }
-
-            glNamedFramebufferDrawBuffers(_framebufferHandle,
-                                          static_cast<GLsizei>(colorBuffers.size()),
-                                          colorBuffers.data());
         }
+
+        glDrawBuffers(static_cast<GLsizei>(colorBuffers.size()), colorBuffers.data());
+        
         // handle depth buffer;
         checkStatus();
         _previousMask = drawPolicy._drawMask;
@@ -461,10 +445,17 @@ void glFramebuffer::clear(const FramebufferTarget& drawPolicy) const {
         GLuint index = 0;
         for (; index < _colorBuffers.size(); ++index) {
             if (_colorBufferEnabled[index]) {
-                glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, index++, _clearColor._v);
+                TextureDescriptor desc = _attachment[index];
+                GFXDataFormat dataType = desc.dataType();
+                if(dataType == GFXDataFormat::FLOAT_16 ||
+                   dataType == GFXDataFormat::FLOAT_32) {
+                    glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, index, _clearColor._v);
+                } else {
+                    glClearNamedFramebufferuiv(_framebufferHandle, GL_COLOR, index, Util::ToUIntColor(_clearColor)._v);
+                }
+                _context.registerDrawCall();
             }
         }
-        _context.registerDrawCalls(index);
     }
 
     if (hasDepth() && drawPolicy._clearDepthBufferOnBind) {
@@ -476,8 +467,6 @@ void glFramebuffer::clear(const FramebufferTarget& drawPolicy) const {
 void glFramebuffer::drawToLayer(TextureDescriptor::AttachmentType slot,
                                 U32 layer,
                                 bool includeDepth) {
-    DIVIDE_ASSERT(slot < TextureDescriptor::AttachmentType::COUNT,
-                  "glFrameBuffer::DrawToLayer Error: invalid slot received!");
 
     GLenum textureType = GLUtil::glTextureTypeTable[to_uint(
         _attachmentTexture[to_uint(slot)]->getTextureType())];
@@ -509,11 +498,11 @@ void glFramebuffer::drawToLayer(TextureDescriptor::AttachmentType slot,
         if (to_uint(slot) > 0) {
             offset = _attOffset[to_uint(slot) - 1];
         }
-        glNamedFramebufferTextureLayer(_framebufferHandle,
-                                       _colorBuffers[offset],
-                                       _attachmentTexture[to_uint(slot)]->getHandle(),
-                                       0,
-                                       layer);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER,
+                                  _colorBuffers[offset],
+                                  _attachmentTexture[to_uint(slot)]->getHandle(),
+                                  0,
+                                  layer);
         _attDirty[to_uint(slot)] = true;
     }
 

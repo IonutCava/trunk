@@ -51,28 +51,30 @@ class Sky : public SceneNode {
 
     bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) override;
     void setSunProperties(const vec3<F32>& sunVect, const vec4<F32>& sunColor);
-    inline Texture* getCubemap() const { return _skybox; }
 
    protected:
     void postLoad(SceneGraphNode& sgn) override;
-    void sceneUpdate(const U64 deltaTime,
-                     SceneGraphNode& sgn,
-                     SceneState& sceneState) override;
 
     bool getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
 
+    void sceneUpdate(const U64 deltaTime,
+                     SceneGraphNode& sgn,
+                     SceneState& sceneState) override;
    private:
     bool load();
 
    private:
     ShaderProgram* _skyShader;
+    ShaderProgram* _skyShaderPrePass;
+
     Texture* _skybox;
     Sphere3D* _sky;
     F32    _farPlane;
     U32 _skyboxRenderStateHash;
+    U32 _skyboxRenderStateHashPrePass;
     U32 _skyboxRenderStateReflectedHash;
 };
 

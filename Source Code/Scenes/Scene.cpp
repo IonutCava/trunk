@@ -711,14 +711,11 @@ void Scene::debugDraw(RenderStage stage) {
     }
 #endif
     if (stage == RenderStage::DISPLAY) {
-        
-        LightManager::getInstance().drawLightImpostors();
-
         // Draw bounding boxes, skeletons, axis gizmo, etc.
         GFX_DEVICE.debugDraw(renderState());
-
         // Show NavMeshes
         AI::AIManager::getInstance().debugDraw(false);
+        LightManager::getInstance().drawLightImpostors();
     }
 }
 
@@ -803,6 +800,25 @@ void Scene::findSelection() {
             cbk();
         }
     }
-
 }
+
+bool Scene::save(ByteBuffer& outputBuffer) const {
+    const Camera& cam = state().renderState().getCameraConst();
+    outputBuffer << cam.getEye() << cam.getEuler();
+    return true;
+}
+
+bool Scene::load(ByteBuffer& inputBuffer) {
+    vec3<F32> camPos;
+    vec3<F32> camEuler;
+
+    inputBuffer >> camPos >> camEuler;
+
+    Camera& cam = state().renderState().getCamera();
+    cam.setEye(camPos);
+    cam.setGlobalRotation(-camEuler);
+
+    return true;
+}
+
 };
