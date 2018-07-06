@@ -79,7 +79,7 @@ void Scene::postRender(){
             GFX_DEVICE.drawLines(_lines[DEBUG_LINE_OBJECT_TO_TARGET],  mat4<F32>(), vec4<I32>(), false,  false);
         }
     }
-    if (!_lines[DEBUG_LINE_OBJECT_TO_TARGET].empty() && AI::AIManager::getInstance().navMeshDebugDraw()) {
+    if (!_lines[DEBUG_LINE_OBJECT_TO_TARGET].empty() && renderState()._debugDrawTargetLines) {
         GFX_DEVICE.drawLines(_lines[DEBUG_LINE_OBJECT_TO_TARGET],  mat4<F32>(), vec4<I32>(), false,  false);
     }
 #endif

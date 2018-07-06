@@ -60,6 +60,7 @@ public:
                         _drawSkeletons(false),
                         _drawObjects(true),
                         _debugDrawLines(false),
+                        _debugDrawTargetLines(false),
                         _cameraMgr(nullptr)
     {
         _gizmoState = NO_GIZMO;
@@ -69,6 +70,7 @@ public:
     inline bool drawSkeletons()           const {return  _drawSkeletons;}
     inline void drawSkeletons(bool visibility)  {_drawSkeletons = visibility;}
     inline void drawDebugLines(bool visibility) {_debugDrawLines = visibility;}
+    inline void drawDebugTargetLines(bool visibility) {_debugDrawTargetLines = visibility;}
     inline GizmoState gizmoState()      const   { return _gizmoState; }
     inline void gizmoState(GizmoState newState) { _gizmoState = newState; }
     inline ObjectRenderState objectState()       const      { return _objectState; }
@@ -110,7 +112,7 @@ public:
     inline CameraManager& getCameraMgr()         { return *_cameraMgr;}
     inline       Camera&  getCamera()            { return *_cameraMgr->getActiveCamera(); }
     inline const Camera&  getCameraConst() const { return *_cameraMgr->getActiveCamera(); }
-    inline vec2<U16>&    cachedResolution() {return _cachedResolution;}
+    inline vec2<U16>&     cachedResolution() {return _cachedResolution;}
 
 protected:
 
@@ -119,6 +121,7 @@ protected:
     bool _drawObjects;
     bool _drawSkeletons;
     bool _debugDrawLines;
+    bool _debugDrawTargetLines;
     GizmoState _gizmoState;
     ObjectRenderState _objectState;
     CameraManager*  _cameraMgr;

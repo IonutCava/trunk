@@ -7,7 +7,8 @@ Application::Application() : _kernel(nullptr),
                              _totalMemoryOcuppied(0),
                              _requestShutdown(false),
                              _hasFocus(true),
-                             _mainLoopActive(false)
+                             _mainLoopActive(false),
+                             _mainLoopPaused(false)
 {
     _threadId = boost::this_thread::get_id();
     _errorCode = NO_ERR;

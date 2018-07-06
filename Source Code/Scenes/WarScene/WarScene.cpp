@@ -23,8 +23,6 @@ REGISTER_SCENE(WarScene);
 WarScene::WarScene() : Scene(),
                        _sun(nullptr),
                        _infoBox(nullptr),
-                       _faction1(nullptr),
-                       _faction2(nullptr),
                        _bobNode(nullptr),
                        _bobNodeBody(nullptr),
                        _lampLightNode(nullptr),
@@ -34,10 +32,10 @@ WarScene::WarScene() : Scene(),
                        _sceneReady(false),
                        _lastNavMeshBuildTime(0UL)
 {
-    _scorTeam1 = 0;
-    _scorTeam2 = 0;
-    _flags[0] = nullptr;
-    _flags[1] = nullptr;
+    for (U8 i = 0; i < 2; ++i) {
+        _flag[i] = nullptr;
+        _faction[i] = nullptr;
+    }
 }
 
 WarScene::~WarScene()
@@ -64,7 +62,9 @@ void WarScene::processGUI(const U64 deltaTime){
 }
 
 void WarScene::processTasks(const U64 deltaTime){
-    if(!_sceneReady) return;
+    if (!_sceneReady) {
+        return;
+    }
 
     static vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
     static bool direction = false;
@@ -118,7 +118,8 @@ void navMeshCreationCompleteCallback(AI::AIEntity::PresetAgentRadius radius,  AI
     AI::AIManager::getInstance().addNavMesh(radius, navMesh);
 }
 
-void WarScene::startSimulation(){
+void WarScene::startSimulation() {
+    AI::AIManager::getInstance().pauseUpdate(true);
     _infoBox->setTitle("NavMesh state");
     _infoBox->setMessageType(GUIMessageBox::MESSAGE_INFO);
     bool previousMesh = false;
@@ -126,23 +127,23 @@ void WarScene::startSimulation(){
     U64 currentTime = GETUSTIME(true);
     U64 diffTime = currentTime - _lastNavMeshBuildTime;
     if (diffTime > getSecToUs(10)) {
-        AI::AIManager::getInstance().pauseUpdate(true);
-        AI::Navigation::NavigationMesh* navMesh = AI::AIManager::getInstance().getNavMesh(_army1[0]->getAgentRadiusCategory());
+        AI::Navigation::NavigationMesh* navMesh = AI::AIManager::getInstance().getNavMesh(_army[0][0]->getAgentRadiusCategory());
         if (!navMesh) {
             navMesh = New AI::Navigation::NavigationMesh();
         } else {
             previousMesh = true;
-            AI::AIManager::getInstance().destroyNavMesh(_army1[0]->getAgentRadiusCategory());
+            AI::AIManager::getInstance().destroyNavMesh(_army[0][0]->getAgentRadiusCategory());
         }
         navMesh->setFileName(GET_ACTIVE_SCENE()->getName());
 
         if (!navMesh->load(nullptr)) {
             loadedFromFile = false;
-            navMesh->build(nullptr, DELEGATE_BIND(navMeshCreationCompleteCallback, _army1[0]->getAgentRadiusCategory(), navMesh));
+            navMesh->build(nullptr, DELEGATE_BIND(navMeshCreationCompleteCallback, _army[0][0]->getAgentRadiusCategory(), navMesh));
         } else {
-            AI::AIManager::getInstance().addNavMesh(_army1[0]->getAgentRadiusCategory(), navMesh);
+            AI::AIManager::getInstance().addNavMesh(_army[0][0]->getAgentRadiusCategory(), navMesh);
 #       ifdef _DEBUG
-                AI::AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
+                navMesh->debugDraw(true);
+                renderState().drawDebugTargetLines(true);
 #       endif
         }
 
@@ -161,14 +162,19 @@ void WarScene::startSimulation(){
         }
         _infoBox->show();
         navMeshStarted = true;
-        AI::AIManager::getInstance().pauseUpdate(false);
         _lastNavMeshBuildTime = currentTime;
-        
+        for (U8 i = 0; i < 2; ++i) {
+            _faction[i]->clearOrders();
+            for(AI::WarSceneOrder* order : _orders[i]) {
+                _faction[i]->addOrder(order);
+            }
+        }
     } else {    
         _infoBox->setMessage(std::string("Can't reload the navigation mesh this soon.\n Please wait \\[ " + Util::toString(getUsToSec<U64>(diffTime)) + " ] seconds more!"));
         _infoBox->setMessageType(GUIMessageBox::MESSAGE_WARNING);
         _infoBox->show();
     }
+    AI::AIManager::getInstance().pauseUpdate(false);
 }
 
 void WarScene::processInput(const U64 deltaTime){
@@ -190,27 +196,20 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
     }*/
     
 #ifdef _DEBUG
-    if (!AI::AIManager::getInstance().getNavMesh(_army1[0]->getAgentRadiusCategory())) {
+    if (!AI::AIManager::getInstance().getNavMesh(_army[0][0]->getAgentRadiusCategory())) {
         return;
     }
 
-    U32 characterCount = (U32)(_army1.size() + _army2.size());
-
-    _lines[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount);
+    _lines[DEBUG_LINE_OBJECT_TO_TARGET].resize(_army[0].size() + _army[1].size());
     //renderState().drawDebugLines(true);
     U32 count = 0;
-    for(AI::AIEntity* character : _army1){
-        _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._startPoint.set(character->getPosition());
-        _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._endPoint.set(character->getDestination());
-        _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._color.set(255,0,255,128);
-        count++;
-    }
-    
-    for(AI::AIEntity* character : _army2){
-        _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._startPoint.set(character->getPosition());
-        _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._endPoint.set(character->getDestination());
-        _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._color.set(255,0,255,128);
-        count++;
+    for (U8 i = 0; i < 2; ++i) {
+        for(AI::AIEntity* character : _army[i]){
+            _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._startPoint.set(character->getPosition());
+            _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._endPoint.set(character->getDestination());
+            _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._color.set(255,0,255,128);
+            count++;
+        }
     }
 #endif
 }
@@ -289,24 +288,24 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
         currentNode->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(currentPos.first, -0.01f, currentPos.second));
     }
     SceneGraphNode* baseFlagNode = cylinderNW;
-    _flags[0] = _sceneGraph->getRoot()->addNode(cylinderMeshNW, "Team1Flag");
-    _flags[0]->setSelectable(false);
-    _flags[0]->usageContext(baseFlagNode->usageContext());
-    _flags[0]->getComponent<PhysicsComponent>()->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
-    _flags[0]->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
-    _flags[0]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
-    _flags[0]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
+    _flag[0] = _sceneGraph->getRoot()->addNode(cylinderMeshNW, "Team1Flag");
+    _flag[0]->setSelectable(false);
+    _flag[0]->usageContext(baseFlagNode->usageContext());
+    _flag[0]->getComponent<PhysicsComponent>()->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
+    _flag[0]->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
+    _flag[0]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
+    _flag[0]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
 
-    _flags[1] = _sceneGraph->getRoot()->addNode(cylinderMeshNW, "Team2Flag");      
-    _flags[1]->setSelectable(false);
-    _flags[1]->usageContext(baseFlagNode->usageContext());
-    _flags[1]->getComponent<PhysicsComponent>()->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
-    _flags[1]->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
-    _flags[1]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
-    _flags[1]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
+    _flag[1] = _sceneGraph->getRoot()->addNode(cylinderMeshNW, "Team2Flag");      
+    _flag[1]->setSelectable(false);
+    _flag[1]->usageContext(baseFlagNode->usageContext());
+    _flag[1]->getComponent<PhysicsComponent>()->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
+    _flag[1]->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
+    _flag[1]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
+    _flag[1]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
 
-    AI::WarSceneAISceneImpl::registerFlags(_flags[0], _flags[1]);
+    AI::WarSceneAISceneImpl::registerFlags(_flag[0], _flag[1]);
 
     /*_bobNode = _sceneGraph->findNode("Soldier3");
     _bobNodeBody = _sceneGraph->findNode("Soldier3_Bob.md5mesh-submesh-0");
@@ -354,12 +353,12 @@ bool WarScene::initializeAI(bool continueOnErrors){
  //   _GOAPContext.setLogLevel(AI::GOAPContext::LOG_LEVEL_NONE);
 
     // Create 2 AI teams
-    _faction1 = New AI::AITeam(0);
-    _faction2 = New AI::AITeam(1);
+    for (U8 i = 0; i < 2; ++i) {
+        _faction[i] = New AI::AITeam(i);
+    }
     // Make the teams fight each other
-    _faction1->addEnemyTeam(_faction2->getTeamID());
-    _faction2->addEnemyTeam(_faction1->getTeamID());
-
+    _faction[0]->addEnemyTeam(_faction[1]->getTeamID());
+    _faction[1]->addEnemyTeam(_faction[0]->getTeamID());
 
     SceneGraphNode* soldierNode1 = _sceneGraph->findNode("Soldier1");
     SceneGraphNode* soldierNode2 = _sceneGraph->findNode("Soldier2");
@@ -376,63 +375,38 @@ bool WarScene::initializeAI(bool continueOnErrors){
     SceneNode* currentMesh = nullptr;
     SceneGraphNode* currentNode = nullptr;
 
-    AI::ScoutAction scout("NormalScout");
-    scout.setPrecondition(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
-    scout.setPrecondition(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(false));
-    scout.setEffect(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(false));
-    scout.setEffect(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(true));
+    AI::ApproachFlag approachEnemyFlag("ApproachEnemyFlag");
+    approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
+    approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(false));
+    approachEnemyFlag.setEffect(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(true));
  
-    AI::ApproachAction approach("NormalApproach");
-    approach.setPrecondition(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(true));
-    approach.setPrecondition(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(false));
-    approach.setPrecondition(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(false));
-    approach.setEffect(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(true));
-    approach.setEffect(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(false));
+    AI::CaptureFlag captureEnemyFlag("CaptureEnemyFlag");
+    captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(true));
+    captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
+    captureEnemyFlag.setEffect(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(true));
   
-    AI::AttackAction attack("NormalAttack");
-    attack.setPrecondition(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(true));
-    attack.setEffect(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(false));
-    attack.setEffect(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(false));
-    attack.setEffect(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
-    attack.setEffect(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(false));
+    AI::ReturnFlag returnEnemyFlag("ReturnEnemyFlag");
+    returnEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(true));
+    returnEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(true));
+    returnEnemyFlag.setEffect(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
 
-    AI::RetreatAction retreat("NormalRetreat");
-    retreat.setPrecondition(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(false));
-    retreat.setPrecondition(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(true));
-    retreat.setEffect(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(false));
+    AI::GOAPGoal findFlag("Find enemy flag");
+    findFlag.setVariable(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
+    findFlag.setVariable(AI::GOAPFact(AI::AtTargetNode),  AI::GOAPValue(true));
 
-    AI::RetreatAction retreatFromAttack("NormalRetreatFromAttack");
-    retreatFromAttack.setPrecondition(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(true));
-    retreatFromAttack.setEffect(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(false));
+    AI::GOAPGoal captureFlag("Capture enemy flag");
+    captureFlag.setVariable(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(true));
+    captureFlag.setVariable(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(true));
 
-    AI::WaitAction waitNoEnemy("IdleWaitNoEnemy");
-    waitNoEnemy.setPrecondition(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(false));
-    waitNoEnemy.setPrecondition(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(false));
-    waitNoEnemy.setEffect(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
+    AI::GOAPGoal returnFlag("Return enemy flag");
+    returnFlag.setVariable(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
 
-    AI::WaitAction waitEnemyDead("IdleWaitEnemyDead");
-    waitEnemyDead.setPrecondition(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(false));
-    waitEnemyDead.setPrecondition(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
-    waitEnemyDead.setEffect(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
+    AI::GOAPGoal protectFlagCarrier("Protect flag carrier");
+    protectFlagCarrier.setVariable(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(true));
+    protectFlagCarrier.setVariable(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
 
-    AI::WaitAction waitApproachEnemy("IdleWaitApproach");
-    waitApproachEnemy.setPrecondition(AI::GOAPFact(AI::WaitingIdle),  AI::GOAPValue(false));
-    waitApproachEnemy.setPrecondition(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(true));
-    waitApproachEnemy.setEffect(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
-
-    AI::WarSceneGoal findEnemy("Find Enemy");
-    findEnemy.setVariable(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(false));
-    findEnemy.setVariable(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(true));
-    findEnemy.setVariable(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(false));
-    findEnemy.setVariable(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
-
-    AI::WarSceneGoal attackEnemy("Attack Enemy");
-    attackEnemy.setVariable(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
-    attackEnemy.setVariable(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
-
-    AI::WarSceneGoal idle("Wait");
-    idle.setVariable(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(false));
-    idle.setVariable(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
+    AI::GOAPGoal retrieveFlag("Retrieve flag");
+    retrieveFlag.setVariable(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(true));
 
     for(U8 k = 0; k < 2; ++k) {
         for(U8 i = 0; i < 15; ++i){
@@ -472,54 +446,35 @@ bool WarScene::initializeAI(bool continueOnErrors){
 
             aiSoldier = New AI::AIEntity(currentNode->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), currentNode->getName());
             aiSoldier->addSensor(AI::VISUAL_SENSOR);
-
-            if (k == 0) {
-                aiSoldier->setTeam(_faction1);
-                currentNode->renderBoundingBox(true);
-            } else {
-                aiSoldier->setTeam(_faction2);
-                currentNode->renderSkeleton(true);
-            }
+            k == 0 ? currentNode->renderBoundingBox(true) : currentNode->renderSkeleton(true);
 
             AI::WarSceneAISceneImpl* brain = New AI::WarSceneAISceneImpl();
-            brain->worldState().setVariable(AI::GOAPFact(AI::EnemyVisible),       AI::GOAPValue(false));
-            brain->worldState().setVariable(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(false));
-            brain->worldState().setVariable(AI::GOAPFact(AI::EnemyDead),          AI::GOAPValue(false));
-            brain->worldState().setVariable(AI::GOAPFact(AI::WaitingIdle),        AI::GOAPValue(true));
-            brain->registerAction(&scout);
-            brain->registerAction(&approach);
-            brain->registerAction(&attack);
-            brain->registerAction(&waitNoEnemy);
-            brain->registerAction(&waitEnemyDead);
-            brain->registerAction(&waitApproachEnemy);
-            brain->registerGoal(findEnemy);
-            brain->registerGoal(attackEnemy);
-            brain->registerGoal(idle);
-
+            brain->worldState().setVariable(AI::GOAPFact(AI::HasTargetNode),  AI::GOAPValue(false));
+            brain->worldState().setVariable(AI::GOAPFact(AI::AtTargetNode),   AI::GOAPValue(false));
+            brain->registerAction(&approachEnemyFlag);
+            brain->registerAction(&captureEnemyFlag);
+            brain->registerAction(&returnEnemyFlag);
+            brain->registerGoal(captureFlag);
+            brain->registerGoal(returnFlag);
+            brain->registerGoal(findFlag);
+            brain->registerGoal(protectFlagCarrier);
+            brain->registerGoal(retrieveFlag);
             aiSoldier->addAISceneImpl(brain);
 
             soldier = New NPC(currentNode, aiSoldier);
             soldier->setMovementSpeed(speed); 
-            if(k == 0){
-                _army1NPCs.push_back(soldier);
-                _army1.push_back(aiSoldier);
-            }else{
-                _army2NPCs.push_back(soldier);
-                _army2.push_back(aiSoldier);
-            }
+            _armyNPCs[k].push_back(soldier);
+            _army[k].push_back(aiSoldier);
         }
     }
 
     //----------------------- AI controlled units ---------------------//
-    for(U8 i = 0; i < _army1.size(); i++){
-        AI::AIManager::getInstance().addEntity(_army1[i]);    
+    for (U8 i = 0; i < 2; ++i) {
+        for(U8 j = 0; j < _army[i].size(); ++j){
+            AI::AIManager::getInstance().registerEntity(i, _army[i][j]);
+        }
     }
-
-    for(U8 i = 0; i < _army2.size(); i++){
-        AI::AIManager::getInstance().addEntity(_army2[i]);
-    }
-
-    bool state = !(_army1.empty() || _army2.empty());
+    bool state = !(_army[0].empty() || _army[1].empty());
 
     if(state || continueOnErrors) {
         Scene::initializeAI(continueOnErrors);
@@ -530,31 +485,42 @@ bool WarScene::initializeAI(bool continueOnErrors){
     SAFE_DELETE(soldierNode1);
     SAFE_DELETE(soldierNode2);
     SAFE_DELETE(soldierNode3);
-    AI::AIManager::getInstance().pauseUpdate(false);
+    for (U8 i = 0; i < 2; ++i) {
+        _orders[i].push_back(New AI::WarSceneOrder(AI::WarSceneOrder::ORDER_FIND_ENEMY_FLAG));
+        _orders[i].push_back(New AI::WarSceneOrder(AI::WarSceneOrder::ORDER_CAPTURE_ENEMY_FLAG));
+        _orders[i].push_back(New AI::WarSceneOrder(AI::WarSceneOrder::ORDER_RETURN_ENEMY_FLAG));
+        _orders[i].push_back(New AI::WarSceneOrder(AI::WarSceneOrder::ORDER_PROTECT_FLAG_CARRIER));
+        _orders[i].push_back(New AI::WarSceneOrder(AI::WarSceneOrder::ORDER_RETRIEVE_FLAG));
+    }
+
     return state;
 }
 
 bool WarScene::deinitializeAI(bool continueOnErrors){
     AI::AIManager::getInstance().pauseUpdate(true);
-    while (AI::AIManager::getInstance().updating()) {}
-    for(U8 i = 0; i < _army1NPCs.size(); i++){
-        SAFE_DELETE(_army1NPCs[i]);
+
+    while (AI::AIManager::getInstance().updating()) {
     }
-    _army1NPCs.clear();
-    for(U8 i = 0; i < _army2NPCs.size(); i++){
-        SAFE_DELETE(_army2NPCs[i]);
+    for (U8 i = 0; i < 2; ++i) {
+        for(U8 j = 0; j < _armyNPCs[i].size(); ++j){
+            SAFE_DELETE(_armyNPCs[i][j]);
+        }
+        _armyNPCs[i].clear();
+
+        for(U8 j = 0; j < _army[i].size(); ++j) {
+            AI::AIManager::getInstance().unregisterEntity(_army[i][j]);
+            SAFE_DELETE(_army[i][j]);
+        }
+        _army[i].clear();
+    
+        SAFE_DELETE(_faction[i]);
+
+        for(AI::WarSceneOrder*& order : _orders[i]) {
+            SAFE_DELETE(order);
+        }
+        _orders[i].clear();
     }
-    _army2NPCs.clear();
-    for(U8 i = 0; i < _army1.size(); i++){
-        AI::AIManager::getInstance().destroyEntity(_army1[i]->getGUID());
-    }
-    _army1.clear();
-    for(U8 i = 0; i < _army2.size(); i++){
-        AI::AIManager::getInstance().destroyEntity(_army2[i]->getGUID());
-    }
-    _army2.clear();
-    SAFE_DELETE(_faction1);
-    SAFE_DELETE(_faction2);
+
     return Scene::deinitializeAI(continueOnErrors);
 }
 

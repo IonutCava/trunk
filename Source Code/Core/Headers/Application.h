@@ -23,10 +23,13 @@
 #ifndef _APPLICATION_H_
 #define _APPLICATION_H_
 
-#include <fstream>
+
 #include "Core/Headers/Singleton.h"
 #include "Core/Math/Headers/MathClasses.h"
 #include "Hardware/Platform/Headers/Thread.h"
+
+#include <fstream>
+#include <boost/atomic.hpp>
 
 class Kernel;
 enum ErrorCode;
@@ -47,25 +50,29 @@ public:
     inline void setResolutionHeight(U16 h)          { _prevResolution.set(_resolution); _resolution.height = h; _screenCenter.y = h / 2;}
     inline void setResolution(U16 w, U16 h)         { _prevResolution.set(_resolution); _resolution.set(w,h); _screenCenter.set(_resolution / 2);}
 
-    inline void RequestShutdown()                   {_requestShutdown = true;}
-    inline void CancelShutdown()                    {_requestShutdown = false;}
-    inline bool ShutdownRequested()           const {return _requestShutdown;}
-    inline Kernel* const getKernel()          const {return _kernel;}
+    inline void RequestShutdown()                   { _requestShutdown = true;  }
+    inline void CancelShutdown()                    { _requestShutdown = false; }
+    inline bool ShutdownRequested()           const { return _requestShutdown;  }
+    inline Kernel* const getKernel()          const { return _kernel; }
 
-    inline const boost::thread::id&  getMainThreadId()               const {return _threadId;}
-    inline bool isMainThread()                                       const {return (_threadId == boost::this_thread::get_id());}
-    inline void setMemoryLogFile(const std::string& fileName)              {_memLogBuffer.open(fileName.c_str());}
+    inline const boost::thread::id&  getMainThreadId()               const { return _threadId; }
+    inline bool isMainThread()                                       const { return (_threadId == boost::this_thread::get_id()); }
+    inline void setMemoryLogFile(const std::string& fileName)              { _memLogBuffer.open(fileName.c_str()); }
     ///Append to "_memLogBuffer" the string contained in "logMsg" and update _totalMemoryOcuppied with "size" accordingly based on the "allocation" flag
     void logMemoryOperation(bool allocation, const char* logMsg, size_t size);
 
-    inline bool hasFocus()                 const {return _hasFocus;}
-    inline void hasFocus(const bool state)       {_hasFocus = state;}
+    inline bool hasFocus()                 const { return _hasFocus; }
+    inline void hasFocus(const bool state)       { _hasFocus = state; }
 
-    inline bool isFullScreen()                 const {return _isFullscreen;}
-    inline void isFullScreen(const bool state)       {_isFullscreen = state;}
+    inline bool isFullScreen()                 const { return _isFullscreen;  }
+    inline void isFullScreen(const bool state)       { _isFullscreen = state; }
 
-    inline bool mainLoopActive()           const { return _mainLoopActive; }
+
+    inline bool mainLoopActive()           const { return _mainLoopActive;  }
     inline void mainLoopActive(bool state)       { _mainLoopActive = state; }
+
+    inline bool mainLoopPaused()           const { return _mainLoopPaused;  }
+    inline void mainLoopPaused(bool state)       { _mainLoopPaused = state; }
 
     void snapCursorToPosition(U16 x, U16 y) const;
 
@@ -73,8 +80,8 @@ public:
         snapCursorToPosition(_screenCenter.x, _screenCenter.y);
     }
 
-    inline void      throwError(ErrorCode err) { _errorCode = err; }
-    inline ErrorCode errorCode()         const { return _errorCode; }
+    inline void      throwError(ErrorCode err)       { _errorCode = err; }
+    inline ErrorCode errorCode()               const { return _errorCode; }
 
 private:
     Application();
@@ -83,8 +90,9 @@ private:
 private:
     ErrorCode _errorCode;
     /// this is true when we are inside the main app loop
-    bool      _mainLoopActive;
-    bool      _requestShutdown;
+    boost::atomic_bool  _mainLoopActive;
+    boost::atomic_bool  _mainLoopPaused;
+    boost::atomic_bool  _requestShutdown;
     /// this is false if the window/application lost focus (e.g. clicked another window, alt + tab, etc)
     bool      _hasFocus; 
     /// this is false if the application is running in windowed mode

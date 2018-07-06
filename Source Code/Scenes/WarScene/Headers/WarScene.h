@@ -31,6 +31,7 @@ class NPC;
 namespace AI {
     class AITeam;
     class AIEntity;
+    class WarSceneOrder;
 };
 
 class WarScene : public Scene {
@@ -65,18 +66,17 @@ private:
 
 private: //Game
     bool _sceneReady;
-    I8 _scorTeam1;
-    I8 _scorTeam2;
     U64 _lastNavMeshBuildTime;
     ///AIEntities are the "processors" behing the NPC's
-    vectorImpl<AI::AIEntity *> _army1;
-    vectorImpl<AI::AIEntity *> _army2;
+    vectorImpl<AI::AIEntity *> _army[2];
     ///NPC's are the actual game entities
-    vectorImpl<NPC *> _army1NPCs;
-    vectorImpl<NPC *> _army2NPCs;
-    SceneGraphNode*   _flags[2];
+    vectorImpl<NPC *> _armyNPCs[2];
+    SceneGraphNode*   _flag[2];
     ///Team's are factions for AIEntites so they can manage friend/foe situations
-    AI::AITeam *_faction1, *_faction2;
+    AI::AITeam *_faction[2];
+    vectorImpl<AI::WarSceneOrder* > _orders[2];
+
+    /// Testing stuff
     SceneGraphNode *_bobNode;
     SceneGraphNode *_bobNodeBody;
     SceneGraphNode *_lampLightNode;

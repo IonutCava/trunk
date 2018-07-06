@@ -31,7 +31,8 @@ namespace AI {
         EnemyInAttackRange = 1,
         EnemyDead = 2,
         WaitingIdle = 3,
-        AtTargetNode = 4
+        AtTargetNode = 4,
+        HasTargetNode = 5
     };
 
     inline const char* WarSceneFactName(GOAPFact fact) {
@@ -46,114 +47,56 @@ namespace AI {
     };
 
     enum ActionType {
-        ACTION_WAIT = 0,
-        ACTION_SCOUT = 1,
-        ACTION_APPROACH = 2,
-        ACTION_TARGET = 3,
-        ACTION_ATTACK = 4,
-        ACTION_RETREAT = 5,
-        ACTION_KILL = 6,
-        ACTION_DEFAULT = 7
+        ACTION_APPROACH_FLAG = 0,
+        ACTION_CAPTURE_FLAG = 1,
+        ACTION_RETURN_FLAG = 2
     };
     
-    enum Order {
-        ORDER_FIND_ENEMY = 0,
-        ORDER_KILL_ENEMY = 1,
-        ORDER_WAIT = 2
-    };
-
-    class WarSceneGoal : public GOAPGoal {
-        public:
-            WarSceneGoal(const std::string& name);
-            WarSceneGoal(GOAPGoal const & other);
-            virtual ~WarSceneGoal();
-            void update(const U64 deltaTime);
-            void evaluateRelevancy(AISceneImpl* const AIScene);
-    
-        private:
-            bool _relevancyUpdateQueued;
-            AISceneImpl* _queuedScene;
-    };
-
     class WarSceneAction : public GOAPAction {
         public:
-            WarSceneAction(ActionType type, const std::string& name, F32 cost = 1.0f);
-            virtual ~WarSceneAction();
-
             inline ActionType actionType() const { return _type; }
 
-            virtual bool preAction() const;
-            virtual bool postAction() const;
+            bool preAction() const;
+            bool postAction() const;
             virtual bool checkImplDependentCondition() const {
                 return true;
             }
 
         protected:
+            WarSceneAction(ActionType type, const std::string& name, F32 cost = 1.0f);
+            virtual ~WarSceneAction();
+
+        protected:
+            friend class WarSceneAISceneImpl;
+            inline void  setParentAIScene(WarSceneAISceneImpl* const scene) {
+                _parentScene = scene;
+            }
+
+        protected:
+            WarSceneAISceneImpl* _parentScene;
             ActionType _type;
     };
 
-    class WaitAction : public WarSceneAction {
+    class ApproachFlag : public WarSceneAction {
         public:
-            WaitAction(std::string name, F32 cost = 1.0f);
-            WaitAction(WarSceneAction const & other) : WarSceneAction(other)
+            ApproachFlag(std::string name, F32 cost = 1.0f);
+            ApproachFlag(WarSceneAction const & other) : WarSceneAction(other)
             {
             }
-            bool preAction() const;
-            bool postAction() const;
     };
-    class ScoutAction : public WarSceneAction {
+    class CaptureFlag : public WarSceneAction {
         public:
-            ScoutAction(std::string name, F32 cost = 1.0f);
-            ScoutAction(WarSceneAction const & other) : WarSceneAction(other)
+            CaptureFlag(std::string name, F32 cost = 1.0f);
+            CaptureFlag(WarSceneAction const & other) : WarSceneAction(other)
             {
             }
-            bool preAction() const;
-            bool postAction() const;
     };
-    class ApproachAction : public WarSceneAction {
+    class ReturnFlag : public WarSceneAction {
         public:
-            ApproachAction(std::string name, F32 cost = 1.0f);
-            ApproachAction(WarSceneAction const & other) : WarSceneAction(other)
+            ReturnFlag(std::string name, F32 cost = 1.0f);
+            ReturnFlag(WarSceneAction const & other) : WarSceneAction(other)
             {
             }
-            bool preAction() const;
-            bool postAction() const;
-    };
-    class TargetAction : public WarSceneAction {
-        public:
-            TargetAction(std::string name, F32 cost = 1.0f);
-            TargetAction(WarSceneAction const & other) : WarSceneAction(other)
-            {
-            }
-            bool preAction() const;
-            bool postAction() const;
-    };
-    class AttackAction : public WarSceneAction {
-        public:
-            AttackAction(std::string name, F32 cost = 1.0f);
-            AttackAction(WarSceneAction const & other) : WarSceneAction(other)
-            {
-            }
-            bool preAction() const;
-            bool postAction() const;
-    };
-    class RetreatAction : public WarSceneAction {
-        public:
-            RetreatAction(std::string name, F32 cost = 1.0f);
-            RetreatAction(WarSceneAction const & other) : WarSceneAction(other)
-            {
-            }
-            bool preAction() const;
-            bool postAction() const;
-    };
-    class KillAction : public WarSceneAction {
-        public:
-            KillAction(std::string name, F32 cost = 1.0f);
-            KillAction(WarSceneAction const & other) : WarSceneAction(other)
-            {
-            }
-            bool preAction() const;
-            bool postAction() const;
     };
 };
 #endif

@@ -23,8 +23,9 @@
 #ifndef _WAR_SCENE_AI_ACTION_LIST_H_
 #define _WAR_SCENE_AI_ACTION_LIST_H_
 
+#include "AI/ActionInterface/Headers/AITeam.h"
 #include "AI/ActionInterface/Headers/AISceneImpl.h"
-#include "AESOPActions/Headers/WarSceneActions.h"
+#include "Scenes/WarScene/AESOPActions/Headers/WarSceneActions.h"
 
 namespace AI {
 enum AIMsg {
@@ -38,9 +39,10 @@ enum FactType {
     FACT_TYPE_COUNTER_SMALL  = 1,
     FACT_TYPE_COUNTER_MEDIUM = 2,
     FACT_TYPE_COUNTER_LARGE  = 3,
-    FACT_TYPE_AI_NODE        = 4,
-    FACT_TYPE_SGN_NODE       = 5,
-    FactType_PLACEHOLDER     = 6
+    FACT_TYPE_TOGGLE_STATE   = 4,
+    FACT_TYPE_AI_NODE        = 5,
+    FACT_TYPE_SGN_NODE       = 6,
+    FactType_PLACEHOLDER     = 7
 };
 
 template<typename T, FactType F>
@@ -70,14 +72,20 @@ protected:
 typedef WorkingMemoryFact<AIEntity*, FACT_TYPE_AI_NODE>          AINodeFact;
 typedef WorkingMemoryFact<SceneGraphNode*, FACT_TYPE_SGN_NODE>   SGNNodeFact;
 typedef WorkingMemoryFact<vec3<F32>, FACT_TYPE_POSITION>         PositionFact;
-typedef WorkingMemoryFact<U8,  FACT_TYPE_COUNTER_SMALL>          SmallCounterFact;
-typedef WorkingMemoryFact<U16, FACT_TYPE_COUNTER_MEDIUM>         MediumCounterFact;
-typedef WorkingMemoryFact<U32, FACT_TYPE_COUNTER_LARGE>          LargeCounterFact;
-
+typedef WorkingMemoryFact<U8,   FACT_TYPE_COUNTER_SMALL>         SmallCounterFact;
+typedef WorkingMemoryFact<U16,  FACT_TYPE_COUNTER_MEDIUM>        MediumCounterFact;
+typedef WorkingMemoryFact<U32,  FACT_TYPE_COUNTER_LARGE>         LargeCounterFact;
+typedef WorkingMemoryFact<bool, FACT_TYPE_TOGGLE_STATE>          ToggleStateFact;
 class WorkingMemory {
 public:
     WorkingMemory() 
     {
+        _hasEnemyFlag.value(false);
+        _enemyHasFlag.value(false);
+        _enemyFlagNear.value(false);
+        _teamMateHasFlag.value(false);
+        _flagCarrierNear.value(false);
+        _enemyFlagCarrierNear.value(false);
         _health.value(100);
         _currentTargetEntity.value(nullptr);  
         _staticDataUpdated = false;
@@ -90,11 +98,34 @@ public:
            SmallCounterFact _health;
            SGNNodeFact      _currentTargetEntity;
            PositionFact     _currentTargetPosition;
-
+           ToggleStateFact  _hasEnemyFlag;
+           ToggleStateFact  _enemyHasFlag;
+           ToggleStateFact  _teamMateHasFlag;
+           ToggleStateFact  _enemyFlagNear;
+           ToggleStateFact  _enemyFlagCarrierNear;
+           ToggleStateFact  _flagCarrierNear;
     bool _staticDataUpdated;
 };
 
-class WarSceneAISceneImpl : public AI::AISceneImpl {
+class WarSceneOrder : public Order {
+public :
+    enum WarOrder {
+        ORDER_FIND_ENEMY_FLAG = 0,
+        ORDER_CAPTURE_ENEMY_FLAG = 1,
+        ORDER_RETURN_ENEMY_FLAG = 2,
+        ORDER_PROTECT_FLAG_CARRIER = 3,
+        ORDER_RETRIEVE_FLAG = 4,
+        ORDER_PLACEHOLDER = 5
+    };
+    WarSceneOrder(WarOrder order) : Order(static_cast<U32>(order)) 
+    {
+    }
+    void evaluatePriority();
+    void lock()   { Order::lock();   }
+    void unlock() { Order::unlock(); }
+};
+
+class WarSceneAISceneImpl : public AISceneImpl {
 public:
     WarSceneAISceneImpl();
     ~WarSceneAISceneImpl();
@@ -104,7 +135,6 @@ public:
     void update(const U64 deltaTime, NPC* unitRef = nullptr);
     void processMessage(AIEntity* sender, AIMsg msg,const cdiggins::any& msg_content);
     void registerAction(GOAPAction* const action);
-    void registerGoal(const GOAPGoal& goal);
 
     static void registerFlags(SceneGraphNode* const flag1, SceneGraphNode* const flag2) {
         WorkingMemory::_flags[0].value(flag1);
@@ -113,13 +143,18 @@ public:
         WorkingMemory::_flags[1].belief(1.0f);
     }
 
+protected:
+    friend class WarSceneAction;
+    bool preAction(ActionType type);
+    bool postAction(ActionType type);
+
 private:
+    void requestOrders();
     void updatePositions();
     // Creates a copy of the specified object and adds it to the action vector and the ActionSet
 
     void handlePlan(const GOAPPlan& plan);
     bool performAction(const GOAPAction* planStep);
-    void receiveOrder(AI::Order order);
     void init();
 
 private:
@@ -128,7 +163,6 @@ private:
     GOAPGoal* _activeGoal;
     bool _newPlan;
     bool _newPlanSuccess;
-    bool _orderReceived;
     U8   _visualSensorUpdateCounter;
     WorkingMemory _workingMemory;
 };

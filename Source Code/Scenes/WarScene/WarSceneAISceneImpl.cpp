@@ -1,9 +1,10 @@
 #include "Headers/WarSceneAISceneImpl.h"
+#include "AI/Sensors/Headers/VisualSensor.h"
+#include "AI/ActionInterface/Headers/AITeam.h"
 
 #include "Managers/Headers/AIManager.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "AI/Sensors/Headers/VisualSensor.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
 using namespace AI;
@@ -20,7 +21,6 @@ WarSceneAISceneImpl::WarSceneAISceneImpl() : AISceneImpl(),
                                             _tickCount(0),
                                             _newPlan(false),
                                             _newPlanSuccess(false),
-                                            _orderReceived(false),
                                             _activeGoal(nullptr),
                                             _visualSensorUpdateCounter(0),
                                             _deltaTime(0ULL)
@@ -38,20 +38,12 @@ WarSceneAISceneImpl::~WarSceneAISceneImpl()
 void WarSceneAISceneImpl::registerAction(GOAPAction* const action) {
     WarSceneAction* const warAction = dynamic_cast<WarSceneAction*>(action);
     switch(warAction->actionType()){
-        case ACTION_WAIT     : AISceneImpl::registerAction(New WaitAction(*warAction));     return;
-        case ACTION_SCOUT    : AISceneImpl::registerAction(New ScoutAction(*warAction));    return;
-        case ACTION_APPROACH : AISceneImpl::registerAction(New ApproachAction(*warAction)); return;
-        case ACTION_TARGET   : AISceneImpl::registerAction(New TargetAction(*warAction));   return;
-        case ACTION_ATTACK   : AISceneImpl::registerAction(New AttackAction(*warAction));   return;
-        case ACTION_RETREAT  : AISceneImpl::registerAction(New RetreatAction(*warAction));  return;
-        case ACTION_KILL     : AISceneImpl::registerAction(New KillAction(*warAction));     return;
+        case ACTION_APPROACH_FLAG : AISceneImpl::registerAction(New ApproachFlag(*warAction)); return;
+        case ACTION_CAPTURE_FLAG  : AISceneImpl::registerAction(New CaptureFlag(*warAction));  return;
+        case ACTION_RETURN_FLAG   : AISceneImpl::registerAction(New ReturnFlag(*warAction));   return;
     };
 
     AISceneImpl::registerAction(New WarSceneAction(*warAction));
-}
-
-void WarSceneAISceneImpl::registerGoal(const GOAPGoal& goal) {
-    AISceneImpl::registerGoal(WarSceneGoal(goal));
 }
 
 static const U32 myTeamContainer = 0;
@@ -64,15 +56,15 @@ void WarSceneAISceneImpl::init() {
 
     if (sensor) {
         AITeam* currentTeam = _entity->getTeam();
-        const AITeam::teamMap& teamAgents = currentTeam->getTeamMembers();
-        FOR_EACH(const AITeam::teamMap::value_type& member, teamAgents) {
+        const AITeam::TeamMap& teamAgents = currentTeam->getTeamMembers();
+        FOR_EACH(const AITeam::TeamMap::value_type& member, teamAgents) {
             sensor->followSceneGraphNode(myTeamContainer, member.second->getUnitRef()->getBoundNode());
         }
 
         AITeam* enemyTeam = AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
         if (enemyTeam != nullptr) {
-            const AITeam::teamMap& enemyMembers = enemyTeam->getTeamMembers();
-            FOR_EACH(const AITeam::teamMap::value_type& enemy, enemyMembers) {
+            const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
+            FOR_EACH(const AITeam::TeamMap::value_type& enemy, enemyMembers) {
                 sensor->followSceneGraphNode(enemyTeamContainer, enemy.second->getUnitRef()->getBoundNode());
             }
         }
@@ -82,19 +74,129 @@ void WarSceneAISceneImpl::init() {
     }
 }
 
-void WarSceneAISceneImpl::receiveOrder(AI::Order order) {
-    switch(order){
-        case ORDER_FIND_ENEMY : {
-            activateGoal("Find Enemy");
-        }; break;
-        case ORDER_KILL_ENEMY : {
-            activateGoal("Attack Enemy");
-        }; break;
-        case ORDER_WAIT : {
-            activateGoal("Wait");
-        }; break;
+void WarSceneAISceneImpl::requestOrders() {
+    const vectorImpl<Order* >& orders = _entity->getTeam()->requestOrders();
+    U8 priority[WarSceneOrder::ORDER_PLACEHOLDER];
+    memset(priority, 0, sizeof(U8) * WarSceneOrder::ORDER_PLACEHOLDER);
+
+    clearActiveGoals();
+    for (GOAPGoal& goal : goalList()) {
+        goal.relevancy(0.0f);
+        activateGoal(goal.getName());
+    }
+
+    for (Order* const order : orders) {
+        WarSceneOrder::WarOrder orderId = static_cast<WarSceneOrder::WarOrder>(dynamic_cast<WarSceneOrder*>(order)->getId());
+        switch (orderId) {
+            case WarSceneOrder::ORDER_FIND_ENEMY_FLAG : {
+                if (!_workingMemory._hasEnemyFlag.value()) {
+                    priority[orderId] = _workingMemory._teamMateHasFlag.value() ? 0 : 128;
+
+                    if (!_workingMemory._enemyHasFlag.value()) {
+                        priority[orderId]++;
+                    }
+                    if (!_workingMemory._enemyFlagNear.value()) {
+                        priority[orderId]++;
+                    }
+                }
+            } break;
+            case WarSceneOrder::ORDER_CAPTURE_ENEMY_FLAG : {
+                if (_workingMemory._enemyFlagNear.value()) {
+                    priority[orderId] = _workingMemory._teamMateHasFlag.value() ? 0 : 128;
+                    if (!_workingMemory._hasEnemyFlag.value()) {
+                        priority[orderId]++;
+                    }
+                    if (_workingMemory._enemyHasFlag.value()) {
+                        priority[orderId]++;
+                    }
+                }
+            } break;
+            case WarSceneOrder::ORDER_RETURN_ENEMY_FLAG : {
+                if (_workingMemory._hasEnemyFlag.value()) {
+                    priority[orderId] = 255;
+                }
+            } break;
+            case WarSceneOrder::ORDER_PROTECT_FLAG_CARRIER : {
+                if (!_workingMemory._hasEnemyFlag.value() && _workingMemory._teamMateHasFlag.value()) {
+                    priority[orderId] = 128;
+                    if (_workingMemory._flagCarrierNear.value()) {
+                        priority[orderId]++;
+                    }
+                }
+            } break;
+            case WarSceneOrder::ORDER_RETRIEVE_FLAG : {
+                if (_workingMemory._enemyHasFlag.value()) {
+                    priority[orderId] = 128;
+                    if (_workingMemory._enemyFlagCarrierNear.value()) {
+                        priority[orderId]++;
+                    }
+                }
+            } break;
+        } 
+    }
+
+    for (GOAPGoal& goal : goalList()) {
+        if (goal.getName().compare("Find enemy flag") == 0) {
+            goal.relevancy(priority[WarSceneOrder::ORDER_FIND_ENEMY_FLAG]);
+        }
+        if (goal.getName().compare("Capture enemy flag") == 0) {
+            goal.relevancy(priority[WarSceneOrder::ORDER_CAPTURE_ENEMY_FLAG]);
+        }
+        if (goal.getName().compare("Return enemy flag") == 0) {
+            goal.relevancy(priority[WarSceneOrder::ORDER_RETURN_ENEMY_FLAG]);
+        }
+        if (goal.getName().compare("Protect flag carrier") == 0) {
+            goal.relevancy(priority[WarSceneOrder::ORDER_PROTECT_FLAG_CARRIER]);
+        }
+        if (goal.getName().compare("Retrieve flag") == 0) {
+            goal.relevancy(priority[WarSceneOrder::ORDER_RETRIEVE_FLAG]);
+        }
+    }
+    if ((_activeGoal = findRelevantGoal()) != nullptr) {
+        PRINT_FN("Current goal: [ %s ]", _activeGoal->getName().c_str());
+        if (_activeGoal->plan(worldState(), actionSet())) {
+            popActiveGoal(_activeGoal);
+            _newPlan = true;
+        }
+    }
+}
+
+bool WarSceneAISceneImpl::preAction(ActionType type) {
+    switch (type) {
+        case ACTION_APPROACH_FLAG : {
+            PRINT_FN("Starting approach flag action");
+        } break;
+        case ACTION_CAPTURE_FLAG : {
+            PRINT_FN("Starting capture flag action");
+        } break;
+        case ACTION_RETURN_FLAG : {
+            PRINT_FN("Starting return flag action");
+        } break;
+        default : {
+            PRINT_FN("Starting normal action");
+        } break;
     };
-    _orderReceived = true;
+        
+    return true;
+}
+
+bool WarSceneAISceneImpl::postAction(ActionType type) {
+    switch (type) {
+        case ACTION_APPROACH_FLAG : {
+            PRINT_FN("Approach flag action over");
+        } break;
+        case ACTION_CAPTURE_FLAG : {
+            PRINT_FN("Capture flag action over");
+        } break;
+        case ACTION_RETURN_FLAG : {
+            PRINT_FN("Return flag action over");
+        } break;
+        default : {
+            PRINT_FN("Normal action over");
+        } break;
+    };
+        
+    return true;
 }
 
 void WarSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content){
@@ -103,7 +205,6 @@ void WarSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg, const cdig
 void WarSceneAISceneImpl::updatePositions(){
 }
 
-static U8 stage = 0;
 void WarSceneAISceneImpl::processInput(const U64 deltaTime) {
     if (!_entity) {
         return;
@@ -140,19 +241,6 @@ void WarSceneAISceneImpl::processInput(const U64 deltaTime) {
             _deltaTime = 0;
         }
     }
-
-    if (stage == 0) {
-        receiveOrder(ORDER_FIND_ENEMY);
-        stage = 1;
-    }
-    if (stage == 2) {
-        receiveOrder(ORDER_KILL_ENEMY);
-        stage = 3;
-    }
-    if (stage == 4) {
-        receiveOrder(ORDER_WAIT);
-        stage = 5;
-    }
 }
 
 void WarSceneAISceneImpl::processData(const U64 deltaTime) {
@@ -166,15 +254,8 @@ void WarSceneAISceneImpl::processData(const U64 deltaTime) {
         _newPlan = false;
     }
 
-    if (_orderReceived) {
-        if ((_activeGoal = findRelevantGoal()) != nullptr) {
-           PRINT_FN("Current goal: [ %s ]", _activeGoal->getName().c_str());
-           if (_activeGoal->plan(worldState(), actionSet())) {
-                popActiveGoal(_activeGoal);
-                _newPlan = true;
-           }
-        }
-        _orderReceived = false;
+    if (!_activeGoal && !goalList().empty()) {
+        requestOrders();
     }
 
     updatePositions();
@@ -203,13 +284,13 @@ void WarSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef){
     if (!_workingMemory._staticDataUpdated) {
         AITeam* team1 = AIManager::getInstance().getTeamByID(0);
         if (team1 != nullptr) {
-            const AITeam::teamMap& team1Members = team1->getTeamMembers();
+            const AITeam::TeamMap& team1Members = team1->getTeamMembers();
             _workingMemory._team1Count.value(static_cast<U8>(team1Members.size()));
             _workingMemory._team1Count.belief(1.0f);
         }
         AITeam* team2 = AIManager::getInstance().getTeamByID(1);
         if (team2 != nullptr) {
-            const AITeam::teamMap& team2Members = team2->getTeamMembers();
+            const AITeam::TeamMap& team2Members = team2->getTeamMembers();
             _workingMemory._team2Count.value(static_cast<U8>(team2Members.size()));
             _workingMemory._team2Count.belief(1.0f);
         }
@@ -240,8 +321,6 @@ void WarSceneAISceneImpl::handlePlan(const GOAPPlan& plan) {
    for (it = plan.begin(); it != plan.end(); it++) {
       performAction(*it);
    }
-   stage += 1;
-   stage = stage % 6;
 }
 
 bool WarSceneAISceneImpl::performAction(const GOAPAction* planStep) {

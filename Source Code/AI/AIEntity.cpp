@@ -1,13 +1,15 @@
 #include "Headers/AIEntity.h"
-#include "ActionInterface/Headers/AISceneImpl.h"
+
+#include "AI/PathFinding/Headers/DivideCrowd.h"
+#include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
+#include "AI/ActionInterface/Headers/AITeam.h"
+#include "AI/ActionInterface/Headers/AISceneImpl.h"
 
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "PathFinding/Waypoints/Headers/WaypointGraph.h"  ///< For waypoint movement
 #include "PathFinding/NavMeshes/Headers/NavMesh.h" ///< For NavMesh movement
 #include "Dynamics/Entities/Units/Headers/NPC.h"
-#include "AI/PathFinding/Headers/DivideCrowd.h"
-#include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 #include "Managers/Headers/AIManager.h"
 
 using namespace AI;
@@ -158,19 +160,19 @@ void AIEntity::init() {
     DIVIDE_ASSERT(_AISceneImpl != nullptr, "AIEntity error: Can't init entity without a proper AISceneImpl");
     _AISceneImpl->init();
 }
+ 
+I32 AIEntity::getTeamID() const { 
+    if (_teamPtr != nullptr) {
+        return _teamPtr->getTeamID();
+    } 
+    return -1; 
+}
 
-void AIEntity::setTeam(AITeam* const teamPtr) {
-    ReadLock r_lock(_updateMutex);
-    if (_teamPtr) {
-        //Remove from old team
+void AIEntity::setTeamPtr(AITeam* const teamPtr) {
+    if (_teamPtr != nullptr) {
         _teamPtr->removeTeamMember(this);
     }
-    //Update our team
     _teamPtr = teamPtr;
-    //Add our self to the new team
-    _teamPtr->addTeamMember(this);
-
-    resetCrowd();
 }
 
 void AIEntity::addUnitRef(NPC* const npc) {
@@ -178,29 +180,6 @@ void AIEntity::addUnitRef(NPC* const npc) {
     if (_unitRef) {
         load(_unitRef->getPosition());
     }
-}
-
-bool AIEntity::addFriend(AIEntity* const friendEntity) {
-    ReadLock r_lock(_updateMutex);
-    AITeam* friendTeam = friendEntity->getTeam();
-    //If no team, check if our friend has a team and add our self to it
-    if (!_teamPtr) {
-        //If our friend has a team ...
-        if (friendTeam) {
-            ///Create friendship
-            friendTeam->addTeamMember(this);
-            _teamPtr = friendTeam;
-            return true;
-        }
-        return false;
-    }
-    //If we have team, add friend to our team
-    _teamPtr->addTeamMember(friendEntity);
-    //If our friend isn't on our team, add him
-    if (!friendTeam) {
-        friendEntity->setTeam(_teamPtr);
-    }
-    return true;
 }
 
 D32 AIEntity::getAgentHeight() const {
@@ -211,12 +190,12 @@ D32 AIEntity::getAgentRadius() const {
     return _detourCrowd ? _detourCrowd->getAgentRadius() : 0.0;
 }
 
-void AIEntity::resetCrowd(){
+void AIEntity::resetCrowd() {
     if (_detourCrowd) {
         unload();
     }
 
-    _detourCrowd = AIManager::getInstance().getCrowd(_teamPtr->getTeamID(), getAgentRadiusCategory());
+    _detourCrowd = _teamPtr->getCrowd(getAgentRadiusCategory());
 
     if (_detourCrowd) {
         _destination = _detourCrowd->getLastDestination();

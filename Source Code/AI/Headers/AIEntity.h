@@ -22,24 +22,26 @@
 #ifndef _AI_ENTITY_H_
 #define _AI_ENTITY_H_
 
-#include "Core/Headers/cdigginsAny.h"
 #include "AI/Sensors/Headers/AudioSensor.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
-#include "AI/ActionInterface/Headers/AITeam.h"
+
+#include "Core/Headers/cdigginsAny.h"
 #include "Utility/Headers/GUIDWrapper.h"
+#include "Hardware/Platform/Headers/SharedMutex.h"
 
 class NPC;
 struct dtCrowdAgent;
 class SceneGraphNode;
 
 namespace AI {
+class AITeam;
 class AISceneImpl;
 enum  AIMsg; //< scene dependent message list
+class Order;
 namespace Navigation {
     class DivideRecast;
     class DivideDtCrowd;
 };
-
 
 /// Based on OgreCrowd.
 class AIEntity : public GUIDWrapper {
@@ -66,18 +68,7 @@ public:
     Sensor* getSensor(SensorType type);
 
     inline AITeam* getTeam()   const { return _teamPtr; }
-    inline I32     getTeamID() const { 
-        if (_teamPtr != nullptr) {
-            return _teamPtr->getTeamID();
-        } 
-        return -1; 
-    }
-
-    ///Set a team for this Entity. If the entity belonged to a different team, remove it from that team first
-    void setTeam(AITeam* const teamPtr);
-    ///Add a friend to our team
-    bool addFriend(AIEntity* const friendEntity);
-
+           I32     getTeamID() const;
     const ::std::string& getName() const {return _name;}
 
            void addUnitRef(NPC* const npc);
@@ -157,7 +148,8 @@ protected:
     void setDestination(const vec3<F32>& destination);
 
 protected:
-    friend class AIManager;
+    friend class AITeam;
+    void setTeamPtr(AITeam* const teamPtr);
     void processInput(const U64 deltaTime);
     void processData(const U64 deltaTime);
     void update(const U64 deltaTime);

@@ -50,15 +50,12 @@ namespace AI {
             GOAPGoal(const std::string& name);
             virtual ~GOAPGoal();
 
-            inline F32 relevancy() const { return _relevancy; }
-
-            virtual void evaluateRelevancy(AISceneImpl* const AIScene) {
-                _relevancy = 1.0f;
-            }
+            inline F32  relevancy()              const { return _relevancy; }
+            inline void relevancy(F32 relevancy)       { _relevancy = relevancy; }
 
             const std::string& getName() const { return name_; }
 
-            bool plan(const GOAPWorldState& worldState, const GOAPActionSet& actionSet);
+            virtual bool plan(const GOAPWorldState& worldState, const GOAPActionSet& actionSet);
 
             const GOAPPlan& getCurrentPlan() const;
     

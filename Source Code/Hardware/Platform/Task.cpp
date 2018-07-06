@@ -51,7 +51,7 @@ void Task::run(){
     //try	{ //< threadpool does not support exceptions
         D_PRINT_FN(Locale::get("TASK_START_THREAD"), boost::this_thread::get_id());
         while(true) {
-            while (_paused) {
+            while (_paused || Application::getInstance().mainLoopPaused()) {
                 boost::this_thread::sleep_for(boost::chrono::milliseconds(_tickIntervalMS > 0 ? _tickIntervalMS : 10));
             }
             if (_end || Application::getInstance().ShutdownRequested()) {

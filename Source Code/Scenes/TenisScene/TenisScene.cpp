@@ -1,6 +1,7 @@
 #include "Headers/TenisScene.h"
 #include "Headers/TenisSceneAISceneImpl.h"
 
+#include "AI/ActionInterface/Headers/AITeam.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
@@ -299,23 +300,17 @@ bool TenisScene::initializeAI(bool continueOnErrors){
     _team1 = New AI::AITeam(1);
     _team2 = New AI::AITeam(2);
 
-    _aiPlayer1->setTeam(_team1);
-    state = _aiPlayer2->addFriend(_aiPlayer1);
     if(state || continueOnErrors){
-        _aiPlayer3->setTeam(_team2);
-        state = _aiPlayer4->addFriend(_aiPlayer3);
-    }
-    if(state || continueOnErrors){
-        state = AI::AIManager::getInstance().addEntity(_aiPlayer1);
+        state = AI::AIManager::getInstance().registerEntity(0, _aiPlayer1);
     }
     if(state || continueOnErrors) {
-        state = AI::AIManager::getInstance().addEntity(_aiPlayer2);
+        state = AI::AIManager::getInstance().registerEntity(0, _aiPlayer2);
     }
     if(state || continueOnErrors) {
-        state = AI::AIManager::getInstance().addEntity(_aiPlayer3);
+        state = AI::AIManager::getInstance().registerEntity(1, _aiPlayer3);
     }
     if(state || continueOnErrors) {
-        state = AI::AIManager::getInstance().addEntity(_aiPlayer4);
+        state = AI::AIManager::getInstance().registerEntity(1, _aiPlayer4);
     }
     if(state || continueOnErrors){
     //----------------------- AI controlled units (NPC's) ---------------------//
@@ -336,10 +331,15 @@ bool TenisScene::initializeAI(bool continueOnErrors){
 
 bool TenisScene::deinitializeAI(bool continueOnErrors){
     AI::AIManager::getInstance().pauseUpdate(true);
-    AI::AIManager::getInstance().destroyEntity(_aiPlayer1->getGUID());
-    AI::AIManager::getInstance().destroyEntity(_aiPlayer2->getGUID());
-    AI::AIManager::getInstance().destroyEntity(_aiPlayer3->getGUID());
-    AI::AIManager::getInstance().destroyEntity(_aiPlayer4->getGUID());
+
+    AI::AIManager::getInstance().unregisterEntity(_aiPlayer1);
+    AI::AIManager::getInstance().unregisterEntity(_aiPlayer2);
+    AI::AIManager::getInstance().unregisterEntity(_aiPlayer3);
+    AI::AIManager::getInstance().unregisterEntity(_aiPlayer4);
+    SAFE_DELETE(_aiPlayer1);
+    SAFE_DELETE(_aiPlayer2);
+    SAFE_DELETE(_aiPlayer3);
+    SAFE_DELETE(_aiPlayer4);
     SAFE_DELETE(_player1);
     SAFE_DELETE(_player2);
     SAFE_DELETE(_player3);

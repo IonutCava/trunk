@@ -23,58 +23,131 @@
 #ifndef _AI_TEAM_H_
 #define _AI_TEAM_H_
 
-#include "core.h"
+#include "AI/Headers/AIEntity.h"
+
 namespace AI {
 
 namespace Navigation{
     class DivideDtCrowd;
+    class NavigationMesh;
 };
 
-class AIEntity;
-class AITeam {
-   const static int maxAgentRadiusCount = 3;
+class Order {
+public:
+    Order(U32 id) : _id(id),
+                    _locked(false)
+    {
+    }
+    inline U32 getId() const { return _id; }
+    inline  bool locked() const { return _locked; }
+    virtual void lock()   { _locked = true;  }
+    virtual void unlock() { _locked = false; }
+protected:
+    U32 _id;
+    bool _locked;
+};
+
+class AITeam : public GUIDWrapper{
 public:
 
-    typedef Unordered_map<I64, AIEntity*> teamMap;
-    typedef Unordered_map<AIEntity*, F32 > memberVariable;
+public:
+    typedef Unordered_map<AIEntity::PresetAgentRadius, Navigation::DivideDtCrowd*> AITeamCrowd;
+    typedef Unordered_map<AIEntity*, F32 > MemberVariable;
+    typedef Unordered_map<I64, AIEntity*> TeamMap;
 
     AITeam(U32 id);
     ~AITeam();
 
-    void update(const U64 deltaTime);
+    inline Navigation::DivideDtCrowd* const getCrowd(AIEntity::PresetAgentRadius radius) const {
+        ReadLock r_lock(_crowdMutex);
+        AITeamCrowd::const_iterator it = _aiTeamCrowd.find(radius);
+        if (it != _aiTeamCrowd.end()) {
+            return it->second;
+        }
+        return nullptr;
+    }
+
     bool addTeamMember(AIEntity* entity);
     bool removeTeamMember(AIEntity* entity);
     bool addEnemyTeam(U32 enemyTeamID);
     bool removeEnemyTeam(U32 enemyTeamID);
 
     inline void setTeamID(U32 value) { _teamID = value; }
-
     inline U32  getTeamID() const { return  _teamID; }
-    inline const teamMap& getTeamMembers()  const {
-        return _team;
-    }
-
-    inline I32 getEnemyTeamID(U32 index) {
+    inline I32  getEnemyTeamID(U32 index) {
         ReadLock r_lock(_enemyTeamLock);
         if (_enemyTeams.size() <= index) {
             return -1;
         }
         return _enemyTeams[index];
     }
-    inline memberVariable& getMemberVariable() { return _memberVariable; }
+
+    inline const TeamMap&  getTeamMembers()    const {  return _team;  }
+    inline MemberVariable& getMemberVariable()       { return _memberVariable; }
    
-private:
-    I32 findEnemyTeamIndex(U32 enemyTeamID);
+    inline void clearOrders() {
+        WriteLock w_lock(_orderMutex);
+        _orders.clear();
+    }
+    inline void addOrder(Order* const order) {
+        assert(order != nullptr);
+        WriteLock w_lock(_orderMutex);
+        if (findOrder(order) == _orders.end()){
+            _orders.push_back(order);
+        }
+    }
+
+    inline void removeOrder(Order* const order) {
+        assert(order != nullptr);
+        WriteLock w_lock(_orderMutex);
+        vectorImpl<Order* >::const_iterator it = findOrder(order);
+        if (it != _orders.end()){
+            _orders.erase(it);
+        }
+    }
+
+    const vectorImpl<Order* >& requestOrders() const { return _orders; }
+
+protected:
+    friend class AIManager;
+    /// Update the crowding system
+    void resetCrowd();
+    void processInput(const U64 deltaTime);
+    void processData(const U64 deltaTime);
+    void update(const U64 deltaTime);
+    void init();
+    void addCrowd(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* crowd);
+    void removeCrowd(AIEntity::PresetAgentRadius radius);
+
+protected:
+    inline vectorImpl<Order* >::const_iterator findOrder(Order* const order) const {
+        assert(order != nullptr);
+        U32 orderId = order->getId();
+        return std::find_if(_orders.begin(), _orders.end(), [&orderId](Order* const order) { 
+                                                                return orderId == order->getId(); 
+                                                            });
+    }
+    inline vectorImpl<U32 >::const_iterator AITeam::findEnemyTeamEntry(U32 enemyTeamID) const {
+        ReadLock r_lock(_enemyTeamLock);
+        return std::find_if(_enemyTeams.begin(), _enemyTeams.end(), [&enemyTeamID](U32 id) { 
+                                                                        return id == enemyTeamID; 
+                                                                    });
+    }
+
+protected:
+    mutable SharedLock _orderMutex;
 
 private:
     U32 _teamID;
-    teamMap  _team;
+    TeamMap  _team;
     /// Container with data per team member. For example a map of distances
-    memberVariable _memberVariable;
+    MemberVariable _memberVariable;
+    AITeamCrowd        _aiTeamCrowd;
     mutable SharedLock _updateMutex;
-
+    mutable SharedLock _crowdMutex;
     mutable SharedLock _enemyTeamLock;
     vectorImpl<U32 >   _enemyTeams;
+    vectorImpl<Order* > _orders;
 };
 
 };

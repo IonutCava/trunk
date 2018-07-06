@@ -88,13 +88,13 @@ void Kernel::idle(){
     FrameListenerManager::getInstance().idle();
 
     ParamHandler& par = ParamHandler::getInstance();
-
+    
     _freezeGUITime  = par.getParam("freezeGUITime", false);
     bool freezeLoopTime = par.getParam("freezeLoopTime", false);
     if (freezeLoopTime != _freezeLoopTime) {
         _freezeLoopTime = freezeLoopTime;
         _currentTimeFrozen = _currentTime;
-        AI::AIManager::getInstance().pauseUpdate(freezeLoopTime);
+        Application::getInstance().mainLoopPaused(_freezeLoopTime);
     }
 
     std::string pendingLanguage = par.getParam<std::string>("language");

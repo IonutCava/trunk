@@ -27,6 +27,7 @@
 #include "AI/Headers/AIEntity.h"
 #include "Core/Headers/cdigginsAny.h"
 #include <boost/noncopyable.hpp>
+#include <boost/atomic.hpp>
 
 class Texture;
 namespace AI {
@@ -73,12 +74,18 @@ public:
         return nullptr;
     }
 
-    inline const vectorImpl<GOAPGoal >& goalList()  const { return _goals; }
-    inline const GOAPActionSet&         actionSet() const { return _actionSet; }
+    inline const vectorImpl<GOAPGoal >& goalListConst() const { return _goals; }
+    inline const GOAPActionSet&         actionSet()     const { return _actionSet; }
+
 
 protected:
     friend class AIEntity;
+    inline vectorImpl<GOAPGoal >& goalList() { return _goals; }
     inline GOAPActionSet&  actionSetPtr() { return _actionSet; }
+
+    inline void clearActiveGoals() {
+        _activeGoals.clear();
+    }
     /// Although we want the goal to be activated, it might not be the most relevant in the current scene state
     inline bool activateGoal(const std::string& name) {
         GOAPGoal* goal = findGoal(name);
@@ -94,11 +101,6 @@ protected:
         if (_activeGoals.empty()) {
             return nullptr;
         }
-
-        for (GOAPGoal* activeGoal : _activeGoals) {
-            activeGoal->evaluateRelevancy(this);
-        }
-        // Sort by previous relevancy (last update call hasn't been processed yet)
         std::sort(_activeGoals.begin(), _activeGoals.end(), [](GOAPGoal const* a, GOAPGoal const* b) {
                                                                 return a->relevancy() < b->relevancy();
                                                             });
@@ -132,7 +134,7 @@ protected:
 
 protected:
 	AIEntity*  _entity;
-
+ 
 private:
     GOAPActionSet   _actionSet;
     GOAPWorldState  _worldState;
