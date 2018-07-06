@@ -2,7 +2,7 @@
 #include "Managers/ResourceManager.h"
 #include "Managers/CameraManager.h"
 #include "Managers/SceneManager.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Hardware/Video/OpenGL/glResources.h"
 using namespace std;
@@ -47,11 +47,13 @@ void WaterPlane::postLoad(SceneGraphNode* node){
 	_node = node;
 	BoundingBox& bb = node->getBoundingBox();
 	_planeSGN = node->addNode(_plane);
+	_planeSGN->setActive(false);
 	_planeTransform = _planeSGN->getTransform();
 }
 
 bool WaterPlane::computeBoundingBox(SceneGraphNode* node){
-	BoundingBox& bb = _node->getBoundingBox();;
+	BoundingBox& bb = _node->getBoundingBox();
+	if(bb.isComputed()) return true;
 	F32 waterLevel = SceneManager::getInstance().getActiveScene()->getWaterLevel();
 	F32 waterDepth = SceneManager::getInstance().getActiveScene()->getWaterDepth();
 	bb.set(vec3(-_farPlane,waterLevel - waterDepth, -_farPlane),vec3(_farPlane, waterLevel, _farPlane));
@@ -119,8 +121,8 @@ void WaterPlane::render(SceneGraphNode* node){
 		_shader->UniformTexture("texWaterReflection", 0);
 		_shader->UniformTexture("texWaterNoiseNM", 1);	
 		_shader->Uniform("time", GETTIME());
-		_shader->Uniform("win_width",  (I32)Engine::getInstance().getWindowDimensions().width);
-		_shader->Uniform("win_height", (I32)Engine::getInstance().getWindowDimensions().height);
+		_shader->Uniform("win_width",  (I32)Application::getInstance().getWindowDimensions().width);
+		_shader->Uniform("win_height", (I32)Application::getInstance().getWindowDimensions().height);
 		_shader->Uniform("water_bb_min",bb.getMin());
 		_shader->Uniform("water_bb_max",bb.getMax());
 		_shader->Uniform("lightProjectionMatrix",GFXDevice::getInstance().getLightProjectionMatrix());

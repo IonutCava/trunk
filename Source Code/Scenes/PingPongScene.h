@@ -24,7 +24,15 @@ class PingPongScene : public Scene
 {
 
 public:
-	PingPongScene() {}
+	PingPongScene() : Scene() {
+		_miscareLaterala = 0;
+		_directieAdversar = true;
+		_directieSus = false;
+		_atinsTeren = false;
+		_atinsTerenAdversar = false;
+		_pierdut = false;
+	}
+
 	~PingPongScene() {}
 	void render();
 	void preRender();
@@ -52,6 +60,14 @@ private:
 	vec4 _sunVector;
 	Sphere3D* _minge;
 	SceneGraphNode* _mingeSGN;
+
+private: //JOC:
+	bool _directieAdversar;
+	bool _directieSus;
+	bool _atinsTeren;
+	bool _atinsTerenAdversar;
+	bool _pierdut;
+	F32 _miscareLaterala;
 };
 
 #endif

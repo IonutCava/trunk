@@ -18,7 +18,6 @@
 #ifndef _RESOURCE_MANAGER_H
 #define _RESOURCE_MANAGER_H
 //#define loadResource<X>(Y) ResourceManager::getInstance().loadResource<X>(Y);
-//#define RemoveResource(X)  RemoveResource(x);
 
 #include "Managers/Manager.h" 
 #include "Utility/Headers/Singleton.h" 

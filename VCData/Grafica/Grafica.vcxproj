@@ -119,7 +119,7 @@
     <ClCompile Include="..\..\Source Code\EngineGraphs\RenderQueue.cpp" />
     <ClCompile Include="..\..\Source Code\EngineGraphs\SceneGraph.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderHandler.cpp" />
-    <ClCompile Include="..\..\Source Code\Rendering\common.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Application.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Frustum.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp" />
@@ -191,7 +191,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\EngineGraphs\RenderQueue.h" />
-    <ClInclude Include="..\..\Source Code\Rendering\common.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Application.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Framerate.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Frustum.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Camera.h" />

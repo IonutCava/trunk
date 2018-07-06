@@ -171,6 +171,7 @@ public:
 		struct {F32 x,y;};
 		struct {F32 s,t;};
 		struct {F32 width,height;};
+		struct {F32 min,max;};
 		F32 v[2];
 	};
 };

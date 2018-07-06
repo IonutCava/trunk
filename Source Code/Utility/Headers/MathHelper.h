@@ -34,6 +34,7 @@ namespace Util {
 		s << data;
 		return s.str();
 	}
+
 #if defined  USE_MATH_SSE		
 	static const __m128 one = _mm_set_ps1(1.0f);
 	//dot
@@ -46,12 +47,14 @@ namespace Util {
 		return add1;
 	}
 
+
 	inline D32 __declspec (naked) __fastcall square_root(D32 n){
 	
 		_asm fld qword ptr [esp+4]
 		_asm fsqrt
 		_asm ret 8
 	} 
+
 
 	namespace Mat4{
 		//multiply
@@ -131,8 +134,8 @@ namespace Util {
 			}
 		}
 
-		inline void
-		mmul(const float * a, const float * b, float * r)
+
+		inline void	mmul(const float * a, const float * b, float * r)
 		{
 			__m128 a_line, b_line, r_line;
 			for (int i=0; i<16; i+=4) {
@@ -149,6 +152,7 @@ namespace Util {
 				_mm_store_ps(&r[i], r_line);     // r[i] = r_line
 			}
 		}
+
 		__forceinline void _mm_inverse_ps(const float *a,float * r)
 		{
 			__m128 in[4];
@@ -317,7 +321,9 @@ namespace Util {
 			_mm_store_ps(&r[3], _mm_mul_ps(Inv3, Rcp0));
 		}
 	}
+
 #else
+
 	inline D32 square_root(D32 n){
 		return sqrtf(n);
 	}
@@ -365,3 +371,7 @@ namespace Util {
 }
 
 #endif
+
+
+
+

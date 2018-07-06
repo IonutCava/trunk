@@ -378,6 +378,7 @@ void ResourceManager::removeResource(T*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }
 
@@ -386,6 +387,7 @@ void ResourceManager::removeResource(SceneNode*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }
 
@@ -394,6 +396,7 @@ void ResourceManager::removeResource(Shader*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }
 
@@ -402,6 +405,7 @@ void ResourceManager::removeResource(Texture*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }
 
@@ -410,6 +414,7 @@ void ResourceManager::removeResource(Object3D*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }
 
@@ -418,6 +423,7 @@ void ResourceManager::removeResource(Sphere3D*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }
 
@@ -426,6 +432,7 @@ void ResourceManager::removeResource(Quad3D*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }
 
@@ -434,6 +441,7 @@ void ResourceManager::removeResource(Box3D*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }
 
@@ -442,6 +450,7 @@ void ResourceManager::removeResource(Text3D*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }
 template <>
@@ -449,6 +458,7 @@ void ResourceManager::removeResource(Mesh*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }
 
@@ -457,6 +467,7 @@ void ResourceManager::removeResource(SubMesh*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }
 template <>
@@ -464,6 +475,7 @@ void ResourceManager::removeResource(Material*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }
 
@@ -472,6 +484,7 @@ void ResourceManager::removeResource(AudioDescriptor*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }
 
@@ -480,5 +493,6 @@ void ResourceManager::removeResource(TerrainDescriptor*& res,bool force){
 	if(Manager::remove(res,force)){
 		delete res;	
 		res = NULL;
+		assert(!res);
 	}
 }

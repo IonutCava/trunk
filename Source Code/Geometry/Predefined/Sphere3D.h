@@ -34,6 +34,7 @@ public:
 	U8&			      getResolution() {return _resolution;}
 
 	virtual bool computeBoundingBox(SceneGraphNode* node){
+		if(node->getBoundingBox().isComputed()) return true;
 		node->getBoundingBox().set(vec3(- _size,- _size,- _size), vec3( _size, _size, _size));
 		return SceneNode::computeBoundingBox(node);
 	}

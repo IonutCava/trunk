@@ -1,6 +1,6 @@
 #include "MainScene.h"
 #include "Managers/CameraManager.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 #include "PhysX/PhysX.h"
 #include "Terrain/Sky.h"
 #include "Terrain/Terrain.h"
@@ -24,7 +24,7 @@ bool MainScene::updateLights(){
 }
 
 void MainScene::preRender(){
-	Sky &sky = Sky::getInstance();
+
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	vec3 eye_pos = cam->getEye();
 	vec3 sun_pos = eye_pos - vec3(_sunVector);
@@ -32,13 +32,11 @@ void MainScene::preRender(){
 	F32 zFar = _paramHandler.getParam<F32>("zFar");
 	vec2 zPlanes(zNear,zFar);
 	D32 tabOrtho[2] = {20.0, 100.0};
-	
 	vec3 lightPos(eye_pos.x - 500*_sunVector.x,	
 				  eye_pos.y - 500*_sunVector.y,
 				  eye_pos.z - 500*_sunVector.z);
 	
 	_GFX.setLightCameraMatrices(lightPos,eye_pos,true);
-
 	//SHADOW MAPPING
 	_GFX.setDepthMapRendering(true);
 
@@ -50,7 +48,6 @@ void MainScene::preRender(){
 			_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 			renderEnvironment(false, true);
 		_depthMap[i]->End();
-
 	}
 
 	_GFX.setOrthoProjection(vec4(-1.0f,1.0f,-1.0f,1.0f),zPlanes);
@@ -79,15 +76,12 @@ void MainScene::preRender(){
 
 void MainScene::render(){
 	renderEnvironment(false,false);
-	//renderEnvironment(true,false);
 }
 
 void MainScene::renderEnvironment(bool waterReflection, bool depthMap){
-	Sky &sky = Sky::getInstance();
-	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	_GFX.ignoreStateChanges(true);
-
 	if(!depthMap){
+		Camera* cam = CameraManager::getInstance().getActiveCamera();
 		if(cam->getEye().y < getWaterLevel()){
 			waterReflection = false;
 			_paramHandler.setParam("underwater",true);
@@ -95,7 +89,7 @@ void MainScene::renderEnvironment(bool waterReflection, bool depthMap){
 		else{
 			_paramHandler.setParam("underwater",false);
 		}
-
+		Sky &sky = Sky::getInstance();
 		sky.setParams(cam->getEye(),vec3(_sunVector),waterReflection,true,true);
 		sky.draw();
 
@@ -120,10 +114,10 @@ void MainScene::processInput(){
 	_inputManager.tick();
 
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
-	moveFB  = Engine::getInstance().moveFB;
-	moveLR  = Engine::getInstance().moveLR;
-	angleLR = Engine::getInstance().angleLR;
-	angleUD = Engine::getInstance().angleUD;
+	moveFB  = Application::getInstance().moveFB;
+	moveLR  = Application::getInstance().moveLR;
+	angleLR = Application::getInstance().angleLR;
+	angleUD = Application::getInstance().angleUD;
 	
 	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor()/5);
 	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor()/5);
@@ -136,13 +130,11 @@ void MainScene::processInput(){
 }
 
 
-void MainScene::processEvents(F32 time)
-{
+void MainScene::processEvents(F32 time){
 	F32 SunDisplay = 1.10f;
 	F32 FpsDisplay = 0.3f;
 	F32 TimeDisplay = 0.01f;
-	if (time - _eventTimers[0] >= SunDisplay)
-	{
+	if (time - _eventTimers[0] >= SunDisplay){
 		_sunAngle.y += 0.0005f;
 		_sunVector = vec4(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 							-cosf(_sunAngle.y),
@@ -151,17 +143,14 @@ void MainScene::processEvents(F32 time)
 		_eventTimers[0] += SunDisplay;
 	}
 
-	if (time - _eventTimers[1] >= FpsDisplay)
-	{
-		
+	if (time - _eventTimers[1] >= FpsDisplay){
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
 		_eventTimers[1] += FpsDisplay;
 
 	}
     
 	
-	if (time - _eventTimers[2] >= TimeDisplay)
-	{
+	if (time - _eventTimers[2] >= TimeDisplay){
 		GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", time);
 		_eventTimers[2] += TimeDisplay;
 	}
@@ -180,9 +169,8 @@ bool MainScene::load(const string& name){
 	for(U8 i = 0; i < TerrainInfoArray.size(); i++){
 		SceneGraphNode* terrainNode = _sceneGraph->findNode(TerrainInfoArray[i]->getVariable("terrainName"));
 		if(terrainNode){ //We might have an unloaded terrain in the Array, and thus, not present in the graph
-			Console::getInstance().printf("Found terrain: ");
 			Terrain* tempTerrain = terrainNode->getNode<Terrain>();
-			Console::getInstance().printfn(" %s!", tempTerrain->getName().c_str());
+			Console::getInstance().printfn("Found terrain:  %s!", tempTerrain->getName().c_str());
 			if(terrainNode->isActive()){
 				Console::getInstance().printfn("Previous found terrain is active!");
 				_visibleTerrains.push_back(tempTerrain);
@@ -218,8 +206,7 @@ void MainScene::test(boost::any a, CallbackParam b){
 	if(boxNode) box = boxNode->getNode<Object3D>();
 	if(box) pos = boxNode->getTransform()->getPosition();
 
-	if(!_switchAB)
-	{
+	if(!_switchAB){
 		if(pos.x < 300 && pos.z == 0)		   pos.x++;
 		if(pos.x == 300)
 		{
@@ -231,15 +218,12 @@ void MainScene::test(boost::any a, CallbackParam b){
 			}
 			
 		}
-	}
-	else 
-	{
+	} else {
 		if(pos.x > -300 && pos.z ==  -500)      pos.x--;
 		if(pos.x == -300)
 		{
 			if(pos.y > 100 && pos.z == -500)    pos.y--;
-			if(pos.y == 100)
-			{
+			if(pos.y == 100) {
 				if(pos.z < 0)    pos.z++;
 				if(pos.z == 0)   _switchAB = false;
 			}
@@ -248,8 +232,7 @@ void MainScene::test(boost::any a, CallbackParam b){
 	if(box)	boxNode->getTransform()->setPosition(pos);
 }
 
-bool MainScene::loadResources(bool continueOnErrors)
-{
+bool MainScene::loadResources(bool continueOnErrors){
 	GUI& gui = GUI::getInstance();
 
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f;
@@ -305,40 +288,36 @@ bool MainScene::loadResources(bool continueOnErrors)
 }
 
 
-void MainScene::onKeyDown(const OIS::KeyEvent& key)
-{
+void MainScene::onKeyDown(const OIS::KeyEvent& key){
 	Scene::onKeyDown(key);
-	switch(key.key)
-	{
+	switch(key.key)	{
 		case OIS::KC_W:
-			Engine::getInstance().moveFB = 0.25f;
+			Application::getInstance().moveFB = 0.25f;
 			break;
 		case OIS::KC_A:
-			Engine::getInstance().moveLR = 0.25f;
+			Application::getInstance().moveLR = 0.25f;
 			break;
 		case OIS::KC_S:
-			Engine::getInstance().moveFB = -0.25f;
+			Application::getInstance().moveFB = -0.25f;
 			break;
 		case OIS::KC_D:
-			Engine::getInstance().moveLR = -0.25f;
+			Application::getInstance().moveLR = -0.25f;
 			break;
 		default:
 			break;
 	}
 }
 
-void MainScene::onKeyUp(const OIS::KeyEvent& key)
-{
+void MainScene::onKeyUp(const OIS::KeyEvent& key){
 	Scene::onKeyUp(key);
-	switch(key.key)
-	{
+	switch(key.key)	{
 		case OIS::KC_W:
 		case OIS::KC_S:
-			Engine::getInstance().moveFB = 0;
+			Application::getInstance().moveFB = 0;
 			break;
 		case OIS::KC_A:
 		case OIS::KC_D:
-			Engine::getInstance().moveLR = 0;
+			Application::getInstance().moveLR = 0;
 			break;
 		case OIS::KC_X:
 			SFXDevice::getInstance().playSound(_beep);
@@ -352,40 +331,36 @@ void MainScene::onKeyUp(const OIS::KeyEvent& key)
 
 }
 
-void MainScene::onMouseMove(const OIS::MouseEvent& key)
-{
+void MainScene::onMouseMove(const OIS::MouseEvent& key){
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
-			Engine::getInstance().angleLR = -0.15f;
+			Application::getInstance().angleLR = -0.15f;
 		else if(_prevMouse.x - key.state.X.abs < -1 )
-			Engine::getInstance().angleLR = 0.15f;
+			Application::getInstance().angleLR = 0.15f;
 		else
-			Engine::getInstance().angleLR = 0;
+			Application::getInstance().angleLR = 0;
 
 		if(_prevMouse.y - key.state.Y.abs > 1 )
-			Engine::getInstance().angleUD = -0.1f;
+			Application::getInstance().angleUD = -0.1f;
 		else if(_prevMouse.y - key.state.Y.abs < -1 )
-			Engine::getInstance().angleUD = 0.1f;
+			Application::getInstance().angleUD = 0.1f;
 		else
-			Engine::getInstance().angleUD = 0;
+			Application::getInstance().angleUD = 0;
 	}
 	
 	_prevMouse.x = key.state.X.abs;
 	_prevMouse.y = key.state.Y.abs;
 }
 
-void MainScene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button)
-{
+void MainScene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
 	if(button == 0) 
 		_mousePressed = true;
 }
 
-void MainScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button)
-{
-	if(button == 0)
-	{
+void MainScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+	if(button == 0)	{
 		_mousePressed = false;
-		Engine::getInstance().angleUD = 0;
-		Engine::getInstance().angleLR = 0;
+		Application::getInstance().angleUD = 0;
+		Application::getInstance().angleLR = 0;
 	}
 }

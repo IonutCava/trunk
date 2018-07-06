@@ -25,6 +25,7 @@ void SceneGraph::render(){
 	if(!_updateRunning){
 		startUpdateThread();
 	}
+
 	GFXDevice::getInstance().processRenderQueue();
 
 	if(!gfx.getDepthMapRendering()&& !gfx.getDeferredShading()){

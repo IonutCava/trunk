@@ -50,6 +50,7 @@ private:
 	void generateBloomTexture();
 	void generateDepthOfFieldTexture();
 	~PostFX();
+	PostFX();
 
 	bool _enablePostProcessing;
 	bool _enableAnaglyph;

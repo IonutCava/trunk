@@ -23,6 +23,7 @@
 class FlashScene : public Scene
 {
 public:
+	FlashScene() : Scene() {}
 	void render();
 	void preRender();
 	bool load(const std::string& name);

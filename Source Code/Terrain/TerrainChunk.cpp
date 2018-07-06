@@ -18,10 +18,10 @@ void TerrainChunk::addTree(const vec4& pos,F32 scale, const FileData& tree, Scen
 	model.setFlag(true);
 	Mesh* tempTree = ResourceManager::getInstance().loadResource<Mesh>(model);
 	if(tempTree){
-		stringstream ss; ss << "_" << parentNode->getChildren().size();
+		stringstream ss; ss << "_" << tempTree->getRefCount();
 		std::string treeName(tempTree->getName()+ss.str());
 		SceneGraphNode* treeNode = parentNode->addNode(tempTree,treeName);
-		Console::getInstance().printfn("Adding tree [ %s ]",treeName.c_str());
+		Console::getInstance().printfn("Added tree [ %s ]",treeNode->getName().c_str());
 		Transform* treeTransform = treeNode->getTransform();
  		treeTransform->scale(scale * tree.scale);
 		treeTransform->rotateY(pos.w);

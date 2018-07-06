@@ -120,9 +120,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\Rendering\common.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
@@ -334,11 +331,11 @@
     <ClCompile Include="..\..\Source Code\EngineGraphs\RenderQueue.cpp">
       <Filter>EngineGraphs</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Application.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\Rendering\common.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Framerate.h">
       <Filter>Rendering</Filter>
     </ClInclude>
@@ -675,6 +672,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\EngineGraphs\RenderQueue.h">
       <Filter>EngineGraphs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Application.h">
+      <Filter>Rendering</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

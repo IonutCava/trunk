@@ -34,7 +34,9 @@ public:
 	vec3 Sky::getSunVector(){	return _sunVect; }
 
 private:
+	bool load();
 
+private:
 	bool			  _init,_invert,_drawSky,_drawSun;
 	Shader*			  _skyShader;
 	TextureCubemap*	  _skybox;

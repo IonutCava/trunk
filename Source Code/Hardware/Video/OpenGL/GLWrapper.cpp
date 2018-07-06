@@ -1,7 +1,7 @@
 #include "glResources.h"
 
 #include "GLWrapper.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 #include "Rendering/Frustum.h"
 #include "Utility/Headers/Guardian.h"
 #include "GUI/GUI.h"
@@ -26,15 +26,15 @@ void resizeWindowCallback(I32 w, I32 h){
 
 void GL_API::initHardware(){
 	I32   argc   = 1; 
-	char *argv[] = {"DIVIDE Engine", NULL};
+	char *argv[] = {"DIVIDE Framework", NULL};
     glutInit(&argc, argv);
 	//glutInitContextVersion(3,3);
 	glutInitContextProfile(GLUT_CORE_PROFILE);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-	glutInitWindowSize(Engine::getInstance().getWindowDimensions().width,Engine::getInstance().getWindowDimensions().height);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE/* |  GLUT_MULTISAMPLE*/);
+	glutInitWindowSize(Application::getInstance().getWindowDimensions().width,Application::getInstance().getWindowDimensions().height);
 	glutInitWindowPosition(10,50);
-	_windowId = glutCreateWindow("DIVIDE Engine");
-	Engine::getInstance().setMainWindowId(_windowId);
+	_windowId = glutCreateWindow("DIVIDE Framework");
+	Application::getInstance().setMainWindowId(_windowId);
 	U32 err = glewInit();
 	if (GLEW_OK != err){
 		Console::getInstance().errorfn("GFXDevice: %s \nTry switching to DX (version 9.0c required) or upgrade hardware.\nApplication will now exit!",glewGetErrorString(err));
@@ -76,10 +76,12 @@ void GL_API::initHardware(){
 	glEnable(GL_NORMALIZE);
 	glDisable(GL_COLOR_MATERIAL);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	glutCloseFunc(Guardian::getInstance().TerminateApplication);
+	glCullFace(GL_BACK);
+	//glutCloseFunc(closeApplication);
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 	glutReshapeFunc(resizeWindowCallback);
-	glutDisplayFunc(Engine::getInstance().DrawSceneStatic);
-	glutIdleFunc(Engine::getInstance().Idle);
+	glutDisplayFunc(Application::getInstance().DrawSceneStatic);
+	glutIdleFunc(Application::getInstance().Idle);
 	Console::getInstance().printfn("OpenGL rendering system initialized!");
 /*
 	int (*SwapInterval)(int);
@@ -104,11 +106,22 @@ SwapInterval(0);
 */
 }
 
-void GL_API::closeRenderingApi(){
-	glutLeaveMainLoop();
-	glutDestroyWindow(_windowId);
+void GL_API::closeApplication(){
+	Guardian::getInstance().TerminateApplication();
+	glutDestroyWindow(Application::getInstance().getMainWindowId());
 }
 
+//clear up stuff ...
+void GL_API::closeRenderingApi(){
+	
+}
+
+void GL_API::initDevice(){
+	//F32 global_ambient[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+	//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
+	glutMainLoop();
+	closeApplication();
+}
 void GL_API::resizeWindow(U16 w, U16 h){
 
 	F32 zNear  = ParamHandler::getInstance().getParam<F32>("zNear");
@@ -116,8 +129,6 @@ void GL_API::resizeWindow(U16 w, U16 h){
 	F32 fov    = ParamHandler::getInstance().getParam<F32>("verticalFOV");
 	F32 ratio  = ParamHandler::getInstance().getParam<F32>("aspectRatio");
 	F32 x=0.0f,y=1.75f,z=5.0f;
-	F32 lx=0.0f,ly=0.0f,lz=-1.0f;
-
 
 
 	// Reset the coordinate system before modifying
@@ -132,9 +143,9 @@ void GL_API::resizeWindow(U16 w, U16 h){
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	gluLookAt(x, y, z, 
-		  	x + lx,y + ly,z + lz,
-			0.0f,1.0f,0.0f);
+	gluLookAt(x,   y,   z, 
+		  	  x,   y,   z-1.0f,
+			  0.0f,1.0f,0.0f);
 }
 
 void GL_API::lookAt(const vec3& eye,const vec3& center,const vec3& up, bool invertx, bool inverty)
@@ -412,18 +423,21 @@ void GL_API::drawBox3D(vec3 min, vec3 max){
 void GL_API::drawBox3D(Box3D* const box){
 	SceneGraphNode temp(box);
 	temp.useDefaultTransform(false);
+	temp.silentDispose(true);
 	drawBox3D(&temp);
 }
 
 void GL_API::drawSphere3D(Sphere3D* const sphere){
 	SceneGraphNode temp(sphere);
 	temp.useDefaultTransform(false);
+	temp.silentDispose(true);
 	drawSphere3D(&temp);
 }
 
 void GL_API::drawQuad3D(Quad3D* const quad){
 	SceneGraphNode temp(quad);
 	temp.useDefaultTransform(false);
+	temp.silentDispose(true);
 	drawQuad3D(&temp);
 	
 }
@@ -431,6 +445,7 @@ void GL_API::drawQuad3D(Quad3D* const quad){
 void GL_API::drawText3D(Text3D* const text){
 	SceneGraphNode temp(text);
 	temp.useDefaultTransform(false);
+	temp.silentDispose(true);
 	drawText3D(&temp);
 }
 
@@ -534,8 +549,8 @@ void GL_API::toggle2D(bool _2D){
 	
 	if(_2D)
 	{
-		F32 width = Engine::getInstance().getWindowDimensions().width;
-		F32 height = Engine::getInstance().getWindowDimensions().height;
+		F32 width = Application::getInstance().getWindowDimensions().width;
+		F32 height = Application::getInstance().getWindowDimensions().height;
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
 		if(GFXDevice::getInstance().getDepthMapRendering()) glCullFace(GL_BACK);
@@ -561,13 +576,6 @@ void GL_API::toggle2D(bool _2D){
 	}
 }
 
-
-void GL_API::initDevice()
-{
-	//F32 global_ambient[] = { 0.8f, 0.8f, 0.8f, 1.0f };
-	//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
-	glutMainLoop();
-}
 
 void GL_API::setLight(U8 slot, unordered_map<string,vec4>& properties){
 	if(_state.lightingEnabled()){

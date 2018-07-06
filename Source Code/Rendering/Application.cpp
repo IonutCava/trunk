@@ -1,4 +1,4 @@
-#include "common.h"
+#include "Application.h"
 
 #include "Utility/Headers/Guardian.h"
 #include "Managers/ResourceManager.h"
@@ -16,40 +16,37 @@
 #include "Hardware/Audio/SFXDevice.h"
 #include "Rendering/PostFX/PostFX.h"
 
-void Engine::Idle()
-{
+void Application::Idle(){
 	SceneManager::getInstance().clean();
 	PostFX::getInstance().idle();
 	GFXDevice::getInstance().idle();
 }
 
-Engine::Engine() : 
+Application::Application() : 
 	_GFX(GFXDevice::getInstance()), //Video
 	_SFX(SFXDevice::getInstance()), //Audio
     _px(PhysX::getInstance()),
 	_scene(SceneManager::getInstance()),
-	_gui(GUI::getInstance())
-{
+	_gui(GUI::getInstance()),
+	_camera(New FreeFlyCamera()){
 	//BEGIN CONSTRUCTOR
 	 angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
 	 mainWindowId = -1;
-	 _camera = New FreeFlyCamera();
+	 
 	 CameraManager::getInstance().add("defaultCamera",_camera);
 	 //END CONSTRUCTOR
 }
 
 
-void Engine::DrawSceneStatic()
-{
+void Application::DrawSceneStatic(){
 	GFXDevice::getInstance().clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
-	Engine::getInstance().DrawScene();
+	Application::getInstance().DrawScene();
 	Framerate::getInstance().SetSpeedFactor();
 	GFXDevice::getInstance().swapBuffers();
 }
 
-void Engine::DrawScene()
-{
-	_camera->RenderLookAt();
+void Application::DrawScene(){
+	_camera->RenderLookAt();	
 	foreach(Light* light, _scene.getLights()){
 		light->onDraw();
 	}
@@ -68,7 +65,7 @@ void Engine::DrawScene()
 	_scene.processEvents(abs(GETTIME()));
 }
 
-void Engine::Initialize(){    
+void Application::Initialize(){    
 	ResourceManager& res = ResourceManager::getInstance();
 	_GFX.setApi(OpenGL32);
 	_GFX.initHardware();
@@ -77,10 +74,4 @@ void Engine::Initialize(){
 	F32 fogColor[4] = {0.7f, 0.7f, 0.9f, 1.0}; 
 	_GFX.enableFog(0.3f,fogColor);
 	PostFX::getInstance().init();
-}
-
-void Engine::Quit()
-{
-	Console::getInstance().printfn("Engine shutdown complete...");
-	exit(0);
 }

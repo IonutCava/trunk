@@ -1,5 +1,5 @@
 #include "GFXDevice.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 #include "Geometry/Object3D.h"
 #include "Importer/DVDConverter.h"
 #include "Managers/TextureManager.h"
@@ -39,8 +39,8 @@ void GFXDevice::setApi(RenderAPI api)
 }
 
 void GFXDevice::resizeWindow(U16 w, U16 h){
-	Engine::getInstance().setWindowWidth(w);
-    Engine::getInstance().setWindowHeight(h);
+	Application::getInstance().setWindowWidth(w);
+    Application::getInstance().setWindowHeight(h);
 	_api.resizeWindow(w,h);
 	PostFX::getInstance().reshapeFBO(w, h);
 }
@@ -93,8 +93,9 @@ void GFXDevice::processRenderQueue(){
 		sn->onDraw();
 		//draw bounding box if needed
 		if(!getDepthMapRendering()){
-			BoundingBox& bb = sn->getSceneGraphNode()->getBoundingBox();
+			BoundingBox& bb = sgn->getBoundingBox();
 			if(bb.getVisibility() || SceneManager::getInstance().getActiveScene()->drawBBox()){
+				//sn->drawBBox();
 				drawBox3D(bb.getMin(),bb.getMax());
 			}
 		}

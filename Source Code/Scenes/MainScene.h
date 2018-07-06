@@ -24,6 +24,7 @@ class WaterPlane;
 class MainScene : public Scene{
 
 public:
+	MainScene() : Scene(){}
 	/*General Scene Requirement*/
 	void render();
 	void preRender();

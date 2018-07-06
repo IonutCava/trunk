@@ -23,4 +23,5 @@
 #include "Scenes/NetworkScene.h"
 #include "Scenes/PingPongScene.h"
 #include "Scenes/FlashScene.h"
+#include "Scenes/AITenisScene.h"
 #endif

@@ -55,6 +55,7 @@ public:
 	virtual	void            prepareMaterial();
 	virtual	void            releaseMaterial();
 			SceneGraphNode* getSceneGraphNode();
+			void            setSceneGraphNode(const std::string& name) {_sceneGraphNodeName = name;}
 	virtual	bool    computeBoundingBox(SceneGraphNode* node);
 	virtual void    onDraw();
 	virtual void    postLoad(SceneGraphNode* node) = 0; //Post insertion calls (Use this to setup child objects during creation)
@@ -72,6 +73,7 @@ private:
 	bool		_renderState,_noDefaultMaterial;
 	bool        _selected;
 	F32         _sortKey;
+	std::string _sceneGraphNodeName;
 
 };
 

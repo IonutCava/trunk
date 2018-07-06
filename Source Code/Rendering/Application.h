@@ -15,8 +15,8 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ENGINE_H_
-#define ENGINE_H_
+#ifndef _APPLICATION_H_
+#define _APPLICATION_H_
 
 #include "resource.h"
 #include "Utility/Headers/Singleton.h"
@@ -29,10 +29,10 @@ class Terrain;
 class GFXDevice;
 class SFXDevice;
 
-DEFINE_SINGLETON( Engine )
+DEFINE_SINGLETON( Application )
 
 private:
-	Engine();
+	Application();
 	I8 mainWindowId;
 	vec2 _dimensions;
 
@@ -45,21 +45,22 @@ private:
 
 public:
 	const vec2& getWindowDimensions() const {return _dimensions;}
-	void setWindowWidth(U16 w){_dimensions.x = w;}
-	void setWindowHeight(U16 h){_dimensions.y = h;}
+	inline void setWindowWidth(U16 w){_dimensions.x = w;}
+	inline void setWindowHeight(U16 h){_dimensions.y = h;}
 
-   F32 moveFB,moveLR,angleUD,angleLR;
-   void LoadControls();
-   //rendering functions
-   void Initialize(); //Set up the rendering platform
-   static void DrawSceneStatic();
-   void DrawScene();
+	F32 moveFB,moveLR,angleUD,angleLR;
 
-   static void Idle();
-   void Quit();
-   I8   getMainWindowId(){return mainWindowId;}
-   void setMainWindowId(U8 id){mainWindowId = id;}
- 
+	//rendering functions
+	void Initialize(); //Set up the rendering platform
+
+	static void DrawSceneStatic();
+	static void Idle();
+
+	inline I8   getMainWindowId(){return mainWindowId;}
+	inline void setMainWindowId(U8 id){mainWindowId = id;}
+
+private:
+	void DrawScene();
    END_SINGLETON
 
 #endif

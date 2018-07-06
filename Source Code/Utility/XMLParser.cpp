@@ -3,7 +3,7 @@
 #include "Headers/ParamHandler.h"
 #include "Managers/SceneManager.h"
 #include "Managers/ResourceManager.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 #include "SceneList.h"
 using namespace std;
 
@@ -46,8 +46,8 @@ namespace XML
 		par.setParam("aspectRatio",1.0f * winWidth / winHeight);
 		par.setParam("windowWidth",winWidth);
 		par.setParam("windowHeight",winHeight);
-		Engine::getInstance().setWindowHeight(winHeight);
-		Engine::getInstance().setWindowWidth(winWidth);
+		Application::getInstance().setWindowHeight(winHeight);
+		Application::getInstance().setWindowWidth(winWidth);
 		bool postProcessing = pt.get("rendering.enablePostFX",false);
 		par.setParam("enablePostFX",postProcessing);
 		if(postProcessing){
@@ -62,23 +62,22 @@ namespace XML
 		}
 	}
 
-	void loadScene(const string& sceneName)
-	{
+	void loadScene(const string& sceneName){
 		pt.clear();
+		SceneManager& scnMGR = SceneManager::getInstance();
 		Console::getInstance().printf("XML: Loading scene [ %s ]\n", sceneName.c_str());
 		read_xml(par.getParam<string>("scriptLocation") + "/" +
                  par.getParam<string>("scenesLocation") + "/" +
 				 sceneName + ".xml", pt);
 		par.setParam("currentScene",sceneName);
-		Scene* scene = SceneManager::getInstance().findScene(sceneName);
+		Scene* scene = scnMGR.loadScene(sceneName);
 
-		if(!scene)
-		{
+		if(!scene)	{
 			Console::getInstance().errorf("XML: Trying to load unsupported scene! Defaulting to default scene\n");
 			scene = New MainScene();
 		}
 
-		SceneManager::getInstance().setActiveScene(scene);
+		scnMGR.setActiveScene(scene);
 		scene->setName(sceneName);
 
 		scene->getGrassVisibility() = pt.get("vegetation.grassVisibility",1000.0f);
@@ -100,15 +99,13 @@ namespace XML
 
 
 
-	void loadTerrain(const string &file)
-	{
+	void loadTerrain(const string &file){
 		pt.clear();
 		Console::getInstance().printf("XML: Loading terrain: [ %s ]\n",file.c_str());
 		read_xml(file,pt);
 		ptree::iterator it;
 		string assetLocation = ParamHandler::getInstance().getParam<string>("assetsLocation") + "/"; 
-		for (it = pt.get_child("terrainList").begin(); it != pt.get_child("terrainList").end(); it++ )
-		{
+		for (it = pt.get_child("terrainList").begin(); it != pt.get_child("terrainList").end(); it++ )	{
 			string name = it->second.data(); //The actual terrain name
 			string tag = it->first.data();   //The <name> tag for valid terrains or <xmlcomment> for comments
 			//Check and skip commented terrain

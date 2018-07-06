@@ -12,11 +12,12 @@ void Manager::add(const string& name, Resource* res){
 }
 
 void Manager::Destroy(){
-	//foreach(ResourceMap::value_type iter, _resDB){
-	for(ResourceMap::iterator iter = _resDB.begin(); iter != _resDB.end(); iter++){
-		iter->second->unload();
-		delete iter->second;
-		iter->second = NULL;
+	foreach(ResourceMap::value_type iter, _resDB){
+		if(iter.second){
+			iter.second->unload();
+			delete iter.second;
+			iter.second = NULL;
+		}
 	}
 	_resDB.clear();
 }
@@ -39,11 +40,10 @@ bool Manager::remove(Resource* res, bool force){
 		Console::getInstance().errorfn("ResourceManager: Trying to remove resource with invalid name!");
 		return false;
 	}
-
 	if(_resDB.find(name) != _resDB.end()){
-		if(_resDB[name]->getRefCount() > 1 && !force) {
-			_resDB[name]->removeCopy();
-			Console::getInstance().printfn("Removing resource: [ %s ]. New ref count: [ %d ]",name.c_str(),_resDB[name]->getRefCount());
+		if(res->getRefCount() > 1 && !force) {
+			res->removeCopy();
+			Console::getInstance().printfn("Removing resource: [ %s ]. New ref count: [ %d ]",name.c_str(),res->getRefCount());
 			return false;
 		}else{
 			Console::getInstance().printfn("Removing resource: [ %s ].",name.c_str());

@@ -70,7 +70,6 @@ void Terrain::terrainSetParameters(const vec3& pos,const vec2& scale){
 	//    |_________\/___________|
 
 	_boundingBox.set(vec3(-pos.x-300, pos.y, -pos.z-300),vec3( pos.x+300, pos.y+40, pos.z+300));
-
 	_boundingBox.Multiply(vec3(terrainScaleFactor,1,terrainScaleFactor));
 	_boundingBox.MultiplyMax(vec3(1,_terrainHeightScaleFactor,1));
 }
@@ -123,7 +122,7 @@ bool Terrain::load(const string& name){
 	U32 t, id;
 	U8* data = ImageTools::OpenImage(terrain->getVariable("heightmap"), _terrainWidth, _terrainHeight, d, t, id);
 	Console::getInstance().printfn("Terrain width: %d and height: %d",_terrainWidth, _terrainHeight);
-	assert(data!=NULL);
+	assert(data);
 
 	U32 nIMGWidth  = _terrainWidth;
 	U32 nIMGHeight = _terrainHeight;
@@ -225,7 +224,6 @@ bool Terrain::load(const string& name){
 		_plane->getCorner(Quad3D::TOP_RIGHT)    = vec3(eyePos.x + _farPlane, height, eyePos.z - _farPlane);
 		_plane->getCorner(Quad3D::BOTTOM_LEFT)  = vec3(eyePos.x - _farPlane, height, eyePos.z + _farPlane);
 		_plane->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(eyePos.x + _farPlane, height, eyePos.z + _farPlane);
-		computeBoundingBox(NULL);
 		ResourceDescriptor terrainMaterial("terrainMaterial");
 		setMaterial(ResourceManager::getInstance().loadResource<Material>(terrainMaterial));
 		getMaterial()->setDiffuse(vec4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -245,8 +243,9 @@ void Terrain::postLoad(SceneGraphNode* node){
 	_planeSGN = node->addNode(_plane);
 	_plane->computeBoundingBox(_planeSGN);
 	_plane->setRenderState(false);
+	_planeSGN->setActive(false);
 	_planeTransform = _planeSGN->getTransform();
-	node->getBoundingBox() = _boundingBox;
+	computeBoundingBox(node);
 	Shader* s = getMaterial()->getShader();
 	s->bind();
 		s->Uniform("alphaTexture", _alphaTexturePresent);
@@ -256,11 +255,13 @@ void Terrain::postLoad(SceneGraphNode* node){
 		s->Uniform("bbox_max", _boundingBox.getMax());
 	s->unbind();
 	_node = node;
-	SceneNode::computeBoundingBox(node);
+	
 }
 
 bool Terrain::computeBoundingBox(SceneGraphNode* node){
-	return _terrainQuadtree->computeBoundingBox(_groundVBO->getPosition());
+	_terrainQuadtree->computeBoundingBox(_groundVBO->getPosition());
+	node->getBoundingBox() = _boundingBox;
+	return  SceneNode::computeBoundingBox(node);
 }
 
 void Terrain::initializeVegetation(TerrainDescriptor* terrain) {	

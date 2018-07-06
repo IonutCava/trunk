@@ -1,11 +1,29 @@
 #include "PostFX.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 #include "Hardware/Video/FrameBufferObject.h"
 #include "Geometry/Predefined/Quad3D.h"
 #include "Utility/Headers/ParamHandler.h"
 #include "Managers/CameraManager.h"
 #include "Managers/SceneManager.h"
 #include "Managers/ResourceManager.h"
+
+PostFX::PostFX(): _underwaterTexture(NULL),
+	_renderQuad(NULL),
+	_anaglyphShader(NULL),
+	_postProcessingShader(NULL),
+	_blurShader(NULL),
+	_bloomShader(NULL),
+	_noise(NULL),
+	_screenBorder(NULL),
+	_tempBloomFBO(NULL),
+	_bloomFBO(NULL),
+	_tempDepthOfFieldFBO(NULL),
+	_depthOfFieldFBO(NULL),
+	_depthFBO(NULL),
+	_screenFBO(NULL){
+	_anaglyphFBO[0] = NULL;
+	_anaglyphFBO[1] = NULL;
+}
 
 PostFX::~PostFX(){
 	ParamHandler& par = ParamHandler::getInstance();
@@ -108,16 +126,16 @@ void PostFX::init(){
 		}
 	}
 	_screenFBO = gfx.newFBO();
-	 _depthFBO = gfx.newFBO();
+	_depthFBO  = gfx.newFBO();
 
 		
 
-	F32 width = Engine::getInstance().getWindowDimensions().width;
-	F32 height = Engine::getInstance().getWindowDimensions().height;
+	F32 width = Application::getInstance().getWindowDimensions().width;
+	F32 height = Application::getInstance().getWindowDimensions().height;
 	ResourceDescriptor mrt("PostFX RenderQuad");
 	mrt.setFlag(true); //No default Material;
 	_renderQuad = ResourceManager::getInstance().loadResource<Quad3D>(mrt);
-	assert(_renderQuad != NULL);
+	assert(_renderQuad);
 	_renderQuad->getCorner(Quad3D::TOP_LEFT) = vec3(0, height, 0);
 	_renderQuad->getCorner(Quad3D::TOP_RIGHT) = vec3(width, height, 0);
 	_renderQuad->getCorner(Quad3D::BOTTOM_LEFT) = vec3(0,0,0);
@@ -130,14 +148,25 @@ void PostFX::init(){
 	_randomNoiseCoefficient = 0;
 	_randomFlashCoefficient = 0;
 	par.setParam("enableDepthOfField", false); //enable using keyboard;
-	PostFX::getInstance().reshapeFBO(Engine::getInstance().getWindowDimensions().width, Engine::getInstance().getWindowDimensions().height);
+	PostFX::getInstance().reshapeFBO(Application::getInstance().getWindowDimensions().width, Application::getInstance().getWindowDimensions().height);
 }
 
 void PostFX::reshapeFBO(I32 width , I32 height){
 	
 	ParamHandler& par = ParamHandler::getInstance();
+
+	if((D32)width / (D32)height != 1.33){
+		height = width/1.33;
+	}
+
+
 	_screenFBO->Create(FrameBufferObject::FBO_2D_COLOR, width, height);
 	_depthFBO->Create(FrameBufferObject::FBO_2D_DEPTH, width, height);
+	_renderQuad->getCorner(Quad3D::TOP_LEFT) = vec3(0, height, 0);
+	_renderQuad->getCorner(Quad3D::TOP_RIGHT) = vec3(width, height, 0);
+	_renderQuad->getCorner(Quad3D::BOTTOM_LEFT) = vec3(0,0,0);
+	_renderQuad->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(width, 0, 0);
+
 	if(!_enablePostProcessing) return;
 	if(_enableAnaglyph){
 		_anaglyphFBO[0]->Create(FrameBufferObject::FBO_2D_COLOR, width, height);
@@ -241,8 +270,8 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 		if(underwater){
 			_underwaterTexture->Bind(id);
 			_postProcessingShader->UniformTexture("texWaterNoiseNM", id++);
-			_postProcessingShader->Uniform("screnWidth", Engine::getInstance().getWindowDimensions().width);
-			_postProcessingShader->Uniform("screnHeight", Engine::getInstance().getWindowDimensions().height);
+			_postProcessingShader->Uniform("screnWidth", Application::getInstance().getWindowDimensions().width);
+			_postProcessingShader->Uniform("screnHeight", Application::getInstance().getWindowDimensions().height);
 			_postProcessingShader->Uniform("noise_tile", 0.05f);
 			_postProcessingShader->Uniform("noise_factor", 0.02f);
 			_postProcessingShader->Uniform("time", GETMSTIME());
@@ -400,8 +429,8 @@ void PostFX::generateDepthOfFieldTexture(){
 			_screenFBO->Bind(0);
 			_depthFBO->Bind(1);
 
-			_blurShader->Uniform("screenWidth", Engine::getInstance().getWindowDimensions().width);
-			_blurShader->Uniform("screenHeight", Engine::getInstance().getWindowDimensions().height);
+			_blurShader->Uniform("screenWidth", Application::getInstance().getWindowDimensions().width);
+			_blurShader->Uniform("screenHeight", Application::getInstance().getWindowDimensions().height);
 			_blurShader->Uniform("bHorizontal", false);
 			_blurShader->UniformTexture("texScreen", 0);
 			_blurShader->UniformTexture("texDepth",1);
@@ -427,8 +456,8 @@ void PostFX::generateDepthOfFieldTexture(){
 			_tempDepthOfFieldFBO->Bind(0);
 			_depthFBO->Bind(1);
 
-			_blurShader->Uniform("screenWidth", Engine::getInstance().getWindowDimensions().width);
-			_blurShader->Uniform("screenHeight", Engine::getInstance().getWindowDimensions().height);
+			_blurShader->Uniform("screenWidth", Application::getInstance().getWindowDimensions().width);
+			_blurShader->Uniform("screenHeight", Application::getInstance().getWindowDimensions().height);
 			_blurShader->Uniform("bHorizontal", true);
 			_blurShader->UniformTexture("texScreen", 0);
 			_blurShader->UniformTexture("texDepth",1);

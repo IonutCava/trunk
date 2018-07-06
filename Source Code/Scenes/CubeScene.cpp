@@ -1,6 +1,6 @@
 #include "CubeScene.h"
 #include "Managers/CameraManager.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 #include "PhysX/PhysX.h"
 #include "GUI/GUI.h"
 #include "Geometry/Predefined/Quad3D.h"
@@ -114,10 +114,10 @@ void CubeScene::processInput()
 
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 
-	moveFB  = Engine::getInstance().moveFB;
-	moveLR  = Engine::getInstance().moveLR;
-	angleLR = Engine::getInstance().angleLR;
-	angleUD = Engine::getInstance().angleUD;
+	moveFB  = Application::getInstance().moveFB;
+	moveLR  = Application::getInstance().moveLR;
+	angleLR = Application::getInstance().angleLR;
+	angleUD = Application::getInstance().angleUD;
 	
 	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
 	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
@@ -157,15 +157,15 @@ bool CubeScene::loadResources(bool continueOnErrors)
 	ResourceDescriptor deferred("DeferredShadingPass2");
 	_deferredShader = _resManager.loadResource<Shader>(deferred);
 
-	_deferredBuffer->Create(FrameBufferObject::FBO_2D_DEFERRED,Engine::getInstance().getWindowDimensions().x,Engine::getInstance().getWindowDimensions().y);
+	_deferredBuffer->Create(FrameBufferObject::FBO_2D_DEFERRED,Application::getInstance().getWindowDimensions().x,Application::getInstance().getWindowDimensions().y);
 	_lightTexture->Create(2,getLights().size());
 
-	F32 width = Engine::getInstance().getWindowDimensions().width;
-	F32 height = Engine::getInstance().getWindowDimensions().height;
+	F32 width = Application::getInstance().getWindowDimensions().width;
+	F32 height = Application::getInstance().getWindowDimensions().height;
 	ResourceDescriptor mrt("MRT RenderQuad");
 	mrt.setFlag(true); //no default material
 	_renderQuad = _resManager.loadResource<Quad3D>(mrt);
-	assert(_renderQuad != NULL);
+	assert(_renderQuad);
 	_renderQuad->getCorner(Quad3D::TOP_LEFT) = vec3(0, height, 0);
 	_renderQuad->getCorner(Quad3D::TOP_RIGHT) = vec3(width, height, 0);
 	_renderQuad->getCorner(Quad3D::BOTTOM_LEFT) = vec3(0,0,0);
@@ -188,16 +188,16 @@ void CubeScene::onKeyDown(const OIS::KeyEvent& key)
 	switch(key.key)
 	{
 		case OIS::KC_W:
-			Engine::getInstance().moveFB = 0.25f;
+			Application::getInstance().moveFB = 0.25f;
 			break;
 		case OIS::KC_A:
-			Engine::getInstance().moveLR = 0.25f;
+			Application::getInstance().moveLR = 0.25f;
 			break;
 		case OIS::KC_S:
-			Engine::getInstance().moveFB = -0.25f;
+			Application::getInstance().moveFB = -0.25f;
 			break;
 		case OIS::KC_D:
-			Engine::getInstance().moveLR = -0.25f;
+			Application::getInstance().moveLR = -0.25f;
 			break;
 		default:
 			break;
@@ -211,11 +211,11 @@ void CubeScene::onKeyUp(const OIS::KeyEvent& key)
 	{
 		case OIS::KC_W:
 		case OIS::KC_S:
-			Engine::getInstance().moveFB = 0;
+			Application::getInstance().moveFB = 0;
 			break;
 		case OIS::KC_A:
 		case OIS::KC_D:
-			Engine::getInstance().moveLR = 0;
+			Application::getInstance().moveLR = 0;
 			break;
 		default:
 			break;

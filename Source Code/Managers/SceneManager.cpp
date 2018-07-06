@@ -1,63 +1,66 @@
 #include "SceneManager.h"
 #include "Managers/CameraManager.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 #include "Rendering/Frustum.h"
 #include "SceneList.h"
 #include "Utility/Headers/ParamHandler.h"
 
 using namespace std;
 
-SceneManager::SceneManager()
-{
-	_scene = NULL;
-	_scenes.insert(make_pair("MainScene", New MainScene()));
-	_scenes.insert(make_pair("CubeScene", New CubeScene()));
-	_scenes.insert(make_pair("NetworkScene", New NetworkScene()));
-	_scenes.insert(make_pair("PingPongScene", New PingPongScene()));
-	_scenes.insert(make_pair("FlashScene", New FlashScene()));
-	_currentSelection = NULL;
+SceneManager::SceneManager() : _scene(NULL), _currentSelection(NULL){}
+
+
+Scene* SceneManager::loadScene(const string& name){
+	Scene* scene = NULL;
+	if(name.compare("MainScene") == 0){
+		scene = New MainScene();
+		_resDB.insert(make_pair("MainScene", scene ));	
+	}else if(name.compare("CubeScene") == 0){
+		scene = New CubeScene();
+		_resDB.insert(make_pair("CubeScene", scene));
+	}else if(name.compare("NetworkScene") == 0){
+		scene = New NetworkScene();
+		_resDB.insert(make_pair("NetworkScene", scene));
+	}else if(name.compare("PingPongScene") == 0){
+		scene = New PingPongScene();
+		_resDB.insert(make_pair("PingPongScene", scene));
+	}else if(name.compare("FlashScene") == 0){
+		scene = New FlashScene();
+		_resDB.insert(make_pair("FlashScene", scene));
+	}else if(name.compare("AITenisScene") == 0){
+		scene = New AITenisScene();
+		_resDB.insert(make_pair("AITenisScene", scene));
+	}else{
+		scene = NULL;
+	}
+	return scene;
 }
 
-Scene* SceneManager::findScene(const string& name)
-{
-	_sceneIter =  _scenes.find(name);
-
-	if ( _sceneIter != _scenes.end() ) return _sceneIter->second;
-    else return NULL;
-}
-
-void SceneManager::toggleBoundingBoxes()
-{
-	if(!_scene->drawBBox() && _scene->drawObjects())
-	{
+void SceneManager::toggleBoundingBoxes(){
+	if(!_scene->drawBBox() && _scene->drawObjects())	{
 		_scene->drawBBox(true);
 		_scene->drawObjects(true);
-	}
-	else if (_scene->drawBBox() && _scene->drawObjects())
-	{
+	}else if (_scene->drawBBox() && _scene->drawObjects()){
 		_scene->drawBBox(true);
 		_scene->drawObjects(false);
-	}
-	else
-	{
+	}else{
 		_scene->drawBBox(false);
 		_scene->drawObjects(true);
 	}
 }
 
-void SceneManager::deleteSelection()
-{
-	if(_currentSelection != NULL)
+void SceneManager::deleteSelection(){
+	if(_currentSelection != NULL){
 		_currentSelection->scheduleDeletion();
+	}
 }
 
-void SceneManager::findSelection(U32 x, U32 y)
-{
+void SceneManager::findSelection(U32 x, U32 y){
 	ParamHandler& par = ParamHandler::getInstance();
     F32 value_fov = 0.7853f;    //this is 45 degrees converted to radians
     F32 value_aspect = par.getParam<F32>("aspectRatio");
-	F32 half_window_width = Engine::getInstance().getWindowDimensions().width / 2.0f;
-	F32 half_window_height = Engine::getInstance().getWindowDimensions().height / 2.0f;
+	F32 half_window_width = Application::getInstance().getWindowDimensions().width / 2.0f;
+	F32 half_window_height = Application::getInstance().getWindowDimensions().height / 2.0f;
 
     F32 modifier_x, modifier_y;
         //mathematical handling of the difference between

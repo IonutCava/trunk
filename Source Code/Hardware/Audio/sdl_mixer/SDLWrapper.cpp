@@ -31,7 +31,7 @@ void SDL_API::playSound(AudioDescriptor* sound)
 
 	if(_chunk != NULL) Mix_FreeChunk(_chunk);
 	_chunk  = Mix_LoadWAV(sound->getName().c_str());
-	assert(_chunk != NULL);
+	assert(_chunk);
 	Mix_Volume(sound->getChannel(),sound->getVolume());
 
 	if(_chunk == NULL)

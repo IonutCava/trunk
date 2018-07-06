@@ -6,7 +6,7 @@
 #include "Rendering/Frustum.h"
 
 SceneGraphNode* SceneNode::getSceneGraphNode(){
-	return SceneManager::getInstance().getActiveScene()->getSceneGraph()->findNode(getName());
+	return SceneManager::getInstance().getActiveScene()->getSceneGraph()->findNode(_sceneGraphNodeName);
 }
 
 void SceneNode::removeCopy(){
@@ -79,6 +79,7 @@ Material* SceneNode::getMaterial(){
 
 void SceneNode::setMaterial(Material* m){
 	if(_material != NULL) {
+		Console::getInstance().printfn("Replacing material [ %s ] with material  [ %s ]",_material->getName().c_str(), m != NULL ? m->getName().c_str() : "");
 		RemoveResource(_material);
 	}
 	if(!m){

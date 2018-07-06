@@ -31,6 +31,7 @@ bool Mesh::computeBoundingBox(SceneGraphNode* node){
 	if(bb.isComputed()) return true;
 	bb.set(vec3(100000.0f, 100000.0f, 100000.0f),vec3(-100000.0f, -100000.0f, -100000.0f));
 	foreach(childrenNodes::value_type it, node->getChildren()){
+		it.second->getBoundingBox().Transform(it.second->getInitialBoundingBox(), it.second->getTransform()->getMatrix());
 		bb.Add(it.second->getBoundingBox());
 	}
 	return SceneNode::computeBoundingBox(node);

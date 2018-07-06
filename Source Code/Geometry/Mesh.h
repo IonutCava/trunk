@@ -39,7 +39,6 @@ class Mesh : public Object3D
 	typedef unordered_map<std::string, SceneGraphNode*> childrenNodes;
 public:
 	Mesh() : Object3D(MESH) {}
-
 	inline void addSubMesh(const std::string& subMesh){_subMeshes.push_back(subMesh);}
 
 	bool computeBoundingBox(SceneGraphNode* node);

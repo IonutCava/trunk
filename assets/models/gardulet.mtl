@@ -12,8 +12,7 @@ newmtl MatD3D26
 	Kd 1.0000 1.0000 1.0000
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Ka ..\texturi\gard.tga
-	map_Kd ..\texturi\gard.tga
+	map_Kd ..\texturi\gard.png
 
 newmtl MatD3D27
 	Ns 0.0000

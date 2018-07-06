@@ -65,11 +65,12 @@ void Material::setTexture(TextureUsage textureUsage, Texture2D* texture) {
 }
 
 void Material::setShader(const std::string& shader){
+	if(_shader){
+		Console::getInstance().printfn("Replacing shader [ %s ] with shader  [ %s ]",_shader->getName().c_str(),shader.c_str());
+		if(_shader->getName().compare(shader) == 0) return;
+		RemoveResource(_shader);
+	}
 	if(!shader.empty()){
-		if(_shader){
-			if(_shader->getName().compare(shader) == 0) return;
-			RemoveResource(_shader);
-		}
 		ResourceDescriptor shaderDescriptor(shader);
 		_shader = ResourceManager::getInstance().loadResource<Shader>(shaderDescriptor);
 	}

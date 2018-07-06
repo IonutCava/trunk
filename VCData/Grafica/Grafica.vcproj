@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="Divide"
 	ProjectGUID="{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}"
 	RootNamespace="Grafica"
@@ -45,6 +45,7 @@
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				EnableEnhancedInstructionSet="2"
 				OpenMP="false"
 				WarningLevel="3"
 				DebugInformationFormat="4"
@@ -187,11 +188,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\Source Code\Rendering\common.cpp"
+				RelativePath="..\..\Source Code\Rendering\Application.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Source Code\Rendering\common.h"
+				RelativePath="..\..\Source Code\Rendering\Application.h"
 				>
 			</File>
 			<File
@@ -518,6 +519,14 @@
 			Name="Scenes"
 			>
 			<File
+				RelativePath="..\..\Source Code\Scenes\AITenisScene.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Scenes\AITenisScene.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\Scenes\CubeScene.cpp"
 				>
 			</File>
@@ -777,6 +786,14 @@
 		<Filter
 			Name="Managers"
 			>
+			<File
+				RelativePath="..\..\Source Code\Managers\AIManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Managers\AIManager.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\Source Code\Managers\CameraManager.cpp"
 				>
@@ -1169,6 +1186,34 @@
 				RelativePath="..\..\Source Code\EngineGraphs\SpatialGraph.h"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="AI"
+			>
+			<File
+				RelativePath="..\..\Source Code\AI\AIEntity.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\AI\AIEntity.h"
+				>
+			</File>
+			<Filter
+				Name="Sensors"
+				>
+				<File
+					RelativePath="..\..\Source Code\AI\Sensors\AudioSensor.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\AI\Sensors\Sensor.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\AI\Sensors\VisualSensor.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath="..\..\Source Code\config.h"

@@ -28,6 +28,7 @@ class SceneGraph  {
 	}
 
 	~SceneGraph(){
+		Console::getInstance().printfn("Deleting SceneGraph");
 		_root->unload();
 		delete _root; //Should recursivelly call delete on the entire scene
 		_root = NULL;

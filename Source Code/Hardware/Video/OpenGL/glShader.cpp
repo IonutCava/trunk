@@ -3,7 +3,7 @@
 #include "glShader.h"
 #include "Utility/Headers/ParamHandler.h"
 #include "Hardware/Video/GFXDevice.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 using namespace std;
 
 void glShader::validateShader(U16 shader, const string &file) {
@@ -96,9 +96,8 @@ bool glShader::loadVertOnly(const string& name)
 	return true;
 }
 
-bool glShader::load(const string& name)
-{
-	setName(name);
+bool glShader::load(const string& name){
+
 	if(!_loaded)
 	{
 		if(name.length() >= 6)

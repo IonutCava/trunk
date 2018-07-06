@@ -25,48 +25,55 @@
 * - 
 * - 
 ***************************************************************************************************************/
+#ifndef _CONFIG_HEADER_
+#define _CONFIG_HEADER_
 
 //Edit the maximum number of concurrent threads that this application may start excluding events.
 //Default 5: Rendering + Update + A.I. + Networking + PhysX
 #ifndef THREAD_LIMIT
 #define THREAD_LIMIT 5
-#endif
+#endif //THREAD_LIMIT
 
 //Comment this out to show the debug console
 #ifndef HIDE_DEBUG_CONSOLE
 #define HIDE_DEBUG_CONSOLE
-#endif
+#endif //HIDE_DEBUG_CONSOLE
 
 //Please enter the desired log file name
 #ifndef OUTPUT_LOG_FILE
 #define OUTPUT_LOG_FILE "console.log"
-#endif 
+#endif //OUTPUT_LOG_FILE
 
 //Show log timestamps
 #ifndef SHOW_LOG_TIMESTAMPS
 #define SHOW_LOG_TIMESTAMPS
-#endif 
+#endif //SHOW_LOG_TIMESTAMPS
 
 //Reduce Build time on Windows Platform
 #ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
+#endif //VC_EXTRALEAN
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif //WIN32_LEAN_AND_MEAN
 
 //Use SSE functions for math calculations: usefull for release
 #ifndef USE_MATH_SSE
-#define USE_MATH_SSE
-#endif
+//#define USE_MATH_SSE
+#endif //USE_MATH_SSE
 
 //Use boost or std::tr1 unordered_map
 #ifndef UNORDERED_MAP
 #define UNORDERED_MAP BOOST
 //#define UNORDERED_MAP TR1
-#endif
+#endif //UNORDERED_MAP
 
 //Use boost or std foreach
 #ifndef FOR_EACH_IMPLEMENTATION
 #define FOR_EACH_IMPLEMENTATION BOOST
 //ToDo: Define a macro for this using lambda expressions. Not supported in VS2008 - Ionut
 //#define FOR_EACH_IMPLEMENTATION STD 
-#endif
+#endif //FOR_EACH_IMPLEMENTATION
+
+#endif //_CONFIG_HEADER

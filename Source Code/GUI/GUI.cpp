@@ -1,14 +1,14 @@
 #include "GUI.h"
 #include <stdarg.h>
 #include "Hardware/Video/GFXDevice.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 #include "guiFlash.h"
 
 using namespace std;
 
 void GUI::onResize(F32 newWidth, F32 newHeight)
 {
-	vec2 difDimensions = Engine::getInstance().getWindowDimensions() - vec2(newWidth,newHeight);
+	vec2 difDimensions = Application::getInstance().getWindowDimensions() - vec2(newWidth,newHeight);
 	foreach(guiMap::value_type guiStackIterator,_guiStack){
 		guiStackIterator.second->onResize(difDimensions);
 	}

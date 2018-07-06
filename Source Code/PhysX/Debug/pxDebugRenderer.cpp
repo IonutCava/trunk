@@ -1,4 +1,4 @@
-#include "Hardware/Video/OpenGL/glResources.h" //ToDo: Remove this from here -Ionut
+//#include "Hardware/Video/OpenGL/glResources.h" //ToDo: Remove this from here -Ionut
 
 #include "pxDebugRenderer.h"
 #include "NxDebugRenderable.h"
@@ -7,19 +7,20 @@
 
 void DebugRenderer::renderBuffer(F32* pVertList, F32* pColorList, I32 type, I32 num)
 {
-	glEnableClientState(GL_VERTEX_ARRAY);
+/*	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3,GL_FLOAT, 0, pVertList);
 	glEnableClientState(GL_COLOR_ARRAY);
 	glColorPointer(4, GL_FLOAT, 0, pColorList);
 	glDrawArrays(type, 0, num);
 	glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
+*/
 }
 
 void DebugRenderer::renderData(const NxDebugRenderable& data) const
 {
-	glLineWidth(1.0f);
-	glDisable(GL_LIGHTING);
+//	glLineWidth(1.0f);
+//	glDisable(GL_LIGHTING);
 
 	U32 NbPoints = data.getNbPoints();
 	if(NbPoints)
@@ -41,7 +42,7 @@ void DebugRenderer::renderData(const NxDebugRenderable& data) const
 	      	Points++;
 		}
 		
-		renderBuffer(pVertList, pColorList, GL_POINTS, data.getNbPoints());
+//		renderBuffer(pVertList, pColorList, GL_POINTS, data.getNbPoints());
     	
     	delete[] pVertList;
     	delete[] pColorList;
@@ -78,7 +79,7 @@ void DebugRenderer::renderData(const NxDebugRenderable& data) const
 	      	Lines++;
 		}
 		
-		renderBuffer(pVertList, pColorList, GL_LINES, data.getNbLines()*2);
+//		renderBuffer(pVertList, pColorList, GL_LINES, data.getNbLines()*2);
     	
     	delete[] pVertList;
     	delete[] pColorList;
@@ -119,13 +120,13 @@ void DebugRenderer::renderData(const NxDebugRenderable& data) const
 	      	Triangles++;
 		}
 		
-		renderBuffer(pVertList, pColorList, GL_TRIANGLES, data.getNbTriangles()*3);
+//		renderBuffer(pVertList, pColorList, GL_TRIANGLES, data.getNbTriangles()*3);
   	
     	delete[] pVertList;
     	delete[] pColorList;
 		pVertList = NULL;
 		pColorList = NULL;
 	}
-	glEnable(GL_LIGHTING);
+//	glEnable(GL_LIGHTING);
 }
 

@@ -19,7 +19,7 @@
 #define _INPUT_MANAGER_H_
 
 #include "JoystickManager.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 #include "Utility/Headers/Singleton.h"
 #if defined OIS_WIN32_PLATFORM
 #  ifndef WIN32_LEAN_AND_MEAN
@@ -52,8 +52,7 @@ void forceVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect);
 void periodVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect);
 //////////// Effect manager class //////////////////////////////////////////////////////////
 
-class EffectManager
-{
+class EffectManager{
   protected:
 
     // The joystick manager
@@ -336,7 +335,7 @@ public:
 #if defined OIS_WIN32_PLATFORM
 	  // Create OIS input manager
 		HWND hWnd = 0;
-		hWnd = FindWindow("FREEGLUT","DIVIDE Engine");
+		hWnd = FindWindow("FREEGLUT","DIVIDE Framework");
 		std::ostringstream wnd;
 		wnd << (size_t)hWnd;
 		pl.insert(std::make_pair(std::string("WINDOW"), wnd.str() ));
@@ -380,8 +379,8 @@ public:
 		_pMouse = (OIS::Mouse*)_pInputMgr->createInputObject(OIS::OISMouse,true);
 		_pMouse->setEventCallback( _pEventHdlr );
 		const OIS::MouseState &ms = _pMouse->getMouseState();
-		ms.width = Engine::getInstance().getWindowDimensions().width;
-		ms.height = Engine::getInstance().getWindowDimensions().height;
+		ms.width = Application::getInstance().getWindowDimensions().width;
+		ms.height = Application::getInstance().getWindowDimensions().height;
 	  }
 	  catch(OIS::Exception &ex)
 	  {

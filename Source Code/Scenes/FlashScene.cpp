@@ -24,10 +24,10 @@ void FlashScene::processInput()
 {
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 
-	moveFB  = Engine::getInstance().moveFB;
-	moveLR  = Engine::getInstance().moveLR;
-	angleLR = Engine::getInstance().angleLR;
-	angleUD = Engine::getInstance().angleUD;
+	moveFB  = Application::getInstance().moveFB;
+	moveLR  = Application::getInstance().moveLR;
+	angleLR = Application::getInstance().angleLR;
+	angleUD = Application::getInstance().angleUD;
 	
 	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
 	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());

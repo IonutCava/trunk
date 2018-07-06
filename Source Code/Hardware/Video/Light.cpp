@@ -5,7 +5,7 @@
 #include "Managers/ResourceManager.h"
 #include "Utility/Headers/ParamHandler.h"
 #include "Rendering/Frustum.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 
 Light::Light(U8 slot, F32 radius) : SceneNode(), _slot(slot), _radius(radius),_drawImpostor(false){
 	vec4 _white(1.0f,1.0f,1.0f,1.0f);
@@ -87,8 +87,8 @@ void Light::getWindowRect(U16 & x, U16 & y, U16 & width, U16 & height)
 
 	Frustum::getInstance().Extract(CameraManager::getInstance().getActiveCamera()->getEye());
 	mat4 cameraViewMatrix = Frustum::getInstance().getModelviewMatrix();
-	U16 windowWidth = Engine::getInstance().getWindowDimensions().x;
-	U16 windowHeight = Engine::getInstance().getWindowDimensions().y;
+	U16 windowWidth = Application::getInstance().getWindowDimensions().x;
+	U16 windowHeight = Application::getInstance().getWindowDimensions().y;
 	F32 left=-1.0f;	F32 right=1.0f;
 	F32 bottom=-1.0f; F32 top=1.0f;
 	vec3 l=cameraViewMatrix*vec3(_lightProperties["position"]);

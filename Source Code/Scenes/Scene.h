@@ -47,11 +47,11 @@ public:
 	  _lightTexture(NULL),
 	  _deferredBuffer(NULL),
 	  _deferredShader(NULL),
-	  _inputManager(InputManagerInterface::getInstance())
+	  _inputManager(InputManagerInterface::getInstance()),
+	  _sceneGraph(New SceneGraph())
 	  {
 		  _white = vec4(1.0f,1.0f,1.0f,1.0f);
 		  _black = vec4(0.0f,0.0f,0.0f,0.0f);
-		  _sceneGraph = New SceneGraph();
 		  _depthMap[0] = NULL;
 		  _depthMap[1] = NULL;
 	  };

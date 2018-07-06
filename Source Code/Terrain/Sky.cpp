@@ -9,10 +9,15 @@
 #include "Geometry/Predefined/Sphere3D.h"
 using namespace std;
 
-Sky::Sky()
-{
-	_init = false;
-	
+Sky::Sky() : _skyShader(NULL), _skybox(NULL), _init(false){}
+
+Sky::~Sky(){
+	RemoveResource(_skyShader);
+	RemoveResource(_skybox);
+}
+
+bool Sky::load() {
+	if(_init) return false;
    	string location = ParamHandler::getInstance().getParam<string>("assetsLocation")+"/misc_images/";
 	ResourceDescriptor skybox("SkyBox");
 	skybox.setFlag(true); //no default material;
@@ -33,20 +38,15 @@ Sky::Sky()
 									   location+"skybox_3.jpg "+ location+"skybox_4.jpg");
 
 	_skybox =  ResourceManager::getInstance().loadResource<TextureCubemap>(skyboxTextures);
-	_skyShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("sky"));
+	ResourceDescriptor skyShaderDescriptor("sky");
+	_skyShader = ResourceManager::getInstance().loadResource<Shader>(skyShaderDescriptor);
 	assert(_skyShader);
 	Console::getInstance().printfn("Generated sky cubemap and sun OK!");
 	_init = true;
+	return true;
 }
 
-Sky::~Sky()
-{
-	RemoveResource(_skyShader);
-	RemoveResource(_skybox);
-}
-
-void Sky::draw() const
-{
+void Sky::draw() const{
 	if(!_init) return;
 	if (_drawSky && _drawSun) drawSkyAndSun();
 	if (_drawSky && !_drawSun) drawSky();
@@ -54,15 +54,14 @@ void Sky::draw() const
 	GFXDevice::getInstance().clearBuffers(GFXDevice::DEPTH_BUFFER);
 }
 
-void Sky::setParams(const vec3& eyePos, const vec3& sunVect, bool invert, bool drawSun, bool drawSky) 
-{
+void Sky::setParams(const vec3& eyePos, const vec3& sunVect, bool invert, bool drawSun, bool drawSky) {
+	if(!_init) load();
 	_eyePos = eyePos;	_sunVect = sunVect;
 	_invert = invert;	_drawSun = drawSun;
 	_drawSky = drawSky;
 }
 
-void Sky::drawSkyAndSun() const
-{
+void Sky::drawSkyAndSun() const {
 	_skyNode->getTransform()->setPosition(vec3(_eyePos.x,_eyePos.y,_eyePos.z));
 	_skyNode->getTransform()->scale(vec3(1.0f, _invert ? -1.0f : 1.0f, 1.0f));
 
@@ -73,22 +72,21 @@ void Sky::drawSkyAndSun() const
 
 	_skybox->Bind(0);
 	_skyShader->bind();
-	{
+	
 		_skyShader->UniformTexture("texSky", 0);
 		_skyShader->Uniform("enable_sun", true);
 		_skyShader->Uniform("sun_vector", _sunVect);
 
 		GFXDevice::getInstance().drawSphere3D(_skyNode);
 		
-	}
+	
 	_skyShader->unbind();
 	_skybox->Unbind(0);
 	GFXDevice::getInstance().ignoreStateChanges(false);
 	
 }
 
-void Sky::drawSky() const
-{
+void Sky::drawSky() const {
 	_skyNode->getTransform()->setPosition(vec3(_eyePos.x,_eyePos.y,_eyePos.z));
 	_skyNode->getTransform()->scale(vec3(1.0f, _invert ? -1.0f : 1.0f, 1.0f));
 	GFXDevice::getInstance().ignoreStateChanges(true);
@@ -98,12 +96,12 @@ void Sky::drawSky() const
 
 	_skybox->Bind(0);
 	_skyShader->bind();
-	{
+	
 		_skyShader->UniformTexture("texSky", 0);
 		_skyShader->Uniform("enable_sun", false);
 
 		GFXDevice::getInstance().drawSphere3D(_skyNode);
-	}
+	
 	_skyShader->unbind();
 	_skybox->Unbind(0);
 
@@ -111,8 +109,7 @@ void Sky::drawSky() const
 
 }
 
-void Sky::drawSun() const
-{
+void Sky::drawSun() const {
 	_sun->getMaterial()->setDiffuse(SceneManager::getInstance().getActiveScene()->getLights()[0]->getDiffuseColor());
 	_sunNode->getTransform()->setPosition(vec3(_eyePos.x-_sunVect.x,_eyePos.y-_sunVect.y,_eyePos.z-_sunVect.z));
 	

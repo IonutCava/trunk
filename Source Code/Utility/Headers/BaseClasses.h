@@ -29,15 +29,15 @@ public:
 															  _flag(flag),
 															  _id(id){}
 
-	const std::string& getResourceLocation() const {return _resourceLocation;}
-	const std::string& getName()			 const {return _name;}
-		  bool getFlag()					 const {return _flag;}
-		  U32  getId()						 const {return _id;}
+	const  std::string& getResourceLocation() const {return _resourceLocation;}
+	const  std::string& getName()			  const {return _name;}
+	inline bool getFlag()					  const {return _flag;}
+	inline U32  getId()						  const {return _id;}
 
-	void setResourceLocation(const std::string& resourceLocation) {_resourceLocation = resourceLocation;}
-	void setName(const std::string& name)					      {_name = name;}
-	void setFlag(bool flag)				                          {_flag = flag;}
-	void setId(U32 id)					                          {_id = id;}
+	inline void setResourceLocation(const std::string& resourceLocation) {_resourceLocation = resourceLocation;}
+	inline void setName(const std::string& name)					      {_name = name;}
+	inline void setFlag(bool flag)				                          {_flag = flag;}
+	inline void setId(U32 id)					                          {_id = id;}
 
 private:
 	std::string _name;			   //Item name
@@ -70,7 +70,7 @@ public:
 
 	/*ID management*/
 	const std::string& getName() {return _name;}
-	void setName(const std::string& name) {_name = name;}
+	inline void setName(const std::string& name) {_name = name;}
 
 	const std::string& getResourceLocation() {return _resourceLocation;}
 	void setResourceLocation(const std::string& resourceLocation) {_resourceLocation = resourceLocation;}

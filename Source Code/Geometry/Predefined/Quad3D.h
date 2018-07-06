@@ -51,6 +51,7 @@ public:
 	}
 	
 	virtual bool computeBoundingBox(SceneGraphNode* node) {
+		if(node->getBoundingBox().isComputed()) return true;
 		node->getBoundingBox().set(_bl,_tr);
 		return SceneNode::computeBoundingBox(node);
 	}

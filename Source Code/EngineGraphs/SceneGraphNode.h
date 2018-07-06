@@ -85,6 +85,7 @@ inline       BoundingBox&	  getBoundingBox()                {return _boundingBox
 inline       void			  setTransform(Transform* t) { if(_transform) delete _transform; _transform = t;}
 			 Transform*		  getTransform();
 inline       void             useDefaultTransform(bool state) {_noDefaultTransform = !state;}
+inline       void             silentDispose(bool state) {_silentDispose = state;}
 /*Transform management*/
 
 /*Node State*/
@@ -104,7 +105,7 @@ private:
 	SceneNode* _node;
 	NodeChildren _children;
 	SceneGraphNode *_parent, *_grandParent;
-	bool _active, _wasActive,_noDefaultTransform,_inView, _sorted;
+	bool _active, _wasActive,_noDefaultTransform,_inView, _sorted, _silentDispose;
 
 	//_initialBoundingBox is a copy of the initialy calculate BB for transformation
 	//it should be copied in every computeBoungingBox call;

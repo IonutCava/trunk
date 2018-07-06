@@ -131,7 +131,14 @@ public:
 	ButtonCallback _callbackFunction;	/* A pointer to a function to call if the button is pressed */
 	//Texture2D image;
 
-	void onResize(const vec2& newSize){_position -= newSize; _dimensions -= newSize; }
+	void onResize(const vec2& newSize){
+		if(_dimensions.x - newSize.x/_dimensions.x > 0.075f &&
+		   _dimensions.y - newSize.y/_dimensions.y > 0.05f){
+			_position -= newSize;
+			_dimensions.x -= newSize.x/_dimensions.x; 
+			_dimensions.y -= newSize.y/_dimensions.y; 
+		}
+	}
     void onMouseMove(const GuiEvent &event);
     void onMouseUp(const GuiEvent &event);
     void onMouseDown(const GuiEvent &event);

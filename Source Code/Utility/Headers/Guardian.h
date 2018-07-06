@@ -26,10 +26,11 @@ public:
 	void LoadApplication(const std::string& entryPoint);
 	void ReloadSettings();
 	void RestartPhysX();
-	static void TerminateApplication();
+	void TerminateApplication();
 	void StartPhysX();
 	void ReloadEngine();
 	std::ofstream myfile;
-	
-	
+
+private:
+	bool _closing;
  END_SINGLETON

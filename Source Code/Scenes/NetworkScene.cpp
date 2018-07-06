@@ -2,7 +2,7 @@
 
 #include "NetworkScene.h"
 #include "GUI/GUI.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 #include "Managers/CameraManager.h"
 #include "Utility/Headers/ParamHandler.h"
 #include "Terrain/Sky.h"
@@ -39,10 +39,10 @@ void NetworkScene::processInput()
 {
 	_inputManager.tick();
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
-	moveFB  = Engine::getInstance().moveFB;
-	moveLR  = Engine::getInstance().moveLR;
-	angleLR = Engine::getInstance().angleLR;
-	angleUD = Engine::getInstance().angleUD;
+	moveFB  = Application::getInstance().moveFB;
+	moveLR  = Application::getInstance().moveLR;
+	angleLR = Application::getInstance().angleLR;
+	angleUD = Application::getInstance().angleUD;
 	
 	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
 	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
@@ -155,30 +155,30 @@ bool NetworkScene::loadResources(bool continueOnErrors)
 								"Elapsed time: %5.0f",GETTIME());
 
 	gui.addText("serverMessage",
-								vec3(Engine::getInstance().getWindowDimensions().width / 4.0f,
-								     Engine::getInstance().getWindowDimensions().height / 1.6f,
+								vec3(Application::getInstance().getWindowDimensions().width / 4.0f,
+								     Application::getInstance().getWindowDimensions().height / 1.6f,
 									 0),
 								BITMAP_8_BY_13,
 								vec3(0.5f,0.5f,0.2f),
 								"Server says: %s", "<< nothing yet >>");
 	gui.addText("statusText",
-								vec3(Engine::getInstance().getWindowDimensions().width / 3.0f,
-								     Engine::getInstance().getWindowDimensions().height / 1.2f,
+								vec3(Application::getInstance().getWindowDimensions().width / 3.0f,
+								     Application::getInstance().getWindowDimensions().height / 1.2f,
 									 0),
 								BITMAP_HELVETICA_12,
 								vec3(0.2f,0.5f,0.2f),
 								"");
 
-	gui.addButton("getPing", "ping me", vec2(60 , Engine::getInstance().getWindowDimensions().height/1.1f),
+	gui.addButton("getPing", "ping me", vec2(60 , Application::getInstance().getWindowDimensions().height/1.1f),
 										vec2(100,25),vec3(0.6f,0.6f,0.6f),
 										boost::bind(&NetworkScene::test,this));
-	gui.addButton("disconnect", "disconnect", vec2(180 , Engine::getInstance().getWindowDimensions().height/1.1f),
+	gui.addButton("disconnect", "disconnect", vec2(180 , Application::getInstance().getWindowDimensions().height/1.1f),
 										vec2(100,25),vec3(0.5f,0.5f,0.5f),
 										boost::bind(&NetworkScene::disconnect,this));
-	gui.addButton("connect", "connect", vec2(300 , Engine::getInstance().getWindowDimensions().height/1.1f),
+	gui.addButton("connect", "connect", vec2(300 , Application::getInstance().getWindowDimensions().height/1.1f),
 										vec2(100,25),vec3(0.65f,0.65f,0.65f),
 										boost::bind(&NetworkScene::connect,this));
-	gui.addButton("patch", "patch",     vec2(420 , Engine::getInstance().getWindowDimensions().height/1.1f),
+	gui.addButton("patch", "patch",     vec2(420 , Application::getInstance().getWindowDimensions().height/1.1f),
 										vec2(100,25),vec3(0.65f,0.65f,0.65f),
 										boost::bind(&NetworkScene::checkPatches,this));
 		

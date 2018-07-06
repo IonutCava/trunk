@@ -1,6 +1,6 @@
 #include "PingPongScene.h"
 #include "Managers/CameraManager.h"
-#include "Rendering/common.h"
+#include "Rendering/Application.h"
 #include "Rendering/Frustum.h"
 #include "PhysX/PhysX.h"
 #include "Importer/DVDConverter.h"
@@ -63,13 +63,6 @@ void PingPongScene::processEvents(F32 time)
 		_eventTimers[0] += FpsDisplay;
 	}
 }
-
-bool _directieAdversar = true;
-bool _directieSus = false;
-bool _atinsTeren = false;
-bool _atinsTerenAdversar = false;
-bool _pierdut = false;
-F32 _miscareLaterala = 0;
 
 void PingPongScene::reseteazaJoc(){
 	_directieAdversar = true;
@@ -177,19 +170,19 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 		updated = true;
 	}
 
-	//Am lovit plasa?
-	if(_mingeSGN->getBoundingBox().Collision(plasa->getBoundingBox()) &&	_directieAdversar)
+	if(_mingeSGN->getBoundingBox().Collision(plasa->getBoundingBox()))
 	{
-		_pierdut = true;
+		if(_directieAdversar){
+			//Am lovit plasa?
+			_pierdut = true;
+		}else{
+			//A lovit adversarul plasa
+			_pierdut = false;
+		}
 		updated = true;
 		
     }
-	//A lovit adversarul plasa
-	if(_mingeSGN->getBoundingBox().Collision(plasa->getBoundingBox()) &&	!_directieAdversar)
-	{
-		_pierdut = false;
-		updated = true;
-    }
+	
 	//Am lovit adversarul? Ne intoarcem ... DAR
 	//... adaugam o mica sansa sa castigam meciul .. dar mica ...
 	if(random(30) != 2)
@@ -233,12 +226,12 @@ void PingPongScene::processInput()
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	//Move FB = Forward/Back = sus/jos
 	//Move LR = Left/Right = stanga/dreapta
-	moveFB  = Engine::getInstance().moveFB;
-	moveLR  = Engine::getInstance().moveLR;
+	moveFB  = Application::getInstance().moveFB;
+	moveLR  = Application::getInstance().moveLR;
 
 	//Miscarea camerei
-	angleLR = Engine::getInstance().angleLR;
-	angleUD = Engine::getInstance().angleUD;
+	angleLR = Application::getInstance().angleLR;
+	angleUD = Application::getInstance().angleUD;
 
 	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
 	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
@@ -297,17 +290,17 @@ bool PingPongScene::loadResources(bool continueOnErrors)
 	_minge->getMaterial()->setSpecular(vec4(0.774597f,0.774597f,0.774597f,1.0f));
 
 	//Adaugam butoane si text labels
-	GUI::getInstance().addButton("Serveste", "Serveste", vec2(Engine::getInstance().getWindowDimensions().width-120 ,
-															 Engine::getInstance().getWindowDimensions().height/1.1f),
+	GUI::getInstance().addButton("Serveste", "Serveste", vec2(Application::getInstance().getWindowDimensions().width-120 ,
+															 Application::getInstance().getWindowDimensions().height/1.1f),
 													    	 vec2(100,25),vec3(0.65f,0.65f,0.65f),
 															 boost::bind(&PingPongScene::servesteMingea,this));
 
-	GUI::getInstance().addText("Scor",vec3(Engine::getInstance().getWindowDimensions().width - 120, Engine::getInstance().getWindowDimensions().height/1.3f, 0),
+	GUI::getInstance().addText("Scor",vec3(Application::getInstance().getWindowDimensions().width - 120, Application::getInstance().getWindowDimensions().height/1.3f, 0),
 							   BITMAP_8_BY_13,vec3(1,0,0), "Scor: %d",0);
 
-	GUI::getInstance().addText("Mesaj",vec3(Engine::getInstance().getWindowDimensions().width - 120, Engine::getInstance().getWindowDimensions().height/1.5f, 0),
+	GUI::getInstance().addText("Mesaj",vec3(Application::getInstance().getWindowDimensions().width - 120, Application::getInstance().getWindowDimensions().height/1.5f, 0),
 							   BITMAP_8_BY_13,vec3(1,0,0), "");
-	GUI::getInstance().addText("insulte",vec3(Engine::getInstance().getWindowDimensions().width/4, Engine::getInstance().getWindowDimensions().height/3, 0),
+	GUI::getInstance().addText("insulte",vec3(Application::getInstance().getWindowDimensions().width/4, Application::getInstance().getWindowDimensions().height/3, 0),
 							   BITMAP_TIMES_ROMAN_24,vec3(0,1,0), "");
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
 		                       vec3(60,60,0),          //Position
@@ -337,16 +330,16 @@ void PingPongScene::onKeyDown(const OIS::KeyEvent& key)
 	switch(key.key)
 	{
 		case OIS::KC_W:
-			Engine::getInstance().moveFB = 0.25f;
+			Application::getInstance().moveFB = 0.25f;
 			break;
 		case OIS::KC_A:
-			Engine::getInstance().moveLR = 0.25f;
+			Application::getInstance().moveLR = 0.25f;
 			break;
 		case OIS::KC_S:
-			Engine::getInstance().moveFB = -0.25f;
+			Application::getInstance().moveFB = -0.25f;
 			break;
 		case OIS::KC_D:
-			Engine::getInstance().moveLR = -0.25f;
+			Application::getInstance().moveLR = -0.25f;
 			break;
 		default:
 			break;
@@ -360,11 +353,11 @@ void PingPongScene::onKeyUp(const OIS::KeyEvent& key)
 	{
 		case OIS::KC_W:
 		case OIS::KC_S:
-			Engine::getInstance().moveFB = 0;
+			Application::getInstance().moveFB = 0;
 			break;
 		case OIS::KC_A:
 		case OIS::KC_D:
-			Engine::getInstance().moveLR = 0;
+			Application::getInstance().moveLR = 0;
 			break;
 		default:
 			break;
@@ -376,19 +369,19 @@ void PingPongScene::OnJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov)
 {
 	Scene::OnJoystickMovePOV(key,pov);
 	if( key.state.mPOV[pov].direction & OIS::Pov::North ) //Going up
-		Engine::getInstance().moveFB = 0.25f;
+		Application::getInstance().moveFB = 0.25f;
 	else if( key.state.mPOV[pov].direction & OIS::Pov::South ) //Going down
-		Engine::getInstance().moveFB = -0.25f;
+		Application::getInstance().moveFB = -0.25f;
 
 	if( key.state.mPOV[pov].direction & OIS::Pov::East ) //Going right
-		Engine::getInstance().moveLR = -0.25f;
+		Application::getInstance().moveLR = -0.25f;
 	else if( key.state.mPOV[pov].direction & OIS::Pov::West ) //Going left
-		Engine::getInstance().moveLR = 0.25f;
+		Application::getInstance().moveLR = 0.25f;
 
 	if( key.state.mPOV[pov].direction == OIS::Pov::Centered ) //stopped/centered out
 	{
-		Engine::getInstance().moveLR = 0;
-		Engine::getInstance().moveFB = 0;
+		Application::getInstance().moveLR = 0;
+		Application::getInstance().moveFB = 0;
 	}
 }
 

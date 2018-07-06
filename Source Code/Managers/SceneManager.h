@@ -27,7 +27,7 @@ DEFINE_SINGLETON_EXT1(SceneManager,Manager)
 
 public:
 	Scene* getActiveScene() {return _scene;}
-	void setActiveScene(Scene* scene) {if(_scene) delete _scene; _scene = scene;}
+	inline void setActiveScene(Scene* scene) {if(_scene) delete _scene; _scene = scene;}
 
 	/*Base Scene Operations*/
 	inline void render() {_scene->render();}
@@ -45,7 +45,7 @@ public:
 	//U32 getNumberOfObjects(){return _scene->getNumberOfObjects();}
     inline U32 getNumberOfTerrains(){return _scene->getNumberOfTerrains();}
    
-	Scene* findScene(const std::string& name);
+	Scene* loadScene(const std::string& name);
 
 	inline void addModel(FileData& model){_scene->addModel(model);}
 	inline void addTerrain(TerrainDescriptor* ter) {_scene->addTerrain(ter);}
@@ -61,8 +61,6 @@ private:
 
 	SceneManager();
 	Scene* _scene;
-	std::map<std::string, Scene*> _scenes;
-	std::map<std::string, Scene*>::iterator _sceneIter;
     Object3D* _currentSelection;
 
 END_SINGLETON

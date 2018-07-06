@@ -41,6 +41,7 @@
 #endif
 #endif
 
+#include "config.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
@@ -57,6 +58,7 @@
 #include <deque>
 #include <list>
 #include <time.h>
+
 #if defined UNORDERED_MAP == BOOST
 #include <boost/unordered_map.hpp>
 #include <boost/foreach.hpp>

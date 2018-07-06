@@ -9,12 +9,14 @@
 #include "Geometry/Predefined/Sphere3D.h"
 #include "Geometry/Predefined/Text3D.h"
 #include "GUI/GUI.h"
-
+#include "Utility/Headers/XMLParser.h"
 using namespace std;
 
 
 bool Scene::clean(){ //Called when application is idle
-	if(_sceneGraph->getRoot()->getChildren().empty()) return false;
+	if(_sceneGraph){
+		if(_sceneGraph->getRoot()->getChildren().empty()) return false;
+	}
 
 	bool _updated = false;
 	if(!PendingDataArray.empty())
@@ -118,11 +120,10 @@ bool Scene::loadGeometry(const FileData& data){
 			vec3 scale = data.scale;
 			vec3 position = data.position;
 			thisObj = _resManager.loadResource<Quad3D>(item);
-			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::TOP_LEFT)     = vec3(scale.x/2-position.x,scale.y/2+position.y, scale.z/2 + position.z);
-			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::TOP_RIGHT)    = vec3(scale.x/2+position.x,scale.y/2+position.y, scale.z/2 + position.z);
-			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::BOTTOM_LEFT)  = vec3(scale.x/2-position.x,scale.y/2-position.y, scale.z/2 + position.z);
-			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(scale.x/2+position.x,scale.y/2-position.y, scale.z/2 + position.z);
-
+			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::TOP_LEFT)     = vec3(0,1,0);
+			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::TOP_RIGHT)    = vec3(1,1,0);
+			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::BOTTOM_LEFT)  = vec3(0,0,0);
+			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(1,0,0);
 	} else if(data.ModelName.compare("Text3D") == 0) {
 		
 			thisObj =_resManager.loadResource<Text3D>(item);
@@ -132,8 +133,13 @@ bool Scene::loadGeometry(const FileData& data){
 		Console::getInstance().errorfn("SCENEMANAGER: Error adding unsupported geometry to scene: [ %s ]",data.ModelName.c_str());
 		return false;
 	}
-	ResourceDescriptor materialDescriptor(data.ItemName+"_material");
-	thisObj->setMaterial(ResourceManager::getInstance().loadResource<Material>(materialDescriptor));
+	Material* tempMaterial = XML::loadMaterial(data.ItemName+"_material");
+	if(!tempMaterial){
+		ResourceDescriptor materialDescriptor(data.ItemName+"_material");
+		tempMaterial = ResourceManager::getInstance().loadResource<Material>(materialDescriptor);
+	}
+	
+	thisObj->setMaterial(tempMaterial);
 	thisObj->getMaterial()->setDiffuse(data.color);
 	thisObj->getMaterial()->setAmbient(data.color);
 	SceneGraphNode* thisObjSGN = _sceneGraph->getRoot()->addNode(thisObj);
@@ -219,7 +225,7 @@ void Scene::clearObjects(){
 	ModelDataArray.clear();
 	VegetationDataArray.clear();
 	PendingDataArray.clear();
-	Console::getInstance().printfn("Deleting SceneGraph");
+	assert(_sceneGraph);
 	delete _sceneGraph;
 	_sceneGraph = NULL;
 }
@@ -289,16 +295,16 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 
 	switch(key.key){
 		case OIS::KC_LEFT : 
-			Engine::getInstance().angleLR = -(speedFactor/10);
+			Application::getInstance().angleLR = -(speedFactor/8);
 			break;
 		case OIS::KC_RIGHT : 
-			Engine::getInstance().angleLR = speedFactor/10;
+			Application::getInstance().angleLR = speedFactor/8;
 			break;
 		case OIS::KC_UP : 
-			Engine::getInstance().angleUD = -(speedFactor/10);
+			Application::getInstance().angleUD = -(speedFactor/8);
 			break;
 		case OIS::KC_DOWN : 
-			Engine::getInstance().angleUD = speedFactor/10;
+			Application::getInstance().angleUD = speedFactor/8;
 			break;
 		case OIS::KC_END:
 			SceneManager::getInstance().deleteSelection();
@@ -340,9 +346,6 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 		case OIS::KC_6:
 			PhysX::getInstance().ApplyForceToActor(PhysX::getInstance().GetSelectedActor(), NxVec3(+1,0,0), 3000); 
 			break;
-		case OIS::KC_7:
-			Guardian::getInstance().TerminateApplication();
-			break;
 		default:
 			break;
 	}
@@ -353,11 +356,11 @@ void Scene::onKeyUp(const OIS::KeyEvent& key){
 	switch( key.key ){
 		case OIS::KC_LEFT:
 		case OIS::KC_RIGHT:
-			Engine::getInstance().angleLR = 0.0f;
+			Application::getInstance().angleLR = 0.0f;
 			break;
 		case OIS::KC_UP:
 		case OIS::KC_DOWN:
-			Engine::getInstance().angleUD = 0.0f;
+			Application::getInstance().angleUD = 0.0f;
 			break;
 		case OIS::KC_F:
 			bool pdc = _paramHandler.getParam<bool>("enableDepthOfField");
@@ -370,19 +373,19 @@ void Scene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis){
 
 	if(axis == 1){
 		if(key.state.mAxes[axis].abs > 0)
-			Engine::getInstance().angleLR = speedFactor/10;
+			Application::getInstance().angleLR = speedFactor/8;
 		else if(key.state.mAxes[axis].abs < 0)
-			Engine::getInstance().angleLR = -(speedFactor/10);
+			Application::getInstance().angleLR = -(speedFactor/8);
 		else
-			Engine::getInstance().angleLR = 0;
+			Application::getInstance().angleLR = 0;
 
 	}else if(axis == 0){
 
 		if(key.state.mAxes[axis].abs > 0)
-			Engine::getInstance().angleUD = speedFactor/10;
+			Application::getInstance().angleUD = speedFactor/8;
 		else if(key.state.mAxes[axis].abs < 0)
-			Engine::getInstance().angleUD = -(speedFactor/10);
+			Application::getInstance().angleUD = -(speedFactor/8);
 		else
-			Engine::getInstance().angleUD = 0;
+			Application::getInstance().angleUD = 0;
 	}
 }

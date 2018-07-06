@@ -4,6 +4,7 @@
 
 bool SubMesh::computeBoundingBox(SceneGraphNode* node){
 	BoundingBox& bb = node->getBoundingBox();
+	if(bb.isComputed()) return true;
 	bb.set(vec3(100000.0f, 100000.0f, 100000.0f),vec3(-100000.0f, -100000.0f, -100000.0f));
 
 	std::vector<vec3>&	tPosition	= _geometry->getPosition();

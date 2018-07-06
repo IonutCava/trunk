@@ -16,6 +16,7 @@ SceneGraphNode::SceneGraphNode(SceneNode* node) : _node(node),
 								                  _noDefaultTransform(false),
 												  _inView(true),
 												  _sorted(false),
+												  _silentDispose(false),
 												  _sceneGraph(NULL),
 												  _updateTimer(GETMSTIME()),
 												  _childQueue(0)
@@ -24,26 +25,30 @@ SceneGraphNode::SceneGraphNode(SceneNode* node) : _node(node),
 
 
 SceneGraphNode::~SceneGraphNode(){
+	//Then delete them
+	foreach(NodeChildren::value_type it, _children){
+		delete it.second;
+		it.second = NULL;
+	}
 	if(_transform != NULL) {
 		delete _transform;
 		_transform = NULL;
 	} 
+
 }
 
 bool SceneGraphNode::unload(){
 	foreach(NodeChildren::value_type it, _children){
-		if(it.second->unload()){
-
-		}else{
-			Console::getInstance().errorfn("SceneGraphNode: Could not unload node [ %s ]",it.second->getNode()->getName().c_str());
-			return false;
-		}
+		it.second->unload();
 	}
-	//Console::getInstance().printfn("Removing: %s (%s)",_node->getName().c_str(), getName().c_str());
-	_children.clear();
-
+	if(!_silentDispose && getParent() && _node){
+		Console::getInstance().printfn("Removing: %s (%s)",_node->getName().c_str(), getName().c_str());
+	}
 	if(getParent()){ //if not root
 		RemoveResource(_node);
+	}
+	if(!_children.empty()){
+		_children.clear();
 	}
 	return true;
 }
@@ -87,12 +92,12 @@ void SceneGraphNode::removeNode(SceneNode* node){
 }
 
 SceneGraphNode* SceneGraphNode::addNode(SceneNode* node,const std::string& name){
-	if(node->getSceneGraphNode()){
-		SceneGraphNode* pSGN = node->getSceneGraphNode()->getParent();
-		if(pSGN){
-			pSGN->removeNode(node);
-		}
-	}
+	//if(node->getSceneGraphNode()){
+	//	SceneGraphNode* pSGN = node->getSceneGraphNode()->getParent();
+	//	if(pSGN){
+	//		pSGN->removeNode(node);
+	//	}
+	//}
 	SceneGraphNode* sceneGraphNode = New SceneGraphNode(node);
 	SceneGraphNode* parentNode = this->getParent();
 	assert(sceneGraphNode);
@@ -117,12 +122,14 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* node,const std::string& name)
 	if(sgName.empty()){
 		sgName = node->getName();
 	}
+	sceneGraphNode->setName(sgName);
+	node->setSceneGraphNode(sgName);
 	result = _children.insert(std::make_pair(sgName,sceneGraphNode));
 	if(!result.second){
 		delete (result.first)->second; 
 		(result.first)->second = sceneGraphNode;
 	}
-	sceneGraphNode->setName(sgName);
+	
 	node->postLoad(sceneGraphNode);
 	return sceneGraphNode;
 }
@@ -147,52 +154,51 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name){
 
 void SceneGraphNode::updateTransformsAndBounds(){
 	//if(GETMSTIME() - _updateTimer  < 10) return; //update every ten milliseconds
-
 	//Update from leafs to root:
 	foreach(NodeChildren::value_type &it, _children){
 		it.second->updateTransformsAndBounds();
 	}
-
+	if(!getParent()) return; // don't update root;
 	//Compute the BoundingBox if it isn't already
-	if(!_boundingBox.isComputed()){
+	if(!getBoundingBox().isComputed()){
 		//Mesh BB is composed of SubMesh BB's. Compute from leaf to root to ensure proper calculations
 		_node->computeBoundingBox(this);
 	}
+
 	Transform* transform = getTransform();
+	Transform* parentTransform = getParent()->getTransform();
 	if(transform){
+		if(parentTransform){
+			transform->setParentMatrix(parentTransform->getMatrix());
+		}
+
 		//Transform the bounding box if we have a new transform
 		//if(getTransform()->isDirty()){
-			_boundingBox.Transform(_initialBoundingBox,transform->getMatrix());
+		getBoundingBox().Transform(_initialBoundingBox,transform->getMatrix() * transform->getParentMatrix());
+			//getBoundingBox().Transform(getBoundingBox(),);
 		//}
-		if(getParent()){
-			//update parent matrix (cached)
-			transform->setParentMatrix(getParent()->getTransform()->getMatrix());
-		}
-	}
-	
-	if(getParent()){
-		getParent()->getBoundingBox().Add(getBoundingBox());
-	}
 
+	}
+	getParent()->getBoundingBox().Add(getBoundingBox());
 	//_updateTimer = GETMSTIME();
 }
 
 void SceneGraphNode::updateVisualInformation(){
 	//Bounding Boxes should be updated, so we can early cull now.
-	Scene* curentScene = SceneManager::getInstance().getActiveScene();
-	//Hold a pointer to the scenegraph
-	if(!_sceneGraph){
-		_sceneGraph = SceneManager::getInstance().getActiveScene()->getSceneGraph();
-	}
-
 	//if current node is active
 	if(_active) {
-		if(_node->isInView(true,_boundingBox)){
-			_inView = (curentScene->drawObjects() && _active && _node->getRenderState());
+		Scene* curentScene = SceneManager::getInstance().getActiveScene();
+		//Hold a pointer to the scenegraph
+		if(!_sceneGraph){
+			_sceneGraph = SceneManager::getInstance().getActiveScene()->getSceneGraph();
 		}
-		if(_inView){
+		if(_node->isInView(true,_boundingBox)){
+			_inView = (curentScene->drawObjects() && _node->getRenderState());
+		}
+
+		if(!_inView){
 		//	continue;//ToDo: --Early cull here? -Ionut
-		//}else{
+		}else{
 			RenderQueue::getInstance().addNodeToQueue(this);
 		}
 	}

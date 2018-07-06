@@ -23,6 +23,7 @@ class Sphere3D;
 class CubeScene : public Scene
 {
 public:
+	CubeScene() : Scene() {}
 	void render();
 	void preRender();
 	bool load(const std::string& name);

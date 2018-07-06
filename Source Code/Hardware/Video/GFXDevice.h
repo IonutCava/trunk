@@ -24,6 +24,8 @@
 class Object3D;
 class Framerate;
 
+
+//Rough around the edges Adapter pattern
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
 friend class Frustum; //For matrix recovery operations
 public:

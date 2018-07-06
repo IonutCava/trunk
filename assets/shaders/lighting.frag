@@ -66,7 +66,7 @@ void main (void)
 	else if(mode == MODE_PARALLAX)
 		color = NormalMapping(gl_TexCoord[0].st*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, true);
 
-
+	if(color.a < 0.2) discard;
 	gl_FragColor = color;
 
 }
@@ -257,7 +257,7 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN)
 
 	}
 	vec4 color = cAmbient + (cDiffuse + cSpecular) * att;
-	
+
 	return color;	
 }
 
