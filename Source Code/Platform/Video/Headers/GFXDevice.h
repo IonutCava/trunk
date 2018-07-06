@@ -157,12 +157,15 @@ DEFINE_SINGLETON(GFXDevice)
 
    struct RenderQueue {
     public:
-       RenderQueue() : _currentCount(0)
+       RenderQueue() : _locked(false),
+                       _currentCount(0)
        {
        }
+
        void clear();
        U32 size() const;
        bool empty() const;
+       bool locked() const;
        const RenderPackage& getPackage(U32 idx) const;
 
     protected:
@@ -170,9 +173,12 @@ DEFINE_SINGLETON(GFXDevice)
         RenderPackage& getPackage(U32 idx);
         RenderPackage& back();
         bool push_back(const RenderPackage& package);
-        void resize(U16 size);
+        void reserve(U16 size);
+        void lock();
+        void unlock();
 
     protected:
+       bool _locked;
        U32 _currentCount;
        vectorImpl<RenderPackage> _packages;
    };
@@ -627,7 +633,9 @@ DEFINE_SINGLETON(GFXDevice)
     std::array<U32, to_const_uint(RenderStage::COUNT) - 1> _lastCommandCount;
     std::array<U32, to_const_uint(RenderStage::COUNT) - 1> _lastNodeCount;
 
+    mutable SharedLock _renderQueueLock;
     vectorImpl<RenderQueue> _renderQueues;
+
     Time::ProfileTimer* _commandBuildTimer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     typedef std::array<std::unique_ptr<ShaderBuffer>, MAX_PASSES_PER_STAGE> RenderStageBuffer;

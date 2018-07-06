@@ -106,41 +106,42 @@ void GFXDevice::submitCommand(const GenericDrawCommand& cmd, bool useIndirectRen
 void GFXDevice::flushRenderQueues() {
     uploadGPUBlock();
 
+    ReadLock lock(_renderQueueLock);
     for (RenderQueue& renderQueue : _renderQueues) {
-        if (renderQueue.empty()) {
-            return;
-        }
-
-        U32 queueSize = renderQueue.size();
-        for (U32 idx = 0; idx < queueSize; ++idx) {
-            RenderPackage& package = renderQueue.getPackage(idx);
-            vectorImpl<GenericDrawCommand>& drawCommands = package._drawCommands;
-            vectorAlg::vecSize commandCount = drawCommands.size();
-            if (commandCount > 0) {
-                vectorAlg::vecSize previousCommandIndex = 0;
-                vectorAlg::vecSize currentCommandIndex = 1;
-                for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
-                    GenericDrawCommand& previousCommand = drawCommands[previousCommandIndex];
-                    GenericDrawCommand& currentCommand = drawCommands[currentCommandIndex];
-                    if (!batchCommands(previousCommand, currentCommand))
-                    {
-                        previousCommandIndex = currentCommandIndex;
+        if (!renderQueue.empty()) {
+            U32 queueSize = renderQueue.size();
+            for (U32 idx = 0; idx < queueSize; ++idx) {
+                RenderPackage& package = renderQueue.getPackage(idx);
+                vectorImpl<GenericDrawCommand>& drawCommands = package._drawCommands;
+                vectorAlg::vecSize commandCount = drawCommands.size();
+                if (commandCount > 0) {
+                    vectorAlg::vecSize previousCommandIndex = 0;
+                    vectorAlg::vecSize currentCommandIndex = 1;
+                    for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
+                        GenericDrawCommand& previousCommand = drawCommands[previousCommandIndex];
+                        GenericDrawCommand& currentCommand = drawCommands[currentCommandIndex];
+                        if (!batchCommands(previousCommand, currentCommand))
+                        {
+                            previousCommandIndex = currentCommandIndex;
+                        }
                     }
-                }
-                for (ShaderBufferList::value_type& it : package._shaderBuffers) {
-                    it._buffer->bindRange(it._slot, it._range.x, it._range.y);
-                }
+                    for (ShaderBufferList::value_type& it : package._shaderBuffers) {
+                        it._buffer->bindRange(it._slot, it._range.x, it._range.y);
+                    }
 
-                _api->makeTexturesResident(package._textureData);
-                submitCommands(package._drawCommands, true);
+                    _api->makeTexturesResident(package._textureData);
+                    submitCommands(package._drawCommands, true);
+                }
             }
-        }
 
-        renderQueue.clear();
+            renderQueue.clear();
+        }
+        renderQueue.unlock();
     }
 }
 
 void GFXDevice::addToRenderQueue(U32 queueIndex, const RenderPackage& package) {
+    ReadLock lock(_renderQueueLock);
     assert(_renderQueues.size() > queueIndex);
 
     if (!package.isRenderable()) {
@@ -159,20 +160,27 @@ void GFXDevice::addToRenderQueue(U32 queueIndex, const RenderPackage& package) {
             return;
         }
     } else {
-        queue.resize(RenderPassManager::getInstance().getQueue().getRenderQueueStackSize());
+        queue.reserve(Config::MAX_VISIBLE_NODES);
     }
+
     queue.push_back(package);
 }
 
 I32 GFXDevice::reserveRenderQueue() {
+    UpgradableReadLock ur_lock(_renderQueueLock);
+    //ToDo: Nothing about this bloody thing is threadsafe
     I32 queueCount = to_int(_renderQueues.size());
     for (I32 i = 0; i < queueCount; ++i) {
-        if (_renderQueues[i].empty()) {
+        RenderQueue& queue = _renderQueues[i];
+        if (queue.empty() && !queue.locked()) {
+            queue.lock();
             return i;
         }
     }
 
+    UpgradeToWriteLock uw_lock(ur_lock);
     _renderQueues.emplace_back();
+    _renderQueues[queueCount].lock();
     return queueCount;
 }
 

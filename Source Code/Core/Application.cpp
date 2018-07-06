@@ -68,11 +68,12 @@ Application::~Application()
     Time::ApplicationTimer::destroyInstance();
     _kernel.reset(nullptr);
     Locale::clear();
-    Console::flush();
+    Console::stop();
 }
 
 ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char** argv) {
     assert(!entryPoint.empty());
+    Console::start();
     // Target FPS is usually 60. So all movement is capped around that value
     Time::ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
     // Read language table

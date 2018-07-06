@@ -126,6 +126,11 @@ GFXDevice::RenderQueue::size() const {
     return _currentCount;
 }
 
+inline bool
+GFXDevice::RenderQueue::locked() const {
+    return _locked;
+}
+
 inline bool 
 GFXDevice::RenderQueue::empty() const {
     return _currentCount == 0;
@@ -157,8 +162,18 @@ GFXDevice::RenderQueue::push_back(const RenderPackage& package) {
 }
 
 inline void
-GFXDevice::RenderQueue::resize(U16 size) {
+GFXDevice::RenderQueue::reserve(U16 size) {
     _packages.resize(size);
+}
+
+inline void
+GFXDevice::RenderQueue::lock() {
+    _locked = true;
+}
+
+inline void
+GFXDevice::RenderQueue::unlock() {
+    _locked = false;
 }
 
 inline void

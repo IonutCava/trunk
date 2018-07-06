@@ -76,6 +76,7 @@ class RenderQueue {
 
   private:
     RenderBinArray _renderBins;
+    vectorImpl<RenderBin*> _activeBins;
 };
 
 };  // namespace Divide

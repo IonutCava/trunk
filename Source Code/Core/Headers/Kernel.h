@@ -32,12 +32,12 @@
 #ifndef _CORE_KERNEL_H_
 #define _CORE_KERNEL_H_
 
+#include "TaskPool.h"
 #include "Core/Headers/Application.h"
 #include "Managers/Headers/CameraManager.h"
-#include "Platform/Threading/Headers/Task.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
-#include <boost/lockfree/queue.hpp>
+
 
 namespace Divide {
 
@@ -72,6 +72,7 @@ struct LoopTimingData {
     U64 _nextGameTick;
 };
 
+
 namespace Attorney {
     class KernelApplication;
 };
@@ -91,12 +92,12 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     /// Our main application rendering loop.
     /// Call input requests, physics calculations, pre-rendering,
     /// rendering,post-rendering etc
-    static void onLoop();
+    void onLoop();
     /// Called after a swap-buffer call and before a clear-buffer call.
     /// In a GPU-bound application, the CPU will wait on the GPU to finish
     /// processing the frame
     /// so this should keep it busy (old-GLUT heritage)
-    static void idle();
+    void idle();
     GFXDevice& getGFXDevice() const { return _GFX; }
     SFXDevice& getSFXDevice() const { return _SFX; }
     PXDevice& getPXDevice() const { return _PFX; }
@@ -239,13 +240,11 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     void shutdown();
     bool mainLoopScene(FrameEvent& evt);
     bool presentToScreen(FrameEvent& evt);
-    void threadPoolCompleted(I64 onExitTaskID);
     bool setCursorPosition(I32 x, I32 y) const;
     /// Update all engine components that depend on the current screen size
     void onChangeWindowSize(U16 w, U16 h);
     void onChangeRenderResolution(U16 w, U16 h) const;
 
-    Task& getAvailableTask();
    private:
     Application& _APP;
     /// Access to the GPU
@@ -263,15 +262,10 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     /// Keep track of all active cameras used by the engine
     std::unique_ptr<CameraManager> _cameraMgr;
 
-    static LoopTimingData _timingData;
-    ThreadPool _mainTaskPool;
+    LoopTimingData _timingData;
 
-    typedef hashMapImpl<I64, DELEGATE_CBK<> > CallbackFunctions;
-    static boost::lockfree::queue<I64> _threadedCallbackBuffer;
-    static CallbackFunctions _threadedCallbackFunctions;
+    TaskPool _taskPool;
 
-    vectorImpl<Task> _tasksPool;
-    std::atomic<U32> _allocatedJobs;
     // Command line arguments
     I32 _argc;
     char** _argv;

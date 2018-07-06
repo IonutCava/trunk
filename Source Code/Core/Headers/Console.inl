@@ -89,63 +89,6 @@ const char* Console::errorf(const char* format, Args&&... args) {
     return output(formatText(format, std::forward<Args>(args)...), false, true);
 }
 
-template <typename... Args>
-const char* Console::printfn(std::ofstream& outStream, const char* format, Args&&... args) {
-    return output(outStream, formatText(format, std::forward<Args>(args)...), true, false);
-}
-
-template <typename... Args>
-const char* Console::printf(std::ofstream& outStream, const char* format, Args&&... args) {
-    return output(outStream, formatText(format, std::forward<Args>(args)...),
-                  false, false);
-}
-
-template <typename... Args>
-const char* Console::errorfn(std::ofstream& outStream, const char* format, Args&&... args) {
-    return output(formatText(format, std::forward<Args>(args)...), true, true);
-}
-
-template <typename... Args>
-const char* Console::errorf(std::ofstream& outStream, const char* format, Args&&... args) {
-    return output(outStream, formatText(format, std::forward<Args>(args)...),
-                  false, true);
-}
-
-template <typename... Args>
-const char* Console::d_printfn(std::ofstream& outStream, const char* format, Args&&... args) {
-#ifdef _DEBUG
-    return printfn(outStream, format, std::forward<Args>(args)...);
-#else
-    return "";
-#endif
-}
-
-template <typename... Args>
-const char* Console::d_printf(std::ofstream& outStream, const char* format, Args&&... args) {
-#ifdef _DEBUG
-    return printf(outStream, format, std::forward<Args>(args)...);
-#else
-    return "";
-#endif
-}
-
-template <typename... Args>
-const char* Console::d_errorfn(std::ofstream& outStream, const char* format, Args&&... args) {
-#ifdef _DEBUG
-    return errorfn(outStream, format, std::forward<Args>(args)...);
-#else
-    return "";
-#endif
-}
-
-template <typename... Args>
-const char* Console::d_errorf(std::ofstream& outStream, const char* format, Args&&... args) {
-#ifdef _DEBUG
-    return errorf(outStream, format, std::forward<Args>(args)...);
-#else
-    return "";
-#endif
-}
 };
 
 #endif  //_CORE_CONSOLE_INL_

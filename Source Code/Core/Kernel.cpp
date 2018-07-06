@@ -33,12 +33,7 @@ LoopTimingData::LoopTimingData() : _previousTime(0ULL),
 {
 }
 
-
-LoopTimingData Kernel::_timingData;
-Time::ProfileTimer* s_appLoopTimer = nullptr;
-
-boost::lockfree::queue<I64> Kernel::_threadedCallbackBuffer(Config::MAX_POOLED_TASKS);
-Kernel::CallbackFunctions Kernel::_threadedCallbackFunctions;
+static Time::ProfileTimer* s_appLoopTimer = nullptr;
 
 Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
@@ -48,14 +43,10 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _SFX(SFXDevice::getInstance()),                // Audio
       _PFX(PXDevice::getInstance()),                 // Physics
       _input(Input::InputInterface::getInstance()),  // Input
-      _GUI(GUI::getInstance()),  // Graphical User Interface
-      _sceneMgr(SceneManager::getInstance()),  // Scene Manager
-      _tasksPool(vectorImpl<Task>(Config::MAX_POOLED_TASKS, Task(_mainTaskPool)))
+      _GUI(GUI::getInstance()),                      // Graphical User Interface
+      _sceneMgr(SceneManager::getInstance())         // Scene Manager
 
 {
-    assert(isPowerOfTwo(Config::MAX_POOLED_TASKS));
-    _allocatedJobs = 0;
-
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
     // General light management and rendering (individual lights are handled by each scene)
@@ -76,35 +67,10 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
 
 Kernel::~Kernel()
 {
-    _mainTaskPool.wait(0);
-    _tasksPool.clear();
-}
-
-void Kernel::threadPoolCompleted(I64 onExitTaskID) {
-    WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(onExitTaskID));
 }
 
 TaskHandle Kernel::getTaskHandle(I64 taskGUID) {
-    for (Task& freeTask : _tasksPool) {
-        if (freeTask.getGUID() == taskGUID) {
-            return TaskHandle(&freeTask, freeTask.jobIdentifier());
-        }
-    }
-    // return the first task instead of a dummy result
-    return TaskHandle(&_tasksPool.front(), -1);
-}
-
-Task& Kernel::getAvailableTask() {
-    Task* task = &_tasksPool[(++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u)];
-    U32 failCount = 0;
-    while (!task->isFinished()) {
-        failCount++;
-        assert(failCount < Config::MAX_POOLED_TASKS * 2);
-
-        task = &_tasksPool[(++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u)];
-    }
-    task->reset();
-    return *task;
+    return _taskPool.getTaskHandle(taskGUID);
 }
 
 TaskHandle Kernel::AddTask(const DELEGATE_CBK_PARAM<bool>& threadedFunction,
@@ -116,20 +82,15 @@ TaskHandle Kernel::AddTask(I64 jobIdentifier,
                            const DELEGATE_CBK_PARAM<bool>& threadedFunction,
                            const DELEGATE_CBK<>& onCompletionFunction) {
 
-    Task& freeTask = getAvailableTask();
+    Task& freeTask = _taskPool.getAvailableTask();
+    TaskHandle handle(&freeTask, jobIdentifier);
 
     freeTask.threadedCallback(threadedFunction, jobIdentifier);
-    freeTask.onCompletionCbk(DELEGATE_BIND(&Kernel::threadPoolCompleted,
-                             this,
-                             std::placeholders::_1));
-
     if (onCompletionFunction) {
-        hashAlg::emplace(_threadedCallbackFunctions,
-                         freeTask.getGUID(),
-                         onCompletionFunction);
+        _taskPool.setTaskCallback(handle, onCompletionFunction);
     }
 
-    return TaskHandle(&freeTask, jobIdentifier);
+    return handle;
 }
 
 void Kernel::idle() {
@@ -155,13 +116,7 @@ void Kernel::idle() {
         Locale::changeLanguage(pendingLanguage);
     }
 
-    I64 taskGUID = -1;
-    while (_threadedCallbackBuffer.pop(taskGUID)) {
-        CallbackFunctions::const_iterator it = _threadedCallbackFunctions.find(taskGUID);
-        if(it != std::end(_threadedCallbackFunctions) && it->second) {
-            it->second();
-        }
-    }
+    _taskPool.idle();
 }
 
 void Kernel::onLoop() {
@@ -189,44 +144,37 @@ void Kernel::onLoop() {
                                     _timingData._currentTimeDelta;
     }
 
-    Kernel::idle();
+    idle();
 
     FrameEvent evt;
     FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
-    Application& APP = Application::getInstance();
 
     // Restore GPU to default state: clear buffers and set default render state
-    GFX_DEVICE.beginFrame();
+    _GFX.beginFrame();
     {
         // Launch the FRAME_STARTED event
-        frameMgr.createEvent(_timingData._currentTime,
-                             FrameEventType::FRAME_EVENT_STARTED, evt);
+        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_STARTED, evt);
         _timingData._keepAlive = frameMgr.frameEvent(evt);
 
         // Process the current frame
-        _timingData._keepAlive = APP.getKernel().mainLoopScene(evt) &&
-                                 _timingData._keepAlive;
+        _timingData._keepAlive = mainLoopScene(evt) && _timingData._keepAlive;
 
         // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended
         // event)
-        frameMgr.createEvent(_timingData._currentTime,
-                             FrameEventType::FRAME_EVENT_PROCESS, evt);
+        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_PROCESS, evt);
 
-        _timingData._keepAlive = frameMgr.frameEvent(evt) && 
-                                 _timingData._keepAlive;
+        _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
     }
-    GFX_DEVICE.endFrame(APP.mainLoopActive());
+    _GFX.endFrame(_APP.mainLoopActive());
 
     // Launch the FRAME_ENDED event (buffers have been swapped)
-    frameMgr.createEvent(_timingData._currentTime,
-                         FrameEventType::FRAME_EVENT_ENDED, evt);
-    _timingData._keepAlive = frameMgr.frameEvent(evt) &&
-                             _timingData._keepAlive;
+    frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_ENDED, evt);
+    _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
 
-    _timingData._keepAlive = !APP.ShutdownRequested() &&
-                             _timingData._keepAlive;
+    _timingData._keepAlive = !_APP.ShutdownRequested() && _timingData._keepAlive;
 
-    ErrorCode err = APP.errorCode();
+    ErrorCode err = _APP.errorCode();
+
     if (err != ErrorCode::NO_ERR) {
         Console::errorfn("Error detected: [ %s ]", getErrorCodeName(err));
         _timingData._keepAlive = false;
@@ -234,11 +182,11 @@ void Kernel::onLoop() {
     Time::STOP_TIMER(*s_appLoopTimer);
 
 #if !defined(_RELEASE)
-    if (GFX_DEVICE.getFrameCount() % (Config::TARGET_FRAME_RATE * 10) == 0) {
+    if (_GFX.getFrameCount() % (Config::TARGET_FRAME_RATE * 10) == 0) {
         Console::printfn(
             "GPU: [ %5.5f ] [DrawCalls: %d]",
-            Time::MicrosecondsToSeconds<F32>(GFX_DEVICE.getFrameDurationGPU()),
-            GFX_DEVICE.getDrawCallCount());
+            Time::MicrosecondsToSeconds<F32>(_GFX.getFrameDurationGPU()),
+            _GFX.getDrawCallCount());
 
         Util::FlushFloatEvents();
     }
@@ -370,6 +318,7 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
 
     return true;
 }
+
 // The first loops compiles all the visible data, so do not render the first couple of frames
 void Kernel::warmup() {
     static const U8 warmupLoopCount = 3;
@@ -412,20 +361,14 @@ void Kernel::warmup() {
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     ParamHandler& par = ParamHandler::getInstance();
 
-    // We have an A.I. thread, a networking thread, a PhysX thread, the main
-    // update/rendering thread so how many threads do we allocate for tasks?
-    // That's up to the programmer to decide for each app.
-    U32 threadCount = HARDWARE_THREAD_COUNT();
-    if (threadCount <= 2) {
-        return ErrorCode::CPU_NOT_SUPPORTED;
-    }
-
     SysInfo& systemInfo = Application::getInstance().getSysInfo();
     if (!CheckMemory(Config::REQUIRED_RAM_SIZE, systemInfo)) {
         return ErrorCode::NOT_ENOUGH_RAM;
     }
 
-    _mainTaskPool.size_controller().resize(std::max(threadCount - 1, 2U));
+    if (!_taskPool.init()) {
+        return ErrorCode::CPU_NOT_SUPPORTED;
+    }
 
     Console::bindConsoleOutput(
         DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(),
@@ -547,8 +490,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
 void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
-    _mainTaskPool.clear();
-    WAIT_FOR_CONDITION(_mainTaskPool.active() == 0);
 
     // release the scene
     GET_ACTIVE_SCENE().state().runningState(false);
@@ -605,7 +546,6 @@ void Kernel::onChangeRenderResolution(U16 w, U16 h) const {
 }
 
 ///--------------------------Input Management-------------------------------------///
-
 bool Kernel::setCursorPosition(I32 x, I32 y) const {
     _GUI.setCursorPosition(x, y);
     return true;

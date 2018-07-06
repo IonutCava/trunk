@@ -548,6 +548,9 @@
     <ClCompile Include="..\..\Source Code\Core\Debugging\DebugInterface.cpp">
       <Filter>Core\Debugging</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\TaskPool.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -957,6 +960,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Debugging\Headers\DebugInterface.h">
       <Filter>Core\Debugging\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\TaskPool.h">
+      <Filter>Core\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

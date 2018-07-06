@@ -107,23 +107,18 @@ void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
 
     if (_boundingBoxesAvailable.at(animationIndex) == false) {
         if (_boundingBoxesComputing.at(animationIndex) == false) {
-            if (MULTITHREADED_BOUNDING_BOX_CALCULATION) {
-                Application::getInstance()
-                            .getKernel()
-                            .AddTask(DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
-                                                   this,
-                                                   std::placeholders::_1,
-                                                   animationIndex,
-                                                   animComp),
-                                     DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
-                                                   this,
-                                                   animationIndex))
-                            .startTask(Task::TaskPriority::DONT_CARE);
-
-            } else {
-                buildBoundingBoxesForAnim(false, animationIndex, animComp);
-                buildBoundingBoxesForAnimCompleted(animationIndex);
-            }
+            Application::getInstance()
+                        .getKernel()
+                        .AddTask(DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
+                                                this,
+                                                std::placeholders::_1,
+                                                animationIndex,
+                                                animComp),
+                                    DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
+                                                this,
+                                                animationIndex))
+                        .startTask(MULTITHREADED_BOUNDING_BOX_CALCULATION ? Task::TaskPriority::DONT_CARE
+                                                                          : Task::TaskPriority::REALTIME);
         }
     }
 }

@@ -9,12 +9,14 @@
 
 namespace Divide {
 
-std::atomic<int> Console::_bufferEntryCount;
 bool Console::_timestamps = false;
 bool Console::_threadID = false;
+std::thread Console::_printThread;
 
-std::mutex Console::io_mutex;
+std::atomic_bool Console::_running;
 Console::consolePrintCallback Console::_guiConsoleCallback;
+
+boost::lockfree::stack<Console::OutputEntry> Console::_outputBuffer(MAX_CONSOLE_ENTRIES);
 
 //! Do not remove the following license without express permission granted by DIVIDE-Studio
 void Console::printCopyrightNotice() {
@@ -63,9 +65,15 @@ const char* Console::formatText(const char* format, ...) {
     return textBuffer;
 }
 
-const char* Console::output(std::ostream& outStream, const char* text,
-                            const bool newline, const bool error) {
-    std::lock_guard<std::mutex> lock(io_mutex);
+const char* Console::output(const char* text, const bool newline, const bool error) {
+    if (_guiConsoleCallback) {
+        _guiConsoleCallback(text, error);
+    }
+
+    OutputEntry entry;
+    entry._error = error;
+
+    std::stringstream outStream;
     if (_timestamps) {
         outStream << "[ " << std::internal
                           << std::setw(9)
@@ -79,31 +87,35 @@ const char* Console::output(std::ostream& outStream, const char* text,
         outStream << "[ " << std::this_thread::get_id() << " ] ";
     }
 
-    outStream << (error ? " Error: " : "")
-              << text
-              << (newline ? "\n" : "");
+    entry._text.append(outStream.str());
+    entry._text = (error ? " Error: " : "");
+    entry._text.append(text);
+    entry._text.append(newline ? "\n" : "");
 
-    return text;
+    WAIT_FOR_CONDITION(_outputBuffer.push(entry));
+
+    return entry._text.c_str();
 }
 
-const char* Console::output(const char* text, const bool newline, const bool error) {
-    if (_guiConsoleCallback) {
-        _guiConsoleCallback(text, error);
+void Console::outThread() {
+    while (_running) {
+        OutputEntry entry;
+        while (_outputBuffer.pop(entry)) {
+            std::ostream& outStream = entry._error ? std::cerr : std::cout;
+            outStream << entry._text.c_str();
+        }
     }
-
-    std::ostream& outputStream = error ? std::cerr : std::cout;
-    output(outputStream, text, newline, error);
-
-    if (_bufferEntryCount++ > MAX_CONSOLE_ENTRIES) {
-        outputStream << std::flush;
-        _bufferEntryCount = 0;
-    }
-
-    return text;
 }
 
-void Console::flush() {
-    std::lock_guard<std::mutex> lock(io_mutex);
+void Console::start() {
+    _running = true;
+    _printThread = std::thread(&Console::outThread);
+}
+
+void Console::stop() {
+    _running = false;
+    _printThread.join();
+
     std::cerr << std::flush;
     std::cout << std::flush;
 }

@@ -33,22 +33,35 @@
 #define _CORE_CONSOLE_H_
 
 #include "Core/Headers/NonCopyable.h"
+#include "Core/TemplateLibraries/Headers/String.h"
 
 #include <mutex>
 #include <functional>
 #include <atomic>
 #include <fstream>
+#include <boost/lockfree/stack.hpp>
 
 namespace Divide {
 
 constexpr int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16;
-constexpr int MAX_CONSOLE_ENTRIES = 5;
+constexpr int MAX_CONSOLE_ENTRIES = 128;
 
 class Console : private NonCopyable {
     typedef std::function<void(const char*, bool)> consolePrintCallback;
 
+    struct OutputEntry {
+        OutputEntry() : _error(false)
+        {
+        }
+
+        std::string _text;
+        bool _error;
+    };
+
    public:
-    static void flush();
+    static void start();
+    static void stop();
+
     static void printCopyrightNotice();
 
     template <typename... T>
@@ -68,30 +81,6 @@ class Console : private NonCopyable {
     inline static const char* d_errorfn(const char* format, T&&... args);
     template <typename... T>
     inline static const char* d_errorf(const char* format, T&&... args);
-    template <typename... T>
-    inline static const char* printfn(std::ofstream& outStream,
-                                      const char* format, T&&... args);
-    template <typename... T>
-    inline static const char* printf(std::ofstream& outStream,
-                                     const char* format, T&&... args);
-    template <typename... T>
-    inline static const char* errorfn(std::ofstream& outStream,
-                                      const char* format, T&&... args);
-    template <typename... T>
-    inline static const char* errorf(std::ofstream& outStream,
-                                     const char* format, T&&... args);
-    template <typename... T>
-    inline static const char* d_printfn(std::ofstream& outStream,
-                                        const char* format, T&&... args);
-    template <typename... T>
-    inline static const char* d_printf(std::ofstream& outStream,
-                                       const char* format, T&&... args);
-    template <typename... T>
-    inline static const char* d_errorfn(std::ofstream& outStream,
-                                        const char* format, T&&... args);
-    template <typename... T>
-    inline static const char* d_errorf(std::ofstream& outStream,
-                                       const char* format, T&&... args);
 
     static bool timeStampsEnabled() { return _timestamps; }
     static void toggleTimeStamps(const bool state) { _timestamps = state; }
@@ -106,17 +95,16 @@ class Console : private NonCopyable {
 
    protected:
     static const char* formatText(const char* format, ...);
-    static const char* output(const char* text, const bool newline,
-                              const bool error);
-    static const char* output(std::ostream& outStream, const char* text,
-                              const bool newline, const bool error);
+    static const char* output(const char* text, const bool newline, const bool error);
+    static void outThread();
 
    private:
-    static std::atomic<int> _bufferEntryCount;
-    static std::mutex io_mutex;
     static consolePrintCallback _guiConsoleCallback;
     static bool _timestamps;
     static bool _threadID;
+    static std::atomic_bool _running;
+    static std::thread _printThread;
+    static boost::lockfree::stack<OutputEntry> _outputBuffer;
 };
 
 };  // namespace Divide

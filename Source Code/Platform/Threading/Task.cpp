@@ -15,43 +15,33 @@ Task::Task(ThreadPool& tp) : GUIDWrapper(),
     _parentTask = nullptr;
     _childTaskCount = 0;
     _done = true;
-    _isRunning = false;
     _stopRequested = false;
 }
 
 Task::Task(const Task& old) : GUIDWrapper(old),
                               _tp(old._tp)
 {
-    _done.store(old._done);
     _stopRequested.store(old._stopRequested);
     _jobIdentifier.store(old._jobIdentifier);
     _callback = old._callback;
     _onCompletionCbk = old._onCompletionCbk;
     _priority = old._priority;
     _childTaskCount.store(old._childTaskCount);
-    _isRunning.store(old._isRunning);
     _parentTask = old._parentTask;
     _childTasks.insert(std::cend(_childTasks), std::cbegin(old._childTasks), std::cend(old._childTasks));
+    _done.store(old._done);
 }
 
 Task::~Task()
 {
-    if (_done == false) {
-        stopTask();
-        Console::errorfn(Locale::get(_ID("TASK_DELETE_ACTIVE")));
-    }
-
-    WAIT_FOR_CONDITION(_done || _tp.active() == 0);
+    stopTask();
+    wait();
 }
 
-bool Task::reset() {
-    bool wasNeeded = false;
-    if (!_done) {
-        wasNeeded = true;
-        stopTask();
-        WAIT_FOR_CONDITION(_done);
-    }
-    _isRunning = false;
+void Task::reset() {
+    stopTask();
+    wait();
+
     _stopRequested = false;
     _callback = DELEGATE_CBK_PARAM<bool>();
     _onCompletionCbk = DELEGATE_CBK_PARAM<I64>();
@@ -60,28 +50,41 @@ bool Task::reset() {
     _parentTask = nullptr;
     _childTasks.clear();
     _childTaskCount = 0;
-
-    return wasNeeded;
 }
 
 void Task::startTask(TaskPriority priority) {
     assert(!isRunning());
 
     _done = false;
-    _isRunning = true;
     _priority = priority;
-
-    while (!_tp.schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this)))) {
-        Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")));
+    if (priority != TaskPriority::REALTIME) {
+        while (!_tp.schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this)))) {
+            Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")));
+        }
+    } else {
+        run();
     }
 }
 
 void Task::stopTask() {
+#if defined(_DEBUG)
+    if (isRunning()) {
+        Console::errorfn(Locale::get(_ID("TASK_DELETE_ACTIVE")));
+    }
+#endif
+
     for (Task* child : _childTasks){
         child->stopTask();
     }
 
     _stopRequested = true;
+}
+
+void Task::wait() {
+    std::unique_lock<std::mutex> lk(_taskDoneMutex);
+    while (!_done) {
+        _taskDoneCV.wait(lk);
+    }
 }
 
 //ToDo: Add better wait for children system. Just manually balance calls for now -Ionut
@@ -94,7 +97,7 @@ void Task::waitForChildren(bool yeld, I64 timeout) {
     while(_childTaskCount > 0) {
         if (timeout > 0L) {
             U64 endTime = Time::ElapsedMicroseconds(true);
-            if (endTime - startTime >= timeout) {
+            if (endTime - startTime >= static_cast<U64>(timeout)) {
                 return;
             }
         } else if (timeout == 0L) {
@@ -121,7 +124,6 @@ void Task::run() {
         if (_onCompletionCbk) {
             _onCompletionCbk(getGUID());
         }
-
     }
 
     if (_parentTask != nullptr) {
@@ -131,7 +133,9 @@ void Task::run() {
     Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), getGUID(), std::this_thread::get_id());
 
     _done = true;
-    _isRunning = false;
+
+    std::unique_lock<std::mutex> lk(_taskDoneMutex);
+    _taskDoneCV.notify_one();
 }
 
 };

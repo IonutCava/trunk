@@ -33,6 +33,7 @@
 #define _SHARED_MUTEX_X_
 
 #include "Thread.h"
+#include <mutex>
 
 namespace Divide {
 

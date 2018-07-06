@@ -103,7 +103,7 @@ class RenderBin {
     ~RenderBin() {}
 
     void sort(const std::atomic_bool& stopRequested, RenderStage renderStage);
-    void populateRenderQueue(RenderStage renderStage);
+    void populateRenderQueue(const std::atomic_bool& stopRequested, RenderStage renderStage);
     void postRender(const SceneRenderState& renderState, RenderStage renderStage);
     void refresh();
 
@@ -122,11 +122,12 @@ class RenderBin {
 
     inline void binIndex(U32 index) { _binIndex = index; }
 
+    inline bool empty() const { return getBinSize() == 0; }
+
    private:
     // mutable SharedLock _renderBinGetMutex;
     U32 _binIndex;
     U32 _binPropertyMask;
-    I32 _renderQueueIndex;
     RenderBinType _rbType;
     RenderBinStack _renderBinStack;
     RenderingOrder::List _renderOrder;

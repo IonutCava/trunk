@@ -47,7 +47,8 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
            LOW = 1,
            MEDIUM = 2,
            HIGH = 3,
-           MAX = 4
+           MAX = 4,
+           REALTIME = 5 //<= not threaded
        };
     /**
      * @brief Creates a new Task that runs in a separate thread
@@ -62,12 +63,10 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
 
     void stopTask();
 
-    inline bool isRunning() const {
-        return _isRunning;
-    }
+    void reset();
 
-    inline bool isFinished() const { 
-        return _done;
+    inline bool isRunning() const {
+        return !_done;
     }
 
     inline I64 jobIdentifier() const {
@@ -83,21 +82,23 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
         _jobIdentifier = jobIdentifier;
     }
 
-    bool reset();
-
     void addChildTask(Task* task) {
         task->_parentTask = this;
         _childTasks.push_back(task);
         _childTaskCount += 1;
     }
 
+    void wait();
+
    protected:
     void run();
     void waitForChildren(bool yeld, I64 timeout);
 
    private:
+    mutable std::mutex _taskDoneMutex;
+    std::condition_variable _taskDoneCV;
     std::atomic_bool _done;
-    std::atomic_bool _isRunning;
+
     std::atomic_bool _stopRequested;
     std::atomic<I64> _jobIdentifier;
 
@@ -124,17 +125,13 @@ struct TaskHandle {
         _task->startTask(prio);
     }
 
-    inline bool isFinished() const {
-        return _task->isFinished();
-    }
-
     inline Task* addChildTask(Task* task) {
         _task->addChildTask(task);
         return task;
     }
 
     inline void wait() {
-        WAIT_FOR_CONDITION(isFinished());
+        _task->wait();
     }
 
     Task* _task;

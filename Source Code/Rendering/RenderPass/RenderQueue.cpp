@@ -20,14 +20,13 @@ RenderQueue::~RenderQueue()
         MemoryManager::DELETE(bin);
     }
     _renderBins.fill(nullptr);
+    _activeBins.clear();
 }
 
 U16 RenderQueue::getRenderQueueStackSize() const {
     U16 temp = 0;
-    for (RenderBin* bin : _renderBins) {
-        if (bin != nullptr) {
-            temp += bin->getBinSize();
-        }
+    for (RenderBin* bin : _activeBins) {
+        temp += bin->getBinSize();
     }
     return temp;
 }
@@ -68,6 +67,12 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
     temp = MemoryManager_NEW RenderBin(rbType, sortOrder);
     _renderBins[rbType._to_integral()] = temp;
     
+    _activeBins.resize(0);
+    for (RenderBin* bin : _renderBins) {
+        if (bin != nullptr) {
+            _activeBins.push_back(bin);
+        }
+    }
     return temp;
 }
 
@@ -120,49 +125,48 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStage stage, c
 }
 
 void RenderQueue::populateRenderQueues(RenderStage renderStage) {
-    for (RenderBin* renderBin : _renderBins) {
-        if (renderBin != nullptr) {
-            renderBin->populateRenderQueue(renderStage);
+    Kernel& kernel = Application::getInstance().getKernel();
+    TaskHandle populateTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
+    for (RenderBin* renderBin : _activeBins) {
+        if (!renderBin->empty()) {
+            populateTask.addChildTask(kernel.AddTask(DELEGATE_BIND(&RenderBin::populateRenderQueue,
+                                                                    renderBin,
+                                                                    std::placeholders::_1,
+                                                                    renderStage))._task)->startTask(Task::TaskPriority::HIGH);      
         }
     }
+    populateTask.startTask(Task::TaskPriority::MAX);
+    populateTask.wait();
 }
 
 void RenderQueue::postRender(SceneRenderState& renderState, RenderStage renderStage) {
-    for (RenderBin* renderBin : _renderBins) {
-        if (renderBin != nullptr) {
-            renderBin->postRender(renderState, renderStage);
-        }
+    for (RenderBin* renderBin : _activeBins) {
+        renderBin->postRender(renderState, renderStage);
     }
 }
 
 void RenderQueue::sort(RenderStage renderStage) {
     U32 index = 0;
-    for (RenderBin* renderBin : _renderBins) {
-        if (renderBin != nullptr) {
-            renderBin->binIndex(index);
-            index += renderBin->getBinSize();
-        }
+    for (RenderBin* renderBin : _activeBins) {
+        renderBin->binIndex(index);
+        index += renderBin->getBinSize();
     }
 
     Kernel& kernel = Application::getInstance().getKernel();
     TaskHandle sortTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
-    for (RenderBin* renderBin : _renderBins) {
-        if (renderBin != nullptr) {
-            sortTask.addChildTask(kernel.AddTask(DELEGATE_BIND(&RenderBin::sort,
-                                                               renderBin,
-                                                               std::placeholders::_1,
-                                                               renderStage))._task)->startTask(Task::TaskPriority::MAX);
-        }
+    for (RenderBin* renderBin : _activeBins) {
+        sortTask.addChildTask(kernel.AddTask(DELEGATE_BIND(&RenderBin::sort,
+                                                            renderBin,
+                                                            std::placeholders::_1,
+                                                            renderStage))._task)->startTask(Task::TaskPriority::HIGH);
     }
     sortTask.startTask(Task::TaskPriority::MAX);
     sortTask.wait();
 }
 
 void RenderQueue::refresh() {
-    for (RenderBin* renderBin : _renderBins) {
-        if (renderBin != nullptr) {
-            renderBin->refresh();
-        }
+    for (RenderBin* renderBin : _activeBins) {
+        renderBin->refresh();
     }
 }
 

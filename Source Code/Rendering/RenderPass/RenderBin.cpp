@@ -70,7 +70,6 @@ RenderBin::RenderBin(RenderBinType rbType,
     : _binIndex(0),
       _rbType(rbType),
       _binPropertyMask(0),
-      _renderQueueIndex(-1),
       _renderOrder(renderOrder)
 {
     _renderBinStack.reserve(125);
@@ -147,27 +146,20 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStage stage, const
                             *renderable);
 }
 
-void RenderBin::populateRenderQueue(RenderStage renderStage) {
+void RenderBin::populateRenderQueue(const std::atomic_bool& stopRequested, RenderStage renderStage) {
     GFXDevice& gfx = GFX_DEVICE;
-
-    _renderQueueIndex = gfx.reserveRenderQueue();
-
-    if (_renderQueueIndex == -1) {
-        return;
-    }
-
+    I32 renderQueueIndex = gfx.reserveRenderQueue();
     // We need to apply different materials for each stage. As nodes are sorted, this should be very fast
     for (const RenderBinItem& item : _renderBinStack) {
-        gfx.addToRenderQueue(_renderQueueIndex,
+        if (stopRequested) {
+            break;
+        }
+        gfx.addToRenderQueue(renderQueueIndex,
                              Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));
     }
 }
 
 void RenderBin::postRender(const SceneRenderState& renderState, RenderStage renderStage) {
-    if (_renderQueueIndex == -1) {
-        return;
-    }
-
     for (const RenderBinItem& item : _renderBinStack) {
         Attorney::RenderingCompRenderBin::postRender(*item._renderable, renderState, renderStage);
     }

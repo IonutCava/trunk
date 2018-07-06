@@ -37,7 +37,6 @@
 
 #include <boost/lockfree/spsc_queue.hpp>
 #include <thread>
-#include <mutex>
 #include <condition_variable>
 #include "Platform/Threading/Headers/Task.h"
 
