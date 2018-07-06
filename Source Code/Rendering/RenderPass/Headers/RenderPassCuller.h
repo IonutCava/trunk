@@ -41,6 +41,7 @@ namespace Divide {
 class SceneState;
 class SceneRenderState;
 
+class Camera;
 class SceneGraph;
 class SceneGraphNode;
 typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
@@ -73,8 +74,9 @@ class RenderPassCuller {
     // return true if the node is not currently visible
     void frustumCullNode(SceneGraphNode& node,
                          RenderStage currentStage,
-                         SceneRenderState& sceneRenderState,
-                         VisibleNodeList& nodes);
+                         const Camera& currentCamera,
+                         U32 nodeListIndex,
+                         bool clearList);
     void addAllChildren(SceneGraphNode& currentNode,
                         RenderStage currentStage,
                         VisibleNodeList& nodes);

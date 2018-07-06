@@ -251,7 +251,7 @@ class SceneGraphNode : public GUIDWrapper,
    protected:
     friend class RenderPassCuller;
     // Returns true if the node should be culled (is not visible for the current stage)
-    bool cullNode(const SceneRenderState& sceneRenderState,
+    bool cullNode(const Camera& currentCamera,
                   Frustum::FrustCollision& collisionType,
                   RenderStage currentStage) const;
 

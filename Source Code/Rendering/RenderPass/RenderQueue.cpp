@@ -150,10 +150,7 @@ void RenderQueue::sort(RenderStage renderStage) {
         if (renderBin != nullptr) {
             vectorAlg::emplace_back(_sortingTasks, 
                 std::async(std::launch::async | std::launch::deferred,
-                [renderBin, renderStage]() {
-                    renderBin->sort(renderStage);
-                }
-            ));
+                           &RenderBin::sort, renderBin, renderStage));
         }
     }
 

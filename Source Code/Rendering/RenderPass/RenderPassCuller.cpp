@@ -59,29 +59,28 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
     VisibleNodeList& nodeCache = getNodeCache(stage);
     nodeCache.resize(0);
 
-    if (sceneState.renderState().drawGeometry()) {
+    SceneRenderState& renderState = sceneState.renderState();
+    if (renderState.drawGeometry()) {
         _cullingFunction = cullingFunction;
-        SceneRenderState& renderState = sceneState.renderState();
         // No point in updating visual information if the scene disabled object
         // rendering or rendering of their bounding boxes
         SceneGraphNode& root = sceneGraph.getRoot();
         U32 childCount = root.getChildCount();
         _perThreadNodeList.resize(childCount);
-
+        const Camera& currentCamera = renderState.getCameraConst();
         std::launch launchPolicy = async ? std::launch::async | std::launch::deferred :
                                            std::launch::deferred;
 
         _cullingTasks.resize(0);
         for (U32 i = 0; i < childCount; ++i) {
             SceneGraphNode& child = root.getChild(i, childCount);
-            VisibleNodeList& container = _perThreadNodeList[i];
-            container.resize(0);
             _cullingTasks.push_back(std::async(launchPolicy, 
                 &RenderPassCuller::frustumCullNode, this, 
                 std::ref(child),
                 stage,
-                std::ref(renderState),
-                std::ref(container)));
+                std::cref(currentCamera),
+                i,
+                true));
         }
 
         for (std::future<void>& task : _cullingTasks) {
@@ -100,9 +99,15 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
 /// children and adds them to the RenderQueue
 void RenderPassCuller::frustumCullNode(SceneGraphNode& currentNode,
                                        RenderStage currentStage,
-                                       SceneRenderState& sceneRenderState,
-                                       VisibleNodeList& nodes)
+                                       const Camera& currentCamera,
+                                       U32 nodeListIndex,
+                                       bool clearList)
 {
+    VisibleNodeList& nodes = _perThreadNodeList[nodeListIndex];
+    if (clearList) {
+        nodes.resize(0);
+    }
+
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
     bool isVisible = !(currentStage == RenderStage::SHADOW &&
                        !currentNode.getComponent<RenderingComponent>()->castsShadows());
@@ -110,7 +115,7 @@ void RenderPassCuller::frustumCullNode(SceneGraphNode& currentNode,
     isVisible = isVisible &&
                 currentNode.isActive() &&
                 !_cullingFunction(currentNode) &&
-                !currentNode.cullNode(sceneRenderState, collisionResult, currentStage);
+                !currentNode.cullNode(currentCamera, collisionResult, currentStage);
 
     if (isVisible) {
         nodes.push_back(std::make_pair(0, currentNode.shared_from_this()));
@@ -121,8 +126,9 @@ void RenderPassCuller::frustumCullNode(SceneGraphNode& currentNode,
                 for (U32 i = 0; i < childCount; ++i) {
                     frustumCullNode(currentNode.getChild(i, childCount),
                                     currentStage,
-                                    sceneRenderState,
-                                    nodes);
+                                    currentCamera,
+                                    nodeListIndex,
+                                    false);
                 }
             } else {
                 // All nodes are in view entirely

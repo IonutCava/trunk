@@ -362,7 +362,7 @@ void SceneGraphNode::frameEnded() {
     }
 }
 
-bool SceneGraphNode::cullNode(const SceneRenderState& sceneRenderState,
+bool SceneGraphNode::cullNode(const Camera& currentCamera,
                               Frustum::FrustCollision& collisionType,
                               RenderStage currentStage) const {
     if (visibilityLocked()) {
@@ -374,9 +374,8 @@ bool SceneGraphNode::cullNode(const SceneRenderState& sceneRenderState,
     const BoundingBox& boundingBox = getBoundingBoxConst();
     const BoundingSphere& sphere = getBoundingSphereConst();
 
-    const Camera& cam = sceneRenderState.getCameraConst();
-    const vec3<F32>& eye = cam.getEye();
-    const Frustum& frust = cam.getFrustumConst();
+    const vec3<F32>& eye = currentCamera.getEye();
+    const Frustum& frust = currentCamera.getFrustumConst();
     F32 radius = sphere.getRadius();
     const vec3<F32>& center = sphere.getCenter();
     F32 cameraDistance = center.distance(eye);
@@ -384,7 +383,7 @@ bool SceneGraphNode::cullNode(const SceneRenderState& sceneRenderState,
 
     if (distanceCheck && cameraDistance > visibilityDistance) {
         if (boundingBox.nearestDistanceFromPointSquared(eye) >
-            std::min(visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y)) {
+            std::min(visibilityDistance, currentCamera.getZPlanes().y)) {
             return true;
         }
     }
