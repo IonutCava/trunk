@@ -16,32 +16,37 @@ bool d3dRenderTarget::create(U16 width, U16 height) { return true; }
 
 void d3dRenderTarget::destroy() {}
 
-void d3dRenderTarget::begin(const RenderTargetDrawDescriptor& drawPolicy) {}
+void d3dRenderTarget::begin(const RTDrawDescriptor& drawPolicy) {}
 
 void d3dRenderTarget::end() {
 }
 
-void d3dRenderTarget::bind(U8 unit, TextureDescriptor::AttachmentType slot, bool flushStateOnRequest) {}
+void d3dRenderTarget::bind(U8 unit, RTAttachment::Type type, U8 index, bool flushStateOnRequest) {}
 
-void d3dRenderTarget::drawToLayer(TextureDescriptor::AttachmentType slot,
+void d3dRenderTarget::drawToLayer(RTAttachment::Type type,
+                                  U8 index,
                                   U32 layer,
                                   bool includeDepth) {}
 
 void d3dRenderTarget::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel,
-                                  TextureDescriptor::AttachmentType slot) {}
+                                  RTAttachment::Type type, U8 index) {}
 
-void d3dRenderTarget::resetMipLevel(TextureDescriptor::AttachmentType slot) {}
+void d3dRenderTarget::resetMipLevel(RTAttachment::Type type, U8 index) {}
 
 bool d3dRenderTarget::checkStatus() const { return true; }
 
 void d3dRenderTarget::readData(const vec4<U16>& rect,
                                GFXImageFormat imageFormat,
-                               GFXDataFormat dataType, void* outData) {}
+                               GFXDataFormat dataType, bufferPtr outData) {}
 
 void d3dRenderTarget::blitFrom(RenderTarget* inputFB,
-                               TextureDescriptor::AttachmentType slot,
+                               bool blitColour,
+                               bool blitDepth) {}
+
+void d3dRenderTarget::blitFrom(RenderTarget* inputFB,
+                               U8 index,
                                bool blitColour, bool blitDepth) {}
 
-void d3dRenderTarget::clear(const RenderTargetDrawDescriptor& drawPolicy) const {}
+void d3dRenderTarget::clear(const RTDrawDescriptor& drawPolicy) const {}
 
 };

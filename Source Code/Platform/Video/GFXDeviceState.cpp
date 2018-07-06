@@ -159,6 +159,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     hiZSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     hiZSampler.toggleMipMaps(true);
     hiZDescriptor.setSampler(hiZSampler);
+    hiZDescriptor.toggleAutomaticMipMapGeneration(false);
 
     SamplerDescriptor screenSampler;
     screenSampler.setFilters(TextureFilter::NEAREST);
@@ -172,11 +173,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     normalDescriptor.setSampler(screenSampler);
     
     // Add the attachments to the render targets
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Colour0);
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Colour1);
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(hiZDescriptor,  TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->setClearColour(DefaultColours::DIVIDE_BLUE());
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->setClearColour(DefaultColours::WHITE(), TextureDescriptor::AttachmentType::Colour1);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(screenDescriptor, RTAttachment::Type::Colour, 0);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(normalDescriptor, RTAttachment::Type::Colour, 1);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::DIVIDE_BLUE());
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->setClearColour(RTAttachment::Type::Colour, 1, DefaultColours::WHITE());
 
     _activeRenderTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target;
 
@@ -194,19 +195,19 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         RenderTarget*& buffer = target._target;
 
         buffer = newRT(false);
-        buffer->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Colour0);
+        buffer->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
         buffer->useAutoDepthBuffer(true);
         buffer->create(Config::REFLECTION_TARGET_RESOLUTION);
-        buffer->setClearColour(DefaultColours::WHITE());
+        buffer->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }
     for (RenderTargetWrapper& target : _refractionTarget) {
         RenderTarget*& buffer = target._target;
 
         buffer = newRT(false);
-        buffer->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Colour0);
+        buffer->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
         buffer->useAutoDepthBuffer(true);
         buffer->create(Config::REFRACTION_TARGET_RESOLUTION);
-        buffer->setClearColour(DefaultColours::WHITE());
+        buffer->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }
     
     // Initialized our HierarchicalZ construction shader (takes a depth
@@ -247,10 +248,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                              to_int(renderResolution.width),
                              to_int(renderResolution.height));
     setBaseViewport(vec4<I32>(0, 0, to_int(renderResolution.width), to_int(renderResolution.height)));
-
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target
-        ->getAttachment(TextureDescriptor::AttachmentType::Depth)
-        ->lockAutomaticMipMapGeneration(true);
 
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;

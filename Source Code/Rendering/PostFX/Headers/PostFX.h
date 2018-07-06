@@ -112,7 +112,7 @@ DEFINE_SINGLETON(PostFX)
     vectorImpl<U32> _shaderFunctionSelection;
     vectorImpl<I32> _shaderFunctionList;
 
-    RenderTarget::RenderTargetDrawDescriptor _postFXTarget;
+    RTDrawDescriptor _postFXTarget;
 
     //fade settings
     D64 _currentFadeTimeMS;

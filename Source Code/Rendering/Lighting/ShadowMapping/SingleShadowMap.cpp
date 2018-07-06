@@ -51,7 +51,7 @@ void SingleShadowMap::previewShadowMaps(U32 rowIndex) {
 
     const vec4<I32> viewport = getViewportForRow(rowIndex);
 
-    getDepthMap()->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), TextureDescriptor::AttachmentType::Depth);
+    getDepthMap()->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
     _previewDepthMapShader->Uniform("layer", _arrayOffset);
 
     GFX::ScopedViewport sViewport(viewport);

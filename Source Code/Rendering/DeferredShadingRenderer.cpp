@@ -49,12 +49,12 @@ DeferredShadingRenderer::DeferredShadingRenderer()
         gBuffer[i].setSampler(gBufferSampler);
     }
 
-    _deferredBuffer->addAttachment(gBuffer[0], TextureDescriptor::AttachmentType::Colour0);
-    _deferredBuffer->addAttachment(gBuffer[1], TextureDescriptor::AttachmentType::Colour1);
-    _deferredBuffer->addAttachment(gBuffer[2], TextureDescriptor::AttachmentType::Colour2);
-    _deferredBuffer->addAttachment(gBuffer[3], TextureDescriptor::AttachmentType::Colour3);
+    _deferredBuffer->addAttachment(gBuffer[0], RTAttachment::Type::Colour, 0);
+    _deferredBuffer->addAttachment(gBuffer[1], RTAttachment::Type::Colour, 1);
+    _deferredBuffer->addAttachment(gBuffer[2], RTAttachment::Type::Colour, 2);
+    _deferredBuffer->addAttachment(gBuffer[3], RTAttachment::Type::Colour, 3);
     _deferredBuffer->useAutoDepthBuffer(true);
-    _deferredBuffer->setClearColour(DefaultColours::BLACK());
+    _deferredBuffer->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
     ResourceDescriptor mrtPreviewSmall("MRT RenderQuad SmallPreview");
     mrtPreviewSmall.setFlag(true);  // no default material
     ResourceDescriptor mrt("MRT RenderQuad");
@@ -75,9 +75,8 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
     par.setParam(_ID("rendering.enableShadows"), false);
 
-    vec2<U16> resolution = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->getResolution();
-    U16 width = resolution.width;
-    U16 height = resolution.height;
+    U16 width = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->getWidth();
+    U16 height = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->getHeight();
 
     updateResolution(width, height);
 
@@ -119,11 +118,11 @@ void DeferredShadingRenderer::preRender(LightPool& lightPool) {
 
     if (lights.size() != _cachedLightCount) {
         _cachedLightCount = (U16)lights.size();
-        _lightTexture->Create(2, _cachedLightCount);
+        _lightTexture->create(2, _cachedLightCount);
     }
 
     U8 index = 0;
-    F32* pixels = (F32*)_lightTexture->Begin();
+    F32* pixels = (F32*)_lightTexture->begin();
     for (U8 row = 0; row < 3; row++) {
         for (U8 col = 0; col < lights.size() / 3; col++) {
             U8 i = row * 10 + col;
@@ -138,7 +137,7 @@ void DeferredShadingRenderer::preRender(LightPool& lightPool) {
             index += 6;
         }
     }
-    _lightTexture->End();
+    _lightTexture->end();
 }
 
 void DeferredShadingRenderer::render(const DELEGATE_CBK<>& renderCallback,
@@ -163,11 +162,11 @@ void DeferredShadingRenderer::secondPass(
     // textures bound to that shader
     GFX::Scoped2DRendering scoped2D(true);
 
-    _deferredBuffer->bind(0, TextureDescriptor::AttachmentType::Colour0);
-    _deferredBuffer->bind(1, TextureDescriptor::AttachmentType::Colour1);
-    _deferredBuffer->bind(2, TextureDescriptor::AttachmentType::Colour2);
-    _deferredBuffer->bind(3, TextureDescriptor::AttachmentType::Colour3);
-    _lightTexture->Bind(4);
+    _deferredBuffer->bind(0, RTAttachment::Type::Colour, 0);
+    _deferredBuffer->bind(1, RTAttachment::Type::Colour, 1);
+    _deferredBuffer->bind(2, RTAttachment::Type::Colour, 2);
+    _deferredBuffer->bind(3, RTAttachment::Type::Colour, 3);
+    _lightTexture->bind(4);
 
     GenericDrawCommand cmd;
     cmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));

@@ -359,7 +359,7 @@ void Vegetation::gpuCull() {
 
         GFX::ScopedRasterizer scoped2D(false);
         GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target
-            ->bind(0, TextureDescriptor::AttachmentType::Depth);
+            ->bind(0, RTAttachment::Type::Depth, 0);
         buffer->bindFeedbackBufferRange(to_const_uint(BufferUsage::CulledPositionBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);

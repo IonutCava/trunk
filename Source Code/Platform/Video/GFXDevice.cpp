@@ -118,22 +118,20 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
                                 RenderStage renderStage) {
     // Only the first colour attachment or the depth attachment is used for now
     // and it must be a cube map texture
-    const Texture_ptr& colourAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Colour0, false);
-    const Texture_ptr& depthAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
+    const RTAttachment& colourAttachment = cubeMap.getAttachment(RTAttachment::Type::Colour, 0, false);
+    const RTAttachment& depthAttachment = cubeMap.getAttachment(RTAttachment::Type::Depth, 0, false);
     // Colour attachment takes precedent over depth attachment
-    bool hasColour = (colourAttachment != nullptr);
-    bool hasDepth = (depthAttachment != nullptr);
+    bool hasColour = colourAttachment.used();
+    bool hasDepth = depthAttachment.used();
     // Everyone's innocent until proven guilty
     bool isValidFB = true;
     if (hasColour) {
         // We only need the colour attachment
-        isValidFB = (colourAttachment->getTextureType() == TextureType::TEXTURE_CUBE_MAP) ||
-                    (colourAttachment->getTextureType() == TextureType::TEXTURE_CUBE_ARRAY);
+        isValidFB = (colourAttachment.descriptor().isCubeTexture());
     } else {
         // We don't have a colour attachment, so we require a cube map depth
         // attachment
-        isValidFB = hasDepth && (depthAttachment->getTextureType() == TextureType::TEXTURE_CUBE_MAP ||
-                                 depthAttachment->getTextureType() == TextureType::TEXTURE_CUBE_ARRAY);
+        isValidFB = hasDepth && depthAttachment.descriptor().isCubeTexture();
     }
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {
@@ -165,8 +163,9 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
-        cubeMap.drawToFace(hasColour ? TextureDescriptor::AttachmentType::Colour0
-                                    : TextureDescriptor::AttachmentType::Depth,
+        cubeMap.drawToFace(hasColour ? RTAttachment::Type::Colour
+                                     : RTAttachment::Type::Depth,
+                           0,
                            i + arrayOffset);
         // Point our camera to the correct face
         _cubeCamera->lookAt(pos, TabCenter[i], TabUp[i]);
@@ -189,18 +188,18 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
                                           const vec2<F32>& zPlanes,
                                           RenderStage renderStage)
 {
-    const Texture_ptr& colourAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Colour0, false);
-    const Texture_ptr& depthAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
+    const RTAttachment& colourAttachment = targetBuffer.getAttachment(RTAttachment::Type::Colour, 0, false);
+    const RTAttachment& depthAttachment = targetBuffer.getAttachment(RTAttachment::Type::Depth, 0, false);
     // Colour attachment takes precedent over depth attachment
-    bool hasColour = (colourAttachment != nullptr);
-    bool hasDepth = (depthAttachment != nullptr);
+    bool hasColour = colourAttachment.used();
+    bool hasDepth = depthAttachment.used();
     bool isValidFB = true;
     if (hasColour) {
         // We only need the colour attachment
-        isValidFB = colourAttachment->getTextureType() == TextureType::TEXTURE_2D_ARRAY;
+        isValidFB = colourAttachment.descriptor().isArrayTexture();
     } else {
-        // We don't have a colour attachment, so we require a cube map depth   // attachment
-        isValidFB = hasDepth && depthAttachment->getTextureType() == TextureType::TEXTURE_2D_ARRAY;
+        // We don't have a colour attachment, so we require a cube map depth attachment
+        isValidFB = hasDepth && depthAttachment.descriptor().isArrayTexture();
     }
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {
@@ -218,8 +217,9 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
     // Enable our render target
     targetBuffer.begin(RenderTarget::defaultPolicy());
         for (U8 i = 0; i < 2; ++i) {
-            targetBuffer.drawToLayer(hasColour ? TextureDescriptor::AttachmentType::Colour0
-                                              : TextureDescriptor::AttachmentType::Depth,
+            targetBuffer.drawToLayer(hasColour ? RTAttachment::Type::Colour
+                                              : RTAttachment::Type::Depth,
+                                     0,
                                      i + arrayOffset);
             // Point our camera to the correct face
             _dualParaboloidCamera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS) + pos, WORLD_Y_AXIS);
@@ -351,7 +351,8 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
     if (_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target != nullptr) {
         // Update resolution only if it's different from the current one.
         // Avoid resolution change on minimize so we don't thrash render targets
-        if (vec2<U16>(w, h) ==  _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getResolution() ||
+        if ((w == _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getWidth() &&
+             h == _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getHeight()) ||
            !(w > 1 && h > 1)) {
             return;
         }
@@ -634,26 +635,27 @@ void GFXDevice::constructHIZ() {
 
     // The depth buffer's resolution should be equal to the screen's resolution
     RenderTarget* screenTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target;
-    vec2<U16> resolution = screenTarget->getResolution();
+    U16 width = screenTarget->getWidth();
+    U16 height = screenTarget->getHeight();
     // Bind the depth texture to the first texture unit
-    screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), TextureDescriptor::AttachmentType::Depth);
+    screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
     // We use a special shader that downsamples the buffer
     // We will use a state block that disables colour writes as we will render only a depth image,
     // disables depth testing but allows depth writes
     // Set the depth buffer as the currently active render target
-    RenderTarget::RenderTargetDrawDescriptor depthOnlyTarget;
+    RTDrawDescriptor depthOnlyTarget;
     depthOnlyTarget._clearColourBuffersOnBind = false;
     depthOnlyTarget._clearDepthBufferOnBind = false;
     depthOnlyTarget._changeViewport = false;
-    depthOnlyTarget._drawMask.fill(false);
-    depthOnlyTarget._drawMask[to_const_uint(TextureDescriptor::AttachmentType::Depth)] = true;
+    depthOnlyTarget._drawMask.disableAll();
+    depthOnlyTarget._drawMask.enabled(RTAttachment::Type::Depth, 0);
 
     screenTarget->begin(depthOnlyTarget);
     // Calculate the number of mipmap levels we need to generate
-    U32 numLevels = 1 + to_uint(floorf(log2f(fmaxf(to_float(resolution.width),
-                                                   to_float(resolution.height)))));
+    U32 numLevels = 1 + to_uint(floorf(log2f(fmaxf(to_float(width),
+                                                   to_float(height)))));
     // Store the current width and height of each mip
-    vec4<I32> currentViewport(0, 0, resolution.width, resolution.height);
+    vec4<I32> currentViewport(0, 0, width, height);
     vec4<I32> previousViewport(_viewport.top());
     // We skip the first level as that's our full resolution image
     for (U16 i = 1; i < numLevels; ++i) {
@@ -661,13 +663,13 @@ void GFXDevice::constructHIZ() {
         // Update the viewport with the new resolution
         updateViewportInternal(setAndGetHalfViewport(currentViewport));
         // Bind next mip level for rendering but first restrict fetches only to previous level
-        screenTarget->setMipLevel(i - 1, i - 1, i, TextureDescriptor::AttachmentType::Depth);
+        screenTarget->setMipLevel(i - 1, i - 1, i, RTAttachment::Type::Depth, 0);
         // Dummy draw command as the full screen quad is generated completely in the vertex shader
         drawTriangle(_stateDepthOnlyRenderingHash, _HIZConstructProgram);
     }
     updateViewportInternal(previousViewport);
     // Reset mipmap level range for the depth buffer
-    screenTarget->resetMipLevel(TextureDescriptor::AttachmentType::Depth);
+    screenTarget->resetMipLevel(RTAttachment::Type::Depth, 0);
     // Unbind the render target
     screenTarget->end();
 }
@@ -705,18 +707,18 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
 /// and save it as a TGA image
 void GFXDevice::Screenshot(const stringImpl& filename) {
     // Get the screen's resolution
-    const vec2<U16>& resolution =
-        _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target
-            ->getResolution();
+    U16 width = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getWidth();
+    U16 height = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getHeight();
     // Allocate sufficiently large buffers to hold the pixel data
-    U32 bufferSize = resolution.width * resolution.height * 4;
+    U32 bufferSize = width * height * 4;
     U8* imageData = MemoryManager_NEW U8[bufferSize];
     // Read the pixels from the main render target (RGBA16F)
     _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->readData(
         GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, imageData);
     // Save to file
     ImageTools::SaveSeries(filename,
-                           vec2<U16>(resolution.width, resolution.height), 32,
+                           vec2<U16>(width, height),
+                           32,
                            imageData);
     // Delete local buffers
     MemoryManager::DELETE_ARRAY(imageData);

@@ -43,7 +43,7 @@ void ShadowMap::initShadowMaps() {
                 depthMapDescriptor.setSampler(depthMapSampler);
 
                 _depthMaps[i] = GFX_DEVICE.newRT();
-                _depthMaps[i]->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
+                _depthMaps[i]->addAttachment(depthMapDescriptor, RTAttachment::Type::Depth, 0);
             } break;
 
             case ShadowType::LAYERED: {
@@ -60,8 +60,8 @@ void ShadowMap::initShadowMaps() {
                 depthMapDescriptor.setSampler(depthMapSampler);
 
                 _depthMaps[i] = GFX_DEVICE.newRT(false);
-                _depthMaps[i]->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Colour0);
-                _depthMaps[i]->setClearColour(DefaultColours::WHITE());
+                _depthMaps[i]->addAttachment(depthMapDescriptor, RTAttachment::Type::Colour, 0);
+                _depthMaps[i]->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
             } break;
 
             case ShadowType::CUBEMAP: {
@@ -79,7 +79,7 @@ void ShadowMap::initShadowMaps() {
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
                 _depthMaps[i] = GFX_DEVICE.newRT();
-                _depthMaps[i]->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
+                _depthMaps[i]->addAttachment(depthMapDescriptor, RTAttachment::Type::Depth, 0);
             } break;
         };
 
@@ -96,11 +96,11 @@ void ShadowMap::clearShadowMaps() {
 
 void ShadowMap::bindShadowMaps() {
     for (U8 i = 0; i < to_const_ubyte(ShadowType::COUNT); ++i) {
-        TextureDescriptor::AttachmentType attachment
+        RTAttachment::Type attachment
             = static_cast<ShadowType>(i) == ShadowType::LAYERED
-                                          ? TextureDescriptor::AttachmentType::Colour0
-                                          : TextureDescriptor::AttachmentType::Depth;
-        _depthMaps[i]->bind(LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i)), attachment);
+                                          ? RTAttachment::Type::Colour
+                                          : RTAttachment::Type::Depth;
+        _depthMaps[i]->bind(LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i)), attachment, 0);
     }
 }
 

@@ -32,163 +32,75 @@
 #ifndef _RENDER_TARGET_H_
 #define _RENDER_TARGET_H_
 
+#include "RTDrawDescriptor.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
-#include "Platform/Video/Textures/Headers/TextureDescriptor.h"
 
 namespace Divide {
 
-FWD_DECLARE_MANAGED_CLASS(Texture);
-
 class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper {
    public:
-    struct RenderTargetDrawDescriptor {
-        typedef std::array<bool, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> FBOBufferMask;
-
-        FBOBufferMask _drawMask;
-        bool _clearColourBuffersOnBind;
-        bool _clearDepthBufferOnBind;
-        bool _changeViewport;
-
-        RenderTargetDrawDescriptor()
-            : _clearColourBuffersOnBind(true),
-              _clearDepthBufferOnBind(true),
-              _changeViewport(true)
-        {
-            _drawMask.fill(true);
-        }
-    };
-
     enum class RenderTargetUsage : U32 {
         RT_READ_WRITE = 0,
         RT_READ_ONLY = 1,
         RT_WRITE_ONLY = 2
     };
 
-    inline static RenderTargetDrawDescriptor& defaultPolicy() {
-        static RenderTargetDrawDescriptor _defaultPolicy;
-        return _defaultPolicy;
-    }
+   public:
+    RenderTarget(GFXDevice& context, bool multiSample);
+    virtual ~RenderTarget();
 
-    inline TextureDescriptor getDescriptor(TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Colour0) {
-        return _attachment[to_uint(slot)];
-    }
+    static RTDrawDescriptor& defaultPolicy();
 
-    virtual const Texture_ptr& getAttachment(
-        TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Colour0,
-        bool flushStateOnRequest = true);
-
-    void addAttachment(const TextureDescriptor& descriptor, TextureDescriptor::AttachmentType type);
-
-    void addAttachment(const Texture_ptr& texture, TextureDescriptor::AttachmentType type);
+    // Enable/Disable the presence of a depth renderbuffer
+    virtual void useAutoDepthBuffer(const bool state);
 
     /// If the FB is not initialized, it gets created, otherwise
     /// the attachements get resized.
     /// If any internal state was changed between calls (_shouldRebuild == true),
     /// the entire FB is recreated with the new state.
     virtual bool create(U16 width, U16 height) = 0;
-
-    inline bool create(U16 widthAndHeight) {
-        return create(widthAndHeight, widthAndHeight);
-    }
-
+    virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest = true);
     virtual void destroy() = 0;
-
     /// Use by multilayered FB's
-    virtual void drawToLayer(TextureDescriptor::AttachmentType slot, U32 layer,
-                             bool includeDepth = true) = 0;
-    /// Used by cubemap FB's
-    inline void drawToFace(TextureDescriptor::AttachmentType slot, U32 nFace,
-                           bool includeDepth = true) {
-        drawToLayer(slot, nFace, includeDepth);
-    }
-
-    virtual void setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel,
-                             TextureDescriptor::AttachmentType slot) = 0;
-
-    virtual void resetMipLevel(TextureDescriptor::AttachmentType slot) = 0;
-
-    void setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel);
-
-    void resetMipLevel();
-
-    virtual void begin(const RenderTargetDrawDescriptor& drawPolicy) = 0;
-
+    virtual void drawToLayer(RTAttachment::Type type, U8 index, U32 layer, bool includeDepth = true) = 0;
+    virtual void setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel, RTAttachment::Type type, U8 index) = 0;
+    virtual void resetMipLevel(RTAttachment::Type type, U8 index) = 0;
+    virtual void begin(const RTDrawDescriptor& drawPolicy) = 0;
     virtual void end() = 0;
+    virtual void bind(U8 unit, RTAttachment::Type type, U8 index, bool flushStateOnRequest = true) = 0;
+    virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) = 0;
+    virtual void clear(const RTDrawDescriptor& drawPolicy) const = 0;
+    virtual void blitFrom(RenderTarget* inputFB, bool blitColour = true, bool blitDepth = false) = 0;
+    virtual void blitFrom(RenderTarget* inputFB, U8 index, bool blitColour = true, bool blitDepth = false) = 0;
 
-    virtual void bind(U8 unit = 0,
-                      TextureDescriptor::AttachmentType
-                          slot = TextureDescriptor::AttachmentType::Colour0,
-                      bool flushStateOnRequest = true) = 0;
-
-    virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat,
-                          GFXDataFormat dataType, void* outData) = 0;
-
-    inline void readData(GFXImageFormat imageFormat, GFXDataFormat dataType,
-                         void* outData) {
-        readData(vec4<U16>(0, 0, _width, _height), imageFormat, dataType,
-                 outData);
-    }
-
-    virtual void clear(const RenderTargetDrawDescriptor& drawPolicy) const = 0;
-
-    virtual void blitFrom(RenderTarget* inputFB,
-                          TextureDescriptor::AttachmentType
-                              slot = TextureDescriptor::AttachmentType::Colour0,
-                          bool blitColour = true, bool blitDepth = false) = 0;
-
-    // Enable/Disable the presence of a depth renderbuffer
-    virtual void useAutoDepthBuffer(const bool state) {
-        if (_useDepthBuffer != state) {
-            _shouldRebuild = true;
-            _useDepthBuffer = state;
-        }
-    }
-    
+    TextureDescriptor& getDescriptor(RTAttachment::Type type, U8 index);
+    void addAttachment(const TextureDescriptor& descriptor, RTAttachment::Type type, U8 index);
+    bool create(U16 widthAndHeight);
+    /// Used by cubemap FB's
+    void drawToFace(RTAttachment::Type type, U8 index, U32 nFace, bool includeDepth = true);
+    void setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel);
+    void resetMipLevel();
+    void readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData);
     // Set the colour the FB will clear to when drawing to it
-    inline void setClearColour(const vec4<F32>& clearColour,
-                              TextureDescriptor::AttachmentType
-                                 slot = TextureDescriptor::AttachmentType::COUNT) {
-        if (slot == TextureDescriptor::AttachmentType::COUNT) {
-            _clearColours.fill(clearColour);
-        } else {
-            _clearColours[to_uint(slot)].set(clearColour);
-        }
-    }
-
-    inline void setClearDepth(F32 depthValue) {
-        _depthValue = depthValue;
-    }
-
-    inline bool isMultisampled() const {
-        return _multisampled;
-    }
-
-    inline U16 getWidth()  const { return _width; }
-    inline U16 getHeight() const { return _height; }
-    inline U32 getHandle() const { return _framebufferHandle; }
-
-    inline vec2<U16> getResolution() const {
-        return vec2<U16>(_width, _height);
-    }
-
-    RenderTarget(GFXDevice& context, bool multiSample);
-    virtual ~RenderTarget();
+    void setClearColour(RTAttachment::Type type, U8 index, const vec4<F32>& clearColour);
+    void setClearDepth(F32 depthValue);
+    bool isMultisampled() const;
+    U16 getWidth()  const;
+    U16 getHeight() const;
 
    protected:
     virtual bool checkStatus() const = 0;
 
    protected:
-    
+    static U8 g_maxColourAttachments;
+
     bool _shouldRebuild;
     bool _useDepthBuffer;
     bool _multisampled;
     U16 _width, _height;
-    U32 _framebufferHandle;
     F32 _depthValue;
-    std::array<vec4<F32>, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _clearColours;
-    std::array<TextureDescriptor, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachment;
-    std::array<Texture_ptr, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachmentTexture;
-    std::array<bool, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachmentChanged;
+
+    RTAttachmentPool _attachments;
 };
 
 };  // namespace Divide

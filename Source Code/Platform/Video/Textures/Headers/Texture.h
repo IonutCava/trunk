@@ -69,9 +69,9 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     virtual ~Texture();
 
     /// Bind the texture to the specified texture unit
-    virtual void Bind(U8 slot, bool flushStateOnRequest = true) = 0;
+    virtual void bind(U8 slot, bool flushStateOnRequest = true) = 0;
     /// Bind a single level
-    virtual void BindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest = true) = 0;
+    virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest = true) = 0;
     /// Change the texture's mip levels. This can be called at any time
     virtual void setMipMapRange(U16 base = 0, U16 max = 1000) {
         _mipMinLevel = base;

@@ -107,7 +107,7 @@ bool ScenePool::deleteScene(Scene*& scene) {
         I64 activeGUID = _activeScene ? _activeScene->getGUID() : 0;
 
         if (targetGUID != defaultGUID) {
-            if (targetGUID == activeGUID) {
+            if (targetGUID == activeGUID && defaultGUID != 0) {
                 _parentMgr.setActiveScene(_defaultScene);
             }
         } else {

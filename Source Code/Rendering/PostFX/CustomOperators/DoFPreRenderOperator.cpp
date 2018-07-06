@@ -11,7 +11,7 @@ DoFPreRenderOperator::DoFPreRenderOperator(RenderTarget* hdrTarget, RenderTarget
     : PreRenderOperator(FilterType::FILTER_DEPTH_OF_FIELD, hdrTarget, ldrTarget)
 {
     _samplerCopy = GFX_DEVICE.newRT();
-    _samplerCopy->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Colour0);
+    _samplerCopy->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
     _samplerCopy->useAutoDepthBuffer(false);
 
     ResourceDescriptor dof("DepthOfField");
@@ -34,9 +34,8 @@ void DoFPreRenderOperator::execute() {
     // Copy current screen
     /*
     _samplerCopy->blitFrom(_hdrTarget);
-    _samplerCopy->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));  // screenFB
-    _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1),
-                      TextureDescriptor::AttachmentType::Depth);  // depthFB
+    _samplerCopy->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // screenFB
+    _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Depth, 0);  // depthFB
         
     _hdrTarget->begin(_screenOnlyDraw);
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _dofShader);

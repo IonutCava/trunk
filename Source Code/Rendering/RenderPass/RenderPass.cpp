@@ -16,8 +16,8 @@
 namespace Divide {
 
 namespace {
-    RenderTarget::RenderTargetDrawDescriptor _noDepthClear;
-    RenderTarget::RenderTargetDrawDescriptor _depthOnly;
+    RTDrawDescriptor _noDepthClear;
+    RTDrawDescriptor _depthOnly;
 
     // We need a proper, time-based system, to check reflection budget
     namespace ReflectionUtil {
@@ -71,12 +71,12 @@ RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<Render
 
     _noDepthClear._clearDepthBufferOnBind = false;
     _noDepthClear._clearColourBuffersOnBind = true;
-    _noDepthClear._drawMask.fill(true);
+    _noDepthClear._drawMask.enableAll();
 
     _depthOnly._clearColourBuffersOnBind = true;
     _depthOnly._clearDepthBufferOnBind = true;
-    _depthOnly._drawMask.fill(false);
-    _depthOnly._drawMask[to_const_uint(TextureDescriptor::AttachmentType::Depth)] = true;
+    _depthOnly._drawMask.disableAll();
+    _depthOnly._drawMask.enabled(RTAttachment::Type::Depth, 0);
 
     // Disable pre-pass for HIZ debugging to be able to render "culled" nodes properly
     if (Config::DEBUG_HIZ_CULLING) {

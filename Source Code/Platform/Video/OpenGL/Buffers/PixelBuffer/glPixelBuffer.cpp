@@ -51,7 +51,7 @@ glPixelBuffer::glPixelBuffer(GFXDevice& context, PBType type) : PixelBuffer(cont
     };
 }
 
-void glPixelBuffer::Destroy() {
+void glPixelBuffer::destroy() {
     if (_textureID > 0) {
         glDeleteTextures(1, &_textureID);
         _textureID = 0;
@@ -64,7 +64,7 @@ void glPixelBuffer::Destroy() {
     _depth = 0;
 }
 
-void* glPixelBuffer::Begin() const {
+bufferPtr glPixelBuffer::begin() const {
     GL_API::setPixelPackUnpackAlignment();
     glNamedBufferSubData(_pixelBufferHandle, 0, _bufferSize, NULL);
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
@@ -108,16 +108,16 @@ void* glPixelBuffer::Begin() const {
     return glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
 }
 
-void glPixelBuffer::End() const {
+void glPixelBuffer::end() const {
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);  // release the mapped buffer
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
-void glPixelBuffer::Bind(GLubyte unit) const {
+void glPixelBuffer::bind(GLubyte unit) const {
     GL_API::bindTexture(unit, _textureID, static_cast<GLenum>(_textureType));
 }
 
-bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
+bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
                            GFXImageFormat internalFormatEnum,
                            GFXImageFormat formatEnum,
                            GFXDataFormat dataTypeEnum) {
@@ -126,7 +126,7 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
     _format = GLUtil::glImageFormatTable[to_uint(formatEnum)];
     _dataType = GLUtil::glDataFormat[to_uint(dataTypeEnum)];
 
-    Destroy();
+    destroy();
     Console::printfn(Locale::get(_ID("GL_PB_GEN")), width, height);
     _width = width;
     _height = height;
@@ -195,9 +195,9 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
 void glPixelBuffer::updatePixels(const GLfloat* const pixels,
                                  GLuint pixelCount) {
     if (pixels && pixels[0] && pixelCount == _bufferSize / _dataSizeBytes) {
-        void* ptr = Begin();
+        bufferPtr ptr = begin();
         memcpy(ptr, pixels, _bufferSize);
-        End();
+        end();
     }
 }
 };

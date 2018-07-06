@@ -39,19 +39,19 @@ namespace Divide {
 class glPixelBuffer : public PixelBuffer {
    public:
     glPixelBuffer(GFXDevice& context, PBType type);
-    ~glPixelBuffer() { Destroy(); }
+    ~glPixelBuffer() { destroy(); }
 
-    bool Create(GLushort width, GLushort height, GLushort depth = 0,
+    bool create(GLushort width, GLushort height, GLushort depth = 0,
                 GFXImageFormat internalFormatEnum = GFXImageFormat::RGBA8,
                 GFXImageFormat formatEnum = GFXImageFormat::RGBA,
                 GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32);
 
-    void Destroy();
+    void destroy();
 
-    void* Begin() const;
-    void End() const;
+    bufferPtr begin() const;
+    void end() const;
 
-    void Bind(GLubyte unit = 0) const;
+    void bind(GLubyte unit = 0) const;
 
     void updatePixels(const GLfloat* const pixels, GLuint pixelCount);
 

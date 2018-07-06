@@ -42,28 +42,42 @@ class d3dRenderTarget : public RenderTarget {
     d3dRenderTarget(GFXDevice& context, bool multisampled);
     ~d3dRenderTarget();
 
-    bool create(U16 width, U16 height);
+    bool create(U16 width, U16 height) override;
 
-    void destroy();
-    void drawToLayer(TextureDescriptor::AttachmentType slot, U32 layer,
-                     bool includeDepth = true);
-    void setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
-                     TextureDescriptor::AttachmentType slot);
-    void resetMipLevel(TextureDescriptor::AttachmentType slot);
-    void begin(const RenderTargetDrawDescriptor& drawPolicy);
-    void end();
+    void destroy() override;
+    void drawToLayer(RTAttachment::Type type,
+                     U8 index,
+                     U32 layer,
+                     bool includeDepth = true) override;
+    void setMipLevel(U16 mipLevel,
+                     U16 mipMaxLevel,
+                     U16 writeLevel,
+                     RTAttachment::Type type,
+                     U8 index) override;
+    void resetMipLevel(RTAttachment::Type type, U8 index) override;
+    void begin(const RTDrawDescriptor& drawPolicy) override;
+    void end() override;
 
-    void bind(U8 unit = 0,
-              TextureDescriptor::AttachmentType slot =
-                TextureDescriptor::AttachmentType::Colour0,
-              bool flushStateOnRequest = true);
-    void readData(const vec4<U16>& rect, GFXImageFormat imageFormat,
-                  GFXDataFormat dataType, void* outData);
+    void bind(U8 unit,
+              RTAttachment::Type type,
+              U8 index,
+              bool flushStateOnRequest = true) override;
+
+    void readData(const vec4<U16>& rect,
+                  GFXImageFormat imageFormat,
+                  GFXDataFormat dataType,
+                  bufferPtr outData) override;
+
     void blitFrom(RenderTarget* inputFB,
-                  TextureDescriptor::AttachmentType slot =
-                      TextureDescriptor::AttachmentType::Colour0,
-                  bool blitColour = true, bool blitDepth = false);
-    void clear(const RenderTargetDrawDescriptor& drawPolicy) const override;
+                  bool blitColour = true,
+                  bool blitDepth = false) override;
+
+    void blitFrom(RenderTarget* inputFB,
+                  U8 index,
+                  bool blitColour = true,
+                  bool blitDepth = false) override;
+
+    void clear(const RTDrawDescriptor& drawPolicy) const override;
 
    protected:
     bool checkStatus() const;

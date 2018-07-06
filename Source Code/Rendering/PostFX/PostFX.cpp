@@ -34,8 +34,8 @@ PostFX::PostFX()
     ParamHandler::instance().setParam<bool>(_ID("postProcessing.enableVignette"), false);
 
     _postFXTarget._clearDepthBufferOnBind = false;
-    _postFXTarget._drawMask.fill(false);
-    _postFXTarget._drawMask[0] = true;
+    _postFXTarget._drawMask.disableAll();
+    _postFXTarget._drawMask.enabled(RTAttachment::Type::Colour, 0);
 }
 
 PostFX::~PostFX()
@@ -139,9 +139,9 @@ void PostFX::apply() {
     _postProcessingShader->SetSubroutines(ShaderType::FRAGMENT, _shaderFunctionSelection);
 
     _preRenderBatch.bindOutput(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
-    _underwaterTexture->Bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
-    _noise->Bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
-    _screenBorder->Bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
+    _underwaterTexture->bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
+    _noise->bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
+    _screenBorder->bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
 
     _gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->begin(_postFXTarget);
         _gfx->drawTriangle(_gfx->getDefaultStateBlock(true), _postProcessingShader);

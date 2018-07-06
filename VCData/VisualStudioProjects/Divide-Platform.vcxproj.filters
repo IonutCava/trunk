@@ -301,6 +301,15 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\RenderTarget\Headers\glFramebuffer.h">
       <Filter>Video\OpenGL\Buffers\RenderTarget\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\Headers\RTAttachment.h">
+      <Filter>Video\Buffers\RenderTarget\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\Headers\RTDrawDescriptor.h">
+      <Filter>Video\Buffers\RenderTarget\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\RenderTarget\Headers\glRTAttachment.h">
+      <Filter>Video\OpenGL\Buffers\RenderTarget\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -500,6 +509,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\RenderTarget\glFramebuffer.cpp">
       <Filter>Video\OpenGL\Buffers\RenderTarget</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\RTAttachment.cpp">
+      <Filter>Video\Buffers\RenderTarget</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\RenderTarget\glRTAttachment.cpp">
+      <Filter>Video\OpenGL\Buffers\RenderTarget</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\RTDrawDescriptor.cpp">
+      <Filter>Video\Buffers\RenderTarget</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

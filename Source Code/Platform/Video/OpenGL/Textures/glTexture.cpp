@@ -384,7 +384,7 @@ bool glTexture::flushTextureState() {
     return true;
 }
 
-void glTexture::Bind(U8 unit, bool flushStateOnRequest) {
+void glTexture::bind(U8 unit, bool flushStateOnRequest) {
     if (flushStateOnRequest) {
         flushTextureState();
     }
@@ -392,7 +392,7 @@ void glTexture::Bind(U8 unit, bool flushStateOnRequest) {
     GL_API::bindTexture(unit, _textureData.getHandleHigh(), _type, _textureData._samplerHash);
 }
 
-void glTexture::BindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest) {
+void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest) {
     if (flushStateOnRequest) {
         flushTextureState();
     }

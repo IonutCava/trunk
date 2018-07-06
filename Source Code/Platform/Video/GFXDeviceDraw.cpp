@@ -331,7 +331,7 @@ void GFXDevice::occlusionCull(U32 pass) {
 
     RenderTarget* screenTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target;
 
-    screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), TextureDescriptor::AttachmentType::Depth);
+    screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
 
     U32 cmdCount = _lastCommandCount[getNodeBufferIndexForStage(currentStage)];
     _HIZCullProgram->bind();
@@ -413,7 +413,7 @@ void GFXDevice::drawTriangle(size_t stateHash, const ShaderProgram_ptr& shaderPr
 }
 
 void GFXDevice::flushDisplay() {
-    activeRenderTarget().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    activeRenderTarget().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
     drawTriangle(getDefaultStateBlock(true), _displayShader);
 }
 

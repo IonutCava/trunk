@@ -32,6 +32,7 @@
 #ifndef _GL_TEXTURE_H_
 #define _GL_TEXTURE_H_
 
+#include "Platform/Video/OpenGL/Headers/glResources.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
@@ -47,9 +48,9 @@ class glTexture final : public Texture {
 
     bool unload() override;
 
-    void Bind(U8 unit, bool flushStateOnRequest = true) override;
+    void bind(U8 unit, bool flushStateOnRequest = true) override;
 
-    void BindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest = true) override;
+    void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest = true) override;
 
     void setMipMapRange(GLushort base = 0, GLushort max = 1000) override;
 
@@ -85,6 +86,8 @@ class glTexture final : public Texture {
     std::atomic_bool _allocatedStorage;
     glLockManager* _lockManager;
 };
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(glTexture);
 
 };  // namespace Divide
 

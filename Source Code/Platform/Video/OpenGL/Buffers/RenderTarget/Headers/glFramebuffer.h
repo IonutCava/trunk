@@ -29,13 +29,14 @@
 
  */
 
-#ifndef _GL_FRAME_BUFFER_OBJECT_H
-#define _GL_FRAME_BUFFER_OBJECT_H
+#ifndef _GL_FRAME_BUFFER_OBJECT_H_
+#define _GL_FRAME_BUFFER_OBJECT_H_
 
-#include "Platform/Video/OpenGL/Headers/glResources.h"
+#include "glRTAttachment.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
+
 class glFramebuffer : public RenderTarget {
     DECLARE_ALLOCATOR
    public:
@@ -44,75 +45,98 @@ class glFramebuffer : public RenderTarget {
     glFramebuffer(GFXDevice& context, bool useResolveBuffer = false);
     ~glFramebuffer();
 
-    bool create(U16 width, U16 height);
-    void destroy();
+    bool create(U16 width, U16 height) override;
+    void destroy() override;
 
-    const Texture_ptr& getAttachment(
-        TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Colour0,
-        bool flushStateOnRequest = true) override;
+    const RTAttachment& getAttachment(RTAttachment::Type type,
+                                      U8 index,
+                                      bool flushStateOnRequest = true) override;
 
-    void drawToLayer(TextureDescriptor::AttachmentType slot, U32 layer,
-                     bool includeDepth = true);
-    void setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel,
-                     TextureDescriptor::AttachmentType slot);
-    void resetMipLevel(TextureDescriptor::AttachmentType slot);
+    void drawToLayer(RTAttachment::Type type,
+                     U8 index,
+                     U32 layer,
+                     bool includeDepth = true) override;
+
+    void setMipLevel(U16 mipMinLevel,
+                     U16 mipMaxLevel,
+                     U16 writeLevel,
+                     RTAttachment::Type type,
+                     U8 index) override;
+
+    void resetMipLevel(RTAttachment::Type type, U8 index) override;
     void addDepthBuffer();
-    void begin(const RenderTargetDrawDescriptor& drawPolicy);
-    void end();
+    void begin(const RTDrawDescriptor& drawPolicy)  override;
+    void end()  override;
 
-    void bind(U8 unit = 0,
-              TextureDescriptor::AttachmentType slot =
-                         TextureDescriptor::AttachmentType::Colour0,
-              bool flushStateOnRequest = true);
-    void readData(const vec4<U16>& rect, GFXImageFormat imageFormat,
-                  GFXDataFormat dataType, void* outData);
-    void blitFrom(RenderTarget* inputFB, TextureDescriptor::AttachmentType slot =
-                                            TextureDescriptor::AttachmentType::Colour0,
-                  bool blitColour = true, bool blitDepth = false);
+    void bind(U8 unit,
+              RTAttachment::Type type,
+              U8 index,
+              bool flushStateOnRequest = true) override;
+
+    void readData(const vec4<U16>& rect,
+                  GFXImageFormat imageFormat,
+                  GFXDataFormat dataType,
+                  void* outData) override;
+
+    void blitFrom(RenderTarget* inputFB,
+                  bool blitColour = true,
+                  bool blitDepth = false) override;
+
+    void blitFrom(RenderTarget* inputFB,
+                  U8 index,
+                  bool blitColour = true,
+                  bool blitDepth = false) override;
 
    protected:
     void resolve();
-    void clear(const RenderTargetDrawDescriptor& drawPolicy) const override;
+    void clear(const RTDrawDescriptor& drawPolicy) const override;
     bool checkStatus() const;
     void setInitialAttachments();
 
-    void initAttachment(TextureDescriptor::AttachmentType type,
+    void initAttachment(RTAttachment::Type type,
+                        U8 index,
                         TextureDescriptor& texDescriptor,
                         bool resize);
-    void resetMipMaps(const RenderTargetDrawDescriptor& drawPolicy);
 
-    void toggleAttachment(TextureDescriptor::AttachmentType type, bool state);
+    void resetMipMaps(const RTDrawDescriptor& drawPolicy);
+
+    void toggleAttachment(RTAttachment::Type type, U8 index, bool state);
 
     inline bool hasDepth() const {
-        return _attachmentTexture[to_const_uint(TextureDescriptor::AttachmentType::Depth)] != nullptr;
+        U8 depthAttCount = _attachments.attachmentCount(RTAttachment::Type::Depth);
+        for (U8 i = 0; i < depthAttCount; ++i) {
+            if (_attachments.get(RTAttachment::Type::Depth, i)->used()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     inline bool hasColour() const {
-        return !_colourBuffers.empty();
+        U8 colourAttCount = _attachments.attachmentCount(RTAttachment::Type::Colour);
+        for (U8 i = 0; i < colourAttCount; ++i) {
+            if (_attachments.get(RTAttachment::Type::Colour, i)->used()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
    protected:
     bool _resolved;
     bool _isCreated;
     bool _isLayeredDepth;
-    
+    GLuint _framebufferHandle;
     static bool _viewportChanged;
 
 #   if defined(ENABLE_GPU_VALIDATION)
         static bool _bufferBound;
 #   endif
 
-    vectorImpl<GLenum> _colourBuffers;
-    vectorImpl<bool>   _colourBufferEnabled;
     glFramebuffer* _resolveBuffer;
-
-    using AttType = TextureDescriptor::AttachmentType;
-    std::array<I32, to_const_uint(AttType::COUNT)> _attOffset;
-    std::array<bool, to_const_uint(AttType::COUNT)> _attDirty;
-    std::array<std::pair<GLenum, U32>, to_const_uint(AttType::COUNT)> _attachments;
-    std::array<bool, to_const_uint(AttType::COUNT)> _attachmentState;
-    std::array<vec2<U16>, to_const_uint(AttType::COUNT)> _mipMapLevel;
-    RenderTargetDrawDescriptor::FBOBufferMask _previousMask;
+    RTDrawMask _previousMask;
 };
 
 };  // namespace Divide

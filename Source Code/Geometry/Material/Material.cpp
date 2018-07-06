@@ -317,9 +317,10 @@ void Material::updateReflectionIndex(I32 index) {
     if (_reflectionIndex > -1) {
         GFXDevice::RenderTargetWrapper& reflectionTarget = GFX_DEVICE.reflectionTarget(index);
         assert(reflectionTarget._target != nullptr);
-        setTexture(ShaderProgram::TextureUsage::REFLECTION, reflectionTarget._target->getAttachment());
+        const Texture_ptr& refTex = reflectionTarget._target->getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+        setTexture(ShaderProgram::TextureUsage::REFLECTION, refTex);
     } else {
-        setTexture(ShaderProgram::TextureUsage::REFLECTION, Texture_ptr());
+        setTexture(ShaderProgram::TextureUsage::REFLECTION, nullptr);
     }
 }
 
@@ -328,9 +329,10 @@ void Material::updateRefractionIndex(I32 index) {
     if (_refractionIndex > -1) {
         GFXDevice::RenderTargetWrapper& refractionTarget = GFX_DEVICE.refractionTarget(index);
         assert(refractionTarget._target != nullptr);
-        setTexture(ShaderProgram::TextureUsage::REFRACTION, refractionTarget._target->getAttachment());
+        const Texture_ptr& refTex = refractionTarget._target->getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+        setTexture(ShaderProgram::TextureUsage::REFRACTION, refTex);
     } else {
-        setTexture(ShaderProgram::TextureUsage::REFRACTION, Texture_ptr());
+        setTexture(ShaderProgram::TextureUsage::REFRACTION, nullptr);
     }
 }
 

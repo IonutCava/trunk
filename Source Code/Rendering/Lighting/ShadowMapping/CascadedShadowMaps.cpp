@@ -32,7 +32,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     _splitFrustumCornersVS.resize(8);
     _horizBlur = 0;
     _vertBlur = 0;
-    _renderPolicy = MemoryManager_NEW RenderTarget::RenderTargetDrawDescriptor(RenderTarget::defaultPolicy());
+    _renderPolicy = MemoryManager_NEW RTDrawDescriptor(RenderTarget::defaultPolicy());
     // We clear the FB on each face draw call, not on Begin()
     _renderPolicy->_clearDepthBufferOnBind = false;
     _renderPolicy->_clearColourBuffersOnBind = false;
@@ -65,8 +65,8 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     
     _blurBuffer = GFX_DEVICE.newRT(false);
     _blurBuffer->addAttachment(blurMapDescriptor,
-                               TextureDescriptor::AttachmentType::Colour0);
-    _blurBuffer->setClearColour(DefaultColours::WHITE());
+                               RTAttachment::Type::Colour, 0);
+    _blurBuffer->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 
     _shadowMatricesBuffer = GFX_DEVICE.newSB("dvd_shadowMatrices", 1, false, false, BufferUpdateFrequency::OFTEN);
     _shadowMatricesBuffer->create(Config::Lighting::MAX_SPLITS_PER_LIGHT, sizeof(mat4<F32>));
@@ -230,14 +230,14 @@ void CascadedShadowMaps::postRender() {
     // Blur horizontally
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
     _blurBuffer->begin(RenderTarget::defaultPolicy());
-    getDepthMap()->bind(0, TextureDescriptor::AttachmentType::Colour0, false);
+    getDepthMap()->bind(0, RTAttachment::Type::Colour, 0, false);
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _blurDepthMapShader);
     getDepthMap()->end();
 
     // Blur vertically
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _vertBlur);
     getDepthMap()->begin(RenderTarget::defaultPolicy());
-    _blurBuffer->bind();
+    _blurBuffer->bind(0, RTAttachment::Type::Colour, 0);
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _blurDepthMapShader);
     getDepthMap()->end();
 }
@@ -250,7 +250,7 @@ void CascadedShadowMaps::previewShadowMaps(U32 rowIndex) {
     const vec4<I32> viewport = getViewportForRow(rowIndex);
 
     size_t stateHash = GFX_DEVICE.getDefaultStateBlock(true);
-    getDepthMap()->bind();
+    getDepthMap()->bind(0, RTAttachment::Type::Colour, 0);
     for (U32 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i + _arrayOffset);
 

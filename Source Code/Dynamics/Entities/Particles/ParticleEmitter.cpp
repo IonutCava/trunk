@@ -175,7 +175,7 @@ bool ParticleEmitter::unload() {
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     RenderTarget* depthBuffer = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target;
-    TextureData depthBufferData = depthBuffer->getAttachment(TextureDescriptor::AttachmentType::Depth)->getData();
+    TextureData depthBufferData = depthBuffer->getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getData();
     depthBufferData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::DEPTH));
     sgn.get<RenderingComponent>()->registerTextureDependency(depthBufferData);
 

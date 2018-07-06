@@ -239,7 +239,7 @@ class Material : public Resource, public FrameListener {
 
     void setDoubleSided(const bool state, const bool useAlphaTest = true);
     bool setTexture(ShaderProgram::TextureUsage textureUsageSlot,
-                    const Texture_ptr&,
+                    const Texture_ptr& tex,
                     const TextureOperation& op = TextureOperation::REPLACE);
     /// Add a texture <-> bind slot pair to be bound with the default textures
     /// on each "bindTexture" call

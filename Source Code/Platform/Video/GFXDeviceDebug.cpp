@@ -36,13 +36,13 @@ void GFXDevice::previewDepthBuffer() {
         return;
     }
 
-    U16 screenWidth = std::max(_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getResolution().width, to_const_ushort(768));
-    Texture_ptr depthTex = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getAttachment(TextureDescriptor::AttachmentType::Depth);
-    depthTex->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    U16 screenWidth = std::max(_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getWidth(), to_const_ushort(768));
+    RenderTarget* rt = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target;
+    rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
     {
         //HiZ preview
         _previewDepthMapShader->Uniform("lodLevel", to_float(to_uint((Time::ElapsedMilliseconds() / 750.0)) % 
-                                                             (depthTex->getMaxMipLevel() - 1)));
+                                                             (rt->getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getMaxMipLevel() - 1)));
         GFX::ScopedViewport viewport(screenWidth - 256, 0, 256, 256);
         drawTriangle(_defaultStateNoDepthHash, _previewDepthMapShader);
     }
@@ -56,7 +56,7 @@ void GFXDevice::previewDepthBuffer() {
         //Normals preview
         _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target
             ->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                   TextureDescriptor::AttachmentType::Colour1);
+                   RTAttachment::Type::Colour, 1);
 
         GFX::ScopedViewport viewport(screenWidth - 768, 0, 256, 256);
         _renderTargetDraw->Uniform("linearSpace", false);
@@ -102,7 +102,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         bool texture = (prim->_texture != nullptr);
         // And bind it to the first diffuse texture slot
         if (texture) {
-            prim->_texture->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
+            prim->_texture->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
         }
         if (previousTextureFlag != texture) {
             previousTextureFlag = texture;

@@ -48,8 +48,8 @@ class NOINITVTABLE PreRenderOperator {
            _ldrTarget(ldrTarget),
            _samplerCopy(nullptr)
     {
-        _screenOnlyDraw._drawMask.fill(false);
-        _screenOnlyDraw._drawMask[0] = true;
+        _screenOnlyDraw._drawMask.disableAll();
+        _screenOnlyDraw._drawMask.enabled(RTAttachment::Type::Colour, 0);
     }
 
     virtual ~PreRenderOperator() 
@@ -86,7 +86,7 @@ class NOINITVTABLE PreRenderOperator {
     RenderTarget* _ldrTarget;
     RenderTarget* _samplerCopy;
 
-    RenderTarget::RenderTargetDrawDescriptor _screenOnlyDraw;
+    RTDrawDescriptor _screenOnlyDraw;
     FilterType  _operatorType;
     vectorImpl<RenderTarget*> _inputFB;
 };

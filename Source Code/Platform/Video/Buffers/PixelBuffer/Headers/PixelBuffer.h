@@ -38,18 +38,18 @@ namespace Divide {
 
 class NOINITVTABLE PixelBuffer : protected GraphicsResource {
    public:
-    virtual bool Create(
+    virtual bool create(
         U16 width, U16 height, U16 depth = 0,
         GFXImageFormat internalFormatEnum = GFXImageFormat::RGBA8,
         GFXImageFormat formatEnum = GFXImageFormat::RGBA,
         GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) = 0;
 
-    virtual void Destroy() = 0;
+    virtual void destroy() = 0;
 
-    virtual void* Begin() const = 0;
-    virtual void End() const = 0;
+    virtual bufferPtr begin() const = 0;
+    virtual void end() const = 0;
 
-    virtual void Bind(U8 unit = 0) const = 0;
+    virtual void bind(U8 unit = 0) const = 0;
 
     virtual void updatePixels(const F32* const pixels, U32 pixelCount) = 0;
     inline U32 getTextureHandle() const { return _textureID; }

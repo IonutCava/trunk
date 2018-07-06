@@ -377,6 +377,82 @@ enum class BufferUpdateFrequency : U32 {
     OFTEN = 2,      //STREAM
     COUNT
 };
+
+
+inline GFXImageFormat baseFromInternalFormat(GFXImageFormat internalFormat) {
+    switch (internalFormat) {
+    case GFXImageFormat::LUMINANCE_ALPHA:
+    case GFXImageFormat::LUMINANCE_ALPHA16F:
+    case GFXImageFormat::LUMINANCE_ALPHA32F:
+        return GFXImageFormat::LUMINANCE;
+
+    case GFXImageFormat::RED8:
+    case GFXImageFormat::RED16:
+    case GFXImageFormat::RED16F:
+    case GFXImageFormat::RED32:
+    case GFXImageFormat::RED32F:
+        return GFXImageFormat::RED;
+
+    case GFXImageFormat::RG8:
+    case GFXImageFormat::RG16:
+    case GFXImageFormat::RG16F:
+    case GFXImageFormat::RG32:
+    case GFXImageFormat::RG32F:
+        return GFXImageFormat::RG;
+
+    case GFXImageFormat::RGB8:
+    case GFXImageFormat::SRGB8:
+    case GFXImageFormat::RGB8I:
+    case GFXImageFormat::RGB16:
+    case GFXImageFormat::RGB16F:
+    case GFXImageFormat::RGB32F:
+        return GFXImageFormat::RGB;
+
+    case GFXImageFormat::RGBA4:
+    case GFXImageFormat::RGBA8:
+    case GFXImageFormat::SRGBA8:
+    case GFXImageFormat::RGBA8I:
+    case GFXImageFormat::RGBA16F:
+    case GFXImageFormat::RGBA32F:
+        return GFXImageFormat::RGBA;
+
+    case GFXImageFormat::DEPTH_COMPONENT16:
+    case GFXImageFormat::DEPTH_COMPONENT24:
+    case GFXImageFormat::DEPTH_COMPONENT32:
+    case GFXImageFormat::DEPTH_COMPONENT32F:
+        return GFXImageFormat::DEPTH_COMPONENT;
+
+    default:
+        break;
+    };
+
+    return internalFormat;
+}
+
+inline GFXDataFormat dataTypeForInternalFormat(GFXImageFormat format) {
+    switch (format) {
+    case GFXImageFormat::DEPTH_COMPONENT32F:
+    case GFXImageFormat::LUMINANCE_ALPHA32F:
+    case GFXImageFormat::RED32F:
+    case GFXImageFormat::RG32F:
+    case GFXImageFormat::RGB32F:
+    case GFXImageFormat::RGBA32F:
+        return GFXDataFormat::FLOAT_32;
+
+    case GFXImageFormat::LUMINANCE_ALPHA16F:
+    case GFXImageFormat::RED16F:
+    case GFXImageFormat::RG16F:
+    case GFXImageFormat::RGB16F:
+    case GFXImageFormat::RGBA16F:
+        return GFXDataFormat::FLOAT_16;
+
+    case GFXImageFormat::RGB8I:
+    case GFXImageFormat::RGBA8I:
+        return GFXDataFormat::SIGNED_BYTE;
+    };
+
+    return GFXDataFormat::UNSIGNED_BYTE;
+}
 };  // namespace Divide
 
 #endif

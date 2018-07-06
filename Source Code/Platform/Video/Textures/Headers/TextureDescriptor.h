@@ -196,6 +196,7 @@ class SamplerDescriptor : public PropertyDescriptor {
     inline bool generateMipMaps() const { 
         return _mipmaps;
     }
+
     inline vec4<F32> borderColour() const { return _borderColour; }
 
    protected:
@@ -225,18 +226,6 @@ class SamplerDescriptor : public PropertyDescriptor {
 /// POD
 class TextureDescriptor : public PropertyDescriptor {
    public:
-    /// This enum is used when creating Frame Buffers to define the channel that
-    /// the texture will attach to
-    enum class AttachmentType : U32 {
-        Colour0 = 0,
-        Colour1 = 1,
-        Colour2 = 2,
-        Colour3 = 3,
-        Depth = 4,
-        COUNT
-
-    };
-
     TextureDescriptor()
         : TextureDescriptor(TextureType::COUNT,
                             GFXImageFormat::COUNT,
@@ -261,7 +250,8 @@ class TextureDescriptor : public PropertyDescriptor {
           _internalFormat(internalFormat),
           _dataType(dataType),
           _type(type),
-          _compressed(false)
+          _compressed(false),
+          _automaticMipMaps(true)
     {
         _baseFormat = baseFromInternalFormat(internalFormat);
     }
@@ -283,6 +273,7 @@ class TextureDescriptor : public PropertyDescriptor {
         _baseFormat = baseFromInternalFormat(_internalFormat);
         _dataType = GFXDataFormat::UNSIGNED_BYTE;
         _type = TextureType::TEXTURE_2D;
+        _automaticMipMaps = true;
     }
 
     inline void setLayerCount(U8 layerCount) { 
@@ -292,6 +283,10 @@ class TextureDescriptor : public PropertyDescriptor {
     inline bool isCubeTexture() const {
         return (_type == TextureType::TEXTURE_CUBE_MAP ||
                 _type == TextureType::TEXTURE_CUBE_ARRAY);
+    }
+
+    inline bool isArrayTexture() const {
+        return _type == TextureType::TEXTURE_2D_ARRAY;
     }
 
     /// A TextureDescriptor will always have a sampler, even if it is the
@@ -324,11 +319,23 @@ class TextureDescriptor : public PropertyDescriptor {
         return _baseFormat;
     }
 
+    inline bool automaticMipMapGeneration() const {
+        return _automaticMipMaps;
+    }
+
+    inline void toggleAutomaticMipMapGeneration(const bool state) {
+        _automaticMipMaps = state;
+    }
+
+    inline TextureType type() const { return _type; }
+
     U8 _layerCount;
     /// Texture data information
     GFXImageFormat _internalFormat;
     TextureType _type;
     bool _compressed;
+    /// Automatically compute mipmaps
+    bool _automaticMipMaps;
     /// The sampler used to initialize this texture with
     SamplerDescriptor _samplerDescriptor;
 

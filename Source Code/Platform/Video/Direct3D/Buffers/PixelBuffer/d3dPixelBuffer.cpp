@@ -8,27 +8,27 @@ d3dPixelBuffer::d3dPixelBuffer(GFXDevice& context, PBType type)
 
 d3dPixelBuffer::~d3dPixelBuffer()
 {
-    Destroy();
+    destroy();
 }
 
-bool d3dPixelBuffer::Create(U16 width, U16 height, U16 depth,
+bool d3dPixelBuffer::create(U16 width, U16 height, U16 depth,
                             GFXImageFormat internalFormatEnum,
                             GFXImageFormat formatEnum,
                             GFXDataFormat dataTypeEnum) {
     return true;
 }
 
-void d3dPixelBuffer::Destroy() {
+void d3dPixelBuffer::destroy() {
 }
 
-void* d3dPixelBuffer::Begin() const {
+bufferPtr d3dPixelBuffer::begin() const {
     return 0;
 }
 
-void d3dPixelBuffer::End() const {
+void d3dPixelBuffer::end() const {
 }
 
-void d3dPixelBuffer::Bind(U8 unit) const {
+void d3dPixelBuffer::bind(U8 unit) const {
 }
 
 void d3dPixelBuffer::updatePixels(const F32* const pixels, U32 pixelCount) {

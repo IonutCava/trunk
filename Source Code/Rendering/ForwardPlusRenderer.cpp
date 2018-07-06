@@ -19,8 +19,8 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     cullShaderDesc.setThreadedLoading(false);
     _lightCullComputeShader = CreateResource<ShaderProgram>(cullShaderDesc);
 
-    vec2<U16> res(GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->getResolution());
-    updateResolution(res.width, res.height);
+    updateResolution(GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->getWidth(),
+                     GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->getHeight());
 
     const U32 numTiles = getNumTilesX() * getNumTilesY();
     const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
@@ -41,7 +41,7 @@ void ForwardPlusRenderer::preRender(LightPool& lightPool) {
 
     GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target
         ->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
-               TextureDescriptor::AttachmentType::Depth);
+               RTAttachment::Type::Depth, 0);
 
     _flag = getMaxNumLightsPerTile();
     _lightCullComputeShader->bind();
