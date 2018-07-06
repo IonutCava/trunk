@@ -109,9 +109,6 @@ class SceneGraphNode : public GUIDWrapper,
 
     /// Called from SceneGraph "sceneUpdate"
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
-    /// Called when the camera updates the view matrix and/or the projection
-    /// matrix
-    void onCameraUpdate(Camera& camera);
     /*Node Management*/
     /// Always use the level of redirection needed to reduce virtual function
     /// overhead

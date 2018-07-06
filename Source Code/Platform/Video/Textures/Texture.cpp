@@ -6,7 +6,7 @@
 
 namespace Divide {
 
-Texture::Texture(GFXDevice& context, TextureType type)
+Texture::Texture(GFXDevice& context, TextureType type, bool asyncLoad)
     : GraphicsResource(context),
       Resource("temp_texture"),
       _numLayers(1),
@@ -14,7 +14,7 @@ Texture::Texture(GFXDevice& context, TextureType type)
       _samplerDirty(true),
       _mipMapsDirty(true),
       _hasTransparency(false),
-      _power2Size(true)
+      _asyncLoad(asyncLoad)
 {
     _width = _height = 0;
     _mipMaxLevel = _mipMinLevel = 0;
@@ -26,12 +26,25 @@ Texture::~Texture()
 {
 }
 
-/// Load texture data using the specified file name
 bool Texture::load() {
+    assert(!getName().empty());
+
+    _context.loadInContext(_asyncLoad ? CurrentContext::GFX_RENDERING_CTX
+                                      : CurrentContext::GFX_LOADING_CTX,
+        [&]() {
+            threadedLoad(getName());
+        }
+    );
+
+    return true;
+}
+
+/// Load texture data using the specified file name
+void Texture::threadedLoad(const stringImpl& name) {
     // Make sure we have a valid file path
     if (getResourceLocation().empty() ||
         getResourceLocation().compare("default") == 0) {
-        return true;
+        return;
     }
 
     TextureLoadInfo info;
@@ -48,7 +61,7 @@ bool Texture::load() {
                // Attempt to load the current entry
                 if (!LoadFile(info, currentTexture)) {
                     // Invalid texture files are not handled yet, so stop loading
-                    return false;
+                    return;
                 }
                 info._layerIndex++;
                 if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
@@ -66,7 +79,7 @@ bool Texture::load() {
             Console::errorfn(
                 Locale::get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
                 getResourceLocation().c_str());
-            return false;
+            return;
         }
     }
 
@@ -76,7 +89,7 @@ bool Texture::load() {
             Console::errorfn(
                 Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
                 getResourceLocation().c_str());
-            return false;
+            return;
         }
     }
 
@@ -85,13 +98,13 @@ bool Texture::load() {
             Console::errorfn(
                 Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
                 getResourceLocation().c_str());
-            return false;
+            return;
         }
     }
 
     setResourceLocation(_name);
 
-    return Resource::load();
+    Resource::load();
 }
 
 /// Use DevIL to load a file into a Texture Object

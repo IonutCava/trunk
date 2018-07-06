@@ -86,7 +86,7 @@ bool Sky::load() {
     _boundingBox.first.set(vec3<F32>(-_farPlane / 2), vec3<F32>(_farPlane / 2));
     _boundingBox.second = true;
     Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));
-    return true;
+    return Resource::load();
 }
 
 void Sky::postLoad(SceneGraphNode& sgn) {

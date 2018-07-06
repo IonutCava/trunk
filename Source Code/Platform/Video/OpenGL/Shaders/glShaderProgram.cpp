@@ -13,8 +13,8 @@ namespace Divide {
 
 std::array<U32, to_const_uint(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 
-glShaderProgram::glShaderProgram(GFXDevice& context)
-    : ShaderProgram(context),
+glShaderProgram::glShaderProgram(GFXDevice& context, bool asyncLoad)
+    : ShaderProgram(context, asyncLoad),
       _loadedFromBinary(false),
       _validated(false),
       _shaderProgramIDTemp(0),
@@ -167,9 +167,6 @@ stringImpl glShaderProgram::getLog() const {
 
 /// Remove a shader stage from this program
 void glShaderProgram::detachShader(Shader* const shader) {
-    DIVIDE_ASSERT(_threadedLoadComplete,
-                  "glShaderProgram error: tried to detach a shader from a "
-                  "program that didn't finish loading!");
     glDetachShader(_shaderProgramID, shader->getShaderID());
     // glUseProgramStages(_shaderProgramID,
     // GLUtil::glShaderStageTable[to_uint(shader->getType())], 0);
@@ -239,7 +236,7 @@ void glShaderProgram::threadedLoad(const stringImpl& name) {
     _shaderProgramID = _shaderProgramIDTemp;
     // Pass the rest of the loading steps to the parent class
     _lockManager->Lock();
-    ShaderProgram::threadedLoad(name);
+    ShaderProgram::load();
 }
 
 /// Linking a shader program also sets up all pre-link properties for the shader
@@ -297,7 +294,7 @@ bool glShaderProgram::load() {
     if (_name.compare("NULL") == 0) {
         _validationQueued = false;
         _shaderProgramID = 0;
-        _threadedLoadComplete = ShaderProgram::load();
+        ShaderProgram::load();
         return true;
     }
 
@@ -357,7 +354,6 @@ bool glShaderProgram::load() {
             // prevents low level access to the program's shaders)
             if (success == 1) {
                 _loadedFromBinary = _linked = true;
-                _threadedLoading = false;
             }
         }
         // Close the file
@@ -462,9 +458,9 @@ bool glShaderProgram::load() {
 
     // try to link the program in a separate thread
     return _context.loadInContext(
-        /*_threadedLoading && !_loadedFromBinary
+        !_loadedFromBinary && _asyncLoad
             ? CurrentContext::GFX_LOADING_CTX
-            : */CurrentContext::GFX_RENDERING_CTX,
+            : CurrentContext::GFX_RENDERING_CTX,
         [&](){
             threadedLoad(_name);
         });
@@ -492,7 +488,7 @@ I32 glShaderProgram::getUniformLocation(const char* name) {
     if (!isValid() || _shaderProgramID == 0) {
         return -1;
     }
-    DIVIDE_ASSERT(_threadedLoadComplete,
+    DIVIDE_ASSERT(getState() == ResourceState::RES_LOADED,
                   "glShaderProgram error: tried to query a shader program "
                   "before threaded load completed!");
 

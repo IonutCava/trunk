@@ -312,6 +312,15 @@ inline stringImpl& Trim(stringImpl& s) {
     return Ltrim(Rtrim(s));
 }
 
+template<class FwdIt, class Compare>
+void insertion_sort(FwdIt first, FwdIt last, Compare cmp)
+{
+    for (auto it = first; it != last; ++it) {
+        auto const insertion = std::upper_bound(first, it, *it, cmp);
+        std::rotate(insertion, it, std::next(it));
+    }
+}
+
 namespace Mat4 {
 
 template <typename T>

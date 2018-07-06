@@ -83,7 +83,7 @@ class ParticleData {
     inline U32 totalCount() const { return _totalCount; }
     
     /// Sort ALIVE particles only
-    void sort();
+    void sort(bool invalidateCache);
 
    protected:
     U32 _totalCount;

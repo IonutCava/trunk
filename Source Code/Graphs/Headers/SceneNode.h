@@ -127,7 +127,6 @@ class NOINITVTABLE SceneNode : public Resource {
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                              SceneState& sceneState);
-    virtual void onCameraUpdate(SceneGraphNode& sgn, Camera& camera) {}
 
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode& sgn) {
@@ -157,11 +156,7 @@ class SceneNodeSceneGraph {
     static void postLoad(SceneNode& node, SceneGraphNode& sgn) {
         node.postLoad(sgn);
     }
-
-    static void onCameraUpdate(SceneNode& node, SceneGraphNode& sgn, Camera& camera) {
-        node.onCameraUpdate(sgn, camera);
-    }
-
+    
     static void sceneUpdate(SceneNode& node, const U64 deltaTime,
                             SceneGraphNode& sgn, SceneState& sceneState) {
         node.sceneUpdate(deltaTime, sgn, sceneState);

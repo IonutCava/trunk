@@ -11,11 +11,8 @@ namespace Divide {
 template<>
 ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
     ParamHandler& par = ParamHandler::getInstance();
-    ShaderProgram* ptr = GFX_DEVICE.newShaderProgram();
+    ShaderProgram* ptr = GFX_DEVICE.newShaderProgram(_descriptor.getThreaded());
 
-    ptr->setState(ResourceState::RES_LOADING);
-    ptr->enableThreadedLoading(_descriptor.getThreaded() &&
-                               Application::getInstance().mainLoopActive());
     if (_descriptor.getResourceLocation().compare("default") == 0) {
         ptr->setResourceLocation(
             par.getParam<stringImpl>(_ID("assetsLocation")) + "/" +

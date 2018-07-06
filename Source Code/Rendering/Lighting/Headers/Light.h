@@ -130,9 +130,6 @@ class Light : public SceneNode {
     /// Get a pointer to the light's impostor
     inline ImpostorSphere* const getImpostor() const { return _impostor; }
 
-    /// Checks if this light needs and update
-    void onCameraUpdate(Camera& camera);
-
     bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) override;
 
     /// SceneNode concrete implementations

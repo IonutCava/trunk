@@ -53,7 +53,11 @@ bool Light::load(const stringImpl& name) {
     _shadowCamera->setTurnSpeedFactor(0.0f);
     _shadowCamera->setFixedYawAxis(true);
 
-    return LightManager::getInstance().addLight(*this);
+    if (LightManager::getInstance().addLight(*this)) {
+        return Resource::load();
+    }
+
+    return false;
 }
 
 bool Light::unload() {
@@ -73,21 +77,6 @@ void Light::postLoad(SceneGraphNode& sgn) {
     _lightSGN = &sgn;
     _lightSGN->getComponent<PhysicsComponent>()->setPosition(_positionAndRange.xyz());
     SceneNode::postLoad(sgn);
-}
-
-void Light::onCameraUpdate(Camera& camera) {
-    assert(_lightSGN != nullptr);
-
-    if (!getEnabled()) {
-        return;
-    }
-    
-    if (_shadowMapInfo) {
-        ShadowMap* sm = _shadowMapInfo->getShadowMap();
-        if (sm) {
-            sm->onCameraUpdate(camera);
-        }
-    }
 }
 
 void Light::setDiffuseColor(const vec3<U8>& newDiffuseColor) {

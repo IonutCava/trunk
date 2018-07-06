@@ -71,15 +71,18 @@ class NOINITVTABLE Resource : public TrackedObject {
     explicit Resource(const stringImpl& name)
         : TrackedObject(),
           _name(name),
-          _resourceState(ResourceState::RES_CREATED) {
-        _threadedLoading = true;
-        _threadedLoadComplete = false;
+          _resourceState(ResourceState::RES_CREATED)
+    {
     }
 
     virtual ~Resource() {}
 
     /// Loading and unloading interface
-    virtual bool load() { return true; }
+    virtual bool load() { 
+        setState(ResourceState::RES_LOADED);
+        return true;
+    }
+
     virtual bool unload() { return true; }
 
     /// Name management
@@ -96,15 +99,6 @@ class NOINITVTABLE Resource : public TrackedObject {
 
     inline ResourceState getState() const { return _resourceState; }
 
-    /// Toggle loading in background thread
-    inline void enableThreadedLoading(const bool enableThreadedLoading) {
-        _threadedLoading = enableThreadedLoading;
-    }
-
-    virtual void threadedLoad(const stringImpl& name) {
-        _threadedLoadComplete = true;
-    }
-
    protected:
     inline void setState(const ResourceState& currentState) {
         _resourceState = currentState;
@@ -114,10 +108,6 @@ class NOINITVTABLE Resource : public TrackedObject {
     stringImpl _name;
     stringImpl _resourceLocation;  ///< Physical file location
     std::atomic<ResourceState> _resourceState;
-    /// Should load resource in a background thread
-    std::atomic_bool _threadedLoading;
-    /// Becomes true when background thread finishes loading
-    std::atomic_bool _threadedLoadComplete;
 };
 
 enum class GeometryType : U32 {

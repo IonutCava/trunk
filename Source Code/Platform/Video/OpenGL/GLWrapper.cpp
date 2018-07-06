@@ -855,14 +855,14 @@ ShaderBuffer* GL_API::newSB(GFXDevice& context,
 }
 
 /// Create and return a new 2D texture. The callee is responsible for it's deletion!
-Texture* GL_API::newTexture(GFXDevice& context, TextureType type) const {
-    return MemoryManager_NEW glTexture(context, type);
+Texture* GL_API::newTexture(GFXDevice& context, TextureType type, bool asyncLoad) const {
+    return MemoryManager_NEW glTexture(context, type, asyncLoad);
 }
 
 /// Create and return a new shader program (optionally, post load optimised).
 /// The callee is responsible for it's deletion!
-ShaderProgram* GL_API::newShaderProgram(GFXDevice& context) const {
-    return MemoryManager_NEW glShaderProgram(context);
+ShaderProgram* GL_API::newShaderProgram(GFXDevice& context, bool asyncLoad) const {
+    return MemoryManager_NEW glShaderProgram(context, asyncLoad);
 }
 
 /// Create and return a new shader of the specified type by loading the

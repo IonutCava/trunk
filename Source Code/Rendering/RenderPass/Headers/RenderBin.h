@@ -102,7 +102,7 @@ class RenderBin {
 
     virtual ~RenderBin() {}
 
-    virtual void sort(U32 binIndex, RenderStage renderStage);
+    virtual void sort(RenderStage renderStage);
     virtual void preRender(RenderStage renderStage);
     virtual void render(const SceneRenderState& renderState,
                         RenderStage renderStage);
@@ -122,11 +122,14 @@ class RenderBin {
 
     inline RenderBinType getType() const { return _rbType; }
 
+    inline void binIndex(U32 index) { _binIndex = index; }
+
    private:
     bool isTranslucent() const;
 
    private:
     // mutable SharedLock _renderBinGetMutex;
+    U32 _binIndex;
     RenderBinType _rbType;
     RenderBinStack _renderBinStack;
     RenderingOrder::List _renderOrder;

@@ -13,7 +13,6 @@ Mesh::Mesh(ObjectFlag flag)
       _visibleToNetwork(true),
       _animator(nullptr)
 {
-    setState(ResourceState::RES_LOADING);
 }
 
 Mesh::~Mesh()

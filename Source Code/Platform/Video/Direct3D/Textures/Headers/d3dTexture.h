@@ -38,10 +38,12 @@ namespace Divide {
 
 class d3dTexture final : public Texture {
    public:
-    d3dTexture(GFXDevice& context, TextureType type);
+    d3dTexture(GFXDevice& context, TextureType type, bool asyncLoad);
     ~d3dTexture() {}
 
-    bool load() override { return Texture::load(); }
+    void threadedLoad(const stringImpl& name) override { 
+        Texture::threadedLoad(name);
+    }
 
     bool unload() override { return Texture::unload(); }
 

@@ -86,8 +86,6 @@ class ParticleEmitter : public SceneNode {
                          const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
 
-    void onCameraUpdate(SceneGraphNode& sgn, Camera& camera) override;
-
    private:
     void uploadToGPU();
 

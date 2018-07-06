@@ -12,8 +12,8 @@
 
 namespace Divide {
 
-glTexture::glTexture(GFXDevice& context, TextureType type)
-    : Texture(context, type),
+glTexture::glTexture(GFXDevice& context, TextureType type, bool asyncLoad)
+    : Texture(context, type, asyncLoad),
     _lockManager(new glLockManager())
 {
     _allocatedStorage = false;
@@ -47,13 +47,8 @@ bool glTexture::unload() {
 
 void glTexture::threadedLoad(const stringImpl& name) {
     updateSampler();
-    Texture::load();
-    if (_threadedLoading) {
-        _lockManager->Lock();
-    } else {
-        _lockManager.reset(nullptr);
-    }
-    Resource::threadedLoad(name);
+    Texture::threadedLoad(name);
+    _lockManager->Lock();
 }
 
 void glTexture::setMipMapRange(GLushort base, GLushort max) {
@@ -100,17 +95,6 @@ void glTexture::updateSampler() {
             GL_API::getOrCreateSamplerObject(_descriptor._samplerDescriptor);
         _samplerDirty = false;
     }
-}
-
-bool glTexture::load() {
-    _context.loadInContext(
-        _threadedLoading ? CurrentContext::GFX_LOADING_CTX
-                         : CurrentContext::GFX_RENDERING_CTX,
-        [&]() {
-            threadedLoad(_name);
-        });
-
-    return true;
 }
 
 void glTexture::reserveStorage(const TextureLoadInfo& info) {
@@ -202,25 +186,12 @@ void glTexture::loadData(const TextureLoadInfo& info,
 
         if (Config::Profile::USE_2x2_TEXTURES) {
             _width = _height = 2;
-            _power2Size = true;
         } else {
             _width = dimensions.width;
             _height = dimensions.height;
-            assert(_width > 0 && _height > 0);
-            GLdouble xPow2 = log((GLdouble)_width) / log(2.0);
-            GLdouble yPow2 = log((GLdouble)_height) / log(2.0);
-
-            GLushort ixPow2 = (GLushort)xPow2;
-            GLushort iyPow2 = (GLushort)yPow2;
-
-            if (xPow2 != (GLdouble)ixPow2) {
-                ixPow2++;
-            }
-            if (yPow2 != (GLdouble)iyPow2) {
-                iyPow2++;
-            }
-            _power2Size = (_width == 1 << ixPow2) && (_height == 1 << iyPow2);
         }
+
+        assert(_width > 0 && _height > 0);
     } else {
         DIVIDE_ASSERT(
             _width == dimensions.width && _height == dimensions.height,
@@ -295,15 +266,15 @@ void glTexture::loadData(const TextureLoadInfo& info,
 }
 
 bool glTexture::flushTextureState() {
-    if (!_threadedLoadComplete) {
-        return false;
+    if (getState() == ResourceState::RES_LOADED) {
+        if (_lockManager) {
+            _lockManager->Wait(true);
+            _lockManager.reset(nullptr);
+        }
+        updateSampler();
+        updateMipMaps();
     }
-    if (_lockManager) {
-        _lockManager->Wait(true);
-        _lockManager.reset(nullptr);
-    }
-    updateSampler();
-    updateMipMaps();
+
     return true;
 }
 

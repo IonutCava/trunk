@@ -200,7 +200,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
 
   protected:
     void initPostLoadState();
-    void onCameraUpdate(Camera& camera);
 
   protected:
     bool frameStarted(const FrameEvent& evt);
@@ -245,9 +244,7 @@ class SceneManagerKernel {
     static void initPostLoadState() {
         Divide::SceneManager::getInstance().initPostLoadState();
     }
-    static void onCameraUpdate(Camera& camera) {
-        Divide::SceneManager::getInstance().onCameraUpdate(camera);
-    }
+
     friend class Divide::Kernel;
 };
 };  // namespace Attorney

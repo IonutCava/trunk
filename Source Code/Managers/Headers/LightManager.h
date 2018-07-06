@@ -91,7 +91,6 @@ DEFINE_SINGLETON(LightManager)
 
     bool clear();
     void idle();
-    void onCameraUpdate(Camera& camera);
     inline Light::LightList& getLights(LightType type) { return _lights[to_uint(type)]; }
     Light* getLight(I64 lightGUID, LightType type);
 

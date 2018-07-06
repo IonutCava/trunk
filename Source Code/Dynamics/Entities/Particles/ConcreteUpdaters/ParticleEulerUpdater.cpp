@@ -4,23 +4,26 @@ namespace Divide {
 
 void ParticleEulerUpdater::update(const U64 deltaTime, std::shared_ptr<ParticleData> p) {
     F32 const dt = Time::MicrosecondsToSeconds<F32>(deltaTime);
-    const vec3<F32> globalA(dt * _globalAcceleration);
+    const vec4<F32> globalA(dt * _globalAcceleration, 0.0f);
 
     const U32 endID = p->aliveCount();
 
+    vectorImpl<vec4<F32>>& acceleration = p->_acceleration;
     for (U32 i = 0; i < endID; ++i) {
-        vec4<F32>& acc = p->_acceleration[i];
-        acc.xyz(acc.xyz() + globalA);
+        vec4<F32>& acc = acceleration[i];
+        acc.xyz(acc + globalA);
     }
 
+    vectorImpl<vec4<F32>>& velocity = p->_velocity;
     for (U32 i = 0; i < endID; ++i) {
-        vec4<F32>& vel = p->_velocity[i];
-        vel.xyz(vel.xyz() + (dt * p->_acceleration[i].xyz()));
+        vec4<F32>& vel = velocity[i];
+        vel.xyz(vel + (dt * acceleration[i]));
     }
 
+    vectorImpl<vec4<F32>>& position = p->_position;
     for (U32 i = 0; i < endID; ++i) {
-        vec4<F32>& pos = p->_position[i];
-        pos.xyz(pos.xyz() + (dt * p->_velocity[i].xyz()));
+        vec4<F32>& pos = position[i];
+        pos.xyz(pos + (dt * velocity[i]));
     }
 }
 };

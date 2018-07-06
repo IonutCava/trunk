@@ -243,8 +243,7 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U
         queue.refresh();
         const vec3<F32>& eyePos = _activeScene->renderState().getCameraConst().getEye();
         for (SceneGraphNode_wptr node : visibleNodes) {
-            SceneGraphNode_ptr sgn = node.lock();
-            queue.addNodeToQueue(*sgn, eyePos);
+            queue.addNodeToQueue(*node.lock(), eyePos);
         }
     }
     
@@ -291,10 +290,6 @@ void SceneManager::setRenderer(RendererType rendererType) {
         _renderer.reset(new DeferredShadingRenderer());
     } break;
     }
-}
-
-void SceneManager::onCameraUpdate(Camera& camera) {
-    Attorney::SceneManager::onCameraUpdate(*_activeScene, camera);
 }
 
 ///--------------------------Input Management-------------------------------------///

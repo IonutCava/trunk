@@ -73,7 +73,7 @@ class NOINITVTABLE ShaderProgram : public Resource, protected GraphicsResource {
         COUNT
     };
 
-    ShaderProgram(GFXDevice& context);
+    ShaderProgram(GFXDevice& context, bool asyncLoad);
     virtual ~ShaderProgram();
 
     virtual bool bind() = 0;
@@ -238,6 +238,7 @@ class NOINITVTABLE ShaderProgram : public Resource, protected GraphicsResource {
     friend class ImplResourceLoader;
 
    protected:
+    bool _asyncLoad;
     std::atomic_bool _linked;
     U32 _shaderProgramID;  //<not thread-safe. Make sure assignment is protected
     // with a mutex or something

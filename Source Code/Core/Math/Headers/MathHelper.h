@@ -241,6 +241,9 @@ void GetPermutations(const stringImpl& inputString,
 
 bool IsNumber(const stringImpl& s);
 
+template<class FwdIt, class Compare = std::less<typename std::iterator_traits<FwdIt>::value_type>>
+void insertion_sort(FwdIt first, FwdIt last, Compare cmp = Compare());
+
 // U = to data type, T = from data type
 template <typename U, typename T>
 U ConvertData(const T& data);

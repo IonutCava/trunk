@@ -11,7 +11,6 @@ template<>
 Terrain* ImplResourceLoader<Terrain>::operator()() {
     Terrain* ptr = MemoryManager_NEW Terrain();
 
-    ptr->setState(ResourceState::RES_LOADING);
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_START")), _descriptor.getName().c_str());
     TerrainDescriptor* terrain = GET_ACTIVE_SCENE().getTerrainInfo(_descriptor.getName());
     if (!ptr || !TerrainLoader::loadTerrain(ptr, terrain)) {

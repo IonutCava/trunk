@@ -26,6 +26,7 @@ void ResourceCache::Destroy() {
     Console::printfn(Locale::get(_ID("STOP_RESOURCE_CACHE")));
 
     for (ResourceMap::value_type& it : _resDB) {
+        WAIT_FOR_CONDITION(it.second->getState() == ResourceState::RES_LOADED);
         while (it.second->GetRef() > 1) {
             it.second->SubRef();
         }
@@ -54,6 +55,7 @@ void ResourceCache::add(const stringImpl& name, Resource* const res) {
 Resource* ResourceCache::loadResource(const stringImpl& name) {
     Resource* resource = find(name);
     if (resource) {
+        WAIT_FOR_CONDITION(resource->getState() == ResourceState::RES_LOADED);
         resource->AddRef();
     } else {
         Console::printfn(Locale::get(_ID("RESOURCE_CACHE_GET_RES")), name.c_str());
@@ -75,6 +77,7 @@ bool ResourceCache::remove(Resource* resource) {
     if (resource == nullptr) {
         return false;
     }
+
     stringImpl nameCpy(resource->getName());
     // If it's not in the resource database, it must've been created manually
     ReadLock r_lock(_creationMutex);

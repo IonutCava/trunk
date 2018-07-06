@@ -179,9 +179,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
     _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
     _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(hiZDescriptor,  TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->create(resolution.width, resolution.height);
     _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
     _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
+    _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->create(resolution.width, resolution.height);
     Texture* hizTexture = _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
     hizTexture->lockAutomaticMipMapGeneration(true);
 
@@ -190,9 +190,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
     _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
     _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->addAttachment(hiZDescriptor, TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->create(resolution.width, resolution.height);
     _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
     _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
+    _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->create(resolution.width, resolution.height);
     hizTexture = _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
     hizTexture->lockAutomaticMipMapGeneration(true);
 

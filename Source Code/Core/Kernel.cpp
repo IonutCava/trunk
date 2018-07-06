@@ -63,10 +63,6 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     _cameraMgr.reset(new CameraManager(this));  // Camera manager
     assert(_cameraMgr != nullptr);
     // force all lights to update on camera change (to keep them still actually)
-    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(
-        &LightManager::onCameraUpdate, &LightManager::getInstance(), std::placeholders::_1));
-    _cameraMgr->addCameraUpdateListener(
-        DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraUpdate, std::placeholders::_1));
     _cameraMgr->addCameraUpdateListener(
         DELEGATE_BIND(&Attorney::GFXDeviceKernel::onCameraUpdate, std::placeholders::_1));
     ParamHandler::getInstance().setParam<stringImpl>(_ID("language"), Locale::currentLanguage());

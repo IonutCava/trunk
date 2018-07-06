@@ -68,7 +68,7 @@ void ParticleData::wake(U32 index) {
     _aliveCount++;
 }
 
-void ParticleData::sort() {
+void ParticleData::sort(bool invalidateCache) {
     U32 count = aliveCount();
 
     if (count == 0) {
@@ -83,18 +83,24 @@ void ParticleData::sort() {
         _indices[i].first = i;
         _indices[i].second = _misc[i].w;
     }
+    
+    auto sortFunc = 
+    [](const std::pair<U32, F32>& indexA, const std::pair<U32, F32>& indexB) {
+        return indexA.second > indexB.second;
+    };
 
-    std::sort(std::begin(_indices), std::end(_indices),
-        [](const std::pair<U32, F32>& indexA,
-           const std::pair<U32, F32>& indexB) {
-               return indexA.second > indexB.second;
-        });
+    if (invalidateCache) {
+        std::sort(std::begin(_indices), std::end(_indices), sortFunc);
+    } else {
+        Util::insertion_sort(std::begin(_indices), std::end(_indices), sortFunc);
+    }
 
     for (U32 i = 0; i < count; ++i) {
         U32 idx = _indices[i].first;
         _renderingPositions[i].set(_position[idx]);
         _renderingColors[i].set(Util::ToByteColor(_color[idx]));
     }
+
 }
 
 void ParticleData::swapData(U32 indexA, U32 indexB) {

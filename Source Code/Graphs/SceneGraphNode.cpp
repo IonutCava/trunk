@@ -271,18 +271,11 @@ void SceneGraphNode::setActive(const bool state) {
     }
 }
 
-void SceneGraphNode::onCameraUpdate(Camera& camera) {
-    U32 childCount = getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        getChild(i, childCount).onCameraUpdate(camera);
-    }
-
-    Attorney::SceneNodeSceneGraph::onCameraUpdate(*_node, *this, camera);
-}
-
-
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
+    assert(_node->getState() == ResourceState::RES_LOADED ||
+           _node->getState() == ResourceState::RES_SPECIAL);
+
     // Compute from leaf to root to ensure proper calculations
     U32 childCount = getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
@@ -329,9 +322,6 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
         _boundingBoxDirty = false;
         pair.second = false;
     }
-
-    assert(_node->getState() == ResourceState::RES_LOADED ||
-           _node->getState() == ResourceState::RES_SPECIAL);
 
     Attorney::SceneNodeSceneGraph::sceneUpdate(*_node,
     		                                   deltaTime,

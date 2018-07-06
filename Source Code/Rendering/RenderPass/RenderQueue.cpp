@@ -137,12 +137,29 @@ void RenderQueue::postRender(SceneRenderState& renderState,
 }
 
 void RenderQueue::sort(RenderStage renderStage) {
+    
+
     U32 index = 0;
     for (RenderBin* renderBin : _renderBins) {
         if (renderBin != nullptr) {
-            renderBin->sort(index, renderStage);
+            renderBin->binIndex(index);
             index += renderBin->getBinSize();
         }
+    }
+
+    _sortingTasks.resize(0);
+    for (RenderBin* renderBin : _renderBins) {
+        if (renderBin != nullptr) {
+            _sortingTasks.push_back(std::async(std::launch::async | std::launch::deferred,
+                [renderBin, renderStage]() {
+                    renderBin->sort(renderStage);
+                }
+            ));
+        }
+    }
+
+    for (std::future<void>& task : _sortingTasks) {
+        task.get();
     }
 }
 

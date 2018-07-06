@@ -177,18 +177,6 @@ U8 LightManager::getShadowBindSlotOffset(ShadowType type) {
     return _shadowLocation[to_uint(type)];
 }
 
-/// Check light properties for every light (this is bound to the camera change
-/// listener group
-/// Update only if needed. Get projection and view matrices if they changed
-/// Also, search for the dominant light if any
-void LightManager::onCameraUpdate(Camera& camera) {
-    for (Light::LightList& lights : _lights) {
-        for (Light* light : lights) {
-            light->onCameraUpdate(camera);
-        }
-    }
-}
-
 /// When pre-rendering is done, the Light Manager will generate the shadow maps
 /// Returning false in any of the FrameListener methods will exit the entire
 /// application!

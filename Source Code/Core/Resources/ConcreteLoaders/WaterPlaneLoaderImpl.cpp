@@ -10,7 +10,6 @@ template <>
 bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
                                           const stringImpl& name) {
     ParamHandler& param = ParamHandler::getInstance();
-    res->setState(ResourceState::RES_LOADING);
 
     SamplerDescriptor defaultSampler;
     defaultSampler.setWrapMode(TextureWrap::REPEAT);

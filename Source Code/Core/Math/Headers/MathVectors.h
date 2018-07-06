@@ -744,59 +744,43 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     inline void rg(const vec2<T> &rg) { this->set(rg); }
     inline void xy(const vec2<T> &xy) { this->set(xy); }
     inline void rb(const vec2<T> &rb) {
-        this->r = rb.x;
-        this->b = rb.y;
+        this->xz(rb);
     }
     inline void xz(const vec2<T> &xz) {
-        this->x = xz.x;
-        this->z = xz.y;
+        this->xz(xz.x, xz.y);
     }
     inline void gb(const vec2<T> &gb) {
-        this->g = gb.x;
-        this->b = gb.y;
+        this->yz(gb);
     }
     inline void yz(const vec2<T> &yz) {
-        this->y = yz.x;
-        this->z = yz.y;
+        this->yz(yz.x, yz.y);
     }
     inline void ra(const vec2<T> &ra) {
-        this->r = ra.x;
-        this->a = ra.y;
+        this->xw(ra);
     }
     inline void xw(const vec2<T> &xw) {
-        this->x = xw.x;
-        this->w = xw.y;
+        this->xw(xw.x, xw.y);
     }
     inline void ga(const vec2<T> &ga) {
-        this->g = ga.x;
-        this->a = ga.y;
+        this->yw(ga);
     }
     inline void yw(const vec2<T> &yw) {
-        this->y = yw.x;
-        this->w = yw.y;
+        this->yw(yw.x, yw.y);
     }
     inline void ba(const vec2<T> &ba) {
-        this->b = ba.x;
-        this->a = ba.y;
+        this->zw(ba);
     }
     inline void zw(const vec2<T> &zw) {
-        this->z = zw.x;
-        this->w = zw.y;
+        this->zw(zw.x, zw.y);
     }
     inline void rgb(const vec3<T> &rgb) {
-        this->r = rgb.x;
-        this->g = rgb.y;
-        this->b = rgb.z;
+        this->xyz(rgb);
     }
     inline void xyz(const vec3<T> &xyz) {
-        this->x = xyz.x;
-        this->y = xyz.y;
-        this->z = xyz.z;
+        this->xyz(xyz.x, xyz.y, xyz.z);
     }
     inline void bgr(const vec3<T> &bgr) {
-        this->b = bgr.x;
-        this->g = bgr.y;
-        this->r = bgr.z;
+        this->zyx(bgr);
     }
     inline void zyx(const vec3<T> &zyx) {
         this->z = zyx.x;
@@ -804,26 +788,72 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         this->x = zyx.z;
     }
     inline void rga(const vec3<T> &rga) {
-        this->r = rga.x;
-        this->g = rga.y;
-        this->a = rga.z;
+        this->xyw(rga);
     }
     inline void xyw(const vec3<T> &xyw) {
-        this->x = xyw.x;
-        this->y = xyw.y;
-        this->w = xyw.z;
+        this->xyw(xyw.x, xyw.y, xyw.z);
     }
     inline void gba(const vec3<T> &gba) {
-        this->g = gba.x;
-        this->b = gba.y;
-        this->a = gba.z;
+        this->yzw(gba);
     }
     inline void yzw(const vec3<T> &yzw) {
-        this->y = yzw.x;
-        this->z = yzw.y;
-        this->w = yzw.z;
+        this->yzw(yzw.x, yzw.y, yzw.z);
     }
 
+    inline void xy(T _x, T _y) {
+        this->x = _x;
+        this->y = _y;
+    }
+
+    inline void xz(T _x, T _z) {
+        this->x = _x;
+        this->z = _z;
+    }
+
+    inline void xw(T _x, T _w) {
+        this->x = _x;
+        this->w = _w;
+    }
+
+    inline void yz(T _y, T _z) {
+        this->y = _y;
+        this->z = _z;
+    }
+
+    inline void yw(T _y, T _w) {
+        this->y = _y;
+        this->w = _w;
+    }
+
+    inline void zw(T _z, T _w) {
+        this->z = _z;
+        this->w = _w;
+    }
+
+    inline void xyz(T _x, T _y, T _z) {
+        xy(_x, _y);
+        this->z = _z;
+    }
+
+    inline void xyw(T _x, T _y, T _w) {
+        xy(_x, _y);
+        this->w = _w;
+    }
+
+    inline void xzw(T _x, T _z, T _w) {
+        xz(_x, _z);
+        this->w = _w;
+    }
+
+    inline void yzw(T _y, T _z, T _w) {
+        yz(_y, _z);
+        this->w = _w;
+    }
+
+    // special common case
+    inline void xyz(const vec4<T> &xyzw) {
+        this->xyz(xyzw.x, xyzw.y, xyzw.z);
+    }
     /// set the 4 components of the vector manually using a source pointer to a
     /// (large enough) array
     inline void setV(const T *v) { this->set(v[0], v[1], v[2], v[3]); }

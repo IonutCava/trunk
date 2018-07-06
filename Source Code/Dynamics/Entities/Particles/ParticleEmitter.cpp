@@ -193,13 +193,22 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
+bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
+                                      RenderStage renderStage,
+                                      const SceneRenderState& sceneRenderState,
+                                      vectorImpl<GenericDrawCommand>& drawCommandsOut) {
 
-void ParticleEmitter::onCameraUpdate(SceneGraphNode& sgn, Camera& camera) {
+    U32 particleCount = getAliveParticleCount();
+    if (!_enabled || particleCount == 0) {
+        return false;
+    }
+
+    const Camera& camera = sceneRenderState.getCameraConst();
 
     vec3<F32> up(camera.getUpDir());
     vec3<F32> right(camera.getRightDir());
 
-    if (_camUp != up ) {
+    if (_camUp != up) {
         _camUp.set(up);
         _particleShader->Uniform("CameraUp_worldspace", up);
         _particleDepthShader->Uniform("CameraUp_worldspace", up);
@@ -209,17 +218,6 @@ void ParticleEmitter::onCameraUpdate(SceneGraphNode& sgn, Camera& camera) {
         _camRight.set(right);
         _particleShader->Uniform("CameraRight_worldspace", right);
         _particleDepthShader->Uniform("CameraRight_worldspace", right);
-    }
-}
-
-bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
-                                      RenderStage renderStage,
-                                      const SceneRenderState& sceneRenderState,
-                                      vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-
-    U32 particleCount = getAliveParticleCount();
-    if (!_enabled || particleCount == 0) {
-        return false;
     }
 
     GenericDrawCommand& cmd = drawCommandsOut.front();
@@ -316,7 +314,8 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
     // const vec3<F32>& origin = transform->getPosition();
     // const Quaternion<F32>& orientation = transform->getOrientation();
 
-    _particles->sort();
+    // invalidateCache means that the existing particle data is no longer partially sorted
+    _particles->sort(count < 1000);
 
     _boundingBox.first.reset();
     U32 aliveCount = _particles->aliveCount();

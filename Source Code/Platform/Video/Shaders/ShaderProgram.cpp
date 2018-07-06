@@ -12,9 +12,10 @@
 
 namespace Divide {
 
-ShaderProgram::ShaderProgram(GFXDevice& context)
+ShaderProgram::ShaderProgram(GFXDevice& context, bool asyncLoad)
     : Resource("temp_shader_program"),
-      GraphicsResource(context)
+      GraphicsResource(context),
+      _asyncLoad(asyncLoad)
 {
     _linked = false;
     // Override in concrete implementations with appropriate invalid values

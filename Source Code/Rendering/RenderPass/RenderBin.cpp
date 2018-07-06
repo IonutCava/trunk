@@ -74,13 +74,14 @@ struct RenderQueueDistanceFrontToBack {
 
 RenderBin::RenderBin(RenderBinType rbType,
                      RenderingOrder::List renderOrder)
-    : _rbType(rbType),
+    : _binIndex(0),
+      _rbType(rbType),
       _renderOrder(renderOrder)
 {
     _renderBinStack.reserve(125);
 }
 
-void RenderBin::sort(U32 binIndex, RenderStage renderStage) {
+void RenderBin::sort(RenderStage renderStage) {
     // WriteLock w_lock(_renderBinGetMutex);
     switch (_renderOrder) {
         default:
@@ -114,9 +115,9 @@ void RenderBin::sort(U32 binIndex, RenderStage renderStage) {
         } break;
     };
 
-    U32 index = 0;
+    U32 index = _binIndex;
     for (RenderBinItem& item : _renderBinStack) {
-        Attorney::RenderingCompRenderBin::drawOrder(*item._renderable, binIndex + index++);
+        Attorney::RenderingCompRenderBin::drawOrder(*item._renderable, index++);
     }
 }
 

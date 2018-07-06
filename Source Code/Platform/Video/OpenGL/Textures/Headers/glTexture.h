@@ -38,7 +38,7 @@ namespace Divide {
 class glLockManager;
 class glTexture final : public Texture {
    public:
-    glTexture(GFXDevice& context, TextureType type);
+    glTexture(GFXDevice& context, TextureType type, bool asyncLoad);
     ~glTexture();
 
     bool unload() override;
@@ -62,8 +62,7 @@ class glTexture final : public Texture {
     bool flushTextureState() override;
 
    protected:
-    bool load() override;
-    void threadedLoad(const stringImpl& name);
+    void threadedLoad(const stringImpl& name) override;
     void reserveStorage(const TextureLoadInfo& info);
     void updateMipMaps();
     void updateSampler();

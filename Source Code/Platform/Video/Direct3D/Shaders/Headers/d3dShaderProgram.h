@@ -38,7 +38,8 @@ namespace Divide {
 
 class d3dShaderProgram final : public ShaderProgram {
    public:
-    d3dShaderProgram(GFXDevice& context) : ShaderProgram(context)
+    d3dShaderProgram(GFXDevice& context, bool asyncLoad) : 
+        ShaderProgram(context, asyncLoad)
     {
     }
 

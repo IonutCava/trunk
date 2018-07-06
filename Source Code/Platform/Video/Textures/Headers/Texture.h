@@ -140,10 +140,11 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     bool LoadFile(const TextureLoadInfo& info, const stringImpl& name);
     /// Load texture data using the specified file name
     virtual bool load() override;
+    virtual void threadedLoad(const stringImpl& name);
     /// Force a refresh of the entire mipmap chain
     virtual void updateMipMaps() = 0;
 
-    explicit Texture(GFXDevice& context, TextureType type);
+    explicit Texture(GFXDevice& context, TextureType type, bool asyncLoad);
     virtual ~Texture();
 
    protected:
@@ -156,7 +157,7 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     bool _mipMapsDirty;
     bool _samplerDirty;
     bool _hasTransparency;
-    bool _power2Size;
+    bool _asyncLoad;
     mat4<F32> _transformMatrix;
     TextureData  _textureData;
     TextureDescriptor _descriptor;

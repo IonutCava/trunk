@@ -106,10 +106,6 @@ bool Scene::idle() {  // Called when application is idle
     return true;
 }
 
-void Scene::onCameraUpdate(Camera& camera) {
-    _sceneGraph.getRoot().onCameraUpdate(camera);
-}
-
 void Scene::addPatch(vectorImpl<FileData>& data) {
 }
 
