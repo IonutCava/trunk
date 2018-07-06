@@ -29,6 +29,7 @@ layout(triangles, invocations = MAX_SPLITS_PER_LIGHT) in;
 layout(triangle_strip, max_vertices = 3) out;
 
 out vec4 geom_vertexWVP;
+
 void main()
 {
     if (gl_InvocationID < dvd_GSInvocationLimit) {
@@ -106,7 +107,7 @@ void main() {
     float depth = geom_vertexWVP.z / geom_vertexWVP.w;
     depth = depth * 0.5 + 0.5;
     //_colourOut = computeMoments(exp(DEPTH_EXP_WARP * depth));
-    _colourOut = computeMoments(depth)
+    _colourOut = computeMoments(depth);
 #endif
 
 }

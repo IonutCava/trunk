@@ -10,6 +10,8 @@ namespace {
 
 bool Octree::s_treeReady = false;
 bool Octree::s_treeBuilt = false;
+
+SharedLock Octree::s_pendingInsertLock;
 std::queue<SceneGraphNode_wptr> Octree::s_pendingInsertion;
 vectorImpl<SceneGraphNode_wptr> Octree::s_intersectionsObjectCache;
 
@@ -151,6 +153,7 @@ bool Octree::addNode(SceneGraphNode_wptr node) {
         !BitCompare(_nodeMask, to_uint(nodePtr->getNode<>()->getType())) &&  // check for valid type
         !nodePtr->isChildOfType(_nodeMask, true)) // parent is valid type as well
     {
+        WriteLock w_lock(s_pendingInsertLock);
         s_pendingInsertion.push(node);
         s_treeReady = false;
         return true;
@@ -413,6 +416,7 @@ void Octree::findEnclosingCube() {
 }
 
 void Octree::updateTree() {
+    WriteLock w_lock(s_pendingInsertLock);
     if (!s_treeBuilt) {
         while (!s_pendingInsertion.empty()) {
             _objects.push_back(s_pendingInsertion.front());

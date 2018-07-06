@@ -198,7 +198,7 @@ void CascadedShadowMaps::applyFrustumSplits() {
         }
 
         F32 frustumSphereRadius = BoundingSphere(_frustumCornersLS).getRadius();
-        vec2<F32> clipPlanes(std::max(0.0f, minZ - _nearClipOffset), (frustumSphereRadius * 2) + _nearClipOffset);
+        vec2<F32> clipPlanes(std::max(1.0f, minZ - _nearClipOffset), frustumSphereRadius * 1.75f + _nearClipOffset);
         _shadowCamera->setProjection(UNIT_RECT * frustumSphereRadius,
                                      clipPlanes,
                                      true);

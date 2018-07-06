@@ -17,11 +17,11 @@ int _shadowTempInt = -2;
 #include "shadow_point.frag"
 #include "shadow_spot.frag"
 
-float getShadowFactor(int lightIndex) {
+float getShadowFactor(int lightIndex, float fragDepth) {
     Light light = dvd_LightSource[lightIndex];
 
     switch (light._options.x) {
-        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(light._options.z, light._options.w);
+        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(light._options.z, light._options.w, fragDepth);
         //case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(light._options.z);
         //case LIGHT_SPOT            : return applyShadowSpot(light._options.z); 
     }
@@ -34,6 +34,8 @@ float shadow_loop(){
         return 1.0;
     }
 
+    fragDepth = gl_FragCoord.z;
+
     float shadow = 1.0;
     int offset = 0;
     int shadowLights = 0;
@@ -42,7 +44,7 @@ float shadow_loop(){
             int lightIndex = j + offset;
             if (shadowLights < MAX_SHADOW_CASTING_LIGHTS && 
                 dvd_LightSource[lightIndex]._options.y == 1) {
-                shadow *= getShadowFactor(lightIndex);
+                shadow *= getShadowFactor(lightIndex, fragDepth);
                 shadowLights++;
             }
         }

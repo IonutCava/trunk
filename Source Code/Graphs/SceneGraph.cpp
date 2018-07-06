@@ -71,7 +71,9 @@ bool SceneGraph::frameStarted(const FrameEvent& evt) {
 }
 
 bool SceneGraph::frameEnded(const FrameEvent& evt) {
-    _root->frameEnded();
+    if (_loadComplete) {
+        _root->frameEnded();
+    }
     return true;
 }
 

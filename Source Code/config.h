@@ -50,7 +50,7 @@ const unsigned int TICK_DIVISOR = 2;
 /// Application update rate
 const unsigned int TICKS_PER_SECOND = TARGET_FRAME_RATE / TICK_DIVISOR;
 /// Maximum frameskip
-const unsigned int MAX_FRAMESKIP = 5;
+const unsigned int MAX_FRAMESKIP = 3;
 const unsigned long long SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
 /// The minimum threshold needed for a threaded loop to use sleep
 /// Update intervals bellow this threshold will not use sleep!

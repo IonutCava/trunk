@@ -101,6 +101,7 @@ class Octree : public std::enable_shared_from_this<Octree> {
 
         static vectorImpl<SceneGraphNode_wptr> s_intersectionsObjectCache;
         static std::queue<SceneGraphNode_wptr> s_pendingInsertion;
+        static SharedLock s_pendingInsertLock;
         static bool s_treeReady;
         static bool s_treeBuilt;
 };
