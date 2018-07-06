@@ -32,7 +32,7 @@ bool Kernel::_keepAlive = true;
 bool Kernel::_renderingPaused = false;
 bool Kernel::_freezeLoopTime = false;
 bool Kernel::_freezeGUITime = false;
-ProfileTimer* s_appLoopTimer = nullptr;
+Time::ProfileTimer* s_appLoopTimer = nullptr;
 
 SharedLock Kernel::_threadedCallbackLock;
 vectorImpl<U64> Kernel::_threadedCallbackBuffer;
@@ -69,7 +69,7 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
 
     ParamHandler::getInstance().setParam<stringImpl>("language", Locale::currentLanguage());
 
-    s_appLoopTimer = ADD_TIMER("MainLoopTimer");
+    s_appLoopTimer = Time::ADD_TIMER("MainLoopTimer");
 }
 
 Kernel::~Kernel()
@@ -78,7 +78,7 @@ Kernel::~Kernel()
     while (_mainTaskPool->active() > 0) {
     }
     MemoryManager::DELETE( _mainTaskPool );
-    REMOVE_TIMER(s_appLoopTimer);
+    Time::REMOVE_TIMER(s_appLoopTimer);
 }
 
 void Kernel::threadPoolCompleted(U64 onExitTaskID) {
@@ -141,13 +141,13 @@ void Kernel::mainLoopApp() {
     }
 
     // Update internal timer
-    ApplicationTimer::getInstance().update(GFX_DEVICE.getFrameCount());
+    Time::ApplicationTimer::getInstance().update(GFX_DEVICE.getFrameCount());
 
-    START_TIMER(s_appLoopTimer);
+    Time::START_TIMER(s_appLoopTimer);
 
     // Update time at every render loop
     _previousTime     = _currentTime;
-    _currentTime      = GETUSTIME();
+    _currentTime      = Time::ElapsedMicroseconds();
     _currentTimeDelta = _currentTime - _previousTime;
 
     FrameEvent evt;
@@ -182,11 +182,11 @@ void Kernel::mainLoopApp() {
         ERROR_FN("Error detected: [ %s ]", getErrorCodeName(err));
         _keepAlive = false;
     }
-    STOP_TIMER(s_appLoopTimer);
+    Time::STOP_TIMER(s_appLoopTimer);
 
 #if defined(_DEBUG) || defined(_PROFILE)  
     if (GFX_DEVICE.getFrameCount() % (Config::TARGET_FRAME_RATE * 10) == 0){
-        PRINT_FN("GPU: [ %5.5f ] [DrawCalls: %d]", getUsToSec(GFX_DEVICE.getFrameDurationGPU()),
+        PRINT_FN("GPU: [ %5.5f ] [DrawCalls: %d]", Time::MicrosecondsToSeconds(GFX_DEVICE.getFrameDurationGPU()),
                                                    GFX_DEVICE.getDrawCallCount());
     }
 #endif
@@ -387,11 +387,11 @@ void Kernel::firstLoop() {
     const vec2<U16> prevRes = Application::getInstance().getPreviousResolution();
     GFX_DEVICE.changeResolution(prevRes.width, prevRes.height);
 #if defined(_DEBUG) || defined(_PROFILE)
-    ApplicationTimer::getInstance().benchmark(true);
+    Time::ApplicationTimer::getInstance().benchmark(true);
 #endif
     SceneManager::getInstance().initPostLoadState();
 
-    _currentTime = _nextGameTick = GETUSTIME();
+    _currentTime = _nextGameTick = Time::ElapsedMicroseconds();
 }
 
 void Kernel::submitRenderCall(const RenderStage& stage, 
@@ -417,7 +417,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                      TYPE_VEGETATION_GRASS | 
                                      TYPE_VEGETATION_TREES);
     //Target FPS is usually 60. So all movement is capped around that value
-    ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
+    Time::ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
     //Load info from XML files
     stringImpl startupScene(stringAlg::toBase(XML::loadScripts(stringAlg::fromBase(entryPoint))));
     //Create mem log file
@@ -492,7 +492,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
 void Kernel::runLogicLoop(){
     PRINT_FN(Locale::get("START_RENDER_LOOP"));
-    Kernel::_nextGameTick = GETUSTIME();
+    Kernel::_nextGameTick = Time::ElapsedMicroseconds();
     //lock the scene
     GET_ACTIVE_SCENE()->state().toggleRunningState(true);
     //The first loops compiles all the visible data, so do not render the first couple of frames

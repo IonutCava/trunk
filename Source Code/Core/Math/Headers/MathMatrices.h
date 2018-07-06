@@ -356,7 +356,7 @@ public:
 
     inline void rotate_y( T angle, bool inDegrees = true ) {
         if ( inDegrees ) {
-            DegToRad( angle );
+            angle = Angle::DegreesToRadians( angle );
         }
 
         T c = (T)std::cos( angle );
@@ -987,12 +987,7 @@ public:
     };
 };
 
-/// Converts a point from world coordinates to projection coordinates
-///(from Y = depth, Z = up to Y = up, Z = depth)
-template<typename T>
-inline void projectPoint( const vec3<T>& position, vec3<T>& output ) {
-    output.set( position.x, position.z, position.y );
-}
+
 
 struct Line {
     vec3<F32> _startPoint;
@@ -1013,7 +1008,12 @@ struct Line {
 };
 
 namespace Util {
-
+    /// Converts a point from world coordinates to projection coordinates
+    ///(from Y = depth, Z = up to Y = up, Z = depth)
+    template<typename T>
+    inline void projectPoint( const vec3<T>& position, vec3<T>& output ) {
+        output.set( position.x, position.z, position.y );
+    }
     inline F32 Lerp( const F32 v1, const F32 v2, const F32 t ) {
         return v1 + ( v2 - v1*t );
     }

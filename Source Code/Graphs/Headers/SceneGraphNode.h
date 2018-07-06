@@ -102,7 +102,11 @@ namespace Divide {
         ///Always use the level of redirection needed to reduce virtual function overhead
         ///Use getNode<SceneNode> if you need material properties for ex. or getNode<SubMesh> for animation transforms
         template<typename T = SceneNode>
-        inline T* getNode() const { assert(_node != nullptr); return dynamic_cast<T*>(_node); }
+        inline T* getNode() const { 
+            static_assert(std::is_base_of<SceneNode, T>::value, "SceneGraphNode::getNode error: Invalid target node type!");
+            assert(_node != nullptr); 
+            return static_cast<T*>(_node); 
+        }
         ///Create node never increments the node's ref counter (used for scene loading)
         SceneGraphNode* createNode(SceneNode* const node, const stringImpl& name = "");
         ///Add node increments the node's ref counter if the node was already added to the scene graph

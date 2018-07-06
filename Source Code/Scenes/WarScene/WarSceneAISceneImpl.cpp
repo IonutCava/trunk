@@ -39,7 +39,7 @@ WarSceneAISceneImpl::~WarSceneAISceneImpl()
 }
 
 void WarSceneAISceneImpl::registerAction(GOAPAction* const action) {
-    WarSceneAction* const warAction = dynamic_cast<WarSceneAction*>(action);
+    WarSceneAction* const warAction = static_cast<WarSceneAction*>(action);
     warAction->setParentAIScene(this);
 
     switch(warAction->actionType()) {
@@ -285,7 +285,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type, const WarSceneAction* warA
 
 bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction* planStep) {
     assert(planStep != nullptr);
-    const WarSceneAction& warAction = *dynamic_cast<const WarSceneAction*>(planStep);
+    const WarSceneAction& warAction = *static_cast<const WarSceneAction*>(planStep);
 
     if (_workingMemory._teamMateHasFlag.value() && (warAction.actionType() == ACTION_APPROACH_FLAG || 
                                                     warAction.actionType() == ACTION_CAPTURE_FLAG ||
@@ -394,7 +394,7 @@ void WarSceneAISceneImpl::processInput(const U64 deltaTime) {
 
     _deltaTime += deltaTime;
     
-    if (_deltaTime > getUsToSec(1.5)) {//wait 1 and a half seconds at the destination
+    if (_deltaTime > Time::SecondsToMicroseconds(1.5)) {//wait 1 and a half seconds at the destination
         _deltaTime = 0;
     }
 }
@@ -458,7 +458,7 @@ bool WarSceneAISceneImpl::performAction(const GOAPAction* planStep) {
     if(planStep == nullptr) {
         return false;
     }
-    return dynamic_cast<const WarSceneAction*>(planStep)->preAction();
+    return static_cast<const WarSceneAction*>(planStep)->preAction();
 }
 
 bool WarSceneAISceneImpl::performActionStep(GOAPAction::operationsIterator step) {

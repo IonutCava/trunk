@@ -16,14 +16,14 @@ void CubeScene::render(){
 
 void CubeScene::processTasks(const U64 deltaTime){
     Light::LightMap& lights = LightManager::getInstance().getLights();
-    D32 updateLights = getSecToMs(0.05);
+    D32 updateLights = Time::SecondsToMilliseconds(0.05);
 
     if(_taskTimers[0] >= updateLights){
         for(U8 row=0; row<3; row++)
             for(U8 col=0; col < lights.size()/3.0f; col++){
-                F32 x = col * 150.0f - 5.0f + cos(GETMSTIME()*(col-row+2)*0.008f)*200.0f;
-                F32 y = cos(GETTIME()*(col-row+2)*0.01f)*200.0f+20;;
-                F32 z = row * 500.0f -500.0f - cos(GETMSTIME()*(col-row+2)*0.009f)*200.0f+10;
+                F32 x = col * 150.0f - 5.0f + cos(Time::ElapsedMilliseconds()*(col-row+2)*0.008f)*200.0f;
+                F32 y = cos(Time::ElapsedSeconds()*(col-row+2)*0.01f)*200.0f+20;;
+                F32 z = row * 500.0f -500.0f - cos(Time::ElapsedMilliseconds()*(col-row+2)*0.009f)*200.0f+10;
                 F32 r = 1;
                 F32 g = 1.0f-(row/3.0f);
                 F32 b = col/(lights.size()/3.0f);

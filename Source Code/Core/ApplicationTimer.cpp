@@ -9,6 +9,7 @@
 #pragma message("Use apropriate conversion in time sensitive code (see ApplicationTimer.h)")
 
 namespace Divide {
+namespace Time {
 
 ApplicationTimer::ApplicationTimer() : _targetFrameRate(Config::TARGET_FRAME_RATE),
                                        _ticksPerMicrosecond(0.0),
@@ -33,10 +34,10 @@ void ApplicationTimer::addTimer(ProfileTimer* const timer) {
 void ApplicationTimer::removeTimer(ProfileTimer* const timer) {
     const stringImpl& timerName = timer->name();
     _profileTimers.erase(std::remove_if(_profileTimers.begin(), _profileTimers.end(),
-                         [&timerName](ProfileTimer* tTimer)->bool {
-                            return tTimer->name().compare(timerName) == 0;
-                         }),
-                        _profileTimers.end());
+        [&timerName](ProfileTimer* tTimer)->bool {
+        return tTimer->name().compare(timerName) == 0;
+    }),
+        _profileTimers.end());
 }
 
 ///No need for init to be threadsafe
@@ -77,8 +78,8 @@ void ApplicationTimer::update(U32 frameCount) {
     LI currentTicks = getCurrentTicksInternal();
     _elapsedTimeUs = getElapsedTimeInternal(currentTicks);
 
-    _speedfactor = static_cast<F32>((currentTicks.QuadPart - _frameDelay.QuadPart) / 
-                                    (_ticksPerSecond.QuadPart / static_cast<F32>(_targetFrameRate)));
+    _speedfactor = static_cast<F32>((currentTicks.QuadPart - _frameDelay.QuadPart) /
+        (_ticksPerSecond.QuadPart / static_cast<F32>(_targetFrameRate)));
     _frameDelay = currentTicks;
 
     if (_speedfactor <= 0.0f) {
@@ -113,7 +114,7 @@ void ApplicationTimer::benchmarkInternal(U32 frameCount){
         g_maxFps = std::max(g_maxFps, _fps);
         g_minFps = std::min(g_minFps, _fps);
     }
-    
+
     //Every 10 seconds (targeted)
     if (frameCount % (_targetFrameRate * 10) == 0) {
         g_averageFpsTotal += g_averageFps;
@@ -122,14 +123,15 @@ void ApplicationTimer::benchmarkInternal(U32 frameCount){
         PRINT_FN(Locale::get("FRAMERATE_FPS_OUTPUT"), avgFPS, g_maxFps, g_minFps, 1000.0f / avgFPS);
 
 #        if defined(_DEBUG) || defined(_PROFILE)
-            for (ProfileTimer* const timer : _profileTimers) {
-                timer->print();
-                timer->reset();
-            }
+        for (ProfileTimer* const timer : _profileTimers) {
+            timer->print();
+            timer->reset();
+        }
 
 #    endif
         g_averageFps = 0;
     }
 }
 
-};
+}; //namespace Time
+}; //namespace Divide

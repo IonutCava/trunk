@@ -28,11 +28,11 @@ namespace Navigation {
     }
 
     void rcContextDivide::doStartTimer(const rcTimerLabel label){
-        _startTime[label] = GETMSTIME(true);
+        _startTime[label] = Time::ElapsedMilliseconds(true);
     }
 
     void rcContextDivide::doStopTimer(const rcTimerLabel label){
-        const D32 deltaTime = GETMSTIME(true) - _startTime[label];
+        const D32 deltaTime = Time::ElapsedMilliseconds(true) - _startTime[label];
         if (_accTime[label] == -1) _accTime[label] = deltaTime;
         else                       _accTime[label] += deltaTime;
     }

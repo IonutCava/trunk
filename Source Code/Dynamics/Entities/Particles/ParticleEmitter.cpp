@@ -243,7 +243,7 @@ namespace Divide {
         }
 
 
-        F32 delta = getUsToSec(deltaTime);
+        F32 delta = Time::MicrosecondsToSeconds(deltaTime);
         F32 emissionVariance = random(-_descriptor._emissionIntervalVariance, _descriptor._emissionIntervalVariance);
         I32 newParticles = _descriptor._emissionInterval + emissionVariance;
         newParticles = (I32)(newParticles * delta) / (sgn->getComponent<RenderingComponent>()->lodLevel() + 1);
@@ -260,7 +260,7 @@ namespace Divide {
         for (I32 i = 0; i < newParticles; ++i) {
             ParticleDescriptor& currentParticle = _particles[findUnusedParticle()];
             F32 lifetimeVariance = random(-_descriptor._lifetimeVariance, _descriptor._lifetimeVariance);
-            currentParticle.life = _descriptor._lifetime + getMsToSec(lifetimeVariance);
+            currentParticle.life = _descriptor._lifetime + Time::MillisecondsToSeconds(lifetimeVariance);
             memcpy(currentParticle.pos, origin._v, 3 * sizeof(F32));
             // Very bad way to generate a random direction;
             // See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,

@@ -113,13 +113,13 @@ Mesh* DVDConverter::load(const stringImpl& file){
     /*FILE* fp = fopen(processedModel.c_str(), "rb");
     if (fp || false){
         fclose(fp);
-        start = GETMSTIME();
+        start = Time::ElapsedMilliseconds();
         _aiScenePointer = importer->ReadFile(processedModel, 0);
-        elapsed = GETMSTIME() - start;
+        elapsed = Time::ElapsedMilliseconds() - start;
     }else{*/
-        start = GETMSTIME();
+        start = Time::ElapsedMilliseconds();
         _aiScenePointer = importer->ReadFile(file.c_str(), _ppsteps);
-        elapsed = GETMSTIME() - start;
+        elapsed = Time::ElapsedMilliseconds() - start;
        
        /* Assimp::Exporter exporter;
 
@@ -130,13 +130,13 @@ Mesh* DVDConverter::load(const stringImpl& file){
         }
     }*/
 
-    D_PRINT_FN(Locale::get("LOAD_MESH_TIME"),_modelName.c_str(),getMsToSec(elapsed));
+    D_PRINT_FN(Locale::get("LOAD_MESH_TIME"),_modelName.c_str(),Time::MillisecondsToSeconds(elapsed));
 
     if( !_aiScenePointer){
         ERROR_FN(Locale::get("ERROR_IMPORTER_FILE"), file.c_str(), importer->GetErrorString());
         return nullptr;
     }
-    start = GETMSTIME(true);
+    start = Time::ElapsedMilliseconds(true);
     Mesh* tempMesh = MemoryManager_NEW Mesh(_aiScenePointer->HasAnimations() ? Object3D::OBJECT_FLAG_SKINNED : 
                                                                                Object3D::OBJECT_FLAG_NONE);
     tempMesh->setName(_modelName);
@@ -188,8 +188,8 @@ Mesh* DVDConverter::load(const stringImpl& file){
     tempMesh->renderState().setDrawState( true );
     tempMesh->getGeometryVB()->Create();
 
-    elapsed = GETMSTIME(true) - start;
-    D_PRINT_FN(Locale::get("PARSE_MESH_TIME"),_modelName.c_str(),getMsToSec(elapsed));
+    elapsed = Time::ElapsedMilliseconds(true) - start;
+    D_PRINT_FN(Locale::get("PARSE_MESH_TIME"),_modelName.c_str(),Time::MillisecondsToSeconds(elapsed));
 
     return tempMesh;
 }
@@ -300,7 +300,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, Mesh* parentMes
 
     if(_aiScenePointer->HasAnimations() && skinned){
         // create animator from current scene and current submesh pointer in that scene
-        dynamic_cast<SkinnedSubMesh*>(tempSubMesh)->getAnimator()->Init(_aiScenePointer, count);
+        static_cast<SkinnedSubMesh*>(tempSubMesh)->getAnimator()->Init(_aiScenePointer, count);
     }
 
     if(source->mTextureCoords[0] != nullptr){

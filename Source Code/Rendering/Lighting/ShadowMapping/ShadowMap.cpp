@@ -62,7 +62,7 @@ ShadowMap* ShadowMapInfo::getOrCreateShadowMap(const SceneRenderState& renderSta
             _shadowMap = MemoryManager_NEW CubeShadowMap(_light, shadowCamera);
             }break;
         case LIGHT_TYPE_DIRECTIONAL:{
-            DirectionalLight* dirLight = dynamic_cast<DirectionalLight*>(_light);
+            DirectionalLight* dirLight = static_cast<DirectionalLight*>(_light);
             _numLayers = dirLight->csmSplitCount();
             _shadowMap = MemoryManager_NEW CascadedShadowMaps(_light, shadowCamera, _numLayers);
             }break;

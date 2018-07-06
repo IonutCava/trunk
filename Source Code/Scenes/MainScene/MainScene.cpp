@@ -66,12 +66,13 @@ void MainScene::processInput(const U64 deltaTime){
 }
 
 void MainScene::processGUI(const U64 deltaTime){
-    D32 FpsDisplay = getSecToMs(0.5);
-    D32 TimeDisplay = getSecToMs(1.0);
+    D32 FpsDisplay = Time::SecondsToMilliseconds(0.5);
+    D32 TimeDisplay = Time::SecondsToMilliseconds(1.0);
 
     if (_guiTimers[0] >= FpsDisplay){
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 
-                         ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+                         Time::ApplicationTimer::getInstance().getFps(), 
+                         Time::ApplicationTimer::getInstance().getFrameTime());
         _GUI->modifyText("underwater", "Underwater [ %s ] | WaterLevel [%f] ]",
                          state()._cameraUnderwater ? "true" : "false", state().getWaterLevel());
         _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
@@ -79,7 +80,7 @@ void MainScene::processGUI(const U64 deltaTime){
     }
 
     if (_guiTimers[1] >= TimeDisplay){
-        _GUI->modifyText("timeDisplay", "Elapsed time: %5.0f", GETTIME());
+        _GUI->modifyText("timeDisplay", "Elapsed time: %5.0f", Time::ElapsedSeconds());
         _guiTimers[1] = 0.0;
     }
 
@@ -88,7 +89,7 @@ void MainScene::processGUI(const U64 deltaTime){
 
 void MainScene::processTasks(const U64 deltaTime){
     updateLights();
-    D32 SunDisplay = getSecToMs(1.50);
+    D32 SunDisplay = Time::SecondsToMilliseconds(1.50);
     if (_taskTimers[0] >= SunDisplay){
         _sunAngle.y += 0.0005f;
         _sunvector = vec4<F32>(    -cosf(_sunAngle.x) * sinf(_sunAngle.y),
@@ -192,7 +193,7 @@ bool MainScene::loadResources(bool continueOnErrors){
                   vec2<I32>(60,80),
                   Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.6f,0.2f,0.2f),
-                  "Elapsed time: %5.0f",GETTIME());
+                  "Elapsed time: %5.0f", Time::ElapsedSeconds());
     _GUI->addText("underwater",
                   vec2<I32>(60,115),
                   Font::DIVIDE_DEFAULT,
@@ -207,7 +208,7 @@ bool MainScene::loadResources(bool continueOnErrors){
     _guiTimers.push_back(0.0); //Fps
     _guiTimers.push_back(0.0); //Time
 
-    _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+    _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
     _sunvector = vec4<F32>(    -cosf(_sunAngle.x) * sinf(_sunAngle.y),
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y),
@@ -215,7 +216,7 @@ bool MainScene::loadResources(bool continueOnErrors){
 
     Kernel* kernel = Application::getInstance().getKernel();
 
-    Task_ptr boxMove(kernel->AddTask(getMsToUs(30), 0, DELEGATE_BIND(&MainScene::test, this, stringImpl("test"), TYPE_STRING)));
+    Task_ptr boxMove(kernel->AddTask(Time::MillisecondsToMicroseconds(30), 0, DELEGATE_BIND(&MainScene::test, this, stringImpl("test"), TYPE_STRING)));
     registerTask(boxMove);
     boxMove->startTask();
 

@@ -17,10 +17,11 @@ void FlashScene::processInput(const U64 deltaTime){
 }
 
 void FlashScene::processGUI(const U64 deltaTime){
-    D32 FpsDisplay = getSecToMs(0.3);
+    D32 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay)    {
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 
-                         ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+                         Time::ApplicationTimer::getInstance().getFps(), 
+                         Time::ApplicationTimer::getInstance().getFrameTime());
         _guiTimers[0] = 0.0;
     }
 }
@@ -39,7 +40,7 @@ bool FlashScene::load(const stringImpl& name, CameraManager* const cameraMgr, GU
 }
 
 bool FlashScene::loadResources(bool continueOnErrors){
-    _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+    _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
     _sunvector = vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y),
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y),

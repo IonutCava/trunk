@@ -49,7 +49,7 @@ void AIManager::update() {
     ReadLock r_lock(_updateMutex);
     /// use internal delta time calculations
     _previousTime = _currentTime;
-    _currentTime  = GETUSTIME();
+    _currentTime  = Time::ElapsedMicroseconds();
     _deltaTime = _currentTime - _previousTime;
     if (_aiTeams.empty() || _pauseUpdate) {
         return; //nothing to do

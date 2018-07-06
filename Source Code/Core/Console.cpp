@@ -141,7 +141,7 @@ const char* Console::output(const char* output, const bool error) const {
     std::ostream& outputStream = error ? std::cerr : std::cout;
 
     if(_timestamps)
-        outputStream << "[ " << std::setprecision(2) << GETTIME(true) << " ] ";
+        outputStream << "[ " << std::setprecision(2) << Time::ElapsedSeconds(true) << " ] ";
 
     if (error) {
         outputStream << " Error: ";

@@ -44,7 +44,7 @@ public:
     /** From Ogre3D: The "positive side" of the plane is the half space to which the
         plane normal points. The "negative side" is the other half
         space. The flag "no side" indicates the plane itself.
-    */
+        */
     enum Side {
         NO_SIDE,
         POSITIVE_SIDE,
@@ -56,36 +56,36 @@ public:
     }
 
     Plane(const Plane& rhs) : _normal(rhs._normal),
-                              _distance(rhs._distance), 
-                              _active(rhs._active), 
-                              _index(rhs._index) 
+        _distance(rhs._distance),
+        _active(rhs._active),
+        _index(rhs._index)
     {
     }
 
     ///distance is stored as the negative of the specified value
-    Plane(const vec3<T>& normal, T distance) : _normal(normal), 
-                                               _distance(distance), 
-                                               _active(false), 
-                                               _index(0) 
+    Plane(const vec3<T>& normal, T distance) : _normal(normal),
+        _distance(distance),
+        _active(false),
+        _index(0)
     {
     }
 
     ///distance is stored as the negative of the specified value
-    Plane(T a, T b, T c, T distance) : Plane(vec3<T>(a,b,c), distance) 
+    Plane(T a, T b, T c, T distance) : Plane(vec3<T>(a, b, c), distance)
     {
     }
 
-    Plane(const vec4<T>& plane) : Plane(plane.xyz(), plane.w) 
+    Plane(const vec4<T>& plane) : Plane(plane.xyz(), plane.w)
     {
     }
 
     Plane(const vec3<T>& normal, const vec3<T>& point) : _active(false),
-                                                         _index(0)
+        _index(0)
     {
         redefine(normal, point);
     }
-    Plane(const vec3<T>& point0, const vec3<T>& point1, const vec3<T>& point2) : _active(false), 
-                                                                                 _index(0)
+    Plane(const vec3<T>& point0, const vec3<T>& point1, const vec3<T>& point2) : _active(false),
+        _index(0)
     {
         redefine(point0, point1, point2);
     }
@@ -98,8 +98,8 @@ public:
     inline T getDistance(const vec3<T>& point) const { return _normal.dot(point) + _distance; }
     inline T getDistance()                     const { return _distance; }
 
-    inline void set(const vec3<T>& normal, T distance) {_normal = normal; _distance = distance;}
-    inline void set(T a, T b, T c, T distance)         { set(vec3<T>(a,b,c), distance); }
+    inline void set(const vec3<T>& normal, T distance) { _normal = normal; _distance = distance; }
+    inline void set(T a, T b, T c, T distance)         { set(vec3<T>(a, b, c), distance); }
 
     inline void redefine(const vec3<T>& point0, const vec3<T>& point1, const vec3<T>& point2) {
         vec3<T> edge1 = point1 - point0;
@@ -113,26 +113,26 @@ public:
         _normal = normal;
         _distance = _normal.dot(point);
     }
-    inline vec4<T> getEquation() const {return vec4<T>(_normal,_distance);}
-    inline const vec3<T>& getNormal() const {return _normal;}
+    inline vec4<T> getEquation() const { return vec4<T>(_normal, _distance); }
+    inline const vec3<T>& getNormal() const { return _normal; }
     /// active plane state. used by rendering API's when the plane is considered a clipplane
-    inline bool active()           const {return _active;}
-    inline void active(bool state)       {_active = state;}
+    inline bool active()           const { return _active; }
+    inline void active(bool state)       { _active = state; }
     /// store an internal id used as userData
-    inline I32  getIndex()          const {return _index;}
-    inline void setIndex(I32 index)       {_index = index;}
+    inline I32  getIndex()          const { return _index; }
+    inline void setIndex(I32 index)       { _index = index; }
     /// Comparison operator
-    bool operator==(const Plane& rhs) const { 
-        return (rhs._distance == _distance && rhs._normal == _normal); 
+    bool operator==(const Plane& rhs) const {
+        return (rhs._distance == _distance && rhs._normal == _normal);
     }
 
     bool operator!=(const Plane& rhs) const {
-        return (rhs._distance != _distance || rhs._normal != _normal); 
+        return (rhs._distance != _distance || rhs._normal != _normal);
     }
 
     T normalize() {
         T length = _normal.length();
-        if ( length > F32(0.0f) ) {
+        if (length > F32(0.0f)) {
             T invLength = 1.0f / length;
             _normal *= invLength;
             _distance *= invLength;

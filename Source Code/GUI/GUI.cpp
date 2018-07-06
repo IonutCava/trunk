@@ -22,10 +22,10 @@ namespace Divide {
 GUI::GUI() : _init(false),
              _rootSheet(nullptr),
              _defaultMsgBox(nullptr),
-             _console(MemoryManager_NEW GUIConsole()),
-             _textRenderInterval(getMsToUs(10))
+             _console(MemoryManager_NEW GUIConsole())
 {
     //500ms
+    _textRenderInterval = Time::MillisecondsToMicroseconds(10);
     _ceguiInput.setInitialDelay(0.500f);
     GUIEditor::createInstance();
 }
@@ -79,8 +79,8 @@ void GUI::update(const U64 deltaTime) {
     }
 
     _ceguiInput.update(deltaTime);
-    CEGUI::System::getSingleton().injectTimePulse(getUsToSec(deltaTime));
-    CEGUI::System::getSingleton().getDefaultGUIContext().injectTimePulse(getUsToSec(deltaTime));
+    CEGUI::System::getSingleton().injectTimePulse(Time::MicrosecondsToSeconds(deltaTime));
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectTimePulse(Time::MicrosecondsToSeconds(deltaTime));
 
     if (_console) {
         _console->update(deltaTime);
@@ -366,6 +366,8 @@ GUIText* GUI::modifyText(const stringImpl& id, char* format, ...){
     assert(element->getType() == GUI_TEXT);
     
     GUIText* textElement = dynamic_cast<GUIText*>(element);
+    assert(textElement != nullptr);
+
     textElement->_text = fmt_text;
     fmt_text.empty();
     return textElement;

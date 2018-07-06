@@ -242,7 +242,7 @@ void AIEntity::updatePosition(const U64 deltaTime){
         // if we are walking but did not change distance
         if(std::abs(_previousDistanceToTarget - _distanceToTarget) < DESTINATION_RADIUS){
             _moveWaitTimer += deltaTime;
-            if(getUsToSec(_moveWaitTimer) > 5){
+            if(Time::MicrosecondsToSeconds(_moveWaitTimer) > 5){
                 _moveWaitTimer = 0;
                 //updateDestination(_detourCrowd->getNavMesh().getRandomPosition());
                 //return;

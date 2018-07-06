@@ -26,29 +26,22 @@
 #include "Platform/DataTypes/Headers/PlatformDefines.h"
 
 namespace Divide {
-    class ProfileTimer {
+namespace Time {
+
+class ProfileTimer {
 public:
     ProfileTimer();
     ~ProfileTimer();
 
-#if defined(_DEBUG) || defined(_PROFILE)
     void create(const stringImpl& name);
     void start();
     void stop();
     void print() const;
     void reset();
-#else
 
-    void create(const stringImpl& name) { _name = name; }
-    void start();
-    void stop();
-    void print() const;
-    void reset();
-#endif
-
-    inline D32  get()  const {return _timer;}
-    inline bool init() const {return _init;}
-    inline void pause(const bool state) {_paused = state;}
+    inline D32  get()  const { return _timer; }
+    inline bool init() const { return _init; }
+    inline void pause(const bool state) { _paused = state; }
     inline const stringImpl& name() const { return _name; }
 
 protected:
@@ -62,6 +55,7 @@ protected:
 #endif
 };
 
+};//namespace Time
 }; //namespace Divide
 
 #endif //_CORE_PROFILE_TIMER_H_

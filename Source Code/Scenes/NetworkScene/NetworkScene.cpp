@@ -25,11 +25,11 @@ void NetworkScene::processInput(const U64 deltaTime){
 }
 
 void NetworkScene::processGUI(const U64 deltaTime){
-    D32 FpsDisplay = getSecToMs(0.3);
-    D32 TimeDisplay = getSecToMs(0.01);
-    D32 ServerPing = getSecToMs(1.0);
+    D32 FpsDisplay = Time::SecondsToMilliseconds(0.3);
+    D32 TimeDisplay = Time::SecondsToMilliseconds(0.01);
+    D32 ServerPing = Time::SecondsToMilliseconds(1.0);
     if (_guiTimers[0] >= FpsDisplay){
-        _GUI->modifyText("fpsDisplay", "FPS: %5.2f", ApplicationTimer::getInstance().getFps());
+        _GUI->modifyText("fpsDisplay", "FPS: %5.2f", Time::ApplicationTimer::getInstance().getFps());
         _guiTimers[0] = 0.0;
     }
 
@@ -79,7 +79,7 @@ bool NetworkScene::load(const stringImpl& name, CameraManager* const cameraMgr, 
 
 void NetworkScene::test(){
     WorldPacket p(CMSG_PING);
-    p << GETMSTIME();
+    p << Time::ElapsedMilliseconds();
     ASIOImpl::getInstance().sendPacket(p);
 }
 
@@ -98,7 +98,7 @@ void NetworkScene::disconnect()
 
 bool NetworkScene::loadResources(bool continueOnErrors)
 {
-    _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+    _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
     _sunvector = vec4<F32>(    -cosf(_sunAngle.x) * sinf(_sunAngle.y),
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y),
@@ -113,7 +113,7 @@ bool NetworkScene::loadResources(bool continueOnErrors)
                   vec2<I32>(60,70),
                   Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.6f,0.2f,0.2f),
-                  "Elapsed time: %5.0f",GETTIME());
+                  "Elapsed time: %5.0f", Time::ElapsedSeconds());
 
     _GUI->addText("serverMessage", vec2<I32>(renderState().cachedResolution().width / 4.0f,
                   renderState().cachedResolution().height / 1.6f),

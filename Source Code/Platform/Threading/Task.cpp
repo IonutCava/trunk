@@ -47,7 +47,7 @@ namespace Divide {
 
     void Task::run(){
         D_PRINT_FN(Locale::get("TASK_START_THREAD"), std::this_thread::get_id());
-        U64 lastCallTime = GETTIME();
+        U64 lastCallTime = Time::ElapsedSeconds();
 
         // 0 == run forever
         if (_numberOfTicks == 0){
@@ -70,10 +70,10 @@ namespace Divide {
                 break;
             }
 
-            U64 nowTime = GETUSTIME(true);
+            U64 nowTime = Time::ElapsedMicroseconds(true);
             if (nowTime > (lastCallTime + _tickInterval)) {
                 _callback();
-                lastCallTime = GETUSTIME(true);
+                lastCallTime = Time::ElapsedMicroseconds(true);
             }
 
             if (_numberOfTicks > 0) {

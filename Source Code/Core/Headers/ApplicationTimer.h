@@ -29,6 +29,7 @@
 //Copyright: "Frame Rate Independent Movement" by Ben Dilts
 
 namespace Divide {
+namespace Time {
 
 DEFINE_SINGLETON(ApplicationTimer)
 
@@ -81,33 +82,20 @@ private:
     std::atomic<U64> _elapsedTimeUs;
 END_SINGLETON
 
-
-inline U64 GETUSTIME() {
-    return ApplicationTimer::getInstance().getElapsedTime();
-}
-
-inline D32 GETTIME() {
-    return getUsToSec(GETUSTIME());
-}
-
-inline D32 GETMSTIME() {
-    return getUsToMs(GETUSTIME());
-}
-
 /// The following functions force a timer update (a call to query performance timer. 
 /// Use these for profiling!
-inline U64 GETUSTIME(bool state) {
-    return ApplicationTimer::getInstance().getElapsedTime(state);
+inline U64 ElapsedMicroseconds(bool forceUpdate = false) {
+    return ApplicationTimer::getInstance().getElapsedTime(forceUpdate);
 }
 
-inline D32 GETTIME(bool state) {
-    return getUsToSec(GETUSTIME(state));
+inline D32 ElapsedMilliseconds(bool forceUpdate = false) {
+    return MicrosecondsToMilliseconds(ElapsedMicroseconds(forceUpdate));
+}
+inline D32 ElapsedSeconds(bool forceUpdate = false) {
+    return MicrosecondsToSeconds(ElapsedMicroseconds(forceUpdate));
 }
 
-inline D32 GETMSTIME(bool state) {
-    return getUsToMs(GETUSTIME(state));
-}
-
+}; //namespace Time
 }; //namespace Divide
 
 #endif //_CORE_APPLICATION_TIMER_H_

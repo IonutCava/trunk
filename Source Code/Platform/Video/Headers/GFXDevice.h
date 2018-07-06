@@ -43,7 +43,6 @@ class PostFX;
 class Quad3D;
 class Object3D;
 class Renderer;
-class ApplicationTimer;
 class SceneRenderState;
 
 /// Rough around the edges Adapter pattern abstracting the actual rendering API and access to the GPU

@@ -13,7 +13,7 @@
 
 namespace Divide {
 
-ProfileTimer* s_shadowPassTimer = nullptr;
+Time::ProfileTimer* s_shadowPassTimer = nullptr;
 
 LightManager::LightManager() : FrameListener(),
                                _init(false),
@@ -22,7 +22,7 @@ LightManager::LightManager() : FrameListener(),
                                _currentShadowPass(0)
 {
     // shadowPassTimer is used to measure the CPU-duration of shadow map generation step
-    s_shadowPassTimer = ADD_TIMER("ShadowPassTimer");
+    s_shadowPassTimer = Time::ADD_TIMER("ShadowPassTimer");
     // SHADER_BUFFER_NORMAL holds general info about the currently active lights: position, color, etc.
     _lightShaderBuffer[SHADER_BUFFER_NORMAL] = nullptr;
     // SHADER_BUFFER_SHADOWS holds info about the currently active shadow casting lights: 
@@ -39,7 +39,7 @@ LightManager::LightManager() : FrameListener(),
 LightManager::~LightManager()
 {
     clear();
-    REMOVE_TIMER(s_shadowPassTimer);
+    Time::REMOVE_TIMER(s_shadowPassTimer);
     MemoryManager::DELETE( _lightShaderBuffer[SHADER_BUFFER_NORMAL] );
     MemoryManager::DELETE( _lightShaderBuffer[SHADER_BUFFER_SHADOW] );
 }
@@ -164,7 +164,7 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt){
         return true;
     }
 
-    START_TIMER(s_shadowPassTimer);
+    Time::START_TIMER(s_shadowPassTimer);
 
     //Tell the engine that we are drawing to depth maps
     //set the current render stage to SHADOW_STAGE
@@ -178,7 +178,7 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt){
     //Revert back to the previous stage
     GFX_DEVICE.setRenderStage(previousRS);
 
-    STOP_TIMER(s_shadowPassTimer);
+    Time::STOP_TIMER(s_shadowPassTimer);
 
     return true;
 }

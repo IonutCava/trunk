@@ -21,7 +21,7 @@ REGISTER_SCENE(TenisScene);
 static std::atomic_bool s_gameStarted;
 
 void TenisScene::preRender(){
-    vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+    vec2<F32> _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
     _sunvector = vec3<F32>(    -cosf(_sunAngle.x) * sinf(_sunAngle.y),
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
@@ -34,7 +34,8 @@ void TenisScene::processGUI(const U64 deltaTime){
     D32 FpsDisplay = 0.7;
     if (_guiTimers[0] >= FpsDisplay){
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 
-                         ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+                         Time::ApplicationTimer::getInstance().getFps(), 
+                         Time::ApplicationTimer::getInstance().getFrameTime());
         _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _guiTimers[0] = 0.0;
     }
@@ -83,7 +84,7 @@ void TenisScene::resetGame(){
 void TenisScene::startGame(){
     resetGame();
     Kernel* kernel = Application::getInstance().getKernel();
-    Task_ptr newGame(kernel->AddTask(getMsToUs(15), 0, DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, TYPE_INTEGER)));
+    Task_ptr newGame(kernel->AddTask(Time::MillisecondsToMicroseconds(15), 0, DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, TYPE_INTEGER)));
     registerTask(newGame);
     newGame->startTask();
     _gameGUID = newGame->getGUID();

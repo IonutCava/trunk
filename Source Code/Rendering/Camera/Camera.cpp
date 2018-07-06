@@ -66,12 +66,12 @@ void Camera::fromCamera(const Camera& camera) {
 
 void Camera::update(const U64 deltaTime) {
     if (Config::USE_FIXED_TIMESTEP) {
-        F32 timeFactor = getUsToSec(Config::SKIP_TICKS);
+        F32 timeFactor = Time::MicrosecondsToSeconds(Config::SKIP_TICKS);
         _cameraMoveSpeed = _moveSpeedFactor * timeFactor;
         _cameraTurnSpeed = _turnSpeedFactor * timeFactor;
         _cameraZoomSpeed = _zoomSpeedFactor * timeFactor;
     } else {
-        F32 timeFactor = getUsToSec(deltaTime);
+        F32 timeFactor = Time::MicrosecondsToSeconds(deltaTime);
         _cameraMoveSpeed = _moveSpeedFactor * timeFactor;
         _cameraTurnSpeed = _turnSpeedFactor * timeFactor;
         _cameraZoomSpeed = _zoomSpeedFactor * timeFactor;
@@ -233,7 +233,7 @@ const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
     _viewMatrix.m[3][2] = -_zAxis.dot(eye);
 
     // Extract the pitch angle from the view matrix.
-    _accumPitchDegrees = DEGREES(asinf(_zAxis.y));
+    _accumPitchDegrees = Angle::RadiansToDegrees(asinf(_zAxis.y));
 
     _orientation.fromMatrix(_viewMatrix);
 

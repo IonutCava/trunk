@@ -155,7 +155,7 @@ namespace Divide {
 #ifdef _DEBUG
         if (sceneRenderState.gizmoState() == SceneRenderState::ALL_GIZMO) {
             if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
-                if (dynamic_cast<Object3D*>(node)->getObjectType() == Object3D::MESH) {
+                if (_parentSGN->getNode<Object3D>()->getObjectType() == Object3D::MESH) {
                     drawDebugAxis();
                 }
             }

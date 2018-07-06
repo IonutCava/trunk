@@ -301,7 +301,7 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint id) {
         case GL_DRAW_INDIRECT_BUFFER  : index = 6; break;
     };
     // Make sure the target is available. Assert if it isn't as this means that a non-supported feature is used somewhere
-    DIVIDE_ASSERT(index != -1, "GLStates error: attempted to bind an invalid buffer target!");
+    DIVIDE_ASSERT(IS_IN_RANGE_INCLUSIVE(index, 0, 6), "GLStates error: attempted to bind an invalid buffer target!");
     // Prevent double bind
     if ( _activeBufferId[index] == id ) {
         return false;

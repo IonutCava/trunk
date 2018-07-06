@@ -34,7 +34,7 @@ Vegetation::Vegetation(const VegetationDetails& details) : SceneNode(details.nam
     _instanceCountTrees(0),
     _grassStateBlockHash(0),
     _stateRefreshIntervalBuffer(0ULL),
-    _stateRefreshInterval(getSecToUs(1)) ///<Every second?
+    _stateRefreshInterval(Time::SecondsToMicroseconds(1)) ///<Every second?
 {
     _threadedLoadComplete = false;
     _stopLoadingRequest = false;
@@ -150,9 +150,9 @@ void Vegetation::uploadGrassData(){
         return;
     }
 
-    static const vec2<F32> pos000(cosf(RADIANS(0.000f)), sinf(RADIANS(0.000f)));
-    static const vec2<F32> pos120(cosf(RADIANS(120.0f)), sinf(RADIANS(120.0f)));
-    static const vec2<F32> pos240(cosf(RADIANS(240.0f)), sinf(RADIANS(240.0f)));
+    static const vec2<F32> pos000(cosf(Angle::DegreesToRadians(0.000f)), sinf(Angle::DegreesToRadians(0.000f)));
+    static const vec2<F32> pos120(cosf(Angle::DegreesToRadians(120.0f)), sinf(Angle::DegreesToRadians(120.0f)));
+    static const vec2<F32> pos240(cosf(Angle::DegreesToRadians(240.0f)), sinf(Angle::DegreesToRadians(240.0f)));
 
     static const vec3<F32> vertices[] = {
         vec3<F32>(-pos000.x, 0.0f, -pos000.y), 

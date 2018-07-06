@@ -24,43 +24,45 @@
 #define _CORE_APPLICATION_TIMER_INL_
 
 namespace Divide {
+namespace Time {
 
-inline void ApplicationTimer::benchmark(bool state)  {
-    _benchmark = state;
-}
-
-inline bool ApplicationTimer::benchmark() const {
-    return _benchmark;
-}
-
-inline F32 ApplicationTimer::getFps() const {
-    return _fps;
-}
-
-inline F32 ApplicationTimer::getFrameTime() const {
-    return _frameTime;
-}
-
-inline F32 ApplicationTimer::getSpeedfactor() const {
-    return _speedfactor;
-}
-    
-inline U64 ApplicationTimer::getElapsedTime(bool forceUpdate) { 
-    if (!forceUpdate) {
-        return _elapsedTimeUs;
+    inline void ApplicationTimer::benchmark(bool state)  {
+        _benchmark = state;
     }
 
-    return getElapsedTimeInternal();
-}
+    inline bool ApplicationTimer::benchmark() const {
+        return _benchmark;
+    }
 
-inline U64 ApplicationTimer::getElapsedTimeInternal() const {
-    return getElapsedTimeInternal(getCurrentTicksInternal());
-}
+    inline F32 ApplicationTimer::getFps() const {
+        return _fps;
+    }
 
-inline F32 FRAME_SPEED_FACTOR() {
-    return ApplicationTimer::getInstance().getSpeedfactor();
-}
+    inline F32 ApplicationTimer::getFrameTime() const {
+        return _frameTime;
+    }
 
+    inline F32 ApplicationTimer::getSpeedfactor() const {
+        return _speedfactor;
+    }
+
+    inline U64 ApplicationTimer::getElapsedTime(bool forceUpdate) {
+        if (!forceUpdate) {
+            return _elapsedTimeUs;
+        }
+
+        return getElapsedTimeInternal();
+    }
+
+    inline U64 ApplicationTimer::getElapsedTimeInternal() const {
+        return getElapsedTimeInternal(getCurrentTicksInternal());
+    }
+
+    inline F32 FRAME_SPEED_FACTOR() {
+        return ApplicationTimer::getInstance().getSpeedfactor();
+    }
+
+}; //namespace Time
 }; //namespace Divide
 
 #endif //_CORE_APPLICATION_TIMER_INL_

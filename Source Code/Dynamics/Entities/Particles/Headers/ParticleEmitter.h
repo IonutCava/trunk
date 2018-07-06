@@ -62,7 +62,7 @@ public:
         _emissionIntervalVariance = 75;
         _velocity = 10.0f;
         _velocityVariance = 1.0f;
-        _lifetime = getSecToMs( 5.0f );
+        _lifetime = Time::SecondsToMilliseconds( 5.0f );
         _lifetimeVariance = 25.0f;
         _textureFileName = "particle.DDS";
     }

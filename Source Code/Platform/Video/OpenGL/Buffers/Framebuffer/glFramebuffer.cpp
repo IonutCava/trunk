@@ -327,7 +327,7 @@ void glFramebuffer::BlitFrom(Framebuffer* inputFB, TextureDescriptor::Attachment
         return;
     }
 
-    glFramebuffer* input = dynamic_cast<glFramebuffer*>(inputFB);
+    glFramebuffer* input = static_cast<glFramebuffer*>(inputFB);
     
     // prevent stack overflow
     if (_resolveBuffer && (inputFB->getGUID() != _resolveBuffer->getGUID())) {
@@ -438,7 +438,7 @@ void glFramebuffer::End() {
 }
 
 void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth) {
-    DIVIDE_ASSERT(slot != TextureDescriptor::AttachmentType_PLACEHOLDER, 
+    DIVIDE_ASSERT(slot < TextureDescriptor::AttachmentType_PLACEHOLDER, 
                   "glFrameBuffer::DrawToLayer Error: invalid slot received!");
 
     GLuint textureType = GLUtil::GL_ENUM_TABLE::glTextureTypeTable[_attachmentTexture[slot]->getTextureType()];

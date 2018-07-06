@@ -160,26 +160,26 @@ bool Scene::loadGeometry( const FileData& data ) {
     item.setResourceLocation( data.ModelName );
     if ( data.ModelName.compare( "Box3D" ) == 0 ) {
         thisObj = CreateResource<Box3D>( item );
-        dynamic_cast<Box3D*>( thisObj )->setSize( data.data );
+        static_cast<Box3D*>( thisObj )->setSize( data.data );
     } else if ( data.ModelName.compare( "Sphere3D" ) == 0 ) {
         thisObj = CreateResource<Sphere3D>( item );
-        dynamic_cast<Sphere3D*>( thisObj )->setRadius( data.data );
+        static_cast<Sphere3D*>( thisObj )->setRadius( data.data );
     } else if ( data.ModelName.compare( "Quad3D" ) == 0 ) {
         vec3<F32> scale = data.scale;
         vec3<F32> position = data.position;
         P32 quadMask; quadMask.i = 0; quadMask.b.b0 = 1;
         item.setBoolMask( quadMask );
         thisObj = CreateResource<Quad3D>( item );
-        dynamic_cast<Quad3D*>( thisObj )->setCorner( Quad3D::TOP_LEFT, vec3<F32>( 0, 1, 0 ) );
-        dynamic_cast<Quad3D*>( thisObj )->setCorner( Quad3D::TOP_RIGHT, vec3<F32>( 1, 1, 0 ) );
-        dynamic_cast<Quad3D*>( thisObj )->setCorner( Quad3D::BOTTOM_LEFT, vec3<F32>( 0, 0, 0 ) );
-        dynamic_cast<Quad3D*>( thisObj )->setCorner( Quad3D::BOTTOM_RIGHT, vec3<F32>( 1, 0, 0 ) );
+        static_cast<Quad3D*>( thisObj )->setCorner( Quad3D::TOP_LEFT, vec3<F32>( 0, 1, 0 ) );
+        static_cast<Quad3D*>( thisObj )->setCorner( Quad3D::TOP_RIGHT, vec3<F32>( 1, 1, 0 ) );
+        static_cast<Quad3D*>( thisObj )->setCorner( Quad3D::BOTTOM_LEFT, vec3<F32>( 0, 0, 0 ) );
+        static_cast<Quad3D*>( thisObj )->setCorner( Quad3D::BOTTOM_RIGHT, vec3<F32>( 1, 0, 0 ) );
     } else if ( data.ModelName.compare( "Text3D" ) == 0 ) {
         ///set font file
         item.setResourceLocation( data.data3 );
         item.setPropertyList( data.data2 );
         thisObj = CreateResource<Text3D>( item );
-        dynamic_cast<Text3D*>( thisObj )->getWidth() = data.data;
+        static_cast<Text3D*>( thisObj )->getWidth() = data.data;
     } else {
         ERROR_FN( Locale::get( "ERROR_SCENE_UNSUPPORTED_GEOM" ), data.ModelName.c_str() );
         return false;
@@ -307,7 +307,7 @@ bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* co
 
     //Create an AI thread, but start it only if needed
     Kernel* kernel = Application::getInstance().getKernel();
-    _aiTask.reset(kernel->AddTask(getMsToUs(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY), 
+    _aiTask.reset(kernel->AddTask(Time::MillisecondsToMicroseconds(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY), 
                                   0, 
                                   DELEGATE_BIND(&AI::AIManager::update, 
                                                 &AI::AIManager::getInstance())));
@@ -449,14 +449,14 @@ void Scene::removeTask(I64 taskGUID) {
 
 void Scene::processGUI( const U64 deltaTime ) {
     for ( U16 i = 0; i < _guiTimers.size(); ++i ) {
-        _guiTimers[i] += getUsToMs( deltaTime );
+        _guiTimers[i] += Time::MicrosecondsToMilliseconds( deltaTime );
     }
 }
 
 
 void Scene::processTasks( const U64 deltaTime ) {
     for ( U16 i = 0; i < _taskTimers.size(); ++i ) {
-        _taskTimers[i] += getUsToMs( deltaTime );
+        _taskTimers[i] += Time::MicrosecondsToMilliseconds( deltaTime );
     }
 }
 

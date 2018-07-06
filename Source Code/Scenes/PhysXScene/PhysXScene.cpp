@@ -24,10 +24,11 @@ void PhysXScene::preRender(){
 //<<end copy-paste
 
 void PhysXScene::processGUI(const U64 deltaTime){
-    D32 FpsDisplay = getSecToMs(0.3);
+    D32 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay){
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 
-                         ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+                         Time::ApplicationTimer::getInstance().getFps(), 
+                         Time::ApplicationTimer::getInstance().getFrameTime());
         _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _guiTimers[0] = 0.0;
     }
@@ -43,7 +44,7 @@ bool PhysXScene::load(const stringImpl& name, CameraManager* const cameraMgr, GU
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     //Add a light
-    vec2<F32> sunAngle(0.0f, RADIANS(45.0f));
+    vec2<F32> sunAngle(0.0f, Angle::DegreesToRadians(45.0f));
     _sunvector = vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y));
     _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
     _sun->setDirection(_sunvector);

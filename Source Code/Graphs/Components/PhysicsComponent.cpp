@@ -61,7 +61,7 @@ void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {
 
     if (_parentSGN->getNode()->getType() == TYPE_OBJECT3D) {
         U32 obj3DExclussionMask = Object3D::TEXT_3D | Object3D::MESH | Object3D::FLYWEIGHT;
-        if ( !bitCompare( obj3DExclussionMask, dynamic_cast<Object3D*>( _parentSGN->getNode() )->getObjectType() ) ) {
+        if ( !bitCompare( obj3DExclussionMask, _parentSGN->getNode<Object3D>()->getObjectType() ) ) {
             PHYSICS_DEVICE.createActor( _parentSGN, sceneName,
                 _parentSGN->usageContext() == SceneGraphNode::NODE_STATIC ? MASK_RIGID_STATIC : MASK_RIGID_DYNAMIC,
                 _physicsCollisionGroup == NODE_COLLIDE_IGNORE ? GROUP_NON_COLLIDABLE :

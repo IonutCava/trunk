@@ -25,7 +25,7 @@ Application::Application() : _kernel(nullptr),
     _errorCode = NO_ERR;
     ParamHandler::createInstance();
     Console::createInstance();
-    ApplicationTimer::createInstance();
+    Time::ApplicationTimer::createInstance();
 }
 
 Application::~Application(){
@@ -46,7 +46,7 @@ Application::~Application(){
     PRINT_FN( Locale::get( "STOP_APPLICATION" ) );
     ParamHandler::destroyInstance();
     Console::destroyInstance();
-    ApplicationTimer::destroyInstance();
+    Time::ApplicationTimer::destroyInstance();
 }
 
 ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char **argv){

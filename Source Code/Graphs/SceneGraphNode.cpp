@@ -42,7 +42,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph* const sg,
                                                          _silentDispose(false),
                                                          _boundingBoxDirty(true),
                                                          _shouldDelete(false),
-                                                         _updateTimer(GETMSTIME()),
+                                                         _updateTimer(Time::ElapsedMilliseconds()),
                                                          _childQueue(0),
                                                          _bbAddExclusionList(0),
                                                          _usageContext(NODE_DYNAMIC)

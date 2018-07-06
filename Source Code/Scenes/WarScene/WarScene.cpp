@@ -46,14 +46,15 @@ WarScene::~WarScene()
 }
 
 void WarScene::processGUI(const U64 deltaTime){
-    D32 FpsDisplay = getSecToMs(0.3);
+    D32 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay){
         const Camera& cam = renderState().getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
         //const vec3<F32>& lampPos = _lampLightNode->getComponent<PhysicsComponent>()->getPosition();
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 
-                         ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+                         Time::ApplicationTimer::getInstance().getFps(), 
+                         Time::ApplicationTimer::getInstance().getFrameTime());
         _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _GUI->modifyText("camPosition", "Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
             eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw);
@@ -70,7 +71,7 @@ void WarScene::processTasks(const U64 deltaTime){
         return;
     }
 
-    static vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+    static vec2<F32> _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
     static bool direction = false;
     if(!direction){
         _sunAngle.y += 0.005f;
@@ -80,7 +81,7 @@ void WarScene::processTasks(const U64 deltaTime){
         _sunAngle.x -= 0.005f;
     }
 
-    if(_sunAngle.y  <= RADIANS(25) || _sunAngle.y >= RADIANS(70))
+    if(_sunAngle.y  <= Angle::DegreesToRadians(25) || _sunAngle.y >= Angle::DegreesToRadians(70))
         direction = !direction;
 
     _sunvector = vec3<F32>(    -cosf(_sunAngle.x) * sinf(_sunAngle.y),
@@ -90,9 +91,9 @@ void WarScene::processTasks(const U64 deltaTime){
     _sun->setDirection(_sunvector);
     _currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sun->getDiffuseColor());
 
-    D32 BobTimer = getSecToMs(5);
-    D32 DwarfTimer = getSecToMs(8);
-    D32 BullTimer = getSecToMs(10);
+    D32 BobTimer = Time::SecondsToMilliseconds(5);
+    D32 DwarfTimer = Time::SecondsToMilliseconds(8);
+    D32 BullTimer = Time::SecondsToMilliseconds(10);
 
     if(_taskTimers[0] >= BobTimer){
         if(_bobNode)
@@ -128,9 +129,9 @@ void WarScene::startSimulation() {
     _infoBox->setMessageType(GUIMessageBox::MESSAGE_INFO);
     bool previousMesh = false;
     bool loadedFromFile = true;
-    U64 currentTime = GETUSTIME(true);
+    U64 currentTime = Time::ElapsedMicroseconds(true);
     U64 diffTime = currentTime - _lastNavMeshBuildTime;
-    if (diffTime > getSecToUs(10)) {
+    if (diffTime > Time::SecondsToMicroseconds(10)) {
         AI::Navigation::NavigationMesh* navMesh = AI::AIManager::getInstance().getNavMesh(_army[0][0]->getAgentRadiusCategory());
         if (navMesh) {
             previousMesh = true;
@@ -174,7 +175,7 @@ void WarScene::startSimulation() {
         }
     } else {    
         stringImpl info("Can't reload the navigation mesh this soon.\n Please wait \\[ ");
-        info.append(Util::toString(getUsToSec<U64>(diffTime)).c_str());
+        info.append(Util::toString(Time::MicrosecondsToSeconds(diffTime)).c_str());
         info.append(" ] seconds more!");
 
         _infoBox->setMessage(info);

@@ -291,7 +291,7 @@ void PostFX::idle(){
     }
 
     if (_enableNoise) {
-        _timer += GETMSTIME();
+        _timer += Time::ElapsedMilliseconds();
 
         if (_timer > _tickInterval) {
             _timer = 0.0;

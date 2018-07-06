@@ -179,18 +179,18 @@ void GFXDevice::drawGUIElement(GUIElement* guiElement) {
     // Choose the appropriate rendering path
     switch (guiElement->getType()) {
         case GUI_TEXT : {
-            const GUIText& text = dynamic_cast<GUIText&>(*guiElement);
+            const GUIText& text = static_cast<GUIText&>(*guiElement);
             drawText(text, text.getPosition());
         }break;
         case GUI_FLASH : {
-            dynamic_cast<GUIFlash* >(guiElement)->playMovie();
+            static_cast<GUIFlash* >(guiElement)->playMovie();
         }break;
         default : {
             // not supported
         } break;
     };
     // Update internal timer
-    guiElement->lastDrawTimer(GETUSTIME());
+    guiElement->lastDrawTimer(Time::ElapsedMicroseconds());
 }
 
 /// Submit a single draw command
@@ -454,7 +454,7 @@ F32* GFXDevice::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
 
 /// Enable a perspective projection and upload the corresponding matrices to the GPU
 F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) {
-    _gpuBlock._ProjectionMatrix.perspective(RADIANS(FoV), aspectRatio, planes.x, planes.y);
+    _gpuBlock._ProjectionMatrix.perspective(Angle::DegreesToRadians(FoV), aspectRatio, planes.x, planes.y);
     _gpuBlock._ZPlanesCombined.x = planes.x;
     _gpuBlock._ZPlanesCombined.y = planes.y;
     _gpuBlock._ViewProjectionMatrix.set(_gpuBlock._ViewMatrix * _gpuBlock._ProjectionMatrix);

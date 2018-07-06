@@ -176,14 +176,14 @@ namespace Navigation {
     void NavigationMesh::buildInternal() {
         _building = true;
         // Create mesh
-        D32 timeStart = GETTIME();
+        D32 timeStart = Time::ElapsedSeconds();
         bool success = generateMesh();
         if (!success) {
-            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"), GETTIME(true) - timeStart);
+            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"), Time::ElapsedSeconds(true) - timeStart);
             return;
         }
 
-        PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"), GETTIME(true) - timeStart);
+        PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"), Time::ElapsedSeconds(true) - timeStart);
 
         _navigationMeshLock.lock();
         {
@@ -215,14 +215,14 @@ namespace Navigation {
     bool NavigationMesh::buildProcess() {
         _building = true;
         // Create mesh
-        D32 timeStart = GETTIME();
+        D32 timeStart = Time::ElapsedSeconds();
         bool success = generateMesh();
         if (!success) {
-            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"), GETTIME(true) - timeStart);
+            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"), Time::ElapsedSeconds(true) - timeStart);
             return false;
         }
 
-        PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"),  GETTIME(true) - timeStart);
+        PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"),  Time::ElapsedSeconds(true) - timeStart);
 
         _navigationMeshLock.lock();
         {

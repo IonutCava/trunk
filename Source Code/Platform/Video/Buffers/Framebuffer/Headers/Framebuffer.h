@@ -116,12 +116,12 @@ protected:
     bool        _useDepthBuffer;
     bool        _disableColorWrites;
     bool        _multisampled;
-    U16            _width, _height;
-    U32            _framebufferHandle;
+    U16         _width, _height;
+    U32         _framebufferHandle;
     vec4<F32>   _clearColor;
-    TextureDescriptor _attachment[5];
-    Texture*          _attachmentTexture[5];
-    bool              _attachmentDirty[5];
+    TextureDescriptor _attachment[TextureDescriptor::AttachmentType_PLACEHOLDER];
+    Texture*          _attachmentTexture[TextureDescriptor::AttachmentType_PLACEHOLDER];
+    bool              _attachmentDirty[TextureDescriptor::AttachmentType_PLACEHOLDER];
 };
 
 }; //namespace Divide

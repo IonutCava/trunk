@@ -9,11 +9,11 @@ namespace Divide {
 Unit::Unit(UnitType type, SceneGraphNode* const node) : FrameListener(),
                                                         _type(type),
                                                         _node(node),
-                                                        _moveSpeed(metre(1)),
+                                                        _moveSpeed(Metric::Base(1)),
                                                         _moveTolerance(0.1f),
                                                         _prevTime(0)
 {
-    DIVIDE_ASSERT(node != nullptr, "Unit error: Invalid parent node specified!");
+    DIVIDE_ASSERT(_node != nullptr, "Unit error: Invalid parent node specified!");
     REGISTER_FRAME_LISTENER(this, 5);
     _node->registerDeletionCallback( DELEGATE_BIND( &Unit::nodeDeleted, this ) );
     _currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
@@ -37,10 +37,10 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
     _currentTargetPosition = targetPosition;
 
     if (_prevTime <= 0) {
-        _prevTime = GETMSTIME();
+        _prevTime = Time::ElapsedMilliseconds();
     }
     // get current time in ms
-    D32 currentTime = GETMSTIME();
+    D32 currentTime = Time::ElapsedMilliseconds();
     // figure out how many milliseconds have elapsed since last move time
     D32 timeDif = currentTime - _prevTime;
     CLAMP<D32>(timeDif, 0, timeDif);
@@ -48,9 +48,10 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
     _prevTime = currentTime;
     // 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms
     // distance = timeDif * 0.001 * moveSpeed
-    F32 moveDistance = std::min((F32)(_moveSpeed * (getMsToSec(timeDif))), 0.0f);
+    F32 moveDistance = std::min((F32)(_moveSpeed * (Time::MillisecondsToSeconds(timeDif))), 0.0f);
 
-    bool returnValue = IS_TOLERANCE(moveDistance, centimetre(1));
+    bool returnValue = IS_TOLERANCE(moveDistance, Metric::Centi(1.0f));
+
     if (!returnValue) {
         F32 xDelta = _currentTargetPosition.x - _currentPosition.x;
         F32 yDelta = _currentTargetPosition.y - _currentPosition.y;
@@ -60,7 +61,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
         bool zTolerance = IS_TOLERANCE(zDelta, _moveTolerance);
         // apply framerate variance
         if (Config::USE_FIXED_TIMESTEP) {
-            moveDistance *= FRAME_SPEED_FACTOR();
+            moveDistance *= Time::FRAME_SPEED_FACTOR();
         }
         // Compute the destination point for current frame step
         vec3<F32> interpPosition;

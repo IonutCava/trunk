@@ -909,5 +909,8 @@
     <None Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.inl">
       <Filter>Core\Math\BoundingVolumes\Headers</Filter>
     </None>
+    <None Include="..\..\Source Code\Core\Math\Headers\MathHelper.inl">
+      <Filter>Core\Math\Headers</Filter>
+    </None>
   </ItemGroup>
 </Project>

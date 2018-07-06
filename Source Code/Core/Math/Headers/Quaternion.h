@@ -69,8 +69,8 @@ public:
     inline T magnituteSq()              const { return _elements.lengthSquared(); }
 
     inline bool compare(const Quaternion& rq, F32 tolerance = 1e-3f) const {
-        T angleRad = RADIANS((T)std::acos((D32)dot(rq)));
-        F32 toleranceRad = RADIANS(tolerance);
+        T angleRad = Angle::DegreesToRadians((T)std::acos((D32)dot(rq)));
+        F32 toleranceRad = Angle::DegreesToRadians(tolerance);
 
         return (std::abs(angleRad) <= toleranceRad) || FLOAT_COMPARE_TOLERANCE(angleRad, M_PI, toleranceRad);
     }
@@ -185,9 +185,10 @@ public:
 
     //! Convert from Axis Angle
     void fromAxisAngle(const vec3<T>& v, T angle, bool inDegrees = true){
-        if(inDegrees)
-            angle = RADIANS(angle);
-
+        if (inDegrees)
+        {
+            angle = Angle::DegreesToRadians(angle);
+        }
         angle *= 0.5f;
         vec3<T> vn(v);
         vn.normalize();
@@ -202,9 +203,15 @@ public:
     //! Convert from Euler Angles
     void  fromEuler(T pitch, T yaw, T roll, bool inDegrees = true) {
 
-        T attitude = inDegrees ? RADIANS(pitch) : pitch;
-        T heading  = inDegrees ? RADIANS(yaw)   : yaw;
-        T bank     = inDegrees ? RADIANS(roll)  : roll;
+        T attitude = pitch;
+        T heading  = yaw;
+        T bank     = roll;
+
+        if (inDegrees) {
+            attitude = Angle::DegreesToRadians(attitude);
+            heading  = Angle::DegreesToRadians(heading);
+            bank     = Angle::DegreesToRadians(bank);
+        }
 
         D32 c1 = std::cos(heading  * 0.5);
         D32 s1 = std::sin(heading  * 0.5);
@@ -244,10 +251,12 @@ public:
             // |w| <= 1/2
             static size_t s_iNext[3] = { 1, 2, 0 };
             size_t i = 0;
-            if ( rotationMatrix.m[1][1] > rotationMatrix.m[0][0] )
+            if (rotationMatrix.m[1][1] > rotationMatrix.m[0][0]) {
                 i = 1;
-            if ( rotationMatrix.m[2][2] > rotationMatrix.m[i][i] )
+            }
+            if (rotationMatrix.m[2][2] > rotationMatrix.m[i][i]) {
                 i = 2;
+            }
             size_t j = s_iNext[i];
             size_t k = s_iNext[j];
 
@@ -292,9 +301,9 @@ public:
     }
 
     //! Convert to Axis/Angles
-    void getAxisAngle(vec3<T> *axis, T *angle,bool inDegrees) const {
+    void getAxisAngle(vec3<T> *axis, T *angle, bool inDegrees) const {
         axis->set(_elements / _elements.xyz().length());
-        *angle = inDegrees ? DEGREES(std::acos(W()) * 2.0f) : std::acos(W()) * 2.0f;
+        *angle = inDegrees ? Angle::RadiansToDegrees(std::acos(W()) * 2.0f) : std::acos(W()) * 2.0f;
     }
 
     void getEuler(vec3<T> *euler, bool toDegrees = false) const {
@@ -328,9 +337,9 @@ public:
         }
         //Convert back from Z = pitch to Z = roll
         if(toDegrees){
-            euler->yaw   = DEGREES(heading);
-            euler->pitch = DEGREES(bank);
-            euler->roll  = DEGREES(attitude);
+            euler->yaw   = Angle::RadiansToDegrees(heading);
+            euler->pitch = Angle::RadiansToDegrees(bank);
+            euler->roll  = Angle::RadiansToDegrees(attitude);
         }else{
             euler->yaw   = heading;
             euler->pitch = bank;
@@ -376,7 +385,7 @@ inline Quaternion<T> rotationFromVToU(const vec3<T>& v,
     } else if (d < (1e-6f - 1.0f)) {
         if(!fallbackAxis.compare(VECTOR3_ZERO)) {
             // rotate 180 degrees about the fallback axis
-            q.fromAxisAngle(fallbackAxis,RADIANS(M_PI));
+            q.fromAxisAngle(fallbackAxis,Angle::DegreesToRadians(M_PI));
         } else {
             // Generate an axis
             vec3<T> axis;
@@ -386,7 +395,7 @@ inline Quaternion<T> rotationFromVToU(const vec3<T>& v,
                 axis.cross(WORLD_Y_AXIS, v);
 
             axis.normalize();
-            q.fromAxisAngle(axis,RADIANS(M_PI));
+            q.fromAxisAngle(axis,Angle::DegreesToRadians(M_PI));
         }
     } else {
         F32 s = std::sqrtf( (1+d)*2 );
@@ -417,6 +426,7 @@ inline vec3<T> getEuler(const Quaternion<T>& q, const bool toDegrees = false) {
     vec3<T> euler; q.getEuler(&euler, toDegrees);
     return euler;
 }
+
 }; //namespace Divide
 
 #endif

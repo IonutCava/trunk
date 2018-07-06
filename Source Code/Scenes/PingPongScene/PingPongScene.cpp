@@ -14,7 +14,7 @@ REGISTER_SCENE(PingPongScene);
 
 //begin copy-paste
 void PingPongScene::preRender(){
-    vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+    vec2<F32> _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
     _sunvector = vec3<F32>(    -cosf(_sunAngle.x) * sinf(_sunAngle.y),
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
@@ -25,17 +25,18 @@ void PingPongScene::preRender(){
 //<<end copy-paste
 
 void PingPongScene::processGUI(const U64 deltaTime){
-    D32 FpsDisplay = getSecToMs(0.3);
+    D32 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay){
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f",
-                         ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+                         Time::ApplicationTimer::getInstance().getFps(), 
+                         Time::ApplicationTimer::getInstance().getFrameTime());
         _guiTimers[0] = 0.0;
     }
     Scene::processGUI(deltaTime);
 }
 
 void PingPongScene::processTasks(const U64 deltaTime){
-    static vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+    static vec2<F32> _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
     static bool direction = false;
     if (!direction){
         _sunAngle.y += 0.005f;
@@ -46,7 +47,7 @@ void PingPongScene::processTasks(const U64 deltaTime){
         _sunAngle.x -= 0.005f;
     }
 
-    if (_sunAngle.y <= RADIANS(25) || _sunAngle.y >= RADIANS(70))
+    if (_sunAngle.y <= Angle::DegreesToRadians(25) || _sunAngle.y >= Angle::DegreesToRadians(70))
         direction = !direction;
 
     _sunvector = vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y),
@@ -77,7 +78,7 @@ void PingPongScene::serveBall(){
 
     if(getTasks().empty()){//A maximum of 1 Tasks allowed
         Kernel* kernel = Application::getInstance().getKernel();
-        Task_ptr newGame(kernel->AddTask(getMsToUs(30), 0, DELEGATE_BIND(&PingPongScene::test, this, rand() % 5, TYPE_INTEGER)));
+        Task_ptr newGame(kernel->AddTask(Time::MillisecondsToMicroseconds(30), 0, DELEGATE_BIND(&PingPongScene::test, this, rand() % 5, TYPE_INTEGER)));
         registerTask(newGame);
         newGame->startTask();
     }

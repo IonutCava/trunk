@@ -123,7 +123,7 @@ void FrameListenerManager::idle() {
 
 ///Please see the Ogre3D documentation about this
 void FrameListenerManager::createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt) {
-    evt._currentTime = getUsToMs(currentTime);
+    evt._currentTime = Time::MicrosecondsToMilliseconds(currentTime);
     evt._timeSinceLastEvent = calculateEventTime(evt._currentTime, FRAME_EVENT_ANY);
     evt._timeSinceLastFrame = calculateEventTime(evt._currentTime, type);
     evt._type = type;
@@ -150,7 +150,7 @@ D32 FrameListenerManager::calculateEventTime(const D32 currentTime, FrameEventTy
     }
 
     times.erase(times.begin(), it);
-    return (times.back() - times.front()) / getSecToMs(times.size() - 1);
+    return (times.back() - times.front()) / Time::SecondsToMilliseconds(times.size() - 1);
 }
 
 };

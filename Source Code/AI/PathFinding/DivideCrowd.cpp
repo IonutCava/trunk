@@ -93,7 +93,7 @@ namespace Navigation {
  
         if (!nav || !_crowd) return;
         // TimeVal startTime = getPerfTime();
-        _crowd->update(getUsToSec(deltaTime), &_agentDebug);
+        _crowd->update(Time::MicrosecondsToSeconds(deltaTime), &_agentDebug);
         // TimeVal endTime = getPerfTime();
         // Update agent trails
         for(I32 i = 0; i < _crowd->getAgentCount(); ++i) {

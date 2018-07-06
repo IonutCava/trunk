@@ -84,10 +84,11 @@ END_SINGLETON
 
 template<typename T>
 inline bool RemoveResource(T*& resource){
+    DIVIDE_ASSERT(std::is_base_of<Resource, T>::value,
+                  Locale::get( "RESOURCE_CACHE_REMOVE_NOT_RESOURCE" ));
+
     DIVIDE_ASSERT(ResourceCache::hasInstance(), 
                   Locale::get( "RESOURCE_CACHE_NOT_AVAILABLE" ));
-    DIVIDE_ASSERT(dynamic_cast<Resource*>( resource ) != nullptr,
-                  Locale::get( "RESOURCE_CACHE_REMOVE_NOT_RESOURCE" ));
 
     if (ResourceCache::getInstance().remove(resource)) {
        resource = nullptr;
