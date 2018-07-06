@@ -44,8 +44,7 @@ bool Texture::generateHWResource(const stringImpl& name) {
         if (!currentTexture.empty()) {
                // Attempt to load the current entry
                 if (!LoadFile(info, currentTexture)) {
-                    // Invalid texture files are not handled yet, so stop
-                    // loading
+                    // Invalid texture files are not handled yet, so stop loading
                     return false;
                 }
                 info._layerIndex++;
@@ -93,7 +92,7 @@ bool Texture::generateHWResource(const stringImpl& name) {
 }
 
 /// Use DevIL to load a file into a Texture Object
-bool Texture::LoadFile(TextureLoadInfo info, const stringImpl& name) {
+bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
     // Create a new imageData object
     ImageTools::ImageData img;
     // Flip image if needed

@@ -51,7 +51,7 @@ class d3dTexture : public Texture {
                 const vec2<U16>& dimensions,
                 const vec2<U16>& mipLevels) {}
     void updateMipMaps() {}
-    void loadData(TextureLoadInfo info,
+    void loadData(const TextureLoadInfo& info,
                   const U8* const ptr,
                   const vec2<U16>& dimensions,
                   const vec2<U16>& mipLevels,

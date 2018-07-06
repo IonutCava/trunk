@@ -51,7 +51,7 @@ class glTexture : public Texture {
                 const vec2<U16>& dimensions,
                 const vec2<U16>& mipLevels);
 
-    void loadData(TextureLoadInfo info,
+    void loadData(const TextureLoadInfo& info,
                   const GLubyte* const ptr,
                   const vec2<GLushort>& dimensions,
                   const vec2<GLushort>& mipLevels,
@@ -61,7 +61,7 @@ class glTexture : public Texture {
    protected:
     bool generateHWResource(const stringImpl& name);
     void threadedLoad(const stringImpl& name);
-    void reserveStorage(TextureLoadInfo info);
+    void reserveStorage(const TextureLoadInfo& info);
     void updateMipMaps();
     void updateSampler();
 

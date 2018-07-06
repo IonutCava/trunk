@@ -109,11 +109,11 @@ bool glTexture::generateHWResource(const stringImpl& name) {
     return true;
 }
 
-void glTexture::reserveStorage(TextureLoadInfo info) {
+void glTexture::reserveStorage(const TextureLoadInfo& info) {
     DIVIDE_ASSERT(
         !(_textureData._textureType == TextureType::TEXTURE_CUBE_MAP &&
           _width != _height),
-        "glTexture::reserverStorage error: width and heigth for "
+        "glTexture::reserverStorage error: width and height for "
         "cube map texture do not match!");
 
     GLenum glInternalFormat = _internalFormat == GFXImageFormat::DEPTH_COMPONENT
@@ -182,7 +182,7 @@ void glTexture::reserveStorage(TextureLoadInfo info) {
     _allocatedStorage = true;
 }
 
-void glTexture::loadData(TextureLoadInfo info,
+void glTexture::loadData(const TextureLoadInfo& info,
                          const GLubyte* const ptr,
                          const vec2<GLushort>& dimensions,
                          const vec2<GLushort>& mipLevels,
@@ -198,10 +198,24 @@ void glTexture::loadData(TextureLoadInfo info,
 
         if (Config::Profile::USE_2x2_TEXTURES) {
             _width = _height = 2;
+            _power2Size = true;
         } else {
             _width = dimensions.width;
             _height = dimensions.height;
             assert(_width > 0 && _height > 0);
+            GLdouble xPow2 = log((GLdouble)_width) / log(2.0);
+            GLdouble yPow2 = log((GLdouble)_height) / log(2.0);
+
+            GLushort ixPow2 = (GLushort)xPow2;
+            GLushort iyPow2 = (GLushort)yPow2;
+
+            if (xPow2 != (GLdouble)ixPow2) {
+                ixPow2++;
+            }
+            if (yPow2 != (GLdouble)iyPow2) {
+                iyPow2++;
+            }
+            _power2Size = (_width == 1 << ixPow2) && (_height == 1 << iyPow2);
         }
     } else {
         DIVIDE_ASSERT(
@@ -214,20 +228,6 @@ void glTexture::loadData(TextureLoadInfo info,
     }
 
     assert(_allocatedStorage);
-
-    GLdouble xPow2 = log((GLdouble)_width)  / log(2.0);
-    GLdouble yPow2 = log((GLdouble)_height) / log(2.0);
-
-    GLushort ixPow2 = (GLushort)xPow2;
-    GLushort iyPow2 = (GLushort)yPow2;
-
-    if (xPow2 != (GLdouble)ixPow2) {
-        ixPow2++;
-    }
-    if (yPow2 != (GLdouble)iyPow2) {
-        iyPow2++;
-    }
-    _power2Size = (_width == 1 << ixPow2) && (_height == 1 << iyPow2);
 
     if (ptr) {
         GL_API::setPixelPackUnpackAlignment();
@@ -255,42 +255,45 @@ void glTexture::loadData(TextureLoadInfo info,
                     GL_UNSIGNED_BYTE,
                     (bufferPtr)ptr);
             } break;
+
             case TextureType::TEXTURE_3D:
             case TextureType::TEXTURE_2D_ARRAY:
-            case TextureType::TEXTURE_2D_ARRAY_MS: {
-                glTextureSubImage3D(
-                    _textureData.getHandleHigh(),
-                    0,
-                    0,
-                    0,
-                    info._layerIndex,
-                    _width,
-                    _height,
-                    1,
-                    glFormat,
-                    GL_UNSIGNED_BYTE,
-                    (bufferPtr)ptr);
-            } break;
-            case TextureType::TEXTURE_CUBE_MAP: 
+            case TextureType::TEXTURE_2D_ARRAY_MS:
+            case TextureType::TEXTURE_CUBE_MAP:
             case TextureType::TEXTURE_CUBE_ARRAY: {
-                glTextureSubImage3D(
-                    _textureData.getHandleHigh(),
-                    0,
-                    0,
-                    0,
-                    (info._cubeMapCount * 6) + info._layerIndex,
-                    _width,
-                    _height,
-                    1,
-                    glFormat,
-                    GL_UNSIGNED_BYTE,
-                    (bufferPtr)ptr);
+                STUBBED("Remove this awful hack that prevents generic cube map loading with AMD cards (including Catalyst 15.7.1 driver) -Ionut")
+                if (_textureData._textureType == TextureType::TEXTURE_CUBE_MAP &&
+                    GFX_DEVICE.getGPUVendor() == GPUVendor::AMD) {
+                    glext::glTextureSubImage2DEXT(
+                        _textureData.getHandleHigh(),
+                        GL_TEXTURE_CUBE_MAP_POSITIVE_X + info._layerIndex,
+                        0,
+                        0,
+                        0,
+                        _width,
+                        _height,
+                        glFormat,
+                        GL_UNSIGNED_BYTE,
+                        (bufferPtr)ptr);
+                } else {
+                    glTextureSubImage3D(
+                        _textureData.getHandleHigh(),
+                        0,
+                        0,
+                        0,
+                        (info._cubeMapCount * 6) + info._layerIndex,
+                        _width,
+                        _height,
+                        1,
+                        glFormat,
+                        GL_UNSIGNED_BYTE,
+                        (bufferPtr)ptr);
+                }
             } break;
         }
     }
     
     _mipMapsDirty = true;
-    updateMipMaps();
 
     DIVIDE_ASSERT(_width > 0 && _height > 0,
                   "glTexture error: Invalid texture dimensions!");

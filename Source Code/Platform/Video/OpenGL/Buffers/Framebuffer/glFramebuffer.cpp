@@ -144,7 +144,7 @@ void glFramebuffer::InitAttachment(AttachmentType type,
 
     if (resize) {
         tex->resize(NULL, vec2<U16>(_width, _height), _mipMapLevel[slot]);
-    }else {
+    } else {
         Texture::TextureLoadInfo info;
         info._type = currentType;
         tex->loadData(info, NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], format, internalFormat);
