@@ -1,6 +1,5 @@
 #include "Headers/SceneNode.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/CameraManager.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Hardware/Video/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Object3D.h"

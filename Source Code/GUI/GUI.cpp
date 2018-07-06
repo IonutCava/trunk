@@ -6,7 +6,6 @@
 #include "Headers/GUIButton.h"
 #include "Headers/GUIConsole.h"
 #include "Hardware/Video/GFXDevice.h"
-#include "Core/Headers/Application.h"
 #include "Hardware/Video/RenderStateBlock.h"
 
 void GUI::onResize(F32 newWidth, F32 newHeight){

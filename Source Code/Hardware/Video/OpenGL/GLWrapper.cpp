@@ -6,7 +6,7 @@
 #include "GUI/Headers/GUIFlash.h"
 #include "GUI/Headers/GUIButton.h"
 #include "GUI/Headers/GUIConsole.h"
-#include "Core/Headers/Application.h"
+#include "Core/Headers/Kernel.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Utility/Headers/ImageTools.h"
@@ -16,7 +16,6 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
-#include "Managers/Headers/CameraManager.h"
 #include "Rendering/Headers/Frustum.h"
 
 #define USE_FREEGLUT
@@ -100,7 +99,7 @@ void resizeWindowCallback(I32 w, I32 h){
 
 //Let's try and create a  valid OpenGL context.
 //Due to university requirements, backwards compatibility with OpenGL 2.0 had to be added
-void GL_API::initHardware(){
+I8 GL_API::initHardware(const vec2<F32>& windowDimensions){
 	ParamHandler& par = ParamHandler::getInstance();
 	I32   argc   = 1; 
 	//The Application's title can be set in the "config.xml" file, so no explanation here needed
@@ -118,13 +117,12 @@ void GL_API::initHardware(){
 	//Also, the depth map is a must!
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE/* |  GLUT_MULTISAMPLE*/);
 	//No comments needed. Window dimensions are specified in the external XML files
-	glutInitWindowSize(Application::getInstance().getWindowDimensions().width,Application::getInstance().getWindowDimensions().height);
+	glutInitWindowSize(windowDimensions.width, windowDimensions.height);
 	//Try to offset the window position just slightly. Found it useful
 	glutInitWindowPosition(10,50);
 	//For a posibile multi-window support (as seen the the OBJ PhysX Simulator video
 	//Store the main window ID for future reference
 	_windowId = glutCreateWindow(par.getParam<std::string>("appTitle").c_str());
-	Application::getInstance().setMainWindowId(_windowId);
 	//Everything is set up as needed, so initialize the OpenGL API
 	U32 err = glewInit();
 	//Check for errors and print if any (They happen more than anyone thinks)
@@ -218,8 +216,8 @@ void GL_API::initHardware(){
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 	//Our Resize/Draw/Idle callback setup
 	glutReshapeFunc(resizeWindowCallback);
-	glutDisplayFunc(Application::getInstance().DrawSceneStatic);
-	glutIdleFunc(Application::getInstance().Idle);
+	glutDisplayFunc(Kernel::MainLoopStatic);
+	glutIdleFunc(Kernel::Idle);
 	//That's it. Everything should be ready for draw calls
 	PRINT_FN("OpenGL rendering system initialized!");
 	
@@ -247,24 +245,29 @@ void GL_API::initHardware(){
 	RenderStateBlockDescriptor defaultGLStateDescriptor;
 	GFX_DEVICE._defaultStateBlock = GFX_DEVICE.createStateBlock(defaultGLStateDescriptor);
 	SET_DEFAULT_STATE_BLOCK();
+
+	return _windowId;
 }
 
-void GL_API::closeApplication(){
-	//glutLeaveMainLoop();
-	_applicationClosing = true;
-	Application::getInstance().killApplication();
-	
+///When closing the application, the main loop has exited. 
+///Control will pass back to the "main" function that should destroy the application
+void GL_API::exitRenderLoop(bool killCommand){
+	if(killCommand){
+		glutLeaveMainLoop();
+	}else{
+		_applicationClosing = true;
+	}
 }
 
 ///clear up stuff ...
 void GL_API::closeRenderingApi(){
 	SAFE_DELETE(_state2DRendering);
-	glutDestroyWindow(Application::getInstance().getMainWindowId());
+	//glutDestroyWindow(_windowId);
 }
 
 void GL_API::initDevice(U32 targetFPS){
 	glutMainLoop();
-	closeApplication();
+	exitRenderLoop(false);
 }
 
 void GL_API::resizeWindow(U16 w, U16 h){

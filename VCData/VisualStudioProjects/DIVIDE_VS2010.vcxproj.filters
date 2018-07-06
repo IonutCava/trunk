@@ -911,11 +911,11 @@
     <ClCompile Include="..\..\Source Code\Core\MemoryManagement\TrackedObject.cpp">
       <Filter>Core\MemoryManagement</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Utility\Kernel.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ParticleEmitterLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Kernel.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1454,9 +1454,6 @@
     <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\TrackedObject.h">
       <Filter>Core\MemoryManagement\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\Kernel.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\HardwareResource.h">
       <Filter>Core\Resources\Headers</Filter>
     </ClInclude>
@@ -1465,6 +1462,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Thread.h">
       <Filter>Hardware\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h">
+      <Filter>Core\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

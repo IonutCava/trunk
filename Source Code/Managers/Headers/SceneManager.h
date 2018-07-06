@@ -43,6 +43,7 @@ public:
 	///Destroy all AI entities, teams, NPC's createa in "initializeAI" (AIEntities are deleted automatically by the AIManager
 	inline bool deinitializeAI(bool continueOnErrors) { return _scene->deinitializeAI(continueOnErrors); }
 	/// Update animations, network data, sounds, triggers etc.
+	inline void updateCamera(Camera* const camera)  { _scene->updateCamera(camera); }
 	inline void updateSceneState(D32 sceneTime)     { _scene->updateSceneState(sceneTime); }
 	inline void preRender()                         { _scene->preRender(); }
 	inline void processInput()                      { _scene->processInput(); }
@@ -60,7 +61,7 @@ public:
 	inline void toggleSkeletons()                            { _scene->drawSkeletons(!_scene->drawSkeletons()); }
 		   void toggleBoundingBoxes();	
 
-	void findSelection(U32 x, U32 y);
+	void findSelection(const vec3<F32>& camOrigin, U32 x, U32 y);
 	void deleteSelection();
 
 private:

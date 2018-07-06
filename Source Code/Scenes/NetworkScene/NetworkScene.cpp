@@ -1,11 +1,10 @@
 #include "ASIO.h"
-
 #include "Headers/NetworkScene.h"
 
 #include "GUI/Headers/GUI.h"
 #include "Core/Headers//Application.h"
-#include "Managers/Headers/CameraManager.h"
 #include "Environment/Sky/Headers/Sky.h"
+#include "Rendering/Camera/Headers/Camera.h"
 
 void NetworkScene::render(){
 
@@ -22,7 +21,7 @@ void NetworkScene::preRender(){
 	light->setLightProperties(LIGHT_DIFFUSE,vSunColor);
 	light->setLightProperties(LIGHT_SPECULAR,vSunColor);
 
-	Sky::getInstance().setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3<F32>(_sunVector),false,true,false);
+	Sky::getInstance().setParams(_camera->getEye(),vec3<F32>(_sunVector),false,true,false);
 	Sky::getInstance().draw();
 
 }
@@ -30,16 +29,10 @@ void NetworkScene::preRender(){
 void NetworkScene::processInput(){
 
 	Scene::processInput();
-	Camera* cam = CameraManager::getInstance().getActiveCamera();
-	moveFB  = Application::getInstance().moveFB;
-	moveLR  = Application::getInstance().moveLR;
-	angleLR = Application::getInstance().angleLR;
-	angleUD = Application::getInstance().angleUD;
-	
-	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
-	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
-	if(moveFB)	cam->PlayerMoveForward(moveFB * (Framerate::getInstance().getSpeedfactor()/5));
-	if(moveLR)	cam->PlayerMoveStrafe(moveLR * (Framerate::getInstance().getSpeedfactor()/5));
+	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor());
+	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor());
+	if(_moveFB)  _camera->MoveForward(_moveFB * (Framerate::getInstance().getSpeedfactor()/5));
+	if(_moveLR)	 _camera->MoveStrafe(_moveLR * (Framerate::getInstance().getSpeedfactor()/5));
 }
 
 void NetworkScene::processEvents(F32 time){
@@ -89,11 +82,10 @@ bool NetworkScene::load(const std::string& name){
 	_GFX.resizeWindow(640,384);
 	ASIO::getInstance().init(_paramHandler.getParam<std::string>("serverAddress"),std::string("443"));
 
-	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f;
 	bool state = loadResources(true);
 	_paramHandler.setParam("serverResponse",std::string("waiting"));
 	addDefaultLight();
-	CameraManager::getInstance().getActiveCamera()->setEye(vec3<F32>(0,30,-30));
+	_camera->setEye(vec3<F32>(0,30,-30));
 	return state;
 }
 

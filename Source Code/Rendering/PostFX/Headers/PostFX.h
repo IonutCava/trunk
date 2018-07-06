@@ -66,7 +66,8 @@ public:
 	ShaderProgram* _SSAOShaderPass1;
 	Texture2D* _underwaterTexture;
 	GFXDevice& _gfx;
-
+	///Update the current camera at every render loop
+	Camera*   _currentCamera;
 private:
 	void displaySceneWithoutAnaglyph(void);
 	void displaySceneWithAnaglyph(void);
@@ -84,7 +85,7 @@ private:
 public:
 	void init();
 	void idle();
-	void render();
+	void render(Camera* const camera);
 	void reshapeFBO(int newwidth , int newheight);
 
 END_SINGLETON

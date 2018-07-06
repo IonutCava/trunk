@@ -56,7 +56,6 @@ private:
 	void resetGame();
 private:
 	std::vector<F32> _eventTimers;
-	F32 angleLR,angleUD,moveFB,moveLR;
 	I8 _scor;
 	std::vector<std::string> _quotes;
 	vec4<F32> _sunVector;

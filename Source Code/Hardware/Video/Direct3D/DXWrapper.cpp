@@ -6,10 +6,15 @@
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
 
-void DX_API::initHardware()
-{
+I8 DX_API::initHardware(const vec2<F32>& windowDimensions){
+
 	PRINT_FN("Initializing Direct3D rendering API! ");
 	D3D_ENUM_TABLE::fill();
+	return -1;
+}
+
+void DX_API::exitRenderLoop(bool killCommand) 
+{
 }
 
 void DX_API::closeRenderingApi()

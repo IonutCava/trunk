@@ -124,7 +124,7 @@ public:
 
 	///Shadow Mapping (all virtual in case we need to expand each light type. Might do ...:
 	inline std::vector<FrameBufferObject* >& getDepthMaps() {return _depthMaps;}
-	virtual void generateShadowMaps();
+	virtual void generateShadowMaps(const vec3<F32>& camEyePos);
 	virtual void setCameraToSceneView();
 	virtual void setCameraToLightView();
 	virtual void setCameraToLightViewOmni();

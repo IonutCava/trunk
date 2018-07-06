@@ -34,7 +34,8 @@ DEFINE_SINGLETON_EXT1(DX_API,RenderAPIWrapper)
 private:
 	DX_API() : RenderAPIWrapper() {}
 
-	void initHardware();
+	I8   initHardware(const vec2<F32>& windowDimensions);
+	void exitRenderLoop(bool killCommand = false); 
 	void closeRenderingApi();
 	void initDevice(U32 targetFPS);
 	void resizeWindow(U16 w, U16 h) {}

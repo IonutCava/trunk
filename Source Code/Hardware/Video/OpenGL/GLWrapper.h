@@ -39,8 +39,9 @@ private:
 
 	GL_API() : RenderAPIWrapper(), _windowId(0), _currentGLRenderStateBlock(NULL), _state2DRendering(NULL), _depthMapRendering(false) {}
 
-	static void closeApplication();
-	void initHardware();
+	void exitRenderLoop(bool killCommand = false);
+
+	I8   initHardware(const vec2<F32>& windowDimensions);
 	void closeRenderingApi();
 	void initDevice(U32 targetFPS);
 	void resizeWindow(U16 w, U16 h);

@@ -1,5 +1,5 @@
 #include "Headers/Resource.h"
-#include "Utility/Headers/Kernel.h"
+#include "Core/Headers/Application.h"
 
 U32 maxAlloc = 0;
 char* zMaxFile = "";
@@ -12,13 +12,12 @@ void* operator new(size_t t ,char* zFile, I32 nLine){
 		nMaxLine = nLine;
 	}
 
-	if(Kernel::getInstance().myfile.is_open())
-		Kernel::getInstance().myfile << "[ "<< GETTIME()
-									   << " ] : New allocation: " << t << " IN: \""
-									   << zFile << "\" at line: " << nLine << "." << std::endl
-									   << "\t Max Allocation: ["  << maxAlloc << "] in file: \""
-									   << zMaxFile << "\" at line: " << nMaxLine
-									   << std::endl << std::endl;
+	std::stringstream ss;
+	ss << "[ "<< GETTIME() << " ] : New allocation: " << t << " IN: \""
+	   << zFile << "\" at line: " << nLine << "." << std::endl
+	   << "\t Max Allocation: ["  << maxAlloc << "] in file: \""
+	   << zMaxFile << "\" at line: " << nMaxLine  << std::endl << std::endl;
+	Application::getInstance().logMemoryAllocation(ss);
 	return malloc(t);
 }
 

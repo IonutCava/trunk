@@ -749,10 +749,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Source Code\Utility\Kernel.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\Source Code\Utility\XMLParser.cpp"
 				>
 			</File>
@@ -776,10 +772,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Utility\Headers\Kernel.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\Source Code\Utility\Headers\XMLParser.h"
 					>
 				</File>
@@ -797,6 +789,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Source Code\Core\Kernel.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\Core\ParamHandler.cpp"
 				>
 			</File>
@@ -809,6 +805,10 @@
 				</File>
 				<File
 					RelativePath="..\..\Source Code\Core\Headers\Console.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Core\Headers\Kernel.h"
 					>
 				</File>
 				<File

@@ -1,8 +1,7 @@
 #include "Headers/Light.h"
-#include "Hardware/Video/GFXDevice.h" 
-#include "Managers/Headers/CameraManager.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Frustum.h"
+#include "Hardware/Video/GFXDevice.h" 
 
 ///Shadow mapping callback is the function that draws the scene when we generate our shadow map
 ///Everything drawn in the callback will be rendered from the light's view and written to the depth buffer
@@ -44,13 +43,13 @@ void Light::setShadowMappingCallback(boost::function0<void> callback) {
 
 ///This function moves the camera to the light's view and set's it's frustum according to the current pass
 ///The more depthmpas, the more transforms
-void Light::generateShadowMaps(){
+void Light::generateShadowMaps(const vec3<F32>& camEyePos){
 	GFXDevice& gfx = GFX_DEVICE;
 	if(!_castsShadows) return;
 	///Stop if the callback is invalid
 	if(_callback.empty()) return;
 	///Get our eye view
-	_eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
+	_eyePos = camEyePos;
 	///For every depth map
 	///Lock our projection matrix so no changes will be permanent during the rest of the frame
 	gfx.lockProjection();
@@ -177,7 +176,7 @@ void Light::setCameraToLightViewDirectional(){
 	  
 	///Tell our rendering API to move the camera
 	GFX_DEVICE.lookAt(_lightPos,    //the light's virtual position
-									_eyePos);     //the light's target
+					  _eyePos);     //the light's target
 }
 
 ///We need to render the scene from the light's perspective

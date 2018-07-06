@@ -145,6 +145,7 @@
     <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastRegion.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoint.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\WaypointGraph.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Kernel.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\MemoryManagement\TrackedObject.cpp" />
     <ClCompile Include="..\..\Source Code\Core\ParamHandler.cpp" />
@@ -240,7 +241,6 @@
     <ClCompile Include="..\..\Source Code\Utility\CRC.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\Event.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\ImageTools.cpp" />
-    <ClCompile Include="..\..\Source Code\Utility\Kernel.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\XMLParser.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Application.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Console.cpp" />
@@ -307,6 +307,7 @@
     <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAlloc.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAssert.h" />
     <ClInclude Include="..\..\Source Code\core.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h" />
     <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\SmartPointer.h" />
     <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\TrackedObject.h" />
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\HardwareResource.h" />
@@ -397,7 +398,6 @@
     <ClInclude Include="..\..\Source Code\Utility\Headers\CRC.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\Event.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\ImageTools.h" />
-    <ClInclude Include="..\..\Source Code\Utility\Headers\Kernel.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\XMLParser.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Application.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Console.h" />

@@ -287,16 +287,16 @@ class EffectManager{
 DEFINE_SINGLETON( InputManagerInterface )
 
   protected:
-    OIS::InputManager*    _pInputMgr;
-    EventHandler*    _pEventHdlr;
-    OIS::Keyboard*   _pKeyboard;
-	OIS::Mouse*      _pMouse;
-	OIS::JoyStick*	 _pJoystick;
-    JoystickManager* _pJoystickMgr;
-	EffectManager*   _pEffectMgr;
+    OIS::InputManager* _pInputMgr;
+    EventHandler*      _pEventHdlr;
+    OIS::Keyboard*     _pKeyboard;
+	OIS::Mouse*        _pMouse;
+	OIS::JoyStick*	   _pJoystick;
+    JoystickManager*   _pJoystickMgr;
+	EffectManager*     _pEffectMgr;
 
-    bool             _bMustStop;
-    bool             _bIsInitialized;
+    bool               _bMustStop;
+    bool               _bIsInitialized;
 
     I16 _nStatus;
 
@@ -309,8 +309,7 @@ DEFINE_SINGLETON( InputManagerInterface )
 
   
 
-    InputManagerInterface()
-    {
+    InputManagerInterface()  {
 	  _pInputMgr = NULL;
 	  _pEventHdlr = NULL;
 	  _pKeyboard = NULL;
@@ -326,7 +325,6 @@ DEFINE_SINGLETON( InputManagerInterface )
 	}
 
 public:
-
     U8 initialize()
     {
 		if(_bIsInitialized)

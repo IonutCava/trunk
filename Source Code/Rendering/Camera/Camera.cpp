@@ -18,8 +18,8 @@ void Camera::SaveCamera(){
 	bSaved = true;
 }
 
-void Camera::RestoreCamera()
-{
+void Camera::RestoreCamera() {
+
 	if(bSaved) {
 		vEye = tSaveVectors[0];
 		vCenter = tSaveVectors[1];
@@ -47,8 +47,7 @@ Camera::Camera() : Resource() {
 }
 
 
-void Camera::Refresh()
-{	
+void Camera::Refresh() {	
 
 	switch(eType) {
 	case FREE_FLY:
@@ -86,7 +85,7 @@ void Camera::RenderLookAt(bool invertx, bool inverty, F32 planey) {
     updateListeners();
 }
 
-void Camera::PlayerMoveForward(F32 factor)	{	
+void Camera::MoveForward(F32 factor)	{	
 	vEye += vViewDir * factor;
 
 	Refresh();
@@ -98,7 +97,7 @@ void Camera::TranslateForward(F32 factor)	{
 	Refresh();
 }
 
-void Camera::PlayerMoveStrafe(F32 factor)	{
+void Camera::MoveStrafe(F32 factor)	{
 	vEye += vLeftDir * factor;
 
 	Refresh();

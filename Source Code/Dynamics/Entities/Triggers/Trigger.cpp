@@ -1,6 +1,5 @@
 #include "Headers/Trigger.h"
 #include "Utility/Headers/Event.h"
-#include "Managers/Headers/CameraManager.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
 #include "Dynamics/Entities/Units/Headers/Unit.h"
 
@@ -57,12 +56,12 @@ void Trigger::render(SceneGraphNode* const sgn){
 	_triggerImpostor->render(_impostorSGN);
 }
 
-bool Trigger::check(Unit* const unit){
+bool Trigger::check(Unit* const unit,const vec3<F32>& camEyePos){
 	if(!_enabled) return false;
 
 	vec3<F32> position;
 	if(!unit){ ///< use camera position
-		position = CameraManager::getInstance().getActiveCamera()->getEye();
+		position = camEyePos;
 	}else{ ///< use unit position
 		position = unit->getCurrentPosition();
 	}

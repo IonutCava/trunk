@@ -3,7 +3,6 @@
 #include "Core/Headers/ParamHandler.h"
 
 ResourceCache::~ResourceCache(){
-	PRINT_FN("Destroying resource cache ...");
 	Destroy();
 	PRINT_FN("Deleting resource cache ...");
 }

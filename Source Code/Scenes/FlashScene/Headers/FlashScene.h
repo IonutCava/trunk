@@ -35,7 +35,7 @@ private:
 	F32 i ;
 	vec2<F32> _sunAngle;
 	vec4<F32> _sunVector;
-	F32 angleLR,angleUD,moveFB,moveLR,update_time;
+	F32 update_time;
 	vec4<F32> _vSunColor;
 	std::vector<F32> _eventTimers;
 

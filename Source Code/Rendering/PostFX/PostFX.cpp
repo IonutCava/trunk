@@ -3,11 +3,11 @@
 #include "Headers/PreRenderStage.h"
 #include "Headers/PreRenderOperator.h"
 #include "Core/Headers/Application.h"
+#include "Rendering/Camera/Headers/Camera.h"
 #include "Hardware/Video/FrameBufferObject.h"
 #include "Hardware/Video/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Managers/Headers/CameraManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
@@ -25,6 +25,7 @@ PostFX::PostFX(): _underwaterTexture(NULL),
 	_depthFBO(NULL),
 	_screenFBO(NULL),
 	_SSAO_FBO(NULL),
+	_currentCamera(NULL),
 	_gfx(GFX_DEVICE){
 	_anaglyphFBO[0] = NULL;
 	_anaglyphFBO[1] = NULL;
@@ -174,12 +175,12 @@ void PostFX::reshapeFBO(I32 width , I32 height){
 
 void PostFX::displaySceneWithAnaglyph(void){
 
-	CameraManager::getInstance().getActiveCamera()->SaveCamera();
+	_currentCamera->SaveCamera();
 	F32 _eyePos[2] = {_eyeOffset/2, -_eyeOffset};
 
 	for(I32 i=0; i<2; i++){
-		CameraManager::getInstance().getActiveCamera()->MoveAnaglyph(_eyePos[i]);
-		CameraManager::getInstance().getActiveCamera()->RenderLookAt();
+		_currentCamera->MoveAnaglyph(_eyePos[i]);
+		_currentCamera->RenderLookAt();
 
 		_anaglyphFBO[i]->Begin();
 
@@ -188,7 +189,7 @@ void PostFX::displaySceneWithAnaglyph(void){
 		_anaglyphFBO[i]->End();
 	}
 
-	CameraManager::getInstance().getActiveCamera()->RestoreCamera();
+	_currentCamera->RestoreCamera();
 
 	
 	_anaglyphShader->bind();
@@ -210,7 +211,7 @@ void PostFX::displaySceneWithAnaglyph(void){
 
 void PostFX::displaySceneWithoutAnaglyph(void){
 
-	CameraManager::getInstance().getActiveCamera()->RenderLookAt();
+	_currentCamera->RenderLookAt();
 	ParamHandler& par = ParamHandler::getInstance();
 
 	bool underwater = par.getParam<bool>("underwater");
@@ -310,7 +311,8 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 
 
 
-void PostFX::render(){
+void PostFX::render(Camera* const camera){
+	_currentCamera = camera;
 	bool deferred = GFX_DEVICE.getDeferredRendering();
 	if(_enablePostProcessing && !deferred){
 		if(_enableAnaglyph){
@@ -319,7 +321,7 @@ void PostFX::render(){
 			displaySceneWithoutAnaglyph();
 		}
 	}else{
-		CameraManager::getInstance().getActiveCamera()->RenderLookAt();
+		_currentCamera->RenderLookAt();
 		SceneManager::getInstance().render(deferred ? DEFERRED_STAGE : FINAL_STAGE);
 	}
 

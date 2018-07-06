@@ -66,18 +66,16 @@ public:
 	vec3<F32>  getNormal(F32 x_clampf, F32 z_clampf) const;
 	vec3<F32>  getTangent(F32 x_clampf, F32 z_clampf) const;
 	vec2<F32>  getDimensions(){return vec2<F32>((F32)_terrainWidth, (F32)_terrainHeight);}
-	void  postLoad(SceneGraphNode* const sgn);	
 
+		   void  terrainSmooth(F32 k);
+		   void  postLoad(SceneGraphNode* const sgn);	
 	inline Vegetation* const getVegetation() const {return _veg;}
-
 	inline Quadtree& getQuadtree() const {return *_terrainQuadtree;}
 
-	void  terrainSmooth(F32 k);
-
 	inline void addVegetation(Vegetation* veg, std::string grassShader){_veg = veg; _grassShader = grassShader;} 
-	void initializeVegetation(TerrainDescriptor* terrain);
-	void toggleVegetation(bool state){ _veg->toggleRendering(state); }
-	inline void setRenderingOptions(bool drawInReflection){_drawInReflection = drawInReflection;}
+		   void initializeVegetation(TerrainDescriptor* terrain);
+		   void toggleVegetation(bool state){ _veg->toggleRendering(state); }
+	inline void setRenderingOptions(bool drawInReflection, const vec3<F32>& eyePos = vec3<F32>(0,0,0)){_drawInReflection = drawInReflection; _eyePos = eyePos;}
 	bool computeBoundingBox(SceneGraphNode* const sgn);
 	inline bool isInView(bool distanceCheck,BoundingBox& boundingBox) {return true;}
 
@@ -96,8 +94,9 @@ private:
 	Quadtree*				_terrainQuadtree;
 	VertexBufferObject*		_groundVBO;
 
-	F32 terrainScaleFactor, _terrainHeightScaleFactor;
-
+	F32  _terrainScaleFactor;
+	F32  _terrainHeightScaleFactor;
+	F32	 _farPlane;
 	bool _drawInReflection;
 	bool _alphaTexturePresent;
 	bool _drawBBoxes;
@@ -106,7 +105,7 @@ private:
 	Vegetation*             _veg;
 	std::string             _grassShader;
 	BoundingBox             _boundingBox;
-	F32						_farPlane;
+	vec3<F32>               _eyePos;
 	Quad3D*					_plane;
 	Transform*				_planeTransform;
 	SceneGraphNode*         _node;

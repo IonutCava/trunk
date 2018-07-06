@@ -38,7 +38,6 @@ public:
 
 private:
 	bool _showTextures;
-	F32 angleLR,angleUD,moveFB,moveLR;
 	Quad3D*	_renderQuad,*_renderQuad2,*_renderQuad3,*_renderQuad4;
 
 };

@@ -53,7 +53,9 @@ public:
 	/// Reflector overwrite
 	void updateReflection();
 	/// Used for many things, such as culling switches, and underwater effects
-	bool isCameraUnderWater();
+	inline bool isCameraUnderWater() { return (_eyePos.y < _waterLevel); }
+	/// Used to set rendering options for the water
+	inline void setRenderingOptions(const vec3<F32> eyePos = vec3<F32>(0,0,0)) {_eyePos = eyePos;}
 
 protected:
 	template<typename T>
@@ -71,6 +73,8 @@ private:
 	F32				   _farPlane;
 	/// cached water level
 	F32                _waterLevel;
+	/// Last known camera position
+	vec3<F32>          _eyePos;
 	/// the water's "geometry"
 	Quad3D*			   _plane;
 	Texture2D*		   _texture;

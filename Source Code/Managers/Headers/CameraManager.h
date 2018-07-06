@@ -19,24 +19,28 @@
 #define _CAMERA_MANAGER_H
 
 #include "core.h"
+#include <boost/noncopyable.hpp>
 #include "Rendering/Camera/Headers/Camera.h"
 
-DEFINE_SINGLETON(CameraManager)
+/// Multiple camera managers can be created if needed in the future
+/// No need for singletons here 
+class CameraManager : private boost::noncopyable {
 typedef unordered_map<std::string, Camera*> CameraPool;
 
 public:
+	CameraManager();
+	~CameraManager();
+
 	Camera* const getActiveCamera();
 	void setActiveCamera(const std::string& name);
 	void addNewCamera(const std::string& cameraName, Camera* const camera);
 
-private:
-	CameraManager();
-	~CameraManager();
+	void addCameraChangeListener(boost::function0<void> f) {_listeners.push_back(f);}
 
 private:
 	Camera* _camera;
 	CameraPool _cameraPool;
-
-END_SINGLETON
+	std::vector<boost::function0<void> > _listeners;
+};
 
 #endif

@@ -24,9 +24,10 @@
 enum RENDER_STAGE;
 enum SCENE_NODE_TYPE;
 
+class Light;
+class Camera;
 class Object3D;
 class Framerate;
-class Light;
 
 ///Rough around the edges Adapter pattern
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
@@ -38,7 +39,9 @@ public:
 	inline RENDER_API         getApi()        {return _api.getId(); }
 	inline RENDER_API_VERSION getApiVersion() {return _api.getVersionId();}
 
-	inline void initHardware(){_api.initHardware();}
+	inline void exitRenderLoop(bool killCommand = false) {_api.exitRenderLoop(killCommand);}
+	inline void registerKernel(Kernel* const kernel){_kernel = kernel;}
+	inline I8   initHardware(const vec2<F32>& windowDimensions){return _api.initHardware(windowDimensions);}
 	inline void initDevice(U32 targetFPS){_api.initDevice(targetFPS);}
 	void resizeWindow(U16 w, U16 h);
 
@@ -145,12 +148,15 @@ public:
 	///Generate a cubemap from the given position
 	///It renders the entire scene graph (with culling) as default
 	///use the callback param to override the draw function
-	void  generateCubeMap(FrameBufferObject& cubeMap, const vec3<F32>& pos, boost::function0<void> callback = 0);
+	void  generateCubeMap(FrameBufferObject& cubeMap, 
+								 Camera* const activeCamera,
+								 const vec3<F32>& pos, 
+								 boost::function0<void> callback = 0);
+
 	inline U16 getLastBinSize() {return _renderBinCount;}
 
 public:
-	enum BufferType
-	{
+	enum BufferType	{
 		COLOR_BUFFER   = 0x0001,
 		DEPTH_BUFFER   = 0x0010,
 		STENCIL_BUFFER = 0x0100
@@ -189,7 +195,8 @@ protected:
 	RenderStateBlock* _currentStateBlock;
     RenderStateBlock* _newStateBlock;
 	RenderStateBlock* _defaultStateBlock;
-
+	///Pointer to current kernel
+	Kernel* _kernel;
 END_SINGLETON
 
 #define GFX_DEVICE GFXDevice::getInstance()

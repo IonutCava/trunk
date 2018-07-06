@@ -308,16 +308,16 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 
 	switch(key.key){
 		case OIS::KC_LEFT : 
-			Application::getInstance().angleLR = -(speedFactor/5);
+			_angleLR = -(speedFactor/5);
 			break;
 		case OIS::KC_RIGHT : 
-			Application::getInstance().angleLR = speedFactor/5;
+			_angleLR = speedFactor/5;
 			break;
 		case OIS::KC_UP : 
-			Application::getInstance().angleUD = -(speedFactor/5);
+			_angleUD = -(speedFactor/5);
 			break;
 		case OIS::KC_DOWN : 
-			Application::getInstance().angleUD = speedFactor/5;
+			_angleUD = speedFactor/5;
 			break;
 		case OIS::KC_END:
 			SceneManager::getInstance().deleteSelection();
@@ -337,7 +337,7 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 			if (speedFactor > 0.1f)   speedFactor -= 0.1f;
 			break;
 		case OIS::KC_F10:
-			Application::getInstance().togglePreviewDepthMaps();
+			LightManager::getInstance().togglePreviewDepthMaps();
 			break;
 		case OIS::KC_F12:
 			GFX_DEVICE.Screenshot("screenshot_",vec4<F32>(0,0,Application::getInstance().getWindowDimensions().x,Application::getInstance().getWindowDimensions().y));
@@ -352,11 +352,11 @@ void Scene::onKeyUp(const OIS::KeyEvent& key){
 	switch( key.key ){
 		case OIS::KC_LEFT:
 		case OIS::KC_RIGHT:
-			Application::getInstance().angleLR = 0.0f;
+			_angleLR = 0.0f;
 			break;
 		case OIS::KC_UP:
 		case OIS::KC_DOWN:
-			Application::getInstance().angleUD = 0.0f;
+			_angleUD = 0.0f;
 			break;
 		case OIS::KC_F:
 			_paramHandler.setParam("enableDepthOfField", !_paramHandler.getParam<bool>("enableDepthOfField")); 
@@ -373,20 +373,20 @@ void Scene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis){
 
 	if(axis == 1){
 		if(key.state.mAxes[axis].abs > 0)
-			Application::getInstance().angleLR = speedFactor/5;
+			_angleLR = speedFactor/5;
 		else if(key.state.mAxes[axis].abs < 0)
-			Application::getInstance().angleLR = -(speedFactor/5);
+			_angleLR = -(speedFactor/5);
 		else
-			Application::getInstance().angleLR = 0;
+			_angleLR = 0;
 
 	}else if(axis == 0){
 
 		if(key.state.mAxes[axis].abs > 0)
-			Application::getInstance().angleUD = speedFactor/5;
+			_angleUD = speedFactor/5;
 		else if(key.state.mAxes[axis].abs < 0)
-			Application::getInstance().angleUD = -(speedFactor/5);
+			_angleUD = -(speedFactor/5);
 		else
-			Application::getInstance().angleUD = 0;
+			_angleUD = 0;
 	}
 }
 

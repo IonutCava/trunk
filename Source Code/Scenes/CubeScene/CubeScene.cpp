@@ -1,8 +1,9 @@
 #include "Headers/CubeScene.h"
-#include "Managers/Headers/CameraManager.h"
+
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Rendering/Camera/Headers/Camera.h"
 #include "Core/Headers/Application.h"
 #include "GUI/Headers/GUI.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 void CubeScene::render(){
 
@@ -22,7 +23,7 @@ void CubeScene::render(){
 			_deferredShader->UniformTexture("tImage2",2);
 			_deferredShader->UniformTexture("lightTexture",3);
 			_deferredShader->Uniform("lightCount",(I32)LightManager::getInstance().getLights().size());
-			_deferredShader->Uniform("cameraPosition",CameraManager::getInstance().getActiveCamera()->getEye());
+			_deferredShader->Uniform("cameraPosition",_camera->getEye());
 
 			_GFX.renderModel(_renderQuad);
 
@@ -142,17 +143,10 @@ void CubeScene::preRender() {
 void CubeScene::processInput(){
 	Scene::processInput();
 
-	Camera* cam = CameraManager::getInstance().getActiveCamera();
-
-	moveFB  = Application::getInstance().moveFB;
-	moveLR  = Application::getInstance().moveLR;
-	angleLR = Application::getInstance().angleLR;
-	angleUD = Application::getInstance().angleUD;
-	
-	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
-	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
-	if(moveFB)	cam->PlayerMoveForward(moveFB * (Framerate::getInstance().getSpeedfactor()/5));
-	if(moveLR)	cam->PlayerMoveStrafe(moveLR * (Framerate::getInstance().getSpeedfactor()/5));
+	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor());
+	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor());
+	if(_moveFB)  _camera->MoveForward(_moveFB * (Framerate::getInstance().getSpeedfactor()/5));
+	if(_moveLR)	 _camera->MoveStrafe(_moveLR * (Framerate::getInstance().getSpeedfactor()/5));
 
 }
 
@@ -168,8 +162,6 @@ bool CubeScene::load(const std::string& name){
 }
 
 bool CubeScene::loadResources(bool continueOnErrors){
-
-	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
 
 	_deferredBuffer = _GFX.newFBO();
 	_lightTexture = _GFX.newPBO();
@@ -265,16 +257,16 @@ void CubeScene::onKeyDown(const OIS::KeyEvent& key)
 	switch(key.key)
 	{
 		case OIS::KC_W:
-			Application::getInstance().moveFB = 0.75f;
+			_moveFB = 0.75f;
 			break;
 		case OIS::KC_A:
-			Application::getInstance().moveLR = 0.75f;
+			_moveLR = 0.75f;
 			break;
 		case OIS::KC_S:
-			Application::getInstance().moveFB = -0.75f;
+			_moveFB = -0.75f;
 			break;
 		case OIS::KC_D:
-			Application::getInstance().moveLR = -0.75f;
+			_moveLR = -0.75f;
 			break;
 		case OIS::KC_T:{
 			F32 width = Application::getInstance().getWindowDimensions().width;
@@ -304,11 +296,11 @@ void CubeScene::onKeyUp(const OIS::KeyEvent& key)
 	{
 		case OIS::KC_W:
 		case OIS::KC_S:
-			Application::getInstance().moveFB = 0;
+			_moveFB = 0;
 			break;
 		case OIS::KC_A:
 		case OIS::KC_D:
-			Application::getInstance().moveLR = 0;
+			_moveLR = 0;
 			break;
 		default:
 			break;

@@ -97,8 +97,8 @@ public:
 		Refresh();
 	}
 
-	void PlayerMoveForward(F32 factor);	
-	void PlayerMoveStrafe(F32 factor);
+	void MoveForward(F32 factor);	
+	void MoveStrafe(F32 factor);
 	void TranslateForward(F32 factor);
 	void TranslateStrafe(F32 factor);	
 	void MoveAnaglyph(F32 factor);

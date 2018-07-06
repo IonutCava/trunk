@@ -7,7 +7,8 @@
 #include "Hardware/Video/FrameBufferObject.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
-LightManager::LightManager(){
+LightManager::LightManager() : _previewDepthMaps(false){
+	
 }
 
 LightManager::~LightManager(){
@@ -80,7 +81,7 @@ void LightManager::update(bool force){
 	}
 }
 
-void LightManager::generateShadowMaps(){
+void LightManager::generateShadowMaps(const vec3<F32>& camEyePos){
 	//Stop if we have shadows disabled
 	if(!ParamHandler::getInstance().getParam<bool>("enableShadows")) return;
 	//Tell the engine that we are drawing to depth maps
@@ -92,7 +93,7 @@ void LightManager::generateShadowMaps(){
 	GFX_DEVICE.toggleDepthMapRendering(true);
 	//generate shadowmaps for each light
 	for_each(LightMap::value_type& light, _lights){
-		light.second->generateShadowMaps();
+		light.second->generateShadowMaps(camEyePos);
 	}
 	//Set normal rendering settings
 	GFX_DEVICE.toggleDepthMapRendering(false);
@@ -101,11 +102,19 @@ void LightManager::generateShadowMaps(){
 }
 
 void LightManager::previewDepthMaps(){
-	GFX_DEVICE.toggle2D(true);
-	GFX_DEVICE.renderInViewport(vec4<F32>(0,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,0));
-	GFX_DEVICE.renderInViewport(vec4<F32>(260,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,1));
-	GFX_DEVICE.renderInViewport(vec4<F32>(520,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,2));
-	GFX_DEVICE.toggle2D(false);
+	if(_previewDepthMaps && GFX_DEVICE.getRenderStage() != DEFERRED_STAGE){
+		GFX_DEVICE.toggle2D(true);
+			GFX_DEVICE.renderInViewport(vec4<F32>(0,0,256,256),
+				                        boost::bind(&LightManager::drawDepthMap, 
+												    boost::ref(LightManager::getInstance()), 0,0));
+			GFX_DEVICE.renderInViewport(vec4<F32>(260,0,256,256),
+										boost::bind(&LightManager::drawDepthMap,
+												    boost::ref(LightManager::getInstance()), 0,1));
+			GFX_DEVICE.renderInViewport(vec4<F32>(520,0,256,256),
+									    boost::bind(&LightManager::drawDepthMap,
+				                                    boost::ref(LightManager::getInstance()), 0,2));
+		GFX_DEVICE.toggle2D(false);
+	}
 }
 
 void LightManager::drawDepthMap(U8 light, U8 index){

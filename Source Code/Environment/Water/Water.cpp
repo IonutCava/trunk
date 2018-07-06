@@ -1,7 +1,6 @@
 #include "Headers/Water.h"
 
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/CameraManager.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/RenderStateBlock.h"
@@ -20,11 +19,10 @@ bool WaterPlane::setInitialData(const std::string& name){
 	_shader->unbind();
 
 	_farPlane = 2.0f * ParamHandler::getInstance().getParam<F32>("zFar");
-	const vec3<F32>& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
-	_plane->setCorner(Quad3D::TOP_LEFT, vec3<F32>(eyePos.x - _farPlane, 0, eyePos.z - _farPlane));
-	_plane->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(eyePos.x + _farPlane, 0, eyePos.z - _farPlane));
-	_plane->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(eyePos.x - _farPlane, 0, eyePos.z + _farPlane));
-	_plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(eyePos.x + _farPlane, 0, eyePos.z + _farPlane));
+	_plane->setCorner(Quad3D::TOP_LEFT, vec3<F32>(   -_farPlane, 0, -_farPlane));
+	_plane->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(   _farPlane, 0, -_farPlane));
+	_plane->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(-_farPlane, 0,  _farPlane));
+	_plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(_farPlane, 0,  _farPlane));
 	_plane->setDrawState(false);
 
 
@@ -75,9 +73,8 @@ void WaterPlane::setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 tr
 }
 
 void WaterPlane::onDraw(){
-	const vec3<F32>& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
 	BoundingBox& bb = _node->getBoundingBox();
-	_planeTransform->setPosition(vec3<F32>(eyePos.x,bb.getMax().y,eyePos.z));
+	_planeTransform->setPosition(vec3<F32>(_eyePos.x,bb.getMax().y,_eyePos.z));
 }
 
 void WaterPlane::prepareMaterial(SceneGraphNode const* const sgn){
@@ -139,9 +136,4 @@ void WaterPlane::updateReflection(){
 	if(!underwater){
 		GFX_DEVICE.setRenderStage(prev);
 	}
-}
-
-bool WaterPlane::isCameraUnderWater(){
-	Camera* cam = CameraManager::getInstance().getActiveCamera();
-	return (cam->getEye().y < _waterLevel);
 }

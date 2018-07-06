@@ -47,11 +47,16 @@ public:
 	  _lightTexture(NULL),
 	  _deferredBuffer(NULL),
 	  _deferredShader(NULL),
+	  _camera(NULL),
 	  _inputManager(InputManagerInterface::getInstance()),
 	  _sceneGraph(New SceneGraph())
 	  {
 		  _white = vec4<F32>(1.0f,1.0f,1.0f,1.0f);
 		  _black = vec4<F32>(0.0f,0.0f,0.0f,0.0f);
+		  _moveFB = 0.0f;
+	      _moveLR = 0.0f;
+		  _angleUD = 0.0f;
+		  _angleLR = 0.0f;
 	  };
 
 	virtual ~Scene() {
@@ -70,6 +75,8 @@ public:
 
 	/// Update animations, network data, sounds, triggers etc.
 	virtual void updateSceneState(D32 sceneTime);
+	/// Update current camera (simple, fast, inlined poitner swap)
+	inline void updateCamera(Camera* const camera) {_camera = camera;}
 
 	inline F32&  getWindSpeed()         {return _windSpeed;}
 	inline F32&  getWindDirX()          {return _windDirX;}
@@ -132,9 +139,17 @@ protected:
 	FrameBufferObject* _deferredBuffer;
 	PixelBufferObject* _lightTexture;
 	ShaderProgram*	   _deferredShader;
+
+	///Global info
+	Camera*            _camera;
 	SceneGraph*        _sceneGraph;
 	F32			       _grassVisibility,_treeVisibility,_generalVisibility,
 				 	   _windSpeed,_windDirX, _windDirZ, _waterHeight, _waterDepth;
+	F32 _moveFB;  ///< forward-back move change detected
+	F32 _moveLR;  ///< left-right move change detected
+	F32 _angleUD; ///< up-down angle change detected
+	F32 _angleLR; ///< left-right angle change detected
+
 private: 
 	std::vector<Event_ptr> _events;
 	Event_ptr _inputEvent;

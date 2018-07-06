@@ -1,11 +1,11 @@
 #include "Headers/PingPongScene.h"
 
-#include "Managers/Headers/CameraManager.h"
+#include "GUI/Headers/GUI.h"
 #include "Core/Headers/Application.h"
 #include "Rendering/Headers/Frustum.h"
-#include "Geometry/Importer/Headers/DVDConverter.h"
 #include "Environment/Sky/Headers/Sky.h"
-#include "GUI/Headers/GUI.h"
+#include "Rendering/Camera/Headers/Camera.h"
+#include "Geometry/Importer/Headers/DVDConverter.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
@@ -15,7 +15,7 @@
 void PingPongScene::render(){
 	Sky& sky = Sky::getInstance();
 
-	sky.setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3<F32>(_sunVector),false,true,true);
+	sky.setParams(_camera->getEye(),vec3<F32>(_sunVector),false,true,true);
 	sky.draw();
 
 	_sceneGraph->render();
@@ -181,33 +181,27 @@ void PingPongScene::test(boost::any a, CallbackParam b){
 void PingPongScene::processInput(){
 	Scene::processInput();
 
-	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	///Move FB = Forward/Back = up/down
 	///Move LR = Left/Right
-	moveFB  = Application::getInstance().moveFB;
-	moveLR  = Application::getInstance().moveLR;
 
 	///Camera controls
-	angleLR = Application::getInstance().angleLR;
-	angleUD = Application::getInstance().angleUD;
-
-	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
-	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
+	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor());
+	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor());
 
 	SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
 
 	vec3<F32> pos = paddle->getTransform()->getPosition();
 
 	///Paddle movement is limited to the [-3,3] range except for Y-descent
-	if(moveFB){
-		if((moveFB > 0 && pos.y >= 3) || (moveFB < 0 && pos.y <= 0.5f)) return;
-		paddle->getTransform()->translateY((moveFB * Framerate::getInstance().getSpeedfactor())/6);
+	if(_moveFB){
+		if((_moveFB > 0 && pos.y >= 3) || (_moveFB < 0 && pos.y <= 0.5f)) return;
+		paddle->getTransform()->translateY((_moveFB * Framerate::getInstance().getSpeedfactor())/6);
 	}
 
-	if(moveLR){
+	if(_moveLR){
 		///Left/right movement is flipped for proper control
-		if((moveLR < 0 && pos.x >= 3) || (moveLR > 0 && pos.x <= -3)) return;
-		paddle->getTransform()->translateX((-moveLR * Framerate::getInstance().getSpeedfactor())/6);
+		if((_moveLR < 0 && pos.x >= 3) || (_moveLR > 0 && pos.x <= -3)) return;
+		paddle->getTransform()->translateX((-_moveLR * Framerate::getInstance().getSpeedfactor())/6);
 	}
 }
 
@@ -221,15 +215,13 @@ bool PingPongScene::load(const std::string& name){
 	state = loadResources(true);	
 	state = loadEvents(true);
 	///Position the camera
-	CameraManager::getInstance().getActiveCamera()->setAngleX(RADIANS(-90));
-	CameraManager::getInstance().getActiveCamera()->setEye(vec3<F32>(0,2.5f,6.5f));
+	_camera->setAngleX(RADIANS(-90));
+	_camera->setEye(vec3<F32>(0,2.5f,6.5f));
 	
 	return state;
 }
 
 bool PingPongScene::loadResources(bool continueOnErrors){
-
-	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;_scor = 0;
 
 	///Create a ball
 	ResourceDescriptor minge("Ping Pong Ball");
@@ -284,16 +276,16 @@ void PingPongScene::onKeyDown(const OIS::KeyEvent& key){
 	switch(key.key){
 
 		case OIS::KC_W:
-			Application::getInstance().moveFB = 0.25f;
+			_moveFB = 0.25f;
 			break;
 		case OIS::KC_A:
-			Application::getInstance().moveLR = 0.25f;
+			_moveLR = 0.25f;
 			break;
 		case OIS::KC_S:
-			Application::getInstance().moveFB = -0.25f;
+			_moveFB = -0.25f;
 			break;
 		case OIS::KC_D:
-			Application::getInstance().moveLR = -0.25f;
+			_moveLR = -0.25f;
 			break;
 		default:
 			break;
@@ -307,11 +299,11 @@ void PingPongScene::onKeyUp(const OIS::KeyEvent& key){
 
 		case OIS::KC_W:
 		case OIS::KC_S:
-			Application::getInstance().moveFB = 0;
+			_moveFB = 0;
 			break;
 		case OIS::KC_A:
 		case OIS::KC_D:
-			Application::getInstance().moveLR = 0;
+			_moveLR = 0;
 			break;
 		default:
 			break;
@@ -323,19 +315,19 @@ void PingPongScene::OnJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
 
 	Scene::OnJoystickMovePOV(key,pov);
 	if( key.state.mPOV[pov].direction & OIS::Pov::North ) //Going up
-		Application::getInstance().moveFB = 0.25f;
+		_moveFB = 0.25f;
 	else if( key.state.mPOV[pov].direction & OIS::Pov::South ) //Going down
-		Application::getInstance().moveFB = -0.25f;
+		_moveFB = -0.25f;
 
 	if( key.state.mPOV[pov].direction & OIS::Pov::East ) //Going right
-		Application::getInstance().moveLR = -0.25f;
+		_moveLR = -0.25f;
 
 	else if( key.state.mPOV[pov].direction & OIS::Pov::West ) //Going left
-		Application::getInstance().moveLR = 0.25f;
+		_moveLR = 0.25f;
 
 	if( key.state.mPOV[pov].direction == OIS::Pov::Centered ){ //stopped/centered out
-		Application::getInstance().moveLR = 0;
-		Application::getInstance().moveFB = 0;
+		_moveLR = 0;
+		_moveFB = 0;
 	}
 }
 

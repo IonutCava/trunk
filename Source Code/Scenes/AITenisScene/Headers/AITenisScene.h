@@ -76,7 +76,6 @@ private:
 
 private:
 	std::vector<F32> _eventTimers;
-	F32 angleLR,angleUD,moveFB,moveLR;
 	vec4<F32> _sunVector;
 	Sphere3D* _ball;
 	SceneGraphNode* _ballSGN;

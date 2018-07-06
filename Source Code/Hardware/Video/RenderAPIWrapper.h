@@ -37,6 +37,7 @@ struct frustum{
 
 class Light;
 class Shader;
+class Kernel;
 class SubMesh;
 class Texture;
 class Material;
@@ -90,7 +91,8 @@ protected:
 	virtual ShaderProgram*      newShaderProgram() = 0;
 	virtual Shader*             newShader(const std::string& name, SHADER_TYPE type) = 0;
 	
-	virtual void initHardware() = 0;
+	virtual I8   initHardware(const vec2<F32>& windowDimensions) = 0;
+	virtual void exitRenderLoop(bool killCommand = false) = 0;
 	virtual void closeRenderingApi() = 0;
 	virtual void initDevice(U32 targetFPS) = 0;
 

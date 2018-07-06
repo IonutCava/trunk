@@ -5,7 +5,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
-#include "Managers/Headers/CameraManager.h"
+#include "Rendering/Camera/Headers/Camera.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Environment/Sky/Headers/Sky.h"
 #include "Managers/Headers/AIManager.h"
@@ -16,7 +16,7 @@
 void WarScene::render(){
 	Sky& sky = Sky::getInstance();
 
-	sky.setParams(CameraManager::getInstance().getActiveCamera()->getEye(),_sunVector,false,true,true);
+	sky.setParams(_camera->getEye(),_sunVector,false,true,true);
 	sky.draw();
 
 	_sceneGraph->render();
@@ -70,18 +70,10 @@ void WarScene::processSimulation(boost::any a, CallbackParam b){
 void WarScene::processInput(){
 	Scene::processInput();
 
-	Camera* cam = CameraManager::getInstance().getActiveCamera();
-	moveFB  = Application::getInstance().moveFB;
-	moveLR  = Application::getInstance().moveLR;
-	angleLR = Application::getInstance().angleLR;
-	angleUD = Application::getInstance().angleUD;
-	
-	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor()/5);
-	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor()/5);
-	if(moveFB || moveLR){
-		if(moveFB) cam->PlayerMoveForward(moveFB * Framerate::getInstance().getSpeedfactor());
-		if(moveLR) cam->PlayerMoveStrafe(moveLR * Framerate::getInstance().getSpeedfactor());
-	}
+	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor());
+	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor());
+	if(_moveFB)  _camera->MoveForward(_moveFB * (Framerate::getInstance().getSpeedfactor()/5));
+	if(_moveLR)	 _camera->MoveStrafe(_moveLR * (Framerate::getInstance().getSpeedfactor()/5));
 }
 
 bool WarScene::load(const std::string& name){
@@ -99,9 +91,9 @@ bool WarScene::load(const std::string& name){
 	state = loadResources(true);	
 	
 	//Position camera
-	CameraManager::getInstance().getActiveCamera()->RotateX(RADIANS(45));
-	CameraManager::getInstance().getActiveCamera()->RotateY(RADIANS(25));
-	CameraManager::getInstance().getActiveCamera()->setEye(vec3<F32>(14,5.5f,11.5f));
+	_camera->RotateX(RADIANS(45));
+	_camera->RotateY(RADIANS(25));
+	_camera->setEye(vec3<F32>(14,5.5f,11.5f));
 	_faction1 = New AICoordination(1);
 	_faction2 = New AICoordination(2);
 
@@ -171,8 +163,6 @@ bool WarScene::deinitializeAI(bool continueOnErrors){
 }
 
 bool WarScene::loadResources(bool continueOnErrors){
-	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
-
 	
 	GUI::getInstance().addButton("Simulate", "Simulate", vec2<F32>(Application::getInstance().getWindowDimensions().width-220 ,
 															 Application::getInstance().getWindowDimensions().height/1.1f),
@@ -205,16 +195,16 @@ void WarScene::onKeyDown(const OIS::KeyEvent& key){
 	Scene::onKeyDown(key);
 	switch(key.key)	{
 		case OIS::KC_W:
-			Application::getInstance().moveFB = 0.25f;
+			_moveFB = 0.25f;
 			break;
 		case OIS::KC_A:
-			Application::getInstance().moveLR = 0.25f;
+			_moveLR = 0.25f;
 			break;
 		case OIS::KC_S:
-			Application::getInstance().moveFB = -0.25f;
+			_moveFB = -0.25f;
 			break;
 		case OIS::KC_D:
-			Application::getInstance().moveLR = -0.25f;
+			_moveLR = -0.25f;
 			break;
 		default:
 			break;
@@ -226,11 +216,11 @@ void WarScene::onKeyUp(const OIS::KeyEvent& key){
 	switch(key.key)	{
 		case OIS::KC_W:
 		case OIS::KC_S:
-			Application::getInstance().moveFB = 0;
+			_moveFB = 0;
 			break;
 		case OIS::KC_A:
 		case OIS::KC_D:
-			Application::getInstance().moveLR = 0;
+			_moveLR = 0;
 			break;
 		case OIS::KC_F1:
 			_sceneGraph->print();
@@ -244,18 +234,18 @@ void WarScene::onMouseMove(const OIS::MouseEvent& key){
 	Scene::onMouseMove(key);
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
-			Application::getInstance().angleLR = -0.15f;
+			_angleLR = -0.15f;
 		else if(_prevMouse.x - key.state.X.abs < -1 )
-			Application::getInstance().angleLR = 0.15f;
+			_angleLR = 0.15f;
 		else
-			Application::getInstance().angleLR = 0;
+			_angleLR = 0;
 
 		if(_prevMouse.y - key.state.Y.abs > 1 )
-			Application::getInstance().angleUD = -0.1f;
+			_angleUD = -0.1f;
 		else if(_prevMouse.y - key.state.Y.abs < -1 )
-			Application::getInstance().angleUD = 0.1f;
+			_angleUD = 0.1f;
 		else
-			Application::getInstance().angleUD = 0;
+			_angleUD = 0;
 	}
 	
 	_prevMouse.x = key.state.X.abs;
@@ -272,7 +262,7 @@ void WarScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID butt
 	Scene::onMouseClickUp(key,button);
 	if(button == 0)	{
 		_mousePressed = false;
-		Application::getInstance().angleUD = 0;
-		Application::getInstance().angleLR = 0;
+		_angleUD = 0;
+		_angleLR = 0;
 	}
 }

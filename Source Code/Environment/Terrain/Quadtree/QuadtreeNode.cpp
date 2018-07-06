@@ -4,7 +4,6 @@
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/CameraManager.h"
 
 void QuadtreeNode::Build(U8 depth,		
 						 vec2<U32> pos,					

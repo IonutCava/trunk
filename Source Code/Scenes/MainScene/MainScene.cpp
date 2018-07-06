@@ -1,14 +1,15 @@
 #include "Headers/MainScene.h"
 
-#include "Managers/Headers/CameraManager.h"
-#include "Core/Headers/Application.h"
-#include "Environment/Sky/Headers/Sky.h"
-#include "Environment/Terrain/Headers/Terrain.h"
-#include "Environment/Terrain/Headers/TerrainDescriptor.h"
-#include "Environment/Water/Headers/Water.h"
 #include "GUI/Headers/GUI.h"
+#include "Core/Headers/Application.h"
 #include "Rendering/Headers/Frustum.h"
+#include "Environment/Sky/Headers/Sky.h"
+#include "Rendering/Camera/Headers/Camera.h"
+#include "Environment/Water/Headers/Water.h"
+#include "Environment/Terrain/Headers/Terrain.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
+#include "Environment/Terrain/Headers/TerrainDescriptor.h"
+
 
 
 bool MainScene::updateLights(){
@@ -34,7 +35,6 @@ void MainScene::render(){
 bool _underwater = false;
 void MainScene::renderEnvironment(bool waterReflection){
 
-	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	if(_water->isCameraUnderWater()){
 		waterReflection = false;
 		_underwater = true;
@@ -44,17 +44,17 @@ void MainScene::renderEnvironment(bool waterReflection){
 		_underwater = false;
 		_paramHandler.setParam("underwater",false);
 	}
-
+	_water->setRenderingOptions(_camera->getEye());
 	for_each(Terrain* ter, _visibleTerrains){
-		ter->setRenderingOptions(waterReflection);
+		ter->setRenderingOptions(waterReflection, _camera->getEye());
 		ter->getMaterial()->setAmbient(_sunColor/1.5f);
 	}
 
-	Sky::getInstance().setParams(cam->getEye(),vec3<F32>(_sunVector),waterReflection,true,true);
+	Sky::getInstance().setParams(_camera->getEye(),vec3<F32>(_sunVector),waterReflection,true,true);
 	Sky::getInstance().draw();
 
 	if(waterReflection){
-		cam->RenderLookAt(true,true,getWaterLevel());
+		_camera->RenderLookAt(true,true,getWaterLevel());
 	}
 	_sceneGraph->render(); //render the rest of the stuff
 }
@@ -62,18 +62,14 @@ void MainScene::renderEnvironment(bool waterReflection){
 void MainScene::processInput(){
 	Scene::processInput();
 
-	Camera* cam = CameraManager::getInstance().getActiveCamera();
-	moveFB  = Application::getInstance().moveFB;
-	moveLR  = Application::getInstance().moveLR;
-	angleLR = Application::getInstance().angleLR;
-	angleUD = Application::getInstance().angleUD;
-	
-	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor()/5);
-	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor()/5);
-	if(moveFB || moveLR){
-		if(moveFB) cam->PlayerMoveForward(moveFB * Framerate::getInstance().getSpeedfactor());
-		if(moveLR) cam->PlayerMoveStrafe(moveLR * Framerate::getInstance().getSpeedfactor());
-		GUI::getInstance().modifyText("camPosition","Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ]",cam->getEye().x, cam->getEye().y,cam->getEye().z);
+	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor()/5);
+	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor()/5);
+
+	if(_moveFB || _moveLR){
+		if(_moveFB)  _camera->MoveForward(_moveFB * (Framerate::getInstance().getSpeedfactor()));
+		if(_moveLR)	 _camera->MoveStrafe(_moveLR * (Framerate::getInstance().getSpeedfactor()));
+		GUI::getInstance().modifyText("camPosition","Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ]",
+									  _camera->getEye().x, _camera->getEye().y,_camera->getEye().z);
 	}
 
 }
@@ -198,7 +194,6 @@ void MainScene::test(boost::any a, CallbackParam b){
 bool MainScene::loadResources(bool continueOnErrors){
 	GUI& gui = GUI::getInstance();
 
-	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f;
 	gui.addText("fpsDisplay",           //Unique ID
 		                       vec3<F32>(60,60,0),          //Position
 							   BITMAP_8_BY_13,    //Font
@@ -257,16 +252,16 @@ void MainScene::onKeyDown(const OIS::KeyEvent& key){
 	Scene::onKeyDown(key);
 	switch(key.key)	{
 		case OIS::KC_W:
-			Application::getInstance().moveFB = 0.25f;
+			_moveFB = 0.25f;
 			break;
 		case OIS::KC_A:
-			Application::getInstance().moveLR = 0.25f;
+			_moveLR = 0.25f;
 			break;
 		case OIS::KC_S:
-			Application::getInstance().moveFB = -0.25f;
+			_moveFB = -0.25f;
 			break;
 		case OIS::KC_D:
-			Application::getInstance().moveLR = -0.25f;
+			_moveLR = -0.25f;
 			break;
 		default:
 			break;
@@ -279,11 +274,11 @@ void MainScene::onKeyUp(const OIS::KeyEvent& key){
 	switch(key.key)	{
 		case OIS::KC_W:
 		case OIS::KC_S:
-			Application::getInstance().moveFB = 0;
+			_moveFB = 0;
 			break;
 		case OIS::KC_A:
 		case OIS::KC_D:
-			Application::getInstance().moveLR = 0;
+			_moveLR = 0;
 			break;
 		case OIS::KC_X:
 			SFX_DEVICE.playSound(_beep);
@@ -314,18 +309,18 @@ void MainScene::onMouseMove(const OIS::MouseEvent& key){
 	Scene::onMouseMove(key);
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
-			Application::getInstance().angleLR = -0.15f;
+			_angleLR = -0.15f;
 		else if(_prevMouse.x - key.state.X.abs < -1 )
-			Application::getInstance().angleLR = 0.15f;
+			_angleLR = 0.15f;
 		else
-			Application::getInstance().angleLR = 0;
+			_angleLR = 0;
 
 		if(_prevMouse.y - key.state.Y.abs > 1 )
-			Application::getInstance().angleUD = -0.1f;
+			_angleUD = -0.1f;
 		else if(_prevMouse.y - key.state.Y.abs < -1 )
-			Application::getInstance().angleUD = 0.1f;
+			_angleUD = 0.1f;
 		else
-			Application::getInstance().angleUD = 0;
+			_angleUD = 0;
 	}
 	
 	_prevMouse.x = key.state.X.abs;
@@ -342,7 +337,7 @@ void MainScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID but
 	Scene::onMouseClickUp(key,button);
 	if(button == 0)	{
 		_mousePressed = false;
-		Application::getInstance().angleUD = 0;
-		Application::getInstance().angleLR = 0;
+		_angleUD = 0;
+		_angleLR = 0;
 	}
 }

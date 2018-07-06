@@ -58,7 +58,6 @@ private:
 	void resetSimulation();
 private:
 	std::vector<F32> _eventTimers;
-	F32 angleLR,angleUD,moveFB,moveLR;
 	I8 _score;
 	vec4<F32> _sunVector;
 	SceneGraphNode* _groundPlaceholder;

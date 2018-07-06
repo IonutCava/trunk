@@ -23,6 +23,7 @@ class Light;
 DEFINE_SINGLETON(LightManager)
 
 public:
+
 	typedef unordered_map<U32, Light*> LightMap;
 
 	bool addLight(Light* const light);
@@ -40,18 +41,22 @@ public:
 	void bindDepthMaps();
 	void unbindDepthMaps();
 	bool shadowMappingEnabled();
-	void generateShadowMaps();
+	void generateShadowMaps(const vec3<F32>& camEyePos);
 	///since every light has the exact same number of depth maps ...
 	I8 getDepthMapPerLightCount();
 	///shadow mapping
 	void previewDepthMaps();
+	inline void togglePreviewDepthMaps() {_previewDepthMaps = !_previewDepthMaps;}
 private:
+
 	LightManager();
 	~LightManager();
 	bool checkId(U32 value);
 	void drawDepthMap(U8 light, U8 index);
+
 private:
 	LightMap _lights;
+	bool     _previewDepthMaps;
 
 END_SINGLETON
 

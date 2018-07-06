@@ -19,8 +19,9 @@
 #define _MAIN_SCENE_H
 
 #include "Scenes/Headers/Scene.h"
-
+class Terrain;
 class WaterPlane;
+
 class MainScene : public Scene{
 
 public:
@@ -52,7 +53,6 @@ private:
 	vec2<F32> _sunAngle;
 	vec4<F32> _sunVector,_sunColor;
 	F32  _sun_cosy;
-	F32 angleLR,angleUD,moveFB,moveLR;
 	vec2<F32> _prevMouse;
 	bool _mousePressed;
 	AudioDescriptor* _backgroundMusic, *_beep;

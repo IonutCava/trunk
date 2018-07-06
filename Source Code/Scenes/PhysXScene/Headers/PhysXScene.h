@@ -43,7 +43,6 @@ private:
 	void createStack();
 private:
 	std::vector<F32> _eventTimers;
-	F32 angleLR,angleUD,moveFB,moveLR;
 	vec4<F32> _sunVector;
 	PhysXImplementation* _physx;
 	bool _mousePressed;

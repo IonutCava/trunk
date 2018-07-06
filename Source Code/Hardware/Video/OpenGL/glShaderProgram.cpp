@@ -5,7 +5,6 @@
 #include "glShaderProgram.h"
 #include "Hardware/Video/Shader.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/Application.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Managers/Headers/ShaderManager.h"
 #include <boost/algorithm/string.hpp>

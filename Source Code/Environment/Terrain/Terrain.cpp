@@ -2,7 +2,6 @@
 #include "Headers/TerrainChunk.h"
 
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/CameraManager.h"
 #include "Quadtree/Headers/Quadtree.h"
 #include "Quadtree/Headers/QuadtreeNode.h"
 #include "Hardware/Video/VertexBufferObject.h"
@@ -102,10 +101,10 @@ void Terrain::postDraw(){
 void Terrain::drawInfinitePlain(){
 	if(_drawInReflection) return;
 
-	const vec3<F32>& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
-	_planeTransform->setPositionX(eyePos.x);
-	_planeTransform->setPositionZ(eyePos.z);
-	_planeSGN->getBoundingBox().Transform(_planeSGN->getInitialBoundingBox(),_planeTransform->getMatrix());
+	_planeTransform->setPositionX(_eyePos.x);
+	_planeTransform->setPositionZ(_eyePos.z);
+	_planeSGN->getBoundingBox().Transform(_planeSGN->getInitialBoundingBox(),
+										  _planeTransform->getMatrix());
 
 	GFX_DEVICE.setObjectState(_planeTransform);
 	GFX_DEVICE.renderModel(_plane);

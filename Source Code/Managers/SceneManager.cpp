@@ -1,5 +1,4 @@
 #include "Headers/SceneManager.h"
-#include "Headers//CameraManager.h"
 #include "Core/Headers/Application.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
@@ -85,7 +84,7 @@ void SceneManager::deleteSelection(){
 	}
 }
 
-void SceneManager::findSelection(U32 x, U32 y){
+void SceneManager::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
 	ParamHandler& par = ParamHandler::getInstance();
     F32 value_fov = 0.7853f;    //this is 45 degrees converted to radians
     F32 value_aspect = par.getParam<F32>("aspectRatio");
@@ -167,7 +166,7 @@ void SceneManager::findSelection(U32 x, U32 y){
 
     final_point = point_xformed + camera_origin;
 
-	vec3<F32> origin(CameraManager::getInstance().getActiveCamera()->getEye());
+	vec3<F32> origin(camOrigin);
 	vec3<F32> dir = origin.direction(final_point);
 	
 	//ToDo: fix this!!!!! -Ionut

@@ -1,7 +1,7 @@
 #include "Headers/FlashScene.h"
-#include "GUI/Headers/GUI.h"
-#include "Managers/Headers/CameraManager.h"
 
+#include "Rendering/Camera/Headers/Camera.h"
+#include "GUI/Headers/GUI.h"
 
 void FlashScene::render(){
 	
@@ -14,17 +14,11 @@ void FlashScene::preRender(){
 } 
 
 void FlashScene::processInput(){
-	Camera* cam = CameraManager::getInstance().getActiveCamera();
 
-	moveFB  = Application::getInstance().moveFB;
-	moveLR  = Application::getInstance().moveLR;
-	angleLR = Application::getInstance().angleLR;
-	angleUD = Application::getInstance().angleUD;
-	
-	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
-	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
-	if(moveFB)	cam->PlayerMoveForward(moveFB * (Framerate::getInstance().getSpeedfactor()/5));
-	if(moveLR)	cam->PlayerMoveStrafe(moveLR * (Framerate::getInstance().getSpeedfactor()/5));
+	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor());
+	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor());
+	if(_moveFB)  _camera->MoveForward(_moveFB * (Framerate::getInstance().getSpeedfactor()/5));
+	if(_moveLR)	 _camera->MoveStrafe(_moveLR * (Framerate::getInstance().getSpeedfactor()/5));
 
 }
 
@@ -49,7 +43,7 @@ bool FlashScene::load(const std::string& name){
 }
 
 bool FlashScene::loadResources(bool continueOnErrors){
-	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
+
 	_sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
 	_sunVector = vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 							-cosf(_sunAngle.y),

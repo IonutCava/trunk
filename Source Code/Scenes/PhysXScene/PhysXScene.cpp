@@ -1,15 +1,16 @@
 #include "Headers/PhysXScene.h"
 #include "Headers/PhysXImplementation.h"
-#include "Rendering/RenderPass/Headers/RenderQueue.h"
+
 #include "GUI/Headers/GUI.h"
 #include "Environment/Sky/Headers/Sky.h"
-#include "Managers/Headers/CameraManager.h"
+#include "Rendering/Camera/Headers/Camera.h"
+#include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 //begin copy-paste: randarea scenei
 void PhysXScene::render(){
 	Sky& sky = Sky::getInstance();
 
-	sky.setParams(CameraManager::getInstance().getActiveCamera()->getEye(),_sunVector, false,true,true);
+	sky.setParams(_camera->getEye(),_sunVector, false,true,true);
 	sky.draw();
 
 	_sceneGraph->render();
@@ -37,18 +38,10 @@ void PhysXScene::processEvents(F32 time){
 void PhysXScene::processInput(){
 	Scene::processInput();
 
-	Camera* cam = CameraManager::getInstance().getActiveCamera();
-	moveFB  = Application::getInstance().moveFB;
-	moveLR  = Application::getInstance().moveLR;
-	angleLR = Application::getInstance().angleLR;
-	angleUD = Application::getInstance().angleUD;
-	
-	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor()/5);
-	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor()/5);
-	if(moveFB || moveLR){
-		if(moveFB) cam->PlayerMoveForward(moveFB * Framerate::getInstance().getSpeedfactor());
-		if(moveLR) cam->PlayerMoveStrafe(moveLR * Framerate::getInstance().getSpeedfactor());
-	}
+	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor());
+	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor());
+	if(_moveFB)  _camera->MoveForward(_moveFB * (Framerate::getInstance().getSpeedfactor()/5));
+	if(_moveLR)	 _camera->MoveStrafe(_moveLR * (Framerate::getInstance().getSpeedfactor()/5));
 }
 
 bool PhysXScene::load(const std::string& name){
@@ -71,7 +64,6 @@ bool PhysXScene::load(const std::string& name){
 
 bool PhysXScene::loadResources(bool continueOnErrors){
 	 _mousePressed = false;
-	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
 
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
 		                       vec3<F32>(60,20,0),          //Position
@@ -90,9 +82,9 @@ bool PhysXScene::loadResources(bool continueOnErrors){
 	_physx = static_cast<PhysXImplementation* >(PHYSICS_DEVICE.NewSceneInterface(this));
 	//Initialize the physics scene
 	_physx->init();
-	CameraManager::getInstance().getActiveCamera()->RotateX(RADIANS(-75));
-	CameraManager::getInstance().getActiveCamera()->RotateY(RADIANS(25));
-	CameraManager::getInstance().getActiveCamera()->setEye(vec3<F32>(0,30,-40));
+	_camera->RotateX(RADIANS(-75));
+	_camera->RotateY(RADIANS(25));
+	_camera->setEye(vec3<F32>(0,30,-40));
 	return true;
 }
 
@@ -126,16 +118,16 @@ void PhysXScene::onKeyDown(const OIS::KeyEvent& key){
 	Scene::onKeyDown(key);
 	switch(key.key)	{
 		case OIS::KC_W:
-			Application::getInstance().moveFB = 0.25f;
+			_moveFB = 0.25f;
 			break;
 		case OIS::KC_A:
-			Application::getInstance().moveLR = 0.25f;
+			_moveLR = 0.25f;
 			break;
 		case OIS::KC_S:
-			Application::getInstance().moveFB = -0.25f;
+			_moveFB = -0.25f;
 			break;
 		case OIS::KC_D:
-			Application::getInstance().moveLR = -0.25f;
+			_moveLR = -0.25f;
 			break;
 		case OIS::KC_1:
 			PHYSICS_DEVICE.createPlane(_physx,vec3<F32>(0,0,0),random(0.5f,2.0f));
@@ -178,11 +170,11 @@ void PhysXScene::onKeyUp(const OIS::KeyEvent& key){
 	switch(key.key)	{
 		case OIS::KC_W:
 		case OIS::KC_S:
-			Application::getInstance().moveFB = 0;
+			_moveFB = 0;
 			break;
 		case OIS::KC_A:
 		case OIS::KC_D:
-			Application::getInstance().moveLR = 0;
+			_moveLR = 0;
 			break;
 		case OIS::KC_F1:
 			_sceneGraph->print();
@@ -198,18 +190,18 @@ void PhysXScene::onMouseMove(const OIS::MouseEvent& key){
 	Scene::onMouseMove(key);
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
-			Application::getInstance().angleLR = -0.15f;
+			_angleLR = -0.15f;
 		else if(_prevMouse.x - key.state.X.abs < -1 )
-			Application::getInstance().angleLR = 0.15f;
+			_angleLR = 0.15f;
 		else
-			Application::getInstance().angleLR = 0;
+			_angleLR = 0;
 
 		if(_prevMouse.y - key.state.Y.abs > 1 )
-			Application::getInstance().angleUD = -0.1f;
+			_angleUD = -0.1f;
 		else if(_prevMouse.y - key.state.Y.abs < -1 )
-			Application::getInstance().angleUD = 0.1f;
+			_angleUD = 0.1f;
 		else
-			Application::getInstance().angleUD = 0;
+			_angleUD = 0;
 	}
 	
 	_prevMouse.x = key.state.X.abs;
@@ -226,7 +218,7 @@ void PhysXScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID bu
 	Scene::onMouseClickUp(key,button);
 	if(button == 0)	{
 		_mousePressed = false;
-		Application::getInstance().angleUD = 0;
-		Application::getInstance().angleLR = 0;
+		_angleUD = 0;
+		_angleLR = 0;
 	}
 }

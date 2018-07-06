@@ -31,6 +31,9 @@ void CameraManager::setActiveCamera(const std::string& name) {
 		assert(_camera != NULL);
 		addNewCamera(name, _camera);
 	}
+	for_each(boost::function0<void > listener, _listeners){
+		listener();
+	}
 }
 
 

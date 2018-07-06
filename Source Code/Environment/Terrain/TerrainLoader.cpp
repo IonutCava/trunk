@@ -5,7 +5,6 @@
 #include "Headers/TerrainDescriptor.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
-#include "Managers/Headers/CameraManager.h"
 
 #define COORD(x,y,w)	((y)*(w)+(x))
 
@@ -52,15 +51,15 @@ void Terrain::loadVisualResources(){
 
 bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 	///Terrain dimensions:
-	///    |----------------------|        /\						      /\
-	///    |          /\          |         |					         /  \
- 	///    |          |           |         |					    /\__/    \
-	///    |          |           | _terrainHeightScaleFactor  /\   /          \__/\___
-	///    |<-terrainScaleFactor->|         |				 |  --/                   \
-	///    |          |           |         |                /                          \
-	///    |          |           |         |              |-                            \
-	///    |          |           |         \/            /_______________________________\
-	///    |_________\/___________|
+	///    |-----------------------|        /\						      /\
+	///    |          /\           |         |					         /  \
+ 	///    |          |            |         |					    /\__/    \
+	///    |          |            | _terrainHeightScaleFactor  /\   /          \__/\___
+	///    |<-_terrainScaleFactor->|         |				 |  --/                   \
+	///    |          |            |         |                /                          \
+	///    |          |            |         |              |-                            \
+	///    |          |            |         \/            /_______________________________\
+	///    |_________\/____________|
 
 	_terrainHeightScaleFactor = terrain->getScale().y;
 
@@ -178,7 +177,7 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 
 	F32 depth = GET_ACTIVE_SCENE()->getWaterDepth();
 	F32 height = GET_ACTIVE_SCENE()->getWaterLevel()- depth;
-	const vec3<F32>& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
+	vec3<F32> eyePos(0.0f, 0.0f, 0.0f);
 	_farPlane = 2.0f * ParamHandler::getInstance().getParam<F32>("zFar");
 	_plane->setCorner(Quad3D::TOP_LEFT, vec3<F32>(eyePos.x - _farPlane, height, eyePos.z - _farPlane));
 	_plane->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(eyePos.x + _farPlane, height, eyePos.z - _farPlane));

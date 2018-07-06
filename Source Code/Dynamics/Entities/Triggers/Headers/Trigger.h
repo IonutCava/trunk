@@ -35,7 +35,7 @@ public:
 
 	/// Checks if the unit has activated this trigger and launches the event
 	/// If we receive a NULL unit as a param, we use the camera position
-	bool check(Unit* const unit);
+	bool check(Unit* const unit,const vec3<F32>& camEyePos = vec3<F32>(0,0,0));
 	/// Sets a new event for this trigger
 	void updateTriggeredEvent(Event_ptr triggeredEvent);
 	/// Trigger's the event regardless of position

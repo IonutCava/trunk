@@ -7,9 +7,9 @@
 
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/ShaderManager.h"
-#include "Managers/Headers/CameraManager.h"
 
 #include "Rendering/PostFX/Headers/PostFX.h"
+#include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 #include "Geometry/Shapes/Headers/Object3D.h"
@@ -244,7 +244,10 @@ void GFXDevice::renderInViewport(const vec4<F32>& rect, boost::function0<void> c
 	_api.renderInViewport(rect,callback);
 }
 
-void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap, const vec3<F32>& pos, boost::function0<void> callback){
+void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap, 
+								 Camera* const activeCamera,
+								 const vec3<F32>& pos, 
+								 boost::function0<void> callback){
 	///Don't need to override cubemap rendering callback
 	if(callback.empty()){
 		SceneGraph* sg = GET_ACTIVE_SCENE()->getSceneGraph();
@@ -257,12 +260,11 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap, const vec3<F32>& po
 		return;
 	}
 	///Get some global vars
-	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	ParamHandler& par = ParamHandler::getInstance();
 	F32 zNear  = par.getParam<F32>("zNear");
 	F32 zFar   = par.getParam<F32>("zFar");
 	///Save our current camera settings
-	cam->SaveCamera();
+	activeCamera->SaveCamera();
 	///And save all camera transform matrices
 	lockModelView();
 	lockProjection();
@@ -275,7 +277,7 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap, const vec3<F32>& po
 	///For each of the environment's faces (TOP,DOWN,NORTH,SOUTH,EAST,WEST)
 	for(U8 i = 0; i < 6; i++){
 		///Set the correct camera orientation and position for current face
-		cam->RenderLookAtToCubeMap( pos, i );
+		activeCamera->RenderLookAtToCubeMap( pos, i );
 		///Bind our FBO's current face
 		cubeMap.Begin(i);
 			///draw our scene
@@ -289,7 +291,7 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap, const vec3<F32>& po
 	releaseProjection();
 	releaseModelView();
 	///And restore camera
-	cam->RestoreCamera();
+	activeCamera->RestoreCamera();
 }
 
 RenderStateBlock* GFXDevice::createStateBlock(const RenderStateBlockDescriptor& descriptor){
