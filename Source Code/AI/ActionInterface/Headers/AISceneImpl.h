@@ -69,7 +69,10 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
     /// Register a specific action.
     /// This only holds a reference to the action itself and does not create a
     /// local copy!
-    virtual void registerGoal(const GOAPGoal& goal) { _goals.push_back(goal); }
+    virtual void registerGoal(const GOAPGoal& goal) { 
+        assert(!goal.vars_.empty());
+        _goals.push_back(goal); 
+    }
 
     virtual GOAPGoal* findGoal(const stringImpl& goalName) {
         vectorImpl<GOAPGoal>::iterator it;

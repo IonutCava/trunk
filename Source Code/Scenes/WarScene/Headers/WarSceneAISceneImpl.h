@@ -35,31 +35,35 @@
 #include "AI/ActionInterface/Headers/AITeam.h"
 #include "AI/ActionInterface/Headers/AISceneImpl.h"
 #include "Scenes/WarScene/AESOPActions/Headers/WarSceneActions.h"
+#include <fstream>
 
 namespace Divide {
 
 namespace AI {
+
 enum class AIMsg : U32 { 
     HAVE_FLAG = 0,
     ENEMY_HAS_FLAG = 1,
+    HAVE_SCORED = 2,
     COUNT
 };
 
 enum class FactType : U32 {
-    FACT_TYPE_POSITION = 0,
-    FACT_TYPE_COUNTER_SMALL = 1,
-    FACT_TYPE_COUNTER_MEDIUM = 2,
-    FACT_TYPE_COUNTER_LARGE = 3,
-    FACT_TYPE_TOGGLE_STATE = 4,
-    FACT_TYPE_AI_NODE = 5,
-    FACT_TYPE_SGN_NODE = 6,
+    POSITION = 0,
+    COUNTER_SMALL = 1,
+    COUNTER_MEDIUM = 2,
+    COUNTER_LARGE = 3,
+    TOGGLE_STATE = 4,
+    AI_NODE = 5,
+    SGN_NODE = 6,
     COUNT
 };
 
 template <typename T, FactType F>
 class WorkingMemoryFact {
    public:
-    WorkingMemoryFact() {
+    WorkingMemoryFact()
+    {
         _value = 0;
         _type = F;
         _belief = 0.0f;
@@ -69,6 +73,7 @@ class WorkingMemoryFact {
         _value = val;
         belief(1.0f);
     }
+
     inline void belief(F32 belief) { _belief = belief; }
 
     inline const T& value() const { return _value; }
@@ -81,57 +86,48 @@ class WorkingMemoryFact {
     FactType _type;
 };
 
-typedef WorkingMemoryFact<AIEntity*, FactType::FACT_TYPE_AI_NODE> AINodeFact;
-typedef WorkingMemoryFact<SceneGraphNode*, FactType::FACT_TYPE_SGN_NODE> SGNNodeFact;
-typedef WorkingMemoryFact<vec3<F32>, FactType::FACT_TYPE_POSITION> PositionFact;
-typedef WorkingMemoryFact<U8, FactType::FACT_TYPE_COUNTER_SMALL> SmallCounterFact;
-typedef WorkingMemoryFact<U16, FactType::FACT_TYPE_COUNTER_MEDIUM> MediumCounterFact;
-typedef WorkingMemoryFact<U32, FactType::FACT_TYPE_COUNTER_LARGE> LargeCounterFact;
-typedef WorkingMemoryFact<bool, FactType::FACT_TYPE_TOGGLE_STATE> ToggleStateFact;
+typedef WorkingMemoryFact<AIEntity*, FactType::AI_NODE> AINodeFact;
+typedef WorkingMemoryFact<SceneGraphNode*, FactType::SGN_NODE> SGNNodeFact;
+typedef WorkingMemoryFact<vec3<F32>, FactType::POSITION> PositionFact;
+typedef WorkingMemoryFact<U8, FactType::COUNTER_SMALL> SmallCounterFact;
+typedef WorkingMemoryFact<U16, FactType::COUNTER_MEDIUM> MediumCounterFact;
+typedef WorkingMemoryFact<U32, FactType::COUNTER_LARGE> LargeCounterFact;
+typedef WorkingMemoryFact<bool, FactType::TOGGLE_STATE> ToggleStateFact;
 
-class WorkingMemory {
-   public:
-    WorkingMemory() {
-        _hasEnemyFlag.value(false);
-        _enemyHasFlag.value(false);
-        _enemyFlagNear.value(false);
-        _friendlyFlagNear.value(true);
-        _teamMateHasFlag.value(false);
-        _health.value(100);
-        _flagCarrier.value(nullptr);
-        _enemyFlagCarrier.value(nullptr);
-        _currentTargetEntity.value(nullptr);
-        _staticDataUpdated = false;
+class GlobalWorkingMemory {
+public:
+    GlobalWorkingMemory() {
+        _flags[0].value(nullptr);
+        _flags[1].value(nullptr);
     }
-    static SGNNodeFact _flags[2];
-    static SmallCounterFact _teamCount[2];
-    static SmallCounterFact _flagProtectors[2];
-    static SmallCounterFact _flagRetrievers[2];
-    static PositionFact _teamFlagPosition[2];
-    AINodeFact _flagCarrier;
-    AINodeFact _enemyFlagCarrier;
-    SmallCounterFact _health;
-    SGNNodeFact _currentTargetEntity;
-    PositionFact _currentTargetPosition;
+
+    SGNNodeFact _flags[2];
+    SmallCounterFact _score[2];
+    PositionFact _teamFlagPosition[2];
+};
+
+class LocalWorkingMemory {
+   public:
+    LocalWorkingMemory() {
+        _hasEnemyFlag.value(false);
+    }
+
     ToggleStateFact _hasEnemyFlag;
-    ToggleStateFact _enemyHasFlag;
-    ToggleStateFact _teamMateHasFlag;
-    ToggleStateFact _enemyFlagNear;
-    ToggleStateFact _friendlyFlagNear;
-    bool _staticDataUpdated;
 };
 
 class WarSceneOrder : public Order {
    public:
     enum class WarOrder : U32 {
-        ORDER_FIND_ENEMY_FLAG = 0,
+        ORDER_IDLE = 0,
         ORDER_CAPTURE_ENEMY_FLAG = 1,
-        ORDER_RETURN_ENEMY_FLAG = 2,
-        ORDER_PROTECT_FLAG_CARRIER = 3,
-        ORDER_RETRIEVE_FLAG = 4,
+        ORDER_SCORE_ENEMY_FLAG = 2,
         COUNT
     };
-    WarSceneOrder(WarOrder order) : Order(static_cast<U32>(order)) {}
+
+    WarSceneOrder(WarOrder order) : Order(static_cast<U32>(order))
+    {
+    }
+
     void evaluatePriority();
     void lock() { Order::lock(); }
     void unlock() { Order::unlock(); }
@@ -162,14 +158,14 @@ class WarSceneAISceneImpl : public AISceneImpl {
 
     static void registerFlags(SceneGraphNode& flag1,
                               SceneGraphNode& flag2) {
-        WorkingMemory::_flags[0].value(&flag1);
-        WorkingMemory::_flags[1].value(&flag2);
+        _globalWorkingMemory._flags[0].value(&flag1);
+        _globalWorkingMemory._flags[1].value(&flag2);
     }
 
    protected:
     bool preAction(ActionType type, const WarSceneAction* warAction);
     bool postAction(ActionType type, const WarSceneAction* warAction);
-    bool checkCurrentActionComplete(const GOAPAction* planStep);
+    bool checkCurrentActionComplete(const GOAPAction& planStep);
 
    private:
     void requestOrders();
@@ -188,7 +184,9 @@ class WarSceneAISceneImpl : public AISceneImpl {
     U8 _visualSensorUpdateCounter;
     VisualSensor* _visualSensor;
     AudioSensor* _audioSensor;
-    WorkingMemory _workingMemory;
+    LocalWorkingMemory _localWorkingMemory;
+    static GlobalWorkingMemory _globalWorkingMemory;
+    mutable std::ofstream _WarAIOutputStream;
     static vec3<F32> _initialFlagPositions[2];
 };
 

@@ -37,6 +37,7 @@
 #include <boost/thread/mutex.hpp>
 #include <functional>
 #include <atomic>
+#include <fstream>
 
 namespace Divide {
 
@@ -49,15 +50,48 @@ class Console : private NonCopyable {
    public:
     static void flush();
     static void printCopyrightNotice();
-    static const char* printfn(const char* format, ...);
-    static const char* printf(const char* format, ...);
-    static const char* errorfn(const char* format, ...);
-    static const char* errorf(const char* format, ...);
 
-    static const char* d_printfn(const char* format, ...);
-    static const char* d_printf(const char* format, ...);
-    static const char* d_errorfn(const char* format, ...);
-    static const char* d_errorf(const char* format, ...);
+    template <typename... T>
+    inline static const char* printfn(const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* printf(const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* errorfn(const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* errorf(const char* format, T&&... args);
+
+    template <typename... T>
+    inline static const char* d_printfn(const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* d_printf(const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* d_errorfn(const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* d_errorf(const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* printfn(std::ofstream& outStream,
+                                      const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* printf(std::ofstream& outStream,
+                                     const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* errorfn(std::ofstream& outStream,
+                                      const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* errorf(std::ofstream& outStream,
+                                     const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* d_printfn(std::ofstream& outStream,
+                                        const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* d_printf(std::ofstream& outStream,
+                                       const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* d_errorfn(std::ofstream& outStream,
+                                        const char* format, T&&... args);
+    template <typename... T>
+    inline static const char* d_errorf(std::ofstream& outStream,
+                                       const char* format, T&&... args);
 
     static void toggleTimeStamps(const bool state) { _timestamps = state; }
     static void bindConsoleOutput(
@@ -66,16 +100,21 @@ class Console : private NonCopyable {
     }
 
    protected:
-    static const char* output(const char* text, const bool error = false);
+    static const char* formatText(const char* format, ...);
+    static const char* output(const char* text, const bool newline,
+                              const bool error);
+    static const char* output(std::ostream& outStream, const char* text,
+                              const bool newline, const bool error);
 
    private:
     static std::atomic<int> _bufferEntryCount;
     static boost::mutex io_mutex;
     static consolePrintCallback _guiConsoleCallback;
     static bool _timestamps;
-    static char _textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE];
 };
 
 };  // namespace Divide
 
 #endif  //_CORE_CONSOLE_H_
+
+#include "Console.inl"

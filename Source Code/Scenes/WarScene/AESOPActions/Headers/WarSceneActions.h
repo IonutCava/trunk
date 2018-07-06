@@ -41,10 +41,7 @@ enum class Fact : U32 {
     AtEnemyFlagLoc = 0,
     AtHomeFlagLoc = 1,
     HasEnemyFlag = 2,
-    HasOwnFlag = 3,
-    EnemyHasFlag = 4,
-    EnemyDead = 5,
-    FlagCarrierDead = 6
+    COUNT
 };
 
 inline const char* WarSceneFactName(GOAPFact fact) {
@@ -55,14 +52,6 @@ inline const char* WarSceneFactName(GOAPFact fact) {
             return "At home location";
         case Fact::HasEnemyFlag:
             return "Has enemy flag";
-        case Fact::HasOwnFlag:
-            return "Has own flag";
-        case Fact::EnemyHasFlag:
-            return "Enemy has flag";
-        case Fact::EnemyDead:
-            return "Enemy dead";
-        case Fact::FlagCarrierDead:
-            return "Flag carrier dead";
     };
     return GOAPFactName(fact);
 };
@@ -70,11 +59,10 @@ inline const char* WarSceneFactName(GOAPFact fact) {
 enum class ActionType : U32 {
     ACTION_APPROACH_FLAG = 0,
     ACTION_CAPTURE_FLAG = 1,
-    ACTION_RETURN_FLAG = 2,
-    ACTION_PROTECT_FLAG_CARRIER = 3,
-    ACTION_RECOVER_FLAG = 4,
-    ACTION_KILL_ENEMY = 5,
-    ACTION_RETURN_TO_BASE = 6
+    ACTION_SCORE_FLAG = 2,
+    ACTION_RETURN_TO_BASE = 3,
+    ACTION_IDLE = 4,
+    COUNT
 };
 
 namespace Attorney {
@@ -113,41 +101,36 @@ class WarSceneActionWarAIScene {
 };
 };  // namespace Attorney
 
+class Idle : public WarSceneAction {
+  public:
+    Idle(const stringImpl& name, F32 cost = 1.0f);
+    Idle(WarSceneAction const& other) : WarSceneAction(other) {}
+};
+
 class ApproachFlag : public WarSceneAction {
    public:
     ApproachFlag(const stringImpl& name, F32 cost = 1.0f);
     ApproachFlag(WarSceneAction const& other) : WarSceneAction(other) {}
 };
+
 class CaptureFlag : public WarSceneAction {
    public:
     CaptureFlag(const stringImpl& name, F32 cost = 1.0f);
     CaptureFlag(WarSceneAction const& other) : WarSceneAction(other) {}
 };
-class ReturnFlag : public WarSceneAction {
-   public:
-    ReturnFlag(const stringImpl& name, F32 cost = 1.0f);
-    ReturnFlag(WarSceneAction const& other) : WarSceneAction(other) {}
-};
-class ProtectFlagCarrier : public WarSceneAction {
-   public:
-    ProtectFlagCarrier(const stringImpl& name, F32 cost = 1.0f);
-    ProtectFlagCarrier(WarSceneAction const& other) : WarSceneAction(other) {}
-};
-class RecoverFlag : public WarSceneAction {
-   public:
-    RecoverFlag(const stringImpl& name, F32 cost = 1.0f);
-    RecoverFlag(WarSceneAction const& other) : WarSceneAction(other) {}
-};
-class KillEnemy : public WarSceneAction {
-   public:
-    KillEnemy(const stringImpl& name, F32 cost = 1.0f);
-    KillEnemy(WarSceneAction const& other) : WarSceneAction(other) {}
-};
+
 class ReturnHome : public WarSceneAction {
    public:
     ReturnHome(const stringImpl& name, F32 cost = 1.0f);
     ReturnHome(WarSceneAction const& other) : WarSceneAction(other) {}
 };
+
+class ScoreFlag : public WarSceneAction {
+   public:
+    ScoreFlag(const stringImpl& name, F32 cost = 1.0f);
+    ScoreFlag(WarSceneAction const& other) : WarSceneAction(other) {}
+};
+
 };  // namespace AI
 };  // namespace Divide
 

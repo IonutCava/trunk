@@ -56,20 +56,21 @@ const char* GOAPFactName(GOAPFact fact);
 class AISceneImpl;
 class GOAPGoal : public goap::WorldState {
    public:
-    GOAPGoal(const std::string& name);
+    GOAPGoal(const std::string& name, U32 ID);
     virtual ~GOAPGoal();
 
     inline F32 relevancy() const { return _relevancy; }
     inline void relevancy(F32 relevancy) { _relevancy = relevancy; }
 
     const std::string& getName() const { return name_; }
-
+    U32 getID() const { return _ID; }
     virtual bool plan(const GOAPWorldState& worldState,
                       const GOAPActionSet& actionSet);
 
     const GOAPPlan& getCurrentPlan() const;
 
    protected:
+    U32 _ID;
     F32 _relevancy;
     goap::AStar _planner;
     GOAPPlan _currentPlan;

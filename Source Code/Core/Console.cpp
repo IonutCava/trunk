@@ -4,13 +4,13 @@
 #include "config.h"
 #include <iomanip>
 #include <stdarg.h>
+#include <thread>
 
 namespace Divide {
 
 std::atomic<int> Console::_bufferEntryCount = 0;
 bool Console::_timestamps = false;
 boost::mutex Console::io_mutex;
-char Console::_textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE];
 Console::consolePrintCallback Console::_guiConsoleCallback;
 
 //! Do not remove the following license without express permission granted bu
@@ -51,138 +51,52 @@ void Console::printCopyrightNotice() {
                  "------------------\n\n";
 }
 
-const char* Console::d_printfn(const char* format, ...) {
-#ifdef _DEBUG
-    va_list args;
-    va_start(args, format);
-    assert(_vscprintf(format, args) - 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(_textBuffer, sizeof(char) * CONSOLE_OUTPUT_BUFFER_SIZE, format,
-               args);
-    strcat(_textBuffer, "\n");
-    va_end(args);
-    return output(_textBuffer);
-#else
-    return "";
-#endif
-}
-
-const char* Console::d_printf(const char* format, ...) {
-#ifdef _DEBUG
+const char* Console::formatText(const char* format, ...) {
+    THREAD_LOCAL static char textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE + 1];
     va_list args;
     va_start(args, format);
     assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(_textBuffer, sizeof(char) * CONSOLE_OUTPUT_BUFFER_SIZE, format,
+    vsprintf_s(textBuffer, sizeof(char) * CONSOLE_OUTPUT_BUFFER_SIZE, format,
                args);
     va_end(args);
-    return output(_textBuffer);
-#else
-    return "";
-#endif
+    return textBuffer;
 }
 
-const char* Console::d_errorfn(const char* format, ...) {
-#ifdef _DEBUG
-    va_list args;
-    va_start(args, format);
-    assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(_textBuffer, sizeof(char) * CONSOLE_OUTPUT_BUFFER_SIZE, format,
-               args);
-    strcat(_textBuffer, "\n");
-    va_end(args);
-    return output(_textBuffer, true);
-#else
-    return "";
-#endif
+const char* Console::output(std::ostream& outStream, const char* text,
+                            const bool newline, const bool error) {
+    boost::mutex::scoped_lock lock(io_mutex);
+    if (_timestamps) {
+        outStream << "[ " << std::setprecision(2) << Time::ElapsedSeconds(true)
+                  << " ] ";
+    }
+
+    outStream << "(" << std::this_thread::get_id() << ")"
+              << (error ? " Error: " : "")
+              << text
+              << (newline ? "\n" : "");
+
+    return text;
 }
 
-const char* Console::d_errorf(const char* format, ...) {
-#ifdef _DEBUG
-    va_list args;
-    va_start(args, format);
-    assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(_textBuffer, sizeof(char) * CONSOLE_OUTPUT_BUFFER_SIZE, format,
-               args);
-    va_end(args);
-    return output(_textBuffer, true);
-#else
-    return "";
-#endif
-}
+const char* Console::output(const char* text, const bool newline, const bool error) {
+    if (_guiConsoleCallback) {
+        _guiConsoleCallback(text, error);
+    }
 
-const char* Console::printfn(const char* format, ...) {
-    va_list args;
-    va_start(args, format);
-    assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(_textBuffer, sizeof(char) * CONSOLE_OUTPUT_BUFFER_SIZE, format,
-               args);
-    strcat(_textBuffer, "\n");
-    va_end(args);
-    return output(_textBuffer);
-}
+    std::ostream& outputStream = error ? std::cerr : std::cout;
+    output(outputStream, text, newline, error);
 
-const char* Console::printf(const char* format, ...) {
-    va_list args;
-    va_start(args, format);
-    assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(_textBuffer, sizeof(char) * CONSOLE_OUTPUT_BUFFER_SIZE, format,
-               args);
-    va_end(args);
-    return output(_textBuffer);
-}
+    if (_bufferEntryCount++ > MAX_CONSOLE_ENTRIES) {
+        outputStream << std::flush;
+        _bufferEntryCount = 0;
+    }
 
-const char* Console::errorfn(const char* format, ...) {
-    va_list args;
-    va_start(args, format);
-    assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(_textBuffer, sizeof(char) * CONSOLE_OUTPUT_BUFFER_SIZE, format,
-               args);
-    strcat(_textBuffer,"\n");
-    va_end(args);
-    return output(_textBuffer, true);
-}
-
-const char* Console::errorf(const char* format, ...) {
-    va_list args;
-    va_start(args, format);
-    assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
-    vsprintf_s(_textBuffer, sizeof(char) * CONSOLE_OUTPUT_BUFFER_SIZE, format,
-               args);
-    va_end(args);
-    return output(_textBuffer, true);
+    return text;
 }
 
 void Console::flush() {
     boost::mutex::scoped_lock lock(io_mutex);
     std::cerr << std::flush;
     std::cout << std::flush;
-}
-
-const char* Console::output(const char* output, const bool error) {
-    if (_guiConsoleCallback) {
-        _guiConsoleCallback(output, error);
-    }
-
-    std::ostream& outputStream = error ? std::cerr : std::cout;
-
-    boost::mutex::scoped_lock lock(io_mutex);
-    if (_timestamps) {
-        outputStream << "[ " 
-                     << std::setprecision(2)
-                     << Time::ElapsedSeconds(true) 
-                     << " ] ";
-    }
-    if (error) {
-        outputStream << " Error: ";
-    }
-
-    _bufferEntryCount++;
-    outputStream << output;
-
-    if (_bufferEntryCount > MAX_CONSOLE_ENTRIES) {
-        outputStream << std::flush;
-        _bufferEntryCount = 0;
-    }
-
-    return output;
 }
 };

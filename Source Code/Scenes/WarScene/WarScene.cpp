@@ -460,10 +460,7 @@ void WarScene::toggleCamera() {
 }
 
 bool WarScene::initializeAI(bool continueOnErrors) {
-    //----------------------------Artificial
-    //Intelligence------------------------------//
-    //   _GOAPContext.setLogLevel(AI::GOAPContext::LOG_LEVEL_NONE);
-
+    //------------------------Artificial Intelligence------------------------//
     // Create 2 AI teams
     for (U8 i = 0; i < 2; ++i) {
         _faction[i] = MemoryManager_NEW AI::AITeam(i);
@@ -487,6 +484,7 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     SceneNode* currentMesh = nullptr;
     SceneGraphNode* currentNode = nullptr;
 
+
     AI::ApproachFlag approachEnemyFlag("ApproachEnemyFlag");
     approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::AtEnemyFlagLoc),
                                       AI::GOAPValue(false));
@@ -503,56 +501,44 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::HasEnemyFlag),
                                      AI::GOAPValue(false));
     captureEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                               AI::GOAPValue(true));
-
-    AI::ReturnHome returnHome("ReturnHome");
-    returnHome.setPrecondition(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
-                               AI::GOAPValue(false));
-    returnHome.setEffect(AI::GOAPFact(AI::Fact::AtHomeFlagLoc), AI::GOAPValue(true));
-    returnHome.setEffect(AI::GOAPFact(AI::Fact::AtEnemyFlagLoc),
-                         AI::GOAPValue(false));
-
-    AI::ReturnFlag returnEnemyFlag("ReturnEnemyFlag");
-    returnEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
-                                    AI::GOAPValue(true));
-    returnEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                                    AI::GOAPValue(true));
-    returnEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                              AI::GOAPValue(false));
-
-    AI::RecoverFlag recoverFlag("RecoverOwnFlag");
-    recoverFlag.setPrecondition(AI::GOAPFact(AI::Fact::EnemyDead),
                                 AI::GOAPValue(true));
-    recoverFlag.setPrecondition(AI::GOAPFact(AI::Fact::EnemyHasFlag),
-                                AI::GOAPValue(false));
-    recoverFlag.setEffect(AI::GOAPFact(AI::Fact::HasOwnFlag), AI::GOAPValue(true));
 
-    AI::KillEnemy killEnemy("KillEnemy");
-    recoverFlag.setPrecondition(AI::GOAPFact(AI::Fact::EnemyDead),
-                                AI::GOAPValue(false));
-    recoverFlag.setEffect(AI::GOAPFact(AI::Fact::EnemyDead), AI::GOAPValue(true));
+    AI::ReturnHome returnToBase("ReturnToBase");
+    returnToBase.setPrecondition(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
+                                 AI::GOAPValue(false));
+    returnToBase.setEffect(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
+                           AI::GOAPValue(true));
 
-    AI::GOAPGoal findFlag("Find enemy flag");
-    findFlag.setVariable(AI::GOAPFact(AI::Fact::AtEnemyFlagLoc), AI::GOAPValue(true));
+    AI::ScoreFlag scoreEnemyFlag("ScoreEnemyFlag");
+    returnToBase.setPrecondition(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
+                                 AI::GOAPValue(true));
+    captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::HasEnemyFlag),
+                                     AI::GOAPValue(true));
+    captureEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::HasEnemyFlag),
+                               AI::GOAPValue(false));
 
-    AI::GOAPGoal captureFlag("Capture enemy flag");
-    captureFlag.setVariable(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                            AI::GOAPValue(true));
+    AI::Idle idleAction("Idle");
 
-    AI::GOAPGoal returnFlag("Return enemy flag");
+    AI::GOAPGoal captureFlag(
+        "Capture enemy flag",
+        to_uint(AI::WarSceneOrder::WarOrder::ORDER_CAPTURE_ENEMY_FLAG));
     captureFlag.setVariable(AI::GOAPFact(AI::Fact::HasEnemyFlag),
                             AI::GOAPValue(true));
     captureFlag.setVariable(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
                             AI::GOAPValue(true));
 
-    AI::GOAPGoal retrieveFlag("Retrieve flag");
-    retrieveFlag.setVariable(AI::GOAPFact(AI::Fact::HasOwnFlag), AI::GOAPValue(true));
-    retrieveFlag.setVariable(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
-                             AI::GOAPValue(true));
+    AI::GOAPGoal scoreFlag("Score",
+        to_uint(AI::WarSceneOrder::WarOrder::ORDER_SCORE_ENEMY_FLAG));
+    scoreFlag.setVariable(AI::GOAPFact(AI::Fact::HasEnemyFlag),
+                          AI::GOAPValue(false));
+
+    AI::GOAPGoal idle("Idle", to_uint(AI::WarSceneOrder::WarOrder::ORDER_IDLE));
+    idle.setVariable(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
+                     AI::GOAPValue(true));
 
     for (I32 k = 0; k < 2; ++k) {
         for (I32 i = 0; i < /*15*/1; ++i) {
-            F32 speed = 5.5f;  // 5.5 m/s
+            F32 speed = 15.5f;  // 5.5 m/s
             U8 zFactor = 0;
             AI::WarSceneAISceneImpl::AIType type;
             if (i < 5) {
@@ -618,25 +604,16 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                                             AI::GOAPValue(false));
             brain->worldState().setVariable(AI::GOAPFact(AI::Fact::HasEnemyFlag),
                                             AI::GOAPValue(false));
-            brain->worldState().setVariable(AI::GOAPFact(AI::Fact::EnemyDead),
-                                            AI::GOAPValue(false));
-            brain->worldState().setVariable(AI::GOAPFact(AI::Fact::EnemyHasFlag),
-                                            AI::GOAPValue(false));
-            brain->worldState().setVariable(AI::GOAPFact(AI::Fact::HasOwnFlag),
-                                            AI::GOAPValue(false));
-            brain->worldState().setVariable(AI::GOAPFact(AI::Fact::FlagCarrierDead),
-                                            AI::GOAPValue(false));
 
             brain->registerAction(&approachEnemyFlag);
             brain->registerAction(&captureEnemyFlag);
-            brain->registerAction(&returnHome);
-            brain->registerAction(&returnEnemyFlag);
-            brain->registerAction(&recoverFlag);
-            brain->registerAction(&killEnemy);
+            brain->registerAction(&returnToBase);
+            brain->registerAction(&scoreEnemyFlag);
+            brain->registerAction(&idleAction);
+
+            brain->registerGoal(scoreFlag);
             brain->registerGoal(captureFlag);
-            brain->registerGoal(findFlag);
-            brain->registerGoal(returnFlag);
-            brain->registerGoal(retrieveFlag);
+            brain->registerGoal(idle);
 
             aiSoldier->addAISceneImpl(brain);
             soldier = MemoryManager_NEW NPC(*currentNode, aiSoldier);
@@ -663,15 +640,11 @@ bool WarScene::initializeAI(bool continueOnErrors) {
 
     for (U8 i = 0; i < 2; ++i) {
         _orders[i].push_back(MemoryManager_NEW AI::WarSceneOrder(
-            AI::WarSceneOrder::WarOrder::ORDER_FIND_ENEMY_FLAG));
+            AI::WarSceneOrder::WarOrder::ORDER_IDLE));
         _orders[i].push_back(MemoryManager_NEW AI::WarSceneOrder(
             AI::WarSceneOrder::WarOrder::ORDER_CAPTURE_ENEMY_FLAG));
         _orders[i].push_back(MemoryManager_NEW AI::WarSceneOrder(
-            AI::WarSceneOrder::WarOrder::ORDER_RETURN_ENEMY_FLAG));
-        _orders[i].push_back(MemoryManager_NEW AI::WarSceneOrder(
-            AI::WarSceneOrder::WarOrder::ORDER_PROTECT_FLAG_CARRIER));
-        _orders[i].push_back(MemoryManager_NEW AI::WarSceneOrder(
-            AI::WarSceneOrder::WarOrder::ORDER_RETRIEVE_FLAG));
+            AI::WarSceneOrder::WarOrder::ORDER_SCORE_ENEMY_FLAG));
     }
 
     return state;

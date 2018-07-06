@@ -527,7 +527,10 @@ inline void SAFE_UPDATE(Base*& OLD, Derived* const NEW) {
 #pragma warning(disable : 4100)  //< unreferenced formal param
 #pragma warning(disable : 4505)  //< unreferenced local function removal
 #pragma warning(disable : 4127)  //< Constant conditional expressions
+
+#define THREAD_LOCAL __declspec(thread)
 #elif defined(__GNUC__)
+#define THREAD_LOCAL __thread
 //#    pragma GCC diagnostic ignored "-Wall"
 #else
 #define NOINITVTABLE 

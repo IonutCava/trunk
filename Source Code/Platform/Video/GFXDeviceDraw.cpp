@@ -264,7 +264,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         getRenderer().processVisibleNodes(visibleNodes, _gpuBlock);
         // Generate and upload all lighting data
         LightManager::getInstance().updateAndUploadLightData(
-            _gpuBlock._ViewMatrix);
+                _gpuBlock._ViewMatrix);
     }
     _renderQueue.reserve(nodeCount);
 
