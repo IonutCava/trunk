@@ -45,11 +45,6 @@ void Init()
 	glutSpecialUpFunc(SpecialUpKeyboard);
 }
 
-void Reshape(int w,int h)
-{
-	
-}
-
 static void Mouse(int button, int state, int x, int y)
 {
     _mouseX = x;

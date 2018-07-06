@@ -2,7 +2,6 @@
 #define _RENDER_API_H
 
 #include "Utility/Headers/DataTypes.h"
-#include <unordered_map>
 
 class RenderState
 {
@@ -70,8 +69,9 @@ class Sphere3D;
 class Quad3D;
 class Text3D;
 class mat4;
-
+class Material;
 #include <iostream>
+#include <unordered_map>
 using namespace std;
 //Renderer Programming Interface
 class RenderAPI
@@ -142,6 +142,7 @@ protected:
 	/*Mesh Rendering*/
 
 	/*Color Management*/
+	virtual void setMaterial(Material& mat) = 0;
 	virtual void setColor(vec4& v) = 0;
 	virtual void setColor(vec3& v) = 0;
 	/*Color Management*/

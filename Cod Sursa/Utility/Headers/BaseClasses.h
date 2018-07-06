@@ -19,6 +19,7 @@ enum GEOMETRY_TYPE
 {
 	MESH,
 	VEGETATION,
+	PRIMITIVE,
 	PLACEHOLDER
 };
 
@@ -30,7 +31,10 @@ public:
 	vec3 scale;
 	vec3 position;
 	vec3 orientation;
+	vec3 color;
 	GEOMETRY_TYPE type;
+	F32 data; //general purpose
+	string data2;
 	F32 version;
 };
 

@@ -393,7 +393,7 @@ NxConvexMesh* PhysX::createConvexMesh(const NxStream& stream)
 	return NULL;
 }
 
-void PhysX::RenderActors()
+void PhysX::UpdateActors()
 {
     // Render all the actors in the scene
 	if(!gScene) return;
@@ -432,6 +432,7 @@ void PhysX::RenderActors()
 
 void PhysX::DrawObjects(NxShape *obj)
 {
+	//ToDo:: Update Objects position for each scene static & dynamic mesh arrays. -Ionut
 	RenderState s(true,true,true,true);
 	GFXDevice::getInstance().setRenderState(s);
 	F32 *orient = new F32[16];
@@ -442,7 +443,7 @@ void PhysX::DrawObjects(NxShape *obj)
     orient[3] = orient[7] = orient[11] = 0.0f;
     orient[15] = 1.0f;
     //glMultMatrixf(&(orient[0]));
-	GFXDevice::getInstance().renderModel((DVDFile*)obj->getActor().userData);
+	//GFXDevice::getInstance().renderModel((DVDFile*)obj->getActor().userData);
 	//GFXDevice::getInstance().popMatrix();
 	delete orient;
 }

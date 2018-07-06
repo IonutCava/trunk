@@ -11,8 +11,8 @@ public:
 	Thread(){}
 	~Thread() {join(); delete _thisThread; _thisThread = NULL;}
 
-	template< class A1, class M, class T >
-	void bind(M T::*f, A1 a1) {_thisThread = new boost::thread(boost::bind(f,a1));}
+	//template< class A1, class M, class T >
+	void bind(boost::function0<void> f) {_thisThread = new boost::thread(f);}
 
 	void sleep(F32 _duration) { boost::this_thread::sleep(boost::posix_time::milliseconds((boost::int64_t)_duration));}
 

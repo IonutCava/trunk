@@ -286,12 +286,12 @@ inline vec3& Vector(const vec3 &vp1, const vec3 &vp2) {
 
 class vec4 {
 public:
-	vec4(void) : x(0), y(0), z(0), w(1) { }
-	vec4(float _x,float _y,float _z,float _w) : x(_x), y(_y), z(_z), w(_w) { }
-	vec4(const float *_v) : x(_v[0]), y(_v[1]), z(_v[2]), w(_v[3]) { }
-	vec4(const vec3 &_v) : x(_v.x), y(_v.y), z(_v.z), w(1) { }
-	vec4(const vec3 &_v,float _w) : x(_v.x), y(_v.y), z(_v.z), w(_w) { }
-	vec4(const vec4 &_v) : x(_v.x), y(_v.y), z(_v.z), w(_v.w) { }
+	vec4(void) : x(0), y(0), z(0), w(1), xyz(x,y,z) { }
+	vec4(float _x,float _y,float _z,float _w) : x(_x), y(_y), z(_z), w(_w), xyz(x,y,z) { }
+	vec4(const float *_v) : x(_v[0]), y(_v[1]), z(_v[2]), w(_v[3]), xyz(x,y,z) { }
+	vec4(const vec3 &_v) : x(_v.x), y(_v.y), z(_v.z), w(1), xyz(x,y,z) { }
+	vec4(const vec3 &_v,float _w) : x(_v.x), y(_v.y), z(_v.z), w(_w), xyz(x,y,z) { }
+	vec4(const vec4 &_v) : x(_v.x), y(_v.y), z(_v.z), w(_v.w), xyz(x,y,z) { }
 
 	int operator==(const vec4 &_v) { return (fabs(this->x - _v.x) < EPSILON && fabs(this->y - _v.y) < EPSILON && fabs(this->z - _v.z) < EPSILON && fabs(this->w - _v.w) < EPSILON); }
 	int operator!=(const vec4 &_v) { return !(*this == _v); }
@@ -307,8 +307,8 @@ public:
 	const vec4 operator-() const { return vec4(-x,-y,-z,-w); }
 	const vec4 operator-(const vec4 &_v) const { return vec4(this->x - _v.x,this->y - _v.y,this->z - _v.z,this->w - _v.w); }
 
-	vec4 &operator*=(float _f) { return *this = *this * _f; }
-	vec4 &operator/=(float _f) { return *this = *this / _f; }
+	vec4 &operator*=(float _f) { return *this = *this * _f; xyz = vec3(x,y,z);}
+	vec4 &operator/=(float _f) { return *this = *this / _f; xyz = vec3(x,y,z);}
 	vec4 &operator+=(const vec4 &_v) { return *this = *this + _v; }
 	vec4 &operator-=(const vec4 &_v) { return *this = *this - _v; }
 
@@ -320,12 +320,12 @@ public:
 //	float &operator[](int _i) { return this->v[_i]; }
 //	const float &operator[](int _i) const { return this->v[_i]; }
 
-	void set(float _x,float _y,float _z,float _w) { this->x=_x; this->y=_y; this->z=_z; this->w=_w; }
-	void reset(void) { this->x = this->y = this->z = this->w = 0; }
+	void set(float _x,float _y,float _z,float _w) { this->x=_x; this->y=_y; this->z=_z; this->w=_w; xyz = vec3(x,y,z);}
+	void reset(void) { this->x = this->y = this->z = this->w = 0; xyz = vec3(x,y,z);}
 	bool compare(const vec4 &_v,float epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi && fabs(this->z - _v.z) < epsi && fabs(this->w - _v.w) < epsi); }
 
 	vec4 lerp(const vec4 &u, const vec4 &v, float factor) { return ((u * (1 - factor)) + (v * factor)); }
-
+	vec3 xyz; 
 	union {
 		struct {float x,y,z,w;};
 		struct {float s,t,p,q;};

@@ -10,95 +10,74 @@
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="PhysX\Actors">
-      <UniqueIdentifier>{9d89aac4-94ce-4d22-8ebd-807c02ee4b35}</UniqueIdentifier>
+      <UniqueIdentifier>{ec312994-0054-4942-b7da-759bafd7e161}</UniqueIdentifier>
     </Filter>
     <Filter Include="PhysX\Debug">
-      <UniqueIdentifier>{686e8494-4707-4af6-ba18-bf8a0a345b29}</UniqueIdentifier>
+      <UniqueIdentifier>{974c6a3b-8fef-4b4a-b293-b9da2dde3136}</UniqueIdentifier>
     </Filter>
     <Filter Include="Importer">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
-    <Filter Include="Importer\3DS">
-      <UniqueIdentifier>{3880f630-abb9-4c5a-897e-55065c7f1b2f}</UniqueIdentifier>
-      <ParseFiles>false</ParseFiles>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
-    <Filter Include="Importer\3DS\mesh">
-      <UniqueIdentifier>{d51f9fb8-1e01-41e3-9b3e-81f2d4ffaa2b}</UniqueIdentifier>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
-    <Filter Include="Importer\3DS\chunk">
-      <UniqueIdentifier>{1af0dca6-7d7b-49d7-9373-1320f918e649}</UniqueIdentifier>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
-    <Filter Include="Importer\3DS\light">
-      <UniqueIdentifier>{2fa31f18-e633-48ba-873d-7dd0d539c777}</UniqueIdentifier>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
-    <Filter Include="Importer\3DS\material">
-      <UniqueIdentifier>{f7c41269-bcd1-445a-bc0c-469fe6385a8a}</UniqueIdentifier>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
     <Filter Include="MultiThreading">
-      <UniqueIdentifier>{262d3355-1c13-456d-93a5-be3ed270c035}</UniqueIdentifier>
+      <UniqueIdentifier>{8a725774-ca12-49fb-b8b5-942d305ac54e}</UniqueIdentifier>
     </Filter>
     <Filter Include="GUI">
-      <UniqueIdentifier>{7bd8d427-fc4b-487c-90a9-fb39aef31a02}</UniqueIdentifier>
+      <UniqueIdentifier>{47f20caf-534e-4f5b-b153-515a87d96acc}</UniqueIdentifier>
     </Filter>
     <Filter Include="Vegetation">
-      <UniqueIdentifier>{7729be06-b97b-45ea-814a-899cf55c4cc2}</UniqueIdentifier>
+      <UniqueIdentifier>{cb04818c-4d7b-4e8f-a468-e3e4a24fe705}</UniqueIdentifier>
     </Filter>
     <Filter Include="Terrain">
-      <UniqueIdentifier>{dc800eab-dec0-4519-bb2c-7752749fb561}</UniqueIdentifier>
+      <UniqueIdentifier>{a7ad16d4-8d2f-4830-93f9-bf0f1e505ef2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Utility">
-      <UniqueIdentifier>{14c925c7-5191-4ec6-b343-39a1455cf76a}</UniqueIdentifier>
+      <UniqueIdentifier>{69803b4e-94cb-47fd-a335-8e67f061155d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Utility\Headers">
-      <UniqueIdentifier>{adedcf5f-a857-46c7-a6df-55fdc39de999}</UniqueIdentifier>
+      <UniqueIdentifier>{3367ea43-bc2e-42de-ac01-adfd3efacb38}</UniqueIdentifier>
     </Filter>
     <Filter Include="TextureManager">
-      <UniqueIdentifier>{9991163d-6afa-416b-8565-3e3625b4c4ad}</UniqueIdentifier>
+      <UniqueIdentifier>{33302c65-658b-43cf-baf0-232bcd4a7458}</UniqueIdentifier>
     </Filter>
     <Filter Include="Assets">
-      <UniqueIdentifier>{6f6eb729-8480-4a06-8c83-36035233cc19}</UniqueIdentifier>
+      <UniqueIdentifier>{f0e396cc-8856-4f3d-b4f6-bcec68a47343}</UniqueIdentifier>
     </Filter>
     <Filter Include="Scenes">
-      <UniqueIdentifier>{ccfa428a-4deb-4d97-b8b2-4fc5e3c97f9c}</UniqueIdentifier>
+      <UniqueIdentifier>{14586a86-3f73-4e40-aafc-5707ba0e7bbf}</UniqueIdentifier>
     </Filter>
     <Filter Include="Hardware">
-      <UniqueIdentifier>{1a0eb9c5-8bca-4196-9892-ecd6c1792a56}</UniqueIdentifier>
+      <UniqueIdentifier>{837b30a7-e56a-4984-b895-10389ba37a00}</UniqueIdentifier>
     </Filter>
     <Filter Include="Hardware\Input">
-      <UniqueIdentifier>{0a0033d2-5ee2-44c2-90eb-ba21120286b2}</UniqueIdentifier>
+      <UniqueIdentifier>{677a433b-b667-4ebd-86ab-a0b9b841a9ab}</UniqueIdentifier>
     </Filter>
     <Filter Include="Hardware\Video">
-      <UniqueIdentifier>{6a780681-8c98-4393-aa2c-2a827c8ae39a}</UniqueIdentifier>
+      <UniqueIdentifier>{632f485f-f5b6-4864-8f61-0737cf967eb0}</UniqueIdentifier>
     </Filter>
     <Filter Include="Hardware\Video\OpenGL">
-      <UniqueIdentifier>{bc5d46f7-12f1-49f8-8762-c558747d99c5}</UniqueIdentifier>
+      <UniqueIdentifier>{79ccc05c-fd01-4d57-b2af-3d02287c390b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Hardware\Video\Direct3D">
-      <UniqueIdentifier>{d501b787-854a-44b7-955f-af77ff07d8a7}</UniqueIdentifier>
+      <UniqueIdentifier>{fd0029f1-724a-49bf-aee5-894ff9d7d887}</UniqueIdentifier>
     </Filter>
     <Filter Include="Hardware\Video\Null">
-      <UniqueIdentifier>{1f113ca3-dd4d-4ad6-8ac1-8776bddf24f7}</UniqueIdentifier>
+      <UniqueIdentifier>{215a26ee-0847-433f-b60e-2fff4dfb5fad}</UniqueIdentifier>
     </Filter>
     <Filter Include="Hardware\Audio">
-      <UniqueIdentifier>{a5182115-06d7-46b7-b1e5-24d1e8a1b10c}</UniqueIdentifier>
+      <UniqueIdentifier>{96fd90f6-f023-44ee-85e5-c4de8c18efcb}</UniqueIdentifier>
     </Filter>
     <Filter Include="Hardware\Network">
-      <UniqueIdentifier>{637319b5-50b5-4181-bbdf-46742053c59b}</UniqueIdentifier>
+      <UniqueIdentifier>{2b121a53-2da4-41cb-bf9b-7df41eea2a2b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Managers">
-      <UniqueIdentifier>{17fd0a3b-1bb0-42bb-8604-d9c9d5409e80}</UniqueIdentifier>
+      <UniqueIdentifier>{5af98f8f-af68-4eb6-a853-46bffd52701d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Geometry">
-      <UniqueIdentifier>{7aeedfa9-d17e-4fc1-9df5-cbc77b452531}</UniqueIdentifier>
+      <UniqueIdentifier>{9c7a5fc4-dee8-4837-9754-282f91561be9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Geometry\Predefined">
-      <UniqueIdentifier>{5ccadf6a-aaca-4829-b6c6-cdf952af4138}</UniqueIdentifier>
+      <UniqueIdentifier>{69581b2b-23dd-4218-be0e-23ca10013278}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -126,38 +105,8 @@
     <ClCompile Include="..\PhysX\Debug\pxDebugRenderer.cpp">
       <Filter>PhysX\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="..\Importer\OBJ.cpp">
+    <ClCompile Include="..\Importer\DVDConverter.cpp">
       <Filter>Importer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Importer\objImporter.cpp">
-      <Filter>Importer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Importer\3DS\scene3ds.cpp">
-      <Filter>Importer\3DS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Importer\3DS\mesh\mesh3ds.cpp">
-      <Filter>Importer\3DS\mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Importer\3DS\mesh\mesh3dsobject.cpp">
-      <Filter>Importer\3DS\mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Importer\3DS\chunk\chunk.cpp">
-      <Filter>Importer\3DS\chunk</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Importer\3DS\chunk\file.cpp">
-      <Filter>Importer\3DS\chunk</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Importer\3DS\light\light3ds.cpp">
-      <Filter>Importer\3DS\light</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Importer\3DS\light\light3dsobject.cpp">
-      <Filter>Importer\3DS\light</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Importer\3DS\material\material3ds.cpp">
-      <Filter>Importer\3DS\material</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Importer\3DS\material\material3dsobject.cpp">
-      <Filter>Importer\3DS\material</Filter>
     </ClCompile>
     <ClCompile Include="..\MultiThreading\threadHandler.cpp">
       <Filter>MultiThreading</Filter>
@@ -174,6 +123,12 @@
     <ClCompile Include="..\Vegetation\Vegetation.cpp">
       <Filter>Vegetation</Filter>
     </ClCompile>
+    <ClCompile Include="..\Terrain\Quadtree.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Terrain\QuadtreeNode.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
     <ClCompile Include="..\Terrain\Sky.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
@@ -183,34 +138,19 @@
     <ClCompile Include="..\Terrain\TerrainChunk.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="..\Terrain\Water.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
     <ClCompile Include="..\Utility\Event.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="..\Utility\Guardian.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\Utility\Math.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Utility\Quadtree.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Utility\QuadtreeNode.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
     <ClCompile Include="..\Utility\XMLParser.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="..\TextureManager\ImageTools.cpp">
-      <Filter>TextureManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\TextureManager\Texture.cpp">
-      <Filter>TextureManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\TextureManager\Texture2D.cpp">
-      <Filter>TextureManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\TextureManager\TextureCubemap.cpp">
       <Filter>TextureManager</Filter>
     </ClCompile>
     <ClCompile Include="..\Assets\Bones.cpp">
@@ -222,6 +162,9 @@
     <ClCompile Include="..\Scenes\MainScene.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="..\Scenes\NetworkScene.cpp">
+      <Filter>Scenes</Filter>
+    </ClCompile>
     <ClCompile Include="..\Scenes\Scene.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
@@ -231,10 +174,19 @@
     <ClCompile Include="..\Hardware\Video\GFXDevice.cpp">
       <Filter>Hardware\Video</Filter>
     </ClCompile>
+    <ClCompile Include="..\Hardware\Video\Light.cpp">
+      <Filter>Hardware\Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Hardware\Video\Texture.cpp">
+      <Filter>Hardware\Video</Filter>
+    </ClCompile>
     <ClCompile Include="..\Hardware\Video\OpenGL\glFrameBufferObject.cpp">
       <Filter>Hardware\Video\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="..\Hardware\Video\OpenGL\glShader.cpp">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Hardware\Video\OpenGL\glTexture.cpp">
       <Filter>Hardware\Video\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="..\Hardware\Video\OpenGL\glVertexBufferObject.cpp">
@@ -245,6 +197,9 @@
     </ClCompile>
     <ClCompile Include="..\Hardware\Video\Direct3D\DXWrapper.cpp">
       <Filter>Hardware\Video\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Hardware\Network\ASIO.cpp">
+      <Filter>Hardware\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\Managers\Manager.cpp">
       <Filter>Managers</Filter>
@@ -267,11 +222,11 @@
     <ClCompile Include="..\Geometry\SubMesh.cpp">
       <Filter>Geometry</Filter>
     </ClCompile>
-    <ClCompile Include="..\Geometry\Predefined\Text3D.cpp">
-      <Filter>Geometry\Predefined</Filter>
-    </ClCompile>
     <ClCompile Include="..\main.cpp">
       <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Scenes\PingPongScene.cpp">
+      <Filter>Scenes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -302,38 +257,8 @@
     <ClInclude Include="..\PhysX\Debug\pxDebugRenderer.h">
       <Filter>PhysX\Debug</Filter>
     </ClInclude>
-    <ClInclude Include="..\Importer\OBJ.h">
+    <ClInclude Include="..\Importer\DVDConverter.h">
       <Filter>Importer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Importer\3DS\3ds.h">
-      <Filter>Importer\3DS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Importer\3DS\scene3ds.h">
-      <Filter>Importer\3DS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Importer\3DS\mesh\mesh3ds.h">
-      <Filter>Importer\3DS\mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Importer\3DS\mesh\mesh3dsobject.h">
-      <Filter>Importer\3DS\mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Importer\3DS\chunk\chunk.h">
-      <Filter>Importer\3DS\chunk</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Importer\3DS\chunk\file.h">
-      <Filter>Importer\3DS\chunk</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Importer\3DS\light\light3ds.h">
-      <Filter>Importer\3DS\light</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Importer\3DS\light\light3dsobject.h">
-      <Filter>Importer\3DS\light</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Importer\3DS\material\material3ds.h">
-      <Filter>Importer\3DS\material</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Importer\3DS\material\material3dsobject.h">
-      <Filter>Importer\3DS\material</Filter>
     </ClInclude>
     <ClInclude Include="..\MultiThreading\threadHandler.h">
       <Filter>MultiThreading</Filter>
@@ -350,10 +275,19 @@
     <ClInclude Include="..\Vegetation\Vegetation.h">
       <Filter>Vegetation</Filter>
     </ClInclude>
+    <ClInclude Include="..\Terrain\Quadtree.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Terrain\QuadtreeNode.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
     <ClInclude Include="..\Terrain\Sky.h">
       <Filter>Terrain</Filter>
     </ClInclude>
     <ClInclude Include="..\Terrain\TerrainChunk.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Terrain\Water.h">
       <Filter>Terrain</Filter>
     </ClInclude>
     <ClInclude Include="..\Utility\Headers\Manager.h">
@@ -383,10 +317,7 @@
     <ClInclude Include="..\Utility\Headers\ParamHandler.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\Utility\Headers\Quadtree.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Utility\Headers\QuadtreeNode.h">
+    <ClInclude Include="..\Utility\Headers\Ray.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\Utility\Headers\Singleton.h">
@@ -398,15 +329,6 @@
     <ClInclude Include="..\TextureManager\ImageTools.h">
       <Filter>TextureManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\TextureManager\Texture.h">
-      <Filter>TextureManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\TextureManager\Texture2D.h">
-      <Filter>TextureManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\TextureManager\TextureCubemap.h">
-      <Filter>TextureManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\Assets\Bones.h">
       <Filter>Assets</Filter>
     </ClInclude>
@@ -414,6 +336,9 @@
       <Filter>Scenes</Filter>
     </ClInclude>
     <ClInclude Include="..\Scenes\MainScene.h">
+      <Filter>Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Scenes\NetworkScene.h">
       <Filter>Scenes</Filter>
     </ClInclude>
     <ClInclude Include="..\Scenes\Scene.h">
@@ -428,10 +353,16 @@
     <ClInclude Include="..\Hardware\Video\GFXDevice.h">
       <Filter>Hardware\Video</Filter>
     </ClInclude>
+    <ClInclude Include="..\Hardware\Video\Light.h">
+      <Filter>Hardware\Video</Filter>
+    </ClInclude>
     <ClInclude Include="..\Hardware\Video\RenderAPIWrapper.h">
       <Filter>Hardware\Video</Filter>
     </ClInclude>
     <ClInclude Include="..\Hardware\Video\ShaderHandler.h">
+      <Filter>Hardware\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Hardware\Video\Texture.h">
       <Filter>Hardware\Video</Filter>
     </ClInclude>
     <ClInclude Include="..\Hardware\Video\VertexBufferObject.h">
@@ -440,7 +371,13 @@
     <ClInclude Include="..\Hardware\Video\OpenGL\glFrameBufferObject.h">
       <Filter>Hardware\Video\OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="..\Hardware\Video\OpenGL\glResources.h">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClInclude>
     <ClInclude Include="..\Hardware\Video\OpenGL\glShader.h">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Hardware\Video\OpenGL\glTexture.h">
       <Filter>Hardware\Video\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="..\Hardware\Video\OpenGL\glVertexBufferObject.h">
@@ -451,6 +388,9 @@
     </ClInclude>
     <ClInclude Include="..\Hardware\Video\Direct3D\DXWrapper.h">
       <Filter>Hardware\Video\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Libs\includes\networking\OPCodes.h">
+      <Filter>Hardware\Network</Filter>
     </ClInclude>
     <ClInclude Include="..\Managers\Manager.h">
       <Filter>Managers</Filter>
@@ -476,6 +416,15 @@
     <ClInclude Include="..\Geometry\SubMesh.h">
       <Filter>Geometry</Filter>
     </ClInclude>
+    <ClInclude Include="..\Geometry\Predefined\Box3D.h">
+      <Filter>Geometry\Predefined</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Geometry\Predefined\Quad3D.h">
+      <Filter>Geometry\Predefined</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Geometry\Predefined\Sphere3D.h">
+      <Filter>Geometry\Predefined</Filter>
+    </ClInclude>
     <ClInclude Include="..\Geometry\Predefined\Text3D.h">
       <Filter>Geometry\Predefined</Filter>
     </ClInclude>
@@ -488,13 +437,19 @@
     <ClInclude Include="..\resource.h">
       <Filter>PhysX</Filter>
     </ClInclude>
+    <ClInclude Include="..\SceneList.h">
+      <Filter>PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Scenes\PingPongScene.h">
+      <Filter>Scenes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuildStep Include="..\Importer\objImporter.h">
-      <Filter>Importer</Filter>
-    </CustomBuildStep>
     <CustomBuildStep Include="..\Terrain\Terrain.h">
       <Filter>Terrain</Filter>
     </CustomBuildStep>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\libs\includes\unordered_map" />
   </ItemGroup>
 </Project>

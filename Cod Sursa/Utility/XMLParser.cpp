@@ -3,6 +3,7 @@
 #include "Headers/ParamHandler.h"
 #include "Managers/SceneManager.h"
 #include "Managers/TerrainManager.h"
+#include "Rendering/common.h"
 
 #include "SceneList.h"
 
@@ -41,6 +42,8 @@ namespace XML
 		par.setParam("simSpeed",pt.get("runtime.simSpeed",1));
 		par.setParam("windowWidth",pt.get("runtime.windowWidth",1024));
 		par.setParam("windowHeight",pt.get("runtime.windowHeight",768));
+		Engine::getInstance().setWindowHeight(pt.get("runtime.windowHeight",768));
+		Engine::getInstance().setWindowWidth(pt.get("runtime.windowWidth",1024));
 	}
 
 	void loadScene(const std::string& sceneName)
@@ -89,7 +92,7 @@ namespace XML
 		ptree::iterator it;
 		typedef pair<string,string> item;
 		string assetLocation = ParamHandler::getInstance().getParam<string>("assetsLocation") + "/"; 
-		for (it = pt.get_child("terrainList").begin(); it != pt.get_child("terrainList").end(); ++it )
+		for (it = pt.get_child("terrainList").begin(); it != pt.get_child("terrainList").end(); it++ )
 		{
 			string name = it->second.data(); //The actual terrain name
 			string tag = it->first.data();   //The <name> tag for valid terrains or <xmlcomment> for comments
@@ -134,7 +137,8 @@ namespace XML
 		read_xml(file,pt);
 		ptree::iterator it;
 		string assetLocation = ParamHandler::getInstance().getParam<string>("assetsLocation")+"/";
-		for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); ++it )
+		if(boost::optional<ptree &> geometry = pt.get_child_optional("geometry"))
+		for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); it++ )
 		{
 			string name = it->second.data();
 			string format = it->first.data();
@@ -155,7 +159,8 @@ namespace XML
 			model.version = pt.get<F32>(name + ".version");
 			SceneManager::getInstance().addModel(model);
 		}
-		for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); ++it )
+		if(boost::optional<ptree &> vegetation = pt.get_child_optional("vegetation"))
+		for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); it++ )
 		{
 			string name = it->second.data();
 			string format = it->first.data();
@@ -173,6 +178,48 @@ namespace XML
 			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y"); 
 			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
 			model.type = VEGETATION;
+			model.version = pt.get<F32>(name + ".version");
+			SceneManager::getInstance().addModel(model);
+		}
+		if(boost::optional<ptree &> primitives = pt.get_child_optional("primitives"))
+		for (it = pt.get_child("primitives").begin(); it != pt.get_child("primitives").end(); ++it )
+		{
+			string name = it->second.data();
+			string format = it->first.data();
+			if(format.find("<xmlcomment>") != string::npos) continue;
+
+			FileData model;
+			model.ItemName = name;
+			model.ModelName = pt.get<string>(name + ".model");
+			model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
+			model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
+			model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
+			model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
+			model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
+			model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
+			model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x"); 
+			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y"); 
+			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
+			/*Primitives don't use materials yet so we can define colors*/
+			model.color.r    = pt.get<F32>(name + ".color.<xmlattr>.r"); 
+			model.color.g    = pt.get<F32>(name + ".color.<xmlattr>.g"); 
+			model.color.b    = pt.get<F32>(name + ".color.<xmlattr>.b");
+			/*The data variable stores a float variable (not void*) that can represent anything you want*/
+			/*For Text3D, it's the line width and for Box3D it's the edge length*/
+			if(model.ModelName.compare("Text3D") == 0)
+			{
+				model.data = pt.get<F32>(name + ".lineWidth");
+				model.data2 = pt.get<string>(name + ".text");
+			}
+			else if(model.ModelName.compare("Box3D") == 0)
+				model.data = pt.get<F32>(name + ".size");
+
+			else if(model.ModelName.compare("Sphere3D") == 0)
+				model.data = pt.get<F32>(name + ".radius");
+			else
+				model.data = 0;
+			
+			model.type = PRIMITIVE;
 			model.version = pt.get<F32>(name + ".version");
 			SceneManager::getInstance().addModel(model);
 		}

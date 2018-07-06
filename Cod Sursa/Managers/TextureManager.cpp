@@ -95,7 +95,7 @@ int TextureManager::SaveSeries(char		*filename,
 // series number and the extension
 	newFilename = new char[strlen(filename)+8];
 
-	sprintf(newFilename,"%s%d.tga",filename,savedImages);
+	sprintf_s(newFilename,strlen(filename)+8,"%s%d.tga",filename,savedImages);
 	
 // save the image
 	status = tgaSave(newFilename,width,height,pixelDepth,imageData);

@@ -3,13 +3,13 @@
 
 Light::Light(U32 slot) : _slot(slot)
 {
+	vec4 _white(1.0f,1.0f,1.0f,1.0f);
 	vec2 angle = vec2(0.0f, RADIANS(45.0f));
 	vec4 position = vec4(-cosf(angle.x) * sinf(angle.y),-cosf(angle.y),	-sinf(angle.x) * sinf(angle.y),	0.0f );
-	vec4 white(1.0f, 1.0f, 1.0f, 1.0f);
-	vec4 diffuse = white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + cosf(angle.y) * 0.75f);
+	vec4 diffuse = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + cosf(angle.y) * 0.75f);
 
 	_lightProperties["position"] = position;
-	_lightProperties["ambient"] = white;
+	_lightProperties["ambient"] = _white;
 	_lightProperties["diffuse"] = diffuse;
 	_lightProperties["specular"] = diffuse;
 
@@ -26,6 +26,7 @@ void Light::setLightProperties(const string& name, vec4 values)
 	tr1::unordered_map<string,vec4>::iterator it = _lightProperties.find(name);
 	if (it != _lightProperties.end())
 		_lightProperties[name] = values;
+
 	if(name.compare("spotDirection") == 0)
-		_lightProperties["spotDirection"] = vec4(0.0f, 0.0f, 0.0f,0.0f);
+		_lightProperties["spotDirection"] = values;
 }

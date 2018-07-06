@@ -14,8 +14,8 @@
 #define NOMINMAX
 #endif
 
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501
+#ifdef WIN32
+#define _CRT_SECURE_NO_WARNINGS
 #endif
 
 #include <stdlib.h>
@@ -34,6 +34,7 @@
 #include <deque>
 #include <list>
 #include <time.h>
+#include <unordered_map>
 #include "Utility/Headers/DataTypes.h"
 
 #define NEW_PARAM (__FILE__, __LINE__)
@@ -48,5 +49,7 @@ void operator delete(void *pxData);
 #define New new NEW_PARAM
 #define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
 
+using namespace std;
+using namespace tr1;
 
 #endif

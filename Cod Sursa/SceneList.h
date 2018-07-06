@@ -4,5 +4,5 @@
 #include "Scenes/MainScene.h"
 #include "Scenes/CubeScene.h"
 #include "Scenes/NetworkScene.h"
-
+#include "Scenes/PingPongScene.h"
 #endif

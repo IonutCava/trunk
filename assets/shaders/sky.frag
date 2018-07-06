@@ -1,4 +1,3 @@
-
 varying vec3 vertex;
 varying vec3 vertexMV;
 

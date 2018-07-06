@@ -4,9 +4,6 @@
 #include "resource.h"
 #include "GUI/zpr.h"
 #include "Utility/Headers/Singleton.h"
-//#include "Hardware/Video/GFXDevice.h"
-
-using namespace std;
 
 class PhysX;
 class Camera;
@@ -37,10 +34,10 @@ public:
 	void setWindowWidth(int w){width = w;}
 	void setWindowHeight(int h){height = h;}
 
-   F32 moveFB,moveLR,angleUD,angleLR,tip, turn;
+   F32 moveFB,moveLR,angleUD,angleLR;
    void LoadControls();
    //rendering functions
-   void Initialize(int w, int h); //Set up the rendering platform
+   void Initialize(); //Set up the rendering platform
    static void Pick(int name){}
    static void DrawSceneStatic();
    void DrawScene();

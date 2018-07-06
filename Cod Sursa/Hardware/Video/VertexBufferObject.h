@@ -5,8 +5,6 @@
 #include "Utility/Headers/MathClasses.h"
 #include "resource.h"
 
-using namespace std;
-
 class VertexBufferObject
 {
 public:

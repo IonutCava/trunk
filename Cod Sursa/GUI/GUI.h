@@ -1,7 +1,6 @@
 #ifndef GUI_H_
 #define GUI_H_
 #include "resource.h"
-#include <unordered_map>
 #include "Utility/Headers/Singleton.h"
 #include <boost/function.hpp>
 
@@ -77,7 +76,7 @@ public:
 	void addText(string id, vec3& position, Font font, vec3& color, char* format, ...);
 	void addButton(string id, string text, vec2& position, vec2& dimensions, vec3& color,ButtonCallback callback);
 	void modifyText(string id, char* format, ...);
-
+	void resize(int newWidth, int newHeight);
 	void clickCheck();
 	void clickReleaseCheck();
 	void checkItem(int x, int y);

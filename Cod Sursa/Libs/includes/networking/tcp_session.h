@@ -75,6 +75,9 @@ public:
   //Push a new packet in the output queue
   void sendPacket(WorldPacket& p);
 
+  //Push a new file in the output queue
+  void sendFile(const string& fileName);
+
 private:
   void stop();
   bool stopped() const;
@@ -87,6 +90,9 @@ private:
   //Write Packet
   void start_write();
   void handle_write(const boost::system::error_code& ec);
+
+  //Write File
+  void handle_write_file(const boost::system::error_code& ec);
 
   //Update Timers
   void await_output();
@@ -105,6 +111,7 @@ private:
   boost::asio::streambuf input_buffer_;
   deadline_timer input_deadline_;
   std::deque<WorldPacket> output_queue_;
+  std::deque<std::string> output_file_queue_;
   deadline_timer non_empty_output_queue_;
   deadline_timer output_deadline_;
   boost::asio::strand _strand;

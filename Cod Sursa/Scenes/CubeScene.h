@@ -18,11 +18,8 @@ public:
 private:
 	F32 i ;
 	vec2 _sunAngle;
-	vec4 _sunVector,_white,_black;
-	F32 angleLR,angleUD,moveFB,moveLR,update_time,_sun_cosy;
-	Box3D *_box;
-	Text3D *_text3D;
-	Quad3D *_innerQuad, *_outterQuad;
+	vec4 _sunVector;
+	F32 angleLR,angleUD,moveFB,moveLR,update_time;
 	vec4 _vSunColor;
 };
 

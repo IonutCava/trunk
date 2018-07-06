@@ -1,0 +1,55 @@
+<geometry>
+	<item>masa</item>
+	<item>plasa</item>
+	<item>paleta</item>
+	<item>test</item>
+	<item>perete</item>
+</geometry>
+
+<primitives>
+	<!--<item>perete</item>-->
+</primitives>
+
+<masa>
+	<model>models/masa.obj</model>
+	<scale x="0.1" y="0.1" z="0.1" />
+	<position x="0" y="0" z="0" />
+	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
+</masa>
+
+<plasa>
+	<model>models/gardulet.obj</model>
+	<scale x="0.1" y="0.1" z="0.1" />
+	<position x="0" y="0" z="0" />
+	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
+</plasa>
+
+<test>
+	<model>models/sponza.obj</model>
+	<scale x="1" y="1" z="1" />
+	<position x="0" y="0" z="0" />
+	<orientation x="0" y="-90" z="0" />
+	<version>1.0</version>
+</test>
+
+<paleta>
+	<model>models/paleta.obj</model>
+	<scale x="0.03" y="0.03" z="0.03" />
+	<position x="0" y="1.5" z="3.5" />
+	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
+</paleta>
+
+<perete>
+	<!--<model>Box3D</model>-->
+	<!--<scale x="1" y="1" z="0.1" />-->
+	<scale x="0.03" y="0.03" z="0.03" />
+	<position x="0" y="0" z="-5" />
+	<orientation x="0" y="0" z="0" />
+	<color r="0.8" g="0.7" b="0.4"/>
+	<!--<size>6</size>-->
+	<model>models/dwarf.x</model>
+	<version>1.0</version>
+</perete>

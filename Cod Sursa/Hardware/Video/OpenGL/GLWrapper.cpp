@@ -6,6 +6,8 @@
 #include "Utility/Headers/Guardian.h"
 #include "GUI/GUI.h"
 #include "Utility/Headers/ParamHandler.h"
+#include "Utility/Headers/MathHelper.h"
+#include "Managers/SceneManager.h"
 
 #include "Geometry/Predefined/Box3D.h"
 #include "Geometry/Predefined/Sphere3D.h"
@@ -16,6 +18,7 @@
 
 void resizeWindowCallback(int w, int h)
 {
+	GUI::getInstance().resize(w,h);
 	GFXDevice::getInstance().resizeWindow(w,h);
 }
 
@@ -65,8 +68,30 @@ void GL_API::initHardware()
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glutCloseFunc(Guardian::getInstance().TerminateApplication);
 	glutReshapeFunc(resizeWindowCallback);
+	glutDisplayFunc(Engine::getInstance().DrawSceneStatic);
+	glutIdleFunc(Engine::getInstance().Idle);
 	cout << "OpenGL rendering system initialized!" << endl;
-	
+/*
+	int (*SwapInterval)(int);
+
+// main init code :
+SwapInterval = getProcAddress("glXSwapInterval");
+if (!SwapInterval)
+SwapInterval = getProcAddress("glXSwapIntervalEXT");
+if (!SwapInterval)
+SwapInterval = getProcAddress("glXSwapIntervalSGI");
+if (!SwapInterval)
+SwapInterval = getProcAddress("wglSwapInterval");
+if (!SwapInterval)
+SwapInterval = getProcAddress("wglSwapIntervalEXT");
+if (!SwapInterval)
+SwapInterval = getProcAddress("wglSwapIntervalSGI");
+// actual vsync activation
+SwapInterval(1);
+
+// no vsync, if needed :
+SwapInterval(0);
+*/
 }
 
 void GL_API::closeRenderingApi()
@@ -78,7 +103,7 @@ void GL_API::closeRenderingApi()
 void GL_API::resizeWindow(U32 w, U32 h)
 {
 	D32 _zNear  = 0.01f;
-	D32 _zFar   = 7000.0f;
+	D32 _zFar   = 70000.0f;
 	F32 x=0.0f,y=1.75f,z=5.0f;
 	F32 lx=0.0f,ly=0.0f,lz=-1.0f;
 
@@ -175,8 +200,8 @@ void GL_API::enableFog(F32 density, F32* color)
 	glFogfv (GL_FOG_COLOR, color); 
 	glFogf (GL_FOG_DENSITY, density); 
 	glHint (GL_FOG_HINT, GL_NICEST); 
-	glFogf (GL_FOG_START,  0.05f);
-	glFogf (GL_FOG_END,    200.0f);
+	glFogf (GL_FOG_START,  6700.0f);
+	glFogf (GL_FOG_END,    7000.0f);
 	glEnable(GL_FOG);
 }
 
@@ -372,6 +397,7 @@ void GL_API::drawBox3D(Box3D* const box)
 	//beginRenderStateProcessing();
 
 	pushMatrix();
+
 	translate(box->getPosition());
 	rotate(box->getOrientation().x,vec3(1.0f,0.0f,0.0f));
 	rotate(box->getOrientation().y,vec3(0.0f,1.0f,0.0f));
@@ -379,6 +405,8 @@ void GL_API::drawBox3D(Box3D* const box)
 	scale(box->getScale());
 	setColor(box->getColor());
 	if(box->getTexture()) box->getTexture()->Bind(0);
+	
+
 	if(box->getShader()) 
 	{
 		box->getShader()->bind();
@@ -387,6 +415,7 @@ void GL_API::drawBox3D(Box3D* const box)
 	glutSolidCube(box->getSize());
 	if(box->getShader())  box->getShader()->unbind();
 	if(box->getTexture()) box->getTexture()->Unbind(0);
+
 	popMatrix();
 
 	//endRenderStateProcessing();
@@ -395,8 +424,8 @@ void GL_API::drawBox3D(Box3D* const box)
 void GL_API::drawSphere3D(Sphere3D* const sphere)
 {
 	//beginRenderStateProcessing();
-
 	pushMatrix();
+
 	translate(sphere->getPosition());
 	rotate(sphere->getOrientation().x,vec3(1.0f,0.0f,0.0f));
 	rotate(sphere->getOrientation().y,vec3(0.0f,1.0f,0.0f));
@@ -409,7 +438,9 @@ void GL_API::drawSphere3D(Sphere3D* const sphere)
 		sphere->getShader()->bind();
 		sphere->getShader()->UniformTexture("texDiffuse",0);
 	}
-	glutSolidSphere(sphere->getSize(),sphere->getResolution(),sphere->getResolution());
+
+	glutSolidSphere(sphere->getSize(), sphere->getResolution(),sphere->getResolution());
+
 	if(sphere->getShader())  sphere->getShader()->unbind();
 	if(sphere->getTexture()) sphere->getTexture()->Unbind(0);
 	popMatrix();
@@ -423,6 +454,7 @@ void GL_API::drawQuad3D(Quad3D* const quad)
 	//beginRenderStateProcessing();
 
 	pushMatrix();
+
 	translate(quad->getPosition());
 	rotate(quad->getOrientation().x,vec3(1.0f,0.0f,0.0f));
 	rotate(quad->getOrientation().y,vec3(0.0f,1.0f,0.0f));
@@ -458,6 +490,7 @@ void GL_API::drawText3D(Text3D* const text)
 	//beginRenderStateProcessing();
 
 	pushMatrix();
+
 	translate(text->getPosition());
 	rotate(text->getOrientation().x,vec3(1.0f,0.0f,0.0f));
 	rotate(text->getOrientation().y,vec3(0.0f,1.0f,0.0f));
@@ -517,36 +550,80 @@ void GL_API::toggle2D(bool _2D)
 void GL_API::renderModel(DVDFile* const model)
 {
 	if(!model->isVisible()) return;
-
 	//beginRenderStateProcessing();
 
 	SubMesh *s;
 	vector<SubMesh* >::iterator _subMeshIterator;
 	
 	pushMatrix();
+
 	translate(model->getPosition());
 	rotate(model->getOrientation().x,vec3(1.0f,0.0f,0.0f));
 	rotate(model->getOrientation().y,vec3(0.0f,1.0f,0.0f));
 	rotate(model->getOrientation().z,vec3(0.0f,0.0f,1.0f));
 	scale(model->getScale());
-	model->getShader()->bind();
-	
+
+	for(U8 n = 0; n < model->getShaders().size(); n++)
+	{
+		model->getShaders()[n]->bind();
+			model->getShaders()[n]->Uniform("enable_shadow_mapping", 0);
+			model->getShaders()[n]->Uniform("tile_factor", 1.0f);	
+	}
+
 	for(_subMeshIterator = model->getSubMeshes().begin(); 
 		_subMeshIterator != model->getSubMeshes().end(); 
-		_subMeshIterator++)
+		++_subMeshIterator)
 	{
 		s = (*_subMeshIterator);
-		s->getGeometryVBO()->Enable();
-		s->getMaterial().texture->Bind(0);
-			model->getShader()->UniformTexture("texDiffuse",0);
-	
-			glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
 
-		s->getMaterial().texture->Unbind(0);
-		s->getGeometryVBO()->Disable();
+		setMaterial(s->getMaterial());
 		
+		U8 count = s->getMaterial().textures.size();
+		for(U8 n = 0; n < model->getShaders().size(); n++)
+			model->getShaders()[n]->Uniform("textureCount",count <= 2 ? count : 2);
+		U8 i = 0;
+		if(count)
+		{
+			for(; i < count; i++)
+				s->getMaterial().textures[i]->Bind(i);
+
+			for(U8 n = 0; n < model->getShaders().size(); n++)
+			{
+				model->getShaders()[n]->UniformTexture("texDiffuse0",0);
+				if(count > 1) model->getShaders()[n]->UniformTexture("texDiffuse1",1);			
+			}
+		}
+
+		if(s->getMaterial().bumpMap)
+		{
+			s->getMaterial().bumpMap->Bind(i++);
+			for(U8 n = 0; n < model->getShaders().size(); n++)
+			{
+				model->getShaders()[n]->Uniform("mode", 0);
+				model->getShaders()[n]->UniformTexture("texNormalHeightMap",i);
+			}
+		}
+		else
+			for(U8 n = 0; n < model->getShaders().size(); n++)
+				model->getShaders()[n]->Uniform("mode", 0);
+			
+		s->getGeometryVBO()->Enable();
+			glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
+		s->getGeometryVBO()->Disable();
+
+		if(count)
+			for(i = 0; i < s->getMaterial().textures.size(); i++)
+				s->getMaterial().textures[i]->Unbind(i);
+
+		if(s->getMaterial().bumpMap)
+			s->getMaterial().bumpMap->Unbind(i++);
+				
 	}
-	model->getShader()->unbind();
+
+	for(U8 n = 0; n < model->getShaders().size(); n++)
+	{
+		model->getShaders()[n]->unbind();
+	}
 	popMatrix();
 
 	//endRenderStateProcessing();
@@ -561,14 +638,23 @@ void GL_API::renderElements(Type t, U32 count, const void* first_element)
 	//endRenderStateProcessing();
 }
 
+void GL_API::setMaterial(Material& mat)
+{
+	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,mat.diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mat.ambient);
+	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mat.specular);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS,mat.shininess);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,mat.emmissive);
+}
+
 void GL_API::setColor(vec4& color)
 {
-	glColor4f(color.r,color.g,color.b,color.a);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color);
 }
 
 void GL_API::setColor(vec3& color)
 {
-	glColor3f(color.r,color.g,color.b);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color);
 }
 
 
@@ -581,11 +667,15 @@ void GL_API::setLight(U32 slot, tr1::unordered_map<string,vec4>& properties)
 {
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0+slot);
-	if( properties.size() == 5)	glLightfv(GL_LIGHT0+slot, GL_SPOT_DIRECTION, properties["spotDirection"]);
+	//F32 global_ambient[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+	//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
 	glLightfv(GL_LIGHT0+slot, GL_POSITION, properties["position"]);
 	glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  properties["ambient"]);
 	glLightfv(GL_LIGHT0+slot, GL_DIFFUSE,  properties["diffuse"]);
-	glLightfv(GL_LIGHT0+slot, GL_SPECULAR, properties["diffuse"]);
+	glLightfv(GL_LIGHT0+slot, GL_SPECULAR, properties["specular"]);
+
+	if( properties.size() == 5)	glLightfv(GL_LIGHT0+slot, GL_SPOT_DIRECTION, properties["spotDirection"]);
+
 }
 
 void GL_API::createLight(U32 slot)

@@ -27,7 +27,7 @@ public:
 private:
 	//Singleton class: Constructor/Destructor private
 	ASIO() {_connected = false; _debugOutput = true; c = NULL;}
-	~ASIO() {work.reset(); t->join(); c->stop(); io_service.stop(); delete c; c = NULL;}
+	~ASIO() {work.reset(); t->join(); c->stop(); io_service_.stop(); delete c; c = NULL;}
 
 	friend class client;
 	void close(){c->stop(); _connected = false;}
@@ -46,7 +46,7 @@ private:
 	boost::thread *t;
 	bool _connected,_debugOutput;
 	client *c;
-	io_service io_service;
+	io_service io_service_;
 	std::string _address,_port;
 
 SINGLETON_END()

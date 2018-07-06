@@ -3,7 +3,7 @@
 void Event::startEvent()
 {
 	_end = false;
-	_thrd.bind(&Event::eventThread,this);
+	_thrd.bind(boost::bind(&Event::eventThread,this));
 }
 
 void Event::eventThread()

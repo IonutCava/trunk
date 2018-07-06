@@ -16,43 +16,47 @@ Note: all transformations applied to the mesh affect every submesh that compose 
 
 #include "resource.h"
 #include "SubMesh.h"
-#include <unordered_map>
 
 class Mesh : public Object3D
 {
 
 public:
-	Mesh() : Object3D() {}
+	Mesh() : Object3D() {_computedLightShaders = false;}
 	Mesh(vec3& position, vec3& scale, vec3& orientation,vec3& color)
-		: Object3D(position,scale,orientation,color) {}
+		: Object3D(position,scale,orientation,color) {_computedLightShaders = false;}
 
 	void addSubMesh(SubMesh* subMesh){_subMeshes.push_back(subMesh);}
 	
 
 	
-	inline vector<SubMesh* >&  getSubMeshes()   {return _subMeshes;}
-		   BoundingBox&        getBoundingBox();
-	inline Shader*             getShader()      {return _shader; }
+	inline vector<SubMesh*>&   getSubMeshes()   {return _subMeshes;}
+	inline BoundingBox&        getBoundingBox();
+	inline vector<Shader* >&   getShaders()      {return _shaders; }
 	inline SubMesh*            getSubMesh(const string& name);
 
-	void                setShader(Shader* s) {_shader = s;}
+	void                addShader(Shader* s) {_shaders.push_back(s);}
 	void                setPosition(vec3 position);
 	void				setScale(vec3 scale);
 	void                setVisibility(bool state) {_render = state;}
 	bool isVisible();
 	
-	
+	void                translate(vec3 position);
+	void                translateX(F32 distance) {translate(vec3(distance,0,0));}
+	void                translateY(F32 distance) {translate(vec3(0,distance,0));}
+	void                translateZ(F32 distance) {translate(vec3(0,0,distance));}
+
 protected:
 	bool isInView();
 	void computeBoundingBox();
+	void computeLightShaders();
 	void DrawBBox();
 
 protected:
 	
-	bool _visibleToNetwork, _render, _loaded, _drawBB;
+	bool _visibleToNetwork, _render, _loaded, _drawBB,_computedLightShaders;
 	vector<SubMesh* >			 _subMeshes;
 	vector<SubMesh* >::iterator  _subMeshIterator;
-	Shader*						 _shader;
+	vector<Shader*>				 _shaders;
 	BoundingBox			         _bb;
 };
 

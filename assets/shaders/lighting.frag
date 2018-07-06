@@ -1,15 +1,17 @@
 
 
-varying vec4 vPixToLightTBN[1];	
-varying vec3 vPixToEyeTBN;	
+varying vec4 vPixToLightTBN[1];	// Vecteur du pixel courant à la lumière
+varying vec3 vPixToEyeTBN;		// Vecteur du pixel courant à l'oeil
 varying vec3 vVertexMV;
 varying vec3 vNormalMV;
 varying vec3 vPixToLightMV;
 varying vec3 vLightDirMV;
 
-uniform sampler2D texDiffuse;
+uniform sampler2D texDiffuse0;
+uniform sampler2D texDiffuse1;
 uniform sampler2D texNormalHeightMap;
 
+uniform int textureCount;
 #define MODE_PHONG		0
 #define MODE_BUMP		1
 #define MODE_PARALLAX	2
@@ -24,7 +26,7 @@ uniform float tile_factor;
 // SHADOW MAPPING //
 uniform int depth_map_size;
 uniform int enable_shadow_mapping;	// 0->no  1->shadow mapping  2->shadow mapping + projected texture
-uniform sampler2DShadow texDepthMapFromLight;
+//uniform sampler2DShadow texDepthMapFromLight;
 uniform sampler2D texDiffuseProjected;
 #define Z_TEST_SIGMA 0.0001
 ////////////////////
@@ -71,6 +73,9 @@ void main (void)
 
 
 
+
+
+
 float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB)
 {
 	const int num_steps_lin = 10;
@@ -95,10 +100,13 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB)
 		
 	}
 	
-
+	
+	// l'intersection se situe entre (depth) et (depth-step);
+	// on se place donc à (depth - step/2) pour commencer
 	step = linear_step/2.0;
 	depth = best_depth - step;
 	
+	// recherche par dichotomie
 	for(int i=0; i<num_steps_bin; i++)
 	{
 		float h = 1.0 - texture2D(texNormalHeightMap, A+AB*depth).a;
@@ -153,8 +161,6 @@ vec4 ReliefMapping(vec2 uv)
 
 
 
-
-
 vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParallax)
 {	
 	vec3 lightVecTBN = normalize(vPixToLightTBN.xyz);
@@ -167,8 +173,10 @@ vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParall
 		vTexCoord = uv + ((height-0.5)* parallax_factor * (vec2(viewVecTBN.x, -viewVecTBN.y)/viewVecTBN.z));
 	}
 	
+	// on trouve la normale pertubée dans l'espace TBN
 	vec3 normalTBN = normalize(texture2D(texNormalHeightMap, vTexCoord).xyz * 2.0 - 1.0);
 	
+//// ECLAIRAGE :
 	return Phong(vTexCoord, normalTBN, vPixToEyeTBN, vPixToLightTBN);
 }
 
@@ -192,7 +200,14 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN)
 	vec3 V = normalize(vEyeTBN.xyz);
 	
 	
-	vec4 base = texture2D(texDiffuse, uv);	
+//// ECLAIRAGE :
+	vec4 base = vec4(1.0,1.0,1.0,1.0);
+	if(textureCount > 0)
+	{
+		base = texture2D(texDiffuse0, uv);	// Couleur diffuse
+		if(textureCount == 2) base *= texture2D(texDiffuse1, uv);
+		if(base.a < 0.4) discard;
+	}
 
 	float iDiffuse = max(dot(L, N), 0.0);	// Intensité diffuse
 	float iSpecular = pow(clamp(dot(reflect(-L, N), V), 0.0, 1.0), gl_FrontMaterial.shininess );
@@ -203,8 +218,10 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN)
 	vec4 cSpecular = gl_LightSource[0].specular * gl_FrontMaterial.specular * iSpecular;	
 		
 	
+	// Si c'est une lumière SPOT
 	if(vLightTBN.w > 1.5)
 	{
+		// Gestion du halo du spot
 		if(dot(normalize(vPixToLightMV.xyz), normalize(-vLightDirMV.xyz)) < gl_LightSource[0].spotCosCutoff)
 		{
 			cDiffuse = vec4(0.0, 0.0, 0.0, 1.0);
@@ -212,6 +229,7 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN)
 		}
 		else
 		{
+			// Shadow mapping :
 			if(enable_shadow_mapping != 0) {
 				vec3 vPixPosInDepthMap;
 				float shadow = ShadowMapping(gl_TexCoord[1], vPixPosInDepthMap);
@@ -227,6 +245,7 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN)
 			}
 		}
 	}
+	// Si c'est pas une lumière SPOT
 	else
 	{
 
@@ -253,17 +272,19 @@ float ShadowMapping(vec4 vVertexFromLightView, out vec3 vPixPosInDepthMap)
 	vPixPosInDepthMap = (vPixPosInDepthMap + 1.0) * 0.5;					// de l'intervale [-1 1] à [0 1]
 	
 	
-	vec4 vDepthMapColor = shadow2D(texDepthMapFromLight, vPixPosInDepthMap);
-
+	//vec4 vDepthMapColor = shadow2D(texDepthMapFromLight, vPixPosInDepthMap);
+/*
 	if((vDepthMapColor.z+Z_TEST_SIGMA) < vPixPosInDepthMap.z)
 	{
 		fShadow = 0.0;
 		
+		// Sof Shadow pour les fragments proches
 		if( length(vVertexMV.xyz) < 12.0 )
 		{
 			for(int i=0; i<9; i++)
 			{
 				vec2 offset = tOffset[i] / (float(depth_map_size));
+				// Couleur du pixel sur la depth map
 				vec4 vDepthMapColor = shadow2D(texDepthMapFromLight, vPixPosInDepthMap + vec3(offset.s, offset.t, 0.0));
 		
 				if((vDepthMapColor.z+Z_TEST_SIGMA) < vPixPosInDepthMap.z) {
@@ -279,7 +300,7 @@ float ShadowMapping(vec4 vVertexFromLightView, out vec3 vPixPosInDepthMap)
 	{
 		fShadow = 1.0;
 	}
-
+*/
 	fShadow = clamp(fShadow, 0.0, 1.0);
 	return fShadow;
 }

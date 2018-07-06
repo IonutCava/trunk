@@ -17,6 +17,7 @@ public:
 	void scheduleDeletion(){_shouldDelete = true;}
 	void cancelDeletion(){_shouldDelete = false;}
 	bool clean();
+
 private:
 	bool load_threaded();
 

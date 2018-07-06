@@ -1,6 +1,5 @@
 #include "Framerate.h"
 #include <iostream>
-using namespace std;
 
 void Framerate::Init(F32 tfps)
 {

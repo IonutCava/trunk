@@ -4,6 +4,7 @@
 #include "OpenGL\GLWrapper.h"
 #include "Direct3D\DXWrapper.h"
 
+class Object3D;
 SINGLETON_BEGIN_EXT1(GFXDevice,RenderAPI)
 
 public:
@@ -61,11 +62,14 @@ public:
 
 	void renderModel(DVDFile* const model){_api.renderModel(model);}
 	void renderElements(Type t, U32 count, const void* first_element){_api.renderElements(t,count,first_element);}
-
+	void renderElements(unordered_map<string,Object3D*>&  primitiveArray);
+	void renderElements(unordered_map<string,DVDFile*>&  geometryArray);
+	
+	void setMaterial(Material& mat){_api.setMaterial(mat);}
 	void setColor(vec4& v){_api.setColor(v);}
 	void setColor(vec3& v){_api.setColor(v);}
 
-	void setLight(U32 slot, tr1::unordered_map<string,vec4>& properties){_api.setLight(slot,properties);}
+	void setLight(U32 slot, unordered_map<string,vec4>& properties){_api.setLight(slot,properties);}
 	void createLight(U32 slot){_api.createLight(slot);}
 
 private:

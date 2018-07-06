@@ -9,7 +9,7 @@
 #include "Debug/pxDebugRenderer.h"
 #include "Hardware/Input/Keyboard.h"
 #include "Utility/Headers/Singleton.h"
-using namespace std;
+
 
 class NxPhysicsSDK; 
 class NxScene;
@@ -108,7 +108,7 @@ public:
 	void CreateSphere(int size);       //Creaza o singura sfera de raza data la pozitia data
 	
 	//Aceasta functie se apeleaza din callback-ul de randare al OpenGL-ului si randeaza TOTI actorii
-	void RenderActors(); //ToDo: un bypass in caz de un obiect nu a fost instantiat si ca actor dar trebuie totusi randat
+	void UpdateActors(); //ToDo: un bypass in caz de un obiect nu a fost instantiat si ca actor dar trebuie totusi randat
 	
 	//Folosing functia aceasta aplicam un impuls de forta "forceStrength" actorului "actor" selectat pe directia "forceDir"
 	//Ex: pxWorld->ApplyForceToActor(actors[3],NxVec3(-1,0,0),300); <= Lovim actorul 4 pe -x cu 300Nm

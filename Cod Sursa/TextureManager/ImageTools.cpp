@@ -15,8 +15,8 @@ unsigned char* OpenImagePPM(const std::string& filename, U32& w, U32& h, U32& d,
 	char head[70];
 	int i,j;
 	U8 * img = NULL;
-
-	FILE * f = fopen(filename.c_str(), "rb");
+	FILE* f;
+	f = fopen(filename.c_str(),"rb");
 
 	if(f==NULL){
 		return 0;
@@ -34,9 +34,9 @@ unsigned char* OpenImagePPM(const std::string& filename, U32& w, U32& h, U32& d,
 			}
 
 			if(i==0)
-				i += sscanf(head, "%d %d %d", &w, &h, &d);
+				i += sscanf_s(head, "%d %d %d", &w, &h, &d);
 			else if(i==1)
-				i += sscanf(head, "%d %d", &h, &d);
+				i += sscanf_s(head, "%d %d", &h, &d);
 			else if(i==2)
 				i += sscanf(head, "%d", &d);
 		}

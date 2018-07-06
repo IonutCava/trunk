@@ -12,7 +12,7 @@ SINGLETON_BEGIN(SERVER)
 
 
 public:
-	void init(U16 port, std::string& broadcast_endpoint_address);
+	void init(U16 port, std::string& broadcast_endpoint_address,bool debugOutput);
 
 private:
   SERVER();
@@ -23,6 +23,7 @@ private:
   boost::asio::io_service io_service_;
   tcp::acceptor* acceptor_;
   channel channel_;
+  bool _debugOutput;
 
 SINGLETON_END()
 

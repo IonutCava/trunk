@@ -2,7 +2,7 @@
 #define BOUNDINGBOX_H_
 #include "MathClasses.h"
 #include "Utility/Headers/Ray.h"
-
+//ToDo: -Add BoundingSphere -Ionut
 class BoundingBox
 {
 public:

@@ -37,11 +37,13 @@ public:
 	string&						getName(){return _name;}
 	void                        setSelected(bool state) {_selected = state;	if(_selected) cout << "Selected: " << getName() << endl;}
 	bool                        isSelected() {return _selected;}
-
+	virtual void                computeBoundingBox(){}
+	std::string& getItemName() {return _itemName;}
 protected:
 	vec3 _position, _orientation, _scale,_color;
 	bool _selected,_update;
 	string _name;
+	string _itemName;
 };
 
 #endif

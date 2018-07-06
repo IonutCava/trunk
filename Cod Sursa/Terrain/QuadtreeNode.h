@@ -26,7 +26,7 @@ public:
 	void ComputeBoundingBox(const vec3* vertices);
 	void Destroy();
 
-	int  DrawGround(Frustum* pFrust, int options);
+	int  DrawGround(int options);
 	void DrawGrass(bool drawInReflexion);
 	int  DrawObjects(bool drawInReflexion);
 	void DrawTrees(bool drawInReflexion);

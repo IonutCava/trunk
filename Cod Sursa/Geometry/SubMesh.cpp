@@ -17,7 +17,10 @@ void SubMesh::computeBoundingBox()
 
 bool SubMesh::unload()
 {
-	ResourceManager::getInstance().remove(_material.texture->getName());
+	for(U8 i = 0; i < _material.textures.size(); i++)
+		ResourceManager::getInstance().remove(_material.textures[i]->getName());
+	if(_material.bumpMap)
+		ResourceManager::getInstance().remove(_material.bumpMap->getName());
 	getGeometryVBO()->Destroy();
 	getIndices().clear(); 
 	return true;

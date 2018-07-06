@@ -2,15 +2,12 @@
 #include "QuadtreeNode.h"
 #include "Utility/Headers/BoundingBox.h"
 #include "Rendering/Frustum.h"
-#include <assert.h>
  
-using namespace std;
-
 int Quadtree::DrawGround(bool drawInReflexion) {
 	assert(m_pRoot);
 	int options = CHUNK_BIT_TESTCHILDREN;
 	if(drawInReflexion)	options |= CHUNK_BIT_WATERREFLECTION;
-	return m_pRoot->DrawGround(&Frustum::getInstance(), options);
+	return m_pRoot->DrawGround(options);
 }
 
 void Quadtree::DrawGrass(bool drawInReflexion)

@@ -305,11 +305,11 @@ class ByteBuffer
 
             for(int i = 0; i < 8; ++i)
             {
-                if(guidmark & (U8(1) << i))
+                if(guidmark & (((U8)1) << i))
                 {
                     U8 bit;
                     (*this) >> bit;
-                    guid |= (U64(bit) << (i * 8));
+                    guid |= (U64)(bit << (i * 8));
                 }
             }
 
@@ -387,8 +387,8 @@ class ByteBuffer
             {
                 if (guid & 0xFF)
                 {
-                    packGUID[0] |= U8(1 << i);
-                    packGUID[size] = U8(guid & 0xFF);
+                    packGUID[0] |= (U8)(1 << i);
+                    packGUID[size] = (U8)(guid & 0xFF);
                     ++size;
                 }
 
@@ -432,9 +432,9 @@ class ByteBuffer
 template <typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, vec3 const& v)
 {
-   b << x;
-   b << y;
-   b << z;
+   b << v.x;
+   b << v.y;
+   b << v.z;
    return b;
 }
 
@@ -443,7 +443,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, vec3 &v)
 {
 	b >> v.x;
 	b >> v.y;
-	b >> v.z
+	b >> v.z;
 	return b;
 }
 

@@ -12,7 +12,7 @@
 namespace ZPR
 {
 	U8 prevKey;
-	static F32 speedFactor = 3;
+	static F32 speedFactor = 0.25f;
 
 	void SpecialUpKeyboard(int Key,int x, int y)
 	{
@@ -35,20 +35,16 @@ namespace ZPR
 			switch( Key)
 			{
 				case GLUT_KEY_LEFT : 
-					Engine::getInstance().angleLR = -(0.01f + speedFactor/100);
-					Engine::getInstance().turn -= 5.0f;
+					Engine::getInstance().angleLR = -(speedFactor/10);
 					break;
 				case GLUT_KEY_RIGHT : 
-					Engine::getInstance().angleLR = 0.01f + speedFactor/100;
-					Engine::getInstance().turn += 5.0f;
+					Engine::getInstance().angleLR = speedFactor/10;
 					break;
 				case GLUT_KEY_UP : 
-					Engine::getInstance().angleUD = -(0.007f + speedFactor/100);
-					Engine::getInstance().tip  -= 5.0f;
+					Engine::getInstance().angleUD = -(speedFactor/10);
 					break;
 				case GLUT_KEY_DOWN : 
-					Engine::getInstance().angleUD = 0.007f + speedFactor/100;
-					Engine::getInstance().tip  += 5.0f;
+					Engine::getInstance().angleUD = speedFactor/10;
 					break;
 				case GLUT_KEY_END:
 					SceneManager::getInstance().deleteSelection();

@@ -38,7 +38,6 @@ Engine::Engine() :
 	 angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
 	 m_bWireframe = false;
  
-	 tip = 0, turn = 0;
 	 mainWindowId = -1;
 	 //END CONSTRUCTOR
 }
@@ -69,6 +68,10 @@ void Engine::DrawScene()
 	}
 	_px.StartPhysics();
 
+	vector<Light*> & lights = _scene.getActiveScene().getLights();
+	for(U8 i = 0; i < lights.size(); i++)
+		lights[i]->update();
+
 	_scene.preRender();
 	_scene.render();
 	_scene.processInput();
@@ -91,18 +94,13 @@ void Engine::RefreshMetrics()
 	if (time - timebase > 1000) timebase = time;		
 }
 
-void Engine::Initialize(int w, int h)
+void Engine::Initialize()
 {    
 	ResourceManager& res = ResourceManager::getInstance();
-	width = w;	height = h;
 	_GFX.setApi(OpenGL32);
 	_GFX.initHardware();
 	ZPR::Init();
-    glutDisplayFunc(DrawSceneStatic);
-	glutIdleFunc(Idle);
-	
-	_camera.setEye(vec3(200,150,200));
-
+	_camera.setEye(vec3(0,0,0));
 	F32 fogColor[4] = {0.5, 0.5, 0.5, 1.0}; 
 	//_GFX.enableFog(0.3f,fogColor);
 }

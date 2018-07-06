@@ -25,7 +25,7 @@ private:
 
 private:
 	vec2 _sunAngle;
-	vec4 _sunVector,_white,_black;
+	vec4 _sunVector;
 	vector<F32> _eventTimers;
 	F32 angleLR,angleUD,moveFB,moveLR;
 };

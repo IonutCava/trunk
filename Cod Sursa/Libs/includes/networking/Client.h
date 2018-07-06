@@ -16,6 +16,7 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp> 
 #include <iostream>
+#include <fstream>
 
 using boost::asio::deadline_timer;
 using boost::asio::ip::tcp;
@@ -46,6 +47,7 @@ public:
   //Packet I/O
   void sendPacket(WorldPacket& p);
   void receivePacket(WorldPacket& p);
+
   void toggleDebugOutput(bool debugOutput){_debugOutput = debugOutput;}
 private:
 
@@ -57,10 +59,14 @@ private:
   void start_read();
   void handle_read_body(const boost::system::error_code& ec,size_t bytes_transfered);
   void handle_read_packet(const boost::system::error_code& ec,size_t bytes_transfered);
-  
+    //File Input
+  void receiveFile();
+  void handle_read_file(const boost::system::error_code& ec,size_t bytes_transfered);
+
   //Write
   void start_write();
   void handle_write(const boost::system::error_code& ec);
+  void handle_read_file_content(const boost::system::error_code& err, std::size_t bytes_transfered);
 
   //Timers
   void check_deadline();
@@ -73,6 +79,12 @@ private:
   deadline_timer deadline_;
   deadline_timer heartbeat_timer_;
   std::deque<WorldPacket> packetQueue;
+
+  //File Data
+  std::ofstream output_file;;
+  boost::asio::streambuf request_buf;
+  size_t file_size;
+  boost::array<char, 1024> buf;
 };
 
 #endif

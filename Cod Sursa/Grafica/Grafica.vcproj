@@ -41,7 +41,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)\Libs\includes\networking&quot;;&quot;$(OutDir)\Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXLoader&quot;;&quot;$(EngineLibraries)\physx\include\Physics&quot;;&quot;$(EngineLibraries)\physx\include\NxCharacter&quot;;&quot;$(EngineLibraries)\physx\include\Foundation&quot;;&quot;$(EngineLibraries)\physx\include\Cooking&quot;"
-				PreprocessorDefinitions="_WIN32;WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG"
+				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -123,7 +123,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)\Libs\includes\networking&quot;;&quot;$(OutDir)\Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXLoader&quot;;&quot;$(EngineLibraries)\physx\include\Physics&quot;;&quot;$(EngineLibraries)\physx\include\NxCharacter&quot;;&quot;$(EngineLibraries)\physx\include\Foundation&quot;;&quot;$(EngineLibraries)\physx\include\Cooking&quot;"
-				PreprocessorDefinitions="_WIN32;WIN32;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32"
 				StringPooling="true"
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
@@ -510,6 +510,14 @@
 			</File>
 			<File
 				RelativePath="..\Scenes\NetworkScene.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Scenes\PingPongScene.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Scenes\PingPongScene.h"
 				>
 			</File>
 			<File

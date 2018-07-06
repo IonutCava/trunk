@@ -2,7 +2,6 @@
 #include "Utility/Headers/Guardian.h"
 #include "Utility/Headers/ParamHandler.h"
 #include "Managers/SceneManager.h"
-using namespace std;
 
 F32 x = 0, y = 20, z = 0;
 F32 treeviz= 100, grassviz = 100, windspeed = 1;

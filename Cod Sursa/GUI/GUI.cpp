@@ -1,19 +1,22 @@
 #include "GUI.h"
 #include <stdarg.h>
 #include "Hardware/Video/GFXDevice.h"
+#include "Rendering/common.h"
 
-bool ButtonClickTest(Button* b,int x,int y) 
+void GUI::resize(int newWidth, int newHeight)
 {
-	if( b) 
+	I32 difWidth = Engine::getInstance().getWindowWidth() - newWidth;
+	I32 difHeight = Engine::getInstance().getWindowHeight() - newHeight;
+	for(_textIterator = _text.begin(); _textIterator != _text.end(); _textIterator++)
 	{
-		if( x > b->_position.x      && 
-			x < b->_position.x+b->_dimensions.x &&
-			y > b->_position.y      && 
-			y < b->_position.y+b->_dimensions.y ) {
-				return true;
-		}
+		(_textIterator->second)->_position.x -= difWidth;
+		(_textIterator->second)->_position.y -= difHeight;
 	}
-	return false;
+	for(_buttonIterator = _button.begin(); _buttonIterator != _button.end(); _buttonIterator++)
+	{
+		(_buttonIterator->second)->_position.x -= difWidth;
+		(_buttonIterator->second)->_position.y -= difHeight;
+	}
 }
 
 void GUI::draw()

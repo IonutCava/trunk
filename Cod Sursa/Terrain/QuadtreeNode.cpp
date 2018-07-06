@@ -1,8 +1,5 @@
 #include "QuadtreeNode.h"
 #include "Rendering/Frustum.h"
-#include "resource.h"
-
-using namespace std;
 
 void QuadtreeNode::Build(U32 depth,		
 						 ivec2 pos,					
@@ -172,19 +169,18 @@ void QuadtreeNode::DrawBBox(bool bTest)
 }
 
 
-int QuadtreeNode::DrawGround(Frustum* pFrust, int options)
+int QuadtreeNode::DrawGround(int options)
 {
-	assert(pFrust);
 
 	m_nLOD = -1;
-
+	Frustum& pFrust = Frustum::getInstance();
 	vec3 center = terrain_BBox.getCenter();				
 	F32 radius = (terrain_BBox.max-center).length();	
 
 	if(options & CHUNK_BIT_TESTCHILDREN) {
-		if(!terrain_BBox.ContainsPoint(pFrust->getEyePos()))
+		if(!terrain_BBox.ContainsPoint(pFrust.getEyePos()))
 		{
-			int resSphereInFrustum = pFrust->ContainsSphere(center, radius);
+			int resSphereInFrustum = pFrust.ContainsSphere(center, radius);
 			switch(resSphereInFrustum) {
 				case FRUSTUM_OUT: return 0;		
 				case FRUSTUM_IN:
@@ -192,7 +188,7 @@ int QuadtreeNode::DrawGround(Frustum* pFrust, int options)
 					break;		
 				case FRUSTUM_INTERSECT:								
 				{		
-					int resBoxInFrustum = pFrust->ContainsBoundingBox(terrain_BBox);
+					int resBoxInFrustum = pFrust.ContainsBoundingBox(terrain_BBox);
 					switch(resBoxInFrustum) {
 						case FRUSTUM_IN: options &= ~CHUNK_BIT_TESTCHILDREN; break;
 						case FRUSTUM_OUT: return 0;
@@ -212,7 +208,7 @@ int QuadtreeNode::DrawGround(Frustum* pFrust, int options)
 		}
 		else {
 			
-			vec3 vEyeToChunk = this->getBoundingBox().getCenter() - pFrust->getEyePos();
+			vec3 vEyeToChunk = this->getBoundingBox().getCenter() - pFrust.getEyePos();
 			m_fDistance = vEyeToChunk.length();
 			U32 lod = 0;
 			if(m_fDistance > TERRAIN_CHUNK_LOD1)		lod = 2;
@@ -225,7 +221,7 @@ int QuadtreeNode::DrawGround(Frustum* pFrust, int options)
 	else {
 		int ret = 0;
 		for(int i=0; i<4; i++)
-			ret += m_pChildren[i].DrawGround(pFrust, options);
+			ret += m_pChildren[i].DrawGround(options);
 		return ret;
 	}
 

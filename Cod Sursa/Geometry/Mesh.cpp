@@ -7,10 +7,25 @@ bool Mesh::isVisible()
 {
 	if(!_render || !isInView() || _subMeshes.empty())
 		return false;
+	if(!_computedLightShaders) computeLightShaders();
+
 	_bb.setVisibility(_selected); 
 	DrawBBox();
 	return true;
 
+}
+void Mesh::computeLightShaders()
+{
+	if(_shaders.empty())
+	{
+		vector<Light*>& lights = SceneManager::getInstance().getActiveScene().getLights();
+		for(U8 i = 0; i < lights.size(); i++)
+		/*if(lights[i]->getPosition().w == 0.0f)
+			_shaders.push_back(ResourceManager::getInstance().LoadResource<Shader>("OBJ"));
+		else*/
+			_shaders.push_back(ResourceManager::getInstance().LoadResource<Shader>("lighting"));
+	}
+	_computedLightShaders = true;
 }
 
 void Mesh::DrawBBox()
@@ -27,7 +42,7 @@ bool Mesh::isInView()
 	if(!_bb.isComputed()) computeBoundingBox();
 
 	// Bellow code is still buggy. ToDo: FIX THIS!!!!!!!
-	//return true; 
+	return true; 
 	vec3 vEyeToChunk = getBoundingBox().getCenter() - Frustum::getInstance().getEyePos();
 	//if(vEyeToChunk.length() > SceneManager::getInstance().getTerrainManager()->getGeneralVisibility()) return false;
 	// END BUGGY CODE :P
@@ -50,16 +65,21 @@ bool Mesh::isInView()
 
 void Mesh::setPosition(vec3 position)
 {
-	if(!_render) return;
+	if(getPosition() == position) return;
+	if(!_bb.isComputed()) computeBoundingBox();
+	_bb.Translate(getPosition()+position);
 	getPosition() = position;
+}
+
+void Mesh::translate(vec3 position)
+{
+	getPosition() += position;
 	if(!_bb.isComputed()) computeBoundingBox();
 	_bb.Translate(position);
-
 }
 
 void Mesh::setScale(vec3 scale)
 {
-	if(!_render) return;
 	getScale() = scale;
 	if(!_bb.isComputed()) computeBoundingBox();
 	_bb.Multiply(scale);

@@ -2,7 +2,6 @@
 #define _MANAGER_H_
 
 #include "resource.h"
-#include <unordered_map>
 #include "Utility/Headers/BaseClasses.h"
 
 class Manager

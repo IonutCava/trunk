@@ -15,6 +15,7 @@
 #define DATA_TYPES_H
 #include "Utility/Headers/MathClasses.h"
 #include <string>
+#include <vector>
 using namespace std;
 #define COORD(x,y,w)	((y)*(w)+(x))
 
@@ -34,14 +35,15 @@ typedef Texture TextureCubemap;
 class Material
 {
 public:
-  string name;              /* name of the material */
-  F32 diffuse[4];           /* diffuse component */
-  F32 ambient[4];           /* ambient component */
-  F32 specular[4];          /* specular component */
-  F32 emmissive[4];         /* emmissive component */
-  F32 shininess;            /* specular exponent */
-  U32 textureId;            /* Pointer to Texture Object */
-  Texture2D* texture;
+	Material() : bumpMap(NULL) {}
+  string name;            /* name of the material */
+  vec4 diffuse;           /* diffuse component */
+  vec4 ambient;           /* ambient component */
+  vec4 specular;          /* specular component */
+  vec4 emmissive;         /* emmissive component */
+  F32 shininess;          /* specular exponent */
+  vector<Texture2D*> textures;
+  Texture2D* bumpMap;
 };
 
 #endif

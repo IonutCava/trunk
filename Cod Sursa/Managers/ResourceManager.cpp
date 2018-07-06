@@ -5,6 +5,10 @@
 #include "Importer/DVDConverter.h"
 #include "Hardware/Video/ShaderHandler.h"
 #include "Utility/Headers/BaseClasses.h"
+#include "Geometry/Predefined/Box3D.h"
+#include "Geometry/Predefined/Sphere3D.h"
+#include "Geometry/Predefined/Text3D.h"
+#include "Geometry/Predefined/Quad3D.h"
 
 U32 maxAlloc = 0;
 char* zMaxFile = "";
@@ -117,16 +121,37 @@ DVDFile* ResourceManager::LoadResource<DVDFile>(const string& name,bool flag)
 	if(!ptr)
 	{
 		ptr = new DVDFile();
-
-		((DVDFile*)ptr)->load(name);
-
-		if(!ptr) return NULL;
+		if(!((DVDFile*)ptr)->load(name) || !ptr) return NULL;
 
 		_resDB[name] = ptr;
 	}
 	return (DVDFile*)ptr;
 }
 
+template<>
+Object3D* ResourceManager::LoadResource<Object3D>(const string& name,bool flag)
+{
+
+	Resource* ptr = LoadResource(name);
+
+	if(!ptr)
+	{
+		if(name.compare("Box3D") == 0)
+			ptr = new Box3D(1);
+		else if(name.compare("Sphere3D") == 0)
+			ptr = new Sphere3D(1,32);
+		else if(name.compare("Quad3D") == 0)
+			ptr = new Quad3D(vec3(1,1,0),vec3(-1,0,0),vec3(0,-1,0),vec3(-1,-1,0));
+		else if(name.compare("Text3D") == 0)
+			ptr = new Text3D("");
+		else
+			ptr = NULL;
+
+		if(!ptr) return NULL;
+		_resDB[name] = ptr;
+	}
+	return (Object3D*)ptr;
+}
 Resource* ResourceManager::LoadResource(const string& name)
 {
 	if(_resDB.find(name) != _resDB.end())	

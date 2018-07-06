@@ -5,8 +5,6 @@
 #include "Managers/ResourceManager.h"
 #include "TextureManager/ImageTools.h"
 
-using namespace std;
-
 class VertexBufferObject;
 class Terrain;
 class Shader;

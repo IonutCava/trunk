@@ -121,7 +121,7 @@ void SceneManager::findSelection(int x, int y)
     final_point[1] = point_xformed[1] + camera_origin[1];
     final_point[2] = point_xformed[2] + camera_origin[2];
 
-	vector<DVDFile* >::iterator it;
+	unordered_map<string, DVDFile* >::iterator it;
 	vec3 origin = vec3(Camera::getInstance().getEye().x,Camera::getInstance().getEye().y,Camera::getInstance().getEye().z);
 	vec3 dir = origin.direction(vec3(final_point[0],final_point[1],final_point[2]));
 	
@@ -129,12 +129,12 @@ void SceneManager::findSelection(int x, int y)
 	_currentSelection = NULL;
 	for(it = getModelArray().begin(); it != getModelArray().end(); it++)
 	{
-		(*it)->setSelected(false);
+		(it->second)->setSelected(false);
 		
-		if((*it)->getBoundingBox().intersect(r,0.01f,RAND_MAX))	
+		if((it->second)->getBoundingBox().intersect(r,0.01f,RAND_MAX))	
 		{
-			(*it)->setSelected(true);
-			_currentSelection = (*it);
+			(it->second)->setSelected(true);
+			_currentSelection = it->second;
 			break;
 		}
 	}

@@ -4,14 +4,15 @@
 enum Opcodes
 {
    	MSG_HEARTBEAT							 = 0x000,
-    CMSG_PING						         = 0x001,
-	SMSG_PONG								 = 0x002,
-	CMSG_REQUEST_DISCONNECT					 = 0x003,
-	CMSG_GEOMETRY_LIST                       = 0x004,
-	SMSG_GEOMETRY_APPEND					 = 0x005,
-	CMSG_REQUEST_GEOMETRY					 = 0x006,
-	SMSG_DISCONNECT							 = 0x007,
-	NUM_MSG_TYPES							 = 0x008
+	SMSG_SEND_FILE                           = 0x001,
+    CMSG_PING						         = 0x002,
+	SMSG_PONG								 = 0x003,
+	CMSG_REQUEST_DISCONNECT					 = 0x004,
+	CMSG_GEOMETRY_LIST                       = 0x005,
+	SMSG_GEOMETRY_APPEND					 = 0x006,
+	CMSG_REQUEST_GEOMETRY					 = 0x007,
+	SMSG_DISCONNECT							 = 0x008,
+	NUM_MSG_TYPES							 = 0x009
 };
 
 #endif;

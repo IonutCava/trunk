@@ -25,7 +25,7 @@ void TerrainChunk::addTree(vec3 pos,F32 rotation,F32 scale)
 	if(t)
 	{
 		t->getName() = DA[i].ModelName;
-		t->setShader(ResourceManager::getInstance().LoadResource<Shader>("terrain_tree"));
+		t->addShader(ResourceManager::getInstance().LoadResource<Shader>("terrain_tree"));
 		t->getOrientation() = vec3(0,rotation,0);
 		t->setScale(scale*DA[i].scale);
 		t->setPosition(pos);
@@ -121,13 +121,13 @@ void TerrainChunk::DrawTrees(U32 lod, F32 d)
 	if(indices_count > 0)
 	for(int i=0; i < indices_count; i++)
 	{
-		m_tTrees[i].getShader()->bind();
-			m_tTrees[i].getShader()->Uniform("time", GETTIME());
-			m_tTrees[i].getShader()->Uniform("scale", m_tTrees[i].getScale().y);
-			m_tTrees[i].getShader()->Uniform("windDirectionX", _windX);
-			m_tTrees[i].getShader()->Uniform("windDirectionZ", _windZ);
-			m_tTrees[i].getShader()->Uniform("windSpeed", _windS);
-		m_tTrees[i].getShader()->unbind();
+		m_tTrees[i].getShaders()[0]->bind();
+			m_tTrees[i].getShaders()[0]->Uniform("time", GETTIME());
+			m_tTrees[i].getShaders()[0]->Uniform("scale", m_tTrees[i].getScale().y);
+			m_tTrees[i].getShaders()[0]->Uniform("windDirectionX", _windX);
+			m_tTrees[i].getShaders()[0]->Uniform("windDirectionZ", _windZ);
+			m_tTrees[i].getShaders()[0]->Uniform("windSpeed", _windS);
+		m_tTrees[i].getShaders()[0]->unbind();
 		
 		GFXDevice::getInstance().renderModel(&m_tTrees[i]);
 		

@@ -31,7 +31,7 @@ void TerrainManager::createThreadedTerrains(vector<TerrainInfo>& terrains)
 {
 	vector<TerrainInfo>::iterator _terrainIter;
 	ResourceManager& res = ResourceManager::getInstance();
-	for(_terrainIter = terrains.begin(); _terrainIter != terrains.end(); ++_terrainIter)
+	for(_terrainIter = terrains.begin(); _terrainIter != terrains.end(); _terrainIter++)
 	{
 		_terrain = New Terrain((*_terrainIter).position,(*_terrainIter).scale);
 		_terrain->load((*_terrainIter).variables["heightmap"]);
@@ -122,7 +122,6 @@ void TerrainManager::drawInfinitePlane(F32 max_distance,FrameBufferObject& _fbo)
 {
 	
 	if(!_loaded) return;
-	const vec3& eye = Camera::getInstance().getEye();
 	ParamHandler&  par = ParamHandler::getInstance();
 	if(!_computedMinHeight)
 	{
@@ -136,20 +135,14 @@ void TerrainManager::drawInfinitePlane(F32 max_distance,FrameBufferObject& _fbo)
 				_maxHeight = ((Terrain*)_resDBiter->second)->getBoundingBox().max.y;
 			}
 		}
-		_minHeight -= 100;
+		_minHeight -= 75;
 		par.setParam("minHeight",_minHeight);
 		_computedMinHeight = true;
 	}
-
+	const vec3& eye = Camera::getInstance().getEye();
 	_water->getQuad()->_tl = vec3(eye.x - max_distance, _minHeight, eye.z - max_distance);
 	_water->getQuad()->_tr = vec3(eye.x + max_distance, _minHeight, eye.z - max_distance);
 	_water->getQuad()->_bl = vec3(eye.x - max_distance, _minHeight, eye.z + max_distance);
 	_water->getQuad()->_br = vec3(eye.x + max_distance, _minHeight, eye.z + max_distance);
-
-	//glVertex3f(eye.x - max_distance, _minHeight, eye.z - max_distance);
-	//glVertex3f(eye.x - max_distance, _minHeight, eye.z + max_distance);
-	//glVertex3f(eye.x + max_distance, _minHeight, eye.z + max_distance);
-	//glVertex3f(eye.x + max_distance, _minHeight, eye.z - max_distance);
-
 	_water->draw(_fbo);
 }

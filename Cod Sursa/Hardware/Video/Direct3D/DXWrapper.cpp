@@ -115,7 +115,8 @@ void DX_API::renderModel(DVDFile* const model)
 	//rotate(model->getOrientation().y,vec3(0.0f,1.0f,0.0f));
 	//rotate(model->getOrientation().z,vec3(0.0f,0.0f,1.0f));
 	//scale(model->getScale());
-	model->getShader()->bind();
+	for(U8 n = 0; n < model->getShaders().size(); n++)
+		model->getShaders()[n]->bind();
 	
 	for(_subMeshIterator = model->getSubMeshes().begin(); 
 		_subMeshIterator != model->getSubMeshes().end(); 
@@ -124,7 +125,8 @@ void DX_API::renderModel(DVDFile* const model)
 		s = (*_subMeshIterator);
 		s->getGeometryVBO()->Enable();
 		//s->getMaterial().texture->Bind(0);
-			model->getShader()->UniformTexture("texDiffuse",0);
+			for(U8 n = 0; n < model->getShaders().size(); n++)
+				model->getShaders()[n]->UniformTexture("texDiffuse",0);
 	
 	//		glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
 
@@ -132,11 +134,16 @@ void DX_API::renderModel(DVDFile* const model)
 		s->getGeometryVBO()->Disable();
 		
 	}
-	model->getShader()->unbind();
+	for(U8 n = 0; n < model->getShaders().size(); n++)
+		model->getShaders()[n]->unbind();
 	//popMatrix();
 }
 
 void DX_API::renderElements(Type t, U32 count, const void* first_element)
+{
+}
+
+void DX_API::setMaterial(Material& mat)
 {
 }
 

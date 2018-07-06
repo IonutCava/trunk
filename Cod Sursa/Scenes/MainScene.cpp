@@ -13,6 +13,20 @@
 #include "GUI/GUI.h"
 #include "Rendering/Frustum.h"
 
+bool MainScene::updateLights()
+{
+	_sun_cosy = cosf(_sunAngle.y);
+	vec4 vSunColor = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f),
+								0.25f + _sun_cosy * 0.75f);
+
+	_lights[0]->setLightProperties(string("position"),_sunVector);
+	_lights[0]->setLightProperties(string("ambient"),_white);
+	_lights[0]->setLightProperties(string("diffuse"),vSunColor);
+	_lights[0]->setLightProperties(string("specular"),vSunColor);
+	//_lights[0]->update();
+	return true;
+}
+
 void MainScene::preRender()
 {
 	ResourceManager& res = ResourceManager::getInstance();
@@ -25,26 +39,10 @@ void MainScene::preRender()
 
 	_GFX.clearBuffers(0x00004000/*GL_COLOR_BUFFER_BIT*/ | 0x00000100/*GL_DEPTH_BUFFER_BIT*/);
 
-	vec3 zeros(0.0f, 0.0f, 0.0f);
-	vec4 white(1.0f, 1.0f, 1.0f, 1.0f);
-	vec4 black(0.0f, 0.0f, 0.0f, 1.0f);
-	vec4 orange(1.0f, 0.5f, 0.0f, 1.0f);
-	vec4 yellow(1.0f, 1.0f, 0.8f, 1.0f);
-	F32 sun_cosy = cosf(_sunAngle.y);
+	updateLights();
 
-
-	vec4 vSunColor = white.lerp(orange, yellow, 0.25f + sun_cosy * 0.75f);
 	sky.setParams(Camera::getInstance().getEye(),vec3(_sunVector),true,true,true);
-	
-	_lights[0]->setLightProperties(string("spotDirection"),zeros);
-	_lights[0]->setLightProperties(string("position"),_sunVector);
-	_lights[0]->setLightProperties(string("ambient"),white);
-	_lights[0]->setLightProperties(string("diffuse"),vSunColor);
-	_lights[0]->setLightProperties(string("specular"),vSunColor);
-	_lights[0]->update();
-	
-	
-	vec4 vGroundAmbient = white.lerp(white*0.2f, black, sun_cosy);
+	vec4 vGroundAmbient = _white.lerp(_white*0.2f, _black, _sun_cosy);
 	
 	sky.draw();
 	_terMgr->drawTerrains(true,true,vGroundAmbient);
@@ -58,33 +56,22 @@ void MainScene::render()
 	GUI &gui = GUI::getInstance();
 	Camera& cam = Camera::getInstance();
 	Frustum::getInstance().Extract(cam.getEye());
-	vec4 zeros(0.0f, 0.0f, 0.0f,0.0f);
-	vec4 white(1.0f, 1.0f, 1.0f, 1.0f);
-	vec4 black(0.0f, 0.0f, 0.0f, 1.0f);
-	vec4 orange(1.0f, 0.5f, 0.0f, 1.0f);
-	vec4 yellow(1.0f, 1.0f, 0.8f, 1.0f);
-	F32 sun_cosy = cosf(_sunAngle.y);
 
-	vec4 vSunColor = white.lerp(orange, yellow, 0.25f + sun_cosy * 0.75f);
+	updateLights();
+
 	sky.setParams(Camera::getInstance().getEye(),vec3(_sunVector),false,true,true);
 	sky.draw();
 
-	_lights[0]->setLightProperties(string("spotDirection"),zeros);
-	_lights[0]->setLightProperties(string("position"),_sunVector);
-	_lights[0]->setLightProperties(string("ambient"),white);
-	_lights[0]->setLightProperties(string("diffuse"),vSunColor);
-	_lights[0]->setLightProperties(string("specular"),vSunColor);
-	_lights[0]->update();
 
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, white/6);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, white);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, _white/6);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, _white);
 
 	renderActors();
 
-	vec4 vGroundAmbient = white.lerp(white*0.2f, black, sun_cosy);
+	vec4 vGroundAmbient = _white.lerp(_white*0.2f, _black, _sun_cosy);
 
 	_terMgr->drawTerrains(true,false,vGroundAmbient);
-	_terMgr->drawInfinitePlane(15.0f*1500,*_skyFBO);
+	_terMgr->drawInfinitePlane(2.0f*4500,*_skyFBO);
 
 	gui.draw();	
 	
@@ -92,15 +79,11 @@ void MainScene::render()
 
 void MainScene::renderActors()
 {
-	if(PhysX::getInstance().getScene() != NULL)
-		PhysX::getInstance().RenderActors();
-	else
-		for(ModelIterator = ModelArray.begin();  ModelIterator != ModelArray.end();  ModelIterator++)
-		{
-			(*ModelIterator)->getBoundingBox().setVisibility(_drawBB);
-			(*ModelIterator)->setVisibility(_drawObjects);
-			GFXDevice::getInstance().renderModel(*ModelIterator);
-		}
+	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
+
+	GFXDevice::getInstance().renderElements(ModelArray);
+	GFXDevice::getInstance().renderElements(GeometryArray);
+
 }
 
 void MainScene::processInput()
@@ -110,18 +93,23 @@ void MainScene::processInput()
 	angleLR = Engine::getInstance().angleLR;
 	angleUD = Engine::getInstance().angleUD;
 	
-	if(angleLR)	Camera::getInstance().RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
-	if(angleUD)	Camera::getInstance().RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
-	if(moveFB)	Camera::getInstance().PlayerMoveForward(moveFB * Framerate::getInstance().getSpeedfactor());
+	if(angleLR)	Camera::getInstance().RotateX(angleLR * Framerate::getInstance().getSpeedfactor()/5);
+	if(angleUD)	Camera::getInstance().RotateY(angleUD * Framerate::getInstance().getSpeedfactor()/5);
+	if(moveFB)	Camera::getInstance().PlayerMoveForward(moveFB * Framerate::getInstance().
+		getSpeedfactor());
 	if(moveLR)	Camera::getInstance().PlayerMoveStrafe(moveLR * Framerate::getInstance().getSpeedfactor());
 
-
+	for(ModelIterator = ModelArray.begin();  ModelIterator != ModelArray.end();  ModelIterator++)
+	{
+		(ModelIterator->second)->getBoundingBox().setVisibility(_drawBB);
+		(ModelIterator->second)->setVisibility(_drawObjects);
+	}
 }
 
 
 void MainScene::processEvents(F32 time)
 {
-	F32 SunDisplay = 0.10f;
+	F32 SunDisplay = 1.10f;
 	F32 FpsDisplay = 0.3f;
 	F32 TimeDisplay = 0.01f;
 	if (time - _eventTimers[0] >= SunDisplay)
@@ -152,7 +140,7 @@ void MainScene::processEvents(F32 time)
 bool MainScene::load(const string& name)
 {
 	bool state = false;
-	_lights.push_back(new Light(0));
+	addDefaultLight();
 	_terMgr->createTerrains(TerrainInfoArray);
 	state = loadResources(true);	
 	state = loadEvents(true);
@@ -164,13 +152,13 @@ bool MainScene::unload()
 	return true;
 }
 
-bool _switchFB = false;
+bool _switchAB = false;
 void MainScene::test(boost::any a, CallbackParam b)
 {
 	boost::mutex::scoped_lock l(_mutex);
-	vec3 pos = ModelArray[0]->getPosition();
+	vec3 pos = ModelArray["box"]->getPosition();
  
-	if(!_switchFB)
+	if(!_switchAB)
 	{
 		if(pos.x < 300 && pos.z == 0)		   pos.x++;
 		if(pos.x == 300)
@@ -179,7 +167,7 @@ void MainScene::test(boost::any a, CallbackParam b)
 			if(pos.y == 800)
 			{
 				if(pos.z > -500)   pos.z--;
-				if(pos.z == -500)  _switchFB = true;
+				if(pos.z == -500)  _switchAB = true;
 			}
 			
 		}
@@ -193,12 +181,12 @@ void MainScene::test(boost::any a, CallbackParam b)
 			if(pos.y == 100)
 			{
 				if(pos.z < 0)    pos.z++;
-				if(pos.z == 0)   _switchFB = false;
+				if(pos.z == 0)   _switchAB = false;
 			}
 		}
 	}
 
-	ModelArray[0]->setPosition(pos);
+	ModelArray["box"]->setPosition(pos);
 }
 
 bool MainScene::loadResources(bool continueOnErrors)

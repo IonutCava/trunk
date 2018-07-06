@@ -3,8 +3,6 @@
 
 #include "resource.h"
 #include <boost/any.hpp>
-//#include <boost/thread.hpp>
-#include <unordered_map>
 #include  "MultiThreading/threadHandler.h"
 
 using boost::any_cast;

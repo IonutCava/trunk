@@ -2,7 +2,6 @@
 #define _SCENE_H
 
 #include "resource.h"
-#include <unordered_map>
 #include "Utility/Headers/BaseClasses.h"
 #include "Utility/Headers/Event.h"
 #include "Hardware/Video/GFXDevice.h"
@@ -25,7 +24,10 @@ public:
 	  _drawBB(false),
 	  _drawObjects(true)
 	  {
+		  _white = vec4(1.0f,1.0f,1.0f,1.0f);
+		  _black = vec4(0.0f,0.0f,0.0f,0.0f);
 	  };
+
 	virtual void render() = 0;
 	virtual void preRender() = 0;
 	virtual bool load(const string& name) = 0;
@@ -33,12 +35,13 @@ public:
 	virtual void processInput() = 0;
 	virtual void processEvents(F32 time) = 0;
 
-   int getNumberOfObjects(){return ModelArray.size();}
+   int getNumberOfObjects(){return ModelArray.size() + GeometryArray.size();}
    int getNumberOfTerrains(){return TerrainInfoArray.size();}
 
    TerrainManager* getTerrainManager() {return _terMgr;}
 
-   inline vector<DVDFile*>& getModelArray(){return ModelArray;}
+   inline unordered_map<string,DVDFile*>& getModelArray(){return ModelArray;}
+   inline unordered_map<string,Object3D*>& getGeometryArray(){return GeometryArray;}
 
    inline vector<FileData>& getModelDataArray() {return ModelDataArray;}
    inline vector<FileData>& getVegetationDataArray() {return VegetationDataArray;}
@@ -56,8 +59,13 @@ protected:
 	GFXDevice& _GFX;
 	TerrainManager* _terMgr;
 
-	vector<DVDFile*> ModelArray;
-	vector<DVDFile*>::iterator ModelIterator;
+	//Dynamic geometry
+	unordered_map<string, DVDFile*> ModelArray;
+	unordered_map<string, DVDFile*>::iterator ModelIterator;
+
+	//Static geometry
+	unordered_map<string,Object3D*> GeometryArray;
+	unordered_map<string,Object3D*>::iterator GeometryIterator;
 
 	//Datablocks for models,vegetation and terrains
 	vector<FileData> ModelDataArray, PendingDataArray;
@@ -66,22 +74,28 @@ protected:
 	
 	vector<Event*> _events;
 	vector<Light*> _lights;
-	bool& drawObjects() {return _drawObjects;}
-	bool& drawBBox() {return _drawBB;}
-	
-protected:
+
+	Light* _defaultLight;
+
 	bool _drawBB,_drawObjects;
 	boost::mutex _mutex;
-	friend class SceneManager;
+	bool& drawObjects() {return _drawObjects;}
+	bool& drawBBox() {return _drawBB;}
+
+	vec4 _white, _black;
 
 	
+protected:
+
+	friend class SceneManager;
 	virtual bool loadResources(bool continueOnErrors){return true;}
 	virtual bool loadEvents(bool continueOnErrors){return true;}
 	virtual void setInitialData();
 	void clearEvents(){/*foreach(_events as event) event.end()*/_events.empty();}
-	void clearObjects(){/*foreach(_ModelArray as model) model.unload();*/ ModelArray.empty();}
-
+	void clearObjects(){/*foreach(_ModelArray as model) model.unload();*/ GeometryArray.empty(); ModelArray.empty();}
 	bool loadModel(FileData& data);
+	bool loadGeometry(FileData& data);
+	bool addDefaultLight();
 
 };
 

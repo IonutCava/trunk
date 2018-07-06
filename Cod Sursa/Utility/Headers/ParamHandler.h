@@ -22,9 +22,7 @@
 #include "Utility/Headers/Singleton.h"
 #include <boost/any.hpp>
 #include <boost/thread/thread.hpp>
-#include <unordered_map>
 
-using namespace std;
 using boost::any_cast;
 
 SINGLETON_BEGIN (ParamHandler)

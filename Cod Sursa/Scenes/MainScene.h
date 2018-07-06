@@ -17,18 +17,21 @@ public:
 	bool loadEvents(bool continueOnErrors){return true;}
 	bool unload();
 
-	
 
+private:
 	/*Specific Scene Requirement*/
+	bool updateLights();
 	void renderActors();
 	void processInput();
 	void processEvents(F32 time);
+	void test(boost::any a, CallbackParam b);
 
 private:
-	void test(boost::any a, CallbackParam b);
+	
 	FrameBufferObject*     _skyFBO;
 	vec2 _sunAngle;
 	vec4 _sunVector;
+	F32  _sun_cosy;
 	mat4 _matSunModelviewProj;
 	F32 angleLR,angleUD,moveFB,moveLR;
 	vector<F32> _eventTimers;

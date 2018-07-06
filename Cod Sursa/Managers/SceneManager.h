@@ -22,7 +22,8 @@ public:
 	void processEvents(F32 time){_scene->processEvents(time);}
 	/*Base Scene Operations*/
 
-	inline vector<DVDFile* >& getModelArray(){return _scene->getModelArray();}
+	inline unordered_map<string, DVDFile* >& getModelArray(){return _scene->getModelArray();}
+	inline unordered_map<string, Object3D* >& getGeometryArray(){return _scene->getGeometryArray();}
 	inline vector<FileData>& getModelDataArray() {return _scene->getModelDataArray();}
 	inline vector<FileData>& getVegetationDataArray() {return _scene->getVegetationDataArray();}
 
@@ -48,6 +49,7 @@ private:
 		_scenes.insert(make_pair("MainScene", New MainScene()));
 		_scenes.insert(make_pair("CubeScene", New CubeScene()));
 		_scenes.insert(make_pair("NetworkScene", New NetworkScene()));
+		_scenes.insert(make_pair("PingPongScene", New PingPongScene()));
 		_currentSelection = NULL;
 	}
 	Scene* _scene;

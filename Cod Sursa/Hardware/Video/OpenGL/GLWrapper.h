@@ -61,7 +61,8 @@ private:
 
 	void renderModel(DVDFile* const model);
 	void renderElements(Type t, U32 count, const void* first_element);
-
+	
+	void setMaterial(Material& mat);
 	void setColor(vec4& color);
 	void setColor(vec3& color);
 

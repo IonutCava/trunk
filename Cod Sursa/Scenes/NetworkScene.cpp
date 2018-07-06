@@ -6,40 +6,36 @@
 #include "Rendering/common.h"
 #include "Rendering/Camera.h"
 #include "Terrain/Sky.h"
+#include "PhysX/PhysX.h"
 
 void NetworkScene::render()
 {
+	RenderState s(true,true,true,true);
+	GFXDevice::getInstance().setRenderState(s);
 
-	GUI &gui = GUI::getInstance();
-	
+	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
 
-	for(ModelIterator = ModelArray.begin();  ModelIterator != ModelArray.end();  ModelIterator++)
-		GFXDevice::getInstance().renderModel(*ModelIterator);
+	GFXDevice::getInstance().renderElements(ModelArray);
+	GFXDevice::getInstance().renderElements(GeometryArray);
 
-	gui.draw();
+	GUI::getInstance().draw();
 	
 }
 
 void NetworkScene::preRender()
 {
-	vec3 zeros(0.0f, 0.0f, 0.0f);
-	vec4 white(1.0f, 1.0f, 1.0f, 1.0f);
-	vec4 black(0.0f, 0.0f, 0.0f, 1.0f);
-	vec4 orange(1.0f, 0.5f, 0.0f, 1.0f);
-	vec4 yellow(1.0f, 1.0f, 0.8f, 1.0f);
-	F32 sun_cosy = cosf(_sunAngle.y);
+	
+	vec4 vSunColor = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f),
+								0.25f + cosf(_sunAngle.y) * 0.75f);
 
-	vec4 vSunColor = white.lerp(orange, yellow, 0.25f + sun_cosy * 0.75f);
-
-	Sky::getInstance().setParams(Camera::getInstance().getEye(),vec3(_sunVector),false,true,false);
-	Sky::getInstance().draw();
-
-	_lights[0]->setLightProperties(string("spotDirection"),zeros);
 	_lights[0]->setLightProperties(string("position"),_sunVector);
-	_lights[0]->setLightProperties(string("ambient"),white);
+	_lights[0]->setLightProperties(string("ambient"),_white);
 	_lights[0]->setLightProperties(string("diffuse"),vSunColor);
 	_lights[0]->setLightProperties(string("specular"),vSunColor);
 	_lights[0]->update();
+
+	Sky::getInstance().setParams(Camera::getInstance().getEye(),vec3(_sunVector),false,true,false);
+	Sky::getInstance().draw();
 
 }
 
@@ -52,8 +48,8 @@ void NetworkScene::processInput()
 	
 	if(angleLR)	Camera::getInstance().RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
 	if(angleUD)	Camera::getInstance().RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
-	if(moveFB)	Camera::getInstance().PlayerMoveForward(moveFB * Framerate::getInstance().getSpeedfactor());
-	if(moveLR)	Camera::getInstance().PlayerMoveStrafe(moveLR * Framerate::getInstance().getSpeedfactor());
+	if(moveFB)	Camera::getInstance().PlayerMoveForward(moveFB * (Framerate::getInstance().getSpeedfactor()/5));
+	if(moveLR)	Camera::getInstance().PlayerMoveStrafe(moveLR * (Framerate::getInstance().getSpeedfactor()/5));
 }
 
 void NetworkScene::processEvents(F32 time)
@@ -116,7 +112,8 @@ bool NetworkScene::load(const string& name)
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f;
 	bool state = loadResources(true);
 	ParamHandler::getInstance().setParam("serverResponse",string("waiting"));
-	_lights.push_back(new Light(0));
+	addDefaultLight();
+	Camera::getInstance().setEye(vec3(0,30,-30));
 	return state;
 }
 
