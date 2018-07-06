@@ -118,7 +118,7 @@ void Camera::MoveAnaglyph(F32 factor)
 	vCenter += vLeftDir * factor;
 }
 
-void Camera::RenderLookAtToCubeMap(const vec3& eye, U32 nFace)
+void Camera::RenderLookAtToCubeMap(const vec3& eye, U8 nFace)
 {
 	assert(nFace < 6);
 

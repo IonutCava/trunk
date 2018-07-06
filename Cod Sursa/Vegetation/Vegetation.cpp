@@ -2,6 +2,7 @@
 
 #include "Utility/Headers/Guardian.h"
 #include "Rendering/Frustum.h"
+#include "Terrain/Terrain.h"
 #include "Terrain/Quadtree.h"
 #include "Terrain/QuadtreeNode.h"
 #include "Terrain/TerrainChunk.h"
@@ -9,10 +10,11 @@
 #include "PhysX/PhysX.h"
 #include "Managers/SceneManager.h"
 #include "Hardware/Video/GFXDevice.h"
+#include "TextureManager/ImageTools.h"
 
 void Vegetation::initialize(const string& grassShader)
 {
-	_grassShader  = _res.LoadResource<Shader>(grassShader);
+	_grassShader  = ResourceManager::getInstance().LoadResource<Shader>(grassShader);
 	_grassDensity = _grassDensity/_billboardCount;
 	
 	for(U8 i = 0 ; i < _billboardCount; i++) _success = generateGrass(i);
@@ -30,7 +32,10 @@ void Vegetation::draw(bool drawInReflexion)
 	_windZ = SceneManager::getInstance().getTerrainManager()->getWindDirZ();
 	_windS = SceneManager::getInstance().getTerrainManager()->getWindSpeed();
 	_time = GETTIME();
-	for(int index = 0; index < _billboardCount; index++)
+	RenderState old = GFXDevice::getInstance().getActiveRenderState();
+	RenderState s(true,true,true,true);
+	GFXDevice::getInstance().setRenderState(s);
+	for(U16 index = 0; index < _billboardCount; index++)
 	{
 		_grassBillboards[index]->Bind(0);
 		_grassShader->UniformTexture("texDiffuse", 0);
@@ -44,13 +49,14 @@ void Vegetation::draw(bool drawInReflexion)
 		
 	}
 	_grassShader->unbind();
+	GFXDevice::getInstance().setRenderState(old);
 
 	DrawTrees(drawInReflexion);
 }
 
 
 
-bool Vegetation::generateGrass(int index)
+bool Vegetation::generateGrass(U32 index)
 {
 	Con::getInstance().printfn("Generating Grass...[ %d ]", (U32)_grassDensity);
 	assert(_map.data);
@@ -77,8 +83,8 @@ bool Vegetation::generateGrass(int index)
 	for(U32 k=0; k<(U32)_grassDensity; k++) {
 		F32 x = random(1.0f);
 		F32 y = random(1.0f);
-		int map_x = (int)(x * _map.w);
-		int map_y = (int)(y * _map.h);
+		U16 map_x = (U16)(x * _map.w);
+		U16 map_y = (U16)(y * _map.h);
 		vec2 uv_offset = vec2(0.0f, random(3)==0 ? 0.0f : 0.5f);
 		F32 size = random(0.5f);
 		ivec3 map_color = _map.getColor(map_x, map_y);
@@ -107,7 +113,7 @@ bool Vegetation::generateGrass(int index)
 			TerrainChunk* chunk = node->getChunk();
 			assert(chunk);
 
-			for(int i=0; i<3*4; i++)
+			for(U8 i=0; i<3*4; i++)
 			{
 				vec3 data = matRot*(tVertices[i]*_grassSize);
 				vec3 vertex = P;
@@ -148,15 +154,10 @@ bool Vegetation::generateTrees()
 		return true;
 	}
 	Con::getInstance().printf("Generating Vegetation... [ %f ]\n", _treeDensity);
-	Shader *tree_shader = ResourceManager::getInstance().LoadResource<Shader>("terrain_tree");
-	tree_shader->bind();
-		tree_shader->Uniform("enable_shadow_mapping", 0);
-		tree_shader->Uniform("tile_factor", 1.0f);	
-	tree_shader->unbind();
 
-	for(U32 k=0; k<(U32)_treeDensity; k++) {
-		I32 map_x = (I32)random((F32)_map.w);
-		I32 map_y = (I32)random((F32)_map.h);
+	for(U16 k=0; k<(U16)_treeDensity; k++) {
+		I16 map_x = (I16)random((F32)_map.w);
+		I16 map_y = (I16)random((F32)_map.h);
 		ivec3 map_color = _map.getColor(map_x, map_y);
 		if(map_color.green < 55) {
 			k--;
@@ -183,8 +184,8 @@ bool Vegetation::generateTrees()
 		TerrainChunk* chunk = node->getChunk();
 		assert(chunk);
 		
-		int index = rand() % DA.size();
-		chunk->addTree(P, random(360.0f),_treeScale,tree_shader,DA[index]);
+		U16 index = rand() % DA.size();
+		chunk->addTree(P, random(360.0f),_treeScale,"terrain_tree",DA[index]);
 	}
 
 	positions.clear();
@@ -194,11 +195,15 @@ bool Vegetation::generateTrees()
 }
 
 void Vegetation::DrawTrees(bool drawInReflexion)
-{
+{	
+	RenderState old = GFXDevice::getInstance().getActiveRenderState();
+	RenderState s(true,true,true,true);
+	GFXDevice::getInstance().setRenderState(s);
 	_terrain.getQuadtree().DrawTrees(drawInReflexion);
+	GFXDevice::getInstance().setRenderState(old);
 }
 
-void Vegetation::DrawGrass(int index,bool drawInReflexion)
+void Vegetation::DrawGrass(U8 index,bool drawInReflexion)
 {
 	if(_grassVBO[index])
 	{

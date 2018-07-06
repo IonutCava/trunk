@@ -10,8 +10,8 @@ public :
 	TextureManager (void);
 	~TextureManager (void);
 	static void Destroy (void);
-	int tgaSave(char *filename,short int width, short int height, U8 pixelDepth, U8 *imageData);
-	int SaveSeries(char *filename,short int width,short int height,U8 pixelDepth,U8 *imageData);
+	I8 tgaSave(char *filename, U16 width, U16 height, U8 pixelDepth, U8 *imageData);
+	I8 SaveSeries(char *filename, U16 width,U16 height,U8 pixelDepth,U8 *imageData);
 
 
 SINGLETON_END()

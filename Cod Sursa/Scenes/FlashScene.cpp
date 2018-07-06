@@ -2,7 +2,6 @@
 #include "GUI/GUI.h"
 #include "PhysX/PhysX.h"
 #include "Managers/CameraManager.h"
-#include "Rendering/Framerate.h"
 using namespace std;
 
 void FlashScene::render()
@@ -55,7 +54,6 @@ void FlashScene::processEvents(F32 time)
 bool FlashScene::load(const string& name)
 {
 	bool state = false;
-	_terMgr->createTerrains(TerrainInfoArray);
 	addDefaultLight();
 	state = loadResources(true);	
 	state = loadEvents(true);

@@ -5,13 +5,31 @@
 void Framerate::Init(F32 tfps)
 {
   _targetFps = tfps;
+   
+#if defined( __WIN32__ ) || defined( _WIN32 )
   QueryPerformanceCounter(&_framedelay);
+  _startupTime = _framedelay;
   QueryPerformanceFrequency(&_tickspersecond);
+#elif defined( __APPLE_CC__ ) // Apple OS X
+	//??
+#else //Linux
+  gettimeofday(&_currentticks,NULL);
+#endif
+
 }
 
 void Framerate::SetSpeedFactor()
 {
-  QueryPerformanceCounter(&_currentticks);
+
+#if defined( __WIN32__ ) || defined( _WIN32 )
+	 QueryPerformanceCounter(&_currentticks);
+#elif defined( __APPLE_CC__ ) // Apple OS X
+	//??
+#else
+	gettimeofday(&_currentticks,NULL);
+#endif
+
+
   _speedfactor = (F32)(_currentticks.QuadPart-_framedelay.QuadPart)/
 	            ((F32)_tickspersecond.QuadPart/_targetFps);
 

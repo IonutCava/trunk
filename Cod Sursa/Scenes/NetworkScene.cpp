@@ -2,9 +2,9 @@
 
 #include "NetworkScene.h"
 #include "GUI/GUI.h"
-#include "Rendering/Framerate.h"
 #include "Rendering/common.h"
 #include "Managers/CameraManager.h"
+#include "Utility/Headers/ParamHandler.h"
 #include "Terrain/Sky.h"
 #include "PhysX/PhysX.h"
 using namespace std;
@@ -29,11 +29,11 @@ void NetworkScene::preRender()
 	vec4 vSunColor = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f),
 								0.25f + cosf(_sunAngle.y) * 0.75f);
 
-	_lights[0]->setLightProperties(string("position"),_sunVector);
-	_lights[0]->setLightProperties(string("ambient"),_white);
-	_lights[0]->setLightProperties(string("diffuse"),vSunColor);
-	_lights[0]->setLightProperties(string("specular"),vSunColor);
-	_lights[0]->update();
+	getLights()[0]->setLightProperties(string("position"),_sunVector);
+	getLights()[0]->setLightProperties(string("ambient"),_white);
+	getLights()[0]->setLightProperties(string("diffuse"),vSunColor);
+	getLights()[0]->setLightProperties(string("specular"),vSunColor);
+	getLights()[0]->update();
 
 	Sky::getInstance().setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3(_sunVector),false,true,false);
 	Sky::getInstance().draw();

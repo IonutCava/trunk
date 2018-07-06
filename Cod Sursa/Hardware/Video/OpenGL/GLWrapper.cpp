@@ -1,7 +1,6 @@
 #include "glResources.h"
 
 #include "GLWrapper.h"
-#include "Utility/Headers/DataTypes.h"
 #include "Rendering/common.h"
 #include "Utility/Headers/Guardian.h"
 #include "GUI/GUI.h"
@@ -19,7 +18,7 @@ using namespace std;
 
 #define USE_FREEGLUT
 
-void resizeWindowCallback(int w, int h)
+void resizeWindowCallback(I32 w, I32 h)
 {
 	GUI::getInstance().onResize(w,h);
 	GFXDevice::getInstance().resizeWindow(w,h);
@@ -27,7 +26,7 @@ void resizeWindowCallback(int w, int h)
 
 void GL_API::initHardware()
 {
-	int   argc   = 1; 
+	I32   argc   = 1; 
 	char *argv[] = {"DIVIDE Engine", NULL};
     glutInit(&argc, argv);
 	glutInitContextVersion(2,0);
@@ -101,17 +100,20 @@ void GL_API::closeRenderingApi()
 	glutDestroyWindow(Engine::getInstance().getMainWindowId());
 }
 
-void GL_API::resizeWindow(U32 w, U32 h)
+void GL_API::resizeWindow(U16 w, U16 h)
 {
-	D32 _zNear  = 0.01f;
-	D32 _zFar   = 70000.0f;
+	D32 zNear  = 0.01f;
+	D32 zFar   = 7000.0f;
+	F32 fov    = 60;
+	F32 ratio = 1.0f * w / h;
 	F32 x=0.0f,y=1.75f,z=5.0f;
 	F32 lx=0.0f,ly=0.0f,lz=-1.0f;
 
-	ParamHandler::getInstance().setParam("zNear",_zNear);
-	ParamHandler::getInstance().setParam("zFar",_zFar);
+	ParamHandler::getInstance().setParam("zNear",zNear);
+	ParamHandler::getInstance().setParam("zFar",zFar);
+	ParamHandler::getInstance().setParam("FOV",fov);
+	ParamHandler::getInstance().setParam("aspectRatio",ratio);
 
-	F32 ratio = 1.0f * w / h;
 	// Reset the coordinate system before modifying
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
@@ -120,7 +122,7 @@ void GL_API::resizeWindow(U32 w, U32 h)
     glViewport(0, 0, w, h);
 
 	// Set the clipping volume
-	gluPerspective(60,ratio,_zNear,_zFar);
+	gluPerspective(fov,ratio,zNear,zFar);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -142,15 +144,6 @@ void GL_API::idle()
 	glutPostRedisplay();
 }
 
-F32 GL_API::getTime()  
-{
-	return (F32)(glutGet(GLUT_ELAPSED_TIME)/1000.0f);
-}
-
-F32 GL_API::getMSTime()
-{
-	return (F32)glutGet(GLUT_ELAPSED_TIME);
-} 
 
 mat4 GL_API::getProjectionMatrix()
 {
@@ -181,9 +174,13 @@ void GL_API::scale(const vec3& scale)
 	glScalef(scale.x,scale.y,scale.z);
 }
 
-void GL_API::clearBuffers(int buffer_mask)
+void GL_API::clearBuffers(U8 buffer_mask)
 {
-	glClear(buffer_mask);
+	I32 buffers = 0;
+	if((buffer_mask & GFXDevice::COLOR_BUFFER ) == GFXDevice::COLOR_BUFFER) buffers |= GL_COLOR_BUFFER_BIT;
+	if((buffer_mask & GFXDevice::DEPTH_BUFFER) == GFXDevice::DEPTH_BUFFER) buffers |= GL_DEPTH_BUFFER_BIT;
+	if((buffer_mask & GFXDevice::STENCIL_BUFFER) == GFXDevice::STENCIL_BUFFER) buffers |= GL_STENCIL_BUFFER_BIT;
+	glClear(buffers);
 }
 
 void GL_API::swapBuffers()
@@ -245,7 +242,7 @@ void GL_API::drawTextToScreen(Text* text)
 void GL_API::drawCharacterToScreen(void* font,char text)
 {
 #ifdef USE_FREEGLUT
-	glutBitmapCharacter(font, (int)text);
+	glutBitmapCharacter(font, (I32)text);
 #else
 	//nothing yet
 #endif
@@ -347,31 +344,17 @@ void GL_API::drawButton(Button* b)
 
 }
 
-void GL_API::beginRenderStateProcessing()
+void GL_API::setRenderState(RenderState& state)
 {
-	//ToDo: Enable these and fix texturing issues -Ionut
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-		if(_state.isEnabled())
-		{
-			/*if( !_state.blendingEnabled()) glDisable(GL_BLEND);
-			else glEnable(GL_BLEND);
-			if(!_state.cullingEnabled() ) glDisable(GL_CULL_FACE);
-			else glEnable(GL_CULL_FACE);
-			if(!_state.lightingEnabled()) glDisable(GL_LIGHTING);
-			else glEnable(GL_LIGHTING);
-			if(!_state.texturesEnabled()) glDisable(GL_TEXTURE_2D);
-			else glEnable(GL_TEXTURE_2D);*/
-		}
+	state.blendingEnabled() ? glEnable(GL_BLEND)      : glDisable(GL_BLEND);
+	state.lightingEnabled() ? glEnable(GL_LIGHTING)   : glDisable(GL_LIGHTING);
+	state.cullingEnabled()  ? glEnable(GL_CULL_FACE)  : glDisable(GL_CULL_FACE);
+	state.texturesEnabled() ? glEnable(GL_TEXTURE_2D) : glDisable(GL_TEXTURE_2D);
 }
 
-void GL_API::endRenderStateProcessing()
-{
-		glPopAttrib();
-}
 
 void GL_API::drawBox3D(vec3 min, vec3 max)
 {
-	//beginRenderStateProcessing();
 
 	glBegin(GL_LINE_LOOP);
 		glVertex3f( min.x, min.y, min.z );
@@ -398,116 +381,141 @@ void GL_API::drawBox3D(vec3 min, vec3 max)
 		glVertex3f( min.x, max.y, max.z );
 	glEnd();
 
-	//endRenderStateProcessing();
 }
 
 void GL_API::drawBox3D(Box3D* const box)
 {
-	//beginRenderStateProcessing();
+	box->onDraw();
 	pushMatrix();
 
-	glMultMatrixf(box->getTransform()->getMatrix());
-	setColor(box->getColor());
-	if(box->getTexture()) box->getTexture()->Bind(0);
-	
+	Shader* s = NULL;
+	if(!box->getShaders().empty()){
+		if(box->getShaders()[0]) 
+			s = box->getShaders()[0];
 
-	if(box->getShader()) 
-	{
-		box->getShader()->bind();
-		box->getShader()->UniformTexture("texDiffuse",0);
+	glMultMatrixf(box->getTransform()->getMatrix());
+	setMaterial(box->getMaterial());
+	if(!box->getMaterial().textures.empty()) box->getMaterial().textures.front()->Bind(0);
+	
+		if(s) {
+			s->bind();
+			s->Uniform("color",box->getMaterial().diffuse);
+			if(!box->getMaterial().textures.empty())
+				s->UniformTexture("texDiffuse",0);
+		}
 	}
 	glutSolidCube(box->getSize());
-	if(box->getShader())  box->getShader()->unbind();
-	if(box->getTexture()) box->getTexture()->Unbind(0);
+	if(s) s->unbind();
+	if(!box->getMaterial().textures.empty()) box->getMaterial().textures.front()->Unbind(0);
 
 	popMatrix();
 
-	//endRenderStateProcessing();
 }
 
 void GL_API::drawSphere3D(Sphere3D* const sphere)
 {
-	//beginRenderStateProcessing();
+	
+	sphere->onDraw();
 	pushMatrix();
 	glMultMatrixf(sphere->getTransform()->getMatrix());
 
-	setColor(sphere->getColor());
-	if(sphere->getTexture()) sphere->getTexture()->Bind(0);
-	if(sphere->getShader()) 
-	{
-		sphere->getShader()->bind();
-		sphere->getShader()->UniformTexture("texDiffuse",0);
-	}
+	Shader* s = NULL;
+	if(!sphere->getShaders().empty()){
+		if(sphere->getShaders()[0]) 
+			s = sphere->getShaders()[0];
 
+	setMaterial(sphere->getMaterial());
+	if(!sphere->getMaterial().textures.empty()) sphere->getMaterial().textures.front()->Bind(0);
+	if(s) {
+			s->bind();
+			s->Uniform("color",sphere->getMaterial().diffuse);
+			if(!sphere->getMaterial().textures.empty())
+				s->UniformTexture("texDiffuse",0);
+		}
+	}
 	glutSolidSphere(sphere->getSize(), sphere->getResolution(),sphere->getResolution());
 
-	if(sphere->getShader())  sphere->getShader()->unbind();
-	if(sphere->getTexture()) sphere->getTexture()->Unbind(0);
+	if(s) s->unbind();
+	if(!sphere->getMaterial().textures.empty()) sphere->getMaterial().textures.front()->Unbind(0);
 	popMatrix();
 
-	//endRenderStateProcessing();
-	
 }
 
 void GL_API::drawQuad3D(Quad3D* const quad)
 {
-	beginRenderStateProcessing();
-
+	quad->onDraw();
 	pushMatrix();
 
 	glMultMatrixf(quad->getTransform()->getMatrix());
-	setColor(quad->getColor());
+	setMaterial(quad->getMaterial());
 
-	if(quad->getTexture()) quad->getTexture()->Bind(0);
-	if(quad->getShader()) 
-	{
-		quad->getShader()->bind();
-		quad->getShader()->UniformTexture("texDiffuse",0);
+	Shader* s = NULL;
+	if(!quad->getShaders().empty()){
+		if(quad->getShaders()[0]) 
+			s = quad->getShaders()[0];
+
+	if(!quad->getMaterial().textures.empty()) quad->getMaterial().textures.front()->Bind(0);
+	if(s){
+			s->bind();
+			s->Uniform("color",quad->getMaterial().diffuse);
+			if(!quad->getMaterial().textures.empty())
+				s->UniformTexture("texDiffuse",0);
+		}
 	}
+
 	glBegin(GL_TRIANGLE_STRIP); //GL_TRIANGLE_STRIP is slightly faster on newer HW than GL_QUAD,
 								//as GL_QUAD converts into a GL_TRIANGLE_STRIP at the driver level anyway
 		glNormal3f(0.0f, 1.0f, 0.0f);
-		glTexCoord3f(1.0f, 0.0f, 0.0f);
-		glVertex3f(quad->_tl.x, quad->_tl.y, quad->_tl.z);
-		glVertex3f(quad->_tr.x, quad->_tr.y, quad->_tr.z);
-		glVertex3f(quad->_bl.x, quad->_bl.y, quad->_bl.z);
-		glVertex3f(quad->_br.x, quad->_br.y, quad->_br.z);
+		glMultiTexCoord2f(GL_TEXTURE0, 0, 0);
+		glVertex3f(quad->getCorner(Quad3D::TOP_LEFT).x, quad->getCorner(Quad3D::TOP_LEFT).y, quad->getCorner(Quad3D::TOP_LEFT).z);
+		glMultiTexCoord2f(GL_TEXTURE0, 1, 0);
+		glVertex3f(quad->getCorner(Quad3D::TOP_RIGHT).x, quad->getCorner(Quad3D::TOP_RIGHT).y, quad->getCorner(Quad3D::TOP_RIGHT).z);
+		glMultiTexCoord2f(GL_TEXTURE0, 0, 1);
+		glVertex3f(quad->getCorner(Quad3D::BOTTOM_LEFT).x, quad->getCorner(Quad3D::BOTTOM_LEFT).y, quad->getCorner(Quad3D::BOTTOM_LEFT).z);
+		glMultiTexCoord2f(GL_TEXTURE0, 1, 1);
+		glVertex3f(quad->getCorner(Quad3D::BOTTOM_RIGHT).x, quad->getCorner(Quad3D::BOTTOM_RIGHT).y, quad->getCorner(Quad3D::BOTTOM_RIGHT).z);
 	glEnd();
-	if(quad->getShader())  quad->getShader()->unbind();
-	if(quad->getTexture()) quad->getTexture()->Unbind(0);
+
+	if(s)	s->unbind();
+	if(!quad->getMaterial().textures.empty()) quad->getMaterial().textures.front()->Unbind(0);
 	
 	popMatrix();
 
-	endRenderStateProcessing();
 }
 
 void GL_API::drawText3D(Text3D* const text)
 {
-	//beginRenderStateProcessing();
-	
+	text->onDraw();
 	pushMatrix();
 	glMultMatrixf(text->getTransform()->getMatrix());
 
+	Shader* s = NULL;
+	if(!text->getShaders().empty()){
+		if(text->getShaders()[0]) 
+			s = text->getShaders()[0];
 
-	if(text->getTexture()) text->getTexture()->Bind(0);
-	if(text->getShader()) 
-	{
-		text->getShader()->bind();
-		text->getShader()->UniformTexture("texDiffuse",0);
+	if(!text->getMaterial().textures.empty()) text->getMaterial().textures.front()->Bind(0);
+	if(s) {
+			s->bind();
+			s->Uniform("color",text->getMaterial().diffuse);
+			if(!text->getMaterial().textures.empty())
+				s->UniformTexture("texDiffuse",0);
+		}
 	}
 	glPushAttrib(GL_ENABLE_BIT);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glEnable(GL_BLEND);
 	glEnable(GL_LINE_SMOOTH);
 	glLineWidth(text->getWidth());
-	setColor(text->getColor());
-	glutStrokeString(text->getFont(), (const unsigned char*)text->getText().c_str());
+	setMaterial(text->getMaterial());
+	glutStrokeString(text->getFont(), (const U8*)text->getText().c_str());
 	glPopAttrib();
-	if(text->getShader())  text->getShader()->unbind();
-	if(text->getTexture()) text->getTexture()->Unbind(0);
+
+	if(s) s->unbind();
+
+	if(!text->getMaterial().textures.empty()) text->getMaterial().textures.front()->Unbind(0);
 	popMatrix();
 
-	//endRenderStateProcessing();
 }
 
 void GL_API::toggle2D(bool _2D)
@@ -542,17 +550,17 @@ void GL_API::toggle2D(bool _2D)
 
 void GL_API::renderModel(Mesh* const model)
 {
-	//beginRenderStateProcessing();
 	SubMesh *s;
 	vector<SubMesh* >::iterator _subMeshIterator;
 	
 	pushMatrix();
+	//ToDo: Per submesh transforms
 	glMultMatrixf(model->getTransform()->getMatrix());
 
 	for(_subMeshIterator = model->getSubMeshes().begin(); 
 		_subMeshIterator != model->getSubMeshes().end(); 
-		++_subMeshIterator)
-	{
+		++_subMeshIterator)	{
+
 		s = (*_subMeshIterator);
 
 		setMaterial(s->getMaterial());
@@ -560,61 +568,69 @@ void GL_API::renderModel(Mesh* const model)
 		U8 count = s->getMaterial().textures.size();
 		U8 i = 0;
 		if(count)
-		{
-			for(; i < count; i++)
-				s->getMaterial().textures[i]->Bind(i);
+			for(U8 j = 0; j < count; j++,i++)
+				s->getMaterial().textures[j]->Bind(i);
 
-			for(U8 n = 0; n < model->getShaders().size(); n++)
-			{
-				model->getShaders()[n]->bind();
-				model->getShaders()[n]->Uniform("textureCount",count <= 2 ? count : 2);
-				model->getShaders()[n]->UniformTexture("texDiffuse0",0);
-				if(count > 1) model->getShaders()[n]->UniformTexture("texDiffuse1",1);			
-			}
-		}
-
+		
+		
 		if(s->getMaterial().bumpMap)
-		{
 			s->getMaterial().bumpMap->Bind(i++);
-			for(U8 n = 0; n < model->getShaders().size(); n++)
-			{
-				model->getShaders()[n]->Uniform("mode", 0);
-				model->getShaders()[n]->UniformTexture("texNormalHeightMap",i);
+				
+		U8 n = 0;
+		
+		if(!model->getShaders().empty()){
+
+			Shader* shader = NULL;
+			//for(U8 n = 0; n < model->getShaders().size(); n++)
+			if(model->getShaders()[n]){
+				shader = model->getShaders()[n];
+				shader->bind();
+				if(!GFXDevice::getInstance().getDeferredShading()){
+     				shader->Uniform("enable_shadow_mapping", 0);
+					shader->Uniform("tile_factor", 1.0f);
+					shader->Uniform("textureCount",count <= 2 ? count : 2);
+					shader->UniformTexture("texDiffuse0",0);
+					if(count > 1) shader->UniformTexture("texDiffuse1",1);
+					if(s->getMaterial().bumpMap){
+						shader->Uniform("mode", 1);
+						shader->UniformTexture("texNormalHeightMap",i);
+					}else{
+						shader->Uniform("mode", 0);
+					}
+				}else{
+					shader->Uniform("tDiffuse",0);
+				}
 			}
 		}
-		else
-			for(U8 n = 0; n < model->getShaders().size(); n++)
-				model->getShaders()[n]->Uniform("mode", 0);
-			
+
 		s->getGeometryVBO()->Enable();
 			glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
 		s->getGeometryVBO()->Disable();
 
-		if(count)
-			for(i = 0; i < s->getMaterial().textures.size(); i++)
-				s->getMaterial().textures[i]->Unbind(i);
+		if(!model->getShaders().empty()){
+			//for(U8 n = 0; n < model->getShaders().size(); n++){
+				if(model->getShaders()[n])
+					model->getShaders()[n]->unbind();
+			//}
+		}
 
 		if(s->getMaterial().bumpMap)
-			s->getMaterial().bumpMap->Unbind(i++);
+			s->getMaterial().bumpMap->Unbind(i);
+
+		if(count) 
+			for(U8 j = count-1; j > 0; j--) s->getMaterial().textures[j]->Unbind(i--);
 				
 	}
 
-	for(U8 n = 0; n < model->getShaders().size(); n++)
-	{
-		model->getShaders()[n]->unbind();
-	}
+
+	
 	popMatrix();
 
-	//endRenderStateProcessing();
 }
 
 void GL_API::renderElements(Type t, U32 count, const void* first_element)
 {
-	//beginRenderStateProcessing();
-
 	glDrawElements(t, count, GL_UNSIGNED_INT, first_element );
-
-	//endRenderStateProcessing();
 }
 
 void GL_API::setMaterial(Material& mat)
@@ -639,15 +655,15 @@ void GL_API::setColor(const vec3& color)
 
 void GL_API::initDevice()
 {
+	F32 global_ambient[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
 	glutMainLoop();
 }
 
-void GL_API::setLight(U32 slot, tr1::unordered_map<string,vec4>& properties)
+void GL_API::setLight(U8 slot, tr1::unordered_map<string,vec4>& properties)
 {
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0+slot);
-	//F32 global_ambient[] = { 0.8f, 0.8f, 0.8f, 1.0f };
-	//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
 	glLightfv(GL_LIGHT0+slot, GL_POSITION, properties["position"]);
 	glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  properties["ambient"]);
 	glLightfv(GL_LIGHT0+slot, GL_DIFFUSE,  properties["diffuse"]);
@@ -657,7 +673,7 @@ void GL_API::setLight(U32 slot, tr1::unordered_map<string,vec4>& properties)
 
 }
 
-void GL_API::createLight(U32 slot)
+void GL_API::createLight(U8 slot)
 {
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0+slot);

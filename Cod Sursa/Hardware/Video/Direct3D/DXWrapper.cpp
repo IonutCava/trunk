@@ -1,5 +1,5 @@
 #include "DXWrapper.h"
-#include "Utility/Headers/DataTypes.h"
+#include "Hardware/Platform/PlatformDefines.h"
 #include "Importer/DVDConverter.h"
 #include <iostream>
 using namespace std;
@@ -47,7 +47,7 @@ void DX_API::scale(const vec3& scale)
 }
 
 
-void DX_API::clearBuffers(int buffer_mask)
+void DX_API::clearBuffers(U8 buffer_mask)
 {
 }
 
@@ -109,6 +109,7 @@ void DX_API::drawText3D(Text3D* const text)
 
 void DX_API::renderModel(Mesh* const model)
 {
+	
 	if(!model->isVisible()) return;
 	
 	SubMesh *s;

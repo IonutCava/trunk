@@ -17,25 +17,42 @@ and a name.
 
 #include "resource.h"
 #include "Hardware/Video/VertexBufferObject.h"
-#include "Utility/Headers/DataTypes.h"
+#include "Hardware/Platform/PlatformDefines.h"
 
 class SubMesh : public Object3D
 {
 
 public:
-	SubMesh(const std::string& name) : Object3D(name),
-								 _geometry(GFXDevice::getInstance().newVBO()){_geometryType = SUBMESH;}
+	SubMesh(const std::string& name) : Object3D(name){
+									_geometry = GFXDevice::getInstance().newVBO();
+									_geometryType = SUBMESH;}
 
+	SubMesh(const SubMesh& old) : Object3D(old),
+								 _render(old._render),_vboPositionOffset(old._vboPositionOffset){
+		_geometry = GFXDevice::getInstance().newVBO();
+		*_geometry = *(old._geometry);
+		_indices.reserve(old._indices.size());
+		for(U32 i = 0; i < old._indices.size(); i++)
+			_indices.push_back(old._indices[i]);
+		_material = old._material;
+	}
+	~SubMesh() {
+		if(_geometry) {
+			delete _geometry;
+			_geometry = NULL;
+		}
+	}
 	bool load(const std::string& name) { computeBoundingBox(); return true;}
 	bool unload();
 
 	inline VertexBufferObject* getGeometryVBO() {return _geometry;    } 
 	inline std::vector<U32>&   getIndices()     {return _indices;     }
 	inline Material&           getMaterial()	{return _material;    }   
-	inline std::string&        getName()		{return _name;        }
 
 private:
 	void computeBoundingBox();
+
+private:
 	bool _visibleToNetwork, _render;
 	VertexBufferObject*     _geometry;
 	Material		        _material;

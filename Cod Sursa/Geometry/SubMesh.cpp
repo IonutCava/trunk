@@ -8,21 +8,17 @@ void SubMesh::computeBoundingBox()
 
 	std::vector<vec3>&	tPosition	= _geometry->getPosition();
 
-	for(int i=0; i<(int)tPosition.size(); i++)
+	for(U32 i=0; i < tPosition.size(); i++)
 	{
 		_bb.Add( tPosition[i] );
 	}
+	_originalBB = _bb;
+	_bb.isComputed() = true;
 }
 
 
 bool SubMesh::unload()
 {
-	for(U8 i = 0; i < _material.textures.size(); i++)
-		ResourceManager::getInstance().remove(_material.textures[i]->getName());
-	if(_material.bumpMap)
-		ResourceManager::getInstance().remove(_material.bumpMap->getName());
-	getGeometryVBO()->Destroy();
 	getIndices().clear(); 
 	return true;
-
 }

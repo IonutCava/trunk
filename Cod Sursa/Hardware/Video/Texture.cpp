@@ -4,14 +4,15 @@ bool Texture::s_bGenerateMipmaps = true;
 
 bool Texture::LoadFile(U32 target, const std::string& name)
 {
-	m_nName = name;
-	ImageTools::OpenImage(name,img);
-	if(!img.data) {
+	_name = name;
+	ImageTools::OpenImage(name,_img);
+	if(!_img.data) {
 		Con::getInstance().errorfn("Texture: Unable to load texture [ %s ]", name.c_str());
 		return false;
 	}
-	LoadData(target, img.data, img.w, img.h, img.d);
-
+	_width = _img.w; _height = _img.h; _bitDepth = _img.d;
+	LoadData(target, _img.data, _img.w, _img.h, _img.d);
+	_img.Destroy();
 	return true;
 }
 

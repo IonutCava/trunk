@@ -3,13 +3,19 @@
 
 #include "resource.h"
 #include <boost/any.hpp>
-#include  "MultiThreading/threadHandler.h"
+#include <boost/thread.hpp>
+#include <boost/enable_shared_from_this.hpp> 
 
 using boost::any_cast;
 
 enum CallbackParam
 {
 	TYPE_INTEGER,
+	TYPE_MEDIUM_INTEGER,
+	TYPE_SMALL_INTEGER,
+	TYPE_UNSIGNED_INTEGER,
+	TYPE_MEDIUM_UNSIGNED_INTEGER,
+	TYPE_SMALL_UNSIGNED_INTEGER,
 	TYPE_STRING,
 	TYPE_FLOAT,
 	TYPE_DOUBLE,
@@ -18,7 +24,7 @@ enum CallbackParam
 };
 
 
-class Event
+class Event : public boost::enable_shared_from_this<Event>
 {
 public:
 	/// <summary>
@@ -41,8 +47,8 @@ public:
 
 	  _tickInterval(tickInterval),
 	  _numberOfTicks(numberOfTicks),
-	  _callback(f)
-	  {
+	  _callback(f),
+	  _end(false){
 		  if(startOnCreate) startEvent();
 	  }
 
@@ -53,28 +59,30 @@ public:
 
 	  _tickInterval(tickInterval),
       _numberOfTicks(1),
-	  _callback(f)
-	  {
+	  _callback(f),
+	  _end(false){
 		  //If runOnce is true, then we only run the event once (# of ticks is 1)
-		  //If runOnce is false, then we run the event untill stopEvent() is called
-		  runOnce? _numberOfTicks = 1 : _numberOfTicks = -1;
+		  //If runOnce is false, then we run the event until stopEvent() is called
+		  runOnce ? _numberOfTicks = 1 : _numberOfTicks = -1;
 		  if(startOnCreate) startEvent();
 	  }
-	~Event(){_end=true;}
+	~Event(){stopEvent();}
 	void updateTickInterval(F32 tickInterval){_tickInterval = tickInterval;}
 	void updateTickCounter(U32 numberOfTicks){_numberOfTicks = numberOfTicks;}
 	void startEvent();
-	void stopEvent(){_end = true;};
-	
+	void stopEvent(){assert(_thisThread); _end = true;_thisThread->interrupt(); _thisThread->join();}
 
 private:
 	std::string _name;
 	F32 _tickInterval;
 	U32 _numberOfTicks;
-	Thread _thrd;
-	bool _end;
-	void eventThread();
+	std::tr1::shared_ptr<boost::thread> _thisThread;
+	boost::mutex _mutex;
+	volatile bool _end;
 	boost::function0<void> _callback;
+
+private:
+	void run();
 
 };
 

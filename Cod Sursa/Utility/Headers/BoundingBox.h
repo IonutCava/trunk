@@ -1,6 +1,5 @@
 #ifndef BOUNDINGBOX_H_
 #define BOUNDINGBOX_H_
-#include "MathClasses.h"
 #include "Utility/Headers/Ray.h"
 //ToDo: -Add BoundingSphere -Ionut
 class BoundingBox
@@ -147,9 +146,9 @@ public:
 		vec3 old_max = originalBB.getMax();
 		_min = _max =  vec3(mat[12],mat[13],mat[14]);
 
-		for (U32 i = 0; i < 3; ++i)
+		for (U8 i = 0; i < 3; ++i)
 		{
-			for (U32 j = 0; j < 3; ++j)
+			for (U8 j = 0; j < 3; ++j)
 			{
 				a = mat.element(i,j) * old_min[j];
 				b = mat.element(i,j) * old_max[j];

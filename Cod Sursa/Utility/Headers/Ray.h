@@ -32,7 +32,7 @@ class Ray {
 		vec3 origin;
 		vec3 direction;
 		vec3 inv_direction;
-		int sign[3];
+		I32 sign[3];
 };
 
 #endif

@@ -1,15 +1,16 @@
 #include "PingPongScene.h"
-#include "Rendering/Framerate.h"
 #include "Managers/CameraManager.h"
+#include "Managers/ResourceManager.h"
 #include "Rendering/common.h"
 #include "PhysX/PhysX.h"
 #include "Importer/DVDConverter.h"
 #include "Terrain/Sky.h"
 #include "GUI/GUI.h"
 #include "Geometry/Predefined/Box3D.h"
+#include "Geometry/Predefined/Sphere3D.h"
 using namespace std;
 
-vec4 _lightPosition(0,20,6,1.0);
+vec4 _lightPosition(0,3,2,1.0);
 
 //begin copy-paste: randarea scenei
 void PingPongScene::render()
@@ -20,9 +21,11 @@ void PingPongScene::render()
 	//Randam toata geometria
 	GFXDevice::getInstance().renderElements(ModelArray);
 	GFXDevice::getInstance().renderElements(GeometryArray);
+	getLights()[0]->draw();
 	GUI::getInstance().draw();
 
-	_lights[0]->setLightProperties(string("position"),_lightPosition);
+	getLights()[0]->setLightProperties(string("position"),_lightPosition);
+	
 }
 //end copy-paste
 
@@ -45,16 +48,13 @@ void PingPongScene::preRender()
 void PingPongScene::servesteMingea()
 {
 	GUI::getInstance().modifyText("insulte","");	
-	while(!_events.empty())
-	{
-		_events[0]->stopEvent(); //Stop event se autodistruge/sterge
-		_events.clear();
-	}
+	getEvents().clear();
 
-	if(_events.empty())//Maxim un singur eveniment
+	if(getEvents().empty())//Maxim un singur eveniment
 	{
 		_minge->getTransform()->setPosition(vec3(0, 2 ,2));
-		_events.push_back(new Event(30,true,false,boost::bind(&PingPongScene::test,this,rand() % 5,TYPE_INTEGER)));
+		Event_ptr jocNou(new Event(30,true,false,boost::bind(&PingPongScene::test,this,rand() % 5,TYPE_INTEGER)));
+		addEvent(jocNou);
 	}
 }
 
@@ -78,9 +78,10 @@ F32 _miscareLaterala = 0;
 
 void PingPongScene::test(boost::any a, CallbackParam b)
 {
+	if(getEvents().empty()) return;
 	bool updated = false;
 	string mesaj;
-
+	boost::mutex::scoped_lock l(_mutex);
 	vec3 pozitieMinge    = _minge->getTransform()->getPosition();
 	vec3 pozitiePaleta   = ModelArray["paleta"]->getTransform()->getPosition();
 	vec3 pozitieMasa     = ModelArray["masa"]->getTransform()->getPosition();
@@ -97,20 +98,20 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 			_pierdut = true;
 		
 		updated = true;
-		_events[0]->stopEvent();
+		getEvents()[0]->stopEvent();
 	}
 	//Am castigat sau am pierdut?
 	if(pozitieMinge.z >= pozitiePaleta.z)
 	{
 		_pierdut = true;
 		updated = true;
-		_events[0]->stopEvent();
+		getEvents()[0]->stopEvent();
 	}
 	if(pozitieMinge.z <= pozitieAdversar.z)
 	{
 		_pierdut = false;
 		updated = true;
-		_events[0]->stopEvent();
+		getEvents()[0]->stopEvent();
 	}
 
 	//Mergem spre adversar sau spre noi
@@ -160,14 +161,14 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 	{
 		_pierdut = true;
 		updated = true;
-		_events[0]->stopEvent();
+		getEvents()[0]->stopEvent();
     }
 	//A lovit adversarul plasa
 	if(_minge->getBoundingBox().Collision(ModelArray["plasa"]->getBoundingBox()) &&	!_directieAdversar)
 	{
 		_pierdut = false;
 		updated = true;
-		_events[0]->stopEvent();
+		getEvents()[0]->stopEvent();
     }
 	//Am lovit adversarul? Ne intoarcem ... DAR
 	//... adaugam o mica sansa sa castigam meciul .. dar mica ...
@@ -189,7 +190,7 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 
 			if(b == TYPE_INTEGER)
 			{
-				I32 quote = boost::any_cast<int>(a);
+				I32 quote = boost::any_cast<I32>(a);
 				if(_scor % 3 == 0 ) GUI::getInstance().modifyText("insulte",(char*)_quotes[quote].c_str());
 			}
 		}
@@ -248,7 +249,7 @@ bool PingPongScene::load(const string& name)
 	bool state = false;
 	//Adaugam o lumina
 	addDefaultLight();
-
+	getLights()[0]->getRadius() = 0.1f;
 	//Incarcam resursele scenei
 	state = loadResources(true);	
 	state = loadEvents(true);
@@ -265,12 +266,13 @@ bool PingPongScene::loadResources(bool continueOnErrors)
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;_scor = 0;
 
 		//Cream o minge
-	_minge = new Sphere3D(0.1f,16);
+	_minge = ResourceManager::getInstance().LoadResource<Sphere3D>("Minge");
+	_minge->getResolution() = 16;
+	_minge->getSize() = 0.1f;
 	_minge->getTransform()->translate(vec3(0, 2 ,2));
 	_minge->getTransform()->scale(vec3(1, 1 ,1));
 	_minge->getTransform()->rotateEuler(vec3(0, 0 ,0));
-	_minge->getColor() = vec3(0.5f,0.2f,0.2f);
-	_minge->getName() = "Minge";
+	_minge->getMaterial().diffuse = vec3(0.5f,0.2f,0.2f);
 	addGeometry(_minge);
 
 	//Adaugam butoane si text labels
@@ -299,6 +301,7 @@ bool PingPongScene::loadResources(bool continueOnErrors)
 	_quotes.push_back("Nu e atat de greu; si o maimuta poate juca jocul asta.");
 	
 	_eventTimers.push_back(0.0f); //Fps
+	_eventTimers.push_back(0.0f); //Light
 	return true;
 }
 
@@ -343,7 +346,7 @@ void PingPongScene::onKeyUp(const OIS::KeyEvent& key)
 
 }
 
-void PingPongScene::OnJoystickMovePOV(const OIS::JoyStickEvent& key,I32 pov)
+void PingPongScene::OnJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov)
 {
 	Scene::OnJoystickMovePOV(key,pov);
 	if( key.state.mPOV[pov].direction & OIS::Pov::North ) //Going up
@@ -363,12 +366,12 @@ void PingPongScene::OnJoystickMovePOV(const OIS::JoyStickEvent& key,I32 pov)
 	}
 }
 
-void PingPongScene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I32 axis)
+void PingPongScene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis)
 {
 	Scene::OnJoystickMoveAxis(key,axis);
 }
 
-void PingPongScene::OnJoystickButtonUp(const OIS::JoyStickEvent& key, I32 button)
+void PingPongScene::OnJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button)
 {
 	if(button == 0)  servesteMingea();
 }

@@ -8,7 +8,7 @@ class PingPongScene : public Scene
 
 public:
 	PingPongScene() {}
-	~PingPongScene() {_events[0]->stopEvent();  _events.erase(_events.begin()); _events.clear();}
+	~PingPongScene() {}
 	void render();
 	void preRender();
 
@@ -19,9 +19,9 @@ public:
 
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
-	void OnJoystickMovePOV(const OIS::JoyStickEvent& event,I32 pov);
-	void OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I32 axis);
-	void OnJoystickButtonUp(const OIS::JoyStickEvent& key, I32 button);
+	void OnJoystickMovePOV(const OIS::JoyStickEvent& event,I8 pov);
+	void OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis);
+	void OnJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button);
 private:
 	void test(boost::any a, CallbackParam b);
 	void servesteMingea();
@@ -29,7 +29,7 @@ private:
 private:
 	std::vector<F32> _eventTimers;
 	F32 angleLR,angleUD,moveFB,moveLR;
-	I32 _scor;
+	I8 _scor;
 	std::vector<std::string> _quotes;
 
 	Sphere3D* _minge;

@@ -10,7 +10,7 @@
 class ErrorStream : public NxUserOutputStream
 	{
 	public:
-	void reportError(NxErrorCode e, const char* message, const char* file, int line)
+	void reportError(NxErrorCode e, const char* message, const char* file, I32 line)
 		{
 		printf("%s (%d) :", file, line);
 		switch (e)
@@ -37,7 +37,7 @@ class ErrorStream : public NxUserOutputStream
 		printf(" : %s\n", message);
 		}
 
-	NxAssertResponse reportAssertViolation(const char* message, const char* file, int line)
+	NxAssertResponse reportAssertViolation(const char* message, const char* file, I32 line)
 		{
 		printf("access violation : %s (%s line %d)\n", message, file, line);
 

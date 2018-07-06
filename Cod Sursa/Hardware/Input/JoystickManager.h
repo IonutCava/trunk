@@ -16,7 +16,7 @@ class JoystickManager
     std::vector<OIS::ForceFeedback*> _vecFFDev;
 
     // Selected joystick
-    int _nCurrJoyInd;
+    U8 _nCurrJoyInd;
 
     // Force feedback detected ?
     bool _bFFFound;
@@ -34,7 +34,7 @@ class JoystickManager
 
     {
 	  _bFFFound = false;
-	  for( int nJoyInd = 0; nJoyInd < pInputMgr->getNumberOfDevices(OIS::OISJoyStick); ++nJoyInd ) 
+	  for( U8 nJoyInd = 0; nJoyInd < pInputMgr->getNumberOfDevices(OIS::OISJoyStick); ++nJoyInd ) 
 	  {
 		//Create the stick
 		OIS::JoyStick* pJoy = (OIS::JoyStick*)pInputMgr->createInputObject( OIS::OISJoyStick, true );
@@ -107,7 +107,7 @@ class JoystickManager
 	  else
 	  {
 		_nCurrJoyInd += eWhich;
-		if (_nCurrJoyInd < -1 || _nCurrJoyInd >= (int)_vecJoys.size())
+		if (_nCurrJoyInd < -1 || _nCurrJoyInd >= (U8)_vecJoys.size())
 		  _nCurrJoyInd = -1;
 		if (_vecJoys.size() > 1 && _nCurrJoyInd >= 0)
 		{

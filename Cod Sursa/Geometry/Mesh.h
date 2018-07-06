@@ -21,9 +21,9 @@ class Mesh : public Object3D
 {
 
 public:
-	Mesh() : Object3D() {_computedLightShaders = false; _geometryType = MESH;}
-	Mesh(vec3& position, vec3& scale, vec3& orientation,vec3& color)
-		: Object3D(position,scale,orientation,color) {_computedLightShaders = false;_geometryType = MESH;}
+	Mesh() : Object3D() {_geometryType = MESH;}
+	Mesh(const vec3& position,const vec3& scale,const vec3& orientation,const Material& mat)
+		: Object3D(position,scale,orientation,mat) {_geometryType = MESH;}
 	Mesh(const Mesh& old);
 
 	void addSubMesh(SubMesh* subMesh){_subMeshes.push_back(subMesh);}
@@ -47,7 +47,7 @@ protected:
 
 protected:
 	
-	bool _visibleToNetwork, _loaded, _computedLightShaders;
+	bool							  _visibleToNetwork, _loaded;
 	std::vector<SubMesh* >		      _subMeshes;
 	std::vector<SubMesh* >::iterator  _subMeshIterator;
 };

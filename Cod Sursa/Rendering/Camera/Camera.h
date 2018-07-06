@@ -2,7 +2,6 @@
 #define CAMERA_H
 
 #include "resource.h"
-#include "Utility/Headers/MathClasses.h"
 #include "Utility/Headers/BaseClasses.h"
 
 class vec3;
@@ -17,8 +16,8 @@ protected:
 	vec3	vLeftDir;	
 	vec3	vUp;
 
-	F32	fAngleX;
-	F32	fAngleY;	
+	F32		fAngleX;
+	F32		fAngleY;	
 	TYPE	eType;
 
 
@@ -29,7 +28,7 @@ protected:
 
 public:
 	Camera();
-
+	virtual ~Camera() {unload();}
 	inline TYPE  getType()				const	{return eType;}
 	inline const vec3& getEye()			const	{return vEye;}
 	inline const vec3& getCenter()		const	{return vCenter;}
@@ -86,7 +85,7 @@ public:
 
 	void RenderLookAt(bool inverty=false, F32 planey=0.0f);
 
-	void RenderLookAtToCubeMap(const vec3& eye, U32 nFace);
+	void RenderLookAtToCubeMap(const vec3& eye, U8 nFace);
 	
 };
 #endif

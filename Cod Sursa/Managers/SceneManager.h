@@ -26,8 +26,8 @@ public:
 	inline std::vector<FileData>& getModelDataArray() {return _scene->getModelDataArray();}
 	inline std::vector<FileData>& getVegetationDataArray() {return _scene->getVegetationDataArray();}
 
-	int getNumberOfObjects(){return _scene->getNumberOfObjects();}
-    int getNumberOfTerrains(){return _scene->getNumberOfTerrains();}
+	U32 getNumberOfObjects(){return _scene->getNumberOfObjects();}
+    U32 getNumberOfTerrains(){return _scene->getNumberOfTerrains();}
 	TerrainManager* getTerrainManager() {return _scene->getTerrainManager();}
    
 	Scene* findScene(const std::string& name);
@@ -37,7 +37,7 @@ public:
 	void toggleBoundingBoxes();
 	void addPatch(std::vector<FileData>& data){_scene->addPatch(data);}
 	
-	void findSelection(int x, int y);
+	void findSelection(U32 x, U32 y);
 	void deleteSelection();
 
 	void clean(){_scene->clean();}

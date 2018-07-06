@@ -1,8 +1,6 @@
 #include "Headers/Guardian.h"
-#include "Managers/TerrainManager.h"
-#include "Managers/TextureManager.h"
 #include "Managers/SceneManager.h"
-#include "PhysX/PhysX.h"
+#include "Managers/ResourceManager.h"
 #include "Headers/ParamHandler.h"
 #include "Headers/XMLParser.h"
 #include "Rendering/common.h"
@@ -12,7 +10,7 @@ void Guardian::LoadApplication(const string& entryPoint)
 {
 	Engine& engine = Engine::getInstance();
 	ParamHandler& par = ParamHandler::getInstance();
-
+	Framerate::getInstance().Init(60);
 	Con::getInstance().printfn("Starting the application!");
 	XML::loadScripts(entryPoint); //ToDo: This should be moved in each scene constructor! - Ionut Cava
 	
@@ -26,6 +24,7 @@ void Guardian::LoadApplication(const string& entryPoint)
 	Con::getInstance().printfn("Initial data loaded ... ");
 	Con::getInstance().printfn("Entering main rendering loop ...");
 	GFXDevice::getInstance().initDevice();
+
 	
 }
 
@@ -70,13 +69,24 @@ void Guardian::TerminateApplication()
 {
 	Con::getInstance().printfn("Closing the PhysX engine ...");
 	PhysX::getInstance().ExitNx();
-	Con::getInstance().printfn("Deleting imported objects ...");
-	//CleanUpOBJ();
+	Con::getInstance().printfn("Destroying Terrain ...");
+	TerrainManager *terMgr = SceneManager::getInstance().getTerrainManager();
+	delete terMgr;
+	terMgr = NULL;
+	Con::getInstance().printfn("Deleting scene objects ...");
+	delete SceneManager::getInstance().getActiveScene();
+	SceneManager::getInstance().Destroy();
+	SceneManager::getInstance().DestroyInstance();
+	//clear everything left in the resourceManager
+	ResourceManager::getInstance().Destroy();
+	ResourceManager::getInstance().DestroyInstance();
+	Con::getInstance().printfn("Closing hardware interface(GFX,SFX,input,network) engine ...");
+	GFXDevice::getInstance().closeRenderingApi();
+	GFXDevice::getInstance().DestroyInstance();
+	SFXDevice::getInstance().closeAudioApi();
+	SFXDevice::getInstance().DestroyInstance();
 	Con::getInstance().printfn("Closing interface engine ...");
 	Engine::getInstance().Quit();
-	Con::getInstance().printfn("Engine shutdown complete...");
-	//myfile.close();
-	exit(0);
 }
 
 void Guardian::LoadSettings()
@@ -87,5 +97,6 @@ void Guardian::LoadSettings()
 	string log = par.getParam<string>("logFile");
 
 	if(mem.compare("none") != 0) myfile.open(mem.c_str());
+	else myfile.open("mem.log");
 
 }

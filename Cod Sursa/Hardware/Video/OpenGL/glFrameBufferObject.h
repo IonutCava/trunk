@@ -10,14 +10,15 @@ public:
 	glFrameBufferObject();
 	~glFrameBufferObject() {Destroy();}
 
-	bool Create(FBO_TYPE type, U32 width, U32 height);
+	bool Create(FBO_TYPE type, U16 width, U16 height);
+				
 	void Destroy();
 
-	void Begin(U32 nFace=0) const;	
-	void End(U32 nFace=0) const;		
+	void Begin(U8 nFace=0) const;	
+	void End(U8 nFace=0) const;		
 
-	void Bind(int unit=0) const;		
-	void Unbind(int unit=0) const;	
+	void Bind(U8 unit=0, U8 texture = 0) const;		
+	void Unbind(U8 unit=0) const;	
 
 private:
 	bool checkStatus();

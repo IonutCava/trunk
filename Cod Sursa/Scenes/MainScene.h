@@ -13,6 +13,7 @@ public:
 	void render();
 	void preRender();
 	bool load(const std::string& name);
+	bool unload();
 	bool loadResources(bool continueOnErrors);
 	bool loadEvents(bool continueOnErrors){return true;}
 
@@ -28,6 +29,9 @@ private:
 	void test(boost::any a, CallbackParam b);
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
+	void onMouseMove(const OIS::MouseEvent& key);
+	void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+	void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
 	
@@ -37,7 +41,9 @@ private:
 	F32  _sun_cosy;
 	mat4 _sunModelviewProj;
 	F32 angleLR,angleUD,moveFB,moveLR;
-	std::vector<F32> _eventTimers;
+	vec2 _prevMouse;
+	bool _mousePressed;
+	AudioDescriptor* _backgroundMusic, *_beep;
 
 };
 

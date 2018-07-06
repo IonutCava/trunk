@@ -2,7 +2,6 @@
 #define TERRAIN_H_
 
 #include "Utility/Headers/BoundingBox.h"
-#include "Utility/Headers/DataTypes.h"
 #include "TextureManager/ImageTools.h"
 #include "Hardware/Video/FrameBufferObject.h"
 #include "Managers/ResourceManager.h"
@@ -11,40 +10,41 @@
 class Shader;
 class Quadtree;
 class VertexBufferObject;
-
-class Terrain : public GraphicResource
+class Quadtree;
+class Terrain : public Resource
 {
 public:
 
 	Terrain();
 	Terrain(vec3 pos, vec2 scale);
-	~Terrain() {destroy();}
+	~Terrain() {unload();}
 
 	bool load(const std::string& heightmap);
-	bool unload(){destroy(); if(!m_pGroundVBO) return true; else return false;}
+	bool unload(){Destroy(); if(!_groundVBO) return true; else return false;}
 	bool computeBoundingBox();
 	
-	void destroy();
-	int  drawGround(bool drawInReflexion) const;
+	void Destroy();
+	void drawGround(bool drawInReflexion) const;
 	void draw() const;
 	void terrainSetParameters(const vec3& pos,const vec2& scale);
 
 	vec3  getPosition(F32 x_clampf, F32 z_clampf) const;
 	vec3  getNormal(F32 x_clampf, F32 z_clampf) const;
 	vec3  getTangent(F32 x_clampf, F32 z_clampf) const;
-	vec2  getDimensions(){return vec2((F32)terrainWidth, (F32)terrainHeight);}
+	vec2  getDimensions(){return vec2((F32)_terrainWidth, (F32)_terrainHeight);}
+	bool  getLoaded() {return _loaded;}
+	void  setLoaded(bool state) {_wasLoaded = _loaded; _loaded = state;}
+	void  restoreLoaded() {_loaded = _wasLoaded;}
 	Vegetation* getVegetation() const {return _veg;}
 
-	Quadtree& getQuadtree() {return *terrain_Quadtree;}
-	const BoundingBox&	getBoundingBox() const	{return terrain_BBox;}
+	Quadtree& getQuadtree() {return *_terrainQuadtree;}
+	const BoundingBox&	getBoundingBox() const	{return _terrainBBox;}
 
 	void  terrainSmooth(F32 k);
-	FrameBufferObject*	m_fboDepthMapFromLight[2];
+	FrameBufferObject*	_depthMapFBO[2];
 	void setShader(Shader *s){terrainShader = s;}
-	void addTexture(Texture2D *t){m_tTextures.push_back(t);}
-	void setDiffuse(Texture2D *t){m_pTerrainDiffuseMap = t;}
-	void setLoaded(bool loaded){if(!_loaded) _wasLoaded = _loaded; _loaded = loaded;} 
-	void restoreLoaded(){_loaded = _wasLoaded;}
+	void addTexture(Texture2D *t){_terrainTextures.push_back(t);}
+	void setDiffuse(Texture2D *t){_terrainDiffuseMap = t;}
 	void addVegetation(Vegetation* veg, std::string grassShader){_veg = veg; _grassShader = grassShader;} 
 	void initializeVegetation() { _veg->initialize(_grassShader);}
 	void toggleVegetation(bool state){ _veg->toggleRendering(state); }
@@ -55,20 +55,18 @@ public:
 private:
 	
 
-	BoundingBox				terrain_BBox;
-	U32			terrainWidth, terrainHeight;
-	Quadtree*				terrain_Quadtree;
+	BoundingBox				_terrainBBox;
+	U16						_terrainWidth, _terrainHeight;
+	Quadtree*				_terrainQuadtree;
 	Texture2D*              _lightmap;
-	VertexBufferObject*		m_pGroundVBO;
+	VertexBufferObject*		_groundVBO;
 	
-	F32 terrainScaleFactor, terrainHeightScaleFactor;
-	bool	m_bShowDetail, _loaded,_wasLoaded,_drawInReflexion,_postLoaded;
-	int detailId;
-
+	F32 terrainScaleFactor, _terrainHeightScaleFactor;
+	bool	_drawInReflexion,_postLoaded,_loaded,_wasLoaded;
 
 	Shader *terrainShader;
-	std::vector<Texture2D*>	m_tTextures;
-	Texture2D*				m_pTerrainDiffuseMap;
+	std::vector<Texture2D*>	_terrainTextures;
+	Texture2D*				_terrainDiffuseMap;
 	Vegetation*             _veg;
 	std::string             _grassShader;
 	vec4                    _ambientColor;

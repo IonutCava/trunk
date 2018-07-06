@@ -10,17 +10,17 @@ class SceneManager;
 class GUI;
 class Terrain;
 class GFXDevice;
+class SFXDevice;
 
 SINGLETON_BEGIN( Engine )
 
 private:
 	Engine();
-	int time, timebase;
-	static int status;
-	int mainWindowId;
+	I8 mainWindowId;
 	vec2 _dimensions;
 
 	GFXDevice&    _GFX;
+	SFXDevice&    _SFX;
     PhysX&        _px;
 	SceneManager& _scene;
 	Camera*       _camera;
@@ -28,22 +28,20 @@ private:
 
 public:
 	const vec2& getWindowDimensions() const {return _dimensions;}
-	void setWindowWidth(int w){_dimensions.x = w;}
-	void setWindowHeight(int h){_dimensions.y = h;}
+	void setWindowWidth(U16 w){_dimensions.x = w;}
+	void setWindowHeight(U16 h){_dimensions.y = h;}
 
    F32 moveFB,moveLR,angleUD,angleLR;
    void LoadControls();
    //rendering functions
    void Initialize(); //Set up the rendering platform
-   static void Pick(int name){}
    static void DrawSceneStatic();
    void DrawScene();
-   void RefreshMetrics();
 
    static void Idle();
    void Quit();
-   int  getMainWindowId(){return mainWindowId;}
-   void setMainWindowId(U32 id){mainWindowId = id;}
+   I8   getMainWindowId(){return mainWindowId;}
+   void setMainWindowId(U8 id){mainWindowId = id;}
  
    SINGLETON_END()
 

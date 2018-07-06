@@ -23,7 +23,7 @@ Mesh* DVDConverter::load(const string& file)
 			   aiProcess_OptimizeMeshes	          | // join small meshes, if possible;
 			   0;
 	bool removeLinesAndPoints = true;
-	tempMesh->getName() = file;
+	tempMesh->setName(file);
 	Assimp::Importer importer;
 	importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE , removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT : 0 );
 
@@ -42,29 +42,47 @@ Mesh* DVDConverter::load(const string& file)
 		return false;
 	}
 
-	U32 index=0;
-	for(U32 n = 0; n < scene->mNumMeshes; n++)
+	U16 index=0;
+	for(U16 n = 0; n < scene->mNumMeshes; n++)
 	{
+		
 		//Skip points and lines ... for now -Ionut
 		//ToDo: Fix this -Ionut
 		if(scene->mMeshes[n]->mPrimitiveTypes == aiPrimitiveType_LINE || 
 			scene->mMeshes[n]->mPrimitiveTypes == aiPrimitiveType_POINT )
 				continue;
-
+		if(scene->mMeshes[n]->mNumVertices == 0) continue; 
 		string temp;
 		char a;
-		for(U32 j = 0; j < scene->mMeshes[n]->mName.length; j++)
+		for(U16 j = 0; j < scene->mMeshes[n]->mName.length; j++)
 		{
 			a = scene->mMeshes[n]->mName.data[j];
 			temp += a;
 		}
-
+		
+		if(temp.empty()){
+			char number[3];
+			sprintf(number,"%d",n);
+			temp = file+"-submesh-"+number;
+		}
 		index = tempMesh->getSubMeshes().size();
 		tempMesh->addSubMesh(new SubMesh(temp));
 		temp.clear();
 		tempMesh->getSubMeshes()[index]->getGeometryVBO()->getPosition().reserve(scene->mMeshes[n]->mNumVertices);
 		tempMesh->getSubMeshes()[index]->getGeometryVBO()->getNormal().reserve(scene->mMeshes[n]->mNumVertices);
+		std::vector< std::vector<vertexWeight> >   weightsPerVertex(scene->mMeshes[n]->mNumVertices);
+/*
+		if(scene->mMeshes[n]->HasBones())
+		{
 		
+			for(U16 b = 0; b < scene->mMeshes[n]->mNumBones; b++)
+			{
+				const aiBone* bone = scene->mMeshes[n]->mBones[b];
+				for( U16 bi = 0; bi < bone->mNumWeights; bi++)
+					weightsPerVertex[bone->mWeights[bi].mVertexId].push_back(vertexWeight( b, bone->mWeights[bi].mWeight));
+			}
+		}
+*/
 		for(U32 j = 0; j < scene->mMeshes[n]->mNumVertices; j++)
 		{
 			
@@ -74,6 +92,24 @@ Mesh* DVDConverter::load(const string& file)
 			tempMesh->getSubMeshes()[index]->getGeometryVBO()->getNormal().push_back(vec3(scene->mMeshes[n]->mNormals[j].x,
 																				scene->mMeshes[n]->mNormals[j].y,
 																				scene->mMeshes[n]->mNormals[j].z));
+			/*vector<U8> boneIndices, boneWeights;
+			boneIndices.push_back(0);boneWeights.push_back(0);
+			boneIndices.push_back(0);boneWeights.push_back(0);
+			boneIndices.push_back(0);boneWeights.push_back(0);
+			boneIndices.push_back(0);boneWeights.push_back(0);
+
+			if( scene->mMeshes[n]->HasBones())	{
+				ai_assert( weightsPerVertex[x].size() <= 4);
+				for( U8 a = 0; a < weightsPerVertex[j].size(); a++)
+				{
+					boneIndices.push_back(weightsPerVertex[j][a]._vertexId);
+					boneWeights.push_back((U8) (weightsPerVertex[j][a]._weight * 255.0f));
+				}
+			}
+
+			tempMesh->getSubMeshes()[index]->getGeometryVBO()->getBoneIndices().push_back(boneIndices);
+			tempMesh->getSubMeshes()[index]->getGeometryVBO()->getBoneWeights().push_back(boneWeights);
+			*/
 		}
 
 		if(scene->mMeshes[n]->mTextureCoords[0] != NULL)
@@ -93,12 +129,14 @@ Mesh* DVDConverter::load(const string& file)
 				for(U32 m = 0; m < scene->mMeshes[n]->mFaces[k].mNumIndices; m++)
 					tempMesh->getSubMeshes()[index]->getIndices().push_back(scene->mMeshes[n]->mFaces[k].mIndices[m]);
 		 
+		
+	
 		tempMesh->getSubMeshes()[index]->getGeometryVBO()->Create();
 	 
 	
 		aiReturn result = AI_SUCCESS; 
-		aiString tName; aiTextureMapping mapping; unsigned int uvInd;
-		float blend;  aiTextureOp op; aiTextureMapMode mode[3];
+		aiString tName; aiTextureMapping mapping; U32 uvInd;
+		F32 blend;  aiTextureOp op; aiTextureMapMode mode[3];
 
 		aiMaterial *mat = scene->mMaterials[scene->mMeshes[n]->mMaterialIndex];
 
@@ -176,7 +214,9 @@ Mesh* DVDConverter::load(const string& file)
 				}
 			}
 		}
+
 	}
 	tempMesh->setVisibility(true);
 	return tempMesh;
 }
+

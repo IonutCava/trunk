@@ -25,7 +25,7 @@ struct GuiEvent
    vec2                 mousePoint;       ///< for mouse events
    U8                   mouseClickCount;
 };
-//<< END TORQUE CODE. Please replace. Only for reference
+
 
 class GuiElement
 {
@@ -158,7 +158,7 @@ public:
 	void onResize(F32 newWidth, F32 newHeight);
 	void clickCheck();
 	void clickReleaseCheck();
-	void checkItem(int x, int y);
+	void checkItem(U16 x, U16 y);
 
 	GuiElement* getGuiElement(const std::string& id){return _guiStack[id];}
 

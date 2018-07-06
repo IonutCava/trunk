@@ -133,23 +133,23 @@ namespace OIS
 	public:
 		virtual ~JoyStickListener() {}
 		/** @remarks Joystick button down event */
-		virtual bool buttonPressed( const JoyStickEvent &arg, int button ) = 0;
+		virtual bool buttonPressed( const JoyStickEvent &arg, signed char button ) = 0;
 		
 		/** @remarks Joystick button up event */
-		virtual bool buttonReleased( const JoyStickEvent &arg, int button ) = 0;
+		virtual bool buttonReleased( const JoyStickEvent &arg, signed char button ) = 0;
 
 		/** @remarks Joystick axis moved event */
-		virtual bool axisMoved( const JoyStickEvent &arg, int axis ) = 0;
+		virtual bool axisMoved( const JoyStickEvent &arg, signed char axis ) = 0;
 
 		//-- Not so common control events, so are not required --//
 		//! Joystick Event, and sliderID
-		virtual bool sliderMoved( const JoyStickEvent &, int index) {return true;}
+		virtual bool sliderMoved( const JoyStickEvent &, signed char index) {return true;}
 		
 		//! Joystick Event, and povID
-		virtual bool povMoved( const JoyStickEvent &arg, int index) {return true;}
+		virtual bool povMoved( const JoyStickEvent &arg, signed char index) {return true;}
 
 		//! Joystick Event, and Vector3ID
-		virtual bool vector3Moved( const JoyStickEvent &arg, int index) {return true;}
+		virtual bool vector3Moved( const JoyStickEvent &arg, signed char index) {return true;}
 	};
 
 	/**

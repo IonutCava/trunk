@@ -6,6 +6,7 @@
 // small like 0.00001f to get accurate results
 void Quaternion::normalize()
 {
+	_dirty = true;
 	// Don't normalize if we don't have to
 	float mag2 = _w * _w + _x * _x + _y * _y + _z * _z;
 	if (  mag2!=0.f && (fabs(mag2 - 1.0f) > TOLERANCE)) {
@@ -55,6 +56,7 @@ vec3 Quaternion::operator* (const vec3 &vec) const
 // Convert from Axis Angle
 void Quaternion::FromAxis(const vec3 &v, float angle)
 {
+	_dirty = true;
 	float sinAngle;
 	angle = RADIANS(angle);
 	angle *= 0.5f;
@@ -73,6 +75,7 @@ void Quaternion::FromAxis(const vec3 &v, float angle)
 // Convert from Euler Angles
 void Quaternion::FromEuler(float pitch, float yaw, float roll)
 {
+	_dirty = true;
 	// Basically we create 3 Quaternions, one for pitch, one for yaw, one for roll
 	// and multiply those together.
 	// the calculation below does the same, just shorter
@@ -96,22 +99,27 @@ void Quaternion::FromEuler(float pitch, float yaw, float roll)
 }
 
 // Convert to Matrix
-mat4 Quaternion::getMatrix() const
+mat4& Quaternion::getMatrix()
 {
-	float x2 = _x * _x;
-	float y2 = _y * _y;
-	float z2 = _z * _z;
-	float xy = _x * _y;
-	float xz = _x * _z;
-	float yz = _y * _z;
-	float wx = _w * _x;
-	float wy = _w * _y;
-	float wz = _w * _z;
-	return mat4( 1.0f - 2.0f * (y2 + z2), 2.0f * (xy - wz), 2.0f * (xz + wy), 0.0f,
-				2.0f * (xy + wz), 1.0f - 2.0f * (x2 + z2), 2.0f * (yz - wx), 0.0f,
-				2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (x2 + y2), 0.0f,
-				0.0f, 0.0f, 0.0f, 1.0f);
+	if(_dirty) {
+		delete _mat;
+		F32 x2 = _x * _x;
+		F32 y2 = _y * _y;
+		F32 z2 = _z * _z;
+		F32 xy = _x * _y;
+		F32 xz = _x * _z;
+		F32 yz = _y * _z;
+		F32 wx = _w * _x;
+		F32 wy = _w * _y;
+		F32 wz = _w * _z;
 
+		_mat = New mat4( 1.0f - 2.0f * (y2 + z2), 2.0f * (xy - wz), 2.0f * (xz + wy), 0.0f,
+					2.0f * (xy + wz), 1.0f - 2.0f * (x2 + z2), 2.0f * (yz - wx), 0.0f,
+					2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (x2 + y2), 0.0f,
+					0.0f, 0.0f, 0.0f, 1.0f);
+		_dirty = false;
+	}
+	return *_mat;
 }
 
 // Convert to Axis/Angles

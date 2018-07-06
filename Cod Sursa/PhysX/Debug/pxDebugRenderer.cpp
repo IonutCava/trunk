@@ -5,7 +5,7 @@
 #include "resource.h"
 #include "Hardware/Video/GFXDevice.h"
 
-void DebugRenderer::renderBuffer(F32* pVertList, F32* pColorList, int type, int num)
+void DebugRenderer::renderBuffer(F32* pVertList, F32* pColorList, I32 type, I32 num)
 {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3,GL_FLOAT, 0, pVertList);
@@ -26,8 +26,8 @@ void DebugRenderer::renderData(const NxDebugRenderable& data) const
 	{
 		F32* pVertList = new F32[NbPoints*3];
     	F32* pColorList = new F32[NbPoints*4];
-    	int vertIndex = 0;
-    	int colorIndex = 0;
+    	I32 vertIndex = 0;
+    	I32 colorIndex = 0;
 		const NxDebugPoint* Points = data.getPoints();
 		while(NbPoints--)
 		{
@@ -45,6 +45,8 @@ void DebugRenderer::renderData(const NxDebugRenderable& data) const
     	
     	delete[] pVertList;
     	delete[] pColorList;
+		pVertList = NULL;
+		pColorList = NULL;
 	}
 
 	U32 NbLines = data.getNbLines();
@@ -52,8 +54,8 @@ void DebugRenderer::renderData(const NxDebugRenderable& data) const
 	{
 		F32* pVertList = new F32[NbLines*3*2];
     	F32* pColorList = new F32[NbLines*4*2];
-    	int vertIndex = 0;
-    	int colorIndex = 0;
+    	I32 vertIndex = 0;
+    	I32 colorIndex = 0;
 		const NxDebugLine* Lines = data.getLines();
 		while(NbLines--)
 		{
@@ -80,6 +82,8 @@ void DebugRenderer::renderData(const NxDebugRenderable& data) const
     	
     	delete[] pVertList;
     	delete[] pColorList;
+		pVertList = NULL;
+		pColorList = NULL;
 	}
 
 	U32 NbTris = data.getNbTriangles();
@@ -87,8 +91,8 @@ void DebugRenderer::renderData(const NxDebugRenderable& data) const
 	{
 		F32* pVertList = new F32[NbTris*3*3];
     	F32* pColorList = new F32[NbTris*4*3];
-    	int vertIndex = 0;
-    	int colorIndex = 0;
+    	I32 vertIndex = 0;
+    	I32 colorIndex = 0;
 		const NxDebugTriangle* Triangles = data.getTriangles();
 		while(NbTris--)
 		{
@@ -104,7 +108,7 @@ void DebugRenderer::renderData(const NxDebugRenderable& data) const
         	pVertList[vertIndex++] = Triangles->p2.y;
         	pVertList[vertIndex++] = Triangles->p2.z;
 
-			for(int i=0;i<3;i++)
+			for(I8 i=0;i<3;i++)
 			{
         		pColorList[colorIndex++] = (F32)((Triangles->color>>16)&0xff)/255.0f;
         		pColorList[colorIndex++] = (F32)((Triangles->color>>8)&0xff)/255.0f;
@@ -119,6 +123,8 @@ void DebugRenderer::renderData(const NxDebugRenderable& data) const
   	
     	delete[] pVertList;
     	delete[] pColorList;
+		pVertList = NULL;
+		pColorList = NULL;
 	}
 	glEnable(GL_LIGHTING);
 	GFXDevice::getInstance().setColor(vec4(1.0f,1.0f,1.0f,1.0f));

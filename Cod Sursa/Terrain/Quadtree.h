@@ -2,29 +2,28 @@
 #define QUADTREE
 
 #include "resource.h"
-#include "Utility/Headers/MathClasses.h"
 
 class QuadtreeNode;
 class BoundingBox;
-
+class ivec2;
 class Quadtree {
 public:
 	void Build(BoundingBox* pBBox, ivec2 HMSize, U32 minHMSize);
-	void ComputeBoundingBox(const vec3* vertices);
+	void ComputeBoundingBox(const std::vector<vec3>& vertices);
 	void Destroy();
 
-	int  DrawGround(bool drawInReflexion);
+	void DrawGround(bool drawInReflexion);
 	void DrawGrass(bool drawInReflexion);
 	void DrawTrees(bool drawInReflexion);
 	void DrawBBox();
 
 	QuadtreeNode*	FindLeaf(vec2& pos);
 
-	Quadtree()	{m_pRoot = NULL;}
+	Quadtree()	{_root = NULL;}
 	~Quadtree()	{Destroy();}
 
 private:
-	QuadtreeNode*	m_pRoot;	// Noeud principal du Quadtree
+	QuadtreeNode*	_root;	
 };
 
 #endif

@@ -2,7 +2,7 @@
 #define PARAM_H_
 /******************************************************************************
  *   <ParamHandler: Adds a parameter database for the entire application>     *
- *   Copyright (C) <2010>  <Cava Ionut - Divide Studio>                       *
+ *   Copyright (C) <2011>  <Cava Ionut - Divide Studio>                       *
  *                                                                            *
  *   This program is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published by     *
@@ -50,13 +50,11 @@ public:
 			try
 			{
 				F32 temp = any_cast<F32>(it->second);
-				Con::getInstance().printfn("Got float with name %s with value %f",name.c_str(),temp);
 				return temp;
 			}
 			catch(const boost::bad_any_cast &)
 			{
-				Con::getInstance().printfn("error for %s",name.c_str());
-				return 0;
+				return getParam<D32>(name); //Float and double are interchangable;
 				
 			}
 		}
@@ -76,6 +74,46 @@ public:
 			}
 			catch(const boost::bad_any_cast &)
 			{
+				return getParam<F32>(name);
+			}
+		}
+		else return 0;
+	}
+
+	template<>
+	U8 getParam<U8>(const std::string& name)
+	{
+		boost::mutex::scoped_lock  lock(mutex_);
+		params::iterator it = _params.find(name);
+		if(it != _params.end())
+		{
+			try
+			{
+				return any_cast<U8>(it->second);
+			}
+			catch(const boost::bad_any_cast &)
+			{
+				Con::getInstance().printfn("ParamHandler: error casting [ %s ] to U8",name.c_str());
+				return 0;
+			}
+		}
+		else return 0;
+	}
+
+	template<>
+	U16 getParam<U16>(const std::string& name)
+	{
+		boost::mutex::scoped_lock  lock(mutex_);
+		params::iterator it = _params.find(name);
+		if(it != _params.end())
+		{
+			try
+			{
+				return any_cast<U16>(it->second);
+			}
+			catch(const boost::bad_any_cast &)
+			{
+				Con::getInstance().printfn("ParamHandler: error casting [ %s ] to U16",name.c_str());
 				return 0;
 			}
 		}
@@ -102,8 +140,8 @@ public:
 		else return 0;
 	}
 
-	template<>
-	int getParam<int>(const std::string& name)
+		template<>
+	I8 getParam<I8>(const std::string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -111,7 +149,45 @@ public:
 		{
 			try
 			{
-				return any_cast<int>(it->second);
+				return any_cast<I8>(it->second);
+			}
+			catch(const boost::bad_any_cast &)
+			{
+				return 0;
+			}
+		}
+		else return 0;
+	}
+
+	template<>
+	I16 getParam<I16>(const std::string& name)
+	{
+		boost::mutex::scoped_lock  lock(mutex_);
+		params::iterator it = _params.find(name);
+		if(it != _params.end())
+		{
+			try
+			{
+				return any_cast<I16>(it->second);
+			}
+			catch(const boost::bad_any_cast &)
+			{
+				return 0;
+			}
+		}
+		else return 0;
+	}
+
+	template<>
+	I32 getParam<I32>(const std::string& name)
+	{
+		boost::mutex::scoped_lock  lock(mutex_);
+		params::iterator it = _params.find(name);
+		if(it != _params.end())
+		{
+			try
+			{
+				return any_cast<I32>(it->second);
 			}
 			catch(const boost::bad_any_cast &)
 			{
@@ -207,6 +283,8 @@ private:
 		else if(value.type() == typeid(D32))			Con::getInstance().printf("%f",any_cast<D32>(value));
 		else if(value.type() == typeid(bool))			Con::getInstance().printf("%s",any_cast<bool>(value)? "true" : "false");
 		else if(value.type() == typeid(int))			Con::getInstance().printf("%d",any_cast<I32>(value));
+		else if(value.type() == typeid(U8))		     	Con::getInstance().printf("%d",any_cast<U8>(value));
+		else if(value.type() == typeid(U16))			Con::getInstance().printf("%d",any_cast<U16>(value));
 		else if(value.type() == typeid(U32))			Con::getInstance().printf("%d",any_cast<U32>(value));
 		else if(value.type() == typeid(std::string)) 	Con::getInstance().printf("%s",any_cast<std::string>(value).c_str());
 		else if(value.type() == typeid(const char*))	Con::getInstance().printf("%s",any_cast<const char*>(value));

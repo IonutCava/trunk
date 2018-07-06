@@ -10,19 +10,19 @@ class glTexture : public Texture
 {
 
 public:
-	glTexture(U32 type, bool flipped = false) : Texture(), _type(type), _flipped(flipped) {}
-	~glTexture() {Destroy();}
+	glTexture(U32 type, bool flipped = false) : Texture(flipped), _type(type) {}
+	~glTexture() {}
 
 	bool load(const std::string& name);
 	bool unload() {Destroy(); return true;}
 
-	void Bind(U32 slot) const;
-	void Unbind(U32 slot) const;
+	void Bind(U16 slot) const;
+	void Unbind(U16 slot) const;
 
-	void SetMatrix(U32 slot, const mat4& transformMatrix);
-	void RestoreMatrix(U32 slot);
+	void SetMatrix(U16 slot, const mat4& transformMatrix);
+	void RestoreMatrix(U16 slot);
 
-	void LoadData(U32 target, U8* ptr, U32& w, U32& h, U32 d);
+	void LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d);
 
 private:
 
@@ -32,7 +32,6 @@ private:
 	void Gen();
 
 private:
-	bool _flipped;
 	U32 _type;
 };
 

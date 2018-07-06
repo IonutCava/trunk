@@ -13,7 +13,7 @@ public:
 		va_list args;
 		std::string fmt_text;
 		va_start(args, format);
-		int len = _vscprintf(format, args) + 1;
+		I32 len = _vscprintf(format, args) + 1;
 	    char *text = new char[len];
 		vsprintf_s(text, len, format, args);
 		fmt_text.append(text);
@@ -31,7 +31,7 @@ public:
 		va_list args;
 		std::string fmt_text;
 		va_start(args, format);
-		int len = _vscprintf(format, args) + 1;
+		I32 len = _vscprintf(format, args) + 1;
 	    char *text = new char[len];
 		vsprintf_s(text, len, format, args);
 		fmt_text.append(text);
@@ -49,7 +49,7 @@ public:
 		va_list args;
 		std::string fmt_text;
 		va_start(args, format);
-		int len = _vscprintf(format, args) + 1;
+		I32 len = _vscprintf(format, args) + 1;
 	    char *text = new char[len];
 		vsprintf_s(text, len, format, args);
 		fmt_text.append(text);
@@ -67,7 +67,7 @@ public:
 		va_list args;
 		std::string fmt_text;
 		va_start(args, format);
-		int len = _vscprintf(format, args) + 1;
+		I32 len = _vscprintf(format, args) + 1;
 	    char *text = new char[len];
 		vsprintf_s(text, len, format, args);
 		fmt_text.append(text);

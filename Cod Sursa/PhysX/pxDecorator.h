@@ -77,6 +77,7 @@ class DecorateActor : public PendingActor
     }
     ~DecorateActor() {
         delete m_wrappee;
+		m_wrappee = NULL;
     }
 	NxActorDesc createActor(){return m_wrappee->createActor();}
 	void setPos(NxVec3 pos){m_wrappee->setPos(pos);}

@@ -119,7 +119,7 @@ namespace XML
 			ter.variables.insert(item("grassBillboard3",assetLocation + pt.get<string>(name + ".vegetation.grassBillboard3")));
 			//ter.variables.insert(item("grassBillboard1",pt.get<string>(name + ".vegetation.grassBillboard1")));
 			ter.grassDensity = pt.get<U32>(name + ".vegetation.<xmlattr>.grassDensity");
-			ter.treeDensity = pt.get<U32>(name + ".vegetation.<xmlattr>.treeDensity");
+			ter.treeDensity = pt.get<U16>(name + ".vegetation.<xmlattr>.treeDensity");
 			ter.grassScale = pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale");
 			ter.treeScale = pt.get<F32>(name + ".vegetation.<xmlattr>.treeScale");
 			SceneManager::getInstance().addTerrain(ter);
@@ -198,7 +198,6 @@ namespace XML
 			model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x"); 
 			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y"); 
 			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
-			/*Primitives don't use materials yet so we can define colors*/
 			model.color.r    = pt.get<F32>(name + ".color.<xmlattr>.r"); 
 			model.color.g    = pt.get<F32>(name + ".color.<xmlattr>.g"); 
 			model.color.b    = pt.get<F32>(name + ".color.<xmlattr>.b");

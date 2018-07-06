@@ -4,9 +4,13 @@
 #include "Geometry/Object3DFlyWeight.h"
 #include "Importer/DVDConverter.h"
 #include "Managers/TextureManager.h"
+#include "Geometry/Predefined/Box3D.h"
+#include "Geometry/Predefined/Sphere3D.h"
+#include "Geometry/Predefined/Quad3D.h"
+#include "Geometry/Predefined/Text3D.h"
 using namespace std;
 
-void GFXDevice::setApi(GraphicsAPI api)
+void GFXDevice::setApi(RenderAPI api)
 {
 	switch(api)
 	{
@@ -31,7 +35,7 @@ void GFXDevice::setApi(GraphicsAPI api)
 	_api.setId(api);
 }
 
-void GFXDevice::resizeWindow(U32 w, U32 h)
+void GFXDevice::resizeWindow(U16 w, U16 h)
 {
 	Engine::getInstance().setWindowWidth(w);
     Engine::getInstance().setWindowHeight(h);
@@ -43,21 +47,20 @@ void GFXDevice::renderElements(tr1::unordered_map<string,Object3D*>& primitiveAr
 	tr1::unordered_map<string,Object3D*>::iterator _iter;
 	for(_iter = primitiveArray.begin();  _iter != primitiveArray.end();  _iter++)
 	{
-		(_iter->second)->onDraw();
 		if(!(_iter->second)->getVisibility()) continue;
 		switch((_iter->second)->getType())
 		{
 			case BOX_3D:
-				drawBox3D((Box3D*)(_iter->second));
+				drawBox3D(dynamic_cast<Box3D*>(_iter->second));
 				break;
 			case SPHERE_3D:
-				drawSphere3D((Sphere3D*)(_iter->second));
+				drawSphere3D(dynamic_cast<Sphere3D*>(_iter->second));
 				break;
 			case QUAD_3D:
-				drawQuad3D((Quad3D*)(_iter->second));
+				drawQuad3D(dynamic_cast<Quad3D*>(_iter->second));
 				break;
 			case TEXT_3D:
-				drawText3D((Text3D*)(_iter->second));
+				drawText3D(dynamic_cast<Text3D*>(_iter->second));
 				break;
 			default:
 				break;
@@ -98,8 +101,9 @@ void GFXDevice::renderElements(tr1::unordered_map<string,Mesh*>& geometryArray)
 
 void GFXDevice::renderModel(Mesh* const model)
 {
+	if(!model) return;
 	if(model->clean()){
-		delete model;
+		ResourceManager::getInstance().remove(model);
 		return;
 	}
 	model->onDraw(); //Update BB, shaders etc.
@@ -114,11 +118,11 @@ void GFXDevice::toggleWireframe(bool state)
 }
 
 // takes a screen shot and saves it to a TGA image
-void GFXDevice::Screenshot(char *filename, int xmin,int ymin, int xmax, int ymax)
+void GFXDevice::Screenshot(char *filename, U16 xmin,U16 ymin, U16 xmax, U16 ymax)
 {
 	// compute width and heidth of the image
-	int w = xmax - xmin;
-	int h = ymax - ymin;
+	U16 w = xmax - xmin;
+	U16 h = ymax - ymin;
 
 	// allocate memory for the pixels
 	U8 *imageData = new U8[w * h * 4];
@@ -129,4 +133,5 @@ void GFXDevice::Screenshot(char *filename, int xmin,int ymin, int xmax, int ymax
 	// save the image 
 	TextureManager::getInstance().SaveSeries(filename,w,h,32,imageData);
 	delete[] imageData;
+	imageData = NULL;
 }

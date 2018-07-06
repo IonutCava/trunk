@@ -1,20 +1,35 @@
 #ifndef _FRAMERATE_H_
 #define _FRAMERATE_H_
 
-#include "Utility/Headers/DataTypes.h"
+#include "Hardware/Platform/PlatformDefines.h"
 #include "Utility/Headers/Singleton.h"
 
-#ifdef _WIN32
+#if defined( __WIN32__ ) || defined( _WIN32 )
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
+#elif defined( __APPLE_CC__ ) // Apple OS X
+//??
+#else //Linux
+#include <sys/time.h> 
 #endif
 
 //Code from http://www.gamedev.net/reference/articles/article1382.asp
 //Copyright: "Frame Rate Independent Movement" by Ben Dilts
 
 SINGLETON_BEGIN(Framerate)
+
+#if defined( __WIN32__ ) || defined( _WIN32 )
+  typedef LARGE_INTEGER LI;
+#elif defined( __APPLE_CC__ ) // Apple OS X
+	//??
+#else //Linux
+  typedef timeval LI;
+#endif
 
 private:
 	Framerate() : 
@@ -27,10 +42,12 @@ private:
   F32           _fps;
   F32           _speedfactor;
   F32           _averageFps,_maxFps,_minFps;
-  int		    _count;
-  LARGE_INTEGER _tickspersecond;
-  LARGE_INTEGER _currentticks;
-  LARGE_INTEGER _framedelay;
+  I16		    _count;
+  U32           _elapsedTime;
+  LI			_tickspersecond;
+  LI			_currentticks;
+  LI			_framedelay;
+  LI			_startupTime;
 	
   
 
@@ -39,6 +56,7 @@ public:
   void          SetSpeedFactor();
   F32           getFps(){return _fps;}
   F32           getSpeedfactor(){return _speedfactor;}
+  F32           getElapsedTime(){QueryPerformanceCounter(&_currentticks); return (F32)(_currentticks.QuadPart-_startupTime.QuadPart) *1000/(F32)_tickspersecond.QuadPart;}
   void          benchmark();
 
 SINGLETON_END()

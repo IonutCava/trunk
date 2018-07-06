@@ -5,25 +5,30 @@
 #include "Managers/TerrainManager.h"
 #include "Geometry/Object3DFlyWeight.h"
 
+
 void TerrainChunk::Load(U32 depth, ivec2 pos, ivec2 HMsize)
 {
-	for(U32 i=0; i<TERRAIN_CHUNKS_LOD; i++)
+	for(U32 i=0; i < TERRAIN_CHUNKS_LOD; i++)
 		ComputeIndicesArray(i, depth, pos, HMsize);
 }
 
 
-void TerrainChunk::addTree(const vec3& pos,F32 rotation,F32 scale, Shader* tree_shader, const FileData& tree)
+void TerrainChunk::addTree(const vec3& pos,F32 rotation,F32 scale, const std::string& tree_shader, const FileData& tree)
 {
 	Mesh* t = ResourceManager::getInstance().LoadResource<Mesh>(tree.ModelName);
 	if(t)
 	{	
-		t->addShader(tree_shader);
+		t->addShader(ResourceManager::getInstance().LoadResource<Shader>(tree_shader));
+		t->getShaders()[0]->bind();
+			t->getShaders()[0]->Uniform("enable_shadow_mapping", 0);
+			t->getShaders()[0]->Uniform("tile_factor", 1.0f);	
+		t->getShaders()[0]->unbind();
 		Object3DFlyWeight* tempTree = New Object3DFlyWeight(t);
 		Transform* tran = tempTree->getTransform();
 		tran->scale(scale * tree.scale);
 		tran->rotateY(rotation);
 		tran->setPosition(pos);
-		m_tTrees.push_back(tempTree);
+		_trees.push_back(tempTree);
 	}
 	else
 	{
@@ -49,10 +54,10 @@ void TerrainChunk::ComputeIndicesArray(U32 lod, U32 depth, ivec2 pos, ivec2 HMsi
 	U32 nHMTotalWidth = (U32)HMsize.x;
 	U32 nHMTotalHeight = (U32)HMsize.y;
 
-	m_tIndOffsetW[lod] = nHMWidth*2;
-	m_tIndOffsetH[lod] = nHMWidth-1;
+	_indOffsetW[lod] = nHMWidth*2;
+	_indOffsetH[lod] = nHMWidth-1;
 	U32 nIndice = (nHMWidth)*(nHMHeight-1)*2;
-	m_tIndice[lod].reserve( nIndice );
+	_indice[lod].reserve( nIndice );
 
 
 	for(U32 j=0; j<(U32)nHMHeight-1; j++)
@@ -61,20 +66,21 @@ void TerrainChunk::ComputeIndicesArray(U32 lod, U32 depth, ivec2 pos, ivec2 HMsi
 		{
 			U32 id0 = (j*(offset) + nHMOffsetY+0)*(nHMTotalWidth)+(i*(offset) + nHMOffsetX+0);
 			U32 id1 = (j*(offset) + nHMOffsetY+(offset))*(nHMTotalWidth)+(i*(offset) + nHMOffsetX+0);
-			m_tIndice[lod].push_back( id0 );
-			m_tIndice[lod].push_back( id1 );
+			_indice[lod].push_back( id0 );
+			_indice[lod].push_back( id1 );
 		}
 	}
 
-	assert(nIndice == m_tIndice[lod].size());
-	
+	assert(nIndice == _indice[lod].size());
 }
 
 
 void TerrainChunk::Destroy()
 {
-	for(U32 i=0; i<TERRAIN_CHUNKS_LOD; i++)
-		m_tIndice[i].clear();
+	for(U8 i=0; i<TERRAIN_CHUNKS_LOD; i++)
+		_indice[i].clear();
+	for(U8 i=0; i<_trees.size(); i++)
+		delete _trees[i];
 
 }
 
@@ -88,23 +94,21 @@ void TerrainChunk::DrawTrees(U32 lod, F32 d)
 	F32 _windZ = SceneManager::getInstance().getTerrainManager()->getWindDirX();
 	F32 _windS = SceneManager::getInstance().getTerrainManager()->getWindSpeed();
 
-	RenderState s(true,true,true,true);
-	GFXDevice::getInstance().setRenderState(s);
+	
 	F32 time = GETTIME();
 	Shader* treeShader;
-	for(U32 i=0; i <  m_tTrees.size(); i++)
+	for(U32 i=0; i <  _trees.size(); i++)
 	{
-		treeShader = m_tTrees[i]->getObject()->getShaders()[0];
+		treeShader = _trees[i]->getObject()->getShaders()[0];
 		treeShader->bind();
 			treeShader->Uniform("time", time);
-			treeShader->Uniform("scale", m_tTrees[i]->getTransform()->getScale().y);
+			treeShader->Uniform("scale", _trees[i]->getTransform()->getScale().y);
 			treeShader->Uniform("windDirectionX", _windX);
 			treeShader->Uniform("windDirectionZ", _windZ);
 			treeShader->Uniform("windSpeed", _windS);
 		treeShader->unbind();
 	}
-	GFXDevice::getInstance().renderElements(m_tTrees);
-	
+	GFXDevice::getInstance().renderElements(_trees);
 }
 
 int TerrainChunk::DrawGround(U32 lod)
@@ -112,8 +116,8 @@ int TerrainChunk::DrawGround(U32 lod)
 	assert(lod < TERRAIN_CHUNKS_LOD);
 	if(lod>0) lod--;
 
-	for(U32 j=0; j<(U32)m_tIndOffsetH[lod]; j++)
-		GFXDevice::getInstance().renderElements(TRIANGLE_STRIP,m_tIndOffsetW[lod],&(m_tIndice[lod][j*m_tIndOffsetW[lod]]));
+	for(U32 j=0; j < _indOffsetH[lod]; j++)
+		GFXDevice::getInstance().renderElements(TRIANGLE_STRIP,_indOffsetW[lod],&(_indice[lod][j*_indOffsetW[lod]]));
 
 	return 1;
 }
@@ -125,20 +129,18 @@ void  TerrainChunk::DrawGrass(U32 lod, F32 d)
 	assert(lod < TERRAIN_CHUNKS_LOD);
 	if(lod != 0) return;
 	if(d > grassVisibility && !GFXDevice::getInstance().getDepthMapRendering()) return;
-	RenderState s(false,true,true,true);
-	GFXDevice::getInstance().setRenderState(s);
-
-	if(m_tGrassIndice.size() > 0)
+	
+	if(_grassIndice.size() > 0)
 	{
 		F32 ratio = 1.0f - (d / grassVisibility);
 		ratio *= 2.0f;
 		if(ratio > 1.0f) ratio = 1.0f;
 
-		int indices_count = (int)( ratio * m_tGrassIndice.size() );
+		U32 indices_count = (U32)( ratio * _grassIndice.size() );
 		indices_count -= indices_count%4; 
 
 		if(indices_count > 0)
-			GFXDevice::getInstance().renderElements(QUADS,indices_count, &(m_tGrassIndice[0]));
+			GFXDevice::getInstance().renderElements(QUADS,indices_count, &(_grassIndice[0]));
 			
 	}
 

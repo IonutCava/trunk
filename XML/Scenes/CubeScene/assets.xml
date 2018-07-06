@@ -64,7 +64,7 @@
 <rifle>
 	<model>models/Rifle2.ase</model>
 	<scale x="0.1" y="0.1" z="0.1" />
-	<position x="220" y="30" z="100" />
+	<position x="120" y="30" z="100" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 </rifle>

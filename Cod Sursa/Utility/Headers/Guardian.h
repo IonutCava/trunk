@@ -1,6 +1,5 @@
 #include "resource.h"
 #include "PhysX/PhysX.h"
-#include "Utility/Headers/Singleton.h"
 
 SINGLETON_BEGIN( Guardian )
 

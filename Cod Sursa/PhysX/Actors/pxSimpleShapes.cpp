@@ -1,16 +1,17 @@
-#include "Hardware/Video/OpenGL/glResources.h" //ToDo: Remove this from here -Ionut
-
 #include "PhysX/PhysX.h"
 #include "Rendering/Frustum.h"
-#include "Utility/Headers/BoundingBox.h"
+#include "Utility/Headers/ParamHandler.h"
 #include "Hardware/Video/GFXDevice.h"
+#include "Geometry/Predefined/Sphere3D.h"
+#include "Geometry/Predefined/Quad3D.h"
+#include "Geometry/Predefined/Box3D.h"
 
-void PhysX::CreateCube(int size=2)
+void PhysX::CreateCube(I16 size=2)
 {
 	CreateCube(defaultPosition,size);
 }
 
-void PhysX::CreateCube(NxVec3 position,int size=2)
+void PhysX::CreateCube(NxVec3 position,I16 size=2)
 {
 	if(!gScene) return;
 	const NxVec3* initial_velocity=NULL;
@@ -45,7 +46,7 @@ void PhysX::CreateCube(NxVec3 position,int size=2)
 	}
 }
 
-void PhysX::CreateStack(int size)
+void PhysX::CreateStack(I16 size)
 {
 	if(!gScene) return;
 	F32 CubeSize = 2.0f;
@@ -54,10 +55,10 @@ void PhysX::CreateStack(int size)
 	F32 Offset = -size * (CubeSize * 2.0f + Spacing) * 0.5f + defaultPosition.x;
 	while(size)
 	{
-		for(int i=0;i<size;i++)
+		for(I16 i=0;i<size;i++)
 		{
 			Pos.x = Offset + i * (CubeSize * 2.0f + Spacing);
-			CreateCube(Pos,(int)CubeSize);
+			CreateCube(Pos,(I16)CubeSize);
 		}
 		Offset += CubeSize;
 		Pos.y += (CubeSize * 2.0f + Spacing);
@@ -65,7 +66,7 @@ void PhysX::CreateStack(int size)
 	}
 }
 
-void PhysX::CreateTower(int size)
+void PhysX::CreateTower(I16 size)
 {
 	if(!gScene) return;
 	F32 CubeSize = 2.0f;
@@ -73,7 +74,7 @@ void PhysX::CreateTower(int size)
 	NxVec3 Pos(defaultPosition.x,defaultPosition.y + CubeSize,defaultPosition.z);
 	while(size)
 	{
-		CreateCube(Pos,(int)CubeSize);
+		CreateCube(Pos,(I16)CubeSize);
 		Pos.y += (CubeSize * 2.0f + Spacing);
 		size--;
 	}
@@ -81,72 +82,57 @@ void PhysX::CreateTower(int size)
 
 void PhysX::DrawLowPlane(NxShape *plane)
 {
-	//GFXDevice::getInstance().pushMatrix();
 	NxMat34 pose = plane->getActor().getGlobalPose();
 	F32 *orient = new F32[16];
 	pose.M.getColumnMajorStride4(orient);
 	vec3(pose.t.x,pose.t.y,pose.t.z).get(&(orient[12]));
     orient[3] = orient[7] = orient[11] = 0.0f;
     orient[15] = 1.0f;
-    //glMultMatrixf(&(orient[0]));
-    //glScaled(8192,0,8192);
-    //GFXDevice::getInstance().popMatrix();
+	D32 zFar = ParamHandler::getInstance().getParam<D32>("zFar");
+	Quad3D quad;
+	quad.getTransform()->scale(vec3(2.0f*zFar,0,2.0f*zFar));
+    quad.getTransform()->setPosition(vec3(pose.t.x,pose.t.y,pose.t.z));
+	GFXDevice::getInstance().drawQuad3D(&quad);
+	quad.unload();
 	delete orient;
+	orient = NULL;
 }
 
 void PhysX::DrawSphere(NxShape *sphere)
 {
-
-	//glPushAttrib(GL_ALL_ATTRIB_BITS);
 	NxMat34 pose = sphere->getActor().getGlobalPose();
 	NxReal r = sphere->isSphere()->getRadius();
-	//GFXDevice::getInstance().pushMatrix();
 	F32 *orient = new F32[16];
 	pose.M.getColumnMajorStride4(orient);
-	vec3(pose.t.x,pose.t.y,pose.t.z).get(&(orient[12]));
-    orient[3] = orient[7] = orient[11] = 0.0f;
-    orient[15] = 1.0f;
-    //glMultMatrixf(&(orient[0]));
-    //glScaled(r,r,r);
-    GLUquadricObj * quadObj = gluNewQuadric ();
-    gluQuadricDrawStyle (quadObj, GLU_FILL);
-    gluQuadricNormals (quadObj, GLU_SMOOTH); 
-    gluQuadricOrientation(quadObj,GLU_OUTSIDE);
-    gluSphere(quadObj, 1.0f, 9, 7);        //unit sphere
-    gluDeleteQuadric(quadObj);
-    //GFXDevice::getInstance().popMatrix();
-	//glPopAttrib();
+	NxQuat temp(pose.M);
+    orient[3] = orient[7] = orient[11] = 0.0f;  orient[15] = 1.0f;
+	Sphere3D visualSphere(1,9);
+	visualSphere.getTransform()->setTransforms(mat4(orient));
+	GFXDevice::getInstance().drawSphere3D(&visualSphere);
+	visualSphere.unload();
 	delete orient;
+	orient = NULL;
 }
 
 void PhysX::DrawBox(NxShape *box)
 {
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	NxMat34 pose = box->getActor().getGlobalPose();
 	F32 *orient = new F32[16];
 	GFXDevice::getInstance().setColor(vec3(0.3f,0.3f,0.8f));
 	BoundingBox *cube = (BoundingBox*)box->getActor().userData;
-	/*if(!Frustum::getInstance().ContainsBoundingBox(*cube)) return;*/
-	//GFXDevice::getInstance().pushMatrix();
 	pose.M.getColumnMajorStride4(orient);
-	//glEnable(GL_COLOR_MATERIAL);
-	//F32 color[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
-	//glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, color);
-	//glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, color);
-	vec3(pose.t.x,pose.t.y,pose.t.z).get(&(orient[12]));
-    orient[3] = orient[7] = orient[11] = 0.0f;
-    orient[15] = 1.0f;
-    //glMultMatrixf(&(orient[0]));
-	cube->Translate(vec3(pose.t.x,pose.t.y,pose.t.z));
-	glutSolidCube(/*cube->size**/2.0f);
-	//glDisable(GL_COLOR_MATERIAL);
-	//GFXDevice::getInstance().popMatrix();
-	GFXDevice::getInstance().setColor(vec3(1.0f,1.0f,1.0f));
-    glPopAttrib();	
+	NxQuat temp(pose.M);
+    orient[3] = orient[7] = orient[11] = 0.0f; orient[15] = 1.0f;
+	Box3D visualCube((cube->getMin()).distance( cube->getExtent()));
+	visualCube.getMaterial().diffuse = vec3(0.3f,0.3f,0.3f);
+	visualCube.getTransform()->setTransforms(mat4(orient));
+	GFXDevice::getInstance().drawBox3D(&visualCube);
+	visualCube.unload();
 	delete orient;
+	orient = NULL;
 }
 
-void PhysX::CreateSphere(int size = 2)
+void PhysX::CreateSphere(I16 size = 2)
 {
 	if(!gScene) return;
 	const NxVec3* initial_velocity=NULL;

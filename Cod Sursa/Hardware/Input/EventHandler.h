@@ -2,6 +2,7 @@
 #define _INPUT_EVENT_HANDLER_H_
 
 #include "OIS.h"
+#include "Hardware/Platform/PlatformDefines.h"
 
 class InputManagerInterface;
 class JoystickManager;
@@ -24,10 +25,10 @@ class EventHandler : public OIS::KeyListener, public OIS::JoyStickListener,publi
 	bool keyPressed( const OIS::KeyEvent &arg );
 	bool keyReleased( const OIS::KeyEvent &arg );
 	//Joystick\Gamepad
-	bool buttonPressed( const OIS::JoyStickEvent &arg, int button );
-	bool buttonReleased( const OIS::JoyStickEvent &arg, int button );
-	bool axisMoved( const OIS::JoyStickEvent &arg, int axis );
-	bool povMoved( const OIS::JoyStickEvent &arg, int pov );
+	bool buttonPressed( const OIS::JoyStickEvent &arg, I8 button );
+	bool buttonReleased( const OIS::JoyStickEvent &arg, I8 button );
+	bool axisMoved( const OIS::JoyStickEvent &arg, I8 axis );
+	bool povMoved( const OIS::JoyStickEvent &arg, I8 pov );
 	//Mouse
 	bool mouseMoved( const OIS::MouseEvent &arg );
 	bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );

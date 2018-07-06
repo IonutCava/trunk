@@ -1,7 +1,8 @@
 #ifndef FRUSTUM_H_
 #define FRUSTUM_H_
 
-#include "Utility/Headers/DataTypes.h"
+#include "Hardware/Platform/PlatformDefines.h"
+#include "Utility/Headers/MathClasses.h"
 #include "Utility/Headers/Singleton.h"
 
 #define FRUSTUM_OUT			0
@@ -15,21 +16,21 @@ public:
 	void Extract(const vec3& eye);
 
 	bool ContainsPoint(const vec3& point) const;
-	int  ContainsBoundingBox(BoundingBox& bbox) const;
-	int  ContainsSphere(const vec3& center, float radius) const;
+	I8  ContainsBoundingBox(BoundingBox& bbox) const;
+	I8  ContainsSphere(const vec3& center, F32 radius) const;
 
 
-	vec3& getEyePos()					{return m_EyePos;}
-	mat4& getModelviewMatrix()			{return m_mtxMV;}
-	mat4& getModelviewInvMatrix()		{return m_mtxMVinv;}
-	mat4& getProjectionMatrix()			{return m_mtxProj;}
+	vec3& getEyePos()					{return _eyePos;}
+	mat4& getModelviewMatrix()			{return _modelViewMatrix;}
+	mat4& getModelviewInvMatrix()		{return _modelViewMatrixInv;}
+	mat4& getProjectionMatrix()			{return _projectionMatrix;}
 
 private:
-	vec3	m_EyePos;
-	vec4	m_tFrustumPlanes[6];	
-	mat4	m_mtxMV, m_mtxMVinv;	// Matricea de Modelview
-	mat4	m_mtxProj; 				// Matricea de Projection
-	mat4	m_mtxMVProj;			// Matricea Proiectie * Modelview
+	vec3	_eyePos;
+	vec4	_frustumPlanes[6];	
+	mat4	_modelViewMatrix, _modelViewMatrixInv;	// Modelview Matrix and it's inverse
+	mat4	_projectionMatrix; 				// Projection Matrix
+	mat4	_modelViewProjectionMatrix;			// Modelview * Projection
 
 SINGLETON_END()
 

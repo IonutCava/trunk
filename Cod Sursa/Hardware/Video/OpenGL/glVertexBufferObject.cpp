@@ -13,12 +13,6 @@ glVertexBufferObject::glVertexBufferObject()
 void glVertexBufferObject::Destroy()
 {
 	glDeleteBuffers(1, &_VBOid);
-	_VBOid = 0;
-
-	_dataPosition.clear();
-	_dataNormal.clear();
-	_dataTexcoord.clear();
-	_dataTangent.clear();
 }
 
 
@@ -98,12 +92,12 @@ void glVertexBufferObject::Enable()
 void glVertexBufferObject::Disable()
 {
 	if(_VBOid)	Disable_VBO();		
-	else			Disable_VA();		
+	else		Disable_VA();		
 }
 
 void glVertexBufferObject::Enable_VA()
 {
-	U32 slot = 0;
+	U16 slot = 0;
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, &(_dataPosition[0].x));
 
@@ -128,7 +122,7 @@ void glVertexBufferObject::Enable_VA()
 void glVertexBufferObject::Enable_VBO()
 {
 	if(!_created) Create();
-	U32 slot = 0;
+	U16 slot = 0;
 	glBindBuffer(GL_ARRAY_BUFFER, _VBOid);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -154,7 +148,7 @@ void glVertexBufferObject::Enable_VBO()
 
 void glVertexBufferObject::Disable_VA()
 {
-	U32 slot = 0;
+	U16 slot = 0;
 
 	if(!_dataTexcoord.empty()) {
 		glClientActiveTexture(GL_TEXTURE0 + slot++);
@@ -175,7 +169,7 @@ void glVertexBufferObject::Disable_VA()
 
 void glVertexBufferObject::Disable_VBO()
 {
-	U32 slot = 0;
+	U16 slot = 0;
 
 	if(!_dataTexcoord.empty()) {
 		glClientActiveTexture(GL_TEXTURE0 + slot++);

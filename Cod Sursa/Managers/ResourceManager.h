@@ -4,6 +4,9 @@
 
 #include "Managers/Manager.h" 
 #include "Utility/Headers/Singleton.h" 
+class Texture;
+typedef Texture Texture2D;
+typedef Texture TextureCubemap;
 
 SINGLETON_BEGIN_EXT1( ResourceManager,Manager )
 
@@ -14,7 +17,7 @@ public:
 	T* LoadResource(const std::string& name,bool flag = false);
 
 protected:
-	~ResourceManager() {destroy();}
+	~ResourceManager() {Destroy();}
 
 SINGLETON_END()
 

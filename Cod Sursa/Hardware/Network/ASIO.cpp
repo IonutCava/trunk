@@ -3,6 +3,7 @@
 #include "Utility/Headers/MathHelper.h"
 #include "Utility/Headers/BaseClasses.h"
 #include "Managers/SceneManager.h"
+#include "Utility/Headers/ParamHandler.h"
 
 using namespace std;
 
@@ -59,13 +60,13 @@ using namespace std;
 	void ASIO::HandleGeometryAppendOpCode(WorldPacket& p)
 	{
 		Con::getInstance().printfn("ASIO: received  [SMSG_GEOMETRY_APPEND]");
-		U32 size;
+		U8 size;
 		p >> size;
 		vector<FileData> patch;
-		for(U32 i = 0; i < size; i++)
+		for(U8 i = 0; i < size; i++)
 		{
 			FileData d;
-			int type = -1;
+			I8 type = -1;
 			p >> d.ItemName;
 			p >> d.ModelName;
 			p >> d.orientation.x;

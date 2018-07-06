@@ -21,15 +21,15 @@ void TextureManager::Destroy (void) {
 // ===================================================================
 
 
-int TextureManager::tgaSave(	char 		*filename, 
-		short int	width, 
-		short int	height, 
+I8 TextureManager::tgaSave(	char 		*filename, 
+		U16	width, 
+		U16	height, 
 		U8	pixelDepth,
 		U8	*imageData) {
 
 	U8 cGarbage = 0, type,mode,aux;
-	short int iGarbage = 0;
-	int i;
+	I16 iGarbage = 0;
+	I32 i;
 	FILE *file;
 
 // open file and check for errors
@@ -51,14 +51,14 @@ int TextureManager::tgaSave(	char 		*filename,
 
 	fwrite(&type, sizeof(U8), 1, file);
 
-	fwrite(&iGarbage, sizeof(short int), 1, file);
-	fwrite(&iGarbage, sizeof(short int), 1, file);
+	fwrite(&iGarbage, sizeof(I16), 1, file);
+	fwrite(&iGarbage, sizeof(I16), 1, file);
 	fwrite(&cGarbage, sizeof(U8), 1, file);
-	fwrite(&iGarbage, sizeof(short int), 1, file);
-	fwrite(&iGarbage, sizeof(short int), 1, file);
+	fwrite(&iGarbage, sizeof(I16), 1, file);
+	fwrite(&iGarbage, sizeof(I16), 1, file);
 
-	fwrite(&width, sizeof(short int), 1, file);
-	fwrite(&height, sizeof(short int), 1, file);
+	fwrite(&width, sizeof(I16), 1, file);
+	fwrite(&height, sizeof(I16), 1, file);
 	fwrite(&pixelDepth, sizeof(U8), 1, file);
 
 	fwrite(&cGarbage, sizeof(U8), 1, file);
@@ -77,19 +77,19 @@ int TextureManager::tgaSave(	char 		*filename,
 	fclose(file);
 // release the memory
 	delete imageData;
-
+	imageData = NULL;
 	return(0);
 }
 
 // saves a series of files with names "filenameX.tga"
-int TextureManager::SaveSeries(char		*filename, 
-			 short int		width, 
-			 short int		height, 
+I8 TextureManager::SaveSeries(char		*filename, 
+			 U16		width, 
+			 U16		height, 
 			 U8	pixelDepth,
 			 U8	*imageData) {
-	static int savedImages=0;
+	static I8 savedImages=0;
 	char *newFilename;
-	int status;
+	I8 status;
 	
 // compute the new filename by adding the 
 // series number and the extension
@@ -104,7 +104,7 @@ int TextureManager::SaveSeries(char		*filename,
 	if (status == 0)
 		savedImages++;
 	delete[] newFilename;
-
+	newFilename = NULL;
 	return(status);
 }
 

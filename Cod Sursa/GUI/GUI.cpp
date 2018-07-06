@@ -52,7 +52,7 @@ void GUI::close()
 	_guiStack.clear();
 }
 
-void GUI::checkItem(int x, int y)
+void GUI::checkItem(U16 x, U16 y)
 {
 	GuiEvent event;
 	event.mousePoint.x = x;
@@ -156,7 +156,7 @@ void GUI::addText(const string& id,const vec3 &position, Font font,const vec3 &c
 	string fmt_text;
 
     va_start(args, format);
-    int len = _vscprintf(format, args) + 1;
+    I32 len = _vscprintf(format, args) + 1;
     char *text = new char[len];
     vsprintf_s(text, len, format, args);
 	fmt_text.append(text);
@@ -183,7 +183,7 @@ void GUI::modifyText(const string& id, char* format, ...)
 	string fmt_text;
 
     va_start(args, format);
-    int len = _vscprintf(format, args) + 1;
+    I32 len = _vscprintf(format, args) + 1;
     char * text = new char[len];
     vsprintf_s(text, len, format, args);
 	fmt_text.append(text);

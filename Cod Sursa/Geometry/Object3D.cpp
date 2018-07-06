@@ -1,18 +1,34 @@
 #include "Object3D.h"
 #include "Managers/SceneManager.h"
-
-Object3D::Object3D(const Object3D& old) : _color(old._color), _selected(old._selected), _update(old._update),
-										  _name(old._name), _itemName(old._itemName), _bb(old._bb), 
-										  _originalBB(old._originalBB),_geometryType(old._geometryType),
-										  _drawBB(old._drawBB),_render(old._render)
+#include "Managers/ResourceManager.h"
+Object3D::Object3D(const Object3D& old) : Resource(old),_material(old._material), _selected(old._selected), _update(old._update),
+										  _bb(old._bb), _originalBB(old._originalBB),_geometryType(old._geometryType),
+										  _drawBB(old._drawBB),_render(old._render),_computedLightShaders(old._computedLightShaders)
 {
 	if(old._transform)	_transform = New Transform(*old._transform);
+	for(std::vector<Shader*>::const_iterator it = old._shaders.begin(); it != old._shaders.end(); it++)
+		_shaders.push_back(*it);
+}
+
+Object3D::~Object3D() {	
+	if(_transform) {
+		delete _transform;
+		_transform = NULL;
+	} 
 }
 
 void Object3D::onDraw()
 {
-	setVisibility(SceneManager::getInstance().getActiveScene()->drawObjects());
-
+	if(!_computedLightShaders){
+		Shader* s;
+		if(!_material.textures.empty())
+			s = ResourceManager::getInstance().LoadResource<Shader>("DeferredShadingPass1");
+		else
+			s = ResourceManager::getInstance().LoadResource<Shader>("DeferredShadingPass1_color.frag,DeferredShadingPass1.vert");
+		
+		_shaders.push_back(s);
+		_computedLightShaders = true;
+	}
 	if(!_bb.isComputed()) computeBoundingBox();
 	_bb.Transform(_originalBB, getTransform()->getMatrix());
 	drawBBox();
@@ -34,4 +50,21 @@ Transform*	const Object3D::getTransform()
 	}
 
 	return _transform;
+}
+
+bool Object3D::unload() 
+{
+	if(_computedLightShaders)
+		clearMaterials();
+	return true;
+}
+
+void Object3D::clearMaterials()
+{
+	if(!getShaders().empty()){
+		for(U8 i = 0; i < getShaders().size(); i++)
+			ResourceManager::getInstance().remove(getShaders()[i]);
+		getShaders().clear();
+	}
+	_computedLightShaders = true;
 }

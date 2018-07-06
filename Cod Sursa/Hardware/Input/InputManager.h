@@ -46,10 +46,10 @@ class EffectManager
     std::vector<VariableEffect*> _vecEffects;
 
     // Selected effect
-    int _nCurrEffectInd;
+    I8 _nCurrEffectInd;
 
     // Update frequency (Hz)
-    unsigned int _nUpdateFreq;
+    U32 _nUpdateFreq;
 
 	// Indexes (in _vecEffects) of the variable effects that are playable by the selected joystick.
 	std::vector<size_t> _vecPlayableEffectInd;
@@ -57,7 +57,7 @@ class EffectManager
 
   public:
 
-    EffectManager(JoystickManager* pJoystickMgr, unsigned int nUpdateFreq) 
+    EffectManager(JoystickManager* pJoystickMgr, U32 nUpdateFreq) 
 	: _pJoystickMgr(pJoystickMgr), _nUpdateFreq(nUpdateFreq), _nCurrEffectInd(-1)
     {
 	  OIS::Effect* pEffect;
@@ -102,10 +102,10 @@ class EffectManager
 	  pEffect->setNumAxes(1);
 	  pConstForce = dynamic_cast<OIS::ConstantEffect*>(pEffect->getForceEffect());
 	  pConstForce->level = 5000;  //-10K to +10k
-	  pConstForce->envelope.attackLength = (unsigned int)(1000000.0/_nUpdateFreq/2);
-	  pConstForce->envelope.attackLevel = (unsigned short)(pConstForce->level*0.1);
+	  pConstForce->envelope.attackLength = (U32)(1000000.0/_nUpdateFreq/2);
+	  pConstForce->envelope.attackLevel = (U16)(pConstForce->level*0.1);
 	  pConstForce->envelope.fadeLength = 0; // Never reached, actually.
-	  pConstForce->envelope.fadeLevel = (unsigned short)pConstForce->level; // Idem
+	  pConstForce->envelope.fadeLevel = (U16)pConstForce->level; // Idem
 
 	  mapVars.clear();
 	  mapVars["Force"] = 
@@ -157,6 +157,7 @@ class EffectManager
 	  std::vector<VariableEffect*>::iterator iterEffs;
 	  for (iterEffs = _vecEffects.begin(); iterEffs != _vecEffects.end(); iterEffs++)
 		delete *iterEffs;
+	   *iterEffs = NULL;
 	}
 
     void updateActiveEffects()
@@ -233,7 +234,7 @@ class EffectManager
 		  ->remove(_vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->getFFEffect());
 		_vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->setActive(false);
 		_nCurrEffectInd += eWhich;
-		if (_nCurrEffectInd < -1 || _nCurrEffectInd >= (int)_vecPlayableEffectInd.size())
+		if (_nCurrEffectInd < -1 || _nCurrEffectInd >= (I16)_vecPlayableEffectInd.size())
 		  _nCurrEffectInd = -1;
 	  }
 
@@ -281,14 +282,14 @@ SINGLETON_BEGIN( InputManagerInterface )
     bool             _bMustStop;
     bool             _bIsInitialized;
 
-    int _nStatus;
+    I16 _nStatus;
 
     // App. hart beat frequency.
-    static const unsigned int _nHartBeatFreq = 20; // Hz
+    static const U8 _nHartBeatFreq = 20; // Hz
 
     // Effects update frequency (Hz) : Needs to be quite lower than app. hart beat frequency,
 	// if we want to be able to calmly study effect changes ...
-    static const unsigned int _nEffectUpdateFreq = 1; // Hz
+    static const U8 _nEffectUpdateFreq = 1; // Hz
 
   
 
@@ -310,7 +311,7 @@ SINGLETON_BEGIN( InputManagerInterface )
 
 public:
 
-    int initialize()
+    U8 initialize()
     {
 		if(_bIsInitialized)
 			return 0;
@@ -406,10 +407,10 @@ public:
 	}
 #endif
 
-    int tick()
+    U8 tick()
     {
-	  const unsigned int nMaxEffectUpdateCnt = _nHartBeatFreq / _nEffectUpdateFreq;
-	  unsigned int nEffectUpdateCnt = 0;
+	  const U8 nMaxEffectUpdateCnt = _nHartBeatFreq / _nEffectUpdateFreq;
+	  U8 nEffectUpdateCnt = 0;
 
 	  if (!_bIsInitialized)	initialize();
 

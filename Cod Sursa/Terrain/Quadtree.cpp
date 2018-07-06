@@ -1,38 +1,38 @@
 #include "Quadtree.h"
 #include "QuadtreeNode.h"
-#include "Utility/Headers/BoundingBox.h"
-#include "Rendering/Frustum.h"
+#include "Hardware/Video/GFXDevice.h"
  
-int Quadtree::DrawGround(bool drawInReflexion) {
-	assert(m_pRoot);
+void Quadtree::DrawGround(bool drawInReflexion) {
+	assert(_root);
 	int options = CHUNK_BIT_TESTCHILDREN;
 	if(drawInReflexion)	options |= CHUNK_BIT_WATERREFLECTION;
 	if(GFXDevice::getInstance().getDepthMapRendering()) options |= CHUNK_BIT_DEPTHMAP;
-	return m_pRoot->DrawGround(options);
+	_root->DrawGround(options);
+	//_root->DrawBBox();
 }
 
 void Quadtree::DrawGrass(bool drawInReflexion)
 {
-	assert(m_pRoot);
-	m_pRoot->DrawGrass(drawInReflexion);
+	assert(_root);
+	_root->DrawGrass(drawInReflexion);
 }
 
 void Quadtree::DrawTrees(bool drawInReflexion)
 {
-	assert(m_pRoot);
-	m_pRoot->DrawTrees(drawInReflexion);
+	assert(_root);
+	_root->DrawTrees(drawInReflexion);
 }
 
 void Quadtree::DrawBBox() {
-	assert(m_pRoot);
-	m_pRoot->DrawBBox(true);
+	assert(_root);
+	_root->DrawBBox();
 }
 
 
 QuadtreeNode* Quadtree::FindLeaf(vec2& pos)
 {
-	assert(m_pRoot);
-	QuadtreeNode* node = m_pRoot;
+	assert(_root);
+	QuadtreeNode* node = _root;
 
 	while(!node->isALeaf()) {
 		int i=0;
@@ -61,28 +61,27 @@ void Quadtree::Build(BoundingBox* pBBox,
 	assert(pBBox);
 
 	
-	m_pRoot = New QuadtreeNode();
-	m_pRoot->setBoundingBox(*pBBox);
+	_root = New QuadtreeNode();
+	_root->setBoundingBox(*pBBox);
 
 	
-	m_pRoot->Build(0, ivec2(0,0), HMsize, minHMSize);
+	_root->Build(0, ivec2(0,0), HMsize, minHMSize);
 }
 
-void Quadtree::ComputeBoundingBox(const vec3* vertices)
+void Quadtree::ComputeBoundingBox(const std::vector<vec3>& vertices)
 {
-	assert(m_pRoot);
-	assert(vertices);
-	m_pRoot->ComputeBoundingBox(vertices);
+	assert(_root);
+	assert(!vertices.empty());
+	_root->ComputeBoundingBox(vertices);
 
 }
 
 
 void Quadtree::Destroy()
 {
-	if(m_pRoot) {
-		m_pRoot->Destroy();
-		delete m_pRoot;
-		m_pRoot = NULL;
+	if(_root) {
+		delete _root;
+		_root = NULL;
 	}
 }
 

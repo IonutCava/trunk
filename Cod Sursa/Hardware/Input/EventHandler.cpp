@@ -29,25 +29,25 @@ bool EventHandler::keyReleased( const OIS::KeyEvent &arg )
 	return true;
 }
 
-bool EventHandler::buttonPressed( const OIS::JoyStickEvent &arg, int button )
+bool EventHandler::buttonPressed( const OIS::JoyStickEvent &arg, I8 button )
 {
   _activeScene->OnJoystickButtonDown(arg,button);
   return true;
 }
 
-bool EventHandler::buttonReleased( const OIS::JoyStickEvent &arg, int button )
+bool EventHandler::buttonReleased( const OIS::JoyStickEvent &arg, I8 button )
 {
   _activeScene->OnJoystickButtonUp(arg,button);
   return true;
 }
 
-bool EventHandler::axisMoved( const OIS::JoyStickEvent &arg, int axis )
+bool EventHandler::axisMoved( const OIS::JoyStickEvent &arg, I8 axis )
 {
   _activeScene->OnJoystickMoveAxis(arg,axis);
   return true;
 }
 
-bool EventHandler::povMoved( const OIS::JoyStickEvent &arg, int pov )
+bool EventHandler::povMoved( const OIS::JoyStickEvent &arg, I8 pov )
 {
   _activeScene->OnJoystickMovePOV(arg,pov);
   return true;
@@ -86,9 +86,9 @@ void forceVariableApplier(MapVariables& mapVars, Effect* pEffect)
 	dAttackFactor = mapVars["AttackFactor"]->getValue();
 
   ConstantEffect* pConstForce = dynamic_cast<ConstantEffect*>(pEffect->getForceEffect());
-  pConstForce->level = (int)dForce;
-  pConstForce->envelope.attackLevel = (unsigned short)fabs(dForce*dAttackFactor);
-  pConstForce->envelope.fadeLevel = (unsigned short)fabs(dForce); // Fade never reached, in fact.
+  pConstForce->level = (I16)dForce;
+  pConstForce->envelope.attackLevel = (U16)fabs(dForce*dAttackFactor);
+  pConstForce->envelope.fadeLevel = (U16)fabs(dForce); // Fade never reached, in fact.
 }
 
 // Variable "Period" on an OIS::PeriodicEffect
@@ -97,7 +97,7 @@ void periodVariableApplier(MapVariables& mapVars, Effect* pEffect)
   double dPeriod = mapVars["Period"]->getValue();
 
   PeriodicEffect* pPeriodForce = dynamic_cast<PeriodicEffect*>(pEffect->getForceEffect());
-  pPeriodForce->period = (unsigned int)dPeriod;
+  pPeriodForce->period = (U32)dPeriod;
 }
 
 

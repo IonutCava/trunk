@@ -6,11 +6,13 @@
 #include "Utility/Headers/BaseClasses.h"
 #include "Utility/Headers/Event.h"
 #include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Audio/SFXDevice.h"
 #include "Importer/DVDConverter.h"
 #include "Managers/TerrainManager.h"
 #include "Hardware/Video/Light.h"
 
-
+typedef std::tr1::shared_ptr<Event> Event_ptr;
+typedef std::tr1::shared_ptr<Light> Light_ptr;
 class Scene : public Resource
 {
 
@@ -20,13 +22,16 @@ public:
 	  _terMgr(new TerrainManager()),
 	  _drawBB(false),
 	  _drawObjects(true),
+	  _lightTexture(NULL),
+	  _deferredBuffer(NULL),
+	  _deferredShader(NULL),
 	  _inputManager(InputManagerInterface::getInstance())
 	  {
 		  _white = vec4(1.0f,1.0f,1.0f,1.0f);
 		  _black = vec4(0.0f,0.0f,0.0f,0.0f);
 	  };
 
-	  ~Scene();
+	virtual ~Scene();
 	void addGeometry(Object3D* const object);
 	void addModel(Mesh* const model);
 	bool removeGeometry(const std::string& name);
@@ -41,19 +46,22 @@ public:
 	virtual void processInput() = 0;
 	virtual void processEvents(F32 time) = 0;
 
-   int getNumberOfObjects(){return ModelArray.size() + GeometryArray.size();}
-   int getNumberOfTerrains(){return TerrainInfoArray.size();}
+   U32 getNumberOfObjects(){return ModelArray.size() + GeometryArray.size();}
+   U32 getNumberOfTerrains(){return TerrainInfoArray.size();}
 
    TerrainManager* getTerrainManager() {return _terMgr;}
-
-   inline std::tr1::unordered_map<std::string,Mesh*>& getModelArray(){return ModelArray;}
+   inline Shader*                                         getDeferredShaders() {return _deferredShader;}
+   inline std::tr1::unordered_map<std::string,Mesh*>&     getModelArray(){return ModelArray;}
    inline std::tr1::unordered_map<std::string,Object3D*>& getGeometryArray(){return GeometryArray;}
 
    inline std::vector<FileData>& getModelDataArray() {return ModelDataArray;}
    inline std::vector<FileData>& getVegetationDataArray() {return VegetationDataArray;}
 
-   inline std::vector<Light*>& getLights() {return _lights;}
-   inline std::vector<Event*>& getEvents() {return _events;}
+   inline std::vector<Light_ptr>& getLights() {return _lights;}
+   inline std::vector<Event_ptr>& getEvents() {return _events;}
+
+   void   addLight(Light_ptr lightItem) {_lights.push_back(lightItem);}
+   void   addEvent(Event_ptr eventItem) {_events.push_back(eventItem);}
 
    void addModel(FileData& model) {ModelDataArray.push_back(model);}
    void addTerrain(const TerrainInfo& ter) {TerrainInfoArray.push_back(ter);}
@@ -83,25 +91,31 @@ protected:
 	std::vector<FileData> VegetationDataArray;
 	std::vector<TerrainInfo> TerrainInfoArray;
 	
-	std::vector<Event*> _events;
-	std::vector<Light*> _lights;
-
-	Light* _defaultLight;
+	std::vector<F32> _eventTimers;
 
 	bool _drawBB,_drawObjects;
 	boost::mutex _mutex;
 
 	vec4 _white, _black;
 	InputManagerInterface& _inputManager;
-	
+
+	//Deferred rendering
+	FrameBufferObject* _deferredBuffer;
+	PixelBufferObject* _lightTexture;
+	Shader*			   _deferredShader;
+
+private: 
+	std::vector<Event_ptr> _events;
+	std::vector<Light_ptr> _lights;
 protected:
 
 	friend class SceneManager;
 	virtual bool loadResources(bool continueOnErrors){return true;}
 	virtual bool loadEvents(bool continueOnErrors){return true;}
 	virtual void setInitialData();
-	void clearEvents(){_events.empty();}
-	void clearObjects(){GeometryArray.empty(); ModelArray.empty();}
+	void clearEvents();
+	void clearObjects();
+	void clearLights();
 	bool loadModel(const FileData& data);
 	bool loadGeometry(const FileData& data);
 	bool addDefaultLight();
@@ -109,10 +123,10 @@ protected:
 public: //Input
 	virtual void onKeyDown(const OIS::KeyEvent& key);
 	virtual void onKeyUp(const OIS::KeyEvent& key);
-	virtual void OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I32 axis);
-	virtual void OnJoystickMovePOV(const OIS::JoyStickEvent& key,I32 pov){}
-	virtual void OnJoystickButtonDown(const OIS::JoyStickEvent& key,I32 button){}
-	virtual void OnJoystickButtonUp(const OIS::JoyStickEvent& key, I32 button){}
+	virtual void OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis);
+	virtual void OnJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){}
+	virtual void OnJoystickButtonDown(const OIS::JoyStickEvent& key,I8 button){}
+	virtual void OnJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){}
 	virtual void onMouseMove(const OIS::MouseEvent& key);
 	virtual void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 	virtual void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);

@@ -13,6 +13,7 @@
 class NxPhysicsSDK; 
 class NxScene;
 class NxVec3;
+class simpletriangle{public:   U32 Vertex[3]; };
 
 SINGLETON_BEGIN( PhysX )
 
@@ -48,7 +49,7 @@ private:
 	//createConvexMesh = este folosit pentru obiecte convexe deoarece este MULT mai rapid decat createTriangleMesh
 	NxTriangleMesh* createTriangleMesh(const NxStream& stream); //Functie de "gatit" meshe triangulare
 	NxConvexMesh*   createConvexMesh(const NxStream& stream);   //Functie de "gatit" meshe convexe
-	NxActor*        createHeightfield(const NxVec3& pos, int index, NxReal step); //Functie folosita pentru crearea terenului
+	//NxActor*        createHeightfield(const NxVec3& pos, int index, NxReal step); //Functie folosita pentru crearea terenului
 	
 
 	//Aceste metode se folosesc strict pentru randarea interna a tuturor actorilor
@@ -100,11 +101,11 @@ public:
 																		//Detalii in corpul functiei
 	bool AddConvexShape(Mesh *mesh);
 	bool AddTriangleShape(Mesh *mesh);
-	void CreateStack(int size);                           //Aceasta metoda creaza o piramida de "size"*cuburi
-	void CreateCube(NxVec3 position,int size);            //Creaza un singur cub de dimensiunea data la pozitia data
-	void CreateCube(int size);                            //Creaza un singur cub de dimensiunea data la pozitia dorita
-	void CreateTower(int size);                           //Creaza un "turn" de "size"*cubure
-	void CreateSphere(int size);       //Creaza o singura sfera de raza data la pozitia data
+	void CreateStack(I16 size);                           //Aceasta metoda creaza o piramida de "size"*cuburi
+	void CreateCube(NxVec3 position,I16 size);            //Creaza un singur cub de dimensiunea data la pozitia data
+	void CreateCube(I16 size);                            //Creaza un singur cub de dimensiunea data la pozitia dorita
+	void CreateTower(I16 size);                           //Creaza un "turn" de "size"*cubure
+	void CreateSphere(I16 size);       //Creaza o singura sfera de raza data la pozitia data
 	
 	//Aceasta functie se apeleaza din callback-ul de randare al OpenGL-ului si randeaza TOTI actorii
 	void UpdateActors(); //ToDo: un bypass in caz de un obiect nu a fost instantiat si ca actor dar trebuie totusi randat

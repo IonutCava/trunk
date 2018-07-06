@@ -5,7 +5,6 @@
 #include "Utility/Headers/ParamHandler.h"
 #include "Managers/ResourceManager.h"
 #include "Managers/TerrainManager.h"
-#include "Rendering/Framerate.h"
 #include "Managers/CameraManager.h"
 #include "Rendering/common.h"
 #include "PhysX/PhysX.h"
@@ -20,11 +19,11 @@ bool MainScene::updateLights()
 	vec4 vSunColor = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f),
 								0.25f + _sun_cosy * 0.75f);
 
-	_lights[0]->setLightProperties(string("position"),_sunVector);
-	_lights[0]->setLightProperties(string("ambient"),_white);
-	_lights[0]->setLightProperties(string("diffuse"),vSunColor);
-	_lights[0]->setLightProperties(string("specular"),vSunColor);
-	//_lights[0]->update();
+	getLights()[0]->setLightProperties(string("position"),_sunVector);
+	getLights()[0]->setLightProperties(string("ambient"),_white);
+	getLights()[0]->setLightProperties(string("diffuse"),vSunColor);
+	getLights()[0]->setLightProperties(string("specular"),vSunColor);
+	//getLights()[0]->update();
 	return true;
 }
 
@@ -35,7 +34,7 @@ void MainScene::preRender()
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	ParamHandler &par = ParamHandler::getInstance();
 
-
+	
 	//SHADOW MAPPING
 	GFXDevice::getInstance().setDepthMapRendering(true);
 	D32 tabOrtho[2] = {20.0, 100.0};
@@ -48,7 +47,7 @@ void MainScene::preRender()
 	vec3 sun_pos = eye_pos - vec3(_sunVector);
 	vec3 eye = CameraManager::getInstance().getActiveCamera()->getEye();
 
-	for(U32 i=0; i<2; i++)
+	for(U8 i=0; i<2; i++)
 	{
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -57,10 +56,11 @@ void MainScene::preRender()
 		Frustum::getInstance().Extract(sun_pos);
 		
 		_depthMap[i]->Begin();
-			_GFX.clearBuffers(0x00004000| 0x00000100);
+			_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 			renderActors();
 			_terMgr->drawVegetation(false);
 		_depthMap[i]->End();
+		_terMgr->setDepthMap(i,_depthMap[i]);
 	}
 
 	glMatrixMode(GL_PROJECTION);
@@ -73,15 +73,12 @@ void MainScene::preRender()
 
 	GFXDevice::getInstance().restoreLightCameraMatrices();
 	Frustum::getInstance().Extract(eye_pos);
-	
-    _terMgr->setDepthMap(0,_depthMap[0]);
-	_terMgr->setDepthMap(1,_depthMap[1]);
 	GFXDevice::getInstance().setDepthMapRendering(false);
 
 	//SHADOW MAPPING
 
 	_skyFBO->Begin();
-		_GFX.clearBuffers(0x00004000 | 0x00000100);
+		_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 		updateLights();
 		sky.setParams(cam->getEye(),vec3(_sunVector),true,true,true);
 		sky.draw();
@@ -91,6 +88,7 @@ void MainScene::preRender()
 
 void MainScene::render()
 {
+	
 	Sky &sky = Sky::getInstance();
 	GUI &gui = GUI::getInstance();
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
@@ -100,14 +98,6 @@ void MainScene::render()
 
 	sky.setParams(cam->getEye(),vec3(_sunVector),false,true,true);
 	sky.draw();
-
-	Material mat;
-	mat.name = "ActorMaterial";
-	mat.ambient = _white/6;
-	mat.diffuse = _white;
-	mat.specular = _white;
-	mat.shininess = 50.0f;
-	GFXDevice::getInstance().setMaterial(mat);
 
 	renderActors();
 
@@ -186,11 +176,26 @@ bool MainScene::load(const string& name)
 	return state;
 }
 
+bool MainScene::unload()
+{
+
+	SFXDevice::getInstance().stopMusic();
+	SFXDevice::getInstance().stopAllSounds();
+	ResourceManager::getInstance().remove(_backgroundMusic);
+	ResourceManager::getInstance().remove(_beep);
+	return Scene::unload();
+}
+
 bool _switchAB = false;
 void MainScene::test(boost::any a, CallbackParam b)
 {
-	boost::mutex::scoped_lock l(_mutex);
-	vec3 pos = ModelArray["box"]->getTransform()->getPosition();
+	vec3 pos;
+	if(!ModelArray.empty())
+		if(ModelArray["box"]){
+		//	boost::mutex::scoped_lock l(_mutex);
+			pos = ModelArray["box"]->getTransform()->getPosition();
+			//l.release();
+	}
  
 	if(!_switchAB)
 	{
@@ -219,8 +224,10 @@ void MainScene::test(boost::any a, CallbackParam b)
 			}
 		}
 	}
-
-	ModelArray["box"]->getTransform()->setPosition(pos);
+	if(!ModelArray.empty())
+		if(ModelArray["box"]){
+			ModelArray["box"]->getTransform()->setPosition(pos);
+		}
 }
 
 bool MainScene::loadResources(bool continueOnErrors)
@@ -242,10 +249,13 @@ bool MainScene::loadResources(bool continueOnErrors)
 	_eventTimers.push_back(0.0f); //Sun
 	_eventTimers.push_back(0.0f); //Fps
 	_eventTimers.push_back(0.0f); //Time
+
+	Con::getInstance().printfn("Creating Frame Buffer Objects for water reflexions and Shadow Mapping");
 	_skyFBO = GFXDevice::getInstance().newFBO();
 	_depthMap[0] = GFXDevice::getInstance().newFBO();
 	_depthMap[1] = GFXDevice::getInstance().newFBO();
 	
+	Con::getInstance().printfn("Initializing Frame Buffer Objects for water reflexions and Shadow Mapping");
 	_skyFBO->Create(FrameBufferObject::FBO_2D_COLOR, 1024, 1024);
 	_depthMap[0]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
 	_depthMap[1]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
@@ -257,9 +267,13 @@ bool MainScene::loadResources(bool continueOnErrors)
 							0.0f );
 
 
-	_events.push_back(new Event(30,true,false,boost::bind(&MainScene::test,this,string("test"),TYPE_STRING)));
+	Event_ptr boxMove(new Event(30,true,false,boost::bind(&MainScene::test,this,string("test"),TYPE_STRING)));
+	addEvent(boxMove);
+	_backgroundMusic = ResourceManager::getInstance().LoadResource<AudioDescriptor>(ParamHandler::getInstance().getParam<string>("assetsLocation")+"/music/background_music.ogg",true);
+	//SFXDevice::getInstance().playMusic(_backgroundMusic);
 
-
+	_beep = ResourceManager::getInstance().LoadResource<AudioDescriptor>(ParamHandler::getInstance().getParam<string>("assetsLocation")+"/sounds/beep.wav",false);
+	Con::getInstance().printfn("Scene resources loaded OK");
 	return true;
 }
 
@@ -299,8 +313,49 @@ void MainScene::onKeyUp(const OIS::KeyEvent& key)
 		case OIS::KC_D:
 			Engine::getInstance().moveLR = 0;
 			break;
+		case OIS::KC_X:
+			SFXDevice::getInstance().playSound(_beep);
+			break;
 		default:
 			break;
 	}
 
+}
+
+void MainScene::onMouseMove(const OIS::MouseEvent& key)
+{
+	if(_mousePressed){
+		if(_prevMouse.x - key.state.X.abs > 1 )
+			Engine::getInstance().angleLR = -0.15f;
+		else if(_prevMouse.x - key.state.X.abs < -1 )
+			Engine::getInstance().angleLR = 0.15f;
+		else
+			Engine::getInstance().angleLR = 0;
+
+		if(_prevMouse.y - key.state.Y.abs > 1 )
+			Engine::getInstance().angleUD = -0.1f;
+		else if(_prevMouse.y - key.state.Y.abs < -1 )
+			Engine::getInstance().angleUD = 0.1f;
+		else
+			Engine::getInstance().angleUD = 0;
+	}
+	
+	_prevMouse.x = key.state.X.abs;
+	_prevMouse.y = key.state.Y.abs;
+}
+
+void MainScene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button)
+{
+	if(button == 0) 
+		_mousePressed = true;
+}
+
+void MainScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button)
+{
+	if(button == 0)
+	{
+		_mousePressed = false;
+		Engine::getInstance().angleUD = 0;
+		Engine::getInstance().angleLR = 0;
+	}
 }

@@ -22,10 +22,11 @@ public:
 	inline Quad3D*     getQuad()    {return _plane;}
 	inline Texture2D*  getTexture() {return _texture;}
 	inline Shader*     getShader()  {return _shader;}
+	void   computeBoundingBox()     {_originalBB = _plane->getBoundingBox(); _bb = _originalBB;}
 private:
 	Quad3D*			   _plane;
 	Texture2D*		   _texture;
-	Shader*			   _shader;
+	Shader*		  	   _shader;
 
 	F32 _shininess, _noiseTile, _noiseFactor;
 };

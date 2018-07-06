@@ -9,23 +9,11 @@
 #include "Geometry/Predefined/Sphere3D.h"
 #include "Geometry/Predefined/Text3D.h"
 #include "GUI/GUI.h"
-#include "GUI/GLUIManager.h"
+
 using namespace std;
 
 Scene::~Scene()
 {
-	for(vector<Event*>::iterator it = _events.begin(); it != _events.end(); it++)
-	{
-		_events.erase(it);
-		delete *it;
-	}
-	for(vector<Light*>::iterator it = _lights.begin(); it !=  _lights.end(); it++)
-	{
-		_lights.erase(it);
-		delete *it;
-	}
-	_events.clear();
-	_inputManager.terminate();
 	unload();
 }
 
@@ -74,12 +62,11 @@ void Scene::addPatch(vector<FileData>& data)
 	for(vector<FileData>::iterator iter = data.begin(); iter != data.end(); iter++)
 	{
 		for(tr1::unordered_map<string,Mesh*>::iterator iter2 = ModelArray.begin(); iter2 != ModelArray.end(); iter2++)
-			if((iter2->second)->getItemName().compare((*iter).ItemName) == 0)
+			if((iter2->second)->getName().compare((*iter).ModelName) == 0)
 			{
-				(iter2->second)->scheduleDeletion(); //ToDo: Fix OpenGL context switch between threads; -Ionut
+				(iter2->second)->scheduleDeletion();
 			
 				Con::getInstance().printfn("SCENE: new pending geometry added in queue [ %s ]",(*iter).ModelName.c_str());
-				//ToDo: MUTEX!!!!!!!!!!!!!!!! -Ionut
 				boost::mutex::scoped_lock l(_mutex);
 				PendingDataArray.push_back(*iter);
 			}
@@ -87,11 +74,9 @@ void Scene::addPatch(vector<FileData>& data)
 		for(tr1::unordered_map<string,Object3D*>::iterator iter2 = GeometryArray.begin(); iter2 != GeometryArray.end(); iter2++)
 			if((iter2->second)->getName().compare((*iter).ModelName) == 0)
 			{
-				//ToDo: MUTEX!!!!!!!!!!!!!!!! -Ionut
 				boost::mutex::scoped_lock l(_mutex);
 				PendingDataArray.push_back(*iter);
-				delete iter2->second;
-				iter2->second = NULL;
+				ResourceManager::getInstance().remove(iter2->second);
 				GeometryArray.erase(iter2);
 				break;
 			}
@@ -120,7 +105,6 @@ void Scene::setInitialData()
 
 bool Scene::loadModel(const FileData& data)
 {
-	Con::getInstance().printfn("Loading: [ %s ]",data.ModelName.c_str());;
 	if(data.type == PRIMITIVE) 
 		return loadGeometry(data);
 
@@ -130,7 +114,7 @@ bool Scene::loadModel(const FileData& data)
 		Con::getInstance().errorfn("SceneManager: Error loading model [ %s ]",  data.ModelName.c_str());
 		return false;
 	}
-	thisObj->getItemName() = data.ItemName;	
+	thisObj->setName(data.ModelName);	
 	
 	
 	thisObj->getTransform()->scale(data.scale);
@@ -146,61 +130,38 @@ bool Scene::loadModel(const FileData& data)
 
 bool Scene::loadGeometry(const FileData& data)
 {
-	Object3D* thisObj = ResourceManager::getInstance().LoadResource<Object3D>(data.ModelName);
-	if(!thisObj)
-	{
-		Con::getInstance().errorfn("SCENEMANAGER: Error adding unsupported geometry to scene: [ %s ]",data.ModelName.c_str());;
-		return false;
-	}
-	thisObj->getItemName() = data.ItemName;
+	Object3D* thisObj;
 	if(data.ModelName.compare("Box3D") == 0) {
-
-			((Box3D*)thisObj)->getSize() = data.data;
-			((Box3D*)thisObj)->getColor() = data.color;
-			((Box3D*)thisObj)->getTransform()->scale(data.scale);
-			((Box3D*)thisObj)->getTransform()->rotateEuler(data.orientation);
-			((Box3D*)thisObj)->getTransform()->translate(data.position);
-			((Box3D*)thisObj)->getName() = data.ItemName;
+			thisObj = ResourceManager::getInstance().LoadResource<Box3D>(data.ModelName+": "+data.ItemName);
+			dynamic_cast<Box3D*>(thisObj)->getSize() = data.data;
 
 	} else if(data.ModelName.compare("Sphere3D") == 0) {
-			
-			((Sphere3D*)thisObj)->getSize() = data.data;
-			((Sphere3D*)thisObj)->getColor() = data.color;
-			((Sphere3D*)thisObj)->getTransform()->scale(data.scale);
-			((Sphere3D*)thisObj)->getTransform()->rotateEuler(data.orientation);
-			((Sphere3D*)thisObj)->getTransform()->translate(data.position);
-			((Sphere3D*)thisObj)->getName() = data.ItemName;
+			thisObj = ResourceManager::getInstance().LoadResource<Sphere3D>(data.ModelName+": "+data.ItemName);
+			dynamic_cast<Sphere3D*>(thisObj)->getSize() = data.data;
 
 	} else if(data.ModelName.compare("Quad3D") == 0)	{
 			vec3 scale = data.scale;
 			vec3 position = data.position;
-
-			((Quad3D*)thisObj)->getColor() = data.color;
-			((Quad3D*)thisObj)->getTransform()->scale(data.scale);
-			((Quad3D*)thisObj)->getTransform()->rotateEuler(data.orientation);
-			((Quad3D*)thisObj)->getTransform()->translate(data.position);
-			((Quad3D*)thisObj)->getName() = data.ItemName;
-
-			((Quad3D*)thisObj)->_tl = vec3(scale.x/2-position.x,scale.y/2+position.y, scale.z/2 + position.z);
-			((Quad3D*)thisObj)->_tr = vec3(scale.x/2+position.x,scale.y/2+position.y, scale.z/2 + position.z);
-			((Quad3D*)thisObj)->_bl = vec3(scale.x/2-position.x,scale.y/2-position.y, scale.z/2 + position.z);
-			((Quad3D*)thisObj)->_br = vec3(scale.x/2+position.x,scale.y/2-position.y, scale.z/2 + position.z);
+			thisObj = ResourceManager::getInstance().LoadResource<Quad3D>(data.ModelName+": "+data.ItemName);
+			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::TOP_LEFT)     = vec3(scale.x/2-position.x,scale.y/2+position.y, scale.z/2 + position.z);
+			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::TOP_RIGHT)    = vec3(scale.x/2+position.x,scale.y/2+position.y, scale.z/2 + position.z);
+			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::BOTTOM_LEFT)  = vec3(scale.x/2-position.x,scale.y/2-position.y, scale.z/2 + position.z);
+			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(scale.x/2+position.x,scale.y/2-position.y, scale.z/2 + position.z);
 
 	} else if(data.ModelName.compare("Text3D") == 0) {
-
-			((Text3D*)thisObj)->getWidth() = data.data;
-			((Text3D*)thisObj)->getColor() = data.color;
-			((Text3D*)thisObj)->getTransform()->scale(data.scale);
-			((Text3D*)thisObj)->getTransform()->rotateEuler(data.orientation);
-			((Text3D*)thisObj)->getTransform()->translate(data.position);
-			((Text3D*)thisObj)->getName() = data.ItemName;
-			((Text3D*)thisObj)->getText() = data.data2;
+			thisObj = ResourceManager::getInstance().LoadResource<Text3D>(data.ModelName+": "+data.ItemName);
+			dynamic_cast<Text3D*>(thisObj)->getWidth() = data.data;
+			dynamic_cast<Text3D*>(thisObj)->getText() = data.data2;
 	}
 	else
 	{
 		Con::getInstance().errorfn("SCENEMANAGER: Error adding unsupported geometry to scene: [ %s ]",data.ModelName.c_str());
 		return false;
 	}
+	thisObj->getMaterial().diffuse = data.color;
+	thisObj->getTransform()->scale(data.scale);
+	thisObj->getTransform()->rotateEuler(data.orientation);
+	thisObj->getTransform()->translate(data.position);
 
 	pair<tr1::unordered_map<string,Object3D*>::iterator,bool> _result;
 	_result = GeometryArray.insert(pair<string,Object3D*>(thisObj->getName(),thisObj));
@@ -212,17 +173,10 @@ bool Scene::loadGeometry(const FileData& data)
 bool Scene::addDefaultLight()
 {
 	F32 oldSize = _lights.size();
-	vec2 angle = vec2(0.0f, RADIANS(45.0f));
-	vec4 vector = vec4(-cosf(angle.x) * sinf(angle.y),	-cosf(angle.y),	-sinf(angle.x) * sinf(angle.y),	0.0f );
-	vec4 diffuseColor(1.0f,1.0f,1.0f,1.0f);
-	_defaultLight = new Light(oldSize);
-	_defaultLight->setLightProperties(string("position"),vector);
-	_defaultLight->setLightProperties(string("ambient"),vec4(0.3f, 0.3f, 0.3f, 1.0f));
-	_defaultLight->setLightProperties(string("diffuse"),diffuseColor);
-	_defaultLight->setLightProperties(string("specular"),diffuseColor);
-	_defaultLight->update();
 
-	_lights.push_back(_defaultLight);
+	Light_ptr l(new Light(oldSize));
+	l->update();
+	_lights.push_back(l);
 	if(_lights.size() > oldSize) return true;	
 	else return false;
 
@@ -242,7 +196,7 @@ bool Scene::removeGeometry(const std::string& name)
 {
 	if(GeometryArray.find(name) != GeometryArray.end())
 	{
-		GeometryArray[name]->unload();
+		ResourceManager::getInstance().remove(GeometryArray[name]);
 		GeometryArray.erase(name);
 		return true;
 	}
@@ -253,7 +207,7 @@ bool Scene::removeModel(const std::string& name)
 {
 	if(ModelArray.find(name) != ModelArray.end())
 	{
-		ModelArray[name]->unload();
+		ResourceManager::getInstance().remove(ModelArray[name]);
 		ModelArray.erase(name);
 		return true;
 	}
@@ -262,11 +216,59 @@ bool Scene::removeModel(const std::string& name)
 
 bool Scene::unload()
 {
-	clearObjects();
 	clearEvents();
+	_inputManager.terminate();
+	_inputManager.DestroyInstance();
+	if(_lightTexture){
+		delete _lightTexture;
+		_lightTexture = NULL;
+	}
+	if(_deferredBuffer){
+		delete _deferredBuffer;
+		_deferredBuffer = NULL;
+	}
+	ResourceManager::getInstance().remove(_deferredShader);
+	clearObjects();
+	clearLights();
+	
 	return true;
 }
 
+void Scene::clearObjects()
+{
+	for(GeometryIterator = GeometryArray.begin(); GeometryIterator != GeometryArray.end(); GeometryIterator++){
+		ResourceManager::getInstance().remove(GeometryIterator->second);
+	}
+	GeometryArray.clear(); 
+
+	for(ModelIterator = ModelArray.begin(); ModelIterator != ModelArray.end(); ModelIterator++){
+		ResourceManager::getInstance().remove(ModelIterator->second);
+	}
+
+	ModelArray.clear();
+
+	ModelDataArray.clear();
+	VegetationDataArray.clear();
+	PendingDataArray.clear();
+	TerrainInfoArray.clear();
+}
+
+void Scene::clearLights()
+{
+	/*for(U8 i = 0; i < _lights.size(); i++){
+		delete _lights[i];
+		_lights[i] = NULL;
+	}*/
+	_lights.empty();
+}
+
+void Scene::clearEvents()
+{
+	Con::getInstance().printfn("Stopping all events ...");
+	/*for(U8 i = 0; i < _events.size(); i++)
+		_events[i]->stopEvent();*/
+	_events.clear();
+}
 
 void Scene::onMouseMove(const OIS::MouseEvent& key)
 {
@@ -306,7 +308,7 @@ void Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button)
 	{
 		case OIS::MB_Left:
 		{
-			SceneManager::getInstance().findSelection(key.state.X.rel,key.state.Y.rel);
+			//SceneManager::getInstance().findSelection(key.state.X.rel,key.state.Y.rel);
 			GUI::getInstance().clickReleaseCheck();
 		}break;
 
@@ -368,25 +370,25 @@ void Scene::onKeyDown(const OIS::KeyEvent& key)
 			break;
 		//1+2+3+4 = cream diversi actori prin scena
 		case OIS::KC_1:
-			glui_cb(10);
+			PhysX::getInstance().CreateStack(20);
 			break;
 		case OIS::KC_2:
-			glui_cb(30);
+			PhysX::getInstance().CreateTower(15);
 			break;
 		case OIS::KC_3:
-			glui_cb(50);
+			PhysX::getInstance().CreateSphere(8);
 			break;
 		case OIS::KC_4:
-			glui_cb(40);
+			PhysX::getInstance().CreateCube(20);
 			break;
 		case OIS::KC_5:
-			glui_cb(60);
+			PhysX::getInstance().setDebugRender(!PhysX::getInstance().getDebugRender());
 			break;
 		case OIS::KC_6:
 			PhysX::getInstance().ApplyForceToActor(PhysX::getInstance().GetSelectedActor(), NxVec3(+1,0,0), 3000); 
 			break;
 		case OIS::KC_7:
-			glui_cb(QUIT_ID);
+			Guardian::getInstance().TerminateApplication();
 			break;
 		default:
 			break;
@@ -408,8 +410,8 @@ void Scene::onKeyUp(const OIS::KeyEvent& key)
 	}
 }
 
-void Scene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I32 axis)
-	{
+void Scene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis)
+{
 	if(axis == 1)
 	{
 		if(key.state.mAxes[axis].abs > 0)
@@ -428,4 +430,4 @@ void Scene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I32 axis)
 		else
 			Engine::getInstance().angleUD = 0;
 	}
-	}
+}

@@ -6,7 +6,6 @@ uniform vec3 fog_color;
 uniform samplerCube texSky;
 uniform bool enable_sun;
 uniform vec3 sun_vector;
-uniform vec3 view_vector;
 
 void main (void)
 {

@@ -8,7 +8,7 @@ using namespace std;
 bool glTexture::load(const string& name)
 {
 	Gen();
-	if(m_nHandle == 0)	return false;
+	if(_handle == 0)	return false;
 
 	Bind();
 
@@ -24,12 +24,11 @@ bool glTexture::load(const string& name)
 		glTexParameterf(_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(_type, GL_GENERATE_MIPMAP, GL_TRUE);
 	}
-	if(_flipped) img._flip = true;
+	if(_flipped) _img._flip = true;
 	if(_type == GL_TEXTURE_2D)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		if(_flipped) img._flip = true;
 		if(!LoadFile(_type,name))
 			return false;
 	}
@@ -39,7 +38,7 @@ bool glTexture::load(const string& name)
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-		int i=0;
+		I8 i=0;
 		stringstream ss( name );
 		string it;
 		while(std::getline(ss, it, ' '))
@@ -54,7 +53,7 @@ bool glTexture::load(const string& name)
 	return true;
 }
 
-void glTexture::LoadData(U32 target, U8* ptr, U32& w, U32& h, U32 d)
+void glTexture::LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d)
 {
 	///If the current texture is a 2D one, than converting it to n^2 by n^2 dimensions will result in faster
 	///rendering for the cost of a slightly higher loading overhead
@@ -62,79 +61,68 @@ void glTexture::LoadData(U32 target, U8* ptr, U32& w, U32& h, U32 d)
 
     if (target == GL_TEXTURE_2D) {
 
-		int xSize2 = w, ySize2 = h;
-		double xPow2 = log((double)xSize2) / log(2.0);
-		double yPow2 = log((double)ySize2) / log(2.0);
+		U16 xSize2 = w, ySize2 = h;
+		D32 xPow2 = log((D32)xSize2) / log(2.0);
+		D32 yPow2 = log((D32)ySize2) / log(2.0);
 
-		int ixPow2 = (int)xPow2;
-		int iyPow2 = (int)yPow2;
+		U16 ixPow2 = (U16)xPow2;
+		U16 iyPow2 = (U16)yPow2;
 
-		if (xPow2 != (double)ixPow2)   ixPow2++;
-		if (yPow2 != (double)iyPow2)   iyPow2++;
+		if (xPow2 != (D32)ixPow2)   ixPow2++;
+		if (yPow2 != (D32)iyPow2)   iyPow2++;
 
 		xSize2 = 1 << ixPow2;
 		ySize2 = 1 << iyPow2;
     
 		if((w != xSize2) || (h != ySize2)) {
-			unsigned char* rdata = new unsigned char[xSize2*ySize2*d];
+			U8* rdata = new U8[xSize2*ySize2*d];
 			gluScaleImage(d==3?GL_RGB:GL_RGBA, w, h,GL_UNSIGNED_BYTE, ptr,
 									   xSize2, ySize2, GL_UNSIGNED_BYTE, rdata);
-			if(ptr) {
-				delete [] ptr;
-				ptr = NULL;
-			}
-			ptr = rdata;
+			_img.Destroy();
+			_img.data = rdata;
 			w = xSize2; h = ySize2;
 		}
 	}
 
-	glTexImage2D(target, 0, d==3?GL_RGB:GL_RGBA, w, h, 0, d==3?GL_RGB:GL_RGBA, GL_UNSIGNED_BYTE, ptr);
+	glTexImage2D(target, 0, d==3?GL_RGB:GL_RGBA, w, h, 0, d==3?GL_RGB:GL_RGBA, GL_UNSIGNED_BYTE, _img.data);
 }
 
 
 void glTexture::Gen()
 {
 	Destroy();
-	glGenTextures(1, &m_nHandle);
+	glGenTextures(1, &_handle);
 }
 
 
 void glTexture::Destroy()
 {
-	glDeleteTextures(1, &m_nHandle);
+	glDeleteTextures(1, &_handle);
 }
 
 void glTexture::Bind() const {
 
-	glBindTexture(_type, m_nHandle);
+	glBindTexture(_type, _handle);
 }
 
-void glTexture::Bind(U32 slot) const {
-	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LIGHTING_BIT);
-
-	RenderState& s = GFXDevice::getInstance().getActiveRenderState();
-	if(s.isEnabled() && !s.texturesEnabled()) return;
-	if(s.isEnabled() && !s.blendingEnabled()) glDisable(GL_BLEND);
-	if(s.isEnabled() && !s.cullingEnabled())  glDisable(GL_CULL_FACE);
-	if(s.isEnabled() && !s.lightingEnabled()) glDisable(GL_LIGHTING);
-
+void glTexture::Bind(U16 slot) const {
 	glActiveTexture(GL_TEXTURE0+slot);
 	glEnable(_type);
-	glBindTexture(_type, m_nHandle);
+	glBindTexture(_type, _handle);
 }
 
 void glTexture::Unbind() const {
 	glBindTexture(_type, 0);
 }
 
-void glTexture::Unbind(U32 slot) const {
+void glTexture::Unbind(U16 slot) const {
 
 	glActiveTexture(GL_TEXTURE0+slot);
 	glBindTexture(_type, 0);
 	glPopAttrib();//RenderState
 }
 
-void glTexture::SetMatrix(U32 slot, const mat4& transformMatrix)
+void glTexture::SetMatrix(U16 slot, const mat4& transformMatrix)
 {
 	glMatrixMode(GL_TEXTURE);
 	glActiveTexture(GL_TEXTURE0+slot);
@@ -142,7 +130,7 @@ void glTexture::SetMatrix(U32 slot, const mat4& transformMatrix)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void glTexture::RestoreMatrix(U32 slot)
+void glTexture::RestoreMatrix(U16 slot)
 {
 	glMatrixMode(GL_TEXTURE);
 	glActiveTexture(GL_TEXTURE0+slot);

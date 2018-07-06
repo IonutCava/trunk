@@ -1,7 +1,8 @@
 #ifndef _RENDER_API_H
 #define _RENDER_API_H
 
-#include "Utility/Headers/DataTypes.h"
+#include "Hardware/Platform/PlatformDefines.h"
+#include "Utility/Headers/MathClasses.h"
 
 class RenderState
 {
@@ -25,7 +26,7 @@ private:
 	bool _culling, _blend, _lighting, _textures,_enabled;
 };
 
-enum GraphicsAPI
+enum RenderAPI
 {
 	OpenGL10,
 	OpenGL12,
@@ -64,7 +65,10 @@ class GuiFlash;
 class SubMesh;
 class FrameBufferObject;
 class VertexBufferObject;
+class PixelBufferObject;
 class Texture;
+typedef Texture Texture2D;
+typedef Texture TextureCubemap;
 class Box3D;
 class Sphere3D;
 class Quad3D;
@@ -75,27 +79,26 @@ class Material;
 #include <unordered_map>
 
 //Renderer Programming Interface
-class RenderAPI
+class RenderAPIWrapper
 {
 
 protected:
-	RenderAPI() : _state(RenderState(true,true,true,true)) {}
+	RenderAPIWrapper() : _state(RenderState(true,true,true,true)) {}
 
 	friend class GFXDevice;
 	
-	void setId(GraphicsAPI api) {_apiId = api;}
-	GraphicsAPI getId() { return _apiId;}
+	void setId(RenderAPI api) {_apiId = api;}
+	RenderAPI getId() { return _apiId;}
 	virtual void lookAt(const vec3& eye,const vec3& center,const vec3& up) = 0;
 	virtual void idle() = 0;
-	virtual F32 getTime() = 0;
-	virtual F32 getMSTime() = 0;
 	virtual mat4 getModelViewMatrix() = 0;
 	virtual mat4 getProjectionMatrix() = 0;
 
-	virtual void resizeWindow(U32 w, U32 h) = 0;
+	virtual void resizeWindow(U16 w, U16 h) = 0;
 
 	virtual FrameBufferObject*  newFBO() = 0;
 	virtual VertexBufferObject* newVBO() = 0;
+	virtual PixelBufferObject*  newPBO() = 0;
 	virtual Texture2D*          newTexture2D(bool flipped = false) = 0;
 	virtual TextureCubemap*     newTextureCubemap(bool flipped = false) = 0;
 	virtual Shader* newShader(const char *vsFile, const char *fsFile) = 0;
@@ -112,7 +115,7 @@ protected:
 	/*Geometry transformations*/
 
 	/*Rendering States*/
-	virtual void clearBuffers(int buffer_mask) = 0;
+	virtual void clearBuffers(U8 buffer_mask) = 0;
 	virtual void swapBuffers() = 0;
 	virtual void enableFog(F32 density, F32* color) = 0;
 	/*Rendering States*/
@@ -150,22 +153,23 @@ protected:
 	/*Color Management*/
 
 	/*Light Management*/
-	virtual void setLight(U32 slot, std::tr1::unordered_map<std::string,vec4>& properties) = 0;
-	virtual void createLight(U32 slot) = 0;
+	virtual void setLight(U8 slot, std::tr1::unordered_map<std::string,vec4>& properties) = 0;
+	virtual void createLight(U8 slot) = 0;
 	virtual void setLightCameraMatrices(const vec3& lightVector) = 0;
 	virtual void restoreLightCameraMatrices() = 0;
 	/*Light Management*/
 
 	virtual void toggleWireframe(bool state) = 0;
-	virtual ~RenderAPI(){};
+	virtual ~RenderAPIWrapper(){};
 
-public: //RenderAPI global
+public: //RenderAPIWrapper global
 	
-	void setRenderState(RenderState& state){_state = state; }
+	//void setRenderState(RenderState& state){_state = state; }
+	virtual void setRenderState(RenderState& state) = 0;
 	RenderState& getActiveRenderState() {return _state;}
 
 private:
-	GraphicsAPI _apiId;
+	RenderAPI _apiId;
 
 protected:
 	RenderState _state;

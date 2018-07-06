@@ -10,11 +10,11 @@ using namespace std;
 
 namespace ImageTools {
 
-unsigned char* OpenImagePPM(const string& filename, U32& w, U32& h, U32& d, U32& t,bool flip)
+U8* OpenImagePPM(const string& filename, U16& w, U16& h, U8& d, U32& t,bool flip)
 {
 
 	char head[70];
-	int i,j;
+	I8 i;
 	U8 * img = NULL;
 	FILE* f;
 	f = fopen(filename.c_str(),"rb");
@@ -26,7 +26,6 @@ unsigned char* OpenImagePPM(const string& filename, U32& w, U32& h, U32& d, U32&
 
 	if(!strncmp(head, "P6", 2)){
 		i=0;
-		j=0;
 		while(i<3){
 			fgets(head,70,f);
 
@@ -58,7 +57,7 @@ unsigned char* OpenImagePPM(const string& filename, U32& w, U32& h, U32& d, U32&
 	return img;
 }
 
-unsigned char* OpenImageDevIL(const string& filename, U32& w, U32& h, U32& d, U32& t,bool flip)
+U8* OpenImageDevIL(const string& filename, U16& w, U16& h, U8& d, U32& t,bool flip)
 {
 	static bool first = true;
 
@@ -96,7 +95,7 @@ unsigned char* OpenImageDevIL(const string& filename, U32& w, U32& h, U32& d, U3
    
     const U8* Pixels = ilGetData();
 
-	unsigned char* img = new unsigned char[(size_t)(w) * (size_t)(h) * (size_t)(d)];
+	U8* img = new U8[(size_t)(w) * (size_t)(h) * (size_t)(d)];
 	memcpy(img, Pixels, (size_t)(w) * (size_t)(h) * (size_t)(d));
 
     ilBindImage(0);
@@ -106,7 +105,7 @@ unsigned char* OpenImageDevIL(const string& filename, U32& w, U32& h, U32& d, U3
 }
 
 
-unsigned char* OpenImage(const string& filename, U32& w, U32& h, U32& d, U32& t,bool flip)
+U8* OpenImage(const string& filename, U16& w, U16& h, U8& d, U32& t,bool flip)
 {
 	if(filename.find(".ppm") != string::npos)
 		return OpenImagePPM(filename, w, h, d,t,flip);
@@ -130,9 +129,9 @@ void ImageData::Destroy()
 	}
 }
 
-ivec3 ImageData::getColor(U32 x, U32 y) const
+ivec3 ImageData::getColor(U16 x, U16 y) const
 {
-	int idx = (y * w + x) * d;
+	I32 idx = (y * w + x) * d;
 	return ivec3( data[idx+0], data[idx+1], data[idx+2]);
 }
 

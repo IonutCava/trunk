@@ -5,24 +5,24 @@
 
 bool Frustum::ContainsPoint(const vec3& point) const
 {
-   for(int p = 0; p < 6; p++)	
-      if(	m_tFrustumPlanes[p][0] * point.x +
-			m_tFrustumPlanes[p][1] * point.y +
-			m_tFrustumPlanes[p][2] * point.z +
-			m_tFrustumPlanes[p][3] <= 0)
+   for(I8 p = 0; p < 6; p++)	
+      if(	_frustumPlanes[p][0] * point.x +
+			_frustumPlanes[p][1] * point.y +
+			_frustumPlanes[p][2] * point.z +
+			_frustumPlanes[p][3] <= 0)
          return false;
 
    return true;
 }
 
-int Frustum::ContainsSphere(const vec3& center, float radius) const
+I8 Frustum::ContainsSphere(const vec3& center, F32 radius) const
 {
-	for(int p = 0; p < 6; p++)
+	for(I8 p = 0; p < 6; p++)
 	{
-		F32 t =	m_tFrustumPlanes[p][0] * center.x +
-				m_tFrustumPlanes[p][1] * center.y +
-				m_tFrustumPlanes[p][2] * center.z +
-				m_tFrustumPlanes[p][3];
+		F32 t =	_frustumPlanes[p][0] * center.x +
+				_frustumPlanes[p][1] * center.y +
+				_frustumPlanes[p][2] * center.z +
+				_frustumPlanes[p][3];
 
 		if( t < -radius)
 			return FRUSTUM_OUT;
@@ -34,7 +34,7 @@ int Frustum::ContainsSphere(const vec3& center, float radius) const
 }
 
 
-int Frustum::ContainsBoundingBox(BoundingBox& bbox) const
+I8 Frustum::ContainsBoundingBox(BoundingBox& bbox) const
 {
 	vec3 min = bbox.getMin();
 	vec3 max = bbox.getMax();
@@ -46,19 +46,19 @@ int Frustum::ContainsBoundingBox(BoundingBox& bbox) const
 							vec3(min.x, max.y, max.z),
 							vec3(max.x, min.y, max.z),
 							vec3(max.x, max.y, max.z)	};
-	int iTotalIn = 0;
+	I32 iTotalIn = 0;
 
-	for(int p=0; p<6; p++)
+	for(I32 p=0; p<6; p++)
 	{
-		int iInCount = 8;
-		int iPtIn = 1;
+		I32 iInCount = 8;
+		I32 iPtIn = 1;
 
-		for(int c=0; c<8; c++)
+		for(I32 c=0; c<8; c++)
 		{
-			F32 side =	m_tFrustumPlanes[p][0] * tCorners[c].x +
-						m_tFrustumPlanes[p][1] * tCorners[c].y +
-						m_tFrustumPlanes[p][2] * tCorners[c].z +
-						m_tFrustumPlanes[p][3];
+			F32 side =	_frustumPlanes[p][0] * tCorners[c].x +
+						_frustumPlanes[p][1] * tCorners[c].y +
+						_frustumPlanes[p][2] * tCorners[c].z +
+						_frustumPlanes[p][3];
 			if(side < 0) {
 				iPtIn = 0;
 				iInCount--;
@@ -83,96 +83,96 @@ int Frustum::ContainsBoundingBox(BoundingBox& bbox) const
 
 void Frustum::Extract(const vec3& eye)
 {
-	m_EyePos = eye;
+	_eyePos = eye;
 
 
-	m_mtxMV = GFXDevice::getInstance().getModelViewMatrix();
-	m_mtxProj = GFXDevice::getInstance().getProjectionMatrix();
-	m_mtxMV.inverse(m_mtxMVinv);						
+	_modelViewMatrix = GFXDevice::getInstance().getModelViewMatrix();
+	_projectionMatrix = GFXDevice::getInstance().getProjectionMatrix();
+	_modelViewMatrix.inverse(_modelViewMatrixInv);						
 	
 	F32 t;
 
 	
-	m_mtxMVProj = m_mtxProj * m_mtxMV;
+	_modelViewProjectionMatrix = _projectionMatrix * _modelViewMatrix;
 
 
 	
-	m_tFrustumPlanes[0][0] = m_mtxMVProj[ 3] - m_mtxMVProj[ 0];
-	m_tFrustumPlanes[0][1] = m_mtxMVProj[ 7] - m_mtxMVProj[ 4];
-	m_tFrustumPlanes[0][2] = m_mtxMVProj[11] - m_mtxMVProj[ 8];
-	m_tFrustumPlanes[0][3] = m_mtxMVProj[15] - m_mtxMVProj[12];
+	_frustumPlanes[0][0] = _modelViewProjectionMatrix[ 3] - _modelViewProjectionMatrix[ 0];
+	_frustumPlanes[0][1] = _modelViewProjectionMatrix[ 7] - _modelViewProjectionMatrix[ 4];
+	_frustumPlanes[0][2] = _modelViewProjectionMatrix[11] - _modelViewProjectionMatrix[ 8];
+	_frustumPlanes[0][3] = _modelViewProjectionMatrix[15] - _modelViewProjectionMatrix[12];
 
 	
-	t = sqrt( m_tFrustumPlanes[0][0] * m_tFrustumPlanes[0][0] + m_tFrustumPlanes[0][1] * m_tFrustumPlanes[0][1] + m_tFrustumPlanes[0][2] * m_tFrustumPlanes[0][2] );
-	m_tFrustumPlanes[0][0] /= t;
-	m_tFrustumPlanes[0][1] /= t;
-	m_tFrustumPlanes[0][2] /= t;
-	m_tFrustumPlanes[0][3] /= t;
+	t = sqrt( _frustumPlanes[0][0] * _frustumPlanes[0][0] + _frustumPlanes[0][1] * _frustumPlanes[0][1] + _frustumPlanes[0][2] * _frustumPlanes[0][2] );
+	_frustumPlanes[0][0] /= t;
+	_frustumPlanes[0][1] /= t;
+	_frustumPlanes[0][2] /= t;
+	_frustumPlanes[0][3] /= t;
 
 	
-	m_tFrustumPlanes[1][0] = m_mtxMVProj[ 3] + m_mtxMVProj[ 0];
-	m_tFrustumPlanes[1][1] = m_mtxMVProj[ 7] + m_mtxMVProj[ 4];
-	m_tFrustumPlanes[1][2] = m_mtxMVProj[11] + m_mtxMVProj[ 8];
-	m_tFrustumPlanes[1][3] = m_mtxMVProj[15] + m_mtxMVProj[12];
+	_frustumPlanes[1][0] = _modelViewProjectionMatrix[ 3] + _modelViewProjectionMatrix[ 0];
+	_frustumPlanes[1][1] = _modelViewProjectionMatrix[ 7] + _modelViewProjectionMatrix[ 4];
+	_frustumPlanes[1][2] = _modelViewProjectionMatrix[11] + _modelViewProjectionMatrix[ 8];
+	_frustumPlanes[1][3] = _modelViewProjectionMatrix[15] + _modelViewProjectionMatrix[12];
 
 	
-	t = sqrt( m_tFrustumPlanes[1][0] * m_tFrustumPlanes[1][0] + m_tFrustumPlanes[1][1] * m_tFrustumPlanes[1][1] + m_tFrustumPlanes[1][2] * m_tFrustumPlanes[1][2] );
-	m_tFrustumPlanes[1][0] /= t;
-	m_tFrustumPlanes[1][1] /= t;
-	m_tFrustumPlanes[1][2] /= t;
-	m_tFrustumPlanes[1][3] /= t;
+	t = sqrt( _frustumPlanes[1][0] * _frustumPlanes[1][0] + _frustumPlanes[1][1] * _frustumPlanes[1][1] + _frustumPlanes[1][2] * _frustumPlanes[1][2] );
+	_frustumPlanes[1][0] /= t;
+	_frustumPlanes[1][1] /= t;
+	_frustumPlanes[1][2] /= t;
+	_frustumPlanes[1][3] /= t;
 
 
-	m_tFrustumPlanes[2][0] = m_mtxMVProj[ 3] + m_mtxMVProj[ 1];
-	m_tFrustumPlanes[2][1] = m_mtxMVProj[ 7] + m_mtxMVProj[ 5];
-	m_tFrustumPlanes[2][2] = m_mtxMVProj[11] + m_mtxMVProj[ 9];
-	m_tFrustumPlanes[2][3] = m_mtxMVProj[15] + m_mtxMVProj[13];
-
-	
-	t = sqrt( m_tFrustumPlanes[2][0] * m_tFrustumPlanes[2][0] + m_tFrustumPlanes[2][1] * m_tFrustumPlanes[2][1] + m_tFrustumPlanes[2][2] * m_tFrustumPlanes[2][2] );
-	m_tFrustumPlanes[2][0] /= t;
-	m_tFrustumPlanes[2][1] /= t;
-	m_tFrustumPlanes[2][2] /= t;
-	m_tFrustumPlanes[2][3] /= t;
+	_frustumPlanes[2][0] = _modelViewProjectionMatrix[ 3] + _modelViewProjectionMatrix[ 1];
+	_frustumPlanes[2][1] = _modelViewProjectionMatrix[ 7] + _modelViewProjectionMatrix[ 5];
+	_frustumPlanes[2][2] = _modelViewProjectionMatrix[11] + _modelViewProjectionMatrix[ 9];
+	_frustumPlanes[2][3] = _modelViewProjectionMatrix[15] + _modelViewProjectionMatrix[13];
 
 	
-	m_tFrustumPlanes[3][0] = m_mtxMVProj[ 3] - m_mtxMVProj[ 1];
-	m_tFrustumPlanes[3][1] = m_mtxMVProj[ 7] - m_mtxMVProj[ 5];
-	m_tFrustumPlanes[3][2] = m_mtxMVProj[11] - m_mtxMVProj[ 9];
-	m_tFrustumPlanes[3][3] = m_mtxMVProj[15] - m_mtxMVProj[13];
+	t = sqrt( _frustumPlanes[2][0] * _frustumPlanes[2][0] + _frustumPlanes[2][1] * _frustumPlanes[2][1] + _frustumPlanes[2][2] * _frustumPlanes[2][2] );
+	_frustumPlanes[2][0] /= t;
+	_frustumPlanes[2][1] /= t;
+	_frustumPlanes[2][2] /= t;
+	_frustumPlanes[2][3] /= t;
 
 	
-	t = sqrt( m_tFrustumPlanes[3][0] * m_tFrustumPlanes[3][0] + m_tFrustumPlanes[3][1] * m_tFrustumPlanes[3][1] + m_tFrustumPlanes[3][2] * m_tFrustumPlanes[3][2] );
-	m_tFrustumPlanes[3][0] /= t;
-	m_tFrustumPlanes[3][1] /= t;
-	m_tFrustumPlanes[3][2] /= t;
-	m_tFrustumPlanes[3][3] /= t;
+	_frustumPlanes[3][0] = _modelViewProjectionMatrix[ 3] - _modelViewProjectionMatrix[ 1];
+	_frustumPlanes[3][1] = _modelViewProjectionMatrix[ 7] - _modelViewProjectionMatrix[ 5];
+	_frustumPlanes[3][2] = _modelViewProjectionMatrix[11] - _modelViewProjectionMatrix[ 9];
+	_frustumPlanes[3][3] = _modelViewProjectionMatrix[15] - _modelViewProjectionMatrix[13];
 
 	
-	m_tFrustumPlanes[4][0] = m_mtxMVProj[ 3] - m_mtxMVProj[ 2];
-	m_tFrustumPlanes[4][1] = m_mtxMVProj[ 7] - m_mtxMVProj[ 6];
-	m_tFrustumPlanes[4][2] = m_mtxMVProj[11] - m_mtxMVProj[10];
-	m_tFrustumPlanes[4][3] = m_mtxMVProj[15] - m_mtxMVProj[14];
+	t = sqrt( _frustumPlanes[3][0] * _frustumPlanes[3][0] + _frustumPlanes[3][1] * _frustumPlanes[3][1] + _frustumPlanes[3][2] * _frustumPlanes[3][2] );
+	_frustumPlanes[3][0] /= t;
+	_frustumPlanes[3][1] /= t;
+	_frustumPlanes[3][2] /= t;
+	_frustumPlanes[3][3] /= t;
 
 	
-	t = sqrt( m_tFrustumPlanes[4][0] * m_tFrustumPlanes[4][0] + m_tFrustumPlanes[4][1] * m_tFrustumPlanes[4][1] + m_tFrustumPlanes[4][2] * m_tFrustumPlanes[4][2] );
-	m_tFrustumPlanes[4][0] /= t;
-	m_tFrustumPlanes[4][1] /= t;
-	m_tFrustumPlanes[4][2] /= t;
-	m_tFrustumPlanes[4][3] /= t;
+	_frustumPlanes[4][0] = _modelViewProjectionMatrix[ 3] - _modelViewProjectionMatrix[ 2];
+	_frustumPlanes[4][1] = _modelViewProjectionMatrix[ 7] - _modelViewProjectionMatrix[ 6];
+	_frustumPlanes[4][2] = _modelViewProjectionMatrix[11] - _modelViewProjectionMatrix[10];
+	_frustumPlanes[4][3] = _modelViewProjectionMatrix[15] - _modelViewProjectionMatrix[14];
 
 	
-	m_tFrustumPlanes[5][0] = m_mtxMVProj[3] + m_mtxMVProj[ 2];
-	m_tFrustumPlanes[5][1] = m_mtxMVProj[ 7] + m_mtxMVProj[ 6];
-	m_tFrustumPlanes[5][2] = m_mtxMVProj[11] + m_mtxMVProj[10];
-	m_tFrustumPlanes[5][3] = m_mtxMVProj[15] + m_mtxMVProj[14];
+	t = sqrt( _frustumPlanes[4][0] * _frustumPlanes[4][0] + _frustumPlanes[4][1] * _frustumPlanes[4][1] + _frustumPlanes[4][2] * _frustumPlanes[4][2] );
+	_frustumPlanes[4][0] /= t;
+	_frustumPlanes[4][1] /= t;
+	_frustumPlanes[4][2] /= t;
+	_frustumPlanes[4][3] /= t;
 
 	
-	t = sqrt( m_tFrustumPlanes[5][0] * m_tFrustumPlanes[5][0] + m_tFrustumPlanes[5][1] * m_tFrustumPlanes[5][1] + m_tFrustumPlanes[5][2] * m_tFrustumPlanes[5][2] );
-	m_tFrustumPlanes[5][0] /= t;
-	m_tFrustumPlanes[5][1] /= t;
-	m_tFrustumPlanes[5][2] /= t;
-	m_tFrustumPlanes[5][3] /= t;
+	_frustumPlanes[5][0] = _modelViewProjectionMatrix[3]  + _modelViewProjectionMatrix[ 2];
+	_frustumPlanes[5][1] = _modelViewProjectionMatrix[ 7] + _modelViewProjectionMatrix[ 6];
+	_frustumPlanes[5][2] = _modelViewProjectionMatrix[11] + _modelViewProjectionMatrix[10];
+	_frustumPlanes[5][3] = _modelViewProjectionMatrix[15] + _modelViewProjectionMatrix[14];
+
+	
+	t = sqrt( _frustumPlanes[5][0] * _frustumPlanes[5][0] + _frustumPlanes[5][1] * _frustumPlanes[5][1] + _frustumPlanes[5][2] * _frustumPlanes[5][2] );
+	_frustumPlanes[5][0] /= t;
+	_frustumPlanes[5][1] /= t;
+	_frustumPlanes[5][2] /= t;
+	_frustumPlanes[5][3] /= t;
 
 
 }

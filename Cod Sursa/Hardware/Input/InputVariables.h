@@ -139,12 +139,16 @@ class VariableEffect
 
     ~VariableEffect()
     {
-	  if (_pEffect)
+	  if (_pEffect){
 		delete _pEffect;
+		_pEffect = NULL;
+	  }
 	  MapVariables::iterator iterVars;
 	  for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); iterVars++)
-		if (iterVars->second)
-		  delete iterVars->second;
+		  if (iterVars->second){
+			delete iterVars->second;
+			iterVars->second = NULL;
+		  }
 	  
 	}
 

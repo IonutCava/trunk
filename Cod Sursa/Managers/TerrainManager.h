@@ -2,11 +2,11 @@
 #define _TERRAIN_MANAGER_H
 
 #include "Manager.h"
-#include "Terrain/Terrain.h"
-#include "Utility/Headers/Singleton.h"
-#include "Terrain/Water.h"
 #include <boost/thread.hpp>
 
+class Terrain;
+class WaterPlane;
+class FrameBufferObject;
 class TerrainManager : public Manager
 {
 public:
@@ -33,9 +33,10 @@ public:
 	F32& getWindDirX(){return _windDirX;}
 	F32& getWindDirZ(){return _windDirZ;}
 
-	Terrain* getTerrain(int index) {return ((Terrain*)_resDB.begin()->second);}
+	//ToDo: FIX THIS!!! return the desired terrain, not the first one. -Ionut
+	Terrain* getTerrain(U8 index);
 
-	void setDepthMap(int index, FrameBufferObject* depthMap);
+	void setDepthMap(U8 index, FrameBufferObject* depthMap);
 private:
 
 	F32           _minHeight,
@@ -46,7 +47,7 @@ private:
 	Terrain*      _terrain; //temp terrain file;
 	boost::thread *_thrd;
 	boost::mutex   _io_mutex;
-	boost::thread_specific_ptr<int> ptr;
+	boost::thread_specific_ptr<I32> ptr;
 	WaterPlane*  _water;
 	mat4 _sunModelviewProj;
 

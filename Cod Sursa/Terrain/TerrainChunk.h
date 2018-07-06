@@ -2,14 +2,13 @@
 #define TERRAINCHUNK_H
 
 #include "resource.h"
-#include "Importer/DVDConverter.h"
 #include "Geometry/Object3DFlyWeight.h"
 using namespace std;
 
 #define TERRAIN_CHUNKS_LOD 3
 
-#define TERRAIN_CHUNK_LOD0	100.0f
-#define TERRAIN_CHUNK_LOD1	180.0f
+#define TERRAIN_CHUNK_LOD0	300.0f
+#define TERRAIN_CHUNK_LOD1	380.0f
 
 class TerrainChunk
 {
@@ -20,11 +19,11 @@ public:
 	void DrawTrees(U32 lod, F32 d);
 	void Load(U32 depth, ivec2 pos, ivec2 HMsize);
 
-	inline std::vector<U32>&					getIndiceArray(U32 lod)	{return m_tIndice[lod];}
-	inline std::vector<U32>&					getGrassIndiceArray()	{return m_tGrassIndice;}
-	inline std::vector<Object3DFlyWeight* >&    getTreeArray()          {return m_tTrees;}
+	inline std::vector<U32>&					getIndiceArray(U32 lod)	{return _indice[lod];}
+	inline std::vector<U32>&					getGrassIndiceArray()	{return _grassIndice;}
+	inline std::vector<Object3DFlyWeight* >&    getTreeArray()          {return _trees;}
 	void								addObject(Mesh* obj);
-	void								addTree(const vec3& pos, F32 rotation, F32 scale,Shader* tree_shader, const FileData& tree);
+	void								addTree(const vec3& pos, F32 rotation, F32 scale,const std::string& tree_shader, const FileData& tree);
 	TerrainChunk() {}
 	~TerrainChunk() {Destroy();}
 
@@ -32,16 +31,13 @@ private:
 	void ComputeIndicesArray(U32 lod, U32 depth, ivec2 pos, ivec2 HMsize);
 
 private:
-	std::vector<U32> 	m_tIndice[TERRAIN_CHUNKS_LOD];
-	U32					m_tIndOffsetW[TERRAIN_CHUNKS_LOD];
-	U32					m_tIndOffsetH[TERRAIN_CHUNKS_LOD];
+	std::vector<U32> 	_indice[TERRAIN_CHUNKS_LOD];
+	U32					_indOffsetW[TERRAIN_CHUNKS_LOD];
+	U32					_indOffsetH[TERRAIN_CHUNKS_LOD];
 
-	std::vector<U32>    m_tGrassIndice;
+	std::vector<U32>    _grassIndice;
 
-	//ToDo: Eliminate this hack. Trees hold a pointer to an Object3D object that represents the tree's geometry,
-	//      and has a position, orientation and scale different from that of the object itself.
-	std::vector<Object3DFlyWeight* >           m_tTrees;
-	std::vector<Object3DFlyWeight* >::iterator m_tTreesIterator;
+	std::vector<Object3DFlyWeight* >           _trees;
 
 	std::string				    previousModel;
 };

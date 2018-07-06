@@ -1,7 +1,6 @@
 #ifndef GLSL_H_
 #define GLSL_H_
 
-#include "Utility/Headers/MathClasses.h"
 #include "Utility/Headers/BaseClasses.h"
 #include "Hardware/Video/ShaderHandler.h"
 
@@ -14,27 +13,32 @@ public:
 	
     void init(const std::string& vsFile, const std::string &fsFile);
 	bool load(const std::string& name);
+	bool unload(){unbind(); return true;}
 	void bind();
 	void unbind();
 	
-	U32 getId();
-	std::string& getName() {return _name;}
+	U16 getId();
 
-	void Uniform(const std::string& ext, int value);
+	void Uniform(const std::string& ext, I32 value);
 	void Uniform(const std::string& ext, F32 value);
 	void Uniform(const std::string& ext, bool state);
 	void Uniform(const std::string& ext, const vec2& value);
 	void Uniform(const std::string& ext, const vec3& value);
 	void Uniform(const std::string& ext, const vec4& value);
-	void UniformTexture(const std::string& ext, int slot);
+	void Uniform(const std::string& ext, const mat3& value);
+    void Uniform(const std::string& ext, const mat4& value);
+	void UniformTexture(const std::string& ext, U16 slot);
+
+	//Legacy
+	void Uniform(I32 location, const vec4& value);
 
 private:
-	std::string _name;
+
 	bool _loaded;
 	char* shaderFileRead(const std::string &fn);
-	int   shaderFileWrite(char *fn, char *s);
-	void  validateShader(U32 shader, const std::string &file = 0);
-	void  validateProgram(U32 program);
+	I8   shaderFileWrite(char *fn, char *s);
+	void  validateShader(U16 shader, const std::string &file = 0);
+	void  validateProgram(U16 program);
 
 	bool loadVertOnly(const std::string& name);
 	bool loadFragOnly(const std::string& name);

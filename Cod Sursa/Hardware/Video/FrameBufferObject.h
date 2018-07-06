@@ -2,25 +2,25 @@
 #define _FRAME_BUFFER_OBJECT_H
 
 #include <iostream>
-#include "Utility/Headers/DataTypes.h"
+#include "Hardware/Platform/PlatformDefines.h"
 
 class FrameBufferObject 
 {
 public:
-	enum FBO_TYPE { FBO_2D_COLOR, FBO_CUBE_COLOR, FBO_2D_DEPTH };
+	enum FBO_TYPE { FBO_2D_COLOR, FBO_CUBE_COLOR, FBO_2D_DEPTH, FBO_2D_DEFERRED };
 
-	virtual bool Create(FBO_TYPE type, U32 width, U32 height) = 0;
+	virtual bool Create(FBO_TYPE type, U16 width, U16 height) = 0;
 	virtual void Destroy() = 0;
 
-	virtual void Begin(U32 nFace=0) const = 0;	
-	virtual void End(U32 nFace=0) const = 0;		
+	virtual void Begin(U8 nFace=0) const = 0;	
+	virtual void End(U8 nFace=0) const = 0;		
 
-	virtual void Bind(int unit=0) const = 0;		
-	virtual void Unbind(int unit=0) const = 0;	
+	virtual void Bind(U8 unit=0, U8 texture = 0) const = 0;		
+	virtual void Unbind(U8 unit=0) const = 0;	
 
-	inline U32 getTextureHandle() const	{return _textureId;} 
-	inline U32 getWidth() const			{return _width;}
-	inline U32 getHeight() const		{return _height;}
+	inline std::vector<U32> getTextureHandle() const	{return _textureId;} 
+	inline U16 getWidth() const			{return _width;}
+	inline U16 getHeight() const		{return _height;}
 
 	virtual ~FrameBufferObject(){};
 
@@ -30,11 +30,15 @@ protected:
 protected:
 	bool		_useFBO;
 	bool		_useDepthBuffer;
-	U32		    _textureId;
-	U32		    _width, _height;
+	std::vector<U32>   _textureId;
+	U16		    _width, _height;
 	U32		    _frameBufferHandle;
 	U32		    _depthBufferHandle;
+	U32         _diffuseBufferHandle;
+	U32         _positionBufferHandle;
+	U32         _normalBufferHandle;
 	U32		    _textureType;
+	U8          _fboType;
 	U32		    _attachment;
 	
 };

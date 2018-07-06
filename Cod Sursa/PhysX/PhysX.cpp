@@ -130,7 +130,7 @@ void PhysX::ExitNx()
 		//si scena creata
 		if(gScene != NULL)
 		{
-			int nbActors = gScene->getNbActors();
+			I16 nbActors = gScene->getNbActors();
 			NxActor** actors = gScene->getActors();
 			Con::getInstance().printfn("PhysX: Preparing to delete %d actors", nbActors);
 			while (nbActors--)
@@ -397,7 +397,7 @@ void PhysX::UpdateActors()
 {
     // Render all the actors in the scene
 	if(!gScene) return;
-    int nbActors = gScene->getNbActors();
+    I16 nbActors = gScene->getNbActors();
     NxActor** actors = gScene->getActors();
 	
     while (nbActors--)
@@ -433,6 +433,7 @@ void PhysX::UpdateActors()
 void PhysX::DrawObjects(NxShape *obj)
 {
 	//ToDo:: Update Objects position for each scene static & dynamic mesh arrays. -Ionut
+	RenderState old = GFXDevice::getInstance().getActiveRenderState();
 	RenderState s(true,true,true,true);
 	GFXDevice::getInstance().setRenderState(s);
 	F32 *orient = new F32[16];
@@ -445,7 +446,9 @@ void PhysX::DrawObjects(NxShape *obj)
     //glMultMatrixf(&(orient[0]));
 	//GFXDevice::getInstance().renderModel((Mesh*)obj->getActor().userData);
 	//GFXDevice::getInstance().popMatrix();
+	GFXDevice::getInstance().setRenderState(old);
 	delete orient;
+	orient = NULL;
 }
 
 NxVec3 PhysX::ApplyForceToActor(NxActor* actor, const NxVec3& forceDir, const NxReal forceStrength)

@@ -1,7 +1,6 @@
 #ifndef _TRANSFORM_H_
 #define _TRANSFORM_H_
 
-#include "MathClasses.h"
 #include "Quaternion.h"
 
 class Transform
@@ -65,21 +64,21 @@ public:
 		_dirty = true;
 	}
 
-	void translateX(const float positionX)
+	void translateX(const F32 positionX)
 	{
 		_translation.x += positionX;
 		_translationMatrix.translate(_translation); 
 		_dirty = true;
 	}
 
-	void translateY(const float positionY)
+	void translateY(const F32 positionY)
 	{
 		_translation.y += positionY;
 		_translationMatrix.translate(_translation); 
 		_dirty = true;
 	}
 
-	void translateZ(const float positionZ)
+	void translateZ(const F32 positionZ)
 	{
 		_translation.z += positionZ;
 		_translationMatrix.translate(_translation);
@@ -93,7 +92,9 @@ public:
 		_dirty = true;
 	}
 
-	void rotate(const vec3& axis, float degrees)
+	void scale(const F32 scale){ this->scale(vec3(scale,scale,scale)); }
+
+	void rotate(const vec3& axis, F32 degrees)
 	{
 		_orientation.FromAxis(axis,degrees);
 		_rotationMatrix = _orientation.getMatrix();
@@ -117,13 +118,13 @@ public:
 		_dirty = true;
 	}
 
-	void rotateX(float angle){_rotationMatrix.rotate_x(angle); _axis.set(1,0,0); angle = angle; _dirty = true;}
-	void rotateY(float angle){_rotationMatrix.rotate_y(angle); _axis.set(0,1,0); angle = angle; _dirty = true;}
-	void rotateZ(float angle){_rotationMatrix.rotate_z(angle); _axis.set(0,0,1); angle = angle; _dirty = true;}
+	void rotateX(F32 angle){_rotationMatrix.rotate_x(angle); _orientation.FromAxis(vec3(1,0,0),angle); _dirty = true;}
+	void rotateY(F32 angle){_rotationMatrix.rotate_y(angle); _orientation.FromAxis(vec3(1,0,0),angle); _dirty = true;}
+	void rotateZ(F32 angle){_rotationMatrix.rotate_z(angle); _orientation.FromAxis(vec3(1,0,0),angle); _dirty = true;}
 	
 
 	const mat4& getMatrix() {if(isDirty()) applyTransforms(); return _worldMatrix;}
-
+	const mat4& getRotationMatrix() {return _orientation.getMatrix();}
 	const vec3& getPosition() {return _translation;}
 	const vec3& getScale() {return _scale;}
 	const Quaternion& getOrientation() {return _orientation;}
@@ -137,6 +138,12 @@ public:
 		clean();
 	}
 
+	void setTransforms(const mat4& transform)
+	{
+		_worldMatrix = transform;
+		clean();
+	}
+
 private:
 	bool isDirty() {return _dirty;}
 	void clean()   {_dirty = false;} 
@@ -144,7 +151,7 @@ private:
 private:
 	Quaternion _orientation;
 	vec3 _axis;
-	float _angle;
+	F32 _angle;
 	vec3 _translation;
 	vec3 _scale;
 	mat4 _worldMatrix,_scaleMatrix,_rotationMatrix,_translationMatrix;

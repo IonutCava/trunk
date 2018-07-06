@@ -6,21 +6,23 @@
 class Resource
 {
 public:
-	Resource() : _shouldDelete(false){}
+	Resource() : _shouldDelete(false), _name("default"){}
+	Resource(std::string name) : _shouldDelete(false), _name(name){}
+
 	virtual bool load(const std::string& name) = 0;
 	virtual bool unload() = 0;
 	virtual void scheduleDeletion(){_shouldDelete = true;}
 	virtual void cancelDeletion(){_shouldDelete = false;}
 	virtual bool clean() {if(_shouldDelete) return unload(); else return false;}
+	const std::string& getName() {return _name;}
+	void setName(const std::string& name) {_name = name;}
+	virtual ~Resource() {}
 
 protected:
-	bool _shouldDelete;
+	bool		 _shouldDelete;
+	std::string	 _name;
 };
 
-class GraphicResource : public Resource
-{
-	virtual void draw() const = 0;
-};
 
 enum GEOMETRY_TYPE
 {
@@ -51,7 +53,7 @@ public:
 	//"variables" contains the various strings needed for each terrain such as texture names, terrain name etc.
 	std::map<std::string,std::string> variables;
 	U32    grassDensity;
-	U32    treeDensity;
+	U16    treeDensity;
 	F32  grassScale;
 	F32  treeScale;
 	vec3   position;

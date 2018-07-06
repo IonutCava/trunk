@@ -8,8 +8,9 @@
 #pragma warning(disable:4244)
 #pragma warning(disable:4996) //strcpy
  
-#define GETTIME()   GFXDevice::getInstance().getTime()
-#define GETMSTIME() GFXDevice::getInstance().getMSTime()
+#define GETTIME()   Framerate::getInstance().getElapsedTime()/1000
+#define GETMSTIME() Framerate::getInstance().getElapsedTime()
+
 #define CLAMP(n, min, max) (((n)<(min))?(min):(((n)>(max))?(max):(n)))
 #define BIT(x) (1 << (x))
 
@@ -40,8 +41,9 @@
 #include <list>
 #include <time.h>
 #include <unordered_map>
-#include "Utility/Headers/DataTypes.h"
+#include "Utility/Headers/MathClasses.h"
 #include "Utility/Headers/Console.h"
+#include "Rendering/Framerate.h" //For time management
 
 #define NEW_PARAM (__FILE__, __LINE__)
 #define PLACEMENTNEW_PARAM ,__FILE__, __LINE__

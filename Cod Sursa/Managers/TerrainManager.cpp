@@ -2,37 +2,41 @@
 #include "Managers/CameraManager.h"
 #include "Managers/ResourceManager.h"
 #include "Hardware/Video/GFXDevice.h"
+#include "Terrain/Water.h"
+#include "Terrain/Terrain.h"
 #include "Rendering/common.h"
 using namespace std;
 
-TerrainManager::TerrainManager()
-{
+TerrainManager::TerrainManager(){
 	_loaded = false;
+	_water = NULL;
 	_computedMinHeight = false;
 	_sunModelviewProj.identity();
 }
 
-TerrainManager::~TerrainManager()
-{
-	delete _water;
-	for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
-	{
-		delete ((Terrain*)_resDBiter->second);
-		_resDB.erase(_resDBiter);
+TerrainManager::~TerrainManager(){
+    Destroy();
+	if(_water) {
+		delete _water;
+		_water = NULL;
 	}
+
 }
 
-void TerrainManager::createTerrains(vector<TerrainInfo>& terrains)
-{
+Terrain* TerrainManager::getTerrain(U8 index) {
+	return dynamic_cast<Terrain*>(_resDB.begin()->second);
+}
+
+void TerrainManager::createTerrains(vector<TerrainInfo>& terrains){
 	
 	//_thrd = new boost::thread(&TerrainManager::createThreadedTerrains,this,terrains);
 	createThreadedTerrains(terrains);
 }
 
-void TerrainManager::createThreadedTerrains(vector<TerrainInfo>& terrains)
-{
+void TerrainManager::createThreadedTerrains(vector<TerrainInfo>& terrains){
 	vector<TerrainInfo>::iterator _terrainIter;
 	ResourceManager& res = ResourceManager::getInstance();
+	if(terrains.empty()) return;
 	for(_terrainIter = terrains.begin(); _terrainIter != terrains.end(); _terrainIter++)
 	{
 		_terrain = New Terrain((*_terrainIter).position,(*_terrainIter).scale);
@@ -73,15 +77,15 @@ void TerrainManager::createThreadedTerrains(vector<TerrainInfo>& terrains)
 	_loaded = true;
 }
 
-void TerrainManager::setDepthMap(int index, FrameBufferObject* depthMap)
+void TerrainManager::setDepthMap(U8 index, FrameBufferObject* depthMap)
 {
 	if(!_loaded) return;
 	if(_resDB.size() > 0)
 	{
 		for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
 		{
-			_terrain = (Terrain*)_resDBiter->second;
-			_terrain->m_fboDepthMapFromLight[index] = depthMap;
+			_terrain = dynamic_cast<Terrain*>(_resDBiter->second);
+			_terrain->_depthMapFBO[index] = depthMap;
 		}	
 	}
 	else return;
@@ -106,14 +110,14 @@ void TerrainManager::drawTerrains(mat4& sunModelviewProj, bool drawInactive, boo
 	{
 		for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
 		{
-			_terrain = (Terrain*)_resDBiter->second;
+			_terrain = dynamic_cast<Terrain*>(_resDBiter->second);
 			drawTerrain(drawInactive,drawInReflexion,ambientColor);
 			
 		}
 	}
 	else if(_resDB.size() == 1)
 	{
-		_terrain = (Terrain*)_resDB.begin()->second;
+		_terrain = dynamic_cast<Terrain*>(_resDB.begin()->second);
 		drawTerrain(drawInactive,drawInReflexion,ambientColor);
 	}
 	else return;
@@ -132,8 +136,8 @@ void TerrainManager::generateVegetation()
 {
 	for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
 	{
-		((Terrain*)_resDBiter->second)->toggleVegetation(true);
-		((Terrain*)_resDBiter->second)->initializeVegetation();
+		dynamic_cast<Terrain*>(_resDBiter->second)->toggleVegetation(true);
+		dynamic_cast<Terrain*>(_resDBiter->second)->initializeVegetation();
 	}
 }
 
@@ -141,8 +145,8 @@ void TerrainManager::generateVegetation(const string& name)
 {
 	if(_resDB.find(name) != _resDB.end())
 	{
-		((Terrain*)_resDB[name])->toggleVegetation(true);
-		((Terrain*)_resDB[name])->initializeVegetation();
+		dynamic_cast<Terrain*>(_resDB[name])->toggleVegetation(true);
+		dynamic_cast<Terrain*>(_resDB[name])->initializeVegetation();
 	}
 }
 
@@ -156,7 +160,7 @@ void TerrainManager::drawInfinitePlane(F32 max_distance,FrameBufferObject* fbo[]
 		_minHeight = 1000; F32 temp = 0;
 		for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
 		{
-			temp = ((Terrain*)_resDBiter->second)->getBoundingBox().getMin().y;
+			temp = dynamic_cast<Terrain*>(_resDBiter->second)->getBoundingBox().getMin().y;
 			if(temp < _minHeight)
 				_minHeight = temp;
 		}
@@ -166,9 +170,9 @@ void TerrainManager::drawInfinitePlane(F32 max_distance,FrameBufferObject* fbo[]
 	}
 
 	const vec3& eye = CameraManager::getInstance().getActiveCamera()->getEye();
-	_water->getQuad()->_tl = vec3(eye.x - max_distance, _minHeight, eye.z - max_distance);
-	_water->getQuad()->_tr = vec3(eye.x + max_distance, _minHeight, eye.z - max_distance);
-	_water->getQuad()->_bl = vec3(eye.x - max_distance, _minHeight, eye.z + max_distance);
-	_water->getQuad()->_br = vec3(eye.x + max_distance, _minHeight, eye.z + max_distance);
+	_water->getQuad()->getCorner(Quad3D::TOP_LEFT)     = vec3(eye.x - max_distance, _minHeight, eye.z - max_distance);
+	_water->getQuad()->getCorner(Quad3D::TOP_RIGHT)    = vec3(eye.x + max_distance, _minHeight, eye.z - max_distance);
+	_water->getQuad()->getCorner(Quad3D::BOTTOM_LEFT)  = vec3(eye.x - max_distance, _minHeight, eye.z + max_distance);
+	_water->getQuad()->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(eye.x + max_distance, _minHeight, eye.z + max_distance);
 	_water->draw(fbo);
 }

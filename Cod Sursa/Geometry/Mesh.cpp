@@ -6,7 +6,6 @@
 using namespace std;
 
 Mesh::Mesh(const Mesh& old) : Object3D(old),
-							  _computedLightShaders(old._computedLightShaders),
 							  _visibleToNetwork(old._visibleToNetwork)
 {
 	
@@ -30,29 +29,25 @@ bool Mesh::load(const string& name)
 
 bool Mesh::unload()
 {
-	ResourceManager::getInstance().remove(getName());
-	for(_subMeshIterator = getSubMeshes().begin(); _subMeshIterator != getSubMeshes().end(); _subMeshIterator++)
+	Con::getInstance().printfn("Removing model [ %s ]",getName().c_str());
+	for(_subMeshIterator = getSubMeshes().begin(); _subMeshIterator != getSubMeshes().end();)
 	{
-		SubMesh* s = (*_subMeshIterator);
-		if(s->unload())	
-		{
-			delete s;
-			s= NULL;
+		if((*_subMeshIterator)->unload()){
+			delete (*_subMeshIterator);
+			(*_subMeshIterator) = NULL;
+			_subMeshIterator = getSubMeshes().erase(_subMeshIterator);
 		}
-		else return false;
+		else
+			 _subMeshIterator++;
 	}
 	getSubMeshes().clear();
 
-	if(!getShaders().empty())
-	{
+	if(!getShaders().empty()){
 		for(U8 i = 0; i < getShaders().size(); i++)
-		{
-			ResourceManager::getInstance().remove(getShaders()[i]->getName());
-			delete getShaders()[i];
-		}
-		getShaders().clear();
+			ResourceManager::getInstance().remove(getShaders()[i]);
+			getShaders().clear();
 	}
-
+	
 	else return false;
 	return true;
 }
@@ -62,8 +57,6 @@ void Mesh::onDraw()
 	//onDraw must be called before any other rendering call (such as "isInView")
 	//in order to properly compute the boundingbox
 	setVisibility(SceneManager::getInstance().getActiveScene()->drawObjects());
-	if(!getBoundingBox().isComputed())
-		computeBoundingBox();
 	_bb.Transform(_originalBB,_transform->getMatrix()); 
 	drawBBox();
 	if(!_computedLightShaders) 
@@ -81,14 +74,13 @@ void Mesh::computeLightShaders()
 {
 	if(_shaders.empty())
 	{
-		vector<Light*>& lights = SceneManager::getInstance().getActiveScene()->getLights();
-		for(U8 i = 0; i < lights.size(); i++)
+		if(GFXDevice::getInstance().getDeferredShading())
+			_shaders.push_back(ResourceManager::getInstance().LoadResource<Shader>("DeferredShadingPass1"));
+		else
 		{
+			//vector<Light_ptr>& lights = SceneManager::getInstance().getActiveScene()->getLights();
+			//for(U8 i = 0; i < lights.size(); i++)
 			_shaders.push_back(ResourceManager::getInstance().LoadResource<Shader>("lighting"));
-			_shaders[_shaders.size()-1]->bind();
-				_shaders[_shaders.size()-1]->Uniform("enable_shadow_mapping", 0);
-				_shaders[_shaders.size()-1]->Uniform("tile_factor", 1.0f);
-			_shaders[_shaders.size()-1]->unbind();
 		}
 	}
 	_computedLightShaders = true;
@@ -123,18 +115,14 @@ bool Mesh::isInView()
 }
 
 
-
 void Mesh::computeBoundingBox()
 {
 	_bb.setMin(vec3(100000.0f, 100000.0f, 100000.0f));
 	_bb.setMax(vec3(-100000.0f, -100000.0f, -100000.0f));
 
 	for(_subMeshIterator = _subMeshes.begin(); _subMeshIterator != _subMeshes.end(); _subMeshIterator++)
-		for(int i=0; i<(int)(*_subMeshIterator)->getGeometryVBO()->getPosition().size(); i++)
-		{
-			vec3& position = (*_subMeshIterator)->getGeometryVBO()->getPosition()[i];
-			_bb.Add(position);
-		}
+			_bb.Add((*_subMeshIterator)->getBoundingBox());
+
 	_bb.isComputed() = true;
 	_originalBB = _bb;
 }

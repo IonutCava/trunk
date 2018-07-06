@@ -36,6 +36,7 @@
 #define MATH_CLASSES_H
 #include <stdlib.h> 
 #include <math.h>
+#include "Hardware/Platform/PlatformDefines.h"
 
 #define EPSILON				0.000001f
 #ifndef M_PI
@@ -54,17 +55,17 @@
 #define DEGREES(a)	((a)*M_180DIVPI)
 
 
-const float INV_RAND_MAX = 1.0 / (RAND_MAX + 1);
-inline float random(float max=1.0) { return max * rand() * INV_RAND_MAX; }
-inline float random(float min, float max) { return min + (max - min) * INV_RAND_MAX * rand(); }
-inline int random(int max=RAND_MAX) { return rand()%(max+1); }
+const  F32 INV_RAND_MAX = 1.0 / (RAND_MAX + 1);
+inline F32 random(F32 max=1.0) { return max * rand() * INV_RAND_MAX; }
+inline F32 random(F32 min, F32 max) { return min + (max - min) * INV_RAND_MAX * rand(); }
+inline I32 random(I32 max=RAND_MAX) { return rand()%(max+1); }
 
 class vec2;
 class vec3;
 class vec4;
 class mat3;
 class mat4;
-class quat;
+//class quat;
 class ivec2;
 class ivec3;
 class ivec4;
@@ -84,8 +85,8 @@ public:
 	vec2(const vec3 &_v);
 	vec2(const vec4 &_v);
 
-	int operator==(const vec2 &_v) { return (fabs(this->x - _v.x) < EPSILON && fabs(this->y - _v.y) < EPSILON); }
-	int operator!=(const vec2 &_v) { return !(*this == _v); }
+	I32 operator==(const vec2 &_v) { return (fabs(this->x - _v.x) < EPSILON && fabs(this->y - _v.y) < EPSILON); }
+	I32 operator!=(const vec2 &_v) { return !(*this == _v); }
 
 	vec2 &operator=(float _f) { this->x=_f; this->y=_f; return (*this); }
 	const vec2 operator*(float _f) const { return vec2(this->x * _f,this->y * _f); }
@@ -103,25 +104,25 @@ public:
 	vec2 &operator+=(const vec2 &_v) { return *this = *this + _v; }
 	vec2 &operator-=(const vec2 &_v) { return *this = *this - _v; }
 
-	float operator*(const vec2 &_v) const { return this->x * _v.x + this->y * _v.y; }
+	F32 operator*(const vec2 &_v) const { return this->x * _v.x + this->y * _v.y; }
 
-	operator float*() { return this->v; }
-	operator const float*() const { return this->v; }
-//	float &operator[](int _i) { return this->v[_i]; }
-//	const float &operator[](int _i) const { return this->v[_i]; }
+	operator F32*() { return this->v; }
+	operator const F32*() const { return this->v; }
+//	F32 &operator[](I32 _i) { return this->v[_i]; }
+//	const F32 &operator[](I32 _i) const { return this->v[_i]; }
 
 	void set(float _x,float _y) { this->x = _x; this->y = _y; }
 	void reset(void) { this->x = this->y = 0; }
-	float length(void) const { return sqrtf(this->x * this->x + this->y * this->y); }
-	float normalize(void) {
-		float inv,l = this->length();
+	F32 length(void) const { return sqrtf(this->x * this->x + this->y * this->y); }
+	F32 normalize(void) {
+		F32 inv,l = this->length();
 		if(l < EPSILON) return 0.0f;
 		inv = 1.0f / l;
 		this->x *= inv;
 		this->y *= inv;
 		return l;
 	}
-	float dot(const vec2 &v) { return ((this->x*v.x) + (this->y*v.y)); } // Produit scalaire
+	F32 dot(const vec2 &v) { return ((this->x*v.x) + (this->y*v.y)); } // Produit scalaire
 	bool compare(const vec2 &_v,float epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi); }
 	// retourne les coordonnée du point le plus proche de *this sur la droite passant par vA et vB
 	vec2 closestPointOnLine(const vec2 &vA, const vec2 &vB) { return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA); }
@@ -165,8 +166,8 @@ public:
 	vec3(const vec3 &_v) : x(_v.x), y(_v.y), z(_v.z) { }
 	vec3(const vec4 &_v);
 
-	int operator==(const vec3 &_v) { return (fabs(this->x - _v.x) < EPSILON && fabs(this->y - _v.y) < EPSILON && fabs(this->z - _v.z) < EPSILON); }
-	int operator!=(const vec3 &_v) { return !(*this == _v); }
+	I32 operator==(const vec3 &_v) { return (fabs(this->x - _v.x) < EPSILON && fabs(this->y - _v.y) < EPSILON && fabs(this->z - _v.z) < EPSILON); }
+	I32 operator!=(const vec3 &_v) { return !(*this == _v); }
 
 	vec3 &operator=(float _f) { this->x=_f; this->y=_f; this->z=_f; return (*this); }
 	const vec3 operator*(float _f) const { return vec3(this->x * _f,this->y * _f,this->z * _f); }
@@ -185,17 +186,17 @@ public:
 	vec3 &operator+=(const vec3 &_v) { return *this = *this + _v; }
 	vec3 &operator-=(const vec3 &_v) { return *this = *this - _v; }
 
-	float operator*(const vec3 &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z; }
-	float operator*(const vec4 &_v) const;
-	//float operator[](const int i) {switch(i){case 0: return this->x; case 1: return this->y; case 2: return this->z;};}
-	operator float*() { return this->v; }
-	operator const float*() const { return this->v; }
+	F32 operator*(const vec3 &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z; }
+	F32 operator*(const vec4 &_v) const;
+	//F32 operator[](const I32 i) {switch(i){case 0: return this->x; case 1: return this->y; case 2: return this->z;};}
+	operator F32*() { return this->v; }
+	operator const F32*() const { return this->v; }
 
 	void set(float _x,float _y,float _z) { this->x = _x; this->y = _y; this->z = _z; }
 	void reset(void) { this->x = this->y = this->z = 0; }
-	float length(void) const { return sqrtf(this->x * this->x + this->y * this->y + this->z * this->z); }
-	float normalize(void) {
-		float inv,l = this->length();
+	F32 length(void) const { return sqrtf(this->x * this->x + this->y * this->y + this->z * this->z); }
+	F32 normalize(void) {
+		F32 inv,l = this->length();
 		if(l < EPSILON) return 0.0f;
 		inv = 1.0f / l;
 		this->x *= inv;
@@ -297,8 +298,8 @@ public:
 	vec4(const vec3 &_v,float _w) : x(_v.x), y(_v.y), z(_v.z), w(_w), xyz(x,y,z) { }
 	vec4(const vec4 &_v) : x(_v.x), y(_v.y), z(_v.z), w(_v.w), xyz(x,y,z) { }
 
-	int operator==(const vec4 &_v) { return (fabs(this->x - _v.x) < EPSILON && fabs(this->y - _v.y) < EPSILON && fabs(this->z - _v.z) < EPSILON && fabs(this->w - _v.w) < EPSILON); }
-	int operator!=(const vec4 &_v) { return !(*this == _v); }
+	I32 operator==(const vec4 &_v) { return (fabs(this->x - _v.x) < EPSILON && fabs(this->y - _v.y) < EPSILON && fabs(this->z - _v.z) < EPSILON && fabs(this->w - _v.w) < EPSILON); }
+	I32 operator!=(const vec4 &_v) { return !(*this == _v); }
 
 	vec4 &operator=(float _f) { this->x=_f; this->y=_f; this->z=_f; this->w=_f; return (*this); }
 	const vec4 operator*(float _f) const { return vec4(this->x * _f,this->y * _f,this->z * _f,this->w * _f); }
@@ -319,28 +320,28 @@ public:
 	float operator*(const vec3 &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z + this->w; }
 	float operator*(const vec4 &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z + this->w * _v.w; }
 
-	operator float*() { return this->v; }
-	operator const float*() const { return this->v; }
-//	float &operator[](int _i) { return this->v[_i]; }
-//	const float &operator[](int _i) const { return this->v[_i]; }
+	operator F32*() { return this->v; }
+	operator const F32*() const { return this->v; }
+//	F32 &operator[](I32 _i) { return this->v[_i]; }
+//	const F32 &operator[](I32 _i) const { return this->v[_i]; }
 
-	void set(float _x,float _y,float _z,float _w) { this->x=_x; this->y=_y; this->z=_z; this->w=_w; xyz = vec3(x,y,z);}
+	void set(F32 _x,F32 _y,F32 _z,F32 _w) { this->x=_x; this->y=_y; this->z=_z; this->w=_w; xyz = vec3(x,y,z);}
 	void reset(void) { this->x = this->y = this->z = this->w = 0; xyz = vec3(x,y,z);}
-	bool compare(const vec4 &_v,float epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi && fabs(this->z - _v.z) < epsi && fabs(this->w - _v.w) < epsi); }
+	bool compare(const vec4 &_v,F32 epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi && fabs(this->z - _v.z) < epsi && fabs(this->w - _v.w) < epsi); }
 
-	vec4 lerp(const vec4 &u, const vec4 &v, float factor) { return ((u * (1 - factor)) + (v * factor)); }
+	vec4 lerp(const vec4 &u, const vec4 &v, F32 factor) { return ((u * (1 - factor)) + (v * factor)); }
 	vec3 xyz; 
 	union {
-		struct {float x,y,z,w;};
-		struct {float s,t,p,q;};
-		struct {float r,g,b,a;};
-		struct {float fov,ratio,znear,zfar;};
-		struct {float width,height,depth,key;};
-		float v[4];
+		struct {F32 x,y,z,w;};
+		struct {F32 s,t,p,q;};
+		struct {F32 r,g,b,a;};
+		struct {F32 fov,ratio,znear,zfar;};
+		struct {F32 width,height,depth,key;};
+		F32 v[4];
 	};
 };
 
-inline vec4 operator*(float fl, const vec4& v)	{ return vec4(v.x*fl, v.y*fl, v.z*fl,  v.w*fl);}
+inline vec4 operator*(F32 fl, const vec4& v)	{ return vec4(v.x*fl, v.y*fl, v.z*fl,  v.w*fl);}
 
 inline vec3::vec3(const vec4 &_v) {
 	this->x = _v.x;
@@ -435,8 +436,8 @@ public:
 	operator float*() { return mat; }
 	operator const float*() const { return mat; }
 	
-	float &operator[](int i) { return mat[i]; }
-	const float operator[](int i) const { return mat[i]; }
+	F32 &operator[](I8 i) { return mat[i]; }
+	const F32 operator[](I32 i) const { return mat[i]; }
 	
 	mat3 transpose(void) const {
 		return mat3(mat[0], mat[3], mat[6],
@@ -640,12 +641,12 @@ public:
 	// premultiply the matrix by the given matrix
 	void multmatrix(const mat4& m) {
 		float tmp[4];
-		for (int j=0; j<4; j++) {
+		for (I8 j=0; j<4; j++) {
 			tmp[0] = mat[j];
 			tmp[1] = mat[4+j];
 			tmp[2] = mat[8+j]; 
 			tmp[3] = mat[12+j];
-			for (int i=0; i<4; i++) {
+			for (I8 i=0; i<4; i++) {
 				mat[4*i+j] = m[4*i]*tmp[0] + m[4*i+1]*tmp[1] +
 				m[4*i+2]*tmp[2] + m[4*i+3]*tmp[3]; 
 			}
@@ -665,19 +666,19 @@ public:
 					this->mat[12] - m[12], this->mat[13] - m[13], this->mat[14] - m[14], this->mat[15] - m[15]);
 	}
 
-	float &element(int i, int j)	{	return this->mat[i+j*4]; }
-	const float element(int i, int j)	const {	return this->mat[i+j*4]; }
+	F32 &element(I8 i, I8 j)	{	return this->mat[i+j*4]; }
+	const F32 element(I8 i, I8 j)	const {	return this->mat[i+j*4]; }
 
-	mat4 &operator*=(float f) { return *this = *this * f; }
+	mat4 &operator*=(F32 f) { return *this = *this * f; }
 	mat4 &operator*=(const mat4 &m) { return *this = *this * m; }
 	mat4 &operator+=(const mat4 &m) { return *this = *this + m; }
 	mat4 &operator-=(const mat4 &m) { return *this = *this - m; }
 	
-	operator float*() { return this->mat; }
-	operator const float*() const { return this->mat; }
+	operator F32*() { return this->mat; }
+	operator const F32*() const { return this->mat; }
 	
-	float &operator[](int i) { return this->mat[i]; }
-	const float operator[](int i) const { return this->mat[i]; }
+	F32 &operator[](I32 i) { return this->mat[i]; }
+	const F32 operator[](I32 i) const { return this->mat[i]; }
 	
 	mat4 rotation(void) const {
 		return mat4(this->mat[0], this->mat[1], this->mat[2], 0,
@@ -861,7 +862,7 @@ inline mat3::mat3(const mat4 &m) {
 /* quat                                                                      */
 /*                                                                           */
 /*****************************************************************************/
-
+/*
 class quat {
 public:
 	quat(void) : x(0), y(0), z(0), w(1) { }
@@ -980,7 +981,7 @@ public:
 		float q[4];
 	};
 };
-
+*/
 /*****************************************************************************/
 /*                                                                           */
 /* ivec2                                                                     */
@@ -994,8 +995,8 @@ public:
 	ivec2(const long *iv) : a(iv[0]), b(iv[1]) { }
 	ivec2(const ivec2 &iv) : a(iv.a), b(iv.b) { }
 
-	int operator==(const ivec2 &iv) { return ((this->a == iv.a) && (this->b == iv.b)); }
-	int operator!=(const ivec2 &iv) { return !(*this == iv); }
+	I32 operator==(const ivec2 &iv) { return ((this->a == iv.a) && (this->b == iv.b)); }
+	I32 operator!=(const ivec2 &iv) { return !(*this == iv); }
 
 	ivec2 &operator=(long _i) { this->x=_i; this->y=_i; return (*this); }
 	const ivec2 operator*(long _i) const { return ivec2(this->a * _i,this->b * _i); }
@@ -1043,8 +1044,8 @@ public:
 	ivec3(const ivec3 &iv) : a(iv.a), b(iv.b), c(iv.c) { }
 	ivec3(const ivec4 &iv);
 
-	int operator==(const ivec3 &iv) { return ((this->a == iv.a) && (this->b == iv.b) && (this->c == iv.c)); }
-	int operator!=(const ivec3 &iv) { return !(*this == iv); }
+	I32 operator==(const ivec3 &iv) { return ((this->a == iv.a) && (this->b == iv.b) && (this->c == iv.c)); }
+	I32 operator!=(const ivec3 &iv) { return !(*this == iv); }
 
 	ivec3 &operator=(long _i) { this->x=_i; this->y=_i; this->z=_i; return (*this); }
 	const ivec3 operator*(long _i) const { return ivec3(this->a * _i,this->b * _i,this->c * _i); }
@@ -1095,8 +1096,8 @@ public:
 	ivec4(const ivec3 &iv,long _d) : a(iv.a), b(iv.b), c(iv.c), d(_d) { }
 	ivec4(const ivec4 &iv) : a(iv.a), b(iv.b), c(iv.c), d(iv.d) { }
 
-	int operator==(const ivec4 &iv) { return ((this->a == iv.a) && (this->b == iv.b) && (this->c == iv.c) && (this->d == iv.d)); }
-	int operator!=(const ivec4 &iv) { return !(*this == iv); }
+	I32 operator==(const ivec4 &iv) { return ((this->a == iv.a) && (this->b == iv.b) && (this->c == iv.c) && (this->d == iv.d)); }
+	I32 operator!=(const ivec4 &iv) { return !(*this == iv); }
 
 	ivec4 &operator=(long _i) { this->x=_i; this->y=_i; this->z=_i; this->w=_i; return (*this); }
 	const ivec4 operator*(long _i) const { return ivec4(this->a * _i,this->b * _i,this->c * _i,this->d * _i); }
