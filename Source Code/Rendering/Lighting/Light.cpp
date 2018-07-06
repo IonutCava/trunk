@@ -213,7 +213,7 @@ bool Light::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     // The isInView call should stop impostor rendering if needed
     if (!_impostor) {
         _impostor =
-            CreateResource<Impostor>(ResourceDescriptor(_name + "_impostor"));
+            CreateResource<ImpostorSphere>(ResourceDescriptor(_name + "_impostor"));
         _impostor->setRadius(_properties._attenuation.w);
         _impostor->renderState().setDrawState(true);
         _impostorSGN = _lightSGN->addNode(*_impostor);

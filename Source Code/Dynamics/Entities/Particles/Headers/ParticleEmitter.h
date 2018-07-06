@@ -116,7 +116,7 @@ class ParticleEmitter : public SceneNode {
     bool _drawImpostor;
     bool _updateParticleEmitterBB;
     /// used for debug rendering / editor
-    Impostor* _impostor;
+    ImpostorBox* _impostor;
 
     GenericVertexData* _particleGPUBuffer;
 

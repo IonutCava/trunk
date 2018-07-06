@@ -24,7 +24,7 @@ bool Trigger::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     /// The isInView call should stop impostor rendering if needed
     if (!_triggerImpostor) {
         ResourceDescriptor impostorDesc(_name + "_impostor");
-        _triggerImpostor = CreateResource<Impostor>(impostorDesc);
+        _triggerImpostor = CreateResource<ImpostorSphere>(impostorDesc);
         sgn.addNode(*_triggerImpostor);
     }
     /// update dummy position if it is so

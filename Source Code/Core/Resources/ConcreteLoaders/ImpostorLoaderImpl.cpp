@@ -5,11 +5,34 @@
 
 namespace Divide {
 
-DEFAULT_LOADER_IMPL(Impostor)
+DEFAULT_LOADER_IMPL(ImpostorSphere)
 
 template <>
-Impostor* ImplResourceLoader<Impostor>::operator()() {
-    Impostor* ptr = MemoryManager_NEW Impostor(_descriptor.getName(), 1.0f);
+ImpostorSphere* ImplResourceLoader<ImpostorSphere>::operator()() {
+    ImpostorSphere* ptr = MemoryManager_NEW ImpostorSphere(_descriptor.getName(), 1.0f);
+
+    if (_descriptor.getFlag()) {
+        ptr->renderState().useDefaultMaterial(false);
+    } else {
+        Material* matTemp = CreateResource<Material>(
+            ResourceDescriptor("Material_" + _descriptor.getName()));
+        matTemp->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+        ptr->setMaterialTpl(matTemp);
+    }
+
+    if (!load(ptr, _descriptor.getName())) {
+        MemoryManager::DELETE(ptr);
+    }
+
+    return ptr;
+}
+
+
+DEFAULT_LOADER_IMPL(ImpostorBox)
+
+template <>
+ImpostorBox* ImplResourceLoader<ImpostorBox>::operator()() {
+    ImpostorBox* ptr = MemoryManager_NEW ImpostorBox(_descriptor.getName(), 1.0f);
 
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);

@@ -38,7 +38,7 @@ namespace Divide {
 
 class Unit;
 class Task;
-class Impostor;
+class ImpostorSphere;
 /// When a unit touches the circle described by
 class Trigger : public SceneNode {
     typedef std::shared_ptr<Task> Task_ptr;
@@ -95,7 +95,7 @@ class Trigger : public SceneNode {
     F32 _radius;
     /// Draw the impostor?
     bool _drawImpostor;
-    Impostor* _triggerImpostor;  ///< used for debug rendering / editing - Ionut
+    ImpostorSphere* _triggerImpostor;  ///< used for debug rendering / editing - Ionut
     bool _enabled;
 };
 

@@ -43,6 +43,10 @@ Object3D::~Object3D()
     }
 }
 
+void Object3D::postLoad(SceneGraphNode& sgn) {
+
+}
+
 void Object3D::setGeometryVB(VertexBuffer* const vb) {
     DIVIDE_ASSERT(_buffer == nullptr,
                   "Object3D error: Please remove the previous vertex buffer of "

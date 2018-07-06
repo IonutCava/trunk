@@ -104,6 +104,7 @@ struct GenericDrawCommand {
     bool _drawToBuffer;
     bool _renderWireframe;
     bool _renderGeometry;
+    bool _renderBounds;
     size_t _stateHash;
     PrimitiveType _type;
     IndirectDrawCommand _cmd;
@@ -146,6 +147,11 @@ struct GenericDrawCommand {
     inline void renderWireframe(bool state) {
         assert(!_locked);
         _renderWireframe = state;
+    }
+
+    inline void renderBounds(bool state) {
+        assert(!_locked);
+        _renderBounds = state;
     }
 
     inline void renderGeometry(bool state) {
@@ -191,6 +197,7 @@ struct GenericDrawCommand {
     inline bool drawToBuffer() const { return _drawToBuffer; }
     inline bool renderWireframe() const { return _renderWireframe; }
     inline bool renderGeometry() const { return _renderGeometry; }
+    inline bool renderBounds() const { return _renderBounds; }
     inline U32 primCount() const { return _cmd.primCount; }
     inline U32 indexCount() const { return _cmd.count; }
 
@@ -213,6 +220,7 @@ struct GenericDrawCommand {
           _drawToBuffer(false),
           _renderWireframe(false),
           _renderGeometry(true),
+          _renderBounds(false),
           _stateHash(0),
     	  _type(type),
           _shaderProgram(nullptr),
@@ -233,6 +241,7 @@ struct GenericDrawCommand {
         _drawCount = base._drawCount;
         _drawToBuffer = base._drawToBuffer;
         _renderWireframe = base._renderWireframe;
+        _renderBounds = base._renderBounds;
         _renderGeometry = base._renderGeometry;
         _stateHash = base._stateHash;
         _type = base._type;
@@ -244,6 +253,7 @@ struct GenericDrawCommand {
         return _queryID == other._queryID && _lodIndex == other._lodIndex &&
                _drawToBuffer == other._drawToBuffer &&
                _renderWireframe == other._renderWireframe &&
+               _renderBounds == other._renderBounds &&
                _renderGeometry == other._renderGeometry &&
                _stateHash == other._stateHash && _type == other._type &&
                (_shaderProgram != nullptr) ==

@@ -32,20 +32,30 @@
 #ifndef _IMPOSTOR_H_
 #define _IMPOSTOR_H_
 
+#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
 namespace Divide {
 
 /// Renders a sphere at the parent node's position using the desired radius;
-class Impostor : public Sphere3D {
+class ImpostorSphere : public Sphere3D {
     template <typename T>
     friend class ImplResourceLoader;
     SET_DELETE_FRIEND
    protected:
-    Impostor(const stringImpl& name, F32 radius = 1.0f);
-    ~Impostor();
+    ImpostorSphere(const stringImpl& name, F32 radius = 1.0f);
+    ~ImpostorSphere();
 };
 
+/// Renders a box at the parent node's position using the desired radius;
+class ImpostorBox : public Box3D {
+    template <typename T>
+    friend class ImplResourceLoader;
+    SET_DELETE_FRIEND
+   protected:
+    ImpostorBox(const stringImpl& name, const vec3<F32>& size = vec3<F32>());
+    ~ImpostorBox();
+};
 };  // namespace Divide
 
 #endif

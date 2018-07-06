@@ -39,7 +39,7 @@ namespace Divide {
 
 class Box3D : public Object3D {
    public:
-    Box3D(F32 size) : Object3D(ObjectType::BOX_3D, ObjectFlag::OBJECT_FLAG_NONE), _size(size) {
+    Box3D(const vec3<F32>& size) : Object3D(ObjectType::BOX_3D, ObjectFlag::OBJECT_FLAG_NONE) {
         vec3<F32> vertices[] = {
             vec3<F32>(-1.0, -1.0, 1.0),  vec3<F32>(1.0, -1.0, 1.0),
             vec3<F32>(-1.0, 1.0, 1.0),   vec3<F32>(1.0, 1.0, 1.0),
@@ -53,12 +53,13 @@ class Box3D : public Object3D {
 
         U16 indices[] = {0, 1, 2, 3, 7, 1, 5, 4, 7, 6, 2, 4, 0, 1};
 
+        _halfExtent.set(size / 2);
+
         getGeometryVB()->reservePositionCount(8);
         getGeometryVB()->reserveNormalCount(8);
-        F32 halfExtent = size * 0.5f;
 
         for (U8 i = 0; i < 8; i++) {
-            getGeometryVB()->addPosition(vertices[i] * halfExtent);
+            getGeometryVB()->addPosition(vertices[i] * _halfExtent);
             getGeometryVB()->addNormal(normals[i]);
         }
 
@@ -69,36 +70,43 @@ class Box3D : public Object3D {
         getGeometryVB()->Create();
     }
 
-    inline F32 getSize() { return _size; }
+    inline void setHalfExtent(const vec3<F32> halfExtent) {
+        vec3<F32> vertices[] = {
+            vec3<F32>(-1.0, -1.0, 1.0),  vec3<F32>(1.0, -1.0, 1.0),
+            vec3<F32>(-1.0, 1.0, 1.0),   vec3<F32>(1.0, 1.0, 1.0),
+            vec3<F32>(-1.0, -1.0, -1.0), vec3<F32>(1.0, -1.0, -1.0),
+            vec3<F32>(-1.0, 1.0, -1.0),  vec3<F32>(1.0, 1.0, -1.0)};
 
-    inline void setSize(F32 size) {
-        /// Since the initial box is half of the full extent already (in the
-        /// constructor)
-        /// Each vertex is already multiplied by 0.5 so, just multiply by the
-        /// new size
-        /// IMPORTANT!! -be aware of this - Ionut
-        F32 halfExtent = size;
+        _halfExtent = halfExtent;
 
-        for (U8 i = 0; i < 8; i++) {
-            getGeometryVB()->modifyPositionValue(
-                i, getGeometryVB()->getPosition()[i] * halfExtent);
+        for (U8 i = 0; i < 8; ++i) {
+            getGeometryVB()->modifyPositionValue(i, vertices[i] * _halfExtent);
         }
 
         getGeometryVB()->queueRefresh();
-        _size = size;
+        
+    }
+
+    inline void mirrorBoundingBox(const BoundingBox& boundingBox) {
+        const vec3<F32>* points = boundingBox.getPoints();
+        for (U8 i = 0; i < 8; ++i) {
+            getGeometryVB()->modifyPositionValue(i, points[i]);
+        }
+         getGeometryVB()->queueRefresh();
+        _halfExtent = boundingBox.getHalfExtent();
     }
 
     virtual bool computeBoundingBox(SceneGraphNode& sgn) {
         if (sgn.getBoundingBoxConst().isComputed()) {
             return true;
         }
-        sgn.getBoundingBox().set(vec3<F32>(-_size), vec3<F32>(_size));
+        sgn.getBoundingBox().set(-_halfExtent, _halfExtent);
         sgn.getBoundingBox().Multiply(0.5f);
         return SceneNode::computeBoundingBox(sgn);
     }
 
    private:
-    F32 _size;
+    vec3<F32> _halfExtent;
 };
 
 };  // namespace Divide

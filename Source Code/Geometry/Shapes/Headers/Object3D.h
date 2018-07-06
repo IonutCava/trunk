@@ -38,7 +38,6 @@
 namespace Divide {
 
 class BoundingBox;
-
 class Object3D : public SceneNode {
    public:
     enum class ObjectType : U32 {
@@ -73,6 +72,8 @@ class Object3D : public SceneNode {
     virtual VertexBuffer* const getGeometryVB() const;
     inline ObjectType getObjectType() const { return _geometryType; }
     inline U32 getFlagMask() const { return _geometryFlagMask; }
+
+    virtual void postLoad(SceneGraphNode& sgn);
 
     virtual bool onDraw(SceneGraphNode& sgn,
                         RenderStage currentStage);

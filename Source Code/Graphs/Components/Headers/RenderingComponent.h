@@ -41,6 +41,7 @@ namespace Divide {
 class Material;
 class GFXDevice;
 class RenderBin;
+class ImpostorBox;
 class ShaderProgram;
 class SceneGraphNode;
 
@@ -157,6 +158,8 @@ class RenderingComponent : public SGNComponent {
     GFXDevice::RenderPackage _renderData;
     IMPrimitive* _boundingBoxPrimitive;
     IMPrimitive* _skeletonPrimitive;
+    ImpostorBox* _impostor;
+
 #ifdef _DEBUG
     vectorImpl<Line> _axisLines;
     IMPrimitive* _axisGizmo;

@@ -98,7 +98,7 @@ struct LightShadowProperties {
 };
 
 class Camera;
-class Impostor;
+class ImpostorSphere;
 class ParamHandler;
 class SceneRenderState;
 /// A light object placed in the scene at a certain position
@@ -170,7 +170,7 @@ class Light : public SceneNode {
     inline const LightMode& getLightMode() const { return _mode; }
 
     /// Get a pointer to the light's impostor
-    inline Impostor* const getImpostor() const { return _impostor; }
+    inline ImpostorSphere* const getImpostor() const { return _impostor; }
 
     /// Checks if this light needs and update
     void onCameraUpdate(Camera& camera);
@@ -270,9 +270,9 @@ class Light : public SceneNode {
     U8 _resolutionFactor;
     bool _drawImpostor;
     bool _updateLightBB;
-    /// Used for debug rendering
-    Impostor* _impostor;
     SceneGraphNode* _lightSGN;
+    /// Used for debug rendering
+    ImpostorSphere* _impostor;
     std::weak_ptr<SceneGraphNode> _impostorSGN;
     Camera* _shadowCamera;
     DELEGATE_CBK<> _callback;

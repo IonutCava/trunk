@@ -7,6 +7,7 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Dynamics/Entities/Headers/Impostor.h"
 
 namespace Divide {
 
@@ -45,6 +46,8 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
         _skeletonPrimitive->name("Skeleton_" + parentSGN.getName());
         _skeletonPrimitive->stateHash(primitiveStateBlock.getHash());
     }
+
+    _impostor = CreateResource<ImpostorBox>(ResourceDescriptor(parentSGN.getName() + "_impostor"));
 #ifdef _DEBUG
     // Red X-axis
     _axisLines.push_back(
@@ -92,6 +95,8 @@ RenderingComponent::~RenderingComponent()
     if (_materialInstance) {
         RemoveResource(_materialInstance);
     }
+
+    RemoveResource(_impostor);
 }
 
 void RenderingComponent::update(const U64 deltaTime) {
