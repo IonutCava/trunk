@@ -7,6 +7,10 @@
 
 namespace Divide {
 
+namespace GenericDrawCommandResults {
+    hashMapImpl<I64, QueryResult> g_queryResults;
+};
+
 IndirectDrawCommand::IndirectDrawCommand()
     : indexCount(0),
       primCount(1),

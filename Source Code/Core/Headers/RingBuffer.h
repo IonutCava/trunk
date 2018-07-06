@@ -43,6 +43,10 @@ public:
     RingBuffer(const RingBuffer& other);
     virtual ~RingBuffer();
 
+    RingBuffer& operator=(const RingBuffer& other);
+
+    virtual void resize(U32 queueLength);
+
     const inline U32 queueLength() const {
         return _queueLength;
     }
@@ -70,7 +74,7 @@ public:
     }
 
 private:
-    const U32 _queueLength;
+    U32 _queueLength;
     std::atomic_uint _queueReadIndex;
     std::atomic_uint _queueWriteIndex;
 };

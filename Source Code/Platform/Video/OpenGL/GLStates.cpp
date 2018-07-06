@@ -52,6 +52,7 @@ GL_API::samplerBoundMapDef GL_API::s_samplerBoundMap;
 GL_API::samplerObjectMap GL_API::s_samplerMap;
 SharedLock GL_API::s_samplerMapLock;
 GLUtil::glVAOPool GL_API::s_vaoPool;
+glHardwareQueryPool GL_API::s_hardwareQueryPool;
 
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates() {

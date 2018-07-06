@@ -136,6 +136,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\glsw\Headers\bstrlib.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\glsw\Headers\glsw.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glHardwareQuery.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glHardwareQueryPool.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glIMPrimitive.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glLockManager.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glResources.h" />
@@ -239,6 +240,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glVAOCache.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLError.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glHardwareQuery.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glHardwareQueryPool.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glIMPrimitive.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glLockManager.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glResources.cpp" />

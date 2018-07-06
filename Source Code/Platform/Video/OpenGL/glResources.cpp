@@ -324,6 +324,27 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          GLuint indexBuffer) {
 
     GL_API::preCommandSubmission();
+    bool queryPrimitives = drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_PRIMITIVE_COUNT);
+    bool querySampleCount = drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_SAMPLE_COUNT);
+    bool querySamplePassed = drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_ANY_SAMPLE_RENDERED);
+
+    glHardwareQueryRing* primitiveQuery = nullptr;
+    glHardwareQueryRing* sampleCountQuery = nullptr;
+    glHardwareQueryRing* anySamplesQuery = nullptr;
+
+    if (queryPrimitives) {
+        primitiveQuery = &GL_API::s_hardwareQueryPool.allocate();
+        glBeginQuery(GL_PRIMITIVES_GENERATED, primitiveQuery->writeQuery().getID());
+    }
+    if (querySampleCount) {
+        primitiveQuery = &GL_API::s_hardwareQueryPool.allocate();
+        glBeginQuery(GL_SAMPLES_PASSED, sampleCountQuery->writeQuery().getID());
+    }
+    if (querySamplePassed) {
+        primitiveQuery = &GL_API::s_hardwareQueryPool.allocate();
+        glBeginQuery(GL_ANY_SAMPLES_PASSED, anySamplesQuery->writeQuery().getID());
+    }
+
     if (useIndirectBuffer) {
         // Don't trust the driver to optimize the loop. Do it here so we know the cost upfront
         if (drawCommand.drawCount() > 1) {
@@ -337,6 +358,28 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
         } else if (drawCommand.drawCount() == 1) {
             sumitDirectCommand(drawCommand.cmd(), mode, internalFormat, indexBuffer);
         }
+    }
+
+    if (queryPrimitives) {
+        U64& result = GenericDrawCommandResults::g_queryResults[drawCommand.sourceBuffer()->getGUID()]._primitivesGenerated;
+        glEndQuery(GL_PRIMITIVES_GENERATED);
+        glGetQueryObjectui64v(primitiveQuery->readQuery().getID(),
+                              GL_QUERY_RESULT,
+                              &result);
+    }
+    if (querySampleCount) {
+        U32& result = GenericDrawCommandResults::g_queryResults[drawCommand.sourceBuffer()->getGUID()]._samplesPassed;
+        glEndQuery(GL_PRIMITIVES_GENERATED);
+        glGetQueryObjectuiv(sampleCountQuery->readQuery().getID(),
+                            GL_QUERY_RESULT,
+                            &result);
+    }
+    if (querySamplePassed) {
+        U32& result = GenericDrawCommandResults::g_queryResults[drawCommand.sourceBuffer()->getGUID()]._anySamplesPassed;
+        glEndQuery(GL_PRIMITIVES_GENERATED);
+        glGetQueryObjectuiv(anySamplesQuery->readQuery().getID(),
+                            GL_QUERY_RESULT,
+                            &result);
     }
     GL_API::postCommandSubmission();
 }

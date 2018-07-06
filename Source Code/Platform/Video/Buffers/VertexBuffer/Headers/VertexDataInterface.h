@@ -45,7 +45,6 @@ class NOINITVTABLE VertexDataInterface : public GraphicsResource, public GUIDWra
     virtual ~VertexDataInterface();
 
     virtual void draw(const GenericDrawCommand& command) = 0;
-    virtual I32 getLastDrawPrimitiveCount() const = 0;
 };
 
 };  // namespace Divide

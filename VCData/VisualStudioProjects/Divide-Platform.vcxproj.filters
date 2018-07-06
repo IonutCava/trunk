@@ -368,6 +368,9 @@
       <Filter>Video\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\OcclusionQuery.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glHardwareQueryPool.h">
+      <Filter>Video\OpenGL\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -654,6 +657,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\PlatformRuntime.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glHardwareQuery.cpp">
+      <Filter>Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glHardwareQueryPool.cpp">
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>

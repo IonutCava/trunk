@@ -66,10 +66,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 
     virtual void draw(const GenericDrawCommand& command) = 0;
 
-    inline I32 getLastDrawPrimitiveCount() const override {
-        return _primitivesGenerated;
-    }
-
     inline void useLargeIndices(bool state = true) {
         assert(_hardwareIndicesL.empty() && _hardwareIndicesS.empty() &&
                "VertexBuffer error: Index format type specified before "
@@ -388,7 +384,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
    protected:
-    I32 _primitivesGenerated;
     /// Flag used to prevent clearing of the _data vector for static buffers
     bool _keepDataInMemory;
     /// If this flag is true, no further modification are allowed on the buffer (static geometry)

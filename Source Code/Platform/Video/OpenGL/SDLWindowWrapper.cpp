@@ -34,6 +34,7 @@
 namespace Divide {
 namespace {
     const U32 g_maxVAOS = 512u;
+    const U32 g_maxQueryRings = 64;
 
     class ContextPool {
     public:
@@ -328,6 +329,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration&
     NS_GLIM::glim.SetVertexAttribLocation(to_base(AttribLocation::VERTEX_POSITION));
     // Initialize our VAO pool
     GL_API::s_vaoPool.init(g_maxVAOS);
+    // Initialize our query pool
+    GL_API::s_hardwareQueryPool.init(g_maxQueryRings);
     // Initialize shader buffers
     glUniformBuffer::onGLInit();
     // We need a dummy VAO object for point rendering
@@ -395,7 +398,7 @@ void GL_API::closeRenderingAPI() {
     glVertexArray::cleanup();
     GLUtil::clearVBOs();
     GL_API::s_vaoPool.destroy();
-
+    GL_API::s_hardwareQueryPool.destroy();
     destroyGLContext();
 }
 

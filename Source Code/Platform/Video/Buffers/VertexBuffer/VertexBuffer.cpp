@@ -13,8 +13,7 @@ VertexBuffer::VertexBuffer(GFXDevice& context)
      _format(GFXDataFormat::UNSIGNED_SHORT),
      _primitiveRestartEnabled(false),
      _staticBuffer(false),
-     _keepDataInMemory(false),
-     _primitivesGenerated(0)
+     _keepDataInMemory(false)
 {
     reset();
 }

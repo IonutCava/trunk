@@ -147,22 +147,8 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
         glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][drawBufferID]);
     }
 
-    //SLOOOOW
-    GLuint query = 0;
-    bool queryPrimitives = command.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_PRIMITIVE_COUNT);
-
-    if (queryPrimitives) {
-        glGenQueries(1, &query);
-        glBeginQuery(GL_PRIMITIVES_GENERATED, query);
-    }
-
     // Submit the draw command
     GLUtil::submitRenderCommand(command, useCmdBuffer, GL_UNSIGNED_INT, _indexBuffer);
-
-    if (queryPrimitives) {
-        glEndQuery(GL_PRIMITIVES_GENERATED);
-        glGetQueryObjectiv(query, GL_QUERY_RESULT, &_primitivesGenerated);
-    }
 
     // Deactivate transform feedback if needed
     if (feedbackActive) {

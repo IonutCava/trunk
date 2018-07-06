@@ -11,8 +11,7 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
     : VertexDataInterface(context),
       _forceWireframe(false),
       _paused(true),
-      _texture(nullptr),
-      _primitivesGenerated(0)
+      _texture(nullptr)
 {
 }
 

@@ -29,53 +29,30 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _GL_HARDWARE_QUERY_H_
-#define _GL_HARDWARE_QUERY_H_
+#ifndef _GL_HARDWARE_QUERY_POOL_H_
+#define _GL_HARDWARE_QUERY_POOL_H_
 
-#include "glResources.h"
-
-#include "Core/Headers/RingBuffer.h"
-#include "Core/TemplateLibraries/Headers/Vector.h"
+#include "glHardwareQuery.h"
 
 namespace Divide {
 
-class glHardwareQuery : public glObject {
+class glHardwareQueryPool {
 public:
-    glHardwareQuery();
-    ~glHardwareQuery();
+    glHardwareQueryPool();
+    ~glHardwareQueryPool();
 
-    void create();
+    void init(U32 size);
     void destroy();
 
-    inline U32 getID() const { return _queryID; }
-    inline bool enabled() const { return _enabled; }
-    inline void enabled(bool state) { _enabled = state; }
+    glHardwareQueryRing& allocate();
+    void deallocate(glHardwareQueryRing& query);
 
-protected:
-    bool _enabled;
-    U32 _queryID;
+private:
+    vectorImpl<glHardwareQueryRing*> _queryPool;
+    U32 _index;
 };
 
-class glHardwareQueryRing : public RingBuffer {
+}; //namespace Divide
 
-public:
-    glHardwareQueryRing(U32 queueLength, U32 id = 0);
-    ~glHardwareQueryRing();
 
-    glHardwareQuery& readQuery();
-    glHardwareQuery& writeQuery();
-
-    void initQueries();
-
-    void resize(U32 queueLength) override;
-
-    inline U32 id() const { return _id; }
-
-protected:
-    U32 _id;
-    bool _needRefresh;
-    vectorImpl<glHardwareQuery> _queries;
-};
-
-};
-#endif //_GL_HARDWARE_QUERY_H_
+#endif //_GL_HARDWARE_QUERY_POOL_H_

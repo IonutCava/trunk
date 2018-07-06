@@ -41,6 +41,16 @@ class Pipeline;
 class VertexDataInterface;
 enum class PrimitiveType : U32;
 
+namespace GenericDrawCommandResults {
+    struct QueryResult {
+        U64 _primitivesGenerated = 0U;
+        U32 _samplesPassed = 0U;
+        U32 _anySamplesPassed = 0U;
+    };
+
+    extern hashMapImpl<I64, QueryResult> g_queryResults;
+};
+
 struct IndirectDrawCommand {
     IndirectDrawCommand();
     void set(const IndirectDrawCommand& other);
@@ -64,6 +74,8 @@ public:
         RENDER_INDIRECT = toBit(6),
         RENDER_TESSELLATED = toBit(7),
         QUERY_PRIMITIVE_COUNT = toBit(8),
+        QUERY_SAMPLE_COUNT = toBit(9),
+        QUERY_ANY_SAMPLE_RENDERED = toBit(10),
         COUNT = 9
     };
 
