@@ -54,6 +54,9 @@ class d3dRenderTarget : public RenderTarget {
                      U16 writeLevel,
                      RTAttachment::Type type,
                      U8 index) override;
+    void setMipLevel(U16 writeLevel,
+                     RTAttachment::Type type,
+                     U8 index) override;
     void resetMipLevel(RTAttachment::Type type, U8 index) override;
     void begin(const RTDrawDescriptor& drawPolicy) override;
     void end() override;

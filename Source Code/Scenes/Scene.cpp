@@ -830,7 +830,7 @@ void Scene::processTasks(const U64 deltaTime) {
 }
 
 void Scene::debugDraw(RenderStage stage) {
-    if (stage != RenderStage::DISPLAY) {
+    if (stage != RenderStage::DISPLAY || GFX_DEVICE.isPrePass()) {
         return;
     }
 

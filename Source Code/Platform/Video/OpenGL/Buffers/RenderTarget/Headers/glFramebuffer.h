@@ -62,7 +62,9 @@ class glFramebuffer : public RenderTarget {
                      U16 writeLevel,
                      RTAttachment::Type type,
                      U8 index) override;
-
+    void setMipLevel(U16 writeLevel,
+                     RTAttachment::Type type,
+                     U8 index) override;
     void resetMipLevel(RTAttachment::Type type, U8 index) override;
     void addDepthBuffer();
     void begin(const RTDrawDescriptor& drawPolicy)  override;

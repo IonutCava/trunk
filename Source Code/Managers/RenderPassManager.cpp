@@ -155,7 +155,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
 
     if (params.stage != RenderStage::SHADOW) {
         Attorney::SceneManagerRenderPass::preRender(mgr, *params.target);
-        if (!Config::DEBUG_HIZ_CULLING) {
+        if (params.doPrePass && !Config::DEBUG_HIZ_CULLING) {
             GFX.toggleDepthWrites(false);
         }
     }
@@ -178,7 +178,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
         params.target->end();
     }
     if (params.stage != RenderStage::SHADOW) {
-        if (!Config::DEBUG_HIZ_CULLING) {
+        if (params.doPrePass && !Config::DEBUG_HIZ_CULLING) {
             GFX.toggleDepthWrites(true);
         }
     }

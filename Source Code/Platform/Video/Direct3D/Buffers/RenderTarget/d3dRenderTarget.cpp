@@ -31,6 +31,8 @@ void d3dRenderTarget::drawToLayer(RTAttachment::Type type,
 void d3dRenderTarget::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel,
                                   RTAttachment::Type type, U8 index) {}
 
+void d3dRenderTarget::setMipLevel(U16 writeLevel, RTAttachment::Type type, U8 index) {}
+
 void d3dRenderTarget::resetMipLevel(RTAttachment::Type type, U8 index) {}
 
 bool d3dRenderTarget::checkStatus() const { return true; }

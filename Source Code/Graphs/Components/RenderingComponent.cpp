@@ -363,7 +363,7 @@ bool RenderingComponent::preDraw(const SceneRenderState& renderState,
 /// Called after the current node was rendered
 void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, RenderStage renderStage) {
     
-    if (renderStage != RenderStage::DISPLAY) {
+    if (renderStage != RenderStage::DISPLAY || GFX_DEVICE.isPrePass()) {
         return;
     }
 

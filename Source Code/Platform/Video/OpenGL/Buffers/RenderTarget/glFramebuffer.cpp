@@ -477,7 +477,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
         U8 bufferCount = _attachments.attachmentCount(type);
         for (U8 j = 0; j < bufferCount; ++j) {
             glRTAttachment* thisAtt = static_cast<glRTAttachment*>(_attachments.get(type, j).get());
-            thisAtt->enabled(drawPolicy._drawMask.enabled(type, j));
+            thisAtt->enabled(drawPolicy._drawMask.enabled(type, j) && thisAtt->used());
             colourBuffers.push_back(thisAtt->enabled() ? thisAtt->getInfo().first : GL_NONE);
         }
         glDrawBuffers(to_uint(bufferCount), colourBuffers.data());
@@ -531,7 +531,7 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy) const {
     if (hasColour() && drawPolicy._clearColourBuffersOnBind) {
         for (U8 index = 0; index < _attachments.attachmentCount(RTAttachment::Type::Colour); ++index) {
             const RTAttachment_ptr& att = _attachments.get(RTAttachment::Type::Colour, index);
-            if (att->enabled()) { //<ToDo: enabled is bugged. Unused attachments still get cleared! -Ionut
+            if (att->enabled()) {
                 GFXDataFormat dataType = att->descriptor().dataType();
                 if(dataType == GFXDataFormat::FLOAT_16 ||dataType == GFXDataFormat::FLOAT_32) {
                     glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, index, att->clearColour()._v);
@@ -600,6 +600,16 @@ void glFramebuffer::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel
     glRTAttachment* glAtt = static_cast<glRTAttachment*>(_attachments.get(type, index).get());
 
     if (glAtt->used()) {
+        glAtt->asTexture()->setMipMapRange(mipMinLevel, mipMaxLevel);
+        setMipLevel(writeLevel, type, index);
+    }
+
+}
+
+void glFramebuffer::setMipLevel(U16 writeLevel, RTAttachment::Type type, U8 index) {
+    glRTAttachment* glAtt = static_cast<glRTAttachment*>(_attachments.get(type, index).get());
+
+    if (glAtt->used()) {
         // This is needed because certain drivers need all attachments to use the same mip level
         // This is also VERY SLOW so it might be worth optimising it per-driver version / IHV
         for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
@@ -612,15 +622,12 @@ void glFramebuffer::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel
             }
         }
 
-        glAtt->asTexture()->setMipMapRange(mipMinLevel, mipMaxLevel);
-
         glFramebufferTexture(GL_FRAMEBUFFER,
                              glAtt->getInfo().first,
                              glAtt->asTexture()->getHandle(),
                              writeLevel);
         checkStatus();
     }
-
 }
 
 void glFramebuffer::resetMipLevel(RTAttachment::Type type, U8 index) {

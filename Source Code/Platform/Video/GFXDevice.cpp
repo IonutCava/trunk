@@ -453,6 +453,10 @@ void GFXDevice::updateViewportInternal(const vec4<I32>& viewport) {
     _gpuBlock._updated = true;
 }
 
+void GFXDevice::updateViewportInternal(I32 x, I32 y, I32 width, I32 height) {
+    updateViewportInternal(vec4<I32>(x, y, width, height));
+}
+
 /// Update the virtual camera's matrices and upload them to the GPU
 F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
     bool updated = false;
@@ -627,6 +631,8 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK_
 }
 
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
+/// Based on RasterGrid implementation: http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
+/// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
 void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     static bool firstRun = true;
     static RTDrawDescriptor depthOnlyTarget;
@@ -645,27 +651,17 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
         firstRun = false;
     }
 
-    auto setAndGetHalfViewport = [](vec4<I32>& viewportIn) -> vec4<I32>& {
-        viewportIn /= 2;
-        // Ensure that the viewport size is always at least 1x1
-        viewportIn.z = viewportIn.z > 0 ? viewportIn.z : 1;
-        viewportIn.w = viewportIn.w > 0 ? viewportIn.w : 1;
-        return viewportIn;
-    };
-
     // The depth buffer's resolution should be equal to the screen's resolution
     RenderTarget& screenTarget = depthBuffer;
     U16 width = screenTarget.getWidth();
     U16 height = screenTarget.getHeight();
-    // Bind the depth texture to the first texture unit
-    screenTarget.bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
+    U16 level = 0;
+    U16 dim = width > height ? width : height;
+    U16 twidth = width;
+    U16 theight = height;
+    bool wasEven = false;
 
-    screenTarget.begin(depthOnlyTarget);
-    // Calculate the number of mipmap levels we need to generate
-    U32 numLevels = 1 + to_uint(floorf(log2f(fmaxf(to_float(width),
-                                                   to_float(height)))));
     // Store the current width and height of each mip
-    vec4<I32> currentViewport(0, 0, width, height);
     vec4<I32> previousViewport(_viewport.top());
 
     GenericDrawCommand triangleCmd;
@@ -674,15 +670,30 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     triangleCmd.stateHash(_stateDepthOnlyRenderingHash);
     triangleCmd.shaderProgram(_HIZConstructProgram);
 
+    // Bind the depth texture to the first texture unit
+    screenTarget.bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
+    screenTarget.begin(depthOnlyTarget);
     // We skip the first level as that's our full resolution image
-    for (U16 i = 1; i < numLevels; ++i) {
+    while (dim) {
+        if (level) {
+            twidth = twidth < 1 ? 1 : twidth;
+            theight = theight < 1 ? 1 : theight;
+            // Update the viewport with the new resolution
+            updateViewportInternal(0, 0, twidth, theight);
+            // Bind next mip level for rendering but first restrict fetches only to previous level
+            screenTarget.setMipLevel(level, RTAttachment::Type::Depth, 0);
+            _HIZConstructProgram->Uniform("depthLoD", level-1);
+            _HIZConstructProgram->Uniform("isDepthEven", wasEven);
+            // Dummy draw command as the full screen quad is generated completely in the vertex shader
+            draw(triangleCmd);
+        }
+
         // Calculate next viewport size
-        // Update the viewport with the new resolution
-        updateViewportInternal(setAndGetHalfViewport(currentViewport));
-        // Bind next mip level for rendering but first restrict fetches only to previous level
-        screenTarget.setMipLevel(i - 1, i - 1, i, RTAttachment::Type::Depth, 0);
-        // Dummy draw command as the full screen quad is generated completely in the vertex shader
-        draw(triangleCmd);
+        wasEven = (twidth % 2 == 0) && (theight % 2 == 0);
+        dim /= 2;
+        twidth /= 2;
+        theight /= 2;
+        level++;
     }
 
     updateViewportInternal(previousViewport);

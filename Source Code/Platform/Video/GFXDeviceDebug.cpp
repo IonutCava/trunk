@@ -40,25 +40,32 @@ void GFXDevice::previewDepthBuffer() {
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
         triangleCmd.stateHash(_defaultStateNoDepthHash);
-        triangleCmd.shaderProgram(_previewDepthMapShader);
 
         U16 screenWidth = std::max(renderTarget(RenderTargetID::SCREEN).getWidth(), to_const_ushort(768));
         RenderTarget& rt = renderTarget(RenderTargetID::SCREEN);
         rt.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
+
+        triangleCmd.shaderProgram(_previewDepthMapShader);
         {
             //HiZ preview
-            _previewDepthMapShader->Uniform("lodLevel",
-                                            to_float(to_uint((Time::ElapsedMilliseconds() / 750.0)) % 
-                                            (rt.getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getMaxMipLevel() - 1)));
+            I32 LoDLevel = 0;
+            if (Config::USE_HIZ_CULLING && Config::USE_Z_PRE_PASS) {
+                LoDLevel = to_int(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) %
+                           (rt.getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getMaxMipLevel() - 1);
+            }
+
+            _previewDepthMapShader->Uniform("lodLevel", to_float(LoDLevel));
             GFX::ScopedViewport viewport(screenWidth - 256, 0, 256, 256);
             draw(triangleCmd);
         }
         {
             //Depth preview
-            _previewDepthMapShader->Uniform("lodLevel", to_float(0));
+            _previewDepthMapShader->Uniform("lodLevel", 0.0f);
             GFX::ScopedViewport viewport(screenWidth - 512, 0, 256, 256);
             draw(triangleCmd);
         }
+
+        triangleCmd.shaderProgram(_renderTargetDraw);
         {
             //Normals preview
             renderTarget(RenderTargetID::SCREEN).bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
@@ -66,7 +73,6 @@ void GFXDevice::previewDepthBuffer() {
 
             GFX::ScopedViewport viewport(screenWidth - 768, 0, 256, 256);
             _renderTargetDraw->Uniform("linearSpace", false);
-            triangleCmd.shaderProgram(_renderTargetDraw);
             draw(triangleCmd);
         }
     }

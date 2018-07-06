@@ -147,7 +147,7 @@ void RenderPass::render(SceneRenderState& renderState) {
             params.stage = _stageFlag;
             params.target = &GFX_DEVICE.renderTarget(RenderTargetID::SCREEN);
             params.pass = 0;
-            params.doPrePass = true;
+            params.doPrePass = false;//Config::USE_Z_PRE_PASS;
             params.occlusionCull = true;
             passMgr.doCustomPass(params);
             _lastTotalBinSize = passMgr.getQueue().getRenderQueueStackSize();

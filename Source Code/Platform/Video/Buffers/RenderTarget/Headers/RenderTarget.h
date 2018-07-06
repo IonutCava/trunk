@@ -66,7 +66,10 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
     virtual void destroy() = 0;
     /// Use by multilayered FB's
     virtual void drawToLayer(RTAttachment::Type type, U8 index, U32 layer, bool includeDepth = true) = 0;
+    // This call also limits the min and max mip levels of the attachment
     virtual void setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel, RTAttachment::Type type, U8 index) = 0;
+    // This call sets the target mip level to write to
+    virtual void setMipLevel(U16 writeLevel, RTAttachment::Type type, U8 index) = 0;
     virtual void resetMipLevel(RTAttachment::Type type, U8 index) = 0;
     virtual void begin(const RTDrawDescriptor& drawPolicy) = 0;
     virtual void end() = 0;
@@ -82,6 +85,8 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
     /// Used by cubemap FB's
     void drawToFace(RTAttachment::Type type, U8 index, U32 nFace, bool includeDepth = true);
     void setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel);
+    void setMipLevel(U16 writeLevel);
+
     void resetMipLevel();
     void readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData);
     // Set the colour the FB will clear to when drawing to it

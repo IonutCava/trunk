@@ -537,6 +537,7 @@ DEFINE_SINGLETON(GFXDevice)
 
     void previewDepthBuffer();
     void updateViewportInternal(const vec4<I32>& viewport);
+    void updateViewportInternal(I32 x, I32 y, I32 width, I32 height);
     /// returns false if there was an invalid state detected that could prevent
     /// rendering
     bool setBufferData(const GenericDrawCommand& cmd);

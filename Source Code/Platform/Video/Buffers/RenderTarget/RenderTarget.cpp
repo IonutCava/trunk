@@ -44,6 +44,15 @@ void RenderTarget::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel)
     }
 }
 
+void RenderTarget::setMipLevel(U16 writeLevel, RTAttachment::Type type, U8 index) {
+    for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
+        RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
+        for (U8 j = 0; j < _attachments.attachmentCount(type); ++j) {
+            setMipLevel(writeLevel, type, j);
+        }
+    }
+}
+
 void RenderTarget::resetMipLevel() {
     for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
         RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
