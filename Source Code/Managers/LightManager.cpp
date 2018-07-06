@@ -20,6 +20,7 @@ LightManager::LightManager()
       _init(false),
       _shadowMapsEnabled(true),
       _previewShadowMaps(false),
+      _currentShadowCastingLight(nullptr),
       _activeLightCount(0)
 {
     // shadowPassTimer is used to measure the CPU-duration of shadow map

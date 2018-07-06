@@ -162,7 +162,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         case TextureType::TEXTURE_CUBE_ARRAY: {
             U32 numFaces = 1;
             if (_textureData._textureType == TextureType::TEXTURE_CUBE_MAP ||
-                _textureData._textureType == TextureType::TEXTURE_CUBE_MAP) {
+                _textureData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
                 numFaces = 6;
             }
             glTextureStorage3D(

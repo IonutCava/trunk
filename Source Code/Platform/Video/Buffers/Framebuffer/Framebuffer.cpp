@@ -8,7 +8,6 @@ namespace Divide {
 Framebuffer::Framebuffer(bool multiSampled)
     : GUIDWrapper(),
       _shouldRebuild(true),
-      _layeredRendering(false),
       _clearBuffersState(true),
       _useDepthBuffer(false),
       _disableColorWrites(false),

@@ -298,6 +298,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     void restoreViewport();
     void setViewport(const vec4<I32>& viewport);
+    inline void setViewport(I32 x, I32 y, I32 width, I32 height) {
+        setViewport(vec4<I32>(x,y,width,height));
+    }
     /// Switch between fullscreen rendering
     void toggleFullScreen();
     void increaseResolution();

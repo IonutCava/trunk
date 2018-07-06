@@ -241,7 +241,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     renderState().getCamera().setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
     renderState().getCamera().setGlobalRotation(-90 /*yaw*/, 59.21 /*pitch*/);
     _sun->csmSplitCount(3);  // 3 splits
-    _sun->csmSplitLogFactor(0.925f);
+    _sun->csmSplitLogFactor(0.85f);
     _sun->csmNearClipOffset(25.0f);
     // Add some obstacles
     SceneGraphNode_ptr cylinder[5];

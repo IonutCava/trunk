@@ -49,13 +49,11 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
         };
 
         BufferMask _drawMask;
-        U32 _numColorChannels;
         bool _clearBuffersOnBind;
         bool _changeViewport;
 
         FramebufferTarget()
             : _drawMask(BufferMask::BOTH),
-              _numColorChannels(1),
               _clearBuffersOnBind(true),
               _changeViewport(true)
         {
@@ -123,12 +121,6 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
                           TextureDescriptor::AttachmentType
                               slot = TextureDescriptor::AttachmentType::Color0,
                           bool blitColor = true, bool blitDepth = false) = 0;
-    // If true, array texture and/or cubemaps are bound to a single attachment
-    // and shader based layered rendering should be used
-    virtual void toggleLayeredRendering(const bool state) {
-        _shouldRebuild = (_layeredRendering != state);
-        _layeredRendering = state;
-    }
     // Enable/Disable color writes
     virtual void toggleColorWrites(const bool state) {
         _shouldRebuild = (_disableColorWrites == state);
@@ -172,7 +164,6 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
 
    protected:
     bool _shouldRebuild;
-    bool _layeredRendering;
     bool _clearBuffersState;
     bool _useDepthBuffer;
     bool _disableColorWrites;

@@ -23,8 +23,8 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     : ShadowMap(light, shadowCamera, ShadowType::LAYERED)
 {
     _dirLight = dynamic_cast<DirectionalLight*>(_light);
-    _splitLogFactor = _dirLight->csmSplitLogFactor();
-    _nearClipOffset = _dirLight->csmNearClipOffset();
+    _splitLogFactor = 0.0f;
+    _nearClipOffset = 0.0f;
     _numSplits = numSplits;
     _splitDepths.resize(_numSplits + 1);
     _frustumCornersWS.resize(8);
@@ -37,8 +37,8 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     _renderPolicy = MemoryManager_NEW Framebuffer::FramebufferTarget(
         Framebuffer::defaultPolicy());
     // We clear the FB on each face draw call, not on Begin()
-    _renderPolicy->_clearBuffersOnBind = true;
-    _renderPolicy->_numColorChannels = _numSplits;
+    _renderPolicy->_clearBuffersOnBind = false;
+
     ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM");
     shadowPreviewShader.setThreadedLoading(false);
     _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
@@ -136,29 +136,23 @@ void CascadedShadowMaps::render(SceneRenderState& renderState,
 
     _splitLogFactor = _dirLight->csmSplitLogFactor();
     _nearClipOffset = _dirLight->csmNearClipOffset();
-    _lightPosition = _light->getPosition();
+    _lightPosition.set(_light->getPosition());
 
     Camera& camera = renderState.getCamera();
-    const vec2<F32>& currentPlanes = camera.getZPlanes();
-    if (_sceneZPlanes != currentPlanes)
-    {
-        _sceneZPlanes = currentPlanes;
-        CalculateSplitDepths(camera);
-    }
-    
+    _sceneZPlanes.set(camera.getZPlanes());
+    CalculateSplitDepths(camera);
     camera.getWorldMatrix(_viewInvMatrixCache);
     camera.getFrustum().getCornersWorldSpace(_frustumCornersWS);
     camera.getFrustum().getCornersViewSpace(_frustumCornersVS);
 
-    // This should always leave the camera in the state that encompesses all of the shadow casters
-    for (U8 i = 0; i < _numSplits; ++i) {
-        ApplyFrustumSplit(i);
-    }
-        
     _depthMap->Begin(*_renderPolicy);
         renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
-        _shadowCamera->renderLookAt();
-            GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
+            for (U8 i = 0; i < _numSplits; ++i) {
+                ApplyFrustumSplit(i);
+                _depthMap->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,
+                                       true);
+                GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
+            }
         renderState.getCameraMgr().popActiveCamera();
     _depthMap->End();
 }
@@ -192,15 +186,18 @@ void CascadedShadowMaps::ApplyFrustumSplit(U8 pass) {
     F32 maxZ = _splitDepths[pass + 1];
 
     for (U8 i = 0; i < 4; ++i) {
-        _splitFrustumCornersVS[i] = _frustumCornersVS[i + 4] * (minZ / _sceneZPlanes.y);
+        _splitFrustumCornersVS[i] =
+            _frustumCornersVS[i + 4] * (minZ / _sceneZPlanes.y);
     }
 
     for (U8 i = 4; i < 8; ++i) {
-        _splitFrustumCornersVS[i] = _frustumCornersVS[i] * (maxZ / _sceneZPlanes.y);
+        _splitFrustumCornersVS[i] =
+            _frustumCornersVS[i] * (maxZ / _sceneZPlanes.y);
     }
 
     for (U8 i = 0; i < 8; ++i) {
-        _frustumCornersWS[i].set(_viewInvMatrixCache.transform(_splitFrustumCornersVS[i]));
+        _frustumCornersWS[i].set(
+            _viewInvMatrixCache.transform(_splitFrustumCornersVS[i]));
     }
 
     vec3<F32> frustumCentroid(0.0f);
@@ -214,11 +211,13 @@ void CascadedShadowMaps::ApplyFrustumSplit(U8 pass) {
     // Position the shadow-caster camera so that it's looking at the centroid,
     // and backed up in the direction of the sunlight
     F32 distFromCentroid =
-        std::max((maxZ - minZ), _splitFrustumCornersVS[4].distance(_splitFrustumCornersVS[5]));
-    // + _nearClipOffset;
-    vec3<F32> currentEye =  frustumCentroid - (_lightPosition * distFromCentroid);
-    const mat4<F32>& viewMatrix = _shadowCamera->lookAt(currentEye, frustumCentroid);
-
+        std::max((maxZ - minZ),
+                 _splitFrustumCornersVS[4].distance(_splitFrustumCornersVS[5])) + _nearClipOffset;
+    
+    vec3<F32> currentEye =
+        frustumCentroid - (_lightPosition * distFromCentroid);
+    const mat4<F32>& viewMatrix =
+        _shadowCamera->lookAt(currentEye, frustumCentroid);
     // Determine the position of the frustum corners in light space
     for (U8 i = 0; i < 8; ++i) {
         _frustumCornersLS[i].set(viewMatrix.transform(_frustumCornersWS[i]));
@@ -249,13 +248,16 @@ void CascadedShadowMaps::ApplyFrustumSplit(U8 pass) {
 
     // http://www.gamedev.net/topic/591684-xna-40---shimmering-shadow-maps/
     F32 halfShadowMapSize = (_resolution)*0.5f;
-    vec3<F32> testPoint = lightViewProj.transform(VECTOR3_ZERO) * halfShadowMapSize;
+    vec3<F32> testPoint =
+        lightViewProj.transform(VECTOR3_ZERO) * halfShadowMapSize;
     vec3<F32> testPointRounded(testPoint);
     testPointRounded.round();
     vec3<F32> rounding = (testPointRounded - testPoint) / halfShadowMapSize;
 
-    _light->setShadowVPMatrix(pass, mat4<F32>(rounding.x, rounding.y, 0.0f) * lightViewProj * _bias);
+    _light->setShadowVPMatrix(
+        pass, mat4<F32>(rounding.x, rounding.y, 0.0f) * lightViewProj * _bias);
     _light->setShadowLightPos(pass, currentEye);
+    _shadowCamera->renderLookAt();
 }
 
 void CascadedShadowMaps::postRender() {
@@ -302,7 +304,8 @@ void CascadedShadowMaps::previewShadowMaps() {
     if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
         return;
     }
-    
+
+
     _depthMap->Bind();
     for (U8 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i);

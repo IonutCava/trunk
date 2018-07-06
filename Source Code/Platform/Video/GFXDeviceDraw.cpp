@@ -463,7 +463,7 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
         // needed viewport rendering (e.g. axis lines)
         if (inViewport) {
             primitive.setRenderStates(
-                DELEGATE_BIND(&GFXDevice::setViewport, this, viewport),
+                DELEGATE_BIND((void(GFXDevice::*)(const vec4<I32>&))&GFXDevice::setViewport, this, viewport),
                 DELEGATE_BIND(&GFXDevice::restoreViewport, this));
         }
         // Create the object containing all of the lines

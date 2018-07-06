@@ -23,7 +23,7 @@ ShadowMap::ShadowMap(Light* light, Camera* shadowCamera, ShadowType type)
 }
 
 ShadowMap::~ShadowMap()
-{ 
+{
     MemoryManager::DELETE(_depthMap);
 }
 
@@ -40,7 +40,8 @@ ShadowMapInfo::ShadowMapInfo(Light* light)
     _numLayers = 1;
 }
 
-ShadowMapInfo::~ShadowMapInfo() {
+ShadowMapInfo::~ShadowMapInfo()
+{
     MemoryManager::DELETE(_shadowMap);
 }
 

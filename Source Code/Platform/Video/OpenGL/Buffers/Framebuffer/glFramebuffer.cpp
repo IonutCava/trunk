@@ -88,6 +88,7 @@ void glFramebuffer::InitAttachment(AttachmentType type,
 
     bool isLayeredTexture = (currentType == TextureType::TEXTURE_2D_ARRAY ||
                              currentType == TextureType::TEXTURE_2D_ARRAY_MS ||
+                             currentType == TextureType::TEXTURE_CUBE_MAP ||
                              currentType == TextureType::TEXTURE_CUBE_ARRAY ||
                              currentType == TextureType::TEXTURE_3D);
 
@@ -131,10 +132,7 @@ void glFramebuffer::InitAttachment(AttachmentType type,
     }
 
     Texture* tex = _attachmentTexture[slot];
-    if (tex == nullptr) {
-        return;
-    }
-
+    assert(tex != nullptr);
     tex->setNumLayers(texDescriptor._layerCount);
     _mipMapLevel[slot].set(0,
                            sampler.generateMipMaps() 
@@ -149,39 +147,38 @@ void glFramebuffer::InitAttachment(AttachmentType type,
     }
 
     // Attach to frame buffer
+    I32 offset = 0;
+    GLenum attachment;
     if (type == AttachmentType::Depth) {
-        glNamedFramebufferTexture(_framebufferHandle, GL_DEPTH_ATTACHMENT, tex->getHandle(), 0);
+        attachment = GL_DEPTH_ATTACHMENT;
         _isLayeredDepth = isLayeredTexture;
     } else {
-        I32 offset = 0;
-        if (slot > to_int(AttachmentType::Color0)) {
+        if (slot > 0) {
             offset = _attOffset[slot - 1];
         }
-        if (texDescriptor.isCubeTexture() && !_layeredRendering) {
-            for (U32 i = 0; i < 6; ++i) {
-                GLenum attachPoint = GL_COLOR_ATTACHMENT0 + (i + offset);
-                glNamedFramebufferTexture(_framebufferHandle, attachPoint, tex->getHandle(), i);
-                _colorBuffers.push_back(attachPoint);
-            }
-            if (slot > 0) {
-                _attOffset[slot] = _attOffset[slot - 1] + 6;
-            }
-        } else if (texDescriptor._layerCount > 1 && !_layeredRendering) {
-            for (U32 i = 0; i < texDescriptor._layerCount; ++i) {
-                GLenum attachPoint = GL_COLOR_ATTACHMENT0 + (i + offset);
+        attachment = GL_COLOR_ATTACHMENT0 + offset;
+    }
+
+    glNamedFramebufferTexture(_framebufferHandle, attachment, tex->getHandle(), 0);
+    if (type != AttachmentType::Depth) {
+        _colorBuffers.push_back(attachment);
+        U32 layerCount = texDescriptor._layerCount;
+        if (currentType == TextureType::TEXTURE_CUBE_MAP) {
+            layerCount *= 6;
+        }
+
+        if (layerCount > 1) {
+            offset += 1;
+            for (U32 i = 0; i < layerCount; ++i) {
+                GLenum attachPoint = GL_COLOR_ATTACHMENT0 + offset + i;
                 glNamedFramebufferTextureLayer(_framebufferHandle, attachPoint, tex->getHandle(), 0, i);
                 _colorBuffers.push_back(attachPoint);
             }
-            if (slot > 0) {
-                _attOffset[slot] = _attOffset[slot - 1] + texDescriptor._layerCount;
-            }
-            // If we require layered rendering, or have a non-layered /
-            // non-cubemap texture, attach it to a single binding point
-        } else {
-            glNamedFramebufferTexture(_framebufferHandle, GL_COLOR_ATTACHMENT0 + to_uint(slot), tex->getHandle(), 0);
-            _colorBuffers.push_back(GL_COLOR_ATTACHMENT0 + to_uint(slot));
         }
+
+        _attOffset[slot] = offset + layerCount;
     }
+    
 }
 
 void glFramebuffer::RemoveDepthBuffer() {
@@ -245,7 +242,6 @@ bool glFramebuffer::Create(U16 width, U16 height) {
     if (_resolveBuffer) {
         _resolveBuffer->_useDepthBuffer = _useDepthBuffer;
         _resolveBuffer->_disableColorWrites = _disableColorWrites;
-        _resolveBuffer->_layeredRendering = _layeredRendering;
         _resolveBuffer->_clearColor.set(_clearColor);
         for (U8 i = 0; i < to_uint(AttachmentType::COUNT); ++i) {
             if (_attachmentDirty[i] &&
@@ -509,9 +505,11 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot,
     }
 
     if (useColorLayer) {
-        GLint offset = slot > TextureDescriptor::AttachmentType::Color0
-                           ? _attOffset[to_uint(slot) - 1]
-                           : 0;
+        GLint offset = 1;
+        if (to_uint(slot) > 0) {
+            offset += _attOffset[to_uint(slot) - 1];
+        }
+
         glNamedFramebufferDrawBuffer(_framebufferHandle, _colorBuffers[layer + offset]);
     }
 
