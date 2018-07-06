@@ -269,19 +269,7 @@ public:  // Accessors and Mutators
     inline const GFXRTPool& renderTargetPool() const {
         return *_rtPool;
     }
-
-    RenderDetailLevel shadowDetailLevel() const { return _shadowDetailLevel; }
-
-    RenderDetailLevel renderDetailLevel() const { return _renderDetailLevel; }
-
-    void shadowDetailLevel(RenderDetailLevel detailLevel) {
-        _shadowDetailLevel = detailLevel;
-    }
-
-    void renderDetailLevel(RenderDetailLevel detailLevel) {
-        _renderDetailLevel = detailLevel;
-    }
-
+    
     inline U32 getFrameCount() const { return FRAME_COUNT; }
 
     inline I32 getDrawCallCount() const { return FRAME_DRAW_CALLS_PREV; }
@@ -455,11 +443,7 @@ protected:
     ShaderProgram_ptr _textRenderShader;
     PushConstants _textRenderConstants;
     Pipeline* _textRenderPipeline = nullptr;
-
-    /// Quality settings
-    RenderDetailLevel _shadowDetailLevel;
-    RenderDetailLevel _renderDetailLevel;
-    
+        
     SharedLock _graphicsResourceMutex;
     vector<std::pair<GraphicsResource::Type, I64>> _graphicResources;
 

@@ -68,7 +68,7 @@ BloomPreRenderOperator::~BloomPreRenderOperator() {
 }
 
 void BloomPreRenderOperator::idle(const Configuration& config) {
-    _bloomFactor = config.rendering.bloomFactor;
+    _bloomFactor = config.rendering.postFX.bloomFactor;
 }
 
 void BloomPreRenderOperator::reshape(U16 width, U16 height) {

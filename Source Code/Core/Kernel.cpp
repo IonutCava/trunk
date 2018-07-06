@@ -566,15 +566,15 @@ void Kernel::warmup() {
         static const U8 warmupLoopCount = 3;
         U8 loopCount = 0;
 
-        RenderDetailLevel shadowLevel = _platformContext->gfx().shadowDetailLevel();
+        RenderDetailLevel shadowLevel = _platformContext->config().rendering.shadowMapping.shadowDetailLevel;
         ParamHandler::instance().setParam(_ID("freezeLoopTime"), true);
-        _platformContext->gfx().shadowDetailLevel(RenderDetailLevel::OFF);
+        _platformContext->config().rendering.shadowMapping.shadowDetailLevel = RenderDetailLevel::OFF;
 
         onLoop();
         loopCount++;
 
         if (shadowLevel != RenderDetailLevel::OFF) {
-            _platformContext->gfx().shadowDetailLevel(shadowLevel);
+            _platformContext->config().rendering.shadowMapping.shadowDetailLevel = shadowLevel;
             onLoop();
             loopCount++;
         }
@@ -637,9 +637,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Locale::changeLanguage(config.language.c_str());
     ECS::Initialize();
-
-    _platformContext->gfx().shadowDetailLevel(config.rendering.shadowDetailLevel);
-    _platformContext->gfx().renderDetailLevel(config.rendering.renderDetailLevel);
 
     // Create mem log file
     const stringImpl& mem = config.debug.memFile;

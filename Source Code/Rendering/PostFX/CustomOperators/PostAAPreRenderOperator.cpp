@@ -46,7 +46,7 @@ PostAAPreRenderOperator::~PostAAPreRenderOperator()
 }
 
 void PostAAPreRenderOperator::idle(const Configuration& config) {
-    I32 samples = config.rendering.postAASamples;
+    I32 samples = config.rendering.postFX.postAASamples;
 
     if (_postAASamples != samples) {
         _postAASamples = samples;
@@ -54,7 +54,7 @@ void PostAAPreRenderOperator::idle(const Configuration& config) {
     }
 
     if (_idleCount == 0) {
-        _useSMAA = _ID_RT(config.rendering.postAAType) == _ID("SMAA");
+        _useSMAA = _ID_RT(config.rendering.postFX.postAAType) == _ID("SMAA");
     }
 
     _idleCount = (++_idleCount % 60);

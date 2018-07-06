@@ -93,21 +93,27 @@ public:
     } gui;
 
     struct Rendering {
-        stringImpl postAAType;
-        U8 postAASamples;
         U8 msaaSamples;
         U8 anisotropicFilteringLevel;
-        RenderDetailLevel shadowDetailLevel;
         RenderDetailLevel renderDetailLevel;
         bool enableFog;
         F32 fogDensity;
         vec3<F32> fogColour;
-        bool enable3D;
-        F32 anaglyphOffset;
-        bool enableDepthOfField;
-        bool enableBloom;
-        F32 bloomFactor;
-        bool enableSSAO;
+        struct PostFX {
+            stringImpl postAAType;
+            U8 postAASamples;
+            bool enableDepthOfField;
+            bool enableBloom;
+            F32 bloomFactor;
+            bool enableSSAO;
+        } postFX;
+        struct ShadowMapping {
+            RenderDetailLevel shadowDetailLevel;
+            U32 shadowMapResolution;
+            U8 msaaSamples;
+            U8 anisotropicFilteringLevel;
+            bool enableBlurring;
+        } shadowMapping;
     } rendering;
 
     stringImpl title;

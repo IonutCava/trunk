@@ -59,6 +59,8 @@ class glFramebuffer : public RenderTarget,
     bool resize(U16 width, U16 height) override;
 
     const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const override;
+    const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index) const override;
+    RTAttachment& getAttachment(RTAttachmentType type, U8 index) override;
 
     void drawToLayer(const DrawLayerParams& params) override;
 

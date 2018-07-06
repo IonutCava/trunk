@@ -3,6 +3,11 @@
 #include "Headers/ShadowMap.h"
 #include "Headers/CubeShadowMap.h"
 #include "Headers/SingleShadowMap.h"
+
+#include "Core/Headers/Kernel.h"
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
+
 #include "Scenes/Headers/SceneState.h"
 #include "Headers/CascadedShadowMaps.h"
 #include "Managers/Headers/SceneManager.h"
@@ -43,15 +48,15 @@ void ShadowMap::resetShadowMaps(GFXDevice& context) {
 }
 
 void ShadowMap::initShadowMaps(GFXDevice& context) {
-    std::array<U16, to_base(ShadowType::COUNT)> resolutions;
-    resolutions.fill(512);
-    if (context.shadowDetailLevel() == RenderDetailLevel::ULTRA) {
-        // Cap cubemap resolution
-        resolutions.fill(2048);
-        resolutions[to_base(ShadowType::CUBEMAP)] = 1024;
-    } else if (context.shadowDetailLevel() == RenderDetailLevel::HIGH) {
-        resolutions.fill(1024);
+    Configuration::Rendering::ShadowMapping settings = context.parent().platformContext().config().rendering.shadowMapping;
+    
+    if (!isPowerOfTwo(settings.shadowMapResolution)) {
+        settings.shadowMapResolution = nextPOW2(settings.shadowMapResolution);
     }
+    
+    std::array<U16, to_base(ShadowType::COUNT)> resolutions;
+    resolutions.fill(settings.shadowMapResolution);
+    resolutions[to_base(ShadowType::CUBEMAP)] = settings.shadowMapResolution / 2;
 
     RenderTargetHandle crtTarget;
     for (U32 i = 0; i < to_base(ShadowType::COUNT); ++i) {
@@ -87,11 +92,14 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 SamplerDescriptor depthMapSampler;
                 depthMapSampler.setFilters(TextureFilter::LINEAR_MIPMAP_LINEAR);
                 depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.setAnisotropy(8);
+                depthMapSampler.setAnisotropy(settings.anisotropicFilteringLevel);
 
-                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
+                TextureType texType = settings.msaaSamples > 0 ? TextureType::TEXTURE_2D_ARRAY_MS : TextureType::TEXTURE_2D_ARRAY;
+
+                TextureDescriptor depthMapDescriptor(texType,
                                                      GFXImageFormat::RG32F,
                                                      GFXDataFormat::FLOAT_32);
+                depthMapDescriptor.msaaSamples(settings.msaaSamples);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT *
                                                  Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.setSampler(depthMapSampler);
@@ -100,12 +108,13 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthSampler.setFilters(TextureFilter::NEAREST);
                 depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
 
-                TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_ARRAY,
+                TextureDescriptor depthDescriptor(texType,
                                                   GFXImageFormat::DEPTH_COMPONENT,
-                                                  GFXDataFormat::FLOAT_32);
+                                                  GFXDataFormat::UNSIGNED_INT);
                 depthDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT *
                                               Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthDescriptor.setSampler(depthSampler);
+                depthDescriptor.msaaSamples(settings.msaaSamples);
 
                 vector<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Colour },

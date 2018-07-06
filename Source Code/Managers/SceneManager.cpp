@@ -398,7 +398,8 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _sceneData->elapsedTime(_elapsedTimeMS);
     _sceneData->deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
     _sceneData->setRendererFlag(_platformContext->gfx().getRenderer().getFlag());
-    _sceneData->detailLevel(_platformContext->gfx().renderDetailLevel(), _platformContext->gfx().shadowDetailLevel());
+    _sceneData->detailLevel(_platformContext->config().rendering.renderDetailLevel,
+                            _platformContext->config().rendering.shadowMapping.shadowDetailLevel);
 
     FogDescriptor& fog = activeScene.state().fogDescriptor();
     bool fogEnabled = _platformContext->config().rendering.enableFog;
@@ -468,10 +469,14 @@ void SceneManager::debugDraw(RenderStagePass stagePass, const Camera& camera, GF
 }
 
 bool SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
-    Scene& activeScene = getActiveScene();
-    LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
-    assert(lightPool != nullptr);
-    return lightPool->generateShadowMaps(activeScene.renderState(), *playerCamera(), bufferInOut);
+    if (_platformContext->config().rendering.shadowMapping.shadowDetailLevel != RenderDetailLevel::OFF) {
+        Scene& activeScene = getActiveScene();
+        LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
+        assert(lightPool != nullptr);
+        return lightPool->generateShadowMaps(activeScene.renderState(), *playerCamera(), bufferInOut);
+    }
+
+    return true;
 }
 
 Camera* SceneManager::playerCamera(PlayerIndex idx) const {

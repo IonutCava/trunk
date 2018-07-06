@@ -9,6 +9,9 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
 
+#include "Core/Headers/Kernel.h"
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Headers/StringHelper.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
@@ -166,7 +169,9 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
-    //postRender(bufferInOut);
+    if (_context.parent().platformContext().config().rendering.shadowMapping.enableBlurring) {
+        postRender(bufferInOut);
+    }
 }
 
 void CascadedShadowMaps::calculateSplitDepths(const mat4<F32>& projMatrix, const vec2<F32>& nearFarPlanes) {

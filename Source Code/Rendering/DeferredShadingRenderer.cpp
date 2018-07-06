@@ -96,9 +96,6 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     _renderQuads.push_back(CreateResource<Quad3D>(cache, mrt4));
     _renderQuads.push_back(CreateResource<Quad3D>(cache, mrtPreviewSmall));
 
-    STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
-    _context.gfx().shadowDetailLevel(RenderDetailLevel::OFF);
-
     RenderTarget& screenRT = _context.gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
     U16 width = screenRT.getWidth();

@@ -333,22 +333,22 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     ParamHandler::instance().setParam<bool>(_ID("rendering.previewDebugViews"), false);
     // If render targets ready, we initialize our post processing system
     postFX.init(*this, cache);
-    if (config.rendering.postAASamples > 0) {
+    if (config.rendering.postFX.postAASamples > 0) {
         postFX.pushFilter(FilterType::FILTER_SS_ANTIALIASING);
     }
     if (false) {
         postFX.pushFilter(FilterType::FILTER_SS_REFLECTIONS);
     }
-    if (config.rendering.enableSSAO) {
+    if (config.rendering.postFX.enableSSAO) {
         postFX.pushFilter(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
     }
-    if (config.rendering.enableDepthOfField) {
+    if (config.rendering.postFX.enableDepthOfField) {
         postFX.pushFilter(FilterType::FILTER_DEPTH_OF_FIELD);
     }
     if (false) {
         postFX.pushFilter(FilterType::FILTER_MOTION_BLUR);
     }
-    if (config.rendering.enableBloom) {
+    if (config.rendering.postFX.enableBloom) {
         postFX.pushFilter(FilterType::FILTER_BLOOM);
     }
     if (false) {

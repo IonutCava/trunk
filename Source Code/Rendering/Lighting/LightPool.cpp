@@ -4,6 +4,7 @@
 
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/StringHelper.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
@@ -168,10 +169,6 @@ void LightPool::idle() {
 /// Returning false in any of the FrameListener methods will exit the entire
 /// application!
 bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState, const Camera& playerCamera, GFX::CommandBuffer& bufferInOut) {
-    if (_context.shadowDetailLevel() == RenderDetailLevel::OFF) {
-        return true;
-    }
-
     Time::ScopedTimer timer(_shadowPassTimer);
 
     ShadowMap::clearShadowMapBuffers(bufferInOut);
@@ -241,7 +238,7 @@ void LightPool::shadowCastingLights(const vec3<F32>& eyePos, LightVec& sortedSha
 void LightPool::togglePreviewShadowMaps(GFXDevice& context) {
     _previewShadowMaps = !_previewShadowMaps;
     // Stop if we have shadows disabled
-    if (context.shadowDetailLevel() == RenderDetailLevel::OFF) {
+    if (context.parent().platformContext().config().rendering.shadowMapping.shadowDetailLevel == RenderDetailLevel::OFF) {
         _previewShadowMaps = false;
     }
 
@@ -251,7 +248,7 @@ void LightPool::togglePreviewShadowMaps(GFXDevice& context) {
 // If we have computed shadowmaps, bind them before rendering any geometry;
 void LightPool::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
     // Skip applying shadows if we are rendering to depth map, or we have shadows disabled
-    if (context.shadowDetailLevel() == RenderDetailLevel::OFF) {
+    if (context.parent().platformContext().config().rendering.shadowMapping.shadowDetailLevel == RenderDetailLevel::OFF) {
         return;
     }
 

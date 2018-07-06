@@ -5,6 +5,10 @@
 #include "Headers/RenderingComponent.h"
 
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
+
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/StringHelper.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraphNode.h"
@@ -281,12 +285,14 @@ void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
 }
 
 void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const {
+    bool shadowMappingEnabled = _context.parent().platformContext().config().rendering.shadowMapping.shadowDetailLevel != RenderDetailLevel::OFF;
+
     propertiesOut.set(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
                                                      ? -1.0f
                                                      : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_HOVER
                                                                                       ? 1.0f
                                                                                       : 0.0f,
-                      (_context.shadowDetailLevel() != RenderDetailLevel::OFF && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS)) ? 1.0f : 0.0f,
+                      (shadowMappingEnabled && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS)) ? 1.0f : 0.0f,
                       _lodLevel,
                       0.0);
     const Material_ptr& mat = getMaterialInstance();

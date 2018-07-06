@@ -18,6 +18,21 @@
 
 namespace Divide {
 
+namespace {
+    TextureType GetNonMSType(TextureType type) {
+        if (type == TextureType::TEXTURE_2D_MS) {
+            return TextureType::TEXTURE_2D;
+        }
+
+        if (type == TextureType::TEXTURE_2D_ARRAY_MS) {
+            return TextureType::TEXTURE_2D_ARRAY;
+        }
+
+        return type;
+    }
+};
+
+
 bool glFramebuffer::_bufferBound = false;
 bool glFramebuffer::_zWriteEnabled = true;
 
@@ -145,11 +160,10 @@ bool glFramebuffer::create() {
                 if (att->used()) {
                     RTAttachmentDescriptor descriptor = {};
                     descriptor._texDescriptor = att->texture()->getDescriptor();
+                    descriptor._texDescriptor._type = GetNonMSType(descriptor._texDescriptor._type);
                     descriptor._clearColour = att->clearColour();
                     descriptor._index = j;
                     descriptor._type = static_cast<RTAttachmentType>(i);
-                    descriptor._texDescriptor = att->texture()->getDescriptor();
-
                     attachments.emplace_back(descriptor);
                 }
             }
@@ -317,6 +331,22 @@ void glFramebuffer::blitFrom(RenderTarget* inputFB,
 }
 
 const RTAttachment& glFramebuffer::getAttachment(RTAttachmentType type, U8 index) const {
+    if (_resolveBuffer) {
+        return _resolveBuffer->getAttachment(type, index);
+    }
+
+    return RenderTarget::getAttachment(type, index);
+}
+
+const RTAttachment_ptr& glFramebuffer::getAttachmentPtr(RTAttachmentType type, U8 index) const {
+    if (_resolveBuffer) {
+        return _resolveBuffer->getAttachmentPtr(type, index);
+    }
+
+    return RenderTarget::getAttachmentPtr(type, index);
+}
+
+RTAttachment& glFramebuffer::getAttachment(RTAttachmentType type, U8 index) {
     if (_resolveBuffer) {
         return _resolveBuffer->getAttachment(type, index);
     }

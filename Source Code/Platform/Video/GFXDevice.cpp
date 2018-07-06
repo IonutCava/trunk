@@ -125,8 +125,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     // Booleans
     _2DRendering = false;
     // Enumerated Types
-    _shadowDetailLevel = RenderDetailLevel::HIGH;
-    _renderDetailLevel = RenderDetailLevel::HIGH;
     _API_ID = RenderAPI::COUNT;
     
     _viewport.set(-1);

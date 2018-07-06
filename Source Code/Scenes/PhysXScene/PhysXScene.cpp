@@ -115,7 +115,7 @@ bool PhysXScene::loadResources(bool continueOnErrors) {
     playerCamera()->setEye(vec3<F32>(0, 30, -40));
     playerCamera()->setFixedYawAxis(true);
     _context.config().rendering.enableFog = false;
-    _context.config().rendering.bloomFactor = 0.1f;
+    _context.config().rendering.postFX.bloomFactor = 0.1f;
     return true;
 }
 

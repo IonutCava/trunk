@@ -12,6 +12,9 @@
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
 #include "Core/Headers/Console.h"
+#include "Core/Headers/Kernel.h"
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
 
 namespace Divide {
 
@@ -489,7 +492,7 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
         setShaderDefines(renderStagePass, "IS_REFLECTIVE");
     }
 
-    if (_context.shadowDetailLevel() == RenderDetailLevel::OFF) {
+    if (_context.parent().platformContext().config().rendering.shadowMapping.shadowDetailLevel == RenderDetailLevel::OFF) {
         shader += ".NoShadows";
         setShaderDefines(renderStagePass, "DISABLE_SHADOW_MAPPING");
     }
@@ -528,7 +531,7 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
         } break;
     }
 
-    if (_context.shadowDetailLevel() == RenderDetailLevel::OFF) {
+    if (_context.parent().platformContext().config().rendering.shadowMapping.shadowDetailLevel == RenderDetailLevel::OFF) {
         setShaderDefines(renderStagePass, "DISABLE_SHADOW_MAPPING");
         shader += ".NoShadows";
     }
