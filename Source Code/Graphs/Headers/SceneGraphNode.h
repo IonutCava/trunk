@@ -293,7 +293,6 @@ class SceneGraphNode : public GUIDWrapper,
 
    protected:
     friend class SceneGraph;
-    void frameEnded();
     void onCameraUpdate(const I64 cameraGUID,
                         const vec3<F32>& posOffset,
                         const mat4<F32>& rotationOffset);

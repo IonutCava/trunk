@@ -202,14 +202,15 @@ SceneGraphNode_ptr SceneGraphNode::addNode(const SceneNode_ptr& node, U32 compon
         // Pass a reference to the newly created SceneGraphNode in case we need
         // transforms or bounding boxes
         Attorney::SceneNodeSceneGraph::postLoad(*node, *sceneGraphNode);
+        invalidateRelationshipCache();
     } else if (node->getState() == ResourceState::RES_LOADING) {
         node->setStateCallback(ResourceState::RES_LOADED,
-            [&node, sceneGraphNode]() {
+            [this, &node, sceneGraphNode]() {
                 Attorney::SceneNodeSceneGraph::postLoad(*node, *sceneGraphNode);
+                invalidateRelationshipCache();
             }
         );
     }
-    invalidateRelationshipCache();
     // return the newly created node
     return sceneGraphNode;
 }
@@ -450,13 +451,7 @@ void SceneGraphNode::sgnUpdate(const U64 deltaTime, SceneState& sceneState) {
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
-    ResourceState nodeState = _node->getState();
-    assert(nodeState == ResourceState::RES_LOADED || nodeState == ResourceState::RES_LOADING);
-
-    // Node is not fully loaded. Skip.
-    if (nodeState == ResourceState::RES_LOADING) {
-        return;
-    }
+    assert(_node->getState() == ResourceState::RES_LOADED);
 
     // update local time
     _elapsedTime += deltaTime;
@@ -496,12 +491,6 @@ bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
     }
 
     return true;
-}
-
-void SceneGraphNode::frameEnded() {
-    forEachChild([](SceneGraphNode& child) {
-        child.frameEnded();
-    });
 }
 
 void SceneGraphNode::onCameraUpdate(const I64 cameraGUID,

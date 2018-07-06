@@ -442,7 +442,7 @@ bool glShaderProgram::load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
             ? CurrentContext::GFX_LOADING_CTX
             : CurrentContext::GFX_RENDERING_CTX,
         [&, onLoadCallback](const Task& parent){
-            threadedLoad(std::move(onLoadCallback), false);
+            threadedLoad(onLoadCallback, false);
         });
 }
 

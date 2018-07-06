@@ -43,7 +43,7 @@ bool Texture::load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
     _context.loadInContext(_asyncLoad ? CurrentContext::GFX_LOADING_CTX
                                       : CurrentContext::GFX_RENDERING_CTX,
         [this, onLoadCallback](const Task& parent) {
-            threadedLoad(std::move(onLoadCallback));
+            threadedLoad(onLoadCallback);
         }
     );
 

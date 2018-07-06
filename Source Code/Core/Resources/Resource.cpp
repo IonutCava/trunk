@@ -36,7 +36,10 @@ Resource::~Resource()
 }
 
 bool Resource::load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
-    onLoadCallback(shared_from_this());
+    setState(ResourceState::RES_LOADED);
+    if (onLoadCallback) {
+        onLoadCallback(shared_from_this());
+    }
     return true;
 }
 
