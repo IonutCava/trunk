@@ -45,13 +45,9 @@ struct CommandEntry {
 
 class CommandBuffer {
     friend class CommandBufferPool;
-    template<class _Ty, size_t _Size>
-    friend class std::array;
 
-   protected:
-    CommandBuffer();
-
-   public:
+  public:
+    CommandBuffer(size_t index = 0);
     ~CommandBuffer();
 
     template<typename T>
@@ -76,11 +72,11 @@ class CommandBuffer {
     inline void clear();
     inline bool empty() const;
 
-    protected:
+  protected:
     void rebuildCaches();
 
-    protected:
-    size_t _poolEntryIndex = std::numeric_limits<size_t>::max();
+  protected:
+    size_t _index = 0;
 
     vectorImpl<std::shared_ptr<Command>> _data;
 

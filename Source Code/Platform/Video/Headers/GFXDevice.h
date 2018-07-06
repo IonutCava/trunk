@@ -38,7 +38,6 @@
 #include "GFXRTPool.h"
 #include "GFXShaderData.h"
 #include "CommandBufferPool.h"
-#include "GenericCommandPool.h"
 #include "RenderPackageQueue.h"
 #include "Core/Math/Headers/Line.h"
 #include "Core/Math/Headers/MathMatrices.h"
@@ -196,16 +195,15 @@ public:  // GPU interface
     U32  renderQueueSize(RenderBinType queueType);
     void addToRenderQueue(RenderBinType queueType, const RenderPackage& package);
     void renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuffer& commandsInOut);
+
     void flushCommandBuffer(GFX::CommandBuffer& commandBuffer);
+    void flushAndClearCommandBuffer(GFX::CommandBuffer& commandBuffer);
 
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc
     inline bool isDepthStage() const;
     inline bool isDepthStage(const RenderStagePass& renderStagePass) const;
-
-    /// Clipping plane management. All the clipping planes are handled by shader programs only!
-    void updateClipPlanes();
 
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
@@ -497,9 +495,7 @@ protected:
     ShaderBuffer* _gfxDataBuffer;
     GenericDrawCommand _defaultDrawCmd;
 
-    GFX::CommandBuffer* _textCmdBuffer;
-    GFX::CommandBuffer* _flushDisplayBuffer;
-    GenericCommandPool  _commandPool;
+    MemoryPool<GenericDrawCommand> _commandPool;
 
     Time::ProfileTimer& _commandBuildTimer;
 

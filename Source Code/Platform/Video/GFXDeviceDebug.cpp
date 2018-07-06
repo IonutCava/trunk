@@ -190,20 +190,17 @@ void GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
 
 void GFXDevice::drawDebugFrustum(GFX::CommandBuffer& bufferInOut) {
     if (_debugFrustum != nullptr) {
-        static const vec4<U8> redColour(Util::ToByteColour(DefaultColours::RED()));
-        static const vec4<U8> greenColour(Util::ToByteColour(DefaultColours::GREEN()));
-
         vectorImpl<vec3<F32>> corners;
         _debugFrustum->getCornersViewSpace(corners);
 
         vectorImpl<Line> lines;
         for (U8 i = 0; i < 4; ++i) {
             // Draw Near Plane
-            lines.emplace_back(corners[i], corners[(i + 1) % 4], redColour);
+            lines.emplace_back(corners[i], corners[(i + 1) % 4], DefaultColours::RED_U8);
             // Draw Far Plane
-            lines.emplace_back(corners[i + 4], corners[(i + 4 + 1) % 4], redColour);
+            lines.emplace_back(corners[i + 4], corners[(i + 4 + 1) % 4], DefaultColours::RED_U8);
             // Connect Near Plane with Far Plane
-            lines.emplace_back(corners[i], corners[(i + 4) % 8], greenColour);
+            lines.emplace_back(corners[i], corners[(i + 4) % 8], DefaultColours::GREEN_U8);
         }
 
         _debugFrustumPrimitive->fromLines(lines);

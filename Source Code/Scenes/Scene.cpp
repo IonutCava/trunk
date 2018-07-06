@@ -456,7 +456,7 @@ void Scene::toggleFlashlight(U8 playerIndex) {
         tempLight->setDrawImpostor(false);
         tempLight->setRange(30.0f);
         tempLight->setCastShadows(true);
-        tempLight->setDiffuseColour(DefaultColours::WHITE());
+        tempLight->setDiffuseColour(DefaultColours::WHITE);
         flashLight = _sceneGraph->getRoot().addNode(tempLight,
                                                     lightMask,
                                                     PhysicsGroup::GROUP_IGNORE);

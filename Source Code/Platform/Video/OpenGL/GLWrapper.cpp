@@ -778,16 +778,15 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 /// Text rendering is handled exclusively by Mikko Mononen's FontStash library (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
 void GL_API::drawText(const TextElementBatch& batch) {
-    static vec4<U8> textBlendColour(Util::ToByteColour(DefaultColours::DIVIDE_BLUE()));
-
-    static BlendingProperties textBlendProperties{
-        BlendProperty::SRC_ALPHA,
-        BlendProperty::INV_SRC_ALPHA
-    };
-
     pushDebugMessage(_context, "OpenGL render text start!", 2);
 
-    GL_API::setBlending(0, true, textBlendProperties, textBlendColour);
+    GL_API::setBlending(0,
+                        true,
+                        BlendingProperties {
+                            BlendProperty::SRC_ALPHA,
+                            BlendProperty::INV_SRC_ALPHA
+                        },
+                        DefaultColours::DIVIDE_BLUE_U8);
     
     I32 height = _context.getCurrentViewport().sizeY;
         

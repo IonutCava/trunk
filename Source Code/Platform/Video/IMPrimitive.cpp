@@ -13,13 +13,13 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
       _paused(true),
       _texture(nullptr)
 {
-    _cmdBuffer = &GFX::allocateCommandBuffer();
+    _cmdBuffer = GFX::allocateCommandBuffer();
 }
 
 IMPrimitive::~IMPrimitive() 
 {
     clear();
-    GFX::deallocateCommandBuffer(*_cmdBuffer);
+    GFX::deallocateCommandBuffer(_cmdBuffer);
 }
 
 void IMPrimitive::clear() {

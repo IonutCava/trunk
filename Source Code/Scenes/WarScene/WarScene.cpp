@@ -493,7 +493,7 @@ bool WarScene::load(const stringImpl& name) {
 
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
 
-    flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::BLUE());
+    flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::BLUE);
 
     _flag[1] = _sceneGraph->getRoot().addNode(flagNode, normalMask, flag->get<PhysicsComponent>()->physicsGroup(), "Team2Flag");
     SceneGraphNode_ptr flag1(_flag[1].lock());
@@ -509,7 +509,7 @@ bool WarScene::load(const stringImpl& name) {
 
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
 
-    flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::RED());
+    flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::RED);
 
     SceneGraphNode_ptr firstPersonFlag = _sceneGraph->getRoot().addNode(flagNode, normalMask, PhysicsGroup::GROUP_KINEMATIC, "FirstPersonFlag");
     firstPersonFlag->lockVisibility(true);
@@ -520,7 +520,7 @@ bool WarScene::load(const stringImpl& name) {
     flagPComp->setPosition(1.25f, -1.5f, 0.15f);
     flagPComp->rotate(-20.0f, -70.0f, 50.0f);
     flagRComp = firstPersonFlag->getChild(0).get<RenderingComponent>();
-    flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::GREEN());
+    flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::GREEN);
     flagRComp->getMaterialInstance()->setHighPriority(true);
     _firstPersonWeapon = firstPersonFlag;
 

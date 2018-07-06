@@ -13,7 +13,7 @@ FogDescriptor::FogDescriptor()
    : _dirty(true),
      _active(true),
      _density(0.0f),
-     _colour(DefaultColours::WHITE().rgb())
+     _colour(DefaultColours::WHITE.rgb())
 {
 }
 

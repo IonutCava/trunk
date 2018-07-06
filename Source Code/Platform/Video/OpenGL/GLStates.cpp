@@ -68,8 +68,6 @@ vectorImpl<GLboolean> GL_API::s_blendEnabled;
 
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates() {
-    static const vec4<F32> clearColour = DefaultColours::DIVIDE_BLUE();
-
     GL_API::bindTextures(0, GL_API::s_maxTextureUnits, nullptr, nullptr);
     setPixelPackUnpackAlignment();
     setActiveVAO(0);
@@ -86,6 +84,7 @@ void GL_API::clearStates() {
     for (vectorAlg::vecSize i = 0; i < GL_API::s_blendEnabled.size(); ++i) {
         setBlending((GLuint)i, false, BlendingProperties(), vec4<U8>(0u), true);
     }
+
     s_activePipeline = nullptr;
     s_activeRenderTarget = nullptr;
     s_activePixelBuffer = nullptr;
@@ -94,7 +93,10 @@ void GL_API::clearStates() {
 
     Attorney::GLAPIShaderProgram::unbind();
 
-    glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
+    glClearColor(DefaultColours::DIVIDE_BLUE.r, 
+                 DefaultColours::DIVIDE_BLUE.g,
+                 DefaultColours::DIVIDE_BLUE.b,
+                 DefaultColours::DIVIDE_BLUE.a);
 
     if (!_context.parent().platformContext().config().gui.cegui.skipRendering) {
         glDisable(GL_SCISSOR_TEST);

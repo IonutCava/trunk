@@ -142,7 +142,8 @@ void RenderPass::generateDrawCommands() {
 }
 
 void RenderPass::render(SceneRenderState& renderState) {
-    GFX::CommandBuffer& commandBuffer = GFX::allocateCommandBuffer();
+    GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
+    GFX::CommandBuffer& commandBuffer = sBuffer();
 
     if (_stageFlag != RenderStage::SHADOW) {
         LightPool::bindShadowMaps(_context, commandBuffer);
@@ -300,7 +301,6 @@ void RenderPass::render(SceneRenderState& renderState) {
     };
 
     _context.flushCommandBuffer(commandBuffer);
-    GFX::deallocateCommandBuffer(commandBuffer);
 }
 
 // This is very hackish but should hold up fine

@@ -37,7 +37,7 @@ Light::Light(ResourceCache& parentCache, size_t descriptorHash, const stringImpl
         _shadowProperties._floatValues[i].set(std::numeric_limits<F32>::max());
     }
     
-    setDiffuseColour(DefaultColours::WHITE());
+    setDiffuseColour(DefaultColours::WHITE);
     setRange(1.0f);
 
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);

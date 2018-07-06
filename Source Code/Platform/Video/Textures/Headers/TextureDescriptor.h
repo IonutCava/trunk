@@ -65,7 +65,7 @@ class SamplerDescriptor {
         // The following 2 are mainly used by depthmaps for hardware comparisons
         _cmpFunc = ComparisonFunction::LEQUAL;
         _useRefCompare = false;
-        _borderColour.set(DefaultColours::BLACK());
+        _borderColour.set(DefaultColours::BLACK);
     }
 
     SamplerDescriptor* clone() const {

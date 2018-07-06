@@ -49,6 +49,10 @@ void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuff
 
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     _api->flushCommandBuffer(commandBuffer);
+}
+
+void GFXDevice::flushAndClearCommandBuffer(GFX::CommandBuffer& commandBuffer) {
+    flushCommandBuffer(commandBuffer);
     commandBuffer.clear();
 }
 
@@ -258,16 +262,13 @@ U32 GFXDevice::getLastCullCount() const {
 }
 
 void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) {
-    static bool firstRun = true;
-    static GFX::BindPipelineCommand bindPipelineCmd;
-    static GFX::SendPushConstantsCommand pushConstantsCommand;
-    static GFX::DrawTextCommand drawTextCommand;
-    if (firstRun) {
-        bindPipelineCmd._pipeline = _textRenderPipeline;
-        pushConstantsCommand._constants = _textRenderConstants;
-        firstRun = false;
-    }
+    GFX::BindPipelineCommand bindPipelineCmd;
+    bindPipelineCmd._pipeline = _textRenderPipeline;
 
+    GFX::SendPushConstantsCommand pushConstantsCommand;
+    pushConstantsCommand._constants = _textRenderConstants;
+
+    GFX::DrawTextCommand drawTextCommand;
     drawTextCommand._batch = batch;
 
     GFX::SetCameraCommand setCameraCommand;
@@ -279,16 +280,15 @@ void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& buff
 }
 
 void GFXDevice::drawText(const TextElementBatch& batch) {
-    GFX::CommandBuffer& buffer = *_textCmdBuffer;
+    GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
 
-    buffer.clear();
-    drawText(batch, buffer);
-    flushCommandBuffer(buffer);
+    drawText(batch, sBuffer());
+    flushCommandBuffer(sBuffer());
 }
 
 void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
-    GFX::CommandBuffer& buffer = *_flushDisplayBuffer;
-    buffer.clear();
+    GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
+    GFX::CommandBuffer& buffer = sBuffer();
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = get2DStateBlock();

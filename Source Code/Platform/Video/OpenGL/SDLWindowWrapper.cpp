@@ -359,8 +359,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         TwInit(TW_OPENGL_CORE, NULL);
     }
 
-    static const vec4<F32> clearColour = DefaultColours::DIVIDE_BLUE();
-    glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
+    glClearColor(DefaultColours::DIVIDE_BLUE.r,
+                 DefaultColours::DIVIDE_BLUE.g,
+                 DefaultColours::DIVIDE_BLUE.b,
+                 DefaultColours::DIVIDE_BLUE.a);
 
     // Prepare shader headers and various shader related states
     if (initShaders()) {

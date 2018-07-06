@@ -8,12 +8,11 @@ namespace Util {
 
 static boost::thread_specific_ptr<vectorImpl<GlobalFloatEvent>> _globalFloatEvents;
 
-
 void ToByteColour(const vec4<F32>& floatColour, vec4<U8>& colourOut) {
     colourOut.set(FLOAT_TO_CHAR(floatColour.r),
-                 FLOAT_TO_CHAR(floatColour.g),
-                 FLOAT_TO_CHAR(floatColour.b),
-                 FLOAT_TO_CHAR(floatColour.a));
+                  FLOAT_TO_CHAR(floatColour.g),
+                  FLOAT_TO_CHAR(floatColour.b),
+                  FLOAT_TO_CHAR(floatColour.a));
 }
 
 void ToByteColour(const vec3<F32>& floatColour, vec3<U8>& colourOut) {
@@ -37,41 +36,41 @@ void ToIntColour(const vec3<F32>& floatColour, vec3<I32>& colourOut) {
 
 void ToUIntColour(const vec4<F32>& floatColour, vec4<U32>& colourOut) {
     colourOut.set(FLOAT_TO_CHAR_SNORM(floatColour.r),
-                 FLOAT_TO_CHAR_SNORM(floatColour.g),
-                 FLOAT_TO_CHAR_SNORM(floatColour.b),
-                 FLOAT_TO_CHAR_SNORM(floatColour.a));
+                  FLOAT_TO_CHAR_SNORM(floatColour.g),
+                  FLOAT_TO_CHAR_SNORM(floatColour.b),
+                  FLOAT_TO_CHAR_SNORM(floatColour.a));
 }
 
 void ToUIntColour(const vec3<F32>& floatColour, vec3<U32>& colourOut) {
     colourOut.set(to_U32(FLOAT_TO_CHAR_SNORM(floatColour.r)),
-                 to_U32(FLOAT_TO_CHAR_SNORM(floatColour.g)),
-                 to_U32(FLOAT_TO_CHAR_SNORM(floatColour.b)));
+                  to_U32(FLOAT_TO_CHAR_SNORM(floatColour.g)),
+                  to_U32(FLOAT_TO_CHAR_SNORM(floatColour.b)));
 }
 
 void ToFloatColour(const vec4<U8>& byteColour, vec4<F32>& colourOut) {
     colourOut.set(CHAR_TO_FLOAT_SNORM(byteColour.r),
-                 CHAR_TO_FLOAT_SNORM(byteColour.g),
-                 CHAR_TO_FLOAT_SNORM(byteColour.b),
-                 CHAR_TO_FLOAT_SNORM(byteColour.a));
+                  CHAR_TO_FLOAT_SNORM(byteColour.g),
+                  CHAR_TO_FLOAT_SNORM(byteColour.b),
+                  CHAR_TO_FLOAT_SNORM(byteColour.a));
 }
 
 void ToFloatColour(const vec3<U8>& byteColour, vec3<F32>& colourOut) {
     colourOut.set(CHAR_TO_FLOAT_SNORM(byteColour.r),
-                 CHAR_TO_FLOAT_SNORM(byteColour.g),
-                 CHAR_TO_FLOAT_SNORM(byteColour.b));
+                  CHAR_TO_FLOAT_SNORM(byteColour.g),
+                  CHAR_TO_FLOAT_SNORM(byteColour.b));
 }
 
 void ToFloatColour(const vec4<U32>& uintColour, vec4<F32>& colourOut) {
     colourOut.set(uintColour.r / 255.0f,
-                 uintColour.g / 255.0f,
-                 uintColour.b / 255.0f,
-                 uintColour.a / 255.0f);
+                  uintColour.g / 255.0f,
+                  uintColour.b / 255.0f,
+                  uintColour.a / 255.0f);
 }
 
 void ToFloatColour(const vec3<U32>& uintColour, vec3<F32>& colourOut) {
     colourOut.set(uintColour.r / 255.0f,
-                 uintColour.g / 255.0f,
-                 uintColour.b / 255.0f);
+                  uintColour.g / 255.0f,
+                  uintColour.b / 255.0f);
 }
 
 vec4<U8> ToByteColour(const vec4<F32>& floatColour) {

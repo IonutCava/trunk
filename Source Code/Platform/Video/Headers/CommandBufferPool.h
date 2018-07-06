@@ -35,6 +35,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CommandBuffer.h"
 #include "config.h"
 
+#include <MemoryPool/StackAlloc.h>
+#include <MemoryPool/C-11/MemoryPool.h>
+
 namespace Divide {
 namespace GFX {
 
@@ -43,13 +46,13 @@ class CommandBufferPool {
     CommandBufferPool();
     ~CommandBufferPool();
 
-    CommandBuffer& allocateBuffer();
-    void deallocateBuffer(CommandBuffer& buffer);
+    CommandBuffer* allocateBuffer();
+    void deallocateBuffer(CommandBuffer*& buffer);
 
  private:
     mutable SharedLock _mutex;
-    vectorImpl<bool> _bufferPoolSlotState;
-    vectorImpl<CommandBuffer> _bufferPool;
+    size_t _bufferCount;
+    MemoryPool<CommandBuffer, 4096 * 4> _pool;
 };
 
 class ScopedCommandBuffer {
@@ -58,21 +61,21 @@ class ScopedCommandBuffer {
     ~ScopedCommandBuffer();
 
     inline CommandBuffer& operator()() {
-        return _buffer;
+        return *_buffer;
     }
 
     inline const CommandBuffer& operator()() const {
-        return _buffer;
+        return *_buffer;
     }
 
   private:
-    GFX::CommandBuffer& _buffer;
+    GFX::CommandBuffer* _buffer;
     bool _useSecondaryBuffers;
 };
 
 ScopedCommandBuffer allocateScopedCommandBuffer(bool useSecondaryBuffers = false);
-CommandBuffer& allocateCommandBuffer(bool useSecondaryBuffers = false);
-void deallocateCommandBuffer(CommandBuffer& buffer, bool useSecondaryBuffers = false);
+CommandBuffer* allocateCommandBuffer(bool useSecondaryBuffers = false);
+void deallocateCommandBuffer(CommandBuffer*& buffer, bool useSecondaryBuffers = false);
 
 static CommandBufferPool s_commandBufferPool;
 static CommandBufferPool s_secondaryCommandBufferPool;

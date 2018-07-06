@@ -60,7 +60,7 @@ private:
     bool _isRenderable;
     bool _isOcclusionCullable;
     bool _secondaryCommandPool;
-    GFX::CommandBuffer& _commands;
+    GFX::CommandBuffer* _commands;
 };
 
 }; //namespace Divide

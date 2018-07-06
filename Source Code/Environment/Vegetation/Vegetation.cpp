@@ -101,7 +101,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     Material_ptr vegMaterial = CreateResource<Material>(_parentCache, vegetationMaterial);
 
     //vegMaterial->setShaderLoadThreaded(false);
-    vegMaterial->setDiffuse(DefaultColours::WHITE());
+    vegMaterial->setDiffuse(DefaultColours::WHITE);
     vegMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     vegMaterial->setShininess(5.0f);
     vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
@@ -365,7 +365,7 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
         drawCmd._drawCommands.push_back(_cullDrawCommand);
         GFX::AddDrawCommands(cmdBuffer, drawCmd);
 
-        _context.flushCommandBuffer(cmdBuffer);
+        _context.flushAndClearCommandBuffer(cmdBuffer);
 
         //_cullDrawCommand.setInstanceCount(_instanceCountTrees);
         //_cullDrawCommand.sourceBuffer(_treeGPUBuffer);

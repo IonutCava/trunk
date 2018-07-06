@@ -152,12 +152,9 @@ constexpr bool USE_HARDWARE_AA_LINES = true;
 /// Multi-draw causes some problems with profiling software (e.g.
 /// GPUPerfStudio2)
 constexpr bool BATCH_DRAW_COMMANDS = false;
-/// Maximum number of draw commands allowed in flight at any time
-constexpr unsigned int MAX_DRAW_COMMANDS_IN_FLIGHT = 4096;
-/// If true, load shader source coude from cache files
+/// If true, load shader source code from cache files
 /// If false, materials recompute shader source code from shader atoms
 /// If true, clear shader cache to apply changes to shader atom source code
-constexpr unsigned int COMMAND_BUFFER_POOL_SIZE = 4096;
 #if defined(_DEBUG)
 constexpr bool USE_SHADER_TEXT_CACHE = false;
 #else

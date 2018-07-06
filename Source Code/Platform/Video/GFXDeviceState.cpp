@@ -107,9 +107,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
 
-    _textCmdBuffer = &GFX::allocateCommandBuffer();
-    _flushDisplayBuffer = &GFX::allocateCommandBuffer();
-
     // Create general purpose render state blocks
     RenderStateBlock::init();
     RenderStateBlock defaultState;
@@ -175,7 +172,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     
     {
         vectorImpl<RTAttachmentDescriptor> attachments = {
-            { screenDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE() },
+            { screenDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
             { normalDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS) },
             { velocityDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY) },
             { hiZDescriptor,      RTAttachmentType::Depth }
@@ -384,9 +381,6 @@ void GFXDevice::closeRenderingAPI() {
     // Delete the renderer implementation
     Console::printfn(Locale::get(_ID("CLOSING_RENDERER")));
     RenderStateBlock::clear();
-
-    deallocateCommandBuffer(*_flushDisplayBuffer);
-    deallocateCommandBuffer(*_textCmdBuffer);
 
     EnvironmentProbe::onShutdown(*this);
     MemoryManager::DELETE(_rtPool);

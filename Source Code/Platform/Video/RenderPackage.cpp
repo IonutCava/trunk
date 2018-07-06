@@ -22,15 +22,15 @@ RenderPackage::~RenderPackage()
 }
 
 void RenderPackage::clear() {
-    _commands.clear();
+    _commands->clear();
 }
 
 void RenderPackage::set(const RenderPackage& other) {
-    _commands = other._commands;
+    *_commands = *other._commands;
 }
 
 size_t RenderPackage::getSortKeyHash() const {
-    const vectorImpl<Pipeline*>& pipelines = _commands.getPipelines();
+    const vectorImpl<Pipeline*>& pipelines = _commands->getPipelines();
     if (!pipelines.empty()) {
         return pipelines.front()->getHash();
     }
@@ -39,10 +39,10 @@ size_t RenderPackage::getSortKeyHash() const {
 }
 
 GFX::CommandBuffer& RenderPackage::commands() {
-    return _commands;
+    return *_commands;
 }
 
 const GFX::CommandBuffer& RenderPackage::commands() const {
-    return _commands;
+    return *_commands;
 }
 }; //namespace Divide

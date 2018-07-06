@@ -99,7 +99,12 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     lumaDescriptor.setSampler(lumaSampler);
     {
         vectorImpl<RTAttachmentDescriptor> att = {
-            { lumaDescriptor, RTAttachmentType::Colour, 0, DefaultColours::BLACK() },
+            {
+                lumaDescriptor,
+                RTAttachmentType::Colour,
+                0,
+                DefaultColours::BLACK
+            },
         };
 
         RenderTargetDescriptor desc = {};

@@ -77,7 +77,7 @@ void EnvironmentProbe::onStartup(GFXDevice& context) {
     depthDescriptor.setSampler(reflectionSampler);
 
     vectorImpl<RTAttachmentDescriptor> att = {
-        { environmentDescriptor, RTAttachmentType::Colour, 0, DefaultColours::WHITE() },
+        { environmentDescriptor, RTAttachmentType::Colour, 0, DefaultColours::WHITE },
         { depthDescriptor, RTAttachmentType::Depth },
     };
 

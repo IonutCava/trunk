@@ -64,7 +64,8 @@ void AddComputeCommand(CommandBuffer& buffer, const DispatchComputeCommand& cmd)
 }
 
 
-CommandBuffer::CommandBuffer()
+CommandBuffer::CommandBuffer(size_t index)
+    : _index(index)
 {
 }
 
@@ -181,11 +182,11 @@ void CommandBuffer::clean() {
     _data.erase(std::remove_if(std::begin(_data),
                                std::end(_data),
                                [](const std::shared_ptr<Command>& cmd) -> bool {
-        if (cmd->_type == CommandType::DRAW_COMMANDS) {
-            return static_cast<DrawCommand*>(cmd.get())->_drawCommands.empty();
-        }
-        return false;
-    }),
+                                  if (cmd->_type == CommandType::DRAW_COMMANDS) {
+                                      return static_cast<DrawCommand*>(cmd.get())->_drawCommands.empty();
+                                  }
+                                  return false;
+                              }),
                 std::end(_data));
 
 

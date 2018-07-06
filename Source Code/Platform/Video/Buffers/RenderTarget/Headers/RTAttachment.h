@@ -50,7 +50,7 @@ struct RTAttachmentDescriptor {
     TextureDescriptor _texDescriptor;
     RTAttachmentType _type = RTAttachmentType::COUNT;
     U8 _index = 0;
-    vec4<F32> _clearColour = DefaultColours::WHITE();
+    vec4<F32> _clearColour = DefaultColours::WHITE;
 };
 
 class RTAttachment {

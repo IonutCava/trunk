@@ -286,9 +286,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\Headers\RTDrawDescriptor.h">
       <Filter>Video\Buffers\RenderTarget\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericCommandPool.h">
-      <Filter>Video\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\GenericBuffer\Headers\GenericVertexData.h">
       <Filter>Video\Buffers\VertexBuffer\GenericBuffer\Headers</Filter>
     </ClInclude>
@@ -675,9 +672,6 @@
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\CommandBuffer.cpp">
-      <Filter>Video</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Video\GenericCommandPool.cpp">
       <Filter>Video</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderPackageQueue.cpp">

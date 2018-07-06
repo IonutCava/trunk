@@ -75,7 +75,7 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     desc._attachments = att.data();
 
     for (U8 i = 0; i < 4; ++i) {
-        att.push_back(RTAttachmentDescriptor{ gBuffer[i], RTAttachmentType::Colour, i, (i == 0 ? DefaultColours::BLACK() : DefaultColours::WHITE()) });
+        att.push_back(RTAttachmentDescriptor{ gBuffer[i], RTAttachmentType::Colour, i, (i == 0 ? DefaultColours::BLACK : DefaultColours::WHITE) });
     }
 
     _deferredBuffer = _context.gfx().renderTargetPool().allocateRT(desc);

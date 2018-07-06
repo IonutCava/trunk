@@ -312,6 +312,18 @@ inline void ClearBit(U32& bitMask, const U32 bit) {
     bitMask &= ~(bit);
 }
 
+template<typename T,
+         typename = typename enable_if<is_integral<T>::value>::type,
+         typename = typename enable_if<is_unsigned<T>::value>::type>
+constexpr T roundup(T value,
+                    unsigned maxb = sizeof(T)*CHAR_BIT,
+                    unsigned curb = 1)
+{
+    return maxb <= curb
+                ? value
+                : roundup(((value - 1) | ((value - 1) >> curb)) + 1, maxb, curb << 1);
+}
+
 inline U32 nextPOW2(U32 n) {
     n--;
     n |= n >> 1;

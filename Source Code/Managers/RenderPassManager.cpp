@@ -255,53 +255,48 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
 }
 
 void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
-    static bool init = false;
-    static GFX::DrawCommand drawCmd;
-    static RTDrawDescriptor noClearPolicy;
-    static GFX::BindPipelineCommand bindPipelineCmd;
-    static GFX::BeginRenderPassCommand beginRenderPassOitCmd, beginRenderPassCompCmd;
-    static GFX::EndRenderPassCommand endRenderPassOitCmd, endRenderPassCompCmd;
-
     // Weighted Blended Order Independent Transparency
     if (_context.renderQueueSize(RenderBinType::RBT_TRANSLUCENT) > 0) {
-        if (!init) {
-            beginRenderPassOitCmd._target = RenderTargetID(RenderTargetUsage::OIT);
-            RTBlendState& state0 = beginRenderPassOitCmd._descriptor.blendState(0);
-            RTBlendState& state1 = beginRenderPassOitCmd._descriptor.blendState(1);
+        GFX::BeginRenderPassCommand beginRenderPassOitCmd, beginRenderPassCompCmd;
+        beginRenderPassOitCmd._target = RenderTargetID(RenderTargetUsage::OIT);
+        RTBlendState& state0 = beginRenderPassOitCmd._descriptor.blendState(0);
+        RTBlendState& state1 = beginRenderPassOitCmd._descriptor.blendState(1);
 
-            state0._blendEnable = true;
-            state0._blendProperties._blendSrc = BlendProperty::ONE;
-            state0._blendProperties._blendDest = BlendProperty::ONE;
-            state0._blendProperties._blendOp = BlendOperation::ADD;
+        state0._blendEnable = true;
+        state0._blendProperties._blendSrc = BlendProperty::ONE;
+        state0._blendProperties._blendDest = BlendProperty::ONE;
+        state0._blendProperties._blendOp = BlendOperation::ADD;
 
-            state1._blendEnable = true;
-            state1._blendProperties._blendSrc = BlendProperty::ZERO;
-            state1._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
-            state1._blendProperties._blendOp = BlendOperation::ADD;
+        state1._blendEnable = true;
+        state1._blendProperties._blendSrc = BlendProperty::ZERO;
+        state1._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
+        state1._blendProperties._blendOp = BlendOperation::ADD;
 
-            // Don't clear depth & colours and do not write to the depth buffer
-            noClearPolicy.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-            noClearPolicy.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
-            noClearPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
-            noClearPolicy.blendState(0)._blendEnable = true;
-            noClearPolicy.blendState(0)._blendProperties._blendSrc = BlendProperty::SRC_ALPHA;
-            noClearPolicy.blendState(0)._blendProperties._blendDest = BlendProperty::INV_SRC_ALPHA;
+        // Don't clear depth & colours and do not write to the depth buffer
+        RTDrawDescriptor noClearPolicy;
+        noClearPolicy.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+        noClearPolicy.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
+        noClearPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
+        noClearPolicy.blendState(0)._blendEnable = true;
+        noClearPolicy.blendState(0)._blendProperties._blendSrc = BlendProperty::SRC_ALPHA;
+        noClearPolicy.blendState(0)._blendProperties._blendDest = BlendProperty::INV_SRC_ALPHA;
 
-            beginRenderPassCompCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
-            beginRenderPassCompCmd._descriptor = noClearPolicy;
-            PipelineDescriptor pipelineDescriptor;
-            pipelineDescriptor._stateHash = _context.get2DStateBlock();
-            pipelineDescriptor._shaderProgram = _OITCompositionShader;
-            bindPipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+        beginRenderPassCompCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
+        beginRenderPassCompCmd._descriptor = noClearPolicy;
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._stateHash = _context.get2DStateBlock();
+        pipelineDescriptor._shaderProgram = _OITCompositionShader;
 
-            GenericDrawCommand drawCommand;
-            drawCommand.primitiveType(PrimitiveType::TRIANGLES);
-            drawCommand.drawCount(1);
-            drawCmd._drawCommands.push_back(drawCommand);
+        GFX::BindPipelineCommand bindPipelineCmd;
+        bindPipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
 
-            init = true;
-        }
+        GFX::DrawCommand drawCmd;
+        GenericDrawCommand drawCommand;
+        drawCommand.primitiveType(PrimitiveType::TRIANGLES);
+        drawCommand.drawCount(1);
+        drawCmd._drawCommands.push_back(drawCommand);
 
+        GFX::EndRenderPassCommand endRenderPassOitCmd, endRenderPassCompCmd;
         // Step1: Draw translucent items into the accumulation and revealage buffers
         GFX::BeginRenderPass(bufferInOut, beginRenderPassOitCmd);
         _context.renderQueueToSubPasses(RenderBinType::RBT_TRANSLUCENT, bufferInOut);
