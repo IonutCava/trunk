@@ -116,6 +116,8 @@ public:
     /// Empty the entire cache of resources
     void clear();
 
+    void printContents() const;
+
 protected:
     /// this method handles cache lookups and reference counting
     CachedResource_ptr loadResource(size_t descriptorHash, const stringImpl& resourceName);
@@ -127,7 +129,7 @@ protected:
 
 protected:
     /// multithreaded resource creation
-    SharedLock _creationMutex;
+    mutable SharedLock _creationMutex;
     typedef hashMap<size_t, CachedResource_wptr> ResourceMap;
     ResourceMap _resDB;
 };

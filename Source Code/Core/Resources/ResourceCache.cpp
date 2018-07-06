@@ -31,6 +31,18 @@ ResourceCache::~ResourceCache()
     clear();
 }
 
+void ResourceCache::printContents() const {
+    WriteLock w_lock(_creationMutex);
+    for (ResourceMap::const_iterator it = std::cbegin(_resDB); it != std::cend(_resDB); ++it)
+    {
+        if (!it->second.expired())
+        {
+            CachedResource_ptr res = it->second.lock();
+            Console::printfn(Locale::get(_ID("RESOURCE_INFO")), res->name().c_str(), res->getGUID());
+        }
+    }
+}
+
 void ResourceCache::clear() {
     WriteLock w_lock(_creationMutex);
     Console::printfn(Locale::get(_ID("STOP_RESOURCE_CACHE")));
@@ -41,7 +53,7 @@ void ResourceCache::clear() {
         {
             CachedResource_ptr res = it->second.lock();
             if (res->getType() != ResourceType::GPU_OBJECT) {
-                Console::printfn(Locale::get(_ID("WARN_RESOURCE_LEAKED")), res->name().c_str(), res->getGUID());
+                Console::warnfn(Locale::get(_ID("WARN_RESOURCE_LEAKED")), res->name().c_str(), res->getGUID());
             }
         }
     }

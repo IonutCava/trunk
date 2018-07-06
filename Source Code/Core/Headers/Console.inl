@@ -47,15 +47,15 @@ void Console::d_printf(const char* format, Args&&... args) {
     }
 }
 
-template <typename... T>
-void Console::d_warnfn(const char* format, T&&... args) {
+template <typename... Args>
+void Console::d_warnfn(const char* format, Args&&... args) {
     if (Config::Build::IS_DEBUG_BUILD) {
         warnfn(format, std::forward<Args>(args)...);
     }
 }
 
-template <typename... T>
-void Console::d_warnf(const char* format, T&&... args) {
+template <typename... Args>
+void Console::d_warnf(const char* format, Args&&... args) {
     if (Config::Build::IS_DEBUG_BUILD) {
         warnf(format, std::forward<Args>(args)...);
     }
@@ -86,13 +86,13 @@ void Console::printf(const char* format, Args&&... args) {
 }
 
 
-template <typename... T>
-void Console::warnfn(const char* format, T&&... args) {
+template <typename... Args>
+void Console::warnfn(const char* format, Args&&... args) {
     output(formatText(format, std::forward<Args>(args)...), true, EntryType::Warning);
 }
 
-template <typename... T>
-void Console::warnf(const char* format, T&&... args) {
+template <typename... Args>
+void Console::warnf(const char* format, Args&&... args) {
     output(formatText(format, std::forward<Args>(args)...), false, EntryType::Warning);
 }
 
@@ -116,13 +116,13 @@ void Console::printf(std::ofstream& outStream, const char* format, Args&&... arg
     output(outStream, formatText(format, std::forward<Args>(args)...), false, EntryType::Info);
 }
 
-template <typename... T>
-void Console::warnfn(std::ofstream& outStream, const char* format, T&&... args) {
+template <typename... Args>
+void Console::warnfn(std::ofstream& outStream, const char* format, Args&&... args) {
     output(outStream, formatText(format, std::forward<Args>(args)...), true, EntryType::Warning);
 }
 
-template <typename... T>
-void Console::warnf(std::ofstream& outStream, const char* format, T&&... args) {
+template <typename... Args>
+void Console::warnf(std::ofstream& outStream, const char* format, Args&&... args) {
     output(outStream, formatText(format, std::forward<Args>(args)...), false, EntryType::Warning);
 }
 
@@ -150,15 +150,15 @@ void Console::d_printf(std::ofstream& outStream, const char* format, Args&&... a
     }
 }
 
-template <typename... T>
-void Console::d_warnfn(std::ofstream& outStream, const char* format, T&&... args) {
+template <typename... Args>
+void Console::d_warnfn(std::ofstream& outStream, const char* format, Args&&... args) {
     if (Config::Build::IS_DEBUG_BUILD) {
         warnfn(outStream, format, std::forward<Args>(args)...);
     }
 }
 
-template <typename... T>
-void Console::d_warnf(std::ofstream& outStream, const char* format, T&&... args) {
+template <typename... Args>
+void Console::d_warnf(std::ofstream& outStream, const char* format, Args&&... args) {
     if (Config::Build::IS_DEBUG_BUILD) {
         warnf(outStream, format, std::forward<Args>(args)...);
     }
