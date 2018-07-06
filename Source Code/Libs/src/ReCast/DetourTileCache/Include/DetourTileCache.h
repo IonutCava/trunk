@@ -70,6 +70,7 @@ struct dtTileCacheMeshProcess
 };
 
 
+class dtNavMesh;
 class dtTileCache
 {
 public:
@@ -111,11 +112,11 @@ public:
     dtStatus queryTiles(const float* bmin, const float* bmax,
                         dtCompressedTileRef* results, int* resultCount, const int maxResults) const;
     
-    dtStatus update(const float /*dt*/, class dtNavMesh* navmesh);
+    dtStatus update(const float /*dt*/, dtNavMesh* navmesh);
     
-    dtStatus buildNavMeshTilesAt(const int tx, const int ty, class dtNavMesh* navmesh);
+    dtStatus buildNavMeshTilesAt(const int tx, const int ty, dtNavMesh* navmesh);
     
-    dtStatus buildNavMeshTile(const dtCompressedTileRef ref, class dtNavMesh* navmesh);
+    dtStatus buildNavMeshTile(const dtCompressedTileRef ref, dtNavMesh* navmesh);
     
     void calcTightTileBounds(const struct dtTileCacheLayerHeader* header, float* bmin, float* bmax) const;
     

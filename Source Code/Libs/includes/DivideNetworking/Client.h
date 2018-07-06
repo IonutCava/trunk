@@ -3,8 +3,6 @@
 
 #include "WorldPacket.h"
 
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -27,14 +25,14 @@ class ASIO;
 
 class Client {
    public:
-    Client(ASIO* asioPointer, boost::asio::io_service& io_service,
+    Client(ASIO* asioPointer, boost::asio::io_service& service,
            bool debugOutput)
         : _asioPointer(asioPointer),
           stopped_(false),
           _debugOutput(debugOutput),
-          socket_(io_service),
-          deadline_(io_service),
-          heartbeat_timer_(io_service) {}
+          socket_(service),
+          deadline_(service),
+          heartbeat_timer_(service) {}
 
     // Start:: Called by the user of the client class to initiate the connection
     // process.
@@ -92,7 +90,6 @@ class Client {
 
     // File Data
     std::ofstream output_file;
-    ;
     boost::asio::streambuf request_buf;
     size_t file_size;
     boost::array<char, 1024> buf;

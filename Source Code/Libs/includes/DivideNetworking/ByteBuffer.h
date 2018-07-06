@@ -24,6 +24,9 @@
 #include <list>
 #include <map>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/vector.hpp>
+
 namespace Divide {
 
 namespace Networking {
@@ -384,6 +387,16 @@ class ByteBuffer {
     void append(T value) {
         EndianConvert(value);
         append((U8 *)&value, sizeof(value));
+    }
+
+   private:
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+        /*ar & _rpos;
+        ar & _wpos;
+        ar & _storage;*/
     }
 
    protected:

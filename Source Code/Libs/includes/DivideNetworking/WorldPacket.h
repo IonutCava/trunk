@@ -2,9 +2,7 @@
 #define MANGOSSERVER_WORLDPACKET_H
 
 #include "ByteBuffer.h"
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/base_object.hpp>
 
 namespace Divide {
 
@@ -28,12 +26,13 @@ class WorldPacket : public ByteBuffer {
 
     void SetOpcode(U16 opcode) { m_opcode = opcode; }
 
+   private:
+    friend class boost::serialization::access;
+
     template <typename Archive>
-    void serialize(Archive& ar, unsigned int version) {
-        ar& _rpos;
-        ar& _wpos;
-        ar& m_opcode;
-        ar& _storage;
+    void serialize(Archive& ar, const unsigned int version) {
+        /*ar & boost::serialization::base_object<ByteBuffer>(*this);
+        ar & m_opcode;*/
     }
 
    protected:
@@ -42,10 +41,4 @@ class WorldPacket : public ByteBuffer {
 
 };  // namespace Divide
 
-// Remove Archive header / Warning: no more version updates ... hmmm
-BOOST_CLASS_IMPLEMENTATION(Divide::WorldPacket,
-                           boost::serialization::object_serializable);
-// Remove pointer tracking and duplication checking. Leave it up to me, why not?
-// 8-|
-BOOST_CLASS_TRACKING(Divide::WorldPacket, boost::serialization::track_never)
 #endif

@@ -6,9 +6,6 @@
 #include <boost/asio.hpp>
 #include <thread>
 
-using namespace boost::asio;
-using namespace boost::asio::ip;
-
 namespace Divide {
 
 #ifndef OPCODE_ENUM
@@ -49,11 +46,11 @@ class ASIO {
 
    protected:
     Client* _localClient;
-    std::auto_ptr<io_service::work> _work;
+    std::auto_ptr<boost::asio::io_service::work> _work;
     std::thread* _thread;
     bool _connected;
     bool _debugOutput;
-    io_service io_service_;
+    boost::asio::io_service io_service_;
     stringImpl _address, _port;
 };
 

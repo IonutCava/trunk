@@ -1064,10 +1064,10 @@ void dumpMaterial(Material &mat) {
                       stringAlg::fromBase(shaderProg->getName()));
     }
 
-    boost::property_tree::xml_writer_settings<char> settings('\t', 1);
     FILE *xml = fopen(fileLocation.c_str(), "w");
     fclose(xml);
-    write_xml(fileLocation, pt_writer, std::locale(), settings);
+    write_xml(fileLocation, pt_writer, std::locale(), 
+        boost::property_tree::xml_writer_make_settings<ptree::key_type>('\t', 1));
 }
 };  // namespace XML
 };  // namespace Divide

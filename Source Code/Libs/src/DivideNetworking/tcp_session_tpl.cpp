@@ -1,8 +1,9 @@
 #include "tcp_session_tpl.h"
 #include <fstream>
-#include <boost/archive/xml_iarchive.hpp>
+
 #include "OPCodesTpl.h"
 
+#include <boost/archive/text_iarchive.hpp>
 ///////////////////////////////////////////////////////////////////////////////////////
 //                                     TCP //
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -190,13 +191,14 @@ void tcp_session_tpl::await_output() {
     }
 }
 
-void tcp_session_tpl::check_deadline(deadline_timer* deadline) {
+void tcp_session_tpl::check_deadline(boost::asio::deadline_timer* deadline) {
     if (stopped()) return;
 
     // Check whether the deadline has passed. We compare the deadline against
     // the current time since a new asynchronous operation may have moved the
     // deadline before this actor had a chance to run.
-    if (deadline->expires_at() <= deadline_timer::traits_type::now()) {
+    if (deadline->expires_at() <= 
+        boost::asio::deadline_timer::traits_type::now()) {
         // The deadline has passed. Stop the session. The other actors will
         // terminate as soon as possible.
         stop();
@@ -212,7 +214,7 @@ void tcp_session_tpl::check_deadline(deadline_timer* deadline) {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 udp_broadcaster::udp_broadcaster(boost::asio::io_service& io_service,
-                                 const udp::endpoint& broadcast_endpoint)
+                      const boost::asio::ip::udp::endpoint& broadcast_endpoint)
     : socket_(io_service) {
     socket_.connect(broadcast_endpoint);
 }

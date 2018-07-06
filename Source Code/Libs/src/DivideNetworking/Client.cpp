@@ -16,6 +16,8 @@
 #include "ASIO.h"
 #include "OPCodesTpl.h"
 
+#include <boost/archive/text_iarchive.hpp>
+
 namespace Divide {
 
 void Client::sendPacket(WorldPacket& p) {
@@ -164,7 +166,7 @@ void Client::start_write() {
     boost::asio::streambuf buf;
     std::ostream os(&buf);
     boost::archive::text_oarchive ar(os);
-    ar& p;  // Archive the packet
+    ar& p;
 
     size_t header = buf.size();
     std::vector<boost::asio::const_buffer> buffers;

@@ -50,4 +50,4 @@ typedef InheritEnum<OPCodesEx, OPCodes> OPCodesImpl;
 
 };  // namespace Divide
 
-#endif;
+#endif

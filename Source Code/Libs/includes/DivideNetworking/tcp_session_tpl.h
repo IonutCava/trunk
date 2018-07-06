@@ -4,24 +4,10 @@
 #include "WorldPacket.h"
 
 #include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_wiarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/asio/io_service.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ip/udp.hpp>
-#include <boost/asio/read_until.hpp>
 #include <boost/asio/streambuf.hpp>
-#include <boost/asio/write.hpp>
 #include <boost/asio.hpp>
 #include <deque>
 #include <set>
-
-using boost::asio::deadline_timer;
-using boost::asio::ip::tcp;
-using boost::asio::ip::udp;
 
 namespace Divide {
 //----------------------------------------------------------------------
@@ -32,15 +18,15 @@ class subscriber {
     virtual void sendPacket(const WorldPacket& p) = 0;
 };
 
-typedef boost::shared_ptr<subscriber> subscriber_ptr;
+typedef std::shared_ptr<subscriber> subscriber_ptr;
 
 //----------------------------------------------------------------------
 
 class channel {
    public:
-    void join(subscriber_ptr subscriber) { subscribers_.insert(subscriber); }
+    void join(subscriber_ptr sub) { subscribers_.insert(sub); }
 
-    void leave(subscriber_ptr subscriber) { subscribers_.erase(subscriber); }
+    void leave(subscriber_ptr sub) { subscribers_.erase(sub); }
 
     void sendPacket(const WorldPacket& p) {
         std::for_each(std::begin(subscribers_), std::end(subscribers_),
@@ -54,11 +40,11 @@ class channel {
 /// This is a single session handled by the server. It is mapped to a single
 /// client
 class tcp_session_tpl : public subscriber,
-                        public boost::enable_shared_from_this<tcp_session_tpl> {
+                        public std::enable_shared_from_this<tcp_session_tpl> {
    public:
     tcp_session_tpl(boost::asio::io_service& io_service, channel& ch);
 
-    inline tcp::socket& getSocket() { return socket_; }
+    inline boost::asio::ip::tcp::socket& getSocket() { return socket_; }
 
     // Called by the server object to initiate the four actors.
     virtual void start();
@@ -89,7 +75,7 @@ class tcp_session_tpl : public subscriber,
 
     // Update Timers
     virtual void await_output();
-    virtual void check_deadline(deadline_timer* deadline);
+    virtual void check_deadline(boost::asio::deadline_timer* deadline);
 
    protected:
     // Define this functions to implement various packet handling (a switch
@@ -101,13 +87,13 @@ class tcp_session_tpl : public subscriber,
    private:
     size_t header;
     channel& channel_;
-    tcp::socket socket_;
+    boost::asio::ip::tcp::socket socket_;
     boost::asio::streambuf input_buffer_;
-    deadline_timer input_deadline_;
+    boost::asio::deadline_timer input_deadline_;
     std::deque<WorldPacket> output_queue_;
     std::deque<stringImpl> output_file_queue_;
-    deadline_timer non_empty_output_queue_;
-    deadline_timer output_deadline_;
+    boost::asio::deadline_timer non_empty_output_queue_;
+    boost::asio::deadline_timer output_deadline_;
     boost::asio::strand _strand;
     time_t start_time;
 };
@@ -119,13 +105,13 @@ typedef boost::shared_ptr<tcp_session_tpl> tcp_session_ptr;
 class udp_broadcaster : public subscriber {
    public:
     udp_broadcaster(boost::asio::io_service& io_service,
-                    const udp::endpoint& broadcast_endpoint);
+                    const boost::asio::ip::udp::endpoint& broadcast_endpoint);
 
-    inline udp::socket& getSocket() { return socket_; }
+    inline boost::asio::ip::udp::socket& getSocket() { return socket_; }
     void sendPacket(const WorldPacket& p);
 
    private:
-    udp::socket socket_;
+    boost::asio::ip::udp::socket socket_;
 };
 
 };  // namespace Divide

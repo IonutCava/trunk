@@ -33,7 +33,6 @@
 #define _TASKS_H_
 
 #include "SharedMutex.h"
-#include <boost/enable_shared_from_this.hpp>
 #include "Utility/Headers/GUIDWrapper.h"
 
 namespace Divide {
@@ -53,7 +52,7 @@ enum CallbackParam {
 /**
  *@brief Using std::atomic for thread-shared data to avoid locking
  */
-class Task : public GUIDWrapper, public boost::enable_shared_from_this<Task> {
+class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
     typedef boost::signals2::signal<void(U64)> SendCompleted;
 
    public:

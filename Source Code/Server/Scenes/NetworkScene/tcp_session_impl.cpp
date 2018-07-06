@@ -4,8 +4,6 @@
 #include "Utility/Headers/Patch.h"
 
 #include "Scenes/NetworkScene/Network/Headers/OPCodesImpl.h"
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
 
 namespace Divide {
 
