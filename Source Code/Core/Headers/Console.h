@@ -93,7 +93,12 @@ class Console : private NonCopyable {
     inline static const char* d_errorf(std::ofstream& outStream,
                                        const char* format, T&&... args);
 
+    static bool timeStampsEnabled() { return _timestamps; }
     static void toggleTimeStamps(const bool state) { _timestamps = state; }
+
+    static bool threadIDEnabled() { return _threadID; }
+    static void togglethreadID(const bool state) { _threadID = state; }
+
     static void bindConsoleOutput(
         const consolePrintCallback& guiConsoleCallback) {
         _guiConsoleCallback = guiConsoleCallback;
@@ -111,6 +116,7 @@ class Console : private NonCopyable {
     static std::mutex io_mutex;
     static consolePrintCallback _guiConsoleCallback;
     static bool _timestamps;
+    static bool _threadID;
 };
 
 };  // namespace Divide

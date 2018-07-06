@@ -39,6 +39,7 @@ Application::Application() : _kernel(nullptr)
     // Print a copyright notice in the log file
     Console::printCopyrightNotice();
     Console::toggleTimeStamps(true);
+    Console::togglethreadID(true);
 }
 
 Application::~Application()

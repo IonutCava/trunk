@@ -258,7 +258,6 @@ void glTexture::loadData(const TextureLoadInfo& info,
             case TextureType::TEXTURE_2D_ARRAY_MS:
             case TextureType::TEXTURE_CUBE_MAP:
             case TextureType::TEXTURE_CUBE_ARRAY: {
-                STUBBED("Remove this awful hack that prevents generic cube map loading with AMD cards (including Catalyst 15.9.1 driver) -Ionut")
                 glTextureSubImage3D(
                     _textureData.getHandleHigh(),
                     0,

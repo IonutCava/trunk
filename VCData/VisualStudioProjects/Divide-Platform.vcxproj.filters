@@ -274,6 +274,9 @@
     <ClInclude Include="..\..\Source Code\Platform\Compute\Headers\OpenCLInterface.h">
       <Filter>Compute\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\SimpleCL\include\simpleCL.h">
+      <Filter>Compute\SimpleCL\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -461,6 +464,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Compute\OpenCLInterface.cpp">
       <Filter>Compute</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\SimpleCL\src\simpleCL.c">
+      <Filter>Compute\SimpleCL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -718,6 +724,12 @@
     </Filter>
     <Filter Include="Compute\Headers">
       <UniqueIdentifier>{47affca7-a836-4486-94e4-82ce928d8d2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Compute\SimpleCL">
+      <UniqueIdentifier>{b4491d22-4fb3-4456-ad0e-d9ac389def08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Compute\SimpleCL\Headers">
+      <UniqueIdentifier>{b587b6f7-9fc3-4b2a-9ae1-f2282f555e6a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -11,7 +11,6 @@ namespace Divide {
 
 namespace {
     static bool g_navMeshStarted = false;
-    std::ofstream g_dataOutput;
 };
 
 void WarScene::printMessage(U8 eventId, const stringImpl& unitName) {
@@ -28,7 +27,7 @@ void WarScene::printMessage(U8 eventId, const stringImpl& unitName) {
     U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
     U32 elapsedTimeSeconds = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) % 60;
 
-    g_dataOutput << Util::StringFormat("[GAME TIME: %d:%d][%s]: %s", elapsedTimeMinutes, elapsedTimeSeconds, eventName.c_str(), unitName.c_str()) << std::endl;
+    Console::d_printfn(Util::StringFormat("[GAME TIME: %d:%d][%s]: %s", elapsedTimeMinutes, elapsedTimeSeconds, eventName.c_str(), unitName.c_str()).c_str());
 }
 
 void WarScene::checkGameCompletion() {
@@ -83,7 +82,7 @@ void WarScene::checkGameCompletion() {
 
     if (restartGame) {
         _elapsedGameTime = 0;
-        g_dataOutput << std::endl << std::endl << "RESTARTING GAME!. Reason: " << (timeReason ? "TIME" : "SCORE") << std::endl << std::endl;
+        Console::d_printfn(Util::StringFormat("\n\nRESTARTING GAME!. Reason: %s \n\n", (timeReason ? "TIME" : "SCORE")).c_str());
         AI::WarSceneAIProcessor::resetScore(0);
         AI::WarSceneAIProcessor::resetScore(1);
         if (timeReason) {
@@ -116,7 +115,7 @@ void WarScene::registerPoint(U8 teamID, const stringImpl& unitName) {
 
         U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
         U32 elapsedTimeSeconds = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) % 60;
-        g_dataOutput << Util::StringFormat("[GAME TIME: %d:%d][TEAM %s REGISTER POINT]: %s", elapsedTimeMinutes, elapsedTimeSeconds, (teamID == 0 ? "A" : "B"), unitName.c_str()) << std::endl;
+        Console::d_printfn(Util::StringFormat("[GAME TIME: %d:%d][TEAM %s REGISTER POINT]: %s", elapsedTimeMinutes, elapsedTimeSeconds, (teamID == 0 ? "A" : "B"), unitName.c_str()).c_str());
         checkGameCompletion();
     }
 }
@@ -139,8 +138,6 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     _sceneGraph->findNode("Soldier1").lock()->setActive(false);
     _sceneGraph->findNode("Soldier2").lock()->setActive(false);
     _sceneGraph->findNode("Soldier3").lock()->setActive(false);
-
-    g_dataOutput.open("TEST_TEST_TEST.txt", std::ofstream::out | std::ofstream::trunc);
 
     return state;
 }

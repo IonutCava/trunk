@@ -1,14 +1,26 @@
 #include "Headers/OpenCLInterface.h"
 #include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
 
-//ref: https://github.com/lilleyse/Mass-Occlusion-Culling
+void clPrint(FILE* target, const char* format, ...) {
+    thread_local static char textBuffer[512 + 1];
+    va_list args;
+    va_start(args, format);
+    assert(_vscprintf(format, args) + 1 < 512);
+    vsprintf(textBuffer, format, args);
+    va_end(args);
+    if (textBuffer[0] == '\n') {
+        textBuffer[0] = ' ';
+    }
+    Divide::Console::printf("--------- ");
+    target == stderr ? Divide::Console::errorfn(textBuffer)
+                     : Divide::Console::printfn(textBuffer);
+}
+
 namespace Divide {
 
-OpenCLInterface::OpenCLInterface() : _clPlatform(nullptr),
-                                     _clGPUContext(nullptr),
-                                     _clDevice(nullptr),
-                                     _clCommandQueue(nullptr),
-                                     _localWorkSize(256)
+OpenCLInterface::OpenCLInterface() : _hardware(nullptr),
+                                     _deviceCount(0)
 {
 }
 
@@ -16,140 +28,85 @@ OpenCLInterface::~OpenCLInterface()
 {
 }
 
-bool OpenCLInterface::init() {
-    bool state = true;
-    //Get an OpenCL platform
-    cl_int clError = clGetPlatformIDs(1, &_clPlatform, NULL);
-
-    if (clError != CL_SUCCESS) {
-        Console::errorfn("Could not create platform");
-        state = false;
-    } else {
-        //Get the device - for now just assume that the device supports sharing with OpenGL
-        clError = clGetDeviceIDs(_clPlatform, CL_DEVICE_TYPE_GPU, 1, &_clDevice, NULL);
-
-        if (clError != CL_SUCCESS) {
-            Console::errorfn("Could not get a GPU device on the platform");
-            state = false;
-        } else {
-
-            //Create the context, with support for sharing with OpenGL 
-            cl_context_properties props[] =
-            {
-                CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
-                CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
-                CL_CONTEXT_PLATFORM, (cl_context_properties)_clPlatform,
-                0
-            };
-            _clGPUContext = clCreateContext(props, 1, &_clDevice, NULL, NULL, &clError);
-
-            if (clError != CL_SUCCESS) {
-                Console::errorfn("Could not create a context");
-                state = false;
-            } else {
-                // Create a command-queue
-                _clCommandQueue = clCreateCommandQueue(_clGPUContext, _clDevice, 0, &clError);
-                if (clError != CL_SUCCESS) {
-                    Console::errorfn("Could not create command queue");
-                    state = false;
-                }
-            }
-        }
+ErrorCode OpenCLInterface::init() {
+    Console::printfn(Locale::get("START_OPENCL_BEGIN"));
+    bool timestamps = Console::timeStampsEnabled();
+    bool threadid = Console::threadIDEnabled();
+    Console::toggleTimeStamps(false);
+    Console::togglethreadID(false);
+    // Get the hardware
+    _hardware = sclGetAllHardware(&_deviceCount);
+    _fastestDevice = sclGetFastestDevice(_hardware, _deviceCount);
+    for (I32 i = 0; i < _deviceCount; ++i) {
+        sclPrintHardwareStatus(_hardware[i]);
     }
+    sclPrintDeviceNamePlatforms(_hardware, _deviceCount);
+    Console::togglethreadID(threadid);
+    Console::toggleTimeStamps(timestamps);
+    Console::printfn(Locale::get("START_OPENCL_END"));
+    
 
-    if (!state) {
-        return deinit();
-    }
-
-    return state;
+    return _deviceCount > 0 ? ErrorCode::NO_ERR : ErrorCode::OCL_INIT_ERROR;
 }
 
 bool OpenCLInterface::deinit() {
-    if (_clGPUContext) {
-        clReleaseContext(_clGPUContext);
-    }
-        
-    return true;
+    Console::printfn(Locale::get("STOP_OPENCL"));
+    sclReleaseAllHardware(_hardware, _deviceCount);
+    
+    return _deviceCount > 0;
 }
 
-bool OpenCLInterface::loadProgram(const stringImpl& programPath) {
-    size_t programLength;
-    cl_program clProgram = nullptr;
-    cl_kernel clKernel = nullptr;
-    bool state = true;
-    char* cSourceCL = loadProgramSource(programPath.c_str(), &programLength);
-    if (cSourceCL == NULL) {
-        Console::errorfn("Could not load program source");
-        state = false;
-    } else {
-
-        // create the program
-        cl_int clError;
-        clProgram = clCreateProgramWithSource(_clGPUContext, 1, (const char **)&cSourceCL, &programLength, &clError);
-        if (clError != CL_SUCCESS) {
-            Console::errorfn("Could not create program");
-            state = false;
-        } else {
-
-            // build the program
-            clError = clBuildProgram(clProgram, 0, NULL, "-cl-fast-relaxed-math", NULL, NULL);
-            if (clError != CL_SUCCESS)
-            {
-                Console::errorfn("Could not build program");
-                char cBuildLog[10240];
-                clGetProgramBuildInfo(clProgram, _clDevice, CL_PROGRAM_BUILD_LOG, sizeof(cBuildLog), cBuildLog, NULL);
-                Console::errorfn("%s",  cBuildLog);
-                state = false;
-            } else {
-
-                // create the kernel
-                clKernel = clCreateKernel(clProgram, "pass_along", &clError);
-                if (clError != CL_SUCCESS) {
-                    Console::errorfn("Could not create kernel");
-                    state = false;
-                }
-            }
-        }
-    }
-
-    return state;
+OpenCLProgram OpenCLInterface::loadProgram(const stringImpl& programPath, const stringImpl& programName, I32 deviceIndex) {
+    // Get the software
+    return OpenCLProgram(sclGetCLSoftware((char*)(programPath.c_str()),
+                                          (char*)(programName.c_str()),
+                                          getHardwareByIndex(deviceIndex)));
 }
 
-//from the Nvidia OpenCL utils
-char* OpenCLInterface::loadProgramSource(const char* cFilename, size_t* szFinalLength)
+void OpenCLInterface::setKernelArg(const OpenCLProgram& clProgram, I32 argnum, size_t typeSize, void *argument) {
+    sclSetKernelArg(clProgram._program, argnum, typeSize, argument);
+}
+
+const sclHard& OpenCLInterface::getHardwareByIndex(I32 deviceIndex) const {
+    return deviceIndex == -1 ? _fastestDevice :
+                               _hardware[std::max(std::min(deviceIndex, _deviceCount), 0)];
+}
+
+cl_int OpenCLInterface::flushHardware(I32 deviceIndex) const {
+    return sclFinish(getHardwareByIndex(deviceIndex));
+}
+
+cl_ulong OpenCLInterface::getEventTime(cl_event event, I32 deviceIndex) const {
+    return sclGetEventTime(getHardwareByIndex(deviceIndex), event);
+}
+
+cl_mem OpenCLInterface::malloc(cl_int mode, size_t size, I32 deviceIndex) const {
+    return sclMalloc(getHardwareByIndex(deviceIndex), mode, size);
+}
+
+cl_mem OpenCLInterface::mallocWrite(cl_int mode, size_t size, void* hostPointer, I32 deviceIndex) const {
+    return sclMallocWrite(getHardwareByIndex(deviceIndex), mode, size, hostPointer);
+}
+
+void OpenCLInterface::write(size_t size, cl_mem buffer, void* hostPointer, I32 deviceIndex) const {
+    sclWrite(getHardwareByIndex(deviceIndex), size, buffer, hostPointer);
+}
+
+void OpenCLInterface::read(size_t size, cl_mem buffer, void *hostPointer, I32 deviceIndex) const {
+    sclRead(getHardwareByIndex(deviceIndex), size, buffer, hostPointer);
+}
+
+void OpenCLInterface::release(cl_mem object) const {
+    sclReleaseMemObject(object);
+}
+
+OpenCLProgram::OpenCLProgram(const sclSoft& program) : _program(program)
 {
-    // locals 
-    FILE* pFileStream = NULL;
-    size_t szSourceLength;
+}
 
-    if (fopen_s(&pFileStream, cFilename, "rb") != 0)
-    {
-        return NULL;
-    }
-
-    // get the length of the source code
-    fseek(pFileStream, 0, SEEK_END);
-    szSourceLength = ftell(pFileStream);
-    fseek(pFileStream, 0, SEEK_SET);
-
-    // allocate a buffer for the source code string and read it in
-    char* cSourceString = (char *)malloc(szSourceLength + 1);
-    if (fread((cSourceString), szSourceLength, 1, pFileStream) != 1)
-    {
-        fclose(pFileStream);
-        free(cSourceString);
-        return 0;
-    }
-
-    // close the file and return the total length of the string
-    fclose(pFileStream);
-    if (szFinalLength != 0)
-    {
-        *szFinalLength = szSourceLength;
-    }
-    cSourceString[szSourceLength] = '\0';
-
-    return cSourceString;
+OpenCLProgram::~OpenCLProgram()
+{
+    sclReleaseClSoft(_program);
 }
 
 }; //namespace Divide

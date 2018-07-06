@@ -107,6 +107,11 @@ const bool USE_HARDWARE_AA_LINES = true;
 /// GPUPerfStudio2)
 const bool BATCH_DRAW_COMMANDS = false;
 
+/// Compute related options
+namespace Compute {
+
+}; //namespace Compute
+
 /// Profiling options
 namespace Profile {
 /// use only a basic shader

@@ -107,6 +107,9 @@ inline const char* getErrorCodeName(ErrorCode code) {
         case ErrorCode::OAL_INIT_ERROR: {
             return "OpenAL failed to initialize";
         };
+        case ErrorCode::OCL_INIT_ERROR: {
+            return "OpenCL could not find any compatible devices!";
+        };
         case ErrorCode::PHYSX_INIT_ERROR: {
             return "The PhysX library failed to initialize";
         };

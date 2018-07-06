@@ -59,7 +59,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     // General light management and rendering (individual lights are handled by each scene)
     // Unloading the lights is a scene level responsibility
     LightManager::createInstance();
-    OpenCLInterface::getInstance().init();
+    OpenCLInterface::createInstance();
     _cameraMgr.reset(new CameraManager(this));  // Camera manager
     assert(_cameraMgr != nullptr);
     // force all lights to update on camera change (to keep them still actually)
@@ -487,7 +487,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
-
+    initError = OpenCLInterface::getInstance().init();
+    if (initError != ErrorCode::NO_ERR) {
+        return initError;
+    }
     Console::printfn(Locale::get("SCENE_ADD_DEFAULT_CAMERA"));
     _mainCamera = MemoryManager_NEW FreeFlyCamera();
     _mainCamera->setProjection(aspectRatio,

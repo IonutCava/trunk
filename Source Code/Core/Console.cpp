@@ -11,11 +11,12 @@ namespace Divide {
 
 std::atomic<int> Console::_bufferEntryCount;
 bool Console::_timestamps = false;
+bool Console::_threadID = false;
+
 std::mutex Console::io_mutex;
 Console::consolePrintCallback Console::_guiConsoleCallback;
 
-//! Do not remove the following license without express permission granted bu
-// DIVIDE-Studio
+//! Do not remove the following license without express permission granted by DIVIDE-Studio
 void Console::printCopyrightNotice() {
     std::cout << "-------------------------------------------------------------"
                  "-----------------\n";
@@ -66,12 +67,18 @@ const char* Console::output(std::ostream& outStream, const char* text,
                             const bool newline, const bool error) {
     std::lock_guard<std::mutex> lock(io_mutex);
     if (_timestamps) {
-        outStream << "[ " << std::setprecision(2) << Time::ElapsedSeconds(true)
+        outStream << "[ " << std::internal
+                          << std::setw(9)
+                          << std::setprecision(3)
+                          << std::setfill('0')
+                          << std::fixed
+                          << Time::ElapsedSeconds(true)
                   << " ] ";
     }
-
-    outStream << "(" << std::this_thread::get_id() << ")"
-              << (error ? " Error: " : "")
+    if (_threadID) {
+        outStream << "[ " << std::this_thread::get_id() << " ] ";
+    }
+    outStream << (error ? " Error: " : "")
               << text
               << (newline ? "\n" : "");
 
