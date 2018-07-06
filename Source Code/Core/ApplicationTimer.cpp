@@ -20,9 +20,9 @@ ApplicationTimer::ApplicationTimer()
       _init(false),
       _benchmark(false)
 {
-    _ticksPerSecond.QuadPart = 0LL;
-    _frameDelay.QuadPart = 0LL;
-    _startupTicks.QuadPart = 0LL;
+    _ticksPerSecond = 0;
+    _frameDelay = 0;
+    _startupTicks = 0;
 }
 
 ApplicationTimer::~ApplicationTimer()
@@ -48,61 +48,46 @@ void ApplicationTimer::init(U8 targetFrameRate) {
     assert(!_init);  //<prevent double init
 
     _targetFrameRate = to_uint(targetFrameRate);
-
-#if defined(OS_WINDOWS)
-    bool queryAvailable = QueryPerformanceFrequency(&_ticksPerSecond) != 0;
-    DIVIDE_ASSERT(
-        queryAvailable,
-        "Current system does not support 'QueryPerformanceFrequency calls!");
-    QueryPerformanceCounter(&_startupTicks);
-#else
-    gettimeofday(&_startupTicks, nullptr);
-#endif
+    getTicksPerSecond(_ticksPerSecond);
+    getCurrentTime(_startupTicks);
+    _startupTicks = std::max(_startupTicks, 0LL);
     _frameDelay = _startupTicks;
     _init = true;
 }
 
-ApplicationTimer::LI ApplicationTimer::getCurrentTicksInternal() const {
-    LI currentTicks;
-    currentTicks.QuadPart = 0;
-#if defined(OS_WINDOWS)
-    QueryPerformanceCounter(&currentTicks);
-#else
-    gettimeofday(&currentTicks, nullptr);
-#endif
+TimeValue ApplicationTimer::getCurrentTicksInternal() const {
+    TimeValue currentTicks;
+    getCurrentTime(currentTicks);
     return currentTicks;
 }
 
-U64 ApplicationTimer::getElapsedTimeInternal(LI currentTicks) const {
-    return Time::SecondsToMicroseconds(currentTicks.QuadPart - _startupTicks.QuadPart) /
-                            _ticksPerSecond.QuadPart;
+U64 ApplicationTimer::getElapsedTimeInternal(TimeValue currentTicks) const {
+    return Time::SecondsToMicroseconds(currentTicks - _startupTicks) / _ticksPerSecond;
 }
 
 void ApplicationTimer::update(U32 frameCount) {
-    LI currentTicks = getCurrentTicksInternal();
+    TimeValue currentTicks = getCurrentTicksInternal();
     _elapsedTimeUs = getElapsedTimeInternal(currentTicks);
 
-    _speedfactor = static_cast<F32>(
-        (currentTicks.QuadPart - _frameDelay.QuadPart) /
-        (_ticksPerSecond.QuadPart / static_cast<F32>(_targetFrameRate)));
+    _speedfactor = static_cast<F32>((currentTicks - _frameDelay) / 
+                   (_ticksPerSecond / static_cast<F32>(_targetFrameRate)));
+
+    CLAMP<F32>(_speedfactor, 0.0f, 1.0f);
+
     _frameDelay = currentTicks;
 
-    if (_speedfactor <= 0.0f) {
-        _speedfactor = 1.0f;
-    }
-
     _fps = _targetFrameRate / _speedfactor;
-    _frameTime = 1000.0 / _fps;
+    _frameTime = 1000.0f / _fps;
 
     benchmarkInternal(frameCount);
 }
 
 namespace {
-static U32 g_averageCount = 0;
-static F32 g_maxFps = std::numeric_limits<F32>::min();
-static F32 g_minFps = std::numeric_limits<F32>::max();
-static F32 g_averageFps = 0.0f;
-static F32 g_averageFpsTotal = 0.0f;
+    static U32 g_averageCount = 0;
+    static F32 g_averageFps = 0.0f;
+    static F32 g_averageFpsTotal = 0.0f;
+    static F32 g_maxFps = std::numeric_limits<F32>::min();
+    static F32 g_minFps = std::numeric_limits<F32>::max();
 };
 
 void ApplicationTimer::benchmarkInternal(U32 frameCount) {
@@ -133,7 +118,6 @@ void ApplicationTimer::benchmarkInternal(U32 frameCount) {
             timer->print();
             timer->reset();
         }
-
 #endif
         g_averageFps = 0;
     }

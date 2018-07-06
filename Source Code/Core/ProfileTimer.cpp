@@ -39,9 +39,6 @@ void ProfileTimer::reset() {
 
 void ProfileTimer::start() {
 #if defined(_DEBUG) || defined(_PROFILE)
-#if defined(OS_WINDOWS)
-    _oldmask = SetThreadAffinityMask(::GetCurrentThread(), 1);
-#endif
     _timer = Time::MicrosecondsToMilliseconds<D32>(
         ApplicationTimer::getInstance().getElapsedTime(true));
 #endif
@@ -53,9 +50,7 @@ void ProfileTimer::stop() {
         reset();
         return;
     }
-#if defined(OS_WINDOWS)
-    SetThreadAffinityMask(::GetCurrentThread(), _oldmask);
-#endif
+
     _timer = Time::MicrosecondsToMilliseconds<D32>(
                  ApplicationTimer::getInstance().getElapsedTime(true)) -
              _timer;

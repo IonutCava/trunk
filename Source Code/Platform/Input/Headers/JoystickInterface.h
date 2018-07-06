@@ -56,8 +56,10 @@ class JoystickInterface {
     F32 _dMasterGain;
     // Selected joystick auto-center mode.
     bool _bAutoCenter;
+    // Per joystick data
+    std::array<JoystickData, to_const_uint(Joystick::COUNT)> _joystickData;
 
-   public:
+    public:
     JoystickInterface(OIS::InputManager* pInputInterface,
                       EventHandler* pEventHdlr)
         : _pInputInterface(pInputInterface),
@@ -127,10 +129,19 @@ class JoystickInterface {
             _pInputInterface->destroyInputObject(_vecJoys[nJoyInd]);
         }
     }
+    
+    inline const JoystickData& getJoystickData(Joystick joystick) const {
+        return _joystickData[to_uint(joystick)];
+    }
+
+    inline void setJoystickData(Joystick joystick, const JoystickData& data) {
+        _joystickData[to_uint(joystick)] = data;
+    }
 
     inline vectorAlg::vecSize getNumberOfJoysticks() const {
         return _vecJoys.size();
     }
+
     inline bool wasFFDetected() const { return _bFFFound; }
 
     enum class EWhichJoystick : I32 { 

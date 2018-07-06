@@ -34,7 +34,7 @@
 
 #include <ReCast/DebugUtils/Include/DebugDraw.h>
 #include "Platform/Video/Headers/RenderAPIEnums.h"
-#include "Platform/DataTypes/Headers/PlatformDefines.h"
+#include "Platform/Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 class IMPrimitive;

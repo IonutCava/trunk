@@ -51,8 +51,7 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
     _sun = addLight(LightType::DIRECTIONAL,
                GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
     _sun->setDirection(_sunvector);
-    _currentSky =
-        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    _currentSky = addSky();
 
     SceneInput::PressReleaseActions cbks;
     cbks.second = [this]() {

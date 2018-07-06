@@ -32,7 +32,9 @@
 #ifndef _CORE_SINGLETON_H_
 #define _CORE_SINGLETON_H_
 
+#if defined(_DEBUG)
 #include <assert.h>
+#endif
 
 namespace Divide {
 
@@ -41,16 +43,19 @@ class Singleton {
 protected:
    public:
 
+    // Alias for getInstance() to easily explain intent
     inline static T& createInstance() {
         return getInstance();
     }
 
     inline static T& getInstance() { 
         if (!_instance) {
+#       if defined(_DEBUG)
             // Avoid resurrection
             assert(!_zombified);
-            _instance = new T();
             _zombified = false;
+#       endif
+            _instance = new T();
         }
         return *_instance;
     }
@@ -58,7 +63,9 @@ protected:
     inline static void destroyInstance() {
         delete _instance;
         _instance = nullptr;
+#       if defined(_DEBUG)
         _zombified = true;
+#       endif
     }
 
    protected:
@@ -76,14 +83,18 @@ protected:
 
    private:
     static T* _instance;
+#if defined(_DEBUG)
     static bool _zombified;
+#endif
 };
 
 template <typename T>
 T* Singleton<T>::_instance = nullptr;
 
+#if defined(_DEBUG)
 template <typename T>
 bool Singleton<T>::_zombified = false;
+#endif
 
 #define DEFINE_SINGLETON_W_SPECIFIER(class_name, specifier)     \
     class class_name specifier : public Singleton<class_name> { \

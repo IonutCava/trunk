@@ -33,7 +33,7 @@
 #define RESOURCE_DESCRIPTOR_H_
 
 #include "Utility/Headers/String.h"
-#include "Platform/DataTypes/Headers/PlatformDefines.h"
+#include "Platform/Platform/Headers/PlatformDefines.h"
 
 #include <boost/shared_ptr.hpp>
 

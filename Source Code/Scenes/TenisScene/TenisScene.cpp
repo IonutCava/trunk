@@ -272,8 +272,7 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     // Add a light
     _sun = addLight(LightType::DIRECTIONAL,
                GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
-    _currentSky =
-        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    _currentSky = addSky();
 
     //    ResourceDescriptor tempLight1("Light omni");
     //    tempLight1.setEnumValue(LIGHT_TYPE_POINT);

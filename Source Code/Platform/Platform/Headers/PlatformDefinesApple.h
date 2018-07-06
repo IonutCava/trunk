@@ -29,31 +29,27 @@
 
  */
 
-#ifndef _RENDERING_RENDER_PASS_RENDERPASS_H_
-#define _RENDERING_RENDER_PASS_RENDERPASS_H_
+#ifndef _PLATFORM_DEFINES_APPLE_H_
+#define _PLATFORM_DEFINES_APPLE_H_
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#define GLFW_EXPOSE_NATIVE_COCOA
+#define GLFW_EXPOSE_NATIVE_NSGL
+
+#include <Carbon/Carbon.h>
+void checkMacEvents();
 
 namespace Divide {
+    struct SysInfo {
+        SysInfo() : _windowHandle(0),
+                    _availableRam(0)
+        {
+        }
 
-class SceneGraph;
-class SceneRenderState;
+        id _windowHandle;
+        size_t _availableRam;
+    };
 
-class RenderPass {
-   public:
-    RenderPass(const stringImpl& name);
-    ~RenderPass();
+    typedef timeval TimeValue;
+}; //namespace Divide
 
-    virtual void render(const SceneRenderState& renderState,
-                        const SceneGraph& activeSceneGraph);
-    inline U16 getLasTotalBinSize() const { return _lastTotalBinSize; }
-    inline const stringImpl& getName() const { return _name; }
-
-   private:
-    stringImpl _name;
-    U16 _lastTotalBinSize;
-};
-
-};  // namespace Divide
-
-#endif
+#endif //_PLATFORM_DEFINES_APPLE_H_

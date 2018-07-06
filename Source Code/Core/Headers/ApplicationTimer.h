@@ -41,13 +41,6 @@ namespace Divide {
 namespace Time {
 
 DEFINE_SINGLETON(ApplicationTimer)
-  private:
-    #if defined(OS_WINDOWS)
-    typedef LARGE_INTEGER LI;
-    #else
-    typedef timeval LI;
-    #endif
-
   public:
     void init(U8 targetFrameRate);
     void update(U32 frameCount);
@@ -57,7 +50,6 @@ DEFINE_SINGLETON(ApplicationTimer)
     F32 getFps() const;
     F32 getFrameTime() const;
     F32 getSpeedfactor() const;
-
     U64 getElapsedTime(bool forceUpdate = false);
 
   protected:
@@ -65,8 +57,8 @@ DEFINE_SINGLETON(ApplicationTimer)
     ~ApplicationTimer();
 
     void benchmarkInternal(U32 frameCount);
-    U64 getElapsedTimeInternal(LI currentTicks) const;
-    LI getCurrentTicksInternal() const;
+    U64 getElapsedTimeInternal(TimeValue currentTicks) const;
+    TimeValue getCurrentTicksInternal() const;
     U64 getElapsedTimeInternal() const;
 
     friend class ProfileTimer;
@@ -79,11 +71,10 @@ DEFINE_SINGLETON(ApplicationTimer)
     F32 _frameTime;
     F32 _speedfactor;
     U32 _targetFrameRate;
-    LI _ticksPerSecond;  // Processor's ticks per second
-    LI _frameDelay;      // Previous frame's number of ticks
-    LI _startupTicks;    // Ticks at class initialization
-    bool _benchmark;     // Measure average FPS and output max/min/average fps to
-                         // console
+    TimeValue _ticksPerSecond;  // Processor's ticks per second
+    TimeValue _frameDelay;      // Previous frame's number of ticks
+    TimeValue _startupTicks;    // Ticks at class initialization
+    bool _benchmark;            // Measure average FPS and output max/min/average fps to console
     bool _init;
 
     std::atomic<U64> _elapsedTimeUs;

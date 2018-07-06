@@ -32,7 +32,7 @@
 #ifndef _CORE_PROFILE_TIMER_H_
 #define _CORE_PROFILE_TIMER_H_
 
-#include "Platform/DataTypes/Headers/PlatformDefines.h"
+#include "Platform/Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 namespace Time {
@@ -54,9 +54,6 @@ class ProfileTimer {
     inline const stringImpl& name() const { return _name; }
 
    protected:
-#if defined(OS_WINDOWS)
-    DWORD_PTR _oldmask;
-#endif
     stringImpl _name;
     std::atomic_bool _paused;
     std::atomic_bool _init;

@@ -33,7 +33,7 @@
 #define _PHYSICS_API_WRAPPER_H_
 
 #include "Core/Headers/Application.h"
-#include "Platform/DataTypes/Headers/PlatformDefines.h"
+#include "Platform/Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

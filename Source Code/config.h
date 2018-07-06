@@ -50,6 +50,8 @@ const bool USE_FIXED_TIMESTEP = true;
 const unsigned int MAX_TEXTURE_STORAGE = 6;
 /// Application desired framerate for physics simulations
 const unsigned int TARGET_FRAME_RATE = 60;
+/// Minimum required RAM size (in bytes) for the current build
+const unsigned int REQUIRED_RAM_SIZE = 2 * 1024 * 1024; //2Gb
 /// Application update rate divisor (how many draw calls per render call
 /// e.g. 2 = 30Hz update rate at 60Hz rendering)
 const unsigned int TICK_DIVISOR = 2;
@@ -121,7 +123,7 @@ const bool LOG_ASSERTS = true;
 /// execution
 const bool CONTINUE_ON_ASSERT = false;
 /// Popup a GUI Message Box on asserts;
-const bool SHOW_MESSAGE_BOX = false;
+const bool SHOW_MESSAGE_BOX = true;
 #elif defined(_PROFILE)
 const bool LOG_ASSERTS = true;
 const bool CONTINUE_ON_ASSERT = false;
@@ -165,34 +167,10 @@ const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
 };  // namespace Config
 };  // namespace Divide
 
-/// OS specific stuff
-#if defined(_WIN32)
-#define OS_WINDOWS
-
-#if defined(_WIN64)
-#define WIN64
-#else
-#define WIN32
-#endif
-
-/// Reduce Build time on Windows Platform
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN 1
-#ifndef VC_EXTRALEAN
-#define VC_EXTRALEAN
-#endif  // VC_EXTRALEAN
-#endif  // WIN32_LEAN_AND_MEAN
-/// If the target machine uses the nVidia Optimus layout (IntelHD + nVidia
-/// discreet GPU)
-/// or the AMD PowerXPress system, this forces the client to use the high
-/// performance GPU
+/// If the target machine uses the nVidia Optimus layout (IntelHD + nVidiadiscreet GPU)
+/// or the AMD PowerXPress system, this forces the client to use the high performance GPU
 #ifndef FORCE_HIGHPERFORMANCE_GPU
 #define FORCE_HIGHPERFORMANCE_GPU
-#endif
-#elif defined(__APPLE_CC__)  // Apple OS X could be supported in the future
-#define OS_APPLE
-#else  // Linux is the only other OS supported
-#define OS_NIX
 #endif
 
 /// Please enter the desired log file name

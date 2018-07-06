@@ -56,13 +56,13 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
         nullptr);
 
     _components[to_uint(SGNComponent::ComponentType::NAVIGATION)]
-        .reset(MemoryManager_NEW NavigationComponent(*this));
+        .reset(new NavigationComponent(*this));
 
     _components[to_uint(SGNComponent::ComponentType::PHYSICS)].reset(
-        MemoryManager_NEW PhysicsComponent(*this));
+        new PhysicsComponent(*this));
 
     _components[to_uint(SGNComponent::ComponentType::RENDERING)].reset(
-        MemoryManager_NEW RenderingComponent(
+        new RenderingComponent(
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                    : nullptr,
             *this));

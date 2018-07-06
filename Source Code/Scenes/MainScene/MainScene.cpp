@@ -126,8 +126,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     _sun->csmSplitCount(3);  // 3 splits
     _sun->csmSplitLogFactor(0.965f);
     _sun->csmNearClipOffset(25.0f);
-    _currentSky =
-        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    _currentSky = addSky();
 
     for (U8 i = 0; i < _terrainInfoArray.size(); i++) {
         SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(

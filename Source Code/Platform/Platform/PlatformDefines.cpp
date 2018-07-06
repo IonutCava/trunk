@@ -36,7 +36,8 @@ bool preAssert(const bool expression, const char* failMessage) {
     if (Config::Assert::LOG_ASSERTS) {
         Console::errorfn("Assert: %s", failMessage);
     }
-    if (Config::Assert::SHOW_MESSAGE_BOX) {
+    /// Message boxes without continue on assert don't render!
+    if (Config::Assert::SHOW_MESSAGE_BOX && Config::Assert::CONTINUE_ON_ASSERT) {
         GUIMessageBox* const msgBox = GUI::getInstance().getDefaultMessageBox();
         if (msgBox) {
             msgBox->setTitle("Assertion Failed!");
@@ -133,7 +134,6 @@ void operator delete[](void* ptr, size_t alignment, size_t alignmentOffset,
     free(ptr);
 }
 
-// E
 Divide::I32 Vsnprintf8(char* pDestination, size_t n, const char* pFormat,
                        va_list arguments) {
 #ifdef _MSC_VER

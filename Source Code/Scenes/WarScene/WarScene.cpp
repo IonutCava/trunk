@@ -196,8 +196,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     _sun = addLight(LightType::DIRECTIONAL,
                GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
     // Add a skybox
-    _currentSky =
-        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    _currentSky = addSky();
     // Position camera
     renderState().getCamera().setEye(vec3<F32>(54.5f, 25.5f, 1.5f));
     renderState().getCamera().setGlobalRotation(-90 /*yaw*/, 35 /*pitch*/);
@@ -380,8 +379,13 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     cbks.second = DELEGATE_BIND(&WarScene::registerPoint, this, 0);
     _input->addKeyMapping(Input::KeyCode::KC_1, cbks);
+
     cbks.second = DELEGATE_BIND(&WarScene::registerPoint, this, 1);
     _input->addKeyMapping(Input::KeyCode::KC_2, cbks);
+
+    cbks.second = [](){DIVIDE_ASSERT(false, "Test Assert"); };
+    _input->addKeyMapping(Input::KeyCode::KC_5, cbks);
+
     _sceneReady = true;
     return loadState;
 }

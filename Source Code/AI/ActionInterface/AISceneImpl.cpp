@@ -1,6 +1,6 @@
 #include "Headers/AISceneImpl.h"
 
-#include "Platform/DataTypes/Headers/PlatformDefines.h"
+#include "Platform/Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 namespace AI {

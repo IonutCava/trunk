@@ -48,6 +48,10 @@ inline const char* getErrorCodeName(ErrorCode code) {
             return "The specified scene failed to load all of its data "
                    "properly";
         };
+        case ErrorCode::CPU_NOT_SUPPORTED: {
+            return "The current CPU has an insufficient core count and "
+                   "as such, it's not supported";
+        }
         case ErrorCode::GFX_NOT_SUPPORTED: {
             return "The specified rendering API is not fully implemented and "
                    "as such, it's not supported";
@@ -104,6 +108,9 @@ inline const char* getErrorCodeName(ErrorCode code) {
         };
         case ErrorCode::NO_LANGUAGE_INI: {
             return "Invalid language file";
+        };
+        case ErrorCode::NOT_ENOUGH_RAM: {
+            return "Insufficient physical RAM available to run the application!";
         };
     };
 }
@@ -186,6 +193,14 @@ inline ErrorCode Application::errorCode() const { return _errorCode; }
 
 inline void Application::registerShutdownCallback(const DELEGATE_CBK<>& cbk) {
     _shutdownCallback.push_back(cbk);
+}
+
+inline SysInfo& Application::getSysInfo() {
+    return _sysInfo;
+}
+
+inline const SysInfo& Application::getSysInfo() const {
+    return _sysInfo;
 }
 
 };  // namespace Divide

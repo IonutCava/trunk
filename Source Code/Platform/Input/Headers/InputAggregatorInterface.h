@@ -32,7 +32,7 @@
 #ifndef _INPUT_AGGREGATOR_INIT_H_
 #define _INPUT_AGGREGATOR_INIT_H_
 
-#include "Platform/DataTypes/Headers/PlatformDefines.h"
+#include "Platform/Platform/Headers/PlatformDefines.h"
 #include <OIS.h>
 
 namespace Divide {
@@ -44,6 +44,16 @@ enum class Joystick : U32 {
     JOYSTICK_3 = 2,
     JOYSTICK_4 = 3,
     COUNT
+};
+
+struct JoystickData {
+    JoystickData() : _deadZone(0),
+                     _max(0)
+    {
+    }
+
+    I32 _deadZone;
+    I32 _max;
 };
 
 typedef OIS::KeyCode KeyCode;

@@ -19,9 +19,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Audio\Headers\AudioDescriptor.h">
       <Filter>Audio\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\DataTypes\Headers\PlatformDefines.h">
-      <Filter>DataTypes\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Input\Headers\AutoKeyRepeat.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
@@ -220,6 +217,18 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glLockManager.h">
       <Filter>Video\OpenGL\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\PlatformDefines.h">
+      <Filter>Platform\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\PlatformDefinesWindows.h">
+      <Filter>Platform\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\PlatformDefinesApple.h">
+      <Filter>Platform\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\PlatformDefinesUnix.h">
+      <Filter>Platform\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -245,9 +254,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Input\InputInterface.cpp">
       <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\DataTypes\PlatformDefines.cpp">
-      <Filter>DataTypes</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderStateBlock.cpp">
       <Filter>Video</Filter>
@@ -393,13 +399,22 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glLockManager.cpp">
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Platform\PlatformDefines.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Platform\PlatformDefinesApple.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Platform\PlatformDefinesUnix.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Platform\PlatformDefinesWindows.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">
       <UniqueIdentifier>{7dc28b1d-889d-420f-baf2-90df9a89e817}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="DataTypes">
-      <UniqueIdentifier>{393e21cf-c5ce-4159-99be-941654ca8f07}</UniqueIdentifier>
     </Filter>
     <Filter Include="Input">
       <UniqueIdentifier>{80d16543-28e0-42c5-9a4b-82d3b2eb3463}</UniqueIdentifier>
@@ -430,9 +445,6 @@
     </Filter>
     <Filter Include="Audio\Headers">
       <UniqueIdentifier>{be82305e-0c2e-48a3-818b-a1494bfb1d40}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="DataTypes\Headers">
-      <UniqueIdentifier>{5b4d06b0-2fe8-43de-831b-24831692845d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Input\Headers">
       <UniqueIdentifier>{a8dcfa34-c016-4762-973e-c15fa16ee34b}</UniqueIdentifier>
@@ -625,6 +637,12 @@
     </Filter>
     <Filter Include="Video\OpenGL\GLIM">
       <UniqueIdentifier>{aa487790-99b3-4ca1-b6e9-bfaf77071aa3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{393e21cf-c5ce-4159-99be-941654ca8f07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Headers">
+      <UniqueIdentifier>{5b4d06b0-2fe8-43de-831b-24831692845d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

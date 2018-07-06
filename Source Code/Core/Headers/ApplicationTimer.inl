@@ -46,11 +46,11 @@ inline F32 ApplicationTimer::getFrameTime() const { return _frameTime; }
 inline F32 ApplicationTimer::getSpeedfactor() const { return _speedfactor; }
 
 inline U64 ApplicationTimer::getElapsedTime(bool forceUpdate) {
-    if (!forceUpdate) {
-        return _elapsedTimeUs;
+    if (forceUpdate) {
+        return getElapsedTimeInternal();
     }
-
-    return getElapsedTimeInternal();
+     
+    return _elapsedTimeUs;
 }
 
 inline U64 ApplicationTimer::getElapsedTimeInternal() const {

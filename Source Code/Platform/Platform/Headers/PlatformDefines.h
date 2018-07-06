@@ -46,11 +46,13 @@
 #include <bitset>
 #define _USE_MATH_DEFINES
 #include <math.h>
-#if defined(OS_WINDOWS)
-#include <windows.h>
-#ifdef DELETE
-#undef DELETE
-#endif
+
+#if defined(_WIN32)
+#include "PlatformDefinesWindows.h"
+#elif defined(__APPLE_CC__) 
+#include "PlatformDefinesApple.h"
+#else //defined(__linux) || defined (__unix)
+#include "PlatformDefinesUnix.h"
 #endif
 
 #ifdef _DEBUG
@@ -127,6 +129,12 @@ I32 to_int(const T value) {
     return static_cast<I32>(to_underlying_type(value));
 }
 
+struct SysInfo;
+void getCurrentTime(TimeValue& timeOut);
+void getTicksPerSecond(TimeValue& ticksPerSecond);
+void getWindowHandle(void* windowClass, SysInfo& info);
+TimeValue getTickDifference(const TimeValue& end, const TimeValue& begin);
+bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info);
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 template<typename T>
 constexpr T toBit(T X) {
@@ -145,6 +153,7 @@ std::unique_ptr<T> copy_unique(const std::unique_ptr<T>& source)
 {
     return source ? std::make_unique<T>(*source) : nullptr;
 }
+
 
 /* See
 
@@ -299,9 +308,11 @@ bool preAssert(const bool expression, const char* failMessage);
 /// It is safe to call evaluate expressions and call functions inside the assert
 /// check as it will compile for every build type
 inline bool DIVIDE_ASSERT(const bool expression, const char* failMessage) {
-#if defined(_DEBUG)
+#if defined(_DEBUG) || defined(_PROFILE)
     if (preAssert(expression, failMessage)) {
+#   if defined(_DEBUG)
         assert(expression && failMessage);
+#   endif
     }
 #else
     ACKNOWLEDGE_UNUSED(failMessage);

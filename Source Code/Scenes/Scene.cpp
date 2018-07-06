@@ -54,8 +54,8 @@ Scene::Scene()
       _paramHandler(ParamHandler::getInstance())
 {
     _sceneTimer = 0UL;
-    _sceneGraph.reset(MemoryManager_NEW SceneGraph());
-    _input.reset(MemoryManager_NEW SceneInput(*this));
+    _sceneGraph.reset(new SceneGraph());
+    _input.reset(new SceneInput(*this));
 
 #ifdef _DEBUG
 
@@ -268,9 +268,9 @@ bool Scene::loadGeometry(const FileData& data) {
 }
 
 SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
-                                          const ParticleData& data,
-                                          SceneGraphNode_ptr parentNode) {
-    assert(!name.empty());
+                                             const ParticleData& data,
+                                             SceneGraphNode_ptr parentNode) {
+    DIVIDE_ASSERT(!name.empty(), "Scene::addParticleEmitter error: invalid name specified!");
 
     ResourceDescriptor particleEmitter(name);
     ParticleEmitter* emitter = CreateResource<ParticleEmitter>(particleEmitter);
@@ -313,9 +313,14 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
     return addLight(*CreateResource<Light>(defaultLight), parentNode);
 }
 
-SceneGraphNode_ptr Scene::addSky(Sky* const skyItem) {
-    assert(skyItem != nullptr);
-    return _sceneGraph->getRoot()->createNode(*skyItem);
+SceneGraphNode_ptr Scene::addSky() {
+    Sky* skyItem = CreateResource<Sky>(ResourceDescriptor("Default Sky"));
+    DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
+    return addSky(*skyItem);
+}
+
+SceneGraphNode_ptr Scene::addSky(Sky& skyItem) {
+    return _sceneGraph->getRoot()->createNode(skyItem);
 }
 
 bool Scene::load(const stringImpl& name, GUI* const guiInterface) {

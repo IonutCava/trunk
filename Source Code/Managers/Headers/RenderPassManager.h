@@ -33,7 +33,7 @@
 #define _MANAGERS_RENDER_PASS_MANAGER_H_
 
 #include "Core/Headers/NonCopyable.h"
-#include "Platform/DataTypes/Headers/PlatformDefines.h"
+#include "Platform/Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

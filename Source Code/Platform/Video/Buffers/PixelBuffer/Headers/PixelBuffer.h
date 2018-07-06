@@ -32,7 +32,7 @@
 #ifndef _PIXEL_BUFFER_OBJECT_H
 #define _PIXEL_BUFFER_OBJECT_H
 
-#include "Platform/DataTypes/Headers/PlatformDefines.h"
+#include "Platform/Platform/Headers/PlatformDefines.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {

@@ -34,7 +34,7 @@
 */
 #ifndef _GUID_WRAPPER_H_
 #define _GUID_WRAPPER_H_
-#include "Platform/DataTypes/Headers/PlatformDefines.h"
+#include "Platform/Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

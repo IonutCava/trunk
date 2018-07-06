@@ -12,23 +12,20 @@ ErrorCode InputInterface::init(Kernel& kernel) {
     Console::printfn(Locale::get("INPUT_CREATE_START"));
 
     OIS::ParamList pl;
+
     std::stringstream ss;
-#if defined OIS_WIN32_PLATFORM
-    ss << (size_t)(ParamHandler::getInstance().getParam<HWND>("mainWindowHandle"));
+    ss << (size_t)(Application::getInstance().getSysInfo()._windowHandle);
     // Create OIS input manager
     pl.insert(std::make_pair("WINDOW", ss.str()));
+    pl.insert(std::make_pair("GLXWINDOW", ss.str()));
     pl.insert(std::make_pair("w32_mouse", "DISCL_FOREGROUND"));
     pl.insert(std::make_pair("w32_mouse", "DISCL_NONEXCLUSIVE"));
     pl.insert(std::make_pair("w32_keyboard", "DISCL_FOREGROUND"));
     pl.insert(std::make_pair("w32_keyboard", "DISCL_NONEXCLUSIVE"));
-#elif defined OIS_LINUX_PLATFORM
-    ss << ParamHandler::getInstance().getParam<Window>("mainWindowHandle");
-    pl.insert(std::make_pair("GLXWINDOW", ss.str());
     pl.insert(std::make_pair("x11_mouse_grab", "false"));
     pl.insert(std::make_pair("x11_mouse_hide", "false"));
     pl.insert(std::make_pair("x11_keyboard_grab", "false"));
     pl.insert(std::make_pair("XAutoRepeatOn", "true"));
-#endif
 
     _pInputInterface = OIS::InputManager::createInputSystem(pl);
     DIVIDE_ASSERT(_pInputInterface != nullptr,
@@ -75,6 +72,15 @@ ErrorCode InputInterface::init(Kernel& kernel) {
         // Create the joystick manager.
         _pJoystickInterface =
             MemoryManager_NEW JoystickInterface(_pInputInterface, _pEventHdlr);
+
+        U32 i = 0;
+        JoystickData data;
+        for (OIS::JoyStick* joystick : _pJoysticks) {
+            data._max = joystick->MAX_AXIS - 4000;
+            data._deadZone = data._max * 0.1;
+
+            _pJoystickInterface->setJoystickData(static_cast<Joystick>(i++), data);
+        }
         if (!_pJoystickInterface->wasFFDetected()) {
             Console::printfn(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
             MemoryManager::DELETE(_pJoystickInterface);

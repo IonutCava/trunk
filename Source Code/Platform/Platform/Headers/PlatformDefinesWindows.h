@@ -29,31 +29,47 @@
 
  */
 
-#ifndef _RENDERING_RENDER_PASS_RENDERPASS_H_
-#define _RENDERING_RENDER_PASS_RENDERPASS_H_
+#ifndef _PLATFORM_DEFINES_WINDOWS_H_
+#define _PLATFORM_DEFINES_WINDOWS_H_
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+/// Reduce Build time on Windows Platform
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#ifndef VC_EXTRALEAN
+#define VC_EXTRALEAN
+#endif  // VC_EXTRALEAN
+#endif  // WIN32_LEAN_AND_MEAN
+
+#define GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_EXPOSE_NATIVE_WGL
+
+//#define GLFW_EXPOSE_NATIVE_EG
+#include <windows.h>
+#ifdef DELETE
+#undef DELETE
+#endif
+
+#if defined(_WIN64)
+#define WIN64
+#else
+#define WIN32
+#endif
+
+LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 namespace Divide {
+    struct SysInfo {
+        SysInfo() : _windowHandle(0),
+                    _availableRam(0)
+        {
+        }
 
-class SceneGraph;
-class SceneRenderState;
+        HWND _windowHandle;
+        size_t _availableRam;
+    };
 
-class RenderPass {
-   public:
-    RenderPass(const stringImpl& name);
-    ~RenderPass();
+    typedef LONGLONG TimeValue;
+}; //namespace Divide
 
-    virtual void render(const SceneRenderState& renderState,
-                        const SceneGraph& activeSceneGraph);
-    inline U16 getLasTotalBinSize() const { return _lastTotalBinSize; }
-    inline const stringImpl& getName() const { return _name; }
 
-   private:
-    stringImpl _name;
-    U16 _lastTotalBinSize;
-};
-
-};  // namespace Divide
-
-#endif
+#endif //_PLATFORM_DEFINES_WINDOWS_H_

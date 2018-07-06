@@ -65,10 +65,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
         bool xTolerance = IS_TOLERANCE(xDelta, _moveTolerance);
         bool yTolerance = IS_TOLERANCE(yDelta, _moveTolerance);
         bool zTolerance = IS_TOLERANCE(zDelta, _moveTolerance);
-        // apply framerate variance
-        if (Config::USE_FIXED_TIMESTEP) {
-            moveDistance *= Time::FRAME_SPEED_FACTOR();
-        }
+
         // Compute the destination point for current frame step
         vec3<F32> interpPosition;
         if (!yTolerance && !IS_ZERO(yDelta)) {

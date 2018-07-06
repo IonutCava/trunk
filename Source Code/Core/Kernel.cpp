@@ -33,7 +33,7 @@ bool Kernel::_freezeLoopTime = false;
 bool Kernel::_freezeGUITime = false;
 Time::ProfileTimer* s_appLoopTimer = nullptr;
 
-boost::lockfree::queue<I64> Kernel::_threadedCallbackBuffer(32);
+boost::lockfree::queue<I64> Kernel::_threadedCallbackBuffer(128);
 Kernel::CallbackFunctions Kernel::_threadedCallbackFunctions;
 
 Util::GraphPlot2D Kernel::_appTimeGraph("APP_TIME_GRAPH");
@@ -63,13 +63,6 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
         &LightManager::onCameraUpdate, &LightManager::getInstance(), std::placeholders::_1));
     _cameraMgr->addCameraUpdateListener(
         DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraUpdate, std::placeholders::_1));
-    // We have an A.I. thread, a networking thread, a PhysX thread, the main
-    // update/rendering thread so how many threads do we allocate for tasks?
-    // That's up to the programmer to decide for each app.
-    // We add the A.I. thread in the same pool as it's a task. 
-    // ReCast should also use this thread.
-    _mainTaskPool.size_controller().resize(HARDWARE_THREAD_COUNT() + 1);
-
     ParamHandler::getInstance().setParam<stringImpl>("language", Locale::currentLanguage());
 
     s_appLoopTimer = Time::ADD_TIMER("MainLoopTimer");
@@ -87,8 +80,11 @@ void Kernel::threadPoolCompleted(I64 onExitTaskID) {
 Task_ptr Kernel::AddTask(U64 tickInterval, I32 numberOfTicks,
                       const DELEGATE_CBK<>& threadedFunction,
                       const DELEGATE_CBK<>& onCompletionFunction) {
-    Task_ptr taskPtr(MemoryManager_NEW Task(_mainTaskPool, tickInterval,
-                                            numberOfTicks, threadedFunction));
+    Task_ptr taskPtr(new Task(_mainTaskPool,
+                              tickInterval,
+                              numberOfTicks,
+                              threadedFunction));
+
     taskPtr->onCompletionCbk(DELEGATE_BIND(&Kernel::threadPoolCompleted, this,
                                            std::placeholders::_1));
     if (onCompletionFunction) {
@@ -417,6 +413,23 @@ void Kernel::submitRenderCall(RenderStage stage,
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     ParamHandler& par = ParamHandler::getInstance();
 
+    // We have an A.I. thread, a networking thread, a PhysX thread, the main
+    // update/rendering thread so how many threads do we allocate for tasks?
+    // That's up to the programmer to decide for each app.
+    // We add the A.I. thread in the same pool as it's a task. 
+    // ReCast should also use this thread.
+    U32 threadCount = HARDWARE_THREAD_COUNT();
+    if (threadCount <= 2) {
+        return ErrorCode::CPU_NOT_SUPPORTED;
+    }
+
+    if (!CheckMemory(Config::REQUIRED_RAM_SIZE, 
+                     Application::getInstance().getSysInfo())) {
+        return ErrorCode::NOT_ENOUGH_RAM;
+    }
+
+    _mainTaskPool.size_controller().resize(HARDWARE_THREAD_COUNT());
+
     Console::bindConsoleOutput(
         DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(),
                       std::placeholders::_1, std::placeholders::_2));
@@ -458,8 +471,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     GUISplash("divideLogo.jpg", vec2<U16>(400, 300)).render();
     _GFX.endFrame();
 
-    LightManager::getInstance().init();
-
     Console::printfn(Locale::get("START_SOUND_INTERFACE"));
     if ((initError = _SFX.initAudioAPI()) != ErrorCode::NO_ERR) {
         return initError;
@@ -476,6 +487,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         ErrorCode::NO_ERR) {
         return initError;
     }
+
+    LightManager::getInstance().init();
+
     // Initialize GUI with our current resolution
     _GUI.init(resolution);
     _sceneMgr.init(&_GUI);

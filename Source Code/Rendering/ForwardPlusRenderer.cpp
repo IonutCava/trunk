@@ -8,8 +8,8 @@ namespace Divide {
 
 ForwardPlusRenderer::ForwardPlusRenderer()
     : Renderer(RendererType::RENDERER_FORWARD_PLUS) {
-    _opaqueGrid.reset(/*MemoryManager_NEW*/ new LightGrid());
-    _transparentGrid.reset(/*MemoryManager_NEW*/ new LightGrid());
+    _opaqueGrid.reset(new LightGrid());
+    _transparentGrid.reset(new LightGrid());
     /// Initialize our depth ranges construction shader (see LightManager.cpp
     /// for more documentation)
     ResourceDescriptor rangesDesc("DepthRangesConstruct");

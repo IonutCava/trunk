@@ -72,7 +72,7 @@ ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc,
     Console::printfn(Locale::get("START_APPLICATION"));
 
     // Create a new kernel
-    _kernel.reset(MemoryManager_NEW Kernel(argc, argv, this->getInstance()));
+    _kernel.reset(new Kernel(argc, argv, this->getInstance()));
     assert(_kernel.get() != nullptr);
 
     // and load it via an XML file config

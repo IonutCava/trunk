@@ -35,21 +35,6 @@
 #include "EffectManager.h"
 #include "Core/Headers/Application.h"
 
-#if defined OIS_WIN32_PLATFORM
-LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-//////////////////////////////////////////////////////////////////////
-////////////////////////////////////Needed Linux Headers//////////////
-#elif defined OIS_LINUX_PLATFORM
-#include <X11/Xlib.h>
-void checkX11Events();
-//////////////////////////////////////////////////////////////////////
-////////////////////////////////////Needed Mac Headers//////////////
-#elif defined OIS_APPLE_PLATFORM
-#include <Carbon/Carbon.h>
-void checkMacEvents();
-#endif
-
 namespace Divide {
 namespace Input {
 

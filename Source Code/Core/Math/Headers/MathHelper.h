@@ -39,7 +39,7 @@
 #ifndef _CORE_MATH_MATH_HELPER_H_
 #define _CORE_MATH_MATH_HELPER_H_
 
-#include "Platform/DataTypes/Headers/PlatformDefines.h"
+#include "Platform/Platform/Headers/PlatformDefines.h"
 #include <boost/thread/tss.hpp>
 
 #include <sstream>

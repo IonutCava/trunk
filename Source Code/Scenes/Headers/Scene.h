@@ -132,8 +132,8 @@ class NOINITVTABLE Scene : public Resource {
                              SceneGraphNode_ptr parentNode);
     SceneGraphNode_ptr addLight(LightType type,
                              SceneGraphNode_ptr parentNode);
-    SceneGraphNode_ptr addSky(Sky* const skyItem);
-
+    SceneGraphNode_ptr addSky();
+    SceneGraphNode_ptr addSky(Sky& skyItem);
     inline void cacheResolution(const vec2<U16>& newResolution) {
         Attorney::SceneRenderStateScene::cachedResolution(
             _sceneState.renderState(), newResolution);

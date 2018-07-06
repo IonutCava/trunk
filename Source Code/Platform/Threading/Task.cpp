@@ -39,40 +39,44 @@ void Task::startTask(TaskPriority priority) {
     }
 }
 
-void Task::stopTask() { _end = true; }
+void Task::stopTask() { 
+    _end = true;
+}
 
-void Task::pauseTask(bool state) { _paused = state; }
+void Task::pauseTask(bool state) {
+    _paused = state;
+}
 
 void Task::run() {
-    Console::d_printfn(Locale::get("TASK_START_THREAD"),
-                       std::this_thread::get_id());
-    U64 lastCallTime = Time::ElapsedMicroseconds(true);
+    Console::d_printfn(Locale::get("TASK_START_THREAD"), getGUID(), std::this_thread::get_id());
 
+    U64 lastCallTime = Time::ElapsedMicroseconds(true);
     // 0 == run forever
     if (_numberOfTicks == 0) {
         _numberOfTicks = -1;
     }
 
-    _done = false;
+    Application& app = Application::getInstance();
 
+    _done = false;
     while (true) {
         if (_numberOfTicks == 0) {
             _end = true;
         }
 
         while ((_paused && !_end) ||
-               (Application::getInstance().mainLoopPaused() &&
-                !Application::getInstance().ShutdownRequested())) {
+               (app.mainLoopPaused() && !app.ShutdownRequested())) {
             continue;
         }
-        if (_end || Application::getInstance().ShutdownRequested()) {
+
+        if (_end || app.ShutdownRequested()) {
             break;
         }
 
         U64 nowTime = Time::ElapsedMicroseconds(true);
-        if (nowTime > (lastCallTime + _tickInterval)) {
+        if (nowTime >= (lastCallTime + _tickInterval)) {
             _callback();
-            lastCallTime = Time::ElapsedMicroseconds(true);
+            lastCallTime = nowTime;
         }
 
         if (_numberOfTicks > 0) {
@@ -80,8 +84,7 @@ void Task::run() {
         }
     }
 
-    Console::d_printfn(Locale::get("TASK_DELETE_THREAD"),
-                       std::this_thread::get_id());
+    Console::d_printfn(Locale::get("TASK_DELETE_THREAD"), getGUID(), std::this_thread::get_id());
 
     if (_onCompletionCbk) {
         _onCompletionCbk(getGUID());

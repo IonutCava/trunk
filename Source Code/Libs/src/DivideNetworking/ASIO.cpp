@@ -20,7 +20,6 @@
 #include "ASIO.h"
 #include "Client.h"
 #include "Core/Math/Headers/MathHelper.h"
-#include <boost/archive/text_iarchive.hpp>
 
 namespace Divide {
 

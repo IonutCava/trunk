@@ -12,7 +12,6 @@
 #include <thread>
 
 #include <CEGUI/RendererModules/OpenGL/GL3Renderer.h>
-#include <GL/glfw3native.h>
 
 namespace Divide {
 
@@ -96,11 +95,9 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
         Console::printfn(Locale::get("WARN_APPLICATION_CLOSE"));
         return ErrorCode::GLFW_WINDOW_INIT_ERROR;
     }
-#if defined(OS_WINDOWS)
-    par.setParam("mainWindowHandle", glfwGetWin32Window(GLUtil::_mainWindow));
-#else
-    par.setParam("mainWindowHandle", glfwGetX11Window(GLUtil::_mainWindow));
-#endif
+
+    getWindowHandle(GLUtil::_mainWindow, Application::getInstance().getSysInfo());
+
     // The application window will hold the main rendering context
     glfwMakeContextCurrent(GLUtil::_mainWindow);
     // Init OpenGL Bidnings for main context

@@ -278,7 +278,6 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
     }
 
     if (_renderSkeleton || sceneRenderState.drawSkeletons()) {
-        Console::printfn("Skeleton requested for [ %s ]", _parentSGN.getName().c_str());
         // Continue only for skinned submeshes
         if (_isSubMesh && _nodeSkinned) {
             SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();

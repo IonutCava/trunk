@@ -28,7 +28,7 @@ void SkinnedSubMesh::postLoad(SceneGraphNode& sgn) {
 
     sgn.setComponent(
         SGNComponent::ComponentType::ANIMATION,
-        MemoryManager_NEW AnimationComponent(*_parentAnimatorPtr, sgn));
+        new AnimationComponent(*_parentAnimatorPtr, sgn));
 
     SubMesh::postLoad(sgn);
 }
@@ -41,10 +41,10 @@ bool SkinnedSubMesh::updateAnimations(SceneGraphNode& sgn) {
 }
 
 void SkinnedSubMesh::buildBoundingBoxesForAnimCompleted(U32 animationIndex) {
-    std::atomic_bool& currentBBStatus = _boundingBoxesAvailable[animationIndex];
-    std::atomic_bool& currentBBComputing = _boundingBoxesComputing[animationIndex];
-    currentBBComputing = false;
-    currentBBStatus = true;
+    boundingBoxPerAnimationStatus::iterator it1 = _boundingBoxesAvailable.find(animationIndex);
+    boundingBoxPerAnimationStatus::iterator it2 = _boundingBoxesComputing.find(animationIndex);
+    it1->second = true;
+    it2->second = false;
 }
 
 void SkinnedSubMesh::buildBoundingBoxesForAnim(
@@ -135,14 +135,16 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
     boundingBoxPerAnimation::const_iterator it3 = _boundingBoxes.find(animationIndex);
     // If the BBs are computed, set the BB for the current frame as the node BB
     if (it3 != std::end(_boundingBoxes)) {
-        U32 frameIndex = animComp->frameIndex();
+#if defined(_DEBUG)
         const boundingBoxPerFrame& bbPerFrame = it3->second;
-
-        boundingBoxPerFrame::const_iterator it4 = bbPerFrame.find(frameIndex);
-        STUBBED("REMOVE THIS HACK!!!!!! -Ionut");
-        if (it4 != std::end(bbPerFrame)) {
+        boundingBoxPerFrame::const_iterator it4 = bbPerFrame.find(animComp->frameIndex());
+        if (it4 != std::end(bbPerFrame))  {
             sgn.setInitialBoundingBox(it4->second);
         }
+#else
+        sgn.setInitialBoundingBox(it3->second.find(animComp->frameIndex()));
+#endif
+
     }
     return true;
 }

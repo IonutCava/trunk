@@ -31,8 +31,7 @@ bool FlashScene::load(const stringImpl& name, GUI* const gui) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name, gui, true, true);
     addLight(LightType::DIRECTIONAL, GET_ACTIVE_SCENEGRAPH().getRoot());
-    _currentSky =
-        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    _currentSky = addSky();
     return loadState;
 }
 

@@ -264,8 +264,7 @@ bool PingPongScene::load(const stringImpl& name, GUI* const gui) {
     // Add a light
     _sun = addLight(LightType::DIRECTIONAL, 
                GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
-    _currentSky =
-        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    _currentSky = addSky();
     _freeFlyCam = &renderState().getCamera();
     _paddleCam = MemoryManager_NEW FreeFlyCamera();
     _paddleCam->fromCamera(*_freeFlyCam);

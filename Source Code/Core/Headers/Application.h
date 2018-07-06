@@ -43,23 +43,25 @@ enum class ErrorCode : I32 {
     NO_ERR = 0,
     MISSING_SCENE_DATA = -1,
     MISSING_SCENE_LOAD_CALL = -2,
-    GFX_NOT_SUPPORTED = -3,
-    GFX_NON_SPECIFIED = -4,
-    SFX_NON_SPECIFIED = -5,
-    PFX_NON_SPECIFIED = -6,
-    GLFW_INIT_ERROR = -7,
-    GLFW_WINDOW_INIT_ERROR = -8,
-    GLBINGING_INIT_ERROR = -9,
-    GL_OLD_HARDWARE = -10,
-    DX_INIT_ERROR = -11,
-    DX_OLD_HARDWARE = -12,
-    SDL_AUDIO_INIT_ERROR = -13,
-    SDL_AUDIO_MIX_INIT_ERROR = -14,
-    FMOD_AUDIO_INIT_ERROR = -15,
-    OAL_INIT_ERROR = -16,
-    PHYSX_INIT_ERROR = -17,
-    PHYSX_EXTENSION_ERROR = -18,
-    NO_LANGUAGE_INI = -19
+    CPU_NOT_SUPPORTED = -3,
+    GFX_NOT_SUPPORTED = -4,
+    GFX_NON_SPECIFIED = -5,
+    SFX_NON_SPECIFIED = -6,
+    PFX_NON_SPECIFIED = -7,
+    GLFW_INIT_ERROR = -8,
+    GLFW_WINDOW_INIT_ERROR = -9,
+    GLBINGING_INIT_ERROR = -10,
+    GL_OLD_HARDWARE = -11,
+    DX_INIT_ERROR = -12,
+    DX_OLD_HARDWARE = -13,
+    SDL_AUDIO_INIT_ERROR = -14,
+    SDL_AUDIO_MIX_INIT_ERROR = -15,
+    FMOD_AUDIO_INIT_ERROR = -16,
+    OAL_INIT_ERROR = -17,
+    PHYSX_INIT_ERROR = -18,
+    PHYSX_EXTENSION_ERROR = -19,
+    NO_LANGUAGE_INI = -20,
+    NOT_ENOUGH_RAM = -21
 };
 
 class Kernel;
@@ -111,6 +113,8 @@ DEFINE_SINGLETON(Application)
     inline void throwError(ErrorCode err);
     inline ErrorCode errorCode() const;
 
+    inline SysInfo& getSysInfo();
+    inline const SysInfo& getSysInfo() const;
     /// Add a list of callback functions that should be called when the application
     /// instance is destroyed
     /// (release hardware, file handlers, etc)
@@ -121,6 +125,7 @@ DEFINE_SINGLETON(Application)
     ~Application();
 
   private:
+    SysInfo _sysInfo;
     ErrorCode _errorCode;
     /// this is true when we are inside the main app loop
     std::atomic_bool _mainLoopActive;

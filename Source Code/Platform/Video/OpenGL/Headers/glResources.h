@@ -36,7 +36,7 @@
 
 #include "config.h"
 
-#include "Platform/DataTypes/Headers/PlatformDefines.h"
+#include "Platform/Platform/Headers/PlatformDefines.h"
 #ifndef GLBINDING_STATIC
 #define GLBINDING_STATIC
 #endif
@@ -59,14 +59,7 @@ namespace glext = gl44ext;
 #endif
 
 #include <glbinding/Binding.h>
-#if defined(OS_WINDOWS)
-#define GLFW_EXPOSE_NATIVE_WIN32
-#define GLFW_EXPOSE_NATIVE_WGL
-//#define GLFW_EXPOSE_NATIVE_EGL
-#else
-#define GLFW_EXPOSE_NATIVE_X11
-#define GLFW_EXPOSE_NATIVE_GLX
-#endif
+
 #include <GL/glfw3.h>
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 

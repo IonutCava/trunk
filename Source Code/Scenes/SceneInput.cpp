@@ -8,7 +8,6 @@
 namespace Divide {
 
 namespace {
-    static const I16 g_axisDeadZone = 256;
     static const bool g_recordInput = true;
 };
 
@@ -98,25 +97,31 @@ bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
     STUBBED("ToDo: Store input from multiple joysticks in scene state! - Ionut");
 
     SceneState& state = _parentScene.state();
-    if (arg.device->getID() != to_int(Input::Joystick::JOYSTICK_1)) {
+    Input::Joystick joystick = static_cast<Input::Joystick>(arg.device->getID());
+    if (joystick != Input::Joystick::JOYSTICK_1) {
         return false;
     }
-    I32 axisABS = arg.state.mAxes[axis].abs;
+
+    Input::JoystickInterface* joyInterface = nullptr;
+    joyInterface = Input::InputInterface::getInstance().getJoystickInterface();
+    const Input::JoystickData& joyData = joyInterface->getJoystickData(joystick);
+    I32 deadZone = joyData._deadZone;
+    I32 axisABS = std::min(arg.state.mAxes[axis].abs, joyData._max);
 
     switch (axis) {
         case 0: {
-            if (axisABS > g_axisDeadZone) {
+            if (axisABS > deadZone) {
                 state.angleUD(SceneState::MoveDirection::POSITIVE);
-            } else if (axisABS < -g_axisDeadZone) {
+            } else if (axisABS < -deadZone) {
                 state.angleUD(SceneState::MoveDirection::NEGATIVE);
             } else {
                 state.angleUD(SceneState::MoveDirection::NONE);
             }
         } break;
         case 1: {
-            if (axisABS > g_axisDeadZone) {
+            if (axisABS > deadZone) {
                 state.angleLR(SceneState::MoveDirection::POSITIVE);
-            } else if (axisABS < -g_axisDeadZone) {
+            } else if (axisABS < -deadZone) {
                 state.angleLR(SceneState::MoveDirection::NEGATIVE);
             } else {
                 state.angleLR(SceneState::MoveDirection::NONE);
@@ -124,18 +129,18 @@ bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
         } break;
 
         case 2: {
-            if (axisABS < -g_axisDeadZone) {
+            if (axisABS < -deadZone) {
                 state.moveFB(SceneState::MoveDirection::POSITIVE);
-            } else if (axisABS > g_axisDeadZone) {
+            } else if (axisABS > deadZone) {
                 state.moveFB(SceneState::MoveDirection::NEGATIVE);
             } else {
                 state.moveFB(SceneState::MoveDirection::NONE);
             }
         } break;
         case 3: {
-            if (axisABS < -g_axisDeadZone) {
+            if (axisABS < -deadZone) {
                 state.moveLR(SceneState::MoveDirection::NEGATIVE);
-            } else if (axisABS > g_axisDeadZone) {
+            } else if (axisABS > deadZone) {
                 state.moveLR(SceneState::MoveDirection::POSITIVE);
             } else {
                 state.moveLR(SceneState::MoveDirection::NONE);
