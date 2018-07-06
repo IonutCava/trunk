@@ -8,10 +8,11 @@
 namespace Divide {
 
 GUISplash::GUISplash(const stringImpl& splashImageName,
-                     const vec2<U16>& dimensions) {
+                     const vec2<U16>& dimensions)
+{
     SamplerDescriptor splashSampler;
-    splashSampler.toggleMipMaps(true);
-    splashSampler.setAnisotropy(16);
+    splashSampler.toggleMipMaps(false);
+    splashSampler.setAnisotropy(0);
     splashSampler.setWrapMode(TextureWrap::CLAMP);
     ResourceDescriptor splashImage("SplashScreen Texture");
     splashImage.setFlag(true);
@@ -29,7 +30,8 @@ GUISplash::GUISplash(const stringImpl& splashImageName,
     _splashShader = CreateResource<ShaderProgram>(splashShader);
 }
 
-GUISplash::~GUISplash() {
+GUISplash::~GUISplash()
+{
     RemoveResource(_splashImage);
     RemoveResource(_splashShader);
 }

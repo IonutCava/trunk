@@ -50,7 +50,7 @@ class glTexture : public Texture {
     void loadData(GLuint target, const GLubyte* const ptr,
                   const vec2<GLushort>& dimensions,
                   const vec2<GLushort>& mipLevels, GFXImageFormat format,
-                  GFXImageFormat internalFormat, bool usePOW2 = false);
+                  GFXImageFormat internalFormat);
 
    protected:
     bool generateHWResource(const stringImpl& name);
@@ -60,6 +60,7 @@ class glTexture : public Texture {
     void updateSampler();
 
    private:
+    GLenum _type;
     GLenum _format;
     GLenum _internalFormat;
     std::atomic_bool _allocatedStorage;

@@ -162,7 +162,7 @@ bool Texture::LoadFile(U32 target, const stringImpl& name) {
     // Uploading to the GPU dependents on the rendering API
     loadData(target, img.data(), img.dimensions(),
              vec2<U16>(0, (U16)floorf(log2f(fmaxf(width, height)))),
-             img.format(), internalFormat, true);
+             img.format(), internalFormat);
 
     // We will always return true because we load the "missing_texture.jpg" in
     // case of errors

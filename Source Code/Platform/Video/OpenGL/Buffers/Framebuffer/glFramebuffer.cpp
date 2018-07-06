@@ -137,7 +137,6 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
         internalFormat);
 
     tex->refreshMipMaps();
-    tex->Bind(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
 
     // Attach to frame buffer
     if (type == TextureDescriptor::AttachmentType::Depth) {

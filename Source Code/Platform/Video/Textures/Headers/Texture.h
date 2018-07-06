@@ -55,8 +55,7 @@ class NOINITVTABLE Texture : public HardwareResource {
     virtual void loadData(U32 target, const U8* const ptr,
                           const vec2<U16>& dimensions,
                           const vec2<U16>& mipLevels, GFXImageFormat format,
-                          GFXImageFormat internalFormat,
-                          bool usePOW2 = false) = 0;
+                          GFXImageFormat internalFormat) = 0;
 
     /// Specify the sampler descriptor used to sample from this texture in the
     /// shaders

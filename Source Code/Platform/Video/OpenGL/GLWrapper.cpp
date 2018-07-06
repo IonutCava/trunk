@@ -574,10 +574,12 @@ void GL_API::drawPoints(GLuint numPoints) {
 
 void GL_API::uploadDrawCommands(const DrawCommandList& drawCommands,
                                 U32 commandCount) const {
-    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
-    GLUtil::DSAWrapper::dsaNamedBufferSubData(
-        _indirectDrawBuffer, 0, commandCount * sizeof(IndirectDrawCommand),
-        (bufferPtr)drawCommands.data());
+    if (commandCount > 0) {
+        GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
+        GLUtil::DSAWrapper::dsaNamedBufferSubData(
+            _indirectDrawBuffer, 0, commandCount * sizeof(IndirectDrawCommand),
+            (bufferPtr)drawCommands.data());
+    }
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {

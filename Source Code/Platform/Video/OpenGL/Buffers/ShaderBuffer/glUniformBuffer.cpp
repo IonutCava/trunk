@@ -93,7 +93,7 @@ void glUniformBuffer::DiscardSubData(ptrdiff_t offsetElementCount,
 void glUniformBuffer::UpdateData(GLintptr offsetElementCount, GLsizeiptr rangeElementCount,
                                  const bufferPtr data) const {
 
-    if (offsetElementCount == rangeElementCount) {
+    if (rangeElementCount == 0) {
         return;
     }
 
