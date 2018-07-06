@@ -59,7 +59,7 @@
 #define _DIVIDE_CROWD_H_
 
 #include "Core/Math/Headers/MathClasses.h"
-#include "DetourCrowd/Include/DetourCrowd.h"
+#include "ReCast/DetourCrowd/Include/DetourCrowd.h"
 #include "../NavMeshes/Headers/NavMesh.h"
 #include <vector>
 
@@ -69,7 +69,7 @@
   * Controls a crowd of agents that can steer to avoid each other and follow
   * individual paths.
   *
-  * This class is largely based on the CrowdTool used in the original recastnavigation
+  * This class is largely based on the CrowdTool used in the original RecastNavigation
   * demo.
   **/
 namespace AI {

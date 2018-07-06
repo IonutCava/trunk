@@ -6,9 +6,9 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
 
-#include <DebugUtils/Include/RecastDump.h>
-#include <DebugUtils/Include/DetourDebugDraw.h>
-#include <DebugUtils/Include/RecastDebugDraw.h>
+#include <ReCast/DebugUtils/Include/RecastDump.h>
+#include <ReCast/DebugUtils/Include/DetourDebugDraw.h>
+#include <ReCast/DebugUtils/Include/RecastDebugDraw.h>
 
 namespace AI {
 namespace Navigation {
@@ -45,8 +45,10 @@ namespace Navigation {
     {
         if (_buildThread) {
             _buildThread->stopTask();
+            while (!_buildThread->isFinished()){
+            }
         }
-
+        
         if (_navQuery) {
             dtFreeNavMeshQuery(_navQuery);
             _navQuery = 0 ;

@@ -23,11 +23,9 @@
 #define _AI_ENTITY_H_
 
 #include "Core/Headers/cdigginsAny.h"
-#include "AI/Headers/GOAPContext.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "AI/ActionInterface/Headers/AITeam.h"
 #include "Utility/Headers/GUIDWrapper.h"
-#include <AesopPlanner.h>
 
 class NPC;
 struct dtCrowdAgent;
@@ -61,7 +59,6 @@ public:
 
     bool addSensor(SensorType type, Sensor* sensor);
     bool addAISceneImpl(AISceneImpl* AISceneImpl);
-    bool addGOAPPlanner(const Aesop::Planner& planner, bool startOnAdd = false);
     void sendMessage(AIEntity* receiver,  AIMsg msg, const cdiggins::any& msg_content);
     void receiveMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content);
     void processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content);
@@ -75,7 +72,6 @@ public:
         return -1; 
     }
 
-    inline void updateGOAPPlan() { _updateGOAPPlan  = true; }
     ///Set a team for this Entity. If the entity belonged to a different team, remove it from that team first
     void setTeam(AITeam* const teamPtr);
     ///Add a friend to our team
@@ -169,8 +165,6 @@ private:
     ::std::string         _name;
     AITeam*               _teamPtr;
     AISceneImpl*          _AISceneImpl;
-    GOAPContext           _goapContext;
-    Aesop::Planner        _goapPlanner;
 
     mutable SharedLock    _updateMutex;
     mutable SharedLock    _managerQueryMutex;
@@ -201,8 +195,6 @@ private:
     U64       _moveWaitTimer;
     /// True if this character is stopped.
     bool _stopped;
-    /// True if the GOAP plan needs an update
-    bool _updateGOAPPlan;
 };
 
 };//namespace AI

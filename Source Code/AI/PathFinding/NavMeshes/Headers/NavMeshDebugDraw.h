@@ -23,7 +23,7 @@
 #ifndef _NAV_MESH_DEBUG_DRAW_H_
 #define _NAV_MESH_DEBUG_DRAW_H_
 
-#include <DebugUtils/Include/DebugDraw.h>
+#include <ReCast/DebugUtils/Include/DebugDraw.h>
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 

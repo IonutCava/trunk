@@ -10,7 +10,6 @@
 #include "AI/PathFinding/Headers/DivideRecast.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 #include "Managers/Headers/AIManager.h"
-#include <Aesop.h>
 
 using namespace AI;
 
@@ -19,7 +18,6 @@ static const D32 DESTINATION_RADIUS = 1.5 * 1.5;
 AIEntity::AIEntity(const vec3<F32>& currentPosition, const std::string& name)  : GUIDWrapper(),
                                                                                 _name(name),
                                                                                 _AISceneImpl(nullptr),
-                                                                                _updateGOAPPlan(false),
                                                                                 _unitRef(nullptr),
                                                                                 _teamPtr(nullptr),
                                                                                 _detourCrowd(nullptr),
@@ -113,7 +111,6 @@ bool AIEntity::addAISceneImpl(AISceneImpl* AISceneImpl) {
     WriteLock w_lock(_updateMutex);
     SAFE_UPDATE(_AISceneImpl, AISceneImpl);
     _AISceneImpl->addEntityRef(this);
-    _goapContext = _AISceneImpl->getGOAPContext();
     return true;
 }
 
@@ -134,10 +131,6 @@ void AIEntity::processData(const U64 deltaTime){
 void AIEntity::update(const U64 deltaTime){
     ReadLock r_lock(_managerQueryMutex);
     if (_AISceneImpl) {
-        if (_updateGOAPPlan){
-            _goapPlanner.plan(&_goapContext);
-            _updateGOAPPlan = false;
-        }
         _AISceneImpl->update(_unitRef);
     }
     if (_unitRef) {
@@ -358,11 +351,4 @@ D32 AIEntity::getMaxSpeed(){
 
 D32 AIEntity::getMaxAcceleration(){
     return (isAgentLoaded()  ? getAgent()->params.maxAcceleration : 0.0);
-}
-
-bool AIEntity::addGOAPPlanner(const Aesop::Planner& planner, bool startOnAdd){
-    _goapPlanner = planner;
-
-    if (startOnAdd) _updateGOAPPlan = true;
-    return true;
 }

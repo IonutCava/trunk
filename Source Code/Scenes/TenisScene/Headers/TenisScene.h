@@ -24,7 +24,6 @@
 #define _AITENIS_SCENE_H
 
 #include "Scenes/Headers/Scene.h"
-#include "AI/Headers/GOAPContext.h"
 
 namespace AI {
     class AIEntity;
@@ -114,7 +113,5 @@ private: //Game stuff
     NPC *_player1, *_player2, *_player3, *_player4;
     ///Team's are factions for AIEntites so they can manage friend/foe situations
     AI::AITeam *_team1, *_team2;
-    ///GOAP context (mainly for logging)
-    AI::GOAPContext _GOAPContext;
 };
 #endif

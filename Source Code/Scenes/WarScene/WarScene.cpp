@@ -1,6 +1,6 @@
 #include "Headers/WarScene.h"
 #include "Headers/WarSceneAISceneImpl.h"
-#include "AESOPActions/Headers/AESOPActions.h"
+#include "AESOPActions/Headers/WarSceneActions.h"
 
 #include "Geometry/Material/Headers/Material.h"
 #include "Core/Math/Headers/Transform.h"
@@ -292,73 +292,12 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
 
 bool WarScene::initializeAI(bool continueOnErrors){
     //----------------------------Artificial Intelligence------------------------------//
-    Aesop::WorldState initialWorldState;
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastNorth % AI::mapCenterNorth, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterNorth % AI::mapEastNorth, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastNorth % AI::mapCenterMiddle, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapEastNorth, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastNorth % AI::mapEastMiddle, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastMiddle % AI::mapEastNorth, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastMiddle % AI::mapCenterNorth, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterNorth % AI::mapEastMiddle, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastMiddle % AI::mapCenterMiddle, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapEastMiddle, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastMiddle % AI::mapCenterSouth, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterSouth % AI::mapEastMiddle, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastMiddle % AI::mapEastSouth, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastSouth % AI::mapEastMiddle, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastSouth % AI::mapCenterMiddle, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapEastSouth, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastSouth % AI::mapCenterSouth, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterSouth % AI::mapEastSouth, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterNorth % AI::mapCenterMiddle, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapCenterNorth, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterNorth % AI::mapWestMiddle, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestMiddle % AI::mapCenterNorth, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterNorth % AI::mapWestNorth, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestNorth % AI::mapCenterNorth, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapCenterSouth, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterSouth % AI::mapCenterMiddle, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapWestSouth, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestSouth % AI::mapCenterMiddle, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapWestMiddle, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestMiddle % AI::mapCenterMiddle, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapWestNorth, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestNorth % AI::mapCenterMiddle, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterSouth % AI::mapWestMiddle, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestMiddle % AI::mapCenterSouth, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterSouth % AI::mapWestSouth, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestSouth % AI::mapCenterSouth, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestNorth % AI::mapWestMiddle, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestMiddle % AI::mapWestNorth, AI::g_predTrue);
-
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestMiddle % AI::mapWestSouth, AI::g_predTrue);
-    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestSouth % AI::mapWestMiddle, AI::g_predTrue);
-    _GOAPContext.setLogLevel(AI::GOAPContext::LOG_LEVEL_NONE);
+ //   _GOAPContext.setLogLevel(AI::GOAPContext::LOG_LEVEL_NONE);
 
     // Create 2 AI teams
     _faction1 = New AI::AITeam(1);
     _faction2 = New AI::AITeam(2);
-    // Make the teams fight eachother
+    // Make the teams fight each other
     _faction1->addEnemyTeam(_faction2->getTeamID());
     _faction2->addEnemyTeam(_faction1->getTeamID());
 
@@ -377,6 +316,65 @@ bool WarScene::initializeAI(bool continueOnErrors){
     AI::AIEntity* aiSoldier = nullptr;
     SceneNode* currentMesh = nullptr;
     SceneGraphNode* currentNode = nullptr;
+
+    AI::ScoutAction scout("NormalScout");
+    scout.setPrecondition(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
+    scout.setPrecondition(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(false));
+    scout.setEffect(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(false));
+    scout.setEffect(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(true));
+ 
+    AI::ApproachAction approach("NormalApproach");
+    approach.setPrecondition(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(true));
+    approach.setPrecondition(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(false));
+    approach.setPrecondition(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(false));
+    approach.setEffect(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(true));
+    approach.setEffect(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(false));
+  
+    AI::AttackAction attack("NormalAttack");
+    attack.setPrecondition(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(true));
+    attack.setEffect(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(false));
+    attack.setEffect(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(false));
+    attack.setEffect(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
+    attack.setEffect(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(false));
+
+    AI::RetreatAction retreat("NormalRetreat");
+    retreat.setPrecondition(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(false));
+    retreat.setPrecondition(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(true));
+    retreat.setEffect(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(false));
+
+    AI::RetreatAction retreatFromAttack("NormalRetreatFromAttack");
+    retreatFromAttack.setPrecondition(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(true));
+    retreatFromAttack.setEffect(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(false));
+
+    AI::WaitAction waitNoEnemy("IdleWaitNoEnemy");
+    waitNoEnemy.setPrecondition(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(false));
+    waitNoEnemy.setPrecondition(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(false));
+    waitNoEnemy.setEffect(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
+
+    AI::WaitAction waitEnemyDead("IdleWaitEnemyDead");
+    waitEnemyDead.setPrecondition(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(false));
+    waitEnemyDead.setPrecondition(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
+    waitEnemyDead.setEffect(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
+
+    AI::WaitAction waitApproachEnemy("IdleWaitApproach");
+    waitApproachEnemy.setPrecondition(AI::GOAPFact(AI::WaitingIdle),  AI::GOAPValue(false));
+    waitApproachEnemy.setPrecondition(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(true));
+    waitApproachEnemy.setEffect(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
+
+    AI::WarSceneGoal findEnemy("Find Enemy");
+    findEnemy.setVariable(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(false));
+    findEnemy.setVariable(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(true));
+    findEnemy.setVariable(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(false));
+    findEnemy.setVariable(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
+
+    AI::WarSceneGoal attackEnemy("Attack Enemy");
+    attackEnemy.setVariable(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
+    attackEnemy.setVariable(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
+
+    AI::WarSceneGoal idle("Wait");
+    idle.setVariable(AI::GOAPFact(AI::EnemyVisible), AI::GOAPValue(false));
+    idle.setVariable(AI::GOAPFact(AI::WaitingIdle), AI::GOAPValue(true));
+
     for(U8 k = 0; k < 2; ++k) {
         for(U8 i = 0; i < 15; ++i){
             F32 speed = 5.5f; // 5.5 m/s
@@ -416,7 +414,24 @@ bool WarScene::initializeAI(bool continueOnErrors){
             aiSoldier = New AI::AIEntity(currentNode->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), currentNode->getName());
             aiSoldier->setTeam(k == 0 ? _faction1 : _faction2);
             aiSoldier->addSensor(AI::VISUAL_SENSOR, New AI::VisualSensor());
-            aiSoldier->addAISceneImpl(New AI::WarSceneAISceneImpl(initialWorldState, _GOAPContext));
+
+            AI::WarSceneAISceneImpl* brain = New AI::WarSceneAISceneImpl();
+            brain->worldState().setVariable(AI::GOAPFact(AI::EnemyVisible),       AI::GOAPValue(false));
+            brain->worldState().setVariable(AI::GOAPFact(AI::EnemyInAttackRange), AI::GOAPValue(false));
+            brain->worldState().setVariable(AI::GOAPFact(AI::EnemyDead),          AI::GOAPValue(false));
+            brain->worldState().setVariable(AI::GOAPFact(AI::WaitingIdle),        AI::GOAPValue(true));
+            brain->registerAction(&scout);
+            brain->registerAction(&approach);
+            brain->registerAction(&attack);
+            brain->registerAction(&waitNoEnemy);
+            brain->registerAction(&waitEnemyDead);
+            brain->registerAction(&waitApproachEnemy);
+            brain->registerGoal(findEnemy);
+            brain->registerGoal(attackEnemy);
+            brain->registerGoal(idle);
+
+            aiSoldier->addAISceneImpl(brain);
+
             soldier = New NPC(currentNode, aiSoldier);
             soldier->setMovementSpeed(speed); 
             if(k == 0){

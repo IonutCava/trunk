@@ -24,7 +24,6 @@
 #define _WAR_SCENE_H
 
 #include "Scenes/Headers/Scene.h"
-#include "AI/Headers/GOAPContext.h"
 
 class SkinnedSubMesh;
 class NPC;
@@ -95,8 +94,6 @@ private: //Game
     SceneGraphNode *_lampLightNode;
     SceneGraphNode *_lampTransformNode;
     SceneNode      *_lampTransform;
-    ///GOAP context (mainly for logging)
-    AI::GOAPContext _GOAPContext;
 };
 
 #endif

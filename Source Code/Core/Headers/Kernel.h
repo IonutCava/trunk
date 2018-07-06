@@ -154,7 +154,7 @@ private:
     static bool   _renderingPaused;
     static bool   _freezeLoopTime;
     static bool   _freezeGUITime;
-   boost::threadpool::pool* _mainTaskPool;
+    boost::threadpool::pool* _mainTaskPool;
    // both are in ms
    static U64 _currentTime;
    static U64 _currentTimeFrozen;

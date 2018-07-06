@@ -71,7 +71,6 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
 
 Kernel::~Kernel()
 {
-    _mainTaskPool->wait();
     SAFE_DELETE(_mainTaskPool);
     REMOVE_TIMER(s_appLoopTimer);
 }
@@ -471,7 +470,7 @@ void Kernel::runLogicLoop(){
     shutdown();
 }
 
-void Kernel::shutdown(){
+void Kernel::shutdown() {
     //release the scene
     GET_ACTIVE_SCENE()->state().toggleRunningState(false);
     Console::getInstance().bindConsoleOutput(boost::function2<void, const char*, bool>());
@@ -493,6 +492,7 @@ void Kernel::shutdown(){
     PRINT_FN(Locale::get("STOP_HARDWARE"));
     _SFX.closeAudioApi();
     _GFX.closeRenderingApi();
+    _mainTaskPool->wait();
     InputInterface::destroyInstance();
     SFXDevice::destroyInstance();
     GFXDevice::destroyInstance();

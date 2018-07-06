@@ -24,6 +24,7 @@
 #define _WAR_SCENE_AI_ACTION_LIST_H_
 
 #include "AI/ActionInterface/Headers/AISceneImpl.h"
+#include "AESOPActions/Headers/WarSceneActions.h"
 
 namespace AI {
 enum AIMsg {
@@ -34,31 +35,34 @@ enum AIMsg {
 
 class WarSceneAISceneImpl : public AI::AISceneImpl {
 public:
-    WarSceneAISceneImpl(const Aesop::WorldState& initialState, const GOAPContext& context);
+    WarSceneAISceneImpl();
     ~WarSceneAISceneImpl();
 
     void processData(const U64 deltaTime);
     void processInput(const U64 deltaTime);
     void update(NPC* unitRef = nullptr);
-    void addEntityRef(AIEntity* entity);
     void processMessage(AIEntity* sender, AIMsg msg,const cdiggins::any& msg_content);
-    
+    void registerAction(GOAPAction* const action);
+    void registerGoal(const GOAPGoal& goal);
+
 private:
     void updatePositions();
-    // Creates a copy of the specified object and adds it to the action vector and the actionset
-    void registerAction(const Aesop::Action& action);
+    // Creates a copy of the specified object and adds it to the action vector and the ActionSet
+
+    void handlePlan(const GOAPPlan& plan);
+    bool performAction(const GOAPAction* planStep);
+
+    void receiveOrder(AI::Order order);
 
 private:
     U16       _tickCount;
     I32       _indexInMap;
     U64       _deltaTime;
     AIEntity* _currentEnemyTarget;
-    Aesop::WorldState *_initState;
-    Aesop::WorldState *_goalState;
-    Aesop::WorldState *_defaultState;
-    Aesop::Planner    *_planner;
-    Aesop::ActionSet  _actionSet;
-    vectorImpl<Aesop::Action > _actions;
+    GOAPGoal* _activeGoal;
+    bool _newPlan;
+    bool _newPlanSuccess;
+    bool _orderReceived;
 };
 
 }; //namespace AI

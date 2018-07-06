@@ -291,10 +291,10 @@ bool TenisScene::initializeAI(bool continueOnErrors){
     _aiPlayer3->addSensor(AI::VISUAL_SENSOR, New AI::VisualSensor());
     _aiPlayer4->addSensor(AI::VISUAL_SENSOR, New AI::VisualSensor());
 
-    _aiPlayer1->addAISceneImpl(New AI::TenisSceneAISceneImpl(_GOAPContext, _ballSGN));
-    _aiPlayer2->addAISceneImpl(New AI::TenisSceneAISceneImpl(_GOAPContext, _ballSGN));
-    _aiPlayer3->addAISceneImpl(New AI::TenisSceneAISceneImpl(_GOAPContext, _ballSGN));
-    _aiPlayer4->addAISceneImpl(New AI::TenisSceneAISceneImpl(_GOAPContext, _ballSGN));
+    _aiPlayer1->addAISceneImpl(New AI::TenisSceneAISceneImpl(_ballSGN));
+    _aiPlayer2->addAISceneImpl(New AI::TenisSceneAISceneImpl(_ballSGN));
+    _aiPlayer3->addAISceneImpl(New AI::TenisSceneAISceneImpl(_ballSGN));
+    _aiPlayer4->addAISceneImpl(New AI::TenisSceneAISceneImpl(_ballSGN));
 
     _team1 = New AI::AITeam(1);
     _team2 = New AI::AITeam(2);

@@ -392,12 +392,6 @@
     <Filter Include="Graphs\Components\Headers">
       <UniqueIdentifier>{e63dac5e-0be9-4591-a66a-3890633302b5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AI\AESOP">
-      <UniqueIdentifier>{84953f6c-d119-43d1-9113-a38819d2405d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\AESOP\Headers">
-      <UniqueIdentifier>{9111c95a-07c0-4e56-91ce-398630769324}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scenes\TenisScene">
       <UniqueIdentifier>{ac00b097-333f-4fa4-8c0b-69ae4a80d1a1}</UniqueIdentifier>
     </Filter>
@@ -409,6 +403,9 @@
     </Filter>
     <Filter Include="Scenes\WarScene\AESOPActions\Headers">
       <UniqueIdentifier>{3d93eacc-596d-4365-9d18-0f00afa1b3ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\ActionInterface\CPPGOAP">
+      <UniqueIdentifier>{754d3403-73ec-4d7b-a26b-c6476270380c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -836,23 +833,11 @@
     <ClCompile Include="..\..\Source Code\Graphs\Components\NavigationComponent.cpp">
       <Filter>Graphs\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\Aesop\source\AesopAction.cpp">
-      <Filter>AI\AESOP</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\Aesop\source\AesopPlanner.cpp">
-      <Filter>AI\AESOP</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\Aesop\source\AesopWorldState.cpp">
-      <Filter>AI\AESOP</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\ActionInterface\AITeam.cpp">
       <Filter>AI\ActionInterface</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CascadedShadowMaps.cpp">
       <Filter>Rendering\Lighting\ShadowMapping</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\GOAPContext.cpp">
-      <Filter>AI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisScene.cpp">
       <Filter>Scenes\TenisScene</Filter>
@@ -884,11 +869,23 @@
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIInput.cpp">
       <Filter>GUI\CEGUIAddons</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\AESOPActionInterface.cpp">
-      <Filter>AI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Scenes\WarScene\AESOPActions\AESOPActions.cpp">
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\AESOPActions\WarSceneActions.cpp">
       <Filter>Scenes\WarScene\AESOPActions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\GOAPInterface.cpp">
+      <Filter>AI\ActionInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Action.cpp">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\AStar.cpp">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Node.cpp">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.cpp">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1355,35 +1352,11 @@
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\NavigationComponent.h">
       <Filter>Graphs\Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\Aesop.h">
-      <Filter>AI\AESOP\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopAction.h">
-      <Filter>AI\AESOP\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopConfig.h">
-      <Filter>AI\AESOP\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopContext.h">
-      <Filter>AI\AESOP\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopPlanner.h">
-      <Filter>AI\AESOP\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopTypes.h">
-      <Filter>AI\AESOP\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopWorldState.h">
-      <Filter>AI\AESOP\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AITeam.h">
       <Filter>AI\ActionInterface\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMaps.h">
       <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\Headers\GOAPContext.h">
-      <Filter>AI\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AISceneImpl.h">
       <Filter>AI\ActionInterface\Headers</Filter>
@@ -1418,11 +1391,23 @@
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIInput.h">
       <Filter>GUI\CEGUIAddons\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Scenes\WarScene\AESOPActions\Headers\AESOPActions.h">
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h">
       <Filter>Scenes\WarScene\AESOPActions\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\Headers\AESOPActionInterface.h">
-      <Filter>AI\Headers</Filter>
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\GOAPInterface.h">
+      <Filter>AI\ActionInterface\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Action.h">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\AStar.h">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Node.h">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.h">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

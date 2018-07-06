@@ -7,12 +7,12 @@
 
 using namespace AI;
 
-TenisSceneAISceneImpl::TenisSceneAISceneImpl(const GOAPContext& context, SceneGraphNode* target) : AISceneImpl(context),
-                                                                             _target(target),
-                                                                             _attackBall(false),
-                                                                             _ballToTeam2(true),
-                                                                             _gameStop(true),
-                                                                             _tickCount(0)
+TenisSceneAISceneImpl::TenisSceneAISceneImpl(SceneGraphNode* target) : AISceneImpl(),
+                                                                       _target(target),
+                                                                       _attackBall(false),
+                                                                       _ballToTeam2(true),
+                                                                       _gameStop(true),
+                                                                       _tickCount(0)
 {
 }
 

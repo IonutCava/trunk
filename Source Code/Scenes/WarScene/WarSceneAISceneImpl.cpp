@@ -1,5 +1,4 @@
 #include "Headers/WarSceneAISceneImpl.h"
-#include "AESOPActions/Headers/AESOPActions.h"
 
 #include "Managers/Headers/AIManager.h"
 #include "Core/Math/Headers/Transform.h"
@@ -11,93 +10,58 @@ using namespace AI;
 
 static const D32 ATTACK_RADIUS = 4 * 4;
 
-void printPlan(Aesop::Context &ctx, const Aesop::Plan &plan) {
-   Aesop::Plan::const_iterator it;
-   ctx.logEvent("The Plan:\n");
-   for (it = plan.begin(); it != plan.end(); it++) {
-      ctx.logEvent("   %s", it->ac->getName().c_str());
-      if (it->params.size()) {
-         Aesop::objects::const_iterator pl;
-         for (pl = it->params.begin(); pl != it->params.end(); pl++) {
-            ctx.logEvent(" %c", *pl);
-        }
-      }
-      ctx.logEvent("\n");
-   }
-}
-
-
-WarSceneAISceneImpl::WarSceneAISceneImpl(const Aesop::WorldState& initialState, const GOAPContext& context) : AISceneImpl(context),
-                                                                                                              _tickCount(0),
-                                                                                                              _currentEnemyTarget(nullptr),
-                                                                                                              _deltaTime(0ULL),
-                                                                                                              _indexInMap(-1)
+WarSceneAISceneImpl::WarSceneAISceneImpl() : AISceneImpl(),
+                                            _tickCount(0),
+                                            _newPlan(false),
+                                            _newPlanSuccess(false),
+                                            _orderReceived(false),
+                                            _activeGoal(nullptr),
+                                            _currentEnemyTarget(nullptr),
+                                            _deltaTime(0ULL),
+                                            _indexInMap(-1)
 {
-    _planner = nullptr;
-    _goalState = New Aesop::WorldState(initialState);
-    _initState = New Aesop::WorldState(initialState);
-    _defaultState = New Aesop::WorldState(initialState);
-
-    MoveAction move("move", 1.0f);
-    // Two parameters to this action, move-from and move-to.
-    move.parameters(2);
-    // Cannot move from x to x.
-    move.condition(Aesop::ArgsNotEqual);        
-    // Required: at() -> param 0
-    move.condition(Aesop::Fact(At), 0, Aesop::Equals);
-    // Required: adjacent(param 0, param 1) -> true
-    move.condition(Aesop::Fact(Adjacent) % Aesop::Parameter(0) % Aesop::Parameter(1), Aesop::Equals, AI::g_predTrue);
-    // Required: ignore center block
-    move.condition(Aesop::Fact(At) % Aesop::Parameter(0), Aesop::NotEqual, AI::mapCenterMiddle);
-    // Effect: unset at(param 0)
-    move.effect(Aesop::Fact(At), Aesop::Unset);        
-    // Effect: at() -> param 1
-    move.effect(Aesop::Fact(At), 1, Aesop::Set);       
-    registerAction(move);
 }
 
 WarSceneAISceneImpl::~WarSceneAISceneImpl()
 {
-    SAFE_DELETE(_goalState);
-    SAFE_DELETE(_initState);
-    SAFE_DELETE(_defaultState);
-    SAFE_DELETE(_planner);
-    _actions.clear();
-}
-
-void WarSceneAISceneImpl::registerAction(const Aesop::Action& action) {
-    _actions.push_back(action);
-    _actionSet.add(&_actions.back());
-}
-
-void WarSceneAISceneImpl::addEntityRef(AIEntity* entity){
-    if (entity) {
-        _entity = entity;
-        SAFE_DELETE(_planner);
-        Aesop::PVal initialLife = 100;
-        Aesop::PVal friendCount = 29;
-        Aesop::PVal enemyCount = 30;
-        //_initState->set(Aesop::Fact(AI::Life),    initialLife);
-        //_initState->set(Aesop::Fact(AI::Friends), friendCount);
-        //_initState->set(Aesop::Fact(AI::Enemies), enemyCount);
-        _initState->set(Aesop::Fact(AI::At), _entity->getTeam()->getTeamID() == 0 ? mapEastMiddle : mapWestMiddle);
-        
-        //_goalState->set(Aesop::Fact(AI::Life),    initialLife);
-        //_goalState->set(Aesop::Fact(AI::Friends), friendCount);
-        //_goalState->set(Aesop::Fact(AI::Enemies), 0);
-        _goalState->set(Aesop::Fact(AI::At), _entity->getTeam()->getTeamID() == 0 ? mapWestMiddle : mapEastMiddle);
-
-        _planner = New Aesop::Planner(_initState, _goalState, _defaultState, &_actionSet);
-        _planner->addObject(AI::mapEastNorth);
-        _planner->addObject(AI::mapEastMiddle);
-        _planner->addObject(AI::mapEastSouth);
-        _planner->addObject(AI::mapCenterNorth);
-        _planner->addObject(AI::mapCenterMiddle);
-        _planner->addObject(AI::mapCenterSouth);
-        _planner->addObject(AI::mapWestNorth);
-        _planner->addObject(AI::mapWestMiddle);
-        _planner->addObject(AI::mapWestSouth);
+    for(GOAPAction*& action : actionSetPtr()){
+        SAFE_DELETE(action);
     }
+    actionSetPtr().clear();
+}
+
+void WarSceneAISceneImpl::registerAction(GOAPAction* const action) {
+    WarSceneAction* const warAction = dynamic_cast<WarSceneAction*>(action);
+    switch(warAction->actionType()){
+        case ACTION_WAIT     : AISceneImpl::registerAction(New WaitAction(*warAction));     return;
+        case ACTION_SCOUT    : AISceneImpl::registerAction(New ScoutAction(*warAction));    return;
+        case ACTION_APPROACH : AISceneImpl::registerAction(New ApproachAction(*warAction)); return;
+        case ACTION_TARGET   : AISceneImpl::registerAction(New TargetAction(*warAction));   return;
+        case ACTION_ATTACK   : AISceneImpl::registerAction(New AttackAction(*warAction));   return;
+        case ACTION_RETREAT  : AISceneImpl::registerAction(New RetreatAction(*warAction));  return;
+        case ACTION_KILL     : AISceneImpl::registerAction(New KillAction(*warAction));     return;
+    };
+
+    AISceneImpl::registerAction(New WarSceneAction(*warAction));
+}
+
+void WarSceneAISceneImpl::registerGoal(const GOAPGoal& goal) {
+    AISceneImpl::registerGoal(WarSceneGoal(goal));
+}
+
+void WarSceneAISceneImpl::receiveOrder(AI::Order order) {
+    switch(order){
+        case ORDER_FIND_ENEMY : {
+            activateGoal("Find Enemy");
+        }; break;
+        case ORDER_KILL_ENEMY : {
+            activateGoal("Attack Enemy");
+        }; break;
+        case ORDER_WAIT : {
+            activateGoal("Wait");
+        }; break;
+    };
+    _orderReceived = true;
 }
 
 void WarSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content){
@@ -106,6 +70,7 @@ void WarSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg, const cdig
 void WarSceneAISceneImpl::updatePositions(){
 }
 
+static U8 stage = 0;
 void WarSceneAISceneImpl::processInput(const U64 deltaTime) {
     if (!_entity) {
         return;
@@ -115,7 +80,6 @@ void WarSceneAISceneImpl::processInput(const U64 deltaTime) {
         return;
     }
     _deltaTime += deltaTime;
-    updatePositions();
 
     AITeam* currentTeam = _entity->getTeam();
     DIVIDE_ASSERT(currentTeam != nullptr, "WarScene error: INVALID TEAM FOR INPUT UPDATE");
@@ -198,20 +162,44 @@ void WarSceneAISceneImpl::processInput(const U64 deltaTime) {
             }
         }
     }
+
+    if (stage == 0) {
+        receiveOrder(ORDER_FIND_ENEMY);
+        stage = 1;
+    }
+    if (stage == 2) {
+        receiveOrder(ORDER_KILL_ENEMY);
+        stage = 3;
+    }
+    if (stage == 4) {
+        receiveOrder(ORDER_WAIT);
+        stage = 5;
+    }
 }
 
 void WarSceneAISceneImpl::processData(const U64 deltaTime) {
     if (!_entity) {
         return;
     }
-    if (!_planner->success()) {
-        if (_planner->plan(&_context)){ 
-            _context.setLogLevel(GOAPContext::LOG_LEVEL_NORMAL);
-            printPlan(_context, _planner->getPlan());
-            _context.setLogLevel(GOAPContext::LOG_LEVEL_NONE);
-        } else {
-        }
+
+    if (_newPlan) {
+        assert(_activeGoal != nullptr);
+        handlePlan(_activeGoal->getCurrentPlan());
+        _newPlan = false;
     }
+
+    if (_orderReceived) {
+        if ((_activeGoal = findRelevantGoal()) != nullptr) {
+           PRINT_FN("Current goal: [ %s ]", _activeGoal->getName().c_str());
+           if (_activeGoal->plan(worldState(), actionSet())) {
+                popActiveGoal(_activeGoal);
+                _newPlan = true;
+           }
+        }
+        _orderReceived = false;
+    }
+
+    updatePositions();
 }
 
 void WarSceneAISceneImpl::update(NPC* unitRef){
@@ -226,4 +214,39 @@ void WarSceneAISceneImpl::update(NPC* unitRef){
     if (visualSensor) {
         visualSensor->updatePosition(unitRef->getPosition());
     }
+}
+
+void WarSceneAISceneImpl::handlePlan(const GOAPPlan& plan) {
+   GOAPPlan::const_iterator it;
+   PRINT_FN("The Plan for [ %d ] involves [ %d ] actions.", _entity->getGUID(), plan.size());
+   for (it = plan.begin(); it != plan.end(); it++) {
+      performAction(*it);
+   }
+   stage += 1;
+   stage = stage % 6;
+}
+
+bool WarSceneAISceneImpl::performAction(const GOAPAction* planStep) {
+    const WarSceneAction* warSceneAction = dynamic_cast<const WarSceneAction*>(planStep);
+    assert(warSceneAction != nullptr);
+
+    if (!warSceneAction->preAction()){
+        return false;
+    }
+    PRINT_FN("   %s ", warSceneAction->name().c_str());
+    
+    GOAPValue oldVal = false;
+    GOAPValue newVal = false;
+    GOAPFact crtFact;
+    for(GOAPAction::operationsIterator o = warSceneAction->effects().begin(); o != warSceneAction->effects().end(); o++) {
+        crtFact = o->first;
+        newVal  = o->second;
+        oldVal  = worldState().getVariable(crtFact);
+        if (oldVal != newVal) {
+            PRINT_FN("\t\tChanging \"%s\" from \"%s\" to \"%s\"", WarSceneFactName(crtFact), GOAPValueName(oldVal), GOAPValueName(newVal));
+            worldState().setVariable(crtFact, newVal);
+        }
+    }
+    PRINT_F("\n");
+    return warSceneAction->postAction();
 }

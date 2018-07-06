@@ -35,7 +35,7 @@ enum AIMsg {
 
 class TenisSceneAISceneImpl : public AISceneImpl{
 public:
-    TenisSceneAISceneImpl(const GOAPContext& context, SceneGraphNode* target);
+    TenisSceneAISceneImpl(SceneGraphNode* target);
 	void processData(const U64 deltaTime);
 	void processInput(const U64 deltaTime);
 	void update(NPC* unitRef = nullptr);

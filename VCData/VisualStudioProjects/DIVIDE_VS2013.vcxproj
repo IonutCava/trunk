@@ -199,7 +199,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\AESOP\include;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\boost;$(EngineLibraries)\glm;$(EngineLibraries)\sdl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\cegui-deps\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(OutDir)Source Code\Libs\src\;$(EngineLibraries)\boost;$(EngineLibraries)\glm;$(EngineLibraries)\sdl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\cegui-deps\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -277,7 +277,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\AESOP\include;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\boost;$(EngineLibraries)\glm;$(EngineLibraries)\sdl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\cegui-deps\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(OutDir)Source Code\Libs\src\;$(EngineLibraries)\boost;$(EngineLibraries)\glm;$(EngineLibraries)\sdl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\cegui-deps\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -354,7 +354,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\AESOP\include;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\boost;$(EngineLibraries)\glm;$(EngineLibraries)\sdl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\cegui-deps\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\boost;$(EngineLibraries)\glm;$(EngineLibraries)\sdl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\cegui-deps\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -385,8 +385,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\AI\AESOPActionInterface.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\GOAPContext.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\GOAPInterface.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideCrowd.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideRecast.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\DivideTileCache.cpp">
@@ -469,9 +468,10 @@
     <ClCompile Include="..\..\Source Code\GUI\GuiFlash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIText.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\Aesop\source\AesopAction.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\Aesop\source\AesopPlanner.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\Aesop\source\AesopWorldState.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Action.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\AStar.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Node.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\RenderPassManager.cpp" />
@@ -519,7 +519,7 @@
     <ClCompile Include="..\..\Source Code\Scenes\SceneInput.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAISceneImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\WarScene\AESOPActions\AESOPActions.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\AESOPActions\WarSceneActions.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAISceneImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\CommandParser.cpp" />
@@ -554,8 +554,7 @@
     <ClCompile Include="..\..\Source Code\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\AI\Headers\AESOPActionInterface.h" />
-    <ClInclude Include="..\..\Source Code\AI\Headers\GOAPContext.h" />
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\GOAPInterface.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideCrowd.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideRecast.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCache.h" />
@@ -622,13 +621,10 @@
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIFlash.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUISplash.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIText.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\Aesop.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopAction.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopConfig.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopContext.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopPlanner.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopTypes.h" />
-    <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopWorldState.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Action.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\AStar.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Node.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\RenderPassManager.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h" />
@@ -679,7 +675,7 @@
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h" />
     <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisSceneAISceneImpl.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\WarScene\AESOPActions\Headers\AESOPActions.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h" />
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAISceneImpl.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\CommandParser.h" />
