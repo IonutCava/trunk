@@ -32,6 +32,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _ATTRIBUTE_DESCRIPTOR_H_
 #define _ATTRIBUTE_DESCRIPTOR_H_
 
+#include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
 
 namespace Divide {

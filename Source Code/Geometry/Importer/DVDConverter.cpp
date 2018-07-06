@@ -15,6 +15,7 @@
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 #include "Geometry/Animations/Headers/SceneAnimator.h"
 #include "Geometry/Animations/Headers/AnimationUtils.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 namespace Divide {
     namespace {

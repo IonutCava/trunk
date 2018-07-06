@@ -35,6 +35,7 @@
 #include "config.h"
 
 #include "Core/Math/Headers/MathMatrices.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {

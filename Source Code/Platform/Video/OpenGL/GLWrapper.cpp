@@ -731,32 +731,40 @@ void GL_API::draw(const GenericDrawCommand& cmd) {
     }
 }
 
-void GL_API::flushCommandBuffers(const vectorImpl<CommandBuffer>& buffers) {
+void GL_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {
     U32 drawCallCount = 0;
-    for (const CommandBuffer& crtBuffer : buffers) {
-        makeTexturesResident(crtBuffer._textures);
-        for (const ShaderBufferBindCmd& shaderBufCmd : crtBuffer._shaderBuffers) {
-            shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
-                                            shaderBufCmd._dataRange.x,
-                                            shaderBufCmd._dataRange.y);
-        }
+    
+    for (const RenderPassCmd& pass : commandBuffer) {
+        //RenderTarget& target = GFX_DEVICE.renderTarget(pass._renderTarget.first,
+        //                                               pass._renderTarget.second);
+        //target.begin(pass._renderTargetDescriptor);
+        for (const RenderSubPassCmd& subPass : pass._subPassCmds) {
+            makeTexturesResident(subPass._textures);
+            for (const ShaderBufferBindCmd& shaderBufCmd : subPass._shaderBuffers) {
+                shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
+                                                shaderBufCmd._dataRange.x,
+                                                shaderBufCmd._dataRange.y);
+            }
 
-        for (const GenericDrawCommand& cmd : crtBuffer._commands) {
-            // Set the proper render states
-            if (setState(cmd)) {
-                /// Submit a single draw command
-                DIVIDE_ASSERT(cmd.sourceBuffer() != nullptr, "GFXDevice error: Invalid vertex buffer submitted!");
-                // Same rules about pre-processing the draw command apply
-                cmd.sourceBuffer()->draw(cmd);
-                if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
-                    drawCallCount++;
-                }
-                if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
-                    drawCallCount++;
+            for (const GenericDrawCommand& cmd : subPass._commands) {
+                // Set the proper render states
+                if (setState(cmd)) {
+                    /// Submit a single draw command
+                    DIVIDE_ASSERT(cmd.sourceBuffer() != nullptr, "GFXDevice error: Invalid vertex buffer submitted!");
+                    // Same rules about pre-processing the draw command apply
+                    cmd.sourceBuffer()->draw(cmd);
+                    if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
+                        drawCallCount++;
+                    }
+                    if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
+                        drawCallCount++;
+                    }
                 }
             }
         }
+        //target.end();
     }
+    
 
     GFX_DEVICE.registerDrawCalls(drawCallCount);
 }

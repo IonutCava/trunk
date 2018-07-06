@@ -33,40 +33,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _HARDWARE_VIDEO_GFX_RT_POOL_H_
 
 #include "Platform/Headers/PlatformDefines.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
 
 class RenderTarget;
-
-enum class RenderTargetID : U32 {
-    SCREEN = 0,
-    REFLECTION = 1,
-    REFRACTION = 2,
-    ENVIRONMENT = 3,
-    SHADOW = 4,
-    OTHER = 5,
-    COUNT
-};
-
-struct RenderTargetHandle {
-    RenderTargetHandle()
-        : RenderTargetHandle(RenderTargetID::COUNT, 0, nullptr)
-    {
-    }
-
-    RenderTargetHandle(RenderTargetID targetID,
-                       U32 targetIndex,
-                       RenderTarget* rt)
-        : _rt(rt),
-          _targetIndex(targetIndex),
-          _targetID(targetID)
-    {
-    }
-
-    RenderTarget* _rt;
-    U32 _targetIndex;
-    RenderTargetID _targetID;
-};
 
 class GFXRTPool {
 protected:
@@ -75,38 +46,36 @@ protected:
     ~GFXRTPool();
 
     inline RenderTarget& renderTarget(const RenderTargetHandle& handle) {
-        return renderTarget(handle._targetID, handle._targetIndex);
+        return renderTarget(handle._targetID);
     }
 
     inline const RenderTarget& renderTarget(const RenderTargetHandle& handle) const {
-        return renderTarget(handle._targetID, handle._targetIndex);
+        return renderTarget(handle._targetID);
     }
 
-    inline RenderTarget& renderTarget(RenderTargetID target, U32 index = 0) {
-        return *_renderTargets[to_uint(target)][index];
+    inline RenderTarget& renderTarget(RenderTargetID target) {
+        return *_renderTargets[to_uint(target._usage)][target._index];
     }
 
-    inline const RenderTarget& renderTarget(RenderTargetID target, U32 index = 0) const {
-        return *_renderTargets[to_uint(target)][index];
+    inline const RenderTarget& renderTarget(RenderTargetID target) const {
+        return *_renderTargets[to_uint(target._usage)][target._index];
     }
 
-    inline vectorImpl<RenderTarget*>& renderTargets(RenderTargetID target) {
+    inline vectorImpl<RenderTarget*>& renderTargets(RenderTargetUsage target) {
         return _renderTargets[to_uint(target)];
     }
 
     inline void set(const RenderTargetHandle& handle, RenderTarget* newTarget) {
-        set(handle._targetID, handle._targetIndex, newTarget);
+        set(handle._targetID, newTarget);
     }
 
-    void swap(RenderTargetID lhs, RenderTargetID rhs);
-
     void clear();
-    void set(RenderTargetID target, U32 index, RenderTarget* newTarget);
-    RenderTargetHandle add(RenderTargetID targetID, RenderTarget* newTarget);
+    void set(RenderTargetID target, RenderTarget* newTarget);
+    RenderTargetHandle add(RenderTargetUsage targetUsage, RenderTarget* newTarget);
     bool remove(RenderTargetHandle& handle);
 
 protected:
-    std::array<vectorImpl<RenderTarget*>, to_const_uint(RenderTargetID::COUNT)> _renderTargets;
+    std::array<vectorImpl<RenderTarget*>, to_const_uint(RenderTargetUsage::COUNT)> _renderTargets;
 };
 }; //namespace Divide
 

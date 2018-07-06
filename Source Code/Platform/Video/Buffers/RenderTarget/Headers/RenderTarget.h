@@ -37,6 +37,42 @@
 
 namespace Divide {
 
+struct RenderTargetID {
+    RenderTargetID() : RenderTargetID(RenderTargetUsage::COUNT)
+    {
+    }
+
+    RenderTargetID(RenderTargetUsage usage) : RenderTargetID(usage, 0)
+    {
+    }
+
+    RenderTargetID(RenderTargetUsage usage, U32 index)
+        : _index(index),
+        _usage(usage)
+    {
+    }
+
+    U32 _index = 0;
+    RenderTargetUsage _usage = RenderTargetUsage::COUNT;
+};
+
+class RenderTarget;
+struct RenderTargetHandle {
+    RenderTargetHandle()
+        : RenderTargetHandle(RenderTargetID(), nullptr)
+    {
+    }
+
+    RenderTargetHandle(RenderTargetID targetID, RenderTarget* rt)
+        : _rt(rt),
+        _targetID(targetID)
+    {
+    }
+
+    RenderTarget* _rt;
+    RenderTargetID _targetID;
+};
+
 class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper {
    public:
     enum class RenderTargetUsage : U32 {
@@ -60,6 +96,7 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
     /// the attachements get resized.
     virtual bool create(U16 width, U16 height) = 0;
     virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest = true);
+    virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index) const;
     virtual void destroy() = 0;
     /// Use by multilayered FB's
     virtual void drawToLayer(RTAttachment::Type type, U8 index, U32 layer, bool includeDepth = true) = 0;

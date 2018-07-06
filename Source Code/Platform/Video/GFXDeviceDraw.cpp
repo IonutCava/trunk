@@ -72,19 +72,18 @@ void GFXDevice::uploadGPUBlock() {
         _gpuBlock._updated = false;
     }
 }
-void GFXDevice::flushRenderQueues() {
+
+void GFXDevice::renderQueueToSubPasses(RenderPassCmd& commandsInOut) {
     ReadLock lock(_renderQueueLock);
-    vectorImpl<CommandBuffer> commandBuffers;
-    commandBuffers.reserve(_renderQueues.size());
     for (RenderQueue& renderQueue : _renderQueues) {
         if (!renderQueue.empty()) {
             U32 queueSize = renderQueue.size();
             for (U32 idx = 0; idx < queueSize; ++idx) {
+                RenderSubPassCmd subPassCmd;
                 RenderPackage& package = renderQueue.getPackage(idx);
                 GenericDrawCommands& drawCommands = package._drawCommands;
                 vectorAlg::vecSize commandCount = drawCommands.size();
                 if (commandCount > 0) {
-                    CommandBuffer crtBuffer;
                     vectorAlg::vecSize previousCommandIndex = 0;
                     vectorAlg::vecSize currentCommandIndex = 1;
                     for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
@@ -100,25 +99,26 @@ void GFXDevice::flushRenderQueues() {
                     }
 
                     for (ShaderBufferList::value_type& it : package._shaderBuffers) {
-                        crtBuffer._shaderBuffers.emplace_back(it._buffer, it._slot, it._range);
+                        subPassCmd._shaderBuffers.emplace_back(it._buffer, it._slot, it._range);
                     }
 
-                    crtBuffer._textures = package._textureData;
-                    crtBuffer._commands.insert(std::cbegin(crtBuffer._commands),
-                                               std::cbegin(drawCommands),
-                                               std::cend(drawCommands));
-                    commandBuffers.push_back(crtBuffer);
+                    subPassCmd._textures = package._textureData;
+                    subPassCmd._commands.insert(std::cbegin(subPassCmd._commands),
+                                                std::cbegin(drawCommands),
+                                                std::cend(drawCommands));
+                    commandsInOut._subPassCmds.push_back(subPassCmd);
                 }
             }
-
             renderQueue.clear();
         }
         renderQueue.unlock();
     }
     lock.unlock();
+}
 
+void GFXDevice::flushCommandBuffer(const CommandBuffer& commandBuffer) {
     uploadGPUBlock();
-    _api->flushCommandBuffers(commandBuffers);
+    _api->flushCommandBuffer(commandBuffer);
 }
 
 void GFXDevice::addToRenderQueue(U32 queueIndex, const RenderPackage& package) {

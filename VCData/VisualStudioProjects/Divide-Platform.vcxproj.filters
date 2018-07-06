@@ -322,6 +322,9 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericDrawCommand.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderDrawCommands.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">

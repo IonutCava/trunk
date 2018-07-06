@@ -58,7 +58,7 @@ namespace Attorney {
 
 typedef DELEGATE_CBK_PARAM_4<const SceneGraphNode&, 
                              const SceneRenderState&,
-                             RenderTarget&,
+                             const RenderTargetID&,
                              U32> RenderCallback;
 
 class RenderingComponent : public SGNComponent {

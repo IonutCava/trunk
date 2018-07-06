@@ -31,6 +31,10 @@ const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 inde
     return *_attachments.get(type, index);
 }
 
+const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index) const {
+    return *_attachments.get(type, index);
+}
+
 void RenderTarget::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) {
     for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
         RTAttachment::Type type = static_cast<RTAttachment::Type>(i);

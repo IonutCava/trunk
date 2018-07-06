@@ -36,6 +36,25 @@
 
 namespace Divide {
 
+enum class RenderAPI : U32 {
+    OpenGL,    ///< 4.x+
+    OpenGLES,  ///< 3.x+
+    Direct3D,  ///< 12.x+ (not supported yet)
+    Vulkan,    ///< not supported yet
+    None,      ///< not supported yet
+    COUNT
+};
+
+enum class RenderTargetUsage : U32 {
+    SCREEN = 0,
+    REFLECTION = 1,
+    REFRACTION = 2,
+    ENVIRONMENT = 3,
+    SHADOW = 4,
+    OTHER = 5,
+    COUNT
+};
+
 /// State the various attribute locations to use in shaders with VAO/VB's
 enum class AttribLocation : U32 {
     VERTEX_POSITION = 0,

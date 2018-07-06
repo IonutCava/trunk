@@ -32,8 +32,7 @@
 #ifndef _RENDER_API_H_
 #define _RENDER_API_H_
 
-#include "RenderAPIEnums.h"
-#include "GenericDrawCommand.h"
+#include "RenderDrawCommands.h"
 #include "Core/Math/Headers/MathMatrices.h"
 
 #include <thread>
@@ -51,6 +50,7 @@ class Transform;
 class GUIElement;
 class RenderStateBlock;
 class SceneRenderState;
+
 enum class ErrorCode : I32;
 
 template <typename T>
@@ -74,16 +74,6 @@ typedef struct {
     I32 BlueBits;
 } VideoModes;
 // FWD DECLARE CLASSES
-
-enum class RenderAPI : U32 {
-    OpenGL,    ///< 4.x+
-    OpenGLES,  ///< 3.x+
-    Direct3D,  ///< 12.x+ (not supported yet)
-    Vulkan,    ///< not supported yet
-    None,      ///< not supported yet
-    COUNT
-};
-
 
 class TextureData {
     public:
@@ -162,10 +152,6 @@ private:
     U64  _textureHandle;
 };
 
-typedef vectorImpl<TextureData> TextureDataContainer;
-typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;
-
-
 class RingBuffer {
     public:
         explicit RingBuffer(U32 queueLength) : 
@@ -225,28 +211,6 @@ class RingBuffer {
 
 };
 
-class ShaderBuffer;
-struct ShaderBufferBindCmd {
-    explicit ShaderBufferBindCmd(ShaderBuffer* buffer,
-                                 ShaderBufferLocation binding,
-                                 vec2<U32> dataRange)
-        : _buffer(buffer),
-          _binding(binding),
-          _dataRange(dataRange)
-    {
-    }
-
-    ShaderBuffer* _buffer;
-    ShaderBufferLocation _binding;
-    vec2<U32> _dataRange;
-};
-
-struct CommandBuffer {
-    TextureDataContainer _textures;
-    GenericDrawCommands  _commands;
-    vectorImpl<ShaderBufferBindCmd> _shaderBuffers;
-};
-
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
    protected:
@@ -270,7 +234,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual size_t setStateBlock(size_t stateBlockHash) = 0;
     virtual void draw(const GenericDrawCommand& cmd) = 0;
 
-    virtual void flushCommandBuffers(const vectorImpl<CommandBuffer>& buffers) = 0;
+    virtual void flushCommandBuffer(const CommandBuffer& commandBuffer) = 0;
 
    protected:
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;

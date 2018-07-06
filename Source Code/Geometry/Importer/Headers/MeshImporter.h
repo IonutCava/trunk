@@ -38,6 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     class ByteBuffer;
+    class VertexBuffer;
     namespace Import {
         struct TextureEntry {
             TextureEntry()

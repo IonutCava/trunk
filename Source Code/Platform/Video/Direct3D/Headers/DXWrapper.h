@@ -52,7 +52,7 @@ DEFINE_SINGLETON_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     void drawText(const TextLabel& textLabel, const vec2<F32>& position, size_t stateHash) override;
     void draw(const GenericDrawCommand& cmd);
 
-    void flushCommandBuffers(const vectorImpl<CommandBuffer>& buffers) override;
+    void flushCommandBuffer(const CommandBuffer& commandBuffer) override;
 
     void updateClipPlanes() override;
     void syncToThread(std::thread::id threadID) override;

@@ -47,7 +47,7 @@ enum class RenderStage : U32;
 DEFINE_SINGLETON(RenderPassManager)
   public:
       struct PassParams {
-          RenderTarget* target = nullptr;
+          RenderTargetID target;
           RTDrawDescriptor* drawPolicy = nullptr;
           RenderStage stage = RenderStage::COUNT;
           Camera* camera = nullptr;

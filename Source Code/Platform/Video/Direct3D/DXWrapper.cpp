@@ -36,7 +36,7 @@ void DX_API::drawText(const TextLabel& textLabel, const vec2<F32>& position, siz
 
 void DX_API::draw(const GenericDrawCommand& cmd) {}
 
-void DX_API::flushCommandBuffers(const vectorImpl<CommandBuffer>& buffers) {}
+void DX_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {}
 
 void DX_API::syncToThread(std::thread::id threadID) {}
 

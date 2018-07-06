@@ -64,7 +64,7 @@ void EnvironmentProbe::onStartup() {
     depthDescriptor.setSampler(reflectionSampler);
 
     RenderTargetHandle tempHandle;
-    s_reflection = GFX_DEVICE.allocateRT(RenderTargetID::ENVIRONMENT);
+    s_reflection = GFX_DEVICE.allocateRT(RenderTargetUsage::ENVIRONMENT);
     s_reflection._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
     s_reflection._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
     s_reflection._rt->create(Config::REFLECTION_TARGET_RESOLUTION);

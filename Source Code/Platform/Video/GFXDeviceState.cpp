@@ -116,7 +116,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // special, on demand,
     // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
-    allocateRT(RenderTargetID::SCREEN);
+    allocateRT(RenderTargetUsage::SCREEN);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -152,7 +152,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     velocityDescriptor.setSampler(screenSampler);
 
     // Add the attachments to the render targets
-    RenderTarget& screenTarget = renderTarget(RenderTargetID::SCREEN, 0);
+    RenderTarget& screenTarget = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, 0);
     screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, 1);
     screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, 2);
@@ -194,7 +194,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     RenderTargetHandle tempHandle;
     for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
-        tempHandle = allocateRT(RenderTargetID::REFLECTION);
+        tempHandle = allocateRT(RenderTargetUsage::REFLECTION);
         tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
         tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
         tempHandle._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
@@ -202,7 +202,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
 
     for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
-        tempHandle = allocateRT(RenderTargetID::REFRACTION);
+        tempHandle = allocateRT(RenderTargetUsage::REFRACTION);
         tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
         tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
         tempHandle._rt->create(Config::REFRACTION_TARGET_RESOLUTION);
@@ -391,7 +391,7 @@ void GFXDevice::endFrame(bool swapBuffers) {
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
     FRAME_DRAW_CALLS = 0;
     
-    _previousDepthBuffer._rt->blitFrom(&renderTarget(RenderTargetID::SCREEN), false, true);
+    _previousDepthBuffer._rt->blitFrom(&renderTarget(RenderTargetID(RenderTargetUsage::SCREEN, 0)), false, true);
 
     // Activate the default render states
     _api->setStateBlock(_defaultStateBlockHash);

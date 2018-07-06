@@ -156,7 +156,6 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
     params.occlusionCull = params.doPrePass;
     params.camera = _cubeCamera;
     params.stage = renderStage;
-    params.target = nullptr;
 
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
@@ -219,7 +218,6 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
     params.occlusionCull = params.doPrePass;
     params.camera = _dualParaboloidCamera;
     params.stage = renderStage;
-    params.target = nullptr;
 
     // Enable our render target
     targetBuffer.begin(RenderTarget::defaultPolicy());
@@ -301,15 +299,17 @@ void GFXDevice::toggleFullScreen() {
 
 /// The main entry point for any resolution change request
 void GFXDevice::onChangeResolution(U16 w, U16 h) {
+    RenderTarget& screenRT = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     // Update resolution only if it's different from the current one.
     // Avoid resolution change on minimize so we don't thrash render targets
-    if ((w == renderTarget(RenderTargetID::SCREEN).getWidth() &&
-         h == renderTarget(RenderTargetID::SCREEN).getHeight()) ||
+    if ((w == screenRT.getWidth() &&
+         h == screenRT.getHeight()) ||
         !(w > 1 && h > 1)) {
         return;
     }
+
     // Update render targets with the new resolution
-    for (RenderTarget* rt : _rtPool.renderTargets(RenderTargetID::SCREEN)) {
+    for (RenderTarget* rt : _rtPool.renderTargets(RenderTargetUsage::SCREEN)) {
         if (rt) {
             rt->create(w, h);
         }
@@ -685,13 +685,14 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
 /// and save it as a TGA image
 void GFXDevice::Screenshot(const stringImpl& filename) {
     // Get the screen's resolution
-    U16 width = renderTarget(RenderTargetID::SCREEN).getWidth();
-    U16 height = renderTarget(RenderTargetID::SCREEN).getHeight();
+    RenderTarget& screenRT = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    U16 width = screenRT.getWidth();
+    U16 height = screenRT.getHeight();
     // Allocate sufficiently large buffers to hold the pixel data
     U32 bufferSize = width * height * 4;
     U8* imageData = MemoryManager_NEW U8[bufferSize];
     // Read the pixels from the main render target (RGBA16F)
-    renderTarget(RenderTargetID::SCREEN).readData(GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, imageData);
+    screenRT.readData(GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, imageData);
     // Save to file
     ImageTools::SaveSeries(filename,
                            vec2<U16>(width, height),

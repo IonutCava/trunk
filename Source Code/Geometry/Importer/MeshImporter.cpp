@@ -9,6 +9,8 @@
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 #include "Utility/Headers/Localization.h"
 
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
+
 namespace Divide {
 
 namespace {

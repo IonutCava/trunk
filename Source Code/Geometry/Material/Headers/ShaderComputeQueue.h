@@ -38,6 +38,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+namespace Time {
+    class ProfileTimer;
+};
+
 class ShaderProgram;
 class ShaderComputeQueue : public FrameListener {
 public:

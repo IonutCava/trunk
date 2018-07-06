@@ -87,11 +87,11 @@ class WaterPlane : public SceneNode {
     void updateBoundsInternal(SceneGraphNode& sgn) override;
     void updateReflection(const SceneGraphNode& sgn,
                           const SceneRenderState& sceneRenderState,
-                          RenderTarget& renderTarget,
+                          const RenderTargetID& renderTarget,
                           U32 passIndex);
     void updateRefraction(const SceneGraphNode& sgn,
                           const SceneRenderState& sceneRenderState,
-                          RenderTarget& renderTarget,
+                          const RenderTargetID& renderTarget,
                           U32 passIndex);
     bool cameraUnderwater(const SceneGraphNode& sgn, const vec3<F32>& eyePos);
 

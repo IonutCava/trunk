@@ -19,8 +19,9 @@ TiledForwardShadingRenderer::TiledForwardShadingRenderer()
     cullShaderDesc.setThreadedLoading(false);
     _lightCullComputeShader = CreateResource<ShaderProgram>(cullShaderDesc);
 
-    updateResolution(GFX_DEVICE.renderTarget(RenderTargetID::SCREEN).getWidth(),
-                     GFX_DEVICE.renderTarget(RenderTargetID::SCREEN).getHeight());
+    RenderTarget& screenRT = GFX_DEVICE.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+
+    updateResolution(screenRT.getWidth(), screenRT.getHeight());
 
     const U32 numTiles = getNumTilesX() * getNumTilesY();
     const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();

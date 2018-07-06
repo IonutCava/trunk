@@ -96,6 +96,9 @@ RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex) {
 
 
 void RenderPassManager::doCustomPass(PassParams& params) {
+    static CommandBuffer commandBuffer;
+    commandBuffer.resize(0);
+
     // step1: cull nodes for current camera and pass
     SceneManager& mgr = SceneManager::instance();
 
@@ -114,23 +117,31 @@ void RenderPassManager::doCustomPass(PassParams& params) {
                                                               params.stage,
                                                               true,
                                                               params.pass);
-        if (params.target) {
-            params.target->begin(RenderTarget::defaultPolicyDepthOnly());
-        }
-            GFX.flushRenderQueues();
+
+        if (params.target._usage != RenderTargetUsage::COUNT) {
+            RenderTarget& target = GFX.renderTarget(params.target);
+            target.begin(RenderTarget::defaultPolicyDepthOnly());
+
+            RenderPassCmd cmd;
+            cmd._renderTarget = params.target;
+            cmd._renderTargetDescriptor = *(params.drawPolicy); |
+            GFX.renderQueueToSubPasses(cmd);
+            commandBuffer.push_back(cmd);
+            GFX.flushCommandBuffer(commandBuffer);
+            commandBuffer.resize(0);
+
+
             Attorney::SceneManagerRenderPass::postRender(mgr, params.stage);
 
-        if (params.target) {
-            params.target->end();
-        }
-        
-        
-        GFX.constructHIZ(*params.target);
+            target.end();
+    
+            GFX.constructHIZ(target);
 
-        if (params.occlusionCull) {
-            RenderPassManager& passMgr = RenderPassManager::instance();
-            RenderPass::BufferData& bufferData = passMgr.getBufferData(params.stage, params.pass);
-            GFX.occlusionCull(bufferData, params.target->getAttachment(RTAttachment::Type::Depth, 0).asTexture());
+            if (params.occlusionCull) {
+                RenderPassManager& passMgr = RenderPassManager::instance();
+                RenderPass::BufferData& bufferData = passMgr.getBufferData(params.stage, params.pass);
+                GFX.occlusionCull(bufferData, target.getAttachment(RTAttachment::Type::Depth, 0).asTexture());
+            }
         }
     }
 
@@ -142,28 +153,36 @@ void RenderPassManager::doCustomPass(PassParams& params) {
                                                           params.stage,
                                                           !params.doPrePass,
                                                           params.pass);
+    if (params.target._usage != RenderTargetUsage::COUNT) {
+        RenderTarget& target = GFX.renderTarget(params.target);
 
-    RTDrawDescriptor* drawPolicy = params.drawPolicy ? params.drawPolicy
-                                                     : &(!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyKeepDepth()
-                                                                                    : RenderTarget::defaultPolicy());
-    bool drawToDepth = true;
-    if (params.stage != RenderStage::SHADOW) {
-        Attorney::SceneManagerRenderPass::preRender(mgr, *params.target);
-        if (params.doPrePass && !Config::DEBUG_HIZ_CULLING) {
-            drawToDepth = false;
+
+        bool drawToDepth = true;
+        if (params.stage != RenderStage::SHADOW) {
+            Attorney::SceneManagerRenderPass::preRender(mgr, target);
+            if (params.doPrePass && !Config::DEBUG_HIZ_CULLING) {
+                drawToDepth = false;
+            }
         }
-    }
 
-    drawPolicy->drawMask().setEnabled(RTAttachment::Type::Depth, 0, drawToDepth);
+        RTDrawDescriptor* drawPolicy = params.drawPolicy ? params.drawPolicy
+                                                         : &(!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyKeepDepth()
+                                                                                        : RenderTarget::defaultPolicy());
+        drawPolicy->drawMask().setEnabled(RTAttachment::Type::Depth, 0, drawToDepth);
 
-    if (params.target) {
-        params.target->begin(*drawPolicy);
-    }
-        GFX.flushRenderQueues();
+        target.begin(*drawPolicy);
+    
+        RenderPassCmd cmd;
+        cmd._renderTarget = params.target;
+        cmd._renderTargetDescriptor = *(params.drawPolicy);|
+        GFX.renderQueueToSubPasses(cmd);
+        commandBuffer.push_back(cmd);
+        GFX.flushCommandBuffer(commandBuffer);
+        commandBuffer.resize(0);
+
         Attorney::SceneManagerRenderPass::postRender(mgr, params.stage);
 
-    if (params.target) {
-        params.target->end();
+        target.end();
     }
 }
 

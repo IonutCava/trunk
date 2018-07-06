@@ -95,6 +95,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\OcclusionQuery.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIEnums.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderDrawCommands.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderStateBlock.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\ScopedStates.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glBufferImpl.h" />

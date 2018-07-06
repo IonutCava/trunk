@@ -33,6 +33,8 @@
 #define _TEXTURE_H_
 
 #include "Core/Resources/Headers/Resource.h"
+
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
 #include "Platform/Video/Textures/Headers/TextureDescriptor.h"
 

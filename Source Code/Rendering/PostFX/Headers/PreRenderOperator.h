@@ -42,44 +42,21 @@ class NOINITVTABLE PreRenderOperator {
     /// doing to set up apropriate states
     /// The target is the full screen quad to which we want to apply our
     /// operation to generate the result
-    PreRenderOperator(FilterType operatorType, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
-        :  _operatorType(operatorType),
-           _hdrTarget(hdrTarget),
-           _ldrTarget(ldrTarget)
-    {
-        _screenOnlyDraw.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-        _screenOnlyDraw.drawMask().disableAll();
-        _screenOnlyDraw.drawMask().setEnabled(RTAttachment::Type::Colour, 0, true);
-    }
-
-    virtual ~PreRenderOperator() 
-    {
-        GFX_DEVICE.deallocateRT(_samplerCopy);
-    }
+    PreRenderOperator(FilterType operatorType, RenderTarget* hdrTarget, RenderTarget* ldrTarget);
+    virtual ~PreRenderOperator();
 
     virtual void idle() = 0;
     virtual void execute() = 0;
 
-    virtual void reshape(U16 width, U16 height) {
-        if (_samplerCopy._rt) {
-            _samplerCopy._rt->create(width, height);
-        }
-    }
+    virtual void reshape(U16 width, U16 height);
 
-    inline void addInputFB(RenderTarget* const input) {
-        _inputFB.push_back(input);
-    }
+    inline void addInputFB(RenderTarget* const input) { _inputFB.push_back(input); }
 
-    inline FilterType operatorType() const {
-        return _operatorType;
-    }
+    inline FilterType operatorType() const { return _operatorType; }
 
-    virtual void debugPreview(U8 slot) const {
-    };
+    virtual void debugPreview(U8 slot) const;
 
-    virtual RenderTarget* getOutput() const {
-        return _hdrTarget;
-    }
+    virtual RenderTarget* getOutput() const;
 
     static void cacheDisplaySettings(const GFXDevice& context);
 

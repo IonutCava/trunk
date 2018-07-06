@@ -140,14 +140,15 @@ void RenderPass::render(SceneRenderState& renderState) {
 
     switch(_stageFlag) {
         case RenderStage::DISPLAY: {
+            const RenderTarget& screenRT = GFX_DEVICE.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
             RenderPassManager& passMgr = RenderPassManager::instance();
             RenderPassManager::PassParams params;
             params.occlusionCull = Config::USE_HIZ_CULLING;
             params.camera = &renderState.getCamera();
             params.stage = _stageFlag;
-            params.target = &GFX_DEVICE.renderTarget(RenderTargetID::SCREEN);
+            params.target = RenderTargetID(RenderTargetUsage::SCREEN);
             params.pass = 0;
-            params.doPrePass = Config::USE_Z_PRE_PASS && params.target->getAttachment(RTAttachment::Type::Depth, 0).used();
+            params.doPrePass = Config::USE_Z_PRE_PASS && screenRT.getAttachment(RTAttachment::Type::Depth, 0).used();
             params.occlusionCull = true;
             passMgr.doCustomPass(params);
             _lastTotalBinSize = passMgr.getQueue().getRenderQueueStackSize();

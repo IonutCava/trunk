@@ -312,7 +312,9 @@ DEFINE_SINGLETON(GFXDevice)
     void draw(const GenericDrawCommand& cmd);
 
     void addToRenderQueue(U32 queueIndex, const RenderPackage& package);
-    void flushRenderQueues();
+    void renderQueueToSubPasses(RenderPassCmd& commandsInOut);
+    void flushCommandBuffer(const CommandBuffer& commandBuffer);
+
     I32  reserveRenderQueue();
 
     /// Sets the current render stage.
@@ -411,24 +413,24 @@ DEFINE_SINGLETON(GFXDevice)
         return (noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash);
     }
 
-    inline RenderTarget& renderTarget(RenderTargetID target, U32 index = 0) {
-        return _rtPool.renderTarget(target, index);
+    inline RenderTarget& renderTarget(RenderTargetID target) {
+        return _rtPool.renderTarget(target);
     }
 
-    inline RenderTarget& prevRenderTarget(RenderTargetID target, U32 index = 0) {
-        return _rtPool.renderTarget(target, index);
+    inline RenderTarget& prevRenderTarget(RenderTargetID target) {
+        return _rtPool.renderTarget(target);
     }
 
-    inline void renderTarget(RenderTargetID target, U32 index, RenderTarget* newTarget) {
-        _rtPool.set(target, index, newTarget);
+    inline void renderTarget(RenderTargetID target, RenderTarget* newTarget) {
+        _rtPool.set(target, newTarget);
     }
 
-    inline RenderTargetHandle allocateRT(RenderTargetID targetID) {
-        return _rtPool.add(targetID, newRT());
+    inline RenderTargetHandle allocateRT(RenderTargetUsage targetUsage) {
+        return _rtPool.add(targetUsage, newRT());
     }
 
     inline RenderTargetHandle allocateRT() {
-        return allocateRT(RenderTargetID::OTHER);
+        return allocateRT(RenderTargetUsage::OTHER);
     }
 
     inline bool deallocateRT(RenderTargetHandle& handle) {

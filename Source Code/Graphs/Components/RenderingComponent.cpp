@@ -643,14 +643,14 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
 
     mat->updateReflectionIndex(reflectionIndex);
 
-    RenderTarget& reflectionTarget = GFX_DEVICE.renderTarget(RenderTargetID::REFLECTION, reflectionIndex);
+    RenderTargetID reflectRTID(RenderTargetUsage::REFLECTION, reflectionIndex);
 
     if (_reflectionCallback) {
-        _reflectionCallback(_parentSGN, renderState, reflectionTarget, reflectionIndex);
+        _reflectionCallback(_parentSGN, renderState, reflectRTID, reflectionIndex);
     } else {
         const vec2<F32>& camZPlanes = renderState.getCameraConst().getZPlanes();
 
-        GFX_DEVICE.generateCubeMap(reflectionTarget,
+        GFX_DEVICE.generateCubeMap(GFX_DEVICE.renderTarget(reflectRTID),
                                    0,
                                    camPos,
                                    vec2<F32>(camZPlanes.x, camZPlanes.y * 0.25f),
@@ -697,7 +697,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
 
     _refractionCallback(_parentSGN,
                         renderState,
-                        GFX_DEVICE.renderTarget(RenderTargetID::REFRACTION, refractionIndex),
+                        RenderTargetID(RenderTargetUsage::REFRACTION, refractionIndex),
                         refractionIndex);
 
     return true;

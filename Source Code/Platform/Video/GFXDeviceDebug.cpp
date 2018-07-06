@@ -41,9 +41,9 @@ void GFXDevice::previewDepthBuffer() {
         triangleCmd.drawCount(1);
         triangleCmd.stateHash(_defaultStateNoDepthHash);
 
-        U16 screenWidth = std::max(renderTarget(RenderTargetID::SCREEN).getWidth(), to_const_ushort(768));
-        RenderTarget& rt = renderTarget(RenderTargetID::SCREEN);
-        rt.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
+        RenderTarget& screenRT = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+        U16 screenWidth = std::max(screenRT.getWidth(), to_const_ushort(768));
+        screenRT.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
 
         triangleCmd.shaderProgram(_previewDepthMapShader);
         {
@@ -51,7 +51,7 @@ void GFXDevice::previewDepthBuffer() {
             I32 LoDLevel = 0;
             if (Config::USE_HIZ_CULLING && Config::USE_Z_PRE_PASS) {
                 LoDLevel = to_int(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) %
-                           (rt.getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getMaxMipLevel() - 1);
+                           (screenRT.getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getMaxMipLevel() - 1);
             }
 
             _previewDepthMapShader->Uniform("lodLevel", to_float(LoDLevel));
@@ -68,8 +68,7 @@ void GFXDevice::previewDepthBuffer() {
         triangleCmd.shaderProgram(_renderTargetDraw);
         {        
             //Normals preview
-            renderTarget(RenderTargetID::SCREEN).bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                                                      RTAttachment::Type::Colour, 1);
+            screenRT.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 1);
 
             GFX::ScopedViewport viewport(screenWidth - 768, 0, 256, 256);
             _renderTargetDraw->Uniform("linearSpace", false);
@@ -78,8 +77,7 @@ void GFXDevice::previewDepthBuffer() {
         }
         {
             //Velocity preview
-            renderTarget(RenderTargetID::SCREEN).bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                                                       RTAttachment::Type::Colour, 2);
+            screenRT.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 2);
 
             GFX::ScopedViewport viewport(screenWidth - 1024, 0, 256, 256);
             _renderTargetDraw->Uniform("linearSpace", false);
@@ -156,7 +154,7 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     // Apply the inverse view matrix so that it cancels out in the shader
     // Submit the draw command, rendering it in a tiny viewport in the lower
     // right corner
-    U16 windowWidth = renderTarget(RenderTargetID::SCREEN).getWidth();
+    U16 windowWidth = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getWidth();
     _axisGizmo->fromLines(_axisLines, vec4<I32>(windowWidth - 120, 8, 128, 128));
 }
 };

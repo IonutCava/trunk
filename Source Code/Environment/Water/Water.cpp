@@ -175,7 +175,7 @@ bool WaterPlane::getDrawState(RenderStage currentStage) {
 /// update water refraction
 void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
                                   const SceneRenderState& sceneRenderState,
-                                  RenderTarget& renderTarget,
+                                  const RenderTargetID& renderTarget,
                                   U32 passIndex) {
     if (cameraUnderwater(sgn, sceneRenderState.getCameraConst().getEye())) {
         return;
@@ -193,7 +193,7 @@ void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
     params.occlusionCull = true;
     params.camera = &_cameraMgr.getActiveCamera();
     params.stage = RenderStage::REFRACTION;
-    params.target = &renderTarget;
+    params.target = renderTarget;
     params.drawPolicy = &RenderTarget::defaultPolicy();
     params.pass = passIndex;
 
@@ -208,8 +208,8 @@ void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
 /// Update water reflections
 void WaterPlane::updateReflection(const SceneGraphNode& sgn,
                                   const SceneRenderState& sceneRenderState,
-                                  RenderTarget& renderTarget,
-                                 U32 passIndex) {
+                                  const RenderTargetID& renderTarget,
+                                  U32 passIndex) {
     // ToDo: this will cause problems later with multiple reflectors.
     // Fix it! -Ionut
     _reflectionRendering = true;
@@ -238,7 +238,7 @@ void WaterPlane::updateReflection(const SceneGraphNode& sgn,
     params.occlusionCull = true;
     params.camera = _reflectionCam;
     params.stage = RenderStage::REFLECTION;
-    params.target = &renderTarget;
+    params.target = renderTarget;
     params.drawPolicy = &RenderTarget::defaultPolicy();
     params.pass = passIndex;
 

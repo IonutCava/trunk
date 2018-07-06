@@ -85,8 +85,10 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
     par.setParam(_ID("rendering.enableShadows"), false);
 
-    U16 width = GFX_DEVICE.renderTarget(RenderTargetID::SCREEN).getWidth();
-    U16 height = GFX_DEVICE.renderTarget(RenderTargetID::SCREEN).getHeight();
+    RenderTarget& screenRT = GFX_DEVICE.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+
+    U16 width = screenRT.getWidth();
+    U16 height = screenRT.getHeight();
 
     updateResolution(width, height);
 

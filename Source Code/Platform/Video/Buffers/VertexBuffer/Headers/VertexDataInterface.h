@@ -32,10 +32,12 @@
 #ifndef _VERTEX_DATA_INTERFACE_H_
 #define _VERTEX_DATA_INTERFACE_H_
 
+#include "Platform/Headers/PlatformDefines.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
 
 namespace Divide {
 
+class GenericDrawCommand;
 class NOINITVTABLE VertexDataInterface : protected GraphicsResource, public GUIDWrapper {
     USE_CUSTOM_ALLOCATOR
    public:

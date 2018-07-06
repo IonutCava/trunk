@@ -35,6 +35,7 @@
 #include "config.h"
 
 #include "AttributeDescriptor.h"
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
 
 /// This class is used to upload generic VB data to the GPU that can be rendered directly or instanced.

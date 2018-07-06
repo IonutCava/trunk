@@ -29,27 +29,49 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _GRAPHICS_RESOURCE_H_
-#define _GRAPHICS_RESOURCE_H_
+#ifndef _RENDER_DRAW_COMMANDS_H_
+#define _RENDER_DRAW_COMMANDS_H_
 
-#include "Core/Headers/NonCopyable.h"
+#include "RenderAPIEnums.h"
+#include "GenericDrawCommand.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
 
-class GFXDevice;
-class GraphicsResource : private NonCopyable {
-protected:
-    explicit GraphicsResource(GFXDevice& context) : _context(context)
+class ShaderBuffer;
+struct ShaderBufferBindCmd {
+    explicit ShaderBufferBindCmd(ShaderBuffer* buffer,
+                                 ShaderBufferLocation binding,
+                                 vec2<U32> dataRange)
+        : _buffer(buffer),
+          _binding(binding),
+          _dataRange(dataRange)
     {
     }
 
-    virtual ~GraphicsResource()
-    {
-    }
-
-    GFXDevice& _context;
+    ShaderBuffer* _buffer;
+    ShaderBufferLocation _binding;
+    vec2<U32> _dataRange;
 };
+
+class TextureData;
+typedef vectorImpl<TextureData> TextureDataContainer;
+typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;
+
+struct RenderSubPassCmd {
+    TextureDataContainer _textures;
+    GenericDrawCommands  _commands;
+    vectorImpl<ShaderBufferBindCmd> _shaderBuffers;
+};
+
+struct RenderPassCmd {
+    RenderTargetID _renderTarget;
+    RTDrawDescriptor _renderTargetDescriptor;
+    vectorImpl<RenderSubPassCmd> _subPassCmds;
+};
+
+typedef vectorImpl<RenderPassCmd> CommandBuffer;
 
 }; //namespace Divide
 
-#endif //_GRAPHICS_RESOURCE_H_
+#endif //_RENDER_DRAW_COMMANDS_H_

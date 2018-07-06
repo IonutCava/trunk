@@ -133,7 +133,7 @@ void CascadedShadowMaps::render(SceneRenderState& renderState, U32 passIdx) {
     params.occlusionCull = false;
     params.camera = _shadowCamera;
     params.stage = RenderStage::SHADOW;
-    params.target = &getDepthMap();
+    params.target = RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType()));
     params.drawPolicy = _renderPolicy;
     params.pass = passIdx;
 

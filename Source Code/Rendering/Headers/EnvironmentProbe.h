@@ -37,6 +37,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+class IMPrimitive;
+class ShaderProgram;
 class ImpostorSphere;
 class EnvironmentProbe : public GUIDWrapper {
 public:

@@ -39,6 +39,10 @@
 
 namespace Divide {
 
+namespace Time {
+    class ProfileTimer;
+};
+
 class ShaderBuffer;
 class SceneGraphNode;
 class SceneRenderState;

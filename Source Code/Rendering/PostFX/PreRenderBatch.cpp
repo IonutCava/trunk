@@ -1,6 +1,8 @@
 #include "Headers/PreRenderBatch.h"
 #include "Headers/PreRenderOperator.h"
 
+#include "Platform/Video/Headers/GFXDevice.h"
+
 #include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Rendering/PostFX/CustomOperators/Headers/BloomPreRenderOperator.h"
@@ -34,7 +36,7 @@ void PreRenderBatch::destroy() {
 }
 
 void PreRenderBatch::init(RenderTarget* renderTarget) {
-    assert(_postFXOutput._targetID == RenderTargetID::COUNT);
+    assert(_postFXOutput._targetID._usage == RenderTargetUsage::COUNT);
     _renderTarget = renderTarget;
 
     _previousLuminance = GFX_DEVICE.allocateRT();

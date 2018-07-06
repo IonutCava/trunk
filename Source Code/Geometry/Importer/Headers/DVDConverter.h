@@ -78,6 +78,7 @@ namespace Import {
 };
 
 class SubMesh;
+class VertexBuffer;
 class DVDConverter {
   public:
 

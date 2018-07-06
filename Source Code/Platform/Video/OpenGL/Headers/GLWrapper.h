@@ -50,6 +50,11 @@ namespace CEGUI {
 };
 
 namespace Divide {
+
+namespace Time {
+    class ProfileTimer;
+};
+
     static const U32 MAX_ACTIVE_TEXTURE_SLOTS = 64;
 
     enum class WindowType : U32;
@@ -96,7 +101,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Sets the current state block to the one passed as a param
     size_t setStateBlock(size_t stateBlockHash) override;
 
-    void flushCommandBuffers(const vectorImpl<CommandBuffer>& buffers) override;
+    void flushCommandBuffer(const CommandBuffer& commandBuffer) override;
 
     /// This functions should be run in a separate, consumer thread.
     /// The main app thread, the producer, adds tasks via a lock-free queue that is
