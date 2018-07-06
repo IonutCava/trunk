@@ -55,6 +55,10 @@
 #define NOMINMAX
 #endif  //NOMINMAX
 
+#ifndef _RESTRICT_
+#define _RESTRICT_ __restrict
+#endif
+
 #ifndef NOINITVTABLE
 #define NOINITVTABLE __declspec(novtable)
 #endif  //NOINITVTABLE

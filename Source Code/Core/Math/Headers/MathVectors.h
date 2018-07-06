@@ -58,20 +58,54 @@
 
 namespace Divide {
 
-template <typename T>
-class Plane;
-template <typename T>
-class vec2;
-template <typename T>
-class vec3;
-template <typename T>
-class vec4;
-template <typename T>
-class mat3;
-template <typename T>
-class mat4;
-template <typename T>
-class Quaternion;
+template <U32 alignment = 16>
+struct alligned_base {
+    void *operator new (size_t size)
+    {
+        return _mm_malloc(size, alignment);
+    }
+
+        void *operator new[](size_t size)
+    {
+        return _mm_malloc(size, alignment);
+    }
+
+        void operator delete (void *mem)
+    {
+        _mm_free(mem);
+    }
+
+    void operator delete[](void *mem)
+    {
+        _mm_free(mem);
+    }
+};
+
+struct non_aligned_base {
+};
+
+template<typename T, typename Enable = void>
+class simd_vector;
+
+template<typename T>
+class simd_vector<T, std::enable_if_t<std::is_same<T, F32>::value>> {
+public:
+    simd_vector() : simd_vector(0)
+    {
+    }
+
+    simd_vector(__m128 reg) : _reg(reg)
+    {
+    }
+
+    __m128 _reg;
+};
+
+template<typename T>
+class simd_vector<T, std::enable_if_t<!std::is_same<T, F32>::value>> {
+   
+};
+
 /***********************************************************************
  * vec2 -  A 2-tuple used to represent things like a vector in 2D space,
  * a point in 2D space or just 2 values linked together
@@ -85,19 +119,8 @@ class vec2 {
     vec2(T value) : vec2(value, value)
     {
     }
-    template <typename U> 
-    vec2(U value) : vec2(static_cast<T>(value),
-                         static_cast<T>(value))
-    {
-    }
 
     vec2(T _x, T _y) : x(_x), y(_y)
-    {
-    }
-
-    template <typename U>
-    vec2(U _x, U _y) : x(static_cast<T>(_x)),
-                       y(static_cast<T>(_y))
     {
     }
 
@@ -105,22 +128,14 @@ class vec2 {
     {
     }
 
-    template <typename U> 
-    vec2(const U *_v) : vec2(_v[0], _v[1])
-    {
-    }
-
     vec2(const vec2 &_v) : vec2(_v._v)
     {
     }
 
-    template <typename U> 
-    vec2(const vec2<U> &_v) : vec2(_v._v)
-    {
-    }
     vec2(const vec3<T> &_v) : vec2(_v.xy())
     {
     }
+
     vec2(const vec4<T> &_v) : vec2(_v.xy())
     {
     }
@@ -271,6 +286,7 @@ class vec2 {
 /// lerp between the 2 specified vectors by the specified amount
 template <typename T, typename U>
 inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, U factor);
+
 /// lerp between the 2 specified vectors by the specified amount for each
 /// component
 template <typename T>
@@ -547,8 +563,11 @@ inline vec3<T> operator*(T fl, const vec3<T> &v);
 (w-component)
  * or just 4 values linked together
  ************************************************************************************/
+//#pragma pack(push)
+//#pragma pack(1)
+//__declspec(align(alignment))
 template <typename T>
-class vec4 {
+class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<16>, non_aligned_base>::type {
    public:
     vec4() : x(0), y(0), z(0), w(1)
     {
@@ -558,43 +577,38 @@ class vec4 {
     {
     }
 
-    template<typename U> 
-    vec4(U _x, U _y, U _z, U _w) : x(static_cast<T>(_x)),
-                                   y(static_cast<T>(_y)),
-                                   z(static_cast<T>(_z)),
-                                   w(static_cast<T>(_w))
+    vec4(simd_vector<T> reg) : _reg(reg)
     {
     }
+
     vec4(T value) : vec4(value, value, value, value)
     {
     }
 
-    template<typename U> 
-    vec4(U value) : vec4(value, value, value, value)
-    {
-    }
     vec4(const T *v) : vec4(v[0], v[1], v[2], v[3])
     {
     }
-    template<typename U> 
-    vec4(const U *v) : vec4(v[0], v[1], v[2], v[3])
-    {
-    }
+
     vec4(const vec2<T> &v) : vec4(v, 0)
     {
     }
+
     vec4(const vec2<T> &v, T _z) : vec4(v, _z, 1)
     {
     }
+
     vec4(const vec2<T> &v, T _z, T _w) : vec4(v.x, v.y, _z, _w)
     {
     }
+
     vec4(const vec3<T> &v) : vec4(v, 1)
     {
     }
+
     vec4(const vec3<T> &v, T _w) : vec4(v.x, v.y, v.z, _w)
     {
     }
+
     vec4(const vec4 &v) : vec4(v._v)
     {
     }
@@ -602,9 +616,19 @@ class vec4 {
     bool operator==(const vec4 &v) const { return this->compare(v); }
     bool operator!=(const vec4 &v) const { return !(*this == v); }
     vec4 &operator=(T _f) { this->set(_f); }
+
+    const vec4 operator-(T _f) const {
+        return vec4(this->x - _f, this->y - _f, this->z - _f, this->w - _f);
+    }
+
+    const vec4 operator+(T _f) const {
+        return vec4(this->x + _f, this->y + _f, this->z + _f, this->w + _f);
+    }
+
     const vec4 operator*(T _f) const {
         return vec4(this->x * _f, this->y * _f, this->z * _f, this->w * _f);
     }
+
     const vec4 operator/(T _f) const {
         if (IS_ZERO(_f)) {
             return *this;
@@ -617,44 +641,59 @@ class vec4 {
     }
 
     const vec4 operator-() const { return vec4(-x, -y, -z, -w); }
+
     const vec4 operator+(const vec4 &v) const {
         return vec4(this->x + v.x, this->y + v.y, this->z + v.z, this->w + v.w);
     }
+
     const vec4 operator-(const vec4 &v) const {
         return vec4(this->x - v.x, this->y - v.y, this->z - v.z, this->w - v.w);
     }
+
+    const vec4 operator/(const vec4 &v) const {
+        return vec4(IS_ZERO(v.x) ? this->x : this->x / v.x,
+            IS_ZERO(v.y) ? this->y : this->y / v.y,
+            IS_ZERO(v.z) ? this->z : this->z / v.z,
+            IS_ZERO(v.w) ? this->w : this->w / v.w);
+    }
+
+    const vec4 operator*(const vec4& v) const {
+        return vec4(this->x * v.x,
+                    this->y * v.y,
+                    this->z * v.z,
+                    this->w * v.w);
+    }
+
     vec4 &operator*=(T _f) {
         this->set(*this * _f);
         return *this;
     }
+
     vec4 &operator/=(T _f) {
         this->set(*this / _f);
         return *this;
     }
+
     vec4 &operator*=(const vec4 &v) {
         this->set(*this * v);
         return *this;
     }
+
+    vec4 &operator/=(const vec4 &v) {
+        this->set(*this / v);
+        return *this;
+    }
+
     vec4 &operator+=(const vec4 &v) {
         this->set(*this + v);
         return *this;
     }
+
     vec4 &operator-=(const vec4 &v) {
         this->set(*this - v);
         return *this;
     }
-    T operator*(const vec3<T> &v) const {
-        return this->x * v.x + this->y * v.y + this->z * v.z + this->w;
-    }
-    T operator*(const vec4<T> &v) const {
-        return this->x * v.x + this->y * v.y + this->z * v.z + this->w * v.w;
-    }
-    const vec4 operator/(const vec4 &v) const {
-        return vec4(IS_ZERO(v.x) ? this->x : this->x / v.x,
-                    IS_ZERO(v.y) ? this->y : this->y / v.y,
-                    IS_ZERO(v.z) ? this->z : this->z / v.z,
-                    IS_ZERO(v.w) ? this->w : this->w / v.w);
-    }
+
     operator T *() { return this->_v; }
     operator const T *() const { return this->_v; }
 
@@ -778,15 +817,14 @@ class vec4 {
         this->z = _z;
         this->w = _w;
     }
-   template <typename U>
+
+    template <typename U>
     inline void set(U _x, U _y, U _z, U _w) {
-        this->x = static_cast<T>(_x);
-        this->y = static_cast<T>(_y);
-        this->z = static_cast<T>(_z);
-        this->w = static_cast<T>(_w);
+        set(static_cast<T>(_x), static_cast<T>(_y), static_cast<T>(_z), static_cast<T>(_w));
     }
+
     /// set the 4 components of the vector using a source vector
-    inline void set(const vec4 &v) { this->set(v.x, v.y, v.z, v.w); }
+    inline void set(const vec4 &v) { this->setV(v._v); }
     /// set the 4 components of the vector using a smaller source vector
     inline void set(const vec3<T> &v) { this->set(v, w); }
     /// set the 4 components of the vector using a smaller source vector
@@ -839,8 +877,10 @@ class vec4 {
             T width, height, depth, key;
         };
         T _v[4];
+        simd_vector<T> _reg;
     };
 };
+//#pragma pack(pop)
 
 /// lerp between the 2 specified vectors by the specified amount
 template <typename T>

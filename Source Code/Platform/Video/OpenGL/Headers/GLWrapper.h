@@ -112,11 +112,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Revert everything that was set up in "initShaders()"
     bool deInitShaders() override;
     /// Window positioning is handled by SDL
-    void setWindowPosition(U16 w, U16 h);
+    void setWindowPosition(I32 w, I32 h);
     /// Centering is also easier via SDL
     void centerWindowPosition();
     /// Mouse positioning is handled by SDL
-    void setCursorPosition(U16 x, U16 y) override;
+    void setCursorPosition(I32 x, I32 y) override;
     /// Prepare the GPU for rendering a frame
     void beginFrame() override;
     /// Finish rendering the current frame

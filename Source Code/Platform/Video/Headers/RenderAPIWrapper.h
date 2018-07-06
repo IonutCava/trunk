@@ -385,7 +385,7 @@ class NOINITVTABLE RenderAPIWrapper {
     /// Platform specific cursor manipulation.
     /// Set's the cursor's location to the specified X and Y relative to the
     /// edge of the window
-    virtual void setCursorPosition(U16 x, U16 y) = 0;
+    virtual void setCursorPosition(I32 x, I32 y) = 0;
     virtual IMPrimitive* newIMP() const = 0;
     virtual Framebuffer* newFB(bool multisampled) const = 0;
     virtual VertexBuffer* newVB() const = 0;

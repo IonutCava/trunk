@@ -57,8 +57,12 @@ inline void WindowManager::setResolution(const vec2<U16>& resolution) {
     _windowDimensions[to_uint(WindowType::WINDOW)].set(resolution);
 }
 
+inline void WindowManager::setWindowDimensions(WindowType windowType, U16 dimensionX, U16 dimensionY) {
+    _windowDimensions[to_uint(windowType)].set(dimensionX, dimensionY);
+}
+
 inline void WindowManager::setWindowDimensions(WindowType windowType, const vec2<U16>& dimensions) {
-    _windowDimensions[to_uint(windowType)].set(dimensions);
+    setWindowDimensions(windowType, dimensions.x, dimensions.y);
 }
 
 inline const vec2<U16>& WindowManager::getWindowDimensions() const {
@@ -69,11 +73,15 @@ inline const vec2<U16>& WindowManager::getWindowDimensions(WindowType windowType
     return _windowDimensions[to_uint(windowType)];
 }
 
-inline void WindowManager::setWindowPosition(const vec2<U16>& position) {
-    _windowPosition.set(position);
+inline void WindowManager::setWindowPosition(I32 positionX, I32 positionY) {
+    _windowPosition.set(positionX, positionY);
 }
 
-inline const vec2<U16>& WindowManager::getWindowPosition() const {
+inline void WindowManager::setWindowPosition(const vec2<I32>& position) {
+    setWindowPosition(position.x, position.y);
+}
+
+inline const vec2<I32>& WindowManager::getWindowPosition() const {
     return _windowPosition;
 }
 

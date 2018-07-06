@@ -410,7 +410,7 @@ void GFXDevice::handleWindowEvent(WindowEvent event, I32 data1, I32 data2) {
         case WindowEvent::RESIZED_INTERNAL:{
             setBaseViewport(vec4<I32>(0, 0, data1, data2));
             // Update the 2D camera so it matches our new rendering viewport
-            _2DCamera->setProjection(vec4<F32>(0, data1, 0, data2),
+            _2DCamera->setProjection(vec4<F32>(0, to_float(data1), 0, to_float(data2)),
                                      vec2<F32>(-1, 1));
             app.getKernel().onChangeWindowSize(to_ushort(data1), to_ushort(data2));
         } break;

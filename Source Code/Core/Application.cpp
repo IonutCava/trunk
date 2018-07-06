@@ -102,7 +102,7 @@ void Application::run() {
     _kernel->runLogicLoop();
 }
 
-void Application::snapCursorToPosition(U16 x, U16 y) const {
+void Application::snapCursorToPosition(I32 x, I32 y) const {
     _kernel->setCursorPosition(x, y);
 }
 

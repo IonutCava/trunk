@@ -6,7 +6,6 @@
 
 #define IL_STATIC_LIB
 #undef _UNICODE
-#include <IL/il.h>
 #include <IL/ilu.h>
 
 namespace Divide {

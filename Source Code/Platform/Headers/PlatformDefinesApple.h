@@ -32,6 +32,10 @@
 #ifndef _PLATFORM_DEFINES_APPLE_H_
 #define _PLATFORM_DEFINES_APPLE_H_
 
+#ifndef _RESTRICT_
+#define _RESTRICT_ __restrict__
+#endif
+
 #ifndef NOINITVTABLE
 #define NOINITVTABLE
 #endif  //NOINITVTABLE

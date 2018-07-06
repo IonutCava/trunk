@@ -105,7 +105,7 @@ bool ForwardPlusRenderer::buildLightGrid() {
             vec2<U16>(Config::Lighting::LIGHT_GRID_TILE_DIM_X,
                       Config::Lighting::LIGHT_GRID_TILE_DIM_Y),
             // render target resolution
-            vec2<U16>(viewport.zw()),
+            vec2<U16>(to_ushort(viewport.z), to_ushort(viewport.w)),
             _omniLightList,
             GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW),
             GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION),

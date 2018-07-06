@@ -66,7 +66,7 @@ void GUI::draw() const {
     const OIS::MouseState& mouseState =
         Input::InputInterface::getInstance().getMouse().getMouseState();
 
-    setCursorPosition(to_ushort(mouseState.X.abs), to_ushort(mouseState.Y.abs));
+    setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 }
 
 void GUI::update(const U64 deltaTime) {
@@ -159,7 +159,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     const OIS::MouseState& mouseState =
         Input::InputInterface::getInstance().getMouse().getMouseState();
 
-    setCursorPosition(to_ushort(mouseState.X.abs), to_ushort(mouseState.Y.abs));
+    setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 
     _defaultMsgBox = addMsgBox("AssertMsgBox", "Assertion failure",
                                "Assertion failed with message: ");
@@ -172,8 +172,8 @@ void GUI::selectionChangeCallback(Scene* const activeScene) {
         activeScene->getCurrentSelection());
 }
 
-void GUI::setCursorPosition(U16 x, U16 y) const {
-    CEGUI_DEFAULT_CTX.injectMousePosition(x, y);
+void GUI::setCursorPosition(I32 x, I32 y) const {
+    CEGUI_DEFAULT_CTX.injectMousePosition(to_float(x), to_float(y));
 }
 
 bool GUI::onKeyDown(const Input::KeyEvent& key) {

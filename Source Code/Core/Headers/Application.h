@@ -97,7 +97,7 @@ DEFINE_SINGLETON(Application)
     inline bool mainLoopPaused() const;
     inline void mainLoopPaused(bool state);
 
-    void snapCursorToPosition(U16 x, U16 y) const;
+    void snapCursorToPosition(I32 x, I32 y) const;
     inline void snapCursorToCenter() const;
 
     inline void throwError(ErrorCode err);

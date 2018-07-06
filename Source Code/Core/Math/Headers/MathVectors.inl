@@ -137,7 +137,7 @@ inline vec4<T> Normalize(const vec4<T> &vector) {
 /// multiply a vector by a value
 template <typename T>
 inline vec4<T> operator*(T fl, const vec4<T> &v) {
-    return vec4<T>(v.x * fl, v.y * fl, v.z * fl, v.w * fl);
+    return v * fl;
 }
 
 /*
@@ -235,8 +235,8 @@ inline void vec2<T>::lerp(const vec2 &v, const vec2 &factor) {
 }
 
 /// linear interpolation between 2 vectors
-template <typename T>
-inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, T factor) {
+template <typename T, typename U>
+inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, U factor) {
     return ((u * (1 - factor)) + (v * factor));
 }
 
@@ -454,8 +454,8 @@ inline vec3<T> vec3<T>::closestPointOnSegment(const vec3 &vA, const vec3 &vB) {
 }
 
 /// lerp between the 2 specified vectors by the specified amount
-template <typename T>
-inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, T factor) {
+template <typename T, typename U>
+inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, U factor) {
     return ((u * (1 - factor)) + (v * factor));
 }
 
@@ -589,5 +589,79 @@ inline vec4<Type> Random(const vec4<Type>& min, const vec4<Type>& max) {
     return vec4<Type>(Random(min.x, max.x), Random(min.y, max.y),
                       Random(min.z, max.z), Random(min.w, max.w));
 }
+
+template<>
+const vec4<F32> vec4<F32>::operator-(F32 _f) const {
+    return vec4<F32>(simd_vector<F32>(_mm_sub_ps(this->_reg._reg, _mm_set1_ps(_f))));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator+(F32 _f) const {
+    return vec4<F32>(simd_vector<F32>(_mm_add_ps(this->_reg._reg, _mm_set1_ps(_f))));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator*(F32 _f) const {
+    return vec4<F32>(simd_vector<F32>(_mm_mul_ps(this->_reg._reg, _mm_set1_ps(_f))));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator/(F32 _f) const {
+    if (IS_ZERO(_f)) {
+        return *this;
+    }
+
+    return vec4<F32>(simd_vector<F32>(_mm_div_ps(this->_reg._reg, _mm_set1_ps(_f))));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator+(const vec4<F32> &v) const {
+    return vec4<F32>(simd_vector<F32>(_mm_add_ps(this->_reg._reg, v._reg._reg)));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator-(const vec4<F32> &v) const {
+    return vec4<F32>(simd_vector<F32>(_mm_sub_ps(this->_reg._reg, v._reg._reg)));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator/(const vec4<F32> &v) const {
+    return vec4<F32>(simd_vector<F32>(_mm_div_ps(this->_reg._reg, v._reg._reg)));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator*(const vec4<F32> &v) const {
+    return vec4<F32>(simd_vector<F32>(_mm_mul_ps(this->_reg._reg, v._reg._reg)));
+}
+
+template<>
+vec4<F32>& vec4<F32>::operator*=(const vec4<F32> &v) {
+    this->_reg._reg = _mm_mul_ps(this->_reg._reg, v._reg._reg);
+    return *this;
+}
+
+template<>
+vec4<F32>& vec4<F32>::operator/=(const vec4<F32> &v) {
+    this->_reg._reg = _mm_div_ps(this->_reg._reg, v._reg._reg);
+    return *this;
+}
+
+template<>
+vec4<F32>& vec4<F32>::operator+=(const vec4<F32> &v) {
+    this->_reg._reg = _mm_add_ps(this->_reg._reg, v._reg._reg);
+    return *this;
+}
+
+template<>
+vec4<F32>& vec4<F32>::operator-=(const vec4<F32> &v) {
+    this->_reg._reg = _mm_sub_ps(this->_reg._reg, v._reg._reg);
+    return *this;
+}
+
+template<>
+inline void vec4<F32>::setV(const F32 *v) {
+    this->_reg._reg = _mm_load_ps(v);
+}
+
 };  // namespace Divide
 #endif

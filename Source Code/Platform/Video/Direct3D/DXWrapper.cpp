@@ -36,7 +36,7 @@ bool DX_API::makeTextureResident(const TextureData& textureData) {
     return true;
 }
 
-void DX_API::setCursorPosition(U16 x, U16 y) {}
+void DX_API::setCursorPosition(I32 x, I32 y) {}
 
 void DX_API::beginFrame() {}
 

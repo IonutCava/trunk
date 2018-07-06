@@ -109,7 +109,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     
     CameraManager& getCameraMgr() { return *_cameraMgr; }
 
-    bool setCursorPosition(U16 x, U16 y) const;
+    bool setCursorPosition(I32 x, I32 y) const;
     /// Key pressed
     bool onKeyDown(const Input::KeyEvent& key);
     /// Key released

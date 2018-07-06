@@ -570,7 +570,7 @@ void Kernel::onChangeWindowSize(U16 w, U16 h) {
 ///--------------------------Input
 /// Management-------------------------------------///
 
-bool Kernel::setCursorPosition(U16 x, U16 y) const {
+bool Kernel::setCursorPosition(I32 x, I32 y) const {
     _GFX.setCursorPosition(x, y);
     _GUI.setCursorPosition(x, y);
     return true;

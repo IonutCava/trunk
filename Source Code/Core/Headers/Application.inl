@@ -179,7 +179,7 @@ inline void Application::mainLoopPaused(bool state) {
 
 inline void Application::snapCursorToCenter() const {
     const vec2<U16>& center = _windowManager.getResolution();
-    snapCursorToPosition(center.x / 2, center.y / 2);
+    snapCursorToPosition(to_int(center.x / 2), to_int(center.y / 2));
 }
 
 inline void Application::throwError(ErrorCode err) {

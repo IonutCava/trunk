@@ -75,9 +75,9 @@ ErrorCode GL_API::createWindow() {
                                            1,
                                            windowFlags);
 
-    vec2<I32> position;
-    SDL_GetWindowPosition(GLUtil::_mainWindow, &position.x, &position.y);
-    winManager.setWindowPosition(vec2<U16>(position));
+    I32 positionX, positionY;
+    SDL_GetWindowPosition(GLUtil::_mainWindow, &positionX, &positionY);
+    winManager.setWindowPosition(positionX, positionY);
 
       // Check if we have a valid window
     if (!GLUtil::_mainWindow) {
@@ -176,8 +176,8 @@ void GL_API::pollWindowEvents() {
                                                      event.window.data2);
 
                         if (!_internalMoveEvent) {
-                            setWindowPosition(to_ushort(event.window.data1),
-                                              to_ushort(event.window.data2));
+                            setWindowPosition(event.window.data1,
+                                              event.window.data2);
                             _internalMoveEvent = false;
                         }
                     } break;
@@ -234,9 +234,11 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     systemInfo._systemResolutionWidth = displayMode.w;
     systemInfo._systemResolutionHeight = displayMode.h;
     winManager.setWindowDimensions(WindowType::FULLSCREEN,
-                                   vec2<U16>(displayMode.w, displayMode.h));
+                                   to_ushort(displayMode.w),
+                                   to_ushort(displayMode.h));
     winManager.setWindowDimensions(WindowType::FULLSCREEN_WINDOWED,
-                                   vec2<U16>(displayMode.w, displayMode.h));
+                                   to_ushort(displayMode.w),
+                                   to_ushort(displayMode.h));
 
     ErrorCode errorState = createWindow();
     if (errorState != ErrorCode::NO_ERR) {
@@ -595,10 +597,10 @@ void GL_API::changeResolution(GLushort w, GLushort h) {
 }
 
 /// Window positioning is handled by SDL
-void GL_API::setWindowPosition(U16 w, U16 h) {
+void GL_API::setWindowPosition(I32 w, I32 h) {
     _internalMoveEvent = true;
     const WindowManager& winManager = Application::getInstance().getWindowManager();
-    if (winManager.getWindowPosition() != vec2<U16>(w, h)) {
+    if (winManager.getWindowPosition() != vec2<I32>(w, h)) {
         SDL_SetWindowPosition(GLUtil::_mainWindow, w, h);
     }
 }
@@ -613,7 +615,7 @@ void GL_API::centerWindowPosition() {
 }
 
 /// Mouse positioning is handled by SDL
-void GL_API::setCursorPosition(GLushort x, GLushort y) {
+void GL_API::setCursorPosition(I32 x, I32 y) {
     SDL_WarpMouseInWindow(GLUtil::_mainWindow, x, y);
 }
 

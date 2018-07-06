@@ -472,7 +472,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         return _api->makeTextureResident(textureData);
     }
 
-    inline void setCursorPosition(U16 x, U16 y) override {
+    inline void setCursorPosition(I32 x, I32 y) override {
         _api->setCursorPosition(x, y);
     }
 

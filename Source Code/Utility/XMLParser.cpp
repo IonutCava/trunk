@@ -276,10 +276,10 @@ void loadConfig(const stringImpl &file) {
     par.setParam("rendering.enableFog", pt.get("rendering.enableFog", true));
 
     I32 targetDisplay = pt.get("runtime.targetDisplay", 0);
-    vec2<U16> resolution(pt.get("runtime.resolution.<xmlattr>.w", 1024),
-                         pt.get("runtime.resolution.<xmlattr>.h", 768));
-    vec2<U16> splashScreenDimensions(pt.get("runtime.splashScreenSize.<xmlattr>.w", 400),
-                                     pt.get("runtime.splashScreenSize.<xmlattr>.h", 300));
+    vec2<U16> resolution(to_ushort(pt.get("runtime.resolution.<xmlattr>.w", 1024)),
+                         to_ushort(pt.get("runtime.resolution.<xmlattr>.h", 768)));
+    vec2<U16> splashScreenDimensions(to_ushort(pt.get("runtime.splashScreenSize.<xmlattr>.w", 400)),
+                                     to_ushort(pt.get("runtime.splashScreenSize.<xmlattr>.h", 300)));
     bool startFullScreen = !pt.get("rendering.windowedMode", true);
     par.setParam("runtime.windowResizable", pt.get("runtime.windowResizable", true));
     par.setParam("runtime.enableVSync", pt.get("runtime.enableVSync", false));

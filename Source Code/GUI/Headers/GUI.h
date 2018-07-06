@@ -116,7 +116,7 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
         _textRenderInterval = renderIntervalUs;
     }
     /// Mouse cursor forced to a certain position
-    void setCursorPosition(U16 x, U16 y) const;
+    void setCursorPosition(I32 x, I32 y) const;
     /// Key pressed
     bool onKeyDown(const Input::KeyEvent& key);
     /// Key released

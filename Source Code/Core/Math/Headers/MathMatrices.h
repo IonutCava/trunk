@@ -482,7 +482,7 @@ class mat3 {
  * mat4
  ***************/
 template <typename T>
-class mat4 {
+class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<16>, non_aligned_base>::type {
    public:
     mat4() { this->identity(); }
 
@@ -589,12 +589,12 @@ class mat4 {
         return retValue;
     }
 
-    mat4<T> operator*(const mat4<T> &matrix) const {
+    mat4<T> operator*(const mat4& matrix) const {
         mat4<T> retValue;
         Util::Mat4::Multiply(this->mat, matrix.mat, retValue.mat);
         return retValue;
     }
-
+    
     inline T elementSum() const {
         return this->mat[0] + this->mat[1] + this->mat[2] + this->mat[3] +
                this->mat[4] + this->mat[5] + this->mat[6] + this->mat[7] +
@@ -770,7 +770,7 @@ class mat4 {
     }
 
     mat4 &operator*=(const mat4 &matrix) {
-        Util::Mat4::Multiply(this->mat, matrix.mat, this->mat);
+        this->set(*this * matrix);
         return *this;
     }
 
@@ -1134,6 +1134,8 @@ class mat4 {
         };
         T mat[16];
         T m[4][4];
+        simd_vector<T> _reg[4];
+        vec4<T> _vec[4];
     };
 };
 
@@ -1206,6 +1208,26 @@ template <typename T, typename U>
 inline T Lerp(const T v1, const T v2, const U t) {
     return v1 + (v2 - v1 * t);
 }
+
+template<>
+mat4<F32> mat4<F32>::operator*(const mat4<F32>& matrix) const {
+    mat4<F32> retValue;
+    Util::Mat4::Multiply(*this, matrix, retValue);
+    return retValue;
+}
+
+namespace Util {
+    namespace Mat4 {
+        FORCE_INLINE void Multiply(const mat4<F32>& matrixA, const mat4<F32>& matrixB, mat4<F32>& ret) {
+            for (U8 i = 0; i < 4; ++i) {
+                ret._vec[i].set(matrixB._vec[0] * matrixA._vec[i][0]
+                              + matrixB._vec[1] * matrixA._vec[i][1]
+                              + matrixB._vec[2] * matrixA._vec[i][2]
+                              + matrixB._vec[3] * matrixA._vec[i][3]);
+            }
+        }
+    };
+};
 
 };  // namespace Divide
 

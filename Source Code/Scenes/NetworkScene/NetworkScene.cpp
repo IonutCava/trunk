@@ -116,13 +116,13 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
                   Time::ElapsedSeconds());
 
     _GUI->addText("serverMessage",
-                  vec2<I32>(resolution.width / 4.0f,
-                            resolution.height / 1.6f),
+                  vec2<I32>(resolution.width / 4,
+                            resolution.height / 1),
                   Font::DIVIDE_DEFAULT, vec3<F32>(0.5f, 0.5f, 0.2f),
                   "Server says: %s", "<< nothing yet >>");
     _GUI->addText("statusText",
-                  vec2<I32>(resolution.width / 3.0f,
-                            resolution.height / 1.2f),
+                  vec2<I32>(resolution.width / 3,
+                            resolution.height / 2),
                   Font::DIVIDE_DEFAULT, vec3<F32>(0.2f, 0.5f, 0.2f), "");
 
     _GUI->addButton(

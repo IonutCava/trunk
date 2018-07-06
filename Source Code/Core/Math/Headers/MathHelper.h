@@ -307,7 +307,8 @@ FORCE_INLINE void Add(const T* a, const T* b, T* r);
 template <typename T>
 FORCE_INLINE void Subtract(const T* a, const T* b, T* r);
 template <typename T>
-FORCE_INLINE void Multiply(const T* a, const T* b, T* r);
+FORCE_INLINE void Multiply(const T* _RESTRICT_ a, const T* _RESTRICT_ b, T* _RESTRICT_ r);
+FORCE_INLINE void Multiply(const mat4<F32>& matrixA, const mat4<F32>& matrixB, mat4<F32>& ret);
 template <typename T>
 FORCE_INLINE void MultiplyScalar(const T* a, T b, T* r);
 template <typename T>

@@ -63,7 +63,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     void closeRenderingAPI() override;
     void changeResolution(U16 w, U16 h) override;
     void changeViewport(const vec4<I32>& newViewport) const override;
-    void setCursorPosition(U16 x, U16 y) override;
+    void setCursorPosition(I32 x, I32 y) override;
     void registerCommandBuffer(const ShaderBuffer& commandBuffer) const override;
     bool makeTexturesResident(const TextureDataContainer& textureData) override;
     bool makeTextureResident(const TextureData& textureData) override;

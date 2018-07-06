@@ -81,12 +81,14 @@ public:
     inline void setResolutionHeight(U16 h);
     inline void setResolution(const vec2<U16>& resolution);
 
+    inline void setWindowDimensions(WindowType windowType, U16 dimensionX, U16 dimensionY);
     inline void setWindowDimensions(WindowType windowType, const vec2<U16>& dimensions);
     inline const vec2<U16>& getWindowDimensions() const;
     inline const vec2<U16>& getWindowDimensions(WindowType windowType) const;
 
-    inline void setWindowPosition(const vec2<U16>& position);
-    inline const vec2<U16>& getWindowPosition() const;
+    inline void setWindowPosition(I32 positionX, I32 positionY);
+    inline void setWindowPosition(const vec2<I32>& position);
+    inline const vec2<I32>& getWindowPosition() const;
 
 protected:
     /// this is false if the window/application lost focus (e.g. clicked another
@@ -96,7 +98,7 @@ protected:
     I32  _displayIndex;
     WindowType _activeWindowType;
     vec2<U16> _prevResolution;
-    vec2<U16> _windowPosition;
+    vec2<I32> _windowPosition;
 
     std::array<vec2<U16>, to_const_uint(WindowType::COUNT)> _windowDimensions;
 };

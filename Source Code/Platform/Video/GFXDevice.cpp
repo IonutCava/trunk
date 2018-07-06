@@ -372,7 +372,7 @@ F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
     }
 
     if (updated) {
-        data._ViewProjectionMatrix.set(data._ViewMatrix * data._ProjectionMatrix);
+        Util::Mat4::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
         _gpuBlock._updated = true;
     }
 
@@ -389,7 +389,7 @@ F32* GFXDevice::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
 
     data._ZPlanesCombined.xy(planes);
 
-    data._ViewProjectionMatrix.set(data._ViewMatrix * data._ProjectionMatrix);
+    Util::Mat4::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
 
     _gpuBlock._updated = true;
 
@@ -408,7 +408,7 @@ F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio,
 
     data._ZPlanesCombined.xy(planes);
 
-    data._ViewProjectionMatrix.set(data._ViewMatrix * data._ProjectionMatrix);
+    Util::Mat4::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
 
     _gpuBlock._updated = true;
 
