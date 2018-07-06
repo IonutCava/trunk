@@ -1,12 +1,17 @@
 #include "Headers/Kernel.h"
 #include "Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Utility/Headers/MemoryTracker.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 
+#if defined(_DEBUG)
+	bool MemoryTracker::Ready = false;
+	MemoryTracker AllocTracer;
+#endif
+
 Application::Application() : _kernel(nullptr),
-                             _totalMemoryOcuppied(0),
                              _hasFocus(true)
 {
 	_requestShutdown = false;
@@ -20,12 +25,23 @@ Application::Application() : _kernel(nullptr),
 }
 
 Application::~Application(){
-    ParamHandler::destroyInstance();
-    PRINT_FN(Locale::get("STOP_KERNEL"));
-    SAFE_DELETE(_kernel);
-    PRINT_FN(Locale::get("STOP_APPLICATION"));
-    Console::destroyInstance();
-    ApplicationTimer::destroyInstance();
+#if defined(_DEBUG)
+	MemoryTracker::Ready = false;
+	bool leakDetected = false;
+	size_t sizeLeaked = 0;
+	stringImpl allocLog = AllocTracer.Dump( leakDetected, sizeLeaked );
+	if ( leakDetected ) {
+		ERROR_FN( Locale::get( "ERROR_MEMORY_NEW_DELETE_MISMATCH" ), sizeLeaked );
+	}
+	std::ofstream memLog;
+	memLog.open( _memLogBuffer.c_str() );
+	memLog << allocLog.c_str();
+	memLog.close();
+#endif
+	PRINT_FN( Locale::get( "STOP_APPLICATION" ) );
+	ParamHandler::destroyInstance();
+	Console::destroyInstance();
+	ApplicationTimer::destroyInstance();
 }
 
 ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char **argv){
@@ -51,16 +67,9 @@ void Application::snapCursorToPosition(U16 x, U16 y) const {
     _kernel->setCursorPosition(x, y);
 }
 
-void Application::deinitialize(){
-    if(_totalMemoryOcuppied != 0)
-        ERROR_FN(Locale::get("ERROR_MEMORY_NEW_DELETE_MISMATCH"), _totalMemoryOcuppied);
-}
-
-void Application::logMemoryOperation(bool allocation, const char* logMsg, size_t size)  {
-    if(_memLogBuffer.is_open())
-        _memLogBuffer << logMsg;
-
-    _totalMemoryOcuppied += size * (allocation ? 1 : -1);
+void Application::deinitialize() {
+	PRINT_FN( Locale::get( "STOP_KERNEL" ) );
+	SAFE_DELETE( _kernel );
 }
 
 };

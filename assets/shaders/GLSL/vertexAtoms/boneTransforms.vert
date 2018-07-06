@@ -1,7 +1,11 @@
+#ifndef _BONE_TRANSFORM_VERT_
+#define _BONE_TRANSFORM_VERT_
+
 layout(binding = SHADER_BUFFER_BONE_TRANSFORMS, std140) uniform dvd_BoneTransforms
 {
     mat4 boneTransforms[MAX_BONE_COUNT_PER_NODE];
 };
+
 #if defined(COMPUTE_TBN)
 void applyBoneTransforms(inout vec4 position, inout vec3 normal, inout vec3 tangnet, in int lod){
 #else
@@ -32,3 +36,5 @@ void applyBoneTransforms(inout vec4 position, inout vec3 normal, in int lod){
 #endif
     
 }
+
+#endif //_BONE_TRANSFORM_VERT_

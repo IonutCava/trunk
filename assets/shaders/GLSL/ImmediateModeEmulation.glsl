@@ -23,10 +23,11 @@ void main(){
 
 -- Fragment
 
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
-uniform bool useTexture;
+#include "lightingDefaults.frag"
 
-in  vec2 _texCoord;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
+
+uniform bool useTexture;
 in  vec4 _color;
 out vec4 _colorOut;
 
@@ -37,6 +38,7 @@ void main(){
         _colorOut = texture(texDiffuse0, _texCoord);
         _colorOut.rgb += _color.rgb;
     }
+	_colorOut = applyGamma(_colorOut);
 }
 
 -- Fragment.GUI

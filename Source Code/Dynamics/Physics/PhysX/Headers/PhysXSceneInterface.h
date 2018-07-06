@@ -25,27 +25,20 @@
 
 #include "PhysX.h"
 #include "Dynamics/Physics/Headers/PhysicsSceneInterface.h"
-#include <boost/thread/locks.hpp>
-#include <boost/lockfree/stack.hpp>
+#include <boost/lockfree/spsc_queue.hpp>
 
 namespace Divide {
 
 class Scene;
 class Transform;
 class PhysXSceneInterface : public PhysicsSceneInterface {
-public:
-    PhysXSceneInterface(Scene* parentScene) : PhysicsSceneInterface(parentScene),
-                                              _gScene(nullptr),
-                                              _cpuDispatcher(nullptr)
-    {
-    }
+	typedef boost::lockfree::spsc_queue<PhysXActor*, boost::lockfree::capacity<128> > LoadQueue;
 
-    virtual ~PhysXSceneInterface()
-    {
-    }
+public:
+	PhysXSceneInterface( Scene* parentScene );
+	virtual ~PhysXSceneInterface();
 
     virtual bool init();
-    virtual bool exit();
     virtual void idle();
     virtual void release();
     virtual void update(const U64 deltaTime);
@@ -70,9 +63,7 @@ private:
     physx::PxDefaultCpuDispatcher*	_cpuDispatcher;
     MaterialMap _materials;
     RigidMap    _sceneRigidActors;
-    RigidMap    _sceneRigidQueue;
-    std::atomic<U32> _rigidCount;
-    mutable SharedLock _queueLock;
+	LoadQueue   _sceneRigidQueue;
 };
 
 }; //namespace Divide

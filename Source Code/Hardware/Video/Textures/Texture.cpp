@@ -125,13 +125,16 @@ bool Texture::LoadFile(U32 target, const stringImpl& name) {
 
     // Create a new Rendering API-dependent texture object    
     GFXImageFormat internalFormat = RGB8;
-    // We only support 8 bit per pixel, 1/2/3/4 channel textures
-    switch(img.format()) {
-        case RED : internalFormat = RED8;  break;
-        case RG  : internalFormat = RG8;   break;
-        case RGB : internalFormat = RGB8;  break;
-        case RGBA: internalFormat = RGBA8; break;
-    }
+	// Select the proper color space internal format
+bool srgb = _samplerDescriptor.srgb();
+	// We only support 8 bit per pixel, 1/2/3/4 channel textures
+	switch (img.format()) {
+		case RED : internalFormat = RED8;  break;
+		case RG  : internalFormat = RG8;   break;
+		case RGB : internalFormat = srgb ? SRGB8  : RGB8;  break;
+		case RGBA: internalFormat = srgb ? SRGBA8 : RGBA8; break;
+	}
+
     // Uploading to the GPU dependents on the rendering API
     loadData(target, img.data(), img.dimensions(), 
              vec2<U16>(0, (U16)floorf(log2f(fmaxf(width, height)))),

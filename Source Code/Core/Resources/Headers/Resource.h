@@ -65,22 +65,22 @@ public:
 
     ///Name management
     const  stringImpl& getName()                       const {return _name;}
-    inline void         setName(const stringImpl& name)      {_name = name;}
+    inline void        setName(const stringImpl& name)       {_name = name;}
     ///Physical file location
     const stringImpl& getResourceLocation()                                   const {return _resourceLocation;}
-          void         setResourceLocation(const stringImpl& resourceLocation)      {_resourceLocation = resourceLocation;}
+          void        setResourceLocation(const stringImpl& resourceLocation)       {_resourceLocation = resourceLocation;}
 
     inline ResourceState getState() const {return _resourceState;}
     ///Toggle loading in background thread
-    inline void enableThreadedLoading(const bool enableThreadedLoading) {_threadedLoading = enableThreadedLoading;}
+    inline  void enableThreadedLoading(const bool enableThreadedLoading) {_threadedLoading = enableThreadedLoading;}
     virtual void threadedLoad(const stringImpl& name)                  {_threadedLoadComplete = true;}
 
 protected:
-    inline void setState(const ResourceState& currentState) {_resourceState = currentState;}
+    inline  void setState(const ResourceState& currentState) {_resourceState = currentState;}
     virtual void refModifyCallback(bool increase);
 
 protected:
-    stringImpl	  _name;
+    stringImpl	 _name;
     stringImpl   _resourceLocation; ///< Physical file location
     std::atomic<ResourceState> _resourceState;
     ///Should load resource in a background thread

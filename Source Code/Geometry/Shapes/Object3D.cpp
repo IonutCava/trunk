@@ -22,8 +22,9 @@ Object3D::Object3D(const stringImpl& name, const ObjectType& type, U32 flag) : S
 
 Object3D::~Object3D()
 {
-    if(!bitCompare(_geometryFlagMask, OBJECT_FLAG_NO_VB))
-        SAFE_DELETE(_buffer);
+	if ( !bitCompare( _geometryFlagMask, OBJECT_FLAG_NO_VB ) ) {
+		SAFE_DELETE( _buffer );
+	}
 }
 
 void Object3D::setGeometryVB(VertexBuffer* const vb) {
@@ -64,7 +65,7 @@ void Object3D::computeNormals() {
     vec3<F32> v1 , v2, normal;
     //Code from http://devmaster.net/forums/topic/1065-calculating-normals-of-a-mesh/
 
-    vectorImpl<vec3<F32> >* normal_buffer = new vectorImpl<vec3<F32> >[getGeometryVB()->getPosition().size()];
+    vectorImpl<vec3<F32> >* normal_buffer = New vectorImpl<vec3<F32> >[getGeometryVB()->getPosition().size()];
 
     for( U32 i = 0; i < getGeometryVB()->getIndexCount(); i += 3 ) {
         // get the three vertices that make the faces

@@ -55,18 +55,15 @@ public:
     inline bool ShutdownRequested()           const { return _requestShutdown;  }
     inline Kernel* const getKernel()          const { return _kernel; }
 
-    inline const std::thread::id&  getMainThreadId()               const { return _threadId; }
-    inline bool isMainThread()                                       const { return (_threadId == std::this_thread::get_id()); }
-    inline void setMemoryLogFile(const stringImpl& fileName)              { _memLogBuffer.open(fileName.c_str()); }
-    ///Append to "_memLogBuffer" the string contained in "logMsg" and update _totalMemoryOcuppied with "size" accordingly based on the "allocation" flag
-    void logMemoryOperation(bool allocation, const char* logMsg, size_t size);
+    inline const std::thread::id&  getMainThreadId()          const { return _threadId; }
+    inline bool isMainThread()                                const { return (_threadId == std::this_thread::get_id()); }
+    inline void setMemoryLogFile(const stringImpl& fileName)        { _memLogBuffer = fileName; }
 
     inline bool hasFocus()                 const { return _hasFocus; }
     inline void hasFocus(const bool state)       { _hasFocus = state; }
 
     inline bool isFullScreen()                 const { return _isFullscreen;  }
     inline void isFullScreen(const bool state)       { _isFullscreen = state; }
-
 
     inline bool mainLoopActive()           const { return _mainLoopActive;  }
     inline void mainLoopActive(bool state)       { _mainLoopActive = state; }
@@ -97,14 +94,12 @@ private:
     bool      _hasFocus; 
     /// this is false if the application is running in windowed mode
     bool      _isFullscreen;
-    /// size in bytes of currently allocated memory by the "New" override (delete calls are taken in consideration)
-    size_t    _totalMemoryOcuppied;
     vec2<U16> _resolution;
     vec2<U16> _screenCenter;
     vec2<U16> _prevResolution;
     Kernel*   _kernel;
     ///buffer to register all of the memory allocations recorded via "New"
-    std::ofstream _memLogBuffer;
+    stringImpl _memLogBuffer;
     ///Main application thread id
     std::thread::id _threadId;
 

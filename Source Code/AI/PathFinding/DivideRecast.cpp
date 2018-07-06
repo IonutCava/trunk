@@ -11,7 +11,7 @@ namespace Navigation {
     DivideRecast::DivideRecast()
     {
         // Setup the default query filter
-        _filter = new dtQueryFilter();
+        _filter = New dtQueryFilter();
         _filter->setIncludeFlags(0xFFFF);    // Include all
         _filter->setExcludeFlags(0);         // Exclude none
         // Area flags for polys to consider in search, and their cost

@@ -15,7 +15,6 @@ PhysicsComponent::PhysicsComponent(SceneGraphNode* const parentSGN) : SGNCompone
                                                                        _physicsAsset(nullptr),
                                                                        _transform(nullptr)
 {
-
 }
 
 PhysicsComponent::~PhysicsComponent()
@@ -34,10 +33,12 @@ Transform* PhysicsComponent::getTransform() {
     return _transform;
 }
 
-void PhysicsComponent::physicsAsset(PhysicsAsset* asset) {
+void PhysicsComponent::physicsAsset(PhysicsAsset* const asset) {
     DIVIDE_ASSERT(_physicsAsset == nullptr, "PhysicsComponent error: Double set physics asset detected! remove the previous one first!");
     _physicsAsset = asset;
-    _physicsAsset->setParent(this);
+	if ( _physicsAsset ) {
+		_physicsAsset->setParent( this );
+	}
 }
 
 void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName){

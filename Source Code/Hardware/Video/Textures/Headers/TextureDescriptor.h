@@ -46,6 +46,7 @@ public:
         setAnisotropy(16);
         setLOD();
         toggleMipMaps(true);
+		toggleSRGBColorSpace(false);
         //The following 2 are mainly used by depthmaps for hardware comparisons
         _cmpFunc = CMP_FUNC_LEQUAL;
         _useRefCompare  = false;
@@ -95,7 +96,7 @@ public:
     inline void setMinFilter(TextureFilter minFilter) {_minFilter = minFilter;}
     inline void setMagFilter(TextureFilter magFilter) {_magFilter = magFilter;}
 
-    inline void toggleMipMaps(bool state) {
+    inline void toggleMipMaps(const bool state) {
         _generateMipMaps = state;
         if(state){
             if(_minFilter == TEXTURE_FILTER_LINEAR)
@@ -106,10 +107,15 @@ public:
         }
     }
 
+	inline void toggleSRGBColorSpace(const bool state) {
+		_srgb = state;
+	}
+
     inline size_t getHash() const {
         size_t hash = 0;
         hash_combine(hash, _cmpFunc);
         hash_combine(hash, _useRefCompare);
+		hash_combine(hash, _srgb);
         hash_combine(hash, _wrapU);
         hash_combine(hash, _wrapV);
         hash_combine(hash, _wrapW);
@@ -134,23 +140,25 @@ public:
     ComparisonFunction _cmpFunc;           ///<Used by RefCompare
     bool               _useRefCompare;     ///<use red channel as comparison (e.g. for shadows)
 
-    inline TextureWrap   wrapU()            const {return _wrapU;}
-    inline TextureWrap   wrapV()            const {return _wrapV;}
-    inline TextureWrap   wrapW()            const {return _wrapW;}
-    inline TextureFilter minFilter()        const {return _minFilter;}
-    inline TextureFilter magFilter()        const {return _magFilter;}
-    inline F32           minLOD()           const {return _minLOD;}
-    inline F32           maxLOD()           const {return _maxLOD;}
-    inline F32           biasLOD()          const {return _biasLOD;}
-    inline U8            anisotropyLevel()  const {return _anisotropyLevel;}
-    inline bool          generateMipMaps()  const {return _generateMipMaps;}
-    inline vec4<F32>     borderColor()      const {return _borderColor;}
+    inline TextureWrap   wrapU()            const { return _wrapU; }
+    inline TextureWrap   wrapV()            const { return _wrapV; }
+    inline TextureWrap   wrapW()            const { return _wrapW; }
+    inline TextureFilter minFilter()        const { return _minFilter; }
+    inline TextureFilter magFilter()        const { return _magFilter; }
+    inline F32           minLOD()           const { return _minLOD; }
+    inline F32           maxLOD()           const { return _maxLOD; }
+    inline F32           biasLOD()          const { return _biasLOD; }
+	inline bool          srgb()             const { return _srgb; }
+    inline U8            anisotropyLevel()  const { return _anisotropyLevel; }
+    inline bool          generateMipMaps()  const { return _generateMipMaps; }
+    inline vec4<F32>     borderColor()      const { return _borderColor; }
 
 protected:
     //Sampler states
     TextureFilter  _minFilter, _magFilter; ///Texture filtering mode
     TextureWrap    _wrapU, _wrapV, _wrapW; ///<Or S-R-T
     bool           _generateMipMaps;       ///<If it's set to true we create automatic MipMaps
+	bool           _srgb; //< Use SRGB color space
     U8             _anisotropyLevel;       ///<The value must be in the range [0...255] and is automatically clamped by the max HW supported level
     F32            _minLOD,_maxLOD;        ///<OpenGL eg: used by TEXTURE_MIN_LOD and TEXTURE_MAX_LOD
     F32            _biasLOD;               ///<OpenGL eg: used by TEXTURE_LOD_BIAS
@@ -212,13 +220,12 @@ public:
     }
 
     ///A TextureDescriptor will always have a sampler, even if it is the default one
-    inline       void               setSampler(const SamplerDescriptor& descriptor) {_samplerDescriptor = descriptor;}
-    inline const SamplerDescriptor& getSampler()                              const {return _samplerDescriptor;}
+    inline       void               setSampler(const SamplerDescriptor& descriptor) { _samplerDescriptor = descriptor; }
+    inline const SamplerDescriptor& getSampler()                              const { return _samplerDescriptor; }
 
     U8  _layerCount;
     U8  _packAlignment, _unpackAlignment; ///<Pixel store information
     U16 _mipMinLevel, _mipMaxLevel;       ///<MipMap interval selection
-
     ///Texture data information
     GFXImageFormat    _internalFormat;
     GFXDataFormat     _dataType;

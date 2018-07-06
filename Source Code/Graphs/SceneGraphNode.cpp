@@ -75,7 +75,8 @@ SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GU
 }
 
 ///If we are destroying the current graph node
-SceneGraphNode::~SceneGraphNode(){
+SceneGraphNode::~SceneGraphNode()
+{
     unload();
 
     PRINT_FN(Locale::get("DELETE_SCENEGRAPH_NODE"), getName().c_str());
@@ -146,14 +147,20 @@ bool SceneGraphNode::unload(){
     if (getParent()){
         _node->decReferenceCount();
         if(_node->getReferenceCount() == 0) {
-            RemoveResource(_node);
-        }
-    }
+			if ( ResourceCache::getInstance().find( _node->getName() ) != nullptr ) {
+				RemoveResource( _node );
+			} else {
+				// not all nodes are loaded via the ResourceCache
+				SAFE_DELETE( _node );
+			}
+		}
+	}
     _loaded = false;
 
 	for (DELEGATE_CBK<>& cbk : _deletionCallbacks) {
 		cbk();
 	}
+
     return true;
 }
 
@@ -186,7 +193,7 @@ void SceneGraphNode::setParent(SceneGraphNode* const parent) {
 }
 
 ///Add a new SceneGraphNode to the current node's child list based on a SceneNode
-SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const stringImpl& name) {
+SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node, const stringImpl& name) {
     assert(node);
     //Create a new SceneGraphNode with the SceneNode's info
     SceneGraphNode* sceneGraphNode = New SceneGraphNode(_sceneGraph, node);
@@ -197,7 +204,7 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const stringImpl& 
     stringImpl sgName(name.empty() ? node->getName() : name);
     //Name the new SceneGraphNode
     sceneGraphNode->setName(sgName);
-     //Get the new node's transform
+    //Get the new node's transform
     Transform* nodeTransform = sceneGraphNode->getComponent<PhysicsComponent>()->getTransform();
     //If the current node and the new node have transforms,
     //Update the relationship between the 2

@@ -30,7 +30,9 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old) : _propert
     _id = old._id;
     _mask = old._mask;
     _enumValue = old._enumValue;
-    if(old._propertyDescriptor != nullptr)	_propertyDescriptor = old._propertyDescriptor->clone();
+	if ( old._propertyDescriptor != nullptr ) {
+		_propertyDescriptor = old._propertyDescriptor->clone();
+	}
 }
 
  ResourceDescriptor& ResourceDescriptor::operator= (ResourceDescriptor const& old) {
@@ -43,7 +45,9 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old) : _propert
         _id = old._id;
         _mask = old._mask;
         _enumValue = old._enumValue;
-        if(old._propertyDescriptor != nullptr)	 SAFE_UPDATE(_propertyDescriptor, old._propertyDescriptor->clone());
+		if ( old._propertyDescriptor != nullptr ) {
+			SAFE_UPDATE( _propertyDescriptor, old._propertyDescriptor->clone() );
+		}
       }
 
       return *this;

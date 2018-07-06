@@ -57,7 +57,7 @@ public:
 
     Resource* const find(const stringImpl& name);
     void add(const stringImpl& name, Resource* const resource);
-    bool remove(Resource* const res, bool force = false);
+    bool remove(Resource* res, bool force = false);
     bool load(Resource* const res, const stringImpl& name);
     bool loadHW(Resource* const res, const stringImpl& name);
 
@@ -80,16 +80,18 @@ protected:
 END_SINGLETON
 
 template<typename T>
-inline void RemoveResource(T*& resource, bool force = false){
+inline bool RemoveResource(T*& resource, bool force = false){
     DIVIDE_ASSERT(ResourceCache::hasInstance(), "ResourceCache error: RemoveResource called without a valid ResourceCache available!");
     Resource* res = dynamic_cast<Resource*>(resource);
     if (res != nullptr) {
         if (ResourceCache::getInstance().remove(res, force)) {
             resource = nullptr;
-        }
+			return true;
+		}
 	} else {
 		ERROR_FN(Locale::get("RESOURCE_CACHE_REMOVE_NOT_RESOURCE"));
 	}
+	return false;
 }
 
 template<typename T>

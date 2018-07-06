@@ -64,16 +64,16 @@ vec4 mappingParallax(){
 #endif
 
 void main (void){
-	//_colorOut = applyFog(MappingRoutine());
+	//_colorOut = applyGamma(applyFog(MappingRoutine()));
 #if defined(COMPUTE_TBN)
 #	if defined(USE_PARALLAX_MAPPING)
-    _colorOut = applyFog(ParallaxMapping());
+    _colorOut = applyGamma(applyFog(ParallaxMapping()));
 #	elif defined(USE_RELIEF_MAPPING)
-    _colorOut = applyFog(ReliefMapping());
+    _colorOut = applyGamma(applyFog(ReliefMapping()));
 #	else
-    _colorOut = applyFog(mappingNormal());
+    _colorOut = applyGamma(applyFog(mappingNormal()));
 #	endif
 #else
-	_colorOut = applyFog(mappingFlat());
+	_colorOut = applyGamma(applyFog(mappingFlat()));
 #endif
-}
+}   

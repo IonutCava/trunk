@@ -34,7 +34,6 @@ Scene::Scene() :  Resource("temp_scene"),
                  _cookCollisionMeshesScheduled(false),
                  _paramHandler(ParamHandler::getInstance()),
                  _currentSelection(nullptr),
-                 _physicsInterface(nullptr),
                  _sceneGraph(New SceneGraph())
 {
     _mousePressed[OIS::MB_Left]    = false;
@@ -78,8 +77,9 @@ bool Scene::idle(){ //Called when application is idle
 }
 
 void Scene::onCameraChange(){
-    if(_sceneGraph)
-        _sceneGraph->getRoot()->onCameraChange();
+	if ( _sceneGraph ) {
+		_sceneGraph->getRoot()->onCameraChange();
+	}
 }
 
 void Scene::postRender(){
@@ -208,34 +208,20 @@ bool Scene::loadGeometry(const FileData& data){
     return true;
 }
 
-ParticleEmitter* Scene::getParticleEmitter(const stringImpl& name){
-    ParticleEmitterMap::const_iterator emitterIt = _particleEmitters.find(name);
-    if(emitterIt != _particleEmitters.end()){
-        return _particleEmitters[name];
-    }
-    return nullptr;
-}
-
-ParticleEmitter* Scene::addParticleEmitter(const stringImpl& name, const ParticleEmitterDescriptor& descriptor){
-   ParticleEmitterMap::const_iterator emitterIt = _particleEmitters.find(name);
-   if(emitterIt != _particleEmitters.end()){
-       RemoveResource(_particleEmitters[name]);
-   }
-
-   ResourceDescriptor particleEmitter(name);
-   ParticleEmitter* temp = CreateResource<ParticleEmitter>(particleEmitter);    
-   _particleEmitters[name] = temp;
-   temp->setDescriptor(descriptor);
-   return temp;
+SceneGraphNode* const Scene::addParticleEmitter(const stringImpl& name, const ParticleEmitterDescriptor& descriptor, SceneGraphNode* parentNode) {
+	assert( parentNode != nullptr && !name.empty());
+    ResourceDescriptor particleEmitter(name);
+	particleEmitter.setPropertyDescriptor( descriptor );
+	return parentNode->addNode( CreateResource<ParticleEmitter>( particleEmitter ) );
 }
 
 SceneGraphNode* Scene::addLight(Light* const lightItem, SceneGraphNode* const parentNode){
     SceneGraphNode* returnNode = nullptr;
-    if(parentNode)
-        returnNode = parentNode->addNode(lightItem);
-    else
-        returnNode = _sceneGraph->getRoot()->addNode(lightItem);
-
+	if ( parentNode ) {
+		returnNode = parentNode->addNode( lightItem );
+	} else {
+		returnNode = _sceneGraph->getRoot()->addNode( lightItem );
+	}
     return returnNode;
 }
 
@@ -252,12 +238,10 @@ DirectionalLight* Scene::addDefaultLight(){
     LightManager::getInstance().setAmbientLight(ambientColor);
     return l;
 }
-///Add skies
-Sky* Scene::addDefaultSky(){
+
+void Scene::addDefaultSky(){
     STUBBED("ToDo: load skyboxes from XML")
-    Sky* tempSky = New Sky("Default Sky");
-    _skiesSGN.push_back(_sceneGraph->getRoot()->addNode(tempSky));
-    return tempSky;
+	_skiesSGN.push_back( _sceneGraph->getRoot()->addNode( CreateResource<Sky>( ResourceDescriptor("Default Sky") ) ) );
 }
 
 SceneGraphNode* Scene::addGeometry(SceneNode* const object,const stringImpl& sgnName){
@@ -271,7 +255,7 @@ bool Scene::removeGeometry(SceneNode* node){
     }
     SceneGraphNode* _graphNode = _sceneGraph->findNode(node->getName());
 
-    SAFE_DELETE_CHECK(_graphNode);
+    return SAFE_DELETE_CHECK(_graphNode);
 }
 
 bool Scene::preLoad() {
@@ -323,11 +307,13 @@ bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* co
 
 bool Scene::unload(){
     // prevent double unload calls
-    if(!checkLoadFlag()) return false;
+	if ( !checkLoadFlag() ) {
+		return false;
+	}
     clearTasks();
+	clearPhysics();
     clearObjects();
     clearLights();
-    clearPhysics();
     _loadComplete = false;
     return true;
 }
@@ -338,21 +324,18 @@ PhysicsSceneInterface* Scene::createPhysicsImplementation(){
 
 bool Scene::loadPhysics(bool continueOnErrors){
     //Add a new physics scene (can be overridden in each scene for custom behavior)
-    _physicsInterface = createPhysicsImplementation();
-    PHYSICS_DEVICE.setPhysicsScene(_physicsInterface);
+	PHYSICS_DEVICE.setPhysicsScene( createPhysicsImplementation() );
     //Initialize the physics scene
     PHYSICS_DEVICE.initScene();
     //Cook geometry
-    if(_paramHandler.getParam<bool>("options.autoCookPhysicsAssets"))
-        _cookCollisionMeshesScheduled = true;
+	if ( _paramHandler.getParam<bool>( "options.autoCookPhysicsAssets" ) ) {
+		_cookCollisionMeshesScheduled = true;
+	}
     return true;
 }
 
 void Scene::clearPhysics(){
-    if(_physicsInterface){
-        _physicsInterface->exit();
-        SAFE_DELETE(_physicsInterface);
-    }
+	PHYSICS_DEVICE.setPhysicsScene( nullptr );
 }
 
 bool Scene::initializeAI(bool continueOnErrors) {
@@ -376,11 +359,11 @@ void Scene::clearObjects(){
     }
     _skiesSGN.clear(); //< Skies are cleared in the SceneGraph
     _terrainInfoArray.clear();
-    while(!_modelDataArray.empty())
-        _modelDataArray.pop();
+	while ( !_modelDataArray.empty() ) {
+		_modelDataArray.pop();
+	}
     _vegetationDataArray.clear();
 
-    _particleEmitters.clear();
     SAFE_DELETE(_sceneGraph);
 }
 

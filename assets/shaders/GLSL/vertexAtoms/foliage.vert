@@ -1,3 +1,6 @@
+#ifndef _FOLIAGE_VERT_
+#define _FOLIAGE_VERT_
+
 uniform vec3  scale;
 uniform float grassScale;
 uniform float dvd_time;
@@ -22,3 +25,5 @@ void computeFoliageMovementGrass(inout vec4 vertex) {
 	vertex.x += (halfScale*cos(timeGrass) * cosX * sinX)*windDirection.x;
 	vertex.z += (halfScale*sin(timeGrass) * cosX * sinX)*windDirection.y;
 }
+
+#endif //_FOLIAGE_VERT_

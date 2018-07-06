@@ -102,7 +102,9 @@ bool PhysX::closePhysicsApi() {
     }
     
     PRINT_FN(Locale::get("STOP_PHYSX_API"));
-    
+	
+	DIVIDE_ASSERT( _targetScene == nullptr, "PhysX error: target scene not destroyed before calling closePhysicsApi. Call \"setPhysicsScene( nullptr )\" first" );
+
     if (_cooking) {
         _cooking->release();
     }
@@ -152,8 +154,15 @@ PhysicsSceneInterface* PhysX::NewSceneInterface(Scene* scene) {
     return New PhysXSceneInterface(scene);
 }
 
+void PhysX::setPhysicsScene( PhysicsSceneInterface* const targetScene ) {
+	if ( _targetScene ) {
+		SAFE_DELETE( _targetScene );
+	}
+	_targetScene = targetScene;
+}
+
 void PhysX::initScene() {
-    assert(_targetScene);
+	DIVIDE_ASSERT( _targetScene != nullptr, "PhysX error: no target scene specified before a call to initScene()" );
     _targetScene->init();
 }
 
@@ -217,16 +226,14 @@ bool PhysX::createActor(SceneGraphNode* const node, const stringImpl& sceneName,
     }
     
     PhysXSceneInterface* targetScene = dynamic_cast<PhysXSceneInterface* >(_targetScene);
-    PhysXActor* tempActor = nullptr;
     PhysicsComponent* nodePhysics = sNode->getObjectType() == Object3D::SUBMESH ? 
                                      node->getParent()->getComponent<PhysicsComponent>() :
                                      node->getComponent<PhysicsComponent>();
 
-    tempActor = targetScene->getOrCreateRigidActor(node->getName());
+	PhysXActor* tempActor = targetScene->getOrCreateRigidActor( node->getName() );
+	assert( tempActor != nullptr );
+	assert( nodePhysics->getConstTransform() != nullptr );
     tempActor->setParent(nodePhysics);
-
-    assert(tempActor != nullptr);
-    assert(nodePhysics->getConstTransform() != nullptr);
 
     if (!tempActor->_actor) {
         const vec3<F32>& position = nodePhysics->getConstTransform()->getPosition();
@@ -248,12 +255,11 @@ bool PhysX::createActor(SceneGraphNode* const node, const stringImpl& sceneName,
         }
 
         tempActor->_type = PxGeometryType::eTRIANGLEMESH;
+		// If we got here, the new actor was just created (didn't exist previously in the scene), so add it
         targetScene->addRigidActor(tempActor, false);
     }
     
     assert(tempActor->_actor);
-
-    physx::PxGeometry* geometry = nullptr;
 
     PxDefaultFileInputData stream(nodeName.c_str());
     physx::PxTriangleMesh* triangleMesh = _gPhysicsSDK->createTriangleMesh(stream);
@@ -264,10 +270,8 @@ bool PhysX::createActor(SceneGraphNode* const node, const stringImpl& sceneName,
     }
 
     const vec3<F32>& scale = tempActor->getComponent()->getConstTransform()->getScale();
-    geometry = New PxTriangleMeshGeometry(triangleMesh, PxMeshScale(PxVec3(scale.x,scale.y,scale.z), PxQuat(PxIdentity)));
-    assert(geometry != nullptr);
-
-    tempActor->_actor->createShape(*geometry, *_gPhysicsSDK->createMaterial(0.7f, 0.7f, 1.0f));
+    PxTriangleMeshGeometry triangleGeometry(triangleMesh, PxMeshScale(PxVec3(scale.x,scale.y,scale.z), PxQuat(PxIdentity)));
+	tempActor->_actor->createShape(triangleGeometry, *_gPhysicsSDK->createMaterial( 0.7f, 0.7f, 1.0f ) );
 
     return true;
 };

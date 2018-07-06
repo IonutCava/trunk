@@ -39,7 +39,7 @@ public:
     };
 
     SGNComponent(ComponentType type, SceneGraphNode* const parentSGN);
-    ~SGNComponent();
+    virtual ~SGNComponent();
 
     virtual void onDraw(RenderStage currentStage) {}
     virtual void update(const U64 deltaTime) {
@@ -47,7 +47,7 @@ public:
         _elapsedTime += deltaTime;
     }
 
-    virtual void reset() {
+    virtual void resetTimers() {
         _deltaTime = 0UL;
         _elapsedTime = 0UL;
     }

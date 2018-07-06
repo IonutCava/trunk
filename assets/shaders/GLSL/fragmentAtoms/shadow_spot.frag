@@ -1,3 +1,6 @@
+#ifndef _SHADOW_SPOT_FRAG_
+#define _SHADOW_SPOT_FRAG_
+
 float filterFinalShadow(in sampler2DShadow depthMap, in vec3 vPosInDM){
     
     // Gaussian 3x3 filter
@@ -40,3 +43,5 @@ float applyShadowSpot(const in uint lightIndex, const in Shadow currentShadowSou
         return filterFinalShadow(texDepthMapFromLight[0], shadow_coord.xyz);
 #   endif
 }
+
+#endif //_SHADOW_SPOT_FRAG_

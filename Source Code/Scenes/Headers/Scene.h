@@ -56,7 +56,7 @@ namespace Divide {
     class Object3D;
     class TerrainDescriptor;
     class ParticleEmitter;
-    struct ParticleEmitterDescriptor;
+    class ParticleEmitterDescriptor;
     class PhysicsSceneInterface;
 
 ///The scene is a resource (to enforce load/unload and setName) and it has a 2 states: one for game information and one for rendering information
@@ -126,8 +126,7 @@ public:
     ///Override this if you need a custom physics implementation (idle,update,process,etc)
     virtual PhysicsSceneInterface* createPhysicsImplementation();
 
-    ParticleEmitter* addParticleEmitter(const stringImpl& name, const ParticleEmitterDescriptor& descriptor);
-    ParticleEmitter* getParticleEmitter(const stringImpl& name);
+	SceneGraphNode* const addParticleEmitter( const stringImpl& name, const ParticleEmitterDescriptor& descriptor, SceneGraphNode* parentNode );
 
     TerrainDescriptor* getTerrainInfo(const stringImpl& terrainName);
     inline vectorImpl<FileData>& getVegetationDataArray() { return _vegetationDataArray; }
@@ -140,7 +139,6 @@ protected:
     ParamHandler&  _paramHandler;
     SceneGraph*    _sceneGraph;
     
-    PhysicsSceneInterface*         _physicsInterface;
     vectorImpl<D32>                _taskTimers;
     vectorImpl<D32>                _guiTimers;
     ///Datablocks for models,vegetation,terrains,tasks etc
@@ -162,9 +160,6 @@ protected:
     ///_aiTask is the thread handling the AIManager. It is started before each scene's "initializeAI" is called
     ///It is destroyed after each scene's "deinitializeAI" is called
     std::shared_ptr<Task>  _aiTask;
-
-    typedef hashMapImpl<stringImpl, ParticleEmitter *> ParticleEmitterMap;
-    ParticleEmitterMap _particleEmitters;
 
 private:
     vectorImpl<Task_ptr> _tasks;
@@ -211,7 +206,7 @@ protected:
     /// Draw debug entities
     void debugDraw(const RenderStage& stage);
 
-    Sky*               addDefaultSky();
+    void               addDefaultSky();
     DirectionalLight*  addDefaultLight();
     
     ///simple function to load the scene elements.

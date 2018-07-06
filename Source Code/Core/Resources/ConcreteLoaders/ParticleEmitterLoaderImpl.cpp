@@ -5,6 +5,7 @@
 namespace Divide {
 
 ParticleEmitter* ImplResourceLoader<ParticleEmitter>::operator()(){
+	DIVIDE_ASSERT( _descriptor.hasPropertyDescriptor(), "ImplResourceLoader<ParticleEmitter> error: No property descriptor specified!" );
     ParticleEmitter* ptr = New ParticleEmitter();
 
     if(!load(ptr,_descriptor.getName())){
@@ -14,7 +15,9 @@ ParticleEmitter* ImplResourceLoader<ParticleEmitter>::operator()(){
         ptr->setMaterial(nullptr);
         if(!ptr->initData()){
             SAFE_DELETE(ptr);
-        }
+		} else {
+			ptr->setDescriptor( *_descriptor.getPropertyDescriptor<ParticleEmitterDescriptor>() );
+		}
     }
     return ptr;
 }

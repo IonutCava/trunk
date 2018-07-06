@@ -52,7 +52,7 @@ public:
         _physicsCollisionGroup = newGroup; 
     }
 
-    void physicsAsset(PhysicsAsset* asset);
+    void physicsAsset(PhysicsAsset* const asset);
 
     inline PhysicsAsset* const physicsAsset() {
         return _physicsAsset;

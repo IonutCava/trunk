@@ -1,3 +1,6 @@
+#ifndef _NODE_BUFFERED_INPUT_CMN_
+#define _NODE_BUFFERED_INPUT_CMN_
+
 struct NodeData {
     mat4 _matrix1;
     mat4 _matrix2;
@@ -37,4 +40,4 @@ layout(binding = SHADER_BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_M
 
 #endif
 
-
+#endif //_NODE_BUFFERED_INPUT_CMN_

@@ -124,6 +124,7 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
 #   endif
     // We start of with a forward plus renderer
     setRenderer(New ForwardPlusRenderer());
+	ParamHandler::getInstance().setParam<bool>("rendering.previewDepthBuffer", false);
     /// Everything is ready from the rendering point of view
     return NO_ERR;
 }

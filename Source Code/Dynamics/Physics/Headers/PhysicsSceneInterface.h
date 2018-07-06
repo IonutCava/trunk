@@ -33,17 +33,19 @@ class PhysicsAsset;
 class SceneGraphNode;
 class PhysicsSceneInterface {
 public:
-    PhysicsSceneInterface(Scene* parentScene) :  _parentScene(parentScene){}
+    PhysicsSceneInterface(Scene* parentScene) :  _parentScene(parentScene)
+	{
+	}
 
-    virtual ~PhysicsSceneInterface(){}
+    virtual ~PhysicsSceneInterface()
+	{
+	}
     ///Pre PHYSICS_DEVICE initialization call
     virtual bool init() = 0;
-    ///Extra cleanup calls on physics device destruction
-    virtual bool exit() = 0;
-    ///Custom physics idle calls
+	///Called on interface destruction
+	virtual void release() = 0;
+	///Custom physics idle calls
     virtual void idle() = 0;
-    ///Called on interface destruction
-    virtual void release() = 0;
     ///Physics update callback for custom behavior
     virtual void update(const U64 deltaTime) = 0;
     ///Custom process step

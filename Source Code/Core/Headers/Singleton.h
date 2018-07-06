@@ -53,7 +53,7 @@ public :
     inline static void destroyInstance() {
         if (_instance) {
             delete _instance;
-            _instance = 0;
+            _instance = nullptr;
         }
     }
 

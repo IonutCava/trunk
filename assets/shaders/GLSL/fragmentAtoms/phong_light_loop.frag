@@ -1,3 +1,6 @@
+#ifndef _PHONG_LIGHT_LOOP_FRAG_
+#define _PHONG_LIGHT_LOOP_FRAG_
+
 #include "shadowMapping.frag"
 
 void phong_omni(in uint lightIndex, in float NdotL, in float iSpecular, float att, inout MaterialProperties materialProp) {
@@ -104,3 +107,5 @@ float shadow_loop(){
 
     return clamp(shadow, 0.2, 1.0);
 }
+
+#endif //_PHONG_LIGHT_LOOP_FRAG_

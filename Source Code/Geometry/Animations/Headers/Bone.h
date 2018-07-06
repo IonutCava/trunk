@@ -48,7 +48,7 @@ public:
     Bone(const stringImpl& name) : _name(name), _parent(0){}
     Bone() : _parent(0){ }
     ~Bone() {
-        SAFE_DELETE_vector(_children); 
+        SAFE_DELETE_VECTOR(_children); 
     }
 };
 

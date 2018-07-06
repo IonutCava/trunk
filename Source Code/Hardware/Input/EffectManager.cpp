@@ -12,7 +12,7 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateF
     OIS::ConstantEffect* pConstForce;
     OIS::PeriodicEffect* pPeriodForce;
 
-    pEffect = new OIS::Effect(OIS::Effect::ConstantForce, OIS::Effect::Constant);
+    pEffect = New OIS::Effect(OIS::Effect::ConstantForce, OIS::Effect::Constant);
     pEffect->direction = OIS::Effect::North;
     pEffect->trigger_button = 0;
     pEffect->trigger_interval = 0;
@@ -28,17 +28,17 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateF
 
     mapVars.clear();
     mapVars["Force"] =
-        new TriangleVariable(0.0, // F0
+        New TriangleVariable(0.0, // F0
         4 * 10000 / _nUpdateFreq / 20.0, // dF for a 20s-period triangle
         -10000.0, // Fmin
         10000.0); // Fmax
-    mapVars["AttackFactor"] = new Constant(1.0);
+    mapVars["AttackFactor"] = New Constant(1.0);
 
-    _vecEffects.push_back(new VariableEffect("Constant force on 1 axis with 20s-period triangle oscillations "
+    _vecEffects.push_back(New VariableEffect("Constant force on 1 axis with 20s-period triangle oscillations "
         "of its signed amplitude in [-10K, +10K]",
         pEffect, mapVars, forceVariableApplier));
 
-    pEffect = new OIS::Effect(OIS::Effect::ConstantForce, OIS::Effect::Constant);
+    pEffect = New OIS::Effect(OIS::Effect::ConstantForce, OIS::Effect::Constant);
     pEffect->direction = OIS::Effect::North;
     pEffect->trigger_button = 0;
     pEffect->trigger_interval = 0;
@@ -54,17 +54,17 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateF
 
     mapVars.clear();
     mapVars["Force"] =
-        new TriangleVariable(0.0, // F0
+        New TriangleVariable(0.0, // F0
         4 * 10000 / _nUpdateFreq / 20.0, // dF for a 20s-period triangle
         -10000.0, // Fmin
         10000.0); // Fmax
-    mapVars["AttackFactor"] = new Constant(0.1);
+    mapVars["AttackFactor"] = New Constant(0.1);
 
-    _vecEffects.push_back(new VariableEffect("Constant force on 1 axis with noticeable attack (app update period / 2)"
+    _vecEffects.push_back(New VariableEffect("Constant force on 1 axis with noticeable attack (app update period / 2)"
         "and 20s-period triangle oscillations of its signed amplitude in [-10K, +10K]",
         pEffect, mapVars, forceVariableApplier));
 
-    pEffect = new OIS::Effect(OIS::Effect::PeriodicForce, OIS::Effect::Triangle);
+    pEffect = New OIS::Effect(OIS::Effect::PeriodicForce, OIS::Effect::Triangle);
     pEffect->direction = OIS::Effect::North;
     pEffect->trigger_button = 0;
     pEffect->trigger_interval = 0;
@@ -83,11 +83,11 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateF
 
     mapVars.clear();
     mapVars["Period"] =
-        new TriangleVariable(1 * 1000.0, // P0
+        New TriangleVariable(1 * 1000.0, // P0
         4 * (400 - 10)*1000.0 / _nUpdateFreq / 40.0, // dP for a 40s-period triangle
         10 * 1000.0, // Pmin
         400 * 1000.0); // Pmax
-    _vecEffects.push_back(new VariableEffect("Periodic force on 1 axis with 40s-period triangle oscillations "
+    _vecEffects.push_back(New VariableEffect("Periodic force on 1 axis with 40s-period triangle oscillations "
         "of its period in [10, 400] ms, and constant amplitude",
         pEffect, mapVars, periodVariableApplier));
 }

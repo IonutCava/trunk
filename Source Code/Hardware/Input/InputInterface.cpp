@@ -65,7 +65,7 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
             SAFE_DELETE(_pJoystickInterface);
         } else{
             // Create force feedback effect manager.
-            _pEffectMgr = new EffectManager(_pJoystickInterface, _nEffectUpdateFreq);
+            _pEffectMgr = New EffectManager(_pJoystickInterface, _nEffectUpdateFreq);
             // Initialize the event handler.
             _pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr);
         }

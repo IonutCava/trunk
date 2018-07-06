@@ -172,7 +172,7 @@ bool SceneGraphNode::onDraw(const SceneRenderState& sceneRenderState, RenderStag
         if (getParent() && !GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
 			for (SceneGraphNode::NodeChildren::value_type& it : getParent()->getChildren()) {
                 if (it.second->getComponent<AnimationComponent>()) {
-                    it.second->getComponent<AnimationComponent>()->reset();
+                    it.second->getComponent<AnimationComponent>()->resetTimers();
                 }
             }
         }

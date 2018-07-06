@@ -24,13 +24,12 @@ Texture* ImplResourceLoader<Texture>::operator()(){
     //Add the specified sampler, if any
     if(_descriptor.hasPropertyDescriptor()){
         //cast back to a SamplerDescriptor from a PropertyDescriptor
-        const SamplerDescriptor* sampler = dynamic_cast<const SamplerDescriptor*>(_descriptor.getPropertyDescriptor<SamplerDescriptor>());
-        ptr->setCurrentSampler(*sampler);
+		ptr->setCurrentSampler( *_descriptor.getPropertyDescriptor<SamplerDescriptor>() );
     }
 
     if(!load(ptr,_descriptor.getName())){
         ERROR_FN(Locale::get("ERROR_TEXTURE_LOADER_FILE"),_descriptor.getResourceLocation().c_str(), _descriptor.getName().c_str());
-        SAFE_DELETE(ptr)
+		SAFE_DELETE(ptr);
     }
 
     return ptr;

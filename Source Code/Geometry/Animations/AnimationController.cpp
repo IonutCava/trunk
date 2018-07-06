@@ -106,7 +106,7 @@ void SceneAnimator::Calculate(I32 animationIndex, const D32 pTime){
 // ------------------------------------------------------------------------------------------------
 // Recursively creates an internal node structure matching the current scene and animation.
 Bone* SceneAnimator::CreateBoneTree( aiNode* pNode, Bone* parent){
-    Bone* internalNode = new Bone(pNode->mName.data);// create a node
+    Bone* internalNode = New Bone(pNode->mName.data);// create a node
     internalNode->_parent = parent; //set the parent, in the case this is theroot node, it will be null
     _bonesByName[internalNode->_name] = internalNode;// use the name as a key
     internalNode->_localTransform =  pNode->mTransformation;
@@ -137,18 +137,20 @@ void SceneAnimator::UpdateTransforms(Bone* pNode) {
 
 Bone* SceneAnimator::GetBoneByName(const stringImpl& bname) const {
     hashMapImpl<stringImpl, Bone*>::const_iterator found = _bonesByName.find(bname);
-    if(found != _bonesByName.end()) 
-        return found->second; 
-    else 
-        return nullptr;
+	if ( found != _bonesByName.end() ) {
+		return found->second;
+	} else {
+		return nullptr;
+	}
 }
 
 I32 SceneAnimator::GetBoneIndex(const stringImpl& bname) const {
     hashMapImpl<stringImpl, U32>::const_iterator found = _bonesToIndex.find(bname);
-    if(found != _bonesToIndex.end()) 
-        return found->second; 
-    else 
-        return -1;
+	if ( found != _bonesToIndex.end() ) {
+		return found->second;
+	} else {
+		return -1;
+	}
 }
 
 /// ------------------------------------------------------------------------------------------------

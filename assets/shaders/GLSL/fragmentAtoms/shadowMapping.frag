@@ -1,3 +1,6 @@
+#ifndef _SHADOW_MAPPING_FRAG_
+#define _SHADOW_MAPPING_FRAG_
+
 layout(binding = SHADOW_CUBE_START)   uniform samplerCubeShadow texDepthMapFromLightCube[MAX_SHADOW_CASTING_LIGHTS];
 layout(binding = SHADOW_NORMAL_START) uniform sampler2DShadow   texDepthMapFromLight[MAX_SHADOW_CASTING_LIGHTS];
 layout(binding = SHADOW_ARRAY_START)  uniform sampler2DArray    texDepthMapFromLightArray[MAX_SHADOW_CASTING_LIGHTS];
@@ -53,3 +56,5 @@ int _shadowTempInt = -1;
 #include "shadow_directional.frag"
 #include "shadow_point.frag"
 #include "shadow_spot.frag"
+
+#endif //_SHADOW_MAPPING_FRAG_

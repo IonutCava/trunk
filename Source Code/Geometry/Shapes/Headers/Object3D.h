@@ -51,8 +51,8 @@ public:
         OBJECT_FLAG_PLACEHOLDER  = toBit(3)
     };
 
-    Object3D(const ObjectType& type = OBJECT_3D_PLACEHOLDER, U32 flag = OBJECT_FLAG_NONE);
-    Object3D(const stringImpl& name, const ObjectType& type = OBJECT_3D_PLACEHOLDER, U32 flag = OBJECT_FLAG_NONE);
+    explicit Object3D(const ObjectType& type = OBJECT_3D_PLACEHOLDER, U32 flag = OBJECT_FLAG_NONE);
+    explicit Object3D(const stringImpl& name, const ObjectType& type = OBJECT_3D_PLACEHOLDER, U32 flag = OBJECT_FLAG_NONE);
 
     virtual ~Object3D();
 

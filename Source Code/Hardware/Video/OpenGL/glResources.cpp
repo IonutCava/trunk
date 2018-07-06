@@ -76,11 +76,8 @@ namespace Divide {
         /// Glew needs extra data to be initialized if it's build with the MX flag        
         void initGlew() {
 #ifdef GLEW_MX
-            GLEWContext * currentGLEWContextsPtr =  _GLEWContextPtr.get();
-            if (currentGLEWContextsPtr == nullptr) {
-                currentGLEWContextsPtr = New GLEWContext;
-                _GLEWContextPtr.reset(currentGLEWContextsPtr);
-                ZeroMemory(currentGLEWContextsPtr, sizeof(GLEWContext));
+			if ( _GLEWContextPtr.get() == nullptr ) {
+				_GLEWContextPtr.reset( New GLEWContext );
             }
 #endif //GLEW_MX
             // As we are using the bleeding edge of OpenGL functionality, experimental must be set to 'true';
@@ -98,21 +95,15 @@ namespace Divide {
 #ifdef GLEW_MX
 #   if defined( OS_WINDOWS )
             /// Same as for normal GLEW initialization, but this time, init platform specific pointers
-            WGLEWContext * currentWGLEWContextsPtr =  _WGLEWContextPtr.get();
-            if (currentWGLEWContextsPtr == nullptr)	{
-                currentWGLEWContextsPtr = New WGLEWContext;
-                _WGLEWContextPtr.reset(currentWGLEWContextsPtr);
-                ZeroMemory(currentWGLEWContextsPtr, sizeof(WGLEWContext));
+			if ( _WGLEWContextPtr.get() == nullptr ) {
+				_WGLEWContextPtr.reset( New WGLEWContext );
             }
 
             err = wglewInit();
 #	else //! OS_WINDOWS
             /// Same as for normal GLEW initialization, but this time, init platform specific pointers
-            GLXEWContext * currentGLXEWContextsPtr =  _GLXEWContextPtr.get();
-            if (currentGLXEWContextsPtr == nullptr)	{
-                currentGLXEWContextsPtr = New GLXEWContext;
-                _GLXEWContextPtr.reset(currentGLXEWContextsPtr);
-                ZeroMemory(currentGLXEWContextsPtr, sizeof(GLXEWContext));
+			if ( _GLXEWContextPtr.get() == nullptr ) {
+				_GLXEWContextPtr.reset( New GLXEWContext );
             }
 
             err = glxewInit();
@@ -218,6 +209,7 @@ namespace Divide {
                glImageFormatTable[RGB] = GL_RGB;
                glImageFormatTable[BGR] = GL_BGR;
                glImageFormatTable[RGB8] = GL_RGB8;
+			   glImageFormatTable[SRGB8] = GL_SRGB8;
                glImageFormatTable[RGB8I] = GL_RGB8I;
                glImageFormatTable[RGB16] = GL_RGB16;
                glImageFormatTable[RGB16F] = GL_RGB16F;
@@ -225,6 +217,7 @@ namespace Divide {
                glImageFormatTable[RGBA] = GL_RGBA;
                glImageFormatTable[RGBA4] = GL_RGBA4;
                glImageFormatTable[RGBA8] = GL_RGBA8;
+			   glImageFormatTable[SRGBA8] = GL_SRGB8_ALPHA8;
                glImageFormatTable[RGBA8I] = GL_RGBA8I;
                glImageFormatTable[RGBA16F] = GL_RGBA16F;
                glImageFormatTable[RGBA32F] = GL_RGBA32F;

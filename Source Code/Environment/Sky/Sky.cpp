@@ -12,6 +12,7 @@
 namespace Divide {
 
 Sky::Sky(const stringImpl& name) : SceneNode(name, TYPE_SKY),
+									_sky(nullptr),
                                     _skyShader(nullptr),
                                     _skybox(nullptr),
                                     _skyGeom(nullptr),
@@ -29,18 +30,21 @@ Sky::Sky(const stringImpl& name) : SceneNode(name, TYPE_SKY),
     _skyboxRenderStateReflectedHash = GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
 }
 
-Sky::~Sky(){
+Sky::~Sky()
+{
     RemoveResource(_skyShader);
     RemoveResource(_skybox);
 }
 
 bool Sky::load() {
-    if (getState() == RES_LOADED) return false;
-
+	if ( _sky != nullptr ) {
+		return false;
+	}
 	stringImpl location(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/misc_images/");
 
     SamplerDescriptor skyboxSampler;
     skyboxSampler.toggleMipMaps(false);
+	skyboxSampler.toggleSRGBColorSpace(true);
     skyboxSampler.setAnisotropy(16);
     skyboxSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
 
@@ -65,13 +69,13 @@ bool Sky::load() {
     _skyShader->Uniform("enable_sun", true);
     _sky->setResolution(4);
     PRINT_FN(Locale::get("CREATE_SKY_RES_OK"));
-    setState(RES_LOADED);
     return true;
 }
 
 void Sky::postLoad(SceneGraphNode* const sgn){
-    if(getState() != RES_LOADED) load();
-
+	if ( _sky == nullptr ) {
+		load();
+	}
     _skyGeom = sgn->addNode(_sky);
     _skyGeom->getComponent<PhysicsComponent>()->physicsGroup(PhysicsComponent::NODE_COLLIDE_IGNORE);
     _sky->getSceneNodeRenderState().setDrawState(false);

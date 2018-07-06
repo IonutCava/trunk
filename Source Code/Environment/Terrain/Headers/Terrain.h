@@ -37,6 +37,7 @@ struct TerrainTextureLayer {
         _lastOffset = 0;
         _blendMap = nullptr;
         _tileMaps = nullptr;
+		_normalMaps = nullptr;
     }
 
     ~TerrainTextureLayer();
@@ -48,16 +49,18 @@ struct TerrainTextureLayer {
         TEXTURE_ALPHA_CHANNEL = 3
     };
 
-    inline void setBlendMap(Texture* texture) { _blendMap = texture; }
-    inline void setTileMaps(Texture* texture) { _tileMaps = texture; }
+    inline void setBlendMap(Texture* const texture)   { _blendMap = texture; }
+    inline void setTileMaps(Texture* const texture)   { _tileMaps = texture; }
+	inline void setNormalMaps(Texture* const texture) { _normalMaps = texture;  }
     inline void setDiffuseScale(TerrainTextureChannel textureChannel, F32 scale) { _diffuseUVScale[textureChannel] = scale; }
     inline void setDetailScale(TerrainTextureChannel textureChannel, F32 scale)  { _detailUVScale[textureChannel]  = scale; }
 
     inline const vec4<F32>& getDiffuseScales() const { return _diffuseUVScale; }
     inline const vec4<F32>& getDetailScales()  const { return _detailUVScale;  }
 
-    Texture* const blendMap() const { return _blendMap; }
-    Texture* const tileMaps() const { return _tileMaps; }
+    Texture* const blendMap()   const { return _blendMap; }
+    Texture* const tileMaps()   const { return _tileMaps; }
+	Texture* const normalMaps() const { return _normalMaps; }
 
 private:
     U32 _lastOffset;
@@ -65,6 +68,7 @@ private:
     vec4<F32> _detailUVScale;
     Texture*  _blendMap;
     Texture*  _tileMaps;
+	Texture*  _normalMaps;
 };
 
 class Quad3D;

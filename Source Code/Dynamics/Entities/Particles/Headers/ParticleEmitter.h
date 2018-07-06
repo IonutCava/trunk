@@ -27,12 +27,14 @@
 #include "Particle.h"
 #include "Graphs/Headers/SceneNode.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
+#include "Core/Resources/Headers/ResourceDescriptor.h"
 
 namespace Divide {
 
 /// Basic definitions used by the particle emitter
 /// By default , every PE node is inert until you pass it a descriptor
-struct ParticleEmitterDescriptor {
+class ParticleEmitterDescriptor : public PropertyDescriptor{
+public:
     U32 _particleCount;            ///< maximum number of particles for this emitter
     I32 _emissionInterval;         ///< particles per second
     I32 _emissionIntervalVariance; ///< particles per second used to vary emission (_emissionInterval + rand(-_emissionIntervalVariance, _emissionIntervalVariance))
@@ -44,7 +46,23 @@ struct ParticleEmitterDescriptor {
     I32 _lifetime;                  ///< lifetime , in milliseconds of each particle
     I32 _lifetimeVariance;          ///< liftime variance (_lifetime + rand(-_lifetimeVariance, _lifetimeVariance))
     stringImpl _textureFileName;
+
+public:
     ParticleEmitterDescriptor();
+	///All of these are default values that should be safe for any kind of texture usage
+	inline void setDefaultValues() {
+		_particleCount = 1000;
+		_spread = 1.5f;
+		_emissionInterval = 400;
+		_emissionIntervalVariance = 75;
+		_velocity = 10.0f;
+		_velocityVariance = 1.0f;
+		_lifetime = getSecToMs( 5.0f );
+		_lifetimeVariance = 25.0f;
+		_textureFileName = "particle.DDS";
+	}
+
+	ParticleEmitterDescriptor* clone() const { return New ParticleEmitterDescriptor( *this ); }
 };
 
 class Texture;

@@ -19,8 +19,11 @@ SceneGraph::SceneGraph() : _nodeCount(0) {
 SceneGraph::~SceneGraph() {
     D_PRINT_FN(Locale::get("DELETE_SCENEGRAPH"));
     _root->unload(); //< Should recursively call unload on the entire scene graph
-    //Should recursively call delete on the entire scene graph
+    // Should recursively call delete on the entire scene graph
+	SceneNode* root = _root->getNode<SceneRoot>();
     SAFE_DELETE(_root);
+	// Delete the root scene node
+	SAFE_DELETE( root );
 }
 
 void SceneGraph::idle(){
@@ -49,9 +52,9 @@ void SceneGraph::print(){
 
 ///Prints out the SceneGraph structure to the Console
 void SceneGraph::printInternal(SceneGraphNode* const sgn){
-    if (!sgn)
-        return;
-
+	if ( !sgn ) {
+		return;
+	}
     //Starting from the current node
     SceneGraphNode* parent = sgn;
     SceneGraphNode* tempParent = parent;

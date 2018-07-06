@@ -118,7 +118,7 @@ protected:
 };
 
     inline ProfileTimer* ADD_TIMER(const char* timerName) {
-        ProfileTimer* timer = new ProfileTimer();
+        ProfileTimer* timer = New ProfileTimer();
         timer->create(timerName); 
         return timer;
     }

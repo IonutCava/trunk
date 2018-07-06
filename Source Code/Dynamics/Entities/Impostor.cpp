@@ -18,8 +18,8 @@ Impostor::Impostor(const stringImpl& name, F32 radius) : Sphere3D(radius, 8)
     setState(RES_LOADED);
 }
 
-Impostor::~Impostor(){
-
+Impostor::~Impostor()
+{
 }
 
 };

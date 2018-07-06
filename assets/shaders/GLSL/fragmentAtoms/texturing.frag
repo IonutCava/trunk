@@ -1,3 +1,6 @@
+#ifndef _TEXTURING_FRAG_
+#define _TEXTURING_FRAG_
+
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
 
@@ -39,3 +42,5 @@ vec4 getTextureColor(in vec2 uv) {
 
     return clamp(color, 0.0, 1.0);
 }
+
+#endif //_TEXTURING_FRAG_

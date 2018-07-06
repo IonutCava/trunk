@@ -89,6 +89,22 @@ namespace Config {
         const bool DISABLE_PERSISTENT_BUFFER = true; //< disable persistently mapped buffers
     };
 
+	namespace Assert {
+#if defined(_DEBUG)
+		const bool LOG_ASSERTS = true; //< Log assert fails messages to the error log file
+		const bool CONTINUE_ON_ASSERT = false; //< Do not call the platform "assert" function in order to continue application execution
+		const bool SHOW_MESSAGE_BOX = true; //< Popup a GUI Message Box on asserts;
+#elif defined(_PROFILE)
+		const bool LOG_ASSERTS = true;
+		const bool CONTINUE_ON_ASSERT = false;
+		const bool SHOW_MESSAGE_BOX = false;
+#else //_RELEASE
+		const bool LOG_ASSERTS = false;
+		const bool CONTINUE_ON_ASSERT = false;
+		const bool SHOW_MESSAGE_BOX = false;
+#endif
+	}
+	
     namespace Lighting {
         /// How many lights total to use in the application (4 should be enough)
         const unsigned int MAX_LIGHTS_PER_SCENE = 4;

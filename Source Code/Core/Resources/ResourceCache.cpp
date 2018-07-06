@@ -23,6 +23,7 @@ ResourceCache::~ResourceCache(){
 }
 
 void ResourceCache::add(const stringImpl& name,Resource* const res){
+	DIVIDE_ASSERT( !name.empty(), "ResourceCache add error: Invalid resource name!" );
     UpgradableReadLock ur_lock(_creationMutex);
     if(res == nullptr) {
         ERROR_FN(Locale::get("ERROR_RESOURCE_CACHE_LOAD_RES"),name.c_str());
@@ -47,12 +48,12 @@ Resource* ResourceCache::loadResource(const stringImpl& name){
 }
 
 void ResourceCache::Destroy(){
-    if(_resDB.empty())
-        return;
-
+	if ( _resDB.empty() ) {
+		return;
+	}
     PRINT_FN(Locale::get("STOP_RESOURCE_CACHE"));
 
-	for (ResourceMap::value_type& it : _resDB){
+	for (ResourceMap::value_type it : _resDB){
         if (removeInternal(it.second, true)) {
             SAFE_DELETE(it.second);
         }
@@ -69,7 +70,7 @@ Resource* const ResourceCache::find(const stringImpl& name){
     return nullptr;
 }
 
-bool ResourceCache::remove(Resource* const res, bool force){
+bool ResourceCache::remove(Resource* res, bool force){
     if (res == nullptr) {
         return false;
     }
@@ -80,12 +81,12 @@ bool ResourceCache::remove(Resource* const res, bool force){
     ResourceMap::iterator resDBiter = _resDB.find(res->getName());
     // If it's not in the resource database, it must've been created manually
     if (resDBiter == _resDB.end()) {
-        return true;
+        return false;
     }
     // If we can't remove it right now ...
     if(removeInternal(res, force)){
         _resDB.erase(resDBiter);
-        delete res;
+        SAFE_DELETE(res);
         return true;
     }
 

@@ -1,5 +1,9 @@
+#ifndef _TERRAIN_SPLATTING_FRAG_
+#define _TERRAIN_SPLATTING_FRAG_
+
 uniform sampler2D texBlend[MAX_TEXTURE_LAYERS];
 uniform sampler2DArray texTileMaps[MAX_TEXTURE_LAYERS];
+uniform sampler2DArray texNormalMaps[MAX_TEXTURE_LAYERS];
 
 uniform vec4 diffuseScale[MAX_TEXTURE_LAYERS];
 uniform vec4 detailScale[MAX_TEXTURE_LAYERS];
@@ -14,31 +18,31 @@ vec4 getFinalColor1(const in vec4 blendMap, const in uint index, const in vec4 d
 }
 
 vec3 getFinalTBN1(const in vec4 blendMap, const in uint index, const in vec4 normSize){
-    return texture(texTileMaps[index], vec3(_texCoord * normSize.r, 1)).rgb * blendMap.r;
+    return texture(texNormalMaps[index], vec3(_texCoord * normSize.r, 0)).rgb * blendMap.r;
 }
 
 vec4 getFinalColor2(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
-    return mix(getFinalColor1(blendMap, index, diffSize), texture(texTileMaps[index], vec3(_texCoord * diffSize.g, 2)), blendMap.g);
+    return mix(getFinalColor1(blendMap, index, diffSize), texture(texTileMaps[index], vec3(_texCoord * diffSize.g, 1)), blendMap.g);
 }
 
 vec3 getFinalTBN2(const in vec4 blendMap, const in uint index, const in vec4 normSize){
-    return mix(getFinalTBN1(blendMap, index, normSize), texture(texTileMaps[index], vec3(_texCoord * normSize.g, 3)).rgb, blendMap.g);
+    return mix(getFinalTBN1(blendMap, index, normSize), texture(texNormalMaps[index], vec3(_texCoord * normSize.g, 1)).rgb, blendMap.g);
 }
 
 vec4 getFinalColor3(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
-    return mix(getFinalColor2(blendMap, index, diffSize), texture(texTileMaps[index], vec3(_texCoord * diffSize.b, 4)), blendMap.b);
+    return mix(getFinalColor2(blendMap, index, diffSize), texture(texTileMaps[index], vec3(_texCoord * diffSize.b, 2)), blendMap.b);
 }
 
 vec3 getFinalTBN3(const in vec4 blendMap, const in uint index, const in vec4 normSize){
-    return mix(getFinalTBN2(blendMap, index, normSize), texture(texTileMaps[index], vec3(_texCoord * normSize.b, 5)).rgb, blendMap.b);
+    return mix(getFinalTBN2(blendMap, index, normSize), texture(texNormalMaps[index], vec3(_texCoord * normSize.b, 2)).rgb, blendMap.b);
 }
 
 vec4 getFinalColor4(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
-    return mix(getFinalColor3(blendMap, index, diffSize), texture(texTileMaps[index], vec3(_texCoord * diffSize.a, 6)), blendMap.a);
+    return mix(getFinalColor3(blendMap, index, diffSize), texture(texTileMaps[index], vec3(_texCoord * diffSize.a, 3)), blendMap.a);
 }
 
 vec3 getFinalTBN4(const in vec4 blendMap, const in uint index, const in vec4 normSize){
-    return mix(getFinalTBN3(blendMap, index, normSize), texture(texTileMaps[index], vec3(_texCoord * normSize.a, 7)).rgb, blendMap.a);
+    return mix(getFinalTBN3(blendMap, index, normSize), texture(texNormalMaps[index], vec3(_texCoord * normSize.a, 3)).rgb, blendMap.a);
 }
 
 void getColorAndTBNNormal(inout vec4 color, inout vec3 tbn){
@@ -90,3 +94,5 @@ void getColorAndTBNUnderwater(inout vec4 color, inout vec3 tbn){
     color = texture(texUnderwaterAlbedo, coords);
     tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
 }
+
+#endif //_TERRAIN_SPLATTING_FRAG_

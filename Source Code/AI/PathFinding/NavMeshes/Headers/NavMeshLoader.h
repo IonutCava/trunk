@@ -72,15 +72,21 @@ namespace Divide {
             _vertexCapacity = _vertexCount = 0;
             _triangleCapacity = _triangleCount = 0;
 
-            if(del)	SAFE_DELETE_ARRAY(_vertices)
-            else	_vertices = 0;
-
-            if(del)	SAFE_DELETE_ARRAY(_triangles)
-            else    _triangles = 0;
-
-            if(del)	SAFE_DELETE_ARRAY(_normals)
-            else _normals = 0;
-
+			if (del) {
+				SAFE_DELETE_ARRAY(_vertices);
+			} else {
+				_vertices = 0;
+			}
+			if (del) {
+				SAFE_DELETE_ARRAY(_triangles);
+			} else {
+				_triangles = 0;
+			}
+			if (del) {
+				SAFE_DELETE_ARRAY(_normals);
+			} else {
+				_normals = 0;
+			}
             _triangleAreaType.clear();
             _navMeshName = "";
         }

@@ -453,10 +453,12 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
         // if we have a name and an extension
         if(!img_name.substr(img_name.find_first_of(".")).empty()){
             // Load the texture resource
-            if(mode[0] != _aiTextureMapMode_Force32Bit)
-                textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
-                                           aiTextureMapModeTable[mode[1]],
-                                           aiTextureMapModeTable[mode[2]]);
+			if (mode[0] != _aiTextureMapMode_Force32Bit) {
+				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
+					  					   aiTextureMapModeTable[mode[1]],
+										   aiTextureMapModeTable[mode[2]]);
+			}
+			textureSampler.toggleSRGBColorSpace(true);
             ResourceDescriptor texture(img_name);
             texture.setResourceLocation(path);
             texture.setFlag(true);
@@ -483,11 +485,13 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
 		path = par.getParam<stringImpl>("assetsLocation") + "/" + par.getParam<stringImpl>("defaultTextureLocation") + "/" + path;
 
         stringImpl pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
-        if(img_name.rfind('.') !=  stringImpl::npos){
-            if(mode[0] != _aiTextureMapMode_Force32Bit)
-                textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
-                                           aiTextureMapModeTable[mode[1]],
-                                           aiTextureMapModeTable[mode[2]]);
+		if (img_name.rfind('.') != stringImpl::npos) {
+			if (mode[0] != _aiTextureMapMode_Force32Bit) {
+				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
+										   aiTextureMapModeTable[mode[1]],
+										   aiTextureMapModeTable[mode[2]]);
+			}
+			textureSampler.toggleSRGBColorSpace(false);
             ResourceDescriptor texture(img_name);
             texture.setResourceLocation(path);
             texture.setFlag(true);
@@ -504,11 +508,13 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
         stringImpl img_name = path.substr( path.find_last_of( '/' ) + 1 );
 		path = par.getParam<stringImpl>("assetsLocation") + "/" + par.getParam<stringImpl>("defaultTextureLocation") + "/" + path;
         stringImpl pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
-        if(img_name.rfind('.') !=  stringImpl::npos){
-            if(mode[0] != _aiTextureMapMode_Force32Bit)
-                textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
-                                           aiTextureMapModeTable[mode[1]],
-                                           aiTextureMapModeTable[mode[2]]);
+        if (img_name.rfind('.') !=  stringImpl::npos) {
+			if (mode[0] != _aiTextureMapMode_Force32Bit) {
+				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
+					   					   aiTextureMapModeTable[mode[1]],
+										   aiTextureMapModeTable[mode[2]]);
+			}
+			textureSampler.toggleSRGBColorSpace(false);
             ResourceDescriptor texture(img_name);
             texture.setResourceLocation(path);
             texture.setFlag(true);
@@ -526,11 +532,13 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
 
 		path = par.getParam<stringImpl>("assetsLocation") + "/" + par.getParam<stringImpl>("defaultTextureLocation") + "/" + path;
 
-        if(img_name.rfind('.') !=  stringImpl::npos){
-            if(mode[0] != _aiTextureMapMode_Force32Bit)
-                textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
-                                           aiTextureMapModeTable[mode[1]],
-                                           aiTextureMapModeTable[mode[2]]);
+        if(img_name.rfind('.') !=  stringImpl::npos) {
+			if (mode[0] != _aiTextureMapMode_Force32Bit) {
+				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
+										   aiTextureMapModeTable[mode[1]],
+										   aiTextureMapModeTable[mode[2]]);
+			}
+			textureSampler.toggleSRGBColorSpace(false);
             ResourceDescriptor texture(img_name);
             texture.setResourceLocation(path);
             texture.setFlag(true);
@@ -555,18 +563,20 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
     }
 
     result = source->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
-    if(result == AI_SUCCESS){
+    if (result == AI_SUCCESS) {
         stringImpl path = tName.data;
         stringImpl img_name = path.substr( path.find_last_of( '/' ) + 1 );
         stringImpl pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 
 		path = par.getParam<stringImpl>("assetsLocation") + "/" + par.getParam<stringImpl>("defaultTextureLocation") + "/" + path;
 
-        if(img_name.rfind('.') !=  stringImpl::npos){
-            if(mode[0] != _aiTextureMapMode_Force32Bit)
-                textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
-                                           aiTextureMapModeTable[mode[1]],
-                                           aiTextureMapModeTable[mode[2]]);
+        if (img_name.rfind('.') !=  stringImpl::npos) {
+			if (mode[0] != _aiTextureMapMode_Force32Bit) {
+				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
+										   aiTextureMapModeTable[mode[1]],
+										   aiTextureMapModeTable[mode[2]]);
+			}
+			textureSampler.toggleSRGBColorSpace(false);
             ResourceDescriptor texture(img_name);
             texture.setResourceLocation(path);
             texture.setFlag(true);

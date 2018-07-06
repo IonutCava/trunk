@@ -132,29 +132,29 @@ void glGenericVertexData::Create(U8 numBuffers, U8 numQueries) {
         glGenQueries(_numQueries, _feedbackQueries[i]);
     }
     // How many times larger should the buffer be than the actual data to offset reading and writing
-    _sizeFactor = new GLuint[numBuffers];
+    _sizeFactor = New GLuint[numBuffers];
     memset(_sizeFactor, 0, numBuffers * sizeof(GLuint));
     // Allocate buffers for all possible data that we may use with this object
     // Query results from the previous frame
     _prevResult = New GLuint[_numQueries];
     memset(_prevResult, 0, sizeof(GLuint) * _numQueries);
     // Flags to verify if each buffer was created
-    _bufferSet = new bool[numBuffers];
+    _bufferSet = New bool[numBuffers];
     memset(_bufferSet, false, numBuffers * sizeof(bool));
     // The element count for each buffer
-    _elementCount = new GLuint[numBuffers];
+    _elementCount = New GLuint[numBuffers];
     memset(_elementCount, 0, numBuffers * sizeof(GLuint));
     // The element size for each buffer (in bytes)
-    _elementSize = new size_t[numBuffers];
+    _elementSize = New size_t[numBuffers];
     memset(_elementSize, 0, numBuffers * sizeof(size_t));
     // Current buffer write head position for 3x buffer updates
-    _startDestOffset = new size_t[numBuffers];
+    _startDestOffset = New size_t[numBuffers];
     memset(_startDestOffset, 0, numBuffers * sizeof(size_t));
     // Current buffer read head position for 3x buffer updates
-    _readOffset = new size_t[numBuffers];
+    _readOffset = New size_t[numBuffers];
     memset(_readOffset, 0, numBuffers * sizeof(size_t));
     // A flag to check if the buffer is or isn't persistently mapped
-    _bufferPersistent = new bool[numBuffers];
+    _bufferPersistent = New bool[numBuffers];
     memset(_bufferPersistent, false, numBuffers * sizeof(bool));
     // Persistently mapped data (array of void* pointers)
     _bufferPersistentData = (void**)malloc(sizeof(void*) * numBuffers);

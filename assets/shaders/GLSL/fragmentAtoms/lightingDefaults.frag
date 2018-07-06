@@ -1,3 +1,6 @@
+#ifndef _LIGHTING_DEFAULTS_FRAG_
+#define _LIGHTING_DEFAULTS_FRAG_
+
 in vec2 _texCoord;
 in vec4 _vertexW;
 in vec4 _vertexWV;
@@ -26,3 +29,9 @@ vec4 applyFog(in vec4 color){
     return vec4(dvd_enableFog ? applyFogColor(color.rgb) : color.rgb, color.a);
 }  
 
+vec4 applyGamma(in vec4 color){
+	// Gamma correction
+    return vec4(pow(color.rgb, vec3(1.0/2.2)), color.a);
+}
+
+#endif //_LIGHTING_DEFAULTS_FRAG_

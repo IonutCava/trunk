@@ -419,6 +419,7 @@
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ParticleEmitterLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Quad3DLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ShaderProgramLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SkyLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Sphere3DLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainDescriptorLoaderImpl.cpp" />
@@ -691,6 +692,7 @@
     <ClInclude Include="..\..\Source Code\Utility\Headers\GUIDWrapper.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\ImageTools.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\Localization.h" />
+    <ClInclude Include="..\..\Source Code\Utility\Headers\MemoryTracker.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\StateTracker.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\String.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\TextLabel.h" />

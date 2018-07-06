@@ -75,14 +75,16 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
     U8 layerOffset = 0;
     stringImpl layerIndex;
     for (U32 i = 0; i < _terrainTextures.size(); ++i){
-        layerOffset = i * 2 + textureOffset;
+        layerOffset = i * 3 + textureOffset;
         layerIndex = stringAlg::toBase(Util::toString(i));
         TerrainTextureLayer* textureLayer = _terrainTextures[i];
         drawShader->UniformTexture("texBlend[" + layerIndex + "]",    layerOffset);
         drawShader->UniformTexture("texTileMaps[" + layerIndex + "]", layerOffset + 1);
-        
+		drawShader->UniformTexture("texNormalMaps[" + layerIndex + "]", layerOffset + 2);
+
         getMaterial()->addCustomTexture(textureLayer->blendMap(), layerOffset);
         getMaterial()->addCustomTexture(textureLayer->tileMaps(), layerOffset + 1);
+		getMaterial()->addCustomTexture(textureLayer->normalMaps(), layerOffset + 2);
 
         drawShader->Uniform("diffuseScale[" + layerIndex + "]", textureLayer->getDiffuseScales());
         drawShader->Uniform("detailScale["  + layerIndex + "]", textureLayer->getDetailScales());
@@ -265,6 +267,7 @@ TerrainTextureLayer::~TerrainTextureLayer()
 {
     RemoveResource(_blendMap);
     RemoveResource(_tileMaps);
+	RemoveResource(_normalMaps);
 }
 
 };

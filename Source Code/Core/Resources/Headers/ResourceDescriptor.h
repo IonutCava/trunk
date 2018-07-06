@@ -34,7 +34,8 @@ public:
 
     enum DescriptorType{
         DESCRIPTOR_TEXTURE = 0,
-        DESCRIPTOR_SAMPLER = 1
+        DESCRIPTOR_SAMPLER = 1,
+		DESCRIPTOR_PARTICLE = 2
     };
 
     explicit PropertyDescriptor(const DescriptorType& type) : _type(type) {}

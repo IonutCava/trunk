@@ -49,7 +49,6 @@ enum PhysicsAPI {
 class Scene;
 class SceneGraphNode;
 
-
 class PhysicsAsset {
 public:
     PhysicsAsset();

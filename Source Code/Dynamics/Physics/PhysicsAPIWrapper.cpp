@@ -8,6 +8,7 @@ PhysicsAsset::PhysicsAsset() : _resetTransforms(true),
                                _parentComponent(nullptr)
 {
 }
+
 PhysicsAsset::~PhysicsAsset()
 {
     setParent(nullptr);

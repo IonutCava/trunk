@@ -16,6 +16,17 @@ enum PhysXSceneInterfaceState {
     STATE_LOADING_ACTORS
 };
 
+PhysXSceneInterface::PhysXSceneInterface( Scene* parentScene ) : PhysicsSceneInterface( parentScene ),
+																 _gScene( nullptr ),
+																 _cpuDispatcher( nullptr ) 
+{
+}
+
+PhysXSceneInterface::~PhysXSceneInterface()
+{
+	release();
+}
+
 bool PhysXSceneInterface::init(){
     physx::PxPhysics* gPhysicsSDK = PhysX::getInstance().getSDK();
     //Create the scene
@@ -34,9 +45,9 @@ bool PhysXSceneInterface::init(){
          sceneDesc.cpuDispatcher = _cpuDispatcher;
     }
 
-    if(!sceneDesc.filterShader)
-        sceneDesc.filterShader	= PxDefaultSimulationFilterShader;
-
+	if ( !sceneDesc.filterShader ) {
+		sceneDesc.filterShader = PxDefaultSimulationFilterShader;
+	}
     sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVETRANSFORMS;
 
     _gScene = gPhysicsSDK->createScene(sceneDesc);
@@ -53,48 +64,41 @@ bool PhysXSceneInterface::init(){
     _materials.push_back(cubeMaterial);
     PxMaterial* sphereMaterial = gPhysicsSDK->createMaterial(0.6f, 0.1f, 0.6f);
     _materials.push_back(sphereMaterial);
-    _rigidCount = 0;
     return true;
 }
 
-bool PhysXSceneInterface::exit(){
-    D_PRINT_FN(Locale::get("STOP_PHYSX_SCENE_INTERFACE"));
-    return true;
+void PhysXSceneInterface::release() {
+	if ( !_gScene ) {
+		ERROR_FN( Locale::get( "ERROR_PHYSX_CLOSE_INVALID_INTERFACE" ) );
+		return;
+	}
+
+	D_PRINT_FN( Locale::get( "STOP_PHYSX_SCENE_INTERFACE" ) );
+
+	idle();
+	for ( RigidMap::iterator it = _sceneRigidActors.begin(); it != _sceneRigidActors.end(); ++it ) {
+		( *it )->_actor->release();
+		SAFE_DELETE( *it );
+	}
+
+	_sceneRigidActors.clear();
+
+	if ( _cpuDispatcher ) {
+		//_cpuDispatcher->release();
+	}
+	_gScene->release();
+	_gScene = nullptr;
 }
 
 void PhysXSceneInterface::idle(){
-    if(_rigidCount == 0)
-        return;
-
-    U32 tempCounter = _rigidCount;
-
-    WriteLock w_lock(_queueLock);
-    for(U32 i = 0; i < tempCounter; ++i){
-        _sceneRigidActors.push_back(_sceneRigidQueue[i]);
+	if ( _sceneRigidQueue.empty() ) {
+		return;
+	}
+	PhysXActor* crtActor = nullptr;
+	while ( _sceneRigidQueue.pop(crtActor) ) {
+		assert( crtActor != nullptr );
+		_sceneRigidActors.push_back( crtActor );
     }
-    _sceneRigidQueue.clear();
-    w_lock.unlock();
-
-    _rigidCount = 0;
-}
-
-void PhysXSceneInterface::release(){
-    if(!_gScene){
-        ERROR_FN(Locale::get("ERROR_PHYSX_CLOSE_INVALID_INTERFACE"));
-        return;
-    }
-
-    for(RigidMap::iterator it = _sceneRigidActors.begin(); it != _sceneRigidActors.end(); ++it){
-        (*it)->_actor->release();
-        SAFE_DELETE(*it);
-     }
-
-    _sceneRigidActors.clear();
-
-    //if(_cpuDispatcher)
-    //   _cpuDispatcher->release();
-
-    _gScene->release();
 }
 
 void PhysXSceneInterface::update(const U64 deltaTime){
@@ -164,25 +168,26 @@ void PhysXSceneInterface::process(const U64 deltaTime){
 }
 
 void PhysXSceneInterface::addRigidActor(PhysXActor* const actor, bool threaded) {
-    if(!actor)
-        return;
-    if(threaded){
-        WriteLock w_lock(_queueLock);
-        _sceneRigidQueue.push_back(actor);
-        w_lock.unlock();
-        _rigidCount++;
-    }else{
+	assert( actor != nullptr );
+
+    if (threaded) {
+		while ( !_sceneRigidQueue.push( actor ) ) {
+			idle();
+		}
+    } else {
         _sceneRigidActors.push_back(actor);
     }
 }
 
 PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(const stringImpl& actorName) {
-    if(!_gScene)
-        return nullptr;
+	if ( !_gScene ) {
+		return nullptr;
+	}
 
-    for(RigidMap::iterator it = _sceneRigidActors.begin(); it != _sceneRigidActors.end(); ++it){
-        if((*it)->_actorName.compare(actorName) == 0)
-            return (*it);
+    for(RigidMap::iterator it = _sceneRigidActors.begin(); it != _sceneRigidActors.end(); ++it) {
+		if ( ( *it )->_actorName.compare( actorName ) == 0 ) {
+			return ( *it );
+		}
     }
 
     PhysXActor* newActor = New  PhysXActor();

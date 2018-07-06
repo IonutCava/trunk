@@ -47,7 +47,6 @@ typedef __int64 _I64;
 typedef float    F32;
 typedef double   D32;
 
-void log_delete(size_t t,char* zFile, I32 nLine);
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 #define toBit(X) (1 << (X))
 /// a la Boost
@@ -168,15 +167,15 @@ inline bool DOUBLE_COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) {  return Almo
 inline bool FLOAT_COMPARE(F32 X, F32 Y)  { return FLOAT_COMPARE_TOLERANCE(X, Y, EPSILON_F32); }
 inline bool DOUBLE_COMPARE(D32 X, D32 Y) { return DOUBLE_COMPARE_TOLERANCE(X, Y, EPSILON_D32); }
 
+/// Performes extra asserts steps (logging, message boxes, etc). Returns true if the assert should be processed.
+bool preAssert( const bool expression, const char* failMessage );
 /// It is safe to call evaluate expressions and call functions inside the assert check as it will compile for every build type
 inline bool DIVIDE_ASSERT(const bool expression, const char* failMessage) {
-    assert(expression && failMessage);
+	if ( preAssert( expression, failMessage ) ) {
+		assert( expression && failMessage );
+	}
 	return expression;
 }
-
-#ifndef DIVIDE_STATIC_ASSERT
-#define DIVIDE_STATIC_ASSERT(expression, failMessage) static_assert(expression && failMessage)
-#endif
 
 typedef struct packed_int {
     U8 b0; U8 b1; U8 b2; U8 b3;
@@ -186,18 +185,6 @@ typedef union {
     U32 i;
     packed_int b;
 } P32;
-
-#ifdef _DEBUG
-#define LOG(X)                     log_delete(sizeof(X),__FILE__, __LINE__)
-#else
-#define LOG(X)
-#endif
-#define SAFE_DELETE(R)	           if(R){ LOG(R); Del R; R=nullptr; }
-#define SAFE_DELETE_ARRAY(R)	   if(R){ LOG(R); Del [] R; R=nullptr; }
-#define SAFE_DELETE_CHECK(R)       if(R){ LOG(R); Del R; R=nullptr; return true;}else{return false;}
-#define SAFE_DELETE_ARRAY_CHECK(R) if(R){ LOG(R); Del [] R; R=nullptr; return true;}else{return false;}
-#define SAFE_DELETE_vector(R)      for(vectorAlg::vecSize r_iter(0); r_iter< R.size(); r_iter++){ LOG(R); Del R[r_iter]; }
-#define SAFE_UPDATE(OLD,NEW)       if(OLD || NEW){ LOG(OLD); Del OLD; OLD=NEW;} ///OLD or NEW check is kinda' useless, but it's there for consistency
 
 template <typename... Args>
 auto DELEGATE_BIND(Args&&... args) -> decltype(std::bind(std::forward<Args>(args)...)) {
@@ -219,23 +206,83 @@ using DELEGATE_CBK = std::function<T()>;
 
 }; //namespace Divide
 
-void* operator new[](size_t size, const char* pName, int flags, unsigned debugFlags, const char* file, int line);
-void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* pName, int flags, unsigned debugFlags, const char* file, int line);
+void* operator new[]( size_t size, const char* pName, Divide::I32 flags, Divide::U32 debugFlags, const char* file, Divide::I32 line );
+void  operator delete[]( void* ptr, const char* pName, Divide::I32 flags, Divide::U32 debugFlags, const char* file, Divide::I32 line );
+void* operator new[]( size_t size, size_t alignment, size_t alignmentOffset, const char* pName, Divide::I32 flags, Divide::U32 debugFlags, const char* file, Divide::I32 line );
+void  operator delete[]( void* ptr, size_t alignment, size_t alignmentOffset, const char* pName, Divide::I32 flags, Divide::U32 debugFlags, const char* file, Divide::I32 line );
 // EASTL also wants us to define this (see string.h line 197)
-int Vsnprintf8(char* pDestination, size_t n, const char* pFormat, va_list arguments);
+Divide::I32 Vsnprintf8( char* pDestination, size_t n, const char* pFormat, va_list arguments );
 
 #if defined(NDEBUG)
 #   define New new
-#   define Del delete
 #else
-    void* operator new[]( size_t t,char* zFile, int nLine );
-    void* operator new(size_t t ,char* zFile, int nLine);
-    void  operator delete( void *p, char* zFile, int nLine);
-    void  operator delete[]( void *p,char* zFile, int nLine );
+	void* operator new( size_t size );
+	void  operator delete( void *p );
+	void* operator new[]( size_t size );
+	void  operator delete[]( void *p );
+
+	void* operator new( size_t size, char* zFile, Divide::I32 nLine );
+	void  operator delete( void *ptr, char* zFile, Divide::I32 nLine );
+	void* operator new[]( size_t size, char* zFile, Divide::I32 nLine );
+	void  operator delete[]( void *ptr, char* zFile, Divide::I32 nLine );
 
 #   define New new(__FILE__, __LINE__)
-#   define Del delete
 #endif
+
+template<class T>
+inline void SAFE_DELETE(T*& ptr) {
+	if (ptr) {
+		delete ptr;
+		ptr = nullptr;
+	}
+}
+
+template<class T>
+inline void SAFE_DELETE_ARRAY(T*& ptr) {
+	if (ptr) {
+		delete [] ptr;
+		ptr = nullptr;
+	}
+}
+
+template<class T>
+inline bool SAFE_DELETE_CHECK(T*& ptr) {
+	if (ptr) {
+		delete ptr;
+		ptr = nullptr;
+		return true;
+	}
+	return false;
+}
+
+template<class T>
+inline bool SAFE_DELETE_ARRAY_CHECK(T*& ptr) {
+	if (ptr) {
+		delete [] ptr;
+		ptr = nullptr;
+		return true;
+	}
+	return false;
+}
+
+template<class T>
+inline void SAFE_DELETE_VECTOR(vectorImpl<T*> vec) {
+	if (!vec.empty()) {
+		for (T* iter : vec) {
+			delete iter;
+		}
+		vec.clear();
+	}
+}
+
+template<class T, class U>
+inline void SAFE_UPDATE(T*& OLD, U* const NEW) {
+	static_assert(std::is_base_of<T, U>::value, "SAFE_UPDATE error: T must be a descendant of U" );
+	if (OLD) {
+		delete OLD;
+	}
+	OLD = NEW;
+}
 
 #if defined(_MSC_VER)
 

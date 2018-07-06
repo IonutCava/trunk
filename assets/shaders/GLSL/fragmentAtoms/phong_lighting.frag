@@ -1,3 +1,6 @@
+#ifndef _PHONG_LIGHTING_FRAG_
+#define _PHONG_LIGHTING_FRAG_
+
 #include "lightInput.cmn"
 #include "lightingDefaults.frag"
 
@@ -62,8 +65,6 @@ vec4 Phong(const in vec2 texCoord, const in vec3 normal, in vec4 textureColor){
 
     color *= textureColor.rgb;
     color += materialProp.specular;
-    // Gama correction
-    // color = pow(color, vec3(1.0/2.2));
     // Apply shadowing
     color *= shadow_loop();
 
@@ -88,3 +89,5 @@ vec4 Phong(const in vec2 texCoord, const in vec3 normal){
     return Phong(texCoord, normal, getTextureColor(texCoord));
 #endif
 }
+
+#endif //_PHONG_LIGHTING_FRAG_

@@ -11,16 +11,9 @@
 
 namespace Divide {
 
-ParticleEmitterDescriptor::ParticleEmitterDescriptor() {
-   _particleCount = 1000;
-   _spread = 1.5f;
-   _emissionInterval = 400;
-   _emissionIntervalVariance = 75;
-   _velocity           = 10.0f;
-   _velocityVariance   = 1.0f;
-   _lifetime           = getSecToMs(5.0f);
-   _lifetimeVariance   = 25.0f;
-   _textureFileName    = "particle.DDS";
+ParticleEmitterDescriptor::ParticleEmitterDescriptor() : PropertyDescriptor( PropertyDescriptor::DESCRIPTOR_PARTICLE )
+{
+	setDefaultValues();
 }
 
 ParticleEmitter::ParticleEmitter() : SceneNode(TYPE_PARTICLE_EMITTER),
@@ -35,6 +28,7 @@ ParticleEmitter::ParticleEmitter() : SceneNode(TYPE_PARTICLE_EMITTER),
                                     _impostorSGN(nullptr),
                                     _particleTexture(nullptr),
                                     _particleShader(nullptr),
+									_particleGPUBuffer(nullptr),
                                     _particleDepthShader(nullptr)
 {
     _drawCommand = GenericDrawCommand(TRIANGLE_STRIP, 0, 4, 1);
@@ -49,7 +43,7 @@ ParticleEmitter::~ParticleEmitter()
 
 bool ParticleEmitter::initData(){
     // assert if double init!
-    assert(_particleGPUBuffer != nullptr);
+    DIVIDE_ASSERT(_particleGPUBuffer == nullptr, "ParticleEmitter error: Double initData detected!");
 
     _particleGPUBuffer = GFX_DEVICE.newGVD(/*true*/false);
     _particleGPUBuffer->Create(3);
@@ -78,15 +72,15 @@ bool ParticleEmitter::initData(){
     ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
     _particleDepthShader = CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
     REGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
-    _impostor = New Impostor(_name);
+    _impostor = New Impostor(_name + "_impostor");
     _renderState.addToDrawExclusionMask(SHADOW_STAGE);
     return (_particleShader != nullptr);
 }
 
 bool ParticleEmitter::unload(){
-    if(getState() != RES_LOADED && getState() != RES_LOADING)
-        return true;
-
+	if ( getState() != RES_LOADED && getState() != RES_LOADING ) {
+		return true;
+	}
     UNREGISTER_TRACKED_DEPENDENCY(_particleTexture);
     UNREGISTER_TRACKED_DEPENDENCY(_particleShader);
     UNREGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
@@ -179,6 +173,7 @@ void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor)
     }
 
     SamplerDescriptor textureSampler;
+	textureSampler.toggleSRGBColorSpace(true);
     ResourceDescriptor texture(descriptor._textureFileName);
 	texture.setResourceLocation(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/" +
 		                        ParamHandler::getInstance().getParam<stringImpl>("defaultTextureLocation") + "/" +

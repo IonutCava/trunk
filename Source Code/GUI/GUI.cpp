@@ -21,6 +21,7 @@ namespace Divide {
 
 GUI::GUI() : _init(false),
              _rootSheet(nullptr),
+			 _defaultMsgBox(nullptr),
              _console(New GUIConsole()),
              _textRenderInterval(getMsToUs(10))
 {
@@ -38,6 +39,7 @@ GUI::~GUI()
         SAFE_DELETE(it.second);
     }
     _guiStack.clear();
+	_defaultMsgBox = nullptr;
 }
 
 void GUI::onResize(const vec2<U16>& newResolution) {
@@ -145,6 +147,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&GUI::draw2D, this), std::numeric_limits<U32>::max() - 1);
     const OIS::MouseState& mouseState = Input::InputInterface::getInstance().getMouse()->getMouseState();
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
+	_defaultMsgBox = addMsgBox( "AssertMsgBox", "Assertion failure", "Assertion failed with message: " );
     _init = true;
     return true;
 }
@@ -305,10 +308,10 @@ GUIText* GUI::addText(const stringImpl& id,const vec2<I32> &position, const stri
 
     va_start(args, format);
     I32 len = _vscprintf(format, args) + 1;
-    char *text = new char[len];
+    char *text = New char[len];
     vsprintf_s(text, len, format, args);
     fmt_text.append(text);
-    delete [] text;
+    SAFE_DELETE_ARRAY(text);
     va_end(args);
 
     GUIText *t = New GUIText(id,fmt_text,position,font,color,_rootSheet);
@@ -343,10 +346,10 @@ GUIText* GUI::modifyText(const stringImpl& id, char* format, ...){
 
     va_start(args, format);
     I32 len = _vscprintf(format, args) + 1;
-    char * text = new char[len];
+    char * text = New char[len];
     vsprintf_s(text, len, format, args);
     fmt_text.append(text);
-    delete [] text;
+	SAFE_DELETE_ARRAY(text);
     va_end(args);
 
     GUIElement* element = _guiStack[id];

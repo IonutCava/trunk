@@ -90,6 +90,8 @@ public:
     /// Used by CEGUI to setup rendering (D3D/OGL/OGRE/etc)
     bool bindRenderer(CEGUI::Renderer& renderer);
     void selectionChangeCallback(Scene* const activeScene);
+	/// Return a pointer to the default, general purpose message box
+	inline GUIMessageBox* const getDefaultMessageBox() const { return _defaultMsgBox; }
     /// Used to prevent text updating every frame
     inline void setTextRenderTimer(const U64 renderIntervalUs) {_textRenderInterval = renderIntervalUs;}
     /// Mouse cursor forced to a certain position
@@ -122,13 +124,14 @@ private:
 
 private:
     bool _init;                     //< Set to true when the GUI has finished loading
-    CEGUIInput  _ceguiInput;        //< Used to implement key repeat
-    GUIConsole* _console;           //< Pointer to the GUIConsole object
-    guiMap      _guiStack;          //< All the GUI elements created
-    vec2<U16>   _cachedResolution;  //< We keep a cache of the current resolution to avoid useless queries
-    U64         _textRenderInterval;//< We should avoid rendering text as fast as possible for performance reasons
+    CEGUIInput     _ceguiInput;        //< Used to implement key repeat
+    GUIConsole*    _console;           //< Pointer to the GUIConsole object
+	GUIMessageBox* _defaultMsgBox;     //< Pointer to a default message box used for general purpose messages
+    guiMap         _guiStack;          //< All the GUI elements created
+    vec2<U16>      _cachedResolution;  //< We keep a cache of the current resolution to avoid useless queries
+    U64            _textRenderInterval;//< We should avoid rendering text as fast as possible for performance reasons
     CEGUI::Window* _rootSheet; //< gui root Window
-    stringImpl _defaultGUIScheme;
+    stringImpl     _defaultGUIScheme;
     ShaderProgram* _guiShader;//<Used to apply color for text for now
 
 END_SINGLETON

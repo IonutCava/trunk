@@ -50,7 +50,8 @@ private:
     void initializeVegetation(Terrain* terrain, TerrainDescriptor* terrainDescriptor);
 
 private:
-    SamplerDescriptor* _textureSampler;
+    SamplerDescriptor* _albedoSampler;
+	SamplerDescriptor* _normalSampler;
 
 END_SINGLETON
 

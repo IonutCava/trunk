@@ -1,3 +1,6 @@
+#ifndef _BUMP_MAPPING_FRAG_
+#define _BUMP_MAPPING_FRAG_
+
 //Normal or BumpMap
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 
@@ -75,3 +78,4 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
     return Phong(uv + uv_offset, normalize(2.0 * texture(texNormalMap, uv + uv_offset).xyz - 1.0));
 }
 
+#endif //_BUMP_MAPPING_FRAG_

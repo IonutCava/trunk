@@ -1,3 +1,5 @@
+#ifndef _SHADOW_POINT_FRAG_
+#define _SHADOW_POINT_FRAG_
 
 float applyShadowPoint(const in uint lightIndex, const in Shadow currentShadowSource) {
 	// SHADOW MAPS
@@ -8,3 +10,5 @@ float applyShadowPoint(const in uint lightIndex, const in Shadow currentShadowSo
 	float depth = (clip.z / clip.w) * 0.5 + 0.5;
     return getCubeShadowValue(lightIndex, vec4(position_ls.xyz, depth));
 }
+
+#endif //_SHADOW_POINT_FRAG_

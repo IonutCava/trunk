@@ -32,10 +32,13 @@ namespace Divide {
 class Texture : public HardwareResource {
     friend class ResourceCache;
     friend class ResourceLoader;
-    template<typename X>
-    friend class ImplResourceLoader;
+    template<typename T>
+	friend class ImplResourceLoader;
 
 public:
+	Texture( TextureType type, const bool flipped = false );
+	virtual ~Texture();
+
     /// Bind the texture to the specified texture unit
     virtual void Bind(U16 slot) = 0;
     /// Change the texture's mip levels. This can be called at any time
@@ -76,8 +79,6 @@ public:
     inline void refreshMipMaps() { _mipMapsDirty = true; }
 
 protected:
-    Texture(TextureType type, const bool flipped = false);
-    virtual ~Texture();
     /// Use DevIL to load a file into a Texture Object
     bool LoadFile(U32 target, const stringImpl& name);
     /// Load texture data using the specified file name

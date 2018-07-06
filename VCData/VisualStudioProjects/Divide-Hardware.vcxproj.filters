@@ -593,6 +593,9 @@
     <ClCompile Include="..\..\Source Code\Hardware\Audio\openAl\ALWrapper.cpp">
       <Filter>Audio\OpenAL</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Platform\PlatformDefines.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl">

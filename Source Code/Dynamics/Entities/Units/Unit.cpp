@@ -15,7 +15,7 @@ Unit::Unit(UnitType type, SceneGraphNode* const node) : FrameListener(),
 {
     DIVIDE_ASSERT(node != nullptr, "Unit error: Invalid parent node specified!");
     REGISTER_FRAME_LISTENER(this, 5);
-    _node->registerdeletionCallback(DELEGATE_BIND(&Unit::nodeDeleted, this));
+	_node->registerDeletionCallback( DELEGATE_BIND( &Unit::nodeDeleted, this ) );
     _currentPosition = _node->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
 }
 

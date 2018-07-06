@@ -1,3 +1,6 @@
+#ifndef _LIGHTING_DEFAULTS_VERT_
+#define _LIGHTING_DEFAULTS_VERT_
+
 #include "lightInput.cmn"
 
 out vec4 _vertexWV;
@@ -20,3 +23,5 @@ void computeLightVectors(){
 #endif
     _viewDirection = normalize(_viewDirection);
 }
+
+#endif //_LIGHTING_DEFAULTS_VERT_

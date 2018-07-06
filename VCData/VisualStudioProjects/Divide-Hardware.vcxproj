@@ -387,6 +387,7 @@
     <ClCompile Include="..\..\Source Code\Hardware\Input\EventHandler.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Input\InputInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Network\ASIOImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Platform\PlatformDefines.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Platform\Task.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Buffers\Framebuffer\Framebuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBuffer\d3dRenderTarget.cpp" />

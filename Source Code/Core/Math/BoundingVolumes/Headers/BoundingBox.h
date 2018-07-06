@@ -37,7 +37,6 @@ public:
     {
         _min.set(std::numeric_limits<F32>::max());
         _max.set(std::numeric_limits<F32>::min());
-        _points = new vec3<F32>[8];
     }
 
     BoundingBox(const vec3<F32>& min, const vec3<F32>& max) : GUIDWrapper(),
@@ -46,7 +45,6 @@ public:
                                                               _min(min),
                                                               _max(max)
     {
-        _points = new vec3<F32>[8];
     }
 
     BoundingBox(vectorImpl<vec3<F32> >& points) : BoundingBox()
@@ -56,7 +54,6 @@ public:
 
     ~BoundingBox()
     {
-        SAFE_DELETE_ARRAY(_points);
     }
 
     BoundingBox(const BoundingBox& b) : GUIDWrapper() {
@@ -65,9 +62,10 @@ public:
         this->_min = b._min;
         this->_max = b._max;
         this->_oldMatrix = b._oldMatrix;
-        this->_points = new vec3<F32>[8];
+		for ( U8 i = 0; i < 8; ++i ) {
+			this->_points[i].set( b._points[i] );
+		}
         this->_pointsDirty = true;
-        memcpy(_points, b._points, sizeof(vec3<F32>) * 8);
     }
 
     void operator=(const BoundingBox& b){
@@ -362,9 +360,8 @@ private:
 
     // This is is very limited in scope so mutable should be ok
     mutable bool _pointsDirty;
-    mutable vec3<F32> *_points;
+    mutable vec3<F32> _points[8];
     mutable vec3<F32> _cacheVector;
-    //mutable SharedLock _lock;
 };
 
 }; //namespace Divide

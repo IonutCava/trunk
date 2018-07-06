@@ -1,3 +1,6 @@
+#ifndef _VB_INPUT_DATA_VERT_
+#define _VB_INPUT_DATA_VERT_
+
 invariant gl_Position;
 
 out vec4 _vertexW;
@@ -78,3 +81,5 @@ float random(float x) { return floatConstruct(hash(floatBitsToUint(x))); }
 float random(vec2  v) { return floatConstruct(hash(floatBitsToUint(v))); }
 float random(vec3  v) { return floatConstruct(hash(floatBitsToUint(v))); }
 float random(vec4  v) { return floatConstruct(hash(floatBitsToUint(v))); }
+
+#endif //_VB_INPUT_DATA_VERT_

@@ -322,7 +322,7 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
         light->setCastShadows(false);
         light->setRange(2.0f);
         light->setDiffuseColor(vec3<F32>(1.0f, 0.5f, 0.0f));
-        _lampTransform = new SceneTransform();
+        _lampTransform = New SceneTransform();
         // Add it to Bob's body
         _lampTransformNode = _bobNodeBody->addNode(_lampTransform, "lampTransform");
         _lampLightNode = addLight(light, _lampTransformNode);
@@ -340,8 +340,8 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
 #endif
     particleSystem._spread = 5.0f;
 
-    ParticleEmitter* test = addParticleEmitter("TESTPARTICLES", particleSystem);
-    SceneGraphNode* testSGN = _sceneGraph->getRoot()->addNode(test, "TESTPARTICLES");
+	SceneGraphNode* testSGN = addParticleEmitter( "TESTPARTICLES", particleSystem, _sceneGraph->getRoot() );
+	ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
     testSGN->getComponent<PhysicsComponent>()->translateY(5);
     test->setDrawImpostor(true);
     test->enableEmitter(true);

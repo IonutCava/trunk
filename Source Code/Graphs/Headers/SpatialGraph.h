@@ -27,30 +27,32 @@
 
 namespace Divide {
 
-class SpatialGraph  {
-public:
-	SpatialGraph(){
-		_root = New SceneGraphNode(new SceneRoot);
-	}
-
-	~SceneGraph(){
-		_root->unload();
-		/// Should recursivelly call delete on the entire scene
-		SAFE_DELETE(_root);
-	}
-
-	inline SceneGraphNode* getRoot(){ return _root; }
-
-	inline SceneGraphNode* findNode(const stringImpl& name){
-		return _root->findNode(name);
-	}
-
-	inline void render() {	_root->render(); }
-
-private:
-	SceneGraphNode* _root;
-	//SpatialHierarchyTree _spatialTree; ///< For HSR
-};
+//class SpatialGraph  {
+//public:
+//	SpatialGraph()
+//	{
+//		_root = New SceneGraphNode(New SceneRoot());
+//	}
+//
+//	~SceneGraph()
+//	{
+//		_root->unload();
+//		/// Should recursivelly call delete on the entire scene
+//		SAFE_DELETE(_root);
+//	}
+//
+//	inline SceneGraphNode* getRoot(){ return _root; }
+//
+//	inline SceneGraphNode* findNode(const stringImpl& name){
+//		return _root->findNode(name);
+//	}
+//
+//	inline void render() {	_root->render(); }
+//
+//private:
+//	SceneGraphNode* _root;
+//	//SpatialHierarchyTree _spatialTree; ///< For HSR
+//};
 
 }; //namespace Divide
 

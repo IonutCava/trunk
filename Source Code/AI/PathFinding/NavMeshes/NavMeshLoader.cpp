@@ -81,7 +81,7 @@ namespace Navigation {
             I32 bufSize = ftell(fp);
             fseek(fp, 0, SEEK_SET);
 
-            char* buf = new char[bufSize];
+            char* buf = New char[bufSize];
             if (!buf)  {
                 fclose(fp);
                 return false;
@@ -131,7 +131,7 @@ namespace Navigation {
             SAFE_DELETE_ARRAY(buf);
 
             // Calculate normals.
-            outData._normals = new F32[outData._triangleCount*3];
+            outData._normals = New F32[outData._triangleCount*3];
 
             for (I32 i = 0; i < (I32)outData._triangleCount*3; i += 3)   {
                 const F32* v0 = &outData._vertices[outData._triangles[i]*3];
@@ -202,7 +202,7 @@ namespace Navigation {
 
                 while(newCap < totalVertCt)	newCap *= 2;
 
-                mergedData._vertices = new F32[newCap*3];
+                mergedData._vertices = New F32[newCap*3];
                 mergedData._vertexCapacity = newCap;
                 mergedData._vertexCount = totalVertCt;
 
@@ -214,7 +214,7 @@ namespace Navigation {
 
                 while(newCap < totalTriCt)	newCap *= 2;
 
-                mergedData._triangles = new I32[newCap*3];
+                mergedData._triangles = New I32[newCap*3];
                 mergedData._triangleCapacity = newCap;
                 mergedData._triangleCount = totalTriCt;
                 I32 aFaceSize = a.getTriCount() * 3;
@@ -242,7 +242,7 @@ namespace Navigation {
             if (modelData->getVertCount()+1 > modelData->_vertexCapacity)  {
                 modelData->_vertexCapacity = ! modelData->_vertexCapacity ? 8 : modelData->_vertexCapacity*2;
 
-                F32* nv = new F32[modelData->_vertexCapacity*3];
+                F32* nv = New F32[modelData->_vertexCapacity*3];
 
                 if(modelData->getVertCount())	memcpy(nv, modelData->getVerts(), modelData->getVertCount()*3*sizeof(F32));
                 if(modelData->getVerts() )	    SAFE_DELETE_ARRAY(modelData->_vertices);
@@ -261,7 +261,7 @@ namespace Navigation {
         void addTriangle(NavModelData* modelData, const vec3<U32>& triangleIndices, U32 triangleIndexOffset, const SamplePolyAreas& areaType){
             if (modelData->getTriCount() + 1 > modelData->_triangleCapacity)  {
                 modelData->_triangleCapacity = !modelData->_triangleCapacity ? 8 : modelData->_triangleCapacity*2;
-                I32* nv = new I32[modelData->_triangleCapacity*3];
+                I32* nv = New I32[modelData->_triangleCapacity*3];
 
                 if( modelData->getTriCount())	memcpy(nv, modelData->_triangles, modelData->getTriCount()*3*sizeof(I32));
                 if( modelData->getTris() )   	SAFE_DELETE_ARRAY(modelData->_triangles);

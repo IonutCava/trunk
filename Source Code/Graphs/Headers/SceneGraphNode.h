@@ -213,7 +213,7 @@ public:
     inline const mat4<F32>& getMaterialColorMatrix()    const { return _materialColorMatrix; }
     inline const mat4<F32>& getMaterialPropertyMatrix() const { return _materialPropertyMatrix; }
 
-	inline void registerdeletionCallback(const DELEGATE_CBK<>& cbk) {
+	inline void registerDeletionCallback( const DELEGATE_CBK<>& cbk ) {
         _deletionCallbacks.push_back(cbk);
     }
 #ifdef _DEBUG

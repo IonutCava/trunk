@@ -1,3 +1,6 @@
+#ifndef _SHADOW_DIRECTIONAL_FRAG_
+#define _SHADOW_DIRECTIONAL_FRAG_
+
 float linstep(float a, float b, float v) {
     return clamp((v - a) / (b - a), 0.0, 1.0);
 }
@@ -70,3 +73,5 @@ float applyShadowDirectional(const in uint lightIndex, const in Shadow currentSh
 
     return 1.0;
 }
+
+#endif //_SHADOW_DIRECTIONAL_FRAG_

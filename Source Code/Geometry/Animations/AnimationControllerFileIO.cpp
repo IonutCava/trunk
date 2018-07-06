@@ -166,7 +166,7 @@ void SceneAnimator::SaveSkeleton(std::ofstream& file, Bone* parent){
 }
 
 Bone* SceneAnimator::LoadSkeleton(std::ifstream& file, Bone* parent){
-	Bone* internalNode = new Bone();// create a node
+	Bone* internalNode = New Bone();// create a node
 	internalNode->_parent = parent; //set the parent, in the case this is theroot node, it will be null
 	uint32_t nsize=0;
 	file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of chars
