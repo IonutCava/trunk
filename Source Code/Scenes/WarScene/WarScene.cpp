@@ -62,8 +62,9 @@ WarScene::WarScene()
 
     _targetLines = GFX_DEVICE.getOrCreatePrimitive(false);
 
-    _timeLimitMinutes = 3;
-    _scoreLimit = 5;
+    _runCount = 0;
+    _timeLimitMinutes = 5;
+    _scoreLimit = 3;
     _elapsedGameTime = 0;
 }
 
@@ -220,6 +221,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
 
     if (!AI::AIManager::getInstance().updatePaused()) {
         _elapsedGameTime += deltaTime;
+        checkGameCompletion();
     }
 }
 
@@ -228,7 +230,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
     // Add a light
     _sun = addLight(LightType::DIRECTIONAL,
-               GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
+        GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
     // Add a skybox
     _currentSky = addSky();
     // Position camera
@@ -248,7 +250,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     for (U8 i = 0; i < 5; ++i) {
         RenderingComponent* const renderable =
             std::begin(cylinder[i]->getChildren())
-                ->second->getComponent<RenderingComponent>();
+            ->second->getComponent<RenderingComponent>();
         renderable->getMaterialInstance()->setDoubleSided(true);
         std::begin(cylinder[i]->getChildren())
             ->second->getNode()
@@ -264,7 +266,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     stringImpl currentName;
     SceneNode* currentMesh = nullptr;
     SceneGraphNode_ptr baseNode;
-    
+
     std::pair<I32, I32> currentPos;
     for (U8 i = 0; i < 40; ++i) {
         if (i < 10) {
@@ -273,19 +275,22 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             currentName = "Cylinder_NW_" + std::to_string((I32)i);
             currentPos.first = -200 + 40 * i + 50;
             currentPos.second = -200 + 40 * i + 50;
-        } else if (i >= 10 && i < 20) {
+        }
+        else if (i >= 10 && i < 20) {
             baseNode = cylinder[2];
             currentMesh = cylinderMeshNE;
             currentName = "Cylinder_NE_" + std::to_string((I32)i);
             currentPos.first = 200 - 40 * (i % 10) - 50;
             currentPos.second = -200 + 40 * (i % 10) + 50;
-        } else if (i >= 20 && i < 30) {
+        }
+        else if (i >= 20 && i < 30) {
             baseNode = cylinder[3];
             currentMesh = cylinderMeshSW;
             currentName = "Cylinder_SW_" + std::to_string((I32)i);
             currentPos.first = -200 + 40 * (i % 20) + 50;
             currentPos.second = 200 - 40 * (i % 20) - 50;
-        } else {
+        }
+        else {
             baseNode = cylinder[4];
             currentMesh = cylinderMeshSE;
             currentName = "Cylinder_SE_" + std::to_string((I32)i);
@@ -294,7 +299,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         }
 
         SceneGraphNode_ptr crtNode = _sceneGraph->getRoot()->addNode(*currentMesh,
-                                                                      currentName);
+            currentName);
         crtNode->setSelectable(true);
         crtNode->usageContext(baseNode->usageContext());
         PhysicsComponent* pComp = crtNode->getComponent<PhysicsComponent>();
@@ -306,7 +311,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             baseNode->getComponent<NavigationComponent>()->navigationContext());
         nComp->navigationDetailOverride(
             baseNode->getComponent<NavigationComponent>()
-                ->navMeshDetailOverride());
+            ->navMeshDetailOverride());
 
         pComp->setScale(baseNode->getComponent<PhysicsComponent>()->getScale());
         pComp->setPosition(
@@ -340,7 +345,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
-    
+
     flagRComp->getMaterialInstance()->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
 
     _flag[1] = _sceneGraph->getRoot()->addNode(*flagNode, "Team2Flag");
@@ -364,8 +369,12 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);
 
-    AI::WarSceneAIProcessor::registerScoreCallback([&](U8 teamID) {
-        registerPoint(teamID);
+    AI::WarSceneAIProcessor::registerScoreCallback([&](U8 teamID, const stringImpl& unitName) {
+        registerPoint(teamID, unitName);
+    });
+
+    AI::WarSceneAIProcessor::registerMessageCallback([&](U8 eventID, const stringImpl& unitName) {
+        printMessage(eventID, unitName);
     });
     
 #ifdef _DEBUG
@@ -404,7 +413,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     std::shared_ptr<ParticleTimeGenerator> timeGenerator = std::make_shared<ParticleTimeGenerator>();
     timeGenerator->_minTime = 2.5f;
-    timeGenerator->_maxTime = 8.5f;
+    timeGenerator->_maxTime = 80.5f;
     particleSource->addGenerator(timeGenerator);
 
     SceneGraphNode_ptr testSGN = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
@@ -435,10 +444,10 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     cbks.second = DELEGATE_BIND(&WarScene::toggleCamera, this);
     _input->addKeyMapping(Input::KeyCode::KC_TAB, cbks);
 
-    cbks.second = DELEGATE_BIND(&WarScene::registerPoint, this, 0);
+    cbks.second = DELEGATE_BIND(&WarScene::registerPoint, this, 0, "");
     _input->addKeyMapping(Input::KeyCode::KC_1, cbks);
 
-    cbks.second = DELEGATE_BIND(&WarScene::registerPoint, this, 1);
+    cbks.second = DELEGATE_BIND(&WarScene::registerPoint, this, 1, "");
     _input->addKeyMapping(Input::KeyCode::KC_2, cbks);
 
     cbks.second = [](){DIVIDE_ASSERT(false, "Test Assert"); };

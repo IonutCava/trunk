@@ -22,8 +22,8 @@ static const U32 g_enemyTeamContainer = 1;
 static const U32 g_flagContainer = 2;
 vec3<F32> WarSceneAIProcessor::_initialFlagPositions[2];
 GlobalWorkingMemory WarSceneAIProcessor::_globalWorkingMemory;
-DELEGATE_CBK_PARAM<U8> WarSceneAIProcessor::_scoreCallback;
-
+DELEGATE_CBK_PARAM_2<U8, const stringImpl&> WarSceneAIProcessor::_scoreCallback;
+DELEGATE_CBK_PARAM_2<U8, const stringImpl&> WarSceneAIProcessor::_messageCallback;
 WarSceneAIProcessor::WarSceneAIProcessor(AIType type)
     : AIProcessor(),
       _type(type),
@@ -435,7 +435,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
                 _entity->sendMessage(*member.second, AIMsg::HAVE_SCORED, _entity);
             }
 
-            _scoreCallback(static_cast<U8>(ownTeamID));
+            _scoreCallback(static_cast<U8>(ownTeamID), _entity->getName());
         } break;
         case ActionType::CAPTURE_ENEMY_FLAG: {
             PRINT("Capture flag action over");
@@ -469,6 +469,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
             for (const AITeam::TeamMap::value_type& enemy : enemyTeam->getTeamMembers()) {
                 _entity->sendMessage(*enemy.second, AIMsg::ENEMY_HAS_FLAG, _entity);
             }
+            _messageCallback(0, _entity->getName());
         } break;
         case ActionType::RETURN_TO_BASE: {
             PRINT("Return to base action over");
@@ -484,6 +485,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
             for (const AITeam::TeamMap::value_type& member : currentTeam->getTeamMembers()) {
                 _entity->sendMessage(*member.second, AIMsg::RETURNED_FLAG, _entity);
             }
+            _messageCallback(1, _entity->getName());
         } break;
         default: {
             assert(false);
@@ -740,7 +742,7 @@ bool WarSceneAIProcessor::processData(const U64 deltaTime) {
 
     for (U8 i = 0; i < 2; ++i) {
         if (_globalWorkingMemory._teamAliveCount[i].value() == 0) {
-            _scoreCallback(i);
+            _scoreCallback(i, "NONE");
             return false;
         }
     }

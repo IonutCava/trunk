@@ -205,8 +205,12 @@ class WarSceneAIProcessor : public AIProcessor {
         _globalWorkingMemory._flags[1].value(flag2);
     }
 
-    static void registerScoreCallback(const DELEGATE_CBK_PARAM<U8>& cbk) {
+    static void registerScoreCallback(const DELEGATE_CBK_PARAM_2<U8, const stringImpl&>& cbk) {
         _scoreCallback = cbk;
+    }
+
+    static void registerMessageCallback(const DELEGATE_CBK_PARAM_2<U8, const stringImpl&>& cbk) {
+        _messageCallback = cbk;
     }
 
     static U8 getScore(U8 teamID) {
@@ -218,6 +222,9 @@ class WarSceneAIProcessor : public AIProcessor {
         _globalWorkingMemory._score[teamID].value(getScore(teamID) + 1);
     }
 
+    static void resetScore(U8 teamID) {
+        _globalWorkingMemory._score[teamID].value(0);
+    }
    protected:
     bool preAction(ActionType type, const WarSceneAction* warAction);
     bool postAction(ActionType type, const WarSceneAction* warAction);
@@ -257,7 +264,8 @@ class WarSceneAIProcessor : public AIProcessor {
     vectorImpl<WarSceneAction> _actionList;
     NodeToUnitMap _nodeToUnitMap[2];
     std::array<bool, to_const_uint(ActionType::COUNT)> _actionState;
-    static DELEGATE_CBK_PARAM<U8> _scoreCallback;
+    static DELEGATE_CBK_PARAM_2<U8, const stringImpl&> _scoreCallback;
+    static DELEGATE_CBK_PARAM_2<U8, const stringImpl&> _messageCallback;
     static GlobalWorkingMemory _globalWorkingMemory;
     static vec3<F32> _initialFlagPositions[2];
 

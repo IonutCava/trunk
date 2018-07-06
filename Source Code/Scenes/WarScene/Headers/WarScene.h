@@ -58,7 +58,8 @@ class WarScene : public Scene {
     void processGUI(const U64 deltaTime);
     void updateSceneStateInternal(const U64 deltaTime);
 
-    void registerPoint(U8 teamID);
+    void registerPoint(U8 teamID, const stringImpl& unitName);
+    void printMessage(U8 eventId, const stringImpl& unitName);
 
    private:
     void startSimulation();
@@ -66,6 +67,7 @@ class WarScene : public Scene {
     bool removeUnits(bool removeNodesOnCall);
     bool addUnits();
     bool resetUnits();
+    void checkGameCompletion();
     AI::AIEntity* findAI(SceneGraphNode_ptr node);
 
    private:
@@ -75,6 +77,7 @@ class WarScene : public Scene {
    private:  // Game
     U32  _timeLimitMinutes;
     U32  _scoreLimit;
+    U32  _runCount;
     U64  _elapsedGameTime;
     bool _sceneReady;
     bool _resetUnits;

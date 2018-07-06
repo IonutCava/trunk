@@ -61,6 +61,8 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     particleRenderState.setCullMode(CullMode::NONE);
     particleRenderState.setBlend(true, BlendProperty::SRC_ALPHA,
                                   BlendProperty::INV_SRC_ALPHA);
+    particleRenderState.setZReadWrite(true, false);
+    particleRenderState.setZFunc(ComparisonFunction::LEQUAL);
     _particleStateBlockHash = particleRenderState.getHash();
 
     ResourceDescriptor particleShaderDescriptor("particles");

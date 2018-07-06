@@ -411,6 +411,9 @@ using DELEGATE_CBK = std::function<T()>;
 template <typename P, typename T = void>
 using DELEGATE_CBK_PARAM = std::function < T(P param) > ;
 
+template <typename P1, typename P2, typename T = void>
+using DELEGATE_CBK_PARAM_2 = std::function < T(P1 param1, P2 param2) >;
+
 U32 HARDWARE_THREAD_COUNT();
 
 };  // namespace Divide

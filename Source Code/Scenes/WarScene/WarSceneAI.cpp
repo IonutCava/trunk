@@ -11,21 +11,113 @@ namespace Divide {
 
 namespace {
     static bool g_navMeshStarted = false;
+    std::ofstream g_dataOutput;
 };
 
-void WarScene::registerPoint(U8 teamID) {
-    _resetUnits = true;
+void WarScene::printMessage(U8 eventId, const stringImpl& unitName) {
+    stringImpl eventName = "";
+    switch (eventId) {
+        case 0: {
+            eventName = "Captured flag";
+        } break;
+        case 1: {
+            eventName = "Recovered flag";
+        } break;
+    };
 
-    for (U8 i = 0; i < 2; ++i) {
-        PhysicsComponent* flagPComp = _flag[i].lock()->getComponent<PhysicsComponent>();
-        WAIT_FOR_CONDITION(!flagPComp->popTransforms());
-        _flag[i].lock()->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
-        flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
+    U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
+    U32 elapsedTimeSeconds = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) % 60;
+
+    g_dataOutput << Util::StringFormat("[GAME TIME: %d:%d][%s]: %s", elapsedTimeMinutes, elapsedTimeSeconds, eventName, unitName.c_str()) << std::endl;
+}
+
+void WarScene::checkGameCompletion() {
+    bool restartGame = false;
+    bool timeReason = false;
+    if (AI::WarSceneAIProcessor::getScore(0) == _scoreLimit ||
+        AI::WarSceneAIProcessor::getScore(1) == _scoreLimit) {
+        _elapsedGameTime = 0;
+        if (_scoreLimit == 3) {
+            _scoreLimit = 5;
+            _timeLimitMinutes = 8;
+            restartGame = true;
+        } else if (_scoreLimit == 5) {
+            _scoreLimit = 20;
+            _timeLimitMinutes = 30;
+            restartGame = true;
+        }
+        else if (_scoreLimit == 20) {
+            if (_runCount == 1) {
+                _scoreLimit = 3;
+                _timeLimitMinutes = 5;
+                _runCount = 2;
+                restartGame = true;
+            }
+            else if (_runCount == 2) {
+                Application::getInstance().RequestShutdown();
+            }
+        }
     }
-    AI::WarSceneAIProcessor::reset();
-    AI::WarSceneAIProcessor::incrementScore(teamID);
-    AI::WarSceneAIProcessor::registerFlags(_flag[0].lock(), _flag[1].lock());
-    _elapsedGameTime = 0;
+
+    U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
+    if (elapsedTimeMinutes >= _timeLimitMinutes) {
+        timeReason = true;
+        if (_timeLimitMinutes == 5) {
+            _timeLimitMinutes = 8;
+            _scoreLimit = 5;
+        } else if (_timeLimitMinutes == 8) {
+            _timeLimitMinutes = 30;
+            _scoreLimit = 20;
+        } else if (_timeLimitMinutes == 30) {
+            if (_runCount == 1) {
+                _timeLimitMinutes = 5;
+                _scoreLimit = 3;
+                _runCount = 2;
+            }
+            else if (_runCount == 2) {
+                Application::getInstance().RequestShutdown();
+            }
+        }
+        restartGame = true;
+    }
+
+    if (restartGame) {
+        g_dataOutput << std::endl << std::endl << "RESTARTING GAME!. Reason: " << (timeReason ? "TIME" : "SCORE") << std::endl << std::endl;
+        AI::WarSceneAIProcessor::resetScore(0);
+        AI::WarSceneAIProcessor::resetScore(1);
+        if (timeReason) {
+            _resetUnits = true;
+            for (U8 i = 0; i < 2; ++i) {
+                PhysicsComponent* flagPComp = _flag[i].lock()->getComponent<PhysicsComponent>();
+                flagPComp->popTransforms();
+                _flag[i].lock()->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
+                flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
+            }
+            AI::WarSceneAIProcessor::reset();
+            AI::WarSceneAIProcessor::registerFlags(_flag[0].lock(), _flag[1].lock());
+        }
+    }
+}
+
+void WarScene::registerPoint(U8 teamID, const stringImpl& unitName) {
+    if (!_resetUnits) {
+        _resetUnits = true;
+
+        for (U8 i = 0; i < 2; ++i) {
+            PhysicsComponent* flagPComp = _flag[i].lock()->getComponent<PhysicsComponent>();
+            WAIT_FOR_CONDITION(!flagPComp->popTransforms());
+            _flag[i].lock()->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
+            flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
+        }
+        AI::WarSceneAIProcessor::reset();
+        AI::WarSceneAIProcessor::incrementScore(teamID);
+        AI::WarSceneAIProcessor::registerFlags(_flag[0].lock(), _flag[1].lock());
+
+        U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
+        U32 elapsedTimeSeconds = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) % 60;
+        g_dataOutput << Util::StringFormat("[GAME TIME: %d:%d][REGISTER POINT]: %s", elapsedTimeMinutes, elapsedTimeSeconds, unitName.c_str()) << std::endl;
+        checkGameCompletion();
+    }
 }
 
 bool WarScene::initializeAI(bool continueOnErrors) {
@@ -46,6 +138,8 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     _sceneGraph->findNode("Soldier1").lock()->setActive(false);
     _sceneGraph->findNode("Soldier2").lock()->setActive(false);
     _sceneGraph->findNode("Soldier3").lock()->setActive(false);
+
+    g_dataOutput.open("TEST_TEST_TEST.txt", std::ofstream::out | std::ofstream::trunc);
 
     return state;
 }
