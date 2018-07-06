@@ -33,6 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _DISPLAY_WINDOW_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
+#include "Platform/Input/Headers/InputAggregatorInterface.h"
 
 typedef struct SDL_Window SDL_Window;
 
@@ -46,6 +47,39 @@ enum class WindowType : U32 {
     COUNT
 };
 
+enum class CursorStyle : U32 {
+    NONE = 0,
+    ARROW,
+    TEXT_INPUT,
+    HAND,
+    RESIZE_NS,
+    RESIZE_EW,
+    RESIZE_NESW,
+    RESIZE_NWSE,
+    COUNT
+};
+
+enum class WindowEvent : U32 {
+    HIDDEN = 0,
+    SHOWN = 1,
+    MINIMIZED = 2,
+    MAXIMIZED = 3,
+    RESTORED = 4,
+    LOST_FOCUS = 5,
+    GAINED_FOCUS = 6,
+    RESIZED_INTERNAL = 7,
+    RESIZED_EXTERNAL = 8,
+    RESOLUTION_CHANGED = 9,
+    MOVED = 10,
+    APP_LOOP = 11,
+    CLOSE_REQUESTED = 12,
+    KEY_PRESS = 13,
+    MOUSE_MOVE = 14,
+    MOUSE_BUTTON = 15,
+    MOUSE_WHEEL = 16,
+    CHAR = 17,
+    COUNT
+};
 typedef std::array<vec2<I32>, to_base(WindowType::COUNT)> PositionByType;
 typedef std::array<vec2<U16>, to_base(WindowType::COUNT)> ResolutionByType;
 
@@ -54,6 +88,16 @@ class PlatformContext;
 enum class ErrorCode;
 // Platform specific window
 class DisplayWindow : public GUIDWrapper {
+public:
+    struct WindowEventArgs {
+        bool _flag = false;
+        Input::KeyCode _key;
+        char _char = ' ';
+        I32 x = -1, y = -1;
+        I32 id = -1;
+
+    };
+    typedef DELEGATE_CBK<void, const WindowEventArgs&> EventListener;
 
 public:
     DisplayWindow(WindowManager& parent, PlatformContext& context);
@@ -75,7 +119,10 @@ public:
     inline void hasFocus(const bool state);
 
     inline bool minimized() const;
-    inline void minimized(const bool state);
+           void minimized(const bool state);
+
+    inline bool maximized() const;
+           void maximized(const bool state);
 
     inline bool hidden() const;
            void hidden(const bool state);
@@ -84,6 +131,7 @@ public:
     inline void type(WindowType type);
     inline void previousType();
 
+    inline void setDimensions(U16 dimensionX, U16 dimensionY);
     inline void setDimensions(WindowType windowType, U16 dimensionX, U16 dimensionY);
     inline void setDimensions(WindowType windowType, const vec2<U16>& dimensions);
 
@@ -93,12 +141,22 @@ public:
     inline const vec2<U16>& getDimensions() const;
     inline const vec2<U16>& getPreviousDimensions() const;
 
+    inline void setPosition(I32 positionX, I32 positionY);
     inline void setPosition(WindowType windowType, I32 positionX, I32 positionY);
     inline void setPosition(WindowType windowType, const vec2<I32>& position);
     inline const vec2<I32>& getPosition(WindowType windowType) const;
+    inline const vec2<I32>& getPosition() const;
+
+    inline const stringImpl& title() const;
+                        void title(const stringImpl& title);
+
+    inline const WindowHandle& handle() const;
 
     /// Mouse positioning is handled by SDL
     void setCursorPosition(I32 x, I32 y) const;
+    void setCursorStyle(CursorStyle style) const;
+
+    inline void addEventListener(WindowEvent windowEvent, const EventListener& listener);
 
 private:
     /// Internally change window size
@@ -123,7 +181,9 @@ private:
     /// window, alt + tab, etc)
     bool _hasFocus;
     bool _minimized;
+    bool _maximized;
     bool _hidden;
+    stringImpl _title;
     /// Did we generate the window move event?
     bool _internalMoveEvent;
     /// Did we resize the window via an OS call?
@@ -133,6 +193,12 @@ private:
     PositionByType   _windowPosition;
     ResolutionByType _prevDimensions;
     ResolutionByType _windowDimensions;
+
+    typedef vectorImpl<EventListener> EventListeners;
+    std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
+
+    // Varies from OS to OS
+    WindowHandle     _handle;
 }; //DisplayWindow
 
 }; //namespace Divide

@@ -36,22 +36,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-enum class WindowEvent : U32 {
-    HIDDEN = 0,
-    SHOWN = 1,
-    MINIMIZED = 2,
-    MAXIMIZED = 3,
-    RESTORED = 4,
-    LOST_FOCUS = 5,
-    GAINED_FOCUS = 6,
-    RESIZED_INTERNAL = 7,
-    RESIZED_EXTERNAL = 8,
-    RESOLUTION_CHANGED = 9,
-    MOVED = 10,
-    APP_LOOP = 11,
-    CLOSE_REQUESTED = 12
-};
-
 enum class RenderAPI : U32;
 
 class PlatformContext;

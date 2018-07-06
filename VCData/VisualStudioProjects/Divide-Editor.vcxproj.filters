@@ -1,0 +1,181 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="3rdParty">
+      <UniqueIdentifier>{6d62067a-bc78-429e-99b0-2667aa3abd1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty\ImWindow">
+      <UniqueIdentifier>{6e852a9d-7e82-4605-b676-7d558609f53e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty\ImGUI">
+      <UniqueIdentifier>{75c82187-537f-4e48-bd91-39e446c309b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty\ImGUI\extra_fonts">
+      <UniqueIdentifier>{6eed0359-8768-4634-b587-3a08b3bb59d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty\ImGUI\samples">
+      <UniqueIdentifier>{0f53bf94-2246-4b37-a92a-9f7906b8d4fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty\ImGUI\samples\OGL3">
+      <UniqueIdentifier>{ca3bd852-92c7-4545-90e4-02ee234e1400}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty\ImGUI\samples\SDL_OGL3">
+      <UniqueIdentifier>{20096b5d-f298-413c-b6cd-737698e3732c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty\ImGUI\samples\Vulkan">
+      <UniqueIdentifier>{325cce71-3ffa-4490-9f7d-7016c508f4f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets">
+      <UniqueIdentifier>{39b105f0-04b0-47f3-9cb7-e03647203d6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Headers">
+      <UniqueIdentifier>{990dfe38-f074-4a79-9a69-e33478edf2f9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source Code\stdafx-editor.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwContainer.cpp">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwMenu.cpp">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwPlatformWindow.cpp">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwStatusBar.cpp">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwToolBar.cpp">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwWindow.cpp">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwWindowManager.cpp">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\JsonValue.cpp">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\extra_fonts\binary_to_compressed_c.cpp">
+      <Filter>3rdParty\ImGUI\extra_fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui.cpp">
+      <Filter>3rdParty\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_demo.cpp">
+      <Filter>3rdParty\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_draw.cpp">
+      <Filter>3rdParty\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\examples\vulkan_example\imgui_impl_glfw_vulkan.cpp">
+      <Filter>3rdParty\ImGUI\samples\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\examples\vulkan_example\main.cpp">
+      <Filter>3rdParty\ImGUI\samples\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\examples\sdl_opengl3_example\imgui_impl_sdl_gl3.cpp">
+      <Filter>3rdParty\ImGUI\samples\SDL_OGL3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\examples\sdl_opengl3_example\main.cpp">
+      <Filter>3rdParty\ImGUI\samples\SDL_OGL3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\examples\opengl3_example\imgui_impl_glfw_gl3.cpp">
+      <Filter>3rdParty\ImGUI\samples\OGL3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\examples\opengl3_example\main.cpp">
+      <Filter>3rdParty\ImGUI\samples\OGL3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Editor\Widgets\ImWindowDivide.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Editor\Widgets\ImWindowManagerDivide.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwConfig.h">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwContainer.h">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwMenu.h">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwPlatformWindow.h">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwStatusBar.h">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwToolBar.h">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwWindow.h">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwWindowManager.h">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\JsonValue.h">
+      <Filter>3rdParty\ImWindow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\imconfig.h">
+      <Filter>3rdParty\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\imgui.h">
+      <Filter>3rdParty\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\imgui_internal.h">
+      <Filter>3rdParty\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\stb_rect_pack.h">
+      <Filter>3rdParty\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\stb_textedit.h">
+      <Filter>3rdParty\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\stb_truetype.h">
+      <Filter>3rdParty\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\examples\vulkan_example\imgui_impl_glfw_vulkan.h">
+      <Filter>3rdParty\ImGUI\samples\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\examples\sdl_opengl3_example\imgui_impl_sdl_gl3.h">
+      <Filter>3rdParty\ImGUI\samples\SDL_OGL3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\examples\opengl3_example\imgui_impl_glfw_gl3.h">
+      <Filter>3rdParty\ImGUI\samples\OGL3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Editor\Headers\Editor.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Editor\Editor.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\ImWindowDivide.h">
+      <Filter>Widgets\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\ImWindowManagerDivide.h">
+      <Filter>Widgets\Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Source Code\Libs\imgui\examples\vulkan_example\gen_spv.sh">
+      <Filter>3rdParty\ImGUI\samples\Vulkan</Filter>
+    </None>
+    <None Include="..\..\Source Code\Libs\imgui\examples\vulkan_example\glsl_shader.frag">
+      <Filter>3rdParty\ImGUI\samples\Vulkan</Filter>
+    </None>
+    <None Include="..\..\Source Code\Libs\imgui\examples\vulkan_example\glsl_shader.vert">
+      <Filter>3rdParty\ImGUI\samples\Vulkan</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -55,6 +55,10 @@ namespace Divide {
         setDimensions(windowType, dimensions.x, dimensions.y);
     }
 
+    inline void DisplayWindow::setDimensions(U16 dimensionX, U16 dimensionY) {
+        setDimensions(type(), dimensionX, dimensionY);
+    }
+
     inline const vec2<U16>& DisplayWindow::getDimensions(WindowType windowType) const {
         return _windowDimensions[to_U32(windowType)];
     }
@@ -79,8 +83,16 @@ namespace Divide {
         setPosition(windowType, position.x, position.y);
     }
 
+    inline void DisplayWindow::setPosition(I32 positionX, I32 positionY) {
+        setPosition(type(), positionX, positionY);
+    }
+
     inline const vec2<I32>& DisplayWindow::getPosition(WindowType windowType) const {
         return _windowPosition[to_base(windowType)];
+    }
+
+    inline const vec2<I32>& DisplayWindow::getPosition() const {
+        return getPosition(type());
     }
 
     inline bool DisplayWindow::swapBuffers() const {
@@ -103,9 +115,10 @@ namespace Divide {
         return _minimized;
     }
 
-    inline void DisplayWindow::minimized(const bool state) {
-        _minimized = state;
+    inline bool DisplayWindow::maximized() const {
+        return _maximized;
     }
+
 
     inline bool DisplayWindow::hidden() const {
         return _hidden;
@@ -126,6 +139,17 @@ namespace Divide {
         type(_previousType);
     }
 
+    inline const stringImpl& DisplayWindow::title() const {
+        return _title;
+    }
+
+    inline const WindowHandle& DisplayWindow::handle() const { 
+        return _handle;
+    }
+
+    inline void DisplayWindow::addEventListener(WindowEvent windowEvent, const EventListener& listener) {
+        _eventListeners[to_base(windowEvent)].push_back(listener);
+    }
 }; //namespace Divide
 
 #endif //_DISPLAY_WINDOW_INL_

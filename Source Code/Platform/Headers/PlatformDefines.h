@@ -100,13 +100,14 @@ FORCE_INLINE bufferPtr bufferOffset(size_t offset) {
 }
 
 struct SysInfo;
-
+struct WindowHandle;
+    
 SysInfo& sysInfo();
 const SysInfo& const_sysInfo();
 
 void InitSysInfo(SysInfo& info, I32 argc, char** argv);
 
-extern void getWindowHandle(void* window, SysInfo& info);
+extern void getWindowHandle(void* window, WindowHandle& handleOut);
 extern void setThreadName(std::thread* thread, const char* threadName);
 extern void setThreadName(const char* threadName);
 extern bool createDirectory(const char* path);

@@ -76,6 +76,8 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) = 0;
     /// Change the texture's mip levels. This can be called at any time
     virtual void setMipMapRange(U16 base = 0, U16 max = 1000) {
+        ACKNOWLEDGE_UNUSED(base);
+        ACKNOWLEDGE_UNUSED(max);
     }
     /// Resize the texture to the specified dimensions and upload the new data
     virtual void resize(const bufferPtr ptr,
@@ -139,7 +141,7 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
     virtual void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback);
     /// Force a refresh of the entire mipmap chain
-    virtual void updateMipMaps(bool force = false) { _mipMapsDirty = false; }
+    virtual void updateMipMaps(bool force = false) { ACKNOWLEDGE_UNUSED(force); _mipMapsDirty = false; }
 
     virtual void validateDescriptor();
 

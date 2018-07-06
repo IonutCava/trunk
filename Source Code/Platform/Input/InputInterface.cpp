@@ -51,9 +51,9 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
     Console::printfn(Locale::get(_ID("INPUT_CREATE_START")));
 
     OIS::ParamList pl;
-
+    
     std::stringstream ss;
-    ss << (size_t)(const_sysInfo()._windowHandle);
+    ss << (size_t)(const_sysInfo()._focusedWindowHandle._handle);
     // Create OIS input manager
     pl.insert(std::make_pair("WINDOW", ss.str()));
     pl.insert(std::make_pair("GLXWINDOW", ss.str()));

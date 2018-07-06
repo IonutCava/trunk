@@ -72,7 +72,9 @@ class Constant : public Variable {
    public:
     Constant(D64 dInitValue) : Variable(dInitValue) {}
 
-    virtual void setValue(D64 dValue) {}
+    virtual void setValue(D64 dValue) {
+        ACKNOWLEDGE_UNUSED(dValue);
+    }
 };
 
 class LimitedVariable : public Variable {

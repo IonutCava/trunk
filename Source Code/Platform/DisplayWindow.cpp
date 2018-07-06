@@ -17,6 +17,49 @@
 #include <AntTweakBar/include/AntTweakBar.h>
 
 namespace Divide {
+
+namespace {
+    Input::KeyCode SDLToOIS(SDL_Keycode code) {
+        switch (code) {
+            case SDLK_TAB: return Input::KeyCode::KC_TAB;
+            case SDLK_LEFT: return Input::KeyCode::KC_LEFT;
+            case SDLK_RIGHT: return Input::KeyCode::KC_RIGHT;
+            case SDLK_UP: return Input::KeyCode::KC_UP;
+            case SDLK_DOWN: return Input::KeyCode::KC_DOWN;
+            case SDLK_PAGEUP: return Input::KeyCode::KC_PGUP;
+            case SDLK_PAGEDOWN: return Input::KeyCode::KC_PGDOWN;
+            case SDLK_HOME: return Input::KeyCode::KC_HOME;
+            case SDLK_END: return Input::KeyCode::KC_END;
+            case SDLK_DELETE: return Input::KeyCode::KC_DELETE;
+            case SDLK_BACKSPACE: return Input::KeyCode::KC_BACK;
+            case SDLK_RETURN: return Input::KeyCode::KC_RETURN;
+            case SDLK_ESCAPE : return Input::KeyCode::KC_ESCAPE;
+            case SDLK_a: return Input::KeyCode::KC_A;
+            case SDLK_c: return Input::KeyCode::KC_C;
+            case SDLK_v: return Input::KeyCode::KC_V;
+            case SDLK_x: return Input::KeyCode::KC_X;
+            case SDLK_y: return Input::KeyCode::KC_Y;
+            case SDLK_z: return Input::KeyCode::KC_Z;
+        };
+        return Input::KeyCode::KC_YEN;
+    }
+
+    SDL_SystemCursor CursorToSDL(CursorStyle style) {
+        switch (style) {
+            case CursorStyle::ARROW: return SDL_SYSTEM_CURSOR_ARROW;
+            case CursorStyle::HAND: return SDL_SYSTEM_CURSOR_HAND;
+            case CursorStyle::NONE: return SDL_SYSTEM_CURSOR_NO;
+            case CursorStyle::RESIZE_EW: return SDL_SYSTEM_CURSOR_SIZEWE;
+            case CursorStyle::RESIZE_NS: return SDL_SYSTEM_CURSOR_SIZENS;
+            case CursorStyle::RESIZE_NESW: return SDL_SYSTEM_CURSOR_SIZENESW;
+            case CursorStyle::RESIZE_NWSE: return SDL_SYSTEM_CURSOR_SIZENWSE;
+            case CursorStyle::TEXT_INPUT: return SDL_SYSTEM_CURSOR_IBEAM;
+        };
+
+        return SDL_SYSTEM_CURSOR_NO;
+    }
+}; // namespace 
+
 DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
  : GUIDWrapper(),
    _parent(parent),
@@ -24,6 +67,7 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
    _swapBuffers(true),
    _hasFocus(true),
    _minimized(false),
+   _maximized(false),
    _hidden(true),
    _type(WindowType::COUNT),
    _previousType(WindowType::COUNT),
@@ -68,10 +112,13 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
                                    1,
                                    1,
                                    windowFlags);
-
+    
     I32 positionX, positionY;
     SDL_GetWindowPosition(_mainWindow, &positionX, &positionY);
     setPosition(type(), positionX, positionY);
+
+    getWindowHandle(_mainWindow, _handle);
+    _title = windowTitle;
 
     // Check if we have a valid window
     if (!_mainWindow) {
@@ -86,6 +133,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
 }
 
 void DisplayWindow::update() {
+
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
@@ -97,87 +145,208 @@ void DisplayWindow::update() {
                 }
             }
         }
+        WindowEventArgs args;
 
         switch (event.type)
         {
             case SDL_QUIT: {
+                for (EventListener& listener : _eventListeners[to_base(WindowEvent::CLOSE_REQUESTED)]) {
+                    listener(args);
+                }
+
                 _parent.handleWindowEvent(WindowEvent::CLOSE_REQUESTED,
                     getGUID(),
                     event.quit.type,
                     event.quit.timestamp);
             } break;
+
+            case SDL_KEYUP:
+            case SDL_KEYDOWN: {
+                if (hasFocus()) {
+                    args._key = SDLToOIS(event.key.keysym.sym);
+                    if (event.key.type == SDL_KEYUP) {
+                        args._flag = false;
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::KEY_PRESS)]) {
+                            listener(args);
+                        }
+                    } else {
+                        args._flag = true;
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::KEY_PRESS)]) {
+                            listener(args);
+                        }
+                    }
+                }
+            } break;
+            case SDL_TEXTINPUT: {
+                if (hasFocus()) {
+                    args._char = event.text.text[0];
+                    for (EventListener& listener : _eventListeners[to_base(WindowEvent::CHAR)]) {
+                        listener(args);
+                    }
+                }
+            } break;
+            case SDL_MOUSEBUTTONDOWN: {
+                if (hasFocus()) {
+                    args._flag = true;
+                    args.id = event.button.button;
+                    for (EventListener& listener : _eventListeners[to_base(WindowEvent::MOUSE_BUTTON)]) {
+                        listener(args);
+                    }
+                }
+            } break;
+            case SDL_MOUSEBUTTONUP: {
+                if (hasFocus()) {
+                    args._flag = false;
+                    args.id = event.button.button;
+                    for (EventListener& listener : _eventListeners[to_base(WindowEvent::MOUSE_BUTTON)]) {
+                        listener(args);
+                    }
+                }
+            } break;
+            case SDL_MOUSEMOTION: {
+                if (hasFocus()) {
+                    args.x = event.motion.x;
+                    args.y = event.motion.y;
+                    for (EventListener& listener : _eventListeners[to_base(WindowEvent::MOUSE_MOVE)]) {
+                        listener(args);
+                    }
+                }
+            } break;
+            case SDL_MOUSEWHEEL: {
+                if (hasFocus()) {
+                    args.x = event.wheel.x;
+                    args.y = event.wheel.y;
+                    for (EventListener& listener : _eventListeners[to_base(WindowEvent::MOUSE_WHEEL)]) {
+                        listener(args);
+                    }
+                }
+            } break;
             case SDL_WINDOWEVENT: {
                 switch (event.window.event) {
-                case SDL_WINDOWEVENT_ENTER:
-                case SDL_WINDOWEVENT_FOCUS_GAINED: {
-                    _parent.handleWindowEvent(WindowEvent::GAINED_FOCUS,
-                        getGUID(),
-                        event.window.data1,
-                        event.window.data2);
-                } break;
-                case SDL_WINDOWEVENT_LEAVE:
-                case SDL_WINDOWEVENT_FOCUS_LOST: {
-                    _parent.handleWindowEvent(WindowEvent::LOST_FOCUS,
-                        getGUID(),
-                        event.window.data1,
-                        event.window.data2);
-                } break;
-                case SDL_WINDOWEVENT_RESIZED: {
-                    _externalResizeEvent = true;
-                    setDimensions(type(),
-                                  to_U16(event.window.data1),
-                                  to_U16(event.window.data2));
-                    _externalResizeEvent = false;
-                }break;
-                case SDL_WINDOWEVENT_SIZE_CHANGED: {
-                    _parent.handleWindowEvent(WindowEvent::RESIZED_INTERNAL,
-                        getGUID(),
-                        event.window.data1,
-                        event.window.data2);
-                } break;
-                case SDL_WINDOWEVENT_MOVED: {
-                    _parent.handleWindowEvent(WindowEvent::MOVED,
-                        getGUID(),
-                        event.window.data1,
-                        event.window.data2);
+                    case SDL_WINDOWEVENT_CLOSE: {
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::CLOSE_REQUESTED)]) {
+                            listener(args);
+                        }
+                    } break;
+                    case SDL_WINDOWEVENT_ENTER:
+                    case SDL_WINDOWEVENT_FOCUS_GAINED: {
+                        args._flag = true;
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::GAINED_FOCUS)]) {
+                            listener(args);
+                        }
 
-                    if (!_internalMoveEvent) {
-                        setPosition(type(),
-                                    event.window.data1,
-                                    event.window.data2);
-                        _internalMoveEvent = false;
-                    }
-                } break;
-                case SDL_WINDOWEVENT_SHOWN: {
-                    _parent.handleWindowEvent(WindowEvent::SHOWN,
-                        getGUID(),
-                        event.window.data1,
-                        event.window.data2);
-                } break;
-                case SDL_WINDOWEVENT_HIDDEN: {
-                    _parent.handleWindowEvent(WindowEvent::HIDDEN,
-                        getGUID(),
-                        event.window.data1,
-                        event.window.data2);
-                } break;
-                case SDL_WINDOWEVENT_MINIMIZED: {
-                    _parent.handleWindowEvent(WindowEvent::MAXIMIZED,
-                        getGUID(),
-                        event.window.data1,
-                        event.window.data2);
-                } break;
-                case SDL_WINDOWEVENT_MAXIMIZED: {
-                    _parent.handleWindowEvent(WindowEvent::MAXIMIZED,
-                        getGUID(),
-                        event.window.data1,
-                        event.window.data2);
-                } break;
-                case SDL_WINDOWEVENT_RESTORED: {
-                    _parent.handleWindowEvent(WindowEvent::RESTORED,
-                        getGUID(),
-                        event.window.data1,
-                        event.window.data2);
-                } break;
+                        _parent.handleWindowEvent(WindowEvent::GAINED_FOCUS,
+                            getGUID(),
+                            event.window.data1,
+                            event.window.data2);
+                    } break;
+                    case SDL_WINDOWEVENT_LEAVE:
+                    case SDL_WINDOWEVENT_FOCUS_LOST: {
+                        args._flag = false;
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::LOST_FOCUS)]) {
+                            listener(args);
+                        }
+
+                        _parent.handleWindowEvent(WindowEvent::LOST_FOCUS,
+                            getGUID(),
+                            event.window.data1,
+                            event.window.data2);
+                    } break;
+                    case SDL_WINDOWEVENT_RESIZED: {
+                        _externalResizeEvent = true;
+                        args.x = event.window.data1;
+                        args.y = event.window.data2;
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::RESIZED_EXTERNAL)]) {
+                            listener(args);
+                        }
+
+                        _parent.handleWindowEvent(WindowEvent::RESIZED_EXTERNAL,
+                                                    getGUID(),
+                                                    event.window.data1,
+                                                    event.window.data2);
+                        _externalResizeEvent = false;
+                    } break;
+                    case SDL_WINDOWEVENT_SIZE_CHANGED: {
+                        args.x = event.window.data1;
+                        args.y = event.window.data2;
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::RESIZED_INTERNAL)]) {
+                            listener(args);
+                        }
+
+                        _parent.handleWindowEvent(WindowEvent::RESIZED_INTERNAL,
+                            getGUID(),
+                            event.window.data1,
+                            event.window.data2);
+                    } break;
+                    case SDL_WINDOWEVENT_MOVED: {
+                        args.x = event.window.data1;
+                        args.y = event.window.data2;
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::MOVED)]) {
+                            listener(args);
+                        }
+
+                        _parent.handleWindowEvent(WindowEvent::MOVED,
+                            getGUID(),
+                            event.window.data1,
+                            event.window.data2);
+
+                        if (!_internalMoveEvent) {
+                            setPosition(type(),
+                                        event.window.data1,
+                                        event.window.data2);
+                            _internalMoveEvent = false;
+                        }
+                    } break;
+                    case SDL_WINDOWEVENT_SHOWN: {
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::SHOWN)]) {
+                            listener(args);
+                        }
+                        
+                        _parent.handleWindowEvent(WindowEvent::SHOWN,
+                            getGUID(),
+                            event.window.data1,
+                            event.window.data2);
+                    } break;
+                    case SDL_WINDOWEVENT_HIDDEN: {
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::HIDDEN)]) {
+                            listener(args);
+                        }
+
+                        _parent.handleWindowEvent(WindowEvent::HIDDEN,
+                            getGUID(),
+                            event.window.data1,
+                            event.window.data2);
+                    } break;
+                    case SDL_WINDOWEVENT_MINIMIZED: {
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::MINIMIZED)]) {
+                            listener(args);
+                        }
+
+                        _parent.handleWindowEvent(WindowEvent::MINIMIZED,
+                            getGUID(),
+                            event.window.data1,
+                            event.window.data2);
+                    } break;
+                    case SDL_WINDOWEVENT_MAXIMIZED: {
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::MAXIMIZED)]) {
+                            listener(args);
+                        }
+
+                        _parent.handleWindowEvent(WindowEvent::MAXIMIZED,
+                            getGUID(),
+                            event.window.data1,
+                            event.window.data2);
+                    } break;
+                    case SDL_WINDOWEVENT_RESTORED: {
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::RESTORED)]) {
+                            listener(args);
+                        }
+
+                        _parent.handleWindowEvent(WindowEvent::RESTORED,
+                            getGUID(),
+                            event.window.data1,
+                            event.window.data2);
+                    } break;
                 };
             } break;
         }
@@ -241,6 +410,10 @@ void DisplayWindow::setCursorPosition(I32 x, I32 y) const {
     SDL_WarpMouseInWindow(_mainWindow, x, y);
 }
 
+void DisplayWindow::setCursorStyle(CursorStyle style) const {
+    SDL_SetCursor(SDL_CreateSystemCursor(CursorToSDL(style)));
+}
+
 void DisplayWindow::hidden(const bool state) {
     if (BitCompare(SDL_GetWindowFlags(_mainWindow), to_U32(SDL_WINDOW_SHOWN)) == state)
     {
@@ -250,6 +423,37 @@ void DisplayWindow::hidden(const bool state) {
             SDL_ShowWindow(_mainWindow);
         }
         _hidden = state;
+    }
+}
+
+void DisplayWindow::minimized(const bool state) {
+    if (BitCompare(SDL_GetWindowFlags(_mainWindow), to_U32(SDL_WINDOW_MINIMIZED)) != state)
+    {
+        if (state) {
+            SDL_MinimizeWindow(_mainWindow);
+        } else {
+            SDL_RestoreWindow(_mainWindow);
+        }
+        _minimized = state;
+    }
+}
+
+void DisplayWindow::maximized(const bool state) {
+    if (BitCompare(SDL_GetWindowFlags(_mainWindow), to_U32(SDL_WINDOW_MAXIMIZED)) != state)
+    {
+        if (state) {
+            SDL_MaximizeWindow(_mainWindow);
+        } else {
+            SDL_RestoreWindow(_mainWindow);
+        }
+        _maximized = state;
+    }
+}
+
+void DisplayWindow::title(const stringImpl& title) {
+    if (title != _title) {
+        SDL_SetWindowTitle(_mainWindow, title.c_str());
+        _title = title;
     }
 }
 

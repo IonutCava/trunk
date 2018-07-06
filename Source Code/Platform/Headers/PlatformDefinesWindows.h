@@ -112,15 +112,18 @@ LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #endif //thread_local
 
 namespace Divide {
+    struct WindowHandle {
+        HWND _handle;
+    };
+
     struct SysInfo {
-        SysInfo() : _windowHandle(0),
-                    _availableRam(0),
+        SysInfo() : _availableRam(0),
                     _systemResolutionWidth(0),
                     _systemResolutionHeight(0)
         {
         }
 
-        HWND _windowHandle;
+        WindowHandle _focusedWindowHandle;
         size_t _availableRam;
         int _systemResolutionWidth;
         int _systemResolutionHeight;

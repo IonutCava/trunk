@@ -84,6 +84,7 @@ namespace Divide {
                         ShaderBuffer* buffer,
                         const vec2<U32>& range,
                         const std::pair<bool, vec2<U32>>& atomicCounter) {
+            ACKNOWLEDGE_UNUSED(atomicCounter);
             _binding = binding;
             _buffer = buffer;
             _range.set(range);

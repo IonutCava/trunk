@@ -38,12 +38,12 @@ namespace Divide {
         return true;
     }
 
-    void getWindowHandle(void* window, SysInfo& info) {
+    void getWindowHandle(void* window, WindowHandle& handleOut) {
         SDL_SysWMinfo wmInfo;
         SDL_VERSION(&wmInfo.version);
         SDL_GetWindowWMInfo(static_cast<SDL_Window*>(window), &wmInfo);
 
-        info._windowHandle = wmInfo.info.cocoa.window;
+        handleOut._handle = wmInfo.info.cocoa.window;
     }
 
     void setThreadName(std::thread* thread, const char* threadName) {

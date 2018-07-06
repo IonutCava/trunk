@@ -146,11 +146,11 @@ namespace Divide {
         return(pBuf);
     }
 
-    void getWindowHandle(void* window, SysInfo& info) {
+    void getWindowHandle(void* window, WindowHandle& handleOut) {
         SDL_SysWMinfo wmInfo;
         SDL_VERSION(&wmInfo.version);
         SDL_GetWindowWMInfo(static_cast<SDL_Window*>(window), &wmInfo);
-        info._windowHandle = wmInfo.info.win.window;
+        handleOut._handle = wmInfo.info.win.window;
     }
 
     ErrorCode PlatformInitImpl(int argc, char** argv) {

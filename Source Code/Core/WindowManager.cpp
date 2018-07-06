@@ -127,8 +127,7 @@ bool WindowManager::destroyWindow(DisplayWindow*& window) {
 void WindowManager::setActiveWindow(U32 index) {
     index = std::min(index, to_U32(_windows.size() -1));
     _activeWindowGUID = _windows[index]->getGUID();
-    SysInfo& systemInfo = sysInfo();
-    getWindowHandle(_windows[index]->getRawWindow(), systemInfo);
+    SysInfo()._focusedWindowHandle = _windows[index]->handle();
 }
 
 U32 WindowManager::createAPIFlags(RenderAPI api) {
@@ -254,6 +253,8 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
             }
         } break;
         case WindowEvent::RESIZED_EXTERNAL: {
+            getWindow(winGUID).setDimensions(to_U16(data1),
+                                             to_U16(data2));
         } break;
         case WindowEvent::RESOLUTION_CHANGED: {
             // Only if rendering window

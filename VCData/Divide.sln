@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.12
+VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-ReCast", "VisualStudioProjects\Divide-ReCast.vcxproj", "{1ED21303-434E-46DA-8050-2DF2684BE74E}"
 EndProject
@@ -39,6 +39,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test-Engine", "VisualStudio
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Executable", "VisualStudioProjects\Divide-GameExecutable.vcxproj", "{87F22E92-2988-41FA-9E23-00033408A869}"
 	ProjectSection(ProjectDependencies) = postProject
+		{D8177F00-194F-42AE-8389-63B114DBEE63} = {D8177F00-194F-42AE-8389-63B114DBEE63}
 		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7} = {8FCA6505-8035-4279-9942-F0BBCCF2FDE7}
 		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB} = {3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}
 	EndProjectSection
@@ -47,10 +48,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Game", "VisualStudio
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Core", "VisualStudioProjects\Divide-Core.vcxproj", "{4B595495-F8D2-4E58-89D4-DC7257E69676}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Editor", "VisualStudioProjects\Divide-Editor.vcxproj", "{D8177F00-194F-42AE-8389-63B114DBEE63}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1ED21303-434E-46DA-8050-2DF2684BE74E} = {1ED21303-434E-46DA-8050-2DF2684BE74E}
+		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7} = {8FCA6505-8035-4279-9942-F0BBCCF2FDE7}
+		{4B595495-F8D2-4E58-89D4-DC7257E69676} = {4B595495-F8D2-4E58-89D4-DC7257E69676}
+		{CE681ABE-38E0-4445-92A0-0F17EE225473} = {CE681ABE-38E0-4445-92A0-0F17EE225473}
+		{9D7BBBC8-E5CF-475D-8531-4520B605833C} = {9D7BBBC8-E5CF-475D-8531-4520B605833C}
+		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB} = {3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}
+	EndProjectSection
+EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Profile|x64 = Profile|x64
@@ -111,12 +119,21 @@ Global
 		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Profile|x64.Build.0 = Profile|x64
 		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Release|x64.ActiveCfg = Release|x64
 		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Release|x64.Build.0 = Release|x64
+		{D8177F00-194F-42AE-8389-63B114DBEE63}.Debug|x64.ActiveCfg = Debug|x64
+		{D8177F00-194F-42AE-8389-63B114DBEE63}.Debug|x64.Build.0 = Debug|x64
+		{D8177F00-194F-42AE-8389-63B114DBEE63}.Profile|x64.ActiveCfg = Profile|x64
+		{D8177F00-194F-42AE-8389-63B114DBEE63}.Profile|x64.Build.0 = Profile|x64
+		{D8177F00-194F-42AE-8389-63B114DBEE63}.Release|x64.ActiveCfg = Release|x64
+		{D8177F00-194F-42AE-8389-63B114DBEE63}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3D06752E-8BD6-487B-9DE6-74632A399539}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true
