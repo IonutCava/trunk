@@ -36,7 +36,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/signals2.hpp>
-#include <ThreadPool/include/threadpool.hpp>
+#include <Threadpool/include/threadpool.hpp>
 
 #include <thread>
 

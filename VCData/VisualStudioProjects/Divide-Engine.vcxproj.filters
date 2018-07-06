@@ -527,7 +527,7 @@
     <ClCompile Include="..\..\Source Code\Core\WindowManager.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\SimpleINI\src\ConvertUTF.c">
+    <ClCompile Include="..\..\Source Code\Libs\SimpleINI\src\ConvertUTF.cpp">
       <Filter>Utility\SimpleINI</Filter>
     </ClCompile>
   </ItemGroup>

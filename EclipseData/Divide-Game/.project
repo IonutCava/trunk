@@ -582,6 +582,11 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Utility/Localization.cpp</locationURI>
 		</link>
 		<link>
+			<name>Utility/SimpleINI</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
 			<name>Utility/XMLParser.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Utility/XMLParser.cpp</locationURI>
@@ -1392,6 +1397,11 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Platform/Threading/Task.cpp</locationURI>
 		</link>
 		<link>
+			<name>Platform/Threading/ThreadPool</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
 			<name>Platform/Video/Buffers</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
@@ -1812,6 +1822,11 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Utility/Headers/XMLParser.h</locationURI>
 		</link>
 		<link>
+			<name>Utility/SimpleINI/Headers</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
 			<name>AI/ActionInterface/Headers/AISceneImpl.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/AI/ActionInterface/Headers/AISceneImpl.h</locationURI>
@@ -2105,11 +2120,6 @@
 			<name>Core/TemplateLibraries/Headers/EASTLHashMap.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Core/TemplateLibraries/Headers/EASTLHashMap.h</locationURI>
-		</link>
-		<link>
-			<name>Core/TemplateLibraries/Headers/EASTLString.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Core/TemplateLibraries/Headers/EASTLString.h</locationURI>
 		</link>
 		<link>
 			<name>Core/TemplateLibraries/Headers/EASTLVector.h</name>
@@ -2607,6 +2617,11 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Platform/Threading/Headers/Thread.h</locationURI>
 		</link>
 		<link>
+			<name>Platform/Threading/ThreadPool/Headers</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
 			<name>Platform/Video/Buffers/Framebuffer</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
@@ -3045,6 +3060,16 @@
 			<name>Scenes/WarScene/Headers/WarSceneAISceneImpl.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Scenes/WarScene/Headers/WarSceneAISceneImpl.h</locationURI>
+		</link>
+		<link>
+			<name>Utility/SimpleINI/Headers/ConvertUTF.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/SimpleINI/include/ConvertUTF.h</locationURI>
+		</link>
+		<link>
+			<name>Utility/SimpleINI/Headers/SimpleIni.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/SimpleINI/include/SimpleIni.h</locationURI>
 		</link>
 		<link>
 			<name>AI/PathFinding/NavMeshes/DetourTileCache/DivideTileCache.cpp</name>
@@ -3602,6 +3627,16 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Platform/Audio/sdl_mixer/Headers/SDLWrapper.h</locationURI>
 		</link>
 		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/Threadpool/include/threadpool.hpp</locationURI>
+		</link>
+		<link>
 			<name>Platform/Video/Buffers/Framebuffer/Framebuffer.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Platform/Video/Buffers/Framebuffer/Framebuffer.cpp</locationURI>
@@ -3977,6 +4012,46 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/ReCast/RecastContrib/TileCacheCompressor/Headers/DivideTileCacheUtil.h</locationURI>
 		</link>
 		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool/detail</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool/future.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/Threadpool/include/threadpool/future.hpp</locationURI>
+		</link>
+		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool/pool.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/Threadpool/include/threadpool/pool.hpp</locationURI>
+		</link>
+		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool/pool_adaptors.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/Threadpool/include/threadpool/pool_adaptors.hpp</locationURI>
+		</link>
+		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool/scheduling_policies.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/Threadpool/include/threadpool/scheduling_policies.hpp</locationURI>
+		</link>
+		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool/shutdown_policies.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/Threadpool/include/threadpool/shutdown_policies.hpp</locationURI>
+		</link>
+		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool/size_policies.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/Threadpool/include/threadpool/size_policies.hpp</locationURI>
+		</link>
+		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool/task_adaptors.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/Threadpool/include/threadpool/task_adaptors.hpp</locationURI>
+		</link>
+		<link>
 			<name>Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h</locationURI>
@@ -4165,6 +4240,31 @@
 			<name>Platform/Video/OpenGL/glsw/Headers/glsw.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Platform/Video/OpenGL/glsw/Headers/glsw.h</locationURI>
+		</link>
+		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool/detail/future.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/Threadpool/include/threadpool/detail/future.hpp</locationURI>
+		</link>
+		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool/detail/locking_ptr.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/Threadpool/include/threadpool/detail/locking_ptr.hpp</locationURI>
+		</link>
+		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool/detail/pool_core.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/Threadpool/include/threadpool/detail/pool_core.hpp</locationURI>
+		</link>
+		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool/detail/scope_guard.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/Threadpool/include/threadpool/detail/scope_guard.hpp</locationURI>
+		</link>
+		<link>
+			<name>Platform/Threading/ThreadPool/Headers/threadpool/detail/worker_thread.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Source%20Code/Libs/Threadpool/include/threadpool/detail/worker_thread.hpp</locationURI>
 		</link>
 		<link>
 			<name>Platform/Video/Direct3D/Buffers/Framebuffer/Headers/d3dRenderTarget.h</name>

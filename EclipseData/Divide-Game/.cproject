@@ -24,8 +24,11 @@
 								<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.1544473069" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.532156866" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1664877724" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/EASTL&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/Threadpool&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/SimpleINI&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/ReCast/Include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/DebugUtils/Include&quot;"/>
@@ -33,20 +36,18 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/DetourCrowd/Include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/DetourTileCache/Include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/RecastContrib/Include&quot;"/>
-									<listOptionValue builtIn="false" value="${EngineLibraries}/boost/"/>
-									<listOptionValue builtIn="false" value="${EngineLibraries}/OpenAL/include/"/>
-									<listOptionValue builtIn="false" value="${EngineLibraries}/cegui/include/"/>
-									<listOptionValue builtIn="false" value="${EngineLibraries}/physx/"/>
+									<listOptionValue builtIn="false" value="${EngineLibraries}/boost"/>
+									<listOptionValue builtIn="false" value="${EngineLibraries}/cegui/include"/>
+									<listOptionValue builtIn="false" value="${EngineLibraries}/physx"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/physx/Include"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/physx/Samples/PxToolkit/include"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/physx/Source/foundation/include"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/OIS/include"/>
-									<listOptionValue builtIn="false" value="${EngineLibraries}/Threadpool/include"/>
-									<listOptionValue builtIn="false" value="${EngineLibraries}/SimpleINI/include"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/glbinding/include"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/assimp/include"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/cegui-deps/include"/>
 									<listOptionValue builtIn="false" value="/usr/include/SDL2"/>
+									<listOptionValue builtIn="false" value="/usr/include/AL"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.51902549" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -std=c++1y -fopenmp" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1209571119" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
@@ -155,14 +156,17 @@
 								<option id="gnu.cpp.compiler.exe.release.option.debugging.level.584914359" name="Debug Level" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1574648196" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/ReCast/Include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/DebugUtils/Include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/Detour/Include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/DetourCrowd/Include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/DetourTileCache/Include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/RecastContrib/Include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/EASTL/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/Threadpool/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/SimpleINI/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/ReCast/Include/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/DebugUtils/Include/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/Detour/Include/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/DetourCrowd/Include/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/DetourTileCache/Include/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../../Source Code/Libs/ReCast/RecastContrib/Include/&quot;"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/boost/"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/OpenAL/include/"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/cegui/include/"/>
@@ -171,8 +175,6 @@
 									<listOptionValue builtIn="false" value="${EngineLibraries}/physx/Samples/PxToolkit/include"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/physx/Source/foundation/include"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/OIS/include"/>
-									<listOptionValue builtIn="false" value="${EngineLibraries}/Threadpool/include"/>
-									<listOptionValue builtIn="false" value="${EngineLibraries}/SimpleINI/include"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/glbinding/include"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/assimp/include"/>
 									<listOptionValue builtIn="false" value="${EngineLibraries}/cegui-deps/include"/>
