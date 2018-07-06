@@ -21,8 +21,8 @@ vec4 BoundingBox[8];
 
 uniform sampler2D HiZBuffer;
 
-subroutine int CullRoutineType(const in vec3 position);
-subroutine uniform CullRoutineType CullRoutine;
+//subroutine int CullRoutineType(const in vec3 position);
+//subroutine uniform CullRoutineType CullRoutine;
 
 //subroutine(CullRoutineType)
 int PassThrough(const in vec3 position) {

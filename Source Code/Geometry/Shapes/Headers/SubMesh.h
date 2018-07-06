@@ -61,7 +61,7 @@ public:
 
 protected:
     friend class Mesh;
-    inline void setParentMesh(Mesh* const parentMesh) { _parentMesh = parentMesh; }
+	void setParentMesh(Mesh* const parentMesh);
     inline void setParentMeshSGN(SceneGraphNode* const meshSGN) { _parentMeshSGN = meshSGN; }
 
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);

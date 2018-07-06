@@ -20,7 +20,13 @@ Object3D::Object3D(const std::string& name, const ObjectType& type, U32 flag) : 
 
 Object3D::~Object3D()
 {
-    SAFE_DELETE(_buffer);
+    if(!bitCompare(_geometryFlagMask, OBJECT_FLAG_NO_VB))
+        SAFE_DELETE(_buffer);
+}
+
+void Object3D::setGeometryVB(VertexBuffer* const vb) {
+	DIVIDE_ASSERT(_buffer == nullptr, "Object3D error: Please remove the previous vertex buffer of this Object3D before specifying a new one!");
+	_buffer = vb;
 }
 
 VertexBuffer* const Object3D::getGeometryVB() const {
@@ -138,6 +144,8 @@ void Object3D::computeTangents(){
 //Create a list of triangles from the vertices + indices lists based on primitive type
 bool Object3D::computeTriangleList(bool force){
     VertexBuffer* geometry = getGeometryVB();
+	DIVIDE_ASSERT(geometry != nullptr, "Object3D error: Please specify a valid VertexBuffer before calculating the triangle list!");
+
     U32 partitionOffset = geometry->getPartitionOffset(_geometryPartitionId);
     U32 partitionCount  = geometry->getPartitionCount(_geometryPartitionId);
     PrimitiveType type  = (_geometryType == MESH || _geometryType == SUBMESH ? TRIANGLES : TRIANGLE_STRIP);

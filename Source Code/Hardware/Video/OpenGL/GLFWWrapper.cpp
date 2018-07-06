@@ -180,6 +180,9 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 #if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(&Divide::GLUtil::DebugCallback, (GLvoid*)(0));
+
+    U32 nvidiaBufferErrors[] = {131185};
+
     //Disable shader compiler errors (shader class handles that)
     glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER,
                             GL_DEBUG_TYPE_ERROR,
@@ -187,6 +190,14 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
                             0,
                             nullptr,
                             GL_FALSE);
+    //Disable nVidia buffer allocation info
+    glDebugMessageControl(GL_DEBUG_SOURCE_API, 
+                          GL_DEBUG_TYPE_OTHER,
+                          GL_DONT_CARE,
+                          1,
+                          nvidiaBufferErrors,
+                          GL_FALSE);
+                                
 #endif
 
     const GLFWvidmode* return_struct = glfwGetVideoMode(glfwGetPrimaryMonitor());

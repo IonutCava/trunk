@@ -80,7 +80,9 @@ protected:
 
     virtual void computeNormals();
     virtual void computeTangents();
-
+	/// Use a custom vertex buffer for this object (e.g., a submesh uses the mesh's vb)
+	/// Please manually delete the old VB if available before replacing!
+	virtual void setGeometryVB(VertexBuffer* const vb);
 protected:
     bool		    _update;
     U32             _geometryFlagMask;

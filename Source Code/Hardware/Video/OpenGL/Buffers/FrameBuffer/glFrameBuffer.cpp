@@ -92,6 +92,7 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
                            texDescriptor._mipMaxLevel > 0 ? texDescriptor._mipMaxLevel : 1 + (I16)floorf(log2f(fmaxf((F32)_width, (F32)_height))));
     
     tex->loadData(isLayeredTexture ? 0 : glTextureTypeTable[currentType], NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], texDescriptor._internalFormat, texDescriptor._internalFormat);
+    tex->Bind(0);
     tex->updateMipMaps();
                
     GLint offset = 0;

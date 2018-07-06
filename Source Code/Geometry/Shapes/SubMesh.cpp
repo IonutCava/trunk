@@ -21,6 +21,11 @@ SubMesh::~SubMesh()
 {
 }
 
+void SubMesh::setParentMesh(Mesh* const parentMesh) { 
+	_parentMesh = parentMesh; 
+	setGeometryVB(_parentMesh->getGeometryVB());
+}
+
 bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
     BoundingBox& bb = sgn->getBoundingBox();
     if(bb.isComputed())
@@ -35,10 +40,9 @@ bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void SubMesh::postLoad(SceneGraphNode* const sgn){
     //sgn->getTransform()->setTransforms(_localMatrix);
-    /// If the mesh has animation data, use dynamic VB's if we use software skinning
-    VertexBuffer* vb = _parentMesh->getGeometryVB();
-    _drawCmd._cmd.firstIndex =  vb->getPartitionOffset(_geometryPartitionId);
-    _drawCmd._cmd.count =       vb->getPartitionCount(_geometryPartitionId);
+    // If the mesh has animation data, use dynamic VB's if we use software skinning
+	_drawCmd._cmd.firstIndex = getGeometryVB()->getPartitionOffset(_geometryPartitionId);
+	_drawCmd._cmd.count      = getGeometryVB()->getPartitionCount(_geometryPartitionId);
     Object3D::postLoad(sgn);
 }
 
