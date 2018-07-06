@@ -281,10 +281,7 @@ void GL_API::toggleRasterization(bool state) {
 
 /// Clipping planes are only enabled/disabled if they differ from the current
 /// state
-void GL_API::updateClipPlanes() {
-    // Get the clip planes from the GFXDevice object
-    const FrustumClipPlanes& list = Attorney::GFXDeviceAPI::getClippingPlanes(_context);
-    
+void GL_API::updateClipPlanes(const FrustumClipPlanes& list) {
     // For every clip plane that we support (usually 6)
     for (U32 i = 0; i < to_base(ClipPlaneIndex::COUNT); ++i) {
         // Check its state and compare it with OpenGL's current state

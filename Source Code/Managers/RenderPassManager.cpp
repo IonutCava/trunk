@@ -10,6 +10,7 @@
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
+#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 #ifndef USE_COLOUR_WOIT
 //#define USE_COLOUR_WOIT
@@ -43,6 +44,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState) {
         CreateTask(pool,
             &renderTarsk,
             [&rp, &buf, &sceneRenderState](const Task& parentTask) {
+                buf.clear();
                 rp->render(sceneRenderState, buf);
             }).startTask(Config::USE_THREADED_COMMAND_GENERATION ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
     }
@@ -53,7 +55,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState) {
     //ToDo: Maybe handle this differently?
 #if 1 //Direct render and clear
     for (vec_size_eastl i = 0; i < _renderPassCommandBuffer.size(); ++i) {
-        _context.flushAndClearCommandBuffer(*_renderPassCommandBuffer[i]);
+        _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
     }
 #else // Maybe better batching and validation?
     GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
@@ -135,18 +137,129 @@ RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex) {
     return getPassForStage(renderStage).getBufferData(bufferIndex);
 }
 
-void RenderPassManager::processVisibleNodes(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
-    RenderQueue::SortedQueues queues = getQueue().getSortedQueues(stagePass._stage);
+/// Prepare the list of visible nodes for rendering
+GFXDevice::NodeData RenderPassManager::processVisibleNode(const VisibleNodeProcessParams& state, const SceneRenderState& sceneRenderState, const mat4<F32>& viewMatrix) const {
+    GFXDevice::NodeData dataOut;
 
-    GFXDevice::BuildDrawCommandsParams gfxParams;
-    gfxParams._sortedQueues = &queues;
-    gfxParams._sceneRenderState = &parent().sceneManager().getActiveScene().renderState();
-    gfxParams._bufferData = &getBufferData(stagePass._stage, params._pass);
-    gfxParams._renderStagePass = stagePass;
-    gfxParams._camera = params._camera;
-    gfxParams._refreshNodeData = refreshNodeData;
+    RenderingComponent* const renderable = state._node->get<RenderingComponent>();
+    TransformComponent* const transform = state._node->get<TransformComponent>();
 
-    _context.buildDrawCommands(gfxParams, bufferInOut);
+    // Extract transform data (if available)
+    // (Nodes without transforms are considered as using identity matrices)
+    if (transform) {
+        // ... get the node's world matrix properly interpolated
+        if (Config::USE_FIXED_TIMESTEP) {
+            dataOut._worldMatrix.set(transform->getWorldMatrix(_context.getFrameInterpolationFactor()));
+        }
+        else {
+            dataOut._worldMatrix.set(transform->getWorldMatrix());
+        }
+
+        dataOut._normalMatrixWV.set(dataOut._worldMatrix);
+        if (!transform->isUniformScaled()) {
+            // Non-uniform scaling requires an inverseTranspose to negate
+            // scaling contribution but preserve rotation
+            dataOut._normalMatrixWV.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
+            dataOut._normalMatrixWV.inverseTranspose();
+            dataOut._normalMatrixWV.mat[15] = 0.0f;
+        }
+        dataOut._normalMatrixWV.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
+
+        // Calculate the normal matrix (world * view)
+        dataOut._normalMatrixWV *= viewMatrix;
+    }
+
+    // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
+    if (sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS)) {
+        AnimationComponent* const animComp = state._node->get<AnimationComponent>();
+        dataOut._normalMatrixWV.element(0, 3) = to_F32(animComp && animComp->playAnimations() ? animComp->boneCount() : 0);
+    }
+    else {
+        dataOut._normalMatrixWV.element(0, 3) = 0.0f;
+    }
+    dataOut._normalMatrixWV.setRow(3, state._node->get<BoundsComponent>()->getBoundingSphere().asVec4());
+    // Get the material property matrix (alpha test, texture count, texture operation, etc.)
+    renderable->getRenderingProperties(dataOut._properties, dataOut._normalMatrixWV.element(1, 3), dataOut._normalMatrixWV.element(2, 3));
+    // Get the colour matrix (diffuse, specular, etc.)
+    renderable->getMaterialColourMatrix(dataOut._colourMatrix);
+
+    //set properties.w to -1 to skip occlusion culling for the node
+    dataOut._properties.w = state._isOcclusionCullable ? 1.0f : -1.0f;
+
+    return dataOut;
+}
+
+void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut)
+{
+    U32 nodeCount = 0;
+    U32 cmdCount = 0;
+
+    const mat4<F32>& viewMatrix = params._camera->getViewMatrix();
+    vectorEASTL<GFXDevice::NodeData> nodeData;
+
+    RenderQueue::SortedQueues sortedQueues = getQueue().getSortedQueues(stagePass._stage);
+    nodeData.reserve(sortedQueues.size() * Config::MAX_VISIBLE_NODES);
+
+    const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
+    std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> drawCommands;
+    for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
+        for (SceneGraphNode* node : queue) {
+            RenderingComponent& renderable = *node->get<RenderingComponent>();
+            Attorney::RenderingCompRenderPass::prepareDrawPackage(renderable, *params._camera, sceneRenderState, stagePass);
+        }
+
+        for (SceneGraphNode* node : queue) {
+            RenderingComponent& renderable = *node->get<RenderingComponent>();
+
+            const RenderPackage& pkg = Attorney::RenderingCompRenderPass::getDrawPackage(renderable, stagePass);
+            if (pkg.isRenderable()) {
+                if (refreshNodeData) {
+                    Attorney::RenderingCompRenderPass::setDrawIDs(renderable, stagePass, cmdCount, nodeCount);
+                    VisibleNodeProcessParams processParams;
+                    processParams._node = node;
+                    processParams._isOcclusionCullable = pkg.isOcclusionCullable();
+                    processParams._dataIndex = nodeCount;
+
+                    nodeData.push_back(processVisibleNode(processParams, sceneRenderState, viewMatrix));
+
+                    for (I32 cmdIdx = 0; cmdIdx < pkg.drawCommandCount(); ++cmdIdx) {
+                        const GFX::DrawCommand& cmd = pkg.drawCommand(cmdIdx);
+                        for (const GenericDrawCommand& drawCmd : cmd._drawCommands) {
+                            for (U32 i = 0; i < drawCmd._drawCount; ++i) {
+                                drawCommands[cmdCount++] = drawCmd._cmd;
+                            }
+                        }
+                    }
+                }
+                nodeCount++;
+            }
+        }
+    }
+
+    if (refreshNodeData) {
+        RenderPass::BufferData& bufferData = getBufferData(stagePass._stage, params._pass);
+        bufferData._lastCommandCount = cmdCount;
+        bufferData._lasNodeCount = nodeCount;
+
+        assert(cmdCount >= nodeCount);
+        // If the buffer update required is large enough, just replace the entire thing
+        if (nodeCount > Config::MAX_VISIBLE_NODES / 2) {
+            bufferData._renderData->writeData(nodeData.data());
+        }
+        else {
+            // Otherwise, just update the needed range to save bandwidth
+            bufferData._renderData->writeData(0, nodeCount, nodeData.data());
+        }
+
+        ShaderBuffer& cmdBuffer = *bufferData._cmdBuffer;
+        cmdBuffer.writeData(drawCommands.data());
+
+        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        descriptorSetCmd._set = _context.newDescriptorSet();
+        descriptorSetCmd._set->_shaderBuffers.emplace_back(ShaderBufferLocation::CMD_BUFFER, bufferData._cmdBuffer);
+        descriptorSetCmd._set->_shaderBuffers.emplace_back(ShaderBufferLocation::NODE_INFO, bufferData._renderData);
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+    }
 }
 
 void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
@@ -175,7 +288,7 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
                                                    : RenderBinType::RBT_COUNT,
                                packageQueue);
 
-    processVisibleNodes(stagePass, params, refreshNodeData, bufferInOut);
+    buildDrawCommands(stagePass, params, refreshNodeData, bufferInOut);
 }
 
 void RenderPassManager::prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
@@ -394,6 +507,9 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     if (params._occlusionCull) {
         _context.constructHIZ(params._target, bufferInOut);
         _context.occlusionCull(getBufferData(params._stage, params._pass), target.getAttachment(RTAttachmentType::Depth, 0).texture(), bufferInOut);
+        if (params._stage == RenderStage::DISPLAY) {
+            _context.updateCullCount(bufferInOut);
+        }
     }
 
     mainPass(params, target, bufferInOut);

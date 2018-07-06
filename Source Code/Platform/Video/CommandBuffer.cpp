@@ -42,6 +42,7 @@ const std::type_info& CommandBuffer::getType(GFX::CommandType type) const {
         case GFX::CommandType::DRAW_TEXT:             return typeid(DrawTextCommand);
         case GFX::CommandType::DRAW_IMGUI:            return typeid(DrawIMGUICommand);
         case GFX::CommandType::DISPATCH_COMPUTE:      return typeid(DispatchComputeCommand);
+        case GFX::CommandType::READ_ATOMIC_COUNTER:   return typeid(ReadAtomicCounterCommand);
         case GFX::CommandType::SWITCH_WINDOW:         return typeid(SwitchWindowCommand);
         case GFX::CommandType::EXTERNAL:              return typeid(ExternalCommand);
             
@@ -111,6 +112,7 @@ void CommandBuffer::batch() {
                     break;
                 }
             } break;
+            case GFX::CommandType::READ_ATOMIC_COUNTER:
             case GFX::CommandType::DISPATCH_COMPUTE:
             case GFX::CommandType::DRAW_TEXT:
             case GFX::CommandType::DRAW_COMMANDS:
@@ -217,6 +219,7 @@ void CommandBuffer::clean() {
             case GFX::CommandType::BEGIN_PIXEL_BUFFER:
             case GFX::CommandType::END_PIXEL_BUFFER:
             case GFX::CommandType::DISPATCH_COMPUTE:
+            case GFX::CommandType::READ_ATOMIC_COUNTER:
             case GFX::CommandType::DRAW_IMGUI:
             case GFX::CommandType::BLIT_RT:
             case GFX::CommandType::SWITCH_WINDOW: 
@@ -315,6 +318,7 @@ bool CommandBuffer::validate() const {
                 case GFX::CommandType::BLIT_RT: {
                     needsDescriptorSets = true;
                 }break;
+                case GFX::CommandType::READ_ATOMIC_COUNTER:
                 case GFX::CommandType::SWITCH_WINDOW:
                 case GFX::CommandType::EXTERNAL: {
                     // no requirements yet

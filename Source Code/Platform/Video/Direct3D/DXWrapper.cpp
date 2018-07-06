@@ -27,9 +27,10 @@ void DX_API::beginFrame() {}
 
 void DX_API::endFrame() {}
 
-void DX_API::updateClipPlanes() {}
+void DX_API::updateClipPlanes(const FrustumClipPlanes& list) { ACKNOWLEDGE_UNUSED(list); }
 
-void DX_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
+void DX_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
+    ACKNOWLEDGE_UNUSED(entry);
     ACKNOWLEDGE_UNUSED(commandBuffer);
 }
 

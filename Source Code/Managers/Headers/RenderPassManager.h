@@ -36,6 +36,7 @@
 #include "Core/Headers/KernelComponent.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
 
 namespace Divide {
@@ -58,6 +59,12 @@ public:
         bool _bindTargets = true;
         U32 _pass = 0;
         FrustumClipPlanes _clippingPlanes;
+    };
+
+    struct VisibleNodeProcessParams {
+        bool _isOcclusionCullable = true;
+        U32 _dataIndex = 0;
+        SceneGraphNode* _node = nullptr;
     };
 
 public:
@@ -89,8 +96,9 @@ private:
 
     RenderPass& getPassForStage(RenderStage renderStage);
     const RenderPass& getPassForStage(RenderStage renderStage) const;
-    void processVisibleNodes(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
+    void buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
+    GFXDevice::NodeData processVisibleNode(const VisibleNodeProcessParams& state, const SceneRenderState& sceneRenderState, const mat4<F32>& viewMatrix) const;
 
 private: //TEMP
     friend class RenderBin;

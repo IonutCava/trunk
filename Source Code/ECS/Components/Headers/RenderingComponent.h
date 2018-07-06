@@ -278,32 +278,29 @@ class RenderingCompRenderPass {
         }
 
         friend class Divide::RenderPass;
-};
 
-class RenderingCompGFXDevice {
-   private:
-    static void prepareDrawPackage(RenderingComponent& renderable,
-                                   const Camera& camera,
-                                   const SceneRenderState& sceneRenderState,
-                                   RenderStagePass renderStagePass) {
-        renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass);
-    }
+        static void prepareDrawPackage(RenderingComponent& renderable,
+                                       const Camera& camera,
+                                       const SceneRenderState& sceneRenderState,
+                                       RenderStagePass renderStagePass) {
+            renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass);
+        }
 
-    static void setDrawIDs(RenderingComponent& renderable, 
-                           RenderStagePass renderStagePass,
-                           U32 cmdOffset,
-                           U32 cmdIndex)
-    {
-        renderable.setDrawIDs(renderStagePass, cmdOffset, cmdIndex);
-    }
+        static void setDrawIDs(RenderingComponent& renderable, 
+                               RenderStagePass renderStagePass,
+                               U32 cmdOffset,
+                               U32 cmdIndex)
+        {
+            renderable.setDrawIDs(renderStagePass, cmdOffset, cmdIndex);
+        }
 
-    static const RenderPackage& getDrawPackage(RenderingComponent& renderable,
-                                               RenderStagePass renderStagePass) {
-        return renderable.getDrawPackage(renderStagePass);
-    }
+        static const RenderPackage& getDrawPackage(RenderingComponent& renderable,
+                                                   RenderStagePass renderStagePass) {
+            return renderable.getDrawPackage(renderStagePass);
+        }
 
-
-    friend class Divide::GFXDevice;
+    friend class Divide::RenderPass;
+    friend class Divide::RenderPassManager;
 };
 
 class RenderingCompRenderBin {

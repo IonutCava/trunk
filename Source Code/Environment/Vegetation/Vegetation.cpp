@@ -392,7 +392,7 @@ void Vegetation::gpuCull(RenderStagePass renderStagePass, const SceneRenderState
         drawCmd._drawCommands.push_back(_cullDrawCommand);
         GFX::EnqueueCommand(cmdBuffer, drawCmd);
 
-        _context.flushAndClearCommandBuffer(cmdBuffer);
+        _context.flushCommandBuffer(cmdBuffer);
 
         //_cullDrawCommand.setInstanceCount(_instanceCountTrees);
         //_cullDrawCommand.sourceBuffer(_treeGPUBuffer);

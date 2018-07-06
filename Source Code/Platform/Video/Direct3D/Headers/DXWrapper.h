@@ -55,9 +55,9 @@ protected:
     void beginFrame() override;
     void endFrame() override;
 
-    void flushCommandBuffer(GFX::CommandBuffer& commandBuffer) override;
+    void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
 
-    void updateClipPlanes() override;
+    void updateClipPlanes(const FrustumClipPlanes& list) override;
 
     size_t setStateBlock(size_t stateBlockHash) override;
 
