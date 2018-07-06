@@ -6,6 +6,7 @@
 #include "VertexBufferObject.h"
 #include "ShaderHandler.h"
 #include "Geometry/Mesh.h"
+#include "GUI/GUI.h"
 
 using namespace std;
 
@@ -59,12 +60,15 @@ protected:
 	virtual void enable_PROJECTION() = 0;
 	virtual void enable_TEXTURE(int slot) = 0;
 	virtual void loadIdentityMatrix() = 0;
+	virtual void loadOrtographicView() = 0;
+	virtual void loadModelView() = 0;
 	/*State Matrix Manipulation*/
 
-	/*Text Rendering*/
-	virtual void drawTextToScreen(void* ,string) = 0;
+	/*GUI Rendering*/
+	virtual void drawTextToScreen(Text*) = 0;
 	virtual void drawCharacterToScreen(void* ,char) = 0;
-	/*Text Rendering*/
+	virtual void drawButton(Button*) = 0;
+	/*GUI Rendering*/
 
 	/*Mesh Rendering*/
 	virtual void renderMesh(const Mesh& mesh) = 0;

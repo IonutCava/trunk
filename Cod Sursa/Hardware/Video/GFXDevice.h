@@ -41,9 +41,12 @@ public:
 	void enable_PROJECTION(){_api.enable_PROJECTION();}
 	void enable_TEXTURE(int slot){_api.enable_TEXTURE(slot);}
 	void loadIdentityMatrix(){_api.loadIdentityMatrix();}
+	void loadOrtographicView(){_api.loadOrtographicView();}
+	void loadModelView(){_api.loadModelView();}
 
-	void drawTextToScreen(void* font,string text){_api.drawTextToScreen(font,text);}
+	void drawTextToScreen(Text* text){_api.drawTextToScreen(text);}
 	void drawCharacterToScreen(void* font,char character){_api.drawCharacterToScreen(font,character);}
+	void drawButton(Button* button){_api.drawButton(button);}
 
 	void renderMesh(const Mesh& mesh){_api.renderMesh(mesh);}
 	void renderSubMesh(const SubMesh& subMesh){_api.renderSubMesh(subMesh);}

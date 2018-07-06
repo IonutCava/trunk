@@ -12,15 +12,14 @@
 
 void Guardian::LoadApplication(string entryPoint)
 {
-	
-	nModelIndex = 0;
+	Engine& engine = Engine::getInstance();
+	ParamHandler& par = ParamHandler::getInstance();
+
 	SceneManager::getInstance().setActiveScene(new MainScene("MainScene","mainScene.xml"));
 	//SceneManager::getInstance().setActiveScene(new CubeScene("CubeScene","cubeScene.xml"));
 	cout << "Starting the application!" << endl;
-	XML::loadScripts(entryPoint);
-	LoadSettings();
-	ParamHandler &par = ParamHandler::getInstance();
-	Engine& engine = Engine::getInstance();
+	XML::loadScripts(entryPoint); //ToDo: This should be moved in each scene constructor! - Ionut Cava
+	LoadSettings(); //ToDo: This should be moved up so that it is the first instruction Guardian executes! - Ionut Cava
 	cout << "Initializing the rendering engine" << endl;
 	engine.Initialize(par.getParam<U32>("windowWidth"),par.getParam<U32>("windowHeight"));
 	cout << "Initializing the PhysX engine!" << endl;
@@ -81,7 +80,7 @@ void Guardian::TerminateApplication()
 	//CleanUpOBJ();
 	Engine::getInstance().Quit();
 	cout << "Closing interface engine ...\n";
-	TEXMANAGER.FreeAll();
+	TextureManager::getInstance().FreeAll();
 	cout << "Engine shutdown complete...\n";
 	//myfile.close();
 	exit(0);

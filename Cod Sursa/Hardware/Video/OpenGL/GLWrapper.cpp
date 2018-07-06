@@ -149,13 +149,18 @@ void GL_API::loadIdentityMatrix()
 	glLoadIdentity();
 }
 
-void GL_API::drawTextToScreen(void* font,string text)
+void GL_API::drawTextToScreen(Text* text)
 {
+	pushMatrix();
+		glColor3f(text->_color.x,text->_color.y,text->_color.z);
+		glLoadIdentity();
+		glRasterPos2f(text->_position.x,text->_position.y);
 #ifdef USE_FREEGLUT
-	glutBitmapString(font, (UBYTE *)(text.c_str()));
+		glutBitmapString(text->_font, (UBYTE *)(text->_text.c_str()));
 #else
-	//nothing yet
+		//nothing yet
 #endif
+		popMatrix();
 }
 
 void GL_API::drawCharacterToScreen(void* font,char text)
@@ -167,9 +172,49 @@ void GL_API::drawCharacterToScreen(void* font,char text)
 #endif
 }
 
+void GL_API::drawButton(Button* button)
+{
+	pushMatrix();
+		glTranslatef(button->_position.x,button->_position.y,button->_position.z);
+		glColor3f(button->_color.x,button->_color.y,button->_color.z);
+		glBegin(GL_TRIANGLE_STRIP );
+			glVertex2f( 0, 0 );
+			glVertex2f( button->_dimensions.x, 0 );
+			glVertex2f( 0, button->_dimensions.y );
+			glVertex2f( button->_dimensions.x, button->_dimensions.y );
+		glEnd();
+		glBegin( GL_TRIANGLE_STRIP );
+			glVertex2f( 1, 1 );
+			glVertex2f( button->_dimensions.x-1, 1 );
+			glVertex2f( 1, button->_dimensions.y-1 );
+			glVertex2f( button->_dimensions.x-1, button->_dimensions.y-1 );  
+		glEnd();
+	popMatrix();
+	
+}
+
+void GL_API::loadOrtographicView()
+{
+	glMatrixMode( GL_PROJECTION );
+		pushMatrix();
+		glLoadIdentity();
+		gluOrtho2D(0, Engine::getInstance().getWindowWidth(), 0,Engine::getInstance().getWindowHeight());
+		glScalef(1, -1, 1);
+		glTranslatef(0, (F32)-Engine::getInstance().getWindowHeight(), 0);
+	glMatrixMode( GL_MODELVIEW );
+}
+
+void GL_API::loadModelView()
+{
+	glMatrixMode( GL_PROJECTION );
+		popMatrix();
+	glMatrixMode( GL_MODELVIEW );
+}
+
 void GL_API::renderMesh(const Mesh& mesh)
 {
 }
+
 void GL_API::renderSubMesh(const SubMesh& subMesh)
 {
 }

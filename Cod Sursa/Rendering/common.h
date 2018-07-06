@@ -47,7 +47,6 @@ public:
    static void Pick(GLint name){}
    static void DrawSceneStatic();
    string text;
-   void ProcessEvents(F32 time);
    void DrawScene();
    void RefreshMetrics();
 
@@ -58,7 +57,7 @@ public:
    void setMainWindowId(int id){mainWindowId = id;}
    void DrawComplexMesh(U32 ListID);
 
-   void Sceenshot(char *filename, int xmin, int ymin, int xmax, int ymax);
+   void Screenshot(char *filename, int xmin, int ymin, int xmax, int ymax);
    void ToggleWireframeRendering();
    
    SINGLETON_END()

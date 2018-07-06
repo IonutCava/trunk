@@ -27,7 +27,8 @@ private:
 	vec4 _sunVector;
 	vec3 _cameraEye;
 	mat4 _matSunModelviewProj;
-	F32 angleLR,angleUD,moveFB,update_time;
+	F32 angleLR,angleUD,moveFB;
+	vector<F32> _eventTimers;
 
 };
 

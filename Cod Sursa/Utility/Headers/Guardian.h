@@ -8,7 +8,6 @@ SINGLETON_BEGIN( Guardian )
 private:
 	vector<FileData> ModelDataArray;
 	vector<TerrainInfo> TerrainInfoArray;
-	int nModelIndex;
 
 public:
 	void LoadSettings();

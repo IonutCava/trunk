@@ -14,8 +14,25 @@ CubeScene::CubeScene(string name, string mainScript) :
 void CubeScene::render()
 {
 	GFXDevice::getInstance().pushMatrix();
-	GFXDevice::getInstance().rotate(1.2f,0.3f,0.6f,0);
-	glutSolidCube(40);
+	/*GFXDevice::getInstance().rotate(1.2f,0.3f,0.6f,0);
+	glutSolidCube(40);*/
+
+	//X = 10; y = 20;
+		//GFXDevice::getInstance().translate(-10.0f,10.0f,0.0f);
+		GFXDevice::getInstance().setColor(0.5f,0.1f,0.3f);
+		glBegin(GL_TRIANGLE_STRIP );
+			glVertex3f( 0, 0,0 );
+			glVertex3f( 10, 0,0 );
+			glVertex3f( 0, 20,0);
+			glVertex3f( 10, 20,0 );
+		glEnd();
+		GFXDevice::getInstance().setColor(0.5f,0.2f,0.9f);
+	    glBegin( GL_TRIANGLE_STRIP );
+			glVertex3f( 1, 1,0 );
+			glVertex3f( 10-1, 1,0 );
+			glVertex3f( 1, 20-1,0 );
+			glVertex3f( 10-1, 20-1,0 );  
+		glEnd();
 	GFXDevice::getInstance().popMatrix();
 }
 

@@ -15,7 +15,9 @@ MainScene::MainScene(string name, string mainScript) :
 		  _cameraEye(Camera::getInstance().getEye())
 {
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f;
-	update_time = 0.0f;
+	_eventTimers.push_back(0.0f); //Sun
+	_eventTimers.push_back(0.0f); //Fps
+	_eventTimers.push_back(0.0f); //Time
 }
 
 
@@ -131,18 +133,34 @@ void MainScene::processInput()
 
 }
 
-F32 SunDisplay = 0.005f;
+F32 SunDisplay = 0.5f;
+F32 FpsDisplay = 0.3f;
+F32 TimeDisplay = 0.01f;
 void MainScene::processEvents(F32 time)
 {
 	
-	if (time - update_time >= SunDisplay)
+	if (time - _eventTimers[0] >= SunDisplay)
 	{
 		_sunAngle.y += 0.0005f;
 		_sunVector = vec4(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 							-cosf(_sunAngle.y),
 							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
 							0.0f );
-		update_time += SunDisplay;
+		_eventTimers[0] += SunDisplay;
+	}
+
+	if (time - _eventTimers[1] >= FpsDisplay)
+	{
+		
+		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
+		_eventTimers[1] += FpsDisplay;
+	}
+    
+	
+	if (time - _eventTimers[2] >= TimeDisplay)
+	{
+		GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", time);
+		_eventTimers[2] += TimeDisplay;
 	}
 }
 bool MainScene::load(const string& name)

@@ -73,7 +73,14 @@ void DX_API::loadIdentityMatrix()
 {
 }
 
-void DX_API::drawTextToScreen(void* f,string s)
+void DX_API::loadOrtographicView()
+{
+}
+
+void DX_API::loadModelView()
+{
+}
+void DX_API::drawTextToScreen(Text* text)
 {
 }
 
@@ -81,6 +88,9 @@ void DX_API::drawCharacterToScreen(void* ,char)
 {
 }
 
+void DX_API::drawButton(Button* button)
+{
+}
 void DX_API::renderMesh(const Mesh& mesh)
 {
 }

@@ -810,6 +810,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Geometry\Object3D.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Geometry\SubMesh.cpp"
 				>
 			</File>
@@ -817,6 +821,18 @@
 				RelativePath="..\Geometry\SubMesh.h"
 				>
 			</File>
+			<Filter
+				Name="Predefined"
+				>
+				<File
+					RelativePath="..\Geometry\Predefined\Text3D.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Geometry\Predefined\Text3D.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath="..\config.h"

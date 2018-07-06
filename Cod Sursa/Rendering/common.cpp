@@ -41,34 +41,8 @@ Engine::Engine() :
 }
 
 
-
-F32 FpsDisplay = 0.3f;
-F32 TimeDisplay = 0.01f;
-//Time in seconds at wich these updates should take place
-void Engine::ProcessEvents(F32 time)
-{
-	
-	if (time - update_time >= FpsDisplay)
-	{
-		
-		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
-		update_time += FpsDisplay;
-	}
-    
-	
-	if (time - update_time2 >= TimeDisplay)
-	{
-		GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", time);
-		update_time2 += TimeDisplay;
-	}
-
-}
-
-
-
 void Engine::DrawSceneStatic()
 {
-	Engine::getInstance().ProcessEvents(abs(GETTIME()));
 	Engine::getInstance().DrawScene();
 	Framerate::getInstance().SetSpeedFactor();
 	GFXDevice::getInstance().swapBuffers();
@@ -124,14 +98,6 @@ void Engine::RefreshMetrics()
 	if (time - timebase > 1000) timebase = time;		
 }
 
-#include "Utility/Headers/Event.h"
-
-void printHello(boost::any a, CallbackParam b)
-{
-	cout << abs(GETTIME()) << ": I am printing hello here so give me a brake! " << endl;
-}
-
-
 void Engine::Initialize(int w, int h)
 {    
 	ResourceManager& res = ResourceManager::getInstance();
@@ -145,7 +111,7 @@ void Engine::Initialize(int w, int h)
 	glutIdleFunc(Idle);
 	
 
-	Camera::getInstance().setEye(vec3(200,100,200));
+	Camera::getInstance().setEye(vec3(200,300,200));
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
 		                       vec3(60,60,0),          //Position
 							   GLUT_BITMAP_8_BY_13,    //Font
@@ -165,6 +131,9 @@ void Engine::Initialize(int w, int h)
 	Event *_event2 = new Event(2000,true,200,&printHello,ev,TYPE_INTEGER);
 	Event *_event3 = new Event(300,true,10,&printHello,ev2,TYPE_CHAR);
 	Event *_event4 = new Event(200,true,20,&printHello,1.0f,TYPE_FLOAT);
+	Text3D* t = new Text3D;
+	t->getName() = "test text";
+	cout << "Test: " << t->getName() << endl;
 	*/
 }
 
@@ -178,23 +147,19 @@ void Engine::Quit()
 
 
 // takes a screen shot and saves it to a TGA image
-void Engine::Sceenshot(char *filename, int xmin,int ymin, int xmax, int ymax)
+void Engine::Screenshot(char *filename, int xmin,int ymin, int xmax, int ymax)
 {
-	
-	int w, h;
-	UBYTE *imageData;
-
 // compute width and heidth of the image
-	w = xmax - xmin;
-	h = ymax - ymin;
+	int w = xmax - xmin;
+	int h = ymax - ymin;
 
 // allocate memory for the pixels
-	imageData = new UBYTE[w * h * 4];
+	UBYTE *imageData = new UBYTE[w * h * 4];
 
 // read the pixels from the frame buffer
-	glReadPixels(xmin,ymin,xmax,ymax,GL_RGBA,GL_UNSIGNED_BYTE, (GLvoid *)imageData);
+	glReadPixels(xmin,ymin,xmax,ymax,GL_RGBA,GL_UNSIGNED_BYTE, (void*)imageData);
 
 // save the image 
-  TEXMANAGER.SaveSeries(filename,w,h,32,imageData);
+	TextureManager::getInstance().SaveSeries(filename,w,h,32,imageData);
   delete imageData;
 }

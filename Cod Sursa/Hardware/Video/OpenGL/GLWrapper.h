@@ -40,9 +40,12 @@ private:
 	void enable_PROJECTION();
 	void enable_TEXTURE(int slot);
 	void loadIdentityMatrix();
+	void loadOrtographicView();
+	void loadModelView();
 
-	void drawTextToScreen(void*,string);
+	void drawTextToScreen(Text*);
 	void drawCharacterToScreen(void* ,char);
+	void drawButton(Button*);
 
 	void renderMesh(const Mesh& mesh);
 	void renderSubMesh(const SubMesh& subMesh);
