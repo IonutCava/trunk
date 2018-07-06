@@ -148,7 +148,9 @@ vec3<U32> TerrainChunk::getBufferOffsetAndSize(I8 targetLoD) const {
 }
 
 
-U8 TerrainChunk::getLoD() const { return _parentNode->getLoD(); }
+U8 TerrainChunk::getLoD(const SceneRenderState& sceneRenderState) const {
+    return _parentNode->getLoD(sceneRenderState);
+}
 
 F32 TerrainChunk::waterHeight() const {
     return Attorney::TerrainChunk::waterHeight(*_parentTerrain);

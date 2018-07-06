@@ -63,12 +63,14 @@ struct RenderCbkParams {
                              const SceneGraphNode& sgn,
                              const SceneRenderState& sceneRenderState,
                              const RenderTargetID& renderTarget,
-                             U32 passIndex)
+                             U32 passIndex,
+                             Camera* camera)
         : _context(context),
           _sgn(sgn),
           _sceneRenderState(sceneRenderState),
           _renderTarget(renderTarget),
-         _passIndex(passIndex)
+          _passIndex(passIndex),
+          _camera(camera)
     {
     }
 
@@ -77,6 +79,7 @@ struct RenderCbkParams {
     const SceneRenderState& _sceneRenderState;
     const RenderTargetID& _renderTarget;
     U32 _passIndex;
+    Camera* _camera;
 };
 
 typedef DELEGATE_CBK<void, RenderCbkParams&> RenderCallback;
@@ -193,12 +196,10 @@ class RenderingComponent : public SGNComponent {
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
     // and saves it in the appropriate material slot
     bool updateReflection(U32 reflectionIndex, 
-                          const vec3<F32>& camPos,
-                          const vec2<F32>& zPlanes,
+                          Camera* camera,
                           const SceneRenderState& renderState);
     bool updateRefraction(U32 refractionIndex,
-                          const vec3<F32>& camPos,
-                          const vec2<F32>& zPlanes,
+                          Camera* camera,
                           const SceneRenderState& renderState);
     bool clearReflection();
     bool clearRefraction();
@@ -236,6 +237,9 @@ class RenderingComponent : public SGNComponent {
     EnvironmentProbeList _envProbes;
     vectorImpl<Line> _axisLines;
     IMPrimitive* _axisGizmo;
+
+    hashMapImpl<U32, GFXDevice::DebugView_ptr> _debugViews[2];
+    ShaderProgram_ptr _previewRenderTarget;
 };
 
 namespace Attorney {
@@ -243,20 +247,18 @@ class RenderingCompRenderPass {
     private:
         static bool updateReflection(RenderingComponent& renderable,
                                      U32 reflectionIndex,
-                                     const vec3<F32>& camPos,
-                                     const vec2<F32>& zPlanes,
+                                     Camera* camera,
                                      const SceneRenderState& renderState)
         {
-            return renderable.updateReflection(reflectionIndex, camPos, zPlanes, renderState);
+            return renderable.updateReflection(reflectionIndex, camera, renderState);
         }
 
         static bool updateRefraction(RenderingComponent& renderable,
                                      U32 refractionIndex,
-                                     const vec3<F32>& camPos,
-                                     const vec2<F32>& zPlanes,
+                                     Camera* camera,
                                      const SceneRenderState& renderState)
         {
-            return renderable.updateRefraction(refractionIndex, camPos, zPlanes, renderState);
+            return renderable.updateRefraction(refractionIndex, camera, renderState);
         }
 
         static bool clearReflection(RenderingComponent& renderable)

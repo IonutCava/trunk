@@ -208,7 +208,8 @@ private:
     RenderPassCuller* _renderPassCuller;
 
     U8 _currentPlayerPass;
-
+    U32 _camUpdateListenerID;
+    U32 _camChangeListenerID;
     ScenePool* _scenePool;
     SceneShaderData* _sceneData;
     U64 _elapsedTime;
@@ -281,14 +282,6 @@ class SceneManagerKernel {
         manager.initPostLoadState();
     }
 
-    static void onCameraUpdate(Divide::SceneManager& manager, const Camera& camera) {
-        manager.onCameraUpdate(camera);
-    }
-
-    static void onCamerachange(Divide::SceneManager& manager, const Camera& camera) {
-        manager.onCameraChange(camera);
-    }
-    
     static void currentPlayerPass(Divide::SceneManager& manager, U8 playerIndex) {
         manager.currentPlayerPass(playerIndex);
     }

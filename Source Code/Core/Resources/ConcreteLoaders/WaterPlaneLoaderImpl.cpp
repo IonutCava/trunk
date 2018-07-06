@@ -48,7 +48,7 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res) {
     waterMatDesc.setCullMode(CullMode::NONE);
     waterMat->setRenderStateBlock(waterMatDesc.getHash());
 
-    return true;
+    return res->load();
 }
 
 template<>

@@ -104,7 +104,7 @@ GFXDevice::~GFXDevice()
 }
 
 /// Generate a cube texture and store it in the provided RenderTarget
-void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
+void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                                 const U16 arrayOffset,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
@@ -112,8 +112,9 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
                                 U32 passIndex) {
     // Only the first colour attachment or the depth attachment is used for now
     // and it must be a cube map texture
-    const RTAttachment& colourAttachment = cubeMap.getAttachment(RTAttachment::Type::Colour, 0, false);
-    const RTAttachment& depthAttachment = cubeMap.getAttachment(RTAttachment::Type::Depth, 0, false);
+    RenderTarget& cubeMapTarget = renderTarget(cubeMap);
+    const RTAttachment& colourAttachment = cubeMapTarget.getAttachment(RTAttachment::Type::Colour, 0, false);
+    const RTAttachment& depthAttachment = cubeMapTarget.getAttachment(RTAttachment::Type::Depth, 0, false);
     // Colour attachment takes precedent over depth attachment
     bool hasColour = colourAttachment.used();
     bool hasDepth = depthAttachment.used();
@@ -150,7 +151,7 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
     // Set the desired render stage, remembering the previous one
     RenderStage prevRenderStage = setRenderStage(renderStage);
     // Enable our render target
-    cubeMap.begin(RenderTarget::defaultPolicy());
+    cubeMapTarget.begin(RenderTarget::defaultPolicy());
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
 
     RenderPassManager& passMgr = parent().renderPassManager();
@@ -159,13 +160,13 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
     params.occlusionCull = params.doPrePass;
     params.camera = _cubeCamera;
     params.stage = renderStage;
-
+    params.target = cubeMap;
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
-        cubeMap.drawToFace(hasColour ? RTAttachment::Type::Colour
-                                     : RTAttachment::Type::Depth,
-                           0,
-                           i + arrayOffset);
+        cubeMapTarget.drawToFace(hasColour ? RTAttachment::Type::Colour
+                                           : RTAttachment::Type::Depth,
+                                 0,
+                                 i + arrayOffset);
         // Point our camera to the correct face
         _cubeCamera->lookAt(pos, TabCenter[i], TabUp[i]);
         // Pass our render function to the renderer
@@ -174,20 +175,21 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
     }
 
     // Resolve our render target
-    cubeMap.end();
+    cubeMapTarget.end();
     // Return to our previous rendering stage
     setRenderStage(prevRenderStage);
 }
 
-void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
+void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                           const U16 arrayOffset,
                                           const vec3<F32>& pos,
                                           const vec2<F32>& zPlanes,
                                           RenderStage renderStage,
                                           U32 passIndex)
 {
-    const RTAttachment& colourAttachment = targetBuffer.getAttachment(RTAttachment::Type::Colour, 0, false);
-    const RTAttachment& depthAttachment = targetBuffer.getAttachment(RTAttachment::Type::Depth, 0, false);
+    RenderTarget& paraboloidTarget = renderTarget(targetBuffer);
+    const RTAttachment& colourAttachment = paraboloidTarget.getAttachment(RTAttachment::Type::Colour, 0, false);
+    const RTAttachment& depthAttachment = paraboloidTarget.getAttachment(RTAttachment::Type::Depth, 0, false);
     // Colour attachment takes precedent over depth attachment
     bool hasColour = colourAttachment.used();
     bool hasDepth = depthAttachment.used();
@@ -217,14 +219,15 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
     params.occlusionCull = params.doPrePass;
     params.camera = _dualParaboloidCamera;
     params.stage = renderStage;
+    params.target = targetBuffer;
 
     // Enable our render target
-    targetBuffer.begin(RenderTarget::defaultPolicy());
+    paraboloidTarget.begin(RenderTarget::defaultPolicy());
         for (U8 i = 0; i < 2; ++i) {
-            targetBuffer.drawToLayer(hasColour ? RTAttachment::Type::Colour
-                                               : RTAttachment::Type::Depth,
-                                     0,
-                                     i + arrayOffset);
+            paraboloidTarget.drawToLayer(hasColour ? RTAttachment::Type::Colour
+                                                   : RTAttachment::Type::Depth,
+                                         0,
+                                         i + arrayOffset);
             // Point our camera to the correct face
             _dualParaboloidCamera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS) + pos, WORLD_Y_AXIS);
             // And generated required matrices
@@ -232,7 +235,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
             params.pass = passIndex + i;
             passMgr.doCustomPass(params);
         }
-    targetBuffer.end();
+        paraboloidTarget.end();
     // Return to our previous rendering stage
     setRenderStage(prevRenderStage);
 }
@@ -576,10 +579,15 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     vec4<I32> previousViewport(_viewport.top());
 
     // Bind the depth texture to the first texture unit
-    screenTarget.bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
+    Texture_ptr depth = screenTarget.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+    if (depth->getDescriptor().automaticMipMapGeneration()) {
+        return;
+    }
+
+    depth->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH));
     screenTarget.begin(depthOnlyTarget);
     // We skip the first level as that's our full resolution image
-
+    
     vec2<I32> depthInfo;
     while (dim) {
         if (level) {

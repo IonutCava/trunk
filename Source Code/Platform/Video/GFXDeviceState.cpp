@@ -186,12 +186,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     reflectionSampler.setFilters(TextureFilter::NEAREST);
     reflectionSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     reflectionSampler.toggleMipMaps(false);
-    TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP,
-                                            GFXImageFormat::RGBA16F,
-                                            GFXDataFormat::FLOAT_16);
+    TextureDescriptor environmentDescriptor(TextureType::TEXTURE_2D,
+                                            GFXImageFormat::RGBA8,
+                                            GFXDataFormat::UNSIGNED_BYTE);
     environmentDescriptor.setSampler(reflectionSampler);
 
-    TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_MAP,
+    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D,
                                       GFXImageFormat::DEPTH_COMPONENT32F,
                                       GFXDataFormat::FLOAT_32);
 
@@ -224,10 +224,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Register a 2D function used for previewing the depth buffer.
     if (Config::Build::IS_DEBUG_BUILD) {
-        add2DRenderFunction(GUID_DELEGATE_CBK([this]() { previewDepthBuffer(); }), 0);
+        add2DRenderFunction(GUID_DELEGATE_CBK([this]() { renderDebugViews(); }), 0);
     }
     
-    ParamHandler::instance().setParam<bool>(_ID("rendering.previewDepthBuffer"), false);
+    ParamHandler::instance().setParam<bool>(_ID("rendering.previewDebugViews"), false);
     // If render targets ready, we initialize our post processing system
     postFX.init(*this, cache);
     if (config.rendering.postAASamples > 0) {
@@ -283,6 +283,7 @@ void GFXDevice::closeRenderingAPI() {
     assert(_api != nullptr && "GFXDevice error: closeRenderingAPI called without init!");
     _axisGizmo->clear();
     _debugFrustumPrimitive->clear();
+    _debugViews.clear();
     // Destroy our post processing system
     Console::printfn(Locale::get(_ID("STOP_POST_FX")));
     PostFX::destroyInstance();

@@ -91,6 +91,10 @@ class Task : public GUIDWrapper, private NonCopyable {
         return !_done;
     }
 
+    inline bool finished() const {
+        return _done;
+    }
+
     inline I64 jobIdentifier() const {
         return _jobIdentifier;
     }

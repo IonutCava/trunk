@@ -130,14 +130,12 @@ class Scene : public Resource {
     inline const SceneInput& input() const { return *_input; }
 
     inline SceneGraph& sceneGraph() { return *_sceneGraph; }
-    void registerTask(const TaskHandle& taskItem);
+    I64 registerTask(const TaskHandle& taskItem, bool start = true, U32 flags = 0, Task::TaskPriority priority = Task::TaskPriority::HIGH);
     void clearTasks();
     void removeTask(I64 jobIdentifier);
 
     inline void addModel(FileData& model) { _modelDataArray.push(model); }
-    inline void addTerrain(TerrainDescriptor* ter) {
-        _terrainInfoArray.push_back(ter);
-    }
+    inline void addTerrain(const std::shared_ptr<TerrainDescriptor>& ter) { _terrainInfoArray.push_back(ter); }
     void addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile);
     void addPatch(vectorImpl<FileData>& data);
 
@@ -185,7 +183,7 @@ class Scene : public Resource {
     void resetSelection();
     void findHoverTarget(U8 playerIndex);
     bool checkCameraUnderwater(U8 playerIndex) const;
-    void toggleFlashlight();
+    void toggleFlashlight(U8 playerIndex);
 
     virtual bool save(ByteBuffer& outputBuffer) const;
     virtual bool load(ByteBuffer& inputBuffer);
@@ -290,14 +288,14 @@ class Scene : public Resource {
        vectorImpl<FileData> _vegetationDataArray;
 
        vectorImpl<stringImpl> _terrainList;
-       vectorImpl<TerrainDescriptor*> _terrainInfoArray;
+       vectorImpl<std::shared_ptr<TerrainDescriptor>> _terrainInfoArray;
        F32 _LRSpeedFactor;
        /// Current selection
        hashMapImpl<U8 /*player index*/, SceneGraphNode_wptr> _currentSelection;
        hashMapImpl<U8 /*player index*/, SceneGraphNode_wptr> _currentHoverTarget;
 
        SceneGraphNode_wptr _currentSky;
-       SceneGraphNode_wptr _flashLight;
+       hashMapImpl<U8, SceneGraphNode_wptr> _flashLight;
 
        /// Scene::load must be called by every scene. Add a load flag to make sure!
        bool _loadComplete;
@@ -309,6 +307,7 @@ class Scene : public Resource {
        std::thread _aiTask;
 
    private:
+       SharedLock _tasksMutex;
        vectorImpl<TaskHandle> _tasks;
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
        SceneState* _sceneState;

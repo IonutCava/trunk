@@ -150,6 +150,11 @@ bool Scene::idle() {  // Called when application is idle
 
     _lightPool->idle();
 
+    WriteLock w_lock(_tasksMutex);
+    _tasks.erase(std::remove_if(std::begin(_tasks), std::end(_tasks),
+                 [](const TaskHandle& handle) -> bool { return handle._task->finished(); }),
+        std::end(_tasks));
+
     return true;
 }
 
@@ -368,15 +373,15 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
     return parentNode.addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
 }
 
-void Scene::toggleFlashlight() {
+void Scene::toggleFlashlight(U8 playerIndex) {
     static const U32 lightMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
-    if (_flashLight.lock() == nullptr) {
-
-        ResourceDescriptor tempLightDesc("MainFlashlight");
+    SceneGraphNode_wptr flashLight = _flashLight[playerIndex];
+    if (!flashLight.lock()) {
+        ResourceDescriptor tempLightDesc(Util::StringFormat("Flashlight_%d", playerIndex));
         tempLightDesc.setEnumValue(to_const_uint(LightType::SPOT));
         tempLightDesc.setUserPtr(_lightPool);
         std::shared_ptr<Light> tempLight = CreateResource<Light>(_resCache, tempLightDesc);
@@ -384,10 +389,11 @@ void Scene::toggleFlashlight() {
         tempLight->setRange(30.0f);
         tempLight->setCastShadows(true);
         tempLight->setDiffuseColour(DefaultColours::WHITE());
-        _flashLight = _sceneGraph->getRoot().addNode(tempLight, lightMask, PhysicsGroup::GROUP_IGNORE);
+        flashLight = _sceneGraph->getRoot().addNode(tempLight, lightMask, PhysicsGroup::GROUP_IGNORE);
+        hashAlg::emplace(_flashLight, playerIndex, flashLight);
     }
 
-    _flashLight.lock()->getNode<Light>()->setEnabled(!_flashLight.lock()->getNode<Light>()->getEnabled());
+    flashLight.lock()->getNode<Light>()->toggleEnabled();
 }
 
 SceneGraphNode_ptr Scene::addSky(const stringImpl& nodeName) {
@@ -480,15 +486,15 @@ U16 Scene::registerInputActions() {
     auto toggleDebugLines = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_DEBUG_LINES);};
     auto toggleBoundingBoxRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_AABB);};
     auto toggleShadowMapDepthBufferPreview = [this](InputParams param) {
-        ParamHandler& par = ParamHandler::instance();
         LightPool::togglePreviewShadowMaps(_context.gfx());
-        par.setParam<bool>(
-            _ID("rendering.previewDepthBuffer"),
-            !par.getParam<bool>(_ID("rendering.previewDepthBuffer"), false));
+
+        ParamHandler& par = ParamHandler::instance();
+        par.setParam<bool>(_ID("rendering.previewDebugViews"),
+                          !par.getParam<bool>(_ID("rendering.previewDebugViews"), false));
     };
     auto takeScreenshot = [this](InputParams param) { _context.gfx().Screenshot("screenshot_"); };
     auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
-    auto toggleFlashLight = [this](InputParams param) {toggleFlashlight(); };
+    auto toggleFlashLight = [this](InputParams param) { toggleFlashlight(getPlayerIndexForDevice(param._deviceIndex)); };
     auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);};
     auto select = [this](InputParams  param) {findSelection(); };
     auto lockCameraToMouse = [this](InputParams  param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).cameraLockedToMouse(true); };
@@ -663,7 +669,7 @@ bool Scene::load(const stringImpl& name) {
 
      // Add terrain from XML
     if (!_terrainInfoArray.empty()) {
-        for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
+        for (const std::shared_ptr<TerrainDescriptor>& terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
             terrain.setPropertyDescriptor(*terrainInfo);
             std::shared_ptr<Terrain> temp = CreateResource<Terrain>(_resCache, terrain);
@@ -675,7 +681,6 @@ bool Scene::load(const stringImpl& name) {
 
             NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
             nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
-            MemoryManager::DELETE(terrainInfo);
         }
     }
     _terrainInfoArray.clear();
@@ -925,17 +930,14 @@ void Scene::updateSceneState(const U64 deltaTime) {
     _sceneTimer += deltaTime;
     updateSceneStateInternal(deltaTime);
     _sceneGraph->sceneUpdate(deltaTime, *_sceneState);
-    for (U8 i = 0; i < _scenePlayers.size(); ++i)
-    {
+    for (U8 i = 0; i < _scenePlayers.size(); ++i) {
         findHoverTarget(i);
-    }
-
-    SceneGraphNode_ptr flashLight = _flashLight.lock();
-
-    if (flashLight) {
-        const Camera& cam = *Camera::activeCamera();
-        flashLight->get<PhysicsComponent>()->setPosition(cam.getEye());
-        flashLight->get<PhysicsComponent>()->setRotation(cam.getEuler());
+        if (_flashLight.size() > i) {
+            PhysicsComponent* pComp = _flashLight[i].lock()->get<PhysicsComponent>();
+            const Camera& cam = _scenePlayers[i]->getCamera();
+            pComp->setPosition(cam.getEye());
+            pComp->setRotation(cam.getEuler());
+        }
     }
 }
 
@@ -949,13 +951,19 @@ void Scene::onLostFocus() {
     }
 }
 
-void Scene::registerTask(const TaskHandle& taskItem) { 
+I64 Scene::registerTask(const TaskHandle& taskItem, bool start, U32 flags, Task::TaskPriority priority) {
+    WriteLock w_lock(_tasksMutex);
     _tasks.push_back(taskItem);
+    if (start) {
+        _tasks.back().startTask(priority, flags);
+    }
+    return taskItem._jobIdentifier;
 }
 
 void Scene::clearTasks() {
     Console::printfn(Locale::get(_ID("STOP_SCENE_TASKS")));
     // Performance shouldn't be an issue here
+    WriteLock w_lock(_tasksMutex);
     for (TaskHandle& task : _tasks) {
         if (task._task->jobIdentifier() == task._jobIdentifier) {
             task._task->stopTask();
@@ -967,6 +975,7 @@ void Scene::clearTasks() {
 }
 
 void Scene::removeTask(I64 jobIdentifier) {
+    WriteLock w_lock(_tasksMutex);
     vectorImpl<TaskHandle>::iterator it;
     for (it = std::begin(_tasks); it != std::end(_tasks); ++it) {
         if ((*it)._task->jobIdentifier() == jobIdentifier) {

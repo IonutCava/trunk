@@ -1,9 +1,9 @@
 -- Vertex
 
 #include "vbInputData.vert"
-#include "lightInput.cmn"
+#include "lightingDefaults.vert"
 
-out bool _underwater;
+out flat int _underwater;
 out vec3 _pixToEye;
 out vec4 _vertexWVP;
 
@@ -11,23 +11,30 @@ void main(void)
 {
     computeData();
 
-    _pixToEye  = -vec3(dvd_ViewMatrix * VAR._vertexW);
+#if defined(ADD_FOLIAGE) && defined(IS_TREE)
+    computeFoliageMovementTree(dvd_Vertex);
+#endif
 
+    computeLightVectors();
+
+    _pixToEye  = -VAR._vertexWV.xyz;
     _vertexWVP = dvd_ViewProjectionMatrix * VAR._vertexW;
-    _underwater = dvd_cameraPosition.y < VAR._vertexW.y;
-
-    VAR._normalWV = normalize(dvd_NormalMatrixWV(VAR.dvd_drawID) * dvd_Normal);
+    _underwater = dvd_cameraPosition.y < VAR._vertexW.y ? 1 : 0;
 
     gl_Position = _vertexWVP;
+
+
 }
 
 -- Fragment
 
-in bool _underwater;
+in flat int _underwater;
 in vec3 _pixToEye;
 in vec4 _vertexWVP;
 
-out vec4 _colourOut;
+layout(location = 0) out vec4 _colourOut;
+layout(location = 1) out vec2 _normalOut;
+layout(location = 2) out vec2 _velocityOut;
 
 uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
@@ -39,11 +46,12 @@ layout(binding = 2) uniform sampler2D texWaterRefraction;
 layout(binding = 3) uniform sampler2D texWaterNoiseDUDV;
 
 #include "lightInput.cmn"
-#include "shadowMapping.frag"
 #include "materialData.frag"
+#include "shadowMapping.frag"
+#include "velocityCalc.frag"
 
 float Fresnel(in vec3 viewDir, in vec3 normal) {
-    return _underwater ? 1.0 : 1.0 / pow(1.0 + dot(viewDir, normal), 5);
+    return _underwater == 1 ? 1.0 : 1.0 / pow(1.0 + dot(viewDir, normal), 5);
 }
 
 void main (void)
@@ -76,11 +84,15 @@ void main (void)
 
     // add Diffuse
     _colourOut.rgb = mix(texture(texWaterReflection, uvFinalRefract).rgb, 
-                        texture(texWaterRefraction, uvFinalReflect).rgb, 
-                        vec3(clamp(Fresnel(V, normalize(VAR._normalWV)), 0.0, 1.0)));
+                         texture(texWaterRefraction, uvFinalReflect).rgb,
+                         vec3(clamp(Fresnel(V, normalize(VAR._normalWV)), 0.0, 1.0)));
+
     // add Specular
     _colourOut.rgb = clamp(_colourOut.rgb + dvd_LightSource[0]._colour.rgb * getSpecular() * iSpecular, vec3(0.0), vec3(1.0));
 
     // add Fog
-    _colourOut = ToSRGB(applyFog(vec4(_colourOut.rgb, 1.0)));
+    _colourOut.rgb = ToSRGB(applyFog(vec4(_colourOut.rgb, 1.0))).rgb;
+
+    _normalOut = packNormal(N);
+    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }

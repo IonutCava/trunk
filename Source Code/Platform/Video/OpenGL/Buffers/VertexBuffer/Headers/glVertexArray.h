@@ -80,7 +80,7 @@ class glVertexArray : public VertexBuffer {
     /// Internally create the VB
     bool createInternal();
     /// Enable full VAO based VB (all pointers are tracked by VAO's)
-    void uploadVBAttributes(U8 vaoIndex);
+    void uploadVBAttributes(GLuint VAO);
     /// Integrity checks
     void checkStatus();
     /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU

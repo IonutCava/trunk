@@ -37,7 +37,7 @@
 namespace Divide {
 
 class Terrain;
-class WaterPlane;
+FWD_DECLARE_MANAGED_CLASS(WaterPlane);
 
 class MainScene : public Scene {
    public:
@@ -67,7 +67,7 @@ class MainScene : public Scene {
     bool _updateLights;
     AudioDescriptor_ptr _beep;
     vectorImpl<SceneGraphNode_wptr> _visibleTerrains;
-    WaterPlane* _water;
+    WaterPlane_ptr _water;
     SceneGraphNode_wptr _sun;
     SceneGraphNode_wptr _waterGraphNode;
 };

@@ -42,8 +42,6 @@ class CubeShadowMap : public ShadowMap {
     ~CubeShadowMap();
     void render(GFXDevice& context, U32 passIdx);
 
-    /// Update depth maps
-    void previewShadowMaps(GFXDevice& context, U32 rowIndex);
     void init(ShadowMapInfo* const smi);
 
   private:

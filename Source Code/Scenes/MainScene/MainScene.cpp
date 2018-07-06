@@ -15,6 +15,11 @@
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
 namespace Divide {
+
+namespace {
+    I64 g_boxMoveTaskID = 0;
+};
+
 MainScene::MainScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
    : Scene(context, cache, parent, name),
     _water(nullptr),
@@ -128,7 +133,7 @@ void MainScene::processTasks(const U64 deltaTime) {
 bool MainScene::load(const stringImpl& name) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name, true, true);
-    Camera::activeCamera()->setMoveSpeedFactor(10.0f);
+    _baseCamera->setMoveSpeedFactor(10.0f);
 
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
@@ -156,24 +161,16 @@ bool MainScene::load(const stringImpl& name) {
                                   to_const_uint(SGNComponent::ComponentType::RENDERING) |
                                   to_const_uint(SGNComponent::ComponentType::NAVIGATION);
 
-    /*ResourceDescriptor infiniteWater("waterEntity");
-    infiniteWater.setID(to_uint(renderState().getCameraConst().getZPlanes().y));
+    ResourceDescriptor infiniteWater("waterEntity");
+    infiniteWater.setID(to_uint(_baseCamera->getZPlanes().y));
     _water = CreateResource<WaterPlane>(_resCache, infiniteWater);
-    _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),
-                      0.34f);
-    _waterGraphNode = _sceneGraph->getRoot().addNode(_water, normalMask);
+    _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),  0.34f);
+    _waterGraphNode = _sceneGraph->getRoot().addNode(_water, normalMask, PhysicsGroup::GROUP_IGNORE);
     SceneGraphNode_ptr waterGraphNode(_waterGraphNode.lock());
     waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
-    waterGraphNode->get<PhysicsComponent>()->setPositionY(state().waterLevel);
+    waterGraphNode->get<PhysicsComponent>()->setPositionY(state().waterLevel());
 
-    // Render the scene for water reflection FB generation (Outdated)
-    //_water->setReflectionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
-    //                                            &SceneManager::instance(),
-    //                                            RenderStage::REFLECTION, true, 0));
-    //_water->setRefractionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
-    //                                            &SceneManager::instance(),
-    //                                            RenderStage::DISPLAY, true, 0));*/
     return loadState;
 }
 
@@ -207,7 +204,8 @@ U16 MainScene::registerInputActions() {
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         _freeflyCamera = !_freeflyCamera;
-        Camera::activeCamera()->setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
+        Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
+        cam.setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
     });
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_L, actions);
@@ -227,12 +225,13 @@ U16 MainScene::registerInputActions() {
 bool MainScene::unload() {
     _context.sfx().stopMusic();
     _context.sfx().stopAllSounds();
+    g_boxMoveTaskID = 0;
 
     return Scene::unload();
 }
 
 void MainScene::test(const Task& parentTask, cdiggins::any a, CallbackParam b) {
-    while (!parentTask.stopRequested()) {
+    if(!parentTask.stopRequested()) {
         static bool switchAB = false;
         vec3<F32> pos;
         SceneGraphNode_ptr boxNode(_sceneGraph->findNode("box").lock());
@@ -267,6 +266,14 @@ void MainScene::test(const Task& parentTask, cdiggins::any a, CallbackParam b) {
         if (box) boxNode->get<PhysicsComponent>()->setPosition(pos);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
+        if (g_boxMoveTaskID != 0) {
+            g_boxMoveTaskID = registerTask(CreateTask(getGUID(),
+                                           DELEGATE_BIND(&MainScene::test,
+                                                this,
+                                                std::placeholders::_1,
+                                                stringImpl("test"),
+                                                CallbackParam::TYPE_STRING)));
+        }
     }
 }
 
@@ -280,14 +287,13 @@ bool MainScene::loadResources(bool continueOnErrors) {
         vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
-    TaskHandle boxMove(CreateTask(getGUID(),
-                                  DELEGATE_BIND(&MainScene::test,
-                                  this,
-                                  std::placeholders::_1,
-                                  stringImpl("test"),
-                                  CallbackParam::TYPE_STRING)));
-    boxMove.startTask();
-    registerTask(boxMove);
+    removeTask(g_boxMoveTaskID);
+    g_boxMoveTaskID = registerTask(CreateTask(getGUID(),
+                                              DELEGATE_BIND(&MainScene::test,
+                                              this,
+                                              std::placeholders::_1,
+                                              stringImpl("test"),
+                                              CallbackParam::TYPE_STRING)));
 
     ResourceDescriptor beepSound("beep sound");
     beepSound.setResourceName("beep.wav");
@@ -315,8 +321,8 @@ void MainScene::postLoadMainThread() {
         vec4<U8>(164, 64, 64, 255),
         Util::StringFormat("Number of items in Render Bin: %d", 0));
 
-    const vec3<F32>& eyePos = Camera::activeCamera()->getEye();
-    const vec3<F32>& euler = Camera::activeCamera()->getEuler();
+    const vec3<F32>& eyePos = _baseCamera->getEye();
+    const vec3<F32>& euler = _baseCamera->getEuler();
     _GUI->addText(_ID("camPosition"), vec2<I32>(60, 100), Font::DIVIDE_DEFAULT,
         vec4<U8>(64, 200, 64, 255),
         Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",

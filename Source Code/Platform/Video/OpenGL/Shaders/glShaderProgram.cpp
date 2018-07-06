@@ -626,10 +626,8 @@ U32 glShaderProgram::GetSubroutineUniformLocation(
         name);
 }
 
-/// Get the index of the specified subroutine name for the specified stage. Not
-/// cached!
-U32 glShaderProgram::GetSubroutineIndex(ShaderType type,
-                                        const char* name) const {
+/// Get the index of the specified subroutine name for the specified stage. Not cached!
+U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) const {
     DIVIDE_ASSERT(isValid(),
                   "glShaderProgram error: tried to query subroutines on an "
                   "invalid program!");

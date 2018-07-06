@@ -371,20 +371,26 @@ class Camera : public Resource {
        /// Informs all listeners of a new event
        static void onUpdate(const Camera& cam);
 
-       static void addChangeListener(const DELEGATE_CBK<void, const Camera& /*new camera*/>& f);
-       static void addUpdateListener(const DELEGATE_CBK<void, const Camera& /*updated camera*/>& f);
+       static bool removeChangeListener(U32 id);
+       static U32 addChangeListener(const DELEGATE_CBK<void, const Camera& /*new camera*/>& f);
+       static bool removeUpdateListener(U32 id);
+       static U32 addUpdateListener(const DELEGATE_CBK<void, const Camera& /*updated camera*/>& f);
 
     private:
       typedef hashMapImpl<U64, Camera*> CameraPool;
       typedef hashMapImpl<I64, Camera*> CameraPoolGUID;
 
-      static Camera* _activeCamera;
-      static Camera* _previousCamera;
-      static vectorImpl<DELEGATE_CBK<void, const Camera&> > _changeCameralisteners;
-      static vectorImpl<DELEGATE_CBK<void, const Camera&> > _updateCameralisteners;
+      static Camera* s_activeCamera;
+      static Camera* s_previousCamera;
 
-      static CameraPool _cameraPool;
-      static SharedLock _cameraPoolLock;
+      typedef hashMapImpl<U32, DELEGATE_CBK<void, const Camera&> > ListenerMap;
+      static U32 s_changeCameraId;
+      static U32 s_updateCameraId;
+      static ListenerMap s_changeCameraListeners;
+      static ListenerMap s_updateCameraListeners;
+
+      static CameraPool s_cameraPool;
+      static SharedLock s_cameraPoolLock;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(Camera);

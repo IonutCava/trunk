@@ -41,6 +41,7 @@ Vegetation::Vegetation(GFXDevice& context, ResourceCache& parentCache, const Veg
     _stopLoadingRequest = false;
     _readBuffer = 1;
     _writeBuffer = 0;
+    _parentLoD = 0;
 
     _map = details.map;
     _grassShaderName = details.grassShaderName;
@@ -272,9 +273,12 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
                              SceneState& sceneState) {
     static const Task updateTask;
 
+    const SceneRenderState& renderState = sceneState.renderState();
     if (_threadedLoadComplete && !_success) {
         generateTrees(updateTask);
-        Camera::addUpdateListener(DELEGATE_BIND(&Vegetation::gpuCull, this));
+        Camera::addUpdateListener([this, &renderState](const Camera& cam) {
+            gpuCull(renderState);
+        });
         _success = true;
     }
 
@@ -322,7 +326,7 @@ U32 Vegetation::getQueryID() {
     };
 }
 
-void Vegetation::gpuCull() {
+void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
     U32 queryID = getQueryID();
 
     if (_context.is2DRendering()) {
@@ -344,8 +348,8 @@ void Vegetation::gpuCull() {
             _culledFinal = true;
         } break;
     }
-
-    if (draw && _threadedLoadComplete && _terrainChunk->getLoD() == 0) {
+    _parentLoD = _terrainChunk->getLoD(sceneRenderState);
+    if (draw && _threadedLoadComplete && _parentLoD == 0) {
         GenericVertexData* buffer = _grassGPUBuffer[_writeBuffer];
         //_cullShader->SetSubroutine(VERTEX,
         //_instanceRoutineIdx[HI_Z_CULL]);
@@ -400,7 +404,7 @@ void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
 
     GenericVertexData* buffer = _grassGPUBuffer[_readBuffer];
     U32 queryID = getQueryID();
-    // gpuCull();
+    gpuCull(sceneRenderState);
 
     buffer->attribDescriptor(posLocation).offset(_instanceCountGrass * queryID);
     buffer->attribDescriptor(scaleLocation).offset(_instanceCountGrass * queryID);
@@ -416,7 +420,7 @@ void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
 bool Vegetation::onRender(RenderStage renderStage) {
     _staticDataUpdated = false;
     return !(!_render || !_success || !_threadedLoadComplete ||
-             _terrainChunk->getLoD() > 0 ||
+             _parentLoD > 0 ||
              (_context.getRenderStage() == _context.getPrevRenderStage() &&
               renderStage == RenderStage::SHADOW));
 }

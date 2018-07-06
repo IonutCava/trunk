@@ -20,6 +20,15 @@ CubeShadowMap::CubeShadowMap(GFXDevice& context, Light* light, Camera* shadowCam
     shadowPreviewShader.setPropertyList("USE_SCENE_ZPLANES");
     _previewDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), shadowPreviewShader);
     _previewDepthMapShader->Uniform("useScenePlanes", false);
+
+    for (U32 i = 0; i < 6; ++i) {
+        GFXDevice::DebugView_ptr shadow = std::make_shared<GFXDevice::DebugView>();
+        shadow->_texture = getDepthMap().getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+        shadow->_shader = _previewDepthMapShader;
+        shadow->_shaderData._intValues.push_back(std::make_pair("layer", _arrayOffset));
+        shadow->_shaderData._intValues.push_back(std::make_pair("face", i));
+        context.addDebugView(shadow);
+    }
 }
 
 CubeShadowMap::~CubeShadowMap()
@@ -31,35 +40,12 @@ void CubeShadowMap::init(ShadowMapInfo* const smi) {
 }
 
 void CubeShadowMap::render(GFXDevice& context, U32 passIdx) {
-    context.generateCubeMap(getDepthMap(),
+    context.generateCubeMap(getDepthMapID(),
                             _arrayOffset,
                             _light->getPosition(),
                             vec2<F32>(0.1f, _light->getRange()),
                             RenderStage::SHADOW,
                             passIdx);
-}
-
-void CubeShadowMap::previewShadowMaps(GFXDevice& context, U32 rowIndex) {
-    if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
-        return;
-    }
-
-    const vec4<I32> viewport = getViewportForRow(rowIndex);
-
-    getDepthMap().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
-    _previewDepthMapShader->Uniform("layer", _arrayOffset);
-
-    GenericDrawCommand triangleCmd;
-    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-    triangleCmd.drawCount(1);
-    triangleCmd.stateHash(context.getDefaultStateBlock(true));
-    triangleCmd.shaderProgram(_previewDepthMapShader);
-
-    for (U32 i = 0; i < 6; ++i) {
-        _previewDepthMapShader->Uniform("face", i);
-        GFX::ScopedViewport sViewport(context, viewport.x * i, viewport.y, viewport.z, viewport.w);
-        context.draw(triangleCmd);
-    }
 }
 
 };

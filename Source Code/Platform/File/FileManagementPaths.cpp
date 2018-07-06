@@ -11,6 +11,7 @@ namespace Paths {
     stringImpl g_assetsLocation;
     stringImpl g_shadersLocation;
     stringImpl g_texturesLocation;
+    stringImpl g_heightmapLocation;
     stringImpl g_imagesLocation;
     stringImpl g_materialsLocation;
     stringImpl g_soundsLocation;
@@ -66,6 +67,7 @@ namespace Paths {
         g_assetsLocation = "assets/";
         g_shadersLocation = "shaders/";
         g_texturesLocation = "textures/";
+        g_heightmapLocation = "terrain/";
         g_xmlDataLocation = "XML/";
         g_scenesLocation = "Scenes/";
 

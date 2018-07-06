@@ -158,7 +158,7 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
     //BoundingBoxes
     GenericDrawCommand bbCommand;
     bbCommand.drawCount(0);
-    for (U32 i = 0; i < chunkCount + 1; ++i) {
+    for (U32 i = 0; i < chunkCount + 2; ++i) {
         drawCommandsInOut.push_back(bbCommand);
     }
 
@@ -192,9 +192,10 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
             cmd.LoD(to_byte(cmdData.z));
         }
     }
+    i++;
 
     // draw infinite plane
-    drawCommandsInOut[i++].drawCount((renderStage == RenderStage::DISPLAY ||
+    drawCommandsInOut[++i].drawCount((renderStage == RenderStage::DISPLAY ||
                                       renderStage == RenderStage::Z_PRE_PASS) ? 1 : 0);
 
     if (_drawBBoxes) {

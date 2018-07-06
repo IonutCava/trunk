@@ -86,7 +86,6 @@ U16 PhysXScene::registerInputActions() {
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         TaskHandle e(CreateTask(getGUID(), DELEGATE_BIND(&PhysXScene::createTower, this, std::placeholders::_1, to_uint(Random(5, 20)))));
-        e.startTask();
         registerTask(e);
     });
     actions._onReleaseAction = actionID;
@@ -95,7 +94,6 @@ U16 PhysXScene::registerInputActions() {
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         TaskHandle e(CreateTask(getGUID(), DELEGATE_BIND(&PhysXScene::createStack, this, std::placeholders::_1, to_uint(Random(5, 10)))));
-        e.startTask();
         registerTask(e);
     });
     actions._onReleaseAction = actionID;

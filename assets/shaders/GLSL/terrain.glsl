@@ -8,7 +8,7 @@ uniform vec3 bbox_extent;
 uniform float dvd_waterHeight;
 uniform float underwaterDiffuseScale;
 
-out vec2 _scrollingUV;
+out vec4 _scrollingUV;
 smooth out float distance;
 
 smooth out float _waterDepth;

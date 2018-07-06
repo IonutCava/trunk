@@ -11,42 +11,44 @@
 
 namespace Divide {
 
-Camera* Camera::_activeCamera = nullptr;
-Camera* Camera::_previousCamera = nullptr;
+Camera* Camera::s_activeCamera = nullptr;
+Camera* Camera::s_previousCamera = nullptr;
 
-vectorImpl<DELEGATE_CBK<void, const Camera&> > Camera::_changeCameralisteners;
-vectorImpl<DELEGATE_CBK<void, const Camera&> > Camera::_updateCameralisteners;
+U32 Camera::s_changeCameraId = 0;
+U32 Camera::s_updateCameraId = 0;
+Camera::ListenerMap Camera::s_changeCameraListeners;
+Camera::ListenerMap Camera::s_updateCameraListeners;
 
-SharedLock Camera::_cameraPoolLock;
-Camera::CameraPool Camera::_cameraPool;
+SharedLock Camera::s_cameraPoolLock;
+Camera::CameraPool Camera::s_cameraPool;
 
 void Camera::update(const U64 deltaTime) {
-    ReadLock r_lock(_cameraPoolLock);
-    for (CameraPool::value_type& it : _cameraPool) {
+    ReadLock r_lock(s_cameraPoolLock);
+    for (CameraPool::value_type& it : s_cameraPool) {
         it.second->updateInternal(deltaTime);
     }
 }
 
 void Camera::onUpdate(const Camera& cam) {
-    for (const DELEGATE_CBK<void, const Camera&>& listener : _updateCameralisteners) {
-        listener(cam);
+    for (ListenerMap::value_type it : s_updateCameraListeners) {
+        it.second(cam);
     }
 }
 
 void Camera::activeCamera(Camera* cam) {
-    if (_activeCamera) {
-        if (cam && _activeCamera->getGUID() == cam->getGUID()) {
+    if (s_activeCamera) {
+        if (cam && s_activeCamera->getGUID() == cam->getGUID()) {
             return;
         }
-        _activeCamera->setActiveInternal(false);
+        s_activeCamera->setActiveInternal(false);
     }
 
-    _previousCamera = _activeCamera;
-    _activeCamera = cam;
+    s_previousCamera = s_activeCamera;
+    s_activeCamera = cam;
     if (cam) {
-        _activeCamera->setActiveInternal(true);
-        for (const DELEGATE_CBK<void, Camera&>& listener : _changeCameralisteners) {
-            listener(*_activeCamera);
+        s_activeCamera->setActiveInternal(true);
+        for (ListenerMap::value_type it : s_changeCameraListeners) {
+            it.second(*s_activeCamera);
         }
     }
 }
@@ -56,24 +58,24 @@ void Camera::activeCamera(U64 cam) {
 }
 
 Camera* Camera::previousCamera() {
-    return _previousCamera;
+    return s_previousCamera;
 }
 
 Camera* Camera::activeCamera() {
-    assert(_activeCamera != nullptr);
+    assert(s_activeCamera != nullptr);
 
-    return _activeCamera;
+    return s_activeCamera;
 }
 
 void Camera::destroyPool() {
     Console::printfn(Locale::get(_ID("CAMERA_MANAGER_DELETE")));
     Console::printfn(Locale::get(_ID("CAMERA_MANAGER_REMOVE_CAMERAS")));
 
-    WriteLock w_lock(_cameraPoolLock);
-    for (CameraPool::value_type& it : _cameraPool) {
+    WriteLock w_lock(s_cameraPoolLock);
+    for (CameraPool::value_type& it : s_cameraPool) {
         it.second->unload();
     }
-    MemoryManager::DELETE_HASHMAP(_cameraPool);
+    MemoryManager::DELETE_HASHMAP(s_cameraPool);
 }
 
 Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
@@ -97,8 +99,8 @@ Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
     }
 
     if (camera != nullptr) {
-        WriteLock w_lock(_cameraPoolLock);
-        hashAlg::emplace(_cameraPool, _ID_RT(camera->getName()), camera);
+        WriteLock w_lock(s_cameraPoolLock);
+        hashAlg::emplace(s_cameraPool, _ID_RT(camera->getName()), camera);
     }
 
     return camera;
@@ -106,13 +108,13 @@ Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
 
 bool Camera::destroyCamera(Camera*& camera) {
     if (camera != nullptr) {
-        if (_activeCamera && _activeCamera->getGUID() == camera->getGUID()) {
+        if (s_activeCamera && s_activeCamera->getGUID() == camera->getGUID()) {
             activeCamera(nullptr);
         }
 
         if (camera->unload()) {
-            WriteLock w_lock(_cameraPoolLock);
-            _cameraPool.erase(_ID_RT(camera->getName()));
+            WriteLock w_lock(s_cameraPoolLock);
+            s_cameraPool.erase(_ID_RT(camera->getName()));
             MemoryManager::DELETE(camera);
             return true;
         }
@@ -122,21 +124,43 @@ bool Camera::destroyCamera(Camera*& camera) {
 }
 
 Camera* Camera::findCamera(U64 nameHash) {
-    ReadLock r_lock(_cameraPoolLock);
-    const CameraPool::const_iterator& it = _cameraPool.find(nameHash);
-    if (it != std::end(_cameraPool)) {
+    ReadLock r_lock(s_cameraPoolLock);
+    const CameraPool::const_iterator& it = s_cameraPool.find(nameHash);
+    if (it != std::end(s_cameraPool)) {
         return it->second;
     }
 
     return nullptr;
 }
 
-void Camera::addChangeListener(const DELEGATE_CBK<void, const Camera&>& f) {
-    _changeCameralisteners.push_back(f);
+bool Camera::removeChangeListener(U32 id) {
+    ListenerMap::const_iterator it = s_changeCameraListeners.find(id);
+    if (it != std::cend(s_changeCameraListeners)) {
+        s_changeCameraListeners.erase(it);
+        return true;
+    }
+
+    return false;
 }
 
-void Camera::addUpdateListener(const DELEGATE_CBK<void, const Camera&>& f) {
-    _updateCameralisteners.push_back(f);
+U32 Camera::addChangeListener(const DELEGATE_CBK<void, const Camera&>& f) {
+    hashAlg::emplace(s_changeCameraListeners, ++s_changeCameraId, f);
+    return s_changeCameraId;
+}
+
+bool Camera::removeUpdateListener(U32 id) {
+    ListenerMap::const_iterator it = s_updateCameraListeners.find(id);
+    if (it != std::cend(s_updateCameraListeners)) {
+        s_updateCameraListeners.erase(it);
+        return true;
+    }
+
+    return false;
+}
+
+U32 Camera::addUpdateListener(const DELEGATE_CBK<void, const Camera&>& f) {
+    hashAlg::emplace(s_updateCameraListeners, ++s_updateCameraId, f);
+    return s_updateCameraId;
 }
 
 }; //namespace Divide

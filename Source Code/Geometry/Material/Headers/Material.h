@@ -212,8 +212,7 @@ class Material : public Resource {
 
     /// Shader defines, separated by commas, are added to the generated shader
     /// The shader generator appends "#define " to the start of each define
-    /// For example, to define max light count and max shadow casters add this
-    /// string:
+    /// For example, to define max light count and max shadow casters add this string:
     ///"MAX_LIGHT_COUNT 4, MAX_SHADOW_CASTERS 2"
     /// The above strings becomes, in the shader:
     ///#define MAX_LIGHT_COUNT 4

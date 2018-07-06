@@ -42,9 +42,10 @@ class Mesh;
 class Terrain;
 class Transform;
 class Vegetation;
+class QuadtreeNode;
 class ShaderProgram;
 class SceneGraphNode;
-class QuadtreeNode;
+class SceneRenderState;
 struct FileData;
 
 namespace Attorney {
@@ -69,7 +70,7 @@ class TerrainChunk {
         return vec4<F32>(_xOffset, _yOffset, _sizeX, _sizeY);
     }
 
-    U8 getLoD() const;
+    U8 getLoD(const SceneRenderState& sceneRenderState) const;
 
     F32 waterHeight() const;
 

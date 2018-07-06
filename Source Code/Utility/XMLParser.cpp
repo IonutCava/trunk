@@ -312,7 +312,9 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes
     if (!fileExists(sceneDataFile.c_str())) {
-        loadMusicPlaylist((sceneLocation + "/" + pt.get("musicPlaylist", "musicPlaylist.xml")).c_str(), scene, config);
+        loadTerrain((sceneLocation + "/" + "terrain.xml").c_str(), scene);
+        loadGeometry((sceneLocation + "/" + "assets.xml").c_str(), scene);
+        loadMusicPlaylist((sceneLocation + "/" + "musicPlaylist.xml").c_str(), scene, config);
         return;
     }
 
@@ -374,9 +376,9 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
     }
     scene->state().fogDescriptor().set(fogColour, fogDensity);
 
-    loadTerrain((sceneLocation + "/" + pt.get("terrain", "terrain.xml")).c_str(), scene);
-    loadGeometry((sceneLocation + "/" + pt.get("assets", "assets.xml")).c_str(), scene);
-    loadMusicPlaylist((sceneLocation + "/" + pt.get("musicPlaylist", "musicPlaylist.xml")).c_str(), scene, config);
+    loadTerrain((sceneLocation + "/" + pt.get("terrain", "")).c_str(), scene);
+    loadGeometry((sceneLocation + "/" + pt.get("assets", "")).c_str(), scene);
+    loadMusicPlaylist((sceneLocation + "/" + pt.get("musicPlaylist", "")).c_str(), scene, config);
 }
 
 void loadMusicPlaylist(const stringImpl& file, Scene* const scene, const Configuration& config) {
@@ -397,6 +399,10 @@ void loadMusicPlaylist(const stringImpl& file, Scene* const scene, const Configu
 }
 
 void loadTerrain(const stringImpl &file, Scene *const scene) {
+    if (!fileExists(file.c_str())) {
+        return;
+    }
+
     U8 count = 0;
     ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), file.c_str());
@@ -415,12 +421,15 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
             continue;
         }
         // Load the rest of the terrain
-        TerrainDescriptor *ter = MemoryManager_NEW TerrainDescriptor((name + "_descriptor").c_str());
+        std::shared_ptr<TerrainDescriptor> ter = std::make_shared<TerrainDescriptor>((name + "_descriptor").c_str());
+
         ter->addVariable("terrainName", name.c_str());
-        ter->addVariable("heightmap", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".heightmap"));
-        ter->addVariable("waterCaustics", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".waterCaustics"));
-        ter->addVariable("underwaterAlbedoTexture", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".underwaterAlbedoTexture"));
-        ter->addVariable("underwaterDetailTexture", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".underwaterDetailTexture"));
+        ter->addVariable("heightmapLocation", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".heightmapLocation", Paths::g_heightmapLocation) + "/");
+        ter->addVariable("textureLocation", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".textureLocation", Paths::g_imagesLocation) + "/");
+        ter->addVariable("heightmap", pt.get<stringImpl>(name + ".heightmap"));
+        ter->addVariable("waterCaustics", pt.get<stringImpl>(name + ".waterCaustics"));
+        ter->addVariable("underwaterAlbedoTexture", pt.get<stringImpl>(name + ".underwaterAlbedoTexture"));
+        ter->addVariable("underwaterDetailTexture", pt.get<stringImpl>(name + ".underwaterDetailTexture"));
         ter->addVariable("underwaterDiffuseScale", pt.get<F32>(name + ".underwaterDiffuseScale"));
 
         I32 i = 0;
@@ -442,39 +451,39 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
             layerOffsetStr = to_stringImpl(i);
             temp = pt.get<stringImpl>(layerName + ".blendMap", "");
             DIVIDE_ASSERT(!temp.empty(), "Blend Map for terrain missing!");
-            ter->addVariable("blendMap" + layerOffsetStr, Paths::g_assetsLocation + temp);
+            ter->addVariable("blendMap" + layerOffsetStr, temp);
 
             temp = pt.get<stringImpl>(layerName + ".redAlbedo", "");
             if (!temp.empty()) {
-                ter->addVariable("redAlbedo" + layerOffsetStr, Paths::g_assetsLocation + temp);
+                ter->addVariable("redAlbedo" + layerOffsetStr, temp);
             }
             temp = pt.get<stringImpl>(layerName + ".redDetail", "");
             if (!temp.empty()) {
-                ter->addVariable("redDetail" + layerOffsetStr, Paths::g_assetsLocation + temp);
+                ter->addVariable("redDetail" + layerOffsetStr, temp);
             }
             temp = pt.get<stringImpl>(layerName + ".greenAlbedo", "");
             if (!temp.empty()) {
-                ter->addVariable("greenAlbedo" + layerOffsetStr, Paths::g_assetsLocation + temp);
+                ter->addVariable("greenAlbedo" + layerOffsetStr, temp);
             }
             temp = pt.get<stringImpl>(layerName + ".greenDetail", "");
             if (!temp.empty()) {
-                ter->addVariable("greenDetail" + layerOffsetStr, Paths::g_assetsLocation + temp);
+                ter->addVariable("greenDetail" + layerOffsetStr, temp);
             }
             temp = pt.get<stringImpl>(layerName + ".blueAlbedo", "");
             if (!temp.empty()) {
-                ter->addVariable("blueAlbedo" + layerOffsetStr, Paths::g_assetsLocation + temp);
+                ter->addVariable("blueAlbedo" + layerOffsetStr, temp);
             }
             temp = pt.get<stringImpl>(layerName + ".blueDetail", "");
             if (!temp.empty()) {
-                ter->addVariable("blueDetail" + layerOffsetStr, Paths::g_assetsLocation + temp);
+                ter->addVariable("blueDetail" + layerOffsetStr, temp);
             }
             temp = pt.get<stringImpl>(layerName + ".alphaAlbedo", "");
             if (!temp.empty()) {
-                ter->addVariable("alphaAlbedo" + layerOffsetStr, Paths::g_assetsLocation + temp);
+                ter->addVariable("alphaAlbedo" + layerOffsetStr, temp);
             }
             temp = pt.get<stringImpl>(layerName + ".alphaDetail", "");
             if (!temp.empty()) {
-                ter->addVariable("alphaDetail" + layerOffsetStr, Paths::g_assetsLocation + temp);
+                ter->addVariable("alphaDetail" + layerOffsetStr, temp);
             }
 
             ter->addVariable("diffuseScaleR" + layerOffsetStr, pt.get<F32>(layerName + ".redDiffuseScale", 0.0f));
@@ -488,11 +497,12 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
         }
 
         ter->setTextureLayerCount(to_ubyte(i));
-        ter->addVariable("grassMap", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".vegetation.map"));
-        ter->addVariable("grassBillboard1", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".vegetation.grassBillboard1", ""));
-        ter->addVariable("grassBillboard2", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".vegetation.grassBillboard2", ""));
-        ter->addVariable("grassBillboard3", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".vegetation.grassBillboard3", ""));
-        ter->addVariable("grassBillboard4", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".vegetation.grassBillboard4", ""));
+        ter->addVariable("grassMapLocation", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".vegetation.vegetationTextureLocation", Paths::g_imagesLocation) + "/");
+        ter->addVariable("grassMap", pt.get<stringImpl>(name + ".vegetation.map"));
+        ter->addVariable("grassBillboard1", pt.get<stringImpl>(name + ".vegetation.grassBillboard1", ""));
+        ter->addVariable("grassBillboard2", pt.get<stringImpl>(name + ".vegetation.grassBillboard2", ""));
+        ter->addVariable("grassBillboard3", pt.get<stringImpl>(name + ".vegetation.grassBillboard3", ""));
+        ter->addVariable("grassBillboard4", pt.get<stringImpl>(name + ".vegetation.grassBillboard4", ""));
         ter->setGrassDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.grassDensity"));
         ter->setTreeDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.treeDensity"));
         ter->setGrassScale(pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale"));
@@ -518,8 +528,12 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
 }
 
 void loadGeometry(const stringImpl &file, Scene *const scene) {
-    ptree pt;
+    if (!fileExists(file.c_str())) {
+        return;
+    }
     Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
+
+    ptree pt;
     read_xml(file.c_str(), pt);
     ptree::iterator it;
 

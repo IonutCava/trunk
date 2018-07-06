@@ -13,16 +13,17 @@
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
-/// Show the contents of the depth buffer in a small rectangle in the bottom
-/// right of the screen
-void GFXDevice::previewDepthBuffer() {
-// As this is touched once per frame, we'll only enable it in debug builds
+
+void GFXDevice::renderDebugViews() {
+    static DebugView* HiZPtr;
+
+    // As this is touched once per frame, we'll only enable it in debug builds
     if (Config::Build::IS_DEBUG_BUILD) {
         // Early out if we didn't request the preview
-        if (!ParamHandler::instance().getParam<bool>(
-            _ID("rendering.previewDepthBuffer"), false)) {
+        if (!ParamHandler::instance().getParam<bool>(_ID("rendering.previewDebugViews"), false)) {
             return;
         }
+
         // Lazy-load preview shader
         if (!_previewDepthMapShader) {
             // The LinearDepth variant converts the depth values to linear values
@@ -31,61 +32,109 @@ void GFXDevice::previewDepthBuffer() {
             fbPreview.setPropertyList("USE_SCENE_ZPLANES");
             _previewDepthMapShader = CreateResource<ShaderProgram>(parent().resourceCache(), fbPreview);
             assert(_previewDepthMapShader != nullptr);
+
+            DebugView_ptr HiZ = std::make_shared<DebugView>();
+            HiZ->_shader = _previewDepthMapShader;
+            HiZ->_texture = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+            HiZ->_shaderData._floatValues.push_back(std::make_pair("lodLevel", to_float(HiZ->_texture->getMaxMipLevel() - 1)));
+
+            DebugView_ptr DepthPreview = std::make_shared<DebugView>();
+            DepthPreview->_shader = _previewDepthMapShader;
+            DepthPreview->_texture = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+            DepthPreview->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
+
+            DebugView_ptr NormalPreview = std::make_shared<DebugView>();
+            NormalPreview->_shader = _renderTargetDraw;
+            NormalPreview->_texture = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::NORMALS)).asTexture();
+            NormalPreview->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
+            NormalPreview->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", true));
+
+            DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
+            VelocityPreview->_shader = _renderTargetDraw;
+            VelocityPreview->_texture = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::VELOCITY)).asTexture();
+            VelocityPreview->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
+            VelocityPreview->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
+
+
+            addDebugView(HiZ);
+            addDebugView(DepthPreview);
+            addDebugView(NormalPreview);
+            addDebugView(VelocityPreview);
+
+            HiZPtr = HiZ.get();
         }
 
-        if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
-            return;
+        if (HiZPtr) {
+            //HiZ preview
+            I32 LoDLevel = 0;
+            if (Config::USE_HIZ_CULLING && Config::USE_Z_PRE_PASS) {
+                LoDLevel = to_int(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) %
+                    (renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getMaxMipLevel() - 1);
+            }
+            HiZPtr->_shaderData._floatValues[0].second = to_float(LoDLevel);
         }
+    
+
+        constexpr I32 maxViewportColumnCount = 10;
+        I32 viewCount = to_int(_debugViews.size());
+        I32 columnCount = std::min(viewCount, maxViewportColumnCount);
+        I32 rowCount = viewCount / maxViewportColumnCount;
+        if (viewCount % maxViewportColumnCount > 0) {
+            rowCount++;
+        }
+
+        RenderTarget& screenRT = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+        U16 screenWidth = std::max(screenRT.getWidth(), to_const_ushort(1280));
+        U16 screenHeight = std::max(screenRT.getHeight(), to_const_ushort(720));
+        F32 aspectRatio = to_float(screenWidth) / screenHeight;
+
+        I32 viewportWidth = screenWidth / maxViewportColumnCount;
+        I32 viewportHeight = to_int(viewportWidth / aspectRatio);
+        vec4<I32> viewport(screenWidth - viewportWidth, 0, viewportWidth, viewportHeight);
 
         GenericDrawCommand triangleCmd;
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
         triangleCmd.stateHash(_defaultStateNoDepthHash);
 
-        RenderTarget& screenRT = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-        U16 screenWidth = std::max(screenRT.getWidth(), to_const_ushort(768));
-        screenRT.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
+        I32 viewIndex = 0;
+        for (U8 i = 0; i < rowCount; ++i) {
+            for (U8 j = 0; j < columnCount; ++j) {
+                DebugView& view = *_debugViews[viewIndex];
+                triangleCmd.shaderProgram(view._shader);
+                view._texture->bind(view._textureBindSlot);
 
-        triangleCmd.shaderProgram(_previewDepthMapShader);
-        {
-            //HiZ preview
-            I32 LoDLevel = 0;
-            if (Config::USE_HIZ_CULLING && Config::USE_Z_PRE_PASS) {
-                LoDLevel = to_int(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) %
-                           (screenRT.getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getMaxMipLevel() - 1);
+                DebugView::ShaderData& shaderData = view._shaderData;
+                for (const std::pair<stringImpl, I32>& data : shaderData._intValues) {
+                    view._shader->Uniform(data.first.c_str(), data.second);
+                }
+                for (const std::pair<stringImpl, F32>& data : shaderData._floatValues) {
+                    view._shader->Uniform(data.first.c_str(), data.second);
+                }
+                for (const std::pair<stringImpl, bool>& data : shaderData._boolValues) {
+                    view._shader->Uniform(data.first.c_str(), data.second);
+                }
+                {
+                    GFX::ScopedViewport sView(*this, viewport);
+                    draw(triangleCmd);
+                }
+
+                viewport.x -= viewportWidth;
+                viewIndex++;
             }
-
-            _previewDepthMapShader->Uniform("lodLevel", to_float(LoDLevel));
-            GFX::ScopedViewport viewport(*this, screenWidth - 256, 0, 256, 256);
-            draw(triangleCmd);
-        }
-        {
-            //Depth preview
-            _previewDepthMapShader->Uniform("lodLevel", 0.0f);
-            GFX::ScopedViewport viewport(*this, screenWidth - 512, 0, 256, 256);
-            draw(triangleCmd);
-        }
-
-        triangleCmd.shaderProgram(_renderTargetDraw);
-        {        
-            //Normals preview
-            screenRT.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::NORMALS));
-
-            GFX::ScopedViewport viewport(*this, screenWidth - 768, 0, 256, 256);
-            _renderTargetDraw->Uniform("linearSpace", false);
-            _renderTargetDraw->Uniform("unpack2Channel", true);
-            draw(triangleCmd);
-        }
-        {
-            //Velocity preview
-            screenRT.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::VELOCITY));
-
-            GFX::ScopedViewport viewport(*this, screenWidth - 1024, 0, 256, 256);
-            _renderTargetDraw->Uniform("linearSpace", false);
-            _renderTargetDraw->Uniform("unpack2Channel", false);
-            draw(triangleCmd);
+            viewport.y -= viewportHeight;
         }
     }
+}
+
+
+void GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
+    _debugViews.push_back(view);
+    std::sort(std::begin(_debugViews),
+              std::end(_debugViews),
+              [](const std::shared_ptr<DebugView>& a, const std::shared_ptr<DebugView>& b)-> bool {
+                  return a->_shader->getGUID() < b->_shader->getGUID();
+               });
 }
 
 void GFXDevice::drawDebugFrustum(RenderSubPassCmds& subPassesInOut) {

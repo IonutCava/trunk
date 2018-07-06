@@ -37,6 +37,14 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, Camera*
     _previewDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), shadowPreviewShader);
     _previewDepthMapShader->Uniform("useScenePlanes", false);
 
+    for (U32 i = 0; i < _numSplits; ++i) {
+        GFXDevice::DebugView_ptr shadow = std::make_shared<GFXDevice::DebugView>();
+        shadow->_texture = getDepthMap().getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+        shadow->_shader = _previewDepthMapShader;
+        shadow->_shaderData._intValues.push_back(std::make_pair("layer", i + _arrayOffset));
+        _context.addDebugView(shadow);
+    }
+
     ResourceDescriptor blurDepthMapShader("blur.GaussBlur");
     blurDepthMapShader.setThreadedLoading(false);
     _blurDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), blurDepthMapShader);
@@ -251,24 +259,4 @@ void CascadedShadowMaps::postRender(GFXDevice& context) {
     depthMap.end();
 }
 
-void CascadedShadowMaps::previewShadowMaps(GFXDevice& context, U32 rowIndex) {
-    if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
-        return;
-    }
-
-    getDepthMap().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
-
-    GenericDrawCommand triangleCmd;
-    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-    triangleCmd.drawCount(1);
-    triangleCmd.stateHash(context.getDefaultStateBlock(true));
-    triangleCmd.shaderProgram(_previewDepthMapShader);
-
-    const vec4<I32> viewport = getViewportForRow(rowIndex);
-    for (U32 i = 0; i < _numSplits; ++i) {
-        _previewDepthMapShader->Uniform("layer", i + _arrayOffset);
-        GFX::ScopedViewport sViewport(context, viewport.x * i, viewport.y, viewport.z, viewport.w);
-        context.draw(triangleCmd);
-    }
-}
 };

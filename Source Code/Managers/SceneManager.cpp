@@ -71,7 +71,9 @@ SceneManager::SceneManager(Kernel& parentKernel)
       _elapsedTime(0ULL),
       _elapsedTimeMS(0),
       _currentPlayerPass(0),
-      _saveTimer(0ULL)
+      _saveTimer(0ULL),
+      _camUpdateListenerID(0),
+      _camChangeListenerID(0)
 {
     ADD_FILE_DEBUG_GROUP();
     ADD_DEBUG_VAR_FILE(&_elapsedTime, CallbackParam::TYPE_LARGE_INTEGER, false);
@@ -211,9 +213,25 @@ void SceneManager::setActiveScene(Scene* const scene) {
 
     _scenePool->activeScene(*scene);
     Attorney::SceneManager::onSetActive(*scene);
+    LoadSave::loadScene(*scene);
+
     ShadowMap::resetShadowMaps(_platformContext->gfx());
     _platformContext->gui().onChangeScene(scene);
     ParamHandler::instance().setParam(_ID("activeScene"), scene->getName());
+
+    if (_camUpdateListenerID != 0) {
+        Camera::removeUpdateListener(_camUpdateListenerID);
+    }
+    _camUpdateListenerID = Camera::addUpdateListener([this](const Camera& cam) {
+        onCameraUpdate(cam);
+    });
+
+    if (_camChangeListenerID != 0) {
+        Camera::removeUpdateListener(_camChangeListenerID);
+    }
+    _camChangeListenerID = Camera::addChangeListener([this](const Camera& cam) {
+        onCameraChange(cam);
+    });
 }
 
 bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool threaded) {
@@ -257,7 +275,6 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
                 }
             }
             assert(loadedScene->getState() == ResourceState::RES_LOADED);
-            LoadSave::loadScene(*loadedScene);
             setActiveScene(loadedScene);
 
             if (unloadPrevious) {
@@ -502,11 +519,20 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes(
     auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
         const SceneGraphNode* sgnNode = node.second;
         SceneNodeType type = sgnNode->getNode()->getType();
-        if (type != SceneNodeType::TYPE_OBJECT3D && type != SceneNodeType::TYPE_WATER) {
+        if (type != SceneNodeType::TYPE_OBJECT3D &&
+            type != SceneNodeType::TYPE_WATER) {
             return true;
         } else {
             if (type == SceneNodeType::TYPE_OBJECT3D) {
-                return sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::FLYWEIGHT;
+                if (sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::FLYWEIGHT) {
+                    return true;
+                } else {
+                    if (sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::TERRAIN) {
+                        return true;
+                    }
+
+                    return sgnNode->get<RenderingComponent>()->getMaterialInstance() == nullptr;
+                }
             }
         }
         // Enable just for water nodes for now (we should flag mirrors somehow):
@@ -771,6 +797,8 @@ bool LoadSave::loadScene(Scene& activeScene) {
             dst.close();
             srcBak.close();
         }
+    } else {
+        src.close();
     }
 
     ByteBuffer save;

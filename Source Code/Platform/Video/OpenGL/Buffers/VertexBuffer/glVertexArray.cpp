@@ -76,7 +76,7 @@ void glVertexArray::reset() {
 
 /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
 std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
-    bool useColour     = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_COLOR)];
+    bool useColour    = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_COLOR)];
     bool useNormals   = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_NORMAL)];
     bool useTangents  = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_TANGENT)];
     bool useTexcoords = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_TEXCOORD)];
@@ -273,12 +273,27 @@ bool glVertexArray::refresh() {
         // Update our IB
         glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
     }
+
+    vectorImpl<GLuint> vaos;
     for (U8 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
         if (vaoCachesDirty[i]) {
-            // Set vertex attribute pointers
-            uploadVBAttributes(i);
+            GLuint crtVao = _vaoCaches[i];
+            if (std::find_if(std::cbegin(vaos), 
+                             std::cend(vaos),
+                             [crtVao](GLuint vao) {
+                                return crtVao == vao;
+                             }) == std::cend(vaos))
+            {
+                vaos.push_back(crtVao);
+            }
         }
     }
+
+    for (U8 i = 0; i < to_ubyte(vaos.size()); ++i) {
+        // Set vertex attribute pointers
+        uploadVBAttributes(vaos[i]);
+    }
+
     vaoCachesDirty.fill(false);
     // Validate the buffer
     checkStatus();
@@ -354,9 +369,9 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
 }
 
 /// Activate and set all of the required vertex attributes.
-void glVertexArray::uploadVBAttributes(U8 vaoIndex) {
+void glVertexArray::uploadVBAttributes(GLuint VAO) {
     // Bind the current VAO to save our attributes
-    GL_API::setActiveVAO(_vaoCaches[vaoIndex]);
+    GL_API::setActiveVAO(VAO);
     static const U32 positionLoc = to_const_uint(AttribLocation::VERTEX_POSITION);
     static const U32 colourLoc = to_const_uint(AttribLocation::VERTEX_COLOR);
     static const U32 normalLoc = to_const_uint(AttribLocation::VERTEX_NORMAL);

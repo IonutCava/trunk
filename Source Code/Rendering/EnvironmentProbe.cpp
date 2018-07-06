@@ -97,7 +97,7 @@ U16 EnvironmentProbe::allocateSlice() {
 
 void EnvironmentProbe::refresh() {
     if (++_currentUpdateCall % _updateRate == 0) {
-        _context.generateCubeMap(*s_reflection._rt,
+        _context.generateCubeMap(s_reflection._targetID,
                                  _currentArrayIndex,
                                  _aabb.getCenter(),
                                  vec2<F32>(0.1f, (_aabb.getMax() - _aabb.getCenter()).length()),

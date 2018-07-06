@@ -44,6 +44,7 @@ namespace Paths {
     extern stringImpl g_assetsLocation;
     extern stringImpl g_shadersLocation;
     extern stringImpl g_texturesLocation;
+    extern stringImpl g_heightmapLocation;
     extern stringImpl g_imagesLocation;
     extern stringImpl g_materialsLocation;
     extern stringImpl g_soundsLocation;

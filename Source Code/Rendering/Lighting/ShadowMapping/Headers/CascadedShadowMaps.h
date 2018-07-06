@@ -54,8 +54,6 @@ class CascadedShadowMaps : public ShadowMap {
     ~CascadedShadowMaps();
     void render(GFXDevice& context, U32 passIdx);
     void postRender(GFXDevice& context);
-    /// Update depth maps
-    void previewShadowMaps(GFXDevice& context, U32 callIndex);
     void init(ShadowMapInfo* const smi);
 
    protected:

@@ -46,7 +46,6 @@ class SingleShadowMap : public ShadowMap {
 
     void render(GFXDevice& context, U32 passIdx);
     void init(ShadowMapInfo* const smi);
-    void previewShadowMaps(GFXDevice& context, U32 rowIndex);
 
    private:
        ShaderProgram_ptr _previewDepthMapShader;

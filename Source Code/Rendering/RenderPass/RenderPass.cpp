@@ -164,11 +164,13 @@ void RenderPass::render(SceneRenderState& renderState) {
             Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager());
         } break;
         case RenderStage::REFLECTION: {
-            /*params.pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
+            SceneManager& mgr = _parent.parent().sceneManager();
+            RenderPassManager::PassParams params;
+            params.pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
+            params.camera = Attorney::SceneManagerRenderPass::getActiveCamera(_parent.parent().sceneManager());
 
-            Attorney::SceneRenderStateRenderPass::currentStagePass(renderState, Config::MAX_REFLECTIVE_NODES_IN_VIEW);
             //Part 1 - update envirnoment maps:
-            SceneEnvironmentProbePool* envProbPool =  Attorney::SceneRenderPass::getEnvProbes(renderState.parentScene());
+            /*SceneEnvironmentProbePool* envProbPool =  Attorney::SceneRenderPass::getEnvProbes(renderState.parentScene());
             const EnvironmentProbeList& probes = envProbPool->getNearestSorted();
             for (EnvironmentProbe_ptr& probe : probes) {
                 probe->refresh();
@@ -178,7 +180,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                 SceneGraphNode* nodePtr = node.second;
                 RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
                 Attorney::RenderingCompRenderPass::updateEnvProbeList(*rComp, probes);
-            }
+            }*/
 
             //Part 2 - update classic reflectors (e.g. mirrors, water, etc)
             //Get list of reflective nodes from the scene manager
@@ -187,46 +189,47 @@ void RenderPass::render(SceneRenderState& renderState) {
             // While in budget, update reflections
             ReflectionUtil::resetBudget();
             for (const RenderPassCuller::VisibleNode& node : nodeCache) {
-                SceneGraphNode* nodePtr = node.second;
+                const SceneGraphNode* nodePtr = node.second;
                 RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
                 if (ReflectionUtil::isInBudget()) {
-                    Attorney::SceneRenderStateRenderPass::currentStagePass(renderState, ReflectionUtil::currentEntry());
+                    if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
+                                                                            ReflectionUtil::currentEntry(),
+                                                                            params.camera,
+                                                                            renderState)) {
 
-                    PhysicsComponent* const pComp = nodePtr->get<PhysicsComponent>();
-                    Attorney::RenderingCompRenderPass::updateReflection(*rComp,
-                        ReflectionUtil::currentEntry(),
-                        pComp->getPosition(),
-                        renderState);
-                    ReflectionUtil::updateBudget();
-                }
-                else {
+                        ReflectionUtil::updateBudget();
+                     }
+                } else {
                     Attorney::RenderingCompRenderPass::clearReflection(*rComp);
                 }
-            }*/
+            }
         } break;
         case RenderStage::REFRACTION: {
             // Get list of refractive nodes from the scene manager
-            /*const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedRefractiveNodes();
+            SceneManager& mgr = _parent.parent().sceneManager();
+            RenderPassManager::PassParams params;
+            params.pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
+            params.camera = Attorney::SceneManagerRenderPass::getActiveCamera(_parent.parent().sceneManager());
 
+            const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedRefractiveNodes();
             // While in budget, update refractions
             RefractionUtil::resetBudget();
             for (const RenderPassCuller::VisibleNode& node : nodeCache) {
-                SceneGraphNode* nodePtr = node.second;
+                const SceneGraphNode* nodePtr = node.second;
                 RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
                 if (RefractionUtil::isInBudget()) {
-                    Attorney::SceneRenderStateRenderPass::currentStagePass(renderState, RefractionUtil::currentEntry());
-
-                    PhysicsComponent* const pComp = nodePtr->get<PhysicsComponent>();
-                    Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
-                        RefractionUtil::currentEntry(),
-                        pComp->getPosition(),
-                        renderState);
-                    RefractionUtil::updateBudget();
+                    if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
+                                                                            RefractionUtil::currentEntry(),
+                                                                            params.camera,
+                                                                            renderState))
+                    {
+                        RefractionUtil::updateBudget();
+                    }
                 }
                 else {
                     Attorney::RenderingCompRenderPass::clearRefraction(*rComp);
                 }
-            }*/
+            }
 
         } break;
     };

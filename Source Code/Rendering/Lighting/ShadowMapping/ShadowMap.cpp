@@ -161,12 +161,20 @@ U16 ShadowMap::findDepthMapLayer(ShadowType shadowType) {
     return layer;
 }
 
+RenderTargetID ShadowMap::getDepthMapID() {
+    return RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType()));
+}
+
+const RenderTargetID ShadowMap::getDepthMapID() const {
+    return RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType()));
+}
+
 RenderTarget& ShadowMap::getDepthMap() {
-    return _context.renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType())));
+    return _context.renderTarget(getDepthMapID());
 }
 
 const RenderTarget& ShadowMap::getDepthMap() const {
-    return _context.renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType())));
+    return _context.renderTarget(getDepthMapID());
 }
 
 void ShadowMap::commitDepthMapLayer(ShadowType shadowType, U32 layer) {
@@ -183,10 +191,6 @@ bool ShadowMap::freeDepthMapLayer(ShadowType shadowType, U32 layer) {
     usageMask[layer] = false;
 
     return true;
-}
-
-vec4<I32> ShadowMap::getViewportForRow(U32 rowIndex) const {
-    return vec4<I32>(128, 4 + (128 * rowIndex), 128, 128);
 }
 
 ShadowMapInfo::ShadowMapInfo(Light* light)

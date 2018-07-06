@@ -107,9 +107,6 @@ class LightPool : public SceneComponent {
     inline Light::LightList& getLights(LightType type) { return _lights[to_uint(type)]; }
     Light* getLight(I64 lightGUID, LightType type);
 
-    /// shadow mapping
-    void previewShadowMaps(Light* light);
-
     void prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
     void uploadLightData(ShaderBufferLocation lightDataLocation,
                          ShaderBufferLocation shadowDataLocation);
@@ -183,7 +180,6 @@ class LightPool : public SceneComponent {
     LightPropertiesVec _sortedLightProperties;
     LightShadowProperties _sortedShadowProperties;
 
-    GUID_DELEGATE_CBK _previewShadowMapsCBK;
     Time::ProfileTimer& _shadowPassTimer;
 
     static bool _previewShadowMaps;

@@ -137,6 +137,24 @@ public:
         void set(const NodeData& other);
     };
 
+    struct DebugView {
+        DebugView()
+            : _textureBindSlot(0)
+        {
+        }
+
+        U8 _textureBindSlot;
+        Texture_ptr _texture;
+        ShaderProgram_ptr _shader;
+
+        struct ShaderData {
+            vectorImpl<std::pair<stringImpl, I32>>  _intValues;
+            vectorImpl<std::pair<stringImpl, F32>>  _floatValues;
+            vectorImpl<std::pair<stringImpl, bool>> _boolValues;
+        } _shaderData;
+    };
+    FWD_DECLARE_MANAGED_CLASS(DebugView);
+
 public:  // GPU interface
     explicit GFXDevice(Kernel& parent);
     ~GFXDevice();
@@ -188,19 +206,19 @@ public:  // GPU interface
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
     /// use the callback param to override the draw function
-    void generateCubeMap(RenderTarget& cubeMap,
-        const U16 arrayOffset,
-        const vec3<F32>& pos,
-        const vec2<F32>& zPlanes,
-        RenderStage renderStage,
-        U32 passIndex);
+    void generateCubeMap(RenderTargetID cubeMap,
+                         const U16 arrayOffset,
+                         const vec3<F32>& pos,
+                         const vec2<F32>& zPlanes,
+                         RenderStage renderStage,
+                         U32 passIndex);
 
-    void generateDualParaboloidMap(RenderTarget& targetBuffer,
-        const U16 arrayOffset,
-        const vec3<F32>& pos,
-        const vec2<F32>& zPlanes,
-        RenderStage renderStage,
-        U32 passIndex);
+    void generateDualParaboloidMap(RenderTargetID targetBuffer,
+                                   const U16 arrayOffset,
+                                   const vec3<F32>& pos,
+                                   const vec2<F32>& zPlanes,
+                                   RenderStage renderStage,
+                                   U32 passIndex);
 
     void getMatrix(const MATRIX& mode, mat4<F32>& mat) const;
     /// Alternative to the normal version of getMatrix
@@ -314,6 +332,8 @@ public:  // Accessors and Mutators
 
     inline RenderStage setRenderStage(RenderStage stage);
 
+    void addDebugView(const std::shared_ptr<DebugView>& view);
+
 public:
     IMPrimitive*       newIMP() const;
     VertexBuffer*      newVB() const;
@@ -331,8 +351,6 @@ public:
     ShaderBuffer*      newSB(const ShaderBufferParams& params) const;
 
 public:  // Direct API calls
-
-
     inline U64 getFrameDurationGPU() {
         return _api->getFrameDurationGPU();
     }
@@ -357,6 +375,8 @@ protected:
     }
 
     void onChangeResolution(U16 w, U16 h);
+
+    void renderDebugViews();
 
 protected:
     friend class Camera;
@@ -386,7 +406,6 @@ protected:
     const RenderAPIWrapper& getAPIImpl() const { return *_api; }
 
 private:
-    void previewDepthBuffer();
     void updateViewportInternal(const vec4<I32>& viewport);
     void updateViewportInternal(I32 x, I32 y, I32 width, I32 height);
     /// Upload draw related data to the GPU (view & projection matrices, viewport settings, etc)
@@ -472,6 +491,8 @@ protected:
     std::array<NodeData, Config::MAX_VISIBLE_NODES> _matricesData;
     std::array<U32, to_const_uint(RenderStage::COUNT) - 1> _lastCommandCount;
     std::array<U32, to_const_uint(RenderStage::COUNT) - 1> _lastNodeCount;
+
+    vectorImpl<DebugView_ptr> _debugViews;
 
     mutable SharedLock _renderQueueLock;
     vectorImpl<RenderPackageQueue> _renderQueues;

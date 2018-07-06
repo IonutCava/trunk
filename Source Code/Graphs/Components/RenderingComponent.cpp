@@ -2,6 +2,7 @@
 
 #include "Headers/RenderingComponent.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -83,6 +84,11 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     }
     
     if (Config::Build::IS_DEBUG_BUILD) {
+
+        ResourceDescriptor previewReflectionRefraction("fbPreview");
+        previewReflectionRefraction.setThreadedLoading(true);
+        _previewRenderTarget = CreateResource<ShaderProgram>(context.parent().resourceCache(), previewReflectionRefraction);
+
         // Red X-axis
         _axisLines.push_back(
             Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255), 5.0f));
@@ -624,8 +630,7 @@ bool RenderingComponent::clearReflection() {
 }
 
 bool RenderingComponent::updateReflection(U32 reflectionIndex,
-                                          const vec3<F32>& camPos,
-                                          const vec2<F32>& zPlanes,
+                                          Camera* camera,
                                           const SceneRenderState& renderState)
 {
     // Low lod entities don't need up to date reflections
@@ -642,13 +647,28 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
 
     RenderTargetID reflectRTID(RenderTargetUsage::REFLECTION, reflectionIndex);
 
+    if (Config::Build::IS_DEBUG_BUILD) {
+        GFXDevice::DebugView_ptr& viewPtr = _debugViews[0][reflectionIndex];
+        if (!viewPtr) {
+            viewPtr = std::make_shared<GFXDevice::DebugView>();
+            RenderTarget& target = _context.renderTarget(reflectRTID);
+            viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+            viewPtr->_shader = _previewRenderTarget;
+            viewPtr->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
+            viewPtr->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
+            viewPtr->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
+            _context.addDebugView(viewPtr);
+        }
+    }
+
     if (_reflectionCallback) {
-        RenderCbkParams params(_context, _parentSGN, renderState, reflectRTID, reflectionIndex);
+        RenderCbkParams params(_context, _parentSGN, renderState, reflectRTID, reflectionIndex, camera);
         _reflectionCallback(params);
     } else {
-        _context.generateCubeMap(_context.renderTarget(reflectRTID),
+        const vec2<F32>& zPlanes = camera->getZPlanes();
+        _context.generateCubeMap(reflectRTID,
                                  0,
-                                 camPos,
+                                 camera->getEye(),
                                  vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
                                  RenderStage::REFLECTION,
                                  reflectionIndex);
@@ -670,8 +690,7 @@ bool RenderingComponent::clearRefraction() {
 }
 
 bool RenderingComponent::updateRefraction(U32 refractionIndex,
-                                          const vec3<F32>& camPos,
-                                          const vec2<F32>& zPlanes,
+                                          Camera* camera,
                                           const SceneRenderState& renderState) {
     // no default refraction system!
     if (!_refractionCallback) {
@@ -685,14 +704,25 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
     if (mat == nullptr) {
         return false;
     }
-    // If shininess is below a certain threshold, we don't have any reflections 
-    if (!mat->isTranslucent()) {
-        return false;
-    }
 
     mat->updateRefractionIndex(refractionIndex);
 
-    RenderCbkParams params(_context, _parentSGN, renderState, RenderTargetID(RenderTargetUsage::REFRACTION, refractionIndex), refractionIndex);
+    RenderTargetID refractRTID(RenderTargetUsage::REFRACTION, refractionIndex);
+    if (Config::Build::IS_DEBUG_BUILD) {
+        GFXDevice::DebugView_ptr& viewPtr = _debugViews[1][refractionIndex];
+        if (!viewPtr) {
+            viewPtr = std::make_shared<GFXDevice::DebugView>();
+            RenderTarget& target = _context.renderTarget(refractRTID);
+            viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+            viewPtr->_shader = _previewRenderTarget;
+            viewPtr->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
+            viewPtr->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
+            viewPtr->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
+            _context.addDebugView(viewPtr);
+        }
+    }
+
+    RenderCbkParams params(_context, _parentSGN, renderState, refractRTID, refractionIndex, camera);
     _refractionCallback(params);
 
     return true;

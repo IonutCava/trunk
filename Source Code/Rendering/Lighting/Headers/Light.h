@@ -126,6 +126,8 @@ class Light : public SceneNode {
     void setSpotCosOuterConeAngle(F32 newCosAngle);
 
     /// Light state (on/off)
+    inline void toggleEnabled() { setEnabled(!getEnabled()); }
+
     inline bool getEnabled() const { return _enabled; }
 
     /// Does this list cast shadows?

@@ -63,6 +63,9 @@ class SceneRenderState;
 
 class QuadtreeNode {
    public:
+     QuadtreeNode();
+     ~QuadtreeNode();
+
     /// recursive node building function
     void Build(GFXDevice& context, const U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize,
                U32 minHMSize, Terrain* const terrain, U32& chunkCount);
@@ -91,10 +94,7 @@ class QuadtreeNode {
     inline QuadtreeNode* getChild(ChildPosition pos) const { return getChild(to_uint(pos)); }
     inline QuadtreeNode* getChild(U32 index) const { return _children[index]; }
 
-    QuadtreeNode();
-    ~QuadtreeNode();
-
-    inline U8 getLoD() const { return _LOD; }
+    U8 getLoD(const SceneRenderState& sceneState) const;
 
    protected:
     bool isInView(U32 options, const SceneRenderState& sceneState) const;
@@ -103,7 +103,6 @@ class QuadtreeNode {
     F32 _terLoDOffset;  ///<Small offset to prevent wrong LoD selection on
                         ///border cases
     U32 _minHMSize;
-    I8 _LOD;                         ///< LOD level
     BoundingBox _boundingBox;        ///< Node BoundingBox
     BoundingSphere _boundingSphere;  ///< Node BoundingSphere
     QuadtreeNode* _children[4];      ///< Node children

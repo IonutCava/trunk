@@ -20,6 +20,11 @@ SingleShadowMap::SingleShadowMap(GFXDevice& context, Light* light, Camera* shado
     shadowPreviewShader.setThreadedLoading(false);
     _previewDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), shadowPreviewShader);
 
+    GFXDevice::DebugView_ptr shadow = std::make_shared<GFXDevice::DebugView>();
+    shadow->_texture = getDepthMap().getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+    shadow->_shader = _previewDepthMapShader;
+    shadow->_shaderData._intValues.push_back(std::make_pair("layer", _arrayOffset));
+    context.addDebugView(shadow);
 }
 
 SingleShadowMap::~SingleShadowMap()
@@ -46,27 +51,6 @@ void SingleShadowMap::render(GFXDevice& context, U32 passIdx) {
     params.pass = passIdx;
 
     passMgr.doCustomPass(params);
-}
-
-void SingleShadowMap::previewShadowMaps(GFXDevice& context, U32 rowIndex) {
-    if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
-        return;
-    }
-
-    const vec4<I32> viewport = getViewportForRow(rowIndex);
-
-    getDepthMap().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
-    _previewDepthMapShader->Uniform("layer", _arrayOffset);
-
-    GFX::ScopedViewport sViewport(context, viewport);
-
-    GenericDrawCommand triangleCmd;
-    triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-    triangleCmd.drawCount(1);
-    triangleCmd.stateHash(context.getDefaultStateBlock(true));
-    triangleCmd.shaderProgram(_previewDepthMapShader);
-
-    context.draw(triangleCmd);
 }
 
 };

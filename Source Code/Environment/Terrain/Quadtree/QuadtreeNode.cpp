@@ -19,7 +19,6 @@ QuadtreeNode::QuadtreeNode()
     _children[to_const_uint(ChildPosition::CHILD_SW)] = nullptr;
     _children[to_const_uint(ChildPosition::CHILD_SE)] = nullptr;
 
-    _LOD = 0;
     _terLoDOffset = 0.0f;
     _minHMSize = 0;
 }
@@ -36,7 +35,6 @@ QuadtreeNode::~QuadtreeNode()
 void QuadtreeNode::Build(GFXDevice& context, U8 depth, const vec2<U32>& pos,
                          const vec2<U32>& HMsize, U32 minHMSize,
                          Terrain* const terrain, U32& chunkCount) {
-    _LOD = 0;
     _minHMSize = minHMSize;
     U32 div = to_uint(std::pow(2.0f, to_float(depth)));
     vec2<U32> nodesize = HMsize / (div);
@@ -130,15 +128,18 @@ bool QuadtreeNode::computeBoundingBox() {
     return true;
 }
 
-void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sceneState) {
-    F32 camDistance =
-        _boundingSphere.getCenter().distance(Camera::activeCamera()->getEye()) -
-        _terLoDOffset;
+U8 QuadtreeNode::getLoD(const SceneRenderState& state) const {
+    F32 camDistance = _boundingSphere.getCenter().distance(Camera::activeCamera()->getEye()) - _terLoDOffset;
     F32 sphereRadius = _boundingSphere.getRadius();
-    _LOD = camDistance >= sphereRadius
-               ? (camDistance >= (sphereRadius * 2) ? 2 : 1)
-               : 0;
+    
+    return camDistance >= sphereRadius
+                        ? (camDistance >= (sphereRadius * 2) 
+                                        ? 2 
+                                        : 1)
+                        : 0;
+}
 
+void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sceneState) {
     if (!isALeaf()) {
         _children[to_const_uint(ChildPosition::CHILD_NW)]->sceneUpdate(deltaTime, sgn, sceneState);
         _children[to_const_uint(ChildPosition::CHILD_NE)]->sceneUpdate(deltaTime, sgn, sceneState);
@@ -215,7 +216,7 @@ void QuadtreeNode::getBufferOffsetAndSize(U32 options,
         if (isALeaf()) {
             assert(_terrainChunk);
             bool waterReflection = BitCompare(options, to_const_uint(ChunkBit::CHUNK_BIT_WATERREFLECTION));
-            chunkBufferData.push_back(_terrainChunk->getBufferOffsetAndSize(waterReflection ? Config::TERRAIN_CHUNKS_LOD - 1 : _LOD));
+            chunkBufferData.push_back(_terrainChunk->getBufferOffsetAndSize(waterReflection ? Config::TERRAIN_CHUNKS_LOD - 1 : getLoD(sceneRenderState)));
         } else {
             _children[to_const_uint(ChildPosition::CHILD_NW)]->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
             _children[to_const_uint(ChildPosition::CHILD_NE)]->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);

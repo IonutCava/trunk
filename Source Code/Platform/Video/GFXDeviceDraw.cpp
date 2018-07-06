@@ -279,6 +279,8 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
 }
 
 void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData, const Texture_ptr& depthBuffer) {
+    return;
+
     static const U32 GROUP_SIZE_AABB = 64;
     uploadGPUBlock();
 

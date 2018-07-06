@@ -1,2 +1,0 @@
-
-global print = fun(x){ handle_output(to_string(x)); }

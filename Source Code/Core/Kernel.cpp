@@ -541,31 +541,34 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
 
 // The first loops compiles all the visible data, so do not render the first couple of frames
 void Kernel::warmup() {
-    static const U8 warmupLoopCount = 3;
-    U8 loopCount = 0;
+    if (false) {
+        static const U8 warmupLoopCount = 3;
+        U8 loopCount = 0;
 
-    Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
-    _timingData._nextGameTick = Time::ElapsedMicroseconds(true);
-    _timingData._keepAlive = true;
+        Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
+        _timingData._nextGameTick = Time::ElapsedMicroseconds(true);
+        _timingData._keepAlive = true;
 
-    RenderDetailLevel shadowLevel = _platformContext->gfx().shadowDetailLevel();
-    ParamHandler::instance().setParam(_ID("freezeLoopTime"), true);
-    _platformContext->gfx().shadowDetailLevel(RenderDetailLevel::OFF);
+        RenderDetailLevel shadowLevel = _platformContext->gfx().shadowDetailLevel();
+        ParamHandler::instance().setParam(_ID("freezeLoopTime"), true);
+        _platformContext->gfx().shadowDetailLevel(RenderDetailLevel::OFF);
 
-    onLoop();
-    loopCount++;
-
-    if (shadowLevel != RenderDetailLevel::OFF) {
-        _platformContext->gfx().shadowDetailLevel(shadowLevel);
         onLoop();
         loopCount++;
+
+        if (shadowLevel != RenderDetailLevel::OFF) {
+            _platformContext->gfx().shadowDetailLevel(shadowLevel);
+            onLoop();
+            loopCount++;
+        }
+
+        for (U8 i = 0; i < std::max(warmupLoopCount - loopCount, 0); ++i) {
+            onLoop();
+        }
+
+        ParamHandler::instance().setParam(_ID("freezeLoopTime"), false);
     }
 
-    for (U8 i = 0; i < std::max(warmupLoopCount - loopCount, 0); ++i) {
-        onLoop();
-    }
-
-    ParamHandler::instance().setParam(_ID("freezeLoopTime"), false);
     Attorney::SceneManagerKernel::initPostLoadState(*_sceneManager);
 
     _timingData._currentTime = _timingData._nextGameTick = Time::ElapsedMicroseconds(true);
@@ -699,12 +702,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     
     ShadowMap::initShadowMaps(_platformContext->gfx());
     _sceneManager->init(*_platformContext, *_resCache);
-    Camera::addUpdateListener([this](const Camera& cam) {
-                                   Attorney::SceneManagerKernel::onCameraUpdate(*_sceneManager, cam);
-                              });
-    Camera::addChangeListener([this](const Camera& cam) {
-                                   Attorney::SceneManagerKernel::onCamerachange(*_sceneManager, cam);
-                              });
     if (!_sceneManager->switchScene(entryData.startupScene, true, false)) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), entryData.startupScene.c_str());
         return ErrorCode::MISSING_SCENE_DATA;

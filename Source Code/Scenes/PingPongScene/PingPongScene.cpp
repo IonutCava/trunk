@@ -10,6 +10,11 @@
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 namespace Divide {
+
+namespace {
+    I64 g_gameTaskID = 0;
+};
+
 PingPongScene::PingPongScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
     : Scene(context, cache, parent, name)
 {
@@ -80,15 +85,9 @@ void PingPongScene::serveBall(I64 btnGUID) {
     _GUI->modifyText(_ID("insults"), "");
     resetGame();
 
-    removeTask(getGUID());
+    removeTask(g_gameTaskID);
 
-    TaskHandle newGame(CreateTask(getGUID(),
-                               DELEGATE_BIND(&PingPongScene::test, this,
-                               std::placeholders::_1,
-                               Random(4),
-                               CallbackParam::TYPE_INTEGER)));
-    newGame.startTask(Task::TaskPriority::HIGH);
-    registerTask(newGame);
+    g_gameTaskID = registerTask(CreateTask(getGUID(),DELEGATE_BIND(&PingPongScene::test, this, std::placeholders::_1, Random(4), CallbackParam::TYPE_INTEGER)));
 }
 
 void PingPongScene::test(const Task& parentTask, cdiggins::any a, CallbackParam b) {

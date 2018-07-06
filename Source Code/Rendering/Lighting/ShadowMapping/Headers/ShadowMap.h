@@ -66,13 +66,14 @@ class NOINITVTABLE ShadowMap {
     RenderTarget& getDepthMap();
     const RenderTarget& getDepthMap() const;
 
+    RenderTargetID getDepthMapID();
+    const RenderTargetID getDepthMapID() const;
+
     inline U32 getArrayOffset() const {
         return _arrayOffset;
     }
 
     virtual void init(ShadowMapInfo* const smi) = 0;
-    virtual void previewShadowMaps(GFXDevice& context, U32 rowIndex) = 0;
-
     static void resetShadowMaps(GFXDevice& context);
     static void initShadowMaps(GFXDevice& context);
     static void clearShadowMaps(GFXDevice& context);
@@ -81,8 +82,6 @@ class NOINITVTABLE ShadowMap {
     static void commitDepthMapLayer(ShadowType shadowType, U32 layer);
     static bool freeDepthMapLayer(ShadowType shadowType, U32 layer);
     static void clearShadowMapBuffers(GFXDevice& context);
-   protected:
-    vec4<I32> getViewportForRow(U32 rowIndex) const;
 
    protected:
     GFXDevice& _context;

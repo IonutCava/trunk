@@ -94,8 +94,6 @@ class WaterPlane : public SceneNode {
     I32 _sideLength;
     /// the water's "geometry"
     std::shared_ptr<Quad3D> _plane;
-    bool _refractionRendering;
-    bool _reflectionRendering;
     bool _paramsDirty;
     F32 _shininess;
     vec2<F32> _noiseTile;

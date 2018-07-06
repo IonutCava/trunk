@@ -148,6 +148,10 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     static CommandBuffer commandBuffer;
     commandBuffer.resize(0);
 
+    for (U32 clippingPlane = 0; clippingPlane < to_const_uint(ClipPlaneIndex::COUNT); ++clippingPlane) {
+        _context.toggleClipPlane(static_cast<ClipPlaneIndex>(clippingPlane), params.clippingPlanes[clippingPlane]);
+    }
+
     // step1: cull nodes for current camera and pass
     SceneManager& mgr = parent().sceneManager();
 
@@ -155,10 +159,18 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     _context.renderFromCamera(*params.camera);
    
     _context.setRenderStage(params.stage);
+    
+    if (params.doPrePass) {
+        RenderTarget& target = _context.renderTarget(params.target);
+        if (!target.getAttachment(RTAttachment::Type::Depth, 0).used()) {
+            params.doPrePass = false;
+        }
+    }
 
     if (params.doPrePass) {
         _context.setPrePass(true);
-        
+        _context.setRenderStage(RenderStage::Z_PRE_PASS);
+
         Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
                                                               params.stage,
                                                               *params.camera,
@@ -182,9 +194,8 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             _context.flushCommandBuffer(commandBuffer);
             commandBuffer.resize(0);
 
-            _context.constructHIZ(target);
-
             if (params.occlusionCull) {
+                _context.constructHIZ(target);
                 const RenderPass::BufferData& bufferData = getBufferData(params.stage, params.pass);
                 _context.occlusionCull(bufferData, depthBufferTexture);
             }

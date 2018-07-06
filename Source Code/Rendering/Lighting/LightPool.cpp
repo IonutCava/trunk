@@ -28,7 +28,6 @@ bool LightPool::_previewShadowMaps = false;
 LightPool::LightPool(Scene& parentScene, GFXDevice& context)
     : SceneComponent(parentScene),
       _context(context),
-      _previewShadowMapsCBK([this]() { previewShadowMaps(nullptr); }),
       _init(false),
       _buffersUpdated(false),
       _lightImpostorShader(nullptr),
@@ -65,8 +64,6 @@ void LightPool::init() {
     if (_init) {
         return;
     }
-
-    _context.add2DRenderFunction(_previewShadowMapsCBK, 1);
 
     ShaderBufferParams params;
     params._primitiveCount = Config::Lighting::MAX_POSSIBLE_LIGHTS;
@@ -121,7 +118,6 @@ bool LightPool::clear() {
         }
         lightList.clear();
     }
-    _context.remove2DRenderFunction(_previewShadowMapsCBK);
     _init = false;
     
     return true;
@@ -197,37 +193,6 @@ void LightPool::togglePreviewShadowMaps(GFXDevice& context) {
         _previewShadowMaps = false;
     } else {
         ParamHandler::instance().setParam( _ID("rendering.debug.displayShadowDebugInfo"), _previewShadowMaps);
-    }
-}
-
-void LightPool::previewShadowMaps(Light* light) {
-    if (!Config::Build::IS_DEBUG_BUILD) {
-        return;
-    }
-
-    // Stop if we have shadows disabled
-    if (!_previewShadowMaps || _lights.empty() ||
-        _context.getRenderStage() != RenderStage::DISPLAY) {
-        return;
-    }
-
-    waitForTasks();
-    // If no light is specified show as many shadowmaps as possible
-    if (!light) {
-        U32 rowIndex = 0;
-        for (Light* shadowLight : _sortedShadowCastingLights) {
-            if (shadowLight != nullptr &&
-                shadowLight->getShadowMapInfo()->getShadowMap() != nullptr)
-            {
-                shadowLight->getShadowMapInfo()->getShadowMap()->previewShadowMaps(_context, rowIndex++);
-            }
-        }
-        return;
-    }
-
-    if (light && light->castsShadows()) {
-        assert(light->getShadowMapInfo()->getShadowMap() != nullptr);
-        light->getShadowMapInfo()->getShadowMap()->previewShadowMaps(_context, 0);
     }
 }
 

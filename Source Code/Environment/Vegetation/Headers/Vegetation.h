@@ -93,7 +93,7 @@ class Vegetation : public SceneNode {
 
     bool onRender(RenderStage renderStage)  override;
 
-    void gpuCull();
+    void gpuCull(const SceneRenderState& sceneRenderState);
 
    private:
     void uploadGrassData();
@@ -112,6 +112,7 @@ class Vegetation : public SceneNode {
 
     GFXDevice& _context;
     // variables
+    U8 _parentLoD;
     bool _render;  ///< Toggle vegetation rendering On/Off
     bool _success;
     std::atomic_bool _threadedLoadComplete;
