@@ -36,6 +36,7 @@
 #include "Core/Headers/KernelComponent.h"
 #include "Core/Math/Headers/MathMatrices.h"
 #include "GUI/CEGUIAddons/Headers/CEGUIInput.h"
+#include "Platform/Video/Headers/TextureData.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
 namespace CEGUI {
@@ -154,6 +155,7 @@ public:
 protected:
     GUIElement* getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const;
     GUIElement* getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) const;
+    TextureData getCEGUIRenderTextureData() const;
 
 protected:
     friend class SceneGUIElements;
@@ -161,6 +163,7 @@ protected:
     stringImpl _defaultGUIScheme;
     CEGUI::GUIContext* _ceguiContext;
     CEGUI::TextureTarget* _ceguiRenderTextureTarget;
+    TextureData _ceguiTextureData;
 
 private:
     bool _init;              //< Set to true when the GUI has finished loading

@@ -57,6 +57,9 @@ GUI::GUI(Kernel& parent)
 {
     // 500ms
     _ceguiInput.setInitialDelay(0.500f);
+
+    // Should we cache this or request it every time?
+    _ceguiTextureData = getCEGUIRenderTextureData();
 }
 
 GUI::~GUI()
@@ -138,7 +141,7 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
         if (!parent().platformContext().config().gui.cegui.skipRendering) {
             GFX::SetBlendCommand blendCmd;
             blendCmd._enabled = true;
-            blendCmd._blendProperties = BlendingProperties{
+            blendCmd._blendProperties = BlendingProperties {
                 BlendProperty::SRC_ALPHA,
                 BlendProperty::INV_SRC_ALPHA
             };
@@ -148,6 +151,8 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
             drawCEGUICmd._context = &getCEGUIContext();
             drawCEGUICmd._textureTarget = _ceguiRenderTextureTarget;
             GFX::AddDrawCEGUICommand(bufferInOut, drawCEGUICmd);
+
+            context.drawFullscreenTexture(_ceguiTextureData, bufferInOut);
         }
     }
 }
@@ -523,5 +528,13 @@ CEGUI::GUIContext& GUI::getCEGUIContext() {
 const CEGUI::GUIContext& GUI::getCEGUIContext() const {
     assert(_ceguiContext != nullptr);
     return *_ceguiContext;
+}
+
+TextureData GUI::getCEGUIRenderTextureData() const {
+    const GFXDevice& gfx = _context->parent().platformContext().gfx();
+
+    TextureData ret(TextureType::TEXTURE_2D,
+                    gfx.getHandleFromCEGUITexture(_ceguiRenderTextureTarget->getTexture()));
+    return ret;
 }
 };

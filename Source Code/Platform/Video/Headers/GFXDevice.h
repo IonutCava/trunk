@@ -350,6 +350,11 @@ public:
 
     Pipeline&          newPipeline(const PipelineDescriptor& descriptor) const;
 
+    // Shortcuts
+    void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const;
+    void drawFullscreenTexture(TextureData data, GFX::CommandBuffer& bufferInOut) const;
+    void drawTextureInViewport(TextureData data, const vec4<I32>& viewport, GFX::CommandBuffer& bufferInOut) const;
+
 public:  // Direct API calls
     inline U32 getFrameDurationGPU() {
         return _api->getFrameDurationGPU();
@@ -358,6 +363,11 @@ public:  // Direct API calls
     inline vec2<U16> getDrawableSize(const DisplayWindow& window) const {
         return _api->getDrawableSize(window);
     }
+
+    inline U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const {
+        return _api->getHandleFromCEGUITexture(textureIn);
+    }
+
 protected:
     RenderTarget* newRT(const RenderTargetDescriptor& descriptor) const;
 
@@ -365,8 +375,8 @@ protected:
 
     void setBaseViewport(const vec4<I32>& viewport);
 
-    void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut);
     void drawText(const TextElementBatch& batch);
+
 
     void onSizeChange(const SizeChangeParams& params);
 

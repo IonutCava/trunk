@@ -928,8 +928,6 @@ void GL_API::drawCEGUI(const GFX::DrawCEGUICommand& ceguiCommand) {
         ctx->draw();
 
         _GUIGLrenderer->endRendering();
-
-        GLuint glTexture = static_cast<CEGUI::OpenGLTexture&>(tex->getTexture()).getOpenGLTexture();
     }
 }
 
@@ -1261,6 +1259,10 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
     }
 
     return 0;
+}
+
+U32 GL_API::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const {
+    return to_U32(static_cast<const CEGUI::OpenGLTexture&>(textureIn).getOpenGLTexture());
 }
 
 };

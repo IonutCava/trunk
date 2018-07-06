@@ -55,4 +55,9 @@ vec2<U16> DX_API::getDrawableSize(const DisplayWindow& window) const {
     vec2<U16> ret(1u);
     return ret;
 }
+
+U32 DX_API::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const {
+    return 0;
+}
+
 };

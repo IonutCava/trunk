@@ -39,6 +39,10 @@ namespace std {
     class thread::id;
 };
 
+namespace CEGUI {
+    class Texture;
+};
+
 namespace Divide {
 
 enum class ErrorCode;
@@ -94,6 +98,10 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     static GFXConfig& config() { return _config; }
 
     virtual vec2<U16> getDrawableSize(const DisplayWindow& window) const = 0;
+
+    // The definition of a hack. Feel free to quote this. -Ionut
+    /// Convert a CEGUI texture handle to something that our current rendering API can use
+    virtual U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const = 0;
 
    protected:
     virtual bool changeViewportInternal(const vec4<I32>& newViewport) = 0;

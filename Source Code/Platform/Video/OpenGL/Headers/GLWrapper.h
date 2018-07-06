@@ -134,6 +134,8 @@ protected:
     /// Return the size in pixels that we can render to. This differs from the window size on Retina displays
     vec2<U16> getDrawableSize(const DisplayWindow& window) const override;
 
+    U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const override;
+
     /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
     inline static GLuint getActiveFB(RenderTarget::RenderTargetUsage usage) {
         return s_activeFBID[to_U32(usage)];

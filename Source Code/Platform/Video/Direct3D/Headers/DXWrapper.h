@@ -65,6 +65,8 @@ protected:
 
     vec2<U16> getDrawableSize(const DisplayWindow& window) const override;
 
+    U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const override;
+
     bool changeViewportInternal(const vec4<I32>& viewport) override;
 };
 
