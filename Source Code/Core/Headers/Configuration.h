@@ -50,6 +50,10 @@ protected:
 
 public:
     struct Debug {
+        /// If true, load shader source code from cache files
+        /// If false, materials recompute shader source code from shader atoms
+        /// If true, clear shader cache to apply changes to shader atom source code
+        bool useShaderTextCache;
         stringImpl memFile;
         struct Mesh {
             bool playAnimations;

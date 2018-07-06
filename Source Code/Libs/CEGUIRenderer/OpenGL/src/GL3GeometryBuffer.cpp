@@ -87,17 +87,8 @@ void OpenGL3GeometryBuffer::draw() const
     // activate desired blending mode
     d_owner->setupRenderingBlendMode(d_blendMode);
 
-    if (OpenGLInfo::getSingleton().isVaoSupported())
-    {
-        // Bind our vao
-        d_glStateChanger->bindVertexArray(d_verticesVAO);
-    }
-    else
-    {
-        // We need to emulate a VAO.
-        // This binds and sets up a vbo for rendering
-        configureVertexArray();
-    }
+    // Bind our vao
+    d_glStateChanger->bindVertexArray(d_verticesVAO);
 
     const int pass_count = d_effect ? d_effect->getPassCount() : 1;
      size_t pos = 0;
@@ -152,34 +143,30 @@ void OpenGL3GeometryBuffer::reset()
 //----------------------------------------------------------------------------//
 void OpenGL3GeometryBuffer::initialiseOpenGLBuffers()
 {
-    if (OpenGLInfo::getSingleton().isVaoSupported())
-    {
-        glGenVertexArrays(1, &d_verticesVAO);
-        glBindVertexArray(d_verticesVAO);
-    }
+    glCreateVertexArrays(1, &d_verticesVAO);
+    Divide::GL_API::setActiveVAO(d_verticesVAO);
 
     // Generate position vbo
-    glGenBuffers(1, &d_verticesVBO);
+    glCreateBuffers(1, &d_verticesVBO);
 
     // This binds and sets up a vbo. The 
     configureVertexArray();
     glBufferData(GL_ARRAY_BUFFER, 0, 0, GL_DYNAMIC_DRAW);
 
-    if (OpenGLInfo::getSingleton().isVaoSupported())
-    {
-        // Unbind Vertex Attribute Array (VAO)
-        glBindVertexArray(0);
-    }
+   // Unbind Vertex Attribute Array (VAO)
+    Divide::GL_API::setActiveVAO(0);
 
     // Unbind array and element array buffers
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 //----------------------------------------------------------------------------//
 void OpenGL3GeometryBuffer::configureVertexArray() const
 {
-    glBindBuffer(GL_ARRAY_BUFFER, d_verticesVBO);
     GLsizei stride = 9 * sizeof(GLfloat);
+
+    Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, d_verticesVBO);
+    Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     glVertexAttribPointer(d_shaderTexCoordLoc, 2, GL_FLOAT, GL_FALSE, stride, 0);
     glEnableVertexAttribArray(d_shaderTexCoordLoc);
@@ -194,8 +181,7 @@ void OpenGL3GeometryBuffer::configureVertexArray() const
 //----------------------------------------------------------------------------//
 void OpenGL3GeometryBuffer::deinitialiseOpenGLBuffers()
 {
-    if (OpenGLInfo::getSingleton().isVaoSupported())
-        glDeleteVertexArrays(1, &d_verticesVAO);
+    glDeleteVertexArrays(1, &d_verticesVAO);
     glDeleteBuffers(1, &d_verticesVBO);
 }
 

@@ -55,7 +55,10 @@ vec4<I32> GL_API::s_activeScissor = vec4<I32>(-1);
 GLfloat GL_API::s_depthFarVal = 1.0f;
 bool GL_API::s_primitiveRestartEnabled = false;
 bool GL_API::s_rasterizationEnabled = true;
+bool GL_API::s_opengl46Supported = false;
 U32 GL_API::s_patchVertexCount = 0;
+size_t GL_API::s_currentStateBlockHash = 0;
+size_t GL_API::s_previousStateBlockHash = 0;
 GL_API::textureBoundMapDef GL_API::s_textureBoundMap;
 GL_API::imageBoundMapDef GL_API::s_imageBoundMap;
 GL_API::samplerBoundMapDef GL_API::s_samplerBoundMap;
@@ -63,6 +66,8 @@ GL_API::samplerObjectMap GL_API::s_samplerMap;
 SharedLock GL_API::s_samplerMapLock;
 GLUtil::glVAOPool GL_API::s_vaoPool;
 glHardwareQueryPool* GL_API::s_hardwareQueryPool = nullptr;
+BlendingProperties GL_API::s_blendPropertiesGlobal;
+GLboolean GL_API::s_blendEnabledGlobal;
 vectorImpl<BlendingProperties> GL_API::s_blendProperties;
 vectorImpl<GLboolean> GL_API::s_blendEnabled;
 
@@ -82,8 +87,9 @@ void GL_API::clearStates() {
     setActiveTransformFeedback(0);
 
     for (vectorAlg::vecSize i = 0; i < GL_API::s_blendEnabled.size(); ++i) {
-        setBlending((GLuint)i, false, BlendingProperties(), vec4<U8>(0u), true);
+        setBlending((GLuint)i, false, BlendingProperties(), true);
     }
+    GL_API::setBlendColour(vec4<U8>(0u), true);
 
     s_activePipeline = nullptr;
     s_activeRenderTarget = nullptr;
@@ -138,6 +144,35 @@ bool GL_API::setPixelPackAlignment(GLint packAlignment,
     return changed;
 }
 
+size_t GL_API::setStateBlockInternal(size_t stateBlockHash) {
+    // If the new state hash is different from the previous one
+    if (stateBlockHash != s_currentStateBlockHash) {
+        // Remember the previous state hash
+        s_previousStateBlockHash = s_currentStateBlockHash;
+        // Update the current state hash
+        s_currentStateBlockHash = stateBlockHash;
+
+        bool currentStateValid = false;
+        const RenderStateBlock& currentState = RenderStateBlock::get(s_currentStateBlockHash, currentStateValid);
+        if (s_previousStateBlockHash != 0) {
+            bool previousStateValid = false;
+            const RenderStateBlock& previousState = RenderStateBlock::get(s_previousStateBlockHash, previousStateValid);
+
+            DIVIDE_ASSERT(currentStateValid && previousStateValid &&
+                          currentState != previousState,
+                          "GL_API error: Invalid state blocks detected on activation!");
+
+            // Activate the new render state block in an rendering API dependent way
+            activateStateBlock(currentState, previousState);
+        } else {
+            DIVIDE_ASSERT(currentStateValid, "GL_API error: Invalid state blocks detected on activation!");
+            activateStateBlock(currentState);
+        }
+    }
+
+    // Return the previous state hash
+    return s_previousStateBlockHash;
+}
 /// Pixel unpack alignment is usually changed by textures, PBOs, etc
 bool GL_API::setPixelUnpackAlignment(GLint unpackAlignment,
                                      GLint rowLength,
@@ -498,7 +533,46 @@ void GL_API::setDepthRange(F32 nearVal, F32 farVal) {
     }
 }
 
-void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProperties& blendingProperties, const vec4<U8>& blendColour, bool force) {
+void GL_API::setBlendColour(const vec4<U8>& blendColour, bool force) {
+    if (GL_API::s_blendColour != blendColour || force) {
+        vec4<F32> floatColour = Util::ToFloatColour(blendColour);
+        glBlendColor(static_cast<GLfloat>(floatColour.r),
+                     static_cast<GLfloat>(floatColour.g),
+                     static_cast<GLfloat>(floatColour.b),
+                     static_cast<GLfloat>(floatColour.a));
+
+        GL_API::s_blendColour.set(blendColour);
+    }
+}
+
+void GL_API::setBlending(bool enable, const BlendingProperties& blendingProperties, bool force) {
+    if ((GL_API::s_blendEnabledGlobal == GL_TRUE) != enable || force) {
+        enable ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
+        GL_API::s_blendEnabledGlobal = (enable ? GL_TRUE : GL_FALSE);
+    }
+
+    if (enable || force) {
+        if (GL_API::s_blendPropertiesGlobal != blendingProperties || force) {
+            if (blendingProperties._blendSrcAlpha != BlendProperty::COUNT) {
+                glBlendFuncSeparate(GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
+                                    GLUtil::glBlendTable[to_base(blendingProperties._blendDest)],
+                                    GLUtil::glBlendTable[to_base(blendingProperties._blendSrcAlpha)],
+                                    GLUtil::glBlendTable[to_base(blendingProperties._blendDestAlpha)]);
+
+                glBlendEquationSeparate(GLUtil::glBlendOpTable[to_base(blendingProperties._blendOp)],
+                                        GLUtil::glBlendOpTable[to_base(blendingProperties._blendOpAlpha)]);
+            } else {
+                glBlendFunc(GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
+                            GLUtil::glBlendTable[to_base(blendingProperties._blendDest)]);
+                glBlendEquation(GLUtil::glBlendOpTable[to_base(blendingProperties._blendOp)]);
+            }
+
+            GL_API::s_blendPropertiesGlobal = blendingProperties;
+        }
+    }
+}
+
+void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProperties& blendingProperties, bool force) {
     assert(drawBufferIdx < (GLuint)(GL_API::s_maxFBOAttachments));
 
     if ((GL_API::s_blendEnabled[drawBufferIdx] == GL_TRUE) != enable || force) {
@@ -528,41 +602,32 @@ void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProper
 
             GL_API::s_blendProperties[drawBufferIdx] = blendingProperties;
         }
-
-        if (GL_API::s_blendColour != blendColour || force) {
-            vec4<F32> floatColour = Util::ToFloatColour(blendColour);
-            glBlendColor(static_cast<GLfloat>(floatColour.r),
-                         static_cast<GLfloat>(floatColour.g),
-                         static_cast<GLfloat>(floatColour.b),
-                         static_cast<GLfloat>(floatColour.a));
-
-            GL_API::s_blendColour.set(blendColour);
-        }
     }
 }
 
 /// Change the current viewport area. Redundancy check is performed in GFXDevice
 /// class
-bool GL_API::changeViewport(const vec4<I32>& newViewport) const {
-    if (newViewport != GL_API::s_activeViewport) {
-    // Debugging and profiling the application may require setting a 1x1
-    // viewport to exclude fill rate bottlenecks
+bool GL_API::changeViewport(I32 x, I32 y, I32 width, I32 height) {
+    if (vec4<I32>(x, y, width, height) != GL_API::s_activeViewport) {
+        // Debugging and profiling the application may require setting a 1x1
+         // viewport to exclude fill rate bottlenecks
         if (Config::Profile::USE_1x1_VIEWPORT) {
-            glViewport(newViewport.x, newViewport.y, 1, 1);
+            glViewport(x, y, 1, 1);
         } else {
-            glViewport(newViewport.x, newViewport.y, newViewport.z, newViewport.w);
+            glViewport(x, y, width, height);
         }
-        GL_API::s_activeViewport.set(newViewport);
+        GL_API::s_activeViewport.set(x, y, width, height);
+        
         return true;
     }
 
     return false;
 }
 
-bool GL_API::setScissor(const vec4<I32>& newScissorRect) const {
-    if (newScissorRect != GL_API::s_activeScissor) {
-        glScissor(newScissorRect.x, newScissorRect.y, newScissorRect.z, newScissorRect.w);
-        GL_API::s_activeScissor.set(newScissorRect);
+bool GL_API::setScissor(I32 x, I32 y, I32 width, I32 height) {
+    if (vec4<I32>(x, y, width, height) != GL_API::s_activeScissor) {
+        glScissor(x, y, width, height);
+        GL_API::s_activeScissor.set(x, y, width, height);
         return true;
     }
 
@@ -572,7 +637,7 @@ bool GL_API::setScissor(const vec4<I32>& newScissorRect) const {
 /// A state block should contain all rendering state changes needed for the next draw call.
 /// Some may be redundant, so we check each one individually
 void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
-                                const RenderStateBlock& oldBlock) const {
+                                const RenderStateBlock& oldBlock) {
     auto toggle = [](bool flag, GLenum state) {
         flag ? glEnable(state) : glDisable(state);
     };
@@ -587,7 +652,9 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     if (oldBlock.zEnable() != newBlock.zEnable()) {
         toggle(newBlock.zEnable(), GL_DEPTH_TEST);
     }
-
+    if (oldBlock.scissorTestEnable() != newBlock.scissorTestEnable()) {
+        toggle(newBlock.scissorTestEnable(), GL_SCISSOR_TEST);
+    }
     // Check culling mode (back (CW) / front (CCW) by default)
     if (oldBlock.cullMode() != newBlock.cullMode()) {
         if (newBlock.cullMode() != CullMode::NONE) {
@@ -646,7 +713,7 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     }
 }
 
-void GL_API::activateStateBlock(const RenderStateBlock& newBlock) const {
+void GL_API::activateStateBlock(const RenderStateBlock& newBlock) {
     auto toggle = [](bool flag, GLenum state) {
         flag ? glEnable(state) : glDisable(state);
     };

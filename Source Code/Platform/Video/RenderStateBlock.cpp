@@ -29,6 +29,7 @@ RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
      _zFunc(other._zFunc),
      _zBias(other._zBias),
      _zUnits(other._zUnits),
+     _scissorTest(other._scissorTest),
      _stencilEnable(other._stencilEnable),
      _stencilRef(other._stencilRef),
      _stencilMask(other._stencilMask),
@@ -79,6 +80,12 @@ void RenderStateBlock::setColourWrites(bool red,
     _colourWrite.b[1] = green ? 1 : 0;
     _colourWrite.b[2] = blue ? 1 : 0;
     _colourWrite.b[3] = alpha ? 1 : 0;
+
+    clean();
+}
+
+void RenderStateBlock::setScissorTest(const bool enable) {
+    _scissorTest = enable;
 
     clean();
 }
@@ -137,6 +144,7 @@ void RenderStateBlock::setDefaultValues() {
     _stencilMask = 0xFFFFFFFF;
     _stencilWriteMask = 0xFFFFFFFF;
     _stencilEnable = false;
+    _scissorTest = false;
     _stencilRef = 0;
     _stencilFailOp = StencilOperation::KEEP;
     _stencilZFailOp = StencilOperation::KEEP;
@@ -160,6 +168,7 @@ void RenderStateBlock::clean() {
     Util::Hash_combine(_hash, to_U32(_zFunc));
     Util::Hash_combine(_hash, zBias);
     Util::Hash_combine(_hash, zUnits);
+    Util::Hash_combine(_hash, _scissorTest);
     Util::Hash_combine(_hash, _stencilEnable);
     Util::Hash_combine(_hash, _stencilRef);
     Util::Hash_combine(_hash, _stencilMask);

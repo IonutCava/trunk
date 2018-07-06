@@ -226,6 +226,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     s_maxTextureUnits = std::max(GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS), 8);
     s_maxAttribBindings = GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS);
     s_vaoBufferData.init(s_maxAttribBindings);
+    s_opengl46Supported = GLUtil::getIntegerv(GL_MINOR_VERSION) == 6;
 
     if (to_base(ShaderProgram::TextureUsage::COUNT) >= to_U32(s_maxTextureUnits)) {
         Console::errorfn(Locale::get(_ID("ERROR_INSUFFICIENT_TEXTURE_UNITS")));
@@ -245,7 +246,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     GL_API::s_blendEnabled.resize(s_maxFBOAttachments, GL_FALSE);
 
     // Cap max anisotropic level to what the hardware supports
-    CLAMP(config.rendering.anisotropicFilteringLevel, to_U8(0), to_U8(GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
+    CLAMP(config.rendering.anisotropicFilteringLevel,
+          to_U8(0),
+          to_U8(GL_API::s_opengl46Supported ? GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY)
+                                            : GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
     GL_API::s_anisoLevel = config.rendering.anisotropicFilteringLevel;
 
     Console::printfn(Locale::get(_ID("GL_MAX_VERSION")),

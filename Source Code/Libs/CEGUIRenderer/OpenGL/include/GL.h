@@ -29,6 +29,7 @@ author:     Paul D Turner
 
 #include "CEGUI/Config.h"
 #include "Platform/Video/OpenGL/Headers/glResources.h"
+#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 
 #if (defined( __WIN32__ ) || defined( _WIN32 )) && !defined(CEGUI_STATIC)
 #   if defined(CEGUIOPENGLRENDERER_EXPORTS) || defined(CEGUIOPENGLES2RENDERER_EXPORTS)
@@ -150,12 +151,6 @@ namespace CEGUI {
 
         /*!
         \brief
-        Returns true if VAO-s (Vertex Array Objects) are supported.
-        */
-        bool isVaoSupported() const { return d_isVaoSupported; }
-
-        /*!
-        \brief
         Returns true if working with the read/draw framebuffers seperately is
         supported.
         */
@@ -195,7 +190,6 @@ namespace CEGUI {
         bool d_isReadBufferSupported;
         bool d_isPolygonModeSupported;
         bool d_isSeperateReadAndDrawFramebufferSupported;
-        bool d_isVaoSupported;
         bool d_isSizedInternalFormatSupported;
     };
 

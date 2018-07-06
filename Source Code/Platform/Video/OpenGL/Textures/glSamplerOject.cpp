@@ -35,8 +35,11 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor)
     }
 
     if (descriptor.anisotropyLevel() > 1 && descriptor.generateMipMaps()) {
-        glSamplerParameterf(_samplerID, gl::GL_TEXTURE_MAX_ANISOTROPY_EXT, std::min<GLfloat>(to_F32(descriptor.anisotropyLevel()),
-                                                                                             to_F32(GL_API::s_anisoLevel)));
+        glSamplerParameterf(_samplerID,
+                            GL_API::s_opengl46Supported ? gl::GL_TEXTURE_MAX_ANISOTROPY
+                                                        : gl::GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                            std::min<GLfloat>(to_F32(descriptor.anisotropyLevel()),
+                                              to_F32(GL_API::s_anisoLevel)));
     }
 }
 

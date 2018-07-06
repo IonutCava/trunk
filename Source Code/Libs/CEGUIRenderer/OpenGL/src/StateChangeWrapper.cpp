@@ -154,7 +154,7 @@ void OpenGL3StateChangeWrapper::bindVertexArray(GLuint vertexArray)
 {
     if(vertexArray != d_vertexArrayObject)
     {
-        glBindVertexArray(vertexArray);
+        Divide::GL_API::setActiveVAO(vertexArray);
         d_vertexArrayObject = vertexArray;
     }
 }
@@ -178,21 +178,24 @@ void OpenGL3StateChangeWrapper::blendFuncSeparate(GLenum sfactorRGB, GLenum dfac
 void OpenGL3StateChangeWrapper::viewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
     bool callIsRedundant = d_viewPortParams.equal(x, y, width, height);
-    if(!callIsRedundant)
-        glViewport(x, y, width, height);
+    if (!callIsRedundant) {
+        Divide::GL_API::changeViewport(x, y, width, height);
+    }
 }
 
 void OpenGL3StateChangeWrapper::scissor(GLint x, GLint y, GLsizei width, GLsizei height)
 {
     bool callIsRedundant = d_scissorParams.equal(x, y, width, height);
-    if(!callIsRedundant)
-        glScissor(x, y, width, height);
+    if (!callIsRedundant) {
+        Divide::GL_API::setScissor(x, y, width, height);
+    }
 }
 void OpenGL3StateChangeWrapper::bindBuffer(GLenum target, GLuint buffer)
 {
     bool callIsRedundant = d_bindBufferParams.equal(target, buffer);
-    if(!callIsRedundant)
-        glBindBuffer(target, buffer);
+    if (!callIsRedundant) {
+        Divide::GL_API::setActiveBuffer(target, buffer);
+    }
 }
 
 

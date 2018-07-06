@@ -57,8 +57,8 @@ class CommandBuffer {
 
     void batch();
 
-    inline vectorImpl<std::shared_ptr<Command>>& operator()();
-    inline const vectorImpl<std::shared_ptr<Command>>& operator()() const;
+    inline vectorImplFast<std::shared_ptr<Command>>& operator()();
+    inline const vectorImplFast<std::shared_ptr<Command>>& operator()() const;
 
     inline vectorAlg::vecSize size() const { return _data.size(); }
     inline void clear();
@@ -73,7 +73,7 @@ class CommandBuffer {
   protected:
     size_t _index = 0;
 
-    vectorImpl<std::shared_ptr<Command>> _data;
+    vectorImplFast<std::shared_ptr<Command>> _data;
 };
 
 void BeginRenderPass(CommandBuffer& buffer, const BeginRenderPassCommand& cmd);

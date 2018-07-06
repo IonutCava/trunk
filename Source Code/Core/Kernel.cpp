@@ -673,6 +673,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     SceneManager::onStartup();
     // We start of with a forward plus renderer
     _platformContext->gfx().setRenderer(RendererType::RENDERER_TILED_FORWARD_SHADING);
+    Attorney::ShaderProgramKernel::useShaderTextCache(config.debug.useShaderTextCache);
 
     DisplayWindow& window = winManager.getActiveWindow();
     window.type(WindowType::SPLASH);

@@ -21,16 +21,15 @@ void musicFinishedHook() {
 
 ErrorCode SDL_API::initAudioAPI(PlatformContext& context) {
 
-    I32 flags = MIX_INIT_OGG | MIX_INIT_MP3;
+    I32 flags = MIX_INIT_OGG | MIX_INIT_MP3 | MIX_INIT_FLAC/* | MIX_INIT_MOD*/;
+
     I32 ret = Mix_Init(flags);
     if ((ret & flags) == flags) {
         // Try HiFi sound
-        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,
-                          4096) == -1) {
+        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) == -1) {
             Console::errorfn("%s", Mix_GetError());
             // Try lower quality
-            if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT,
-                              MIX_DEFAULT_CHANNELS, 2048) == -1) {
+            if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 2048) == -1) {
                 Console::errorfn("%s", Mix_GetError());
                 return ErrorCode::SDL_AUDIO_MIX_INIT_ERROR;
             }

@@ -13,6 +13,8 @@
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
+    bool ShaderProgram::s_useShaderTextCache = false;
+
 namespace {
     UpdateListener s_fileWatcherListener([](const char* atomName, FileUpdateEvent evt) {
         ShaderProgram::onAtomChange(atomName, evt);

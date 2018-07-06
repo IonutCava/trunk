@@ -403,12 +403,10 @@ std::pair<bool, stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
     std::pair<bool, stringImpl> sourceCode;
     sourceCode.first = false;
 
-    if (Config::USE_SHADER_TEXT_CACHE && !forceReParse) {
-        if (Config::ENABLE_GPU_VALIDATION) {
-            ShaderProgram::shaderFileRead(Paths::Shaders::g_cacheLocationText + stageName,
-                                          true,
-                                          sourceCode.second);
-        }
+    if (s_useShaderTextCache && !forceReParse) {
+        ShaderProgram::shaderFileRead(Paths::Shaders::g_cacheLocationText + stageName,
+                                        true,
+                                        sourceCode.second);
     }
 
     if (sourceCode.second.empty()) {

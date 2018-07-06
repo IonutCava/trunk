@@ -46,6 +46,7 @@ namespace FW {
 
 namespace Divide {
 
+class Kernel;
 class Camera;
 class Material;
 class ShaderBuffer;
@@ -56,8 +57,14 @@ enum class FileUpdateEvent : U8;
 
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
+namespace Attorney {
+    class ShaderProgramKernel;
+}
+
 class NOINITVTABLE ShaderProgram : public CachedResource,
                                    public GraphicsResource {
+    friend class Attorney::ShaderProgramKernel;
+
    public:
     typedef hashMapImpl<size_t, ShaderProgram_ptr> ShaderProgramMap;
     typedef hashMapImpl<U64, stringImpl> AtomMap;
@@ -199,6 +206,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
      virtual bool recompileInternal() = 0;
      void registerAtomFile(const stringImpl& atomFile);
 
+     static void useShaderTextCache(bool state) { s_useShaderTextCache = state; }
+
    protected:
     /// Shaders loaded from files are kept as atoms
     static AtomMap _atoms;
@@ -226,6 +235,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     vectorImpl<stringImpl> _definesList;
     /// A list of atoms used by this program. (All stages are added toghether)
     vectorImpl<stringImpl> _usedAtoms;
+    static bool s_useShaderTextCache;
 
    private:
     std::array<std::array<vectorImpl<U32>, Config::SCENE_NODE_LOD>, to_base(ShaderType::COUNT)> _functionIndex;
@@ -233,6 +243,17 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static std::unique_ptr<FW::FileWatcher> s_shaderFileWatcher;
 };
+
+namespace Attorney {
+    class ShaderProgramKernel {
+      protected:
+        static void useShaderTextCache(bool state) { 
+            ShaderProgram::useShaderTextCache(state);
+        }
+
+        friend class Divide::Kernel;
+    };
+}
 
 };  // namespace Divide
 #endif //_SHADER_PROGRAM_H_

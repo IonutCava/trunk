@@ -77,7 +77,7 @@ public:
                              const stringImpl& font,
                              const vec4<U8>& colour,
                              const stringImpl& text,
-                             U32 fontSize = 16);
+                             U8 fontSize = 16u);
 
     virtual GUIText* modifyText(U64 guiID,
                                 const stringImpl& text);

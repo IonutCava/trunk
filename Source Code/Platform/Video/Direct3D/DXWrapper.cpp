@@ -24,8 +24,6 @@ ErrorCode DX_API::initRenderingAPI(I32 argc, char** argv, Configuration& config)
 
 void DX_API::closeRenderingAPI() {}
 
-bool DX_API::changeViewport(const vec4<I32>& newViewport) const { return false; }
-
 void DX_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
     ACKNOWLEDGE_UNUSED(commandBuffer);
 }
@@ -45,4 +43,7 @@ size_t DX_API::setStateBlock(size_t stateBlockHash) {
     return 0;
 }
 
+bool DX_API::changeViewportInternal(const vec4<I32>& viewport) {
+    return true;
+}
 };

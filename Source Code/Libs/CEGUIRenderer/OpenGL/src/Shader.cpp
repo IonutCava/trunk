@@ -85,13 +85,13 @@ OpenGL3Shader::~OpenGL3Shader()
 //----------------------------------------------------------------------------//
 void OpenGL3Shader::bind() const
 {
-    glUseProgram(d_program);
+    Divide::GL_API::setActiveProgram(d_program);
 }
 
 //----------------------------------------------------------------------------//
 void OpenGL3Shader::unbind() const
 {
-    glUseProgram(0);
+    Divide::GL_API::setActiveProgram(0);
 }
 
 //----------------------------------------------------------------------------//

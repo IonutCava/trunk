@@ -128,10 +128,7 @@ protected:
     }
     /// Try to find the requested font in the font cache. Load on cache miss.
     I32 getFont(const stringImpl& fontName);
-    /// Change the current viewport area. Redundancy check is performed in GFXDevice
-    /// class
-    bool changeViewport(const vec4<I32>& newViewport) const override;
-    bool setScissor(const vec4<I32>& newScissorRect) const;
+
     /// Reset as much of the GL default state as possible within the limitations
     /// given
     void clearStates();
@@ -139,6 +136,8 @@ protected:
 
     bool makeTexturesResident(const TextureDataContainer& textureData);
     bool makeTextureResident(const TextureData& textureData, U8 binding);
+
+    bool changeViewportInternal(const vec4<I32>& viewport) override;
 
 public:
     /// Makes sure that the calling thread has a valid GL context. If not, a new one is created.
@@ -163,8 +162,18 @@ public:
     static bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID);
     /// Set a new depth range. Default is 0 - 1 with 0 mapping to the near plane and 1 to the far plane
     static void setDepthRange(F32 nearVal, F32 farVal);
+    static void setBlending(bool enable, const BlendingProperties& blendingProperties, bool force = false);
+    inline static void setBlending(bool enable, bool force = false) {
+        setBlending(enable, s_blendPropertiesGlobal, force);
+    }
     /// Set the blending properties for the specified draw buffer
-    static void setBlending(GLuint drawBufferIdx, bool enable, const BlendingProperties& blendingProperties, const vec4<U8>& blendColour, bool force = false);
+    static void setBlending(GLuint drawBufferIdx, bool enable, const BlendingProperties& blendingProperties, bool force = false);
+
+    inline static void setBlending(GLuint drawBufferIdx, bool enable, bool force = false) {
+        setBlending(drawBufferIdx, enable, s_blendProperties[drawBufferIdx], force);
+    }
+
+    static void setBlendColour(const vec4<U8>& blendColour, bool force = false);
     /// Switch the current framebuffer by binding it as either a R/W buffer, read
     /// buffer or write buffer
     static bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID);
@@ -176,9 +185,9 @@ public:
     static bool setActiveProgram(GLuint programHandle);
     /// A state block should contain all rendering state changes needed for the next draw call.
     /// Some may be redundant, so we check each one individually
-    void activateStateBlock(const RenderStateBlock& newBlock,
-                            const RenderStateBlock& oldBlock) const;
-    void activateStateBlock(const RenderStateBlock& newBlock) const;
+    static void activateStateBlock(const RenderStateBlock& newBlock,
+                                   const RenderStateBlock& oldBlock);
+    static void activateStateBlock(const RenderStateBlock& newBlock);
     /// Pixel pack and unpack alignment is usually changed by textures, PBOs, etc
     static bool setPixelPackUnpackAlignment(GLint packAlignment = 1,
         GLint unpackAlignment = 1) {
@@ -203,6 +212,8 @@ public:
     /// unit
     static bool bindTextures(GLushort unitOffset, GLuint textureCount, GLuint* textureHandles, GLuint* samplerHandles);
 
+    static size_t setStateBlockInternal(size_t stateBlockHash);
+
     /// Bind multiple samplers described by the array of hash values to the
     /// consecutive texture units starting from the specified offset
     static bool bindSamplers(GLushort unitOffset, GLuint samplerCount,
@@ -219,6 +230,17 @@ public:
     static void pushDebugMessage(GFXDevice& context, const char* message, I32 id);
     static void popDebugMessage(GFXDevice& context);
 
+    static bool setScissor(I32 x, I32 y, I32 width, I32 height);
+    inline static bool setScissor(const vec4<I32>& newScissorRect) {
+        setScissor(newScissorRect.x, newScissorRect.y, newScissorRect.z, newScissorRect.w);
+    }
+
+    /// Change the current viewport area. Redundancy check is performed in GFXDevice class
+    static bool changeViewport(I32 x, I32 y, I32 width, I32 height);
+    inline static bool changeViewport(const vec4<I32>& newViewport) {
+        changeViewport(newViewport.x, newViewport.y, newViewport.z, newViewport.w);
+    }
+    
 private:
     /// Prepare our shader loading system
     bool initShaders();
@@ -294,8 +316,12 @@ private:
     static GLuint s_activeShaderProgram;
     static GLfloat s_depthNearVal;
     static GLfloat s_depthFarVal;
+    static BlendingProperties s_blendPropertiesGlobal;
+	static GLboolean s_blendEnabledGlobal;
+
     static vectorImpl<BlendingProperties> s_blendProperties;
-	static vectorImpl<GLboolean> s_blendEnabled;
+    static vectorImpl<GLboolean> s_blendEnabled;
+
     static vec4<U8> s_blendColour;
     static vec4<I32> s_activeViewport;
     static vec4<I32> s_activeScissor;
@@ -307,6 +333,10 @@ private:
     static bool s_primitiveRestartEnabled;
     static bool s_rasterizationEnabled;
     static U32  s_patchVertexCount;
+
+    static size_t s_currentStateBlockHash;
+    static size_t s_previousStateBlockHash;
+
     /// Current state of all available clipping planes
     std::array<bool, to_base(Frustum::FrustPlane::COUNT)> _activeClipPlanes;
     /// Hardware query objects used for performance measurements
@@ -332,12 +362,8 @@ private:
     static samplerObjectMap s_samplerMap;
 
     static VAOBindings s_vaoBufferData;
-
+    static bool s_opengl46Supported;
     CEGUI::OpenGL3Renderer* _GUIGLrenderer;
-
-    /* GL State management */
-    size_t _currentStateBlockHash;
-    size_t _previousStateBlockHash;
 
     Time::ProfileTimer& _swapBufferTimer;
 };

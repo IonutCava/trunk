@@ -10,7 +10,7 @@ GUIText::GUIText(U64 guiID,
                  const stringImpl& font,
                  const vec4<U8>& colour,
                  CEGUI::Window* parent,
-                 U32 fontSize)
+                 U8 fontSize)
     : GUIElement(guiID, parent, GUIType::GUI_TEXT),
       TextLabel(text, font, colour, fontSize),
       _position(relativePosition)

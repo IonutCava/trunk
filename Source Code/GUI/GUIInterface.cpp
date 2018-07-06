@@ -208,7 +208,7 @@ GUIText* GUIInterface::addText(U64 guiID,
                                const stringImpl& font,
                                const vec4<U8>& colour,
                                const stringImpl& text,
-                               U32 fontSize) {
+                               U8 fontSize) {
     assert(getGUIElement(guiID) == nullptr);
 
     GUIText* t = MemoryManager_NEW GUIText(guiID,

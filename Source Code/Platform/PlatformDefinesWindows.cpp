@@ -21,16 +21,15 @@
 // maintenance reasons
 // We can easily adjust them as needed. Same thing with PhysX libs
 #pragma comment(lib, "opengl32.lib")
-#pragma comment(lib, "SDL2.lib")
 #pragma comment(lib, "OpenAL32.lib")
-#pragma comment(lib, "SDL2_mixer.lib")
 #pragma comment(lib, "Winmm.lib")
 #pragma comment(lib, "OpenCL.lib")
+#pragma comment(lib, "SDL2.lib")
+#pragma comment(lib, "SDL2_mixer.lib")
 
 #ifdef _DEBUG
 #pragma comment(lib, "AntTweakBar64.lib")
 #pragma comment(lib, "DbgHelp.lib")
-
 #pragma comment(lib, "glbindingd.lib")
 #pragma comment(lib, "OIS_static_d.lib")
 #pragma comment(lib, "assimp_d.lib")

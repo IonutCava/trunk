@@ -34,6 +34,23 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 namespace Util {
+
+template<typename T>
+typename std::enable_if<std::is_same<T, vectorImpl<stringImpl>>::value ||
+                        std::is_same<T, vectorImplFast<stringImpl>>::value, T&>::type
+Split(const stringImpl& input, char delimiter, T& elems) {
+    elems.resize(0);
+    if (!input.empty()) {
+        istringstreamImpl ss(input);
+        stringImpl item;
+        while (std::getline(ss, item, delimiter)) {
+            vectorAlg::emplace_back(elems, item);
+        }
+    }
+
+    return elems;
+}
+
 /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
 inline stringImpl Ltrim(const stringImpl& s) {
     stringImpl temp(s);

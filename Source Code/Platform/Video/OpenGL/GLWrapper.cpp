@@ -58,8 +58,6 @@ GL_API::GL_API(GFXDevice& context)
       _prevSizeString(0),
       _prevWidthNode(0),
       _prevWidthString(0),
-      _currentStateBlockHash(0),
-      _previousStateBlockHash(0),
       _fonsContext(nullptr),
       _GUIGLrenderer(nullptr),
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
@@ -105,7 +103,7 @@ void GL_API::beginFrame() {
     // to stay in sync with third party software
     _context.registerDrawCall();
     GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-    _previousStateBlockHash = 0;
+    s_previousStateBlockHash = 0;
 }
 
 /// Finish rendering the current frame
@@ -788,9 +786,9 @@ void GL_API::drawText(const TextElementBatch& batch) {
                         BlendingProperties {
                             BlendProperty::SRC_ALPHA,
                             BlendProperty::INV_SRC_ALPHA
-                        },
-                        DefaultColours::DIVIDE_BLUE_U8);
-    
+                        });
+
+    GL_API::setBlendColour(DefaultColours::DIVIDE_BLUE_U8);
     I32 height = _context.getCurrentViewport().sizeY;
         
     vectorAlg::vecSize drawCount = 0;
@@ -819,7 +817,7 @@ void GL_API::drawText(const TextElementBatch& batch) {
             F32 lh = 0;
             fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
 
-            const vectorImpl<stringImpl>& text = textLabel.text();
+            const vectorImplFast<stringImpl>& text = textLabel.text();
             vectorAlg::vecSize lineCount = text.size();
             for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
                 fonsDrawText(_fonsContext,
@@ -941,7 +939,7 @@ void GL_API::popDebugMessage(GFXDevice& context) {
 void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     U32 drawCallCount = 0;
 
-    const vectorImpl<std::shared_ptr<GFX::Command>>& commands = commandBuffer();
+    const vectorImplFast<std::shared_ptr<GFX::Command>>& commands = commandBuffer();
     for (const std::shared_ptr<GFX::Command>& cmd : commands) {
         switch (cmd->_type) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {
@@ -1063,33 +1061,7 @@ size_t GL_API::setStateBlock(size_t stateBlockHash) {
         stateBlockHash = _context.getDefaultStateBlock(false);
     }
 
-    // If the new state hash is different from the previous one
-    if (stateBlockHash != _currentStateBlockHash) {
-        // Remember the previous state hash
-        _previousStateBlockHash = _currentStateBlockHash;
-        // Update the current state hash
-        _currentStateBlockHash = stateBlockHash;
-
-        bool currentStateValid = false;
-        const RenderStateBlock& currentState = RenderStateBlock::get(_currentStateBlockHash, currentStateValid);
-        if (_previousStateBlockHash != 0) {
-            bool previousStateValid = false;
-            const RenderStateBlock& previousState = RenderStateBlock::get(_previousStateBlockHash, previousStateValid);
-
-            DIVIDE_ASSERT(currentStateValid && previousStateValid &&
-                          currentState != previousState,
-                          "GL_API error: Invalid state blocks detected on activation!");
-
-            // Activate the new render state block in an rendering API dependent way
-            activateStateBlock(currentState, previousState);
-        } else {
-            DIVIDE_ASSERT(currentStateValid, "GL_API error: Invalid state blocks detected on activation!");
-            activateStateBlock(currentState);
-        }
-    }
-
-    // Return the previous state hash
-    return _previousStateBlockHash;
+    return setStateBlockInternal(stateBlockHash);
 }
 
 void GL_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
@@ -1122,6 +1094,10 @@ bool GL_API::makeTextureResident(const TextureData& textureData, U8 binding) {
         static_cast<GLushort>(binding),
         textureData.getHandle(),
         textureData._samplerHash);
+}
+
+bool GL_API::changeViewportInternal(const vec4<I32>& viewport) {
+    return changeViewport(viewport);
 }
 
 /// Verify if we have a sampler object created and available for the given

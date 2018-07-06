@@ -1,5 +1,6 @@
 <!-- DEBUG: General purpose settings needed while the application is loading -->
 <debug>
+  <useShaderTextCache>true</useShaderTextCache>
   <!-- memFile: file name that the application should use to write  memory allocation info -->
   <!-- leave empty for none! -->
   <memFile>mem.log</memFile>
@@ -32,9 +33,9 @@
 
 <GUI>
   <CEGUI>
-    <Enabled>false</Enabled>
-    <ExtraStates>true</ExtraStates>
-    <SkipRendering>false</SkipRendering>
+    <Enabled>true</Enabled>
+    <ExtraStates>false</ExtraStates>
+    <SkipRendering>true</SkipRendering>
     <defaultGUIScheme>GWEN</defaultGUIScheme>
   </CEGUI>
   <enableDebugVariableControls>false</enableDebugVariableControls>

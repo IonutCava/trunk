@@ -56,7 +56,10 @@ namespace Divide {
         /// http://stackoverflow.com/questions/236129/split-a-string-in-c
         vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter);
 
-        vectorImpl<stringImpl>& Split(const stringImpl& input, char delimiter, vectorImpl<stringImpl>& elems);
+        template<typename T>
+        typename std::enable_if<std::is_same<T, vectorImpl<stringImpl>>::value ||
+                                std::is_same<T, vectorImplFast<stringImpl>>::value, T&>::type
+        Split(const stringImpl& input, char delimiter, T& elems);
 
         /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
         stringImpl& Ltrim(stringImpl& s);

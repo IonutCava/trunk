@@ -46,7 +46,7 @@ class GUIText : public GUIElement, public TextLabel {
             const stringImpl& font,
             const vec4<U8>& colour,
             CEGUI::Window* parent,
-            U32 fontSize = 16);
+            U8 fontSize = 16u);
 
     void draw(GFXDevice& context) const;
     // Return true if input was consumed

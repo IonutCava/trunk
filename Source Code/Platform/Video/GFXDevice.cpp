@@ -537,7 +537,7 @@ void GFXDevice::renderFromCamera(Camera& camera) {
 /// Update the rendering viewport
 bool GFXDevice::setViewport(const vec4<I32>& viewport) {
     // Change the viewport on the Rendering API level
-    if (_api->changeViewport(viewport)) {
+    if (_api->changeViewportInternal(viewport)) {
     // Update the buffer with the new value
         _gpuBlock._data._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
         _gpuBlock._needsUpload = true;

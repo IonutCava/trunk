@@ -51,7 +51,6 @@ public:
 protected:
     ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) override;
     void closeRenderingAPI() override;
-    bool changeViewport(const vec4<I32>& newViewport) const override;
     void registerCommandBuffer(const ShaderBuffer& commandBuffer) const override;
     void beginFrame() override;
     void endFrame() override;
@@ -63,6 +62,8 @@ protected:
     size_t setStateBlock(size_t stateBlockHash) override;
 
     U32 getFrameDurationGPU() override { return 0u; }
+
+    bool changeViewportInternal(const vec4<I32>& viewport) override;
 };
 
 };  // namespace Divide

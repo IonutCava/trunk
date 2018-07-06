@@ -49,26 +49,6 @@ stringImpl GetStartingCharacters(const stringImpl& input, size_t count) {
     return input.substr(0, inputLength - count);
 }
 
-vectorImpl<stringImpl>& Split(const stringImpl& input, char delimiter,
-    vectorImpl<stringImpl>& elems) {
-    elems.resize(0);
-    if (!input.empty()) {
-        istringstreamImpl ss(input);
-        stringImpl item;
-        while (std::getline(ss, item, delimiter)) {
-            vectorAlg::emplace_back(elems, item);
-        }
-    }
-
-    return elems;
-}
-
-vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter) {
-    vectorImpl<stringImpl> elems;
-    Split(input, delimiter, elems);
-    return elems;
-}
-
 stringImpl StringFormat(const char *const format, ...) {
     vectorImpl<char> temp;
     std::size_t length = 63;
@@ -85,6 +65,10 @@ stringImpl StringFormat(const char *const format, ...) {
     return stringImpl(temp.data(), length);
 }
 
+vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter) {
+    vectorImpl<stringImpl> elems;
+    return Split(input, delimiter, elems);
+}
 
 U32 LineCount(const stringImpl& str) {
     return to_U32(std::count(std::cbegin(str), std::cend(str), '\n')) + 1;

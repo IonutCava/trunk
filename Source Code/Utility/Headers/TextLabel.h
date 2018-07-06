@@ -41,7 +41,7 @@ class TextLabel {
     TextLabel(const stringImpl& string,
               const stringImpl& font,
               const vec4<U8>& colour,
-              U32 fontSize)
+              U8 fontSize)
         : _width(1),
           _font(font),
           _fontSize(fontSize),
@@ -60,13 +60,13 @@ class TextLabel {
         Util::Split(text, '\n', _text);
     }
 
-    inline const vectorImpl<stringImpl>& text() const {
+    inline const vectorImplFast<stringImpl>& text() const {
         return _text;
     }
 
     stringImpl _font;
-    U32 _fontSize;
-    U32 _width;
+    U8 _fontSize;
+    U8 _width;
     F32 _blurAmount;
     F32 _spacing;
     U32 _alignFlag;  ///< Check font-stash alignment for details
@@ -75,7 +75,7 @@ class TextLabel {
     bool _italic;
 
 private:
-    vectorImpl<stringImpl> _text;
+    vectorImplFast<stringImpl> _text;
 };
 
 struct TextElement {

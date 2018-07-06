@@ -144,7 +144,7 @@ bool glShader::validate() {
 
 stringImpl glShader::preprocessIncludes(const stringImpl& name,
                                         const stringImpl& source,
-                                        I32 level,
+                                        GLint level,
                                         vectorImpl<stringImpl>& foundAtoms) {
     if (level > 32) {
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_INCLUD_LIMIT")));

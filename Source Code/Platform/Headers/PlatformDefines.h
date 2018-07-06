@@ -313,6 +313,22 @@ struct has_reserve< C, typename std::enable_if<
     : std::true_type
 {};
 
+template< typename C, typename = void >
+struct has_emplace_back
+    : std::false_type
+{};
+
+template< typename C >
+struct has_emplace_back< C, typename std::enable_if<
+                                        std::is_same<
+                                            decltype(std::declval<C>().emplace_back(std::declval<typename C::value_type>())),
+                                            void
+                                        >::value
+                                    >::type >
+    : std::true_type
+{};
+
+
 template<typename>
 static constexpr std::false_type has_assign(...) { 
     return std::false_type();

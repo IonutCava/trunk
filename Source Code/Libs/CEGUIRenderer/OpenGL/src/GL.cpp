@@ -52,7 +52,6 @@ OpenGLInfo::OpenGLInfo() :
     d_isReadBufferSupported(false),
     d_isPolygonModeSupported(false),
     d_isSeperateReadAndDrawFramebufferSupported(false),
-    d_isVaoSupported(false),
     d_isSizedInternalFormatSupported(false)
 {
 }
@@ -128,7 +127,6 @@ void OpenGLInfo::initSupportedFeatures()
     d_isNpotTextureSupported = true;
     d_isPolygonModeSupported = d_isSizedInternalFormatSupported;
     d_isSeperateReadAndDrawFramebufferSupported = true;
-    d_isVaoSupported = true;
 }
 
 } // namespace CEGUI

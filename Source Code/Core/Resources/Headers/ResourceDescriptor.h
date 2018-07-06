@@ -66,7 +66,7 @@ class NOINITVTABLE PropertyDescriptor : public Hashable {
     virtual PropertyDescriptor* clone() const = 0;
 
    protected:
-    /// usefull for switch statements
+    /// useful for switch statements
     DescriptorType _type;
 };
 

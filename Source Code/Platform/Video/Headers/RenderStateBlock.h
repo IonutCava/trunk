@@ -60,6 +60,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     /// Rasterizer
     CullMode _cullMode;
     bool _cullEnabled;
+    bool _scissorTest;
 
     /// Depth
     bool _zEnable;
@@ -97,6 +98,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     void flipCullMode();
     void setCullMode(CullMode mode);
     void setZRead(const bool enable);
+    void setScissorTest(const bool enable);
 
     void setStencil(bool enable,
                     U32 stencilRef = 0,
@@ -130,6 +132,9 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     }
     inline F32 zUnits() const {
         return _zUnits;
+    }
+    inline bool scissorTestEnable() const {
+        return _scissorTest;
     }
     inline bool stencilEnable() const {
         return _stencilEnable;

@@ -146,6 +146,7 @@ class SamplerDescriptor : public Hashable {
     inline void toggleSRGBColourSpace(const bool state) { _srgb = state; }
 
     inline size_t getHash() const override {
+        _hash = 0;
         Util::Hash_combine(_hash, to_U32(_cmpFunc));
         Util::Hash_combine(_hash, _useRefCompare);
         Util::Hash_combine(_hash, _srgb);

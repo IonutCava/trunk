@@ -134,17 +134,14 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
     U32 windowFlags = 0;
 
     if (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES) {
-        Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
+        Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG |
+                             SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
+
         if (Config::ENABLE_GPU_VALIDATION) {
             // OpenGL error handling is available in any build configuration
             // if the proper defines are in place.
             OpenGLFlags |= SDL_GL_CONTEXT_DEBUG_FLAG |
-                           SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG |
-                           SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
-        } else {
-            // These seem to use the same value
-            auto KHR_NO_ERROR = SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
-            OpenGLFlags |= KHR_NO_ERROR;
+                           SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG;
         }
 
         auto validate = [](I32 errCode) -> bool {
@@ -177,6 +174,10 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
         validateAssert(SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8));
         validateAssert(SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24));
         validateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
+        if (!Config::ENABLE_GPU_VALIDATION) {
+            //validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_NO_ERROR, 1));
+        }
+
         // Toggle multi-sampling if requested.
         // This options requires a client-restart, sadly.
         I32 msaaSamples = to_I32(_context->config().rendering.msaaSamples);
@@ -205,7 +206,9 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
         }  else {
             validate(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
             validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4));
-            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5));
+            //if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6) != 0) {
+                validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5));
+            //}
         }
 
         windowFlags |= SDL_WINDOW_OPENGL;

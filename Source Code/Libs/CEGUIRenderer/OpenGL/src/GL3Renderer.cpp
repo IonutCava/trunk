@@ -45,6 +45,8 @@
 
 #include <algorithm>
 
+#include "Platform/Video/Headers/RenderStateBlock.h"
+
 // Start of CEGUI namespace section
 namespace CEGUI
 {
@@ -147,7 +149,8 @@ OpenGL3Renderer::OpenGL3Renderer() :
     OpenGLRendererBase(true),
     d_shaderStandard(0),
     d_openGLStateChanger(0),
-    d_shaderManager(0)
+    d_shaderManager(0),
+    d_defaultStateHash(0)
 {
     init();
     CEGUI_UNUSED(d_s3tcSupported);
@@ -175,6 +178,13 @@ void OpenGL3Renderer::init()
     initialiseTextureTargetFactory();
     initialiseOpenGLShaders();
     d_openGLStateChanger = CEGUI_NEW_AO OpenGL3StateChangeWrapper();
+
+    Divide::RenderStateBlock defaultState;
+    defaultState.setCullMode(Divide::CullMode::NONE);
+    defaultState.setFillMode(Divide::FillMode::SOLID);
+    defaultState.setZRead(false);
+    defaultState.setScissorTest(true);
+    d_defaultStateHash = defaultState.getHash();
 }
 
 //----------------------------------------------------------------------------//
@@ -219,44 +229,29 @@ void OpenGL3Renderer::beginRendering()
     if (d_initExtraStates)
         setupExtraStates();
 
-    glEnable(GL_SCISSOR_TEST);
-    glEnable(GL_BLEND);
-
+    Divide::GL_API::setStateBlockInternal(d_defaultStateHash);
     // force set blending ops to get to a known state.
     setupRenderingBlendMode(BM_NORMAL, true);
-
     d_shaderStandard->bind();
 }
 
 //----------------------------------------------------------------------------//
 void OpenGL3Renderer::endRendering()
 {
-    glUseProgram(0);
-
     if (d_initExtraStates)
         setupExtraStates();
 
-    glDisable(GL_BLEND);
-    glDisable(GL_SCISSOR_TEST);
+    Divide::GL_API::setBlending(false);
 }
 
 //----------------------------------------------------------------------------//
 void OpenGL3Renderer::setupExtraStates()
 {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    Divide::GL_API::bindTexture(0, 0);
+    Divide::GL_API::setActiveProgram(0);
 
-    if (OpenGLInfo::getSingleton().isPolygonModeSupported())
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
-    
     d_openGLStateChanger->blendFunc(GL_ONE, GL_ZERO);
-
-    if (OpenGLInfo::getSingleton().isVaoSupported())
-        d_openGLStateChanger->bindVertexArray(0);
-    glUseProgram(0);
+    d_openGLStateChanger->bindVertexArray(0);
     d_openGLStateChanger->bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     d_openGLStateChanger->bindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -281,11 +276,23 @@ void OpenGL3Renderer::setupRenderingBlendMode(const BlendMode mode,
 
     if (d_activeBlendMode == BM_RTT_PREMULTIPLIED)
     {
-        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        Divide::GL_API::setBlending(true,
+                                   Divide::BlendingProperties{
+                                        Divide::BlendProperty::ONE,
+                                        Divide::BlendProperty::INV_SRC_ALPHA
+                                    });
     }
     else
     {
-        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_ONE);
+        Divide::GL_API::setBlending(true,
+                                    Divide::BlendingProperties{
+                                        Divide::BlendProperty::SRC_ALPHA,
+                                        Divide::BlendProperty::INV_SRC_ALPHA,
+                                        Divide::BlendOperation::ADD,
+                                        Divide::BlendProperty::INV_DEST_ALPHA,
+                                        Divide::BlendProperty::ONE,
+                                        Divide::BlendOperation::ADD
+                                    });
     }
 }
 

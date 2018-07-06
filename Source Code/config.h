@@ -152,14 +152,6 @@ constexpr bool USE_HARDWARE_AA_LINES = true;
 /// Multi-draw causes some problems with profiling software (e.g.
 /// GPUPerfStudio2)
 constexpr bool BATCH_DRAW_COMMANDS = false;
-/// If true, load shader source code from cache files
-/// If false, materials recompute shader source code from shader atoms
-/// If true, clear shader cache to apply changes to shader atom source code
-#if defined(_DEBUG)
-constexpr bool USE_SHADER_TEXT_CACHE = false;
-#else
-constexpr bool USE_SHADER_TEXT_CACHE = true;
-#endif
 /// If true, Hi-Z based occlusion culling is used
 constexpr bool USE_HIZ_CULLING = true;
 /// If true, Hi-Z culling is disabled and potentially culled nodes are drawn in bright red and double in size

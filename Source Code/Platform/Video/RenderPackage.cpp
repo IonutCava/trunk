@@ -175,7 +175,7 @@ void RenderPackage::addDescriptorSetsCommand(const GFX::BindDescriptorSetsComman
 }
 
 void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
-    const vectorImpl<std::shared_ptr<GFX::Command>>& commands = commandBuffer();
+    const vectorImplFast<std::shared_ptr<GFX::Command>>& commands = commandBuffer();
     for (const std::shared_ptr<GFX::Command>& cmd : commands) {
         switch (cmd->_type) {
             case GFX::CommandType::DRAW_COMMANDS: {
