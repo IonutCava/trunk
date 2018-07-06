@@ -26,8 +26,9 @@ bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
             const GFXDevice::ShaderBufferList::value_type& buffer2 =
                 other._shaderBuffers[i];
 
-            if (buffer1.first != buffer2.first ||
-                buffer1.second->getGUID() != buffer2.second->getGUID()) {
+            if (buffer1._slot != buffer2._slot ||
+                buffer1._range != buffer2._range ||
+                buffer1._buffer->getGUID() != buffer2._buffer->getGUID()) {
                 return false;
             }
         }
@@ -58,8 +59,7 @@ bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
 
 void GFXDevice::uploadGlobalBufferData() {
     if (_buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)]) {
-        _nodeBuffer->UpdateData(0, _matricesData.size() * sizeof(NodeData),
-                                _matricesData.data());
+        _nodeBuffer->UpdateData(0, _matricesData.size(), _matricesData.data());
         _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = false;
     }
 
@@ -70,8 +70,7 @@ void GFXDevice::uploadGlobalBufferData() {
 
     if (_buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)]) {
         // We flush the entire buffer on update to inform the GPU that we don't
-        // need
-        // the previous data. Might avoid some driver sync
+        // need the previous data. Might avoid some driver sync
         _gfxDataBuffer->SetData(&_gpuBlock);
         _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = false;
     }
@@ -172,7 +171,7 @@ void GFXDevice::flushRenderQueue() {
                                    -> bool { return cmd.drawCount() == 0; }),
                 std::end(package._drawCommands));
             for (ShaderBufferList::value_type& it : package._shaderBuffers) {
-                it.second->Bind(it.first);
+                it._buffer->BindRange(it._slot, it._range.x, it._range.y);
             }
 
             makeTexturesResident(package._textureData);

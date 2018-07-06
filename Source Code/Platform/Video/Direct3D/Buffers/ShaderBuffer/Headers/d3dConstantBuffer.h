@@ -49,12 +49,15 @@ class d3dConstantBuffer final : public ShaderBuffer {
 
     void DiscardAllData() const;
 
-    void DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const;
+    void DiscardSubData(ptrdiff_t offsetElementCount,
+                        ptrdiff_t rangeElementCount) const;
 
-    void UpdateData(ptrdiff_t offset, ptrdiff_t size,
+    void UpdateData(ptrdiff_t offsetElementCount,
+                    ptrdiff_t rangeElementCount,
                     const bufferPtr data) const;
 
-    bool BindRange(U32 bindIndex, U32 offsetElementCount,
+    bool BindRange(U32 bindIndex,
+                   U32 offsetElementCount,
                    U32 rangeElementCount);
 
     bool CheckBindRange(U32 bindIndex, U32 offsetElementCount,

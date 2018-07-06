@@ -20,12 +20,17 @@ void d3dConstantBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
     ShaderBuffer::Create(primitiveCount, primitiveSize);
 }
 
-void d3dConstantBuffer::DiscardAllData() const {}
+void d3dConstantBuffer::DiscardAllData() const {
+}
 
-void d3dConstantBuffer::DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const {}
+void d3dConstantBuffer::DiscardSubData(ptrdiff_t offsetElementCount,
+                                       ptrdiff_t rangeElementCount) const {
+}
 
-void d3dConstantBuffer::UpdateData(ptrdiff_t offset, ptrdiff_t size,
-    const bufferPtr data) const {}
+void d3dConstantBuffer::UpdateData(ptrdiff_t offsetElementCount,
+                                   ptrdiff_t rangeElementCount,
+                                   const bufferPtr data) const {
+}
 
 bool d3dConstantBuffer::BindRange(U32 bindIndex, U32 offsetElementCount,
                                   U32 rangeElementCount) {

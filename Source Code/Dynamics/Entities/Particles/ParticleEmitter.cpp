@@ -34,7 +34,7 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     DIVIDE_ASSERT(_particleGPUBuffer == nullptr,
                   "ParticleEmitter::initData error: Double initData detected!");
 
-    _particleGPUBuffer = GFX_DEVICE.newGVD(/*true*/ false);
+    _particleGPUBuffer = GFX_DEVICE.newGVD(true);
     _particleGPUBuffer->Create(3);
 
     // Not using Quad3D to improve performance

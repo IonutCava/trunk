@@ -130,7 +130,7 @@ namespace NS_GLIM
         bool m_bUploadedToGPU;
         // Whether VBOs where ever created.
         bool m_bCreatedVBOs;
-
+        std::vector<Glim4ByteData> m_bufferData;
 #ifdef AE_RENDERAPI_OPENGL
         unsigned int m_VertexArrayObjectID;
         // GL attrib location of the vertex data in the shader program

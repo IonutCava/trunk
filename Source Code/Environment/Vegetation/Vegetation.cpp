@@ -279,8 +279,8 @@ void Vegetation::uploadGrassData() {
         /*
         _grassMatrices->Create(false, false, (I32)_grassMatricesTemp.size(),
         sizeof(_grassMatricesTemp[0]));
-        _grassMatrices->UpdateData(0, _grassMatricesTemp.size() *
-        sizeof(_grassMatricesTemp[0]), &_grassMatricesTemp[0]);
+        _grassMatrices->UpdateData(0, _grassMatricesTemp.size(),
+        &_grassMatricesTemp[0]);
         _grassMatrices->bind();
         _grassMatricesTemp.clear();
         */

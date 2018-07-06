@@ -87,10 +87,35 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         COUNT
     };
   public:  // GPU specific data
+   struct ShaderBufferBinding {
+       ShaderBufferLocation _slot;
+       ShaderBuffer* _buffer;
+       vec2<ptrdiff_t> _range;
+
+       ShaderBufferBinding() : _buffer(nullptr)
+       {
+       }
+
+       ShaderBufferBinding(ShaderBufferLocation slot,
+                           ShaderBuffer* buffer,
+                           const vec2<ptrdiff_t>& range)
+           : _slot(slot), _buffer(buffer), _range(range)
+       {
+       }
+
+       void set(ShaderBufferLocation slot,
+                ShaderBuffer* buffer,
+                const vec2<ptrdiff_t>& range) {
+           _slot = slot;
+           _buffer = buffer;
+           _range.set(range);
+       }
+   };
+
    typedef vectorImpl<RenderPassCuller::RenderableNode> VisibleNodeList;
 
-   typedef vectorImpl<std::pair<ShaderBufferLocation, ShaderBuffer*>>
-       ShaderBufferList;
+   typedef vectorImpl<ShaderBufferBinding> ShaderBufferList;
+
    struct RenderPackage {
        vectorImpl<GenericDrawCommand> _drawCommands;
        TextureDataContainer _textureData;

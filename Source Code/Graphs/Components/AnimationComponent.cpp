@@ -13,30 +13,33 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator,
       _skeletonAvailable(false),
       _playAnimations(true),
       _currentTimeStamp(0.0),
-      _currentAnimIndex(0) {
+      _currentAnimIndex(0),
+      _dataRange(0),
+      _readOffset(-1),
+      _writeOffset(2),
+      _bufferSizeFactor(3)
+{
     assert(_animator != nullptr);
 
-    _readBuffer = 1;
-    _writeBuffer = 0;
     DIVIDE_ASSERT(_animator->GetBoneCount() <= Config::MAX_BONE_COUNT_PER_NODE,
                   "AnimationComponent error: Too many bones for current node! "
                   "Increase MAX_BONE_COUNT_PER_NODE in Config!");
 
-    _boneTransformBuffer[_writeBuffer] = GFX_DEVICE.newSB("dvd_BoneTransforms");
-    _boneTransformBuffer[_writeBuffer]->Create((U32)_animator->GetBoneCount(),
-                                               sizeof(mat4<F32>));
-    _boneTransformBuffer[_readBuffer] = GFX_DEVICE.newSB("dvd_BoneTransforms");
-    _boneTransformBuffer[_readBuffer]->Create((U32)_animator->GetBoneCount(),
-                                              sizeof(mat4<F32>));
+    _dataRange = static_cast<I32>(_animator->GetBoneCount());
 
-    parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
-        ShaderBufferLocation::BONE_TRANSFORMS,
-       *_boneTransformBuffer[_readBuffer]);
+    I32 alignmentOffset = (_dataRange * sizeof(mat4<F32>)) % ShaderBuffer::getTargetDataAlignment();
+
+    if (alignmentOffset > 0) {
+        _dataRange += (ShaderBuffer::getTargetDataAlignment() - alignmentOffset) / sizeof(mat4<F32>);
+    }
+
+    _boneTransformBuffer = GFX_DEVICE.newSB("dvd_BoneTransforms", true);
+    _boneTransformBuffer->Create(_dataRange * _bufferSizeFactor, sizeof(mat4<F32>));
 }
 
-AnimationComponent::~AnimationComponent() {
-    MemoryManager::DELETE(_boneTransformBuffer[0]);
-    MemoryManager::DELETE(_boneTransformBuffer[1]);
+AnimationComponent::~AnimationComponent()
+{
+    MemoryManager::DELETE(_boneTransformBuffer);
 }
 
 void AnimationComponent::update(const U64 deltaTime) {
@@ -49,21 +52,21 @@ void AnimationComponent::update(const U64 deltaTime) {
         return;
     }
 
-    _readBuffer = (_readBuffer + 1) % 2;
-    _writeBuffer = (_writeBuffer + 1) % 2;
+    U32 writeOffset = _writeOffset * _dataRange;
 
     _currentTimeStamp = timeStamp;
     _lastFrameIndexes[_currentAnimIndex] =
         _animator->GetAnimationByIndex(_currentAnimIndex)
             .GetFrameIndexAt(_currentTimeStamp);
 
-    Object3D* node = _parentSGN.getNode<Object3D>();
-    if (node->updateAnimations(_parentSGN)) {
+    if (_parentSGN.getNode<Object3D>()->updateAnimations(_parentSGN)) {
         vectorImpl<mat4<F32>>& animationTransforms =
             _animator->GetTransforms(_currentAnimIndex, _currentTimeStamp);
-        _boneTransformBuffer[_writeBuffer]->UpdateData(
-            0, animationTransforms.size() * sizeof(mat4<F32>),
-            animationTransforms.data());
+        _boneTransformBuffer->UpdateData(writeOffset,
+                                         animationTransforms.size(),
+                                         animationTransforms.data());
+        _writeOffset = (_writeOffset + 1) % _bufferSizeFactor;
+        _readOffset = (_readOffset + 1) % _bufferSizeFactor;
     }
 }
 
@@ -132,16 +135,17 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
 
     _skeletonAvailable = false;
 
-    _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
-        ShaderBufferLocation::BONE_TRANSFORMS,
-        *_boneTransformBuffer[_readBuffer]);
-
     if (GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY ||
         !_playAnimations || _currentTimeStamp < 0.0) {
         return true;
     }
     // All animation data is valid, so we have a skeleton to render if needed
     _skeletonAvailable = true;
+
+    _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
+        ShaderBufferLocation::BONE_TRANSFORMS,
+        vec2<ptrdiff_t>(_readOffset * _dataRange, _dataRange),
+        *_boneTransformBuffer);
 
     return true;
 }

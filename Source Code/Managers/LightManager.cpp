@@ -364,15 +364,12 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
     }
 
     if (!_lightProperties.empty()) {
-        _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]
-            ->UpdateData(0, _lightProperties.size() * sizeof(LightProperties),
-                         _lightProperties.data());
+        _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->UpdateData(
+            0, _lightProperties.size(), _lightProperties.data());
     }
     if (!_lightShadowProperties.empty()) {
-        _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]
-            ->UpdateData(0, _lightShadowProperties.size() *
-                                sizeof(LightShadowProperties),
-                         _lightShadowProperties.data());
+        _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->UpdateData(
+            0, _lightShadowProperties.size(), _lightShadowProperties.data());
     }
 }
 };

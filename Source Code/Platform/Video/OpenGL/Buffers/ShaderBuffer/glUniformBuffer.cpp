@@ -5,6 +5,7 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
+#include "Core/Headers/ParamHandler.h"
 
 namespace Divide {
 
@@ -21,6 +22,9 @@ glUniformBuffer::glUniformBuffer(const stringImpl& bufferName, bool unbound,
 
       _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER)
 {
+    if (ShaderBuffer::_targetDataAlignment == -1) {
+        ShaderBuffer::_targetDataAlignment = ParamHandler::getInstance().getParam<I32>("rendering.SSBOAligment", 256);
+    }
 }
 
 glUniformBuffer::~glUniformBuffer() 
@@ -49,6 +53,14 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
         BufferAccessMask access = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
                                   GL_MAP_COHERENT_BIT;
 
+        I32 remainder = _bufferSize % ShaderBuffer::_targetDataAlignment;
+        if (remainder > 0) {
+            _primitiveCount += static_cast<U32>(
+                (ShaderBuffer::_targetDataAlignment - remainder) /
+                _primitiveSize);
+            _bufferSize = _primitiveCount * _primitiveSize;
+        }
+
         _mappedBuffer = GLUtil::createAndAllocPersistentBuffer(_bufferSize, usage, access, _UBOid);
 
         DIVIDE_ASSERT(_mappedBuffer != nullptr,
@@ -64,36 +76,41 @@ void glUniformBuffer::DiscardAllData() const {
     glInvalidateBufferData(_UBOid);
 }
 
-void glUniformBuffer::DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const {
-    DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize,
+void glUniformBuffer::DiscardSubData(ptrdiff_t offsetElementCount,
+                                     ptrdiff_t rangeElementCount) const {
+    DIVIDE_ASSERT((offsetElementCount + rangeElementCount) * _primitiveSize <=
+                      _bufferSize,
                   "glUniformBuffer error: DiscardSubData was called with an "
                   "invalid range (buffer overflow)!");
-    glInvalidateBufferSubData(_UBOid, offset, size);
+    glInvalidateBufferSubData(_UBOid, offsetElementCount * _primitiveSize,
+                              rangeElementCount * _primitiveSize);
 }
 
-void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
+void glUniformBuffer::UpdateData(GLintptr offsetElementCount, GLsizeiptr rangeElementCount,
                                  const bufferPtr data) const {
 
-    if (size == offset) {
+    if (offsetElementCount == rangeElementCount) {
         return;
     }
 
-    DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize,
-                   "glUniformBuffer::UpdateData error: was called with an "
+    GLintptr offset = offsetElementCount * _primitiveSize;
+    GLintptr range = rangeElementCount * _primitiveSize;
+
+    DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_bufferSize,
+                  "glUniformBuffer::UpdateData error: was called with an "
                   "invalid range (buffer overflow)!");
     DIVIDE_ASSERT(_persistentMapped == (_mappedBuffer != nullptr),
-                   "glUniformBuffer::UpdateData error: was called for an "
-                   "unmapped buffer!");
+                  "glUniformBuffer::UpdateData error: was called for an "
+                  "unmapped buffer!");
 
-    DiscardSubData(offset, size);
+    DiscardSubData(offsetElementCount, rangeElementCount);
 
     if (_persistentMapped) {
-        _lockManager->WaitForLockedRange(offset, size);
-        GLUtil::bufferPtr dst = (U8*)_mappedBuffer + offset;
-        memcpy(dst, data, size);
-        _lockManager->LockRange(offset, size);
+        _lockManager->WaitForLockedRange(offset, range);
+        memcpy(reinterpret_cast<U8*>(_mappedBuffer) + offset, data, range);
+        _lockManager->LockRange(offset, range);
     } else {
-        GLUtil::updateBuffer(_UBOid, offset, size, data);
+        GLUtil::updateBuffer(_UBOid, offset, range, data);
     }
 }
 
@@ -107,10 +124,14 @@ bool glUniformBuffer::BindRange(U32 bindIndex, U32 offsetElementCount,
         _currentBindConfig.set(bindIndex, _UBOid, offsetElementCount,
                                rangeElementCount);
 
-        if (offsetElementCount != rangeElementCount) {
-            glBindBufferRange(_target, bindIndex, _UBOid,
-                              _primitiveSize * offsetElementCount,
-                              _primitiveSize * rangeElementCount);
+        if (rangeElementCount != 0) {
+            size_t range = _primitiveSize * rangeElementCount;
+            I32 remainder = range % ShaderBuffer::_targetDataAlignment;
+
+            glBindBufferRange(
+                _target, bindIndex, _UBOid, _primitiveSize * offsetElementCount,
+                remainder ? range + (ShaderBuffer::_targetDataAlignment - remainder)
+                          : range);
         }
 
         return true;

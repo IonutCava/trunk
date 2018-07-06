@@ -67,11 +67,11 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
     virtual void Destroy() = 0;
     virtual void DiscardAllData() const = 0;
     virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const = 0;
-    virtual void UpdateData(ptrdiff_t offset,
-                            ptrdiff_t size,
+    virtual void UpdateData(ptrdiff_t offsetElementCount,
+                            ptrdiff_t rangeElementCount,
                             const bufferPtr data) const = 0;
     inline void SetData(const bufferPtr data) {
-        UpdateData(0, _bufferSize, data);
+        UpdateData(0, _primitiveCount, data);
     }
 
     virtual bool BindRange(U32 bindIndex,
@@ -117,11 +117,14 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
     inline size_t getPrimitiveSize() const { return _primitiveSize; }
     inline U32 getPrimitiveCount() const { return _primitiveCount; }
 
+    static I32 getTargetDataAlignment() { return _targetDataAlignment; }
+
    protected:
+    static I32 _targetDataAlignment;
+
     size_t _bufferSize;
     size_t _primitiveSize;
     U32 _primitiveCount;
-
     const bool _unbound;
     const bool _persistentMapped;
 

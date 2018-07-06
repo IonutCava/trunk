@@ -384,6 +384,9 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\GFXDeviceDraw.cpp">
       <Filter>Video</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\ShaderBuffer\ShaderBuffer.cpp">
+      <Filter>Video\Buffers\ShaderBuffer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">

@@ -477,21 +477,27 @@ namespace NS_GLIM
             glGenBuffers (1, &m_uiElementBufferID_Triangles);
             glGenBuffers (1, &m_uiElementBufferID_Wireframe);
         }
-        
-        std::vector<Glim4ByteData> bufferData;
-        bufferData.insert(std::end(bufferData), std::begin(m_PositionData), std::end(m_PositionData));
-        m_PositionData.clear();
 
-        unsigned int uiOffset = uiVertices * sizeof(Glim4ByteData) * 3;
-
-        // now upload each attribute array one after another
+        // space reservation pre-pass;
+        size_t bufferSize = m_PositionData.size();
         std::map<stringImpl, GlimArrayData>::iterator it, itend;
         it = std::begin(m_Attributes);
         itend = std::end(m_Attributes);
-
         for (; it != itend; ++it) {
-            bufferData.insert(std::end(bufferData), std::begin(it->second.m_ArrayData),
-                              std::end(it->second.m_ArrayData));
+            bufferSize += it->second.m_ArrayData.size();
+        }
+
+        m_bufferData.resize(0);
+        m_bufferData.reserve(bufferSize);
+        m_bufferData.insert(std::end(m_bufferData), std::begin(m_PositionData), std::end(m_PositionData));
+        m_PositionData.clear();
+
+        unsigned int uiOffset = uiVertices * sizeof(Glim4ByteData) * 3;
+ 
+        // now upload each attribute array one after another
+        for (it = std::begin(m_Attributes); it != itend; ++it) {
+            m_bufferData.insert(std::end(m_bufferData), std::begin(it->second.m_ArrayData),
+                                std::end(it->second.m_ArrayData));
             const unsigned int uiAttributeSize =
                 (unsigned int)(it->second.m_ArrayData.size()) *
                 sizeof(Glim4ByteData); // already includes the number of vertices
@@ -507,9 +513,9 @@ namespace NS_GLIM
 
         Divide::GLUtil::allocBuffer(m_uiVertexBufferID,
                                     uiVertices * uiVertexDataSize,
-                                    GL_STREAM_DRAW, bufferData.data());
+                                    GL_STREAM_DRAW, m_bufferData.data());
         // the buffer in RAM can be cleared now
-        bufferData.clear();
+        m_bufferData.clear();
 
         m_uiWireframeElements = (unsigned int) m_IndexBuffer_Wireframe.size();
         m_uiPointElements = (unsigned int) m_IndexBuffer_Points.size ();

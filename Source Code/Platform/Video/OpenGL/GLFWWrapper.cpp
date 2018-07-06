@@ -243,13 +243,14 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     //           be accessed by all active shaders and
     //           minimum required alignment for shader storage buffer sizes and
     //           offset.
+    GLint sboffset = GLUtil::getIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT);
     Console::printfn(
         Locale::get("GL_SSBO_INFO"),
         GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS),
         (GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / 1024) / 1024,
         GLUtil::getIntegerv(GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS),
-        GLUtil::getIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT));
-
+        sboffset);
+    par.setParam<I32>("rendering.SSBOAligment", sboffset);
     // Maximum number of subroutines and maximum number of subroutine uniform
     // locations usable in a shader
     Console::printfn(Locale::get("GL_SUBROUTINE_INFO"),

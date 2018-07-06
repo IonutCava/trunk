@@ -227,19 +227,19 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
 }
 
 void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
+                                              vec2<ptrdiff_t> bindRange,
                                               ShaderBuffer& shaderBuffer) {
     GFXDevice::ShaderBufferList::iterator it;
     it = std::find_if(
         std::begin(_renderData._shaderBuffers),
         std::end(_renderData._shaderBuffers),
-        [&slot](const std::pair<ShaderBufferLocation, ShaderBuffer*>& binding)
-            -> bool { return binding.first == slot; });
+        [&slot](const GFXDevice::ShaderBufferBinding& binding)
+            -> bool { return binding._slot == slot; });
 
     if (it == std::end(_renderData._shaderBuffers)) {
-        _renderData._shaderBuffers.push_back(
-            std::make_pair(slot, &shaderBuffer));
+       vectorAlg::emplace_back(_renderData._shaderBuffers, slot, &shaderBuffer, bindRange);
     } else {
-        it->second = &shaderBuffer;
+        it->set(slot, &shaderBuffer, bindRange);
     }
 }
 
@@ -249,8 +249,8 @@ void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
             std::begin(_renderData._shaderBuffers),
             std::end(_renderData._shaderBuffers),
             [&slot](
-                const std::pair<ShaderBufferLocation, ShaderBuffer*>& binding)
-                -> bool { return binding.first == slot; }),
+                const GFXDevice::ShaderBufferBinding& binding)
+                -> bool { return binding._slot == slot; }),
         std::end(_renderData._shaderBuffers));
 }
 
