@@ -527,6 +527,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Source Code\Scenes\AITenisSceneAIActionList.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Scenes\AITenisSceneAIActionList.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\Scenes\CubeScene.cpp"
 				>
 			</File>
@@ -1206,11 +1214,39 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\Source Code\AI\Sensors\CommunicationSensor.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\AI\Sensors\CommunicationSensor.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Source Code\AI\Sensors\Sensor.h"
 					>
 				</File>
 				<File
+					RelativePath="..\..\Source Code\AI\Sensors\VisualSensor.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Source Code\AI\Sensors\VisualSensor.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="ActionInterface"
+				>
+				<File
+					RelativePath="..\..\Source Code\AI\ActionInterface\ActionList.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\AI\ActionInterface\Coordination.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\AI\ActionInterface\Coordination.h"
 					>
 				</File>
 			</Filter>

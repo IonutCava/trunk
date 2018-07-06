@@ -33,7 +33,7 @@ void Material::removeCopy(){
 		_shader->removeCopy();
 		Console::getInstance().printfn("Shader [ %s ] new ref count: %d",_shader->getName().c_str(),_shader->getRefCount());
 	}
-	foreach(textureMap::value_type iter , _textures){
+	for_each(textureMap::value_type iter , _textures){
 		if(iter.second){
 			iter.second->removeCopy();
 		}
@@ -47,7 +47,7 @@ void Material::createCopy(){
 		Console::getInstance().printfn("Shader [ %s ] new ref count: %d",_shader->getName().c_str(),_shader->getRefCount());
 	}
 
-	foreach(textureMap::value_type iter , _textures){
+	for_each(textureMap::value_type iter , _textures){
 		if(iter.second){
 			iter.second->createCopy();
 		}
@@ -106,7 +106,7 @@ bool Material::unload(){
 		RemoveResource(_shader);
 	}
 	
-	foreach(textureMap::value_type iter , _textures){
+	for_each(textureMap::value_type iter , _textures){
 		if(iter.second){
 			RemoveResource(iter.second);
 		}

@@ -69,7 +69,7 @@
 //#define UNORDERED_MAP TR1
 #endif //UNORDERED_MAP
 
-//Use boost or std foreach
+//Use boost or std for_each
 #ifndef FOR_EACH_IMPLEMENTATION
 #define FOR_EACH_IMPLEMENTATION BOOST
 //ToDo: Define a macro for this using lambda expressions. Not supported in VS2008 - Ionut

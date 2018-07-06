@@ -12,7 +12,7 @@ void Manager::add(const string& name, Resource* res){
 }
 
 void Manager::Destroy(){
-	foreach(ResourceMap::value_type iter, _resDB){
+	for_each(ResourceMap::value_type iter, _resDB){
 		if(iter.second){
 			iter.second->unload();
 			delete iter.second;

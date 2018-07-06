@@ -47,7 +47,7 @@ void Application::DrawSceneStatic(){
 
 void Application::DrawScene(){
 	_camera->RenderLookAt();	
-	foreach(Light* light, _scene.getLights()){
+	for_each(Light* light, _scene.getLights()){
 		light->onDraw();
 	}
 

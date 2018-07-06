@@ -1,10 +1,13 @@
 #include "AITenisScene.h"
 #include "Terrain/Sky.h"
 #include "Managers/CameraManager.h"
+#include "Managers/AIManager.h"
 #include "PhysX/PhysX.h"
 #include "Rendering/Frustum.h"
 #include "GUI/GUI.h"
 #include "Geometry/Predefined/Sphere3D.h"
+#include "AITenisSceneAIActionList.h"
+
 using namespace std;
 
 //begin copy-paste: randarea scenei
@@ -86,7 +89,7 @@ void AITenisScene::reseteazaJoc(){
 	_pierdutEchipa1 = false;
 	_aplicaImpulsLateral = false;
 	_impulsLateral = 0;
-	_mingeSGN->getTransform()->setPosition(vec3(3.2f, 0.2f ,7.0f));
+	_mingeSGN->getTransform()->setPosition(vec3(3.0f, 0.2f ,7.0f));
 }
 
 void AITenisScene::startJoc(){
@@ -94,7 +97,7 @@ void AITenisScene::startJoc(){
 	reseteazaJoc();
 
 	if(getEvents().empty()){//Maxim un singur eveniment
-		Event_ptr jocNou(New Event(10,true,false,boost::bind(&AITenisScene::procesareJoc,this,rand() % 5,TYPE_INTEGER)));
+		Event_ptr jocNou(New Event(12,true,false,boost::bind(&AITenisScene::procesareJoc,this,rand() % 5,TYPE_INTEGER)));
 		addEvent(jocNou);
 	}
 }
@@ -129,10 +132,10 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 	//Mingea se deplaseaza de la Echipa 1 la Echipa 2?
 	_directieEchipa1SpreEchipa2 ? pozitieMinge.z -= 0.123f : pozitieMinge.z += 0.123f;
 	//Mingea se deplaseaza de jos in sus sau e in cadere?
-	_directieAscendenta ? pozitieMinge.y += 0.065f : pozitieMinge.y -= 0.065f;
+	_directieAscendenta ? pozitieMinge.y += 0.066f : pozitieMinge.y -= 0.066f;
 	//In cazul unui impul lateral, modificam si pozitia mingii deasemenea
 	if(_aplicaImpulsLateral){
-		//pozitieMinge.x += _impulsLateral*0.05f;
+		pozitieMinge.x += _impulsLateral*0.025f;
 	}
 	//Dupa finalizarea calculelor de pozitie, aplicam transformarea
 	//ToDo: mutex aici!;
@@ -182,7 +185,7 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 		_impulsLateral = pozitieMinge.x - decalajLateral;
 		_directieEchipa1SpreEchipa2 = false;
 	}
-	
+
 	//-----------------VALIDARI REZULTATE----------------------//
 	//A castigat Echipa 1 sau Echipa 2?
 	if(pozitieMinge.z >= Player1->getTransform()->getPosition().z &&
@@ -207,6 +210,18 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 		}
 		updated = true;
     }
+	if(pozitieMinge.x + 1 < Fileu->getBoundingBox().getMin().x || pozitieMinge.x + 1 > Fileu->getBoundingBox().getMax().x){
+		//Daca am lovit noi si am atins terenul adversarului
+		//Sau daca a lovit adversarul si nu a atins terenul nostru
+		if(Podea->getBoundingBox().Collision(_mingeSGN->getBoundingBox())){
+			if((_atinsTerenEchipa2 && _directieEchipa1SpreEchipa2) || (!_directieEchipa1SpreEchipa2 && !_atinsTerenEchipa1)){
+				_pierdutEchipa1 = false;
+			}else{
+				_pierdutEchipa1 = true;
+			}
+			updated = true;
+		}
+	}
 	
 	//-----------------AFISARE REZULTATE---------------------//
 	if(updated){
@@ -250,7 +265,7 @@ bool AITenisScene::load(const string& name){
 	addDefaultLight();
 	//Incarcam resursele scenei
 	state = loadResources(true);	
-	state = loadEvents(true);
+	
 	_depthMap[0] =_GFX.newFBO();
 	_depthMap[0]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
 	_depthMap[1] = _GFX.newFBO();
@@ -260,6 +275,51 @@ bool AITenisScene::load(const string& name){
 	CameraManager::getInstance().getActiveCamera()->RotateY(RADIANS(25));
 	CameraManager::getInstance().getActiveCamera()->setEye(vec3(14,5.5f,11.5f));
 	
+	//----------------------------INTELIGENTA ARTIFICIALA------------------------------//
+    _aiPlayer1 = New AIEntity("Player1");
+	_aiPlayer2 = New AIEntity("Player2");
+	_aiPlayer3 = New AIEntity("Player3");
+	_aiPlayer4 = New AIEntity("Player4");
+
+	_aiPlayer1->attachNode(_sceneGraph->findNode("Player1"));
+	_aiPlayer2->attachNode(_sceneGraph->findNode("Player2"));
+	_aiPlayer3->attachNode(_sceneGraph->findNode("Player3"));
+	_aiPlayer4->attachNode(_sceneGraph->findNode("Player4"));
+	
+	
+	_aiPlayer1->addFriend(_aiPlayer2);
+	_aiPlayer3->addFriend(_aiPlayer4);
+
+	_aiPlayer1->addEnemyTeam(_aiPlayer3->getTeam());
+	_aiPlayer3->addEnemyTeam(_aiPlayer1->getTeam());
+
+
+	_aiPlayer1->addSensor(VISUAL_SENSOR,New VisualSensor());
+	_aiPlayer1->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(_aiPlayer1));
+	_aiPlayer2->addSensor(VISUAL_SENSOR,New VisualSensor());
+	_aiPlayer2->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(_aiPlayer2));
+	_aiPlayer3->addSensor(VISUAL_SENSOR,New VisualSensor());
+	_aiPlayer3->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(_aiPlayer3));
+	_aiPlayer4->addSensor(VISUAL_SENSOR,New VisualSensor());
+	_aiPlayer4->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(_aiPlayer4));
+
+	_aiPlayer1->addActionProcessor(New AITenisSceneAIActionList(_mingeSGN));
+	_aiPlayer2->addActionProcessor(New AITenisSceneAIActionList(_mingeSGN));
+	_aiPlayer3->addActionProcessor(New AITenisSceneAIActionList(_mingeSGN));
+	_aiPlayer4->addActionProcessor(New AITenisSceneAIActionList(_mingeSGN));
+
+	_aiPlayer1->setTeamID(1);
+	_aiPlayer2->setTeamID(1);
+	_aiPlayer3->setTeamID(2);
+	_aiPlayer4->setTeamID(2);
+
+	AIManager::getInstance().addEntity(_aiPlayer1);
+	AIManager::getInstance().addEntity(_aiPlayer2);
+	AIManager::getInstance().addEntity(_aiPlayer3);
+	AIManager::getInstance().addEntity(_aiPlayer4);
+
+
+	state = loadEvents(true);
 	return state;
 }
 
@@ -272,7 +332,7 @@ bool AITenisScene::loadResources(bool continueOnErrors){
 	_mingeSGN = addGeometry(_minge);
 	_minge->getResolution() = 16;
 	_minge->getSize() = 0.3f;
-	_mingeSGN->getTransform()->translate(vec3(3.2f, 0.2f ,7.0f));
+	_mingeSGN->getTransform()->translate(vec3(3.0f, 0.2f ,7.0f));
 	_minge->getMaterial()->setDiffuse(vec4(0.4f,0.5f,0.5f,1.0f));
 	_minge->getMaterial()->setAmbient(vec4(0.5f,0.5f,0.5f,1.0f));
 	_minge->getMaterial()->setShininess(0.2f);

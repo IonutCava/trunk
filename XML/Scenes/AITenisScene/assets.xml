@@ -13,7 +13,7 @@
 <Fileu>
 	<model>models/gardulet.obj</model>
 	<scale x="0.3" y="0.7" z="0.1" />
-	<position x="0" y="-7" z="0" />
+	<position x="0" y="-7.5" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 </Fileu>

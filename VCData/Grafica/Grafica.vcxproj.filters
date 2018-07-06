@@ -124,6 +124,9 @@
     <Filter Include="AI\Sensors">
       <UniqueIdentifier>{1c9f431f-fe0b-4104-8f8e-bac4fcb23a7e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AI\ActionInterface">
+      <UniqueIdentifier>{593f09a5-e09d-4c71-bdb9-063edeb49e33}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -347,6 +350,18 @@
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Scenes\AITenisScene.cpp">
+      <Filter>Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\Coordination.cpp">
+      <Filter>AI\ActionInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\Sensors\CommunicationSensor.cpp">
+      <Filter>AI\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\Sensors\VisualSensor.cpp">
+      <Filter>AI\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\AITenisSceneAIActionList.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
   </ItemGroup>
@@ -707,6 +722,18 @@
       <Filter>Managers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Scenes\AITenisScene.h">
+      <Filter>Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\ActionList.h">
+      <Filter>AI\ActionInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Coordination.h">
+      <Filter>AI\ActionInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\Sensors\CommunicationSensor.h">
+      <Filter>AI\Sensors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\AITenisSceneAIActionList.h">
       <Filter>Scenes</Filter>
     </ClInclude>
   </ItemGroup>

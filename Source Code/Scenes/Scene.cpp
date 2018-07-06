@@ -217,6 +217,8 @@ bool Scene::unload(){
 	if(_deferredShader != NULL){
 		RemoveResource(_deferredShader);
 	}
+	AIManager::getInstance().Destroy();
+	AIManager::getInstance().DestroyInstance();
 	clearObjects();
 	clearLights();
 	return true;
@@ -251,6 +253,7 @@ void Scene::onMouseMove(const OIS::MouseEvent& key){
 
 void Scene::processInput(){
 	_inputManager.tick();
+	//AIManager::getInstance().tick();
 }
 
 bool Scene::loadEvents(bool continueOnErrors){

@@ -197,7 +197,7 @@ bool Vegetation::generateTrees(){
 			k--;
 			continue;
 		}
-		foreach(std::vector<vec3>::value_type it, positions){
+		for_each(std::vector<vec3>::value_type it, positions){
 			if(it.compare(P) || (it.distance(P) < 0.02f))
 			{
 				k--;

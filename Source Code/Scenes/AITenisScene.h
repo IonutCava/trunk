@@ -20,11 +20,16 @@
 
 #include "Scene.h"
 
+class AIEntity;
 class AITenisScene : public Scene
 {
 
 public:
-	AITenisScene() : Scene() {
+	AITenisScene() : Scene(),
+		_aiPlayer1(NULL),
+		_aiPlayer2(NULL),
+		_aiPlayer3(NULL),
+		_aiPlayer4(NULL) {
 		_impulsLateral = 0;
 		_directieEchipa1SpreEchipa2 = true;
 		_directieAscendenta = true;
@@ -69,6 +74,7 @@ private: //Joc
 	bool _aplicaImpulsLateral;
 	I8 _scorEchipa1;
 	I8 _scorEchipa2;
+	AIEntity *_aiPlayer1, *_aiPlayer2, *_aiPlayer3, *_aiPlayer4;
 };
 
 #endif
