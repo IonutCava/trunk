@@ -65,8 +65,8 @@ void EnvironmentProbe::onStartup() {
 
     RenderTargetHandle tempHandle;
     s_reflection = GFX_DEVICE.allocateRT(RenderTargetUsage::ENVIRONMENT, "EnviromentProbe");
-    s_reflection._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
-    s_reflection._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
+    s_reflection._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0, false);
+    s_reflection._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0, false);
     s_reflection._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
     s_reflection._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 }

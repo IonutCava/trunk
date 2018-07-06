@@ -16,6 +16,7 @@ RenderTarget::RenderTarget(GFXDevice& context, const stringImpl& name)
       _depthValue(1.0),
       _name(name)
 {
+    _attachments.init(g_maxColourAttachments);
 }
 
 RenderTarget::~RenderTarget()
@@ -24,8 +25,9 @@ RenderTarget::~RenderTarget()
 
 void RenderTarget::addAttachment(const TextureDescriptor& descriptor,
                                  RTAttachment::Type type,
-                                 U8 index) {
-    _attachments.get(type, index)->fromDescriptor(descriptor);
+                                 U8 index,
+                                 bool keepPreviousFrame) {
+    _attachments.add(type, index, descriptor, keepPreviousFrame);
 }
 
 const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest) {

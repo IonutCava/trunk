@@ -133,8 +133,7 @@ class Material : public Resource {
 
     /// Return a new instance of this material with the name composed of the
     /// base material's name and the give name suffix.
-    /// Call RemoveResource on the returned pointer to free memory. (clone calls
-    /// CreateResource internally!)
+    /// clone calls CreateResource internally!)
     Material_ptr clone(const stringImpl& nameSuffix);
     bool unload();
     void update(const U64 deltaTime);

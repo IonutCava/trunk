@@ -113,7 +113,7 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
     virtual void blitFrom(RenderTarget* inputFB, U8 index, bool blitColour = true, bool blitDepth = false) = 0;
 
     TextureDescriptor& getDescriptor(RTAttachment::Type type, U8 index);
-    void addAttachment(const TextureDescriptor& descriptor, RTAttachment::Type type, U8 index);
+    void addAttachment(const TextureDescriptor& descriptor, RTAttachment::Type type, U8 index, bool keepPreviousFrame);
     bool create(U16 widthAndHeight);
     /// Used by cubemap FB's
     void drawToFace(RTAttachment::Type type, U8 index, U32 nFace, bool includeDepth = true);

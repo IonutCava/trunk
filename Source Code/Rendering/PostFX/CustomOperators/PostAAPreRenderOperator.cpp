@@ -13,7 +13,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(RenderTarget* hdrTarget, Render
       _postAASamples(0)
 {
     _samplerCopy = GFX_DEVICE.allocateRT("PostAA");
-    _samplerCopy._rt->addAttachment(_ldrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
+    _samplerCopy._rt->addAttachment(_ldrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
 
     ResourceDescriptor fxaa("FXAA");
     fxaa.setThreadedLoading(false);

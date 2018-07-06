@@ -60,10 +60,10 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     depthDescriptor.setSampler(depthSampler);
 
     for (U8 i = 0; i < 4; ++i) {
-        _deferredBuffer._rt->addAttachment(gBuffer[i], RTAttachment::Type::Colour, i);
+        _deferredBuffer._rt->addAttachment(gBuffer[i], RTAttachment::Type::Colour, i, false);
     }
 
-    _deferredBuffer._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
+    _deferredBuffer._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0, false);
     _deferredBuffer._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
     ResourceDescriptor mrtPreviewSmall("MRT RenderQuad SmallPreview");
     mrtPreviewSmall.setFlag(true);  // no default material

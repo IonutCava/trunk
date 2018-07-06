@@ -33,6 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _RENDER_TARGET_ATTACHMENT_H_
 
 #include "Platform/Video/Textures/Headers/TextureDescriptor.h"
+#include "Managers/Headers/FrameListenerManager.h"
 
 namespace Divide {
 
@@ -103,19 +104,39 @@ class RTAttachment {
 TYPEDEF_SMART_POINTERS_FOR_CLASS(RTAttachment);
 
 
-class RTAttachmentPool {
+class RTAttachmentPool : public FrameListener {
+    public:
+        typedef std::array<vectorImpl<RTAttachment_ptr>, to_const_uint(RTAttachment::Type::COUNT)> AttachmentPool;
+
     public:
         RTAttachmentPool();
         ~RTAttachmentPool();
 
+        void init(U8 colourAttCount);
+
+        void add(RTAttachment::Type type,
+                 U8 index,
+                  const TextureDescriptor& descriptor,
+                  bool keepPreviousFrame);
+
+        RTAttachment_ptr& get(RTAttachment::Type type, U8 index);
         const RTAttachment_ptr& get(RTAttachment::Type type, U8 index) const;
+
         U8 attachmentCount(RTAttachment::Type type) const;
 
-        void init(U8 colourAttachmentCount);
         void destroy();
 
+    protected:
+        bool frameEnded(const FrameEvent& evt) override;
+
     private:
-        std::array<vectorImpl<RTAttachment_ptr>, to_const_uint(RTAttachment::Type::COUNT)> _attachment;
+        RTAttachment_ptr& getInternal(AttachmentPool& pool, RTAttachment::Type type, U8 index);
+        const RTAttachment_ptr& getInternal(const AttachmentPool& pool, RTAttachment::Type type, U8 index) const;
+
+    private:
+        AttachmentPool _attachment;
+        AttachmentPool _attachmentHistory;
+        vectorImpl<std::pair<RTAttachment::Type, U8>> _attachmentHistoryIndex;
 };
 
 }; //namespace Divide

@@ -305,8 +305,6 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
         }
     }
 
-    _previousDepthBuffer._rt->create(w, h);
-
     // Update post-processing render targets and buffers
     PostFX::instance().updateResolution(w, h);
     _gpuBlock._data._invScreenDimension.xy(1.0f / w, 1.0f / h);

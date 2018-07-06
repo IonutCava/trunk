@@ -299,10 +299,6 @@ DEFINE_SINGLETON(GFXDevice)
         return _rtPool.renderTarget(target);
     }
 
-    inline RenderTarget& prevRenderTarget(RenderTargetID target) {
-        return _rtPool.renderTarget(target);
-    }
-
     inline void renderTarget(RenderTargetID target, RenderTarget* newTarget) {
         _rtPool.set(target, newTarget);
     }
@@ -448,7 +444,6 @@ DEFINE_SINGLETON(GFXDevice)
     Frustum         *_debugFrustum;
     IMPrimitive     *_debugFrustumPrimitive;
 
-    RenderTargetHandle _previousDepthBuffer;
   protected:
     RenderAPI _API_ID;
     GPUVendor _GPUVendor;

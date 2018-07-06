@@ -83,4 +83,4 @@ inline void UNREGISTER_FRAME_LISTENER(FrameListener* listener) {
 
 };  // namespace Divide
 
-#endif
+#endif //_FRAME_LISTENER_MANAGER_H_

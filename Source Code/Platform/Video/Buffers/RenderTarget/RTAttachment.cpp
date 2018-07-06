@@ -100,7 +100,7 @@ void RTAttachment::binding(U32 binding) {
     _binding = binding;
 }
 
-RTAttachmentPool::RTAttachmentPool()
+RTAttachmentPool::RTAttachmentPool() : FrameListener()
 {
  
 }
@@ -109,37 +109,98 @@ RTAttachmentPool::~RTAttachmentPool()
 {
 }
 
-const RTAttachment_ptr& RTAttachmentPool::get(RTAttachment::Type type, U8 index) const {
-    
-    switch(type) {
-        case RTAttachment::Type::Colour :
+bool RTAttachmentPool::frameEnded(const FrameEvent& evt) {
+    for (const std::pair<RTAttachment::Type, U8> &entry : _attachmentHistoryIndex) {
+        std::swap(getInternal(_attachment, entry.first, entry.second),
+                  getInternal(_attachmentHistory, entry.first, entry.second));
+    }
+
+    return true;
+}
+
+void RTAttachmentPool::init(U8 colourAttCount) {
+    _attachment[to_const_uint(RTAttachment::Type::Colour)].resize(colourAttCount, nullptr);
+    _attachment[to_const_uint(RTAttachment::Type::Depth)].resize(1, nullptr);
+    _attachment[to_const_uint(RTAttachment::Type::Stencil)].resize(1, nullptr);
+
+    _attachmentHistory[to_const_uint(RTAttachment::Type::Colour)].resize(colourAttCount, nullptr);
+    _attachmentHistory[to_const_uint(RTAttachment::Type::Depth)].resize(1, nullptr);
+    _attachmentHistory[to_const_uint(RTAttachment::Type::Stencil)].resize(1, nullptr);
+}
+
+void RTAttachmentPool::add(RTAttachment::Type type,
+                           U8 index,
+                           const TextureDescriptor& descriptor,
+                           bool keepPreviousFrame) {
+    assert(index < to_ubyte(_attachment[to_uint(type)].size()));
+
+    RTAttachment_ptr& ptr = getInternal(_attachment, type, index);
+    assert(ptr == nullptr);
+
+    ptr = std::make_shared<RTAttachment>();
+    ptr->fromDescriptor(descriptor);
+
+    if (keepPreviousFrame) {
+        RTAttachment_ptr& ptrPrev = getInternal(_attachmentHistory, type, index);
+        ptrPrev = std::make_shared<RTAttachment>();
+        ptrPrev->fromDescriptor(descriptor);
+
+        _attachmentHistoryIndex.emplace_back(type, index);
+    }
+}
+
+RTAttachment_ptr& RTAttachmentPool::getInternal(AttachmentPool& pool, RTAttachment::Type type, U8 index) {
+    switch (type) {
+        case RTAttachment::Type::Colour:
         {
-            assert(index < attachmentCount(type));
-            return _attachment[to_const_uint(RTAttachment::Type::Colour)][index];
+            assert(index < to_ubyte(_attachment[to_uint(type)].size()));
+            return pool[to_const_uint(RTAttachment::Type::Colour)][index];
         }
-        case RTAttachment::Type::Depth :
+        case RTAttachment::Type::Depth:
         {
             assert(index == 0);
-            return _attachment[to_const_uint(RTAttachment::Type::Depth)].front();
+            return pool[to_const_uint(RTAttachment::Type::Depth)].front();
         }
         case RTAttachment::Type::Stencil:
         {
             assert(index == 0);
-            return _attachment[to_const_uint(RTAttachment::Type::Stencil)].front();
+            return pool[to_const_uint(RTAttachment::Type::Stencil)].front();
         }
     }
 
     DIVIDE_UNEXPECTED_CALL("Invalid render target attachment type");
-    return _attachment[0][0];
+    return pool[0][0];
 }
 
-void RTAttachmentPool::init(U8 colourAttachmentCount) {
-    for (U8 i = 0; i < colourAttachmentCount; ++i) {
-        _attachment[to_const_uint(RTAttachment::Type::Colour)].emplace_back(std::make_shared<RTAttachment>());
+const RTAttachment_ptr& RTAttachmentPool::getInternal(const AttachmentPool& pool, RTAttachment::Type type, U8 index) const {
+    switch (type) {
+        case RTAttachment::Type::Colour:
+        {
+            assert(index < to_ubyte(_attachment[to_uint(type)].size()));
+            return pool[to_const_uint(RTAttachment::Type::Colour)][index];
+        }
+        case RTAttachment::Type::Depth:
+        {
+            assert(index == 0);
+            return pool[to_const_uint(RTAttachment::Type::Depth)].front();
+        }
+        case RTAttachment::Type::Stencil:
+        {
+            assert(index == 0);
+            return pool[to_const_uint(RTAttachment::Type::Stencil)].front();
+        }
     }
 
-    _attachment[to_const_uint(RTAttachment::Type::Depth)].emplace_back(std::make_shared<RTAttachment>());
-    _attachment[to_const_uint(RTAttachment::Type::Stencil)].emplace_back(std::make_shared<RTAttachment>());
+    DIVIDE_UNEXPECTED_CALL("Invalid render target attachment type");
+    return pool[0][0];
+}
+
+RTAttachment_ptr& RTAttachmentPool::get(RTAttachment::Type type, U8 index) {
+    return getInternal(_attachment, type, index);
+}
+
+const RTAttachment_ptr& RTAttachmentPool::get(RTAttachment::Type type, U8 index) const {
+    return getInternal(_attachment, type, index);
 }
 
 void RTAttachmentPool::destroy() {
@@ -149,7 +210,11 @@ void RTAttachmentPool::destroy() {
 }
 
 U8 RTAttachmentPool::attachmentCount(RTAttachment::Type type) const {
-    return to_ubyte(_attachment[to_uint(type)].size());
+    return to_ubyte(std::count_if(std::cbegin(_attachment[to_uint(type)]),
+                                  std::cend(_attachment[to_uint(type)]),
+                                  [](const RTAttachment_ptr& ptr) {
+                                       return ptr != nullptr;
+                                  }));
 }
 
 bool RTAttachment::dirty() const {

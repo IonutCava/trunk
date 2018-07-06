@@ -59,8 +59,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     blurMapDescriptor.setSampler(blurMapSampler);
     
     _blurBuffer = GFX_DEVICE.allocateRT("CSM_Blur");
-    _blurBuffer._rt->addAttachment(blurMapDescriptor,
-                                   RTAttachment::Type::Colour, 0);
+    _blurBuffer._rt->addAttachment(blurMapDescriptor, RTAttachment::Type::Colour, 0, false);
     _blurBuffer._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 
     _shadowMatricesBuffer = GFX_DEVICE.newSB(1, false, false, BufferUpdateFrequency::OFTEN);

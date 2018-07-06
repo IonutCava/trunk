@@ -151,10 +151,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Add the attachments to the render targets
     RenderTarget& screenTarget = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, 0);
-    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, 1);
-    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, 2);
-    screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0);
+    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, 0, false);
+    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, 1, false);
+    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, 2, true);
+    screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0, true);
     screenTarget.setClearColour(RTAttachment::Type::Colour, 0, DefaultColours::DIVIDE_BLUE());
     screenTarget.setClearColour(RTAttachment::Type::Colour, 1, DefaultColours::WHITE());
     screenTarget.setClearColour(RTAttachment::Type::Colour, 2, DefaultColours::WHITE());
@@ -168,10 +168,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     depthCopySampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     depthCopySampler.toggleMipMaps(false);
     depthCopyDescriptor.setSampler(depthCopySampler);
-
-    _previousDepthBuffer = allocateRT("PreviousScreen");
-    _previousDepthBuffer._rt->addAttachment(depthCopyDescriptor, RTAttachment::Type::Depth, 0);
-
+    
     _activeRenderTarget = &screenTarget;
 
     // Reflection Targets
@@ -193,16 +190,16 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     RenderTargetHandle tempHandle;
     for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
         tempHandle = allocateRT(RenderTargetUsage::REFLECTION, Util::StringFormat("Reflection_%d", i));
-        tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
-        tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
+        tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0, false);
+        tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0, false);
         tempHandle._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
         tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }
 
     for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
         tempHandle = allocateRT(RenderTargetUsage::REFRACTION, Util::StringFormat("Refraction_%d", i));
-        tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
-        tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
+        tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0, false);
+        tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0, false);
         tempHandle._rt->create(Config::REFRACTION_TARGET_RESOLUTION);
         tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }
@@ -302,15 +299,23 @@ void GFXDevice::closeRenderingAPI() {
     EnvironmentProbe::onShutdown();
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
-    deallocateRT(_previousDepthBuffer);
     _rtPool.clear();
+
+    _previewDepthMapShader = nullptr;
+    _renderTargetDraw = nullptr;
+    _HIZConstructProgram = nullptr;
+    _HIZCullProgram = nullptr;
+    _displayShader = nullptr;
+
     // Close the shader manager
     ShaderProgram::onShutdown();
     _gpuObjectArena.clear();
     // Close the rendering API
     _api->closeRenderingAPI();
 
-    assert(_graphicResources == 0);
+    if (_graphicResources > 0) {
+        Console::errorfn(Locale::get(_ID("ERROR_GFX_LEAKED_RESOURCES")), (I32)_graphicResources);
+    }
 
     switch (_API_ID) {
         case RenderAPI::OpenGL:
@@ -354,10 +359,6 @@ void GFXDevice::idle() {
 void GFXDevice::beginFrame() {
     _api->beginFrame();
     _api->setStateBlock(_defaultStateBlockHash);
-    _previousDepthBuffer._rt->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH_PREV),
-                                   RTAttachment::Type::Depth,
-                                   0,
-                                   false);
 }
 
 void GFXDevice::endFrame(bool swapBuffers) {
@@ -374,8 +375,6 @@ void GFXDevice::endFrame(bool swapBuffers) {
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
     FRAME_DRAW_CALLS = 0;
     
-    _previousDepthBuffer._rt->blitFrom(&renderTarget(RenderTargetID(RenderTargetUsage::SCREEN, 0)), false, true);
-
     // Activate the default render states
     _api->setStateBlock(_defaultStateBlockHash);
     // Unbind shaders
