@@ -130,9 +130,10 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
 #if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
     // GL_DEBUG_OUTPUT_SYNCHRONOUS is essential for debugging gl commands in the
     // IDE
+    glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     // hardwire our debug callback function with OpenGL's implementation
-    glDebugMessageCallback(&GLUtil::DebugCallback, NULL);
+    glDebugMessageCallback(GLUtil::DebugCallback, (void*)(0));
     // nVidia flushes a lot of useful info about buffer allocations and shader
     // recompiles due to state and what now,
     // but those aren't needed until that's what's actually causing the
@@ -416,10 +417,11 @@ void GL_API::threadedLoadCallback() {
 
 // Enable OpenGL debug callbacks for this context as well
 #if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
+    glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     // Debug callback in a separate thread requires a flag to distinguish it
     // from the main thread's callbacks
-    glDebugMessageCallback(&GLUtil::DebugCallback, (void*)(1));
+    glDebugMessageCallback(GLUtil::DebugCallback, (void*)(1));
 #endif
 
     GPUState& gfxState = GFX_DEVICE.gpuState();

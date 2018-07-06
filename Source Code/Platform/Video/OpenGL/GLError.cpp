@@ -40,7 +40,7 @@ void glfw_error_callback(GLint errorCode, const char* msg) {
     Console::errorfn(Locale::get("GLFW_ERROR"), errorDesc, msg);
 }
 /// Print OpenGL specific messages
-void APIENTRY CALLBACK
+void APIENTRY 
 DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
               GLsizei length, const GLchar* message, const void* userParam) {
     // Translate message source

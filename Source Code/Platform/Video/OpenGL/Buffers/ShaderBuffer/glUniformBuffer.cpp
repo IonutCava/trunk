@@ -13,49 +13,45 @@ namespace Divide {
 glUniformBuffer::glUniformBuffer(bool unbound, bool persistentMapped)
     : ShaderBuffer(unbound, persistentMapped),
       _mappedBuffer(nullptr),
-      _lockManager(nullptr),
-      _UBOid(0) {
-    if (Config::Profile::DISABLE_PERSISTENT_BUFFER) {
-        persistentMapped = _persistentMapped = false;
-    }
+      _UBOid(0),
+      _lockManager(_persistentMapped
+                       ? MemoryManager_NEW glBufferLockManager(true)
+                       : nullptr),
 
-    if (persistentMapped) {
-        _lockManager = MemoryManager_NEW glBufferLockManager(true);
-    }
+      _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER)
+{
 }
 
-glUniformBuffer::~glUniformBuffer() {
+glUniformBuffer::~glUniformBuffer() 
+{
     if (_UBOid > 0) {
         if (_persistentMapped) {
             GL_API::setActiveBuffer(_target, _UBOid);
             glUnmapBuffer(_target);
         }
         glDeleteBuffers(1, &_UBOid);
-        _UBOid = 0;
     }
-
-    MemoryManager::DELETE(_lockManager);
 }
 
 void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
-    DIVIDE_ASSERT(_UBOid == 0,
-                  "glUniformBuffer error: Tried to double create current UBO");
+    DIVIDE_ASSERT(
+        _UBOid == 0,
+        "glUniformBuffer::Create error: Tried to double create current UBO");
+
     ShaderBuffer::Create(primitiveCount, primitiveSize);
 
-    glGenBuffers(1, &_UBOid);  // Generate the buffer
-    DIVIDE_ASSERT(_UBOid != 0, "glUniformBuffer error: UBO creation failed");
-
-    _target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
+    glGenBuffers(1, &_UBOid);
+    DIVIDE_ASSERT(_UBOid != 0,
+                  "glUniformBuffer::Create error: UBO creation failed");
 
     if (_persistentMapped) {
-        BufferAccessMask accessFlag =
-            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        MapBufferUsageMask usageFlag =
-            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
-            GL_MAP_COHERENT_BIT | GL_DYNAMIC_STORAGE_BIT;
-        glNamedBufferStorage(_UBOid, _bufferSize, NULL, usageFlag);
-        _mappedBuffer =
-            glMapNamedBufferRange(_UBOid, 0, _bufferSize, accessFlag);
+        glNamedBufferStorage(_UBOid, _bufferSize, NULL, GL_MAP_WRITE_BIT |
+                                                        GL_MAP_PERSISTENT_BIT |
+                                                        GL_MAP_COHERENT_BIT);
+        _mappedBuffer = glMapNamedBufferRange(_UBOid, 0, _bufferSize,
+                                                        GL_MAP_WRITE_BIT | 
+                                                        GL_MAP_PERSISTENT_BIT |
+                                                        GL_MAP_COHERENT_BIT);
     } else {
         glNamedBufferData(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
     }
@@ -71,18 +67,17 @@ void glUniformBuffer::DiscardSubData(ptrdiff_t offset, ptrdiff_t size) {
 }
 
 void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
-                                 const void* data,
+                                 const bufferPtr data,
                                  const bool invalidateBuffer) const {
     DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize,
-                  "glUniformBuffer error: ChangeSubData was called with an "
+                   "glUniformBuffer::UpdateData error: was called with an "
                   "invalid range (buffer overflow)!");
+    DIVIDE_ASSERT(_mappedBuffer != nullptr,
+                   "glUniformBuffer::UpdateData error: was called for an "
+                   "unmapped buffer!");
 
     if (invalidateBuffer) {
-        if (_persistentMapped) {
-            // glNamedBufferSubDataEXT(_UBOid, 0, _bufferSize, NULL);
-        } else {
-            glNamedBufferData(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
-        }
+        glNamedBufferSubData(_UBOid, 0, _bufferSize, NULL);
     }
 
     if (size == 0 || !data) {
@@ -92,7 +87,7 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
     if (_persistentMapped) {
         GL_API::setActiveBuffer(_target, _UBOid);
         _lockManager->WaitForLockedRange(offset, size);
-        void* dst = (U8*)_mappedBuffer + offset;
+        bufferPtr dst = (U8*)_mappedBuffer + offset;
         memcpy(dst, data, size);
         _lockManager->LockRange(offset, size);
     } else {
@@ -109,7 +104,6 @@ bool glUniformBuffer::BindRange(ShaderBufferLocation bindIndex,
     glBindBufferRange(_target, bindIndex, _UBOid,
                       _primitiveSize * offsetElementCount,
                       _primitiveSize * rangeElementCount);
-
     return true;
 }
 

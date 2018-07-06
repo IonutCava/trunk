@@ -122,7 +122,8 @@ class glGenericVertexData : public GenericVertexData {
     GLuint _currentReadQuery;
     size_t* _startDestOffset;
     vectorImpl<U32> _fdbkBindPoints;
-    glBufferLockManager* _lockManager;
+    
+    std::unique_ptr<glBufferLockManager> _lockManager;
 };
 
 };  // namespace Divide

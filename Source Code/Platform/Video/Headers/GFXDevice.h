@@ -409,7 +409,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     RenderAPI _apiId;
     GPUVendor _GPUVendor;
     GPUState _state;
-    std::unique_ptr<Renderer> _renderer;
     /* Rendering buffers*/
     Framebuffer* _renderTarget[RenderTarget_PLACEHOLDER];
     /*State management */
@@ -458,8 +457,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     vectorImpl<NodeData> _matricesData;
 
-    ShaderBuffer* _gfxDataBuffer;
-    ShaderBuffer* _nodeBuffer;
+    std::unique_ptr<Renderer> _renderer;
+    std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
+    std::unique_ptr<ShaderBuffer> _nodeBuffer;
 
     GenericDrawCommand _defaultDrawCmd;
 

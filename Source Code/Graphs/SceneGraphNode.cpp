@@ -50,16 +50,20 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
     setName(name);
     _instanceID = (node->GetRef() - 1);
     Material* const materialTpl = _node->getMaterialTpl();
-    _components[SGNComponent::SGN_COMP_ANIMATION] = nullptr;
-    _components[SGNComponent::SGN_COMP_NAVIGATION] =
-        MemoryManager_NEW NavigationComponent(*this);
-    _components[SGNComponent::SGN_COMP_PHYSICS] =
-        MemoryManager_NEW PhysicsComponent(*this);
-    _components[SGNComponent::SGN_COMP_RENDERING] =
+
+    _components[SGNComponent::SGN_COMP_ANIMATION].reset(nullptr);
+
+    _components[SGNComponent::SGN_COMP_NAVIGATION].reset(
+        MemoryManager_NEW NavigationComponent(*this));
+
+    _components[SGNComponent::SGN_COMP_PHYSICS].reset(
+        MemoryManager_NEW PhysicsComponent(*this));
+
+    _components[SGNComponent::SGN_COMP_RENDERING].reset(
         MemoryManager_NEW RenderingComponent(
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                    : nullptr,
-            *this);
+            *this));
 }
 
 /// If we are destroying the current graph node
@@ -69,10 +73,6 @@ SceneGraphNode::~SceneGraphNode() {
     Console::printfn(Locale::get("DELETE_SCENEGRAPH_NODE"), getName().c_str());
     // delete child nodes recursively
     MemoryManager::DELETE_HASHMAP(_children);
-
-    for (SGNComponent*& component : _components) {
-        MemoryManager::DELETE(component);
-    }
 }
 
 void SceneGraphNode::addBoundingBox(const BoundingBox& bb,

@@ -339,6 +339,10 @@ inline void DELETE(T*& ptr) {
     delete ptr;
     ptr = nullptr;
 }
+
+#define SET_UNIQUE_PTR_DELETE_FRIEND(X) \
+    friend std::unique_ptr<X>::deleter_type;
+
 #define SET_DELETE_FRIEND \
     template <typename T> \
     friend void MemoryManager::DELETE(T*& ptr);

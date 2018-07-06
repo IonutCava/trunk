@@ -215,7 +215,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
 
     inline void setComponent(SGNComponent::ComponentType type,
                              SGNComponent* component) {
-        MemoryManager::SAFE_UPDATE(_components[type], component);
+        _components[type].reset(component);
     }
 
     template <typename T>
@@ -226,22 +226,22 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     template <>
     inline AnimationComponent* getComponent() const {
         return static_cast<AnimationComponent*>(
-            _components[SGNComponent::SGN_COMP_ANIMATION]);
+            _components[SGNComponent::SGN_COMP_ANIMATION].get());
     }
     template <>
     inline NavigationComponent* getComponent() const {
         return static_cast<NavigationComponent*>(
-            _components[SGNComponent::SGN_COMP_NAVIGATION]);
+            _components[SGNComponent::SGN_COMP_NAVIGATION].get());
     }
     template <>
     inline PhysicsComponent* getComponent() const {
         return static_cast<PhysicsComponent*>(
-            _components[SGNComponent::SGN_COMP_PHYSICS]);
+            _components[SGNComponent::SGN_COMP_PHYSICS].get());
     }
     template <>
     inline RenderingComponent* getComponent() const {
         return static_cast<RenderingComponent*>(
-            _components[SGNComponent::SGN_COMP_RENDERING]);
+            _components[SGNComponent::SGN_COMP_RENDERING].get());
     }
 
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
@@ -263,6 +263,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     SET_SAFE_UPDATE_FRIEND
     SET_DELETE_VECTOR_FRIEND
     SET_DELETE_HASHMAP_FRIEND
+    SET_UNIQUE_PTR_DELETE_FRIEND(SceneGraphNode)
 
     friend class SceneGraph;
     friend vectorImpl<SceneGraphNode>;
@@ -314,7 +315,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     stringImpl _name;
 
     UsageContext _usageContext;
-    SGNComponent* _components[SGNComponent::ComponentType_PLACEHOLDER];
+    std::unique_ptr<SGNComponent> _components[SGNComponent::ComponentType_PLACEHOLDER];
     vectorImpl<DELEGATE_CBK<>> _deletionCallbacks;
     hashMapImpl<RenderStage, bool, hashAlg::hash<I32>> _reset;
 

@@ -49,7 +49,8 @@ struct CameraFrustum {
 F32 _anaglyphIOD = -0.01f;
 };
 
-GFXDevice::GFXDevice() : _api(nullptr), _renderStage(INVALID_STAGE) {
+GFXDevice::GFXDevice() : _api(nullptr), _renderStage(INVALID_STAGE) 
+{
     // Hash values
     _state2DRenderingHash = 0;
     _defaultStateBlockHash = 0;

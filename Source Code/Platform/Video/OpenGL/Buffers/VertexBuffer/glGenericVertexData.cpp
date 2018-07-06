@@ -16,7 +16,10 @@ glGenericVertexData::glGenericVertexData(bool persistentMapped)
       _sizeFactor(nullptr),
       _startDestOffset(nullptr),
       _readOffset(nullptr),
-      _lockManager(nullptr) {
+      _lockManager(_persistentMapped
+                       ? MemoryManager_NEW glBufferLockManager(true)
+                       : nullptr)
+{
     _numQueries = 0;
     _indexBuffer = 0;
     _currentReadQuery = 0;
@@ -28,14 +31,6 @@ glGenericVertexData::glGenericVertexData(bool persistentMapped)
     for (U8 i = 0; i < 2; ++i) {
         _feedbackQueries[i] = nullptr;
         _resultAvailable[i] = nullptr;
-    }
-
-    if (Config::Profile::DISABLE_PERSISTENT_BUFFER) {
-        persistentMapped = _persistentMapped = false;
-    }
-    // Persistently mapped buffers require explicit synchronization
-    if (persistentMapped) {
-        _lockManager = MemoryManager_NEW glBufferLockManager(true);
     }
 }
 
@@ -94,8 +89,8 @@ glGenericVertexData::~glGenericVertexData() {
     MemoryManager::DELETE_ARRAY(_sizeFactor);
     MemoryManager::DELETE_ARRAY(_startDestOffset);
     MemoryManager::DELETE_ARRAY(_readOffset);
-    MemoryManager::DELETE(_lockManager);
-    if (_bufferPersistentData != nullptr) {
+    if (_bufferPersistentData != nullptr)
+    {
         free(_bufferPersistentData);
     }
 

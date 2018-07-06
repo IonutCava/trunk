@@ -48,7 +48,8 @@ class glUniformBuffer : public ShaderBuffer {
     virtual void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
     virtual void DiscardAllData();
     virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size);
-    virtual void UpdateData(GLintptr offset, GLsizeiptr size, const void* data,
+    virtual void UpdateData(GLintptr offset, GLsizeiptr size,
+                            const bufferPtr data,
                             const bool invalidateBuffer = false) const;
     virtual bool BindRange(ShaderBufferLocation bindIndex,
                            U32 offsetElementCount, U32 rangeElementCount) const;
@@ -59,9 +60,10 @@ class glUniformBuffer : public ShaderBuffer {
 
    protected:
     GLuint _UBOid;
-    GLenum _target;
-    void* _mappedBuffer;
-    glBufferLockManager* _lockManager;
+    bufferPtr _mappedBuffer;
+    
+    const GLenum _target;
+    const std::unique_ptr<glBufferLockManager> _lockManager;
 };
 
 };  // namespace Divide

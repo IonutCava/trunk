@@ -61,21 +61,23 @@ TextureDescriptor::AttachmentType getAttachmentType(U8 slot) {
 }
 };
 
-glFramebuffer::glFramebuffer(glFramebuffer* resolveBuffer)
-    : Framebuffer(resolveBuffer != nullptr),
-      _resolveBuffer(resolveBuffer),
+glFramebuffer::glFramebuffer(bool useResolveBuffer)
+    : Framebuffer(useResolveBuffer),
+      _resolveBuffer(useResolveBuffer ? MemoryManager_NEW glFramebuffer()
+                                      : nullptr),
       _hasDepth(false),
       _hasColor(false),
       _resolved(false),
-      _isLayeredDepth(false) {
+      _isLayeredDepth(false)
+{
     for (U8 i = 0; i < TextureDescriptor::AttachmentType_PLACEHOLDER; ++i) {
         _mipMapLevel[i].set(0);
         _attOffset[i] = 0;
     }
 }
 
-glFramebuffer::~glFramebuffer() {
-    MemoryManager::DELETE(_resolveBuffer);
+glFramebuffer::~glFramebuffer()
+{
     Destroy();
 }
 

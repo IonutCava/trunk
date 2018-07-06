@@ -16,7 +16,7 @@ void d3dConstantBuffer::DiscardAllData() {}
 void d3dConstantBuffer::DiscardSubData(ptrdiff_t offset, ptrdiff_t size) {}
 
 void d3dConstantBuffer::UpdateData(ptrdiff_t offset, ptrdiff_t size,
-                                   const void* data,
+                                   const bufferPtr data,
                                    const bool invalidateBuffer) const {}
 
 bool d3dConstantBuffer::BindRange(ShaderBufferLocation bindIndex,

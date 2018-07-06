@@ -39,7 +39,7 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc,
     // persistent mapping.
     // (Many small updates with BufferSubData are recommended with the target
     // usage of the buffer)
-    _gfxDataBuffer = newSB(false, false);
+    _gfxDataBuffer.reset(newSB(false, false));
     _gfxDataBuffer->Create(1, sizeof(GPUBlock));
     _gfxDataBuffer->Bind(SHADER_BUFFER_GPU_BLOCK);
     // Every visible node will first update this buffer with required data
@@ -47,7 +47,7 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc,
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a
     // Shader Storage Buffer that's persistently
     // and coherently mapped
-    _nodeBuffer = newSB(true);
+    _nodeBuffer.reset(newSB(true));
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
     _nodeBuffer->Bind(SHADER_BUFFER_NODE_INFO);
     // Resize our window to the target resolution (usually, the splash screen
@@ -200,9 +200,6 @@ void GFXDevice::closeRenderingApi() {
     for (Framebuffer*& renderTarget : _renderTarget) {
         MemoryManager::DELETE(renderTarget);
     }
-    // Delete our shader buffers
-    MemoryManager::DELETE(_gfxDataBuffer);
-    MemoryManager::DELETE(_nodeBuffer);
     // Close the shader manager
     ShaderManager::getInstance().destroy();
     // Close the rendering API

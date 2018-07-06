@@ -140,12 +140,16 @@ class GenericVertexData : public VertexDataInterface {
     };
 
     GenericVertexData(bool persistentMapped)
-        : VertexDataInterface(), _persistentMapped(persistentMapped) {
+        : VertexDataInterface(),
+          _persistentMapped(persistentMapped &&
+                            !Config::Profile::DISABLE_PERSISTENT_BUFFER)
+    {
         _hasIndexBuffer = false;
         _doubleBufferedQuery = true;
     }
 
-    virtual ~GenericVertexData() {
+    virtual ~GenericVertexData()
+    {
         _attributeMapDraw.clear();
         _attributeMapFdbk.clear();
     }
@@ -201,13 +205,14 @@ class GenericVertexData : public VertexDataInterface {
 
    protected:
     typedef hashMapImpl<U32, AttributeDescriptor> attributeMap;
-    bool _persistentMapped;
     bool _hasIndexBuffer;
     bool _doubleBufferedQuery;
     vectorImpl<U32> _feedbackBuffers;
     vectorImpl<U32> _bufferObjects;
     attributeMap _attributeMapDraw;
     attributeMap _attributeMapFdbk;
+
+    const bool _persistentMapped;
 };
 
 };  // namespace Divide

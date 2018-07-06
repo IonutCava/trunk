@@ -78,7 +78,7 @@ void glfw_focus_callback(GLFWwindow* window, I32 focusState);
 /// This function is called if GLFW throws an error
 void glfw_error_callback(GLint error, const char* description);
 /// Check the current operation for errors
-void APIENTRY CALLBACK
+void APIENTRY 
 DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
               GLsizei length, const char* message, const void* userParam);
 /// Half float conversion from:

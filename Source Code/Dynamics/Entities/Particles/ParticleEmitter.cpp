@@ -34,8 +34,6 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     DIVIDE_ASSERT(_particleGPUBuffer == nullptr,
                   "ParticleEmitter::initData error: Double initData detected!");
 
-    updateData(particleData);
-
     _particleGPUBuffer = GFX_DEVICE.newGVD(/*true*/ false);
     _particleGPUBuffer->Create(3);
 
@@ -49,6 +47,8 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
                                   false);
     _particleGPUBuffer->getDrawAttribDescriptor(VERTEX_POSITION_LOCATION)
         .set(0, 0, 3, false, 0, 0, FLOAT_32);
+
+    updateData(particleData);
 
     // Generate a render state
     RenderStateBlockDescriptor particleStateDesc;

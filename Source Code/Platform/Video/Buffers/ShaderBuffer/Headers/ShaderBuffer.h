@@ -40,15 +40,22 @@ namespace Divide {
 class ShaderProgram;
 class ShaderBuffer : private NonCopyable, public GUIDWrapper {
    public:
+    typedef void* bufferPtr;
+
     ShaderBuffer(bool unbound, bool persistentMapped)
         : GUIDWrapper(),
           _unbound(unbound),
           _primitiveSize(0),
           _primitiveCount(0),
           _bufferSize(0),
-          _persistentMapped(persistentMapped) {}
+          _persistentMapped(persistentMapped &&
+                            !Config::Profile::DISABLE_PERSISTENT_BUFFER)
+    {
+    }
 
-    virtual ~ShaderBuffer() {}
+    virtual ~ShaderBuffer()
+    {
+    }
 
     /// Create a new buffer to hold our shader data
     virtual void Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
@@ -59,9 +66,9 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
 
     virtual void DiscardAllData() = 0;
     virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size) = 0;
-    virtual void UpdateData(ptrdiff_t offset, ptrdiff_t size, const void *data,
+    virtual void UpdateData(ptrdiff_t offset, ptrdiff_t size, const bufferPtr data,
                             const bool invalidateBuffer = false) const = 0;
-    inline void SetData(const void *data) {
+    inline void SetData(const bufferPtr data) {
         UpdateData(0, _bufferSize, data, true);
     }
 
@@ -76,11 +83,12 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
     inline U32 getPrimitiveCount() const { return _primitiveCount; }
 
    protected:
-    bool _unbound;
-    bool _persistentMapped;
     size_t _bufferSize;
     size_t _primitiveSize;
     U32 _primitiveCount;
+
+    const bool _unbound;
+    const bool _persistentMapped;
 };
 
 };  // namespace Divide

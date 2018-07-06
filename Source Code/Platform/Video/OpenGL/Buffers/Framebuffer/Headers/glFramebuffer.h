@@ -41,7 +41,7 @@ class glFramebuffer : public Framebuffer {
    public:
     /// if resolveBuffer is not null, we add all of our attachments to it and
     /// initialize it with this buffer
-    glFramebuffer(glFramebuffer* resolveBuffer = nullptr);
+    glFramebuffer(bool useResolveBuffer = false);
     ~glFramebuffer();
 
     bool Create(GLushort width, GLushort height);
@@ -82,7 +82,7 @@ class glFramebuffer : public Framebuffer {
     vectorImpl<GLenum> _colorBuffers;
     bool _colorMaskChanged;
     bool _depthMaskChanged;
-    glFramebuffer* _resolveBuffer;
+    const std::unique_ptr<glFramebuffer> _resolveBuffer;
 
     GLint _attOffset[TextureDescriptor::AttachmentType_PLACEHOLDER];
     vec2<GLushort> _mipMapLevel[TextureDescriptor::AttachmentType_PLACEHOLDER];

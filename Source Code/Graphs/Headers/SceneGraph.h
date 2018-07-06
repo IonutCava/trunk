@@ -79,7 +79,7 @@ class SceneGraph : private NonCopyable {
     void printInternal(SceneGraphNode& sgn);
 
    private:
-    SceneGraphNode* _root;
+    std::unique_ptr<SceneGraphNode> _root;
     vectorImpl<BoundingBox> _boundingBoxes;
     vectorImpl<SceneGraphNode*> _pendingDeletionNodes;
 };
