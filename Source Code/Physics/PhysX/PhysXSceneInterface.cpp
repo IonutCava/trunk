@@ -4,7 +4,6 @@
 
 #include "Scenes/Headers/Scene.h"
 #include "Graphs/Headers/SceneNode.h"
-#include "Graphs/Components/Headers/PhysicsComponent.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
@@ -123,12 +122,12 @@ void PhysXSceneInterface::update(const U64 deltaTimeUS) {
     // update each SGN with the new transform
     for (PxU32 i = 0; i < nbActiveTransforms; ++i) {
         PxRigidActor* actor = static_cast<PxRigidActor*>(activeTransforms[i].actor);
-        PhysicsComponent* pComp = static_cast<PhysicsComponent*>(actor->userData);
+        TransformComponent* tComp = static_cast<TransformComponent*>(actor->userData);
         PxTransform pT = actor->getGlobalPose();
         PxQuat pQ = pT.q.getConjugate();
         PxVec3 pP = pT.p;
-        pComp->setRotation(Quaternion<F32>(pQ.x, pQ.y, pQ.z, pQ.w));
-        pComp->setPosition(vec3<F32>(pP.x, pP.y, pP.z));
+        tComp->setRotation(Quaternion<F32>(pQ.x, pQ.y, pQ.z, pQ.w));
+        tComp->setPosition(vec3<F32>(pP.x, pP.y, pP.z));
     }
 }
 
@@ -166,7 +165,8 @@ void PhysXSceneInterface::addRigidActor(PhysXActor* const actor,
 
 void PhysXSceneInterface::addToScene(PhysXActor& actor) {
     static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::TRANSFORM) |
+                                  to_base(SGNComponent::ComponentType::RIGID_BODY) |
                                   to_base(SGNComponent::ComponentType::BOUNDS) |
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NETWORKING);
@@ -208,7 +208,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
             if (FindResourceImpl<Quad3D>(sgnName)) {
                 targetNode = parentScene.sceneGraph().findNode(sgnName).lock();
                 assert(targetNode);
-                actor.setParent(targetNode->get<PhysicsComponent>());
+                actor.setParent(targetNode->get<RigidBodyComponent>());
                 return;
             }
 
@@ -243,7 +243,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
     } 
 
     assert(targetNode != nullptr);
-    actor.setParent(targetNode->get<PhysicsComponent>());
+    actor.setParent(targetNode->get<RigidBodyComponent>());
     */
 }
 };

@@ -39,11 +39,13 @@
 #include "Graphs/Components/Headers/UnitComponent.h"
 #include "Graphs/Components/Headers/BoundsComponent.h"
 #include "Graphs/Components/Headers/RagdollComponent.h"
-#include "Graphs/Components/Headers/PhysicsComponent.h"
 #include "Graphs/Components/Headers/RenderingComponent.h"
 #include "Graphs/Components/Headers/AnimationComponent.h"
 #include "Graphs/Components/Headers/NavigationComponent.h"
 #include "Graphs/Components/Headers/NetworkingComponent.h"
+
+#include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/RigidBodyComponent.h"
 
 #include <ECS.h>
 
@@ -328,14 +330,14 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         _name = name;
     }
 
-    void setComponent(SGNComponent::ComponentType type, SGNComponent*&& component);
+    void setComponent(SGNComponent::ComponentType type, SGNComponent* component);
 
     inline U32 getComponentIdx(SGNComponent::ComponentType type) const {
         return powerOfTwo(to_U32(type)) - 1;
     }
 
     inline SGNComponent* getComponent(SGNComponent::ComponentType type) const {
-        return _components[getComponentIdx(type)].get();
+        return _components[getComponentIdx(type)];
     }
 
     void RegisterEventCallbacks();
@@ -371,7 +373,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     StateTracker<bool> _trackedBools;
 
-    std::array<std::unique_ptr<SGNComponent>, to_base(SGNComponent::ComponentType::COUNT)> _components;
+    vectorImpl<SGNComponent*> _components;
     SGNRelationshipCache _relationshipCache;
 
     mutable SharedLock _childrenDeletionLock;
@@ -404,8 +406,13 @@ inline NavigationComponent* SceneGraphNode::get() const {
 }
 
 template <>
-inline PhysicsComponent* SceneGraphNode::get() const {
-    return static_cast<PhysicsComponent*>(getComponent(SGNComponent::ComponentType::PHYSICS));
+inline TransformComponent* SceneGraphNode::get() const {
+    return static_cast<TransformComponent*>(getComponent(SGNComponent::ComponentType::TRANSFORM));
+}
+
+template <>
+inline RigidBodyComponent* SceneGraphNode::get() const {
+    return static_cast<RigidBodyComponent*>(getComponent(SGNComponent::ComponentType::RIGID_BODY));
 }
 
 template <>

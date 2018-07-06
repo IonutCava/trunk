@@ -49,38 +49,44 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
     setName(name);
 
     if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::ANIMATION))) {
-        setComponent(SGNComponent::ComponentType::ANIMATION, new AnimationComponent(*this));
+        setComponent(SGNComponent::ComponentType::ANIMATION, MemoryManager_NEW AnimationComponent(*this));
     }
     if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::INVERSE_KINEMATICS))) {
-        setComponent(SGNComponent::ComponentType::INVERSE_KINEMATICS, new IKComponent(*this));
+        setComponent(SGNComponent::ComponentType::INVERSE_KINEMATICS, MemoryManager_NEW IKComponent(*this));
     }
     if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::NETWORKING))) {
         LocalClient& client = _sceneGraph.parentScene().platformContext().client();
-        setComponent(SGNComponent::ComponentType::NETWORKING, new NetworkingComponent(*this, client));
+        setComponent(SGNComponent::ComponentType::NETWORKING, MemoryManager_NEW NetworkingComponent(*this, client));
     }
     if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::RAGDOLL))) {
-        setComponent(SGNComponent::ComponentType::RAGDOLL, new RagdollComponent(*this));
+        setComponent(SGNComponent::ComponentType::RAGDOLL, MemoryManager_NEW RagdollComponent(*this));
     }
     if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::NAVIGATION))) {
-        setComponent(SGNComponent::ComponentType::NAVIGATION, new NavigationComponent(*this));
+        setComponent(SGNComponent::ComponentType::NAVIGATION, MemoryManager_NEW NavigationComponent(*this));
     }
-    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::PHYSICS))) {
+    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::RIGID_BODY))) {
         STUBBED("Rigid body physics disabled for now - Ionut");
         physicsGroup = PhysicsGroup::GROUP_IGNORE;
         PXDevice& pxContext = _sceneGraph.parentScene().platformContext().pfx();
-        setComponent(SGNComponent::ComponentType::PHYSICS, new PhysicsComponent(*this, physicsGroup, pxContext));
+        RigidBodyComponent* rComp = AddComponent<RigidBodyComponent>(*this, physicsGroup, pxContext);
+        setComponent(SGNComponent::ComponentType::RIGID_BODY, rComp);
+    }
+    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::TRANSFORM))) {
 
-        PhysicsComponent* pComp = get<PhysicsComponent>();
-        pComp->addTransformUpdateCbk([this]() { Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this); });
-        pComp->addTransformUpdateCbk([this]() { onTransform(); });
+        TransformComponent* tComp = AddComponent<TransformComponent>(*this);
+
+        setComponent(SGNComponent::ComponentType::TRANSFORM, tComp);
+
+        tComp->addTransformUpdateCbk([this]() { Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this); });
+        tComp->addTransformUpdateCbk([this]() { onTransform(); });
     }
 
     if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::BOUNDS))) {
-        setComponent(SGNComponent::ComponentType::BOUNDS, new BoundsComponent(*this));
+        setComponent(SGNComponent::ComponentType::BOUNDS, MemoryManager_NEW BoundsComponent(*this));
     }
 
     if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::UNIT))) {
-        setComponent(SGNComponent::ComponentType::UNIT, new UnitComponent(*this));
+        setComponent(SGNComponent::ComponentType::UNIT, MemoryManager_NEW UnitComponent(*this));
     }
     
     if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::RENDERING))) {
@@ -88,7 +94,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
 
         const Material_ptr& materialTpl = _node->getMaterialTpl();
         setComponent(SGNComponent::ComponentType::RENDERING, 
-                     new RenderingComponent(gfxContext,
+                     MemoryManager_NEW RenderingComponent(gfxContext,
                                             materialTpl ? materialTpl->clone("_instance_" + name)
                                                         : nullptr,
                                             *this));
@@ -112,6 +118,10 @@ SceneGraphNode::~SceneGraphNode()
         for (U32 i = 0; i < getChildCount(); ++i) {
             DIVIDE_ASSERT(_children[i].unique(), "SceneGraphNode::~SceneGraphNode error: child still in use!");
         }
+    }
+
+    for (SGNComponent* comp : _components) {
+        MemoryManager::SAFE_DELETE(comp);
     }
 
     Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, getGUID());
@@ -149,7 +159,7 @@ void SceneGraphNode::OnTransformClean(const TransformClean* event) {
     }
 }
 
-void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent*&& component) {
+void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent* component) {
     // We have a component registered for the specified slot
     if (getComponent(type) != nullptr) {
         if (component != nullptr) {
@@ -161,7 +171,7 @@ void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent
         // We are adding a new component type
     }
 
-    _components[getComponentIdx(type)] = to_unique(std::move(component));
+    _components[getComponentIdx(type)] = component;
 }
 
 void SceneGraphNode::usageContext(const UsageContext& newContext) {
@@ -512,10 +522,10 @@ void SceneGraphNode::onTransform() {
         child.onTransform();
     });
 
-    PhysicsComponent* pComp = get<PhysicsComponent>();
+    TransformComponent* tComp = get<TransformComponent>();
     BoundsComponent* bComp = get<BoundsComponent>();
-    if (pComp != nullptr && bComp != nullptr) {
-        bComp->onTransform(pComp->getWorldMatrix());
+    if (tComp != nullptr && bComp != nullptr) {
+        bComp->onTransform(tComp->getWorldMatrix());
     }
 }
 
@@ -538,9 +548,9 @@ void SceneGraphNode::onCameraUpdate(const I64 cameraGUID,
         child.onCameraUpdate(cameraGUID, posOffset, rotationOffset);
     });
 
-    PhysicsComponent* pComp = get<PhysicsComponent>();
-    if (pComp && pComp->ignoreView(cameraGUID)) {
-        pComp->setViewOffset(posOffset, rotationOffset);
+    TransformComponent* tComp = get<TransformComponent>();
+    if (tComp && tComp->ignoreView(cameraGUID)) {
+        tComp->setViewOffset(posOffset, rotationOffset);
     }
     
     Attorney::SceneNodeSceneGraph::onCameraUpdate(*this, *_node, cameraGUID, posOffset, rotationOffset);

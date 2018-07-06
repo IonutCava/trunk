@@ -2,12 +2,14 @@
 
 #include "Physics/Headers/PXDevice.h"
 #include "Headers/RigidBodyComponent.h"
+#include "Graphs/Headers/SceneGraphNode.h"
 
 namespace Divide {
-    RigidBodyComponent::RigidBodyComponent(PhysicsGroup physicsGroup, PXDevice& context)
-        : _physicsCollisionGroup(physicsGroup)
+    RigidBodyComponent::RigidBodyComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup, PXDevice& context)
+        : SGNComponent(SGNComponent::ComponentType::RIGID_BODY, parentSGN),
+          _physicsCollisionGroup(physicsGroup)
     {
-        //_transformInterface.reset(context.createRigidActor(parentSGN));
+        _rigidBody.reset(context.createRigidActor(parentSGN));
     }
 
     RigidBodyComponent::~RigidBodyComponent()
@@ -17,5 +19,20 @@ namespace Divide {
 
     void RigidBodyComponent::cookCollisionMesh(const stringImpl& sceneName) {
 
+    }
+
+    bool RigidBodyComponent::filterCollission(const RigidBodyComponent& collider) {
+        // filter by mask, type, etc
+        return true;
+    }
+
+    void RigidBodyComponent::onCollision(const RigidBodyComponent& collider) {
+        //handle collision
+        if (_collisionCbk) {
+            if (filterCollission(collider)) {
+                assert(getSGN().getGUID() != collider.getSGN().getGUID());
+                _collisionCbk(collider);
+            }
+        }
     }
 }; //namespace

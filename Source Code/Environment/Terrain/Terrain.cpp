@@ -42,7 +42,8 @@ bool Terrain::unload() {
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
     static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::TRANSFORM) |
+                                  to_base(SGNComponent::ComponentType::RIGID_BODY) |
                                   to_base(SGNComponent::ComponentType::BOUNDS) |
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NETWORKING);
@@ -67,7 +68,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
                                                         vec2<U32>(0, Terrain::MAX_RENDER_NODES),
                                                         *_shaderData);
 
-    sgn.get<PhysicsComponent>()->setPosition(_offsetPosition);
+    sgn.get<TransformComponent>()->setPosition(_offsetPosition);
 
     SceneNode::postLoad(sgn);
 }

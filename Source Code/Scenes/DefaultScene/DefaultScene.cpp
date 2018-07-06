@@ -26,7 +26,7 @@ bool DefaultScene::load(const stringImpl& name) {
                         -cosf(sunAngle.y),
                         -sinf(sunAngle.x) * sinf(sunAngle.y));
     
-    light.lock()->get<PhysicsComponent>()->setPosition(sunvector);
+    light.lock()->get<TransformComponent>()->setPosition(sunvector);
     PushConstants& constants = _currentSky.lock()->get<RenderingComponent>()->pushConstants();
     constants.set("enable_sun", PushConstantType::BOOL, true);
     constants.set("sun_vector", PushConstantType::VEC3, sunvector);

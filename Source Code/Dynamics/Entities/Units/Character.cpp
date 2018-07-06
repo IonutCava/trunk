@@ -23,7 +23,7 @@ Character::~Character()
 
 void Character::setParentNode(SceneGraphNode_ptr node) {
     Unit::setParentNode(node);
-    PhysicsComponent* const transform = node->get<PhysicsComponent>();
+    TransformComponent* const transform = node->get<TransformComponent>();
     if (transform) {
         _newPosition.set(transform->getPosition());
         _oldPosition.set(_newPosition);
@@ -50,17 +50,17 @@ void Character::update(const U64 deltaTimeUS) {
         _velocityDirty = false;
     }
 
-    PhysicsComponent* const nodePhysicsComponent =
-        getBoundNode().lock()->get<PhysicsComponent>();
+    TransformComponent* const nodeTransformComponent =
+        getBoundNode().lock()->get<TransformComponent>();
     
     vec3<F32> sourceDirection(getLookingDirection());
     sourceDirection.y = 0.0f;
 
-    _oldPosition.set(nodePhysicsComponent->getPosition());
+    _oldPosition.set(nodeTransformComponent->getPosition());
     _oldPosition.lerp(_curPosition, to_F32(GFXDevice::getFrameInterpolationFactor()));
-    nodePhysicsComponent->setPosition(_oldPosition);
-    nodePhysicsComponent->rotateSlerp(
-        nodePhysicsComponent->getOrientation() *
+    nodeTransformComponent->setPosition(_oldPosition);
+    nodeTransformComponent->rotateSlerp(
+        nodeTransformComponent->getOrientation() *
             RotationFromVToU(sourceDirection, _curVelocity),
         to_F32(GFXDevice::getFrameInterpolationFactor()));
 }
@@ -92,7 +92,7 @@ vec3<F32> Character::getLookingDirection() {
     SceneGraphNode_ptr node(getBoundNode().lock());
 
     if (node) {
-        return node->get<PhysicsComponent>()->getOrientation() *
+        return node->get<TransformComponent>()->getOrientation() *
                getRelativeLookingDirection();
     }
 
@@ -107,7 +107,7 @@ void Character::lookAt(const vec3<F32>& targetPos) {
     }
 
     _newVelocity.set(
-        node->get<PhysicsComponent>()->getPosition().direction(
+        node->get<TransformComponent>()->getPosition().direction(
             targetPos));
     _velocityDirty = true;
 }

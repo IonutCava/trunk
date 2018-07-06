@@ -26,7 +26,7 @@ Unit::~Unit()
 
 void Unit::setParentNode(SceneGraphNode_ptr node) {
     _node = node;
-    _currentPosition = _node.lock()->get<PhysicsComponent>()->getPosition();
+    _currentPosition = _node.lock()->get<TransformComponent>()->getPosition();
 }
 
 /// Pathfinding, collision detection, animation playback should all be
@@ -40,7 +40,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
     WriteLock w_lock(_unitUpdateMutex);
     // We receive move request every frame for now (or every task tick)
     // Start plotting a course from our current position
-    _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
+    _currentPosition = sgn->get<TransformComponent>()->getPosition();
     _currentTargetPosition = targetPosition;
 
     if (_prevTime <= 0) {
@@ -107,7 +107,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
                          : moveDistance);
             }
             // commit transformations
-            sgn->get<PhysicsComponent>()->translate(interpPosition);
+            sgn->get<TransformComponent>()->translate(interpPosition);
         }
     }
 
@@ -123,7 +123,7 @@ bool Unit::moveToX(const F32 targetPosition) {
     {
         /// Update current position
         WriteLock w_lock(_unitUpdateMutex);
-        _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
+        _currentPosition = sgn->get<TransformComponent>()->getPosition();
     }
     return moveTo(vec3<F32>(targetPosition,
                             _currentPosition.y,
@@ -139,7 +139,7 @@ bool Unit::moveToY(const F32 targetPosition) {
     {
         /// Update current position
         WriteLock w_lock(_unitUpdateMutex);
-        _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
+        _currentPosition = sgn->get<TransformComponent>()->getPosition();
     }
     return moveTo(vec3<F32>(_currentPosition.x,
                             targetPosition,
@@ -155,7 +155,7 @@ bool Unit::moveToZ(const F32 targetPosition) {
     {
         /// Update current position
         WriteLock w_lock(_unitUpdateMutex);
-        _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
+        _currentPosition = sgn->get<TransformComponent>()->getPosition();
     }
     return moveTo(vec3<F32>(_currentPosition.x,
                             _currentPosition.y,
@@ -176,14 +176,14 @@ bool Unit::teleportTo(const vec3<F32>& targetPosition) {
         /// Update target
         _currentTargetPosition = targetPosition;
     }
-    PhysicsComponent* nodePhysicsComponent =
-        sgn->get<PhysicsComponent>();
+    TransformComponent* nodeTransformComponent =
+        sgn->get<TransformComponent>();
     /// Start plotting a course from our current position
-    _currentPosition = nodePhysicsComponent->getPosition();
+    _currentPosition = nodeTransformComponent->getPosition();
     /// teleport to desired position
-    nodePhysicsComponent->setPosition(_currentTargetPosition);
+    nodeTransformComponent->setPosition(_currentTargetPosition);
     /// Update current position
-    _currentPosition = nodePhysicsComponent->getPosition();
+    _currentPosition = nodeTransformComponent->getPosition();
     /// And check if we arrived
     if (_currentTargetPosition.compare(_currentPosition, 0.0001f)) {
         return true;  ///< yes

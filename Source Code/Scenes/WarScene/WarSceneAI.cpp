@@ -91,10 +91,10 @@ void WarScene::checkGameCompletion() {
         if (timeReason) {
             _resetUnits = true;
             for (U8 i = 0; i < 2; ++i) {
-                PhysicsComponent* flagPComp = _flag[i].lock()->get<PhysicsComponent>();
-                flagPComp->popTransforms();
+                TransformComponent* flagtComp = _flag[i].lock()->get<TransformComponent>();
+                flagtComp->popTransforms();
                 _flag[i].lock()->setParent(_sceneGraph->getRoot());
-                flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
+                flagtComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
             }
             AI::WarSceneAIProcessor::reset();
             AI::WarSceneAIProcessor::registerFlags(_flag[0].lock(), _flag[1].lock());
@@ -107,10 +107,10 @@ void WarScene::registerPoint(U16 teamID, const stringImpl& unitName) {
         _resetUnits = true;
 
         for (U8 i = 0; i < 2; ++i) {
-            PhysicsComponent* flagPComp = _flag[i].lock()->get<PhysicsComponent>();
-            WAIT_FOR_CONDITION(!flagPComp->popTransforms());
+            TransformComponent* flagtComp = _flag[i].lock()->get<TransformComponent>();
+            WAIT_FOR_CONDITION(!flagtComp->popTransforms());
             _flag[i].lock()->setParent(_sceneGraph->getRoot());
-            flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
+            flagtComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
         }
         AI::WarSceneAIProcessor::reset();
         AI::WarSceneAIProcessor::incrementScore(teamID);
@@ -276,7 +276,8 @@ bool WarScene::addUnits() {
     stringImpl currentName;
 
     static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::TRANSFORM) |
+                                  to_base(SGNComponent::ComponentType::RIGID_BODY) |
                                   to_base(SGNComponent::ComponentType::BOUNDS) |
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::UNIT) |
@@ -295,7 +296,7 @@ bool WarScene::addUnits() {
             if (IS_IN_RANGE_INCLUSIVE(i, 0, 4)) {
                 currentMesh = lightNodeMesh;
                 currentScale =
-                    lightNode->get<PhysicsComponent>()->getScale();
+                    lightNode->get<TransformComponent>()->getScale();
                 currentName = Util::StringFormat("Soldier_1_%d_%d", k, i);
                 speed = Metric::Base(Random(6.5f, 9.5f));
                 acc = Metric::Base(Random(4.5f, 8.0f));
@@ -303,7 +304,7 @@ bool WarScene::addUnits() {
             } else if (IS_IN_RANGE_INCLUSIVE(i, 5, 9)) {
                 currentMesh = animalNodeMesh;
                 currentScale =
-                    animalNode->get<PhysicsComponent>()->getScale();
+                    animalNode->get<TransformComponent>()->getScale();
                 currentName = Util::StringFormat("Soldier_2_%d_%d", k, i % 5);
                 speed = Metric::Base(Random(8.5f, 11.5f));
                 acc = Metric::Base(Random(6.0f, 9.0f));
@@ -313,7 +314,7 @@ bool WarScene::addUnits() {
             } else {
                 currentMesh = heavyNodeMesh;
                 currentScale =
-                    heavyNode->get<PhysicsComponent>()->getScale();
+                    heavyNode->get<TransformComponent>()->getScale();
                 currentName = Util::StringFormat("Soldier_3_%d_%d", k, i % 10);
                 speed = Metric::Base(Random(4.5f, 7.5f));
                 acc = Metric::Base(Random(4.0f, 6.5f));
@@ -325,27 +326,27 @@ bool WarScene::addUnits() {
             SceneGraphNode_ptr currentNode = root.addNode(currentMesh, normalMask, PhysicsGroup::GROUP_KINEMATIC, currentName);
             currentNode->setSelectable(true);
 
-            PhysicsComponent* pComp =
-                currentNode->get<PhysicsComponent>();
-            pComp->setScale(currentScale);
+            TransformComponent* tComp =
+                currentNode->get<TransformComponent>();
+            tComp->setScale(currentScale);
 
             if (k == 0) {
                 zFactor *= -25;
                 zFactor -= 200;
-                pComp->translateX(Metric::Base(-25.0f));
+                tComp->translateX(Metric::Base(-25.0f));
             } else {
                 zFactor *= 25;
                 zFactor += 200;
-                pComp->rotateY(Angle::DEGREES<F32>(180.0f));
-                pComp->translateX(Metric::Base(100.0f));
-                pComp->translateX(Metric::Base(25.0f));
+                tComp->rotateY(Angle::DEGREES<F32>(180.0f));
+                tComp->translateX(Metric::Base(100.0f));
+                tComp->translateX(Metric::Base(25.0f));
             }
 
-            pComp->setPosition(vec3<F32>(Metric::Base(-125.0f + 25 * (i % 5)),
+            tComp->setPosition(vec3<F32>(Metric::Base(-125.0f + 25 * (i % 5)),
                                          Metric::Base(-0.01f),
                                          Metric::Base(zFactor)));
 
-            aiSoldier = MemoryManager_NEW AI::AIEntity(pComp->getPosition(),
+            aiSoldier = MemoryManager_NEW AI::AIEntity(tComp->getPosition(),
                                                        currentNode->getName());
             aiSoldier->addSensor(AI::SensorType::VISUAL_SENSOR);
             currentNode->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_BOUNDS_AABB, k == 0);

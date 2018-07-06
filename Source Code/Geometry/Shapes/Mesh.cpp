@@ -41,7 +41,8 @@ void Mesh::updateBoundsInternal(SceneGraphNode& sgn) {
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void Mesh::postLoad(SceneGraphNode& sgn) {
     static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::TRANSFORM) |
+                                  to_base(SGNComponent::ComponentType::RIGID_BODY) |
                                   to_base(SGNComponent::ComponentType::BOUNDS) |
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NAVIGATION);

@@ -301,7 +301,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
         U32 aliveCount = getAliveParticleCount();
         renderState().setDrawState(aliveCount > 0);
 
-        PhysicsComponent* transform = sgn.get<PhysicsComponent>();
+        TransformComponent* transform = sgn.get<TransformComponent>();
 
         const vec3<F32>& pos = transform->getPosition();
         const Quaternion<F32>& rot = transform->getOrientation();

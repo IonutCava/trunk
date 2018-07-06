@@ -3,7 +3,7 @@
 #include "Headers/PhysXActor.h"
 
 namespace Divide {
-    PhysXActor::PhysXActor(PhysicsComponent& parent)
+    PhysXActor::PhysXActor(RigidBodyComponent& parent)
         : PhysicsAsset(parent),
         _actor(nullptr),
         _isDynamic(false),

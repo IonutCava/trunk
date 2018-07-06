@@ -346,9 +346,6 @@
     <ClCompile Include="..\../Source Code/Graphs\Components\AnimationComponent.cpp">
       <Filter>Graphs\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Graphs\Components\PhysicsComponent.cpp">
-      <Filter>Graphs\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Graphs\Components\NavigationComponent.cpp">
       <Filter>Graphs\Components</Filter>
     </ClCompile>
@@ -730,9 +727,6 @@
       <Filter>Graphs\Components\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Graphs\Components\Headers\SGNComponent.h">
-      <Filter>Graphs\Components\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Graphs\Components\Headers\PhysicsComponent.h">
       <Filter>Graphs\Components\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Graphs\Components\Headers\NavigationComponent.h">

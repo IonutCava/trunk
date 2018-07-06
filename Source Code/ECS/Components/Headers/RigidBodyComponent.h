@@ -33,12 +33,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _RIGID_BODY_COMPONENT_H_
 
 #include "Core/Math/Headers/Transform.h"
+#include "Graphs/Components/Headers/SGNComponent.h"
+#include "Physics/Headers/PhysicsAsset.h"
 
 #include <ECS.h>
 
 namespace Divide {
-    class PXDevice;
-
     enum class PhysicsGroup : U32 {
         GROUP_STATIC = 0,
         GROUP_DYNAMIC,
@@ -49,9 +49,12 @@ namespace Divide {
         GROUP_COUNT
     };
 
-    class RigidBodyComponent : public ECS::Component<RigidBodyComponent> {
+    class PXDevice;
+    
+    class RigidBodyComponent : public SGNComponent, 
+                               public ECS::Component<RigidBodyComponent> {
       public:
-        RigidBodyComponent(PhysicsGroup physicsGroup, PXDevice& context);
+        RigidBodyComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup, PXDevice& context);
         ~RigidBodyComponent();
 
 
@@ -61,9 +64,20 @@ namespace Divide {
 
         void cookCollisionMesh(const stringImpl& sceneName);
 
+        void onCollision(const RigidBodyComponent& collider);
+
+        inline void onCollisionCbk(const DELEGATE_CBK<void, const RigidBodyComponent&>& cbk) {
+            _collisionCbk = cbk;
+        }
+
+
+      private:
+        bool filterCollission(const RigidBodyComponent& collider);
+
       private:
         PhysicsGroup _physicsCollisionGroup;
-        std::unique_ptr<TransformInterface> _transformInterface;
+        std::unique_ptr<PhysicsAsset> _rigidBody;
+        DELEGATE_CBK<void, const RigidBodyComponent&> _collisionCbk;
         
     };
 };

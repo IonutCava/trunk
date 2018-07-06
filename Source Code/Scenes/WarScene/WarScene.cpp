@@ -174,7 +174,7 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
                             -cosf(g_sunAngle.y),
                             -sinf(g_sunAngle.x) * sinf(g_sunAngle.y));
 
-        _sun.lock()->get<PhysicsComponent>()->setPosition(sunVector);
+        _sun.lock()->get<TransformComponent>()->setPosition(sunVector);
         vec4<F32> sunColour = vec4<F32>(1.0f, 1.0f, 0.2f, 1.0f);
 
         _sun.lock()->getNode<Light>()->setDiffuseColour(sunColour);
@@ -205,10 +205,10 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
 
     if (!initPosSetLight) {
         for (U8 i = 0; i < 16; ++i) {
-            initPosLight[i].set(_lightNodes[i].lock()->get<PhysicsComponent>()->getPosition());
+            initPosLight[i].set(_lightNodes[i].lock()->get<TransformComponent>()->getPosition());
         }
         for (U8 i = 0; i < 80; ++i) {
-            initPosLight2[i].set(_lightNodes2[i].first.lock()->get<PhysicsComponent>()->getPosition());
+            initPosLight2[i].set(_lightNodes2[i].first.lock()->get<TransformComponent>()->getPosition());
         }
         initPosSetLight = true;
     }
@@ -228,25 +228,25 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
             F32 c = i % 2 == 0 ? c1 : c2;
             F32 s = i % 2 == 0 ? s1 : s2;
             SceneGraphNode_ptr light = _lightNodes[i].lock();
-            PhysicsComponent* pComp = light->get<PhysicsComponent>();
-            pComp->setPositionX(radius * c + initPosLight[i].x);
-            pComp->setPositionZ(radius * s + initPosLight[i].z);
-            pComp->setPositionY((radius * 0.5f) * s + initPosLight[i].y);
+            TransformComponent* tComp = light->get<TransformComponent>();
+            tComp->setPositionX(radius * c + initPosLight[i].x);
+            tComp->setPositionZ(radius * s + initPosLight[i].z);
+            tComp->setPositionY((radius * 0.5f) * s + initPosLight[i].y);
         }
 
         for (U8 i = 0; i < 80; ++i) {
             SceneGraphNode_ptr light = _lightNodes2[i].first.lock();
-            PhysicsComponent* pComp = light->get<PhysicsComponent>();
+            TransformComponent* tComp = light->get<TransformComponent>();
             F32 angle = _lightNodes2[i].second ? std::fmod(phiLight + 45.0f, 360.0f) : phiLight;
             vec2<F32> position(rotatePoint(vec2<F32>(0.0f), angle, initPosLight2[i].xz()));
-            pComp->setPositionX(position.x);
-            pComp->setPositionZ(position.y);
+            tComp->setPositionX(position.x);
+            tComp->setPositionZ(position.y);
         }
 
         for (U8 i = 0; i < 40; ++i) {
             SceneGraphNode_ptr light = _lightNodes3[i].lock();
-            PhysicsComponent* pComp = light->get<PhysicsComponent>();
-            pComp->rotateY(phiLight);
+            TransformComponent* tComp = light->get<TransformComponent>();
+            tComp->rotateY(phiLight);
         }
         _taskTimers[3] = 0.0;
     }
@@ -281,16 +281,16 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
             phi = 0.0f;
         }
 
-        PhysicsComponent* pComp = particles->get<PhysicsComponent>();
+        TransformComponent* tComp = particles->get<TransformComponent>();
         if (!initPosSet) {
-            initPos.set(pComp->getPosition());
+            initPos.set(tComp->getPosition());
             initPosSet = true;
         }
 
-        /*pComp->setPositionX(radius * std::cos(phi) + initPos.x);
-        pComp->setPositionZ(radius * std::sin(phi) + initPos.z);
-        pComp->setPositionY((radius * 0.5f) * std::sin(phi) + initPos.y);
-        pComp->rotateY(phi);*/
+        /*tComp->setPositionX(radius * std::cos(phi) + initPos.x);
+        tComp->setPositionZ(radius * std::sin(phi) + initPos.z);
+        tComp->setPositionY((radius * 0.5f) * std::sin(phi) + initPos.y);
+        tComp->rotateY(phi);*/
     }
 
     if (!_aiManager->getNavMesh(_armyNPCs[0][0].lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity()->getAgentRadiusCategory())) {
@@ -328,11 +328,12 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
 }
 
 bool WarScene::load(const stringImpl& name) {
-    static const U32 lightMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+    static const U32 lightMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
                                  to_base(SGNComponent::ComponentType::BOUNDS) |
                                  to_base(SGNComponent::ComponentType::RENDERING);
 
     static const U32 normalMask = lightMask |
+                                  to_base(SGNComponent::ComponentType::RIGID_BODY) |
                                   to_base(SGNComponent::ComponentType::NAVIGATION) |
                                   to_base(SGNComponent::ComponentType::NETWORKING);
 
@@ -411,10 +412,10 @@ bool WarScene::load(const stringImpl& name) {
             locationFlag = 3;
         }
 
-        SceneGraphNode_ptr crtNode = _sceneGraph->getRoot().addNode(currentMesh, normalMask, baseNode->get<PhysicsComponent>()->physicsGroup(), currentName);
+        SceneGraphNode_ptr crtNode = _sceneGraph->getRoot().addNode(currentMesh, normalMask, baseNode->get<RigidBodyComponent>()->physicsGroup(), currentName);
         crtNode->setSelectable(true);
         crtNode->usageContext(baseNode->usageContext());
-        PhysicsComponent* pComp = crtNode->get<PhysicsComponent>();
+        TransformComponent* tComp = crtNode->get<TransformComponent>();
         NavigationComponent* nComp = crtNode->get<NavigationComponent>();
         nComp->navigationContext(
             baseNode->get<NavigationComponent>()->navigationContext());
@@ -423,8 +424,8 @@ bool WarScene::load(const stringImpl& name) {
             ->navMeshDetailOverride());
 
         vec3<F32> position(to_F32(currentPos.first), -0.01f, to_F32(currentPos.second));
-        pComp->setScale(baseNode->get<PhysicsComponent>()->getScale());
-        pComp->setPosition(position);
+        tComp->setScale(baseNode->get<TransformComponent>()->getScale());
+        tComp->setPosition(position);
 
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_1", currentName.c_str()));
@@ -437,7 +438,7 @@ bool WarScene::load(const stringImpl& name) {
             light->setCastShadows(false);
             light->setDiffuseColour(DefaultColours::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
-            lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
+            lightSGN->get<TransformComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, false));
         }
         {
@@ -450,7 +451,7 @@ bool WarScene::load(const stringImpl& name) {
             light->setCastShadows(false);
             light->setDiffuseColour(DefaultColours::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
-            lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
+            lightSGN->get<TransformComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, true));
         }
         {
@@ -464,8 +465,8 @@ bool WarScene::load(const stringImpl& name) {
             light->setCastShadows(false);
             light->setDiffuseColour(DefaultColours::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
-            lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));
-            lightSGN->get<PhysicsComponent>()->rotateX(-20);
+            lightSGN->get<TransformComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));
+            lightSGN->get<TransformComponent>()->rotateX(-20);
             _lightNodes3.push_back(lightSGN);
         }
     }
@@ -479,33 +480,33 @@ bool WarScene::load(const stringImpl& name) {
     flag->setActive(false);
     std::shared_ptr<SceneNode> flagNode = flag->getNode();
 
-    _flag[0] = _sceneGraph->getRoot().addNode(flagNode, normalMask, flag->get<PhysicsComponent>()->physicsGroup(), "Team1Flag");
+    _flag[0] = _sceneGraph->getRoot().addNode(flagNode, normalMask, flag->get<RigidBodyComponent>()->physicsGroup(), "Team1Flag");
 
     SceneGraphNode_ptr flag0(_flag[0].lock());
     flag0->setSelectable(false);
     flag0->usageContext(flag->usageContext());
-    PhysicsComponent* flagPComp = flag0->get<PhysicsComponent>();
+    TransformComponent* flagtComp = flag0->get<TransformComponent>();
     NavigationComponent* flagNComp = flag0->get<NavigationComponent>();
     RenderingComponent* flagRComp = flag0->getChild(0).get<RenderingComponent>();
 
-    flagPComp->setScale(flag->get<PhysicsComponent>()->getScale());
-    flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
+    flagtComp->setScale(flag->get<TransformComponent>()->getScale());
+    flagtComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
 
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::BLUE);
 
-    _flag[1] = _sceneGraph->getRoot().addNode(flagNode, normalMask, flag->get<PhysicsComponent>()->physicsGroup(), "Team2Flag");
+    _flag[1] = _sceneGraph->getRoot().addNode(flagNode, normalMask, flag->get<RigidBodyComponent>()->physicsGroup(), "Team2Flag");
     SceneGraphNode_ptr flag1(_flag[1].lock());
     flag1->setSelectable(false);
     flag1->usageContext(flag->usageContext());
 
-    flagPComp = flag1->get<PhysicsComponent>();
+    flagtComp = flag1->get<TransformComponent>();
     flagNComp = flag1->get<NavigationComponent>();
     flagRComp = flag1->getChild(0).get<RenderingComponent>();
 
-    flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
-    flagPComp->setScale(flag->get<PhysicsComponent>()->getScale());
+    flagtComp->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
+    flagtComp->setScale(flag->get<TransformComponent>()->getScale());
 
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
 
@@ -514,17 +515,17 @@ bool WarScene::load(const stringImpl& name) {
     SceneGraphNode_ptr firstPersonFlag = _sceneGraph->getRoot().addNode(flagNode, normalMask, PhysicsGroup::GROUP_KINEMATIC, "FirstPersonFlag");
     firstPersonFlag->lockVisibility(true);
     firstPersonFlag->usageContext(SceneGraphNode::UsageContext::NODE_DYNAMIC);
-    flagPComp = firstPersonFlag->get<PhysicsComponent>();
-    flagPComp->setScale(0.0015f);
-    flagPComp->setPosition(1.25f, -1.5f, 0.15f);
-    flagPComp->rotate(-20.0f, -70.0f, 50.0f);
-    flagPComp->onCollisionCbk(DELEGATE_BIND(&WarScene::weaponCollision, this, std::placeholders::_1));
+    flagtComp = firstPersonFlag->get<TransformComponent>();
+    flagtComp->setScale(0.0015f);
+    flagtComp->setPosition(1.25f, -1.5f, 0.15f);
+    flagtComp->rotate(-20.0f, -70.0f, 50.0f);
+    firstPersonFlag->get<RigidBodyComponent>()->onCollisionCbk(DELEGATE_BIND(&WarScene::weaponCollision, this, std::placeholders::_1));
     flagRComp = firstPersonFlag->getChild(0).get<RenderingComponent>();
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::GREEN);
     flagRComp->getMaterialInstance()->setHighPriority(true);
     _firstPersonWeapon = firstPersonFlag;
 
-    //_firstPersonWeapon.lock()->get<PhysicsComponent>()->ignoreView(true, playerCamera()->getGUID());
+    //_firstPersonWeapon.lock()->get<TransformComponent>()->ignoreView(true, playerCamera()->getGUID());
 
     AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);
 
@@ -575,11 +576,11 @@ bool WarScene::load(const stringImpl& name) {
     _particleEmitter = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
     SceneGraphNode_ptr testSGN = _particleEmitter.lock();
     std::shared_ptr<ParticleEmitter> test = testSGN->getNode<ParticleEmitter>();
-    testSGN->get<PhysicsComponent>()->translateY(10);
+    testSGN->get<TransformComponent>()->translateY(10);
     test->setDrawImpostor(true);
     test->enableEmitter(true);
     test->addSource(particleSource);
-    boxGenerator->pos(vec4<F32>(testSGN->get<PhysicsComponent>()->getPosition()));
+    boxGenerator->pos(vec4<F32>(testSGN->get<TransformComponent>()->getPosition()));
 
     std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>(platformContext().gfx());
     eulerUpdater->_globalAcceleration.set(0.0f, -20.0f, 0.0f);
@@ -604,7 +605,7 @@ bool WarScene::load(const stringImpl& name) {
             light->setCastShadows(false);
             light->setDiffuseColour(DefaultColours::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
-            lightSGN->get<PhysicsComponent>()->setPosition(vec3<F32>(-215.0f + (115 * row), 15.0f, (-215.0f + (115 * col))));
+            lightSGN->get<TransformComponent>()->setPosition(vec3<F32>(-215.0f + (115 * row), 15.0f, (-215.0f + (115 * col))));
             _lightNodes.push_back(lightSGN);
         }
     }
@@ -768,7 +769,7 @@ void WarScene::postLoadMainThread() {
     Scene::postLoadMainThread();
 }
 
-void WarScene::weaponCollision(const PhysicsComponent& collider) {
+void WarScene::weaponCollision(const RigidBodyComponent& collider) {
     Console::d_printfn("Weapon touched [ %s ]", collider.getSGN().getName().c_str());
 }
 

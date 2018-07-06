@@ -75,7 +75,7 @@ bool Light::unload() {
 }
 
 void Light::postLoad(SceneGraphNode& sgn) {
-    sgn.get<PhysicsComponent>()->setPosition(_positionAndRange.xyz());
+    sgn.get<TransformComponent>()->setPosition(_positionAndRange.xyz());
     sgn.get<BoundsComponent>()->lockBBTransforms(true);
     SceneNode::postLoad(sgn);
 }
@@ -99,10 +99,10 @@ void Light::setSpotCosOuterConeAngle(F32 newCosAngle) {
 }
 
 void Light::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
-    vec3<F32> dir(sgn.get<PhysicsComponent>()->getOrientation() * WORLD_Z_NEG_AXIS);
+    vec3<F32> dir(sgn.get<TransformComponent>()->getOrientation() * WORLD_Z_NEG_AXIS);
     dir.normalize();
     _spotProperties.xyz(dir);
-    _positionAndRange.xyz(sgn.get<PhysicsComponent>()->getPosition());
+    _positionAndRange.xyz(sgn.get<TransformComponent>()->getPosition());
     setFlag(UpdateFlag::BOUNDS_CHANGED);
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
@@ -136,7 +136,7 @@ bool Light::onRender(SceneGraphNode& sgn,
     }
 
     if (!_impostor) {
-        static const U32 normalMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+        static const U32 normalMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
                                       to_base(SGNComponent::ComponentType::BOUNDS) |
                                       to_base(SGNComponent::ComponentType::RENDERING);
 
@@ -166,8 +166,8 @@ void Light::updateImpostor() {
             // Spot light's bounding sphere extends from the middle of the light's range outwards,
             // touching the light's position on one end and the cone at the other
             // so we need to offest the impostor's position a bit
-            PhysicsComponent* pComp = _impostorSGN.lock()->get<PhysicsComponent>();
-            pComp->setPosition(getSpotDirection() * range);
+            TransformComponent* tComp = _impostorSGN.lock()->get<TransformComponent>();
+            tComp->setPosition(getSpotDirection() * range);
         }
         _impostor->setRadius(range);
         _rangeChanged = false;

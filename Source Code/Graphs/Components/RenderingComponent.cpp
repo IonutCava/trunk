@@ -424,7 +424,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
                 AnimationComponent* childAnimComp = _parentSGN.get<AnimationComponent>();
                 // Get the skeleton lines from the submesh's animation component
                 const vectorImpl<Line>& skeletonLines = childAnimComp->skeletonLines();
-                _skeletonPrimitive->worldMatrix(_parentSGN.get<PhysicsComponent>()->getWorldMatrix());
+                _skeletonPrimitive->worldMatrix(_parentSGN.get<TransformComponent>()->getWorldMatrix());
                 // Submit the skeleton lines to the GPU for rendering
                 _skeletonPrimitive->fromLines(skeletonLines);
                 parentStates.setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, true);
@@ -763,7 +763,7 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
 
     _envProbes.insert(std::cend(_envProbes), std::cbegin(probes), std::cend(probes));
 
-    PhysicsComponent* const transform = _parentSGN.get<PhysicsComponent>();
+    TransformComponent* const transform = _parentSGN.get<TransformComponent>();
     if (transform) {
         const vec3<F32>& nodePos = transform->getPosition();
         auto sortFunc = [&nodePos](const EnvironmentProbe_ptr& a, const EnvironmentProbe_ptr& b) -> bool {
@@ -788,7 +788,7 @@ void RenderingComponent::drawDebugAxis() {
         return;
     }
 
-    PhysicsComponent* const transform = _parentSGN.get<PhysicsComponent>();
+    TransformComponent* const transform = _parentSGN.get<TransformComponent>();
     if (transform) {
         mat4<F32> tempOffset(GetMatrix(transform->getOrientation()), false);
         tempOffset.setTranslation(transform->getPosition());

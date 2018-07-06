@@ -6,7 +6,7 @@
 
 namespace Divide {
     TransformComponent::TransformComponent(SceneGraphNode& parentSGN)
-      : SGNComponent(SGNComponent::ComponentType::PHYSICS, parentSGN),
+      : SGNComponent(SGNComponent::ComponentType::TRANSFORM, parentSGN),
         _dirty(true),
         _dirtyInterp(true),
         _parentDirty(true),
@@ -371,7 +371,7 @@ namespace Divide {
                                    getLocalScale(interpolationFactor),
                                    mat4<F32>(GetMatrix(getLocalOrientation(interpolationFactor)), false));
             if (!grandParentPtr.expired()) {
-                _worldMatrixInterp *= grandParentPtr.lock()->get<PhysicsComponent>()->getWorldMatrix(interpolationFactor);
+                _worldMatrixInterp *= grandParentPtr.lock()->get<TransformComponent>()->getWorldMatrix(interpolationFactor);
             }
             clean(true);
         }
@@ -389,7 +389,7 @@ namespace Divide {
 
             SceneGraphNode_wptr grandParentPtr = _parentSGN.getParent();
             if (!grandParentPtr.expired()) {
-                _worldMatrix *= grandParentPtr.lock()->get<PhysicsComponent>()->getWorldMatrix();
+                _worldMatrix *= grandParentPtr.lock()->get<TransformComponent>()->getWorldMatrix();
             }
             clean(false);
         }
@@ -407,7 +407,7 @@ namespace Divide {
 
         SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
         if (grandParent) {
-            position += grandParent->get<PhysicsComponent>()->getPosition();
+            position += grandParent->get<TransformComponent>()->getPosition();
         }
 
         return position;
@@ -425,7 +425,7 @@ namespace Divide {
 
         SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
         if (grandParent) {
-            position += grandParent->get<PhysicsComponent>()->getPosition(interpolationFactor);
+            position += grandParent->get<TransformComponent>()->getPosition(interpolationFactor);
         }
 
         return position;
@@ -442,7 +442,7 @@ namespace Divide {
 
         SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
         if (grandParent) {
-            scale *= grandParent->get<PhysicsComponent>()->getScale();
+            scale *= grandParent->get<TransformComponent>()->getScale();
         }
 
         return scale;
@@ -460,7 +460,7 @@ namespace Divide {
 
         SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
         if (grandParent) {
-            scale *= grandParent->get<PhysicsComponent>()->getScale(interpolationFactor);
+            scale *= grandParent->get<TransformComponent>()->getScale(interpolationFactor);
         }
 
         return scale;
@@ -478,7 +478,7 @@ namespace Divide {
 
         SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
         if (grandParent) {
-            orientation.set(grandParent->get<PhysicsComponent>()->getOrientation() * orientation);
+            orientation.set(grandParent->get<TransformComponent>()->getOrientation() * orientation);
         }
 
         return orientation;
@@ -495,7 +495,7 @@ namespace Divide {
 
         SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
         if (grandParent) {
-            orientation.set(grandParent->get<PhysicsComponent>()->getOrientation(interpolationFactor) * orientation);
+            orientation.set(grandParent->get<TransformComponent>()->getOrientation(interpolationFactor) * orientation);
         }
 
         return orientation;

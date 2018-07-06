@@ -36,7 +36,7 @@ void CubeScene::processTasks(const U64 deltaTimeUS) {
                 F32 b = col / (_lightNodes.size() / 3.0f);
 
                 _lightNodes[row * 10 + col].lock()->getNode<Light>()->setDiffuseColour(vec3<F32>(r, g, b));
-                _lightNodes[row * 10 + col].lock()->get<PhysicsComponent>()->setPosition(vec3<F32>(x, y, z));
+                _lightNodes[row * 10 + col].lock()->get<TransformComponent>()->setPosition(vec3<F32>(x, y, z));
             }
 
         _taskTimers[0] = 0.0;
@@ -66,12 +66,12 @@ void CubeScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     SceneGraphNode_cptr bila(_sceneGraph->findNode("Bila").lock());
     SceneGraphNode_cptr dwarf(_sceneGraph->findNode("dwarf").lock());
 
-    cutia1->get<PhysicsComponent>()->rotate(
+    cutia1->get<TransformComponent>()->rotate(
         0.3f * g_i, 0.6f * g_i, 0);
-    hellotext->get<PhysicsComponent>()->rotate(
+    hellotext->get<TransformComponent>()->rotate(
         vec3<F32>(0.6f, 0.2f, 0.4f), g_i);
-    bila->get<PhysicsComponent>()->translateY(g_j * 0.25f);
-    dwarf->get<PhysicsComponent>()->rotate(vec3<F32>(0, 1, 0), g_i);
+    bila->get<TransformComponent>()->translateY(g_j * 0.25f);
+    dwarf->get<TransformComponent>()->rotate(vec3<F32>(0, 1, 0), g_i);
 
     Scene::processInput(idx, deltaTimeUS);
 }
@@ -84,7 +84,7 @@ bool CubeScene::load(const stringImpl& name) {
 
 bool CubeScene::loadResources(bool continueOnErrors) {
     // 30 lights? >:)
-    static const U32 normalMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+    static const U32 normalMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
                                   to_base(SGNComponent::ComponentType::BOUNDS) |
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NETWORKING);

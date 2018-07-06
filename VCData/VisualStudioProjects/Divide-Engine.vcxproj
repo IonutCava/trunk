@@ -299,7 +299,6 @@
     <ClCompile Include="..\../Source Code/Graphs\Components\IKComponent.cpp" />
     <ClCompile Include="..\../Source Code/Graphs\Components\NavigationComponent.cpp" />
     <ClCompile Include="..\../Source Code/Graphs\Components\NetworkingComponent.cpp" />
-    <ClCompile Include="..\../Source Code/Graphs\Components\PhysicsComponent.cpp" />
     <ClCompile Include="..\../Source Code/Graphs\Components\RagdollComponent.cpp" />
     <ClCompile Include="..\../Source Code/Graphs\Components\RenderingComponent.cpp" />
     <ClCompile Include="..\../Source Code/Graphs\Components\RenderingComponentState.cpp" />
@@ -440,7 +439,6 @@
     <ClInclude Include="..\../Source Code/Graphs\Components\Headers\IKComponent.h" />
     <ClInclude Include="..\../Source Code/Graphs\Components\Headers\NavigationComponent.h" />
     <ClInclude Include="..\../Source Code/Graphs\Components\Headers\NetworkingComponent.h" />
-    <ClInclude Include="..\../Source Code/Graphs\Components\Headers\PhysicsComponent.h" />
     <ClInclude Include="..\../Source Code/Graphs\Components\Headers\RagdollComponent.h" />
     <ClInclude Include="..\../Source Code/Graphs\Components\Headers\RenderingComponent.h" />
     <ClInclude Include="..\../Source Code/Graphs\Components\Headers\SGNComponent.h" />

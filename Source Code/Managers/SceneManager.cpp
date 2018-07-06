@@ -455,7 +455,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
             const SceneGraphNode_ptr water(body.lock());
             
             _sceneData->waterDetails(index,
-                                     water->get<PhysicsComponent>()->getPosition(),
+                                     water->get<TransformComponent>()->getPosition(),
                                      water->getNode<WaterPlane>()->getDimensions());
             index++;
             break;//<- temp

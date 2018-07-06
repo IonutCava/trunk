@@ -76,7 +76,7 @@ void TenisScene::processTasks(const U64 deltaTimeUS) {
         vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-    _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
+    _sun.lock()->get<TransformComponent>()->setPosition(_sunvector);
 
     PushConstants& constants = _currentSky.lock()->get<RenderingComponent>()->pushConstants();
     constants.set("enable_sun", PushConstantType::BOOL, true);
@@ -99,7 +99,7 @@ void TenisScene::resetGame() {
     _applySideImpulse = false;
     _sideImpulseFactor = 0;
     WriteLock w_lock(_gameLock);
-    _ballSGN.lock()->get<PhysicsComponent>()->setPosition(vec3<F32>(
+    _ballSGN.lock()->get<TransformComponent>()->setPosition(vec3<F32>(
         (Random(0, 10) >= 5) ? 3.0f : -3.0f, 0.2f, _lostTeam1 ? -7.0f : 7.0f));
     _directionTeam1ToTeam2 = !_lostTeam1;
     _lostTeam1 = false;
@@ -144,12 +144,12 @@ void TenisScene::playGame(const Task& parentTask, AnyParam a, CallbackParam b) {
         UpgradableReadLock ur_lock(_gameLock);
         // Store by copy (thread-safe) current ball position (getPosition()) should
         // be threadsafe
-        vec3<F32> netPosition = _net.lock()->get<PhysicsComponent>()->getPosition();
-        vec3<F32> ballPosition = _ballSGN.lock()->get<PhysicsComponent>()->getPosition();
-        vec3<F32> player1Pos = _aiPlayer[0].lock()->get<PhysicsComponent>()->getPosition();
-        vec3<F32> player2Pos = _aiPlayer[1].lock()->get<PhysicsComponent>()->getPosition();
-        vec3<F32> player3Pos = _aiPlayer[2].lock()->get<PhysicsComponent>()->getPosition();
-        vec3<F32> player4Pos = _aiPlayer[3].lock()->get<PhysicsComponent>()->getPosition();
+        vec3<F32> netPosition = _net.lock()->get<TransformComponent>()->getPosition();
+        vec3<F32> ballPosition = _ballSGN.lock()->get<TransformComponent>()->getPosition();
+        vec3<F32> player1Pos = _aiPlayer[0].lock()->get<TransformComponent>()->getPosition();
+        vec3<F32> player2Pos = _aiPlayer[1].lock()->get<TransformComponent>()->getPosition();
+        vec3<F32> player3Pos = _aiPlayer[2].lock()->get<TransformComponent>()->getPosition();
+        vec3<F32> player4Pos = _aiPlayer[3].lock()->get<TransformComponent>()->getPosition();
         vec3<F32> netBBMax = _net.lock()->get<BoundsComponent>()->getBoundingBox().getMax();
         vec3<F32> netBBMin = _net.lock()->get<BoundsComponent>()->getBoundingBox().getMin();
 
@@ -164,9 +164,9 @@ void TenisScene::playGame(const Task& parentTask, AnyParam a, CallbackParam b) {
 
         // After we finish our computations, apply the new transform
         // setPosition/getPosition should be thread-safe
-        _ballSGN.lock()->get<PhysicsComponent>()->setPosition(ballPosition);
+        _ballSGN.lock()->get<TransformComponent>()->setPosition(ballPosition);
         // Add a spin to the ball just for fun ...
-        _ballSGN.lock()->get<PhysicsComponent>()->rotate(
+        _ballSGN.lock()->get<TransformComponent>()->rotate(
             vec3<F32>(ballPosition.z, 1, 1));
 
         //----------------------COLLISIONS------------------------------//
@@ -319,7 +319,7 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
         player[i]->setSelectable(true);
         UnitComponent* unitComp = player[i]->get<UnitComponent>();
 
-        aiPlayer[i] = MemoryManager_NEW AI::AIEntity(player[i]->get<PhysicsComponent>()->getPosition(), nodeName);
+        aiPlayer[i] = MemoryManager_NEW AI::AIEntity(player[i]->get<TransformComponent>()->getPosition(), nodeName);
         aiPlayer[i]->addSensor(AI::SensorType::VISUAL_SENSOR);
         aiPlayer[i]->setAIProcessor(MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN, *_aiManager));
 
@@ -364,7 +364,8 @@ bool TenisScene::deinitializeAI(bool continueOnErrors) {
 }
 
 bool TenisScene::loadResources(bool continueOnErrors) {
-    static const U32 normalMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+    static const U32 normalMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
+                                  to_base(SGNComponent::ComponentType::RIGID_BODY) |
                                   to_base(SGNComponent::ComponentType::BOUNDS) |
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NAVIGATION) |
@@ -379,7 +380,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
     _ballSGN = _sceneGraph->getRoot().addNode(_ball, normalMask, PhysicsGroup::GROUP_KINEMATIC, "TenisBallSGN");
-    _ballSGN.lock()->get<PhysicsComponent>()->translate(
+    _ballSGN.lock()->get<TransformComponent>()->translate(
         vec3<F32>(3.0f, 0.2f, 7.0f));
     _ballSGN.lock()->setSelectable(true);
 

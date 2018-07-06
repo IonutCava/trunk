@@ -96,7 +96,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
 
     RenderingComponent* const renderable = node.get<RenderingComponent>();
     AnimationComponent* const animComp   = node.get<AnimationComponent>();
-    PhysicsComponent*   const transform  = node.get<PhysicsComponent>();
+    TransformComponent* const transform  = node.get<TransformComponent>();
 
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)

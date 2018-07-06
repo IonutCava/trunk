@@ -58,7 +58,7 @@ bool PhysXScene::load(const stringImpl& name) {
         vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y), -cosf(sunAngle.y),
                   -sinf(sunAngle.x) * sinf(sunAngle.y));
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
-    _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
+    _sun.lock()->get<TransformComponent>()->setPosition(_sunvector);
     _currentSky = addSky();
 
     s_sceneState = PhysXState::STATE_IDLE;

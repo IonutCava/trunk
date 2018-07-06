@@ -72,8 +72,7 @@ void OrbitCamera::update(const U64 deltaTimeUS) {
         return;
     }
 
-    PhysicsComponent* const trans =
-        sgn->get<PhysicsComponent>();
+    TransformComponent* const trans = sgn->get<TransformComponent>();
 
     static vec3<F32> newTargetOrientation;
 

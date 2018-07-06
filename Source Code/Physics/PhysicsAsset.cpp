@@ -3,7 +3,7 @@
 #include "Headers/PhysicsAsset.h"
 
 namespace Divide {
-PhysicsAsset::PhysicsAsset(PhysicsComponent& parent)
+PhysicsAsset::PhysicsAsset(RigidBodyComponent& parent)
     : TransformInterface(),
       _parentComponent(parent)
 {

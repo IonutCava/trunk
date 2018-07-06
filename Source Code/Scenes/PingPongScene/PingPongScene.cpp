@@ -82,7 +82,7 @@ void PingPongScene::resetGame() {
     _lost = false;
     _sideDrift = 0;
     clearTasks();
-    _ballSGN.lock()->get<PhysicsComponent>()->setPosition(vec3<F32>(0, 2, 2));
+    _ballSGN.lock()->get<TransformComponent>()->setPosition(vec3<F32>(0, 2, 2));
 }
 
 void PingPongScene::serveBall(I64 btnGUID) {
@@ -98,8 +98,8 @@ void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
     while (!parentTask.stopRequested()) {
         bool updated = false;
         stringImpl message;
-        PhysicsComponent* ballTransform =
-            _ballSGN.lock()->get<PhysicsComponent>();
+        TransformComponent* ballTransform =
+            _ballSGN.lock()->get<TransformComponent>();
         vec3<F32> ballPosition = ballTransform->getPosition();
 
         SceneGraphNode_cptr table(_sceneGraph->findNode("table").lock());
@@ -108,11 +108,11 @@ void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
         SceneGraphNode_cptr paddle(_sceneGraph->findNode("paddle").lock());
 
         vec3<F32> paddlePosition =
-            paddle->get<PhysicsComponent>()->getPosition();
+            paddle->get<TransformComponent>()->getPosition();
         vec3<F32> opponentPosition =
-            opponent->get<PhysicsComponent>()->getPosition();
+            opponent->get<TransformComponent>()->getPosition();
         vec3<F32> tablePosition =
-            table->get<PhysicsComponent>()->getPosition();
+            table->get<TransformComponent>()->getPosition();
 
         // Is the ball coming towards us or towards the opponent?
         _directionTowardsAdversary ? ballPosition.z -= 0.11f : ballPosition.z +=
@@ -123,7 +123,7 @@ void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
         // Is the ball moving to the right or to the left?
         ballPosition.x += _sideDrift * 0.15f;
         if (opponentPosition.x != ballPosition.x)
-            opponent->get<PhysicsComponent>()->translateX(
+            opponent->get<TransformComponent>()->translateX(
                 ballPosition.x - opponentPosition.x);
 
         ballTransform->translate(ballPosition - ballTransform->getPosition());
@@ -195,7 +195,7 @@ void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
                                                                     ->getBoundingBox())) {
                 _sideDrift =
                     ballPosition.x -
-                    opponent->get<PhysicsComponent>()->getPosition().x;
+                    opponent->get<TransformComponent>()->getPosition().x;
                 _directionTowardsAdversary = false;
             }
         // Add a spin effect to the ball
@@ -251,7 +251,7 @@ void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
 
     SceneGraphNode_cptr paddle(_sceneGraph->findNode("paddle").lock());
 
-    vec3<F32> pos = paddle->get<PhysicsComponent>()->getPosition();
+    vec3<F32> pos = paddle->get<TransformComponent>()->getPosition();
 
     // Paddle movement is limited to the [-3,3] range except for Y-descent
     if (state().playerState(idx).moveFB() != MoveDirection::NONE) {
@@ -260,7 +260,7 @@ void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
             Scene::processInput(idx, deltaTimeUS);
             return;
         }
-        paddle->get<PhysicsComponent>()->translateY(to_I32(state().playerState(idx).moveFB()) / paddleMovementDivisor);
+        paddle->get<TransformComponent>()->translateY(to_I32(state().playerState(idx).moveFB()) / paddleMovementDivisor);
     }
 
     if (state().playerState(idx).moveLR() != MoveDirection::NONE) {
@@ -270,7 +270,7 @@ void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
             Scene::processInput(idx, deltaTimeUS);
             return;
         }
-        paddle->get<PhysicsComponent>()->translateX(to_I32(state().playerState(idx).moveLR()) / paddleMovementDivisor);
+        paddle->get<TransformComponent>()->translateX(to_I32(state().playerState(idx).moveLR()) / paddleMovementDivisor);
     }
 
     Scene::processInput(idx, deltaTimeUS);
@@ -315,11 +315,12 @@ U16 PingPongScene::registerInputActions() {
 }
 
 bool PingPongScene::loadResources(bool continueOnErrors) {
-    static const U32 lightMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+    static const U32 lightMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
                                  to_base(SGNComponent::ComponentType::BOUNDS) |
                                  to_base(SGNComponent::ComponentType::RENDERING);
 
-    static const U32 normalMask = lightMask | 
+    static const U32 normalMask = lightMask |
+                                  to_base(SGNComponent::ComponentType::RIGID_BODY) |
                                   to_base(SGNComponent::ComponentType::NAVIGATION) |
                                   to_base(SGNComponent::ComponentType::NETWORKING);
         
@@ -334,7 +335,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setSpecular(
         vec4<F32>(0.774597f, 0.774597f, 0.774597f, 1.0f));
     _ballSGN = _sceneGraph->getRoot().addNode(_ball, normalMask, PhysicsGroup::GROUP_KINEMATIC, "PingPongBallSGN");
-    _ballSGN.lock()->get<PhysicsComponent>()->translate(vec3<F32>(0, 2, 2));
+    _ballSGN.lock()->get<TransformComponent>()->translate(vec3<F32>(0, 2, 2));
 
     /*ResourceDescriptor tempLight("Light Omni");
     tempLight.setEnumValue(LIGHT_TYPE_POINT);

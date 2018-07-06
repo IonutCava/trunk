@@ -29,7 +29,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
      _octreeChanged(false),
      _rootNode(new SceneRoot(parentScene.resourceCache(), 1234))
 {
-    static const U32 rootMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+    static const U32 rootMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
                                 to_base(SGNComponent::ComponentType::BOUNDS);
 
     REGISTER_FRAME_LISTENER(this, 1);

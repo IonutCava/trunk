@@ -42,7 +42,7 @@ void MainScene::updateLights() {
         Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
              vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + _sun_cosy * 0.75f);
 
-    _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
+    _sun.lock()->get<TransformComponent>()->setPosition(_sunvector);
     _sun.lock()->getNode<Light>()->setDiffuseColour(_sunColour);
 
     PushConstants& constants = _currentSky.lock()->get<RenderingComponent>()->pushConstants();
@@ -75,7 +75,7 @@ void MainScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
                            ter->getDimensions().height * 0.5f * -1.0f,
                            ter->getDimensions().height * 0.5f);
 
-                vec3<F32> position = terrainNode.lock()->get<PhysicsComponent>()->getWorldMatrix() *
+                vec3<F32> position = terrainNode.lock()->get<TransformComponent>()->getWorldMatrix() *
                                      ter->getPositionFromGlobal(eyePosition.x, eyePosition.z);
                 terrainHeight = position.y;
                 if (!IS_ZERO(terrainHeight)) {
@@ -141,7 +141,7 @@ void MainScene::processTasks(const U64 deltaTimeUS) {
         vectorImpl<SceneGraphNode_wptr> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), Object3D::ObjectType::TERRAIN);
 
         for (SceneGraphNode_wptr terrainNode : terrains) {
-            //terrainNode.lock()->get<PhysicsComponent>()->setPositionY(terrainNode.lock()->get<PhysicsComponent>()->getPosition().y - 0.5f);
+            //terrainNode.lock()->get<TransformComponent>()->setPositionY(terrainNode.lock()->get<TransformComponent>()->getPosition().y - 0.5f);
         }
     }
 
@@ -161,7 +161,7 @@ bool MainScene::load(const stringImpl& name) {
     _currentSky = addSky();
 
     static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::TRANSFORM) |
                                   to_base(SGNComponent::ComponentType::BOUNDS) |
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NAVIGATION);
@@ -174,7 +174,7 @@ bool MainScene::load(const stringImpl& name) {
     SceneGraphNode_ptr waterGraphNode = _sceneGraph->getRoot().addNode(water, normalMask, PhysicsGroup::GROUP_IGNORE);
     waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
-    waterGraphNode->get<PhysicsComponent>()->setPositionY(state().waterLevel());
+    waterGraphNode->get<TransformComponent>()->setPositionY(state().waterLevel());
     PushConstants& constants = waterGraphNode->get<RenderingComponent>()->pushConstants();
     constants.set("_waterShininess", PushConstantType::FLOAT, 50.0f);
     constants.set("_noiseFactor", PushConstantType::VEC2, vec2<F32>(10.0f, 10.0f));
@@ -251,7 +251,7 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
             box = boxNode->getNode<Object3D>();
         }
         if (box) {
-            pos = boxNode->get<PhysicsComponent>()->getPosition();
+            pos = boxNode->get<TransformComponent>()->getPosition();
         }
 
         if (!switchAB) {
@@ -273,7 +273,7 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
                 }
             }
         }
-        if (box) boxNode->get<PhysicsComponent>()->setPosition(pos);
+        if (box) boxNode->get<TransformComponent>()->setPosition(pos);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
         if (g_boxMoveTaskID != 0) {

@@ -130,11 +130,11 @@ void WarSceneAIProcessor::initInternal() {
 
     _initialFlagPositions[0].set(_globalWorkingMemory._flags[0]
                                      .value().lock()
-                                     ->get<PhysicsComponent>()
+                                     ->get<TransformComponent>()
                                      ->getPosition());
     _initialFlagPositions[1].set(_globalWorkingMemory._flags[1]
                                      .value().lock()
-                                     ->get<PhysicsComponent>()
+                                     ->get<TransformComponent>()
                                      ->getPosition());
 
     
@@ -158,12 +158,12 @@ bool WarSceneAIProcessor::DIE() {
     bool hadFlag = _localWorkingMemory._hasEnemyFlag.value();
     if (hadFlag == true) {
         _globalWorkingMemory._flags[enemyTeamID].value().lock()->setParent(_parentManager.parentScene().sceneGraph().getRoot());
-        PhysicsComponent* pComp = _globalWorkingMemory._flags[enemyTeamID]
+        TransformComponent* tComp = _globalWorkingMemory._flags[enemyTeamID]
                                   .value().lock()
-                                  ->get<PhysicsComponent>();
-         pComp->popTransforms();
-         pComp->pushTransforms();
-         pComp->setPosition(_entity->getPosition());
+                                  ->get<TransformComponent>();
+        tComp->popTransforms();
+        tComp->pushTransforms();
+        tComp->setPosition(_entity->getPosition());
         _globalWorkingMemory._flagCarriers[ownTeamID].value(nullptr);
     }
 
@@ -397,7 +397,7 @@ bool WarSceneAIProcessor::preAction(ActionType type,
 
                 if (_localWorkingMemory._isFlagRetriever.value() == false) {
                     SceneGraphNode_wptr enemy = _visualSensor->getClosestNode(g_enemyTeamContainer);
-                    _entity->updateDestination(enemy.lock()->get<PhysicsComponent>()->getPosition(), true);
+                    _entity->updateDestination(enemy.lock()->get<TransformComponent>()->getPosition(), true);
                     _localWorkingMemory._currentTarget.value(enemy);
                 } else {
                     if (_globalWorkingMemory._flagCarriers[enemyTeamID].value() == nullptr) {
@@ -409,11 +409,11 @@ bool WarSceneAIProcessor::preAction(ActionType type,
                             .value()
                             ->getUnitRef()
                             ->getBoundNode();
-                    _entity->updateDestination(enemy.lock()->get<PhysicsComponent>()->getPosition(), true);
+                    _entity->updateDestination(enemy.lock()->get<TransformComponent>()->getPosition(), true);
                     _localWorkingMemory._currentTarget.value(enemy);
                 }
             } else {
-                _entity->updateDestination(_localWorkingMemory._currentTarget.value().lock()->get<PhysicsComponent>()->getPosition());
+                _entity->updateDestination(_localWorkingMemory._currentTarget.value().lock()->get<TransformComponent>()->getPosition());
             }
         } break;
         case ActionType::RECOVER_FLAG: {
@@ -453,10 +453,10 @@ bool WarSceneAIProcessor::postAction(ActionType type,
 
             _globalWorkingMemory._flags[enemyTeamID].value().lock()->setParent(
                 _parentManager.parentScene().sceneGraph().getRoot());
-            PhysicsComponent* pComp = _globalWorkingMemory._flags[enemyTeamID]
+            TransformComponent* tComp = _globalWorkingMemory._flags[enemyTeamID]
                                   .value().lock()
-                                  ->get<PhysicsComponent>();
-            pComp->popTransforms();
+                                  ->get<TransformComponent>();
+            tComp->popTransforms();
 
             for (const AITeam::TeamMap::value_type& member : currentTeam->getTeamMembers()) {
                 _entity->sendMessage(*member.second, AIMsg::HAVE_SCORED, _entity);
@@ -472,17 +472,17 @@ bool WarSceneAIProcessor::postAction(ActionType type,
             {
                 SceneGraphNode_wptr targetNode = _entity->getUnitRef()->getBoundNode();
                 SceneGraphNode_ptr flag = _globalWorkingMemory._flags[enemyTeamID].value().lock();
-                PhysicsComponent* pComp = flag->get<PhysicsComponent>();
-                PhysicsComponent* parentPComp = targetNode.lock()->get<PhysicsComponent>();
+                TransformComponent* tComp = flag->get<TransformComponent>();
+                TransformComponent* parenttComp = targetNode.lock()->get<TransformComponent>();
                 flag->setParent(*targetNode.lock());
-                vec3<F32> prevScale(pComp->getLocalScale());
-                vec3<F32> parentScale(parentPComp->getLocalScale());
-                vec3<F32> parentPos(parentPComp->getPosition());
+                vec3<F32> prevScale(tComp->getLocalScale());
+                vec3<F32> parentScale(parenttComp->getLocalScale());
+                vec3<F32> parentPos(parenttComp->getPosition());
 
-                pComp->pushTransforms();
-                pComp->setPosition(vec3<F32>(-2.5f, 2.75f, 1.0f));
-                pComp->setScale(prevScale / parentScale);
-                pComp->rotate(0, -90, 0);
+                tComp->pushTransforms();
+                tComp->setPosition(vec3<F32>(-2.5f, 2.75f, 1.0f));
+                tComp->setScale(prevScale / parentScale);
+                tComp->rotate(0, -90, 0);
             }
 
             _localWorkingMemory._hasEnemyFlag.value(true);
@@ -709,11 +709,11 @@ void WarSceneAIProcessor::updatePositions() {
             if (nearOwnFlag() && !atHome) {
                 _globalWorkingMemory._flags[teamID].value().lock()->setParent(
                     _parentManager.parentScene().sceneGraph().getRoot());
-                PhysicsComponent* pComp =
+                TransformComponent* tComp =
                     _globalWorkingMemory._flags[teamID]
                         .value().lock()
-                        ->get<PhysicsComponent>();
-                pComp->popTransforms();
+                        ->get<TransformComponent>();
+                tComp->popTransforms();
                 _globalWorkingMemory._flagsAtBase[teamID].value(true);
             
                 for (const AITeam::TeamMap::value_type& member :

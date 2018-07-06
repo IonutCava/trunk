@@ -83,7 +83,7 @@ bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
 }
 
 void Sky::postLoad(SceneGraphNode& sgn) {
-    static const U32 normalMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+    static const U32 normalMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
                                   to_base(SGNComponent::ComponentType::BOUNDS) |
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NAVIGATION);

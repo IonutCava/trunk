@@ -151,7 +151,7 @@ bool Scene::idle() {  // Called when application is idle
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (_context.gfx().getFrameCount() > 1) {
-            _sceneGraph->getRoot().get<PhysicsComponent>()->cookCollisionMesh(_name);
+            _sceneGraph->getRoot().get<RigidBodyComponent>()->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
         }
     }
@@ -192,7 +192,8 @@ void Scene::loadXMLAssets(bool singleStep) {
     constexpr bool terrainThreadedLoading = true;
 
     static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::TRANSFORM) |
+                                  to_base(SGNComponent::ComponentType::RIGID_BODY) |
                                   to_base(SGNComponent::ComponentType::BOUNDS) |
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NETWORKING);
@@ -248,7 +249,8 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
     constexpr bool modelThreadedLoading = true;
 
     static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::TRANSFORM) |
+                                  to_base(SGNComponent::ComponentType::RIGID_BODY) |
                                   to_base(SGNComponent::ComponentType::BOUNDS) |
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NETWORKING);
@@ -278,9 +280,9 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
                                                data.ItemName);
             meshNode->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, data.castsShadows);
             meshNode->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RECEIVE_SHADOWS, data.receivesShadows);
-            meshNode->get<PhysicsComponent>()->setScale(data.scale);
-            meshNode->get<PhysicsComponent>()->setRotation(data.orientation);
-            meshNode->get<PhysicsComponent>()->setPosition(data.position);
+            meshNode->get<TransformComponent>()->setScale(data.scale);
+            meshNode->get<TransformComponent>()->setRotation(data.orientation);
+            meshNode->get<TransformComponent>()->setPosition(data.position);
 
             if (data.staticUsage) {
                 meshNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
@@ -300,7 +302,8 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
 
 Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
     static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::TRANSFORM) |
+                                  to_base(SGNComponent::ComponentType::RIGID_BODY) |
                                   to_base(SGNComponent::ComponentType::BOUNDS) |
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NETWORKING);
@@ -360,9 +363,9 @@ Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
                                                                        data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
                                                                                                               : PhysicsGroup::GROUP_DYNAMIC
                                                                                          : PhysicsGroup::GROUP_IGNORE);
-        thisObjSGN->get<PhysicsComponent>()->setScale(data.scale);
-        thisObjSGN->get<PhysicsComponent>()->setRotation(data.orientation);
-        thisObjSGN->get<PhysicsComponent>()->setPosition(data.position);
+        thisObjSGN->get<TransformComponent>()->setScale(data.scale);
+        thisObjSGN->get<TransformComponent>()->setRotation(data.orientation);
+        thisObjSGN->get<TransformComponent>()->setPosition(data.position);
         thisObjSGN->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, data.castsShadows);
         thisObjSGN->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RECEIVE_SHADOWS, data.receivesShadows);
         if (data.staticUsage) {
@@ -383,7 +386,7 @@ Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
 SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
                                              std::shared_ptr<ParticleData> data,
                                              SceneGraphNode& parentNode) {
-    static const U32 particleMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+    static const U32 particleMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
                                     to_base(SGNComponent::ComponentType::BOUNDS) |
                                     to_base(SGNComponent::ComponentType::RENDERING) |
                                     to_base(SGNComponent::ComponentType::NETWORKING);
@@ -408,7 +411,7 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
 
 SceneGraphNode_ptr Scene::addLight(LightType type,
                                    SceneGraphNode& parentNode) {
-    static const U32 lightMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+    static const U32 lightMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
                                  to_base(SGNComponent::ComponentType::BOUNDS) |
                                  to_base(SGNComponent::ComponentType::RENDERING) |
                                  to_base(SGNComponent::ComponentType::NETWORKING);
@@ -441,7 +444,7 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
 }
 
 void Scene::toggleFlashlight(PlayerIndex idx) {
-    static const U32 lightMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+    static const U32 lightMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
                                  to_base(SGNComponent::ComponentType::BOUNDS) |
                                  to_base(SGNComponent::ComponentType::RENDERING) |
                                  to_base(SGNComponent::ComponentType::NETWORKING);
@@ -477,7 +480,7 @@ SceneGraphNode_ptr Scene::addSky(const stringImpl& nodeName) {
 
     static const U32 normalMask = 
         to_base(SGNComponent::ComponentType::NAVIGATION) |
-        to_base(SGNComponent::ComponentType::PHYSICS) |
+        to_base(SGNComponent::ComponentType::TRANSFORM) |
         to_base(SGNComponent::ComponentType::BOUNDS) |
         to_base(SGNComponent::ComponentType::RENDERING) |
         to_base(SGNComponent::ComponentType::NETWORKING);
@@ -875,7 +878,7 @@ void Scene::addPlayerInternal(bool queue) {
         SceneGraphNode& root = _sceneGraph->getRoot();
         playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache, 12345678 + _parent.getPlayers().size(), g_PlayerExtents)),
                                 to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                to_base(SGNComponent::ComponentType::PHYSICS) |
+                                to_base(SGNComponent::ComponentType::TRANSFORM) |
                                 to_base(SGNComponent::ComponentType::BOUNDS) |
                                 to_base(SGNComponent::ComponentType::UNIT) |
                                 to_base(SGNComponent::ComponentType::NETWORKING),
@@ -1027,10 +1030,10 @@ void Scene::updateSceneState(const U64 deltaTimeUS) {
         PlayerIndex idx = _scenePlayers[i]->index();
         findHoverTarget(idx);
         if (_flashLight[idx]) {
-            PhysicsComponent* pComp = _flashLight[idx]->get<PhysicsComponent>();
+            TransformComponent* tComp = _flashLight[idx]->get<TransformComponent>();
             const Camera& cam = _scenePlayers[idx]->getCamera();
-            pComp->setPosition(cam.getEye());
-            pComp->setRotation(cam.getEuler());
+            tComp->setPosition(cam.getEye());
+            tComp->setRotation(cam.getEuler());
         }
     }
 }

@@ -50,7 +50,7 @@ WaterPlane::~WaterPlane()
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
     static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::TRANSFORM) |
                                   to_base(SGNComponent::ComponentType::BOUNDS) |
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NETWORKING);
@@ -172,8 +172,8 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
 }
 
 void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plane, bool reflection) {
-    F32 waterLevel = sgn.get<PhysicsComponent>()->getPosition().y;
-    const Quaternion<F32>& orientation = sgn.get<PhysicsComponent>()->getOrientation();
+    F32 waterLevel = sgn.get<TransformComponent>()->getPosition().y;
+    const Quaternion<F32>& orientation = sgn.get<TransformComponent>()->getOrientation();
 
     vec3<F32> normal(orientation * (reflection ? WORLD_Y_AXIS : WORLD_Y_NEG_AXIS));
     normal.normalize();

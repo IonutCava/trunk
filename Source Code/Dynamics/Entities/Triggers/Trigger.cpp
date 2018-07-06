@@ -28,7 +28,7 @@ void Trigger::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                           SceneState& sceneState) {
     if (_drawImpostor) {
         if (!_triggerImpostor) {
-            static const U32 normalMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+            static const U32 normalMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
                                           to_base(SGNComponent::ComponentType::BOUNDS) |
                                           to_base(SGNComponent::ComponentType::RENDERING) |
                                           to_base(SGNComponent::ComponentType::NETWORKING);
@@ -38,7 +38,7 @@ void Trigger::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
             sgn.addNode(_triggerImpostor, normalMask, PhysicsGroup::GROUP_IGNORE);
         }
         /// update dummy position if it is so
-        sgn.getChild(0).get<PhysicsComponent>()->setPosition(_triggerPosition);
+        sgn.getChild(0).get<TransformComponent>()->setPosition(_triggerPosition);
         _triggerImpostor->setRadius(_radius);
         _triggerImpostor->renderState().setDrawState(true);
         sgn.getChild(0).setActive(true);

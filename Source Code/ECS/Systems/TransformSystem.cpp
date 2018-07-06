@@ -20,9 +20,9 @@ namespace Divide {
 
     void TransformSystem::PreUpdate(F32 dt) {
         // Go over all transforms and make sure we update parent states
-        for (auto& transform = ECS::ECS_Engine->GetComponentManager()->begin<TransformComponent>(); 
-                   transform != ECS::ECS_Engine->GetComponentManager()->end<TransformComponent>();
-                 ++transform)
+        for (auto transform = ECS::ECS_Engine->GetComponentManager()->begin<TransformComponent>(); 
+                  transform != ECS::ECS_Engine->GetComponentManager()->end<TransformComponent>();
+                ++transform)
         {
            
         }
@@ -34,9 +34,9 @@ namespace Divide {
 
     void TransformSystem::PostUpdate(F32 dt) {
         // If the transform has been modified, notify listeners, 
-        for (auto& transform = ECS::ECS_Engine->GetComponentManager()->begin<TransformComponent>();
-                   transform != ECS::ECS_Engine->GetComponentManager()->end<TransformComponent>();
-                 ++transform)
+        for (auto transform = ECS::ECS_Engine->GetComponentManager()->begin<TransformComponent>();
+                  transform != ECS::ECS_Engine->GetComponentManager()->end<TransformComponent>();
+                ++transform)
         {
             transform->notifyListeners();
             transform->snapshot();

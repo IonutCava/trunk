@@ -42,7 +42,7 @@ namespace Divide {
 
 class PhysXActor : public PhysicsAsset {
 public:
-    PhysXActor(PhysicsComponent& parent);
+    PhysXActor(RigidBodyComponent& parent);
     ~PhysXActor();
 
     void setPosition(const vec3<F32>& position) override;

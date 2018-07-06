@@ -300,7 +300,7 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
     }
 
     PhysXSceneInterface* targetScene =  dynamic_cast<PhysXSceneInterface*>(_targetScene);
-    PhysicsComponent* nodePhysics = node.get<PhysicsComponent>();
+    RigidBodyComponent* nodePhysics = node.get<RigidBodyComponent>();
 
     PhysXActor* tempActor = targetScene->getOrCreateRigidActor(node.getName());
     assert(tempActor != nullptr);
@@ -368,7 +368,7 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
 
 PhysicsAsset* PhysX::createRigidActor(const SceneGraphNode& node)
 {
-    PhysicsComponent* pComp = node.get<PhysicsComponent>();
+    RigidBodyComponent* pComp = node.get<RigidBodyComponent>();
     assert(pComp != nullptr);
 
     PhysXActor* newActor = new PhysXActor(*pComp);

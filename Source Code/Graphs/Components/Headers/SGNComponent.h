@@ -48,12 +48,13 @@ class SGNComponent : private NonCopyable {
         INVERSE_KINEMATICS = toBit(2),
         RAGDOLL = toBit(3),
         NAVIGATION = toBit(4),
-        PHYSICS = toBit(5),
+        TRANSFORM = toBit(5),
         BOUNDS = toBit(6),
         RENDERING = toBit(7),
         NETWORKING = toBit(8),
         UNIT = toBit(9),
-        COUNT = 10
+        RIGID_BODY = toBit(10),
+        COUNT = 11
     };
     
     SGNComponent(ComponentType type, SceneGraphNode& parentSGN);

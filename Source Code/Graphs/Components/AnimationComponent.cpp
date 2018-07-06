@@ -54,7 +54,7 @@ void AnimationComponent::update(const U64 deltaTimeUS) {
 
     // Resolve ragdoll
     // if (_resolveRagdoll) {
-        /// Use PhysX actor from PhysicsComponent to feed new bone positions/orientation
+        /// Use PhysX actor from RigidBodyComponent to feed new bone positions/orientation
         /// And read back ragdoll results to update transforms accordingly
     //}
 }
@@ -183,7 +183,7 @@ const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
     if (node->getObjectType() != Object3D::ObjectType::SUBMESH ||
         (node->getObjectType() == Object3D::ObjectType::SUBMESH &&
          !node->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))) {
-        return _parentSGN.get<PhysicsComponent>()->getWorldMatrix();
+        return _parentSGN.get<TransformComponent>()->getWorldMatrix();
     }
 
     I32 frameIndex = _animator->frameIndexForTimeStamp(animationID, timeStamp);
