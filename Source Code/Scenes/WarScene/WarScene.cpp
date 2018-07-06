@@ -114,7 +114,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
 		AIEntity* aiSoldier = New AIEntity("Soldier1");
 		aiSoldier->attachNode(soldierMesh);
 		aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
-		aiSoldier->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(aiSoldier));
+		aiSoldier->setComInterface();
 		aiSoldier->addActionProcessor(New WarSceneAIActionList());
 		aiSoldier->setTeam(_faction1);
 		_army1.push_back(aiSoldier);
@@ -125,7 +125,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
 		aiSoldier = New AIEntity("Soldier2");
 		aiSoldier->attachNode(soldierMesh);
 		aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
-		aiSoldier->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(aiSoldier));
+		aiSoldier->setComInterface();
 		aiSoldier->addActionProcessor(New WarSceneAIActionList());
 		aiSoldier->setTeam(_faction2);
 		_army2.push_back(aiSoldier);

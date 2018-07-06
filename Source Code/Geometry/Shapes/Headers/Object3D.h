@@ -22,28 +22,33 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 
-enum PrimitiveType {
-
-	OBJECT_3D,
-	SPHERE_3D,
-	BOX_3D,
-	QUAD_3D,
-	TEXT_3D,
-	MESH,
-	SUBMESH,
-	GENERIC,
-	OBJECT_3D_FLYWEIGHT
-};
-
 class BoundingBox;
 
 class Object3D : public SceneNode {
 public:
+	enum PrimitiveType {
+		OBJECT_3D = 0,
+		SPHERE_3D,
+		BOX_3D,
+		QUAD_3D,
+		TEXT_3D,
+		MESH,
+		SUBMESH,
+		GENERIC,
+		OBJECT_3D_FLYWEIGHT
+	};
+
+	enum UsageContext {
+		OBJECT_DYNAMIC = 0,
+		OBJECT_STATIC
+	};
+
 	Object3D(PrimitiveType type = OBJECT_3D) : SceneNode(TYPE_OBJECT3D),
 											  _update(false),
 											  _geometryType(type),
 											  _geometry(GFX_DEVICE.newVBO()),
-											  _refreshVBO(true)
+											  _refreshVBO(true),
+											  _usageContext(OBJECT_STATIC)
 
 	{}
 
@@ -51,35 +56,38 @@ public:
 																	    _update(false),
 																		_geometryType(type),
 																		_geometry(GFX_DEVICE.newVBO()),
-																		_refreshVBO(true)
+																		_refreshVBO(true),
+																		_usageContext(OBJECT_STATIC)
 	{}
 
 	virtual ~Object3D(){
 		SAFE_DELETE(_geometry);
 	};
 
-
-	virtual void						postLoad(SceneGraphNode* const sgn) {}	
-	inline  PrimitiveType               getType()       const {return _geometryType;}
-	
-	virtual		void    render(SceneGraphNode* const sgn);
-
-	VertexBufferObject* const getGeometryVBO(); ///<Please use IBO's ...
-	inline vec2<U16>&          getIndiceLimits()      {return _indiceLimits; }
-	virtual void onDraw();
+	        VertexBufferObject* const getGeometryVBO(); ///<Please use IBO's ...
+	inline  PrimitiveType             getType()         const {return _geometryType;}
+	inline  UsageContext              getUsageContext() const {return _usageContext;}
+	inline  vec2<U16>&                getIndiceLimits()       {return _indiceLimits;}
+	inline  void                      setUsageContext(UsageContext newContext) {_usageContext = newContext;}
 
 	/// Called from SceneGraph "sceneUpdate"
-	virtual void sceneUpdate(D32 sceneTime) {}
+	virtual void sceneUpdate(D32 sceneTime) {}           ///<To avoid a lot of typing
+	virtual void  postLoad(SceneGraphNode* const sgn) {} ///<To avoid a lot of typing
+	virtual	void  render(SceneGraphNode* const sgn);
+	virtual void  onDraw();
+
 
 protected:
 	virtual void computeNormals() {};
 	virtual void computeTangents();
 
 protected:
-	bool		          _update, _refreshVBO;
-	PrimitiveType         _geometryType;
-	VertexBufferObject*   _geometry;
+	bool		          _update;
+	bool                  _refreshVBO;
 	vec2<U16>             _indiceLimits;
+	PrimitiveType         _geometryType;
+	UsageContext          _usageContext;
+	VertexBufferObject*   _geometry;
 };
 
 #endif

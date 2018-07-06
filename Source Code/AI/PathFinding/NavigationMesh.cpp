@@ -126,10 +126,7 @@ namespace Navigation {
 	bool NavigationMesh::generateMesh(){
 		assert(_sgn != NULL);
 		// Parse objects from level into RC-compatible format
-		NavModelData data = NavigationMeshLoader::mergeModels(
-		 NavigationMeshLoader::parseTerrainData(_sgn->getBoundingBox(), 0),
-		 NavigationMeshLoader::parseStaticObjects(_sgn->getBoundingBox()),
-		 true);
+		NavModelData data = NavigationMeshLoader::parseNode(_sgn);
 
 		// Check for no geometry
 		if(!data.getVertCount())

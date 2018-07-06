@@ -32,7 +32,7 @@ void SubMesh::postLoad(SceneGraphNode* const sgn){
 
 void SubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 	if(!_animator) return;
-	if(!getParentMesh()->_playAnimations) return;
+	if(!getParentMesh()->playAnimations()) return;
 	if(!ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")) return;
 
 	_currentAnimationID = _animator->GetAnimationIndex();
@@ -79,7 +79,7 @@ void SubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 }
 
 void SubMesh::updateTransform(SceneGraphNode* const sgn){
-	if(_animator != NULL  && getParentMesh()->_playAnimations && !_transforms.empty()){
+	if(_animator != NULL  && getParentMesh()->playAnimations() && !_transforms.empty()){
 		_animator->setGlobalMatrix(sgn->getTransform()->getGlobalMatrix());
 	}
 }
@@ -88,7 +88,7 @@ void SubMesh::onDraw(){
 	///Software skinning
 	if(_softwareSkinning){
 
-		if(_animator != NULL  && getParentMesh()->_playAnimations){
+		if(_animator != NULL  && getParentMesh()->playAnimations()){
 
 			if(GFX_DEVICE.getRenderStage() == FINAL_STAGE ||
 				GFX_DEVICE.getRenderStage() == DEFERRED_STAGE){
@@ -141,7 +141,7 @@ void SubMesh::updateAnimations(D32 timeIndex){
 	_renderSkeleton = false;
 	if(GFX_DEVICE.getRenderStage() == FINAL_STAGE || 
 		GFX_DEVICE.getRenderStage() == DEFERRED_STAGE){
-		if (_animator != NULL && getParentMesh()->_playAnimations) {
+		if (_animator != NULL && getParentMesh()->playAnimations()) {
 			 _deltaTime = timeIndex;
 			  //set the bone animation to the specified timestamp
 			 _transforms = _animator->GetTransforms(_deltaTime);

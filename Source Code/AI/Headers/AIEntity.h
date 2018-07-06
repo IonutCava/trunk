@@ -19,8 +19,8 @@
 #define _AI_ENTITY_H_
 
 #include "core.h"
+#include "CommunicationInterface.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
-#include "AI/Sensors/Headers/CommunicationSensor.h"
 #include "AI/ActionInterface/Headers/Coordination.h"
 
 class ActionList;
@@ -40,9 +40,10 @@ public:
 	SceneGraphNode* getBoundNode() {return _node;}
 	bool attachNode(SceneGraphNode* const sgn) {_node = sgn; return true;}
 	bool addSensor(SENSOR_TYPE type, Sensor* sensor);
+	bool setComInterface() {SAFE_UPDATE(_comInterface, New CommunicationInterface(this)); return true;}
 	bool addActionProcessor(ActionList* actionProcessor);
 	Sensor* getSensor(SENSOR_TYPE type);
-
+	CommunicationInterface* getCommunicationInterface() {return _comInterface;}
 	inline AICoordination* getTeam() {return _coordination; }
 	inline U32  getTeamID() const    {if(_coordination != NULL) { return _coordination->getTeamID();} return -1; }
 	inline U32  getGUID()   const    {return _GUID;}
@@ -69,6 +70,7 @@ private:
 	mutable Lock    _updateMutex;
 	mutable Lock    _managerQueryMutex;
 
+	CommunicationInterface*             _comInterface;
 	unordered_map<SENSOR_TYPE, Sensor*> _sensorList;
 	NPC* _unitRef;
 	

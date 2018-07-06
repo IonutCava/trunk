@@ -118,6 +118,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\AI\CommunicationInterface.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMesh.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMeshLoader.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationPath.cpp" />
@@ -286,12 +287,12 @@
     <ClCompile Include="..\..\Source Code\Graphs\SceneGraphNode.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SceneNode.cpp" />
     <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\Sensors\CommunicationSensor.cpp" />
     <ClCompile Include="..\..\Source Code\AI\Sensors\VisualSensor.cpp" />
     <ClCompile Include="..\..\Source Code\AI\ActionInterface\Coordination.cpp" />
     <ClCompile Include="..\..\Source Code\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source Code\AI\Headers\CommunicationInterface.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMesh.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMeshLoader.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationPath.h" />
@@ -481,7 +482,6 @@
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNode.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SpatialGraph.h" />
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\AudioSensor.h" />
-    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\CommunicationSensor.h" />
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\Sensor.h" />
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\VisualSensor.h" />
     <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\ActionList.h" />

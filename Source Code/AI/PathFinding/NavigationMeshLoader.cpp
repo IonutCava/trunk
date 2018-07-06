@@ -1,4 +1,6 @@
 #include "Headers/NavigationMeshLoader.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Geometry/Shapes/Headers/Object3D.h"
 
 namespace Navigation {
 
@@ -283,36 +285,11 @@ namespace Navigation {
 		modelData->tri_ct++;
 	}
 
-	NavModelData NavigationMeshLoader::parseTerrainData(BoundingBox box, SceneNode* set/* = NULL*/, I32* count/* = NULL*/){
-		if(set->getType() != TYPE_TERRAIN){
-			PRINT_FN(Locale::get("WARN_NAV_PARSE_TERRAIN"),set->getName().c_str());
-			NavModelData data;
-			data.clear(true);
-			return data;
-		}
-		return parse(box, (TYPE_TERRAIN), DETAIL_ABSOLUTE, set, count);
+	NavModelData NavigationMeshLoader::parseNode(SceneGraphNode* sgn/* = NULL*/){
+		NavModelData data;
+		data.clear(false);
+		return parse(sgn->getBoundingBox(), data, sgn);
 	}
-
-	NavModelData NavigationMeshLoader::parseStaticObjects(BoundingBox box, SceneNode* set/* = NULL*/, I32* count/* = NULL*/){
-		if(set->getType() != TYPE_WATER || set->getType() == TYPE_TERRAIN || set->getType() == TYPE_OBJECT3D){
-			PRINT_FN(Locale::get("WARN_NAV_PARSE_STATIC"),set->getName().c_str());
-			NavModelData data;
-			data.clear(true);
-			return data;
-		}
-		return parse(box, (TYPE_WATER), DETAIL_ABSOLUTE, set, count);
-	}
-
-	NavModelData NavigationMeshLoader::parseDynamicObjects(BoundingBox box, SceneNode* set/* = NULL*/, I32* count/* = NULL*/){
-		if(set->getType() != TYPE_OBJECT3D || set->getType() == TYPE_TERRAIN || set->getType() == TYPE_WATER){
-			PRINT_FN(Locale::get("WARN_NAV_PARSE_DYNAMIC"),set->getName().c_str());
-			NavModelData data;
-			data.clear(true);
-			return data;
-		}
-		return parse(box, (TYPE_OBJECT3D), DETAIL_BOUNDINGBOX, set, count);
-	}
-
 
 	static const vec3<F32> cubePoints[8] = {
 
@@ -326,16 +303,16 @@ namespace Navigation {
 	   { 3, 2, 6, 7 }, { 7, 6, 4, 5 }, { 3, 7, 5, 1 }
 	};
 
-	NavModelData NavigationMeshLoader::parse(BoundingBox box, U32 mask, MESH_DETAIL_LEVEL level, SceneNode* set/* = NULL*/, I32* count /*= NULL*/) {
-
-		if(count)
-			*count = 0;
+	NavModelData NavigationMeshLoader::parse(const BoundingBox& box,NavModelData& data, SceneGraphNode* sgn) {
+		SceneNode* sn = sgn->getNode<SceneNode>();
+		assert(sn != NULL);
+		if(sn->getType() != TYPE_WATER || 
+		   sn->getType() != TYPE_TERRAIN ||
+		   sn->getType() != TYPE_OBJECT3D){
+			PRINT_FN(Locale::get("WARN_NAV_UNSUPPORTED"),sn->getName().c_str());
+			return data;
+		}
 	    
-		NavModelData data;
-	    
-
-		data.clear(false);
-
 		U32 numVert = 1;
 
 		unordered_map<U32, vec3<F32> > globalPointIdxMap;
@@ -343,6 +320,33 @@ namespace Navigation {
 		std::vector<vec3<F32> > vertexVector;
 		std::vector<vec3<I32> > faceVector;
 
+		MESH_DETAIL_LEVEL level = DETAIL_LOW;
+		U32 mask = sn->getType();
+	
+		switch(mask){
+			case TYPE_WATER: {
+				level = DETAIL_BOUNDINGBOX;
+				 }break;
+			case TYPE_TERRAIN: {
+				level = DETAIL_ABSOLUTE;
+				}break;
+			case TYPE_OBJECT3D: {
+				if(sgn->getNode<Object3D>()->getUsageContext() == Object3D::OBJECT_DYNAMIC){
+					level = DETAIL_BOUNDINGBOX;
+				}else{
+					level = DETAIL_ABSOLUTE;
+				}
+				}break;
+			default:{
+				PRINT_FN(Locale::get("WARN_NAV_INCOMPLETE"));
+				return data;
+					}break;
+		};
+		
+
+		for_each(SceneGraphNode::NodeChildren::value_type& it,sgn->getChildren()){
+			parse(it.second->getBoundingBox(), data, it.second);
+		}
 		PRINT_FN(Locale::get("WARN_NAV_INCOMPLETE"));
 
 		return data;

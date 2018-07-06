@@ -258,13 +258,14 @@ bool AITenisScene::initializeAI(bool continueOnErrors){
 	_aiPlayer4->attachNode(_sceneGraph->findNode("Player4"));
 
 	_aiPlayer1->addSensor(VISUAL_SENSOR,New VisualSensor());
-	_aiPlayer1->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(_aiPlayer1));
 	_aiPlayer2->addSensor(VISUAL_SENSOR,New VisualSensor());
-	_aiPlayer2->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(_aiPlayer2));
 	_aiPlayer3->addSensor(VISUAL_SENSOR,New VisualSensor());
-	_aiPlayer3->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(_aiPlayer3));
 	_aiPlayer4->addSensor(VISUAL_SENSOR,New VisualSensor());
-	_aiPlayer4->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(_aiPlayer4));
+
+	_aiPlayer1->setComInterface();
+	_aiPlayer2->setComInterface();
+	_aiPlayer3->setComInterface();
+	_aiPlayer4->setComInterface();
 
 	_aiPlayer1->addActionProcessor(New AITenisSceneAIActionList(_ballSGN));
 	_aiPlayer2->addActionProcessor(New AITenisSceneAIActionList(_ballSGN));

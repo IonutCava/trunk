@@ -44,7 +44,7 @@ Kernel::Kernel() :	_loadAI(false),
 	 ///As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
 	 _cameraMgr->addNewCamera("defaultCamera",_camera);
 	 ///Create an AI thread, but start it only if needed
-	 _aiEvent.reset(New Event(3,false,false,boost::bind(&AIManager::tick, boost::ref(AIManager::getInstance()))));
+	 _aiEvent.reset(New Event(10,false,false,boost::bind(&AIManager::tick, boost::ref(AIManager::getInstance()))));
 }
 
 Kernel::~Kernel(){

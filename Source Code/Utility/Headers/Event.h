@@ -50,9 +50,6 @@ public:
 	/// The class uses Boost::thread library (http://www.boost.org)
 	/// </remarks>
 	/// <param name="tickInterval">The delay (in milliseconds) between each callback</param>
-	/// <param name="repeatable">True: the callback function is called once every 'tickInterval' milliseconds for 'numberOfTicks' times
-	///                          False: the callback function is called only once after 'tickInterval' milliseconds</param>
-
 	/// <param name="startOnCreate">The event begins processing as soon as it is created (no need to call 'startEvent()')</param>
 	/// <param name="numberOfTicks">The number of times to call the callback function before the event is deleted</param>
 	/// <param name="*f">The callback function</param>

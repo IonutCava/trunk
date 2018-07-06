@@ -43,7 +43,7 @@ class EventHandler : public OIS::KeyListener, public OIS::JoyStickListener,publi
 	///Keyboard
 	bool keyPressed( const OIS::KeyEvent &arg );
 	bool keyReleased( const OIS::KeyEvent &arg );
-	///Joystick\Gamepad
+	///Joystick or Gamepad
 	bool buttonPressed( const OIS::JoyStickEvent &arg, I8 button );
 	bool buttonReleased( const OIS::JoyStickEvent &arg, I8 button );
 	bool axisMoved( const OIS::JoyStickEvent &arg, I8 axis );

@@ -118,17 +118,17 @@ void DX_API::renderModel(Object3D* const model)
 	//render in the switch or after. hacky, but works -Ionut
 	bool b_continue = true;
 	switch(model->getType()){
-		case TEXT_3D:{
+		case Object3D::TEXT_3D:{
 			Text3D* text = dynamic_cast<Text3D*>(model);
 			b_continue = false;
 			}break;
 		
-		case BOX_3D:
-		case SUBMESH:
+		case Object3D::BOX_3D:
+		case Object3D::SUBMESH:
 			type = TRIANGLES;
 			break;
-		case QUAD_3D:
-		case SPHERE_3D:
+		case Object3D::QUAD_3D:
+		case Object3D::SPHERE_3D:
 			type = QUADS;
 			break;
 		//We should never enter the default case!

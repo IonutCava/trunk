@@ -222,7 +222,7 @@ void GFXDevice::processRenderQueue(){
 					Object3D* obj = sgn->getNode<Object3D>();
 					assert(obj != NULL);
 					/// For SubMesh objects
-					if(obj->getType() == SUBMESH){
+					if(obj->getType() == Object3D::SUBMESH){
 						dynamic_cast<SubMesh*>(obj)->renderSkeleton(sgn);
 					}
 				}

@@ -7,20 +7,21 @@
 AIEntity::AIEntity(const std::string& name) : _name(name),
 											  _actionProcessor(NULL),
 											  _unitRef(NULL),
-											  _coordination(NULL)
+											  _coordination(NULL),
+											  _comInterface(NULL)
 {
 	_GUID = GETMSTIME() * random(55);
 }
 
 void AIEntity::sendMessage(AIEntity* receiver, AI_MSG msg,const boost::any& msg_content){
-	CommunicationSensor* com = dynamic_cast<CommunicationSensor*>(getSensor(COMMUNICATION_SENSOR));
+	CommunicationInterface* com = getCommunicationInterface();
 	if(com){
 		com->sendMessageToEntity(receiver, msg,msg_content);
 	}
 }
 
 void AIEntity::receiveMessage(AIEntity* sender, AI_MSG msg, const boost::any& msg_content){
-	CommunicationSensor* com = dynamic_cast<CommunicationSensor*>(getSensor(COMMUNICATION_SENSOR));
+	CommunicationInterface* com = getCommunicationInterface();
 	if(com){
 		com->receiveMessageFromEntity(sender, msg,msg_content);
 	}

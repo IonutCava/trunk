@@ -102,7 +102,7 @@ public:
 	inline void toggleDepthMapRendering(bool state)    {_api.toggleDepthMapRendering(state);}
 
 	///Sets the current render state.
-	///@param state Is used to inform the rendering pipeline what we are rendering. Shadows? reflections? etc
+	///@param stage Is used to inform the rendering pipeline what we are rendering. Shadows? reflections? etc
 		   void         setRenderStage(RENDER_STAGE stage);
 	inline RENDER_STAGE getRenderStage()                 {return _renderStage;}
 	inline void         setDeferredRendering(bool state) {_deferredRendering = state;} 

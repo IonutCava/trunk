@@ -700,9 +700,6 @@
     <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp">
       <Filter>AI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\Sensors\CommunicationSensor.cpp">
-      <Filter>AI\Sensors</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\Sensors\VisualSensor.cpp">
       <Filter>AI\Sensors</Filter>
     </ClCompile>
@@ -1088,6 +1085,9 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glTextureBufferObject.cpp">
       <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\CommunicationInterface.cpp">
+      <Filter>AI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -1259,9 +1259,6 @@
       <Filter>Graphs\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\AudioSensor.h">
-      <Filter>AI\Sensors\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\CommunicationSensor.h">
       <Filter>AI\Sensors\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\Sensor.h">
@@ -1675,6 +1672,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glTextureBufferObject.h">
       <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\Headers\CommunicationInterface.h">
+      <Filter>AI\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

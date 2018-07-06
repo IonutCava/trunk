@@ -17,7 +17,7 @@
 
 #ifndef _GL_RESOURCES_H_
 #define _GL_RESOURCES_H_
-
+#define GLEW_STATIC
 #include <gl/glew.h>
 #include <gl/freeglut.h> 
 #include <RendererModules/OpenGL/CEGUIOpenGLRenderer.h>

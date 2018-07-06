@@ -148,7 +148,7 @@ void SceneNode::prepareMaterial(SceneGraphNode const* const sgn){
 	if(getType() == TYPE_OBJECT3D && ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")){
 		Object3D* obj = dynamic_cast<Object3D* >(this);
 		/// For Mesh objects
-		if(obj->getType() == SUBMESH){
+		if(obj->getType() == Object3D::SUBMESH){
 			/// Apply bone transforms
 			std::vector<mat4<F32> >& transforms = dynamic_cast<SubMesh* >(obj)->GetTransforms();
 			if(!transforms.empty()){
@@ -254,7 +254,7 @@ void SceneNode::prepareShadowMaterial(SceneGraphNode* const sgn){
 			if(getType() == TYPE_OBJECT3D){
 				Object3D* obj = dynamic_cast<Object3D* >(this);
 				/// For Mesh objects
-				if(obj->getType() == SUBMESH){
+				if(obj->getType() == Object3D::SUBMESH){
 					/// Apply bone transforms
 					std::vector<mat4<F32> >& transforms = dynamic_cast<SubMesh* >(obj)->GetTransforms();
 					if(transforms.empty()){

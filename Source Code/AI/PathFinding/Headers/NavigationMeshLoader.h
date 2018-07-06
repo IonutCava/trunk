@@ -128,12 +128,10 @@ namespace Navigation {
 		static NavModelData loadMeshFile(const char* fileName);
 		static NavModelData mergeModels(NavModelData a, NavModelData b, bool delOriginals = false);
 		static bool saveModelData(NavModelData data, const char* filename, const char* activeScene = NULL);
-		static NavModelData parseTerrainData(BoundingBox box, SceneNode* set = NULL, I32* count = NULL);
-		static NavModelData parseStaticObjects(BoundingBox box, SceneNode* set = NULL, I32* count = NULL);
-		static NavModelData parseDynamicObjects(BoundingBox box, SceneNode* set = NULL, I32* count = NULL);
+		static NavModelData parseNode(SceneGraphNode* sgn = NULL);
 
 	private:
-		static NavModelData parse(BoundingBox box, U32 mask, MESH_DETAIL_LEVEL level, SceneNode* set = NULL, I32* count = NULL);
+		static NavModelData parse(const BoundingBox& box, NavModelData& data, SceneGraphNode* set = NULL);
 		static void addVertex(NavModelData* modelData, F32 x, F32 y, F32 z);
 		static void addTriangle(NavModelData* modelData, I32 a, I32 b, I32 c);
 		static char* parseRow(char* buf, char* bufEnd, char* row, I32 len);

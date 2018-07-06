@@ -2180,13 +2180,13 @@
 				RelativePath="..\..\Source Code\AI\AIEntity.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\Source Code\AI\CommunicationInterface.cpp"
+				>
+			</File>
 			<Filter
 				Name="Sensors"
 				>
-				<File
-					RelativePath="..\..\Source Code\AI\Sensors\CommunicationSensor.cpp"
-					>
-				</File>
 				<File
 					RelativePath="..\..\Source Code\AI\Sensors\VisualSensor.cpp"
 					>
@@ -2196,10 +2196,6 @@
 					>
 					<File
 						RelativePath="..\..\Source Code\AI\Sensors\Headers\AudioSensor.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\Sensors\Headers\CommunicationSensor.h"
 						>
 					</File>
 					<File
@@ -2237,6 +2233,10 @@
 				>
 				<File
 					RelativePath="..\..\Source Code\AI\Headers\AIEntity.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\AI\Headers\CommunicationInterface.h"
 					>
 				</File>
 			</Filter>

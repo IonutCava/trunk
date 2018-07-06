@@ -19,13 +19,11 @@
 #define _AI_SENSOR_H_
 
 #include "core.h"
-#include <boost/any.hpp>
 
 enum SENSOR_TYPE{
 	NONE = 0,
 	VISUAL_SENSOR = 1,
-	AUDIO_SENSOR = 2,
-	COMMUNICATION_SENSOR = 3
+	AUDIO_SENSOR = 2
 };
 
 class Sensor{

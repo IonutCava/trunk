@@ -15,17 +15,18 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _AI_AUDIO_SENSOR_H_
-#define _AI_AUDIO_SENSOR_H_
+#ifndef _AI_COMMUNICATION_INTERFACE_H_
+#define _AI_COMMUNICATION_INTERFACE_H_
 
-#include "Sensor.h"
+#include "core.h"
+#include <boost/any.hpp>
 
 enum AI_MSG;
 class AIEntity;
-class CommunicationSensor : public Sensor{
+class CommunicationInterface{
 
 public:
-	CommunicationSensor(AIEntity* entity) : _entity(entity), Sensor(COMMUNICATION_SENSOR) {}
+	CommunicationInterface(AIEntity* entity) : _entity(entity) {}
 
 	bool sendMessageToEntity(AIEntity* receiver, AI_MSG msg,const boost::any& msg_content);
 	bool receiveMessageFromEntity(AIEntity* sender, AI_MSG msg, const boost::any& msg_content);

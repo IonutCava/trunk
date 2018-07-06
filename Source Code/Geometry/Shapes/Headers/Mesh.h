@@ -36,9 +36,8 @@ Note: all transformations applied to the mesh affect every submesh that compose 
 #include <assimp/anim.h>
 
 class Mesh : public Object3D {
-
-	typedef unordered_map<std::string, SceneGraphNode*> childrenNodes;
 public:
+
 	Mesh() : Object3D(MESH), _visibleToNetwork(true),
 							 _playAnimations(true),
 							 _hasAnimations(false)
@@ -47,35 +46,36 @@ public:
 	}
 
 	~Mesh() {}
-
-	inline void addSubMesh(const std::string& subMesh){_subMeshes.push_back(subMesh);}
-
+		
 	bool computeBoundingBox(SceneGraphNode* const sgn);
 	void updateTransform(SceneGraphNode* const sgn);
-	inline std::vector<std::string>&   getSubMeshes()   {return _subMeshes;}
-	inline bool hasAnimations() {return _hasAnimations;}
-
-	void postLoad(SceneGraphNode* const sgn);
-	inline void render(SceneGraphNode* const sgn){};
-
-	void onDraw();
-
 	void updateBBatCurrentFrame(SceneGraphNode* const sgn);
+
 	/// Called from SceneGraph "sceneUpdate"
-	void sceneUpdate(D32 sceneTime);
+		   void sceneUpdate(D32 sceneTime);
+		   void postLoad(SceneGraphNode* const sgn);
+		   void onDraw();
+	inline void render(SceneGraphNode* const sgn){};
+	
+	inline bool                        hasAnimations()  {return _hasAnimations;}
+	inline bool                        playAnimations() {return _playAnimations;}
+	inline std::vector<std::string>&   getSubMeshes()   {return _subMeshes;}
+
+	inline void  addSubMesh(const std::string& subMesh){_subMeshes.push_back(subMesh);}
 
 protected:
-
-	friend class SubMesh;
-
-	void computeNormals(){}
 	void computeTangents(){}	
-	bool						 _visibleToNetwork;
-	bool                         _playAnimations;
-	bool                         _hasAnimations;
-	std::vector<std::string >	 _subMeshes;
+
+protected:
+	typedef unordered_map<std::string, SceneGraphNode*> childrenNodes;
 	typedef unordered_map<U32, SubMesh*> subMeshRefMap;
-	subMeshRefMap _subMeshRefMap;
+
+	bool _visibleToNetwork;
+	bool _playAnimations;
+	bool _hasAnimations;
+
+	std::vector<std::string > _subMeshes;
+	subMeshRefMap            _subMeshRefMap;
 };
 
 #endif
