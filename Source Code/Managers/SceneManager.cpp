@@ -1,4 +1,5 @@
 #include "Headers/SceneManager.h"
+#include "Headers/AIManager.h"
 
 #include "SceneList.h"
 #include "Rendering/Headers/Renderer.h"
@@ -15,7 +16,7 @@ SceneManager::~SceneManager(){
 		SAFE_DELETE(it.second);
 	}
 	_sceneMap.clear();
-	///Destroy the model loader;
+	//Destroy the model loader;
 	DVDConverter::getInstance().DestroyInstance();
 }
 
@@ -59,5 +60,14 @@ void SceneManager::render(const RenderStage& stage) {
 		GFX.render(DELEGATE_BIND(&SceneGraph::update,sg),_activeScene->renderState());
 	}else{
 		GFX.render(_activeScene->renderCallback(),_activeScene->renderState());
+	}
+
+	if(bitCompare(stage,FINAL_STAGE) || bitCompare(stage,DEFERRED_STAGE)){
+		// Draw bounding boxes, skeletons, axis gizmo, etc.
+		GFX.debugDraw();
+		// Preview depthmaps if needed
+		LightManager::getInstance().previewShadowMaps();
+		// Show navmeshes
+		AIManager::getInstance().debugDraw(false);
 	}
 }

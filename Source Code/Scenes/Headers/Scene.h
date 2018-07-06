@@ -67,7 +67,7 @@ public:
 	virtual void processInput() = 0;                //<Get all input commands from the user
 	virtual void processTasks(const U32 time) = 0;  //<Update the scene based on the inputs
 	virtual void preRender() = 0;                   //<Prepare the scene for rendering after the update
-    virtual void postRender();                      //<Perform any post rendering operations (such as showing texture previews)
+    virtual void postRender();                      //<Perform any post rendering operations
 	bool idle();                                    //<Scene is rendering, so add intensive tasks here to save CPU cycles
 	/**End scene logic loop*/
 

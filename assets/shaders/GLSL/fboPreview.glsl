@@ -23,6 +23,7 @@ uniform sampler2D tex;
 void main()
 {
 	_colorOut = texture(tex, _texCoord);
+	_colorOut.a = 0;
 }
 
 -- Fragment.Layered
@@ -44,4 +45,5 @@ void main()
 	float fLayer = layer;
 	vec3 tex_coord = vec3(_texCoord, fLayer);
 	_colorOut = texture(tex, tex_coord);
+	_colorOut.a = 0;
 }

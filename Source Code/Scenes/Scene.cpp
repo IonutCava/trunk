@@ -76,14 +76,7 @@ bool Scene::idle(){ //Called when application is idle
 }
 
 void Scene::postRender(){
-	if(GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE) ){
-		// Draw bounding boxes, skeletons, axis gizmo, etc.
-		_GFX.debugDraw();
-		// Preview depthmaps if needed
-		LightManager::getInstance().previewShadowMaps();
-		// Show navmeshes
-		AIManager::getInstance().debugDraw(false);
-	}
+
 }
 
 void Scene::addPatch(vectorImpl<FileData>& data){
