@@ -50,12 +50,13 @@ typedef std::array<vec2<I32>, to_base(WindowType::COUNT)> PositionByType;
 typedef std::array<vec2<U16>, to_base(WindowType::COUNT)> ResolutionByType;
 
 class WindowManager;
+class PlatformContext;
 enum class ErrorCode : I32;
 // Platform specific window
 class DisplayWindow : public GUIDWrapper {
 
 public:
-    DisplayWindow(WindowManager& context);
+    DisplayWindow(WindowManager& parent, PlatformContext& context);
     ~DisplayWindow();
     ErrorCode init(U32 windowFlags,
                    WindowType initialType,
@@ -107,7 +108,8 @@ private:
     void handleChangeWindowType(WindowType newWindowType);
 
 private:
-    WindowManager& _context;
+    WindowManager& _parent;
+    PlatformContext& _context;
     /// The current rendering window type
     WindowType _type;
     WindowType _previousType;

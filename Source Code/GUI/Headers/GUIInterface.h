@@ -99,9 +99,12 @@ public:
                                const vec2<U32>& position,
                                const vec2<U32>& extent);
 
-    virtual void mouseMoved(const GUIEvent& event);
-    virtual void onMouseUp(const GUIEvent& event);
-    virtual void onMouseDown(const GUIEvent& event);
+    // Return true if input was consumed
+    virtual bool mouseMoved(const GUIEvent& event);
+    // Return true if input was consumed
+    virtual bool onMouseUp(const GUIEvent& event);
+    // Return true if input was consumed
+    virtual bool onMouseDown(const GUIEvent& event);
 
 protected:
     void addElement(U64 id, GUIElement* element);

@@ -74,14 +74,14 @@ U16 PhysXScene::registerInputActions() {
             _hasGroundPlane = true;
         }
     });
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_1, actions);
     actionID++;
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param){
         // Create Box
     });
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_2, actions);
     actionID++;
 
@@ -90,7 +90,7 @@ U16 PhysXScene::registerInputActions() {
         TaskHandle e(CreateTask(getGUID(), DELEGATE_BIND(&PhysXScene::createTower, this, std::placeholders::_1, to_U32(Random(5, 20)))));
         registerTask(e);
     });
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_3, actions);
     actionID++;
 
@@ -98,7 +98,7 @@ U16 PhysXScene::registerInputActions() {
         TaskHandle e(CreateTask(getGUID(), DELEGATE_BIND(&PhysXScene::createStack, this, std::placeholders::_1, to_U32(Random(5, 10)))));
         registerTask(e);
     });
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_4, actions);
 
     return actionID++;

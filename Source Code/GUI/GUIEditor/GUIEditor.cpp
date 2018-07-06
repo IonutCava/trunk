@@ -234,7 +234,9 @@ void GUIEditor::setVisible(bool visible) {
     _editorWindow->setVisible(visible);
 }
 
-bool GUIEditor::isVisible() { return _editorWindow->isVisible(); }
+bool GUIEditor::isVisible() const {
+    return _editorWindow->isVisible();
+}
 
 bool GUIEditor::update(const U64 deltaTime) {
     _wasControlClick = false;
@@ -936,7 +938,7 @@ bool GUIEditor::Handle_EditFieldClick(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_CreateNavMesh(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: NavMesh creation queued!");
-    _context.gui().getConsole()->setVisible(true);
+    _context.gui().getConsole().setVisible(true);
     _createNavMeshQueued = true;
     return true;
 }

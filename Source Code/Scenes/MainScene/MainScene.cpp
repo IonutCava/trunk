@@ -175,7 +175,7 @@ U16 MainScene::registerInputActions() {
     PressReleaseActions actions;
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {_context.sfx().playSound(_beep);});
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_X, actions);
     actionID++;
     
@@ -192,7 +192,7 @@ U16 MainScene::registerInputActions() {
             _context.sfx().stopMusic();
         }
     });
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_M, actions);
     actionID++;
 
@@ -201,7 +201,7 @@ U16 MainScene::registerInputActions() {
         Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
         cam.setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
     });
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_L, actions);
     actionID++;
 
@@ -212,7 +212,7 @@ U16 MainScene::registerInputActions() {
             terrainNode.lock()->getNode<Terrain>()->toggleBoundingBoxes();
         }
     });
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_T, actions);
 
     return actionID++;

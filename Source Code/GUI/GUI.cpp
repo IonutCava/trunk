@@ -346,133 +346,142 @@ void GUI::setCursorPosition(I32 x, I32 y) const {
     CEGUI_DEFAULT_CTX.injectMousePosition(to_F32(x), to_F32(y));
 }
 
+// Return true if input was consumed
 bool GUI::onKeyDown(const Input::KeyEvent& key) {
     if (!_init) {
-        return true;
+        return false;
     }
 
-    return !_ceguiInput.onKeyDown(key);
+    return _ceguiInput.onKeyDown(key);
 }
 
+// Return true if input was consumed
 bool GUI::onKeyUp(const Input::KeyEvent& key) {
     if (!_init) {
-        return true;
+        return false;
     }
-
-    if (key._key == Input::KeyCode::KC_GRAVE) {
-        _console->setVisible(!_console->isVisible());
-    }
-
-    if (Config::Build::IS_DEBUG_BUILD) {
-        if (key._key == Input::KeyCode::KC_F11) {
-            _guiEditor->setVisible(!_guiEditor->isVisible());
-        }
-    }
-
-    return !_ceguiInput.onKeyUp(key);
+    return _ceguiInput.onKeyUp(key);
 }
 
+// Return true if input was consumed
 bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     if (!_init) {
-        return true;
+        return false;
     }
 
     GUIEvent event;
     event.mousePoint.x = to_F32(arg._event.state.X.abs);
     event.mousePoint.y = to_F32(arg._event.state.Y.abs);
 
-    GUIInterface::mouseMoved(event);
+    if (GUIInterface::mouseMoved(event)) {
+        return true;
+    }
 
     // scene specific
     ReadLock r_lock(_guiStackLock);
     GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
     if (it != std::cend(_guiStack)) {
-        it->second->mouseMoved(event);
+        if (it->second->mouseMoved(event)) {
+            return true;
+        }
     }
 
-    return !_ceguiInput.mouseMoved(arg);
+    return _ceguiInput.mouseMoved(arg);
 }
 
+// Return true if input was consumed
 bool GUI::mouseButtonPressed(const Input::MouseEvent& arg,
                              Input::MouseButton button) {
     if (!_init) {
-        return true;
+        return false;
     }
 
-    bool processed = false;
-    if (!_ceguiInput.mouseButtonPressed(arg, button)) {
+    bool consumed = _ceguiInput.mouseButtonPressed(arg, button);
+    if (!consumed) {
         if (button == Input::MouseButton::MB_Left) {
             GUIEvent event;
             event.mouseClickCount = 0;
 
-            GUIInterface::onMouseDown(event);
+            if (GUIInterface::onMouseDown(event)) {
+                return true;
+            }
 
             // scene specific
             ReadLock r_lock(_guiStackLock);
             GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
             if (it != std::cend(_guiStack)) {
-                it->second->onMouseDown(event);
+                if (it->second->onMouseDown(event)) {
+                    return true;
+                }
             }
         }
-        processed = true;
     }
 
-    return processed;
+    return consumed;
 }
 
+// Return true if input was consumed
 bool GUI::mouseButtonReleased(const Input::MouseEvent& arg,
                               Input::MouseButton button) {
     if (!_init) {
-        return true;
+        return false;
     }
 
-    bool processed = false;
-    if (!_ceguiInput.mouseButtonReleased(arg, button)) {
+    bool consumed = _ceguiInput.mouseButtonReleased(arg, button);
+    if (!consumed) {
         if (button == Input::MouseButton::MB_Left) {
             GUIEvent event;
             event.mouseClickCount = 1;
 
-            GUIInterface::onMouseUp(event);
+            if (GUIInterface::onMouseUp(event)) {
+                return true;
+            }
 
             // scene specific
             ReadLock r_lock(_guiStackLock);
             GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
             if (it != std::cend(_guiStack)) {
-                it->second->onMouseUp(event);
+                if (it->second->onMouseUp(event)) {
+                    return true;
+                }
             }
         }
-        processed = true;
     }
 
-    return processed;
+    return consumed;
 }
 
+// Return true if input was consumed
 bool GUI::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
-    return !_ceguiInput.joystickAxisMoved(arg, axis);
+    return _ceguiInput.joystickAxisMoved(arg, axis);
 }
 
+// Return true if input was consumed
 bool GUI::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
-    return !_ceguiInput.joystickPovMoved(arg, pov);
+    return _ceguiInput.joystickPovMoved(arg, pov);
 }
 
+// Return true if input was consumed
 bool GUI::joystickButtonPressed(const Input::JoystickEvent& arg,
                                 Input::JoystickButton button) {
-    return !_ceguiInput.joystickButtonPressed(arg, button);
+    return _ceguiInput.joystickButtonPressed(arg, button);
 }
 
+// Return true if input was consumed
 bool GUI::joystickButtonReleased(const Input::JoystickEvent& arg,
                                  Input::JoystickButton button) {
-    return !_ceguiInput.joystickButtonReleased(arg, button);
+    return _ceguiInput.joystickButtonReleased(arg, button);
 }
 
+// Return true if input was consumed
 bool GUI::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) {
-    return !_ceguiInput.joystickSliderMoved(arg, index);
+    return _ceguiInput.joystickSliderMoved(arg, index);
 }
 
+// Return true if input was consumed
 bool GUI::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
-    return !_ceguiInput.joystickVector3DMoved(arg, index);
+    return _ceguiInput.joystickVector3DMoved(arg, index);
 }
-
 
 GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const {
     if (sceneID != 0) {

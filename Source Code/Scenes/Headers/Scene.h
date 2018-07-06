@@ -222,6 +222,7 @@ class Scene : public Resource {
 
     inline const Camera& baseCamera() const { return *_baseCamera; }
 
+    //Return true if input was consumed
     bool mouseMoved(const Input::MouseEvent& arg);
 
     U8 getSceneIndexForPlayer(U8 playerIndex) const;

@@ -109,29 +109,43 @@ GUIElement* GUIInterface::getGUIElementImpl(I64 elementID, GUIType type) const {
     return ret;
 }
 
-
-void GUIInterface::mouseMoved(const GUIEvent& event) {
+// Return true if input was consumed
+bool GUIInterface::mouseMoved(const GUIEvent& event) {
     for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
         for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
-            guiStackIterator.second.first->mouseMoved(event);
+            if (guiStackIterator.second.first->mouseMoved(event)) {
+                return true;
+            }
         }
     }
+
+    return false;
 }
 
-void GUIInterface::onMouseUp(const GUIEvent& event) {
+// Return true if input was consumed
+bool GUIInterface::onMouseUp(const GUIEvent& event) {
     for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
         for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
-            guiStackIterator.second.first->onMouseUp(event);
+            if (guiStackIterator.second.first->onMouseUp(event)) {
+                return true;
+            }
         }
     }
+
+    return false;
 }
 
-void GUIInterface::onMouseDown(const GUIEvent& event) {
+// Return true if input was consumed
+bool GUIInterface::onMouseDown(const GUIEvent& event) {
     for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
         for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
-            guiStackIterator.second.first->onMouseDown(event);
+            if (guiStackIterator.second.first->onMouseDown(event)) {
+                return true;
+            }
         }
     }
+
+    return false;
 }
 
 

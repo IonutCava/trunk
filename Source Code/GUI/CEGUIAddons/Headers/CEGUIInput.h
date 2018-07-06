@@ -40,33 +40,33 @@ namespace Divide {
 class CEGUIInput : public Input::InputAggregatorInterface,
                    public Input::AutoRepeatKey {
    public:
-    /// Key pressed
+    /// Key pressed: return true if input was consumed
     bool onKeyDown(const Input::KeyEvent& key);
-    /// Key released
+    /// Key released: return true if input was consumed
     bool onKeyUp(const Input::KeyEvent& key);
-    /// Joystick axis change
+    /// Joystick axis change: return true if input was consumed
     bool joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis);
-    /// Joystick direction change
+    /// Joystick direction change: return true if input was consumed
     bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov);
-    /// Joystick button pressed
+    /// Joystick button pressed: return true if input was consumed
     bool joystickButtonPressed(const Input::JoystickEvent& arg,
                                Input::JoystickButton button);
-    /// Joystick button released
+    /// Joystick button released: return true if input was consumed
     bool joystickButtonReleased(const Input::JoystickEvent& arg,
                                 Input::JoystickButton button);
     bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index);
     bool joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index);
-    /// Mouse moved
+    /// Mouse moved: return true if input was consumed
     bool mouseMoved(const Input::MouseEvent& arg);
-    /// Mouse button pressed
+    /// Mouse button pressed: return true if input was consumed
     bool mouseButtonPressed(const Input::MouseEvent& arg,
                             Input::MouseButton button);
-    /// Mouse button released
+    /// Mouse button released: return true if input was consumed
     bool mouseButtonReleased(const Input::MouseEvent& arg,
                              Input::MouseButton button);
 
    protected:
-    /// Called on key events
+    /// Called on key events: return true if the input was consumed
     bool injectOISKey(bool pressed, const Input::KeyEvent& inKey);
     void repeatKey(I32 inKey, U32 Char);
 };

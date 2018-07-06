@@ -12,7 +12,6 @@ WindowManager::WindowManager() : _displayIndex(0),
                                  _activeWindowGUID(-1),
                                  _context(nullptr)
 {
-    _windows.emplace_back(MemoryManager_NEW DisplayWindow(*this));
     SDL_Init(SDL_INIT_VIDEO);
 }
 
@@ -45,6 +44,8 @@ ErrorCode WindowManager::init(PlatformContext& context,
                                                                   to_U16(displayMode.h));
     initialResolutions[to_base(WindowType::FULLSCREEN_WINDOWED)].set(to_U16(displayMode.w),
                                                                            to_U16(displayMode.h));
+
+    _windows.emplace_back(MemoryManager_NEW DisplayWindow(*this, context));
 
     ErrorCode err = initWindow(0,
                                createAPIFlags(api),

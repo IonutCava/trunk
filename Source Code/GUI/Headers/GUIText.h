@@ -70,9 +70,12 @@ class GUIText : public GUIElement, public TextLabel {
             U32 fontSize = 16);
 
     void draw(GFXDevice& context) const;
-    void mouseMoved(const GUIEvent& event);
-    void onMouseUp(const GUIEvent& event);
-    void onMouseDown(const GUIEvent& event);
+    // Return true if input was consumed
+    bool mouseMoved(const GUIEvent& event) override;
+    // Return true if input was consumed
+    bool onMouseUp(const GUIEvent& event) override;
+    // Return true if input was consumed
+    bool onMouseDown(const GUIEvent& event) override;
     void onChangeResolution(U16 w, U16 h);
     vec2<F32> getPosition() const;
 protected:

@@ -294,7 +294,7 @@ U16 PingPongScene::registerInputActions() {
     PressReleaseActions actions;
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {serveBall(-1);});
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addJoystickMapping(Input::Joystick::JOYSTICK_1, Input::JoystickElement(Input::JoystickElementType::BUTTON_PRESS, 0), actions);
     actionID++;
 
@@ -306,7 +306,7 @@ U16 PingPongScene::registerInputActions() {
             Camera::activeCamera(Camera::activeCamera());
         }
     });
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_L, actions);
 
     return actionID++;

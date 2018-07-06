@@ -25,17 +25,17 @@ PressReleaseActions::PressReleaseActions(U16 onPressAction,
                                          U16 onLAltReleaseAction,
                                          U16 onRAltPressAction,
                                          U16 onRAltReleaseAction)
-    : _onPressAction(onPressAction),
-      _onReleaseAction(onReleaseAction),
-      _onLCtrlPressAction(onLCtrlPressAction),
-      _onLCtrlReleaseAction(onLCtrlReleaseAction),
-      _onRCtrlPressAction(onRCtrlPressAction),
-      _onRCtrlReleaseAction(onRCtrlReleaseAction),
-      _onLAltPressAction(onLAltPressAction),
-      _onLAltReleaseAction(onLAltReleaseAction),
-      _onRAltPressAction(onRAltPressAction),
-      _onRAltReleaseAction(onRAltReleaseAction)
 {
+    _actions[to_base(Action::PRESS)] = onPressAction;
+    _actions[to_base(Action::RELEASE)] = onReleaseAction;
+    _actions[to_base(Action::LEFT_CTRL_PRESS)] = onLCtrlPressAction;
+    _actions[to_base(Action::LEFT_CTRL_RELEASE)] = onLCtrlReleaseAction;
+    _actions[to_base(Action::RIGHT_CTRL_PRESS)] = onRCtrlPressAction;
+    _actions[to_base(Action::RIGHT_CTRL_RELEASE)] = onRCtrlReleaseAction;
+    _actions[to_base(Action::LEFT_ALT_PRESS)] = onLAltPressAction;
+    _actions[to_base(Action::LEFT_ALT_RELEASE)] = onLAltReleaseAction;
+    _actions[to_base(Action::RIGHT_ALT_PRESS)] = onRAltPressAction;
+    _actions[to_base(Action::RIGHT_ALT_RELEASE)] = onRAltReleaseAction;
 }
 
 InputAction::InputAction()

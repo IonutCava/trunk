@@ -67,7 +67,22 @@ struct InputParams {
     U8  _deviceIndex;
 };
 
-struct PressReleaseActions {
+class PressReleaseActions {
+public:
+    enum class Action : U8 {
+        PRESS = 0,
+        RELEASE,
+        LEFT_CTRL_PRESS,
+        LEFT_CTRL_RELEASE,
+        RIGHT_CTRL_PRESS,
+        RIGHT_CTRL_RELEASE,
+        LEFT_ALT_PRESS,
+        LEFT_ALT_RELEASE,
+        RIGHT_ALT_PRESS,
+        RIGHT_ALT_RELEASE,
+        COUNT
+    };
+
     PressReleaseActions();
     PressReleaseActions(U16 onPressAction,
                         U16 onReleaseAction);
@@ -82,32 +97,36 @@ struct PressReleaseActions {
                         U16 onRAltPressAction = 0u,
                         U16 onRAltReleaseAction = 0u);
 
-    // key only
-    U16 _onPressAction;
-    U16 _onReleaseAction;
-
-    U16 _onLCtrlPressAction;
-    U16 _onLCtrlReleaseAction;
-    U16 _onRCtrlPressAction;
-    U16 _onRCtrlReleaseAction;
-
-    U16 _onLAltPressAction;
-    U16 _onLAltReleaseAction;
-    U16 _onRAltPressAction;
-    U16 _onRAltReleaseAction;
-
     inline void clear() {
-        _onPressAction = 
-        _onReleaseAction = 
-        _onLCtrlPressAction = 
-        _onLCtrlReleaseAction = 
-        _onRCtrlPressAction = 
-        _onRCtrlReleaseAction = 
-        _onLAltPressAction = 
-        _onLAltReleaseAction = 
-        _onRAltPressAction = 
-        _onRAltReleaseAction = 0;
+        _actions.fill(0);
     }
+
+    inline bool merge(const PressReleaseActions& other) {
+        bool conflict = false;
+
+        for (U8 i = 0; i < to_U8(Action::COUNT); ++i) {
+            if (other._actions[i] != 0) {
+                if (_actions[i] != 0) {
+                    conflict = true;
+                }
+                _actions[i] = other._actions[i];
+            }
+        }
+
+        return conflict;
+    }
+
+    inline U16 actionID(Action action) const {
+        return _actions[to_base(action)];
+    }
+
+    inline void actionID(Action action, U16 ID) {
+        _actions[to_base(action)] = ID;
+    }
+
+private:
+    // key only
+    std::array<U16, to_base(Action::COUNT)> _actions;
 };
 
 struct InputAction {

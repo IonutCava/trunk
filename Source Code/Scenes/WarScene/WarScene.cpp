@@ -619,22 +619,22 @@ U16 WarScene::registerInputActions() {
     //ToDo: Move these to per-scene XML file
     PressReleaseActions actions;
     _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::toggleCamera, this));
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_TAB, actions);
     actionID++;
 
     _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, to_U16(0), ""));
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_1, actions);
     actionID++;
 
     _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, to_U16(1), ""));
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_2, actions);
     actionID++;
 
     _input->actionList().registerInputAction(actionID, [](InputParams param) {DIVIDE_ASSERT(false, "Test Assert"); });
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_5, actions);
     actionID++;
 
@@ -659,7 +659,7 @@ U16 WarScene::registerInputActions() {
             _lightPool->toggleLightType(LightType::POINT, true);
         }
     });
-    actions._onReleaseAction = actionID;
+    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_L, actions);
 
 

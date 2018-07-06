@@ -395,7 +395,9 @@ void GFXDevice::endFrame(bool swapBuffers) {
     ShaderProgram::unbind();
 
     if (Config::USE_ANT_TWEAK_BAR) {
-        TwDraw();
+        if (_parent.platformContext().config().gui.enableDebugVariableControls) {
+            TwDraw();
+        }
     }
 
     _api->endFrame(swapBuffers);

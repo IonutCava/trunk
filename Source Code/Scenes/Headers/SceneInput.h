@@ -85,9 +85,10 @@ class SceneInput : public Input::InputAggregatorInterface {
 
     explicit SceneInput(Scene &parentScene, Input::InputInterface& context);
 
+    //Keyboard: return true if input was consumed
     bool onKeyDown(const Input::KeyEvent &arg);
     bool onKeyUp(const Input::KeyEvent &arg);
-    /// Joystick or Gamepad
+    /// Joystick or Gamepad: return true if input was consumed
     bool joystickButtonPressed(const Input::JoystickEvent &arg,
                                Input::JoystickButton button);
     bool joystickButtonReleased(const Input::JoystickEvent &arg,
@@ -96,14 +97,14 @@ class SceneInput : public Input::InputAggregatorInterface {
     bool joystickPovMoved(const Input::JoystickEvent &arg, I8 pov);
     bool joystickSliderMoved(const Input::JoystickEvent &, I8 index);
     bool joystickVector3DMoved(const Input::JoystickEvent &arg, I8 index);
-    /// Mouse
+    /// Mouse: return true if input was consumed
     bool mouseMoved(const Input::MouseEvent &arg);
     bool mouseButtonPressed(const Input::MouseEvent &arg,
                             Input::MouseButton id);
     bool mouseButtonReleased(const Input::MouseEvent &arg,
                              Input::MouseButton id);
 
-    /// Returns false if the key is already assigned.
+    /// Returns false if the key is already assigned and couldn't be merged
     /// Call removeKeyMapping for the specified key first
     bool addKeyMapping(Input::KeyCode key, PressReleaseActions keyCbks);
     /// Returns false if the key wasn't previously assigned

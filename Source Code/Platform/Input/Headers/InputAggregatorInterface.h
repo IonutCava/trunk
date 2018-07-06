@@ -123,10 +123,10 @@ enum class InputState : U32 {
 
 class InputAggregatorInterface {
    public:
-    /// Keyboard
+    /// Keyboard: return true if input was consumed
     virtual bool onKeyDown(const KeyEvent &arg) = 0;
     virtual bool onKeyUp(const KeyEvent &arg) = 0;
-    /// Joystick or Gamepad
+    /// Joystick or Gamepad: return true if input was consumed
     virtual bool joystickButtonPressed(const JoystickEvent &arg, JoystickButton button) = 0;
     virtual bool joystickButtonReleased(const JoystickEvent &arg,
                                         JoystickButton button) = 0;
@@ -134,7 +134,7 @@ class InputAggregatorInterface {
     virtual bool joystickPovMoved(const JoystickEvent &arg, I8 pov) = 0;
     virtual bool joystickSliderMoved(const JoystickEvent &, I8 index) = 0;
     virtual bool joystickVector3DMoved(const JoystickEvent &arg, I8 index) = 0;
-    /// Mouse
+    /// Mouse: return true if input was consumed
     virtual bool mouseMoved(const MouseEvent &arg) = 0;
     virtual bool mouseButtonPressed(const MouseEvent &arg, MouseButton id) = 0;
     virtual bool mouseButtonReleased(const MouseEvent &arg, MouseButton id) = 0;

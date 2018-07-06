@@ -11,21 +11,22 @@
 
 namespace Divide {
 
+// return true if the input was consumed
 bool CEGUIInput::injectOISKey(bool pressed, const Input::KeyEvent& inKey) {
-    bool processed = false;
+    bool consumed = false;
     if (pressed) {
         if (CEGUI_DEFAULT_CTX.injectKeyDown((CEGUI::Key::Scan)inKey._key)) {
             CEGUI_DEFAULT_CTX.injectChar((CEGUI::Key::Scan)inKey._text);
             begin(inKey);
-            processed = true;
+            consumed = true;
         }
     } else {
         if (CEGUI_DEFAULT_CTX.injectKeyUp((CEGUI::Key::Scan)inKey._key)) {
             end(inKey);
-            processed = true;
+            consumed = true;
         }
     }
-    return processed;
+    return consumed;
 }
 
 void CEGUIInput::repeatKey(I32 inKey, U32 Char) {
@@ -36,95 +37,118 @@ void CEGUIInput::repeatKey(I32 inKey, U32 Char) {
     CEGUI_DEFAULT_CTX.injectChar(Char);  // What that key means
 }
 
+// Return true if input was consumed
 bool CEGUIInput::onKeyDown(const Input::KeyEvent& key) {
     return injectOISKey(true, key);
 }
 
+// Return true if input was consumed
 bool CEGUIInput::onKeyUp(const Input::KeyEvent& key) {
     return injectOISKey(false, key);
 }
 
+// Return true if input was consumed
 bool CEGUIInput::mouseMoved(const Input::MouseEvent& arg) {
     return (CEGUI_DEFAULT_CTX.injectMouseWheelChange(to_F32(arg._event.state.Z.abs)) ||
             CEGUI_DEFAULT_CTX.injectMouseMove(to_F32(arg._event.state.X.rel),
                                               to_F32(arg._event.state.Y.rel)));
 }
 
+// Return true if input was consumed
 bool CEGUIInput::mouseButtonPressed(const Input::MouseEvent& arg,
                                     Input::MouseButton button) {
-    bool processed = false;
+    bool consumed = false;
     switch (button) {
         case Input::MouseButton::MB_Left: {
-            processed = CEGUI_DEFAULT_CTX.injectMouseButtonDown(CEGUI::LeftButton);
+            consumed = CEGUI_DEFAULT_CTX.injectMouseButtonDown(CEGUI::LeftButton);
         } break;
         case Input::MouseButton::MB_Middle: {
-            processed = CEGUI_DEFAULT_CTX.injectMouseButtonDown(CEGUI::MiddleButton);
+            consumed = CEGUI_DEFAULT_CTX.injectMouseButtonDown(CEGUI::MiddleButton);
         } break;
         case Input::MouseButton::MB_Right: {
-            processed = CEGUI_DEFAULT_CTX.injectMouseButtonDown(CEGUI::RightButton);
+            consumed = CEGUI_DEFAULT_CTX.injectMouseButtonDown(CEGUI::RightButton);
         } break;
         case Input::MouseButton::MB_Button3: {
-            processed = CEGUI_DEFAULT_CTX.injectMouseButtonDown(CEGUI::X1Button);
+            consumed = CEGUI_DEFAULT_CTX.injectMouseButtonDown(CEGUI::X1Button);
         } break;
         case Input::MouseButton::MB_Button4: {
-            processed = CEGUI_DEFAULT_CTX.injectMouseButtonDown(CEGUI::X2Button);
+            consumed = CEGUI_DEFAULT_CTX.injectMouseButtonDown(CEGUI::X2Button);
         } break;
         default: break;
     };
 
-    return processed;
+    return consumed;
 }
 
+// Return true if input was consumed
 bool CEGUIInput::mouseButtonReleased(const Input::MouseEvent& arg,
                                      Input::MouseButton button) {
-    bool processed = false;
+    bool consumed = false;
     switch (button) {
         case Input::MouseButton::MB_Left: {
-            processed = CEGUI_DEFAULT_CTX.injectMouseButtonUp(CEGUI::LeftButton);
+            consumed = CEGUI_DEFAULT_CTX.injectMouseButtonUp(CEGUI::LeftButton);
         } break;
         case Input::MouseButton::MB_Middle: {
-            processed = CEGUI_DEFAULT_CTX.injectMouseButtonUp(CEGUI::MiddleButton);
+            consumed = CEGUI_DEFAULT_CTX.injectMouseButtonUp(CEGUI::MiddleButton);
         } break;
         case Input::MouseButton::MB_Right: {
-            processed = CEGUI_DEFAULT_CTX.injectMouseButtonUp(CEGUI::RightButton);
+            consumed = CEGUI_DEFAULT_CTX.injectMouseButtonUp(CEGUI::RightButton);
         } break;
         case Input::MouseButton::MB_Button3: {
-            processed = CEGUI_DEFAULT_CTX.injectMouseButtonUp(CEGUI::X1Button);
+            consumed = CEGUI_DEFAULT_CTX.injectMouseButtonUp(CEGUI::X1Button);
         } break;
         case Input::MouseButton::MB_Button4: {
-            processed = CEGUI_DEFAULT_CTX.injectMouseButtonUp(CEGUI::X2Button);
+            consumed = CEGUI_DEFAULT_CTX.injectMouseButtonUp(CEGUI::X2Button);
         } break;
         default: break;
     };
 
-    return processed;
+    return consumed;
 }
 
+// Return true if input was consumed
 bool CEGUIInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
-    return false;
+    bool consumed = false;
+
+    return consumed;
 }
 
+// Return true if input was consumed
 bool CEGUIInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
-    return false;
+    bool consumed = false;
+
+    return consumed;
 }
 
+// Return true if input was consumed
 bool CEGUIInput::joystickButtonPressed(const Input::JoystickEvent& arg,
                                        Input::JoystickButton button) {
-    return false;
+    bool consumed = false;
+
+    return consumed;
 }
 
+// Return true if input was consumed
 bool CEGUIInput::joystickButtonReleased(const Input::JoystickEvent& arg,
                                         Input::JoystickButton button) {
-    return false;
+    bool consumed = false;
+
+    return consumed;
 }
 
+// Return true if input was consumed
 bool CEGUIInput::joystickSliderMoved(const Input::JoystickEvent& arg,
                                      I8 index) {
-    return false;
+    bool consumed = false;
+
+    return consumed;
 }
 
+// Return true if input was consumed
 bool CEGUIInput::joystickVector3DMoved(const Input::JoystickEvent& arg,
                                        I8 index) {
-    return false;
+    bool consumed = false;
+
+    return consumed;
 }
 };

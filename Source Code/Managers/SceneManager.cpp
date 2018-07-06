@@ -31,7 +31,7 @@ namespace Divide {
     ToDo:
     - Add IMPrimities per Scene and clear on scene unload
     - Cleanup load flags and use ResourceState enum instead
-    - Sort out camera loading/unloading issues with parameteres (position, orientation, etc)
+    - Sort out camera loading/unloading issues with parameters (position, orientation, etc)
 */
 
 namespace {
@@ -702,6 +702,7 @@ bool SceneManager::onKeyDown(const Input::KeyEvent& key) {
     if (!_processInput) {
         return false;
     }
+
     return getActiveScene().input().onKeyDown(key);
 }
 
@@ -726,6 +727,7 @@ bool SceneManager::mouseButtonPressed(const Input::MouseEvent& arg,
     if (!_processInput) {
         return false;
     }
+
     return getActiveScene().input().mouseButtonPressed(arg, button);
 }
 
@@ -742,6 +744,7 @@ bool SceneManager::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
     if (!_processInput) {
         return false;
     }
+
     return getActiveScene().input().joystickAxisMoved(arg, axis);
 }
 
@@ -749,6 +752,7 @@ bool SceneManager::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
     if (!_processInput) {
         return false;
     }
+
     return getActiveScene().input().joystickPovMoved(arg, pov);
 }
 
@@ -757,6 +761,7 @@ bool SceneManager::joystickButtonPressed(const Input::JoystickEvent& arg,
     if (!_processInput) {
         return false;
     }
+
     return getActiveScene().input().joystickButtonPressed(arg, button);
 }
 
@@ -765,6 +770,7 @@ bool SceneManager::joystickButtonReleased(const Input::JoystickEvent& arg,
     if (!_processInput) {
         return false;
     }
+
     return getActiveScene().input().joystickButtonReleased(arg, button);
 }
 
@@ -773,6 +779,7 @@ bool SceneManager::joystickSliderMoved(const Input::JoystickEvent& arg,
     if (!_processInput) {
         return false;
     }
+
     return getActiveScene().input().joystickSliderMoved(arg, index);
 }
 
@@ -781,6 +788,7 @@ bool SceneManager::joystickVector3DMoved(const Input::JoystickEvent& arg,
     if (!_processInput) {
         return false;
     }
+
     return getActiveScene().input().joystickVector3DMoved(arg, index);
 }
 

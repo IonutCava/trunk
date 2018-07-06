@@ -30,6 +30,7 @@ Configuration::Configuration() : XML::IXMLSerializable()
     gui.cegui.defaultGUIScheme = "GWEN";
     gui.consoleLayoutFile = "console.layout";
     gui.editorLayoutFile = "editor.layout";
+    gui.enableDebugVariableControls = false;
 
     rendering.postAAType = "FXAA";
     rendering.postAASamples = 0;

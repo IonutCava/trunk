@@ -221,7 +221,7 @@ class SceneStatePerPlayer {
     inline void aimPos(const vec2<I32>& position) { _aimDelta.set(_aimPos - position); _aimPos.set(position); }
     inline const vec2<I32>&  aimPos()       const { return _aimPos; }
 
-    inline const vec2<I32>&  aimDelta()      const { return _aimDelta; }
+    inline const vec2<I32>&  aimDelta()     const { return _aimDelta; }
 
     inline void    overrideCamera(Camera* camera) { _overrideCamera = camera; }
     inline Camera* overrideCamera()         const { return _overrideCamera; }

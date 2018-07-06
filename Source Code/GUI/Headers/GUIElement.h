@@ -111,9 +111,12 @@ class GUIElement : public GUIDWrapper {
 
     virtual void setTooltip(const stringImpl& tooltipText) {}
 
-    virtual void mouseMoved(const GUIEvent& event){}
-    virtual void onMouseUp(const GUIEvent& event){}
-    virtual void onMouseDown(const GUIEvent& event){}
+    // Return true if input was consumed
+    virtual bool mouseMoved(const GUIEvent& event) { return false; }
+    // Return true if input was consumed
+    virtual bool onMouseUp(const GUIEvent& event) { return false; }
+    // Return true if input was consumed
+    virtual bool onMouseDown(const GUIEvent& event) { return false; }
 
     virtual void onChangeResolution(U16 w, U16 h) {}
 

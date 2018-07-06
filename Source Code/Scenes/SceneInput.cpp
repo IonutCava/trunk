@@ -13,16 +13,16 @@ namespace {
 };
 
 void PressReleaseActionCbks::from(const PressReleaseActions& actions, const InputActionList& actionList) {
-    _onPressAction = actionList.getInputAction(actions._onPressAction)._action;
-    _onReleaseAction = actionList.getInputAction(actions._onReleaseAction)._action;
-    _onLCtrlPressAction = actionList.getInputAction(actions._onLCtrlPressAction)._action;
-    _onLCtrlReleaseAction = actionList.getInputAction(actions._onLCtrlReleaseAction)._action;
-    _onRCtrlPressAction = actionList.getInputAction(actions._onRCtrlPressAction)._action;
-    _onRCtrlReleaseAction = actionList.getInputAction(actions._onRCtrlReleaseAction)._action;
-    _onLAltPressAction = actionList.getInputAction(actions._onLAltPressAction)._action;
-    _onLAltReleaseAction = actionList.getInputAction(actions._onLAltReleaseAction)._action;
-    _onRAltPressAction = actionList.getInputAction(actions._onRAltPressAction)._action;
-    _onRAltReleaseAction = actionList.getInputAction(actions._onRAltReleaseAction)._action;
+    _onPressAction = actionList.getInputAction(actions.actionID(PressReleaseActions::Action::PRESS))._action;
+    _onReleaseAction = actionList.getInputAction(actions.actionID(PressReleaseActions::Action::RELEASE))._action;
+    _onLCtrlPressAction = actionList.getInputAction(actions.actionID(PressReleaseActions::Action::LEFT_CTRL_PRESS))._action;
+    _onLCtrlReleaseAction = actionList.getInputAction(actions.actionID(PressReleaseActions::Action::LEFT_CTRL_RELEASE))._action;
+    _onRCtrlPressAction = actionList.getInputAction(actions.actionID(PressReleaseActions::Action::RIGHT_CTRL_PRESS))._action;
+    _onRCtrlReleaseAction = actionList.getInputAction(actions.actionID(PressReleaseActions::Action::RIGHT_CTRL_RELEASE))._action;
+    _onLAltPressAction = actionList.getInputAction(actions.actionID(PressReleaseActions::Action::LEFT_ALT_PRESS))._action;
+    _onLAltReleaseAction = actionList.getInputAction(actions.actionID(PressReleaseActions::Action::LEFT_ALT_RELEASE))._action;
+    _onRAltPressAction = actionList.getInputAction(actions.actionID(PressReleaseActions::Action::RIGHT_ALT_PRESS))._action;
+    _onRAltReleaseAction = actionList.getInputAction(actions.actionID(PressReleaseActions::Action::RIGHT_ALT_RELEASE))._action;
 }
 
 SceneInput::SceneInput(Scene& parentScene, Input::InputInterface& context) 
@@ -274,16 +274,22 @@ bool SceneInput::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index
 }
 
 bool SceneInput::mouseMoved(const Input::MouseEvent& arg) {
+    constexpr I32 moveTolerance = 2;
+
     SceneStatePerPlayer& state = _parentScene.state().playerState(arg._deviceIndex);
     state.aimPos(vec2<I32>(arg._event.state.X.abs, arg._event.state.Y.abs));
 
     if (state.cameraLockedToMouse()) {
-        state.angleLR(state.aimDelta().x < 0
-                        ? MoveDirection::POSITIVE
-                        : MoveDirection::NEGATIVE);
-        state.angleUD(state.aimDelta().x < 0
-                        ? MoveDirection::POSITIVE
-                        : MoveDirection::NEGATIVE);
+        if (state.aimDelta().x < -moveTolerance) {
+            state.angleLR(MoveDirection::POSITIVE);
+        } else if(state.aimDelta().x > moveTolerance) {
+            state.angleLR(MoveDirection::NEGATIVE);
+        }
+        if (state.aimDelta().y < -moveTolerance) {
+            state.angleUD(MoveDirection::POSITIVE);
+        } else if (state.aimDelta().y > moveTolerance) {
+            state.angleUD(MoveDirection::NEGATIVE);
+        }
     }
 
     return Attorney::SceneInput::mouseMoved(_parentScene, arg);
@@ -322,6 +328,9 @@ bool SceneInput::mouseButtonReleased(const Input::MouseEvent& arg,
 
 bool SceneInput::addKeyMapping(Input::KeyCode key, PressReleaseActions keyCbks) {
     std::pair<KeyMap::iterator, bool> result = hashAlg::emplace(_keyMap, key, keyCbks);
+    if (!result.second) {
+        return result.first->second.merge(keyCbks);
+    }
 
     return result.second;
 }
@@ -399,34 +408,34 @@ bool SceneInput::addJoystickMapping(Input::Joystick device, Input::JoystickEleme
         element._type == Input::JoystickElementType::VECTOR_MOVE)
     {
         // non-buttons have no pressed/release states so map on release to on press's action as well
-        if (btnCbks._onPressAction){ 
-            btnCbks._onReleaseAction = btnCbks._onPressAction;
+        if (btnCbks.actionID(PressReleaseActions::Action::PRESS)){ 
+            btnCbks.actionID(PressReleaseActions::Action::RELEASE, btnCbks.actionID(PressReleaseActions::Action::PRESS));
         } else {
-            btnCbks._onPressAction = btnCbks._onReleaseAction;
+            btnCbks.actionID(PressReleaseActions::Action::PRESS, btnCbks.actionID(PressReleaseActions::Action::RELEASE));
         }
 
-        if (btnCbks._onLCtrlPressAction) {
-            btnCbks._onLCtrlReleaseAction = btnCbks._onLCtrlPressAction;
+        if (btnCbks.actionID(PressReleaseActions::Action::LEFT_CTRL_PRESS)) {
+            btnCbks.actionID(PressReleaseActions::Action::LEFT_CTRL_RELEASE, btnCbks.actionID(PressReleaseActions::Action::LEFT_CTRL_PRESS));
         } else {
-            btnCbks._onLCtrlPressAction = btnCbks._onLCtrlReleaseAction;
+            btnCbks.actionID(PressReleaseActions::Action::LEFT_CTRL_PRESS, btnCbks.actionID(PressReleaseActions::Action::LEFT_CTRL_RELEASE));
         }
 
-        if (btnCbks._onRCtrlPressAction) {
-            btnCbks._onRCtrlReleaseAction = btnCbks._onRCtrlPressAction;
+        if (btnCbks.actionID(PressReleaseActions::Action::RIGHT_CTRL_PRESS)) {
+            btnCbks.actionID(PressReleaseActions::Action::RIGHT_CTRL_RELEASE, btnCbks.actionID(PressReleaseActions::Action::RIGHT_CTRL_PRESS));
         } else {
-            btnCbks._onRCtrlPressAction = btnCbks._onRCtrlReleaseAction;
+            btnCbks.actionID(PressReleaseActions::Action::RIGHT_CTRL_PRESS, btnCbks.actionID(PressReleaseActions::Action::RIGHT_CTRL_RELEASE));
         }
 
-        if (btnCbks._onLAltPressAction) {
-            btnCbks._onLAltReleaseAction = btnCbks._onLAltPressAction;
+        if (btnCbks.actionID(PressReleaseActions::Action::LEFT_ALT_PRESS)) {
+            btnCbks.actionID(PressReleaseActions::Action::LEFT_ALT_RELEASE, btnCbks.actionID(PressReleaseActions::Action::LEFT_ALT_PRESS));
         } else {
-            btnCbks._onLAltPressAction = btnCbks._onLAltReleaseAction;
+            btnCbks.actionID(PressReleaseActions::Action::LEFT_ALT_PRESS, btnCbks.actionID(PressReleaseActions::Action::LEFT_ALT_RELEASE));
         }
 
-        if (btnCbks._onRAltPressAction) {
-            btnCbks._onRAltReleaseAction = btnCbks._onRAltPressAction;
+        if (btnCbks.actionID(PressReleaseActions::Action::RIGHT_ALT_PRESS)) {
+            btnCbks.actionID(PressReleaseActions::Action::RIGHT_ALT_RELEASE, btnCbks.actionID(PressReleaseActions::Action::RIGHT_ALT_PRESS));
         } else {
-            btnCbks._onRAltPressAction = btnCbks._onRAltReleaseAction;
+            btnCbks.actionID(PressReleaseActions::Action::RIGHT_ALT_PRESS, btnCbks.actionID(PressReleaseActions::Action::RIGHT_ALT_RELEASE));
         }
     }
 

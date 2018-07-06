@@ -117,9 +117,8 @@ void Camera::rotate(const Quaternion<F32>& q) {
         euler = Angle::to_DEGREES(euler);
         rotate(euler.yaw, euler.pitch, euler.roll);
     } else {
-        Quaternion<F32> tempOrientation = q * _orientation;
-        tempOrientation.normalize();
-        _orientation = tempOrientation;
+        _orientation = q * _orientation;
+        _orientation.normalize();
     }
 
     _viewMatrixDirty = true;

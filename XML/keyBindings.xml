@@ -46,6 +46,9 @@
 <action id="39" name="shutdown"/>
 <action id="40" name="pov navigation"/>
 <action id="41" name="axis navigation"/>
+<action id="42" name="toggle AntTweakBar" />
+<action id="43" name="toggle editor" />
+<action id="44" name="toggle console" />
 </actions>
 
 <!--
@@ -84,6 +87,8 @@
 <key actionUp="33">F</key>
 <key actionUp="34">Y</key>
 <key actionUp="39">T</key>
+<key actionLCtrlUp="42" actionUp="43">F11</key>
+<key actionUp="44">GRAVE</key><!-- GRAVE == '~' -->
 </keys>
 
 <!-- Only a single mouse is supported (and a maximum of 8 buttons)! -->

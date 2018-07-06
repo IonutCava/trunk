@@ -154,8 +154,8 @@ bool glUniformBuffer::bind(U32 bindIndex) {
 }
 
 void glUniformBuffer::addAtomicCounter(U32 sizeFactor) {
-    const char* name = Util::StringFormat("DVD_ATOMIC_BUFFER_%d_%d", getGUID(), _atomicCounters.size()).c_str();
-    _atomicCounters.emplace_back(MemoryManager_NEW AtomicCounter(std::max(sizeFactor, 1u), name));
+    stringImpl name = Util::StringFormat("DVD_ATOMIC_BUFFER_%d_%d", getGUID(), _atomicCounters.size());
+    _atomicCounters.emplace_back(MemoryManager_NEW AtomicCounter(std::max(sizeFactor, 1u), name.c_str()));
 }
 
 U32 glUniformBuffer::getAtomicCounter(U32 counterIndex) {

@@ -55,7 +55,7 @@ public:
     ~GUIEditor();
     bool init();
     void setVisible(bool visible);  //< Hide or show the editor
-    bool isVisible();  //< Return true if editor is visible, false if is hidden
+    bool isVisible() const;  //< Return true if editor is visible, false if is hidden
     bool update(const U64 deltaTime);  //< Used to update time dependent elements
     bool Handle_ChangeSelection(SceneGraphNode_wptr newNode);
 

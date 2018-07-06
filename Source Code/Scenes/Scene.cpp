@@ -27,6 +27,10 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
+#include "GUI/Headers/GUI.h"
+#include "GUI/Headers/GUIConsole.h"
+#include "GUI/GUIEditor/Headers/GUIEditor.h"
+
 #include "Dynamics/Entities/Units/Headers/Player.h"
 
 #include "Platform/Headers/PlatformRuntime.h"
@@ -644,6 +648,23 @@ U16 Scene::registerInputActions() {
         }
     };
 
+    auto toggleAntTweakBar = [this](InputParams param) {
+        _context.config().gui.enableDebugVariableControls =
+            !_context.config().gui.enableDebugVariableControls;
+    };
+
+    auto toggleEditor = [this](InputParams param) {
+        if (Config::Build::IS_DEBUG_BUILD) {
+            _context.gui().getEditor().setVisible(!_context.gui().getEditor().isVisible());
+        }
+    };
+
+    auto toggleConsole = [this](InputParams param) {
+        if (Config::Build::IS_DEBUG_BUILD) {
+            _context.gui().getConsole().setVisible(!_context.gui().getConsole().isVisible());
+        }
+    };
+
     U16 actionID = 0;
     InputActionList& actions = _input->actionList();
     actions.registerInputAction(actionID++, none);
@@ -688,7 +709,10 @@ U16 Scene::registerInputActions() {
     actions.registerInputAction(actionID++, shutdown);
     actions.registerInputAction(actionID++, povNavigation);
     actions.registerInputAction(actionID++, axisNavigation);
-
+    actions.registerInputAction(actionID++, toggleAntTweakBar);
+    actions.registerInputAction(actionID++, toggleEditor);
+    actions.registerInputAction(actionID++, toggleConsole);
+    
     return actionID;
 }
 

@@ -195,7 +195,7 @@ void Kernel::onLoop() {
 
     if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_PROFILING)
     {
-        // Should be approximatelly 2 times a seconds
+        // Should be approximately 2 times a seconds
         bool print = false;
         if (Config::Build::IS_DEBUG_BUILD) {
             print = frameCount % (Config::TARGET_FRAME_RATE / 4) == 0;
@@ -621,7 +621,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
     Console::printfn(Locale::get(_ID("START_RENDER_INTERFACE")));
 
-    // Fulscreen is automatically calculated
+    // Fullscreen is automatically calculated
     ResolutionByType initRes;
     initRes[to_base(WindowType::WINDOW)].set(config.runtime.resolution.w, config.runtime.resolution.h);
     initRes[to_base(WindowType::SPLASH)].set(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
@@ -701,7 +701,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                     12);                                           // Font size
 
     Console::bindConsoleOutput([this](const char* output, bool error) {
-                                   _platformContext->gui().getConsole()->printText(output, error);
+                                   _platformContext->gui().getConsole().printText(output, error);
                                });
     
     ShadowMap::initShadowMaps(_platformContext->gfx());
@@ -774,14 +774,14 @@ bool Kernel::setCursorPosition(I32 x, I32 y) const {
 }
 
 bool Kernel::onKeyDown(const Input::KeyEvent& key) {
-    if (_platformContext->gui().onKeyDown(key)) {
+    if (!_platformContext->gui().onKeyDown(key)) {
         return _sceneManager->onKeyDown(key);
     }
     return true;  //< InputInterface needs to know when this is completed
 }
 
 bool Kernel::onKeyUp(const Input::KeyEvent& key) {
-    if (_platformContext->gui().onKeyUp(key)) {
+    if (!_platformContext->gui().onKeyUp(key)) {
         return _sceneManager->onKeyUp(key);
     }
     // InputInterface needs to know when this is completed
@@ -789,7 +789,7 @@ bool Kernel::onKeyUp(const Input::KeyEvent& key) {
 }
 
 bool Kernel::mouseMoved(const Input::MouseEvent& arg) {
-    if (_platformContext->gui().mouseMoved(arg)) {
+    if (!_platformContext->gui().mouseMoved(arg)) {
         return _sceneManager->mouseMoved(arg);
     }
     // InputInterface needs to know when this is completed
@@ -798,68 +798,76 @@ bool Kernel::mouseMoved(const Input::MouseEvent& arg) {
 
 bool Kernel::mouseButtonPressed(const Input::MouseEvent& arg,
                                 Input::MouseButton button) {
-    if (_platformContext->gui().mouseButtonPressed(arg, button)) {
+    if (!_platformContext->gui().mouseButtonPressed(arg, button)) {
         return _sceneManager->mouseButtonPressed(arg, button);
     }
+
     // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::mouseButtonReleased(const Input::MouseEvent& arg,
                                  Input::MouseButton button) {
-    if (_platformContext->gui().mouseButtonReleased(arg, button)) {
+    if (!_platformContext->gui().mouseButtonReleased(arg, button)) {
         return _sceneManager->mouseButtonReleased(arg, button);
     }
+
     // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
-    if (_platformContext->gui().joystickAxisMoved(arg, axis)) {
+    if (!_platformContext->gui().joystickAxisMoved(arg, axis)) {
         return _sceneManager->joystickAxisMoved(arg, axis);
     }
+
     // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
-    if (_platformContext->gui().joystickPovMoved(arg, pov)) {
+    if (!_platformContext->gui().joystickPovMoved(arg, pov)) {
         return _sceneManager->joystickPovMoved(arg, pov);
     }
+
     // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::joystickButtonPressed(const Input::JoystickEvent& arg,
                                    Input::JoystickButton button) {
-    if (_platformContext->gui().joystickButtonPressed(arg, button)) {
+    if (!_platformContext->gui().joystickButtonPressed(arg, button)) {
         return _sceneManager->joystickButtonPressed(arg, button);
     }
+
     // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::joystickButtonReleased(const Input::JoystickEvent& arg,
                                     Input::JoystickButton button) {
-    if (_platformContext->gui().joystickButtonReleased(arg, button)) {
+    if (!_platformContext->gui().joystickButtonReleased(arg, button)) {
         return _sceneManager->joystickButtonReleased(arg, button);
     }
+
     // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) {
-    if (_platformContext->gui().joystickSliderMoved(arg, index)) {
+    if (!_platformContext->gui().joystickSliderMoved(arg, index)) {
         return _sceneManager->joystickSliderMoved(arg, index);
     }
+
     // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
-    if (_platformContext->gui().joystickVector3DMoved(arg, index)) {
+    if (!_platformContext->gui().joystickVector3DMoved(arg, index)) {
         return _sceneManager->joystickVector3DMoved(arg, index);
     }
+
     // InputInterface needs to know when this is completed
     return false;
 }

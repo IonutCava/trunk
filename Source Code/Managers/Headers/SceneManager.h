@@ -139,30 +139,27 @@ public:
     }
 
 public:  /// Input
-  /// Key pressed
+  /// Key pressed: return true if input was consumed
     bool onKeyDown(const Input::KeyEvent& key);
-    /// Key released
+    /// Key released: return true if input was consumed
     bool onKeyUp(const Input::KeyEvent& key);
-    /// Joystic axis change
+    /// Joystick axis change: return true if input was consumed
     bool joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis);
-    /// Joystick direction change
+    /// Joystick direction change: return true if input was consumed
     bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov);
-    /// Joystick button pressed
-    bool joystickButtonPressed(const Input::JoystickEvent& arg,
-        Input::JoystickButton button);
-    /// Joystick button released
-    bool joystickButtonReleased(const Input::JoystickEvent& arg,
-        Input::JoystickButton button);
+    /// Joystick button pressed: return true if input was consumed
+    bool joystickButtonPressed(const Input::JoystickEvent& arg, Input::JoystickButton button);
+    /// Joystick button released: return true if input was consumed
+    bool joystickButtonReleased(const Input::JoystickEvent& arg, Input::JoystickButton button);
     bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index);
+    // return true if input was consumed
     bool joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index);
-    /// Mouse moved
+    /// Mouse moved: return true if input was consumed
     bool mouseMoved(const Input::MouseEvent& arg);
-    /// Mouse button pressed
-    bool mouseButtonPressed(const Input::MouseEvent& arg,
-        Input::MouseButton button);
-    /// Mouse button released
-    bool mouseButtonReleased(const Input::MouseEvent& arg,
-        Input::MouseButton button);
+    /// Mouse button pressed: return true if input was consumed
+    bool mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button);
+    /// Mouse button released: return true if input was consumed
+    bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button);
 
     bool switchScene(const stringImpl& name, bool unloadPrevious, bool threaded = true);
 // networking

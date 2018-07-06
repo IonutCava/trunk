@@ -333,6 +333,7 @@ JoystickElement  InputInterface::joystickElementByName(const stringImpl& element
 }
 
 OIS::KeyCode InputInterface::keyCodeByName(const stringImpl& name) {
+    
     stringImpl nameCpy("KC_" + name);
     std::map<stringImpl, OIS::KeyCode>::const_iterator it;
     it = g_keysByNameMap.find(nameCpy);
@@ -396,6 +397,7 @@ KeyByNameMap initKeyByNameMap() {
     keysByNameMap["KC_SEMICOLON"] = OIS::KC_SEMICOLON;
     keysByNameMap["KC_APOSTROPHE"] = OIS::KC_APOSTROPHE;
     keysByNameMap["KC_GRAVE"] = OIS::KC_GRAVE;
+    keysByNameMap["KC_~"] = OIS::KC_GRAVE;
     keysByNameMap["KC_LSHIFT"] = OIS::KC_LSHIFT;
     keysByNameMap["KC_BACKSLASH"] = OIS::KC_BACKSLASH;
     keysByNameMap["KC_Z"] = OIS::KC_Z;

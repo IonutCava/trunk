@@ -78,7 +78,7 @@ class Camera : public Resource {
     }
     /// Sets the camera's orientation to match the specified yaw, pitch and roll
     /// values;
-    /// Creates a quaternion based on the specified euler angles and calls
+    /// Creates a quaternion based on the specified Euler angles and calls
     /// "rotate" to change
     /// the orientation
     virtual void rotate(Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> roll);
@@ -89,7 +89,7 @@ class Camera : public Resource {
     inline void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> angle) {
         rotate(Quaternion<F32>(axis, angle * _cameraTurnSpeed));
     }
-    /// Yaw, Pitch and Roll call "rotate" with a apropriate quaternion for  each
+    /// Yaw, Pitch and Roll call "rotate" with a appropriate quaternion for  each
     /// rotation.
     /// Because the camera is facing the -Z axis, a positive angle will create a
     /// positive Yaw
@@ -101,7 +101,7 @@ class Camera : public Resource {
     /// Change camera's pitch
     void rotatePitch(Angle::DEGREES<F32> angle);
     /// Sets the camera's Yaw angle.
-    /// This creates a new orientation quaternion for the camera and extracts the euler angles
+    /// This creates a new orientation quaternion for the camera and extracts the Euler angles
     inline void setYaw(Angle::DEGREES<F32> angle) {
         setRotation(angle, _euler.pitch, _euler.roll);
     }
@@ -114,7 +114,7 @@ class Camera : public Resource {
         setRotation(_euler.yaw, _euler.pitch, angle);
     }
     /// Sets the camera's Yaw angle.
-    /// This creates a new orientation quaternion for the camera and extracts the euler angles
+    /// This creates a new orientation quaternion for the camera and extracts the Euler angles
     inline void setGlobalYaw(Angle::DEGREES<F32> angle) {
         setGlobalRotation(angle, _euler.pitch, _euler.roll);
     }
@@ -286,7 +286,7 @@ class Camera : public Resource {
 
     inline void lockFrustum(bool state) { _frustumLocked = state; }
 
-    /// Get the world space pozition from the specified screen coordinates
+    /// Get the world space position from the specified screen coordinates
     /// (use winCoords.z for depth from 0 to 1)
     inline vec3<F32> unProject(const vec3<F32>& winCoords, const vec4<I32>& viewport) const {
         return unProject(winCoords.x, winCoords.y, winCoords.z, viewport);

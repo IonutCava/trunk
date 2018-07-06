@@ -79,6 +79,7 @@ public:
         } cegui;
         stringImpl consoleLayoutFile;
         stringImpl editorLayoutFile;
+        bool enableDebugVariableControls;
     } gui;
 
     struct Rendering {

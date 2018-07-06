@@ -232,16 +232,16 @@ inline stringImpl getRendererTypeName(RendererType type) {
 }
 
 void populatePressRelease(PressReleaseActions& actions, const ptree & attributes) {
-    actions._onPressAction = attributes.get<U16>("actionDown", 0u);
-    actions._onReleaseAction = attributes.get<U16>("actionUp", 0u);
-    actions._onLCtrlPressAction = attributes.get<U16>("actionLCtrlDown", 0u);
-    actions._onLCtrlReleaseAction = attributes.get<U16>("actionLCtrlUp", 0u);
-    actions._onRCtrlPressAction = attributes.get<U16>("actionRCtrlDown", 0u);
-    actions._onRCtrlReleaseAction = attributes.get<U16>("actionRCtrlUp", 0u);
-    actions._onLAltPressAction = attributes.get<U16>("actionLAltDown", 0u);
-    actions._onLAltReleaseAction = attributes.get<U16>("actionLAtlUp", 0u);
-    actions._onRAltPressAction = attributes.get<U16>("actionRAltDown", 0u);
-    actions._onRAltReleaseAction = attributes.get<U16>("actionRAltUp", 0u);
+    actions.actionID(PressReleaseActions::Action::PRESS, attributes.get<U16>("actionDown", 0u));
+    actions.actionID(PressReleaseActions::Action::RELEASE, attributes.get<U16>("actionUp", 0u));
+    actions.actionID(PressReleaseActions::Action::LEFT_CTRL_PRESS, attributes.get<U16>("actionLCtrlDown", 0u));
+    actions.actionID(PressReleaseActions::Action::LEFT_CTRL_RELEASE, attributes.get<U16>("actionLCtrlUp", 0u));
+    actions.actionID(PressReleaseActions::Action::RIGHT_CTRL_PRESS, attributes.get<U16>("actionRCtrlDown", 0u));
+    actions.actionID(PressReleaseActions::Action::RIGHT_CTRL_RELEASE, attributes.get<U16>("actionRCtrlUp", 0u));
+    actions.actionID(PressReleaseActions::Action::LEFT_ALT_PRESS, attributes.get<U16>("actionLAltDown", 0u));
+    actions.actionID(PressReleaseActions::Action::LEFT_ALT_RELEASE, attributes.get<U16>("actionLAtlUp", 0u));
+    actions.actionID(PressReleaseActions::Action::RIGHT_ALT_PRESS, attributes.get<U16>("actionRAltDown", 0u));
+    actions.actionID(PressReleaseActions::Action::RIGHT_ALT_RELEASE, attributes.get<U16>("actionRAltUp", 0u));
 }
 
 void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {

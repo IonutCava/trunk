@@ -36,9 +36,12 @@ void GUIText::onChangeResolution(U16 w, U16 h) {
     _heightCache = h;
 }
 
-void GUIText::mouseMoved(const GUIEvent &event) {}
+// Return true if input was consumed
+bool GUIText::mouseMoved(const GUIEvent &event) { return false; }
 
-void GUIText::onMouseUp(const GUIEvent &event) {}
+// Return true if input was consumed
+bool GUIText::onMouseUp(const GUIEvent &event) { return false; }
 
-void GUIText::onMouseDown(const GUIEvent &event) {}
+// Return true if input was consumed
+bool GUIText::onMouseDown(const GUIEvent &event) { return false; }
 };
