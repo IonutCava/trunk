@@ -32,7 +32,7 @@ GLuint GL_API::_activeBufferID[] = {GLUtil::_invalidObjectID,
                                     GLUtil::_invalidObjectID,
                                     GLUtil::_invalidObjectID,
                                     GLUtil::_invalidObjectID};
-GL_API::VAOBufferData GL_API::_vaoBufferData;
+GL_API::VAOBindings GL_API::_vaoBufferData;
 bool GL_API::_primitiveRestartEnabled = false;
 GL_API::textureBoundMapDef GL_API::_textureBoundMap;
 GL_API::imageBoundMapDef GL_API::_imageBoundMap;
@@ -307,19 +307,14 @@ bool GL_API::bindTextureImage(GLushort unit, GLuint handle, GLint level,
 
 /// Single place to change buffer objects for every target available
 bool GL_API::bindActiveBuffer(GLuint vaoID, GLuint location, GLuint bufferID, GLintptr offset, GLsizei stride) {
-    BufferBindingParams currentParams(location, bufferID, offset, stride);
-
-    VAOBufferData::iterator it = _vaoBufferData.find(vaoID);
-    bool isValidEntry = it != std::cend(_vaoBufferData);
-    if (isValidEntry && it->second == currentParams) {
+    BufferBindingParams& bindings = _vaoBufferData[vaoID][location];
+    BufferBindingParams currentParams(bufferID, offset, stride);
+    if (bindings == currentParams) {
         return false;
     }
     // Remember the new binding for future reference
-    if (isValidEntry) {
-        it->second = currentParams;
-    } else {
-        hashAlg::emplace(_vaoBufferData, vaoID, currentParams);
-    }
+    bindings = currentParams;
+
     // Bind the specified buffer handle to the desired buffer target
     glVertexArrayVertexBuffer(vaoID, location, bufferID, offset, stride);
 
@@ -589,4 +584,5 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
                     cWrite.b[3] == 1 ? GL_TRUE : GL_FALSE);  // A
     }
 }
+
 };

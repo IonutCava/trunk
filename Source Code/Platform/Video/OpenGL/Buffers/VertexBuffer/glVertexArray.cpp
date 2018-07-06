@@ -9,20 +9,8 @@
 namespace Divide {
 
 glVertexArray::VAOMap glVertexArray::_VAOMap;
-vec3<U32> glVertexArray::_currentBindConfig;
-vec3<U32> glVertexArray::_tempConfig;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glVertexArray, 0, 0)
-bool glVertexArray::setIfDifferentBindRange(U32 VBOid, U32 offset, U32 size) {
-    _tempConfig.set(VBOid, offset, size);
-    if (_tempConfig != _currentBindConfig) {
-        _currentBindConfig.set(_tempConfig);
-        glBindVertexBuffer(0, VBOid, offset, size);
-        return true;
-    }
-
-    return false;
-}
 
 void glVertexArray::cleanup() {
     clearVaos();
@@ -43,7 +31,7 @@ void glVertexArray::setVao(size_t hash, GLuint id) {
 void glVertexArray::clearVaos() {
     for (VAOMap::value_type& value : _VAOMap) {
         if (value.second != 0) {
-            glDeleteVertexArrays(1, &value.second);
+            GLUtil::_vaoPool.deallocate(value.second);
         }
     }
     _VAOMap.clear();
@@ -230,7 +218,7 @@ bool glVertexArray::refresh() {
         _vaoCaches[i] = getVao(crtHash);
         if (_vaoCaches[i] == 0) {
             // Generate a "Vertex Array Object"
-            glCreateVertexArrays(1, &_vaoCaches[i]);
+            _vaoCaches[i] = GLUtil::_vaoPool.allocate();
             DIVIDE_ASSERT(_vaoCaches[i] != 0, Locale::get(_ID("ERROR_VAO_INIT")));
             setVao(crtHash, _vaoCaches[i]);
             vaoCachesDirty[i] = true;
@@ -345,15 +333,19 @@ void glVertexArray::draw(const GenericDrawCommand& command, bool useCmdBuffer) {
 
     // Bind the vertex array object that in turn activates all of the bindings
     // and pointers set on creation
-    if (GL_API::setActiveVAO(_vaoCaches[to_uint(_context.getRenderStage())])) {
+    GLuint vao = _vaoCaches[to_uint(_context.getRenderStage())];
+    if (GL_API::setActiveVAO(vao)) {
         // If this is the first time the VAO is bound in the current loop, check
         // for primitive restart requests
         GL_API::togglePrimitiveRestart(_primitiveRestartEnabled);
-        _currentBindConfig.reset();
     }
-
     // Bind the the vertex buffer and index buffer
-    setIfDifferentBindRange(_VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
+    GL_API::bindActiveBuffer(vao,
+                             0,
+                             _VBHandle._id,
+                             _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
+                             _effectiveEntrySize);
+
     GLUtil::submitRenderCommand(command, useCmdBuffer, _formatInternal, _IBid);
 }
 

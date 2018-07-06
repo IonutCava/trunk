@@ -12,6 +12,93 @@
 #include <GLIM/glim.h>
 
 namespace Divide {
+
+glVAOPool::glVAOPool()
+{
+    
+}
+
+glVAOPool::~glVAOPool()
+{
+    destroy();
+}
+
+void glVAOPool::init(U32 capacity) {
+    destroy();
+
+    _pool.resize(capacity, std::make_pair(0, false));
+    for (std::pair<GLuint, bool>& entry : _pool) {
+        glCreateVertexArrays(1, &entry.first);
+    }
+}
+
+void glVAOPool::destroy() {
+    for (std::pair<GLuint, bool>& entry : _pool) {
+        glDeleteVertexArrays(1, &entry.first);
+    }
+    _pool.clear();
+}
+
+GLuint glVAOPool::allocate() {
+    for (std::pair<GLuint, bool>& entry : _pool) {
+        if (entry.second == false) {
+            entry.second = true;
+            return entry.first;
+        }
+    }
+
+    DIVIDE_UNEXPECTED_CALL();
+    return 0;
+}
+
+void glVAOPool::allocate(U32 count, GLuint* vaosOUT) {
+    for (U32 i = 0; i < count; ++i) {
+        vaosOUT[i] = allocate();
+    }
+}
+
+void glVAOPool::deallocate(GLuint& vao) {
+    assert(Application::instance().isMainThread());
+
+    vectorImpl<std::pair<GLuint, bool>>::iterator it;
+    it = std::find_if(std::begin(_pool),
+                      std::end(_pool),
+                      [vao](std::pair<GLuint, bool>& entry) {
+                          return entry.first == vao;
+                      });
+
+    assert(it != std::cend(_pool));
+    // We don't know what kind of state we may have in the current VAO so delete it and create a new one.
+    glDeleteVertexArrays(1, &(it->first));
+    glGenVertexArrays(1, &(it->first));
+    it->second = false;
+    vao = 0;
+}
+
+
+glHardwareQuery::glHardwareQuery() : _enabled(false),
+    _queryID(0)
+{
+}
+
+glHardwareQuery::~glHardwareQuery()
+{
+    destroy();
+}
+
+void glHardwareQuery::create() {
+    destroy();
+    glGenQueries(1, &_queryID);
+}
+
+void glHardwareQuery::destroy() {
+    if (_queryID != 0) {
+        glDeleteQueries(1, &_queryID);
+    }
+    _queryID = 0;
+}
+
+
 namespace GLUtil {
 
 /*-----------Object Management----*/
@@ -19,6 +106,7 @@ GLuint _invalidObjectID = GL_INVALID_INDEX;
 SDL_GLContext _glRenderContext;
 SharedLock _glContextLock;
 hashMapImpl<size_t /*threadID hash*/, SDL_GLContext> _glSecondaryContexts;
+glVAOPool _vaoPool;
 
 /// this may not seem very efficient (or useful) but it saves a lot of
 /// single-use code scattered around further down

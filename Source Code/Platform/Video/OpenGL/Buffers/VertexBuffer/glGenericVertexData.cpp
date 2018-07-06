@@ -6,21 +6,7 @@
 
 namespace Divide {
 
-hashMapImpl<GLuint, glGenericVertexData::BufferBindConfig> glGenericVertexData::k_bindConfigs;
-
 IMPLEMENT_CUSTOM_ALLOCATOR(glGenericVertexData, 0, 0)
-bool glGenericVertexData::setIfDifferentBindRange(GLuint bindIndex, const BufferBindConfig& bindConfig) {
-
-    // If this is a new index, this will just create a default config
-    BufferBindConfig& crtConfig = k_bindConfigs[bindIndex];
-    if (bindConfig == crtConfig) {
-        return false;
-    }
-
-    crtConfig.set(bindConfig);
-    glBindVertexBuffer(bindIndex, bindConfig._buffer, bindConfig._offset, bindConfig._stride);
-    return true;
-}
 
 glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBufferLength)
     : GenericVertexData(context, ringBufferLength),
@@ -37,6 +23,7 @@ glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBuffe
     _vertexArray[to_const_uint(GVDUsage::FDBCK)] = 0;
     _feedbackQueries.fill(nullptr);
     _resultAvailable.fill(nullptr);
+    _invalidateAttributes = true;
 }
 
 glGenericVertexData::~glGenericVertexData() {
@@ -50,13 +37,11 @@ glGenericVertexData::~glGenericVertexData() {
     GL_API::setActiveVAO(0);
     // Delete the rendering VAO
     if (_vertexArray[to_const_uint(GVDUsage::DRAW)] > 0) {
-        glDeleteVertexArrays(1, &_vertexArray[to_const_uint(GVDUsage::DRAW)]);
-        _vertexArray[to_const_uint(GVDUsage::DRAW)] = 0;
+        GLUtil::_vaoPool.deallocate(_vertexArray[to_const_uint(GVDUsage::DRAW)]);
     }
     // Delete the transform feedback VAO
     if (_vertexArray[to_const_uint(GVDUsage::FDBCK)] > 0) {
-        glDeleteVertexArrays(1, &_vertexArray[to_const_uint(GVDUsage::FDBCK)]);
-        _vertexArray[to_const_uint(GVDUsage::FDBCK)] = 0;
+        GLUtil::_vaoPool.deallocate(_vertexArray[to_const_uint(GVDUsage::FDBCK)]);
     }
     // Make sure we don't have the indirect draw buffer bound
     // Make sure we don't have our transform feedback object bound
@@ -87,12 +72,10 @@ glGenericVertexData::~glGenericVertexData() {
 /// vertex data container
 void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     // Prevent double create
-    DIVIDE_ASSERT(
-        _bufferObjects.empty(),
-        "glGenericVertexData error: create called with no buffers specified!");
-    // Create two vertex array objects. One for rendering and one for transform
-    // feedback
-    glGenVertexArrays(to_const_uint(GVDUsage::COUNT), &_vertexArray[0]);
+    DIVIDE_ASSERT(_bufferObjects.empty(),
+                  "glGenericVertexData error: create called with no buffers specified!");
+    // Create two vertex array objects. One for rendering and one for transform feedback
+    GLUtil::_vaoPool.allocate(to_const_uint(GVDUsage::COUNT), &_vertexArray[0]);
     // Transform feedback may not be used, but it simplifies the class interface a lot
     // Create a transform feedback object
     glGenTransformFeedbacks(1, &_transformFeedback);
@@ -150,13 +133,16 @@ void glGenericVertexData::draw(const GenericDrawCommand& command, bool useCmdBuf
     U32 drawBufferID = command.drawToBuffer();
     // Check if we are rendering to the screen or to a buffer
     bool feedbackActive = (drawBufferID > 0 && !_feedbackBuffers.empty());
-    // Activate the appropriate vertex array object for the type of rendering we
-    // requested
-    GL_API::setActiveVAO(_vertexArray[feedbackActive ? to_const_uint(GVDUsage::FDBCK) 
-                                                     : to_const_uint(GVDUsage::DRAW)]);
+    // Activate the appropriate vertex array object for the type of rendering we requested
+    GLuint activeVAO = _vertexArray[feedbackActive ? to_const_uint(GVDUsage::FDBCK)
+                                                   : to_const_uint(GVDUsage::DRAW)];
+    // Update buffer bindings
+    setBufferBindings(activeVAO);
     // Update vertex attributes if needed (e.g. if offsets changed)
-    setAttributes(feedbackActive);
+    setAttributes(activeVAO, feedbackActive);
 
+    // Delay this for as long as possible
+    GL_API::setActiveVAO(activeVAO);
     // Activate transform feedback if needed
     if (feedbackActive) {
         GL_API::setActiveTransformFeedback(_transformFeedback);
@@ -227,7 +213,7 @@ void glGenericVertexData::setBuffer(U32 buffer,
                                     U32 elementCount,
                                     size_t elementSize,
                                     bool useRingBuffer,
-                                    bufferPtr data,
+                                    const bufferPtr data,
                                     bool dynamic,
                                     bool stream,
                                     bool persistentMapped) {
@@ -262,6 +248,8 @@ void glGenericVertexData::setBuffer(U32 buffer,
         GL_API::setActiveTransformFeedback(_transformFeedback);
         glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, feedbackBindPoint(buffer), tempBuffer->bufferHandle());
     }
+
+    _invalidateAttributes = true;
 }
 
 /// Update the elementCount worth of data contained in the buffer starting from
@@ -269,68 +257,84 @@ void glGenericVertexData::setBuffer(U32 buffer,
 void glGenericVertexData::updateBuffer(U32 buffer,
                                        U32 elementCount,
                                        U32 elementCountOffset,
-                                       bufferPtr data) {
+                                       const bufferPtr data) {
     _bufferObjects[buffer]->updateData(elementCount, elementCountOffset, queueWriteIndex(), data);
 }
 
-/// Update the appropriate attributes (either for drawing or for transform
-/// feedback)
-void glGenericVertexData::setAttributes(bool feedbackPass) {
+void glGenericVertexData::setBufferBindOffset(U32 buffer, U32 elementCountOffset) {
+    _bufferObjects[buffer]->setBindOffset(elementCountOffset);
+}
+
+void glGenericVertexData::incQueue() { 
+    RingBuffer::incQueue();
+    _invalidateAttributes = queueLength() > 1;
+}
+
+
+void glGenericVertexData::setBufferBindings(GLuint activeVAO) {
+    if (!_bufferObjects.empty()) {
+        for (U32 i = 0; i < _bufferObjects.size(); ++i) {
+            glGenericBuffer* buffer = _bufferObjects[i];
+            GL_API::bindActiveBuffer(activeVAO,
+                                     i,
+                                     buffer->bufferHandle(),
+                                     buffer->getBindOffset(queueReadIndex()),
+                                     static_cast<GLsizei>(buffer->elementSize()));
+        }
+    }
+
+}
+
+/// Update the appropriate attributes (either for drawing or for transform feedback)
+void glGenericVertexData::setAttributes(GLuint activeVAO, bool feedbackPass) {
     // Get the appropriate list of attributes
     attributeMap& map = feedbackPass ? _attributeMapFdbk : _attributeMapDraw;
     // And update them in turn
     for (attributeMap::value_type& it : map) {
-        setAttributeInternal(it.second);
+        setAttributeInternal(activeVAO, it.second);
     }
+    _invalidateAttributes = false;
 }
 
 /// Update internal attribute data
-void glGenericVertexData::setAttributeInternal(AttributeDescriptor& descriptor) {
+void glGenericVertexData::setAttributeInternal(GLuint activeVAO, AttributeDescriptor& descriptor) {
     // Early out if the attribute didn't change
-    if (!descriptor.dirty()) {
+    if (!descriptor.dirty() && !_invalidateAttributes) {
         return;
     }
-
-    U32 bufferIndex = descriptor.bufferIndex();
-
-    glGenericBuffer* buffer = _bufferObjects[bufferIndex];
-
-    BufferBindConfig crtConfig(buffer->bufferHandle(),
-                               buffer->bindOffset(descriptor.offset(), queueReadIndex()),
-                               static_cast<GLsizei>(buffer->elementSize()));
-
-    setIfDifferentBindRange(bufferIndex, crtConfig);
 
     // If the attribute wasn't activate until now, enable it
     if (!descriptor.wasSet()) {
         DIVIDE_ASSERT(descriptor.attribIndex() < to_uint(GL_API::_maxAttribBindings),
-                      "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
+            "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
 
-        glEnableVertexAttribArray(descriptor.attribIndex());
-        glVertexAttribBinding(descriptor.attribIndex(), bufferIndex);
+        glEnableVertexArrayAttrib(activeVAO, descriptor.attribIndex());
+        glVertexArrayAttribBinding(activeVAO, descriptor.attribIndex(), descriptor.bufferIndex());
         descriptor.wasSet(true);
     }
-    // Update the attribute data
 
+    // Update the attribute data
     GFXDataFormat format = descriptor.dataType();
 
     bool isIntegerType = format != GFXDataFormat::FLOAT_16 &&
                          format != GFXDataFormat::FLOAT_32;
     
     if (!isIntegerType || descriptor.normalized()) {
-        glVertexAttribFormat(descriptor.attribIndex(),
-                             descriptor.componentsPerElement(),
-                             GLUtil::glDataFormat[to_uint(format)],
-                             descriptor.normalized() ? GL_TRUE : GL_FALSE,
-                             0);
+        glVertexArrayAttribFormat(activeVAO,
+                                  descriptor.attribIndex(),
+                                  descriptor.componentsPerElement(),
+                                  GLUtil::glDataFormat[to_uint(format)],
+                                  descriptor.normalized() ? GL_TRUE : GL_FALSE,
+                                  to_uint(descriptor.offset() * dataSizeForType(format)));
     } else {
-        glVertexAttribIFormat(descriptor.attribIndex(),
-                              descriptor.componentsPerElement(),
-                              GLUtil::glDataFormat[to_uint(format)],
-                              0);
+        glVertexArrayAttribIFormat(activeVAO,
+                                   descriptor.attribIndex(),
+                                   descriptor.componentsPerElement(),
+                                   GLUtil::glDataFormat[to_uint(format)],
+                                   to_uint(descriptor.offset() * dataSizeForType(format)));
     }
 
-    glVertexBindingDivisor(bufferIndex, descriptor.instanceDivisor());
+    glVertexArrayBindingDivisor(activeVAO, descriptor.bufferIndex(), descriptor.instanceDivisor());
 
     // Inform the descriptor that the data was updated
     descriptor.clean();

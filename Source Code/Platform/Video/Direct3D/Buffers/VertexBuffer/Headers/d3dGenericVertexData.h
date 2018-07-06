@@ -43,27 +43,40 @@ class d3dGenericVertexData : public GenericVertexData {
 
     ~d3dGenericVertexData();
 
-    void create(U8 numBuffers = 1, U8 numQueries = 1) {}
+    void create(U8 numBuffers = 1, U8 numQueries = 1) override {}
 
-    void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream, const vectorImpl<U32>& indices) {}
-    void updateIndexBuffer(const vectorImpl<U32>& indices) {}
+    void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream, const vectorImpl<U32>& indices) override {}
+    void updateIndexBuffer(const vectorImpl<U32>& indices) override {}
 
-    void setBuffer(U32 buffer, U32 elementCount, size_t elementSize,
-                   bool useRingBuffer, bufferPtr data, bool dynamic, bool stream,
-                   bool persistentMapped = false) {}
-    void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
-                                 size_t elementCount) {}
-    void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset,
-                      bufferPtr data) {}
-    void setFeedbackBuffer(U32 buffer, U32 bindPoint) {}
-    U32 getFeedbackPrimitiveCount(U8 queryID) { return 0; }
+    void setBuffer(U32 buffer,
+                   U32 elementCount,
+                   size_t elementSize,
+                   bool useRingBuffer,
+                   const bufferPtr data,
+                   bool dynamic,
+                   bool stream,
+                   bool persistentMapped = false) override {}
+
+    void bindFeedbackBufferRange(U32 buffer,
+                                 U32 elementCountOffset,
+                                 size_t elementCount) override {}
+
+    void updateBuffer(U32 buffer,
+                      U32 elementCount,
+                      U32 elementCountOffset,
+                      const bufferPtr data) override {}
+
+    void setBufferBindOffset(U32 buffer, U32 elementCountOffset) override {}
+
+    void setFeedbackBuffer(U32 buffer, U32 bindPoint) override {}
+    U32 getFeedbackPrimitiveCount(U8 queryID) override { return 0; }
 
     void incQueryQueue() override {}
 
    protected:
     friend class GFXDevice;
     void draw(const GenericDrawCommand& command,
-              bool useCmdBuffer = false) {}
+              bool useCmdBuffer = false) override {}
 };
 
 };  // namespace Divide

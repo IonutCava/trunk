@@ -56,43 +56,6 @@ namespace Divide {
 
     class DisplayWindow;
 
-class glHardwareQuery {
-public:
-    glHardwareQuery();
-    ~glHardwareQuery();
-
-    void create();
-    void destroy();
-    inline U32 getID() const { return _queryID; }
-    inline bool enabled() const { return _enabled; }
-    inline void enabled(bool state) { _enabled = state; }
-protected:
-    bool _enabled;
-    U32 _queryID;
-};
-
-struct ImageBindSettings {
-    GLuint _texture;
-    GLint  _level;
-    GLboolean _layered;
-    GLint _layer;
-    GLenum _access;
-    GLenum _format;
-
-    bool operator==(const ImageBindSettings& other) const {
-        return _texture == other._texture &&
-               _level == other._level &&
-               _layered == other._layered &&
-               _layer == other._layer &&
-               _access == other._access &&
-               _format == other._format;
-    }
-
-    bool operator!=(const ImageBindSettings& other) const {
-        return !(*this == other);
-    }
-};
-
 /// OpenGL implementation of the RenderAPIWrapper
 DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     friend class glShader;
@@ -235,7 +198,6 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
                                  GLuint bufferID,
                                  GLintptr offset,
                                  GLsizei stride);
-
   private:
     /// Prepare our shader loading system
     bool initShaders();
@@ -326,9 +288,10 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static SharedLock _samplerMapLock;
     static samplerObjectMap _samplerMap;
 
-    typedef std::tuple<GLuint, GLuint, GLintptr, GLsizei> BufferBindingParams;
-    typedef hashMapImpl<GLuint, BufferBindingParams> VAOBufferData;
-    static VAOBufferData _vaoBufferData;
+    typedef std::tuple<GLuint, GLintptr, GLsizei> BufferBindingParams;
+    typedef hashMapImpl<GLuint /*bind index*/, BufferBindingParams> VAOBufferData;
+    typedef hashMapImpl<GLuint /*vao ID*/, VAOBufferData> VAOBindings;
+    static VAOBindings _vaoBufferData;
 
     CEGUI::OpenGL3Renderer* _GUIGLrenderer;
 

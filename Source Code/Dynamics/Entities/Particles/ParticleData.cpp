@@ -3,11 +3,24 @@
 
 namespace Divide {
 
-ParticleData::ParticleData(U32 particleCount, U32 optionsMask) {
+ParticleData::ParticleData(U32 particleCount, U32 optionsMask)
+{
+    _isBillboarded = true;
+    // Default particles are quad sprites.
+    // To optimise fillrate we could provide geometry that tightly fits the particle's texture
+    _particleGeometryVertices.resize(4);
+    _particleGeometryVertices[0].set(-0.5f,  0.5f, 0.0f);
+    _particleGeometryVertices[1].set(-0.5f, -0.5f, 0.0f);
+    _particleGeometryVertices[2].set(0.5f,  0.5f, 0.0f);
+    _particleGeometryVertices[3].set(0.5f, -0.5f, 0.0f);
+    _particleGeometryType = PrimitiveType::TRIANGLE_STRIP;
     generateParticles(particleCount, optionsMask);
 }
 
-ParticleData::~ParticleData() { generateParticles(0, _optionsMask); }
+ParticleData::~ParticleData()
+{
+    generateParticles(0, _optionsMask);
+}
 
 void ParticleData::generateParticles(U32 particleCount, U32 optionsMask) {
     _totalCount = particleCount;
@@ -121,5 +134,17 @@ void ParticleData::swapData(U32 indexA, U32 indexB) {
         _endColour[indexA].set(_endColour[indexB]);
     }
     _misc[indexA].set(_misc[indexB]);
+}
+
+void ParticleData::setParticleGeometry(const vectorImpl<vec3<F32>>& particleGeometryVertices,
+                                       const vectorImpl<U32>& particleGeometryIndices,
+                                       PrimitiveType particleGeometryType) {
+    _particleGeometryVertices = particleGeometryVertices;
+    _particleGeometryIndices = particleGeometryIndices;
+    _particleGeometryType = particleGeometryType;
+}
+
+void ParticleData::setBillboarded(const bool state) {
+    _isBillboarded = state;
 }
 };

@@ -58,8 +58,8 @@ class ParticleEmitter : public SceneNode {
 
     inline void setDrawImpostor(const bool state) { _drawImpostor = state; }
 
-    bool initData(const std::shared_ptr<ParticleData>& particleData);
     bool updateData(const std::shared_ptr<ParticleData>& particleData);
+    bool initData(const std::shared_ptr<ParticleData>& particleData);
 
     /// SceneNode concrete implementations
     bool unload();

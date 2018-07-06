@@ -70,6 +70,28 @@ class ParticleData {
     /// Location of the texture file. Leave blank for colour only
     stringImpl _textureFileName;
 
+
+    void setParticleGeometry(const vectorImpl<vec3<F32>>& particleGeometryVertices,
+                             const vectorImpl<U32>& particleGeometryIndices,
+                             PrimitiveType particleGeometryType);
+
+    void setBillboarded(const bool state);
+
+    inline PrimitiveType particleGeometryType() const {
+        return _particleGeometryType;
+    }
+
+    inline const vectorImpl<vec3<F32>>& particleGeometryVertices() const {
+        return _particleGeometryVertices;
+    }
+
+    inline const vectorImpl<U32>& particleGeometryIndices() const {
+        return _particleGeometryIndices;
+    }
+
+    inline bool isBillboarded() const {
+        return _isBillboarded;
+    }
    public:
     explicit ParticleData(U32 particleCount, U32 optionsMask);
     ~ParticleData();
@@ -91,6 +113,11 @@ class ParticleData {
     U32 _optionsMask;
     vec3<F32> _oldestPosition;
     vec3<F32> _newestPosition;
+
+    bool _isBillboarded;
+    vectorImpl<vec3<F32>> _particleGeometryVertices;
+    vectorImpl<U32> _particleGeometryIndices;
+    PrimitiveType _particleGeometryType;
 };
 
 };  // namespace Divide

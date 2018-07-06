@@ -34,28 +34,6 @@
 
 namespace Divide {
 
-glHardwareQuery::glHardwareQuery() : _enabled(false),
-                                     _queryID(0)
-{
-}
-
-glHardwareQuery::~glHardwareQuery()
-{
-    destroy();
-}
-
-void glHardwareQuery::create() {
-    destroy();
-    glGenQueries(1, &_queryID);
-}
-
-void glHardwareQuery::destroy() {
-    if (_queryID != 0) {
-        glDeleteQueries(1, &_queryID);
-    }
-    _queryID = 0;
-}
-
 GL_API::GL_API()
     : RenderAPIWrapper(),
       _prevSizeNode(0),

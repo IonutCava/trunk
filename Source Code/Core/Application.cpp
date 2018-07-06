@@ -13,8 +13,6 @@
 
 namespace Divide {
 
-
-
 #if defined(_DEBUG)
 bool MemoryManager::MemoryTracker::Ready = false;
 bool MemoryManager::MemoryTracker::LogAllAllocations = false;
@@ -120,6 +118,19 @@ void Application::run() {
 
 bool Application::onLoop() {
     _windowManager.handleWindowEvent(WindowEvent::APP_LOOP, -1, -1, -1);
+
+    {
+        UpgradableReadLock ur_lock(_taskLock);
+        bool isQueueEmpty = _mainThreadCallbacks.empty();
+        if (!isQueueEmpty) {
+            UpgradeToWriteLock w_lock(ur_lock);
+            while(!_mainThreadCallbacks.empty()) {
+                _mainThreadCallbacks.back()();
+                _mainThreadCallbacks.pop_back();
+            }
+        }
+    }
+
     return mainLoopActive();
 }
 
@@ -144,9 +155,24 @@ bool Application::isMainThread() const {
     return (_threadID == std::this_thread::get_id());
 }
 
+void Application::mainThreadTask(const DELEGATE_CBK<>& task, bool wait) {
+    std::atomic_bool done = false;
+    if (wait) {
+        WriteLock w_lock(_taskLock);
+        _mainThreadCallbacks.push_back([&done, &task] { task(); done = true; });
+    } else {
+        WriteLock w_lock(_taskLock);
+        _mainThreadCallbacks.push_back(task);
+    }
+
+    if (wait) {
+        WAIT_FOR_CONDITION(done);
+    }
+}
 
 void Attorney::ApplicationTask::syncThreadToGPU(std::thread::id threadID, bool beginSync) {
     Attorney::KernelApplication::syncThreadToGPU(*Application::instance()._kernel, threadID, beginSync);
 }
+
 
 }; //namespace Divide

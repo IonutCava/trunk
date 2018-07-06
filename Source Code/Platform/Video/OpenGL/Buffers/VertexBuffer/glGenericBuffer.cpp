@@ -7,6 +7,7 @@ glGenericBuffer::glGenericBuffer(GLenum usage,
                                  GLuint ringSizeFactor)
     : _elementCount(0),
       _elementSize(0),
+      _elementCountBindOffset(0),
       _ringSizeFactor(ringSizeFactor)
 {
     if (persistentMapped) {
@@ -29,7 +30,7 @@ GLuint glGenericBuffer::bufferHandle() const {
 void glGenericBuffer::create(GLuint elementCount,
                              size_t elementSize,
                              BufferUpdateFrequency frequency,
-                             bufferPtr data)
+                             const bufferPtr data)
 {
     // Remember the element count and size for the current buffer
     _elementCount = elementCount;
@@ -52,7 +53,7 @@ void glGenericBuffer::create(GLuint elementCount,
 void glGenericBuffer::updateData(GLuint elementCount,
                                  GLuint elementOffset,
                                  GLuint ringWriteOffset,
-                                 bufferPtr data)
+                                 const bufferPtr data)
 {
     // Calculate the size of the data that needs updating
     size_t dataCurrentSize = elementCount * _elementSize;
@@ -80,16 +81,19 @@ void glGenericBuffer::lockData(GLuint elementCount,
     _buffer->lockRange(offset, range);
 }
 
-GLintptr glGenericBuffer::bindOffset(GLuint descriptorOffset,
-                                     GLuint ringReadOffset)
+GLintptr glGenericBuffer::getBindOffset(GLuint ringReadOffset)
 {
-    GLintptr ret = static_cast<GLintptr>(descriptorOffset * _elementSize);
+    GLintptr ret = static_cast<GLintptr>(_elementCountBindOffset * _elementSize);
 
     if (_ringSizeFactor > 1) {
         ret += _elementCount * _elementSize * ringReadOffset;
     }
 
     return ret;
+}
+
+void glGenericBuffer::setBindOffset(GLuint elementCountOffset) {
+    _elementCountBindOffset = elementCountOffset;
 }
 
 }; //namespace Divide

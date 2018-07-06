@@ -54,23 +54,24 @@ class glGenericBuffer {
       void create(GLuint elementCount, 
                   size_t elementSize,
                   BufferUpdateFrequency frequency,
-                  bufferPtr data);
+                  const bufferPtr data);
 
       void updateData(GLuint elementCount,
                       GLuint elementOffset,
                       GLuint ringWriteOffset,
-                      bufferPtr data);
+                      const bufferPtr data);
 
       void lockData(GLuint elementCount,
                     GLuint elementOffset,
                     GLuint ringReadOffset);
                     
-       GLintptr bindOffset(GLuint descriptorOffset,
-                           GLuint ringReadOffset);
-                                                                        
+       GLintptr getBindOffset(GLuint ringReadOffset);
+
+       void     setBindOffset(GLuint elementCountOffset);
   protected:
       GLuint _elementCount;
       size_t _elementSize;
+      GLuint _elementCountBindOffset;
       // A flag to check if the buffer uses the RingBuffer system
       glBufferImpl* _buffer;
 

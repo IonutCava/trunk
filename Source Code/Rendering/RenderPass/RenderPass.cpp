@@ -243,7 +243,7 @@ bool RenderPass::preRender(SceneRenderState& renderState, U32 pass) {
             _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
             bindShadowMaps = true;
             if (Config::USE_HIZ_CULLING) {
-                GFX.occlusionCull(RenderPassManager::instance().getBufferData(RenderStage::DISPLAY, 0, 0));
+                //GFX.occlusionCull(RenderPassManager::instance().getBufferData(RenderStage::DISPLAY, 0, 0));
             }
             if (Config::USE_Z_PRE_PASS && !Config::DEBUG_HIZ_CULLING) {
                 GFX.toggleDepthWrites(false);

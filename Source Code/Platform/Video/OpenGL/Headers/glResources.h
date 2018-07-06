@@ -52,6 +52,64 @@ namespace NS_GLIM {
 }; //namespace NS_GLIM
 
 namespace Divide {
+
+class glVAOPool {
+
+public:
+    glVAOPool();
+    ~glVAOPool();
+
+    GLuint allocate();
+    void   allocate(U32 count, GLuint* vaosOUT);
+    // This must be called on the main thread!
+    void   deallocate(GLuint& vao);
+
+protected:
+    friend class GL_API;
+    void init(U32 capacity);
+    void destroy();
+
+protected:
+    vectorImpl<std::pair<GLuint, bool>> _pool;
+};
+
+class glHardwareQuery {
+public:
+    glHardwareQuery();
+    ~glHardwareQuery();
+
+    void create();
+    void destroy();
+    inline U32 getID() const { return _queryID; }
+    inline bool enabled() const { return _enabled; }
+    inline void enabled(bool state) { _enabled = state; }
+protected:
+    bool _enabled;
+    U32 _queryID;
+};
+
+struct ImageBindSettings {
+    GLuint _texture;
+    GLint  _level;
+    GLboolean _layered;
+    GLint _layer;
+    GLenum _access;
+    GLenum _format;
+
+    bool operator==(const ImageBindSettings& other) const {
+        return _texture == other._texture &&
+            _level == other._level &&
+            _layered == other._layered &&
+            _layer == other._layer &&
+            _access == other._access &&
+            _format == other._format;
+    }
+
+    bool operator!=(const ImageBindSettings& other) const {
+        return !(*this == other);
+    }
+};
+
 namespace GLUtil {
 
 /// Wrapper for glGetIntegerv
@@ -70,7 +128,8 @@ extern GLuint _invalidObjectID;
 extern SDL_GLContext _glRenderContext;
 extern SharedLock _glContextLock;
 extern hashMapImpl<size_t /*threadID hash*/, SDL_GLContext> _glSecondaryContexts;
-
+/// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
+extern glVAOPool _vaoPool;
 void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool useIndirectBuffer,
                          GLenum internalFormat,

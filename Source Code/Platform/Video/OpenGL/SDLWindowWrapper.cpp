@@ -23,6 +23,8 @@
 
 namespace Divide {
 namespace {
+    const U32 g_maxVAOS = 512u;
+
     class ContextPool {
     public:
         ContextPool()
@@ -275,8 +277,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
 
     // Prepare immediate mode emulation rendering
     NS_GLIM::glim.SetVertexAttribLocation(to_const_uint(AttribLocation::VERTEX_POSITION));
+    // Initialize our VAO pool
+    GLUtil::_vaoPool.init(g_maxVAOS);
     // We need a dummy VAO object for point rendering
-    glCreateVertexArrays(1, &_dummyVAO);
+    _dummyVAO = GLUtil::_vaoPool.allocate();
 
     // In debug, we also have various performance counters to profile GPU rendering
     // operations
@@ -349,6 +353,8 @@ void GL_API::closeRenderingAPI() {
     }
     glVertexArray::cleanup();
     GLUtil::clearVBOs();
+    GLUtil::_vaoPool.destroy();
+
     destroyGLContext();
 }
 

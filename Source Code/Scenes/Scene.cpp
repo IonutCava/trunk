@@ -274,7 +274,11 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
     DIVIDE_ASSERT(emitter != nullptr,
                   "Scene::addParticleEmitter error: Could not instantiate emitter!");
 
-    emitter->initData(data);
+    if (Application::instance().isMainThread()) {
+        emitter->initData(data);
+    } else {
+        Application::instance().mainThreadTask([&emitter, &data] { emitter->initData(data); });
+    }
 
     return parentNode.addNode(emitter, particleMask, PhysicsGroup::GROUP_IGNORE);
 }

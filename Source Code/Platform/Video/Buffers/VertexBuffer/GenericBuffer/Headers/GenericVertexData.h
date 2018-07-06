@@ -64,15 +64,23 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     /// When reading and writing to the same buffer, we use a round-robin
     /// approach and
     /// offset the reading and writing to multiple copies of the data
-    virtual void setBuffer(U32 buffer, U32 elementCount, size_t elementSize,
-                           bool useRingBuffer, bufferPtr data, bool dynamic, bool stream,
+    virtual void setBuffer(U32 buffer,
+                           U32 elementCount,
+                           size_t elementSize,
+                           bool useRingBuffer,
+                           const bufferPtr data,
+                           bool dynamic,
+                           bool stream,
                            bool persistentMapped = false) = 0;
 
-    virtual void updateBuffer(U32 buffer, U32 elementCount,
-                              U32 elementCountOffset, bufferPtr data) = 0;
+    virtual void updateBuffer(U32 buffer,
+                              U32 elementCount,
+                              U32 elementCountOffset,
+                              const bufferPtr data) = 0;
 
-    virtual void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
-                                         size_t elementCount) = 0;
+    virtual void setBufferBindOffset(U32 buffer, U32 elementCountOffset) = 0;
+
+    virtual void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount) = 0;
 
     virtual U32 getFeedbackPrimitiveCount(U8 queryID) = 0;
 

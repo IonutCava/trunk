@@ -40,8 +40,12 @@ namespace Divide {
         AttributeDescriptor();
         ~AttributeDescriptor();
 
-        void set(U32 bufferIndex, U32 instanceDivisor, U32 componentsPerElement,
-                 bool normalized, U32 elementCountOffset, GFXDataFormat dataType);
+        void set(U32 bufferIndex,
+                 U32 instanceDivisor,
+                 U32 componentsPerElement,
+                 bool normalized,
+                 U32 elementCountOffset,
+                 GFXDataFormat dataType);
 
         void attribIndex(U32 index);
         void offset(U32 elementCountOffset);
@@ -65,6 +69,7 @@ namespace Divide {
         inline bool dirty() const { return _dirty; }
         
         size_t stride() const;
+
     protected:
         U32 _index;
         U32 _divisor;

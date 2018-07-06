@@ -20,8 +20,8 @@ namespace {
     // 1 in ram, 1 in driver and 1 in VRAM
     static const U32 g_particleBufferSizeFactor = 1;
     static const U32 g_particleGeometryBuffer = 0;
-    static const U32 g_particlePositionBuffer = 1;
-    static const U32 g_particleColourBuffer = 2;
+    static const U32 g_particlePositionBuffer = g_particleGeometryBuffer + 1;
+    static const U32 g_particleColourBuffer = g_particlePositionBuffer* + 2;
     static const bool g_usePersistentlyMappedBuffers = false;
 
     static const U64 g_updateInterval = Time::MillisecondsToMicroseconds(33);
@@ -36,37 +36,37 @@ ParticleEmitter::ParticleEmitter(const stringImpl& name)
       _enabled(false),
       _particleTexture(nullptr),
       _particleShader(nullptr),
-      _particleGPUBuffer(nullptr),
       _particleDepthShader(nullptr)
 {
     _updating = false;
+    _particleGPUBuffer = GFX_DEVICE.newGVD(g_particleBufferSizeFactor);
 }
 
-ParticleEmitter::~ParticleEmitter() { 
+ParticleEmitter::~ParticleEmitter()
+{ 
     unload(); 
+    MemoryManager::DELETE(_particleGPUBuffer);
 }
 
 bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData) {
     // assert if double init!
-    DIVIDE_ASSERT(_particleGPUBuffer == nullptr,
-                  "ParticleEmitter::initData error: Double initData detected!");
-
-    _particleGPUBuffer = GFX_DEVICE.newGVD(g_particleBufferSizeFactor);
+    DIVIDE_ASSERT(particleData.get() != nullptr, "ParticleEmitter::updateData error: Invalid particle data!");
+    _particles = particleData;
     _particleGPUBuffer->create(3);
 
-    static F32 particleQuad[] = {
-        -0.5f, -0.5f,  0.0f, 
-         0.5f, -0.5f,  0.0f,
-        -0.5f,  0.5f,  0.0f,
-         0.5f,  0.5f,  0.0f,
-    };
+    const vectorImpl<vec3<F32>>& geometry = particleData->particleGeometryVertices();
+    const vectorImpl<U32>& indices = particleData->particleGeometryIndices();
+
     _particleGPUBuffer->setBuffer(g_particleGeometryBuffer,
-                                  4,
-                                  3 * sizeof(F32),
+                                  to_uint(geometry.size()),
+                                  sizeof(vec3<F32>),
                                   false,
-                                  particleQuad,
+                                  (bufferPtr)geometry.data(),
                                   false,
                                   false);
+    if (!indices.empty()) {
+        _particleGPUBuffer->setIndexBuffer(to_uint(indices.size()), false, false, indices);
+    }
 
     _particleGPUBuffer
         ->attribDescriptor(to_const_uint(AttribLocation::VERTEX_POSITION))
@@ -101,19 +101,12 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
     _particleDepthShader = CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
 
-    //_renderState.addToDrawExclusionMask(RenderStage::SHADOW);
-    //_renderState.addToDrawExclusionMask(RenderStage::REFLECTION);
-
     return (_particleShader != nullptr);
 }
 
 bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleData) {
     static const U32 positionAttribLocation = 13;
     static const U32 colourAttribLocation = to_const_uint(AttribLocation::VERTEX_COLOR);
-
-    DIVIDE_ASSERT(particleData.get() != nullptr, "ParticleEmitter::updateData error: Invalid particle data!");
-
-    _particles = particleData;
 
     U32 particleCount = _particles->totalCount();
 
@@ -169,9 +162,7 @@ bool ParticleEmitter::unload() {
         getState() != ResourceState::RES_LOADING) {
         return true;
     }
-
-    MemoryManager::DELETE(_particleGPUBuffer);
-
+    
     _particles.reset();
 
     return SceneNode::unload();
@@ -193,7 +184,11 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
 
-    GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 4);
+    U32 indexCount = to_uint(_particles->particleGeometryIndices().size());
+    if(indexCount == 0) {
+        indexCount = to_uint(_particles->particleGeometryVertices().size());
+    }
+    GenericDrawCommand cmd(_particles->particleGeometryType(), 0, indexCount);
     cmd.sourceBuffer(_particleGPUBuffer);
     for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
         GFXDevice::RenderPackage& pkg = 
@@ -272,6 +267,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
             }
 
             _updating = true;
+
             U32 aliveCount = getAliveParticleCount();
             bool validCount = aliveCount > 0;
             renderState().setDrawState(validCount);

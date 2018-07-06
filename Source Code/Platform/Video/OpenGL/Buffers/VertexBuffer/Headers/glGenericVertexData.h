@@ -84,37 +84,46 @@ class glGenericVertexData : public GenericVertexData {
     glGenericVertexData(GFXDevice& context, const U32 ringBufferLength);
     ~glGenericVertexData();
 
-    void create(U8 numBuffers = 1, U8 numQueries = 1);
-    U32 getFeedbackPrimitiveCount(U8 queryID);
+    void create(U8 numBuffers = 1, U8 numQueries = 1) override;
+    U32 getFeedbackPrimitiveCount(U8 queryID) override;
 
-    void setIndexBuffer(U32 indicesCount, bool dynamic,  bool stream, const vectorImpl<U32>& indices);
-    void updateIndexBuffer(const vectorImpl<U32>& indices);
+    void setIndexBuffer(U32 indicesCount, bool dynamic,  bool stream, const vectorImpl<U32>& indices) override;
+    void updateIndexBuffer(const vectorImpl<U32>& indices) override;
 
-    void setBuffer(U32 buffer, U32 elementCount, size_t elementSize,
-                   bool useRingBuffer, bufferPtr data, bool dynamic, bool stream,
-                   bool persistentMapped = false);
+    void setBuffer(U32 buffer,
+                   U32 elementCount,
+                   size_t elementSize,
+                   bool useRingBuffer,
+                   const bufferPtr data,
+                   bool dynamic,
+                   bool stream,
+                   bool persistentMapped = false) override;
 
-    void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset, bufferPtr data);
+    void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset, const bufferPtr data) override;
 
-    void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount);
+    void setBufferBindOffset(U32 buffer, U32 elementCountOffset) override;
 
-    void setFeedbackBuffer(U32 buffer, U32 bindPoint);
+    void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount) override;
+
+    void setFeedbackBuffer(U32 buffer, U32 bindPoint) override;
 
    protected:
     friend class GFXDevice;
-    void draw(const GenericDrawCommand& command,
-              bool useCmdBuffer = false);
+    void draw(const GenericDrawCommand& command, bool useCmdBuffer = false) override;
 
    protected:
-    void setAttributes(bool feedbackPass);
-    void setAttributeInternal(AttributeDescriptor& descriptor);
+    void setBufferBindings(GLuint activeVAO);
+    void setAttributes(GLuint activeVAO, bool feedbackPass);
+    void setAttributeInternal(GLuint activeVAO, AttributeDescriptor& descriptor);
 
     bool isFeedbackBuffer(U32 index);
     U32 feedbackBindPoint(U32 buffer);
 
     void incQueryQueue() override;
 
-    static bool setIfDifferentBindRange(GLuint bindIndex, const BufferBindConfig& bindConfig);
+    static bool setIfDifferentBindRange(GLuint activeVAO, GLuint bindIndex, const BufferBindConfig& bindConfig);
+
+    void incQueue() override;
 
    private:
     GLuint _indexBuffer;
@@ -129,8 +138,7 @@ class glGenericVertexData : public GenericVertexData {
     GLuint _currentReadQuery;
     vectorImpl<glGenericBuffer*> _bufferObjects;
     std::array<GLuint, to_const_uint(GVDUsage::COUNT)> _vertexArray;
-
-    static hashMapImpl<GLuint, BufferBindConfig> k_bindConfigs;
+    bool _invalidateAttributes;
 };
 
 };  // namespace Divide

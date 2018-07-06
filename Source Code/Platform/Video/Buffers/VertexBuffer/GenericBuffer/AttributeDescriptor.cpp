@@ -9,7 +9,7 @@ AttributeDescriptor::AttributeDescriptor()
     _componentsPerElement(0),
     _elementCountOffset(0),
     _wasSet(false),
-    _dirty(false),
+    _dirty(true),
     _normalized(false),
     _stride(0),
     _type(GFXDataFormat::UNSIGNED_INT)
@@ -20,8 +20,13 @@ AttributeDescriptor::~AttributeDescriptor()
 {
 }
 
-void AttributeDescriptor::set(U32 bufferIndex, U32 instanceDivisor, U32 componentsPerElement,
-                              bool normalized, U32 elementCountOffset, GFXDataFormat dataType) {
+void AttributeDescriptor::set(U32 bufferIndex, 
+                              U32 instanceDivisor,
+                              U32 componentsPerElement,
+                              bool normalized,
+                              U32 elementCountOffset,
+                              GFXDataFormat dataType) {
+
     this->bufferIndex(bufferIndex);
     this->instanceDivisor(instanceDivisor);
     this->componentsPerElement(componentsPerElement);
@@ -42,15 +47,15 @@ void AttributeDescriptor::attribIndex(U32 index) {
     _wasSet = false;
 }
 
-void AttributeDescriptor::offset(U32 elementCountOffset) {
-    _elementCountOffset = elementCountOffset;
-    _dirty = true;
-}
-
 void AttributeDescriptor::bufferIndex(U32 bufferIndex) {
     _parentBuffer = bufferIndex;
     _dirty = true;
     _wasSet = false;
+}
+
+void AttributeDescriptor::offset(U32 elementCountOffset) {
+    _elementCountOffset = elementCountOffset;
+    _dirty = true;
 }
 
 void AttributeDescriptor::instanceDivisor(U32 instanceDivisor) {

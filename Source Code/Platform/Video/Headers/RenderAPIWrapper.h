@@ -372,7 +372,7 @@ class RingBuffer {
             return _queueReadIndex;
         }
 
-        inline void incQueue() { 
+        virtual void incQueue() { 
             if (queueLength() > 1) {
                 WriteLock w_lock(_lock);
                 ++_queueWriteIndex %= _queueLength;
