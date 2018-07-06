@@ -286,7 +286,7 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& r
                                                      : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_HOVER
                                                                                       ? 1.0f
                                                                                       : 0.0f,
-                      renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS) ? 1.0f : 0.0f,
+                      (_context.shadowDetailLevel() != RenderDetailLevel::OFF && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS)) ? 1.0f : 0.0f,
                       _lodLevel,
                       0.0);
     const Material_ptr& mat = getMaterialInstance();

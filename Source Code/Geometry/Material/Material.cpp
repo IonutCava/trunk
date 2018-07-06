@@ -520,6 +520,11 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
             shader += ".CookTorrance";
         } break;
     }
+
+    if (_context.shadowDetailLevel() == RenderDetailLevel::OFF) {
+        setShaderDefines(renderStagePass, "DISABLE_SHADOW_MAPPING");
+        shader += ".NoShadows";
+    }
     // Add any modifiers you wish
     stringImpl& modifier = _shaderModifier[renderStagePass.index()];
     if (!modifier.empty()) {

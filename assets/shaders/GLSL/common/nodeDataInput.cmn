@@ -56,10 +56,15 @@ vec2 dvd_invScreenDimensions() {
 
 layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
 {
+    // x,y,z - colour, w - density
     vec4   dvd_fogDetails;
+    // x,y,z - direction, w - speed
     vec4   dvd_windDetails;
+    //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
     vec4   dvd_shadowingSettings;
+    //x - elapsed time, y - debug render, z - renderer flag, w - reserved
     vec4   dvd_otherData;
+    // x - delta time, y - detail level, z - shadow detail level, w - reserved
     vec4   dvd_otherData2;
     vec4   dvd_waterPositionsW/*[MAX_WATER_BODIES]*/;
     //x = width, y = length, z = depth
@@ -71,7 +76,6 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
 #define dvd_time int(dvd_otherData.x)
 #define dvd_showDebugInfo int(dvd_otherData.y)
 #define dvd_deltaTime (int(dvd_otherData2.x))
-#define dvd_shadowsEnabled (int(dvd_otherData.z) == 1)
 #define dvd_renderDetailLevel (int(dvd_otherData2.y))
 #define dvd_shadowDetailLevel (int(dvd_otherData2.z))
 

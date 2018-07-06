@@ -38,10 +38,15 @@ namespace Divide {
 class SceneShaderData {
   private:
     struct SceneShaderBufferData {
+        // x,y,z - colour, w - density
         vec4<F32> _fogDetails;
+        // x,y,z - direction, w - speed
         vec4<F32> _windDetails;
+        //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
         vec4<F32> _shadowingSettings;
+        //x - elapsed time, y - debug render, z - renderer flag, w - reserved
         vec4<F32> _otherData;
+        // x - delta time, y - detail level, z - shadow detail level, w - reserved
         vec4<F32> _otherData2;
         vec4<F32> _waterPositionsW/*[MAX_WATER_BODIES]*/;
         vec4<F32> _waterDetails/*[MAX_WATER_BODIES]*/;
@@ -81,13 +86,8 @@ class SceneShaderData {
         _dirty = true;
     }
 
-    inline void toggleShadowMapping(bool state) {
-        _bufferData._otherData.z = state ? 1.0f : 0.0f;
-        _dirty = true;
-    }
-
     inline void setRendererFlag(U32 flag) {
-        _bufferData._otherData.w = to_F32(flag);
+        _bufferData._otherData.z = to_F32(flag);
         _dirty = true;
     }
 

@@ -414,7 +414,6 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _sceneData->deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
     _sceneData->setRendererFlag(_platformContext->gfx().getRenderer().getFlag());
     _sceneData->detailLevel(_platformContext->gfx().renderDetailLevel(), _platformContext->gfx().shadowDetailLevel());
-    _sceneData->toggleShadowMapping(_platformContext->gfx().shadowDetailLevel() != RenderDetailLevel::OFF);
 
     FogDescriptor& fog = activeScene.state().fogDescriptor();
     bool fogEnabled = _platformContext->config().rendering.enableFog;

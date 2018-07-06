@@ -218,7 +218,6 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
 
     //set properties.w to -1 to skip occlusion culling for the node
     dataOut._properties.w = isOcclusionCullable ? 1.0f : -1.0f;
-
     return dataOut;
 }
 
