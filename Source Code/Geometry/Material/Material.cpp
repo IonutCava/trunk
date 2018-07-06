@@ -114,7 +114,19 @@ Material* Material::clone(const stringImpl& nameSuffix) {
 void Material::update(const U64 deltaTime) {
     // build one shader per frame
     computeShaderInternal();
-    clean();
+
+    bool cleanMaterial = true;
+    for (ShaderInfo& info : _shaderInfo) {
+        if (info._shaderCompStage ==  ShaderInfo::ShaderCompilationStage::QUEUED ||
+            info._shaderCompStage ==  ShaderInfo::ShaderCompilationStage::REQUESTED ||
+            info._shaderCompStage ==  ShaderInfo::ShaderCompilationStage::PENDING) {
+            cleanMaterial = false;
+            break;
+        }
+    }
+    if (cleanMaterial) {
+        clean();
+    }
 }
 
 size_t Material::getRenderStateBlock(RenderStage currentStage) {
@@ -252,8 +264,14 @@ bool Material::computeShader(RenderStage renderStage,
                              const bool computeOnAdd,
                              const DELEGATE_CBK<>& shaderCompileCallback) {
     ShaderInfo& info = _shaderInfo[to_uint(renderStage)];
+    if (info._shaderCompStage ==
+        ShaderInfo::ShaderCompilationStage::UNHANDLED) {
+        info._shaderCompStage = ShaderInfo::ShaderCompilationStage::REQUESTED;
+        return false;
+    }
+
     if (info._shaderCompStage !=
-        ShaderInfo::ShaderCompilationStage::REQUESTED) {
+            ShaderInfo::ShaderCompilationStage::REQUESTED) {
         return info._shaderCompStage ==
                ShaderInfo::ShaderCompilationStage::COMPUTED;
     }
@@ -424,7 +442,7 @@ void Material::computeShaderInternal() {
 
     ShaderInfo& info = _shaderInfo[renderStageIndex];
     info._shaderRef = CreateResource<ShaderProgram>(descriptor);
-    info._shaderCompStage = ShaderInfo::ShaderCompilationStage::COMPUTED;
+    info._shaderCompStage = ShaderInfo::ShaderCompilationStage::PENDING;
     if (callback) {
         callback();
     }

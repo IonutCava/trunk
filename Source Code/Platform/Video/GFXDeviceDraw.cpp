@@ -275,7 +275,7 @@ void GFXDevice::buildDrawCommands(
                 *renderable, sceneRenderState, currentStage);
 
         if (nodeDrawCommands.empty()){
-            continue;
+            continue;   
         }
 
         for (GenericDrawCommand& cmd : nodeDrawCommands) {

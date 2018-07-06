@@ -295,12 +295,13 @@ vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
     SceneRenderState& sceneRenderState, RenderStage renderStage) {
     _renderData._drawCommands.clear();
     if (!_renderingLocked &&
-        _parentSGN.prepareDraw(sceneRenderState, renderStage))
+        canDraw(sceneRenderState, renderStage))
     {
         _parentSGN.getNode()->getDrawCommands(_parentSGN, renderStage,
                                               sceneRenderState,
                                               _renderData._drawCommands);
     }
+
     return _renderData._drawCommands;
 }
 

@@ -145,7 +145,7 @@ class Material : public Resource {
         ShaderInfo() {
             _shaderRef = nullptr;
             _shader = "";
-            _shaderCompStage = ShaderCompilationStage::COUNT;
+            _shaderCompStage = ShaderCompilationStage::UNHANDLED;
             for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
                 memset(_shadingFunction[i], 0,
                        to_uint(BumpMethod::COUNT) * sizeof(U32));
