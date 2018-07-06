@@ -328,7 +328,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _GUI->addButton(_ID("Serve"), "Serve",
                     vec2<I32>(to_int(resolution.width - 120),
                               to_int(resolution.height / 1.1f)),
-                    vec2<U32>(100, 25), vec3<F32>(0.65f),
+                    vec2<U32>(100, 25),
                     DELEGATE_BIND(&PingPongScene::serveBall, this, std::placeholders::_1));
 
     _GUI->addText(_ID("Score"),

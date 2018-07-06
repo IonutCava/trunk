@@ -38,9 +38,7 @@
 
 namespace Divide {
 
-class SceneGraphNode;
-
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
+FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 /// Unit interface
 class Unit : public FrameListener {

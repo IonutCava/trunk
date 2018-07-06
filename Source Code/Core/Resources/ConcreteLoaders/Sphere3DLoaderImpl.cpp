@@ -18,7 +18,7 @@ namespace Divide {
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);
     } else {
-        std::shared_ptr<Material> matTemp = 
+        Material_ptr matTemp =
             CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName()));
 
         matTemp->setShadingMode(Material::ShadingMode::BLINN_PHONG);

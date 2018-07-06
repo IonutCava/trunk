@@ -60,9 +60,9 @@ struct TerrainTextureLayer {
         TEXTURE_ALPHA_CHANNEL = 3
     };
 
-    inline void setBlendMap(const std::shared_ptr<Texture>& texture) { _blendMap = texture; }
-    inline void setTileMaps(const std::shared_ptr<Texture>& texture) { _tileMaps = texture; }
-    inline void setNormalMaps(const std::shared_ptr<Texture>& texture) { _normalMaps = texture; }
+    inline void setBlendMap(const Texture_ptr& texture) { _blendMap = texture; }
+    inline void setTileMaps(const Texture_ptr& texture) { _tileMaps = texture; }
+    inline void setNormalMaps(const Texture_ptr& texture) { _normalMaps = texture; }
     inline void setDiffuseScale(TerrainTextureChannel textureChannel,
                                 F32 scale) {
         _diffuseUVScale[to_uint(textureChannel)] = scale;
@@ -75,28 +75,27 @@ struct TerrainTextureLayer {
     inline const vec4<F32>& getDiffuseScales() const { return _diffuseUVScale; }
     inline const vec4<F32>& getDetailScales() const { return _detailUVScale; }
 
-    const std::shared_ptr<Texture>& blendMap() const { return _blendMap; }
-    const std::shared_ptr<Texture>& tileMaps() const { return _tileMaps; }
-    const std::shared_ptr<Texture>& normalMaps() const { return _normalMaps; }
+    const Texture_ptr& blendMap() const { return _blendMap; }
+    const Texture_ptr& tileMaps() const { return _tileMaps; }
+    const Texture_ptr& normalMaps() const { return _normalMaps; }
 
    private:
     U32 _lastOffset;
     vec4<F32> _diffuseUVScale;
     vec4<F32> _detailUVScale;
-    std::shared_ptr<Texture> _blendMap;
-    std::shared_ptr<Texture> _tileMaps;
-    std::shared_ptr<Texture> _normalMaps;
+    Texture_ptr _blendMap;
+    Texture_ptr _tileMaps;
+    Texture_ptr _normalMaps;
 };
 
-class Quad3D;
 class Quadtree;
 class Transform;
 class VertexBuffer;
-class ShaderProgram;
 class SamplerDescriptor;
 class TerrainDescriptor;
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Quad3D);
+FWD_DECLARE_MANAGED_CLASS(Quad3D);
+FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 namespace Attorney {
     class TerrainChunk;

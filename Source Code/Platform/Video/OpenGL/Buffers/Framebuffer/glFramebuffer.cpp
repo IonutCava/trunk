@@ -105,7 +105,7 @@ void glFramebuffer::initAttachment(AttachmentType type,
     }
 
     bool newTexture = false;
-    std::shared_ptr<Texture>& tex = _attachmentTexture[slot];
+    Texture_ptr& tex = _attachmentTexture[slot];
     if (!tex) {
         stringImpl attachmentName = Util::StringFormat(
             "Framebuffer_Att_%s_%d", getAttachmentName(type), getGUID());
@@ -334,7 +334,7 @@ void glFramebuffer::blitFrom(Framebuffer* inputFB,
     GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, previousFB);
 }
 
-const std::shared_ptr<Texture>& glFramebuffer::getAttachment(AttachmentType slot, bool flushStateOnRequest) {
+const Texture_ptr& glFramebuffer::getAttachment(AttachmentType slot, bool flushStateOnRequest) {
     if (_resolveBuffer) {
         resolve();
         return _resolveBuffer->getAttachment(slot, flushStateOnRequest);
@@ -344,7 +344,7 @@ const std::shared_ptr<Texture>& glFramebuffer::getAttachment(AttachmentType slot
 }
 
 void glFramebuffer::bind(U8 unit, AttachmentType slot, bool flushStateOnRequest) {
-    const std::shared_ptr<Texture>& attachment = getAttachment(slot, flushStateOnRequest);
+    const Texture_ptr& attachment = getAttachment(slot, flushStateOnRequest);
     if (attachment != nullptr) {
         attachment->Bind(unit, flushStateOnRequest);
     }

@@ -43,7 +43,7 @@ const bool USE_FIXED_TIMESTEP = true;
 /// How many textures to store per material.
 /// bump(0) + opacity(1) + spec(2) + tex[3..MAX_TEXTURE_STORAGE - 1]
 const unsigned int MAX_TEXTURE_STORAGE = 6;
-/// Application desired framerate for physics simulations
+/// Application desired framerate for physics and input simulations
 const unsigned int TARGET_FRAME_RATE = 60;
 /// Minimum required RAM size (in bytes) for the current build
 const unsigned int REQUIRED_RAM_SIZE = 2 * 1024 * 1024; //2Gb

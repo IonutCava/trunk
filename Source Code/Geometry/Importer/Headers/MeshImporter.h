@@ -131,9 +131,8 @@ namespace Divide {
     };
 
 
-    class Mesh;
-    class Material;
-    TYPEDEF_SMART_POINTERS_FOR_CLASS(Mesh);
+    FWD_DECLARE_MANAGED_CLASS(Mesh);
+    FWD_DECLARE_MANAGED_CLASS(Material);
 
     DEFINE_SINGLETON(MeshImporter)
         public:
@@ -141,7 +140,7 @@ namespace Divide {
             Mesh_ptr loadMesh(const stringImpl& name, const Import::ImportData& dataIn);
 
         protected:
-            std::shared_ptr<Material> loadSubMeshMaterial(const Import::MaterialData& importData, bool skinned);
+            Material_ptr loadSubMeshMaterial(const Import::MaterialData& importData, bool skinned);
     END_SINGLETON
 
 };  // namespace Divide

@@ -54,9 +54,10 @@ class Plane;
 typedef vectorImpl<Plane<F32> > PlaneList;
 class SceneGraph;
 
-class ShaderProgram;
 class GenericVertexData;
 class VertexDataInterface;
+
+FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 typedef struct {
     // Video resolution
@@ -130,7 +131,7 @@ struct GenericDrawCommand {
     PrimitiveType _type;
     IndirectDrawCommand _cmd;
     VertexDataInterface* _sourceBuffer;
-    std::shared_ptr<ShaderProgram> _shaderProgram;
+    ShaderProgram_ptr _shaderProgram;
 
    public:
 
@@ -165,7 +166,7 @@ struct GenericDrawCommand {
               : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY));
     }
 
-    inline void shaderProgram(const std::shared_ptr<ShaderProgram>& program) {
+    inline void shaderProgram(const ShaderProgram_ptr& program) {
         _shaderProgram = program;
     }
 
@@ -205,7 +206,7 @@ struct GenericDrawCommand {
         return _cmd;
     }
 
-    inline const std::shared_ptr<ShaderProgram>& shaderProgram() const { return _shaderProgram; }
+    inline const ShaderProgram_ptr& shaderProgram() const { return _shaderProgram; }
     inline VertexDataInterface* sourceBuffer() const { return _sourceBuffer; }
     inline PrimitiveType primitiveType() const { return _type; }
 

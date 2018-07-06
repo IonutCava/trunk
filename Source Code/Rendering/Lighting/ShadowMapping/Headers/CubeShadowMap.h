@@ -47,7 +47,7 @@ class CubeShadowMap : public ShadowMap {
     void init(ShadowMapInfo* const smi);
 
   private:
-    std::shared_ptr<ShaderProgram> _previewDepthMapShader;
+      ShaderProgram_ptr _previewDepthMapShader;
 };
 
 };  // namespace Divide

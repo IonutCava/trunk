@@ -36,8 +36,8 @@
 
 namespace Divide {
 
-class Texture;
-class ShaderProgram;
+FWD_DECLARE_MANAGED_CLASS(Texture);
+FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 class GUISplash {
    public:
@@ -47,8 +47,8 @@ class GUISplash {
 
    private:
     vec2<U16> _dimensions;
-    std::shared_ptr<Texture> _splashImage;
-    std::shared_ptr<ShaderProgram> _splashShader;
+    Texture_ptr _splashImage;
+    ShaderProgram_ptr _splashShader;
 };
 
 };  // namespace Divide

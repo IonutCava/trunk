@@ -41,8 +41,7 @@ glShader::glShader(GFXDevice& context,
     : Shader(context, name, type, optimise) {
     switch (type) {
         default:
-            Console::errorfn(Locale::get(_ID("ERROR_GLSL_UNKNOWN_ShaderType")),
-                             type);
+            Console::errorfn(Locale::get(_ID("ERROR_GLSL_UNKNOWN_ShaderType")), type);
             break;
         case ShaderType::VERTEX:
             _shader = glCreateShader(GL_VERTEX_SHADER);
@@ -186,7 +185,8 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
 
             if (include_string.empty()) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")),
-                                 getName().c_str(), line_number,
+                                 getName().c_str(),
+                                 line_number,
                                  include_file.c_str());
             }
             output.append(preprocessIncludes(include_string, include_file, level + 1));

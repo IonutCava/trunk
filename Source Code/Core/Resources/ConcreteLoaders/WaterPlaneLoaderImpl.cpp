@@ -27,13 +27,13 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res) {
         "/misc_images/water_dudv.jpg");
     waterTextureDUDV.setPropertyDescriptor(defaultSampler);
 
-    std::shared_ptr<Texture> waterNM = CreateResource<Texture>(waterTexture);
+    Texture_ptr waterNM = CreateResource<Texture>(waterTexture);
     assert(waterNM != nullptr);
 
-    std::shared_ptr<ShaderProgram> waterShaderProgram = CreateResource<ShaderProgram>(waterShader);
+    ShaderProgram_ptr waterShaderProgram = CreateResource<ShaderProgram>(waterShader);
     assert(waterShaderProgram != nullptr);
 
-    std::shared_ptr<Material> waterMat = CreateResource<Material>(waterMaterial);
+    Material_ptr waterMat = CreateResource<Material>(waterMaterial);
     assert(waterMat != nullptr);
     // The material is responsible for the destruction of the textures and
     // shaders it receives!!!!

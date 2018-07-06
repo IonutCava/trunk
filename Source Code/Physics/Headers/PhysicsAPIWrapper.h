@@ -49,10 +49,9 @@ enum class RigidBodyShape : U32 {
 
 class Scene;
 class PhysicsAsset;
-class SceneGraphNode;
 class PhysicsSceneInterface;
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
+FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 enum class ErrorCode : I32;
 class NOINITVTABLE PhysicsAPIWrapper {

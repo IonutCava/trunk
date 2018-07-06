@@ -32,17 +32,17 @@ void Framebuffer::addAttachment(const TextureDescriptor& descriptor,
     _shouldRebuild = true;
 }
 
-void Framebuffer::addAttachment(const std::shared_ptr<Texture>& texture,
+void Framebuffer::addAttachment(const Texture_ptr& texture,
                                 TextureDescriptor::AttachmentType type) {
     addAttachment(texture->getDescriptor(), type);
     _attachmentTexture[to_uint(type)] = texture;
 }
 
-const std::shared_ptr<Texture>& Framebuffer::getAttachment(TextureDescriptor::AttachmentType slot,
+const Texture_ptr& Framebuffer::getAttachment(TextureDescriptor::AttachmentType slot,
                                                            bool flushStateOnRequest) {
-    static std::shared_ptr<Texture> defaultAttachment;
+    static Texture_ptr defaultAttachment;
 
-    std::shared_ptr<Texture>& tex = _attachmentTexture[to_uint(slot)];
+    Texture_ptr& tex = _attachmentTexture[to_uint(slot)];
     if (tex && ((flushStateOnRequest && tex->flushTextureState())  || !flushStateOnRequest)) {
         return tex;
     }
@@ -53,7 +53,7 @@ const std::shared_ptr<Texture>& Framebuffer::getAttachment(TextureDescriptor::At
 
 void Framebuffer::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) {
     for (U32 i = 0; i < to_const_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
-        const std::shared_ptr<Texture>& tex = _attachmentTexture[i];
+        const Texture_ptr& tex = _attachmentTexture[i];
         if (tex != nullptr) {
             setMipLevel(mipMinLevel, mipMaxLevel, writeLevel, static_cast<TextureDescriptor::AttachmentType>(i));
         }
@@ -62,7 +62,7 @@ void Framebuffer::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) 
 
 void Framebuffer::resetMipLevel() {
     for (U32 i = 0; i < to_const_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
-        const std::shared_ptr<Texture>& tex = _attachmentTexture[i];
+        const Texture_ptr& tex = _attachmentTexture[i];
         if (tex != nullptr) {
             resetMipLevel(static_cast<TextureDescriptor::AttachmentType>(i));
         }

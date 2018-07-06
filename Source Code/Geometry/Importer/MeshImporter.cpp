@@ -288,7 +288,7 @@ namespace Import {
     }
 
     /// Load the material for the current SubMesh
-    std::shared_ptr<Material> MeshImporter::loadSubMeshMaterial(const Import::MaterialData& importData, bool skinned) {
+    Material_ptr MeshImporter::loadSubMeshMaterial(const Import::MaterialData& importData, bool skinned) {
         // See if the material already exists in a cooked state (XML file)
         STUBBED("LOADING MATERIALS FROM XML IS DISABLED FOR NOW! - Ionut")
 #if !defined(DEBUG)
@@ -297,7 +297,7 @@ namespace Import {
             const bool DISABLE_MAT_FROM_FILE = true;
 #endif
 
-        std::shared_ptr<Material> tempMaterial;
+        Material_ptr tempMaterial;
         if (!DISABLE_MAT_FROM_FILE) {
             tempMaterial = XML::loadMaterial(importData._name);
             if (tempMaterial) {
@@ -337,7 +337,7 @@ namespace Import {
                 texture.setResourceLocation(tex._texturePath);
                 texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
                 texture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
-                std::shared_ptr<Texture> textureRes = CreateResource<Texture>(texture);
+                Texture_ptr textureRes = CreateResource<Texture>(texture);
                 assert(textureRes != nullptr);
 
                 tempMaterial->setTexture(static_cast<ShaderProgram::TextureUsage>(i), textureRes, tex._operation);
@@ -347,9 +347,9 @@ namespace Import {
         // If we don't have a valid opacity map, try to find out whether the diffuse texture has any non-opaque pixels.
         // If we find a few, use it as opacity texture
         if (!importData._ignoreAlpha && importData._textures[to_const_uint(ShaderProgram::TextureUsage::OPACITY)]._textureName.empty()) {
-            std::shared_ptr<Texture> diffuse = tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0).lock();
+            Texture_ptr diffuse = tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0).lock();
             if (diffuse && diffuse->hasTransparency()) {
-                std::shared_ptr<Texture> textureRes = CreateResource<Texture>(ResourceDescriptor(diffuse->getName()));
+                Texture_ptr textureRes = CreateResource<Texture>(ResourceDescriptor(diffuse->getName()));
                 tempMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, textureRes, Material::TextureOperation::REPLACE);
             }
         }

@@ -53,8 +53,7 @@ the mesh.
 struct aiScene;
 namespace Divide {
 
-class SubMesh;
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SubMesh);
+FWD_DECLARE_MANAGED_CLASS(SubMesh);
 
 class Mesh : public Object3D {
    public:

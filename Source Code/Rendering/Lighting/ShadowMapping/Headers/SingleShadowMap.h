@@ -49,7 +49,7 @@ class SingleShadowMap : public ShadowMap {
     void previewShadowMaps(U32 rowIndex);
 
    private:
-    std::shared_ptr<ShaderProgram> _previewDepthMapShader;
+       ShaderProgram_ptr _previewDepthMapShader;
 };
 
 };  // namespace Divide

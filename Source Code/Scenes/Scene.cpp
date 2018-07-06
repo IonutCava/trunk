@@ -219,7 +219,7 @@ bool Scene::loadGeometry(const FileData& data) {
         return false;
     }
     STUBBED("Load material from XML disabled for primitives! - Ionut")
-    std::shared_ptr<Material> tempMaterial; /* = XML::loadMaterial(data.ItemName + "_material")*/;
+    Material_ptr tempMaterial; /* = XML::loadMaterial(data.ItemName + "_material")*/;
     if (!tempMaterial) {
         ResourceDescriptor materialDescriptor(data.ItemName + "_material");
         tempMaterial = CreateResource<Material>(materialDescriptor);
@@ -604,6 +604,7 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
 
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback,
                                        &GUI::instance(), this));
+
     _loadComplete = true;
     return _loadComplete;
 }
@@ -624,6 +625,17 @@ bool Scene::unload() {
 
 void Scene::postLoad() {
     _sceneGraph->postLoad();
+    Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_START")));
+    initializeAI(true);
+    Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_END")));
+}
+
+void Scene::onSetActive() {
+    AI::AIManager::instance().pauseUpdate(false);
+}
+
+void Scene::onRemoveActive() {
+    AI::AIManager::instance().pauseUpdate(true);
 }
 
 PhysicsSceneInterface* Scene::createPhysicsImplementation() {

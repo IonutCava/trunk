@@ -197,12 +197,16 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     bool mouseButtonReleased(const Input::MouseEvent& arg,
                              Input::MouseButton button);
 
+    bool switchScene(const stringImpl& name, bool unloadPrevious);
+
   protected:
     void initPostLoadState();
     /// Lookup the factory methods table and return the pointer to a newly
     /// constructed scene bound to that name
     Scene* createScene(const stringImpl& name);
     bool   unloadScene(Scene*& scene);
+
+    Scene* findLoadedScene(const stringImpl& name) const;
 
   protected:
     bool frameStarted(const FrameEvent& evt) override;
@@ -222,6 +226,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     /// Pointer to the currently active scene
     Scene* _activeScene;
     std::unique_ptr<Scene> _defaultScene;
+    vectorImpl<Scene*> _loadedScenes;
     /// Pointer to the GUI interface
     GUI* _GUI;
     /// Pointer to the scene graph culler that's used to determine what nodes are
@@ -238,7 +243,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     U32 _elapsedTimeMS;
     U64 _saveTimer;
     std::unique_ptr<Renderer> _renderer;
-    std::shared_ptr<Material> _defaultMaterial;
+    Material_ptr _defaultMaterial;
     RenderPassCuller::VisibleNodeList _reflectiveNodesCache;
     Time::ProfileTimer& _sceneGraphCullTimer;
 END_SINGLETON

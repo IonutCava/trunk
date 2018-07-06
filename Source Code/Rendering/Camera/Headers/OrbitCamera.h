@@ -36,8 +36,7 @@
 
 namespace Divide {
 
-class SceneGraphNode;
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
+FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 /// A camera that always looks at a given target and orbits around it.
 /// It's position / direction can't be changed by user input

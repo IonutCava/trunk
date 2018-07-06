@@ -41,8 +41,9 @@
 /// https://github.com/fenbf/particles/blob/public/particlesCode
 namespace Divide {
 
-class Texture;
 class GenericVertexData;
+
+FWD_DECLARE_MANAGED_CLASS(Texture);
 /// A Particle emitter scene node. Nothing smarter to say, sorry :"> - Ionut
 class ParticleEmitter : public SceneNode {
    public:
@@ -107,9 +108,9 @@ class ParticleEmitter : public SceneNode {
     U64 _lastUpdateTimer;
 
     std::atomic_bool _updating;
-    std::shared_ptr<ShaderProgram> _particleShader;
-    std::shared_ptr<ShaderProgram> _particleDepthShader;
-    std::shared_ptr<Texture> _particleTexture;
+    ShaderProgram_ptr _particleShader;
+    ShaderProgram_ptr _particleDepthShader;
+    Texture_ptr _particleTexture;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(ParticleEmitter);

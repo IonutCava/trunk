@@ -43,8 +43,7 @@ class Shader;
 class ShaderBuffer;
 struct GenericDrawCommand;
 
-class ShaderProgram;
-TYPEDEF_SMART_POINTERS_FOR_CLASS(ShaderProgram);
+FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 class NOINITVTABLE ShaderProgram : public Resource, 
                                    protected GraphicsResource,

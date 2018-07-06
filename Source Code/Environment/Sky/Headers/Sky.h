@@ -36,11 +36,12 @@
 
 namespace Divide {
 
-class Texture;
-class Sphere3D;
-class ShaderProgram;
-class SceneGraphNode;
 class RenderStateBlock;
+
+FWD_DECLARE_MANAGED_CLASS(Texture);
+FWD_DECLARE_MANAGED_CLASS(Sphere3D);
+FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
+FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 enum class RenderStage : U32;
 
@@ -71,10 +72,10 @@ class Sky : public SceneNode {
 
    private:
     U32       _diameter;
-    std::shared_ptr<Texture>  _skybox;
-    std::shared_ptr<Sphere3D> _sky;
-    std::shared_ptr<ShaderProgram> _skyShader;
-    std::shared_ptr<ShaderProgram> _skyShaderPrePass;
+    Texture_ptr  _skybox;
+    Sphere3D_ptr _sky;
+    ShaderProgram_ptr _skyShader;
+    ShaderProgram_ptr _skyShaderPrePass;
     size_t _skyboxRenderStateHash;
     size_t _skyboxRenderStateHashPrePass;
     size_t _skyboxRenderStateReflectedHash;

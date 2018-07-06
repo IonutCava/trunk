@@ -12,7 +12,7 @@ Resource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);
     } else {
-        std::shared_ptr<Material> matTemp = 
+        Material_ptr matTemp = 
             CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName()));
 
         RenderStateBlock dummyDesc(GFX_DEVICE.getRenderStateBlock(matTemp->getRenderStateBlock(RenderStage::DISPLAY)));
@@ -38,7 +38,7 @@ Resource_ptr ImplResourceLoader<ImpostorBox>::operator()() {
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);
     } else {
-        std::shared_ptr<Material> matTemp =
+        Material_ptr matTemp =
             CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName()));
 
         RenderStateBlock dummyDesc(GFX_DEVICE.getRenderStateBlock(matTemp->getRenderStateBlock(RenderStage::DISPLAY)));

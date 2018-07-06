@@ -12,14 +12,10 @@ GUIButton::GUIButton(ULL ID,
                      const stringImpl& guiScheme,
                      const vec2<F32>& relativeOffset,
                      const vec2<F32>& relativeDimensions,
-                     const vec3<F32>& color,
                      CEGUI::Window* parent,
                      ButtonCallback callback)
     : GUIElement(ID, parent, GUIType::GUI_BUTTON),
-      _color(color),
       _callbackFunction(callback),
-      _highlight(false),
-      _pressed(false),
       _btnWindow(nullptr)
 {
     
@@ -29,9 +25,8 @@ GUIButton::GUIButton(ULL ID,
     _btnWindow->setSize(CEGUI::USize(CEGUI::UDim(relativeDimensions.x / 100, 0.0f),
                                      CEGUI::UDim(relativeDimensions.y / 100, 0.0f)));
     _btnWindow->setText(text.c_str());
-    _btnWindow->subscribeEvent(
-        CEGUI::PushButton::EventClicked,
-        CEGUI::Event::Subscriber(&GUIButton::joystickButtonPressed, this));
+    _btnWindow->subscribeEvent(CEGUI::PushButton::EventClicked,
+                               CEGUI::Event::Subscriber(&GUIButton::joystickButtonPressed, this));
     _parent->addChild(_btnWindow);
     _btnWindow->setEnabled(true);
     setActive(true);

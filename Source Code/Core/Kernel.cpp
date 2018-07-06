@@ -27,8 +27,7 @@ LoopTimingData::LoopTimingData() : _updateLoops(0),
                                    _currentTimeDelta(0ULL),
                                    _nextGameTick(0ULL),
                                    _keepAlive(true),
-                                   _freezeLoopTime(false),
-                                   _freezeGUITime(false)
+                                   _freezeLoopTime(false)
 {
 }
 
@@ -94,7 +93,6 @@ void Kernel::idle() {
 
     ParamHandler& par = ParamHandler::instance();
 
-    _timingData._freezeGUITime = par.getParam(_ID("freezeGUITime"), false);
     bool freezeLoopTime = par.getParam(_ID("freezeLoopTime"), false);
     if (freezeLoopTime != _timingData._freezeLoopTime) {
         _timingData._freezeLoopTime = freezeLoopTime;
@@ -150,8 +148,13 @@ void Kernel::onLoop() {
             frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_STARTED, evt);
             _timingData._keepAlive = frameMgr.frameEvent(evt);
 
+            U64 deltaTime = _timingData._freezeLoopTime ? 0UL
+                                                        : Config::USE_FIXED_TIMESTEP
+                                                                    ? Config::SKIP_TICKS
+                                                                    : _timingData._currentTimeDelta;
+
             // Process the current frame
-            _timingData._keepAlive = mainLoopScene(evt) && _timingData._keepAlive;
+            _timingData._keepAlive = mainLoopScene(evt, deltaTime) && _timingData._keepAlive;
 
             // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended
             // event)
@@ -166,7 +169,7 @@ void Kernel::onLoop() {
         _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
 
         _timingData._keepAlive = !_APP.ShutdownRequested() && _timingData._keepAlive;
-
+    
         ErrorCode err = _APP.errorCode();
 
         if (err != ErrorCode::NO_ERR) {
@@ -179,7 +182,8 @@ if (Config::Profile::BENCHMARK_PERFORMANCE ||
     Config::Profile::ENABLE_FUNCTION_PROFILING)
 {
     U32 frameCount = _GFX.getFrameCount();
-    if (frameCount % 5 == 0) {
+    // Should be approximatelly 2 times a seconds
+    if (frameCount % (Config::TARGET_FRAME_RATE / 2) == 0) {
         stringImpl profileData(Util::StringFormat("Scene Update Loops: %d", _timingData._updateLoops));
 
         if (Config::Profile::BENCHMARK_PERFORMANCE) {
@@ -194,7 +198,10 @@ if (Config::Profile::BENCHMARK_PERFORMANCE ||
             profileData.append("\n");
             profileData.append(Time::ProfileTimer::printAll());
         }
-        Console::printfn(profileData.c_str());
+        // Should equate to approximately once every 10 seconds
+        if (frameCount % (Config::TARGET_FRAME_RATE * Time::Seconds(10)) == 0) {
+            Console::printfn(profileData.c_str());
+        }
 
         _GUI.modifyGlobalText(_ID("ProfileData"), profileData);
     }
@@ -209,11 +216,13 @@ if (Config::Profile::BENCHMARK_PERFORMANCE ||
 }
 }
 
-bool Kernel::mainLoopScene(FrameEvent& evt) {
+bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
     Time::ScopedTimer timer(_appScenePass);
 
-    U64 deltaTime = Config::USE_FIXED_TIMESTEP ? Config::SKIP_TICKS 
-                                               : _timingData._currentTimeDelta;
+    // Physics system uses (or should use) its own timestep code
+    U64 physicsTime 
+        =  _timingData._freezeLoopTime ? 0ULL
+                                       : _timingData._currentTimeDelta;
     {
         Time::ScopedTimer timer2(_cameraMgrTimer);
         // Update cameras
@@ -228,8 +237,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
     {
         Time::ScopedTimer timer2(_physicsProcessTimer);
         // Process physics
-        _PFX.process(_timingData._freezeLoopTime ? 0ULL
-                                                : _timingData._currentTimeDelta);
+        _PFX.process(physicsTime);
     }
 
     {
@@ -243,20 +251,16 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
                 _sceneUpdateLoopTimer.start();
             }
 
-            if (!_timingData._freezeGUITime) {
-                _sceneMgr.processGUI(deltaTime);
-            }
+            _sceneMgr.processGUI(deltaTime);
 
-            if (!_timingData._freezeLoopTime) {
-                // Flush any pending threaded callbacks
-                _taskPool.flushCallbackQueue();
-                // Update scene based on input
-                _sceneMgr.processInput(deltaTime);
-                // process all scene events
-                _sceneMgr.processTasks(deltaTime);
-                // Update the scene state based on current time (e.g. animation matrices)
-                _sceneMgr.updateSceneState(deltaTime);
-            }
+            // Flush any pending threaded callbacks
+            _taskPool.flushCallbackQueue();
+            // Update scene based on input
+            _sceneMgr.processInput(deltaTime);
+            // process all scene events
+            _sceneMgr.processTasks(deltaTime);
+            // Update the scene state based on current time (e.g. animation matrices)
+            _sceneMgr.updateSceneState(deltaTime);
 
             if (_timingData._updateLoops == 0) {
                 _sceneUpdateLoopTimer.stop();
@@ -276,14 +280,13 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
 
         }  // while
     }
-    D64 interpolationFactor = static_cast<D64>(_timingData._currentTime + 
-                                               deltaTime -
-                                               _timingData._nextGameTick);
+    D64 interpolationFactor = 1.0;
+    if (Config::USE_FIXED_TIMESTEP && !_timingData._freezeLoopTime) {
+        interpolationFactor = static_cast<D64>(_timingData._currentTime + deltaTime - _timingData._nextGameTick) / deltaTime;
+        assert(interpolationFactor <= 1.0 && interpolationFactor > 0.0);
+    }
 
-    interpolationFactor /= static_cast<D64>(deltaTime);
-    assert(interpolationFactor <= 1.0 && interpolationFactor > 0.0);
-
-    _GFX.setInterpolation(Config::USE_FIXED_TIMESTEP ? interpolationFactor : 1.0);
+    _GFX.setInterpolation(interpolationFactor);
     
     // Get input events
     if (_APP.windowManager().getActiveWindow().hasFocus()) {
@@ -293,20 +296,17 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
     }
     {
         Time::ScopedTimer timer3(_physicsUpdateTimer);
-        // Update physics - uses own timestep implementation
-        _PFX.update(_timingData._freezeLoopTime ? 0ULL
-                                                : _timingData._currentTimeDelta);
-    }
-    // Update the graphical user interface
-    if (!_timingData._freezeGUITime) {
-        _GUI.update(_timingData._freezeGUITime ? 0ULL
-                                               : _timingData._currentTimeDelta);
+        // Update physics
+        _PFX.update(physicsTime);
     }
 
-    return presentToScreen(evt);
+    // Update the graphical user interface
+    _GUI.update(_timingData._currentTimeDelta);
+
+    return presentToScreen(evt, deltaTime);
 }
 
-bool Kernel::presentToScreen(FrameEvent& evt) {
+bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
     Time::ScopedTimer time(_flushToScreenTimer);
     FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
@@ -317,7 +317,7 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
     }
 
     // perform time-sensitive shader tasks
-    if (!ShaderProgram::updateAll(_timingData._currentTimeDelta)){
+    if (!ShaderProgram::updateAll(deltaTime)){
         return false;
     }
 
@@ -338,8 +338,7 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
         return false;
     }
 
-    frameMgr.createEvent(_timingData._currentTime,
-                         FrameEventType::FRAME_POSTRENDER_END, evt);
+    frameMgr.createEvent(_timingData._currentTime,  FrameEventType::FRAME_POSTRENDER_END, evt);
 
     if (!frameMgr.frameEvent(evt)) {
         return false;
@@ -351,35 +350,31 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
 // The first loops compiles all the visible data, so do not render the first couple of frames
 void Kernel::warmup() {
     static const U8 warmupLoopCount = 3;
+    U8 loopCount = 0;
 
     Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
-    _timingData._nextGameTick = Time::ElapsedMicroseconds();
+    _timingData._nextGameTick = Time::ElapsedMicroseconds(true);
     _timingData._keepAlive = true;
 
     ParamHandler& par = ParamHandler::instance();
     bool shadowMappingEnabled = par.getParam<bool>(_ID("rendering.enableShadows"));
-    // Skip two frames, one without and one with shadows, so all resources can
-    // be built while
-    // the splash screen is displayed
-    par.setParam(_ID("freezeGUITime"), true);
     par.setParam(_ID("freezeLoopTime"), true);
     par.setParam(_ID("rendering.enableShadows"), false);
 
-    onLoop();
+    onLoop(); loopCount++;
     if (shadowMappingEnabled) {
         par.setParam(_ID("rendering.enableShadows"), true);
+        onLoop(); loopCount++;
+    }
+
+    for (U8 i = 0; i < std::max(warmupLoopCount - loopCount, 0); ++i) {
         onLoop();
     }
 
-    for (U8 i = 0; i < std::max(warmupLoopCount - 3, 0); ++i) {
-        onLoop();
-    }
-
-    par.setParam(_ID("freezeGUITime"), false);
     par.setParam(_ID("freezeLoopTime"), false);
     Attorney::SceneManagerKernel::initPostLoadState();
 
-    _timingData._currentTime = _timingData._nextGameTick = Time::ElapsedMicroseconds();
+    _timingData._currentTime = _timingData._nextGameTick = Time::ElapsedMicroseconds(true);
 }
 
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
@@ -397,9 +392,11 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
 
-    Console::bindConsoleOutput(
-        DELEGATE_BIND(&GUIConsole::printText, _GUI.getConsole(),
-                      std::placeholders::_1, std::placeholders::_2));
+    Console::bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText,
+                                             _GUI.getConsole(),
+                                             std::placeholders::_1,
+                                             std::placeholders::_2));
+
     _PFX.setAPI(PXDevice::PhysicsAPI::PhysX);
     _SFX.setAPI(SFXDevice::AudioAPI::SDL);
     // Using OpenGL for rendering as default

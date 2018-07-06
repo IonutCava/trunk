@@ -137,6 +137,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\EffectManager.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\EventHandler.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Input\InputAggregatorInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\InputInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\PlatformDefines.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\PlatformDefinesApple.cpp" />

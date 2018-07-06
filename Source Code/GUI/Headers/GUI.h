@@ -54,11 +54,11 @@ const static char* DROID_SERIF_BOLD = "DroidSerif-Bold.ttf";
 
 class GUIConsole;
 class GUIElement;
-class ShaderProgram;
 class RenderStateBlock;
 
-#define CEGUI_DEFAULT_CTX \
-    CEGUI::System::getSingleton().getDefaultGUIContext()
+FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
+
+#define CEGUI_DEFAULT_CTX CEGUI::System::getSingleton().getDefaultGUIContext()
 
 class GUIText;
 class GUIFlash;
@@ -115,14 +115,12 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
                          const stringImpl& text,
                          const vec2<I32>& position,
                          const vec2<U32>& dimensions,
-                         const vec3<F32>& color,
                          ButtonCallback callback,
                          const stringImpl& rootSheetID = "");
     GUIButton* addGlobalButton(ULL ID,
                                const stringImpl& text,
                                const vec2<I32>& position,
                                const vec2<U32>& dimensions,
-                               const vec3<F32>& color,
                                ButtonCallback callback,
                                const stringImpl& rootSheetID = "");
     /// Add a flash element -DEPRECATED-
@@ -218,7 +216,7 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
                               //for performance reasons
     CEGUI::Window* _rootSheet;  //< gui root Window
     stringImpl _defaultGUIScheme;
-    std::shared_ptr<ShaderProgram> _guiShader;  //<Used to apply color for text for now
+    ShaderProgram_ptr _guiShader;  //<Used to apply color for text for now
 
     /// Each scene has its own gui elements! (0 = global)
     I64 _activeSceneGUID;

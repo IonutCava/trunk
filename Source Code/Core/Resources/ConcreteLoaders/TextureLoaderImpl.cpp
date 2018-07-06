@@ -15,7 +15,7 @@ Resource_ptr ImplResourceLoader<Texture>::operator()() {
 
     bool threadedLoad = _descriptor.getThreaded();
 
-    std::shared_ptr<Texture> ptr(GFX_DEVICE.newTexture(_descriptor.getName(),
+    Texture_ptr ptr(GFX_DEVICE.newTexture(_descriptor.getName(),
                                                        _descriptor.getResourceLocation(),
                                                        static_cast<TextureType>(_descriptor.getEnumValue()),
                                                        threadedLoad),

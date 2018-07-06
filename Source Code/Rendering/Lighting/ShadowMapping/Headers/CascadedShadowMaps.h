@@ -42,10 +42,9 @@ class Camera;
 class GFXDevice;
 class ShaderBuffer;
 class ShaderProgram;
-class SceneGraphNode;
 class DirectionalLight;
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
+FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 /// Directional lights can't deliver good quality shadows using a single shadow map.
 /// This technique offers an implementation of the CSM method
@@ -73,8 +72,8 @@ class CascadedShadowMaps : public ShadowMap {
     vec2<F32> _sceneZPlanes;
     vec3<F32> _lightPosition;
     mat4<F32> _viewInvMatrixCache;
-    std::shared_ptr<ShaderProgram> _previewDepthMapShader;
-    std::shared_ptr<ShaderProgram> _blurDepthMapShader;
+    ShaderProgram_ptr _previewDepthMapShader;
+    ShaderProgram_ptr _blurDepthMapShader;
     Framebuffer::FramebufferTarget* _renderPolicy;
     /// Shortcut for the owning directional light
     DirectionalLight* _dirLight;

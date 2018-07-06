@@ -350,7 +350,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     }
 
     // Make the center cylinder reflective
-    const std::shared_ptr<Material>& matInstance = cylinder[0]->getChild(0, temp).get<RenderingComponent>()->getMaterialInstance();
+    const Material_ptr& matInstance = cylinder[0]->getChild(0, temp).get<RenderingComponent>()->getMaterialInstance();
     matInstance->setShininess(200);
 
     std::shared_ptr<SceneNode> cylinderMeshNW = cylinder[1]->getNode();
@@ -458,7 +458,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     flag = _sceneGraph->findNode("flag").lock();
     RenderingComponent* const renderable = flag->getChild(0, temp).get<RenderingComponent>();
     renderable->getMaterialInstance()->setDoubleSided(true);
-    const std::shared_ptr<Material>& mat = flag->getChild(0, temp).getNode()->getMaterialTpl();
+    const Material_ptr& mat = flag->getChild(0, temp).getNode()->getMaterialTpl();
     mat->setDoubleSided(true);
     flag->setActive(false);
     std::shared_ptr<SceneNode> flagNode = flag->getNode();
@@ -688,8 +688,7 @@ bool WarScene::loadResources(bool continueOnErrors) {
 
     _GUI->addButton(_ID("Simulate"), "Simulate",
                     vec2<I32>(resolution.width - 220, 60),
-                    vec2<U32>(100, 25), 
-                    vec3<F32>(0.65f),
+                    vec2<U32>(100, 25),
                     DELEGATE_BIND(&WarScene::startSimulation, this, std::placeholders::_1));
 
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID

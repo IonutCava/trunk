@@ -36,8 +36,9 @@
 
 namespace Divide {
 
-class Material;
 class SceneNode;
+
+FWD_DECLARE_MANAGED_CLASS(Material);
 
 /// This class manages all of the RenderBins and renders them in the correct order
 class RenderQueue {
@@ -68,7 +69,7 @@ class RenderQueue {
 
   private:
     RenderBin* getBinForNode(const std::shared_ptr<SceneNode>& nodeType,
-                             const std::shared_ptr<Material>& matInstance);
+                             const Material_ptr& matInstance);
 
     RenderBin* getOrCreateBin(RenderBinType rbType);
 

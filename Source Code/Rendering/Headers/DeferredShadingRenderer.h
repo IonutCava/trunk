@@ -65,8 +65,8 @@ class DeferredShadingRenderer : public Renderer {
     U16 _cachedLightCount;
     vectorImpl<std::shared_ptr<Quad3D>> _renderQuads;
     Framebuffer* _deferredBuffer;
-    std::shared_ptr<ShaderProgram> _deferredShader;
-    std::shared_ptr<ShaderProgram> _previewDeferredShader;
+    ShaderProgram_ptr _deferredShader;
+    ShaderProgram_ptr _previewDeferredShader;
     PixelBuffer* _lightTexture;
 };
 

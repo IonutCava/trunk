@@ -67,9 +67,9 @@ class PreRenderBatch {
     Framebuffer* _renderTarget;
     Framebuffer* _previousLuminance;
     Framebuffer* _currentLuminance;
-    std::shared_ptr<ShaderProgram> _toneMap;
-    std::shared_ptr<ShaderProgram> _toneMapAdaptive;
-    std::shared_ptr<ShaderProgram> _luminanceCalc;
+    ShaderProgram_ptr _toneMap;
+    ShaderProgram_ptr _toneMapAdaptive;
+    ShaderProgram_ptr _luminanceCalc;
 };
 
 };  // namespace Divide

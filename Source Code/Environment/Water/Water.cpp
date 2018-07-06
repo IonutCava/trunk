@@ -101,7 +101,7 @@ void WaterPlane::setParams(F32 shininess, const vec2<F32>& noiseTile,
 void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,  SceneState& sceneState) {
     if (_paramsDirty) {
         RenderingComponent* rComp = sgn.get<RenderingComponent>();
-        const std::shared_ptr<ShaderProgram>& shader = 
+        const ShaderProgram_ptr& shader =
                 rComp->getMaterialInstance()
                      ->getShaderInfo(RenderStage::DISPLAY)
                      .getProgram();
@@ -139,7 +139,7 @@ bool WaterPlane::getDrawCommands(SceneGraphNode& sgn,
     RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
 
-    const std::shared_ptr<ShaderProgram>& drawShader =
+    const ShaderProgram_ptr& drawShader =
         renderable->getDrawShader(GFX_DEVICE.isDepthStage() ? RenderStage::Z_PRE_PASS : RenderStage::DISPLAY);
 
     drawShader->Uniform("underwater", cameraUnderwater(sgn, sceneRenderState));

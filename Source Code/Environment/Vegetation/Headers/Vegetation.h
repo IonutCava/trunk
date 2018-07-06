@@ -39,18 +39,19 @@
 
 namespace Divide {
 
-class Terrain;
-class Texture;
 class Transform;
 class SceneState;
 class Framebuffer;
 class ShaderBuffer;
 class TerrainChunk;
-class ShaderProgram;
 class SceneGraphNode;
 class RenderStateBlock;
 class GenericVertexData;
 enum class RenderStage : U32;
+
+FWD_DECLARE_MANAGED_CLASS(Texture);
+FWD_DECLARE_MANAGED_CLASS(Terrain);
+FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 struct VegetationDetails {
     U16 billboardCount;
@@ -62,7 +63,7 @@ struct VegetationDetails {
     stringImpl grassShaderName;
     std::shared_ptr<ImageTools::ImageData> map;
     std::weak_ptr<Terrain> parentTerrain;
-    std::shared_ptr<Texture> grassBillboards;
+    Texture_ptr grassBillboards;
 };
 
 /// Generates grass and trees on the terrain.
@@ -119,8 +120,8 @@ class Vegetation : public SceneNode {
     U64 _stateRefreshInterval;
     U64 _stateRefreshIntervalBuffer;
     std::shared_ptr<ImageTools::ImageData> _map;  ///< Dispersion map for vegetation placement
-    std::shared_ptr<Texture> _grassBillboards;
-    std::shared_ptr<ShaderProgram> _cullShader;
+    Texture_ptr _grassBillboards;
+    ShaderProgram_ptr _cullShader;
     stringImpl _grassShaderName;
     bool _shadowMapped;
     size_t  _grassStateBlockHash;

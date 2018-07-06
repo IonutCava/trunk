@@ -151,7 +151,7 @@ Material::TextureOperation getTextureOperation(const stringImpl& operation) {
 }
 
 void saveTextureXML(const stringImpl &textureNode, std::weak_ptr<Texture> texturePtr, ptree &tree, const stringImpl& operation = "") {
-    std::shared_ptr<Texture> texture = texturePtr.lock();
+    Texture_ptr texture = texturePtr.lock();
 
     const SamplerDescriptor &sampler = texture->getCurrentSampler();
     WAIT_FOR_CONDITION(texture->getState() == ResourceState::RES_LOADED);
@@ -170,7 +170,7 @@ void saveTextureXML(const stringImpl &textureNode, std::weak_ptr<Texture> textur
     }
 }
 
-std::shared_ptr<Texture> loadTextureXML(const stringImpl &textureNode,
+Texture_ptr loadTextureXML(const stringImpl &textureNode,
                                         const stringImpl &textureName,
                                         const ptree& pt) {
     stringImpl img_name(textureName.substr(textureName.find_last_of('/') + 1));
@@ -900,7 +900,7 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
     }
 }
 
-std::shared_ptr<Material> loadMaterial(const stringImpl &file) {
+Material_ptr loadMaterial(const stringImpl &file) {
     ParamHandler &par = ParamHandler::instance();
     stringImpl location = par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
                           par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
@@ -910,7 +910,7 @@ std::shared_ptr<Material> loadMaterial(const stringImpl &file) {
     return loadMaterialXML(location + file);
 }
 
-std::shared_ptr<Material> loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
+Material_ptr loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
     stringImpl materialFile(matName);
     if (rendererDependent) {
         materialFile +=
@@ -942,7 +942,7 @@ std::shared_ptr<Material> loadMaterialXML(const stringImpl &matName, bool render
         skip = true;
     }
 
-    std::shared_ptr<Material> mat = CreateResource<Material>(ResourceDescriptor(materialName));
+    Material_ptr mat = CreateResource<Material>(ResourceDescriptor(materialName));
     if (skip) {
         return mat;
     }
@@ -1080,7 +1080,7 @@ void dumpMaterial(Material &mat) {
         saveTextureXML("specularMap", texture, pt_writer);
     }
 
-    std::shared_ptr<ShaderProgram> shaderProg = mat.getShaderInfo().getProgram();
+    ShaderProgram_ptr shaderProg = mat.getShaderInfo().getProgram();
     if (shaderProg) {
         pt_writer.put("shaderProgram.effect", shaderProg->getName());
     }

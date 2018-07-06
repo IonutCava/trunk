@@ -126,22 +126,22 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
     _GUI->addButton(
         _ID("getPing"), "ping me",
         vec2<I32>(60, to_int(resolution.height / 1.1f)),
-        vec2<U32>(100, 25), vec3<F32>(0.6f, 0.6f, 0.6f),
+        vec2<U32>(100, 25),
         DELEGATE_BIND(&NetworkScene::test, this, std::placeholders::_1));
     _GUI->addButton(
         _ID("disconnect"), "disconnect",
         vec2<I32>(180, to_int(resolution.height / 1.1f)),
-        vec2<U32>(100, 25), vec3<F32>(0.5f, 0.5f, 0.5f),
+        vec2<U32>(100, 25),
         DELEGATE_BIND(&NetworkScene::disconnect, this, std::placeholders::_1));
     _GUI->addButton(
         _ID("connect"), "connect",
         vec2<I32>(300, to_int(resolution.height / 1.1f)),
-        vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
+        vec2<U32>(100, 25),
         DELEGATE_BIND(&NetworkScene::connect, this, std::placeholders::_1));
     _GUI->addButton(
         _ID("patch"), "patch",
         vec2<I32>(420, to_int(resolution.height / 1.1f)),
-        vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
+        vec2<U32>(100, 25),
         DELEGATE_BIND(&NetworkScene::checkPatches, this, std::placeholders::_1));
 
     _guiTimers.push_back(0.0f);  // Fps

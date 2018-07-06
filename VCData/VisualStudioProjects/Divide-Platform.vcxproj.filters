@@ -504,6 +504,9 @@
     <ClCompile Include="..\..\Source Code\Libs\Allocator\xallocator.cpp">
       <Filter>Memory\Allocator</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Input\InputAggregatorInterface.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">

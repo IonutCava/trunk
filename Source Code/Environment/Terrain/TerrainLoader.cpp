@@ -155,7 +155,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     }
 
     ResourceDescriptor terrainMaterialDescriptor("terrainMaterial_" + name);
-    std::shared_ptr<Material> terrainMaterial =
+    Material_ptr terrainMaterial =
         CreateResource<Material>(terrainMaterialDescriptor);
 
     terrainMaterial->setDiffuse(
@@ -503,7 +503,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     textureDetailMaps.setID(textureCount);
     textureDetailMaps.setResourceLocation(textureLocation);
     textureDetailMaps.setPropertyDescriptor(grassSampler);
-    std::shared_ptr<Texture> grassBillboardArray = CreateResource<Texture>(textureDetailMaps);
+    Texture_ptr grassBillboardArray = CreateResource<Texture>(textureDetailMaps);
 
     VegetationDetails& vegDetails =
         Attorney::TerrainLoader::vegetationDetails(*terrain);

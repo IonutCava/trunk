@@ -130,6 +130,10 @@ do {                                                \
     typedef std::weak_ptr<const T> T ## _cwptr;  \
     typedef std::shared_ptr<const T> T ## _cptr; 
 
+#define FWD_DECLARE_MANAGED_CLASS(T)      \
+    class T;                              \
+    TYPEDEF_SMART_POINTERS_FOR_CLASS(T);
+
 namespace Divide {
 
 static constexpr ULL basis = 14695981039346656037ULL;

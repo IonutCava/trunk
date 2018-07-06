@@ -47,15 +47,9 @@ enum class Joystick : U32 {
 };
 
 struct JoystickData {
-    JoystickData() : _deadZone(0),
-                     _max(0)
-    {
-    }
-    JoystickData(I32 deadZone, I32 max) 
-        : _deadZone(deadZone),
-          _max(max)
-    {
-    }
+    JoystickData();
+    JoystickData(I32 deadZone, I32 max);
+
     I32 _deadZone;
     I32 _max;
 };
@@ -72,16 +66,11 @@ typedef I8 JoystickButton;
 static const U32 KeyCode_PLACEHOLDER = 0xEE;
 
 struct KeyEvent {
+    KeyEvent();
+
     KeyCode _key;
     bool _pressed;
     U32 _text;
-
-    KeyEvent()
-        : _key(static_cast<KeyCode>(0)),
-          _pressed(false),
-          _text(0)
-    {
-    }
 };
 
 enum class JoystickElementType : U32 {
@@ -94,24 +83,14 @@ enum class JoystickElementType : U32 {
 };
 
 struct JoystickElement {
-    JoystickElement(JoystickElementType elementType)
-        : JoystickElement(elementType, -1)
-    {
-    }
+    JoystickElement(JoystickElementType elementType);
+    JoystickElement(JoystickElementType elementType, I8 data);
 
-    JoystickElement(JoystickElementType elementType, I8 data)
-        : _type(elementType),
-          _data(data)
-    {
-    }
+    bool operator==(const JoystickElement &other) const;
 
     JoystickElementType _type;
     I8 _data; //< e.g. button index
 
-    bool operator==(const JoystickElement &other) const
-    {
-        return (_type == other._type && _data == other._data);
-    }
 };
 
 enum class InputState : U32 {

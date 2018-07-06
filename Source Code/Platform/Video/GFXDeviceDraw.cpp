@@ -375,11 +375,13 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
 
 /// This is just a short-circuit system (hack) to send a list of points to the shader
 /// It's used, mostly, to draw full screen quads using geometry shaders
-void GFXDevice::drawPoints(U32 numPoints, size_t stateHash, const std::shared_ptr<ShaderProgram>& shaderProgram) {
+void GFXDevice::drawPoints(U32 numPoints, size_t stateHash, const ShaderProgram_ptr& shaderProgram) {
+    static const char* msgUnderflow = Locale::get(_ID("ERROR_GFX_POINTS_UNDERFLOW"));
+    static const char* msgOverflow = Locale::get(_ID("ERROR_GFX_POINTS_OVERFLOW"));
     // We need a valid amount of points. Check lower limit
-    DIVIDE_ASSERT(numPoints != 0, Locale::get(_ID("ERROR_GFX_POINTS_UNDERFLOW")));
+    DIVIDE_ASSERT(numPoints != 0, msgUnderflow);
     // Also check upper limit
-    DIVIDE_ASSERT(numPoints <= Config::MAX_POINTS_PER_BATCH, Locale::get(_ID("ERROR_GFX_POINTS_OVERFLOW")));
+    DIVIDE_ASSERT(numPoints <= Config::MAX_POINTS_PER_BATCH, msgOverflow);
 
     // We require a state hash value to set proper states
     _defaultDrawCmd.stateHash(stateHash);
@@ -395,7 +397,7 @@ void GFXDevice::drawPoints(U32 numPoints, size_t stateHash, const std::shared_pt
 
 /// This is just a short-circuit system (hack) to quickly send 3 vertices to the shader
 /// It's used, mostly, to draw full screen quads using vertex shaders
-void GFXDevice::drawTriangle(size_t stateHash, const std::shared_ptr<ShaderProgram>& shaderProgram) {
+void GFXDevice::drawTriangle(size_t stateHash, const ShaderProgram_ptr& shaderProgram) {
     // We require a state hash value to set proper states
     _defaultDrawCmd.stateHash(stateHash);
     // We also require a shader program (although it may already be bound. Better safe ...)

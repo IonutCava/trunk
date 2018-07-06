@@ -76,11 +76,11 @@ void Terrain::buildQuadtree() {
     _boundingBox.set(_terrainQuadtree.computeBoundingBox());
 
 
-    const std::shared_ptr<Material>& mat = getMaterialTpl();
+    const Material_ptr& mat = getMaterialTpl();
     for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
         RenderStage stage = static_cast<RenderStage>(i);
 
-        const std::shared_ptr<ShaderProgram>& drawShader = mat->getShaderInfo(stage).getProgram();
+        const ShaderProgram_ptr& drawShader = mat->getShaderInfo(stage).getProgram();
 
         drawShader->Uniform("bbox_min", _boundingBox.getMin());
         drawShader->Uniform("bbox_extent", _boundingBox.getExtent());

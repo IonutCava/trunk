@@ -64,7 +64,6 @@ struct LoopTimingData {
 
     bool _keepAlive;
     bool _freezeLoopTime;
-    bool _freezeGUITime;
     // both are in ms
     U64 _currentTime;
     U64 _currentTimeFrozen;
@@ -146,8 +145,8 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     ErrorCode initialize(const stringImpl& entryPoint);
     void warmup();
     void shutdown();
-    bool mainLoopScene(FrameEvent& evt);
-    bool presentToScreen(FrameEvent& evt);
+    bool mainLoopScene(FrameEvent& evt, const U64 deltaTime);
+    bool presentToScreen(FrameEvent& evt, const U64 deltaTime);
     bool setCursorPosition(I32 x, I32 y) const;
     /// Update all engine components that depend on the current screen size
     void onChangeWindowSize(U16 w, U16 h);

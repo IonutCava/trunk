@@ -77,7 +77,7 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
 }
 
 RenderBin* RenderQueue::getBinForNode(const std::shared_ptr<SceneNode>& node,
-                                      const std::shared_ptr<Material>& matInstance) {
+                                      const Material_ptr& matInstance) {
     assert(node != nullptr);
     switch (node->getType()) {
         case SceneNodeType::TYPE_LIGHT: {
@@ -114,7 +114,7 @@ RenderBin* RenderQueue::getBinForNode(const std::shared_ptr<SceneNode>& node,
 }
 
 void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStage stage, const vec3<F32>& eyePos) {
-    static std::shared_ptr<Material> defaultMat;
+    static Material_ptr defaultMat;
 
     RenderingComponent* const renderingCmp = sgn.get<RenderingComponent>();
     RenderBin* rb = getBinForNode(sgn.getNode(),

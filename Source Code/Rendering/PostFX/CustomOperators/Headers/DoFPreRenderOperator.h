@@ -46,7 +46,7 @@ class DoFPreRenderOperator : public PreRenderOperator {
     void reshape(U16 width, U16 height) override;
 
    private:
-    std::shared_ptr<ShaderProgram> _dofShader;
+       ShaderProgram_ptr _dofShader;
 };
 
 };  // namespace Divide

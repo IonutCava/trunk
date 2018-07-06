@@ -153,8 +153,8 @@ class LightPool {
     std::array<bool, to_const_uint(LightType::COUNT)> _lightTypeState;
     std::array<Light::LightList, to_const_uint(LightType::COUNT)> _lights;
     bool _init;
-    std::shared_ptr<Texture> _lightIconsTexture;
-    std::shared_ptr<ShaderProgram> _lightImpostorShader;
+    Texture_ptr _lightIconsTexture;
+    ShaderProgram_ptr _lightImpostorShader;
     std::array<U32, to_const_uint(LightType::COUNT)> _activeLightCount;
 
     std::array<ShaderBuffer*, to_const_uint(ShaderBufferType::COUNT)>  _lightShaderBuffer;

@@ -16,7 +16,7 @@ namespace {
     const F32 g_MaterialShininessThresholdForReflection = 127.0f;
 };
 
-RenderingComponent::RenderingComponent(std::shared_ptr<Material> materialInstance,
+RenderingComponent::RenderingComponent(Material_ptr materialInstance,
                                        SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::ComponentType::RENDERING, parentSGN),
       _lodLevel(0),
@@ -122,7 +122,7 @@ RenderingComponent::~RenderingComponent()
 }
 
 void RenderingComponent::update(const U64 deltaTime) {
-    const std::shared_ptr<Material>& mat = getMaterialInstance();
+    const Material_ptr& mat = getMaterialInstance();
     if (mat) {
         mat->update(deltaTime);
     }
@@ -145,7 +145,7 @@ bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
                                  RenderStage renderStage) {
     bool canDraw = _parentSGN.getNode()->getDrawState(renderStage);
     if (canDraw) {
-        const std::shared_ptr<Material>& mat = getMaterialInstance();
+        const Material_ptr& mat = getMaterialInstance();
         if (mat) {
             if (!mat->canDraw(renderStage)) {
                 return false;
@@ -189,7 +189,7 @@ bool RenderingComponent::onRender(RenderStage currentStage) {
     GFXDevice::RenderPackage& pkg = _renderData[to_uint(currentStage)];
 
     pkg._textureData.resize(0);
-    const std::shared_ptr<Material>& mat = getMaterialInstance();
+    const Material_ptr& mat = getMaterialInstance();
     if (mat) {
         mat->getTextureData(pkg._textureData);
     }
@@ -318,7 +318,7 @@ bool RenderingComponent::receivesShadows() const {
 void RenderingComponent::getMaterialColorMatrix(mat4<F32>& matOut) const {
     matOut.zero();
 
-    const std::shared_ptr<Material>& mat = getMaterialInstance();
+    const Material_ptr& mat = getMaterialInstance();
     if (mat) {
         mat->getMaterialMatrix(matOut);
     }
@@ -481,7 +481,7 @@ void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
     }
 }
 
-std::shared_ptr<ShaderProgram> RenderingComponent::getDrawShader(RenderStage renderStage) {
+ShaderProgram_ptr RenderingComponent::getDrawShader(RenderStage renderStage) {
     return (getMaterialInstance()
                 ? _materialInstance->getShaderInfo(renderStage).getProgram()
                 : nullptr);
@@ -587,7 +587,7 @@ void RenderingComponent::setActive(const bool state) {
 
 bool RenderingComponent::clearReflection() {
     // If we lake a material, we don't use reflections
-    const std::shared_ptr<Material>& mat = getMaterialInstance();
+    const Material_ptr& mat = getMaterialInstance();
     if (mat == nullptr) {
         return false;
     }
@@ -609,7 +609,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
         return false;
     }
     // If we lake a material, we don't use reflections
-    const std::shared_ptr<Material>& mat = getMaterialInstance();
+    const Material_ptr& mat = getMaterialInstance();
     if (mat == nullptr) {
         return false;
     }
@@ -637,7 +637,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
 }
 
 bool RenderingComponent::clearRefraction() {
-    const std::shared_ptr<Material>& mat = getMaterialInstance();
+    const Material_ptr& mat = getMaterialInstance();
     if (mat == nullptr) {
         return false;
     }
@@ -659,7 +659,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
     if (_lodLevel > 1) {
         return false;
     }
-    const std::shared_ptr<Material>& mat = getMaterialInstance();
+    const Material_ptr& mat = getMaterialInstance();
     if (mat == nullptr) {
         return false;
     }

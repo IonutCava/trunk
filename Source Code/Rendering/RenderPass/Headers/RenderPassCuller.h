@@ -42,9 +42,8 @@ class SceneRenderState;
 
 class Camera;
 class SceneGraph;
-class SceneGraphNode;
 
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
+FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 class RenderPassCuller {
    public:

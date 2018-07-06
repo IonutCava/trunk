@@ -103,7 +103,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     _grassStateBlockHash = transparentRenderState.getHash();
 
     ResourceDescriptor vegetationMaterial("vegetationMaterial" + getName());
-    std::shared_ptr<Material> vegMaterial = CreateResource<Material>(vegetationMaterial);
+    Material_ptr vegMaterial = CreateResource<Material>(vegetationMaterial);
 
     vegMaterial->setDiffuse(DefaultColors::WHITE());
     vegMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
@@ -212,9 +212,9 @@ void Vegetation::uploadGrassData() {
         }
     }
 
-    const std::shared_ptr<Material>& mat = getMaterialTpl();
+    const Material_ptr& mat = getMaterialTpl();
     for (U8 i = 0; i < 3; ++i) {
-        const std::shared_ptr<ShaderProgram>& shaderProg =
+        const ShaderProgram_ptr& shaderProg =
             mat->getShaderInfo(i == 0
                                    ? RenderStage::DISPLAY
                                    : (i == 1 ? RenderStage::SHADOW
@@ -292,8 +292,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
                 _windX = sceneState.windDirX();
                 _windZ = sceneState.windDirZ();
                 _windS = sceneState.windSpeed();
-                const std::shared_ptr<Material>& mat =
-                    sgn.get<RenderingComponent>()->getMaterialInstance();
+                const Material_ptr& mat = sgn.get<RenderingComponent>()->getMaterialInstance();
                 for (U8 i = 0; i < 3; ++i) {
                     RenderStage stage =
                         (i == 0 ? RenderStage::DISPLAY

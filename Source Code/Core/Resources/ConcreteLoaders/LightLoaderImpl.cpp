@@ -13,7 +13,7 @@ Resource_ptr ImplResourceLoader<Light>::operator()() {
     void* userPtr = _descriptor.getUserPtr();
     assert(userPtr != nullptr && "ImplResourceLoader error : No target light pool specified!");
 
-    LightPool& pool = *static_cast<LightPool*>(_descriptor.getUserPtr());
+    LightPool& pool = *static_cast<LightPool*>(userPtr);
 
     std::shared_ptr<Light> ptr;
     // descriptor ID is not the same as light ID. This is the light's slot!!

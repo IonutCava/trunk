@@ -24,12 +24,11 @@ Resource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
         resourceLocation = _descriptor.getResourceLocation();
     }
 
-    std::shared_ptr<ShaderProgram> ptr;
-    ptr.reset(GFX_DEVICE.newShaderProgram(_descriptor.getName(),
+    ShaderProgram_ptr ptr(GFX_DEVICE.newShaderProgram(_descriptor.getName(),
                                           resourceLocation,
                                           USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded()
                                                                    : false),
-              DeleteResource());
+                          DeleteResource());
 
 
 

@@ -412,7 +412,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     GUIElement* btn = _GUI->addButton(
         _ID("Serve"), "Serve",
         vec2<I32>(resolution.width - 220, 60),
-        vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
+        vec2<U32>(100, 25),
         DELEGATE_BIND(&TenisScene::startGame, this, std::placeholders::_1));
     btn->setTooltip("Start a new game!");
 

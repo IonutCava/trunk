@@ -77,7 +77,7 @@ bool SceneNode::getDrawState(RenderStage currentStage) {
     return _renderState.getDrawState(currentStage);
 }
 
-const std::shared_ptr<Material>& SceneNode::getMaterialTpl() {
+const Material_ptr& SceneNode::getMaterialTpl() {
     // UpgradableReadLock ur_lock(_materialLock);
     if (_materialTemplate == nullptr && _renderState.useDefaultMaterial()) {
         // UpgradeToWriteLock uw_lock(ur_lock);
@@ -87,7 +87,7 @@ const std::shared_ptr<Material>& SceneNode::getMaterialTpl() {
     return _materialTemplate;
 }
 
-void SceneNode::setMaterialTpl(std::shared_ptr<Material> material) {
+void SceneNode::setMaterialTpl(Material_ptr material) {
     if (material) {  // If we need to update the material
         // UpgradableReadLock ur_lock(_materialLock);
 

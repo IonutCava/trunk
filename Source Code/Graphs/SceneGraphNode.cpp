@@ -69,7 +69,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
     
     if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::RENDERING))) {
 
-        const std::shared_ptr<Material>& materialTpl = _node->getMaterialTpl();
+        const Material_ptr& materialTpl = _node->getMaterialTpl();
         setComponent(SGNComponent::ComponentType::RENDERING, 
                      new RenderingComponent(materialTpl ? materialTpl->clone("_instance_" + name) 
                                                         : nullptr,

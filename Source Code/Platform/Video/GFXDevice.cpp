@@ -115,8 +115,8 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap,
                                 RenderStage renderStage) {
     // Only the first color attachment or the depth attachment is used for now
     // and it must be a cube map texture
-    const std::shared_ptr<Texture>& colorAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Color0, false);
-    const std::shared_ptr<Texture>& depthAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
+    const Texture_ptr& colorAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Color0, false);
+    const Texture_ptr& depthAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
     // Color attachment takes precedent over depth attachment
     bool hasColor = (colorAttachment != nullptr);
     bool hasDepth = (depthAttachment != nullptr);
@@ -186,8 +186,8 @@ void GFXDevice::generateDualParaboloidMap(Framebuffer& targetBuffer,
                                           const vec2<F32>& zPlanes,
                                           RenderStage renderStage)
 {
-    const std::shared_ptr<Texture>& colorAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Color0, false);
-    const std::shared_ptr<Texture>& depthAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
+    const Texture_ptr& colorAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Color0, false);
+    const Texture_ptr& depthAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
     // Color attachment takes precedent over depth attachment
     bool hasColor = (colorAttachment != nullptr);
     bool hasDepth = (depthAttachment != nullptr);

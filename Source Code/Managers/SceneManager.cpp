@@ -73,6 +73,10 @@ SceneManager::~SceneManager()
         _defaultScene.reset(nullptr);
     }
 
+    for (Scene* scene : _loadedScenes) {
+        unloadScene(scene);
+    }
+
     _sceneShaderData->destroy();
     AI::AIManager::destroyInstance();
     UNREGISTER_FRAME_LISTENER(&(this->instance()));
@@ -104,19 +108,38 @@ bool SceneManager::init(GUI* const gui) {
     _sceneData.shadowingSettings(0.0000002f, 0.0002f, 150.0f, 250.0f);
 
     _defaultScene.reset(new DefaultScene());
+
     _init = true;
     return true;
 }
 
+Scene* SceneManager::findLoadedScene(const stringImpl& name) const {
+    for (Scene* scene : _loadedScenes) {
+        if (scene->getName().compare(name) == 0) {
+            return scene;
+        }
+    }
+
+    return nullptr;
+}
+
 Scene* SceneManager::load(stringImpl sceneName) {
     bool loadDefaultScene = sceneName.empty();
-
-    Scene* loadingScene = _defaultScene.get();
-    if (loadDefaultScene) {
-        sceneName = "defaultScene";
-    } else {
-        loadingScene = createScene(sceneName);
+    if (sceneName.empty()) {
+        sceneName = "DefaultScene";
     }
+
+    Scene* loadingScene = findLoadedScene(sceneName);
+
+    bool isAlreadyLoaded = loadingScene != nullptr;
+    if (!isAlreadyLoaded) {
+        if (loadDefaultScene) {
+            loadingScene = _defaultScene.get();
+        } else {
+            loadingScene = createScene(sceneName);
+        }
+    }
+    
 
     I64 guiSceneCache = _GUI->activeSceneGUID();
 
@@ -128,24 +151,36 @@ Scene* SceneManager::load(stringImpl sceneName) {
         _GUI->onChangeScene(loadingScene->getGUID());
     }
 
-    if (!loadDefaultScene) {
-        XML::loadScene(sceneName, loadingScene);
+    bool state = true;
+    if (!isAlreadyLoaded) {
+        if (!loadDefaultScene) {
+            XML::loadScene(sceneName, loadingScene);
+        }
+
+        state = Attorney::SceneManager::load(*loadingScene, sceneName, _GUI);
     }
 
-    bool state = Attorney::SceneManager::load(*loadingScene, sceneName, _GUI);
     if (state && !loadDefaultScene) {
         state = LoadSave::loadScene(*loadingScene);
     }
-    if (state) {
+
+    if (state && !isAlreadyLoaded) {
         Attorney::SceneManager::postLoad(*loadingScene);
     }
 
-    Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_START")));
-    state = Attorney::SceneManager::initializeAI(*loadingScene, true);
-    Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_END")));
-
     if (!state) {
         _GUI->onChangeScene(guiSceneCache);
+    } else {
+        if (!loadDefaultScene) {
+            _GUI->addButton(_ID_RT("Back"),
+                            "Back",
+                            vec2<I32>(15, 15),
+                            vec2<U32>(50, 25),
+                            [this](I64 btnGUID)
+                            {
+                                load("");
+                            });
+        }
     }
 
     return state ? loadingScene : nullptr;
@@ -153,6 +188,7 @@ Scene* SceneManager::load(stringImpl sceneName) {
 
 bool SceneManager::unloadScene(Scene*& scene) {
     assert(scene != nullptr);
+    I64 targetGUID = scene->getGUID();
 
     AI::AIManager::instance().pauseUpdate(true);
 
@@ -172,6 +208,12 @@ bool SceneManager::unloadScene(Scene*& scene) {
         } else {
             _defaultScene.reset(nullptr);
         }
+
+        _loadedScenes.erase(
+            std::remove_if(std::begin(_loadedScenes), std::end(_loadedScenes),
+                [&targetGUID](Scene* scene)
+                -> bool { return scene->getGUID() == targetGUID; }),
+            std::end(_loadedScenes));
     }
     return state;
 }
@@ -181,9 +223,21 @@ bool SceneManager::unloadCurrentScene() {
 }
 
 void SceneManager::setActiveScene(Scene& scene) {
+    if (_activeScene) {
+        Attorney::SceneManager::onRemoveActive(*_activeScene);
+    }
+    Attorney::SceneManager::onSetActive(scene);
     _activeScene = &scene;
     _GUI->onChangeScene(scene.getGUID());
     ParamHandler::instance().setParam(_ID("activeScene"), scene.getName());
+}
+
+bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious) {
+    if (unloadPrevious) {
+        unloadScene(_activeScene);
+    }
+    SceneManager::instance().setActiveScene(*load(name));
+    return true;
 }
 
 vectorImpl<stringImpl> SceneManager::sceneNameList() const {

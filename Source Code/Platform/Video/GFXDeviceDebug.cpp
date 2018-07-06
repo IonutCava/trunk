@@ -37,7 +37,7 @@ void GFXDevice::previewDepthBuffer() {
     }
 
     U16 screenWidth = std::max(_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getResolution().width, to_const_ushort(768));
-    std::shared_ptr<Texture> depthTex = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
+    Texture_ptr depthTex = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
     depthTex->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
     {
         //HiZ preview

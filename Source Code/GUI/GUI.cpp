@@ -413,7 +413,6 @@ GUIButton* GUI::addGlobalButton(ULL ID,
                                 const stringImpl& text,
                                 const vec2<I32>& position,
                                 const vec2<U32>& dimensions,
-                                const vec3<F32>& color,
                                 ButtonCallback callback,
                                 const stringImpl& rootSheetID) {
     vec2<F32> relOffset((position.x * 100.0f) / _resolutionCache.width,
@@ -430,7 +429,7 @@ GUIButton* GUI::addGlobalButton(ULL ID,
         parent = _rootSheet;
     }
 
-    GUIButton* btn = MemoryManager_NEW GUIButton(ID, text, _defaultGUIScheme, relOffset, relDim, color, parent, callback);
+    GUIButton* btn = MemoryManager_NEW GUIButton(ID, text, _defaultGUIScheme, relOffset, relDim, parent, callback);
 
     addElement(ID, 0, btn);
 
@@ -441,7 +440,6 @@ GUIButton* GUI::addButton(ULL ID,
                           const stringImpl& text,
                           const vec2<I32>& position,
                           const vec2<U32>& dimensions,
-                          const vec3<F32>& color,
                           ButtonCallback callback,
                           const stringImpl& rootSheetID) {
     vec2<F32> relOffset((position.x * 100.0f) / _resolutionCache.width,
@@ -458,7 +456,7 @@ GUIButton* GUI::addButton(ULL ID,
         parent = _rootSheet;
     }
 
-    GUIButton* btn = MemoryManager_NEW GUIButton(ID, text, _defaultGUIScheme, relOffset, relDim, color, parent, callback);
+    GUIButton* btn = MemoryManager_NEW GUIButton(ID, text, _defaultGUIScheme, relOffset, relDim, parent, callback);
 
     addElement(ID, _activeSceneGUID, btn);
 

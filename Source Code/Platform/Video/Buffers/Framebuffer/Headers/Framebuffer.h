@@ -37,7 +37,8 @@
 
 namespace Divide {
 
-class Texture;
+FWD_DECLARE_MANAGED_CLASS(Texture);
+
 class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper {
    public:
     struct FramebufferTarget {
@@ -72,13 +73,13 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
         return _attachment[to_uint(slot)];
     }
 
-    virtual const std::shared_ptr<Texture>& getAttachment(
+    virtual const Texture_ptr& getAttachment(
         TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0,
         bool flushStateOnRequest = true);
 
     void addAttachment(const TextureDescriptor& descriptor, TextureDescriptor::AttachmentType type);
 
-    void addAttachment(const std::shared_ptr<Texture>& texture, TextureDescriptor::AttachmentType type);
+    void addAttachment(const Texture_ptr& texture, TextureDescriptor::AttachmentType type);
 
     /// If the FB is not initialized, it gets created, otherwise
     /// the attachements get resized.
@@ -186,7 +187,7 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
     F32 _depthValue;
     std::array<vec4<F32>, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _clearColors;
     std::array<TextureDescriptor, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachment;
-    std::array<std::shared_ptr<Texture>, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachmentTexture;
+    std::array<Texture_ptr, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachmentTexture;
     std::array<bool, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachmentChanged;
 };
 

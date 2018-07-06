@@ -34,14 +34,13 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include "Core/TemplateLibraries/Headers/String.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 
 class Scene;
-class Texture;
-class Material;
-class Scene;
+
+FWD_DECLARE_MANAGED_CLASS(Material);
 
 namespace XML {
 /// Parent Function
@@ -53,10 +52,10 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene);
 void loadScene(const stringImpl& sceneName, Scene* scene);
 void loadGeometry(const stringImpl& file, Scene* const scene);
 void loadTerrain(const stringImpl& file, Scene* const scene);
-std::shared_ptr<Material> loadMaterial(const stringImpl& file);
+Material_ptr loadMaterial(const stringImpl& file);
 void dumpMaterial(Material& mat);
 
-std::shared_ptr<Material> loadMaterialXML(const stringImpl& location, bool rendererDependent = true);
+Material_ptr loadMaterialXML(const stringImpl& location, bool rendererDependent = true);
 };  // namespace XML
 };  // namespace Divide
 

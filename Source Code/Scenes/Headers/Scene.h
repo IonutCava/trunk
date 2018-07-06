@@ -157,6 +157,8 @@ class Scene : public Resource {
     }
 
    protected:
+    void onSetActive();
+    void onRemoveActive();
     // returns the first available action ID
     virtual U16 registerInputActions();
     virtual void loadKeyBindings();
@@ -289,9 +291,7 @@ class SceneManager {
         return scene.updateCameraControls();
     }
     static bool checkLoadFlag(Scene& scene) { return scene.checkLoadFlag(); }
-    static bool initializeAI(Scene& scene, bool continueOnErrors) {
-        return scene.initializeAI(continueOnErrors);
-    }
+
     static bool deinitializeAI(Scene& scene) {
         return scene.deinitializeAI(true);
     }
@@ -302,10 +302,20 @@ class SceneManager {
                      GUI* const guiInterface) {
         return scene.load(name, guiInterface);
     }
-    static bool unload(Scene& scene) { return scene.unload(); }
+    static bool unload(Scene& scene) { 
+        return scene.unload();
+    }
 
     static void postLoad(Scene& scene) {
         scene.postLoad();
+    }
+
+    static void onSetActive(Scene& scene) {
+        scene.onSetActive();
+    }
+
+    static void onRemoveActive(Scene& scene) {
+        scene.onRemoveActive();
     }
 
     static bool initStaticData() {

@@ -95,8 +95,7 @@ void CameraManager::setActiveCamera(Camera* cam) {
 
 void CameraManager::addNewCamera(Camera* const camera) {
     if (camera == nullptr) {
-        Console::errorfn(Locale::get(_ID("ERROR_CAMERA_MANAGER_CREATION")),
-                         camera->getName().c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_CAMERA_MANAGER_CREATION")));
         return;
     }
 

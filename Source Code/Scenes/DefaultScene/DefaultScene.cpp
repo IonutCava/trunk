@@ -44,6 +44,8 @@ bool DefaultScene::loadResources(bool continueOnErrors) {
     const I32 windowCenterY = to_int(resolution.height * 0.5f);
     const I32 btnStartXOffset = to_int(windowCenterX - numColumns * 0.5f * btnWidth);
     const I32 btnStartYOffset = to_int(windowCenterY - numRows * 0.5f * btnHeight);
+    const I32 quitButtonWidth = 100;
+    const I32 quitButtonHeight = 100;
 
     size_t i = 0, j = 0;
     for (const stringImpl& scene : scenes) {
@@ -54,7 +56,6 @@ bool DefaultScene::loadResources(bool continueOnErrors) {
                                           vec2<I32>(btnStartXOffset + localOffsetX ,
                                                     btnStartYOffset + localOffsetY),
                                           vec2<U32>(btnWidth, btnHeight),
-                                          vec3<F32>(0.6f, 0.6f, 0.6f),
                                           DELEGATE_BIND(&DefaultScene::loadScene, this, std::placeholders::_1));
 
         _buttonToSceneMap[btn->getGUID()] = scene;
@@ -64,6 +65,10 @@ bool DefaultScene::loadResources(bool continueOnErrors) {
         }
     }
 
+    _GUI->addButton(_ID_RT("Quit"), "Quit",
+                    vec2<I32>(resolution.width - quitButtonWidth * 1.5f, resolution.height - quitButtonHeight * 1.5f),
+                    vec2<U32>(quitButtonWidth, quitButtonHeight),
+                    [](I64 btnGUID) {Application::instance().RequestShutdown();});
 
     _GUI->addText(_ID("globalMessage"),
                   vec2<I32>(windowCenterX,
@@ -81,8 +86,7 @@ void DefaultScene::processInput(const U64 deltaTime) {
     if (!_sceneToLoad.empty()) {
         _GUI->modifyText(_ID("globalMessage"),
                          Util::StringFormat("Please wait while scene [ %s ] is loading", _sceneToLoad.c_str()));
-        Scene* newScene = SceneManager::instance().load(_sceneToLoad);
-        SceneManager::instance().setActiveScene(*newScene);
+        SceneManager::instance().switchScene(_sceneToLoad, false);
         _sceneToLoad = "";
     }
 }
@@ -92,7 +96,7 @@ void DefaultScene::processTasks(const U64 deltaTime) {
 
     D64 SpinTimer = Time::Milliseconds(16);
     if (_taskTimers[0] >= SpinTimer) {
-        angle += 0.0125f;
+        angle += 0.025f;
         if (angle >= 360.0f) {
             angle = 0.0f;
         }

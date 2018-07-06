@@ -7,7 +7,7 @@ namespace Divide {
 
 template<>
 Resource_ptr ImplResourceLoader<Material>::operator()() {
-    std::shared_ptr<Material> ptr(MemoryManager_NEW Material(_descriptor.getName()), DeleteResource());
+    Material_ptr ptr(MemoryManager_NEW Material(_descriptor.getName()), DeleteResource());
     assert(ptr != nullptr);
 
     if (!load(ptr)) {

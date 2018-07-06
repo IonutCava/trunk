@@ -41,7 +41,16 @@
 
 namespace Divide {
 class Scene;
-class Material;
+class Camera;
+class SceneState;
+class SceneRenderState;
+enum class RenderStage : U32;
+
+FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
+FWD_DECLARE_MANAGED_CLASS(Material);
+namespace Attorney {
+    class SceneNodeSceneGraph;
+};
 
 enum class SceneNodeType : U32 {
     TYPE_ROOT = toBit(1),       //< root node
@@ -54,21 +63,8 @@ enum class SceneNodeType : U32 {
     TYPE_SKY = toBit(8),                //< sky node
     TYPE_VEGETATION_GRASS = toBit(9),   //< grass node
     TYPE_VEGETATION_TREES = toBit(10),  //< trees node (to do later)
-    /// Place types above
-    COUNT
-};
-
-class Camera;
-class SceneState;
-class SceneRenderState;
-class ShaderProgram;
-class SceneGraphNode;
-enum class RenderStage : U32;
-
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
-
-namespace Attorney {
-    class SceneNodeSceneGraph;
+                                        /// Place types above
+                                        COUNT
 };
 
 class NOINITVTABLE SceneNode : public Resource {
@@ -121,8 +117,8 @@ class NOINITVTABLE SceneNode : public Resource {
     /*//Rendering/Processing*/
 
     virtual bool unload();
-    virtual void setMaterialTpl(std::shared_ptr<Material> material);
-    const std::shared_ptr<Material>& getMaterialTpl();
+    virtual void setMaterialTpl(Material_ptr material);
+    const Material_ptr& getMaterialTpl();
 
     virtual void postRender(SceneGraphNode& sgn) const;
 
@@ -173,7 +169,7 @@ class NOINITVTABLE SceneNode : public Resource {
 
    private:
     SceneNodeType _type;
-    std::shared_ptr<Material> _materialTemplate;
+    Material_ptr _materialTemplate;
 
     vectorImpl<SGNParentData> _sgnParents;
     

@@ -69,7 +69,9 @@
 #include "NavMeshContext.h"
 
 namespace Divide {
-class SceneGraphNode;
+
+FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
+
 namespace AI {
 namespace Navigation {
 
@@ -95,8 +97,6 @@ struct NavMeshTileHeader {
 /// generated.
 class NavMeshDebugDraw;
 class DivideDtCrowd;
-
-TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
 
 namespace Attorney {
     class NavigationMeshCrowd;

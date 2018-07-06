@@ -60,7 +60,6 @@ class GUIButton : public GUIElement {
               const stringImpl& guiScheme, 
               const vec2<F32>& relativeOffset,
               const vec2<F32>& relativeDimensions,
-              const vec3<F32>& color,
               CEGUI::Window* parent,
               ButtonCallback callback);
     ~GUIButton();
@@ -68,10 +67,7 @@ class GUIButton : public GUIElement {
     void draw() const;
     bool joystickButtonPressed(const CEGUI::EventArgs& /*e*/);
 
-   protected:
-    vec3<F32> _color;
-    bool _pressed;
-    bool _highlight;
+   protected:;
     /// A pointer to a function to call if the button is pressed
     ButtonCallback _callbackFunction;
     CEGUI::Window* _btnWindow;
