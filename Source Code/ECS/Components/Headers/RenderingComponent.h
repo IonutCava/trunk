@@ -175,8 +175,6 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
 
     void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass);
 
-    void setDrawIDs(RenderStagePass renderStagePass, U32 cmdOffset, U32 cmdIndex);
-
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
     // and saves it in the appropriate material slot
     bool updateReflection(U32 reflectionIndex, 
@@ -202,8 +200,6 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
 
     /// LOD level is updated at every visibility check
     U8  _lodLevel;  ///<Relative to camera distance
-    std::array<U32, to_base(RenderStage::COUNT)> _commandIndex;
-    std::array<U32, to_base(RenderStage::COUNT)> _commandOffset;
     U32 _renderMask;
     TextureDataContainer _textureDependencies;
     std::array<std::unique_ptr<RenderPackage>, to_base(RenderStage::COUNT)> _renderData[to_base(RenderPassType::COUNT)];
@@ -278,16 +274,9 @@ class RenderingCompRenderPass {
             renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass);
         }
 
-        static void setDrawIDs(RenderingComponent& renderable, 
-                               RenderStagePass renderStagePass,
-                               U32 cmdOffset,
-                               U32 cmdIndex)
-        {
-            renderable.setDrawIDs(renderStagePass, cmdOffset, cmdIndex);
-        }
 
-        static const RenderPackage& getDrawPackage(RenderingComponent& renderable,
-                                                   RenderStagePass renderStagePass) {
+        static RenderPackage& getDrawPackage(RenderingComponent& renderable,
+                                             RenderStagePass renderStagePass) {
             return renderable.getDrawPackage(renderStagePass);
         }
 

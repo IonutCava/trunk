@@ -211,12 +211,12 @@ void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     }
 }
 
-void RenderPackage::setDrawIDs(U32 cmdOffset, U32 cmdIndex) {
+void RenderPackage::updateDrawCommands(U32 cmdIndex, vectorEASTL<IndirectDrawCommand>& drawCmdsInOut) {
     bool dirty = false;
     for (I32 cmdIdx = 0; cmdIdx < drawCommandCount(); ++cmdIdx) {
         GFX::DrawCommand& cmd = drawCommand(cmdIdx);
         for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
-            U32 newOffset = cmdOffset++;
+            U32 newOffset = to_U32(drawCmdsInOut.size());
             if (drawCmd._commandOffset != newOffset) {
                 drawCmd._commandOffset = newOffset;
                 dirty = true;
@@ -226,6 +226,10 @@ void RenderPackage::setDrawIDs(U32 cmdOffset, U32 cmdIndex) {
                 dirty = true;
             }
             setOption(drawCmd, CmdRenderOptions::RENDER_INDIRECT, true);
+
+            for (U32 i = 0; i < drawCmd._drawCount; ++i) {
+                drawCmdsInOut.push_back(drawCmd._cmd);
+            }
         }
     }
 

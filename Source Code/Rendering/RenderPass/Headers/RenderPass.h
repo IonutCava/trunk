@@ -58,7 +58,6 @@ class RenderPass : private NonCopyable {
            ShaderBuffer* _renderData;
            ShaderBuffer* _cmdBuffer;
            U32 _lastCommandCount;
-           U32 _lasNodeCount;
        };
    protected:
 

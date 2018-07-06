@@ -36,8 +36,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
 {
-    _commandIndex.fill(0);
-    _commandOffset.fill(0);
     toggleRenderOption(RenderOptions::RENDER_GEOMETRY, true);
     toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
     toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, true);
@@ -485,17 +483,6 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass re
     }
 }
 
-void RenderingComponent::setDrawIDs(RenderStagePass renderStagePass,
-                                    U32 cmdOffset,
-                                    U32 cmdIndex) {
-
-    _commandOffset[to_base(renderStagePass._stage)] = cmdOffset;
-    _commandIndex[to_base(renderStagePass._stage)] = cmdIndex;
-    
-    std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
-    Attorney::RenderPackageRenderingComponent::setDrawIDs(*pkg, cmdOffset, cmdIndex);
-}
-
 void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass) {
     std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
     pkg->isRenderable(false);
@@ -526,12 +513,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
                     drawCmd._lodIndex = _lodLevel;
                 }
             }
-            pkg->isRenderable(pkg->drawCommandCount());
-            // Keep draw IDs up-to-date
-            setDrawIDs(renderStagePass, _commandOffset[to_base(renderStagePass._stage)], _commandIndex[to_base(renderStagePass._stage)]);
-            if (Attorney::RenderPackageRenderingComponent::buildCommandBuffer(*pkg)) {
-                //rebuild detected -Ionut
-            }
+            pkg->isRenderable(pkg->drawCommandCount() > 0);
         }
     }
 }

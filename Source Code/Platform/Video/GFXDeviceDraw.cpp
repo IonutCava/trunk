@@ -93,6 +93,11 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
 
     constexpr U32 GROUP_SIZE_AABB = 64;
 
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    beginDebugScopeCmd._scopeID = 0;
+    beginDebugScopeCmd._scopeName = "Occlusion Cull";
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+
     GFX::BindPipelineCommand bindPipelineCmd;
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._shaderProgramHandle = _HIZCullProgram->getID();
@@ -121,6 +126,9 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     computeCmd._params._barrierType = MemoryBarrierType::COUNTER;
     computeCmd._params._groupSize = vec3<U32>((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
     GFX::EnqueueCommand(bufferInOut, computeCmd);
+
+    GFX::EndDebugScopeCommand endDebugScopeCmd;
+    GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }
 
 void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const {

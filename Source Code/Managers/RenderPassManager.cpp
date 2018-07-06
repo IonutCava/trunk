@@ -189,75 +189,87 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(const VisibleNodeProce
     return dataOut;
 }
 
-void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut)
-{
+void RenderPassManager::updateNodeData(RenderStagePass stagePass, const PassParams& params, GFX::CommandBuffer& bufferInOut) {
+    const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
+
+    RenderQueue::SortedQueues sortedQueues = getQueue().getSortedQueues(stagePass._stage);
+    for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
+        for (SceneGraphNode* node : queue) {
+            Attorney::RenderingCompRenderPass::prepareDrawPackage(
+                *node->get<RenderingComponent>(),
+                *params._camera,
+                sceneRenderState,
+                stagePass);
+        }
+    }
+}
+
+void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassParams& params, GFX::CommandBuffer& bufferInOut) {
+    const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
+
     U32 nodeCount = 0;
-    U32 cmdCount = 0;
+    RenderQueue::SortedQueues sortedQueues = getQueue().getSortedQueues(stagePass._stage);
 
     const mat4<F32>& viewMatrix = params._camera->getViewMatrix();
     vectorEASTL<GFXDevice::NodeData> nodeData;
-
-    RenderQueue::SortedQueues sortedQueues = getQueue().getSortedQueues(stagePass._stage);
     nodeData.reserve(sortedQueues.size() * Config::MAX_VISIBLE_NODES);
 
-    const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
-    std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> drawCommands;
+    vectorEASTL<IndirectDrawCommand> drawCommands;
+    drawCommands.reserve(Config::MAX_VISIBLE_NODES);
+
     for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
-            Attorney::RenderingCompRenderPass::prepareDrawPackage(renderable, *params._camera, sceneRenderState, stagePass);
-        }
 
-        for (SceneGraphNode* node : queue) {
-            RenderingComponent& renderable = *node->get<RenderingComponent>();
-
-            const RenderPackage& pkg = Attorney::RenderingCompRenderPass::getDrawPackage(renderable, stagePass);
+            RenderPackage& pkg = Attorney::RenderingCompRenderPass::getDrawPackage(renderable, stagePass);
             if (pkg.isRenderable()) {
-                if (refreshNodeData) {
-                    Attorney::RenderingCompRenderPass::setDrawIDs(renderable, stagePass, cmdCount, nodeCount);
-                    VisibleNodeProcessParams processParams;
-                    processParams._node = node;
-                    processParams._isOcclusionCullable = pkg.isOcclusionCullable();
-                    processParams._dataIndex = nodeCount;
+                Attorney::RenderPackageRenderPassManager::updateDrawCommands(pkg, nodeCount, drawCommands);
+                VisibleNodeProcessParams processParams;
+                processParams._node = node;
+                processParams._isOcclusionCullable = pkg.isOcclusionCullable();
+                processParams._dataIndex = nodeCount;
 
-                    nodeData.push_back(processVisibleNode(processParams, sceneRenderState, viewMatrix));
-
-                    for (I32 cmdIdx = 0; cmdIdx < pkg.drawCommandCount(); ++cmdIdx) {
-                        const GFX::DrawCommand& cmd = pkg.drawCommand(cmdIdx);
-                        for (const GenericDrawCommand& drawCmd : cmd._drawCommands) {
-                            for (U32 i = 0; i < drawCmd._drawCount; ++i) {
-                                drawCommands[cmdCount++] = drawCmd._cmd;
-                            }
-                        }
-                    }
-                }
+                nodeData.push_back(processVisibleNode(processParams, sceneRenderState, viewMatrix));
                 ++nodeCount;
             }
         }
     }
 
+    RenderPass::BufferData& bufferData = getBufferData(stagePass._stage, params._pass);
+    bufferData._lastCommandCount = to_U32(drawCommands.size());
+
+    assert(bufferData._lastCommandCount >= nodeCount);
+    // If the buffer update required is large enough, just replace the entire thing
+    if (nodeCount > Config::MAX_VISIBLE_NODES / 2) {
+        bufferData._renderData->writeData(nodeData.data());
+    } else { // Otherwise, just update the needed range to save bandwidth
+        bufferData._renderData->writeData(0, nodeCount, nodeData.data());
+    }
+
+    bufferData._cmdBuffer->writeData(drawCommands.data());
+
+    ShaderBufferBinding shaderBufferCmds;
+    shaderBufferCmds._binding = ShaderBufferLocation::CMD_BUFFER;
+    shaderBufferCmds._buffer = bufferData._cmdBuffer;
+
+    ShaderBufferBinding shaderBufferData;
+    shaderBufferData._binding = ShaderBufferLocation::NODE_INFO;
+    shaderBufferData._buffer = bufferData._renderData;
+    shaderBufferData._range = vec2<U16>(0, to_U16(nodeData.size()));
+
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    descriptorSetCmd._set = _context.newDescriptorSet();
+    descriptorSetCmd._set->_shaderBuffers.emplace_back(shaderBufferCmds);
+    descriptorSetCmd._set->_shaderBuffers.emplace_back(shaderBufferData);
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+}
+
+void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut)
+{
+    this->updateNodeData(stagePass, params, bufferInOut);
+
     if (refreshNodeData) {
-        RenderPass::BufferData& bufferData = getBufferData(stagePass._stage, params._pass);
-        bufferData._lastCommandCount = cmdCount;
-        bufferData._lasNodeCount = nodeCount;
-
-        assert(cmdCount >= nodeCount);
-        // If the buffer update required is large enough, just replace the entire thing
-        if (nodeCount > Config::MAX_VISIBLE_NODES / 2) {
-            bufferData._renderData->writeData(nodeData.data());
-        } else {
-            // Otherwise, just update the needed range to save bandwidth
-            bufferData._renderData->writeData(0, nodeCount, nodeData.data());
-        }
-
-        ShaderBuffer& cmdBuffer = *bufferData._cmdBuffer;
-        cmdBuffer.writeData(drawCommands.data());
-
-        GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set = _context.newDescriptorSet();
-        descriptorSetCmd._set->_shaderBuffers.emplace_back(ShaderBufferLocation::CMD_BUFFER, bufferData._cmdBuffer);
-        descriptorSetCmd._set->_shaderBuffers.emplace_back(ShaderBufferLocation::NODE_INFO, bufferData._renderData);
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+        this->refreshNodeData(stagePass, params, bufferInOut);
     }
 }
 
@@ -290,7 +302,7 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
 void RenderPassManager::prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 0;
-    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s ): PrePass", TypeUtil::renderStageToString(params._stage)).c_str();
+    beginDebugScopeCmd._scopeName = " - PrePass";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     // PrePass requires a depth buffer
@@ -325,7 +337,7 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
 void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 1;
-    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s ): RenderPass", TypeUtil::renderStageToString(params._stage)).c_str();
+    beginDebugScopeCmd._scopeName = " - MainPass";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     SceneManager& sceneManager = parent().sceneManager();
@@ -405,6 +417,11 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
 
     // Weighted Blended Order Independent Transparency
     for (U8 i = 0; i < /*2*/1; ++i) {
+        GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+        beginDebugScopeCmd._scopeID = 2;
+        beginDebugScopeCmd._scopeName = Util::StringFormat(" - W-OIT Pass %d", to_U32(i)).c_str();
+        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+
         //RenderPackage::MinQuality quality = i == 0 ? RenderPackage::MinQuality::FULL : RenderPackage::MinQuality::LOW;
         if (renderQueueSize(stagePass) > 0) {
             RenderTargetUsage rtUsage = i == 0 ? RenderTargetUsage::OIT_FULL_RES : RenderTargetUsage::OIT_QUARTER_RES;
@@ -482,6 +499,9 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
             GFX::EndRenderPassCommand endRenderPassCompCmd;
             GFX::EnqueueCommand(bufferInOut, endRenderPassCompCmd);
         }
+
+        GFX::EndDebugScopeCommand endDebugScopeCmd;
+        GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
     }
 }
 
@@ -498,6 +518,12 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     GFX::EnqueueCommand(bufferInOut, setClipPlanesCommand);
 
     RenderTarget& target = _context.renderTargetPool().renderTarget(params._target);
+
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    beginDebugScopeCmd._scopeID = 0;
+    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s )", TypeUtil::renderStageToString(params._stage)).c_str();
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+
     prePass(params, target, bufferInOut);
 
     if (params._occlusionCull) {
@@ -510,6 +536,9 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     mainPass(params, target, bufferInOut);
     woitPass(params, target, bufferInOut);
+
+    GFX::EndDebugScopeCommand endDebugScopeCmd;
+    GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }
 
 

@@ -64,8 +64,7 @@ namespace {
 };
 
 RenderPass::BufferData::BufferData(GFXDevice& context)
-  : _lastCommandCount(0),
-    _lasNodeCount(0)
+  : _lastCommandCount(0)
 {
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._primitiveCount = Config::MAX_VISIBLE_NODES;
