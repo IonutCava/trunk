@@ -9,11 +9,11 @@ GUIElement::GUIElement(CEGUI::Window*const  parent,const GUIType& type,const vec
                            _position(position){
                            _name = "defaultGuiControl";
                            _visible = true;
-    RenderStateBlockDescriptor d;
-    d.setCullMode(CULL_MODE_NONE);
-    d.setZEnable(false);
-    d.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
-    _guiSB = GFX_DEVICE.getOrCreateStateBlock(d);
+    RenderStateBlockDescriptor desc;
+    desc.setCullMode(CULL_MODE_NONE);
+    desc.setZEnable(false);
+    desc.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
+    _guiSBHash = GFX_DEVICE.getOrCreateStateBlock(desc);
 }
 
 GUIElement::~GUIElement(){

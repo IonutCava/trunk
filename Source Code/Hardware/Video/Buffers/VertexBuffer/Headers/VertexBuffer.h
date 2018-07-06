@@ -24,7 +24,6 @@
 #define _VERTEX_BUFFER_OBJECT_H
 
 #include <iostream>
-#include <cassert>
 #include "Utility/Headers/Vector.h"
 #include "Utility/Headers/GUIDWrapper.h"
 #include "Core/Math/Headers/MathClasses.h"
@@ -110,7 +109,10 @@ public:
     inline void setRangeCount(const U32 rangeCount)          {_rangeCount = rangeCount;}
     inline void setFirstElement(U32 firstElement)            {_firstElement = firstElement;}
     inline void setDepthPass(bool state = false)             {if(_optimizeForDepth) _depthPass = state;}
-    inline void useLargeIndices(bool state = true)           {assert(!_created); _largeIndices = state; _format = _largeIndices ? UNSIGNED_INT : UNSIGNED_SHORT;}
+    inline void useLargeIndices(bool state = true)           {
+        DIVIDE_ASSERT(!_created, "VertexBuffer error: Indice format type specified before buffer creation!");
+        _largeIndices = state; _format = _largeIndices ? UNSIGNED_INT : UNSIGNED_SHORT;
+    }
     inline void computeTriangles(bool state = true)          {_computeTriangles = state;}
     inline void reservePositionCount(U32 size)  {_dataPosition.reserve(size);}
     inline void reserveColourCount(U32 size)    {_dataColor.reserve(size);}
@@ -259,38 +261,38 @@ public:
     }
 
     inline void setIndiceLimits(const vec2<U32>& indiceLimits, U8 LODindex = 0) {
-        assert(LODindex < _indiceLimits.size());
+        DIVIDE_ASSERT(LODindex < _indiceLimits.size(), "VertexBuffer error: Invalid LOD passed for indices limits creation");
         vec2<U32>& limits = _indiceLimits[LODindex];
         limits.y = std::max(indiceLimits.y, limits.y);
         limits.x = std::min(indiceLimits.x, limits.x);
     }
 
     inline void modifyPositionValue(U32 index, const vec3<F32>& newValue){
-        assert(index < _dataPosition.size());
+        DIVIDE_ASSERT(index < _dataPosition.size(), "VertexBuffer error: Invalid position offset!");
         _dataPosition[index] = newValue;
         _attribDirty[ATTRIB_POSITION] = true;
     }
 
     inline void modifyColorValue(U32 index, const vec3<U8>& newValue) {
-        assert(index < _dataColor.size());
+        DIVIDE_ASSERT(index < _dataColor.size(), "VertexBuffer error: Invalid color offset!");
         _dataColor[index] = newValue;
         _attribDirty[ATTRIB_COLOR] = true;
     }
 
     inline void modifyNormalValue(U32 index, const vec3<F32>& newValue)  {
-        assert(index < _dataNormal.size());
+        DIVIDE_ASSERT(index < _dataNormal.size(), "VertexBuffer error: Invalid normal offset!");
         _dataNormal[index] = newValue;
         _attribDirty[ATTRIB_NORMAL] = true;
     }
 
     inline void modifyTangentValue(U32 index, const vec3<F32>& newValue)  {
-        assert(index < _dataTangent.size());
+        DIVIDE_ASSERT(index < _dataTangent.size(), "VertexBuffer error: Invalid tangent offset!");
         _dataTangent[index] = newValue;
         _attribDirty[ATTRIB_TANGENT] = true;
     }
 
     inline void modifyBiTangentValue(U32 index, const vec3<F32>& newValue)  {
-        assert(index < _dataBiTangent.size());
+        DIVIDE_ASSERT(index < _dataBiTangent.size(), "VertexBuffer error: Invalid bitangent offset!");
         _dataBiTangent[index] = newValue;
         _attribDirty[ATTRIB_BITANGENT] = true;
     }
@@ -306,12 +308,12 @@ public:
     }
 
     inline U32 getPartitionCount(U16 partitionIdx){
-        assert(partitionIdx < _partitions.size());
+        DIVIDE_ASSERT(partitionIdx < _partitions.size(), "VertexBuffer error: Invalid partition offset!");
         return _partitions[partitionIdx].second;
     }
 
     inline U32 getPartitionOffset(U16 partitionIdx){
-        assert(partitionIdx < _partitions.size());
+        DIVIDE_ASSERT(partitionIdx < _partitions.size(), "VertexBuffer error: Invalid partition offset!");
         return _partitions[partitionIdx].first;
     }
 

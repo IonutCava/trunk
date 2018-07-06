@@ -63,17 +63,17 @@ void SceneGraph::printInternal(SceneGraphNode* const sgn){
         //Get the material's name
         material = mat->getName();
         //If we have a shader
-        if (mat->getShaderProgram()){
+        if (mat->getShaderInfo().getProgram()){
             //Get the shader's name
-            shader = mat->getShaderProgram()->getName();
+            shader = mat->getShaderInfo().getProgram()->getName();
         }
-        if (mat->getShaderProgram(SHADOW_STAGE)){
+        if (mat->getShaderInfo(SHADOW_STAGE).getProgram()){
             //Get the depth shader's name
-            depthShader = mat->getShaderProgram(SHADOW_STAGE)->getName();
+            depthShader = mat->getShaderInfo(SHADOW_STAGE).getProgram()->getName();
         }
-        if (mat->getShaderProgram(Z_PRE_PASS_STAGE)){
+        if (mat->getShaderInfo(Z_PRE_PASS_STAGE).getProgram()){
             //Get the depth shader's name
-            depthShader = mat->getShaderProgram(Z_PRE_PASS_STAGE)->getName();
+            depthShader = mat->getShaderInfo(Z_PRE_PASS_STAGE).getProgram()->getName();
         }
     }
     //Print our current node's information

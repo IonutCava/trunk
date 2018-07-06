@@ -22,7 +22,7 @@ Impostor::Impostor(const std::string& name, F32 radius) : _visible(false){
     _dummy->getSceneNodeRenderState().setDrawState(false);
     _dummy->setResolution(8);
     _dummy->setRadius(radius);
-    RenderStateBlockDescriptor dummyDesc(_dummy->getMaterial()->getRenderStateBlock(FINAL_STAGE).getDescriptor());
+    RenderStateBlockDescriptor dummyDesc(GFX_DEVICE.getStateBlockDescriptor(_dummy->getMaterial()->getRenderStateBlock(FINAL_STAGE)));
     dummyDesc.setFillMode(FILL_MODE_WIREFRAME);
     _dummy->getMaterial()->setRenderStateBlock(dummyDesc, FINAL_STAGE);
 }
@@ -39,8 +39,8 @@ void Impostor::render(SceneGraphNode* const node, const SceneRenderState& sceneR
     _dummy->renderInstance()->transform(node->getTransform());
 
     _dummy->onDraw(node, gfx.getRenderStage());
-    _dummy->getMaterial()->getShaderProgram()->bind();
-    _dummy->getMaterial()->getShaderProgram()->Uniform("material",_dummy->getMaterial()->getMaterialMatrix());
+    _dummy->getMaterial()->getShaderInfo().getProgram()->bind();
+    _dummy->getMaterial()->getShaderInfo().getProgram()->Uniform("material",_dummy->getMaterial()->getMaterialMatrix());
 
     gfx.renderInstance(_dummy->renderInstance());
 }
@@ -53,8 +53,8 @@ void Impostor::render(Transform* const transform, const SceneRenderState& sceneR
     _dummy->renderInstance()->transform(transform);
 
     _dummy->onDraw(nullptr, gfx.getRenderStage());
-    _dummy->getMaterial()->getShaderProgram()->bind();
-    _dummy->getMaterial()->getShaderProgram()->Uniform("material",_dummy->getMaterial()->getMaterialMatrix());
+    _dummy->getMaterial()->getShaderInfo().getProgram()->bind();
+    _dummy->getMaterial()->getShaderInfo().getProgram()->Uniform("material",_dummy->getMaterial()->getMaterialMatrix());
 
     gfx.renderInstance(_dummy->renderInstance());
 }

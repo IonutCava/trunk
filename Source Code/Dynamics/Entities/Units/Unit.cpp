@@ -40,8 +40,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
     _prevTime = currentTime;
     // 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms
     // distance = timeDif * 0.001 * moveSpeed
-    F32 moveDistance = _moveSpeed * (getMsToSec(timeDif));
-    CLAMP<F32>(moveDistance, EPSILON, _moveSpeed);
+    F32 moveDistance = min(_moveSpeed * (getMsToSec(timeDif)), 0.0f);
 
     bool returnValue = IS_TOLERANCE(moveDistance, centimetre(1));
     if(!returnValue){

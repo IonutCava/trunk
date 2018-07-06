@@ -29,9 +29,7 @@ namespace Locale {
             }
         }else{
             _languageTable[key] = defaultValue;
-#ifdef _DEBUG
-            assert(_languageTable[key].compare("String not found!") != 0);
-#endif
+            assert(_languageTable[key].compare("String not found!") != 0 && "Locale error: INVALID STRING KEY!");
         }
         //Return our desired value now
         return (char*)_languageTable[key].c_str();

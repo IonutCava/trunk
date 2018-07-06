@@ -26,15 +26,15 @@ void SkinnedSubMesh::postLoad(SceneGraphNode* const sgn){
 }
 
 // update possible animations
-void SkinnedSubMesh::updateAnimations(SceneGraphNode* const sgn){
+bool SkinnedSubMesh::updateAnimations(SceneGraphNode* const sgn){
     assert(sgn->getComponent<AnimationComponent>());
 
-    getBoundingBoxForCurrentFrame(sgn);
+    return getBoundingBoxForCurrentFrame(sgn);
 }
 
-void SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn){
+bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn){
     AnimationComponent* animComp = sgn->getComponent<AnimationComponent>();
-    if (!animComp || !animComp->playAnimations()) return;
+    if (!animComp || !animComp->playAnimations()) return false;
 
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
 
@@ -75,4 +75,5 @@ void SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn){
     }
 
     sgn->setInitialBoundingBox(animBB[animComp->frameIndex()]);
+    return true;
 }

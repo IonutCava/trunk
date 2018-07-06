@@ -31,6 +31,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
 class Bone;
+class ShaderBuffer;
 class SceneAnimator;
 class SceneGraphNode;
 class AnimationComponent : public SGNComponent {
@@ -91,6 +92,8 @@ protected:
     boundingBoxPerFrame _bbsPerFrame;
     ///store a map of bounding boxes for every animation at every frame
     boundingBoxPerAnimation _boundingBoxes;
+    ///used to upload bone data to the gpu
+    ShaderBuffer* _boneTransformBuffer;
 };
 
 #endif

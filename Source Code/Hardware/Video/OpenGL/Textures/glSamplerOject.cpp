@@ -8,11 +8,7 @@
 
 glSamplerObject::glSamplerObject() : _samplerID(Divide::GLUtil::_invalidObjectID)
 {
-    bool availableSamplerObj = (glewIsSupported("GL_ARB_sampler_objects") == GL_TRUE);
-    if(!availableSamplerObj){
-        ERROR_FN(Locale::get("ERROR_NO_SAMPLER_SUPPORT"));
-        assert(availableSamplerObj);
-    }
+    DIVIDE_ASSERT((glewIsSupported("GL_ARB_sampler_objects") == GL_TRUE), Locale::get("ERROR_NO_SAMPLER_SUPPORT"));
 }
 
 glSamplerObject::~glSamplerObject()

@@ -33,10 +33,11 @@
 
 struct aiNode;
 struct aiScene;
+class ShaderBuffer;
 class SceneAnimator{
 public:
 
-    SceneAnimator(): _skeleton(0)
+    SceneAnimator(): _skeleton(0), _boneTransformBuffer(nullptr)
     {
     }
 
@@ -104,6 +105,9 @@ public:
     I32 GetBoneIndex(const std::string& bname) const;
     I32 RenderSkeleton(I32 animationIndex, const D32 dt);
 
+    size_t GetBoneCount() const { return _bones.size(); }
+
+    ShaderBuffer* getBoneDataBuffer() const { return _boneTransformBuffer; }
 private:
 
     ///I/O operations
@@ -141,6 +145,8 @@ private:
     colorCollection _colors;
     mat4<F32>  _cacheIdentity;
     mat4<F32>  _rootTransformRender;
+
+    ShaderBuffer* _boneTransformBuffer;
 };
 
 #endif

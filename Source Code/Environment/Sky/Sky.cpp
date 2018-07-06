@@ -22,9 +22,9 @@ Sky::Sky(const std::string& name) : SceneNode(name, TYPE_SKY),
     RenderStateBlockDescriptor skyboxDesc;
     skyboxDesc.setCullMode(CULL_MODE_CCW);
     //skyboxDesc.setZReadWrite(false, false); - not needed anymore. Using gl_Position.z = gl_Position.w - 0.0001 in GLSL -Ionut
-    _skyboxRenderState = GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
+    _skyboxRenderStateHash = GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
     skyboxDesc.setCullMode(CULL_MODE_CW);
-    _skyboxRenderStateReflected = GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
+    _skyboxRenderStateReflectedHash = GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
 }
 
 Sky::~Sky(){
@@ -87,7 +87,7 @@ void Sky::postLoad(SceneGraphNode* const sgn){
 }
 
 bool Sky::prepareMaterial(SceneGraphNode* const sgn) {
-    SET_STATE_BLOCK(*(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflected : _skyboxRenderState));
+    SET_STATE_BLOCK(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);
 
     _skyShader->Uniform("sun_color", LightManager::getInstance().getLight(0)->getDiffuseColor());
     return true;

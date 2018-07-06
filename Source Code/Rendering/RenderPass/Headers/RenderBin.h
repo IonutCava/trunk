@@ -34,7 +34,6 @@ class SceneGraphNode;
 
 #include "Utility/Headers/Vector.h"
 #include "Core/Math/Headers/MathClasses.h"
-#include <cassert>
 
 struct RenderBinItem{
     SceneGraphNode  *_node;

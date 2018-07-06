@@ -38,7 +38,7 @@ bool glShader::load(const std::string& source){
 
     if((_type == FRAGMENT_SHADER || _type == VERTEX_SHADER) && _optimise){
         glslopt_ctx* ctx = GL_API::getGLSLOptContext();
-        assert(ctx != nullptr);
+        DIVIDE_ASSERT(ctx != nullptr, "glShader error: Invalid shader optimization context!");
         glslopt_shader_type shaderType = (_type == FRAGMENT_SHADER ? kGlslOptShaderFragment : kGlslOptShaderVertex);
         glslopt_shader* shader = glslopt_optimize (ctx, shaderType, parsedSource.c_str(), 0);
         if (glslopt_get_status (shader)) {

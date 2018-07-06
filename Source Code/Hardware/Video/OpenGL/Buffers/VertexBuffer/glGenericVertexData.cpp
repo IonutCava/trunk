@@ -62,7 +62,9 @@ glGenericVertexData::~glGenericVertexData()
 }
 
 void glGenericVertexData::Create(U8 numBuffers, U8 numQueries){
-    assert(_bufferObjects.empty()); //< double create is not implemented yet as I don't quite need it. -Ionut
+    // double create is not implemented yet as I don't quite need it. -Ionut
+    DIVIDE_ASSERT(_bufferObjects.empty(), "glGenericVertexData error: create called with no buffers specified!");
+
     glGenVertexArrays(GVD_USAGE_PLACEHOLDER, &_vertexArray[0]);
     glGenTransformFeedbacks(1, &_transformFeedback);
 
@@ -116,7 +118,8 @@ bool glGenericVertexData::frameStarted(const FrameEvent& evt) {
 }
 
 void glGenericVertexData::BindFeedbackBufferRange(U32 buffer, size_t elementCountOffset, size_t elementCount){
-    assert(isFeedbackBuffer(buffer));
+    DIVIDE_ASSERT(isFeedbackBuffer(buffer), "glGenericVertexData error: called bind buffer range for non-feedback buffer!");
+
     GL_API::setActiveTransformFeedback(_transformFeedback);
     glBindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, getBindPoint(_bufferObjects[buffer]), _bufferObjects[buffer], elementCountOffset * _elementSize[buffer], elementCount * _elementSize[buffer]);
 }
@@ -148,10 +151,10 @@ void glGenericVertexData::DrawInternal(const PrimitiveType& type, U32 min, U32 m
 }
 
 void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped) {
-    assert(buffer >= 0 && buffer < _bufferObjects.size());
+    DIVIDE_ASSERT(buffer >= 0 && buffer < _bufferObjects.size(), "glGenericVertexData error: set buffer called for invalid buffer index!");
     // glBufferData on persistentMapped buffers is not allowed
-    assert(!(_bufferSet[buffer] && _persistentMapped && persistentMapped));
-    assert((persistentMapped && _persistentMapped) || !persistentMapped);
+    DIVIDE_ASSERT(!_bufferSet[buffer], "glGenericVertexData error: set buffer called for an already created buffer!");
+    DIVIDE_ASSERT((persistentMapped && _persistentMapped) || !persistentMapped, "glGenericVertexData error: persistent map flag is not compatible with object details!");
 
     _elementCount[buffer] = elementCount;
     _elementSize[buffer] = elementSize;
@@ -186,11 +189,10 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount, size_t element
 
 void glGenericVertexData::UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 offset, bool dynamic, bool stream) {
     size_t dataCurrentSize = elementCount * _elementSize[buffer];
+    GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[buffer]);
     if (!_bufferPersistent[buffer]){
-        SetBuffer(buffer, _elementCount[buffer], _elementSize[buffer], nullptr, dynamic, stream, false);
         glBufferSubData(GL_ARRAY_BUFFER, offset, dataCurrentSize, data);
     }else{
-        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[buffer]);
         size_t bufferSize = _elementCount[buffer] * _elementSize[buffer];
 
         _lockManager->WaitForLockedRange(_startDestOffset[buffer], bufferSize);
@@ -207,7 +209,8 @@ void glGenericVertexData::UpdateBuffer(U32 buffer, U32 elementCount, void* data,
 }
 
 void glGenericVertexData::SetAttributeInternal(AttributeDescriptor& descriptor){
-    assert(_elementSize[descriptor._parentBuffer] != 0);
+    DIVIDE_ASSERT(_elementSize[descriptor._parentBuffer] != 0, "glGenericVertexData error: attribute's parent buffer has an invalid element size!");
+
     if(!descriptor._dirty) return;
 
     if(!descriptor._wasSet){
@@ -232,7 +235,8 @@ void glGenericVertexData::SetAttributes(bool feedbackPass) {
 }
 
 U32 glGenericVertexData::GetFeedbackPrimitiveCount(U8 queryID) {
-    assert(queryID < _numQueries && !_bufferObjects.empty());
+    DIVIDE_ASSERT(queryID < _numQueries && !_bufferObjects.empty(), "glGenericVertexData error: Current object isn't ready for query processing!");
+
     U32 queryEntry = _doubleBufferedQuery ? _currentReadQuery : _currentWriteQuery;
     if (_resultAvailable[queryEntry][queryID]){
         // get the result of the previous query about the generated primitive count

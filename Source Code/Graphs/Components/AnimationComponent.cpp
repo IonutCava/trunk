@@ -8,7 +8,7 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator, SceneGraphNode* 
                                                                   _animator(animator),
                                                                   _skeletonAvailable(false),
                                                                   _playAnimations(true),
-                                                                  _currentTimeStamp(0.0),
+                                                                  _currentTimeStamp(-1.0),
                                                                   _currentAnimationID(0),
                                                                   _currentFrameIndex(0),
                                                                   _currentAnimIndex(0)
@@ -17,6 +17,7 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator, SceneGraphNode* 
 
     _animationTransforms.clear();
     _animationTransforms.reserve(40);
+    _boneTransformBuffer = animator->getBoneDataBuffer();
 }
 
 AnimationComponent::~AnimationComponent()
@@ -41,6 +42,7 @@ bool AnimationComponent::playAnimation(const std::string& name){
     if (_currentAnimIndex == -1)
         _currentAnimIndex = 0;
 
+    reset();
     return oldindex != _currentAnimIndex;
 }
 
@@ -49,6 +51,7 @@ bool AnimationComponent::playAnimation(I32  pAnimIndex){
     if (pAnimIndex >= (I32)_animator->GetAnimations().size()) return false;// no change, or the animations data is out of bounds
     I32 oldindex = _currentAnimIndex;
     _currentAnimIndex = pAnimIndex;// only set this after the checks for good data and the object was actually inserted
+    reset();
     return oldindex != _currentAnimIndex;
 }
 
@@ -56,6 +59,7 @@ bool AnimationComponent::playAnimation(I32  pAnimIndex){
 bool AnimationComponent::playNextAnimation() {
     I32 oldindex = _currentAnimIndex;
     _currentAnimIndex = ++_currentAnimIndex % _animator->GetAnimations().size();
+    reset();
     return oldindex != _currentAnimIndex;
 }
 
@@ -72,12 +76,18 @@ void AnimationComponent::onDraw(RenderStage currentStage) {
     if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE) || !_playAnimations)
         return;
 
-    _currentTimeStamp = _playAnimations ? getUsToSec(_elapsedTime) : 0.0;
-
     //All animation data is valid, so we have a skeleton to render if needed
     _skeletonAvailable = true;
+    D32 timeStamp = _playAnimations ? getUsToSec(_elapsedTime) : 0.0;
 
+    if(DOUBLE_COMPARE(timeStamp, _currentTimeStamp)) return;
+
+    _currentTimeStamp = timeStamp;
     _animationTransforms = _animator->GetTransforms(_currentAnimIndex, _currentTimeStamp);
+    
+    size_t animationDataSize = _animationTransforms.size() * sizeof(mat4<F32>);
+    _boneTransformBuffer->bind(Divide::SHADER_BUFFER_BONE_TRANSFORMS);
+    _boneTransformBuffer->ChangeSubData(_instanceID * animationDataSize, animationDataSize, &_animationTransforms[0][0]);
 }
 
 I32 AnimationComponent::frameIndex() const {

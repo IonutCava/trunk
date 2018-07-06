@@ -77,6 +77,12 @@ void ShaderManager::refresh(){
     }
 }
 
+void ShaderManager::refreshSceneData(){
+   FOR_EACH(ShaderProgramMap::value_type& it, _shaderPrograms){
+        it.second->setSceneDataDirty();
+    }
+}
+
 void ShaderManager::setMatricesDirty(){
     FOR_EACH(ShaderProgramMap::value_type& it, _shaderPrograms){
         it.second->setMatricesDirty();

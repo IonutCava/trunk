@@ -1,22 +1,8 @@
-#define U8  unsigned char
-#define U16 unsigned short
-#define U32 unsigned int
-#define U64 unsigned long long
-
-#define I8  signed char
-#define I16 signed short
-#define I32 signed int
-#define I64 signed long long
-
-#define F32 float
-#define D32 double
-#define UBYTE unsigned char
-
 #ifndef DATA_TYPES_H
 #define DATA_TYPES_H
 
 #include <string>
-#include "MathClasses.h"
+#include "Core/Math/Headers/MathVectors.h"
 
 using namespace std;
 
@@ -33,10 +19,10 @@ class FileData
 public:
 	string ItemName;
 	string ModelName;
-	vec3 scale;
-	vec3 position;
-	vec3 orientation;
-	vec3 color;
+	vec3<F32> scale;
+	vec3<F32> position;
+	vec3<F32> orientation;
+	vec3<F32> color;
 	GEOMETRY_TYPE type;
 	F32 data; //general purpose
 	string data2;

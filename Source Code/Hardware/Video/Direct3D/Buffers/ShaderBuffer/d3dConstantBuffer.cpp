@@ -12,7 +12,7 @@ d3dConstantBuffer::~d3dConstantBuffer()
 void d3dConstantBuffer::Create(bool dynamic, bool stream){
 }
 
-void d3dConstantBuffer::ReserveBuffer(U32 primitiveCount, ptrdiff_t primitiveSize) const {
+void d3dConstantBuffer::ReserveBuffer(U32 primitiveCount, ptrdiff_t primitiveSize) {
 }
 
 void d3dConstantBuffer::ChangeSubData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer) const {

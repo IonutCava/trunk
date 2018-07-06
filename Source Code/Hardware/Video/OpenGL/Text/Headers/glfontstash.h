@@ -37,8 +37,7 @@ struct GLFONScontext {
 
 static int glfons__renderCreate(void* userPtr, int width, int height)
 {
-    assert(width > 0 && height > 0);
-
+    DIVIDE_ASSERT(width > 0 && height > 0, "glfons__renderCreate error: invalid texture dimensions!");
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     glGenTextures(1, &gl->tex);
     glGenVertexArrays(1, &gl->glfons_vaoID);

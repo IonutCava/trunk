@@ -36,17 +36,8 @@ public:
         SGN_COMP_PHYSICS = 2
     };
 
-    SGNComponent(ComponentType type, SceneGraphNode* const parentSGN) : _type(type),
-                                                                        _parentSGN(parentSGN),
-                                                                        _elapsedTime(0ULL),
-                                                                        _deltaTime(0ULL)
-    {
-
-    }
-    ~SGNComponent()
-    {
-
-    }
+    SGNComponent(ComponentType type, SceneGraphNode* const parentSGN);
+    ~SGNComponent();
 
     virtual void onDraw(RenderStage currentStage) {}
     virtual void update(const U64 deltaTime) {
@@ -63,6 +54,8 @@ public:
     inline SceneGraphNode* const getSGN()  const { return _parentSGN; }
 
 protected:
+    /// The current instance using this component
+    U32 _instanceID;
     /// Pointer to the SGN owning this instance of AnimationComponent
     SceneGraphNode* _parentSGN;
     ComponentType _type;

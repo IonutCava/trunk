@@ -70,8 +70,8 @@ namespace Navigation {
         void releaseDrawState();
 
     private:
-        RenderStateBlock*   _navMeshStateBlock;
-        IMPrimitive*        _primitive;
+        I64   _navMeshStateBlockHash;
+        IMPrimitive* _primitive;
         U32 _vertCount;
         U32 _color;
         PrimitiveType _primType;

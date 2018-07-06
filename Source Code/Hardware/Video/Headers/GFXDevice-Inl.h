@@ -42,7 +42,7 @@ inline void GFXDevice::renderInViewport(const vec4<I32>& rect, const DELEGATE_CB
 
 /// Compare the current render stage flag with the given mask
 inline bool GFXDevice::isCurrentRenderStage(U8 renderStageMask) {
-    assert((renderStageMask & ~(INVALID_STAGE - 1)) == 0);
+    DIVIDE_ASSERT((renderStageMask & ~(INVALID_STAGE - 1)) == 0, "GFXDevice error: render stage query received an invalid bitmask!"); 
     return bitCompare(renderStageMask, _renderStage);
 }
 
@@ -152,11 +152,11 @@ inline void GFXDevice::resetClipPlanes() {
 #define GFX_DEVICE GFXDevice::getInstance()
 #define GFX_RENDER_BIN_SIZE RenderPassManager::getInstance().getLastTotalBinSize(0)
 
-inline RenderStateBlock* SET_STATE_BLOCK(const RenderStateBlock& block, bool forceUpdate = false){
-    return GFX_DEVICE.setStateBlock(block, forceUpdate);
+inline I64 SET_STATE_BLOCK(I64 blockHash, bool forceUpdate = false){
+    return GFX_DEVICE.setStateBlock(blockHash, forceUpdate);
 }
 
-inline RenderStateBlock* SET_DEFAULT_STATE_BLOCK(bool forceUpdate = false){
+inline I64 SET_DEFAULT_STATE_BLOCK(bool forceUpdate = false){
     return GFX_DEVICE.setDefaultStateBlock(forceUpdate);
 }
 

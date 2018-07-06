@@ -9,7 +9,7 @@ Task::~Task(){
 }
 
 void Task::startTask(){
-    assert(_tp != nullptr);
+    DIVIDE_ASSERT(_tp != nullptr, "Task error: ThreadPool pointer is invalid!");
     if(!_tp->schedule(DELEGATE_BIND(&Task::run, this))){
         ERROR_FN(Locale::get("TASK_SCHEDULE_FAIL"));
     }

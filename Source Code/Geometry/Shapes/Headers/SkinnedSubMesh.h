@@ -37,10 +37,10 @@ public:
     inline SceneAnimator* getAnimator() { return _animator; }
 
 protected:
-    void updateAnimations(SceneGraphNode* const sgn);
+    bool updateAnimations(SceneGraphNode* const sgn);
     
 private:
-    void getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn);
+    bool getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn);
     
 private:
     vectorImpl<vec3<F32> > _origVerts;

@@ -60,7 +60,7 @@ public:
 
     virtual void  postLoad(SceneGraphNode* const sgn);
     virtual bool  onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
-    virtual void  updateAnimations(SceneGraphNode* const sgn) {}
+    virtual bool  updateAnimations(SceneGraphNode* const sgn) { return false; }
     //virtual void  optimizeForDepth(bool state = true,bool force = false) {if(_geometry) _geometry->optimizeForDepth(state,force);}
 
 protected:

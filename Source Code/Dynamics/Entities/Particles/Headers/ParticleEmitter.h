@@ -117,7 +117,7 @@ private:
 
     GenericVertexData* _particleGPUBuffer;
 
-    RenderStateBlock* _particleStateBlock;
+    I64 _particleStateBlockHash;
 
     ShaderProgram* _particleShader;
     ShaderProgram* _particleDepthShader;

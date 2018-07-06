@@ -96,7 +96,7 @@ inline T vec2<T>::normalize() {
 
 /// compare 2 vectors using the given tolerance
 template<class T>
-inline bool vec2<T>::compare(const vec2 &_v,F32 epsi=EPSILON) const {
+inline bool vec2<T>::compare(const vec2 &_v,F32 epsi = EPSILON_F32) const {
     return (FLOAT_COMPARE_TOLERANCE(this->x,_v.x,epsi) &&
             FLOAT_COMPARE_TOLERANCE(this->y,_v.y,epsi));
 }
@@ -170,7 +170,7 @@ inline vec2<T>::vec2(const vec4<T> &v) {
 */
 /// compare 2 vectors within the specified tolerance
 template<class T>
-inline bool vec3<T>::compare(const vec3 &v, F32 epsi = EPSILON) const {
+inline bool vec3<T>::compare(const vec3 &v, F32 epsi = EPSILON_F32) const {
     return FLOAT_COMPARE_TOLERANCE(this->x,v.x,epsi) &&
            FLOAT_COMPARE_TOLERANCE(this->y,v.y,epsi) &&
            FLOAT_COMPARE_TOLERANCE(this->z,v.z,epsi);
@@ -193,8 +193,8 @@ template<class T>
 inline T vec3<T>::normalize() {
     T l = this->length();
 
-    if(l < EPSILON)
-        return 0;
+    if(l < EPSILON_F32)
+        return 0.0f;
 
     //multiply by the inverse length
     *this *= (1.0f / l);
@@ -376,7 +376,7 @@ inline vec3<T>::vec3(const vec4<T> &v) {
 
 /// compare this vector with the one specified and see if they match within the specified amount
 template<class T>
-inline bool vec4<T>::compare(const vec4 &v,F32 epsi = EPSILON) const {
+inline bool vec4<T>::compare(const vec4 &v,F32 epsi = EPSILON_F32) const {
     return (FLOAT_COMPARE_TOLERANCE((F32)this->x, (F32)v.x, epsi) &&
             FLOAT_COMPARE_TOLERANCE((F32)this->y, (F32)v.y, epsi) &&
             FLOAT_COMPARE_TOLERANCE((F32)this->z, (F32)v.z, epsi) &&
@@ -432,7 +432,7 @@ template<class T>
 inline T vec4<T>::normalize() {
     T l = this->length();
 
-    if(l < EPSILON)
+    if(l < EPSILON_F32)
         return 0;
 
     //multiply by the inverse length

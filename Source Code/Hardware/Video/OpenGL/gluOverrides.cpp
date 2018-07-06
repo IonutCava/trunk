@@ -118,7 +118,7 @@ namespace Divide {
             }else if(_currentMatrixMode == TEXTURE_MATRIX) {
                 _textureMatrix.push(_textureMatrix.top());
             }else {
-                assert(_currentMatrixMode == -1);
+                DIVIDE_ASSERT(_currentMatrixMode == -1, "gluOverrides error: attempted to push an invalid matrix target!");
             }
         }
 
@@ -132,7 +132,7 @@ namespace Divide {
             }else if(_currentMatrixMode == TEXTURE_MATRIX){
                 _textureMatrix.pop();
             }else{
-                assert(_currentMatrixMode == -1);
+                DIVIDE_ASSERT(_currentMatrixMode == -1, "gluOverrides error: attempted to pop an invalid matrix target!");
             }
         }
 
@@ -146,7 +146,7 @@ namespace Divide {
             }else if(_currentMatrixMode == TEXTURE_MATRIX){
                 _textureMatrix.top() = _identityMatrix;
             }else{
-                assert(_currentMatrixMode == -1);
+                DIVIDE_ASSERT(_currentMatrixMode == -1, "gluOverrides error: attempted to reset an invalid matrix target!");
             }
         }
     }//namespace GLUtil

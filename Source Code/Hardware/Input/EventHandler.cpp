@@ -10,7 +10,7 @@ EventHandler::EventHandler(InputInterface* pApp, Kernel* const kernel) :
 												   _pJoystickInterface(nullptr),
 												   _pEffectMgr(nullptr)
 {
-	assert(kernel != nullptr);
+	DIVIDE_ASSERT(kernel != nullptr, "EventHandler error: INVALID KERNEL PASSED ON HANDLER CREATION");
 }
 
 void EventHandler::initialize(JoystickInterface* pJoystickInterface, EffectManager* pEffectMgr){

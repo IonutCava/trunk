@@ -26,7 +26,7 @@ WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,v
 void WaterPlane::postLoad(SceneGraphNode* const sgn){
     _node = sgn;
 
-    ShaderProgram* shader = getMaterial()->getShaderProgram(FINAL_STAGE);
+    ShaderProgram* shader = getMaterial()->getShaderInfo(FINAL_STAGE).getProgram();
 
     _farPlane = 2.0f * GET_ACTIVE_SCENE()->state().getRenderState().getCameraConst().getZPlanes().y;
     _plane->setCorner(Quad3D::TOP_LEFT,     vec3<F32>(-_farPlane * 1.5f, 0, -_farPlane * 1.5f));
@@ -91,7 +91,7 @@ bool WaterPlane::unload(){
 }
 
 void WaterPlane::setParams(F32 shininess, const vec2<F32>& noiseTile, const vec2<F32>& noiseFactor, F32 transparency){
-    ShaderProgram* shader = getMaterial()->getShaderProgram(FINAL_STAGE);
+    ShaderProgram* shader = getMaterial()->getShaderInfo(FINAL_STAGE).getProgram();
     shader->Uniform("_waterShininess",   shininess   );
     shader->Uniform("_noiseFactor",      noiseFactor );
     shader->Uniform("_noiseTile",        noiseTile   );
@@ -125,7 +125,7 @@ void WaterPlane::postDraw(SceneGraphNode* const sgn, const RenderStage& currentS
 bool WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
 
     Material* waterMat = getMaterial();
-    _drawShader = waterMat->getShaderProgram();
+    _drawShader = waterMat->getShaderInfo().getProgram();
     waterMat->getTexture(Material::TEXTURE_UNIT0)->Bind(0);
     _reflectedTexture->Bind(1);
     if (!_cameraUnderWater){
@@ -140,7 +140,7 @@ bool WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
 }
 
 bool WaterPlane::prepareDepthMaterial(SceneGraphNode* const sgn){ 
-    _drawShader = getMaterial()->getShaderProgram(Z_PRE_PASS_STAGE);
+    _drawShader = getMaterial()->getShaderInfo(Z_PRE_PASS_STAGE).getProgram();
     _plane->setCustomShader(_drawShader);
     return _drawShader->bind();
 }

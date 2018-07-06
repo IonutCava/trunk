@@ -79,10 +79,11 @@ protected:
 
     /// Prevent binding multiple textures to the same slot.
     bool checkSlotUsage(GLint location, GLushort slot);
-
+ 
 private:
     typedef Unordered_map<std::string, GLint > ShaderVarMap;
-    typedef Unordered_map<GLushort, GLint >   TextureSlotMap;
+    typedef Unordered_map<GLushort, GLint >    TextureSlotMap;
+
     ShaderVarMap _shaderVars;
     TextureSlotMap _textureSlots;
     boost::atomic_bool _validationQueued;

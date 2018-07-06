@@ -54,6 +54,8 @@ public:
     U8      idle();
     ///Calling refresh will mark all shader programs as dirty
     void    refresh();
+    ///Calling refreshSceneData will mark all shader programs as dirty(scene specific data only)
+    void    refreshSceneData();
     ///Remove a shader from the cache
     void    removeShader(Shader* s);
     ///Find a shader in a cache

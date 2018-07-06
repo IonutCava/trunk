@@ -318,7 +318,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 #ifdef _DEBUG
     for (U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i){
         glGenQueries(PERFORMANCE_COUNTERS, _queryID[i]);
-        assert(_queryID[i][0] != 0);
+        DIVIDE_ASSERT(_queryID[i][0] != 0, "GLFWWrapper error: Invalid performance counter query ID!");
     }
 
     _queryBackBuffer = 4;
@@ -393,7 +393,8 @@ void GL_API::closeRenderingApi(){
 }
 
 void GL_API::initDevice(GLuint targetFrameRate){
-    assert(_imShader != nullptr);
+    DIVIDE_ASSERT(_imShader != nullptr, "GLFWWrapper error: No immediate mode emulation shader available!");
+
     _imShader->Uniform("tex",0);
     while (!glfwWindowShouldClose(Divide::GLUtil::_mainWindow)) {
         Kernel::mainLoopStatic();
@@ -438,6 +439,7 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.1;");
     glswAddDirectiveToken("", "//__CUSTOM_DEFINES__");
     glswAddDirectiveToken("", "//__CUSTOM_UNIFORMS__");
+    glswAddDirectiveToken("Vertex",   std::string("#define SHADER_BUFFER_BONE_TRANSFORMS " + Util::toString(Divide::SHADER_BUFFER_BONE_TRANSFORMS)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define SHADER_BUFFER_LIGHT_SHADOW " + Util::toString(Divide::SHADER_BUFFER_LIGHT_SHADOW)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define SHADER_BUFFER_LIGHT_COLOR " + Util::toString(Divide::SHADER_BUFFER_LIGHT_COLOR)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT0 " + Util::toString(Material::TEXTURE_UNIT0 + 0)).c_str());

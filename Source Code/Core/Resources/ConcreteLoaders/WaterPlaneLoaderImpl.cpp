@@ -1,9 +1,7 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Environment/Water/Headers/Water.h"
-#include "Hardware/Video/Headers/RenderStateBlock.h"
-#include "Hardware/Video/Textures/Headers/Texture.h"
-#include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
 
 WaterPlane* ImplResourceLoader<WaterPlane>::operator()(){
@@ -48,7 +46,7 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const std::stri
     waterMat->setShaderProgram(waterShaderProgram->getName(), FINAL_STAGE, true);
     waterMat->setShaderProgram("depthPass.PrePass", Z_PRE_PASS_STAGE, true);
  
-    RenderStateBlockDescriptor waterMatDesc(waterMat->getRenderStateBlock(FINAL_STAGE).getDescriptor());
+    RenderStateBlockDescriptor waterMatDesc(GFX_DEVICE.getStateBlockDescriptor(waterMat->getRenderStateBlock(FINAL_STAGE)));
     waterMatDesc.setCullMode(CULL_MODE_NONE);
     waterMat->setRenderStateBlock(waterMatDesc, FINAL_STAGE);
 

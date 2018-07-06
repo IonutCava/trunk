@@ -61,7 +61,7 @@ void GUI::draw2D(){
         if (!guiElement->isVisible()) continue;
         switch (guiElement->getType()){
             case GUI_TEXT:{
-                SET_STATE_BLOCK(*guiElement->_guiSB);
+                SET_STATE_BLOCK(guiElement->_guiSBHash);
                 gfx.updateStates();
                 GUIText* text = dynamic_cast<GUIText*>(guiElement);
                 gfx.drawText(*text, text->getPosition());

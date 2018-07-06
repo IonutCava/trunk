@@ -40,7 +40,7 @@ Material::Material() : Resource("temp_material"),
 
    /// Normal state for final rendering
    RenderStateBlockDescriptor stateDescriptor;
-   _defaultRenderStates.insert(std::make_pair(FINAL_STAGE, GFX_DEVICE.getOrCreateStateBlock(stateDescriptor)));
+   _defaultRenderStates.insert(std::make_pair(FINAL_STAGE,      GFX_DEVICE.getOrCreateStateBlock(stateDescriptor)));
    /// the reflection descriptor is the same as the normal descriptor
    RenderStateBlockDescriptor reflectorDescriptor(stateDescriptor);
    _defaultRenderStates.insert(std::make_pair(REFLECTION_STAGE, GFX_DEVICE.getOrCreateStateBlock(reflectorDescriptor)));
@@ -57,10 +57,10 @@ Material::Material() : Resource("temp_material"),
    shadowDescriptor.setColorWrites(true, true, false, false);
    _defaultRenderStates.insert(std::make_pair(SHADOW_STAGE, GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor)));
    
-   assert(_defaultRenderStates[FINAL_STAGE] != nullptr);
-   assert(_defaultRenderStates[Z_PRE_PASS_STAGE] != nullptr);
-   assert(_defaultRenderStates[SHADOW_STAGE] != nullptr);
-   assert(_defaultRenderStates[REFLECTION_STAGE] != nullptr);
+   assert(_defaultRenderStates[FINAL_STAGE]      != 0);
+   assert(_defaultRenderStates[Z_PRE_PASS_STAGE] != 0);
+   assert(_defaultRenderStates[SHADOW_STAGE]     != 0);
+   assert(_defaultRenderStates[REFLECTION_STAGE] != 0);
 
    _computedShaderTextures = false;
 }
@@ -74,20 +74,24 @@ void Material::update(const U64 deltaTime){
     computeShaderInternal();
 }
 
-const RenderStateBlock& Material::getRenderStateBlock(RenderStage currentStage) {
-    if (_defaultRenderStates.find(currentStage) == _defaultRenderStates.end())
-        return *_defaultRenderStates[FINAL_STAGE];
+I64 Material::getRenderStateBlock(RenderStage currentStage) {
+    const renderStateBlockMap::const_iterator& it = _defaultRenderStates.find(currentStage);
+    if (it == _defaultRenderStates.end())
+        return _defaultRenderStates[FINAL_STAGE];
     
-    return *_defaultRenderStates[currentStage];
+    return it->second;
 }
 
-RenderStateBlock* Material::setRenderStateBlock(RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage){
-    if(descriptor.getHash() == _defaultRenderStates[renderStage]->getDescriptor().getHash()){
-        return _defaultRenderStates[renderStage];
+I64 Material::setRenderStateBlock(RenderStateBlockDescriptor& descriptor, const RenderStage& renderStage){
+    renderStateBlockMap::iterator it = _defaultRenderStates.find(renderStage);
+    I64 stateBlockHash = GFX_DEVICE.getOrCreateStateBlock(descriptor);
+    if(it == _defaultRenderStates.end()){
+        _defaultRenderStates.insert(std::make_pair(renderStage, stateBlockHash));
+        return stateBlockHash;
     }
 
-    _defaultRenderStates[renderStage] = GFX_DEVICE.getOrCreateStateBlock(descriptor);
-    return _defaultRenderStates[renderStage];
+    it->second = stateBlockHash;
+    return it->second;
 }
 
 //base = base texture
@@ -258,9 +262,16 @@ void Material::computeShaderInternal(){
     _shaderComputeQueue.pop();
 }
 
-ShaderProgram* const Material::getShaderProgram(RenderStage renderStage) {
-    ShaderProgram* shaderPtr = _shaderInfo[renderStage]._shaderRef;
-    return shaderPtr == nullptr ? ShaderManager::getInstance().getDefaultShader() : shaderPtr;
+ShaderProgram* const Material::ShaderInfo::getProgram(){
+    return _shaderRef == nullptr ? ShaderManager::getInstance().getDefaultShader() : _shaderRef;
+}
+
+Material::ShaderInfo& Material::getShaderInfo(RenderStage renderStage) {
+    Unordered_map<RenderStage, ShaderInfo >::iterator it = _shaderInfo.find(renderStage);
+    if(it == _shaderInfo.end())
+        return _shaderInfo[FINAL_STAGE];
+
+    return it->second;
 }
 
 void Material::setBumpMethod(const BumpMethod& newBumpMethod,const bool force){
@@ -289,9 +300,8 @@ void Material::setDoubleSided(bool state, const bool useAlphaTest) {
     _useAlphaTest = useAlphaTest;
     // Update all render states for this item
     if(_doubleSided){
-        typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
-        FOR_EACH(stateValue& it, _defaultRenderStates){
-            RenderStateBlockDescriptor descriptor(it.second->getDescriptor());
+        FOR_EACH(renderStateBlockMap::value_type& it, _defaultRenderStates){
+            RenderStateBlockDescriptor descriptor(GFX_DEVICE.getStateBlockDescriptor(it.second));
             if (it.first != SHADOW_STAGE) descriptor.setCullMode(CULL_MODE_NONE);
             if (!_useAlphaTest) descriptor.setBlend(true);
             setRenderStateBlock(descriptor, it.first);

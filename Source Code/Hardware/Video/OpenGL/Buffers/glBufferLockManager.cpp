@@ -63,10 +63,7 @@ void glBufferLockManager::wait(GLsync* _syncObj)
                 return;
             }
 
-            if (waitRet == GL_WAIT_FAILED) {
-                assert(!"Not sure what to do here. Probably raise an exception or something.");
-                return;
-            }
+            DIVIDE_ASSERT(waitRet != GL_WAIT_FAILED, "Not sure what to do here. Probably raise an exception or something.");
 
             // After the first time, need to start flushing, and wait for a looong time.
             waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;

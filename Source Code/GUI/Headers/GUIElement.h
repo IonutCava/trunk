@@ -81,7 +81,7 @@ public:
 protected:
     vec2<I32> _position;
     GUIType   _guiType;
-    RenderStateBlock* _guiSB;
+    I64       _guiSBHash;
     CEGUI::Window*    _parent;
 
 private:

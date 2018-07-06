@@ -339,7 +339,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
 
             currentNode = _sceneGraph->getRoot()->addNode(currentMesh, currentName);
             currentNode->getTransform()->scale(currentScale);
-            assert(currentNode);
+            DIVIDE_ASSERT(currentNode != nullptr, "WarScene error: INVALID SOLDIER NODE TEMPLATE!");
             currentNode->setSelectable(true);
             I8 side = k == 0 ? -1 : 1;
 

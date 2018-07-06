@@ -1,5 +1,4 @@
 #include "Headers/TrackedObject.h"
-#include <cassert>
 
 TrackedObject::TrackedObject() : GUIDWrapper(), _refCount(1)
 {

@@ -477,7 +477,7 @@ public:
         const F32* mat2 = &B.mat[0];
         U8 i = 0;
         for (; i < 16; ++i)
-            if (!FLOAT_COMPARE(mat[i] + EPSILON, mat2[i] + EPSILON)) //< add a small epsilon value to avoid 0.0 != 0.0
+            if (!FLOAT_COMPARE(mat[i] + EPSILON_F32, mat2[i] + EPSILON_F32)) //< add a small epsilon value to avoid 0.0 != 0.0
                 return false;
 
         return true;

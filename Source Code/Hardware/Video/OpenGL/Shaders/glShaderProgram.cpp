@@ -71,7 +71,7 @@ U8 glShaderProgram::update(const U64 deltaTime){
    
             glGetProgramiv(_shaderProgramId, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
             void* binary = (void*)malloc(binaryLength);
-            assert(binary != NULL);
+            DIVIDE_ASSERT(binary != NULL, "glShaderProgram error: could not allocate memory for the program binary!");
             glGetProgramBinary(_shaderProgramId, binaryLength, nullptr, &_binaryFormat, binary);
  
             std::string outFileName("shaderCache/Binary/"+getName()+".bin");
@@ -107,7 +107,7 @@ std::string glShaderProgram::getLog() const {
 }
 
 void glShaderProgram::detachShader(Shader* const shader){
-    assert(_threadedLoadComplete);
+    DIVIDE_ASSERT(_threadedLoadComplete, "glShaderProgram error: tried to detach a shader from a program that didn't finish loading!");
     glDetachShader(_shaderProgramId ,shader->getShaderId());
 }
 
@@ -155,7 +155,7 @@ void glShaderProgram::threadedLoad(const std::string& name){
 
     validate();
     _shaderProgramId = _shaderProgramIDTemp;
-
+    _textureSlots.clear();
     ShaderProgram::generateHWResource(name);
 }
 
@@ -329,8 +329,7 @@ GLint glShaderProgram::cachedLoc(const std::string& name, const bool uniform){
     //Not loaded or NULL_SHADER
     if (!isHWInitComplete() || _shaderProgramId == 0 || _shaderProgramId == Divide::GLUtil::_invalidObjectID) return -1;
     
-    assert(_linked && _threadedLoadComplete);
-
+    DIVIDE_ASSERT(_linked && _threadedLoadComplete, "glShaderProgram error: tried to query a shader program before linking!");
     const ShaderVarMap::const_iterator& it = _shaderVars.find(name);
 
     if(it != _shaderVars.end())	return it->second;
@@ -348,11 +347,11 @@ bool glShaderProgram::bind() {
         return false;
     }
 
-    assert(_shaderProgramId != Divide::GLUtil::_invalidObjectID);
+    DIVIDE_ASSERT(_shaderProgramId != Divide::GLUtil::_invalidObjectID, "glShaderProgram error: tried to bind a shader program with an invalid handle!");
 
     GL_API::setActiveProgram(this);
     //send default uniforms to GPU for every shader
-   return ShaderProgram::bind();
+    return ShaderProgram::bind();
 }
 
 void glShaderProgram::unbind(bool resetActiveProgram) {
@@ -394,7 +393,7 @@ void glShaderProgram::Attribute(I32 location, const vec4<GLfloat>& value) const 
 }
 
 void glShaderProgram::SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const {
-    assert(_bound);
+    DIVIDE_ASSERT(_bound && _linked, "glShaderProgram error: tried to set subroutines on an unbound or unlinked program!");
     if (indices[0] != GL_INVALID_INDEX)
         glUniformSubroutinesuiv(_shaderStageTable[type], (GLsizei)indices.size(), &indices.front());
     
@@ -402,7 +401,7 @@ void glShaderProgram::SetSubroutines(ShaderType type, const vectorImpl<U32>& ind
 
 void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
     static U32 value[1];
-    assert(_bound && _linked);
+    DIVIDE_ASSERT(_bound && _linked, "glShaderProgram error: tried to set subroutines on an unbound or unlinked program!");
     if (index != GL_INVALID_INDEX){
         value[0] = index;
         glUniformSubroutinesuiv(_shaderStageTable[type], 1, value);
@@ -410,7 +409,7 @@ void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
 }
 
 U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const std::string& name) const {
-    assert(_linked);
+    DIVIDE_ASSERT(_linked, "glShaderProgram error: tried to query subroutines on an unlinked program!");
 
     return glGetSubroutineIndex(_shaderProgramId, _shaderStageTable[type], name.c_str());
 }
@@ -424,7 +423,7 @@ void glShaderProgram::Uniform(GLint location, GLuint value) const {
 
 void glShaderProgram::Uniform(GLint location, GLint value) const {
     if (location == -1) return;
-
+ 
     if (!_bound) glProgramUniform1i(_shaderProgramId, location, value);
     else         glUniform1i(location, value);
 }

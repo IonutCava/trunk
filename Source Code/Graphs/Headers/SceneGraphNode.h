@@ -167,6 +167,7 @@ public:
 
     void getShadowCastersAndReceivers(vectorImpl<const SceneGraphNode* >& casters, vectorImpl<const SceneGraphNode* >& receivers, bool visibleOnly = false) const;
 
+    inline U32  getInstanceID() const {return _instanceID;}
     inline U32  getChildQueue() const {return _childQueue;}
     inline void incChildQueue()       {_childQueue++;}
     inline void decChildQueue()       {_childQueue--;}
@@ -229,6 +230,7 @@ private:
     Transform*  _transformPrevious;
     mat4<F32>   _transformGlobalMatrixCache;
 
+    U32 _instanceID;
     U32 _childQueue;
     D32 _updateTimer;
     U64 _elapsedTime;//< the total amount of time that passed since this node was created

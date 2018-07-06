@@ -453,6 +453,7 @@
     <ClCompile Include="..\..\Source Code\Graphs\Components\AnimationComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\NavigationComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\PhysicsComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\Graphs\Components\SGNComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SceneNodeRenderState.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SGNRenderCalls.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIFormattedListBox.cpp" />

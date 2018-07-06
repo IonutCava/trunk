@@ -31,7 +31,6 @@ glIMPrimitive* GL_API::getOrCreateIMPrimitive(bool allowPrimitiveRecycle){
         tempPriv = New glIMPrimitive();
         _glimInterfaces.push_back(tempPriv);
     }
-    assert(tempPriv != nullptr);
     tempPriv->_setupStates.clear();
     tempPriv->_resetStates.clear();
     tempPriv->_canZombify = allowPrimitiveRecycle;

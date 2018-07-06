@@ -53,7 +53,7 @@ void WarSceneAISceneImpl::processInput(const U64 deltaTime){
     _deltaTime += deltaTime;
 
     AITeam* currentTeam = _entity->getTeam();
-    assert(currentTeam);
+    DIVIDE_ASSERT(currentTeam != nullptr, "WarScene error: INVALID TEAM FOR INPUT UPDATE");
 
     if(_entity->destinationReached()) {
         I64 currentIndex = 0;

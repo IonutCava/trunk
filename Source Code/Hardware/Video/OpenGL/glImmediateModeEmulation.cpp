@@ -11,7 +11,6 @@ glIMPrimitive::glIMPrimitive() : IMPrimitive()
 {
     _imInterface = New NS_GLIM::GLIM_BATCH();
     _imInterface->SetVertexAttribLocation(Divide::VERTEX_POSITION_LOCATION);
-    assert(_imInterface != nullptr);
     glimPrimitiveType[API_POINTS] = NS_GLIM::GLIM_POINTS;
     glimPrimitiveType[LINES] = NS_GLIM::GLIM_LINES;
     glimPrimitiveType[LINE_LOOP] = NS_GLIM::GLIM_LINE_LOOP;

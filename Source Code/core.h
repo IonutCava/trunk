@@ -34,7 +34,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
-#include <cassert>
 #include <memory>
 #include <malloc.h>
 #include <typeinfo.h>

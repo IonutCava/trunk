@@ -1,6 +1,6 @@
 uniform vec2  dvd_zPlanes;
 uniform mat4  material;
-uniform int   isSelected = 0;
+uniform int   dvd_isSelected = 0;
 uniform int   lodLevel = 0;
 
 #include "lightInput.cmn"
@@ -58,7 +58,7 @@ vec4 Phong(const in vec2 texCoord, const in vec3 normal, const in vec4 textureCo
 #endif
 
     //Add global ambient value and selection ambient value
-    materialProp.ambient += isSelected ? vec4(1.0) : dvd_lightAmbient * material[0];
+    materialProp.ambient += dvd_isSelected ? vec4(1.0) : dvd_lightAmbient * material[0];
     //Add material color terms to the final color
     vec4 linearColor = vec4(((materialProp.ambient.rgb + materialProp.diffuse.rgb) * textureColor.rgb) + materialProp.specular.rgb, alpha);
 

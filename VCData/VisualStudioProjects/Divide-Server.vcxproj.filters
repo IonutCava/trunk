@@ -22,9 +22,6 @@
     <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\DataTypes.h">
       <Filter>Header Files\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\MathClasses.h">
-      <Filter>Header Files\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\OutputBuffer.h">
       <Filter>Header Files\Utility</Filter>
     </ClInclude>

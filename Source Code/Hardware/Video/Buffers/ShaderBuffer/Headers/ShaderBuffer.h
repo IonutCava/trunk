@@ -39,7 +39,7 @@ public:
 
     ///Create a new buffer to hold our shader data
     virtual void Create(bool dynamic = true, bool stream = false) = 0;
-    virtual void ReserveBuffer(U32 primitiveCount, ptrdiff_t primitiveSize) const = 0;
+    virtual void ReserveBuffer(U32 primitiveCount, ptrdiff_t primitiveSize) = 0;
     virtual void ChangeSubData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer = false) const = 0;
     virtual bool bindRange(U32 bindIndex, ptrdiff_t offset, ptrdiff_t size) const = 0;
     virtual bool bind(U32 bindIndex) const = 0;

@@ -103,12 +103,11 @@ private:
     U64 _stateRefreshInterval;
     U64 _stateRefreshIntervalBuffer;
     ImageTools::ImageData _map;  ///< Dispersion map for vegetation placement
-    Texture*              _grassBillboards;
-    ShaderProgram*        _cullShader;
-    std::string           _grassShaderName;
-    bool _shadowMapped;
-    RenderStateBlock*     _grassStateBlock;
-
+    Texture*               _grassBillboards;
+    ShaderProgram*         _cullShader;
+    std::string            _grassShaderName;
+    bool                   _shadowMapped;
+    I64                    _grassStateBlockHash;
     bool                   _culledFinal;
     U32                    _readBuffer;
     U32                    _writeBuffer;

@@ -56,7 +56,7 @@ namespace ImageTools {
 	}
 
 	bool ImageData::setInternalData() {
-		assert(ilGetInteger(IL_CUR_IMAGE) != 0);
+		DIVIDE_ASSERT(ilGetInteger(IL_CUR_IMAGE) != 0, "INVALID IMAGE FILE TARGET FOR INTERNAL DATA UPDATE!");
 		_dimensions.set(ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT));
 		_bpp    = ilGetInteger(IL_IMAGE_BPP);
 		ILint format = ilGetInteger(IL_IMAGE_FORMAT);

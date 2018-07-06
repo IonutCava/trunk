@@ -117,7 +117,7 @@ inline void PhysX::updateTimeStep(U8 timeStepFactor) {
 
 ///Process results
 void PhysX::process(const U64 deltaTime){
-    if(_targetScene && _timeStep > EPSILON){
+    if(_targetScene && _timeStep > 0.0f){
         _accumulator  += static_cast<physx::PxReal>(getUsToMs(deltaTime));
         
         if(_accumulator < _timeStep)

@@ -33,6 +33,7 @@ Vegetation::Vegetation(const VegetationDetails& details) : SceneNode(details.nam
     _terrainChunk(nullptr),
     _instanceCountGrass(0),
     _instanceCountTrees(0),
+    _grassStateBlockHash(0),
     _stateRefreshIntervalBuffer(0ULL),
     _stateRefreshInterval(getSecToUs(1)) ///<Every second?
 {
@@ -94,7 +95,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk, SceneGraphNode* co
     RenderStateBlockDescriptor transparent;
     transparent.setCullMode(CULL_MODE_CW);
     //transparent.setBlend(true);
-    _grassStateBlock = GFX_DEVICE.getOrCreateStateBlock( transparent );
+    _grassStateBlockHash = GFX_DEVICE.getOrCreateStateBlock( transparent );
 
     ResourceDescriptor vegetationMaterial("vegetationMaterial" + getName());
     Material* vegMaterial = CreateResource<Material>(vegetationMaterial);
@@ -186,13 +187,12 @@ bool Vegetation::uploadGrassData(){
 
     Material* mat = getMaterial();
     for (U8 i = 0; i < 3; ++i){
-        RenderStage stage = (i == 0 ? FINAL_STAGE : (i == 1 ? SHADOW_STAGE : Z_PRE_PASS_STAGE));
-        
-        mat->getShaderProgram(stage)->Uniform("positionOffsets", grassBlades);
-        mat->getShaderProgram(stage)->Uniform("texCoordOffsets", texCoord);
-        mat->getShaderProgram(stage)->Uniform("rotationMatrices", rotationMatrices);
-        mat->getShaderProgram(stage)->Uniform("lod_metric", 100.0f);
-        mat->getShaderProgram(stage)->UniformTexture("texDiffuseGrass", 0);
+        ShaderProgram* const shaderProg = mat->getShaderInfo(i == 0 ? FINAL_STAGE : (i == 1 ? SHADOW_STAGE : Z_PRE_PASS_STAGE)).getProgram();
+        shaderProg->Uniform("positionOffsets", grassBlades);
+        shaderProg->Uniform("texCoordOffsets", texCoord);
+        shaderProg->Uniform("rotationMatrices", rotationMatrices);
+        shaderProg->Uniform("lod_metric", 100.0f);
+        shaderProg->UniformTexture("texDiffuseGrass", 0);
     }
     
     for(U8 i = 0; i < 2; ++i){
@@ -251,9 +251,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Sce
             Material* mat = getMaterial();
             for (U8 i = 0; i < 3; ++i){
                 RenderStage stage = (i == 0 ? FINAL_STAGE : (i == 1 ? SHADOW_STAGE : Z_PRE_PASS_STAGE));
-                mat->getShaderProgram(stage)->Uniform("windDirection",vec2<F32>(_windX,_windZ));
-                mat->getShaderProgram(stage)->Uniform("windSpeed", _windS);
-                mat->getShaderProgram(stage)->Uniform("grassScale",/* _grassSize*/1.0f);
+                mat->getShaderInfo(stage).getProgram()->Uniform("grassScale",/* _grassSize*/1.0f);
             }
              _stateRefreshIntervalBuffer -= _stateRefreshInterval;
             _cullShader->Uniform("dvd_visibilityDistance", sceneState.getGrassVisibility());
@@ -324,7 +322,7 @@ bool Vegetation::setMaterialInternal(SceneGraphNode* const sgn) {
     bool depthPrePass = GFX_DEVICE.isDepthPrePass();
 
     LightManager& lightMgr = LightManager::getInstance();
-    _drawShader = getMaterial()->getShaderProgram(depthPass ? (depthPrePass ? Z_PRE_PASS_STAGE : SHADOW_STAGE) : FINAL_STAGE);
+    _drawShader = getMaterial()->getShaderInfo(depthPass ? (depthPrePass ? Z_PRE_PASS_STAGE : SHADOW_STAGE) : FINAL_STAGE).getProgram();
     if (!depthPass){
         _drawShader->ApplyMaterial(getMaterial());
         _drawShader->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
@@ -345,7 +343,7 @@ void Vegetation::render(SceneGraphNode* const sgn, const SceneRenderState& scene
     if (instanceCount == 0)
         return;
 
-    SET_STATE_BLOCK(*_grassStateBlock, true);
+    SET_STATE_BLOCK(_grassStateBlockHash, true);
 
     _grassBillboards->Bind(0);
     if(setMaterialInternal(sgn)){

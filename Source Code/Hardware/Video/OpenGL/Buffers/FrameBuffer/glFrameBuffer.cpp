@@ -40,8 +40,8 @@ void glFrameBuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
     if (!_attachmentDirty[type])
         return;
 
-    assert(_width != 0 && _height != 0);
-
+    DIVIDE_ASSERT(_width != 0 && _height != 0, "glFrameBuffer error: Invalid frame buffer dimensions!");
+    
     if(type != TextureDescriptor::Depth) _hasColor = true;
     else                                 _hasDepth = true;
 
@@ -220,17 +220,11 @@ bool glFrameBuffer::Create(GLushort width, GLushort height) {
     }
 
     _clearBufferMask = 0;
-    if(glGenerateMipmap == nullptr){
-        ERROR_FN(Locale::get("ERROR_NO_MIP_MAPS"));
-        assert(glGenerateMipmap);
-    }
+    DIVIDE_ASSERT(glGenerateMipmap != NULL, Locale::get("ERROR_NO_MIP_MAPS"));
 
     if(_frameBufferHandle <= 0){
         glGenFramebuffers(1, &_frameBufferHandle);
     }
-#ifdef _DEBUG
-    else assert(_width != width && _height != height);
-#endif
 
     _width = width;
     _height = height;
@@ -347,7 +341,7 @@ void glFrameBuffer::Bind(GLubyte unit, TextureDescriptor::AttachmentType slot) {
 }
 
 void glFrameBuffer::Begin(const FrameBufferTarget& drawPolicy) {
-    assert(_frameBufferHandle != 0);
+    DIVIDE_ASSERT(_frameBufferHandle != 0, "glFrameBuffer error: Tried to bind and invalid framebuffer!");
    
     if(_viewportChanged){
         GFX_DEVICE.restoreViewport();
@@ -413,7 +407,7 @@ void glFrameBuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer
 
 void glFrameBuffer::SetMipLevel(U8 mipLevel, TextureDescriptor::AttachmentType slot){
     // Only 2D texture support for now
-    assert(_textureType[slot] == GL_TEXTURE_2D);
+    DIVIDE_ASSERT(_textureType[slot] == GL_TEXTURE_2D, "glFrameBuffer error: Changing mip level is only available for 2D textures!");
 
     glTexParameteri(_textureType[slot], GL_TEXTURE_BASE_LEVEL, mipLevel);
     glTexParameteri(_textureType[slot], GL_TEXTURE_MAX_LEVEL,  mipLevel);
@@ -422,7 +416,7 @@ void glFrameBuffer::SetMipLevel(U8 mipLevel, TextureDescriptor::AttachmentType s
 
 void glFrameBuffer::ResetMipLevel(TextureDescriptor::AttachmentType slot) {
     // Only 2D texture support for now
-    assert(_textureType[slot] == GL_TEXTURE_2D);
+    DIVIDE_ASSERT(_textureType[slot] == GL_TEXTURE_2D, "glFrameBuffer error: Changing mip level is only available for 2D textures!");
 
     // reset mipmap level range for the depth image
     glTexParameteri(_textureType[slot], GL_TEXTURE_BASE_LEVEL, _mipMinLevel[slot]);

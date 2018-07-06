@@ -47,12 +47,6 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _2DRendering = false;
    _loaderThread = nullptr;
    _matricesBuffer = nullptr;
-   _state2DRendering = nullptr;
-   _stateDepthOnlyRendering = nullptr;
-   _defaultStateBlock = nullptr;
-   _defaultStateNoDepth = nullptr;
-   _currentStateBlock = nullptr;
-   _previewDepthMapShader = nullptr;
    _stateBlockDirty = false;
    _drawDebugAxis = false;
    _enablePostProcessing = false;
@@ -87,6 +81,13 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    RenderPass* diffusePass = New RenderPass("diffusePass");
    RenderPassManager::getOrCreateInstance().addRenderPass(diffusePass,1);
    //RenderPassManager::getInstance().addRenderPass(shadowPass,2);
+
+   _state2DRenderingHash = 0;
+   _stateDepthOnlyRenderingHash = 0;
+   _defaultStateBlockHash = 0;
+   _defaultStateNoDepthHash = 0;
+   _currentStateBlockHash = 0;
+   _previewDepthMapShader = 0;
 }
 
 GFXDevice::~GFXDevice()
@@ -118,18 +119,18 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
         changeResolution(resolution);
 
         RenderStateBlockDescriptor defaultStateDescriptor;
-        _defaultStateBlock = getOrCreateStateBlock(defaultStateDescriptor);
+        _defaultStateBlockHash = getOrCreateStateBlock(defaultStateDescriptor);
         RenderStateBlockDescriptor defaultStateDescriptorNoDepth;
         defaultStateDescriptorNoDepth.setZReadWrite(false, false);
-        _defaultStateNoDepth = getOrCreateStateBlock(defaultStateDescriptorNoDepth);
+        _defaultStateNoDepthHash = getOrCreateStateBlock(defaultStateDescriptorNoDepth);
         RenderStateBlockDescriptor state2DRenderingDesc;
         state2DRenderingDesc.setCullMode(CULL_MODE_NONE);
         state2DRenderingDesc.setZReadWrite(false, true);
-        _state2DRendering = getOrCreateStateBlock(state2DRenderingDesc);
+        _state2DRenderingHash = getOrCreateStateBlock(state2DRenderingDesc);
         RenderStateBlockDescriptor stateDepthOnlyRendering;
         stateDepthOnlyRendering.setColorWrites(false, false, false, false);
         stateDepthOnlyRendering.setZFunc(CMP_FUNC_ALWAYS);
-        _stateDepthOnlyRendering = getOrCreateStateBlock(stateDepthOnlyRendering);
+        _stateDepthOnlyRenderingHash = getOrCreateStateBlock(stateDepthOnlyRendering);
 
         SET_DEFAULT_STATE_BLOCK(true);
         //Screen FB should use MSAA if available, else fallback to normal color FB (no AA or FXAA)
@@ -375,50 +376,53 @@ void  GFXDevice::generateCubeMap(FrameBuffer& cubeMap, const vec3<F32>& pos, con
     _kernel->getCameraMgr().popActiveCamera();
 }
 
-RenderStateBlock* GFXDevice::getOrCreateStateBlock(RenderStateBlockDescriptor& descriptor){
+I64 GFXDevice::getOrCreateStateBlock(RenderStateBlockDescriptor& descriptor){
    size_t hashValue = descriptor.getHash();
 
-   if (_stateBlockMap.find(hashValue) != _stateBlockMap.end())
-      return _stateBlockMap[hashValue];
+   if (_stateBlockMap.find(hashValue) == _stateBlockMap.end())
+       _stateBlockMap.insert(std::make_pair(hashValue, New RenderStateBlock(descriptor)));
 
-   RenderStateBlock* result = New RenderStateBlock(descriptor);
-   _stateBlockMap.insert(std::make_pair(hashValue,result));
-
-   return result;
+   return hashValue;
 }
 
-RenderStateBlock* GFXDevice::setStateBlock(const RenderStateBlock& block, bool forceUpdate) {
+I64 GFXDevice::setStateBlock(I64 stateBlockHash, bool forceUpdate) {
    
-   RenderStateBlock* prev = _newStateBlock;
-   if (!_currentStateBlock || !block.Compare(*_currentStateBlock)) {
+   I64 prevStateHash = _newStateBlockHash;
+   if (_currentStateBlockHash == 0 || stateBlockHash != _currentStateBlockHash) {
        _deviceStateDirty = _stateBlockDirty = true;
-       _newStateBlock = const_cast<RenderStateBlock*>(&block);
+       _newStateBlockHash = stateBlockHash;
        if(forceUpdate)  updateStates();//<there is no need to force a internal update of stateblocks if nothing changed
    } else {
        _stateBlockDirty = false;
-       _newStateBlock = _currentStateBlock;
+       _newStateBlockHash = _currentStateBlockHash;
    }
 
-   return prev;
+   return prevStateHash;
 }
 
 void GFXDevice::updateStates(bool force) {
-    RenderStateBlock* old = nullptr;
+    I64 oldStateBlockHash = 0;
     //Verify render states
     if(force){
         _stateBlockDirty = true;
     }else{
-        old = _currentStateBlock;
+        oldStateBlockHash = _currentStateBlockHash;
     }
 
-    if (_newStateBlock && _stateBlockDirty){
-        activateStateBlock(*_newStateBlock, old);
+    if (_newStateBlockHash && _stateBlockDirty){
+        activateStateBlock(*_stateBlockMap[_newStateBlockHash], oldStateBlockHash == 0 ? nullptr : _stateBlockMap[oldStateBlockHash]);
         _stateBlockDirty = false;
     }
 
-    _currentStateBlock = _newStateBlock;
+    _currentStateBlockHash = _newStateBlockHash;
     
     updateClipPlanes();
+}
+
+const RenderStateBlockDescriptor& GFXDevice::getStateBlockDescriptor(I64 renderStateBlockHash) const {
+    RenderStateMap ::const_iterator it = _stateBlockMap.find(renderStateBlockHash);
+    assert(it != _stateBlockMap.end());
+    return it->second->getDescriptor(); 
 }
 
 void GFXDevice::changeResolution(U16 w, U16 h) {
@@ -451,7 +455,7 @@ void GFXDevice::enableFog(F32 density, const vec3<F32>& color){
     par.setParam("rendering.sceneState.fogColor.g", color.g);
     par.setParam("rendering.sceneState.fogColor.b", color.b);
     par.setParam("rendering.sceneState.fogDensity",density);
-    _shaderManager.refresh();
+    _shaderManager.refreshSceneData();
 }
 
  void GFXDevice::popWorldMatrix(){
@@ -507,7 +511,7 @@ void GFXDevice::cleanMatrices(){
 }
 
 void GFXDevice::toggle2D(bool state) {
-    static RenderStateBlock* previousStateBlock = nullptr;
+    static I64 previousStateBlockHash = 0;
     if (state == _2DRendering) return;
 #ifdef _DEBUG
     assert((state && !_2DRendering) || (!state && _2DRendering));
@@ -515,12 +519,12 @@ void GFXDevice::toggle2D(bool state) {
     _2DRendering = state;
 
     if (state){ //2D
-        previousStateBlock = SET_STATE_BLOCK(*_state2DRendering);
+        previousStateBlockHash = SET_STATE_BLOCK(_state2DRenderingHash);
         _kernel->getCameraMgr().pushActiveCamera(_2DCamera);
         _2DCamera->renderLookAt();
     }else{ //3D
         _kernel->getCameraMgr().popActiveCamera();
-        SET_STATE_BLOCK(*previousStateBlock);
+        SET_STATE_BLOCK(previousStateBlockHash);
     }
 }
 
@@ -622,7 +626,6 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK&
     return true;
 }
 
-
 void GFXDevice::ConstructHIZ() {
     static FrameBuffer::FrameBufferTarget hizTarget;
     hizTarget._clearBuffersOnBind = false;
@@ -630,7 +633,7 @@ void GFXDevice::ConstructHIZ() {
     _HIZConstructProgram->bind();
     // disable color buffer as we will render only a depth image
     // we have to disable depth testing but allow depth writes
-    setStateBlock(*_stateDepthOnlyRendering);
+    setStateBlock(_stateDepthOnlyRenderingHash);
     
     _renderTarget[RENDER_TARGET_DEPTH]->Begin(hizTarget);
     _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
@@ -666,7 +669,7 @@ void GFXDevice::DownSampleDepthBuffer(vectorImpl<vec2<F32>> &depthRanges){
 
     _depthRanges->Begin(FrameBuffer::defaultPolicy());
     _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
-    SET_STATE_BLOCK(*_defaultStateNoDepth, true);
+    SET_STATE_BLOCK(_defaultStateNoDepthHash, true);
     _depthRangesConstrucProgram->bind();
     drawPoints(1);
     depthRanges.resize(_depthRanges->getWidth() * _depthRanges->getHeight());

@@ -3,7 +3,7 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "core.h"
 
-glUniformBuffer::glUniformBuffer(const bool unbound) : ShaderBuffer(unbound), _UBOid(0)
+glUniformBuffer::glUniformBuffer(const bool unbound) : ShaderBuffer(unbound), _UBOid(0), _bufferSize(0)
 {
 }
 
@@ -87,41 +87,44 @@ void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram, U32 bindInde
 }
 
 void glUniformBuffer::Create(bool dynamic, bool stream){
-    assert(_UBOid == 0);
+    DIVIDE_ASSERT(_UBOid == 0, "glUniformBuffer error: Tried to double create current UBO");
+
     _usage = (dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW) : GL_STATIC_DRAW);
     glGenBuffers(1, &_UBOid); // Generate the buffer
     _target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
-    assert(_UBOid != 0);
+
+    DIVIDE_ASSERT(_UBOid != 0, "glUniformBuffer error: UBO creation failed");
 }
 
 void glUniformBuffer::setActive() const {
+    DIVIDE_ASSERT(_UBOid != 0, "glUniformBuffer error: Tried to modify an uninitialized UBO");
     _unbound ? GL_API::setActiveBuffer(GL_SHADER_STORAGE_BUFFER, _UBOid) : GL_API::setActiveBuffer(GL_UNIFORM_BUFFER, _UBOid);
 }
 
-void glUniformBuffer::ReserveBuffer(GLuint primitiveCount, GLsizeiptr primitiveSize) const {
-    assert(_UBOid != 0);
-
+void glUniformBuffer::ReserveBuffer(GLuint primitiveCount, GLsizeiptr primitiveSize) {
     setActive();
     glBufferData(_target, primitiveSize * primitiveCount, nullptr, _usage);
+    _bufferSize = primitiveSize * primitiveCount;
 }
 
 void glUniformBuffer::ChangeSubData(GLintptr offset, GLsizeiptr size, const GLvoid *data, const bool invalidateBuffer) const {
-    assert(_UBOid != 0);
     setActive();
-    if(invalidateBuffer)
-        glBufferData(_target, size, NULL, _usage);
-    
+    if(invalidateBuffer){
+        DIVIDE_ASSERT(size == _bufferSize, "glUniformBuffer error: Buffer orphaning on ChangeSubData is available only if the entire buffer data is replaced!");
+        glBufferData(_target, _bufferSize, NULL, _usage);
+    }
+    DIVIDE_ASSERT(offset + size <= _bufferSize, "glUniformBuffer error: ChangeSubData was called with an invalid range (buffer overflow)!");
     glBufferSubData(_target, offset, size, data);
 }
 
 bool glUniformBuffer::bindRange(GLuint bindIndex, GLintptr offset, GLsizeiptr size) const {
-    assert(_UBOid != 0); 
+    DIVIDE_ASSERT(_UBOid != 0, "glUniformBuffer error: Tried to bind an uninitialized UBO");
     glBindBufferRange(_target, bindIndex, _UBOid, offset, size);
     return true;
 }
 
 bool glUniformBuffer::bind(GLuint bindIndex) const {
-    assert(_UBOid != 0);
-    glBindBufferBase(_target, bindIndex, _UBOid);
+    DIVIDE_ASSERT(_UBOid != 0, "glUniformBuffer error: Tried to bind an uninitialized UBO");
+    _unbound ? glBindBufferRange(_target, bindIndex, _UBOid, 0, _bufferSize) : glBindBufferBase(_target, bindIndex, _UBOid);
     return true;
 }

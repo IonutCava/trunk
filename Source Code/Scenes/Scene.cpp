@@ -357,7 +357,6 @@ void Scene::clearObjects(){
     while(!_modelDataArray.empty())
         _modelDataArray.pop();
     _vegetationDataArray.clear();
-    assert(_sceneGraph);
 
     _particleEmitters.clear();
     SAFE_DELETE(_sceneGraph);
@@ -445,6 +444,6 @@ TerrainDescriptor* Scene::getTerrainInfo(const std::string& terrainName) {
     if (terrainName.compare(_terrainInfoArray[i]->getVariable("terrainName")) == 0)
         return _terrainInfoArray[i];
 
-    assert(false); // not found;
+    DIVIDE_ASSERT(false, "Scene error: INVALID TERRAIN NAME FOR INFO LOOKUP"); // not found;
     return _terrainInfoArray[0];
 }

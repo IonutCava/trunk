@@ -189,13 +189,13 @@ U8 InputInterface::init(Kernel* const kernel, const std::string& windowTitle) {
 #endif
 
     _pInputInterface = OIS::InputManager::createInputSystem(pl);
-    assert(_pInputInterface);
+    DIVIDE_ASSERT(_pInputInterface != nullptr, "InputInterface error: Could not create OIS Input Interface");
 
     PRINT_FN(Locale::get("INPUT_CREATE_OK"), _pInputInterface->inputSystemName().c_str());
 
     // Create the event handler.
     _pEventHdlr = New EventHandler(this, kernel);
-    assert(_pEventHdlr);
+    DIVIDE_ASSERT(_pEventHdlr != nullptr, "InputInterface error: EventHandler allocation failed!");
 
     try{
         // Create a simple keyboard

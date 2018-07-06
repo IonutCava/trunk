@@ -63,7 +63,7 @@ public:
     inline void normalize() {
         // Don't normalize if we don't have to
         T mag2 = (_w * _w + _x * _x + _y * _y + _z * _z);
-        if (  mag2!=0.f && (fabs(mag2 - 1.0f) > EPSILON)) {
+        if (  mag2!=0.f && (fabs(mag2 - 1.0f) > EPSILON_F32)) {
             T mag = square_root_tpl(mag2);
             _w /= mag;
             _x /= mag;
@@ -347,11 +347,11 @@ public:
         T test = _x * _y + _z * _w;
         T unit = sqx + sqy + sqz + sqw; // if normalized is one, otherwise is correction factor
 
-        if(test > (0.5f - EPSILON) * unit) { // singularity at north pole
+        if(test > (0.5f - EPSILON_F32) * unit) { // singularity at north pole
             heading  = 2 * atan2(_x , _w);
             attitude = M_PIDIV2;
             bank     = 0;
-        }else if (test < -(0.5f - EPSILON) * unit) { // singularity at south pole
+        }else if (test < -(0.5f - EPSILON_F32) * unit) { // singularity at south pole
             heading  = -2 * atan2(_x , _w);
             attitude = -M_PIDIV2;
             bank     = 0;

@@ -46,7 +46,8 @@ class GFXDevice;
 ///Rough around the edges Adapter pattern
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
 friend class Frustum; ///< For matrix recovery operations
-typedef std::stack<mat4<F32>, vectorImpl<mat4<F32> > > matrixStackW;
+    typedef std::stack<mat4<F32>, vectorImpl<mat4<F32> > > matrixStackW;
+    typedef Unordered_map<I64, RenderStateBlock* > RenderStateMap;
 public:
     enum RenderTarget {
         RENDER_TARGET_SCREEN = 0,
@@ -143,8 +144,14 @@ public:
     inline void         setPrevTextureId(const U32& id)  {_prevTextureId = id;}
     inline U32          getPrevTextureId()               {return _prevTextureId;}
            void         closeRenderer();
-    inline Renderer*    getRenderer()                         {assert(_renderer != nullptr); return _renderer;}
-    inline void         setRenderer(Renderer* const renderer) {assert(renderer != nullptr);  SAFE_UPDATE(_renderer, renderer);}
+    inline Renderer*    getRenderer()                         {
+        DIVIDE_ASSERT(_renderer != nullptr, "GFXDevice error: Renderer requested but not created!"); 
+        return _renderer;
+    }
+    inline void         setRenderer(Renderer* const renderer) {
+        DIVIDE_ASSERT(renderer != nullptr, "GFXDevice error: Tried to create an invalid renderer!"); 
+        SAFE_UPDATE(_renderer, renderer);
+    }
     /*
     /* Clipping plane management. All the clipping planes are handled by shader programs only!
     */
@@ -196,13 +203,12 @@ public:
     ///Creates a new API dependent stateblock based on the received description
     ///Sets the current state block to the one passed as a param
     ///It is not set immediately, but a call to "updateStates" is required
-    RenderStateBlock* setStateBlock(const RenderStateBlock& block, bool forceUpdate = false);
+    I64 setStateBlock(I64 stateBlockHash, bool forceUpdate = false);
     /// Return or create a new state block using the given descriptor. DO NOT DELETE THE RETURNED STATE BLOCK! GFXDevice handles that!
-    RenderStateBlock* getOrCreateStateBlock(RenderStateBlockDescriptor& descriptor);
+    I64 getOrCreateStateBlock(RenderStateBlockDescriptor& descriptor);
+    const RenderStateBlockDescriptor& getStateBlockDescriptor(I64 renderStateBlockHash) const;
     ///Sets a standard state block
-    inline RenderStateBlock* setDefaultStateBlock(bool forceUpdate = false)  {return setStateBlock(*_defaultStateBlock, forceUpdate);}
-    ///Update the graphics pipeline using the current rendering API with the state block passed
-    inline void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock)  const { _api.activateStateBlock(newBlock, oldBlock); }
+    inline I64 setDefaultStateBlock(bool forceUpdate = false)  {return setStateBlock(_defaultStateBlockHash, forceUpdate);}
     ///If a new state has been set, update the Graphics pipeline
            void updateStates(bool force = false);
     /*//Render State Management */
@@ -295,6 +301,8 @@ private:
     ~GFXDevice();
     void previewDepthBuffer();
     void updateViewportInternal(const vec4<I32>& viewport);
+    ///Update the graphics pipeline using the current rendering API with the state block passed
+    inline void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock)  const { _api.activateStateBlock(newBlock, oldBlock); }
 
 private:
     Camera*           _cubeCamera;
@@ -322,17 +330,16 @@ protected:
     FrameBuffer* _renderTarget[RenderTarget_PLACEHOLDER];
     FrameBuffer* _depthRanges;
     /*State management */
-    typedef Unordered_map<I64, RenderStateBlock* > RenderStateMap;
     RenderStateMap _stateBlockMap;
     bool _stateBlockDirty;
     bool _stateBlockByDescription;
-    RenderStateBlock* _currentStateBlock;
-    RenderStateBlock* _newStateBlock;
-    RenderStateBlock* _defaultStateBlock;
-    RenderStateBlock* _defaultStateNoDepth; //<The default render state buth with depth testing disabled
-    RenderStateBlock* _state2DRendering;    //<Special render state for 2D rendering
-    RenderStateBlock* _stateDepthOnlyRendering;
-    matrixStackW      _worldMatrices;
+    I64 _currentStateBlockHash;
+    I64 _newStateBlockHash;
+    I64 _defaultStateBlockHash;
+    I64 _defaultStateNoDepthHash; //<The default render state buth with depth testing disabled
+    I64 _state2DRenderingHash;    //<Special render state for 2D rendering
+    I64 _stateDepthOnlyRenderingHash;
+    matrixStackW  _worldMatrices;
     mat4<F32> _WVCachedMatrix;
     mat4<F32> _VPCachedMatrix;
     mat4<F32> _WVPCachedMatrix;

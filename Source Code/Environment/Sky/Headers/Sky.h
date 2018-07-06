@@ -56,15 +56,15 @@ private:
     bool load();
 
 private:
-    bool			  _drawSky,_drawSun;
-    ShaderProgram*	  _skyShader;
-    Texture*   	      _skybox;
-    vec3<F32>		  _sunVect;
-    Sphere3D          *_sky,*_sun;
-    SceneGraphNode    *_sunNode, *_skyGeom;
-    U16				  _exclusionMask;
-    RenderStateBlock* _skyboxRenderState;
-	RenderStateBlock* _skyboxRenderStateReflected;
+    bool			_drawSky,_drawSun;
+    ShaderProgram*	_skyShader;
+    Texture*   	    _skybox;
+    vec3<F32>		_sunVect;
+    Sphere3D       *_sky,*_sun;
+    SceneGraphNode *_sunNode, *_skyGeom;
+    U16				_exclusionMask;
+    I64             _skyboxRenderStateHash;
+	I64             _skyboxRenderStateReflectedHash;
 };
 
 #endif

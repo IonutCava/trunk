@@ -31,9 +31,9 @@ Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
     _underwaterAlbedoTex(nullptr),
     _underwaterDetailTex(nullptr),
     _underwaterDiffuseScale(100.0f),
-    _terrainRenderState(nullptr),
-    _terrainDepthRenderState(nullptr),
-    _terrainReflectionRenderState(nullptr)
+    _terrainRenderStateHash(0),
+    _terrainDepthRenderStateHash(0),
+    _terrainReflectionRenderStateHash(0)
 {
     _groundVB = GFX_DEVICE.newVB(TRIANGLE_STRIP);
     _groundVB->useLargeIndices(true);//<32bit indices
@@ -65,7 +65,7 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
     _groundVB->Create();
     _terrainQuadtree->Build(_boundingBox, vec2<U32>(_terrainWidth, _terrainHeight), _chunkSize, _groundVB, this, sgn);
 
-    _drawShader = getMaterial()->getShaderProgram();
+    _drawShader = getMaterial()->getShaderInfo().getProgram();
     _drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel());
     _drawShader->Uniform("bbox_min", _boundingBox.getMin());
     _drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
@@ -138,11 +138,16 @@ bool Terrain::prepareMaterial(SceneGraphNode* const sgn){
         _terrainTextures[i]->bindTextures((i * 2) + textureOffset);
     }
 
-    SET_STATE_BLOCK(*(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _terrainReflectionRenderState : _terrainRenderState));
+    SET_STATE_BLOCK(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _terrainReflectionRenderStateHash : _terrainRenderStateHash);
 
-    _drawShader = getMaterial()->getShaderProgram();
+    Material::ShaderInfo& shaderInfo = getMaterial()->getShaderInfo();
+    _drawShader = shaderInfo.getProgram();
     _drawShader->ApplyMaterial(getMaterial());
-    _drawShader->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
+    bool temp = lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows();
+    if(shaderInfo.getTrackedBool(1) != temp){
+        shaderInfo.setTrackedBool(1, temp);
+        _drawShader->Uniform("dvd_enableShadowMapping", temp);
+    }        
 
     _groundVB->setShaderProgram(_drawShader);
     _plane->setCustomShader(_drawShader);
@@ -153,8 +158,8 @@ bool Terrain::prepareMaterial(SceneGraphNode* const sgn){
 bool Terrain::prepareDepthMaterial(SceneGraphNode* const sgn){
     bool depthPrePass = GFX_DEVICE.isDepthPrePass();
 
-    SET_STATE_BLOCK(*(depthPrePass ? _terrainRenderState : _terrainDepthRenderState));
-    _drawShader = getMaterial()->getShaderProgram(depthPrePass ? Z_PRE_PASS_STAGE : SHADOW_STAGE);
+    SET_STATE_BLOCK(depthPrePass ? _terrainRenderStateHash : _terrainDepthRenderStateHash);
+    _drawShader = getMaterial()->getShaderInfo(depthPrePass ? Z_PRE_PASS_STAGE : SHADOW_STAGE).getProgram();
 
     _groundVB->setShaderProgram(_drawShader);
     _plane->setCustomShader(_drawShader);

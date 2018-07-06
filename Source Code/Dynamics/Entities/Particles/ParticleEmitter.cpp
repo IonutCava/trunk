@@ -26,6 +26,7 @@ ParticleEmitter::ParticleEmitter() : SceneNode(TYPE_PARTICLE_EMITTER),
                                     _updateParticleEmitterBB(true),
                                     _lastUsedParticle(0),
                                     _particlesCurrentCount(0),
+                                    _particleStateBlockHash(0),
                                     _enabled(false),
                                     _uploaded(false),
                                     _created(false),
@@ -64,7 +65,7 @@ bool ParticleEmitter::initData(){
     RenderStateBlockDescriptor particleStateDesc;
     particleStateDesc.setCullMode(CULL_MODE_NONE);
     particleStateDesc.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
-    _particleStateBlock = GFX_DEVICE.getOrCreateStateBlock(particleStateDesc);
+    _particleStateBlockHash = GFX_DEVICE.getOrCreateStateBlock(particleStateDesc);
 
     ResourceDescriptor particleShaderDescriptor("particles");
     _particleShader = CreateResource<ShaderProgram>(particleShaderDescriptor);
@@ -134,7 +135,7 @@ bool ParticleEmitter::prepareDepthMaterial(SceneGraphNode* const sgn){
     if(!_enabled || !_created)
         return false;
 
-    SET_STATE_BLOCK(*_particleStateBlock);
+    SET_STATE_BLOCK(_particleStateBlockHash);
 
     if(!_particleDepthShader->bind())
         return false;
@@ -149,7 +150,7 @@ bool ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn){
     if(!_enabled || !_created)
         return false;
 
-    SET_STATE_BLOCK(*_particleStateBlock);
+    SET_STATE_BLOCK(_particleStateBlockHash);
 
     if(!_particleShader->bind())
         return false;

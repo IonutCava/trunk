@@ -139,7 +139,7 @@ void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const 
     priv->_lineWidth = 4.0f;
     mat4<F32> offset(globalOffset);
 
-    priv->setRenderStates(DELEGATE_BIND(&GL_API::setupLineState, this, offset,  GFX_DEVICE._defaultStateBlock, false),
+    priv->setRenderStates(DELEGATE_BIND(&GL_API::setupLineState, this, offset,  GFX_DEVICE._defaultStateBlockHash, false),
                           DELEGATE_BIND(&GL_API::releaseLineState, this, false));
     priv->beginBatch();
 
@@ -174,9 +174,9 @@ void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const 
     priv->endBatch();
 }
 
-void GL_API::setupLineState(const mat4<F32>& mat, RenderStateBlock* const drawState,const bool ortho){
+void GL_API::setupLineState(const mat4<F32>& mat, I64 drawStateHash, const bool ortho){
     GFX_DEVICE.pushWorldMatrix(mat,true);
-    SET_STATE_BLOCK(*drawState);
+    SET_STATE_BLOCK(drawStateHash);
 
     if(ortho){
         GFX_DEVICE.setViewport(vec4<GLint>(_cachedResolution.width - 128, 0, 128, 128));
@@ -243,7 +243,7 @@ void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
     priv->_lineWidth = std::min((F32)_lineWidthLimit, 5.0f);
 
     if(!priv->hasRenderStates()){
-        priv->setRenderStates(DELEGATE_BIND(&GL_API::setupLineState, this, globalOffset, disableDepth ? GFX_DEVICE._defaultStateNoDepth : GFX_DEVICE._defaultStateBlock,orthoMode),
+        priv->setRenderStates(DELEGATE_BIND(&GL_API::setupLineState, this, globalOffset, disableDepth ? GFX_DEVICE._defaultStateNoDepthHash : GFX_DEVICE._defaultStateBlockHash,orthoMode),
                               DELEGATE_BIND(&GL_API::releaseLineState, this, orthoMode));
     }
 

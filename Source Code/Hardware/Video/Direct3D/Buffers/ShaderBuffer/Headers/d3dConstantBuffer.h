@@ -33,7 +33,7 @@ public:
     
     void Create(bool dynamic = true, bool stream = false);
     ///Reserve primitiveCount * implementation specific primitive size of space in the buffer and fill it with nullptr values
-    virtual void ReserveBuffer(U32 primitiveCount, ptrdiff_t primitiveSize) const;
+    virtual void ReserveBuffer(U32 primitiveCount, ptrdiff_t primitiveSize);
     virtual void ChangeSubData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer = false) const;
     virtual bool bindRange(U32 bindIndex, ptrdiff_t offset, ptrdiff_t size) const;
     virtual bool bind(U32 bindIndex) const;

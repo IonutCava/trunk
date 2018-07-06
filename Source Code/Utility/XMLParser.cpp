@@ -136,10 +136,7 @@ namespace XML {
                 //texture not fully loaded yet
             }
             std::string fileLocation = texture->getResourceLocation();
-            if(fileLocation.empty()){
-                ERROR_FN("INVALID FILE -------------------------------------");
-            }
-            assert(!fileLocation.empty());
+            DIVIDE_ASSERT(!fileLocation.empty(), "INVALID TEXTURE SAVE FILE -------------------------------------");
             tree.put(textureNode+".file",fileLocation);
             tree.put(textureNode+".flip",texture->isFlipped());
             tree.put(textureNode+".MapU", getWrapModeName(sampler.wrapU()));
@@ -377,7 +374,7 @@ namespace XML {
 
                 layerOffsetStr = Util::toString(i);
                 temp = pt.get<std::string>(layerName + ".blendMap", "");
-                assert(!temp.empty());
+                DIVIDE_ASSERT(!temp.empty(), "Blend Map for terrain missing!");
                 ter->addVariable("blendMap" + layerOffsetStr, assetLocation + temp);
 
                 temp = pt.get<std::string>(layerName + ".redAlbedo", "");
@@ -769,15 +766,15 @@ namespace XML {
             saveTextureXML("specularMap", getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_SPECULAR)), texture, pt_writer);
         }
 
-        ShaderProgram* s = mat.getShaderProgram();
+        ShaderProgram* s = mat.getShaderInfo().getProgram();
         if(s){
             pt_writer.put("shaderProgram.effect",s->getName());
         }
-        s = mat.getShaderProgram(SHADOW_STAGE);
+        s = mat.getShaderInfo(SHADOW_STAGE).getProgram();
         if(s){
             pt_writer.put("shaderProgram.shadowEffect",s->getName());
         }
-        s = mat.getShaderProgram(Z_PRE_PASS_STAGE);
+        s = mat.getShaderInfo(Z_PRE_PASS_STAGE).getProgram();
         if(s){
             pt_writer.put("shaderProgram.zPrePassEffect",s->getName());
         }

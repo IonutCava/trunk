@@ -72,20 +72,122 @@
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 #define toBit(X) (1 << (X))
 
-static const F32 EPSILON     = std::numeric_limits<F32>::epsilon();
-static const D32 TEST_EPSILON_D32 = std::numeric_limits<D32>::epsilon();
+/* See
+ 
+http://randomascii.wordpress.com/2012/01/11/tricks-with-the-floating-point-format/
+ 
+for the potential portability problems with the union and bit-fields below.
+*/
+union Float_t {
+    Float_t(F32 num = 0.0f) : f(num) {}
+    // Portable extraction of components.
+    bool    Negative()    const { return (i >> 31) != 0; }
+    int32_t RawMantissa() const { return i & ((1 << 23) - 1); }
+    int32_t RawExponent() const { return (i >> 23) & 0xFF; }
+ 
+    int32_t i;
+    F32 f;
+};
 
-inline bool IS_ZERO(F32 X) { return  (std::fabs(X) < EPSILON); }
-inline bool IS_ZERO(D32 X) { return  (std::fabs(X) < TEST_EPSILON_D32); }
+union Double_t {
+    Double_t(D32 num = 0.0) : d(num) {}
+    // Portable extraction of components.
+    bool    Negative()    const { return (i >> 63) != 0; }
+    int64_t RawMantissa() const { return i & ((1LL << 52) - 1); }
+    int64_t RawExponent() const { return (i >> 52) & 0x7FF; }
+
+   int64_t i;
+   D32 d;
+};
+
+inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff)
+{
+    // Check if the numbers are really close -- needed
+    // when comparing numbers near zero.
+    F32 absDiff = std::fabs(A - B);
+    if (absDiff <= maxDiff)
+        return true;
+ 
+    Float_t uA(A);
+    Float_t uB(B);
+ 
+    // Different signs means they do not match.
+    if (uA.Negative() != uB.Negative())
+        return false;
+ 
+    // Find the difference in ULPs.
+    return (std::abs(uA.i - uB.i) <= maxUlpsDiff);
+}
+
+inline bool AlmostEqualUlpsAndAbs(D32 A, D32 B, D32 maxDiff, I32 maxUlpsDiff)
+{
+    // Check if the numbers are really close -- needed
+    // when comparing numbers near zero.
+    D32 absDiff = std::fabs(A - B);
+    if (absDiff <= maxDiff)
+        return true;
+ 
+    Double_t uA(A);
+    Double_t uB(B);
+ 
+    // Different signs means they do not match.
+    if (uA.Negative() != uB.Negative())
+        return false;
+ 
+    // Find the difference in ULPs.
+    return (std::abs(uA.i - uB.i) <= maxUlpsDiff);
+}
+
+inline bool AlmostEqualRelativeAndAbs(F32 A, F32 B, F32 maxDiff, F32 maxRelDiff)
+{
+    // Check if the numbers are really close -- needed
+    // when comparing numbers near zero.
+    F32 diff = std::fabs(A - B);
+    if (diff <= maxDiff)
+        return true;
+ 
+    A = std::fabs(A);
+    B = std::fabs(B);
+    F32 largest = (B > A) ? B : A;
+ 
+    return (diff <= largest * maxRelDiff);
+}
+
+inline bool AlmostEqualRelativeAndAbs(D32 A, D32 B, D32 maxDiff, D32 maxRelDiff)
+{
+    // Check if the numbers are really close -- needed
+    // when comparing numbers near zero.
+    D32 diff = std::fabs(A - B);
+    if (diff <= maxDiff)
+        return true;
+ 
+    A = std::fabs(A);
+    B = std::fabs(B);
+    D32 largest = (B > A) ? B : A;
+ 
+    return (diff <= largest * maxRelDiff);
+}
+
+static const F32 EPSILON_F32     = std::numeric_limits<F32>::epsilon();
+static const D32 EPSILON_D32 = std::numeric_limits<D32>::epsilon();
+
+inline bool IS_ZERO(F32 X) { return  (std::fabs(X) < EPSILON_F32); }
+inline bool IS_ZERO(D32 X) { return  (std::fabs(X) < EPSILON_D32); }
 
 inline bool IS_TOLERANCE(F32 X, F32 TOLERANCE) { return (std::fabs(X) < TOLERANCE); }
 inline bool IS_TOLERANCE(D32 X, D32 TOLERANCE) { return (std::fabs(X) < TOLERANCE); }
 
-inline bool FLOAT_COMPARE(F32 X, F32 Y)  { return (std::fabs(X / Y - 1.0f) < EPSILON); }
-inline bool DOUBLE_COMPARE(D32 X, D32 Y) { return (std::fabs(X / Y - 1.0) < TEST_EPSILON_D32); }
+inline bool FLOAT_COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE)  {  return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4); }
+inline bool DOUBLE_COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) {  return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4); }
 
-inline bool FLOAT_COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE)  { return (std::fabs(X / Y - 1.0f) < TOLERANCE); }
-inline bool DOUBLE_COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) { return (std::fabs(X / Y - 1.0) < TOLERANCE); }
+inline bool FLOAT_COMPARE(F32 X, F32 Y)  { return FLOAT_COMPARE_TOLERANCE(X, Y, EPSILON_F32); }
+inline bool DOUBLE_COMPARE(D32 X, D32 Y) { return DOUBLE_COMPARE_TOLERANCE(X, Y, EPSILON_D32); }
+
+inline void DIVIDE_ASSERT(const bool expression, const char* failMessage){
+#if defined(_DEBUG)
+    assert(expression && failMessage);
+#endif
+}
 
 #if defined(NDEBUG)
 #   define New new
@@ -125,15 +227,12 @@ typedef union {
     U32 i;
     packed_int b;
 } P32;
+
 #else
 #undef _P_D_TYPES_ONLY_
 #endif
-#if defined(_MSC_VER)
 
-#if defined(_PROFILE)
-    #undef assert
-    #define assert(x) if(!(x)) __debugbreak()
-#endif
+#if defined(_MSC_VER)
 
 #	pragma warning(disable:4103) ///<Boost alignment shouts
 #	pragma warning(disable:4244)

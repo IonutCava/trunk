@@ -128,7 +128,7 @@ public:
     /// project this vector on the line defined by the 2 points(A, B)
     inline T    projectionOnLine(const vec2 &vA, const vec2 &vB) const;
     /// compare 2 vectors within the specified tolerance
-    inline bool compare(const vec2 &_v,F32 epsi=EPSILON) const;
+    inline bool compare(const vec2 &_v,F32 epsi = EPSILON_F32) const;
     /// return the closest point on the line defined by the 2 points (A, B) and this vector
     inline vec2 closestPointOnLine(const vec2 &vA, const vec2 &vB) const;
     /// return the closest point on the line segment defined between the 2 points (A, B) and this vector
@@ -213,9 +213,9 @@ public:
     /// return the vector's length
     inline T    length()          const {return square_root_tpl(lengthSquared()); }
     /// return true if length is zero
-    inline bool isZeroLength()    const { return lengthSquared() < (EPSILON * EPSILON); }
+    inline bool isZeroLength()    const { return lengthSquared() < EPSILON_F32; }
     /// compare 2 vectors within the specified tolerance
-    inline bool compare(const vec3 &v,F32 epsi = EPSILON) const;
+    inline bool compare(const vec3 &v,F32 epsi = EPSILON_F32) const;
     /// uniform vector: x = y = z
     inline bool isUniform() const;
     /// return the squared distance of the vector
@@ -360,7 +360,7 @@ public:
     /// set all the components back to 0
     inline void reset()                  { this->x = this->y = this->z = this->w = 0;}
     /// compare 2 vectors within the specified tolerance
-    inline bool compare(const vec4 &v,F32 epsi = EPSILON) const;
+    inline bool compare(const vec4 &v,F32 epsi = EPSILON_F32) const;
     /// lerp between the 2 specified vectors by the specified amount
     inline vec4 lerp(const vec4 &u, const vec4 &v, T factor) const;
     /// lerp between the 2 specified vectors by the specified amount for each component

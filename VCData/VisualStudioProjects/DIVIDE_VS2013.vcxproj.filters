@@ -887,6 +887,9 @@
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightGrid.cpp">
       <Filter>Rendering\Lighting</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Graphs\Components\SGNComponent.cpp">
+      <Filter>Graphs\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">

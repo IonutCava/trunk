@@ -31,7 +31,6 @@
     <ClInclude Include="..\..\Source Code\DivideSever\Server.h" />
     <ClInclude Include="..\..\Source Code\DivideSever\tcp_session_impl.h" />
     <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\DataTypes.h" />
-    <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\MathClasses.h" />
     <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\OutputBuffer.h" />
     <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\Patch.h" />
     <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\UtilClasses.h" />

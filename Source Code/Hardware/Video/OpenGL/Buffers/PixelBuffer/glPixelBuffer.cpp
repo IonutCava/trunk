@@ -49,7 +49,7 @@ void glPixelBuffer::Destroy() {
 }
 
 GLvoid* glPixelBuffer::Begin(GLubyte nFace) const {
-    assert(nFace<6);
+    DIVIDE_ASSERT(nFace < 6, "glPixelBuffer error: Tried to map an invalid PBO texture's face!");
 
     GL_API::bindTexture(0, _textureId, _textureType);
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
@@ -81,8 +81,8 @@ GLvoid* glPixelBuffer::Begin(GLubyte nFace) const {
     return glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
 }
 
-void glPixelBuffer::End(GLubyte nFace) const {
-    assert(nFace<6);
+void glPixelBuffer::End() const {
+
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER); // release the mapped buffer
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     GL_API::unbindTexture(0, _textureType);

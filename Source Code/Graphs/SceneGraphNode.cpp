@@ -45,6 +45,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GU
     _components[SGNComponent::SGN_COMP_ANIMATION]  = nullptr;
     _components[SGNComponent::SGN_COMP_NAVIGATION] = New NavigationComponent(this);
     _components[SGNComponent::SGN_COMP_PHYSICS]    = New PhysicsComponent(this);
+    _instanceID = node->getReferenceCount();
 }
 
 ///If we are destroying the current graph node

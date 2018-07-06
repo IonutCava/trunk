@@ -3,6 +3,7 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/ShaderManager.h"
+#include "Managers/Headers/SceneManager.h"
 #include "core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/Application.h"
@@ -32,7 +33,7 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
 
     _extendedMatricesDirty = true;
     _clipPlanesDirty = true;
-
+    _sceneDataDirty = true;
     _extendedMatrixEntry[WORLD_MATRIX]  = -1;
     _extendedMatrixEntry[WV_MATRIX]     = -1;
     _extendedMatrixEntry[WV_INV_MATRIX] = -1;
@@ -85,6 +86,7 @@ U8 ShaderProgram::update(const U64 deltaTime){
         return 0;
 
     _activeCamera = Application::getInstance().getKernel()->getCameraMgr().getActiveCamera();
+    
     ParamHandler& par = ParamHandler::getInstance();
     LightManager& lightMgr = LightManager::getInstance();
     bool enableFog = par.getParam<bool>("rendering.enableFog");
@@ -94,6 +96,18 @@ U8 ShaderProgram::update(const U64 deltaTime){
     this->Uniform(_timeLoc, _elapsedTimeMS);
     this->Uniform(_enableFogLoc, enableFog);
     this->Uniform(_lightAmbientLoc, lightMgr.getAmbientLight());
+    if(_sceneDataDirty){
+        if(enableFog){
+            this->Uniform(_fogColorLoc, vec3<F32>(par.getParam<F32>("rendering.sceneState.fogColor.r"),
+                                                  par.getParam<F32>("rendering.sceneState.fogColor.g"),
+                                                  par.getParam<F32>("rendering.sceneState.fogColor.b")));
+            this->Uniform(_fogDensityLoc, par.getParam<F32>("rendering.sceneState.fogDensity"));
+        }
+        Scene* activeScene = GET_ACTIVE_SCENE();
+        this->Uniform("windDirection", vec2<F32>(activeScene->state().getWindDirX(), activeScene->state().getWindDirZ()));
+        this->Uniform("windSpeed", activeScene->state().getWindSpeed());
+        _sceneDataDirty = false;
+    }
     if(_dirty){
         const vec2<U16>& screenRes = GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->getResolution();
         this->Uniform(_screenDimensionLoc, screenRes);
@@ -120,13 +134,6 @@ U8 ShaderProgram::update(const U64 deltaTime){
         this->Uniform("dvd_minShadowVariance", 0.0002f);
         this->Uniform("dvd_shadowMaxDist", 250.0f);
         this->Uniform("dvd_shadowFadeDist",150.0f);
-
-        if(enableFog){
-            this->Uniform(_fogColorLoc, vec3<F32>(par.getParam<F32>("rendering.sceneState.fogColor.r"),
-                                                  par.getParam<F32>("rendering.sceneState.fogColor.g"),
-                                                  par.getParam<F32>("rendering.sceneState.fogColor.b")));
-            this->Uniform(_fogDensityLoc, par.getParam<F32>("rendering.sceneState.fogDensity"));
-        }
         _dirty = false;
     }
 
@@ -141,7 +148,7 @@ bool ShaderProgram::generateHWResource(const std::string& name){
 
     HardwareResource::threadedLoad(name);
 
-    assert(isHWInitComplete());
+    DIVIDE_ASSERT(isHWInitComplete(), "ShaderProgram error: hardware initialization failed!");
 
     _extendedMatrixEntry[WORLD_MATRIX]  = this->cachedLoc("dvd_WorldMatrix");
     _extendedMatrixEntry[WV_MATRIX]     = this->cachedLoc("dvd_WorldViewMatrix");
@@ -177,7 +184,8 @@ bool ShaderProgram::bind(){
 }
 
 void ShaderProgram::uploadNodeMatrices(){
-    assert(_bound);
+    DIVIDE_ASSERT(_bound, "ShaderProgram error: tried to upload transform data to an unbound shader program!");
+
     GFXDevice& GFX = GFX_DEVICE;
 
     this->Uniform(_cameraLocationLoc, _cachedCamEye);
@@ -238,8 +246,10 @@ void ShaderProgram::uploadNodeMatrices(){
 void ShaderProgram::ApplyMaterial(Material* const material){
     if (!material) return;
 
+    Texture* texture = nullptr;
     for (U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i){
-        if (material->getTexture(i)){
+        if ((texture = material->getTexture(i)) != nullptr){
+            texture->Bind(i);
             if (i >= Material::TEXTURE_UNIT0)
                 Uniform(_textureOperationUniformSlots[i], (I32)material->getTextureOperation(i));
         }

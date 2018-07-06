@@ -62,7 +62,8 @@ void GL_API::togglePrimitiveRestart(bool state, bool smallIndices){
 }
 
 void GL_API::updateProjectionMatrix(){
-    assert(Divide::GLUtil::_contextAvailable);
+    DIVIDE_ASSERT(Divide::GLUtil::_contextAvailable, "GLStates error: attempted to modify the projection matrix from an invalid context!");
+
     const size_t mat4Size = 16 * sizeof(GLfloat);
 
     GLfloat matrixDataProjection[3 * 16];
@@ -77,7 +78,8 @@ void GL_API::updateProjectionMatrix(){
 }
 
 void GL_API::updateViewMatrix(){
-    assert(Divide::GLUtil::_contextAvailable);
+    DIVIDE_ASSERT(Divide::GLUtil::_contextAvailable, "GLStates error: attempted to modify the view matrix from an invalid context!");
+
     const size_t mat4Size = 16 * sizeof(GLfloat);
 
     GLfloat matrixDataView[2 * 16];
@@ -98,7 +100,7 @@ void GL_API::getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat) {
     else if (mode == PROJECTION_INV_MATRIX)      mat.set(glm::value_ptr(glm::inverse(Divide::GLUtil::_projectionMatrix.top())));
     else if (mode == TEXTURE_MATRIX)             mat.set(glm::value_ptr(Divide::GLUtil::_textureMatrix.top()));
     else if(mode == VIEW_PROJECTION_INV_MATRIX) _ViewProjectionCacheMatrix.inverse(mat);
-    else assert(mode == -1);
+    else { DIVIDE_ASSERT(mode == -1, "GLStates error: attempted to query an invalid matrix target!"); }
 }
 
 void GL_API::lockMatrices(const MATRIX_MODE& setCurrentMatrix, bool lockView, bool lockProjection){
@@ -168,11 +170,11 @@ bool GL_API::bindSampler(GLuint unit, GLuint samplerID){
 }
   
 bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type, GLuint samplerID){
-    GL_API::setActiveTextureUnit(unit);
     GL_API::bindSampler(unit, samplerID);
 
     std::pair<GLuint, GLenum>& currentMapping = textureBoundMap[unit];
     if (currentMapping.first != handle || currentMapping.second != type){
+        GL_API::setActiveTextureUnit(unit);
         glBindTexture(type, handle);
 
         currentMapping.first = handle;
@@ -224,7 +226,8 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint id, const bool force){
         case GL_PIXEL_UNPACK_BUFFER   : index = 5; break;
     };
 
-    assert(index != -1);
+    DIVIDE_ASSERT(index != -1, "GLStates error: attempted to bind an invalid buffer target!");
+
     if (_activeBufferId[index] == id && !force)
         return false; //<prevent double bind
 

@@ -8,8 +8,8 @@ public:
     SceneNodeRenderState() : _drawState(true),
                              _noDefaultMaterial(false),
                              _exclusionMask(0),
-                             _depthStateBlock(nullptr),
-                             _shadowStateBlock(nullptr),
+                             _depthStateBlockHash(0),
+                             _shadowStateBlockHash(0),
                              _isVisible(true),
                              _hasWaterReflection(true)
     {
@@ -23,8 +23,8 @@ public:
             bool getDrawState(const RenderStage& currentStage)  const;
             void addToDrawExclusionMask(U32 stageMask);
             void removeFromDrawExclusionMask(U32 stageMask);
-     const  RenderStateBlock& getDepthStateBlock();
-     const  RenderStateBlock& getShadowStateBlock();
+            I64 getDepthStateBlock();
+            I64 getShadowStateBlock();
 
 protected:
     friend class SceneNode;
@@ -34,8 +34,8 @@ protected:
     bool _noDefaultMaterial;
     U32  _exclusionMask;
 
-    RenderStateBlock* _depthStateBlock;
-    RenderStateBlock* _shadowStateBlock;
+    I64 _depthStateBlockHash;
+    I64 _shadowStateBlockHash;
 };
 
 #endif

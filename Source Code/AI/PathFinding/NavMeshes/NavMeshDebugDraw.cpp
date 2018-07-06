@@ -17,7 +17,7 @@ namespace Navigation {
         RenderStateBlockDescriptor navigationDebugDesc;
         navigationDebugDesc.setCullMode(CULL_MODE_NONE);
         navigationDebugDesc.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
-        _navMeshStateBlock = GFX_DEVICE.getOrCreateStateBlock(navigationDebugDesc);
+        _navMeshStateBlockHash = GFX_DEVICE.getOrCreateStateBlock(navigationDebugDesc);
     }
 
    NavMeshDebugDraw::~NavMeshDebugDraw()
@@ -34,16 +34,16 @@ namespace Navigation {
    }
 
    void NavMeshDebugDraw::depthMask(bool state){
-      RenderStateBlockDescriptor newDepthDesc(_navMeshStateBlock->getDescriptor());
+      RenderStateBlockDescriptor newDepthDesc(GFX_DEVICE.getStateBlockDescriptor(_navMeshStateBlockHash));
       newDepthDesc.setZReadWrite(true, state);
-      _navMeshStateBlock = GFX_DEVICE.getOrCreateStateBlock(newDepthDesc);
+      _navMeshStateBlockHash = GFX_DEVICE.getOrCreateStateBlock(newDepthDesc);
    }
 
    void NavMeshDebugDraw::texture(bool state){
    }
 
    void NavMeshDebugDraw::setDrawState(){
-        SET_STATE_BLOCK(*_navMeshStateBlock, true);
+        SET_STATE_BLOCK(_navMeshStateBlockHash, true);
         GFX_DEVICE.pushWorldMatrix(mat4<F32>(), true);
    }
 

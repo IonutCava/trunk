@@ -51,9 +51,8 @@ bool Object3D::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage
     } else {
         if (!getMaterial())
             return false;
-
-        bool isDepthPass = bitCompare(DEPTH_STAGE, currentStage);
-        _drawShader = isDepthPass ? getMaterial()->getShaderProgram(bitCompare(currentStage, SHADOW_STAGE) ? SHADOW_STAGE : Z_PRE_PASS_STAGE) : getMaterial()->getShaderProgram();
+        RenderStage shaderFlag =  bitCompare(DEPTH_STAGE, currentStage) ? ((bitCompare(currentStage, SHADOW_STAGE) ? SHADOW_STAGE : Z_PRE_PASS_STAGE)) : FINAL_STAGE;
+        _drawShader = getMaterial()->getShaderInfo(shaderFlag).getProgram();
     }
 
     assert(_drawShader != nullptr);

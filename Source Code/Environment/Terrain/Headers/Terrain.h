@@ -148,11 +148,11 @@ protected:
     vectorImpl<TerrainTextureLayer* > _terrainTextures;
     vectorImpl<VertexBuffer::DeferredDrawCommand >  _drawCommands[2]; // one for LoD 0 and one for LoD > 0
     ///Normal rendering state
-    RenderStateBlock* _terrainRenderState;
+    I64 _terrainRenderStateHash;
     ///Depth map rendering state
-    RenderStateBlock* _terrainDepthRenderState;
+    I64 _terrainDepthRenderStateHash;
     ///Reflection rendering state
-    RenderStateBlock*  _terrainReflectionRenderState;
+    I64 _terrainReflectionRenderStateHash;
 };
 
 #endif

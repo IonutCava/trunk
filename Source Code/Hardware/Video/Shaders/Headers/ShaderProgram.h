@@ -128,8 +128,9 @@ public:
 protected:
     friend class ShaderManager;
     vectorImpl<Shader* > getShaders(const ShaderType& type) const;
-    inline void setMatricesDirty() { _extendedMatricesDirty = true; }
-    inline void updateClipPlanes() { _clipPlanesDirty = true; }
+    inline void setMatricesDirty()  { _extendedMatricesDirty = true; }
+    inline void updateClipPlanes()  { _clipPlanesDirty = true; }
+    inline void setSceneDataDirty() { _sceneDataDirty = true; }
     static void updateCamera(const Camera& activeCamera);
     I32 operator==(const ShaderProgram &_v) { return this->getGUID() == _v.getGUID(); }
     I32 operator!=(const ShaderProgram &_v) { return !(*this == _v); }
@@ -181,6 +182,7 @@ private:
     Unordered_map<EXTENDED_MATRIX, I32  > _extendedMatrixEntry;
     bool _extendedMatricesDirty;
     bool _clipPlanesDirty;
+    bool _sceneDataDirty;
     ///Various uniform/attribute locations
     I32 _timeLoc;
     I32 _cameraLocationLoc;

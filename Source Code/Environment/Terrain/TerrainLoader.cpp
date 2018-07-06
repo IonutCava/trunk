@@ -160,9 +160,9 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
     //terrainDescDepth.setZBias(1.0f, 2.0f);
     terrainDescDepth.setColorWrites(true, true, false, false);
 
-    terrain->_terrainRenderState           = GFX_DEVICE.getOrCreateStateBlock(terrainDesc);
-    terrain->_terrainReflectionRenderState = GFX_DEVICE.getOrCreateStateBlock(terrainDescRef);
-    terrain->_terrainDepthRenderState      = GFX_DEVICE.getOrCreateStateBlock(terrainDescDepth);
+    terrain->_terrainRenderStateHash           = GFX_DEVICE.getOrCreateStateBlock(terrainDesc);
+    terrain->_terrainReflectionRenderStateHash = GFX_DEVICE.getOrCreateStateBlock(terrainDescRef);
+    terrain->_terrainDepthRenderStateHash      = GFX_DEVICE.getOrCreateStateBlock(terrainDescDepth);
 
     return loadThreadedResources(terrain, terrainDescriptor);
 }

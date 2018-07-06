@@ -64,12 +64,27 @@ public:
         std::string _shader;
         bool _computedShader;
         vectorImpl<std::string> _shaderDefines;
+        
+        bool _trackedBools[10];
+
+        ShaderProgram* const getProgram();
+
+        inline bool getTrackedBool(U8 index) const {
+            assert(index < 10); 
+            return _trackedBools[index];
+        }
+
+        inline void setTrackedBool(U8 index, const bool state){
+            assert(index < 10);
+            _trackedBools[index] = state;
+        }
 
         ShaderInfo()
         {
             _shaderRef = nullptr;
             _shader = "";
             _computedShader = false;
+            memset(_trackedBools, false, 10 * sizeof(bool));
         }
     };
 
@@ -149,7 +164,7 @@ public:
     inline void useAlphaTest(const bool state)          { _useAlphaTest = state; }
     inline void setShadingMode(const ShadingMode& mode) { _shadingMode = mode; }
 
-    void setDoubleSided(const bool state, const bool useAlphaTest = false);
+    void setDoubleSided(const bool state, const bool useAlphaTest = true);
     void setTexture(U32 textureUsageSlot, Texture* const texture, const TextureOperation& op = TextureOperation_Replace, U8 index = 0);
     ///Set the desired bump mapping method. If force == true, the shader is updated immediately
     void setBumpMethod(const BumpMethod& newBumpMethod, const bool force = false);
@@ -166,6 +181,7 @@ public:
     inline void addShaderDefines(RenderStage renderStage, const std::string& shaderDefines) {
         _shaderInfo[renderStage]._shaderDefines.push_back(shaderDefines);
     }
+
     inline void addShaderDefines(const std::string& shaderDefines)	{
         addShaderDefines(FINAL_STAGE, shaderDefines);
         addShaderDefines(Z_PRE_PASS_STAGE, shaderDefines);
@@ -175,7 +191,7 @@ public:
     ///toggle multi-threaded shader loading on or off for this material
     inline void setShaderLoadThreaded(const bool state) {_shaderThreadedLoad = state;}
     void setShaderProgram(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE, const bool computeOnAdd = false);
-    RenderStateBlock* setRenderStateBlock(RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage);
+    I64 setRenderStateBlock(RenderStateBlockDescriptor& descriptor, const RenderStage& renderStage);
 
     void getSortKeys(I32& shaderKey, I32& textureKey) const;
 
@@ -184,10 +200,10 @@ public:
     inline F32   getOpacityValue(U8 index = 0)    const {return _shaderData[index]._opacity;}
     inline U8    getTextureCount(U8 index = 0)    const {return _shaderData[index]._textureCount;}
 
-           const RenderStateBlock& getRenderStateBlock(RenderStage currentStage);
+                 I64               getRenderStateBlock(RenderStage currentStage);
     inline       Texture*	 const getTexture(U32 textureUsage) {return _textures[textureUsage];}
-           ShaderProgram*    const getShaderProgram(RenderStage renderStage = FINAL_STAGE);
-
+             ShaderInfo&           getShaderInfo(RenderStage renderStage = FINAL_STAGE);
+    
     inline const TextureOperation& getTextureOperation(U32 textureUsage)   const {
         return _operations[textureUsage >= TEXTURE_UNIT0 ? textureUsage - TEXTURE_UNIT0 : 0];
     }
@@ -236,7 +252,8 @@ private:
     bool        _computedShaderTextures;//<if we should recompute only fragment shader on texture change
     /// use this map to add more render states mapped to a specific state
     /// 3 render state's: Normal, reflection and shadow
-    Unordered_map<RenderStage, RenderStateBlock* > _defaultRenderStates;
+    typedef Unordered_map<RenderStage, I64 /*renderStateBlockHash*/ > renderStateBlockMap;
+    renderStateBlockMap _defaultRenderStates;
     /// use this map to add textures to the material
     Texture* _textures[Config::MAX_TEXTURE_STORAGE];
     /// use the bellow map to define texture operation
