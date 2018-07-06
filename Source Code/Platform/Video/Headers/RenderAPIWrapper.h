@@ -364,12 +364,24 @@ class RingBuffer {
         {
         }
 
-        const inline U32 queueLength() const { return _queueLength; }
-        const inline U32 queueWriteIndex() const { return _queueWriteIndex; }
-        const inline U32 queueReadIndex() const { return _queueReadIndex; }
+        const inline U32 queueLength() const {
+            ReadLock r_lock(_lock);
+            return _queueLength;
+        }
+
+        const inline U32 queueWriteIndex() const {
+            ReadLock r_lock(_lock);
+            return _queueWriteIndex;
+        }
+
+        const inline U32 queueReadIndex() const {
+            ReadLock r_lock(_lock);
+            return _queueReadIndex;
+        }
 
         inline void incQueue() { 
             if (queueLength() > 1) {
+                WriteLock w_lock(_lock);
                 ++_queueWriteIndex %= _queueLength;
                 ++_queueReadIndex  %= _queueLength;
             }
@@ -377,6 +389,7 @@ class RingBuffer {
 
         inline void decQueue() {
             if (queueLength() > 1) {
+                WriteLock w_lock(_lock);
                 --_queueWriteIndex %= _queueLength;
                 --_queueReadIndex  %= _queueLength;
             }
@@ -386,6 +399,7 @@ class RingBuffer {
         const U32 _queueLength;
         U32 _queueReadIndex;
         U32 _queueWriteIndex;
+        mutable SharedLock _lock;
 
 };
 

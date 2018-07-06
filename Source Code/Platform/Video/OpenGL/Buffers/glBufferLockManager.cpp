@@ -13,6 +13,7 @@ glBufferLockManager::glBufferLockManager()
 
 // --------------------------------------------------------------------------------------------------------------------
 glBufferLockManager::~glBufferLockManager() {
+    WriteLock w_lock(_lock);
     for (BufferLock& lock : _bufferLocks) {
         cleanup(&lock);
     }
@@ -28,6 +29,7 @@ void glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
 
     vectorImpl<BufferLock> swapLocks;
 
+    WriteLock w_lock(_lock);
     for (BufferLock& lock : _bufferLocks) {
         if (testRange.Overlaps(lock._range)) {
             wait(&lock._syncObj, blockClient);
@@ -45,16 +47,20 @@ void glBufferLockManager::LockRange(size_t lockBeginBytes,
                                     size_t lockLength,
                                     bool flushOnCall) {
     BufferRange testRange = { lockBeginBytes, lockLength };
-    for (BufferLock& lock : _bufferLocks) {
-        if (testRange.Overlaps(lock._range)) {
-            // no point in locking the same range multiple times
-            return;
+    {
+        WriteLock w_lock(_lock);
+        for (BufferLock& lock : _bufferLocks) {
+            if (testRange.Overlaps(lock._range)) {
+                // no point in locking the same range multiple times
+                return;
+            }
         }
+
+        _bufferLocks.push_back({testRange,
+                                glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT)
+                               });
     }
 
-    _bufferLocks.push_back({testRange,
-                            glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT)
-                           });
     if (flushOnCall) {
         glFlush();
     }

@@ -68,6 +68,9 @@ class glBufferLockManager : public glLockManager {
 
    private:
     void cleanup(BufferLock* bufferLock);
+
+   private:
+    mutable SharedLock _lock;
     vectorImpl<BufferLock> _bufferLocks;
 };
 

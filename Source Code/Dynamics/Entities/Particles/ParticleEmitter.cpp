@@ -18,7 +18,7 @@ namespace Divide {
 namespace {
     // 3 should always be enough for round-robin GPU updates to avoid stalls:
     // 1 in ram, 1 in driver and 1 in VRAM
-    static const U32 g_particleBufferSizeFactor = 1;
+    static const U32 g_particleBufferSizeFactor = 3;
     static const U32 g_particleGeometryBuffer = 0;
     static const U32 g_particlePositionBuffer = 1;
     static const U32 g_particleColourBuffer = 2;
@@ -248,12 +248,6 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
     return _enabled &&  getAliveParticleCount() > 0;
 }
 
-void ParticleEmitter::postUpdate() {
-    U32 aliveCount = to_uint(_particles->_renderingPositions.size());
-    _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
-    _particleGPUBuffer->updateBuffer(g_particleColourBuffer, aliveCount, 0, _particles->_renderingColours.data());
-    _particleGPUBuffer->incQueue();
-}
 
 /// Pre-process particles
 void ParticleEmitter::sceneUpdate(const U64 deltaTime,
@@ -309,7 +303,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
 
             // const vec3<F32>& origin = transform->getPosition();
             // const Quaternion<F32>& orientation = transform->getOrientation();
-       
+            aliveCount = to_uint(_particles->_renderingPositions.size());
             CreateTask(
                 [this, aliveCount, averageEmitRate](const std::atomic_bool& stopRequested) {
                     // invalidateCache means that the existing particle data is no longer partially sorted
@@ -321,17 +315,11 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                         _boundingBox.add(_particles->_position[i]);
                     }
 
-                    //if (g_usePersistentlyMappedBuffers) {
-                    //    postUpdate();
-                    //}
-                },
-                [this]()
-                {
-                    //if (!g_usePersistentlyMappedBuffers) {
-                        postUpdate();
-                    //}
+                    _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
+                    _particleGPUBuffer->updateBuffer(g_particleColourBuffer, aliveCount, 0, _particles->_renderingColours.data());
+                    _particleGPUBuffer->incQueue();
                     _updating = false;
-                })._task->startTask(Task::TaskPriority::REALTIME_WITH_CALLBACK);
+                })._task->startTask(Task::TaskPriority::DONT_CARE, to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
         }
     }
 

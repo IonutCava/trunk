@@ -20,7 +20,8 @@ float chebyshevUpperBound(vec2 moments, float depth, float minVariance) {
     float variance = max(moments.y - (moments.x * moments.x), minVariance);
     float d = (depth - moments.x);
     float p_max = variance / (variance + d*d);
-    return max(1.0 - p_max, 0.0);
+    //return max(1.0 - p_max, 0.0);
+    return p_max;
 }
 
 float applyShadowDirectional(int shadowIndex, int splitCount, in float fragDepth) {
