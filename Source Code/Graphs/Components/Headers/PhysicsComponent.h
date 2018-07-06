@@ -195,7 +195,7 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     bool isUniformScaled() const;
 
     /// Return the position
-    vec3<F32> getPosition() const override;
+    vec3<F32> getPosition() const;
     /// Return the local position
     vec3<F32> getLocalPosition() const;
     /// Return the position
@@ -204,7 +204,7 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     vec3<F32> getLocalPosition(D64 interpolationFactor) const;
 
     /// Return the scale factor
-    vec3<F32> getScale() const override;
+    vec3<F32> getScale() const;
     /// Return the local scale factor
     vec3<F32> getLocalScale() const;
     /// Return the scale factor
@@ -213,7 +213,7 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     vec3<F32> getLocalScale(D64 interpolationFactor) const;
 
     /// Return the orientation quaternion
-    Quaternion<F32> getOrientation() const override;
+    Quaternion<F32> getOrientation() const;
     /// Return the local orientation quaternion
     Quaternion<F32> getLocalOrientation() const;
     /// Return the orientation quaternion
@@ -242,6 +242,12 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     inline void addTransformUpdateCbk(DELEGATE_CBK<> cbk) {
         _transformCallbacks.push_back(cbk);
     }
+
+
+    // Local transform interface access
+    void getScale(vec3<F32>& scaleOut) const override;
+    void getPosition(vec3<F32>& posOut) const override;
+    void getOrientation(Quaternion<F32>& quatOut) const override;
 
    private:
     void clean(bool interp);

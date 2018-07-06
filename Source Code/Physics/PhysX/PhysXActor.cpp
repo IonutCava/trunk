@@ -10,7 +10,9 @@ namespace Divide {
     {
     }
 
-    PhysXActor::~PhysXActor() {}
+    PhysXActor::~PhysXActor()
+    {
+    }
 
     /// Set the local X,Y and Z position
     void PhysXActor::setPosition(const vec3<F32>& position) {
@@ -150,19 +152,20 @@ namespace Divide {
     void PhysXActor::setRotationZ(const F32 angle, bool inDegrees) {
 
     }
-
+    
     /// Return the scale factor
-    vec3<F32> PhysXActor::getScale() const {
-        return vec3<F32>(1.0f);
+    void PhysXActor::getScale(vec3<F32>& scaleOut) const {
+        scaleOut.set(1.0f);
     }
 
     /// Return the position
-    vec3<F32> PhysXActor::getPosition() const {
-        return vec3<F32>(0.0f);
+    void PhysXActor::getPosition(vec3<F32>& posOut) const {
+        posOut.set(0.0f);
     }
+
     /// Return the orientation quaternion
-    Quaternion<F32> PhysXActor::getOrientation() const {
-        return Quaternion<F32>();
+    void  PhysXActor::getOrientation(Quaternion<F32>& quatOut) const {
+        quatOut.identity();
     }
 
     const mat4<F32>& PhysXActor::getMatrix() {

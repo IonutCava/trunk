@@ -29,9 +29,6 @@ namespace Divide {
 */
 
 namespace {
-    // if culled count exceeds this limit, culling becomes multithreaded in the next frame
-    const U32 g_asyncCullThreshold = 75;
-
     struct VisibleNodesFrontToBack {
         VisibleNodesFrontToBack(const vec3<F32>& camPos) : _camPos(camPos)
         {
@@ -379,6 +376,10 @@ void SceneManager::onCameraUpdate(const Camera& camera) {
     getActiveScene().sceneGraph().onCameraUpdate(camera);
 }
 
+void SceneManager::onCameraChange(const Camera& camera) {
+    getActiveScene().sceneGraph().onCameraChange(camera);
+}
+
 void SceneManager::updateSceneState(const U64 deltaTime) {
     Scene& activeScene = getActiveScene();
     assert(activeScene.getState() == ResourceState::RES_LOADED);
@@ -565,13 +566,9 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
         return type == SceneNodeType::TYPE_LIGHT || type == SceneNodeType::TYPE_TRIGGER;
     };
 
-    // If we are rendering a high node count, we might want to use async frustum culling
-    bool cullAsync = parent().renderPassManager().getLastTotalBinSize(stage) > g_asyncCullThreshold;
-
     _renderPassCuller->frustumCull(activeScene.sceneGraph(),
                                    activeScene.state(),
                                    isPrePass ? RenderStage::Z_PRE_PASS : stage,
-                                   cullAsync,
                                    cullingFunction);
     RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage);
 

@@ -220,19 +220,19 @@ inline void Transform::setRotationZ(const F32 angle, bool inDegrees) {
 }
 
 /// Return the scale factor
-inline vec3<F32> Transform::getScale() const {
+inline void Transform::getScale(vec3<F32>& scaleOut) const {
     ReadLock r_lock(_lock);
-    return _transformValues._scale;
+    scaleOut.set(_transformValues._scale);
 }
 /// Return the position
-inline vec3<F32> Transform::getPosition() const {
+inline void Transform::getPosition(vec3<F32>& posOut) const {
     ReadLock r_lock(_lock);
-    return _transformValues._translation;
+    posOut.set(_transformValues._translation);
 }
 /// Return the orientation quaternion
-inline Quaternion<F32> Transform::getOrientation() const {
+inline void Transform::getOrientation(Quaternion<F32>& quatOut) const {
     ReadLock r_lock(_lock);
-    return _transformValues._orientation;
+    quatOut.set(_transformValues._orientation);
 }
 
 inline void Transform::clone(Transform* const transform) {

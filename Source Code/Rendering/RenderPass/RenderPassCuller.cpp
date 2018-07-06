@@ -11,7 +11,7 @@
 namespace Divide {
 
 namespace {
-    static const U32 g_nodesPerCullingPartition = Config::MAX_VISIBLE_NODES / 4u;
+    static const U32 g_nodesPerCullingPartition = Config::MAX_VISIBLE_NODES / 128u;
 
     template <typename T>
     constexpr T&&
@@ -80,9 +80,9 @@ bool RenderPassCuller::wasNodeInView(I64 GUID, RenderStage stage) const {
 void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
                                    const SceneState& sceneState,
                                    RenderStage stage,
-                                   bool async,
                                    const CullingFunction& cullingFunction)
 {
+
     VisibleNodeList& nodeCache = getNodeCache(stage);
     vectorImpl<VisibleNodeList>& nodeList = _perThreadNodeList[to_uint(stage)];
     nodeCache.resize(0);
@@ -96,18 +96,16 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
         nodeList.resize(childCount);
         const Camera& camera = *Camera::activeCamera();
         F32 cullMaxDistance = renderState.generalVisibility();
-        parallel_for(DELEGATE_BIND(&RenderPassCuller::frumstumPartitionCuller,
-                                   this,
-                                   std::placeholders::_1,
-                                   std::placeholders::_2,
-                                   std::placeholders::_3,
-                                   std::ref(root),
-                                   std::cref(camera),
-                                   stage,
-                                   cullMaxDistance),
-                     childCount,
-                     g_nodesPerCullingPartition,
-                     Task::TaskPriority::MAX);
+
+        auto cullIterFunction = [this, &root, &camera, &stage, &cullMaxDistance](const Task& parentTask, U32 start, U32 end) {
+            auto perChildCull = [this, &parentTask, &camera, stage, cullMaxDistance](const SceneGraphNode& child, I32 i) {
+                frustumCullNode(parentTask, child, camera, stage, cullMaxDistance, _perThreadNodeList[to_uint(stage)][i], true);
+            };
+
+            root.forEachChild(perChildCull, start, end);
+        };
+
+        parallel_for(cullIterFunction, childCount, g_nodesPerCullingPartition, Task::TaskPriority::MAX);
 
         for (const VisibleNodeList& nodeListEntry : nodeList) {
             nodeCache.insert(std::end(nodeCache), std::cbegin(nodeListEntry), std::cend(nodeListEntry));
@@ -115,18 +113,6 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
     }
 }
 
-void RenderPassCuller::frumstumPartitionCuller(const Task& parentTask,
-                                               U32 start,
-                                               U32 end,
-                                               SceneGraphNode& root,
-                                               const Camera& camera,
-                                               RenderStage stage,
-                                               F32 cullMaxDistance)
-{
-    root.forEachChild([this, &parentTask, &camera, stage, cullMaxDistance](const SceneGraphNode& child, I32 i) {
-        frustumCullNode(parentTask, child, camera, stage, cullMaxDistance, i, true);
-    }, start, end);
-}
 /// This method performs the visibility check on the given node and all of its
 /// children and adds them to the RenderQueue
 void RenderPassCuller::frustumCullNode(const Task& parentTask,
@@ -134,10 +120,9 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
                                        const Camera& currentCamera,
                                        RenderStage currentStage,
                                        F32 cullMaxDistance,
-                                       U32 nodeListIndex,
-                                       bool clearList)
+                                       VisibleNodeList& nodes,
+                                       bool clearList) const
 {
-    VisibleNodeList& nodes = _perThreadNodeList[to_uint(currentStage)][nodeListIndex];
     if (clearList) {
         nodes.resize(0);
     }
@@ -162,9 +147,11 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
         vectorAlg::emplace_back(nodes, 0, currentNode.shared_from_this());
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
             // Parent node intersects the view, so check children
-            currentNode.forEachChild([this, &parentTask, &currentCamera, currentStage, cullMaxDistance, nodeListIndex](const SceneGraphNode& child) {
-                frustumCullNode(parentTask, child, currentCamera, currentStage, cullMaxDistance, nodeListIndex, false);
-            });
+            auto childCull = [this, &parentTask, &currentCamera, &nodes, currentStage, cullMaxDistance](const SceneGraphNode& child) {
+                frustumCullNode(parentTask, child, currentCamera, currentStage, cullMaxDistance, nodes, false);
+            };
+
+            currentNode.forEachChild(childCull);
         } else {
             // All nodes are in view entirely
             addAllChildren(currentNode, currentStage, nodes);
@@ -172,7 +159,7 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
     }
 }
 
-void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderStage currentStage, VisibleNodeList& nodes) {
+void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderStage currentStage, VisibleNodeList& nodes) const {
     currentNode.forEachChild([this, &currentNode, currentStage, &nodes](const SceneGraphNode& child) {
         if (!(currentStage == RenderStage::SHADOW &&   !currentNode.get<RenderingComponent>()->castsShadows())) {
             if (child.isActive() && !_cullingFunction[to_uint(currentStage)](child)) {

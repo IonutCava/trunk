@@ -86,9 +86,9 @@ public:
     void rotateZ(const F32 angle, bool inDegrees = true) override;
     using TransformInterface::rotate;
 
-    vec3<F32> getScale() const override;
-    vec3<F32> getPosition() const override;
-    Quaternion<F32> getOrientation() const override;
+    void getScale(vec3<F32>& scaleOut) const override;
+    void getPosition(vec3<F32>& posOut) const override;
+    void getOrientation(Quaternion<F32>& quatOut) const override;
 
     /// Get the local transformation matrix
     /// wasRebuilt is set to true if the matrix was just rebuilt

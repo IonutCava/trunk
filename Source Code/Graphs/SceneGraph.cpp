@@ -181,6 +181,10 @@ void SceneGraph::onCameraUpdate(const Camera& camera) {
     _root->onCameraUpdate(camera.getGUID(), camera.getEye(), camera.getWorldMatrix());
 }
 
+void SceneGraph::onCameraChange(const Camera& camera) {
+    _root->onCameraChange(camera);
+}
+
 void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_cwptr>& selectionHits) const {
     _root->intersect(ray, start, end, selectionHits);
 

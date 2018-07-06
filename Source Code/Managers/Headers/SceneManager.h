@@ -181,6 +181,7 @@ protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
     void onCameraUpdate(const Camera& camera);
+    void onCameraChange(const Camera& camera);
     void preRender(const Camera& camera, RenderTarget& target);
     void postRender(const Camera& camera, RenderStage stage, RenderSubPassCmds& subPassesInOut);
     bool generateShadowMaps();
@@ -281,6 +282,10 @@ class SceneManagerKernel {
         manager.onCameraUpdate(camera);
     }
 
+    static void onCamerachange(Divide::SceneManager& manager, const Camera& camera) {
+        manager.onCameraChange(camera);
+    }
+    
     static void currentPlayerPass(Divide::SceneManager& manager, U8 playerIndex) {
         manager.currentPlayerPass(playerIndex);
     }

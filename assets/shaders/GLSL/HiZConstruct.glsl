@@ -17,14 +17,15 @@ void main(void)
 
 
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D depthTex;
-uniform int  depthLoD;
-uniform bool isDepthEven;
+uniform ivec2 depthInfo;
 
 void main() {
+    int depthLoD = depthInfo.x;
+
     ivec2 lodSize = textureSize(depthTex, depthLoD);
     float depth = 0;
 
-    if (isDepthEven) {
+    if (depthInfo.y == 1) {
         ivec2 offsets[] = ivec2[](ivec2(0, 0),
                                   ivec2(0, 1),
                                   ivec2(1, 1),

@@ -510,6 +510,15 @@ void SceneGraphNode::onCameraUpdate(const I64 cameraGUID,
         pComp->setViewOffset(posOffset, rotationOffset);
     }
     
+    Attorney::SceneNodeSceneGraph::onCameraUpdate(*this, *_node, cameraGUID, posOffset, rotationOffset);
+}
+
+void SceneGraphNode::onCameraChange(const Camera& cam) {
+    forEachChild([&cam](SceneGraphNode& child) {
+        child.onCameraChange(cam);
+    });
+
+    Attorney::SceneNodeSceneGraph::onCameraChange(*this, *_node, cam);
 }
 
 bool SceneGraphNode::filterCollission(const SceneGraphNode& node) {

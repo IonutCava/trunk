@@ -135,7 +135,10 @@ const RTAttachment_ptr& RTAttachmentPool::get(RTAttachment::Type type, U8 index)
 }
 
 void RTAttachmentPool::get(RTAttachment::Type type, vectorImpl<RTAttachment_ptr>& attachments) const {
-    attachments.resize(0);
+    if (!attachments.empty()) {
+        attachments.resize(0);
+    }
+
     std::back_insert_iterator<std::vector<RTAttachment_ptr>> back_it(attachments);
     auto const usedPredicate = [](const RTAttachment_ptr& ptr) { return ptr && ptr->used(); };
     std::copy_if(std::begin(_attachment[to_uint(type)]), std::end(_attachment[to_uint(type)]), back_it, usedPredicate);

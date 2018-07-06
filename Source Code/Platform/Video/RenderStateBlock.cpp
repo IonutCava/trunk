@@ -45,30 +45,6 @@ RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
 {
 }
 
-void RenderStateBlock::copy(const RenderStateBlock& other) {
-    _colourWrite = other._colourWrite;
-    _blendEnable = other._blendEnable;
-    _blendSrc = other._blendSrc;
-    _blendDest = other._blendDest;
-    _blendOp = other._blendOp;
-    _cullMode = other._cullMode;
-    _cullEnabled = other._cullEnabled;
-    _zEnable = other._zEnable;
-    _zFunc = other._zFunc;
-    _zBias = other._zBias;
-    _zUnits = other._zUnits;
-    _stencilEnable = other._stencilEnable;
-    _stencilRef = other._stencilRef;
-    _stencilMask = other._stencilMask;
-    _stencilWriteMask = other._stencilWriteMask;
-    _stencilFailOp = other._stencilFailOp;
-    _stencilZFailOp = other._stencilZFailOp;
-    _stencilPassOp = other._stencilPassOp;
-    _stencilFunc = other._stencilFunc;
-    _fillMode = other._fillMode;
-    _cachedHash = other._cachedHash;
-}
-
 void RenderStateBlock::flipCullMode() {
     if (_cullMode == CullMode::NONE) {
         _cullMode = CullMode::ALL;
@@ -232,26 +208,26 @@ void RenderStateBlock::clear() {
 
 /// Return the render state block defined by the specified hash value.
 const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash) {
-    ReadLock r_lock(s_stateBlockMapMutex);
-    // Find the render state block associated with the received hash value
-    RenderStateMap::const_iterator it = s_stateBlockMap.find(renderStateBlockHash);
+    bool blockFound = false;
+    const RenderStateBlock& block = get(renderStateBlockHash, blockFound);
     // Assert if it doesn't exist. Avoids programming errors.
-    DIVIDE_ASSERT(it != std::cend(s_stateBlockMap),
-                  "RenderStateBlock error: Invalid render state block hash specified for getRenderStateBlock!");
+    DIVIDE_ASSERT(blockFound, "RenderStateBlock error: Invalid render state block hash specified for getRenderStateBlock!");
     // Return the state block's descriptor
-    return it->second;
+    return block;
 }
 
-bool RenderStateBlock::get(size_t renderStateBlockHash, RenderStateBlock& blockOut) {
+const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash, bool& blockFound) {
+    blockFound = false;
+
     ReadLock r_lock(s_stateBlockMapMutex);
     // Find the render state block associated with the received hash value
     RenderStateMap::const_iterator it = s_stateBlockMap.find(renderStateBlockHash);
     if(it != std::cend(s_stateBlockMap) ) {
-        blockOut.copy(it->second);
-        return true;
+        blockFound = true;
+        return it->second;
     }
 
-    return false;
+    return s_stateBlockMap.find(s_defaultCacheValue)->second;
 }
 
 };

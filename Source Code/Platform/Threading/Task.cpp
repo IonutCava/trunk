@@ -146,7 +146,10 @@ void Task::stopTask() {
 
 void Task::wait() {
     std::unique_lock<std::mutex> lk(_taskDoneMutex);
-    _taskDoneCV.wait(lk, [this]() -> bool { return _done; } );
+    _taskDoneCV.wait(lk,
+                     [this]() -> bool {
+                        return _done;
+                      });
 }
 
 void Task::run() {

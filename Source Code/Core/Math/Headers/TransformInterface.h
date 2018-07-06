@@ -152,11 +152,11 @@ public:
     }
     
     /// Return the scale factor
-    virtual vec3<F32> getScale() const = 0;
+    virtual void getScale(vec3<F32>& scaleOut) const = 0;
     /// Return the position
-    virtual vec3<F32> getPosition() const = 0;
+    virtual void getPosition(vec3<F32>& posOut) const = 0;
     /// Return the orientation quaternion
-    virtual Quaternion<F32> getOrientation() const = 0;
+    virtual void getOrientation(Quaternion<F32>& quatOut) const = 0;
 
     /// Get the local transformation matrix
     /// wasRebuilt is set to true if the matrix was just rebuilt

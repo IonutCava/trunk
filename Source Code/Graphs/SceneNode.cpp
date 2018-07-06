@@ -49,6 +49,9 @@ SceneNode::~SceneNode()
 void SceneNode::sceneUpdate(const U64 deltaTime,
                             SceneGraphNode& sgn,
                             SceneState& sceneState) {
+    ACKNOWLEDGE_UNUSED(deltaTime);
+    ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(sceneState);
 }
 
 void SceneNode::sgnUpdate(const U64 deltaTime,
@@ -70,6 +73,7 @@ void SceneNode::sgnUpdate(const U64 deltaTime,
 }
 
 void SceneNode::updateBoundsInternal(SceneGraphNode& sgn) {
+    ACKNOWLEDGE_UNUSED(sgn);
 }
 
 void SceneNode::postLoad(SceneGraphNode& sgn) {
@@ -121,12 +125,35 @@ bool SceneNode::unload() {
 void SceneNode::initialiseDrawCommands(SceneGraphNode& sgn,
                                        RenderStage renderStage,
                                        GenericDrawCommands& drawCommandsInOut) {
+    ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(renderStage);
+    ACKNOWLEDGE_UNUSED(drawCommandsInOut);
 }
 
 void SceneNode::updateDrawCommands(SceneGraphNode& sgn,
                                    RenderStage renderStage,
                                    const SceneRenderState& sceneRenderState,
                                    GenericDrawCommands& drawCommandsInOut) {
+    ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(renderStage);
+    ACKNOWLEDGE_UNUSED(sceneRenderState);
+    ACKNOWLEDGE_UNUSED(drawCommandsInOut);
+}
+
+void SceneNode::onCameraUpdate(SceneGraphNode& sgn,
+                               const I64 cameraGUID,
+                               const vec3<F32>& posOffset,
+                               const mat4<F32>& rotationOffset) {
+    ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(cameraGUID);
+    ACKNOWLEDGE_UNUSED(posOffset);
+    ACKNOWLEDGE_UNUSED(rotationOffset);
+}
+
+void SceneNode::onCameraChange(SceneGraphNode& sgn,
+                               const Camera& cam) {
+    ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(cam);
 }
 
 };

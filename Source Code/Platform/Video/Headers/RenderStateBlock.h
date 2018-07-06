@@ -50,7 +50,7 @@ class RenderStateBlock : public GUIDWrapper {
        /// If the hash value doesn't exist in the state block map, return the default state block
        static const RenderStateBlock& get(size_t renderStateBlockHash);
        /// Returns false if the specified hash is not found in the map
-       static bool get(size_t renderStateBlockHash, RenderStateBlock& blockOut);
+       static const RenderStateBlock& get(size_t renderStateBlockHash, bool& blockFound);
 
    protected:
     /// Colour Writes
@@ -97,7 +97,6 @@ class RenderStateBlock : public GUIDWrapper {
     RenderStateBlock(const RenderStateBlock& b);
 
     void setDefaultValues();
-    void copy(const RenderStateBlock& other);
 
     void setFillMode(FillMode mode);
     void setZBias(F32 zBias, F32 zUnits);
@@ -189,10 +188,10 @@ class RenderStateBlock : public GUIDWrapper {
     inline size_t getHash() const {
         return _cachedHash;
     }
-    bool operator==(RenderStateBlock& RSBD) const {
+    bool operator==(const RenderStateBlock& RSBD) const {
         return _cachedHash == RSBD._cachedHash;
     }
-    bool operator!=(RenderStateBlock& RSBD) const {
+    bool operator!=(const RenderStateBlock& RSBD) const {
         return _cachedHash != RSBD._cachedHash;
     }
 };

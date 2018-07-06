@@ -322,7 +322,9 @@ vec3<F32> PhysicsComponent::getPosition() const {
 }
 
 vec3<F32> PhysicsComponent::getLocalPosition() const {
-    return _transformInterface->getPosition();
+    vec3<F32> pos;
+    getPosition(pos);
+    return pos;
 }
 
 /// Return the position
@@ -359,7 +361,9 @@ vec3<F32> PhysicsComponent::getScale() const {
 }
 
 vec3<F32> PhysicsComponent::getLocalScale() const {
-    return _transformInterface->getScale();
+    vec3<F32> scale;
+    getScale(scale);
+    return scale;
 }
 
 /// Return the scale factor
@@ -398,7 +402,9 @@ Quaternion<F32> PhysicsComponent::getOrientation() const {
 }
 
 Quaternion<F32> PhysicsComponent::getLocalOrientation() const {
-    return _transformInterface->getOrientation();
+    Quaternion<F32> quat;
+    getOrientation(quat);
+    return quat;
 }
 
 Quaternion<F32> PhysicsComponent::getOrientation(D64 interpolationFactor) const {
@@ -423,7 +429,7 @@ Quaternion<F32> PhysicsComponent::getLocalOrientation(D64 interpolationFactor) c
 }
 
 bool PhysicsComponent::isUniformScaled() const {
-    return _transformInterface->getScale().isUniform();
+    return getLocalScale().isUniform();
 }
 
 Transform* PhysicsComponent::getTransform() const {
@@ -439,6 +445,19 @@ PhysicsAsset* PhysicsComponent::getPhysicsAsset() const {
 bool PhysicsComponent::physicsDriven() const {
     return (_physicsCollisionGroup != PhysicsGroup::GROUP_IGNORE &&
             _physicsCollisionGroup != PhysicsGroup::GROUP_COUNT);
+}
+
+// Transform interface access
+void PhysicsComponent::getScale(vec3<F32>& scaleOut) const {
+    _transformInterface->getScale(scaleOut);
+}
+
+void PhysicsComponent::getPosition(vec3<F32>& posOut) const {
+    _transformInterface->getPosition(posOut);
+}
+
+void PhysicsComponent::getOrientation(Quaternion<F32>& quatOut) const {
+    _transformInterface->getOrientation(quatOut);
 }
 
 };

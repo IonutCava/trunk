@@ -570,6 +570,8 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     screenTarget.bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
     screenTarget.begin(depthOnlyTarget);
     // We skip the first level as that's our full resolution image
+
+    vec2<I32> depthInfo;
     while (dim) {
         if (level) {
             twidth = twidth < 1 ? 1 : twidth;
@@ -578,8 +580,8 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
             updateViewportInternal(0, 0, twidth, theight);
             // Bind next mip level for rendering but first restrict fetches only to previous level
             screenTarget.setMipLevel(level);
-            _HIZConstructProgram->Uniform("depthLoD", level-1);
-            _HIZConstructProgram->Uniform("isDepthEven", wasEven);
+            depthInfo.set(level - 1, wasEven ? 1 : 0);
+            _HIZConstructProgram->Uniform("depthInfo", depthInfo);
             // Dummy draw command as the full screen quad is generated completely in the vertex shader
             draw(triangleCmd);
         }

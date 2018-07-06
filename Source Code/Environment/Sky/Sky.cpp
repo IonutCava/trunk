@@ -102,6 +102,22 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
+void Sky::onCameraUpdate(SceneGraphNode& sgn,
+                         const I64 cameraGUID,
+                         const vec3<F32>& posOffset,
+                         const mat4<F32>& rotationOffset) {
+    SceneNode::onCameraUpdate(sgn, cameraGUID, posOffset, rotationOffset);
+
+    sgn.get<PhysicsComponent>()->setPosition(posOffset);
+}
+
+void Sky::onCameraChange(SceneGraphNode& sgn,
+                         const Camera& cam) {
+    SceneNode::onCameraChange(sgn, cam);
+
+    sgn.get<PhysicsComponent>()->setPosition(cam.getEye());
+}
+
 void Sky::sceneUpdate(const U64 deltaTime,
                       SceneGraphNode& sgn,
                       SceneState& sceneState) {
@@ -128,8 +144,6 @@ void Sky::updateDrawCommands(SceneGraphNode& sgn,
                              RenderStage renderStage,
                              const SceneRenderState& sceneRenderState,
                              GenericDrawCommands& drawCommandsInOut) {
-
-    sgn.get<PhysicsComponent>()->setPosition(Camera::activeCamera()->getEye());
 
     GenericDrawCommand& cmd = drawCommandsInOut.front();
     cmd.stateHash(renderStage == RenderStage::REFLECTION

@@ -164,6 +164,12 @@ class NOINITVTABLE SceneNode : public Resource {
         return getSGNData(sgnGUID);
     }
 
+    virtual void onCameraUpdate(SceneGraphNode& sgn,
+                                const I64 cameraGUID,
+                                const vec3<F32>& posOffset,
+                                const mat4<F32>& rotationOffset);
+    virtual void onCameraChange(SceneGraphNode& sgn,
+                                const Camera& cam);
    protected:
     ResourceCache& _parentCache;
     /// The various states needed for rendering
@@ -219,6 +225,21 @@ class SceneNodeSceneGraph {
 
     static size_t parentCount(const SceneNode& node) {
         return node._sgnParents.size();
+    }
+
+
+    static void onCameraUpdate(SceneGraphNode& sgn,
+                               SceneNode& node,
+                               const I64 cameraGUID,
+                               const vec3<F32>& posOffset,
+                               const mat4<F32>& rotationOffset) {
+        node.onCameraUpdate(sgn, cameraGUID, posOffset, rotationOffset);
+    }
+
+    static void onCameraChange(SceneGraphNode& sgn,
+                               SceneNode& node,
+                               const Camera& cam) {
+        node.onCameraChange(sgn, cam);
     }
 
     friend class Divide::SceneGraphNode;

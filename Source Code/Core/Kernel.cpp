@@ -672,7 +672,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Camera::addUpdateListener([this](const Camera& cam) {
                                    Attorney::SceneManagerKernel::onCameraUpdate(*_sceneManager, cam);
                               });
-
+    Camera::addChangeListener([this](const Camera& cam) {
+                                   Attorney::SceneManagerKernel::onCamerachange(*_sceneManager, cam);
+                              });
     if (!_sceneManager->switchScene(startupScene, true, false)) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), startupScene.c_str());
         return ErrorCode::MISSING_SCENE_DATA;

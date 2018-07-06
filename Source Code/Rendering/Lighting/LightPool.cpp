@@ -177,11 +177,18 @@ bool LightPool::generateShadowMaps(GFXDevice& context, SceneRenderState& sceneRe
     if (!_shadowMapsEnabled) {
         return true;
     }
+
+    for (TaskHandle& task : _lightUpdateTask) {
+        task.wait();
+    }
+
     ShadowMap::clearShadowMapBuffers(_context);
     Time::ScopedTimer timer(_shadowPassTimer);
     // generate shadowmaps for each light
     I32 idx = 0;
-    for (Light* light : _sortedShadowCastingLights) {
+    vectorAlg::vecSize count = _sortedShadowCastingLights.size();
+    for (vectorAlg::vecSize i = 0; i < count; ++i) {
+        Light* light = _sortedShadowCastingLights[i];
         if(light != nullptr) {
             _currentShadowCastingLight = light;
             light->validateOrCreateShadowMaps(context, sceneRenderState);
@@ -212,6 +219,10 @@ void LightPool::previewShadowMaps(Light* light) {
     if (!_shadowMapsEnabled || !_previewShadowMaps || _lights.empty() ||
         _context.getRenderStage() != RenderStage::DISPLAY) {
         return;
+    }
+
+    for (TaskHandle& task : _lightUpdateTask) {
+        task.wait();
     }
 
     // If no light is specified show as many shadowmaps as possible
@@ -263,9 +274,6 @@ void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewM
     _lightUpdateTask.clear();
     // Create and upload light data for current pass
     _activeLightCount.fill(0);
-    // Sort all lights (Sort in parallel by type)
-    TaskPool& pool = Application::instance().kernel().taskPool();
-
     _sortedLights.resize(0);
     _sortedShadowCastingLights.resize(0);
     _sortedLightProperties.resize(0);
@@ -315,8 +323,8 @@ void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewM
             if (light->getLightType() == LightType::DIRECTIONAL) {
                 temp._options.w = static_cast<DirectionalLight*>(light)->csmSplitCount();
             }
-
-            if (light->castsShadows() && _sortedShadowProperties.size() < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
+            
+           if (light->castsShadows() && _sortedShadowProperties.size() < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
                 temp._options.z = to_int(_sortedShadowProperties.size());
                 _sortedShadowProperties.emplace_back(light->getShadowProperties());
                 _sortedShadowCastingLights.emplace_back(light);
@@ -346,6 +354,8 @@ void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewM
     };
 
     if (!_sortedLights.empty()) {
+        // Sort all lights (Sort in parallel by type)
+        TaskPool& pool = Application::instance().kernel().taskPool();
         _lightUpdateTask.emplace_back(CreateTask(pool, lightUpdate));
         _lightUpdateTask.back().startTask(Task::TaskPriority::HIGH, g_usePersistentMapping ? 0 : to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
     }

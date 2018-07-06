@@ -69,31 +69,23 @@ class RenderPassCuller {
     void frustumCull(SceneGraph& sceneGraph,
                      const SceneState& sceneState,
                      RenderStage stage,
-                     bool async,
                      const CullingFunction& cullingFunction);
 
     bool wasNodeInView(I64 GUID, RenderStage stage) const;
 
    protected:
 
-    void frumstumPartitionCuller(const Task& parentTask,
-                                 U32 start,
-                                 U32 end,
-                                 SceneGraphNode& root,
-                                 const Camera& camera,
-                                 RenderStage stage,
-                                 F32 cullMaxDistance);
     // return true if the node is not currently visible
     void frustumCullNode(const Task& parentTask,
                          const SceneGraphNode& node,
                          const Camera& currentCamera,
                          RenderStage currentStage,
                          F32 cullMaxDistance,
-                         U32 nodeListIndex,
-                         bool clearList);
+                         VisibleNodeList& nodes,
+                         bool clearList) const;
     void addAllChildren(const SceneGraphNode& currentNode,
                         RenderStage currentStage,
-                        VisibleNodeList& nodes);
+                        VisibleNodeList& nodes) const;
 
     U32 stageToCacheIndex(RenderStage stage) const;
 

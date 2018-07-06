@@ -73,6 +73,13 @@ class Sky : public SceneNode {
 
     bool load();
 
+    void onCameraUpdate(SceneGraphNode& sgn,
+                        const I64 cameraGUID,
+                        const vec3<F32>& posOffset,
+                        const mat4<F32>& rotationOffset) override;
+
+    void onCameraChange(SceneGraphNode& sgn,
+                        const Camera& cam) override;
    private:
     U32       _diameter;
     Texture_ptr  _skybox;

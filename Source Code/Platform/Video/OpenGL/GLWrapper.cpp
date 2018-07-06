@@ -794,13 +794,14 @@ size_t GL_API::setStateBlock(size_t stateBlockHash) {
         // Update the current state hash
         _currentStateBlockHash = stateBlockHash;
 
-        RenderStateBlock previousState, currentState;
-        bool currentStateValid = RenderStateBlock::get(_currentStateBlockHash, currentState);
+        bool currentStateValid = false;
+        const RenderStateBlock& currentState = RenderStateBlock::get(_currentStateBlockHash, currentStateValid);
         if (_previousStateBlockHash != 0) {
-            bool previousStateValid = RenderStateBlock::get(_previousStateBlockHash, previousState);
+            bool previousStateValid = false;
+            const RenderStateBlock& previousState = RenderStateBlock::get(_previousStateBlockHash, previousStateValid);
 
-            DIVIDE_ASSERT(currentState != previousState &&
-                          currentStateValid &&  previousStateValid,
+            DIVIDE_ASSERT(currentStateValid && previousStateValid &&
+                          currentState != previousState,
                           "GL_API error: Invalid state blocks detected on activation!");
 
             // Activate the new render state block in an rendering API dependent way
@@ -858,7 +859,6 @@ size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
 /// Return the OpenGL sampler object's handle for the given hash value
 GLuint GL_API::getSamplerHandle(size_t samplerHash) {
     // If the hash value is 0, we assume the code is trying to unbind a sampler object
-    GLuint samplerHandle = 0;
     if (samplerHash > 0) {
         // If we fail to find the sampler object for the given hash, we print an
         // error and return the default OpenGL handle
@@ -866,13 +866,13 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
         samplerObjectMap::const_iterator it = s_samplerMap.find(samplerHash);
         if (it != std::cend(s_samplerMap)) {
             // Return the OpenGL handle for the sampler object matching the specified hash value
-            samplerHandle = it->second->getObjectHandle();
+            return it->second->getObjectHandle();
         } else {
             Console::errorfn(Locale::get(_ID("ERROR_NO_SAMPLER_OBJECT_FOUND")), samplerHash);
         }
     }
 
-    return samplerHandle;
+    return 0;
 }
 
 };

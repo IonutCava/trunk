@@ -302,6 +302,8 @@ class SceneGraphNode : public GUIDWrapper,
                         const vec3<F32>& posOffset,
                         const mat4<F32>& rotationOffset);
 
+    void onCameraChange(const Camera& cam);
+
     inline void setUpdateFlag(UpdateFlag flag) {
         _updateFlags[to_uint(flag)] = true;
     }

@@ -89,6 +89,7 @@ class SceneGraph : private NonCopyable,
     void deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd);
 
     void onCameraUpdate(const Camera& camera);
+    void onCameraChange(const Camera& camera);
 
     void postLoad();
 
