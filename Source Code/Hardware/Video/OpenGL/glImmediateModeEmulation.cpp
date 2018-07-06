@@ -44,6 +44,8 @@ glIMPrimitive::~glIMPrimitive()
 
 void glIMPrimitive::beginBatch() {
     _imInterface->BeginBatch();
+	_inUse = true;
+	_zombieCounter = 0;
 }
 
 void glIMPrimitive::begin(PrimitiveType type){

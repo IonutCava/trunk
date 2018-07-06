@@ -29,10 +29,13 @@ namespace NS_GLIM {
 extern NS_GLIM::GLIM_ENUM glimPrimitiveType[PrimitiveType_PLACEHOLDER];
 
 class glIMPrimitive : public IMPrimitive {
-public:
+
+protected:
+	friend class GLWrapper;
 	glIMPrimitive();
 	~glIMPrimitive();
 
+public:
     void beginBatch();
     void begin(PrimitiveType type);
     void vertex(const vec3<F32>& vert);

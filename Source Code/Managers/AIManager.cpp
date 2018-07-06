@@ -1,6 +1,6 @@
 #include "Headers/AIManager.h"
 
-AIManager::AIManager() : _navMeshDraw(false)
+AIManager::AIManager() : _navMeshDebugDraw(false)
 {
 }
 
@@ -67,6 +67,7 @@ void AIManager::Destroy(){
 }
 
 bool AIManager::addNavMesh(Navigation::NavigationMesh* const navMesh){
+	navMesh->debugDraw(_navMeshDebugDraw);
     WriteLock w_lock(_navMeshMutex);
     _navMeshes.push_back(navMesh);
     return true;
@@ -83,6 +84,14 @@ void AIManager::destroyNavMesh(Navigation::NavigationMesh* const navMesh){
             return;
         }
     }
+}
+
+void AIManager::toggleNavMeshDebugDraw(bool state) {
+	WriteLock w_lock(_navMeshMutex);
+	for_each(Navigation::NavigationMesh* navMesh, _navMeshes){
+		navMesh->debugDraw(state);
+	}
+	_navMeshDebugDraw = state;
 }
 
 void AIManager::debugDraw(bool forceAll){

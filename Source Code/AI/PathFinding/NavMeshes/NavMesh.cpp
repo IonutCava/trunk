@@ -1,6 +1,7 @@
 #include "Headers/NavMesh.h"
 #include "Headers/NavMeshDebugDraw.h"
 
+#include <SimpleIni.h>
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
 
@@ -9,49 +10,22 @@
 #include <DebugUtils/Include/RecastDebugDraw.h>
 
 namespace Navigation {
-    void rcContextDivide::doLog(const rcLogCategory category, const char* msg, const I32 len){
-        switch(category){
-            default:
-            case RC_LOG_PROGRESS:
-                PRINT_FN(Locale::get("RECAST_CONTEXT_LOG_PROGRESS"),msg);
-                break;
-            case RC_LOG_WARNING:
-                PRINT_FN(Locale::get("RECAST_CONTEXT_LOG_WARNING"),msg);
-                break;
-            case RC_LOG_ERROR:
-                ERROR_FN(Locale::get("RECAST_CONTEXT_LOG_ERROR"),msg);
-                break;
-        }
-    }
-
-	const U32 NavigationMesh::_maxVertsPerPoly = 3;
 
     NavigationMesh::NavigationMesh() : GUIDWrapper() {
         ParamHandler& par = ParamHandler::getInstance();
-
-        _fileName =  par.getParam<std::string>("scriptLocation") + "/" +
+		std::string path = par.getParam<std::string>("scriptLocation") + "/" +
 				     par.getParam<std::string>("scenesLocation") + "/" +
-					 par.getParam<std::string>("currentScene") + "/navMeshes/";
+					 par.getParam<std::string>("currentScene");
 
+        _fileName =  path + "/navMeshes/";
+		_configFileValid = loadConfigFromFile(path + "/navMeshConfig.ini");
+		
 		_buildThreaded = true;
         _debugDraw = true;
         _renderConnections = true;
-		_saveIntermediates = false;
         _renderMode = RENDER_NAVMESH;
-		_cellSize = _cellHeight = 0.3f;
-		_walkableHeight = 2.0f;
-		_walkableClimb = 1.0f;
-		_walkableRadius = 0.5f;
-		_walkableSlope = 45.0f;
-		_borderSize = 1;
-		_detailSampleDist = 6.0f;
-		_detailSampleMaxError = 1.0f;
-		_maxEdgeLen = 12;
-		_maxSimplificationError = 1.3f;
-		_minRegionArea = 8;
-		_mergeRegionArea = 20;
-		_tileSize = 32;
-
+		_debugDrawInterface = New NavMeshDebugDraw();
+		assert(_debugDrawInterface != NULL);
 		hf  = NULL;
 		chf = NULL;
 		cs  = NULL;
@@ -63,10 +37,8 @@ namespace Navigation {
 	}
 
 	NavigationMesh::~NavigationMesh(){
-		if(mThread)	{
-			mThread->stopTask();
-		}
-
+		if(_buildThread) _buildThread->stopTask();
+		
 		freeIntermediates(true);
 		dtFreeNavMesh(nm);
 		nm = NULL;
@@ -89,7 +61,45 @@ namespace Navigation {
 		_navigationMeshLock.unlock();
 	}
 
+	bool NavigationMesh::loadConfigFromFile(const std::string& configPath){
+		//Use SimpleIni library for cross-platform INI parsing
+		CSimpleIniA ini;
+		ini.SetUnicode();
+		ini.LoadFile(configPath.c_str());
+
+        if(!ini.GetSection("Rasterization") ||
+		   !ini.GetSection("Agent") ||
+		   !ini.GetSection("Region") ||
+		   !ini.GetSection("Polygonization") ||
+		   !ini.GetSection("DetailMesh")) return false;
+		
+		//Load all key-value pairs for the "Rasterization" section
+		_configParams.setCellSize(Util::convertData<F32,const char*>(ini.GetValue("Rasterization", "fCellSize", "0.3")));
+		_configParams.setCellHeight(Util::convertData<F32, const char*>(ini.GetValue("Rasterization", "fCellHeight", "0.2")));
+		_configParams.setTileSize(Util::convertData<I32,const char*>(ini.GetValue("Rasterization","iTileSize","48")));
+		//Load all key-value pairs for the "Agent" section
+		_configParams.setAgentHeight(Util::convertData<F32,const char*>(ini.GetValue("Agent", "fAgentHeight", "2.5")));
+        _configParams.setAgentRadius(Util::convertData<F32,const char*>(ini.GetValue("Agent", "fAgentRadius", "0.5")));
+		_configParams.setAgentMaxClimb(Util::convertData<F32,const char*>(ini.GetValue("Agent", "fAgentMaxClimb", "1")));
+		_configParams.setAgentMaxSlope(Util::convertData<F32,const char*>(ini.GetValue("Agent", "fAgentMaxSlope", "20")));
+		//Load all key-value pairs for the "Region" section
+		_configParams.setRegionMergeSize(Util::convertData<F32,const char*>(ini.GetValue("Region", "fMergeSize", "20")));
+		_configParams.setRegionMinSize(Util::convertData<F32,const char*>(ini.GetValue("Region", "fMinSize", "50")));
+		//Load all key-value pairs for the "Polygonization" section
+		_configParams.setEdgeMaxLen(Util::convertData<F32,const char*>(ini.GetValue("Polygonization", "fEdgeMaxLength", "12")));
+		_configParams.setEdgeMaxError(Util::convertData<F32,const char*>(ini.GetValue("Polygonization", "fEdgeMaxError", "1.3")));
+		_configParams.setVertsPerPoly(Util::convertData<I32,const char*>(ini.GetValue("Polygonization", "iVertsPerPoly", "6")));
+		//Load all key-value pairs for the "DetailMesh" section
+		_configParams.setDetailSampleDist(Util::convertData<F32,const char*>(ini.GetValue("DetailMesh", "fDetailSampleDist", "6")));
+		_configParams.setDetailSampleMaxError(Util::convertData<F32,const char*>(ini.GetValue("DetailMesh", "fDetailSampleMaxError", "1")));
+		_configParams.setKeepInterResults(Util::convertData<bool,const char*>(ini.GetValue("DetailMesh", "bKeepInterResults", "false")));
+
+		return true;
+	}
+
 	bool NavigationMesh::build(SceneGraphNode* const sgn,bool threaded){
+		if(!_configFileValid) return false;
+
 		if(sgn){
 			_sgn = sgn;
 		}else{	/// use root node
@@ -111,11 +121,10 @@ namespace Navigation {
 		boost::mutex::scoped_lock(_buildLock);
 		if(!_buildLock.owns_lock()) return false;
 
-		if(mThread) {
-			mThread->stopTask();
-		}
+		if(_buildThread) _buildThread->stopTask();
+		
 		Kernel* kernel = Application::getInstance().getKernel();
-		mThread.reset(New Task(kernel->getThreadPool(),3,true,true,DELEGATE_BIND(&NavigationMesh::launchThreadedBuild,this)));
+		_buildThread.reset(New Task(kernel->getThreadPool(),3,true,true,DELEGATE_BIND(&NavigationMesh::launchThreadedBuild,this)));
 
 		return true;
 	}
@@ -170,24 +179,26 @@ namespace Navigation {
 		rcConfig cfg;
 
 		memset(&cfg, 0, sizeof(cfg));
-		cfg.cs = _cellSize;
-		cfg.ch = _cellHeight;
+		_saveIntermediates = _configParams.getKeepInterResults();
+		cfg.cs = _configParams.getCellSize();
+		cfg.ch = _configParams.getCellHeight();
+
 		rcCalcBounds(data.verts, data.getVertCount(), cfg.bmin, cfg.bmax);
 		rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
 
-		cfg.walkableHeight         = (F32)ceil(_walkableHeight / _cellHeight);
-		cfg.walkableClimb          = (F32)ceil(_walkableClimb  / _cellHeight);
-		cfg.walkableRadius         = (F32)ceil(_walkableRadius / _cellSize);
-		cfg.walkableSlopeAngle     = _walkableSlope;
-		cfg.borderSize             = _borderSize;
-		cfg.detailSampleDist       = _detailSampleDist;
-		cfg.detailSampleMaxError   = _detailSampleMaxError;
-		cfg.maxEdgeLen             = _maxEdgeLen;
-		cfg.maxSimplificationError = _maxSimplificationError;
-		cfg.maxVertsPerPoly        = _maxVertsPerPoly;
-		cfg.minRegionArea          = _minRegionArea;
-		cfg.mergeRegionArea        = _mergeRegionArea;
-		cfg.tileSize               = _tileSize;
+		cfg.walkableHeight         = _configParams.base_getWalkableHeight();
+		cfg.walkableClimb          = _configParams.base_getWalkableClimb();
+		cfg.walkableRadius         = _configParams.base_getWalkableRadius();
+		cfg.walkableSlopeAngle     = _configParams.getAgentMaxSlope();
+		cfg.borderSize             = (I32)(_configParams.base_getWalkableRadius() + BORDER_PADDING); // Reserve enough padding
+		cfg.detailSampleDist       = _configParams.getDetailSampleDist();
+		cfg.detailSampleMaxError   = _configParams.getDetailSampleMaxError();
+		cfg.maxEdgeLen             = _configParams.getEdgeMaxLen();
+		cfg.maxSimplificationError = _configParams.getEdgeMaxError();
+		cfg.maxVertsPerPoly        = _configParams.getVertsPerPoly();
+		cfg.minRegionArea          = _configParams.getRegionMinSize();
+		cfg.mergeRegionArea        = _configParams.getRegionMergeSize();
+		cfg.tileSize               = _configParams.getTileSize();
 
         if(!createPolyMesh(cfg, data, &ctx)){
             data.valid = false;
@@ -371,6 +382,28 @@ namespace Navigation {
 
 		return true;
 	}
+	
+	void NavigationMesh::render(){
+
+         RenderMode mode = _renderMode;
+         if(_building)
+         {
+            mode = RENDER_NAVMESH;
+            _debugDrawInterface->overrideColor(duRGBA(255, 0, 0, 80));
+         }
+
+         _navigationMeshLock.lock();
+         switch(mode)
+         {
+            case RENDER_NAVMESH:    if(nm) duDebugDrawNavMesh          (_debugDrawInterface, *nm, 0); break;
+            case RENDER_CONTOURS:   if(cs) duDebugDrawContours         (_debugDrawInterface, *cs);    break;
+            case RENDER_POLYMESH:   if(pm) duDebugDrawPolyMesh         (_debugDrawInterface, *pm);    break;
+            case RENDER_DETAILMESH: if(pmd)duDebugDrawPolyMeshDetail   (_debugDrawInterface, *pmd);   break;
+            case RENDER_PORTALS:    if(nm) duDebugDrawNavMeshPortals   (_debugDrawInterface, *nm);    break;
+         }
+         if(cs && _renderConnections && !_building)   duDebugDrawRegionConnections(_debugDrawInterface, *cs);
+         _navigationMeshLock.unlock();
+    }
 
 #pragma message("ToDo: Enable file support for navMeshes! - Ionut")
 	bool NavigationMesh::load(SceneGraphNode* const sgn){
@@ -476,7 +509,6 @@ namespace Navigation {
 			tileHeader.tileRef = nm->getTileRef(tile);
 			tileHeader.dataSize = tile->dataSize;
 			fwrite(&tileHeader, sizeof(tileHeader), 1, fp);
-
 			fwrite(tile->data, tile->dataSize, 1, fp);
 		}
 
@@ -484,25 +516,4 @@ namespace Navigation {
 
 		return true;
 	}
-
-    void NavigationMesh::render(){
-         NavMeshDebugDraw debugDraw;
-         RenderMode mode = _renderMode;
-         if(_building)
-         {
-            mode = RENDER_NAVMESH;
-            debugDraw.overrideColor(duRGBA(255, 0, 0, 80));
-         }
-         _navigationMeshLock.lock();
-         switch(mode)
-         {
-            case RENDER_NAVMESH:    if(nm) duDebugDrawNavMesh          (&debugDraw, *nm, 0); break;
-            case RENDER_CONTOURS:   if(cs) duDebugDrawContours         (&debugDraw, *cs);    break;
-            case RENDER_POLYMESH:   if(pm) duDebugDrawPolyMesh         (&debugDraw, *pm);    break;
-            case RENDER_DETAILMESH: if(pmd)duDebugDrawPolyMeshDetail   (&debugDraw, *pmd);   break;
-            case RENDER_PORTALS:    if(nm) duDebugDrawNavMeshPortals   (&debugDraw, *nm);    break;
-         }
-         if(cs && _renderConnections && !_building)   duDebugDrawRegionConnections(&debugDraw, *cs);
-         _navigationMeshLock.unlock();
-    }
 };

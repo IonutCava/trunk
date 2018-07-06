@@ -78,7 +78,7 @@ void GL_API::debugDraw(){
 			++priv->_zombieCounter;
 			continue;
 		}
-
+		
 		if(!priv->_setupStates.empty()){
 			priv->_setupStates();
 		}else{

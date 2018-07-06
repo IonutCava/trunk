@@ -1160,6 +1160,9 @@
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationPath.cpp">
       <Filter>AI\PathFinding</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshContext.cpp">
+      <Filter>AI\PathFinding\NavMeshes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -1843,6 +1846,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationPath.h">
       <Filter>AI\PathFinding\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshConfig.h">
+      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshDefines.h">
+      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -44,9 +44,9 @@ bool GUIEditor::init(){
 
 	setVisible(false);
 
-	GUIEditorAIInterface::getInstance().init();
-	GUIEditorLightInterface::getInstance().init();
-	GUIEditorSceneGraphInterface::getInstance().init();
+	GUIEditorAIInterface::getInstance().init(_editorWindow);
+	GUIEditorLightInterface::getInstance().init(_editorWindow);
+	GUIEditorSceneGraphInterface::getInstance().init(_editorWindow);
 	_init = true;
 	PRINT_FN(Locale::get("GUI_EDITOR_CREATED"));
 	return true;

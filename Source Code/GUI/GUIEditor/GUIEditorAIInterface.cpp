@@ -1,3 +1,4 @@
+#include <CEGUI/CEGUI.h>
 #include "Headers/GUIEditorAIInterface.h"
 
 #include "GUI/Headers/GUI.h"
@@ -8,26 +9,37 @@
 
 GUIEditorAIInterface::GUIEditorAIInterface() : GUIEditorInterface(), _createNavMeshQueued(false)
 {
+
 }
 
 GUIEditorAIInterface::~GUIEditorAIInterface()
 {
 }
 
-bool GUIEditorAIInterface::init() {
-	return true;
+bool GUIEditorAIInterface::init(CEGUI::Window *parent) {
+	_debugDrawCheckbox = static_cast<CEGUI::ToggleButton*>(parent->getChild("AIEditor/DebugDraw"));
+	_debugDrawCheckbox->subscribeEvent(CEGUI::ToggleButton::EventSelectStateChanged,
+									   CEGUI::Event::Subscriber(&GUIEditorAIInterface::Handle_ToggleDebugDraw,&GUIEditorAIInterface::getInstance()));
+	return GUIEditorInterface::init(parent);
 }
 
 bool GUIEditorAIInterface::tick(U32 deltaMsTime){
-	bool state = true;
+	bool state = false;
 	if(_createNavMeshQueued){
+		AIManager::getInstance().toggleNavMeshDebugDraw(_debugDrawCheckbox->isSelected());
 		Navigation::NavigationMesh* temp = New Navigation::NavigationMesh();
 		temp->setFileName(GET_ACTIVE_SCENE()->getName());
-		if(!temp->load(NULL)){ //<Start from root for now
-			temp->build(NULL,false);
+		bool loaded = temp->load(NULL);//<Start from root for now
+
+		if(!loaded){ 
+			loaded = temp->build(NULL,false);
 		}
-		temp->save();
-		state = AIManager::getInstance().addNavMesh(temp);
+
+		if(loaded){
+			temp->save();
+			state = AIManager::getInstance().addNavMesh(temp);
+			state = true;
+		}
 		_createNavMeshQueued = false;
 	}
 	return state;
@@ -36,5 +48,10 @@ bool GUIEditorAIInterface::tick(U32 deltaMsTime){
 bool GUIEditorAIInterface::Handle_CreateNavMesh(const CEGUI::EventArgs &e){
 	GUI::getInstance().getConsole()->setVisible(true);
 	_createNavMeshQueued = true;
+	return true;
+}
+
+bool GUIEditorAIInterface::Handle_ToggleDebugDraw(const CEGUI::EventArgs &e){
+	AIManager::getInstance().toggleNavMeshDebugDraw(_debugDrawCheckbox->isSelected());
 	return true;
 }

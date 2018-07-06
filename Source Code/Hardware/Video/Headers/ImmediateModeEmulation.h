@@ -29,9 +29,6 @@ enum PrimitiveType;
 ///IMPrimitive replaces immediate mode calls to VBO based rendering
 class IMPrimitive  : private boost::noncopyable{
 public:
-    IMPrimitive();
-    virtual ~IMPrimitive();
-
     inline void setRenderStates(boost::function0<void> setupStatesCallback, boost::function0<void> releaseStatesCallback){
         _setupStates = setupStatesCallback;
         _resetStates = releaseStatesCallback;
@@ -53,6 +50,10 @@ public:
     inline void forceWireframe(bool state)         {_forceWireframe = state;}
     inline bool forceWireframe()             const {return _forceWireframe; }
     inline bool hasRenderStates()            const {return (!_setupStates.empty() && !_resetStates.empty());}
+
+protected:
+	IMPrimitive();
+    virtual ~IMPrimitive();
 
 public:
 

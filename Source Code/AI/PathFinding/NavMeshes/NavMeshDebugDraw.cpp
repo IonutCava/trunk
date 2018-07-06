@@ -23,6 +23,8 @@ namespace Navigation {
    NavMeshDebugDraw::~NavMeshDebugDraw()
    {
        SAFE_DELETE(_navMeshStateBlock);
+	   //Allow the primitive to be deleted
+	   _primitive->_canZombify = true;
    }
 
    void NavMeshDebugDraw::depthMask(bool state)

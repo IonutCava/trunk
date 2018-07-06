@@ -18,6 +18,7 @@
 #ifndef _TASKS_H_
 #define _TASKS_H_
 
+#include "SharedMutex.h"
 #include <boost/any.hpp>
 #include <boost/atomic.hpp>
 #include <boost/function.hpp>

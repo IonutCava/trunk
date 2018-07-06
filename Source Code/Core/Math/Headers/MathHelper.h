@@ -85,6 +85,16 @@ namespace Util {
 		s << data;
 		return s.str();
 	}
+
+	//U = to data type, T = from data type
+	template<class U, class T>
+	inline U convertData(const T& data){
+		std::istringstream  iStream(data);
+		U floatValue;
+		iStream >> floatValue;
+		return floatValue;
+	}
+
 	inline F32 max(const F32& a, const F32& b){
 		return (a<b) ? b : a;
 	}

@@ -27,7 +27,7 @@ protected:
 
 	GUIEditorLightInterface();
 	~GUIEditorLightInterface();
-	bool init();
+	bool init(CEGUI::Window *parent);
 	bool tick(U32 deltaMsTime);
 
 END_SINGLETON

@@ -19,7 +19,7 @@
 #include <FTGL/ftgl.h>
 
 namespace IMPrimitiveValidation{
-	inline bool isValid(glIMPrimitive* const priv){ return !priv->inUse(); }
+	inline bool isValid(glIMPrimitive* const priv){ return (priv && !priv->inUse()); }
 }
 
 IMPrimitive* GL_API::createPrimitive(bool allowPrimitiveRecycle) {
@@ -40,7 +40,6 @@ glIMPrimitive* GL_API::getOrCreateIMPrimitive(bool allowPrimitiveRecycle){
 		_glimInterfaces.push_back(tempPriv);
 	}
 	assert(tempPriv != NULL);
-	tempPriv->_inUse = true;
 	tempPriv->_setupStates.clear();
 	tempPriv->_resetStates.clear();
 	tempPriv->_canZombify = allowPrimitiveRecycle;

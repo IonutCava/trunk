@@ -17,17 +17,20 @@
 
 #ifndef _GUI_EDITOR_INTERFACE_H_
 #define _GUI_EDITOR_INTERFACE_H_
-
+#define NULL 0
 #include "Hardware/Platform/Headers/PlatformDefines.h"
-
+namespace CEGUI{
+	class Window;
+};
 ///Abstract interface for various editor plugins, suchs as light managers, ai managers, scene graph interface, etc
 class GUIEditorInterface {
 protected:
-	GUIEditorInterface(){}
+	GUIEditorInterface() : _parent(NULL) {}
 	virtual ~GUIEditorInterface() {}
-	virtual bool init() = 0;
+	virtual bool init(CEGUI::Window *parent) {_parent = parent; return (_parent != NULL);}
 	///Handle tick with time difference from last call
 	virtual bool tick(U32 deltaMsTime) = 0;
+	CEGUI::Window *_parent;
 };
 
 #endif

@@ -82,7 +82,7 @@ void Scene::postRender(){
 		// Preview depthmaps if needed
 		LightManager::getInstance().previewShadowMaps();
 		// Show navmeshes
-		AIManager::getInstance().debugDraw();
+		AIManager::getInstance().debugDraw(false);
 	}
 }
 

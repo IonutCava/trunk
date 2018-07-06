@@ -19,6 +19,9 @@
 #define _GUI_EDITOR_AI_INTERFACE_H_
 
 #include "GUIEditor.h"
+namespace CEGUI{
+	class ToggleButton;
+};
 
 DEFINE_SINGLETON_EXT1(GUIEditorAIInterface,GUIEditorInterface)
 
@@ -27,13 +30,14 @@ protected:
 
 	GUIEditorAIInterface();
 	~GUIEditorAIInterface();
-	bool init();
+	bool init(CEGUI::Window *parent);
 	bool tick(U32 deltaMsTime);
 
 	bool Handle_CreateNavMesh(const CEGUI::EventArgs &e);
-
+	bool Handle_ToggleDebugDraw(const CEGUI::EventArgs &e);
 private:
 	bool _createNavMeshQueued;
+	CEGUI::ToggleButton* _debugDrawCheckbox;
 
 END_SINGLETON
 

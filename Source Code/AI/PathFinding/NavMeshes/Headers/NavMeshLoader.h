@@ -40,35 +40,12 @@
 #ifndef _NAVIGATION_MESH_LOADER_H_
 #define _NAVIGATION_MESH_LOADER_H_
 
+#include "NavMeshConfig.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Graphs/Headers/SceneNode.h"
 #include <functional>
 
 namespace Navigation {
-	/// These are just sample areas to use consistent values across the samples.
-	/// The use should specify these base on his needs.
-	enum SamplePolyAreas
-	{
-		SAMPLE_POLYAREA_GROUND,
-		SAMPLE_POLYAREA_WATER,
-		SAMPLE_POLYAREA_ROAD,
-		SAMPLE_POLYAREA_DOOR,
-		SAMPLE_POLYAREA_GRASS,
-		SAMPLE_POLYAREA_JUMP,
-        SAMPLE_AREA_OBSTACLE
-	};
-
-	enum SamplePolyFlags
-	{
-		SAMPLE_POLYFLAGS_WALK		= 0x01,		// Ability to walk (ground, grass, road)
-		SAMPLE_POLYFLAGS_SWIM		= 0x02,		// Ability to swim (water).
-		SAMPLE_POLYFLAGS_DOOR		= 0x04,		// Ability to move through doors.
-		SAMPLE_POLYFLAGS_JUMP		= 0x08,		// Ability to jump.
-		SAMPLE_POLYFLAGS_DISABLED	= 0x10,		// Disabled polygon
-		SAMPLE_POLYFLAGS_ALL		= 0xffff	// All abilities.
-	};
-
-	///Converting data to ReCast friendly format
 
 	// This struct contains the vertices and triangles in recast coords
 	struct NavModelData {
@@ -80,6 +57,8 @@ namespace Navigation {
 			tri_ct= 0;
 			tri_cap = 0;
 			tris = 0;
+			_minValues.set(1,1,1);
+			_maxValues.set(-1,-1,-1);
             valid = false;
 		}
 
@@ -108,6 +87,10 @@ namespace Navigation {
 		U32  tri_ct;
 		U32  tri_cap;
 		I32* tris;
+		///The minimum values on each axis
+		vec3<F32> _minValues;
+		///The maximum values on each axis
+		vec3<F32> _maxValues;
         vectorImpl<SamplePolyAreas > triangleAreaType;
         bool valid;
         std::string navMeshName;
@@ -122,30 +105,28 @@ namespace Navigation {
         inline vectorImpl<SamplePolyAreas >& getAreaTypes() {return triangleAreaType;}
 	};
 
-	enum MeshDetailLevel{
-		DETAIL_ABSOLUTE    = 0,
-		DETAIL_HIGH        = 1,
-		DETAIL_MEDIUM      = 2,
-		DETAIL_LOW         = 3,
-		DETAIL_BOUNDINGBOX = 4
-	};
 
-	class NavigationMeshLoader {
-	public:
-		NavigationMeshLoader();
-		~NavigationMeshLoader();
 
-		static NavModelData loadMeshFile(const char* fileName);
-		static NavModelData mergeModels(NavModelData a, NavModelData b, bool delOriginals = false);
-		static bool saveModelData(NavModelData data, const char* filename, const char* activeScene = NULL);
-        static NavModelData parseNode(SceneGraphNode* sgn = NULL, const std::string& navMeshName = "");
+	namespace NavigationMeshLoader {
 
-	private:
-		static NavModelData parse(const BoundingBox& box, NavModelData& data, SceneGraphNode* set = NULL);
-		static void addVertex(NavModelData* modelData, const vec3<F32>& vertex);
-		static void addTriangle(NavModelData* modelData,const vec3<U32>& triangleIndices, const SamplePolyAreas& areaType = SAMPLE_POLYAREA_GROUND);
-		static char* parseRow(char* buf, char* bufEnd, char* row, I32 len);
-		static I32 parseFace(char* row, I32* data, I32 n, I32 vcnt);
+		enum MeshDetailLevel {
+			DETAIL_ABSOLUTE    = 0,
+			DETAIL_HIGH        = 1,
+			DETAIL_MEDIUM      = 2,
+			DETAIL_LOW         = 3,
+			DETAIL_BOUNDINGBOX = 4
+		};
+
+		NavModelData loadMeshFile(const char* fileName);
+		NavModelData mergeModels(NavModelData a, NavModelData b, bool delOriginals = false);
+		bool saveMeshFile(NavModelData data, const char* filename, const char* activeScene = NULL);
+        NavModelData parseNode(SceneGraphNode* sgn = NULL, const std::string& navMeshName = "");
+
+		NavModelData parse(const BoundingBox& box, NavModelData& data, SceneGraphNode* set = NULL);
+		void addVertex(NavModelData* modelData, const vec3<F32>& vertex);
+		void addTriangle(NavModelData* modelData,const vec3<U32>& triangleIndices, const SamplePolyAreas& areaType = SAMPLE_POLYAREA_GROUND);
+		char* parseRow(char* buf, char* bufEnd, char* row, I32 len);
+		I32 parseFace(char* row, I32* data, I32 n, I32 vcnt);
 	};
 };
 #endif

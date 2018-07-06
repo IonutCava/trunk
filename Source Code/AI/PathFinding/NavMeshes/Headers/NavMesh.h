@@ -26,14 +26,12 @@
 #ifndef _NAVIGATION_MESH_H_
 #define _NAVIGATION_MESH_H_
 
-#include "core.h"
 #include "Utility/Headers/GUIDWrapper.h"
 #include "Hardware/Platform/Headers/Task.h"
+
+#include "NavMeshConfig.h"
 #include "NavMeshLoader.h"
 #include "NavMeshContext.h"
-#include <Detour/Include/DetourNavMesh.h>
-#include <Detour/Include/DetourNavMeshQuery.h>
-#include <Detour/Include/DetourNavMeshBuilder.h>
 
 class SceneGraphNode;
 
@@ -55,7 +53,7 @@ namespace Navigation {
 
     	/// @class NavigationMesh
 	/// Represents a set of bounds within which a Recast navigation mesh is generated.
-
+	class NavMeshDebugDraw;
 	class NavigationMesh : public GUIDWrapper/*,public SceneObject */{
 	      friend class NavigationPath;
     protected:
@@ -67,10 +65,6 @@ namespace Navigation {
             RENDER_PORTALS,
         };
 	public:
-		/// @name NavigationMesh build
-		/// @{
-		/// Do we build in a separate thread?
-		bool _buildThreaded;
         inline void setFileName(const std::string& fileName) {_fileName.append(fileName);}
 		/// Initiates the NavigationMesh build process, which includes notifying the
 		/// clients and posting a task.
@@ -85,30 +79,6 @@ namespace Navigation {
         inline bool debugDraw() {return _debugDraw;}
         inline void setRenderMode(RenderMode mode) {_renderMode = mode;}
         inline void setRenderConnections(bool state) {_renderConnections = state;}
-
-		/// Cell width and height.
-		F32 _cellSize, _cellHeight;
-		/// @name Actor data
-		/// @{
-		F32 _walkableHeight,
-			_walkableClimb,
-			_walkableRadius,
-			_walkableSlope;
-		/// @}
-		/// @name Generation data
-		/// @{
-		U32 _borderSize;
-		F32 _detailSampleDist, _detailSampleMaxError;
-		U32 _maxEdgeLen;
-		F32 _maxSimplificationError;
-		static const U32 _maxVertsPerPoly;
-		U32 _minRegionArea;
-		U32 _mergeRegionArea;
-		U32 _tileSize;
-		/// @}
-
-		/// Save imtermediate NavigationMesh creation data?
-		bool _saveIntermediates;
 
 		NavigationMesh();
 		~NavigationMesh();
@@ -131,7 +101,20 @@ namespace Navigation {
 		bool createPolyMesh(rcConfig &cfg, NavModelData &data, rcContextDivide *ctx);
 		/// Performs the Detour part of the build process.
 		bool createNavigationMesh(dtNavMeshCreateParams &params);
+		/// Load nav mesh configuration from file
+		bool loadConfigFromFile(const std::string& configPath);
 
+	private:
+		bool _saveIntermediates;
+		NavigationMeshConfig _configParams;
+		/// @name NavigationMesh build
+		/// @{
+		/// Do we build in a separate thread?
+		bool _buildThreaded;
+		/// @name NavigationMesh build
+		/// @{
+		/// Do we have a valid configuration file for the current scene?
+		bool _configFileValid;
 		/// @name Intermediate data
 		/// @{
 		rcHeightfield        *hf;
@@ -147,7 +130,7 @@ namespace Navigation {
 		/// @}
 
 		/// A thread for us to update in.
-		std::tr1::shared_ptr<Task> mThread;
+		std::tr1::shared_ptr<Task> _buildThread;
 		/// A mutex for NavigationMesh builds.
 		boost::mutex _buildLock;
 		/// A mutex for accessing our actual NavigationMesh.
@@ -163,6 +146,8 @@ namespace Navigation {
         boost::atomic<bool> _debugDraw;
         boost::atomic<bool> _renderConnections;
         RenderMode _renderMode;
+		///DebugDraw interface
+		NavMeshDebugDraw *_debugDrawInterface;
 	};
 };
 

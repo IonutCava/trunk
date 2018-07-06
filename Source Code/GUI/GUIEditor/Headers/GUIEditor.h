@@ -37,6 +37,7 @@ DEFINE_SINGLETON( GUIEditor )
 		GUIEditor();
 		~GUIEditor();
 		void RegisterHandlers();       //< Register our handler functions
+
 	private:
 		bool _init;
 		CEGUI::Window *_editorWindow;  //< This will be a pointer to the EditorRoot window.
