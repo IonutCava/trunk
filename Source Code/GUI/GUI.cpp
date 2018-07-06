@@ -412,7 +412,7 @@ GUIMessageBox* GUI::addMsgBox(const stringImpl& ID, const stringImpl& title,
 }
 
 GUIText* GUI::addText(const stringImpl& ID, const vec2<I32>& position,
-                      const stringImpl& font, const vec3<F32>& color,
+                      const stringImpl& font, const vec4<U8>& color,
                       const stringImpl& text) {
     ULL idHash = _ID_RT(ID);
 

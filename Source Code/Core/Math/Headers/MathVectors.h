@@ -185,8 +185,15 @@ class vec2 {
     bool operator<(const vec2 &v) const { return x < v.x && y < v.y; }
     bool operator<=(const vec2 &v) const { return *this < v || *this == v; }
     bool operator>=(const vec2 &v) const { return *this > v || *this == v; }
+
     bool operator==(const vec2 &v) const { return this->compare(v); }
     bool operator!=(const vec2 &v) const { return !(*this == v); }
+
+    template<typename U>
+    bool operator!=(const vec2<U> &v) const { return !(*this == v); }
+    template<typename U>
+    bool operator==(const vec2<T> &v) const { return this->compare(v); }
+
     vec2 &operator=(T _f) {
         this->set(_f);
         return (*this);
@@ -304,9 +311,11 @@ class vec2 {
     /// (A, B) and this vector
     inline vec2 closestPointOnSegment(const vec2 &vA, const vec2 &vB);
     /// compare 2 vectors
-    inline bool compare(const vec2 &_v) const;
+    template<typename U>
+    inline bool compare(const vec2<U> &_v) const;
     /// compare 2 vectors within the specified tolerance
-    inline bool compare(const vec2 &_v, T epsi) const;
+    template<typename U>
+    inline bool compare(const vec2<U> &_v, T epsi) const;
     /// export the vector's components in the first 2 positions of the specified
     /// array
     inline void get(T *v) const;
@@ -401,7 +410,7 @@ class vec3 {
     vec3(const T *v) : vec3(v[0], v[1], v[2])
     {
     }
-    vec3(const vec2<T> &v) : vec3(v, 0)
+    vec3(const vec2<T> &v) : vec3(v, static_cast<T>(0))
     {
     }
     vec3(const vec2<T> &v, T _z) : vec3(v.x, v.y, _z)
@@ -415,7 +424,7 @@ class vec3 {
     }
 
     template<typename U>
-    vec3(const vec2<U> &v) : vec3(v.x, v.y, 0)
+    vec3(const vec2<U> &v) : vec3(v.x, v.y, static_cast<U>(0))
     {
     }
 
@@ -433,8 +442,15 @@ class vec3 {
     bool operator<(const vec3 &v) const { return x < v.x && y < v.y && z < v.z; }
     bool operator<=(const vec3 &v) const { return *this < v || *this == v; }
     bool operator>=(const vec3 &v) const { return *this > v || *this == v; }
+    
     bool operator!=(const vec3 &v) const { return !(*this == v); }
     bool operator==(const vec3 &v) const { return this->compare(v); }
+
+    template<typename U>
+    bool operator!=(const vec3<U> &v) const { return !(*this == v); }
+    template<typename U>
+    bool operator==(const vec3<T> &v) const { return this->compare(v); }
+
     vec3 &operator=(T _f) {
         this->set(_f);
         return (*this);
@@ -550,9 +566,11 @@ class vec3 {
     /// return true if length is zero
     inline bool isZeroLength() const { return lengthSquared() < EPSILON_F32; }
     /// compare 2 vectors
-    inline bool compare(const vec3 &v) const;
+    template<typename U>
+    inline bool compare(const vec3<U> &v) const;
     /// compare 2 vectors within the specified tolerance
-    inline bool compare(const vec3 &v, T epsi) const;
+    template<typename U>
+    inline bool compare(const vec3<U> &v, T epsi) const;
     /// uniform vector: x = y = z
     inline bool isUniform() const;
     /// return the squared distance of the vector
@@ -693,11 +711,11 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     {
     }
 
-    vec4(const vec2<T> &v) : vec4(v, 0)
+    vec4(const vec2<T> &v) : vec4(v, static_cast<T>(0))
     {
     }
 
-    vec4(const vec2<T> &v, T _z) : vec4(v, _z, 1)
+    vec4(const vec2<T> &v, T _z) : vec4(v, _z, static_cast<T>(1))
     {
     }
 
@@ -705,7 +723,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     {
     }
 
-    vec4(const vec3<T> &v) : vec4(v, 1)
+    vec4(const vec3<T> &v) : vec4(v, static_cast<T>(1))
     {
     }
 
@@ -718,12 +736,12 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     }
 
     template<typename U>
-    vec4(const vec2<U> &v) : vec4(v.x, v.y, 0, 0)
+    vec4(const vec2<U> &v) : vec4(v.x, v.y, static_cast<U>(0), static_cast<U>(0))
     {
     }
 
     template<typename U>
-    vec4(const vec3<U> &v) : vec4(v.x, v.y, v.z, 0)
+    vec4(const vec3<U> &v) : vec4(v.x, v.y, v.z, static_cast<U>(0))
     {
     }
 
@@ -736,8 +754,15 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     bool operator<(const vec4 &v) const { return x < v.x && y < v.y && z < v.z && w < v.w; }
     bool operator<=(const vec4 &v) const { return *this < v || *this == v; }
     bool operator>=(const vec4 &v) const { return *this > v || *this == v; }
+
     bool operator==(const vec4 &v) const { return this->compare(v); }
     bool operator!=(const vec4 &v) const { return !(*this == v); }
+
+    template<typename U>
+    bool operator!=(const vec4<U> &v) const { return !(*this == v); }
+    template<typename U>
+    bool operator==(const vec4<T> &v) const { return this->compare(v); }
+
     vec4 &operator=(T _f) { this->set(_f); }
     vec4 &operator=(const vec4& other) { this->set(other); return *this; }
 
@@ -992,9 +1017,11 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     /// set all the components back to 0
     inline void reset() { this->set(0); }
     /// compare 2 vectors
-    inline bool compare(const vec4 &v) const;
+    template<typename U>
+    inline bool compare(const vec4<U> &v) const;
     /// compare 2 vectors within the specified tolerance
-    inline bool compare(const vec4 &v, T epsi) const;
+    template<typename U>
+    inline bool compare(const vec4<U> &v, T epsi) const;
     /// swap the components  of this vector with that of the specified one
     inline void swap(vec4 *iv);
     /// swap the components  of this vector with that of the specified one

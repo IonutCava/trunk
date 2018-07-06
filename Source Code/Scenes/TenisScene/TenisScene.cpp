@@ -421,28 +421,32 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _GUI->addText(
         "Team1Score", vec2<I32>(to_int(resolution.width - 250),
                                 to_int(resolution.height / 1.3f)),
-        Font::DIVIDE_DEFAULT, vec3<F32>(0, 0.8f, 0.8f),
+        Font::DIVIDE_DEFAULT,
+        vec4<U8>(0, 192, 192, 255),
         Util::StringFormat("Team 1 Score: %d", 0));
 
     _GUI->addText(
         "Team2Score", vec2<I32>(to_int(resolution.width - 250),
                                 to_int(resolution.height / 1.5f)),
-        Font::DIVIDE_DEFAULT, vec3<F32>(0.2f, 0.8f, 0),
+        Font::DIVIDE_DEFAULT,
+        vec4<U8>(50, 192, 0, 255),
         Util::StringFormat("Team 2 Score: %d", 0));
 
     _GUI->addText("Message",
                   vec2<I32>(to_int(resolution.width - 250),
                             to_int(resolution.height / 1.7f)),
-                  Font::DIVIDE_DEFAULT, vec3<F32>(0, 1, 0), "");
+                  Font::DIVIDE_DEFAULT,
+                  vec4<U8>(0, 255, 0, 255),
+                  "");
 
     _GUI->addText("fpsDisplay",  // Unique ID
                   vec2<I32>(60, 60),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
-                  vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
+                  vec4<U8>(0, 50, 255, 255),// Color
                   Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
     _GUI->addText("RenderBinCount", vec2<I32>(60, 70), Font::DIVIDE_DEFAULT,
-                  vec3<F32>(0.6f, 0.2f, 0.2f),
+                  vec4<U8>(164, 50, 50, 255),
                   Util::StringFormat("Number of items in Render Bin: %d", 0));
     _guiTimers.push_back(0.0);  // Fps
     return true;

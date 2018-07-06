@@ -161,16 +161,18 @@ inline T vec2<T>::normalize() {
 
 /// compare 2 vectors
 template <typename T>
-inline bool vec2<T>::compare(const vec2<T> &v) const {
-    return COMPARE<T>(this->x, v.x) &&
-           COMPARE<T>(this->y, v.y);
+template <typename U>
+inline bool vec2<T>::compare(const vec2<U> &v) const {
+    return COMPARE(this->x, v.x) &&
+           COMPARE(this->y, v.y);
 }
 
 /// compare 2 vectors using the given tolerance
 template <typename T>
-inline bool vec2<T>::compare(const vec2 &v, T epsi) const {
-    return (COMPARE_TOLERANCE<T>(this->x, v.x, epsi) &&
-            COMPARE_TOLERANCE<T>(this->y, v.y, epsi));
+template <typename U>
+inline bool vec2<T>::compare(const vec2<U> &v, T epsi) const {
+    return (COMPARE_TOLERANCE(this->x, v.x, epsi) &&
+            COMPARE_TOLERANCE(this->y, v.y, epsi));
 }
 
 /// return the projection factor from *this to the line determined by points vA
@@ -253,18 +255,20 @@ inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor) {
 
 /// compare 2 vectors
 template <typename T>
-inline bool vec3<T>::compare(const vec3<T> &v) const {
-    return COMPARE<T>(this->x, v.x) &&
-           COMPARE<T>(this->y, v.y) &&
-           COMPARE<T>(this->z, v.z);
+template <typename U>
+inline bool vec3<T>::compare(const vec3<U> &v) const {
+    return COMPARE(this->x, v.x) &&
+           COMPARE(this->y, v.y) &&
+           COMPARE(this->z, v.z);
 }
 
 /// compare 2 vectors within the specified tolerance
 template <typename T>
-inline bool vec3<T>::compare(const vec3 &v, T epsi) const {
-    return COMPARE_TOLERANCE<T>(this->x, v.x, epsi) &&
-           COMPARE_TOLERANCE<T>(this->y, v.y, epsi) &&
-           COMPARE_TOLERANCE<T>(this->z, v.z, epsi);
+template <typename U>
+inline bool vec3<T>::compare(const vec3<U> &v, T epsi) const {
+    return COMPARE_TOLERANCE(this->x, v.x, epsi) &&
+           COMPARE_TOLERANCE(this->y, v.y, epsi) &&
+           COMPARE_TOLERANCE(this->z, v.z, epsi);
 }
 
 /// uniform vector: x = y = z
@@ -473,21 +477,23 @@ inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) {
 
 /// compare 2 vectors
 template <typename T>
-inline bool vec4<T>::compare(const vec4<T> &v) const {
-    return COMPARE<T>(this->x, v.x) &&
-           COMPARE<T>(this->y, v.y) &&
-           COMPARE<T>(this->z, v.z) &&
-           COMPARE<T>(this->w, v.w);
+template <typename U>
+inline bool vec4<T>::compare(const vec4<U> &v) const {
+    return COMPARE(this->x, v.x) &&
+           COMPARE(this->y, v.y) &&
+           COMPARE(this->z, v.z) &&
+           COMPARE(this->w, v.w);
 }
 
 /// compare this vector with the one specified and see if they match within the
 /// specified amount
 template <typename T>
-inline bool vec4<T>::compare(const vec4 &v, T epsi) const {
-    return (COMPARE_TOLERANCE<T>(this->x, v.x, epsi) &&
-            COMPARE_TOLERANCE<T>(this->y, v.y, epsi) &&
-            COMPARE_TOLERANCE<T>(this->z, v.z, epsi) &&
-            COMPARE_TOLERANCE<T>(this->w, v.w, epsi));
+template <typename U>
+inline bool vec4<T>::compare(const vec4<U> &v, T epsi) const {
+    return (COMPARE_TOLERANCE(this->x, v.x, epsi) &&
+            COMPARE_TOLERANCE(this->y, v.y, epsi) &&
+            COMPARE_TOLERANCE(this->z, v.z, epsi) &&
+            COMPARE_TOLERANCE(this->w, v.w, epsi));
 }
 
 /// round all four values

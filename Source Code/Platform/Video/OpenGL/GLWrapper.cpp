@@ -670,11 +670,11 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {
         fonsSetFont(_fonsContext, font);
         F32 lh = 0;
         fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
-        fonsSetColor(_fonsContext, 
-                     to_ubyte(textLabel._color.r * 255),
-                     to_ubyte(textLabel._color.g * 255),
-                     to_ubyte(textLabel._color.b * 255),
-                     to_ubyte(textLabel._color.a * 255));
+        fonsSetColor(_fonsContext,
+                     textLabel._color.r,
+                     textLabel._color.g,
+                     textLabel._color.b,
+                     textLabel._color.a);
 
         if (textLabel._blurAmount > 0.01f) {
             fonsSetBlur(_fonsContext, textLabel._blurAmount);

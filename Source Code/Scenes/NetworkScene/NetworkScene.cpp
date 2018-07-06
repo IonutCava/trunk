@@ -106,21 +106,24 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
     _GUI->addText("fpsDisplay",  // Unique ID
                   vec2<I32>(60, 60),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
-                  vec3<F32>(0.0f, 0.6f, 1.0f),  // Color
+                  vec4<U8>(0, 164, 255, 255),  // Color
                   Util::StringFormat("FPS: %d", 0));  // Text and arguments
     _GUI->addText("timeDisplay", vec2<I32>(60, 70), Font::DIVIDE_DEFAULT,
-                  vec3<F32>(0.6f, 0.2f, 0.2f),
+                  vec4<U8>(164, 64, 64, 255),
                   Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
 
     _GUI->addText("serverMessage",
                   vec2<I32>(resolution.width / 4,
                             resolution.height / 1),
-                  Font::DIVIDE_DEFAULT, vec3<F32>(0.5f, 0.5f, 0.2f),
+                  Font::DIVIDE_DEFAULT, 
+                  vec4<U8>(128, 128, 64, 255),
                   Util::StringFormat("Server says: %s", "<< nothing yet >>"));
     _GUI->addText("statusText",
                   vec2<I32>(resolution.width / 3,
                             resolution.height / 2),
-                  Font::DIVIDE_DEFAULT, vec3<F32>(0.2f, 0.5f, 0.2f), "");
+                  Font::DIVIDE_DEFAULT,
+                  vec4<U8>(64, 128, 64, 255),
+                  "");
 
     _GUI->addButton(
         "getPing", "ping me",

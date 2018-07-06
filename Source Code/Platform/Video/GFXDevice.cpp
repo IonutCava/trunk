@@ -452,8 +452,7 @@ F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
 F32* GFXDevice::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
     GPUBlock::GPUData& data = _gpuBlock._data;
 
-    data._ProjectionMatrix.ortho(rect.x, rect.y, rect.z, rect.w,
-                                 planes.x, planes.y);
+    data._ProjectionMatrix.ortho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
 
     data._ZPlanesCombined.xy(planes);
 
@@ -468,8 +467,7 @@ F32* GFXDevice::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
 
 /// Enable a perspective projection and upload the corresponding matrices to the
 /// GPU
-F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio,
-                              const vec2<F32>& planes) {
+F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio,  const vec2<F32>& planes) {
     GPUBlock::GPUData& data = _gpuBlock._data;
 
     data._ProjectionMatrix.perspective(Angle::DegreesToRadians(FoV),

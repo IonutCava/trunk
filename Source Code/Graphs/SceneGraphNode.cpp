@@ -140,7 +140,7 @@ void SceneGraphNode::setParent(SceneGraphNode& parent) {
     _parent = parent.shared_from_this();
     // Add ourselves in the new parent's children map
     parent.registerNode(shared_from_this());
-    _relationshipCache.invalidate();
+    invalidateRelationshipCache();
     // That's it. Parent Transforms will be updated in the next render pass;
 }
 
@@ -189,7 +189,7 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, U32 componentMask, c
             }
         );
     }
-    _relationshipCache.invalidate();
+    invalidateRelationshipCache();
     // return the newly created node
     return sceneGraphNode;
 }
@@ -202,7 +202,7 @@ void SceneGraphNode::removeNode(const stringImpl& nodeName, bool recursive) {
             _children[i].reset();
             _childCount = _childCount - 1;
             std::swap(_children[_childCount], _children[i]);
-            _relationshipCache.invalidate();
+            invalidateRelationshipCache();
             return;
         }
     }
@@ -533,4 +533,16 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
     return collisionTypeOut == Frustum::FrustCollision::FRUSTUM_OUT;
 }
 
+void SceneGraphNode::invalidateRelationshipCache() {
+    _relationshipCache.invalidate();
+
+    SceneGraphNode_ptr parentPtr = _parent.lock();
+    if (parentPtr && parentPtr->getParent().lock()) {
+        parentPtr->invalidateRelationshipCache();
+        U32 childCount = getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            getChild(i, childCount).invalidateRelationshipCache();
+        }
+    }
+}
 };

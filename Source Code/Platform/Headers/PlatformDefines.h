@@ -462,6 +462,11 @@ inline bool IS_TOLERANCE(D64 X, D64 TOLERANCE) {
     return (std::fabs(X) <= TOLERANCE);
 }
 
+template<typename T, typename U>
+inline bool COMPARE_TOLERANCE(T X, U Y, T TOLERANCE) {
+    return COMPARE_TOLERANCE(X, static_cast<T>(Y), TOLERANCE);
+}
+
 template<typename T>
 inline bool COMPARE_TOLERANCE(T X, T Y, T TOLERANCE) {
     return std::fabs(X - Y) <= TOLERANCE;

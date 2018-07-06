@@ -2003,17 +2003,24 @@ void mat4<T>::lookAt(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &u
     m[1][2] = static_cast<T>(zAxis.y);
     m[2][2] = static_cast<T>(zAxis.z);
     m[3][2] = static_cast<T>(-zAxis.dot(eye));
+
+    m[0][3] = static_cast<T>(0);
+    m[1][3] = static_cast<T>(0);
+    m[2][3] = static_cast<T>(0);
+    m[3][3] = static_cast<T>(0);
 }
 
 template<typename T>
 template<typename U>
 void mat4<T>::ortho(U left, U right, U bottom, U top, U zNear, U zFar) {
-    m[0][0] = static_cast<T>(2 / (right - left));
-    m[1][1] = static_cast<T>(2 / (top - bottom));
-    m[2][2] = -static_cast<T>(2 / (zFar - zNear));
-    m[3][0] = -static_cast<T>((right + left) / (right - left));
-    m[3][1] = -static_cast<T>((top + bottom) / (top - bottom));
-    m[3][2] = -static_cast<T>((zFar + zNear) / (zFar - zNear));
+    zero();
+
+    m[0][0] =  static_cast<T>(2.0f / (right - left));
+    m[1][1] =  static_cast<T>(2.0f / (top - bottom));
+    m[2][2] = -static_cast<T>(2.0f / (zFar - zNear));
+    m[3][0] = -static_cast<T>(to_float(right + left) / (right - left));
+    m[3][1] = -static_cast<T>(to_float(top + bottom) / (top - bottom));
+    m[3][2] = -static_cast<T>(to_float(zFar + zNear) / (zFar - zNear));
 }
 
 template<typename T>
@@ -2022,15 +2029,15 @@ void mat4<T>::perspective(U fovyRad, U aspect, U zNear, U zFar) {
     assert(!IS_ZERO(aspect));
     assert(zFar > zNear);
 
-    U tanHalfFovy = static_cast<U>(std::tan(fovyRad * 0.5f));
+    F32 tanHalfFovy = std::tan(fovyRad * 0.5f);
 
     zero();
 
-    m[0][0] = static_cast<T>(1 / (aspect * tanHalfFovy));
-    m[1][1] = static_cast<T>(1 / (tanHalfFovy));
-    m[2][2] = -static_cast<T>((zFar + zNear) / (zFar - zNear));
+    m[0][0] =  static_cast<T>(1.0f / (aspect * tanHalfFovy));
+    m[1][1] =  static_cast<T>(1.0f / (tanHalfFovy));
+    m[2][2] = -static_cast<T>(to_float(zFar + zNear) / (zFar - zNear));
     m[2][3] = -static_cast<T>(1);
-    m[3][2] = -static_cast<T>((2 * zFar * zNear) / (zFar - zNear));
+    m[3][2] = -static_cast<T>((2.0f * zFar * zNear) / (zFar - zNear));
 }
 
 template<typename T>
@@ -2038,13 +2045,13 @@ template<typename U>
 void mat4<T>::frustum(U left, U right, U bottom, U top, U nearVal, U farVal) {
     zero();
 
-    m[0][0] = static_cast<T>((2 * nearVal) / (right - left));
-    m[1][1] = static_cast<T>((2 * nearVal) / (top - bottom));
-    m[2][0] = static_cast<T>((right + left) / (right - left));
-    m[2][1] = static_cast<T>((top + bottom) / (top - bottom));
-    m[2][2] = -static_cast<T>((farVal + nearVal) / (farVal - nearVal));
+    m[0][0] = static_cast<T>((2.0f * nearVal) / (right - left));
+    m[1][1] = static_cast<T>((2.0f * nearVal) / (top - bottom));
+    m[2][0] = static_cast<T>(to_float(right + left) / (right - left));
+    m[2][1] = static_cast<T>(to_float(top + bottom) / (top - bottom));
+    m[2][2] = -static_cast<T>(to_float(farVal + nearVal) / (farVal - nearVal));
     m[2][3] = static_cast<T>(-1);
-    m[3][2] = -static_cast<T>((2 * farVal * nearVal) / (farVal - nearVal));
+    m[3][2] = -static_cast<T>((2.0f * farVal * nearVal) / (farVal - nearVal));
 }
 
 template<typename T>

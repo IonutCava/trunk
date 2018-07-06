@@ -255,13 +255,13 @@ bool MainScene::loadResources(bool continueOnErrors) {
                   Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
     _GUI->addText("timeDisplay", vec2<I32>(60, 80), Font::DIVIDE_DEFAULT,
-                  vec3<F32>(0.6f, 0.2f, 0.2f),
+                  vec4<U8>(164, 64, 64, 255),
                   Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
     _GUI->addText("underwater", vec2<I32>(60, 115), Font::DIVIDE_DEFAULT,
-                  vec3<F32>(0.2f, 0.8f, 0.2f),
+                  vec4<U8>(64, 200, 64, 255),
                   Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]", "false", 0));
     _GUI->addText("RenderBinCount", vec2<I32>(60, 135), Font::BATANG,
-                  vec3<F32>(0.6f, 0.2f, 0.2f),
+                  vec4<U8>(164, 64, 64, 255),
                   Util::StringFormat("Number of items in Render Bin: %d", 0));
     _taskTimers.push_back(0.0);  // Sun
     _guiTimers.push_back(0.0);  // Fps
@@ -299,7 +299,7 @@ bool MainScene::loadResources(bool continueOnErrors) {
     const vec3<F32>& eyePos = renderState().getCamera().getEye();
     const vec3<F32>& euler = renderState().getCamera().getEuler();
     _GUI->addText("camPosition", vec2<I32>(60, 100), Font::DIVIDE_DEFAULT,
-                  vec3<F32>(0.2f, 0.8f, 0.2f),
+                  vec4<U8>(64, 200, 64, 255),
                   Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
                   eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw));
 

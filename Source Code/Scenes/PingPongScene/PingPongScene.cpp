@@ -334,21 +334,26 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _GUI->addText("Score",
                   vec2<I32>(to_int(resolution.width - 120),
                             to_int(resolution.height / 1.3f)),
-                  Font::DIVIDE_DEFAULT, vec3<F32>(1, 0, 0),
+                  Font::DIVIDE_DEFAULT,
+                  vec4<U8>(255, 0, 0, 255),
                   Util::StringFormat("Score: %d", 0));
 
     _GUI->addText("Message",
                   vec2<I32>(to_int(resolution.width - 120),
                             to_int(resolution.height / 1.5f)),
-                  Font::DIVIDE_DEFAULT, vec3<F32>(1, 0, 0), "");
+                  Font::DIVIDE_DEFAULT,
+                  vec4<U8>(255, 0, 0, 255),
+                  "");
     _GUI->addText("insults",
                   vec2<I32>(resolution.width / 4,
                             resolution.height / 3),
-                  Font::DIVIDE_DEFAULT, vec3<F32>(0, 1, 0), "");
+                  Font::DIVIDE_DEFAULT,
+                  vec4<U8>(0, 255, 0, 255),
+                  "");
     _GUI->addText("fpsDisplay",  // Unique ID
                   vec2<I32>(60, 60),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
-                  vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
+                  vec4<U8>(0, 50, 255, 255),// Color
                   Util::StringFormat("FPS: %d", 0));  // Text and arguments
     // Add some taunts
     _quotes.push_back("Ha ha ... even Odin's laughin'!");

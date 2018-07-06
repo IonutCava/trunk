@@ -42,7 +42,7 @@ bool FlashScene::loadResources(bool continueOnErrors) {
     _GUI->addText("fpsDisplay",  // Unique ID
                   vec2<I32>(60, 60),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
-                  vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
+                  vec4<U8>(0, 64, 255, 255),  // Color
                   Util::StringFormat("FPS: %d", 0));  // Text and arguments
     _guiTimers.push_back(0.0);
     i = 0;

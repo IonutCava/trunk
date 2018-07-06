@@ -80,7 +80,7 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     void update(const U64 deltaTime);
     /// Add a text label
     GUIText* addText(const stringImpl& id, const vec2<I32>& position,
-                     const stringImpl& font, const vec3<F32>& color,
+                     const stringImpl& font, const vec4<U8>& color,
                      const stringImpl& text);
     /// Modify a text label
     GUIText* modifyText(const char* id, const stringImpl& text);

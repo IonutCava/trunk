@@ -314,6 +314,7 @@ class SceneGraphNode : public GUIDWrapper,
     inline const SGNRelationshipCache& relationshipCache() const {
         return _relationshipCache;
     }
+    void invalidateRelationshipCache();
    private:
     // An SGN doesn't exist outside of a scene graph
     SceneGraph& _sceneGraph;
