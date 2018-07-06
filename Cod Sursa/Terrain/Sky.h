@@ -7,6 +7,7 @@
 #include "TextureManager/TextureCubemap.h"
 #include "Hardware/Video/ShaderHandler.h"
 #include "Managers/ResourceManager.h"
+#include "Geometry/Predefined/Sphere3D.h"
 
 SINGLETON_BEGIN( Sky ) 
 
@@ -16,14 +17,16 @@ public:
 	vec3 Sky::getSunVector(){	return _sunVect; }
 
 private:
-	Sky();
 
 	bool			  _init,_invert,_drawSky,_drawSun;
 	Shader*			  _skyShader;
 	TextureCubemap*	  _skybox;
 	vec3			  _sunVect,	_eyePos;
+	Sphere3D          *_sky,*_sun;
 	
-
+private:
+	Sky();
+	~Sky();
 	void drawSky() const;
 	void drawSun() const;
 	void drawSkyAndSun() const;

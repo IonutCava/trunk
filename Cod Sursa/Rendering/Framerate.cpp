@@ -30,7 +30,7 @@ void Framerate::benchmark()
 	_averageFps += _fps;
 
 	//Min/Max FPS
-	if(_count > 25)
+	if(_count > 50)
 	{
 		if(_fps > _maxFps) _maxFps = _fps;
 		if(_fps < _minFps) _minFps = _fps;

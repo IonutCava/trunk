@@ -34,7 +34,6 @@ void PhysX::CreateCube(NxVec3 position,int size=2)
 	{
 		
 		BoundingBox *cube = new BoundingBox(v1,v2);
-		cube->size = (F32)size;
 		newActor->userData = (void*)cube;
 	}
 	else
@@ -138,7 +137,7 @@ void PhysX::DrawBox(NxShape *box)
     orient[15] = 1.0f;
     glMultMatrixf(&(orient[0]));
 	cube->Translate(vec3(pose.t.x,pose.t.y,pose.t.z));
-	glutSolidCube(cube->size*2.0f);
+	glutSolidCube(/*cube->size**/2.0f);
 	//glDisable(GL_COLOR_MATERIAL);
 	GFXDevice::getInstance().popMatrix();
 	GFXDevice::getInstance().setColor(1.0f,1.0f,1.0f);

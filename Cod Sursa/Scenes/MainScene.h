@@ -16,17 +16,17 @@ public:
 	bool loadResources(bool continueOnErrors);
 	bool loadEvents(bool continueOnErrors){return true;}
 	bool unload();
-	void processEvents(F32 time);
+
+	
 
 	/*Specific Scene Requirement*/
 	void renderActors();
 	void processInput();
-	void processKey(int Key);
-	
+	void processEvents(F32 time);
+
 private:
 	void test(boost::any a, CallbackParam b);
 	FrameBufferObject*     _skyFBO;
-	Shader* _geometryShader;
 	vec2 _sunAngle;
 	vec4 _sunVector;
 	mat4 _matSunModelviewProj;

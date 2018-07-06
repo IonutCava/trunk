@@ -8,7 +8,6 @@ Light::Light(U32 slot) : _slot(slot)
 	vec4 white(1.0f, 1.0f, 1.0f, 1.0f);
 	vec4 diffuse = white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + cosf(angle.y) * 0.75f);
 
-	_lightProperties["spotDirection"] = vec4(0.0f, 0.0f, 0.0f,0.0f);
 	_lightProperties["position"] = position;
 	_lightProperties["ambient"] = white;
 	_lightProperties["diffuse"] = diffuse;
@@ -27,4 +26,6 @@ void Light::setLightProperties(const string& name, vec4 values)
 	tr1::unordered_map<string,vec4>::iterator it = _lightProperties.find(name);
 	if (it != _lightProperties.end())
 		_lightProperties[name] = values;
+	if(name.compare("spotDirection") == 0)
+		_lightProperties["spotDirection"] = vec4(0.0f, 0.0f, 0.0f,0.0f);
 }

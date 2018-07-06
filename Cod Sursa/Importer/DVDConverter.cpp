@@ -32,15 +32,15 @@ bool DVDFile::unload()
 	for(_subMeshIterator = getSubMeshes().begin(); _subMeshIterator != getSubMeshes().end(); _subMeshIterator++)
 	{
 		SubMesh* s = (*_subMeshIterator);
-		if(s->unload())	delete s;
+		if(s->unload())	
+		{
+			delete s;
+			s= NULL;
+		}
 		else return false;
 	}
 	getSubMeshes().clear();
-	if(getShader())
-	{
-		getShader()->unload();
-		delete getShader();
-	}
+	if(getShader()) delete getShader();
 	else return false;
 
 	return true;
@@ -113,7 +113,7 @@ bool DVDFile::load(const string& file)
 		string path = tName.data;
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
 		string pathName = file.substr( 0, file.rfind("/")+1 );
-		getSubMeshes()[index]->getMaterial().texture = ResourceManager::getInstance().LoadResource<Texture2DFlipped>(pathName + path);
+		getSubMeshes()[index]->getMaterial().texture = ResourceManager::getInstance().LoadResource<Texture2DFlipped>(pathName + "../texturi/"  + img_name);
 	}
 	_render = true;
 	return _render;

@@ -1,7 +1,7 @@
 varying vec4 vPixToLightTBN;		// Vecteur du pixel courant à la lumière
 varying vec3 vPixToEyeTBN;			// Vecteur du pixel courant à l'oeil
 varying vec3 vPosition;
-//varying vec3 vPositionNormalized;
+varying vec3 vPositionNormalized;
 
 // Bounding Box du terrain
 uniform vec3 bbox_min;
@@ -16,13 +16,10 @@ void main(void)
 	vPosition = gl_Vertex.xyz;
 	
 	// Position du vertex si le terrain est compris entre 0.0 et 1.0
-	vec3 vPositionNormalized = (gl_Vertex.xyz - bbox_min.xyz) / (bbox_max.xyz - bbox_min.xyz);
+	vPositionNormalized = (gl_Vertex.xyz - bbox_min.xyz) / (bbox_max.xyz - bbox_min.xyz);
 	
-	// Coordonnées de texture
 	gl_TexCoord[0].st = vPositionNormalized.xz;
 	
-	
-	// Calcul de l'espace TBN
 	vec3 vTangent = gl_MultiTexCoord0.xyz;
 	vec3 n = normalize(gl_NormalMatrix * gl_Normal);
 	vec3 t = normalize(gl_NormalMatrix * vTangent);

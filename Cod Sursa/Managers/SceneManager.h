@@ -4,8 +4,7 @@
 
 #include "Manager.h"
 #include "Scenes/Scene.h"
-#include "Scenes/MainScene.h"
-#include "Scenes/CubeScene.h"
+#include "SceneList.h"
 #include "Utility/Headers/Singleton.h"
 
 SINGLETON_BEGIN_EXT1(SceneManager,Manager)
@@ -38,12 +37,14 @@ public:
 	void addTerrain(const TerrainInfo& ter) {_scene->addTerrain(ter);}
 	void toggleBoundingBoxes();
 
+	void findSelection(int x, int y);
 private:
 
 	SceneManager()
 	{
 		_scenes.insert(make_pair("MainScene", New MainScene()));
 		_scenes.insert(make_pair("CubeScene", New CubeScene()));
+		_scenes.insert(make_pair("NetworkScene", New NetworkScene()));
 	}
 	Scene* _scene;
 	map<string, Scene*> _scenes;

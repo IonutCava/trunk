@@ -51,27 +51,15 @@
 namespace ZPR
 {
 
-/*
- *
- */	
-
 /* Mouse Manipulation API */
-static void Reshape(int w,int h);
+void Reshape(int w,int h);
 void Init();
-extern F32 ReferencePoint[4];
-void getMatrix();
-extern void SelectionFunc(void (*f)(void));      /* Selection-mode draw function */
-extern void PickFunc(void (*f)(int name));     /* Pick event handling function */
 
-static void Reshape(int w,int h);
 static void Mouse(int button, int state, int x, int y);
 static void Motion(int x, int y);
+static void MouseMove(int x, int y);
 void Keyboard(UBYTE Key,int x,int y);
 void KeyboardUp(UBYTE Key,int x,int y);
-static void Pick(D32 x, D32 y,D32 delX, D32 delY);
-static void ProcessHits (int hits, int buffer[]);
-static void StopPicking();
-void pos(D32 *px,D32 *py,D32 *pz,const int x,const int y,const int *viewport);
 
 }
 #endif

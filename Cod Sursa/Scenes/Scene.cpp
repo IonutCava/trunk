@@ -23,13 +23,13 @@ void Scene::setInitialData()
 			return;
 		}
 
-		thisObj->getScale()       = ModelDataArray[index].scale;
-		thisObj->getPosition()    = ModelDataArray[index].position;
+		
 		thisObj->getOrientation() = ModelDataArray[index].orientation;
+
+		thisObj->setScale(ModelDataArray[index].scale);
+		thisObj->setPosition(ModelDataArray[index].position);
+		
 		thisObj->setShader(ResourceManager::getInstance().LoadResource<Shader>("OBJ"));
-		//thisObj->getBoundingBox().Translate(ModelDataArray[index].position);
-	
-		//PhysX::getInstance().AddShape(thisObj,false);
 		ModelArray.push_back(thisObj);
 	}
 }	

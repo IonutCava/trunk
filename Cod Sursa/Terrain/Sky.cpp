@@ -9,6 +9,9 @@ Sky::Sky()
 {
 	_init = false;
    	string location = ParamHandler::getInstance().getParam<string>("assetsLocation")+"/misc_images/";
+	_sky = new Sphere3D(1,4);
+	_sun = new Sphere3D(0.1f, 16);
+
 	_skybox =  ResourceManager::getInstance().LoadResource<TextureCubemap>(
 				location+"skybox_2.jpg "+
 				location+"skybox_1.jpg "+
@@ -19,6 +22,14 @@ Sky::Sky()
 	_skyShader = ResourceManager::getInstance().LoadResource<Shader>("sky");
 	assert(_skyShader);
 	_init = true;
+}
+
+Sky::~Sky()
+{
+	delete _sky; _sky = NULL;
+	delete _sun; _sun = NULL;
+	delete _skyShader; _skyShader = NULL;
+	delete _skybox; _skybox = NULL;
 }
 
 void Sky::draw() const
@@ -39,9 +50,13 @@ void Sky::drawSkyAndSun() const
 {
 	if(!_init) return;
 	GFXDevice::getInstance().enable_MODELVIEW();
-	GFXDevice::getInstance().pushMatrix();
-	GFXDevice::getInstance().translate(_eyePos.x, _eyePos.y, _eyePos.z);
-	if(_invert) GFXDevice::getInstance().scale(1.0f, -1.0f, 1.0f);
+	_sky->getPosition() = vec3(_eyePos.x,_eyePos.y,_eyePos.z);
+
+	if(_invert)
+		_sky->getScale() = vec3(1.0f, -1.0f, 1.0f);
+	else
+		_sky->getScale() = vec3(1.0f, 1.0f, 1.0f);
+
 
 	glPushAttrib(GL_ENABLE_BIT);
 
@@ -55,14 +70,11 @@ void Sky::drawSkyAndSun() const
 
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_LIGHTING);
-		glutSolidSphere (1.0, 4, 4);
+		_sky->draw();
 	}
 	_skyShader->unbind();
 	_skybox->Unbind(0);
 	glPopAttrib();
-
-	GFXDevice::getInstance().popMatrix();
-
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
@@ -70,10 +82,11 @@ void Sky::drawSky() const
 {
 
 	if(!_init) return;
-
-	GFXDevice::getInstance().pushMatrix();
-	GFXDevice::getInstance().translate(_eyePos.x, _eyePos.y, _eyePos.z);
-	if(_invert)	GFXDevice::getInstance().scale(1.0f, -1.0f, 1.0f);
+	_sky->getPosition() = vec3(_eyePos.x,_eyePos.y,_eyePos.z);
+	if(_invert)
+		_sky->getScale() = vec3(1.0f, -1.0f, 1.0f);
+	else
+		_sky->getScale() = vec3(1.0f,  1.0f, 1.0f);
 
 	glPushAttrib(GL_ENABLE_BIT);
 
@@ -86,14 +99,11 @@ void Sky::drawSky() const
 
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_LIGHTING);
-		glutSolidSphere (1.0, 4, 4);
+		_sky->draw();
 	}
 	_skyShader->unbind();
 	_skybox->Unbind(0);
 	glPopAttrib();
-
-	GFXDevice::getInstance().popMatrix();
-
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 }
@@ -101,28 +111,23 @@ void Sky::drawSky() const
 void Sky::drawSun() const
 {
 	if(!_init) return;
-
+	
 	vec4 color;
 	glGetLightfv(GL_LIGHT0, GL_DIFFUSE, color);
+	_sun->getColor() = vec3(color.r, color.g, color.b);
+	_sun->getPosition() = vec3(_eyePos.x,_eyePos.y,_eyePos.z);
 
 	GFXDevice::getInstance().enable_MODELVIEW();
 	GFXDevice::getInstance().pushMatrix();
-	GFXDevice::getInstance().translate(_eyePos.x, _eyePos.y, _eyePos.z);
-	GFXDevice::getInstance().translate(-_sunVect.x, -_sunVect.y, -_sunVect.z);
-
+	GFXDevice::getInstance().translate(vec3(-_sunVect.x, -_sunVect.y, -_sunVect.z));
 	glPushAttrib(GL_ENABLE_BIT);
-
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
-	GFXDevice::getInstance().setColor(color.r, color.g, color.b);
-	glutSolidSphere(0.1, 16, 16);
-
-	glPopAttrib();
-
+		glDisable(GL_LIGHTING);
+		glDisable(GL_TEXTURE_2D);
+		_sun->draw();
+		glPopAttrib();
 	glClear(GL_DEPTH_BUFFER_BIT);
 	GFXDevice::getInstance().popMatrix();
 
-	delete color;
 }
 
 

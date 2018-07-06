@@ -10,6 +10,11 @@
 #include "Managers/TerrainManager.h"
 #include "Hardware/Video/Light.h"
 
+#include "Geometry/Predefined/Box3D.h"
+#include "Geometry/Predefined/Text3D.h"
+#include "Geometry/Predefined/Sphere3D.h"
+#include "Geometry/Predefined/Quad3D.h"
+
 class Scene : public Resource
 {
 
@@ -20,7 +25,6 @@ public:
 	  _drawBB(false),
 	  _drawObjects(true)
 	  {
-		  _lights.push_back(new Light(0));
 	  };
 	virtual void render() = 0;
 	virtual void preRender() = 0;

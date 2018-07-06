@@ -9,6 +9,7 @@ public:
 	~Text3D(){};
 	bool load(const std::string &name) {_text = name; return true;}
 	bool unload() {_text.clear(); return true;}
+	void draw();
 	string& getText() {return _text;}
 private:
 	string _text;

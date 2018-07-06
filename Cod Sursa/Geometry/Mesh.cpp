@@ -6,11 +6,18 @@
 
 void Mesh::Draw()
 {
-	if(!_render || _subMeshes.empty()) return;
+	if(!_render /*|| !isInView()*/ || _subMeshes.empty()) return;
+	if(_selected) _bb.setVisibility(true); 
+	DrawBBox();
+
 	SubMesh *s;
-	
-	glPushAttrib(GL_POLYGON_BIT);
-	glDisable(GL_CULL_FACE);
+	_shader->bind();
+	GFXDevice::getInstance().pushMatrix();
+
+	GFXDevice::getInstance().translate(getPosition());
+	GFXDevice::getInstance().rotate(getOrientation());
+	GFXDevice::getInstance().scale(getScale());
+
 	for(_subMeshIterator = _subMeshes.begin(); _subMeshIterator != _subMeshes.end(); _subMeshIterator++)
 	{
 		s = (*_subMeshIterator);
@@ -23,19 +30,21 @@ void Mesh::Draw()
 		s->getMaterial().texture->Unbind(0);
 		s->getGeometryVBO()->Disable();
 	}
-	glPopAttrib();
-	
+	GFXDevice::getInstance().popMatrix();
+	_shader->unbind();
 }
 
 void Mesh::DrawBBox()
 {
-	if(!_render) return;
+	//if(!_render || !_bb.getVisibility()) return;
+	if(!_bb.isComputed()) computeBoundingBox();
+
 	glBegin(GL_LINE_LOOP);
 		glVertex3f( _bb.min.x, _bb.min.y, _bb.min.z );
 		glVertex3f( _bb.max.x, _bb.min.y, _bb.min.z );
 		glVertex3f( _bb.max.x, _bb.min.y, _bb.max.z );
 		glVertex3f( _bb.min.x, _bb.min.y, _bb.max.z );
-		glEnd();
+	glEnd();
 
 	glBegin(GL_LINE_LOOP);
 		glVertex3f( _bb.min.x, _bb.max.y, _bb.min.z );
@@ -56,10 +65,11 @@ void Mesh::DrawBBox()
 	glEnd();
 }
 
-bool Mesh::IsInView()
+bool Mesh::isInView()
 {
 	if(!_render) return false;
-	if(!getBoundingBox().isComputed()) computeBoundingBox();
+	if(!_bb.isComputed()) computeBoundingBox();
+
 	vec3 vEyeToChunk = getBoundingBox().getCenter() - Frustum::getInstance().getEyePos();
 	if(vEyeToChunk.length() > SceneManager::getInstance().getTerrainManager()->getGeneralVisibility()) return false;
 
@@ -83,12 +93,21 @@ void Mesh::setPosition(vec3 position)
 {
 	if(!_render) return;
 	getPosition() = position;
-	getBoundingBox().Translate(position - getBoundingBox().getCenter());
+	if(!_bb.isComputed()) computeBoundingBox();
+	_bb.Translate(position);
+
+}
+
+void Mesh::setScale(vec3 scale)
+{
+	if(!_render) return;
+	getScale() = scale;
+	if(!_bb.isComputed()) computeBoundingBox();
+	_bb.Multiply(scale);
 }
 
 BoundingBox& Mesh::getBoundingBox()
 {
-	if(!_bb.isComputed()) computeBoundingBox();
 	return _bb;
 }
 
@@ -99,7 +118,10 @@ void Mesh::computeBoundingBox()
 
 	for(_subMeshIterator = _subMeshes.begin(); _subMeshIterator != _subMeshes.end(); _subMeshIterator++)
 		for(int i=0; i<(int)(*_subMeshIterator)->getGeometryVBO()->getPosition().size(); i++)
-			_bb.Add((*_subMeshIterator)->getGeometryVBO()->getPosition()[i]);
+		{
+			vec3& position = (*_subMeshIterator)->getGeometryVBO()->getPosition()[i];
+			_bb.Add(position);
+		}
 	_bb.isComputed() = true;
 }
 

@@ -174,6 +174,7 @@ public:
 		_f = 1.0f / _f;
 		return (*this) * _f;
 	}
+
 	const vec3 operator+(const vec3 &_v) const { return vec3(this->x + _v.x,this->y + _v.y,this->z + _v.z); }
 	const vec3 operator-() const { return vec3(-this->x,-this->y,-this->z); }
 	const vec3 operator-(const vec3 &_v) const { return vec3(this->x - _v.x,this->y - _v.y,this->z - _v.z); }
@@ -185,7 +186,7 @@ public:
 
 	float operator*(const vec3 &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z; }
 	float operator*(const vec4 &_v) const;
-
+	//float operator[](const int i) {switch(i){case 0: return this->x; case 1: return this->y; case 2: return this->z;};}
 	operator float*() { return this->v; }
 	operator const float*() const { return this->v; }
 
@@ -208,6 +209,7 @@ public:
 		this->y = v1.z * v2.x - v1.x * v2.z;
 		this->z = v1.x * v2.y - v1.y * v2.x;
 	}
+
 	void cross(const vec3 &v2) {
 		float x = this->y * v2.z - this->z * v2.y;
 		float y = this->z * v2.x - this->x * v2.z;
@@ -225,7 +227,8 @@ public:
 		if(angle < EPSILON) return 0;
 		return angle;
 	}
-	
+	vec3 direction(const vec3& u) {vec3 v(u.x - this->x, u.y - this->y, u.z-this->z); v.normalize(); return v;}
+
 	vec3 closestPointOnLine(const vec3 &vA, const vec3 &vB) { return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA); }
 	vec3 closestPointOnSegment(const vec3 &vA, const vec3 &vB) {
 		float factor = this->projectionOnLine(vA, vB);
@@ -241,7 +244,6 @@ public:
 	vec3 lerp(vec3 &u, vec3 &v, vec3& factor) { return (vec3(	(u.x * (1 - factor.x)) + (v.x * factor.x),
 																(u.y * (1 - factor.y)) + (v.y * factor.y),
 																(u.z * (1 - factor.z)) + (v.z * factor.z))); }
-
 	union {
 		struct {float x,y,z;};
 		struct {float s,t,p;};

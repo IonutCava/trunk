@@ -444,6 +444,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\Utility\Headers\Ray.h"
+					>
+				</File>
+				<File
 					RelativePath="..\Utility\Headers\Singleton.h"
 					>
 				</File>
@@ -518,6 +522,14 @@
 			</File>
 			<File
 				RelativePath="..\Scenes\MainScene.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Scenes\NetworkScene.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Scenes\NetworkScene.h"
 				>
 			</File>
 			<File
@@ -639,6 +651,34 @@
 			<Filter
 				Name="Network"
 				>
+				<File
+					RelativePath="..\Hardware\Network\ASIO.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Hardware\Network\ASIO.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Hardware\Network\ByteBuffer.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Hardware\Network\ByteConverter.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Hardware\Network\OPCodes.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Hardware\Network\Session.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Hardware\Network\WorldPacket.h"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -712,6 +752,30 @@
 				Name="Predefined"
 				>
 				<File
+					RelativePath="..\Geometry\Predefined\Box3D.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Geometry\Predefined\Box3D.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Geometry\Predefined\Quad3D.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Geometry\Predefined\Quad3D.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Geometry\Predefined\Sphere3D.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Geometry\Predefined\Sphere3D.h"
+					>
+				</File>
+				<File
 					RelativePath="..\Geometry\Predefined\Text3D.cpp"
 					>
 				</File>
@@ -735,6 +799,10 @@
 		</File>
 		<File
 			RelativePath="..\resource.h"
+			>
+		</File>
+		<File
+			RelativePath="..\SceneList.h"
 			>
 		</File>
 	</Files>

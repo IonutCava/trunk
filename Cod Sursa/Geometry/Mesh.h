@@ -23,8 +23,8 @@ class Mesh : public Object3D
 
 public:
 	Mesh() : Object3D() {}
-	Mesh(vec3& position, vec3& scale, vec3& orientation)
-		: Object3D(position,scale,orientation) {}
+	Mesh(vec3& position, vec3& scale, vec3& orientation,vec3& color)
+		: Object3D(position,scale,orientation,color) {}
 
 	void addSubMesh(SubMesh* subMesh){_subMeshes.push_back(subMesh);}
 	
@@ -37,19 +37,19 @@ public:
 
 	void                setShader(Shader* s) {_shader = s;}
 	void                setPosition(vec3 position);
-
-
+	void				setScale(vec3 scale);
+	void                setVisibility(bool state) {_render = state;}
 	void Draw();
-	void DrawBBox();
-	bool IsInView();
+	bool isInView();
 	
 protected:
 
 	void computeBoundingBox();
+	void DrawBBox();
 
 protected:
 	
-	bool _visibleToNetwork, _render, _loaded;
+	bool _visibleToNetwork, _render, _loaded, _drawBB;
 	vector<SubMesh* >			 _subMeshes;
 	vector<SubMesh* >::iterator  _subMeshIterator;
 	Shader*						 _shader;

@@ -14,7 +14,7 @@ void GL_API::initHardware()
 	glutInitContextVersion(2,0);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL | GLUT_DOUBLE);
 	glutInitWindowSize(Engine::getInstance().getWindowWidth(),Engine::getInstance().getWindowHeight());
-	glutInitWindowPosition(10,10);
+	glutInitWindowPosition(10,50);
 	Engine::getInstance().setMainWindowId(glutCreateWindow("DIVIDE Engine"));
 	U32 err = glewInit();
 	if (GLEW_OK != err)
@@ -47,10 +47,9 @@ void GL_API::initHardware()
 	glEnable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_RESCALE_NORMAL);
-	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_NORMALIZE);
+	glDisable(GL_COLOR_MATERIAL);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	glEnable (GL_COLOR_MATERIAL );
 	glutCloseFunc(Guardian::getInstance().TerminateApplication);
 	cout << "OpenGL rendering system initialized!" << endl;
 	
@@ -61,39 +60,19 @@ void GL_API::closeRenderingApi()
 	glutDestroyWindow(Engine::getInstance().getMainWindowId());
 }
 
-void GL_API::translate(F32 x, F32 y, F32 z)
+void GL_API::translate(vec3& pos)
 {
-	glTranslatef(x,y,z);
+	glTranslatef(pos.x,pos.y,pos.z);
 }
 
-void GL_API::translate(D32 x, D32 y, D32 z)
+void GL_API::rotate(F32 angle, vec3& weights)
 {
-	glTranslated(x,y,z);
+	glRotatef(angle,weights.x,weights.y,weights.z);
 }
 
-void GL_API::rotate(F32 angle, F32 x, F32 y, F32 z)
+void GL_API::scale(vec3& scale)
 {
-	glRotatef(angle,x,y,z);
-}
-
-void GL_API::rotate(D32 angle, D32 x, D32 y, D32 z)
-{
-	glRotated(angle,x,y,z);
-}
-
-void GL_API::scale(F32 x, F32 y, F32 z)
-{
-	glScalef(x,y,z);
-}
-
-void GL_API::scale(D32 x, D32 y, D32 z)
-{
-	glScaled(x,y,z);
-}
-
-void GL_API::scale(int x, int y, int z)
-{
-	glScalef((F32)x,(F32)y,(F32)z);
+	glScalef(scale.x,scale.y,scale.z);
 }
 
 void GL_API::clearBuffers(int buffer_mask)
@@ -155,9 +134,10 @@ void GL_API::loadIdentityMatrix()
 void GL_API::drawTextToScreen(Text* text)
 {
 	pushMatrix();
-		glColor3f(text->_color.x,text->_color.y,text->_color.z);
 		glLoadIdentity();
+		glColor3f(text->_color.x,text->_color.y,text->_color.z);
 		glRasterPos2f(text->_position.x,text->_position.y);
+		
 #ifdef USE_FREEGLUT
 		glutBitmapString(text->_font, (UBYTE *)(text->_text.c_str()));
 #else
@@ -175,25 +155,116 @@ void GL_API::drawCharacterToScreen(void* font,char text)
 #endif
 }
 
-void GL_API::drawButton(Button* button)
+void GL_API::drawButton(Button* b)
 {
-	pushMatrix();
-		glTranslatef(button->_position.x,button->_position.y,0);
-		glColor3f(button->_color.x,button->_color.y,button->_color.z);
-		glBegin(GL_TRIANGLE_STRIP );
-			glVertex2f( 0, 0 );
-			glVertex2f( button->_dimensions.x, 0 );
-			glVertex2f( 0, button->_dimensions.y );
-			glVertex2f( button->_dimensions.x, button->_dimensions.y );
+	F32 fontx;
+	F32 fonty;
+	Text *t = NULL;
+
+	if(b)
+	{
+		/*
+		 *	We will indicate that the mouse cursor is over the button by changing its
+		 *	colour.
+		 */
+		if (b->_highlight) 
+			glColor3f(b->_color.r + 0.1f,b->_color.g + 0.1f,b->_color.b + 0.2f);
+		else 
+			glColor3f(b->_color.r,b->_color.g,b->_color.b);
+
+		/*
+		 *	draw background for the button.
+		 */
+		glBegin(GL_QUADS);
+			glVertex2f( b->_position.x     , b->_position.y      );
+			glVertex2f( b->_position.x     , b->_position.y+b->_dimensions.y );
+			glVertex2f( b->_position.x+b->_dimensions.x, b->_position.y+b->_dimensions.y );
+			glVertex2f( b->_position.x+b->_dimensions.x, b->_position.y      );
 		glEnd();
-		glBegin( GL_TRIANGLE_STRIP );
-			glVertex2f( 1, 1 );
-			glVertex2f( button->_dimensions.x-1, 1 );
-			glVertex2f( 1, button->_dimensions.y-1 );
-			glVertex2f( button->_dimensions.x-1, button->_dimensions.y-1 );  
+
+		/*
+		 *	Draw an outline around the button with width 3
+		 */
+		glLineWidth(3);
+
+		/*
+		 *	The colours for the outline are reversed when the button. 
+		 */
+		if (b->_pressed) 
+			glColor3f((b->_color.r + 0.1f)/2.0f,(b->_color.g+ 0.1f)/2.0f,(b->_color.b+ 0.1f)/2.0f);
+		else 
+			glColor3f(b->_color.r + 0.1f,b->_color.g+ 0.1f,b->_color.b+ 0.1f);
+
+		glBegin(GL_LINE_STRIP);
+			glVertex2f( b->_position.x+b->_dimensions.x, b->_position.y      );
+			glVertex2f( b->_position.x     , b->_position.y      );
+			glVertex2f( b->_position.x     , b->_position.y+b->_dimensions.y );
 		glEnd();
-	popMatrix();
-	
+
+		if (b->_pressed) 
+			glColor3f(0.8f,0.8f,0.8f);
+		else 
+			glColor3f(0.4f,0.4f,0.4f);
+
+		glBegin(GL_LINE_STRIP);
+			glVertex2f( b->_position.x     , b->_position.y+b->_dimensions.y );
+			glVertex2f( b->_position.x+b->_dimensions.x, b->_position.y+b->_dimensions.y );
+			glVertex2f( b->_position.x+b->_dimensions.x, b->_position.y      );
+		glEnd();
+
+		glLineWidth(1);
+		fontx = b->_position.x + (b->_dimensions.x - glutBitmapLength(GLUT_BITMAP_HELVETICA_10,(UBYTE*)b->_text.c_str())) / 2 ;
+		fonty = b->_position.y + (b->_dimensions.y+10)/2;
+
+		/*
+		 *	if the button is pressed, make it look as though the string has been pushed
+		 *	down. It's just a visual thing to help with the overall look....
+		 */
+		if (b->_pressed) {
+			fontx+=2;
+			fonty+=2;
+		}
+
+		/*
+		 *	If the cursor is currently over the button we offset the text string and draw a shadow
+		 */
+		if(b->_highlight)
+		{
+			if(t) delete t;
+			t = new Text(string("1"),b->_text,vec3(fontx,fonty,0),GLUT_BITMAP_HELVETICA_10,vec3(0,0,0));
+			fontx--;
+			fonty--;
+		}
+		if(t) delete t;
+		t = new Text(string("1"),b->_text,vec3(fontx,fonty,0),GLUT_BITMAP_HELVETICA_10,vec3(1,1,1));
+		drawTextToScreen(t);
+	}
+	delete t;
+	t = NULL;
+
+}
+
+void GL_API::drawCube(F32 size)
+{
+	glutSolidCube(size);
+}
+
+void GL_API::drawSphere(F32 size, U32 resolution)
+{
+	glutSolidSphere(size,resolution,resolution);
+}
+
+void GL_API::drawQuad(vec3& _topLeft, vec3& _topRight, vec3& _bottomLeft, vec3& _bottomRight)
+{
+	glBegin(GL_TRIANGLE_STRIP); //GL_TRIANGLE_STRIP is slightly faster on newer HW than GL_QUAD,
+								//as GL_QUAD converts into a GL_TRIANGLE_STRIP at the driver level anyway
+		glNormal3f(0.0f, 1.0f, 0.0f);
+		glTexCoord3f(1.0f, 0.0f, 0.0f);
+		glVertex3f(_topLeft.x, _topLeft.y, _topLeft.z);
+		glVertex3f(_topRight.x, _topRight.y, _topRight.z);
+		glVertex3f(_bottomLeft.x, _bottomLeft.y, _bottomLeft.z);
+		glVertex3f(_bottomRight.x, _bottomRight.y, _bottomRight.z);
+	glEnd();
 }
 
 void GL_API::loadOrtographicView()
@@ -210,8 +281,32 @@ void GL_API::loadOrtographicView()
 void GL_API::loadModelView()
 {
 	glMatrixMode( GL_PROJECTION );
-		popMatrix();
+	popMatrix();
 	glMatrixMode( GL_MODELVIEW );
+}
+
+void GL_API::toggle2D3D(bool _3D)
+{
+	if(!_3D)
+	{
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(0,Engine::getInstance().getWindowWidth(),Engine::getInstance().getWindowHeight(),0,-1,1);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);
+	}
+	else
+	{
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		gluPerspective(45,(Engine::getInstance().getWindowHeight()==0)?(1):((float)Engine::getInstance().getWindowWidth()/Engine::getInstance().getWindowHeight()),1,100);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_LIGHTING);
+	}
 }
 
 void GL_API::renderMesh(const Mesh& mesh)
@@ -283,7 +378,9 @@ void GL_API::initDevice()
 
 void GL_API::setLight(U32 slot, tr1::unordered_map<string,vec4>& properties)
 {
-	glLightfv(GL_LIGHT0+slot, GL_SPOT_DIRECTION, properties["spotDirection"]);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0+slot);
+	if( properties.size() == 5)	glLightfv(GL_LIGHT0+slot, GL_SPOT_DIRECTION, properties["spotDirection"]);
 	glLightfv(GL_LIGHT0+slot, GL_POSITION, properties["position"]);
 	glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  properties["ambient"]);
 	glLightfv(GL_LIGHT0+slot, GL_DIFFUSE,  properties["diffuse"]);

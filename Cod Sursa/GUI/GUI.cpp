@@ -17,14 +17,14 @@ bool ButtonClickTest(Button* b,int x,int y)
 
 void GUI::draw()
 {
-	GFXDevice::getInstance().loadOrtographicView();
+	GFXDevice::getInstance().toggle2D3D(false);
 	
     //------------------------------------------------------------------------
 		drawText();
 		drawButtons();
 	//------------------------------------------------------------------------
 
-	GFXDevice::getInstance().loadModelView();
+	GFXDevice::getInstance().toggle2D3D(true);
 		
 }
 
@@ -51,6 +51,49 @@ void GUI::drawButtons()
 		GFXDevice::getInstance().drawButton((*_buttonIterator).second);
 }
 
+void GUI::checkItem(int x, int y)
+{
+	for(_buttonIterator = _button.begin(); _buttonIterator != _button.end(); _buttonIterator++)
+	{
+		Button *b = (*_buttonIterator).second;
+
+	    if( x > b->_position.x   &&  x < b->_position.x+b->_dimensions.x &&	y > b->_position.y   &&  y < b->_position.y+b->_dimensions.y ) 
+			b->_highlight = true;
+    	else
+			b->_highlight = false;
+	}
+}
+
+void GUI::clickCheck()
+{
+	for(_buttonIterator = _button.begin(); _buttonIterator != _button.end(); _buttonIterator++)
+	{
+		Button *b = (*_buttonIterator).second;
+		if (b->_highlight)
+		{
+			b->_pressed = true;
+		}
+		else b->_pressed = false;
+	}
+}
+
+void GUI::clickReleaseCheck()
+{
+	for(_buttonIterator = _button.begin(); _buttonIterator != _button.end(); _buttonIterator++)
+	{
+		Button *b = (*_buttonIterator).second;
+		if (b->_pressed)
+		{
+			if (b->_callbackFunction) {
+				b->_callbackFunction();
+			}
+			b->_pressed = false;
+			break;
+		}
+	}
+	
+}
+
 void GUI::addButton(string id, string text, vec2& position, vec2& dimensions, vec3& color,ButtonCallback callback)
 {
 	_button[id] = new Button(id,text,position,dimensions,color,callback);
@@ -67,6 +110,7 @@ void GUI::addText(string id, vec3 &position, void *font, vec3 &color, char* form
     vsprintf_s(text, len, format, args);
 	fmt_text.append(text);
 	delete[] text;
+	text = NULL;
     va_end(args);
 
 	Text *t = new Text(id,fmt_text,position,font,color);
@@ -86,6 +130,7 @@ void GUI::modifyText(string id, char* format, ...)
     vsprintf_s(text, len, format, args);
 	fmt_text.append(text);
 	delete[] text;
+	text = NULL;
     va_end(args);
 
 	_text[id]->_text = fmt_text;

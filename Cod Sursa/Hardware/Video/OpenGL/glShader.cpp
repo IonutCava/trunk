@@ -139,6 +139,7 @@ void glShader::init(const std::string &vsFile, const std::string &fsFile) {
 		validateShader(_shaderVP, vsFile);
 		glAttachShader(_shaderId, _shaderVP);
 		delete vsText;
+		vsText = NULL;
 	}
 	if(useFrag)
 	{
@@ -154,6 +155,7 @@ void glShader::init(const std::string &vsFile, const std::string &fsFile) {
 		validateShader(_shaderFP, fsFile);
 		glAttachShader(_shaderId, _shaderFP);
 		delete fsText;
+		fsText = NULL;
 	}
 
 	glLinkProgram(_shaderId);

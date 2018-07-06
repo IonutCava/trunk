@@ -9,33 +9,19 @@ void DX_API::initHardware()
 void DX_API::closeRenderingApi()
 {
 }
-void DX_API::translate(F32 x, F32 y, F32 z)
+void DX_API::translate(vec3& pos)
 {
 }
 
-void DX_API::translate(D32 x, D32 y, D32 z)
+void DX_API::rotate(F32 angle, vec3& weights)
 {
 }
 
-void DX_API::rotate(F32 angle, F32 x, F32 y, F32 z)
+
+void DX_API::scale(vec3& scale)
 {
 }
 
-void DX_API::rotate(D32 angle, D32 x, D32 y, D32 z)
-{
-}
-
-void DX_API::scale(F32 x, F32 y, F32 z)
-{
-}
-
-void DX_API::scale(D32 x, D32 y, D32 z)
-{
-}
-
-void DX_API::scale(int x, int y, int z)
-{
-}
 
 void DX_API::clearBuffers(int buffer_mask)
 {
@@ -80,6 +66,11 @@ void DX_API::loadOrtographicView()
 void DX_API::loadModelView()
 {
 }
+
+void DX_API::toggle2D3D(bool _3D)
+{
+}
+
 void DX_API::drawTextToScreen(Text* text)
 {
 }
@@ -91,9 +82,23 @@ void DX_API::drawCharacterToScreen(void* ,char)
 void DX_API::drawButton(Button* button)
 {
 }
+
+void DX_API::drawCube(F32 size)
+{
+}
+
+void DX_API::drawSphere(F32 size, U32 resolution)
+{
+}
+
+void DX_API::drawQuad(vec3& _topLeft, vec3& _topRight, vec3& _bottomLeft, vec3& _bottomRight)
+{
+}
+
 void DX_API::renderMesh(const Mesh& mesh)
 {
 }
+
 void DX_API::renderSubMesh(const SubMesh& subMesh)
 {
 }

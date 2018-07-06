@@ -9,16 +9,6 @@
 #define TERRAIN_CHUNK_LOD0	100.0f
 #define TERRAIN_CHUNK_LOD1	180.0f
 
-class Tree
-{
-public:
-	Object3D* geometry;
-	vec3 scale;
-	vec3 position;
-	vec3 orientation;
-	string name;
-};
-
 class TerrainChunk
 {
 public:
@@ -32,7 +22,7 @@ public:
 	inline vector<GLuint>&				getIndiceArray(GLuint lod)	{return m_tIndice[lod];}
 	inline vector<GLuint>&				getGrassIndiceArray()		{return m_tGrassIndice;}
 	inline vector<DVDFile*>&	     	getObjectsArray()			{return m_tObject;}
-	inline vector<Tree >&               getTreeArray()              {return m_tTrees;}
+	inline vector<DVDFile >&            getTreeArray()              {return m_tTrees;}
 	void								addObject(DVDFile* obj);
 	void								addTree(vec3 pos, F32 rotation, F32 scale);
 	TerrainChunk() {}
@@ -51,8 +41,8 @@ private:
 
 	//ToDo: Eliminate this hack. Trees hold a pointer to an Object3D object that represents the tree's geometry,
 	//      and has a position, orientation and scale different from that of the object itself.
-	vector<Tree >           m_tTrees;
-	vector<Tree >::iterator m_tTreesIterator;
+	vector<DVDFile >           m_tTrees;
+	vector<DVDFile >::iterator m_tTreesIterator;
 
 	vector<DVDFile*>	    m_tObject;
 	string				    previousModel;

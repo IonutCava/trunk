@@ -39,7 +39,7 @@ protected:
 	friend class GFXDevice;
 	void setId(GraphicsAPI api) {_apiId = api;}
 	GraphicsAPI getId() { return _apiId;}
-
+	virtual void resizeWindow(U32 w, U32 h) = 0;
 	virtual FrameBufferObject* newFBO() = 0;
 	virtual VertexBufferObject* newVBO() = 0;
 	virtual Shader* newShader(const char *vsFile, const char *fsFile) = 0;
@@ -49,13 +49,9 @@ protected:
 	virtual void closeRenderingApi() = 0;
 	virtual void initDevice() = 0;
 	/*Geometry transformations*/
-	virtual void translate(F32 x, F32 y, F32 z) = 0;
-	virtual void translate(D32 x, D32 y, D32 z) = 0;
-	virtual void rotate(F32 angle, F32 x, F32 y, F32 z) = 0;
-	virtual void rotate(D32 angle, D32 x, D32 y, D32 z) = 0;
-	virtual void scale (F32 x, F32 y, F32 z) = 0;
-	virtual void scale (D32 x, D32 y, D32 z) = 0;
-	virtual void scale (int x, int y, int z) = 0;
+	virtual void translate(vec3& pos) = 0;
+	virtual void rotate(F32 angle, vec3& weights) = 0;
+    virtual void scale(vec3& scale) = 0;
 	/*Geometry transformations*/
 
 	/*Rendering States*/
@@ -73,12 +69,16 @@ protected:
 	virtual void loadIdentityMatrix() = 0;
 	virtual void loadOrtographicView() = 0;
 	virtual void loadModelView() = 0;
+	virtual void toggle2D3D(bool _3D) = 0;
 	/*State Matrix Manipulation*/
 
 	/*GUI Rendering*/
 	virtual void drawTextToScreen(Text*) = 0;
 	virtual void drawCharacterToScreen(void* ,char) = 0;
 	virtual void drawButton(Button*) = 0;
+	virtual void drawCube(F32 size) = 0;
+	virtual void drawSphere(F32 size,U32 resolution) = 0;
+	virtual void drawQuad(vec3& _topLeft, vec3& _topRight, vec3& _bottomLeft, vec3& _bottomRight) = 0;
 	/*GUI Rendering*/
 
 	/*Mesh Rendering*/

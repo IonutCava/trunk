@@ -14,6 +14,7 @@ private:
 	void initHardware();
 	void closeRenderingApi();
 	void initDevice();
+	void resizeWindow(U32 w, U32 h) {glutReshapeWindow(w,h);}
 
 	FrameBufferObject* newFBO(){return New glFrameBufferObject(); }
 	VertexBufferObject* newVBO(){return New glVertexBufferObject(); }
@@ -22,13 +23,9 @@ private:
 
 	typedef void (*callback)();	void glCommand(callback f){f();}
 
-	void translate(F32 x, F32 y, F32 z);
-	void translate(D32 x, D32 y, D32 z);
-	void rotate(F32 angle, F32 x, F32 y, F32 z);
-	void rotate(D32 angle, D32 x, D32 y, D32 z);
-	void scale (F32 x, F32 y, F32 z);
-	void scale (D32 x, D32 y, D32 z);
-	void scale (int x, int y, int z);
+	void translate(vec3& pos);
+	void rotate(F32 angle, vec3& weights);
+    void scale(vec3& scale);
 
 	void clearBuffers(int buffer_mask);
 	void swapBuffers();
@@ -42,10 +39,14 @@ private:
 	void loadIdentityMatrix();
 	void loadOrtographicView();
 	void loadModelView();
+	void toggle2D3D(bool _3D);
 
 	void drawTextToScreen(Text*);
 	void drawCharacterToScreen(void* ,char);
 	void drawButton(Button*);
+    void drawCube(F32 size);
+	void drawSphere(F32 size,U32 resolution);
+	void drawQuad(vec3& _topLeft, vec3& _topRight, vec3& _bottomLeft, vec3& _bottomRight);
 
 	void renderMesh(const Mesh& mesh);
 	void renderSubMesh(const SubMesh& subMesh);

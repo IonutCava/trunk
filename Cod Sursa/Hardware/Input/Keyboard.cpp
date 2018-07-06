@@ -110,9 +110,6 @@ namespace ZPR
 			case '-':
 				if (speedFactor > 0.1f)   speedFactor -= 0.1f;
 				break;
-			case 'f':
-				Engine::getInstance().toggleFirstPerson();
-				break;
 			//1+2+3+4 = cream diversi actori prin scena
 			case '1':
 				glui_cb(10);

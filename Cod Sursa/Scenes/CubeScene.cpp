@@ -4,65 +4,44 @@
 #include "Rendering/common.h"
 #include "PhysX/PhysX.h"
 #include "Importer/DVDConverter.h"
+#include "Terrain/Sky.h"
 
-DVDFile test;
 Shader *s;
 void CubeScene::render()
 {
 	GFXDevice::getInstance().pushMatrix();
-		
-		GFXDevice::getInstance().rotate(i,0.3f,0.6f,0);
-		glutSolidCube(40);
-
-		GFXDevice::getInstance().translate(-10.0f,-100.0f,0.0f);
-		GFXDevice::getInstance().setColor(0.5f,0.1f,0.3f);
-		glBegin(GL_TRIANGLE_STRIP );
-			glVertex3f( 0, 0,0 );
-			glVertex3f( 10, 0,0 );
-			glVertex3f( 0, 20,0);
-			glVertex3f( 10, 20,0 );
-		glEnd();
-		GFXDevice::getInstance().setColor(0.5f,0.2f,0.9f);
-	    glBegin( GL_TRIANGLE_STRIP );
-			glVertex3f( 1, 1,0 );
-			glVertex3f( 10-1, 1,0 );
-			glVertex3f( 1, 20-1,0 );
-			glVertex3f( 10-1, 20-1,0 );  
-		glEnd();
+	GFXDevice::getInstance().rotate(i,vec3(0.3f,0.6f,0));
+	_box->draw();
 	GFXDevice::getInstance().popMatrix();
-	
-	_terMgr->drawTerrains(true,false);
+
+	_innerQuad->draw();
+	_outterQuad->draw();	
 
 	if(PhysX::getInstance().getScene() != NULL)
 		PhysX::getInstance().RenderActors();
 	else
 		for(ModelIterator = ModelArray.begin();  ModelIterator != ModelArray.end();  ModelIterator++)
-		{
-			GFXDevice::getInstance().pushMatrix();
-			GFXDevice::getInstance().translate((*ModelIterator)->getPosition());
-			GFXDevice::getInstance().rotate((*ModelIterator)->getOrientation());
-			GFXDevice::getInstance().scale((*ModelIterator)->getScale());
-			(*ModelIterator)->getShader()->bind();
-				(*ModelIterator)->Draw();
-			(*ModelIterator)->getShader()->unbind();
-			GFXDevice::getInstance().popMatrix();
-		}
-	test.getShader()->bind();
-	test.Draw();
-	test.getShader()->unbind();
+			(*ModelIterator)->Draw();
+
+	_terMgr->drawTerrains(true,false);
 }
 
 void CubeScene::preRender()
 {
 	i >= 360 ? i = 0 : i += 0.1f;
 
-	vec4 zeros(0.0f, 0.0f, 0.0f,0.0f);
+	
+	vec3 zeros(0.0f, 0.0f, 0.0f);
 	vec4 white(1.0f, 1.0f, 1.0f, 1.0f);
 	vec4 black(0.0f, 0.0f, 0.0f, 1.0f);
 	vec4 orange(1.0f, 0.5f, 0.0f, 1.0f);
 	vec4 yellow(1.0f, 1.0f, 0.8f, 1.0f);
 	F32 sun_cosy = cosf(_sunAngle.y);
+
 	vec4 vSunColor = white.lerp(orange, yellow, 0.25f + sun_cosy * 0.75f);
+
+	Sky::getInstance().setParams(Camera::getInstance().getEye(),vec3(_sunVector),false,true,false);
+	Sky::getInstance().draw();
 
 	_lights[0]->setLightProperties(string("spotDirection"),zeros);
 	_lights[0]->setLightProperties(string("position"),_sunVector);
@@ -70,7 +49,6 @@ void CubeScene::preRender()
 	_lights[0]->setLightProperties(string("diffuse"),vSunColor);
 	_lights[0]->setLightProperties(string("specular"),vSunColor);
 	_lights[0]->update();
-
 }
 
 void CubeScene::processInput()
@@ -90,9 +68,8 @@ void CubeScene::processInput()
 bool CubeScene::load(const string& name)
 {
 	bool state = false;
-	test.load("Assets/models/copac.obj");
-	test.setShader(ResourceManager::getInstance().LoadResource<Shader>("OBJ"));
 	_terMgr->createTerrains(TerrainInfoArray);
+	_lights.push_back(new Light(0));
 	state = loadResources(true);	
 	state = loadEvents(true);
 	return state;
@@ -114,5 +91,16 @@ bool CubeScene::loadResources(bool continueOnErrors)
 							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
 							0.0f );
     i = 0;
+	_box = new Box3D(40);
+	_innerQuad = new Quad3D(vec3(1,1,0),vec3(10-1,0,0),vec3(0,20-1,0),vec3(10-1,20-1,0));
+	_outterQuad = new Quad3D(vec3(0,0,0),vec3(10,0,0),vec3(0,20,0),vec3(10,20,0));
+
+	
+	_box->getColor() = vec3(0.5f,0.1f,0.3f);
+	_innerQuad->getColor() = vec3(0.5f,0.2f,0.9f);
+	_outterQuad->getColor() = vec3(0.2f,0.1f,0.3f);
+
+	_innerQuad->getPosition() = vec3(-10.0f,-100.0f,-0.1f);
+	_outterQuad->getPosition() = vec3(-10.0f,-100.0f,0.0f);
 	return true;
 }

@@ -1,4 +1,5 @@
 #include "GFXDevice.h"
+#include "Rendering/common.h"
 
 void GFXDevice::setApi(GraphicsAPI api)
 {
@@ -11,4 +12,11 @@ void GFXDevice::setApi(GraphicsAPI api)
 		_api = DX_API::getInstance();
 	}
 	_api.setId(api);
+}
+
+void GFXDevice::resizeWindow(U32 w, U32 h)
+{
+	Engine::getInstance().setWindowWidth(w);
+    Engine::getInstance().setWindowHeight(h);
+	_api.resizeWindow(w,h);
 }

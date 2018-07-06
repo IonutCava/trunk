@@ -11,7 +11,7 @@
 #define NOMINMAX
 #endif
 
-#include <windows.h>
+#define _WIN32_WINNT 0x0501
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
@@ -31,8 +31,6 @@
 #include <time.h>
 #include "Utility/Headers/DataTypes.h"
 
-#define GLUT_ICON                       101
-
 #define NEW_PARAM (__FILE__, __LINE__)
 #define PLACEMENTNEW_PARAM ,__FILE__, __LINE__
 #define NEW_DECL , char* zFile, int nLine
@@ -45,14 +43,5 @@ void operator delete(void *pxData);
 #define New new NEW_PARAM
 #define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
 
-#define STEP	1
-#define SIN		2
-#define COS		3
-#define CIRCLE  4
-#define MPD		5
-#define RandomDirection 6
-#define string_length sizeof(GLUI_String)
-
-//GLEWContext* glewGetContext();
 
 #endif

@@ -73,10 +73,8 @@ void QuadtreeNode::ComputeBoundingBox(const vec3* vertices)
 		}
 
 		for(GLuint i=0; i<m_pTerrainChunk->getTreeArray().size(); i++) {
-			DVDFile* obj = ((DVDFile*)m_pTerrainChunk->getTreeArray()[ i ].geometry);
-			BoundingBox bbox = obj->getBoundingBox();
-			bbox.Translate( obj->getPosition() );
-			terrain_BBox.Add( bbox );
+			DVDFile& obj = m_pTerrainChunk->getTreeArray()[ i ];
+			terrain_BBox.Add( obj.getBoundingBox() );
 		}
 	}
 

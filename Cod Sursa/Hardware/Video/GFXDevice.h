@@ -11,6 +11,7 @@ public:
 	int  getApi(){return _api.getId(); }
 	void initHardware(){_api.initHardware();}
 	void initDevice(){_api.initDevice();}
+	void resizeWindow(U32 w, U32 h);
 
 	void closeRenderingApi(){_api.closeRenderingApi();}
 	FrameBufferObject* newFBO(){return _api.newFBO(); }
@@ -24,24 +25,18 @@ public:
 	*/
 
 	
-	void translate(F32 x, F32 y, F32 z){_api.translate(x,y,z);}
-	void translate(D32 x, D32 y, D32 z){_api.translate(x,y,z);} 
-	void translate(vec3 trans){_api.translate(trans.x,trans.y,trans.z);}
+	void translate(vec3& pos){_api.translate(pos);}
+	void rotate(F32 angle, vec3& weights){_api.rotate(angle,weights);}
+	void scale(vec3& scale){_api.scale(scale);}
 
-	void rotate(F32 angle, F32 x, F32 y, F32 z){_api.rotate(angle,x,y,z);}
-	void rotate(D32 angle, D32 x, D32 y, D32 z){_api.rotate(angle,x,y,z);}
-
-	void rotate(vec3 rot)
+	void rotate(vec3& rot)
 	{
-		_api.rotate(rot.x,1.0f,0.0f,0.0f); 
-		_api.rotate(rot.y,0.0f,1.0f,0.0f);
-		_api.rotate(rot.z,0.0f,0.0f,1.0f);
+		_api.rotate(rot.x,vec3(1.0f,0.0f,0.0f)); 
+		_api.rotate(rot.y,vec3(0.0f,1.0f,0.0f));
+		_api.rotate(rot.z,vec3(0.0f,0.0f,1.0f));
 	}
 
-	void scale(F32 x, F32 y, F32 z){_api.scale(x,y,z);}
-	void scale(D32 x, D32 y, D32 z){_api.scale(x,y,z);}
-	void scale(int x, int y, int z){_api.scale(x,y,z);}
-	void scale(vec3 scale){_api.scale(scale.x,scale.y,scale.z);}
+
 
 	void clearBuffers(int buffer_mask){_api.clearBuffers(buffer_mask);}
 	void swapBuffers(){_api.swapBuffers();}
@@ -55,10 +50,14 @@ public:
 	void loadIdentityMatrix(){_api.loadIdentityMatrix();}
 	void loadOrtographicView(){_api.loadOrtographicView();}
 	void loadModelView(){_api.loadModelView();}
+	void toggle2D3D(bool _3D) {_api.toggle2D3D(_3D);}
 
 	void drawTextToScreen(Text* text){_api.drawTextToScreen(text);}
 	void drawCharacterToScreen(void* font,char character){_api.drawCharacterToScreen(font,character);}
 	void drawButton(Button* button){_api.drawButton(button);}
+	void drawCube(F32 size){_api.drawCube(size);}
+	void drawSphere(F32 size,U32 resolution){_api.drawSphere(size,resolution);}
+	void drawQuad(vec3& _topLeft, vec3& _topRight, vec3& _bottomLeft, vec3& _bottomRight){_api.drawQuad(_topLeft,_topRight,_bottomLeft,_bottomRight);}
 
 	void renderMesh(const Mesh& mesh){_api.renderMesh(mesh);}
 	void renderSubMesh(const SubMesh& subMesh){_api.renderSubMesh(subMesh);}

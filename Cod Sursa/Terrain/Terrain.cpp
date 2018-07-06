@@ -251,10 +251,7 @@ vec3 Terrain::getTangent(F32 x_clampf, F32 z_clampf) const
 
 int Terrain::drawObjects() const
 {
-	glPushAttrib(GL_POLYGON_BIT);
-	glDisable(GL_CULL_FACE);
 		int ret = terrain_Quadtree->DrawObjects(_drawInReflexion);
-	glPopAttrib();
 
 	return ret;
 }
@@ -262,6 +259,15 @@ int Terrain::drawObjects() const
 void Terrain::draw() const
 {
 	if(!_loaded) return;
+
+	_veg->draw(_drawInReflexion);
+
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, _ambientColor);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50.0f);
+
+	
 		U32 idx=0;
 		for(U32 i=0; i<m_tTextures.size(); i++)
 			m_tTextures[i]->Bind(idx++);
@@ -293,9 +299,6 @@ void Terrain::draw() const
 		m_pTerrainDiffuseMap->Unbind(--idx);
 		for(int i=(GLint)m_tTextures.size()-1; i>=0; i--)
 			m_tTextures[i]->Unbind(--idx);
-
-		_veg->draw(_drawInReflexion);
-
 }
 
 

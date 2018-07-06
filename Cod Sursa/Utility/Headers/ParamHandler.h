@@ -94,6 +94,7 @@ public:
 			}
 			catch(const boost::bad_any_cast &)
 			{
+				cout << "ParamHandler: error casting [ " << name << " ] to U32" << endl;
 				return 0;
 			}
 		}

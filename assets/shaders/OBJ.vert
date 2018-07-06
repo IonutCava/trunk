@@ -5,7 +5,7 @@ void main(void)
 
 	vec4 vertex = gl_Vertex;
 	vec4 vertexMV = gl_ModelViewMatrix * gl_Vertex;
-	vec3 normalMV = gl_NormalMatrix * gl_Normal;
+	vec3 normalMV = normalize(gl_NormalMatrix * gl_Normal);
 	
 	vec4 vertexM = gl_TextureMatrix[0] * gl_ModelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
 	

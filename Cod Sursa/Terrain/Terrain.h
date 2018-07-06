@@ -49,7 +49,7 @@ public:
 	void addVegetation(Vegetation* veg, string grassShader){_veg = veg; _grassShader = grassShader;} 
 	void initializeVegetation() { _veg->initialize(_grassShader);}
 	void toggleVegetation(bool state){ _veg->toggleRendering(state); }
-	void toggleReflexionRendering(bool state){_drawInReflexion = state; }
+	void toggleRenderingParams(bool state,vec4& ambientcolor){_drawInReflexion = state; _ambientColor = ambientcolor; }
 	bool postLoad();
 	bool isPostLoaded() {return _postLoaded;}
 private:
@@ -71,6 +71,7 @@ private:
 	Texture2D*				m_pTerrainDiffuseMap;
 	Vegetation*             _veg;
 	string                  _grassShader;
+	vec4                    _ambientColor;
 	
 };
 

@@ -55,7 +55,7 @@ void TerrainManager::createThreadedTerrains(vector<TerrainInfo>& terrains)
 	initialize();	
 }
 
-void TerrainManager::drawTerrains(bool drawInactive, bool drawInReflexion)
+void TerrainManager::drawTerrains(bool drawInactive, bool drawInReflexion,vec4& ambientColor)
 {
 	if(!_loaded) return;
 	if(_resDB.size() > 1)
@@ -63,7 +63,7 @@ void TerrainManager::drawTerrains(bool drawInactive, bool drawInReflexion)
 		for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
 		{
 			_terrain = (Terrain*)_resDBiter->second;
-			drawTerrain(drawInactive,drawInReflexion);
+			drawTerrain(drawInactive,drawInReflexion,ambientColor);
 			
 		}
 	}
@@ -75,12 +75,12 @@ void TerrainManager::drawTerrains(bool drawInactive, bool drawInReflexion)
 	else return;
 }
 
-void TerrainManager::drawTerrain(bool drawInactive, bool drawInReflexion)
+void TerrainManager::drawTerrain(bool drawInactive, bool drawInReflexion,vec4& ambientColor)
 {
 	if(drawInactive) _terrain->setLoaded(true);
 	else _terrain->restoreLoaded();
 
-	_terrain->toggleReflexionRendering(drawInReflexion);
+	_terrain->toggleRenderingParams(drawInReflexion,ambientColor);
 	_terrain->draw();
 }
 
@@ -110,9 +110,11 @@ void TerrainManager::initialize()
 	_loaded = true;
 }
 
-void TerrainManager::drawInfinitePlane(const vec3& eye, F32 max_distance,FrameBufferObject& _fbo)
+void TerrainManager::drawInfinitePlane(F32 max_distance,FrameBufferObject& _fbo)
 {
+	
 	if(!_loaded) return;
+	const vec3& eye = Camera::getInstance().getEye();
 	ParamHandler&  par = ParamHandler::getInstance();
 	if(!_computedMinHeight)
 	{

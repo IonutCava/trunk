@@ -3,8 +3,8 @@
 #include "Headers/ParamHandler.h"
 #include "Managers/SceneManager.h"
 #include "Managers/TerrainManager.h"
-#include "Scenes/MainScene.h"
-#include "Scenes/CubeScene.h"
+
+#include "SceneList.h"
 
 namespace XML
 {
@@ -19,6 +19,7 @@ namespace XML
 		par.setParam("scriptLocation",pt.get("scriptLocation","XML"));
 		par.setParam("assetsLocation",pt.get("assets","Assets"));
 		par.setParam("scenesLocation",pt.get("scenes","Scenes"));
+		par.setParam("serverAdress",pt.get("server","127.0.0.1"));
 
 		loadConfig(par.getParam<string>("scriptLocation") + "/" + pt.get("config","config.xml"));
 
@@ -150,7 +151,6 @@ namespace XML
 			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y"); 
 			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
 			model.type = MESH;
-			model.format = format;
 			SceneManager::getInstance().addModel(model);
 		}
 		for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); ++it )
@@ -170,7 +170,6 @@ namespace XML
 			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y"); 
 			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
 			model.type = VEGETATION;
-			model.format = format;
 			SceneManager::getInstance().addModel(model);
 		}
 	}

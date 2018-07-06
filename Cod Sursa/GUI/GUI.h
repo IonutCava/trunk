@@ -33,7 +33,7 @@ public:
 		_dimensions(dimensions),
 		_color(color),
 		_callbackFunction(callback)
-		/*_image(image)*/{};
+		/*_image(image)*/{_pressed = false; _highlight = false;};
 
 	string _text;
 	vec2 _position;
@@ -55,6 +55,10 @@ public:
 	void addButton(string id, string text, vec2& position, vec2& dimensions, vec3& color,ButtonCallback callback);
 	void modifyText(string id, char* format, ...);
 
+	void clickCheck();
+	void clickReleaseCheck();
+	void checkItem(int x, int y);
+	
 	~GUI();
 private:
 	void drawText();

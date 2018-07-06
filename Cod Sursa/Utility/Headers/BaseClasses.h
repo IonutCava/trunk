@@ -29,7 +29,6 @@ public:
 	vec3 scale;
 	vec3 position;
 	vec3 orientation;
-	string format;
 	GEOMETRY_TYPE type;
 };
 

@@ -34,15 +34,10 @@ Engine::Engine() :
 	 time = 0;
 	 timebase = 0;
 	 angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
-	 firstPersonCamera = true;
 	 m_bWireframe = false;
  
 	 tip = 0, turn = 0;
 	 mainWindowId = -1;
-	 EpochTime = 0;
-	 update_time = 0.0f;
-	 update_time2 = 0.0f;
-	 update_time3 = 0.0f;
 	 //END CONSTRUCTOR
 }
 
@@ -76,10 +71,6 @@ void Engine::DrawScene()
 	_scene.render();
 	_scene.processInput();
 	_scene.processEvents(abs(GETTIME()));
-	
-	
-	ProcessRenderingInput();
-	
 }
 
 void Engine::ToggleWireframeRendering()
@@ -91,38 +82,11 @@ void Engine::ToggleWireframeRendering()
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void Engine::ProcessRenderingInput()
-{
-
-	
-
-}
-
 
 void Engine::RefreshMetrics()
 {
 	time=(int)(GETTIME()*1000);
 	if (time - timebase > 1000) timebase = time;		
-}
-
-void printHello(boost::any data, CallbackParam type)
-{
-	/*if(type == TYPE_CHAR)
-		cout << "Hello from: " << boost::any_cast<char*>(data) << endl;
-	else if(type == TYPE_STRING)
-		cout << "Hello from: " << boost::any_cast<string>(data) << endl;
-	else if(type == TYPE_FLOAT)
-		cout << "Hello from: " << boost::any_cast<F32>(data) << endl;
-	else if(type == TYPE_INTEGER)
-		cout << "Hello from: " << boost::any_cast<int>(data) << endl;
-	else*/
-	cout << GETTIME() << "Hello " << boost::this_thread::get_id() << endl;
-}
-
-/*Test Button function*/
-void TheButtonCallback()
-{
-	cout << "I have been called" << endl;
 }
 
 void Engine::Initialize(int w, int h)
@@ -132,39 +96,13 @@ void Engine::Initialize(int w, int h)
 	_GFX.setApi(OpenGL32);
 	_GFX.initHardware();
 	ZPR::Init();
-	ZPR::SelectionFunc(DrawSceneStatic);    /* Selection mode draw function */
-	ZPR::PickFunc(Pick);              /* Pick event client callback   */
     glutDisplayFunc(DrawSceneStatic);
 	glutIdleFunc(Idle);
 	
-
 	_camera.setEye(vec3(200,150,200));
-	_gui.addText("fpsDisplay",           //Unique ID
-		                       vec3(60,60,0),          //Position
-							   GLUT_BITMAP_8_BY_13,    //Font
-							   vec3(0.0f,0.2f, 1.0f),  //Color
-							   "HELLO! FPS: %s",0);    //Text and arguments
-	_gui.addText("timeDisplay",
-								vec3(60,70,0),
-								GLUT_BITMAP_8_BY_13,
-								vec3(0.6f,0.2f,0.2f),
-								"Elapsed time: %5.0f",GETTIME());
+
 	F32 fogColor[4] = {0.5, 0.5, 0.5, 1.0}; 
-	_GFX.enableFog(0.3f,fogColor);
-	_gui.addButton("testButton","click me",vec2(20,20),vec2(40,40),vec3(0.3f,0.2f,0.6f),TheButtonCallback);
-/*
-	int ev = 1;
-	char* ev2 = "aha";
-	Event *_event = new Event(30,true,100,&printHello,string("Hello from stupid thread"),TYPE_STRING);
-	Event *_event2 = new Event(2000,true,200,&printHello,ev,TYPE_INTEGER);
-	Event *_event3 = new Event(300,true,10,&printHello,ev2,TYPE_CHAR);
-	Event *_event4 = new Event(200,true,20,&printHello,1.0f,TYPE_FLOAT);
-	Text3D* t = new Text3D();
-	t->getName() = "test text";
-	t->getText() = "Test text to display";
-	cout << "Test: " << t->getName() <<  " has text: " << t->getText() << endl;
-	*/
-	
+	//_GFX.enableFog(0.3f,fogColor);
 }
 
 void Engine::Quit()

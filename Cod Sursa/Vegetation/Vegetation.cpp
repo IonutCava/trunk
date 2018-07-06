@@ -51,10 +51,7 @@ void Vegetation::draw(bool drawInReflexion)
 	_grassShader->unbind();
 	glDisable(GL_BLEND);
 
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-		DrawTrees(drawInReflexion);
-	glPopAttrib();
-
+	DrawTrees(drawInReflexion);
 }
 
 
@@ -179,10 +176,7 @@ bool Vegetation::generateTrees()
 
 void Vegetation::DrawTrees(bool drawInReflexion)
 {
-	glPushAttrib(GL_POLYGON_BIT);
-	glDisable(GL_CULL_FACE);
-		_terrain.getQuadtree().DrawTrees(drawInReflexion);
-	glPopAttrib();
+	_terrain.getQuadtree().DrawTrees(drawInReflexion);
 }
 
 void Vegetation::DrawGrass(int index,bool drawInReflexion)

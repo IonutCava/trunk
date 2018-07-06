@@ -17,7 +17,7 @@ void Guardian::LoadApplication(string entryPoint)
 	
 	LoadSettings(); //ToDo: This should be moved up so that it is the first instruction Guardian executes! - Ionut Cava
 	cout << "Initializing the rendering engine" << endl;
-	engine.Initialize(par.getParam<U32>("windowWidth"),par.getParam<U32>("windowHeight"));
+	engine.Initialize((int)par.getParam<F32>("windowWidth"),(int)par.getParam<F32>("windowHeight"));
 	cout << "Initializing the PhysX engine!" << endl;
     PhysX::getInstance().setParameters(-9.81f,par.getParam<bool>("showPhysXErrors"),1.0f);
 	StartPhysX();
