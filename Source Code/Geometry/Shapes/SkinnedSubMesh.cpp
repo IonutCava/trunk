@@ -89,11 +89,10 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
             const vec4<F32>& wgh = parentVB->getBoneWeights(idx);
             const vec3<F32>& curentVert = parentVB->getPosition(idx);
 
-            F32 fwgh = 1.0f - (wgh.x + wgh.y + wgh.z);
             bb.Add((wgh.x * (transforms[ind.b[0]] * curentVert)) +
                    (wgh.y * (transforms[ind.b[1]] * curentVert)) +
                    (wgh.z * (transforms[ind.b[2]] * curentVert)) +
-                   (fwgh  * (transforms[ind.b[3]] * curentVert)));
+                   (wgh.w * (transforms[ind.b[3]] * curentVert)));
         }
 
         bb.setComputed(true);

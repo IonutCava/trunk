@@ -67,7 +67,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         F32       _tangent;
         vec4<U8>  _color;
         vec2<F32> _texcoord;
-        vec4<F32> _weights;
+        P32       _weights;
         P32       _indices;
     };
 
@@ -157,8 +157,16 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         return _data[index]._indices;
     }
 
-    inline const vec4<F32>& getBoneWeights(U32 index) const {
+    inline P32 getBoneWeightsPacked(U32 index) const {
         return _data[index]._weights;
+    }
+
+    inline vec4<F32> getBoneWeights(U32 index) const {
+        const P32& weight = _data[index]._weights;
+        return vec4<F32>(CHAR_TO_FLOAT_SNORM(weight.b[0]),
+                         CHAR_TO_FLOAT_SNORM(weight.b[1]),
+                         CHAR_TO_FLOAT_SNORM(weight.b[2]),
+                         CHAR_TO_FLOAT_SNORM(weight.b[3]));
     }
 
     virtual bool queueRefresh() = 0;
@@ -290,13 +298,22 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
     }
 
     inline void modifyBoneWeights(U32 index, const vec4<F32>& weights) {
+        P32 boneWeights;
+        boneWeights.b[0] = FLOAT_TO_CHAR_SNORM(weights.x);
+        boneWeights.b[1] = FLOAT_TO_CHAR_SNORM(weights.y);
+        boneWeights.b[2] = FLOAT_TO_CHAR_SNORM(weights.z);
+        boneWeights.b[3] = FLOAT_TO_CHAR_SNORM(weights.w);
+        modifyBoneWeights(index, boneWeights);
+    }
+
+    inline void modifyBoneWeights(U32 index, P32 packedWeights) {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
                       (_staticBuffer == true && !_data.empty()),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
-        _data[index]._weights = weights;
+        _data[index]._weights = packedWeights;
         _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = true;
     }
 

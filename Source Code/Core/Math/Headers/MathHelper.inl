@@ -88,9 +88,21 @@ inline F32 FRACT(const F32 floatValue) {
     return to_float(fmod(floatValue, 1.0f));
 }
 
-//Helper method to go from a float to packed char
+///Helper methods to go from a float [0 ... 1] to packed char and back
+inline U8 FLOAT_TO_CHAR_SNORM(const F32 value) {
+    return to_ubyte(std::min(255, (I32)(value * 256.0f)));
+}
+
 inline U8 FLOAT_TO_CHAR(const F32 value) {
     return to_ubyte(((value + 1.0f) * 0.5f) * 255.0f);
+}
+
+inline F32 CHAR_TO_FLOAT(const U8 value) {
+    return ((value / 255.0f) * 2.0f) - 1.0f;
+}
+
+inline F32 CHAR_TO_FLOAT_SNORM(const U8 value) {
+    return value / 256.0f;
 }
 
 // Pack 3 values into 1 float

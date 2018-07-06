@@ -102,8 +102,8 @@ class Material : public Resource {
         U8  _textureCount;
 
         ShaderData()
-            : _diffuse(vec4<F32>(vec3<F32>(1.0f) / 1.5f, 1)),
-              _ambient(vec4<F32>(vec3<F32>(1.0f) / 5.0f, 1)),
+            : _diffuse(vec4<F32>(VECTOR3_UNIT / 1.5f, 1)),
+              _ambient(vec4<F32>(VECTOR3_UNIT / 5.0f, 1)),
               _specular(0.8f, 0.8f, 0.8f, 1.0f),
               _emissive(0.6f, 0.6f, 0.6f, 1.0f),
               _shininess(5),

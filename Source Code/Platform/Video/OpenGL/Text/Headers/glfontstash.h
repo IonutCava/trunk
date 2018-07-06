@@ -101,7 +101,7 @@ static void glfons__renderDraw(void* userPtr,
     glEnableVertexAttribArray(3);
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2,  (char*)0 + (vertDataSize));
     glEnableVertexAttribArray(1);
-    glVertexAttribIPointer(1, 4, GL_UNSIGNED_BYTE, sizeof(unsigned char) * 4, (char*)0 + (2 * vertDataSize));
+    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(unsigned char) * 4, (char*)0 + (2 * vertDataSize));
     
     glDrawArrays(GL_TRIANGLES, 0, nverts);
 }

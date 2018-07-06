@@ -428,7 +428,7 @@ void GFXDevice::drawBox3D(IMPrimitive& primitive,
     // Create the object
     primitive.beginBatch(true, 16);
     // Set it's color
-    primitive.attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), color);
+    primitive.attribute4f(to_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(color));
     // Draw the bottom loop
     primitive.begin(PrimitiveType::LINE_LOOP);
     primitive.vertex(min.x, min.y, min.z);
@@ -496,7 +496,7 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
         }
         // Create the object containing all of the lines
         primitive.beginBatch(true, to_uint(lines.size()) * 2 * 14);
-        primitive.attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), lines[0]._colorStart);
+        primitive.attribute4f(to_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(lines[0]._colorStart));
         // Set the mode to line rendering
         //primitive.begin(PrimitiveType::TRIANGLE_STRIP);
         primitive.begin(PrimitiveType::LINES);
@@ -504,7 +504,7 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
         //vec3<F32> tempVertex;
         // Add every line in the list to the batch
         for (const Line& line : lines) {
-            primitive.attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), line._colorStart);
+            primitive.attribute4f(to_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(line._colorStart));
             /*for (U16 idx : indices) {
                 tempVertex.set(line._startPoint * vertices[idx]);
                 tempVertex *= line._widthStart;
@@ -513,7 +513,7 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
             }*/
             primitive.vertex(line._startPoint);
 
-            primitive.attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), line._colorEnd);
+            primitive.attribute4f(to_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(line._colorEnd));
             /*for (U16 idx : indices) {
                 tempVertex.set(line._endPoint * vertices[idx]);
                 tempVertex *= line._widthEnd;

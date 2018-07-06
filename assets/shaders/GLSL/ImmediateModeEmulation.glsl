@@ -6,7 +6,7 @@ uniform mat4 dvd_WorldMatrix;
 
 void main(){
   _texCoord = inTexCoordData;
-  _color = inColorData / vec4(255.0);
+  _color = inColorData;
   gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix * vec4(inVertexData,1.0);
 } 
 

@@ -22,7 +22,7 @@ void main()
     
     // UV of the vertex. No special space for this one.
     texCoord = inVertexData.xy + vec2(0.5, 0.5);
-    particleColor = inColorData  / vec4(255.0);
+    particleColor = inColorData;
 }
 
 

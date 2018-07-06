@@ -75,11 +75,11 @@ void glVertexArray::destroy() {
 
 /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
 std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
-    bool useColor = _useAttribute[to_uint(VertexAttribute::ATTRIB_COLOR)];
-    bool useNormals = _useAttribute[to_uint(VertexAttribute::ATTRIB_NORMAL)];
-    bool useTangents = _useAttribute[to_uint(VertexAttribute::ATTRIB_TANGENT)];
+    bool useColor     = _useAttribute[to_uint(VertexAttribute::ATTRIB_COLOR)];
+    bool useNormals   = _useAttribute[to_uint(VertexAttribute::ATTRIB_NORMAL)];
+    bool useTangents  = _useAttribute[to_uint(VertexAttribute::ATTRIB_TANGENT)];
     bool useTexcoords = _useAttribute[to_uint(VertexAttribute::ATTRIB_TEXCOORD)];
-    bool useBoneData = _useAttribute[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)];
+    bool useBoneData  = _useAttribute[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)];
 
     size_t prevOffset = sizeof(vec3<F32>);
     if (useNormals) {
@@ -104,7 +104,7 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
 
     if (useBoneData) {
         _attributeOffset[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = to_uint(prevOffset);
-        prevOffset += sizeof(vec4<F32>);
+        prevOffset += sizeof(U32);
         _attributeOffset[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = to_uint(prevOffset);
         prevOffset += sizeof(U32);
     }
@@ -139,10 +139,7 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
         }
 
         if (useBoneData) {
-            _smallData << data._weights.x;
-            _smallData << data._weights.y;
-            _smallData << data._weights.z;
-            _smallData << data._weights.w;
+            _smallData << data._weights.i;
             _smallData << data._indices.i;
         }
     }
@@ -381,7 +378,7 @@ void glVertexArray::uploadVBAttributes() {
 
     if (_useAttribute[colorLoc]) {
         glEnableVertexAttribArray(colorLoc);
-        glVertexAttribIFormat(colorLoc, 4, GL_UNSIGNED_BYTE, _attributeOffset[colorLoc]);
+        glVertexAttribFormat(colorLoc, 4, GL_UNSIGNED_BYTE, GL_TRUE, _attributeOffset[colorLoc]);
         glVertexAttribBinding(colorLoc, 0);
     } else {
         glDisableVertexAttribArray(colorLoc);
@@ -416,8 +413,8 @@ void glVertexArray::uploadVBAttributes() {
 
         glEnableVertexAttribArray(boneWeightLoc);
         glEnableVertexAttribArray(boneIndiceLoc);
-        glVertexAttribFormat(boneWeightLoc, 4, GL_FLOAT, GL_FALSE, _attributeOffset[boneWeightLoc]);
-        glVertexAttribIFormat(boneIndiceLoc,1, GL_UNSIGNED_INT, _attributeOffset[boneIndiceLoc]);
+        glVertexAttribFormat(boneWeightLoc, 4, GL_UNSIGNED_BYTE, GL_TRUE, _attributeOffset[boneWeightLoc]);
+        glVertexAttribIFormat(boneIndiceLoc, 4, GL_UNSIGNED_BYTE, _attributeOffset[boneIndiceLoc]);
         glVertexAttribBinding(boneWeightLoc, 0);
         glVertexAttribBinding(boneIndiceLoc, 0);
     } else {

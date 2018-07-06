@@ -79,15 +79,14 @@ void CLAMP(T& n, const T min, const T max);
 template <typename T>
 T CLAMPED(const T& n, const T min, const T max);
 
-///Helper method to go from a float to packed char
+///Helper methods to go from a float to packed char and back
 U8 FLOAT_TO_CHAR(const F32 value);
+U8 FLOAT_TO_CHAR_SNORM(const F32 value);
+F32 CHAR_TO_FLOAT(const U8 value);
+F32 CHAR_TO_FLOAT_SNORM(const U8 value);
 
 /// Helper method to emulate GLSL
 F32 FRACT(const F32 floatValue);
-
-/// Packs a floating point value into the [0...255] range (thx sqrt[-1] of
-/// opengl.org forums)
-U8 PACK_FLOAT(const F32 floatValue);
 
 // Pack 3 values into 1 float
 F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z);
@@ -281,6 +280,13 @@ vec4<F32> ToFloatColor(const vec4<U8>& byteColor);
 vec3<F32> ToFloatColor(const vec3<U8>& byteColor);
 vec4<F32> ToFloatColor(const vec4<U32>& uintColor);
 vec3<F32> ToFloatColor(const vec3<U32>& uintColor);
+
+
+inline F32 PACK_VEC3_SNORM(const F32 x, const F32 y, const F32 z) {
+    return PACK_FLOAT(FLOAT_TO_CHAR_SNORM(x),
+                      FLOAT_TO_CHAR_SNORM(y),
+                      FLOAT_TO_CHAR_SNORM(z));
+}
 
 inline F32 PACK_VEC3(const F32 x, const F32 y, const F32 z) {
     return PACK_FLOAT(FLOAT_TO_CHAR(x),

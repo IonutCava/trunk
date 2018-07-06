@@ -94,7 +94,7 @@ void NavMeshDebugDraw::begin(duDebugDrawPrimitives prim, F32 size) {
             assert(prim == DU_DRAW_QUADS);
     }
 
-    _primitive->attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), vec4<U8>(255, 255, 255, 128));
+    _primitive->attribute4f(to_uint(AttribLocation::VERTEX_COLOR), vec4<F32>(1.0f, 1.0f, 1.0f, 0.5f));
     _primitive->begin(_primType);
 }
 
@@ -107,12 +107,11 @@ void NavMeshDebugDraw::vertex(const F32 x, const F32 y, const F32 z,
         color = _color;
     }
 
-    U8 colorVec[4];
-    rcCol(color, colorVec[0], colorVec[1], colorVec[2], colorVec[3]);
-    colorVec[3] = 64;
+    vec4<U8> colorVec;
+    rcCol(color, colorVec.r, colorVec.g, colorVec.b, colorVec.a);
+    colorVec.a = 64;
 
-    _primitive->attribute4ub(to_uint(AttribLocation::VERTEX_COLOR), colorVec[0], colorVec[1],
-                             colorVec[2], colorVec[3]);
+    _primitive->attribute4f(to_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(colorVec));
     _primitive->vertex(x, y, z);
 }
 

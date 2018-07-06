@@ -415,51 +415,50 @@ bool GL_API::initShaders() {
         ShaderType::VERTEX,
         "layout(location = " +
             std::to_string(to_uint(AttribLocation::VERTEX_POSITION)) +
-            ") in vec3  inVertexData;",
+            ") in vec3 inVertexData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
             std::to_string(to_uint(AttribLocation::VERTEX_COLOR)) +
-            ") in uvec4  inColorData;",
+            ") in vec4 inColorData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
             std::to_string(to_uint(AttribLocation::VERTEX_NORMAL)) +
-            ") in float  inNormalData;",
+            ") in float inNormalData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
             std::to_string(to_uint(AttribLocation::VERTEX_TEXCOORD)) +
-            ") in vec2  inTexCoordData;",
+            ") in vec2 inTexCoordData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
             std::to_string(to_uint(AttribLocation::VERTEX_TANGENT)) +
-            ") in float  inTangentData;",
+            ") in float inTangentData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
             std::to_string(to_uint(AttribLocation::VERTEX_BONE_WEIGHT)) +
-            ") in vec4  inBoneWeightData;",
+            ") in vec4 inBoneWeightData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
             std::to_string(to_uint(AttribLocation::VERTEX_BONE_INDICE)) +
-            ") in uint inBoneIndiceData;",
+            ") in uvec4 inBoneIndiceData;",
         lineOffsets);
-
     
     appendToShaderHeader(
         ShaderType::VERTEX,

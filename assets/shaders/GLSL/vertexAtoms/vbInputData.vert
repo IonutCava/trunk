@@ -25,7 +25,7 @@ void computeData(){
     dvd_drawID  = gl_BaseInstanceARB;
     dvd_Vertex  = vec4(inVertexData,1.0);
     dvd_Normal  = UNPACK_FLOAT(inNormalData);
-    dvd_Color   = inColorData / vec4(255.0);
+    dvd_Color   = inColorData;
     dvd_Tangent = UNPACK_FLOAT(inTangentData); 
 
 #   if defined(USE_GPU_SKINNING)
