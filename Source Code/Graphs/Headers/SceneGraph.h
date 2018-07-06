@@ -76,6 +76,8 @@ class SceneGraph : private NonCopyable, public FrameListener {
 
     void deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd);
 
+    void onCameraUpdate(Camera& camera);
+
    protected:
     void onNodeDestroy(SceneGraphNode& oldNode);
     void onNodeAdd(SceneGraphNode& newNode);

@@ -146,6 +146,10 @@ bool SceneManager::frameEnded(const FrameEvent& evt) {
     return Attorney::SceneManager::frameEnded(*_activeScene);
 }
 
+void SceneManager::onCameraUpdate(Camera& camera) {
+    GET_ACTIVE_SCENEGRAPH().onCameraUpdate(camera);
+}
+
 void SceneManager::updateSceneState(const U64 deltaTime) {
     // Update internal timers
     _elapsedTime += deltaTime;

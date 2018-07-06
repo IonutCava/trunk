@@ -11,7 +11,6 @@ namespace Divide {
 
 PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::ComponentType::PHYSICS, parentSGN),
-      _ignoreView(false),
       _physicsAsset(nullptr),
       _physicsCollisionGroup(PhysicsGroup::NODE_COLLIDE_IGNORE),
       _transform(MemoryManager_NEW Transform()),
@@ -58,6 +57,15 @@ void PhysicsComponent::useDefaultTransform(const bool state) {
         MemoryManager::DELETE(_transform);
         reset();
     }
+}
+
+void PhysicsComponent::ignoreView(const bool state, const I64 cameraGUID) {
+    _ignoreViewSettings._cameraGUID = cameraGUID;
+}
+
+void PhysicsComponent::setViewOffset(const vec3<F32>& posOffset, const mat4<F32>& rotationOffset) {
+    _ignoreViewSettings._posOffset.set(posOffset);
+    _ignoreViewSettings._transformOffset.set(rotationOffset);
 }
 
 void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {
@@ -341,8 +349,13 @@ bool PhysicsComponent::popTransforms() {
 bool PhysicsComponent::isParentTransformDirty(bool interp) const {
     SceneGraphNode_ptr parent = _parentSGN.getParent().lock();
     while (parent != nullptr) {
-        if(interp ? parent->getComponent<PhysicsComponent>()->_dirtyInterp
-                  : parent->getComponent<PhysicsComponent>()->_dirty) {
+        PhysicsComponent* parentComp = parent->getComponent<PhysicsComponent>();
+        if (parentComp->_ignoreViewSettings._cameraGUID != -1) {
+            parentComp->_dirty = parentComp->_dirtyInterp = true;
+        }
+
+        if(interp ? parentComp->_dirtyInterp
+                  : parentComp->_dirty) {
             return true;
         }
         parent = parent->getParent().lock();
@@ -359,11 +372,12 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor) {
     bool dirty = (_dirtyInterp ||
                   _prevInterpValue != interpolationFactor ||
                   isParentTransformDirty(true));
+
     if (dirty) {
+        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
         _worldMatrixInterp = mat4<F32>(getPosition(interpolationFactor, true),
                                        getScale(interpolationFactor, true),
                                        GetMatrix(getOrientation(interpolationFactor, true)));
-        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
         if (grandParent) {
             _worldMatrixInterp *=
                  grandParent->getComponent<PhysicsComponent>()->getWorldMatrix(interpolationFactor);
@@ -372,9 +386,8 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor) {
 
     }
 
-
-    if (ignoreView()) {
-        _worldMatrixInterp = _worldMatrixInterp * GFX_DEVICE.getMatrix(MATRIX::VIEW_INV);
+    if (_ignoreViewSettings._cameraGUID != -1) {
+        _worldMatrixInterp = _worldMatrixInterp * _ignoreViewSettings._transformOffset;
     }
 
     return _worldMatrixInterp;
@@ -393,8 +406,8 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix() {
         _dirty = false;
     }
 
-    if (ignoreView()) {
-        _worldMatrix = _worldMatrix * GFX_DEVICE.getMatrix(MATRIX::VIEW_INV);
+    if (_ignoreViewSettings._cameraGUID != -1) {
+        _worldMatrix = _worldMatrix * _ignoreViewSettings._transformOffset;
     }
 
     return _worldMatrix;
@@ -429,8 +442,8 @@ vec3<F32> PhysicsComponent::getPosition(D32 interpolationFactor,
     vec3<F32> position;
     if (_transform) {
         position.set(Lerp(_prevTransformValues._translation,
-                            _transform->getPosition(),
-                            to_float(interpolationFactor)));
+                          _transform->getPosition(),
+                           to_float(interpolationFactor)));
     } else {
         position.set(0.0f);
     }
@@ -452,8 +465,8 @@ Quaternion<F32> PhysicsComponent::getOrientation(D32 interpolationFactor,
     
     if (_transform) {
         orientation.set(Slerp(_prevTransformValues._orientation,
-                                _transform->getOrientation(),
-                                to_float(interpolationFactor)));
+                              _transform->getOrientation(),
+                              to_float(interpolationFactor)));
     } else {
         orientation.identity();
     }

@@ -14,7 +14,7 @@ namespace {
     U64 g_sleepThresholdMS = 5UL;
 };
 
-U64 Task::_currentTime = 0UL;
+std::atomic<U64> Task::_currentTime(0UL);
 
 Task::Task(ThreadPool& tp, U64 tickInterval, I32 numberOfTicks,
            const DELEGATE_CBK<>& f)
@@ -74,8 +74,15 @@ void Task::run() {
     Application& app = Application::getInstance();
 
     _done = !_callback;
+
+    I32 tickCountTemp = 0;
+    U64 tickIntervalTemp = 0;
+    U64 currentTimeTemp = 0;
     while (true) {
-        if (_numberOfTicks == 0) {
+        tickCountTemp = _numberOfTicks;
+        tickIntervalTemp = _tickInterval;
+        currentTimeTemp = _currentTime;
+        if (tickCountTemp == 0) {
             _end = true;
         }
 
@@ -87,16 +94,16 @@ void Task::run() {
             continue;
         }
 
-        if (_currentTime >= (lastCallTime + _tickInterval)) {
+        if (currentTimeTemp >= (lastCallTime + tickIntervalTemp)) {
             _callback();
-            if (_numberOfTicks > 0) {
+            if (tickCountTemp > 0) {
                 _numberOfTicks--;
             }
-            lastCallTime = _currentTime;
+            lastCallTime = currentTimeTemp;
             // Sleep does not guarantee a maximum wait time, just a minimum, so g_sleepThresholdMS should be enough margin
-            if (_tickInterval > Time::MillisecondsToMicroseconds(g_sleepThresholdMS)) {
+            if (tickIntervalTemp > Time::MillisecondsToMicroseconds(g_sleepThresholdMS)) {
                 // If the tick interval is over 'g_sleepThreshold', sleep for at least half of the duration
-                std::this_thread::sleep_for(std::chrono::microseconds(_tickInterval / 2));
+                std::this_thread::sleep_for(std::chrono::microseconds(tickIntervalTemp / 2));
             }
         }
 

@@ -232,6 +232,7 @@ class Camera : public Resource {
     }
 
     /// Getter methods.
+    inline const Quaternion<F32>& getRotation() const { return _orientation; }
     inline F32 getMouseSensitivity() const { return _mouseSensitivity; }
 
     inline F32 getMoveSpeedFactor() const { return _moveSpeedFactor; }

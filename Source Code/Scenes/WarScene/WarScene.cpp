@@ -495,7 +495,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     SceneGraphNode_ptr firstPersonFlag = _sceneGraph.getRoot().addNode(*flagNode, "FirstPersonFlag");
     firstPersonFlag->lockVisibility(true);
     flagPComp = firstPersonFlag->getComponent<PhysicsComponent>();
-    flagPComp->ignoreView(true);
+    flagPComp->ignoreView(true, renderState().getCamera().getGUID());
     flagPComp->setScale(0.0015f);
     flagPComp->setPosition(1.25f, -1.5f, 0.15f);
     flagPComp->rotate(-20.0f, -70.0f, 50.0f);

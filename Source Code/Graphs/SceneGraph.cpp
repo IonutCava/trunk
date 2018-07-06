@@ -105,6 +105,10 @@ void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _octree->update(deltaTime);
 }
 
+void SceneGraph::onCameraUpdate(Camera& camera) {
+    _root->onCameraUpdate(camera.getGUID(), camera.getEye(), camera.getViewMatrix().getInverse());
+}
+
 void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_cwptr>& selectionHits) const {
     _root->intersect(ray, start, end, selectionHits);
 }

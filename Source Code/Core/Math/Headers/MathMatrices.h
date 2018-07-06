@@ -296,7 +296,7 @@ class mat3 {
                 (this->mat[0] * this->mat[7] * this->mat[5]));
     }
 
-    inline void inverse() const {
+    inline void inverse() {
         T idet = this->det();
         assert(!IS_ZERO(idet));
         idet = static_cast<T>(1) / idet;
@@ -768,6 +768,10 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
 
     T &operator[](I32 i) { return this->mat[i]; }
     const T &operator[](I32 i) const { return this->mat[i]; }
+
+    inline vec3<T> getTranslation() const {
+        return vec3<T>(mat[12], mat[13], mat[14]);
+    }
 
     inline mat4 getRotation(void) const {
         return mat4(this->mat[0], this->mat[1], this->mat[2], 0, this->mat[4],

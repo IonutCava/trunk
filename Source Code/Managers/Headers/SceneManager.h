@@ -204,8 +204,9 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     void initPostLoadState();
 
   protected:
-    bool frameStarted(const FrameEvent& evt);
-    bool frameEnded(const FrameEvent& evt);
+    bool frameStarted(const FrameEvent& evt) override;
+    bool frameEnded(const FrameEvent& evt) override;
+    void onCameraUpdate(Camera& camera);
 
   private:
     SceneManager();
@@ -246,6 +247,10 @@ class SceneManagerKernel {
    private:
     static void initPostLoadState() {
         Divide::SceneManager::getInstance().initPostLoadState();
+    }
+
+    static void onCameraUpdate(Camera& camera) {
+        Divide::SceneManager::getInstance().onCameraUpdate(camera);
     }
 
     friend class Divide::Kernel;

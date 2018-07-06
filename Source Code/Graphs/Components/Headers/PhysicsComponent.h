@@ -113,6 +113,16 @@ class PhysicsComponent : public SGNComponent {
            std::array<bool, to_const_uint(TransformType::COUNT)> _transformFlags;
     };
 
+    struct IgnoreViewSettings {
+        IgnoreViewSettings() : _cameraGUID(-1)
+        {
+        }
+
+        I64 _cameraGUID;
+        vec3<F32> _posOffset;
+        mat4<F32> _transformOffset;
+    };
+
    public:
     void update(const U64 deltaTime);
 
@@ -217,15 +227,13 @@ class PhysicsComponent : public SGNComponent {
     void pushTransforms();
     bool popTransforms();
     
-    inline bool ignoreView() const { return _ignoreView; }
-
-    inline void ignoreView(const bool state) { 
-        if (_ignoreView != state) {
-            _ignoreView = state;
-            _dirty = true;
-            _dirtyInterp = true;
-        }
+    inline bool ignoreView(const I64 cameraGUID) const { 
+        return _ignoreViewSettings._cameraGUID == cameraGUID;
     }
+
+    void setViewOffset(const vec3<F32>& posOffset, const mat4<F32>& rotationOffset);
+
+    void ignoreView(const bool state, const I64 cameraGUID);
 
    protected:
     friend class SceneGraphNode;
@@ -247,7 +255,7 @@ class PhysicsComponent : public SGNComponent {
     bool isParentTransformDirty(bool interp) const;
 
    protected:
-    bool _ignoreView;
+    IgnoreViewSettings _ignoreViewSettings;
     PhysicsAsset* _physicsAsset;
     PhysicsGroup _physicsCollisionGroup;
     Transform* _transform;

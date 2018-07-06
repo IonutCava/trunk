@@ -362,6 +362,26 @@ void SceneGraphNode::frameEnded() {
     }
 }
 
+void SceneGraphNode::onCameraUpdate(const I64 cameraGUID,
+                                    const vec3<F32>& posOffset,
+                                    const mat4<F32>& rotationOffset) {
+
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        getChild(i, childCount).onCameraUpdate(cameraGUID, posOffset, rotationOffset);
+    }
+
+    PhysicsComponent* pComp = getComponent<PhysicsComponent>();
+    if (pComp && pComp->ignoreView(cameraGUID)) {
+        U32 childCount2 = getChildCount();
+        for (U32 i = 0; i < childCount2; ++i) {
+            getChild(i, childCount2)._boundingBoxDirty = true;
+        }
+        pComp->setViewOffset(posOffset, rotationOffset);
+    }
+    
+}
+
 bool SceneGraphNode::cullNode(const Camera& currentCamera,
                               Frustum::FrustCollision& collisionType,
                               RenderStage currentStage) const {
