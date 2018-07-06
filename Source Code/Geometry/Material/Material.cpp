@@ -32,7 +32,6 @@ Material::Material()
       _shaderThreadedLoad(true),
       _hardwareSkinning(false),
       _useAlphaTest(false),
-      _isReflective(false),
       _dumpToFile(true),
       _translucencyCheck(true),
       _shadingMode(ShadingMode::COUNT),
@@ -102,7 +101,6 @@ Material* Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_translucencyCheck = base._translucencyCheck;
     cloneMat->_dumpToFile = base._dumpToFile;
     cloneMat->_useAlphaTest = base._useAlphaTest;
-    cloneMat->_isReflective = base._isReflective;
     cloneMat->_doubleSided = base._doubleSided;
     cloneMat->_hardwareSkinning = base._hardwareSkinning;
     cloneMat->_shaderThreadedLoad = base._shaderThreadedLoad;
@@ -434,11 +432,6 @@ bool Material::computeShader(RenderStage renderStage,
         setShaderDefines(renderStage, "USE_DOUBLE_SIDED");
     }
 
-    if (_isReflective) {
-        shader += ".Reflective";
-        setShaderDefines(renderStage, "USE_REFLECTIVE_CUBEMAP");
-    }
-
     // Add the GPU skinning module to the vertex shader?
     if (_hardwareSkinning) {
         setShaderDefines(renderStage, "USE_GPU_SKINNING");
@@ -511,8 +504,9 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
     U32 slotValue = to_uint(slot);
     Texture* crtTexture = _textures[slotValue];
     if (crtTexture && crtTexture->flushTextureState()) {
-        container.push_back(crtTexture->getData());
-        container.back().setHandleLow(slotValue);
+        TextureData& data = crtTexture->getData();
+        data.setHandleLow(slotValue);
+        vectorAlg::emplace_back(container, data);
     }
 }
 
@@ -565,11 +559,6 @@ void Material::setBumpMethod(const BumpMethod& newBumpMethod) {
 
 void Material::setShadingMode(const ShadingMode& mode) { 
     _shadingMode = mode;
-    recomputeShaders();
-}
-
-void Material::setReflective(const bool state) {
-    _isReflective = state;
     recomputeShaders();
 }
 

@@ -343,7 +343,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     // Make the center cylinder reflective
     Material* matInstance = cylinder[0]->getChild(0, temp).getComponent<RenderingComponent>()->getMaterialInstance();
-    matInstance->setReflective(true);
+    matInstance->setShininess(80);
 
     SceneNode* cylinderMeshNW = cylinder[1]->getNode();
     SceneNode* cylinderMeshNE = cylinder[2]->getNode();

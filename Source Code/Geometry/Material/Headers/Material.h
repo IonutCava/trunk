@@ -231,7 +231,6 @@ class Material : public Resource, public FrameListener {
         _shaderData._shininess = value;
     }
 
-    void setReflective(const bool state);
     void setShadingMode(const ShadingMode& mode);
 
     inline void useAlphaTest(const bool state) { _useAlphaTest = state; }
@@ -367,7 +366,6 @@ class Material : public Resource, public FrameListener {
     inline bool isDirty() const { return _dirty; }
     inline bool isDoubleSided() const { return _doubleSided; }
     inline bool useAlphaTest() const { return _useAlphaTest; }
-    inline bool isReflective() const { return _isReflective; }
     // Checks if the shader needed for the current stage is already constructed.
     // Returns false if the shader was already ready.
     bool computeShader(RenderStage renderStage, const bool computeOnAdd);
@@ -402,7 +400,6 @@ class Material : public Resource, public FrameListener {
     bool _translucencyCheck;
     /// use discard if true / blend if otherwise
     bool _useAlphaTest;
-    bool _isReflective;
     bool _doubleSided;
     /// Use shaders that have bone transforms implemented
     bool _hardwareSkinning;

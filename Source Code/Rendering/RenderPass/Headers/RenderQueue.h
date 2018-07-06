@@ -53,7 +53,7 @@ class RenderQueue {
     void postRender(SceneRenderState& renderState, RenderStage renderStage);
     void sort(RenderStage renderStage);
     void refresh();
-    void addNodeToQueue(SceneGraphNode& sgn, const vec3<F32>& eyePos);
+    void addNodeToQueue(SceneGraphNode& sgn, RenderStage stage, const vec3<F32>& eyePos);
     U16 getRenderQueueStackSize() const;
 
     inline RenderBin* getBin(RenderBinType rbType) {

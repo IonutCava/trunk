@@ -242,7 +242,7 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U
         queue.refresh();
         const vec3<F32>& eyePos = _activeScene->renderState().getCameraConst().getEye();
         for (RenderPassCuller::VisibleNode& node : visibleNodes) {
-            queue.addNodeToQueue(*node.second.lock(), eyePos);
+            queue.addNodeToQueue(*node.second.lock(), stage, eyePos);
         }
     }
     

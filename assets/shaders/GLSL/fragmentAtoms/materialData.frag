@@ -9,6 +9,9 @@
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
 #endif
+
+layout(binding = TEXTURE_REFLECTION) uniform samplerCubeArray texEnvironmentCube;
+
 //Normal or BumpMap
 #if defined(COMPUTE_TBN)
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
@@ -23,9 +26,7 @@ layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #endif
 
-#if defined(USE_REFLECTIVE_CUBEMAP)
-layout(binding = TEXTURE_REFLECTION) uniform samplerCubeArray texEnvironmentCube;
-#endif
+
 
 float Gloss(in vec3 bump, in vec2 texCoord)
 {

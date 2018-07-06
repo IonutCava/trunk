@@ -32,10 +32,18 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
     bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
     bool nodeSkinned = parentSGN.getNode<Object3D>()->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
-    if (_materialInstance && !isSubMesh) {
-        _materialInstance->addShaderModifier(RenderStage::SHADOW, "TriangleStrip");
-        _materialInstance->setShaderDefines(RenderStage::SHADOW, "USE_TRIANGLE_STRIP");
+
+    if (_materialInstance) {
+        if (!isSubMesh) {
+            _materialInstance->addShaderModifier(RenderStage::SHADOW, "TriangleStrip");
+            _materialInstance->setShaderDefines(RenderStage::SHADOW, "USE_TRIANGLE_STRIP");
+        }
+        if (_materialInstance->getTexture(ShaderProgram::TextureUsage::REFLECTION) == nullptr) {
+            _materialInstance->setTexture(ShaderProgram::TextureUsage::REFLECTION,
+                GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::ENVIRONMENT)._buffer->getAttachment());
+        }
     }
+
     for (GFXDevice::RenderPackage& pkg : _renderData) {
         pkg._textureData.reserve(ParamHandler::getInstance().getParam<I32>(_ID("rendering.maxTextureSlots"), 16));
     }
@@ -117,12 +125,6 @@ void RenderingComponent::update(const U64 deltaTime) {
     Material* mat = getMaterialInstance();
     if (mat) {
         mat->update(deltaTime);
-        if (mat->isReflective()) {
-            if (mat->getTexture(ShaderProgram::TextureUsage::REFLECTION) == nullptr) {
-                mat->setTexture(ShaderProgram::TextureUsage::REFLECTION,
-                                GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::ENVIRONMENT)._buffer->getAttachment());
-            }
-        }
     }
 
     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
@@ -456,11 +458,12 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
 
     GFXDevice::ShaderBufferList::iterator it;
     for (GFXDevice::RenderPackage& pkg : _renderData) {
-        it = std::find_if(std::begin(pkg._shaderBuffers), std::end(pkg._shaderBuffers),
+        GFXDevice::ShaderBufferList::iterator itEnd = std::end(pkg._shaderBuffers);
+        it = std::find_if(std::begin(pkg._shaderBuffers), itEnd,
             [&slot](const GFXDevice::ShaderBufferBinding& binding)
                     -> bool { return binding._slot == slot; });
 
-        if (it == std::end(pkg._shaderBuffers)) {
+        if (it == itEnd) {
            vectorAlg::emplace_back(pkg._shaderBuffers, slot, &shaderBuffer, bindRange);
         } else {
             it->set(slot, &shaderBuffer, bindRange);
@@ -488,10 +491,10 @@ U32 RenderingComponent::getDrawStateHash(RenderStage renderStage) {
     if (!getMaterialInstance()) {
         return 0L;
     }
-
-    bool depthPass = GFX_DEVICE.isDepthStage();
-    bool shadowStage = GFX_DEVICE.getRenderStage() == RenderStage::SHADOW;
-    bool reflectionStage = GFX_DEVICE.getRenderStage() == RenderStage::REFLECTION;
+    
+    bool shadowStage = renderStage == RenderStage::SHADOW;
+    bool depthPass = renderStage == RenderStage::Z_PRE_PASS || shadowStage;
+    bool reflectionStage = renderStage == RenderStage::REFLECTION;
 
     if (!_materialInstance && depthPass) {
         
@@ -524,6 +527,10 @@ GFXDevice::RenderPackage&
 RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
                                    RenderStage renderStage) {
 
+    static const U32 SCENE_NODE_LOD0_SQ = Config::SCENE_NODE_LOD0 * Config::SCENE_NODE_LOD0;
+    static const U32 SCENE_NODE_LOD1_SQ = Config::SCENE_NODE_LOD1 * Config::SCENE_NODE_LOD1;
+    
+
     GFXDevice::RenderPackage& pkg = _renderData[to_uint(renderStage)];
     pkg.isRenderable(false);
     if (canDraw(sceneRenderState, renderStage) &&
@@ -537,12 +544,12 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
                 _parentSGN
                     .getBoundingSphereConst()
                     .getCenter()
-                    .distance(sceneRenderState
-                                .getCameraConst()
-                                .getEye());
+                    .distanceSquared(sceneRenderState
+                                     .getCameraConst()
+                                     .getEye());
 
-            U8 lodLevelTemp = cameraDistance > Config::SCENE_NODE_LOD0
-                                    ? cameraDistance > Config::SCENE_NODE_LOD1 ? 2 : 1
+            U8 lodLevelTemp = cameraDistance > SCENE_NODE_LOD0_SQ
+                                    ? cameraDistance > SCENE_NODE_LOD1_SQ ? 2 : 1
                                     : 0;
             _lodLevel =
                 std::min(to_ubyte(_parentSGN.getNode()->getLODcount() - 1),

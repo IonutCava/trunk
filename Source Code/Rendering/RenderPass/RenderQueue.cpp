@@ -107,14 +107,14 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node,
     return nullptr;
 }
 
-void RenderQueue::addNodeToQueue(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
+void RenderQueue::addNodeToQueue(SceneGraphNode& sgn, RenderStage stage, const vec3<F32>& eyePos) {
     RenderingComponent* renderingCmp = sgn.getComponent<RenderingComponent>();
     RenderBin* rb = getBinForNode(sgn.getNode(),
                                   renderingCmp
                                     ? renderingCmp->getMaterialInstance()
                                     : nullptr);
     if (rb) {
-        rb->addNodeToBin(sgn, eyePos);
+        rb->addNodeToBin(sgn, stage, eyePos);
     }
 }
 
@@ -148,7 +148,8 @@ void RenderQueue::sort(RenderStage renderStage) {
     _sortingTasks.resize(0);
     for (RenderBin* renderBin : _renderBins) {
         if (renderBin != nullptr) {
-            _sortingTasks.push_back(std::async(std::launch::async | std::launch::deferred,
+            vectorAlg::emplace_back(_sortingTasks, 
+                std::async(std::launch::async | std::launch::deferred,
                 [renderBin, renderStage]() {
                     renderBin->sort(renderStage);
                 }

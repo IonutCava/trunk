@@ -10,7 +10,8 @@
 
 namespace Divide {
 
-RenderBinItem::RenderBinItem(I32 sortKeyA,
+RenderBinItem::RenderBinItem(RenderStage currentStage, 
+                             I32 sortKeyA,
                              I32 sortKeyB,
                              F32 distToCamSq,
                              RenderingComponent& renderable)
@@ -27,7 +28,7 @@ RenderBinItem::RenderBinItem(I32 sortKeyA,
     }
     // Sort by state hash depending on the current rendering stage
     // Save the render state hash value for sorting
-    _stateHash = renderable.getDrawStateHash(GFX_DEVICE.getRenderStage());
+    _stateHash = renderable.getDrawStateHash(currentStage);
 }
 
 /// Sorting opaque items is a 3 step process:
@@ -127,7 +128,7 @@ void RenderBin::refresh() {
     _renderBinStack.reserve(128);
 }
 
-void RenderBin::addNodeToBin(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
+void RenderBin::addNodeToBin(SceneGraphNode& sgn, RenderStage stage, const vec3<F32>& eyePos) {
     I32 keyA = to_uint(_renderBinStack.size() + 1);
     I32 keyB = keyA;
 
@@ -138,10 +139,12 @@ void RenderBin::addNodeToBin(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
         nodeMaterial->getSortKeys(keyA, keyB);
     }
 
-    _renderBinStack.push_back(RenderBinItem(
-        keyA, keyB,
-        sgn.getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos),
-        *renderable));
+    vectorAlg::emplace_back(_renderBinStack, 
+                            stage,
+                            keyA,
+                            keyB,
+                            sgn.getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos),
+                            *renderable);
 }
 
 void RenderBin::preRender(RenderStage renderStage) {}
@@ -152,8 +155,7 @@ void RenderBin::render(const SceneRenderState& renderState,  RenderStage renderS
     isTranslucent() ? SetBit(binPropertyMask, to_uint(RenderBitProperty::TRANSLUCENT))
                     : ClearBit(binPropertyMask, to_uint(RenderBitProperty::TRANSLUCENT));
 
-    // We need to apply different materials for each stage. As nodes are sorted,
-    // this should be very fast
+    // We need to apply different materials for each stage. As nodes are sorted, this should be very fast
     for (const RenderBinItem& item : _renderBinStack) {
         gfx.addToRenderQueue(binPropertyMask,
                              Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));

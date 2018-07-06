@@ -57,7 +57,7 @@ struct RenderBinItem {
     F32 _distanceToCameraSq;
 
     RenderBinItem() : _sortKeyA(-1), _sortKeyB(-1), _stateHash(0), _distanceToCameraSq(-1.0f), _renderable(nullptr) {}
-    RenderBinItem(I32 sortKeyA, I32 sortKeyB, F32 distToCamSq,
+    RenderBinItem(RenderStage currentStage, I32 sortKeyA, I32 sortKeyB, F32 distToCamSq,
                   RenderingComponent& renderable);
 };
 
@@ -111,6 +111,7 @@ class RenderBin {
     virtual void refresh();
 
     virtual void addNodeToBin(SceneGraphNode& sgn,
+                              RenderStage stage,
                               const vec3<F32>& eyePos);
 
     inline const RenderBinItem& getItem(U16 index) const {

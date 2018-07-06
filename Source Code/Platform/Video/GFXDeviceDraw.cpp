@@ -325,13 +325,6 @@ U32 GFXDevice::getLastCullCount(U32 pass) const {
 
 bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
                               GenericDrawCommand& currentIDC) const {
-    DIVIDE_ASSERT(previousIDC.sourceBuffer() && currentIDC.sourceBuffer(),
-                  "GFXDevice::batchCommands error: a command with an invalid "
-                  "source buffer was specified!");
-    DIVIDE_ASSERT(previousIDC.shaderProgram() && currentIDC.shaderProgram(),
-                  "GFXDevice::batchCommands error: a command with an invalid "
-                  "shader program was specified!");
-
     if (previousIDC.compatible(currentIDC) &&
         // Batchable commands must share the same buffer
         previousIDC.sourceBuffer()->getGUID() ==

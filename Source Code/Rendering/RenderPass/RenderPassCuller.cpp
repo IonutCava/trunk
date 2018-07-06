@@ -76,11 +76,12 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
             SceneGraphNode& child = root.getChild(i, childCount);
             VisibleNodeList& container = _perThreadNodeList[i];
             container.resize(0);
-            _cullingTasks.push_back(std::async(launchPolicy,
-                [&]() {
-                    frustumCullNode(child, stage, renderState, container);
-                })
-            );
+            _cullingTasks.push_back(std::async(launchPolicy, 
+                &RenderPassCuller::frustumCullNode, this, 
+                std::ref(child),
+                stage,
+                std::ref(renderState),
+                std::ref(container)));
         }
 
         for (std::future<void>& task : _cullingTasks) {
