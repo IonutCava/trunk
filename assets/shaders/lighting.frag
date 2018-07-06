@@ -7,12 +7,16 @@ varying vec3 vNormalMV;
 varying vec3 vPixToLightMV;
 varying vec3 vLightDirMV;
 
+//Textures
+uniform int textureCount;
 uniform sampler2D texDiffuse0;
 uniform sampler2D texDiffuse1;
 uniform sampler2D texBump;
-uniform vec4      color;
 
-uniform int textureCount;
+//Material properties
+uniform mat4 material;
+
+
 #define MODE_PHONG		0
 #define MODE_BUMP		1
 #define MODE_PARALLAX	2
@@ -47,23 +51,23 @@ void main (void)
 	gl_FragDepth = gl_FragCoord.z;
 	vec4 vPixToLightTBNcurrent = vPixToLightTBN[0];
 	
-	vec4 color = vec4(1.0, 0.0, 0.0, 1.0);
+	vec4 colorOut = vec4(1.0, 0.0, 0.0, 1.0);
 
 
 	if(mode == MODE_PHONG)
-		color = Phong(gl_TexCoord[0].st*tile_factor, vec3(0.0, 0.0, 1.0), vPixToEyeTBN, vPixToLightTBNcurrent);
+		colorOut = Phong(gl_TexCoord[0].st*tile_factor, vec3(0.0, 0.0, 1.0), vPixToEyeTBN, vPixToLightTBNcurrent);
 
 	else if(mode == MODE_RELIEF)
-		color = ReliefMapping(gl_TexCoord[0].st*tile_factor);
+		colorOut = ReliefMapping(gl_TexCoord[0].st*tile_factor);
 		
 	else if(mode == MODE_BUMP)
-		color = NormalMapping(gl_TexCoord[0].st*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, false);
+		colorOut = NormalMapping(gl_TexCoord[0].st*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, false);
 	
 	else if(mode == MODE_PARALLAX)
-		color = NormalMapping(gl_TexCoord[0].st*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, true);
+		colorOut = NormalMapping(gl_TexCoord[0].st*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, true);
 
 
-	gl_FragColor = color;
+	gl_FragColor = colorOut;
 
 }
 
@@ -189,22 +193,35 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN)
 	vec3 N = normalize(vNormalTBN.xyz);
 	vec3 V = normalize(vEyeTBN.xyz);
 	
+	//vec4 ambient = material[0];
+	//vec4 diffuse = material[1];
+	//vec4 specular = material[2];
+	//float shininess = material[3].x;
+	//vec4 emmissive = vec4(material[3].xyx,1.0f);
 	
 //// ECLAIRAGE :
-	vec4 base = color;
-	if(textureCount > 0)
-	{
-		base = texture2D(texDiffuse0, uv);	// Couleur diffuse
-		if(textureCount == 2) base *= texture2D(texDiffuse1, uv);
-	}
 
 	float iDiffuse = max(dot(L, N), 0.0);	// Intensité diffuse
-	float iSpecular = pow(clamp(dot(reflect(-L, N), V), 0.0, 1.0), gl_FrontMaterial.shininess );
+	float iSpecular = pow(clamp(dot(reflect(-L, N), V), 0.0, 1.0), material[3].x );
 	
 	
-	vec4 cAmbient = gl_LightSource[0].ambient * gl_FrontMaterial.ambient;
-	vec4 cDiffuse = gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * iDiffuse;	
-	vec4 cSpecular = gl_LightSource[0].specular * gl_FrontMaterial.specular * iSpecular;	
+	//vec4 cAmbient = gl_LightSource[0].ambient * gl_FrontMaterial.ambient;
+	//vec4 cDiffuse = gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * iDiffuse;	
+	//vec4 cSpecular = gl_LightSource[0].specular * gl_FrontMaterial.specular * iSpecular;	
+	
+	vec4 cAmbient = gl_LightSource[0].ambient * material[0];
+	vec4 cDiffuse = gl_LightSource[0].diffuse * material[1] * iDiffuse;	
+	vec4 cSpecular = gl_LightSource[0].specular * material[2] * iSpecular;	
+	
+	if(textureCount > 0){
+		vec4 base = texture2D(texDiffuse0, uv);	// Couleur diffuse
+		if(textureCount == 2) base += texture2D(texDiffuse1, uv);
+		
+		cAmbient *= base;
+		cDiffuse *= base;
+	}
+
+
 		
 	
 	// Si c'est une lumière SPOT
@@ -238,12 +255,9 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN)
 	{
 
 	}
-
-
-	vec4 color = cAmbient * base + (cDiffuse * base + cSpecular) * att;
-	color.a = base.a;
+	vec4 colorOut = cAmbient + (cDiffuse + cSpecular) * att;
 	
-	return color;	
+	return colorOut;	
 }
 /*
 float ShadowMapping(vec4 vVertexFromLightView, out vec3 vPixPosInDepthMap)

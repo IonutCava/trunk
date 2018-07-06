@@ -6,8 +6,7 @@
 using namespace std;
 
 Mesh::Mesh(const Mesh& old) : Object3D(old),
-							  _visibleToNetwork(old._visibleToNetwork)
-{
+							  _visibleToNetwork(old._visibleToNetwork){
 	
 	vector<SubMesh* >::const_iterator it;
 	_subMeshes.reserve(old._subMeshes.size());
@@ -15,19 +14,13 @@ Mesh::Mesh(const Mesh& old) : Object3D(old),
 		_subMeshes.push_back(*it);
 }
 
-bool Mesh::load(const string& name)
-{
-	if(name.compare(getName()) == 0 && getSubMeshes().size() > 0)
-		return true;
-	else 
-		return false;
+bool Mesh::load(const string& name){
+	_name = name;
+	return true;
 }
 
-bool Mesh::unload()
-{
-	Con::getInstance().printfn("Removing model [ %s ]",getName().c_str());
-	for(_subMeshIterator = getSubMeshes().begin(); _subMeshIterator != getSubMeshes().end();)
-	{
+bool Mesh::unload(){
+	for(_subMeshIterator = getSubMeshes().begin(); _subMeshIterator != getSubMeshes().end();){
 		if((*_subMeshIterator)->unload()){
 			delete (*_subMeshIterator);
 			(*_subMeshIterator) = NULL;
@@ -37,67 +30,56 @@ bool Mesh::unload()
 			 _subMeshIterator++;
 	}
 	getSubMeshes().clear();
-
-	if(!getSubMeshes().empty()) return false;
+	SceneNode::unload();
 	return true;
 }
 
-void Mesh::onDraw()
-{
+void Mesh::onDraw(){
 	//onDraw must be called before any other rendering call (such as "isInView")
 	//in order to properly compute the boundingbox
-	setVisibility(SceneManager::getInstance().getActiveScene()->drawObjects());
-	_bb.Transform(_originalBB,_transform->getMatrix()); 
+	setRenderState(SceneManager::getInstance().getActiveScene()->drawObjects());
+	_boundingBox.Transform(getOriginalBoundingBox(),getTransform()->getMatrix()); 
 	drawBBox();
 	if(!_computedLightShaders) 
 		computeLightShaders();
 }
 
-bool Mesh::getVisibility()
-{
+bool Mesh::getVisibility(){
 	if(!_render || !isInView() || _subMeshes.empty())
 		return false;
 	return true;
 
 }
-void Mesh::computeLightShaders()
-{
+
+void Mesh::computeLightShaders(){
+	getMaterial()->computeLightShaders();
+	Shader* parentShader = getMaterial()->getShader();
 	for(_subMeshIterator = getSubMeshes().begin(); _subMeshIterator != getSubMeshes().end();_subMeshIterator++){
-		Material& m = (*_subMeshIterator)->getMaterial();
-		if(!m.getShader()){
-			if(GFXDevice::getInstance().getDeferredShading())
-				m.setShader(ResourceManager::getInstance().LoadResource<Shader>("DeferredShadingPass1"));
-			else{
-				//vector<Light_ptr>& lights = SceneManager::getInstance().getActiveScene()->getLights();
-				//for(U8 i = 0; i < lights.size(); i++)
-				m.setShader(ResourceManager::getInstance().LoadResource<Shader>("lighting"));
-			}
-		}
+		(*_subMeshIterator)->getMaterial()->setShader(parentShader->getName());
 	}
 	_computedLightShaders = true;
 }
 
-bool Mesh::isInView()
-{
+bool Mesh::isInView(){
 	if(!_render) return false;
 
 	if(!GFXDevice::getInstance().getDepthMapRendering())
 	{
-		vec3 vEyeToChunk = getBoundingBox().getCenter() - Frustum::getInstance().getEyePos();
-		if(vEyeToChunk.length() > SceneManager::getInstance().getTerrainManager()->getGeneralVisibility()) return false;
+		vec3 vEyeToChunk = _boundingBox.getCenter() - Frustum::getInstance().getEyePos();
+		if(vEyeToChunk.length() > SceneManager::getInstance().getActiveScene()->getGeneralVisibility()) return false;
 	}
 
-	vec3 center = getBoundingBox().getCenter();
-	float radius = (getBoundingBox().getMax()-center).length();
+	vec3 center = _boundingBox.getCenter();
+	float radius = (_boundingBox.getMax()-center).length();
 
-	if(!getBoundingBox().ContainsPoint(Frustum::getInstance().getEyePos()))
+	if(!_boundingBox.ContainsPoint(Frustum::getInstance().getEyePos()))
 	{
 		switch(Frustum::getInstance().ContainsSphere(center, radius)) {
 				case FRUSTUM_OUT: 	
 					return false;
 				
 				case FRUSTUM_INTERSECT:	
-					if(Frustum::getInstance().ContainsBoundingBox(getBoundingBox()) == FRUSTUM_OUT)
+					if(Frustum::getInstance().ContainsBoundingBox(_boundingBox) == FRUSTUM_OUT)
 						return false;
 				
 			}
@@ -106,16 +88,16 @@ bool Mesh::isInView()
 }
 
 
-void Mesh::computeBoundingBox()
-{
-	_bb.setMin(vec3(100000.0f, 100000.0f, 100000.0f));
-	_bb.setMax(vec3(-100000.0f, -100000.0f, -100000.0f));
+bool Mesh::computeBoundingBox(){
+	_boundingBox.setMin(vec3(100000.0f, 100000.0f, 100000.0f));
+	_boundingBox.setMax(vec3(-100000.0f, -100000.0f, -100000.0f));
 
 	for(_subMeshIterator = _subMeshes.begin(); _subMeshIterator != _subMeshes.end(); _subMeshIterator++)
-			_bb.Add((*_subMeshIterator)->getBoundingBox());
+			_boundingBox.Add((*_subMeshIterator)->getBoundingBox());
 
-	_bb.isComputed() = true;
-	_originalBB = _bb;
+	_boundingBox.isComputed() = true;
+	setOriginalBoundingBox(_boundingBox);
+	return true;
 }
 
 SubMesh*  Mesh::getSubMesh(const string& name)

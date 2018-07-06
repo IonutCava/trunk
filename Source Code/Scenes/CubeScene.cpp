@@ -34,9 +34,7 @@ void CubeScene::render()
 	//Draw the geometry, saving parameters into the buffer
 	_deferredBuffer->Begin();
 		GFXDevice::getInstance().clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
-		GFXDevice::getInstance().renderElements(GeometryArray);
-		for(U8 i = 0; i < getLights().size(); i++)
-			getLights()[i]->draw();
+		_sceneGraph->render();
 		GUI::getInstance().draw();
 	_deferredBuffer->End();
 	
@@ -104,18 +102,14 @@ void CubeScene::preRender()
 
 	i >= 180 ? j = -1 : j = 1;
 
-	for(tr1::unordered_map<string,Object3D*>::iterator iter = GeometryArray.begin(); iter != GeometryArray.end(); iter++)
-	{
-		if((iter->second)->getName().compare("Cutia1") == 0)
-			(iter->second)->getTransform()->rotateEuler(vec3(0.3f*i, 0.6f*i,0));
-		if((iter->second)->getName().compare("HelloText") == 0)
-			(iter->second)->getTransform()->rotate(vec3(0.6f,0.2f,0.4f),i);
-		if((iter->second)->getName().compare("Bila") == 0)
-			(iter->second)->getTransform()->translateY(j*0.25f);
-	}
-
-	if(GeometryArray["dwarf"])
-		GeometryArray["dwarf"]->getTransform()->rotate(vec3(0,1,0),i);
+	Object3D* cutia1 = _sceneGraph->findNode("Cutia1")->getNode<Object3D>();
+	Object3D* hellotext = _sceneGraph->findNode("HelloText")->getNode<Object3D>();
+	Object3D* bila = _sceneGraph->findNode("Bila")->getNode<Object3D>();
+	Object3D* dwarf = _sceneGraph->findNode("dwarf")->getNode<Object3D>();
+	cutia1->getTransform()->rotateEuler(vec3(0.3f*i, 0.6f*i,0));
+	hellotext->getTransform()->rotate(vec3(0.6f,0.2f,0.4f),i);
+	bila->getTransform()->translateY(j*0.25f);
+	dwarf->getTransform()->rotate(vec3(0,1,0),i);
 
 	if(PhysX::getInstance().getScene() != NULL)	
 		PhysX::getInstance().UpdateActors();
@@ -156,23 +150,35 @@ bool CubeScene::loadResources(bool continueOnErrors)
 	//30 lights? >:)
 	for(U8 row=0; row<3; row++)
 		for(U8 col=0; col < 10; col++){
-			Light_ptr light(new Light((U8)(row*10+col)));
+			U8 lightId = (U8)(row*10+col);
+			stringstream ss; ss << (U32)lightId;
+			ResourceDescriptor tempLight("Light Deferred " + ss.str());
+			tempLight.setId(lightId);
+			Light* light = ResourceManager::getInstance().LoadResource<Light>(tempLight);
+			/*SceneGraphNode* lightNode = */_sceneGraph->getRoot()->addNode(light);
+			//lightNode->addNode(static_cast<SceneNode*>(light->getImpostor()));
 			getLights().push_back(light);
 	}
 
-	_deferredShader = ResourceManager::getInstance().LoadResource<Shader>("DeferredShadingPass2");
+	ResourceDescriptor deferred("DeferredShadingPass2");
+	_deferredShader = ResourceManager::getInstance().LoadResource<Shader>(deferred);
 
 	_deferredBuffer->Create(FrameBufferObject::FBO_2D_DEFERRED,Engine::getInstance().getWindowDimensions().x,Engine::getInstance().getWindowDimensions().y);
 	_lightTexture->Create(2,getLights().size());
 
 	F32 width = Engine::getInstance().getWindowDimensions().width;
 	F32 height = Engine::getInstance().getWindowDimensions().height;
-	_renderQuad = ResourceManager::getInstance().LoadResource<Quad3D>("MRT RenderQuad",true);
+	ResourceDescriptor mrt("MRT RenderQuad");
+	_renderQuad = ResourceManager::getInstance().LoadResource<Quad3D>(mrt);
+	assert(_renderQuad != NULL);
 	_renderQuad->getCorner(Quad3D::TOP_LEFT) = vec3(0, height, 0);
 	_renderQuad->getCorner(Quad3D::TOP_RIGHT) = vec3(width, height, 0);
 	_renderQuad->getCorner(Quad3D::BOTTOM_LEFT) = vec3(0,0,0);
 	_renderQuad->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(width, 0, 0);
-	_renderQuad->getMaterial().diffuse = vec4(1,1,1,1);
+	ResourceDescriptor renderQuadMaterialDescriptor("MRT RenderQuad _material");
+	renderQuadMaterialDescriptor.setFlag(true); //no shaders and textures;
+	_renderQuad->setMaterial(ResourceManager::getInstance().LoadResource<Material>(renderQuadMaterialDescriptor));
+	_renderQuad->getMaterial()->setDiffuse(vec4(1,1,1,1));
 	_renderQuad->getTransform()->setPosition(vec3(0,0,-1));
 	_eventTimers.push_back(0.0f);
 	return true;
@@ -180,9 +186,8 @@ bool CubeScene::loadResources(bool continueOnErrors)
 
 bool CubeScene::unload()
 {
-	Con::getInstance().printfn("Deleting Deferred Rendering RenderTarget!");
+	Console::getInstance().printfn("Deleting Deferred Rendering RenderTarget!");
 	ResourceManager::getInstance().remove(_renderQuad);
-	_renderQuad = NULL;
 	return Scene::unload();
 }
 

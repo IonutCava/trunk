@@ -115,7 +115,7 @@ void glFrameBufferObject::Unbind(U8 unit) const
 bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height)
 {
 	Destroy();
-	Con::getInstance().printfn("Generating framebuffer of dimmensions [%d x %d]",width,height);
+	Console::getInstance().printfn("Generating framebuffer of dimmensions [%d x %d]",width,height);
 	_width = width;
 	_height = height;
 	_useFBO = true;
@@ -253,35 +253,35 @@ bool glFrameBufferObject::checkStatus()
         return true;
 
     case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-        Con::getInstance().errorfn("Framebuffer incomplete: Attachment is NOT complete.");
+        Console::getInstance().errorfn("Framebuffer incomplete: Attachment is NOT complete.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-        Con::getInstance().errorfn("Framebuffer incomplete: No image is attached to FBO.");
+        Console::getInstance().errorfn("Framebuffer incomplete: No image is attached to FBO.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-        Con::getInstance().errorfn("Framebuffer incomplete: Attached images have different dimensions.");
+        Console::getInstance().errorfn("Framebuffer incomplete: Attached images have different dimensions.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
-        Con::getInstance().errorfn("Framebuffer incomplete: Color attached images have different internal formats.");
+        Console::getInstance().errorfn("Framebuffer incomplete: Color attached images have different internal formats.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-        Con::getInstance().errorfn("Framebuffer incomplete: Draw buffer.");
+        Console::getInstance().errorfn("Framebuffer incomplete: Draw buffer.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-        Con::getInstance().errorfn("Framebuffer incomplete: Read buffer.");
+        Console::getInstance().errorfn("Framebuffer incomplete: Read buffer.");
         return false;
 
     case GL_FRAMEBUFFER_UNSUPPORTED:
-        Con::getInstance().errorfn("Unsupported by FBO implementation.");
+        Console::getInstance().errorfn("Unsupported by FBO implementation.");
         return false;
 
     default:
-        Con::getInstance().errorfn("Unknow error.");
+        Console::getInstance().errorfn("Unknow error.");
         return false;
     }
 }

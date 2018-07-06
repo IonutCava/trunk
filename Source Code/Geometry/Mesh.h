@@ -1,3 +1,20 @@
+/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _MESH_H_
 #define _MESH_H_
 
@@ -21,9 +38,9 @@ class Mesh : public Object3D
 {
 
 public:
-	Mesh() : Object3D() {_geometryType = MESH;}
-	Mesh(const vec3& position,const vec3& scale,const vec3& orientation,const Material& mat)
-		: Object3D(position,scale,orientation,mat) {_geometryType = MESH;}
+	Mesh() : Object3D(MESH) {}
+	/*Mesh(const vec3& position,const vec3& scale,const vec3& orientation,Material* mat)
+		: Object3D(position,scale,orientation,mat,MESH) {}*/
 	Mesh(const Mesh& old);
 
 	void addSubMesh(SubMesh* subMesh){_subMeshes.push_back(subMesh);}
@@ -42,7 +59,7 @@ public:
 
 protected:
 	bool isInView();
-	void computeBoundingBox();
+	bool computeBoundingBox();
 	void computeLightShaders();
 
 protected:

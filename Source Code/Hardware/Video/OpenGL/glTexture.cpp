@@ -122,19 +122,5 @@ void glTexture::Unbind(U16 slot) const {
 	glPopAttrib();//RenderState
 }
 
-void glTexture::SetMatrix(U16 slot, const mat4& transformMatrix)
-{
-	glMatrixMode(GL_TEXTURE);
-	glActiveTexture(GL_TEXTURE0+slot);
-	glLoadMatrixf( transformMatrix );
-	glMatrixMode(GL_MODELVIEW);
-}
 
-void glTexture::RestoreMatrix(U16 slot)
-{
-	glMatrixMode(GL_TEXTURE);
-	glActiveTexture(GL_TEXTURE0+slot);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-}
 

@@ -2,7 +2,7 @@
 #include "Headers/Guardian.h"
 #include "Headers/ParamHandler.h"
 #include "Managers/SceneManager.h"
-#include "Managers/TerrainManager.h"
+#include "Managers/ResourceManager.h"
 #include "Rendering/common.h"
 #include "SceneList.h"
 using namespace std;
@@ -15,7 +15,7 @@ namespace XML
 
 	void loadScripts(const string& file)
 	{
-		Con::getInstance().printfn("XML: Loading Scripts!");
+		Console::getInstance().printfn("XML: Loading Scripts!");
 		read_xml(file,pt);
 		par.setParam("scriptLocation",pt.get("scriptLocation","XML"));
 		par.setParam("assetsLocation",pt.get("assets","Assets"));
@@ -31,7 +31,7 @@ namespace XML
 	void loadConfig(const string& file)
 	{
 		pt.clear();
-		Con::getInstance().printf("XML: Loading Configuration settings file: [ %s ]\n", file.c_str());
+		Console::getInstance().printf("XML: Loading Configuration settings file: [ %s ]\n", file.c_str());
 		read_xml(file,pt);
 		par.setParam("showPhysXErrors", pt.get("debug.showPhysXErrors",true));
 		par.setParam("logFile",pt.get("debug.logFile","none"));
@@ -47,7 +47,7 @@ namespace XML
 	void loadScene(const string& sceneName)
 	{
 		pt.clear();
-		Con::getInstance().printf("XML: Loading scene [ %s ]\n", sceneName.c_str());
+		Console::getInstance().printf("XML: Loading scene [ %s ]\n", sceneName.c_str());
 		read_xml(par.getParam<string>("scriptLocation") + "/" +
                  par.getParam<string>("scenesLocation") + "/" +
 				 sceneName + ".xml", pt);
@@ -56,21 +56,22 @@ namespace XML
 
 		if(!scene)
 		{
-			Con::getInstance().errorf("XML: Trying to load unsupported scene! Defaulting to default scene\n");
+			Console::getInstance().errorf("XML: Trying to load unsupported scene! Defaulting to default scene\n");
 			scene = new MainScene();
 		}
 
 		SceneManager::getInstance().setActiveScene(scene);
 
-		TerrainManager* terMgr = SceneManager::getInstance().getTerrainManager();
-		terMgr->getGrassVisibility() = pt.get("vegetation.grassVisibility",1000.0f);
-		terMgr->getTreeVisibility()  = pt.get("vegetation.treeVisibility",1000.0f);
-		terMgr->getGeneralVisibility()  = pt.get("options.visibility",1000.0f);
+		SceneManager::getInstance().getActiveScene()->getGrassVisibility() = pt.get("vegetation.grassVisibility",1000.0f);
+		SceneManager::getInstance().getActiveScene()->getTreeVisibility()  = pt.get("vegetation.treeVisibility",1000.0f);
+		SceneManager::getInstance().getActiveScene()->getGeneralVisibility()  = pt.get("options.visibility",1000.0f);
 
-		terMgr->getWindDirX()  = pt.get("wind.windDirX",1.0f);
-		terMgr->getWindDirZ()  = pt.get("wind.windDirZ",1.0f);
-		terMgr->getWindSpeed() = pt.get("wind.windSpeed",1.0f);
+		SceneManager::getInstance().getActiveScene()->getWindDirX()  = pt.get("wind.windDirX",1.0f);
+		SceneManager::getInstance().getActiveScene()->getWindDirZ()  = pt.get("wind.windDirZ",1.0f);
+		SceneManager::getInstance().getActiveScene()->getWindSpeed() = pt.get("wind.windSpeed",1.0f);
 
+		SceneManager::getInstance().getActiveScene()->getWaterLevel() = pt.get("water.waterLevel",RAND_MAX);
+		SceneManager::getInstance().getActiveScene()->getWaterDepth() = pt.get("water.waterDepth",-75);
 		loadTerrain(par.getParam<string>("scriptLocation") + "/" +
 					par.getParam<string>("scenesLocation") + "/" +
 					sceneName + "/" + pt.get("terrain","terrain.xml"));
@@ -85,10 +86,9 @@ namespace XML
 	void loadTerrain(const string &file)
 	{
 		pt.clear();
-		Con::getInstance().printf("XML: Loading terrain: [ %s ]\n",file.c_str());
+		Console::getInstance().printf("XML: Loading terrain: [ %s ]\n",file.c_str());
 		read_xml(file,pt);
 		ptree::iterator it;
-		typedef pair<string,string> item;
 		string assetLocation = ParamHandler::getInstance().getParam<string>("assetsLocation") + "/"; 
 		for (it = pt.get_child("terrainList").begin(); it != pt.get_child("terrainList").end(); it++ )
 		{
@@ -97,41 +97,45 @@ namespace XML
 			//Check and skip commented terrain
 			if(tag.find("<xmlcomment>") != string::npos) continue;
 			//Load the rest of the terrain
-			TerrainInfo ter;
-			ter.variables.insert(item("terrainName",name));
-			ter.variables.insert(item("heightmap",assetLocation + pt.get<string>(name + ".heightmap")));
-			ter.variables.insert(item("textureMap",assetLocation + pt.get<string>(name + ".textures.map")));
-			ter.variables.insert(item("redTexture",assetLocation + pt.get<string>(name + ".textures.red")));
-			ter.variables.insert(item("greenTexture",assetLocation + pt.get<string>(name + ".textures.green")));
-			ter.variables.insert(item("blueTexture",assetLocation + pt.get<string>(name + ".textures.blue")));
-			//ter.variables.insert(item("alphaTexture",assetLocation + pt.get<string>(name + ".textures.alpha"))); NotUsed
-			ter.variables.insert(item("normalMap",assetLocation + pt.get<string>(name + ".textures.normalMap")));
-			ter.variables.insert(item("waterCaustics",assetLocation + pt.get<string>(name + ".textures.waterCaustics")));
-			ter.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
-			ter.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
-			ter.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
-			ter.scale.x = pt.get<F32>(name + ".scale");
-			ter.scale.y = pt.get<F32>(name + ".heightFactor");
-			ter.active = pt.get<bool>(name + ".active");
-			ter.variables.insert(item("grassMap",assetLocation + pt.get<string>(name + ".vegetation.map")));
-			ter.variables.insert(item("grassBillboard1",assetLocation + pt.get<string>(name + ".vegetation.grassBillboard1")));
-			ter.variables.insert(item("grassBillboard2",assetLocation + pt.get<string>(name + ".vegetation.grassBillboard2")));
-			ter.variables.insert(item("grassBillboard3",assetLocation + pt.get<string>(name + ".vegetation.grassBillboard3")));
-			//ter.variables.insert(item("grassBillboard1",pt.get<string>(name + ".vegetation.grassBillboard1")));
-			ter.grassDensity = pt.get<U32>(name + ".vegetation.<xmlattr>.grassDensity");
-			ter.treeDensity = pt.get<U16>(name + ".vegetation.<xmlattr>.treeDensity");
-			ter.grassScale = pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale");
-			ter.treeScale = pt.get<F32>(name + ".vegetation.<xmlattr>.treeScale");
+			TerrainDescriptor* ter = ResourceManager::getInstance().LoadResource<TerrainDescriptor>(name+"_descriptor");
+			ter->addVariable("terrainName",name);
+			ter->addVariable("heightmap",assetLocation + pt.get<string>(name + ".heightmap"));
+			ter->addVariable("textureMap",assetLocation + pt.get<string>(name + ".textures.map"));
+			ter->addVariable("redTexture",assetLocation + pt.get<string>(name + ".textures.red"));
+			ter->addVariable("greenTexture",assetLocation + pt.get<string>(name + ".textures.green"));
+			ter->addVariable("blueTexture",assetLocation + pt.get<string>(name + ".textures.blue"));
+			ter->addVariable("alphaTexture",assetLocation + pt.get<string>(name + ".textures.alpha","none"));
+			ter->addVariable("normalMap",assetLocation + pt.get<string>(name + ".textures.normalMap"));
+			ter->addVariable("waterCaustics",assetLocation + pt.get<string>(name + ".textures.waterCaustics"));
+			ter->addVariable("grassMap",assetLocation + pt.get<string>(name + ".vegetation.map"));
+			ter->addVariable("grassBillboard1",assetLocation + pt.get<string>(name + ".vegetation.grassBillboard1"));
+			ter->addVariable("grassBillboard2",assetLocation + pt.get<string>(name + ".vegetation.grassBillboard2"));
+			ter->addVariable("grassBillboard3",assetLocation + pt.get<string>(name + ".vegetation.grassBillboard3"));
+			//ter->addVariable("grassBillboard1",pt.get<string>(name + ".vegetation.grassBillboard1"));
+			ter->setGrassDensity(pt.get<U32>(name + ".vegetation.<xmlattr>.grassDensity"));
+			ter->setTreeDensity(pt.get<U16>(name + ".vegetation.<xmlattr>.treeDensity"));
+			ter->setGrassScale(pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale"));
+			ter->setTreeScale(pt.get<F32>(name + ".vegetation.<xmlattr>.treeScale"));
+
+			ter->setPosition(vec3(pt.get<F32>(name + ".position.<xmlattr>.x"),
+								  pt.get<F32>(name + ".position.<xmlattr>.y"),
+								  pt.get<F32>(name + ".position.<xmlattr>.z")));
+			ter->setScale(vec2(pt.get<F32>(name + ".scale"), //width / length
+							   pt.get<F32>(name + ".heightFactor"))); //height
+							   
+
+			ter->setActive(pt.get<bool>(name + ".active"));
+			
 			SceneManager::getInstance().addTerrain(ter);
 			
 		}
-		Con::getInstance().printf("XML: Number of terrains to load: %d\n",SceneManager::getInstance().getNumberOfTerrains());
+		Console::getInstance().printf("XML: Number of terrains to load: %d\n",SceneManager::getInstance().getNumberOfTerrains());
 	}
 
 	void loadGeometry(const string &file)
 	{
 		pt.clear();
-		Con::getInstance().printf("XML: Loading Geometry: [ %s ]\n",file.c_str());
+		Console::getInstance().printf("XML: Loading Geometry: [ %s ]\n",file.c_str());
 		read_xml(file,pt);
 		ptree::iterator it;
 		string assetLocation = ParamHandler::getInstance().getParam<string>("assetsLocation")+"/";

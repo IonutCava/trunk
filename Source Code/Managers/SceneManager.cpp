@@ -46,7 +46,7 @@ void SceneManager::toggleBoundingBoxes()
 
 void SceneManager::deleteSelection()
 {
-	if(_currentSelection)
+	if(_currentSelection != NULL)
 		_currentSelection->scheduleDeletion();
 }
 
@@ -136,7 +136,8 @@ void SceneManager::findSelection(U32 x, U32 y)
 	vec3 origin(CameraManager::getInstance().getActiveCamera()->getEye());
 	vec3 dir = origin.direction(final_point);
 	
-	Ray r(origin,dir);
+	//ToDo: fix this!!!!! -Ionut
+	/*Ray r(origin,dir);
 	_currentSelection = NULL;
 	for(tr1::unordered_map<string, Object3D* >::iterator it = getGeometryArray().begin(); 
 													 it != getGeometryArray().end(); it++){
@@ -148,5 +149,5 @@ void SceneManager::findSelection(U32 x, U32 y)
 			_currentSelection = it->second;
 			break;
 		}
-	}
+	}*/
 }

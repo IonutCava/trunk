@@ -15,22 +15,24 @@ Sky::Sky()
 	_init = false;
 	
    	string location = ParamHandler::getInstance().getParam<string>("assetsLocation")+"/misc_images/";
-	_sky = ResourceManager::getInstance().LoadResource<Sphere3D>("Skybox",true);
+	ResourceDescriptor skybox("SkyBox");
+	skybox.setFlag(true); //no materials;
+	_sky = ResourceManager::getInstance().LoadResource<Sphere3D>(skybox);
 	_sky->getResolution() = 4;
-	_sun = ResourceManager::getInstance().LoadResource<Sphere3D>("Sun",true);
+	ResourceDescriptor sun("Sun");
+	sun.setFlag(true);
+	_sun = ResourceManager::getInstance().LoadResource<Sphere3D>(sun);
 	_sun->getResolution() = 16;
 	_sun->getSize() = 0.1f;
-	_skybox =  ResourceManager::getInstance().LoadResource<TextureCubemap>(
-				location+"skybox_2.jpg "+
-				location+"skybox_1.jpg "+
-				location+"skybox_5.jpg "+
-				location+"skybox_6.jpg "+ 
-				location+"skybox_3.jpg "+
-				location+"skybox_4.jpg");
+	ResourceDescriptor skyboxTextures("SkyboxTextures");
+	skyboxTextures.setResourceLocation(location+"skybox_2.jpg "+ location+"skybox_1.jpg "+
+								       location+"skybox_5.jpg "+ location+"skybox_6.jpg "+ 
+									   location+"skybox_3.jpg "+ location+"skybox_4.jpg");
 
-	_skyShader = ResourceManager::getInstance().LoadResource<Shader>("sky");
+	_skybox =  ResourceManager::getInstance().LoadResource<TextureCubemap>(skyboxTextures);
+	_skyShader = ResourceManager::getInstance().LoadResource<Shader>(ResourceDescriptor("sky"));
 	assert(_skyShader);
-	Con::getInstance().printfn("Generated sky cubemap and sun OK!");
+	Console::getInstance().printfn("Generated sky cubemap and sun OK!");
 	_init = true;
 }
 
@@ -105,7 +107,7 @@ void Sky::drawSky() const
 
 void Sky::drawSun() const
 {
-	_sun->getMaterial().diffuse = SceneManager::getInstance().getActiveScene()->getLights()[0]->getDiffuseColor();
+	_sun->getMaterial()->setDiffuse(SceneManager::getInstance().getActiveScene()->getLights()[0]->getDiffuseColor());
 	_sun->getTransform()->setPosition(vec3(_eyePos.x-_sunVect.x,_eyePos.y-_sunVect.y,_eyePos.z-_sunVect.z));
 	RenderState old = GFXDevice::getInstance().getActiveRenderState();
 	RenderState s(false,false,false,false);

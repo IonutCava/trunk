@@ -1,55 +1,61 @@
 #include "Manager.h"
 using namespace std;
-void Manager::add(const string& name, Resource* res)
-{
-	_result = _resDB.insert(pair<string,Resource*>(name,res));
-	if(!_result.second) (_result.first)->second = res;
+void Manager::add(const string& name, Resource* res){
+	std::pair<ResourceMap::iterator, bool > result = _resDB.insert(make_pair(name,res));
+	if(!result.second){
+		remove((result.first)->second);
+		(result.first)->second = res;
+	}
 	_refCounts[name] += 1;
 }
 
-void Manager::Destroy()
-{
-	for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++) {
-		(*_resDBiter).second->unload();
-		delete (*_resDBiter).second;
-		(*_resDBiter).second = NULL;
+void Manager::Destroy(){
+	for(ResourceMap::iterator resDBiter = _resDB.begin(); resDBiter != _resDB.end(); resDBiter++) {
+		remove(resDBiter->second,true);
 	}
 	_resDB.clear();
 }
 
-Resource* Manager::find(const string& name)
-{
-	_resDBiter = _resDB.find(name);
-	if(_resDBiter != _resDB.end())
-		return _resDBiter->second;
+Resource* Manager::find(const string& name){
+	ResourceMap::iterator resDBiter = _resDB.find(name);
+	if(resDBiter != _resDB.end())
+		return resDBiter->second;
 	else
 		return NULL;
 }
 
-void Manager::remove(const std::string& name) { 
-	Con::getInstance().printfn("Removing resource: %s. New ref count: %d",name.c_str(),_refCounts[name] - 1);
-	std::string tempName = name;
-	_resDBiter = _resDB.find(name);
-	if(_resDBiter != _resDB.end())
-	{
-		if(_refCounts[name] > 1) {
+bool Manager::remove(Resource* res, bool force){
+	if(!res){
+		Console::getInstance().errorfn("ResourceManager: Trying to remove NULL resource!");
+		return false;
+	}
+
+	if(res->getName().empty()){
+		Console::getInstance().errorfn("ResourceManager: Trying to remove resource with invalid name!");
+		return false;
+	}
+
+	string name(res->getName());
+	ResourceMap::iterator resDBiter = _resDB.find(name);
+
+	if(resDBiter != _resDB.end()){
+		if(_refCounts[name] > 1 && !force) {
 			_refCounts[name] -= 1;
+			Console::getInstance().printfn("Removing resource: [ %s ]. New ref count: [ %d ]",name.c_str(),_refCounts[name]);
+			return false;
 		}else{
-			Resource* t = _resDBiter->second;
-			if(t){
-				if(t->unload()){
-					delete t;
-					t = NULL; 
-					_resDB.erase(tempName);
-				}
+			Console::getInstance().printfn("Removing resource: [ %s ].",name.c_str());
+			if(res->unload()){
+				_resDB.erase(name);
+				_refCounts.erase(name);
+				return true;
+			}else{
+				Console::getInstance().errorfn("Resource [ %s ] not unloaded succesfully!", name.c_str());
+				return false;
 			}
 		}
 	}
-}
 
-void Manager::remove(Resource* res)
-{
-	if(res)
-		if(!res->getName().empty())
-			remove(res->getName());
+	Console::getInstance().errorfn("ResourceManager: resource [ %s ] not found in database!",name.c_str());
+	return false;
 }

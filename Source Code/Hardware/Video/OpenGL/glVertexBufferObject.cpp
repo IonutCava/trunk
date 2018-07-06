@@ -3,20 +3,20 @@
 #include "glVertexBufferObject.h"
 
 
-glVertexBufferObject::glVertexBufferObject()
-{
+glVertexBufferObject::glVertexBufferObject(){
 	_VBOid = 0;
 	_created = false;
 
 }
 
-void glVertexBufferObject::Destroy()
-{
+void glVertexBufferObject::Destroy(){
 	glDeleteBuffers(1, &_VBOid);
 }
 
 
-bool glVertexBufferObject::Create(){	return Create(GL_STATIC_DRAW);  }
+bool glVertexBufferObject::Create(){	
+	return Create(GL_STATIC_DRAW);
+}
 
 bool glVertexBufferObject::Create(U32 usage)
 {
@@ -32,7 +32,7 @@ bool glVertexBufferObject::Create(U32 usage)
 		nSizePosition = _dataPosition.size()*sizeof(vec3);
 	}
 	else {
-		Con::getInstance().errorf("No position data !\n");
+		Console::getInstance().errorf("No position data !\n");
 		return false;
 	}
 
@@ -58,7 +58,7 @@ bool glVertexBufferObject::Create(U32 usage)
 
 	glGenBuffers(1, &_VBOid);
 	if(_VBOid == 0) {
-		Con::getInstance().errorfn( "Init VBO failed!");
+		Console::getInstance().errorfn( "Init VBO failed!");
 		_created = false;
 	}
 	else {

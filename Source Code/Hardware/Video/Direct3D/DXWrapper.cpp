@@ -6,7 +6,7 @@ using namespace std;
 
 void DX_API::initHardware()
 {
-	Con::getInstance().printfn("Initializing Direct3D rendering API! ");
+	Console::getInstance().printfn("Initializing Direct3D rendering API! ");
 }
 
 void DX_API::closeRenderingApi()
@@ -71,6 +71,14 @@ void DX_API::toggle2D(bool _2D)
 {
 }
 
+void DX_API::setTextureMatrix(U16 slot, const mat4& transformMatrix)
+{
+}
+
+void DX_API::restoreTextureMatrix(U16 slot)
+{
+}
+
 void DX_API::drawTextToScreen(Text* text)
 {
 }
@@ -126,10 +134,10 @@ void DX_API::renderModel(Object3D* const model)
 
 		setMaterial(s->getMaterial());
 		
-		Shader* shader = model->getMaterial().getShader();
-		Texture2D* baseTexture = model->getMaterial().getTexture(Material::TEXTURE_BASE);
-		Texture2D* bumpTexture = model->getMaterial().getTexture(Material::TEXTURE_BUMP);
-		Texture2D* secondTexture = model->getMaterial().getTexture(Material::TEXTURE_SECOND);
+		Shader* shader = model->getMaterial()->getShader();
+		Texture2D* baseTexture = model->getMaterial()->getTexture(Material::TEXTURE_BASE);
+		Texture2D* bumpTexture = model->getMaterial()->getTexture(Material::TEXTURE_BUMP);
+		Texture2D* secondTexture = model->getMaterial()->getTexture(Material::TEXTURE_SECOND);
 
 		if(baseTexture) baseTexture->Bind(0);
 		if(bumpTexture) bumpTexture->Bind(1);
@@ -169,11 +177,11 @@ void DX_API::renderModel(Object3D* const model)
 	//popMatrix();
 }
 
-void DX_API::renderElements(Type t, U32 count, const void* first_element)
+void DX_API::renderElements(Type t, U32 count, const void* first_element,bool inverty)
 {
 }
 
-void DX_API::setMaterial(Material& mat)
+void DX_API::setMaterial(Material* mat)
 {
 }
 

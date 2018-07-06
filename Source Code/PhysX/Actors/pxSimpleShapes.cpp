@@ -124,7 +124,7 @@ void PhysX::DrawBox(NxShape *box)
 	NxQuat temp(pose.M);
     orient[3] = orient[7] = orient[11] = 0.0f; orient[15] = 1.0f;
 	Box3D visualCube((cube->getMin()).distance( cube->getExtent()));
-	visualCube.getMaterial().diffuse = vec3(0.3f,0.3f,0.3f);
+	visualCube.getMaterial()->setDiffuse(vec4(0.3f,0.3f,0.3f,1.0f));
 	visualCube.getTransform()->setTransforms(mat4(orient));
 	GFXDevice::getInstance().drawBox3D(&visualCube);
 	visualCube.unload();

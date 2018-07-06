@@ -165,7 +165,7 @@ void GUI::addText(const string& id,const vec3 &position, Font font,const vec3 &c
     va_end(args);
 
 	GuiElement *t = new Text(id,fmt_text,position,(void*)font,color);
-	_resultGuiElement = _guiStack.insert(pair<string,GuiElement*>(id,t));
+	_resultGuiElement = _guiStack.insert(make_pair(id,t));
 	if(!_resultGuiElement.second) (_resultGuiElement.first)->second = t;
 	fmt_text.empty();
 }
@@ -173,7 +173,7 @@ void GUI::addText(const string& id,const vec3 &position, Font font,const vec3 &c
 void GUI::addFlash(const string& id, string movie, const vec2& position, const vec2& extent)
 {
 	GuiFlash *flash = new GuiFlash();
-	_resultGuiElement = _guiStack.insert(pair<string,GuiElement*>(id,dynamic_cast<GuiElement*>(flash)));
+	_resultGuiElement = _guiStack.insert(make_pair(id,dynamic_cast<GuiElement*>(flash)));
 	if(!_resultGuiElement.second) (_resultGuiElement.first)->second = dynamic_cast<GuiElement*>(flash);
 }
 

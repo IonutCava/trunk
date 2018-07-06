@@ -58,7 +58,7 @@ void Framerate::benchmark()
 	if(_count > 1000)
 	{
 		_averageFps /= _count;
-		 Con::getInstance().printfn("Average FPS: %0.2f; Max FPS: %0.2f; Min FPS: %0.2f" , _averageFps,_maxFps,_minFps); 
+		 Console::getInstance().printfn("Average FPS: %0.2f; Max FPS: %0.2f; Min FPS: %0.2f" , _averageFps,_maxFps,_minFps); 
 		_count = 0;
 	}
 	++_count;

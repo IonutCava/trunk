@@ -1,3 +1,20 @@
+/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _RENDER_API_H
 #define _RENDER_API_H
 
@@ -124,6 +141,8 @@ protected:
 	virtual void enable_MODELVIEW() = 0;
 	virtual void loadIdentityMatrix() = 0;
 	virtual void toggle2D(bool _2D) = 0;
+	virtual void setTextureMatrix(U16 slot, const mat4& transformMatrix) = 0;
+	virtual void restoreTextureMatrix(U16 slot) = 0;
 	/*State Matrix Manipulation*/
 
 	/*GUI Rendering*/
@@ -143,11 +162,11 @@ protected:
 
 	/*Mesh Rendering*/
 	virtual void renderModel(Object3D* const model) = 0;
-	virtual void renderElements(Type t, U32 count, const void* first_element) = 0;
+	virtual void renderElements(Type t, U32 count, const void* first_element, bool inverty = false) = 0;
 	/*Mesh Rendering*/
 
 	/*Color Management*/
-	virtual void setMaterial(Material& mat) = 0;
+	virtual void setMaterial(Material* mat) = 0;
 	virtual void setColor(const vec4& v) = 0;
 	virtual void setColor(const vec3& v) = 0;
 	/*Color Management*/

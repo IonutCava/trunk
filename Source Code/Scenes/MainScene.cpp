@@ -4,11 +4,12 @@
 
 #include "Utility/Headers/ParamHandler.h"
 #include "Managers/ResourceManager.h"
-#include "Managers/TerrainManager.h"
 #include "Managers/CameraManager.h"
 #include "Rendering/common.h"
 #include "PhysX/PhysX.h"
 #include "Terrain/Sky.h"
+#include "Terrain/Terrain.h"
+#include "Terrain/Water.h"
 #include "GUI/GUI.h"
 #include "Rendering/Frustum.h"
 using namespace std;
@@ -16,13 +17,13 @@ using namespace std;
 bool MainScene::updateLights()
 {
 	_sun_cosy = cosf(_sunAngle.y);
-	vec4 vSunColor = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f),
+	_sunColor = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f),
 								0.25f + _sun_cosy * 0.75f);
 
 	getLights()[0]->setLightProperties(string("position"),_sunVector);
 	getLights()[0]->setLightProperties(string("ambient"),_white);
-	getLights()[0]->setLightProperties(string("diffuse"),vSunColor);
-	getLights()[0]->setLightProperties(string("specular"),vSunColor);
+	getLights()[0]->setLightProperties(string("diffuse"),_sunColor);
+	getLights()[0]->setLightProperties(string("specular"),_sunColor);
 	//getLights()[0]->update();
 	return true;
 }
@@ -33,37 +34,48 @@ void MainScene::preRender()
 	Sky &sky = Sky::getInstance();
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	ParamHandler &par = ParamHandler::getInstance();
+	for(U8 i = 0; i < _visibleTerrains.size(); i++){
+		_visibleTerrains[i]->setRenderingParams(false,_sunColor,_sunModelviewProj);
+	}
 
-	
 	//SHADOW MAPPING
-	GFXDevice::getInstance().setDepthMapRendering(true);
-	D32 tabOrtho[2] = {20.0, 100.0};
+	//GFXDevice::getInstance().setDepthMapRendering(true);
+	//D32 tabOrtho[2] = {20.0, 100.0};
 
-	GFXDevice::getInstance().setLightCameraMatrices(_sunVector);
+	//GFXDevice::getInstance().setLightCameraMatrices(_sunVector);
 
-	D32 zNear = par.getParam<D32>("zNear");
-	D32 zFar = par.getParam<D32>("zFar");
+	//D32 zNear = par.getParam<D32>("zNear");
+	//D32 zFar = par.getParam<D32>("zFar");
 	vec3 eye_pos = CameraManager::getInstance().getActiveCamera()->getEye();
-	vec3 sun_pos = eye_pos - vec3(_sunVector);
-	vec3 eye = CameraManager::getInstance().getActiveCamera()->getEye();
+	//vec3 sun_pos = eye_pos - vec3(_sunVector);
 
 	for(U8 i=0; i<2; i++)
 	{
-		glMatrixMode(GL_PROJECTION);
+	/*	glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(-tabOrtho[i], tabOrtho[i], -tabOrtho[i], tabOrtho[i], zNear, zFar);
 		glMatrixMode(GL_MODELVIEW);
-		Frustum::getInstance().Extract(sun_pos);
+		Frustum::getInstance().Extract(sun_pos);*/
 		
 		_depthMap[i]->Begin();
 			_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
-			renderActors();
-			_terMgr->drawVegetation(false);
+			for(U8 j = 0; j < _visibleTerrains.size(); j++){
+				_visibleTerrains[j]->setActive(false);//Disable terrain rendering ...
+				_visibleTerrains[j]->getVegetation()->draw(false); //... but draw the vegetation and then ...
+			}
+			_sceneGraph->render(); //render the rest of the stuff
+
+			for(U8 j = 0; j < _visibleTerrains.size(); j++){
+				_visibleTerrains[j]->restoreActive(); //.. restore terrain previous state
+			}
 		_depthMap[i]->End();
-		_terMgr->setDepthMap(i,_depthMap[i]);
+
+		for(U8 j = 0; j < _visibleTerrains.size(); j++){
+			_visibleTerrains[j]->setDepthMap(i,_depthMap[i]);
+		}
 	}
 
-	glMatrixMode(GL_PROJECTION);
+	/*glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(-1.0, 1.0, -1.0, 1.0, zNear, zFar);
 	Frustum::getInstance().Extract(sun_pos);
@@ -73,46 +85,49 @@ void MainScene::preRender()
 
 	GFXDevice::getInstance().restoreLightCameraMatrices();
 	Frustum::getInstance().Extract(eye_pos);
-	GFXDevice::getInstance().setDepthMapRendering(false);
-
+	GFXDevice::getInstance().setDepthMapRendering(false);*/
 	//SHADOW MAPPING
 
-	_skyFBO->Begin();
-		_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
-		updateLights();
-		sky.setParams(cam->getEye(),vec3(_sunVector),true,true,true);
-		sky.draw();
-		_terMgr->drawTerrains(_sunModelviewProj,true,true,_white.lerp(_white*0.2f, _black, _sun_cosy));
-	_skyFBO->End();
+	if(_water != NULL){
+		_skyFBO->Begin();
+			_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+			updateLights();
+			sky.setParams(eye_pos,vec3(_sunVector),true,true,true);
+			sky.draw();
+			for(U8 i = 0; i < _visibleTerrains.size(); i++){
+				_visibleTerrains[i]->setRenderingParams(true,_sunColor,_sunModelviewProj);
+			}
+			_sceneGraph->render();
+		_skyFBO->End();
+	}
 }
 
-void MainScene::render()
-{
-	
+void MainScene::render(){
 	Sky &sky = Sky::getInstance();
 	GUI &gui = GUI::getInstance();
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
+	const vec3& eye_pos = cam->getEye();
 	ParamHandler& par = ParamHandler::getInstance();
-	Frustum::getInstance().Extract(cam->getEye());
+	Frustum::getInstance().Extract(eye_pos);
 	updateLights();
 
-	sky.setParams(cam->getEye(),vec3(_sunVector),false,true,true);
+	sky.setParams(eye_pos,vec3(_sunVector),false,true,true);
 	sky.draw();
 
-	renderActors();
+	for(U8 i = 0; i < _visibleTerrains.size(); i++){
+		_visibleTerrains[i]->setRenderingParams(false,_sunColor,_sunModelviewProj);
+	}
 
-	_terMgr->drawTerrains(_sunModelviewProj,true,false,_white.lerp(_white*0.2f, _black, _sun_cosy));
-
-	FrameBufferObject* fbo[] = {_skyFBO,_depthMap[0],_depthMap[1]};
-	_terMgr->drawInfinitePlane(2.0f*par.getParam<D32>("zFar"),fbo);
+	
+	if(_water != NULL){
+		FrameBufferObject* fbo[] = {_skyFBO,_depthMap[0],_depthMap[1]};
+		_water->setFBO(fbo);
+		_water->setWaterTextureProjectionMatrix(_sunModelviewProj);
+	}
+	_sceneGraph->render();
 
 	gui.draw();	
 	
-}
-
-void MainScene::renderActors()
-{
-	GFXDevice::getInstance().renderElements(GeometryArray);
 }
 
 void MainScene::processInput()
@@ -127,8 +142,11 @@ void MainScene::processInput()
 	
 	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor()/5);
 	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor()/5);
-	if(moveFB)	cam->PlayerMoveForward(moveFB * Framerate::getInstance().getSpeedfactor());
-	if(moveLR)	cam->PlayerMoveStrafe(moveLR * Framerate::getInstance().getSpeedfactor());
+	if(moveFB || moveLR){
+		if(moveFB) cam->PlayerMoveForward(moveFB * Framerate::getInstance().getSpeedfactor());
+		if(moveLR) cam->PlayerMoveStrafe(moveLR * Framerate::getInstance().getSpeedfactor());
+		GUI::getInstance().modifyText("camPosition","Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ]",cam->getEye().x, cam->getEye().y,cam->getEye().z);
+	}
 
 }
 
@@ -153,6 +171,7 @@ void MainScene::processEvents(F32 time)
 		
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
 		_eventTimers[1] += FpsDisplay;
+
 	}
     
 	
@@ -164,24 +183,48 @@ void MainScene::processEvents(F32 time)
 	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
 }
 
-bool MainScene::load(const string& name)
-{
+bool MainScene::load(const string& name){
 	bool state = false;
+	state = Scene::load(name);
+	bool computeWaterHeight = false;
+	if(_waterHeight == RAND_MAX) computeWaterHeight = true;
 	addDefaultLight();
+	getLights()[0]->toggleImpostor(false);
 	_sunModelviewProj.identity();
-	_terMgr->createTerrains(TerrainInfoArray);
 	state = loadResources(true);	
 	state = loadEvents(true);
+	for(U8 i = 0; i < TerrainInfoArray.size(); i++){
+		SceneGraphNode* terrainNode = _sceneGraph->findNode(TerrainInfoArray[i]->getVariable("terrainName"));
+		if(terrainNode){ //We might have an unloaded terrain in the Array, and thus, not present in the graph
+			Console::getInstance().printf("Found terrain: ");
+			Terrain* tempTerrain = terrainNode->getNode<Terrain>();
+			Console::getInstance().printfn(" %s!", tempTerrain->getName().c_str());
+			if(tempTerrain->isActive()){
+				Console::getInstance().printfn("Previous found terrain is active!");
+				_visibleTerrains.push_back(tempTerrain);
+				if(computeWaterHeight){
+					F32 tempMin = tempTerrain->getBoundingBox().getMin().y;
+					if(_waterHeight > tempMin) _waterHeight = tempMin;
+				}
+			}
+		}
+	}
+	ResourceDescriptor infiniteWater("waterEntity");
+	_water = ResourceManager::getInstance().LoadResource<WaterPlane>(infiniteWater);
+	_water->setParams(50,10,0.1f,0.5f);
+	_sceneGraph->getRoot()->addNode(_water);
+	if(computeWaterHeight)	_waterHeight -= 75;
+	
 	return state;
 }
 
 bool MainScene::unload()
 {
-
 	SFXDevice::getInstance().stopMusic();
 	SFXDevice::getInstance().stopAllSounds();
 	ResourceManager::getInstance().remove(_backgroundMusic);
 	ResourceManager::getInstance().remove(_beep);
+	Sky::getInstance().DestroyInstance();
 	return Scene::unload();
 }
 
@@ -189,13 +232,11 @@ bool _switchAB = false;
 void MainScene::test(boost::any a, CallbackParam b)
 {
 	vec3 pos;
-	if(!GeometryArray.empty())
-		if(GeometryArray["box"]){
-		//	boost::mutex::scoped_lock l(_mutex);
-			pos = GeometryArray["box"]->getTransform()->getPosition();
-			//l.release();
-	}
- 
+	SceneGraphNode* boxNode = _sceneGraph->findNode("box");
+	Object3D* box = NULL;
+	if(boxNode) box = boxNode->getNode<Object3D>();
+	if(box) pos = box->getTransform()->getPosition();
+
 	if(!_switchAB)
 	{
 		if(pos.x < 300 && pos.z == 0)		   pos.x++;
@@ -223,10 +264,7 @@ void MainScene::test(boost::any a, CallbackParam b)
 			}
 		}
 	}
-	if(!GeometryArray.empty())
-		if(GeometryArray["box"]){
-			GeometryArray["box"]->getTransform()->setPosition(pos);
-		}
+	if(box)	box->getTransform()->setPosition(pos);
 }
 
 bool MainScene::loadResources(bool continueOnErrors)
@@ -245,17 +283,22 @@ bool MainScene::loadResources(bool continueOnErrors)
 								BITMAP_8_BY_13,
 								vec3(0.6f,0.2f,0.2f),
 								"Elapsed time: %5.0f",GETTIME());
+	gui.addText("camPosition",
+								vec3(60,80,0),
+								BITMAP_8_BY_13,
+								vec3(0.2f,0.8f,0.2f),
+								"Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ]",0.0f,0.0f,0.0f);
 	_eventTimers.push_back(0.0f); //Sun
 	_eventTimers.push_back(0.0f); //Fps
 	_eventTimers.push_back(0.0f); //Time
 
-	Con::getInstance().printfn("Creating Frame Buffer Objects for water reflexions and Shadow Mapping");
+	Console::getInstance().printfn("Creating Frame Buffer Objects for water reflexions and Shadow Mapping");
 	_skyFBO = GFXDevice::getInstance().newFBO();
 	_depthMap[0] = GFXDevice::getInstance().newFBO();
 	_depthMap[1] = GFXDevice::getInstance().newFBO();
 	
-	Con::getInstance().printfn("Initializing Frame Buffer Objects for water reflexions and Shadow Mapping");
-	_skyFBO->Create(FrameBufferObject::FBO_2D_COLOR, 1024, 1024);
+	Console::getInstance().printfn("Initializing Frame Buffer Objects for water reflexions and Shadow Mapping");
+	_skyFBO->Create(FrameBufferObject::FBO_2D_COLOR, 2048, 2048);
 	_depthMap[0]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
 	_depthMap[1]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
 	
@@ -268,11 +311,17 @@ bool MainScene::loadResources(bool continueOnErrors)
 
 	Event_ptr boxMove(new Event(30,true,false,boost::bind(&MainScene::test,this,string("test"),TYPE_STRING)));
 	addEvent(boxMove);
-	_backgroundMusic = ResourceManager::getInstance().LoadResource<AudioDescriptor>(ParamHandler::getInstance().getParam<string>("assetsLocation")+"/music/background_music.ogg",true);
-	//SFXDevice::getInstance().playMusic(_backgroundMusic);
+	ResourceDescriptor backgroundMusic("background music");
+	backgroundMusic.setResourceLocation(ParamHandler::getInstance().getParam<string>("assetsLocation")+"/music/background_music.ogg");
+	backgroundMusic.setFlag(true);
 
-	_beep = ResourceManager::getInstance().LoadResource<AudioDescriptor>(ParamHandler::getInstance().getParam<string>("assetsLocation")+"/sounds/beep.wav",false);
-	Con::getInstance().printfn("Scene resources loaded OK");
+	ResourceDescriptor beepSound("beep sound");
+	beepSound.setResourceLocation(ParamHandler::getInstance().getParam<string>("assetsLocation")+"/sounds/beep.wav");
+	beepSound.setFlag(false);
+	_backgroundMusic = ResourceManager::getInstance().LoadResource<AudioDescriptor>(backgroundMusic);
+	_beep = ResourceManager::getInstance().LoadResource<AudioDescriptor>(beepSound);
+	//SFXDevice::getInstance().playMusic(_backgroundMusic);
+	Console::getInstance().printfn("Scene resources loaded OK");
 	return true;
 }
 

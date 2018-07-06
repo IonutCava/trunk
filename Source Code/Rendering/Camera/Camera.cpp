@@ -34,7 +34,7 @@ void Camera::RestoreCamera()
 }
 
 
-Camera::Camera() {
+Camera::Camera() : Resource() {
 
 	fAngleX	=	3.0f;
 	fAngleY	=	M_PI/2;
@@ -73,8 +73,7 @@ void Camera::RenderLookAt(bool inverty, F32 planey) {
 
 	vec3 eye = vEye, center = vCenter, up = vUp;
 	
-	if(inverty)
-	{
+	if(inverty){
 		eye.y = 2.0f*planey-vEye.y;
 		center.y = 2.0f*planey-vCenter.y;
 		vUp *= -1;

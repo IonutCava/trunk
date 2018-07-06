@@ -27,16 +27,18 @@ void SDL_API::playMusic(AudioDescriptor* musicFile)
 
 void SDL_API::playSound(AudioDescriptor* sound)
 {
-	if(!sound) return;
+	if(sound == NULL) return;
+
 	if(_chunk != NULL) Mix_FreeChunk(_chunk);
 	_chunk  = Mix_LoadWAV(sound->getName().c_str());
+	assert(_chunk != NULL);
 	Mix_Volume(sound->getChannel(),sound->getVolume());
 
 	if(_chunk == NULL)
-		Con::getInstance().errorfn("SFXDevice: Can't load sound [ %s ] with SDL!" ,sound->getName().c_str());
+		Console::getInstance().errorfn("SFXDevice: Can't load sound [ %s ] with SDL!" ,sound->getName().c_str());
 
 	if(Mix_PlayChannel( sound->getChannel(), _chunk, sound->isLooping() ? -1 : 0 ) == -1){
-		Con::getInstance().errorfn("SFXDevice: Can't play sound [ %s ] with SDL! Error: %s" ,sound->getName().c_str(),Mix_GetError());
+		Console::getInstance().errorfn("SFXDevice: Can't play sound [ %s ] with SDL! Error: %s" ,sound->getName().c_str(),Mix_GetError());
 	}
 	
 }

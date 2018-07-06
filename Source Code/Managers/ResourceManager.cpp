@@ -2,10 +2,13 @@
 #include "Utility/Headers/Guardian.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Hardware/Audio/SFXDevice.h"
+#include "Hardware/Video/Light.h"
 #include "Terrain/Terrain.h"
+#include "Terrain/Water.h"
 #include "Importer/DVDConverter.h"
 #include "Hardware/Video/ShaderHandler.h"
 #include "Utility/Headers/BaseClasses.h"
+#include "Terrain/TerrainDescriptor.h"
 #include "Geometry/Predefined/Box3D.h"
 #include "Geometry/Predefined/Sphere3D.h"
 #include "Geometry/Predefined/Text3D.h"
@@ -48,180 +51,441 @@ void operator delete(void * pxData ,char* zFile, int nLine)
 /*             - Object3D based classes skip default material assigment if flag == true */          
 /****************************************************************************************/
 template<class T>
-T* ResourceManager::LoadResource(const string& name,bool flag)
-{
-	Resource* ptr = LoadResource(name);
-	if(!ptr)
-	{
-		ptr = new T();
-		dynamic_cast<T*>(ptr)->load(name);
+T* ResourceManager::LoadResource(const ResourceDescriptor& descriptor){
 
+	T* ptr = dynamic_cast<T*>(LoadResource(descriptor.getName()));
+
+	if(!ptr){
+		ptr = new T();
 		if(!ptr) return NULL;
 
-		_resDB[name] = ptr;
-		_refCounts[name] = 1;
+		if(!ptr->load(descriptor.getName())) return NULL;
+
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));
 	}
 
-	return dynamic_cast<T*>(ptr);
+	return ptr;
 }
 
 template<>
-Texture* ResourceManager::LoadResource<Texture>(const string& name,bool flag)
-{
-	Resource* ptr = LoadResource(name);
-	stringstream ss( name );
+Terrain* ResourceManager::LoadResource<Terrain>(const ResourceDescriptor& descriptor){
+
+	Terrain* ptr = dynamic_cast<Terrain*>(LoadResource(descriptor.getName()));
+
+	if(!ptr){
+
+		ptr = new Terrain();
+		if(!ptr) return NULL;
+
+		if(!ptr->load(descriptor.getName())) return NULL;
+
+		ptr->setName(descriptor.getName());
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));;
+	}
+
+	return ptr;
+}
+
+template<>
+WaterPlane* ResourceManager::LoadResource<WaterPlane>(const ResourceDescriptor& descriptor){
+
+	WaterPlane* ptr = dynamic_cast<WaterPlane*>(LoadResource(descriptor.getName()));
+
+	if(!ptr){
+
+		ptr = new WaterPlane();
+		if(!ptr) return NULL;
+		if(!ptr->load(descriptor.getName())) return NULL;
+		ptr->setName(descriptor.getName());
+
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));
+	}
+
+	return ptr;
+}
+
+template<>
+Texture* ResourceManager::LoadResource<Texture>(const ResourceDescriptor& descriptor){
+
+	Texture* ptr = dynamic_cast<Texture*>(LoadResource(descriptor.getName()));
+	stringstream ss( descriptor.getResourceLocation() );
 	string it;
 	I8 i = 0;
 	while(std::getline(ss, it, ' ')) i++;
 
-	if(!ptr)
-	{
+	if(!ptr){
 		if(i == 6)
-			ptr = GFXDevice::getInstance().newTextureCubemap(flag);
+			ptr = GFXDevice::getInstance().newTextureCubemap(descriptor.getFlag());
 		else if (i == 1)
-			ptr = GFXDevice::getInstance().newTexture2D(flag);
-		else
-		{
-			Con::getInstance().errorfn("TextureManager ERROR: wrong number of files for cubemap texture: [ %s ]", name.c_str());
+			ptr = GFXDevice::getInstance().newTexture2D(descriptor.getFlag());
+		else{
+			Console::getInstance().errorfn("TextureManager: wrong number of files for cubemap texture: [ %s ]", descriptor.getName().c_str());
 			return NULL;
 		}
 
-		dynamic_cast<Texture*>(ptr)->load(name);
+		if(!ptr->load(descriptor.getResourceLocation())){
+			Console::getInstance().errorfn("ResourceManager: could not load texture file [ %s ]", descriptor.getResourceLocation().c_str());
+			return NULL;
+		}
 
-		if(!ptr) return NULL;
+		ptr->setName(descriptor.getName());
 
-		_resDB[name] = ptr;
-		_refCounts[name] = 1;
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));
 	}
-	return dynamic_cast<Texture*>(ptr);
+	return ptr;
 }
 
 template<>
-Shader* ResourceManager::LoadResource<Shader>(const string& name,bool flag)
-{
-	//ToDo: add a counter for shaders so that it get's deleted when no more objects need it anymore - Ionut
-	Resource* ptr = LoadResource(name);
-	if(!ptr)
-	{
+Shader* ResourceManager::LoadResource<Shader>(const ResourceDescriptor& descriptor){
 
+	Shader* ptr = dynamic_cast<Shader*>(LoadResource(descriptor.getName()));
+	if(!ptr){
+		
 		ptr = GFXDevice::getInstance().newShader();
-		dynamic_cast<Shader*>(ptr)->load(name);
-	
+
+		if(descriptor.getResourceLocation().compare("default") == 0)
+			ptr->setResourceLocation(ParamHandler::getInstance().getParam<string>("assetsLocation") + "/shaders/");
+		else
+			ptr->setResourceLocation(descriptor.getResourceLocation());
+
 		if(!ptr) return NULL;
+		if(!ptr->load(descriptor.getName())) return NULL;
+		ptr->setName(descriptor.getName());
 
-		_resDB[name] = ptr;
-		_refCounts[name] = 1;
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));
 	}
 
-	return dynamic_cast<Shader*>(ptr);
+	return ptr;
 }
 
 template<>
-Mesh* ResourceManager::LoadResource<Mesh>(const string& name,bool flag)
-{
+Material* ResourceManager::LoadResource<Material>(const ResourceDescriptor& descriptor){
 
-	Resource* ptr = LoadResource(name);
+	Material* ptr = dynamic_cast<Material*>(LoadResource(descriptor.getName()));
 
-	if(!ptr)
-	{
-		ptr = DVDConverter::getInstance().load(name);
-		if(!dynamic_cast<Mesh*>(ptr)->load(name) || !ptr) return NULL;
+	if(!ptr){
+		ptr = new Material();
+		if(!ptr) return NULL;
+		if(!ptr->load(descriptor.getName())) return NULL;
+		if(descriptor.getFlag()) ptr->skipComputeLightShaders();
+		ptr->setName(descriptor.getName());
 
-		_resDB[name] = ptr;
-		_refCounts[name] = 1;
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));
 	}
-	return dynamic_cast<Mesh*>(ptr);
+	return ptr;
 }
 
 template<>
-AudioDescriptor* ResourceManager::LoadResource<AudioDescriptor>(const string& name, bool flag)
-{
-	Resource* ptr = LoadResource(name);
+Mesh* ResourceManager::LoadResource<Mesh>(const ResourceDescriptor& descriptor){
 
-	if(!ptr)
-	{
+	Mesh* ptr = dynamic_cast<Mesh*>(LoadResource(descriptor.getName()));
+
+	if(!ptr){
+		ptr = DVDConverter::getInstance().load(descriptor.getResourceLocation());
+		if(!ptr) return NULL;
+		if(!ptr->load(descriptor.getName())) return NULL;
+		if(descriptor.getFlag()) ptr->useDefaultMaterial(false);
+		ptr->setName(descriptor.getName());
+
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));
+	}
+	return ptr;
+}
+
+template<>
+Light* ResourceManager::LoadResource<Light>(const ResourceDescriptor& descriptor){
+
+	Light* ptr = dynamic_cast<Light*>(LoadResource(descriptor.getName()));
+
+	if(!ptr){
+
+		ptr = new Light(descriptor.getId());
+
+		if(!ptr) return NULL;
+		if(!ptr->load(descriptor.getName())) return NULL;
+
+		ptr->update();
+
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));
+	}
+	return ptr;
+}
+
+template<>
+AudioDescriptor* ResourceManager::LoadResource<AudioDescriptor>(const ResourceDescriptor& descriptor){
+
+	AudioDescriptor* ptr = dynamic_cast<AudioDescriptor*>(LoadResource(descriptor.getName()));
+
+	if(!ptr){
+
 		ptr = new AudioDescriptor();
-		if(!dynamic_cast<AudioDescriptor*>(ptr)->load(name) || !ptr) return NULL;
-		dynamic_cast<AudioDescriptor*>(ptr)->isLooping() = flag;
-		_resDB[name] = ptr;
-		_refCounts[name] = 1;
+
+		if(!ptr) return NULL;
+		if(!ptr->load(descriptor.getName())) return NULL;
+
+		ptr->isLooping() = descriptor.getFlag();
+
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));
 	}
-	return dynamic_cast<AudioDescriptor*>(ptr);
+	return ptr;
 }
 
 template<>
-Box3D* ResourceManager::LoadResource<Box3D>(const string& name,bool flag)
-{
-	Resource* ptr = LoadResource(name);
-	if(!ptr)
-	{
+TerrainDescriptor* ResourceManager::LoadResource<TerrainDescriptor>(const ResourceDescriptor& descriptor){
+
+	TerrainDescriptor* ptr = dynamic_cast<TerrainDescriptor*>(LoadResource(descriptor.getName()));
+
+	if(!ptr){
+
+		ptr = new TerrainDescriptor();
+
+		if(!ptr) return NULL;
+		if(!ptr->load(descriptor.getName())) return NULL;
+
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));
+	}
+	return ptr;
+}
+
+template<>
+Box3D* ResourceManager::LoadResource<Box3D>(const ResourceDescriptor& descriptor){
+	Box3D* ptr = dynamic_cast<Box3D*>(LoadResource(descriptor.getName()));
+
+	if(!ptr){
+
 	  	ptr = new Box3D(1);
-		if(!dynamic_cast<Box3D*>(ptr)->load(name) || !ptr) return NULL;
-		if(flag) dynamic_cast<Box3D*>(ptr)->clearMaterials();
-		_resDB[name] = ptr;
-		_refCounts[name] = 1;
+
+		if(!ptr) return NULL;
+		if(!ptr->load(descriptor.getName())) return NULL;
+
+		ptr->setName(descriptor.getName());
+
+		if(descriptor.getFlag()){
+			ptr->clearMaterials();
+			ptr->useDefaultMaterial(false);
+		}
+		
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));
 	}
-	return dynamic_cast<Box3D*>(ptr);
+	return ptr;
 }
 
 template<>
-Sphere3D* ResourceManager::LoadResource<Sphere3D>(const string& name,bool flag)
-{
-	Resource* ptr = LoadResource(name);
-	if(!ptr)
-	{
+Sphere3D* ResourceManager::LoadResource<Sphere3D>(const ResourceDescriptor& descriptor){
+
+	Sphere3D* ptr = dynamic_cast<Sphere3D*>(LoadResource(descriptor.getName()));
+
+	if(!ptr){
+
 	  	ptr = new Sphere3D(1,32);
-		if(!dynamic_cast<Sphere3D*>(ptr)->load(name) || !ptr) return NULL;
-		if(flag) dynamic_cast<Sphere3D*>(ptr)->clearMaterials();
-		_resDB[name] = ptr;
-		_refCounts[name] = 1;
+
+		if(!ptr) return NULL;
+		if(!ptr->load(descriptor.getName())) return NULL;
+
+		ptr->setName(descriptor.getName());
+
+		if(descriptor.getFlag()){
+			ptr->clearMaterials();
+			ptr->useDefaultMaterial(false);
+		}
+		
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));
 	}
-	return dynamic_cast<Sphere3D*>(ptr);
+	return ptr;
 }
 
 template<>
-Text3D* ResourceManager::LoadResource<Text3D>(const string& name,bool flag)
-{
-	Resource* ptr = LoadResource(name);
-	if(!ptr)
-	{
-	  	ptr = new Text3D(name);
-		if(!dynamic_cast<Text3D*>(ptr)->load(name) || !ptr) return NULL;
-		if(flag) dynamic_cast<Text3D*>(ptr)->clearMaterials();
-		_resDB[name] = ptr;
-		_refCounts[name] = 1;
+Text3D* ResourceManager::LoadResource<Text3D>(const ResourceDescriptor& descriptor){
+
+	Text3D* ptr = dynamic_cast<Text3D*>(LoadResource(descriptor.getName()));
+
+	if(!ptr){
+
+	  	ptr = new Text3D(descriptor.getName());
+
+		if(!ptr) return NULL;
+		if(!ptr->load(descriptor.getName())) return NULL;
+		
+		ptr->setName(descriptor.getName());
+
+		if(descriptor.getFlag()){
+			ptr->clearMaterials();
+			ptr->useDefaultMaterial(false);
+		}
+		
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));
 	}
-	return dynamic_cast<Text3D*>(ptr);
+	return ptr;
 }
 
 template<>
-Quad3D* ResourceManager::LoadResource<Quad3D>(const string& name,bool flag)
-{
-	Resource* ptr = LoadResource(name);
-	if(!ptr)
-	{
+Quad3D* ResourceManager::LoadResource<Quad3D>(const ResourceDescriptor& descriptor){
+
+	Quad3D* ptr = dynamic_cast<Quad3D*>(LoadResource(descriptor.getName()));
+	
+	if(!ptr){
+
 	  	ptr = new Quad3D(vec3(1,1,0),vec3(-1,0,0),vec3(0,-1,0),vec3(-1,-1,0));
-		if(!dynamic_cast<Quad3D*>(ptr)->load(name) || !ptr) return NULL;
-		if(flag) dynamic_cast<Quad3D*>(ptr)->clearMaterials();
-		_resDB[name] = ptr;
-		_refCounts[name] = 1;
+		if(!ptr) return NULL;
+		if(!ptr->load(descriptor.getName())) return NULL;
+
+		ptr->setName(descriptor.getName());
+
+		if(descriptor.getFlag()){
+			ptr->clearMaterials();
+			ptr->useDefaultMaterial(false);
+		}
+
+		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		_refCounts.insert(make_pair(descriptor.getName(),1));
 	}
-	return dynamic_cast<Quad3D*>(ptr);
+
+	return ptr;
 }
 
 Resource* ResourceManager::LoadResource(const string& name)
 {
 	if(_resDB.find(name) != _resDB.end())	
 	{
-		Con::getInstance().printf("ResourceManager: returning resource [ %s ]. Ref count: %d\n",name.c_str(),_refCounts[name]+1);
+		Console::getInstance().printf("ResourceManager: returning resource [ %s ]. Ref count: %d\n",name.c_str(),_refCounts[name]+1);
 		_refCounts[name] += 1;
 		return _resDB[name];
 	}
 	else
 	{
-		Con::getInstance().printf("ResourceManager: loading resource [ %s ]\n",name.c_str());
+		Console::getInstance().printf("ResourceManager: loading resource [ %s ]\n",name.c_str());
 		return NULL;
+	}
+}
+template<class T>
+void ResourceManager::remove(T *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
 	}
 }
 
 
+template<>
+void ResourceManager::remove(Terrain *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}
+
+template<>
+void ResourceManager::remove(Light *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}
+
+template<>
+void ResourceManager::remove(Shader *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}
+
+template<>
+void ResourceManager::remove(Texture *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}
+
+template<>
+void ResourceManager::remove(Material *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}
+
+template<>
+void ResourceManager::remove(AudioDescriptor *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}
+
+template<>
+void ResourceManager::remove(TerrainDescriptor *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}
+template<>
+void ResourceManager::remove(Object3D *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}
+
+template<>
+void ResourceManager::remove(SceneNode *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}
+
+template<>
+void ResourceManager::remove(Mesh *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}
+
+template<>
+void ResourceManager::remove(Sphere3D*& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}
+
+template<>
+void ResourceManager::remove(Text3D *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}
+
+template<>
+void ResourceManager::remove(Box3D *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}
+
+template<>
+void ResourceManager::remove(Quad3D *& res){
+	if(Manager::remove(res)){
+		delete res;
+		res = NULL;
+	}
+}

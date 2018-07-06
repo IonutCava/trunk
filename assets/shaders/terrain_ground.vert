@@ -1,9 +1,9 @@
-varying vec4 vPixToLightTBN;		// Vecteur du pixel courant à la lumière
-varying vec3 vPixToEyeTBN;			// Vecteur du pixel courant à l'oeil
+varying vec4 vPixToLightTBN;	
+varying vec3 vPixToEyeTBN;
 varying vec3 vPosition;
 varying vec3 vPositionNormalized;
 
-// Bounding Box du terrain
+
 uniform vec3 bbox_min;
 uniform vec3 bbox_max;
 

@@ -1,6 +1,24 @@
+/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _RESOURCE_MANAGER_H
 #define _RESOURCE_MANAGER_H
-
+//#define LoadResource<X>(Y) ResourceManager::getInstance().LoadResource<X>(Y);
+//#define RemoveResource(X)  ResourceManager::getInstance().remove(x);
 
 #include "Managers/Manager.h" 
 #include "Utility/Headers/Singleton.h" 
@@ -11,13 +29,12 @@ typedef Texture TextureCubemap;
 SINGLETON_BEGIN_EXT1( ResourceManager,Manager )
 
 public:
-	Resource* LoadResource(const std::string& name);
-
 	template<class T>
-	T* LoadResource(const std::string& name,bool flag = false);
-
+	T* LoadResource(const ResourceDescriptor& descriptor);
+	template<class T>
+	void remove(T*& res);
 protected:
-	~ResourceManager() {Destroy();}
+	Resource* LoadResource(const std::string& name);
 
 SINGLETON_END()
 

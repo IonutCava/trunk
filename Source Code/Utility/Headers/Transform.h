@@ -1,3 +1,20 @@
+/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _TRANSFORM_H_
 #define _TRANSFORM_H_
 
@@ -13,6 +30,7 @@ public:
 		_rotationMatrix.identity();
 		_scaleMatrix.identity();
 		_translationMatrix.identity();
+		_parentMatrix.identity();
 	}
 
 	Transform(const Quaternion& orientation, const vec3& translation, const vec3& scale) : 
@@ -23,6 +41,7 @@ public:
 		_rotationMatrix.identity();
 		_scaleMatrix.identity();
 		_translationMatrix.identity();
+		_parentMatrix.identity();
 	}
 
 	void setPosition(const vec3& position) 
@@ -93,6 +112,9 @@ public:
 	}
 
 	void scale(const F32 scale){ this->scale(vec3(scale,scale,scale)); }
+	void scaleX(const F32 scale) {this->scale(vec3(scale,_scale.y,_scale.z));}
+	void scaleY(const F32 scale) {this->scale(vec3(_scale.x,scale,_scale.z));}
+	void scaleZ(const F32 scale) {this->scale(vec3(_scale.x,_scale.y,scale));}
 
 	void rotate(const vec3& axis, F32 degrees)
 	{
@@ -124,13 +146,13 @@ public:
 	
 
 	const mat4& getMatrix() {if(isDirty()) applyTransforms(); return _worldMatrix;}
+	const mat4& getParentMatrix() {return _parentMatrix;}
 	const mat4& getRotationMatrix() {return _orientation.getMatrix();}
 	const vec3& getPosition() {return _translation;}
 	const vec3& getScale() {return _scale;}
 	const Quaternion& getOrientation() {return _orientation;}
 
-	void applyTransforms()
-	{
+	void applyTransforms(){
 		_worldMatrix.identity();
 		_worldMatrix *= _translationMatrix;
 		_worldMatrix *= _rotationMatrix;
@@ -138,12 +160,25 @@ public:
 		clean();
 	}
 
-	void setTransforms(const mat4& transform)
-	{
+	void setTransforms(const mat4& transform){
 		_worldMatrix = transform;
 		clean();
 	}
 
+	void setParentMatrix(const mat4& transform){
+		_parentMatrix = transform;
+	}
+
+	bool compare(Transform* t){
+		bool result = false;
+
+		if(_scale.compare(t->_scale) &&  
+		   _orientation.compare(t->_orientation) &&
+		   _translation.compare(t->_translation))
+		   result = true;
+
+		return result;
+	}
 private:
 	bool isDirty() {return _dirty;}
 	void clean()   {_dirty = false;} 
@@ -154,7 +189,7 @@ private:
 	F32 _angle;
 	vec3 _translation;
 	vec3 _scale;
-	mat4 _worldMatrix,_scaleMatrix,_rotationMatrix,_translationMatrix;
+	mat4 _worldMatrix,_scaleMatrix,_rotationMatrix,_translationMatrix,_parentMatrix;
 	bool _dirty;
 };
 

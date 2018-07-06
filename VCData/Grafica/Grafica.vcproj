@@ -386,6 +386,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Source Code\Terrain\TerrainDescriptor.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\Terrain\Water.cpp"
 				>
 			</File>
@@ -398,15 +402,15 @@
 			Name="Utility"
 			>
 			<File
+				RelativePath="..\..\Source Code\Utility\Console.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\Utility\Event.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\Source Code\Utility\Guardian.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Source Code\Utility\Headers\Manager.h"
 				>
 			</File>
 			<File
@@ -429,7 +433,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Utility\Headers\DataTypes.h"
+					RelativePath="..\..\Source Code\Utility\Headers\Console.h"
 					>
 				</File>
 				<File
@@ -790,14 +794,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Source Code\Managers\TerrainManager.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Source Code\Managers\TerrainManager.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\Source Code\Managers\TextureManager.cpp"
 				>
 			</File>
@@ -823,10 +819,6 @@
 			</File>
 			<File
 				RelativePath="..\..\Source Code\Geometry\Object3D.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Source Code\Geometry\Object3DFlyWeight.h"
 				>
 			</File>
 			<File
@@ -1029,6 +1021,130 @@
 					</Filter>
 				</Filter>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="shaders"
+			>
+			<File
+				RelativePath="..\..\assets\shaders\DeferredShadingPass1.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\DeferredShadingPass1.vert"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\DeferredShadingPass1_bump.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\DeferredShadingPass1_color.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\DeferredShadingPass2.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\DeferredShadingPass2.vert"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\frag_color.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\lighting.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\lighting.vert"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\OBJ.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\OBJ.vert"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\sky.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\sky.vert"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\terrain_grass.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\terrain_grass.vert"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\terrain_ground.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\terrain_ground.vert"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\terrain_tree.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\terrain_tree.vert"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\texturing.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\vertex_transform.vert"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\water.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\water.vert"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="EngineGraphs"
+			>
+			<File
+				RelativePath="..\..\Source Code\EngineGraphs\SceneGraph.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\EngineGraphs\SceneGraphNode.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\EngineGraphs\SceneGraphNode.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\EngineGraphs\SceneNode.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\EngineGraphs\SceneNode.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\EngineGraphs\SpatialGraph.h"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath="..\..\Source Code\config.h"

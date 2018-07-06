@@ -6,6 +6,11 @@
 	<treeVisibility>40000</treeVisibility>
 </vegetation>
 
+<water>
+	<waterLevel>100</waterLevel>
+	<waterDepth>500</waterDepth>
+</water>
+
 <wind>
 	<windDirX>1</windDirX>
 	<windDirZ>-1</windDirZ>

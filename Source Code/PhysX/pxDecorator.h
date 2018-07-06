@@ -1,3 +1,20 @@
+/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "PhysX.h"
 
 class PendingActor
@@ -33,28 +50,28 @@ public:
     }
 	void setBody(NxBodyDesc *b)
 	{
-	    Con::getInstance().printfn("Setting Body");
+	    Console::getInstance().printfn("Setting Body");
 		body = b;
 	}
 	void setName(const std::string& n)
 	{
-		Con::getInstance().printfn("Setting Name");
+		Console::getInstance().printfn("Setting Name");
 		name = n;
 	}
 	void setConvexShape(NxConvexShapeDesc meshDescription)
 	{
-		Con::getInstance().printfn("We are using a Convex Shape ");
+		Console::getInstance().printfn("We are using a Convex Shape ");
 		staticMeshDesc = meshDescription;
 	}
 	void setTriangleShape(NxTriangleMeshShapeDesc meshDescription)
 	{
-        Con::getInstance().printfn("We are using a Triangle Shape");
+        Console::getInstance().printfn("We are using a Triangle Shape");
 		staticTMeshDesc = meshDescription;
 	}
 	void setUseConvex(bool status){UseConvex = status;}
 	void setPos(NxVec3 pos)
 	{
-		Con::getInstance().printfn("Setting position to %f , %f, %f", pos.x , pos.y , pos.z);
+		Console::getInstance().printfn("Setting position to %f , %f, %f", pos.x , pos.y , pos.z);
 		position = pos;
 	}
 private:

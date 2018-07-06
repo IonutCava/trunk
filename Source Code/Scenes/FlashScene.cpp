@@ -10,7 +10,7 @@ void FlashScene::render()
 	RenderState s(true,true,true,true);
 	GFXDevice::getInstance().setRenderState(s);
 
-	GFXDevice::getInstance().renderElements(GeometryArray);
+	_sceneGraph->render();
 
 	GUI::getInstance().draw();
 	

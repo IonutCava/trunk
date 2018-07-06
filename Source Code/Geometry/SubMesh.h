@@ -1,3 +1,20 @@
+/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _SUB_MESH_H_
 #define _SUB_MESH_H_
 #include "Object3D.h"
@@ -23,9 +40,10 @@ class SubMesh : public Object3D
 {
 
 public:
-	SubMesh(const std::string& name) : Object3D(name){
-									_geometry = GFXDevice::getInstance().newVBO();
-									_geometryType = SUBMESH;}
+	SubMesh(const std::string& name) : Object3D(name,SUBMESH),
+								      _geometry(GFXDevice::getInstance().newVBO())
+									 {}
+
 
 	SubMesh(const SubMesh& old) : Object3D(old),
 								 _render(old._render),_vboPositionOffset(old._vboPositionOffset){
@@ -34,10 +52,9 @@ public:
 		_indices.reserve(old._indices.size());
 		for(U32 i = 0; i < old._indices.size(); i++)
 			_indices.push_back(old._indices[i]);
-		_material = old._material;
 	}
 	~SubMesh() {
-		if(_geometry) {
+		if(_geometry != NULL) {
 			delete _geometry;
 			_geometry = NULL;
 		}
@@ -47,15 +64,13 @@ public:
 
 	inline VertexBufferObject* getGeometryVBO() {return _geometry;    } 
 	inline std::vector<U32>&   getIndices()     {return _indices;     }
-	inline Material&           getMaterial()	{return _material;    }   
 
 private:
-	void computeBoundingBox();
+	bool computeBoundingBox();
 
 private:
 	bool _visibleToNetwork, _render;
 	VertexBufferObject*     _geometry;
-	Material		        _material;
 	std::vector<U32>        _indices;
 	U32                     _vboPositionOffset;
 };

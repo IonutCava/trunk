@@ -31,7 +31,8 @@ void Event::run()
 
 		
 	}
-	Con::getInstance().printfn("EventManager: Deleting thread: %d", boost::this_thread::get_id());
+	Console::getInstance().printfn("EventManager: Deleting thread: %d", boost::this_thread::get_id());
+	_end = false;
 }
 
 

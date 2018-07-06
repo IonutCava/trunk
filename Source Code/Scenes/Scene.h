@@ -1,26 +1,43 @@
+/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _SCENE_H
 #define _SCENE_H
 
 #include "resource.h"
+#include "EngineGraphs/SceneGraph.h"
 #include "Hardware/Input/InputManager.h"
 #include "Utility/Headers/BaseClasses.h"
 #include "Utility/Headers/Event.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Hardware/Audio/SFXDevice.h"
 #include "Importer/DVDConverter.h"
-#include "Managers/TerrainManager.h"
+#include "Terrain/TerrainDescriptor.h"
 #include "Hardware/Video/Light.h"
 
 typedef std::tr1::shared_ptr<Event> Event_ptr;
-typedef std::tr1::shared_ptr<Light> Light_ptr;
 typedef std::tr1::unordered_map<std::string, Object3D*> Name_Object_map;
+class SceneGraph;
 class Scene : public Resource
 {
 
 public:
-	Scene() :
+	Scene() :  Resource(),
 	  _GFX(GFXDevice::getInstance()),
-	  _terMgr(new TerrainManager()),
 	  _drawBB(false),
 	  _drawObjects(true),
 	  _lightTexture(NULL),
@@ -30,9 +47,10 @@ public:
 	  {
 		  _white = vec4(1.0f,1.0f,1.0f,1.0f);
 		  _black = vec4(0.0f,0.0f,0.0f,0.0f);
+		  _sceneGraph = new SceneGraph();
 	  };
 
-	virtual ~Scene();
+	virtual ~Scene() {};
 	void addGeometry(Object3D* const object);
 	void addModel(Mesh* const model);
 	bool removeGeometry(const std::string& name);
@@ -41,29 +59,38 @@ public:
 
 	virtual void render() = 0;
 	virtual void preRender() = 0;
-	virtual bool load(const std::string& name) = 0;
+	virtual bool load(const std::string& name);
 	
 	virtual void processInput() = 0;
 	virtual void processEvents(F32 time) = 0;
 
-   U32 getNumberOfObjects(){return GeometryArray.size();}
-   U32 getNumberOfTerrains(){return TerrainInfoArray.size();}
+	F32& getWindSpeed(){return _windSpeed;}
+	F32& getWindDirX(){return _windDirX;}
+	F32& getWindDirZ(){return _windDirZ;}
+	F32&  getGrassVisibility()		    {return _grassVisibility;}
+	F32&  getTreeVisibility()		    {return _treeVisibility;}
+	F32&  getGeneralVisibility()	  	{return _generalVisibility;}
+	F32&  getWaterLevel()               {return _waterHeight;}
+	F32&  getWaterDepth()               {return _waterDepth;}
 
-   TerrainManager* getTerrainManager() {return _terMgr;}
+   //U32 getNumberOfObjects(){return GeometryArray.size();}
+   U32 getNumberOfTerrains(){return TerrainInfoArray.size();}
+   std::vector<TerrainDescriptor*>& getTerrainInfoArray(){return TerrainInfoArray;}
    inline Shader*                                         getDeferredShaders() {return _deferredShader;}
-   inline std::tr1::unordered_map<std::string,Object3D*>& getGeometryArray(){return GeometryArray;}
+   //inline std::tr1::unordered_map<std::string,Object3D*>& getGeometryArray(){return GeometryArray;}
 
    inline std::vector<FileData>& getModelDataArray() {return ModelDataArray;}
    inline std::vector<FileData>& getVegetationDataArray() {return VegetationDataArray;}
 
-   inline std::vector<Light_ptr>& getLights() {return _lights;}
+   inline std::vector<Light*>& getLights() {return _lights;}
    inline std::vector<Event_ptr>& getEvents() {return _events;}
 
-   void   addLight(Light_ptr lightItem) {_lights.push_back(lightItem);}
+   inline SceneGraph* getSceneGraph()	{return _sceneGraph;}
+   void   addLight(Light* lightItem) {_lights.push_back(lightItem);}
    void   addEvent(Event_ptr eventItem) {_events.push_back(eventItem);}
 
    void addModel(FileData& model) {ModelDataArray.push_back(model);}
-   void addTerrain(const TerrainInfo& ter) {TerrainInfoArray.push_back(ter);}
+   void addTerrain(TerrainDescriptor* ter) {TerrainInfoArray.push_back(ter);}
    void addPatch(std::vector<FileData>& data);
    bool clean();
 
@@ -75,15 +102,14 @@ public:
 protected:
 
 	GFXDevice& _GFX;
-	TerrainManager* _terMgr;
 
-	Name_Object_map GeometryArray;
-	Name_Object_map::iterator GeometryIterator;
+	/*Name_Object_map GeometryArray;
+	Name_Object_map::iterator GeometryIterator;*/
 
 	//Datablocks for models,vegetation and terrains
 	std::vector<FileData> ModelDataArray, PendingDataArray;
 	std::vector<FileData> VegetationDataArray;
-	std::vector<TerrainInfo> TerrainInfoArray;
+	std::vector<TerrainDescriptor*> TerrainInfoArray;
 	
 	std::vector<F32> _eventTimers;
 
@@ -97,10 +123,13 @@ protected:
 	FrameBufferObject* _deferredBuffer;
 	PixelBufferObject* _lightTexture;
 	Shader*			   _deferredShader;
-
+	SceneGraph*        _sceneGraph;
+	F32			       _grassVisibility,_treeVisibility,_generalVisibility,
+				 	   _windSpeed,_windDirX, _windDirZ, _waterHeight, _waterDepth;
 private: 
 	std::vector<Event_ptr> _events;
-	std::vector<Light_ptr> _lights;
+	std::vector<Light*> _lights;
+
 protected:
 
 	friend class SceneManager;

@@ -1,6 +1,24 @@
+/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _WRAPPER_GL_H_
 #define _WRAPPER_GL_H_
-#include "Utility/Headers/Singleton.h"
+//#include "Utility/Headers/Singleton.h"
+#include "EngineGraphs/SceneNode.h"
 #include "../RenderAPIWrapper.h"
 
 #include "glFrameBufferObject.h"
@@ -47,6 +65,8 @@ private:
 	void enable_MODELVIEW();
 	void loadIdentityMatrix();
 	void toggle2D(bool _2D);
+	void setTextureMatrix(U16 slot, const mat4& transformMatrix);
+	void restoreTextureMatrix(U16 slot);
 
 	void drawTextToScreen(Text*);
 	void drawCharacterToScreen(void* ,char);
@@ -60,9 +80,9 @@ private:
 	void drawText3D(Text3D* const text);
 
 	void renderModel(Object3D* const model);
-	void renderElements(Type t, U32 count, const void* first_element);
+	void renderElements(Type t, U32 count, const void* first_element, bool inverty = false);
 	
-	void setMaterial(Material& mat);
+	void setMaterial(Material* mat);
 	void setColor(const vec4& color);
 	void setColor(const vec3& color);
 
@@ -74,12 +94,15 @@ private:
 	void toggleWireframe(bool state);
 
 	void setRenderState(RenderState& state);
+
 private: //OpenGL specific:
 
 	void pushMatrix();
 	void popMatrix();
-	void prepareMaterial(Material& mat,Shader* prevShader = NULL);
-	void releaseMaterial(Material& mat,Shader* prevShader = NULL);
+	void prepareMaterial(SceneNode* model, Material* mat,Shader* prevShader = NULL);
+	void releaseMaterial(Material* mat,Shader* prevShader = NULL);
+	void setObjectState(SceneNode* const model);
+	void releaseObjectState(SceneNode* const model);
 
 SINGLETON_END()
 

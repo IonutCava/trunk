@@ -1,3 +1,20 @@
+/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _GL_TEXTURE_H_
 #define _GL_TEXTURE_H_
 
@@ -18,9 +35,6 @@ public:
 
 	void Bind(U16 slot) const;
 	void Unbind(U16 slot) const;
-
-	void SetMatrix(U16 slot, const mat4& transformMatrix);
-	void RestoreMatrix(U16 slot);
 
 	void LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d);
 

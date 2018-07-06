@@ -18,43 +18,47 @@ using namespace std;
 
 #define USE_FREEGLUT
 
-void resizeWindowCallback(I32 w, I32 h)
-{
+void resizeWindowCallback(I32 w, I32 h){
 	GUI::getInstance().onResize(w,h);
 	GFXDevice::getInstance().resizeWindow(w,h);
 }
 
-void GL_API::initHardware()
-{
+void GL_API::initHardware(){
 	I32   argc   = 1; 
 	char *argv[] = {"DIVIDE Engine", NULL};
     glutInit(&argc, argv);
-	glutInitContextVersion(2,0);
+	//glutInitContextVersion(3,3);
+	glutInitContextProfile(GLUT_CORE_PROFILE);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL | GLUT_DOUBLE);
 	glutInitWindowSize(Engine::getInstance().getWindowDimensions().width,Engine::getInstance().getWindowDimensions().height);
 	glutInitWindowPosition(10,50);
 	Engine::getInstance().setMainWindowId(glutCreateWindow("DIVIDE Engine"));
 	U32 err = glewInit();
-	if (GLEW_OK != err)
-	{
-		Con::getInstance().errorfn("GFXDevice: %s \nTry switching to DX (version 9.0c required) or upgrade hardware.\nApplication will now exit!",glewGetErrorString(err));
+	if (GLEW_OK != err){
+		Console::getInstance().errorfn("GFXDevice: %s \nTry switching to DX (version 9.0c required) or upgrade hardware.\nApplication will now exit!",glewGetErrorString(err));
 		exit(1);
 	}
-	string ver;
-	if      (glewIsSupported("GL_VERSION_3_2")) ver = "3.2";
-	else if	(glewIsSupported("GL_VERSION_3_1"))	ver = "3.1";
-	else if	(glewIsSupported("GL_VERSION_3_0")) ver = "3.0";
-	else if	(glewIsSupported("GL_VERSION_2_1")) ver = "2.1";
-	else if	(glewIsSupported("GL_VERSION_2_0")) ver = "2.0";
-	else
-	{
-		Con::getInstance().errorfn("Your current hardware does not support the OpenGL 2.0 extension set!");
-		Con::getInstance().printfn("Try switching to DX (version 9.0c required) or upgrade hardware.");
-		Con::getInstance().printfn("Application will now exit!");
+
+
+	I32 major = 0, minor = 0, max_frag_uniform = 0, max_varying_floats = 0,max_vertex_uniform = 0, max_vertex_attrib = 0;
+	glGetIntegerv(GL_MAJOR_VERSION, &major);
+    glGetIntegerv(GL_MINOR_VERSION, &minor);
+	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &max_frag_uniform);
+	glGetIntegerv(GL_MAX_VARYING_FLOATS, &max_varying_floats);
+	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &max_vertex_uniform);
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attrib);
+
+	if(major < 2){
+		Console::getInstance().errorfn("Your current hardware does not support the OpenGL 2.0 extension set!");
+		Console::getInstance().printfn("Try switching to DX (version 9.0c required) or upgrade hardware.");
+		Console::getInstance().printfn("Application will now exit!");
 		exit(2);
 	}
-	Con::getInstance().printfn("Hardware acceleration up to OpenGL %s supported!", ver.c_str());
-	ver.empty();
+	Console::getInstance().printfn("Max GLSL fragment uniform components supported: %d",max_frag_uniform);
+	Console::getInstance().printfn("Max GLSL fragment varying floats supported: %d",max_varying_floats);
+	Console::getInstance().printfn("Max GLSL vertex uniform components supported: %d",max_vertex_uniform);
+	Console::getInstance().printfn("Max GLSL vertex attributes supported: %d",max_vertex_attrib);
+	Console::getInstance().printfn("Hardware acceleration up to OpenGL %d.%d supported!",major,minor);
 	
 	glClearColor(0.1f,0.1f,0.8f,0.2f);
 	glDepthFunc(GL_LEQUAL); 
@@ -70,7 +74,7 @@ void GL_API::initHardware()
 	glutReshapeFunc(resizeWindowCallback);
 	glutDisplayFunc(Engine::getInstance().DrawSceneStatic);
 	glutIdleFunc(Engine::getInstance().Idle);
-	Con::getInstance().printfn("OpenGL rendering system initialized!");
+	Console::getInstance().printfn("OpenGL rendering system initialized!");
 /*
 	int (*SwapInterval)(int);
 
@@ -219,9 +223,22 @@ void GL_API::enable_MODELVIEW()
 	glMatrixMode( GL_MODELVIEW );
 }
 
-void GL_API::loadIdentityMatrix()
-{
+void GL_API::loadIdentityMatrix(){
 	glLoadIdentity();
+}
+
+void GL_API::setTextureMatrix(U16 slot, const mat4& transformMatrix){
+	glMatrixMode(GL_TEXTURE);
+	glActiveTexture(GL_TEXTURE0+slot);
+	glLoadMatrixf( transformMatrix );
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void GL_API::restoreTextureMatrix(U16 slot){
+	glMatrixMode(GL_TEXTURE);
+	glActiveTexture(GL_TEXTURE0+slot);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void GL_API::drawTextToScreen(Text* text)
@@ -355,11 +372,15 @@ void GL_API::setRenderState(RenderState& state)
 //ToDo: Sort meshes by material!!!!! - Ionut
 //Maybe create custom materials and manually assign them to submeshes?
 //Bind once, draw all meshes affected by material, unbind?
-void GL_API::prepareMaterial(Material& mat, Shader* prevShader){
-	Shader* s = mat.getShader();
-	Texture2D* baseTexture = mat.getTexture(Material::TEXTURE_BASE);
-	Texture2D* bumpTexture = mat.getTexture(Material::TEXTURE_BUMP);
-	Texture2D* secondTexture = mat.getTexture(Material::TEXTURE_SECOND);
+void GL_API::prepareMaterial(SceneNode* model, Material* mat, Shader* prevShader){
+	if(!mat) return;
+	Shader* s = mat->getShader();
+	F32 windX = SceneManager::getInstance().getActiveScene()->getWindDirX();
+	F32 windZ = SceneManager::getInstance().getActiveScene()->getWindDirX();
+	F32 windS = SceneManager::getInstance().getActiveScene()->getWindSpeed();
+	Texture2D* baseTexture = mat->getTexture(Material::TEXTURE_BASE);
+	Texture2D* bumpTexture = mat->getTexture(Material::TEXTURE_BUMP);
+	Texture2D* secondTexture = mat->getTexture(Material::TEXTURE_SECOND);
 	U8 count = 0;
 	if(baseTexture){
 		baseTexture->Bind(0);
@@ -371,17 +392,18 @@ void GL_API::prepareMaterial(Material& mat, Shader* prevShader){
 		secondTexture->Bind(2);
 		count++;
 	}
-
 	setMaterial(mat);
+
 	if(s) {
+		//Console::getInstance().printfn("Model [ %s ] uses shader [ %s ]",model->getName().c_str(), s->getName().c_str());
 		if(prevShader){ //If we specified a previous shader
 			if(s->getName().compare(prevShader->getName()) != 0) //Only bind/unbind if we have a new shader;
 				s->bind();
 		}else{
 			s->bind();
 		}
-
-		s->Uniform("color",mat.diffuse);
+		s->Uniform("scale",model->getTransform()->getScale());
+		s->Uniform("material",mat->getMaterialMatrix());
 		if(baseTexture)	s->UniformTexture("texDiffuse0",0);
 		if(!GFXDevice::getInstance().getDeferredShading()){
 			if(bumpTexture){
@@ -395,14 +417,19 @@ void GL_API::prepareMaterial(Material& mat, Shader* prevShader){
 			s->Uniform("enable_shadow_mapping", 0);
 			s->Uniform("tile_factor", 1.0f);
 		}
+		s->Uniform("time", GETTIME());
+		s->Uniform("windDirectionX", windX);
+		s->Uniform("windDirectionZ", windZ);
+		s->Uniform("windSpeed", windS);
 	}
 }
 
-void GL_API::releaseMaterial(Material& mat, Shader* prevShader){
-	Shader* s = mat.getShader();
-	Texture2D* baseTexture = mat.getTexture(Material::TEXTURE_BASE);
-	Texture2D* bumpTexture = mat.getTexture(Material::TEXTURE_BUMP);
-	Texture2D* secondTexture = mat.getTexture(Material::TEXTURE_SECOND);
+void GL_API::releaseMaterial(Material* mat, Shader* prevShader){
+	if(!mat) return;
+	Shader* s = mat->getShader();
+	Texture2D* baseTexture = mat->getTexture(Material::TEXTURE_BASE);
+	Texture2D* bumpTexture = mat->getTexture(Material::TEXTURE_BUMP);
+	Texture2D* secondTexture = mat->getTexture(Material::TEXTURE_SECOND);
 
 	if(s)
 		if(prevShader){ //If we specified a previous shader
@@ -450,14 +477,12 @@ void GL_API::drawBox3D(vec3 min, vec3 max)
 
 void GL_API::drawBox3D(Box3D* const model)
 {
-	model->onDraw();
-
 	pushMatrix();
 
 	glMultMatrixf(model->getTransform()->getMatrix());
-	glMultMatrixf(model->getParentMatrix());
+	glMultMatrixf(model->getTransform()->getParentMatrix());
 
-	prepareMaterial(model->getMaterial());
+	prepareMaterial(model, model->getMaterial());
 
 	glutSolidCube(model->getSize());
 
@@ -469,13 +494,12 @@ void GL_API::drawBox3D(Box3D* const model)
 
 void GL_API::drawSphere3D(Sphere3D* const model)
 {
-	model->onDraw();
 	pushMatrix();
 	glMultMatrixf(model->getTransform()->getMatrix());
-	glMultMatrixf(model->getParentMatrix());
+	glMultMatrixf(model->getTransform()->getParentMatrix());
 
-	prepareMaterial(model->getMaterial());
-
+	prepareMaterial(model, model->getMaterial());
+	
 	glutSolidSphere(model->getSize(), model->getResolution(),model->getResolution());
 
 	releaseMaterial(model->getMaterial());
@@ -483,17 +507,23 @@ void GL_API::drawSphere3D(Sphere3D* const model)
 	popMatrix();
 
 }
-
-void GL_API::drawQuad3D(Quad3D* const model)
-{
-	model->onDraw();
-
+void GL_API::setObjectState(SceneNode* const model){
 	pushMatrix();
 
 	glMultMatrixf(model->getTransform()->getMatrix());
-	glMultMatrixf(model->getParentMatrix());
+	glMultMatrixf(model->getTransform()->getParentMatrix());
 
-	prepareMaterial(model->getMaterial());
+	prepareMaterial(model, model->getMaterial());
+}
+
+void GL_API::releaseObjectState(SceneNode* const model){
+	releaseMaterial(model->getMaterial());
+	popMatrix();
+}
+
+void GL_API::drawQuad3D(Quad3D* const model)
+{
+	setObjectState(model);
 
 	glBegin(GL_TRIANGLE_STRIP); //GL_TRIANGLE_STRIP is slightly faster on newer HW than GL_QUAD,
 								//as GL_QUAD converts into a GL_TRIANGLE_STRIP at the driver level anyway
@@ -508,22 +538,18 @@ void GL_API::drawQuad3D(Quad3D* const model)
 		glVertex3f(model->getCorner(Quad3D::BOTTOM_RIGHT).x, model->getCorner(Quad3D::BOTTOM_RIGHT).y, model->getCorner(Quad3D::BOTTOM_RIGHT).z);
 	glEnd();
 
-	releaseMaterial(model->getMaterial());
-	
-	popMatrix();
+	releaseObjectState(model);
 
 }
 
 void GL_API::drawText3D(Text3D* const model)
 {
-	model->onDraw();
-
 	pushMatrix();
 
 	glMultMatrixf(model->getTransform()->getMatrix());
-	glMultMatrixf(model->getParentMatrix());
+	glMultMatrixf(model->getTransform()->getParentMatrix());
 
-	prepareMaterial(model->getMaterial());
+	prepareMaterial(model, model->getMaterial());
 
 	glPushAttrib(GL_ENABLE_BIT);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -543,33 +569,41 @@ void GL_API::drawText3D(Text3D* const model)
 void GL_API::renderModel(Object3D* const model)
 {
 	Mesh* tempModel = dynamic_cast<Mesh*>(model);
+
 	pushMatrix();
 	//ToDo: Per submesh transforms!!!!!!!!!!!!!!!!!!! - Ionut
 	glMultMatrixf(tempModel->getTransform()->getMatrix());
-	glMultMatrixf(tempModel->getParentMatrix());
+	glMultMatrixf(model->getTransform()->getParentMatrix());
 	Shader* prevShader = NULL;
+
 	for(vector<SubMesh* >::iterator subMeshIterator = tempModel->getSubMeshes().begin(); 
 		subMeshIterator != tempModel->getSubMeshes().end(); 
 		++subMeshIterator)	{
 
 		SubMesh *s = (*subMeshIterator);
-
-		prepareMaterial(s->getMaterial(), prevShader);
+		prepareMaterial(s, s->getMaterial(), prevShader);
 
 		s->getGeometryVBO()->Enable();
 			glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
 		s->getGeometryVBO()->Disable();
 
 		releaseMaterial(s->getMaterial(), prevShader);
-		prevShader = s->getMaterial().getShader();
+		prevShader = s->getMaterial()->getShader();
 		
 	}
 	popMatrix();
 }
 
-void GL_API::renderElements(Type t, U32 count, const void* first_element)
+void GL_API::renderElements(Type t, U32 count, const void* first_element, bool inverty)
 {
+	if(inverty){
+		glPushMatrix();
+		glScalef(1,-1,1);
+	}
 	glDrawElements(t, count, GL_UNSIGNED_INT, first_element );
+
+	if(inverty)
+		glPopMatrix();
 }
 
 void GL_API::toggle2D(bool _2D)
@@ -602,13 +636,13 @@ void GL_API::toggle2D(bool _2D)
 	}
 }
 
-void GL_API::setMaterial(Material& mat)
+void GL_API::setMaterial(Material* mat)
 {
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,mat.diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mat.ambient);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mat.specular);
-	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS,mat.shininess);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,mat.emmissive);
+	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,mat->getMaterialMatrix().getCol(1));
+	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mat->getMaterialMatrix().getCol(0));
+	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mat->getMaterialMatrix().getCol(2));
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS,mat->getMaterialMatrix().getCol(3).x);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,vec4(mat->getMaterialMatrix().getCol(3).y,mat->getMaterialMatrix().getCol(3).z,mat->getMaterialMatrix().getCol(3).w,1.0f));
 }
 
 void GL_API::setColor(const vec4& color)
@@ -624,8 +658,8 @@ void GL_API::setColor(const vec3& color)
 
 void GL_API::initDevice()
 {
-	F32 global_ambient[] = { 0.8f, 0.8f, 0.8f, 1.0f };
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
+	//F32 global_ambient[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+	//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
 	glutMainLoop();
 }
 

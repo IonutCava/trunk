@@ -26,18 +26,18 @@ void glShader::validateProgram(U16 program) {
 
 	glValidateProgram(program);
 	glGetProgramInfoLog(program, BUFFER_SIZE, &length, buffer);
-	Con::getInstance().printfn("GLSL Manager: Validating program:  %s ", buffer);
+	Console::getInstance().printfn("GLSL Manager: Validating program:  %s ", buffer);
 	I32 status;
 	glGetProgramiv(program, GL_VALIDATE_STATUS, &status);
 	if (status == GL_FALSE)
-		Con::getInstance().errorfn("GLSL Manager: Error validating shader [ %d ]", program);
+		Console::getInstance().errorfn("GLSL Manager: Error validating shader [ %d ]", program);
 }
 
 
 
 char* glShader::shaderFileRead(const string &fn) {
 
-	string file = ParamHandler::getInstance().getParam<string>("assetsLocation") + "/shaders/" + fn;
+	string file = getResourceLocation()+ fn;
 	FILE *fp = NULL;
 	fopen_s(&fp,file.c_str(),"r");
 
@@ -97,9 +97,9 @@ bool glShader::loadVertOnly(const string& name)
 
 bool glShader::load(const string& name)
 {
+	setName(name);
 	if(!_loaded)
 	{
-		_name = name;
 		if(name.length() >= 6)
 		{
 			size_t pos = name.find(",");
@@ -114,7 +114,7 @@ bool glShader::load(const string& name)
 				else if(extension1.compare(".frag") == 0 && extension2.compare(".vert") == 0)
 					init(shaderFile1,shaderFile2);
 				else
-					Con::getInstance().errorfn("GLSL: could not load shaders: %s",name.c_str());
+					Console::getInstance().errorfn("GLSL: could not load shaders: %s",name.c_str());
 			}
 			else
 			{
@@ -138,12 +138,11 @@ void glShader::init(const string &vsFile, const string &fsFile) {
 	if(fsFile.compare("none") != 0) useFrag = true;
 
     if(useVert && useFrag) 
-		Con::getInstance().printfn("GLSL Manager: Loading shaders %s and %s.",vsFile.c_str(),fsFile.c_str());
+		Console::getInstance().printfn("GLSL Manager: Loading shaders %s and %s.",vsFile.c_str(),fsFile.c_str());
 	if(useVert && !useFrag)
-		Con::getInstance().printfn( "GLSL Manager: Loading shaders %s.",vsFile.c_str());
+		Console::getInstance().printfn( "GLSL Manager: Loading shaders %s.",vsFile.c_str());
 	if(!useVert && useFrag)
-		Con::getInstance().printfn("GLSL Manager: Loading shaders %s.",fsFile.c_str());
-
+		Console::getInstance().printfn("GLSL Manager: Loading shaders %s.",fsFile.c_str());
 	_shaderId = glCreateProgram();
 	if(useVert)
 	{
@@ -151,7 +150,7 @@ void glShader::init(const string &vsFile, const string &fsFile) {
 		const char* vsText = shaderFileRead(vsFile);
 		if(vsText == NULL)
 		{
-			Con::getInstance().errorfn("GLSL Manager: Vertex shader [ %s ] not found!",vsFile.c_str());
+			Console::getInstance().errorfn("GLSL Manager: Vertex shader [ %s ] not found!",vsFile.c_str());
 			return;
 		}
 		glShaderSource(_shaderVP, 1, &vsText, 0);
@@ -167,7 +166,7 @@ void glShader::init(const string &vsFile, const string &fsFile) {
 		const char* fsText = shaderFileRead(fsFile);
 		if(fsText == NULL)
 		{
-			Con::getInstance().errorfn("GLSL Manager: Fragment shader [ %s ] not found!",fsFile.c_str());
+			Console::getInstance().errorfn("GLSL Manager: Fragment shader [ %s ] not found!",fsFile.c_str());
 			return;
 		}
 		glShaderSource(_shaderFP, 1, &fsText, 0);

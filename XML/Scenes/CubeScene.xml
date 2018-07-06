@@ -12,6 +12,11 @@
 	<windSpeed>1</windSpeed>
 </wind>
 
+<water>
+	<waterLevel>100</waterLevel>
+	<waterDepth>500</waterDepth>
+</water>
+
 <options>
 	<visibility>1000</visibility>
 </options>

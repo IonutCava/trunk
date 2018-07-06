@@ -1,3 +1,20 @@
+/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _INPUT_MANAGER_H_
 #define _INPUT_MANAGER_H_
 
@@ -192,14 +209,14 @@ class EffectManager
 	  // Print details about playable effects
 	  if (_vecPlayableEffectInd.empty())
 	  {
-		  Con::getInstance().printfn("InputManager: The device can't play any effect of the test set");
+		  Console::getInstance().printfn("InputManager: The device can't play any effect of the test set");
 	  }
 	  else
 	  {
-		  Con::getInstance().printfn("InputManager: Selected device can play the following effects :");
+		  Console::getInstance().printfn("InputManager: Selected device can play the following effects :");
 		for (size_t nEffIndInd = 0; nEffIndInd < _vecPlayableEffectInd.size(); nEffIndInd++)
 			printEffect(_vecPlayableEffectInd[nEffIndInd]);
-		Con::getInstance().printfn("");
+		Console::getInstance().printfn("");
 	  }
 	}
 
@@ -211,14 +228,14 @@ class EffectManager
 	  // Nothing to do if no joystick currently selected
 	  if (!_pJoystickMgr->getCurrentFFDevice())
 	  {
-		  Con::getInstance().printfn("InputManager: No Joystick selected.");  
+		  Console::getInstance().printfn("InputManager: No Joystick selected.");  
 		return;
 	  }
 
 	  // Nothing to do if joystick cannot play any effect
 	  if (_vecPlayableEffectInd.empty())
 	  {
-		  Con::getInstance().printfn("InputManager: No playable effects."); 
+		  Console::getInstance().printfn("InputManager: No playable effects."); 
 		return;
 	  }
 
@@ -255,7 +272,7 @@ class EffectManager
 
     void printEffect(size_t nEffInd)
     {
-		Con::getInstance().printfn("InputManager: * #%d : %s",nEffInd,_vecEffects[nEffInd]->getDescription());
+		Console::getInstance().printfn("InputManager: * #%d : %s",nEffInd,_vecEffects[nEffInd]->getDescription());
 	}
 
     void printEffects()
@@ -335,7 +352,7 @@ public:
 #endif
 
 	  _pInputMgr = OIS::InputManager::createInputSystem(pl);
-	  Con::getInstance().printf("InputManager: %s created.\n",_pInputMgr->inputSystemName().c_str());
+	  Console::getInstance().printf("InputManager: %s created.\n",_pInputMgr->inputSystemName().c_str());
 
 	  // Create the event handler.
 	  _pEventHdlr = new EventHandler(this);
@@ -346,7 +363,7 @@ public:
 	  }
 	  catch(OIS::Exception &ex)
 	  {
-		Con::getInstance().printf("Exception raised on keyboard creation: %s\n",ex.eText);
+		Console::getInstance().printf("Exception raised on keyboard creation: %s\n",ex.eText);
 	  }
 
 	  try{
@@ -355,7 +372,7 @@ public:
 	  }
 	  catch(OIS::Exception &ex)
 	  {
-			Con::getInstance().printf("Exception raised on joystick creation: %s\n",ex.eText);
+			Console::getInstance().printf("Exception raised on joystick creation: %s\n",ex.eText);
 	  }
 
 	  try{
@@ -368,14 +385,14 @@ public:
 	  }
 	  catch(OIS::Exception &ex)
 	  {
-		Con::getInstance().printf("Exception raised on mouse creation: %s\n",ex.eText);
+		Console::getInstance().printf("Exception raised on mouse creation: %s\n",ex.eText);
 	  }
 	  
 	  // Create the joystick manager.
 	  _pJoystickMgr = new JoystickManager(_pInputMgr, _pEventHdlr);
 	  if( !_pJoystickMgr->wasFFDetected() )
 	  {
-		Con::getInstance().printf("InputManager: No Force Feedback device detected.\n");
+		Console::getInstance().printf("InputManager: No Force Feedback device detected.\n");
 		delete _pJoystickMgr;
 		_pJoystickMgr = NULL;
 	  }
@@ -420,15 +437,15 @@ public:
 	  try
 	  {
 		  // This fires off buffered events for keyboards
-		  if(_pKeyboard)
+		  if(_pKeyboard != NULL)
 			_pKeyboard->capture();
-		  if(_pJoystick)
+		  if(_pJoystick != NULL)
 			_pJoystick->capture();
-		  if(_pMouse)
+		  if(_pMouse != NULL)
 			_pMouse->capture();
 
 		  // This fires off buffered events for each joystick we have
-		  if(_pJoystickMgr)
+		  if(_pJoystickMgr != NULL)
 		  {
 			_pJoystickMgr->captureEvents();
 	        // Update currently selected effects if time has come to.

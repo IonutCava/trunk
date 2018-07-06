@@ -1,28 +1,24 @@
 uniform sampler2D texDiffuse0;
 uniform sampler2D texDiffuse1;
-uniform int textureCount;
+uniform int		  textureCount;
+uniform mat4      material;
 
 void main (void)
 {
-	vec4 cBase = vec4(1.0f,1.0f,1.0f,1.0f);
-	vec4 outColor = vec4(1.0f,1.0f,1.0f,1.0f);
-
-	vec4 cAmbient = gl_LightSource[0].ambient * gl_FrontMaterial.ambient;
-	vec4 cDiffuse = gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * gl_Color;	
-		
-	if(textureCount > 0)
-	{
-		cBase = texture2D(texDiffuse0, gl_TexCoord[0].st);
-		if(textureCount == 2) cBase *= texture2D(texDiffuse1, gl_TexCoord[0].st);
-		outColor = cAmbient * cBase + cDiffuse * cBase; 
+	vec4 cAmbient = gl_LightSource[0].ambient * material[0];
+	vec4 cDiffuse = gl_LightSource[0].diffuse * material[1] * gl_Color;	
+	vec4 cSpecular = gl_LightSource[0].specular * material[2] ;	
+	
+	if(textureCount > 0){
+		vec4 base = texture2D(texDiffuse0, gl_TexCoord[0].st);
+		if(textureCount == 2) base += texture2D(texDiffuse1, gl_TexCoord[0].st);
+		cAmbient *= base;
+		cDiffuse *= base;
 	}
-	else
-	{
-		outColor = cAmbient + cDiffuse;
-	}
-	if(outColor.a < 0.2) discard;
+	vec4 colorOut = cAmbient + (cDiffuse + cSpecular);
+	if(colorOut.a < 0.2) discard;
 
-	gl_FragColor = outColor ;
+	gl_FragColor = colorOut ;
 
 }
 

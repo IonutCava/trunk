@@ -4,7 +4,7 @@
 // ===================================================================
 TextureManager::TextureManager (void)
 {
-	Con::getInstance().printfn("Texture Manager Initialized!");
+	Console::getInstance().printfn("Texture Manager Initialized!");
 
 }
 

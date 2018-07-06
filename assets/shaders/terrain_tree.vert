@@ -1,5 +1,5 @@
 uniform float time;
-uniform float scale;
+uniform vec3  scale;
 uniform float windDirectionX;
 uniform float windDirectionZ;
 uniform float windSpeed;
@@ -18,7 +18,7 @@ void main(void)
 	float move_speed = (float(int(vertexM.y*vertexM.z) % 50)/50.0 + 0.5);
 	float move_offset = vertexM.x;
 
-	vertex.x += 0.003 * pow(vertex.y, 2.0) * scale * cos(time + move_offset);
+	vertex.x += 0.003 * pow(vertex.y, 2.0) * scale.y * cos(time + move_offset);
 	
 	
 	vec4 vLightPosMV = -gl_LightSource[0].position;

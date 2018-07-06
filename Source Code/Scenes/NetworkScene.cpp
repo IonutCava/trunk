@@ -16,7 +16,7 @@ void NetworkScene::render()
 
 	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
 
-	GFXDevice::getInstance().renderElements(GeometryArray);
+	_sceneGraph->render();
 
 	GUI::getInstance().draw();
 	
@@ -112,6 +112,11 @@ bool NetworkScene::load(const string& name)
 	addDefaultLight();
 	CameraManager::getInstance().getActiveCamera()->setEye(vec3(0,30,-30));
 	return state;
+}
+
+bool NetworkScene::unload(){
+	Sky::getInstance().DestroyInstance();
+	return Scene::unload();
 }
 
 void NetworkScene::test()

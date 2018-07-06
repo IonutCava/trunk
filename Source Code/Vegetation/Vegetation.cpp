@@ -12,11 +12,27 @@
 #include "Hardware/Video/GFXDevice.h"
 #include "TextureManager/ImageTools.h"
 
-void Vegetation::initialize(const string& grassShader)
+Vegetation::~Vegetation(){
+	Console::getInstance().printfn("Destroying vegetation for terrain [ %s ] ...",_terrain->getName().c_str());
+	for(U8 i = 0; i < _grassVBO.size(); i++){
+		delete _grassVBO[i];
+		_grassVBO[i] = NULL;
+	}
+	_grassVBO.clear();
+	_grassIndice.clear();
+	ResourceManager::getInstance().remove(_grassShader);
+	for(U8 i = 0; i < _grassBillboards.size(); i++){
+		ResourceManager::getInstance().remove(_grassBillboards[i]);
+	}
+	Console::getInstance().printfn("... destruction complete!");
+}
+
+void Vegetation::initialize(const string& grassShader,const string& terrainName)
 {
-	_grassShader  = ResourceManager::getInstance().LoadResource<Shader>(grassShader);
+	_grassShader  = ResourceManager::getInstance().LoadResource<Shader>(ResourceDescriptor(grassShader));
 	_grassDensity = _grassDensity/_billboardCount;
-	
+	_terrain = SceneManager::getInstance().getActiveScene()->getSceneGraph()->findNode(terrainName)->getNode<Terrain>();
+	assert(_terrain);
 	for(U8 i = 0 ; i < _billboardCount; i++) _success = generateGrass(i);
 	if(_success) _success = generateTrees();
 
@@ -28,9 +44,9 @@ void Vegetation::draw(bool drawInReflexion)
 {
 	if(!_render || !_success) return;
 	_grassShader->bind();
-	_windX = SceneManager::getInstance().getTerrainManager()->getWindDirX();
-	_windZ = SceneManager::getInstance().getTerrainManager()->getWindDirZ();
-	_windS = SceneManager::getInstance().getTerrainManager()->getWindSpeed();
+	_windX = SceneManager::getInstance().getActiveScene()->getWindDirX();
+	_windZ = SceneManager::getInstance().getActiveScene()->getWindDirZ();
+	_windS = SceneManager::getInstance().getActiveScene()->getWindSpeed();
 	_time = GETTIME();
 	RenderState old = GFXDevice::getInstance().getActiveRenderState();
 	RenderState s(true,true,true,true);
@@ -58,7 +74,7 @@ void Vegetation::draw(bool drawInReflexion)
 
 bool Vegetation::generateGrass(U32 index)
 {
-	Con::getInstance().printfn("Generating Grass...[ %d ]", (U32)_grassDensity);
+	Console::getInstance().printfn("Generating Grass...[ %d ]", (U32)_grassDensity);
 	assert(_map.data);
 	vec2 pos0(cosf(RADIANS(0.0f)), sinf(RADIANS(0.0f)));
 	vec2 pos120(cosf(RADIANS(120.0f)), sinf(RADIANS(120.0f)));
@@ -94,9 +110,9 @@ bool Vegetation::generateGrass(U32 index)
 		}
 
 		_grassSize = (F32)(map_color.green+1) / (256 / _grassScale);
-		vec3 P = _terrain.getPosition(x, y);
-		vec3 N = _terrain.getNormal(x, y);
-		vec3 T = _terrain.getTangent(x, y);
+		vec3 P = _terrain->getPosition(x, y);
+		vec3 N = _terrain->getNormal(x, y);
+		vec3 T = _terrain->getTangent(x, y);
 		vec3 B = Cross(N, T);
 
 		if(N.y < 0.8f) {
@@ -108,7 +124,7 @@ bool Vegetation::generateGrass(U32 index)
 
 			U32 idx = (U32)_grassVBO[index]->getPosition().size();
 
-			QuadtreeNode* node = _terrain.getQuadtree().FindLeaf(vec2(P.x, P.z));
+			QuadtreeNode* node = _terrain->getQuadtree().FindLeaf(vec2(P.x, P.z));
 			assert(node);
 			TerrainChunk* chunk = node->getChunk();
 			assert(chunk);
@@ -137,23 +153,23 @@ bool Vegetation::generateGrass(U32 index)
 		_grassShader->Uniform("scale", _grassSize);
 	_grassShader->unbind();
 
-	Con::getInstance().printfn("Generating Grass OK");
+	Console::getInstance().printfn("Generating Grass OK");
 	return ret;
 }
 
-bool Vegetation::generateTrees()
-{
+bool Vegetation::generateTrees(){
+	SceneGraphNode* parentNode = SceneManager::getInstance().getActiveScene()->getSceneGraph()->findNode(_terrain->getName());
+	assert(parentNode);
 	//--> Unique position generation
 	vector<vec3> positions;
 	vector<vec3>::iterator positionIterator;
 	//<-- End unique position generation
 	vector<FileData>& DA = SceneManager::getInstance().getActiveScene()->getVegetationDataArray();
-	if(DA.empty())
-	{
-		Con::getInstance().errorf("Vegetation: Insufficient base geometry for tree generation. Skipping!\n");
+	if(DA.empty()){
+		Console::getInstance().errorf("Vegetation: Insufficient base geometry for tree generation. Skipping!\n");
 		return true;
 	}
-	Con::getInstance().printf("Generating Vegetation... [ %f ]\n", _treeDensity);
+	Console::getInstance().printf("Generating Vegetation... [ %f ]\n", _treeDensity);
 
 	for(U16 k=0; k<(U16)_treeDensity; k++) {
 		I16 map_x = (I16)random((F32)_map.w);
@@ -164,7 +180,7 @@ bool Vegetation::generateTrees()
 			continue;
 		}
 		
-		vec3 P = _terrain.getPosition(((F32)map_x)/_map.w, ((F32)map_y)/_map.h);
+		vec3 P = _terrain->getPosition(((F32)map_x)/_map.w, ((F32)map_y)/_map.h);
 		P.y -= 0.2f;
 
 		for(positionIterator = positions.begin(); positionIterator != positions.end(); positionIterator++)
@@ -179,17 +195,17 @@ bool Vegetation::generateTrees()
 			
 		}
 		positions.push_back(P);
-		QuadtreeNode* node = _terrain.getQuadtree().FindLeaf(vec2(P.x, P.z));
+		QuadtreeNode* node = _terrain->getQuadtree().FindLeaf(vec2(P.x, P.z));
 		assert(node);
 		TerrainChunk* chunk = node->getChunk();
 		assert(chunk);
 		
 		U16 index = rand() % DA.size();
-		chunk->addTree(P, random(360.0f),_treeScale,"terrain_tree",DA[index]);
+		chunk->addTree(P, random(360.0f),_treeScale,"terrain_tree",DA[index],parentNode);
 	}
 
 	positions.clear();
-	Con::getInstance().printf("Generating Vegetation OK\n");
+	Console::getInstance().printf("Generating Vegetation OK\n");
 	DA.empty();
 	return true;
 }
@@ -199,16 +215,16 @@ void Vegetation::DrawTrees(bool drawInReflexion)
 	RenderState old = GFXDevice::getInstance().getActiveRenderState();
 	RenderState s(true,true,true,true);
 	GFXDevice::getInstance().setRenderState(s);
-	_terrain.getQuadtree().DrawTrees(drawInReflexion);
+	_terrain->getQuadtree().DrawTrees(drawInReflexion);
 	GFXDevice::getInstance().setRenderState(old);
 }
 
 void Vegetation::DrawGrass(U8 index,bool drawInReflexion)
 {
-	if(_grassVBO[index])
+	if(_grassVBO[index] != NULL)
 	{
 		_grassVBO[index]->Enable();
-			_terrain.getQuadtree().DrawGrass(drawInReflexion);
+			_terrain->getQuadtree().DrawGrass(drawInReflexion);
 		_grassVBO[index]->Disable();
 	}
 }

@@ -1,3 +1,20 @@
+/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _GFX_DEVICE_H
 #define _GFX_DEVICE_H
 
@@ -5,7 +22,6 @@
 #include "Direct3D\DXWrapper.h"
 
 class Object3D;
-class Object3DFlyWeight;
 class Framerate;
 SINGLETON_BEGIN_EXT1(GFXDevice,RenderAPIWrapper)
 
@@ -50,6 +66,8 @@ public:
 	void enable_MODELVIEW(){_api.enable_MODELVIEW();}
 	void loadIdentityMatrix(){_api.loadIdentityMatrix();}
 	void toggle2D(bool _2D) {_api.toggle2D(_2D);}
+	void setTextureMatrix(U16 slot, const mat4& transformMatrix) {_api.setTextureMatrix(slot,transformMatrix);}
+	void restoreTextureMatrix(U16 slot) {_api.restoreTextureMatrix(slot); }
 
 	void drawTextToScreen(Text* text){_api.drawTextToScreen(text);}
 	void drawCharacterToScreen(void* font,char character){_api.drawCharacterToScreen(font,character);}
@@ -63,11 +81,9 @@ public:
 	void drawText3D(Text3D* const text){_api.drawText3D(text);}
 
 	void renderModel(Object3D* const model);
-	void renderElements(Type t, U32 count, const void* first_element){_api.renderElements(t,count,first_element);}
-	void renderElements(std::tr1::unordered_map<std::string,Object3D*>&  geometryArray);
-	void renderElements(std::vector<Object3DFlyWeight*>& geometryArray);
+	void renderElements(Type t, U32 count, const void* first_element, bool inverty = false){_api.renderElements(t,count,first_element,inverty);}
 	
-	void setMaterial(Material& mat){_api.setMaterial(mat);}
+	void setMaterial(Material* mat){_api.setMaterial(mat);}
 	void setColor(const vec4& v){_api.setColor(v);}
 	void setColor(const vec3& v){_api.setColor(v);}
 

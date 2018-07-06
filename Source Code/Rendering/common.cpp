@@ -2,7 +2,6 @@
 
 #include "Utility/Headers/Guardian.h"
 #include "Managers/ResourceManager.h"
-#include "Managers/TerrainManager.h"
 #include "Managers/SceneManager.h"
 #include "Terrain/Sky.h"
 #include "Managers/CameraManager.h"
@@ -62,7 +61,7 @@ void Engine::DrawScene()
 	}
 	
 
-	std::vector<Light_ptr> & lights = _scene.getActiveScene()->getLights();
+	std::vector<Light*> & lights = _scene.getActiveScene()->getLights();
 	for(U8 i = 0; i < lights.size(); i++)
 		lights[i]->update();
 
@@ -85,6 +84,6 @@ void Engine::Initialize()
 
 void Engine::Quit()
 {
-	Con::getInstance().printfn("Engine shutdown complete...");
+	Console::getInstance().printfn("Engine shutdown complete...");
 	exit(0);
 }

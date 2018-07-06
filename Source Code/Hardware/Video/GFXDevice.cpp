@@ -1,9 +1,9 @@
 #include "GFXDevice.h"
 #include "Rendering/common.h"
 #include "Geometry/Object3D.h"
-#include "Geometry/Object3DFlyWeight.h"
 #include "Importer/DVDConverter.h"
 #include "Managers/TextureManager.h"
+#include "Managers/SceneManager.h"
 #include "Geometry/Predefined/Box3D.h"
 #include "Geometry/Predefined/Sphere3D.h"
 #include "Geometry/Predefined/Quad3D.h"
@@ -42,63 +42,37 @@ void GFXDevice::resizeWindow(U16 w, U16 h)
 	_api.resizeWindow(w,h);
 }
 
-void GFXDevice::renderElements(tr1::unordered_map<string,Object3D*>& geometryArray)
-{
-	tr1::unordered_map<string,Object3D*>::iterator _iter;
-	for(_iter = geometryArray.begin();  _iter != geometryArray.end();  _iter++){
-		renderModel(_iter->second);
-	}
-}
-
-void GFXDevice::renderElements(vector<Object3DFlyWeight*>& geometryArray)
-{
-	vector<Object3DFlyWeight*>::iterator _iter;
-	Mesh *temp = NULL;
-	for(_iter = geometryArray.begin();  _iter != geometryArray.end(); ++ _iter)
-	{
-		temp = dynamic_cast<Mesh*>((*_iter)->getObject());
-		temp->getTransform()->setPosition((*_iter)->getTransform()->getPosition());
-		temp->getTransform()->scale((*_iter)->getTransform()->getScale());
-		temp->getTransform()->rotateQuaternion((*_iter)->getTransform()->getOrientation());
-		renderModel(temp);
-	}
-}
-
 void GFXDevice::renderModel(Object3D* const model)
 {
-		if(!model) return;
-		if(!model->getVisibility()) return;
-		if(model->shouldDelete()){
-			ResourceManager::getInstance().remove(model);
-			return;;
-		}
-		model->onDraw();
-		if(!model->getChildren().empty()){
-			for(U8 i = 0; i < model->getChildren().size(); i++){
-				model->getChildren()[i]->setParentMatrix(model->getParentMatrix());
-				renderModel(model->getChildren()[i]);
-			}
-		}
-		switch(model->getType())
-		{
-			case BOX_3D:
-				drawBox3D(dynamic_cast<Box3D*>(model));
-				break;
-			case SPHERE_3D:
-				drawSphere3D(dynamic_cast<Sphere3D*>(model));
-				break;
-			case QUAD_3D:
-				drawQuad3D(dynamic_cast<Quad3D*>(model));
-				break;
-			case TEXT_3D:
-				drawText3D(dynamic_cast<Text3D*>(model));
-				break;
-			case MESH:
-				_api.renderModel(dynamic_cast<Mesh*>(model));
-				break;
-			default:
-				break;
-		};
+	if(!model) return;
+	if(!model->getVisibility()) return;
+	if(model->shouldDelete()){
+		SceneGraph* activeSceneGraph = SceneManager::getInstance().getActiveScene()->getSceneGraph();
+		SceneGraphNode* modelNode = activeSceneGraph->findNode(model->getName());
+		delete modelNode;
+		modelNode = NULL;
+		return;
+	}
+	switch(model->getType())
+	{
+		case BOX_3D:
+			drawBox3D(dynamic_cast<Box3D*>(model));
+			break;
+		case SPHERE_3D:
+			drawSphere3D(dynamic_cast<Sphere3D*>(model));
+			break;
+		case QUAD_3D:
+			drawQuad3D(dynamic_cast<Quad3D*>(model));
+			break;
+		case TEXT_3D:
+			drawText3D(dynamic_cast<Text3D*>(model));
+			break;
+		case MESH:
+			_api.renderModel(dynamic_cast<Mesh*>(model));
+			break;
+		default:
+			break;
+	};
 }
 
 void GFXDevice::toggleWireframe(bool state)

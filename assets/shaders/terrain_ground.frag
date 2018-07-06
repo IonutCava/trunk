@@ -8,6 +8,7 @@ uniform sampler2D texNormalHeightMap;
 uniform sampler2D texDiffuse0;
 uniform sampler2D texDiffuse1;
 uniform sampler2D texDiffuse2;
+uniform sampler2D texDiffuse3;
 uniform sampler2D texWaterCaustics;
 
 uniform float parallax_factor;
@@ -15,6 +16,7 @@ uniform float detail_scale;
 uniform float diffuse_scale;
 
 uniform bool water_reflection_rendering;
+uniform bool alphaTexture;
 uniform float water_height;
 uniform vec3 fog_color;
 uniform float time;
@@ -93,17 +95,19 @@ vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParall
 	vec2 uv_diffuse = uv * diffuse_scale;
 
 	
-	// on trouve la normale pertubée dans l'espace TBN
 	vec3 normalTBN = texture2D(texNormalHeightMap, uv_detail).rgb * 2.0 - 1.0;
 	normalTBN = normalize(normalTBN);
-//	vec3 normalTBN = vec3(0.0, 0.0, 1.0);
 	
 //// ECLAIRAGE :
 	// Couleur diffuse
 	vec4 tBase[3];
+	vec4 alpha;
 	tBase[0] = texture2D(texDiffuse0, uv_diffuse);
 	tBase[1] = texture2D(texDiffuse1, uv_diffuse);	
 	tBase[2] = texture2D(texDiffuse2, uv_diffuse);
+	if(alphaTexture){
+		alpha = texture2D(texDiffuse3, uv_diffuse);
+	}
 	vec4 DiffuseMap = texture2D(texDiffuseMap, uv);
 	
 	vec4 cBase;
@@ -111,7 +115,11 @@ vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParall
 	if(vPosition.y < water_height)
 		cBase = tBase[0];
 	else {
-		cBase = mix(mix(tBase[1], tBase[0], DiffuseMap.r), tBase[2], DiffuseMap.g);
+		if(alphaTexture){
+			cBase = mix(mix(mix(tBase[1], tBase[0], DiffuseMap.r), tBase[2], DiffuseMap.g), alpha, DiffuseMap.a);
+		}else{
+			cBase = mix(mix(tBase[1], tBase[0], DiffuseMap.r), tBase[2], DiffuseMap.g);			
+		}
 	}
 
 

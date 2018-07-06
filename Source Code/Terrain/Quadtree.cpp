@@ -68,18 +68,17 @@ void Quadtree::Build(BoundingBox* pBBox,
 	_root->Build(0, ivec2(0,0), HMsize, minHMSize);
 }
 
-void Quadtree::ComputeBoundingBox(const std::vector<vec3>& vertices)
-{
+bool Quadtree::computeBoundingBox(const std::vector<vec3>& vertices){
 	assert(_root);
 	assert(!vertices.empty());
-	_root->ComputeBoundingBox(vertices);
-
+	_root->computeBoundingBox(vertices);
+	return true;
 }
 
 
 void Quadtree::Destroy()
 {
-	if(_root) {
+	if(_root != NULL) {
 		delete _root;
 		_root = NULL;
 	}

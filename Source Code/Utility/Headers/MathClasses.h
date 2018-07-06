@@ -32,6 +32,24 @@
  * vec4 : added methods : set, reset, compare
  ***************************************************************************
  */
+
+/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef MATH_CLASSES_H
 #define MATH_CLASSES_H
 #include <stdlib.h> 
@@ -571,6 +589,13 @@ public:
 		this->mat[2] = m2; this->mat[6] = m6; this->mat[10] = m10; this->mat[14] = m14;
 		this->mat[3] = m3; this->mat[7] = m7; this->mat[11] = m11; this->mat[15] = m15;
 	}
+	mat4(const vec4 &col1,const vec4 &col2,const vec4 &col3,const vec4 &col4){
+		this->mat[0] = col1.x; this->mat[4] = col1.x; this->mat[8]  = col1.x; this->mat[12] = col1.x;
+		this->mat[1] = col1.y; this->mat[5] = col1.y; this->mat[9]  = col1.y; this->mat[13] = col1.y;
+		this->mat[2] = col1.z; this->mat[6] = col1.z; this->mat[10] = col1.z; this->mat[14] = col1.z;
+		this->mat[3] = col1.w; this->mat[7] = col1.w; this->mat[11] = col1.w; this->mat[15] = col1.w;
+	}
+
 	mat4(const vec3 &v) {
 		translate(v);
 	}
@@ -636,6 +661,17 @@ public:
 					this->mat[1] * m[12] + this->mat[5] * m[13] + this->mat[9]  * m[14] + this->mat[13] * m[15],
 					this->mat[2] * m[12] + this->mat[6] * m[13] + this->mat[10] * m[14] + this->mat[14] * m[15],
 					this->mat[3] * m[12] + this->mat[7] * m[13] + this->mat[11] * m[14] + this->mat[15] * m[15]);
+	}
+
+	vec4 getCol(int index){
+		return vec4(this->mat[0 + (index*4)],this->mat[1 + (index*4)],this->mat[2 + (index*4)],this->mat[3 + (index*4)]);
+	}
+
+	void setCol(int index, const vec4& value){
+		this->mat[0 + (index*4)] = value.x;
+		this->mat[1 + (index*4)] = value.y;
+		this->mat[2 + (index*4)] = value.z;
+		this->mat[3 + (index*4)] = value.w;
 	}
 
 	// premultiply the matrix by the given matrix
@@ -1144,5 +1180,6 @@ inline long ivec3::operator*(const ivec4 &iv) const {
 }
 
 #endif
+
 
 

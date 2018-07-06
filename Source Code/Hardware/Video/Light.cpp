@@ -7,44 +7,52 @@
 #include "Rendering/Frustum.h"
 #include "Rendering/common.h"
 
-Light::Light(U8 slot, F32 radius) : _slot(slot), _radius(radius)
-{
+Light::Light(U8 slot, F32 radius) : SceneNode(), _slot(slot), _radius(radius),_drawImpostor(false){
 	vec4 _white(1.0f,1.0f,1.0f,1.0f);
 	vec2 angle = vec2(0.0f, RADIANS(45.0f));
 	vec4 position = vec4(-cosf(angle.x) * sinf(angle.y),-cosf(angle.y),	-sinf(angle.x) * sinf(angle.y),	0.0f );
 	vec4 diffuse = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + cosf(angle.y) * 0.75f);
 
 	_lightProperties["position"] = position;
-	_lightProperties["ambient"] = _white;
+	_lightProperties["ambient"] = vec4(0.1f,0.1f,0.1f,1.0f);
 	_lightProperties["diffuse"] = diffuse;
 	_lightProperties["specular"] = diffuse;
-	char lightName[9];
-	sprintf(lightName, "Light %d", slot);
-	_light = ResourceManager::getInstance().LoadResource<Sphere3D>(lightName);
-	_light->getResolution() = 8;
-	_light->getSize() = radius;
 	GFXDevice::getInstance().createLight(_slot);
 	
 }
 
-Light::~Light()
-{
-	_lightProperties.empty();
-	ResourceManager::getInstance().remove(_light);
+Light::~Light(){
 }
-void Light::update()
-{
-	_light->getTransform()->setPosition(_lightProperties["position"]);
-	_light->getTransform()->scale(vec3(1, 1 ,1));
+
+bool Light::unload(){
+	if(_light != NULL)
+		ResourceManager::getInstance().remove(_light); //Deleted by SceneGraph??
+	_lightProperties.empty();
+	return SceneNode::unload();
+}
+
+bool Light::load(const std::string& name){
+	setName(name);
+	ResourceDescriptor light(getName()+"_impostor");
+	_light = ResourceManager::getInstance().LoadResource<Sphere3D>(light);
+	_light->getResolution() = 8;
 	_light->getSize() = _radius;
-	_light->getTransform()->rotateEuler(vec3(0, 0 ,0));
-	_light->getMaterial().diffuse = getDiffuseColor();
+	ResourceDescriptor lightMat(getName()+"_impostor"+"_material");
+	Material *lightImpostorMaterial = ResourceManager::getInstance().LoadResource<Material>(lightMat);
+	_light->setMaterial(lightImpostorMaterial);
+	return true;
+}
+
+void Light::update(){
+	_light->getTransform()->setPosition(_lightProperties["position"]);
+	_light->getSize() = _radius;
+	_light->getMaterial()->setDiffuse(getDiffuseColor());
+	_light->getMaterial()->setAmbient(getDiffuseColor());
 	if(!GFXDevice::getInstance().getDeferredShading())
 		GFXDevice::getInstance().setLight(_slot,_lightProperties);
 }
 
-void Light::setLightProperties(const std::string& name, vec4 values)
-{
+void Light::setLightProperties(const std::string& name, vec4 values){
 	std::tr1::unordered_map<std::string,vec4>::iterator it = _lightProperties.find(name);
 	if (it != _lightProperties.end())
 		_lightProperties[name] = values;
@@ -53,9 +61,8 @@ void Light::setLightProperties(const std::string& name, vec4 values)
 		_lightProperties["spotDirection"] = values;
 }
 
-void Light::draw()
-{
-	GFXDevice::getInstance().drawSphere3D(_light);
+void Light::render(){
+	if(_drawImpostor) _light->render();
 }
 
 

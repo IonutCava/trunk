@@ -1,3 +1,20 @@
+/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef JOYSTICK_MANAGER_H_
 #define JOYSTICK_MANAGER_H_
 #include "InputVariables.h"
@@ -38,7 +55,7 @@ class JoystickManager
 	  {
 		//Create the stick
 		OIS::JoyStick* pJoy = (OIS::JoyStick*)pInputMgr->createInputObject( OIS::OISJoyStick, true );
-		Con::getInstance().printfn("Created buffered joystick # %d '%s' (Id='%d')",nJoyInd,pJoy->vendor(),pJoy->getID());
+		Console::getInstance().printfn("Created buffered joystick # %d '%s' (Id='%d')",nJoyInd,pJoy->vendor(),pJoy->getID());
 		
 		// Check for FF, and if so, keep the joy and dump FF info
 		OIS::ForceFeedback* pFFDev = (OIS::ForceFeedback*)pJoy->queryInterface(OIS::Interface::ForceFeedback );
@@ -54,19 +71,19 @@ class JoystickManager
 		  _vecFFDev.push_back(pFFDev);
 		  
 		  // Dump FF supported effects and other info.
-		  Con::getInstance().printfn(" * Number of force feedback axes : %d", pFFDev->getFFAxesNumber());
+		  Console::getInstance().printfn(" * Number of force feedback axes : %d", pFFDev->getFFAxesNumber());
 		  const OIS::ForceFeedback::SupportedEffectList &lstFFEffects = 
 			pFFDev->getSupportedEffects();
 		  if (lstFFEffects.size() > 0)
 		  {
-			  Con::getInstance().printf(" * Supported effects :");
+			  Console::getInstance().printf(" * Supported effects :");
 			OIS::ForceFeedback::SupportedEffectList::const_iterator itFFEff;
 			for(itFFEff = lstFFEffects.begin(); itFFEff != lstFFEffects.end(); ++itFFEff)
-				Con::getInstance().printf(" %s",OIS::Effect::getEffectTypeName(itFFEff->second));
-			Con::getInstance().printf("\n");//Double new line - Ionut
+				Console::getInstance().printf(" %s",OIS::Effect::getEffectTypeName(itFFEff->second));
+			Console::getInstance().printf("\n");//Double new line - Ionut
 		  }
 		  else
-			  Con::getInstance().printfn("Warning: no supported effect found !");
+			  Console::getInstance().printfn("Warning: no supported effect found !");
 		}
 		/*else
 		{

@@ -13,7 +13,7 @@
 
 <pin>
 	<model>models/pin.obj</model>
-	<scale x="0.01" y="0.01" z="0.01" />
+	<scale x="0.008" y="0.008" z="0.008" />
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
@@ -21,7 +21,7 @@
 
 <copacel>
 	<model>models/copacel.obj</model>
-	<scale x="2" y="2" z="2" />
+	<scale x="0.8" y="0.8" z="0.8" />
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
@@ -29,7 +29,7 @@
 
 <copac>
 	<model>models/copac.obj</model>
-	<scale x="0.01" y="0.01" z="0.01" />
+	<scale x="0.005" y="0.005" z="0.005" />
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
