@@ -43,7 +43,7 @@ void OrbitCamera::fromCamera(Camera& camera) {
 
 }
 
-void OrbitCamera::setTarget(SceneGraphNode_wptr sgn, const vec3<F32>& offsetDirection) {
+void OrbitCamera::setTarget(SceneGraphNode_cwptr sgn, const vec3<F32>& offsetDirection) {
     _targetNode = sgn;
     _offsetDir = offsetDirection;
     _offsetDir.normalize();
@@ -67,7 +67,7 @@ bool OrbitCamera::updateViewMatrix() {
 void OrbitCamera::update(const U64 deltaTime) {
     Camera::update(deltaTime);
 
-    SceneGraphNode_ptr sgn = _targetNode.lock();
+    SceneGraphNode_cptr sgn = _targetNode.lock();
     if (!sgn) {
         return;
     }

@@ -53,9 +53,9 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
 
     _resetUnits = false;
 
-    addSelectionCallback([&](U8 playerIndex) {
-        if (!_currentSelection[playerIndex].expired()) {
-            _GUI->modifyText(_ID("entityState"), _currentSelection[playerIndex].lock()->getName().c_str());
+    addSelectionCallback([&](PlayerIndex idx) {
+        if (!_currentSelection[idx].expired()) {
+            _GUI->modifyText(_ID("entityState"), _currentSelection[idx].lock()->getName().c_str());
         } else {
             _GUI->modifyText(_ID("entityState"), "");
         }
@@ -683,18 +683,18 @@ void WarScene::toggleCamera(InputParams param) {
         fpsCamera = Camera::findCamera(_ID("fpsCamera"));
     }
 
-    U8 playerIndex = getPlayerIndexForDevice(param._deviceIndex);
-    if (!_currentSelection[playerIndex].expired()) {
+    PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
+    if (!_currentSelection[idx].expired()) {
         if (flyCameraActive) {
-            state().playerState(playerIndex).overrideCamera(tpsCamera);
-            static_cast<ThirdPersonCamera&>(*tpsCamera).setTarget(_currentSelection[playerIndex]);
+            state().playerState(idx).overrideCamera(tpsCamera);
+            static_cast<ThirdPersonCamera&>(*tpsCamera).setTarget(_currentSelection[idx]);
             flyCameraActive = false;
             tpsCameraActive = true;
             return;
         }
     }
     if (tpsCameraActive) {
-        state().playerState(playerIndex).overrideCamera(nullptr);
+        state().playerState(idx).overrideCamera(nullptr);
         tpsCameraActive = false;
         flyCameraActive = true;
     }

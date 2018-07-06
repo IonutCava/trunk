@@ -46,7 +46,7 @@ class NetworkScene : public Scene {
     void postLoadMainThread() override;
 
     void processGUI(const U64 deltaTime);
-    void processInput(U8 playerIndex, const U64 deltaTime);
+    void processInput(PlayerIndex idx, const U64 deltaTime);
 
    private:
     void test(I64 btnGUID);

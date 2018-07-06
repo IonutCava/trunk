@@ -52,7 +52,7 @@ class MainScene : public Scene {
    private:
     /*Specific Scene Requirement*/
     void updateLights();
-    void processInput(U8 playerIndex, const U64 deltaTime)override;
+    void processInput(PlayerIndex idx, const U64 deltaTime)override;
     void processTasks(const U64 deltaTime)override;
     void processGUI(const U64 deltaTime)override;
     void test(const Task& parentTask, AnyParam a, CallbackParam b);

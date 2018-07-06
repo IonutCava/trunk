@@ -53,7 +53,7 @@ class TenisScene : public Scene {
     void postLoadMainThread() override;
     bool initializeAI(bool continueOnErrors);
     bool deinitializeAI(bool continueOnErrors);
-    void processInput(U8 playerIndex, const U64 deltaTime);
+    void processInput(PlayerIndex idx, const U64 deltaTime);
     void processTasks(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
 

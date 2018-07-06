@@ -67,6 +67,8 @@ do {                                                \
 
 namespace Divide {
 
+typedef U8 PlayerIndex;
+
 constexpr U64 basis = UINT64_C(14695981039346656037);
 constexpr U64 prime = UINT64_C(1099511628211);
 
@@ -961,6 +963,7 @@ struct AtomicWrapper
 };  // namespace Divide
 
 #endif
+
 
 #if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
 #if !defined(AUTOMATIC_XALLOCATOR_INIT_DESTROY)

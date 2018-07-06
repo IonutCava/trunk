@@ -16,8 +16,8 @@ bool ReflectionScene::loadResources(bool continueOnErrors) {
     return Scene::loadResources(continueOnErrors);
 }
 
-void ReflectionScene::processInput(U8 playerIndex, const U64 deltaTime) {
-    Scene::processInput(playerIndex, deltaTime);
+void ReflectionScene::processInput(PlayerIndex idx, const U64 deltaTime) {
+    Scene::processInput(idx, deltaTime);
 }
 
 void ReflectionScene::processTasks(const U64 deltaTime) {

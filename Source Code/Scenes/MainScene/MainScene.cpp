@@ -54,9 +54,9 @@ void MainScene::updateLights() {
     return;
 }
 
-void MainScene::processInput(U8 playerIndex, const U64 deltaTime) {
-    if (state().playerState(playerIndex).cameraUpdated()) {
-        Camera& cam = getPlayerForIndex(playerIndex)->getCamera();
+void MainScene::processInput(PlayerIndex idx, const U64 deltaTime) {
+    if (state().playerState(idx).cameraUpdated()) {
+        Camera& cam = getPlayerForIndex(idx)->getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
         if (!_freeflyCamera) {
@@ -94,7 +94,7 @@ void MainScene::processInput(U8 playerIndex, const U64 deltaTime) {
         }
     }
 
-    Scene::processInput(playerIndex, deltaTime);
+    Scene::processInput(idx, deltaTime);
 }
 
 void MainScene::processGUI(const U64 deltaTime) {
@@ -243,7 +243,7 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
     if(!parentTask.stopRequested()) {
         static bool switchAB = false;
         vec3<F32> pos;
-        SceneGraphNode_ptr boxNode(_sceneGraph->findNode("box").lock());
+        SceneGraphNode_cptr boxNode(_sceneGraph->findNode("box").lock());
 
         std::shared_ptr<Object3D> box;
         if (boxNode) {

@@ -46,7 +46,7 @@ class FlashScene : public Scene {
     bool load(const stringImpl& name) override;
     void postLoadMainThread() override;
     bool loadResources(bool continueOnErrors) override;
-    void processInput(U8 playerIndex, const U64 deltaTime) override;
+    void processInput(PlayerIndex idx, const U64 deltaTime) override;
     void processTasks(const U64 deltaTime) override;
     void processGUI(const U64 deltaTime) override;
 

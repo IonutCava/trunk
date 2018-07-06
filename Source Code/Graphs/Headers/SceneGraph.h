@@ -64,8 +64,21 @@ class SceneGraph : private NonCopyable,
         return *_root;
     }
 
-    inline SceneGraphNode_wptr findNode(const stringImpl& name, bool sceneNodeName = false) {
-        return _root->findNode(name, sceneNodeName);
+    inline SceneGraphNode_wptr findNode(const stringImpl& name, bool sceneNodeName = false) const {
+        if (sceneNodeName ? _root->getNode()->getName().compare(name) == 0
+                          : _root->getName().compare(name) == 0) {
+            return _root;
+        }
+
+        return _root->findChild(name, sceneNodeName, true);
+    }
+
+    inline SceneGraphNode_wptr findNode(I64 guid) const {
+        if (_root->getGUID() == guid) {
+            return _root;
+        }
+
+        return _root->findChild(guid, true);
     }
 
     inline Octree& getOctree() {
@@ -81,8 +94,7 @@ class SceneGraph : private NonCopyable,
 
     void idle();
 
-    void intersect(const Ray& ray, F32 start, F32 end,
-                   vectorImpl<SceneGraphNode_cwptr>& selectionHits) const;
+    void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<I64>& selectionHits) const;
 
     // If deferrRemoval is true, removal will happen on the next "idle" call.
     // If this function returns true, the node was successfully removed (or queued for removal)

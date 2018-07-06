@@ -241,7 +241,7 @@ void SceneGraph::onNetworkSend(U32 frameCount) {
     _root->onNetworkSend(frameCount);
 }
 
-void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_cwptr>& selectionHits) const {
+void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<I64>& selectionHits) const {
     _root->intersect(ray, start, end, selectionHits);
 
     /*if (_loadComplete) {

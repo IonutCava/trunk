@@ -441,15 +441,15 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
     return parentNode.addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
 }
 
-void Scene::toggleFlashlight(U8 playerIndex) {
+void Scene::toggleFlashlight(PlayerIndex idx) {
     static const U32 lightMask = to_base(SGNComponent::ComponentType::PHYSICS) |
                                  to_base(SGNComponent::ComponentType::BOUNDS) |
                                  to_base(SGNComponent::ComponentType::RENDERING) |
                                  to_base(SGNComponent::ComponentType::NETWORKING);
 
-    SceneGraphNode_ptr& flashLight = _flashLight[playerIndex];
+    SceneGraphNode_ptr& flashLight = _flashLight[idx];
     if (!flashLight) {
-        ResourceDescriptor tempLightDesc(Util::StringFormat("Flashlight_%d", playerIndex));
+        ResourceDescriptor tempLightDesc(Util::StringFormat("Flashlight_%d", idx));
         tempLightDesc.setEnumValue(to_base(LightType::SPOT));
         tempLightDesc.setUserPtr(_lightPool);
         std::shared_ptr<Light> tempLight = CreateResource<Light>(_resCache, tempLightDesc);
@@ -461,7 +461,7 @@ void Scene::toggleFlashlight(U8 playerIndex) {
                                                     lightMask,
                                                     PhysicsGroup::GROUP_IGNORE);
         hashAlg::insert(_flashLight,
-                        playerIndex,
+                        idx,
                         flashLight);
                      
     }
@@ -814,7 +814,7 @@ void Scene::postLoadMainThread() {
 }
 
 void Scene::rebuildShaders() {
-    SceneGraphNode_ptr selection(_currentSelection[0].lock());
+    SceneGraphNode_cptr selection(_currentSelection[0].lock());
     if (selection != nullptr) {
         selection->get<RenderingComponent>()->rebuildMaterial();
     } else {
@@ -822,14 +822,14 @@ void Scene::rebuildShaders() {
     }
 }
 
-stringImpl Scene::getPlayerSGNName(U8 playerIndex) {
-    return Util::StringFormat(g_defaultPlayerName, playerIndex + 1);
+stringImpl Scene::getPlayerSGNName(PlayerIndex idx) {
+    return Util::StringFormat(g_defaultPlayerName, idx + 1);
 }
 
-void Scene::currentPlayerPass(U8 playerIndex) {
-    renderState().playerPass(playerIndex);
+void Scene::currentPlayerPass(PlayerIndex idx) {
+    renderState().playerPass(idx);
 
-    if (state().playerState(playerIndex).cameraUnderwater()) {
+    if (state().playerState(idx).cameraUnderwater()) {
         PostFX::instance().pushFilter(FilterType::FILTER_UNDERWATER);
     } else {
         PostFX::instance().popFilter(FilterType::FILTER_UNDERWATER);
@@ -871,7 +871,7 @@ void Scene::onRemoveActive() {
 void Scene::addPlayerInternal(bool queue) {
     stringImpl playerName = getPlayerSGNName(to_U8(_parent.getPlayers().size()));
     
-    SceneGraphNode_ptr playerSGN(_sceneGraph->findNode(playerName).lock());
+    SceneGraphNode_cptr playerSGN(_sceneGraph->findNode(playerName).lock());
     if (!playerSGN) {
         SceneGraphNode& root = _sceneGraph->getRoot();
         playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache, 12345678 + _parent.getPlayers().size(), g_PlayerExtents)),
@@ -888,10 +888,10 @@ void Scene::addPlayerInternal(bool queue) {
     }
 }
 
-void Scene::removePlayerInternal(U8 playerIndex) {
-    assert(playerIndex < _scenePlayers.size());
+void Scene::removePlayerInternal(PlayerIndex idx) {
+    assert(idx < _scenePlayers.size());
     
-    _parent.removePlayer(*this, _scenePlayers[getSceneIndexForPlayer(playerIndex)], true);
+    _parent.removePlayer(*this, _scenePlayers[getSceneIndexForPlayer(idx)], true);
 }
 
 void Scene::onPlayerAdd(const Player_ptr& player) {
@@ -901,19 +901,19 @@ void Scene::onPlayerAdd(const Player_ptr& player) {
 }
 
 void Scene::onPlayerRemove(const Player_ptr& player) {
-    U8 playerIndex = player->index();
+    PlayerIndex idx = player->index();
 
-    input().onPlayerRemove(playerIndex);
-    state().onPlayerRemove(playerIndex);
+    input().onPlayerRemove(idx);
+    state().onPlayerRemove(idx);
 
     _sceneGraph->getRoot().removeNode(*player->getBoundNode().lock());
 
-    _scenePlayers.erase(std::cbegin(_scenePlayers) + getSceneIndexForPlayer(playerIndex));
+    _scenePlayers.erase(std::cbegin(_scenePlayers) + getSceneIndexForPlayer(idx));
 }
 
-U8 Scene::getSceneIndexForPlayer(U8 playerIndex) const {
+U8 Scene::getSceneIndexForPlayer(PlayerIndex idx) const {
     for (U8 i = 0; i < to_U8(_scenePlayers.size()); ++i) {
-        if (_scenePlayers[i]->index() == playerIndex) {
+        if (_scenePlayers[i]->index() == idx) {
             return i;
         }
     }
@@ -922,8 +922,8 @@ U8 Scene::getSceneIndexForPlayer(U8 playerIndex) const {
     return 0;
 }
 
-const Player_ptr& Scene::getPlayerForIndex(U8 playerIndex) const {
-    return _scenePlayers[getSceneIndexForPlayer(playerIndex)];
+const Player_ptr& Scene::getPlayerForIndex(PlayerIndex idx) const {
+    return _scenePlayers[getSceneIndexForPlayer(idx)];
 }
 
 U8 Scene::getPlayerIndexForDevice(U8 deviceIndex) const {
@@ -967,9 +967,9 @@ void Scene::clearObjects() {
 
 bool Scene::mouseMoved(const Input::MouseEvent& arg) {
     // ToDo: Use mapping between device ID an player index -Ionut
-    U8 playerIndex = getPlayerIndexForDevice(arg._deviceIndex);
+    PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
 
-    Camera& cam = _scenePlayers[playerIndex]->getCamera();
+    Camera& cam = _scenePlayers[idx]->getCamera();
     if (cam.moveRelative(vec3<I32>(arg._event.state.X.rel,
                                    arg._event.state.Y.rel,
                                    arg._event.state.Z.rel)))
@@ -983,10 +983,10 @@ bool Scene::mouseMoved(const Input::MouseEvent& arg) {
     return false;
 }
 
-bool Scene::updateCameraControls(U8 playerIndex) {
-    Camera& cam = getPlayerForIndex(playerIndex)->getCamera();
+bool Scene::updateCameraControls(PlayerIndex idx) {
+    Camera& cam = getPlayerForIndex(idx)->getCamera();
     
-    SceneStatePerPlayer& playerState = state().playerState(playerIndex);
+    SceneStatePerPlayer& playerState = state().playerState(idx);
 
     playerState.cameraUpdated(false);
     switch (cam.getType()) {
@@ -1015,7 +1015,7 @@ bool Scene::updateCameraControls(U8 playerIndex) {
         } break;
     }
 
-    playerState.cameraUnderwater(checkCameraUnderwater(playerIndex));
+    playerState.cameraUnderwater(checkCameraUnderwater(idx));
 
     return playerState.cameraUpdated();
 }
@@ -1027,11 +1027,11 @@ void Scene::updateSceneState(const U64 deltaTime) {
     _aiManager->update(deltaTime);
 
     for (U8 i = 0; i < to_U8(_scenePlayers.size()); ++i) {
-        U8 playerIndex = _scenePlayers[i]->index();
-        findHoverTarget(playerIndex);
-        if (_flashLight[playerIndex]) {
-            PhysicsComponent* pComp = _flashLight[playerIndex]->get<PhysicsComponent>();
-            const Camera& cam = _scenePlayers[playerIndex]->getCamera();
+        PlayerIndex idx = _scenePlayers[i]->index();
+        findHoverTarget(idx);
+        if (_flashLight[idx]) {
+            PhysicsComponent* pComp = _flashLight[idx]->get<PhysicsComponent>();
+            const Camera& cam = _scenePlayers[idx]->getCamera();
             pComp->setPosition(cam.getEye());
             pComp->setRotation(cam.getEuler());
         }
@@ -1083,7 +1083,7 @@ void Scene::removeTask(I64 jobIdentifier) {
 
 }
 
-void Scene::processInput(U8 playerIndex, const U64 deltaTime) {
+void Scene::processInput(PlayerIndex idx, const U64 deltaTime) {
 }
 
 void Scene::processGUI(const U64 deltaTime) {
@@ -1103,7 +1103,7 @@ void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePa
         const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
 
         if (currentGizmoState == SceneRenderState::GizmoState::SELECTED_GIZMO) {
-            SceneGraphNode_ptr selection(_currentSelection[0].lock());
+            SceneGraphNode_cptr selection(_currentSelection[0].lock());
             if (selection != nullptr) {
                 selection->get<RenderingComponent>()->drawDebugAxis();
             }
@@ -1144,11 +1144,11 @@ void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePa
     _envProbePool->debugDraw(bufferInOut);
 }
 
-bool Scene::checkCameraUnderwater(U8 playerIndex) const {
+bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
     const vectorImpl<SceneGraphNode_wptr>& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
 
     if (!waterBodies.empty()) {
-        const Camera& crtCamera = getPlayerForIndex(playerIndex)->getCamera();
+        const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
         const vec3<F32>& eyePos = crtCamera.getEye();
 
         for (const SceneGraphNode_wptr& node : waterBodies) {
@@ -1162,12 +1162,12 @@ bool Scene::checkCameraUnderwater(U8 playerIndex) const {
     return false;
 }
 
-void Scene::findHoverTarget(U8 playerIndex) {
-    const Camera& crtCamera = getPlayerForIndex(playerIndex)->getCamera();
+void Scene::findHoverTarget(PlayerIndex idx) {
+    const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
 
     const vec2<U16>& displaySize = _context.app().windowManager().getActiveWindow().getDimensions();
     const vec2<F32>& zPlanes = crtCamera.getZPlanes();
-    const vec2<I32>& aimPos = state().playerState(playerIndex).aimPos();
+    const vec2<I32>& aimPos = state().playerState(idx).aimPos();
 
     F32 aimX = to_F32(aimPos.x);
     F32 aimY = displaySize.height - to_F32(aimPos.y) - 1;
@@ -1190,29 +1190,30 @@ void Scene::findHoverTarget(U8 playerIndex) {
     }
 
     if (!_sceneSelectionCandidates.empty()) {
-        _currentHoverTarget[playerIndex] = _sceneSelectionCandidates.front();
-        std::shared_ptr<SceneNode> node = _currentHoverTarget[playerIndex].lock()->getNode();
+        _currentHoverTarget[idx] = _sceneSelectionCandidates.front();
+
+        const SceneGraphNode_cptr& target = _sceneGraph->findNode(_currentHoverTarget[idx]).lock();
+
+        const std::shared_ptr<SceneNode>& node = target->getNode();
         if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
             if (static_cast<Object3D*>(node.get())->getObjectType() == Object3D::ObjectType::SUBMESH) {
-                _currentHoverTarget[playerIndex] = _currentHoverTarget[playerIndex].lock()->getParent();
+                _currentHoverTarget[idx] = target->getParent().lock()->getGUID();
             }
         }
 
-        SceneGraphNode_ptr target = _currentHoverTarget[playerIndex].lock();
-        if (target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
-            target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_HOVER);
+         SceneGraphNode* sgn = _sceneGraph->findNode(_currentHoverTarget[idx]).lock().get();
+        if (sgn->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
+            sgn->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_HOVER);
         }
     } else {
-        SceneGraphNode_ptr target(_currentHoverTarget[playerIndex].lock());
+        SceneGraphNode_ptr target(_sceneGraph->findNode(_currentHoverTarget[idx]).lock());
         if (target) {
             if (target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
                 target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
             }
-            _currentHoverTarget[playerIndex].reset();
+            _currentHoverTarget[idx] = 0;
         }
-
     }
-
 }
 
 void Scene::resetSelection() {
@@ -1223,23 +1224,23 @@ void Scene::resetSelection() {
     _currentSelection[0].reset();
 }
 
-void Scene::findSelection(U8 playerIndex) {
-    bool hadTarget = !_currentSelection[playerIndex].expired();
-    bool haveTarget = !_currentHoverTarget[playerIndex].expired();
+void Scene::findSelection(PlayerIndex idx) {
+    bool hadTarget = !_currentSelection[idx].expired();
+    bool haveTarget = _currentHoverTarget[idx] != 0;
 
-    I64 crtGUID = hadTarget ? _currentSelection[playerIndex].lock()->getGUID() : -1;
-    I64 GUID = haveTarget ? _currentHoverTarget[playerIndex].lock()->getGUID() : -1;
+    I64 crtGUID = hadTarget ? _currentSelection[idx].lock()->getGUID() : -1;
+    I64 GUID = haveTarget ? _currentHoverTarget[idx] : -1;
 
     if (crtGUID != GUID) {
         resetSelection();
 
         if (haveTarget) {
-            _currentSelection[playerIndex] = _currentHoverTarget[playerIndex];
-            _currentSelection[playerIndex].lock()->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_SELECTED);
+            _currentSelection[idx] = _sceneGraph->findNode(_currentHoverTarget[idx]);
+            _currentSelection[idx].lock()->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_SELECTED);
         }
 
         for (DELEGATE_CBK<void, U8>& cbk : _selectionChangeCallbacks) {
-            cbk(playerIndex);
+            cbk(idx);
         }
     }
 }

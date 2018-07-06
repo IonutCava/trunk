@@ -132,21 +132,18 @@ class SceneGraphNode : public GUIDWrapper,
 
     /// If this function returns true, the node will no longer be part of the scene hierarchy.
     /// If the node is not a child of the calling node, we will recursively look in all of its children for a match
-    bool removeNode(SceneGraphNode& node);
+    bool removeNode(const SceneGraphNode& node);
     /// If this function returns true, at least one node of the specified type was removed.
     bool removeNodesByType(SceneNodeType nodeType);
 
-    /// Find a node in the graph based on the SceneGraphNode's name
-    /// If sceneNodeName = true, find a node in the graph based on the
-    /// SceneNode's name
-    SceneGraphNode_wptr findNode(const stringImpl& name, bool sceneNodeName = false);
     /// Find a child Node using the given name (either SGN name or SceneNode name)
-    SceneGraphNode_wptr findChild(const stringImpl& name, bool sceneNodeName = false, bool recursive = false);
+    SceneGraphNode_wptr findChild(const stringImpl& name, bool sceneNodeName = false, bool recursive = false) const;
     /// Find a child using the give GUID
-    SceneGraphNode_wptr findChild(I64 GUID, bool recursive = false);
+    SceneGraphNode_wptr findChild(I64 GUID, bool recursive = false) const;
+
     /// Find the graph nodes whom's bounding boxes intersects the given ray
     void intersect(const Ray& ray, F32 start, F32 end,
-                   vectorImpl<SceneGraphNode_cwptr>& selectionHits,
+                   vectorImpl<I64>& selectionHits,
                    bool recursive = true) const;
 
     inline void onCollisionCbk(const DELEGATE_CBK<void, SceneGraphNode_cptr>& cbk) {

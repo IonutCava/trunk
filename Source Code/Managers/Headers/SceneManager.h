@@ -91,7 +91,7 @@ public:
     void destroy();
 
     // Add a new player to the simulation
-    void addPlayer(Scene& parentScene, const SceneGraphNode_ptr& playerNode, bool queue);
+    void addPlayer(Scene& parentScene, const SceneGraphNode_cptr& playerNode, bool queue);
     // Removes the specified player from the active simulation
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
@@ -121,9 +121,9 @@ public:
     void updateSceneState(const U64 deltaTime);
 
     /// Gather input events and process them in the current scene
-    inline void processInput(U8 playerIndex, const U64 deltaTime) {
-        getActiveScene().processInput(playerIndex, deltaTime);
-        Attorney::SceneManager::updateCameraControls(getActiveScene(), playerIndex);
+    inline void processInput(PlayerIndex idx, const U64 deltaTime) {
+        getActiveScene().processInput(idx, deltaTime);
+        Attorney::SceneManager::updateCameraControls(getActiveScene(), idx);
     }
 
     inline void processTasks(const U64 deltaTime) {
@@ -178,7 +178,7 @@ protected:
     bool   unloadScene(Scene* scene);
 
     // Add a new player to the simulation
-    void addPlayerInternal(Scene& parentScene, const SceneGraphNode_ptr& playerNode);
+    void addPlayerInternal(Scene& parentScene, const SceneGraphNode_cptr& playerNode);
     // Removes the specified player from the active simulation
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
@@ -195,8 +195,8 @@ protected:
     bool generateShadowMaps(GFX::CommandBuffer& bufferInOut);
     bool populateRenderQueue(const Camera& camera, bool doCulling, U32 passIndex);
     Camera* playerCamera() const;
-    Camera* playerCamera(U8 playerIndex) const;
-    void currentPlayerPass(U8 playerIndex);
+    Camera* playerCamera(PlayerIndex idx) const;
+    void currentPlayerPass(PlayerIndex idx);
 
 private:
     bool _init;
@@ -209,7 +209,7 @@ private:
     /// visible in the current frame
     RenderPassCuller* _renderPassCuller;
 
-    U8 _currentPlayerPass;
+    PlayerIndex _currentPlayerPass;
     U32 _camUpdateListenerID;
     U32 _camChangeListenerID;
     ScenePool* _scenePool;
@@ -224,7 +224,7 @@ private:
     std::array<CullTimersPerPass, to_base(RenderPassType::COUNT)> _sceneGraphCullTimers;
     PlayerList _players;
 
-    std::queue<std::pair<Scene*, SceneGraphNode_ptr>>  _playerAddQueue;
+    std::queue<std::pair<Scene*, SceneGraphNode_cptr>>  _playerAddQueue;
     std::queue<std::pair<Scene*, Player_ptr>>  _playerRemoveQueue;
 
     struct SwitchSceneTarget {
@@ -284,8 +284,8 @@ class SceneManagerKernel {
         manager.initPostLoadState();
     }
 
-    static void currentPlayerPass(Divide::SceneManager& manager, U8 playerIndex) {
-        manager.currentPlayerPass(playerIndex);
+    static void currentPlayerPass(Divide::SceneManager& manager, PlayerIndex idx) {
+        manager.currentPlayerPass(idx);
     }
 
     static bool networkUpdate(Divide::SceneManager& manager, U32 frameCount) {
@@ -310,8 +310,8 @@ class SceneManagerCameraAccessor {
         return mgr.playerCamera();
     }
 
-    static Camera* playerCamera(Divide::SceneManager& mgr, U8 playerIndex) {
-        return mgr.playerCamera(playerIndex);
+    static Camera* playerCamera(Divide::SceneManager& mgr, PlayerIndex idx) {
+        return mgr.playerCamera(idx);
     }
 
     friend class Divide::Scene;

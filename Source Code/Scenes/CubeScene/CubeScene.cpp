@@ -48,7 +48,7 @@ I8 g_j = 1;
 F32 g_i = 0;
 bool _switch = false;
 
-void CubeScene::processInput(U8 playerIndex, const U64 deltaTime) {
+void CubeScene::processInput(PlayerIndex idx, const U64 deltaTime) {
     if (g_i >= 360)
         _switch = true;
     else if (g_i <= 0)
@@ -61,10 +61,10 @@ void CubeScene::processInput(U8 playerIndex, const U64 deltaTime) {
 
     g_i >= 180 ? g_j = -1 : g_j = 1;
 
-    SceneGraphNode_ptr cutia1(_sceneGraph->findNode("Cutia1").lock());
-    SceneGraphNode_ptr hellotext(_sceneGraph->findNode("HelloText").lock());
-    SceneGraphNode_ptr bila(_sceneGraph->findNode("Bila").lock());
-    SceneGraphNode_ptr dwarf(_sceneGraph->findNode("dwarf").lock());
+    SceneGraphNode_cptr cutia1(_sceneGraph->findNode("Cutia1").lock());
+    SceneGraphNode_cptr hellotext(_sceneGraph->findNode("HelloText").lock());
+    SceneGraphNode_cptr bila(_sceneGraph->findNode("Bila").lock());
+    SceneGraphNode_cptr dwarf(_sceneGraph->findNode("dwarf").lock());
 
     cutia1->get<PhysicsComponent>()->rotate(
         0.3f * g_i, 0.6f * g_i, 0);
@@ -73,7 +73,7 @@ void CubeScene::processInput(U8 playerIndex, const U64 deltaTime) {
     bila->get<PhysicsComponent>()->translateY(g_j * 0.25f);
     dwarf->get<PhysicsComponent>()->rotate(vec3<F32>(0, 1, 0), g_i);
 
-    Scene::processInput(playerIndex, deltaTime);
+    Scene::processInput(idx, deltaTime);
 }
 
 bool CubeScene::load(const stringImpl& name) {

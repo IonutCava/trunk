@@ -91,7 +91,7 @@ class ParticleEmitter : public SceneNode {
 
     void prepareForRender(const RenderStagePass& renderStagePass, const Camera& crtCamera);
 
-    GenericVertexData& getDataBuffer(RenderStage stage, U8 playerIndex);
+    GenericVertexData& getDataBuffer(RenderStage stage, PlayerIndex idx);
 
    private:
     static const U8 s_MaxPlayerBuffers = 4;

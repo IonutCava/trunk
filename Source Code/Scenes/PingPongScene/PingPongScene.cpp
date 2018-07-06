@@ -101,10 +101,10 @@ void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
             _ballSGN.lock()->get<PhysicsComponent>();
         vec3<F32> ballPosition = ballTransform->getPosition();
 
-        SceneGraphNode_ptr table(_sceneGraph->findNode("table").lock());
-        SceneGraphNode_ptr net(_sceneGraph->findNode("net").lock());
-        SceneGraphNode_ptr opponent(_sceneGraph->findNode("opponent").lock());
-        SceneGraphNode_ptr paddle(_sceneGraph->findNode("paddle").lock());
+        SceneGraphNode_cptr table(_sceneGraph->findNode("table").lock());
+        SceneGraphNode_cptr net(_sceneGraph->findNode("net").lock());
+        SceneGraphNode_cptr opponent(_sceneGraph->findNode("opponent").lock());
+        SceneGraphNode_cptr paddle(_sceneGraph->findNode("paddle").lock());
 
         vec3<F32> paddlePosition =
             paddle->get<PhysicsComponent>()->getPosition();
@@ -224,10 +224,10 @@ void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
     }
 }
 
-void PingPongScene::processInput(U8 playerIndex, const U64 deltaTime) {
+void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTime) {
     if (_freeFly) {
         _wasInFreeFly = true;
-        Scene::processInput(playerIndex, deltaTime);
+        Scene::processInput(idx, deltaTime);
         return;
     }
     if (_wasInFreeFly) {
@@ -241,38 +241,38 @@ void PingPongScene::processInput(U8 playerIndex, const U64 deltaTime) {
     // Move LR = Left/Right
     static F32 paddleMovementDivisor = 10;
     // Camera controls
-    if (state().playerState(playerIndex).angleLR() != MoveDirection::NONE) {
-        _paddleCam->rotateYaw(Angle::DEGREES<F32>(state().playerState(playerIndex).angleLR()));
+    if (state().playerState(idx).angleLR() != MoveDirection::NONE) {
+        _paddleCam->rotateYaw(Angle::DEGREES<F32>(state().playerState(idx).angleLR()));
     }
-    if (state().playerState(playerIndex).angleUD() != MoveDirection::NONE) {
-        _paddleCam->rotatePitch(Angle::DEGREES<F32>(state().playerState(playerIndex).angleUD()));
+    if (state().playerState(idx).angleUD() != MoveDirection::NONE) {
+        _paddleCam->rotatePitch(Angle::DEGREES<F32>(state().playerState(idx).angleUD()));
     }
 
-    SceneGraphNode_ptr paddle(_sceneGraph->findNode("paddle").lock());
+    SceneGraphNode_cptr paddle(_sceneGraph->findNode("paddle").lock());
 
     vec3<F32> pos = paddle->get<PhysicsComponent>()->getPosition();
 
     // Paddle movement is limited to the [-3,3] range except for Y-descent
-    if (state().playerState(playerIndex).moveFB() != MoveDirection::NONE) {
-        if ((state().playerState(playerIndex).moveFB() == MoveDirection::POSITIVE && pos.y >= 3) ||
-            (state().playerState(playerIndex).moveFB() == MoveDirection::NEGATIVE && pos.y <= 0.5f)) {
-            Scene::processInput(playerIndex, deltaTime);
+    if (state().playerState(idx).moveFB() != MoveDirection::NONE) {
+        if ((state().playerState(idx).moveFB() == MoveDirection::POSITIVE && pos.y >= 3) ||
+            (state().playerState(idx).moveFB() == MoveDirection::NEGATIVE && pos.y <= 0.5f)) {
+            Scene::processInput(idx, deltaTime);
             return;
         }
-        paddle->get<PhysicsComponent>()->translateY(to_I32(state().playerState(playerIndex).moveFB()) / paddleMovementDivisor);
+        paddle->get<PhysicsComponent>()->translateY(to_I32(state().playerState(idx).moveFB()) / paddleMovementDivisor);
     }
 
-    if (state().playerState(playerIndex).moveLR() != MoveDirection::NONE) {
+    if (state().playerState(idx).moveLR() != MoveDirection::NONE) {
         // Left/right movement is flipped for proper control
-        if ((state().playerState(playerIndex).moveLR() == MoveDirection::NEGATIVE && pos.x >= 3) ||
-            (state().playerState(playerIndex).moveLR() == MoveDirection::POSITIVE && pos.x <= -3)) {
-            Scene::processInput(playerIndex, deltaTime);
+        if ((state().playerState(idx).moveLR() == MoveDirection::NEGATIVE && pos.x >= 3) ||
+            (state().playerState(idx).moveLR() == MoveDirection::POSITIVE && pos.x <= -3)) {
+            Scene::processInput(idx, deltaTime);
             return;
         }
-        paddle->get<PhysicsComponent>()->translateX(to_I32(state().playerState(playerIndex).moveLR()) / paddleMovementDivisor);
+        paddle->get<PhysicsComponent>()->translateX(to_I32(state().playerState(idx).moveLR()) / paddleMovementDivisor);
     }
 
-    Scene::processInput(playerIndex, deltaTime);
+    Scene::processInput(idx, deltaTime);
 }
 
 bool PingPongScene::load(const stringImpl& name) {

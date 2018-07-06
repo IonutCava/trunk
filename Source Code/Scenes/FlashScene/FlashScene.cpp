@@ -8,8 +8,8 @@
 
 namespace Divide {
 
-void FlashScene::processInput(U8 playerIndex, const U64 deltaTime) {
-    Scene::processInput(playerIndex, deltaTime);
+void FlashScene::processInput(PlayerIndex idx, const U64 deltaTime) {
+    Scene::processInput(idx, deltaTime);
 }
 
 void FlashScene::processGUI(const U64 deltaTime) {

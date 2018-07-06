@@ -57,8 +57,8 @@ ParticleEmitter::~ParticleEmitter()
     unload(); 
 }
 
-GenericVertexData& ParticleEmitter::getDataBuffer(RenderStage stage, U8 playerIndex) {
-    return *_particleGPUBuffers[playerIndex % s_MaxPlayerBuffers][to_U32(stage)];
+GenericVertexData& ParticleEmitter::getDataBuffer(RenderStage stage, PlayerIndex idx) {
+    return *_particleGPUBuffers[idx % s_MaxPlayerBuffers][to_U32(stage)];
 }
 
 bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData) {

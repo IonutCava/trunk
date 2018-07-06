@@ -111,7 +111,7 @@ void SceneManager::idle() {
         PostFX::instance().setFadeIn(2750.0);
     } else {
         while (!_playerAddQueue.empty()) {
-            std::pair<Scene*, SceneGraphNode_ptr>& playerToAdd = _playerAddQueue.front();
+            std::pair<Scene*, SceneGraphNode_cptr>& playerToAdd = _playerAddQueue.front();
             addPlayerInternal(*playerToAdd.first, playerToAdd.second);
             _playerAddQueue.pop();
         }
@@ -325,7 +325,7 @@ void SceneManager::onChangeResolution(U16 w, U16 h) {
     }
 }
 
-void SceneManager::addPlayer(Scene& parentScene, const SceneGraphNode_ptr& playerNode, bool queue) {
+void SceneManager::addPlayer(Scene& parentScene, const SceneGraphNode_cptr& playerNode, bool queue) {
     if (queue) {
         _playerAddQueue.push(std::make_pair(&parentScene, playerNode));
     } else {
@@ -333,7 +333,7 @@ void SceneManager::addPlayer(Scene& parentScene, const SceneGraphNode_ptr& playe
     }
 }
 
-void SceneManager::addPlayerInternal(Scene& parentScene, const SceneGraphNode_ptr& playerNode) {
+void SceneManager::addPlayerInternal(Scene& parentScene, const SceneGraphNode_cptr& playerNode) {
     I64 sgnGUID = playerNode->getGUID();
     for (const Player_ptr& crtPlayer : _players) {
         if (crtPlayer->getBoundNode().lock()->getGUID() == sgnGUID) {
@@ -502,10 +502,10 @@ bool SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
     return lightPool->generateShadowMaps(activeScene.renderState(), bufferInOut);
 }
 
-Camera* SceneManager::playerCamera(U8 playerIndex) const {
-    Camera* overrideCamera = getActiveScene().state().playerState(playerIndex).overrideCamera();
+Camera* SceneManager::playerCamera(PlayerIndex idx) const {
+    Camera* overrideCamera = getActiveScene().state().playerState(idx).overrideCamera();
     if (overrideCamera == nullptr) {
-        overrideCamera = &getPlayers().at(playerIndex)->getCamera();
+        overrideCamera = &getPlayers().at(idx)->getCamera();
     }
 
     return overrideCamera;
@@ -515,12 +515,12 @@ Camera* SceneManager::playerCamera() const {
     return playerCamera(_currentPlayerPass);
 }
 
-void SceneManager::currentPlayerPass(U8 playerIndex) {
-    _currentPlayerPass = playerIndex;
-    _platformContext->gfx().historyIndex(playerIndex, true);
+void SceneManager::currentPlayerPass(PlayerIndex idx) {
+    _currentPlayerPass = idx;
+    _platformContext->gfx().historyIndex(idx, true);
     Camera& playerCam = getPlayers().at(_currentPlayerPass)->getCamera();
     _platformContext->gfx().setSceneZPlanes(playerCam.getZPlanes());
-    Attorney::SceneManager::currentPlayerPass(getActiveScene(), playerIndex);
+    Attorney::SceneManager::currentPlayerPass(getActiveScene(), idx);
 }
 
 const RenderPassCuller::VisibleNodeList&

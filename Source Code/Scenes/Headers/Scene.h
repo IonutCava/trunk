@@ -108,7 +108,7 @@ class Scene : public Resource {
 
     /**Begin scene logic loop*/
     /// Get all input commands from the user
-    virtual void processInput(U8 playerIndex, const U64 deltaTime);
+    virtual void processInput(PlayerIndex idx, const U64 deltaTime);
     /// Update the scene based on the inputs
     virtual void processTasks(const U64 deltaTime);
     virtual void processGUI(const U64 deltaTime);
@@ -148,7 +148,7 @@ class Scene : public Resource {
         return _currentSelection[index];
     }
 
-    void findSelection(U8 playerIndex);
+    void findSelection(PlayerIndex idx);
 
     inline void addSelectionCallback(const DELEGATE_CBK<void, U8>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
@@ -182,9 +182,9 @@ class Scene : public Resource {
     virtual void loadKeyBindings();
 
     void resetSelection();
-    void findHoverTarget(U8 playerIndex);
-    bool checkCameraUnderwater(U8 playerIndex) const;
-    void toggleFlashlight(U8 playerIndex);
+    void findHoverTarget(PlayerIndex idx);
+    bool checkCameraUnderwater(PlayerIndex idx) const;
+    void toggleFlashlight(PlayerIndex idx);
 
     virtual bool save(ByteBuffer& outputBuffer) const;
     virtual bool load(ByteBuffer& inputBuffer);
@@ -217,7 +217,7 @@ class Scene : public Resource {
     void clearObjects();
     /**End loading and unloading logic*/
     /// returns true if the camera was moved/rotated/etc
-    bool updateCameraControls(U8 playerIndex);
+    bool updateCameraControls(PlayerIndex idx);
     /// Draw debug entities
     virtual void debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut);
 
@@ -228,13 +228,13 @@ class Scene : public Resource {
     //Return true if input was consumed
     bool mouseMoved(const Input::MouseEvent& arg);
 
-    U8 getSceneIndexForPlayer(U8 playerIndex) const;
-    const Player_ptr& getPlayerForIndex(U8 playerIndex) const;
+    U8 getSceneIndexForPlayer(PlayerIndex idx) const;
+    const Player_ptr& getPlayerForIndex(PlayerIndex idx) const;
 
     U8 getPlayerIndexForDevice(U8 deviceIndex) const;
 
     void addPlayerInternal(bool queue);
-    void removePlayerInternal(U8 playerIndex);
+    void removePlayerInternal(PlayerIndex idx);
     void onPlayerAdd(const Player_ptr& player);
     void onPlayerRemove(const Player_ptr& player);
 
@@ -265,9 +265,9 @@ class Scene : public Resource {
         return true;
     }
 
-    stringImpl getPlayerSGNName(U8 playerIndex);
+    stringImpl getPlayerSGNName(PlayerIndex idx);
 
-    void currentPlayerPass(U8 playerIndex);
+    void currentPlayerPass(PlayerIndex idx);
 
    protected:
        /// Global info
@@ -295,7 +295,7 @@ class Scene : public Resource {
        F32 _LRSpeedFactor;
        /// Current selection
        hashMapImpl<U8 /*player index*/, SceneGraphNode_wptr> _currentSelection;
-       hashMapImpl<U8 /*player index*/, SceneGraphNode_wptr> _currentHoverTarget;
+       hashMapImpl<U8 /*player index*/, I64> _currentHoverTarget;
 
        SceneGraphNode_wptr _currentSky;
        hashMapImpl<U8, SceneGraphNode_ptr> _flashLight;
@@ -312,7 +312,7 @@ class Scene : public Resource {
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
        SceneState* _sceneState;
        vectorImpl<DELEGATE_CBK<void, U8 /*player index*/> > _selectionChangeCallbacks;
-       vectorImpl<SceneGraphNode_cwptr> _sceneSelectionCandidates;
+       vectorImpl<I64> _sceneSelectionCandidates;
 
    protected:
        LightPool* _lightPool;
@@ -335,8 +335,8 @@ class SceneManager {
         return scene._lightPool;
     }
 
-    static bool updateCameraControls(Scene& scene, U8 playerIndex) {
-        return scene.updateCameraControls(playerIndex);
+    static bool updateCameraControls(Scene& scene, PlayerIndex idx) {
+        return scene.updateCameraControls(idx);
     }
 
     static bool checkLoadFlag(const Scene& scene) {
@@ -363,8 +363,8 @@ class SceneManager {
         scene.onPlayerRemove(player);
     }
 
-    static void currentPlayerPass(Scene& scene, U8 playerIndex) {
-        scene.currentPlayerPass(playerIndex);
+    static void currentPlayerPass(Scene& scene, PlayerIndex idx) {
+        scene.currentPlayerPass(idx);
     }
 
     /// Draw debug entities

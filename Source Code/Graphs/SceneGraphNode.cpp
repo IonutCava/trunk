@@ -166,7 +166,7 @@ void SceneGraphNode::setParent(SceneGraphNode& parent) {
 
 SceneGraphNode_ptr SceneGraphNode::registerNode(SceneGraphNode_ptr node) {
     // Time to add it to the children vector
-    SceneGraphNode_ptr child = findChild(node->getName()).lock();
+    SceneGraphNode_cptr child = findChild(node->getName()).lock();
     if (child) {
         removeNode(*child);
     }
@@ -257,7 +257,7 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
     return childRemovalCount > 0;
 }
 
-bool SceneGraphNode::removeNode(SceneGraphNode& node) {
+bool SceneGraphNode::removeNode(const SceneGraphNode& node) {
     // Beware. Removing a node, does no delete it!
     // Call delete on the SceneGraphNode's pointer to do that
 
@@ -330,7 +330,7 @@ bool SceneGraphNode::isChild(const SceneGraphNode& target, bool recursive) const
     return type == SGNRelationshipCache::RelationShipType::CHILD;
 }
 
-SceneGraphNode_wptr SceneGraphNode::findChild(I64 GUID, bool recursive) {
+SceneGraphNode_wptr SceneGraphNode::findChild(I64 GUID, bool recursive) const {
     U32 childCount = getChildCount();
     ReadLock r_lock(_childLock);
     for (U32 i = 0; i < childCount; ++i) {
@@ -351,7 +351,7 @@ SceneGraphNode_wptr SceneGraphNode::findChild(I64 GUID, bool recursive) {
     return SceneGraphNode_wptr();
 }
 
-SceneGraphNode_wptr SceneGraphNode::findChild(const stringImpl& name, bool sceneNodeName, bool recursive) {
+SceneGraphNode_wptr SceneGraphNode::findChild(const stringImpl& name, bool sceneNodeName, bool recursive) const {
     U32 childCount = getChildCount();
     ReadLock r_lock(_childLock);
     for (U32 i = 0; i < childCount; ++i) {
@@ -374,51 +374,15 @@ SceneGraphNode_wptr SceneGraphNode::findChild(const stringImpl& name, bool scene
     return SceneGraphNode_wptr();
 }
 
-// Finding a node based on the name of the SceneGraphNode or the SceneNode it holds
-// Switching is done by setting sceneNodeName to false if we pass a SceneGraphNode name
-// or to true if we search by a SceneNode's name
-SceneGraphNode_wptr SceneGraphNode::findNode(const stringImpl& name,  bool sceneNodeName) {
-    // Make sure a name exists
-    if (!name.empty()) {
-        // check if it is the name we are looking for
-        if (sceneNodeName ? _node->getName().compare(name) == 0
-                          : getName().compare(name) == 0) {
-            // We got the node!
-            return shared_from_this();
-        }
-
-        // The current node isn't the one we want, so check children
-        SceneGraphNode_wptr child = findChild(name, sceneNodeName);
-        if (!child.expired()) {
-            return child;
-        }
-
-        // The node we want isn't one of the children, so recursively check each of them
-        U32 childCount = getChildCount();
-        ReadLock r_lock(_childLock);
-        for (U32 i = 0; i < childCount; ++i) {
-            SceneGraphNode_wptr returnValue = _children[i]->findNode(name, sceneNodeName);
-            // if it is not nullptr it is the node we are looking for so just pass it through
-            if (!returnValue.expired()) {
-                return returnValue;
-            }
-        }
-    }
-
-    // no children's name matches or there are no more children
-    // so return nullptr, indicating that the node was not found yet
-    return SceneGraphNode_wptr();
-}
-
 void SceneGraphNode::intersect(const Ray& ray,
                                F32 start,
                                F32 end,
-                               vectorImpl<SceneGraphNode_cwptr>& selectionHits,
+                               vectorImpl<I64>& selectionHits,
                                bool recursive) const {
 
     if (isSelectable()) {
         if (get<BoundsComponent>()->getBoundingBox().intersect(ray, start, end)) {
-            selectionHits.push_back(shared_from_this());
+            selectionHits.push_back(getGUID());
         }
     }
 

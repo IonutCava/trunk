@@ -260,9 +260,9 @@ bool WarScene::addUnits() {
     heavyPackage._goalList.push_back(protectFlagCarrier);
     lightPackage._goalList.push_back(protectFlagCarrier);
 
-    SceneGraphNode_ptr lightNode(_sceneGraph->findNode("Soldier1").lock());
-    SceneGraphNode_ptr animalNode(_sceneGraph->findNode("Soldier2").lock());
-    SceneGraphNode_ptr heavyNode(_sceneGraph->findNode("Soldier3").lock());
+    SceneGraphNode_cptr lightNode(_sceneGraph->findNode("Soldier1").lock());
+    SceneGraphNode_cptr animalNode(_sceneGraph->findNode("Soldier2").lock());
+    SceneGraphNode_cptr heavyNode(_sceneGraph->findNode("Soldier3").lock());
 
     std::shared_ptr<SceneNode> lightNodeMesh = lightNode->getNode();
     std::shared_ptr<SceneNode> animalNodeMesh = animalNode->getNode();
@@ -373,7 +373,7 @@ bool WarScene::addUnits() {
     return !(_armyNPCs[0].empty() || _armyNPCs[1].empty());
 }
 
-AI::AIEntity* WarScene::findAI(SceneGraphNode_ptr node) {
+AI::AIEntity* WarScene::findAI(SceneGraphNode_cptr node) {
     I64 targetGUID = node->getGUID();
 
     for (U8 i = 0; i < 2; ++i) {

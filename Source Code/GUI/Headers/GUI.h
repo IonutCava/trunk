@@ -116,7 +116,7 @@ public:
     inline CEGUI::Window* rootSheet() const { return _rootSheet; }
     inline const stringImpl& guiScheme() const { return _defaultGUIScheme; }
 
-    void selectionChangeCallback(Scene* const activeScene, U8 playerIndex);
+    void selectionChangeCallback(Scene* const activeScene, PlayerIndex idx);
     /// Return a pointer to the default, general purpose message box
     inline GUIMessageBox* const getDefaultMessageBox() const {
         return _defaultMsgBox;

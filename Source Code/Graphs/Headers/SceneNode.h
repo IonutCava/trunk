@@ -53,6 +53,7 @@ class NetworkingComponent;
 
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 FWD_DECLARE_MANAGED_CLASS(Material);
+
 namespace Attorney {
     class SceneNodeSceneGraph;
     class SceneNodeNetworkComponent;

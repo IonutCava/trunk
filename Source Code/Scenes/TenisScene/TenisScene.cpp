@@ -277,8 +277,8 @@ void TenisScene::playGame(const Task& parentTask, AnyParam a, CallbackParam b) {
     }
 }
 
-void TenisScene::processInput(U8 playerIndex, const U64 deltaTime) {
-    Scene::processInput(playerIndex, deltaTime);
+void TenisScene::processInput(PlayerIndex idx, const U64 deltaTime) {
+    Scene::processInput(idx, deltaTime);
 }
 
 bool TenisScene::load(const stringImpl& name) {

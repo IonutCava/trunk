@@ -116,7 +116,7 @@ void DefaultScene::postLoadMainThread() {
     Scene::postLoadMainThread();
 }
 
-void DefaultScene::processInput(U8 playerIndex, const U64 deltaTime) {
+void DefaultScene::processInput(PlayerIndex idx, const U64 deltaTime) {
     if (!_sceneToLoad.empty()) {
         _GUI->modifyText(_ID("globalMessage"),
                          Util::StringFormat("Please wait while scene [ %s ] is loading", _sceneToLoad.c_str()));
@@ -124,17 +124,17 @@ void DefaultScene::processInput(U8 playerIndex, const U64 deltaTime) {
         _sceneToLoad.clear();
     }
 
-    Angle::DEGREES<F32>& angle = _camAngle[getSceneIndexForPlayer(playerIndex)];
-    if (playerIndex % 3 == 1) {
-        getPlayerForIndex(playerIndex)->getCamera().rotatePitch(angle);
-    } else if (playerIndex % 3 == 2) {
-        getPlayerForIndex(playerIndex)->getCamera().rotateRoll(angle);
+    Angle::DEGREES<F32>& angle = _camAngle[getSceneIndexForPlayer(idx)];
+    if (idx % 3 == 1) {
+        getPlayerForIndex(idx)->getCamera().rotatePitch(angle);
+    } else if (idx % 3 == 2) {
+        getPlayerForIndex(idx)->getCamera().rotateRoll(angle);
     } else {
-        getPlayerForIndex(playerIndex)->getCamera().rotateYaw(angle);
+        getPlayerForIndex(idx)->getCamera().rotateYaw(angle);
     }
     angle = 0.0f;
 
-    Scene::processInput(playerIndex, deltaTime);
+    Scene::processInput(idx, deltaTime);
 }
 
 void DefaultScene::processTasks(const U64 deltaTime) {
