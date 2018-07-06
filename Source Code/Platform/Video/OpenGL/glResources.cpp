@@ -25,10 +25,10 @@ namespace GLUtil {
 
 /*-----------Object Management----*/
 GLuint _invalidObjectID = GL_INVALID_INDEX;
-GLFWwindow* _mainWindowWindowed = nullptr;
-GLFWwindow* _mainWindowFullScreen = nullptr;
-GLFWwindow* _mainWindowSplash = nullptr;
-GLFWwindow* _loaderWindow = nullptr;
+SDL_Window* _mainWindow = nullptr;
+SDL_Window* _loaderWindow = nullptr;
+SDL_GLContext _glRenderContext;
+SDL_GLContext _glLoadingContext;
 
 /// this may not seem very efficient (or useful) but it saves a lot of
 /// single-use code scattered around further down
@@ -36,16 +36,6 @@ GLint getIntegerv(GLenum param) {
     GLint tempValue = 0;
     glGetIntegerv(param, &tempValue);
     return tempValue;
-}
-
-/// Send a shutdown request to the app on X-button clicks
-void glfw_close_callback(GLFWwindow* window) {
-    Application::getInstance().RequestShutdown();
-}
-
-/// Used by GLFW to inform the application if it has focus or not
-void glfw_focus_callback(GLFWwindow* window, I32 focusState) {
-    Application::getInstance().getWindowManager().hasFocus(focusState != 0);
 }
 
 std::array<GLenum, to_const_uint(BlendProperty::COUNT)> glBlendTable;
@@ -412,7 +402,6 @@ namespace DSAWrapper {
             }
 #endif
         }
-
         GL_API::bindTexture(0, texture, target);
         glTexParameteri(target, pname, param);
     }

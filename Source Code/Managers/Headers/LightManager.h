@@ -61,8 +61,6 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     inline Light::LightList& getLights() { return _lights; }
     Light* getLight(I64 lightGUID);
 
-    void updateResolution(U16 newWidth, U16 newHeight);
-
     /// shadow mapping
     void bindDepthMaps();
     bool shadowMappingEnabled() const;
@@ -120,7 +118,6 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     bool _previewShadowMaps;
     bool _shadowMapsEnabled;
     vec3<F32> _ambientLight;
-    vec2<U16> _cachedResolution;
     mat4<F32> _viewMatrixCache;
 
     std::array<ShaderBuffer*, to_const_uint(ShaderBufferType::COUNT)>

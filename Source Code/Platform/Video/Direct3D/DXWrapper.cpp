@@ -22,7 +22,7 @@ ErrorCode DX_API::initRenderingAPI(I32 argc, char** argv) {
 
 void DX_API::closeRenderingAPI() {}
 
-void DX_API::changeResolution(U16 w, U16 h) {}
+void DX_API::changeWindowSize(U16 w, U16 h) {}
 
 void DX_API::changeViewport(const vec4<I32>& newViewport) const {}
 
@@ -37,7 +37,9 @@ bool DX_API::makeTextureResident(const TextureData& textureData) {
     return true;
 }
 
-void DX_API::setWindowPos(U16 w, U16 h) {}
+void DX_API::setWindowPosition(U16 w, U16 h) {}
+
+void DX_API::centerWindowPosition() {}
 
 void DX_API::setCursorPosition(U16 x, U16 y) {}
 
@@ -49,7 +51,7 @@ void DX_API::toggleRasterization(bool state) {}
 
 void DX_API::updateClipPlanes() {}
 
-void DX_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {}
+void DX_API::drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffset) {}
 
 void DX_API::drawPoints(U32 numPoints) {}
 

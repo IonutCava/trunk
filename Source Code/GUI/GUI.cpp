@@ -45,26 +45,6 @@ GUI::~GUI() {
     _defaultMsgBox = nullptr;
 }
 
-void GUI::onResize(const vec2<U16>& newResolution) {
-    // CEGUI handles it's own init checks
-    CEGUI::System::getSingleton().notifyDisplaySizeChanged(
-        CEGUI::Sizef(newResolution.width, newResolution.height));
-
-    if (!_init || _cachedResolution == newResolution) {
-        return;
-    }
-
-    vec2<I32> difDimensions(
-        (I32)_cachedResolution.width - newResolution.width,
-        (I32)_cachedResolution.height - newResolution.height);
-
-    for (guiMap::value_type& guiStackIterator : _guiStack) {
-        guiStackIterator.second->onResize(difDimensions);
-    }
-
-    _cachedResolution = newResolution;
-}
-
 void GUI::draw() const {
     if (!_init) {
         return;
@@ -116,7 +96,6 @@ bool GUI::init(const vec2<U16>& resolution) {
         Console::d_errorfn(Locale::get("ERROR_GUI_DOUBLE_INIT"));
         return false;
     }
-    _cachedResolution = resolution;
 
 #ifdef _DEBUG
     CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
@@ -172,7 +151,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     CEGUI_DEFAULT_CTX.setRootWindow(_rootSheet);
     CEGUI_DEFAULT_CTX.setDefaultTooltipType(
         stringAlg::fromBase(_defaultGUIScheme + "/Tooltip"));
-
+    _rootSheet->setPixelAligned(false);
     assert(_console);
     //_console->CreateCEGUIWindow();
     GUIEditor::getInstance().init();
@@ -323,11 +302,23 @@ bool GUI::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
     return _ceguiInput.joystickVector3DMoved(arg, index);
 }
 
-GUIButton* GUI::addButton(const stringImpl& ID, const stringImpl& text,
+GUIButton* GUI::addButton(const stringImpl& ID,
+                          const stringImpl& text,
                           const vec2<I32>& position,
-                          const vec2<U32>& dimensions, const vec3<F32>& color,
+                          const vec2<U32>& dimensions,
+                          const vec3<F32>& color,
                           ButtonCallback callback,
                           const stringImpl& rootSheetID) {
+
+    const vec2<U16>& windowSize
+        = Application::getInstance().getWindowManager().getWindowDimension();
+
+    vec2<F32> relOffset((position.x * 100.0f) / windowSize.x,
+                        (position.y * 100.0f) / windowSize.y);
+
+    vec2<F32> relDim((dimensions.x * 100.0f) / windowSize.x,
+                     (dimensions.y * 100.0f) / windowSize.y);
+
     CEGUI::Window* parent = nullptr;
     if (!rootSheetID.empty()) {
         parent = CEGUI_DEFAULT_CTX.getRootWindow()->getChild(
@@ -337,8 +328,8 @@ GUIButton* GUI::addButton(const stringImpl& ID, const stringImpl& text,
         parent = _rootSheet;
     }
     GUIButton* btn =
-        MemoryManager_NEW GUIButton(ID, text, _defaultGUIScheme, position,
-                                    dimensions, color, parent, callback);
+        MemoryManager_NEW GUIButton(ID, text, _defaultGUIScheme, relOffset,
+                                    relDim, color, parent, callback);
     guiMap::iterator it = _guiStack.find(ID);
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, btn);
@@ -367,6 +358,11 @@ GUIMessageBox* GUI::addMsgBox(const stringImpl& id, const stringImpl& title,
 GUIText* GUI::addText(const stringImpl& id, const vec2<I32>& position,
                       const stringImpl& font, const vec3<F32>& color,
                       char* format, ...) {
+    const vec2<U16>& windowSize 
+        = Application::getInstance().getWindowManager().getWindowDimension();
+    vec2<F32> relOffset((position.x * 100.0f) / windowSize.x,
+                        (position.y * 100.0f) / windowSize.y);
+
     va_list args;
     stringImpl fmt_text;
 
@@ -378,8 +374,7 @@ GUIText* GUI::addText(const stringImpl& id, const vec2<I32>& position,
     MemoryManager::DELETE_ARRAY(text);
     va_end(args);
 
-    GUIText* t = MemoryManager_NEW GUIText(id, fmt_text, position, font, color,
-                                           _rootSheet);
+    GUIText* t = MemoryManager_NEW GUIText(id, fmt_text, relOffset, font, color, _rootSheet);
     guiMap::iterator it = _guiStack.find(id);
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, t);

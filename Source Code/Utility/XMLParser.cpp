@@ -278,12 +278,12 @@ void loadConfig(const std::string &file) {
     par.setParam("rendering.shadowDetailLevel", shadowDetailLevel);
     par.setParam("rendering.enableFog", pt.get("rendering.enableFog", true));
 
-    vec2<U16> resolutionWindow(pt.get("runtime.resolution.windowedMode.<xmlattr>.w", 1024),
-                               pt.get("runtime.resolution.windowedMode.<xmlattr>.h", 768));
-    vec2<U16> resolutionFullscreen(pt.get("runtime.resolution.fullscreenMode.<xmlattr>.w", 1024),
-                                   pt.get("runtime.resolution.fullscreenMode.<xmlattr>.h", 768));
-    vec2<U16> resolutionSplashScreen(pt.get("runtime.resolution.splashScreenMode.<xmlattr>.w", 400),
-                                     pt.get("runtime.resolution.splashScreenMode.<xmlattr>.h", 300));
+    vec2<U16> resolution(pt.get("runtime.resolution.<xmlattr>.w", 1024),
+                         pt.get("runtime.resolution.<xmlattr>.h", 768));
+    vec2<U16> windowSize(pt.get("runtime.windowSize.window.<xmlattr>.w", 1024),
+                         pt.get("runtime.windowSize.window.<xmlattr>.h", 768));
+    vec2<U16> splashScreenSize(pt.get("runtime.windowSize.splashScreen.<xmlattr>.w", 400),
+                              pt.get("runtime.windowSize.splashScreen.<xmlattr>.h", 300));
     bool startFullScreen = !pt.get("rendering.windowedMode", true);
     par.setParam("runtime.enableVSync", pt.get("runtime.enableVSync", false));
     par.setParam("runtime.groundPos",
@@ -308,15 +308,11 @@ void loadConfig(const std::string &file) {
 
 
     WindowManager& windowManager = Application::getInstance().getWindowManager();
-    windowManager.setResolution(WindowType::WINDOW,
-                                resolutionWindow.width,
-                                resolutionWindow.height);
-    windowManager.setResolution(WindowType::FULLSCREEN,
-                                resolutionFullscreen.width,
-                                resolutionFullscreen.height);
-    windowManager.setResolution(WindowType::SPLASH,
-                                resolutionSplashScreen.width,
-                                resolutionSplashScreen.height);
+    windowManager.setResolution(resolution);
+    windowManager.setWindowDimension(WindowType::WINDOW,
+                                     windowSize);
+    windowManager.setWindowDimension(WindowType::SPLASH,
+                                     splashScreenSize);
     windowManager.mainWindowType(startFullScreen
                                      ? WindowType::FULLSCREEN
                                      : WindowType::WINDOW);

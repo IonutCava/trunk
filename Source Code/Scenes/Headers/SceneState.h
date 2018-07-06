@@ -158,10 +158,6 @@ class SceneRenderState {
         return *_cameraMgr->getActiveCamera();
     }
 
-    inline const vec2<U16>& cachedResolution() const {
-        return _cachedResolution;
-    }
-
     inline bool playAnimations() const {
         return _playAnimations;
     }
@@ -170,10 +166,6 @@ class SceneRenderState {
 
     inline void playAnimations(bool state) { 
         _playAnimations = state; 
-    }
-
-    inline void cachedResolution(const vec2<U16>& resolution) {
-        return _cachedResolution.set(resolution);
     }
 
    protected:
@@ -189,8 +181,6 @@ class SceneRenderState {
 
     GizmoState _gizmoState;
     CameraManager* _cameraMgr;
-    /// cached resolution
-    vec2<U16> _cachedResolution;
 };
 
 class SceneState {
@@ -320,10 +310,6 @@ protected:
 namespace Attorney {
 class SceneRenderStateScene {
    private:
-    static void cachedResolution(SceneRenderState& sceneRenderState,
-                                 const vec2<U16>& resolution) {
-        sceneRenderState.cachedResolution(resolution);
-    }
     static void playAnimations(SceneRenderState& sceneRenderState,
                                bool playAnimations) {
         sceneRenderState.playAnimations(playAnimations);

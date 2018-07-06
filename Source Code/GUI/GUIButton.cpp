@@ -7,26 +7,29 @@
 
 namespace Divide {
 
-GUIButton::GUIButton(const stringImpl& id, const stringImpl& text,
-                     const stringImpl& guiScheme, const vec2<I32>& position,
-                     const vec2<U32>& dimensions, const vec3<F32>& color,
-                     CEGUI::Window* parent, ButtonCallback callback)
-    : GUIElement(parent, GUIType::GUI_BUTTON, position),
+GUIButton::GUIButton(const stringImpl& id,
+                     const stringImpl& text,
+                     const stringImpl& guiScheme,
+                     const vec2<F32>& relativeOffset,
+                     const vec2<F32>& relativeDimensions,
+                     const vec3<F32>& color,
+                     CEGUI::Window* parent,
+                     ButtonCallback callback)
+    : GUIElement(parent, GUIType::GUI_BUTTON),
       _text(text),
-      _dimensions(dimensions),
       _color(color),
       _callbackFunction(callback),
       _highlight(false),
       _pressed(false),
       _btnWindow(nullptr)
 {
+    
     _btnWindow = CEGUI::WindowManager::getSingleton().createWindow(
         stringAlg::fromBase(guiScheme + "/Button"), stringAlg::fromBase(id));
-    _btnWindow->setPosition(CEGUI::UVector2(
-        CEGUI::UDim(0.0f, to_float(position.x)), 
-        CEGUI::UDim(1.0f, -1.0f * position.y)));
-    _btnWindow->setSize(CEGUI::USize(CEGUI::UDim(0.0f, to_float(dimensions.x)),
-                                     CEGUI::UDim(0.0f, to_float(dimensions.y))));
+    _btnWindow->setPosition(CEGUI::UVector2(CEGUI::UDim(relativeOffset.x / 100, 0.0f),
+                                            CEGUI::UDim(relativeOffset.y / 100, 0.0f)));
+    _btnWindow->setSize(CEGUI::USize(CEGUI::UDim(relativeDimensions.x / 100, 0.0f),
+                                     CEGUI::UDim(relativeDimensions.y / 100, 0.0f)));
     _btnWindow->setText(text.c_str());
     _btnWindow->subscribeEvent(
         CEGUI::PushButton::EventClicked,

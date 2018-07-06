@@ -258,7 +258,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void setViewport(const vec4<I32>& viewport);
     /// Switch between fullscreen rendering
     void toggleFullScreen();
-    void changeResolution(U16 w, U16 h) override;
+    void increaseResolution();
+    void decreaseResolution();
+    void changeResolution(U16 w, U16 h);
+    void changeWindowSize(U16 w, U16 h) override;
     bool loadInContext(const CurrentContext& context,
                        const DELEGATE_CBK<>& callback);
 
@@ -330,12 +333,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline const vec4<I32>& getCurrentViewport() const { return _viewport.top(); }
 
   public:  // Direct API calls
-    inline void setWindowPos(U16 w, U16 h) { 
-        _prevCachedWindowPosition.set(_cachedWindowPosition);
-        _api->setWindowPos(w, h); 
-        _cachedWindowPosition.set(w, h);
-    }
+    inline void setWindowPosition(U16 w, U16 h) { _api->setWindowPosition(w, h); }
 
+    inline void centerWindowPosition() { _api->centerWindowPosition(); }
     /// Hardware specific shader preps (e.g.: OpenGL: init/deinit GLSL-OPT and GLSW)
     inline bool initShaders() override { return _api->initShaders(); }
 
@@ -469,9 +469,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     bool registerRenderStateBlock(const RenderStateBlock& stateBlock);
 
     inline void drawText(const TextLabel& textLabel,
-                         const vec2<I32>& position) override {
+                         const vec2<F32>& relativeOffset) override {
         uploadGlobalBufferData();
-        _api->drawText(textLabel, position);
+        _api->drawText(textLabel, relativeOffset);
     }
 
     /// Sets the current state block to the one passed as a param
@@ -556,16 +556,13 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     std::unique_ptr<ShaderBuffer> _nodeBuffer;
     GenericDrawCommand _defaultDrawCmd;
 
-    /// Current window resolution
-    vec2<U16> _cachedWindowPosition;
-    vec2<U16> _prevCachedWindowPosition;
 END_SINGLETON
 
 namespace Attorney {
     class GFXDeviceGUI {
     private:
-        static void drawText(GFXDevice& gfxDevice, const TextLabel& text, const vec2<I32>& position) {
-            return gfxDevice.drawText(text, position);
+        static void drawText(GFXDevice& gfxDevice, const TextLabel& text, const vec2<F32>& relativeOffset) {
+            return gfxDevice.drawText(text, relativeOffset);
         }
 
         static size_t setStateBlock(GFXDevice& gfxDevice, size_t stateBlockHash) {

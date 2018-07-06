@@ -1,16 +1,17 @@
 #include "Headers/PlatformDefines.h"
 
-#include <GL/glfw3.h>
-#include <GL/glfw3native.h>
+#include <SDL_syswm.h>
 
 namespace {
     static LARGE_INTEGER g_time;
 }
 
 namespace Divide {
-    void getWindowHandle(void* windowClass, SysInfo& info) {
-
-        info._windowHandle = glfwGetWin32Window(static_cast<GLFWwindow*>(windowClass));
+    void getWindowHandle(void* window, SysInfo& info) {
+        SDL_SysWMinfo wmInfo;
+        SDL_VERSION(&wmInfo.version);
+        SDL_GetWindowWMInfo(static_cast<SDL_Window*>(window), &wmInfo);
+        info._windowHandle = wmInfo.info.win.window;
     }
 
     bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info) {

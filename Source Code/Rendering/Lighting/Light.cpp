@@ -240,15 +240,6 @@ bool Light::removeShadowMapInfo() {
     MemoryManager::DELETE(_shadowMapInfo);
     return true;
 }
-void Light::updateResolution(U16 newWidth, U16 newHeight) {
-    ShadowMap* sm = _shadowMapInfo->getShadowMap();
-
-    if (!sm) {
-        return; 
-    }
-
-    sm->updateResolution(newWidth, newHeight);
-}
 
 void Light::generateShadowMaps(SceneRenderState& sceneRenderState) {
     ShadowMap* sm =

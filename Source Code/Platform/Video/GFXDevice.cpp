@@ -240,34 +240,84 @@ const RenderStateBlock& GFXDevice::getRenderStateBlock(size_t renderStateBlockHa
     return *it->second;
 }
 
+void GFXDevice::increaseResolution() {
+    const vec2<U16>& resolution = Application::getInstance().getWindowManager().getResolution();
+    const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes();
+
+    vectorImpl<GPUState::GPUVideoMode>::const_reverse_iterator it;
+    for (it = std::rbegin(displayModes); it != std::rend(displayModes); ++it) {
+        const vec2<U16>& tempResolution = it->_resolution;
+
+        if (resolution.width < tempResolution.width &&
+            resolution.height < tempResolution.height) {
+            changeResolution(tempResolution.width, tempResolution.height);
+            return;
+        }
+    }
+}
+
+void GFXDevice::decreaseResolution() {
+    const vec2<U16>& resolution = Application::getInstance().getWindowManager().getResolution();
+    const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes();
+    
+    vectorImpl<GPUState::GPUVideoMode>::const_iterator it;
+    for (it = std::begin(displayModes); it != std::end(displayModes); ++it) {
+        const vec2<U16>& tempResolution = it->_resolution;
+        if (resolution.width > tempResolution.width &&
+            resolution.height > tempResolution.height) {
+            changeResolution(tempResolution.width, tempResolution.height);
+            return;
+        }
+    }
+}
+
 void GFXDevice::toggleFullScreen() {
     WindowManager& winManager = Application::getInstance().getWindowManager();
-    winManager.mainWindowType(winManager.mainWindowType() == WindowType::WINDOW
-                                  ? WindowType::FULLSCREEN
-                                  : WindowType::WINDOW);
+    switch (winManager.mainWindowType()) {
+        case WindowType::WINDOW:
+        case WindowType::SPLASH:
+            winManager.mainWindowType(WindowType::FULLSCREEN_WINDOWED);
+            break;
+        case WindowType::FULLSCREEN_WINDOWED:
+            winManager.mainWindowType(WindowType::FULLSCREEN);
+            break;
+        case WindowType::FULLSCREEN:
+            winManager.mainWindowType(WindowType::WINDOW);
+            break;
+    };
+}
 
-    // This should be sufficient to switch the rendering window
-    /*if (state) {
-        const SysInfo& systemInfo = Application::getInstance().getSysInfo();
-        changeResolution(static_cast<U16>(systemInfo._systemResolutionWidth),
-                         static_cast<U16>(systemInfo._systemResolutionHeight));
-        setWindowPos(0, 0);
-    } else {
-        const vec2<U16>& prevResolution = Application::getInstance().getPreviousResolution();
-        changeResolution(prevResolution.width, prevResolution.height);
-        setWindowPos(_prevCachedWindowPosition.x, _prevCachedWindowPosition.y);
-    }*/
+void GFXDevice::changeWindowSize(U16 w, U16 h) {
+    if (!_viewport.empty() &&
+        getCurrentViewport().width == w &&
+        getCurrentViewport().height == h) {
+        return;
+    }
+
+    _api->changeWindowSize(w, h);
+    // Set the viewport to be the entire window. Force the update so we don't
+    // push a new value (we replace the old)
+    forceViewportInternal(vec4<I32>(0, 0, w, h));
+    // Make sure the main viewport is the only one active. Never change
+    // resolution while rendering to a render target
+    DIVIDE_ASSERT(_viewport.size() == 1,
+        "GFXDevice error: changeWinowSize called while not rendering to screen!");
+    // Update the 2D camera so it matches our new rendering viewport
+    _2DCamera->setProjection(vec4<F32>(0, w, 0, h), vec2<F32>(-1, 1));
+    // Refresh shader programs
+    ShaderManager::getInstance().refreshShaderData();
+    
+    Application::getInstance().getWindowManager().setWindowDimension(vec2<U16>(w, h));
+    Application::getInstance().getKernel().changeWindowDimensions(w, h);
 }
 
 /// The main entry point for any resolution change request
 void GFXDevice::changeResolution(U16 w, U16 h) {
     // Make sure we are in a valid state that allows resolution updates
-    if (_renderTarget[to_uint(RenderTarget::SCREEN)] !=
-        nullptr) {
+    if (_renderTarget[to_uint(RenderTarget::SCREEN)] != nullptr) {
         // Update resolution only if it's different from the current one.
         // Avoid resolution change on minimize so we don't thrash render targets
-        if (vec2<U16>(w, h) ==
-                _renderTarget[to_uint(RenderTarget::SCREEN)]
+        if (vec2<U16>(w, h) ==  _renderTarget[to_uint(RenderTarget::SCREEN)]
                     ->getResolution() ||
             !(w > 1 && h > 1)) {
             return;
@@ -279,24 +329,21 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
             }
         }
     }
-    // Inform rendering API of the resolution change
-    _api->changeResolution(w, h);
-    // Set the viewport to be the entire window. Force the update so we don't
-    // push a new value (we replace the old)
-    forceViewportInternal(vec4<I32>(0, 0, w, h));
-    // Make sure the main viewport is the only one active. Never change
-    // resolution while rendering to a render target
-    DIVIDE_ASSERT(_viewport.size() == 1,
-                  "GFXDevice error: changeResolution called while not "
-                  "rendering to screen!");
+
+    WindowType windowType
+        = Application::getInstance().getWindowManager().mainWindowType();
+
     // Inform the Kernel
-    Kernel::updateResolutionCallback(w, h);
+    Application::getInstance().getKernel().changeResolution(
+        w, h, windowType == WindowType::FULLSCREEN ||
+              windowType == WindowType::FULLSCREEN_WINDOWED);
+
     // Update post-processing render targets and buffers
     PostFX::getInstance().updateResolution(w, h);
     // Refresh shader programs
     ShaderManager::getInstance().refreshShaderData();
-    // Update the 2D camera so it matches our new rendering viewport
-    _2DCamera->setProjection(vec4<F32>(0, w, 0, h), vec2<F32>(-1, 1));
+
+    Application::getInstance().getWindowManager().setResolution(vec2<U16>(w, h));
 }
 
 /// Update fog values

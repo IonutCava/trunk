@@ -61,7 +61,6 @@ class CascadedShadowMaps : public ShadowMap {
     bool BindInternal(U8 offset);
     void CalculateSplitDepths(const Camera& cam);
     void ApplyFrustumSplit(U8 pass);
-    void updateResolution(U16 newWidth, U16 newHeight);
 
    protected:
     U8 _numSplits;

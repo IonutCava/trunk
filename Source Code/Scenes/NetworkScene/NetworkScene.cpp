@@ -105,6 +105,9 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
         vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
+    const vec2<U16>& resolution
+        = Application::getInstance().getWindowManager().getResolution();
+
     _GUI->addText("fpsDisplay",  // Unique ID
                   vec2<I32>(60, 60),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
@@ -115,33 +118,33 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
                   Time::ElapsedSeconds());
 
     _GUI->addText("serverMessage",
-                  vec2<I32>(renderState().cachedResolution().width / 4.0f,
-                            renderState().cachedResolution().height / 1.6f),
+                  vec2<I32>(resolution.width / 4.0f,
+                            resolution.height / 1.6f),
                   Font::DIVIDE_DEFAULT, vec3<F32>(0.5f, 0.5f, 0.2f),
                   "Server says: %s", "<< nothing yet >>");
     _GUI->addText("statusText",
-                  vec2<I32>(renderState().cachedResolution().width / 3.0f,
-                            renderState().cachedResolution().height / 1.2f),
+                  vec2<I32>(resolution.width / 3.0f,
+                            resolution.height / 1.2f),
                   Font::DIVIDE_DEFAULT, vec3<F32>(0.2f, 0.5f, 0.2f), "");
 
     _GUI->addButton(
         "getPing", "ping me",
-        vec2<I32>(60, to_int(renderState().cachedResolution().height / 1.1f)),
+        vec2<I32>(60, to_int(resolution.height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.6f, 0.6f, 0.6f),
         DELEGATE_BIND(&NetworkScene::test, this));
     _GUI->addButton(
         "disconnect", "disconnect",
-        vec2<I32>(180, to_int(renderState().cachedResolution().height / 1.1f)),
+        vec2<I32>(180, to_int(resolution.height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.5f, 0.5f, 0.5f),
         DELEGATE_BIND(&NetworkScene::disconnect, this));
     _GUI->addButton(
         "connect", "connect",
-        vec2<I32>(300, to_int(renderState().cachedResolution().height / 1.1f)),
+        vec2<I32>(300, to_int(resolution.height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
         DELEGATE_BIND(&NetworkScene::connect, this));
     _GUI->addButton(
         "patch", "patch",
-        vec2<I32>(420, to_int(renderState().cachedResolution().height / 1.1f)),
+        vec2<I32>(420, to_int(resolution.height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
         DELEGATE_BIND(&NetworkScene::checkPatches, this));
 

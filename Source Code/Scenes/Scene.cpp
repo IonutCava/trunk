@@ -398,21 +398,29 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     _input->addKeyMapping(Input::KeyCode::KC_END, cbks);
 
     cbks.first = [this]() {
-        Camera& cam = renderState().getCamera();
-        F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
-        if (currentCamMoveSpeedFactor < 50) {
-            cam.setMoveSpeedFactor(currentCamMoveSpeedFactor + 1.0f);
-            cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() + 1.0f);
+        if (_input->getKeyState(Input::KeyCode::KC_LCONTROL) == SceneInput::InputState::PRESSED) {
+            GFX_DEVICE.increaseResolution();
+        } else {
+            Camera& cam = renderState().getCamera();
+            F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
+            if (currentCamMoveSpeedFactor < 50) {
+                cam.setMoveSpeedFactor(currentCamMoveSpeedFactor + 1.0f);
+                cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() + 1.0f);
+            }
         }
     };
     _input->addKeyMapping(Input::KeyCode::KC_ADD, cbks);
 
     cbks.first = [this]() {
-        Camera& cam = renderState().getCamera();
-        F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
-        if (currentCamMoveSpeedFactor > 1.0f) {
-            cam.setMoveSpeedFactor(currentCamMoveSpeedFactor - 1.0f);
-            cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() - 1.0f);
+        if (_input->getKeyState(Input::KeyCode::KC_LCONTROL) == SceneInput::InputState::PRESSED) {
+            GFX_DEVICE.decreaseResolution();
+        } else {
+            Camera& cam = renderState().getCamera();
+            F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
+            if (currentCamMoveSpeedFactor > 1.0f) {
+                cam.setMoveSpeedFactor(currentCamMoveSpeedFactor - 1.0f);
+                cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() - 1.0f);
+            }
         }
     };
     _input->addKeyMapping(Input::KeyCode::KC_SUBTRACT, cbks);
@@ -726,7 +734,9 @@ void Scene::findSelection() {
     F32 mouseX = to_float(mousePos.x);
     F32 mouseY = to_float(mousePos.y);
 
-    mouseY = renderState().cachedResolution().height - mouseY - 1;
+    const vec2<U16>& windowDimension 
+        = Application::getInstance().getWindowManager().getWindowDimension();
+    mouseY = windowDimension.height - mouseY - 1;
     vec3<F32> startRay = renderState().getCameraConst().unProject(
         vec3<F32>(mouseX, mouseY, 0.0f));
     vec3<F32> endRay = renderState().getCameraConst().unProject(

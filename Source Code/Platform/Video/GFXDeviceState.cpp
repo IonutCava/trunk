@@ -25,6 +25,14 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         // Validate initialization
         return hardwareState;
     }
+    const SysInfo& systemInfo = Application::getInstance().getSysInfo();
+    WindowManager& winManager = Application::getInstance().getWindowManager();
+    winManager.setWindowDimension(WindowType::FULLSCREEN, 
+                                  vec2<U16>(systemInfo._systemResolutionWidth,
+                                            systemInfo._systemResolutionHeight));
+    winManager.setWindowDimension(WindowType::FULLSCREEN_WINDOWED,
+                                  vec2<U16>(systemInfo._systemResolutionWidth,
+                                            systemInfo._systemResolutionHeight));
     // Initialize the shader manager
     ShaderManager::getInstance().init();
     // Create an immediate mode shader used for general purpose rendering (e.g.
@@ -52,10 +60,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, 1, sizeof(NodeData));
     _nodeBuffer->Bind(ShaderBufferLocation::NODE_INFO);
     // Resize our window to the target resolution
-    const vec2<U16>& resolution 
-        = Application::getInstance().getWindowManager().getResolution();
+    const vec2<U16>& resolution = winManager.getResolution();
     changeResolution(resolution.width, resolution.height);
-
+    const vec2<U16>& windowSize = winManager.getWindowDimension();
+    changeWindowSize(windowSize.width, windowSize.height);
     // Create general purpose render state blocks
     RenderStateBlock defaultState;
     _defaultStateBlockHash = defaultState.getHash();

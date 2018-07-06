@@ -34,9 +34,6 @@
 
 //#pragma GCC diagnostic ignored "-Wall"
 
-#define GLFW_EXPOSE_NATIVE_X11
-#define GLFW_EXPOSE_NATIVE_GLX
-
 #ifndef NOINITVTABLE
 #define NOINITVTABLE
 #endif  //NOINITVTABLE

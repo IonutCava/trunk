@@ -108,16 +108,6 @@ ErrorCode InputInterface::init(Kernel& kernel) {
     return ErrorCode::NO_ERR;
 }
 
-void InputInterface::updateResolution(U16 w, U16 h) {
-    if (!_bIsInitialized) {
-        return;
-    }
-    // width and height are mutable
-    const OIS::MouseState& ms = _pMouse->getMouseState();
-    ms.width = w;
-    ms.height = h;
-}
-
 U8 InputInterface::update(const U64 deltaTime) {
     const U8 nMaxEffectUpdateCnt = _nHartBeatFreq / _nEffectUpdateFreq;
     U8 nEffectUpdateCnt = 0;

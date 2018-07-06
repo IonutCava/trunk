@@ -416,9 +416,11 @@ void WarScene::toggleCamera() {
 }
 
 bool WarScene::loadResources(bool continueOnErrors) {
+    const vec2<U16>& resolution
+        = Application::getInstance().getWindowManager().getResolution();
+
     _GUI->addButton("Simulate", "Simulate",
-                    vec2<I32>(renderState().cachedResolution().width - 220,
-                              to_int(renderState().cachedResolution().height / 1.1f)),
+                    vec2<I32>(resolution.width - 220, 60),
                     vec2<U32>(100, 25), vec3<F32>(0.65f),
                     DELEGATE_BIND(&WarScene::startSimulation, this));
 

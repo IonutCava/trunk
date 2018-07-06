@@ -2,22 +2,22 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
-GUIText::GUIText(const stringImpl& id, const stringImpl& text,
-                 const vec2<I32>& position, const stringImpl& font,
-                 const vec3<F32>& color, CEGUI::Window* parent, U32 textHeight)
-    : GUIElement(parent, GUIType::GUI_TEXT, position),
-      TextLabel(text, font, color, textHeight)
+GUIText::GUIText(const stringImpl& id,
+                 const stringImpl& text,
+                 const vec2<F32>& relativePosition,
+                 const stringImpl& font,
+                 const vec3<F32>& color,
+                 CEGUI::Window* parent,
+                 U32 textHeight)
+    : GUIElement(parent, GUIType::GUI_TEXT),
+      TextLabel(text, font, color, textHeight),
+    _relativePosition(relativePosition)
 {
 }
 
 
 void GUIText::draw() const {
-    Attorney::GFXDeviceGUI::drawText(GFX_DEVICE, *this, getPosition());
-}
-
-void GUIText::onResize(const vec2<I32> &newSize) {
-    _position.x -= newSize.x;
-    _position.y -= newSize.y;
+    Attorney::GFXDeviceGUI::drawText(GFX_DEVICE, *this, _relativePosition);
 }
 
 void GUIText::mouseMoved(const GUIEvent &event) {}

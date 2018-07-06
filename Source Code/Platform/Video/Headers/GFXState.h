@@ -50,15 +50,18 @@ class GPUState : private NonCopyable {
     struct GPUVideoMode {
         // width x height
         vec2<U16> _resolution;
-        // R,G,B
-        vec3<U8> _bitDepth;
+        // bits per pixel;
+        U8 _bitDepth;
+        // format name;
+        stringImpl _formatName;
         // Max supported
         vectorImpl<U8> _refreshRate;
 
         bool operator==(const GPUVideoMode& other) const {
             return _resolution == other._resolution &&
                    _bitDepth == other._bitDepth &&
-                   _refreshRate == other._refreshRate;
+                   _refreshRate == other._refreshRate &&
+                   _formatName.compare(other._formatName) == 0;
         }
     };
 

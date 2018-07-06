@@ -67,17 +67,19 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
 
     /// Try and create a valid OpenGL context taking in account the specified
     /// command line arguments
-    ErrorCode initRenderingAPI(GLint argc, char** argv) override;
+    ErrorCode initRenderingAPI(I32 argc, char** argv) override;
     /// Clear everything that was setup in initRenderingAPI()
     void closeRenderingAPI() override;
     /// Prepare our shader loading system
     bool initShaders() override;
     /// Revert everything that was set up in "initShaders()"
     bool deInitShaders() override;
-    /// Window positioning is handled by GLFW
-    void setWindowPos(GLushort w, GLushort h) override;
-    /// Mouse positioning is handled by GLFW
-    void setCursorPosition(GLushort x, GLushort y) override;
+    /// Window positioning is handled by SDL
+    void setWindowPosition(U16 w, U16 h) override;
+    /// Centering is also easier via SDL
+    void centerWindowPosition() override;
+    /// Mouse positioning is handled by SDL
+    void setCursorPosition(U16 x, U16 y) override;
     /// Prepare the GPU for rendering a frame
     void beginFrame() override;
     /// Finish rendering the current frame
@@ -135,10 +137,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Text rendering is handled exclusively by Mikko Mononen's FontStash library
     /// (https://github.com/memononen/fontstash)
     /// with his OpenGL frontend adapted for core context profiles
-    void drawText(const TextLabel& textLabel, const vec2<I32>& position) override;
+    void drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffset) override;
     /// Rendering points is universally useful, so we have a function, and a VAO,
     /// dedicated to this process
-    void drawPoints(GLuint numPoints) override;
+    void drawPoints(U32 numPoints) override;
     /// This functions should be run in a separate, consumer thread.
     /// The main app thread, the producer, adds tasks via a lock-free queue that is
     /// checked every 20 ms
@@ -168,9 +170,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     }
     /// Try to find the requested font in the font cache. Load on cache miss.
     I32 getFont(const stringImpl& fontName);
-    /// changeResolution is simply asking GLFW to do the resizing and updating the
-    /// resolution cache
-    void changeResolution(GLushort w, GLushort h) override;
+    void changeWindowSize(U16 w, U16 h) override;
     /// Change the current viewport area. Redundancy check is performed in GFXDevice
     /// class
     void changeViewport(const vec4<GLint>& newViewport) const override;
@@ -255,14 +255,14 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static GLuint getSamplerHandle(size_t samplerHash);
 
   private:
-    ErrorCode createWindow(WindowType windowType, 
-                           const vec2<GLushort>& resolution);
-    ErrorCode destroyWindow(WindowType windowType);
-    GLFWwindow* getActiveWindow() const;
-    bool handleChangeWindowType(WindowType newWindowType);
-
+    ErrorCode createWindow();
+    ErrorCode createGLContext();
+    ErrorCode destroyWindow();
+    ErrorCode destroyGLContext();
+    void handleChangeWindowType(WindowType newWindowType);
+    void pollWindowEvents();
     /// FontStash library initialization
-    void createFonsContext();
+    bool createFonsContext();
     /// FontStash library deinitialization
     void deleteFonsContext();
     /// Use GLSW to append tokens to shaders. Use ShaderType::COUNT to append to

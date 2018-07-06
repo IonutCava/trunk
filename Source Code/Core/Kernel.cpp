@@ -50,6 +50,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _sceneMgr(SceneManager::getInstance())  // Scene Manager
 
 {
+    _mainCamera = nullptr;
+
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
     // General light management and rendering (individual lights are handled by
@@ -459,35 +461,25 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     Console::printfn(Locale::get("SCENE_ADD_DEFAULT_CAMERA"));
-    Camera* camera = MemoryManager_NEW FreeFlyCamera();
-    camera->setProjection(aspectRatio,
-                          par.getParam<F32>("rendering.verticalFOV"),
-                          vec2<F32>(par.getParam<F32>("rendering.zNear"),
-                                    par.getParam<F32>("rendering.zFar")));
-    camera->setFixedYawAxis(true);
+    _mainCamera = MemoryManager_NEW FreeFlyCamera();
+    _mainCamera->setProjection(aspectRatio,
+                               par.getParam<F32>("rendering.verticalFOV"),
+                               vec2<F32>(par.getParam<F32>("rendering.zNear"),
+                                         par.getParam<F32>("rendering.zFar")));
+    _mainCamera->setFixedYawAxis(true);
     // As soon as a camera is added to the camera manager, the manager is
     // responsible for cleaning it up
-    _cameraMgr->addNewCamera("defaultCamera", camera);
-    _cameraMgr->pushActiveCamera(camera);
+    _cameraMgr->addNewCamera("defaultCamera", _mainCamera);
+    _cameraMgr->pushActiveCamera(_mainCamera);
 
-    const vec2<U16>& splashResolution = winManager.getResolution(WindowType::SPLASH);
     winManager.mainWindowType(WindowType::SPLASH);
-
-    _GFX.setWindowPos(static_cast<U16>((systemInfo._systemResolutionWidth  -
-                                        splashResolution.width)  / 2),
-                      static_cast<U16>((systemInfo._systemResolutionHeight -
-                                        splashResolution.height) / 2));
-
     // Load and render the splash screen
     _GFX.setRenderStage(RenderStage::DISPLAY);
     _GFX.beginFrame();
-    GUISplash("divideLogo.jpg", splashResolution).render();
+    GUISplash("divideLogo.jpg", winManager.getWindowDimension(WindowType::SPLASH)).render();
     _GFX.endFrame();
 
-    winManager.mainWindowType(WindowType::WINDOW);
-    GFX_DEVICE.setWindowPos(10, 60);
     winManager.mainWindowType(windowType);
-
     Console::printfn(Locale::get("START_SOUND_INTERFACE"));
     if ((initError = _SFX.initAudioAPI()) != ErrorCode::NO_ERR) {
         return initError;
@@ -522,8 +514,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::MISSING_SCENE_LOAD_CALL;
     }
 
-    camera->setMoveSpeedFactor(par.getParam<F32>("options.cameraSpeed.move"));
-    camera->setTurnSpeedFactor(par.getParam<F32>("options.cameraSpeed.turn"));
+    _mainCamera->setMoveSpeedFactor(par.getParam<F32>("options.cameraSpeed.move"));
+    _mainCamera->setTurnSpeedFactor(par.getParam<F32>("options.cameraSpeed.turn"));
 
     Console::printfn(Locale::get("INITIAL_DATA_LOADED"));
     Console::printfn(Locale::get("CREATE_AI_ENTITIES_START"));
@@ -591,23 +583,30 @@ void Kernel::shutdown() {
     Time::REMOVE_TIMER(s_appLoopTimer);
 }
 
-void Kernel::updateResolutionCallback(U16 w, U16 h) {
-    // Update the graphical user interface
-    vec2<U16> newResolution(w, h);
+void Kernel::changeWindowDimensions(U16 w, U16 h) {
+    CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
+    if (Input::InputInterface::getInstance().isInit()) {
+        const OIS::MouseState& ms = Input::InputInterface::getInstance().getMouse().getMouseState();
+        ms.width = w;
+        ms.height = h;
+    }
+}
 
-    Application& APP = Application::getInstance();
-    APP.getWindowManager().setResolution(newResolution.width, newResolution.height);
-    // Update internal resolution tracking (used for joysticks and mouse)
-    Input::InputInterface::getInstance().updateResolution(newResolution.width, newResolution.height);
-    GUI::getInstance().onResize(newResolution);
+void Kernel::changeResolution(U16 w, U16 h, bool isFullScreen) {
+    Application::getInstance().getWindowManager().setResolution(vec2<U16>(w, h));
     // minimized
     _renderingPaused = (w == 0 || h == 0);
-    if (APP.mainLoopActive()) {
-        // Update light manager so that all shadow maps and other render targets
-        // match our needs
-        LightManager::getInstance().updateResolution(w, h);
-        // Cache resolution for faster access
-        SceneManager::getInstance().cacheResolution(newResolution);
+
+    if (isFullScreen) {
+        if (Input::InputInterface::getInstance().isInit()) {
+            const OIS::MouseState& ms = Input::InputInterface::getInstance().getMouse().getMouseState();
+            ms.width = w;
+            ms.height = h;
+        }
+        CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
+    }
+    if (_mainCamera) {
+        _mainCamera->setAspectRatio(to_float(w) / to_float(h));
     }
 }
 

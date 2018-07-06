@@ -32,12 +32,10 @@
 #ifndef _GUI_SPLASH_H
 #define _GUI_SPLASH_H
 
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
 
-template <typename T>
-class vec2;
 class Texture;
 class ShaderProgram;
 
@@ -48,6 +46,7 @@ class GUISplash {
     void render();
 
    private:
+    vec2<U16> _dimensions;
     Texture* _splashImage;
     ShaderProgram* _splashShader;
 };

@@ -48,20 +48,21 @@ enum class ErrorCode : I32 {
     GFX_NON_SPECIFIED = -5,
     SFX_NON_SPECIFIED = -6,
     PFX_NON_SPECIFIED = -7,
-    GLFW_INIT_ERROR = -8,
-    GLFW_WINDOW_INIT_ERROR = -9,
-    GLBINGING_INIT_ERROR = -10,
-    GL_OLD_HARDWARE = -11,
-    DX_INIT_ERROR = -12,
-    DX_OLD_HARDWARE = -13,
-    SDL_AUDIO_INIT_ERROR = -14,
-    SDL_AUDIO_MIX_INIT_ERROR = -15,
-    FMOD_AUDIO_INIT_ERROR = -16,
-    OAL_INIT_ERROR = -17,
-    PHYSX_INIT_ERROR = -18,
-    PHYSX_EXTENSION_ERROR = -19,
-    NO_LANGUAGE_INI = -20,
-    NOT_ENOUGH_RAM = -21
+    SDL_INIT_ERROR = -8,
+    SDL_WINDOW_INIT_ERROR = -9,
+    FONT_INIT_ERROR = -10,
+    GLBINGING_INIT_ERROR = -11,
+    GL_OLD_HARDWARE = -12,
+    DX_INIT_ERROR = -13,
+    DX_OLD_HARDWARE = -14,
+    SDL_AUDIO_INIT_ERROR = -15,
+    SDL_AUDIO_MIX_INIT_ERROR = -16,
+    FMOD_AUDIO_INIT_ERROR = -17,
+    OAL_INIT_ERROR = -18,
+    PHYSX_INIT_ERROR = -19,
+    PHYSX_EXTENSION_ERROR = -20,
+    NO_LANGUAGE_INI = -21,
+    NOT_ENOUGH_RAM = -22
 };
 
 class Kernel;
@@ -71,6 +72,7 @@ enum class WindowType : U32 {
     WINDOW = 0,
     SPLASH = 1,
     FULLSCREEN = 2,
+    FULLSCREEN_WINDOWED = 3,
     COUNT
 };
 
@@ -86,27 +88,25 @@ public:
     
     /// Application resolution (either fullscreen resolution or window dimensions)
     inline const vec2<U16>& getResolution() const;
-    inline const vec2<U16>& getResolution(WindowType window) const;
-    inline const vec2<U16>& getScreenCenter() const;
-    inline const vec2<U16>& getScreenCenter(WindowType window) const;
     inline const vec2<U16>& getPreviousResolution() const;
-    inline const vec2<U16>& getPreviousResolution(WindowType window) const;
 
     inline void setResolutionWidth(U16 w);
-    inline void setResolutionWidth(WindowType window, U16 w);
     inline void setResolutionHeight(U16 h);
-    inline void setResolutionHeight(WindowType window, U16 h);
-    inline void setResolution(U16 w, U16 h);
-    inline void setResolution(WindowType window, U16 w, U16 h);
+    inline void setResolution(const vec2<U16>& resolution);
+    
+    inline const vec2<U16>& getWindowDimension() const;
+    inline const vec2<U16>& getWindowDimension(WindowType windowType) const;
+    inline void setWindowDimension(const vec2<U16>& newDimension);
+    inline void setWindowDimension(WindowType windowType, const vec2<U16>& newDimension);
 
 protected:
     /// this is false if the window/application lost focus (e.g. clicked another
     /// window, alt + tab, etc)
     bool _hasFocus;
     WindowType _activeWindowType;
-    std::array<vec2<U16>, to_const_uint(WindowType::COUNT)> _resolution;
-    std::array<vec2<U16>, to_const_uint(WindowType::COUNT)> _screenCenter;
-    std::array<vec2<U16>, to_const_uint(WindowType::COUNT)> _prevResolution;
+    vec2<U16> _resolution;
+    vec2<U16> _prevResolution;
+    std::array<vec2<U16>, to_const_uint(WindowType::COUNT)> _windowDimensions;
 };
 
 /// Lightweight singleton class that manages our application's kernel and window

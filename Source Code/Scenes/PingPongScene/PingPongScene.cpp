@@ -311,25 +311,27 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     light->setCastShadows(false);
     light->setPosition(vec3<F32>(0, 6, 2));
     */
+    const vec2<U16>& resolution
+        = Application::getInstance().getWindowManager().getResolution();
     // Buttons and text labels
     _GUI->addButton("Serve", "Serve",
-                    vec2<I32>(to_int(renderState().cachedResolution().width - 120),
-                              to_int(renderState().cachedResolution().height / 1.1f)),
+                    vec2<I32>(to_int(resolution.width - 120),
+                              to_int(resolution.height / 1.1f)),
                     vec2<U32>(100, 25), vec3<F32>(0.65f),
                     DELEGATE_BIND(&PingPongScene::serveBall, this));
 
     _GUI->addText("Score",
-                  vec2<I32>(to_int(renderState().cachedResolution().width - 120),
-                            to_int(renderState().cachedResolution().height / 1.3f)),
+                  vec2<I32>(to_int(resolution.width - 120),
+                            to_int(resolution.height / 1.3f)),
                   Font::DIVIDE_DEFAULT, vec3<F32>(1, 0, 0), "Score: %d", 0);
 
     _GUI->addText("Message",
-                  vec2<I32>(to_int(renderState().cachedResolution().width - 120),
-                            to_int(renderState().cachedResolution().height / 1.5f)),
+                  vec2<I32>(to_int(resolution.width - 120),
+                            to_int(resolution.height / 1.5f)),
                   Font::DIVIDE_DEFAULT, vec3<F32>(1, 0, 0), "");
     _GUI->addText("insults",
-                  vec2<I32>(renderState().cachedResolution().width / 4,
-                            renderState().cachedResolution().height / 3),
+                  vec2<I32>(resolution.width / 4,
+                            resolution.height / 3),
                   Font::DIVIDE_DEFAULT, vec3<F32>(0, 1, 0), "");
     _GUI->addText("fpsDisplay",  // Unique ID
                   vec2<I32>(60, 60),  // Position

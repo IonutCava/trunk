@@ -67,7 +67,6 @@ bool SceneManager::load(const stringImpl& sceneName,
     if (!_activeScene) {
         return false;
     }
-    cacheResolution(resolution);
 
     _activeScene->renderCallback(
         DELEGATE_BIND(&SceneManager::renderScene, this));

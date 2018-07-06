@@ -96,8 +96,6 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     /// Add a flash element -DEPRECATED-
     GUIFlash* addFlash(const stringImpl& id, stringImpl movie,
                        const vec2<U32>& position, const vec2<U32>& extent);
-    /// Called on window resize to adjust the dimensions of all the GUI elements
-    void onResize(const vec2<U16>& newResolution);
     /// Get a pointer to our console window
     inline GUIConsole* const getConsole() { return _console; }
     inline const GUIEditor& getEditor() { return GUIEditor::getInstance(); }
@@ -157,8 +155,6 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     GUIMessageBox* _defaultMsgBox;  //< Pointer to a default message box used for
                                     //general purpose messages
     guiMap _guiStack;               //< All the GUI elements created
-    vec2<U16> _cachedResolution;    //< We keep a cache of the current resolution to
-                                    //avoid useless queries
     U64 _textRenderInterval;  //< We should avoid rendering text as fast as possible
                               //for performance reasons
     CEGUI::Window* _rootSheet;  //< gui root Window

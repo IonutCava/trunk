@@ -68,11 +68,14 @@ inline const char* getErrorCodeName(ErrorCode code) {
             return "No physx API specified before trying to initialize the "
                    "PFX Device";
         };
-        case ErrorCode::GLFW_INIT_ERROR: {
-            return "GLFW system failed to initialize";
+        case ErrorCode::SDL_INIT_ERROR: {
+            return "SDL failed to initialize";
         };
-        case ErrorCode::GLFW_WINDOW_INIT_ERROR: {
-            return "GLFW failed to create a valid window";
+        case ErrorCode::SDL_WINDOW_INIT_ERROR: {
+            return "SDL failed to create a valid window";
+        };
+        case ErrorCode::FONT_INIT_ERROR: {
+            return "Font system failed to create a valid context";
         };
         case ErrorCode::GLBINGING_INIT_ERROR: {
             return "GLBinding failed to initialize";
@@ -116,57 +119,43 @@ inline const char* getErrorCodeName(ErrorCode code) {
 }
 
 inline const vec2<U16>& WindowManager::getResolution() const {
-    return getResolution(_activeWindowType);
-}
-
-inline const vec2<U16>& WindowManager::getResolution(WindowType window) const {
-    return _resolution[to_uint(window)];
-}
-
-inline const vec2<U16>& WindowManager::getScreenCenter() const {
-    return getScreenCenter(_activeWindowType);
-}
-
-inline const vec2<U16>& WindowManager::getScreenCenter(WindowType window) const {
-    return _screenCenter[to_uint(window)];
+    return _resolution;
 }
 
 inline const vec2<U16>& WindowManager::getPreviousResolution() const {
-    return getPreviousResolution(_activeWindowType);
-}
-
-inline const vec2<U16>& WindowManager::getPreviousResolution(WindowType window) const {
-    return _prevResolution[to_uint(window)];
+    return _prevResolution;
 }
 
 inline void WindowManager::setResolutionWidth(U16 w) {
-    setResolutionWidth(_activeWindowType, w);
-}
-
-inline void WindowManager::setResolutionWidth(WindowType window, U16 w) {
-    _prevResolution[to_uint(window)].set(_resolution[to_uint(window)]);
-    _resolution[to_uint(window)].width = w;
-    _screenCenter[to_uint(window)].x = w / 2;
+    _prevResolution.set(_resolution);
+    _resolution.width = w;
 }
 
 inline void WindowManager::setResolutionHeight(U16 h) {
-    setResolutionHeight(_activeWindowType, h);
+    _prevResolution.set(_resolution);
+    _resolution.height = h;
 }
 
-inline void WindowManager::setResolutionHeight(WindowType window, U16 h) {
-    _prevResolution[to_uint(window)].set(_resolution[to_uint(window)]);
-    _resolution[to_uint(window)].height = h;
-    _screenCenter[to_uint(window)].y = h / 2;
+inline void WindowManager::setResolution(const vec2<U16>& resolution) {
+    _prevResolution.set(_resolution);
+    _resolution.set(resolution);
 }
 
-inline void WindowManager::setResolution(U16 w, U16 h) {
-    setResolution(_activeWindowType, w, h);
+inline const vec2<U16>& WindowManager::getWindowDimension() const {
+    return getWindowDimension(mainWindowType());
 }
 
-inline void WindowManager::setResolution(WindowType window, U16 w, U16 h) {
-    _prevResolution[to_uint(window)].set(_resolution[to_uint(window)]);
-    _resolution[to_uint(window)].set(w, h);
-    _screenCenter[to_uint(window)].set(_resolution[to_uint(window)] / 2);
+inline const vec2<U16>& WindowManager::getWindowDimension(WindowType windowType) const {
+    return _windowDimensions[to_uint(windowType)];
+}
+
+inline void WindowManager::setWindowDimension(const vec2<U16>& newDimension) {
+    setWindowDimension(mainWindowType(), newDimension);
+}
+
+inline void WindowManager::setWindowDimension(WindowType windowType,
+                                              const vec2<U16>& newDimension) {
+    _windowDimensions[to_uint(windowType)].set(newDimension);
 }
 
 inline bool WindowManager::hasFocus() const {
@@ -238,8 +227,8 @@ inline void Application::mainLoopPaused(bool state) {
 }
 
 inline void Application::snapCursorToCenter() const {
-    const vec2<U16>& center = _windowManager.getScreenCenter();
-    snapCursorToPosition(center.x, center.y);
+    const vec2<U16>& center = _windowManager.getResolution();
+    snapCursorToPosition(center.x / 2, center.y / 2);
 }
 
 inline void Application::throwError(ErrorCode err) {

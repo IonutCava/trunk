@@ -3,13 +3,12 @@
 
 namespace Divide {
 
-GUIElement::GUIElement(CEGUI::Window* const parent, const GUIType& type,
-                       const vec2<I32>& position)
+GUIElement::GUIElement(CEGUI::Window* const parent, const GUIType& type)
     : _guiType(type),
       _parent(parent),
       _active(false),
-      _position(position),
-      _lastDrawTimer(0) {
+      _lastDrawTimer(0)
+{
     _name = "defaultGuiControl";
     _visible = true;
 
@@ -21,5 +20,8 @@ GUIElement::GUIElement(CEGUI::Window* const parent, const GUIType& type,
     _guiSBHash = stateBlock.getHash();
 }
 
-GUIElement::~GUIElement() {}
+GUIElement::~GUIElement()
+{
+}
+
 };

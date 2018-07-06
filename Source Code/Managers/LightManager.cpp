@@ -81,9 +81,6 @@ void LightManager::init() {
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->Bind(
         ShaderBufferLocation::LIGHT_SHADOW);
 
-    _cachedResolution.set(
-        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)
-            ->getResolution());
     _init = true;
 }
 
@@ -145,14 +142,6 @@ void LightManager::idle() {
         ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
 
     s_shadowPassTimer->pause(!_shadowMapsEnabled);
-}
-
-void LightManager::updateResolution(U16 newWidth, U16 newHeight) {
-    for (Light* light : _lights) {
-        light->updateResolution(newWidth, newHeight);
-    }
-
-    _cachedResolution.set(newWidth, newHeight);
 }
 
 U8 LightManager::getShadowBindSlotOffset(ShadowType type) {

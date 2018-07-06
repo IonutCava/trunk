@@ -23,6 +23,7 @@
 #include "Text/Headers/glfontstash.h"
 #endif
 
+#include <sdl/include/SDL_video.h>
 #include <glsl/glsl_optimizer.h>
 
 #ifndef CEGUI_STATIC
@@ -66,9 +67,10 @@ GL_API::GL_API()
 GL_API::~GL_API() {}
 
 /// FontStash library initialization
-void GL_API::createFonsContext() {
+bool GL_API::createFonsContext() {
     // 512x512 atlas with bottom-left origin
     _fonsContext = glfonsCreate(512, 512, FONS_ZERO_BOTTOMLEFT);
+    return _fonsContext != nullptr;
 }
 
 /// FontStash library deinitialization
@@ -82,6 +84,7 @@ void GL_API::beginFrame() {
     WindowType mainWindowType = Application::getInstance().getWindowManager().mainWindowType();
     if (_crtWindowType != mainWindowType) {
         handleChangeWindowType(mainWindowType);
+        _crtWindowType = mainWindowType;
     }
 // Start a duration query in debug builds
 #ifdef _DEBUG
@@ -110,11 +113,12 @@ void GL_API::endFrame() {
         CEGUI::System::getSingleton().renderAllGUIContexts();
         // glPopDebugGroup();
     }
+
     // Swap buffers
-    glfwSwapBuffers(getActiveWindow());
-    // Poll for new events
-    glfwPollEvents();
-// End the timing query started in beginFrame() in debug builds
+    SDL_GL_SwapWindow(GLUtil::_mainWindow);
+    pollWindowEvents();
+
+    // End the timing query started in beginFrame() in debug builds
 #ifdef _DEBUG
     glEndQuery(GL_TIME_ELAPSED);
     // Swap query objects. The current time will be available after 4 frames
@@ -535,7 +539,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 /// Text rendering is handled exclusively by Mikko Mononen's FontStash library
 /// (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
-void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {
+void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffset) {
     /*glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 2, -1,
                     "OpenGL render text start!");*/
     // Retrieve the font from the font cache
@@ -569,22 +573,26 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {
         if (textLabel._alignFlag != 0) {
             fonsSetAlign(_fonsContext, textLabel._alignFlag);
         }
-        const vec2<U16>& cachedResolution = Application::getInstance().getWindowManager().getResolution();
+        const vec2<U16>& windowSize
+            = Application::getInstance().getWindowManager().getWindowDimension();
+
+        vec2<F32> position((relativeOffset.x * windowSize.x) / 100.0f,
+                           (relativeOffset.y * windowSize.y) / 100.0f);
         if (textLabel._multiLine) {
             lines.clear();
             lines = Util::Split(textLabel.text(), '\n');
             vectorAlg::vecSize lineCount = lines.size();
             for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
                 fonsDrawText(_fonsContext,
-                             to_float(position.x),
-                             to_float(cachedResolution.y - (position.y + (lh * (1 + i)))),
+                             position.x,
+                             to_float(windowSize.y - (position.y + (lh * (1 + i)))),
                              lines[i].c_str(),
                              nullptr);
             }
         } else {
                 fonsDrawText(_fonsContext,
-                             to_float(position.x),
-                             to_float(cachedResolution.y - (position.y + lh)),
+                             position.x,
+                             to_float(windowSize.y - (position.y + lh)),
                              textLabel.text().c_str(),
                              nullptr);
         }

@@ -399,26 +399,30 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ballSGN.lock()->getComponent<PhysicsComponent>()->translate(
         vec3<F32>(3.0f, 0.2f, 7.0f));
     _ballSGN.lock()->setSelectable(true);
+
+    const vec2<U16>& resolution
+        = Application::getInstance().getWindowManager().getResolution();
+
     GUIElement* btn = _GUI->addButton(
         "Serve", "Serve",
-        vec2<I32>(renderState().cachedResolution().width - 220, 60),
+        vec2<I32>(resolution.width - 220, 60),
         vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
         DELEGATE_BIND(&TenisScene::startGame, this));
     btn->setTooltip("Start a new game!");
 
     _GUI->addText(
-        "Team1Score", vec2<I32>(to_int(renderState().cachedResolution().width - 250),
-                                to_int(renderState().cachedResolution().height / 1.3f)),
+        "Team1Score", vec2<I32>(to_int(resolution.width - 250),
+                                to_int(resolution.height / 1.3f)),
         Font::DIVIDE_DEFAULT, vec3<F32>(0, 0.8f, 0.8f), "Team 1 Score: %d", 0);
 
     _GUI->addText(
-        "Team2Score", vec2<I32>(to_int(renderState().cachedResolution().width - 250),
-                                to_int(renderState().cachedResolution().height / 1.5f)),
+        "Team2Score", vec2<I32>(to_int(resolution.width - 250),
+                                to_int(resolution.height / 1.5f)),
         Font::DIVIDE_DEFAULT, vec3<F32>(0.2f, 0.8f, 0), "Team 2 Score: %d", 0);
 
     _GUI->addText("Message",
-                  vec2<I32>(to_int(renderState().cachedResolution().width - 250),
-                            to_int(renderState().cachedResolution().height / 1.7f)),
+                  vec2<I32>(to_int(resolution.width - 250),
+                            to_int(resolution.height / 1.7f)),
                   Font::DIVIDE_DEFAULT, vec3<F32>(0, 1, 0), "");
 
     _GUI->addText("fpsDisplay",  // Unique ID

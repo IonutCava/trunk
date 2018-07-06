@@ -48,10 +48,14 @@ class GUIButton : public GUIElement {
     friend class GUI;
 
    protected:
-    GUIButton(const stringImpl& id, const stringImpl& text,
-              const stringImpl& guiScheme, const vec2<I32>& position,
-              const vec2<U32>& dimensions, const vec3<F32>& color,
-              CEGUI::Window* parent, ButtonCallback callback);
+    GUIButton(const stringImpl& id,
+              const stringImpl& text,
+              const stringImpl& guiScheme, 
+              const vec2<F32>& relativeOffset,
+              const vec2<F32>& relativeDimensions,
+              const vec3<F32>& color,
+              CEGUI::Window* parent,
+              ButtonCallback callback);
     ~GUIButton();
 
     void draw() const;
@@ -62,7 +66,6 @@ class GUIButton : public GUIElement {
 
    protected:
     stringImpl _text;
-    vec2<U32> _dimensions;
     vec3<F32> _color;
     bool _pressed;
     bool _highlight;

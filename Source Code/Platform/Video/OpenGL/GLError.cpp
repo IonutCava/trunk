@@ -5,40 +5,7 @@
 
 namespace Divide {
 namespace GLUtil {
-/// Print GLFW specific errors
-void glfw_error_callback(GLint errorCode, const char* msg) {
-    const char* errorDesc = "UNDEFINED_ERROR";
-    switch (errorCode) {
-        case GLFW_NOT_INITIALIZED: {
-            errorDesc = "GLFW_NOT_INITIALIZED";
-        } break;
-        case GLFW_NO_CURRENT_CONTEXT: {
-            errorDesc = "GLFW_NO_CURRENT_CTX";
-        } break;
-        case GLFW_INVALID_ENUM: {
-            errorDesc = "GLFW_INVALID_ENUM";
-        } break;
-        case GLFW_INVALID_VALUE: {
-            errorDesc = "GLFW_INVALID_VALUE";
-        } break;
-        case GLFW_OUT_OF_MEMORY: {
-            errorDesc = "GLFW_OUT_OF_MEMORY";
-        } break;
-        case GLFW_API_UNAVAILABLE: {
-            errorDesc = "GLFW_API_UNAVAILABLE";
-        } break;
-        case GLFW_VERSION_UNAVAILABLE: {
-            errorDesc = "GLFW_VERSION_UNAVAILABLE";
-        } break;
-        case GLFW_PLATFORM_ERROR: {
-            errorDesc = "GLFW_PLATFORM_ERROR";
-        } break;
-        case GLFW_FORMAT_UNAVAILABLE: {
-            errorDesc = "GLFW_FORMAT_UNAVAILABLE";
-        } break;
-    }
-    Console::errorfn(Locale::get("GLFW_ERROR"), errorDesc, msg);
-}
+
 /// Print OpenGL specific messages
 void APIENTRY 
 DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,

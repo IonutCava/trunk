@@ -1,7 +1,6 @@
 #include "Headers/PlatformDefinesUnix.h"
 
-#include <GL/glfw3.h>
-#include <GL/glfw3native.h>
+#include <SDL_syswm.h>
 
 namespace Divide {
 
@@ -12,9 +11,12 @@ namespace Divide {
         return info._availableRam > physicalRAMNeeded;
     }
 
-    void getWindowHandle(void* windowClass, SysInfo& info) {
+    void getWindowHandle(void* window, SysInfo& info) {
+        SDL_SysWMinfo wmInfo;
+        SDL_VERSION(&wmInfo.version);
+        SDL_GetWindowWMInfo(static_cast<SDL_Window*>(window), &wmInfo);
 
-        info._windowHandle = glfwGetX11Window(static_cast<GLFWwindow*>(windowClass));
+        info._windowHandle = wmInfo.info.x11.display;
     }
 
     void getTicksPerSecond(TimeValue& ticksPerSecond) {

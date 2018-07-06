@@ -52,7 +52,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
 
     ErrorCode initRenderingAPI(I32 argc, char** argv) override;
     void closeRenderingAPI() override;
-    void changeResolution(U16 w, U16 h) override;
+    void changeWindowSize(U16 w, U16 h) override;
     void changeViewport(const vec4<I32>& newViewport) const override;
     void setCursorPosition(U16 x, U16 y) override;
     void uploadDrawCommands(const DrawCommandList& drawCommands,
@@ -60,7 +60,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     bool makeTexturesResident(const TextureDataContainer& textureData) override;
     bool makeTextureResident(const TextureData& textureData) override;
     /// Change the window's position
-    void setWindowPos(U16 w, U16 h) override;
+    void setWindowPosition(U16 w, U16 h) override;
+    void centerWindowPosition() override;
     void beginFrame() override;
     void endFrame() override;
 
@@ -117,7 +118,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
 
     void toggleRasterization(bool state) override;
 
-    void drawText(const TextLabel& textLabel, const vec2<I32>& position) override;
+    void drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffset) override;
     void drawPoints(U32 numPoints) override;
 
     void updateClipPlanes() override;

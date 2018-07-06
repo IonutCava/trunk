@@ -41,14 +41,16 @@ class GUIText : public GUIElement, public TextLabel {
 
    public:
     GUIText(const stringImpl& id, const stringImpl& text,
-            const vec2<I32>& position, const stringImpl& font,
+            const vec2<F32>& relativePosition, const stringImpl& font,
             const vec3<F32>& color, CEGUI::Window* parent, U32 textHeight = 16);
 
     void draw() const;
     void mouseMoved(const GUIEvent& event);
     void onMouseUp(const GUIEvent& event);
     void onMouseDown(const GUIEvent& event);
-    void onResize(const vec2<I32>& newSize);
+
+protected:
+    vec2<F32> _relativePosition;
 };
 
 };  // namespace Divide

@@ -1,5 +1,6 @@
 #include "Headers/PlatformDefinesApple.h"
 
+#include <SDL_syswm.h>
 
 namespace Divide {
     bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info) {
@@ -16,8 +17,12 @@ namespace Divide {
         return info._availableRam > physicalRAMNeeded;
     }
 
-    void getWindowHandle(void* windowClass, SysInfo& info) {
-        info._windowHandle = glfwGetCocoaWindow(static_cast<GLFWwindow*>(windowClass));
+    void getWindowHandle(void* window, SysInfo& info) {
+        SDL_SysWMinfo wmInfo;
+        SDL_VERSION(&wmInfo.version);
+        SDL_GetWindowWMInfo(static_cast<SDL_Window*>(window), &wmInfo);
+
+        info._windowHandle = wmInfo.info.cocoa.window;
     }
 
     void getTicksPerSecond(TimeValue& ticksPerSecond) {

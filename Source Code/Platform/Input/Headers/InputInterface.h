@@ -48,8 +48,6 @@ DEFINE_SINGLETON(InputInterface)
   public:
     ErrorCode init(Kernel& kernel);
 
-    void updateResolution(U16 w, U16 h);
-
     #if defined OIS_LINUX_PLATFORM
 
     // This is just here to show that you still receive x11 events,
@@ -66,6 +64,10 @@ DEFINE_SINGLETON(InputInterface)
 
     U8 update(const U64 deltaTime);
     void terminate();
+
+    inline bool isInit() const {
+        return _bIsInitialized;
+    }
 
     inline void stop() { _bMustStop = true; }
     inline JoystickInterface* getJoystickInterface() { 

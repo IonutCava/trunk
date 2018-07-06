@@ -507,10 +507,10 @@ bool glShaderProgram::isBound() const {
 /// later use
 GLint glShaderProgram::cachedLocation(const stringImpl& name) {
     // If the shader can't be used for rendering, just return an invalid address
-    if (!isValid()) {
+    if (!isValid() || _shaderProgramID == 0) {
         return -1;
     }
-
+    
     DIVIDE_ASSERT(_threadedLoadComplete,
                   "glShaderProgram error: tried to query a shader program "
                   "before threaded load completed!");

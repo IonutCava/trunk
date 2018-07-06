@@ -115,14 +115,9 @@ void CascadedShadowMaps::resolution(U16 resolution, U8 resolutionFactor) {
         _vertBlur = _blurDepthMapShader->GetSubroutineIndex(
             ShaderType::GEOMETRY, "computeCoordsV");
         _blurBuffer->Create(_resolution, _resolution);
-        updateResolution(screenResolution.width, screenResolution.height);
     }
 
     ShadowMap::resolution(resolution, resolutionFactor);
-}
-
-void CascadedShadowMaps::updateResolution(U16 newWidth, U16 newHeight) {
-    ShadowMap::updateResolution(newWidth, newHeight);
 }
 
 void CascadedShadowMaps::render(SceneRenderState& renderState,

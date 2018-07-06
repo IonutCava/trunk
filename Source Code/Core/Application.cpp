@@ -7,6 +7,8 @@
 #include "Utility/Headers/MemoryTracker.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
+#include <sdl/include/SDL.h>
+
 namespace Divide {
 
 #if defined(_DEBUG)
@@ -21,6 +23,9 @@ WindowManager::WindowManager() : _hasFocus(true),
 
 Application::Application() : _kernel(nullptr)
 {
+
+    SDL_Init(0);
+
     // MemoryTracker::Ready = false; //< faster way of disabling memory tracking
     _requestShutdown = false;
     _mainLoopActive = false;
@@ -64,18 +69,19 @@ Application::~Application()
     _kernel.reset(nullptr);
     Locale::clear();
     Console::flush();
+
+    SDL_Quit();
 }
 
 ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc,
                                   char** argv) {
     assert(!entryPoint.empty());
-
+    // Target FPS is usually 60. So all movement is capped around that value
+    Time::ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
     // Read language table
     if (!Locale::init()) {
         return errorCode();
     }
-    // Target FPS is usually 60. So all movement is capped around that value
-    Time::ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
     Console::printfn(Locale::get("START_APPLICATION"));
 
     // Create a new kernel

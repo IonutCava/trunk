@@ -60,10 +60,6 @@
 #define THREAD_LOCAL __declspec(thread)
 #endif
 
-#define GLFW_EXPOSE_NATIVE_WIN32
-#define GLFW_EXPOSE_NATIVE_WGL
-
-//#define GLFW_EXPOSE_NATIVE_EG
 #include <windows.h>
 #ifdef DELETE
 #undef DELETE

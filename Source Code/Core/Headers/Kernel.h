@@ -88,7 +88,8 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     /// so this should keep it busy (old-GLUT heritage)
     static void idle();
     /// Update all engine components that depend on the current resolution
-    static void updateResolutionCallback(U16 w, U16 h);
+    void changeResolution(U16 w, U16 h, bool isFullScreen);
+    void changeWindowDimensions(U16 w, U16 h);
 
     GFXDevice& getGFXDevice() const { return _GFX; }
     SFXDevice& getSFXDevice() const { return _SFX; }
@@ -164,6 +165,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     SceneManager& _sceneMgr;
     /// Keep track of all active cameras used by the engine
     std::unique_ptr<CameraManager> _cameraMgr;
+    Camera* _mainCamera;
 
     static bool _keepAlive;
     static bool _renderingPaused;

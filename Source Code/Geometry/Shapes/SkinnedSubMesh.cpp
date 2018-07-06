@@ -18,6 +18,13 @@ SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name)
 
 SkinnedSubMesh::~SkinnedSubMesh()
 {
+    for (Task_weak_ptr task_ptr : _bbBuildTasks) {
+        Task_ptr task = task_ptr.lock();
+        if (task) {
+            task->stopTask();
+        }
+    }
+    _bbBuildTasks.clear();
 }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
@@ -123,10 +130,10 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
                                                    this, animationIndex, animComp);
             DELEGATE_CBK<> builBBComplete = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
                                                           this, animationIndex);
-            Application::getInstance()
+            _bbBuildTasks.push_back(Application::getInstance()
                 .getKernel()
-                .AddTask(1, 1, buildBB, builBBComplete)
-                ->startTask(Task::TaskPriority::DONT_CARE);
+                .AddTask(1, 1, buildBB, builBBComplete));
+            _bbBuildTasks.back().lock()->startTask(Task::TaskPriority::DONT_CARE);
         }
 
         return true;

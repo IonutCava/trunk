@@ -96,9 +96,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     inline void processGUI(const U64 deltaTime) {
         _activeScene->processGUI(deltaTime);
     }
-    inline void cacheResolution(const vec2<U16>& newResolution) {
-        _activeScene->cacheResolution(newResolution);
-    }
     /// Insert a new scene factory method for the given name
     template <typename DerivedScene>
     inline bool registerScene(const stringImpl& sceneName) {

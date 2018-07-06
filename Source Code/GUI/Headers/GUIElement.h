@@ -68,15 +68,12 @@ class GUIElement {
     friend class GUI;
 
    public:
-    GUIElement(CEGUI::Window* const parent, const GUIType& type,
-               const vec2<I32>& position);
+    GUIElement(CEGUI::Window* const parent, const GUIType& type);
     virtual ~GUIElement();
 
     virtual void draw() const = 0;
 
     inline const stringImpl& getName() const { return _name; }
-    inline const vec2<I32>& getPosition() const { return _position; }
-    inline void setPosition(const vec2<I32>& pos) { _position = pos; }
     inline const GUIType getType() const { return _guiType; }
     inline size_t getStateBlockHash() const { return _guiSBHash; }
     inline const bool isActive() const { return _active; }
@@ -89,10 +86,6 @@ class GUIElement {
     inline void addChildElement(GUIElement* child) {}
 
     virtual void setTooltip(const stringImpl& tooltipText) {}
-    virtual void onResize(const vec2<I32>& newSize) {
-        _position.x -= newSize.x;
-        _position.y -= newSize.y;
-    }
 
     inline void lastDrawTimer(const U64 time) { _lastDrawTimer = time; }
     virtual void mouseMoved(const GUIEvent& event){};
@@ -100,7 +93,6 @@ class GUIElement {
     virtual void onMouseDown(const GUIEvent& event){};
 
    protected:
-    vec2<I32> _position;
     GUIType _guiType;
     size_t _guiSBHash;
     U64 _lastDrawTimer;

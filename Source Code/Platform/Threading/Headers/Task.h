@@ -102,6 +102,7 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
 };
 
 typedef std::shared_ptr<Task> Task_ptr;
+typedef std::weak_ptr<Task> Task_weak_ptr;
 
 };  // namespace Divide
 

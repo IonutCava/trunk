@@ -41,10 +41,6 @@
 #define GLBINDING_STATIC
 #endif
 
-#ifndef GLFW_INCLUDE_NONE
-#define GLFW_INCLUDE_NONE
-#endif
-
 #define GL_VERSION_4_4
 //#define GL_VERSION_4_5
 
@@ -60,8 +56,10 @@ namespace glext = gl44ext;
 
 #include <glbinding/Binding.h>
 
-#include <GL/glfw3.h>
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
+
+struct SDL_Window;
+typedef void *SDL_GLContext;
 
 namespace NS_GLIM {
     enum class GLIM_ENUM : int;
@@ -72,12 +70,6 @@ namespace GLUtil {
 
 /// Wrapper for glGetIntegerv
 GLint getIntegerv(GLenum param);
-/// This function is called when the window's close button is pressed
-void glfw_close_callback(GLFWwindow* window);
-/// This function is called when the window loses focus
-void glfw_focus_callback(GLFWwindow* window, I32 focusState);
-/// This function is called if GLFW throws an error
-void glfw_error_callback(GLint error, const char* description);
 /// Check the current operation for errors
 void APIENTRY 
 DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
@@ -86,11 +78,9 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 /// properly created
 extern GLuint _invalidObjectID;
 /// Main rendering window
-extern GLFWwindow* _mainWindowWindowed;
-extern GLFWwindow* _mainWindowSplash;
-extern GLFWwindow* _mainWindowFullScreen;
-/// Background thread for loading resources
-extern GLFWwindow* _loaderWindow;
+extern SDL_Window* _mainWindow;
+extern SDL_GLContext _glRenderContext;
+extern SDL_GLContext _glLoadingContext;
 /// Populate enumeration tables with appropriate API values
 void fillEnumTables();
 

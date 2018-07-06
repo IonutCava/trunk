@@ -61,6 +61,7 @@ class SkinnedSubMesh : public SubMesh {
                                    AnimationComponent* const animComp);
 
    private:
+    vectorImpl<Task_weak_ptr> _bbBuildTasks;
     SceneAnimator* _parentAnimatorPtr;
     /// Build status of bounding boxes for each animation (true if BBs are available)
     boundingBoxPerAnimationStatus _boundingBoxesAvailable;
