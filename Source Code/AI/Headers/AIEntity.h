@@ -77,13 +77,12 @@ class AIEntity : public GUIDWrapper {
     void unload();
 
     bool addSensor(SensorType type);
-    bool addAISceneImpl(AISceneImpl* AISceneImpl);
-    void sendMessage(AIEntity* receiver, AIMsg msg,
-                     const cdiggins::any& msg_content);
-    void receiveMessage(AIEntity* sender, AIMsg msg,
-                        const cdiggins::any& msg_content);
-    void processMessage(AIEntity* sender, AIMsg msg,
-                        const cdiggins::any& msg_content);
+    bool setAISceneImpl(AISceneImpl* AISceneImpl);
+
+    void sendMessage(AIEntity& receiver, AIMsg msg, const cdiggins::any& msg_content);
+    void receiveMessage(AIEntity& sender, AIMsg msg, const cdiggins::any& msg_content);
+    void processMessage(AIEntity& sender, AIMsg msg, const cdiggins::any& msg_content);
+
     Sensor* getSensor(SensorType type);
 
     inline AITeam* getTeam() const { return _teamPtr; }
@@ -188,7 +187,7 @@ class AIEntity : public GUIDWrapper {
    private:
     stringImpl _name;
     AITeam* _teamPtr;
-    AISceneImpl* _AISceneImpl;
+    std::unique_ptr<AISceneImpl> _AISceneImpl;
 
     mutable SharedLock _updateMutex;
     mutable SharedLock _managerQueryMutex;

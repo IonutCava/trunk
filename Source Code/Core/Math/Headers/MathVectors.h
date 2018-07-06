@@ -253,6 +253,8 @@ inline vec2<T> Inverse(const vec2<T> &v);
 template <typename T>
 inline vec2<T> Normalize(vec2<T> &vector);
 template <typename T>
+inline vec2<T> Normalize(const vec2<T> &vector);
+template <typename T>
 inline T Dot(const vec2<T> &a, const vec2<T> &b);
 /// multiply a vector by a value
 template <typename T>
@@ -485,6 +487,8 @@ template <typename T>
 inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor);
 template <typename T>
 inline vec3<T> Normalize(vec3<T> &vector);
+template <typename T>
+inline vec3<T> Normalize(const vec3<T> &vector);
 /// general vec3 dot product
 template <typename T>
 inline T Dot(const vec3<T> &a, const vec3<T> &b);
@@ -776,6 +780,8 @@ template <typename T>
 inline vec4<T> Max(const vec4<T> &v1, const vec4<T> &v2);
 template <typename T>
 inline vec4<T> Normalize(vec4<T> &vector);
+template <typename T>
+inline vec4<T> Normalize(const vec4<T> &vector);
 /// multiply a vector by a value
 template <typename T>
 inline vec4<T> operator*(T fl, const vec4<T> &v);

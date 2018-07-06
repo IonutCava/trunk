@@ -194,8 +194,7 @@ class WarSceneAISceneImpl : public AISceneImpl {
     bool processData(const U64 deltaTime);
     bool processInput(const U64 deltaTime);
     bool update(const U64 deltaTime, NPC* unitRef = nullptr);
-    void processMessage(AIEntity* sender, AIMsg msg,
-                        const cdiggins::any& msg_content);
+    void processMessage(AIEntity& sender, AIMsg msg, const cdiggins::any& msg_content);
 
     static void registerFlags(SceneGraphNode& flag1,
                               SceneGraphNode& flag2) {

@@ -28,7 +28,8 @@ void TenisSceneAISceneImpl::addEntityRef(AIEntity* entity) {
 }
 
 // Process message from sender to receiver
-void TenisSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg,
+void TenisSceneAISceneImpl::processMessage(AIEntity& sender,
+                                           AIMsg msg,
                                            const cdiggins::any& msg_content) {
     AITeam* currentTeam = nullptr;
     switch (msg) {
@@ -41,7 +42,7 @@ void TenisSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg,
         case AIMsg::RECEIVE_DISTANCE_TO_TARGET: {
             assert(_entity->getTeam());
             bool success = false;
-            _entity->getTeam()->getMemberVariable()[sender] =
+            _entity->getTeam()->getMemberVariable()[&sender] =
                 msg_content.constant_cast<F32>(success);
             assert(success);
         } break;
@@ -51,7 +52,7 @@ void TenisSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg,
             for (const AITeam::TeamMap::value_type& member :
                  currentTeam->getTeamMembers()) {
                 if (_entity->getGUID() != member.second->getGUID()) {
-                    _entity->sendMessage(member.second, AIMsg::DONT_ATTACK_BALL, 0);
+                    _entity->sendMessage(*member.second, AIMsg::DONT_ATTACK_BALL, 0);
                 }
             }
             if (_ballToTeam2) {
@@ -102,7 +103,7 @@ bool TenisSceneAISceneImpl::processInput(const U64 deltaTime) {
          currentTeam->getTeamMembers()) {
         /// Ask all of our team-mates to send us their distance to the ball
         if (_entity->getGUID() != member.second->getGUID()) {
-            _entity->sendMessage(member.second, AIMsg::REQUEST_DISTANCE_TO_TARGET, 0);
+            _entity->sendMessage(*member.second, AIMsg::REQUEST_DISTANCE_TO_TARGET, 0);
         }
     }
 
@@ -121,7 +122,7 @@ bool TenisSceneAISceneImpl::processData(const U64 deltaTime) {
             nearestEntity = member.first;
         }
     }
-    _entity->sendMessage(nearestEntity, AIMsg::ATTACK_BALL, distance);
+    _entity->sendMessage(*nearestEntity, AIMsg::ATTACK_BALL, distance);
 
     return true;
 }

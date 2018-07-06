@@ -51,8 +51,7 @@ class TenisSceneAISceneImpl : public AISceneImpl {
     bool processInput(const U64 deltaTime);
     bool update(const U64 deltaTime, NPC* unitRef = nullptr);
     void addEntityRef(AIEntity* entity);
-    void processMessage(AIEntity* sender, AIMsg msg,
-                        const cdiggins::any& msg_content);
+    void processMessage(AIEntity& sender, AIMsg msg, const cdiggins::any& msg_content);
 
     inline stringImpl toString() const { return ""; }
 

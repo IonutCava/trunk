@@ -40,6 +40,10 @@ WarSceneAISceneImpl::WarSceneAISceneImpl(AIType type)
 
 WarSceneAISceneImpl::~WarSceneAISceneImpl()
 {
+    _visualSensor->unfollowSceneGraphNode(
+        g_flagContainer, _globalWorkingMemory._flags[0].value()->getGUID());
+    _visualSensor->unfollowSceneGraphNode(
+        g_flagContainer, _globalWorkingMemory._flags[1].value()->getGUID());
 #if defined(PRINT_AI_TO_FILE)
     _WarAIOutputStream.close();
 #endif
@@ -138,16 +142,21 @@ bool WarSceneAISceneImpl::DIE() {
             1);
     }
 
+    _visualSensor->unfollowSceneGraphNode(
+        g_flagContainer, _globalWorkingMemory._flags[0].value()->getGUID());
+    _visualSensor->unfollowSceneGraphNode(
+        g_flagContainer, _globalWorkingMemory._flags[1].value()->getGUID());
+
     AITeam* enemyTeam = AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
     const AITeam::TeamMap& teamAgents = currentTeam->getTeamMembers();
     const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
 
     for (const AITeam::TeamMap::value_type& member : teamAgents) {
-        _entity->sendMessage(member.second, AIMsg::HAVE_DIED, hadFlag);
+        _entity->sendMessage(*member.second, AIMsg::HAVE_DIED, hadFlag);
     }
 
     for (const AITeam::TeamMap::value_type& enemy : enemyMembers) {
-        _entity->sendMessage(enemy.second, AIMsg::HAVE_DIED, hadFlag);
+        _entity->sendMessage(*enemy.second, AIMsg::HAVE_DIED, hadFlag);
     }
 
     currentTeam->removeTeamMember(_entity);
@@ -412,7 +421,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
             pComp->popTransforms();
 
             for (const AITeam::TeamMap::value_type& member : currentTeam->getTeamMembers()) {
-                _entity->sendMessage(member.second, AIMsg::HAVE_SCORED, _entity);
+                _entity->sendMessage(*member.second, AIMsg::HAVE_SCORED, _entity);
             }
 
             _scoreCallback(ownTeamID);
@@ -442,12 +451,12 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
 
             for (const AITeam::TeamMap::value_type& member :
                  currentTeam->getTeamMembers()) {
-                _entity->sendMessage(member.second, AIMsg::HAVE_FLAG, _entity);
+                _entity->sendMessage(*member.second, AIMsg::HAVE_FLAG, _entity);
             }
             
             const AITeam* const enemyTeam = AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
             for (const AITeam::TeamMap::value_type& enemy : enemyTeam->getTeamMembers()) {
-                _entity->sendMessage(enemy.second, AIMsg::ENEMY_HAS_FLAG, _entity);
+                _entity->sendMessage(*enemy.second, AIMsg::ENEMY_HAS_FLAG, _entity);
             }
         } break;
         case ActionType::RETURN_TO_BASE: {
@@ -462,7 +471,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
         case ActionType::RECOVER_FLAG: {
             PRINT("Recover flag action over");
             for (const AITeam::TeamMap::value_type& member : currentTeam->getTeamMembers()) {
-                _entity->sendMessage(member.second, AIMsg::RETURNED_FLAG, _entity);
+                _entity->sendMessage(*member.second, AIMsg::RETURNED_FLAG, _entity);
             }
         } break;
         default: {
@@ -561,7 +570,7 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction& planStep)
     return state;
 }
 
-void WarSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg,
+void WarSceneAISceneImpl::processMessage(AIEntity& sender, AIMsg msg,
                                          const cdiggins::any& msg_content) {
     switch (msg) {
         case AIMsg::RETURNED_FLAG:
@@ -575,17 +584,17 @@ void WarSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg,
         case AIMsg::ATTACK: {
             if (!_localWorkingMemory._currentTarget.value() || 
                 _localWorkingMemory._currentTarget.value()->getGUID() != 
-                sender->getUnitRef()->getBoundNode()->getGUID())
+                sender.getUnitRef()->getBoundNode()->getGUID())
             {
                 invalidateCurrentPlan();
-                _localWorkingMemory._currentTarget.value(sender->getUnitRef()->getBoundNode());
+                _localWorkingMemory._currentTarget.value(sender.getUnitRef()->getBoundNode());
             }
         } break;
 
         case AIMsg::HAVE_DIED: {
             bool hadFlag = msg_content.constant_cast<bool>();
             if (hadFlag) {
-                U8 senderTeamID = sender->getTeamID();
+                U8 senderTeamID = sender.getTeamID();
                 U8 ownTeamID = _entity->getTeamID();
                 if (ownTeamID == senderTeamID) {
                     worldState().setVariable(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(false));
@@ -596,15 +605,9 @@ void WarSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg,
                 invalidateCurrentPlan();
             }
 
-             SceneGraphNode* node = sender->getUnitRef()->getBoundNode();
+             SceneGraphNode* node = sender.getUnitRef()->getBoundNode();
             _visualSensor->unfollowSceneGraphNode(g_myTeamContainer, node->getGUID());
             _visualSensor->unfollowSceneGraphNode(g_enemyTeamContainer, node->getGUID());
-            _visualSensor->unfollowSceneGraphNode(
-                g_flagContainer,
-                _globalWorkingMemory._flags[0].value()->getGUID());
-            _visualSensor->unfollowSceneGraphNode(
-                g_flagContainer,
-                _globalWorkingMemory._flags[1].value()->getGUID());
             if (_localWorkingMemory._currentTarget.value() != nullptr &&
                 _localWorkingMemory._currentTarget.value()->getGUID() == node->getGUID()) {
                 _localWorkingMemory._currentTarget.value(nullptr);
@@ -674,10 +677,10 @@ void WarSceneAISceneImpl::updatePositions() {
             }
            for (const AITeam::TeamMap::value_type& member :
                  currentTeam->getTeamMembers()) {
-                _entity->sendMessage(member.second, AIMsg::RETURNED_FLAG, teamID);
+                _entity->sendMessage(*member.second, AIMsg::RETURNED_FLAG, teamID);
             }
             for (const AITeam::TeamMap::value_type& enemy : enemyTeam->getTeamMembers()) {
-                _entity->sendMessage(enemy.second, AIMsg::RETURNED_FLAG, teamID);
+                _entity->sendMessage(*enemy.second, AIMsg::RETURNED_FLAG, teamID);
             }
         }
     }
@@ -753,7 +756,7 @@ bool WarSceneAISceneImpl::processData(const U64 deltaTime) {
                     I32 HP = targetNPC->getAttribute(to_uint(UnitAttributes::HEALTH_POINTS));
                     I32 Damage = _entity->getUnitRef()->getAttribute(to_uint(UnitAttributes::DAMAGE));
                     targetNPC->setAttribute(to_uint(UnitAttributes::HEALTH_POINTS), std::max(HP - Damage, 0));
-                    _entity->sendMessage(targetUnit, AIMsg::ATTACK, 0);
+                    _entity->sendMessage(*targetUnit, AIMsg::ATTACK, 0);
                     _attackTimer = 0ULL;
                 }
             } else {

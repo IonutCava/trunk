@@ -770,7 +770,8 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
 }
 
 bool NavigationMesh::getClosestPosition(const vec3<F32>& destination,
-                                        const vec3<F32>& extents, F32 delta,
+                                        const vec3<F32>& extents,
+                                        F32 delta,
                                         vec3<F32>& result) const {
     dtPolyRef resultPoly;
     return Navigation::DivideRecast::getInstance().findNearestPointOnNavmesh(

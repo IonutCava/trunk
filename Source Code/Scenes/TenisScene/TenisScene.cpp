@@ -321,13 +321,13 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
     _aiPlayer3->addSensor(AI::SensorType::VISUAL_SENSOR);
     _aiPlayer4->addSensor(AI::SensorType::VISUAL_SENSOR);
 
-    _aiPlayer1->addAISceneImpl(
+    _aiPlayer1->setAISceneImpl(
         MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
-    _aiPlayer2->addAISceneImpl(
+    _aiPlayer2->setAISceneImpl(
         MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
-    _aiPlayer3->addAISceneImpl(
+    _aiPlayer3->setAISceneImpl(
         MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
-    _aiPlayer4->addAISceneImpl(
+    _aiPlayer4->setAISceneImpl(
         MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
 
     _team1 = MemoryManager_NEW AI::AITeam(1);

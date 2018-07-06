@@ -269,7 +269,7 @@ bool WarScene::addUnits() {
 
             // GOAP
             brain->registerGOAPPackage(goapPackages[to_uint(type)]);
-            aiSoldier->addAISceneImpl(brain);
+            aiSoldier->setAISceneImpl(brain);
             soldier = MemoryManager_NEW NPC(currentNode, aiSoldier);
             soldier->setAttribute(to_uint(AI::UnitAttributes::HEALTH_POINTS), 100);
             soldier->setAttribute(to_uint(AI::UnitAttributes::DAMAGE), damage);

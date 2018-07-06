@@ -8,7 +8,8 @@ static const U8 DT_TILECACHE_NULL_AREA = 0;
 static const U8 DT_TILECACHE_WALKABLE_AREA = 63;
 static const U16 DT_TILECACHE_NULL_IDX = 0xffff;
 
-DivideRecast::DivideRecast() {
+DivideRecast::DivideRecast()
+{
     // Setup the default query filter
     _filter.reset(new dtQueryFilter());
     _filter->setIncludeFlags(0xFFFF);  // Include all
@@ -25,12 +26,16 @@ DivideRecast::DivideRecast() {
     }
 }
 
-DivideRecast::~DivideRecast() {}
+DivideRecast::~DivideRecast()
+{
+}
 
 PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
                                      const vec3<F32>& startPos,
-                                     const vec3<F32>& endPos, I32 pathSlot,
+                                     const vec3<F32>& endPos,
+                                     I32 pathSlot,
                                      I32 target) {
+
     const F32* pStartPos = &startPos[0];
     const F32* pEndPos = &endPos[0];
     const F32* extents = &navMesh.getExtents()[0];
@@ -46,50 +51,75 @@ PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
     I32 nPathCount = 0;
     I32 nVertCount = 0;
 
+    dtQueryFilter* filter = _filter.get();
     // find the start polygon
-    status = navQuery.findNearestPoly(pStartPos, extents, _filter.get(),
-                                      &StartPoly, StartNearest);
-    if ((status & DT_FAILURE) || (status & DT_STATUS_MASK))
-        return PathErrorCode::PATH_ERROR_NO_NEAREST_POLY_START;  // couldn't find a polygon
+    status = navQuery.findNearestPoly(pStartPos,
+                                      extents,
+                                      filter,
+                                      &StartPoly,
+                                      StartNearest);
+
+    if ((status & DT_FAILURE) || (status & DT_STATUS_MASK)) {
+        // couldn't find a polygon
+        return PathErrorCode::PATH_ERROR_NO_NEAREST_POLY_START;
+    }
 
     // find the end polygon
-    status = navQuery.findNearestPoly(pEndPos, extents, _filter.get(), &EndPoly,
+    status = navQuery.findNearestPoly(pEndPos,
+                                      extents,
+                                      filter,
+                                      &EndPoly,
                                       EndNearest);
-    if ((status & DT_FAILURE) || (status & DT_STATUS_MASK))
-        return PathErrorCode::PATH_ERROR_NO_NEAREST_POLY_END;  // couldn't find a polygon
 
-    status =
-        navQuery.findPath(StartPoly, EndPoly, StartNearest, EndNearest,
-                          _filter.get(), PolyPath, &nPathCount, MAX_PATHPOLY);
     if ((status & DT_FAILURE) || (status & DT_STATUS_MASK)) {
-        return PathErrorCode::PATH_ERROR_COULD_NOT_CREATE_PATH;  // couldn't create a path
+        // couldn't find a polygon
+        return PathErrorCode::PATH_ERROR_NO_NEAREST_POLY_END;
+    }
+
+    status = navQuery.findPath(StartPoly,
+                               EndPoly,
+                               StartNearest,
+                               EndNearest,
+                               filter,
+                               PolyPath,
+                               &nPathCount,
+                               MAX_PATHPOLY);
+
+    if ((status & DT_FAILURE) || (status & DT_STATUS_MASK)) {
+        // couldn't create a path
+        return PathErrorCode::PATH_ERROR_COULD_NOT_CREATE_PATH;
     }
 
     if (nPathCount == 0) {
-        return PathErrorCode::PATH_ERROR_COULD_NOT_FIND_PATH;  // couldn't find a path
+        // couldn't find a path
+        return PathErrorCode::PATH_ERROR_COULD_NOT_FIND_PATH;
     }
-    status = navQuery.findStraightPath(StartNearest, EndNearest, PolyPath,
-                                       nPathCount, StraightPath, nullptr,
-                                       nullptr, &nVertCount, MAX_PATHVERT);
+
+    status = navQuery.findStraightPath(StartNearest,
+                                       EndNearest,
+                                       PolyPath,
+                                       nPathCount,
+                                       StraightPath,
+                                       nullptr,
+                                       nullptr,
+                                       &nVertCount,
+                                       MAX_PATHVERT);
+
     if ((status & DT_FAILURE) || (status & DT_STATUS_MASK)) {
-        return PathErrorCode::PATH_ERROR_NO_STRAIGHT_PATH_CREATE;  // couldn't create a path
+        // couldn't create a path
+        return PathErrorCode::PATH_ERROR_NO_STRAIGHT_PATH_CREATE;
     }
 
     if (nVertCount == 0) {
-        return PathErrorCode::PATH_ERROR_NO_STRAIGHT_PATH_FIND;  // couldn't find a path
+        // couldn't find a path
+        return PathErrorCode::PATH_ERROR_NO_STRAIGHT_PATH_FIND;
     }
-    // At this point we have our path.  Copy it to the path store
-    I32 nIndex = 0;
-    for (I32 nVert = 0; nVert < nVertCount; nVert++) {
+
+    // At this point we have our path. Copy it to the path store
+    for (I32 nVert = 0, nIndex = 0; nVert < nVertCount; ++nVert) {
         _pathStore[pathSlot].PosX[nVert] = StraightPath[nIndex++];
         _pathStore[pathSlot].PosY[nVert] = StraightPath[nIndex++];
         _pathStore[pathSlot].PosZ[nVert] = StraightPath[nIndex++];
-
-        // Console::printfn("Path Vert %i, %f %f %f", nVert,
-        // m_PathStore[pathSlot].PosX[nVert],
-        //                                          m_PathStore[pathSlot].PosY[nVert],
-        //                                          m_PathStore[pathSlot].PosZ[nVert])
-        //                                          ;
     }
 
     _pathStore[pathSlot].MaxVertex = nVertCount;
@@ -100,83 +130,125 @@ PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
 
 vectorImpl<vec3<F32> > DivideRecast::getPath(I32 pathSlot) {
     vectorImpl<vec3<F32> > result;
-    if (pathSlot < 0 || pathSlot >= MAX_PATHSLOT ||
-        _pathStore[pathSlot].MaxVertex <= 0)
-        return result;
+    if (!IS_IN_RANGE_INCLUSIVE(pathSlot, 0, MAX_PATHSLOT - 1) ||
+        _pathStore[pathSlot].MaxVertex <= 0) {
 
-    PATHDATA* path = &(_pathStore[pathSlot]);
-    result.reserve(path->MaxVertex);
-    for (I32 i = 0; i < path->MaxVertex; i++) {
-        result.push_back(
-            vec3<F32>(path->PosX[i], path->PosY[i], path->PosZ[i]));
+        return result;
+    }
+
+    PATHDATA& path = _pathStore[pathSlot];
+    result.reserve(path.MaxVertex);
+
+    for (I32 i = 0; i < path.MaxVertex; ++i) {
+        vectorAlg::emplace_back(result, path.PosX[i],
+                                        path.PosY[i],
+                                        path.PosZ[i]);
     }
 
     return result;
 }
 
 I32 DivideRecast::getTarget(I32 pathSlot) {
-    if (pathSlot < 0 || pathSlot >= MAX_PATHSLOT) return 0;
+    if (pathSlot < 0 || pathSlot >= MAX_PATHSLOT) {
+        return 0;
+    }
 
     return _pathStore[pathSlot].Target;
 }
 
-/// Random number generator implementation used by getRandomNavMeshPoint method.
-static F32 frand() { return (F32)rand() / (F32)RAND_MAX; }
+namespace {
+    /// Random number generator implementation used by navmesh query methods.
+    inline F32 frand() {
+        return rand() / static_cast<F32>(RAND_MAX);
+    }
+}
 
 bool DivideRecast::getRandomNavMeshPoint(const NavigationMesh& navMesh,
                                          vec3<F32>& resultPt) {
-    if (navMesh.getNavQuery().getAttachedNavMesh() == nullptr) {
-        return false;
-    }
-    dtPolyRef resultPoly;
-    navMesh.getNavQuery().findRandomPoint(_filter.get(), frand, &resultPoly,
-                                          resultPt._v);
+    if (navMesh.getNavQuery().getAttachedNavMesh() != nullptr) {
+        dtPolyRef resultPoly;
+        dtStatus status = navMesh.getNavQuery().findRandomPoint(_filter.get(),
+                                                                frand,
+                                                                &resultPoly,
+                                                                resultPt._v);
 
-    return true;
+        return !(status & DT_FAILURE || status & DT_STATUS_MASK);
+    }
+
+    return false;
 }
 
-bool DivideRecast::getRandomPointAroundCircle(
-    const NavigationMesh& navMesh, const vec3<F32>& centerPosition, F32 radius,
-    const vec3<F32>& extents, vec3<F32>& resultPt, U8 maxIters) {
-    const dtNavMeshQuery& query = navMesh.getNavQuery();
-    if (query.getAttachedNavMesh() == nullptr) {
-        return false;
-    }
-    F32 radiusSq = radius * radius;
+bool DivideRecast::getRandomPointAroundCircle(const NavigationMesh& navMesh,
+                                              const vec3<F32>& centerPosition,
+                                              F32 radius,
+                                              const vec3<F32>& extents,
+                                              vec3<F32>& resultPt,
+                                              U8 maxIters) {
 
-    dtPolyRef resultPoly;
-    findNearestPolyOnNavmesh(navMesh, centerPosition, extents, resultPt,
-                             resultPoly);
-    U8 i = 0;
-    for (i = 0; i < maxIters; ++i) {
-        query.findRandomPointAroundCircle(resultPoly, centerPosition._v, radius,
-                                          _filter.get(), frand, &resultPoly,
-                                          resultPt._v);
-        if (centerPosition.distanceSquared(resultPt) <= radiusSq) {
-            break;
+    const dtNavMeshQuery& query = navMesh.getNavQuery();
+
+    if (query.getAttachedNavMesh() != nullptr) {
+        F32 radiusSq = radius * radius;
+
+        dtPolyRef resultPoly;
+        bool pointOnPolyMesh = findNearestPolyOnNavmesh(navMesh,
+                                                        centerPosition,
+                                                        extents,
+                                                        resultPt,
+                                                        resultPoly);
+        if (pointOnPolyMesh) {
+            dtStatus status;
+            dtQueryFilter* filter = _filter.get();
+            for (U8 i = 0; i < maxIters; ++i) {
+                status = query.findRandomPointAroundCircle(resultPoly,
+                                                           centerPosition._v,
+                                                           radius,
+                                                           filter,
+                                                           frand,
+                                                           &resultPoly,
+                                                           resultPt._v);
+
+                if (centerPosition.distanceSquared(resultPt) <= radiusSq) {
+                    return true;
+                }
+            }
         }
     }
-    return (i != maxIters);
+
+    return false;
 }
 
 bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh,
                                              const vec3<F32>& position,
                                              const vec3<F32>& extents,
-                                             F32 delta, vec3<F32>& resultPt,
+                                             F32 delta,
+                                             vec3<F32>& resultPt,
                                              dtPolyRef& resultPoly) {
-    if (findNearestPolyOnNavmesh(navMesh, position, extents, resultPt,
-                                 resultPoly)) {
-        if (position.distanceSquared(resultPt) > (delta * delta)) {
-            if (findNearestPolyOnNavmesh(navMesh, position,
-                                         &navMesh.getExtents()[0], resultPt,
-                                         resultPoly)) {
-                if (position.distanceSquared(resultPt) <= (delta * delta)) {
-                    return true;
-                }
+
+    F32 distanceSq = delta * delta;
+
+    bool pointOnPolyMesh = findNearestPolyOnNavmesh(navMesh,
+                                                    position,
+                                                    extents,
+                                                    resultPt,
+                                                    resultPoly);
+
+    if (pointOnPolyMesh) {
+        bool pointIsInRange = position.distanceSquared(resultPt) <= distanceSq;
+
+        if (!pointIsInRange) {
+            pointOnPolyMesh = findNearestPolyOnNavmesh(navMesh,
+                                                       position,
+                                                       &navMesh.getExtents()[0],
+                                                       resultPt,
+                                                       resultPoly);
+            if (pointOnPolyMesh) {
+                pointIsInRange = position.distanceSquared(resultPt) <= distanceSq;
             }
         }
-        return true;
+        return pointIsInRange;
     }
+
     return false;
 }
 
@@ -185,18 +257,21 @@ bool DivideRecast::findNearestPolyOnNavmesh(const NavigationMesh& navMesh,
                                             const vec3<F32>& extents,
                                             vec3<F32>& resultPt,
                                             dtPolyRef& resultPoly) {
-    if (navMesh.getNavQuery().getAttachedNavMesh() == nullptr) {
-        resultPt.set(VECTOR3_ZERO);
-        return false;
+    resultPt.reset();
+
+    if (navMesh.getNavQuery().getAttachedNavMesh() != nullptr) {
+        dtStatus status = navMesh.getNavQuery().findNearestPoly(position._v,
+                                                                extents._v,
+                                                                _filter.get(),
+                                                                &resultPoly,
+                                                                resultPt._v);
+
+        return !(status & DT_FAILURE || status & DT_STATUS_MASK);
     }
 
-    dtStatus status = navMesh.getNavQuery().findNearestPoly(
-        position._v, extents._v, _filter.get(), &resultPoly, resultPt._v);
-    if ((status & DT_FAILURE) || (status & DT_STATUS_MASK)) {
-        return false;  // couldn't find a polygon
-    }
-    return true;
+    return false;
 }
+
 };  // namespace Navigation
 };  // namespace AI
 };  // namespace Divide

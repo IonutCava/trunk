@@ -52,6 +52,13 @@ inline vec2<T> Normalize(vec2<T> &vector) {
     return vector;
 }
 
+template <typename T>
+inline vec2<T> Normalize(const vec2<T> &vector) {
+    vec2<T> result(vector);
+    result.normalize();
+    return result;
+}
+
 /// multiply a vector by a value
 template <typename T>
 inline vec2<T> operator*(T fl, const vec2<T> &v) {
@@ -68,6 +75,13 @@ template <typename T>
 inline vec3<T> Normalize(vec3<T> &vector) {
     vector.normalize();
     return vector;
+}
+
+template <typename T>
+inline vec3<T> Normalize(const vec3<T> &vector) {
+    vec3<T> result(vector);
+    result.normalize();
+    return result;
 }
 
 /// multiply a vector by a value
@@ -111,6 +125,13 @@ template <typename T>
 inline vec4<T> Normalize(vec4<T> &vector) {
     vector.normalize();
     return vector;
+}
+
+template <typename T>
+inline vec4<T> Normalize(const vec4<T> &vector) {
+    vec4<T> result(vector);
+    result.normalize();
+    return result;
 }
 
 /// multiply a vector by a value

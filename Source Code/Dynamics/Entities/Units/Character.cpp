@@ -21,7 +21,9 @@ Character::Character(CharacterType type, SceneGraphNode& node)
     }
 }
 
-Character::~Character() {}
+Character::~Character()
+{
+}
 
 void Character::update(const U64 deltaTime) {
     assert(_node != nullptr);
@@ -40,13 +42,7 @@ void Character::update(const U64 deltaTime) {
                           Time::MicrosecondsToSeconds<F32>(deltaTime));
         _velocityDirty = false;
     }
-}
 
-/// Just before we render the frame
-bool Character::frameRenderingQueued(const FrameEvent& evt) {
-    if (!getBoundNode()) {
-        return false;
-    }
     PhysicsComponent* const nodePhysicsComponent =
         getBoundNode()->getComponent<PhysicsComponent>();
 
@@ -60,6 +56,14 @@ bool Character::frameRenderingQueued(const FrameEvent& evt) {
         nodePhysicsComponent->getOrientation() *
             RotationFromVToU(sourceDirection, _curVelocity),
         GFX_DEVICE.getInterpolation());
+}
+
+/// Just before we render the frame
+bool Character::frameRenderingQueued(const FrameEvent& evt) {
+    if (!getBoundNode()) {
+        return false;
+    }
+
     return true;
 }
 
