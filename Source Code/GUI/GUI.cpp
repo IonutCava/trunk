@@ -95,16 +95,12 @@ void GUI::onUnloadScene(Scene* scene) {
 }
 
 void GUI::draw(GFXDevice& context) const {
-    static vectorImpl<GUITextBatchEntry> textBatch;
-
     if (!_init || !_activeScene) {
         return;
     }
 
-    _guiShader->bind();
-
     // global elements
-    textBatch.resize(0);
+    TextElementBatch textBatch;
 
     for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
         if (i != to_base(GUIType::GUI_TEXT)) {
@@ -122,11 +118,11 @@ void GUI::draw(GFXDevice& context) const {
     for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
         GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
         if (!textElement.text().empty()) {
-            textBatch.emplace_back(&textElement, textElement.getPosition(), textElement.getStateBlockHash());
+            textBatch._data.emplace_back(&textElement, textElement.getPosition());
         }
     }
 
-    if (!textBatch.empty()) {
+    if (!textBatch().empty()) {
         Attorney::GFXDeviceGUI::drawText(context, textBatch);
     }
 
@@ -220,11 +216,6 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     //_console->CreateCEGUIWindow();
     _guiEditor->init();
 
-    ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
-    immediateModeShader.setThreadedLoading(false);
-    _guiShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
-    _guiShader->Uniform("dvd_WorldMatrix", mat4<F32>());
-
     context.gfx().add2DRenderFunction(GUID_DELEGATE_CBK([this, &context]() {
                                           draw(context.gfx());
                                       }),
@@ -272,7 +263,6 @@ void GUI::destroy() {
         catch (...) {
             Console::d_errorfn(Locale::get(_ID("ERROR_CEGUI_DESTROY")));
         }
-        _guiShader.reset();
         _init = false;
     }
 }

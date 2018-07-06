@@ -790,7 +790,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 
 /// Text rendering is handled exclusively by Mikko Mononen's FontStash library (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
-void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
+void GL_API::drawText(const TextElementBatch& batch) {
     static vec4<U8> textBlendColour(Util::ToByteColour(DefaultColours::DIVIDE_BLUE()));
 
     static BlendingProperties textBlendProperties{
@@ -802,18 +802,18 @@ void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
 
     GL_API::setBlending(0, true, textBlendProperties, textBlendColour);
 
-    U16 height = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getHeight();
+    I32 height = _context.getCurrentViewport().sizeY;
         
+    vectorAlg::vecSize drawCount = 0;
+
     fonsClearState(_fonsContext);
-    for (const GUITextBatchEntry& entry : batch)
+    for (const TextElement& entry : batch())
     {
         const TextLabel& textLabel = *entry._textLabel;
         // Retrieve the font from the font cache
         I32 font = getFont(textLabel._font);
         // The font may be invalid, so skip this text label
         if (font != FONS_INVALID) {
-            setStateBlock(entry._stateHash);
-
             fonsSetFont(_fonsContext, font);
             fonsSetBlur(_fonsContext, textLabel._blurAmount);
             fonsSetBlur(_fonsContext, textLabel._spacing);
@@ -825,37 +825,38 @@ void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
                           textLabel._colour.b,
                           textLabel._colour.a);
 
+            F32 textX = entry._position.x;
+            F32 textY = height - entry._position.y;
             F32 lh = 0;
             fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
 
             const vectorImpl<stringImpl>& text = textLabel.text();
-            vec2<F32> position(entry._position.x, height - entry._position.y);
-
             vectorAlg::vecSize lineCount = text.size();
             for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
                 fonsDrawText(_fonsContext,
-                             position.x,
-                             position.y - (lh * i),
+                             textX,
+                             textY - (lh * i),
                              text[i].c_str(),
                              nullptr);
             }
-            // Register each label rendered as a draw call
-            _context.registerDrawCalls(to_U32(lineCount));
+            drawCount += lineCount;
         }
+        // Register each label rendered as a draw call
+        _context.registerDrawCalls(to_U32(drawCount));
     }
 }
 
-bool GL_API::setState(const GenericDrawCommand& cmd) {
+bool GL_API::bindPipeline(const Pipeline& pipeline) {
     // Set the proper render states
-    setStateBlock(cmd.pipeline().stateHash());
+    setStateBlock(pipeline.stateHash());
     // We need a valid shader as no fixed function pipeline is available
-    DIVIDE_ASSERT(cmd.pipeline().shaderProgram() != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
+    DIVIDE_ASSERT(pipeline.shaderProgram() != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
-    return cmd.pipeline().shaderProgram()->bind();
+    return pipeline.shaderProgram()->bind();
 }
 
 bool GL_API::draw(const GenericDrawCommand& cmd) {
-    if (setState(cmd)) {
+    if (bindPipeline(cmd.pipeline())) {
         if (cmd.sourceBuffer() == nullptr) {
             GL_API::setActiveVAO(s_dummyVAO);
         

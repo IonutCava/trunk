@@ -109,7 +109,7 @@ protected:
     /// Text rendering is handled exclusively by Mikko Mononen's FontStash library
     /// (https://github.com/memononen/fontstash)
     /// with his OpenGL frontend adapted for core context profiles
-    void drawText(const vectorImpl<GUITextBatchEntry>& batch) override;
+    void drawText(const TextElementBatch& batch) override;
     bool draw(const GenericDrawCommand& cmd) override;
 
     /// Sets the current state block to the one passed as a param
@@ -225,7 +225,7 @@ private:
     /// Revert everything that was set up in "initShaders()"
     bool deInitShaders();
 
-    bool setState(const GenericDrawCommand& cmd);
+    bool bindPipeline(const Pipeline& pipeline);
 
     ErrorCode createGLContext(const DisplayWindow& window);
     ErrorCode destroyGLContext();

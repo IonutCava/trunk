@@ -40,7 +40,7 @@ class TextLabel {
    public:
     TextLabel(const stringImpl& string,
               const stringImpl& font,
-              const vec3<U8>& colour,
+              const vec4<U8>& colour,
               U32 fontSize)
         : _width(1),
           _font(font),
@@ -76,6 +76,42 @@ class TextLabel {
 
 private:
     vectorImpl<stringImpl> _text;
+};
+
+struct TextElement {
+    TextElement()
+        : _textLabel(nullptr)
+    {
+    }
+
+    TextElement(const TextLabel *textLabel,
+                const vec2<F32>& position)
+        : _textLabel(textLabel),
+          _position(position)
+    {
+    }
+
+    const TextLabel *_textLabel = 0;
+    vec2<F32> _position;
+};
+
+struct TextElementBatch {
+    typedef vectorImplFast<TextElement> BatchType;
+
+    TextElementBatch()
+    {
+    }
+
+    TextElementBatch(TextElement& element)
+        : _data {element}
+    {
+    }
+
+    const BatchType& operator()() const {
+        return _data;
+    }
+
+    BatchType _data;
 };
 
 };  // namespace Divide

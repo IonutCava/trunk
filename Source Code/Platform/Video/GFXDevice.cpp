@@ -106,6 +106,7 @@ GFXDevice::GFXDevice(Kernel& parent)
     _HIZCullProgram = nullptr;
     _renderTargetDraw = nullptr;
     _previewDepthMapShader = nullptr;
+    _textRenderShader = nullptr;
     _displayShader = nullptr;
     _debugFrustum = nullptr;
     _debugFrustumPrimitive = nullptr;

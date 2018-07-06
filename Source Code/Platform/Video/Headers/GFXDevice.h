@@ -162,7 +162,7 @@ public:
 
         DebugView(U16 sortIndex)
             : _textureBindSlot(0)
-            , _sortIndex(sortIndex)
+            , _sortIndex(to_I16(sortIndex))
         {
         }
 
@@ -177,7 +177,9 @@ public:
         } _shaderData;
 
         I16 _sortIndex;
+        stringImpl _name;
     };
+
     FWD_DECLARE_MANAGED_CLASS(DebugView);
 
 public:  // GPU interface
@@ -399,7 +401,8 @@ protected:
 
     void setBaseViewport(const vec4<I32>& viewport);
 
-    inline void drawText(const vectorImpl<GUITextBatchEntry>& batch) {
+    inline void drawText(const TextElementBatch& batch) {
+        _textRenderShader->bind();
         uploadGPUBlock();
         _api->drawText(batch);
     }
@@ -499,6 +502,7 @@ protected:
     ShaderProgram_ptr _HIZConstructProgram;
     ShaderProgram_ptr _HIZCullProgram;
     ShaderProgram_ptr _displayShader;
+    ShaderProgram_ptr _textRenderShader;
 
     /// Quality settings
     RenderDetailLevel _shadowDetailLevel;
@@ -547,7 +551,7 @@ protected:
 namespace Attorney {
     class GFXDeviceGUI {
     private:
-        static void drawText(GFXDevice& device, const vectorImpl<GUITextBatchEntry>& batch) {
+        static void drawText(GFXDevice& device, const TextElementBatch& batch) {
             return device.drawText(batch);
         }
 

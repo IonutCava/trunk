@@ -347,6 +347,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader);
     assert(_renderTargetDraw != nullptr);
 
+    ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
+    immediateModeShader.setThreadedLoading(false);
+    _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
+    _textRenderShader->Uniform("dvd_WorldMatrix", mat4<F32>());
+    assert(_textRenderShader != nullptr);
+
     // Create initial buffers, cameras etc for this resolution. It should match window size
     WindowManager& winMgr = _parent.platformContext().app().windowManager();
     winMgr.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
@@ -380,6 +386,7 @@ void GFXDevice::closeRenderingAPI() {
     _HIZConstructProgram = nullptr;
     _HIZCullProgram = nullptr;
     _displayShader = nullptr;
+    _textRenderShader = nullptr;
 
     MemoryManager::DELETE(_renderer);
 

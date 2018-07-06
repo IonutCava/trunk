@@ -36,27 +36,6 @@
 
 namespace Divide {
 
-struct GUITextBatchEntry {
-    GUITextBatchEntry()
-        : _textLabel(nullptr),
-          _stateHash(0)
-    {
-    }
-
-    GUITextBatchEntry(const TextLabel *textLabel,
-                      const vec2<F32>& position,
-                      size_t stateHash)
-        : _textLabel(textLabel),
-          _position(position),
-          _stateHash(stateHash)
-    {
-    }
-
-    const TextLabel *_textLabel = 0;
-    vec2<F32> _position;
-    size_t _stateHash;
-};
-
 class GUIText : public GUIElement, public TextLabel {
     friend class GUIInterface;
 
@@ -65,7 +44,7 @@ class GUIText : public GUIElement, public TextLabel {
             const stringImpl& text,
             const vec2<F32>& relativePosition,
             const stringImpl& font,
-            const vec3<F32>& colour,
+            const vec4<U8>& colour,
             CEGUI::Window* parent,
             U32 fontSize = 16);
 

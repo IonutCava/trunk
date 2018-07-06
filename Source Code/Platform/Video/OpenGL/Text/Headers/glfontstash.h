@@ -119,9 +119,9 @@ static void glfons__renderDraw(void* userPtr,
     Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
     Divide::GL_API::bindTexture(0, gl->tex);
 
-    glInvalidateBufferData(bufferID);
     glNamedBufferData(bufferID, nverts * sizeof(FONSvert), verts, GL_STREAM_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, nverts);
+    glInvalidateBufferData(bufferID);
 }
 
 static void glfons__renderDelete(void* userPtr) {

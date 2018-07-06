@@ -2,10 +2,12 @@
 
 #include "Headers/GFXDevice.h"
 
+#include "GUI\Headers\GUI.h"
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Scenes/Headers/SceneState.h"
+#include "Utility/Headers/TextLabel.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Rendering/Camera/Headers/Camera.h"
@@ -39,29 +41,34 @@ void GFXDevice::renderDebugViews() {
             HiZ->_shader = _previewDepthMapShader;
             HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
             HiZ->_shaderData._floatValues.push_back(std::make_pair("lodLevel", to_F32(HiZ->_texture->getMaxMipLevel() - 1)));
+            HiZ->_name = "Hierarchical-Z";
 
             DebugView_ptr DepthPreview = std::make_shared<DebugView>();
             DepthPreview->_shader = _previewDepthMapShader;
             DepthPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
             DepthPreview->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
+            DepthPreview->_name = "Depth Buffer";
 
             DebugView_ptr NormalPreview = std::make_shared<DebugView>();
             NormalPreview->_shader = _renderTargetDraw;
             NormalPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS)).texture();
             NormalPreview->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
             NormalPreview->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", true));
+            NormalPreview->_name = "Normals";
 
             DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
             VelocityPreview->_shader = _renderTargetDraw;
             VelocityPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY)).texture();
             VelocityPreview->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
             VelocityPreview->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
+            VelocityPreview->_name = "Velocity Map";
 
             DebugView_ptr AlphaAccumulation = std::make_shared<DebugView>();
             AlphaAccumulation->_shader = _renderTargetDraw;
             AlphaAccumulation->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
             AlphaAccumulation->_shaderData._boolValues.push_back(std::make_pair("linearSpace", true));
             AlphaAccumulation->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
+            AlphaAccumulation->_name = "Alpha Accumulation";
 
             addDebugView(HiZ);
             addDebugView(DepthPreview);
@@ -82,7 +89,6 @@ void GFXDevice::renderDebugViews() {
             }
             HiZPtr->_shaderData._floatValues[0].second = to_F32(LoDLevel);
         }
-    
 
         constexpr I32 maxViewportColumnCount = 10;
         I32 viewCount = to_I32(_debugViews.size());
@@ -101,11 +107,13 @@ void GFXDevice::renderDebugViews() {
         vec4<I32> viewport(screenWidth - viewportWidth, 0, viewportWidth, viewportHeight);
 
         PipelineDescriptor pipelineDesc;
-        pipelineDesc._stateHash = _defaultStateNoDepthHash;
+        pipelineDesc._stateHash = _defaultStateBlockHash;
 
         GenericDrawCommand triangleCmd;
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
+
+        vectorImplFast <std::pair<stringImpl, vec4<I32>>> labelStack;
 
         I32 viewIndex = 0;
         for (U8 i = 0; i < rowCount; ++i) {
@@ -128,6 +136,9 @@ void GFXDevice::renderDebugViews() {
                 {
                     GFX::ScopedViewport sView(*this, viewport);
                     draw(triangleCmd);
+                    if (!view._name.empty()) {
+                        labelStack.emplace_back(view._name, viewport);
+                    }
                 }
 
                 viewport.x -= viewportWidth;
@@ -136,6 +147,16 @@ void GFXDevice::renderDebugViews() {
                 }
             }
             viewport.y += viewportHeight;
+        }
+
+        // Draw labels at the end to reduce number of state changes
+        TextLabel label("", Font::DROID_SERIF_BOLD, vec4<U8>(255), 96);
+        TextElement text(&label, vec2<F32>(10.0f));
+        for (const std::pair<stringImpl, vec4<I32>>& entry : labelStack) {
+            GFX::ScopedViewport sView(*this, entry.second);
+            text._position.y = entry.second.sizeY - 10.0f;
+            label.text(entry.first);
+            drawText(text);
         }
     }
 }

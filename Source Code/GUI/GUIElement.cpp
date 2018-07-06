@@ -15,11 +15,6 @@ GUIElement::GUIElement(U64 guiID, CEGUI::Window* const parent, const GUIType& ty
 {
     _name = "defaultGuiControl";
     _visible = true;
-
-    RenderStateBlock stateBlock;
-    stateBlock.setCullMode(CullMode::NONE);
-    stateBlock.setZRead(false);
-    _guiSBHash = stateBlock.getHash();
 }
 
 GUIElement::~GUIElement()

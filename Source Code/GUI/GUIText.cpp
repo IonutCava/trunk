@@ -8,7 +8,7 @@ GUIText::GUIText(U64 guiID,
                  const stringImpl& text,
                  const vec2<F32>& relativePosition,
                  const stringImpl& font,
-                 const vec3<F32>& colour,
+                 const vec4<U8>& colour,
                  CEGUI::Window* parent,
                  U32 fontSize)
     : GUIElement(guiID, parent, GUIType::GUI_TEXT),
@@ -19,11 +19,7 @@ GUIText::GUIText(U64 guiID,
 
 void GUIText::draw(GFXDevice& context) const {
     if (!text().empty()) {
-        static vectorImpl<GUITextBatchEntry> entry(1);
-        entry[0]._textLabel = this;
-        entry[0]._position.set(getPosition());
-        entry[0]._stateHash = getStateBlockHash();
-        Attorney::GFXDeviceGUI::drawText(context, entry);
+        Attorney::GFXDeviceGUI::drawText(context, TextElement(this, getPosition()));
     }
 }
 

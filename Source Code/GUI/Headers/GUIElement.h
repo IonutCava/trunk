@@ -99,7 +99,6 @@ class GUIElement : public GUIDWrapper {
 
     inline const stringImpl& getName() const { return _name; }
     inline const GUIType getType() const { return _guiType; }
-    inline size_t getStateBlockHash() const { return _guiSBHash; }
     inline const bool isActive() const { return _active; }
     virtual const bool isVisible() const { return _visible; }
 
@@ -122,7 +121,6 @@ class GUIElement : public GUIDWrapper {
 
    protected:
     GUIType _guiType;
-    size_t _guiSBHash;
     CEGUI::Window* _parent;
 
    private:

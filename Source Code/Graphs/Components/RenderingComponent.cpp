@@ -5,6 +5,7 @@
 #include "Headers/RenderingComponent.h"
 
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/StringHelper.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -695,6 +696,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
             viewPtr->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
+            viewPtr->_name = Util::StringFormat("Reflection_", reflectRTID);
             _context.addDebugView(viewPtr);
         } else {
             if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
@@ -774,6 +776,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
             viewPtr->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
+            viewPtr->_name = Util::StringFormat("Refraction", refractRTID);
             _context.addDebugView(viewPtr);
         } else {
             if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {

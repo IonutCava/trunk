@@ -1211,6 +1211,9 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         struct {
             T width, height, depth, key;
         };
+        struct {
+            T offsetX, offsetY, sizeX, sizeY;
+        };
         T _v[4];
         simd_vector<T> _reg;
     };

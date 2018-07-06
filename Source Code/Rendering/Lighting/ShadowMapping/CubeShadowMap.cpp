@@ -2,6 +2,7 @@
 
 #include "Headers/CubeShadowMap.h"
 
+#include "Core/Headers/StringHelper.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
@@ -29,6 +30,7 @@ CubeShadowMap::CubeShadowMap(GFXDevice& context, Light* light, const ShadowCamer
         shadow->_shader = _previewDepthMapShader;
         shadow->_shaderData._intValues.push_back(std::make_pair("layer", _arrayOffset));
         shadow->_shaderData._intValues.push_back(std::make_pair("face", i));
+        shadow->_name = Util::StringFormat("CubeSM_%d_face_%d", _arrayOffset, i);
         context.addDebugView(shadow);
     }
 }

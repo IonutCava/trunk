@@ -68,8 +68,8 @@ public:
         return renderTarget(handle._targetID);
     }
 
-    inline RenderTarget& activeRenderTarget() {
-        return *_activeRenderTarget;
+    inline RenderTarget* activeRenderTarget() {
+        return _activeRenderTarget;
     }
 
     inline RenderTarget& renderTarget(RenderTargetID target) {

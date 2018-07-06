@@ -178,7 +178,6 @@ private:
     GUIEditor*  _guiEditor; //< Pointer to a World Editor type interface
     U64 _textRenderInterval;  //< We should avoid rendering text as fast as possible
                               //for performance reasons
-    ShaderProgram_ptr _guiShader;  //<Used to apply colour for text for now
 
     /// Each scene has its own gui elements! (0 = global)
     Scene* _activeScene;

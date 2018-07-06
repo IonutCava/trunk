@@ -56,7 +56,7 @@ protected:
     void beginFrame() override;
     void endFrame() override;
 
-    void drawText(const vectorImpl<GUITextBatchEntry>& batch) override;
+    void drawText(const TextElementBatch& batch) override;
     bool draw(const GenericDrawCommand& cmd);
 
     void flushCommandBuffer(CommandBuffer& commandBuffer) override;

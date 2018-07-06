@@ -29,9 +29,6 @@ SceneGUIElements::~SceneGUIElements()
 }
 
 void SceneGUIElements::draw(GFXDevice& context) {
-    static vectorImpl<GUITextBatchEntry> textBatch;
-    textBatch.resize(0);
-
     for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
         if (i != to_base(GUIType::GUI_TEXT)) {
             for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
@@ -44,15 +41,16 @@ void SceneGUIElements::draw(GFXDevice& context) {
         }
     }
 
+    TextElementBatch batch;
     for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
         GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
         if (!textElement.text().empty()) {
-            textBatch.emplace_back(&textElement, textElement.getPosition(), textElement.getStateBlockHash());
+            batch._data.emplace_back(&textElement, textElement.getPosition());
         }
     }
 
-    if (!textBatch.empty()) {
-        Attorney::GFXDeviceGUI::drawText(context, textBatch);
+    if (!batch().empty()) {
+        Attorney::GFXDeviceGUI::drawText(context, batch);
     }
 }
 

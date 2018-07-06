@@ -9,6 +9,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
 
+#include "Core/Headers/StringHelper.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
@@ -44,6 +45,7 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
         shadow->_texture = getDepthMap().getAttachment(RTAttachmentType::Colour, 0).texture();
         shadow->_shader = _previewDepthMapShader;
         shadow->_shaderData._intValues.push_back(std::make_pair("layer", i + _arrayOffset));
+        shadow->_name = Util::StringFormat("CSM_%d", i + _arrayOffset);
         _context.addDebugView(shadow);
     }
 

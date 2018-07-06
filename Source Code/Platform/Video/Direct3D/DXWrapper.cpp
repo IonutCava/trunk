@@ -36,7 +36,7 @@ void DX_API::endFrame() {}
 
 void DX_API::updateClipPlanes() {}
 
-void DX_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
+void DX_API::drawText(const TextElementBatch& batch) {
     ACKNOWLEDGE_UNUSED(batch);
 }
 
