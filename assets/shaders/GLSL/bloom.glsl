@@ -21,7 +21,8 @@ out vec4 _colorOut;
 
 void main() {
     _colorOut = texture(texScreen, VAR._texCoord);
-    _colorOut.rgb += bloomFactor * texture(texBloom, VAR._texCoord).rgb;
+    vec3 bloom = texture(texBloom, VAR._texCoord).rgb;
+    _colorOut.rgb = 1.0 - ((1.0 - bloom * bloomFactor)*(1.0 - _colorOut.rgb));
 }
 
 -- Fragment.BloomCalc
@@ -44,11 +45,17 @@ void main() {
 out vec4 _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
+
+#ifdef USE_ADAPTIVE_LUMINANCE
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texExposure;
+uniform int luminanceMipLevel;
+uniform int exposureMipLevel;
+#else
+uniform float exposure = 0.975;
+uniform float whitePoint = 0.975;
+#endif
 
-uniform int  exposureMipLevel;
-uniform float whitePoint = 0.95;
-
+const float W = 11.2;
 vec3 Uncharted2Tonemap(vec3 x)
 {
     const float A = 0.15;
@@ -61,27 +68,21 @@ vec3 Uncharted2Tonemap(vec3 x)
     return ((x*(A*x + C*B) + D*E) / (x*(A*x + B) + D*F)) - E / F;
 }
 
-const float KeyValue = 0.5;
-// Determines the color based on exposure settings
-vec3 CalcExposedColor(vec3 color, float avgLuminance, float threshold, out float exposure)
-{
-    // Use geometric mean
-    avgLuminance = max(avgLuminance, 0.001f);
-    float keyValue = KeyValue;
-    float linearExposure = (KeyValue / avgLuminance);
-    exposure = log(max(linearExposure, 0.0001f));
-    exposure -= threshold;
-    return exp(exposure) * color;
-}
-
 void main() {
     vec3 screenColor = texture(texScreen, VAR._texCoord).rgb;
-
+#ifdef USE_ADAPTIVE_LUMINANCE
     float avgLuminance = exp(textureLod(texExposure, vec2(0.5, 0.5), exposureMipLevel).r);
-    float exposure = 0;
-    float threshold = 0;
-    screenColor = CalcExposedColor(screenColor, avgLuminance, threshold, exposure);
-    _colorOut.rgb = ToSRGB(Uncharted2Tonemap(screenColor) / Uncharted2Tonemap(vec3(whitePoint)));
+    float exposure = sqrt(8.0 / (avgLuminance + 0.25));
+
+    screenColor *= exposure;
+    const float ExposureBias = 2.0f;
+    vec3 curr = Uncharted2Tonemap(ExposureBias * screenColor);
+    vec3 whiteScale = 1.0 / Uncharted2Tonemap(vec3(W));
+    _colorOut.rgb = ToSRGB(curr * whiteScale);
+#else
+    _colorOut.rgb = ToSRGB(Uncharted2Tonemap(screenColor * exposure) / Uncharted2Tonemap(vec3(whitePoint)));
+#endif
+
     _colorOut.a = dot(_colorOut.rgb, vec3(0.299, 0.587, 0.114));
 }
 
@@ -90,13 +91,18 @@ void main() {
 out float _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
-layout(binding = TEXTURE_UNIT1) uniform sampler2D texPrevExposure;
+layout(binding = TEXTURE_UNIT1) uniform sampler2D texPrevLuminance;
 
 void main() {
+    //Human eye:
+    // - bright sunlight -> complete dark: 20-30 min
+    // - complete dark -> bright sunlight: 5 min
+    // - speed diff ~5
     vec3 screenColor = texture(texScreen, VAR._texCoord).rgb;
-    float luminance = dot(screenColor, vec3(0.299, 0.587, 0.114));
-    float PreviousExposure = texture(texPrevExposure, VAR._texCoord).r;
-    float TargetExposure = log(0.5 / clamp(dot(screenColor, vec3(0.299, 0.587, 0.114)), 0.3, 0.7));
-
-    _colorOut = mix(PreviousExposure, TargetExposure, 0.1);
+    float crtluminance = clamp(dot(screenColor, vec3(0.299, 0.587, 0.114)), 0.35, 0.75);
+    float prevLuminance = clamp(exp(texture(texPrevLuminance, VAR._texCoord).r), 0.35, 0.75);
+    // Slowly change luminance by mimicking human eye behaviour:
+    // bright->dark 5 times faster than dark->bright
+    float tau = mix(0.15, 0.35, prevLuminance > crtluminance);
+    _colorOut = prevLuminance + (crtluminance - prevLuminance) * (1 - exp(-dvd_deltaTime * tau));
 }

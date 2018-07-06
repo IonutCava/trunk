@@ -38,6 +38,7 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
     vec4   dvd_windDetails;
     vec4   dvd_shadowingSettings;
     vec4   dvd_otherData;
+    vec4   dvd_otherData2;
     uvec4  dvd_lightCountPerType;
     //uint  dvd_lightCountPerType[MAX_LIGHT_TYPES];
 };
@@ -47,7 +48,7 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
 #define dvd_time int(dvd_otherData.x)
 #define dvd_showDebugInfo int(dvd_otherData.y)
 #define dvd_shadowsEnabled (int(dvd_otherData.z) == 1)
-
+#define dvd_deltaTime int(dvd_otherData2.x)
 
 #if defined(VERT_SHADER)
 
@@ -75,5 +76,7 @@ void setClipPlanes(in vec4 worldSpaceVertex) {
 #endif
 }
 #endif
+
+//mix(false, true, condition);
 
 #endif //_NODE_DATA_INPUT_CMN_

@@ -19,6 +19,10 @@ class PreRenderBatch {
 
     void bindOutput(U8 slot);
 
+    inline void toggleAdaptivExposure(const bool state) {
+        _adaptiveExposureControl = state;
+    }
+
     inline PreRenderOperator& getOperator(FilterType type) {
         OperatorBatch& batch = _operators[to_uint(getOperatorSpace(type))];
         OperatorBatch::iterator it = 
@@ -44,12 +48,15 @@ class PreRenderBatch {
     typedef vectorImpl<PreRenderOperator*> OperatorBatch;
     OperatorBatch _operators[to_const_uint(FilterSpace::COUNT)];
 
+    bool _adaptiveExposureControl;
+
     PreRenderOperator* _debugOperator;
     Framebuffer* _postFXOutput;
     Framebuffer* _renderTarget;
-    Framebuffer* _previousExposure;
-    Framebuffer* _currentExposure;
+    Framebuffer* _previousLuminance;
+    Framebuffer* _currentLuminance;
     ShaderProgram* _toneMap;
+    ShaderProgram* _toneMapAdaptive;
     ShaderProgram* _luminanceCalc;
 };
 

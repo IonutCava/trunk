@@ -23,7 +23,8 @@ namespace {
     }
 };
 
-PreRenderBatch::PreRenderBatch() : _debugOperator(nullptr),
+PreRenderBatch::PreRenderBatch() : _adaptiveExposureControl(true),
+                                   _debugOperator(nullptr),
                                    _postFXOutput(nullptr),
                                    _renderTarget(nullptr),
                                    _toneMap(nullptr)
@@ -50,8 +51,8 @@ void PreRenderBatch::init(Framebuffer* renderTarget) {
     assert(_postFXOutput == nullptr);
     _renderTarget = renderTarget;
 
-    _previousExposure = GFX_DEVICE.newFB();
-    _currentExposure = GFX_DEVICE.newFB();
+    _previousLuminance = GFX_DEVICE.newFB();
+    _currentLuminance = GFX_DEVICE.newFB();
     _postFXOutput = GFX_DEVICE.newFB();
     SamplerDescriptor screenSampler;
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
@@ -75,11 +76,13 @@ void PreRenderBatch::init(Framebuffer* renderTarget) {
                                      GFXImageFormat::RED16F,
                                      GFXDataFormat::FLOAT_16);
     lumaDescriptor.setSampler(lumaSampler);
-    _currentExposure->addAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _currentLuminance->addAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Color0);
+
     lumaSampler.setFilters(TextureFilter::LINEAR);
+    lumaSampler.toggleMipMaps(false);
     lumaDescriptor.setSampler(lumaSampler);
-    _previousExposure->addAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _previousExposure->setClearColor(DefaultColors::BLACK());
+    _previousLuminance->addAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _previousLuminance->setClearColor(DefaultColors::BLACK());
 
     // Order is very important!
     OperatorBatch& hdrBatch = _operators[to_uint(FilterSpace::FILTER_SPACE_HDR)];
@@ -93,6 +96,11 @@ void PreRenderBatch::init(Framebuffer* renderTarget) {
     ResourceDescriptor toneMap("bloom.ToneMap");
     toneMap.setThreadedLoading(false);
     _toneMap = CreateResource<ShaderProgram>(toneMap);
+
+    ResourceDescriptor toneMapAdaptive("bloom.ToneMap.Adaptive");
+    toneMapAdaptive.setThreadedLoading(false);
+    toneMapAdaptive.setPropertyList("USE_ADAPTIVE_LUMINANCE");
+    _toneMapAdaptive = CreateResource<ShaderProgram>(toneMapAdaptive);
 
     ResourceDescriptor luminanceCalc("bloom.LuminanceCalc");
     luminanceCalc.setThreadedLoading(false);
@@ -123,17 +131,19 @@ void PreRenderBatch::execute(U32 filterMask) {
     OperatorBatch& hdrBatch = _operators[to_uint(FilterSpace::FILTER_SPACE_HDR)];
     OperatorBatch& ldrBatch = _operators[to_uint(FilterSpace::FILTER_SPACE_LDR)];
 
-    // Compute exposure
-    // Step 1: Luminance calc
-    _renderTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
-    _previousExposure->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1));
+    if (_adaptiveExposureControl) {
+        // Compute Luminance
+        // Step 1: Luminance calc
+        _renderTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+        _previousLuminance->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1));
 
-    _currentExposure->begin(Framebuffer::defaultPolicy());
-        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _luminanceCalc);
-    _currentExposure->end();
+        _currentLuminance->begin(Framebuffer::defaultPolicy());
+            GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _luminanceCalc);
+        _currentLuminance->end();
 
-    // Use previous exposure to control adaptive luminance
-    _previousExposure->blitFrom(_currentExposure);
+        // Use previous luminance to control adaptive exposure
+        _previousLuminance->blitFrom(_currentLuminance);
+    }
 
     // Execute all HDR based operators
     for (PreRenderOperator* op : hdrBatch) {
@@ -144,9 +154,14 @@ void PreRenderBatch::execute(U32 filterMask) {
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
     _renderTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
-    _currentExposure->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1));
+
+    if (_adaptiveExposureControl) {
+        _currentLuminance->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1));
+    }
+
     _postFXOutput->begin(Framebuffer::defaultPolicy());
-        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _toneMap);
+        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
+                                _adaptiveExposureControl ? _toneMapAdaptive : _toneMap);
     _postFXOutput->end();
 
     // Execute all LDR based operators
@@ -160,16 +175,11 @@ void PreRenderBatch::execute(U32 filterMask) {
 
 void PreRenderBatch::reshape(U16 width, U16 height) {
     U16 lumaRez = to_ushort(nextPOW2(to_uint(width / 3.0f)));
-    U16 lumaRezCopy = lumaRez;
-    I32 luminaMipLevel = 0;
-    while (lumaRez >>= 1) {
-        luminaMipLevel++;
-    }
     // make the texture square sized and power of two
-    _currentExposure->create(lumaRezCopy, lumaRezCopy);
-    _previousExposure->create(1, 1);
+    _currentLuminance->create(lumaRez, lumaRez);
+    _previousLuminance->create(1, 1);
 
-    _toneMap->Uniform("exposureMipLevel", luminaMipLevel);
+    _toneMap->Uniform("luminanceMipLevel", _currentLuminance->getAttachment()->getMaxMipLevel());
 
     for (OperatorBatch& batch : _operators) {
         for (PreRenderOperator* op : batch) {

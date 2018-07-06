@@ -138,7 +138,7 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     _sceneData.enableDebugRender(par.getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo")));
     // Time, fog, etc
     _sceneData.elapsedTime(_elapsedTimeMS);
-
+    _sceneData.deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTime));
     _sceneData.lightCount(LightType::DIRECTIONAL, lightMgr.getActiveLightCount(LightType::DIRECTIONAL));
     _sceneData.lightCount(LightType::POINT, lightMgr.getActiveLightCount(LightType::POINT));
     _sceneData.lightCount(LightType::SPOT, lightMgr.getActiveLightCount(LightType::SPOT));

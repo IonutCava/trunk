@@ -47,6 +47,7 @@ struct SceneShaderData {
     vec4<F32> _windDetails;
     vec4<F32> _shadowingSettings;
     vec4<F32> _otherData;
+    vec4<F32> _otherData2;
     vec4<U32> _lightCountPerType;
     //U32       _lightCountPerType[to_const_uint(LightType::COUNT)];
 
@@ -64,6 +65,10 @@ struct SceneShaderData {
 
     inline void windDetails(F32 directionX, F32 directionY, F32 directionZ, F32 speed) {
         _windDetails.set(directionX, directionY, directionZ, speed);
+    }
+
+    inline void deltaTime(F32 deltaTimeSeconds) {
+        _otherData2.x = deltaTimeSeconds;
     }
 
     inline void elapsedTime(U32 timeMS) {
