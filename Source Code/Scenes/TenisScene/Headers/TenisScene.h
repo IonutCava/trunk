@@ -26,8 +26,11 @@
 #include "Scenes/Headers/Scene.h"
 #include "AI/Headers/GOAPContext.h"
 
-class AIEntity;
-class AITeam;
+namespace AI {
+    class AIEntity;
+    class AITeam;
+};
+
 class Sphere3D;
 class NPC;
 
@@ -106,12 +109,12 @@ private: //Game stuff
     F32 _sideImpulseFactor;
     U32 _gameGUID;
     ///AIEntities are the "processors" behing the NPC's
-    AIEntity *_aiPlayer1, *_aiPlayer2, *_aiPlayer3, *_aiPlayer4;
+    AI::AIEntity *_aiPlayer1, *_aiPlayer2, *_aiPlayer3, *_aiPlayer4;
     ///NPC's are the actual game entities
     NPC *_player1, *_player2, *_player3, *_player4;
     ///Team's are factions for AIEntites so they can manage friend/foe situations
-    AITeam *_team1, *_team2;
+    AI::AITeam *_team1, *_team2;
     ///GOAP context (mainly for logging)
-    GOAPContext _GOAPContext;
+    AI::GOAPContext _GOAPContext;
 };
 #endif

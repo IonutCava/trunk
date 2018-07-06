@@ -137,6 +137,7 @@ void PostFX::createOperators(){
         _bloomFB = _gfx->newFB();
         _bloomOP = stageBuilder.addPreRenderOperator<BloomPreRenderOperator>(_enableBloom, _bloomFB, _resolutionCache);
         _bloomOP->addInputFB(screenBuffer);
+        //_bloomOP->genericFlag(toneMapEnabled);
     }
 
     if (_enableSSAO && !_SSAO_FB) {

@@ -18,7 +18,7 @@ SceneManager::SceneManager() : FrameListener(),
 
 {
     DVDConverter::createInstance();
-    AIManager::createInstance();
+    AI::AIManager::createInstance();
 }
 
 SceneManager::~SceneManager(){
@@ -79,7 +79,7 @@ Scene* SceneManager::createScene(const std::string& name){
 }
 
 bool SceneManager::unloadCurrentScene()  {  
-    AIManager::getInstance().pauseUpdate(true); 
+    AI::AIManager::getInstance().pauseUpdate(true); 
     RemoveResource(_defaultMaterial);
     return _activeScene->unload();
 }
@@ -91,7 +91,7 @@ void SceneManager::initPostLoadState(){
 
 bool SceneManager::deinitializeAI(bool continueOnErrors)  { 
     bool state = _activeScene->deinitializeAI(continueOnErrors);
-    AIManager::getInstance().destroyInstance(); 
+    AI::AIManager::getInstance().destroyInstance(); 
     return state;
 }
 

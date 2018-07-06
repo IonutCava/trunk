@@ -28,8 +28,10 @@
 #include "Core/Headers/cdigginsAny.h"
 #include <boost/noncopyable.hpp>
 
-enum AIMsg;
 class Texture;
+namespace AI {
+
+enum AIMsg;
 /// Provides a scene-level AI implementation
 class AISceneImpl : private boost::noncopyable {
 public:
@@ -55,6 +57,8 @@ public:
 protected:
 	AIEntity*  _entity;
     GOAPContext _context;
+};
+
 };
 
 #endif

@@ -3,6 +3,7 @@
 #include <core.h>
 #include "Detour/Include/DetourCommon.h"
 
+namespace AI {
 namespace Navigation {
  
     DivideDtCrowd::DivideDtCrowd(NavigationMesh *navMesh) : _crowd(nullptr),
@@ -260,4 +261,5 @@ namespace Navigation {
     bool DivideDtCrowd::isValidNavMesh() const {
         return _recast->getNavQuery().getAttachedNavMesh() != nullptr;
     }
-};
+}; //namespace Navigation
+}; //namespace AI

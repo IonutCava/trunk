@@ -265,7 +265,7 @@ bool TenisScene::load(const std::string& name, CameraManager* const cameraMgr, G
     _floor = _sceneGraph->findNode("Floor");
     _floor->castsShadows(false);
 
-    AIManager::getInstance().pauseUpdate(false);
+    AI::AIManager::getInstance().pauseUpdate(false);
     return loadState;
 }
 
@@ -282,22 +282,22 @@ bool TenisScene::initializeAI(bool continueOnErrors){
     player[2]->setSelectable(true);
     player[3]->setSelectable(true);
 
-    _aiPlayer1 = New AIEntity(player[0]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player1");
-    _aiPlayer2 = New AIEntity(player[1]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player2");
-    _aiPlayer3 = New AIEntity(player[2]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player3");
-    _aiPlayer4 = New AIEntity(player[3]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player4");
-    _aiPlayer1->addSensor(VISUAL_SENSOR,New VisualSensor());
-    _aiPlayer2->addSensor(VISUAL_SENSOR,New VisualSensor());
-    _aiPlayer3->addSensor(VISUAL_SENSOR,New VisualSensor());
-    _aiPlayer4->addSensor(VISUAL_SENSOR,New VisualSensor());
+    _aiPlayer1 = New AI::AIEntity(player[0]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player1");
+    _aiPlayer2 = New AI::AIEntity(player[1]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player2");
+    _aiPlayer3 = New AI::AIEntity(player[2]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player3");
+    _aiPlayer4 = New AI::AIEntity(player[3]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player4");
+    _aiPlayer1->addSensor(AI::VISUAL_SENSOR, New AI::VisualSensor());
+    _aiPlayer2->addSensor(AI::VISUAL_SENSOR, New AI::VisualSensor());
+    _aiPlayer3->addSensor(AI::VISUAL_SENSOR, New AI::VisualSensor());
+    _aiPlayer4->addSensor(AI::VISUAL_SENSOR, New AI::VisualSensor());
 
-    _aiPlayer1->addAISceneImpl(New TenisSceneAISceneImpl(_GOAPContext, _ballSGN));
-    _aiPlayer2->addAISceneImpl(New TenisSceneAISceneImpl(_GOAPContext, _ballSGN));
-    _aiPlayer3->addAISceneImpl(New TenisSceneAISceneImpl(_GOAPContext, _ballSGN));
-    _aiPlayer4->addAISceneImpl(New TenisSceneAISceneImpl(_GOAPContext, _ballSGN));
+    _aiPlayer1->addAISceneImpl(New AI::TenisSceneAISceneImpl(_GOAPContext, _ballSGN));
+    _aiPlayer2->addAISceneImpl(New AI::TenisSceneAISceneImpl(_GOAPContext, _ballSGN));
+    _aiPlayer3->addAISceneImpl(New AI::TenisSceneAISceneImpl(_GOAPContext, _ballSGN));
+    _aiPlayer4->addAISceneImpl(New AI::TenisSceneAISceneImpl(_GOAPContext, _ballSGN));
 
-    _team1 = New AITeam(1);
-    _team2 = New AITeam(2);
+    _team1 = New AI::AITeam(1);
+    _team2 = New AI::AITeam(2);
 
     _aiPlayer1->setTeam(_team1);
     state = _aiPlayer2->addFriend(_aiPlayer1);
@@ -306,16 +306,16 @@ bool TenisScene::initializeAI(bool continueOnErrors){
         state = _aiPlayer4->addFriend(_aiPlayer3);
     }
     if(state || continueOnErrors){
-        state = AIManager::getInstance().addEntity(_aiPlayer1);
+        state = AI::AIManager::getInstance().addEntity(_aiPlayer1);
     }
     if(state || continueOnErrors) {
-        state = AIManager::getInstance().addEntity(_aiPlayer2);
+        state = AI::AIManager::getInstance().addEntity(_aiPlayer2);
     }
     if(state || continueOnErrors) {
-        state = AIManager::getInstance().addEntity(_aiPlayer3);
+        state = AI::AIManager::getInstance().addEntity(_aiPlayer3);
     }
     if(state || continueOnErrors) {
-        state = AIManager::getInstance().addEntity(_aiPlayer4);
+        state = AI::AIManager::getInstance().addEntity(_aiPlayer4);
     }
     if(state || continueOnErrors){
     //----------------------- AI controlled units (NPC's) ---------------------//
@@ -335,11 +335,11 @@ bool TenisScene::initializeAI(bool continueOnErrors){
 }
 
 bool TenisScene::deinitializeAI(bool continueOnErrors){
-    AIManager::getInstance().pauseUpdate(true);
-    AIManager::getInstance().destroyEntity(_aiPlayer1->getGUID());
-    AIManager::getInstance().destroyEntity(_aiPlayer2->getGUID());
-    AIManager::getInstance().destroyEntity(_aiPlayer3->getGUID());
-    AIManager::getInstance().destroyEntity(_aiPlayer4->getGUID());
+    AI::AIManager::getInstance().pauseUpdate(true);
+    AI::AIManager::getInstance().destroyEntity(_aiPlayer1->getGUID());
+    AI::AIManager::getInstance().destroyEntity(_aiPlayer2->getGUID());
+    AI::AIManager::getInstance().destroyEntity(_aiPlayer3->getGUID());
+    AI::AIManager::getInstance().destroyEntity(_aiPlayer4->getGUID());
     SAFE_DELETE(_player1);
     SAFE_DELETE(_player2);
     SAFE_DELETE(_player3);

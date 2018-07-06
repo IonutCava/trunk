@@ -24,6 +24,7 @@
 #define _AI_TEAM_H_
 
 #include "core.h"
+namespace AI {
 
 namespace Navigation{
     class DivideDtCrowd;
@@ -76,4 +77,5 @@ private:
     vectorImpl<U32 >   _enemyTeams;
 };
 
+};
 #endif

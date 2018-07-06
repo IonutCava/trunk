@@ -176,12 +176,12 @@ bool GUIEditor::update(const U64 deltaTime) {
   	if (_createNavMeshQueued) {
         state = false;
         // Check if we already have a NavMesh created
-        Navigation::NavigationMesh* temp = AIManager::getInstance().getNavMesh(AIEntity::AGENT_RADIUS_SMALL);
+        AI::Navigation::NavigationMesh* temp = AI::AIManager::getInstance().getNavMesh(AI::AIEntity::AGENT_RADIUS_SMALL);
         // Check debug rendering status
-		AIManager::getInstance().toggleNavMeshDebugDraw(_toggleButtons[TOGGLE_NAV_MESH_DRAW]->isSelected());
+		AI::AIManager::getInstance().toggleNavMeshDebugDraw(_toggleButtons[TOGGLE_NAV_MESH_DRAW]->isSelected());
         // Create a new NavMesh if we don't currently have one
         if (!temp) {
-		    temp = New Navigation::NavigationMesh();
+		    temp = New AI::Navigation::NavigationMesh();
         }
         // Set it's file name
 		temp->setFileName(GET_ACTIVE_SCENE()->getName());
@@ -195,7 +195,7 @@ bool GUIEditor::update(const U64 deltaTime) {
 		}
         // If we loaded/built the NavMesh correctly, add it to the AIManager
 		if (loaded) {
-			state = AIManager::getInstance().addNavMesh(AIEntity::AGENT_RADIUS_SMALL, temp);
+			state = AI::AIManager::getInstance().addNavMesh(AI::AIEntity::AGENT_RADIUS_SMALL, temp);
 		}
 
 		_createNavMeshQueued = false;
@@ -609,7 +609,7 @@ bool GUIEditor::Handle_DrawNavMeshToggle(const CEGUI::EventArgs &e) {
     } else {
         D_PRINT_FN("[Editor]: NavMesh rendering disabled!");
     }
-    AIManager::getInstance().toggleNavMeshDebugDraw(_toggleButtons[TOGGLE_NAV_MESH_DRAW]->isSelected());
+    AI::AIManager::getInstance().toggleNavMeshDebugDraw(_toggleButtons[TOGGLE_NAV_MESH_DRAW]->isSelected());
     return true;
 }
 

@@ -79,7 +79,7 @@ void Scene::postRender(){
             GFX_DEVICE.drawLines(_lines[DEBUG_LINE_OBJECT_TO_TARGET],  mat4<F32>(), vec4<I32>(), false,  false);
         }
     }
-    if (!_lines[DEBUG_LINE_OBJECT_TO_TARGET].empty() && AIManager::getInstance().navMeshDebugDraw()) {
+    if (!_lines[DEBUG_LINE_OBJECT_TO_TARGET].empty() && AI::AIManager::getInstance().navMeshDebugDraw()) {
         GFX_DEVICE.drawLines(_lines[DEBUG_LINE_OBJECT_TO_TARGET],  mat4<F32>(), vec4<I32>(), false,  false);
     }
 #endif
@@ -304,7 +304,7 @@ bool Scene::load(const std::string& name, CameraManager* const cameraMgr, GUI* c
     //Create an AI thread, but start it only if needed
     Kernel* kernel = Application::getInstance().getKernel();
     _aiTask.reset(kernel->AddTask(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY, false, false,
-                                  DELEGATE_BIND(&AIManager::update, DELEGATE_REF(AIManager::getInstance()))));
+                                  DELEGATE_BIND(&AI::AIManager::update, DELEGATE_REF(AI::AIManager::getInstance()))));
 
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, DELEGATE_REF(GUI::getInstance()), this));
     _loadComplete = true;
@@ -475,6 +475,6 @@ void Scene::debugDraw(const RenderStage& stage) {
         // Draw bounding boxes, skeletons, axis gizmo, etc.
         GFX_DEVICE.debugDraw(renderState());
         // Show NavMeshes
-        AIManager::getInstance().debugDraw(false);
+        AI::AIManager::getInstance().debugDraw(false);
     }
 }

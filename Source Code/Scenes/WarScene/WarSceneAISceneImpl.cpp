@@ -1,4 +1,5 @@
 #include "Headers/WarSceneAISceneImpl.h"
+#include "AESOPActions/Headers/AESOPActions.h"
 
 #include "Managers/Headers/AIManager.h"
 #include "Core/Math/Headers/Transform.h"
@@ -6,19 +7,96 @@
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
+using namespace AI;
+
 static const D32 ATTACK_RADIUS = 4 * 4;
 
-WarSceneAISceneImpl::WarSceneAISceneImpl(const GOAPContext& context) : AISceneImpl(context),
-                                              _tickCount(0),
-                                              _currentEnemyTarget(nullptr),
-                                              _deltaTime(0ULL),
-                                              _indexInMap(-1)
+void printPlan(Aesop::Context &ctx, const Aesop::Plan &plan) {
+   Aesop::Plan::const_iterator it;
+   ctx.logEvent("The Plan:\n");
+   for (it = plan.begin(); it != plan.end(); it++) {
+      ctx.logEvent("   %s", it->ac->getName().c_str());
+      if (it->params.size()) {
+         Aesop::objects::const_iterator pl;
+         for (pl = it->params.begin(); pl != it->params.end(); pl++) {
+            ctx.logEvent(" %c", *pl);
+        }
+      }
+      ctx.logEvent("\n");
+   }
+}
+
+
+WarSceneAISceneImpl::WarSceneAISceneImpl(const Aesop::WorldState& initialState, const GOAPContext& context) : AISceneImpl(context),
+                                                                                                              _tickCount(0),
+                                                                                                              _currentEnemyTarget(nullptr),
+                                                                                                              _deltaTime(0ULL),
+                                                                                                              _indexInMap(-1)
 {
+    _planner = nullptr;
+    _goalState = New Aesop::WorldState(initialState);
+    _initState = New Aesop::WorldState(initialState);
+    _defaultState = New Aesop::WorldState(initialState);
+
+    MoveAction move("move", 1.0f);
+    // Two parameters to this action, move-from and move-to.
+    move.parameters(2);
+    // Cannot move from x to x.
+    move.condition(Aesop::ArgsNotEqual);        
+    // Required: at() -> param 0
+    move.condition(Aesop::Fact(At), 0, Aesop::Equals);
+    // Required: adjacent(param 0, param 1) -> true
+    move.condition(Aesop::Fact(Adjacent) % Aesop::Parameter(0) % Aesop::Parameter(1), Aesop::Equals, AI::g_predTrue);
+    // Required: ignore center block
+    move.condition(Aesop::Fact(At) % Aesop::Parameter(0), Aesop::NotEqual, AI::mapCenterMiddle);
+    // Effect: unset at(param 0)
+    move.effect(Aesop::Fact(At), Aesop::Unset);        
+    // Effect: at() -> param 1
+    move.effect(Aesop::Fact(At), 1, Aesop::Set);       
+    registerAction(move);
+}
+
+WarSceneAISceneImpl::~WarSceneAISceneImpl()
+{
+    SAFE_DELETE(_goalState);
+    SAFE_DELETE(_initState);
+    SAFE_DELETE(_defaultState);
+    SAFE_DELETE(_planner);
+    _actions.clear();
+}
+
+void WarSceneAISceneImpl::registerAction(const Aesop::Action& action) {
+    _actions.push_back(action);
+    _actionSet.add(&_actions.back());
 }
 
 void WarSceneAISceneImpl::addEntityRef(AIEntity* entity){
     if (entity) {
         _entity = entity;
+        SAFE_DELETE(_planner);
+        Aesop::PVal initialLife = 100;
+        Aesop::PVal friendCount = 29;
+        Aesop::PVal enemyCount = 30;
+        //_initState->set(Aesop::Fact(AI::Life),    initialLife);
+        //_initState->set(Aesop::Fact(AI::Friends), friendCount);
+        //_initState->set(Aesop::Fact(AI::Enemies), enemyCount);
+        _initState->set(Aesop::Fact(AI::At), _entity->getTeam()->getTeamID() == 0 ? mapEastMiddle : mapWestMiddle);
+        
+        //_goalState->set(Aesop::Fact(AI::Life),    initialLife);
+        //_goalState->set(Aesop::Fact(AI::Friends), friendCount);
+        //_goalState->set(Aesop::Fact(AI::Enemies), 0);
+        _goalState->set(Aesop::Fact(AI::At), _entity->getTeam()->getTeamID() == 0 ? mapWestMiddle : mapEastMiddle);
+
+        _planner = New Aesop::Planner(_initState, _goalState, _defaultState, &_actionSet);
+        _planner->addObject(AI::mapEastNorth);
+        _planner->addObject(AI::mapEastMiddle);
+        _planner->addObject(AI::mapEastSouth);
+        _planner->addObject(AI::mapCenterNorth);
+        _planner->addObject(AI::mapCenterMiddle);
+        _planner->addObject(AI::mapCenterSouth);
+        _planner->addObject(AI::mapWestNorth);
+        _planner->addObject(AI::mapWestMiddle);
+        _planner->addObject(AI::mapWestSouth);
     }
 }
 
@@ -123,6 +201,17 @@ void WarSceneAISceneImpl::processInput(const U64 deltaTime) {
 }
 
 void WarSceneAISceneImpl::processData(const U64 deltaTime) {
+    if (!_entity) {
+        return;
+    }
+    if (!_planner->success()) {
+        if (_planner->plan(&_context)){ 
+            _context.setLogLevel(GOAPContext::LOG_LEVEL_NORMAL);
+            printPlan(_context, _planner->getPlan());
+            _context.setLogLevel(GOAPContext::LOG_LEVEL_NONE);
+        } else {
+        }
+    }
 }
 
 void WarSceneAISceneImpl::update(NPC* unitRef){

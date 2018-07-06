@@ -28,6 +28,7 @@
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 #include <boost/atomic.hpp>
 
+namespace AI {
 DEFINE_SINGLETON(AIManager)
 public:
 
@@ -75,8 +76,8 @@ public:
     void destroyNavMesh(AIEntity::PresetAgentRadius radius);
  
     inline void setSceneCallback(const DELEGATE_CBK& callback) {WriteLock w_lock(_updateMutex); _sceneCallback = callback;}
-    inline void pauseUpdate(bool state) {_pauseUpdate = state;}
-
+    inline void pauseUpdate(bool state)       { _pauseUpdate = state;}
+    inline bool updating()              const { return _updating; }
     ///Toggle NavMesh debugDraw
     void toggleNavMeshDebugDraw(bool state);
 	void toggleNavMeshDebugDraw(Navigation::NavigationMesh* navMesh, bool state);
@@ -109,6 +110,7 @@ private:
     U64 _deltaTime,_currentTime, _previousTime;
     boost::atomic<bool> _navMeshDebugDraw;
     boost::atomic<bool> _pauseUpdate;
+    boost::atomic<bool> _updating;
     NavMeshMap      _navMeshes;
     AITeamMap       _aiTeams;
     AIEntityMap     _aiEntities;
@@ -118,5 +120,7 @@ private:
     DELEGATE_CBK       _sceneCallback;
 
 END_SINGLETON
+
+}; //namespace AI
 
 #endif

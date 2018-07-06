@@ -2,6 +2,7 @@
 
 #include "core.h"
 
+namespace AI {
 namespace Navigation {
     void rcContextDivide::doLog(const rcLogCategory category, const char* msg, const I32 len){
         switch(category){
@@ -37,3 +38,4 @@ namespace Navigation {
         return _accTime[label];
     }
 };
+}; //namespace AI

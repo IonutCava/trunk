@@ -25,8 +25,10 @@
 
 #include "Sensor.h"
 
-class AIEntity;
 class SceneGraphNode;
+namespace AI {
+class AIEntity;
+
 class VisualSensor : public Sensor{
 public:
 	VisualSensor() : Sensor(VISUAL_SENSOR) {}
@@ -40,5 +42,5 @@ public:
 	AIEntity*  getNearestFriendlyEntity()         {}  ///< get closest visible friendly entity
 	AIEntity*  getNearestHostileEntity()          {}  ///< get closest visible hostile entity
 };
-
+}; //namespace AI
 #endif

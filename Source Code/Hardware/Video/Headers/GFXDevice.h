@@ -222,9 +222,6 @@ public:
     /// Anaglyph rendering state
     inline bool anaglyphEnabled()                 const {return _enableAnaglyph;}
     inline void anaglyphEnabled(const bool state)       {_enableAnaglyph = state;}
-    /// High Dynamic Range rendering
-    inline bool hdrEnabled()                 const {return _enableHDR;}
-    inline void hdrEnabled(const bool state)       {_enableHDR = state;}
     /// 2D rendering enabled
     inline bool is2DRendering()                  const { return _2DRendering; }
     ///Save a screenshot in TGA format
@@ -391,7 +388,6 @@ protected:
     PlaneList _clippingPlanes;
     bool      _enablePostProcessing;
     bool      _enableAnaglyph;
-    bool      _enableHDR;
     bool      _2DRendering;
     bool      _rasterizationEnabled;
    

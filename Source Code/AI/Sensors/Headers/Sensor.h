@@ -23,9 +23,10 @@
 #ifndef _AI_SENSOR_H_
 #define _AI_SENSOR_H_
 
-#include "core.h"
+#include "Core/Math/Headers/MathVectors.h"
 
-enum SensorType{
+namespace AI {
+enum SensorType {
 	NONE = 0,
 	VISUAL_SENSOR = 1,
 	AUDIO_SENSOR = 2
@@ -37,7 +38,7 @@ public:
 	virtual void updatePosition(const vec3<F32>& newPosition) {_position = newPosition;}
 	/// return the coordinates at which the sensor is found (or the entity it's attached to)
 	inline vec3<F32>& getSpatialPosition() {return _position;}
-	inline SensorType getSensorType()     {return _type;}
+	inline SensorType getSensorType()      {return _type;}
 
 protected:
 
@@ -45,5 +46,5 @@ protected:
 	vec2<F32> _range; ///< min/max
 	SensorType _type;
 };
-
+}; //namespace AI
 #endif 

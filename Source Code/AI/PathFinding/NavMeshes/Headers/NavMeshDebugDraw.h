@@ -30,6 +30,7 @@
 class IMPrimitive;
 class RenderStateBlock;
 
+namespace AI {
 namespace Navigation {
     /// Convert a Rcast color integer to RGBA components.
     inline void rcCol(U32 col, U8 &r, U8 &g, U8 &b, U8 &a) {
@@ -76,4 +77,5 @@ namespace Navigation {
             bool _paused;
     };
 };
+}; //namespace AI
 #endif

@@ -24,7 +24,7 @@
 #define _AI_AUDIO_SENSOR_H_
 
 #include "Sensor.h"
-
+namespace AI {
 class AIEntity;
 class AudioSensor : public Sensor{
 public:
@@ -37,5 +37,5 @@ public:
 	AIEntity* getNearestFriendlyEntity()         {}  ///< get closest noisy friendly entity
 	AIEntity* getNearestHostileEntity()          {}  ///< get closest noisy hostile entity
 };
-
+}; //namespace AI
 #endif

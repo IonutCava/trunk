@@ -404,6 +404,12 @@
     <Filter Include="Scenes\TenisScene\Headers">
       <UniqueIdentifier>{18e31dd7-6ff8-40bd-8150-c4364c02b1eb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scenes\WarScene\AESOPActions">
+      <UniqueIdentifier>{a8cf33a8-ec9a-4d71-88e8-d6b3a87ca5ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\AESOPActions\Headers">
+      <UniqueIdentifier>{3d93eacc-596d-4365-9d18-0f00afa1b3ba}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp">
@@ -877,6 +883,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIInput.cpp">
       <Filter>GUI\CEGUIAddons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\AESOPActionInterface.cpp">
+      <Filter>AI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\AESOPActions\AESOPActions.cpp">
+      <Filter>Scenes\WarScene\AESOPActions</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1405,6 +1417,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIInput.h">
       <Filter>GUI\CEGUIAddons\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\AESOPActions\Headers\AESOPActions.h">
+      <Filter>Scenes\WarScene\AESOPActions\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\Headers\AESOPActionInterface.h">
+      <Filter>AI\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

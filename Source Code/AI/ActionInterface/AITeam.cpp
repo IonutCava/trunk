@@ -5,6 +5,8 @@
 #include "Managers/Headers/AIManager.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
+using namespace AI;
+
 AITeam::AITeam(U32 id) : _teamID(id)
 {
     _team.clear();

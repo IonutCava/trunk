@@ -29,15 +29,18 @@
 #include "Utility/Headers/GUIDWrapper.h"
 #include <AesopPlanner.h>
 
-class AISceneImpl;
-class SceneGraphNode;
 class NPC;
-enum  AIMsg; //< scene dependent message list
 struct dtCrowdAgent;
+class SceneGraphNode;
+
+namespace AI {
+class AISceneImpl;
+enum  AIMsg; //< scene dependent message list
 namespace Navigation {
     class DivideRecast;
     class DivideDtCrowd;
 };
+
 
 /// Based on OgreCrowd.
 class AIEntity : public GUIDWrapper {
@@ -50,7 +53,7 @@ public:
         AgentRadius_PLACEHOLDER = 4
     };
 
-    AIEntity(const vec3<F32>& currentPosition, const std::string& name);
+    AIEntity(const vec3<F32>& currentPosition, const ::std::string& name);
     ~AIEntity();
 
     void load(const vec3<F32>& position);
@@ -78,7 +81,7 @@ public:
     ///Add a friend to our team
     bool addFriend(AIEntity* const friendEntity);
 
-    const std::string& getName() const {return _name;}
+    const ::std::string& getName() const {return _name;}
 
            void addUnitRef(NPC* const npc);
     inline NPC* getUnitRef()                {return _unitRef;}
@@ -163,7 +166,7 @@ protected:
     void update(const U64 deltaTime);
 
 private:
-    std::string           _name;
+    ::std::string         _name;
     AITeam*               _teamPtr;
     AISceneImpl*          _AISceneImpl;
     GOAPContext           _goapContext;
@@ -202,4 +205,5 @@ private:
     bool _updateGOAPPlan;
 };
 
+};//namespace AI
 #endif

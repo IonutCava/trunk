@@ -25,7 +25,8 @@
 
 #include "AI/ActionInterface/Headers/AISceneImpl.h"
 
-enum AIMsg{
+namespace AI {
+enum AIMsg {
 	REQUEST_DISTANCE_TO_TARGET = 0,
 	RECEIVE_DISTANCE_TO_TARGET = 1,
 	ATTACK_BALL = 2,
@@ -51,5 +52,7 @@ private:
 	bool _attackBall, _ballToTeam2,_gameStop;
 	U16 _tickCount;
 };
+
+}; //namespace AI
 
 #endif

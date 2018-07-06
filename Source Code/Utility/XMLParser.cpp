@@ -234,7 +234,6 @@ namespace XML {
 
         GFX_DEVICE.postProcessingEnabled(pt.get("rendering.enablePostFX", false));
         GFX_DEVICE.anaglyphEnabled(pt.get("rendering.enable3D",false));
-        GFX_DEVICE.hdrEnabled(pt.get("rendering.enableHDR",false));
         par.setParam("rendering.MSAAsampless",std::max(pt.get<I32>("rendering.MSAAsamples", 0), 0));
         par.setParam("rendering.FXAAsamples", std::max(pt.get<I32>("rendering.FXAAsamples", 0), 0));
         par.setParam("GUI.CEGUI.ExtraStates",pt.get("GUI.CEGUI.ExtraStates",false));

@@ -60,7 +60,10 @@
 
 class SceneGraphNode;
 
+namespace AI {
+
 namespace Navigation {
+
     static const I32 NAVMESHSET_MAGIC = 'M'<<24 | 'S'<<16 | 'E'<<8 | 'T'; //'MSET';
     static const I32 NAVMESHSET_VERSION = 1;
 
@@ -194,6 +197,8 @@ namespace Navigation {
         ///DebugDraw interface
         NavMeshDebugDraw *_debugDrawInterface;
 	};
-};
+}; // namespace Navigation
+
+}; // namespace AI
 
 #endif

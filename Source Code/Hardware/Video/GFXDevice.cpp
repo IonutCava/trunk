@@ -84,7 +84,6 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _previousLineWidth = 1.0;
    _interpolationFactor = 1.0;
    // Booleans
-   _enableHDR = false;
    _2DRendering = false;
    _drawDebugAxis = false;
    _enableAnaglyph = false;

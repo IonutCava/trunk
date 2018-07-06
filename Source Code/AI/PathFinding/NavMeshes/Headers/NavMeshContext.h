@@ -24,7 +24,8 @@
 
 #include "NavMeshDefines.h"
 
-namespace Navigation{
+namespace AI {
+namespace Navigation {
     class rcContextDivide : public rcContext{
     public:
         rcContextDivide(bool state) : rcContext(state) {resetTimers();}
@@ -46,5 +47,7 @@ namespace Navigation{
         I32 _accTime[RC_MAX_TIMERS];
     };
 };
+
+}; //namespace AI
 
 #endif

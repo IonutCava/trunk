@@ -12,6 +12,8 @@
 #include "Managers/Headers/AIManager.h"
 #include <Aesop.h>
 
+using namespace AI;
+
 static const D32 DESTINATION_RADIUS = 1.5 * 1.5;
 
 AIEntity::AIEntity(const vec3<F32>& currentPosition, const std::string& name)  : GUIDWrapper(),

@@ -5,6 +5,8 @@
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
+using namespace AI;
+
 TenisSceneAISceneImpl::TenisSceneAISceneImpl(const GOAPContext& context, SceneGraphNode* target) : AISceneImpl(context),
                                                                              _target(target),
                                                                              _attackBall(false),

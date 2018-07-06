@@ -1,6 +1,7 @@
 #include "Headers/DivideRecast.h"
 #include "Waypoints/Headers/WaypointGraph.h"
 
+namespace AI {
 namespace Navigation {
     static const U8  DT_TILECACHE_NULL_AREA     = 0;
     static const U8  DT_TILECACHE_WALKABLE_AREA = 63;
@@ -145,4 +146,5 @@ namespace Navigation {
         resultPt.set(rPt[0],rPt[1],rPt[2]);
         return true;
     }
-};
+}; //namespace Navigation
+}; //namespace AI

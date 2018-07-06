@@ -10,6 +10,7 @@
 #include <DebugUtils/Include/DetourDebugDraw.h>
 #include <DebugUtils/Include/RecastDebugDraw.h>
 
+namespace AI {
 namespace Navigation {
 
     NavigationMesh::NavigationMesh() : GUIDWrapper() 
@@ -636,5 +637,6 @@ namespace Navigation {
     vec3<F32> NavigationMesh::getRandomPosition() const {
         return Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*this);
     }
+}; //namespace Navigation
 
-};
+}; //namespace AI

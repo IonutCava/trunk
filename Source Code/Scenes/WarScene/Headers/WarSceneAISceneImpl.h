@@ -25,29 +25,41 @@
 
 #include "AI/ActionInterface/Headers/AISceneImpl.h"
 
-enum AIMsg{
+namespace AI {
+enum AIMsg {
     REQUEST_DISTANCE_TO_TARGET = 0,
     RECEIVE_DISTANCE_TO_TARGET = 1,
     CHANGE_DESTINATION_POINT = 2
 };
 
-class WarSceneAISceneImpl : public AISceneImpl{
+class WarSceneAISceneImpl : public AI::AISceneImpl {
 public:
-    WarSceneAISceneImpl(const GOAPContext& context);
+    WarSceneAISceneImpl(const Aesop::WorldState& initialState, const GOAPContext& context);
+    ~WarSceneAISceneImpl();
+
     void processData(const U64 deltaTime);
     void processInput(const U64 deltaTime);
     void update(NPC* unitRef = nullptr);
     void addEntityRef(AIEntity* entity);
     void processMessage(AIEntity* sender, AIMsg msg,const cdiggins::any& msg_content);
-
+    
 private:
     void updatePositions();
+    // Creates a copy of the specified object and adds it to the action vector and the actionset
+    void registerAction(const Aesop::Action& action);
 
 private:
     U16       _tickCount;
     I32       _indexInMap;
     U64       _deltaTime;
     AIEntity* _currentEnemyTarget;
+    Aesop::WorldState *_initState;
+    Aesop::WorldState *_goalState;
+    Aesop::WorldState *_defaultState;
+    Aesop::Planner    *_planner;
+    Aesop::ActionSet  _actionSet;
+    vectorImpl<Aesop::Action > _actions;
 };
 
+}; //namespace AI
 #endif

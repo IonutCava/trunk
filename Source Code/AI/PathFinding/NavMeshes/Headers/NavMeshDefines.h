@@ -37,6 +37,7 @@
 #define MAX_PATHPOLY      256 // max number of polygons in a path
 #define MAX_PATHVERT      512 // most verts in a path
 
+namespace AI {
 // Extra padding added to the border size of tiles (together with agent radius)
 const F32 BORDER_PADDING = -3;
 
@@ -85,4 +86,5 @@ namespace Navigation {
     };
 };
 
+}; //namespace AI
 #endif

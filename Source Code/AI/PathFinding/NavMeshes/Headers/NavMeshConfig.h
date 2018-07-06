@@ -28,8 +28,10 @@
 
 /*Code from: http://www.ogre3d.org/forums/viewtopic.php?f=11&t=69781&sid=2439989b4c0208780a353e4c90f9864b */
 
-class NavigationMeshConfig
-{
+namespace AI {
+
+class NavigationMeshConfig {
+
 public:
     NavigationMeshConfig() : _cellSize(0.3f),
                              _cellHeight(0.2f),
@@ -389,5 +391,7 @@ private:
       **/
     F32 _base_detailSampleMaxError;
 };
+
+}; //namespace AI
 
 #endif

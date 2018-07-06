@@ -72,8 +72,12 @@
   * This class is largely based on the CrowdTool used in the original recastnavigation
   * demo.
   **/
+namespace AI {
+
 namespace Navigation {
+
     class NavigationMesh;
+
     class DivideDtCrowd {
     public:
         /**
@@ -218,4 +222,5 @@ namespace Navigation {
     }; // DivideDtCrowd
 }; // Navigation
 
+}; //namespace AI
 #endif

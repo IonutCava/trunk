@@ -1,5 +1,6 @@
 #include "Headers/WarScene.h"
 #include "Headers/WarSceneAISceneImpl.h"
+#include "AESOPActions/Headers/AESOPActions.h"
 
 #include "Geometry/Material/Headers/Material.h"
 #include "Core/Math/Headers/Transform.h"
@@ -87,10 +88,10 @@ void WarScene::processTasks(const U64 deltaTime){
 
 static boost::atomic_bool navMeshStarted;
 
-void navMeshCreationCompleteCallback(AIEntity::PresetAgentRadius radius,  Navigation::NavigationMesh* navMesh){
+void navMeshCreationCompleteCallback(AI::AIEntity::PresetAgentRadius radius,  AI::Navigation::NavigationMesh* navMesh){
     navMesh->save();
-    AIManager::getInstance().addNavMesh(radius, navMesh);
-    //AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
+    AI::AIManager::getInstance().addNavMesh(radius, navMesh);
+    //AI::AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
 }
 
 void WarScene::resetSimulation(){
@@ -101,18 +102,18 @@ void WarScene::startSimulation(){
     resetSimulation();
 
     if (!navMeshStarted) {
-        Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(_army1[0]->getAgentRadiusCategory());
+        AI::Navigation::NavigationMesh* navMesh = AI::AIManager::getInstance().getNavMesh(_army1[0]->getAgentRadiusCategory());
         if (!navMesh) {
-            navMesh = New Navigation::NavigationMesh();
+            navMesh = New AI::Navigation::NavigationMesh();
         }
         navMesh->setFileName(GET_ACTIVE_SCENE()->getName());
 
         if (!navMesh->load(nullptr)) {
             navMesh->build(nullptr, DELEGATE_BIND(navMeshCreationCompleteCallback, _army1[0]->getAgentRadiusCategory(), navMesh));
         } else {
-            AIManager::getInstance().addNavMesh(_army1[0]->getAgentRadiusCategory(), navMesh);
+            AI::AIManager::getInstance().addNavMesh(_army1[0]->getAgentRadiusCategory(), navMesh);
 #       ifdef _DEBUG
-                AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
+                AI::AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
 #       endif
         }
 
@@ -149,7 +150,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
     }*/
     
 #ifdef _DEBUG
-    if (!AIManager::getInstance().getNavMesh(_army1[0]->getAgentRadiusCategory())) {
+    if (!AI::AIManager::getInstance().getNavMesh(_army1[0]->getAgentRadiusCategory())) {
         return;
     }
 
@@ -158,14 +159,14 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
     _lines[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount);
     //renderState().drawDebugLines(true);
     U32 count = 0;
-    for(AIEntity* character : _army1){
+    for(AI::AIEntity* character : _army1){
         _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._startPoint.set(character->getPosition());
         _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._endPoint.set(character->getDestination());
         _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._color.set(255,0,255,128);
         count++;
     }
     
-    for(AIEntity* character : _army2){
+    for(AI::AIEntity* character : _army2){
         _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._startPoint.set(character->getPosition());
         _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._endPoint.set(character->getDestination());
         _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._color.set(255,0,255,128);
@@ -291,10 +292,72 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
 
 bool WarScene::initializeAI(bool continueOnErrors){
     //----------------------------Artificial Intelligence------------------------------//
-    
+    Aesop::WorldState initialWorldState;
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastNorth % AI::mapCenterNorth, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterNorth % AI::mapEastNorth, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastNorth % AI::mapCenterMiddle, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapEastNorth, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastNorth % AI::mapEastMiddle, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastMiddle % AI::mapEastNorth, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastMiddle % AI::mapCenterNorth, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterNorth % AI::mapEastMiddle, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastMiddle % AI::mapCenterMiddle, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapEastMiddle, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastMiddle % AI::mapCenterSouth, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterSouth % AI::mapEastMiddle, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastMiddle % AI::mapEastSouth, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastSouth % AI::mapEastMiddle, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastSouth % AI::mapCenterMiddle, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapEastSouth, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapEastSouth % AI::mapCenterSouth, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterSouth % AI::mapEastSouth, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterNorth % AI::mapCenterMiddle, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapCenterNorth, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterNorth % AI::mapWestMiddle, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestMiddle % AI::mapCenterNorth, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterNorth % AI::mapWestNorth, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestNorth % AI::mapCenterNorth, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapCenterSouth, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterSouth % AI::mapCenterMiddle, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapWestSouth, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestSouth % AI::mapCenterMiddle, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapWestMiddle, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestMiddle % AI::mapCenterMiddle, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterMiddle % AI::mapWestNorth, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestNorth % AI::mapCenterMiddle, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterSouth % AI::mapWestMiddle, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestMiddle % AI::mapCenterSouth, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapCenterSouth % AI::mapWestSouth, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestSouth % AI::mapCenterSouth, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestNorth % AI::mapWestMiddle, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestMiddle % AI::mapWestNorth, AI::g_predTrue);
+
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestMiddle % AI::mapWestSouth, AI::g_predTrue);
+    initialWorldState.set(Aesop::Fact(AI::Adjacent) % AI::mapWestSouth % AI::mapWestMiddle, AI::g_predTrue);
+    _GOAPContext.setLogLevel(AI::GOAPContext::LOG_LEVEL_NONE);
+
     // Create 2 AI teams
-    _faction1 = New AITeam(1);
-    _faction2 = New AITeam(2);
+    _faction1 = New AI::AITeam(1);
+    _faction2 = New AI::AITeam(2);
     // Make the teams fight eachother
     _faction1->addEnemyTeam(_faction2->getTeamID());
     _faction2->addEnemyTeam(_faction1->getTeamID());
@@ -311,7 +374,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
     vec3<F32> currentScale;
     NPC* soldier = nullptr;
     std::string currentName;
-    AIEntity* aiSoldier = nullptr;
+    AI::AIEntity* aiSoldier = nullptr;
     SceneNode* currentMesh = nullptr;
     SceneGraphNode* currentNode = nullptr;
     for(U8 k = 0; k < 2; ++k) {
@@ -350,10 +413,10 @@ bool WarScene::initializeAI(bool continueOnErrors){
           
             currentNode->getComponent<PhysicsComponent>()->translateX(25 * side);
 
-            aiSoldier = New AIEntity(currentNode->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), currentNode->getName());
-            aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
-            aiSoldier->addAISceneImpl(New WarSceneAISceneImpl(_GOAPContext));
+            aiSoldier = New AI::AIEntity(currentNode->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), currentNode->getName());
             aiSoldier->setTeam(k == 0 ? _faction1 : _faction2);
+            aiSoldier->addSensor(AI::VISUAL_SENSOR, New AI::VisualSensor());
+            aiSoldier->addAISceneImpl(New AI::WarSceneAISceneImpl(initialWorldState, _GOAPContext));
             soldier = New NPC(currentNode, aiSoldier);
             soldier->setMovementSpeed(speed); 
             if(k == 0){
@@ -368,29 +431,31 @@ bool WarScene::initializeAI(bool continueOnErrors){
 
     //----------------------- AI controlled units ---------------------//
     for(U8 i = 0; i < _army1.size(); i++){
-        AIManager::getInstance().addEntity(_army1[i]);    
+        AI::AIManager::getInstance().addEntity(_army1[i]);    
     }
 
     for(U8 i = 0; i < _army2.size(); i++){
-        AIManager::getInstance().addEntity(_army2[i]);
+        AI::AIManager::getInstance().addEntity(_army2[i]);
     }
 
     bool state = !(_army1.empty() || _army2.empty());
 
-    if(state || continueOnErrors) Scene::initializeAI(continueOnErrors);
-
+    if(state || continueOnErrors) {
+        Scene::initializeAI(continueOnErrors);
+    }
     _sceneGraph->getRoot()->removeNode(soldierNode1);
     _sceneGraph->getRoot()->removeNode(soldierNode2);
     _sceneGraph->getRoot()->removeNode(soldierNode3);
     SAFE_DELETE(soldierNode1);
     SAFE_DELETE(soldierNode2);
     SAFE_DELETE(soldierNode3);
-    AIManager::getInstance().pauseUpdate(false);
+    AI::AIManager::getInstance().pauseUpdate(false);
     return state;
 }
 
 bool WarScene::deinitializeAI(bool continueOnErrors){
-    AIManager::getInstance().pauseUpdate(true);
+    AI::AIManager::getInstance().pauseUpdate(true);
+    while (AI::AIManager::getInstance().updating()) {}
     for(U8 i = 0; i < _army1NPCs.size(); i++){
         SAFE_DELETE(_army1NPCs[i]);
     }
@@ -400,11 +465,11 @@ bool WarScene::deinitializeAI(bool continueOnErrors){
     }
     _army2NPCs.clear();
     for(U8 i = 0; i < _army1.size(); i++){
-        AIManager::getInstance().destroyEntity(_army1[i]->getGUID());
+        AI::AIManager::getInstance().destroyEntity(_army1[i]->getGUID());
     }
     _army1.clear();
     for(U8 i = 0; i < _army2.size(); i++){
-        AIManager::getInstance().destroyEntity(_army2[i]->getGUID());
+        AI::AIManager::getInstance().destroyEntity(_army2[i]->getGUID());
     }
     _army2.clear();
     SAFE_DELETE(_faction1);

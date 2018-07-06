@@ -22,12 +22,26 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _AI_GOAP_CONTEXT_H_
 #define _AI_GOAP_CONTEXT_H_
 
-#include "Aesop.h"
+#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include <Aesop.h>
+
+namespace AI {
 
 class GOAPContext : public Aesop::Context {
 public:
+    enum LogLevel {
+        LOG_LEVEL_NONE = 0,
+        LOG_LEVEL_NORMAL = 1
+    };
     GOAPContext();
     ~GOAPContext();
     void logEvent(const char *fmt, ...);
+
+    inline void setLogLevel(LogLevel newLevel) { _logLevel = newLevel; }
+
+private:
+    LogLevel _logLevel;
+};
+
 };
 #endif

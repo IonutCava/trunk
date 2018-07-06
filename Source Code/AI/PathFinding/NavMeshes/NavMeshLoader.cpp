@@ -9,6 +9,7 @@
 
 #include <fstream>
 
+namespace AI {
 namespace Navigation {
     namespace NavigationMeshLoader{
         static vec3<F32> _minVertValue, _maxVertValue;
@@ -386,4 +387,5 @@ namespace Navigation {
             return true;
         }
     };
-};
+}; //namespace Navigation
+}; //namespace AI

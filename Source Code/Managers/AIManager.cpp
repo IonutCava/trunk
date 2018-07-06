@@ -3,8 +3,11 @@
 #include "AI/PathFinding/Headers/DivideRecast.h"
 #include "AI/PathFinding/Headers/DivideCrowd.h"
 
+using namespace AI;
+
 AIManager::AIManager() : _navMeshDebugDraw(false), _pauseUpdate(true), _deltaTime(0ULL), _currentTime(0ULL), _previousTime(0ULL)
 {
+    _updating = false;
     Navigation::DivideRecast::createInstance();
 }
 
@@ -48,17 +51,18 @@ U8 AIManager::update(){
     _previousTime = _currentTime;
     _currentTime  = GETUSTIME();
     _deltaTime = _currentTime - _previousTime;
-
     if(_aiEntities.empty() || _pauseUpdate){
         boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
         return 1; //nothing to do
     }
-    if(!_sceneCallback.empty())
+    _updating = true;
+    if (!_sceneCallback.empty()) {
         _sceneCallback();
-
+    }
     processInput(_deltaTime);  //sensors
     processData(_deltaTime);   //think
     updateEntities(_deltaTime);//react
+    _updating = false;
     return 0;
 }
 

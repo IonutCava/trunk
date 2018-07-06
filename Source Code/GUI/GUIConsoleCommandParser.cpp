@@ -149,10 +149,10 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const std::string& args){
         }
     }
     // Check if we already have a NavMesh created
-    Navigation::NavigationMesh* temp = AIManager::getInstance().getNavMesh(AIEntity::AGENT_RADIUS_SMALL);
+    AI::Navigation::NavigationMesh* temp = AI::AIManager::getInstance().getNavMesh(AI::AIEntity::AGENT_RADIUS_SMALL);
     // Create a new NavMesh if we don't currently have one
     if (!temp) {
-		temp = New Navigation::NavigationMesh();
+		temp = New AI::Navigation::NavigationMesh();
     }
     // Set it's file name
 	temp->setFileName(GET_ACTIVE_SCENE()->getName());
@@ -166,7 +166,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const std::string& args){
 	}
     // If we loaded/built the NavMesh correctly, add it to the AIManager
 	if (loaded) {
-		AIManager::getInstance().addNavMesh(AIEntity::AGENT_RADIUS_SMALL, temp);
+		AI::AIManager::getInstance().addNavMesh(AI::AIEntity::AGENT_RADIUS_SMALL, temp);
 	}
 }
 

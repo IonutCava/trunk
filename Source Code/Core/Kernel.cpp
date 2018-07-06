@@ -95,7 +95,7 @@ void Kernel::idle(){
     if (freezeLoopTime != _freezeLoopTime) {
         _freezeLoopTime = freezeLoopTime;
         _currentTimeFrozen = _currentTime;
-        AIManager::getInstance().pauseUpdate(freezeLoopTime);
+        AI::AIManager::getInstance().pauseUpdate(freezeLoopTime);
     }
 
     std::string pendingLanguage = par.getParam<std::string>("language");

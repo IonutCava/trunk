@@ -10,6 +10,7 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
+namespace AI {
 namespace Navigation {
     NavMeshDebugDraw::NavMeshDebugDraw() : _overrideColor(false), _dirty(true), _paused(false), _color(0), _primitive(nullptr)
     {
@@ -96,5 +97,5 @@ namespace Navigation {
         _overrideColor = true;
         _color = col;
     }
-
-};
+}; //namespace Navigation
+}; //namespace AI

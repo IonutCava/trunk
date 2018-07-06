@@ -27,9 +27,12 @@
 #include "AI/Headers/GOAPContext.h"
 
 class SkinnedSubMesh;
-class AITeam;
-class AIEntity;
 class NPC;
+
+namespace AI {
+    class AITeam;
+    class AIEntity;
+};
 
 class WarScene : public Scene {
 public:
@@ -80,20 +83,20 @@ private: //Game
     I8 _scorTeam1;
     I8 _scorTeam2;
     ///AIEntities are the "processors" behing the NPC's
-    vectorImpl<AIEntity *> _army1;
-    vectorImpl<AIEntity *> _army2;
+    vectorImpl<AI::AIEntity *> _army1;
+    vectorImpl<AI::AIEntity *> _army2;
     ///NPC's are the actual game entities
     vectorImpl<NPC *> _army1NPCs;
     vectorImpl<NPC *> _army2NPCs;
     ///Team's are factions for AIEntites so they can manage friend/foe situations
-    AITeam *_faction1, *_faction2;
+    AI::AITeam *_faction1, *_faction2;
     SceneGraphNode *_bobNode;
     SceneGraphNode *_bobNodeBody;
     SceneGraphNode *_lampLightNode;
     SceneGraphNode *_lampTransformNode;
     SceneNode      *_lampTransform;
     ///GOAP context (mainly for logging)
-    GOAPContext _GOAPContext;
+    AI::GOAPContext _GOAPContext;
 };
 
 #endif
