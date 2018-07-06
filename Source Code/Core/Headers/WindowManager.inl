@@ -61,6 +61,10 @@ inline void WindowManager::setWindowDimensions(WindowType windowType, const vec2
     _windowDimensions[to_uint(windowType)].set(dimensions);
 }
 
+inline const vec2<U16>& WindowManager::getWindowDimensions() const {
+    return _windowDimensions[to_uint(mainWindowType())];
+}
+
 inline const vec2<U16>& WindowManager::getWindowDimensions(WindowType windowType) const {
     return _windowDimensions[to_uint(windowType)];
 }

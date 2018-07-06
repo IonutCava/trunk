@@ -8,7 +8,6 @@ namespace Divide {
 
 Texture::Texture(TextureType type)
     : HardwareResource("temp_texture"),
-      _bitDepth(0),
       _numLayers(1),
       _samplerDirty(true),
       _mipMapsDirty(true),
@@ -107,7 +106,6 @@ bool Texture::LoadFile(U32 target, const stringImpl& name) {
     // Extract width, height and bitdepth
     U16 width = img.dimensions().width;
     U16 height = img.dimensions().height;
-    _bitDepth = img.bpp();
     // If we have an alpha channel, we must check for translucency
     if (img.alpha()) {
         // Each pixel is independent so this is a brilliant place to parallelize

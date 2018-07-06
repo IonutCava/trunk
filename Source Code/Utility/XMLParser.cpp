@@ -283,7 +283,7 @@ void loadConfig(const std::string &file) {
     vec2<U16> splashScreenDimensions(pt.get("runtime.splashScreenSize.<xmlattr>.w", 400),
                                      pt.get("runtime.splashScreenSize.<xmlattr>.h", 300));
     bool startFullScreen = !pt.get("rendering.windowedMode", true);
-    
+    par.setParam("runtime.windowResizable", pt.get("runtime.windowResizable", true));
     par.setParam("runtime.enableVSync", pt.get("runtime.enableVSync", false));
     par.setParam("postProcessing.anaglyphOffset",
                  pt.get("rendering.anaglyphOffset", 0.16f));

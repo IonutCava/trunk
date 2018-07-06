@@ -1,12 +1,7 @@
--- Vertex
-
-#include "vertexDefault.vert"
-#include "nodeBufferedInput.cmn"
+-- Vertex 
 
 void main(void)
 {
-
-    computeData();
 }
 
 

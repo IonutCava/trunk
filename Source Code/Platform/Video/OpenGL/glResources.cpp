@@ -512,7 +512,6 @@ namespace DSAWrapper {
                 return;
     }
 #endif
-
             glNamedFramebufferTextureEXT(framebuffer, attachment, texture, level);
             return;
 }
@@ -552,7 +551,7 @@ namespace DSAWrapper {
                 return;
     }
 #endif
-            glext::glFramebufferDrawBufferEXT(framebuffer, buf);
+            glFramebufferDrawBufferEXT(framebuffer, buf);
             return;
     }
 
@@ -571,7 +570,7 @@ void dsaNamedFramebufferDrawBuffers(GLuint framebuffer, GLsizei n, const GLenum*
             return;
         }
 #endif
-        glext::glFramebufferDrawBuffersEXT(framebuffer, n, bufs);
+        glFramebufferDrawBuffersEXT(framebuffer, n, bufs);
         return;
     }
     GLuint oldBuffer;
@@ -588,7 +587,7 @@ void dsaNamedFramebufferReadBuffer(GLuint framebuffer, GLenum src) {
             return;
         }
 #endif
-        glext::glFramebufferReadBufferEXT(framebuffer, src);
+        glFramebufferReadBufferEXT(framebuffer, src);
         return;
     }
 

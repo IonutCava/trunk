@@ -21,6 +21,7 @@
 namespace Divide {
 
 ErrorCode GL_API::createWindow() {
+    ParamHandler& par = ParamHandler::getInstance();
 
     Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
 #if defined(_DEBUG) || defined(_GLDEBUG_IN_RELEASE)
@@ -43,8 +44,7 @@ ErrorCode GL_API::createWindow() {
 
     // Toggle multi-sampling if requested.
     // This options requires a client-restart, sadly.
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,
-                        ParamHandler::getInstance().getParam<I32>("rendering.MSAAsampless", 0));
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, par.getParam<I32>("rendering.MSAAsampless", 0));
 
     // OpenGL ES is not yet supported, but when added, it will need to mirror
     // OpenGL functionality 1-to-1
@@ -63,16 +63,18 @@ ErrorCode GL_API::createWindow() {
 #endif
     }
 
+    U32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
+    if (par.getParam<bool>("runtime.windowResizable", true)) {
+        windowFlags |= SDL_WINDOW_RESIZABLE;
+    }
+
     WindowManager& winManager = Application::getInstance().getWindowManager();
-    stringImpl windowTitle(ParamHandler::getInstance().getParam<stringImpl>("appTitle", "Divide"));
-    GLUtil::_mainWindow = SDL_CreateWindow(windowTitle.c_str(), 
+    GLUtil::_mainWindow = SDL_CreateWindow(par.getParam<stringImpl>("appTitle", "Divide").c_str(),
                                            SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay()),
                                            SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay()),
                                            1,
                                            1,
-                                           SDL_WINDOW_OPENGL | 
-                                           SDL_WINDOW_HIDDEN |
-                                           SDL_WINDOW_ALLOW_HIGHDPI);
+                                           windowFlags);
 
     vec2<I32> position;
     SDL_GetWindowPosition(GLUtil::_mainWindow, &position.x, &position.y);
@@ -149,9 +151,10 @@ void GL_API::pollWindowEvents() {
                                                      event.window.data2);
                     } break;
                     case SDL_WINDOWEVENT_RESIZED: {
-                        GFX_DEVICE.handleWindowEvent(WindowEvent::RESIZED_EXTERNAL,
-                                                     event.window.data1,
-                                                     event.window.data2);
+                        _externalResizeEvent = true;
+                        changeWindowSize(static_cast<U16>(event.window.data1),
+                                         static_cast<U16>(event.window.data2));
+                        _externalResizeEvent = false;
                     }break;
                     case SDL_WINDOWEVENT_SIZE_CHANGED: {
                         GFX_DEVICE.handleWindowEvent(WindowEvent::RESIZED_INTERNAL,
@@ -495,28 +498,32 @@ void GL_API::handleChangeWindowType(WindowType newWindowType) {
     I32 switchState = 0;
     switch (newWindowType) {
         case WindowType::SPLASH: {
-            SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_FALSE);
-            SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_FALSE);
             switchState = SDL_SetWindowFullscreen(GLUtil::_mainWindow, 0);
             assert(switchState >= 0);
+
+            SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_FALSE);
+            SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_FALSE);
         } break;
         case WindowType::WINDOW: {
+            switchState = SDL_SetWindowFullscreen(GLUtil::_mainWindow, 0);
+            assert(switchState >= 0);
+
             SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_TRUE);
             SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_FALSE);
-            switchState = SDL_SetWindowFullscreen(GLUtil::_mainWindow, 0);
-            assert(switchState >= 0);
         } break;
         case WindowType::FULLSCREEN_WINDOWED: {
-            SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_FALSE);
-            SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_FALSE);
             switchState = SDL_SetWindowFullscreen(GLUtil::_mainWindow, 0);
             assert(switchState >= 0);
+
+            SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_FALSE);
+            SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_FALSE);
         } break;
         case WindowType::FULLSCREEN: {
-            SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_FALSE);
-            SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_TRUE);
             switchState = SDL_SetWindowFullscreen(GLUtil::_mainWindow, SDL_WINDOW_FULLSCREEN);
             assert(switchState >= 0);
+
+            SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_FALSE);
+            SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_TRUE);
         } break;
     };
 
@@ -532,16 +539,39 @@ void GL_API::handleChangeWindowType(WindowType newWindowType) {
 }
 
 void GL_API::changeWindowSize(U16 w, U16 h) {
-    const WindowManager& winManager = Application::getInstance().getWindowManager();
-    if (winManager.mainWindowType() == WindowType::FULLSCREEN) {
-        SDL_DisplayMode mode, closesMode;
+
+    WindowManager& winManager = Application::getInstance().getWindowManager();
+    WindowType type = winManager.mainWindowType();
+
+    if (_externalResizeEvent && type != WindowType::WINDOW) {
+        return;
+    }
+
+    if (type == WindowType::FULLSCREEN) {
+        // Should never be true, but need to be sure
+        SDL_DisplayMode mode, closestMode;
         SDL_GetCurrentDisplayMode(winManager.targetDisplay(), &mode);
         mode.w = w;
         mode.h = h;
-        SDL_GetClosestDisplayMode(winManager.targetDisplay(), &mode, &closesMode);
-        SDL_SetWindowDisplayMode(GLUtil::_mainWindow, &closesMode);
+        SDL_GetClosestDisplayMode(winManager.targetDisplay(), &mode, &closestMode);
+        SDL_SetWindowDisplayMode(GLUtil::_mainWindow, &closestMode);
     } else {
+        if (_externalResizeEvent) {
+            // Find a decent resolution close to our dragged dimensions
+            SDL_DisplayMode mode, closestMode;
+            SDL_GetCurrentDisplayMode(winManager.targetDisplay(), &mode);
+            mode.w = w;
+            mode.h = h;
+            SDL_GetClosestDisplayMode(winManager.targetDisplay(), &mode, &closestMode);
+            w = static_cast<U16>(closestMode.w);
+            h = static_cast<U16>(closestMode.h);
+        }
+
         SDL_SetWindowSize(GLUtil::_mainWindow, w, h);
+        if (winManager.getWindowDimensions() != vec2<U16>(w, h)) {
+            winManager.setWindowDimensions(winManager.mainWindowType(), 
+                                           vec2<U16>(w, h));
+        }
     }
 }
 

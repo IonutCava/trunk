@@ -87,8 +87,6 @@ class NOINITVTABLE Texture : public HardwareResource {
     /// Set/Get the number of layers (used by texture arrays)
     inline void setNumLayers(U8 numLayers) { _numLayers = numLayers; }
     inline U8 getNumLayers() const { return _numLayers; }
-    /// Texture bit depth as returned by DevIL
-    inline U8 getBitDepth() const { return _bitDepth; }
     /// Texture width as returned by DevIL
     inline U16 getWidth() const { return _width; }
     /// Texture height depth as returned by DevIL
@@ -118,7 +116,6 @@ class NOINITVTABLE Texture : public HardwareResource {
     virtual ~Texture();
 
    protected:
-    U8 _bitDepth;
     U8 _numLayers;
     U16 _width;
     U16 _height;

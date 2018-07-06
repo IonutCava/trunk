@@ -319,6 +319,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     bool _enableCEGUIRendering;
     /// Did we generate the window move event?
     bool _internalMoveEvent;
+    /// Did we resize the window via an OS call?
+    bool _externalResizeEvent;
     /// Current state of all available clipping planes
     bool _activeClipPlanes[Config::MAX_CLIP_PLANES];
     /// Performance counters: front x 2 and back x 2

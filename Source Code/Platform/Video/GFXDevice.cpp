@@ -77,7 +77,6 @@ GFXDevice::GFXDevice()
     // Utility cameras
     _2DCamera = MemoryManager_NEW FreeFlyCamera();
     _2DCamera->lockView(true);
-    _2DCamera->lockFrustum(true);
     _cubeCamera = MemoryManager_NEW FreeFlyCamera();
     // Clipping planes
     _clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0, 0, 0, 0));
@@ -528,8 +527,10 @@ void GFXDevice::restoreViewport() {
 
 /// Set a new viewport clearing the previous stack first
 void GFXDevice::setBaseViewport(const vec4<I32>& viewport) {
-    assert(_viewport.size() == 1);
-    _viewport.top().set(viewport);
+    while (!_viewport.empty()) {
+        _viewport.pop();
+    }
+    _viewport.push(viewport);
 
     // Set the new viewport
     updateViewportInternal(viewport);

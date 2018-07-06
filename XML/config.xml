@@ -17,6 +17,7 @@
 	<targetDisplay>1</targetDisplay>
 	<!-- set to true to start the application in windowed mode -->
 	<windowedMode>true</windowedMode>
+	<windowResizable>false</windowResizable>
 	<!-- toggle Vsync on or off. This can be overridden by the display driver! -->
 	<enableVSync>true</enableVSync>
 	<!-- splash screen dimensions -->

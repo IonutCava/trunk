@@ -78,6 +78,7 @@ public:
     inline void setResolution(const vec2<U16>& resolution);
 
     inline void setWindowDimensions(WindowType windowType, const vec2<U16>& dimensions);
+    inline const vec2<U16>& getWindowDimensions() const;
     inline const vec2<U16>& getWindowDimensions(WindowType windowType) const;
 
     inline void setWindowPosition(const vec2<U16>& position);

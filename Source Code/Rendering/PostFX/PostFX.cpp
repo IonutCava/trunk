@@ -63,9 +63,9 @@ void PostFX::init(const vec2<U16>& resolution) {
     anaglyph.setThreadedLoading(false);
     _anaglyphShader = CreateResource<ShaderProgram>(anaglyph);
     _anaglyphShader->Uniform("texRightEye",
-                             to_uint(TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));
+                             static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));
     _anaglyphShader->Uniform("texLeftEye",
-                             to_uint(TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));
+                             static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));
 
     ResourceDescriptor postFXShader("postProcessing");
     postFXShader.setThreadedLoading(false);

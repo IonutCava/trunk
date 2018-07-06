@@ -734,9 +734,10 @@ void Scene::findSelection() {
     F32 mouseX = to_float(mousePos.x);
     F32 mouseY = to_float(mousePos.y);
 
-    const vec2<U16>& resolution 
-        = Application::getInstance().getWindowManager().getResolution();
-    mouseY = resolution.height - mouseY - 1;
+    const vec2<U16>& displaySize 
+        = Application::getInstance().getWindowManager().getWindowDimensions();
+
+    mouseY = displaySize.height - mouseY - 1;
     vec3<F32> startRay = renderState().getCameraConst().unProject(
         vec3<F32>(mouseX, mouseY, 0.0f));
     vec3<F32> endRay = renderState().getCameraConst().unProject(

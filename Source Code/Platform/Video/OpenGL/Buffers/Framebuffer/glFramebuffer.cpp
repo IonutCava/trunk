@@ -49,11 +49,13 @@ glFramebuffer::~glFramebuffer() {
 }
 
 void glFramebuffer::InitAttachment(AttachmentType type,
-                                   const TextureDescriptor& texDescriptor) {
+                                   const TextureDescriptor& texDescriptor,
+                                   bool resize) {
     // If it changed
     if (!_attachmentDirty[to_uint(type)]) {
         return;
     }
+
 
     DIVIDE_ASSERT(_width != 0 && _height != 0,
                   "glFramebuffer error: Invalid frame buffer dimensions!");
@@ -108,24 +110,31 @@ void glFramebuffer::InitAttachment(AttachmentType type,
             internalFormat = GFXImageFormat::RGB8;
         }
     }
+
     if (_multisampled) {
         sampler.toggleMipMaps(false);
     }
 
-    if (_attachmentTexture[slot]) {
+    if (_attachmentTexture[slot] && !resize) {
         RemoveResource(_attachmentTexture[slot]);
     }
 
-    stringImpl attachmentName = Util::StringFormat(
-        "Framebuffer_Att_%s_%d", getAttachmentName(type), getGUID());
+    if (!resize) {
+        stringImpl attachmentName = Util::StringFormat(
+            "Framebuffer_Att_%s_%d", getAttachmentName(type), getGUID());
 
-    ResourceDescriptor textureAttachment(attachmentName);
-    textureAttachment.setThreadedLoading(false);
-    textureAttachment.setPropertyDescriptor(sampler);
-    textureAttachment.setEnumValue(to_uint(currentType));
-    _attachmentTexture[slot] = CreateResource<Texture>(textureAttachment);
+        ResourceDescriptor textureAttachment(attachmentName);
+        textureAttachment.setThreadedLoading(false);
+        textureAttachment.setPropertyDescriptor(sampler);
+        textureAttachment.setEnumValue(to_uint(currentType));
+        _attachmentTexture[slot] = CreateResource<Texture>(textureAttachment);
+    }
 
     Texture* tex = _attachmentTexture[slot];
+    if (tex == nullptr) {
+        return;
+    }
+
     tex->setNumLayers(texDescriptor._layerCount);
     _mipMapLevel[slot].set(
         texDescriptor._mipMinLevel,
@@ -133,13 +142,15 @@ void glFramebuffer::InitAttachment(AttachmentType type,
             ? texDescriptor._mipMaxLevel
             : 1 + (I16)floorf(log2f(fmaxf(to_float(_width), to_float(_height)))));
 
-    tex->loadData(
-        isLayeredTexture
+    if (resize) {
+        tex->resize(NULL, vec2<U16>(_width, _height), _mipMapLevel[slot]);
+    }else {
+        tex->loadData(
+            isLayeredTexture
             ? 0
             : to_uint(GLUtil::glTextureTypeTable[to_uint(currentType)]),
-        NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], format, internalFormat);
-
-    tex->refreshMipMaps();
+            NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], format, internalFormat);
+    }
 
     // Attach to frame buffer
     if (type == AttachmentType::Depth) {
@@ -147,12 +158,12 @@ void glFramebuffer::InitAttachment(AttachmentType type,
             _framebufferHandle, GL_DEPTH_ATTACHMENT, tex->getHandle(), 0);
         _isLayeredDepth = isLayeredTexture;
     } else {
-        GLint offset = 0;
+        I32 offset = 0;
         if (slot > to_int(AttachmentType::Color0)) {
             offset = _attOffset[slot - 1];
         }
         if (texDescriptor.isCubeTexture() && !_layeredRendering) {
-            for (GLuint i = 0; i < 6; ++i) {
+            for (U32 i = 0; i < 6; ++i) {
                 GLenum attachPoint = GL_COLOR_ATTACHMENT0 + (i + offset);
                 GLUtil::DSAWrapper::dsaNamedFramebufferTexture(
                     _framebufferHandle, attachPoint, tex->getHandle(), i);
@@ -162,7 +173,7 @@ void glFramebuffer::InitAttachment(AttachmentType type,
                 _attOffset[slot] = _attOffset[slot - 1] + 6;
             }
         } else if (texDescriptor._layerCount > 1 && !_layeredRendering) {
-            for (GLuint i = 0; i < texDescriptor._layerCount; ++i) {
+            for (U32 i = 0; i < texDescriptor._layerCount; ++i) {
                 GLenum attachPoint = GL_COLOR_ATTACHMENT0 + (i + offset);
                 GLUtil::DSAWrapper::dsaNamedFramebufferTextureLayer(
                     _framebufferHandle, attachPoint, tex->getHandle(), 0, i);
@@ -176,10 +187,9 @@ void glFramebuffer::InitAttachment(AttachmentType type,
         } else {
             GLUtil::DSAWrapper::dsaNamedFramebufferTexture(
                 _framebufferHandle,
-                GL_COLOR_ATTACHMENT0 + static_cast<GLuint>(slot),
+                GL_COLOR_ATTACHMENT0 + to_uint(slot),
                 tex->getHandle(), 0);
-            _colorBuffers.push_back(GL_COLOR_ATTACHMENT0 +
-                                    static_cast<GLuint>(slot));
+            _colorBuffers.push_back(GL_COLOR_ATTACHMENT0 + to_uint(slot));
         }
     }
 }
@@ -232,79 +242,12 @@ void glFramebuffer::AddDepthBuffer() {
     depthDescriptor.setSampler(screenSampler);
     _attachmentDirty[to_uint(AttachmentType::Depth)] = true;
     _attachment[to_uint(AttachmentType::Depth)] = depthDescriptor;
-    InitAttachment(AttachmentType::Depth, depthDescriptor);
+    InitAttachment(AttachmentType::Depth, depthDescriptor, false);
 
     _hasDepth = true;
 }
 
-void glFramebuffer::Resize(GLushort width, GLushort height) {
-    DIVIDE_ASSERT(width != 0 && height != 0,
-            "glFramebuffer error: Invalid frame buffer dimensions!");
-
-
-    _colorBuffers.resize(0);
-
-    for (U32 slot = 0; slot < to_uint(AttachmentType::COUNT); ++slot) {
-        AttachmentType type = static_cast<AttachmentType>(slot);
-        Texture* tex = _attachmentTexture[slot];
-        TextureDescriptor texDescriptor = _attachment[slot];
-
-        if (tex == nullptr) {
-            continue;
-        }
-
-        _mipMapLevel[slot].set(
-            texDescriptor._mipMinLevel,
-            texDescriptor._mipMaxLevel > 0
-            ? texDescriptor._mipMaxLevel
-            : 1 + (I16)floorf(log2f(fmaxf(to_float(width), to_float(height)))));
-        tex->setMipMapRange(_mipMapLevel[slot].x, _mipMapLevel[slot].y);
-        tex->resize(NULL, vec2<U16>(_width, _height), _mipMapLevel[slot]);
-        tex->refreshMipMaps();
-
-        if (type == AttachmentType::Depth) {
-            GLUtil::DSAWrapper::dsaNamedFramebufferTexture(
-                _framebufferHandle, GL_DEPTH_ATTACHMENT, tex->getHandle(), 0);
-        } else {
-            GLint offset = 0;
-            if (slot > to_int(AttachmentType::Color0)) {
-                offset = _attOffset[slot - 1];
-            }
-            if (texDescriptor.isCubeTexture() && !_layeredRendering) {
-                for (GLuint i = 0; i < 6; ++i) {
-                    GLenum attachPoint = GL_COLOR_ATTACHMENT0 + (i + offset);
-                    GLUtil::DSAWrapper::dsaNamedFramebufferTexture(
-                        _framebufferHandle, attachPoint, tex->getHandle(), i);
-                    _colorBuffers.push_back(attachPoint);
-                }
-                if (slot > 0) {
-                    _attOffset[slot] = _attOffset[slot - 1] + 6;
-                }
-            }  else if (texDescriptor._layerCount > 1 && !_layeredRendering) {
-                for (GLuint i = 0; i < texDescriptor._layerCount; ++i) {
-                    GLenum attachPoint = GL_COLOR_ATTACHMENT0 + (i + offset);
-                    GLUtil::DSAWrapper::dsaNamedFramebufferTextureLayer(
-                        _framebufferHandle, attachPoint, tex->getHandle(), 0, i);
-                    _colorBuffers.push_back(attachPoint);
-                }
-                if (slot > 0) {
-                    _attOffset[slot] = _attOffset[slot - 1] + texDescriptor._layerCount;
-                }
-                // If we require layered rendering, or have a non-layered /
-                // non-cubemap texture, attach it to a single binding point
-            } else {
-                GLUtil::DSAWrapper::dsaNamedFramebufferTexture(
-                    _framebufferHandle,
-                    GL_COLOR_ATTACHMENT0 + static_cast<GLuint>(slot),
-                    tex->getHandle(), 0);
-                _colorBuffers.push_back(GL_COLOR_ATTACHMENT0 +
-                    static_cast<GLuint>(slot));
-            }
-        }
-    }
-}
-
-bool glFramebuffer::Create(GLushort width, GLushort height) {
+bool glFramebuffer::Create(U16 width, U16 height) {
     _hasDepth = false;
     _hasColor = false;
     _resolved = false;
@@ -339,23 +282,21 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
     if (!_isCreated) {
         assert(_framebufferHandle == 0);
         GLUtil::DSAWrapper::dsaCreateFramebuffers(1, &_framebufferHandle);
-        _colorBuffers.resize(0);
-        // For every attachment, be it a color or depth attachment ...
-        for (U8 i = 0; i < to_uint(AttachmentType::COUNT); ++i) {
-            InitAttachment(static_cast<AttachmentType>(i), _attachment[i]);
-        }
-        // If we either specify a depth texture or request a depth buffer ...
-        if (_useDepthBuffer && !_hasDepth) {
-            AddDepthBuffer();
-        }
-    } else {
-        // no need to resize debug-created framebuffers
-        if (!shouldResize) {
-            return true;
-        }
-        Resize(width, height);
+        shouldResize = false;
     }
 
+
+    _colorBuffers.resize(0);
+    // For every attachment, be it a color or depth attachment ...
+    for (U8 i = 0; i < to_uint(AttachmentType::COUNT); ++i) {
+        InitAttachment(static_cast<AttachmentType>(i), _attachment[i], shouldResize);
+    }
+    
+    // If we either specify a depth texture or request a depth buffer ...
+    if (_useDepthBuffer && !_hasDepth) {
+        AddDepthBuffer();
+    }
+    
     // If color writes are disabled, draw only depth info
     if (_disableColorWrites) {
         GLUtil::DSAWrapper::dsaNamedFramebufferDrawBuffer(_framebufferHandle,
@@ -463,7 +404,7 @@ Texture* glFramebuffer::GetAttachment(AttachmentType slot) {
     return Framebuffer::GetAttachment(slot);
 }
 
-void glFramebuffer::Bind(GLubyte unit, AttachmentType slot) {
+void glFramebuffer::Bind(U8 unit, AttachmentType slot) {
     GetAttachment(slot)->Bind(unit);
 }
 
@@ -601,9 +542,7 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot,
     }
 }
 
-void glFramebuffer::SetMipLevel(GLushort mipLevel,
-                                GLushort mipMaxLevel,
-                                GLushort writeLevel,
+void glFramebuffer::SetMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
                                 TextureDescriptor::AttachmentType slot) {
     GLenum textureType = GLUtil::glTextureTypeTable[to_uint(
         _attachmentTexture[to_uint(slot)]->getTextureType())];

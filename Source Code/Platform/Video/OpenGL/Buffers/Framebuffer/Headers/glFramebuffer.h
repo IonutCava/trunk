@@ -44,15 +44,14 @@ class glFramebuffer : public Framebuffer {
     glFramebuffer(bool useResolveBuffer = false);
     ~glFramebuffer();
 
-    bool Create(GLushort width, GLushort height);
+    bool Create(U16 width, U16 height);
     void Destroy();
 
     Texture* GetAttachment(TextureDescriptor::AttachmentType slot);
 
-    void DrawToLayer(TextureDescriptor::AttachmentType slot, GLubyte layer,
+    void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer,
                      bool includeDepth = true);
-    void SetMipLevel(GLushort mipLevel, GLushort mipMaxLevel,
-                     GLushort writeLevel,
+    void SetMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
                      TextureDescriptor::AttachmentType slot);
     void ResetMipLevel(TextureDescriptor::AttachmentType slot);
     void AddDepthBuffer();
@@ -60,9 +59,9 @@ class glFramebuffer : public Framebuffer {
     void Begin(const FramebufferTarget& drawPolicy);
     void End();
 
-    void Bind(GLubyte unit = 0, TextureDescriptor::AttachmentType slot =
-                                    TextureDescriptor::AttachmentType::Color0);
-    void ReadData(const vec4<GLushort>& rect, GFXImageFormat imageFormat,
+    void Bind(U8 unit = 0, TextureDescriptor::AttachmentType slot =
+                               TextureDescriptor::AttachmentType::Color0);
+    void ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat,
                   GFXDataFormat dataType, void* outData);
     void BlitFrom(Framebuffer* inputFB, TextureDescriptor::AttachmentType slot =
                                             TextureDescriptor::AttachmentType::Color0,
@@ -72,10 +71,9 @@ class glFramebuffer : public Framebuffer {
     void resolve();
     bool checkStatus() const;
     void InitAttachment(TextureDescriptor::AttachmentType type,
-                        const TextureDescriptor& texDescriptor);
+                        const TextureDescriptor& texDescriptor,
+                        bool resize);
     void ResetMipMaps(FramebufferTarget::BufferMask mask);
-    void clearColor();
-    void Resize(U16 width, U16 height);
 
    protected:
     ClearBufferMask _clearBufferMask;
@@ -89,12 +87,12 @@ class glFramebuffer : public Framebuffer {
     vectorImpl<GLenum> _colorBuffers;
     bool _colorMaskChanged;
     bool _depthMaskChanged;
-    vec4<GLfloat> _prevClearColor;
+    vec4<F32> _prevClearColor;
     const std::unique_ptr<glFramebuffer> _resolveBuffer;
 
     using AttType = TextureDescriptor::AttachmentType;
-    std::array<GLint, to_const_uint(AttType::COUNT)> _attOffset;
-    std::array<vec2<GLushort>, to_const_uint(AttType::COUNT)> _mipMapLevel;
+    std::array<I32, to_const_uint(AttType::COUNT)> _attOffset;
+    std::array<vec2<U16>, to_const_uint(AttType::COUNT)> _mipMapLevel;
 };
 
 };  // namespace Divide

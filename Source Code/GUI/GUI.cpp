@@ -310,14 +310,14 @@ GUIButton* GUI::addButton(const stringImpl& ID,
                           ButtonCallback callback,
                           const stringImpl& rootSheetID) {
 
-    const vec2<U16>& resolution
-        = Application::getInstance().getWindowManager().getResolution();
+    const vec2<U16>& displaySize
+        = Application::getInstance().getWindowManager().getWindowDimensions();
 
-    vec2<F32> relOffset((position.x * 100.0f) / resolution.x,
-                        (position.y * 100.0f) / resolution.y);
+    vec2<F32> relOffset((position.x * 100.0f) / displaySize.x,
+                        (position.y * 100.0f) / displaySize.y);
 
-    vec2<F32> relDim((dimensions.x * 100.0f) / resolution.x,
-                     (dimensions.y * 100.0f) / resolution.y);
+    vec2<F32> relDim((dimensions.x * 100.0f) / displaySize.x,
+                     (dimensions.y * 100.0f) / displaySize.y);
 
     CEGUI::Window* parent = nullptr;
     if (!rootSheetID.empty()) {
@@ -359,11 +359,11 @@ GUIText* GUI::addText(const stringImpl& id, const vec2<I32>& position,
                       const stringImpl& font, const vec3<F32>& color,
                       char* format, ...) {
 
-    const vec2<U16>& resolution
-        = Application::getInstance().getWindowManager().getResolution();
+    const vec2<U16>& displaySize
+        = Application::getInstance().getWindowManager().getWindowDimensions();
 
-    vec2<F32> relOffset((position.x * 100.0f) / resolution.x,
-                        (position.y * 100.0f) / resolution.y);
+    vec2<F32> relOffset((position.x * 100.0f) / displaySize.x,
+                        ((displaySize.y - position.y) * 100.0f) / displaySize.y);
 
     va_list args;
     stringImpl fmt_text;
