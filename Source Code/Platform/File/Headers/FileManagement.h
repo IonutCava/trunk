@@ -81,7 +81,7 @@ namespace Paths {
             extern stringImpl g_comnAtomLoc;
         }; //namespace GLSL
         namespace HLSL {
-
+            extern stringImpl g_parentShaderLoc;
         }; //namespace HLSL
     }; //namespace Shaders
 

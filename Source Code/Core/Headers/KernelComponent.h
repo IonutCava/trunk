@@ -32,10 +32,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _KERNEL_COMPONENT_H_
 #define _KERNEL_COMPONENT_H_
 
+#include "NonCopyable.h"
+
 namespace Divide {
 
 class Kernel;
-class KernelComponent {
+class KernelComponent : public NonCopyable {
 
 public:
     KernelComponent(Kernel& parent) : _parent(parent)

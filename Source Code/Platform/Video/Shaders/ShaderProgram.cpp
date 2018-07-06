@@ -7,7 +7,33 @@
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
+#include "simplefilewatcher/includes/FileWatcher.h"
+
 namespace Divide {
+namespace {
+    class UpdateListener : public FW::FileWatchListener
+    {
+    public:
+        UpdateListener() 
+        {
+        }
+
+        void handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename, FW::Action action)
+        {
+            switch (action)
+            {
+                case FW::Actions::Add: break;
+                case FW::Actions::Delete: break;
+                case FW::Actions::Modified:
+                    ShaderProgram::onAtomChange(filename.c_str());
+                    break;
+
+                default:
+                    DIVIDE_UNEXPECTED_CALL("Unknown file event!");
+            }
+        };
+    } s_fileWatcherListener;
+};
 
 ShaderProgram_ptr ShaderProgram::_imShader;
 ShaderProgram_ptr ShaderProgram::_nullShader;
@@ -15,6 +41,8 @@ ShaderProgram::AtomMap ShaderProgram::_atoms;
 ShaderProgram::ShaderQueue ShaderProgram::_recompileQueue;
 ShaderProgram::ShaderProgramMap ShaderProgram::_shaderPrograms;
 SharedLock ShaderProgram::_programLock;
+
+std::unique_ptr<FW::FileWatcher> ShaderProgram::s_shaderFileWatcher;
 
 ShaderProgram::ShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, bool asyncLoad)
     : Resource(ResourceType::GPU_OBJECT, name, resourceName, resourceLocation),
@@ -33,6 +61,7 @@ ShaderProgram::~ShaderProgram()
 
 bool ShaderProgram::load() {
     registerShaderProgram(getName(), shared_from_this());
+
     return Resource::load();
 }
 
@@ -87,7 +116,7 @@ bool ShaderProgram::recompile() {
     if (getState() != ResourceState::RES_LOADED) {
         return true;
     }
-
+    _usedAtoms.clear();
     // Remember bind state
     bool wasBound = isBound();
     if (wasBound) {
@@ -103,6 +132,10 @@ bool ShaderProgram::recompile() {
     return state;
 }
 
+void ShaderProgram::registerAtomFile(const stringImpl& atomFile) {
+    _usedAtoms.push_back(atomFile);
+}
+
 //================================ static methods ========================================
 void ShaderProgram::idle() {
     // If we don't have any shaders queued for recompilation, return early
@@ -113,6 +146,8 @@ void ShaderProgram::idle() {
         }
         _recompileQueue.pop();
     }
+
+    s_shaderFileWatcher->update();
 }
 
 /// Calling this will force a recompilation of all shader stages for the program
@@ -140,8 +175,7 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
     return state;
 }
 
-/// Open the file found at 'location' matching 'atomName' and return it's source
-/// code
+/// Open the file found at 'location' matching 'atomName' and return it's source code
 const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& atomName, const stringImpl& location) {
     U64 atomNameHash = _ID_RT(atomName);
     // See if the atom was previously loaded and still in cache
@@ -187,9 +221,11 @@ void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sour
     stringImpl variant = atomName;
     if (Config::Build::IS_DEBUG_BUILD) {
         variant.append(".debug");
-    } else if (Config::Build::IS_PROFILE_BUILD) {
+    }
+    else if (Config::Build::IS_PROFILE_BUILD) {
         variant.append(".profile");
-    } else {
+    }
+    else {
         variant.append(".release");
     }
 
@@ -197,6 +233,14 @@ void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sour
 }
 
 void ShaderProgram::onStartup(ResourceCache& parentCache) {
+    s_shaderFileWatcher = std::make_unique<FW::FileWatcher>();
+
+    vectorImpl<stringImpl> atomLocations = getAllAtomLocations();
+    for (const stringImpl& loc : atomLocations) {
+        createDirectories(loc.c_str());
+        s_shaderFileWatcher->addWatch(loc, &s_fileWatcherListener);
+    }
+
     // Create an immediate mode rendering shader that simulates the fixed function pipeline
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
     immediateModeShader.setThreadedLoading(false);
@@ -214,9 +258,11 @@ void ShaderProgram::onShutdown() {
     _shaderPrograms.clear();
     _nullShader.reset();
     _imShader.reset();
-    while(!_recompileQueue.empty()) {
+    while (!_recompileQueue.empty()) {
         _recompileQueue.pop();
     }
+
+    s_shaderFileWatcher.reset();
 }
 
 bool ShaderProgram::updateAll(const U64 deltaTime) {
@@ -266,6 +312,73 @@ void ShaderProgram::rebuildAllShaders() {
     for (ShaderProgramMap::value_type& shader : _shaderPrograms) {
         _recompileQueue.push(shader.second);
     }
+}
+
+void ShaderProgram::onAtomChange(const stringImpl& atomName) {
+    //Get list of shader programs that use the atom and rebuild all shaders in list;
+    for (ShaderProgramMap::value_type& it : _shaderPrograms) {
+        for (const stringImpl& atom : it.second->_usedAtoms) {
+            if (atom.compare(atomName) == 0) {
+                _recompileQueue.push(it.second);
+                break;
+            }
+        }
+    }
+}
+
+vectorImpl<stringImpl> ShaderProgram::getAllAtomLocations() {
+    static vectorImpl<stringImpl> atomLocations;
+        if (atomLocations.empty()) {
+        // General
+        atomLocations.emplace_back(Paths::g_assetsLocation +
+                                   Paths::g_shadersLocation);
+        // GLSL
+        atomLocations.emplace_back(Paths::g_assetsLocation +
+                                   Paths::g_shadersLocation +
+                                   Paths::Shaders::GLSL::g_parentShaderLoc);
+
+        atomLocations.emplace_back(Paths::g_assetsLocation +
+                                   Paths::g_shadersLocation +
+                                   Paths::Shaders::GLSL::g_parentShaderLoc +
+                                   Paths::Shaders::GLSL::g_comnAtomLoc);
+
+        atomLocations.emplace_back(Paths::g_assetsLocation +
+                                   Paths::g_shadersLocation +
+                                   Paths::Shaders::GLSL::g_parentShaderLoc +
+                                   Paths::Shaders::GLSL::g_compAtomLoc);
+
+        atomLocations.emplace_back(Paths::g_assetsLocation +
+                                   Paths::g_shadersLocation +
+                                   Paths::Shaders::GLSL::g_parentShaderLoc +
+                                   Paths::Shaders::GLSL::g_fragAtomLoc);
+
+        atomLocations.emplace_back(Paths::g_assetsLocation +
+                                   Paths::g_shadersLocation +
+                                   Paths::Shaders::GLSL::g_parentShaderLoc +
+                                   Paths::Shaders::GLSL::g_geomAtomLoc);
+
+        atomLocations.emplace_back(Paths::g_assetsLocation +
+                                   Paths::g_shadersLocation +
+                                   Paths::Shaders::GLSL::g_parentShaderLoc +
+                                   Paths::Shaders::GLSL::g_tescAtomLoc);
+
+        atomLocations.emplace_back(Paths::g_assetsLocation +
+                                   Paths::g_shadersLocation +
+                                   Paths::Shaders::GLSL::g_parentShaderLoc +
+                                   Paths::Shaders::GLSL::g_teseAtomLoc);
+
+        atomLocations.emplace_back(Paths::g_assetsLocation +
+                                   Paths::g_shadersLocation +
+                                   Paths::Shaders::GLSL::g_parentShaderLoc +
+                                   Paths::Shaders::GLSL::g_vertAtomLoc);
+        // HLSL
+        atomLocations.emplace_back(Paths::g_assetsLocation +
+                                   Paths::g_shadersLocation +
+                                   Paths::Shaders::HLSL::g_parentShaderLoc);
+
+    }
+
+    return atomLocations;
 }
 
 };

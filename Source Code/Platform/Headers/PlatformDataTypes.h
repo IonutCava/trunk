@@ -50,6 +50,16 @@ typedef double D64;
 
 typedef void* bufferPtr;
 
+typedef union {
+    U32 i;
+    U8  b[4];
+} P32;
+
+typedef union {
+    U64 i;
+    U8  b[8];
+} P64;
+
 enum class CallbackParam : U32 {
     TYPE_SMALL_INTEGER = 0,
     TYPE_MEDIUM_INTEGER,

@@ -268,8 +268,12 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     immediateModeShader.setThreadedLoading(false);
     _guiShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
     _guiShader->Uniform("dvd_WorldMatrix", mat4<F32>());
-    context.gfx().add2DRenderFunction(GUID_DELEGATE_CBK(DELEGATE_BIND(&GUI::draw, this, std::ref(context.gfx()))),
+
+    context.gfx().add2DRenderFunction(GUID_DELEGATE_CBK([this, &context]() {
+                                          draw(context.gfx());
+                                      }),
                                       std::numeric_limits<U32>::max() - 1);
+
     const OIS::MouseState& mouseState = context.input().getKeyboardMousePair(0).second->getMouseState();
 
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
@@ -280,9 +284,8 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
 
     g_assertMsgBox = _defaultMsgBox;
 
-    GUIButton::soundCallback(DELEGATE_BIND(&SFXDevice::playSound, 
-                                           &context.sfx(),
-                                           std::placeholders::_1));
+    GUIButton::soundCallback([&context](const AudioDescriptor_ptr& sound) { context.sfx().playSound(sound); });
+
     _init = true;
     return true;
 }

@@ -57,16 +57,16 @@ class GUIDWrapper {
         (void)old;
     }
 
-    inline int64_t getGUID() const { return _GUID; }
+    inline I64 getGUID() const { return _GUID; }
 
    private:
     void operator=(const GUIDWrapper& old) = delete;
 
    protected:
-    const int64_t _GUID;
+    const I64 _GUID;
 
    private:
-    static int64_t _idGenerator;
+    static I64 _idGenerator;
 };
 
 };  // namespace Divide

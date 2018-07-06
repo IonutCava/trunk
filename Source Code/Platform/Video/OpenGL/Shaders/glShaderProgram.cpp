@@ -437,6 +437,8 @@ bool glShaderProgram::load() {
         // Use the specified shader path
         glswSetPath(info._resourcePath.c_str(), ".glsl");
 
+        registerAtomFile(info._programName + ".glsl");
+
         // For every stage
         for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
             // Brute force conversion to an enum
@@ -468,6 +470,10 @@ bool glShaderProgram::load() {
                 // Try to compile the shader (it doesn't double compile shaders, so it's safe to call it multiple times)
                 if (!_shaderStage[i]->compile()) {
                     Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _shaderStage[i]->getShaderID(), shaderCompileName.c_str());
+                }
+
+                for (const stringImpl& atoms : _shaderStage[i]->usedAtoms()) {
+                    registerAtomFile(atoms);
                 }
             }
         }
@@ -517,6 +523,9 @@ bool glShaderProgram::recompileInternal() {
                 _shaderStage[i] = glShader::loadShader(_context, shaderCompileName, sourceCode.second, type, sourceCode.first);
                 if (!_shaderStage[i]->compile()) {
                     Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _shaderStage[i]->getShaderID(), shaderCompileName.c_str());
+                }
+                for (const stringImpl& atoms : _shaderStage[i]->usedAtoms()) {
+                    registerAtomFile(atoms);
                 }
             }
         }

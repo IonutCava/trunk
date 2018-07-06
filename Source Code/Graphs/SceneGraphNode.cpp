@@ -66,8 +66,8 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
         setComponent(SGNComponent::ComponentType::PHYSICS, new PhysicsComponent(*this, physicsGroup, pxContext));
 
         PhysicsComponent* pComp = get<PhysicsComponent>();
-        pComp->addTransformUpdateCbk(DELEGATE_BIND(&Attorney::SceneGraphSGN::onNodeTransform, std::ref(_sceneGraph), std::ref(*this)));
-        pComp->addTransformUpdateCbk(DELEGATE_BIND(&SceneGraphNode::onTransform, this));
+        pComp->addTransformUpdateCbk([this]() { Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this); });
+        pComp->addTransformUpdateCbk([this]() { onTransform(); });
     }
 
     if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::BOUNDS))) {

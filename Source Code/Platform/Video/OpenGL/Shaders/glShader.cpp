@@ -77,6 +77,7 @@ bool glShader::load(const stringImpl& source) {
         return false;
     }
 
+    _usedAtoms.clear();
     stringImpl parsedSource = _skipIncludes ? source
                                             : preprocessIncludes(source, getName(), 0);
 
@@ -148,6 +149,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
     while (std::getline(input, line)) {
         if (std::regex_search(line, matches, Paths::g_includePattern)) {
             include_file = matches[1].str().c_str();
+            _usedAtoms.push_back(include_file);
 
             ShaderType typeIndex = ShaderType::COUNT;
             // switch will throw warnings due to promotion to int
@@ -171,7 +173,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
             }
 
             include_string = ShaderProgram::shaderFileRead(include_file, shaderAtomLocationPrefix[to_uint(typeIndex)]);
-
+            
             if (include_string.empty()) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")),
                                  getName().c_str(),

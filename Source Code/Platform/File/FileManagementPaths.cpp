@@ -47,6 +47,10 @@ namespace Paths {
             stringImpl g_compAtomLoc;
             stringImpl g_comnAtomLoc;
         };
+
+        namespace HLSL {
+            stringImpl g_parentShaderLoc;
+        };
     };
     std::regex g_includePattern;
 
@@ -87,6 +91,8 @@ namespace Paths {
         Shaders::GLSL::g_teseAtomLoc = "tessellationEAtoms/";
         Shaders::GLSL::g_compAtomLoc = "computeAtoms/";
         Shaders::GLSL::g_comnAtomLoc = "common/";
+
+        Shaders::HLSL::g_parentShaderLoc = "HLSL/";
 
         g_includePattern = std::regex("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
     }

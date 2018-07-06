@@ -685,11 +685,6 @@ FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "") {
     DIVIDE_ASSERT(false, failMessage);
 }
 
-typedef union {
-    U32 i;
-    U8  b[4];
-} P32;
-
 template <typename... Args>
 #if defined(CPP_14_SUPPORT)
 [[deprecated("Please use lambda expressions instead!")]]

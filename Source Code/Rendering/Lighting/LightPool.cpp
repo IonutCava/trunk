@@ -28,7 +28,7 @@ bool LightPool::_previewShadowMaps = false;
 LightPool::LightPool(Scene& parentScene, GFXDevice& context)
     : SceneComponent(parentScene),
       _context(context),
-      _previewShadowMapsCBK(DELEGATE_BIND(&LightPool::previewShadowMaps, this, nullptr)),
+      _previewShadowMapsCBK([this]() { previewShadowMaps(nullptr); }),
       _init(false),
       _buffersUpdated(false),
       _lightImpostorShader(nullptr),

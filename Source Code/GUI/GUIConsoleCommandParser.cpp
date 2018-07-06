@@ -22,35 +22,16 @@ GUIConsoleCommandParser::GUIConsoleCommandParser(PlatformContext& context, Resou
       _resCache(cache),
       _sound(nullptr)
 {
-    _commandMap[_ID("say")] =
-        DELEGATE_BIND(&GUIConsoleCommandParser::handleSayCommand, this,
-                      std::placeholders::_1);
-    _commandMap[_ID("quit")] =
-        DELEGATE_BIND(&GUIConsoleCommandParser::handleQuitCommand, this,
-                      std::placeholders::_1);
-    _commandMap[_ID("help")] =
-        DELEGATE_BIND(&GUIConsoleCommandParser::handleHelpCommand, this,
-                      std::placeholders::_1);
-    _commandMap[_ID("editparam")] =
-        DELEGATE_BIND(&GUIConsoleCommandParser::handleEditParamCommand, this,
-                      std::placeholders::_1);
-    _commandMap[_ID("playsound")] =
-        DELEGATE_BIND(&GUIConsoleCommandParser::handlePlaySoundCommand, this,
-                      std::placeholders::_1);
-    _commandMap[_ID("createnavmesh")] =
-        DELEGATE_BIND(&GUIConsoleCommandParser::handleNavMeshCommand, this,
-                      std::placeholders::_1);
-    _commandMap[_ID("setfov")] =
-        DELEGATE_BIND(&GUIConsoleCommandParser::handleFOVCommand, this,
-                      std::placeholders::_1);
-    _commandMap[_ID("invalidcommand")] =
-        DELEGATE_BIND(&GUIConsoleCommandParser::handleInvalidCommand, this,
-                      std::placeholders::_1);
-    _commandMap[_ID("addobject")] = DELEGATE_BIND(
-        &GUIConsoleCommandParser::handleAddObject, this, std::placeholders::_1);
-    _commandMap[_ID("recompileshader")] =
-        DELEGATE_BIND(&GUIConsoleCommandParser::handleShaderRecompileCommand,
-                      this, std::placeholders::_1);
+    _commandMap[_ID("say")] = [this](const stringImpl& args) { handleSayCommand(args); };
+    _commandMap[_ID("quit")] = [this](const stringImpl& args) { handleQuitCommand(args); };
+    _commandMap[_ID("help")] = [this](const stringImpl& args) { handleHelpCommand(args); };
+    _commandMap[_ID("editparam")] = [this](const stringImpl& args) { handleEditParamCommand(args); };
+    _commandMap[_ID("playsound")] = [this](const stringImpl& args) { handlePlaySoundCommand(args); };
+    _commandMap[_ID("createnavmesh")] = [this](const stringImpl& args) { handleNavMeshCommand(args); };
+    _commandMap[_ID("setfov")] = [this](const stringImpl& args) { handleFOVCommand(args); };
+    _commandMap[_ID("invalidcommand")] = [this](const stringImpl& args) { handleInvalidCommand(args); };
+    _commandMap[_ID("addobject")] = [this](const stringImpl& args) { handleAddObject(args); };
+    _commandMap[_ID("recompileshader")] = [this](const stringImpl& args) { handleShaderRecompileCommand(args); };
 
     _commandHelp[_ID("say")] = Locale::get(_ID("CONSOLE_SAY_COMMAND_HELP"));
     _commandHelp[_ID("quit")] = Locale::get(_ID("CONSOLE_QUIT_COMMAND_HELP"));
@@ -75,9 +56,11 @@ bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString) {
         if (commandString.at(0) == '/') {
             stringImpl::size_type commandEnd = commandString.find(" ", 1);
             stringImpl command = commandString.substr(1, commandEnd - 1);
-            stringImpl commandArgs = commandString.substr(
-                commandEnd + 1, commandString.length() - (commandEnd + 1));
-            if (commandString.compare(commandArgs) == 0) commandArgs.clear();
+            stringImpl commandArgs = commandString.substr(commandEnd + 1, commandString.length() - (commandEnd + 1));
+
+            if (commandString.compare(commandArgs) == 0) {
+                commandArgs.clear();
+            }
             // convert command to lower case
             for (stringImpl::size_type i = 0; i < command.length(); i++) {
                 command[i] = static_cast<char>(tolower(command[i]));
@@ -90,9 +73,8 @@ bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString) {
                 _commandMap[_ID("invalidcommand")](command);
             }
         } else {
-            Console::printfn(
-                "%s", commandString
-                          .c_str());  // no commands, just output what was typed
+            // no commands, just output what was typed
+            Console::printfn("%s", commandString .c_str());  
         }
     }
     return true;

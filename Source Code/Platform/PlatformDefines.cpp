@@ -91,7 +91,7 @@ bool createDirectories(const char* path) {
         directories = Util::Split(path, '\\');
     }
 
-    stringImpl previousPath = "..";
+    stringImpl previousPath = ".";
     for (const stringImpl& dir : directories) {
         if (!createDirectory((previousPath + "/" + dir).c_str())) {
             return false;

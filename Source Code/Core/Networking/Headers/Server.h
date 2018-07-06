@@ -36,6 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Networking/Headers/tcp_session_tpl.h"
 
 #include <boost/asio.hpp>
+#include <thread>
 
 //----------------------------------------------------------------------
 namespace Divide {
@@ -45,6 +46,7 @@ DEFINE_SINGLETON(Server)
     void init(U16 port,
               const stringImpl& broadcast_endpoint_address,
               bool debugOutput);
+    void close();
 
   private:
     Server();
@@ -54,6 +56,7 @@ DEFINE_SINGLETON(Server)
 
   private:
     boost::asio::io_service io_service_;
+    boost::scoped_ptr<std::thread> thread_;
     boost::asio::ip::tcp::acceptor* acceptor_;
     channel _channel;
     bool _debugOutput;

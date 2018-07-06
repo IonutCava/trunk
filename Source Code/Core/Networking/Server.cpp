@@ -8,16 +8,31 @@ using namespace boost::asio;
 namespace Divide {
 
 Server::Server()
+    : thread_()
 {
 }
 
 Server::~Server()
 {
-    acceptor_->close();
+    close();
     delete acceptor_;
 }
 
+void Server::close() {
+    if (!thread_) {
+        return; // stopped
+    }
+
+    acceptor_->close();
+    io_service_.stop();
+    thread_->join();
+    thread_.reset();
+}
 void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool debugOutput) {
+    if (thread_) {
+        return;
+    }
+
     _debugOutput = debugOutput;
     try {
         tcp::endpoint listen_endpoint(tcp::v4(), port);
@@ -34,7 +49,11 @@ void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool d
             boost::bind(&Server::handle_accept, this, new_session, _1));
         std::auto_ptr<boost::asio::io_service::work> work(
             new boost::asio::io_service::work(io_service_));
-        io_service_.run();
+        
+        thread_.reset(new std::thread([this]() {
+            io_service_.run();
+        }));
+
     } catch (std::exception& e) {
         std::cout << "SERVER: " << e.what() << std::endl;
     }

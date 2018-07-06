@@ -40,6 +40,10 @@
 
 #include <stack>
 
+namespace FW {
+    class FileWatcher;
+};
+
 namespace Divide {
 
 class Camera;
@@ -262,11 +266,16 @@ class NOINITVTABLE ShaderProgram : public Resource,
     /// Return a default shader used for general purpose rendering
     static const ShaderProgram_ptr& defaultShader();
 
+    static void onAtomChange(const stringImpl& atomName);
+
     static void rebuildAllShaders();
+
+    static vectorImpl<stringImpl> getAllAtomLocations();
 
    protected:
        virtual bool recompileInternal() = 0;
 
+       void registerAtomFile(const stringImpl& atomFile);
    protected:
     /// Shaders loaded from files are kept as atoms
     static AtomMap _atoms;
@@ -281,6 +290,7 @@ class NOINITVTABLE ShaderProgram : public Resource,
     static ShaderProgramMap _shaderPrograms;
 
     static SharedLock _programLock;
+
    protected:
     template <typename T>
     friend class ImplResourceLoader;
@@ -291,10 +301,14 @@ class NOINITVTABLE ShaderProgram : public Resource,
     // with a mutex or something
     /// A list of preprocessor defines
     vectorImpl<stringImpl> _definesList;
+    /// A list of atoms used by this program. (All stages are added toghether)
+    vectorImpl<stringImpl> _usedAtoms;
 
    private:
     std::array<std::array<vectorImpl<U32>, Config::SCENE_NODE_LOD>, to_const_uint(ShaderType::COUNT)> _functionIndex;
     std::array<vectorImpl<U32>, to_const_uint(ShaderType::COUNT)>  _availableFunctionIndex;
+    
+    static std::unique_ptr<FW::FileWatcher> s_shaderFileWatcher;
 };
 
 };  // namespace Divide

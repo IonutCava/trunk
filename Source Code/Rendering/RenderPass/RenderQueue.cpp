@@ -138,11 +138,11 @@ void RenderQueue::populateRenderQueues(RenderStage renderStage) {
     TaskHandle populateTask = CreateTask(pool, DELEGATE_CBK_PARAM<const Task&>());
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
-            populateTask.addChildTask(CreateTask(pool,
-                                                 DELEGATE_BIND(&RenderBin::populateRenderQueue,
-                                                               renderBin,
-                                                               std::placeholders::_1,
-                                                               renderStage))._task)->startTask(Task::TaskPriority::HIGH);
+            populateTask.addChildTask(
+                CreateTask(pool,
+                           [renderBin, renderStage](const Task& parentTask) {
+                               renderBin->populateRenderQueue(parentTask, renderStage);
+                           })._task)->startTask(Task::TaskPriority::HIGH);
         }
     }
     populateTask.startTask(Task::TaskPriority::MAX);
@@ -167,10 +167,9 @@ void RenderQueue::sort(RenderStage renderStage) {
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
             sortTask.addChildTask(CreateTask(pool,
-                                             DELEGATE_BIND(&RenderBin::sort,
-                                                           renderBin,
-                                                           std::placeholders::_1,
-                                                           renderStage))._task)->startTask(Task::TaskPriority::HIGH);
+                [renderBin, renderStage](const Task& parentTask) {
+                    renderBin->sort(parentTask, renderStage);
+                })._task)->startTask(Task::TaskPriority::HIGH);
         }
     }
     sortTask.startTask(Task::TaskPriority::MAX);
