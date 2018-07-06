@@ -44,7 +44,7 @@ inline F32 FrameRateHandler::maxFrameRate() const {
 }
 
 inline F32 FrameRateHandler::frameRate() const {
-    return _fps;
+    return _framerate;
 }
 
 inline F32 FrameRateHandler::frameTime() const {
@@ -52,7 +52,7 @@ inline F32 FrameRateHandler::frameTime() const {
 }
 
 inline F32 FrameRateHandler::averageFrameRate() const {
-    return _averageFps;
+    return _averageFPS / _frameCount;
 }
 
 }; //namespace Time

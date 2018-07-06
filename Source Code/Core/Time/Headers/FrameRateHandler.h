@@ -37,37 +37,32 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace Time {
 class FrameRateHandler {
+    static const U32 FRAME_AVG_DELAY_COUNT = 5;
     static const U32 FRAME_ARRAY_SIZE = 120;
+    static const U32 FRAME_AVG_RESET_COUNT = 60 * 5;
 
 public:
     FrameRateHandler();
     ~FrameRateHandler();
 
     void tick(const U64 deltaTimeUS);
-    void init(U32 targetFrameRate);
+    void init();
     void reset();
 
-    F32 minFrameRate() const;
-    F32 maxFrameRate() const;
-    F32 frameRate() const;
-    F32 frameTime() const ;
-    F32 averageFrameRate() const;
+    inline F32 minFrameRate() const;
+    inline F32 maxFrameRate() const;
+    inline F32 frameRate() const;
+    inline F32 frameTime() const ;
+    inline F32 averageFrameRate() const;
 
 private:
-    U32 _targetFrameRate;
-    F32 _fps;
     U32 _frameCount;
-
-    F32 _averageFps;
-    U64 _averageFpsCount;
-
     F32 _minFPS;
     F32 _maxFPS;
 
-    U64 _tickTimeStamp;
-
+    F32 _averageFPS;
     F32 _previousElapsedSeconds;
-    F32 _framerateSecPerFrame[FRAME_ARRAY_SIZE];
+    std::array<F32, FRAME_ARRAY_SIZE> _framerateSecPerFrame;
     F32 _framerate;
     I32 _framerateSecPerFrameIdx;
     F32 _framerateSecPerFrameAccum;

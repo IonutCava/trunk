@@ -21,7 +21,7 @@ ApplicationTimer::ApplicationTimer()
 {
     _startupTicks = getCurrentTicksInternal();
     _frameDelay = _startupTicks;
-    _frameRateHandler.init(_targetFrameRate);
+    _frameRateHandler.init();
 }
 
 ApplicationTimer::~ApplicationTimer()
@@ -47,10 +47,11 @@ void ApplicationTimer::update() {
             _lastBenchmarkTimeStamp = elapsedTime;
             _lastBenchmarkReport = 
                 Util::StringFormat(Locale::get(_ID("FRAMERATE_FPS_OUTPUT")),
+                                   _frameRateHandler.frameRate(),
                                    _frameRateHandler.averageFrameRate(),
                                    _frameRateHandler.maxFrameRate(),
                                    _frameRateHandler.minFrameRate(),
-                                   1000.0f / _frameRateHandler.averageFrameRate());
+                                   1000.0f / _frameRateHandler.frameRate());
         }
     }
 }

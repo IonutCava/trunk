@@ -187,6 +187,7 @@ U64 FrameListenerManager::calculateEventTime(const U64 currentTimeUS, FrameEvent
     }
 
     times.erase(std::cbegin(times), it);
-    return (times.back() - times.front()) / Time::SecondsToMicroseconds(times.size() - 1);
+    U64 diff = times.back() - times.front();
+    return diff;
 }
 };

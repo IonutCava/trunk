@@ -9,8 +9,7 @@
 namespace Divide {
 
 ImwWindowManagerDivide::ImwWindowManagerDivide(Editor& parent)
-    : _parent(parent),
-      _windowCount(0u)
+    : _parent(parent)
 {
 }
 
@@ -32,6 +31,12 @@ ImWindow::ImwPlatformWindow* ImwWindowManagerDivide::CreatePlatformWindow(ImWind
     }
 }
 
+void ImwWindowManagerDivide::update(const U64 deltaTimeUS) {
+    for (ImwWindowDivide* win : _windows) {
+        win->update(deltaTimeUS);
+    }
+}
+
 ImVec2 ImwWindowManagerDivide::GetCursorPos()
 {
     return ImVec2(vec2<F32>(_parent.context().app().windowManager().getCursorPosition()));
@@ -50,7 +55,7 @@ void ImwWindowManagerDivide::renderDrawList(ImDrawData* pDrawData, I64 windowGUI
 void ImwWindowManagerDivide::onCreateWindow(ImwWindowDivide* window) {
     ACKNOWLEDGE_UNUSED(window);
 
-    ++_windowCount;
+    _windows.push_back(window);
 }
 
 void ImwWindowManagerDivide::onDestroyWindow(ImwWindowDivide* window) {
@@ -58,7 +63,11 @@ void ImwWindowManagerDivide::onDestroyWindow(ImwWindowDivide* window) {
         DisplayWindow* windowPtr = window->nativeWindow();
         _parent.context().app().windowManager().destroyWindow(windowPtr);
     }
-    --_windowCount;
+    _windows.erase(
+        std::remove_if(std::begin(_windows), std::end(_windows),
+                       [&window](ImwWindowDivide* windowIt)
+                       -> bool { return window == windowIt; }),
+        std::end(_windows));
 }
 
 }; //namespace Divide

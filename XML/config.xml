@@ -18,8 +18,12 @@
   <!-- set to true to start the application in windowed mode -->
   <windowedMode>true</windowedMode>
   <windowResizable>false</windowResizable>
+  <!-- cap framerate. Set to 0 or less to disable -->
+  <frameRateLimit>0</frameRateLimit>
   <!-- toggle Vsync on or off. This can be overridden by the display driver! -->
   <enableVSync>false</enableVSync>
+  <!-- try to enable late v-swap. Only works with VSync. May fallback to regular vsync-->
+  <adaptiveSync>true</adaptiveSync>
   <!-- splash screen dimensions -->
   <splashScreenSize w="400" h="300"/>
   <!-- rendering resolution -->

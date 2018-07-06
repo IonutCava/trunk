@@ -16,6 +16,7 @@ ImwWindowDivide::ImwWindowDivide(ImwWindowManagerDivide& parent, PlatformContext
     , _pWindow(nullptr)
     , _isMainWindow(false)
     , _windowGUID(-1)
+    , _deltaTimeUS(0)
 {
     Attorney::WindowManagerWindow::onCreateWindow(_parent, this);
 }
@@ -62,11 +63,16 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* parent)
 
     SetState();
     ImGuiIO& io = ImGui::GetIO();
+
     io.RenderDrawListsFn = nullptr;
     io.ImeWindowHandle = (void*)_pWindow->handle()._handle;
     RestoreState();
 
     _windowGUID = _pWindow->getGUID();
+
+    if (!_isMainWindow) {
+        _pWindow->addEventListener(WindowEvent::RESIZED_EXTERNAL, [this](const DisplayWindow::WindowEventArgs& args) { OnSize(args.x, args.y);});
+    }
 
     _pWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); OnClose();});
     _pWindow->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) { OnFocus(args._flag);});
@@ -158,6 +164,10 @@ void ImwWindowDivide::SetTitle(const char* pTitle)
     }
 }
 
+void ImwWindowDivide::update(const U64 deltaTimeUS) {
+    _deltaTimeUS = deltaTimeUS;
+}
+
 void ImwWindowDivide::PreUpdate()
 {
 
@@ -171,6 +181,7 @@ void ImwWindowDivide::Render()
 
     SetState();
     ImGuiIO& io = ImGui::GetIO();
+    io.DeltaTime = Time::MicrosecondsToSeconds<float>(_deltaTimeUS);
     io.DisplaySize = GetSize();
     io.DisplayFramebufferScale = GetDrawableSize();
     ImGui::Render();

@@ -171,7 +171,7 @@ void Kernel::onLoop() {
         {
             Time::ScopedTimer timer3(_frameTimer);
             // Launch the FRAME_STARTED event
-            frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_EVENT_STARTED, evt);
+            frameMgr.createEvent(Time::ElapsedMicroseconds(), FrameEventType::FRAME_EVENT_STARTED, evt);
             _timingData._keepAlive = frameMgr.frameEvent(evt);
 
             U64 deltaTimeUS = 0ULL;
@@ -184,14 +184,14 @@ void Kernel::onLoop() {
             _timingData._keepAlive = mainLoopScene(evt, deltaTimeUS) && _timingData._keepAlive;
 
             // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
-            frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_EVENT_PROCESS, evt);
+            frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_PROCESS, evt);
 
             _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
         }
         _platformContext->endFrame();
 
         // Launch the FRAME_ENDED event (buffers have been swapped)
-        frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_EVENT_ENDED, evt);
+        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_ENDED, evt);
         _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
 
         _timingData._keepAlive = !_platformContext->app().ShutdownRequested() && _timingData._keepAlive;
@@ -259,13 +259,25 @@ void Kernel::onLoop() {
             Util::FlushFloatEvents();
         }
     }
+
+    // Cap FPS
+    I16 frameLimit = _platformContext->config().runtime.frameRateLimit;
+    if (frameLimit > 0) {
+        F32 deltaMilliseconds = Time::MicrosecondsToMilliseconds<F32>(_timingData.currentTimeDeltaUS());
+        F32 targetFrametime = 1000.0f / frameLimit;
+
+        if (deltaMilliseconds < targetFrametime) {
+            //Sleep the remaining frame time 
+            std::this_thread::sleep_for(std::chrono::milliseconds(to_I32(std::floorf(targetFrametime - deltaMilliseconds))));
+        }
+    }
 }
 
 bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     Time::ScopedTimer timer(_appScenePass);
 
     // Physics system uses (or should use) its own timestep code
-    U64 physicsTime = _timingData.currentTimeDeltaUS();
+    U64 realTime = _timingData.currentTimeDeltaUS();
     {
         Time::ScopedTimer timer2(_cameraMgrTimer);
         // Update cameras
@@ -280,7 +292,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     {
         Time::ScopedTimer timer2(_physicsProcessTimer);
         // Process physics
-        _platformContext->pfx().process(physicsTime);
+        _platformContext->pfx().process(realTime);
     }
 
     {
@@ -294,10 +306,6 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
 
             if (firstRun) {
                 _sceneUpdateLoopTimer.start();
-            }
-
-            if (Config::Build::ENABLE_EDITOR) {
-                _platformContext->editor().update(deltaTimeUS);
             }
 
             _sceneManager->processGUI(deltaTimeUS);
@@ -346,7 +354,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     
     // Update windows and get input events
     WindowManager& winManager = _platformContext->app().windowManager();
-    winManager.update(deltaTimeUS);
+    winManager.update(realTime);
     if (!winManager.anyWindowFocus()) {
         _sceneManager->onLostFocus();
     }
@@ -354,11 +362,16 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     {
         Time::ScopedTimer timer3(_physicsUpdateTimer);
         // Update physics
-        _platformContext->pfx().update(physicsTime);
+        _platformContext->pfx().update(realTime);
     }
 
     // Update the graphical user interface
     _platformContext->gui().update(deltaTimeUS);
+
+    if (Config::Build::ENABLE_EDITOR) {
+        _platformContext->editor().update(realTime);
+    }
+
     return presentToScreen(evt, deltaTimeUS);
 }
 
@@ -477,7 +490,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 
     {
         Time::ScopedTimer time1(_preRenderTimer);
-        frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_PRERENDER_START, evt);
+        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_PRERENDER_START, evt);
 
         if (!frameMgr.frameEvent(evt)) {
             return false;
@@ -488,7 +501,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
             return false;
         }
 
-        frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_PRERENDER_END, evt);
+        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_PRERENDER_END, evt);
         if (!frameMgr.frameEvent(evt)) {
             return false;
         }
@@ -527,13 +540,13 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 
     {
         Time::ScopedTimer time5(_postRenderTimer);
-        frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_POSTRENDER_START, evt);
+        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_START, evt);
 
         if (!frameMgr.frameEvent(evt)) {
             return false;
         }
 
-        frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_POSTRENDER_END, evt);
+        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_END, evt);
 
         if (!frameMgr.frameEvent(evt)) {
             return false;

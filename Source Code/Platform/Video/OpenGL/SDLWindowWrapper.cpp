@@ -163,8 +163,16 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     }
 
     // Vsync is toggled on or off via the external config file
-    SDL_GL_SetSwapInterval(config.runtime.enableVSync ? 1 : 0);
-
+    bool vsyncSet = false;
+    // Late swap may fail
+    if (config.runtime.enableVSync && config.runtime.adaptiveSync) {
+        vsyncSet = SDL_GL_SetSwapInterval(-1) != -1;
+    }
+    
+    if (!vsyncSet) {
+        vsyncSet = SDL_GL_SetSwapInterval(config.runtime.enableVSync ? 1 : 0) != -1;
+    }
+	assert(vsyncSet);
     // Query GPU vendor to enable/disable vendor specific features
     GPUVendor vendor = GPUVendor::COUNT;
     const char* gpuVendorStr = reinterpret_cast<const char*>(glGetString(GL_VENDOR));

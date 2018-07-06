@@ -115,7 +115,6 @@ class Editor : public PlatformContextComponent,
     Texture_ptr       _fontTexture;
     ShaderProgram_ptr _imguiProgram;
 
-    Time::ProfileTimer& _editorTimer;
     Time::ProfileTimer& _editorUpdateTimer;
     Time::ProfileTimer& _editorRenderTimer;
 

@@ -47,6 +47,8 @@ class ImwWindowDivide : public ImWindow::ImwPlatformWindow, public PlatformConte
     ImwWindowDivide(ImwWindowManagerDivide& parent, PlatformContext& context, ImWindow::EPlatformWindowType eType, bool bCreateState);
     virtual ~ImwWindowDivide();
 
+    void update(const U64 deltaTimeUS);
+
     virtual bool Init(ImWindow::ImwPlatformWindow* parent) override;
 
     virtual ImVec2 GetPosition() const override;
@@ -83,13 +85,13 @@ class ImwWindowDivide : public ImWindow::ImwPlatformWindow, public PlatformConte
     void OnUTF8(const char* text);
 
   private:
+    U64 _deltaTimeUS = 0;
     ImVec2 _size;
     ImVec2 _drawableSize;
     I64 _windowGUID;
     DisplayWindow* _pWindow;
     bool _isMainWindow = false;
     ImwWindowManagerDivide& _parent;
-
 };
 }; //namespace Divide
 

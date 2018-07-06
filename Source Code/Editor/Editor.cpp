@@ -30,14 +30,11 @@ Editor::Editor(PlatformContext& context)
     : PlatformContextComponent(context),
       _running(false),
       _activeWindowGUID(-1),
-      _editorTimer(Time::ADD_TIMER("Main Editor Timer")),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
 {
     _windowManager = std::make_unique<ImwWindowManagerDivide>(*this);
     _mainWindow = nullptr;
-    _editorTimer.addChildTimer(_editorUpdateTimer);
-    _editorTimer.addChildTimer(_editorRenderTimer);
     REGISTER_FRAME_LISTENER(this, 99999);
 }
 
@@ -151,6 +148,7 @@ void Editor::update(const U64 deltaTimeUS) {
     if (!_running) {
         return;
     }
+    _windowManager->update(deltaTimeUS);
 
     Time::ScopedTimer timer(_editorUpdateTimer);
     if (_windowManager->Run(false))
@@ -232,7 +230,7 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
         if (ImGui::Button("Test Window")) show_test_window ^= 1;
         if (ImGui::Button("Another Window")) show_another_window ^= 1;
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::Text("Time since last events %.3f ms", Time::MicrosecondsToSeconds<float>(evt._timeSinceLastFrameUS));
+        ImGui::Text("Time since last frame %.3f ms", Time::MicrosecondsToMilliseconds<float>(evt._timeSinceLastFrameUS));
         if (ImGui::Button("Toggle cursor")) {
             ImGuiIO& io = ImGui::GetIO();
             io.MouseDrawCursor = !io.MouseDrawCursor;

@@ -52,6 +52,7 @@ class ImwWindowManagerDivide : public ImWindow::ImwWindowManager
     explicit ImwWindowManagerDivide(Editor& parent);
     virtual  ~ImwWindowManagerDivide();
 
+    void update(const U64 deltaTimeUS);
     void renderDrawList(ImDrawData* pDrawData, I64 windowGUID);
 
   protected:
@@ -66,8 +67,8 @@ class ImwWindowManagerDivide : public ImWindow::ImwWindowManager
     virtual bool IsLeftClickDown();
 
    private:
-     U32 _windowCount;
      Editor& _parent;
+     vectorImpl<ImwWindowDivide*> _windows;
 };
 
 namespace Attorney {
