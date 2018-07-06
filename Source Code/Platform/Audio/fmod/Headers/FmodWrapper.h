@@ -45,19 +45,27 @@ namespace Divide {
 
 DEFINE_SINGLETON_W_SPECIFIER(FMOD_API, AudioAPIWrapper, final)
   public:
-    ErrorCode initAudioAPI() { return ErrorCode::FMOD_AUDIO_INIT_ERROR; }
+    ErrorCode initAudioAPI() override { return ErrorCode::FMOD_AUDIO_INIT_ERROR; }
 
-    void closeAudioAPI() {}
+    void closeAudioAPI() override {}
 
-    void playSound(const AudioDescriptor_ptr& sound) {}
-    void playMusic(const AudioDescriptor_ptr& music) {}
+    void playSound(const AudioDescriptor_ptr& sound) override {}
 
-    void pauseMusic() {}
-    void stopMusic() {}
-    void stopAllSounds() {}
+    void playMusic(const AudioDescriptor_ptr& music) override {}
 
-    void setMusicVolume(I8 value) {}
-    void setSoundVolume(I8 value) {}
+    void beginFrame() override {}
+    void endFrame() override {}
+
+    void pauseMusic() override {}
+    void stopMusic() override {}
+    void stopAllSounds() override {}
+
+    void setMusicVolume(I8 value) override {}
+    void setSoundVolume(I8 value) override {}
+
+protected:
+    void musicFinished() override {}
+
 END_SINGLETON
 
 };  // namespace Divide

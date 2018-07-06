@@ -13,6 +13,7 @@ SFXDevice::SFXDevice() : _state(true, true, true, true),
                          _API_ID(AudioAPI::COUNT),
                          _api(nullptr)
 {
+    _playNextInPlaylist = false;
 }
 
 SFXDevice::~SFXDevice()
@@ -61,6 +62,24 @@ void SFXDevice::closeAudioAPI() {
     };
 }
 
+void SFXDevice::beginFrame() {
+    _api->beginFrame();
+
+    if (_playNextInPlaylist) {
+        _api->musicFinished();
+
+        if (!_currentPlaylist.second.empty()) {
+            _currentPlaylist.first = ++_currentPlaylist.first % _currentPlaylist.second.size();
+            _api->playMusic(_currentPlaylist.second[_currentPlaylist.first]);
+        }
+        _playNextInPlaylist = false;
+    }
+}
+
+void SFXDevice::endFrame() {
+    _api->endFrame();
+}
+
 void SFXDevice::playSound(const AudioDescriptor_ptr& sound) {
     DIVIDE_ASSERT(_api != nullptr,
                 "SFXDevice error: playSound called without init!");
@@ -68,10 +87,32 @@ void SFXDevice::playSound(const AudioDescriptor_ptr& sound) {
     _api->playSound(sound);
 }
 
-void SFXDevice::playMusic(const AudioDescriptor_ptr& music) {
-    DIVIDE_ASSERT(_api != nullptr,
-                "SFXDevice error: playMusic called without init!");
+void SFXDevice::addMusic(U32 playlistEntry, const AudioDescriptor_ptr& music) {
+    MusicPlaylist& playlist = _musicPlaylists[playlistEntry];
+    playlist.second.push_back(music);
+    playlist.first = 0;
+}
 
+bool SFXDevice::playMusic(U32 playlistEntry) {
+    MusicPlaylists::iterator it = _musicPlaylists.find(playlistEntry);
+    if (it != std::cend(_musicPlaylists)) {
+        return playMusic(it->second);
+    }
+
+    return false;
+}
+
+bool SFXDevice::playMusic(MusicPlaylist& playlist) {
+    if (!playlist.second.empty()) {
+        _currentPlaylist = playlist;
+        _api->playMusic(_currentPlaylist.second[_currentPlaylist.first]);
+        return true;
+    }
+
+    return false;
+}
+
+void SFXDevice::playMusic(const AudioDescriptor_ptr& music) {
     _api->playMusic(music);
 }
 
@@ -108,6 +149,15 @@ void SFXDevice::setSoundVolume(I8 value) {
                 "SFXDevice error: setSoundVolume called without init!");
 
     _api->setSoundVolume(value);
+}
+
+void SFXDevice::musicFinished() {
+    _playNextInPlaylist = true;
+}
+
+void SFXDevice::dumpPlaylists() {
+    _currentPlaylist = MusicPlaylist();
+    _musicPlaylists.clear();
 }
 
 }; //namespace Divide

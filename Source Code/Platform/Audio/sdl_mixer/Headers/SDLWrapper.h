@@ -40,18 +40,24 @@ namespace Divide {
 
 DEFINE_SINGLETON_W_SPECIFIER(SDL_API, AudioAPIWrapper, final)
   public:
-    ErrorCode initAudioAPI();
-    void closeAudioAPI();
+    ErrorCode initAudioAPI() override;
+    void closeAudioAPI() override;
 
-    void playSound(const AudioDescriptor_ptr& sound);
-    void playMusic(const AudioDescriptor_ptr& music);
+    void beginFrame() override;
+    void endFrame() override;
 
-    void stopMusic() { Mix_HaltMusic(); }
-    void stopAllSounds() {}
-    void pauseMusic() {}
+    void playSound(const AudioDescriptor_ptr& sound) override;
+    void playMusic(const AudioDescriptor_ptr& music) override;
 
-    void setMusicVolume(I8 value) {}
-    void setSoundVolume(I8 value) {}
+    void stopMusic() override { Mix_HaltMusic(); }
+    void stopAllSounds() override {}
+    void pauseMusic() override {}
+
+    void setMusicVolume(I8 value) override {}
+    void setSoundVolume(I8 value) override {}
+
+  protected:
+    void musicFinished() override;
 
   private:
     typedef hashMapImpl<I64, Mix_Music*> MusicMap;

@@ -146,6 +146,7 @@ void Kernel::onLoop() {
         FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
         // Restore GPU to default state: clear buffers and set default render state
+        _SFX.beginFrame();
         _GFX.beginFrame();
         {
             Time::ScopedTimer timer3(_frameTimer);
@@ -168,6 +169,7 @@ void Kernel::onLoop() {
             _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
         }
         _GFX.endFrame(_APP.mainLoopActive());
+        _SFX.endFrame();
 
         // Launch the FRAME_ENDED event (buffers have been swapped)
         frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_ENDED, evt);

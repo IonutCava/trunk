@@ -44,9 +44,9 @@ DEFINE_SINGLETON_W_SPECIFIER(SFXDevice, AudioAPIWrapper, final)
         SDL,
         COUNT
     };
-
-    ErrorCode initAudioAPI();
-    void closeAudioAPI();
+    
+    ErrorCode initAudioAPI() override;
+    void closeAudioAPI() override;
 
     inline void setAPI(AudioAPI API) { _API_ID = API; }
     inline AudioAPI getAPI() const { return _API_ID; }
@@ -54,14 +54,26 @@ DEFINE_SINGLETON_W_SPECIFIER(SFXDevice, AudioAPIWrapper, final)
     inline void setAudioState(AudioState& state) { _state = state; }
     inline AudioState& getActiveAudioState() { return _state; }
 
-    void playSound(const AudioDescriptor_ptr& sound);
-    void playMusic(const AudioDescriptor_ptr& music);
-    void pauseMusic();
-    void stopMusic();
-    void stopAllSounds();
-    void setMusicVolume(I8 value);
-    void setSoundVolume(I8 value);
-    
+    void beginFrame() override;
+    void endFrame() override;
+    void playSound(const AudioDescriptor_ptr& sound) override;
+    void playMusic(const AudioDescriptor_ptr& music) override;
+
+    void pauseMusic() override;
+    void stopMusic() override;
+    void stopAllSounds() override;
+    void setMusicVolume(I8 value) override;
+    void setSoundVolume(I8 value) override;
+
+    void addMusic(U32 playlistEntry, const AudioDescriptor_ptr& music);
+    bool playMusic(U32 playlistEntry);
+    bool playMusic(MusicPlaylist& playlist);
+
+    void dumpPlaylists();
+  protected:
+     friend void musicFinishedHook();
+     void musicFinished() override;
+
   private:
     SFXDevice();
     ~SFXDevice();
@@ -69,10 +81,14 @@ DEFINE_SINGLETON_W_SPECIFIER(SFXDevice, AudioAPIWrapper, final)
   protected:
     AudioState _state;
 
+    MusicPlaylists _musicPlaylists;
+
+    MusicPlaylist _currentPlaylist;
+
   private:
     AudioAPI _API_ID;
     AudioAPIWrapper* _api;
-
+    std::atomic_bool _playNextInPlaylist;
 END_SINGLETON
 
 #define SFX_DEVICE SFXDevice::instance()

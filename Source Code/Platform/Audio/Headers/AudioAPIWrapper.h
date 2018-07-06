@@ -45,12 +45,21 @@ static const U32 MAX_SOUND_BUFFERS = 64;
 
 /// Audio Programming Interface
 class NOINITVTABLE AudioAPIWrapper {
+   public:
+     typedef std::pair<U32, vectorImpl<AudioDescriptor_ptr>> MusicPlaylist;
+     typedef hashMapImpl<U32, MusicPlaylist> MusicPlaylists;
+
    protected:
     friend class SFXDevice;
     virtual ErrorCode initAudioAPI() = 0;
     virtual void closeAudioAPI() = 0;
 
+    virtual void beginFrame() = 0;
+    virtual void endFrame() = 0;
+
     virtual void playSound(const AudioDescriptor_ptr& sound) = 0;
+
+    // this stops the current track, if any, and plays the specified song
     virtual void playMusic(const AudioDescriptor_ptr& music) = 0;
 
     virtual void pauseMusic() = 0;
@@ -60,6 +69,7 @@ class NOINITVTABLE AudioAPIWrapper {
     virtual void setMusicVolume(I8 value) = 0;
     virtual void setSoundVolume(I8 value) = 0;
 
+    virtual void musicFinished() = 0;
 };
 
 };  // namespace Divide

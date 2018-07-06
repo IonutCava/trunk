@@ -1,12 +1,19 @@
 #include "Headers/SDLWrapper.h"
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
+#include "Platform/Audio/Headers/SFXDevice.h"
 
 #include <stdexcept>
 
 namespace Divide {
 
+
+void musicFinishedHook() {
+    SFXDevice::instance().musicFinished();
+}
+
 ErrorCode SDL_API::initAudioAPI() {
+
     I32 flags = MIX_INIT_OGG | MIX_INIT_MP3;
     I32 ret = Mix_Init(flags);
     if ((ret & flags) == flags) {
@@ -22,6 +29,7 @@ ErrorCode SDL_API::initAudioAPI() {
             }
         }
 
+        Mix_HookMusicFinished(musicFinishedHook);
         return ErrorCode::NO_ERR;
     }
     Console::errorfn("%s", Mix_GetError());
@@ -39,6 +47,18 @@ void SDL_API::closeAudioAPI() {
     Mix_CloseAudio();
     Mix_Quit();
 }
+
+void SDL_API::beginFrame() {
+    
+}
+
+void SDL_API::endFrame() {
+    
+}
+
+void SDL_API::musicFinished() {
+}
+
 
 void SDL_API::playMusic(const AudioDescriptor_ptr& music) {
     if (music) {

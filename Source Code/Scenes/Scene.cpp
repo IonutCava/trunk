@@ -657,17 +657,22 @@ void Scene::postLoadMainThread() {
 void Scene::onSetActive() {
     PHYSICS_DEVICE.setPhysicsScene(_pxScene);
     _aiManager->pauseUpdate(false);
-    const SceneState::MusicPlaylist& playlist = state().music(MusicType::TYPE_BACKGROUND);
-    if (!playlist.empty()) {
-        SFX_DEVICE.playMusic(playlist.begin()->second);
-        //ToDo: add a way to detect when the song is finished 
-        // and start the next song in the queue (with proper fade in/out) -Ionut
+    
+    for (U32 i = 0; i < to_const_uint(MusicType::COUNT); ++i) {
+        const SceneState::MusicPlaylist& playlist = state().music(static_cast<MusicType>(i));
+        if (!playlist.empty()) {
+            for (const SceneState::MusicPlaylist::value_type& song : playlist) {
+                SFX_DEVICE.addMusic(i, song.second);
+            }
+        }
     }
+    SFX_DEVICE.playMusic(0);
 }
 
 void Scene::onRemoveActive() {
     _aiManager->pauseUpdate(true);
     SFX_DEVICE.stopMusic();
+    SFX_DEVICE.dumpPlaylists();
 }
 
 bool Scene::loadPhysics(bool continueOnErrors) {

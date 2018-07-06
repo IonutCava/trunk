@@ -26,6 +26,10 @@ ErrorCode OpenAL_API::initAudioAPI() {
     return ErrorCode::OAL_INIT_ERROR;
 }
 
+void OpenAL_API::beginFrame() {}
+
+void OpenAL_API::endFrame() {}
+
 void OpenAL_API::closeAudioAPI() {}
 
 void OpenAL_API::playSound(const AudioDescriptor_ptr& sound) {}
@@ -41,4 +45,6 @@ void OpenAL_API::stopAllSounds() {}
 void OpenAL_API::setMusicVolume(I8 value) {}
 
 void OpenAL_API::setSoundVolume(I8 value) {}
+
+void OpenAL_API::musicFinished() {}
 };

@@ -38,18 +38,24 @@ namespace Divide {
 
 DEFINE_SINGLETON_W_SPECIFIER(OpenAL_API, AudioAPIWrapper, final)
   public:
-    ErrorCode initAudioAPI();
-    void closeAudioAPI();
+    ErrorCode initAudioAPI() override;
+    void closeAudioAPI() override;
 
-    void playSound(const AudioDescriptor_ptr& sound);
-    void playMusic(const AudioDescriptor_ptr& music);
+    void beginFrame() override;
+    void endFrame() override;
 
-    void pauseMusic();
-    void stopMusic();
-    void stopAllSounds();
+    void playSound(const AudioDescriptor_ptr& sound) override;
+    void playMusic(const AudioDescriptor_ptr& music) override;
 
-    void setMusicVolume(I8 value);
-    void setSoundVolume(I8 value);
+    void pauseMusic() override;
+    void stopMusic() override;
+    void stopAllSounds() override;
+
+    void setMusicVolume(I8 value) override;
+    void setSoundVolume(I8 value) override;
+
+  protected:
+    void musicFinished() override;
 
   private:
     U32 buffers[MAX_SOUND_BUFFERS];
