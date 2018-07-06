@@ -627,32 +627,21 @@ bool GL_API::setActiveTransformFeedback(GLuint ID, GLuint& previousID) {
 
 /// Single place to change buffer objects for every target available
 bool GL_API::setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID) {
-    bool changed = false;
-    if (target == GL_ELEMENT_ARRAY_BUFFER) {
-        previousID = s_activeVAOIB[s_activeVAOID];
-        if (previousID != ID) {
-            s_activeVAOIB[s_activeVAOID] = ID;
-            changed = true;
-        }
-    } else {
-        // We map buffer targets from 0 to n in a static array
-        GLint index = getBufferTargetIndex(target);
+    GLuint& crtBinding = target == GL_ELEMENT_ARRAY_BUFFER 
+                                 ? s_activeVAOIB[s_activeVAOID]
+                                 : s_activeBufferID[getBufferTargetIndex(target)];
+    previousID = crtBinding;
 
-        // Prevent double bind
-        previousID = s_activeBufferID[index];
-        if (previousID != ID) {
-            // Remember the new binding for future reference
-            s_activeBufferID[index] = ID;
-            // Bind the specified buffer handle to the desired buffer target
-            changed = true;
-        }
-    }
-
-    if (changed) {
+    // Prevent double bind
+    if (previousID != ID) {
+        // Remember the new binding for future reference
+        crtBinding = ID;
+        // Bind the specified buffer handle to the desired buffer target
         glBindBuffer(target, ID);
+        return true;
     }
 
-    return changed;
+    return false;
 }
 
 bool GL_API::setActiveBuffer(GLenum target, GLuint ID) {

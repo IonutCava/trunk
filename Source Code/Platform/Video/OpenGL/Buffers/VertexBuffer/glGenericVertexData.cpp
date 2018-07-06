@@ -166,11 +166,11 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
 }
 
 void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) {
-    if (indices.count > 0) {
-        if (_indexBuffer != 0) {
-            GLUtil::freeBuffer(_indexBuffer);
-        }
+    if (_indexBuffer != 0) {
+        GLUtil::freeBuffer(_indexBuffer);
+    }
 
+    if (indices.count > 0) {
         _indexBufferUsage = 
             updateFrequency == BufferUpdateFrequency::ONCE
                              ? GL_STATIC_DRAW
@@ -187,8 +187,6 @@ void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdat
             _indexBuffer,
             indices.data,
             _name != nullptr ? (_name + stringImpl("_index")).c_str() : _name);
-    } else {
-        GLUtil::freeBuffer(_indexBuffer);
     }
 
     GL_API::setActiveVAO(_vertexArray[to_base(GVDUsage::DRAW)]);

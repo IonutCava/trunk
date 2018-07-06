@@ -410,6 +410,9 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                   "GLUtil::submitRenderCommand error: Draw command's type is not valid!");
     
     GL_API::toggleRasterization(!isEnabledOption(drawCommand, CmdRenderOptions::RENDER_NO_RASTERIZE));
+    if (isEnabledOption(drawCommand, CmdRenderOptions::RENDER_TESSELLATED)) {
+        GL_API::setPatchVertexCount(drawCommand._patchVertexCount);
+    }
     if (isEnabledOption(drawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
         GLenum mode = glPrimitiveTypeTable[to_U32(drawCommand._primitiveType)];
         submitRenderCommand(drawCommand, mode, drawIndexed, useIndirectBuffer, internalFormat);

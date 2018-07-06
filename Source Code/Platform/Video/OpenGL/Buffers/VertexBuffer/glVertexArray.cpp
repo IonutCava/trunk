@@ -304,15 +304,17 @@ bool glVertexArray::refresh() {
         glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
     }
 
-    vector<GLuint> vaos;
+    vectorEASTL<GLuint> vaos;
+    vaos.reserve(RenderStagePass::count());
+
     for (RenderStagePass::PassIndex pass = 0; pass < RenderStagePass::count(); ++pass) {
         if (vaoCachesDirty[pass]) {
             GLuint crtVao = _vaoCaches[pass];
-            if (std::find_if(std::cbegin(vaos),
-                                std::cend(vaos),
-                                    [crtVao](GLuint vao) {
-                                        return crtVao == vao;
-                                    }) == std::cend(vaos))
+            if (eastl::find_if(eastl::cbegin(vaos),
+                               eastl::cend(vaos),
+                               [crtVao](GLuint vao) {
+                                   return crtVao == vao;
+                               }) == eastl::cend(vaos))
             {
                 vaos.push_back(crtVao);
             }
@@ -381,7 +383,6 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
     }
 
     // Bind the vertex array object that in turn activates all of the bindings and pointers set on creation
-
     GLuint vao = _vaoCaches[command._bufferIndex];
     if (GL_API::setActiveVAO(vao)) {
         // If this is the first time the VAO is bound in the current loop, check
@@ -389,10 +390,9 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
         GL_API::togglePrimitiveRestart(_primitiveRestartEnabled);
     }
   
-
-    if (isEnabledOption(command, CmdRenderOptions::RENDER_TESSELLATED)) {
-        GL_API::setPatchVertexCount(command._patchVertexCount);
-    }
+    // VAOs store vertex formats and are reused by multiple 3d objects, so the Index Buffer and Vertex Buffers need to be double checked
+    GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
+    GL_API::bindActiveBuffer(vao, 0, _VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
 
     GLUtil::submitRenderCommand(command, true, useCmdBuffer, _formatInternal);
 }
@@ -401,13 +401,12 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
 void glVertexArray::uploadVBAttributes(GLuint VAO) {
     // Bind the current VAO to save our attributes
     GL_API::setActiveVAO(VAO);
-    // Bind the the vertex buffer and index buffer
+    // Bind the vertex buffer and index buffer
     GL_API::bindActiveBuffer(VAO,
                              0,
                              _VBHandle._id,
                              _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
                              _effectiveEntrySize);
-    GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
 
     static const U32 positionLoc = to_base(AttribLocation::VERTEX_POSITION);
     static const U32 colourLoc = to_base(AttribLocation::VERTEX_COLOR);

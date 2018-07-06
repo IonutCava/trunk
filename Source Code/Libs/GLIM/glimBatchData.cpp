@@ -353,12 +353,15 @@ unsigned int glimBatchData::getVertexDataSize(void) const {
 #ifdef AE_RENDERAPI_OPENGL
 
 void glimBatchData::UnbindOGL(void) {
-    if (!m_bUploadedToGPU) return;
+    if (!m_bUploadedToGPU) 
+        return;
+
 	Divide::GL_API::setActiveVAO(0);
 }
 
 void glimBatchData::BindOGL(unsigned int uiCurrentProgram) {
-    if (!m_bUploadedToGPU) return;
+    if (!m_bUploadedToGPU)
+        return;
 
     Divide::GL_API::setActiveVAO(m_VertexArrayObjectID);
     Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
