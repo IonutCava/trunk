@@ -268,7 +268,9 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
 
    protected:
     friend class RenderPassCuller;
-    void inView(const bool state);
+    void setInView(const bool state);
+    bool canDraw(const SceneRenderState& sceneRenderState,
+                 RenderStage currentStage);
 
    protected:
     friend class RenderingComponent;

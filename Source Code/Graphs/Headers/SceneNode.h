@@ -86,12 +86,13 @@ class SceneNode : public Resource {
         SceneGraphNode& sgn, RenderStage renderStage,
         SceneRenderState& sceneRenderState,
         vectorImpl<GenericDrawCommand>& drawCommandsOut) = 0;
-    /*//Rendering/Processing*/
-
-    virtual bool unload();
     virtual bool isInView(const SceneRenderState& sceneRenderState,
                           SceneGraphNode& sgn,
                           const bool distanceCheck = true);
+
+    /*//Rendering/Processing*/
+
+    virtual bool unload();
     virtual void setMaterialTpl(Material* const m);
     Material* const getMaterialTpl();
 
@@ -139,13 +140,22 @@ class SceneNodeGraphAttorney {
     static void postLoad(SceneNode& node, SceneGraphNode& sgn) {
         node.postLoad(sgn);
     }
+
     static void onCameraChange(SceneNode& node, SceneGraphNode& sgn) {
         node.onCameraChange(sgn);
     }
+
     static void sceneUpdate(SceneNode& node, const U64 deltaTime,
                             SceneGraphNode& sgn, SceneState& sceneState) {
         node.sceneUpdate(deltaTime, sgn, sceneState);
     }
+
+    static bool isInView(SceneNode& node,
+                         const SceneRenderState& sceneRenderState,
+                         SceneGraphNode& sgn, const bool distanceCheck = true) {
+        return node.isInView(sceneRenderState, sgn, distanceCheck);
+    }
+
     friend class SceneGraphNode;
 };
 

@@ -57,7 +57,7 @@ ForwardPlusRenderer::~ForwardPlusRenderer() {
 }
 
 void ForwardPlusRenderer::processVisibleNodes(
-    const vectorImpl<SceneGraphNode*>& visibleNodes,
+    const GFXDevice::VisibleNodeList& visibleNodes,
     const GFXDevice::GPUBlock& gpuBlock) {
     buildLightGrid(gpuBlock);
 }

@@ -47,7 +47,7 @@ class ForwardPlusRenderer : public Renderer {
     ForwardPlusRenderer();
     ~ForwardPlusRenderer();
 
-    void processVisibleNodes(const vectorImpl<SceneGraphNode*>& visibleNodes,
+    void processVisibleNodes(const GFXDevice::VisibleNodeList& visibleNodes,
                              const GFXDevice::GPUBlock& gpuBlock);
 
     void render(const DELEGATE_CBK<>& renderCallback,

@@ -38,6 +38,7 @@
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/Direct3D/Headers/DXWrapper.h"
+#include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 #include "Managers/Headers/RenderPassManager.h"
 
 #include <stack>
@@ -76,6 +77,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     };
 
   public:  // GPU specific data
+   typedef vectorImpl<RenderPassCuller::RenderableNode> VisibleNodeList;
    typedef vectorImpl<std::pair<ShaderBufferLocation, ShaderBuffer*>>
        ShaderBufferList;
    struct RenderPackage {
@@ -391,9 +393,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
    protected:
     friend class RenderPassCuller;
-    void processVisibleNodes(const vectorImpl<SceneGraphNode*>& visibleNodes,
+    void processVisibleNodes(VisibleNodeList& visibleNodes,
                              SceneRenderState& sceneRenderState);
-    void buildDrawCommands(const vectorImpl<SceneGraphNode*>& visibleNodes,
+    void buildDrawCommands(VisibleNodeList& visibleNodes,
                            SceneRenderState& sceneRenderState,
                            bool refreshNodeData);
     bool batchCommands(GenericDrawCommand& previousIDC,
@@ -494,9 +496,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// Batching unsorted commands does not work
     bool _batchCommands;
     vectorImpl<NodeData> _matricesData;
-    vectorImpl<IndirectDrawCommand> _drawCommandsCache;
-    vectorImpl<GenericDrawCommand> _nonBatchedCommands;
-    
 
     typedef vectorImpl<RenderPackage> RenderQueue;
     RenderQueue _renderQueue;

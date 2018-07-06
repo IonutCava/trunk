@@ -46,6 +46,17 @@ class SceneGraphNode;
 
 class RenderPassCuller {
    public:
+    struct RenderableNode {
+        SceneGraphNode* _visibleNode;
+        bool _isDrawReady;
+
+        explicit RenderableNode()
+            : _visibleNode(nullptr), _isDrawReady(false) {}
+        explicit RenderableNode(SceneGraphNode& node)
+            : _visibleNode(&node), _isDrawReady(false) {}
+    };
+
+   public:
     RenderPassCuller();
     ~RenderPassCuller();
     /// This method performs the visibility check on the given node and all of
@@ -56,10 +67,6 @@ class RenderPassCuller {
         SceneState& sceneState,
         const std::function<bool(SceneGraphNode*)>& cullingFunction);
     void refresh();
-
-    const vectorImpl<SceneGraphNode*>& getVisibleNodes() const {
-        return _visibleNodes;
-    }
 
    protected:
     /// Perform CPU-based culling (Frustrum - AABB, distance check, etc)
@@ -77,7 +84,7 @@ class RenderPassCuller {
     void sortVisibleNodes();
 
    protected:
-    vectorImpl<SceneGraphNode*> _visibleNodes;
+    vectorImpl<RenderableNode> _visibleNodes;
     bool _visibleNodesSorted;
 };
 

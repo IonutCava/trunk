@@ -367,7 +367,7 @@ bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
     return true;
 }
 
-void SceneGraphNode::inView(const bool state) {
+void SceneGraphNode::setInView(const bool state) {
     _inView = state;
     if (state) {
         RenderingCompSceneGraphAttorney::inViewCallback(
@@ -375,4 +375,15 @@ void SceneGraphNode::inView(const bool state) {
     }
 }
 
+bool SceneGraphNode::canDraw(const SceneRenderState& sceneRenderState,
+                             RenderStage currentStage) {
+    if ((currentStage == RenderStage::SHADOW_STAGE &&
+         !getComponent<RenderingComponent>()->castsShadows())) {
+        return false;
+    }
+
+    return SceneNodeGraphAttorney::isInView(
+        *getNode(), sceneRenderState, *this,
+        currentStage != RenderStage::SHADOW_STAGE);
+}
 };

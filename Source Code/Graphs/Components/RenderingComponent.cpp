@@ -298,8 +298,7 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
 vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
     SceneRenderState& sceneRenderState, RenderStage renderStage) {
     _renderData._drawCommands.clear();
-    if (!_renderingLocked &&
-        canDraw(sceneRenderState, renderStage))
+    if (canDraw(sceneRenderState, renderStage))
     {
         _parentSGN.getNode()->getDrawCommands(_parentSGN, renderStage,
                                               sceneRenderState,

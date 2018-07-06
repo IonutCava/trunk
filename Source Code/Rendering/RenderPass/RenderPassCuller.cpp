@@ -22,11 +22,11 @@ void RenderPassCuller::sortVisibleNodes() {
     }
 
     std::sort(std::begin(_visibleNodes), std::end(_visibleNodes),
-            [](const SceneGraphNode* a, const SceneGraphNode* b) {
+            [](const RenderableNode& nodeA, const RenderableNode& nodeB) {
                 RenderingComponent* renderableA =
-                    a->getComponent<RenderingComponent>();
+                    nodeA._visibleNode->getComponent<RenderingComponent>();
                 RenderingComponent* renderableB =
-                    b->getComponent<RenderingComponent>();
+                    nodeB._visibleNode->getComponent<RenderingComponent>();
                 return renderableA->drawOrder() < renderableB->drawOrder();
             });
 
@@ -58,8 +58,9 @@ void RenderPassCuller::cullSceneGraph(
 
     const vec3<F32>& eyePos =
         sceneState.getRenderState().getCameraConst().getEye();
-    for (SceneGraphNode* node : _visibleNodes) {
-        RenderQueue::getInstance().addNodeToQueue(*node, eyePos);
+
+    for (RenderableNode& node : _visibleNodes) {
+        RenderQueue::getInstance().addNodeToQueue(*node._visibleNode, eyePos);
     }
 
     RenderQueue::getInstance().sort(GFX_DEVICE.getRenderStage());
@@ -86,53 +87,31 @@ void RenderPassCuller::cullSceneGraphCPU(
         SceneRenderState::ObjectRenderState::NO_DRAW) {
         return;
     }
-    RenderStage currentStage = GFX_DEVICE.getRenderStage();
-
-    // Bounding Boxes should be updated, so we can early cull now.
-    bool skipChildren = false;
 
     if (currentNode.getParent()) {
-        currentNode.inView(false);
+        currentNode.setInView(false);
         // Skip all of this for inactive nodes.
         if (currentNode.isActive()) {
-            SceneNode* node = currentNode.getNode();
-            RenderingComponent* renderingCmp =
-                    currentNode.getComponent<RenderingComponent>();
-            // If this node isn't render-disabled, check if it is visible
-            // Skip expensive frustum culling if we shouldn't draw the node in
-            // the first place
-            if (!/*RenderingCompPassCullerAttorney::canDraw(
-                    *renderingCmp, sceneRenderState, currentStage)*/
-                    renderingCmp->getSGN().prepareDraw(sceneRenderState, currentStage)) {
-                // If the current SceneGraphNode isn't visible, it's children
-                // aren't visible as well
-                skipChildren = true;
-            } else {
-                if (currentStage != RenderStage::SHADOW_STAGE ||
-                    (currentStage == RenderStage::SHADOW_STAGE &&
-                     (renderingCmp ? renderingCmp->castsShadows() : false))) {
-                    // Perform visibility test on current node
-                    if (node->isInView(sceneRenderState, currentNode,
-                                       currentStage == RenderStage::SHADOW_STAGE
-                                           ? false
-                                           : true)) {
-                        // If the current node is visible, add it to the render
-                        // queue (if it passes our custom culling function)
-                        if (!cullingFunction(&currentNode)) {
-                            _visibleNodes.push_back(&currentNode);
-                        }
-                        currentNode.inView(true);
-                    }
+            // Perform visibility test on current node
+            if (currentNode.canDraw(sceneRenderState,
+                                    GFX_DEVICE.getRenderStage())) {
+                // If the current node is visible, add it to the render
+                // queue (if it passes our custom culling function)
+                if (!cullingFunction(&currentNode)) {
+                    _visibleNodes.push_back(RenderableNode(currentNode));
+                    currentNode.setInView(true);
                 }
+            } else {
+                // Skip processing children if the parent node isn't visible
+                return;
             }
         }
     }
-    // If we don't need to skip child testing
-    if (!skipChildren) {
-        for (SceneGraphNode::NodeChildren::value_type& it :
-             currentNode.getChildren()) {
-            cullSceneGraphCPU(*it.second, sceneRenderState, cullingFunction);
-        }
+
+    // Process children if we did not early-out of the culling loop
+    for (SceneGraphNode::NodeChildren::value_type& it :
+         currentNode.getChildren()) {
+        cullSceneGraphCPU(*it.second, sceneRenderState, cullingFunction);
     }
 }
 

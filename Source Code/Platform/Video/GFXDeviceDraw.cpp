@@ -163,9 +163,8 @@ void GFXDevice::addToRenderQueue(const RenderPackage& package) {
 }
 
 /// Prepare the list of visible nodes for rendering
-void GFXDevice::processVisibleNodes(
-    const vectorImpl<SceneGraphNode*>& visibleNodes,
-    SceneRenderState& sceneRenderState) {
+void GFXDevice::processVisibleNodes(VisibleNodeList& visibleNodes,
+                                    SceneRenderState& sceneRenderState) {
     // If there aren't any nodes visible in the current pass, don't update
     // anything
     if (visibleNodes.empty()) {
@@ -180,24 +179,24 @@ void GFXDevice::processVisibleNodes(
     _matricesData.reserve(nodeCount + 1);
     _matricesData.resize(1);
     // Loop over the list of nodes
-    for (SceneGraphNode* const crtNode : visibleNodes) {
+    for (VisibleNodeList::value_type& crtNode : visibleNodes) {
         RenderingComponent* const renderable =
-            crtNode->getComponent<RenderingComponent>();
+            crtNode._visibleNode->getComponent<RenderingComponent>();
         if (!RenderingCompGFXDeviceAttorney::canDraw(
                 *renderable, sceneRenderState, getRenderStage())) {
-            RenderingCompGFXDeviceAttorney::lockRendering(*renderable);
+            crtNode._isDrawReady = false;
             continue;
         }
-        RenderingCompGFXDeviceAttorney::unlockRendering(*renderable);
+        crtNode._isDrawReady = true;
         NodeData temp;
         // Extract transform data
         const PhysicsComponent* const transform =
-            crtNode->getComponent<PhysicsComponent>();
+            crtNode._visibleNode->getComponent<PhysicsComponent>();
         // If we have valid transform data ...
         if (transform) {
             // ... get the node's world matrix properly interpolated
             temp._matrix[0].set(
-                crtNode->getComponent<PhysicsComponent>()->getWorldMatrix(
+                crtNode._visibleNode->getComponent<PhysicsComponent>()->getWorldMatrix(
                     _interpolationFactor));
             // Calculate the normal matrix (world * view)
             // If the world matrix is uniform scaled, inverseTranspose is a
@@ -222,8 +221,8 @@ void GFXDevice::processVisibleNodes(
         temp._matrix[1].element(3, 2, true) =
             static_cast<F32>(LightManager::getInstance().getLights().size());
         temp._matrix[1].element(3, 3, true) = static_cast<F32>(
-            crtNode->getComponent<AnimationComponent>()
-                ? crtNode->getComponent<AnimationComponent>()->boneCount()
+            crtNode._visibleNode->getComponent<AnimationComponent>()
+                ? crtNode._visibleNode->getComponent<AnimationComponent>()->boneCount()
                 : 0);
 
         // Get the color matrix (diffuse, ambient, specular, etc.)
@@ -240,10 +239,9 @@ void GFXDevice::processVisibleNodes(
                             _matricesData.data());
 }
 
-void GFXDevice::buildDrawCommands(
-    const vectorImpl<SceneGraphNode*>& visibleNodes,
-    SceneRenderState& sceneRenderState,
-    bool refreshNodeData) {
+void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
+                                  SceneRenderState& sceneRenderState,
+                                  bool refreshNodeData) {
     // If there aren't any nodes visible in the current pass, don't update
     // anything (but clear the render queue
     if (visibleNodes.empty()) {
@@ -258,42 +256,43 @@ void GFXDevice::buildDrawCommands(
     vectorAlg::vecSize nodeCount = visibleNodes.size();
     _renderQueue.reserve(nodeCount);
     // Reset previously generated commands
-    _nonBatchedCommands.reserve(nodeCount + 1);
-    _nonBatchedCommands.resize(0);
-    _nonBatchedCommands.push_back(_defaultDrawCmd);
+    vectorImpl<GenericDrawCommand> nonBatchedCommands;
+    nonBatchedCommands.reserve(nodeCount + 1);
+    nonBatchedCommands.push_back(_defaultDrawCmd);
 
     U32 drawID = 1;
     // Loop over the list of nodes to generate a new command list
     RenderStage currentStage = getRenderStage();
-    for (SceneGraphNode* node : visibleNodes) {
-        RenderingComponent* renderable =
-            node->getComponent<RenderingComponent>();
+    for (VisibleNodeList::value_type& node : visibleNodes) {
+        if (!node._isDrawReady) {
+            continue;
+        }
 
         vectorImpl<GenericDrawCommand>& nodeDrawCommands =
             RenderingCompGFXDeviceAttorney::getDrawCommands(
-                *renderable, sceneRenderState, currentStage);
+                *node._visibleNode->getComponent<RenderingComponent>(),
+                sceneRenderState, currentStage);
 
-        if (nodeDrawCommands.empty()){
-            continue;   
+        if (!nodeDrawCommands.empty()){
+            for (GenericDrawCommand& cmd : nodeDrawCommands) {
+                cmd.drawID(drawID);
+                nonBatchedCommands.push_back(cmd);
+            }
         }
 
-        for (GenericDrawCommand& cmd : nodeDrawCommands) {
-            cmd.drawID(drawID);
-            _nonBatchedCommands.push_back(cmd);
-        }
         drawID += 1;
     }
 
     // Extract the specific rendering commands from the draw commands
     // Rendering commands are stored in GPU memory. Draw commands are not.
-    _drawCommandsCache.reserve(_nonBatchedCommands.size());
-    _drawCommandsCache.resize(0);
-    for (const GenericDrawCommand& cmd : _nonBatchedCommands) {
-        _drawCommandsCache.push_back(cmd.cmd());
+    vectorImpl<IndirectDrawCommand> drawCommandsCache;
+    drawCommandsCache.reserve(nonBatchedCommands.size());
+    for (const GenericDrawCommand& cmd : nonBatchedCommands) {
+        drawCommandsCache.push_back(cmd.cmd());
     }
 
     // Upload the rendering commands to the GPU memory
-    uploadDrawCommands(_drawCommandsCache);
+    uploadDrawCommands(drawCommandsCache);
 }
 
 bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
@@ -322,7 +321,6 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
         // And set the current command's draw count to zero so it gets removed
         // from the list later on
         currentIDC.drawCount(0);
-        //assert(previousIDC.drawID() + previousIDC.drawCount() < _drawCommandsCache.size());
         return true;
     }
 

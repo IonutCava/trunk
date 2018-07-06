@@ -131,7 +131,6 @@ class RenderingComponent : public SGNComponent {
     bool _renderWireframe;
     bool _renderBoundingBox;
     bool _renderSkeleton;
-    bool _renderingLocked;
     mat4<F32> _materialColorMatrix;
     mat4<F32> _materialPropertyMatrix;
 
@@ -145,13 +144,6 @@ class RenderingComponent : public SGNComponent {
 
 class RenderingCompGFXDeviceAttorney {
    private:
-    static void lockRendering(RenderingComponent& renderable) {
-        renderable._renderingLocked = true;
-    }
-    static void unlockRendering(RenderingComponent& renderable) {
-        renderable._renderingLocked = false;
-    }
-
     static vectorImpl<GenericDrawCommand>& getDrawCommands(
         RenderingComponent& renderable,
         SceneRenderState& sceneRenderState,

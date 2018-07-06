@@ -51,7 +51,7 @@ class Renderer {
     virtual ~Renderer() {}
 
     virtual void processVisibleNodes(
-        const vectorImpl<SceneGraphNode*>& visibleNodes,
+        const GFXDevice::VisibleNodeList& visibleNodes,
         const GFXDevice::GPUBlock& gpuBlock) = 0;
 
     virtual void render(const DELEGATE_CBK<>& renderCallback,

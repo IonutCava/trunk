@@ -124,7 +124,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer() {
 }
 
 void DeferredShadingRenderer::processVisibleNodes(
-    const vectorImpl<SceneGraphNode*>& visibleNodes,
+    const GFXDevice::VisibleNodeList& visibleNodes,
     const GFXDevice::GPUBlock& gpuBlock) {
 
     Light::LightMap& lights = LightManager::getInstance().getLights();

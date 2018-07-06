@@ -48,7 +48,7 @@ class DeferredShadingRenderer : public Renderer {
     DeferredShadingRenderer();
     ~DeferredShadingRenderer();
 
-    void processVisibleNodes(const vectorImpl<SceneGraphNode*>& visibleNodes,
+    void processVisibleNodes(const GFXDevice::VisibleNodeList& visibleNodes,
                              const GFXDevice::GPUBlock& gpuBlock);
 
     void render(const DELEGATE_CBK<>& renderCallback,
