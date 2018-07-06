@@ -15,96 +15,96 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\Editor\Widgets\ImWindowDivide.cpp" />
-    <ClCompile Include="..\..\Source Code\Editor\Widgets\ImWindowManagerDivide.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\examples\opengl3_example\imgui_impl_glfw_gl3.cpp">
+    <ClCompile Include="..\../Source Code/Editor\Widgets\ImWindowDivide.cpp" />
+    <ClCompile Include="..\../Source Code/Editor\Widgets\ImWindowManagerDivide.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/imgui\examples\opengl3_example\imgui_impl_glfw_gl3.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\examples\opengl3_example\main.cpp">
+    <ClCompile Include="..\../Source Code/Libs/imgui\examples\opengl3_example\main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\examples\sdl_opengl3_example\imgui_impl_sdl_gl3.cpp">
+    <ClCompile Include="..\../Source Code/Libs/imgui\examples\sdl_opengl3_example\imgui_impl_sdl_gl3.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\examples\sdl_opengl3_example\main.cpp">
+    <ClCompile Include="..\../Source Code/Libs/imgui\examples\sdl_opengl3_example\main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\examples\vulkan_example\imgui_impl_glfw_vulkan.cpp">
+    <ClCompile Include="..\../Source Code/Libs/imgui\examples\vulkan_example\imgui_impl_glfw_vulkan.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\examples\vulkan_example\main.cpp">
+    <ClCompile Include="..\../Source Code/Libs/imgui\examples\vulkan_example\main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\extra_fonts\binary_to_compressed_c.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_demo.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_draw.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwContainer.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwMenu.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwPlatformWindow.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwStatusBar.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwToolBar.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwWindow.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwWindowManager.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\ImWindow\ImWindow\JsonValue.cpp" />
-    <ClCompile Include="..\..\Source Code\stdafx-editor.cpp">
+    <ClCompile Include="..\../Source Code/Libs/imgui\extra_fonts\binary_to_compressed_c.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/imgui\imgui.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwContainer.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwMenu.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwPlatformWindow.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwStatusBar.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwToolBar.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindow.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindowManager.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\JsonValue.cpp" />
+    <ClCompile Include="..\../Source Code/stdafx-editor.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\Editor\Editor.h" />
-    <ClInclude Include="..\..\Source Code\Editor\Headers\Editor.h" />
-    <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\ImWindowDivide.h" />
-    <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\ImWindowManagerDivide.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\examples\opengl3_example\imgui_impl_glfw_gl3.h">
+    <ClInclude Include="..\../Source Code/Editor\Editor.h" />
+    <ClInclude Include="..\../Source Code/Editor\Headers\Editor.h" />
+    <ClInclude Include="..\../Source Code/Editor\Widgets\Headers\ImWindowDivide.h" />
+    <ClInclude Include="..\../Source Code/Editor\Widgets\Headers\ImWindowManagerDivide.h" />
+    <ClInclude Include="..\../Source Code/Libs/imgui\examples\opengl3_example\imgui_impl_glfw_gl3.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\imgui\examples\sdl_opengl3_example\imgui_impl_sdl_gl3.h">
+    <ClInclude Include="..\../Source Code/Libs/imgui\examples\sdl_opengl3_example\imgui_impl_sdl_gl3.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\imgui\examples\vulkan_example\imgui_impl_glfw_vulkan.h">
+    <ClInclude Include="..\../Source Code/Libs/imgui\examples\vulkan_example\imgui_impl_glfw_vulkan.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\imgui\imconfig.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\imgui.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\imgui_internal.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\stb_rect_pack.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\stb_textedit.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\stb_truetype.h" />
-    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwConfig.h" />
-    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwContainer.h" />
-    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwMenu.h" />
-    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwPlatformWindow.h" />
-    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwStatusBar.h" />
-    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwToolBar.h" />
-    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwWindow.h" />
-    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\ImwWindowManager.h" />
-    <ClInclude Include="..\..\Source Code\Libs\ImWindow\ImWindow\JsonValue.h" />
+    <ClInclude Include="..\../Source Code/Libs/imgui\imconfig.h" />
+    <ClInclude Include="..\../Source Code/Libs/imgui\imgui.h" />
+    <ClInclude Include="..\../Source Code/Libs/imgui\imgui_internal.h" />
+    <ClInclude Include="..\../Source Code/Libs/imgui\stb_rect_pack.h" />
+    <ClInclude Include="..\../Source Code/Libs/imgui\stb_textedit.h" />
+    <ClInclude Include="..\../Source Code/Libs/imgui\stb_truetype.h" />
+    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwConfig.h" />
+    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwContainer.h" />
+    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwMenu.h" />
+    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwPlatformWindow.h" />
+    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwStatusBar.h" />
+    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwToolBar.h" />
+    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindow.h" />
+    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindowManager.h" />
+    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\JsonValue.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Source Code\Libs\imgui\examples\vulkan_example\gen_spv.sh" />
-    <None Include="..\..\Source Code\Libs\imgui\examples\vulkan_example\glsl_shader.frag" />
-    <None Include="..\..\Source Code\Libs\imgui\examples\vulkan_example\glsl_shader.vert" />
+    <None Include="..\../Source Code/Libs/imgui\examples\vulkan_example\gen_spv.sh" />
+    <None Include="..\../Source Code/Libs/imgui\examples\vulkan_example\glsl_shader.frag" />
+    <None Include="..\../Source Code/Libs/imgui\examples\vulkan_example\glsl_shader.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D8177F00-194F-42AE-8389-63B114DBEE63}</ProjectGuid>
@@ -145,10 +145,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Configuration)_Editor\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Configuration)_Editor\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(Configuration)_Editor\</IntDir>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
@@ -182,7 +182,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\imgui\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\ImWindow\ImWindow\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\chaiscript\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ImWindow\ImWindow\;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/chaiscript\include/</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -213,8 +213,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Lib>
-      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_d$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>$(EngineLibraries)\boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_d$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>$(SolutionDir)../3rdParty/boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
       <Verbose>false</Verbose>
     </Lib>
@@ -231,7 +231,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\imgui\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\ImWindow\ImWindow\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\chaiscript\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ImWindow\ImWindow\;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/chaiscript\include/</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -259,8 +259,8 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Lib>
-      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>$(EngineLibraries)\boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>$(SolutionDir)../3rdParty/boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Verbose>false</Verbose>
     </Lib>
     <PostBuildEvent>
@@ -273,7 +273,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\imgui\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\ImWindow\ImWindow\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\chaiscript\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ImWindow\ImWindow\;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/chaiscript\include/</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -301,8 +301,8 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Lib>
-      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>$(EngineLibraries)\boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_p$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>$(SolutionDir)../3rdParty/boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Verbose>false</Verbose>
     </Lib>
     <PostBuildEvent>

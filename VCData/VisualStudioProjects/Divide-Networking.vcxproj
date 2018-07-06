@@ -15,23 +15,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\Networking\ASIO.cpp" />
-    <ClCompile Include="..\..\Source Code\Networking\Client.cpp" />
-    <ClCompile Include="..\..\Source Code\Networking\tcp_session_tpl.cpp" />
-    <ClCompile Include="..\..\Source Code\stdafx-networking.cpp">
+    <ClCompile Include="..\../Source Code/Networking\ASIO.cpp" />
+    <ClCompile Include="..\../Source Code/Networking\Client.cpp" />
+    <ClCompile Include="..\../Source Code/Networking\tcp_session_tpl.cpp" />
+    <ClCompile Include="..\../Source Code/stdafx-networking.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\Networking\Headers\ASIO.h" />
-    <ClInclude Include="..\..\Source Code\Networking\Headers\ByteConverter.h" />
-    <ClInclude Include="..\..\Source Code\Networking\Headers\Client.h" />
-    <ClInclude Include="..\..\Source Code\Networking\Headers\OPCodesTpl.h" />
-    <ClInclude Include="..\..\Source Code\Networking\Headers\Singleton.h" />
-    <ClInclude Include="..\..\Source Code\Networking\Headers\tcp_session_tpl.h" />
-    <ClInclude Include="..\..\Source Code\Networking\Headers\WorldPacket.h" />
+    <ClInclude Include="..\../Source Code/Networking\Headers\ASIO.h" />
+    <ClInclude Include="..\../Source Code/Networking\Headers\ByteConverter.h" />
+    <ClInclude Include="..\../Source Code/Networking\Headers\Client.h" />
+    <ClInclude Include="..\../Source Code/Networking\Headers\OPCodesTpl.h" />
+    <ClInclude Include="..\../Source Code/Networking\Headers\Singleton.h" />
+    <ClInclude Include="..\../Source Code/Networking\Headers\tcp_session_tpl.h" />
+    <ClInclude Include="..\../Source Code/Networking\Headers\WorldPacket.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9D7BBBC8-E5CF-475D-8531-4520B605833C}</ProjectGuid>
@@ -72,10 +72,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Configuration)_Networking\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Configuration)_Networking\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(Configuration)_Networking\</IntDir>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
@@ -109,7 +109,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -140,8 +140,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Lib>
-      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_d$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>$(EngineLibraries)\boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_d$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>$(SolutionDir)../3rdParty/boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
       <Verbose>false</Verbose>
     </Lib>
@@ -158,7 +158,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -186,8 +186,8 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Lib>
-      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>$(EngineLibraries)\boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>$(SolutionDir)../3rdParty/boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Verbose>false</Verbose>
     </Lib>
     <PostBuildEvent>
@@ -200,7 +200,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -228,8 +228,8 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Lib>
-      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>$(EngineLibraries)\boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_p$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>$(SolutionDir)../3rdParty/boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Verbose>false</Verbose>
     </Lib>
     <PostBuildEvent>

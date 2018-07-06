@@ -9,14 +9,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\UnitTests\Platform-Tests\main.cpp" />
-    <ClCompile Include="..\..\Source Code\UnitTests\Platform-Tests\Tests\FileManagement.cpp">
+    <ClCompile Include="..\../Source Code/UnitTests\Platform-Tests\main.cpp" />
+    <ClCompile Include="..\../Source Code/UnitTests\Platform-Tests\Tests\FileManagement.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\stdafx-test-platform.cpp" />
+    <ClCompile Include="..\../Source Code/stdafx-test-platform.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\UnitTests\Headers\Defines.h">
+    <ClInclude Include="..\../Source Code/UnitTests\Headers\Defines.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

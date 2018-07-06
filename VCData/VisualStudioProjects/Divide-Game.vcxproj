@@ -15,186 +15,186 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\AI\ActionInterface\AIProcessor.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\ActionInterface\AITeam.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\ActionInterface\GOAPInterface.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\AIManager.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideCrowd.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideRecast.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\DivideTileCache.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMesh.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshContext.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshDebugDraw.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshLoader.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\Waypoint.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\WaypointGraph.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\Sensors\AudioSensor.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\Sensors\VisualSensor.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ParticleEmitterLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SkyLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TriggerLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\WaterPlaneLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Impostor.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleBoxGenerator.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleColourGenerator.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleRoundGenerator.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleSphereVelocityGenerator.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleTimeGenerator.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleVelocityFromPositionGenerator.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleVelocityGenerator.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleAttractorUpdater.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleBasicColourUpdater.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleBasicTimeUpdater.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleEulerUpdater.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleFloorUpdater.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticlePositionColourUpdater.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleVelocityColourUpdater.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleData.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleEmitter.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleGenerator.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleSource.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Triggers\Trigger.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Character.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\NPC.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Player.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Unit.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Vehicle.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Ammunition\Ammunition.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Projectile.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Weapon.cpp" />
-    <ClCompile Include="..\..\Source Code\Environment\Sky\Sky.cpp" />
-    <ClCompile Include="..\..\Source Code\Environment\Terrain\Quadtree\Quadtree.cpp" />
-    <ClCompile Include="..\..\Source Code\Environment\Terrain\Quadtree\QuadtreeNode.cpp" />
-    <ClCompile Include="..\..\Source Code\Environment\Terrain\Terrain.cpp" />
-    <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainChunk.cpp" />
-    <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainLoader.cpp" />
-    <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainTessellator.cpp" />
-    <ClCompile Include="..\..\Source Code\Environment\Vegetation\Vegetation.cpp" />
-    <ClCompile Include="..\..\Source Code\Environment\Water\Water.cpp" />
-    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditor.cpp" />
-    <ClCompile Include="..\..\Source Code\GUI\SceneGUIElements.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Action.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Node.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Planner.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\WorldState.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\CubeScene\CubeScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\DefaultScene\DefaultScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\FlashScene\FlashScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\MainScene\MainScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\NetworkScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\PhysXScene\PhysXScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\ReflectionScene\ReflectionScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\Scene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\SceneEnvironmentProbePool.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\SceneInput.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\SceneInputActions.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\ScenePool.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\SceneShaderData.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\SceneState.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\ShadowScene\ShadowScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAIProcessor.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\WarScene\AESOPActions\WarSceneActions.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAI.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAIProcessor.cpp" />
-    <ClCompile Include="..\..\Source Code\stdafx-game.cpp">
+    <ClCompile Include="..\../Source Code/AI\ActionInterface\AIProcessor.cpp" />
+    <ClCompile Include="..\../Source Code/AI\ActionInterface\AITeam.cpp" />
+    <ClCompile Include="..\../Source Code/AI\ActionInterface\GOAPInterface.cpp" />
+    <ClCompile Include="..\../Source Code/AI\AIEntity.cpp" />
+    <ClCompile Include="..\../Source Code/AI\AIManager.cpp" />
+    <ClCompile Include="..\../Source Code/AI\PathFinding\DivideCrowd.cpp" />
+    <ClCompile Include="..\../Source Code/AI\PathFinding\DivideRecast.cpp" />
+    <ClCompile Include="..\../Source Code/AI\PathFinding\NavMeshes\DetourTileCache\DivideTileCache.cpp" />
+    <ClCompile Include="..\../Source Code/AI\PathFinding\NavMeshes\NavMesh.cpp" />
+    <ClCompile Include="..\../Source Code/AI\PathFinding\NavMeshes\NavMeshContext.cpp" />
+    <ClCompile Include="..\../Source Code/AI\PathFinding\NavMeshes\NavMeshDebugDraw.cpp" />
+    <ClCompile Include="..\../Source Code/AI\PathFinding\NavMeshes\NavMeshLoader.cpp" />
+    <ClCompile Include="..\../Source Code/AI\PathFinding\Waypoints\Waypoint.cpp" />
+    <ClCompile Include="..\../Source Code/AI\PathFinding\Waypoints\WaypointGraph.cpp" />
+    <ClCompile Include="..\../Source Code/AI\Sensors\AudioSensor.cpp" />
+    <ClCompile Include="..\../Source Code/AI\Sensors\VisualSensor.cpp" />
+    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\ParticleEmitterLoaderImpl.cpp" />
+    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\SkyLoaderImpl.cpp" />
+    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\TerrainLoaderImpl.cpp" />
+    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\TriggerLoaderImpl.cpp" />
+    <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\WaterPlaneLoaderImpl.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Impostor.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\ParticleBoxGenerator.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\ParticleColourGenerator.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\ParticleRoundGenerator.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\ParticleSphereVelocityGenerator.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\ParticleTimeGenerator.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\ParticleVelocityFromPositionGenerator.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\ParticleVelocityGenerator.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\ParticleAttractorUpdater.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\ParticleBasicColourUpdater.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\ParticleBasicTimeUpdater.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\ParticleEulerUpdater.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\ParticleFloorUpdater.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\ParticlePositionColourUpdater.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\ParticleVelocityColourUpdater.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ParticleData.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ParticleEmitter.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ParticleGenerator.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Particles\ParticleSource.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Triggers\Trigger.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Units\Character.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Units\NPC.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Units\Player.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Units\Unit.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\Entities\Units\Vehicle.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\WeaponSystem\Ammunition\Ammunition.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\WeaponSystem\Projectile\Projectile.cpp" />
+    <ClCompile Include="..\../Source Code/Dynamics\WeaponSystem\Weapons\Weapon.cpp" />
+    <ClCompile Include="..\../Source Code/Environment\Sky\Sky.cpp" />
+    <ClCompile Include="..\../Source Code/Environment\Terrain\Quadtree\Quadtree.cpp" />
+    <ClCompile Include="..\../Source Code/Environment\Terrain\Quadtree\QuadtreeNode.cpp" />
+    <ClCompile Include="..\../Source Code/Environment\Terrain\Terrain.cpp" />
+    <ClCompile Include="..\../Source Code/Environment\Terrain\TerrainChunk.cpp" />
+    <ClCompile Include="..\../Source Code/Environment\Terrain\TerrainLoader.cpp" />
+    <ClCompile Include="..\../Source Code/Environment\Terrain\TerrainTessellator.cpp" />
+    <ClCompile Include="..\../Source Code/Environment\Vegetation\Vegetation.cpp" />
+    <ClCompile Include="..\../Source Code/Environment\Water\Water.cpp" />
+    <ClCompile Include="..\../Source Code/GUI\GUIEditor\GUIEditor.cpp" />
+    <ClCompile Include="..\../Source Code/GUI\SceneGUIElements.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/CPPGoap\Action.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/CPPGoap\Node.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/CPPGoap\Planner.cpp" />
+    <ClCompile Include="..\../Source Code/Libs/CPPGoap\WorldState.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\CubeScene\CubeScene.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\DefaultScene\DefaultScene.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\FlashScene\FlashScene.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\MainScene\MainScene.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\NetworkScene\NetworkScene.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\PhysXScene\PhysXScene.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\PingPongScene\PingPongScene.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\ReflectionScene\ReflectionScene.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\Scene.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\SceneEnvironmentProbePool.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\SceneInput.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\SceneInputActions.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\ScenePool.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\SceneShaderData.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\SceneState.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\ShadowScene\ShadowScene.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\TenisScene\TenisScene.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\TenisScene\TenisSceneAIProcessor.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\WarScene\AESOPActions\WarSceneActions.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\WarScene\WarScene.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\WarScene\WarSceneAI.cpp" />
+    <ClCompile Include="..\../Source Code/Scenes\WarScene\WarSceneAIProcessor.cpp" />
+    <ClCompile Include="..\../Source Code/stdafx-game.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AIProcessor.h" />
-    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AITeam.h" />
-    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\GOAPInterface.h" />
-    <ClInclude Include="..\..\Source Code\AI\Headers\AIEntity.h" />
-    <ClInclude Include="..\..\Source Code\AI\Headers\AIManager.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideCrowd.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideRecast.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCache.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMesh.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshConfig.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshContext.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshDebugDraw.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshDefines.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshLoader.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\Waypoint.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\WaypointGraph.h" />
-    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\AudioSensor.h" />
-    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\Sensor.h" />
-    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\VisualSensor.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Headers\Impostor.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleBoxGenerator.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleColourGenerator.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleRoundGenerator.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleSphereVelocityGenerator.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleTimeGenerator.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleVelocityFromPositionGenerator.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleVelocityGenerator.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleAttractorUpdater.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleBasicColourUpdater.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleBasicTimeUpdater.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleEulerUpdater.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleFloorUpdater.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticlePositionColourUpdater.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleVelocityColourUpdater.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleData.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleEmitter.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleGenerator.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleSource.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleUpdater.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Triggers\Headers\Trigger.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Character.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\NPC.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Player.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Unit.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Vehicle.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Ammunition\Headers\Ammunition.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Headers\Projectile.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Headers\Weapon.h" />
-    <ClInclude Include="..\..\Source Code\Environment\Sky\Headers\Sky.h" />
-    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\Terrain.h" />
-    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\TerrainChunk.h" />
-    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\TerrainDescriptor.h" />
-    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\TerrainLoader.h" />
-    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\TerrainTessellator.h" />
-    <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\Quadtree.h" />
-    <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\QuadtreeNode.h" />
-    <ClInclude Include="..\..\Source Code\Environment\Vegetation\Headers\Vegetation.h" />
-    <ClInclude Include="..\..\Source Code\Environment\Water\Headers\Water.h" />
-    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditor.h" />
-    <ClInclude Include="..\..\Source Code\GUI\Headers\SceneGUIElements.h" />
-    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Action.h" />
-    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Node.h" />
-    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Planner.h" />
-    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\WorldState.h" />
-    <ClInclude Include="..\..\Source Code\SceneList.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\CubeScene\Headers\CubeScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\DefaultScene\Headers\DefaultScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\FlashScene\Headers\FlashScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\Headers\Scene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneComponent.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneEnvironmentProbePool.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInput.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInputActions.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\Headers\ScenePool.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneShaderData.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\MainScene\Headers\MainScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Headers\NetworkScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\PhysXScene\Headers\PhysXScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\PingPongScene\Headers\PingPongScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\ReflectionScene\Headers\ReflectionScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\ShadowScene\Headers\ShadowScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisSceneAIProcessor.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAIProcessor.h" />
+    <ClInclude Include="..\../Source Code/AI\ActionInterface\Headers\AIProcessor.h" />
+    <ClInclude Include="..\../Source Code/AI\ActionInterface\Headers\AITeam.h" />
+    <ClInclude Include="..\../Source Code/AI\ActionInterface\Headers\GOAPInterface.h" />
+    <ClInclude Include="..\../Source Code/AI\Headers\AIEntity.h" />
+    <ClInclude Include="..\../Source Code/AI\Headers\AIManager.h" />
+    <ClInclude Include="..\../Source Code/AI\PathFinding\Headers\DivideCrowd.h" />
+    <ClInclude Include="..\../Source Code/AI\PathFinding\Headers\DivideRecast.h" />
+    <ClInclude Include="..\../Source Code/AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCache.h" />
+    <ClInclude Include="..\../Source Code/AI\PathFinding\NavMeshes\Headers\NavMesh.h" />
+    <ClInclude Include="..\../Source Code/AI\PathFinding\NavMeshes\Headers\NavMeshConfig.h" />
+    <ClInclude Include="..\../Source Code/AI\PathFinding\NavMeshes\Headers\NavMeshContext.h" />
+    <ClInclude Include="..\../Source Code/AI\PathFinding\NavMeshes\Headers\NavMeshDebugDraw.h" />
+    <ClInclude Include="..\../Source Code/AI\PathFinding\NavMeshes\Headers\NavMeshDefines.h" />
+    <ClInclude Include="..\../Source Code/AI\PathFinding\NavMeshes\Headers\NavMeshLoader.h" />
+    <ClInclude Include="..\../Source Code/AI\PathFinding\Waypoints\Headers\Waypoint.h" />
+    <ClInclude Include="..\../Source Code/AI\PathFinding\Waypoints\Headers\WaypointGraph.h" />
+    <ClInclude Include="..\../Source Code/AI\Sensors\Headers\AudioSensor.h" />
+    <ClInclude Include="..\../Source Code/AI\Sensors\Headers\Sensor.h" />
+    <ClInclude Include="..\../Source Code/AI\Sensors\Headers\VisualSensor.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Headers\Impostor.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleBoxGenerator.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleColourGenerator.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleRoundGenerator.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleSphereVelocityGenerator.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleTimeGenerator.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleVelocityFromPositionGenerator.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleVelocityGenerator.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleAttractorUpdater.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleBasicColourUpdater.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleBasicTimeUpdater.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleEulerUpdater.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleFloorUpdater.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticlePositionColourUpdater.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleVelocityColourUpdater.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\Headers\ParticleData.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\Headers\ParticleEmitter.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\Headers\ParticleGenerator.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\Headers\ParticleSource.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Particles\Headers\ParticleUpdater.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Triggers\Headers\Trigger.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Units\Headers\Character.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Units\Headers\NPC.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Units\Headers\Player.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Units\Headers\Unit.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\Entities\Units\Headers\Vehicle.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\WeaponSystem\Ammunition\Headers\Ammunition.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\WeaponSystem\Projectile\Headers\Projectile.h" />
+    <ClInclude Include="..\../Source Code/Dynamics\WeaponSystem\Weapons\Headers\Weapon.h" />
+    <ClInclude Include="..\../Source Code/Environment\Sky\Headers\Sky.h" />
+    <ClInclude Include="..\../Source Code/Environment\Terrain\Headers\Terrain.h" />
+    <ClInclude Include="..\../Source Code/Environment\Terrain\Headers\TerrainChunk.h" />
+    <ClInclude Include="..\../Source Code/Environment\Terrain\Headers\TerrainDescriptor.h" />
+    <ClInclude Include="..\../Source Code/Environment\Terrain\Headers\TerrainLoader.h" />
+    <ClInclude Include="..\../Source Code/Environment\Terrain\Headers\TerrainTessellator.h" />
+    <ClInclude Include="..\../Source Code/Environment\Terrain\Quadtree\Headers\Quadtree.h" />
+    <ClInclude Include="..\../Source Code/Environment\Terrain\Quadtree\Headers\QuadtreeNode.h" />
+    <ClInclude Include="..\../Source Code/Environment\Vegetation\Headers\Vegetation.h" />
+    <ClInclude Include="..\../Source Code/Environment\Water\Headers\Water.h" />
+    <ClInclude Include="..\../Source Code/GUI\GUIEditor\Headers\GUIEditor.h" />
+    <ClInclude Include="..\../Source Code/GUI\Headers\SceneGUIElements.h" />
+    <ClInclude Include="..\../Source Code/Libs/CPPGoap\Action.h" />
+    <ClInclude Include="..\../Source Code/Libs/CPPGoap\Node.h" />
+    <ClInclude Include="..\../Source Code/Libs/CPPGoap\Planner.h" />
+    <ClInclude Include="..\../Source Code/Libs/CPPGoap\WorldState.h" />
+    <ClInclude Include="..\../Source Code/SceneList.h" />
+    <ClInclude Include="..\../Source Code/Scenes\CubeScene\Headers\CubeScene.h" />
+    <ClInclude Include="..\../Source Code/Scenes\DefaultScene\Headers\DefaultScene.h" />
+    <ClInclude Include="..\../Source Code/Scenes\FlashScene\Headers\FlashScene.h" />
+    <ClInclude Include="..\../Source Code/Scenes\Headers\Scene.h" />
+    <ClInclude Include="..\../Source Code/Scenes\Headers\SceneComponent.h" />
+    <ClInclude Include="..\../Source Code/Scenes\Headers\SceneEnvironmentProbePool.h" />
+    <ClInclude Include="..\../Source Code/Scenes\Headers\SceneInput.h" />
+    <ClInclude Include="..\../Source Code/Scenes\Headers\SceneInputActions.h" />
+    <ClInclude Include="..\../Source Code/Scenes\Headers\ScenePool.h" />
+    <ClInclude Include="..\../Source Code/Scenes\Headers\SceneShaderData.h" />
+    <ClInclude Include="..\../Source Code/Scenes\Headers\SceneState.h" />
+    <ClInclude Include="..\../Source Code/Scenes\MainScene\Headers\MainScene.h" />
+    <ClInclude Include="..\../Source Code/Scenes\NetworkScene\Headers\NetworkScene.h" />
+    <ClInclude Include="..\../Source Code/Scenes\PhysXScene\Headers\PhysXScene.h" />
+    <ClInclude Include="..\../Source Code/Scenes\PingPongScene\Headers\PingPongScene.h" />
+    <ClInclude Include="..\../Source Code/Scenes\ReflectionScene\Headers\ReflectionScene.h" />
+    <ClInclude Include="..\../Source Code/Scenes\ShadowScene\Headers\ShadowScene.h" />
+    <ClInclude Include="..\../Source Code/Scenes\TenisScene\Headers\TenisScene.h" />
+    <ClInclude Include="..\../Source Code/Scenes\TenisScene\Headers\TenisSceneAIProcessor.h" />
+    <ClInclude Include="..\../Source Code/Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h" />
+    <ClInclude Include="..\../Source Code/Scenes\WarScene\Headers\WarScene.h" />
+    <ClInclude Include="..\../Source Code/Scenes\WarScene\Headers\WarSceneAIProcessor.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="..\..\main.xml">
@@ -267,7 +267,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+    <OutDir>$(SolutionDir)../Source Code/Libs/lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>$(Configuration)_Game\</IntDir>
@@ -278,10 +278,10 @@
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+    <OutDir>$(SolutionDir)../Source Code/Libs/lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+    <OutDir>$(SolutionDir)../Source Code/Libs/lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(Configuration)_Game\</IntDir>
@@ -303,7 +303,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(EngineLibraries)\boost\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\PxShared\include\;$(EngineLibraries)\physx\PhysX_3.4\include\;$(EngineLibraries)\physx\PhysX_3.4\include\common\;$(EngineLibraries)\physx\PhysX_3.4\\include\foundation\;$(EngineLibraries)\physx\PhysX_3.4\\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;$(EngineLibraries)\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
@@ -336,7 +336,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_d$(TargetExt)</OutputFile>
+      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_d$(TargetExt)</OutputFile>
       <AdditionalDependencies>
       </AdditionalDependencies>
       <AdditionalLibraryDirectories>
@@ -353,7 +353,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(EngineLibraries)\boost\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\PxShared\include\;$(EngineLibraries)\physx\PhysX_3.4\include\;$(EngineLibraries)\physx\PhysX_3.4\include\common\;$(EngineLibraries)\physx\PhysX_3.4\\include\foundation\;$(EngineLibraries)\physx\PhysX_3.4\\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;$(EngineLibraries)\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
@@ -384,7 +384,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)$(TargetExt)</OutputFile>
+      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)$(TargetExt)</OutputFile>
       <AdditionalDependencies>
       </AdditionalDependencies>
       <Verbose>false</Verbose>
@@ -396,7 +396,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(EngineLibraries)\boost\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\PxShared\include\;$(EngineLibraries)\physx\PhysX_3.4\include\;$(EngineLibraries)\physx\PhysX_3.4\include\common\;$(EngineLibraries)\physx\PhysX_3.4\\include\foundation\;$(EngineLibraries)\physx\PhysX_3.4\\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;$(EngineLibraries)\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -427,7 +427,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
+      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_p$(TargetExt)</OutputFile>
       <Verbose>false</Verbose>
     </Lib>
   </ItemDefinitionGroup>
