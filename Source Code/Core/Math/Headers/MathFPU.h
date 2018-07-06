@@ -69,19 +69,19 @@ namespace Mat4{
 		out[0]  =  (in[5] * in[10] - in[9] * in[6]) * idet;
 		out[1]  = -(in[1] * in[10] - in[9] * in[2]) * idet;
 		out[2]  =  (in[1] * in[6]  - in[5] * in[2]) * idet;
-		out[3]  = 0.0;
+		out[3]  = 0.0f;
 		out[4]  = -(in[4] * in[10] - in[8] * in[6]) * idet;
 		out[5]  =  (in[0] * in[10] - in[8] * in[2]) * idet;
 		out[6]  = -(in[0] * in[6]  - in[4] * in[2]) * idet;
-		out[7]  = 0.0;
+		out[7]  = 0.0f;
 		out[8]  =  (in[4] * in[9] - in[8] * in[5]) * idet;
 		out[9]  = -(in[0] * in[9] - in[8] * in[1]) * idet;
 		out[10] =  (in[0] * in[5] - in[4] * in[1]) * idet;
-		out[11] = 0.0;
+		out[11] = 0.0f;
 		out[12] = -(in[12] * (out)[0] + in[13] * (out)[4] + in[14] * (out)[8]);
 		out[13] = -(in[12] * (out)[1] + in[13] * (out)[5] + in[14] * (out)[9]);
 		out[14] = -(in[12] * (out)[2] + in[13] * (out)[6] + in[14] * (out)[10]);
-		out[15] = 1.0;
+		out[15] = 1.0f;
 	}
 }
 #endif

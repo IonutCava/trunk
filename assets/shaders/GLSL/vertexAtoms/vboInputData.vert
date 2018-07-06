@@ -47,9 +47,9 @@ uniform vec4 dvd_clip_plane[MAX_CLIP_PLANES];
 
 layout(std140) uniform dvd_MatrixBlock
 {
-    mat4 dvd_ProjectionMatrix;
-    mat4 dvd_ViewMatrix;
-	mat4 dvd_ViewProjectionMatrix;
+   mat4 dvd_ProjectionMatrix;
+   mat4 dvd_ViewMatrix;
+   mat4 dvd_ViewProjectionMatrix;
 };
 
 //layout(std140) uniform dvd_LightBlock

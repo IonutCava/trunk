@@ -112,21 +112,22 @@ void ShaderProgram::uploadNodeMatrices(){
         this->Uniform("dvd_NormalMatrix",_cachedNormalMatrix);
     }
     if(this->getUniformLocation("dvd_WorldMatrix") != -1){
-		GFX.getMatrix(GFXDevice::WORLD_MATRIX,_cachedMatrix);
+        GFX.getMatrix(GFXDevice::WORLD_MATRIX,_cachedMatrix);
         this->Uniform("dvd_WorldMatrix",_cachedMatrix);
     }
     if(this->getUniformLocation("dvd_WorldViewMatrix") != -1){
         GFX.getMatrix(GFXDevice::WV_MATRIX,_cachedMatrix);
         this->Uniform("dvd_WorldViewMatrix",_cachedMatrix);
     }
-	if(this->getUniformLocation("dvd_WorldViewMatrixInverse") != -1){
+    if(this->getUniformLocation("dvd_WorldViewMatrixInverse") != -1){
         GFX.getMatrix(GFXDevice::WV_INV_MATRIX,_cachedMatrix);
         this->Uniform("dvd_WorldViewMatrixInverse",_cachedMatrix);
     }
-	if(this->getUniformLocation("dvd_WorldViewProjectionMatrix") != -1){
-		GFX.getMatrix(GFXDevice::WVP_MATRIX, _cachedMatrix);
+    if(this->getUniformLocation("dvd_WorldViewProjectionMatrix") != -1){
+        GFX.getMatrix(GFXDevice::WVP_MATRIX, _cachedMatrix);
         this->Uniform("dvd_WorldViewProjectionMatrix",_cachedMatrix);
     }
+    
     /*Get and upload clip plane data*/
     if(GFX_DEVICE.clippingPlanesDirty()){
         GFX_DEVICE.updateClipPlanes();

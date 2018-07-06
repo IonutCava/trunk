@@ -210,11 +210,11 @@ public:
         */
     }
 
-	inline void set(const mat4<T> &matrix) {
-		this->mat[0] = matrix[0]; this->mat[3] = matrix[4]; this->mat[6] = matrix[8];
-		this->mat[1] = matrix[1]; this->mat[4] = matrix[5]; this->mat[7] = matrix[9];
-		this->mat[2] = matrix[2]; this->mat[5] = matrix[6]; this->mat[8] = matrix[10];
-	}
+    inline void set(const mat4<T> &matrix) {
+        this->mat[0] = matrix[0]; this->mat[3] = matrix[4]; this->mat[6] = matrix[8];
+        this->mat[1] = matrix[1]; this->mat[4] = matrix[5]; this->mat[7] = matrix[9];
+        this->mat[2] = matrix[2]; this->mat[5] = matrix[6]; this->mat[8] = matrix[10];
+    }
 
     inline mat3 transpose() const {
         return mat3(mat[0], mat[3], mat[6],
@@ -502,9 +502,9 @@ public:
         */
     }
 
-	inline void set(const mat4& matrix) {
-		this->set(matrix.mat);
-	}
+    inline void set(const mat4& matrix) {
+        this->set(matrix.mat);
+    }
 
     inline vec4<T> getCol(I32 index) const {
         return vec4<T>(this->mat[0 + (index*4)],
@@ -622,8 +622,8 @@ public:
         this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = 1.0; this->mat[14] = 0.0;
         this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 1.0;
     }
-	
-	inline void bias() {
+    
+    inline void bias() {
         this->mat[0] = 0.5; this->mat[4] = 0.0; this->mat[8]  = 0.0; this->mat[12] = 0.0;
         this->mat[1] = 0.0; this->mat[5] = 0.5; this->mat[9]  = 0.0; this->mat[13] = 0.0;
         this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = 0.5; this->mat[14] = 0.0;

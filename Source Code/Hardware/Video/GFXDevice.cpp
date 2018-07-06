@@ -79,7 +79,7 @@ void GFXDevice::closeRenderer(){
 void GFXDevice::renderInstance(RenderInstance* const instance){
     //All geometry is stored in VBO format
     assert(instance->object3D() != NULL);
-	Object3D* model = instance->object3D();
+    Object3D* model = instance->object3D();
  
     if(instance->preDraw())
         model->onDraw(getRenderStage());
@@ -91,48 +91,48 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
     if(_stateBlockDirty)
         updateStates();
 
-	if(model->getType() == Object3D::OBJECT_3D_PLACEHOLDER){
+    if(model->getType() == Object3D::OBJECT_3D_PLACEHOLDER){
         ERROR_FN(Locale::get("ERROR_GFX_INVALID_OBJECT_TYPE"),model->getName().c_str());
         return;
     }
-	 
-	if(model->getType() == Object3D::TEXT_3D){
+     
+    if(model->getType() == Object3D::TEXT_3D){
         Text3D* text = dynamic_cast<Text3D*>(model);
         drawText(text->getText(),text->getWidth(),text->getFont(),text->getHeight());
         return;
     }
 
-	Transform* transform = instance->transform();
-	VertexBufferObject* VBO = model->getGeometryVBO();
-	assert(VBO != NULL);
+    Transform* transform = instance->transform();
+    VertexBufferObject* VBO = model->getGeometryVBO();
+    assert(VBO != NULL);
 
-	if(transform) 
-		pushWorldMatrix(transform->getGlobalMatrix(), transform->isUniformScaled());
+    if(transform) 
+        pushWorldMatrix(transform->getGlobalMatrix(), transform->isUniformScaled());
 
     //Send our transformation matrixes (projection, world, view, inv model view, etc)
     VBO->currentShader()->uploadNodeMatrices();
     //Render our current vertex array object
     VBO->Draw(model->getCurrentLOD());
 
-	if(transform) 
-		popWorldMatrix();
+    if(transform) 
+        popWorldMatrix();
 }
 
 void GFXDevice::renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform){
-	assert(vbo != NULL);
+    assert(vbo != NULL);
 
     if(_stateBlockDirty)
         updateStates();
-	 
-	if(vboTransform){
+     
+    if(vboTransform){
          pushWorldMatrix(vboTransform->getGlobalMatrix(), vboTransform->isUniformScaled());
     }
          
-	vbo->currentShader()->uploadNodeMatrices();
+    vbo->currentShader()->uploadNodeMatrices();
     //Render our current vertex array object
     vbo->DrawRange();
 
-	if(vboTransform){
+    if(vboTransform){
         popWorldMatrix();
     }
 }
@@ -312,13 +312,13 @@ void GFXDevice::enableFog(FogMode mode, F32 density, const vec3<F32>& color, F32
 }
 
  void GFXDevice::popWorldMatrix(bool force){
-	 _worldMatrices.pop();
-	 _isUniformedScaled = _WDirty = true;
+     _worldMatrices.pop();
+     _isUniformedScaled = _WDirty = true;
 }
 
 void GFXDevice::pushWorldMatrix(const mat4<F32>& worldMatrix, bool isUniformedScaled){
     _worldMatrices.push(worldMatrix);
-	_isUniformedScaled = isUniformedScaled;
+    _isUniformedScaled = isUniformedScaled;
     _WDirty = true;
 }
        
@@ -326,39 +326,41 @@ void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat){
      assert(mode == NORMAL_MATRIX /*|| mode == ... */);
      cleanMatrices();
             
-	 // Normal Matrix
+     // Normal Matrix
      if(!_isUniformedScaled){
-		 mat4<F32> temp;
-		 _WVCachedMatrix.inverse(temp);
-		 mat.set(temp.transpose());
-	 }else{
-		 mat.set(_WVCachedMatrix);
-	 }
+         mat4<F32> temp;
+         _WVCachedMatrix.inverse(temp);
+         mat.set(temp.transpose());
+     }else{
+         mat.set(_WVCachedMatrix);
+     }
 }
 
 void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat) {
      assert(mode != NORMAL_MATRIX /*|| mode != ... */);
 
-	 //refresh cache
-	 if(mode != WORLD_MATRIX && mode != BIAS_MATRIX)
-		 cleanMatrices();
-
+     //refresh cache
+     if(mode != WORLD_MATRIX && mode != BIAS_MATRIX)
+          cleanMatrices();
+      
       switch(mode){
           case WORLD_MATRIX:  mat.set(_worldMatrices.top()); break;
-		  case WV_MATRIX:     mat.set(_WVCachedMatrix);      break;
-		  case WVP_MATRIX:    mat.set(_WVPCachedMatrix);     break;
+          case WV_MATRIX:     mat.set(_WVCachedMatrix);      break;
+          case WVP_MATRIX:    mat.set(_WVPCachedMatrix);     break;
           case BIAS_MATRIX:   mat.bias();                    break;
-	      case WV_INV_MATRIX: _WVCachedMatrix.inverse(mat);  break;
+          case WV_INV_MATRIX: _WVCachedMatrix.inverse(mat);  break;
       }
 }
 
 void GFXDevice::cleanMatrices(){
-	 if(_WDirty){
-		if(_VDirty) 	       _api.getMatrix(VIEW_MATRIX, _viewCacheMatrix);
-		if(_VDirty || _PDirty) _api.getMatrix(VIEW_PROJECTION_MATRIX, _VPCachedMatrix);
-	 
-		 _WVCachedMatrix.set(_viewCacheMatrix * _worldMatrices.top());
-		 _WVPCachedMatrix.set(_VPCachedMatrix * _worldMatrices.top());
-		 _VDirty = _PDirty = _WDirty = false;
-	 }
+    assert(!_worldMatrices.empty());
+    if(_WDirty){
+        if(_VDirty) 	       _api.getMatrix(VIEW_MATRIX, _viewCacheMatrix);
+        if(_VDirty || _PDirty) _api.getMatrix(VIEW_PROJECTION_MATRIX, _VPCachedMatrix);
+        // we transpose the matrices when we use them in the shader
+         _WVCachedMatrix.set(_worldMatrices.top() * _viewCacheMatrix);
+         _WVPCachedMatrix.set(_worldMatrices.top() * _VPCachedMatrix);
+
+         _VDirty = _PDirty = _WDirty = false;
+    }
 }

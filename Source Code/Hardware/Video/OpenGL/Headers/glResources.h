@@ -289,7 +289,6 @@ namespace Divide {
     void _popMatrix();
     void _loadIdentity();
     /*-----------------END: FIXED PIPELINE EMULATION -----------------------*/
-    void _queryMatrix(const MATRIX_MODE& mode,     mat4<GLfloat>& mat);
 
     /*-----------------Locals------------------------------------------------*/
     extern glm::mat4   _identityMatrix;

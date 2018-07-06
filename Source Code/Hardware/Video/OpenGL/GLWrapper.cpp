@@ -128,7 +128,10 @@ void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const 
 
     priv->_hasLines = true;
     priv->_lineWidth = 4.0f;
+    mat4<F32> offset(globalOffset);
 
+    priv->setRenderStates(DELEGATE_BIND(&GL_API::setupLineState, this, offset,  GFX_DEVICE._defaultStateBlock, false),
+                          DELEGATE_BIND(&GL_API::releaseLineState, this, false));
     priv->beginBatch();
 
     vec4<GLubyte> color(0,0,255,255);
@@ -235,8 +238,8 @@ void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
     if(pointsA.size() != colors.size()) return;
 
     IMPrimitive* priv = getOrCreateIMPrimitive();
-    mat4<F32> offset;
-    std::copy(globalOffset.mat, globalOffset.mat+16, offset.mat);
+    mat4<F32> offset(globalOffset);
+
     priv->_hasLines = true;
     priv->_lineWidth = 5.0f;
     if(!priv->hasRenderStates()){
@@ -264,7 +267,7 @@ void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
 }
 
 void GL_API::drawText(const std::string& text, const GLint width, const std::string& fontName, const GLfloat fontSize){
-	setActiveVAO(0);
+    setActiveVAO(0);
 
     FTFont* font = getFont(fontName);
     if(!font) return;

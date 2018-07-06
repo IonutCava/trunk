@@ -113,26 +113,26 @@ GLfloat matrixDataProjection[3 * 16];
 
 void GL_API::updateProjectionMatrix(){
     if(!Divide::GL::_contextAvailable) return;
-	_ViewProjectionCacheMatrix.set(glm::value_ptr(Divide::GL::_projectionMatrix.top() * Divide::GL::_viewMatrix.top()));
+    _ViewProjectionCacheMatrix.set(glm::value_ptr(Divide::GL::_projectionMatrix.top() * Divide::GL::_viewMatrix.top()));
 
-	memcpy(matrixDataProjection, glm::value_ptr(Divide::GL::_projectionMatrix.top()), mat4Size);
-	memcpy(matrixDataProjection + 16, glm::value_ptr(Divide::GL::_viewMatrix.top()), mat4Size);
-	memcpy(matrixDataProjection + 32, _ViewProjectionCacheMatrix.mat, mat4Size);
+    memcpy(matrixDataProjection, glm::value_ptr(Divide::GL::_projectionMatrix.top()), mat4Size);
+    memcpy(matrixDataProjection + 16, glm::value_ptr(Divide::GL::_viewMatrix.top()), mat4Size);
+    memcpy(matrixDataProjection + 32, _ViewProjectionCacheMatrix.mat, mat4Size);
 
     _uniformBufferObjects[Matrices_UBO]->ChangeSubData(0, 3 * mat4Size, matrixDataProjection);
-	GFX_DEVICE.setProjectionDirty(true);
+    GFX_DEVICE.setProjectionDirty(true);
 }
 
 void GL_API::updateViewMatrix(){
     if(!Divide::GL::_contextAvailable) return;
-	_ViewProjectionCacheMatrix.set(glm::value_ptr(Divide::GL::_projectionMatrix.top() * Divide::GL::_viewMatrix.top()));
+    _ViewProjectionCacheMatrix.set(glm::value_ptr(Divide::GL::_projectionMatrix.top() * Divide::GL::_viewMatrix.top()));
 
-	memcpy(matrixDataView, glm::value_ptr(Divide::GL::_viewMatrix.top()), mat4Size);
-	memcpy(matrixDataView + 16, _ViewProjectionCacheMatrix.mat, mat4Size);
+    memcpy(matrixDataView, glm::value_ptr(Divide::GL::_viewMatrix.top()), mat4Size);
+    memcpy(matrixDataView + 16, _ViewProjectionCacheMatrix.mat, mat4Size);
 
     _uniformBufferObjects[Matrices_UBO]->ChangeSubData(mat4Size, 2 * mat4Size, matrixDataView);
 
-	GFX_DEVICE.setViewDirty(true);
+    GFX_DEVICE.setViewDirty(true);
 }
 
 //Setting _LookAt here for camera's or shadow projection
@@ -149,9 +149,12 @@ void GL_API::lookAt(const vec3<GLfloat>& eye, const vec3<GLfloat>& target, const
 }
 
 void GL_API::getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat) {
-	if(mode == VIEW_PROJECTION_MATRIX)           mat.set(_ViewProjectionCacheMatrix);
-	else if(mode == VIEW_PROJECTION_INV_MATRIX) _ViewProjectionCacheMatrix.inverse(mat);
-	else 		                                Divide::GL::_queryMatrix(mode, mat);
+    if(mode == VIEW_PROJECTION_MATRIX)          mat.set(_ViewProjectionCacheMatrix);
+    else if(mode == VIEW_MATRIX)                mat.set(glm::value_ptr(Divide::GL::_viewMatrix.top()));
+    else if(mode == PROJECTION_MATRIX)          mat.set(glm::value_ptr(Divide::GL::_projectionMatrix.top()));
+    else if(mode == TEXTURE_MATRIX)             mat.set(glm::value_ptr(Divide::GL::_textureMatrix.top()));
+    else if(mode == VIEW_PROJECTION_INV_MATRIX) _ViewProjectionCacheMatrix.inverse(mat);
+    else assert(mode == -1);
 }
 
 void GL_API::lockMatrices(const MATRIX_MODE& setCurrentMatrix, bool lockView, bool lockProjection){

@@ -161,12 +161,5 @@ namespace Divide {
                 assert(_currentMatrixMode == -1);
             }
         }
-
-        void _queryMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat){
-            if(mode == VIEW_MATRIX)            mat.set(glm::value_ptr(_viewMatrix.top()));
-            else if(mode == PROJECTION_MATRIX) mat.set(glm::value_ptr(_projectionMatrix.top()));
-            else if(mode == TEXTURE_MATRIX)    mat.set(glm::value_ptr(_textureMatrix.top()));
-            else assert(mode == -1);
-        }
     }//namespace GL
 }// namespace Divide
