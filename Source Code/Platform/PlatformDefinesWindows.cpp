@@ -17,22 +17,20 @@
 #endif
 #include <direct.h>
 
-// We are actually importing GL specific libraries in code mainly for
-// maintenance reasons
-// We can easily adjust them as needed. Same thing with PhysX libs
-#pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "OpenAL32.lib")
 #pragma comment(lib, "Winmm.lib")
 #pragma comment(lib, "OpenCL.lib")
 #pragma comment(lib, "SDL2.lib")
 #pragma comment(lib, "SDL2_mixer.lib")
+#pragma comment(lib, "dinput8.lib")
+#pragma comment(lib, "dxguid.lib")
 
 #ifdef _DEBUG
 #pragma comment(lib, "AntTweakBar64.lib")
 #pragma comment(lib, "DbgHelp.lib")
 #pragma comment(lib, "glbindingd.lib")
 #pragma comment(lib, "glbinding-auxd.lib")
-#pragma comment(lib, "OIS_static_d.lib")
+#pragma comment(lib, "OISd.lib")
 #pragma comment(lib, "assimp-vc140-mt_d.lib")
 #pragma comment(lib, "IL_d.lib")
 #pragma comment(lib, "libpng_d.lib")
@@ -61,9 +59,6 @@
 #pragma comment(lib, "PxFoundationDEBUG_x64.lib")
 
 #else  //_DEBUG
-#pragma comment(lib, "glbinding.lib")
-#pragma comment(lib, "glbinding-aux.lib")
-#pragma comment(lib, "OIS_static.lib")
 #pragma comment(lib, "IL.lib")
 #pragma comment(lib, "libpng.lib")
 #pragma comment(lib, "jpeg.lib")
@@ -76,6 +71,9 @@
 #pragma comment(lib, "FreeImage.lib")
 
 #if defined(_PROFILE)
+    #pragma comment(lib, "OISp.lib")
+    #pragma comment(lib, "glbindingp.lib")
+    #pragma comment(lib, "glbinding-auxp.lib")
     #pragma comment(lib, "assimp-vc140-mt_p.lib")
     #pragma comment(lib, "PhysX3CookingCHECKED_x64.lib")
     #pragma comment(lib, "PhysX3CHECKED_x64.lib")
@@ -91,6 +89,9 @@
     #pragma comment(lib, "CEGUILuaScriptModule-0_Static_p.lib")
     #pragma comment(lib, "CEGUITinyXMLParser_Static_p.lib")
 #else
+    #pragma comment(lib, "OIS.lib")
+    #pragma comment(lib, "glbinding.lib")
+    #pragma comment(lib, "glbinding-aux.lib")
     #pragma comment(lib, "assimp-vc140-mt.lib")
     #pragma comment(lib, "PhysX3Cooking_x64.lib")
     #pragma comment(lib, "PhysX3_x64.lib")
