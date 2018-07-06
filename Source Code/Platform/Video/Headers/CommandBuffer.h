@@ -95,7 +95,7 @@ class CommandBuffer : protected NonCopyable {
 
   protected:
       vectorEASTL<CommandEntry> _commandOrder;
-      boost::base_collection<GFX::Command> _commands;
+      boost::base_collection<GFX::Command, dvd_allocator<GFX::Command>> _commands;
 };
 
 template<typename T>

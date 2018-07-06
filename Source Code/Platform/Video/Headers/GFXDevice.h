@@ -349,6 +349,7 @@ public:
     ShaderBuffer*      newSB(const ShaderBufferDescriptor& descriptor) const;
 
     Pipeline&          newPipeline(const PipelineDescriptor& descriptor) const;
+    DescriptorSet&     newDescriptorSet();
 
     // Shortcuts
     void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const;
@@ -516,6 +517,8 @@ protected:
     MemoryPool<GenericDrawCommand> _commandPool;
 
     Time::ProfileTimer& _commandBuildTimer;
+
+    MemoryPool<DescriptorSet, 1024> _descriptorSetPool;
 
     mutable hashMap<size_t, Pipeline> _pipelineCache;
     std::shared_ptr<RenderDocManager> _renderDocManager;

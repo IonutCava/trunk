@@ -80,7 +80,12 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
         return _pipeline;
     }
 
+    inline const Texture* texture() const {
+        return _texture;
+    }
+
     virtual void pipeline(const Pipeline& pipeline);
+    virtual void texture(const Texture& texture);
 
     virtual void draw(const GenericDrawCommand& cmd) = 0;
 
@@ -156,14 +161,13 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
    public:
     virtual ~IMPrimitive();
 
-   public:
+   protected:
 
     const Pipeline* _pipeline;
     const Texture* _texture;
-
-   protected:
     // render in wireframe mode
     bool _forceWireframe;
+    DescriptorSet _descriptorSet;
 
    private:
     /// If _pause is true, rendering for the current primitive is skipped and

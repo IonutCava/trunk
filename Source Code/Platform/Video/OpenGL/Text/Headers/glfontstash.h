@@ -18,53 +18,75 @@
 // Modified by Ionut Cava: Updated rendering for compatibility with OpenGL 3.3+
 // Core Context
 
-#ifndef GLFONTSTASH_H
-#define GLFONTSTASH_H
+#ifndef GL3COREFONTSTASH_H
+#define GL3COREFONTSTASH_H
 
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
-
-struct FONScontext* glfonsCreate(int width, int height, int flags);
-void glfonsDelete(struct FONScontext* ctx);
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+FONS_DEF FONScontext* glfonsCreate(int width, int height, int flags);
+FONS_DEF void glfonsDelete(FONScontext* ctx);
+
+FONS_DEF unsigned int glfonsRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // GL3COREFONTSTASH_H
 
 #ifdef GLFONTSTASH_IMPLEMENTATION
 
-constexpr GLuint glfons_position_slot = (GLuint)(Divide::AttribLocation::VERTEX_POSITION);
-constexpr GLuint glfons_textcoord_slot = (GLuint)(Divide::AttribLocation::VERTEX_TEXCOORD);
-constexpr GLuint glfons_colour_slot = (GLuint)(Divide::AttribLocation::VERTEX_COLOR);
+constexpr GLuint GLFONS_VERTEX_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_POSITION);
+constexpr GLuint GLFONS_TCOORD_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_TEXCOORD);
+constexpr GLuint GLFONS_COLOR_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_COLOR);
 
 struct GLFONScontext {
     GLuint tex;
-    GLuint glfons_vaoID;
-    GLuint glfons_vboID;
     int width, height;
+	GLuint glfons_vaoID;
+    GLuint glfons_vboID;
 };
+typedef struct GLFONScontext GLFONScontext;
 
-static int glfons__renderCreate(void* userPtr, int width, int height) {
-    assert((width > 0 && height > 0) && "glfons__renderCreate error: invalid texture dimensions!");
-    struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
+static int glfons__renderCreate(void* userPtr, int width, int height)
+{
+    GLFONScontext* gl = (GLFONScontext*)userPtr;
+
+	// Create may be called multiple times, delete existing texture.
+	if (gl->tex != 0) {
+		glDeleteTextures(1, &gl->tex);
+		gl->tex = 0;
+	}
     glCreateTextures(GL_TEXTURE_2D, 1, &gl->tex);
-    glCreateVertexArrays(1, &gl->glfons_vaoID);
-    glCreateBuffers(1, &gl->glfons_vboID);
+	if (!gl->tex) return 0;
+
+    if (!gl->glfons_vaoID) glCreateVertexArrays(1, &gl->glfons_vaoID);
+	if (!gl->glfons_vaoID) return 0;
 
     Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     {
+    	if (!gl->glfons_vboID) glCreateBuffers(1, &gl->glfons_vboID);
+		if (!gl->glfons_vboID) return 0;
+
         Divide::U32 prevOffset = 0;
-        glEnableVertexAttribArray(glfons_position_slot);
-        glVertexAttribFormat(glfons_position_slot, 2, GL_FLOAT, GL_FALSE, prevOffset);
+        glEnableVertexAttribArray(GLFONS_VERTEX_ATTRIB);
+        glVertexAttribFormat(GLFONS_VERTEX_ATTRIB, 2, GL_FLOAT, GL_FALSE, prevOffset);
 
         prevOffset += Divide::to_U32(sizeof(float) * 2);
-        glEnableVertexAttribArray(glfons_textcoord_slot);
-        glVertexAttribFormat(glfons_textcoord_slot, 2, GL_FLOAT, GL_FALSE, Divide::to_U32(prevOffset));
+        glEnableVertexAttribArray(GLFONS_TCOORD_ATTRIB);
+        glVertexAttribFormat(GLFONS_TCOORD_ATTRIB, 2, GL_FLOAT, GL_FALSE, Divide::to_U32(prevOffset));
 
         prevOffset += Divide::to_U32(sizeof(float) * 2);
-        glEnableVertexAttribArray(glfons_colour_slot);
-        glVertexAttribFormat(glfons_colour_slot, 4, GL_UNSIGNED_BYTE, GL_TRUE, prevOffset);
+        glEnableVertexAttribArray(GLFONS_COLOR_ATTRIB);
+        glVertexAttribFormat(GLFONS_COLOR_ATTRIB, 4, GL_UNSIGNED_BYTE, GL_TRUE, prevOffset);
 
-        glVertexAttribBinding(glfons_position_slot, 0);
-        glVertexAttribBinding(glfons_textcoord_slot, 0);
-        glVertexAttribBinding(glfons_colour_slot, 0);
+        glVertexAttribBinding(GLFONS_VERTEX_ATTRIB, 0);
+        glVertexAttribBinding(GLFONS_TCOORD_ATTRIB, 0);
+        glVertexAttribBinding(GLFONS_COLOR_ATTRIB, 0);
 
         glVertexArrayVertexBuffer(gl->glfons_vaoID, 0, gl->glfons_vboID, 0, sizeof(FONSvert));
     }
@@ -93,10 +115,15 @@ static int glfons__renderCreate(void* userPtr, int width, int height) {
     return 1;
 }
 
-static void glfons__renderUpdate(void* userPtr,
-                                 int* rect,
-                                 const unsigned char* data) {
-    struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
+static int glfons__renderResize(void* userPtr, int width, int height)
+{
+	// Reuse create to resize too.
+	return glfons__renderCreate(userPtr, width, height);
+}
+
+static void glfons__renderUpdate(void* userPtr, int* rect, const unsigned char* data)
+{
+	GLFONScontext* gl = (GLFONScontext*)userPtr;
 
     if (gl->tex != 0) {
         int w = rect[2] - rect[0];
@@ -106,13 +133,10 @@ static void glfons__renderUpdate(void* userPtr,
     }
 }
 
-static void glfons__renderDraw(void* userPtr,
-                               const FONSvert* verts,
-                               int nverts) {
-    struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
-    if (gl->tex == 0) {
-        return;
-    }
+static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
+{
+    GLFONScontext* gl = (GLFONScontext*)userPtr;
+    if (gl->tex == 0 || gl->glfons_vaoID == 0) return;
 
     GLuint bufferID = gl->glfons_vboID;
     Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
@@ -136,20 +160,21 @@ static void glfons__renderDelete(void* userPtr) {
     free(gl);
 }
 
-struct FONScontext* glfonsCreate(int width, int height, int flags) {
-    struct FONSparams params;
-    struct GLFONScontext* gl;
+FONS_DEF FONScontext* glfonsCreate(int width, int height, int flags)
+{
+	FONSparams params;
+	GLFONScontext* gl;
 
-    gl = (struct GLFONScontext*)malloc(sizeof(struct GLFONScontext));
-    if (gl == nullptr)
-        goto error;
-    memset(gl, 0, sizeof(struct GLFONScontext));
+	gl = (GLFONScontext*)malloc(sizeof(GLFONScontext));
+	if (gl == nullptr) goto error;
+	memset(gl, 0, sizeof(GLFONScontext));
 
     memset(&params, 0, sizeof(params));
     params.width = width;
     params.height = height;
-    params.flags = static_cast<unsigned char>(flags);
+	params.flags = (unsigned char)flags;
     params.renderCreate = glfons__renderCreate;
+	params.renderResize = glfons__renderResize;
     params.renderUpdate = glfons__renderUpdate;
     params.renderDraw = glfons__renderDraw;
     params.renderDelete = glfons__renderDelete;
@@ -158,12 +183,18 @@ struct FONScontext* glfonsCreate(int width, int height, int flags) {
     return fonsCreateInternal(&params);
 
 error:
-    free(gl);
-    return nullptr;
+	if (gl != NULL) free(gl);
+	return NULL;
 }
 
-void glfonsDelete(struct FONScontext* ctx) {
+FONS_DEF void glfonsDelete(FONScontext* ctx)
+{
     fonsDeleteInternal(ctx);
 }
 
-#endif
+FONS_DEF unsigned int glfonsRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+{
+	return (r) | (g << 8) | (b << 16) | (a << 24);
+}
+
+#endif // GLFONTSTASH_IMPLEMENTATION

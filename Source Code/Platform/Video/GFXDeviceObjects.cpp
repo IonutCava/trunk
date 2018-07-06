@@ -233,6 +233,10 @@ Pipeline& GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
     return it->second;
 }
 
+DescriptorSet& GFXDevice::newDescriptorSet() {
+    return *_descriptorSetPool.newElement();
+}
+
 ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
                                            const stringImpl& name,
                                            const stringImpl& resourceName,

@@ -27,6 +27,7 @@ void IMPrimitive::clear() {
     clearRenderStates();
     _worldMatrix.identity();
     _texture = nullptr;
+    _descriptorSet._textureData.clear();
 }
 
 void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const UColour& colour) {
@@ -201,4 +202,10 @@ void IMPrimitive::pipeline(const Pipeline& pipeline) {
     _pipeline = &pipeline;
 }
 
+void IMPrimitive::texture(const Texture& texture) {
+    _texture = &texture;
+    _descriptorSet._textureData.clear();
+    _descriptorSet._textureData.addTexture(_texture->getData(),
+                                           to_U8(ShaderProgram::TextureUsage::UNIT0));
+}
 };
