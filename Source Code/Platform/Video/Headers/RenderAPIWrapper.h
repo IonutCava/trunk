@@ -399,7 +399,7 @@ class RingBuffer {
             if (queueLength() > 1) {
                 WriteLock w_lock(_lock);
                 _queueWriteIndex = (_queueWriteIndex + 1) % _queueLength;
-                _queueReadIndex  = (_queueReadIndex + 1) & _queueLength;
+                _queueReadIndex  = (_queueReadIndex + 1) % _queueLength;
             }
         }
 
@@ -407,7 +407,7 @@ class RingBuffer {
             if (queueLength() > 1) {
                 WriteLock w_lock(_lock);
                 _queueWriteIndex = (_queueWriteIndex - 1) % _queueLength;
-                _queueReadIndex = (_queueReadIndex - 1) & _queueLength;
+                _queueReadIndex = (_queueReadIndex - 1) % _queueLength;
             }
         }
 
