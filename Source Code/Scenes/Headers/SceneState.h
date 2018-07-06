@@ -89,6 +89,7 @@ class SceneRenderState {
     /// Show/hide geometry
     void toggleGeometry();
 
+
     inline void drawGeometry(bool state) {
         _drawGeometry = state;
     }
@@ -137,6 +138,14 @@ class SceneRenderState {
         return _debugDrawTargetLines;
     }
 
+    inline void drawOctreeRegions(bool visibility) {
+        _drawOctreeRegions = visibility;
+    }
+
+    inline bool drawOctreeRegions() const {
+        return _drawOctreeRegions;
+    }
+
     inline void gizmoState(GizmoState newState) {
         _gizmoState = newState;
     }
@@ -178,6 +187,7 @@ class SceneRenderState {
     bool _drawSkeletons;
     bool _drawBoundingBoxes;
     bool _drawWireframe;
+    bool _drawOctreeRegions;
 
     GizmoState _gizmoState;
     CameraManager* _cameraMgr;

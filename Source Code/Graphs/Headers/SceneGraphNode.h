@@ -241,7 +241,9 @@ class SceneGraphNode : public GUIDWrapper,
 
     friend class SceneGraph;
     friend class std::shared_ptr<SceneGraphNode> ;*/
-    explicit SceneGraphNode(SceneNode& node, const stringImpl& name);
+    explicit SceneGraphNode(SceneGraph& sceneGraph,
+                            SceneNode& node,
+                            const stringImpl& name);
     ~SceneGraphNode();
 
     bool operator==(const SceneGraphNode& rhs) const {
@@ -274,6 +276,9 @@ class SceneGraphNode : public GUIDWrapper,
     inline void setName(const stringImpl& name) { _name = name; }
 
    private:
+    // An SGN doesn't exist outside of a scene graph
+    SceneGraph& _sceneGraph;
+
     D32 _updateTimer;
     U64 _elapsedTime;
     stringImpl _name;

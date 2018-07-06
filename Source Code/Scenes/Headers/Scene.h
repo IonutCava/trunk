@@ -267,6 +267,8 @@ class NOINITVTABLE Scene : public Resource {
     std::unique_ptr<SceneInput> _input;
 #ifdef _DEBUG
     IMPrimitive* _linesPrimitive;
+    vectorImpl<IMPrimitive*> _octreePrimitives;
+    vectorImpl<BoundingBox> _octreeBoundingBoxes;
 #endif
 };
 

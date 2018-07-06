@@ -16,21 +16,21 @@ namespace {
 };
 
 SceneGraph::SceneGraph() : FrameListener(),
-                           _rootNode(MemoryManager_NEW SceneRoot()),
-                           _root(std::make_shared<SceneGraphNode>(*_rootNode, "ROOT"))
+                           _rootNode(MemoryManager_NEW SceneRoot())
 {
     REGISTER_FRAME_LISTENER(this, 1);
+    _root = std::make_shared<SceneGraphNode>(*this, *_rootNode, "ROOT");
     _rootNode->postLoad(*_root);
 
     onNodeAdd(*_root);
     vectorImpl<SceneGraphNode_wptr> objects;
     objects.push_back(_root);
-    _octree = MemoryManager_NEW Octree(BoundingBox(vec3<F32>(-10000), vec3<F32>(10000)), objects);
+    _octree.reset(MemoryManager_NEW Octree(BoundingBox(vec3<F32>(-10000), vec3<F32>(10000)), objects));
 }
 
 SceneGraph::~SceneGraph()
 { 
-    MemoryManager::DELETE(_octree);
+    _octree.reset();
     UNREGISTER_FRAME_LISTENER(this);
     Console::d_printfn(Locale::get(_ID("DELETE_SCENEGRAPH")));
     // Should recursively delete the entire scene graph
@@ -68,6 +68,13 @@ void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
 
 void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
     if (!BitCompare(ignoredNodeType, to_uint(newNode.getNode<>()->getType()))) {
+        _octree->registerMovedNode(newNode);
+    }
+}
+
+void SceneGraph::onNodeTransform(SceneGraphNode& node) {
+    if (!BitCompare(ignoredNodeType, to_uint(node.getNode<>()->getType()))) {
+        _octree->registerMovedNode(node);
     }
 }
 

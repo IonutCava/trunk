@@ -35,11 +35,11 @@
 #include "SceneGraphNode.h"
 
 namespace Divide {
-
+// ref: http://www.gamedev.net/page/resources/_/technical/game-programming/introduction-to-octrees-r3529
 class Octree : public std::enable_shared_from_this<Octree> {
     /// Minimum cube size is 1x1x1
     static const I32 MIN_SIZE = 1;
-    static const I32 MAX_LIFE_SPAN_LIMIT = 64;
+    static const I32 MAX_LIFE_SPAN_LIMIT = 32;
 
     public:
         Octree();
@@ -49,27 +49,33 @@ class Octree : public std::enable_shared_from_this<Octree> {
         ~Octree();
 
         void update(const U64 deltaTime);
-        void registerMovedNode(SceneGraphNode_ptr node);
+        void registerMovedNode(SceneGraphNode& node);
+        void getAllRegions(vectorImpl<BoundingBox>& regionsOut) const;
+
+        inline const BoundingBox& getRegion() const {
+            return _region;
+        }
+
     private:
         void updateTree();
         void buildTree();
         void insert(SceneGraphNode_wptr object);
         void findEnclosingCube();
         std::shared_ptr<Octree>
-        createNode(const BoundingBox& region,
-                   vectorImpl<SceneGraphNode_wptr> objects) const;
+        createNode(const BoundingBox& region, vectorImpl<SceneGraphNode_wptr> objects);
 
         std::shared_ptr<Octree>
-        createNode(const BoundingBox& region, SceneGraphNode_wptr object) const;
+        createNode(const BoundingBox& region, SceneGraphNode_wptr object);
+
     private:
         I32 _curLife;
         I32 _maxLifespan;
         bool _hasChildren;
-        std::weak_ptr<Octree> _parent;
         BoundingBox _region;
-        std::array<std::shared_ptr<Octree>, 8> _childNodes;
-        std::array<bool,   8> _activeNodes;
+        std::shared_ptr<Octree> _parent;
+        std::array<bool, 8> _activeNodes;
         vectorImpl<SceneGraphNode_wptr> _objects;
+        std::array<std::shared_ptr<Octree>, 8> _childNodes;
         hashMapImpl<I64, SceneGraphNode_wptr> _movedObjects;
         static std::queue<SceneGraphNode_ptr> _pendingInsertion;
         static bool _treeReady;

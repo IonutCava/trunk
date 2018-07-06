@@ -516,12 +516,19 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
         }
     };
 
+    _input->addKeyMapping(Input::KeyCode::KC_RETURN, cbks);
+
     cbks.second = [this]() {
         toggleFlashlight();
     };
     _input->addKeyMapping(Input::KeyCode::KC_F, cbks);
 
-    _input->addKeyMapping(Input::KeyCode::KC_RETURN, cbks);
+    cbks.second = [this]() {
+        renderState().drawOctreeRegions(!renderState().drawOctreeRegions());
+    };
+
+    _input->addKeyMapping(Input::KeyCode::KC_Y, cbks);
+
     _loadComplete = true;
     return _loadComplete;
 }
@@ -705,6 +712,32 @@ void Scene::debugDraw(RenderStage stage) {
             selection->getComponent<RenderingComponent>()->drawDebugAxis();
         }
     }
+
+    if (renderState().drawOctreeRegions()) {
+        for (IMPrimitive* prim : _octreePrimitives) {
+            prim->paused(true);
+        }
+
+        GFXDevice& gfx = GFX_DEVICE;
+
+        _octreeBoundingBoxes.resize(0);
+        getSceneGraph().getOctree().getAllRegions(_octreeBoundingBoxes);
+
+        size_t primitiveCount = _octreePrimitives.size();
+        size_t regionCount = _octreeBoundingBoxes.size();
+        size_t diff = regionCount - primitiveCount;
+        for (size_t i = 0; i < diff; ++i) {
+            _octreePrimitives.push_back(gfx.getOrCreatePrimitive(false));
+        }
+        assert(_octreePrimitives.size() == _octreeBoundingBoxes.size());
+
+        for (size_t i = 0; i < regionCount; ++i) {
+            const BoundingBox& box = _octreeBoundingBoxes[i];
+            IMPrimitive& prim = *_octreePrimitives[i];
+            gfx.drawBox3D(prim, box.getMin(), box.getMax(), vec4<U8>(255, 0, 255, 255));
+        }
+    }
+
 #endif
     if (stage == RenderStage::DISPLAY) {
         // Draw bounding boxes, skeletons, axis gizmo, etc.

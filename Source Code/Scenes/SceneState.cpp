@@ -11,6 +11,7 @@ SceneRenderState::SceneRenderState()
       _drawSkeletons(false),
       _drawBoundingBoxes(false),
       _drawWireframe(false),
+      _drawOctreeRegions(false),
       _debugDrawLines(false),
       _debugDrawTargetLines(false),
       _playAnimations(true)

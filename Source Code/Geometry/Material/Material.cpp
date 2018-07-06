@@ -215,9 +215,11 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 
     }
 
-    _translucencyCheck =
-        (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 ||
-         textureUsageSlot == ShaderProgram::TextureUsage::OPACITY);
+    if (!_translucencyCheck) {
+        _translucencyCheck =
+            (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 ||
+             textureUsageSlot == ShaderProgram::TextureUsage::OPACITY);
+    }
 
     if (_textures[slot]) {
         UNREGISTER_TRACKED_DEPENDENCY(_textures[slot]);

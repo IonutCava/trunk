@@ -76,7 +76,7 @@ void Octree::update(const U64 deltaTime) {
     }
 
     for (MovedMap::value_type& it : _movedObjects) {
-        Octree* current = this;
+        Octree*  current = this;
         SceneGraphNode_ptr movedObj = it.second.lock();
         if (!movedObj) {
             continue;
@@ -87,16 +87,16 @@ void Octree::update(const U64 deltaTime) {
 
         if (bb.getExtent() > VECTOR3_ZERO) {
             while(!current->_region.containsBox(bb)) {
-                if (current->_parent.lock() != nullptr) {
-                    current = current->_parent.lock().get();
+                if (current->_parent != nullptr) {
+                    current = current->_parent.get();
                 } else {
                     break;
                 }
             }
         } else {
             while (!current->_region.containsSphere(bs)) {
-                if (current->_parent.lock() != nullptr) {
-                    current = current->_parent.lock().get();
+                if (current->_parent != nullptr) {
+                    current = current->_parent.get();
                 } else {
                     break;
                 }
@@ -120,7 +120,7 @@ void Octree::update(const U64 deltaTime) {
     }
 
     /*// root node
-    if (_parent.lock() == nullptr) {
+    if (_parent == nullptr) {
         vectorImpl<IntersectionRecord> irList = getIntersection(vectorImpl<SceneGraphNode_wptr>());
 
         for(IntersectionRecord ir : irList) {
@@ -132,12 +132,10 @@ void Octree::update(const U64 deltaTime) {
     }*/
 }
 
-void Octree::registerMovedNode(SceneGraphNode_ptr node) {
-    if (node) {
-        I64 guid = node->getGUID();
-        if (_movedObjects.find(guid) == std::cend(_movedObjects)) {
-            _movedObjects[guid] = node;
-        }
+void Octree::registerMovedNode(SceneGraphNode& node) {
+    I64 guid = node.getGUID();
+    if (_movedObjects.find(guid) == std::cend(_movedObjects)) {
+        _movedObjects[guid] = node.shared_from_this();
     }
 }
 
@@ -352,7 +350,7 @@ void Octree::findEnclosingCube() {
 
 std::shared_ptr<Octree>
 Octree::createNode(const BoundingBox& region,
-                   vectorImpl<SceneGraphNode_wptr> objects) const {
+                   vectorImpl<SceneGraphNode_wptr> objects) {
     if (objects.empty()) {
         return nullptr;
     }
@@ -362,10 +360,21 @@ Octree::createNode(const BoundingBox& region,
 }
 
 std::shared_ptr<Octree>
-Octree::createNode(const BoundingBox& region, SceneGraphNode_wptr object) const {
+Octree::createNode(const BoundingBox& region, SceneGraphNode_wptr object) {
     vectorImpl<SceneGraphNode_wptr> objList;
     objList.push_back(object);
     return createNode(region, objList);
+}
+
+void Octree::getAllRegions(vectorImpl<BoundingBox>& regionsOut) const {
+    for (U8 i = 0; i < 8; ++i) {
+        if (_activeNodes[i]) {
+            assert(_childNodes[i]);
+            _childNodes[i]->getAllRegions(regionsOut);
+        }
+    }
+    
+    vectorAlg::emplace_back(regionsOut, getRegion().getMin(), getRegion().getMax());
 }
 
 }; //namespace Divide

@@ -14,8 +14,11 @@
 
 namespace Divide {
 
-SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
+SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, 
+                               SceneNode& node,
+                               const stringImpl& name)
     : GUIDWrapper(),
+      _sceneGraph(sceneGraph),
       _updateTimer(Time::ElapsedMilliseconds()),
       _elapsedTime(0ULL),
       _node(&node),
@@ -45,7 +48,7 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
 }
 
 void SceneGraphNode::usageContext(const UsageContext& newContext) {
-    Attorney::SceneGraphSGN::onNodeUsageChange(GET_ACTIVE_SCENEGRAPH(),
+    Attorney::SceneGraphSGN::onNodeUsageChange(_sceneGraph,
                                                *this,
                                                _usageContext,
                                                newContext);
@@ -56,7 +59,7 @@ void SceneGraphNode::usageContext(const UsageContext& newContext) {
 SceneGraphNode::~SceneGraphNode()
 {
     if (getParent().lock()) {
-        Attorney::SceneGraphSGN::onNodeDestroy(GET_ACTIVE_SCENEGRAPH(), *this);
+        Attorney::SceneGraphSGN::onNodeDestroy(_sceneGraph, *this);
     }
     Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")),
                      getName().c_str(), _node->getName().c_str());
@@ -103,7 +106,7 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneGraphNode_ptr node) {
         removeNode(*child, true);
     }
     
-    Attorney::SceneGraphSGN::onNodeAdd(GET_ACTIVE_SCENEGRAPH(), *node);
+    Attorney::SceneGraphSGN::onNodeAdd(_sceneGraph, *node);
     
     if (_childCount == _children.size()) {
         _children.push_back(node);
@@ -122,8 +125,10 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, const stringImpl& na
     // We need to name the new SceneGraphNode
     // If we did not supply a custom name use the SceneNode's name
     SceneGraphNode_ptr sceneGraphNode = 
-        std::make_shared<SceneGraphNode>(node, name.empty() ? node.getName()
-                                                            : name);
+        std::make_shared<SceneGraphNode>(_sceneGraph, 
+                                         node,
+                                         name.empty() ? node.getName()
+                                                      : name);
 
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
@@ -310,6 +315,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     PhysicsComponent* pComp = getComponent<PhysicsComponent>();
     const PhysicsComponent::TransformMask& transformUpdateMask = pComp->transformUpdateMask();
     if (transformUpdateMask.hasSetFlags()) {
+        Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this);
         _boundingBoxDirty = true;
         for (U32 i = 0; i < childCount; ++i) {
             getChild(i, childCount).getComponent<PhysicsComponent>()->transformUpdateMask().setFlags(transformUpdateMask);

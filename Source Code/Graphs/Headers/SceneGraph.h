@@ -66,6 +66,13 @@ class SceneGraph : private NonCopyable, public FrameListener {
         return _root->findNode(name, sceneNodeName);
     }
 
+    inline Octree& getOctree() {
+        return *_octree;
+    }
+
+    inline const Octree& getOctree() const {
+        return *_octree;
+    }
     /// Update all nodes. Called from "updateSceneState" from class Scene
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
 
@@ -81,15 +88,17 @@ class SceneGraph : private NonCopyable, public FrameListener {
    protected:
     void onNodeDestroy(SceneGraphNode& oldNode);
     void onNodeAdd(SceneGraphNode& newNode);
+    void onNodeTransform(SceneGraphNode& node);
+
     void unregisterNode(I64 guid, SceneGraphNode::UsageContext usage);
 
     bool frameStarted(const FrameEvent& evt);
     bool frameEnded(const FrameEvent& evt);
 
    private:
-    Octree* _octree;
     SceneRoot* _rootNode;
     SceneGraphNode_ptr _root;
+    std::shared_ptr<Octree> _octree;
     vectorImpl<SceneGraphNode_wptr> _pendingDeletionNodes;
 };
 
@@ -112,6 +121,12 @@ class SceneGraphSGN {
         sceneGraph.unregisterNode(node.getGUID(), node.usageContext());
 
     }
+
+    static void onNodeTransform(SceneGraph& sceneGraph, SceneGraphNode& node)
+    {
+        sceneGraph.onNodeTransform(node);
+    }
+             
     friend class Divide::SceneGraphNode;
 };
 
