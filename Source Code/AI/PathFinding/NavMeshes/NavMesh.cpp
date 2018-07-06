@@ -16,7 +16,8 @@ namespace Divide {
 namespace AI {
 namespace Navigation {
 
-NavigationMesh::NavigationMesh() : GUIDWrapper() {
+NavigationMesh::NavigationMesh() : GUIDWrapper()
+{
     ParamHandler& par = ParamHandler::getInstance();
     stringImpl path(par.getParam<stringImpl>("scriptLocation") + "/" +
                     par.getParam<stringImpl>("scenesLocation") + "/" +
@@ -41,7 +42,10 @@ NavigationMesh::NavigationMesh() : GUIDWrapper() {
     _building = false;
 }
 
-NavigationMesh::~NavigationMesh() { unload(); }
+NavigationMesh::~NavigationMesh()
+{
+    unload();
+}
 
 bool NavigationMesh::unload() {
     if (_buildThread) {
@@ -144,7 +148,7 @@ bool NavigationMesh::loadConfigFromFile() {
     return true;
 }
 
-bool NavigationMesh::build(SceneGraphNode& sgn,
+bool NavigationMesh::build(SceneGraphNode_ptr sgn,
                            CreationCallback creationCompleteCallback,
                            bool threaded) {
     if (!loadConfigFromFile()) {
@@ -152,7 +156,7 @@ bool NavigationMesh::build(SceneGraphNode& sgn,
         return false;
     }
 
-    _sgn = &sgn;
+    _sgn = sgn;
     _loadCompleteClbk = creationCompleteCallback;
 
     if (_buildThreaded && threaded) {
@@ -265,11 +269,11 @@ bool NavigationMesh::buildProcess() {
 }
 
 bool NavigationMesh::generateMesh() {
-    assert(_sgn != nullptr);
+    SceneGraphNode_ptr sgn = _sgn.lock();
 
-    stringImpl nodeName((_sgn->getNode()->getType() != SceneNodeType::TYPE_ROOT)
-                            ? "_node_[_" + _sgn->getName() + "_]"
-                            : "_root_node");
+    assert(sgn != nullptr);
+
+    stringImpl nodeName(generateMeshName(sgn));
 
     // Parse objects from level into RC-compatible format
     _fileName.append(nodeName);
@@ -285,7 +289,7 @@ bool NavigationMesh::generateMesh() {
     data.setName(nodeName);
 
     if (!NavigationMeshLoader::loadMeshFile(data, geometrySaveFile.c_str())) {
-        if (!NavigationMeshLoader::parse(_sgn->getBoundingBoxConst(), data,
+        if (!NavigationMeshLoader::parse(sgn->getBoundingBoxConst(), data,
                                          _sgn)) {
             Console::errorfn(Locale::get("ERROR_NAV_PARSE_FAILED"),
                              nodeName.c_str());
@@ -373,7 +377,7 @@ bool NavigationMesh::generateMesh() {
         dtFreeNavMesh(_navMesh);
     }
 
-    load(*_sgn);
+    load(sgn);
     if (_navMesh == nullptr) {
         createNavigationMesh(params);
     }
@@ -384,7 +388,7 @@ bool NavigationMesh::generateMesh() {
     }
 
     data.isValid(true);
-    save(*_sgn);
+    save(sgn);
 
     return NavigationMeshLoader::saveMeshFile(
         data, geometrySaveFile.c_str());  // input geometry;
@@ -629,7 +633,8 @@ void NavigationMesh::render() {
     _debugDrawInterface->endBatch();
 }
 
-bool NavigationMesh::load(SceneGraphNode& sgn) {
+
+bool NavigationMesh::load(SceneGraphNode_ptr sgn) {
     if (!_fileName.length()) {
         return false;
     }
@@ -637,9 +642,7 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
     dtNavMesh* temp = nullptr;
     stringImpl file = _fileName;
 
-    stringImpl nodeName((sgn.getNode()->getType() != SceneNodeType::TYPE_ROOT)
-                         ? "_node_[_" + sgn.getName() + "_]"
-                         : "_root_node");
+    stringImpl nodeName(generateMeshName(sgn));
     
     // Parse objects from level into RC-compatible format
     file.append(nodeName);
@@ -706,15 +709,13 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
     return createNavigationQuery();
 }
 
-bool NavigationMesh::save(SceneGraphNode& sgn) {
+bool NavigationMesh::save(SceneGraphNode_ptr sgn) {
     if (!_fileName.length() || !_navMesh) {
         return false;
     }
 
     stringImpl file = _fileName;
-    stringImpl nodeName((sgn.getNode()->getType() != SceneNodeType::TYPE_ROOT)
-                         ? "_node_[_" + sgn.getName() + "_]"
-                         : "_root_node");
+    stringImpl nodeName(generateMeshName(sgn));
     // Parse objects from level into RC-compatible format
     file.append(nodeName);
     file.append(".nm");
@@ -767,6 +768,12 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
     fclose(fp);
 
     return true;
+}
+
+stringImpl NavigationMesh::generateMeshName(SceneGraphNode_ptr sgn) {
+    return (sgn->getNode()->getType() != SceneNodeType::TYPE_ROOT)
+               ? "_node_[_" + sgn->getName() + "_]"
+               : "_root_node";
 }
 
 bool NavigationMesh::getClosestPosition(const vec3<F32>& destination,

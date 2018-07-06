@@ -5,14 +5,14 @@
 
 namespace Divide {
 
-Character::Character(CharacterType type, SceneGraphNode& node)
+Character::Character(CharacterType type, SceneGraphNode_ptr node)
     : Unit(Unit::UnitType::UNIT_TYPE_CHARACTER, node), _type(type) {
     _positionDirty = false;
     _velocityDirty = false;
     setRelativeLookingDirection(WORLD_Z_NEG_AXIS);
     _newVelocity.reset();
     _curVelocity.reset();
-    PhysicsComponent* const transform = node.getComponent<PhysicsComponent>();
+    PhysicsComponent* const transform = node->getComponent<PhysicsComponent>();
     if (transform) {
         _newPosition.set(transform->getPosition());
         _oldPosition.set(_newPosition);
@@ -26,7 +26,7 @@ Character::~Character()
 }
 
 void Character::update(const U64 deltaTime) {
-    assert(_node != nullptr);
+    assert(_node.lock() != nullptr);
 
     if (_positionDirty) {
         _curPosition.lerp(_newPosition,
@@ -44,7 +44,7 @@ void Character::update(const U64 deltaTime) {
     }
 
     PhysicsComponent* const nodePhysicsComponent =
-        getBoundNode()->getComponent<PhysicsComponent>();
+        getBoundNode().lock()->getComponent<PhysicsComponent>();
 
     vec3<F32> sourceDirection(getLookingDirection());
     sourceDirection.y = 0.0f;
@@ -60,7 +60,7 @@ void Character::update(const U64 deltaTime) {
 
 /// Just before we render the frame
 bool Character::frameRenderingQueued(const FrameEvent& evt) {
-    if (!getBoundNode()) {
+    if (!getBoundNode().lock()) {
         return false;
     }
 
@@ -80,27 +80,32 @@ void Character::setVelocity(const vec3<F32>& newVelocity) {
 vec3<F32> Character::getPosition() const { return _curPosition; }
 
 vec3<F32> Character::getLookingDirection() {
-    if (getBoundNode())
-        return getBoundNode()
-                   ->getComponent<PhysicsComponent>()
-                   ->getOrientation() *
+    SceneGraphNode_ptr node(getBoundNode().lock());
+
+    if (node) {
+        return node->getComponent<PhysicsComponent>()->getOrientation() *
                getRelativeLookingDirection();
+    }
 
     return getRelativeLookingDirection();
 }
 
 void Character::lookAt(const vec3<F32>& targetPos) {
-    if (!getBoundNode()) return;
-    _newVelocity.set(getBoundNode()
-                         ->getComponent<PhysicsComponent>()
-                         ->getPosition()
-                         .direction(targetPos));
+    SceneGraphNode_ptr node(getBoundNode().lock());
+
+    if (!node) {
+        return;
+    }
+
+    _newVelocity.set(
+        node->getComponent<PhysicsComponent>()->getPosition().direction(
+            targetPos));
     _velocityDirty = true;
 }
 
 
 void Character::playAnimation(I32 index) {
-    SceneGraphNode* node = getBoundNode();
+    SceneGraphNode_ptr node(getBoundNode().lock());
     if (node) {
         AnimationComponent* anim = node->getComponent<AnimationComponent>();
         if (anim) {
@@ -118,7 +123,7 @@ void Character::playAnimation(I32 index) {
 }
 
 void Character::playNextAnimation() {
-    SceneGraphNode* node = getBoundNode();
+    SceneGraphNode_ptr node(getBoundNode().lock());
     if (node) {
         AnimationComponent* anim = node->getComponent<AnimationComponent>();
         if (anim) {
@@ -136,7 +141,7 @@ void Character::playNextAnimation() {
 }
 
 void Character::playPreviousAnimation() {
-    SceneGraphNode* node = getBoundNode();
+    SceneGraphNode_ptr node(getBoundNode().lock());
     if (node) {
         AnimationComponent* anim = node->getComponent<AnimationComponent>();
         if (anim) {
@@ -154,7 +159,7 @@ void Character::playPreviousAnimation() {
 }
 
 void Character::pauseAnimation(bool state) {
-    SceneGraphNode* node = getBoundNode();
+    SceneGraphNode_ptr node(getBoundNode().lock());
     if (node) {
         AnimationComponent* anim = node->getComponent<AnimationComponent>();
         if (anim) {

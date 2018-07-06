@@ -12,7 +12,7 @@ namespace Divide {
 
 RenderingComponent::RenderingComponent(Material* const materialInstance,
                                        SceneGraphNode& parentSGN)
-    : SGNComponent(SGNComponent::ComponentType::ANIMATION, parentSGN),
+    : SGNComponent(SGNComponent::ComponentType::RENDERING, parentSGN),
       _lodLevel(0),
       _drawOrder(0),
       _castsShadows(true),
@@ -34,14 +34,14 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     primitiveStateBlock.setLineWidth(4.0f);
 
     _boundingBoxPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
-    _boundingBoxPrimitive->name("BoundingBox_" + _parentSGN.getName());
+    _boundingBoxPrimitive->name("BoundingBox_" + parentSGN.getName());
     _boundingBoxPrimitive->stateHash(primitiveStateBlock.getHash());
 
     if (_nodeSkinned) {
         primitiveStateBlock.setLineWidth(2.0f);
         primitiveStateBlock.setZReadWrite(false, true);
         _skeletonPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
-        _skeletonPrimitive->name("Skeleton_" + _parentSGN.getName());
+        _skeletonPrimitive->name("Skeleton_" + parentSGN.getName());
         _skeletonPrimitive->stateHash(primitiveStateBlock.getHash());
     }
 #ifdef _DEBUG
@@ -99,12 +99,11 @@ void RenderingComponent::update(const U64 deltaTime) {
         mat->update(deltaTime);
     }
 
-    
     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
     // Continue only for skinned submeshes
     if (type == Object3D::ObjectType::SUBMESH && _nodeSkinned) {
-        StateTracker<bool>& parentStates =
-            _parentSGN.getParent()->getTrackedBools();
+        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        StateTracker<bool>& parentStates = grandParent->getTrackedBools();
         parentStates.setTrackedValue(
             StateTracker<bool>::State::SKELETON_RENDERED, false);
         _skeletonPrimitive->paused(true);
@@ -155,8 +154,8 @@ bool RenderingComponent::onDraw(RenderStage currentStage) {
 
 void RenderingComponent::renderGeometry(const bool state) {
     _renderGeometry = state;
-    for (SceneGraphNode::NodeChildren::value_type& it :
-         _parentSGN.getChildren()) {
+
+    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();
         if (renderable) {
@@ -167,8 +166,8 @@ void RenderingComponent::renderGeometry(const bool state) {
 
 void RenderingComponent::renderWireframe(const bool state) {
     _renderWireframe = state;
-    for (SceneGraphNode::NodeChildren::value_type& it :
-         _parentSGN.getChildren()) {
+    
+    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();
         if (renderable) {
@@ -179,8 +178,8 @@ void RenderingComponent::renderWireframe(const bool state) {
 
 void RenderingComponent::renderBoundingBox(const bool state) {
     _renderBoundingBox = state;
-    for (SceneGraphNode::NodeChildren::value_type& it :
-         _parentSGN.getChildren()) {
+    
+    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();
         if (renderable) {
@@ -191,8 +190,8 @@ void RenderingComponent::renderBoundingBox(const bool state) {
 
 void RenderingComponent::renderSkeleton(const bool state) {
     _renderSkeleton = state;
-    for (SceneGraphNode::NodeChildren::value_type& it :
-         _parentSGN.getChildren()) {
+    
+    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();
         if (renderable) {
@@ -203,8 +202,8 @@ void RenderingComponent::renderSkeleton(const bool state) {
 
 void RenderingComponent::castsShadows(const bool state) {
     _castsShadows = state;
-    for (SceneGraphNode::NodeChildren::value_type& it :
-         _parentSGN.getChildren()) {
+    
+    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();
         if (renderable) {
@@ -215,8 +214,8 @@ void RenderingComponent::castsShadows(const bool state) {
 
 void RenderingComponent::receivesShadows(const bool state) {
     _receiveShadows = state;
-    for (SceneGraphNode::NodeChildren::value_type& it :
-         _parentSGN.getChildren()) {
+    
+    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();
         if (renderable) {
@@ -236,12 +235,14 @@ bool RenderingComponent::receivesShadows() const {
 
 bool RenderingComponent::preDraw(const SceneRenderState& renderState,
                                  RenderStage renderStage) const {
+    
     return _parentSGN.prepareDraw(renderState, renderStage);
 }
 
 /// Called after the current node was rendered
 void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
                                   RenderStage renderStage) {
+    
     SceneNode* const node = _parentSGN.getNode();
 
 #ifdef _DEBUG
@@ -276,7 +277,8 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
         Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
         // Continue only for skinned submeshes
         if (type == Object3D::ObjectType::SUBMESH && _nodeSkinned) {
-            StateTracker<bool>& parentStates = _parentSGN.getParent()->getTrackedBools();
+            SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+            StateTracker<bool>& parentStates = grandParent->getTrackedBools();
             if (parentStates.getTrackedValue(
                 StateTracker<bool>::State::SKELETON_RENDERED) == false) {
                 // Get the animation component of any submesh. They should be synced anyway.
@@ -327,12 +329,14 @@ void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
 }
 
 U8 RenderingComponent::lodLevel() const {
+    
     return (_lodLevel < (_parentSGN.getNode()->getLODcount() - 1)
                 ? _lodLevel
                 : (_parentSGN.getNode()->getLODcount() - 1));
 }
 
 void RenderingComponent::lodLevel(U8 LoD) {
+    
     _lodLevel =
         std::min(static_cast<U8>(_parentSGN.getNode()->getLODcount() - 1),
                  std::max(LoD, static_cast<U8>(0)));
@@ -355,6 +359,7 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
     bool reflectionStage = GFX_DEVICE.getRenderStage() == RenderStage::REFLECTION;
 
     if (!_materialInstance && depthPass) {
+        
         return shadowStage
                    ? _parentSGN.getNode()->renderState().getShadowStateBlock()
                    : _parentSGN.getNode()->renderState().getDepthStateBlock();
@@ -373,7 +378,9 @@ vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
     if (canDraw(sceneRenderState, renderStage) &&
         preDraw(sceneRenderState, renderStage))
     {
-        _parentSGN.getNode()->getDrawCommands(_parentSGN, renderStage,
+        
+        _parentSGN.getNode()->getDrawCommands(_parentSGN,
+                                              renderStage,
                                               sceneRenderState,
                                               _renderData._drawCommands);
     }
@@ -422,7 +429,7 @@ void RenderingComponent::drawDebugAxis() {
     if (!_parentNodeActive) {
         return;
     }
-
+    
     PhysicsComponent* const transform =
         _parentSGN.getComponent<PhysicsComponent>();
     if (transform) {

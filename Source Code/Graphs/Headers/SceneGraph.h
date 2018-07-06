@@ -51,8 +51,8 @@ class SceneGraph : private NonCopyable {
     SceneGraph();
     ~SceneGraph();
 
-    inline SceneGraphNode& getRoot() const {
-        return *_root;
+    inline SceneGraphNode_ptr getRoot() const {
+        return _root;
     }
 
     inline vectorImpl<BoundingBox>& getBBoxes() {
@@ -61,29 +61,28 @@ class SceneGraph : private NonCopyable {
         return _boundingBoxes;
     }
 
-    inline SceneGraphNode* findNode(const stringImpl& name,
-                                    bool sceneNodeName = false) {
+    inline std::weak_ptr<SceneGraphNode> findNode(const stringImpl& name,
+                                                  bool sceneNodeName = false) {
         return _root->findNode(name, sceneNodeName);
     }
 
     /// Update all nodes. Called from "updateSceneState" from class Scene
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
 
-    void print();
     void idle();
 
     void intersect(const Ray& ray, F32 start, F32 end,
-                   vectorImpl<SceneGraphNode*>& selectionHits);
+                   vectorImpl<std::weak_ptr<SceneGraphNode>>& selectionHits);
 
-    void deleteNode(SceneGraphNode* node, bool deleteOnAdd);
+    void deleteNode(std::weak_ptr<SceneGraphNode> node, bool deleteOnAdd);
 
    protected:
-    void printInternal(SceneGraphNode& sgn);
     void onNodeDestroy(SceneGraphNode& oldNode);
+
    private:
-    std::unique_ptr<SceneGraphNode> _root;
+    SceneGraphNode_ptr _root;
     vectorImpl<BoundingBox> _boundingBoxes;
-    vectorImpl<SceneGraphNode*> _pendingDeletionNodes;
+    vectorImpl<std::weak_ptr<SceneGraphNode>> _pendingDeletionNodes;
 };
 
 namespace Attorney {

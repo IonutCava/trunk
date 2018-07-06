@@ -91,10 +91,8 @@ DEFINE_SINGLETON(ShaderManager)
     I8 shaderFileWrite(const stringImpl& atomName, const stringImpl& sourceCode);
     /// Bind the null shader
     bool unbind();
-    /// Return a default shader if we try to render something with a material that
-    /// is missing a valid shader
+    /// Return a default shader used for general purpose rendering
     ShaderProgram* const getDefaultShader() const { return _imShader; }
-
   private:
     /// A simple check to see if the manager is ready to process commands
     bool _init;

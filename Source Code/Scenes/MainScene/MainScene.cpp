@@ -24,9 +24,9 @@ void MainScene::updateLights() {
 
     _sun->setDirection(_sunvector);
     _sun->setDiffuseColor(_sunColor);
-    _currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sunColor);
-    for (SceneGraphNode* const ter : _visibleTerrains) {
-        ter->getComponent<RenderingComponent>()
+    _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, _sunColor);
+    for (std::weak_ptr<SceneGraphNode> ter : _visibleTerrains) {
+        ter.lock()->getComponent<RenderingComponent>()
             ->getMaterialInstance()
             ->setAmbient(_sunColor);
     }
@@ -43,8 +43,8 @@ void MainScene::processInput(const U64 deltaTime) {
         if (!_freeflyCamera) {
             F32 terrainHeight = 0.0f;
             vec3<F32> eyePosition = cam.getEye();
-            for (SceneGraphNode* const terrainNode : _visibleTerrains) {
-                Terrain* ter = terrainNode->getNode<Terrain>();
+            for (std::weak_ptr<SceneGraphNode> terrainNode : _visibleTerrains) {
+                Terrain* ter = terrainNode.lock()->getNode<Terrain>();
                 assert(ter != nullptr);
                 CLAMP<F32>(eyePosition.x,
                            ter->getDimensions().width * 0.5 * -1.0f,
@@ -122,16 +122,16 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     renderState().getCamera().setMoveSpeedFactor(10.0f);
 
     _sun = addLight(LightType::DIRECTIONAL,
-               GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
+               GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
     _sun->csmSplitCount(3);  // 3 splits
     _sun->csmSplitLogFactor(0.965f);
     _sun->csmNearClipOffset(25.0f);
     _currentSky =
-        &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
 
     for (U8 i = 0; i < _terrainInfoArray.size(); i++) {
-        SceneGraphNode* terrainNode = _sceneGraph->findNode(
-            _terrainInfoArray[i]->getVariable("terrainName"));
+        SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(
+            _terrainInfoArray[i]->getVariable("terrainName")).lock());
         if (terrainNode) {  // We might have an unloaded terrain in the Array,
                             // and thus, not present in the graph
             Terrain* tempTerrain = terrainNode->getNode<Terrain>();
@@ -149,10 +149,12 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     _water = CreateResource<WaterPlane>(infiniteWater);
     _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),
                       0.34f);
-    _waterGraphNode = &_sceneGraph->getRoot().addNode(*_water);
-    _waterGraphNode->useDefaultTransform(false);
-    _waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
-    _waterGraphNode->getComponent<NavigationComponent>()->navigationContext(
+    _waterGraphNode = _sceneGraph->getRoot()->addNode(*_water);
+    SceneGraphNode_ptr waterGraphNode(_waterGraphNode.lock());
+
+    waterGraphNode->useDefaultTransform(false);
+    waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
+    waterGraphNode->getComponent<NavigationComponent>()->navigationContext(
         NavigationComponent::NavigationContext::NODE_IGNORE);
     // Render the scene for water reflection FB generation
     _water->setReflectionCallback(DELEGATE_BIND(
@@ -191,8 +193,8 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
 
     _input->addKeyMapping(Input::KeyCode::KC_F, cbks);
     cbks.second = [this]() {
-        for (SceneGraphNode* const ter : _visibleTerrains) {
-            ter->getNode<Terrain>()->toggleBoundingBoxes();
+        for (std::weak_ptr<SceneGraphNode> ter : _visibleTerrains) {
+            ter.lock()->getNode<Terrain>()->toggleBoundingBoxes();
         }
     };
 
@@ -211,10 +213,15 @@ bool MainScene::unload() {
 void MainScene::test(cdiggins::any a, CallbackParam b) {
     static bool switchAB = false;
     vec3<F32> pos;
-    SceneGraphNode* boxNode = _sceneGraph->findNode("box");
+    SceneGraphNode_ptr boxNode(_sceneGraph->findNode("box").lock());
+
     Object3D* box = nullptr;
-    if (boxNode) box = boxNode->getNode<Object3D>();
-    if (box) pos = boxNode->getComponent<PhysicsComponent>()->getPosition();
+    if (boxNode) {
+        box = boxNode->getNode<Object3D>();
+    }
+    if (box) {
+        pos = boxNode->getComponent<PhysicsComponent>()->getPosition();
+    }
 
     if (!switchAB) {
         if (pos.x < 300 && pos.z == 0) pos.x++;

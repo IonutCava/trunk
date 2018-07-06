@@ -87,7 +87,7 @@ class Character : public Unit {
         COUNT
     };
 
-    Character(CharacterType type, SceneGraphNode& node);
+    Character(CharacterType type, SceneGraphNode_ptr node);
     virtual ~Character();
 
     /// Set unit type

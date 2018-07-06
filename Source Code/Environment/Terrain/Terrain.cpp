@@ -20,13 +20,13 @@ Terrain::Terrain()
       _alphaTexturePresent(false),
       _plane(nullptr),
       _drawBBoxes(false),
-      _vegetationGrassNode(nullptr),
       _underwaterDiffuseScale(100.0f),
       _terrainRenderStateHash(0),
       _terrainDepthRenderStateHash(0),
       _terrainReflectionRenderStateHash(0),
       _terrainInView(false),
-      _planeInView(false) {
+      _planeInView(false)
+{
     getGeometryVB()->useLargeIndices(true);  //<32bit indices
 
     _albedoSampler = MemoryManager_NEW SamplerDescriptor();
@@ -54,9 +54,9 @@ bool Terrain::unload() {
 }
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
-    SceneGraphNode& planeSGN = sgn.addNode(*_plane);
-    planeSGN.setActive(false);
-    _plane->computeBoundingBox(planeSGN);
+    SceneGraphNode_ptr planeSGN(sgn.addNode(*_plane));
+    planeSGN->setActive(false);
+    _plane->computeBoundingBox(*planeSGN);
     computeBoundingBox(sgn);
     for (TerrainChunk* chunk : _terrainChunks) {
         sgn.addNode(*Attorney::TerrainChunkTerrain::getVegetation(*chunk));
@@ -135,7 +135,8 @@ bool Terrain::isInView(const SceneRenderState& sceneRenderState,
     _planeInView = _terrainInView
                        ? false
                        : _plane->isInView(sceneRenderState,
-                                          *sgn.getChildren()[0], distanceCheck);
+                                          *sgn.getChildren()[0],
+                                          distanceCheck);
 
     return _terrainInView || _planeInView;
 }

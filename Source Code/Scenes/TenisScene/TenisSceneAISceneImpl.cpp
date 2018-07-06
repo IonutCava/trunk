@@ -11,13 +11,15 @@ namespace Divide {
 
 using namespace AI;
 
-TenisSceneAISceneImpl::TenisSceneAISceneImpl(SceneGraphNode* target)
+TenisSceneAISceneImpl::TenisSceneAISceneImpl(std::weak_ptr<SceneGraphNode> target)
     : AISceneImpl(),
       _target(target),
       _attackBall(false),
       _ballToTeam2(true),
       _gameStop(true),
-      _tickCount(0) {}
+      _tickCount(0)
+{
+}
 
 void TenisSceneAISceneImpl::addEntityRef(AIEntity* entity) {
     assert(entity != nullptr);
@@ -81,7 +83,7 @@ void TenisSceneAISceneImpl::updatePositions() {
         _prevBallPosition = _ballPosition;
         _tickCount = 0;
     }
-    _ballPosition = _target->getComponent<PhysicsComponent>()->getPosition();
+    _ballPosition = _target.lock()->getComponent<PhysicsComponent>()->getPosition();
     _entityPosition = _entity->getUnitRef()->getCurrentPosition();
     if (_prevBallPosition.z != _ballPosition.z) {
         _prevBallPosition.z < _ballPosition.z ? _ballToTeam2 = false

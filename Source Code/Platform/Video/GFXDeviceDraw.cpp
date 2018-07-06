@@ -208,12 +208,16 @@ void GFXDevice::addToRenderQueue(const RenderPackage& package) {
 void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
                                    NodeData& dataOut) {
 
+    assert(node._visibleNode != nullptr);
+
+    const SceneGraphNode& nodeRef = *node._visibleNode;
+
     RenderingComponent* const renderable =
-        node._visibleNode->getComponent<RenderingComponent>();
+        nodeRef.getComponent<RenderingComponent>();
     AnimationComponent* const animComp =
-        node._visibleNode->getComponent<AnimationComponent>();
+        nodeRef.getComponent<AnimationComponent>();
     PhysicsComponent* const transform =
-        node._visibleNode->getComponent<PhysicsComponent>();
+        nodeRef.getComponent<PhysicsComponent>();
 
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
@@ -275,9 +279,11 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         std::begin(visibleNodes), std::end(visibleNodes),
         [&](VisibleNodeList::value_type& node) -> void {
 
+            SceneGraphNode& nodeRef = *node._visibleNode;
+
             vectorImpl<GenericDrawCommand>& nodeDrawCommands =
                 Attorney::RenderingCompGFXDevice::getDrawCommands(
-                    *node._visibleNode->getComponent<RenderingComponent>(),
+                    *nodeRef.getComponent<RenderingComponent>(),
                     sceneRenderState, currentStage);
 
             if (!nodeDrawCommands.empty()) {

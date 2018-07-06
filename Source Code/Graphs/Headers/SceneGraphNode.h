@@ -87,9 +87,13 @@ class SceneTransform : public SceneNode {
     bool computeBoundingBox(SceneGraphNode& sgn) { return true; }
 };
 
-class SceneGraphNode : public GUIDWrapper, private NonCopyable {
+
+typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
+class SceneGraphNode : public GUIDWrapper,
+                       private NonCopyable,
+                       public std::enable_shared_from_this<SceneGraphNode> {
    public:
-    typedef hashMapImpl<stringImpl, SceneGraphNode*> NodeChildren;
+    typedef hashMapImpl<stringImpl, SceneGraphNode_ptr > NodeChildren;
 
     /// Usage context affects lighting, navigation, physics, etc
     enum class UsageContext : U32 {
@@ -97,7 +101,6 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
         NODE_STATIC 
     };
 
-    
     /// Update bounding boxes
     void checkBoundingBoxes();
     /// Apply current transform to the node's BB. Return true if the bounding
@@ -123,23 +126,23 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     }
     /// Create node never increments the node's ref counter (used for scene
     /// loading)
-    SceneGraphNode& createNode(SceneNode& node,
-                               const stringImpl& name = "");
+    SceneGraphNode_ptr createNode(SceneNode& node, const stringImpl& name = "");
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
-    SceneGraphNode& addNode(SceneNode& node, const stringImpl& name = "");
+    SceneGraphNode_ptr addNode(SceneNode& node, const stringImpl& name = "");
+    SceneGraphNode_ptr addNode(SceneGraphNode_ptr node);
     void removeNode(const stringImpl& nodeName, bool recursive = true);
-    inline void removeNode(SceneGraphNode& node, bool recursive = true) {
-        removeNode(node.getName(), recursive);
+    inline void removeNode(SceneGraphNode_ptr node, bool recursive = true) {
+        removeNode(node->getName(), recursive);
     }    
      /// Find a node in the graph based on the SceneGraphNode's name
     /// If sceneNodeName = true, find a node in the graph based on the
     /// SceneNode's name
-    SceneGraphNode* findNode(const stringImpl& name,
-                             bool sceneNodeName = false);
+    std::weak_ptr<SceneGraphNode> findNode(const stringImpl& name,
+                                           bool sceneNodeName = false);
     /// Find the graph nodes whom's bounding boxes intersects the given ray
     void intersect(const Ray& ray, F32 start, F32 end,
-                   vectorImpl<SceneGraphNode*>& selectionHits);
+                   vectorImpl<std::weak_ptr<SceneGraphNode>>& selectionHits);
 
     /// Selection helper functions
     void setSelected(const bool state);
@@ -151,9 +154,16 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     /*Node Management*/
 
     /*Parent <-> Children*/
-    inline SceneGraphNode* getParent() const { return _parent; }
-    inline NodeChildren& getChildren() { return _children; }
-    void setParent(SceneGraphNode& parent);
+    inline std::weak_ptr<SceneGraphNode> getParent() const {
+        return _parent;
+    }
+
+    inline NodeChildren& getChildren() { 
+        ReadLock(_childrenLock);
+        return _children;
+    }
+
+    void setParent(SceneGraphNode_ptr parent);
 
     /*Parent <-> Children*/
 
@@ -184,9 +194,6 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     void restoreActive();
     inline void scheduleDeletion() { _shouldDelete = true; }
     
-    size_t registerDeletionCallback(const DELEGATE_CBK<>& cbk);
-    void unregisterDeletionCallback(size_t callbackID);
-
     inline bool inView() const { return _inView; }
     inline bool isActive() const { return _active; }
 
@@ -240,25 +247,32 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
 
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
-    bool operator==(const SceneGraphNode& other) const {
-        return this->getGUID() == other.getGUID();
+    bool operator==(const SceneGraphNode_ptr other) const {
+        return this->getGUID() == other->getGUID();
     }
 
-    bool operator!=(const SceneGraphNode& other) const {
-        return this->getGUID() != other.getGUID();
+    bool operator!=(const SceneGraphNode_ptr other) const {
+        return this->getGUID() != other->getGUID();
     }
 
-   protected:
+   /*protected:
     SET_DELETE_FRIEND
     SET_SAFE_UPDATE_FRIEND
     SET_DELETE_VECTOR_FRIEND
     SET_DELETE_HASHMAP_FRIEND
-    SET_UNIQUE_PTR_DELETE_FRIEND(SceneGraphNode)
 
     friend class SceneGraph;
-    friend vectorImpl<SceneGraphNode>;
+    friend class std::shared_ptr<SceneGraphNode> ;*/
     explicit SceneGraphNode(SceneNode& node, const stringImpl& name);
     ~SceneGraphNode();
+
+    bool operator==(const SceneGraphNode& rhs) const {
+        return getGUID() == rhs.getGUID();
+    }
+
+    bool operator!=(const SceneGraphNode& rhs) const {
+        return getGUID() != rhs.getGUID();
+    }
 
    protected:
     friend class RenderPassCuller;
@@ -276,7 +290,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
    private:
     SceneNode* _node;
     NodeChildren _children;
-    SceneGraphNode* _parent;
+    std::weak_ptr<SceneGraphNode> _parent;
     std::atomic<bool> _active;
     std::atomic<bool> _inView;
     std::atomic<bool> _boundingBoxDirty;
@@ -304,8 +318,9 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     std::array<std::unique_ptr<SGNComponent>,
                to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
 
-    hashMapImpl<size_t, DELEGATE_CBK<>> _deletionCallbacks;
     StateTracker<bool> _trackedBools;
+
+    mutable SharedLock _childrenLock;
 };
 };  // namespace Divide
 #endif

@@ -37,6 +37,8 @@
 namespace Divide {
 
 class SceneGraphNode;
+typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
+
 /// A camera that always looks at a given target and orbits around it.
 /// It's position / direction can't be changed by user input
 class OrbitCamera : public Camera {
@@ -44,7 +46,7 @@ class OrbitCamera : public Camera {
     OrbitCamera(const CameraType& type = CameraType::ORBIT,
                 const vec3<F32>& eye = VECTOR3_ZERO);
 
-    void setTarget(SceneGraphNode& sgn,
+    void setTarget(std::weak_ptr<SceneGraphNode> sgn,
                    const vec3<F32>& offsetDirection = vec3<F32>(0, 0.75, 1.0));
 
     inline void maxRadius(F32 radius) { _maxRadius = radius; }
@@ -80,7 +82,7 @@ class OrbitCamera : public Camera {
     vec3<F32> _offsetDir;
     vec3<F32> _cameraRotation;
     vec3<F32> _newEye;
-    SceneGraphNode* _targetNode;
+    std::weak_ptr<SceneGraphNode> _targetNode;
 };
 
 };  // namespace Divide

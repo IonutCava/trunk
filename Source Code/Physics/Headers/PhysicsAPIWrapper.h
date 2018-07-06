@@ -51,6 +51,7 @@ enum class PhysicsActorMask : U32 {
 class Scene;
 class SceneGraphNode;
 class PhysicsSceneInterface;
+typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
 
 class PhysicsAsset {
     friend class PhysicsComponent;

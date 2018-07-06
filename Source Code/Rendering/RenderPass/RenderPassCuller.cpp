@@ -47,7 +47,7 @@ RenderPassCuller::VisibleNodeCache& RenderPassCuller::getNodeCache(RenderStage s
 /// children and adds them to the RenderQueue
 RenderPassCuller::VisibleNodeCache& RenderPassCuller::frustumCull(
     SceneGraphNode& currentNode, SceneState& sceneState,
-    const std::function<bool(SceneGraphNode*)>& cullingFunction) 
+    const std::function<bool(const SceneGraphNode&)>& cullingFunction) 
 {
     VisibleNodeCache& nodes = getNodeCache(GFX_DEVICE.getRenderStage());
 
@@ -66,12 +66,11 @@ RenderPassCuller::VisibleNodeCache& RenderPassCuller::frustumCull(
     return nodes;
 }
 
-void RenderPassCuller::cullSceneGraphCPU(
-    VisibleNodeCache& nodes,
-    SceneGraphNode& currentNode,
-    SceneRenderState& sceneRenderState,
-    const std::function<bool(SceneGraphNode*)>& cullingFunction) {
-    if (currentNode.getParent()) {
+void RenderPassCuller::cullSceneGraphCPU(VisibleNodeCache& nodes,
+                                         SceneGraphNode& currentNode,
+                                         SceneRenderState& sceneRenderState,
+                                         const std::function<bool(const SceneGraphNode&)>& cullingFunction) {
+    if (currentNode.getParent().lock()) {
         currentNode.setInView(false);
         // Skip all of this for inactive nodes.
         if (currentNode.isActive()) {
@@ -80,7 +79,7 @@ void RenderPassCuller::cullSceneGraphCPU(
                                     GFX_DEVICE.getRenderStage())) {
                 // If the current node is visible, add it to the render
                 // queue (if it passes our custom culling function)
-                if (!cullingFunction(&currentNode)) {
+                if (!cullingFunction(currentNode)) {
                     nodes._visibleNodes.push_back(RenderableNode(currentNode));
                     currentNode.setInView(true);
                 }
@@ -92,8 +91,7 @@ void RenderPassCuller::cullSceneGraphCPU(
     }
 
     // Process children if we did not early-out of the culling loop
-    for (SceneGraphNode::NodeChildren::value_type& it :
-         currentNode.getChildren()) {
+    for (SceneGraphNode::NodeChildren::value_type& it : currentNode.getChildren()) {
         cullSceneGraphCPU(nodes, *it.second, sceneRenderState, cullingFunction);
     }
 }

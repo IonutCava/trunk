@@ -17,14 +17,14 @@ void WarScene::registerPoint(U8 teamID) {
     _resetUnits = true;
 
     for (U8 i = 0; i < 2; ++i) {
-        PhysicsComponent* flagPComp = _flag[i]->getComponent<PhysicsComponent>();
+        PhysicsComponent* flagPComp = _flag[i].lock()->getComponent<PhysicsComponent>();
         WAIT_FOR_CONDITION(!flagPComp->popTransforms());
-        _flag[i]->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
+        _flag[i].lock()->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
         flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
     }
     AI::WarSceneAISceneImpl::reset();
     AI::WarSceneAISceneImpl::incrementScore(teamID);
-    AI::WarSceneAISceneImpl::registerFlags(*_flag[0], *_flag[1]);
+    AI::WarSceneAISceneImpl::registerFlags(_flag[0].lock(), _flag[1].lock());
 }
 
 bool WarScene::initializeAI(bool continueOnErrors) {
@@ -42,12 +42,9 @@ bool WarScene::initializeAI(bool continueOnErrors) {
         Scene::initializeAI(continueOnErrors);
     }
 
-    SceneGraphNode* lightNode = _sceneGraph->findNode("Soldier1");
-    SceneGraphNode* animalNode = _sceneGraph->findNode("Soldier2");
-    SceneGraphNode* heavyNode = _sceneGraph->findNode("Soldier3");
-    lightNode->setActive(false);
-    animalNode->setActive(false);
-    heavyNode->setActive(false);
+    _sceneGraph->findNode("Soldier1").lock()->setActive(false);
+    _sceneGraph->findNode("Soldier2").lock()->setActive(false);
+    _sceneGraph->findNode("Soldier3").lock()->setActive(false);
 
     return state;
 }
@@ -175,9 +172,9 @@ bool WarScene::addUnits() {
     heavyPackage._goalList.push_back(protectFlagCarrier);
     lightPackage._goalList.push_back(protectFlagCarrier);
 
-    SceneGraphNode* lightNode = _sceneGraph->findNode("Soldier1");
-    SceneGraphNode* animalNode = _sceneGraph->findNode("Soldier2");
-    SceneGraphNode* heavyNode = _sceneGraph->findNode("Soldier3");
+    SceneGraphNode_ptr lightNode(_sceneGraph->findNode("Soldier1").lock());
+    SceneGraphNode_ptr animalNode(_sceneGraph->findNode("Soldier2").lock());
+    SceneGraphNode_ptr heavyNode(_sceneGraph->findNode("Soldier3").lock());
 
     SceneNode* lightNodeMesh = lightNode->getNode();
     SceneNode* animalNodeMesh = animalNode->getNode();
@@ -191,7 +188,7 @@ bool WarScene::addUnits() {
     vec3<F32> currentScale;
     stringImpl currentName;
 
-    SceneGraphNode& root = GET_ACTIVE_SCENEGRAPH().getRoot();
+    SceneGraphNode_ptr root = GET_ACTIVE_SCENEGRAPH().getRoot();
     for (I32 k = 0; k < 2; ++k) {
         for (I32 i = 0; i < 15; ++i) {
 
@@ -231,12 +228,12 @@ bool WarScene::addUnits() {
                 damage = 15;
             }
 
-            SceneGraphNode& currentNode =
-                root.addNode(*currentMesh, currentName);
-            currentNode.setSelectable(true);
+            SceneGraphNode_ptr currentNode =
+                root->addNode(*currentMesh, currentName);
+            currentNode->setSelectable(true);
 
             PhysicsComponent* pComp =
-                currentNode.getComponent<PhysicsComponent>();
+                currentNode->getComponent<PhysicsComponent>();
             pComp->setScale(currentScale);
 
             if (k == 0) {
@@ -256,12 +253,12 @@ bool WarScene::addUnits() {
                                          Metric::Base(zFactor)));
 
             aiSoldier = MemoryManager_NEW AI::AIEntity(pComp->getPosition(),
-                                                       currentNode.getName());
+                                                       currentNode->getName());
             aiSoldier->addSensor(AI::SensorType::VISUAL_SENSOR);
             k == 0
-                ? currentNode.getComponent<RenderingComponent>()
+                ? currentNode->getComponent<RenderingComponent>()
                       ->renderBoundingBox(true)
-                : currentNode.getComponent<RenderingComponent>()
+                : currentNode->getComponent<RenderingComponent>()
                       ->renderSkeleton(true);
 
             AI::WarSceneAISceneImpl* brain =
@@ -293,12 +290,12 @@ bool WarScene::addUnits() {
     return !(_army[0].empty() || _army[1].empty());
 }
 
-AI::AIEntity* WarScene::findAI(SceneGraphNode& node) {
-    I64 targetGUID = node.getGUID();
+AI::AIEntity* WarScene::findAI(SceneGraphNode_ptr node) {
+    I64 targetGUID = node->getGUID();
 
     for (U8 i = 0; i < 2; ++i) {
         for (AI::AIEntity* entity : _army[i]) {
-            if (entity->getUnitRef()->getBoundNode()->getGUID() == targetGUID) {
+            if (entity->getUnitRef()->getBoundNode().lock()->getGUID() == targetGUID) {
                 return entity;
             }
         }

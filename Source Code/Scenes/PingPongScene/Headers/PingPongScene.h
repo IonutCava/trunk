@@ -47,7 +47,6 @@ class PingPongScene : public Scene {
         _touchedOwnTableHalf = false;
         _touchedAdversaryTableHalf = false;
         _lost = false;
-        _ballSGN = nullptr;
         _ball = nullptr;
         _freeFlyCam = nullptr;
         _paddleCam = nullptr;
@@ -73,7 +72,7 @@ class PingPongScene : public Scene {
     vectorImpl<stringImpl> _quotes;
     vec3<F32> _sunvector;
     Sphere3D* _ball;
-    SceneGraphNode* _ballSGN;
+    std::weak_ptr<SceneGraphNode> _ballSGN;
     Camera* _freeFlyCam;
     Camera* _paddleCam;
     DirectionalLight* _sun;

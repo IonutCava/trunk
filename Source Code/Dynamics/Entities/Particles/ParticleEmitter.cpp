@@ -154,7 +154,7 @@ bool ParticleEmitter::unload() {
 }
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
-    sgn.addNode(*_impostor).setActive(false);
+    sgn.addNode(*_impostor)->setActive(false);
     SceneNode::postLoad(sgn);
 }
 
@@ -196,6 +196,7 @@ void ParticleEmitter::getDrawCommands(
     SceneGraphNode& sgn, RenderStage renderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+
     U32 particleCount = getAliveParticleCount();
     if (!_enabled || particleCount == 0) {
         return;

@@ -6,44 +6,38 @@
 
 namespace Divide {
 
-Unit::Unit(UnitType type, SceneGraphNode& node)
+Unit::Unit(UnitType type, SceneGraphNode_ptr node)
     : FrameListener(),
       _type(type),
-      _node(&node),
+      _node(node),
       _moveSpeed(Metric::Base(1)),
       _acceleration(Metric::Base(1)),
       _moveTolerance(0.1f),
       _prevTime(0)
 {
-    DIVIDE_ASSERT(_node != nullptr,
-                  "Unit error: Invalid parent node specified!");
     REGISTER_FRAME_LISTENER(this, 5);
-    _deletionCallbackID = _node->registerDeletionCallback(DELEGATE_BIND(&Unit::nodeDeleted, this));
-    _currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
+    _currentPosition =
+        _node.lock()->getComponent<PhysicsComponent>()->getPosition();
 }
 
-Unit::~Unit() { 
+Unit::~Unit()
+{ 
     UNREGISTER_FRAME_LISTENER(this);
-    if (_node) {
-        _node->unregisterDeletionCallback(_deletionCallbackID);
-    }
 }
 
-void Unit::nodeDeleted() {
-    _node = nullptr;
-}
 
 /// Pathfinding, collision detection, animation playback should all be
 /// controlled from here
 bool Unit::moveTo(const vec3<F32>& targetPosition) {
     // We should always have a node
-    if (!_node) {
+    SceneGraphNode_ptr sgn = _node.lock();
+    if (!sgn) {
         return false;
     }
     WriteLock w_lock(_unitUpdateMutex);
     // We receive move request every frame for now (or every task tick)
     // Start plotting a course from our current position
-    _currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
+    _currentPosition = sgn->getComponent<PhysicsComponent>()->getPosition();
     _currentTargetPosition = targetPosition;
 
     if (_prevTime <= 0) {
@@ -114,7 +108,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
                          : moveDistance);
             }
             // commit transformations
-            _node->getComponent<PhysicsComponent>()->translate(interpPosition);
+            sgn->getComponent<PhysicsComponent>()->translate(interpPosition);
         }
     }
 
@@ -123,48 +117,54 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
 
 /// Move along the X axis
 bool Unit::moveToX(const F32 targetPosition) {
-    if (!_node) {
+    SceneGraphNode_ptr sgn = _node.lock();
+    if (!sgn) {
         return false;
     }
     /// Update current position
     WriteLock w_lock(_unitUpdateMutex);
-    _currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
+    _currentPosition = sgn->getComponent<PhysicsComponent>()->getPosition();
     w_lock.unlock();
-    return moveTo(
-        vec3<F32>(targetPosition, _currentPosition.y, _currentPosition.z));
+    return moveTo(vec3<F32>(targetPosition,
+                            _currentPosition.y,
+                            _currentPosition.z));
 }
 
 /// Move along the Y axis
 bool Unit::moveToY(const F32 targetPosition) {
-    if (!_node) {
+    SceneGraphNode_ptr sgn = _node.lock();
+    if (!sgn) {
         return false;
     }
     /// Update current position
     WriteLock w_lock(_unitUpdateMutex);
-    _currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
+    _currentPosition = sgn->getComponent<PhysicsComponent>()->getPosition();
     w_lock.unlock();
-    return moveTo(
-        vec3<F32>(_currentPosition.x, targetPosition, _currentPosition.z));
+    return moveTo(vec3<F32>(_currentPosition.x,
+                            targetPosition,
+                            _currentPosition.z));
 }
 
 /// Move along the Z axis
 bool Unit::moveToZ(const F32 targetPosition) {
-    if (!_node) {
+    SceneGraphNode_ptr sgn = _node.lock();
+    if (!sgn) {
         return false;
     }
     /// Update current position
     WriteLock w_lock(_unitUpdateMutex);
-    _currentPosition = _node->getComponent<PhysicsComponent>()->getPosition();
+    _currentPosition = sgn->getComponent<PhysicsComponent>()->getPosition();
     w_lock.unlock();
-    return moveTo(
-        vec3<F32>(_currentPosition.x, _currentPosition.y, targetPosition));
+    return moveTo(vec3<F32>(_currentPosition.x,
+                            _currentPosition.y,
+                            targetPosition));
 }
 
 /// Further improvements may imply a cooldown and collision detection at
 /// destination (thus the if-check at the end)
 bool Unit::teleportTo(const vec3<F32>& targetPosition) {
-    /// We should always have a node
-    if (!_node) {
+    SceneGraphNode_ptr sgn = _node.lock();
+    if (!sgn) {
         return false;
     }
     WriteLock w_lock(_unitUpdateMutex);
@@ -175,7 +175,7 @@ bool Unit::teleportTo(const vec3<F32>& targetPosition) {
         _currentTargetPosition = targetPosition;
     }
     PhysicsComponent* nodePhysicsComponent =
-        _node->getComponent<PhysicsComponent>();
+        sgn->getComponent<PhysicsComponent>();
     /// Start plotting a course from our current position
     _currentPosition = nodePhysicsComponent->getPosition();
     /// teleport to desired position

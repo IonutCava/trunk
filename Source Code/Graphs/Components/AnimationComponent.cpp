@@ -8,6 +8,7 @@ namespace Divide {
 
 AnimationComponent::AnimationComponent(SceneAnimator& animator,
                                        SceneGraphNode& parentSGN)
+
     : SGNComponent(SGNComponent::ComponentType::ANIMATION, parentSGN),
       _animator(animator),
       _playAnimations(true),
@@ -140,7 +141,7 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
     if (!_playAnimations) {
         return true;
     }
-
+    
     _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
         ShaderBufferLocation::BONE_TRANSFORMS,
         vec2<ptrdiff_t>(_readOffset * _dataRange, _dataRange),

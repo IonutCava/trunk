@@ -56,11 +56,8 @@ class TenisScene : public Scene {
           _player2(nullptr),
           _player3(nullptr),
           _player4(nullptr),
-          _floor(nullptr),
-          _net(nullptr),
-          _ballSGN(nullptr),
-          _ball(nullptr),
-          _sun(nullptr) {
+          _ball(nullptr)
+ {
         _sideImpulseFactor = 0;
         _directionTeam1ToTeam2 = true;
         _upwardsDirection = true;
@@ -94,9 +91,9 @@ class TenisScene : public Scene {
    private:
     vec3<F32> _sunvector;
     Sphere3D* _ball;
-    SceneGraphNode* _ballSGN;
-    SceneGraphNode* _net;
-    SceneGraphNode* _floor;
+    std::weak_ptr<SceneGraphNode> _ballSGN;
+    std::weak_ptr<SceneGraphNode> _net;
+    std::weak_ptr<SceneGraphNode> _floor;
     DirectionalLight* _sun;
 
    private:  // Game stuff

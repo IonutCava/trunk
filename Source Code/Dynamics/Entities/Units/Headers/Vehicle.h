@@ -53,7 +53,7 @@ class Vehicle : public Unit {
         COUNT
     };
 
-    Vehicle(SceneGraphNode& node);
+    Vehicle(SceneGraphNode_ptr node);
     ~Vehicle();
 
     /// A vehicle can be of multiple types at once

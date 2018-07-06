@@ -402,11 +402,11 @@ void Vegetation::gpuCull() {
     }
 }
 
-void Vegetation::getDrawCommands(
-    SceneGraphNode& sgn,
-    RenderStage renderStage,
-    SceneRenderState& sceneRenderState,
-    vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+void Vegetation::getDrawCommands(SceneGraphNode& sgn,
+                                 RenderStage renderStage,
+                                 SceneRenderState& sceneRenderState,
+                                 vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+
     GenericVertexData* buffer = _grassGPUBuffer[_readBuffer];
     U32 queryID = getQueryID();
     // gpuCull();

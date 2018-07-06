@@ -47,9 +47,14 @@ class RenderPassCuller {
         //ToDo: Add more data as needed
         SceneGraphNode* _visibleNode;
         explicit RenderableNode()
-            : _visibleNode(nullptr) {}
+            : _visibleNode(nullptr)
+        {
+        }
+
         explicit RenderableNode(SceneGraphNode& node)
-            : _visibleNode(&node) {}
+            : _visibleNode(&node)
+        {
+        }
     };
 
     typedef vectorImpl<RenderableNode> VisibleNodeList;
@@ -66,7 +71,7 @@ class RenderPassCuller {
     ~RenderPassCuller();
     VisibleNodeCache& frustumCull(
         SceneGraphNode& currentNode, SceneState& sceneState,
-        const std::function<bool(SceneGraphNode*)>& cullingFunction);
+        const std::function<bool(const SceneGraphNode&)>& cullingFunction);
     VisibleNodeCache& occlusionCull(
         RenderPassCuller::VisibleNodeCache& inputNodes);
     void refresh();
@@ -77,7 +82,7 @@ class RenderPassCuller {
         VisibleNodeCache& nodes,
         SceneGraphNode& currentNode,
         SceneRenderState& sceneRenderState,
-        const std::function<bool(SceneGraphNode*)>& cullingFunction);
+        const std::function<bool(const SceneGraphNode&)>& cullingFunction);
     VisibleNodeCache& getNodeCache(RenderStage stage);
    protected:
     std::array<VisibleNodeCache, to_const_uint(RenderStage::COUNT)>

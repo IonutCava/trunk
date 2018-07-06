@@ -20,7 +20,6 @@ ShaderProgram::ShaderProgram(const bool optimise)
       _elapsedTime(0ULL),
       _elapsedTimeMS(0.0f)
 {
-    _bound = false;
     _linked = false;
     // Override in concrete implementations with appropriate invalid values
     _shaderProgramID = 0;
@@ -128,15 +127,6 @@ bool ShaderProgram::generateHWResource(const stringImpl& name) {
     return true;
 }
 
-/// Mark the shader as bound
-bool ShaderProgram::bind() {
-    _bound = true;
-    return _shaderProgramID != 0;
-}
-
-/// Mark the shader as unbound
-void ShaderProgram::unbind(bool resetActiveProgram) { _bound = false; }
-
 /// Add a define to the shader. The defined must not have been added previously
 void ShaderProgram::addShaderDefine(const stringImpl& define) {
     // Find the string in the list of program defines
@@ -174,7 +164,7 @@ void ShaderProgram::recompile(const bool vertex, const bool fragment,
                               const bool compute) {
     _linked = false;
     // Remember bind state
-    bool wasBound = _bound;
+    bool wasBound = isBound();
     if (wasBound) {
         unbind();
     }

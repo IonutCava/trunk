@@ -46,7 +46,7 @@ enum class AIMsg : U32 {
 
 class TenisSceneAISceneImpl : public AISceneImpl {
    public:
-    TenisSceneAISceneImpl(SceneGraphNode* target);
+    TenisSceneAISceneImpl(std::weak_ptr<SceneGraphNode> target);
     bool processData(const U64 deltaTime);
     bool processInput(const U64 deltaTime);
     bool update(const U64 deltaTime, NPC* unitRef = nullptr);
@@ -64,7 +64,7 @@ class TenisSceneAISceneImpl : public AISceneImpl {
     bool performAction(const GOAPAction& planStep) { return true; }
 
    private:
-    SceneGraphNode* _target;
+    std::weak_ptr<SceneGraphNode> _target;
     vec3<F32> _ballPosition, _prevBallPosition, _entityPosition,
         _initialPosition;
     bool _attackBall, _ballToTeam2, _gameStop;

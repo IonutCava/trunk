@@ -109,10 +109,10 @@ class Object3D : public SceneNode {
     bool computeTriangleList(bool force = false);
 
    protected:
-    virtual void getDrawCommands(
-        SceneGraphNode& sgn, RenderStage renderStage,
-        SceneRenderState& sceneRenderState,
-        vectorImpl<GenericDrawCommand>& drawCommandsOut);
+    virtual void getDrawCommands(SceneGraphNode& sgn,
+                                 RenderStage renderStage,
+                                 SceneRenderState& sceneRenderState,
+                                 vectorImpl<GenericDrawCommand>& drawCommandsOut);
     virtual void computeNormals();
     virtual void computeTangents();
     /// Use a custom vertex buffer for this object (e.g., a submesh uses the

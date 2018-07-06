@@ -13,11 +13,15 @@
 
 namespace Divide {
 
-RenderQueue::RenderQueue() : _isSorted(false) {
+RenderQueue::RenderQueue() : _isSorted(false)
+{
     //_renderBins.reserve(RenderBin::COUNT);
 }
 
-RenderQueue::~RenderQueue() { MemoryManager::DELETE_HASHMAP(_renderBins); }
+RenderQueue::~RenderQueue()
+{
+    MemoryManager::DELETE_HASHMAP(_renderBins);
+}
 
 U16 RenderQueue::getRenderQueueStackSize() const {
     U16 temp = 0;
@@ -186,9 +190,10 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node,
 
 void RenderQueue::addNodeToQueue(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
     RenderingComponent* renderingCmp = sgn.getComponent<RenderingComponent>();
-    RenderBin* rb = getBinForNode(
-        sgn.getNode(),
-        renderingCmp ? renderingCmp->getMaterialInstance() : nullptr);
+    RenderBin* rb = getBinForNode(sgn.getNode(),
+                                  renderingCmp
+                                    ? renderingCmp->getMaterialInstance()
+                                    : nullptr);
     if (rb) {
         rb->addNodeToBin(sgn, eyePos);
     }

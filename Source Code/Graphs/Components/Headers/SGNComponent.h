@@ -38,6 +38,7 @@ namespace Divide {
 /// A generic component for the SceneGraphNode class
 enum class RenderStage : U32;
 class SceneGraphNode;
+
 class SGNComponent : private NonCopyable {
    public:
     enum class ComponentType : U32 {
@@ -47,7 +48,7 @@ class SGNComponent : private NonCopyable {
         RENDERING = 3,
         COUNT
     };
-
+    
     SGNComponent(ComponentType type, SceneGraphNode& parentSGN);
     virtual ~SGNComponent();
 

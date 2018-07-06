@@ -39,7 +39,7 @@ namespace Divide {
 /// User controlled Unit
 class Player : public Character {
    public:
-    Player(SceneGraphNode& node);
+    Player(SceneGraphNode_ptr node);
     ~Player();
 
     /// Do not allow or allow the user again to control this player

@@ -96,6 +96,8 @@ struct NavMeshTileHeader {
 class NavMeshDebugDraw;
 class DivideDtCrowd;
 
+typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
+
 namespace Attorney {
     class NavigationMeshCrowd;
 };
@@ -120,12 +122,12 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     }
     /// Initiates the NavigationMesh build process, which includes notifying the
     /// clients and posting a task.
-    bool build(SceneGraphNode& sgn,
+    bool build(SceneGraphNode_ptr sgn,
                CreationCallback creationCompleteCallback, bool threaded = true);
     /// Save the NavigationMesh to a file.
-    bool save(SceneGraphNode& sgn);
+    bool save(SceneGraphNode_ptr sgn);
     /// Load a saved NavigationMesh from a file.
-    bool load(SceneGraphNode& sgn);
+    bool load(SceneGraphNode_ptr sgn);
     /// Unload the navmesh reverting the instance to an empty container
     bool unload();
     /// Called once per frame with the time diff between this and the last frame
@@ -175,7 +177,8 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     bool loadConfigFromFile();
     /// Create a navigation mesh query to help in pathfinding.
     bool createNavigationQuery(U32 maxNodes = 2048);
-
+    /// Create a unique mesh name using the given root node
+    stringImpl generateMeshName(SceneGraphNode_ptr sgn);
    private:
     bool _saveIntermediates;
     NavigationMeshConfig _configParams;
@@ -216,7 +219,7 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     ///  Query object used for this mesh
     dtNavMeshQuery* _navQuery;
     /// SceneGraphNode from which to build
-    SceneGraphNode* _sgn;
+    std::weak_ptr<SceneGraphNode> _sgn;
     std::atomic<bool> _debugDraw;
     bool _renderConnections;
     RenderMode _renderMode;

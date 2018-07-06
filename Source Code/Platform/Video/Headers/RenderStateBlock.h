@@ -40,8 +40,6 @@ namespace Divide {
 
 class RenderStateBlock : public GUIDWrapper {
    protected:
-    friend class GL_API;
-    friend class DX_API;
     /// Color Writes
     P32 _colorWrite;
 
@@ -117,14 +115,83 @@ class RenderStateBlock : public GUIDWrapper {
 
     void setColorWrites(bool red, bool green, bool blue, bool alpha);
 
-    inline size_t getHash() const { return _cachedHash; }
+    inline P32 colorWrite() const {
+        return _colorWrite;
+    }
+    inline bool blendEnable() const {
+        return _blendEnable;
+    }
+    inline BlendProperty blendSrc() const {
+        return _blendSrc;
+    }
+    inline BlendProperty blendDest() const {
+        return _blendDest;
+    }
+    inline BlendOperation blendOp() const {
+        return _blendOp;
+    }
+    inline CullMode cullMode() const {
+        return _cullMode;
+    }
+    inline bool cullEnabled() const {
+        return _cullEnabled;
+    }
+    inline F32 lineWidth() const {
+        return _lineWidth;
+    }
+    inline bool zEnable() const {
+        return _zEnable;
+    }
+    inline bool zWriteEnable() const {
+        return _zWriteEnable;
+    }
+    inline ComparisonFunction zFunc() const {
+        return _zFunc;
+    }
+    inline F32 zBias() const {
+        return _zBias;
+    }
+    inline F32 zUnits() const {
+        return _zUnits;
+    }
+    inline bool stencilEnable() const {
+        return _stencilEnable;
+    }
+    inline U32 stencilRef() const {
+        return _stencilRef;
+    }
+    inline U32 stencilMask() const {
+        return _stencilMask;
+    }
+    inline U32 stencilWriteMask() const {
+        return _stencilWriteMask;
+    }
+    inline StencilOperation stencilFailOp() const {
+        return _stencilFailOp;
+    }
+    inline StencilOperation stencilZFailOp() const {
+        return _stencilZFailOp;
+    }
+    inline StencilOperation stencilPassOp() const {
+        return _stencilPassOp;
+    }
+    inline ComparisonFunction stencilFunc() const {
+        return _stencilFunc;
+    }
+    inline FillMode fillMode() const {
+        return _fillMode;
+    }
+
+    inline size_t getHash() const {
+        return _cachedHash;
+    }
 
     bool operator==(RenderStateBlock& RSBD) const {
-        return getHash() == RSBD.getHash();
+        return _cachedHash == RSBD._cachedHash;
     }
 
     bool operator!=(RenderStateBlock& RSBD) const {
-        return !(*this == RSBD);
+        return _cachedHash != RSBD._cachedHash;
     }
 };
 

@@ -61,8 +61,13 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
 
     virtual ~ShaderProgram();
 
-    virtual bool bind();
-    virtual void unbind(bool resetActiveProgram = true);
+    virtual bool bind() = 0;
+    virtual void unbind() = 0;
+    /// Currently active
+    virtual bool isBound() const = 0;
+    /// Is the shader ready for drawing?
+    virtual bool isValid() const = 0;
+
     virtual bool update(const U64 deltaTime);
     virtual bool unload() { return true; }
 
@@ -173,10 +178,6 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
     /// ShaderProgram object id (i.e.: for OGL _shaderProgramID =
     /// glCreateProgram())
     inline U32 getID() const { return _shaderProgramID; }
-    /// Currently active
-    inline bool isBound() const { return _bound; }
-    /// Is the shader ready for drawing?
-    virtual bool isValid() const = 0;
     ///  Calling recompile will re-create the marked shaders from source files
     ///  and update them in the ShaderManager if needed
     void recompile(const bool vertex,
@@ -265,7 +266,6 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
    protected:
     bool _optimise;
     bool _dirty;
-    std::atomic_bool _bound;
     std::atomic_bool _linked;
     U32 _shaderProgramID;  //<not thread-safe. Make sure assignment is protected
     // with a mutex or something
@@ -278,9 +278,9 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
     typedef hashMapImpl<U32, Shader*> ShaderIDMap;
     ShaderIDMap _shaderIDMap;
     std::array<bool, to_const_uint(ShaderType::COUNT)> _refreshStage;
+
    private:
     bool _sceneDataDirty;
-
     std::array<std::array<vectorImpl<U32>, Config::SCENE_NODE_LOD>,
                to_const_uint(ShaderType::COUNT)> _functionIndex;
     std::array<vectorImpl<U32>, to_const_uint(ShaderType::COUNT)>

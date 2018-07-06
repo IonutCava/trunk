@@ -82,7 +82,7 @@ bool WaterPlane::computeBoundingBox(SceneGraphNode& sgn) {
     if (bb.isComputed()) {
         return true;
     }
-    SceneGraphNode* planeSGN = sgn.getChildren()[0];
+    SceneGraphNode_ptr planeSGN(sgn.getChildren()[0]);
     _waterLevel = GET_ACTIVE_SCENE().state().waterLevel();
     _waterDepth = GET_ACTIVE_SCENE().state().waterDepth();
     planeSGN->getComponent<PhysicsComponent>()->setPositionY(_waterLevel);
@@ -158,10 +158,11 @@ bool WaterPlane::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     return true;
 }
 
-void WaterPlane::getDrawCommands(
-    SceneGraphNode& sgn, RenderStage renderStage,
-    SceneRenderState& sceneRenderState,
-    vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+void WaterPlane::getDrawCommands(SceneGraphNode& sgn,
+                                 RenderStage renderStage,
+                                 SceneRenderState& sceneRenderState,
+                                 vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+
     bool depthPass = GFX_DEVICE.isDepthStage();
     RenderingComponent* const renderable =
         sgn.getComponent<RenderingComponent>();

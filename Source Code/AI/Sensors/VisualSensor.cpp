@@ -16,15 +16,7 @@ VisualSensor::VisualSensor(AIEntity* const parentEntity)
 
 VisualSensor::~VisualSensor()
 {
-
     for (NodeContainerMap::value_type& container : _nodeContainerMap) {
-        for (const NodeContainer::value_type& entry : container.second) {
-            if (entry.second) {
-                hashMapImpl<I64, size_t>::const_iterator itCbk = _deletionCallbackID.find(entry.second->getGUID());
-                assert(itCbk != std::end(_deletionCallbackID));
-                entry.second->unregisterDeletionCallback(itCbk->second);
-            }
-        }
         container.second.clear();
     }
     _nodeContainerMap.clear();
@@ -32,42 +24,32 @@ VisualSensor::~VisualSensor()
 }
 
 void VisualSensor::followSceneGraphNode(U32 containerID,
-                                        SceneGraphNode& node) {
+                                        std::weak_ptr<SceneGraphNode> node) {
 
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
 
+    SceneGraphNode_ptr sgnNode(node.lock());
+    assert(sgnNode);
+
     if (container != std::end(_nodeContainerMap)) {
-        NodeContainer::const_iterator nodeEntry =
-            container->second.find(node.getGUID());
-        if (nodeEntry == std::end(container->second)) {
-            hashAlg::emplace(container->second, node.getGUID(), &node);
-            size_t deletionCallbackID = node.registerDeletionCallback(
-                DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode, this,
-                              containerID, node.getGUID()));
-            std::pair<hashMapImpl<I64, size_t>::iterator, bool> result =
-            hashAlg::emplace(_deletionCallbackID, node.getGUID(),
-                             deletionCallbackID);
-            assert(result.second);
-        } else {
-            Console::errorfn(
-                "VisualSensor: Added the same node to follow twice!");
+        std::pair<NodeContainer::const_iterator, bool> result;
+        result = hashAlg::emplace(container->second,
+                                  sgnNode->getGUID(),
+                                  node);
+        if (!result.second) {
+            Console::errorfn("VisualSensor: Added the same node to follow twice!");
         }
     } else {
-        NodeContainer& newContainer = _nodeContainerMap[containerID];
-
-        hashAlg::emplace(newContainer, node.getGUID(), &node);
-        size_t deletionCallbackID = node.registerDeletionCallback(
-            DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode, this,
-                          containerID, node.getGUID()));
-        std::pair<hashMapImpl<I64, size_t>::iterator, bool> result =
-            hashAlg::emplace(_deletionCallbackID, node.getGUID(),
-                             deletionCallbackID);
-        assert(result.second);
+        hashAlg::emplace(_nodeContainerMap[containerID],
+                         sgnNode->getGUID(),
+                         node);
+       
     }
 
     NodePositions& positions = _nodePositionsMap[containerID];
-    hashAlg::emplace(positions, node.getGUID(),
-                     node.getComponent<PhysicsComponent>()->getPosition());
+    hashAlg::emplace(positions,
+                     sgnNode->getGUID(),
+                     sgnNode->getComponent<PhysicsComponent>()->getPosition());
 }
 
 void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
@@ -78,9 +60,7 @@ void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
     if (container != std::end(_nodeContainerMap)) {
         NodeContainer::iterator nodeEntry = container->second.find(nodeGUID);
         if (nodeEntry != std::end(container->second)) {
-            hashMapImpl<I64, size_t>::const_iterator itCbk = _deletionCallbackID.find(nodeGUID);
-            assert(itCbk != std::end(_deletionCallbackID));
-            nodeEntry->second->unregisterDeletionCallback(itCbk->second);
+         
             container->second.erase(nodeEntry);
             NodePositions& positions = _nodePositionsMap[containerID];
             NodePositions::const_iterator it = positions.find(nodeGUID);
@@ -95,13 +75,16 @@ void VisualSensor::update(const U64 deltaTime) {
     for (const NodeContainerMap::value_type& container : _nodeContainerMap) {
         NodePositions& positions = _nodePositionsMap[container.first];
         for (const NodeContainer::value_type& entry : container.second) {
-            positions[entry.first] =
-                entry.second->getComponent<PhysicsComponent>()->getPosition();
+            SceneGraphNode_ptr sgn(entry.second.lock());
+            if (sgn) {
+                positions[entry.first] =
+                    sgn->getComponent<PhysicsComponent>()->getPosition();
+            }
         }
     }
 }
 
-SceneGraphNode* VisualSensor::getClosestNode(U32 containerID) {
+std::weak_ptr<SceneGraphNode> VisualSensor::getClosestNode(U32 containerID) {
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
     if (container != std::end(_nodeContainerMap)) {
         NodePositions& positions = _nodePositionsMap[container->first];
@@ -126,7 +109,8 @@ SceneGraphNode* VisualSensor::getClosestNode(U32 containerID) {
             }
         }
     }
-    return nullptr;
+
+    return std::weak_ptr<SceneGraphNode>();
 }
 
 F32 VisualSensor::getDistanceToNodeSq(U32 containerID, U64 nodeGUID) {

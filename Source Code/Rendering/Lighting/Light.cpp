@@ -17,10 +17,9 @@ Light::Light(const F32 range, const LightType& type)
       _type(type),
       _drawImpostor(false),
       _updateLightBB(false),
-      _lightSGN(nullptr),
       _impostor(nullptr),
+      _lightSGN(nullptr),
       _resolutionFactor(1),
-      _impostorSGN(nullptr),
       _shadowMapInfo(nullptr)
 {
     // All lights default to fully dynamic for now.
@@ -89,6 +88,7 @@ void Light::postLoad(SceneGraphNode& sgn) {
 
 void Light::onCameraUpdate(Camera& camera) {
     assert(_lightSGN != nullptr);
+
     if (!getEnabled()) {
         return;
     }
@@ -206,7 +206,7 @@ bool Light::computeBoundingBox(SceneGraphNode& sgn) {
 
 bool Light::isInView(const SceneRenderState& sceneRenderState,
                      SceneGraphNode& sgn, const bool distanceCheck) {
-    return ((_impostorSGN != nullptr) && _drawImpostor);
+    return ((_impostorSGN.lock() != nullptr) && _drawImpostor);
 }
 
 bool Light::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
@@ -216,11 +216,11 @@ bool Light::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
             CreateResource<Impostor>(ResourceDescriptor(_name + "_impostor"));
         _impostor->setRadius(_properties._attenuation.w);
         _impostor->renderState().setDrawState(true);
-        _lightSGN->addNode(*_impostor).setActive(true);
+        _impostorSGN = _lightSGN->addNode(*_impostor);
+        _impostorSGN.lock()->setActive(true);
     }
-    SceneGraphNode* impostorSGN = std::begin(_lightSGN->getChildren())->second;
     Material* const impostorMaterialInst =
-        impostorSGN->getComponent<RenderingComponent>()->getMaterialInstance();
+        _impostorSGN.lock()->getComponent<RenderingComponent>()->getMaterialInstance();
     impostorMaterialInst->setDiffuse(getDiffuseColor());
     impostorMaterialInst->setAmbient(getDiffuseColor());
 

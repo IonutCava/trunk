@@ -143,10 +143,10 @@ void SceneManager::sortVisibleNodes(
 }
 
 void SceneManager::updateVisibleNodes(bool flushCache) {
-    auto cullingFunction = [](SceneGraphNode* node) -> bool {
-        if (node->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
+    auto cullingFunction = [](const SceneGraphNode& node) -> bool {
+        if (node.getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
             Object3D::ObjectType type =
-                node->getNode<Object3D>()->getObjectType();
+                node.getNode<Object3D>()->getObjectType();
             return (type == Object3D::ObjectType::MESH ||
                     type == Object3D::ObjectType::FLYWEIGHT);
         }
@@ -160,7 +160,7 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
     RenderQueue& queue = RenderQueue::getInstance();
     RenderPassCuller::VisibleNodeCache& nodes =
         _renderPassCuller->frustumCull(
-            GET_ACTIVE_SCENEGRAPH().getRoot(), _activeScene->state(),
+            *GET_ACTIVE_SCENEGRAPH().getRoot(), _activeScene->state(),
             cullingFunction);
 
     bool refreshNodeData = !nodes._locked;

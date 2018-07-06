@@ -55,9 +55,6 @@ class PhysicsComponent : public SGNComponent {
         NODE_COLLIDE
     };
    public:
-    PhysicsComponent(SceneGraphNode& parentSGN);
-    ~PhysicsComponent();
-
     void update(const U64 deltaTime);
 
     inline const PhysicsGroup& physicsGroup() const {
@@ -134,6 +131,9 @@ class PhysicsComponent : public SGNComponent {
 
    protected:
     friend class SceneGraphNode;
+    PhysicsComponent(SceneGraphNode& parentSGN);
+    ~PhysicsComponent();
+
     void useDefaultTransform(const bool state);
 
     inline bool transformUpdated() const { return _transformUpdated; }

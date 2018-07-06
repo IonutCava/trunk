@@ -45,9 +45,6 @@ class NavigationComponent : public SGNComponent {
         NODE_IGNORE
     };
 
-    NavigationComponent(SceneGraphNode& sgn);
-    ~NavigationComponent();
-
     inline const NavigationContext& navigationContext() const {
         return _navigationContext;
     }
@@ -55,6 +52,11 @@ class NavigationComponent : public SGNComponent {
 
     void navigationContext(const NavigationContext& newContext);
     void navigationDetailOverride(const bool detailOverride);
+
+   protected:
+    friend class SceneGraphNode;
+    NavigationComponent(SceneGraphNode& sgn);
+    ~NavigationComponent();
 
    protected:
     NavigationContext _navigationContext;

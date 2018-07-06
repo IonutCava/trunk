@@ -30,7 +30,7 @@ bool SceneNode::getDrawState(RenderStage currentStage) {
 }
 
 bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
-                         SceneGraphNode& sgn, const bool distanceCheck) {
+                         SceneGraphNode& sgn, bool distanceCheck) {
     const BoundingBox& boundingBox = sgn.getBoundingBoxConst();
     const BoundingSphere& sphere = sgn.getBoundingSphereConst();
 

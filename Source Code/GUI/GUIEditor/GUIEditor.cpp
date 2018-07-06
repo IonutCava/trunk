@@ -16,8 +16,8 @@ GUIEditor::GUIEditor()
       _wasControlClick(false),
       _createNavMeshQueued(false),
       _pauseSelectionTracking(false),
-      _editorWindow(nullptr),
-      _currentSelection(nullptr) {
+      _editorWindow(nullptr)
+{
     _saveSelectionButton = nullptr;
     _deleteSelectionButton = nullptr;
 
@@ -89,7 +89,7 @@ bool GUIEditor::init() {
     return true;
 }
 
-bool GUIEditor::Handle_ChangeSelection(SceneGraphNode *const newNode) {
+bool GUIEditor::Handle_ChangeSelection(std::weak_ptr<SceneGraphNode> newNode) {
     _currentSelection = newNode;
     if (isVisible()) {
         UpdateControls();
@@ -98,9 +98,11 @@ bool GUIEditor::Handle_ChangeSelection(SceneGraphNode *const newNode) {
 }
 
 void GUIEditor::TrackSelection() {
-    if (_currentSelection && !_pauseSelectionTracking) {
+    SceneGraphNode_ptr node = _currentSelection.lock();
+
+    if (node && !_pauseSelectionTracking) {
         PhysicsComponent *const selectionTransform =
-            _currentSelection->getComponent<PhysicsComponent>();
+            node->getComponent<PhysicsComponent>();
         const vec3<F32> &localPosition = selectionTransform->getPosition();
         const vec3<F32> &localScale = selectionTransform->getScale();
         vec3<F32> localOrientation =
@@ -140,7 +142,7 @@ void GUIEditor::TrackSelection() {
         }
 
         RenderingComponent *rComp =
-            _currentSelection->getComponent<RenderingComponent>();
+            node->getComponent<RenderingComponent>();
         toggleButton(ToggleButtons::TOGGLE_SKELETONS)
             ->setSelected(rComp->renderSkeleton());
         toggleButton(ToggleButtons::TOGGLE_SHADOW_MAPPING)
@@ -153,10 +155,12 @@ void GUIEditor::TrackSelection() {
 }
 
 void GUIEditor::UpdateControls() {
+    SceneGraphNode_ptr node = _currentSelection.lock();
+
     bool hasValidTransform = false;
-    if (_currentSelection) {
+    if (node) {
         hasValidTransform =
-            (_currentSelection->getComponent<PhysicsComponent>() != nullptr);
+            (node->getComponent<PhysicsComponent>() != nullptr);
         toggleButton(ToggleButtons::TOGGLE_WIREFRAME)->setEnabled(true);
         toggleButton(ToggleButtons::TOGGLE_BOUNDING_BOXES)->setEnabled(true);
         toggleButton(ToggleButtons::TOGGLE_SKELETONS)->setEnabled(true);
@@ -325,9 +329,7 @@ void GUIEditor::RegisterHandlers() {
     {
         CEGUI::Window *dumpSceneGraphButton = static_cast<CEGUI::Window *>(
             EditorBar->getChild("DumpSceneGraphTree"));
-        dumpSceneGraphButton->subscribeEvent(
-            CEGUI::PushButton::EventClicked,
-            CEGUI::Event::Subscriber(&GUIEditor::Handle_PrintSceneGraph, this));
+        dumpSceneGraphButton->setEnabled(false);
     }
     CEGUI::ToggleButton *toggleButtonPtr = nullptr;
     // Toggle Wireframe rendering
@@ -953,20 +955,15 @@ bool GUIEditor::Handle_ReloadScene(const CEGUI::EventArgs &e) {
     return true;
 }
 
-bool GUIEditor::Handle_PrintSceneGraph(const CEGUI::EventArgs &e) {
-    Console::d_printfn("[Editor]:Printing scene graph!");
-    GET_ACTIVE_SCENEGRAPH().print();
-    return true;
-}
-
 bool GUIEditor::Handle_WireframeToggle(const CEGUI::EventArgs &e) {
     if (toggleButton(ToggleButtons::TOGGLE_WIREFRAME)->isSelected()) {
         Console::d_printfn("[Editor]: Wireframe rendering enabled!");
     } else {
         Console::d_printfn("[Editor]: Wireframe rendering disabled!");
     }
-    if (_currentSelection) {
-        _currentSelection->getComponent<RenderingComponent>()->renderWireframe(
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<RenderingComponent>()->renderWireframe(
             toggleButton(ToggleButtons::TOGGLE_WIREFRAME)->isSelected());
     }
     return true;
@@ -990,8 +987,9 @@ bool GUIEditor::Handle_ShadowMappingToggle(const CEGUI::EventArgs &e) {
     } else {
         Console::d_printfn("[Editor]: Shadow Mapping disabled!");
     }
-    if (_currentSelection) {
-        _currentSelection->getComponent<RenderingComponent>()->castsShadows(
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<RenderingComponent>()->castsShadows(
             toggleButton(ToggleButtons::TOGGLE_SHADOW_MAPPING)->isSelected());
     }
     return true;
@@ -1028,9 +1026,9 @@ bool GUIEditor::Handle_BoundingBoxesToggle(const CEGUI::EventArgs &e) {
     } else {
         Console::d_printfn("[Editor]: Bounding Box rendering disabled!");
     }
-    if (_currentSelection) {
-        RenderingComponent *rComp =
-            _currentSelection->getComponent<RenderingComponent>();
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        RenderingComponent *rComp = node->getComponent<RenderingComponent>();
         rComp->renderBoundingBox(
             toggleButton(ToggleButtons::TOGGLE_BOUNDING_BOXES)->isSelected());
     }
@@ -1055,8 +1053,9 @@ bool GUIEditor::Handle_SkeletonsToggle(const CEGUI::EventArgs &e) {
         Console::d_printfn("[Editor]: Skeleton rendering disabled!");
     }
 
-    if (_currentSelection) {
-        _currentSelection->getComponent<RenderingComponent>()->renderSkeleton(
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<RenderingComponent>()->renderSkeleton(
             toggleButton(ToggleButtons::TOGGLE_SKELETONS)->isSelected());
     }
     return true;
@@ -1069,9 +1068,12 @@ bool GUIEditor::Handle_PositionXChange(const CEGUI::EventArgs &e) {
                     ControlFields::CONTROL_FIELD_X)->getText());
     currentValues(TransformFields::TRANSFORM_POSITION,
                   ControlFields::CONTROL_FIELD_X) = x;
-    _currentSelection->getComponent<PhysicsComponent>()->setPositionX(
-        currentValues(TransformFields::TRANSFORM_POSITION,
-                      ControlFields::CONTROL_FIELD_X));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setPositionX(
+            currentValues(TransformFields::TRANSFORM_POSITION,
+            ControlFields::CONTROL_FIELD_X));
+    }
     _pauseSelectionTracking = false;
     return true;
 }
@@ -1083,9 +1085,12 @@ bool GUIEditor::Handle_PositionYChange(const CEGUI::EventArgs &e) {
                     ControlFields::CONTROL_FIELD_Y)->getText());
     currentValues(TransformFields::TRANSFORM_POSITION,
                   ControlFields::CONTROL_FIELD_Y) = y;
-    _currentSelection->getComponent<PhysicsComponent>()->setPositionY(
-        currentValues(TransformFields::TRANSFORM_POSITION,
-                      ControlFields::CONTROL_FIELD_Y));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setPositionY(
+            currentValues(TransformFields::TRANSFORM_POSITION,
+            ControlFields::CONTROL_FIELD_Y));
+    }
     _pauseSelectionTracking = false;
     return true;
 }
@@ -1097,9 +1102,12 @@ bool GUIEditor::Handle_PositionZChange(const CEGUI::EventArgs &e) {
                     ControlFields::CONTROL_FIELD_Z)->getText());
     currentValues(TransformFields::TRANSFORM_POSITION,
                   ControlFields::CONTROL_FIELD_Z) = z;
-    _currentSelection->getComponent<PhysicsComponent>()->setPositionZ(
-        currentValues(TransformFields::TRANSFORM_POSITION,
-                      ControlFields::CONTROL_FIELD_Z));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setPositionZ(
+            currentValues(TransformFields::TRANSFORM_POSITION,
+            ControlFields::CONTROL_FIELD_Z));
+    }
     _pauseSelectionTracking = false;
     return true;
 }
@@ -1136,15 +1144,18 @@ bool GUIEditor::Handle_RotationXChange(const CEGUI::EventArgs &e) {
         TransformFields::TRANSFORM_ROTATION, ControlFields::CONTROL_FIELD_X));
     valuesField(TransformFields::TRANSFORM_ROTATION,
                 ControlFields::CONTROL_FIELD_X)->setText(xStr);
-    PhysicsComponent *pComp =
-        _currentSelection->getComponent<PhysicsComponent>();
-    pComp->setRotation(
-        vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_X),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Y),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Z)));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        PhysicsComponent *pComp =
+            node->getComponent<PhysicsComponent>();
+        pComp->setRotation(
+            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_X),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Y),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Z)));
+    }
     _pauseSelectionTracking = false;
     return true;
 }
@@ -1163,15 +1174,18 @@ bool GUIEditor::Handle_RotationYChange(const CEGUI::EventArgs &e) {
         TransformFields::TRANSFORM_ROTATION, ControlFields::CONTROL_FIELD_Y));
     valuesField(TransformFields::TRANSFORM_ROTATION,
                 ControlFields::CONTROL_FIELD_Y)->setText(yStr);
-    PhysicsComponent *pComp =
-        _currentSelection->getComponent<PhysicsComponent>();
-    pComp->setRotation(
-        vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_X),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Y),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Z)));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        PhysicsComponent *pComp =
+            node->getComponent<PhysicsComponent>();
+        pComp->setRotation(
+            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_X),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Y),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Z)));
+    }
     _pauseSelectionTracking = false;
     return true;
 }
@@ -1190,15 +1204,18 @@ bool GUIEditor::Handle_RotationZChange(const CEGUI::EventArgs &e) {
         TransformFields::TRANSFORM_ROTATION, ControlFields::CONTROL_FIELD_Z));
     valuesField(TransformFields::TRANSFORM_ROTATION,
                 ControlFields::CONTROL_FIELD_Z)->setText(zStr);
-    PhysicsComponent *pComp =
-        _currentSelection->getComponent<PhysicsComponent>();
-    pComp->setRotation(
-        vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_X),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Y),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Z)));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        PhysicsComponent *pComp =
+            node->getComponent<PhysicsComponent>();
+        pComp->setRotation(
+            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_X),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Y),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Z)));
+    }
     _pauseSelectionTracking = false;
     return true;
 }
@@ -1228,9 +1245,12 @@ bool GUIEditor::Handle_ScaleXChange(const CEGUI::EventArgs &e) {
                     ControlFields::CONTROL_FIELD_X)->getText());
     currentValues(TransformFields::TRANSFORM_SCALE,
                   ControlFields::CONTROL_FIELD_X) = x;
-    _currentSelection->getComponent<PhysicsComponent>()->setScaleX(
-        currentValues(TransformFields::TRANSFORM_SCALE,
-                      ControlFields::CONTROL_FIELD_X));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setScaleX(
+            currentValues(TransformFields::TRANSFORM_SCALE,
+            ControlFields::CONTROL_FIELD_X));
+    }
     _pauseSelectionTracking = false;
     return true;
 }
@@ -1242,9 +1262,12 @@ bool GUIEditor::Handle_ScaleYChange(const CEGUI::EventArgs &e) {
                     ControlFields::CONTROL_FIELD_Y)->getText());
     currentValues(TransformFields::TRANSFORM_SCALE,
                   ControlFields::CONTROL_FIELD_Y) = y;
-    _currentSelection->getComponent<PhysicsComponent>()->setScaleY(
-        currentValues(TransformFields::TRANSFORM_SCALE,
-                      ControlFields::CONTROL_FIELD_Y));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setScaleY(
+            currentValues(TransformFields::TRANSFORM_SCALE,
+            ControlFields::CONTROL_FIELD_Y));
+    }
     _pauseSelectionTracking = false;
     return true;
 }
@@ -1256,9 +1279,12 @@ bool GUIEditor::Handle_ScaleZChange(const CEGUI::EventArgs &e) {
                     ControlFields::CONTROL_FIELD_Z)->getText());
     currentValues(TransformFields::TRANSFORM_SCALE,
                   ControlFields::CONTROL_FIELD_Z) = z;
-    _currentSelection->getComponent<PhysicsComponent>()->setScaleZ(
-        currentValues(TransformFields::TRANSFORM_SCALE,
-                      ControlFields::CONTROL_FIELD_Z));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setScaleZ(
+            currentValues(TransformFields::TRANSFORM_SCALE,
+            ControlFields::CONTROL_FIELD_Z));
+    }
     _pauseSelectionTracking = false;
     return true;
 }
@@ -1284,84 +1310,96 @@ bool GUIEditor::Handle_ScaleGranularityChange(const CEGUI::EventArgs &e) {
 bool GUIEditor::Handle_IncrementPositionX(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Position X incremented via button!");
     // If we don't have a selection, the button is disabled
-    assert(_currentSelection != nullptr);
     currentValues(TransformFields::TRANSFORM_POSITION,
                   ControlFields::CONTROL_FIELD_X) +=
         currentValues(TransformFields::TRANSFORM_POSITION,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    _currentSelection->getComponent<PhysicsComponent>()->setPositionX(
-        currentValues(TransformFields::TRANSFORM_POSITION,
-                      ControlFields::CONTROL_FIELD_X));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setPositionX(
+            currentValues(TransformFields::TRANSFORM_POSITION,
+            ControlFields::CONTROL_FIELD_X));
+    }
     return true;
 }
 
 bool GUIEditor::Handle_DecrementPositionX(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Position X decremented via button!");
     // If we don't have a selection, the button is disabled
-    assert(_currentSelection != nullptr);
     currentValues(TransformFields::TRANSFORM_POSITION,
                   ControlFields::CONTROL_FIELD_X) -=
         currentValues(TransformFields::TRANSFORM_POSITION,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    _currentSelection->getComponent<PhysicsComponent>()->setPositionX(
-        currentValues(TransformFields::TRANSFORM_POSITION,
-                      ControlFields::CONTROL_FIELD_X));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setPositionX(
+            currentValues(TransformFields::TRANSFORM_POSITION,
+            ControlFields::CONTROL_FIELD_X));
+    }
     return true;
 }
 
 bool GUIEditor::Handle_IncrementPositionY(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Position Y incremented via button!");
     // If we don't have a selection, the button is disabled
-    assert(_currentSelection != nullptr);
     currentValues(TransformFields::TRANSFORM_POSITION,
                   ControlFields::CONTROL_FIELD_Y) +=
         currentValues(TransformFields::TRANSFORM_POSITION,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    _currentSelection->getComponent<PhysicsComponent>()->setPositionY(
-        currentValues(TransformFields::TRANSFORM_POSITION,
-                      ControlFields::CONTROL_FIELD_Y));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setPositionY(
+            currentValues(TransformFields::TRANSFORM_POSITION,
+            ControlFields::CONTROL_FIELD_Y));
+    }
     return true;
 }
 
 bool GUIEditor::Handle_DecrementPositionY(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Position Y decremented via button!");
     // If we don't have a selection, the button is disabled
-    assert(_currentSelection != nullptr);
     currentValues(TransformFields::TRANSFORM_POSITION,
                   ControlFields::CONTROL_FIELD_Y) -=
         currentValues(TransformFields::TRANSFORM_POSITION,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    _currentSelection->getComponent<PhysicsComponent>()->setPositionY(
-        currentValues(TransformFields::TRANSFORM_POSITION,
-                      ControlFields::CONTROL_FIELD_Y));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setPositionY(
+            currentValues(TransformFields::TRANSFORM_POSITION,
+            ControlFields::CONTROL_FIELD_Y));
+    }
     return true;
 }
 
 bool GUIEditor::Handle_IncrementPositionZ(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Position Z incremented via button!");
     // If we don't have a selection, the button is disabled
-    assert(_currentSelection != nullptr);
     currentValues(TransformFields::TRANSFORM_POSITION,
                   ControlFields::CONTROL_FIELD_Z) +=
         currentValues(TransformFields::TRANSFORM_POSITION,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    _currentSelection->getComponent<PhysicsComponent>()->setPositionZ(
-        currentValues(TransformFields::TRANSFORM_POSITION,
-                      ControlFields::CONTROL_FIELD_Z));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setPositionZ(
+            currentValues(TransformFields::TRANSFORM_POSITION,
+            ControlFields::CONTROL_FIELD_Z));
+    }
     return true;
 }
 
 bool GUIEditor::Handle_DecrementPositionZ(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Position Z decremented via button!");
     // If we don't have a selection, the button is disabled
-    assert(_currentSelection != nullptr);
     currentValues(TransformFields::TRANSFORM_POSITION,
                   ControlFields::CONTROL_FIELD_Z) -=
         currentValues(TransformFields::TRANSFORM_POSITION,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    _currentSelection->getComponent<PhysicsComponent>()->setPositionZ(
-        currentValues(TransformFields::TRANSFORM_POSITION,
-                      ControlFields::CONTROL_FIELD_Z));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setPositionZ(
+            currentValues(TransformFields::TRANSFORM_POSITION,
+            ControlFields::CONTROL_FIELD_Z));
+    }
     return true;
 }
 
@@ -1401,115 +1439,131 @@ bool GUIEditor::Handle_DecrementPositionGranularity(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_IncrementRotationX(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Rotation X incremented via button!");
-    assert(_currentSelection != nullptr);
     currentValues(TransformFields::TRANSFORM_ROTATION,
                   ControlFields::CONTROL_FIELD_X) +=
         currentValues(TransformFields::TRANSFORM_ROTATION,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    PhysicsComponent *pComp =
-        _currentSelection->getComponent<PhysicsComponent>();
-    pComp->setRotation(
-        vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_X),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Y),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Z)));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        PhysicsComponent *pComp =
+            node->getComponent<PhysicsComponent>();
+        pComp->setRotation(
+            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_X),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Y),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Z)));
+    }
     return true;
 }
 
 bool GUIEditor::Handle_DecrementRotationX(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Rotation X decremented via button!");
-    assert(_currentSelection != nullptr);
     currentValues(TransformFields::TRANSFORM_ROTATION,
                   ControlFields::CONTROL_FIELD_X) -=
         currentValues(TransformFields::TRANSFORM_ROTATION,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    PhysicsComponent *pComp =
-        _currentSelection->getComponent<PhysicsComponent>();
-    pComp->setRotation(
-        vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_X),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Y),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Z)));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        PhysicsComponent *pComp =
+            node->getComponent<PhysicsComponent>();
+        pComp->setRotation(
+            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_X),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Y),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Z)));
+    }
+
     return true;
 }
 
 bool GUIEditor::Handle_IncrementRotationY(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Rotation Y incremented via button!");
-    assert(_currentSelection != nullptr);
+    
     currentValues(TransformFields::TRANSFORM_ROTATION,
                   ControlFields::CONTROL_FIELD_Y) +=
         currentValues(TransformFields::TRANSFORM_ROTATION,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    PhysicsComponent *pComp =
-        _currentSelection->getComponent<PhysicsComponent>();
-    pComp->setRotation(
-        vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_X),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Y),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Z)));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        PhysicsComponent *pComp =
+            node->getComponent<PhysicsComponent>();
+        pComp->setRotation(
+            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_X),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Y),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Z)));
+    }
     return true;
 }
 
 bool GUIEditor::Handle_DecrementRotationY(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Rotation Y decremented via button!");
-    assert(_currentSelection != nullptr);
     currentValues(TransformFields::TRANSFORM_ROTATION,
                   ControlFields::CONTROL_FIELD_Y) -=
         currentValues(TransformFields::TRANSFORM_ROTATION,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    PhysicsComponent *pComp =
-        _currentSelection->getComponent<PhysicsComponent>();
-    pComp->setRotation(
-        vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_X),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Y),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Z)));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        PhysicsComponent *pComp =
+            node->getComponent<PhysicsComponent>();
+        pComp->setRotation(
+            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_X),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Y),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Z)));
+    }
     return true;
 }
 
 bool GUIEditor::Handle_IncrementRotationZ(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Rotation Z incremented via button!");
-    assert(_currentSelection != nullptr);
+    
     currentValues(TransformFields::TRANSFORM_ROTATION,
                   ControlFields::CONTROL_FIELD_Z) +=
         currentValues(TransformFields::TRANSFORM_ROTATION,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    PhysicsComponent *pComp =
-        _currentSelection->getComponent<PhysicsComponent>();
-    pComp->setRotation(
-        vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_X),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Y),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Z)));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        PhysicsComponent *pComp =
+            node->getComponent<PhysicsComponent>();
+        pComp->setRotation(
+            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_X),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Y),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Z)));
+    }
     return true;
 }
 
 bool GUIEditor::Handle_DecrementRotationZ(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Rotation Z decremented via button!");
-    assert(_currentSelection != nullptr);
+    
     currentValues(TransformFields::TRANSFORM_ROTATION,
                   ControlFields::CONTROL_FIELD_Z) -=
         currentValues(TransformFields::TRANSFORM_ROTATION,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    PhysicsComponent *pComp =
-        _currentSelection->getComponent<PhysicsComponent>();
-    pComp->setRotation(
-        vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_X),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Y),
-                  currentValues(TransformFields::TRANSFORM_ROTATION,
-                                ControlFields::CONTROL_FIELD_Z)));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        PhysicsComponent *pComp =
+            node->getComponent<PhysicsComponent>();
+        pComp->setRotation(
+            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_X),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Y),
+            currentValues(TransformFields::TRANSFORM_ROTATION,
+            ControlFields::CONTROL_FIELD_Z)));
+    }
     return true;
 }
 
@@ -1551,66 +1605,80 @@ bool GUIEditor::Handle_DecrementRotationGranularity(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_IncrementScaleX(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Scale X incremented via button!");
-    assert(_currentSelection != nullptr);
+    
     currentValues(TransformFields::TRANSFORM_SCALE,
                   ControlFields::CONTROL_FIELD_X) +=
         currentValues(TransformFields::TRANSFORM_SCALE,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    _currentSelection->getComponent<PhysicsComponent>()->setScaleX(
-        currentValues(TransformFields::TRANSFORM_SCALE,
-                      ControlFields::CONTROL_FIELD_X));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setScaleX(
+            currentValues(TransformFields::TRANSFORM_SCALE,
+            ControlFields::CONTROL_FIELD_X));
+    }
     return true;
 }
 
 bool GUIEditor::Handle_DecrementScaleX(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Scale X decremented via button!");
-    assert(_currentSelection != nullptr);
+    
     currentValues(TransformFields::TRANSFORM_SCALE,
                   ControlFields::CONTROL_FIELD_X) -=
         currentValues(TransformFields::TRANSFORM_SCALE,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    _currentSelection->getComponent<PhysicsComponent>()->setScaleX(
-        currentValues(TransformFields::TRANSFORM_SCALE,
-                      ControlFields::CONTROL_FIELD_X));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setScaleX(
+            currentValues(TransformFields::TRANSFORM_SCALE,
+            ControlFields::CONTROL_FIELD_X));
+    }
     return true;
 }
 
 bool GUIEditor::Handle_IncrementScaleY(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Scale Y incremented via button!");
-    assert(_currentSelection != nullptr);
+    
     currentValues(TransformFields::TRANSFORM_SCALE,
                   ControlFields::CONTROL_FIELD_Y) +=
         currentValues(TransformFields::TRANSFORM_SCALE,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    _currentSelection->getComponent<PhysicsComponent>()->setScaleY(
-        currentValues(TransformFields::TRANSFORM_SCALE,
-                      ControlFields::CONTROL_FIELD_Y));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setScaleY(
+            currentValues(TransformFields::TRANSFORM_SCALE,
+            ControlFields::CONTROL_FIELD_Y));
+    }
     return true;
 }
 
 bool GUIEditor::Handle_DecrementScaleY(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Scale Y decremented via button!");
-    assert(_currentSelection != nullptr);
+    
     currentValues(TransformFields::TRANSFORM_SCALE,
                   ControlFields::CONTROL_FIELD_Y) -=
         currentValues(TransformFields::TRANSFORM_SCALE,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    _currentSelection->getComponent<PhysicsComponent>()->setScaleY(
-        currentValues(TransformFields::TRANSFORM_SCALE,
-                      ControlFields::CONTROL_FIELD_Y));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setScaleY(
+            currentValues(TransformFields::TRANSFORM_SCALE,
+            ControlFields::CONTROL_FIELD_Y));
+    }
     return true;
 }
 
 bool GUIEditor::Handle_IncrementScaleZ(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Scale Z incremented via button!");
-    assert(_currentSelection != nullptr);
     currentValues(TransformFields::TRANSFORM_SCALE,
                   ControlFields::CONTROL_FIELD_Z) +=
         currentValues(TransformFields::TRANSFORM_SCALE,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    _currentSelection->getComponent<PhysicsComponent>()->setScaleZ(
-        currentValues(TransformFields::TRANSFORM_SCALE,
-                      ControlFields::CONTROL_FIELD_Z));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setScaleZ(
+            currentValues(TransformFields::TRANSFORM_SCALE,
+            ControlFields::CONTROL_FIELD_Z));
+    }
     return true;
 }
 
@@ -1620,9 +1688,12 @@ bool GUIEditor::Handle_DecrementScaleZ(const CEGUI::EventArgs &e) {
                   ControlFields::CONTROL_FIELD_Z) -=
         currentValues(TransformFields::TRANSFORM_SCALE,
                       ControlFields::CONTROL_FIELD_GRANULARITY);
-    _currentSelection->getComponent<PhysicsComponent>()->setScaleZ(
-        currentValues(TransformFields::TRANSFORM_SCALE,
-                      ControlFields::CONTROL_FIELD_Z));
+    SceneGraphNode_ptr node = _currentSelection.lock();
+    if (node) {
+        node->getComponent<PhysicsComponent>()->setScaleZ(
+            currentValues(TransformFields::TRANSFORM_SCALE,
+            ControlFields::CONTROL_FIELD_Z));
+    }
     return true;
 }
 

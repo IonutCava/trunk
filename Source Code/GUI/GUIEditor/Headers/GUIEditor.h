@@ -52,7 +52,7 @@ DEFINE_SINGLETON(GUIEditor)
     void setVisible(bool visible);  //< Hide or show the editor
     bool isVisible();  //< Return true if editor is visible, false if is hidden
     bool update(const U64 deltaTime);  //< Used to update time dependent elements
-    bool Handle_ChangeSelection(SceneGraphNode *const newNode);
+    bool Handle_ChangeSelection(std::weak_ptr<SceneGraphNode> newNode);
 
     /// Returns true if the last click was in one of the editor's windows
     inline bool wasControlClick() { return _wasControlClick; }
@@ -71,7 +71,6 @@ DEFINE_SINGLETON(GUIEditor)
     bool Handle_SaveSelection(const CEGUI::EventArgs &e);
     bool Handle_DeleteSelection(const CEGUI::EventArgs &e);
     bool Handle_ReloadScene(const CEGUI::EventArgs &e);
-    bool Handle_PrintSceneGraph(const CEGUI::EventArgs &e);
     bool Handle_WireframeToggle(const CEGUI::EventArgs &e);
     bool Handle_DepthPreviewToggle(const CEGUI::EventArgs &e);
     bool Handle_ShadowMappingToggle(const CEGUI::EventArgs &e);
@@ -176,7 +175,7 @@ private:
     bool _wasControlClick;
     bool _createNavMeshQueued;
     bool _pauseSelectionTracking;
-    SceneGraphNode *_currentSelection;
+    std::weak_ptr<SceneGraphNode> _currentSelection;
     CEGUI::Window *
         _editorWindow;  //< This will be a pointer to the EditorRoot window.
     CEGUI::Window *_saveSelectionButton;

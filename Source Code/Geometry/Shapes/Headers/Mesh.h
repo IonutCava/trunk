@@ -71,12 +71,13 @@ class Mesh : public Object3D {
 
    protected:
     /// Called from SceneGraph "sceneUpdate"
-    virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
+    virtual void sceneUpdate(const U64 deltaTime,
+                             SceneGraphNode& sgn,
                              SceneState& sceneState);
-    virtual void getDrawCommands(
-        SceneGraphNode& sgn, RenderStage renderStage,
-        SceneRenderState& sceneRenderState,
-        vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
+    virtual void getDrawCommands(SceneGraphNode& sgn,
+                                 RenderStage renderStage,
+                                 SceneRenderState& sceneRenderState,
+                                 vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
 
    protected:
     typedef hashMapImpl<U32, SubMesh*> SubMeshRefMap;

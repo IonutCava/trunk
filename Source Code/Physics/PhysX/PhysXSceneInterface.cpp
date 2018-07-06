@@ -214,7 +214,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
         MemoryManager_NEW PxShape * [actor._actor->getNbShapes()];
     actor._actor->getShapes(shapes, actor._actor->getNbShapes());
 
-    SceneGraphNode* targetNode = nullptr;
+    SceneGraphNode_ptr targetNode;
     stringImpl sgnName = "";
     bool shadowState = true;
     switch (actor._type) {
@@ -239,8 +239,8 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
         case PxGeometryType::ePLANE: {
             sgnName = "PlaneActor";
             if (FindResourceImpl<Quad3D>(sgnName)) {
-                targetNode = GET_ACTIVE_SCENEGRAPH().findNode(sgnName);
-                assert(targetNode != nullptr);
+                targetNode = GET_ACTIVE_SCENEGRAPH().findNode(sgnName).lock();
+                assert(targetNode);
                 actor.setParent(targetNode->getComponent<PhysicsComponent>());
                 return;
             }
@@ -266,7 +266,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
         if (sceneNode) {
             sceneNode->renderState().setDrawState(true);
             targetNode =
-                &_parentScene->getSceneGraph().getRoot().addNode(*sceneNode, sgnName);
+                _parentScene->getSceneGraph().getRoot()->addNode(*sceneNode, sgnName);
             targetNode->getComponent<RenderingComponent>()->castsShadows(
                 shadowState);
         }

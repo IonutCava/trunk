@@ -66,7 +66,7 @@ class WarScene : public Scene {
     bool removeUnits(bool removeNodesOnCall);
     bool addUnits();
     bool resetUnits();
-    AI::AIEntity* findAI(SceneGraphNode& node);
+    AI::AIEntity* findAI(SceneGraphNode_ptr node);
 
    private:
     DirectionalLight* _sun;
@@ -80,7 +80,7 @@ class WarScene : public Scene {
     vectorImpl<AI::AIEntity*> _army[2];
     /// NPC's are the actual game entities
     vectorImpl<NPC*> _armyNPCs[2];
-    SceneGraphNode* _flag[2];
+    std::weak_ptr<SceneGraphNode> _flag[2];
     /// Teams are factions for AIEntites so they can manage friend/foe situations
     AI::AITeam* _faction[2];
 };

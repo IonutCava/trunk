@@ -40,10 +40,7 @@ void RenderPass::render(const SceneRenderState& renderState,
             renderQueue.getBinSorted(i)->render(renderState, currentStage);
         }
     }
-
-    // Unbind all shaders after every render pass
-    ShaderManager::getInstance().unbind();
-
+    
     if (isDisplayStage) {
         for (U16 i = 0; i < renderBinCount; ++i) {
             renderQueue.getBinSorted(i)->postRender(renderState, currentStage);

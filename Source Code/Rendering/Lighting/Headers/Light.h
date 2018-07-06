@@ -275,7 +275,7 @@ class Light : public SceneNode {
     /// Used for debug rendering
     Impostor* _impostor;
     SceneGraphNode* _lightSGN;
-    SceneGraphNode* _impostorSGN;
+    std::weak_ptr<SceneGraphNode> _impostorSGN;
     Camera* _shadowCamera;
     DELEGATE_CBK<> _callback;
     bool _enabled;

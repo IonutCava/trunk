@@ -58,10 +58,6 @@ class RenderingComponent : public SGNComponent {
     friend class Attorney::RenderingCompPassCuller;
 
    public:
-    RenderingComponent(Material* const materialInstance,
-                       SceneGraphNode& parentSGN);
-    ~RenderingComponent();
-
     bool onDraw(RenderStage currentStage);
     void update(const U64 deltaTime);
 
@@ -114,6 +110,13 @@ class RenderingComponent : public SGNComponent {
 #endif
 
     void setActive(const bool state);
+
+   protected:
+    friend class SceneGraphNode;
+    RenderingComponent(Material* const materialInstance,
+                       SceneGraphNode& parentSGN);
+    ~RenderingComponent();
+
    protected:
     void inViewCallback();
     bool canDraw(const SceneRenderState& sceneRenderState,

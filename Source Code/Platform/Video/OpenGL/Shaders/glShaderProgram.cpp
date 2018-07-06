@@ -489,8 +489,15 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
 /// Check every possible combination of flags to make sure this program can be
 /// used for rendering
 bool glShaderProgram::isValid() const {
-    return isHWInitComplete() && _linked && _shaderProgramID != 0 &&
-           _shaderProgramID != GLUtil::_invalidObjectID;
+    // null shader is a valid shader
+    return _shaderProgramID == 0 ||
+           (isHWInitComplete() &&
+           _linked &&
+           _shaderProgramID != GLUtil::_invalidObjectID);
+}
+
+bool glShaderProgram::isBound() const {
+    return GL_API::_activeShaderProgram == _shaderProgramID;
 }
 
 /// Cache uniform/attribute locations for shader programs
@@ -526,50 +533,39 @@ GLint glShaderProgram::cachedLocation(const stringImpl& name) {
 
 /// Bind this shader program
 bool glShaderProgram::bind() {
-    // Prevent double bind
-    if (_bound) {
-        return true;
-    }
     // If the shader isn't ready or failed to link, stop here
     if (!isValid()) {
         return false;
     }
+
     if (_lockManager) {
         _lockManager->Wait();
         _lockManager.reset(nullptr);
     }
+
     // Set this program as the currently active one
-    GL_API::setActiveProgram(this);
-    // Pass the rest of the binding responsibilities to the parent class
-    return ShaderProgram::bind();
+    GL_API::setActiveProgram(_shaderProgramID);
+    return true;
 }
 
-/// Unbinding this program, unless forced, just clears the _bound flag
-void glShaderProgram::unbind(bool resetActiveProgram) {
-    // Prevent double unbind
-    if (!_bound) {
-        return;
-    }
+/// Unbinding this program
+void glShaderProgram::unbind() {
     // After using the shader at least once, validate the shader if needed
     if (!_validated) {
         _validationQueued = isValid();
     }
-    // If forced to do so, we can clear OpenGL's active program object
-    if (resetActiveProgram) {
-        GL_API::setActiveProgram(nullptr);
-    }
-    // Pass the rest of the unbind responsibilities to the parent class
-    ShaderProgram::unbind(resetActiveProgram);
+    GL_API::setActiveProgram(0);
 }
 
-void glShaderProgram::registerShaderBuffer(ShaderBuffer& buffer) {}
+void glShaderProgram::registerShaderBuffer(ShaderBuffer& buffer) {
+}
 
 /// This is used to set all of the subroutine indices for the specified shader
 /// stage for this program
 void glShaderProgram::SetSubroutines(ShaderType type,
                                      const vectorImpl<U32>& indices) const {
     // The shader must be bound before calling this!
-    DIVIDE_ASSERT(_bound && isValid(),
+    DIVIDE_ASSERT(isBound() && isValid(),
                   "glShaderProgram error: tried to set subroutines on an "
                   "unbound or unlinked program!");
     // Validate data and send to GPU
@@ -582,7 +578,7 @@ void glShaderProgram::SetSubroutines(ShaderType type,
 /// This works exactly like SetSubroutines, but for a single index.
 /// If the shader has multiple subroutine uniforms, this will reset the rest!!!
 void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
-    DIVIDE_ASSERT(_bound && isValid(),
+    DIVIDE_ASSERT(isBound() && isValid(),
                   "glShaderProgram error: tried to set subroutines on an "
                   "unbound or unlinked program!");
 

@@ -48,9 +48,9 @@ class AnimationComponent : public SGNComponent {
     typedef hashMapImpl<U32 /*animationID*/, I32 /*last frame index*/>
         FrameIndexes;
 
-    AnimationComponent(SceneAnimator& animator,
-                       SceneGraphNode& parentSGN);
+    AnimationComponent(SceneAnimator& animator, SceneGraphNode& parentSGN);
     ~AnimationComponent();
+
     bool onDraw(RenderStage currentStage);
 
     void update(const U64 deltaTime);
@@ -102,6 +102,7 @@ class AnimationComponent : public SGNComponent {
     void incParentTimeStamp(const U64 timestamp);
 
     const vectorImpl<Line>& skeletonLines() const;
+
    protected:
     /// Pointer to the mesh's animator. Owned by the mesh!
     SceneAnimator& _animator;

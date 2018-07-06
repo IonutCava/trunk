@@ -12,10 +12,12 @@ Trigger::Trigger()
     : SceneNode(SceneNodeType::TYPE_TRIGGER),
       _drawImpostor(false),
       _triggerImpostor(nullptr),
-      _enabled(true) {
+      _enabled(true)
+{
 }
 
-Trigger::~Trigger() {
+Trigger::~Trigger()
+{
 }
 
 bool Trigger::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {

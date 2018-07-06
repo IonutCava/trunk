@@ -527,8 +527,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     vectorImpl<std::pair<U32, DELEGATE_CBK<> > > _2dRenderQueue;
 
-    /// Immediate mode emulation
-    ShaderProgram* _imShader;  //<The shader used to render VB data
+    /// Immediate mode emulation shader
+    ShaderProgram* _imShader;
     vectorImpl<IMPrimitive*>
         _imInterfaces;  //<The interface that coverts IM calls to VB data
 

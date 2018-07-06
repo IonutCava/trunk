@@ -79,7 +79,7 @@ class WorkingMemoryFact {
    public:
     WorkingMemoryFact()
     {
-        _value = 0;
+        _value = T();
         _type = F;
         _belief = 0.0f;
     }
@@ -102,7 +102,7 @@ class WorkingMemoryFact {
 };
 
 typedef WorkingMemoryFact<AIEntity*, FactType::AI_NODE> AINodeFact;
-typedef WorkingMemoryFact<SceneGraphNode*, FactType::SGN_NODE> SGNNodeFact;
+typedef WorkingMemoryFact<std::weak_ptr<SceneGraphNode>, FactType::SGN_NODE> SGNNodeFact;
 typedef WorkingMemoryFact<vec3<F32>, FactType::POSITION> PositionFact;
 typedef WorkingMemoryFact<U8, FactType::COUNTER_SMALL> SmallCounterFact;
 typedef WorkingMemoryFact<U16, FactType::COUNTER_MEDIUM> MediumCounterFact;
@@ -111,9 +111,10 @@ typedef WorkingMemoryFact<bool, FactType::TOGGLE_STATE> ToggleStateFact;
 
 class GlobalWorkingMemory {
 public:
-    GlobalWorkingMemory() {
-        _flags[0].value(nullptr);
-        _flags[1].value(nullptr);
+    GlobalWorkingMemory()
+    {
+        _flags[0].value(std::weak_ptr<SceneGraphNode>());
+        _flags[1].value(std::weak_ptr<SceneGraphNode>());
         _flagCarriers[0].value(nullptr);
         _flagCarriers[1].value(nullptr);
         _flagsAtBase[0].value(true);
@@ -131,11 +132,12 @@ public:
 
 class LocalWorkingMemory {
    public:
-    LocalWorkingMemory() {
+    LocalWorkingMemory()
+    {
         _hasEnemyFlag.value(false);
         _enemyHasFlag.value(false);
-        _currentTarget.value(nullptr);
-        _isFlagRetriever.value(false);
+       _isFlagRetriever.value(false);
+       _currentTarget.value(std::weak_ptr<SceneGraphNode>());
     }
 
     SGNNodeFact _currentTarget;
@@ -196,10 +198,10 @@ class WarSceneAISceneImpl : public AISceneImpl {
     bool update(const U64 deltaTime, NPC* unitRef = nullptr);
     void processMessage(AIEntity& sender, AIMsg msg, const cdiggins::any& msg_content);
 
-    static void registerFlags(SceneGraphNode& flag1,
-                              SceneGraphNode& flag2) {
-        _globalWorkingMemory._flags[0].value(&flag1);
-        _globalWorkingMemory._flags[1].value(&flag2);
+    static void registerFlags(std::weak_ptr<SceneGraphNode> flag1,
+                              std::weak_ptr<SceneGraphNode> flag2) {
+        _globalWorkingMemory._flags[0].value(flag1);
+        _globalWorkingMemory._flags[1].value(flag2);
     }
 
     static void registerScoreCallback(const DELEGATE_CBK_PARAM<U8>& cbk) {
@@ -231,7 +233,7 @@ class WarSceneAISceneImpl : public AISceneImpl {
     void printWorkingMemory() const;
     void initInternal();
     void beginPlan(const GOAPGoal& currentGoal);
-    AIEntity* getUnitForNode(U32 teamID, SceneGraphNode* node) const;
+    AIEntity* getUnitForNode(U32 teamID, std::weak_ptr<SceneGraphNode> node) const;
 
     template <typename... T>
     inline void PRINT(const char* format, T&&... args) const {

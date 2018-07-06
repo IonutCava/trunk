@@ -46,10 +46,13 @@ class d3dShaderProgram : public ShaderProgram {
         unbind();
         return true;
     }
-    bool bind() { return false; }
-    void unbind(bool resetActiveProgram = true) {}
 
+    bool bind() { return false; }
+    void unbind() {}
+
+    bool isBound() const { return false; }
     bool isValid() const { return false; }
+
     void attachShader(Shader* const shader, const bool refresh = false) {}
     void detachShader(Shader* const shader) {}
 

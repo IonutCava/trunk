@@ -159,7 +159,7 @@ class Terrain : public Object3D {
     bool _drawBBoxes;
     bool _terrainInView;
     bool _planeInView;
-    SceneGraphNode* _vegetationGrassNode;
+    std::weak_ptr<SceneGraphNode> _vegetationGrassNode;
     BoundingBox _boundingBox;
     Quad3D* _plane;
     F32 _underwaterDiffuseScale;

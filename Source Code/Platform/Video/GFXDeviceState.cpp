@@ -285,6 +285,8 @@ void GFXDevice::endFrame() {
     }
     // Activate the default render states
     setStateBlock(_defaultStateBlockHash);
+    // Unbind shaders
+    ShaderManager::getInstance().unbind();
     _api->endFrame();
 }
 

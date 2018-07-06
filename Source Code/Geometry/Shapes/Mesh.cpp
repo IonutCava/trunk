@@ -55,9 +55,10 @@ void Mesh::addSubMesh(SubMesh* const subMesh) {
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void Mesh::postLoad(SceneGraphNode& sgn) {
     for (SubMeshRefMap::value_type it : _subMeshRefMap) {
-        sgn.addNode(
-            *(it.second),
-            Util::StringFormat("%s_%d", sgn.getName().c_str(), it.first));
+        sgn.addNode(*(it.second),
+                     Util::StringFormat("%s_%d",
+                                        sgn.getName().c_str(),
+                                        it.first));
     }
 
     Object3D::postLoad(sgn);

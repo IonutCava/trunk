@@ -39,6 +39,7 @@
 namespace Divide {
 
 class SceneGraphNode;
+typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
 /// Unit interface
 class Unit : public FrameListener {
    public:
@@ -55,7 +56,7 @@ class Unit : public FrameListener {
         COUNT
     };
 
-    Unit(UnitType type, SceneGraphNode& node);
+    Unit(UnitType type, SceneGraphNode_ptr node);
     virtual ~Unit();
 
     /// moveTo makes the unit follow a path from it's current position to the
@@ -102,11 +103,11 @@ class Unit : public FrameListener {
     /// Get unit type
     inline UnitType getUnitType() const { return _type; }
     /// Get bound node
-    inline SceneGraphNode* getBoundNode() const { return _node; }
+    inline std::weak_ptr<SceneGraphNode> getBoundNode() const {
+        return _node;
+    }
     /// Just before we render the frame
     virtual bool frameRenderingQueued(const FrameEvent& evt) { return true; }
-    /// If the parent node is deleted, this gets called automatically
-    void nodeDeleted();
 
     virtual void setAttribute(U32 attributeID, I32 initialValue);
     virtual I32 getAttribute(U32 attributeID) const;
@@ -126,10 +127,7 @@ class Unit : public FrameListener {
     vec3<F32> _currentPosition;
     /// Current destination point cached
     vec3<F32> _currentTargetPosition;
-    /// SceneGraphNode the unit is managing (used for updating positions and
-    /// checking collisions
-    size_t _deletionCallbackID;
-    SceneGraphNode* _node;
+    std::weak_ptr<SceneGraphNode> _node;
     AttributeMap _attributes;
     mutable SharedLock _unitUpdateMutex;
 };

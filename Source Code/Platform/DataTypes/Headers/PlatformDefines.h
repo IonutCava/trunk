@@ -398,6 +398,10 @@ inline void DELETE(T*& ptr) {
     ptr = nullptr;
 }
 
+#define SET_SHARED_PTR_DELETE_FRIEND(X) \
+    friend void DeletelFunc(X *);
+    
+
 #define SET_UNIQUE_PTR_DELETE_FRIEND(X) \
     friend std::unique_ptr<X>::deleter_type;
 

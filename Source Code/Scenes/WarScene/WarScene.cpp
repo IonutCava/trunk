@@ -45,15 +45,15 @@ WarScene::WarScene()
     _lastNavMeshBuildTime(0UL)
 {
     for (U8 i = 0; i < 2; ++i) {
-        _flag[i] = nullptr;
         _faction[i] = nullptr;
     }
 
     _resetUnits = false;
 
     addSelectionCallback([&]() {
-        if (_currentSelection) {
-            _GUI->modifyText("entityState", _currentSelection->getName().c_str());
+        SceneGraphNode_ptr selection(_currentSelection.lock());
+        if (selection) {
+            _GUI->modifyText("entityState", selection->getName().c_str());
         } else {
             _GUI->modifyText("entityState", "");
         }
@@ -84,8 +84,9 @@ void WarScene::processGUI(const U64 deltaTime) {
     }
 
     if (_guiTimers[1] >= Time::SecondsToMilliseconds(1)) {
-        if (_currentSelection) {
-            AI::AIEntity* entity = findAI(*_currentSelection);
+        SceneGraphNode_ptr selection(_currentSelection.lock());
+        if (selection) {
+            AI::AIEntity* entity = findAI(selection);
             if (entity) {
                 _GUI->modifyText("entityState", entity->toString().c_str());
             }
@@ -128,7 +129,7 @@ void WarScene::processTasks(const U64 deltaTime) {
                             -sinf(g_sunAngle.x) * sinf(g_sunAngle.y));
 
         _sun->setDirection(sunVector);
-        _currentSky->getNode<Sky>()->setSunProperties(sunVector,
+        _currentSky.lock()->getNode<Sky>()->setSunProperties(sunVector,
             _sun->getDiffuseColor());
 
         _taskTimers[0] = 0.0;
@@ -173,7 +174,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
     U32 count = 0;
     for (U8 i = 0; i < 2; ++i) {
         for (AI::AIEntity* const character : _army[i]) {
-            if (!character->getUnitRef()->getBoundNode()->isActive()) {
+            if (!character->getUnitRef()->getBoundNode().lock()->isActive()) {
                 continue;
             }
 
@@ -194,10 +195,10 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
     // Add a light
     _sun = addLight(LightType::DIRECTIONAL,
-               GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
+               GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
     // Add a skybox
     _currentSky =
-        &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     // Position camera
     renderState().getCamera().setEye(vec3<F32>(54.5f, 25.5f, 1.5f));
     renderState().getCamera().setGlobalRotation(-90 /*yaw*/, 35 /*pitch*/);
@@ -205,12 +206,12 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     _sun->csmSplitLogFactor(0.925f);
     _sun->csmNearClipOffset(25.0f);
     // Add some obstacles
-    SceneGraphNode* cylinder[5];
-    cylinder[0] = _sceneGraph->findNode("cylinderC");
-    cylinder[1] = _sceneGraph->findNode("cylinderNW");
-    cylinder[2] = _sceneGraph->findNode("cylinderNE");
-    cylinder[3] = _sceneGraph->findNode("cylinderSW");
-    cylinder[4] = _sceneGraph->findNode("cylinderSE");
+    SceneGraphNode_ptr cylinder[5];
+    cylinder[0] = _sceneGraph->findNode("cylinderC").lock();
+    cylinder[1] = _sceneGraph->findNode("cylinderNW").lock();
+    cylinder[2] = _sceneGraph->findNode("cylinderNE").lock();
+    cylinder[3] = _sceneGraph->findNode("cylinderSW").lock();
+    cylinder[4] = _sceneGraph->findNode("cylinderSE").lock();
 
     for (U8 i = 0; i < 5; ++i) {
         RenderingComponent* const renderable =
@@ -230,7 +231,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     stringImpl currentName;
     SceneNode* currentMesh = nullptr;
-    SceneGraphNode* baseNode = nullptr;
+    SceneGraphNode_ptr baseNode;
     
     std::pair<I32, I32> currentPos;
     for (U8 i = 0; i < 40; ++i) {
@@ -260,13 +261,13 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             currentPos.second = 200 - 40 * (i % 30) - 50;
         }
 
-        SceneGraphNode& crtNode = _sceneGraph->getRoot().addNode(*currentMesh,
-                                                                 currentName);
-        crtNode.setSelectable(true);
-        crtNode.usageContext(baseNode->usageContext());
-        PhysicsComponent* pComp = crtNode.getComponent<PhysicsComponent>();
+        SceneGraphNode_ptr crtNode = _sceneGraph->getRoot()->addNode(*currentMesh,
+                                                                      currentName);
+        crtNode->setSelectable(true);
+        crtNode->usageContext(baseNode->usageContext());
+        PhysicsComponent* pComp = crtNode->getComponent<PhysicsComponent>();
         NavigationComponent* nComp =
-            crtNode.getComponent<NavigationComponent>();
+            crtNode->getComponent<NavigationComponent>();
         pComp->physicsGroup(
             baseNode->getComponent<PhysicsComponent>()->physicsGroup());
         nComp->navigationContext(
@@ -279,13 +280,15 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         pComp->setPosition(
             vec3<F32>(currentPos.first, -0.01f, currentPos.second));
     }
-    SceneGraphNode* baseFlagNode = cylinder[1];
-    _flag[0] = &_sceneGraph->getRoot().addNode(*cylinderMeshNW, "Team1Flag");
-    _flag[0]->setSelectable(false);
-    _flag[0]->usageContext(baseFlagNode->usageContext());
-    PhysicsComponent* flagPComp = _flag[0]->getComponent<PhysicsComponent>();
+    SceneGraphNode_ptr baseFlagNode = cylinder[1];
+    _flag[0] = _sceneGraph->getRoot()->addNode(*cylinderMeshNW, "Team1Flag");
+
+    SceneGraphNode_ptr flag0(_flag[0].lock());
+    flag0->setSelectable(false);
+    flag0->usageContext(baseFlagNode->usageContext());
+    PhysicsComponent* flagPComp = flag0->getComponent<PhysicsComponent>();
     NavigationComponent* flagNComp =
-        _flag[0]->getComponent<NavigationComponent>();
+        flag0->getComponent<NavigationComponent>();
     flagPComp->physicsGroup(
         baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
@@ -294,12 +297,14 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         vec3<F32>(0.05f, 2.1f, 0.05f));
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
-    _flag[1] = &_sceneGraph->getRoot().addNode(*cylinderMeshNW, "Team2Flag");
-    _flag[1]->setSelectable(false);
-    _flag[1]->usageContext(baseFlagNode->usageContext());
+    _flag[1] = _sceneGraph->getRoot()->addNode(*cylinderMeshNW, "Team2Flag");
 
-    flagPComp = _flag[1]->getComponent<PhysicsComponent>();
-    flagNComp = _flag[1]->getComponent<NavigationComponent>();
+    SceneGraphNode_ptr flag1(_flag[1].lock());
+    flag1->setSelectable(false);
+    flag1->usageContext(baseFlagNode->usageContext());
+
+    flagPComp = flag1->getComponent<PhysicsComponent>();
+    flagNComp = flag1->getComponent<NavigationComponent>();
 
     flagPComp->physicsGroup(
         baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
@@ -309,7 +314,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         vec3<F32>(0.05f, 2.1f, 0.05f));
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
 
-    AI::WarSceneAISceneImpl::registerFlags(*_flag[0], *_flag[1]);
+    AI::WarSceneAISceneImpl::registerFlags(_flag[0], _flag[1]);
 
     AI::WarSceneAISceneImpl::registerScoreCallback([&](U8 teamID) {
         registerPoint(teamID);
@@ -346,7 +351,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         std::make_shared<ParticleTimeGenerator>();
     particleSource->addGenerator(timeGenerator);
 
-    SceneGraphNode& testSGN =
+    SceneGraphNode_ptr testSGN =
         addParticleEmitter("TESTPARTICLES", particles, _sceneGraph.getRoot());
     ParticleEmitter* test = testSGN.getNode<ParticleEmitter>();
     testSGN.getComponent<PhysicsComponent>()->translateY(5);
@@ -387,14 +392,14 @@ void WarScene::toggleCamera() {
     static bool tpsCameraActive = false;
     static bool flyCameraActive = true;
 
-    if (_currentSelection != nullptr) {
+    if (_currentSelection.lock()) {
         if (flyCameraActive) {
             if (fpsCameraActive) {
                 renderState().getCameraMgr().popActiveCamera();
             }
             renderState().getCameraMgr().pushActiveCamera("tpsCamera");
             static_cast<ThirdPersonCamera&>(renderState().getCamera())
-                .setTarget(*_currentSelection);
+                .setTarget(_currentSelection);
             flyCameraActive = false;
             tpsCameraActive = true;
             return;

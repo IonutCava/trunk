@@ -19,8 +19,8 @@ static std::atomic<PhysXState> s_sceneState;
 
 // begin copy-paste
 void PhysXScene::preRender() {
-    _currentSky->getNode<Sky>()->setSunProperties(_sunvector,
-                                                  _sun->getDiffuseColor());
+    _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector,
+                                                         _sun->getDiffuseColor());
 }
 //<<end copy-paste
 
@@ -49,10 +49,10 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
         vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y), -cosf(sunAngle.y),
                   -sinf(sunAngle.x) * sinf(sunAngle.y));
     _sun = addLight(LightType::DIRECTIONAL,
-               GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
+               GET_ACTIVE_SCENEGRAPH().getRoot())->getNode<DirectionalLight>();
     _sun->setDirection(_sunvector);
     _currentSky =
-        &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+        addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
 
     SceneInput::PressReleaseActions cbks;
     cbks.second = [this]() {

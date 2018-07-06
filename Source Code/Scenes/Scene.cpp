@@ -31,11 +31,12 @@ struct selectionQueueDistanceFrontToBack {
     selectionQueueDistanceFrontToBack(const vec3<F32>& eyePos)
         : _eyePos(eyePos) {}
 
-    bool operator()(SceneGraphNode* const a, SceneGraphNode* const b) const {
+    bool operator()(std::weak_ptr<SceneGraphNode> a, 
+                    std::weak_ptr<SceneGraphNode> b) const {
         F32 dist_a =
-            a->getBoundingBoxConst().nearestDistanceFromPointSquared(_eyePos);
+            a.lock()->getBoundingBoxConst().nearestDistanceFromPointSquared(_eyePos);
         F32 dist_b =
-            b->getBoundingBoxConst().nearestDistanceFromPointSquared(_eyePos);
+            b.lock()->getBoundingBoxConst().nearestDistanceFromPointSquared(_eyePos);
         return dist_a > dist_b;
     }
 
@@ -50,9 +51,7 @@ Scene::Scene()
       _LRSpeedFactor(5.0f),
       _loadComplete(false),
       _cookCollisionMeshesScheduled(false),
-      _paramHandler(ParamHandler::getInstance()),
-      _currentSelection(nullptr),
-      _currentSky(nullptr)
+      _paramHandler(ParamHandler::getInstance())
 {
     _sceneTimer = 0UL;
     _sceneGraph.reset(MemoryManager_NEW SceneGraph());
@@ -98,7 +97,7 @@ bool Scene::idle() {  // Called when application is idle
         loadXMLAssets(true);
     }
 
-    if (_sceneGraph->getRoot().getChildren().empty()) {
+    if (_sceneGraph->getRoot()->getChildren().empty()) {
         return false;
     }
 
@@ -111,7 +110,7 @@ bool Scene::idle() {  // Called when application is idle
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (GFX_DEVICE.getFrameCount() > 1) {
             _sceneGraph->getRoot()
-                .getComponent<PhysicsComponent>()
+                ->getComponent<PhysicsComponent>()
                 ->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
         }
@@ -121,7 +120,7 @@ bool Scene::idle() {  // Called when application is idle
 }
 
 void Scene::onCameraUpdate(Camera& camera) {
-    _sceneGraph->getRoot().onCameraUpdate(camera);
+    _sceneGraph->getRoot()->onCameraUpdate(camera);
 }
 
 void Scene::preRender() {
@@ -182,29 +181,29 @@ bool Scene::loadModel(const FileData& data) {
         return false;
     }
 
-    SceneGraphNode& meshNode =
-        _sceneGraph->getRoot().createNode(*thisObj, data.ItemName);
-    meshNode.getComponent<RenderingComponent>()->castsShadows(
+    SceneGraphNode_ptr meshNode =
+        _sceneGraph->getRoot()->createNode(*thisObj, data.ItemName);
+    meshNode->getComponent<RenderingComponent>()->castsShadows(
         data.castsShadows);
-    meshNode.getComponent<RenderingComponent>()->receivesShadows(
+    meshNode->getComponent<RenderingComponent>()->receivesShadows(
         data.receivesShadows);
-    meshNode.getComponent<PhysicsComponent>()->setScale(data.scale);
-    meshNode.getComponent<PhysicsComponent>()->setRotation(data.orientation);
-    meshNode.getComponent<PhysicsComponent>()->setPosition(data.position);
+    meshNode->getComponent<PhysicsComponent>()->setScale(data.scale);
+    meshNode->getComponent<PhysicsComponent>()->setRotation(data.orientation);
+    meshNode->getComponent<PhysicsComponent>()->setPosition(data.position);
     if (data.staticUsage) {
-        meshNode.usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
+        meshNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     }
     if (data.navigationUsage) {
-        meshNode.getComponent<NavigationComponent>()->navigationContext(
+        meshNode->getComponent<NavigationComponent>()->navigationContext(
             NavigationComponent::NavigationContext::NODE_OBSTACLE);
     }
     if (data.physicsUsage) {
-        meshNode.getComponent<PhysicsComponent>()->physicsGroup(
+        meshNode->getComponent<PhysicsComponent>()->physicsGroup(
             data.physicsPushable ? PhysicsComponent::PhysicsGroup::NODE_COLLIDE
                                  : PhysicsComponent::PhysicsGroup::NODE_COLLIDE_NO_PUSH);
     }
     if (data.useHighDetailNavMesh) {
-        meshNode.getComponent<NavigationComponent>()->navigationDetailOverride(
+        meshNode->getComponent<NavigationComponent>()->navigationDetailOverride(
             true);
     }
     return true;
@@ -258,36 +257,36 @@ bool Scene::loadGeometry(const FileData& data) {
     }
 
     thisObj->setMaterialTpl(tempMaterial);
-    SceneGraphNode& thisObjSGN = _sceneGraph->getRoot().createNode(*thisObj);
-    thisObjSGN.getComponent<PhysicsComponent>()->setScale(data.scale);
-    thisObjSGN.getComponent<PhysicsComponent>()->setRotation(data.orientation);
-    thisObjSGN.getComponent<PhysicsComponent>()->setPosition(data.position);
-    thisObjSGN.getComponent<RenderingComponent>()->castsShadows(
+    SceneGraphNode_ptr thisObjSGN = _sceneGraph->getRoot()->createNode(*thisObj);
+    thisObjSGN->getComponent<PhysicsComponent>()->setScale(data.scale);
+    thisObjSGN->getComponent<PhysicsComponent>()->setRotation(data.orientation);
+    thisObjSGN->getComponent<PhysicsComponent>()->setPosition(data.position);
+    thisObjSGN->getComponent<RenderingComponent>()->castsShadows(
         data.castsShadows);
-    thisObjSGN.getComponent<RenderingComponent>()->receivesShadows(
+    thisObjSGN->getComponent<RenderingComponent>()->receivesShadows(
         data.receivesShadows);
     if (data.staticUsage) {
-        thisObjSGN.usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
+        thisObjSGN->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     }
     if (data.navigationUsage) {
-        thisObjSGN.getComponent<NavigationComponent>()->navigationContext(
+        thisObjSGN->getComponent<NavigationComponent>()->navigationContext(
             NavigationComponent::NavigationContext::NODE_OBSTACLE);
     }
     if (data.physicsUsage) {
-        thisObjSGN.getComponent<PhysicsComponent>()->physicsGroup(
+        thisObjSGN->getComponent<PhysicsComponent>()->physicsGroup(
             data.physicsPushable ? PhysicsComponent::PhysicsGroup::NODE_COLLIDE
                                  : PhysicsComponent::PhysicsGroup::NODE_COLLIDE_NO_PUSH);
     }
     if (data.useHighDetailNavMesh) {
-        thisObjSGN.getComponent<NavigationComponent>()
+        thisObjSGN->getComponent<NavigationComponent>()
             ->navigationDetailOverride(true);
     }
     return true;
 }
 
-SceneGraphNode& Scene::addParticleEmitter(const stringImpl& name,
+SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
                                           const ParticleData& data,
-                                          SceneGraphNode& parentNode) {
+                                          SceneGraphNode_ptr parentNode) {
     assert(!name.empty());
 
     ResourceDescriptor particleEmitter(name);
@@ -299,18 +298,18 @@ SceneGraphNode& Scene::addParticleEmitter(const stringImpl& name,
 
     emitter->initData(std::make_shared<ParticleData>(data));
 
-    return parentNode.addNode(*emitter);
+    return parentNode->addNode(*emitter);
 }
 
-SceneGraphNode& Scene::addLight(Light& lightItem,
-                                SceneGraphNode& parentNode) {
+SceneGraphNode_ptr Scene::addLight(Light& lightItem,
+                                SceneGraphNode_ptr parentNode) {
     lightItem.setCastShadows(lightItem.getLightType() != LightType::POINT);
 
-    return parentNode.addNode(lightItem);
+    return parentNode->addNode(lightItem);
 }
 
-SceneGraphNode& Scene::addLight(LightType type,
-                                SceneGraphNode& parentNode) {
+SceneGraphNode_ptr Scene::addLight(LightType type,
+                                SceneGraphNode_ptr parentNode) {
     const char* lightType = "";
     switch (type) {
         case LightType::DIRECTIONAL:
@@ -331,9 +330,9 @@ SceneGraphNode& Scene::addLight(LightType type,
     return addLight(*CreateResource<Light>(defaultLight), parentNode);
 }
 
-SceneGraphNode& Scene::addSky(Sky* const skyItem) {
+SceneGraphNode_ptr Scene::addSky(Sky* const skyItem) {
     assert(skyItem != nullptr);
-    return _sceneGraph->getRoot().createNode(*skyItem);
+    return _sceneGraph->getRoot()->createNode(*skyItem);
 }
 
 bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
@@ -345,22 +344,22 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
                    _sceneState.fogDescriptor()._fogColor);
 
     loadXMLAssets();
-    SceneGraphNode& root = _sceneGraph->getRoot();
+    SceneGraphNode_ptr root = _sceneGraph->getRoot();
     // Add terrain from XML
     if (!_terrainInfoArray.empty()) {
         for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
             Terrain* temp = CreateResource<Terrain>(terrain);
-            SceneGraphNode& terrainTemp = root.createNode(*temp);
-            terrainTemp.setActive(terrainInfo->getActive());
-            terrainTemp.usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
+            SceneGraphNode_ptr terrainTemp = root->createNode(*temp);
+            terrainTemp->setActive(terrainInfo->getActive());
+            terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
 
             NavigationComponent* nComp =
-                terrainTemp.getComponent<NavigationComponent>();
+                terrainTemp->getComponent<NavigationComponent>();
             nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
 
             PhysicsComponent* pComp =
-                terrainTemp.getComponent<PhysicsComponent>();
+                terrainTemp->getComponent<PhysicsComponent>();
             pComp->physicsGroup(terrainInfo->getCreatePXActor()
                                     ? PhysicsComponent::PhysicsGroup::NODE_COLLIDE_NO_PUSH
                                     : PhysicsComponent::PhysicsGroup::NODE_COLLIDE_IGNORE);
@@ -635,8 +634,9 @@ void Scene::updateSceneState(const U64 deltaTime) {
 }
 
 void Scene::deleteSelection() {
-    if (_currentSelection != nullptr) {
-        _currentSelection->scheduleDeletion();
+    SceneGraphNode_ptr selection(_currentSelection.lock());
+    if (selection != nullptr) {
+        selection->scheduleDeletion();
     }
 }
 
@@ -703,8 +703,9 @@ void Scene::debugDraw(RenderStage stage) {
     GFX_DEVICE.drawDebugAxis(currentGizmoState != SceneRenderState::GizmoState::NO_GIZMO);
 
     if (currentGizmoState == SceneRenderState::GizmoState::SELECTED_GIZMO) {
-        if (_currentSelection != nullptr) {
-            _currentSelection->getComponent<RenderingComponent>()
+        SceneGraphNode_ptr selection(_currentSelection.lock());
+        if (selection != nullptr) {
+            selection->getComponent<RenderingComponent>()
                 ->drawDebugAxis();
         }
     }
@@ -718,11 +719,12 @@ void Scene::debugDraw(RenderStage stage) {
 }
 
 void Scene::resetSelection() {
-    if (_currentSelection) {
-        _currentSelection->setSelected(false);
+    SceneGraphNode_ptr selection(_currentSelection.lock());
+    if (selection) {
+        selection->setSelected(false);
     }
 
-    _currentSelection = nullptr;
+    _currentSelection.reset();
 }
 
 void Scene::findSelection() {
@@ -754,7 +756,7 @@ void Scene::findSelection() {
                       renderState().getCameraConst().getEye()));
         _currentSelection = _sceneSelectionCandidates[0];
         // set it's state to selected
-        _currentSelection->setSelected(true);
+        _currentSelection.lock()->setSelected(true);
 #ifdef _DEBUG
         _lines[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)].push_back(
             Line(startRay, endRay, vec4<U8>(0, 255, 0, 255)));

@@ -13,8 +13,7 @@ PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::ComponentType::PHYSICS, parentSGN),
       _physicsCollisionGroup(PhysicsGroup::NODE_COLLIDE_IGNORE),
       _transformUpdated(true),
-      _physicsAsset(nullptr),
-      _transform(nullptr)
+      _physicsAsset(nullptr)
 {
     _transform = MemoryManager_NEW Transform();
     reset();
@@ -56,8 +55,8 @@ void PhysicsComponent::useDefaultTransform(const bool state) {
 
 void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {
     STUBBED("ToDo: add terrain height field and water cooking support! -Ionut")
-    for (SceneGraphNode::NodeChildren::value_type& it :
-         _parentSGN.getChildren()) {
+    
+    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
         it.second->getComponent<PhysicsComponent>()->cookCollisionMesh(
             sceneName);
     }
@@ -340,14 +339,15 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor,
             _worldMatrix.set(_transform->getMatrix());
         }
     }
-  
-    const SceneGraphNode* const parent = _parentSGN.getParent();
-    if (!local && parent) {
-        _worldMatrix *=
-            parent->getComponent<PhysicsComponent>()->getWorldMatrix(
-                interpolationFactor, local);
-    }
 
+    if (!local) {
+        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        if (grandParent) {
+            _worldMatrix *=
+                grandParent->getComponent<PhysicsComponent>()->getWorldMatrix(
+                interpolationFactor, local);
+        }
+    }
     return _worldMatrix;
 }
 
@@ -366,10 +366,12 @@ const vec3<F32>& PhysicsComponent::getScale(D32 interpolationFactor,
         scale.set(1.0f);
     }
 
-    const SceneGraphNode* const parent = _parentSGN.getParent();
-    if (!local && parent) {
-        scale *= parent->getComponent<PhysicsComponent>()->getScale(
-            interpolationFactor, local);
+    if (!local) {
+        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        if (grandParent) {
+            scale *= grandParent->getComponent<PhysicsComponent>()->getScale(
+                interpolationFactor, local);
+        }
     }
 
     return scale;
@@ -391,12 +393,13 @@ const vec3<F32>& PhysicsComponent::getPosition(D32 interpolationFactor,
         position.set(0.0f);
     }
 
-    const SceneGraphNode* const parent = _parentSGN.getParent();
-    if (!local && parent) {
-        position += parent->getComponent<PhysicsComponent>()->getPosition(
-            interpolationFactor, local);
+    if (!local) {
+        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        if (grandParent) {
+            position += grandParent->getComponent<PhysicsComponent>()->getPosition(
+                interpolationFactor, local);
+        }
     }
-
     return position;
 }
 
@@ -416,9 +419,9 @@ const Quaternion<F32>& PhysicsComponent::getOrientation(D32 interpolationFactor,
         orientation.identity();
     }
 
-    const SceneGraphNode* const parent = _parentSGN.getParent();
-    if (!local && parent) {
-        orientation.set(parent->getComponent<PhysicsComponent>()
+    SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+    if (!local && grandParent) {
+        orientation.set(grandParent->getComponent<PhysicsComponent>()
                             ->getOrientation(interpolationFactor, local)
                             .inverse() *
                         orientation);

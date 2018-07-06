@@ -37,6 +37,8 @@
 
 namespace Divide {
 class SceneGraphNode;
+typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
+
 namespace AI {
 
 namespace Attorney {
@@ -44,7 +46,7 @@ namespace Attorney {
 };
 
 /// SGN GUID, SGN pointer
-typedef hashMapImpl<I64, SceneGraphNode*> NodeContainer;
+typedef hashMapImpl<I64, std::weak_ptr<SceneGraphNode>> NodeContainer;
 /// Container ID, NodeContainer
 typedef hashMapImpl<U32, NodeContainer> NodeContainerMap;
 /// SGN GUID, Last position
@@ -58,8 +60,10 @@ class VisualSensor : public Sensor {
      ~VisualSensor();
 
     void update(const U64 deltaTime);
-    void followSceneGraphNode(U32 containerID, SceneGraphNode& node);
+
+    void followSceneGraphNode(U32 containerID, std::weak_ptr<SceneGraphNode> node);
     void unfollowSceneGraphNode(U32 containerID, U64 nodeGUID);
+
     F32 getDistanceToNodeSq(U32 containerID, U64 nodeGUID);
     inline F32 getDistanceToNode(U32 containerID, U64 nodeGUID) {
         F32 distanceSq = getDistanceToNodeSq(containerID, nodeGUID);
@@ -68,8 +72,9 @@ class VisualSensor : public Sensor {
         }
         return distanceSq;
     }
+
     vec3<F32> getNodePosition(U32 containerID, U64 nodeGUID);
-    SceneGraphNode* getClosestNode(U32 containerID);
+    std::weak_ptr<SceneGraphNode> getClosestNode(U32 containerID);
 
    protected:
     VisualSensor(AIEntity* const parentEntity);
@@ -78,7 +83,6 @@ class VisualSensor : public Sensor {
    protected:
     NodeContainerMap _nodeContainerMap;
     NodePositionsMap _nodePositionsMap;
-    hashMapImpl<I64, size_t> _deletionCallbackID;
 };
 
 namespace Attorney {

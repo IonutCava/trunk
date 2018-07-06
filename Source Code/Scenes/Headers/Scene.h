@@ -134,11 +134,11 @@ class NOINITVTABLE Scene : public Resource {
     }
     void addPatch(vectorImpl<FileData>& data);
 
-    SceneGraphNode& addLight(Light& lightItem,
-                             SceneGraphNode& parentNode);
-    SceneGraphNode& addLight(LightType type,
-                             SceneGraphNode& parentNode);
-    SceneGraphNode& addSky(Sky* const skyItem);
+    SceneGraphNode_ptr addLight(Light& lightItem,
+                             SceneGraphNode_ptr parentNode);
+    SceneGraphNode_ptr addLight(LightType type,
+                             SceneGraphNode_ptr parentNode);
+    SceneGraphNode_ptr addSky(Sky* const skyItem);
 
     inline void cacheResolution(const vec2<U16>& newResolution) {
         Attorney::SceneRenderStateScene::cachedResolution(
@@ -146,7 +146,7 @@ class NOINITVTABLE Scene : public Resource {
     }
 
     /// Object picking
-    inline SceneGraphNode* getCurrentSelection() const {
+    inline std::weak_ptr<SceneGraphNode> getCurrentSelection() const {
         return _currentSelection;
     }
     void findSelection();
@@ -166,9 +166,9 @@ class NOINITVTABLE Scene : public Resource {
     /// (idle,update,process,etc)
     virtual PhysicsSceneInterface* createPhysicsImplementation();
 
-    SceneGraphNode& addParticleEmitter(const stringImpl& name,
+    SceneGraphNode_ptr addParticleEmitter(const stringImpl& name,
                                              const ParticleData& data,
-                                             SceneGraphNode& parentNode);
+                                             SceneGraphNode_ptr parentNode);
 
     TerrainDescriptor* getTerrainInfo(const stringImpl& terrainName);
     inline vectorImpl<FileData>& getVegetationDataArray() {
@@ -191,8 +191,8 @@ class NOINITVTABLE Scene : public Resource {
     vectorImpl<TerrainDescriptor*> _terrainInfoArray;
     F32 _LRSpeedFactor;
     /// Current selection
-    SceneGraphNode* _currentSelection;
-    SceneGraphNode* _currentSky;
+    std::weak_ptr<SceneGraphNode> _currentSelection;
+    std::weak_ptr<SceneGraphNode> _currentSky;
     /// This is the rendering function used to override the default one for the
     /// renderer.
     /// If this is empty, the renderer will use the scene's scenegraph render
@@ -215,7 +215,7 @@ class NOINITVTABLE Scene : public Resource {
     /// ranges, etc)
     SceneState _sceneState;
     vectorImpl<DELEGATE_CBK<> > _selectionChangeCallbacks;
-    vectorImpl<SceneGraphNode*> _sceneSelectionCandidates;
+    vectorImpl<std::weak_ptr<SceneGraphNode>> _sceneSelectionCandidates;
 
    protected:
     void resetSelection();
@@ -322,7 +322,7 @@ class SceneManager {
 class SceneGraph {
 private:
     static void onNodeDestroy(Scene& scene, SceneGraphNode& node) {
-        SceneGraphNode* currentSelection = scene.getCurrentSelection();
+        SceneGraphNode_ptr currentSelection = scene.getCurrentSelection().lock();
         if (currentSelection && currentSelection->getGUID() == node.getGUID()) {
             scene.resetSelection();
         }

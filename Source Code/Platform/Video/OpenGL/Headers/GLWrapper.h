@@ -176,8 +176,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     void changeViewport(const vec4<GLint>& newViewport) const override;
     /// Reset as much of the GL default state as possible within the limitations
     /// given
-    void clearStates(const bool skipShader, const bool skipTextures,
-                     const bool skipBuffers, const bool skipScissor);
+    void clearStates(const bool skipTextures,
+                     const bool skipBuffers,
+                     const bool skipScissor);
     /// Return the glsl optimisation context (created by the glsl-optimizer library)
     inline glslopt_ctx* getGLSLOptContext() const { return _GLSLOptContex; }
     void uploadDrawCommands(const DrawCommandList& drawCommands,
@@ -212,9 +213,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static bool setActiveTransformFeedback(GLuint ID);
     /// Bind the specified transform feedback object
     static bool setActiveTransformFeedback(GLuint ID, GLuint& previousID);
-    /// Change the currently active shader program. Passing null will unbind shaders
-    /// (will use program 0)
-    static bool setActiveProgram(glShaderProgram* const program);
+    /// Change the currently active shader program.
+    static bool setActiveProgram(GLuint programHandle);
     /// A state block should contain all rendering state changes needed for the next
     /// draw call.
     /// Some may be redundant, so we check each one individually
@@ -304,8 +304,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static GLint _activePackUnpackRowLength[2];
     static GLint _activePackUnpackSkipPixels[2];
     static GLint _activePackUnpackSkipRows[2];
+    static GLuint _activeShaderProgram;
     static vec4<GLfloat> _prevClearColor;
-    static ShaderProgram* _activeShaderProgram;
     /// Boolean value used to verify if primitive restart index is enabled or
     /// disabled
     static bool _primitiveRestartEnabled;
