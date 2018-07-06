@@ -11,6 +11,11 @@
 
 namespace Divide {
 
+namespace {
+    // if culled count exceeds this limit, culling becomes multithreaded in the next frame
+    const U32 g_asyncCullThreshold = 75;
+};
+
 SceneManager::SceneManager()
     : FrameListener(),
       _GUI(nullptr),
@@ -131,6 +136,7 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
 
     const vec3<F32>& ambient = lightMgr.getAmbientLight();
     _sceneData.lightDetails(ambient.r, ambient.g, ambient.b, lightMgr.getActiveLightCount());
+    _sceneData.toggleShadowMapping(lightMgr.shadowMappingEnabled());
 
     _sceneData.fogDensity(par.getParam<bool>("rendering.enableFog")
                             ? par.getParam<F32>("rendering.sceneState.fogDensity")
@@ -176,7 +182,13 @@ const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderSta
         return false;
     };
 
-    _renderPassCuller->frustumCull(GET_ACTIVE_SCENEGRAPH(), _activeScene->state(), stage, cullingFunction);
+    // If we are rendering a high node count, we might want to use async frustum culling
+    bool cullAsync = _renderPassManager->getLastTotalBinSize(stage) > g_asyncCullThreshold;
+    _renderPassCuller->frustumCull(GET_ACTIVE_SCENEGRAPH(), 
+                                   _activeScene->state(),
+                                   stage,
+                                   cullAsync,
+                                   cullingFunction);
     RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage);
 
     visibleNodes.erase(std::remove_if(std::begin(visibleNodes),

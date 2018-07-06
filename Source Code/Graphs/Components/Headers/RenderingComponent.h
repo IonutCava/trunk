@@ -153,8 +153,6 @@ class RenderingComponent : public SGNComponent {
     U8  _lodLevel;  ///<Relative to camera distance
     U32 _drawOrder;
     U32 _commandIndex;
-    /// System level check for shadowing
-    bool _shadowMappingEnabled;
     bool _castsShadows;
     bool _receiveShadows;
     bool _renderGeometry;

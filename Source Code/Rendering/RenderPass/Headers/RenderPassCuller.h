@@ -59,6 +59,7 @@ class RenderPassCuller {
     void frustumCull(SceneGraph& sceneGraph,
                      SceneState& sceneState,
                      RenderStage stage,
+                     bool async,
                      const CullingFunction& cullingFunction);
    protected:
     // return true if the node is not inside the frustum

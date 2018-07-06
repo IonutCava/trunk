@@ -186,10 +186,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _renderTarget[to_uint(RenderTarget::DEPTH)]->getAttachment(TextureDescriptor::AttachmentType::Depth)->lockAutomaticMipMapGeneration(true);
 
     TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP,
-        GFXImageFormat::RGBA16F,
-        GFXDataFormat::FLOAT_16);
+                                            GFXImageFormat::RGBA16F,
+                                            GFXDataFormat::FLOAT_16);
     environmentDescriptor.setSampler(screenSampler);
     _renderTarget[to_uint(RenderTarget::ENVIRONMENT)]->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _renderTarget[to_uint(RenderTarget::ENVIRONMENT)]->toggleDepthBuffer(true);
     _renderTarget[to_uint(RenderTarget::ENVIRONMENT)]->create(256, 256);
     _renderTarget[to_uint(RenderTarget::ENVIRONMENT)]->setClearColor(DefaultColors::DIVIDE_BLUE());
 

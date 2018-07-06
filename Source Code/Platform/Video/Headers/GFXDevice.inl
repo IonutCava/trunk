@@ -260,11 +260,11 @@ inline ShaderBuffer& GFXDevice::getNodeBuffer(RenderStage stage, U32 pass) const
     U32 bufferIdx = 0;
     switch (stage) {
         case RenderStage::REFLECTION:
-        bufferIdx = 1;
-        break;
-    case RenderStage::SHADOW:
-        bufferIdx = 2;
-        break;
+            bufferIdx = 1;
+            break;
+        case RenderStage::SHADOW:
+            bufferIdx = 2;
+            break;
     };
 
     assert(pass < MAX_PASSES_PER_STAGE && _nodeBuffers[bufferIdx][pass]);

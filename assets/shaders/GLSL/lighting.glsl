@@ -58,7 +58,7 @@ vec4 mappingParallax(){
 
 void main (void){
     //_colorOut = ToSRGB(applyFog(MappingRoutine()));
-#if defined(COMPUTE_TBN)
+#if defined(COMPUTE_TBN) && !defined(USE_REFLECTIVE_CUBEMAP)
 #    if defined(USE_PARALLAX_MAPPING)
     _colorOut = ToSRGB(applyFog(ParallaxMapping()));
 #    elif defined(USE_RELIEF_MAPPING)

@@ -35,6 +35,7 @@ RenderPassCuller::getNodeCache(RenderStage stage) {
 void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
                                    SceneState& sceneState,
                                    RenderStage stage,
+                                   bool async,
                                    const CullingFunction& cullingFunction)
 {
     VisibleNodeList& nodeCache = getNodeCache(stage);
@@ -52,7 +53,9 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
             SceneGraphNode& child = root.getChild(i, childCount);
             VisibleNodeList& container = _perThreadNodeList[i];
             container.resize(0);
-            _cullingTasks.push_back(std::async(/*std::launch::async | */std::launch::deferred, [&]() {
+            _cullingTasks.push_back(std::async(async ? std::launch::async | std::launch::deferred
+                                                     : std::launch::deferred,
+            [&]() {
                 frustumCullRecursive(child, stage, renderState, container);
             }));
         }

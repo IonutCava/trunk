@@ -33,9 +33,9 @@ BoundingBox::~BoundingBox()
 BoundingBox::BoundingBox(const BoundingBox& b) : GUIDWrapper() {
     // WriteLock w_lock(_lock);
     this->_computed = b._computed;
-    this->_min = b._min;
-    this->_max = b._max;
-    this->_oldMatrix = b._oldMatrix;
+    this->_min.set(b._min);
+    this->_max.set(b._max);
+    this->_oldMatrix.set(b._oldMatrix);
     for (U8 i = 0; i < 8; ++i) {
         this->_points[i].set(b._points[i]);
     }
@@ -45,9 +45,9 @@ BoundingBox::BoundingBox(const BoundingBox& b) : GUIDWrapper() {
 void BoundingBox::operator=(const BoundingBox& b) {
     // WriteLock w_lock(_lock);
     this->_computed = b._computed;
-    this->_min = b._min;
-    this->_max = b._max;
-    this->_oldMatrix = b._oldMatrix;
+    this->_min.set(b._min);
+    this->_max.set(b._max);
+    this->_oldMatrix.set(b._oldMatrix);
     this->_pointsDirty = true;
     memcpy(_points, b._points, sizeof(vec3<F32>) * 8);
 }

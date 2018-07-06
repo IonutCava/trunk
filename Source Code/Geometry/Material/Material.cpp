@@ -44,9 +44,8 @@ Material::Material()
     RenderStateBlock shadowDescriptor(stateDescriptor);
     shadowDescriptor.setCullMode(CullMode::CCW);
     /// set a polygon offset
-    // shadowDescriptor.setZBias(1.0f, 2.0f);
-    /// ignore colors - Some shadowing techniques require drawing to the a color
-    /// buffer
+     shadowDescriptor.setZBias(1.0f, 2.0f);
+    /// ignore colors - Some shadowing techniques require drawing to the a color buffer
     shadowDescriptor.setColorWrites(true, true, false, false);
     setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW);
 }

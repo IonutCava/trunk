@@ -17,7 +17,6 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
       _lodLevel(0),
       _drawOrder(0),
       _commandIndex(0),
-      _shadowMappingEnabled(false),
       _castsShadows(true),
       _receiveShadows(true),
       _renderWireframe(false),
@@ -118,28 +117,21 @@ void RenderingComponent::update(const U64 deltaTime) {
     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
     // Continue only for skinned submeshes
     if (type == Object3D::ObjectType::SUBMESH && _nodeSkinned) {
-        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
-        StateTracker<bool>& parentStates = grandParent->getTrackedBools();
-        parentStates.setTrackedValue(
-            StateTracker<bool>::State::SKELETON_RENDERED, false);
+        _parentSGN.getParent().lock()->getTrackedBools().setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
         _skeletonPrimitive->paused(true);
     }
 
-    _shadowMappingEnabled = LightManager::getInstance().shadowMappingEnabled();
-
     if (_impostorDirty) {
-        vectorImpl<vec3<F32>> points(8);
         const vec3<F32>* bbPoints = _parentSGN.getInitialBoundingBox().getPoints();
-        points[0].set(bbPoints[1]);
-        points[1].set(bbPoints[5]);
-        points[2].set(bbPoints[3]);
-        points[3].set(bbPoints[7]);
-        points[4].set(bbPoints[0]);
-        points[5].set(bbPoints[4]);
-        points[6].set(bbPoints[2]);
-        points[7].set(bbPoints[6]);
-
-        _impostor->fromPoints(points, _parentSGN.getInitialBoundingBox().getHalfExtent());
+        _impostor->fromPoints({ bbPoints[1],
+                                bbPoints[5],
+                                bbPoints[3],
+                                bbPoints[7],
+                                bbPoints[0],
+                                bbPoints[4],
+                                bbPoints[2],
+                                bbPoints[6] },
+                               _parentSGN.getInitialBoundingBox().getHalfExtent());
         _impostorDirty = false;
     }
 }
@@ -279,11 +271,11 @@ void RenderingComponent::receivesShadows(const bool state) {
 }
 
 bool RenderingComponent::castsShadows() const {
-    return _castsShadows && _shadowMappingEnabled;
+    return _castsShadows;
 }
 
 bool RenderingComponent::receivesShadows() const {
-    return _receiveShadows && _shadowMappingEnabled;
+    return _receiveShadows;
 }
 
 void RenderingComponent::getMaterialColorMatrix(mat4<F32>& matOut) const {

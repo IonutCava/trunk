@@ -38,8 +38,12 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
     vec4 dvd_fogDetails;
     vec4 dvd_windDetails;
     vec4 dvd_shadowingSettings;
-    vec4 dvd_otherData; //x = time, y = debug rendering
+    vec4 dvd_otherData; //x = time, y = debug rendering, z = shadows enabled
 };
+
+bool dvd_shadowsEnabled() {
+    return dvd_otherData.z > 0.5;
+}
 
 float dvd_time() {
     return dvd_otherData.x;

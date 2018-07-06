@@ -72,6 +72,10 @@ struct SceneShaderData {
     inline void enableDebugRender(bool state) {
         _otherData.y = state ? 1.0f : 0.0f;
     }
+
+    inline void toggleShadowMapping(bool state) {
+        _otherData.z = state ? 1.0f : 0.0f;
+    }
 };
 
 enum class RenderStage : U32;

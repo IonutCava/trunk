@@ -52,6 +52,9 @@ int _shadowTempInt = -2;
 
 
 float shadow_loop(){
+    if (!dvd_shadowsEnabled()) {
+        return 1.0;
+    }
 
     float shadow = 1.0;
     for (uint i = 0; i < MAX_SHADOW_CASTING_LIGHTS; i++) {

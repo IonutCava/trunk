@@ -77,19 +77,19 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
     }
     currentCamera.renderLookAt();
 
-    bool bindDepthMaps = false;
+    bool bindShadowMaps = false;
     switch (_stageFlags[pass]) {
         case RenderStage::DISPLAY: {
             RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
             _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
-            bindDepthMaps = true;
+            bindShadowMaps = true;
             GFX.occlusionCull(0);
             GFXDevice::RenderTarget eyeTarget = anaglyph ? GFXDevice::RenderTarget::ANAGLYPH
                                                          : GFXDevice::RenderTarget::SCREEN;
             GFX.getRenderTarget(eyeTarget)->begin(Framebuffer::defaultPolicy());
         } break;
         case RenderStage::REFLECTION: {
-            bindDepthMaps = true;
+            bindShadowMaps = true;
         } break;
         case RenderStage::SHADOW: {
         } break;
@@ -101,7 +101,7 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
     };
 
 
-    if (bindDepthMaps) {
+    if (bindShadowMaps) {
         LightManager::getInstance().bindShadowMaps();
         GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->bind(0, TextureDescriptor::AttachmentType::Depth);
     }
