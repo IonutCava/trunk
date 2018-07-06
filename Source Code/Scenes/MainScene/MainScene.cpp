@@ -252,12 +252,14 @@ void MainScene::test(const Task& parentTask, cdiggins::any a, CallbackParam b) {
 
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
         if (g_boxMoveTaskID != 0) {
-            g_boxMoveTaskID = registerTask(CreateTask(getGUID(),
-                                           DELEGATE_BIND(&MainScene::test,
-                                                this,
-                                                std::placeholders::_1,
-                                                stringImpl("test"),
-                                                CallbackParam::TYPE_STRING)));
+            if (!parentTask.stopRequested()) {
+                g_boxMoveTaskID = registerTask(CreateTask(getGUID(),
+                                               DELEGATE_BIND(&MainScene::test,
+                                                             this,
+                                                             std::placeholders::_1,
+                                                             stringImpl("test"),
+                                                             CallbackParam::TYPE_STRING)));
+            }
         }
     }
 }

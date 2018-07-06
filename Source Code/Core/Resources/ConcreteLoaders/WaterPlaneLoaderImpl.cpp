@@ -8,7 +8,7 @@
 namespace Divide {
 
 template <>
-bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) {
+bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
     const stringImpl& name = res->getName();
 
     res->setState(ResourceState::RES_LOADING);

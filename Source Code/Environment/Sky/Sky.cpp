@@ -33,7 +33,7 @@ Sky::~Sky()
 {
 }
 
-bool Sky::load(const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) {
+bool Sky::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
     if (_sky != nullptr) {
         return false;
     }

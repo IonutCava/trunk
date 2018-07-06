@@ -205,15 +205,15 @@ void Scene::loadXMLAssets(bool singleStep) {
         }
     }
 
-    auto registerTerrain = [this](Resource_ptr res) {
+    auto registerTerrain = [this](Resource_wptr res) {
         SceneGraphNode& root = _sceneGraph->getRoot();
-        SceneGraphNode_ptr terrainTemp = root.addNode(std::dynamic_pointer_cast<Terrain>(res), normalMask, PhysicsGroup::GROUP_STATIC);
+        SceneGraphNode_ptr terrainTemp = root.addNode(std::dynamic_pointer_cast<Terrain>(res.lock()), normalMask, PhysicsGroup::GROUP_STATIC);
         terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
 
         NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
         nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
 
-        SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(res->getName(), true).lock());
+        SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(res.lock()->getName(), true).lock());
         assert(terrainNode != nullptr);
         if (terrainNode->isActive()) {
             //tempTerrain->toggleBoundingBoxes();
@@ -249,7 +249,7 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
                                   to_const_uint(SGNComponent::ComponentType::RENDERING) |
                                   to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
-    auto loadModelComplete = [this](Resource_ptr res) {
+    auto loadModelComplete = [this](Resource_wptr res) {
         ACKNOWLEDGE_UNUSED(res);
         _loadingTasks--;
     };
@@ -301,7 +301,7 @@ Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
                                   to_const_uint(SGNComponent::ComponentType::RENDERING) |
                                   to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
-    auto loadModelComplete = [this](Resource_ptr res) {
+    auto loadModelComplete = [this](Resource_wptr res) {
         ACKNOWLEDGE_UNUSED(res);
         _loadingTasks--;
     };

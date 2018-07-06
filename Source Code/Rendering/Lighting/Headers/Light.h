@@ -204,7 +204,7 @@ class Light : public SceneNode {
     friend class LightPool;
     template <typename T>
     friend class ImplResourceLoader;
-    bool load(const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) override;
+    bool load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) override;
     void postLoad(SceneGraphNode& sgn) override;
     SceneGraphNode* getSGN() const { return _lightSGN; }
     /// Set light type

@@ -39,7 +39,7 @@ Texture::~Texture()
 {
 }
 
-bool Texture::load(const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) {
+bool Texture::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
     _context.loadInContext(_asyncLoad ? CurrentContext::GFX_LOADING_CTX
                                       : CurrentContext::GFX_RENDERING_CTX,
         [this, onLoadCallback](const Task& parent) {
@@ -51,7 +51,7 @@ bool Texture::load(const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) {
 }
 
 /// Load texture data using the specified file name
-void Texture::threadedLoad(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
+void Texture::threadedLoad(DELEGATE_CBK<void, Resource_wptr> onLoadCallback) {
     TextureLoadInfo info;
     info._type = _textureData._textureType;
 

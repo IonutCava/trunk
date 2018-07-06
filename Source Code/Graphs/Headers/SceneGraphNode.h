@@ -337,11 +337,6 @@ class SceneGraphNode : public GUIDWrapper,
     }
     void invalidateRelationshipCache();
 
-    inline bool isHelperNode(const SceneNode& node) const {
-        return node.getType() == SceneNodeType::TYPE_ROOT ||
-               node.getType() == SceneNodeType::TYPE_TRANSFORM;
-    }
-
    private:
     // An SGN doesn't exist outside of a scene graph
     SceneGraph& _sceneGraph;

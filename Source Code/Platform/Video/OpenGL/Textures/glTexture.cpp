@@ -52,7 +52,7 @@ bool glTexture::unload() {
     return true;
 }
 
-void glTexture::threadedLoad(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
+void glTexture::threadedLoad(DELEGATE_CBK<void, Resource_wptr> onLoadCallback) {
     updateSampler();
     Texture::threadedLoad(onLoadCallback);
     _lockManager->Lock();

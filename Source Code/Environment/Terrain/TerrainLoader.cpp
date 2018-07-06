@@ -16,7 +16,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
                                 const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
                                 PlatformContext& context,
                                 bool threadedLoading,
-                                const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback ) {
+                                const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback ) {
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
 
     Attorney::TerrainLoader::setUnderwaterDiffuseScale(
@@ -238,7 +238,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
 
 bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                                           const std::shared_ptr<TerrainDescriptor> terrainDescriptor,
-                                          DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
+                                          DELEGATE_CBK<void, Resource_wptr> onLoadCallback) {
 
     ResourceDescriptor infinitePlane("infinitePlane");
     infinitePlane.setFlag(true);  // No default material

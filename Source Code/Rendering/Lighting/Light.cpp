@@ -46,7 +46,7 @@ Light::~Light()
 {
 }
 
-bool Light::load(const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) {
+bool Light::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
     _shadowCamera = Camera::createCamera(getName() + "_shadowCamera", Camera::CameraType::FREE_FLY);
 
     _shadowCamera->setMoveSpeedFactor(0.0f);

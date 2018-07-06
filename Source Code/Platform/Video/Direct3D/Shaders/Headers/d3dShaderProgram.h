@@ -122,7 +122,7 @@ class d3dShaderProgram final : public ShaderProgram {
      bool recompileInternal() override;
 
    protected:
-    bool load(const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) override;
+    bool load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) override;
 };
 
 };  // namespace Divide

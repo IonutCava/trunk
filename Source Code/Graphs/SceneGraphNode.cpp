@@ -109,11 +109,10 @@ SceneGraphNode::~SceneGraphNode()
 
     Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, getGUID());
 
-    if (isHelperNode(*_node)) {
-        if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
-            _node.reset();
-        }
+    if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
+        _node.reset();
     }
+    
 
     for (SGNComponent* component : _components) {
         MemoryManager::DELETE(component);
@@ -206,11 +205,14 @@ SceneGraphNode_ptr SceneGraphNode::addNode(const SceneNode_ptr& node, U32 compon
     } else if (node->getState() == ResourceState::RES_LOADING) {
         setUpdateFlag(UpdateFlag::THREADED_LOAD);
 
+        SceneGraphNode_wptr callbackPtr = sceneGraphNode;
+
         node->setStateCallback(ResourceState::RES_LOADED,
-            [this, sceneGraphNode](Resource_ptr res) {
-                Attorney::SceneNodeSceneGraph::postLoad(*(std::dynamic_pointer_cast<SceneNode>(res)), *sceneGraphNode);
+            [this, callbackPtr](Resource_wptr res) {
+                Attorney::SceneNodeSceneGraph::postLoad(*(std::dynamic_pointer_cast<SceneNode>(res.lock())), *(callbackPtr.lock()));
                 invalidateRelationshipCache();
                 clearUpdateFlag(UpdateFlag::THREADED_LOAD);
+
             }
         );
     }

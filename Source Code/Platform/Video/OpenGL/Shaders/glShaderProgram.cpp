@@ -214,7 +214,7 @@ void glShaderProgram::attachShader(glShader* const shader) {
 
 /// This should be called in the loading thread, but some issues are still
 /// present, and it's not recommended (yet)
-void glShaderProgram::threadedLoad(DELEGATE_CBK<void, Resource_ptr> onLoadCallback, bool skipRegister) {
+void glShaderProgram::threadedLoad(DELEGATE_CBK<void, Resource_wptr> onLoadCallback, bool skipRegister) {
     // Loading from binary gives us a linked program ready for usage.
     if (!_loadedFromBinary) {
         // If this wasn't loaded from binary, we need a new API specific object
@@ -420,7 +420,7 @@ std::pair<bool, stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
 
 /// Creation of a new shader program. Pass in a shader token and use glsw to
 /// load the corresponding effects
-bool glShaderProgram::load(const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) {
+bool glShaderProgram::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
     // NULL shader means use shaderProgram(0), so bypass the normal
     // loading routine
     if (_resourceName.compare("NULL") == 0) {
@@ -507,7 +507,7 @@ bool glShaderProgram::recompileInternal() {
     }
 
     reloadShaders(true);
-    threadedLoad(DELEGATE_CBK<void, Resource_ptr>(), true);
+    threadedLoad(DELEGATE_CBK<void, Resource_wptr>(), true);
 
     return getState() == ResourceState::RES_LOADED;
 }

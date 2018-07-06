@@ -74,7 +74,7 @@ class glTexture final : public Texture {
     bool flushTextureState() override;
 
    protected:
-    void threadedLoad(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) override;
+    void threadedLoad(DELEGATE_CBK<void, Resource_wptr> onLoadCallback) override;
     void reserveStorage(const TextureLoadInfo& info);
     void updateMipMaps();
     void updateSampler();

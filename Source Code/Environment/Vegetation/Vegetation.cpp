@@ -54,8 +54,8 @@ Vegetation::Vegetation(GFXDevice& context, ResourceCache& parentCache, const Veg
 
     _instanceRoutineIdx.fill(0);
 
-    auto setShaderData = [this](Resource_ptr res) {
-        ShaderProgram_ptr shader = std::dynamic_pointer_cast<ShaderProgram>(res);
+    auto setShaderData = [this](Resource_wptr res) {
+        ShaderProgram_ptr shader = std::dynamic_pointer_cast<ShaderProgram>(res.lock());
 
         shader->Uniform("ObjectExtent", vec3<F32>(1.0f, 1.0f, 1.0f));
         _instanceRoutineIdx[to_const_uint(CullType::PASS_THROUGH)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "PassThrough");

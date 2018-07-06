@@ -11,7 +11,7 @@ Resource::Resource(ResourceType type,
       _name(name),
       _resourceState(ResourceState::RES_CREATED)
 {
-    _loadingCallbacks.fill(DELEGATE_CBK<void, Resource_ptr>());
+    _loadingCallbacks.fill(DELEGATE_CBK<void, Resource_wptr>());
 }
 Resource::Resource(ResourceType type,
                   const stringImpl& name,
@@ -34,7 +34,7 @@ Resource::~Resource()
 {
 }
 
-bool Resource::load(const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) {
+bool Resource::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
     setState(ResourceState::RES_LOADED);
     if (onLoadCallback) {
         onLoadCallback(shared_from_this());
@@ -79,7 +79,7 @@ ResourceType Resource::getType() const {
     return _resourceType;
 }
 
-void Resource::setStateCallback(ResourceState targetState, const DELEGATE_CBK<void, Resource_ptr>& cbk) {
+void Resource::setStateCallback(ResourceState targetState, const DELEGATE_CBK<void, Resource_wptr>& cbk) {
     WriteLock w_lock(_callbackLock);
     _loadingCallbacks[to_uint(targetState)] = cbk;
 }
@@ -88,9 +88,10 @@ void Resource::setState(ResourceState currentState) {
     _resourceState = currentState;
 
     ReadLock r_lock(_callbackLock);
-    const DELEGATE_CBK<void, Resource_ptr>& cbk = _loadingCallbacks[to_uint(currentState)];
+    const DELEGATE_CBK<void, Resource_wptr>& cbk = _loadingCallbacks[to_uint(currentState)];
     if (cbk) {
         cbk(shared_from_this());
+        _loadingCallbacks[to_uint(currentState)] = DELEGATE_CBK<void, Resource_wptr>();
     }
 }
 

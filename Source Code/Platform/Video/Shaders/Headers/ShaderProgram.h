@@ -108,7 +108,7 @@ class NOINITVTABLE ShaderProgram : public Resource,
     /// Is the shader ready for drawing?
     virtual bool isValid() const = 0;
     virtual bool update(const U64 deltaTime);
-    virtual bool load(const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) override;
+    virtual bool load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) override;
     virtual bool unload() override;
 
     /// Uniforms (update constant buffer for D3D. Use index as location in

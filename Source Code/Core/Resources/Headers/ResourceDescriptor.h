@@ -105,7 +105,7 @@ class ResourceDescriptor {
     inline P32  getMask() const { return _mask; }
     inline void* getUserPtr() const { return _userPtr; }
 
-    const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback() const {
+    const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback() const {
         return _onLoadCallback;
     }
 
@@ -134,7 +134,7 @@ class ResourceDescriptor {
         _propertyDescriptor.reset(MemoryManager_NEW T(descriptor));
     }
 
-    void setOnLoadCallback(const DELEGATE_CBK<void, Resource_ptr>& callback) {
+    void setOnLoadCallback(const DELEGATE_CBK<void, Resource_wptr>& callback) {
         _onLoadCallback = callback;
     }
 
@@ -156,7 +156,7 @@ class ResourceDescriptor {
     /// Use for extra resource properties: textures, samplers, terrain etc.
     std::shared_ptr<PropertyDescriptor> _propertyDescriptor;
     /// Callback to use when the resource finished loading (includes threaded loading)
-    DELEGATE_CBK<void, Resource_ptr> _onLoadCallback;
+    DELEGATE_CBK<void, Resource_wptr> _onLoadCallback;
     /// General Data
     void *_userPtr;
 };
