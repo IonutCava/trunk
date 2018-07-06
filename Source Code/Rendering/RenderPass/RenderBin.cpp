@@ -80,6 +80,10 @@ RenderBin::RenderBin(RenderBinType rbType,
     }
 }
 
+RenderBin::~RenderBin()
+{
+}
+
 void RenderBin::sort(const std::atomic_bool& stopRequested, RenderStage renderStage) {
     // WriteLock w_lock(_renderBinGetMutex);
     switch (_renderOrder) {

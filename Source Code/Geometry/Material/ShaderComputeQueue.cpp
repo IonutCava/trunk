@@ -41,17 +41,19 @@ void ShaderComputeQueue::stepQueue() {
         const ShaderQueueElement& currentItem = _shaderComputeQueue.front();
         ShaderProgramInfo& info = *currentItem._shaderData;
         info._shaderRef = CreateResource<ShaderProgram>(currentItem._shaderDescriptor);
-        info._shaderCompStage = ShaderProgramInfo::BuildStage::COMPUTED;
+        info.computeStage(ShaderProgramInfo::BuildStage::COMPUTED);
         _shaderComputeQueue.pop_front();
     }
 }
 
 
 void ShaderComputeQueue::addToQueueFront(const ShaderQueueElement& element) {
+    element._shaderData->computeStage(ShaderProgramInfo::BuildStage::QUEUED);
     _shaderComputeQueue.push_front(element);
 }
 
 void ShaderComputeQueue::addToQueueBack(const ShaderQueueElement& element) {
+    element._shaderData->computeStage(ShaderProgramInfo::BuildStage::QUEUED);
     _shaderComputeQueue.push_back(element);
 }
 

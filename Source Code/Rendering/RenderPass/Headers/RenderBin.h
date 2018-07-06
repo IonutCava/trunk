@@ -70,6 +70,7 @@ struct RenderingOrder {
     };
 };
 
+//Bins can sold certain node types. This is also the order in which nodes will be rendered!
 BETTER_ENUM(RenderBinType, U32, 
     RBT_TERRAIN = 0,
     RBT_OPAQUE,
@@ -101,7 +102,7 @@ class RenderBin {
     RenderBin(RenderBinType rbType,
               RenderingOrder::List renderOrder);
 
-    ~RenderBin() {}
+    ~RenderBin();
 
     void sort(const std::atomic_bool& stopRequested, RenderStage renderStage);
     void populateRenderQueue(const std::atomic_bool& stopRequested, RenderStage renderStage);

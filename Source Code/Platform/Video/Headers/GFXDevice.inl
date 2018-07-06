@@ -40,10 +40,6 @@ namespace Divide {
 #define GFX_HIZ_CULL_COUNT \
     GFX_DEVICE.getLastCullCount()
 
-inline void GFXDevice::GPUBlock::updateFrustumPlanes() {
-    GFXDevice::computeFrustumPlanes(_viewProjMatrixInv, _data._frustumPlanes);
-}
-
 inline F32 GFXDevice::GPUBlock::GPUData::aspectRatio() const {
     return _cameraPosition.w;
 }

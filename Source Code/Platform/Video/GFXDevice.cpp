@@ -402,57 +402,22 @@ void GFXDevice::updateViewportInternal(I32 x, I32 y, I32 width, I32 height) {
     updateViewportInternal(vec4<I32>(x, y, width, height));
 }
 
-/// Update the virtual camera's matrices and upload them to the GPU
-F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
-    if (viewMatrix != _gpuBlock._data._ViewMatrix) {
-        GPUBlock::GPUData& data = _gpuBlock._data;
-        data._ViewMatrix.set(viewMatrix);
-        data._cameraPosition.xyz(eyePos);
-        _gpuBlock.update(true);
-    }
-
-    return _gpuBlock._data._ViewMatrix.mat;
-}
-
-/// Enable an orthographic projection and upload the corresponding matrices to the GPU
-F32* GFXDevice::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
-    GPUBlock::GPUData& data = _gpuBlock._data;
-
-    data._ProjectionMatrix.ortho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
-    data._ZPlanesCombined.xy(planes);
-
-    _gpuBlock.update(false);
-
-    return data._ProjectionMatrix.mat;
-}
-
-/// Enable a perspective projection and upload the corresponding matrices to the
-/// GPU
-F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio,  const vec2<F32>& planes) {
-    GPUBlock::GPUData& data = _gpuBlock._data;
-
-    data._ProjectionMatrix.perspective(Angle::DegreesToRadians(FoV),
-                                       aspectRatio,
-                                       planes.x, planes.y);
-
-    data._ZPlanesCombined.xy(planes);
-    data._cameraPosition.w = aspectRatio;
-    data._renderProperties.z = FoV;
-    data._renderProperties.w = std::tan(FoV * 0.5f);
-    _gpuBlock.update(false);    
-
-    return data._ProjectionMatrix.mat;
-}
-
 void GFXDevice::renderFromCamera(Camera& camera) {
     camera.updateLookAt();
     // Tell the Rendering API to draw from our desired PoV
-    lookAt(camera.getViewMatrix(), camera.getEye());
-    if (camera.isOrthoProjected()) {
-        setProjection(camera.orthoRect(), camera.getZPlanes());
-    } else {
-        setProjection(camera.getVerticalFoV(), camera.getAspectRatio(), camera.getZPlanes());
+    GPUBlock::GPUData& data = _gpuBlock._data;
+
+    const mat4<F32>& viewMatrix = camera.getViewMatrix();
+    bool viewMatUpdated = viewMatrix != _gpuBlock._data._ViewMatrix;
+    if (viewMatUpdated) {
+        data._ViewMatrix.set(viewMatrix);
     }
+    F32 FoV = camera.getVerticalFoV();
+    data._ProjectionMatrix.set(camera.getProjectionMatrix());
+    data._cameraPosition.set(camera.getEye(), camera.getAspectRatio());
+    data._renderProperties.zw(FoV, std::tan(FoV * 0.5f));
+    data._ZPlanesCombined.xy(camera.getZPlanes());
+    _gpuBlock.update(viewMatUpdated);
 }
 
 /// Enable or disable 2D rendering mode 

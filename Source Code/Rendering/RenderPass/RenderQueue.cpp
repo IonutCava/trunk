@@ -65,6 +65,7 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
     };
 
     temp = MemoryManager_NEW RenderBin(rbType, sortOrder);
+    // Bins are sorted by their type
     _renderBins[rbType._to_integral()] = temp;
     
     _activeBins.resize(0);
@@ -73,6 +74,7 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
             _activeBins.push_back(bin);
         }
     }
+
     return temp;
 }
 

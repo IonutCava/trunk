@@ -99,12 +99,12 @@ class Plane {
     }
 
     inline Side classifyPoint(const vec3<F32>& point) const {
-        F32 result = getDistance(point);
+        F32 result = signedDistanceToPoint(point);
         return (result > 0 ? Side::POSITIVE_SIDE
                            : (result < 0 ? Side::NEGATIVE_SIDE : Side::NO_SIDE));
     }
 
-    inline T getDistance(const vec3<T>& point) const {
+    inline T signedDistanceToPoint(const vec3<T>& point) const {
         return _normal.dot(point) + _distance;
     }
     inline T getDistance() const { return _distance; }
@@ -150,11 +150,11 @@ class Plane {
 
     T normalize() {
         T length = _normal.length();
-        if (length > F32(0.0f)) {
-            T invLength = 1.0f / length;
-            _normal *= invLength;
-            _distance *= invLength;
-        }
+        assert(length > 0.0f);
+        T invLength = 1.0f / length;
+        _normal *= invLength;
+        _distance *= invLength;
+        
         return length;
     }
 

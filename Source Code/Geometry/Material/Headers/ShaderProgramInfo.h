@@ -47,16 +47,21 @@ public:
     };
 
 public:
-    ShaderProgramInfo();
+    explicit ShaderProgramInfo();
     ShaderProgramInfo(const ShaderProgramInfo& other);
     ShaderProgramInfo& operator=(const ShaderProgramInfo& other);
     const ShaderProgram_ptr& getProgram() const;
 
+    BuildStage computeStage() const;
+    void computeStage(BuildStage stage);
+
     bool _customShader;
     ShaderProgram_ptr _shaderRef;
     stringImpl _shader;
-    std::atomic<BuildStage> _shaderCompStage;
     vectorImplAligned<stringImpl> _shaderDefines;
+
+private:
+    std::atomic<BuildStage> _shaderCompStage;
 };
 }; //namespace Divide
 

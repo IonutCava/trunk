@@ -25,7 +25,7 @@ Frustum::FrustCollision Frustum::ContainsSphere(const vec3<F32>& center,
     F32 distance = 0.0f;
 
     for (const Plane<F32>& frustumPlane : _frustumPlanes) {
-        distance = frustumPlane.getDistance(center);
+        distance = frustumPlane.signedDistanceToPoint(center);
 
         if (distance < -radius) {
             return FrustCollision::FRUSTUM_OUT;
@@ -58,11 +58,11 @@ Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox) co
         vmax.set(box[px]->x, box[py]->y, box[pz]->z);*/
 
 
-        if (frustumPlane.getDistance(bbox.getPVertex(normal)) < 0) {
+        if (frustumPlane.signedDistanceToPoint(bbox.getPVertex(normal)) < 0) {
             return FrustCollision::FRUSTUM_OUT;
         }
 
-        if (frustumPlane.getDistance(bbox.getNVertex(normal)) < 0) {
+        if (frustumPlane.signedDistanceToPoint(bbox.getNVertex(normal)) < 0) {
             ret = FrustCollision::FRUSTUM_INTERSECT;
         }
     }

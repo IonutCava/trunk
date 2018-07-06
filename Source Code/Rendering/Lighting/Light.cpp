@@ -25,6 +25,11 @@ Light::Light(const stringImpl& name, const F32 range, const LightType& type, Lig
       _spotPropertiesChanged(false),
       _spotCosOuterConeAngle(0.0f)
 {
+    if (type == LightType::DIRECTIONAL) {
+        // 0,0,0 is not a valid direction for directional lights
+        _positionAndRange.set(1.0f);
+    }
+
     for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
         _shadowProperties._lightVP[i].identity();
         _shadowProperties._floatValues[i].set(std::numeric_limits<F32>::max());

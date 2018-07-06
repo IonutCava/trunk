@@ -34,7 +34,6 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     _splitFrustumCornersVS.resize(8);
     _horizBlur = 0;
     _vertBlur = 0;
-    _renderPolicy = MemoryManager_NEW RTDrawDescriptor(RenderTarget::defaultPolicy());
 
     ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
     shadowPreviewShader.setThreadedLoading(false);
@@ -75,7 +74,6 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
 CascadedShadowMaps::~CascadedShadowMaps()
 {
     GFX_DEVICE.deallocateRT(_blurBuffer);
-    MemoryManager::DELETE(_renderPolicy);
     MemoryManager::DELETE(_shadowMatricesBuffer);
 }
 
@@ -129,11 +127,9 @@ void CascadedShadowMaps::render(SceneRenderState& renderState, U32 passIdx) {
 
     RenderPassManager::PassParams params;
     params.doPrePass = false;
-    params.occlusionCull = false;
     params.camera = _shadowCamera;
     params.stage = RenderStage::SHADOW;
     params.target = RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType()));
-    params.drawPolicy = _renderPolicy;
     params.pass = passIdx;
 
     renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
@@ -209,7 +205,7 @@ void CascadedShadowMaps::applyFrustumSplits() {
         _shadowCamera->setProjection(UNIT_RECT * frustumSphereRadius,
                                      clipPlanes,
                                      true);
-        _shadowMatrices[pass].set(viewMatrix * _shadowCamera->getProjectionMatrix());
+        mat4<F32>::Multiply(viewMatrix, _shadowCamera->getProjectionMatrix(), _shadowMatrices[pass]);
 
         // http://www.gamedev.net/topic/591684-xna-40---shimmering-shadow-maps/
         F32 halfShadowMapSize = getDepthMap().getWidth() * 0.5f;

@@ -54,4 +54,10 @@
 #include "STLVector.h"
 #endif  // defined(VECTOR_IMP)
 
+template< typename T, typename Pred >
+typename vectorImpl<T>::iterator insert_sorted(vectorImpl<T>& vec, T const& item, Pred pred)
+{
+    return vec.insert(std::upper_bound(std::begin(vec), std::end(vec), item, pred), item);
+}
+
 #endif

@@ -7,7 +7,6 @@ namespace Divide {
 
 Camera::Camera(const stringImpl& name, const CameraType& type, const vec3<F32>& eye)
     : Resource(name),
-      _isActive(false),
       _isOrthoCamera(false),
       _projectionDirty(true),
       _viewMatrixDirty(true),
@@ -71,8 +70,6 @@ void Camera::update(const U64 deltaTime) {
 }
 
 void Camera::updateProjection() {
-    assert(_isActive);
-
     if (_projectionDirty) {
         if (_isOrthoCamera) {
             _projectionMatrix.ortho(_orthoRect.x,
@@ -94,12 +91,9 @@ void Camera::updateProjection() {
 }
 
 void Camera::onActivate() {
-    _isActive = true;
-    updateProjection();
 }
 
 void Camera::onDeactivate() {
-    _isActive = false;
 }
 
 void Camera::setGlobalRotation(F32 yaw, F32 pitch, F32 roll) {
@@ -213,6 +207,7 @@ const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
 
     _eye.set(eye);
     _target.set(target);
+
     zAxis.set(eye - target);
 
     zAxis.normalize();
@@ -271,7 +266,6 @@ void Camera::setProjection(F32 aspectRatio, F32 verticalFoV,
     _projectionDirty = true;
 
     if (updateOnSet) {
-        _isActive = true;
         updateProjection();
     }
 }
@@ -283,7 +277,6 @@ void Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes, bool
     _projectionDirty = true;
 
     if (updateOnSet) {
-        _isActive = true;
         updateProjection();
     }
 }
@@ -318,16 +311,12 @@ bool Camera::updateViewMatrix() {
 }
 
 void Camera::updateListeners() {
-    assert(_isActive);
-
     for (const DELEGATE_CBK_PARAM<Camera&>& listener : _listeners) {
         listener(*this);
     }
 }
 
 bool Camera::updateFrustum() {
-    assert(_isActive);
-
     if (_frustumLocked) {
         return true;
     }

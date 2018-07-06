@@ -124,7 +124,6 @@ DEFINE_SINGLETON(GFXDevice)
 
    struct GPUBlock {
        GPUBlock() : _updated(true),
-                    _frustumDirty(true),
                     _data(GPUData())
        {
        }
@@ -177,11 +176,9 @@ DEFINE_SINGLETON(GFXDevice)
                 _data._ProjectionMatrix.getInverse(_data._InvProjectionMatrix);
             }
             _data._ViewProjectionMatrix.getInverse(_viewProjMatrixInv);
-            updateFrustumPlanes();
+            GFXDevice::computeFrustumPlanes(_viewProjMatrixInv, _data._frustumPlanes);
             _updated = true;
         }
-
-        inline void updateFrustumPlanes();
 
         inline mat4<F32>& viewMatrixInv() { return _viewMatrixInv; }
         inline mat4<F32>& viewProjectionMatrixInv() { return _viewProjMatrixInv; }
@@ -191,7 +188,6 @@ DEFINE_SINGLETON(GFXDevice)
 
         bool _updated;
        private:
-           bool _frustumDirty;
            mat4<F32> _viewMatrixInv;
            mat4<F32> _viewProjMatrixInv;
    };
@@ -405,15 +401,7 @@ DEFINE_SINGLETON(GFXDevice)
     static void computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut);
   protected:
     friend class Camera;
-
-    F32* lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos);
-    /// sets an ortho projection, updating any listeners if needed
-    F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes);
-    /// sets a perspective projection, updating any listeners if needed
-    F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes);
-
     void renderFromCamera(Camera& camera);
-
     void onCameraUpdate(Camera& camera);
     void onCameraChange(Camera& camera);
 

@@ -74,7 +74,6 @@ class CascadedShadowMaps : public ShadowMap {
     mat4<F32> _viewInvMatrixCache;
     ShaderProgram_ptr _previewDepthMapShader;
     ShaderProgram_ptr _blurDepthMapShader;
-    RTDrawDescriptor* _renderPolicy;
     /// Shortcut for the owning directional light
     DirectionalLight* _dirLight;
     RenderTargetHandle _blurBuffer;

@@ -141,15 +141,20 @@ void RenderPassCuller::frustumCullNode(const std::atomic_bool&stopRequested,
     if (clearList) {
         nodes.resize(0);
     }
+    // Early out for inactive nodes
+    if (!currentNode.isActive()) {
+        return;
+    }
+
+    // Early out for non-shadow casters during shadow pass
+    if (currentStage == RenderStage::SHADOW && !currentNode.get<RenderingComponent>()->castsShadows()) {
+        return;
+    }
+
+    bool isVisible = !_cullingFunction[to_uint(currentStage)](currentNode);
 
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
-    bool isVisible = !(currentStage == RenderStage::SHADOW &&
-                       !currentNode.get<RenderingComponent>()->castsShadows());
-
-    isVisible = isVisible &&
-                currentNode.isActive() &&
-                !_cullingFunction[to_uint(currentStage)](currentNode) &&
-                !currentNode.cullNode(currentCamera, cullMaxDistance, currentStage, collisionResult);
+    isVisible = isVisible && !currentNode.cullNode(currentCamera, cullMaxDistance, currentStage, collisionResult);
 
     if (isVisible && !stopRequested) {
         vectorAlg::emplace_back(nodes, 0, currentNode.shared_from_this());

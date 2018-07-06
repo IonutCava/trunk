@@ -373,7 +373,6 @@ class Camera : public Resource {
     CameraType _type;
 
     vectorImpl<DELEGATE_CBK_PARAM<Camera&> > _listeners;
-    bool _isActive;
     bool _projectionDirty;
     bool _viewMatrixDirty;
     bool _viewMatrixLocked;

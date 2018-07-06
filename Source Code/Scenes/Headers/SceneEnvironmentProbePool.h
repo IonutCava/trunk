@@ -45,12 +45,14 @@ public:
 
     const EnvironmentProbeList& getNearestSorted();
 
-    void addInfiniteProbe(const vec3<F32>& position);
-    void addLocalProbe(const vec3<F32>& bbMin, const vec3<F32>& bbMax);
+    EnvironmentProbe* addInfiniteProbe(const vec3<F32>& position);
+    EnvironmentProbe* addLocalProbe(const vec3<F32>& bbMin, const vec3<F32>& bbMax);
+    void removeProbe(EnvironmentProbe*& probe);
 
     void debugDraw(RenderSubPassCmds& subPassesInOut);
 
 protected:
+    bool _isSorted;
     EnvironmentProbeList _envProbes;
     EnvironmentProbeList _sortedProbes;
 };

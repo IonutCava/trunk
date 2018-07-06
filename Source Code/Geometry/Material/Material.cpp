@@ -131,9 +131,9 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
 
 void Material::update(const U64 deltaTime) {
     for (ShaderProgramInfo& info : _shaderInfo) {
-        if (info._shaderCompStage == ShaderProgramInfo::BuildStage::COMPUTED) {
+        if (info.computeStage() == ShaderProgramInfo::BuildStage::COMPUTED) {
             if (info._shaderRef->getState() == ResourceState::RES_LOADED) {
-                info._shaderCompStage = ShaderProgramInfo::BuildStage::READY;
+                info.computeStage(ShaderProgramInfo::BuildStage::READY);
                 _dirty = true;
             }
         }
@@ -204,7 +204,6 @@ void Material::setShaderProgram(const stringImpl& shader,
 void Material::setShaderProgramInternal(const stringImpl& shader,
                                         RenderStage renderStage,
                                         const bool computeOnAdd) {
-
     U32 stageIndex = to_uint(renderStage);
     ShaderProgramInfo& info = _shaderInfo[stageIndex];
     // if we already had a shader assigned ...
@@ -241,8 +240,6 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
     } else {
         shaderQueue.addToQueueBack(queueElement);
     }
-    
-    info._shaderCompStage = ShaderProgramInfo::BuildStage::QUEUED;
 }
 
 void Material::clean() {
@@ -258,7 +255,7 @@ void Material::clean() {
 void Material::recomputeShaders() {
     for (ShaderProgramInfo& info : _shaderInfo) {
         if (!info._customShader) {
-            info._shaderCompStage = ShaderProgramInfo::BuildStage::REQUESTED;
+            info.computeStage(ShaderProgramInfo::BuildStage::REQUESTED);
         }
     }
 }
@@ -266,7 +263,7 @@ void Material::recomputeShaders() {
 bool Material::canDraw(RenderStage renderStage) {
     for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
         ShaderProgramInfo& info = _shaderInfo[i];
-        if (info._shaderCompStage != ShaderProgramInfo::BuildStage::READY) {
+        if (info.computeStage() != ShaderProgramInfo::BuildStage::READY) {
             computeShader(static_cast<RenderStage>(i), _highPriority);
             return false;
         }
@@ -311,21 +308,20 @@ void Material::defaultRefractionTexture(const Texture_ptr& refractionPtr, U32 ar
 /// If the current material doesn't have a shader associated with it, then add
 /// the default ones.
 bool Material::computeShader(RenderStage renderStage, const bool computeOnAdd){
-
     ShaderProgramInfo& info = _shaderInfo[to_uint(renderStage)];
     // If shader's invalid, try to request a recompute as it might fix it
-    if (info._shaderCompStage == ShaderProgramInfo::BuildStage::COUNT) {
-        info._shaderCompStage = ShaderProgramInfo::BuildStage::REQUESTED;
+    if (info.computeStage() == ShaderProgramInfo::BuildStage::COUNT) {
+        info.computeStage(ShaderProgramInfo::BuildStage::REQUESTED);
         return false;
     }
 
-    // If the shader is valid and a recomput wasn't requested, just return true
-    if (info._shaderCompStage != ShaderProgramInfo::BuildStage::REQUESTED) {
-        return info._shaderCompStage == ShaderProgramInfo::BuildStage::READY;
+    // If the shader is valid and a recompute wasn't requested, just return true
+    if (info.computeStage() != ShaderProgramInfo::BuildStage::REQUESTED) {
+        return info.computeStage() == ShaderProgramInfo::BuildStage::READY;
     }
 
     // At this point, only computation requests are processed
-    assert(info._shaderCompStage == ShaderProgramInfo::BuildStage::REQUESTED);
+    assert(info.computeStage() == ShaderProgramInfo::BuildStage::REQUESTED);
 
     const U32 slot0 = to_const_uint(ShaderProgram::TextureUsage::UNIT0);
     const U32 slot1 = to_const_uint(ShaderProgram::TextureUsage::UNIT1);
