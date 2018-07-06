@@ -115,65 +115,60 @@ namespace Navigation {
         return (F32)rand()/(F32)RAND_MAX;
     }
 
-    vec3<F32> DivideRecast::getRandomNavMeshPoint(const NavigationMesh& navMesh){
+    bool DivideRecast::getRandomNavMeshPoint(const NavigationMesh& navMesh, vec3<F32>& resultPt){
         if (navMesh.getNavQuery().getAttachedNavMesh() == nullptr) {
-            return VECTOR3_ZERO;
+            return false;
         }
-        F32 resultPoint[3];
         dtPolyRef resultPoly;
-        navMesh.getNavQuery().findRandomPoint(_filter, frand, &resultPoly, resultPoint);
+        navMesh.getNavQuery().findRandomPoint(_filter, frand, &resultPoly, resultPt._v);
 
-        return vec3<F32>(resultPoint[0], resultPoint[1], resultPoint[2]);
+        return true;
     }
 
-    vec3<F32> DivideRecast::getRandomPointAroundCircle(const NavigationMesh& navMesh, const vec3<F32>& centerPosition, F32 radius) {
-        if (navMesh.getNavQuery().getAttachedNavMesh() == nullptr) {
-            return VECTOR3_ZERO;
+    bool DivideRecast::getRandomPointAroundCircle(const NavigationMesh& navMesh, const vec3<F32>& centerPosition, F32 radius, const vec3<F32>& extents, vec3<F32>& resultPt, U8 maxIters) {
+        const dtNavMeshQuery& query = navMesh.getNavQuery();
+        if (query.getAttachedNavMesh() == nullptr) {
+            return false;
         }
-        F32 resultPoint[3];
-        dtPolyRef resultPoly;
+        F32 radiusSq = radius * radius;
 
-	    // Randomly pick one tile. Assume that all tiles cover roughly the same area.
-	    const dtMeshTile* tile = 0;
-	    float tsum = 0.0f;
-	    for (int i = 0; i < navMesh.getNavigationMesh()->getMaxTiles(); i++)
-	    {
-		    const dtMeshTile* t = navMesh.getNavigationMesh()->getTile(i);
-		    if (!t || !t->header) continue;
-
-		    // Choose random tile using reservoir sampling.
-		    const float area = 1.0f; // Could be tile area too.
-		    tsum += area;
-		    const float u = frand();
-		    if (u*tsum <= area)
-			    tile = t;
-	    }
-	    if (!tile) {
-		    return DT_FAILURE;
+	    dtPolyRef resultPoly;
+        query.findNearestPoly(centerPosition._v, extents, _filter, &resultPoly, resultPt._v);
+        
+        U8 i = 0;
+        for (i = 0; i < maxIters; ++i) {
+            query.findRandomPointAroundCircle(resultPoly, centerPosition._v, radius, _filter, frand,  &resultPoly, resultPt._v);
+            if (centerPosition.distanceSquared(resultPt) <= radiusSq) {
+                break;
+            }
         }
-        navMesh.getNavQuery().findRandomPointAroundCircle(navMesh.getNavigationMesh()->getPolyRefBase(tile), centerPosition._v, radius, _filter, frand,  &resultPoly, resultPoint);
-
-        return vec3<F32>(resultPoint[0], resultPoint[1], resultPoint[2]);
+        return (i != maxIters);
     }
 
-    bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, vec3<F32>& resultPt) {
-        dtPolyRef navmeshPoly;
-        return findNearestPolyOnNavmesh(navMesh, position, resultPt, navmeshPoly);
+    bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, const vec3<F32>& extents, F32 delta, vec3<F32>& resultPt, dtPolyRef &resultPoly) {
+        if (findNearestPolyOnNavmesh(navMesh, position, extents, resultPt, resultPoly) ){
+            if (position.distanceSquared(resultPt) > (delta * delta)) {
+                if (findNearestPolyOnNavmesh(navMesh, position, &navMesh.getExtents()[0], resultPt, resultPoly)) {
+                    if (position.distanceSquared(resultPt) <= (delta * delta)) {
+                        return true;
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
-    bool DivideRecast::findNearestPolyOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, vec3<F32>& resultPt, dtPolyRef &resultPoly){
+    bool DivideRecast::findNearestPolyOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, const vec3<F32>& extents, vec3<F32>& resultPt, dtPolyRef &resultPoly) {
         if(navMesh.getNavQuery().getAttachedNavMesh() == nullptr){
             resultPt.set(VECTOR3_ZERO);
             return false;
         }
 
-        F32 pt[] = {position.x, position.y, position.z};
-        F32 rPt[3];
-        const F32* extents = &navMesh.getExtents()[0];
-        dtStatus status = navMesh.getNavQuery().findNearestPoly(pt, extents, _filter, &resultPoly, rPt);
-        if((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK))
+        dtStatus status = navMesh.getNavQuery().findNearestPoly(position._v, extents._v, _filter, &resultPoly, resultPt._v);
+        if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) {
             return false; // couldn't find a polygon
-        resultPt.set(rPt[0],rPt[1],rPt[2]);
+        }
         return true;
     }
 }; //namespace Navigation

@@ -29,16 +29,18 @@ SceneNode::~SceneNode() {
 void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     assert(_nodeReady);
 
-    if(!_material) return;
-
+    if (!_material) {
+        return;
+    }
     _refreshMaterialData = _material->isDirty();
     _material->clean();
 }
 
 bool SceneNode::getDrawState(const RenderStage& currentStage)  { 
     Material* mat = getMaterial();
-    if (mat && !mat->getShaderInfo(currentStage).getProgram()->isHWInitComplete())
+    if (mat && !mat->getShaderInfo(currentStage).getProgram()->isHWInitComplete()) {
        return false;
+    }
 
     return _renderState.getDrawState(currentStage); 
 }
@@ -51,17 +53,22 @@ bool SceneNode::isInView(const SceneRenderState& sceneRenderState, const Boundin
     const vec3<F32>& center  = sphere.getCenter();
     F32  cameraDistance = center.distance(eye);
     F32 visibilityDistance = GET_ACTIVE_SCENE()->state().getGeneralVisibility() + sphere.getRadius();
-    if(distanceCheck && cameraDistance > visibilityDistance){
-        if (boundingBox.nearestDistanceFromPointSquared(eye) > std::min(visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y))
+    if(distanceCheck && cameraDistance > visibilityDistance) {
+        if (boundingBox.nearestDistanceFromPointSquared(eye) > std::min(visibilityDistance, sceneRenderState.getCameraConst().getZPlanes().y)) {
             return false;
+        }
     }
 
-    if(!boundingBox.ContainsPoint(eye)){
+    if (!boundingBox.ContainsPoint(eye)) {
         switch (cam.getFrustumConst().ContainsSphere(center, sphere.getRadius())) {
-            case Frustum::FRUSTUM_OUT: return false;
+            case Frustum::FRUSTUM_OUT: {
+                return false;
+            };
             case Frustum::FRUSTUM_INTERSECT:	{
-                if (!cam.getFrustumConst().ContainsBoundingBox(boundingBox)) return false;
-            }
+                if (!cam.getFrustumConst().ContainsBoundingBox(boundingBox)) {
+                    return false;
+                }
+            };
         }
     }
 
@@ -70,10 +77,10 @@ bool SceneNode::isInView(const SceneRenderState& sceneRenderState, const Boundin
     return true;
 }
 
-Material* const SceneNode::getMaterial(){
+Material* const SceneNode::getMaterial() {
     //UpgradableReadLock ur_lock(_materialLock);
-    if(_material == nullptr){
-        if(!_renderState._noDefaultMaterial){
+    if (_material == nullptr) {
+        if (!_renderState._noDefaultMaterial) {
             ResourceDescriptor defaultMat("defaultMaterial");
             //UpgradeToWriteLock uw_lock(ur_lock);
             _material = CreateResource<Material>(defaultMat);
@@ -83,12 +90,12 @@ Material* const SceneNode::getMaterial(){
     return _material;
 }
 
-void SceneNode::setMaterial(Material* const m){
-    if(m){ //If we need to update the material
+void SceneNode::setMaterial(Material* const mat) {
+    if (mat) { //If we need to update the material
         //UpgradableReadLock ur_lock(_materialLock);
-        if(_material){ //If we had an old material
-            if(_material->getGUID() != m->getGUID()){ //if the old material isn't the same as the new one
-                PRINT_FN(Locale::get("REPLACE_MATERIAL"),_material->getName().c_str(),m->getName().c_str());
+        if (_material) { //If we had an old material
+            if (_material->getGUID() != mat->getGUID()) { //if the old material isn't the same as the new one
+                PRINT_FN(Locale::get("REPLACE_MATERIAL"),_material->getName().c_str(),mat->getName().c_str());
                 //UpgradeToWriteLock uw_lock(ur_lock);
                 RemoveResource(_material);			//remove the old material
                 UNREGISTER_TRACKED_DEPENDENCY(_material);
@@ -96,11 +103,11 @@ void SceneNode::setMaterial(Material* const m){
             }
         }
         //UpgradeToWriteLock uw_lock(ur_lock);
-        _material = m;				   //set the new material
+        _material = mat;				   //set the new material
         REGISTER_TRACKED_DEPENDENCY(_material);
-    }else{ //if we receive a null material, the we need to remove this node's material
+    } else { //if we receive a null material, the we need to remove this node's material
         //UpgradableReadLock ur_lock(_materialLock);
-        if(_material){
+        if (_material) {
             //UpgradeToWriteLock uw_lock(ur_lock);
             UNREGISTER_TRACKED_DEPENDENCY(_material);
             RemoveResource(_material);
@@ -122,7 +129,7 @@ size_t SceneNode::getDrawStateHash(RenderStage renderStage){
 
     if (!_material && depthPass) {
         return shadowStage ? _renderState.getShadowStateBlock() : _renderState.getDepthStateBlock();
-   }
+    }
 
     bool reflectionStage = GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE);
 
@@ -131,8 +138,9 @@ size_t SceneNode::getDrawStateHash(RenderStage renderStage){
 }
 
 void SceneNode::bindTextures() {
-    if(getMaterial())
+    if (getMaterial()) {
         getMaterial()->bindTextures();
+    }
 }
 
 bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {

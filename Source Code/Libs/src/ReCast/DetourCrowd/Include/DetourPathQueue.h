@@ -19,8 +19,8 @@
 #ifndef DETOURPATHQUEUE_H
 #define DETOURPATHQUEUE_H
 
-#include <Detour/Include/DetourNavMesh.h>
-#include <Detour/Include/DetourNavMeshQuery.h>
+#include "DetourNavMesh.h"
+#include "DetourNavMeshQuery.h"
 
 static const unsigned int DT_PATHQ_INVALID = 0;
 
@@ -42,33 +42,34 @@ class dtPathQueue
 		int keepAlive;
 		const dtQueryFilter* filter; ///< TODO: This is potentially dangerous!
 	};
-
+	
 	static const int MAX_QUEUE = 8;
 	PathQuery m_queue[MAX_QUEUE];
 	dtPathQueueRef m_nextHandle;
 	int m_maxPathSize;
 	int m_queueHead;
 	dtNavMeshQuery* m_navquery;
-
+	
 	void purge();
-
+	
 public:
 	dtPathQueue();
 	~dtPathQueue();
-
+	
 	bool init(const int maxPathSize, const int maxSearchNodeCount, dtNavMesh* nav);
-
+	
 	void update(const int maxIters);
-
+	
 	dtPathQueueRef request(dtPolyRef startRef, dtPolyRef endRef,
-						   const float* startPos, const float* endPos,
+						   const float* startPos, const float* endPos, 
 						   const dtQueryFilter* filter);
-
+	
 	dtStatus getRequestStatus(dtPathQueueRef ref) const;
-
+	
 	dtStatus getPathResult(dtPathQueueRef ref, dtPolyRef* path, int* pathSize, const int maxPath);
-
+	
 	inline const dtNavMeshQuery* getNavQuery() const { return m_navquery; }
+
 };
 
 #endif // DETOURPATHQUEUE_H

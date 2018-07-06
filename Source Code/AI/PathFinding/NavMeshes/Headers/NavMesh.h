@@ -123,7 +123,9 @@ namespace Navigation {
 
         inline const dtNavMeshQuery& getNavQuery() const {return *_navQuery;}
 
-        vec3<F32> getRandomPosition() const;
+        bool getRandomPosition(vec3<F32>& result) const;
+        bool getClosestPosition(const vec3<F32>& destination, const vec3<F32>& extents, F32 delta, vec3<F32>& result) const;
+        bool getRandomPositionInCircle(const vec3<F32>& center, F32 radius, const vec3<F32>& extents, vec3<F32>& result, U8 maxIters = 15) const;
 
         NavigationMesh();
         ~NavigationMesh();

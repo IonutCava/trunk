@@ -16,12 +16,25 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include <Detour/Include/DetourNode.h>
-#include <Detour/Include/DetourAlloc.h>
-#include <Detour/Include/DetourAssert.h>
-#include <Detour/Include/DetourCommon.h>
+#include "DetourNode.h"
+#include "DetourAlloc.h"
+#include "DetourAssert.h"
+#include "DetourCommon.h"
 #include <string.h>
 
+#ifdef DT_POLYREF64
+// From Thomas Wang, https://gist.github.com/badboy/6267743
+inline unsigned int dtHashRef(dtPolyRef a)
+{
+	a = (~a) + (a << 18); // a = (a << 18) - a - 1;
+	a = a ^ (a >> 31);
+	a = a * 21; // a = (a + (a << 2)) + (a << 4);
+	a = a ^ (a >> 11);
+	a = a + (a << 6);
+	a = a ^ (a >> 22);
+	return (unsigned int)a;
+}
+#else
 inline unsigned int dtHashRef(dtPolyRef a)
 {
 	a += ~(a<<15);
@@ -32,6 +45,7 @@ inline unsigned int dtHashRef(dtPolyRef a)
 	a ^=  (a>>16);
 	return (unsigned int)a;
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////////////////////
 dtNodePool::dtNodePool(int maxNodes, int hashSize) :
@@ -70,50 +84,71 @@ void dtNodePool::clear()
 	m_nodeCount = 0;
 }
 
-dtNode* dtNodePool::findNode(dtPolyRef id)
+unsigned int dtNodePool::findNodes(dtPolyRef id, dtNode** nodes, const int maxNodes)
 {
+	int n = 0;
 	unsigned int bucket = dtHashRef(id) & (m_hashSize-1);
 	dtNodeIndex i = m_first[bucket];
 	while (i != DT_NULL_IDX)
 	{
 		if (m_nodes[i].id == id)
+		{
+			if (n >= maxNodes)
+				return n;
+			nodes[n++] = &m_nodes[i];
+		}
+		i = m_next[i];
+	}
+
+	return n;
+}
+
+dtNode* dtNodePool::findNode(dtPolyRef id, unsigned char state)
+{
+	unsigned int bucket = dtHashRef(id) & (m_hashSize-1);
+	dtNodeIndex i = m_first[bucket];
+	while (i != DT_NULL_IDX)
+	{
+		if (m_nodes[i].id == id && m_nodes[i].state == state)
 			return &m_nodes[i];
 		i = m_next[i];
 	}
 	return 0;
 }
 
-dtNode* dtNodePool::getNode(dtPolyRef id)
+dtNode* dtNodePool::getNode(dtPolyRef id, unsigned char state)
 {
 	unsigned int bucket = dtHashRef(id) & (m_hashSize-1);
 	dtNodeIndex i = m_first[bucket];
 	dtNode* node = 0;
 	while (i != DT_NULL_IDX)
 	{
-		if (m_nodes[i].id == id)
+		if (m_nodes[i].id == id && m_nodes[i].state == state)
 			return &m_nodes[i];
 		i = m_next[i];
 	}
-
+	
 	if (m_nodeCount >= m_maxNodes)
 		return 0;
-
+	
 	i = (dtNodeIndex)m_nodeCount;
 	m_nodeCount++;
-
+	
 	// Init node
 	node = &m_nodes[i];
 	node->pidx = 0;
 	node->cost = 0;
 	node->total = 0;
 	node->id = id;
+	node->state = state;
 	node->flags = 0;
-
+	
 	m_next[i] = m_first[bucket];
 	m_first[bucket] = i;
-
+	
 	return node;
 }
+
 
 //////////////////////////////////////////////////////////////////////////////////////////
 dtNodeQueue::dtNodeQueue(int n) :
@@ -122,7 +157,7 @@ dtNodeQueue::dtNodeQueue(int n) :
 	m_size(0)
 {
 	dtAssert(m_capacity > 0);
-
+	
 	m_heap = (dtNode**)dtAlloc(sizeof(dtNode*)*(m_capacity+1), DT_ALLOC_PERM);
 	dtAssert(m_heap);
 }
@@ -150,7 +185,7 @@ void dtNodeQueue::trickleDown(int i, dtNode* node)
 	int child = (i*2)+1;
 	while (child < m_size)
 	{
-		if (((child+1) < m_size) &&
+		if (((child+1) < m_size) && 
 			(m_heap[child]->total > m_heap[child+1]->total))
 		{
 			child++;

@@ -8,7 +8,7 @@
 
 using namespace AI;
 
-static const D32 ATTACK_RADIUS = 5 * 5;
+static const D32 ATTACK_RADIUS = 5;
 
 PositionFact     WorkingMemory::_team1FlagPosition;
 PositionFact     WorkingMemory::_team2FlagPosition;
@@ -22,10 +22,8 @@ WarSceneAISceneImpl::WarSceneAISceneImpl() : AISceneImpl(),
                                             _newPlanSuccess(false),
                                             _orderReceived(false),
                                             _activeGoal(nullptr),
-                                            _currentEnemyTarget(nullptr),
                                             _visualSensorUpdateCounter(0),
-                                            _deltaTime(0ULL),
-                                            _indexInMap(-1)
+                                            _deltaTime(0ULL)
 {
 }
 
@@ -56,11 +54,13 @@ void WarSceneAISceneImpl::registerGoal(const GOAPGoal& goal) {
     AISceneImpl::registerGoal(WarSceneGoal(goal));
 }
 
+static const U32 myTeamContainer = 0;
+static const U32 enemyTeamContainer = 1;
+static const U32 flagContainer = 2;
+
 void WarSceneAISceneImpl::init() {
     VisualSensor* sensor = dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
-    U32 myTeamContainer = 0;
-    U32 enemyTeamContainer = 1;
-    U32 flagContainer = 2;
+
 
     if (sensor) {
         AITeam* currentTeam = _entity->getTeam();
@@ -117,82 +117,27 @@ void WarSceneAISceneImpl::processInput(const U64 deltaTime) {
     AITeam* currentTeam = _entity->getTeam();
     DIVIDE_ASSERT(currentTeam != nullptr, "WarScene error: INVALID TEAM FOR INPUT UPDATE");
 
-    if (_entity->destinationReached()) {
-        I64 currentIndex = 0;
-        
-        bool foundId = (_indexInMap != -1);
-        if (_indexInMap == -1) {
-            _indexInMap = 0;
-        }
+    if (_entity->destinationReached() && _workingMemory._staticDataUpdated) {
+        if (_deltaTime > getUsToSec(1.5)) {//wait 1 and a half seconds at the destination
 
-        const AITeam::teamMap& teamAgents = currentTeam->getTeamMembers();
-        FOR_EACH(const AITeam::teamMap::value_type& member, teamAgents) {
-            if (_entity->getGUID() != member.second->getGUID()) {
-                _entity->sendMessage(member.second, CHANGE_DESTINATION_POINT, 0);
-                if (!foundId) {
-                    _indexInMap++;
-                }
-            } else {
-                currentIndex = member.first;
-                foundId = true;
-            }
-        }
-        
-        if (currentTeam->getTeamID() == 1 && _deltaTime > getUsToSec(1.5)) { //wait 1 and a half seconds at the destination
-            // team 1 moves randomly. team2 chases team 1
-            _entity->updateDestination( aiMgr.getNavMesh(_entity->getAgentRadiusCategory())->getRandomPosition() );
-            _deltaTime = 0;
-        }
-    }
-     
-    if (!_currentEnemyTarget) {
-        AITeam* enemyTeam = aiMgr.getTeamByID(currentTeam->getEnemyTeamID(0));
-        if (enemyTeam != nullptr) {
-            const AITeam::teamMap& enemyMembers = enemyTeam->getTeamMembers();
+            const BoundingBox& bb1 = _entity->getUnitRef()->getBoundNode()->getBoundingBoxConst();
+            const BoundingBox& bb2 = _workingMemory._flags[currentTeam->getTeamID()].value()->getBoundingBoxConst();
 
-            I32 i = 0; 
-            AIEntity* selectedEnemy = nullptr;
-            FOR_EACH(const AITeam::teamMap::value_type& enemy, enemyMembers) {
-                selectedEnemy = enemy.second;
-                if (i++ >= _indexInMap) {
-                    break;
-                }
-            }
-            _currentEnemyTarget = selectedEnemy;
-        }
-    }
+            if (bb1.Collision(bb2)) {
 
-    if (currentTeam->getTeamID() == 2 && _deltaTime > getUsToMs(250)) {
-        AITeam* enemyTeam = aiMgr.getTeamByID(currentTeam->getEnemyTeamID(0));
-        if (enemyTeam != nullptr) {
-            AITeam::teamMap::const_iterator it = enemyTeam->getTeamMembers().begin();
-            I32 i = 0; 
-            while (i < _indexInMap) {
-                ++i;
-                ++it;
-            }
-            _entity->updateDestination(_currentEnemyTarget->getPosition());
-            _deltaTime = 0;
-        }
-    }
-
-    if (_currentEnemyTarget && _currentEnemyTarget->getUnitRef()) {
-        if (_entity->getPosition().distanceSquared(_currentEnemyTarget->getPosition()) < ATTACK_RADIUS) {
-            if (_currentEnemyTarget->isMoving()) {
-                const BoundingBox& bb1 = _entity->getUnitRef()->getBoundNode()->getBoundingBox();
-                const BoundingBox& bb2 = _currentEnemyTarget->getUnitRef()->getBoundNode()->getBoundingBox();
-
-                if (bb1.Collision(bb2)) {
-                    _entity->moveBackwards();
-                    _currentEnemyTarget->moveBackwards();
-                }
-
-                _currentEnemyTarget->stop();
                 _entity->stop();
+                _entity->getUnitRef()->lookAt(currentTeam->getTeamID() == 0 ? _workingMemory._team2FlagPosition.value() : _workingMemory._team1FlagPosition.value());
 
-                _currentEnemyTarget->getUnitRef()->lookAt(_entity->getPosition());
-                _entity->getUnitRef()->lookAt(_currentEnemyTarget->getPosition());
+            } else {
+
+                if (currentTeam->getTeamID() == 0) { 
+                    _entity->updateDestination(  _workingMemory._team2FlagPosition.value() );
+                } else {
+                    _entity->updateDestination( _workingMemory._team1FlagPosition.value() );
+                }    
+
             }
+            _deltaTime = 0;
         }
     }
 
@@ -272,18 +217,21 @@ void WarSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef){
             _workingMemory._team1FlagPosition.value(_workingMemory._flags[0].value()->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
             _workingMemory._team1FlagPosition.belief(1.0f);
         }
-        if (_workingMemory._flags[0].value() != nullptr) {
+        if (_workingMemory._flags[1].value() != nullptr) {
             _workingMemory._team2FlagPosition.value(_workingMemory._flags[1].value()->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
             _workingMemory._team2FlagPosition.belief(1.0f);
         }
         _workingMemory._staticDataUpdated = true;
     }
-    if (_currentEnemyTarget) {
-        _workingMemory._currentTargetEntity.value(_currentEnemyTarget);
+    
+    if (!_workingMemory._currentTargetEntity.value()) {
+        _workingMemory._currentTargetEntity.value(visualSensor->getClosestNode(enemyTeamContainer));
         _workingMemory._currentTargetEntity.belief(1.0f);
-        _workingMemory._currentTargetPosition.value(_currentEnemyTarget->getUnitRef()->getCurrentPosition());
+    } else {
+        _workingMemory._currentTargetPosition.value( _workingMemory._currentTargetEntity.value()->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
         _workingMemory._currentTargetPosition.belief(1.0f);
     }
+    
 }
 
 void WarSceneAISceneImpl::handlePlan(const GOAPPlan& plan) {

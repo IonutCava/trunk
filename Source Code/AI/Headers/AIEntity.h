@@ -103,13 +103,13 @@ public:
       * of calculating a completely new path, but this can only be used if the new
       * destination is close to the previous (eg. when chasing a moving entity).
     **/
-    void updateDestination(const vec3<F32>& destination, bool updatePreviousPath = false);
+    bool updateDestination(const vec3<F32>& destination, bool updatePreviousPath = false);
     /// The destination set for this agent.
     const vec3<F32>& getDestination() const;
     /// Returns true when this agent has reached its set destination.
     bool destinationReached();
     /// Place agent at new position.
-    void setPosition(const vec3<F32> position);
+    bool setPosition(const vec3<F32> position);
     /// The current position of the agent. Is only up to date once update() has been called in a frame.
     const vec3<F32>& getPosition() const;
     /// The maximum speed this character can attain.

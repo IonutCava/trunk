@@ -295,7 +295,7 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
     _flags[0]->getComponent<PhysicsComponent>()->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
     _flags[0]->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
     _flags[0]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
-    _flags[0]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
+    _flags[0]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
 
     _flags[1] = _sceneGraph->getRoot()->addNode(cylinderMeshNW, "Team2Flag");      
@@ -304,7 +304,7 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
     _flags[1]->getComponent<PhysicsComponent>()->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
     _flags[1]->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
     _flags[1]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
-    _flags[1]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
+    _flags[1]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
 
     AI::WarSceneAISceneImpl::registerFlags(_flags[0], _flags[1]);
 
@@ -354,8 +354,8 @@ bool WarScene::initializeAI(bool continueOnErrors){
  //   _GOAPContext.setLogLevel(AI::GOAPContext::LOG_LEVEL_NONE);
 
     // Create 2 AI teams
-    _faction1 = New AI::AITeam(1);
-    _faction2 = New AI::AITeam(2);
+    _faction1 = New AI::AITeam(0);
+    _faction2 = New AI::AITeam(1);
     // Make the teams fight each other
     _faction1->addEnemyTeam(_faction2->getTeamID());
     _faction2->addEnemyTeam(_faction1->getTeamID());
@@ -471,8 +471,15 @@ bool WarScene::initializeAI(bool continueOnErrors){
             currentNode->getComponent<PhysicsComponent>()->translateX(25 * side);
 
             aiSoldier = New AI::AIEntity(currentNode->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), currentNode->getName());
-            aiSoldier->setTeam(k == 0 ? _faction1 : _faction2);
             aiSoldier->addSensor(AI::VISUAL_SENSOR);
+
+            if (k == 0) {
+                aiSoldier->setTeam(_faction1);
+                currentNode->renderBoundingBox(true);
+            } else {
+                aiSoldier->setTeam(_faction2);
+                currentNode->renderSkeleton(true);
+            }
 
             AI::WarSceneAISceneImpl* brain = New AI::WarSceneAISceneImpl();
             brain->worldState().setVariable(AI::GOAPFact(AI::EnemyVisible),       AI::GOAPValue(false));

@@ -5,11 +5,7 @@
 #include "Managers/Headers/SceneManager.h"
 
 void Scene::onLostFocus(){
-   state()._moveFB = 0;
-   state()._moveLR = 0;
-   state()._roll   = 0; 
-   state()._angleLR = 0;
-   state()._angleUD = 0;
+   state().resetMovement();
 #ifndef _DEBUG
    _paramHandler.setParam("freezeLoopTime", true);
 #endif
@@ -105,16 +101,16 @@ void Scene::defaultCameraKeys(OIS::KeyCode code, bool upState){
 
     if (upState){
         switch (code){
-            case OIS::KC_W: if (state()._moveFB == 1) state()._moveFB = 0; break;
-            case OIS::KC_S: if (state()._moveFB == -1) state()._moveFB = 0; break;
-            case OIS::KC_A: if (state()._moveLR == -1) state()._moveLR = 0; break;
-            case OIS::KC_D:	if (state()._moveLR == 1) state()._moveLR = 0; break;
-            case OIS::KC_Q: if (state()._roll == -1)   state()._roll = 0;   break;
-            case OIS::KC_E: if (state()._roll == 1)   state()._roll = 0;   break;
-            case OIS::KC_LEFT: if (state()._angleLR == -1) state()._angleLR = 0; break;
-            case OIS::KC_RIGHT: if (state()._angleLR == 1) state()._angleLR = 0; break;
-            case OIS::KC_UP: if (state()._angleUD == -1) state()._angleUD = 0; break;
-            case OIS::KC_DOWN: if (state()._angleUD == 1) state()._angleUD = 0; break;
+            case OIS::KC_W: state()._moveFB = 0; break;
+            case OIS::KC_S: state()._moveFB = 0; break;
+            case OIS::KC_A: state()._moveLR = 0; break;
+            case OIS::KC_D:	state()._moveLR = 0; break;
+            case OIS::KC_Q: state()._roll = 0;   break;
+            case OIS::KC_E: state()._roll = 0;   break;
+            case OIS::KC_LEFT:  state()._angleLR = 0; break;
+            case OIS::KC_RIGHT: state()._angleLR = 0; break;
+            case OIS::KC_UP:    state()._angleUD = 0; break;
+            case OIS::KC_DOWN:  state()._angleUD = 0; break;
         }
     }else{
         switch (code){

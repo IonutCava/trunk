@@ -88,7 +88,7 @@ public:
     static SmallCounterFact _team2Count;
     static SGNNodeFact      _flags[2];
            SmallCounterFact _health;
-           AINodeFact       _currentTargetEntity;
+           SGNNodeFact      _currentTargetEntity;
            PositionFact     _currentTargetPosition;
 
     bool _staticDataUpdated;
@@ -124,9 +124,7 @@ private:
 
 private:
     U16       _tickCount;
-    I32       _indexInMap;
     U64       _deltaTime;
-    AIEntity* _currentEnemyTarget;
     GOAPGoal* _activeGoal;
     bool _newPlan;
     bool _newPlanSuccess;

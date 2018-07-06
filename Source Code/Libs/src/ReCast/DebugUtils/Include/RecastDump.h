@@ -39,4 +39,5 @@ bool duReadCompactHeightfield(struct rcCompactHeightfield& chf, duFileIO* io);
 
 void duLogBuildTimes(rcContext& ctx, const int totalTileUsec);
 
+
 #endif // RECAST_DUMP_H

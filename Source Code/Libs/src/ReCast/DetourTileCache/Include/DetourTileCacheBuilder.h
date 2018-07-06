@@ -19,8 +19,8 @@
 #ifndef DETOURTILECACHEBUILDER_H
 #define DETOURTILECACHEBUILDER_H
 
-#include <Detour/Include/DetourAlloc.h>
-#include <Detour/Include/DetourStatus.h>
+#include "DetourAlloc.h"
+#include "DetourStatus.h"
 
 static const int DT_TILECACHE_MAGIC = 'D'<<24 | 'T'<<16 | 'L'<<8 | 'R'; ///< 'DTLR';
 static const int DT_TILECACHE_VERSION = 1;
@@ -75,17 +75,20 @@ struct dtTileCachePolyMesh
 	unsigned char* areas;	///< Area ID of polygons.
 };
 
+
 struct dtTileCacheAlloc
 {
+	virtual ~dtTileCacheAlloc() { }
+
 	virtual void reset()
 	{
 	}
-
+	
 	virtual void* alloc(const int size)
 	{
 		return dtAlloc(size, DT_ALLOC_TEMP);
 	}
-
+	
 	virtual void free(void* ptr)
 	{
 		dtFree(ptr);
@@ -94,12 +97,15 @@ struct dtTileCacheAlloc
 
 struct dtTileCacheCompressor
 {
+	virtual ~dtTileCacheCompressor() { }
+
 	virtual int maxCompressedSize(const int bufferSize) = 0;
 	virtual dtStatus compress(const unsigned char* buffer, const int bufferSize,
 							  unsigned char* compressed, const int maxCompressedSize, int* compressedSize) = 0;
 	virtual dtStatus decompress(const unsigned char* compressed, const int compressedSize,
 								unsigned char* buffer, const int maxBufferSize, int* bufferSize) = 0;
 };
+
 
 dtStatus dtBuildTileCacheLayer(dtTileCacheCompressor* comp,
 							   dtTileCacheLayerHeader* header,
@@ -141,5 +147,6 @@ dtStatus dtBuildTileCachePolyMesh(dtTileCacheAlloc* alloc,
 ///  @param[in,out]	data		The tile data array.
 ///  @param[in]		dataSize	The size of the data array.
 bool dtTileCacheHeaderSwapEndian(unsigned char* data, const int dataSize);
+
 
 #endif // DETOURTILECACHEBUILDER_H

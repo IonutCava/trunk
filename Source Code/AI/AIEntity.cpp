@@ -7,7 +7,6 @@
 #include "PathFinding/NavMeshes/Headers/NavMesh.h" ///< For NavMesh movement
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 #include "AI/PathFinding/Headers/DivideCrowd.h"
-#include "AI/PathFinding/Headers/DivideRecast.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 #include "Managers/Headers/AIManager.h"
 
@@ -225,24 +224,21 @@ void AIEntity::resetCrowd(){
     }
 }
 
-void AIEntity::setPosition(const vec3<F32> position) {
+bool AIEntity::setPosition(const vec3<F32> position) {
     if (!isAgentLoaded()) {
         if (_unitRef) {
             _unitRef->setPosition(position);
         }
-        return;
+        return false;
     }
-    if (!_detourCrowd) {
-        return;
+    if (!_detourCrowd || !_detourCrowd->isValidNavMesh()) {
+        return false;
     }
-    vec3<F32> result;
 
-    if (!_detourCrowd->isValidNavMesh()) {
-        return;
-    }
+    vec3<F32> result;
     // Find position on NavMesh
-    if (!Navigation::DivideRecast::getInstance().findNearestPointOnNavmesh(_detourCrowd->getNavMesh(), position, result)) {
-        return;
+    if (!_detourCrowd->getNavMesh().getClosestPosition(position, vec3<F32>(5), DESTINATION_RADIUS, result)) {
+        return false;
     }
     // Remove agent from crowd and re-add at position
     _detourCrowd->removeAgent(_agentID);
@@ -252,6 +248,7 @@ void AIEntity::setPosition(const vec3<F32> position) {
     if (_unitRef) {
         _unitRef->setPosition(position);
     }
+    return true;
 }
 
 void AIEntity::updatePosition(const U64 deltaTime){
@@ -264,8 +261,8 @@ void AIEntity::updatePosition(const U64 deltaTime){
             _moveWaitTimer += deltaTime;
             if(getUsToSec(_moveWaitTimer) > 5){
                 _moveWaitTimer = 0;
-                updateDestination(_detourCrowd->getNavMesh().getRandomPosition());
-                return;
+                //updateDestination(_detourCrowd->getNavMesh().getRandomPosition());
+                //return;
             }
         }else{
             _moveWaitTimer = 0;
@@ -280,19 +277,24 @@ void AIEntity::updatePosition(const U64 deltaTime){
     }
 }
 
-void AIEntity::updateDestination(const vec3<F32>& destination, bool updatePreviousPath ){
-    if(!isAgentLoaded())
-        return;
-
+bool AIEntity::updateDestination(const vec3<F32>& destination, bool updatePreviousPath) {
+    if (!isAgentLoaded()) {
+        return false;
+    }
     vec3<F32> result;
-
     // Find position on navmesh
-    if(!Navigation::DivideRecast::getInstance().findNearestPointOnNavmesh(_detourCrowd->getNavMesh() , destination, result))
-        return;
+    if(!_detourCrowd->getNavMesh().getRandomPositionInCircle(destination, DESTINATION_RADIUS, vec3<F32>(5), result, 10)) {
+        return false;
+    }
+    /*if (!_detourCrowd->getNavMesh().getClosestPosition(position, vec3<F32>(5), DESTINATION_RADIUS, result)) {
+        return false;
+    }*/
 
     _detourCrowd->setMoveTarget(_agentID, result, updatePreviousPath);
     _destination = result;
     _stopped = false;
+
+    return true;
 }
 
 const vec3<F32>& AIEntity::getPosition() const {

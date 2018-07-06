@@ -206,5 +206,8 @@
     <ClInclude Include="..\..\Source Code\Libs\src\ReCast\RecastContrib\TileCacheCompressor\Headers\DivideTileCacheUtil.h">
       <Filter>ReCastContrib\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourMath.h">
+      <Filter>Detour\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

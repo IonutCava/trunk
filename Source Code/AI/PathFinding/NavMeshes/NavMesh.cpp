@@ -641,8 +641,17 @@ namespace Navigation {
         return true;
     }
 
-    vec3<F32> NavigationMesh::getRandomPosition() const {
-        return Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*this);
+    bool NavigationMesh::getClosestPosition(const vec3<F32>& destination, const vec3<F32>& extents, F32 delta, vec3<F32>& result) const {
+        dtPolyRef resultPoly;
+        return Navigation::DivideRecast::getInstance().findNearestPointOnNavmesh(*this, destination, extents, delta, result, resultPoly);
+    }
+
+    bool NavigationMesh::getRandomPosition(vec3<F32>& result) const {
+        return Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*this, result);
+    }
+
+    bool NavigationMesh::getRandomPositionInCircle(const vec3<F32>& center, F32 radius, const vec3<F32>& extents, vec3<F32>& result, U8 maxIters) const {
+        return Navigation::DivideRecast::getInstance().getRandomPointAroundCircle(*this, center, radius, extents, result, maxIters);
     }
 }; //namespace Navigation
 

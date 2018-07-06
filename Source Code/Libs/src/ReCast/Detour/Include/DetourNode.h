@@ -25,6 +25,7 @@ enum dtNodeFlags
 {
 	DT_NODE_OPEN = 0x01,
 	DT_NODE_CLOSED = 0x02,
+	DT_NODE_PARENT_DETACHED = 0x04, // parent of the node is not adjacent. Found using raycast.
 };
 
 typedef unsigned short dtNodeIndex;
@@ -35,10 +36,16 @@ struct dtNode
 	float pos[3];				///< Position of the node.
 	float cost;					///< Cost from previous node to current node.
 	float total;				///< Cost up to the node.
-	unsigned int pidx : 30;		///< Index to parent node.
-	unsigned int flags : 2;		///< Node flags 0/open/closed.
+	unsigned int pidx : 24;		///< Index to parent node.
+	unsigned int state : 2;		///< extra state information. A polyRef can have multiple nodes with different extra info. see DT_MAX_STATES_PER_NODE
+	unsigned int flags : 3;		///< Node flags. A combination of dtNodeFlags.
 	dtPolyRef id;				///< Polygon ref the node corresponds to.
 };
+
+
+static const int DT_MAX_STATES_PER_NODE = 4;	// number of extra states per node. See dtNode::state
+
+
 
 class dtNodePool
 {
@@ -47,8 +54,12 @@ public:
 	~dtNodePool();
 	inline void operator=(const dtNodePool&) {}
 	void clear();
-	dtNode* getNode(dtPolyRef id);
-	dtNode* findNode(dtPolyRef id);
+
+	// Get a dtNode by ref and extra state information. If there is none then - allocate
+	// There can be more than one node for the same polyRef but with different extra state information
+	dtNode* getNode(dtPolyRef id, unsigned char state=0);	
+	dtNode* findNode(dtPolyRef id, unsigned char state);
+	unsigned int findNodes(dtPolyRef id, dtNode** nodes, const int maxNodes);
 
 	inline unsigned int getNodeIdx(const dtNode* node) const
 	{
@@ -67,7 +78,7 @@ public:
 		if (!idx) return 0;
 		return &m_nodes[idx-1];
 	}
-
+	
 	inline int getMemUsed() const
 	{
 		return sizeof(*this) +
@@ -75,15 +86,16 @@ public:
 			sizeof(dtNodeIndex)*m_maxNodes +
 			sizeof(dtNodeIndex)*m_hashSize;
 	}
-
+	
 	inline int getMaxNodes() const { return m_maxNodes; }
-
+	
 	inline int getHashSize() const { return m_hashSize; }
 	inline dtNodeIndex getFirst(int bucket) const { return m_first[bucket]; }
 	inline dtNodeIndex getNext(int i) const { return m_next[i]; }
-
+	inline int getNodeCount() const { return m_nodeCount; }
+	
 private:
-
+	
 	dtNode* m_nodes;
 	dtNodeIndex* m_first;
 	dtNodeIndex* m_next;
@@ -98,17 +110,17 @@ public:
 	dtNodeQueue(int n);
 	~dtNodeQueue();
 	inline void operator=(dtNodeQueue&) {}
-
+	
 	inline void clear()
 	{
 		m_size = 0;
 	}
-
+	
 	inline dtNode* top()
 	{
 		return m_heap[0];
 	}
-
+	
 	inline dtNode* pop()
 	{
 		dtNode* result = m_heap[0];
@@ -116,13 +128,13 @@ public:
 		trickleDown(0, m_heap[m_size]);
 		return result;
 	}
-
+	
 	inline void push(dtNode* node)
 	{
 		m_size++;
 		bubbleUp(m_size-1, node);
 	}
-
+	
 	inline void modify(dtNode* node)
 	{
 		for (int i = 0; i < m_size; ++i)
@@ -134,24 +146,25 @@ public:
 			}
 		}
 	}
-
+	
 	inline bool empty() const { return m_size == 0; }
-
+	
 	inline int getMemUsed() const
 	{
 		return sizeof(*this) +
 		sizeof(dtNode*)*(m_capacity+1);
 	}
-
+	
 	inline int getCapacity() const { return m_capacity; }
-
+	
 private:
 	void bubbleUp(int i, dtNode* node);
 	void trickleDown(int i, dtNode* node);
-
+	
 	dtNode** m_heap;
 	const int m_capacity;
 	int m_size;
-};
+};		
+
 
 #endif // DETOURNODE_H

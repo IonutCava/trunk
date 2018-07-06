@@ -129,15 +129,11 @@ protected:
 class SceneState{
 public:
     SceneState() :
-      _moveFB(0),
-      _moveLR(0),
-      _angleUD(0),
-      _angleLR(0),
-      _roll(0),
       _cameraUnderwater(false),
       _cameraUpdated(false),
       _isRunning(false)
     {
+        resetMovement();
         _fog._fogColor = vec3<F32>(0.2f, 0.2f, 0.2f);
         _fog._fogDensity = 0.01f;
     }
@@ -164,6 +160,14 @@ public:
     inline F32& getWaterDepth()                {return _waterDepth;}
     inline bool getRunningState()        const {return _isRunning;}
     inline void toggleRunningState(bool state) {_isRunning = state;}
+
+    inline void resetMovement() {
+        _moveFB = 0;
+        _moveLR = 0;
+        _angleUD = 0;
+        _angleLR = 0;
+        _roll = 0;
+    }
 
     I32 _moveFB;  ///< forward-back move change detected
     I32 _moveLR;  ///< left-right move change detected

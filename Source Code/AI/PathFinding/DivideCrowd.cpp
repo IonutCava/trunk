@@ -1,7 +1,7 @@
 #include "Headers/DivideCrowd.h"
 
 #include <core.h>
-#include "Detour/Include/DetourCommon.h"
+#include "DetourCommon.h"
 
 namespace AI {
 namespace Navigation {
@@ -45,7 +45,7 @@ namespace Navigation {
         if (nav && crowd && crowd->getAgentCount() == 0) {
             crowd->init(MAX_AGENTS, navMesh->getConfigParams().getAgentRadius(), nav);
             // Make polygons with 'disabled' flag invalid.
-            crowd->getEditableFilter()->setExcludeFlags(SAMPLE_POLYFLAGS_DISABLED);
+            crowd->getEditableFilter(0)->setExcludeFlags(SAMPLE_POLYFLAGS_DISABLED);
             // Create different avoidance settings presets. The crowd object can store multiple, identified by an index number.
             // Setup local avoidance params to different qualities.
             dtObstacleAvoidanceParams params;
@@ -189,7 +189,7 @@ namespace Navigation {
         // Find nearest point on navmesh and set move request to that location.
         const dtNavMeshQuery& navquery = _recast->getNavQuery();
  
-        const dtQueryFilter* filter = _crowd->getFilter();
+        const dtQueryFilter* filter = _crowd->getFilter(0);
         const F32* ext = _crowd->getQueryExtents();
         const F32 *p = &position.x;
         navquery.findNearestPoly(p, ext, filter, &_targetRef, _targetPos);
@@ -217,7 +217,7 @@ namespace Navigation {
         // Find nearest point on navmesh and set move request to that location.
         const dtNavMeshQuery& navquery = _recast->getNavQuery();
         dtCrowd* crowd = _crowd;
-        const dtQueryFilter* filter = crowd->getFilter();
+        const dtQueryFilter* filter = crowd->getFilter(0);
         const F32* ext = crowd->getQueryExtents();
         const F32* p = &position.x;
         navquery.findNearestPoly(p, ext, filter, &_targetRef, _targetPos);

@@ -22,15 +22,21 @@
 /**
 @defgroup detour Detour
 
-Members in this module are used to create, manipulate, and query navigation
+Members in this module are used to create, manipulate, and query navigation 
 meshes.
 
-@note This is a summary list of members.  Use the index or search
+@note This is a summary list of members.  Use the index or search 
 feature to find minor members.
 */
 
 /// @name General helper functions
 /// @{
+
+/// Used to ignore a function parameter.  VS complains about unused parameters
+/// and this silences the warning.
+///  @param [in] _ Unused parameter
+template<class T> void dtIgnoreUnused(const T&) { }
+
 /// Swaps the values of the two parameters.
 ///  @param[in,out]	a	Value A
 ///  @param[in,out]	b	Value B
@@ -73,6 +79,7 @@ float dtSqrt(float x);
 /// @}
 /// @name Vector helper functions.
 /// @{
+
 /// Derives the cross product of two vectors. (@p v1 x @p v2)
 ///  @param[out]	dest	The cross product. [(x, y, z)]
 ///  @param[in]		v1		A Vector [(x, y, z)]
@@ -81,7 +88,7 @@ inline void dtVcross(float* dest, const float* v1, const float* v2)
 {
 	dest[0] = v1[1]*v2[2] - v1[2]*v2[1];
 	dest[1] = v1[2]*v2[0] - v1[0]*v2[2];
-	dest[2] = v1[0]*v2[1] - v1[1]*v2[0];
+	dest[2] = v1[0]*v2[1] - v1[1]*v2[0]; 
 }
 
 /// Derives the dot product of two vectors. (@p v1 . @p v2)
@@ -269,7 +276,7 @@ inline void dtVnormalize(float* v)
 ///  @param[in]		p1	A point. [(x, y, z)]
 /// @return True if the points are considered to be at the same location.
 ///
-/// Basically, this function will return true if the specified points are
+/// Basically, this function will return true if the specified points are 
 /// close enough to eachother to be considered colocated.
 inline bool dtVequal(const float* p0, const float* p1)
 {
@@ -303,6 +310,7 @@ inline float dtVperp2D(const float* u, const float* v)
 /// @}
 /// @name Computational geometry helper functions.
 /// @{
+
 /// Derives the signed xz-plane area of the triangle ABC, or the relationship of line AB to point C.
 ///  @param[in]		a		Vertex A. [(x, y, z)]
 ///  @param[in]		b		Vertex B. [(x, y, z)]
@@ -352,7 +360,7 @@ inline bool dtOverlapBounds(const float* amin, const float* amax,
 }
 
 /// Derives the closest point on a triangle from the specified reference point.
-///  @param[out]	closest	The closest point on the triangle.
+///  @param[out]	closest	The closest point on the triangle.	
 ///  @param[in]		p		The reference point from which to test. [(x, y, z)]
 ///  @param[in]		a		Vertex A of triangle ABC. [(x, y, z)]
 ///  @param[in]		b		Vertex B of triangle ABC. [(x, y, z)]
@@ -408,6 +416,7 @@ bool dtOverlapPolyPoly2D(const float* polya, const int npolya,
 /// @}
 /// @name Miscellanious functions.
 /// @{
+
 inline unsigned int dtNextPow2(unsigned int v)
 {
 	v--;

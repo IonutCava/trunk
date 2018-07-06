@@ -18,10 +18,11 @@
 
 #include <float.h>
 #include <string.h>
-#include <DetourCrowd/Include/DetourLocalBoundary.h>
-#include <Detour/Include/DetourNavMeshQuery.h>
-#include <Detour/Include/DetourCommon.h>
-#include <Detour/Include/DetourAssert.h>
+#include "DetourLocalBoundary.h"
+#include "DetourNavMeshQuery.h"
+#include "DetourCommon.h"
+#include "DetourAssert.h"
+
 
 dtLocalBoundary::dtLocalBoundary() :
 	m_nsegs(0),
@@ -72,10 +73,10 @@ void dtLocalBoundary::addSegment(const float dist, const float* s)
 			memmove(&m_segs[tgt], &m_segs[i], sizeof(Segment)*n);
 		seg = &m_segs[i];
 	}
-
+	
 	seg->d = dist;
 	memcpy(seg->s, s, sizeof(float)*6);
-
+	
 	if (m_nsegs < MAX_LOCAL_SEGS)
 		m_nsegs++;
 }
@@ -84,7 +85,7 @@ void dtLocalBoundary::update(dtPolyRef ref, const float* pos, const float collis
 							 dtNavMeshQuery* navquery, const dtQueryFilter* filter)
 {
 	static const int MAX_SEGS_PER_POLY = DT_VERTS_PER_POLYGON*3;
-
+	
 	if (!ref)
 	{
 		dtVset(m_center, FLT_MAX,FLT_MAX,FLT_MAX);
@@ -92,13 +93,13 @@ void dtLocalBoundary::update(dtPolyRef ref, const float* pos, const float collis
 		m_npolys = 0;
 		return;
 	}
-
+	
 	dtVcopy(m_center, pos);
-
+	
 	// First query non-overlapping polygons.
 	navquery->findLocalNeighbourhood(ref, pos, collisionQueryRange,
 									 filter, m_polys, 0, &m_npolys, MAX_LOCAL_POLYS);
-
+	
 	// Secondly, store all polygon edges.
 	m_nsegs = 0;
 	float segs[MAX_SEGS_PER_POLY*6];
@@ -123,13 +124,14 @@ bool dtLocalBoundary::isValid(dtNavMeshQuery* navquery, const dtQueryFilter* fil
 {
 	if (!m_npolys)
 		return false;
-
+	
 	// Check that all polygons still pass query filter.
 	for (int i = 0; i < m_npolys; ++i)
 	{
 		if (!navquery->isValidPolyRef(m_polys[i], filter))
 			return false;
 	}
-
+	
 	return true;
 }
+

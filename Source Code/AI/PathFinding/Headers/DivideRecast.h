@@ -66,8 +66,8 @@ namespace AI {
 namespace Navigation {
 
     DEFINE_SINGLETON( DivideRecast )
-        public:
-            
+        protected:
+           friend class NavigationMesh;
            /**
             * Find a path beween start point and end point and, if possible, generates a list of lines in a path.
             * It might fail if the start or end points aren't near any navmesh polygons, or if the path is too long,
@@ -106,19 +106,19 @@ namespace Navigation {
             /**
             * Returns a random point on the navmesh.
             **/
-            vec3<F32> getRandomNavMeshPoint(const NavigationMesh& navMesh);
+            bool getRandomNavMeshPoint(const NavigationMesh& navMesh, vec3<F32>& resultPt);
             /**
             * Returns a random point on the navmesh contained withing the specified circle
             **/
-            vec3<F32> getRandomPointAroundCircle(const NavigationMesh& navMesh, const vec3<F32>& centerPosition, F32 radius);
+            bool getRandomPointAroundCircle(const NavigationMesh& navMesh, const vec3<F32>& centerPosition, F32 radius, const vec3<F32>& extents, vec3<F32>& resultPt, U8 maxIters);
             /**
             * Find a point on the navmesh closest to the specified point position, within predefined
             * bounds.
             * Returns true if such a point is found (returned as resultPt), returns false
             * if no point is found. When false is returned, resultPt is not altered.
             **/
-            bool findNearestPointOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, vec3<F32>& resultPt);
-            bool findNearestPolyOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, vec3<F32>& resultPt, dtPolyRef &resultPoly);
+            bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, const vec3<F32>& extents, F32 delta, vec3<F32>& resultPt, dtPolyRef &resultPoly);
+            bool findNearestPolyOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, const vec3<F32>& extents, vec3<F32>& resultPt, dtPolyRef &resultPoly);
 
         protected:
             DivideRecast();
