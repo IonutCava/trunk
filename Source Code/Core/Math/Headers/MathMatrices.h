@@ -513,14 +513,6 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
 
     mat4(const mat4 &m) : mat4(m.mat) {}
 
-    mat4(const vec4<T> &col1, const vec4<T> &col2, const vec4<T> &col3,
-         const vec4<T> &col4) {
-        this->setCol(0, col1);
-        this->setCol(1, col2);
-        this->setCol(2, col3);
-        this->setCol(3, col4);
-    }
-
     mat4(const vec3<T> &translation, const vec3<T> &scale) : mat4(translation) {
         this->setScale(scale);
     }
@@ -669,54 +661,52 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         this->mat[0] = matrix.mat[0];
         this->mat[4] = matrix.mat[3];
         this->mat[8] = matrix.mat[6];
-        this->mat[12] = 0.0;
+        this->mat[12] = (T)0;
 
         this->mat[1] = matrix.mat[1];
         this->mat[5] = matrix.mat[4];
         this->mat[9] = matrix.mat[7];
-        this->mat[13] = 0.0;
+        this->mat[13] = (T)0;
 
         this->mat[2] = matrix.mat[2];
         this->mat[6] = matrix.mat[5];
         this->mat[10] = matrix.mat[8];
-        this->mat[14] = 0.0;
+        this->mat[14] = (T)0;
 
-        this->mat[3] = 0.0;
-        this->mat[7] = 0.0;
-        this->mat[11] = 0.0;
-        this->mat[15] = 1.0;
-    }
-
-    inline vec4<T>& getRow(I32 index) { 
-        return this->_vec[index];
+        this->mat[3] = (T)0;
+        this->mat[7] = (T)0;
+        this->mat[11] = (T)0;
+        this->mat[15] = (T)0;
     }
 
     inline void setRow(I32 index, const T value) {
-        this->setRow(index, value, value, value, value);
-    }
-
-    inline void setRow(I32 index, const T x, const T y, const T z, const T w) {
-        this->_vec[index].set(x, y, z, w);
+        this->_vec[index].set(value);
     }
 
     inline void setRow(I32 index, const vec4<T> &value) {
         this->_vec[index].set(value);
     }
 
-    inline void setCol(I32 index, const T value) {
-        this->setCol(index, value, value, value, value);
+    inline void setRow(I32 index, const T x, const T y, const T z, const T w) {
+        this->_vec[index].set(x, y, z, w);
     }
 
     inline void setCol(I32 index, const vec4<T> &value) {
         this->setCol(index, value.x, value.y, value.z, value.w);
     }
 
+    inline void setCol(I32 index, const T value) {
+        this->m[0][index] = value;
+        this->m[1][index] = value;
+        this->m[2][index] = value;
+        this->m[3][index] = value;
+    }
+
     inline void setCol(I32 index, const T x, const T y, const T z, const T w) {
-        const I32 columnIndex = index * 4;
-        this->mat[0 + columnIndex] = x;
-        this->mat[1 + columnIndex] = y;
-        this->mat[2 + columnIndex] = z;
-        this->mat[3 + columnIndex] = w;
+        this->m[0][index] = x;
+        this->m[1][index] = y;
+        this->m[2][index] = z;
+        this->m[3][index] = w;
     }
 
     mat4 operator+(const mat4 &matrix) const {
@@ -726,7 +716,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     }
 
     mat4 operator-(const mat4 &matrix) const {
-         mat4<T> retValue;
+        mat4<T> retValue;
         Util::Mat4::Subtract(this->mat, matrix.mat, retValue.mat);
         return retValue;
     }
@@ -838,10 +828,10 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
 
     inline void identity() {
         this->zero();
-        this->mat[0] = 1.0;
-        this->mat[5] = 1.0;
-        this->mat[10] = 1.0;
-        this->mat[15] = 1.0;
+        this->mat[0] = (T)1;
+        this->mat[5] = (T)1;
+        this->mat[10] = (T)1;
+        this->mat[15] = (T)1;
     }
 
     inline void bias() {

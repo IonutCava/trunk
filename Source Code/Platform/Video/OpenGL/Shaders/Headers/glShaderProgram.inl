@@ -248,14 +248,14 @@ void glShaderProgram::Uniform(const stringImpl& ext,
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const mat3<F32>& value,
-                              bool rowMajor) {
-    Uniform(getUniformLocation(ext), value, rowMajor);
+                              bool transpose) {
+    Uniform(getUniformLocation(ext), value, transpose);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const mat4<F32>& value,
-                              bool rowMajor) {
-    Uniform(getUniformLocation(ext), value, rowMajor);
+                              bool transpose) {
+    Uniform(getUniformLocation(ext), value, transpose);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
@@ -285,14 +285,14 @@ void glShaderProgram::Uniform(const stringImpl& ext,
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vectorImpl<mat3<F32> >& values,
-                              bool rowMajor) {
-    Uniform(getUniformLocation(ext), values, rowMajor);
+                              bool transpose) {
+    Uniform(getUniformLocation(ext), values, transpose);
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
                               const vectorImpl<mat4<F32> >& values,
-                              bool rowMajor) {
-    Uniform(getUniformLocation(ext), values, rowMajor);
+                              bool transpose) {
+    Uniform(getUniformLocation(ext), values, transpose);
 }
 
 }; //namespace Divide

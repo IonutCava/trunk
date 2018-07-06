@@ -306,7 +306,7 @@ private:
 };
 
 typedef vectorImpl<TextureData> TextureDataContainer;
-typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES + 1> DrawCommandList;
+typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;
 
 enum class ShaderType : U32;
 class Shader;

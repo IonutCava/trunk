@@ -662,19 +662,19 @@ void glShaderProgram::Uniform(GLint location, const vec4<F32>& value) {
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location, const mat3<F32>& value,
-                              bool rowMajor) {
+                              bool transpose) {
     if (cachedValueUpdate(location, value)) {
         glProgramUniformMatrix3fv(_shaderProgramID, location, 1,
-                                  rowMajor ? GL_TRUE : GL_FALSE, value.mat);
+                                  transpose ? GL_TRUE : GL_FALSE, value.mat);
     }
 }
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location, const mat4<F32>& value,
-                              bool rowMajor) {
+                              bool transpose) {
     if (cachedValueUpdate(location, value)) {
         glProgramUniformMatrix4fv(_shaderProgramID, location, 1,
-                                  rowMajor ? GL_TRUE : GL_FALSE, value.mat);
+                                  transpose ? GL_TRUE : GL_FALSE, value.mat);
     }
 }
 
@@ -734,27 +734,27 @@ void glShaderProgram::Uniform(GLint location,
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location,
                               const vectorImpl<mat3<F32> >& values,
-                              bool rowMajor) {
+                              bool transpose) {
     if (values.empty() || location == -1) {
         return;
     }
 
     glProgramUniformMatrix3fv(_shaderProgramID, location,
                               (GLsizei)values.size(),
-                              rowMajor ? GL_TRUE : GL_FALSE, values.front());
+                              transpose ? GL_TRUE : GL_FALSE, values.front());
 }
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location,
                               const vectorImpl<mat4<F32> >& values,
-                              bool rowMajor) {
+                              bool transpose) {
     if (values.empty() || location == -1) {
         return;
     }
 
     glProgramUniformMatrix4fv(_shaderProgramID, location,
                               (GLsizei)values.size(),
-                              rowMajor ? GL_TRUE : GL_FALSE, values.front());
+                              transpose ? GL_TRUE : GL_FALSE, values.front());
 }
 
 void glShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) {

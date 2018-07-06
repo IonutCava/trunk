@@ -84,44 +84,17 @@ DEFINE_SINGLETON(GFXDevice)
     typedef std::stack<vec4<I32>> ViewportStack;
 
     struct NodeData {
-      private:
-        union {
-            mat4<F32> _matrix[4];
-            F32       _data[4 * 4 * 4];
-        };
-
-      public:
+        mat4<F32> _worldMatrix;
+        mat4<F32> _normalMatrix;
+        mat4<F32> _colorMatrix;
+        vec4<F32> _properties;
+        vec4<F32> _boundingSphere;
 
         NodeData()
         {
-            worldMatrix().identity();
-            normalMatrix().identity();
-            colorMatrix().zero();
-            propertyMatrix().zero();
-        }
-
-        inline mat4<F32>& worldMatrix() {
-            return _matrix[0];
-        }
-
-        inline mat4<F32>& normalMatrix() {
-            return _matrix[1];
-        }
-
-        inline mat4<F32>& colorMatrix() {
-            return _matrix[2];
-        }
-
-        inline mat4<F32>& propertyMatrix() {
-            return _matrix[3];
-        }
-
-        inline void boundingSphere(const vec4<F32>& bSphere) {
-            return propertyMatrix().setRow(2, bSphere);
-        }
-
-        inline F32* data() {
-            return _data;
+            _worldMatrix.identity();
+            _normalMatrix.identity();
+            _colorMatrix.zero();
         }
         void set(const NodeData& other);
     };
@@ -610,7 +583,7 @@ DEFINE_SINGLETON(GFXDevice)
     GPUBlock _gpuBlock;
 
     DrawCommandList _drawCommandsCache;
-    std::array<NodeData, Config::MAX_VISIBLE_NODES + 1> _matricesData;
+    std::array<NodeData, Config::MAX_VISIBLE_NODES> _matricesData;
     U32 _lastCommandCount;
     U32 _lastNodeCount;
     RenderQueue _renderQueue;

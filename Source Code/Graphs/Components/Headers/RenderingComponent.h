@@ -96,7 +96,7 @@ class RenderingComponent : public SGNComponent {
 
     void getMaterialColorMatrix(mat4<F32>& matOut) const;
 
-    void getMaterialPropertyMatrix(mat4<F32>& matOut) const;
+    void getRenderingProperties(vec4<F32>& propertiesOut) const;
 
     inline Material* const getMaterialInstance() const { return _materialInstance; }
 

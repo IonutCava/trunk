@@ -270,27 +270,15 @@ void RenderingComponent::getMaterialColorMatrix(mat4<F32>& matOut) const {
     }
 }
 
-void RenderingComponent::getMaterialPropertyMatrix(mat4<F32>& matOut) const {
-    matOut.zero();
-    matOut.setRow(0,
-                  vec4<F32>(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
-                                                          ? -1.0f
-                                                          : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_HOVER
-                                                                                          ? 1.0f
-                                                                                          : 0.0f,
-                           receivesShadows() ? 1.0f : 0.0f,
-                           to_float(lodLevel()),
-                           0.0));
-    Material* mat = getMaterialInstance();
-    if (mat) {
-        bool isTranslucent = mat->isTranslucent() ? mat->useAlphaTest() : false;
-
-        matOut.setRow(1,
-                      vec4<F32>(isTranslucent ? 1.0f : 0.0f,
-                                to_float(mat->getTextureOperation()),
-                                to_float(mat->getTextureCount()),
-                                mat->getParallaxFactor()));
-    }
+void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut) const {
+    propertiesOut.set(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
+                                                     ? -1.0f
+                                                     : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_HOVER
+                                                                                      ? 1.0f
+                                                                                      : 0.0f,
+                      receivesShadows() ? 1.0f : 0.0f,
+                      to_float(lodLevel()),
+                      0.0);
 }
 
 bool RenderingComponent::preDraw(const SceneRenderState& renderState,

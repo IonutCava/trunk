@@ -337,19 +337,14 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix(bool& matrixRebuilt,
     getWorldMatrix(matrixRebuilt, interpolationFactor, local);
     if (matrixRebuilt) {
         _normalMatrix.set(_worldMatrix);
-        _normalMatrix.setCol(3, 0.0f, 0.0f, 0.0f, 0.0f);
-
         if (!isUniformScaled()) {
             // Non-uniform scaling requires an inverseTranspose to negate
             // scaling contribution but preserve rotation
             _normalMatrix.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
             _normalMatrix.inverseTranspose();
             _normalMatrix.mat[15] = 0.0f;
-        } else {
-            // If the world matrix is uniform scaled, inverseTranspose is a
-            // double transpose (no-op) so we can skip it
-            _normalMatrix.setRow(3, 0.0f);
         }
+        _normalMatrix.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
     }
     normalMatrixOut.set(_normalMatrix);
     return _worldMatrix;

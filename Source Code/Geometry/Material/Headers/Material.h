@@ -330,11 +330,7 @@ class Material : public Resource {
 
     void getSortKeys(I32& shaderKey, I32& textureKey) const;
 
-    inline void getMaterialMatrix(mat4<F32>& retMatrix) const {
-        retMatrix.setCol(1, _shaderData._diffuse);
-        retMatrix.setCol(2, _shaderData._specular);
-        retMatrix.setCol(3, vec4<F32>(_shaderData._emissive.rgb(), _shaderData._shininess));
-    }
+    void getMaterialMatrix(mat4<F32>& retMatrix) const;
 
     inline F32 getParallaxFactor() const { return _parallaxFactor; }
     inline U8  getTextureCount()   const { return _shaderData._textureCount; }
@@ -355,6 +351,7 @@ class Material : public Resource {
 
     void clean();
     bool isTranslucent();
+    inline bool isTranslucent() const { return !_translucencySource.empty(); }
 
     inline void dumpToFile(bool state) { _dumpToFile = state; }
     inline bool isDirty() const { return _dirty; }

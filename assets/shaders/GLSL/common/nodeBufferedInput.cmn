@@ -7,15 +7,13 @@ struct NodeData {
     mat4 _worldMatrix;
     mat4 _normalMatrix;
     mat4 _colorMatrix;
-    vec4 dvd_integerValues;
-    vec4 dvd_BufferMatProperties;
-    vec4 dvd_boundingSphere;
-    vec4 _padding_reserved;
+    vec4 _properties;
+    vec4 _boundingSphere;
 };
 
 layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBlock
 {
-    NodeData dvd_Matrices[MAX_VISIBLE_NODES + 1];
+    NodeData dvd_Matrices[MAX_VISIBLE_NODES];
 };
 
 mat4 dvd_WorldMatrix() {
@@ -27,7 +25,7 @@ mat3 dvd_NormalMatrix() {
 }
 
 ivec4 dvd_BufferIntegerValues() {
-    return ivec4(dvd_Matrices[dvd_drawID].dvd_integerValues);
+    return ivec4(dvd_Matrices[dvd_drawID]._properties);
 }
 
 #if defined(VERT_SHADER)
@@ -39,7 +37,7 @@ ivec4 dvd_BufferIntegerValues() {
 
 #if defined(FRAG_SHADER)
 // x - useAlphaTest; y - textureOperation; z - textureCount, w - parallax/relief mapping factor
-#define buffer_matProperties dvd_Matrices[dvd_drawID].dvd_BufferMatProperties 
+#define buffer_matProperties dvd_Matrices[dvd_drawID]._colorMatrix[3]
 
 #define dvd_isSelected     (dvd_BufferIntegerValues().x < -0.5)
 #define dvd_isHighlighted  (dvd_BufferIntegerValues().x >  0.5)
@@ -49,10 +47,10 @@ ivec4 dvd_BufferIntegerValues() {
 #define dvd_textureCount   uint(buffer_matProperties.z)
 #define dvd_parallaxFactor buffer_matProperties.w
 #define dvd_reliefFactor   dvd_parallaxFactor
-#define dvd_MatDiffuse     dvd_Matrices[dvd_drawID]._colorMatrix[1]
-#define dvd_MatSpecular    dvd_Matrices[dvd_drawID]._colorMatrix[2].rgb
-#define dvd_MatEmissive    dvd_Matrices[dvd_drawID]._colorMatrix[3].rgb
-#define dvd_MatShininess   dvd_Matrices[dvd_drawID]._colorMatrix[3].w
+#define dvd_MatDiffuse     dvd_Matrices[dvd_drawID]._colorMatrix[0]
+#define dvd_MatSpecular    dvd_Matrices[dvd_drawID]._colorMatrix[1].rgb
+#define dvd_MatEmissive    dvd_Matrices[dvd_drawID]._colorMatrix[2].rgb
+#define dvd_MatShininess   dvd_Matrices[dvd_drawID]._colorMatrix[2].w
 
 #endif
 

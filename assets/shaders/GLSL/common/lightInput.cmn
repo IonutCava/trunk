@@ -54,13 +54,13 @@ layout(binding = BUFFER_LIGHT_INDICES, std430) coherent ACCESS buffer perTileLig
 
 #if defined(FRAG_SHADER)
 struct Shadow {
+    uvec4 _arrayOffset;
     mat4  _lightVP[MAX_SPLITS_PER_LIGHT];
     vec4  _lightPosition[MAX_SPLITS_PER_LIGHT];
     vec4  _floatValues[MAX_SPLITS_PER_LIGHT];
-    uvec4 _arrayOffset;
 };
 
-layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
+layout(binding = BUFFER_LIGHT_SHADOW, std430) coherent ACCESS buffer dvd_ShadowBlock
 {
     Shadow dvd_ShadowSource[MAX_SHADOW_CASTING_LIGHTS];
 };

@@ -77,10 +77,10 @@ class d3dShaderProgram final : public ShaderProgram {
     void Uniform(const stringImpl& ext, const vec4<F32>& value) override {}
     void Uniform(const stringImpl& ext,
                  const mat3<F32>& value,
-                 bool rowMajor = false) override {}
+                 bool transpose = false) override {}
     void Uniform(const stringImpl& ext,
                  const mat4<F32>& value,
-                 bool rowMajor = false) override {}
+                 bool transpose = false) override {}
     void Uniform(const stringImpl& ext, const vectorImpl<I32>& values) override {}
     void Uniform(const stringImpl& ext, const vectorImpl<F32>& values) override {}
     void Uniform(const stringImpl& ext, const vectorImpl<vec2<F32> >& values) override {}
@@ -88,10 +88,10 @@ class d3dShaderProgram final : public ShaderProgram {
     void Uniform(const stringImpl& ext, const vectorImpl<vec4<F32> >& values) override {}
     void Uniform(const stringImpl& ext,
                  const vectorImpl<mat3<F32> >& values,
-                 bool rowMajor = false) override {}
+                 bool transpose = false) override {}
     void Uniform(const stringImpl& ext,
                  const vectorImpl<mat4<F32> >& values,
-                 bool rowMajor = false) override {}
+                 bool transpose = false) override {}
 
     void Uniform(I32 location, U32 value) override {}
     void Uniform(I32 location, I32 value) override {}
@@ -100,8 +100,8 @@ class d3dShaderProgram final : public ShaderProgram {
     void Uniform(I32 location, const vec2<I32>& value) override {}
     void Uniform(I32 location, const vec3<F32>& value) override {}
     void Uniform(I32 location, const vec4<F32>& value) override {}
-    void Uniform(I32 location, const mat3<F32>& value, bool rowMajor = false) override {}
-    void Uniform(I32 location, const mat4<F32>& value, bool rowMajor = false) override {}
+    void Uniform(I32 location, const mat3<F32>& value, bool transpose = false) override {}
+    void Uniform(I32 location, const mat4<F32>& value, bool transpose = false) override {}
     void Uniform(I32 location, const vectorImpl<I32>& values) override {}
     void Uniform(I32 location, const vectorImpl<F32>& values) override {}
     void Uniform(I32 location, const vectorImpl<vec2<F32> >& values) override {}
@@ -109,10 +109,10 @@ class d3dShaderProgram final : public ShaderProgram {
     void Uniform(I32 location, const vectorImpl<vec4<F32> >& values) override {}
     void Uniform(I32 location,
                  const vectorImpl<mat3<F32> >& values,
-                 bool rowMajor = false) override {}
+                 bool transpose = false) override {}
     void Uniform(I32 location,
                  const vectorImpl<mat4<F32> >& values,
-                 bool rowMajor = false) override {}
+                 bool transpose = false) override {}
     I32 getUniformLocation(const stringImpl& name) override { return -1; }
     void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) override {}
 

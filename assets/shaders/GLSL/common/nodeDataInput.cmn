@@ -12,7 +12,7 @@ struct IndirectDrawCommand {
 
 layout(binding = BUFFER_GPU_COMMANDS, std430) coherent buffer dvd_GPUCmds
 {
-    IndirectDrawCommand dvd_drawCommands[MAX_VISIBLE_NODES + 1];
+    IndirectDrawCommand dvd_drawCommands[MAX_VISIBLE_NODES];
 };
 #endif
 

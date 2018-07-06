@@ -53,20 +53,20 @@ class SceneRenderState;
 class Light : public SceneNode {
    public:
        struct ShadowProperties {
+           vec4<U32> _arrayOffset;
            /// light viewProjection matrices
            mat4<F32> _lightVP[Config::Lighting::MAX_SPLITS_PER_LIGHT];
            /// light's position in world space
            vec4<F32> _lightPosition[Config::Lighting::MAX_SPLITS_PER_LIGHT];
            /// random float values (e.g. split distances)
            vec4<F32> _floatValues[Config::Lighting::MAX_SPLITS_PER_LIGHT];
-           vec4<U32> _arrayOffset;
 
            inline void set(const ShadowProperties& other) {
+               _arrayOffset.set(other._arrayOffset);
                for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
                    _lightVP[i].set(other._lightVP[i]);
                    _lightPosition[i].set(other._lightPosition[i]);
                    _floatValues[i].set(other._floatValues[i]);
-                   _arrayOffset.set(other._arrayOffset);
                }
            }
        };

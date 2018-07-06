@@ -81,7 +81,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         RenderStageBuffer& cmdBuffers = _indirectCommandBuffers[i];
         for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
             cmdBuffers[j].reset(newSB(Util::StringFormat("dvd_GPUCmds%d_%d", i, j), 1, true, false, BufferUpdateFrequency::OFTEN));
-            cmdBuffers[j]->create(Config::MAX_VISIBLE_NODES + 1, sizeof(IndirectDrawCommand));
+            cmdBuffers[j]->create(to_uint(_drawCommandsCache.size()), sizeof(_drawCommandsCache.front()));
             cmdBuffers[j]->addAtomicCounter(3);
         }
     }
@@ -90,7 +90,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         RenderStageBuffer& nodeBuffers = _nodeBuffers[i];
         for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
             nodeBuffers[j].reset(newSB(Util::StringFormat("dvd_MatrixBlock%d_%d", i, j), 1, true, true, BufferUpdateFrequency::OFTEN));
-            nodeBuffers[j]->create(Config::MAX_VISIBLE_NODES + 1, sizeof(NodeData));
+            nodeBuffers[j]->create(to_uint(_matricesData.size()), sizeof(_matricesData.front()));
         }
     }
 

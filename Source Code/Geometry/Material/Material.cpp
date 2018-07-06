@@ -623,4 +623,11 @@ void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
     Texture* albedoTex = getTexture(ShaderProgram::TextureUsage::UNIT0);
     textureKey = albedoTex ? albedoTex->getHandle() : invalidShaderKey;
 }
+
+void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
+    retMatrix.setRow(0, _shaderData._diffuse);
+    retMatrix.setRow(1, _shaderData._specular);
+    retMatrix.setRow(2, vec4<F32>(_shaderData._emissive.rgb(), _shaderData._shininess));
+    retMatrix.setRow(3, vec4<F32>(isTranslucent() ? 1.0f : 0.0f,  to_float(getTextureOperation()), to_float(getTextureCount()), getParallaxFactor()));
+}
 };

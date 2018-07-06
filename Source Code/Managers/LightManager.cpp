@@ -68,9 +68,10 @@ void LightManager::init() {
     // SHADOWS holds info about the currently active shadow
     // casting lights:
     // ViewProjection Matrices, View Space Position, etc
+    // Should be SSBO (not UBO) to use std430 alignment. Structures should not be padded
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)] = GFX_DEVICE.newSB("dvd_ShadowBlock",
                                                                              1,
-                                                                             false,
+                                                                             true,
                                                                              false,
                                                                              BufferUpdateFrequency::OCASSIONAL);
 
