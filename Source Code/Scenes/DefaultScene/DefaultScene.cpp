@@ -4,6 +4,8 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 
+#include "Dynamics/Entities/Units/Headers/Player.h"
+
 namespace Divide {
 DefaultScene::DefaultScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
     : Scene(context, cache, parent, name)
@@ -56,6 +58,7 @@ void DefaultScene::postLoadMainThread() {
     const I32 btnStartYOffset = to_int(windowCenterY - numRows * 0.5f * btnHeight);
     const I32 quitButtonWidth = 100;
     const I32 quitButtonHeight = 100;
+    const I32 playerButtonHeight = 25;
 
     size_t i = 0, j = 0;
     for (const stringImpl& scene : scenes) {
@@ -79,6 +82,36 @@ void DefaultScene::postLoadMainThread() {
         vec2<I32>(resolution.width - quitButtonWidth * 1.5f, resolution.height - quitButtonHeight * 1.5f),
         vec2<U32>(quitButtonWidth, quitButtonHeight),
         [](I64 btnGUID) {Application::instance().RequestShutdown(); });
+
+    _GUI->addButton(_ID_RT("AddPlayer"), "Add Player",
+        vec2<I32>(0, resolution.height - playerButtonHeight * 1.5f),
+        vec2<U32>(quitButtonWidth, playerButtonHeight),
+        [this](I64 btnGUID) {
+
+        const SceneManager::PlayerList& scenePlayers = _parent.getPlayers();
+
+        SceneGraphNode& root = _sceneGraph->getRoot();
+        SceneGraphNode_ptr playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache)),
+                                                    to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                                    to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                                    to_const_uint(SGNComponent::ComponentType::BOUNDS),
+                                                    PhysicsGroup::GROUP_KINEMATIC,
+                                                    Util::StringFormat("Player %d", scenePlayers.size()));
+
+        _scenePlayers.emplace_back(MemoryManager_NEW Player(playerSGN));
+        _parent.addPlayer(_scenePlayers.back());
+    });
+
+    _GUI->addButton(_ID_RT("RemovePlayer"), "Remove Player",
+        vec2<I32>(0, resolution.height - playerButtonHeight * 1.5f - playerButtonHeight * 1.5f),
+        vec2<U32>(quitButtonWidth, playerButtonHeight),
+        [this](I64 btnGUID) {
+
+        if (_scenePlayers.size() > 1) {
+            _parent.removePlayer(_scenePlayers.back());
+            _scenePlayers.pop_back();
+        }
+    });
 
     _GUI->addText(_ID("globalMessage"),
         vec2<I32>(windowCenterX,
