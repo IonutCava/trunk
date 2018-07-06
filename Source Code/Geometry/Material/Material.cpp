@@ -467,8 +467,6 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
 
 void Material::getTextureData(TextureDataContainer& textureData) {
     textureData.reserve(to_uint(ShaderProgram::TextureUsage::COUNT) + _customTextures.size());
-    getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
-    getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
 
     if (!GFX_DEVICE.isDepthStage()) {
         getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData);
@@ -480,6 +478,15 @@ void Material::getTextureData(TextureDataContainer& textureData) {
                 TextureData data = tex.first->getData();
                 data.setHandleLow(to_uint(tex.second));
                 textureData.push_back(data);
+            }
+        }
+    } else {
+        for (Material::TranslucencySource source : _translucencySource) {
+            if (source == TranslucencySource::OPACITY_MAP) {
+                getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
+            }
+            if (source == TranslucencySource::DIFFUSE_MAP) {
+                getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
             }
         }
     }

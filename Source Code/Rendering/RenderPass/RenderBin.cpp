@@ -30,18 +30,6 @@ RenderBinItem::RenderBinItem(I32 sortKeyA,
     _stateHash = nodeMaterial->getRenderStateBlock(GFX_DEVICE.getRenderStage());
 }
 
-struct RenderQueueDistanceBacktoFront {
-    bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
-        return a._distanceToCameraSq < b._distanceToCameraSq;
-    }
-};
-
-struct RenderQueueDistanceFrontToBack {
-    bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
-        return a._distanceToCameraSq > b._distanceToCameraSq;
-    }
-};
-
 /// Sorting opaque items is a 3 step process:
 /// 1: sort by shaders
 /// 2: if the shader is identical, sort by state hash
@@ -61,6 +49,26 @@ struct RenderQueueKeyCompare {
         // If both the shader are the same and the state hashes match,
         // we sort by the secondary key (usually the texture id)
         return a._sortKeyB < b._sortKeyB;
+    }
+};
+
+struct RenderQueueDistanceBacktoFront {
+    bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
+        if (a._distanceToCameraSq != b._distanceToCameraSq) {
+            return a._distanceToCameraSq < b._distanceToCameraSq;
+        }
+         
+         return RenderQueueKeyCompare()(a, b);
+    }
+};
+
+struct RenderQueueDistanceFrontToBack {
+    bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
+        if (a._distanceToCameraSq != b._distanceToCameraSq) {
+            return a._distanceToCameraSq > b._distanceToCameraSq;
+        }
+
+        return RenderQueueKeyCompare()(a, b);
     }
 };
 
