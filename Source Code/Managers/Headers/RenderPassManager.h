@@ -107,7 +107,7 @@ private:
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
 
     ShaderProgram_ptr _OITCompositionShader;
-
+    Time::ProfileTimer* _postFxRenderTimer;
     std::array<vectorEASTL<RenderPackage*>, to_base(RenderStage::COUNT)> _renderQueues;
 };
 

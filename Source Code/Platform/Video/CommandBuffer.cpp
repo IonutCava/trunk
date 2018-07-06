@@ -11,15 +11,18 @@ namespace GFX {
 
 CommandBuffer::CommandBuffer()
 {
+#if defined(USE_BOOST_POLY)
     // Most common command buffer elements
     _commands.register_types<BindPipelineCommand,
                              SendPushConstantsCommand,
                              BindDescriptorSetsCommand,
                              DrawCommand>();
+#endif
+
     _commands.reserve(4);
 }
 
-
+#if defined(USE_BOOST_POLY)
 const std::type_info& CommandBuffer::getType(GFX::CommandType type) const {
     switch (type) {
         case GFX::CommandType::BEGIN_RENDER_PASS:     return typeid(BeginRenderPassCommand);
@@ -50,11 +53,13 @@ const std::type_info& CommandBuffer::getType(GFX::CommandType type) const {
 
     return typeid(DrawCommand);
 }
+#endif
 
 void CommandBuffer::add(const CommandBuffer& other) {
     if (!other.empty()) {
         for (const CommandEntry& cmd : other._commandOrder) {
-            add(*(other._commands.begin(getType(cmd.first)) + cmd.second));
+            const CommandBase& command = other.getCommand<CommandBase>(cmd);
+            command.addToBuffer(*this);
         }
     }
 }

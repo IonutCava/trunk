@@ -58,7 +58,7 @@ DEFINE_SINGLETON(PostFX)
     ~PostFX();
 
   public:
-    void apply();
+    void apply(GFX::CommandBuffer& bufferInOut);
 
     void init(GFXDevice& context, ResourceCache& cache);
     void idle(const Configuration& config);

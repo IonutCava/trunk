@@ -94,7 +94,7 @@ public:
     bool init(PlatformContext& platformContext, ResourceCache& cache);
     void destroy();
 
-    U32 getActivePlayerCount() const;
+    inline U8 getActivePlayerCount() const { return _activePlayerCount; }
 
     inline void addSelectionCallback(const DELEGATE_CBK<void, U8, SceneGraphNode*>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
@@ -230,6 +230,7 @@ private:
     typedef std::array<Time::ProfileTimer*, to_base(RenderStage::COUNT)> CullTimersPerPass;
     std::array<CullTimersPerPass, to_base(RenderPassType::COUNT)> _sceneGraphCullTimers;
     PlayerList _players;
+    U8 _activePlayerCount;
 
     std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerAddQueue;
     std::queue<std::pair<Scene*, Player_ptr>>  _playerRemoveQueue;

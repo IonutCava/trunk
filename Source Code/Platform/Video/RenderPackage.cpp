@@ -87,8 +87,7 @@ void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
 }
 
 void RenderPackage::setDrawOption(CmdRenderOptions option, bool state) {
-    for (I32 cmdIdx = 0; cmdIdx < drawCommandCount(); ++cmdIdx) {
-        GFX::DrawCommand& cmd = _drawCommands[cmdIdx];
+    for (GFX::DrawCommand& cmd : _drawCommands) {
         for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
             setOption(drawCmd, option, state);
         }
@@ -96,8 +95,7 @@ void RenderPackage::setDrawOption(CmdRenderOptions option, bool state) {
 }
 
 void RenderPackage::setLoD(U8 LoDIntex) {
-    for (I32 cmdIdx = 0; cmdIdx < drawCommandCount(); ++cmdIdx) {
-        GFX::DrawCommand& cmd = _drawCommands[cmdIdx];
+    for (GFX::DrawCommand& cmd : _drawCommands) {
         for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
             drawCmd._lodIndex = LoDIntex;
         }
@@ -222,8 +220,7 @@ void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
 
 void RenderPackage::setDataIndex(U32 dataIndex) {
     bool dirty = false;
-    for (I32 cmdIdx = 0; cmdIdx < drawCommandCount(); ++cmdIdx) {
-        GFX::DrawCommand& cmd = _drawCommands[cmdIdx];
+    for (GFX::DrawCommand& cmd : _drawCommands) {
         for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
             if (drawCmd._cmd.baseInstance != dataIndex) {
                 drawCmd._cmd.baseInstance = dataIndex;
@@ -238,8 +235,7 @@ void RenderPackage::setDataIndex(U32 dataIndex) {
 
 void RenderPackage::updateDrawCommands(U32 startOffset) {
     bool dirty = false;
-    for (I32 cmdIdx = 0; cmdIdx < drawCommandCount(); ++cmdIdx) {
-        GFX::DrawCommand& cmd = _drawCommands[cmdIdx];
+    for (GFX::DrawCommand& cmd : _drawCommands) {
         for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
             if (drawCmd._commandOffset != startOffset) {
                 drawCmd._commandOffset = startOffset;

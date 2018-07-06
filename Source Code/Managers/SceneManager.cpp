@@ -48,6 +48,7 @@ SceneManager::SceneManager(Kernel& parentKernel)
       _processInput(false),
       _scenePool(nullptr),
       _init(false),
+      _activePlayerCount(0),
       _elapsedTime(0ULL),
       _elapsedTimeMS(0),
       _currentPlayerPass(0),
@@ -345,7 +346,9 @@ void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerN
         playerNode->get<UnitComponent>()->setUnit(player);
 
         _players[i] = player;
-        _platformContext->gfx().resizeHistory(to_U8(getActivePlayerCount()));
+        ++_activePlayerCount;
+
+        _platformContext->gfx().resizeHistory(_activePlayerCount);
         Attorney::SceneManager::onPlayerAdd(parentScene, player);
     }
 }
@@ -360,32 +363,19 @@ void SceneManager::removePlayer(Scene& parentScene, Player_ptr& player, bool que
 
 void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) {
     if (player) {
-        bool found = false;
         I64 targetGUID = player->getGUID();
         for (U32 i = 0; i < Config::MAX_LOCAL_PLAYER_COUNT; ++i) {
             if (_players[i] != nullptr && _players[i]->getGUID() == targetGUID) {
                 _players[i] = nullptr;
-                found = true;
+                --_activePlayerCount;
+                _platformContext->gfx().resizeHistory(_activePlayerCount);
+                Attorney::SceneManager::onPlayerRemove(parentScene, player);
+                break;
             }
         }
 
-        if (found) {
-            _platformContext->gfx().resizeHistory(to_U8(getActivePlayerCount()));
-            Attorney::SceneManager::onPlayerRemove(parentScene, player);
-        }
         player.reset();
     }
-}
-
-
-U32 SceneManager::getActivePlayerCount() const {
-    U32 ret = 0;
-    for (const Player_ptr& player : _players) {
-        if (player != nullptr) {
-            ++ret;
-        }
-    }
-    return ret;
 }
 
 bool SceneManager::frameStarted(const FrameEvent& evt) {

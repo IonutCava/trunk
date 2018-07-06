@@ -6,8 +6,10 @@
 #include "Core/Headers/TaskPool.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
@@ -18,42 +20,61 @@
 
 namespace Divide {
 
+namespace {
+    thread_local vectorEASTL<GFXDevice::NodeData> g_nodeData;
+    thread_local vectorEASTL<IndirectDrawCommand> g_drawCommands;
+};
+
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
     : KernelComponent(parent),
      _renderQueue(parent),
-     _context(context)
+     _context(context),
+     _postFxRenderTimer(&Time::ADD_TIMER("PostFX Timer"))
 {
     ResourceDescriptor shaderDesc("OITComposition");
     _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderDesc);
+    _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer(true));
 }
 
 RenderPassManager::~RenderPassManager()
 {
     for (GFX::CommandBuffer*& buf : _renderPassCommandBuffer) {
-        GFX::deallocateCommandBuffer(buf);
+        GFX::deallocateCommandBuffer(buf, true);
     }
 }
 
 void RenderPassManager::render(SceneRenderState& sceneRenderState) {
+    TaskPriority priority = Config::USE_THREADED_COMMAND_GENERATION ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+
     TaskPool& pool = parent().platformContext().taskPool();
-    TaskHandle renderTarsk = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
+    TaskHandle renderTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
 
     for (vec_size_eastl i = 0; i < _renderPasses.size(); ++i) {
         std::shared_ptr<RenderPass>& rp = _renderPasses[i];
         GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
         CreateTask(pool,
-            &renderTarsk,
-            [&rp, &buf, &sceneRenderState](const Task& parentTask) {
-                buf.clear();
-                rp->render(sceneRenderState, buf);
-            }).startTask(Config::USE_THREADED_COMMAND_GENERATION ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
+                   &renderTask,
+                   [&rp, &buf, &sceneRenderState](const Task& parentTask) {
+                       buf.clear();
+                       rp->render(sceneRenderState, buf);
+                       buf.batch();
+                   }).startTask(priority);
     }
 
-    renderTarsk.startTask(Config::USE_THREADED_COMMAND_GENERATION ? TaskPriority::DONT_CARE : TaskPriority::REALTIME).wait();
+    CreateTask(pool,
+               &renderTask,
+               [this](const Task& parentTask) {
+                  Time::ScopedTimer time3(*_postFxRenderTimer);
+                  GFX::CommandBuffer& buf = *_renderPassCommandBuffer.back();
+                  buf.clear();
+                  PostFX::instance().apply(buf);
+                  buf.batch();
+               }).startTask(priority);
 
-    
+    renderTask.startTask(priority).wait();
+
     //ToDo: Maybe handle this differently?
-#if 1 //Direct render and clear
+#if 0 //Direct render and clear
     for (vec_size_eastl i = 0; i < _renderPassCommandBuffer.size(); ++i) {
         _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
     }
@@ -62,7 +83,6 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState) {
     for (vec_size_eastl i = 0; i < _renderPassCommandBuffer.size(); ++i) {
         GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
         sBuffer().add(buf);
-        buf.clear();
     }
     _context.flushCommandBuffer(sBuffer());
 #endif
@@ -74,7 +94,7 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
     assert(!renderPassName.empty());
 
     _renderPasses.push_back(std::make_shared<RenderPass>(*this, _context, renderPassName, orderKey, renderStage));
-    _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer());
+    _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer(true));
 
     std::shared_ptr<RenderPass>& item = _renderPasses.back();
 
@@ -94,7 +114,7 @@ void RenderPassManager::removeRenderPass(const stringImpl& name) {
             _renderPasses.erase(it);
             // Remove one command buffer
             GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
-            GFX::deallocateCommandBuffer(buf);
+            GFX::deallocateCommandBuffer(buf, true);
             _renderPassCommandBuffer.pop_back();
             break;
         }
@@ -193,35 +213,35 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassPar
     RenderQueue::SortedQueues sortedQueues = getQueue().getSortedQueues(stagePass._stage);
 
     const mat4<F32>& viewMatrix = params._camera->getViewMatrix();
-    vectorEASTL<GFXDevice::NodeData> nodeData;
-    nodeData.reserve(sortedQueues.size() * Config::MAX_VISIBLE_NODES);
+    g_nodeData.resize(0);
+    g_nodeData.reserve(sortedQueues.size() * Config::MAX_VISIBLE_NODES);
 
-    vectorEASTL<IndirectDrawCommand> drawCommands;
-    drawCommands.reserve(Config::MAX_VISIBLE_NODES);
+    g_drawCommands.resize(0);
+    g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);
 
     for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
-            Attorney::RenderingCompRenderPass::setDataIndex(renderable, to_U32(nodeData.size()));
+            Attorney::RenderingCompRenderPass::setDataIndex(renderable, to_U32(g_nodeData.size()));
             if (Attorney::RenderingCompRenderPass::hasDrawCommands(renderable, stagePass._stage)) {
-                nodeData.push_back(processVisibleNode(node, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), sceneRenderState, viewMatrix));
-                Attorney::RenderingCompRenderPass::updateDrawCommands(renderable, stagePass._stage, drawCommands);
+                g_nodeData.push_back(processVisibleNode(node, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), sceneRenderState, viewMatrix));
+                Attorney::RenderingCompRenderPass::updateDrawCommands(renderable, stagePass._stage, g_drawCommands);
             }
         }
     }
 
     RenderPass::BufferData& bufferData = getBufferData(stagePass._stage, params._pass);
-    bufferData._lastCommandCount = to_U32(drawCommands.size());
+    bufferData._lastCommandCount = to_U32(g_drawCommands.size());
 
-    assert(bufferData._lastCommandCount >= to_U32(nodeData.size()));
+    assert(bufferData._lastCommandCount >= to_U32(g_nodeData.size()));
     // If the buffer update required is large enough, just replace the entire thing
-    if (nodeData.size() > Config::MAX_VISIBLE_NODES / 2) {
-        bufferData._renderData->writeData(nodeData.data());
+    if (g_nodeData.size() > Config::MAX_VISIBLE_NODES / 2) {
+        bufferData._renderData->writeData(g_nodeData.data());
     } else { // Otherwise, just update the needed range to save bandwidth
-        bufferData._renderData->writeData(0, nodeData.size(), nodeData.data());
+        bufferData._renderData->writeData(0, g_nodeData.size(), g_nodeData.data());
     }
 
-    bufferData._cmdBuffer->writeData(drawCommands.data());
+    bufferData._cmdBuffer->writeData(g_drawCommands.data());
 
     ShaderBufferBinding shaderBufferCmds;
     shaderBufferCmds._binding = ShaderBufferLocation::CMD_BUFFER;
@@ -230,7 +250,7 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassPar
     ShaderBufferBinding shaderBufferData;
     shaderBufferData._binding = ShaderBufferLocation::NODE_INFO;
     shaderBufferData._buffer = bufferData._renderData;
-    shaderBufferData._range = vec2<U16>(0, to_U16(nodeData.size()));
+    shaderBufferData._range = vec2<U16>(0, to_U16(g_nodeData.size()));
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set = _context.newDescriptorSet();

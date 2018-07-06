@@ -33,6 +33,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _GFX_COMMAND_H_
 #define _GFX_COMMAND_H_
 
+#ifndef USE_BOOST_POLY
+//#define USE_BOOST_POLY
+#endif
+
 #include "GenericDrawCommand.h"
 #include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
@@ -75,14 +79,18 @@ enum class CommandType : U8 {
 
 class CommandBuffer;
 
-struct CommandBase {
+struct CommandBase 
+#if !defined(USE_BOOST_POLY)
+    : public std::enable_shared_from_this<CommandBase>
+#endif
+{
     CommandBase() : CommandBase(CommandType::COUNT, "null") {}
     CommandBase(CommandType type, const char* typeName) : _type(type), _typeName(typeName) {}
 
     virtual ~CommandBase() = default;
 
     virtual const std::type_info& type() const = 0;
-    virtual bool onBufferAdd(CommandBuffer& buffer) const = 0;
+    virtual bool addToBuffer(CommandBuffer& buffer) const = 0;
 
     virtual const char* toString() const { return _typeName; }
 
@@ -90,14 +98,20 @@ struct CommandBase {
     const char* _typeName = nullptr;;
 };
 
+
 template<typename T, CommandType enumVal>
 struct Command : public CommandBase {
     Command() : CommandBase(enumVal, TO_STRING(enumVal)) { }
     
     virtual ~Command() = default;
 
-    bool onBufferAdd(CommandBuffer& buffer) const override {
-        return buffer.registerType<T>();
+    bool addToBuffer(CommandBuffer& buffer) const override {
+        if (buffer.registerType<T>()) {
+            buffer.add(*this);
+            return true;
+        }
+
+        return false;
     }
 
     const std::type_info& type() const override { return typeid (T); };
