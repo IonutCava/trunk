@@ -239,9 +239,10 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     TextureDataContainer _textureCache;
     ShaderBufferList _shaderBuffersCache;
 
-    hashMapImpl<U32, GFXDevice::DebugView_ptr> _debugViews[2];
     ShaderProgram_ptr _previewRenderTargetColour;
     ShaderProgram_ptr _previewRenderTargetDepth;
+
+    static hashMapImpl<U32, GFXDevice::DebugView_ptr> s_debugViews[2];
 };
 
 namespace Attorney {

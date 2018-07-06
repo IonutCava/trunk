@@ -20,7 +20,7 @@ namespace Divide {
 
 void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
     static DebugView* HiZPtr;
-    static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, UColour(255), 96).getHash();
+    static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, UColour(128), 96).getHash();
 
     // As this is touched once per frame, we'll only enable it in debug builds
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -47,7 +47,8 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             DebugView_ptr DepthPreview = std::make_shared<DebugView>();
             DepthPreview->_shader = _previewDepthMapShader;
             DepthPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
-            DepthPreview->_shaderData.set("Depth Buffer", GFX::PushConstantType::FLOAT, 0.0f);
+            DepthPreview->_name = "Depth Buffer";
+            DepthPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
 
             DebugView_ptr NormalPreview = std::make_shared<DebugView>();
             NormalPreview->_shader = _renderTargetDraw;
@@ -102,7 +103,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
         U16 screenHeight = std::max(screenRT.getHeight(), to_U16(720));
         F32 aspectRatio = to_F32(screenWidth) / screenHeight;
 
-        I32 viewportWidth = screenWidth / maxViewportColumnCount;
+        I32 viewportWidth = screenWidth / columnCount;
         I32 viewportHeight = to_I32(viewportWidth / aspectRatio);
         Rect<I32> viewport(screenWidth - viewportWidth, 0, viewportWidth, viewportHeight);
 
@@ -123,38 +124,37 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(triangleCmd);
 
-        I32 viewIndex = 0;
-        for (U8 i = 0; i < rowCount; ++i) {
-            for (U8 j = 0; j < columnCount; ++j) {
-                DebugView& view = *_debugViews[viewIndex];
-                pipelineDesc._shaderProgram = view._shader;
+        for (U8 idx = 0; idx < to_U8(_debugViews.size()); ++idx) {
 
-                bindPipeline._pipeline = &newPipeline(pipelineDesc);
-                GFX::BindPipeline(bufferInOut, bindPipeline);
+            DebugView& view = *_debugViews[idx];
+            pipelineDesc._shaderProgram = view._shader;
 
-                pushConstants._constants = view._shaderData;
-                GFX::SendPushConstants(bufferInOut, pushConstants);
+            bindPipeline._pipeline = &newPipeline(pipelineDesc);
+            GFX::BindPipeline(bufferInOut, bindPipeline);
 
-                setViewport._viewport.set(viewport);
-                GFX::SetViewPort(bufferInOut, setViewport);
+            pushConstants._constants = view._shaderData;
+            GFX::SendPushConstants(bufferInOut, pushConstants);
 
-                bindDescriptorSets._set._textureData.clear();
-                bindDescriptorSets._set._textureData.addTexture(view._texture->getData(),
-                                                                view._textureBindSlot);
-                GFX::BindDescriptorSets(bufferInOut, bindDescriptorSets);
+            setViewport._viewport.set(viewport);
+            GFX::SetViewPort(bufferInOut, setViewport);
 
-                GFX::AddDrawCommands(bufferInOut, drawCommand);
+            bindDescriptorSets._set._textureData.clear();
+            bindDescriptorSets._set._textureData.addTexture(view._texture->getData(),
+                                                            view._textureBindSlot);
+            GFX::BindDescriptorSets(bufferInOut, bindDescriptorSets);
 
-                if (!view._name.empty()) {
-                    labelStack.emplace_back(view._name, viewport);
-                }
+            GFX::AddDrawCommands(bufferInOut, drawCommand);
 
-                viewport.x -= viewportWidth;
-                if (viewIndex++ == viewCount) {
-                    return;
-                }
+            if (!view._name.empty()) {
+                labelStack.emplace_back(view._name, viewport);
             }
-            viewport.y += viewportHeight;
+
+            viewport.x -= viewportWidth;
+            
+            if (idx > 0 && idx % columnCount == 0) {
+                viewport.y += viewportHeight;
+                viewport.x += viewportWidth * columnCount;
+            }
         }
 
         TextElement text(labelStyleHash, RelativePosition2D(RelativeValue(0.1f, 0.0f), RelativeValue(0.1f, 0.0f)));

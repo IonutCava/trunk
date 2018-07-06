@@ -19,6 +19,8 @@
 
 namespace Divide {
 
+hashMapImpl<U32, GFXDevice::DebugView_ptr> RenderingComponent::s_debugViews[2];
+
 RenderingComponent::RenderingComponent(GFXDevice& context,
                                        Material_ptr materialInstance,
                                        SceneGraphNode& parentSGN)
@@ -635,8 +637,9 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
                                reflectionIndex);
 
     if (Config::Build::IS_DEBUG_BUILD) {
-        GFXDevice::DebugView_ptr& viewPtr = _debugViews[0][reflectionIndex];
         const RenderTarget& target = _context.renderTargetPool().renderTarget(reflectRTID);
+
+        GFXDevice::DebugView_ptr& viewPtr = s_debugViews[0][reflectionIndex];
         if (!viewPtr) {
             viewPtr = std::make_shared<GFXDevice::DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
@@ -645,7 +648,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
             viewPtr->_shaderData.set("linearSpace", GFX::PushConstantType::BOOL, false);
             viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::BOOL, false);
 
-            viewPtr->_name = Util::StringFormat("Reflection_", reflectRTID);
+            viewPtr->_name = Util::StringFormat("REFLECTION_%d", reflectRTID._index);
             _context.addDebugView(viewPtr);
         } else {
             if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
@@ -717,9 +720,9 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
                                refractionIndex);
 
     if (Config::Build::IS_DEBUG_BUILD) {
-        GFXDevice::DebugView_ptr& viewPtr = _debugViews[1][refractionIndex];
         const RenderTarget& target = _context.renderTargetPool().renderTarget(refractRTID);
 
+        GFXDevice::DebugView_ptr& viewPtr = s_debugViews[1][refractionIndex];
         if (!viewPtr) {
             viewPtr = std::make_shared<GFXDevice::DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
@@ -727,7 +730,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
             viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
             viewPtr->_shaderData.set("linearSpace", GFX::PushConstantType::BOOL, false);
             viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::BOOL, false);
-            viewPtr->_name = Util::StringFormat("Refraction", refractRTID);
+            viewPtr->_name = Util::StringFormat("REFRACTION_%d", refractRTID._index);
             _context.addDebugView(viewPtr);
         } else {
             if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {

@@ -29,6 +29,7 @@ ShaderProgram::AtomMap ShaderProgram::_atoms;
 ShaderProgram::ShaderQueue ShaderProgram::_recompileQueue;
 ShaderProgram::ShaderProgramMap ShaderProgram::_shaderPrograms;
 
+SharedLock ShaderProgram::_atomLock;
 SharedLock ShaderProgram::_programLock;
 
 I64 ShaderProgram::s_shaderFileWatcherID = -1;
@@ -57,12 +58,7 @@ bool ShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCa
 
 bool ShaderProgram::unload() {
     // Unregister the program from the manager
-    ReadLock r_lock(_programLock);
-    if (!_shaderPrograms.empty()) {
-        unregisterShaderProgram(getDescriptorHash());
-    }
-
-    return true;
+    return unregisterShaderProgram(getDescriptorHash());
 }
 
 /// Called once per frame. Update common values used across programs
@@ -166,6 +162,7 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
 const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& filePath, const stringImpl& atomName) {
     U64 atomNameHash = _ID_RT(atomName);
     // See if the atom was previously loaded and still in cache
+    UpgradableReadLock ur_lock(_atomLock);
     AtomMap::iterator it = _atoms.find(atomNameHash);
     // If that's the case, return the code from cache
     if (it != std::cend(_atoms)) {
@@ -178,6 +175,8 @@ const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& filePath, cons
     // Open the atom file and add the code to the atom cache for future reference
     stringImpl output;
     readFile(filePath, atomName, output, FileType::TEXT);
+
+    UpgradeToWriteLock w_lock(ur_lock);
     std::pair<AtomMap::iterator, bool> result = hashAlg::insert(_atoms, atomNameHash, output);
 
     assert(result.second);
@@ -248,7 +247,10 @@ void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
 
 void ShaderProgram::onShutdown() {
     // Make sure we unload all shaders
-    _shaderPrograms.clear();
+    {
+        //WriteLock w_lock(_programLock);
+        _shaderPrograms.clear();
+    }
     _nullShader.reset();
     _imShader.reset();
     while (!_recompileQueue.empty()) {
@@ -301,6 +303,7 @@ const ShaderProgram_ptr& ShaderProgram::nullShader() {
 }
 
 void ShaderProgram::rebuildAllShaders() {
+    ReadLock r_lock(_programLock);
     for (ShaderProgramMap::value_type& shader : _shaderPrograms) {
         _recompileQueue.push(shader.second);
     }
@@ -315,12 +318,16 @@ void ShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
     // ADD and MODIFY events should get processed as usual
 
     // Clear the atom from the cache
-    AtomMap::iterator it = _atoms.find(_ID_RT(atomName));
-    if (it != std::cend(_atoms)) {
-        it = _atoms.erase(it);
-    }
 
+    {
+        WriteLock w_lock(_atomLock);
+        AtomMap::iterator it = _atoms.find(_ID_RT(atomName));
+        if (it != std::cend(_atoms)) {
+            it = _atoms.erase(it);
+        }
+    }
     //Get list of shader programs that use the atom and rebuild all shaders in list;
+    ReadLock r_lock(_programLock);
     for (ShaderProgramMap::value_type& program : _shaderPrograms) {
         for (const stringImpl& atom : program.second->_usedAtoms) {
             if (Util::CompareIgnoreCase(atom, atomName)) {
