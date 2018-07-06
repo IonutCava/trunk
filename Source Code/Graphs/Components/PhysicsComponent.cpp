@@ -16,6 +16,7 @@ PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN)
       _transform(MemoryManager_NEW Transform()),
       _dirty(true),
       _dirtyInterp(true),
+      _parentDirty(true),
       _prevInterpValue(0.0)
 {
     reset();
@@ -33,6 +34,8 @@ void PhysicsComponent::update(const U64 deltaTime) {
     if (_transform) {
         _prevTransformValues = _transform->getValues();
     }
+
+    _parentDirty = isParentTransformDirty();
 }
 
 void PhysicsComponent::reset() {
@@ -66,6 +69,7 @@ void PhysicsComponent::ignoreView(const bool state, const I64 cameraGUID) {
 void PhysicsComponent::setViewOffset(const vec3<F32>& posOffset, const mat4<F32>& rotationOffset) {
     _ignoreViewSettings._posOffset.set(posOffset);
     _ignoreViewSettings._transformOffset.set(rotationOffset);
+    _dirty = _dirtyInterp = true;
 }
 
 void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {
@@ -346,23 +350,11 @@ bool PhysicsComponent::popTransforms() {
     return false;
 }
 
-bool PhysicsComponent::isParentTransformDirty(bool interp) const {
-    // ToDo: HACK - PLEASE REMOVE -Ionut
-    return true;
-
+bool PhysicsComponent::isParentTransformDirty() const {
     SceneGraphNode_ptr parent = _parentSGN.getParent().lock();
     while (parent != nullptr) {
         PhysicsComponent* parentComp = parent->getComponent<PhysicsComponent>();
-        if (parentComp->_ignoreViewSettings._cameraGUID != -1) {
-            if (interp) {
-                parentComp->_dirtyInterp = true;
-            } else {
-                parentComp->_dirty = true;
-            }
-        }
-
-        if((interp && parentComp->_dirtyInterp) ||
-           (!interp && parentComp->_dirty))
+        if(parentComp->_dirtyInterp || parentComp->_dirty)
         {
             return true;
         }
@@ -373,6 +365,14 @@ bool PhysicsComponent::isParentTransformDirty(bool interp) const {
     return false;
 }
 
+void PhysicsComponent::clean(bool interp) {
+    if (interp) {
+        _dirtyInterp = false;
+    } else {
+        _dirty = false;
+    }
+}
+
 const mat4<F32>& PhysicsComponent::getLocalMatrix() const {
     bool wasRebuilt;
     return _transform->getMatrix(wasRebuilt);
@@ -380,8 +380,8 @@ const mat4<F32>& PhysicsComponent::getLocalMatrix() const {
 
 const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor) {
     bool dirty = (_dirtyInterp ||
-                  _prevInterpValue != interpolationFactor ||
-                  isParentTransformDirty(true));
+                  !COMPARE(_prevInterpValue, interpolationFactor) ||
+                  _parentDirty);
 
     if (dirty) {
         SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
@@ -392,10 +392,7 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor) {
             _worldMatrixInterp *=
                  grandParent->getComponent<PhysicsComponent>()->getWorldMatrix(interpolationFactor);
         }
-        _dirtyInterp = false;
-        if (!_dirty) {
-            _transformUpdatedMask.clearAllFlags();
-        }
+        clean(true);
     }
 
     if (_ignoreViewSettings._cameraGUID != -1) {
@@ -406,20 +403,15 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor) {
 }
 
 const mat4<F32>& PhysicsComponent::getWorldMatrix() {
-    if (_dirty || isParentTransformDirty(false)){
+    if (_dirty || _parentDirty){
         _worldMatrix.set(getLocalMatrix());
 
         SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
         if (grandParent) {
-            // THIS CLEARS PARENT DIRTY FLAG, THUS ALL CHILD BB's except the first update properly
             _worldMatrix *=
                 grandParent->getComponent<PhysicsComponent>()->getWorldMatrix();
         }
-
-        _dirty = false;
-        if (!_dirtyInterp) {
-            _transformUpdatedMask.clearAllFlags();
-        }
+        clean(false);
     }
 
     if (_ignoreViewSettings._cameraGUID != -1) {

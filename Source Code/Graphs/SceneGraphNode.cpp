@@ -313,8 +313,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     }
 
     PhysicsComponent* pComp = getComponent<PhysicsComponent>();
-    const PhysicsComponent::TransformMask& transformUpdateMask = pComp->transformUpdateMask();
-    if (transformUpdateMask.hasSetFlags()) {
+    if (pComp->parseTransformUpdateMask()) {
         Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this);
         _boundingBoxDirty = true;
     }

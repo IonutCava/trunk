@@ -246,13 +246,16 @@ class PhysicsComponent : public SGNComponent {
 
     void useDefaultTransform(const bool state);
 
-    inline const TransformMask& transformUpdateMask() const {
-        return _transformUpdatedMask;
+    inline bool parseTransformUpdateMask() {
+        bool ret = _transformUpdatedMask.hasSetFlags();
+        _transformUpdatedMask.clearAllFlags();
+        return ret;
     }
 
    private:
+    void clean(bool interp);
     void setTransformDirty(TransformType type);
-    bool isParentTransformDirty(bool interp) const;
+    bool isParentTransformDirty() const;
 
    protected:
     IgnoreViewSettings _ignoreViewSettings;
@@ -266,6 +269,7 @@ class PhysicsComponent : public SGNComponent {
     /// Transform cache values
     std::atomic_bool _dirty;
     std::atomic_bool _dirtyInterp;
+    std::atomic_bool _parentDirty;
 
     mat4<F32> _worldMatrix;
     D32  _prevInterpValue;
