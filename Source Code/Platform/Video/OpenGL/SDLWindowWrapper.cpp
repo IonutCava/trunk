@@ -22,10 +22,55 @@
 #include <SDL.h>
 
 namespace Divide {
+namespace {
+    class ContextPool {
+    public:
+        ContextPool()
+        {
+            _contexts.reserve(HARDWARE_THREAD_COUNT() * 2);
+        }
+
+        ~ContextPool() 
+        {
+            assert(_contexts.empty());
+        }
+
+        bool init(U32 size, const DisplayWindow& window) {
+            _contexts.resize(size, std::make_pair(nullptr, false));
+            for (std::pair<SDL_GLContext, bool>& ctx : _contexts) {
+                ctx.first = SDL_GL_CreateContext(window.getRawWindow());
+            }
+            return true;
+        }
+
+        bool destroy() {
+            for (std::pair<SDL_GLContext, bool>& ctx : _contexts) {
+                SDL_GL_DeleteContext(ctx.first);
+            }
+            _contexts.clear();
+            return true;
+        }
+
+        bool getAvailableContext(SDL_GLContext& ctx) {
+            for (std::pair<SDL_GLContext, bool>& ctxIt : _contexts) {
+                if (!ctxIt.second) {
+                    ctx = ctxIt.first;
+                    ctxIt.second = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+    private:
+        vectorImpl<std::pair<SDL_GLContext, bool /*in use*/>> _contexts;
+    } g_ContextPool;
+};
 
 ErrorCode GL_API::createGLContext(const DisplayWindow& window) {
-    SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-    GLUtil::_glSecondaryContexts.push_back(SDL_GL_CreateContext(window.getRawWindow()));
+    g_ContextPool.init(HARDWARE_THREAD_COUNT() * 2, window);
+
     GLUtil::_glRenderContext = SDL_GL_CreateContext(window.getRawWindow());
     if (GLUtil::_glRenderContext == nullptr)
     {
@@ -41,10 +86,7 @@ ErrorCode GL_API::createGLContext(const DisplayWindow& window) {
 
 ErrorCode GL_API::destroyGLContext() {
     SDL_GL_DeleteContext(GLUtil::_glRenderContext);
-
-    for (SDL_GLContext& ctx : GLUtil::_glSecondaryContexts) {
-        SDL_GL_DeleteContext(ctx);
-    }
+    g_ContextPool.destroy();
     GLUtil::_glSecondaryContexts.clear();
 
     return ErrorCode::NO_ERR;
@@ -77,7 +119,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     // hardwire our debug callback function with OpenGL's implementation
-    glDebugMessageCallback(GLUtil::DebugCallback, nullptr);
+    glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, nullptr);
     // nVidia flushes a lot of useful info about buffer allocations and shader
     // recompiles due to state and what now, but those aren't needed until that's
     // what's actually causing the bottlenecks
@@ -290,22 +332,32 @@ void GL_API::closeRenderingAPI() {
     destroyGLContext();
 }
 
-/// This functions should be run in a separate, consumer thread.
-/// The main app thread, the producer, adds tasks via a lock-free queue
-void GL_API::threadedLoadCallback() {
+void GL_API::syncToThread(std::thread::id threadID) {
     glbinding::ContextHandle glCtx = glbinding::getCurrentContext();
     if (glCtx == 0) {
-        const DisplayWindow& window = Application::instance().windowManager().getActiveWindow();
-        SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glSecondaryContexts.front());
+
+        std::hash<std::thread::id> hasher;
+        size_t threadHash = hasher(threadID);
+        hashMapImpl<size_t, SDL_GLContext>::iterator it;
+        it = GLUtil::_glSecondaryContexts.find(threadHash);
+        assert(it == std::cend(GLUtil::_glSecondaryContexts));
+        // This also makes the context current
+        SDL_GLContext ctx;
+        bool ctxFound = g_ContextPool.getAvailableContext(ctx);
+        assert(ctxFound);
+
+        hashAlg::emplace(GLUtil::_glSecondaryContexts, threadHash, ctx);
+
+        SDL_GL_MakeCurrent(Application::instance().windowManager().getActiveWindow().getRawWindow(), ctx);
         glbinding::Binding::initialize(false);
-    // Enable OpenGL debug callbacks for this context as well
-    #if defined(ENABLE_GPU_VALIDATION)
+        // Enable OpenGL debug callbacks for this context as well
+#if defined(ENABLE_GPU_VALIDATION)
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         // Debug callback in a separate thread requires a flag to distinguish it
         // from the main thread's callbacks
-        glDebugMessageCallback(GLUtil::DebugCallback, GLUtil::_glSecondaryContexts.front());
-    #endif
+        glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, ctx);
+#endif
     } else {
         glbinding::Binding::useCurrentContext();
     }

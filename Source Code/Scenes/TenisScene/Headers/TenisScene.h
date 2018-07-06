@@ -70,7 +70,7 @@ class TenisScene : public Scene {
         _gamePlaying = false;
     }
 
-    bool load(const stringImpl& name, GUI* const gui);
+    bool load(const stringImpl& name);
     bool loadResources(bool continueOnErrors);
     bool initializeAI(bool continueOnErrors);
     bool deinitializeAI(bool continueOnErrors);

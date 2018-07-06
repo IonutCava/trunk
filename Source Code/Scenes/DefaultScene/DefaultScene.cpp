@@ -9,8 +9,8 @@ DefaultScene::DefaultScene()
 {
 }
 
-bool DefaultScene::load(const stringImpl& name, GUI* const gui) {
-    bool loadState = SCENE_LOAD(name, gui, true, true);
+bool DefaultScene::load(const stringImpl& name) {
+    bool loadState = SCENE_LOAD(name, true, true);
     SceneGraphNode_wptr light = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _currentSky = addSky();
     // Add a light
@@ -112,10 +112,10 @@ void DefaultScene::loadScene(I64 btnGUID) {
     _sceneToLoad = _buttonToSceneMap[btnGUID];
     Console::d_printf("Loading scene [ %s ]", _sceneToLoad.c_str());
 
-    GUIButton* selection = _GUI->getGuiElement<GUIButton>(getGUID(), btnGUID);
+    GUIButton* selection = _GUI->getGUIElement<GUIButton>(getGUID(), btnGUID);
     selection->setText("Loading ...");
     for (hashMapImpl<I64, stringImpl>::value_type it : _buttonToSceneMap) {
-        GUIButton* btn = _GUI->getGuiElement<GUIButton>(getGUID(), it.first);
+        GUIButton* btn = _GUI->getGUIElement<GUIButton>(getGUID(), it.first);
         if (btn->getGUID() != btnGUID) {
             btn->setActive(false);
             btn->setVisible(false);
@@ -127,7 +127,7 @@ void DefaultScene::onSetActive() {
     vectorImpl<stringImpl> scenes = SceneManager::instance().sceneNameList();
 
     for (const stringImpl& scene : scenes) {
-        GUIButton* btn = _GUI->getGuiElement<GUIButton>(getGUID(), _ID_RT("StartScene" + scene));
+        GUIButton* btn = _GUI->getGUIElement<GUIButton>(getGUID(), _ID_RT("StartScene" + scene));
         
         btn->setText(scene);
         btn->setActive(true);

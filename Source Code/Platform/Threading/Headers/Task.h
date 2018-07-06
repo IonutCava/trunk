@@ -49,16 +49,25 @@ class Task : public GUIDWrapper, private NonCopyable {
            MEDIUM = 2,
            HIGH = 3,
            MAX = 4,
-           REALTIME = 5 //<= not threaded
+           REALTIME = 5, //<= not threaded
+           COUNT
        };
+
+      enum class TaskFlags : U32 {
+        SYNC_WITH_GPU = toBit(1),
+        PRINT_DEBUG_INFO = toBit(2),
+        COUNT = 2,
+      };
+
     /**
      * @brief Creates a new Task that runs in a separate thread
      * @param f The callback function (bool param will be true if the task receives a stop request)
      */
-    Task();
+    explicit Task();
     ~Task();
 
-    void startTask(TaskPriority priority = TaskPriority::DONT_CARE);
+    void startTask(TaskPriority priority = TaskPriority::DONT_CARE,
+                   U32 taskFlags = 0);
 
     void stopTask();
 
@@ -96,6 +105,8 @@ class Task : public GUIDWrapper, private NonCopyable {
 
    protected:
     void run();
+    void beginSyncGPU();
+    void endSyncGPU();
     void waitForChildren(bool yeld, I64 timeout);
 
    private:
@@ -115,6 +126,9 @@ class Task : public GUIDWrapper, private NonCopyable {
     Task* _parentTask;
     vectorImpl<Task*> _childTasks;
     std::atomic<I64> _childTaskCount;
+
+
+    U32 _taskFlags;
 };
 
 // A task object may be used for multiple jobs
@@ -125,9 +139,10 @@ struct TaskHandle {
     {
     }
 
-    inline void startTask(Task::TaskPriority prio = Task::TaskPriority::DONT_CARE) {
+    inline void startTask(Task::TaskPriority prio = Task::TaskPriority::DONT_CARE,
+                          U32 taskFlags = 0) {
         assert(_task != nullptr);
-        _task->startTask(prio);
+        _task->startTask(prio, taskFlags);
     }
 
     inline Task* addChildTask(Task* task) {

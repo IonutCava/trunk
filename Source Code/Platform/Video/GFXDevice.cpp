@@ -2,6 +2,7 @@
 
 #include "Headers/GFXDevice.h"
 
+#include "Core/Headers/TaskPool.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
@@ -604,19 +605,17 @@ void GFXDevice::onCameraUpdate(Camera& camera) {
 
 /// Depending on the context, either immediately call the function, or pass it
 /// to the loading thread via a queue
-bool GFXDevice::loadInContext(const CurrentContext& context,
-                              const DELEGATE_CBK<>& callback) {
+bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK_PARAM<bool>& callback) {
     // Skip invalid callbacks
     if (!callback) {
         return false;
     }
-    bool loadInThread = context == CurrentContext::GFX_LOADING_CTX && _state.loadingThreadAvailable();
-    // If we want and can call the function in the loading thread, add it to the
-    // lock-free, single-producer, single-consumer queue
-    if (loadInThread) {
-        _state.addToLoadQueue(callback);
+
+    if (context == CurrentContext::GFX_LOADING_CTX && Config::USE_GPU_THREADED_LOADING) {
+        CreateTask(callback)._task->startTask(Task::TaskPriority::HIGH,
+                                              to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
     } else {
-        callback();
+        callback(false);
     }
 
     // The callback is valid and has been processed

@@ -40,7 +40,7 @@ class DefaultScene : public Scene {
 public:
     DefaultScene();
 
-    bool load(const stringImpl& name, GUI* const gui) override;
+    bool load(const stringImpl& name) override;
     bool loadResources(bool continueOnErrors) override;
     void processInput(const U64 deltaTime) override;
     void processTasks(const U64 deltaTime) override;

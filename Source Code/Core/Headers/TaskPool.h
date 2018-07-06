@@ -113,12 +113,14 @@ TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority = Task::TaskPriority::HIGH,
+                        U32 taskFlags = 0,
                         bool waitForResult = true);
 TaskHandle parallel_for(TaskPool& pool, 
                         const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority = Task::TaskPriority::HIGH,
+                        U32 taskFlags = 0,
                         bool waitForResult = true);
 
 void WaitForAllTasks(bool yeld, bool flushCallbacks);

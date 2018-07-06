@@ -16,23 +16,28 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener,
 
     listener->setCallOrder(callOrder);
 
+    WriteLock w_lock(_listenerLock);
     _listeners.push_back(listener);
-
     std::sort(std::begin(_listeners), std::end(_listeners));
 }
 
 /// Remove an existent Frame Listener from our collection
 void FrameListenerManager::removeFrameListener(FrameListener* listener) {
     const stringImpl& name = listener->getListenerName();
-    vectorImpl<FrameListener*>::iterator it;
-    it = std::find_if(std::begin(_listeners), std::end(_listeners),
-                      [&name](FrameListener const* fl)
-                          -> bool { return fl->getListenerName().compare(name) == 0; });
-    if (it != std::end(_listeners)) {
+
+    UpgradableReadLock ur_lock(_listenerLock);
+    vectorImpl<FrameListener*>::const_iterator it;
+    it = std::find_if(std::cbegin(_listeners), std::cend(_listeners),
+                      [&name](FrameListener const* fl) -> bool
+                      {
+                        return fl->getListenerName().compare(name) == 0;
+                      });
+
+    if (it != std::cend(_listeners)) {
+        UpgradeToWriteLock w_lock(ur_lock);
         _listeners.erase(it);
     } else {
-        Console::errorfn(Locale::get(_ID("ERROR_FRAME_LISTENER_REMOVE")),
-                         listener->getListenerName().c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_FRAME_LISTENER_REMOVE")), listener->getListenerName().c_str());
     }
 }
 
@@ -62,6 +67,7 @@ bool FrameListenerManager::frameEvent(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::frameStarted(const FrameEvent& evt) {
+    ReadLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->frameStarted(evt)) {
             return false;
@@ -71,6 +77,7 @@ bool FrameListenerManager::frameStarted(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::framePreRenderStarted(const FrameEvent& evt) {
+    ReadLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->framePreRenderStarted(evt)) {
             return false;
@@ -80,6 +87,7 @@ bool FrameListenerManager::framePreRenderStarted(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::framePreRenderEnded(const FrameEvent& evt) {
+    ReadLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->framePreRenderEnded(evt)) {
             return false;
@@ -89,6 +97,7 @@ bool FrameListenerManager::framePreRenderEnded(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::frameRenderingQueued(const FrameEvent& evt) {
+    ReadLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->frameRenderingQueued(evt)) {
             return false;
@@ -98,6 +107,7 @@ bool FrameListenerManager::frameRenderingQueued(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::framePostRenderStarted(const FrameEvent& evt) {
+    ReadLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->framePostRenderStarted(evt)) {
             return false;
@@ -107,6 +117,7 @@ bool FrameListenerManager::framePostRenderStarted(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::framePostRenderEnded(const FrameEvent& evt) {
+    ReadLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->framePostRenderEnded(evt)) {
             return false;
@@ -116,6 +127,7 @@ bool FrameListenerManager::framePostRenderEnded(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::frameEnded(const FrameEvent& evt) {
+    ReadLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->frameEnded(evt)) {
             return false;
@@ -125,11 +137,11 @@ bool FrameListenerManager::frameEnded(const FrameEvent& evt) {
 }
 
 /// When the application is idle, we should really clear up old events
-void FrameListenerManager::idle() {}
+void FrameListenerManager::idle() {
+}
 
 /// Please see the Ogre3D documentation about this
-void FrameListenerManager::createEvent(const U64 currentTime,
-                                       FrameEventType type, FrameEvent& evt) {
+void FrameListenerManager::createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt) {
     evt._currentTime = Time::MicrosecondsToMilliseconds<D64>(currentTime);
     evt._timeSinceLastEvent =
         calculateEventTime(evt._currentTime, FrameEventType::FRAME_EVENT_ANY);
@@ -137,8 +149,7 @@ void FrameListenerManager::createEvent(const U64 currentTime,
     evt._type = type;
 }
 
-D64 FrameListenerManager::calculateEventTime(const D64 currentTime,
-                                             FrameEventType type) {
+D64 FrameListenerManager::calculateEventTime(const D64 currentTime, FrameEventType type) {
     EventTimeMap& times = _eventTimers[to_uint(type)];
     times.push_back(currentTime);
 
@@ -158,7 +169,6 @@ D64 FrameListenerManager::calculateEventTime(const D64 currentTime,
     }
 
     times.erase(std::cbegin(times), it);
-    return (times.back() - times.front()) /
-           Time::SecondsToMilliseconds(times.size() - 1);
+    return (times.back() - times.front()) / Time::SecondsToMilliseconds(times.size() - 1);
 }
 };

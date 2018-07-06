@@ -52,7 +52,7 @@ class MainScene : public Scene {
     }
 
     /*General Scene Requirement*/
-    bool load(const stringImpl& name, GUI* const gui);
+    bool load(const stringImpl& name);
     bool unload();
     bool loadResources(bool continueOnErrors);
 

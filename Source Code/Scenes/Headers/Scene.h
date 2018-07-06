@@ -59,8 +59,7 @@
 #include "Physics/Headers/PXDevice.h"
 #include "Dynamics/Entities/Particles/Headers/ParticleEmitter.h"
 // GUI
-#include "GUI/Headers/GUI.h"
-#include "GUI/Headers/GUIElement.h"
+#include "GUI/Headers/SceneGUIElements.h"
 
 namespace Divide {
 class Sky;
@@ -76,6 +75,7 @@ namespace Attorney {
     class SceneGraph;
     class SceneRenderPass;
     class SceneLoadSave;
+    class SceneGUI;
 };
 
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2 states:
@@ -86,6 +86,7 @@ class Scene : public Resource {
     friend class Attorney::SceneGraph;
     friend class Attorney::SceneRenderPass;
     friend class Attorney::SceneLoadSave;
+    friend class Attorney::SceneGUI;
 
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
@@ -185,7 +186,7 @@ class Scene : public Resource {
     /// loaded.
     /// Useful for loading one model per frame
     virtual void loadXMLAssets(bool singleStep = false);
-    virtual bool load(const stringImpl& name, GUI* const guiInterface);
+    virtual bool load(const stringImpl& name);
     bool loadModel(const FileData& data);
     bool loadGeometry(const FileData& data);
     virtual bool unload();
@@ -204,10 +205,10 @@ class Scene : public Resource {
     void debugDraw(RenderStage stage);
 
     /// simple function to load the scene elements.
-    inline bool SCENE_LOAD(const stringImpl& name, GUI* const gui,
+    inline bool SCENE_LOAD(const stringImpl& name,
                            const bool contOnErrorRes,
                            const bool contOnErrorTasks) {
-        if (!Scene::load(name, gui)) {
+        if (!Scene::load(name)) {
             Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load function");
             return false;
         }
@@ -233,10 +234,10 @@ class Scene : public Resource {
    protected:
        /// Global info
        GFXDevice& _GFX;
-       GUI* _GUI;
        ParamHandler&  _paramHandler;
        SceneGraph*    _sceneGraph;
        AI::AIManager* _aiManager;
+       SceneGUIElements* _GUI;
 
        U64 _sceneTimer;
        vectorImpl<D64> _taskTimers;
@@ -298,9 +299,8 @@ class SceneManager {
 
     static bool frameStarted(Scene& scene) { return scene.frameStarted(); }
     static bool frameEnded(Scene& scene) { return scene.frameEnded(); }
-    static bool load(Scene& scene, const stringImpl& name,
-                     GUI* const guiInterface) {
-        return scene.load(name, guiInterface);
+    static bool load(Scene& scene, const stringImpl& name) {
+        return scene.load(name);
     }
     static bool unload(Scene& scene) { 
         return scene.unload();
@@ -356,6 +356,16 @@ private:
     }
     friend class Divide::SceneGraph;
 };
+
+class SceneGUI {
+private:
+    static SceneGUIElements* guiElements(Scene& scene) {
+        return scene._GUI;
+    }
+
+    friend class Divide::GUI;
+};
+
 };  // namespace Attorney
 };  // namespace Divide
 

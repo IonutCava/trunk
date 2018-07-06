@@ -144,4 +144,9 @@ bool Application::isMainThread() const {
     return (_threadID == std::this_thread::get_id());
 }
 
+
+void Attorney::ApplicationTask::syncThreadToGPU(std::thread::id threadID, bool beginSync) {
+    Attorney::KernelApplication::syncThreadToGPU(*Application::instance()._kernel, threadID, beginSync);
+}
+
 }; //namespace Divide

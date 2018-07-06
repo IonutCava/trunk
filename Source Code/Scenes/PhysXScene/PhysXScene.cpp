@@ -36,10 +36,10 @@ void PhysXScene::processInput(const U64 deltaTime) {
     _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, _sun.lock()->getNode<Light>()->getDiffuseColor());
 }
 
-bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
+bool PhysXScene::load(const stringImpl& name) {
     s_sceneState = PhysXState::STATE_LOADING;
     // Load scene resources
-    bool loadState = SCENE_LOAD(name, gui, true, true);
+    bool loadState = SCENE_LOAD(name, true, true);
     // Add a light
     vec2<F32> sunAngle(0.0f, Angle::DegreesToRadians(45.0f));
     _sunvector =

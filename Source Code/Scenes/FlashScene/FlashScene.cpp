@@ -22,9 +22,9 @@ void FlashScene::processTasks(const U64 deltaTime) {
     Scene::processTasks(deltaTime);
 }
 
-bool FlashScene::load(const stringImpl& name, GUI* const gui) {
+bool FlashScene::load(const stringImpl& name) {
     // Load scene resources
-    bool loadState = SCENE_LOAD(name, gui, true, true);
+    bool loadState = SCENE_LOAD(name, true, true);
     addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _currentSky = addSky();
     return loadState;

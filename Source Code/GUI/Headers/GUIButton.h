@@ -46,6 +46,7 @@ namespace Divide {
 class GUIButton : public GUIElement {
     typedef DELEGATE_CBK_PARAM<I64> ButtonCallback;
     friend class GUI;
+    friend class SceneGUIElements;
 
    public:
     void setTooltip(const stringImpl& tooltipText);

@@ -44,7 +44,7 @@ class PhysXScene : public Scene {
         _hasGroundPlane = false;
     }
 
-    bool load(const stringImpl& name, GUI* const gui) override;
+    bool load(const stringImpl& name) override;
     bool loadResources(bool continueOnErrors) override;
     bool unload() override;
     void processInput(const U64 deltaTime) override;

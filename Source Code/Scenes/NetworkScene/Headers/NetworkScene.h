@@ -43,7 +43,7 @@ class NetworkScene : public Scene {
     {
     }
 
-    bool load(const stringImpl& name, GUI* const gui);
+    bool load(const stringImpl& name);
     bool loadResources(bool continueOnErrors);
 
     void processGUI(const U64 deltaTime);

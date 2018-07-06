@@ -48,6 +48,7 @@ SceneManager::SceneManager()
       _GUI(nullptr),
       _renderer(nullptr),
       _activeScene(nullptr),
+      _loadedScene(nullptr),
       _defaultScene(nullptr),
       _renderPassCuller(nullptr),
       _renderPassManager(nullptr),
@@ -151,16 +152,11 @@ Scene* SceneManager::load(stringImpl sceneName) {
             loadingScene = createScene(sceneName);
         }
     }
-    
-
-    Scene* guiSceneCache = _GUI->activeScene();
 
     ParamHandler::instance().setParam(_ID("currentScene"), sceneName);
     if (!loadingScene) {
         Console::errorfn(Locale::get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
         return nullptr;
-    } else {
-        _GUI->onChangeScene(loadingScene);
     }
 
     bool state = true;
@@ -169,7 +165,7 @@ Scene* SceneManager::load(stringImpl sceneName) {
             XML::loadScene(sceneName, loadingScene);
         }
 
-        state = Attorney::SceneManager::load(*loadingScene, sceneName, _GUI);
+        state = Attorney::SceneManager::load(*loadingScene, sceneName);
     }
 
     if (state && !loadDefaultScene) {
@@ -180,23 +176,19 @@ Scene* SceneManager::load(stringImpl sceneName) {
         Attorney::SceneManager::postLoad(*loadingScene);
     }
 
-    if (!state) {
-        _GUI->onChangeScene(guiSceneCache);
-    } else {
-        if (!isAlreadyLoaded) {
-            if (!loadDefaultScene) {
-                _GUI->addButton(_ID_RT("Back"),
-                                "Back",
-                                vec2<I32>(15, 15),
-                                vec2<U32>(50, 25),
-                                [this](I64 btnGUID)
-                                {
-                                    _sceneSwitchTarget.first = "DefaultScene";
-                                    _sceneSwitchTarget.second = true;
-                                });
-            }
-          _loadedScenes.push_back(loadingScene);
+    if (state && !isAlreadyLoaded) {
+        if (!loadDefaultScene) {
+            _GUI->addButton(_ID_RT("Back"),
+                            "Back",
+                            vec2<I32>(15, 15),
+                            vec2<U32>(50, 25),
+                            [this](I64 btnGUID)
+                            {
+                                _sceneSwitchTarget.first = "DefaultScene";
+                                _sceneSwitchTarget.second = true;
+                            });
         }
+        _loadedScenes.push_back(loadingScene);
     }
 
     return state ? loadingScene : nullptr;
@@ -218,6 +210,7 @@ bool SceneManager::unloadScene(Scene*& scene) {
                     return scene->getGUID() == targetGUID;
                 }));
 
+        _GUI->onUnloadScene(scene);
         state = Attorney::SceneManager::unload(*scene);
 
         if (!isDefaultScene) {
@@ -250,13 +243,28 @@ void SceneManager::setActiveScene(Scene& scene) {
 }
 
 bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious) {
-    if (unloadPrevious) {
-        Attorney::SceneManager::onRemoveActive(*_activeScene);
-        unloadScene(_activeScene);
-    }
-    _reflectiveNodesCache.clear();
-    _renderPassCuller->clear();
-    SceneManager::instance().setActiveScene(*load(name));
+    CreateTask(
+        [this, name, unloadPrevious](const std::atomic_bool& stopRequested)
+        {
+            if (unloadPrevious) {
+                Attorney::SceneManager::onRemoveActive(*_activeScene);
+                unloadScene(_activeScene);
+            }
+
+            _loadedScene = load(name);
+        },
+        [this]()
+        {
+            if (_loadedScene != nullptr) {
+                SceneManager::instance().setActiveScene(*_loadedScene);
+
+                _reflectiveNodesCache.clear();
+                _renderPassCuller->clear();
+                _loadedScene = nullptr;
+            }
+
+        })._task->startTask(Task::TaskPriority::REALTIME, to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
+
     _sceneSwitchTarget.first = "";
     return true;
 }

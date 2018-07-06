@@ -205,7 +205,7 @@ if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_P
             Console::printfn(profileData.c_str());
         }
 
-        _GUI.modifyGlobalText(_ID("ProfileData"), profileData);
+        _GUI.modifyText(_ID("ProfileData"), profileData);
     }
 
     Util::RecordFloatEvent("kernel.mainLoopApp",
@@ -489,8 +489,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     // Initialize GUI with our current resolution
     _GUI.init(renderResolution);
-    _GUI.addGlobalText(_ID("ProfileData"),              // Unique ID
-        vec2<I32>(renderResolution.width * 0.75, 100),  // Position
+    _GUI.addText(_ID("ProfileData"),                   // Unique ID
+        vec2<I32>(renderResolution.width * 0.75, 100), // Position
         Font::DROID_SERIF_BOLD,          // Font
         vec4<U8>(255,  50, 0, 255),      // Color
         "PROFILE DATA",                  // Text
@@ -668,4 +668,9 @@ bool Kernel::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
     // InputInterface needs to know when this is completed
     return false;
 }
+
+void Attorney::KernelApplication::syncThreadToGPU(Kernel& kernel, std::thread::id threadID, bool beginSync) {
+    kernel._GFX.syncThreadToGPU(threadID, beginSync);
+}
+
 };

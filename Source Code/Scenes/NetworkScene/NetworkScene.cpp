@@ -60,11 +60,11 @@ void NetworkScene::checkPatches(I64 btnGUID) {
     ASIOImpl::instance().sendPacket(p);
 }
 
-bool NetworkScene::load(const stringImpl& name, GUI* const gui) {
+bool NetworkScene::load(const stringImpl& name) {
     ASIOImpl::instance().init(
         _paramHandler.getParam<stringImpl>(_ID("serverAddress")).c_str(), "443");
     // Load scene resources
-    bool loadState = SCENE_LOAD(name, gui, true, true);
+    bool loadState = SCENE_LOAD(name, true, true);
 
     _paramHandler.setParam(_ID("serverResponse"), "waiting");
     addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());

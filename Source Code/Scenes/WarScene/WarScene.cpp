@@ -310,7 +310,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
     }
 }
 
-bool WarScene::load(const stringImpl& name, GUI* const gui) {
+bool WarScene::load(const stringImpl& name) {
     static const U32 lightMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
@@ -319,7 +319,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
                                   to_const_uint(SGNComponent::ComponentType::NAVIGATION);
 
     // Load scene resources
-    bool loadState = SCENE_LOAD(name, gui, true, true);
+    bool loadState = SCENE_LOAD(name, true, true);
     // Add a light
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     // Add a skybox

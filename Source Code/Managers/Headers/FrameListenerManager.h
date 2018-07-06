@@ -35,6 +35,7 @@
 /// Add this include here so that any FrameListner derived class only needs to
 /// include the manager
 #include "Rendering/Headers/FrameListener.h"
+#include "Platform/Threading/Headers/SharedMutex.h"
 
 namespace Divide {
 
@@ -66,9 +67,9 @@ DEFINE_SINGLETON(FrameListenerManager)
     D64 calculateEventTime(const D64 currentTime, FrameEventType type);
 
    private:
+    mutable SharedLock _listenerLock;
     vectorImpl<FrameListener*> _listeners;
-    std::array<EventTimeMap, to_const_uint(FrameEventType::FRAME_EVENT_ENDED) +
-                                 1> _eventTimers;
+    std::array<EventTimeMap, to_const_uint(FrameEventType::FRAME_EVENT_ENDED) + 1> _eventTimers;
 
 END_SINGLETON
 

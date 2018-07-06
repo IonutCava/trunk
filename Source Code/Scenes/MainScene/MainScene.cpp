@@ -108,9 +108,9 @@ void MainScene::processTasks(const U64 deltaTime) {
     Scene::processTasks(deltaTime);
 }
 
-bool MainScene::load(const stringImpl& name, GUI* const gui) {
+bool MainScene::load(const stringImpl& name) {
     // Load scene resources
-    bool loadState = SCENE_LOAD(name, gui, true, true);
+    bool loadState = SCENE_LOAD(name, true, true);
     renderState().getCamera().setMoveSpeedFactor(10.0f);
 
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());

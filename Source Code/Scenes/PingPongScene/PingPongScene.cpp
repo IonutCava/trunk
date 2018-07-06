@@ -250,12 +250,12 @@ void PingPongScene::processInput(const U64 deltaTime) {
     }
 }
 
-bool PingPongScene::load(const stringImpl& name, GUI* const gui) {
+bool PingPongScene::load(const stringImpl& name) {
     _freeFly = false;
     _wasInFreeFly = false;
 
     // Load scene resources
-    bool loadState = SCENE_LOAD(name, gui, true, true);
+    bool loadState = SCENE_LOAD(name, true, true);
     // Add a light
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _currentSky = addSky();

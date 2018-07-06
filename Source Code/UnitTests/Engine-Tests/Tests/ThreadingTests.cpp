@@ -9,7 +9,7 @@ namespace {
     const U32 g_TestTaskPoolSize = 4;
 };
 
-/*TEST(TaskPoolContructionTest)
+TEST(TaskPoolContructionTest)
 {
     TaskPool test(g_TestTaskPoolSize);
     bool init = test.init(0);
@@ -149,7 +149,13 @@ TEST(TaskPriorityTest)
     job.wait();
     CHECK_EQUAL(callbackValue, 3u);
     test.flushCallbackQueue();
+    CHECK_EQUAL(callbackValue, 3u);
+    test.setTaskCallback(job, callback);
+    job.startTask(Task::TaskPriority::REALTIME);
+    job.wait();
     CHECK_EQUAL(callbackValue, 4u);
-}*/
+    test.flushCallbackQueue();
+    CHECK_EQUAL(callbackValue, 5u);
+}
 
 }; //namespace Divide

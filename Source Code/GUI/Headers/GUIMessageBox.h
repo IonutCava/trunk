@@ -45,6 +45,7 @@ namespace Divide {
 
 class GUIMessageBox : public GUIElement {
     friend class GUI;
+    friend class SceneGUIElements;
 
    public:
     enum class MessageType : U32 {

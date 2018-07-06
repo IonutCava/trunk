@@ -270,10 +270,10 @@ void TenisScene::playGame(const std::atomic_bool& stopRequested, cdiggins::any a
 
 void TenisScene::processInput(const U64 deltaTime) {}
 
-bool TenisScene::load(const stringImpl& name, GUI* const gui) {
+bool TenisScene::load(const stringImpl& name) {
     s_gameStarted = false;
     // Load scene resources
-    bool loadState = SCENE_LOAD(name, gui, true, true);
+    bool loadState = SCENE_LOAD(name, true, true);
 
     // Add a light
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());

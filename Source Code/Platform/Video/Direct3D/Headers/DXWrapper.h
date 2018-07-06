@@ -119,7 +119,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     void drawPoints(U32 numPoints) override;
     void drawTriangle() override;
     void updateClipPlanes() override;
-    void threadedLoadCallback() override;
+    void syncToThread(std::thread::id threadID) override;
 
     U64 getFrameDurationGPU() override { return 0; }
     void activateStateBlock(const RenderStateBlock& newBlock,

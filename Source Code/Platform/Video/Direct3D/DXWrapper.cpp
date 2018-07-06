@@ -53,7 +53,7 @@ bool DX_API::initShaders() { return true; }
 
 bool DX_API::deInitShaders() { return true; }
 
-void DX_API::threadedLoadCallback() {}
+void DX_API::syncToThread(std::thread::id threadID) {}
 
 void DX_API::activateStateBlock(const RenderStateBlock& newBlock,
                                 const RenderStateBlock& oldBlock) const {}

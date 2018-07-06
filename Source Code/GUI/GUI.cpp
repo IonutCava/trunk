@@ -1,4 +1,5 @@
 #include "Headers/GUI.h"
+#include "Headers/SceneGUIElements.h"
 
 #include "Headers/GUIFlash.h"
 #include "Headers/GUIText.h"
@@ -45,12 +46,12 @@ GUI::~GUI()
     Console::printfn(Locale::get(_ID("STOP_GUI")));
     GUIEditor::destroyInstance();
     MemoryManager::DELETE(_console);
-    for (GUIMapPerScene::value_type& it : _guiStack) {
-        for (GUIMap::value_type& it2 : it.second) {
-            MemoryManager::DELETE(it2.second.first);
-        }
+    assert(_guiStack.empty());
+    for (GUIMap::value_type& it : _guiGlobalStack) {
+        MemoryManager::DELETE(it.second.first);
     }
-    _guiStack.clear();
+ 
+    _guiGlobalStack.clear();
 
     _defaultMsgBox = nullptr;
 
@@ -68,17 +69,17 @@ void GUI::onChangeScene(Scene* newScene) {
     if (_activeScene != nullptr && _activeScene->getGUID() != newScene->getGUID()) {
         GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
         if (it != std::cend(_guiStack)) {
-            for (const GUIMap::value_type& guiStackIterator : it->second) {
-               guiStackIterator.second.first->setVisible(false);
-            }
+            it->second->onDisable();
         }
     }
 
     GUIMapPerScene::const_iterator it = _guiStack.find(newScene->getGUID());
     if (it != std::cend(_guiStack)) {
-        for (const GUIMap::value_type& guiStackIterator : it->second) {
-            guiStackIterator.second.first->setVisible(guiStackIterator.second.second);
-        }
+        it->second->onEnable();
+    } else {
+        SceneGUIElements* elements = Attorney::SceneGUI::guiElements(*newScene);
+        hashAlg::emplace(_guiStack, newScene->getGUID(), elements);
+        elements->onEnable();
     }
 
     _activeScene = newScene;
@@ -86,14 +87,7 @@ void GUI::onChangeScene(Scene* newScene) {
 
 void GUI::onUnloadScene(Scene* scene) {
     assert(scene != nullptr);
-
-    GUIMapPerScene::iterator it = _guiStack.find(scene->getGUID());
-    if (it != std::cend(_guiStack)) {
-        for (GUIMap::value_type& guiStackIterator : it->second) {
-            MemoryManager::DELETE(guiStackIterator.second.first);
-        }
-    }
-    _guiStack.erase(it);
+    _guiStack.erase(_guiStack.find(scene->getGUID()));
 }
 
 void GUI::draw() const {
@@ -104,8 +98,7 @@ void GUI::draw() const {
     _guiShader->bind();
 
     // global elements
-    GUIMapPerScene::const_iterator it = _guiStack.find(0);
-    for (const GUIMap::value_type& guiStackIterator : it->second) {
+    for (const GUIMap::value_type& guiStackIterator : _guiGlobalStack) {
         GUIElement& element = *guiStackIterator.second.first;
         // Skip hidden elements
         if (element.isVisible()) {
@@ -114,15 +107,9 @@ void GUI::draw() const {
     }
 
     // scene specific
-    it = _guiStack.find(_activeScene->getGUID());
+    GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
     if (it != std::cend(_guiStack)) {
-        for (const GUIMap::value_type& guiStackIterator : it->second) {
-            GUIElement& element = *guiStackIterator.second.first;
-            // Skip hidden elements
-            if (element.isVisible()) {
-                element.draw();
-            }
-        }
+        it->second->draw();
     }
 
     const OIS::MouseState& mouseState =
@@ -274,9 +261,9 @@ bool GUI::init(const vec2<U16>& renderResolution) {
 
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 
-    _defaultMsgBox = addGlobalMsgBox(_ID("AssertMsgBox"),
-                                     "Assertion failure",
-                                     "Assertion failed with message: ");
+    _defaultMsgBox = addMsgBox(_ID("AssertMsgBox"),
+                               "Assertion failure",
+                               "Assertion failed with message: ");
 
     _init = true;
     return true;
@@ -286,10 +273,16 @@ void GUI::onChangeResolution(U16 w, U16 h) {
     _resolutionCache.set(w, h);
     CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
 
-    
-    for (const GUIMapPerScene::value_type& guiSceneIterator : _guiStack) {
-        for (const GUIMap::value_type& guiStackIterator : guiSceneIterator.second) {
-            guiStackIterator.second.first->onChangeResolution(w, h);
+    // global elements
+    for (const GUIMap::value_type& guiStackIterator : _guiGlobalStack) {
+        guiStackIterator.second.first->onChangeResolution(w, h);
+    }
+
+    if (!_guiStack.empty()) {
+        // scene specific
+        GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
+        if (it != std::cend(_guiStack)) {
+            it->second->onChangeResolution(w, h);
         }
     }
 }
@@ -338,10 +331,15 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     event.mousePoint.x = to_float(arg.state.X.abs);
     event.mousePoint.y = to_float(arg.state.Y.abs);
 
-    GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
-    assert(it != std::cend(_guiStack));
-    for (const GUIMap::value_type& guiStackIterator : it->second) {
+    // global elements
+    for (const GUIMap::value_type& guiStackIterator : _guiGlobalStack) {
         guiStackIterator.second.first->mouseMoved(event);
+    }
+
+    // scene specific
+    GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
+    if (it != std::cend(_guiStack)) {
+        it->second->mouseMoved(event);
     }
 
     return !_ceguiInput.mouseMoved(arg);
@@ -358,10 +356,16 @@ bool GUI::mouseButtonPressed(const Input::MouseEvent& arg,
         if (button == Input::MouseButton::MB_Left) {
             GUIEvent event;
             event.mouseClickCount = 0;
-            GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
-            assert(it != std::cend(_guiStack));
-            for (GUIMap::value_type guiStackIterator : it->second) {
+
+            // global elements
+            for (const GUIMap::value_type& guiStackIterator : _guiGlobalStack) {
                 guiStackIterator.second.first->onMouseDown(event);
+            }
+
+            // scene specific
+            GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
+            if (it != std::cend(_guiStack)) {
+                it->second->onMouseDown(event);
             }
         }
         processed = true;
@@ -381,10 +385,16 @@ bool GUI::mouseButtonReleased(const Input::MouseEvent& arg,
         if (button == Input::MouseButton::MB_Left) {
             GUIEvent event;
             event.mouseClickCount = 1;
-            GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
-            assert(it != std::cend(_guiStack));
-            for (GUIMap::value_type guiStackIterator : it->second) {
+
+            // global elements
+            for (const GUIMap::value_type& guiStackIterator : _guiGlobalStack) {
                 guiStackIterator.second.first->onMouseUp(event);
+            }
+
+            // scene specific
+            GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
+            if (it != std::cend(_guiStack)) {
+                it->second->onMouseUp(event);
             }
         }
         processed = true;
@@ -419,24 +429,22 @@ bool GUI::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
     return !_ceguiInput.joystickVector3DMoved(arg, index);
 }
 
-void GUI::addElement(ULL id, I64 sceneID, GUIElement* element) {
-    GUIMap& stack = _guiStack[sceneID];
-
-    GUIMap::iterator it2 = stack.find(id);
-    if (it2 != std::end(stack)) {
-        MemoryManager::SAFE_UPDATE(it2->second.first, element);
-        it2->second.second = element ? element->isVisible() : false;
+void GUI::addElement(ULL id,GUIElement* element) {
+    GUIMap::iterator it = _guiGlobalStack.find(id);
+    if (it != std::end(_guiGlobalStack)) {
+        MemoryManager::SAFE_UPDATE(it->second.first, element);
+        it->second.second = element ? element->isVisible() : false;
     } else {
-        hashAlg::insert(stack, std::make_pair(id, std::make_pair(element, element ? element->isVisible() : false)));
+        hashAlg::insert(_guiGlobalStack, std::make_pair(id, std::make_pair(element, element ? element->isVisible() : false)));
     }
 }
 
-GUIButton* GUI::addGlobalButton(ULL ID,
-                                const stringImpl& text,
-                                const vec2<I32>& position,
-                                const vec2<U32>& dimensions,
-                                ButtonCallback callback,
-                                const stringImpl& rootSheetID) {
+GUIButton* GUI::addButton(ULL ID,
+                         const stringImpl& text,
+                         const vec2<I32>& position,
+                         const vec2<U32>& dimensions,
+                         ButtonCallback callback,
+                         const stringImpl& rootSheetID) {
     vec2<F32> relOffset((position.x * 100.0f) / _resolutionCache.width,
         (position.y * 100.0f) / _resolutionCache.height);
 
@@ -453,34 +461,7 @@ GUIButton* GUI::addGlobalButton(ULL ID,
 
     GUIButton* btn = MemoryManager_NEW GUIButton(ID, text, _defaultGUIScheme, relOffset, relDim, parent, callback);
 
-    addElement(ID, 0, btn);
-
-    return btn;
-}
-
-GUIButton* GUI::addButton(ULL ID,
-                          const stringImpl& text,
-                          const vec2<I32>& position,
-                          const vec2<U32>& dimensions,
-                          ButtonCallback callback,
-                          const stringImpl& rootSheetID) {
-    vec2<F32> relOffset((position.x * 100.0f) / _resolutionCache.width,
-                        (position.y * 100.0f) / _resolutionCache.height);
-
-    vec2<F32> relDim((dimensions.x * 100.0f) / _resolutionCache.width,
-                     (dimensions.y * 100.0f) / _resolutionCache.height);
-
-    CEGUI::Window* parent = nullptr;
-    if (!rootSheetID.empty()) {
-        parent = CEGUI_DEFAULT_CTX.getRootWindow()->getChild(rootSheetID.c_str());
-    }
-    if (!parent) {
-        parent = _rootSheet;
-    }
-
-    GUIButton* btn = MemoryManager_NEW GUIButton(ID, text, _defaultGUIScheme, relOffset, relDim, parent, callback);
-
-    addElement(ID, _activeScene->getGUID(), btn);
+    addElement(ID, btn);
 
     return btn;
 }
@@ -490,47 +471,18 @@ GUIMessageBox* GUI::addMsgBox(ULL ID,
                               const stringImpl& message,
                               const vec2<I32>& offsetFromCentre) {
     GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(ID, title, message, offsetFromCentre, _rootSheet);
-    addElement(ID, _activeScene->getGUID(), box);
+    addElement(ID, box);
 
     return box;
 }
 
-GUIMessageBox* GUI::addGlobalMsgBox(ULL ID,
-                                    const stringImpl& title,
-                                    const stringImpl& message,
-                                    const vec2<I32>& offsetFromCentre) {
-    GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(ID, title, message, offsetFromCentre, _rootSheet);
-    addElement(ID, 0, box);
 
-    return box;
-}
 GUIText* GUI::addText(ULL ID,
                       const vec2<I32>& position,
                       const stringImpl& font,
                       const vec4<U8>& color,
                       const stringImpl& text,
                       U32 fontSize) {
-
-    GUIText* t = MemoryManager_NEW GUIText(ID,
-                                           text,
-                                           vec2<F32>(position.width, 
-                                                     position.height),
-                                           font,
-                                           color,
-                                           _rootSheet,
-                                           fontSize);
-
-    addElement(ID, _activeScene->getGUID(), t);
-
-    return t;
-}
-
-GUIText* GUI::addGlobalText(ULL ID,
-                            const vec2<I32>& position,
-                            const stringImpl& font,
-                            const vec4<U8>& color,
-                            const stringImpl& text,
-                            U32 fontSize) {
 
     GUIText* t = MemoryManager_NEW GUIText(ID,
                                            text,
@@ -541,10 +493,11 @@ GUIText* GUI::addGlobalText(ULL ID,
                                            _rootSheet,
                                            fontSize);
 
-    addElement(ID, 0, t);
+    addElement(ID,t);
 
     return t;
 }
+
 
 GUIFlash* GUI::addFlash(ULL ID,
                         stringImpl movie,
@@ -552,63 +505,66 @@ GUIFlash* GUI::addFlash(ULL ID,
                         const vec2<U32>& extent) {
 
     GUIFlash* flash = MemoryManager_NEW GUIFlash(ID, _rootSheet);
-    addElement(ID, _activeScene->getGUID(), flash);
+    addElement(ID, flash);
 
     return flash;
 }
 
-GUIFlash* GUI::addGlobalFlash(ULL ID,
-                              stringImpl movie,
-                              const vec2<U32>& position,
-                              const vec2<U32>& extent) {
-
-    GUIFlash* flash = MemoryManager_NEW GUIFlash(ID, _rootSheet);
-    addElement(ID, 0, flash);
-
-    return flash;
-}
 
 GUIText* GUI::modifyText(ULL ID, const stringImpl& text) {
-    GUIMapPerScene::iterator it = _guiStack.find(_activeScene->getGUID());
-    if (it == std::end(_guiStack)) {
+    GUIMap::iterator it = _guiGlobalStack.find(ID);
+
+    if (it == std::cend(_guiGlobalStack)) {
         return nullptr;
     }
 
-    GUIMap::iterator it2 = it->second.find(ID);
-
-    if (it2 == std::cend(it->second)) {
-        return nullptr;
-    }
- 
-    GUIElement* element = it2->second.first;
+    GUIElement* element = it->second.first;
     assert(element->getType() == GUIType::GUI_TEXT);
 
     GUIText* textElement = dynamic_cast<GUIText*>(element);
     assert(textElement != nullptr);
 
     textElement->text(text);
-    
+
     return textElement;
 }
 
-GUIText* GUI::modifyGlobalText(ULL ID, const stringImpl& text) {
-    GUIMapPerScene::iterator it = _guiStack.find(0);
-
-    GUIMap::iterator it2 = it->second.find(ID);
-
-    if (it2 == std::cend(it->second)) {
-        return nullptr;
+GUIElement* GUI::getGUIElementImpl(I64 sceneID, ULL elementName) const {
+    GUIElement* ret = nullptr;
+    if (sceneID != 0) {
+        GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
+        if (it != std::cend(_guiStack)) {
+            ret = it->second->get(elementName);
+        }
+    } else {
+        GUIMap::const_iterator it = _guiGlobalStack.find(elementName);
+        if (it != std::cend(_guiGlobalStack)) {
+            ret = it->second.first;
+        }
     }
 
-    GUIElement* element = it2->second.first;
-    assert(element->getType() == GUIType::GUI_TEXT);
+    return ret;
+}
 
-    GUIText* textElement = dynamic_cast<GUIText*>(element);
-    assert(textElement != nullptr);
+GUIElement* GUI::getGUIElementImpl(I64 sceneID, I64 elementID) const {
+    GUIElement* ret = nullptr;
+    if (sceneID != 0) {
+        GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
+        if (it != std::cend(_guiStack)) {
+            ret = it->second->get(elementID);
+        }
+    } else {
+        GUIElement* element = nullptr;
+        for (const GUIMap::value_type& guiStackIterator : _guiGlobalStack) {
+            element = guiStackIterator.second.first;
+            if (element->getGUID() == elementID) {
+                ret = element;
+                break;
+            }
+        }
+    }
 
-    textElement->text(text);
-
-    return textElement;
+    return ret;
 }
 
 };

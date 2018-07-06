@@ -82,22 +82,22 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     updateResolution(width, height);
 
     GUI& gui = GUI::instance();
-    gui.addGlobalText(_ID("PositionData"),             // Unique ID
-                      vec2<I32>(60, 60),               // Position
-                      Font::DIVIDE_DEFAULT,            // Font
-                      vec4<U8>(0, 64, 255, 255),       // Color
-                      "POSITION DATA");                // Text
-    gui.addGlobalText(_ID("NormalData"),               // Unique ID
-                      vec2<I32>(60 + width / 2, 60),   // Position
-                      Font::DIVIDE_DEFAULT,            // Font
-                      vec4<U8>(0, 64, 255, 255),       // Color
-                      "NORMAL DATA");                  // Text
-    gui.addGlobalText(_ID("FinalImage"),               // Unique ID
-                      vec2<I32>(60, 60 + height / 2),  // Position
-                      Font::DIVIDE_DEFAULT,            // Font
-                      vec4<U8>(0, 64, 255, 255),       // Color
-                      "FINAL IMAGE");                  // Text
-    gui.addGlobalText(_ID("LightTexture"),            // Unique ID
+    gui.addText(_ID("PositionData"),                 // Unique ID
+                      vec2<I32>(60, 60),             // Position
+                      Font::DIVIDE_DEFAULT,          // Font
+                      vec4<U8>(0, 64, 255, 255),     // Color
+                      "POSITION DATA");              // Text
+    gui.addText(_ID("NormalData"),                   // Unique ID
+                      vec2<I32>(60 + width / 2, 60), // Position
+                      Font::DIVIDE_DEFAULT,          // Font
+                      vec4<U8>(0, 64, 255, 255),     // Color
+                      "NORMAL DATA");                // Text
+    gui.addText(_ID("FinalImage"),                    // Unique ID
+                      vec2<I32>(60, 60 + height / 2), // Position
+                      Font::DIVIDE_DEFAULT,           // Font
+                      vec4<U8>(0, 64, 255, 255),      // Color
+                      "FINAL IMAGE");                 // Text
+    gui.addText(_ID("LightTexture"),                               // Unique ID
                       vec2<I32>(60 + width / 2, 60 + height / 2),  // Position
                       Font::DIVIDE_DEFAULT,                        // Font
                       vec4<U8>(0, 64, 255, 255),                   // Color
@@ -200,19 +200,19 @@ void DeferredShadingRenderer::secondPass(
     }
 
     GUI& gui = GUI::instance();
-    GUIElement* guiElement = gui.getGuiElement(0, _ID("FinalImage"));
+    GUIElement* guiElement = gui.getGUIElement(0, _ID("FinalImage"));
     if (guiElement) {
         guiElement->setVisible(_debugView);
     }
-    guiElement = gui.getGuiElement(0, _ID("LightTexture"));
+    guiElement = gui.getGUIElement(0, _ID("LightTexture"));
     if (guiElement) {
         guiElement->setVisible(_debugView);
     }
-    guiElement = gui.getGuiElement(0, _ID("PositionData"));
+    guiElement = gui.getGUIElement(0, _ID("PositionData"));
     if (guiElement) {
         guiElement->setVisible(_debugView);
     }
-    guiElement = gui.getGuiElement(0, _ID("NormalData"));
+    guiElement = gui.getGUIElement(0, _ID("NormalData"));
     if (guiElement) {
         guiElement->setVisible(_debugView);
     }

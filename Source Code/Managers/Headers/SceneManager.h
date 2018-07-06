@@ -226,6 +226,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     bool _processInput;
     /// Pointer to the currently active scene
     Scene* _activeScene;
+    Scene* _loadedScene;
     Scene* _defaultScene;
     vectorImpl<Scene*> _loadedScenes;
     /// Pointer to the GUI interface

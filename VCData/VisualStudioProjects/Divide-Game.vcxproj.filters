@@ -226,6 +226,9 @@
     <Filter Include="Scenes\DefaultScene\Headers">
       <UniqueIdentifier>{122eb966-83ad-47d9-85f1-3ac4f98b4016}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GUI\Headers">
+      <UniqueIdentifier>{32875ac5-aea9-45bf-8f5f-4caad227e673}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp">
@@ -467,6 +470,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\AIManager.cpp">
       <Filter>AI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\SceneGUIElements.cpp">
+      <Filter>GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -713,6 +719,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneComponent.h">
       <Filter>Scenes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\Headers\SceneGUIElements.h">
+      <Filter>GUI\Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

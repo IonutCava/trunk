@@ -37,7 +37,7 @@ Texture::~Texture()
 bool Texture::load() {
     _context.loadInContext(_asyncLoad ? CurrentContext::GFX_LOADING_CTX
                                       : CurrentContext::GFX_RENDERING_CTX,
-        [&]() {
+        [&](bool stopRequested) {
             threadedLoad();
         }
     );

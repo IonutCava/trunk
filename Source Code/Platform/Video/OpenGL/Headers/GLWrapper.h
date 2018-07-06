@@ -188,7 +188,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// This functions should be run in a separate, consumer thread.
     /// The main app thread, the producer, adds tasks via a lock-free queue that is
     /// checked every 20 ms
-    void threadedLoadCallback() override;
+    void syncToThread(std::thread::id threadID) override;
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in debug builds
     GLuint64 getFrameDurationGPU() override;

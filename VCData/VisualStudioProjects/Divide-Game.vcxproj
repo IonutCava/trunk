@@ -73,6 +73,7 @@
     <ClCompile Include="..\..\Source Code\Environment\Vegetation\Vegetation.cpp" />
     <ClCompile Include="..\..\Source Code\Environment\Water\Water.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditor.cpp" />
+    <ClCompile Include="..\..\Source Code\GUI\SceneGUIElements.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Action.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Node.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Planner.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="..\..\Source Code\Environment\Vegetation\Headers\Vegetation.h" />
     <ClInclude Include="..\..\Source Code\Environment\Water\Headers\Water.h" />
     <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditor.h" />
+    <ClInclude Include="..\..\Source Code\GUI\Headers\SceneGUIElements.h" />
     <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Action.h" />
     <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Node.h" />
     <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Planner.h" />

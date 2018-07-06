@@ -50,7 +50,7 @@ class WarScene : public Scene {
     explicit WarScene(const stringImpl& name);
     ~WarScene();
 
-    bool load(const stringImpl& name, GUI* const gui) override;
+    bool load(const stringImpl& name) override;
     bool loadResources(bool continueOnErrors) override;
     bool initializeAI(bool continueOnErrors) override;
     bool deinitializeAI(bool continueOnErrors) override;

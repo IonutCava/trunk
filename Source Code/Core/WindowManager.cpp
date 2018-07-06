@@ -121,7 +121,7 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
         SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-
+        SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
         // Toggle multi-sampling if requested.
         // This options requires a client-restart, sadly.
         I32 msaaSamples = par.getParam<I32>(_ID("rendering.MSAAsampless"), 0);

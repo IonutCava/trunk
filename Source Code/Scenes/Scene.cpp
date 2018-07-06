@@ -1,7 +1,5 @@
 #include "Headers/Scene.h"
 
-#include "GUI/Headers/GUI.h"
-
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 
@@ -61,6 +59,8 @@ Scene::Scene(const stringImpl& name)
     _sceneGraph = MemoryManager_NEW SceneGraph(*this);
     _aiManager = MemoryManager_NEW AI::AIManager(*this);
     _lightPool = MemoryManager_NEW LightPool(*this);
+    _GUI = MemoryManager_NEW SceneGUIElements(*this);
+
 #ifdef _DEBUG
 
     RenderStateBlock primitiveDescriptor;
@@ -81,6 +81,7 @@ Scene::~Scene()
     MemoryManager::DELETE(_sceneGraph);
     MemoryManager::DELETE(_aiManager);
     MemoryManager::DELETE(_lightPool);
+    MemoryManager::DELETE(_GUI);
 }
 
 bool Scene::initStaticData() {
@@ -552,14 +553,13 @@ void Scene::loadKeyBindings() {
     XML::loadDefaultKeybindings("keyBindings.xml", this);
 }
 
-bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
+bool Scene::load(const stringImpl& name) {
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING);
 
     STUBBED("ToDo: load skyboxes from XML")
-    _GUI = guiInterface;
     _name = name;
 
     SceneManager::instance().enableFog(_sceneState->fogDescriptor()._fogDensity,
@@ -618,7 +618,6 @@ bool Scene::unload() {
     if (!checkLoadFlag()) {
         return false;
     }
-    _GUI->onUnloadScene(this);
     clearTasks();
     _lightPool->clear();
     /// Destroy physics (:D)
@@ -637,6 +636,7 @@ void Scene::postLoad() {
 
 void Scene::onSetActive() {
     _aiManager->pauseUpdate(false);
+
 }
 
 void Scene::onRemoveActive() {

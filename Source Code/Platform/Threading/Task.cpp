@@ -1,6 +1,6 @@
 #include "Headers/Task.h"
 
-#include "Core/Headers/Kernel.h"
+#include "Core/Headers/TaskPool.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
@@ -12,16 +12,22 @@ namespace {
     const bool g_DebugTaskStartStop = false;
 };
 
-Task::Task() : GUIDWrapper(),
-               _tp(nullptr),
-               _poolIndex(0),
-               _jobIdentifier(-1),
-               _priority(TaskPriority::DONT_CARE)
+Task::Task()
+  : GUIDWrapper(),
+    _taskFlags(0),
+    _tp(nullptr),
+    _poolIndex(0),
+    _jobIdentifier(-1),
+    _priority(TaskPriority::DONT_CARE)
 {
     _parentTask = nullptr;
     _childTaskCount = 0;
     _done = true;
     _stopRequested = false;
+
+    if (g_DebugTaskStartStop) {
+        SetBit(_taskFlags, to_const_uint(TaskFlags::PRINT_DEBUG_INFO));
+    }
 }
 
 Task::~Task()
@@ -45,7 +51,9 @@ void Task::reset() {
     _childTaskCount = 0;
 }
 
-void Task::startTask(TaskPriority priority) {
+void Task::startTask(TaskPriority priority, U32 taskFlags) {
+    SetBit(_taskFlags, taskFlags);
+
     assert(!isRunning());
 
     _done = false;
@@ -105,8 +113,13 @@ void Task::waitForChildren(bool yeld, I64 timeout) {
 
 void Task::run() {
     waitForChildren(true, -1L);
-    if (g_DebugTaskStartStop) {
+
+    if (BitCompare(_taskFlags, to_const_uint(TaskFlags::PRINT_DEBUG_INFO))) {
         Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), getGUID(), std::this_thread::get_id());
+    }
+
+    if (BitCompare(_taskFlags, to_const_uint(TaskFlags::SYNC_WITH_GPU))) {
+        beginSyncGPU();
     }
 
     if (!Application::instance().ShutdownRequested()) {
@@ -123,14 +136,26 @@ void Task::run() {
         _parentTask->_childTaskCount -= 1;
     }
 
-    if (g_DebugTaskStartStop) {
-        Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), getGUID(), std::this_thread::get_id());
-    }
-
     _done = true;
 
     std::unique_lock<std::mutex> lk(_taskDoneMutex);
     _taskDoneCV.notify_one();
+
+    if (BitCompare(_taskFlags, to_const_uint(TaskFlags::PRINT_DEBUG_INFO))) {
+        Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), getGUID(), std::this_thread::get_id());
+    }
+
+    if (BitCompare(_taskFlags, to_const_uint(TaskFlags::SYNC_WITH_GPU))) {
+        endSyncGPU();
+    }
+}
+
+void Task::beginSyncGPU() {
+    Attorney::ApplicationTask::syncThreadToGPU(std::this_thread::get_id(), true);
+}
+
+void Task::endSyncGPU() {
+    Attorney::ApplicationTask::syncThreadToGPU(std::this_thread::get_id(), false);
 }
 
 };

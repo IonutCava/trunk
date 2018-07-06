@@ -67,13 +67,18 @@ enum class ErrorCode : I32 {
     PLATFORM_CLOSE_ERROR = -26
 };
 
+class Task;
 class Kernel;
 const char* getErrorCodeName(ErrorCode code);
   
+namespace Attorney {
+    class ApplicationTask;
+};
+
 /// Lightweight singleton class that manages our application's kernel and window
 /// information
 DEFINE_SINGLETON(Application)
-
+    friend class Attorney::ApplicationTask;
   public:
     static bool initStaticData();
     /// Startup and shutdown
@@ -139,6 +144,17 @@ DEFINE_SINGLETON(Application)
     /// is destroyed
     vectorImpl<DELEGATE_CBK<> > _shutdownCallback;
 END_SINGLETON
+
+namespace Attorney {
+    class ApplicationTask {
+    private:
+        // threadID = calling thread
+        // beginSync = true, called before thread processes data / false, called when thread finished processing data
+        static void syncThreadToGPU(std::thread::id threadID, bool beginSync);
+
+        friend class Divide::Task;
+    };
+};  // namespace Attorney
 
 };  // namespace Divide
 

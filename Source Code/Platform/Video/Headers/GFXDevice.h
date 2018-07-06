@@ -350,7 +350,7 @@ DEFINE_SINGLETON(GFXDevice)
     void increaseResolution();
     void decreaseResolution();
     bool loadInContext(const CurrentContext& context,
-                       const DELEGATE_CBK<>& callback);
+                       const DELEGATE_CBK_PARAM<bool>& callback);
 
     /// Save a screenshot in TGA format
     void Screenshot(const stringImpl& filename);
@@ -479,6 +479,10 @@ DEFINE_SINGLETON(GFXDevice)
         return _api->getFrameDurationGPU();
     }
 
+    inline void syncThreadToGPU(std::thread::id threadID, bool beginSync) {
+        _api->syncToThread(threadID);
+    }
+
   protected:
     void setBaseViewport(const vec4<I32>& viewport);
 
@@ -533,6 +537,9 @@ DEFINE_SINGLETON(GFXDevice)
     bool batchCommands(GenericDrawCommand& previousIDC,
                        GenericDrawCommand& currentIDC) const;
     void constructHIZ();
+
+    RenderAPIWrapper& getAPIImpl() { return *_api; }
+    const RenderAPIWrapper& getAPIImpl() const { return *_api; }
 
    private:
     GFXDevice();
@@ -688,6 +695,12 @@ namespace Attorney {
 
         static void onChangeRenderResolution(U16 w, U16 h) {
             GFXDevice::instance().onChangeResolution(w, h);
+        }
+
+        static void syncThreadToGPU(std::thread::id threadID, bool beginSync) {
+            if (beginSync) {
+                GFXDevice::instance().syncThreadToGPU(threadID, beginSync);
+            }
         }
 
         friend class Divide::Kernel;

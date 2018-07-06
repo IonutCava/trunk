@@ -71,10 +71,6 @@ class GPUState : private NonCopyable {
 
     /// register a new display mode (resolution, bitdepth, etc).
     void registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode);
-    bool startLoaderThread(const DELEGATE_CBK<>& loadingFunction);
-    bool stopLoaderThread();
-    void addToLoadQueue(const DELEGATE_CBK<>& callback);
-    void consumeOneFromQueue();
 
     inline vectorAlg::vecSize getDisplayCount() const {
         return _supportedDislpayModes.size();
@@ -85,32 +81,7 @@ class GPUState : private NonCopyable {
         return _supportedDislpayModes[displayIndex];
     }
 
-    inline void loadingThreadAvailable(bool state) {
-        _loadingThreadAvailable = state;
-    }
-   
-    inline void closeLoadingThread(bool state) {
-        _closeLoadingThread = state;
-    }
-    
-    inline bool loadingThreadAvailable() const {
-        return _loadingThreadAvailable && _loaderThread;
-    }
-     
-    inline bool closeLoadingThread() const {
-        return _closeLoadingThread;
-    }
-
    protected:
-    /// Threading system
-    LoadQueue _loadQueue;
-    std::atomic_bool _loadingThreadAvailable;
-    std::mutex _loadQueueMutex;
-    std::condition_variable _loadQueueCV;
-    bool _loadQueueDataReady;
-    /// Atomic boolean value used to signal the loading thread to stop
-    std::atomic_bool _closeLoadingThread;
-    std::thread* _loaderThread;
     // Display system
     vectorImpl<vectorImpl<GPUVideoMode>> _supportedDislpayModes;
 };

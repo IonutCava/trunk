@@ -37,6 +37,8 @@
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
+#include <thread>
+
 namespace Divide {
 
 class Kernel;
@@ -504,7 +506,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
 
    protected:
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
-    virtual void threadedLoadCallback() = 0;
+    virtual void syncToThread(std::thread::id threadID) = 0;
     virtual void registerCommandBuffer(const ShaderBuffer& commandBuffer) const = 0;
 
     virtual bool makeTexturesResident(const TextureDataContainer& textureData) = 0;

@@ -219,21 +219,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         ParamHandler::instance().getParam<F32>(_ID("rendering.zFar"))));
     _gpuBlock._updated = true;
 
-    // Create a separate loading thread that shares resources with the main
-    // rendering context
-    _state.startLoaderThread([&]() {
-        _api->threadedLoadCallback();
-        // Use an atomic bool to check if the thread is still active
-        _state.loadingThreadAvailable(true);
-        // Run an infinite loop until we actually request otherwise
-        while (!_state.closeLoadingThread()) {
-            _state.consumeOneFromQueue();
-        }
-        // If we close the loading thread, update our atomic bool to make sure the
-        // application isn't using it anymore
-        _state.loadingThreadAvailable(false);
-    });
-
     // Register a 2D function used for previewing the depth buffer.
 #ifdef _DEBUG
     add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
@@ -328,8 +313,6 @@ void GFXDevice::closeRenderingAPI() {
     ShaderProgram::destroyStaticData();
     // Close the rendering API
     _api->closeRenderingAPI();
-    // Close the loading thread and wait for it to terminate
-    _state.stopLoaderThread();
 
     switch (_API_ID) {
         case RenderAPI::OpenGL:

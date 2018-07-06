@@ -183,10 +183,11 @@ TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority,
+                        U32 taskFlags,
                         bool waitForResult)
 {
     TaskPool& pool = Application::instance().kernel().taskPool();
-    return parallel_for(pool, cbk, count, partitionSize, priority, waitForResult);
+    return parallel_for(pool, cbk, count, partitionSize, priority, taskFlags, waitForResult);
 }
 
 TaskHandle parallel_for(TaskPool& pool, 
@@ -194,6 +195,7 @@ TaskHandle parallel_for(TaskPool& pool,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority,
+                        U32 taskFlags,
                         bool waitForResult)
 {
     U32 crtPartitionSize = std::min(partitionSize, count);
@@ -208,17 +210,17 @@ TaskHandle parallel_for(TaskPool& pool,
                                            DELEGATE_BIND(cbk,
                                                          std::placeholders::_1,
                                                          start,
-                                                         end))._task)->startTask(priority);
+                                                         end))._task)->startTask(priority, taskFlags);
     }
     if (remainder > 0) {
         updateTask.addChildTask(CreateTask(pool,
                                            DELEGATE_BIND(cbk,
                                                          std::placeholders::_1,
                                                          count - remainder,
-                                                         count))._task)->startTask(priority);
+                                                         count))._task)->startTask(priority, taskFlags);
     }
 
-    updateTask.startTask(priority);
+    updateTask.startTask(priority, taskFlags);
     if (waitForResult) {
         updateTask.wait();
     }
