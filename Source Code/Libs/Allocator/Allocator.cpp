@@ -114,7 +114,7 @@ void Allocator::Deallocate(void* pBlock)
 //------------------------------------------------------------------------------
 void Allocator::Push(void* pMemory)
 {
-    Block* pBlock = (Block*)pMemory;
+    Block* pBlock = static_cast<Block*>(pMemory);
     pBlock->pNext = m_pHead;
     m_pHead = pBlock;
 }

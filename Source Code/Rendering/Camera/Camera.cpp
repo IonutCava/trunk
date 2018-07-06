@@ -79,13 +79,13 @@ void Camera::updateProjection(bool updateGPU) {
     if (updateGPU) {
         GFXDevice& gfx = GFX_DEVICE;
 
-        F32* projectionMatrixData = nullptr;
-        projectionMatrixData = _isOrthoCamera ? gfx.setProjection(_orthoRect,
-                                                                  _zPlanes)
+        F32* projectionMatrixData = 
+            _isOrthoCamera ? gfx.setProjection(_orthoRect,
+                                               _zPlanes)
 
-                                              : gfx.setProjection(_verticalFoV,
-                                                                  _aspectRatio,
-                                                                  _zPlanes);
+                           : gfx.setProjection(_verticalFoV,
+                                               _aspectRatio,
+                                               _zPlanes);
         if (_projectionDirty) {
             _projectionMatrix.set(projectionMatrixData);
             _frustumDirty = true;
@@ -180,14 +180,14 @@ void Camera::rotate(F32 yaw, F32 pitch, F32 roll) {
 
         // Rotate camera about the world y axis.
         // Note the order the quaternions are multiplied. That is important!
-        if (yaw != 0.0f) {
+        if (!IS_ZERO(yaw)) {
             _tempOrientation.fromAxisAngle(WORLD_Y_AXIS, yaw);
             _orientation = _tempOrientation * _orientation;
         }
 
         // Rotate camera about its local x axis.
         // Note the order the quaternions are multiplied. That is important!
-        if (pitch != 0.0f) {
+        if (!IS_ZERO(pitch)) {
             _tempOrientation.fromAxisAngle(WORLD_X_AXIS, pitch);
             _orientation = _orientation * _tempOrientation;
         }

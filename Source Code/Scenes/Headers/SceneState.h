@@ -264,7 +264,15 @@ class SceneState : public SceneComponent {
           _cameraUnderwater(false), 
           _cameraUpdated(false),
           _cameraLockedToMouse(false),
-          _saveLoadDisabled(false)
+          _saveLoadDisabled(false),
+          _waterHeight(0.0f),
+          _waterDepth(0.0f),
+          _grassVisibility(1.0f),
+          _treeVisibility(1.0f),
+          _generalVisibility(1.0f),
+          _windSpeed(1.0f),
+          _windDirX(0.0f),
+          _windDirZ(1.0f)
     {
         resetMovement();
         _fog.set(vec3<F32>(0.2f, 0.2f, 0.2f), 0.01f);

@@ -149,6 +149,7 @@ GFXDevice::RenderQueue::getPackage(U32 idx) const {
 
 inline GFXDevice::RenderPackage&
 GFXDevice::RenderQueue::getPackage(U32 idx) {
+    assert(idx < Config::MAX_VISIBLE_NODES);
     return _packages.at(idx);
 }
 

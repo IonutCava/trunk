@@ -31,7 +31,7 @@ namespace goap {
 
     public:
         Action();
-        Action(std::string name, int cost);
+        Action(const std::string& name, int cost);
 
         /**
          Is this action eligible to operate on the given worldstate?

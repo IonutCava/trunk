@@ -60,14 +60,19 @@ class StateTracker {
     {
     }
 
+    StateTracker(const StateTracker& other)
+        : _trackedValues(other._trackedValues)
+    {
+    }
+
     ~StateTracker()
     {
     }
 
+
+
     StateTracker& operator=(const StateTracker& other) {
-        for (U32 i = 0; i < to_const_uint(State::COUNT); ++i) {
-            _trackedValues[i] = other._trackedValues[i];
-        }
+        _trackedValues = other._trackedValues;
         return *this;
     }
 

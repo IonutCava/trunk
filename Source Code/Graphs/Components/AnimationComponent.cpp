@@ -110,7 +110,7 @@ bool AnimationComponent::playNextAnimation() {
     }
 
     I32 oldIndex = _currentAnimIndex;
-    ++_currentAnimIndex %= _animator->animations().size();
+    _currentAnimIndex = (_currentAnimIndex + 1 ) % _animator->animations().size();
 
     resetTimers();
 

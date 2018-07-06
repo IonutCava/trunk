@@ -88,7 +88,7 @@ void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     // Create our generic query objects
     for (U8 i = 0; i < 2; ++i) {
         memset(_feedbackQueries[i], 0, sizeof(GLuint) * _numQueries);
-        memset(_resultAvailable[i], false, sizeof(bool) * _numQueries);
+        memset(_resultAvailable[i], 0, sizeof(bool) * _numQueries);
         glGenQueries(_numQueries, _feedbackQueries[i]);
     }
     // Allocate buffers for all possible data that we may use with this object

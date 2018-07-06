@@ -15,9 +15,8 @@ void ParticleSphereVelocityGenerator::generate(TaskHandle& packagedTasksParent,
         theta = Random(-floatPI, floatPI);
         v = Random(_minVel, _maxVel);
         r = v * std::sin(phi);
-        p._velocity[i].z = v * std::cos(phi);
-        p._velocity[i].x = r * std::cos(theta);
-        p._velocity[i].y = r * std::sin(theta);
+        vec4<F32>& vel = p._velocity[i];
+        vel.set(r * std::cos(theta), r * std::sin(theta), v * std::cos(phi), vel.w);
     }
 }
 };

@@ -76,6 +76,12 @@ Quaternion<T>::Quaternion(const Quaternion& q)
 }
 
 template <typename T>
+Quaternion<T>& Quaternion<T>::operator=(const Quaternion& q) {
+    set(q);
+    return *this;
+}
+
+template <typename T>
 inline T Quaternion<T>::dot(const Quaternion<T>& rq) const {
     return _elements.dot(rq._elements);
 }

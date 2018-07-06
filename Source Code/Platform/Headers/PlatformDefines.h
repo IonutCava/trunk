@@ -686,8 +686,8 @@ auto DELEGATE_BIND(Args&&... args)
 
 template <typename... Args>
 auto DELEGATE_REF(Args&&... args)
-    -> decltype(std::bind(std::forward<Args>(args)...)) {
-    return std::bind(std::forward<Args>(args)...);
+    -> decltype(std::ref(std::forward<Args>(args)...)) {
+    return std::ref(std::forward<Args>(args)...);
 }
 
 template <typename... Args>

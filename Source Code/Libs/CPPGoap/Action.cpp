@@ -4,7 +4,7 @@
 goap::Action::Action() : cost_(0) {
 }
 
-goap::Action::Action(std::string name, int cost) : Action() {
+goap::Action::Action(const std::string& name, int cost) : Action() {
     // Because delegating constructors cannot initialize & delegate at the same time...
     name_ = name;
     cost_ = cost;

@@ -28,6 +28,13 @@ class WorldPacket : public ByteBuffer {
     {
     }
 
+    WorldPacket& operator=(const WorldPacket &packet) {
+        ByteBuffer::operator=(packet);
+        m_opcode = packet.m_opcode;
+
+        return *this;
+    }
+
     void Initialize(U16 opcode, size_t newres = 200) {
         clear();
         _storage.reserve(newres);

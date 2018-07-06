@@ -23,7 +23,7 @@ namespace goap {
         const Action* action_;     // The action that got us here (for replay purposes)
 
         Node();
-        Node(const WorldState state, int g, int h, int parent_id, const Action* action);
+        Node(const WorldState& state, int g, int h, int parent_id, const Action* action);
 
         // F -- which is simply G+H -- is autocalculated
         int f() const {

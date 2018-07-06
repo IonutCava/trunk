@@ -26,6 +26,7 @@ void glVertexArray::setVao(size_t hash, GLuint id) {
     std::pair<VAOMap::const_iterator, bool> result =
         hashAlg::emplace(_VAOMap, hash, id);
     assert(result.second);
+    ACKNOWLEDGE_UNUSED(result);
 }
 
 void glVertexArray::clearVaos() {

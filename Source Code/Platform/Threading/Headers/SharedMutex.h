@@ -50,7 +50,9 @@ struct synchronized {
     synchronized& operator=(T const& newval) {
         ReadLock lock(mutex);
         value = newval;
+        return *this;
     }
+
     operator T() const {
         WriteLock lock(mutex);
         return value;

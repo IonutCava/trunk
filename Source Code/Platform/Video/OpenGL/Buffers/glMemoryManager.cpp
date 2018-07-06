@@ -37,6 +37,8 @@ U32 VBO::handle() {
 }
 
 bool VBO::checkChunksAvailability(U32 offset, U32 count) {
+    assert(MAX_VBO_CHUNK_COUNT > offset);
+
     std::pair<bool, U32>& chunk = _chunkUsageState[offset];
     U32 freeChunkCount = 0;
     if (!chunk.first) {

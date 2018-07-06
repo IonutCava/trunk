@@ -37,6 +37,8 @@
 namespace Divide {
 
 struct TransformValues {
+    TransformValues();
+    TransformValues(const TransformValues& other);
     /// The object's position in the world as a 3 component vector
     vec3<F32> _translation;
     /// Scaling is stored as a 3 component vector.
@@ -47,7 +49,6 @@ struct TransformValues {
     Quaternion<F32> _orientation;
 
     void operator=(const TransformValues& other);
-
     bool operator==(const TransformValues& other) const;
     bool operator!=(const TransformValues& other) const;
 };

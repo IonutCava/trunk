@@ -6,8 +6,8 @@ namespace Divide {
 
 RenderStateBlock::RenderStateBlock()
     : GUIDWrapper(), 
-    _cachedHash(0),
-    _lockHash(false)
+     _cachedHash(0),
+     _lockHash(false)
 {
     setDefaultValues();
 }

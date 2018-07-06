@@ -55,6 +55,8 @@ class Quaternion {
     Quaternion(T pitch, T yaw, T roll, bool inDegrees = true);
     Quaternion(const Quaternion& q);
 
+    Quaternion& operator=(const Quaternion& q);
+
     inline T dot(const Quaternion& rq) const;
     inline T magnitude() const;
     inline T magnituteSq() const;

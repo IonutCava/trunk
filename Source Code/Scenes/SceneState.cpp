@@ -45,7 +45,7 @@ void SceneRenderState::toggleBoundingBoxes() {
 void SceneRenderState::toggleAxisLines() {
     static U32 selection = 0;
     Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_AXIS_GIZMO")));
-    ++selection %= to_const_uint(GizmoState::COUNT);
+    selection = (selection + 1) % to_const_uint(GizmoState::COUNT);
     switch (selection) {
         case 0:
             gizmoState(GizmoState::SELECTED_GIZMO);

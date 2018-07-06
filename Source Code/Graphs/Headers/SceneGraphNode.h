@@ -210,8 +210,9 @@ class SceneGraphNode : public GUIDWrapper,
         ReadLock r_lock(_childLock);
         updatedChildCount = getChildCount();
         assert(idx < updatedChildCount);
-        assert(_children.at(idx));
-        return *_children.at(idx);
+        const SceneGraphNode_ptr& child = _children.at(idx);
+        assert(child);
+        return *child;
     }
 
     inline U32 getChildCount() const {

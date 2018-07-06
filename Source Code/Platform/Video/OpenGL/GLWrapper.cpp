@@ -383,16 +383,6 @@ bool GL_API::initShaders() {
         lineOffsets);
 
     appendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define MAX_TEXTURE_SLOTS " + to_stringImpl(GL_API::_maxTextureUnits),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define MAX_TEXTURE_SLOTS " + to_stringImpl(GL_API::_maxTextureUnits),
-        lineOffsets);
-
-    appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_UNIT0 " +
             to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::UNIT0)),

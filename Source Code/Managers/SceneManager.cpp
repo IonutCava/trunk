@@ -325,7 +325,7 @@ bool SceneManager::generateShadowMaps() {
 }
 
 const RenderPassCuller::VisibleNodeList&
-SceneManager::getSortedCulledNodes(std::function<bool(const RenderPassCuller::VisibleNode&)> cullingFunction) {
+SceneManager::getSortedCulledNodes(const std::function<bool(const RenderPassCuller::VisibleNode&)>& cullingFunction) {
     const SceneRenderState& renderState = getActiveScene().state().renderState();
     const vec3<F32>& camPos = renderState.getCameraConst().getEye();
 
@@ -353,16 +353,16 @@ SceneManager::getSortedCulledNodes(std::function<bool(const RenderPassCuller::Vi
 const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes() {
     auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
         SceneGraphNode_cptr sgnNode = node.second.lock();
-        if (sgnNode->getNode()->getType() != SceneNodeType::TYPE_OBJECT3D &&
-            sgnNode->getNode()->getType() != SceneNodeType::TYPE_WATER) {
+        SceneNodeType type = sgnNode->getNode()->getType();
+        if (type != SceneNodeType::TYPE_OBJECT3D && type != SceneNodeType::TYPE_WATER) {
             return true;
         } else {
-            if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
+            if (type == SceneNodeType::TYPE_OBJECT3D) {
                 return sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::FLYWEIGHT;
             }
         }
         // Enable just for water nodes for now (we should flag mirrors somehow):
-        return sgnNode->getNode()->getType() != SceneNodeType::TYPE_WATER;
+        return type != SceneNodeType::TYPE_WATER;
     };
 
     return getSortedCulledNodes(cullingFunction);
@@ -371,11 +371,11 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes(
 const RenderPassCuller::VisibleNodeList& SceneManager::getSortedRefractiveNodes() {
     auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
         SceneGraphNode_cptr sgnNode = node.second.lock();
-        if (sgnNode->getNode()->getType() != SceneNodeType::TYPE_OBJECT3D &&
-            sgnNode->getNode()->getType() != SceneNodeType::TYPE_WATER) {
+        SceneNodeType type = sgnNode->getNode()->getType();
+        if (type != SceneNodeType::TYPE_OBJECT3D && type != SceneNodeType::TYPE_WATER) {
             return true;
         } else {
-            if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
+            if (type == SceneNodeType::TYPE_OBJECT3D) {
                 return sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::FLYWEIGHT;
             }
         }
@@ -383,7 +383,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedRefractiveNodes(
         //    return true;
         //}
         // Enable just for water nodes for now:
-        return sgnNode->getNode()->getType() != SceneNodeType::TYPE_WATER;
+        return type != SceneNodeType::TYPE_WATER;
     };
 
     return getSortedCulledNodes(cullingFunction);

@@ -212,9 +212,9 @@ void DisplayWindow::setPositionInternal(I32 w, I32 h) {
 void DisplayWindow::centerWindowPosition() {
     _internalMoveEvent = true;
     const WindowManager& winManager = Application::instance().windowManager();
-    I32 winX = SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay());
-    I32 winY = SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay());
-    setPosition(type(), winX, winY);
+    setPosition(type(),
+                SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay()),
+                SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay()));
 }
 
 /// Mouse positioning is handled by SDL

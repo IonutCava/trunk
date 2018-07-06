@@ -276,8 +276,11 @@ class Camera : public Resource {
         return _reflectionRendering ? _reflectedViewMatrix : _viewMatrix;
     }
 
-    inline const mat4<F32>& getViewMatrix() {
-        updateViewMatrix();
+    inline const mat4<F32>& getViewMatrix(bool update = false) {
+        if (update) {
+            updateViewMatrix();
+        }
+
         return _reflectionRendering ? _reflectedViewMatrix : _viewMatrix;
     }
 

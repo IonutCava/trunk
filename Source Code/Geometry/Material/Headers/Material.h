@@ -111,6 +111,15 @@ class Material : public Resource, public FrameListener {
         {
         }
 
+        ShaderData(const ShaderData& other)
+            : _diffuse(other._diffuse),
+              _specular(other._specular),
+              _emissive(other._emissive),
+              _shininess(other._shininess),
+              _textureCount(other._textureCount)
+        {
+        }
+
         ShaderData& operator=(const ShaderData& other) {
             _diffuse.set(other._diffuse);
             _specular.set(other._specular);
@@ -133,13 +142,6 @@ class Material : public Resource, public FrameListener {
             COUNT
         };
 
-        bool _customShader;
-        ShaderProgram_ptr _shaderRef;
-        stringImpl _shader;
-        RenderStage _stage;
-        std::atomic<ShaderCompilationStage> _shaderCompStage;
-        vectorImplAligned<stringImpl> _shaderDefines;
-
         const ShaderProgram_ptr& getProgram() const;
 
         inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
@@ -156,21 +158,37 @@ class Material : public Resource, public FrameListener {
                 _shadingFunction[i].fill(0);
             }
         }
+        
+        ShaderInfo(const ShaderInfo& other)
+            : _stage(other._stage),
+              _customShader(other._customShader),
+              _shaderRef(other._shaderRef),
+              _shader(other._shader),
+              _shadingFunction(other._shadingFunction),
+              _trackedBools(other._trackedBools),
+              _shaderDefines(other._shaderDefines)
+        {
+            _shaderCompStage.store(other._shaderCompStage);
+        }
 
         ShaderInfo& operator=(const ShaderInfo& other) {
+            _stage = other._stage;
             _customShader = other._customShader;
             _shaderRef = other._shaderRef;
             _shader = other._shader;
             _shaderCompStage.store(other._shaderCompStage);
-            for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
-                for (U32 j = 0; j < to_const_uint(BumpMethod::COUNT); ++j) {
-                    _shadingFunction[i][j] = other._shadingFunction[i][j];
-                }
-            }
+            _shadingFunction = other._shadingFunction;
             _trackedBools = other._trackedBools;
+            _shaderDefines = other._shaderDefines;
             return *this;
         }
 
+        bool _customShader;
+        ShaderProgram_ptr _shaderRef;
+        stringImpl _shader;
+        RenderStage _stage;
+        std::atomic<ShaderCompilationStage> _shaderCompStage;
+        vectorImplAligned<stringImpl> _shaderDefines;
         std::array<std::array<U32, to_const_uint(BumpMethod::COUNT)>,
                    to_const_uint(ShaderType::COUNT)> _shadingFunction;
 
@@ -362,8 +380,8 @@ class Material : public Resource, public FrameListener {
     void updateReflectionIndex(I32 index);
     void updateRefractionIndex(I32 index);
 
-    void defaultReflectionTexture(Texture_ptr reflectionPtr, U32 arrayIndex);
-    void defaultRefractionTexture(Texture_ptr reflectionPtr, U32 arrayIndex);
+    void defaultReflectionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
+    void defaultRefractionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
 
     inline U32 defaultReflectionTextureIndex() const { return _reflectionIndex > -1 ? to_uint(_reflectionIndex) : _defaultReflection.second; }
     inline U32 defaultRefractionTextureIndex() const { return _refractionIndex > -1 ? to_uint(_refractionIndex) : _defaultRefraction.second; }

@@ -56,8 +56,8 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
            }
 
            TextureType _type;
-           I32 _layerIndex;
-           I32 _cubeMapCount;
+           U32 _layerIndex;
+           U32 _cubeMapCount;
        };
     public:
 

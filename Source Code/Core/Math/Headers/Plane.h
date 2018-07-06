@@ -89,6 +89,15 @@ class Plane {
         redefine(point0, point1, point2);
     }
 
+    Plane& operator=(const Plane& other) {
+        _normal.set(other._normal);
+        _distance = other._distance;
+        _active = other._active;
+        _index = other._index;
+
+        return *this;
+    }
+
     inline Side classifyPoint(const vec3<F32>& point) const {
         F32 result = getDistance(point);
         return (result > 0 ? Side::POSITIVE_SIDE
@@ -132,11 +141,11 @@ class Plane {
     inline void setIndex(I32 index) { _index = index; }
     /// Comparison operator
     bool operator==(const Plane& rhs) const {
-        return (rhs._distance == _distance && rhs._normal == _normal);
+        return COMPARE(rhs._distance, _distance) && rhs._normal == _normal;
     }
 
     bool operator!=(const Plane& rhs) const {
-        return (rhs._distance != _distance || rhs._normal != _normal);
+        return !COMPARE(rhs._distance, _distance) || rhs._normal != _normal;
     }
 
     T normalize() {

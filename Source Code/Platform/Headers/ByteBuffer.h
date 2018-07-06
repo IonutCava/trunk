@@ -62,7 +62,17 @@ class ByteBuffer {
 
     // copy constructor
     ByteBuffer(const ByteBuffer &buf)
-        : _rpos(buf._rpos), _wpos(buf._wpos), _storage(buf._storage) {}
+        : _rpos(buf._rpos), _wpos(buf._wpos), _storage(buf._storage)
+    {
+    }
+
+    ByteBuffer& operator=(const ByteBuffer &buf) {
+        _rpos = buf._rpos;
+        _wpos = buf._rpos;
+        _storage = buf._storage;
+
+        return *this;
+    }
 
     void clear() {
         _storage.clear();

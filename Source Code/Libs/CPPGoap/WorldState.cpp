@@ -1,6 +1,6 @@
 #include "WorldState.h"
 
-goap::WorldState::WorldState(const std::string name) : priority_(0), name_(name) {
+goap::WorldState::WorldState(const std::string& name) : priority_(0), name_(name) {
     //nop
 }
 

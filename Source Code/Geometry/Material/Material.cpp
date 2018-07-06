@@ -85,15 +85,14 @@ Material::~Material()
 }
 
 bool Material::frameStarted(const FrameEvent& evt) {
-    _shadersComputedThisFrame = false;
-    _totalShaderComputeCountThisFrame = 0;
-
     return true;
 }
 
 bool Material::frameEnded(const FrameEvent& evt) {
     if (_shadersComputedThisFrame) {
         _totalShaderComputeCount += _totalShaderComputeCountThisFrame;
+        _totalShaderComputeCountThisFrame = 0;
+        _shadersComputedThisFrame = false;
     }
 
     return true;
@@ -340,12 +339,12 @@ void Material::updateRefractionIndex(I32 index) {
 }
 
 
-void Material::defaultReflectionTexture(Texture_ptr reflectionPtr, U32 arrayIndex) {
+void Material::defaultReflectionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex) {
     _defaultReflection.first = reflectionPtr;
     _defaultReflection.second = arrayIndex;
 }
 
-void Material::defaultRefractionTexture(Texture_ptr refractionPtr, U32 arrayIndex) {
+void Material::defaultRefractionTexture(const Texture_ptr& refractionPtr, U32 arrayIndex) {
     _defaultRefraction.first = refractionPtr;
     _defaultRefraction.second = arrayIndex;
 }

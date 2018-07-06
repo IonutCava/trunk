@@ -63,8 +63,8 @@ struct RenderTargetHandle {
     {
     }
 
-    U32 _targetIndex;
     RenderTarget* _rt;
+    U32 _targetIndex;
     RenderTargetID _targetID;
 };
 

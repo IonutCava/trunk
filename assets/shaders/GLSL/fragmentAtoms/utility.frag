@@ -21,6 +21,25 @@ void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
     targetTexture.xyz = mix(targetTexture.xyz, projectedTex.xyz, projectedTextureMixWeight);
 }
 
+//Box Projected Cube Environment Mapping by Bartosz Czuba
+vec3 bpcem(in vec3 v, vec3 Emax, vec3 Emin, vec3 Epos)
+{
+    vec3 pos = vec3(1.0);
+    //e.g.: vec3 rVec = bpcem(reflect(vVec,nVec),EnvBoxMax,EnvBoxMin,EnvBoxPos); //bpcem-izing reflection coordinates
+    //      vec3 env = textureCube(envMap, rVec).rgb;
+    vec3 nrdir = normalize(v);
+    vec3 rbmax = (Emax - pos) / nrdir;
+    vec3 rbmin = (Emin - pos) / nrdir;
+
+    vec3 rbminmax;
+    rbminmax.x = (nrdir.x>0.0) ? rbmax.x : rbmin.x;
+    rbminmax.y = (nrdir.y>0.0) ? rbmax.y : rbmin.y;
+    rbminmax.z = (nrdir.z>0.0) ? rbmax.z : rbmin.z;
+    float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
+    vec3 posonbox = pos + nrdir * fa;
+    return posonbox - Epos;
+}
+
 vec3 applyFogColour(in vec3 colour){
     const float LOG2 = 1.442695;
     float zDepth = gl_FragCoord.z / gl_FragCoord.w;

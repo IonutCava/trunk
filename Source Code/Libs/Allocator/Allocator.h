@@ -55,6 +55,8 @@ public:
     inline UINT GetDeallocations() { return m_deallocations; }
 	
 private:
+    Allocator(const Allocator& other) = delete;
+
     /// Push a memory block onto head of free-list.
     /// @param[in]  pMemory - block of memory to push onto free-list
     void Push(void* pMemory);
@@ -91,6 +93,7 @@ class AllocatorPool : public Allocator
 public:
 	AllocatorPool() : Allocator(sizeof(T), Objects, m_memory)
 	{
+        memset(m_memory, 0, sizeof(T) * Objects * sizeof(char))
 	}
 private:
 	CHAR m_memory[sizeof(T) * Objects];

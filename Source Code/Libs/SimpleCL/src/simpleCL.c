@@ -236,14 +236,13 @@ cl_program _sclCreateProgram( char* program_source, cl_context context )
 void _sclBuildProgram( cl_program program, cl_device_id devices, const char* pName )
 {
 #ifdef _DEBUG
-	cl_int err;
-	char build_c[4096];
-	
-	err = clBuildProgram( program, 0, NULL, NULL, NULL, NULL );
+	cl_int err = clBuildProgram( program, 0, NULL, NULL, NULL, NULL );
    	if ( err != CL_SUCCESS ) {
 		clPrint( stderr,  "Error on buildProgram " );
 		sclPrintErrorFlags( err ); 
 		clPrint( stderr,  "\nRequestingInfo\n" );
+
+        char build_c[4096];
 		clGetProgramBuildInfo( program, devices, CL_PROGRAM_BUILD_LOG, 4096, build_c, NULL );
 		clPrint( stderr,  "Build Log for %s_program:\n%s\n", pName, build_c );
 	}
@@ -534,7 +533,6 @@ sclHard sclGetFastestDevice( sclHard* hardList, int found ) {
 
 sclHard* sclGetAllHardware( int* found ) {
 
-	int i, j; 
 	cl_uint nPlatforms=0, nDevices=0;
 	char* platformName;
 	sclHard* hardList;
@@ -557,7 +555,7 @@ sclHard* sclGetAllHardware( int* found ) {
 	}
 	else {
 		
-		for ( i = 0; i < (int)nPlatforms; ++i ) {
+		for (int i = 0; i < (int)nPlatforms; ++i ) {
 			err = clGetDeviceIDs( platforms[i], CL_DEVICE_TYPE_ALL, 16, devices, &nDevices );
 			if ( nDevices == 0 ) {
 				clPrint( stderr, "\nNo OpenCL enabled device found.");
@@ -567,7 +565,7 @@ sclHard* sclGetAllHardware( int* found ) {
 				}
 			}
 			else {
-				for ( j = 0; j < (int)nDevices; ++j ) {
+				for (int j = 0; j < (int)nDevices; ++j ) {
 					
 					hardList[ *found ].platform       = platforms[ i ];
 					hardList[ *found ].device         = devices[ j ];
@@ -587,6 +585,9 @@ sclHard* sclGetAllHardware( int* found ) {
 #endif
 	sclRetainAllHardware( hardList, *found );
 	
+    free(GPUplatforms);
+    free(platformName);
+
 	return hardList;
 
 }

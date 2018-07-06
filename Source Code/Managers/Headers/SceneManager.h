@@ -84,7 +84,7 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     const RenderPassCuller::VisibleNodeList& getSortedRefractiveNodes();
 
     const RenderPassCuller::VisibleNodeList&
-        getSortedCulledNodes(std::function<bool(const RenderPassCuller::VisibleNode&)> cullingFunction);
+        getSortedCulledNodes(const std::function<bool(const RenderPassCuller::VisibleNode&)>& cullingFunction);
 
     void onLostFocus();
     /// Check if the scene was loaded properly

@@ -25,8 +25,8 @@ Sky::Sky(const stringImpl& name, U32 diameter)
     skyboxRenderState.setZFunc(ComparisonFunction::LESS);
     _skyboxRenderStateHashPrePass = skyboxRenderState.getHash();
     skyboxRenderState.setZFunc(ComparisonFunction::LEQUAL);
-    _skyboxRenderStateReflectedHash = skyboxRenderState.getHash();
     _skyboxRenderStateHash = skyboxRenderState.getHash();
+    _skyboxRenderStateReflectedHash = _skyboxRenderStateHash;
 }
 
 Sky::~Sky()

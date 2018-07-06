@@ -115,7 +115,7 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
                _transformFlags[to_const_uint(TransformType::ROTATION)] =
                        other.getFlag(TransformType::ROTATION);
                _transformFlags[to_const_uint(TransformType::TRANSLATION)] =
-                       getFlag(TransformType::VIEW_OFFSET);
+                       getFlag(TransformType::TRANSLATION);
                _transformFlags[to_const_uint(TransformType::VIEW_OFFSET)] =
                        getFlag(TransformType::VIEW_OFFSET);
 

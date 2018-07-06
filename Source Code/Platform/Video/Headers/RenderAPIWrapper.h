@@ -217,7 +217,7 @@ struct GenericDrawCommand {
     }
 
     inline bool renderBoundsSphere() const {
-        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_AABB));
+        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_SPHERE));
     }
 
     inline const IndirectDrawCommand& cmd() const {
@@ -300,6 +300,14 @@ class TextureData {
           _samplerHash(other._samplerHash),
           _textureHandle(other._textureHandle)
     {
+    }
+
+    TextureData& operator=(const TextureData& other) {
+        _textureType = other._textureType;
+        _samplerHash = other._samplerHash;
+        _textureHandle = other._textureHandle;
+
+        return *this;
     }
 
     inline void set(const TextureData& other) {
@@ -390,16 +398,16 @@ class RingBuffer {
         virtual void incQueue() { 
             if (queueLength() > 1) {
                 WriteLock w_lock(_lock);
-                ++_queueWriteIndex %= _queueLength;
-                ++_queueReadIndex  %= _queueLength;
+                _queueWriteIndex = (_queueWriteIndex + 1) % _queueLength;
+                _queueReadIndex  = (_queueLength + 1) & _queueLength;
             }
         }
 
         inline void decQueue() {
             if (queueLength() > 1) {
                 WriteLock w_lock(_lock);
-                --_queueWriteIndex %= _queueLength;
-                --_queueReadIndex  %= _queueLength;
+                _queueWriteIndex = (_queueWriteIndex - 1) % _queueLength;
+                _queueReadIndex = (_queueLength - 1) & _queueLength;
             }
         }
 

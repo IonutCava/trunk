@@ -1,6 +1,18 @@
 #include "Headers/Transform.h"
 
 namespace Divide {
+
+TransformValues::TransformValues()
+{
+}
+
+TransformValues::TransformValues(const TransformValues& other)
+    : _translation(other._translation),
+      _scale(other._scale),
+      _orientation(other._orientation)
+{
+}
+
 Transform::Transform()
     : Transform(Quaternion<F32>(), vec3<F32>(0.0f), vec3<F32>(1.0f))
 {

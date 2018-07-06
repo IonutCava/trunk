@@ -245,7 +245,7 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
     if (currentStage == RenderStage::SHADOW) {
         Light* shadowLight = LightPool::currentShadowCastingLight();
         assert(shadowLight != nullptr);
-        if (_gpuBlock._data._renderProperties.x != shadowLight->getShadowProperties()._arrayOffset.x) {
+        if (!COMPARE(_gpuBlock._data._renderProperties.x, shadowLight->getShadowProperties()._arrayOffset.x)) {
             _gpuBlock._data._renderProperties.x = to_float(shadowLight->getShadowProperties()._arrayOffset.x);
             _gpuBlock._updated = true;
         }

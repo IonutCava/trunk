@@ -694,7 +694,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     {
     }
 
-    vec4(simd_vector<T> reg) : _reg(reg)
+    vec4(const simd_vector<T>& reg) : _reg(reg)
     {
     }
 
@@ -763,7 +763,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     bool operator==(const vec4<T> &v) const { return this->compare(v); }
 
-    vec4 &operator=(T _f) { this->set(_f); }
+    vec4 &operator=(T _f) { this->set(_f); return *this; }
     vec4 &operator=(const vec4& other) { this->set(other); return *this; }
 
     const vec4 operator-(T _f) const {

@@ -170,7 +170,7 @@ namespace Divide {
         MEMORYSTATUSEX status; 
         status.dwLength = sizeof(status);
         BOOL infoStatus = GlobalMemoryStatusEx(&status);
-        if (infoStatus == TRUE) {
+        if (infoStatus != FALSE) {
             info._availableRam = status.ullAvailPhys;
             return info._availableRam > physicalRAMNeeded;
         } else {

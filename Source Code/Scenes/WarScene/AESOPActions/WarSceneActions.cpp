@@ -6,7 +6,8 @@
 namespace Divide {
 namespace AI {
 
-WarSceneAction::WarSceneAction(ActionType type, const stringImpl& name,
+WarSceneAction::WarSceneAction(ActionType type,
+                               const stringImpl& name,
                                F32 cost)
     : GOAPAction(name.c_str(), to_int(cost)),
     _type(type)
