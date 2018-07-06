@@ -51,7 +51,7 @@ public:
 
 protected:
     void render(SceneGraphNode* const sgn)             { return; }
-    void postLoad(SceneGraphNode* const sgn)           { return; }
+    void postLoad(SceneGraphNode* const sgn)           { SceneNode::postLoad(sgn); }
 };
 
 // Add as many SceneTransform nodes are needed as parent nodes for any scenenode to create complex transforms in the scene

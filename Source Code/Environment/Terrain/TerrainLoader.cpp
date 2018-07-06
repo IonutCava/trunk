@@ -211,6 +211,8 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
     if(_alphaTexturePresent) s->UniformTexture("texBlend3",6);
 
     _groundVBO->setShaderProgram(s);
+
+    SceneNode::postLoad(sgn);
 }
 
 bool Terrain::computeBoundingBox(SceneGraphNode* const sgn){

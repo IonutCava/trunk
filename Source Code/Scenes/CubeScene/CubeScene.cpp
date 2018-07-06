@@ -91,29 +91,12 @@ bool CubeScene::loadResources(bool continueOnErrors){
     return true;
 }
 
-bool CubeScene::onKeyDown(const OIS::KeyEvent& key)
-{
-    bool keyState = Scene::onKeyDown(key);
-    switch(key.key)	{
-        default: break;
-        case OIS::KC_W: state()._moveFB =  1; break;
-        case OIS::KC_A:	state()._moveLR = -1; break;
-        case OIS::KC_S:	state()._moveFB = -1; break;
-        case OIS::KC_D:	state()._moveLR =  1; break;
-        case OIS::KC_T:	_GFX.getRenderer()->toggleDebugView(); break;
-    }
-    return keyState;
-}
-
 bool CubeScene::onKeyUp(const OIS::KeyEvent& key)
 {
     bool keyState = Scene::onKeyUp(key);
     switch(key.key)
     {
-        case OIS::KC_W:
-        case OIS::KC_S:	state()._moveFB = 0;	break;
-        case OIS::KC_A:
-        case OIS::KC_D:	state()._moveLR = 0;	break;
+        case OIS::KC_T:	_GFX.getRenderer()->toggleDebugView(); break;
         default: break;
     }
     return keyState;

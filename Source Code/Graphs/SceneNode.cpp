@@ -17,6 +17,7 @@ SceneNode::SceneNode(const std::string& name, const SceneNodeType& type) : Resou
                                                              _material(nullptr),
                                                              _customShader(nullptr),
                                                              _refreshMaterialData(true),
+                                                             _nodeReady(false),
                                                              _type(type),
                                                              _lodLevel(0),
                                                              _LODcount(1), ///<Defaults to 1 LOD level
@@ -36,6 +37,8 @@ SceneNode::~SceneNode() {
 }
 
 void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
+    assert(_nodeReady);
+
     if(!_material) return;
 
     _refreshMaterialData = _material->isDirty();
@@ -52,6 +55,8 @@ void SceneNode::onDraw(const RenderStage& currentStage){
 }
 
 void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn) {
+    assert(_nodeReady);
+
     //draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
     //Draw the bounding box if it's always on or if the scene demands it
     if (sgn->getBoundingBoxConst().getVisibility() || GET_ACTIVE_SCENE()->renderState().drawBBox()){
@@ -63,6 +68,8 @@ void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn) {
 }
 
 bool SceneNode::isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck){
+    assert(_nodeReady);
+
     const Frustum& frust = Frustum::getInstance();
 
     const vec3<F32>& eye = frust.getEyePos();
@@ -127,6 +134,8 @@ void SceneNode::setMaterial(Material* const m){
 }
 
 void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
+    assert(_nodeReady);
+
     //UpgradableReadLock ur_lock(_materialLock);
     if(!_material)
         return;
@@ -190,6 +199,8 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 }
 
 void SceneNode::releaseMaterial(){
+    assert(_nodeReady);
+
     //UpgradableReadLock ur_lock(_materialLock);
     if(!_material) return;
 
@@ -200,6 +211,8 @@ void SceneNode::releaseMaterial(){
 }
 
 void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
+    assert(_nodeReady);
+
     if(getType() != TYPE_OBJECT3D && getType() != TYPE_TERRAIN)
         return;
 
@@ -242,6 +255,8 @@ void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
 }
 
 void SceneNode::releaseDepthMaterial(){
+    assert(_nodeReady);
+
     //UpgradableReadLock ur_lock(_materialLock);
     if(!_material || !_material->isTranslucent())
         return;

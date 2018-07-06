@@ -139,7 +139,6 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 
     Divide::GL::_initStacks();
 
-    //So, if someone selected High detail level, try to use pure 3.x API
     GLubyte msaaSamples = par.getParam<GLubyte>("rendering.FSAAsamples",2);
     GLubyte msaaMethod  = par.getParam<GLubyte>("rendering.FSAAmethod",FS_MSAA);
     _useMSAA = (msaaMethod == FS_MSAA || msaaMethod == FS_MSwFXAA) && (msaaSamples > 1);
@@ -151,7 +150,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     }
 
     glfwWindowHint(GLFW_RESIZABLE,par.getParam<bool>("runtime.allowWindowResize",false));
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,3);
     ///32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
     glfwWindowHint(GLFW_RED_BITS,8);

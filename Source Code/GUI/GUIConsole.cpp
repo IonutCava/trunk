@@ -47,6 +47,16 @@ namespace {
 
     /// Used to queue output text to be displayed when '_init' becomes true
     static boost::lockfree::queue<MessageStruct* , boost::lockfree::capacity<messageQueueCapacity> >  _outputBuffer;
+    static vectorImpl<std::pair<std::string, bool > > _outputTempBuffer;
+
+    void PushText(MessageStruct* msg){
+        U64 startTimer = GETUSTIME(true);
+        while (!_outputBuffer.push(msg)){
+            if (getUsToSec(GETUSTIME(true) - startTimer) > messageQueueTimeoutInSec){
+                break;
+            }
+        }
+    }
 };
 
 #if defined(_MSC_VER)
@@ -65,6 +75,7 @@ GUIConsole::GUIConsole() : _consoleWindow(nullptr),
 {
     // we need a default command parser, so just create it here
     _cmdParser = New GUIConsoleCommandParser();
+    _outputTempBuffer.reserve(1024);
 
     for(U16 i = 0; i < _CEGUI_MAX_CONSOLE_ENTRIES; ++i){
         _newItem.push_back(New CEGUI::FormattedListboxTextItem("",CEGUI::HTF_WORDWRAP_LEFT_ALIGNED));
@@ -77,8 +88,9 @@ GUIConsole::GUIConsole() : _consoleWindow(nullptr),
 
 GUIConsole::~GUIConsole()
 {
-    _init = false;
     setVisible(false);
+
+    _init = false;
     if (_consoleWindow)
         CEGUI_DEFAULT_CONTEXT.getRootWindow()->removeChild(_consoleWindow);
 
@@ -113,7 +125,7 @@ void GUIConsole::CreateCEGUIWindow(){
          CEGUI::Logger::getSingleton().logEvent("Error: Unable to load the ConsoleWindow from .layout");
          ERROR_FN(Locale::get("ERROR_CONSOLE_LAYOUT_FILE"),layoutFile.c_str());
     }
-    setVisible(false);
+
     _init = true;
     PRINT_FN(Locale::get("GUI_CONSOLE_CREATED"));
 }
@@ -170,6 +182,9 @@ bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs &e){
 }
 
 void GUIConsole::setVisible(bool visible){
+    if (!_init)
+        CreateCEGUIWindow();
+    
     //if it's not the first key (e.g., if the toggle key is "~", then "lorem~ipsum" should not close the Window)
     if(!_inputBuffer.empty())
         return;
@@ -188,17 +203,20 @@ void GUIConsole::setVisible(bool visible){
 }
 
 bool GUIConsole::isVisible(){
+    if (!_init)
+        return false;
+
     return _consoleWindow->isVisible();
 }
 
 void GUIConsole::printText(const char* output, bool error){
-    U64 startTimer = GETUSTIME(true);
-    MessageStruct* msg = New MessageStruct(output, error);
-    while(!_outputBuffer.push(msg)){
-        if(getUsToSec(GETUSTIME(true) - startTimer) > messageQueueTimeoutInSec){
-            break;
-        }
+
+    if (!_init){
+        _outputTempBuffer.push_back(std::make_pair(std::string(output), error));
+        return;
     }
+
+    PushText(New MessageStruct(output, error));
  }
 
 static I32 currentItem = 0;
@@ -226,6 +244,18 @@ void GUIConsole::update(const U64 deltaTime){
 
     static bool lastMsgError = false;
     static std::string lastMsg;
+
+    for (std::pair<std::string, bool> message : _outputTempBuffer){
+        if (lastMsgError != message.second){
+            lastMsgError = message.second;
+            OutputText(message.first.c_str(), lastMsgError);
+            lastMsg.clear();
+        }
+
+        lastMsg.append(message.first.c_str());
+        lastMsg.append("\n");
+    }
+    _outputTempBuffer.clear();
 
     MessageStruct* outMsg = nullptr;
     while(_outputBuffer.pop(outMsg)){

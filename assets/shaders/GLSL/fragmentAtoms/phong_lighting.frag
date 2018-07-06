@@ -62,7 +62,8 @@ vec4 Phong(in vec2 texCoord, in vec3 normal){
     linearColor.a *= opacity
     if(useAlphaTest && linearColor.a < ALPHA_DISCARD_THRESHOLD) discard;
 #elif defined(USE_OPACITY_MAP)
-    linearColor.a = texture(texOpacityMap, texCoord).a;
+    vec4 opacityMap = texture(texOpacityMap, texCoord);
+    linearColor.a = max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
     if(useAlphaTest && linearColor.a < ALPHA_DISCARD_THRESHOLD) discard;
 #elif defined(USE_OPACITY_DIFFUSE_MAP)
     // nothing. already added

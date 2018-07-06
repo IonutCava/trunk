@@ -40,7 +40,7 @@ public:
 
 private:
 	std::string _name;
-	U8 _lastTotalBinSize;
+	U16 _lastTotalBinSize;
 };
 
 #endif

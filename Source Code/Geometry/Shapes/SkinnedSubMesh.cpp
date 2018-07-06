@@ -26,6 +26,7 @@ void SkinnedSubMesh::postLoad(SceneGraphNode* const sgn){
     _softwareSkinning = ParamHandler::getInstance().getParam<bool>("mesh.useSoftwareSkinning", false);
     getGeometryVBO()->Create(!_softwareSkinning);
     sgn->setComponent(SGNComponent::SGN_COMP_ANIMATION, New AnimationComponent(_animator, sgn));
+
     Object3D::postLoad(sgn);
 }
 

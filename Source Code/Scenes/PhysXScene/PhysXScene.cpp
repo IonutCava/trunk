@@ -30,10 +30,7 @@ void PhysXScene::processTasks(const U64 deltaTime){
 }
 
 void PhysXScene::processInput(const U64 deltaTime){
-    if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
-    if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
-    if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
-    if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
+    defaultCameraControls();
 }
 
 bool PhysXScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
@@ -110,26 +107,10 @@ void PhysXScene::createTower(U32 size){
     s_sceneState = STATE_IDLE;
 }
 
-bool PhysXScene::onKeyDown(const OIS::KeyEvent& key){
-    bool keyState = Scene::onKeyDown(key);
-    switch(key.key)	{
-        default: break;
-        case OIS::KC_W: state()._moveFB =  1; break;
-        case OIS::KC_A:	state()._moveLR = -1; break;
-        case OIS::KC_S:	state()._moveFB = -1; break;
-        case OIS::KC_D:	state()._moveLR =  1; break;
-    }
-    return keyState;
-}
 
 bool PhysXScene::onKeyUp(const OIS::KeyEvent& key){
-    bool keyState = Scene::onKeyUp(key);
     switch(key.key)	{
         default: break;
-        case OIS::KC_W:
-        case OIS::KC_S:	state()._moveFB = 0; break;
-        case OIS::KC_A:
-        case OIS::KC_D:	state()._moveLR = 0; break;
         case OIS::KC_F1: _sceneGraph->print(); break;
         case OIS::KC_5:{
             _paramHandler.setParam("simSpeed", IS_ZERO(_paramHandler.getParam<F32>("simSpeed")) ? 1.0f : 0.0f);
@@ -156,7 +137,7 @@ bool PhysXScene::onKeyUp(const OIS::KeyEvent& key){
             addTask(e);
         } break;
     }
-    return keyState;
+    return Scene::onKeyUp(key);
 }
 
 bool PhysXScene::onMouseMove(const OIS::MouseEvent& key){

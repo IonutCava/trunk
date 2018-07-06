@@ -116,7 +116,12 @@ bool SceneGraphNode::unload(){
 
 ///Change current SceneGraphNode's parent
 void SceneGraphNode::setParent(SceneGraphNode* const parent) {
+    assert(parent != nullptr);
+    assert(parent->getGUID() != getGUID());
+
     if(_parent){
+        if (_parent->getGUID() == parent->getGUID())
+            return;
         //Remove us from the old parent's children map
         NodeChildren::iterator it = _parent->getChildren().find(getName());
         _parent->getChildren().erase(it);

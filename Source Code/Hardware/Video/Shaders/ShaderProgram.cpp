@@ -17,7 +17,8 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
                                                     _bound(false),
                                                     _dirty(true),
                                                     _wasBound(false),
-                                                    _elapsedTime(0ULL)
+                                                    _elapsedTime(0ULL),
+                                                    _elapsedTimeMS(0.0f)
 {
     _shaderProgramId = 0;//<Override in concrete implementations with appropriate invalid values
     _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = false;
@@ -65,6 +66,7 @@ ShaderProgram::~ShaderProgram()
 
 U8 ShaderProgram::update(const U64 deltaTime){
     _elapsedTime += deltaTime;
+    _elapsedTimeMS = static_cast<F32>(getUsToMs(_elapsedTime));
     ParamHandler& par = ParamHandler::getInstance();
     bool enableFog = par.getParam<bool>("rendering.enableFog");
     this->Uniform(_enableFogLoc, enableFog);
@@ -162,7 +164,7 @@ void ShaderProgram::bind(){
         return;
 
     //Apply global shader values valid throughout current render call:
-    this->Uniform(_timeLoc, static_cast<F32>(getUsToMs(_elapsedTime)));
+    this->Uniform(_timeLoc, _elapsedTimeMS);
     this->Attribute(_cameraLocationLoc, Frustum::getInstance().getEyePos());
 }
 

@@ -30,7 +30,7 @@ void glRenderStateBlock::activate(glRenderStateBlock* oldState){
     TOGGLE_WITH_CHECK(_cullMode, GL_CULL_FACE);
 
     if(SHOULD_TOGGLE(_blendSrc) || SHOULD_TOGGLE(_blendDest)){
-        GLCheck(glBlendFunc(glBlendTable[_descriptor._blendSrc], glBlendTable[_descriptor._blendDest]));
+        GLCheck(glBlendFuncSeparate(glBlendTable[_descriptor._blendSrc], glBlendTable[_descriptor._blendDest], GL_ONE, GL_ZERO));
     }
     
     if(SHOULD_TOGGLE(_blendOp)){

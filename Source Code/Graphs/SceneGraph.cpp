@@ -5,7 +5,9 @@
 #include "Geometry/Material/Headers/Material.h"
 
 SceneGraph::SceneGraph(){
-    _root = New SceneGraphNode(this, New SceneRoot);
+    SceneNode* root = New SceneRoot();
+    _root = New SceneGraphNode(this, root);
+    root->postLoad(_root);
     _root->setBBExclusionMask(TYPE_SKY | TYPE_LIGHT | TYPE_TRIGGER |TYPE_PARTICLE_EMITTER|TYPE_VEGETATION_GRASS|TYPE_VEGETATION_TREES);
     _updateRunning = false;
 }

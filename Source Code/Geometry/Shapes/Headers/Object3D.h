@@ -57,7 +57,7 @@ public:
     inline  ObjectFlag                getFlag()         const {return _geometryFlag;}
     inline  RenderInstance*     const renderInstance()  const {return _renderInstance;}
 
-    virtual void  postLoad(SceneGraphNode* const sgn) {} ///<To avoid a lot of typing
+    virtual void  postLoad(SceneGraphNode* const sgn);
     virtual void  onDraw(const RenderStage& currentStage);
     //virtual void  optimizeForDepth(bool state = true,bool force = false) {if(_geometry) _geometry->optimizeForDepth(state,force);}
 

@@ -57,7 +57,6 @@ public:
     void processTasks(const U64 deltaTime);
     void updateSceneStateInternal(const U64 deltaTime);
 
-    bool onKeyDown(const OIS::KeyEvent& key);
     bool onKeyUp(const OIS::KeyEvent& key);
     bool onMouseMove(const OIS::MouseEvent& key);
     bool onMouseClickDown(const OIS::MouseEvent& key, OIS::MouseButtonID button);

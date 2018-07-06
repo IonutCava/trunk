@@ -46,6 +46,8 @@ bool Trigger::unload(){
 void Trigger::postLoad(SceneGraphNode* const sgn) {
     //Hold a pointer to the trigger's location in the SceneGraph
     _triggerSGN = sgn;
+
+    SceneNode::postLoad(sgn);
 }
 
 void Trigger::render(SceneGraphNode* const sgn){

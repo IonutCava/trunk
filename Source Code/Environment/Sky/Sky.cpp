@@ -83,6 +83,8 @@ void Sky::postLoad(SceneGraphNode* const sgn){
     _sun->getSceneNodeRenderState().setDrawState(false);
     _sky->setCustomShader(_skyShader);
     _sun->setCustomShader(_skyShader);
+
+    SceneNode::postLoad(sgn);
 }
 
 void Sky::prepareMaterial(SceneGraphNode* const sgn) {

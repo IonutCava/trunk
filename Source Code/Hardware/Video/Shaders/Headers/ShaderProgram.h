@@ -49,6 +49,7 @@ public:
     inline void Uniform(const std::string& ext, U32 value) { Uniform(cachedLoc(ext), value); }
     inline void Uniform(const std::string& ext, I32 value) { Uniform(cachedLoc(ext), value); }
     inline void Uniform(const std::string& ext, F32 value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const std::string& ext, bool value) { Uniform(cachedLoc(ext), value); }
     inline void Uniform(const std::string& ext, const vec2<F32>& value) { Uniform(cachedLoc(ext), value); }
     inline void Uniform(const std::string& ext, const vec2<I32>& value) { Uniform(cachedLoc(ext), value); }
     inline void Uniform(const std::string& ext, const vec2<U16>& value) { Uniform(cachedLoc(ext), value); }
@@ -66,28 +67,30 @@ public:
     inline void UniformTexture(const std::string& ext, U16 slot) { UniformTexture(cachedLoc(ext), slot); }
 
     ///Attribute+Uniform+UniformTexture implementation
-    virtual void Attribute(I32 location, D32 value) = 0;
-    virtual void Attribute(I32 location, F32 value) = 0;
-    virtual void Attribute(I32 location, const vec2<F32>& value) = 0;
-    virtual void Attribute(I32 location, const vec3<F32>& value) = 0;
-    virtual void Attribute(I32 location, const vec4<F32>& value) = 0;
-    virtual void Uniform(I32 location, U32 value) = 0;
-    virtual void Uniform(I32 location, I32 value) = 0;
-    virtual void Uniform(I32 location, F32 value) = 0;
-    virtual void Uniform(I32 location, const vec2<F32>& value) = 0;
-    virtual void Uniform(I32 location, const vec2<I32>& value) = 0;
-    virtual void Uniform(I32 location, const vec2<U16>& value) = 0;
-    virtual void Uniform(I32 location, const vec3<F32>& value) = 0;
-    virtual void Uniform(I32 location, const vec4<F32>& value) = 0;
-    virtual void Uniform(I32 location, const mat3<F32>& value, bool rowMajor = false) = 0;
-    virtual void Uniform(I32 location, const mat4<F32>& value, bool rowMajor = false) = 0;
-    virtual void Uniform(I32 location, const vectorImpl<I32 >& values) = 0;
-    virtual void Uniform(I32 location, const vectorImpl<F32 >& values) = 0;
-    virtual void Uniform(I32 location, const vectorImpl<vec2<F32> >& values) = 0;
-    virtual void Uniform(I32 location, const vectorImpl<vec3<F32> >& values) = 0;
-    virtual void Uniform(I32 location, const vectorImpl<vec4<F32> >& values) = 0;
-    virtual void Uniform(I32 location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) = 0;
-    virtual void UniformTexture(I32, U16 slot) = 0;
+    virtual void Attribute(I32 location, D32 value) const = 0;
+    virtual void Attribute(I32 location, F32 value) const = 0;
+    virtual void Attribute(I32 location, const vec2<F32>& value) const = 0;
+    virtual void Attribute(I32 location, const vec3<F32>& value) const = 0;
+    virtual void Attribute(I32 location, const vec4<F32>& value) const = 0;
+    virtual void Uniform(I32 location, U32 value) const = 0;
+    virtual void Uniform(I32 location, I32 value) const = 0;
+    virtual void Uniform(I32 location, F32 value) const = 0;
+    virtual void Uniform(I32 location, const vec2<F32>& value) const = 0;
+    virtual void Uniform(I32 location, const vec2<I32>& value) const = 0;
+    virtual void Uniform(I32 location, const vec2<U16>& value) const = 0;
+    virtual void Uniform(I32 location, const vec3<F32>& value) const = 0;
+    virtual void Uniform(I32 location, const vec4<F32>& value) const = 0;
+    virtual void Uniform(I32 location, const mat3<F32>& value, bool rowMajor = false) const = 0;
+    virtual void Uniform(I32 location, const mat4<F32>& value, bool rowMajor = false) const = 0;
+    virtual void Uniform(I32 location, const vectorImpl<I32 >& values) const = 0;
+    virtual void Uniform(I32 location, const vectorImpl<F32 >& values) const = 0;
+    virtual void Uniform(I32 location, const vectorImpl<vec2<F32> >& values) const = 0;
+    virtual void Uniform(I32 location, const vectorImpl<vec3<F32> >& values) const = 0;
+    virtual void Uniform(I32 location, const vectorImpl<vec4<F32> >& values) const = 0;
+    virtual void Uniform(I32 location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) const = 0;
+    virtual void UniformTexture(I32, U16 slot) const = 0;
+
+    inline void Uniform(I32 location, bool value) const { Uniform(location, value ? 1 : 0); }
 
     virtual void attachShader(Shader* const shader,const bool refresh = false) = 0;
     virtual void detachShader(Shader* const shader) = 0;
@@ -123,6 +126,7 @@ protected:
     inline void setMatricesDirty() { _extendedMatricesDirty = true; }
     I32 operator==(const ShaderProgram &_v) { return this->getGUID() == _v.getGUID(); }
     I32 operator!=(const ShaderProgram &_v) { return !(*this == _v); }
+
 protected:
 
     ShaderProgram(const bool optimise = false);
@@ -152,6 +156,7 @@ protected:
     boost::atomic_bool _compiled;
     U32 _shaderProgramId; //<not thread-safe. Make sure assignment is protected with a mutex or something
     U64 _elapsedTime;
+    F32 _elapsedTimeMS;
     I32 _maxCombinedTextureUnits;
     ///A list of preprocessor defines
     vectorImpl<std::string > _definesList;

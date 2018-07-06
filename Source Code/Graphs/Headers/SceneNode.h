@@ -62,40 +62,41 @@ public:
 
     /// Perform any pre-draw operations (this is after sort and transform updates)
     virtual void onDraw(const RenderStage& currentStage);
-    virtual	bool getDrawState() const {return _renderState.getDrawState();}
+    virtual	bool getDrawState() const { return _renderState.getDrawState(); }
     /// Some scenenodes may need special case handling. I.E. water shouldn't render itself in REFLECTION_STAGE
-    virtual	bool getDrawState(const RenderStage& currentStage)  const {return _renderState.getDrawState(currentStage); }
+    virtual	bool getDrawState(const RenderStage& currentStage)  const { return _renderState.getDrawState(currentStage); }
     /*//Rendering/Processing*/
 
     virtual	bool	  unload();
     virtual bool	  isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
     virtual	void	  setMaterial(Material* const m);
-            Material* getMaterial();
+    Material* getMaterial();
     /// A custom shader is used if we either don't have a material or we need to render in a special way.
     /// Either way, we are not using the fixed pipeline so a shader is always needed for rendering
-    inline void  setCustomShader(ShaderProgram* const shader) {_customShader = shader;}
+    inline void  setCustomShader(ShaderProgram* const shader) { _customShader = shader; }
 
     /// Every SceneNode computes a bounding box in it's own way.
     virtual	bool computeBoundingBox(SceneGraphNode* const sgn);
     virtual void drawBoundingBox(SceneGraphNode* const sgn) const;
 
-    inline       void           setType(const SceneNodeType& type)        {_type = type;}
-    inline const SceneNodeType& getType()					        const {return _type;}
+    inline       void           setType(const SceneNodeType& type)        { _type = type; }
+    inline const SceneNodeType& getType()					        const { return _type; }
 
-    inline SceneNodeRenderState& getSceneNodeRenderState() {return _renderState;}
+    inline SceneNodeRenderState& getSceneNodeRenderState() { return _renderState; }
 
-    inline void incLODcount() {_LODcount++;}
-    inline void decLODcount() {_LODcount--;}
-    inline U8   getLODcount()   const {return _LODcount;}
-    inline U8   getCurrentLOD() const {return (_lodLevel < (_LODcount-1) ? _lodLevel : (_LODcount-1));}
+    inline void incLODcount() { _LODcount++; }
+    inline void decLODcount() { _LODcount--; }
+    inline U8   getLODcount()   const { return _LODcount; }
+    inline U8   getCurrentLOD() const { return (_lodLevel < (_LODcount - 1) ? _lodLevel : (_LODcount - 1)); }
 
 protected:
     friend class RenderBin;
     friend class RenderPass;
+    friend class SceneGraph;
     friend class SceneGraphNode;
-    inline I8   getReferenceCount() const {return _sgnReferenceCount;}
-    inline void incReferenceCount()       {_sgnReferenceCount++;}
-    inline void decReferenceCount()       {_sgnReferenceCount--;}
+    inline I8   getReferenceCount() const { return _sgnReferenceCount; }
+    inline void incReferenceCount()       { _sgnReferenceCount++; }
+    inline void decReferenceCount()       { _sgnReferenceCount--; }
 
     /// Perform any post-draw operations (this is after releasing object and shadow states)
     virtual void postDraw(const RenderStage& currentStage) {/*Nothing yet*/ }
@@ -115,7 +116,7 @@ protected:
 
     /// Perform any last minute operations before the frame drawing ends (this is after shader and shodawmap unbindng)
     virtual void preFrameDrawEnd(SceneGraphNode* const sgn);
-    virtual void postLoad(SceneGraphNode* const sgn) = 0; //Post insertion calls (Use this to setup child objects during creation)
+    virtual void postLoad(SceneGraphNode* const sgn) { _nodeReady = (sgn != nullptr); }; //Post insertion calls (Use this to setup child objects during creation)
 
 protected:
     ShaderProgram*        _customShader;
@@ -132,6 +133,7 @@ private:
     //mutable SharedLock _materialLock;
     Material*	  _material;
     bool          _refreshMaterialData;
+    bool          _nodeReady; //< make sure postload was called with a valid SGN
     SceneNodeType _type;
     char          _textureOperationUniformSlots[Config::MAX_TEXTURE_STORAGE][32];
 };

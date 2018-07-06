@@ -475,120 +475,120 @@ void glShaderProgram::unbind(bool resetActiveProgram) {
     ShaderProgram::unbind(resetActiveProgram);
 }
 
-void glShaderProgram::Attribute(I32 location, GLdouble value){
+void glShaderProgram::Attribute(I32 location, GLdouble value) const {
     GLCheck(glVertexAttrib1d(location,value));
 }
 
-void glShaderProgram::Attribute(I32 location, GLfloat value){
+void glShaderProgram::Attribute(I32 location, GLfloat value) const {
     GLCheck(glVertexAttrib1f(location,value));
 }
 
-void glShaderProgram::Attribute(I32 location, const vec2<GLfloat>& value){
+void glShaderProgram::Attribute(I32 location, const vec2<GLfloat>& value) const {
     GLCheck(glVertexAttrib2fv(location,value));
 }
 
-void glShaderProgram::Attribute(I32 location, const vec3<GLfloat>& value){
+void glShaderProgram::Attribute(I32 location, const vec3<GLfloat>& value) const {
     GLCheck(glVertexAttrib3fv(location,value));
 }
 
-void glShaderProgram::Attribute(I32 location, const vec4<GLfloat>& value){
+void glShaderProgram::Attribute(I32 location, const vec4<GLfloat>& value) const {
     GLCheck(glVertexAttrib4fv(location,value));
 }
 
-void glShaderProgram::Uniform(GLint location, GLuint value){
+void glShaderProgram::Uniform(GLint location, GLuint value) const {
     if (!_bound) GLCheck(glProgramUniform1ui(_shaderProgramId, location, value));
     else         GLCheck(glUniform1ui(location, value));
 }
 
-void glShaderProgram::Uniform(GLint location, GLint value){
+void glShaderProgram::Uniform(GLint location, GLint value) const {
     if (!_bound) GLCheck(glProgramUniform1i(_shaderProgramId, location, value));
     else         GLCheck(glUniform1i(location, value));
 }
 
-void glShaderProgram::Uniform(GLint location, GLfloat value){
+void glShaderProgram::Uniform(GLint location, GLfloat value) const {
     if (!_bound) GLCheck(glProgramUniform1f(_shaderProgramId, location, value));
     else         GLCheck(glUniform1f(location, value));
 }
 
-void glShaderProgram::Uniform(GLint location, const vec2<GLfloat>& value){
+void glShaderProgram::Uniform(GLint location, const vec2<GLfloat>& value) const {
     if (!_bound) GLCheck(glProgramUniform2fv(_shaderProgramId, location, 1, value));
     else         GLCheck(glUniform2fv(location, 1, value));
 }
 
-void glShaderProgram::Uniform(GLint location, const vec2<GLint>& value){
+void glShaderProgram::Uniform(GLint location, const vec2<GLint>& value) const {
     if (!_bound) GLCheck(glProgramUniform2iv(_shaderProgramId, location, 1, value));
     else         GLCheck(glUniform2iv(location, 1, value));
 }
 
-void glShaderProgram::Uniform(GLint location, const vec2<GLushort>& value){
+void glShaderProgram::Uniform(GLint location, const vec2<GLushort>& value) const {
     if (!_bound) GLCheck(glProgramUniform2iv(_shaderProgramId, location, 1, vec2<I32>(value.x, value.y)));
     else         GLCheck(glUniform2iv(location, 1, vec2<I32>(value.x, value.y)));
   
 }
 
-void glShaderProgram::Uniform(GLint location, const vec3<GLfloat>& value){
+void glShaderProgram::Uniform(GLint location, const vec3<GLfloat>& value) const {
     if (!_bound) GLCheck(glProgramUniform3fv(_shaderProgramId, location, 1, value));
     else         GLCheck(glUniform3fv(location, 1, value));
 }
 
-void glShaderProgram::Uniform(GLint location, const vec4<GLfloat>& value){
+void glShaderProgram::Uniform(GLint location, const vec4<GLfloat>& value) const {
     if (!_bound) GLCheck(glProgramUniform4fv(_shaderProgramId, location, 1, value));
     else         GLCheck(glUniform4fv(location, 1, value));
 }
 
-void glShaderProgram::Uniform(GLint location, const mat3<GLfloat>& value, bool rowMajor){
+void glShaderProgram::Uniform(GLint location, const mat3<GLfloat>& value, bool rowMajor) const {
     if (!_bound) GLCheck(glProgramUniformMatrix3fv(_shaderProgramId, location, 1, rowMajor, value));
     else         GLCheck(glUniformMatrix3fv(location, 1, rowMajor, value));
 }
 
-void glShaderProgram::Uniform(GLint location, const mat4<GLfloat>& value, bool rowMajor){
+void glShaderProgram::Uniform(GLint location, const mat4<GLfloat>& value, bool rowMajor) const {
     if (!_bound) GLCheck(glProgramUniformMatrix4fv(_shaderProgramId, location, 1, rowMajor, value));
     else         GLCheck(glUniformMatrix4fv(location, 1, rowMajor, value.mat));
 }
 
-void glShaderProgram::Uniform(GLint location, const vectorImpl<GLint >& values){
+void glShaderProgram::Uniform(GLint location, const vectorImpl<GLint >& values) const {
     if (values.empty()) return;
 
     if (!_bound) GLCheck(glProgramUniform1iv(_shaderProgramId, location, (GLsizei)values.size(), &values.front()));
     else         GLCheck(glUniform1iv(location, (GLsizei)values.size(), &values.front()));
 }
 
-void glShaderProgram::Uniform(GLint location, const vectorImpl<GLfloat >& values){
+void glShaderProgram::Uniform(GLint location, const vectorImpl<GLfloat >& values) const {
     if (values.empty()) return;
 
     if (!_bound) GLCheck(glProgramUniform1fv(_shaderProgramId, location, (GLsizei)values.size(), &values.front()));
     else         GLCheck(glUniform1fv(location, (GLsizei)values.size(), &values.front()));
 }
 
-void glShaderProgram::Uniform(GLint location, const vectorImpl<vec2<GLfloat> >& values){
+void glShaderProgram::Uniform(GLint location, const vectorImpl<vec2<GLfloat> >& values) const {
     if (values.empty()) return;
 
     if (!_bound) GLCheck(glProgramUniform2fv(_shaderProgramId, location, (GLsizei)values.size(), values.front()));
     else         GLCheck(glUniform2fv(location, (GLsizei)values.size(), values.front()));
 }
 
-void glShaderProgram::Uniform(GLint location, const vectorImpl<vec3<GLfloat> >& values){
+void glShaderProgram::Uniform(GLint location, const vectorImpl<vec3<GLfloat> >& values) const {
     if (values.empty()) return;
 
     if (!_bound) GLCheck(glProgramUniform3fv(_shaderProgramId, location, (GLsizei)values.size(), values.front()));
     else         GLCheck(glUniform3fv(location, (GLsizei)values.size(), values.front()));
 }
 
-void glShaderProgram::Uniform(GLint location, const vectorImpl<vec4<GLfloat> >& values){
+void glShaderProgram::Uniform(GLint location, const vectorImpl<vec4<GLfloat> >& values) const {
     if (values.empty()) return;
 
     if (!_bound) GLCheck(glProgramUniform4fv(_shaderProgramId, location, (GLsizei)values.size(), values.front()));
     else         GLCheck(glUniform4fv(location, (GLsizei)values.size(), values.front()));
 }
 
-void glShaderProgram::Uniform(GLint location, const vectorImpl<mat4<GLfloat> >& values, bool rowMajor){
+void glShaderProgram::Uniform(GLint location, const vectorImpl<mat4<GLfloat> >& values, bool rowMajor) const {
     if (values.empty()) return;
 
     if (!_bound) GLCheck(glProgramUniformMatrix4fv(_shaderProgramId, location, (GLsizei)values.size(), rowMajor, values.front()));
     else         GLCheck(glUniformMatrix4fv(location, (GLsizei)values.size(), rowMajor, values.front()));
 }
 
-void glShaderProgram::UniformTexture(GLint location, GLushort slot){
+void glShaderProgram::UniformTexture(GLint location, GLushort slot) const {
     if(!_bound) GLCheck(glProgramUniform1i(_shaderProgramId, location, slot));
     else        GLCheck(glUniform1i(location, slot));
 }

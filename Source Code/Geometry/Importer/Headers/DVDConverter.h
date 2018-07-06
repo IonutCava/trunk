@@ -64,10 +64,11 @@ DEFINE_SINGLETON( DVDConverter )
 public:
     Mesh* load(const std::string& file);
     bool init();
+
 private:
     DVDConverter();
     ~DVDConverter();
-    SubMesh* loadSubMeshGeometry(const aiMesh* source, U8 count);
+    SubMesh* loadSubMeshGeometry(const aiMesh* source, U16 count);
     Material* loadSubMeshMaterial(const aiMaterial* source, const std::string& materialName);
 
 private:
@@ -78,12 +79,12 @@ private:
     };
 
     Assimp::Importer* importer;
+
     const aiScene* _aiScenePointer;
     U32   _ppsteps;
-    U32   _loadcount; ///<keep track of the number of imported meshes
     std::string _fileLocation;
     std::string _modelName;
-    bool _init;
+
     TextureWrap                aiTextureMapModeTable[TextureWrap_PLACEHOLDER];
     Material::ShadingMode      aiShadingModeInternalTable[Material::ShadingMode_PLACEHOLDER];
     Material::TextureOperation aiTextureOperationTable[Material::TextureOperation_PLACEHOLDER];

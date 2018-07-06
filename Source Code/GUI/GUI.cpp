@@ -118,7 +118,7 @@ bool GUI::init(){
     CEGUI_DEFAULT_CONTEXT.setDefaultTooltipType( _defaultGUIScheme + "/Tooltip" );
 
     assert(_console);
-    _console->CreateCEGUIWindow();
+    //_console->CreateCEGUIWindow();
     GUIEditor::getInstance().init();
 
     P32 shaderMask;

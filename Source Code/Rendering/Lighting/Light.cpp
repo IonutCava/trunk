@@ -71,6 +71,8 @@ void Light::postLoad(SceneGraphNode* const sgn) {
     //Hold a pointer to the light's location in the SceneGraph
     _lightSGN = sgn;
     _updateLightBB = true;
+
+    SceneNode::postLoad(sgn);
 }
 
 void Light::updateState(const bool force){

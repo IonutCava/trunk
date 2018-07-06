@@ -38,6 +38,14 @@ void Object3D::render(SceneGraphNode* const sgn){
     GFX_DEVICE.renderInstance(_renderInstance);
 }
 
+void  Object3D::postLoad(SceneGraphNode* const sgn){
+    Material* mat = getMaterial();
+    if (mat && getFlag() == OBJECT_FLAG_SKINNED)
+        mat->setHardwareSkinning(true);
+
+    SceneNode::postLoad(sgn);
+}
+
 void Object3D::onDraw(const RenderStage& currentStage){
     if (getState() != RES_LOADED) return;
 

@@ -220,7 +220,7 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>Divide-Hardware_d.lib;Divide-Networking_d.lib;Divide-ReCast_d.lib;IL_d.lib;ILU_d.lib;jpeg_d.lib;libpng_d.lib;libmng_d.lib;libtiff_d.lib;SDL2.lib;SDL2_mixer.lib;zlib_d.lib;assimp_d.lib;glu32.lib;opengl32.lib;glfw3_d.lib;glsl_optimizer_d.lib;OIS_static_d.lib;pcre_d.lib;expat_d.lib;freetype_d.lib;CEGUIBase_d.lib;CEGUIDevILImageCodec_d.lib;CEGUICoreWindowRendererSet_d.lib;CEGUIExpatParser_d.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Hardware_d.lib;Divide-Networking_d.lib;Divide-ReCast_d.lib;IL_d.lib;ILU_d.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL2.lib;SDL2_mixer.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer_d.lib;OIS_static_d.lib;pcre.lib;expat.lib;freetype.lib;CEGUIBase_d.lib;CEGUIDevILImageCodec_d.lib;CEGUICoreWindowRendererSet_d.lib;CEGUIExpatParser_d.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Visual Leak Detector\lib\Win64;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\glslopt\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\sdl\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\cegui-deps\lib\static;$(EngineLibraries)\physx\lib\win64</AdditionalLibraryDirectories>

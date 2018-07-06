@@ -165,12 +165,28 @@ void PingPongScene::test(boost::any a, CallbackParam b){
 }
 
 void PingPongScene::processInput(const U64 deltaTime){
+    
+    if (_freeFly){
+        defaultCameraControls();
+        _wasInFreeFly = true;
+        return;
+    }
+
+    Camera& cam = renderState().getCamera();
+    if (_wasInFreeFly){
+        //Position the camera
+        cam.setPitch(-90);
+        cam.setYaw(0);
+        cam.setRoll(0);
+        cam.setEye(vec3<F32>(0, 2.5f, 6.5f));
+        _wasInFreeFly = false;
+    }
     //Move FB = Forward/Back = up/down
     //Move LR = Left/Right
     static F32 paddleMovementDivisor = 10;
     //Camera controls
-    if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
-    if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
+    if (state()._angleLR) cam.rotateYaw(state()._angleLR);
+    if (state()._angleUD) cam.rotatePitch(state()._angleUD);
 
     SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
 
@@ -190,13 +206,16 @@ void PingPongScene::processInput(const U64 deltaTime){
 }
 
 bool PingPongScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
+    _freeFly = false;
+    _wasInFreeFly = false;
+
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     //Add a light
     addDefaultLight();
     addDefaultSky();
     //Position the camera
-    renderState().getCamera().setPitch(-90);
+    //renderState().getCamera().setPitch(-90);
     renderState().getCamera().setEye(vec3<F32>(0,2.5f,6.5f));
 
     return loadState;
@@ -215,15 +234,15 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     _ball->getMaterial()->setShininess(36.8f);
     _ball->getMaterial()->setSpecular(vec4<F32>(0.774597f,0.774597f,0.774597f,1.0f));
 
-    ResourceDescriptor tempLight("Light Omni");
+    /*ResourceDescriptor tempLight("Light Omni");
     tempLight.setId(2);
     tempLight.setEnumValue(LIGHT_TYPE_POINT);
     Light* light = CreateResource<Light>(tempLight);
+    addLight(light, _sceneGraph->getRoot());
     light->setLightProperties(LIGHT_PROPERTY_BRIGHTNESS, 30.0f);
     light->setCastShadows(false);
-    light->setPosition(vec3<F32>(0, 6 ,2));
-    _sceneGraph->getRoot()->addNode(light);
-    addLight(light);
+    light->setPosition(vec3<F32>(0, 6, 2));
+    */
     //Buttons and text labels
     _GUI->addButton("Serve", "Serve", vec2<I32>(renderState().cachedResolution().width-120 ,
                     renderState().cachedResolution().height/1.1f),
@@ -254,49 +273,16 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     return true;
 }
 
-bool PingPongScene::onKeyDown(const OIS::KeyEvent& key){
-    bool keyState = Scene::onKeyDown(key);
-    switch(key.key){
-        default: break;
-        case OIS::KC_W: state()._moveFB =  1; break;
-        case OIS::KC_A:	state()._moveLR = -1; break;
-        case OIS::KC_S:	state()._moveFB = -1; break;
-        case OIS::KC_D:	state()._moveLR =  1; break;
-    }
-    return keyState;
-}
-
 bool PingPongScene::onKeyUp(const OIS::KeyEvent& key){
     bool keyState = Scene::onKeyUp(key);
     switch(key.key)	{
         default: break;
-        case OIS::KC_W:
-        case OIS::KC_S:	state()._moveFB = 0; break;
-        case OIS::KC_A:
-        case OIS::KC_D:	state()._moveLR = 0; break;
+        case OIS::KC_F: _freeFly = !_freeFly;
     }
     return keyState;
 }
 
-bool PingPongScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
-    bool keyState = Scene::onJoystickMovePOV(key,pov);
-    if( key.state.mPOV[pov].direction & OIS::Pov::North ) //Going up
-        state()._moveFB = 1;
-    else if( key.state.mPOV[pov].direction & OIS::Pov::South ) //Going down
-        state()._moveFB = -1;
 
-    if( key.state.mPOV[pov].direction & OIS::Pov::East ) //Going right
-        state()._moveLR = 1;
-
-    else if( key.state.mPOV[pov].direction & OIS::Pov::West ) //Going left
-        state()._moveLR = -1;
-
-    if( key.state.mPOV[pov].direction == OIS::Pov::Centered ){ //stopped/centered out
-        state()._moveLR = 0;
-        state()._moveFB = 0;
-    }
-    return keyState;
-}
 
 bool PingPongScene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone){
     return Scene::onJoystickMoveAxis(key,axis,deadZone);

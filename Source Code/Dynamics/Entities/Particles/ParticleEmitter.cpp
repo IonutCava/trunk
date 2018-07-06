@@ -120,6 +120,8 @@ void ParticleEmitter::postLoad(SceneGraphNode* const sgn){
     _updateParticleEmitterBB = true;
 
     setState(RES_LOADED);
+
+    SceneNode::postLoad(sgn);
 }
 
 bool ParticleEmitter::computeBoundingBox(SceneGraphNode* const sgn){

@@ -395,6 +395,23 @@ void Scene::clearLights(){
     LightManager::getInstance().clear();
 }
 
+bool Scene::defaultCameraControls(){
+
+    Camera& cam = renderState().getCamera();
+    switch (cam.getType()){
+        default:
+        case Camera::FREE_FLY:{
+            if (state()._angleLR) cam.rotateYaw(state()._angleLR);
+            if (state()._angleUD) cam.rotatePitch(state()._angleUD);
+            if (state()._roll)    cam.rotateRoll(state()._roll);
+            if (state()._moveFB)  cam.moveForward(state()._moveFB);
+            if (state()._moveLR)  cam.moveStrafe(state()._moveLR);
+        }break;
+    }
+
+    return (state()._moveFB || state()._moveLR || state()._angleLR || state()._angleUD || state()._roll);
+}
+
 void Scene::updateSceneState(const U64 deltaTime){
     updateSceneStateInternal(deltaTime);
     _sceneGraph->sceneUpdate(deltaTime, _sceneState);

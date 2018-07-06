@@ -65,7 +65,7 @@ public:
           _map.create(map);
       }
     ~Vegetation();
-    void postLoad(SceneGraphNode* const sgn) {}
+    void postLoad(SceneGraphNode* const sgn) { SceneNode::postLoad(sgn); }
     void initialize(const std::string& grassShader, Terrain* const terrain,SceneGraphNode* const terrainSGN);
     inline void toggleRendering(bool state){_render = state;}
     ///parentTransform: the transform of the parent terrain node

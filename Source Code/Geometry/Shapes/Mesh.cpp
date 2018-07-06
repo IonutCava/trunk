@@ -52,6 +52,7 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
             s->setParentMeshSGN(sgn);
         }
     }
+
     Object3D::postLoad(sgn);
 }
 

@@ -157,6 +157,7 @@ protected:
 
     typedef Unordered_map<std::string, ParticleEmitter *> ParticleEmitterMap;
     ParticleEmitterMap _particleEmitters;
+
 private:
     vectorImpl<Task_ptr> _tasks;
     ///Contains all game related info for the scene (wind speed, visibility ranges, etc)
@@ -193,6 +194,9 @@ protected:
     void clearPhysics();
     /**End loading and unloading logic*/
 
+    // returns true if the camera was moved/rotated/etc
+    bool defaultCameraControls();
+
     Light*  addDefaultLight();
     Sky*    addDefaultSky();
     Camera* addDefaultCamera();//Default camera
@@ -221,7 +225,7 @@ public: //Input
     virtual bool onKeyDown(const OIS::KeyEvent& key);
     virtual bool onKeyUp(const OIS::KeyEvent& key);
     virtual bool onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone);
-    virtual bool onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){ return true; }
+    virtual bool onJoystickMovePOV(const OIS::JoyStickEvent& key, I8 pov);
     virtual bool onJoystickButtonDown(const OIS::JoyStickEvent& key,I8 button){ return true;}
     virtual bool onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button) { return true; }
     virtual bool sliderMoved( const OIS::JoyStickEvent &arg, I8 index) { return true; }

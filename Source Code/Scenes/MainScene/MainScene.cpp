@@ -62,24 +62,10 @@ void MainScene::renderEnvironment(bool waterReflection){
 }
 
 void MainScene::processInput(const U64 deltaTime){
-    bool update = false;
-    Camera& cam = renderState().getCamera();
-    if(state()._angleLR){
-        cam.rotateYaw(state()._angleLR);
-        update = true;
-    }
-    if(state()._angleUD){
-        cam.rotatePitch(state()._angleUD);
-        update = true;
-    }
-
-    if(state()._moveFB || state()._moveLR){
-        if(state()._moveFB) cam.moveForward(state()._moveFB);
-        if(state()._moveLR) cam.moveStrafe(state()._moveLR);
-        update = true;
-    }
+    bool update = defaultCameraControls();
 
     if(update){
+        Camera& cam = renderState().getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler  = cam.getEuler();
         if(!_freeflyCamera){
@@ -100,7 +86,6 @@ void MainScene::processInput(const U64 deltaTime){
             _GUI->modifyText("camPosition","[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
                               eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw);
         }
-        update = false;
     }
 }
 
@@ -270,27 +255,10 @@ bool MainScene::loadResources(bool continueOnErrors){
     return true;
 }
 
-bool MainScene::onKeyDown(const OIS::KeyEvent& key){
-    bool keyState = Scene::onKeyDown(key);
-    switch(key.key)	{
-        default: break;
-        case OIS::KC_W: state()._moveFB =  1; break;
-        case OIS::KC_A:	state()._moveLR = -1; break;
-        case OIS::KC_S:	state()._moveFB = -1; break;
-        case OIS::KC_D:	state()._moveLR =  1; break;
-    }
-    return keyState;
-}
-
 bool _playMusic = false;
 bool MainScene::onKeyUp(const OIS::KeyEvent& key){
-    bool keyState = Scene::onKeyUp(key);
     switch(key.key)	{
         default: break;
-        case OIS::KC_W:
-        case OIS::KC_S:	state()._moveFB = 0; break;
-        case OIS::KC_A:
-        case OIS::KC_D: state()._moveLR = 0; break;
         case OIS::KC_X:	SFX_DEVICE.playSound(_beep); break;
         case OIS::KC_M:{
             _playMusic = !_playMusic;
@@ -317,7 +285,7 @@ bool MainScene::onKeyUp(const OIS::KeyEvent& key){
             }
             break;
     }
-    return keyState;
+    return Scene::onKeyUp(key);
 }
 
 bool MainScene::onMouseMove(const OIS::MouseEvent& key){

@@ -232,10 +232,7 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
 }
 
 void AITenisScene::processInput(const U64 deltaTime){
-    if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
-    if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
-    if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
-    if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
+    defaultCameraControls();
 }
 
 bool AITenisScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
@@ -401,49 +398,13 @@ bool AITenisScene::loadResources(bool continueOnErrors){
     return true;
 }
 
-bool AITenisScene::onKeyDown(const OIS::KeyEvent& key){
-    bool keyState = Scene::onKeyDown(key);
-    switch(key.key)	{
-        default: break;
-        case OIS::KC_W: state()._moveFB =  1; break;
-        case OIS::KC_A:	state()._moveLR = -1; break;
-        case OIS::KC_S:	state()._moveFB = -1; break;
-        case OIS::KC_D:	state()._moveLR =  1; break;
-    }
-    return keyState;
-}
-
 bool AITenisScene::onKeyUp(const OIS::KeyEvent& key){
-    bool keyState = Scene::onKeyUp(key);
     switch(key.key)	{
-        case OIS::KC_W:
-        case OIS::KC_S:	state()._moveFB = 0; break;
-        case OIS::KC_A:
-        case OIS::KC_D:	state()._moveLR = 0; break;
         case OIS::KC_F1: _sceneGraph->print();	break;
         default: break;
     }
-    return keyState;
-}
 
-bool AITenisScene::onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){
-    bool keyState = Scene::onJoystickMovePOV(key,pov);
-    if( key.state.mPOV[pov].direction & OIS::Pov::North ) //Going up
-        state()._moveFB = 1;
-    else if( key.state.mPOV[pov].direction & OIS::Pov::South ) //Going down
-        state()._moveFB = -1;
-
-    if( key.state.mPOV[pov].direction & OIS::Pov::East ) //Going right
-        state()._moveLR = -1;
-
-    else if( key.state.mPOV[pov].direction & OIS::Pov::West ) //Going left
-        state()._moveLR = 1;
-
-    if( key.state.mPOV[pov].direction == OIS::Pov::Centered ){ //stopped/centered out
-        state()._moveLR = 0;
-        state()._moveFB = 0;
-    }
-    return keyState;
+    return Scene::onKeyUp(key);
 }
 
 bool AITenisScene::onMouseMove(const OIS::MouseEvent& key){

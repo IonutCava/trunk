@@ -110,18 +110,7 @@ void WarScene::processSimulation(boost::any a, CallbackParam b){
 }
 
 void WarScene::processInput(const U64 deltaTime){
-    if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
-    if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
-
-    Camera& cam = renderState().getCamera();
-    switch(cam.getType()){
-        default:
-        case Camera::FREE_FLY:{
-            if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
-            if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
-            if(state()._roll)    renderState().getCamera().rotateRoll(state()._roll);
-        }break;
-    }
+    defaultCameraControls();
 }
 
 static boost::atomic_bool navMeshStarted;
@@ -470,20 +459,6 @@ bool WarScene::loadResources(bool continueOnErrors){
     return true;
 }
 
-bool WarScene::onKeyDown(const OIS::KeyEvent& key){
-    bool keyState = Scene::onKeyDown(key);
-    switch(key.key)	{
-        default: break;
-        case OIS::KC_W: state()._moveFB =  1; break;
-        case OIS::KC_A:	state()._moveLR = -1; break;
-        case OIS::KC_S:	state()._moveFB = -1; break;
-        case OIS::KC_D:	state()._moveLR =  1; break;
-        case OIS::KC_Q: state()._roll   = -1; break;
-        case OIS::KC_E: state()._roll   =  1; break;
-    }
-    return keyState;
-}
-
 bool WarScene::onKeyUp(const OIS::KeyEvent& key){
     static bool fpsCameraActive = false;
     static bool tpsCameraActive = false;
@@ -492,12 +467,7 @@ bool WarScene::onKeyUp(const OIS::KeyEvent& key){
     bool keyState = Scene::onKeyUp(key);
     switch(key.key)	{
         default: break;
-        case OIS::KC_W:
-        case OIS::KC_S:	state()._moveFB = 0; break;
-        case OIS::KC_A:
-        case OIS::KC_D: state()._moveLR = 0; break;
-        case OIS::KC_Q:
-        case OIS::KC_E: state()._roll   = 0; break;
+
         case OIS::KC_F1: _sceneGraph->print(); break;
         case OIS::KC_TAB:{
             if(_currentSelection != nullptr){

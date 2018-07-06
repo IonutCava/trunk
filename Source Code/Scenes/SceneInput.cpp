@@ -63,6 +63,12 @@ bool Scene::onMouseMove(const OIS::MouseEvent& key){
 bool Scene::onKeyDown(const OIS::KeyEvent& key){
     switch(key.key){
         default: break;
+        case OIS::KC_W     : state()._moveFB = 1;   break;
+        case OIS::KC_A     : state()._moveLR = -1;  break;
+        case OIS::KC_S     : state()._moveFB = -1;  break;
+        case OIS::KC_D     : state()._moveLR = 1;   break;
+        case OIS::KC_Q     : state()._roll = -1;    break;
+        case OIS::KC_E     : state()._roll = 1;     break;
         case OIS::KC_LEFT  : state()._angleLR = -1; break;
         case OIS::KC_RIGHT : state()._angleLR =  1; break;
         case OIS::KC_UP    : state()._angleUD = -1; break;
@@ -91,6 +97,12 @@ bool Scene::onKeyDown(const OIS::KeyEvent& key){
 
 bool Scene::onKeyUp(const OIS::KeyEvent& key){
     switch( key.key ){
+        case OIS::KC_W    :
+        case OIS::KC_S    :	state()._moveFB = 0; break;
+        case OIS::KC_A    :
+        case OIS::KC_D    :	state()._moveLR = 0; break;
+        case OIS::KC_Q:
+        case OIS::KC_E: state()._roll = 0; break;
         case OIS::KC_LEFT :
         case OIS::KC_RIGHT:	state()._angleLR = 0; break;
         case OIS::KC_UP   :
@@ -165,6 +177,25 @@ bool Scene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZon
         if(axisABS < -deadZone)      state()._moveLR = -1;
         else if(axisABS > deadZone)  state()._moveLR = 1;
         else                         state()._moveLR = 0;
+    }
+    return true;
+}
+
+bool Scene::onJoystickMovePOV(const OIS::JoyStickEvent& key, I8 pov){
+    if (key.state.mPOV[pov].direction & OIS::Pov::North) //Going up
+        state()._moveFB = 1;
+    else if (key.state.mPOV[pov].direction & OIS::Pov::South) //Going down
+        state()._moveFB = -1;
+
+    if (key.state.mPOV[pov].direction & OIS::Pov::East) //Going right
+        state()._moveLR = 1;
+
+    else if (key.state.mPOV[pov].direction & OIS::Pov::West) //Going left
+        state()._moveLR = -1;
+
+    if (key.state.mPOV[pov].direction == OIS::Pov::Centered){ //stopped/centered out
+        state()._moveLR = 0;
+        state()._moveFB = 0;
     }
     return true;
 }

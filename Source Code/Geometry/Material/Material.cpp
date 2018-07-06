@@ -10,7 +10,7 @@ Material::Material() : Resource("temp_material"),
                        _doubleSided(false),
                        _shaderThreadedLoad(true),
                        _hardwareSkinning(false),
-                       _useAlphaTest(true),
+                       _useAlphaTest(false),
                        _gsInputType(GS_TRIANGLES),
                        _translucencyCheck(false),
                        _shadingMode(SHADING_PHONG), /// phong shading by default

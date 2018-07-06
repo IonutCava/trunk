@@ -36,30 +36,30 @@ public:
     void attachShader(Shader* const shader,const bool refresh = false){}
     void detachShader(Shader* const shader) {}
     //Attributes
-    void Attribute(I32 location, D32 value){}
-    void Attribute(I32 location, F32 value){}
-    void Attribute(I32 location, const vec2<F32>& value){}
-    void Attribute(I32 location, const vec3<F32>& value){}
-    void Attribute(I32 location, const vec4<F32>& value){}
+    void Attribute(I32 location, D32 value) const {}
+    void Attribute(I32 location, F32 value) const {}
+    void Attribute(I32 location, const vec2<F32>& value) const {}
+    void Attribute(I32 location, const vec3<F32>& value) const {}
+    void Attribute(I32 location, const vec4<F32>& value) const {}
     //Uniforms
-    void Uniform(I32 location, U32 value) {}
-    void Uniform(I32 location, I32 value) {}
-    void Uniform(I32 location, F32 value) {}
-    void Uniform(I32 location, const vec2<F32>& value) {}
-    void Uniform(I32 location, const vec2<I32>& value) {}
-    void Uniform(I32 location, const vec2<U16>& value) {}
-    void Uniform(I32 location, const vec3<F32>& value) {}
-    void Uniform(I32 location, const vec4<F32>& value) {}
-    void Uniform(I32 location, const mat3<F32>& value, bool rowMajor = false) {}
-    void Uniform(I32 location, const mat4<F32>& value, bool rowMajor = false) {}
-    void Uniform(I32 location, const vectorImpl<I32 >& values) {}
-    void Uniform(I32 location, const vectorImpl<F32 >& values) {}
-    void Uniform(I32 location, const vectorImpl<vec2<F32> >& values) {}
-    void Uniform(I32 location, const vectorImpl<vec3<F32> >& values) {}
-    void Uniform(I32 location, const vectorImpl<vec4<F32> >& values) {}
-    void Uniform(I32 location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) {}
+    void Uniform(I32 location, U32 value) const {}
+    void Uniform(I32 location, I32 value) const {}
+    void Uniform(I32 location, F32 value) const {}
+    void Uniform(I32 location, const vec2<F32>& value) const {}
+    void Uniform(I32 location, const vec2<I32>& value) const {}
+    void Uniform(I32 location, const vec2<U16>& value) const {}
+    void Uniform(I32 location, const vec3<F32>& value) const {}
+    void Uniform(I32 location, const vec4<F32>& value) const {}
+    void Uniform(I32 location, const mat3<F32>& value, bool rowMajor = false) const {}
+    void Uniform(I32 location, const mat4<F32>& value, bool rowMajor = false) const {}
+    void Uniform(I32 location, const vectorImpl<I32 >& values) const {}
+    void Uniform(I32 location, const vectorImpl<F32 >& values) const {}
+    void Uniform(I32 location, const vectorImpl<vec2<F32> >& values) const {}
+    void Uniform(I32 location, const vectorImpl<vec3<F32> >& values) const {}
+    void Uniform(I32 location, const vectorImpl<vec4<F32> >& values) const {}
+    void Uniform(I32 location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) const {}
     //Uniform Texture
-    void UniformTexture(I32 location, U16 slot){}
+    void UniformTexture(I32 location, U16 slot) const {}
 
 private:
     I32  cachedLoc(const std::string& name, const bool uniform = true) { return -1; }

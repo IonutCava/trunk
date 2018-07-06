@@ -60,7 +60,7 @@ class GUIConsole{
 
     protected:
        friend class GUI;
-       void CreateCEGUIWindow();                                  //< The function which will load in the CEGUI Window and register event handlers
+       void CreateCEGUIWindow(); //< The function which will load in the CEGUI Window and register event handlers
        // Post the message to the ChatHistory listbox with a white color default
        void OutputText(const char* inMsg, const bool error = false);
 

@@ -39,30 +39,30 @@ public:
     void attachShader(Shader* const shader,const bool refresh = false);
     void detachShader(Shader* const shader);
     //Attributes
-    void Attribute(GLint location, GLdouble value);
-    void Attribute(GLint location, GLfloat value);
-    void Attribute(GLint location, const vec2<GLfloat>& value);
-    void Attribute(GLint location, const vec3<GLfloat>& value);
-    void Attribute(GLint location, const vec4<GLfloat>& value);
+    void Attribute(GLint location, GLdouble value) const;
+    void Attribute(GLint location, GLfloat value) const;
+    void Attribute(GLint location, const vec2<GLfloat>& value) const;
+    void Attribute(GLint location, const vec3<GLfloat>& value) const;
+    void Attribute(GLint location, const vec4<GLfloat>& value) const;
     //Uniforms (no redundant 'if(location == -1) return' checks as the driver already handles that)
-    void Uniform(GLint location, U32 value);
-    void Uniform(GLint location, I32 value);
-    void Uniform(GLint location, F32 value);
-    void Uniform(GLint location, const vec2<F32>& value);
-    void Uniform(GLint location, const vec2<I32>& value);
-    void Uniform(GLint location, const vec2<U16>& value);
-    void Uniform(GLint location, const vec3<F32>& value);
-    void Uniform(GLint location, const vec4<F32>& value);
-    void Uniform(GLint location, const mat3<F32>& value, bool rowMajor = false);
-    void Uniform(GLint location, const mat4<F32>& value, bool rowMajor = false);
-    void Uniform(GLint location, const vectorImpl<I32 >& values);
-    void Uniform(GLint location, const vectorImpl<F32 >& values);
-    void Uniform(GLint location, const vectorImpl<vec2<F32> >& values);
-    void Uniform(GLint location, const vectorImpl<vec3<F32> >& values);
-    void Uniform(GLint location, const vectorImpl<vec4<F32> >& values);
-    void Uniform(GLint location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false);
+    void Uniform(GLint location, U32 value) const;
+    void Uniform(GLint location, I32 value) const;
+    void Uniform(GLint location, F32 value) const;
+    void Uniform(GLint location, const vec2<F32>& value) const;
+    void Uniform(GLint location, const vec2<I32>& value) const;
+    void Uniform(GLint location, const vec2<U16>& value) const;
+    void Uniform(GLint location, const vec3<F32>& value) const;
+    void Uniform(GLint location, const vec4<F32>& value) const;
+    void Uniform(GLint location, const mat3<F32>& value, bool rowMajor = false) const;
+    void Uniform(GLint location, const mat4<F32>& value, bool rowMajor = false) const;
+    void Uniform(GLint location, const vectorImpl<I32 >& values) const;
+    void Uniform(GLint location, const vectorImpl<F32 >& values) const;
+    void Uniform(GLint location, const vectorImpl<vec2<F32> >& values) const;
+    void Uniform(GLint location, const vectorImpl<vec3<F32> >& values) const;
+    void Uniform(GLint location, const vectorImpl<vec4<F32> >& values) const;
+    void Uniform(GLint location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) const;
     //Uniform Texture
-    void UniformTexture(GLint location, GLushort slot);
+    void UniformTexture(GLint location, GLushort slot) const;
 
     inline void  flushLocCache()                               { _shaderVars.clear();}
 

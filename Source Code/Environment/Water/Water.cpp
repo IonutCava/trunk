@@ -34,6 +34,8 @@ void WaterPlane::postLoad(SceneGraphNode* const sgn){
     _shader->UniformTexture("texWaterNoiseNM", 0);
     _shader->UniformTexture("texWaterReflection", 1);
     _shader->UniformTexture("texWaterRefraction", 2);
+
+    SceneNode::postLoad(sgn);
 }
 
 bool WaterPlane::computeBoundingBox(SceneGraphNode* const sgn){

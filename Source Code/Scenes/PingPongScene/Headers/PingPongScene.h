@@ -48,9 +48,7 @@ public:
 	void processInput(const U64 deltaTime);
 	void processTasks(const U64 deltaTime);
 
-	bool onKeyDown(const OIS::KeyEvent& key);
 	bool onKeyUp(const OIS::KeyEvent& key);
-	bool onJoystickMovePOV(const OIS::JoyStickEvent& event,I8 pov);
 	bool onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone);
 	bool onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button);
 
@@ -72,6 +70,8 @@ private: //Game stuff:
 	bool _touchedOwnTableHalf;
 	bool _touchedAdversaryTableHalf;
 	bool _lost;
+    bool _freeFly;
+    bool _wasInFreeFly;
 	F32 _sideDrift;
 };
 

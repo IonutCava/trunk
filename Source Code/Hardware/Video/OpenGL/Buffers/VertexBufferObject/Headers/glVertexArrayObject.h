@@ -68,7 +68,8 @@ protected:
     void checkStatus();
 
 protected:
-
+    GLenum _formatInternal;
+    GLenum _typeInternal;
     GLuint _VAOid;
     GLuint _DepthVAOid;
     GLuint _usage;

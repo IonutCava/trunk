@@ -173,7 +173,7 @@ public:
 private:
 
     void loadInContextInternal();
-    boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<10> > _loadQueue;
+    boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<15> > _loadQueue;
     boost::thread *_loaderThread;
     boost::atomic_bool _closeLoadingThread;
 
