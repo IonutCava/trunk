@@ -38,15 +38,8 @@ void operator delete(void * pxData ,char* zFile, int nLine);
 
 #define New new NEW_PARAM
 
-
 #ifndef NOMINMAX
 #define NOMINMAX
-#endif
-
-#ifdef WIN32
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#endif
 #endif
 
 #include "config.h"

@@ -2,6 +2,7 @@
 #include "Headers/GLWrapper.h"
 #include "Headers/glRenderStateBlock.h"
 
+#include "CEGUI.h"
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIText.h"
 #include "GUI/Headers/GUIFlash.h"
@@ -131,11 +132,14 @@ I8 GL_API::initHardware(const vec2<U16>& resolution){
 		return GLEW_INIT_ERROR;
 	}
 	//If we got here, let's figure out what capabilities we have available
-	I32 major = 0, minor = 0, max_frag_uniform = 0, max_varying_floats = 0;
+	I32 max_frag_uniform = 0, max_varying_floats = 0;
 	I32 max_vertex_uniform = 0, max_vertex_attrib = 0,max_texture_units = 0;
-
+	I32 buffers = 0, samples = 0;
+	I32 major = 0, minor = 0;
 	glGetIntegerv(GL_MAJOR_VERSION, &major); // OpenGL major version
     glGetIntegerv(GL_MINOR_VERSION, &minor); // OpenGL minor version 
+	glGetIntegerv(GL_SAMPLE_BUFFERS, &buffers);
+	glGetIntegerv(GL_SAMPLES, &samples);
 	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &max_frag_uniform); //How many uniforms can we send to fragment shaders
 	glGetIntegerv(GL_MAX_VARYING_FLOATS, &max_varying_floats); //How many varying floats can we use inside a shader program
 	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &max_vertex_uniform); //How many uniforms can we send to vertex shaders
@@ -199,6 +203,7 @@ I8 GL_API::initHardware(const vec2<U16>& resolution){
 	PRINT_FN(Locale::get("GL_MAX_VERSION"),major,minor);
 	PRINT_FN(Locale::get("GL_GLSL_SUPPORT"),glslVersionSupported);
 	PRINT_FN(Locale::get("GL_VENDOR_STRING"),glDriverVendor);
+	PRINT_FN(Locale::get("GL_MULTI_SAMPLE_INFO"),samples,buffers);
 	GL_ENUM_TABLE::fill();
 	//Set the clear color to a nice blue
 	glClearColor(0.1f,0.1f,0.8f,1);
@@ -245,7 +250,9 @@ I8 GL_API::initHardware(const vec2<U16>& resolution){
 	RenderStateBlockDescriptor defaultGLStateDescriptor;
 	GFX_DEVICE._defaultStateBlock = GFX_DEVICE.createStateBlock(defaultGLStateDescriptor);
 	SET_DEFAULT_STATE_BLOCK();
-
+	///Build an OpenGL GUI renderer
+	CEGUI::OpenGLRenderer::bootstrapSystem();
+	GUI::getInstance().init();
 	return _windowId;
 }
 

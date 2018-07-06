@@ -1,10 +1,12 @@
 #include <stdarg.h>
 
+#include "CEGUI.h"
 #include "Headers/GUI.h"
 #include "Headers/GUIFlash.h"
 #include "Headers/GUIText.h"
 #include "Headers/GUIButton.h"
 #include "Headers/GUIConsole.h"
+#include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
@@ -33,7 +35,46 @@ void GUI::draw(){
 		}
 	//------------------------------------------------------------------------
 	gfx.toggle2D(false);
-		
+	//CEGUI::System::getSingleton().renderGUI();
+}
+
+bool GUI::init(){
+	return true;
+	CEGUI::DefaultResourceProvider & defaultResProvider =* static_cast<CEGUI::DefaultResourceProvider*>( CEGUI::System::getSingleton().getResourceProvider() ) ;
+	std::string CEGUIInstallSharePath = ParamHandler::getInstance().getParam<std::string>("assetsLocation");
+	CEGUIInstallSharePath += "/GUI/" ;
+	defaultResProvider.setResourceGroupDirectory( "schemes",    CEGUIInstallSharePath + "schemes/" ) ;
+ 	defaultResProvider.setResourceGroupDirectory( "imagesets",  CEGUIInstallSharePath + "imagesets/" ) ;
+ 	defaultResProvider.setResourceGroupDirectory( "fonts",      CEGUIInstallSharePath + "fonts/" ) ;
+ 	defaultResProvider.setResourceGroupDirectory( "layouts",    CEGUIInstallSharePath + "layouts/" ) ;
+ 	defaultResProvider.setResourceGroupDirectory( "looknfeels", CEGUIInstallSharePath + "looknfeel/" ) ;
+ 	defaultResProvider.setResourceGroupDirectory( "lua_scripts",CEGUIInstallSharePath + "lua_scripts/" ) ;
+ 	defaultResProvider.setResourceGroupDirectory( "schemas",    CEGUIInstallSharePath + "xml_schemas/" ) ;
+ 	defaultResProvider.setResourceGroupDirectory( "animations", CEGUIInstallSharePath + "animations/" ) ;
+ 
+	// Sets the default resource groups to be used:
+	CEGUI::Imageset::setDefaultResourceGroup( "imagesets" ) ;
+	CEGUI::Font::setDefaultResourceGroup( "fonts" ) ;
+	CEGUI::Scheme::setDefaultResourceGroup( "schemes" ) ;
+	CEGUI::WidgetLookManager::setDefaultResourceGroup( "looknfeels" ) ;
+	CEGUI::WindowManager::setDefaultResourceGroup( "layouts" ) ;
+	CEGUI::ScriptModule::setDefaultResourceGroup( "lua_scripts" ) ;
+	CEGUI::AnimationManager::setDefaultResourceGroup( "animations" ) ;
+ 
+	// Set-up default group for validation schemas:
+	CEGUI::XMLParser * parser = CEGUI::System::getSingleton().getXMLParser() ;
+	if ( parser->isPropertyPresent( "SchemaDefaultResourceGroup" ) ){
+		parser->setProperty( "SchemaDefaultResourceGroup", "schemas" ) ;
+	}
+	CEGUI::SchemeManager::getSingleton().create( "TaharezLook.scheme" ) ;
+	CEGUI::System::getSingleton().setDefaultMouseCursor( "TaharezLook", "MouseArrow" ) ;
+	CEGUI::Window* myRoot = CEGUI::WindowManager::getSingleton().loadWindowLayout( "hwTestWindow.layout" );
+	CEGUI::System::getSingleton().setGUISheet( myRoot );
+	return true;
+}
+
+GUI::GUI(){
+
 }
 
 GUI::~GUI(){

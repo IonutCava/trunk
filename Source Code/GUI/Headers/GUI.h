@@ -21,6 +21,9 @@
 #include "GUIElement.h"
 
 enum Font;
+namespace CEGUI{
+	class Renderer;
+};
 class GUIElement;
 
 DEFINE_SINGLETON( GUI )
@@ -45,8 +48,10 @@ public:
 	inline GUIElement* getGuiElement(const std::string& id){return _guiStack[id];}
 	inline void cacheResolution(const vec2<U16>& resolution) {_cachedResolution = resolution;}
 
-private:
+	bool init();
 
+private:
+	GUI();
 	~GUI();
 	void drawText();
 	void drawButtons();

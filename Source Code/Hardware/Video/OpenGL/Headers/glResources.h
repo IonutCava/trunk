@@ -20,6 +20,7 @@
 
 #include <gl/glew.h>
 #include <gl/freeglut.h> 
+#include <RendererModules/OpenGL/CEGUIOpenGLRenderer.h>
 
 #ifdef _DEBUG
 #define GLCheck(Func) ((Func), GLCheckError(__FILE__, __LINE__,#Func))

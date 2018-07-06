@@ -59,8 +59,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code/Libs\packages;$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\includes\sdl;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code\Libs\includes\MultiModalInput;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_DEBUG;FREEGLUT_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code/Libs\packages;$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\includes\sdl;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code\Libs\includes\MultiModalInput;$(EngineLibraries)\boost;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_DEBUG;FREEGLUT_STATIC;CEGUI_STATIC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -75,10 +75,10 @@
     </ProjectReference>
     <Link>
       <AdditionalOptions>/Y3 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;SDL.lib;SDL_mixer.lib;OIS_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;SDL.lib;SDL_mixer.lib;OIS_static.lib;freetype.lib;expat.lib;SILLY.lib;pcre.lib;libpng.lib;libtiff.lib;zlib.lib;jpeg.lib;CEGUIBase_Static_d.lib;CEGUIExpatParser_Static_d.lib;CEGUISILLYImageCodec_Static_d.lib;CEGUIOpenGLRenderer_Static_d.lib;CEGUIFalagardWRBase_Static_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(TargetPath)</OutputFile>
-      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib\Debug;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib\Debug;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib; LIBCPMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -92,8 +92,8 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code/Libs\packages;$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\includes\sdl;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code\Libs\includes\MultiModalInput;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_SCL_SECURE=0;FREEGLUT_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code/Libs\packages;$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\includes\sdl;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code\Libs\includes\MultiModalInput;$(EngineLibraries)\boost;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_SCL_SECURE=0;FREEGLUT_STATIC;CEGUI_STATIC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -105,9 +105,9 @@
       <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;SDL.lib;SDL_mixer.lib;OIS_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;SDL.lib;SDL_mixer.lib;OIS_static.lib;freetype.lib;expat.lib;SILLY.lib;pcre.lib;libpng.lib;libtiff.lib;zlib.lib;jpeg.lib;CEGUIBase_Static.lib;CEGUIExpatParser_Static.lib;CEGUISILLYImageCodec_Static.lib;CEGUIOpenGLRenderer_Static.lib;CEGUIFalagardWRBase_Static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
-      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib\Release;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib\Release;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib;LIBCPMT.lib;LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
