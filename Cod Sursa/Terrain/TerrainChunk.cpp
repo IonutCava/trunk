@@ -19,14 +19,11 @@ void TerrainChunk::addTree(vec3 pos,F32 rotation,F32 scale)
 	vector<FileData> DA = Guardian::getInstance().getModelDataArray();
 	Tree t;
     ImportedModel *temp = NULL;
-	int numberOfMeshes = SceneManager::getInstance().getNumberOfObjects()-1;
+	int numberOfMeshes = SceneManager::getInstance().getNumberOfObjects();
+	if (numberOfMeshes < 1) return;
 	int i = random(numberOfMeshes);
 
-	while(DA[i].Vegetation != true)
-	{
-		i = random(numberOfMeshes);	
-		cout << "Random Number: " << endl;
-	}
+	while(!DA[i].Vegetation)	i = random(numberOfMeshes);	
 
 
 	cout << "Adding tree: " << DA[i].ModelName << endl;

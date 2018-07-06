@@ -17,7 +17,7 @@ ImportedModel* Scene::findObject(string& name)
 
 void Scene::setInitialData(const vector<FileData>& models)
 {
-	for(int index = 0; index  < numberOfObjects; index++)
+	for(U32 index = 0; index  < models.size(); index++)
 	{
 		//vegetation is loaded elsewhere
 		if(models[index].Vegetation) return;

@@ -26,7 +26,7 @@ public:
 	virtual void processInput() = 0;
 	virtual void processEvents(F32 time) = 0;
 
-   int getNumberOfObjects(){return numberOfObjects;}
+   int getNumberOfObjects(){return ModelArray.size();}
    int getNumberOfTerrains(){return numberOfTerrains;}
    void setNumberOfObjects(int nr){numberOfObjects = nr;}
    void setNumberOfTerrains(int nr){numberOfTerrains = nr;}

@@ -35,9 +35,6 @@ protected:
 	static bool s_bGenerateMipmaps;	
 };
 
-struct TGAHeader
-{
-	UBYTE Header[12];									// TGA File Header
-};
+
 #endif
 

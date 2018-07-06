@@ -13,6 +13,7 @@ private:
 	
 	void initHardware();
 	void closeRenderingApi();
+	void initDevice();
 
 	FrameBufferObject* newFBO(){return new glFrameBufferObject(); }
 	VertexBufferObject* newVBO(){return new glVertexBufferObject(); }

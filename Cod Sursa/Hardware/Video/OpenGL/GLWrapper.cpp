@@ -1,6 +1,7 @@
 #include "GLWrapper.h"
 #include "Utility/Headers/DataTypes.h"
 #include "Rendering/common.h"
+#include "Utility/Headers/Guardian.h"
 
 #define USE_FREEGLUT
 
@@ -9,6 +10,7 @@ void GL_API::initHardware()
 	int   argc   = 1; 
 	char *argv[] = {"DIVIDE Engine", NULL};
     glutInit(&argc, argv);
+	glutInitContextVersion(2,0);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL | GLUT_DOUBLE);
 	glutInitWindowSize(Engine::getInstance().getWindowWidth(),Engine::getInstance().getWindowHeight());
 	glutInitWindowPosition(10,10);
@@ -48,7 +50,9 @@ void GL_API::initHardware()
 	glEnable(GL_COLOR_MATERIAL);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glEnable (GL_COLOR_MATERIAL );
-	cout << "OpenGL rendering systm initialized!" << endl;
+	glutCloseFunc(Guardian::getInstance().TerminateApplication);
+	cout << "OpenGL rendering system initialized!" << endl;
+	
 }
 void GL_API::closeRenderingApi()
 {
@@ -222,4 +226,9 @@ void GL_API::setColor(int *v)
 	if( number_elements == 3)	glColor3iv(v);
 	else if( number_elements == 4)	glColor4iv(v);
 	else glColor3i(0,0,0);
+}
+
+void GL_API::initDevice()
+{
+	glutMainLoop();
 }

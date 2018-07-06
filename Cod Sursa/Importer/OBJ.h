@@ -233,8 +233,6 @@ CreateSimpleFaceArray(ImportedModel *pMesh);
  */
 UBYTE* 
 glmReadPPM(char* filename, int* width, int* height);
-UBYTE* 
-glmReadTGA(char* filename, int* width, int* height);
 
 Group*
 glmFindGroup(ImportedModel* model, const string& name);

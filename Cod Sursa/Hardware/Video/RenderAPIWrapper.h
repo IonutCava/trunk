@@ -35,7 +35,7 @@ protected:
 	
 	virtual void initHardware() = 0;
 	virtual void closeRenderingApi() = 0;
-
+	virtual void initDevice() = 0;
 	/*Geometry transformations*/
 	virtual void translate(F32 x, F32 y, F32 z) = 0;
 	virtual void translate(D32 x, D32 y, D32 z) = 0;

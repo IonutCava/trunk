@@ -123,3 +123,7 @@ void DX_API::setColor(D32 *v)
 void DX_API::setColor(int *v)
 {
 }
+
+void DX_API::initDevice()
+{
+}

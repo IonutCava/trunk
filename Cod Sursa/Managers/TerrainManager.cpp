@@ -49,7 +49,7 @@ void TerrainManager::createThreadedTerrains(vector<TerrainInfo>& terrains)
 		_terrain->toggleVegetation(true);
 		_terrain->initializeVegetation();
 		
-		add((*_terrainIter).variables["terrainName"],*_terrain);
+		add((*_terrainIter).variables["terrainName"],_terrain);
 		//img.Destroy();
 	}
 	terrains.clear();
@@ -68,7 +68,7 @@ void TerrainManager::drawTerrains(bool drawInactive, bool drawInReflexion)
 			
 		}
 	else
-		_terrain = (Terrain*)_resDB[0];
+		_terrain = (Terrain*)_resDB.begin()->second;
 		drawTerrain(drawInactive,drawInReflexion);
 }
 

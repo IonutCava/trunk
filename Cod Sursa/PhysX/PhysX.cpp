@@ -64,11 +64,11 @@ NxReal PhysX::UpdateTime()
 bool PhysX::InitNx()
 {
 	if (gPhysicsSDK) return false; //Daca am initializat SDK-ul deja, renuntam la initializare
-	if (mErrorReport)//Ori afisam erori ori ... nu. In functie de asta initializam SDK-ul cu parametri diferiti.
+	/*if (mErrorReport)//Ori afisam erori ori ... nu. In functie de asta initializam SDK-ul cu parametri diferiti.
 		gPhysicsSDK = NxCreatePhysicsSDK(NX_PHYSICS_SDK_VERSION, NULL, new ErrorStream(), desc, &errorCode);
 	else
 		gPhysicsSDK = NxCreatePhysicsSDK(NX_PHYSICS_SDK_VERSION);
-
+*/
 	if(gPhysicsSDK == NULL) 
 	{
 		//E posibil sa nu gasim driverul necesar instalat, asa ca anuntam utilizatorul

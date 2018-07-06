@@ -37,16 +37,9 @@ public :	// Debug / Utilitarian
 	int GetTexID (int nIndex);
 	int tgaSave(char *filename,short int width, short int height, UBYTE pixelDepth, UBYTE *imageData);
 	int SaveSeries(char *filename,short int width,short int height,UBYTE	pixelDepth,UBYTE *imageData);
-	bool LoadTGAImage(TextureInfo * texture,const char *filename);
 	void tgaRGBtoGreyscale(TextureInfo *info);
-	UBYTE *LoadTargaFile (const std::string& filename, int &nWidth, int &nHeight, int &nBPP);
 private :
 
-	UBYTE *LoadBitmapFile (const std::string& filename, int &nWidth, int &nHeight, int &nBPP);
-	
-
-	bool LoadCompressedTGA(TextureInfo * texture, const char * filename, FILE * fTGA);
-	bool LoadUncompressedTGA(TextureInfo * texture, const char * filename, FILE * fTGA);
 	int GetNewTextureID (int nPossibleTextureID);	// get a new one if one isn't provided
 	bool CheckSize (int nDimension);
 

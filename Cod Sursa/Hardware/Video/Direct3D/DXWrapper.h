@@ -9,6 +9,8 @@ SINGLETON_BEGIN_EXT1(DX_API,RenderAPI)
 private:
 	void initHardware();
 	void closeRenderingApi();
+	void initDevice();
+
 	FrameBufferObject* newFBO(){return /*new dxFrameBufferObject();*/ NULL; }
 	VertexBufferObject* newVBO(){return /*new dxVertexBufferObject();*/ NULL; }
 	Shader* newShader(const char *vsFile, const char *fsFile){return /*new dxShader();*/ NULL;}

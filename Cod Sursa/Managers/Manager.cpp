@@ -1,10 +1,9 @@
 #include "Manager.h"
 
-void Manager::add(const string& name, Resource& res)
+void Manager::add(const string& name, Resource* res)
 {
-	cout << "Added: " << name << endl;
-	_result = _resDB.insert(pair<string,Resource*>(name,&res));
-	if(!_result.second) (_result.first)->second = &res;
+	_result = _resDB.insert(pair<string,Resource*>(name,res));
+	if(!_result.second) (_result.first)->second = res;
 }
 
 void Manager::destroy()

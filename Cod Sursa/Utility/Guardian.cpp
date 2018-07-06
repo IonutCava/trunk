@@ -26,15 +26,13 @@ void Guardian::LoadApplication(string entryPoint)
 	cout << "Initializing the PhysX engine!" << endl;
     PhysX::getInstance().setParameters(-9.81f,par.getParam<bool>("showPhysXErrors"),1.0f);
 	StartPhysX();
-	cout << "Initial data loaded ... " << endl;
-	SceneManager::getInstance().setInitialData(ModelDataArray);
-	glutSetWindow(engine.getMainWindowId());
-	glutCloseFunc(TerminateApplication);
 	TerrainManager::getInstance().createTerrains(TerrainInfoArray);
+	SceneManager::getInstance().setInitialData(ModelDataArray);
+	SceneManager::getInstance().load(string(""));
+	cout << "Initial data loaded ... " << endl;
 	ModelDataArray.clear();
 	cout << "Entering main rendering loop ..." << endl;
-	SceneManager::getInstance().load(string(""));
-	glutMainLoop();
+	GFXDevice::getInstance().initDevice();
 	
 }
 

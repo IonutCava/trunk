@@ -10,6 +10,7 @@ public:
 	void setApi(GraphicsAPI api);
 	int  getApi(){return _api.getId(); }
 	void initHardware(){_api.initHardware();}
+	void initDevice(){_api.initDevice();}
 
 	void closeRenderingApi(){_api.closeRenderingApi();}
 	FrameBufferObject* newFBO(){return _api.newFBO(); }

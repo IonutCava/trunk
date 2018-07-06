@@ -14,7 +14,7 @@ protected:
 	tr1::unordered_map<string, Resource*>::iterator _resDBiter;
 
 public: 
-	void add(const string& name, Resource& res);
+	void add(const string& name, Resource* res);
 	Resource* add(Resource* data, const std::string& name);
 	Resource* find(const string& name);
 	void remove(const string& name) {_resDB.erase(name);}
