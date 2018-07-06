@@ -56,9 +56,9 @@ class RenderQueue : public KernelComponent {
     void populateRenderQueues(RenderStagePass stagePass, RenderBinType rbType, vectorEASTL<RenderPackage*>& queueInOut);
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void sort(RenderStagePass stagePass);
-    void refresh(RenderStagePass stagePass);
+    void refresh(RenderStage stage);
     void addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, const vec3<F32>& eyePos);
-    U16 getRenderQueueStackSize(RenderStagePass stagePass) const;
+    U16 getRenderQueueStackSize(RenderStage stage) const;
 
     inline RenderBin* getBin(RenderBinType rbType) {
         return _renderBins[rbType._to_integral()];
@@ -72,7 +72,7 @@ class RenderQueue : public KernelComponent {
         return _renderBins;
     }
 
-    SortedQueues getSortedQueues(RenderStagePass stagePass) const;
+    SortedQueues getSortedQueues(RenderStage stage) const;
 
   private:
     RenderingOrder::List getSortOrder(RenderStagePass stagePass, RenderBinType rbType);

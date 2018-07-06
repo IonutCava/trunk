@@ -96,22 +96,22 @@ class LightPool : public SceneComponent {
         return _lightTypeState[to_U32(type)];
     }
     /// Retrieve the number of active lights in the scene;
-    inline const U32 getActiveLightCount(RenderStagePass stagePass, LightType type) const {
-        return _activeLightCount[to_base(stagePass._stage)][to_U32(type)];
+    inline const U32 getActiveLightCount(RenderStage stage, LightType type) const {
+        return _activeLightCount[to_base(stage)][to_U32(type)];
     }
 
     bool clear();
     inline Light::LightList& getLights(LightType type) { return _lights[to_U32(type)]; }
     Light* getLight(I64 lightGUID, LightType type);
 
-    void prepareLightData(RenderStagePass stagePass,
+    void prepareLightData(RenderStage stage,
                           const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
-    void uploadLightData(RenderStagePass stagePass,
+    void uploadLightData(RenderStage stage,
                          ShaderBufferLocation lightDataLocation,
                          ShaderBufferLocation shadowDataLocation,
                          GFX::CommandBuffer& bufferInOut);
 
-    void drawLightImpostors(RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) const;
+    void drawLightImpostors(RenderStage stage, GFX::CommandBuffer& bufferInOut) const;
 
     static void idle();
     /// shadow mapping

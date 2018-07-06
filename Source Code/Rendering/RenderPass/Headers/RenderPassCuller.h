@@ -67,7 +67,7 @@ class RenderPassCuller {
     struct CullParams {
         PlatformContext* _context = nullptr;
         SceneGraph* _sceneGraph = nullptr;
-        Camera* _camera = nullptr;
+        const Camera* _camera = nullptr;
         SceneState* _sceneState = nullptr;
         RenderStage _stage = RenderStage::COUNT;
         F32 _visibilityDistanceSq = 0.0f;

@@ -493,9 +493,6 @@ protected:
 
     GFXShaderData _gpuBlock;
 
-    typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;
-    std::array<DrawCommandList, to_base(RenderStage::COUNT)> _drawCommandsCache;
-
     std::array<U32, to_base(RenderStage::COUNT) - 1> _lastCommandCount;
     std::array<U32, to_base(RenderStage::COUNT) - 1> _lastNodeCount;
 

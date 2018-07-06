@@ -580,16 +580,6 @@ namespace {
                nodeType != SceneNodeType::TYPE_TRIGGER;
     }
 
-    // Return true if the node can't be drawn but contains command generating children but 
-    bool isParentNode(const RenderPassCuller::VisibleNode& node) {
-        const SceneGraphNode* sgn = node._node;
-        const SceneNode_ptr& sceneNode = sgn->getNode();
-        if (sceneNode->getType() == SceneNodeType::TYPE_OBJECT3D) {
-            return sgn->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::MESH;
-        }
-        return false;
-    }
-
     // Return true if this node should be removed from a shadow pass
     bool doesNotCastShadows(RenderStage stage, const SceneGraphNode& node) {
         if (stage == RenderStage::SHADOW) {
@@ -609,7 +599,9 @@ namespace {
     }
 };
 
-const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStagePass stage) {
+const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStagePass stage, const Camera& camera) {
+    Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage._passType)][to_U32(stage._stage)]);
+
     Scene& activeScene = getActiveScene();
     SceneState& sceneState = activeScene.state();
 
@@ -620,7 +612,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
     cullParams._sceneGraph = &activeScene.sceneGraph();
     cullParams._sceneState = &sceneState;
     cullParams._stage = renderStage;
-    cullParams._camera = playerCamera();
+    cullParams._camera = &camera;
     if (renderStage == RenderStage::SHADOW) {
         cullParams._visibilityDistanceSq = std::numeric_limits<F32>::max();
     } else {
@@ -636,47 +628,16 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
         return true;
     };
 
-    // Some nodes don't need to be rendered because they are an aggregate of their children (e.g. Mesh <-> SubMesh)
-    RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->frustumCull(cullParams);
-    visibleNodes.erase(eastl::remove_if(eastl::begin(visibleNodes),
-                                        eastl::end(visibleNodes),
-                                        [](const RenderPassCuller::VisibleNode& node) -> bool {
-                                            return isParentNode(node);
-                                        }),
-                       eastl::end(visibleNodes));
-    return visibleNodes;
+    return  _renderPassCuller->frustumCull(cullParams);
 }
 
 RenderPassCuller::VisibleNodeList& SceneManager::getVisibleNodesCache(RenderStage stage) {
     return _renderPassCuller->getNodeCache(stage);
 }
 
-void SceneManager::updateVisibleNodes(RenderStagePass stagePass, bool refreshNodeData, U32 pass, GFX::CommandBuffer& bufferInOut) {
-    RenderPassManager& mgr = parent().renderPassManager();
-    RenderQueue& queue = mgr.getQueue();
-
-    RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stagePass._stage);
-
-    if (refreshNodeData) {
-        // Add all the visible nodes to the proper bins
-        queue.refresh(stagePass);
-        const vec3<F32>& eyePos = playerCamera()->getEye();
-        for (RenderPassCuller::VisibleNode& node : visibleNodes) {
-            queue.addNodeToQueue(*node._node, stagePass, eyePos);
-        }
-    }
-}
-
-void SceneManager::prepareLightData(RenderStagePass stagePass, const Camera& camera) {
-    if (stagePass._passType == RenderPassType::COLOUR_PASS) {
-        LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
-        lightPool->prepareLightData(stagePass, camera.getEye(), camera.getViewMatrix());
-    }
-}
-
-const RenderPassCuller::VisibleNodeList& SceneManager::cullScene(RenderStagePass stagePass, const Camera& camera, U32 passIndex) {
-    Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stagePass._passType)][to_U32(stagePass._stage)]);
-    return cullSceneGraph(stagePass);
+void SceneManager::prepareLightData(RenderStage stage, const Camera& camera) {
+    LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
+    lightPool->prepareLightData(stage, camera.getEye(), camera.getViewMatrix());
 }
 
 void SceneManager::onLostFocus() {

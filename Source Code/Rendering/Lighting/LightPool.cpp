@@ -254,8 +254,8 @@ void LightPool::waitForTasks(U8 stageIndex) {
     _lightUpdateTask[stageIndex].wait();
 }
 
-void LightPool::prepareLightData(RenderStagePass stagePass, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
-    U8 stageIndex = to_U8(stagePass._stage);
+void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
+    U8 stageIndex = to_U8(stage);
     waitForTasks(stageIndex);
 
     // Create and upload light data for current pass
@@ -317,20 +317,20 @@ void LightPool::prepareLightData(RenderStagePass stagePass, const vec3<F32>& eye
     _lightUpdateTask[stageIndex].startTask();
 }
 
-void LightPool::uploadLightData(RenderStagePass stagePass,
+void LightPool::uploadLightData(RenderStage stage,
                                 ShaderBufferLocation lightDataLocation,
                                 ShaderBufferLocation shadowDataLocation,
                                 GFX::CommandBuffer& bufferInOut) {
 
     GFX::ExternalCommand externalCmd;
-    externalCmd._cbk = [this, stagePass]() {
-        waitForTasks(to_U8(stagePass._stage));
+    externalCmd._cbk = [this, stage]() {
+        waitForTasks(to_U8(stage));
     };
     GFX::EnqueueCommand(bufferInOut, externalCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set = _context.newDescriptorSet();
-    descriptorSetCmd._set->_shaderBuffers.emplace_back(lightDataLocation, _lightShaderBuffer[to_base(stagePass._stage)]);
+    descriptorSetCmd._set->_shaderBuffers.emplace_back(lightDataLocation, _lightShaderBuffer[to_base(stage)]);
     descriptorSetCmd._set->_shaderBuffers.emplace_back(shadowDataLocation, _shadowBuffer);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
@@ -353,12 +353,12 @@ void LightPool::uploadLightBuffers(U8 stageIndex) {
     }
 }
 
-void LightPool::drawLightImpostors(RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) const {
+void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& bufferInOut) const {
     if (!_previewShadowMaps) {
         return;
     }
 
-    U8 stageIndex = to_U8(stagePass._stage);
+    U8 stageIndex = to_U8(stage);
 
     assert(_lightImpostorShader);
     const U32 directionalLightCount = _activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)];

@@ -24,6 +24,6 @@ void Renderer::preRender(RenderStagePass stagePass,
                          RenderTarget& target,
                          LightPool& lightPool,
                          GFX::CommandBuffer& bufferInOut) {
-    lightPool.uploadLightData(stagePass, ShaderBufferLocation::LIGHT_NORMAL, ShaderBufferLocation::LIGHT_SHADOW, bufferInOut);
+    lightPool.uploadLightData(stagePass._stage, ShaderBufferLocation::LIGHT_NORMAL, ShaderBufferLocation::LIGHT_SHADOW, bufferInOut);
 }
 };

@@ -31,10 +31,10 @@ RenderQueue::~RenderQueue()
     _activeBins.clear();
 }
 
-U16 RenderQueue::getRenderQueueStackSize(RenderStagePass stagePass) const {
+U16 RenderQueue::getRenderQueueStackSize(RenderStage stage) const {
     U16 temp = 0;
     for (RenderBin* bin : _activeBins) {
-        temp += bin->getBinSize(stagePass);
+        temp += bin->getBinSize(stage);
     }
     return temp;
 }
@@ -175,34 +175,34 @@ void RenderQueue::sort(RenderStagePass stagePass) {
     TaskPool& pool = parent().platformContext().taskPool();
     TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     for (RenderBin* renderBin : _activeBins) {
-        if (!renderBin->empty(stagePass)) {
+        if (!renderBin->empty(stagePass._stage)) {
             RenderingOrder::List sortOrder = getSortOrder(stagePass, renderBin->getType());
 
-            if (renderBin->getBinSize(stagePass) > threadBias) {
+            if (renderBin->getBinSize(stagePass._stage) > threadBias) {
                 CreateTask(pool,
                            &sortTask,
                             [renderBin, sortOrder, stagePass](const Task& parentTask) {
-                                renderBin->sort(stagePass, sortOrder, parentTask);
+                                renderBin->sort(stagePass._stage, sortOrder, parentTask);
                             }).startTask();
             } else {
-                renderBin->sort(stagePass, sortOrder);
+                renderBin->sort(stagePass._stage, sortOrder);
             }
         }
     }
     sortTask.startTask().wait();
 }
 
-void RenderQueue::refresh(RenderStagePass stagePass) {
+void RenderQueue::refresh(RenderStage stage) {
     for (RenderBin* renderBin : _activeBins) {
-        renderBin->refresh(stagePass);
+        renderBin->refresh(stage);
     }
 }
 
-RenderQueue::SortedQueues RenderQueue::getSortedQueues(RenderStagePass stagePass) const {
+RenderQueue::SortedQueues RenderQueue::getSortedQueues(RenderStage stage) const {
     SortedQueues queues;
     for (RenderBin* renderBin : _activeBins) {
         vectorEASTL<SceneGraphNode*>& nodes = queues[renderBin->getType()._to_integral()];
-        renderBin->getSortedNodes(stagePass, nodes);
+        renderBin->getSortedNodes(stage, nodes);
     }
 
     return queues;

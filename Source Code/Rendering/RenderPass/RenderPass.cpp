@@ -177,7 +177,7 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
             GFX::EndDebugScopeCommand endDebugScopeCmd;
             GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 
-            _lastTotalBinSize = _parent.getQueue().getRenderQueueStackSize(RenderStagePass(_stageFlag, RenderPassType::COLOUR_PASS));
+            _lastTotalBinSize = _parent.getQueue().getRenderQueueStackSize(_stageFlag);
 
         } break;
         case RenderStage::SHADOW: {

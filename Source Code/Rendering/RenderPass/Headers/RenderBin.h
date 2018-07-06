@@ -29,9 +29,7 @@
 
  */
 
-/*The system is similar to the one used in Torque3D (RenderPassMgr /
-  RenderBinManager)
-  as it was used as an inspiration.
+/*The system is similar to the one used in Torque3D (RenderPassMgr / RenderBinManager) as it was used as an inspiration.
   All credit goes to GarageGames for the idea:
   - http://garagegames.com/
   - https://github.com/GarageGames/Torque3D
@@ -48,11 +46,10 @@
 namespace Divide {
 
 struct Task;
-struct RenderStagePass;
-
 class GFXDevice;
 class SceneGraphNode;
 class RenderingComponent;
+struct RenderStagePass;
 
 namespace GFX {
     class CommandBuffer;
@@ -93,7 +90,6 @@ class RenderPackage;
 class SceneRenderState;
 class RenderPassManager;
 
-struct RenderStagePass;
 /// This class contains a list of "RenderBinItem"'s and stores them sorted
 /// depending on designation
 class RenderBin {
@@ -106,23 +102,23 @@ class RenderBin {
     explicit RenderBin(RenderBinType rbType);
     ~RenderBin();
 
-    void sort(RenderStagePass stagePass, RenderingOrder::List renderOrder);
-    void sort(RenderStagePass stagePass, RenderingOrder::List renderOrder, const Task& parentTask);
+    void sort(RenderStage stage, RenderingOrder::List renderOrder);
+    void sort(RenderStage stage, RenderingOrder::List renderOrder, const Task& parentTask);
     void populateRenderQueue(RenderStagePass stagePass, vectorEASTL<RenderPackage*>& queueInOut) const;
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
-    void refresh(RenderStagePass stagePass);
+    void refresh(RenderStage stage);
 
     void addNodeToBin(const SceneGraphNode& sgn,
                       RenderStagePass renderStagePass,
                       const vec3<F32>& eyePos);
 
-    const RenderBinItem& getItem(RenderStagePass stagePass, U16 index) const;
+    const RenderBinItem& getItem(RenderStage stage, U16 index) const;
 
-    void getSortedNodes(RenderStagePass stagePass, vectorEASTL<SceneGraphNode*>& nodes) const;
+    void getSortedNodes(RenderStage stage, vectorEASTL<SceneGraphNode*>& nodes) const;
 
-    U16 getBinSize(RenderStagePass stagePass) const;
+    U16 getBinSize(RenderStage stage) const;
 
-    bool empty(RenderStagePass stagePass) const;
+    bool empty(RenderStage stage) const;
 
     inline RenderBinType getType() const { return _rbType; }
 

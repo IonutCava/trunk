@@ -68,9 +68,9 @@ void TiledForwardShadingRenderer::preRender(RenderStagePass stagePass,
     GFX::SendPushConstantsCommand sendPushConstantsCmd;
     PushConstants constants;
     constants.set("maxNumLightsPerTile", GFX::PushConstantType::UINT, _flag);
-    constants.set("numDirLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass, LightType::DIRECTIONAL));
-    constants.set("numPointLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass, LightType::POINT));
-    constants.set("numSpotLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass, LightType::SPOT));
+    constants.set("numDirLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass._stage, LightType::DIRECTIONAL));
+    constants.set("numPointLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass._stage, LightType::POINT));
+    constants.set("numSpotLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass._stage, LightType::SPOT));
 
     sendPushConstantsCmd._constants = constants;
     GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);

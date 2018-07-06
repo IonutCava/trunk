@@ -96,11 +96,6 @@ public:
 
     U32 getActivePlayerCount() const;
 
-    /*Base Scene Operations*/
-    // generate a list of nodes to render
-    void updateVisibleNodes(RenderStagePass stage, bool refreshNodeData, U32 pass, GFX::CommandBuffer& bufferInOut);
-
-
     inline void addSelectionCallback(const DELEGATE_CBK<void, U8, SceneGraphNode*>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
@@ -108,7 +103,7 @@ public:
     void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
 
     // cull the scenegraph against the current view frustum
-    const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStagePass stage);
+    const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStagePass stage, const Camera& camera);
     // get the full list of reflective nodes
     RenderPassCuller::VisibleNodeList getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const;
     // get the full list of refractive nodes
@@ -203,8 +198,7 @@ protected:
     void preRender(RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut);
     void postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
-    const RenderPassCuller::VisibleNodeList& cullScene(RenderStagePass stagePass, const Camera& camera, U32 passIndex);
-    void prepareLightData(RenderStagePass stagePass, const Camera& camera);
+    void prepareLightData(RenderStage stage, const Camera& camera);
     bool generateShadowMaps(GFX::CommandBuffer& bufferInOut);
 
     Camera* playerCamera() const;
@@ -354,15 +348,14 @@ class SceneManagerRenderPass {
    private:
     static const RenderPassCuller::VisibleNodeList& cullScene(Divide::SceneManager& mgr,
                                                               RenderStagePass stagePass,
-                                                              const Camera& camera,
-                                                              U32 passIndex) {
-        return mgr.cullScene(stagePass, camera, passIndex);
+                                                              const Camera& camera) {
+        return mgr.cullSceneGraph(stagePass, camera);
     }
 
     static void prepareLightData(Divide::SceneManager& mgr,
-                                 RenderStagePass stagePass,
+                                 RenderStage stage,
                                  const Camera& camera) {
-        mgr.prepareLightData(stagePass, camera);
+        mgr.prepareLightData(stage, camera);
     }
 
     static void preRender(Divide::SceneManager& mgr, RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {

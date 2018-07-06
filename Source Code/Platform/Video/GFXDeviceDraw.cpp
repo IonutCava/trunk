@@ -112,11 +112,11 @@ void GFXDevice::buildDrawCommands(const BuildDrawCommandsParams& params, GFX::Co
     U32 nodeCount = 0;
     U32 cmdCount = 0;
 
-    U8 stageIndex = to_U8(params._renderStagePass._stage);
     RenderQueue::SortedQueues sortedQueues = *params._sortedQueues;
     vectorEASTL<NodeData> nodeData;
     nodeData.reserve(sortedQueues.size() * Config::MAX_VISIBLE_NODES);
 
+    std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> drawCommands;
     for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
@@ -143,7 +143,7 @@ void GFXDevice::buildDrawCommands(const BuildDrawCommandsParams& params, GFX::Co
                         const GFX::DrawCommand& cmd = pkg.drawCommand(cmdIdx);
                         for (const GenericDrawCommand& drawCmd : cmd._drawCommands) {
                             for (U32 i = 0; i < drawCmd._drawCount; ++i) {
-                                _drawCommandsCache[stageIndex][cmdCount++] = drawCmd._cmd;
+                                drawCommands[cmdCount++] = drawCmd._cmd;
                             }
                         }
                     }
@@ -167,7 +167,7 @@ void GFXDevice::buildDrawCommands(const BuildDrawCommandsParams& params, GFX::Co
         }
 
         ShaderBuffer& cmdBuffer = *bufferData._cmdBuffer;
-        cmdBuffer.writeData(_drawCommandsCache[stageIndex].data());
+        cmdBuffer.writeData(drawCommands.data());
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set = newDescriptorSet();

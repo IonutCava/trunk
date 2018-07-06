@@ -136,7 +136,7 @@ RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex) {
 }
 
 void RenderPassManager::processVisibleNodes(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
-    RenderQueue::SortedQueues queues = getQueue().getSortedQueues(stagePass);
+    RenderQueue::SortedQueues queues = getQueue().getSortedQueues(stagePass._stage);
 
     GFXDevice::BuildDrawCommandsParams gfxParams;
     gfxParams._sortedQueues = &queues;
@@ -153,11 +153,11 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
 
     SceneManager& sceneManager = parent().sceneManager();
 
-    const RenderPassCuller::VisibleNodeList& visibleNodes = refreshNodeData ? Attorney::SceneManagerRenderPass::cullScene(sceneManager, stagePass, *params._camera, params._pass)
+    const RenderPassCuller::VisibleNodeList& visibleNodes = refreshNodeData ? Attorney::SceneManagerRenderPass::cullScene(sceneManager, stagePass, *params._camera)
                                                                             : sceneManager.getVisibleNodesCache(params._stage);
 
     RenderQueue& queue = getQueue();
-    queue.refresh(stagePass);
+    queue.refresh(stagePass._stage);
     const vec3<F32>& eyePos = params._camera->getEye();
     for (const RenderPassCuller::VisibleNode& node : visibleNodes) {
         queue.addNodeToQueue(*node._node, stagePass, eyePos);
@@ -377,6 +377,8 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
 }
 
 void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut) {
+    Attorney::SceneManagerRenderPass::prepareLightData(parent().sceneManager(), params._stage, *params._camera);
+
     // Tell the Rendering API to draw from our desired PoV
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._camera = params._camera;

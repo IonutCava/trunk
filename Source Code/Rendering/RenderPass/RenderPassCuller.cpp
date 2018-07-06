@@ -9,11 +9,22 @@
 #include "Graphs/Headers/SceneGraph.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
 
 namespace Divide {
 
 namespace {
     static const U32 g_nodesPerCullingPartition = 16u;
+
+    // Return true if the node can't be drawn but contains command generating children but 
+    bool isParentNode(const RenderPassCuller::VisibleNode& node) {
+        const SceneGraphNode* sgn = node._node;
+        const SceneNode_ptr& sceneNode = sgn->getNode();
+        if (sceneNode->getType() == SceneNodeType::TYPE_OBJECT3D) {
+            return sgn->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::MESH;
+        }
+        return false;
+    }
 };
 
 RenderPassCuller::RenderPassCuller() {
@@ -63,18 +74,18 @@ RenderPassCuller::VisibleNodeList& RenderPassCuller::frustumCull(const CullParam
         return nodeCache;
     }
 
-    const SceneState& sceneState = *params._sceneState;
-    const SceneGraph& sceneGraph = *params._sceneGraph;
-    const Camera& camera = *params._camera;
-    F32 cullMaxDistanceSq = std::min(params._visibilityDistanceSq, SQUARED(camera.getZPlanes().y));
-    
-    const SceneRenderState& renderState = sceneState.renderState();
-    if (renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
+    nodeCache.resize(0);
+    if (params._sceneState->renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
+        const Camera& camera = *params._camera;
+
+        F32 cullMaxDistanceSq = std::min(params._visibilityDistanceSq, SQUARED(camera.getZPlanes().y));
+
         _cullingFunction[to_U32(stage)] = params._cullFunction;
 
-        const SceneGraphNode& root = sceneGraph.getRoot();
-        U32 childCount = root.getChildCount();
+        const SceneGraphNode& root = params._sceneGraph->getRoot();
         vectorEASTL<VisibleNodeList>& nodes = _perThreadNodeList[to_U32(stage)];
+
+        U32 childCount = root.getChildCount();
         nodes.resize(childCount);
 
         auto cullIterFunction = [this, &root, &camera, &nodes, &stage, cullMaxDistanceSq](const Task& parentTask, U32 start, U32 end) {
@@ -89,11 +100,19 @@ RenderPassCuller::VisibleNodeList& RenderPassCuller::frustumCull(const CullParam
                      childCount,
                      g_nodesPerCullingPartition);
 
-        nodeCache.resize(0);
+        
         for (const VisibleNodeList& nodeListEntry : nodes) {
             nodeCache.insert(eastl::end(nodeCache), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
         }
     }
+
+    // Some nodes don't need to be rendered because they are an aggregate of their children (e.g. Mesh <-> SubMesh)
+    nodeCache.erase(eastl::remove_if(eastl::begin(nodeCache),
+                                     eastl::end(nodeCache),
+                                         [](const RenderPassCuller::VisibleNode& node) -> bool {
+                                             return isParentNode(node);
+                                         }),
+                    eastl::end(nodeCache));
 
     return nodeCache;
 }

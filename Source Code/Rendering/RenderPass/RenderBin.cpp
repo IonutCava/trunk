@@ -76,14 +76,14 @@ RenderBin::~RenderBin()
 {
 }
 
-const RenderBinItem& RenderBin::getItem(RenderStagePass stagePass, U16 index) const {
-    assert(index < _renderBinStack[to_base(stagePass._stage)].size());
-    return _renderBinStack[to_base(stagePass._stage)][index];
+const RenderBinItem& RenderBin::getItem(RenderStage stage, U16 index) const {
+    assert(index < _renderBinStack[to_base(stage)].size());
+    return _renderBinStack[to_base(stage)][index];
 }
 
-void RenderBin::sort(RenderStagePass stagePass, RenderingOrder::List renderOrder) {
+void RenderBin::sort(RenderStage stage, RenderingOrder::List renderOrder) {
     // WriteLock w_lock(_renderBinGetMutex);
-    U8 stageIndex = to_U8(stagePass._stage);
+    U8 stageIndex = to_U8(stage);
 
     switch (renderOrder) {
         case RenderingOrder::List::BY_STATE: {
@@ -111,22 +111,22 @@ void RenderBin::sort(RenderStagePass stagePass, RenderingOrder::List renderOrder
     };
 }
 
-void RenderBin::sort(RenderStagePass stagePass, RenderingOrder::List renderOrder, const Task& parentTask) {
+void RenderBin::sort(RenderStage stage, RenderingOrder::List renderOrder, const Task& parentTask) {
     ACKNOWLEDGE_UNUSED(parentTask);
-    sort(stagePass, renderOrder);
+    sort(stage, renderOrder);
 }
 
-void RenderBin::getSortedNodes(RenderStagePass stagePass, vectorEASTL<SceneGraphNode*>& nodes) const {
+void RenderBin::getSortedNodes(RenderStage stage, vectorEASTL<SceneGraphNode*>& nodes) const {
     nodes.resize(0);
-    for (const RenderBinItem& item : _renderBinStack[to_base(stagePass._stage)]) {
+    for (const RenderBinItem& item : _renderBinStack[to_base(stage)]) {
         nodes.push_back(&(item._renderable->getSGN()));
     }
 }
 
-void RenderBin::refresh(RenderStagePass stagePass) {
+void RenderBin::refresh(RenderStage stage) {
     // WriteLock w_lock(_renderBinGetMutex);
-    _renderBinStack[to_base(stagePass._stage)].resize(0);
-    _renderBinStack[to_base(stagePass._stage)].reserve(AVERAGE_BIN_SIZE);
+    _renderBinStack[to_base(stage)].resize(0);
+    _renderBinStack[to_base(stage)].reserve(AVERAGE_BIN_SIZE);
 }
 
 void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePass, const vec3<F32>& eyePos) {
@@ -164,12 +164,12 @@ void RenderBin::postRender(const SceneRenderState& renderState, RenderStagePass 
     }
 }
 
-U16 RenderBin::getBinSize(RenderStagePass stagePass) const {
-    return (U16)_renderBinStack[to_base(stagePass._stage)].size();
+U16 RenderBin::getBinSize(RenderStage stage) const {
+    return (U16)_renderBinStack[to_base(stage)].size();
 }
 
-bool RenderBin::empty(RenderStagePass stagePass) const {
-    return getBinSize(stagePass) == 0;
+bool RenderBin::empty(RenderStage stage) const {
+    return getBinSize(stage) == 0;
 }
 
 };
