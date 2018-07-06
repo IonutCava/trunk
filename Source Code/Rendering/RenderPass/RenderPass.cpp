@@ -177,6 +177,22 @@ void RenderPass::render(SceneRenderState& renderState) {
                 Attorney::SceneManagerRenderPass::generateShadowMaps(mgr);
             } break;
             case RenderStage::REFLECTION: {
+                Attorney::SceneRenderStateRenderPass::currentStagePass(renderState, Config::MAX_REFLECTIVE_NODES_IN_VIEW);
+                //Part 1 - update envirnoment maps:
+                SceneEnvironmentProbePool* envProbPool = 
+                    Attorney::SceneRenderPass::getEnvProbes(renderState.parentScene());
+                const EnvironmentProbeList& probes = envProbPool->getNearestSorted();
+                for (EnvironmentProbe* probe : probes) {
+                    probe->refresh();
+                }
+                RenderPassCuller::VisibleNodeList& mainNodeCache = mgr.getVisibleNodesCache(RenderStage::DISPLAY);
+                for (const RenderPassCuller::VisibleNode& node : mainNodeCache) {
+                    SceneGraphNode_cptr nodePtr = node.second.lock();
+                    RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
+                    Attorney::RenderingCompRenderPass::updateEnvProbeList(*rComp, probes);
+                }
+
+                //Part 2 - update classic reflectors (e.g. mirrors, water, etc)
                 // Get list of reflective nodes from the scene manager
                 const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedReflectiveNodes();
 
@@ -308,11 +324,13 @@ std::pair<U32, U32> RenderPass::getRenderPassInfoForStages(const vectorImpl<Rend
     //We only care about the first parameter as it will determine the properties for the rest of the stages
     switch (stages[0]) {
         case RenderStage::REFLECTION: {
-            maxPasses = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
+            // max reflective nodes and an extra buffer for environment maps
+            maxPasses = Config::MAX_REFLECTIVE_NODES_IN_VIEW + 1;
             maxStages = 6u; // number of cube faces
         }; break;
         case RenderStage::REFRACTION: {
-            maxPasses = Config::MAX_REFRACTIVE_NODES_IN_VIEW;
+            // max reflective nodes and an extra buffer for environment maps
+            maxPasses = Config::MAX_REFRACTIVE_NODES_IN_VIEW + 1;
             maxStages = 1u;
         } break;
         case RenderStage::SHADOW: {

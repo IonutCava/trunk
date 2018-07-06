@@ -330,6 +330,7 @@
     <ClCompile Include="..\..\Source Code\Rendering\Camera\ScriptedCamera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\ThirdPersonCamera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\DeferredShadingRenderer.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\EnvironmentProbe.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\ForwardPlusRenderer.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\DirectionalLight.cpp" />
@@ -456,6 +457,7 @@
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\ThirdPersonCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\ClipRegion.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\DeferredShadingRenderer.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Headers\EnvironmentProbe.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\ForwardPlusRenderer.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\FrameListener.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\Renderer.h" />

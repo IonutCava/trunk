@@ -599,6 +599,9 @@ bool WarScene::load(const stringImpl& name) {
         .getActiveCamera()
         .setHorizontalFoV(110);
 
+    _envProbePool->addInfiniteProbe(vec3<F32>(0.0f, 0.0f, 0.0f));
+    _envProbePool->addLocalProbe(vec3<F32>(-5.0f), vec3<F32>(-1.0f));
+
     _sceneReady = true;
     return loadState;
 }

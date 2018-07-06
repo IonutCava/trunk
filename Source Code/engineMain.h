@@ -37,6 +37,7 @@ namespace Divide {
 
 extern int engineMain(int argc, char **argv);
 extern bool initStaticData();
+extern bool destroyStaticData();
 
 };
 

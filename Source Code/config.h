@@ -82,6 +82,8 @@ const unsigned int MAX_REFRACTIVE_NODES_IN_VIEW = 2;
 #   else
 const unsigned int  MAX_REFRACTIVE_NODES_IN_VIEW = 4;
 #   endif
+const unsigned int MAX_REFLECTIVE_PROBES_PER_PASS = 6;
+
 /// Reflection render target resolution
 const unsigned int REFLECTION_TARGET_RESOLUTION = 256;
 const unsigned int REFRACTION_TARGET_RESOLUTION = 1024;

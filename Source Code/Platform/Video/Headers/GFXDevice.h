@@ -100,6 +100,7 @@ DEFINE_SINGLETON(GFXDevice)
         mat4<F32> _normalMatrixWV;
         mat4<F32> _colourMatrix;
         vec4<F32> _properties;
+        vec4<F32> _extraProperties;
 
         NodeData()
         {

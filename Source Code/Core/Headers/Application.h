@@ -82,6 +82,7 @@ DEFINE_SINGLETON(Application)
     friend class Attorney::ApplicationTask;
   public:
     static bool initStaticData();
+    static bool destroyStaticData();
     /// Startup and shutdown
     ErrorCode initialize(const stringImpl& entryPoint, I32 argc, char** argv);
     void run();

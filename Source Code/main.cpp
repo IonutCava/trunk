@@ -5,5 +5,7 @@ bool staticData = Divide::initStaticData();
 
 int main(int argc, char **argv) { 
     assert(staticData);
-    return Divide::engineMain(argc, argv); 
+    int status = Divide::engineMain(argc, argv); 
+    Divide::destroyStaticData();
+    return status;
 }

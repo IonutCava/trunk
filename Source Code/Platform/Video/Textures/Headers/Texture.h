@@ -115,8 +115,8 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
         return _textureData;
     }
     /// Set/Get the number of layers (used by texture arrays)
-    inline void setNumLayers(U8 numLayers) { _numLayers = numLayers; }
-    inline U8 getNumLayers() const { return _numLayers; }
+    inline void setNumLayers(U32 numLayers) { _numLayers = numLayers; }
+    inline U32 getNumLayers() const { return _numLayers; }
     /// Texture width as returned by STB/DDS loader
     inline U16 getWidth() const { return _width; }
     /// Texture height depth as returned by STB/DDS loader
@@ -156,7 +156,7 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     virtual void updateMipMaps() = 0;
 
    protected:
-    U8 _numLayers;
+    U32 _numLayers;
     U16 _width;
     U16 _height;
     U16 _mipMaxLevel;
@@ -166,7 +166,6 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     bool _samplerDirty;
     bool _hasTransparency;
     bool _asyncLoad;
-    mat4<F32> _transformMatrix;
     TextureData  _textureData;
     TextureDescriptor _descriptor;
 };

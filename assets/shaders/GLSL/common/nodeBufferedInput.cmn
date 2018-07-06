@@ -18,8 +18,12 @@ struct NodeData {
     // x = selection flag
     // y = is shadow received
     // z = lod level
-    // w = reserved
+    // w = occlusion flag
     vec4 _properties;
+    // x = environment reflection index
+    // y = environment refraction index
+    // z,w = reserved
+    vec4 _extraProperties;
 };
 
 layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBlock
@@ -39,6 +43,10 @@ ivec4 dvd_BufferIntegerValues() {
     return ivec4(dvd_Matrices[VAR.dvd_drawID]._properties);
 }
 
+ivec4 dvd_BufferExtraIntegerValues() {
+    return ivec4(dvd_Matrices[VAR.dvd_drawID]._extraProperties);
+}
+
 #if defined(VERT_SHADER)
 #define dvd_boneCount     uint(dvd_Matrices[VAR.dvd_drawID]._normalMatrixWV[0][3])
 #endif
@@ -46,6 +54,8 @@ ivec4 dvd_BufferIntegerValues() {
 // x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - occlusion cull data
 #define dvd_lodLevel dvd_BufferIntegerValues().z
 #define dvd_customData dvd_Matrices[VAR.dvd_drawID]._properties.w
+#define dvd_reflectionIndex dvd_BufferExtraIntegerValues().x
+#define dvd_refractionIndex dvd_BufferExtraIntegerValues().y
 
 #if defined(FRAG_SHADER)
 // x - useAlphaTest; y - textureOperation; z - textureCount, w - parallax/relief mapping factor

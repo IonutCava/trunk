@@ -7,6 +7,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
+#include "Rendering/Headers/EnvironmentProbe.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
@@ -57,6 +58,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Initialize the shader manager
     ShaderProgram::initStaticData();
+    EnvironmentProbe::initStaticData();
     // Create an immediate mode shader used for general purpose rendering (e.g.
     // to mimic the fixed function pipeline)
     _imShader = ShaderProgram::defaultShader();
@@ -243,6 +245,7 @@ void GFXDevice::closeRenderingAPI() {
     _gfxDataBuffer->destroy();
     MemoryManager::DELETE(_gfxDataBuffer);
 
+    EnvironmentProbe::destroyStaticData();
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
     _rtPool.clear();

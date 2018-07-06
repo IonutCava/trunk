@@ -218,10 +218,8 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
     dataOut._normalMatrixWV.setRow(3, node.get<BoundsComponent>()->getBoundingSphere().asVec4());
     // Get the colour matrix (diffuse, specular, etc.)
     renderable->getMaterialColourMatrix(dataOut._colourMatrix);
-    // Get the material property matrix (alpha test, texture count,
-    // texture operation, etc.)
-    renderable->getRenderingProperties(dataOut._properties);
-
+    // Get the material property matrix (alpha test, texture count, texture operation, etc.)
+    renderable->getRenderingProperties(dataOut._properties, dataOut._extraProperties);
     return dataOut;
 }
 

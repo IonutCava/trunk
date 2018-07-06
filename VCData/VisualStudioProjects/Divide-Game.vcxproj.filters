@@ -498,6 +498,9 @@
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleVelocityColourUpdater.cpp">
       <Filter>Dynamics\Entities\Particles\ConcreteUpdaters</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\SceneEnvironmentProbePool.cpp">
+      <Filter>Scenes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\AudioSensor.h">
@@ -758,6 +761,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleVelocityColourUpdater.h">
       <Filter>Dynamics\Entities\Particles\ConcreteUpdaters\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneEnvironmentProbePool.h">
+      <Filter>Scenes\Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -52,6 +52,7 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Input/Headers/InputInterface.h"
 // Scene Elements
+#include "SceneEnvironmentProbePool.h"
 #include "AI/Headers/AIManager.h"
 #include "Environment/Sky/Headers/Sky.h"
 #include "Rendering/Lighting/Headers/Light.h"
@@ -92,6 +93,7 @@ class Scene : public Resource {
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
     static bool initStaticData();
+    static bool destroyStaticData();
 
    public:
     explicit Scene(const stringImpl& name);
@@ -277,6 +279,7 @@ class Scene : public Resource {
        LightPool* _lightPool;
        SceneInput* _input;
        PhysicsSceneInterface* _pxScene;
+       SceneEnvironmentProbePool* _envProbePool;
 #ifdef _DEBUG
        IMPrimitive* _linesPrimitive;
        vectorImpl<IMPrimitive*> _octreePrimitives;
@@ -332,6 +335,10 @@ class SceneManager {
         return Scene::initStaticData();
     }
 
+    static bool destroyStaticData() {
+        return Scene::destroyStaticData();
+    }
+
     static SceneGUIElements* gui(Scene& scene) {
         return scene._GUI;
     }
@@ -345,6 +352,11 @@ class SceneRenderPass {
     static void debugDraw(Scene& scene, RenderStage stage) {
         scene.debugDraw(stage);
     }
+
+    static SceneEnvironmentProbePool* getEnvProbes(Scene& scene) {
+        return scene._envProbePool;
+    }
+
     friend class Divide::RenderPass;
 };
 

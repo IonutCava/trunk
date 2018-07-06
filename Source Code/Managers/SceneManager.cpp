@@ -48,6 +48,10 @@ bool SceneManager::initStaticData() {
     return Attorney::SceneManager::initStaticData();
 }
 
+bool SceneManager::destroyStaticData() {
+    return Attorney::SceneManager::destroyStaticData();
+}
+
 SceneManager::SceneManager()
     : FrameListener(),
       _GUI(nullptr),
@@ -357,11 +361,8 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes(
                 return sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::FLYWEIGHT;
             }
         }
-        //if (not reflective) {
-        //    return true;
-        //}
-
-        return false;
+        // Enable just for water nodes for now (we should flag mirrors somehow):
+        return sgnNode->getNode()->getType() != SceneNodeType::TYPE_WATER;
     };
 
     return getSortedCulledNodes(cullingFunction);
@@ -373,8 +374,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedRefractiveNodes(
         if (sgnNode->getNode()->getType() != SceneNodeType::TYPE_OBJECT3D &&
             sgnNode->getNode()->getType() != SceneNodeType::TYPE_WATER) {
             return true;
-        }
-        else {
+        } else {
             if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
                 return sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::FLYWEIGHT;
             }
@@ -382,8 +382,8 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedRefractiveNodes(
         //if (not refractive) {
         //    return true;
         //}
-
-        return false;
+        // Enable just for water nodes for now:
+        return sgnNode->getNode()->getType() != SceneNodeType::TYPE_WATER;
     };
 
     return getSortedCulledNodes(cullingFunction);

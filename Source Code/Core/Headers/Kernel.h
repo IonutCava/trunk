@@ -93,6 +93,8 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     ~Kernel();
 
     static bool initStaticData();
+    static bool destroyStaticData();
+
     /// Our main application rendering loop.
     /// Call input requests, physics calculations, pre-rendering,
     /// rendering,post-rendering etc

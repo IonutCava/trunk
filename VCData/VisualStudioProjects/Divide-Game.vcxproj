@@ -88,6 +88,7 @@
     <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\ReflectionScene\ReflectionScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\Scene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\SceneEnvironmentProbePool.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\SceneInput.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\SceneInputActions.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\ScenePool.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="..\..\Source Code\Scenes\FlashScene\Headers\FlashScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\Scene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneComponent.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneEnvironmentProbePool.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInput.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInputActions.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\ScenePool.h" />

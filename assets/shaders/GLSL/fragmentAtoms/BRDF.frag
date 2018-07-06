@@ -10,6 +10,7 @@
 
 vec3 processedNormal = vec3(0.0, 0.0, 1.0);
 
+//AMAZING RESOURCE: http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
 //TEMP PBR
 /// Smith GGX Visibility
 ///     nDotL: dot-prod of surface normal and light direction
@@ -146,7 +147,7 @@ vec4 getPixelColour(const in vec2 texCoord, in vec3 normalWV) {
     if (reflectance > 0.75 && dvd_lodLevel < 1) {
         vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), processedNormal);
         reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0));
-        colour = mix(texture(texEnvironmentCube, vec4(reflectDirection, 0.0)).rgb,
+        colour = mix(texture(texEnvironmentCube, vec4(reflectDirection, dvd_reflectionIndex)).rgb,
                     colour,
                     vec3(reflectance));
 

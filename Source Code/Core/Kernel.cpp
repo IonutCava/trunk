@@ -36,6 +36,10 @@ bool Kernel::initStaticData() {
     return SceneManager::initStaticData();
 }
 
+bool Kernel::destroyStaticData() {
+    return SceneManager::destroyStaticData();
+}
+
 Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),

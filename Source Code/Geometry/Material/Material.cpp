@@ -45,6 +45,8 @@ Material::Material(const stringImpl& name)
     _textureExtenalFlag.fill(false);
     _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFLECTION)] = true;
     _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFRACTION)] = true;
+    defaultReflectionTexture(nullptr, 0);
+    defaultRefractionTexture(nullptr, 0);
 
     REGISTER_FRAME_LISTENER(this, 9999);
 
@@ -116,6 +118,8 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_parallaxFactor = base._parallaxFactor;
     cloneMat->_reflectionIndex = base._reflectionIndex;
     cloneMat->_refractionIndex = base._refractionIndex;
+    cloneMat->_defaultReflection = base._defaultReflection;
+    cloneMat->_defaultRefraction = base._defaultRefraction;
 
     cloneMat->_translucencySource.clear();
 
@@ -320,7 +324,7 @@ void Material::updateReflectionIndex(I32 index) {
         const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
         setTexture(ShaderProgram::TextureUsage::REFLECTION, refTex);
     } else {
-        setTexture(ShaderProgram::TextureUsage::REFLECTION, nullptr);
+        setTexture(ShaderProgram::TextureUsage::REFLECTION, _defaultReflection.first);
     }
 }
 
@@ -331,9 +335,21 @@ void Material::updateRefractionIndex(I32 index) {
         const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
         setTexture(ShaderProgram::TextureUsage::REFRACTION, refTex);
     } else {
-        setTexture(ShaderProgram::TextureUsage::REFRACTION, nullptr);
+        setTexture(ShaderProgram::TextureUsage::REFRACTION, _defaultRefraction.first);
     }
 }
+
+
+void Material::defaultReflectionTexture(Texture_ptr reflectionPtr, U32 arrayIndex) {
+    _defaultReflection.first = reflectionPtr;
+    _defaultReflection.second = arrayIndex;
+}
+
+void Material::defaultRefractionTexture(Texture_ptr refractionPtr, U32 arrayIndex) {
+    _defaultRefraction.first = refractionPtr;
+    _defaultRefraction.second = arrayIndex;
+}
+
 
 /// If the current material doesn't have a shader associated with it, then add
 /// the default ones.

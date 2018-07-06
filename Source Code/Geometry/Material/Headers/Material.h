@@ -362,6 +362,12 @@ class Material : public Resource, public FrameListener {
     void updateReflectionIndex(I32 index);
     void updateRefractionIndex(I32 index);
 
+    void defaultReflectionTexture(Texture_ptr reflectionPtr, U32 arrayIndex);
+    void defaultRefractionTexture(Texture_ptr reflectionPtr, U32 arrayIndex);
+
+    inline U32 defaultReflectionTextureIndex() const { return _reflectionIndex > -1 ? to_uint(_reflectionIndex) : _defaultReflection.second; }
+    inline U32 defaultRefractionTextureIndex() const { return _refractionIndex > -1 ? to_uint(_refractionIndex) : _defaultRefraction.second; }
+
    protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
@@ -417,6 +423,9 @@ class Material : public Resource, public FrameListener {
     /// used to keep track of what GFXDevice::reflectionTarget we are using for this rendering pass
     I32 _reflectionIndex;
     I32 _refractionIndex;
+
+    std::pair<Texture_ptr, U32> _defaultReflection;
+    std::pair<Texture_ptr, U32> _defaultRefraction;
 
     static bool _shadersComputedThisFrame;
     static U32  _totalShaderComputeCountThisFrame;

@@ -276,7 +276,7 @@ class TextureDescriptor : public PropertyDescriptor {
         _automaticMipMaps = true;
     }
 
-    inline void setLayerCount(U8 layerCount) { 
+    inline void setLayerCount(U32 layerCount) { 
         _layerCount = layerCount;
     }
 
@@ -329,7 +329,7 @@ class TextureDescriptor : public PropertyDescriptor {
 
     inline TextureType type() const { return _type; }
 
-    U8 _layerCount;
+    U32 _layerCount;
     /// Texture data information
     GFXImageFormat _internalFormat;
     TextureType _type;

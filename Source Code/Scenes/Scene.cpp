@@ -60,6 +60,8 @@ Scene::Scene(const stringImpl& name)
     _sceneGraph = MemoryManager_NEW SceneGraph(*this);
     _aiManager = MemoryManager_NEW AI::AIManager(*this);
     _lightPool = MemoryManager_NEW LightPool(*this);
+    _envProbePool = MemoryManager_NEW SceneEnvironmentProbePool(*this);
+
     _GUI = MemoryManager_NEW SceneGUIElements(*this);
 
 #ifdef _DEBUG
@@ -83,10 +85,15 @@ Scene::~Scene()
     MemoryManager::DELETE(_sceneGraph);
     MemoryManager::DELETE(_aiManager);
     MemoryManager::DELETE(_lightPool);
+    MemoryManager::DELETE(_envProbePool);
     MemoryManager::DELETE(_GUI);
 }
 
 bool Scene::initStaticData() {
+    return true;
+}
+
+bool Scene::destroyStaticData() {
     return true;
 }
 
@@ -868,6 +875,7 @@ void Scene::debugDraw(RenderStage stage) {
         // Show NavMeshes
         _aiManager->debugDraw(false);
         _lightPool->drawLightImpostors();
+        _envProbePool->debugDraw();
     }
 }
 

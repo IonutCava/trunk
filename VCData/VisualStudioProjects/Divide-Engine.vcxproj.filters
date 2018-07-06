@@ -542,6 +542,9 @@
     <ClCompile Include="..\..\Source Code\Core\GUIDWrapper.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\EnvironmentProbe.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -957,6 +960,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\GUIDWrapper.h">
       <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Headers\EnvironmentProbe.h">
+      <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

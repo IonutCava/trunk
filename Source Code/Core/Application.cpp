@@ -28,6 +28,10 @@ bool Application::initStaticData() {
     return Kernel::initStaticData();
 }
 
+bool Application::destroyStaticData() {
+    return Kernel::destroyStaticData();
+}
+
 Application::Application() : _kernel(nullptr)
 {
     _requestShutdown = false;

@@ -22,6 +22,10 @@ bool initStaticData() {
     return status;
 }
 
+bool destroyStaticData() {
+    return Application::destroyStaticData();
+}
+
 int engineMain(int argc, char** argv) {
     std::set_new_handler(out_of_memory);
 

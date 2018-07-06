@@ -35,6 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SGNComponent.h"
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Rendering/Headers/EnvironmentProbe.h"
 
 namespace Divide {
 
@@ -117,7 +118,7 @@ class RenderingComponent : public SGNComponent {
 
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
-    void getRenderingProperties(vec4<F32>& propertiesOut) const;
+    void getRenderingProperties(vec4<F32>& propertiesOut, vec4<F32>& extraPropertiesOut) const;
 
     inline const Material_ptr& getMaterialInstance() const { return _materialInstance; }
 
@@ -180,6 +181,8 @@ class RenderingComponent : public SGNComponent {
     bool clearReflection();
     bool clearRefraction();
 
+    void updateEnvProbeList(const EnvironmentProbeList& probes);
+
    protected:
     Material_ptr _materialInstance;
     /// LOD level is updated at every visibility check
@@ -203,6 +206,8 @@ class RenderingComponent : public SGNComponent {
 
     RenderCallback _reflectionCallback;
     RenderCallback _refractionCallback;
+
+    EnvironmentProbeList _envProbes;
 #ifdef _DEBUG
     vectorImpl<Line> _axisLines;
     IMPrimitive* _axisGizmo;
@@ -236,6 +241,10 @@ class RenderingCompRenderPass {
         static bool clearRefraction(RenderingComponent& renderable)
         {
             return renderable.clearRefraction();
+        }
+
+        static void updateEnvProbeList(RenderingComponent& renderable, const EnvironmentProbeList& probes) {
+            renderable.updateEnvProbeList(probes);
         }
 
         friend class Divide::RenderPass;

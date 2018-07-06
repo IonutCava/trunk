@@ -42,8 +42,9 @@ enum class RenderTargetID : U32 {
     SCREEN = 0,
     REFLECTION = 1,
     REFRACTION = 2,
-    SHADOW = 3,
-    OTHER = 4,
+    ENVIRONMENT = 3,
+    SHADOW = 4,
+    OTHER = 5,
     COUNT
 };
 

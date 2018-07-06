@@ -14,10 +14,6 @@
 
 namespace Divide {
 
-namespace {
-    const F32 g_MaterialShininessThresholdForReflection = 127.0f;
-};
-
 RenderingComponent::RenderingComponent(Material_ptr materialInstance,
                                        SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::ComponentType::RENDERING, parentSGN),
@@ -343,7 +339,7 @@ void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
     }
 }
 
-void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut) const {
+void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, vec4<F32>& extraPropertiesOut) const {
     propertiesOut.set(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
                                                      ? -1.0f
                                                      : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_HOVER
@@ -352,6 +348,11 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut) const 
                       receivesShadows() ? 1.0f : 0.0f,
                       _lodLevel,
                       0.0);
+    const Material_ptr& mat = getMaterialInstance();
+    if (mat) {
+        extraPropertiesOut.x = to_float(mat->defaultReflectionTextureIndex());
+        extraPropertiesOut.y = to_float(mat->defaultRefractionTextureIndex());
+    }
 }
 
 bool RenderingComponent::preDraw(const SceneRenderState& renderState,
@@ -607,10 +608,6 @@ bool RenderingComponent::clearReflection() {
     if (mat == nullptr) {
         return false;
     }
-    // If shininess is below a certain threshold, we don't have any reflections 
-    if (mat->getShaderData()._shininess < g_MaterialShininessThresholdForReflection) {
-        return false;
-    }
 
     mat->updateReflectionIndex(-1);
     return true;
@@ -627,10 +624,6 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
     // If we lake a material, we don't use reflections
     const Material_ptr& mat = getMaterialInstance();
     if (mat == nullptr) {
-        return false;
-    }
-    // If shininess is below a certain threshold, we don't have any reflections 
-    if (mat->getShaderData()._shininess < g_MaterialShininessThresholdForReflection) {
         return false;
     }
 
@@ -692,6 +685,33 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
                         GFX_DEVICE.renderTarget(RenderTargetID::REFRACTION, refractionIndex));
 
     return true;
+}
+
+void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) {
+    _envProbes.resize(0);
+    if (probes.empty()) {
+        return;
+    }
+
+    _envProbes.insert(std::cend(_envProbes), std::cbegin(probes), std::cend(probes));
+
+    PhysicsComponent* const transform = _parentSGN.get<PhysicsComponent>();
+    if (transform) {
+        const vec3<F32>& nodePos = transform->getPosition();
+        auto sortFunc = [&nodePos](EnvironmentProbe* a, EnvironmentProbe* b) -> bool {
+            return a->distanceSqTo(nodePos) < b->distanceSqTo(nodePos);
+        };
+
+        std::sort(std::begin(_envProbes), std::end(_envProbes), sortFunc);
+    }
+    const Material_ptr& mat = getMaterialInstance();
+    if (mat == nullptr) {
+        return;
+    }
+
+    RenderTarget* rt = EnvironmentProbe::reflectionTarget()._rt;
+    mat->defaultReflectionTexture(rt->getAttachment(RTAttachment::Type::Colour, 0).asTexture(),
+                                  _envProbes.front()->getRTIndex());
 }
 
 #ifdef _DEBUG
