@@ -331,6 +331,12 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glGenericBuffer.h">
       <Filter>Video\OpenGL\Buffers\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\RenderDoc-Manager\renderdoc_app.h">
+      <Filter>Video\RenderDocManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\RenderDoc-Manager\RenderDocManager.h">
+      <Filter>Video\RenderDocManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -566,6 +572,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glGenericBuffer.cpp">
       <Filter>Video\OpenGL\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\RenderDoc-Manager\RenderDocManager.cpp">
+      <Filter>Video\RenderDocManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -841,6 +850,9 @@
     </Filter>
     <Filter Include="Video\Buffers\VertexBuffer\GenericBuffer\Headers">
       <UniqueIdentifier>{b6f686fa-062d-495d-b408-40ced390b98d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Video\RenderDocManager">
+      <UniqueIdentifier>{7945316d-c736-408f-be14-e10c800a23a3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

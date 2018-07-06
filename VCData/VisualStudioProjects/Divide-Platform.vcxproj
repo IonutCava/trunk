@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -26,6 +26,8 @@
     <ClInclude Include="..\..\Source Code\Libs\GLIM\glimBatch.h" />
     <ClInclude Include="..\..\Source Code\Libs\GLIM\glimBatchData.h" />
     <ClInclude Include="..\..\Source Code\Libs\GLIM\glimInterface.h" />
+    <ClInclude Include="..\..\Source Code\Libs\RenderDoc-Manager\RenderDocManager.h" />
+    <ClInclude Include="..\..\Source Code\Libs\RenderDoc-Manager\renderdoc_app.h" />
     <ClInclude Include="..\..\Source Code\Libs\SimpleCL\include\simpleCL.h" />
     <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool.hpp" />
     <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\detail\future.hpp" />
@@ -136,6 +138,7 @@
     <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatchData.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\GLIM\glimD3D11.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\GLIM\Stuff.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\RenderDoc-Manager\RenderDocManager.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\SimpleCL\src\simpleCL.c" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\openAl\ALWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\sdl_mixer\SDLWrapper.cpp" />

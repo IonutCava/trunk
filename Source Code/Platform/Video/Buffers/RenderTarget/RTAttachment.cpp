@@ -102,7 +102,7 @@ void RTAttachment::binding(U32 binding) {
 
 RTAttachmentPool::RTAttachmentPool() : FrameListener()
 {
- 
+    _attachmentCount.fill(0);
 }
 
 RTAttachmentPool::~RTAttachmentPool()
@@ -139,6 +139,7 @@ void RTAttachmentPool::add(RTAttachment::Type type,
 
     ptr = std::make_shared<RTAttachment>();
     ptr->fromDescriptor(descriptor);
+    _attachmentCount[to_uint(type)]++;
 
     if (keepPreviousFrame) {
         RTAttachment_ptr& ptrPrev = getInternal(_attachmentHistory, type, index);
@@ -210,11 +211,7 @@ void RTAttachmentPool::destroy() {
 }
 
 U8 RTAttachmentPool::attachmentCount(RTAttachment::Type type) const {
-    return to_ubyte(std::count_if(std::cbegin(_attachment[to_uint(type)]),
-                                  std::cend(_attachment[to_uint(type)]),
-                                  [](const RTAttachment_ptr& ptr) {
-                                       return ptr != nullptr;
-                                  }));
+    return _attachmentCount[to_uint(type)];
 }
 
 bool RTAttachment::dirty() const {

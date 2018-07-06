@@ -23,15 +23,22 @@
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/Direct3D/Headers/DXWrapper.h"
 
+#include "RenderDoc-Manager/RenderDocManager.h"
+
 namespace Divide {
 
 /// Create a display context using the selected API and create all of the needed
 /// primitives needed for frame rendering
 ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& renderResolution) {
-
     ErrorCode hardwareState = createAPIInstance();
     if (hardwareState == ErrorCode::NO_ERR) {
         // Initialize the rendering API
+        if (Config::ENABLE_GPU_VALIDATION) {
+           //_renderDocManager = 
+           //   std::make_shared<RenderDocManager>(Application::instance().sysInfo()._windowHandle,
+           //                                      ".\\RenderDoc\\renderdoc.dll",
+           //                                      L"\\RenderDoc\\Captures\\");
+        }
         hardwareState = _api->initRenderingAPI(argc, argv);
     }
 
@@ -357,6 +364,12 @@ void GFXDevice::idle() {
 }
 
 void GFXDevice::beginFrame() {
+    if (Config::ENABLE_GPU_VALIDATION) {
+        if (_renderDocManager) {
+            _renderDocManager->StartFrameCapture();
+        }
+    }
+
     _api->beginFrame();
     _api->setStateBlock(_defaultStateBlockHash);
 }
@@ -380,6 +393,12 @@ void GFXDevice::endFrame(bool swapBuffers) {
     // Unbind shaders
     ShaderProgram::unbind();
     _api->endFrame(swapBuffers);
+
+    if (Config::ENABLE_GPU_VALIDATION) {
+        if (_renderDocManager) {
+            _renderDocManager->EndFrameCapture();
+        }
+    }
 }
 
 ErrorCode GFXDevice::createAPIInstance() {

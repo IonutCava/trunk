@@ -43,6 +43,7 @@ GFXDevice::GFXDevice()
     _activeRenderTarget = nullptr;
     _debugFrustum = nullptr;
     _debugFrustumPrimitive = nullptr;
+    _renderDocManager = nullptr;
     // Integers
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;

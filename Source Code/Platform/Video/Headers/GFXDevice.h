@@ -51,6 +51,8 @@
 #include <stack>
 #include <ArenaAllocator/arena_allocator.h>
 
+class RenderDocManager;
+
 namespace Divide {
 
 enum class RenderStage : U32;
@@ -505,6 +507,7 @@ DEFINE_SINGLETON(GFXDevice)
     GenericCommandPool  _commandPool;
     Time::ProfileTimer& _commandBuildTimer;
 
+    std::shared_ptr<RenderDocManager> _renderDocManager;
     mutable std::mutex _gpuObjectArenaMutex;
     mutable MyArena<Config::REQUIRED_RAM_SIZE / 4> _gpuObjectArena;
 

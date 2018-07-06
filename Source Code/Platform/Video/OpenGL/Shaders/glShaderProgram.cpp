@@ -80,11 +80,11 @@ bool glShaderProgram::validateInternal() {
     // if the shader is validated, it isn't retrieved)
     if (status == 0) {
         Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")),
-                         getName().c_str(), getLog().c_str());
+                         _shaderProgramID, getName().c_str(), getLog().c_str());
         shaderError = true;
     } else {
         Console::d_printfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")),
-                           getName().c_str(), getLog().c_str());
+                           _shaderProgramID, getName().c_str(), getLog().c_str());
     }
     _validated = true;
 
@@ -488,7 +488,7 @@ bool glShaderProgram::load() {
             } else {
                 // Try to compile the shader (it doesn't double compile shaders, so it's safe to call it multiple times)
                 if (!_shaderStage[i]->compile()) {
-                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _shaderStage[i]->getShaderID());
+                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _shaderStage[i]->getShaderID(), shaderCompileName.c_str());
                 }
             }
         }
@@ -537,7 +537,7 @@ bool glShaderProgram::recompileInternal() {
                 // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
                 _shaderStage[i] = glShader::loadShader(shaderCompileName, sourceCode.second, type, sourceCode.first);
                 if (!_shaderStage[i]->compile()) {
-                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _shaderStage[i]->getShaderID());
+                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _shaderStage[i]->getShaderID(), shaderCompileName.c_str());
                 }
             }
         }

@@ -149,13 +149,11 @@ bool glShader::validate() {
         glGetShaderInfoLog(_shader, length, NULL, &shaderLog[0]);
         shaderLog.push_back('\n');
         if (status == 0) {
-            Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_SHADER")), _name.c_str(),
-                             &shaderLog[0]);
-            return true;
-        } else {
-            Console::d_printfn(Locale::get(_ID("GLSL_VALIDATING_SHADER")), _name.c_str(),
-                               &shaderLog[0]);
+            Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_SHADER")), _shader, _name.c_str(), &shaderLog[0]);
             return false;
+        } else {
+            Console::d_printfn(Locale::get(_ID("GLSL_VALIDATING_SHADER")), _shader, _name.c_str(), &shaderLog[0]);
+            return true;
         }
     }
 

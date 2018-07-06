@@ -116,8 +116,8 @@ class RTAttachmentPool : public FrameListener {
 
         void add(RTAttachment::Type type,
                  U8 index,
-                  const TextureDescriptor& descriptor,
-                  bool keepPreviousFrame);
+                 const TextureDescriptor& descriptor,
+                 bool keepPreviousFrame);
 
         RTAttachment_ptr& get(RTAttachment::Type type, U8 index);
         const RTAttachment_ptr& get(RTAttachment::Type type, U8 index) const;
@@ -137,6 +137,7 @@ class RTAttachmentPool : public FrameListener {
         AttachmentPool _attachment;
         AttachmentPool _attachmentHistory;
         vectorImpl<std::pair<RTAttachment::Type, U8>> _attachmentHistoryIndex;
+        std::array < U8, to_const_uint(RTAttachment::Type::COUNT)> _attachmentCount;
 };
 
 }; //namespace Divide
