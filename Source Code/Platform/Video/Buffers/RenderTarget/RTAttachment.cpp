@@ -1,18 +1,32 @@
 #include "Headers/RTAttachment.h"
 
+#include "Platform/Video/Textures/Headers/Texture.h"
+
 namespace Divide {
 
 RTAttachment::RTAttachment()
     : _clearColour(DefaultColours::WHITE()),
       _descriptor(TextureDescriptor()),
+      _texture(nullptr),
       _needsRefresh(false),
       _attDirty(false),
-      _enabled(false)
+      _enabled(false),
+      _toggledState(false),
+      _mipMapLevel(0, 1),
+      _binding(0)
 {
 }
 
 RTAttachment::~RTAttachment()
 {
+}
+
+const Texture_ptr& RTAttachment::asTexture() const {
+    return _texture;
+}
+
+void RTAttachment::setTexture(const Texture_ptr& tex) {
+    _texture = tex;
 }
 
 TextureDescriptor& RTAttachment::descriptor() {
@@ -24,10 +38,29 @@ const TextureDescriptor& RTAttachment::descriptor() const {
 }
 
 void RTAttachment::flush() {
+    assert(_texture != nullptr);
+    _texture->flushTextureState();
 }
 
 bool RTAttachment::used() const {
-    return false;
+    return _texture != nullptr;
+}
+
+
+bool RTAttachment::toggledState() const {
+    return _toggledState;
+}
+
+void RTAttachment::toggledState(const bool state) {
+    _toggledState = state;
+}
+
+void RTAttachment::mipMapLevel(U16 min, U16 max) {
+    _mipMapLevel.set(min, max);
+}
+
+const vec2<U16>& RTAttachment::mipMapLevel() const {
+    return _mipMapLevel;
 }
 
 bool RTAttachment::enabled() const {
@@ -55,6 +88,17 @@ const vec4<F32>& RTAttachment::clearColour() const {
     return _clearColour;
 }
 
+void RTAttachment::clearRefreshFlag() {
+    _needsRefresh = false;
+}
+
+U32 RTAttachment::binding() const {
+    return _binding;
+}
+
+void RTAttachment::binding(U32 binding) {
+    _binding = binding;
+}
 
 RTAttachmentPool::RTAttachmentPool()
 {
@@ -64,7 +108,6 @@ RTAttachmentPool::RTAttachmentPool()
 RTAttachmentPool::~RTAttachmentPool()
 {
 }
-
 
 const RTAttachment_ptr& RTAttachmentPool::get(RTAttachment::Type type, U8 index) const {
     
@@ -88,6 +131,15 @@ const RTAttachment_ptr& RTAttachmentPool::get(RTAttachment::Type type, U8 index)
 
     DIVIDE_UNEXPECTED_CALL("Invalid render target attachment type");
     return _attachment[0][0];
+}
+
+void RTAttachmentPool::init(U8 colourAttachmentCount) {
+    for (U8 i = 0; i < colourAttachmentCount; ++i) {
+        _attachment[to_const_uint(RTAttachment::Type::Colour)].emplace_back(std::make_shared<RTAttachment>());
+    }
+
+    _attachment[to_const_uint(RTAttachment::Type::Depth)].emplace_back(std::make_shared<RTAttachment>());
+    _attachment[to_const_uint(RTAttachment::Type::Stencil)].emplace_back(std::make_shared<RTAttachment>());
 }
 
 U8 RTAttachmentPool::attachmentCount(RTAttachment::Type type) const {

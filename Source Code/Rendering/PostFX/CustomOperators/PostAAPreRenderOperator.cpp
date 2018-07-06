@@ -14,7 +14,6 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(RenderTarget* hdrTarget, Render
 {
     _samplerCopy = GFX_DEVICE.allocateRT(false);
     _samplerCopy._rt->addAttachment(_ldrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
-    _samplerCopy._rt->useAutoDepthBuffer(false);
 
     ResourceDescriptor fxaa("FXAA");
     fxaa.setThreadedLoading(false);

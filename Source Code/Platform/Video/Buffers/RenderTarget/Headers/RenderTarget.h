@@ -56,9 +56,6 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
     static RTDrawDescriptor& defaultPolicyKeepDepth();
     static RTDrawDescriptor& defaultPolicyDepthOnly();
 
-    // Enable/Disable the presence of a depth renderbuffer
-    virtual void useAutoDepthBuffer(const bool state);
-
     /// If the FB is not initialized, it gets created, otherwise
     /// the attachements get resized.
     /// If any internal state was changed between calls (_shouldRebuild == true),
@@ -105,7 +102,6 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
     static U8 g_maxColourAttachments;
 
     bool _shouldRebuild;
-    bool _useDepthBuffer;
     bool _multisampled;
     U16 _width, _height;
     F32 _depthValue;

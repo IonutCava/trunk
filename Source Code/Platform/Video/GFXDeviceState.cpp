@@ -186,11 +186,17 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                                             GFXDataFormat::FLOAT_16);
     environmentDescriptor.setSampler(reflectionSampler);
 
+    TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_MAP,
+                                      GFXImageFormat::DEPTH_COMPONENT32F,
+                                      GFXDataFormat::FLOAT_32);
+
+    depthDescriptor.setSampler(reflectionSampler);
+
     RenderTargetHandle tempHandle;
     for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
         tempHandle = allocateRT(RenderTargetID::REFLECTION, false);
         tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
-        tempHandle._rt->useAutoDepthBuffer(true);
+        tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
         tempHandle._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
         tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }
@@ -198,7 +204,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
         tempHandle = allocateRT(RenderTargetID::REFRACTION, false);
         tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
-        tempHandle._rt->useAutoDepthBuffer(true);
+        tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
         tempHandle._rt->create(Config::REFRACTION_TARGET_RESOLUTION);
         tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }

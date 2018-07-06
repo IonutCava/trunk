@@ -49,37 +49,55 @@ class RTAttachment {
             COUNT
 
         };
+
     public:
         RTAttachment();
         virtual ~RTAttachment();
 
         TextureDescriptor& descriptor();
         const TextureDescriptor& descriptor() const;
-        virtual void flush();
-        virtual bool used() const;
-        virtual bool enabled() const;
-        virtual bool changed() const;
 
-        virtual void enabled(const bool state);
+        void flush();
+        void clearRefreshFlag();
 
-        void fromDescriptor(const TextureDescriptor& descriptor);
+        bool used() const;
+        
+        bool changed() const;
 
-        void clearColour(const vec4<F32>& clearColour);
+        bool toggledState() const;
+        void toggledState(const bool state);
 
-        const vec4<F32>& clearColour() const;
-        // RT should be convertible to a texture on demand!
-        virtual Texture_ptr asTexture() const = 0;
+        bool enabled() const;
+        void enabled(const bool state);
 
         bool dirty() const;
         void flagDirty();
         void clean();
 
+        void fromDescriptor(const TextureDescriptor& descriptor);
+
+        void clearColour(const vec4<F32>& clearColour);
+        const vec4<F32>& clearColour() const;
+
+        void mipMapLevel(U16 min, U16 max);
+        const vec2<U16>& mipMapLevel() const;
+
+        const Texture_ptr& asTexture() const;
+        void setTexture(const Texture_ptr& tex);
+
+        U32 binding() const;
+        void binding(U32 binding);
+
     protected:
         bool _attDirty;
         bool _enabled;
-        vec4<F32> _clearColour;
-        TextureDescriptor _descriptor;
+        bool _toggledState;
         bool _needsRefresh;
+        U32  _binding;
+        Texture_ptr _texture;
+        vec4<F32> _clearColour;
+        vec2<U16> _mipMapLevel;
+        TextureDescriptor _descriptor;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(RTAttachment);
@@ -93,24 +111,11 @@ class RTAttachmentPool {
         const RTAttachment_ptr& get(RTAttachment::Type type, U8 index) const;
         U8 attachmentCount(RTAttachment::Type type) const;
 
-        template<typename T>
-        typename std::enable_if<std::is_base_of<RTAttachment, T>::value, void>::type
-        init(U8 colourAttachmentCount);
+        void init(U8 colourAttachmentCount);
 
     private:
         std::array<vectorImpl<RTAttachment_ptr>, to_const_uint(RTAttachment::Type::COUNT)> _attachment;
 };
-
-template<typename T>
-typename std::enable_if<std::is_base_of<RTAttachment, T>::value, void>::type
-RTAttachmentPool::init(U8 colourAttachmentCount) {
-    for (U8 i = 0; i < colourAttachmentCount; ++i) {
-        _attachment[to_const_uint(RTAttachment::Type::Colour)].emplace_back(std::make_shared<T>());
-    }
-
-    _attachment[to_const_uint(RTAttachment::Type::Depth)].emplace_back(std::make_shared<T>());
-    _attachment[to_const_uint(RTAttachment::Type::Stencil)].emplace_back(std::make_shared<T>());
-}
 
 }; //namespace Divide
 

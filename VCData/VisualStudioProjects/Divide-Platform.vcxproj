@@ -102,7 +102,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glMemoryManager.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\PixelBuffer\Headers\glPixelBuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\RenderTarget\Headers\glFramebuffer.h" />
-    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\RenderTarget\Headers\glRTAttachment.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\ShaderBuffer\Headers\glUniformBuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\Headers\glGenericBuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\Headers\glGenericVertexData.h" />
@@ -183,7 +182,6 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glMemoryManager.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\PixelBuffer\glPixelBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\RenderTarget\glFramebuffer.cpp" />
-    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\RenderTarget\glRTAttachment.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\ShaderBuffer\glUniformBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glGenericBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glGenericVertexData.cpp" />

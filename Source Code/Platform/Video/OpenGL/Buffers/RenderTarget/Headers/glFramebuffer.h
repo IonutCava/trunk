@@ -32,7 +32,8 @@
 #ifndef _GL_FRAME_BUFFER_OBJECT_H_
 #define _GL_FRAME_BUFFER_OBJECT_H_
 
-#include "glRTAttachment.h"
+#include "Platform/Video/OpenGL/Headers/glResources.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RTAttachment.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
@@ -66,7 +67,6 @@ class glFramebuffer : public RenderTarget {
                      RTAttachment::Type type,
                      U8 index) override;
     void resetMipLevel(RTAttachment::Type type, U8 index) override;
-    void addDepthBuffer();
     void begin(const RTDrawDescriptor& drawPolicy)  override;
     void end()  override;
 
@@ -93,7 +93,7 @@ class glFramebuffer : public RenderTarget {
     void resolve();
     void clear(const RTDrawDescriptor& drawPolicy) const override;
     bool checkStatus() const;
-    void setInitialAttachments();
+    void resetAttachments();
 
     void initAttachment(RTAttachment::Type type,
                         U8 index,

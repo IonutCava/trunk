@@ -49,11 +49,21 @@ DeferredShadingRenderer::DeferredShadingRenderer()
         gBuffer[i].setSampler(gBufferSampler);
     }
 
-    _deferredBuffer._rt->addAttachment(gBuffer[0], RTAttachment::Type::Colour, 0);
-    _deferredBuffer._rt->addAttachment(gBuffer[1], RTAttachment::Type::Colour, 1);
-    _deferredBuffer._rt->addAttachment(gBuffer[2], RTAttachment::Type::Colour, 2);
-    _deferredBuffer._rt->addAttachment(gBuffer[3], RTAttachment::Type::Colour, 3);
-    _deferredBuffer._rt->useAutoDepthBuffer(true);
+    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D,
+                                      GFXImageFormat::DEPTH_COMPONENT,
+                                      GFXDataFormat::UNSIGNED_INT);
+
+    SamplerDescriptor depthSampler;
+    depthSampler.setFilters(TextureFilter::NEAREST);
+    depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    depthSampler.toggleMipMaps(false);
+    depthDescriptor.setSampler(depthSampler);
+
+    for (U8 i = 0; i < 4; ++i) {
+        _deferredBuffer._rt->addAttachment(gBuffer[i], RTAttachment::Type::Colour, i);
+    }
+
+    _deferredBuffer._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
     _deferredBuffer._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
     ResourceDescriptor mrtPreviewSmall("MRT RenderQuad SmallPreview");
     mrtPreviewSmall.setFlag(true);  // no default material

@@ -51,15 +51,22 @@ void EnvironmentProbe::onStartup() {
     reflectionSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     reflectionSampler.toggleMipMaps(false);
     TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP,
-        GFXImageFormat::RGB8,
-        GFXDataFormat::UNSIGNED_BYTE);
+                                            GFXImageFormat::RGB8,
+                                            GFXDataFormat::UNSIGNED_BYTE);
     environmentDescriptor.setSampler(reflectionSampler);
     environmentDescriptor.setLayerCount(g_maxEnvironmentProbes);
+
+
+    TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_MAP,
+                                      GFXImageFormat::DEPTH_COMPONENT,
+                                      GFXDataFormat::UNSIGNED_INT);
+
+    depthDescriptor.setSampler(reflectionSampler);
 
     RenderTargetHandle tempHandle;
     s_reflection = GFX_DEVICE.allocateRT(RenderTargetID::ENVIRONMENT, false);
     s_reflection._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
-    s_reflection._rt->useAutoDepthBuffer(true);
+    s_reflection._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
     s_reflection._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
     s_reflection._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 }

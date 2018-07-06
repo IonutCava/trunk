@@ -12,7 +12,6 @@ RenderTarget::RenderTarget(GFXDevice& context, bool multiSampled)
     : GraphicsResource(context),
       GUIDWrapper(),
       _shouldRebuild(true),
-      _useDepthBuffer(false),
       _multisampled(multiSampled),
       _width(0),
       _height(0),
@@ -96,14 +95,6 @@ void RenderTarget::drawToFace(RTAttachment::Type type, U8 index, U32 nFace, bool
 
 void RenderTarget::readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) {
     readData(vec4<U16>(0, 0, _width, _height), imageFormat, dataType, outData);
-}
-
-// Enable/Disable the presence of a depth renderbuffer
-void RenderTarget::useAutoDepthBuffer(const bool state) {
-    if (_useDepthBuffer != state) {
-        _shouldRebuild = true;
-        _useDepthBuffer = state;
-    }
 }
 
 // Set the colour the FB will clear to when drawing to it
