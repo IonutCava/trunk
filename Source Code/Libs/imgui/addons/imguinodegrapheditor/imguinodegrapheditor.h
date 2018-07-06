@@ -263,7 +263,7 @@ class Node
     virtual ~Node() {}
     mutable void* user_ptr;
     mutable int userID;
-    inline const char* name() const {return Name;}
+    inline const char* getName() const {return Name;}
     inline int getType() const {return typeID;}
     inline int getNumInputSlots() const {return InputsCount;}
     inline int getNumOutputSlots() const {return OutputsCount;}
@@ -277,7 +277,7 @@ class Node
         bool nodeEdited = false;
         for (int i=0,isz=fields.size();i<isz;i++)   {
             FieldInfo& f = fields[i];
-            nodeEdited|=f.render(nodeWidth);
+            nodeEdited|=f.render(static_cast<int>(nodeWidth));
         }
         return nodeEdited;
     }
@@ -359,7 +359,7 @@ struct NodeLink
         OutputNode = output_node; OutputSlot = output_slot;
     }
 
-    friend struct NodeGraphEditor;
+    friend class NodeGraphEditor;
 };
 
 class NodeGraphEditor
@@ -684,7 +684,7 @@ class NodeGraphEditor
     // It should be better not to add/delete node/links in the callbacks... (but all is untested here)
     void setNodeCallback(NodeCallback cb) {nodeCallback=cb;}
     void setLinkCallback(LinkCallback cb) {linkCallback=cb;}
-    void setNodeEditedCallbackTimeThreshold(int seconds) {nodeEditedTimeThreshold=seconds;}
+    void setNodeEditedCallbackTimeThreshold(int seconds) {nodeEditedTimeThreshold=static_cast<float>(seconds);}
 
 //-------------------------------------------------------------------------------
 #       if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))

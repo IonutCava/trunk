@@ -28,6 +28,7 @@ IMGUI_API void Text(int fntIndex,const char* fmt, ...) IM_FMTARGS(2);
 // Handy if we want to use ImGui::Image(...) or ImGui::ImageButton(...) with a glyph
 IMGUI_API bool GetTexCoordsFromGlyph(unsigned short glyph,ImVec2& uv0,ImVec2& uv1);
 // Returns the height of the main menu based on the current font and style
+// Warning: according to https://github.com/ocornut/imgui/issues/252 this approach can fail [Better call ImGui::GetWindowSize().y from inside the menu and store the result somewhere]
 IMGUI_API float CalcMainMenuHeight();
 #endif //NO_IMGUIHELPER_FONT_METHODS
 

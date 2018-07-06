@@ -187,7 +187,13 @@ public:
         const float oldFrameBorderSize = Style.FrameBorderSize;Style.FrameBorderSize=0.f;
         static const ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse|
                 ImGuiWindowFlags_NoCollapse|ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoSavedSettings/*|ImGuiWindowFlags_Tooltip*/;
-        const bool dontSkip = inWindowMode || ImGui::Begin(name,NULL,toolbarWindowSize,0,flags);
+        //const bool dontSkip = inWindowMode || ImGui::Begin(name,NULL,toolbarWindowSize,0,flags);
+        bool dontSkip = inWindowMode;
+        if (!inWindowMode) {
+            ImGui::SetNextWindowSize(toolbarWindowSize, ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowBgAlpha(0.0f);
+            dontSkip = ImGui::Begin(name,NULL,flags);
+        }
         if (dontSkip){                        
             ImGui::PushStyleColor(ImGuiCol_Button,ImVec4(0,0,0,0));      // Hack not needed in previous ImGui versions: the bg color of the image button should be defined inside ImGui::ImageButton(...). (see below)
             bool noItemHovered = true;float nextSpacingAmount = 0;float currentWidth=Style.WindowPadding.x;const float windowWidth = ImGui::GetWindowWidth();

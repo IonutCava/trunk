@@ -837,7 +837,9 @@ void NodeGraphEditor::render()
 
             const bool isLMBClicked = ImGui::IsMouseClicked(0);
             const bool isLMBDoubleClicked = ImGui::IsMouseDoubleClicked(0);
-            const bool isMouseDraggingForMovingNodes = isMouseHoveringWindow && ImGui::IsMouseDragging(0, 8.0f);	// This is not enough for a node to be actually moved
+            // Note that this alone is not enough for a node to be actually moved:
+            const bool isMouseDraggingForMovingNodes = isMouseHoveringWindow && //ImGui::IsMouseDragging(0, 8.0f);  // Hey: IsMouseDragging(...) in this case does not work anymore! It can still move nodes, but it does not allow rectangle selection anymore. Why?
+                    io.MouseDown[0];    // Very bad fallback that works but is much less robust...
 
             // Display links variable (their display code have been moved down)
             const bool cantDragAnything = isMouseDraggingForScrolling || mouseRectangularSelectionForNodesStarted;
@@ -2244,30 +2246,24 @@ bool FieldInfo::render(int nodeWidth)   {
     switch (f.type) {
     case FT_DOUBLE: {
         precisionStr[precisionLastCharIndex]='f';
-        const float minValue = (float) f.minValue;
-        const float maxValue = (float) f.maxValue;
+        const double minValue = (double) f.minValue;
+        const double maxValue = (double) f.maxValue;
+        const ImGuiDataType_ dataType = ImGuiDataType_Double;
         const double rtd = f.needsRadiansToDegs ? GetRadiansToDegs<double>() : 1.f;
         const double dtr = f.needsRadiansToDegs ? GetDegsToRadians<double>() : 1.f;
         double* pField = (double*)f.pdata;
-        float value[4] = {0,0,0,0};
+        double value[4] = {0,0,0,0};
         for (int vl=0;vl<f.numArrayElements;vl++) {
-            value[vl] = (float) ((*(pField+vl))*rtd);
+            value[vl] = (double) ((*(pField+vl))*rtd);
         }
         if (NodeGraphEditor::UseSlidersInsteadOfDragControls)   {
-            switch (f.numArrayElements)    {
-            case 2: changed = ImGui::SliderFloat2(label,value,minValue,maxValue,precisionStr);break;
-            case 3: changed = ImGui::SliderFloat3(label,value,minValue,maxValue,precisionStr);break;
-            case 4: changed = ImGui::SliderFloat4(label,value,minValue,maxValue,precisionStr);break;
-            default: changed = ImGui::SliderFloat(label,value,minValue,maxValue,precisionStr);break;
-            }
+            if (f.numArrayElements>1) changed = ImGui::SliderScalarN(label,dataType,value,f.numArrayElements,&minValue,&maxValue,precisionStr);
+            else changed = ImGui::SliderScalar(label,dataType,value,&minValue,&maxValue,precisionStr);
         }
         else {
-            switch (f.numArrayElements)    {
-            case 2: changed = ImGui::DragFloat2(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            case 3: changed = ImGui::DragFloat3(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            case 4: changed = ImGui::DragFloat4(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            default: changed = ImGui::DragFloat(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            }
+            if (dragSpeed<1.f) dragSpeed = 1.f;
+            if (f.numArrayElements>1) changed = ImGui::DragScalarN(label,dataType,value,f.numArrayElements,dragSpeed,&minValue,&maxValue,precisionStr);
+            else changed = ImGui::DragScalar(label,dataType,value,dragSpeed,&minValue,&maxValue,precisionStr);
         }
         if (changed)    {
             for (int vl=0;vl<f.numArrayElements;vl++) {
@@ -2312,69 +2308,43 @@ bool FieldInfo::render(int nodeWidth)   {
     }
         break;
     case FT_UNSIGNED: {
-        strcpy(precisionStr,"%1.0f");
-        const int minValue = (int) f.minValue;
-        const int maxValue = (int) f.maxValue;
-        unsigned* pField = (unsigned*) f.pdata;
-        int value[4] = {0,0,0,0};
-        for (int vl=0;vl<f.numArrayElements;vl++) {
-            value[vl] = (int) *(pField+vl);
-        }
+        strcpy(precisionStr,"%u");
+        const ImGuiDataType_ dataType = ImGuiDataType_U32;
+        const unsigned int minValue = (unsigned int) f.minValue;
+        const unsigned int maxValue = (unsigned int) f.maxValue;
+        unsigned int* pField = (unsigned int*) f.pdata;
+        unsigned int value[4] = {0,0,0,0};  // TODO: Probably we can remove this hack now that Dear ImGui supports all types
+        for (int vl=0;vl<f.numArrayElements;vl++) {value[vl] = (unsigned int) *(pField+vl);}
         if (NodeGraphEditor::UseSlidersInsteadOfDragControls)   {
-            switch (f.numArrayElements)    {
-            case 2: changed = ImGui::SliderInt2(label,value,minValue,maxValue,precisionStr);break;
-            case 3: changed = ImGui::SliderInt3(label,value,minValue,maxValue,precisionStr);break;
-            case 4: changed = ImGui::SliderInt4(label,value,minValue,maxValue,precisionStr);break;
-            default: changed = ImGui::SliderInt(label,value,minValue,maxValue,precisionStr);break;
-            }
+            if (f.numArrayElements>1) changed = ImGui::SliderScalarN(label,dataType,value,f.numArrayElements,&minValue,&maxValue,precisionStr);
+            else changed = ImGui::SliderScalar(label,dataType,value,&minValue,&maxValue,precisionStr);
         }
         else {
             if (dragSpeed<1.f) dragSpeed = 1.f;
-            switch (f.numArrayElements)    {
-            case 2: changed = ImGui::DragInt2(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            case 3: changed = ImGui::DragInt3(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            case 4: changed = ImGui::DragInt4(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            default: changed = ImGui::DragInt(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            }
+            if (f.numArrayElements>1) changed = ImGui::DragScalarN(label,dataType,value,f.numArrayElements,dragSpeed,&minValue,&maxValue,precisionStr);
+            else changed = ImGui::DragScalar(label,dataType,value,dragSpeed,&minValue,&maxValue,precisionStr);
         }
-        if (changed)    {
-            for (int vl=0;vl<f.numArrayElements;vl++) {
-                *(pField+vl) = (unsigned) value[vl];
-            }
-        }
+        if (changed)    {for (int vl=0;vl<f.numArrayElements;vl++) {*(pField+vl) = (unsigned int) value[vl];}}
     }
         break;
     case FT_INT: {
-        strcpy(precisionStr,"%1.0f");
+        strcpy(precisionStr,"%d");
         const int minValue = (int) f.minValue;
         const int maxValue = (int) f.maxValue;
+        const ImGuiDataType_ dataType = ImGuiDataType_S32;
         int* pField = (int*) f.pdata;
-        int value[4] = {0,0,0,0};
-        for (int vl=0;vl<f.numArrayElements;vl++) {
-            value[vl] = (int) *(pField+vl);
-        }
+        int value[4] = {0,0,0,0};  // TODO: Probably we can remove this hack now that Dear ImGui supports all types
+        for (int vl=0;vl<f.numArrayElements;vl++) {value[vl] = (int) *(pField+vl);}
         if (NodeGraphEditor::UseSlidersInsteadOfDragControls)   {
-            switch (f.numArrayElements)    {
-            case 2: changed = ImGui::SliderInt2(label,value,minValue,maxValue,precisionStr);break;
-            case 3: changed = ImGui::SliderInt3(label,value,minValue,maxValue,precisionStr);break;
-            case 4: changed = ImGui::SliderInt4(label,value,minValue,maxValue,precisionStr);break;
-            default: changed = ImGui::SliderInt(label,value,minValue,maxValue,precisionStr);break;
-            }
+            if (f.numArrayElements>1) changed = ImGui::SliderScalarN(label,dataType,value,f.numArrayElements,&minValue,&maxValue,precisionStr);
+            else changed = ImGui::SliderScalar(label,dataType,value,&minValue,&maxValue,precisionStr);
         }
         else {
             if (dragSpeed<1.f) dragSpeed = 1.f;
-            switch (f.numArrayElements)    {
-            case 2: changed = ImGui::DragInt2(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            case 3: changed = ImGui::DragInt3(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            case 4: changed = ImGui::DragInt4(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            default: changed = ImGui::DragInt(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            }
+            if (f.numArrayElements>1) changed = ImGui::DragScalarN(label,dataType,value,f.numArrayElements,dragSpeed,&minValue,&maxValue,precisionStr);
+            else changed = ImGui::DragScalar(label,dataType,value,dragSpeed,&minValue,&maxValue,precisionStr);
         }
-        if (changed)    {
-            for (int vl=0;vl<f.numArrayElements;vl++) {
-                *(pField+vl) = (int) value[vl];
-            }
-        }
+        if (changed)    {for (int vl=0;vl<f.numArrayElements;vl++) {*(pField+vl) = (int) value[vl];}}
     }
         break;
     case FT_BOOL:   {

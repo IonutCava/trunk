@@ -1322,6 +1322,12 @@ namespace SoLoud
 		delete[] mBasePtr;
 	}
 
+    TinyAlignedFloatBuffer::TinyAlignedFloatBuffer()
+    {
+        unsigned char * basePtr = &mActualData[0];
+        mData = (float *)(((size_t)basePtr + 15)&~15);
+    }
+
 
 	Soloud::Soloud()
 	{
@@ -1332,6 +1338,7 @@ namespace SoLoud
 		_controlfp(u, _MCW_EM);
 #endif
 		
+        mInsideAudioThreadMutex = false;
 		mScratchSize = 0;
 		mScratchNeeded = 0;
 		mSamplerate = 0;
@@ -1347,8 +1354,10 @@ namespace SoLoud
 		mStreamTime = 0;
 		mLastClockedTime = 0;
 		mAudioSourceID = 1;
-		mBackendString = 0;
+        mBackendString = 0;
 		mBackendID = 0;
+        mActiveVoiceDirty = 1;
+        mActiveVoiceCount = 0;
 		int i;
 		for (i = 0; i < FILTERS_PER_STREAM; i++)
 		{
@@ -1403,6 +1412,7 @@ namespace SoLoud
 
 	void Soloud::deinit()
 	{
+        SOLOUD_ASSERT(!mInsideAudioThreadMutex);
 		if (mBackendCleanupFunc)
 			mBackendCleanupFunc(this);
 		mBackendCleanupFunc = 0;
@@ -1827,9 +1837,8 @@ namespace SoLoud
 			float nw = -0.9862875f;	__m128 negwall = _mm_load_ps1(&nw);
 			float pw = 0.9862875f;	__m128 poswall = _mm_load_ps1(&pw);
 			__m128 postscale = _mm_load_ps1(&mPostClipScaler);
-			AlignedFloatBuffer volumes;
-			volumes.init(4);
-			volumes.mData[0] = v;
+            TinyAlignedFloatBuffer volumes;
+            volumes.mData[0] = v;
 			volumes.mData[1] = v + vd;
 			volumes.mData[2] = v + vd + vd;
 			volumes.mData[3] = v + vd + vd + vd;
@@ -1884,9 +1893,8 @@ namespace SoLoud
 			float nb = -1.0f;	__m128 negbound = _mm_load_ps1(&nb);
 			float pb = 1.0f;	__m128 posbound = _mm_load_ps1(&pb);
 			__m128 postscale = _mm_load_ps1(&mPostClipScaler);
-			AlignedFloatBuffer volumes;
-			volumes.init(4);
-			volumes.mData[0] = v;
+            TinyAlignedFloatBuffer volumes;
+            volumes.mData[0] = v;
 			volumes.mData[1] = v + vd;
 			volumes.mData[2] = v + vd + vd;
 			volumes.mData[3] = v + vd + vd + vd;
@@ -2029,798 +2037,844 @@ namespace SoLoud
 #endif
 	}
 
-	void Soloud::mixBus(float *aBuffer, unsigned int aSamples, float *aScratch, unsigned int aBus, float aSamplerate, unsigned int aChannels)
-	{
-		unsigned int i;
-		// Clear accumulation buffer
-		for (i = 0; i < aSamples * aChannels; i++)
-		{
-			aBuffer[i] = 0;
-		}
 
-		// Accumulate sound sources		
-		for (i = 0; i < mActiveVoiceCount; i++)
-		{
-			AudioSourceInstance *voice = mVoice[mActiveVoice[i]];
-			if (voice &&
-				voice->mBusHandle == aBus &&
-				!(voice->mFlags & AudioSourceInstance::PAUSED) &&
-				!(voice->mFlags & AudioSourceInstance::INAUDIBLE))
-			{
-				unsigned int j, k;
-				float step = voice->mSamplerate / aSamplerate;
-				// avoid step overflow
-				if (step > (1 << (32 - FIXPOINT_FRAC_BITS)))
-					step = 0;
-				unsigned int step_fixed = (int)floor(step * FIXPOINT_FRAC_MUL);
-				unsigned int outofs = 0;
-			
-				if (voice->mDelaySamples)
-				{
-					if (voice->mDelaySamples > aSamples)
-					{
-						outofs = aSamples;
-						voice->mDelaySamples -= aSamples;
-					}
-					else
-					{
-						outofs = voice->mDelaySamples;
-						voice->mDelaySamples = 0;
-					}
-					
-					// Clear scratch where we're skipping
-					for (j = 0; j < voice->mChannels; j++)
-					{
-						memset(aScratch + j * aSamples, 0, sizeof(float) * outofs); 
-					}
-				}												
+    void panAndExpand(AudioSourceInstance *aVoice, float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize, float *aScratch, unsigned int aChannels)
+    {
+        float pan[MAX_CHANNELS]; // current speaker volume
+        float pand[MAX_CHANNELS]; // destination speaker volume
+        float pani[MAX_CHANNELS]; // speaker volume increment per sample
+        unsigned int j, k;
+        for (k = 0; k < aChannels; k++)
+        {
+            pan[k] = aVoice->mCurrentChannelVolume[k];
+            pand[k] = aVoice->mChannelVolume[k] * aVoice->mOverallVolume;
+            pani[k] = (pand[k] - pan[k]) / aSamplesToRead; // TODO: this is a bit inconsistent.. but it's a hack to begin with
+        }
 
-				while (step_fixed != 0 && outofs < aSamples)
-				{
-					if (voice->mLeftoverSamples == 0)
-					{
-						// Swap resample buffers (ping-pong)
-						AudioSourceResampleData * t = voice->mResampleData[0];
-						voice->mResampleData[0] = voice->mResampleData[1];
-						voice->mResampleData[1] = t;
+        int ofs = 0;
+        switch (aChannels)
+        {
+        case 1: // Target is mono. Sum everything. (1->1, 2->1, 4->1, 6->1)
+            for (j = 0, ofs = 0; j < aVoice->mChannels; j++, ofs += aBufferSize)
+            {
+                pan[0] = aVoice->mCurrentChannelVolume[0];
+                for (k = 0; k < aSamplesToRead; k++)
+                {
+                    pan[0] += pani[0];
+                    aBuffer[k] += aScratch[ofs + k] * pan[0];
+                }
+            }
+            break;
+        case 2:
+            switch (aVoice->mChannels)
+            {
+            case 6: // 6->2, just sum lefties and righties, add a bit of center, ignore sub?
+                for (j = 0; j < aSamplesToRead; j++)
+                {
+                    pan[0] += pani[0];
+                    pan[1] += pani[1];
+                    float s1 = aScratch[j];
+                    float s2 = aScratch[aBufferSize + j];
+                    float s3 = aScratch[aBufferSize * 2 + j];
+                    //float s4 = aScratch[aBufferSize * 3 + j];
+                    float s5 = aScratch[aBufferSize * 4 + j];
+                    float s6 = aScratch[aBufferSize * 5 + j];
+                    aBuffer[j + 0] += 0.3f * (s1 + s3 + s5) * pan[0];
+                    aBuffer[j + aBufferSize] += 0.3f * (s2 + s3 + s6) * pan[1];
+                }
+                break;
+            case 4: // 4->2, just sum lefties and righties
+                for (j = 0; j < aSamplesToRead; j++)
+                {
+                    pan[0] += pani[0];
+                    pan[1] += pani[1];
+                    float s1 = aScratch[j];
+                    float s2 = aScratch[aBufferSize + j];
+                    float s3 = aScratch[aBufferSize * 2 + j];
+                    float s4 = aScratch[aBufferSize * 3 + j];
+                    aBuffer[j + 0] += 0.5f * (s1 + s3) * pan[0];
+                    aBuffer[j + aBufferSize] += 0.5f * (s2 + s4) * pan[1];
+                }
+                break;
+            case 2: // 2->2
+                for (j = 0; j < aSamplesToRead; j++)
+                {
+                    pan[0] += pani[0];
+                    pan[1] += pani[1];
+                    float s1 = aScratch[j];
+                    float s2 = aScratch[aBufferSize + j];
+                    aBuffer[j + 0] += s1 * pan[0];
+                    aBuffer[j + aBufferSize] += s2 * pan[1];
+                }
+                break;
+            case 1: // 1->2
+                for (j = 0; j < aSamplesToRead; j++)
+                {
+                    pan[0] += pani[0];
+                    pan[1] += pani[1];
+                    float s = aScratch[j];
+                    aBuffer[j + 0] += s * pan[0];
+                    aBuffer[j + aBufferSize] += s * pan[1];
+                }
+                break;
+            }
+            break;
+        case 4:
+            switch (aVoice->mChannels)
+            {
+            case 6: // 6->4, add a bit of center, ignore sub?
+                for (j = 0; j < aSamplesToRead; j++)
+                {
+                    pan[0] += pani[0];
+                    pan[1] += pani[1];
+                    pan[2] += pani[2];
+                    pan[3] += pani[3];
+                    float s1 = aScratch[j];
+                    float s2 = aScratch[aBufferSize + j];
+                    float s3 = aScratch[aBufferSize * 2 + j];
+                    //float s4 = aScratch[aBufferSize * 3 + j];
+                    float s5 = aScratch[aBufferSize * 4 + j];
+                    float s6 = aScratch[aBufferSize * 5 + j];
+                    float c = s3 * 0.7f;
+                    aBuffer[j + 0] += s1 * pan[0] + c;
+                    aBuffer[j + aBufferSize] += s2 * pan[1] + c;
+                    aBuffer[j + aBufferSize * 2] += s5 * pan[2];
+                    aBuffer[j + aBufferSize * 3] += s6 * pan[3];
+                }
+                break;
+            case 4: // 4->4
+                for (j = 0; j < aSamplesToRead; j++)
+                {
+                    pan[0] += pani[0];
+                    pan[1] += pani[1];
+                    pan[2] += pani[2];
+                    pan[3] += pani[3];
+                    float s1 = aScratch[j];
+                    float s2 = aScratch[aBufferSize + j];
+                    float s3 = aScratch[aBufferSize * 2 + j];
+                    float s4 = aScratch[aBufferSize * 3 + j];
+                    aBuffer[j + 0] += s1 * pan[0];
+                    aBuffer[j + aBufferSize] += s2 * pan[1];
+                    aBuffer[j + aBufferSize * 2] += s3 * pan[2];
+                    aBuffer[j + aBufferSize * 3] += s4 * pan[3];
+                }
+                break;
+            case 2: // 2->4
+                for (j = 0; j < aSamplesToRead; j++)
+                {
+                    pan[0] += pani[0];
+                    pan[1] += pani[1];
+                    pan[2] += pani[2];
+                    pan[3] += pani[3];
+                    float s1 = aScratch[j];
+                    float s2 = aScratch[aBufferSize + j];
+                    aBuffer[j + 0] += s1 * pan[0];
+                    aBuffer[j + aBufferSize] += s2 * pan[1];
+                    aBuffer[j + aBufferSize * 2] += s1 * pan[2];
+                    aBuffer[j + aBufferSize * 3] += s2 * pan[3];
+                }
+                break;
+            case 1: // 1->4
+                for (j = 0; j < aSamplesToRead; j++)
+                {
+                    pan[0] += pani[0];
+                    pan[1] += pani[1];
+                    pan[2] += pani[2];
+                    pan[3] += pani[3];
+                    float s = aScratch[j];
+                    aBuffer[j + 0] += s * pan[0];
+                    aBuffer[j + aBufferSize] += s * pan[1];
+                    aBuffer[j + aBufferSize * 2] += s * pan[2];
+                    aBuffer[j + aBufferSize * 3] += s * pan[3];
+                }
+                break;
+            }
+            break;
+        case 6:
+            switch (aVoice->mChannels)
+            {
+            case 6: // 6->6
+                for (j = 0; j < aSamplesToRead; j++)
+                {
+                    pan[0] += pani[0];
+                    pan[1] += pani[1];
+                    pan[2] += pani[2];
+                    pan[3] += pani[3];
+                    pan[4] += pani[4];
+                    pan[5] += pani[5];
+                    float s1 = aScratch[j];
+                    float s2 = aScratch[aBufferSize + j];
+                    float s3 = aScratch[aBufferSize * 2 + j];
+                    float s4 = aScratch[aBufferSize * 3 + j];
+                    float s5 = aScratch[aBufferSize * 4 + j];
+                    float s6 = aScratch[aBufferSize * 5 + j];
+                    aBuffer[j + 0] += s1 * pan[0];
+                    aBuffer[j + aBufferSize] += s2 * pan[1];
+                    aBuffer[j + aBufferSize * 2] += s3 * pan[2];
+                    aBuffer[j + aBufferSize * 3] += s4 * pan[3];
+                    aBuffer[j + aBufferSize * 4] += s5 * pan[4];
+                    aBuffer[j + aBufferSize * 5] += s6 * pan[5];
+                }
+                break;
+            case 4: // 4->6
+                for (j = 0; j < aSamplesToRead; j++)
+                {
+                    pan[0] += pani[0];
+                    pan[1] += pani[1];
+                    pan[2] += pani[2];
+                    pan[3] += pani[3];
+                    pan[4] += pani[4];
+                    pan[5] += pani[5];
+                    float s1 = aScratch[j];
+                    float s2 = aScratch[aBufferSize + j];
+                    float s3 = aScratch[aBufferSize * 2 + j];
+                    float s4 = aScratch[aBufferSize * 3 + j];
+                    aBuffer[j + 0] += s1 * pan[0];
+                    aBuffer[j + aBufferSize] += s2 * pan[1];
+                    aBuffer[j + aBufferSize * 2] += 0.5f * (s1 + s2) * pan[2];
+                    aBuffer[j + aBufferSize * 3] += 0.25f * (s1 + s2 + s3 + s4) * pan[3];
+                    aBuffer[j + aBufferSize * 4] += s3 * pan[4];
+                    aBuffer[j + aBufferSize * 5] += s4 * pan[5];
+                }
+                break;
+            case 2: // 2->6
+                for (j = 0; j < aSamplesToRead; j++)
+                {
+                    pan[0] += pani[0];
+                    pan[1] += pani[1];
+                    pan[2] += pani[2];
+                    pan[3] += pani[3];
+                    pan[4] += pani[4];
+                    pan[5] += pani[5];
+                    float s1 = aScratch[j];
+                    float s2 = aScratch[aBufferSize + j];
+                    aBuffer[j + 0] += s1 * pan[0];
+                    aBuffer[j + aBufferSize] += s2 * pan[1];
+                    aBuffer[j + aBufferSize * 2] += 0.5f * (s1 + s2) * pan[2];
+                    aBuffer[j + aBufferSize * 3] += 0.5f * (s1 + s2) * pan[3];
+                    aBuffer[j + aBufferSize * 4] += s1 * pan[4];
+                    aBuffer[j + aBufferSize * 5] += s2 * pan[5];
+                }
+                break;
+            case 1: // 1->6
+                for (j = 0; j < aSamplesToRead; j++)
+                {
+                    pan[0] += pani[0];
+                    pan[1] += pani[1];
+                    pan[2] += pani[2];
+                    pan[3] += pani[3];
+                    pan[4] += pani[4];
+                    pan[5] += pani[5];
+                    float s = aScratch[j];
+                    aBuffer[j + 0] += s * pan[0];
+                    aBuffer[j + aBufferSize] += s * pan[1];
+                    aBuffer[j + aBufferSize * 2] += s * pan[2];
+                    aBuffer[j + aBufferSize * 3] += s * pan[3];
+                    aBuffer[j + aBufferSize * 4] += s * pan[4];
+                    aBuffer[j + aBufferSize * 5] += s * pan[5];
+                }
+                break;
+            }
+            break;
+        }
 
-						// Get a block of source data
+        for (k = 0; k < aChannels; k++)
+            aVoice->mCurrentChannelVolume[k] = pand[k];
+    }
 
-						if (voice->hasEnded())
-						{
-							memset(voice->mResampleData[0]->mBuffer, 0, sizeof(float) * SAMPLE_GRANULARITY * voice->mChannels);
-						}
-						else
-						{
-							voice->getAudio(voice->mResampleData[0]->mBuffer, SAMPLE_GRANULARITY);
-						}
+    void Soloud::mixBus(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize, float *aScratch, unsigned int aBus, float aSamplerate, unsigned int aChannels)
+    {
+        unsigned int i, j;
+        // Clear accumulation buffer
+        for (i = 0; i < aSamplesToRead; i++)
+        {
+            for (j = 0; j < aChannels; j++)
+            {
+                aBuffer[i + j * aBufferSize] = 0;
+            }
+        }
 
-						
-						
+        // Accumulate sound sources
+        for (i = 0; i < mActiveVoiceCount; i++)
+        {
+            AudioSourceInstance *voice = mVoice[mActiveVoice[i]];
+            if (voice &&
+                voice->mBusHandle == aBus &&
+                !(voice->mFlags & AudioSourceInstance::PAUSED) &&
+                !(voice->mFlags & AudioSourceInstance::INAUDIBLE))
+            {
+                unsigned int j;
+                float step = voice->mSamplerate / aSamplerate;
+                // avoid step overflow
+                if (step > (1 << (32 - FIXPOINT_FRAC_BITS)))
+                    step = 0;
+                unsigned int step_fixed = (int)floor(step * FIXPOINT_FRAC_MUL);
+                unsigned int outofs = 0;
 
-						// If we go past zero, crop to zero (a bit of a kludge)
-						if (voice->mSrcOffset < SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL)
-						{
-							voice->mSrcOffset = 0;
-						}
-						else
-						{
-							// We have new block of data, move pointer backwards
-							voice->mSrcOffset -= SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL;
-						}
+                if (voice->mDelaySamples)
+                {
+                    if (voice->mDelaySamples > aSamplesToRead)
+                    {
+                        outofs = aSamplesToRead;
+                        voice->mDelaySamples -= aSamplesToRead;
+                    }
+                    else
+                    {
+                        outofs = voice->mDelaySamples;
+                        voice->mDelaySamples = 0;
+                    }
 
-					
-						// Run the per-stream filters to get our source data
+                    // Clear scratch where we're skipping
+                    for (j = 0; j < voice->mChannels; j++)
+                    {
+                        memset(aScratch + j * aBufferSize, 0, sizeof(float) * outofs);
+                    }
+                }
 
-						for (j = 0; j < FILTERS_PER_STREAM; j++)
-						{
-							if (voice->mFilter[j])
-							{
-								voice->mFilter[j]->filter(
-									voice->mResampleData[0]->mBuffer,
-									SAMPLE_GRANULARITY, 
-									voice->mChannels,
-									voice->mSamplerate,
-									mStreamTime);
-							}
-						}
-					}
-					else
-					{
-						voice->mLeftoverSamples = 0;
-					}
+                while (step_fixed != 0 && outofs < aSamplesToRead)
+                {
+                    if (voice->mLeftoverSamples == 0)
+                    {
+                        // Swap resample buffers (ping-pong)
+                        AudioSourceResampleData * t = voice->mResampleData[0];
+                        voice->mResampleData[0] = voice->mResampleData[1];
+                        voice->mResampleData[1] = t;
 
-					// Figure out how many samples we can generate from this source data.
-					// The value may be zero.
+                        // Get a block of source data
 
-					unsigned int writesamples = 0;
+                        int readcount = 0;
+                        if (!voice->hasEnded() || voice->mFlags & AudioSourceInstance::LOOPING)
+                        {
+                            readcount = voice->getAudio(voice->mResampleData[0]->mBuffer, SAMPLE_GRANULARITY, SAMPLE_GRANULARITY);
+                            if (readcount < SAMPLE_GRANULARITY)
+                            {
+                                if (voice->mFlags & AudioSourceInstance::LOOPING)
+                                {
+                                    while (readcount < SAMPLE_GRANULARITY && voice->seek(voice->mLoopPoint, mScratch.mData, mScratchSize) == SO_NO_ERROR)
+                                    {
+                                        voice->mLoopCount++;
+                                        int inc = voice->getAudio(voice->mResampleData[0]->mBuffer + readcount, SAMPLE_GRANULARITY - readcount, SAMPLE_GRANULARITY);
+                                        readcount += inc;
+                                        if (inc == 0) break;
+                                    }
+                                }
+                            }
+                        }
 
-					if (voice->mSrcOffset < SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL)
-					{
-						writesamples = ((SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL) - voice->mSrcOffset) / step_fixed + 1;
+                        if (readcount < SAMPLE_GRANULARITY)
+                        {
+                            memset(voice->mResampleData[0]->mBuffer + readcount, 0, sizeof(float) * (SAMPLE_GRANULARITY - readcount) * voice->mChannels);
+                        }
 
-						// avoid reading past the current buffer..
-						if (((writesamples * step_fixed + voice->mSrcOffset) >> FIXPOINT_FRAC_BITS) >= SAMPLE_GRANULARITY)
-							writesamples--;
-					}
-
-
-					// If this is too much for our output buffer, don't write that many:
-					if (writesamples + outofs > aSamples)
-					{
-						voice->mLeftoverSamples = (writesamples + outofs) - aSamples;
-						writesamples = aSamples - outofs;
-					}
-
-					// Call resampler to generate the samples, once per channel
-					if (writesamples)
-					{
-						for (j = 0; j < voice->mChannels; j++)
-						{
-							resample(voice->mResampleData[0]->mBuffer + SAMPLE_GRANULARITY * j,
-								voice->mResampleData[1]->mBuffer + SAMPLE_GRANULARITY * j,
-									 aScratch + aSamples * j + outofs, 
-									 voice->mSrcOffset,
-									 writesamples,
-									 voice->mSamplerate,
-									 aSamplerate,
-									 step_fixed);
-						}
-					}
-
-					// Keep track of how many samples we've written so far
-					outofs += writesamples;
-
-					// Move source pointer onwards (writesamples may be zero)
-					voice->mSrcOffset += writesamples * step_fixed;
-				}
-				
-				float pan[MAX_CHANNELS]; // current speaker volume
-				float pand[MAX_CHANNELS]; // destination speaker volume
-				float pani[MAX_CHANNELS]; // speaker volume increment per sample
-				for (k = 0; k < aChannels; k++)
-				{
-					pan[k] = voice->mCurrentChannelVolume[k];
-					pand[k] = voice->mChannelVolume[k] * voice->mOverallVolume;
-					pani[k] = (pand[k] - pan[k]) / aSamples;
-				}
-
-				int ofs = 0;
-				switch (aChannels)
-				{
-				case 1: // Target is mono. Sum everything. (1->1, 2->1, 4->1, 6->1)
-					for (j = 0, ofs = 0; j < voice->mChannels; j++, ofs += aSamples)
-					{
-						pan[0] = voice->mCurrentChannelVolume[0];
-						for (k = 0; k < aSamples; k++)
-						{
-							pan[0] += pani[0];
-							aBuffer[k] += aScratch[ofs + k] * pan[0];
-						}
-					}
-					break;
-				case 2:
-					switch (voice->mChannels)
-					{
-					case 6: // 6->2, just sum lefties and righties, add a bit of center, ignore sub?
-						for (j = 0; j < aSamples; j++)
-						{
-							pan[0] += pani[0];
-							pan[1] += pani[1];
-							float s1 = aScratch[j];
-							float s2 = aScratch[aSamples + j];
-							float s3 = aScratch[aSamples * 2 + j];
-							//float s4 = aScratch[aSamples * 3 + j];
-							float s5 = aScratch[aSamples * 4 + j];
-							float s6 = aScratch[aSamples * 5 + j];
-							aBuffer[j + 0] += 0.3f * (s1 + s3 + s5) * pan[0];
-							aBuffer[j + aSamples] += 0.3f * (s2 + s3 + s6) * pan[1];
-						}
-						break;
-					case 4: // 4->2, just sum lefties and righties
-						for (j = 0; j < aSamples; j++)
-						{
-							pan[0] += pani[0];
-							pan[1] += pani[1];
-							float s1 = aScratch[j];
-							float s2 = aScratch[aSamples + j];
-							float s3 = aScratch[aSamples * 2 + j];
-							float s4 = aScratch[aSamples * 3 + j];
-							aBuffer[j + 0] += 0.5f * (s1 + s3) * pan[0];
-							aBuffer[j + aSamples] += 0.5f * (s2 + s4) * pan[1];
-						}
-						break;
-					case 2: // 2->2
-						for (j = 0; j < aSamples; j++)
-						{
-							pan[0] += pani[0];
-							pan[1] += pani[1];
-							float s1 = aScratch[j];
-							float s2 = aScratch[aSamples + j];
-							aBuffer[j + 0] += s1 * pan[0];
-							aBuffer[j + aSamples] += s2 * pan[1];
-						}
-						break;
-					case 1: // 1->2
-						for (j = 0; j < aSamples; j++)
-						{
-							pan[0] += pani[0];
-							pan[1] += pani[1];
-							float s = aScratch[j];
-							aBuffer[j + 0] += s * pan[0];
-							aBuffer[j + aSamples] += s * pan[1];
-						}
-						break;
-					}
-					break;
-				case 4:
-					switch (voice->mChannels)
-					{
-					case 6: // 6->4, add a bit of center, ignore sub?
-						for (j = 0; j < aSamples; j++)
-						{
-							pan[0] += pani[0];
-							pan[1] += pani[1];
-							pan[2] += pani[2];
-							pan[3] += pani[3];
-							float s1 = aScratch[j];
-							float s2 = aScratch[aSamples + j];
-							float s3 = aScratch[aSamples * 2 + j];
-							//float s4 = aScratch[aSamples * 3 + j];
-							float s5 = aScratch[aSamples * 4 + j];
-							float s6 = aScratch[aSamples * 5 + j];
-							float c = s3 * 0.7f;
-							aBuffer[j + 0] += s1 * pan[0] + c;
-							aBuffer[j + aSamples] += s2 * pan[1] + c;
-							aBuffer[j + aSamples * 2] += s5 * pan[2];
-							aBuffer[j + aSamples * 3] += s6 * pan[3];
-						}
-						break;
-					case 4: // 4->4
-						for (j = 0; j < aSamples; j++)
-						{
-							pan[0] += pani[0];
-							pan[1] += pani[1];
-							pan[2] += pani[2];
-							pan[3] += pani[3];
-							float s1 = aScratch[j];
-							float s2 = aScratch[aSamples + j];
-							float s3 = aScratch[aSamples * 2 + j];
-							float s4 = aScratch[aSamples * 3 + j];
-							aBuffer[j + 0] += s1 * pan[0];
-							aBuffer[j + aSamples] += s2 * pan[1];
-							aBuffer[j + aSamples * 2] += s3 * pan[2];
-							aBuffer[j + aSamples * 3] += s4 * pan[3];
-						}
-						break;
-					case 2: // 2->4
-						for (j = 0; j < aSamples; j++)
-						{
-							pan[0] += pani[0];
-							pan[1] += pani[1];
-							pan[2] += pani[2];
-							pan[3] += pani[3];
-							float s1 = aScratch[j];
-							float s2 = aScratch[aSamples + j];
-							aBuffer[j + 0] += s1 * pan[0];
-							aBuffer[j + aSamples] += s2 * pan[1];
-							aBuffer[j + aSamples * 2] += s1 * pan[2];
-							aBuffer[j + aSamples * 3] += s2 * pan[3];
-						}
-						break;
-					case 1: // 1->4
-						for (j = 0; j < aSamples; j++)
-						{
-							pan[0] += pani[0];
-							pan[1] += pani[1];
-							pan[2] += pani[2];
-							pan[3] += pani[3];
-							float s = aScratch[j];
-							aBuffer[j + 0] += s * pan[0];
-							aBuffer[j + aSamples] += s * pan[1];
-							aBuffer[j + aSamples * 2] += s * pan[2];
-							aBuffer[j + aSamples * 3] += s * pan[3];
-						}
-						break;
-					}
-					break;
-				case 6:
-					switch (voice->mChannels)
-					{
-					case 6: // 6->6
-						for (j = 0; j < aSamples; j++)
-						{
-							pan[0] += pani[0];
-							pan[1] += pani[1];
-							pan[2] += pani[2];
-							pan[3] += pani[3];
-							pan[4] += pani[4];
-							pan[5] += pani[5];
-							float s1 = aScratch[j];
-							float s2 = aScratch[aSamples + j];
-							float s3 = aScratch[aSamples * 2 + j];
-							float s4 = aScratch[aSamples * 3 + j];
-							float s5 = aScratch[aSamples * 4 + j];
-							float s6 = aScratch[aSamples * 5 + j];
-							aBuffer[j + 0] += s1 * pan[0];
-							aBuffer[j + aSamples] += s2 * pan[1];
-							aBuffer[j + aSamples * 2] += s3 * pan[2];
-							aBuffer[j + aSamples * 3] += s4 * pan[3];
-							aBuffer[j + aSamples * 4] += s5 * pan[4];
-							aBuffer[j + aSamples * 5] += s6 * pan[5];
-						}
-						break;
-					case 4: // 4->6
-						for (j = 0; j < aSamples; j++)
-						{
-							pan[0] += pani[0];
-							pan[1] += pani[1];
-							pan[2] += pani[2];
-							pan[3] += pani[3];
-							pan[4] += pani[4];
-							pan[5] += pani[5];
-							float s1 = aScratch[j];
-							float s2 = aScratch[aSamples + j];
-							float s3 = aScratch[aSamples * 2 + j];
-							float s4 = aScratch[aSamples * 3 + j];
-							aBuffer[j + 0] += s1 * pan[0];
-							aBuffer[j + aSamples] += s2 * pan[1];
-							aBuffer[j + aSamples * 2] += 0.5f * (s1 + s2) * pan[2];
-							aBuffer[j + aSamples * 3] += 0.25f * (s1 + s2 + s3 + s4) * pan[3];
-							aBuffer[j + aSamples * 4] += s3 * pan[4];
-							aBuffer[j + aSamples * 5] += s4 * pan[5];
-						}
-						break;
-					case 2: // 2->6
-						for (j = 0; j < aSamples; j++)
-						{
-							pan[0] += pani[0];
-							pan[1] += pani[1];
-							pan[2] += pani[2];
-							pan[3] += pani[3];
-							pan[4] += pani[4];
-							pan[5] += pani[5];
-							float s1 = aScratch[j];
-							float s2 = aScratch[aSamples + j];
-							aBuffer[j + 0] += s1 * pan[0];
-							aBuffer[j + aSamples] += s2 * pan[1];
-							aBuffer[j + aSamples * 2] += 0.5f * (s1 + s2) * pan[2];
-							aBuffer[j + aSamples * 3] += 0.5f * (s1 + s2) * pan[3];
-							aBuffer[j + aSamples * 4] += s1 * pan[4];
-							aBuffer[j + aSamples * 5] += s2 * pan[5];
-						}
-						break;
-					case 1: // 1->6
-						for (j = 0; j < aSamples; j++)
-						{
-							pan[0] += pani[0];
-							pan[1] += pani[1];
-							pan[2] += pani[2];
-							pan[3] += pani[3];
-							pan[4] += pani[4];
-							pan[5] += pani[5];
-							float s = aScratch[j];
-							aBuffer[j + 0] += s * pan[0];
-							aBuffer[j + aSamples] += s * pan[1];
-							aBuffer[j + aSamples * 2] += s * pan[2];
-							aBuffer[j + aSamples * 3] += s * pan[3];
-							aBuffer[j + aSamples * 4] += s * pan[4];
-							aBuffer[j + aSamples * 5] += s * pan[5];
-						}
-						break;
-					}
-					break;
-				}
-				
-				for (k = 0; k < aChannels; k++)
-					voice->mCurrentChannelVolume[k] = pand[k];
-
-				// clear voice if the sound is over
-				if (!(voice->mFlags & AudioSourceInstance::LOOPING) && voice->hasEnded())
-				{
-					stopVoice(mActiveVoice[i]);
-				}
-			}
-			else
-				if (voice &&
-					voice->mBusHandle == aBus &&
-					!(voice->mFlags & AudioSourceInstance::PAUSED) &&
-					(voice->mFlags & AudioSourceInstance::INAUDIBLE) &&
-					(voice->mFlags & AudioSourceInstance::INAUDIBLE_TICK))
-			{
-				// Inaudible but needs ticking. Do minimal work (keep counters up to date and ask audiosource for data)
-				float step = voice->mSamplerate / aSamplerate;
-				int step_fixed = (int)floor(step * FIXPOINT_FRAC_MUL);
-				unsigned int outofs = 0;
-
-				if (voice->mDelaySamples)
-				{
-					if (voice->mDelaySamples > aSamples)
-					{
-						outofs = aSamples;
-						voice->mDelaySamples -= aSamples;
-					}
-					else
-					{
-						outofs = voice->mDelaySamples;
-						voice->mDelaySamples = 0;
-					}
-				}
-
-				while (step_fixed != 0 && outofs < aSamples)
-				{
-					if (voice->mLeftoverSamples == 0)
-					{
-						// Swap resample buffers (ping-pong)
-						AudioSourceResampleData * t = voice->mResampleData[0];
-						voice->mResampleData[0] = voice->mResampleData[1];
-						voice->mResampleData[1] = t;
-
-						// Get a block of source data
-
-						if (!voice->hasEnded())
-						{
-							voice->getAudio(voice->mResampleData[0]->mBuffer, SAMPLE_GRANULARITY);
-						}
+                        // If we go past zero, crop to zero (a bit of a kludge)
+                        if (voice->mSrcOffset < SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL)
+                        {
+                            voice->mSrcOffset = 0;
+                        }
+                        else
+                        {
+                            // We have new block of data, move pointer backwards
+                            voice->mSrcOffset -= SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL;
+                        }
 
 
-						// If we go past zero, crop to zero (a bit of a kludge)
-						if (voice->mSrcOffset < SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL)
-						{
-							voice->mSrcOffset = 0;
-						}
-						else
-						{
-							// We have new block of data, move pointer backwards
-							voice->mSrcOffset -= SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL;
-						}
+                        // Run the per-stream filters to get our source data
 
-						// Skip filters
-					}
-					else
-					{
-						voice->mLeftoverSamples = 0;
-					}
+                        for (j = 0; j < FILTERS_PER_STREAM; j++)
+                        {
+                            if (voice->mFilter[j])
+                            {
+                                voice->mFilter[j]->filter(
+                                    voice->mResampleData[0]->mBuffer,
+                                    SAMPLE_GRANULARITY,
+                                    voice->mChannels,
+                                    voice->mSamplerate,
+                                    mStreamTime);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        voice->mLeftoverSamples = 0;
+                    }
 
-					// Figure out how many samples we can generate from this source data.
-					// The value may be zero.
+                    // Figure out how many samples we can generate from this source data.
+                    // The value may be zero.
 
-					unsigned int writesamples = 0;
+                    unsigned int writesamples = 0;
 
-					if (voice->mSrcOffset < SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL)
-					{
-						writesamples = ((SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL) - voice->mSrcOffset) / step_fixed + 1;
+                    if (voice->mSrcOffset < SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL)
+                    {
+                        writesamples = ((SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL) - voice->mSrcOffset) / step_fixed + 1;
 
-						// avoid reading past the current buffer..
-						if (((writesamples * step_fixed + voice->mSrcOffset) >> FIXPOINT_FRAC_BITS) >= SAMPLE_GRANULARITY)
-							writesamples--;
-					}
+                        // avoid reading past the current buffer..
+                        if (((writesamples * step_fixed + voice->mSrcOffset) >> FIXPOINT_FRAC_BITS) >= SAMPLE_GRANULARITY)
+                            writesamples--;
+                    }
 
 
-					// If this is too much for our output buffer, don't write that many:
-					if (writesamples + outofs > aSamples)
-					{
-						voice->mLeftoverSamples = (writesamples + outofs) - aSamples;
-						writesamples = aSamples - outofs;
-					}
+                    // If this is too much for our output buffer, don't write that many:
+                    if (writesamples + outofs > aSamplesToRead)
+                    {
+                        voice->mLeftoverSamples = (writesamples + outofs) - aSamplesToRead;
+                        writesamples = aSamplesToRead - outofs;
+                    }
 
-					// Skip resampler
+                    // Call resampler to generate the samples, once per channel
+                    if (writesamples)
+                    {
+                        for (j = 0; j < voice->mChannels; j++)
+                        {
+                            resample(voice->mResampleData[0]->mBuffer + SAMPLE_GRANULARITY * j,
+                                voice->mResampleData[1]->mBuffer + SAMPLE_GRANULARITY * j,
+                                     aScratch + aBufferSize * j + outofs,
+                                     voice->mSrcOffset,
+                                     writesamples,
+                                     voice->mSamplerate,
+                                     aSamplerate,
+                                     step_fixed);
+                        }
+                    }
 
-					// Keep track of how many samples we've written so far
-					outofs += writesamples;
+                    // Keep track of how many samples we've written so far
+                    outofs += writesamples;
 
-					// Move source pointer onwards (writesamples may be zero)
-					voice->mSrcOffset += writesamples * step_fixed;
-				}
+                    // Move source pointer onwards (writesamples may be zero)
+                    voice->mSrcOffset += writesamples * step_fixed;
+                }
 
-				// clear voice if the sound is over
-				if (!(voice->mFlags & AudioSourceInstance::LOOPING) && voice->hasEnded())
-				{
-					stopVoice(mActiveVoice[i]);
-				}
-			}
-		}
-	}
+                // Handle panning and channel expansion (and/or shrinking)
+                panAndExpand(voice, aBuffer, aSamplesToRead, aBufferSize, aScratch, aChannels);
 
-	void Soloud::calcActiveVoices()
-	{
-		// TODO: consider whether we need to re-evaluate the active voices all the time.
-		// It is a must when new voices are started, but otherwise we could get away
-		// with postponing it sometimes..
+                // clear voice if the sound is over
+                if (!(voice->mFlags & AudioSourceInstance::LOOPING) && voice->hasEnded())
+                {
+                    stopVoice(mActiveVoice[i]);
+                }
+            }
+            else
+                if (voice &&
+                    voice->mBusHandle == aBus &&
+                    !(voice->mFlags & AudioSourceInstance::PAUSED) &&
+                    (voice->mFlags & AudioSourceInstance::INAUDIBLE) &&
+                    (voice->mFlags & AudioSourceInstance::INAUDIBLE_TICK))
+            {
+                // Inaudible but needs ticking. Do minimal work (keep counters up to date and ask audiosource for data)
+                float step = voice->mSamplerate / aSamplerate;
+                int step_fixed = (int)floor(step * FIXPOINT_FRAC_MUL);
+                unsigned int outofs = 0;
 
-		mActiveVoiceDirty = false;
+                if (voice->mDelaySamples)
+                {
+                    if (voice->mDelaySamples > aSamplesToRead)
+                    {
+                        outofs = aSamplesToRead;
+                        voice->mDelaySamples -= aSamplesToRead;
+                    }
+                    else
+                    {
+                        outofs = voice->mDelaySamples;
+                        voice->mDelaySamples = 0;
+                    }
+                }
 
-		// Populate
-		unsigned int i, candidates, mustlive;
-		candidates = 0;
-		mustlive = 0;
-		for (i = 0; i < mHighestVoice; i++)
-		{
-			if (mVoice[i] && (!(mVoice[i]->mFlags & (AudioSourceInstance::INAUDIBLE | AudioSourceInstance::PAUSED)) || (mVoice[i]->mFlags & AudioSourceInstance::INAUDIBLE_TICK)))
-			{
-				mActiveVoice[candidates] = i;
-				candidates++;
-				if (mVoice[i]->mFlags & AudioSourceInstance::INAUDIBLE_TICK)
-				{
-					mActiveVoice[candidates - 1] = mActiveVoice[mustlive];
-					mActiveVoice[mustlive] = i;
-					mustlive++;
-				}
-			}
-		}
+                while (step_fixed != 0 && outofs < aSamplesToRead)
+                {
+                    if (voice->mLeftoverSamples == 0)
+                    {
+                        // Swap resample buffers (ping-pong)
+                        AudioSourceResampleData * t = voice->mResampleData[0];
+                        voice->mResampleData[0] = voice->mResampleData[1];
+                        voice->mResampleData[1] = t;
 
-		// Check for early out
-		if (candidates <= mMaxActiveVoices)
-		{
-			// everything is audible, early out
-			mActiveVoiceCount = candidates;
-			return;
-		}
+                        // Get a block of source data
 
-		mActiveVoiceCount = mMaxActiveVoices;
+                        int readcount = 0;
+                        if (!voice->hasEnded() || voice->mFlags & AudioSourceInstance::LOOPING)
+                        {
+                            readcount = voice->getAudio(voice->mResampleData[0]->mBuffer, SAMPLE_GRANULARITY, SAMPLE_GRANULARITY);
+                            if (readcount < SAMPLE_GRANULARITY)
+                            {
+                                if (voice->mFlags & AudioSourceInstance::LOOPING)
+                                {
+                                    while (readcount < SAMPLE_GRANULARITY && voice->seek(voice->mLoopPoint, mScratch.mData, mScratchSize) == SO_NO_ERROR)
+                                    {
+                                        voice->mLoopCount++;
+                                        readcount += voice->getAudio(voice->mResampleData[0]->mBuffer + readcount, SAMPLE_GRANULARITY - readcount, SAMPLE_GRANULARITY);
+                                    }
+                                }
+                            }
+                        }
 
-		if (mustlive >= mMaxActiveVoices)
-		{
-			// Oopsie. Well, nothing to sort, since the "must live" voices already
-			// ate all our active voice slots.
-			// This is a potentially an error situation, but we have no way to report
-			// error from here. And asserting could be bad, too.
-			return;
-		}
+                        // If we go past zero, crop to zero (a bit of a kludge)
+                        if (voice->mSrcOffset < SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL)
+                        {
+                            voice->mSrcOffset = 0;
+                        }
+                        else
+                        {
+                            // We have new block of data, move pointer backwards
+                            voice->mSrcOffset -= SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL;
+                        }
 
-		// If we get this far, there's nothing to it: we'll have to sort the voices to find the most audible.
+                        // Skip filters
+                    }
+                    else
+                    {
+                        voice->mLeftoverSamples = 0;
+                    }
 
-		// Iterative partial quicksort:
-		int left = 0, stack[24], pos = 0, right;
-		int len = candidates - mustlive;
-		unsigned int *data = mActiveVoice + mustlive;
-		int k = mActiveVoiceCount;
-		for (;;) 
-		{                                 
-			for (; left + 1 < len; len++) 
-			{                
-				if (pos == 24) len = stack[pos = 0]; 
-				int pivot = data[left];
-				float pivotvol = mVoice[pivot]->mOverallVolume;
-				stack[pos++] = len;      
-				for (right = left - 1;;) 
-				{
-					do 
-					{
-						right++;
-					} 
-					while (mVoice[data[right]]->mOverallVolume > pivotvol);
-					do
-					{
-						len--;
-					}
-					while (pivotvol > mVoice[data[len]]->mOverallVolume);
-					if (right >= len) break;       
-					int temp = data[right];
-					data[right] = data[len];
-					data[len] = temp;
-				}                        
-			}
-			if (pos == 0) break;         
-			if (left >= k) break;
-			left = len;                  
-			len = stack[--pos];          
-		}		
-	}
+                    // Figure out how many samples we can generate from this source data.
+                    // The value may be zero.
 
-	void Soloud::mix_internal(unsigned int aSamples)
-	{
+                    unsigned int writesamples = 0;
+
+                    if (voice->mSrcOffset < SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL)
+                    {
+                        writesamples = ((SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL) - voice->mSrcOffset) / step_fixed + 1;
+
+                        // avoid reading past the current buffer..
+                        if (((writesamples * step_fixed + voice->mSrcOffset) >> FIXPOINT_FRAC_BITS) >= SAMPLE_GRANULARITY)
+                            writesamples--;
+                    }
+
+
+                    // If this is too much for our output buffer, don't write that many:
+                    if (writesamples + outofs > aSamplesToRead)
+                    {
+                        voice->mLeftoverSamples = (writesamples + outofs) - aSamplesToRead;
+                        writesamples = aSamplesToRead - outofs;
+                    }
+
+                    // Skip resampler
+
+                    // Keep track of how many samples we've written so far
+                    outofs += writesamples;
+
+                    // Move source pointer onwards (writesamples may be zero)
+                    voice->mSrcOffset += writesamples * step_fixed;
+                }
+
+                // clear voice if the sound is over
+                if (!(voice->mFlags & AudioSourceInstance::LOOPING) && voice->hasEnded())
+                {
+                    stopVoice(mActiveVoice[i]);
+                }
+            }
+        }
+    }
+
+    void Soloud::calcActiveVoices()
+    {
+        // TODO: consider whether we need to re-evaluate the active voices all the time.
+        // It is a must when new voices are started, but otherwise we could get away
+        // with postponing it sometimes..
+
+        mActiveVoiceDirty = false;
+
+        // Populate
+        unsigned int i, candidates, mustlive;
+        candidates = 0;
+        mustlive = 0;
+        for (i = 0; i < mHighestVoice; i++)
+        {
+            if (mVoice[i] && (!(mVoice[i]->mFlags & (AudioSourceInstance::INAUDIBLE | AudioSourceInstance::PAUSED)) || (mVoice[i]->mFlags & AudioSourceInstance::INAUDIBLE_TICK)))
+            {
+                mActiveVoice[candidates] = i;
+                candidates++;
+                if (mVoice[i]->mFlags & AudioSourceInstance::INAUDIBLE_TICK)
+                {
+                    mActiveVoice[candidates - 1] = mActiveVoice[mustlive];
+                    mActiveVoice[mustlive] = i;
+                    mustlive++;
+                }
+            }
+        }
+
+        // Check for early out
+        if (candidates <= mMaxActiveVoices)
+        {
+            // everything is audible, early out
+            mActiveVoiceCount = candidates;
+            return;
+        }
+
+        mActiveVoiceCount = mMaxActiveVoices;
+
+        if (mustlive >= mMaxActiveVoices)
+        {
+            // Oopsie. Well, nothing to sort, since the "must live" voices already
+            // ate all our active voice slots.
+            // This is a potentially an error situation, but we have no way to report
+            // error from here. And asserting could be bad, too.
+            return;
+        }
+
+        // If we get this far, there's nothing to it: we'll have to sort the voices to find the most audible.
+
+        // Iterative partial quicksort:
+        int left = 0, stack[24], pos = 0, right;
+        int len = candidates - mustlive;
+        unsigned int *data = mActiveVoice + mustlive;
+        int k = mActiveVoiceCount;
+        for (;;)
+        {
+            for (; left + 1 < len; len++)
+            {
+                if (pos == 24) len = stack[pos = 0];
+                int pivot = data[left];
+                float pivotvol = mVoice[pivot]->mOverallVolume;
+                stack[pos++] = len;
+                for (right = left - 1;;)
+                {
+                    do
+                    {
+                        right++;
+                    }
+                    while (mVoice[data[right]]->mOverallVolume > pivotvol);
+                    do
+                    {
+                        len--;
+                    }
+                    while (pivotvol > mVoice[data[len]]->mOverallVolume);
+                    if (right >= len) break;
+                    int temp = data[right];
+                    data[right] = data[len];
+                    data[len] = temp;
+                }
+            }
+            if (pos == 0) break;
+            if (left >= k) break;
+            left = len;
+            len = stack[--pos];
+        }
+        // TODO: should the rest of the voices be flagged INAUDIBLE?
+    }
+
+    void Soloud::mix_internal(unsigned int aSamples)
+    {
 #ifdef FLOATING_POINT_DEBUG
-		// This needs to be done in the audio thread as well..
-		static int done = 0;
-		if (!done)
-		{
-			unsigned int u;
-			u = _controlfp(0, 0);
-			u = u & ~(_EM_INVALID | /*_EM_DENORMAL |*/ _EM_ZERODIVIDE | _EM_OVERFLOW /*| _EM_UNDERFLOW  | _EM_INEXACT*/);
-			_controlfp(u, _MCW_EM);
-			done = 1;
-		}
+        // This needs to be done in the audio thread as well..
+        static int done = 0;
+        if (!done)
+        {
+            unsigned int u;
+            u = _controlfp(0, 0);
+            u = u & ~(_EM_INVALID | /*_EM_DENORMAL |*/ _EM_ZERODIVIDE | _EM_OVERFLOW /*| _EM_UNDERFLOW  | _EM_INEXACT*/);
+            _controlfp(u, _MCW_EM);
+            done = 1;
+        }
 #endif
 
-		float buffertime = aSamples / (float)mSamplerate;
-		float globalVolume[2];
-		mStreamTime += buffertime;
-		mLastClockedTime = 0;
+        float buffertime = aSamples / (float)mSamplerate;
+        float globalVolume[2];
+        mStreamTime += buffertime;
+        mLastClockedTime = 0;
 
-		globalVolume[0] = mGlobalVolume;
-		if (mGlobalVolumeFader.mActive)
-		{
-			mGlobalVolume = mGlobalVolumeFader.get(mStreamTime);
-		}
-		globalVolume[1] = mGlobalVolume;
+        globalVolume[0] = mGlobalVolume;
+        if (mGlobalVolumeFader.mActive)
+        {
+            mGlobalVolume = mGlobalVolumeFader.get(mStreamTime);
+        }
+        globalVolume[1] = mGlobalVolume;
 
-		lockAudioMutex();
+        lockAudioMutex();
 
-		// Process faders. May change scratch size.
-		int i;
-		for (i = 0; i < (signed)mHighestVoice; i++)
-		{
-			if (mVoice[i] && !(mVoice[i]->mFlags & AudioSourceInstance::PAUSED))
-			{
-				float volume[2];
+        // Process faders. May change scratch size.
+        int i;
+        for (i = 0; i < (signed)mHighestVoice; i++)
+        {
+            if (mVoice[i] && !(mVoice[i]->mFlags & AudioSourceInstance::PAUSED))
+            {
+                float volume[2];
 
-				mVoice[i]->mActiveFader = 0;
+                mVoice[i]->mActiveFader = 0;
 
-				if (mGlobalVolumeFader.mActive > 0)
-				{
-					mVoice[i]->mActiveFader = 1;
-				}
+                if (mGlobalVolumeFader.mActive > 0)
+                {
+                    mVoice[i]->mActiveFader = 1;
+                }
 
-				mVoice[i]->mStreamTime += buffertime;
+                mVoice[i]->mStreamTime += buffertime;
+                mVoice[i]->mStreamPosition += buffertime;
 
-				if (mVoice[i]->mRelativePlaySpeedFader.mActive > 0)
-				{
-					float speed = mVoice[i]->mRelativePlaySpeedFader.get(mVoice[i]->mStreamTime);
-					setVoiceRelativePlaySpeed(i, speed);
-				}
+                // TODO: this is actually unstable, because mStreamTime depends on the relative
+                // play speed.
+                if (mVoice[i]->mRelativePlaySpeedFader.mActive > 0)
+                {
+                    float speed = mVoice[i]->mRelativePlaySpeedFader.get(mVoice[i]->mStreamTime);
+                    setVoiceRelativePlaySpeed(i, speed);
+                }
 
-				volume[0] = mVoice[i]->mOverallVolume;
-				if (mVoice[i]->mVolumeFader.mActive > 0)
-				{
-					mVoice[i]->mSetVolume = mVoice[i]->mVolumeFader.get(mVoice[i]->mStreamTime);
-					mVoice[i]->mActiveFader = 1;
-					updateVoiceVolume(i);
-					mActiveVoiceDirty = true;
-				}
-				volume[1] = mVoice[i]->mOverallVolume;
+                volume[0] = mVoice[i]->mOverallVolume;
+                if (mVoice[i]->mVolumeFader.mActive > 0)
+                {
+                    mVoice[i]->mSetVolume = mVoice[i]->mVolumeFader.get(mVoice[i]->mStreamTime);
+                    mVoice[i]->mActiveFader = 1;
+                    updateVoiceVolume(i);
+                    mActiveVoiceDirty = true;
+                }
+                volume[1] = mVoice[i]->mOverallVolume;
 
-				if (mVoice[i]->mPanFader.mActive > 0)
-				{
-					float pan = mVoice[i]->mPanFader.get(mVoice[i]->mStreamTime);
-					setVoicePan(i, pan);
-					mVoice[i]->mActiveFader = 1;
-				}
+                if (mVoice[i]->mPanFader.mActive > 0)
+                {
+                    float pan = mVoice[i]->mPanFader.get(mVoice[i]->mStreamTime);
+                    setVoicePan(i, pan);
+                    mVoice[i]->mActiveFader = 1;
+                }
 
-				if (mVoice[i]->mPauseScheduler.mActive)
-				{
-					mVoice[i]->mPauseScheduler.get(mVoice[i]->mStreamTime);
-					if (mVoice[i]->mPauseScheduler.mActive == -1)
-					{
-						mVoice[i]->mPauseScheduler.mActive = 0;
-						setVoicePause(i, 1);
-					}
-				}
+                if (mVoice[i]->mPauseScheduler.mActive)
+                {
+                    mVoice[i]->mPauseScheduler.get(mVoice[i]->mStreamTime);
+                    if (mVoice[i]->mPauseScheduler.mActive == -1)
+                    {
+                        mVoice[i]->mPauseScheduler.mActive = 0;
+                        setVoicePause(i, 1);
+                    }
+                }
 
-				if (mVoice[i]->mStopScheduler.mActive)
-				{
-					mVoice[i]->mStopScheduler.get(mVoice[i]->mStreamTime);
-					if (mVoice[i]->mStopScheduler.mActive == -1)
-					{
-						mVoice[i]->mStopScheduler.mActive = 0;
-						stopVoice(i);
-					}
-				}
-			}
-		}
+                if (mVoice[i]->mStopScheduler.mActive)
+                {
+                    mVoice[i]->mStopScheduler.get(mVoice[i]->mStreamTime);
+                    if (mVoice[i]->mStopScheduler.mActive == -1)
+                    {
+                        mVoice[i]->mStopScheduler.mActive = 0;
+                        stopVoice(i);
+                    }
+                }
+            }
+        }
 
-		if (mActiveVoiceDirty)
-			calcActiveVoices();
+        if (mActiveVoiceDirty)
+            calcActiveVoices();
 
-		// Resize scratch if needed.
-		if (mScratchSize < mScratchNeeded)
-		{
-			mScratchSize = mScratchNeeded;
-			mScratch.init(mScratchSize * MAX_CHANNELS);
-		}
-		
-		mixBus(mOutputScratch.mData, aSamples, mScratch.mData, 0, (float)mSamplerate, mChannels);
+        // Resize scratch if needed.
+        if (mScratchSize < mScratchNeeded)
+        {
+            mScratchSize = mScratchNeeded;
+            mScratch.init(mScratchSize * MAX_CHANNELS);
+        }
 
-		for (i = 0; i < FILTERS_PER_STREAM; i++)
-		{
-			if (mFilterInstance[i])
-			{
-				mFilterInstance[i]->filter(mOutputScratch.mData, aSamples, mChannels, (float)mSamplerate, mStreamTime);
-			}
-		}
+        mixBus(mOutputScratch.mData, aSamples, aSamples, mScratch.mData, 0, (float)mSamplerate, mChannels);
 
-		unlockAudioMutex();
+        for (i = 0; i < FILTERS_PER_STREAM; i++)
+        {
+            if (mFilterInstance[i])
+            {
+                mFilterInstance[i]->filter(mOutputScratch.mData, aSamples, mChannels, (float)mSamplerate, mStreamTime);
+            }
+        }
 
-		clip(mOutputScratch, mScratch, aSamples, globalVolume[0], globalVolume[1]);
+        unlockAudioMutex();
 
-		if (mFlags & ENABLE_VISUALIZATION)
-		{
-			if (aSamples > 255)
-			{
-				for (i = 0; i < 256; i++)
-				{
-					int j;
-					mVisualizationWaveData[i] = 0;
-					for (j = 0; j < (signed)mChannels; j++)
-					{
-						mVisualizationWaveData[i] += mScratch.mData[i + j * aSamples];
-					}
-				}
-			}
-			else
-			{
-				// Very unlikely failsafe branch
-				for (i = 0; i < 256; i++)
-				{
-					int j;
-					mVisualizationWaveData[i] = 0;
-					for (j = 0; j < (signed)mChannels; j++)
-					{
-						mVisualizationWaveData[i] += mScratch.mData[(i % aSamples) + j * aSamples];
-					}
-				}
-			}
-		}
-	}
+        clip(mOutputScratch, mScratch, aSamples, globalVolume[0], globalVolume[1]);
 
-	void Soloud::mix(float *aBuffer, unsigned int aSamples)
-	{
-		mix_internal(aSamples);
-		interlace_samples_float(mScratch.mData, aBuffer, aSamples, mChannels);
-	}
+        if (mFlags & ENABLE_VISUALIZATION)
+        {
+            if (aSamples > 255)
+            {
+                for (i = 0; i < 256; i++)
+                {
+                    int j;
+                    mVisualizationWaveData[i] = 0;
+                    for (j = 0; j < (signed)mChannels; j++)
+                    {
+                        mVisualizationWaveData[i] += mScratch.mData[i + j * aSamples];
+                    }
+                }
+            }
+            else
+            {
+                // Very unlikely failsafe branch
+                for (i = 0; i < 256; i++)
+                {
+                    int j;
+                    mVisualizationWaveData[i] = 0;
+                    for (j = 0; j < (signed)mChannels; j++)
+                    {
+                        mVisualizationWaveData[i] += mScratch.mData[(i % aSamples) + j * aSamples];
+                    }
+                }
+            }
+        }
+    }
 
-	void Soloud::mixSigned16(short *aBuffer, unsigned int aSamples)
-	{
-		mix_internal(aSamples);
-		interlace_samples_s16(mScratch.mData, aBuffer, aSamples, mChannels);
-	}
+    void Soloud::mix(float *aBuffer, unsigned int aSamples)
+    {
+        mix_internal(aSamples);
+        interlace_samples_float(mScratch.mData, aBuffer, aSamples, mChannels);
+    }
 
-	void deinterlace_samples_float(const float *aSourceBuffer, float *aDestBuffer, unsigned int aSamples, unsigned int aChannels)
-	{
-		// 121212 -> 111222
-		unsigned int i, j, c;
-		c = 0;
-		for (j = 0; j < aChannels; j++)
-		{
-			for (i = j; i < aSamples; i += aChannels)
-			{
-				aDestBuffer[c] = aSourceBuffer[i + j];
-				c++;
-			}
-		}
-	}
+    void Soloud::mixSigned16(short *aBuffer, unsigned int aSamples)
+    {
+        mix_internal(aSamples);
+        interlace_samples_s16(mScratch.mData, aBuffer, aSamples, mChannels);
+    }
 
-	void interlace_samples_float(const float *aSourceBuffer, float *aDestBuffer, unsigned int aSamples, unsigned int aChannels)
-	{
-		// 111222 -> 121212
-		unsigned int i, j, c;
-		c = 0;
-		for (j = 0; j < aChannels; j++)
-		{
-			for (i = j; i < aSamples * aChannels; i += aChannels)
-			{
-				aDestBuffer[i] = aSourceBuffer[c];
-				c++;
-			}
-		}
-	}
+    void deinterlace_samples_float(const float *aSourceBuffer, float *aDestBuffer, unsigned int aSamples, unsigned int aChannels)
+    {
+        // 121212 -> 111222
+        unsigned int i, j, c;
+        c = 0;
+        for (j = 0; j < aChannels; j++)
+        {
+            for (i = j; i < aSamples; i += aChannels)
+            {
+                aDestBuffer[c] = aSourceBuffer[i + j];
+                c++;
+            }
+        }
+    }
 
-	void interlace_samples_s16(const float *aSourceBuffer, short *aDestBuffer, unsigned int aSamples, unsigned int aChannels)
-	{
-		// 111222 -> 121212
-		unsigned int i, j, c;
-		c = 0;
-		for (j = 0; j < aChannels; j++)
-		{
-			for (i = j; i < aSamples * aChannels; i += aChannels)
-			{
-				aDestBuffer[i] = (short)(aSourceBuffer[c] * 0x7fff);
-				c++;
-			}
-		}
-	}
+    void interlace_samples_float(const float *aSourceBuffer, float *aDestBuffer, unsigned int aSamples, unsigned int aChannels)
+    {
+        // 111222 -> 121212
+        unsigned int i, j, c;
+        c = 0;
+        for (j = 0; j < aChannels; j++)
+        {
+            for (i = j; i < aSamples * aChannels; i += aChannels)
+            {
+                aDestBuffer[i] = aSourceBuffer[c];
+                c++;
+            }
+        }
+    }
 
-	void Soloud::lockAudioMutex()
-	{
-		if (mAudioThreadMutex)
-			Thread::lockMutex(mAudioThreadMutex);
-	}
+    void interlace_samples_s16(const float *aSourceBuffer, short *aDestBuffer, unsigned int aSamples, unsigned int aChannels)
+    {
+        // 111222 -> 121212
+        unsigned int i, j, c;
+        c = 0;
+        for (j = 0; j < aChannels; j++)
+        {
+            for (i = j; i < aSamples * aChannels; i += aChannels)
+            {
+                aDestBuffer[i] = (short)(aSourceBuffer[c] * 0x7fff);
+                c++;
+            }
+        }
+    }
 
-	void Soloud::unlockAudioMutex()
-	{
-		if (mAudioThreadMutex)
-			Thread::unlockMutex(mAudioThreadMutex);
-	}
+    void Soloud::lockAudioMutex()
+    {
+        if (mAudioThreadMutex)
+        {
+            Thread::lockMutex(mAudioThreadMutex);
+        }
+        SOLOUD_ASSERT(!mInsideAudioThreadMutex);
+        mInsideAudioThreadMutex = true;
+    }
+
+    void Soloud::unlockAudioMutex()
+    {
+        SOLOUD_ASSERT(mInsideAudioThreadMutex);
+        mInsideAudioThreadMutex = false;
+        if (mAudioThreadMutex)
+        {
+            Thread::unlockMutex(mAudioThreadMutex);
+        }
+    }
 
 };
 //----soloud_audiosource.cpp-----------------------------------------------------------------------
@@ -2883,6 +2937,7 @@ namespace SoLoud
 		mSamplerate = 44100.0f;
 		mSetRelativePlaySpeed = 1.0f;
 		mStreamTime = 0.0f;
+        mStreamPosition = 0.0f;
 		mAudioSourceID = 0;
 		mActiveFader = 0;
 		mChannels = 1;
@@ -2922,7 +2977,9 @@ namespace SoLoud
 		mBaseSamplerate = aSource.mBaseSamplerate;
 		mSamplerate = mBaseSamplerate;
 		mChannels = aSource.mChannels;
-		mStreamTime = 0.0f;
+        mStreamTime = 0.0f;
+        mStreamPosition = 0.0f;
+        mLoopPoint = aSource.mLoopPoint;
 
 		if (aSource.mFlags & AudioSource::SHOULD_LOOP)
 		{
@@ -2951,30 +3008,30 @@ namespace SoLoud
 		return NOT_IMPLEMENTED;
 	}
 
-	void AudioSourceInstance::seek(double aSeconds, float *mScratch, unsigned int mScratchSize)
+    result AudioSourceInstance::seek(time aSeconds, float *mScratch, unsigned int mScratchSize)
 	{
-		double offset = aSeconds - mStreamTime;
-		if (offset < 0)
-		{
-			if (rewind() != SO_NO_ERROR)
-			{
-				// can't do generic seek backwards unless we can rewind.
-				return;
-			}
-			offset = aSeconds;
-		}
-		int samples_to_discard = (int)floor(mSamplerate * offset);
+        double offset = aSeconds - mStreamPosition;
+        if (offset <= 0)
+        {
+            if (rewind() != SO_NO_ERROR)
+            {
+                // can't do generic seek backwards unless we can rewind.
+                return NOT_IMPLEMENTED;
+            }
+            offset = aSeconds;
+        }
+        int samples_to_discard = (int)floor(mSamplerate * offset);
 
-		while (samples_to_discard)
-		{
-			int samples = mScratchSize / 2;
-			if (samples > samples_to_discard)
-				samples = samples_to_discard;
-			getAudio(mScratch, samples);
-			samples_to_discard -= samples;
-		}
-
-		mStreamTime = aSeconds;
+        while (samples_to_discard)
+        {
+            int samples = mScratchSize / mChannels;
+            if (samples > samples_to_discard)
+                samples = samples_to_discard;
+            getAudio(mScratch, samples, samples);
+            samples_to_discard -= samples;
+        }
+        mStreamPosition = offset;
+        return SO_NO_ERROR;
 	}
 
 
@@ -2999,6 +3056,7 @@ namespace SoLoud
 		mAttenuator = 0;
 		mColliderData = 0;
 		mVolume = 1;
+        mLoopPoint = 0;
 	}
 
 	AudioSource::~AudioSource() 
@@ -3010,6 +3068,15 @@ namespace SoLoud
 	{
 		mVolume = aVolume;
 	}
+
+    void AudioSource::setLoopPoint(time aLoopPoint)
+    {
+        mLoopPoint = aLoopPoint;
+    }
+
+    time AudioSource::getLoopPoint()    {
+        return mLoopPoint;
+    }
 
 	void AudioSource::setLooping(bool aLoop)
 	{
@@ -3139,265 +3206,265 @@ namespace SoLoud
 //----soloud_bus.cpp-------------------------------------------------------------------------------
 namespace SoLoud
 {
-	BusInstance::BusInstance(Bus *aParent)
-	{
-		mParent = aParent;
-		mScratchSize = 0;
-		mFlags |= PROTECTED | INAUDIBLE_TICK;
-	}
-	
-	void BusInstance::getAudio(float *aBuffer, unsigned int aSamples)
-	{
-		int handle = mParent->mChannelHandle;
-		if (handle == 0) 
-		{
-			// Avoid reuse of scratch data if this bus hasn't played anything yet
-			unsigned int i;
-			for (i = 0; i < aSamples * mChannels; i++)
-				aBuffer[i] = 0;
-			return;
-		}
-		
-		Soloud *s = mParent->mSoloud;
-		if (s->mScratchNeeded != mScratchSize)
-		{
-			mScratchSize = s->mScratchNeeded;
-			mScratch.init(mScratchSize * MAX_CHANNELS);
-		}
-		
-		s->mixBus(aBuffer, aSamples, mScratch.mData, handle, mSamplerate, mChannels);
+    BusInstance::BusInstance(Bus *aParent)
+    {
+        mParent = aParent;
+        mScratchSize = 0;
+        mFlags |= PROTECTED | INAUDIBLE_TICK;
+    }
 
-		int i;
-		if (mParent->mFlags & AudioSource::VISUALIZATION_DATA)
-		{
-			if (aSamples > 255)
-			{
-				for (i = 0; i < 256; i++)
-				{
-					int j;
-					mVisualizationWaveData[i] = 0;
-					for (j = 0; j < (signed)mChannels; j++)
-						mVisualizationWaveData[i] += aBuffer[i + aSamples * j];
-				}
-			}
-			else
-			{
-				// Very unlikely failsafe branch
-				for (i = 0; i < 256; i++)
-				{
-					int j;
-					mVisualizationWaveData[i] = 0;
-					for (j = 0; j < (signed)mChannels; j++)
-						mVisualizationWaveData[i] += aBuffer[(i % aSamples) + aSamples * j];
-				}
-			}
-		}
-	}
+    unsigned int BusInstance::getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)
+    {
+        int handle = mParent->mChannelHandle;
+        if (handle == 0)
+        {
+            // Avoid reuse of scratch data if this bus hasn't played anything yet
+            unsigned int i;
+            for (i = 0; i < aBufferSize * mChannels; i++)
+                aBuffer[i] = 0;
+            return aSamplesToRead;
+        }
 
-	bool BusInstance::hasEnded()
-	{
-		// Busses never stop for fear of going under 50mph.
-		return 0;
-	}
+        Soloud *s = mParent->mSoloud;
+        if (s->mScratchNeeded != mScratchSize)
+        {
+            mScratchSize = s->mScratchNeeded;
+            mScratch.init(mScratchSize * MAX_CHANNELS);
+        }
 
-	BusInstance::~BusInstance()
-	{
-		Soloud *s = mParent->mSoloud;
-		int i;
-		for (i = 0; i < (signed)s->mHighestVoice; i++)
-		{
-			if (s->mVoice[i] && s->mVoice[i]->mBusHandle == mParent->mChannelHandle)
-			{
-				s->stopVoice(i);
-			}
-		}
-	}
+        s->mixBus(aBuffer, aSamplesToRead, aBufferSize, mScratch.mData, handle, mSamplerate, mChannels);
 
-	Bus::Bus()
-	{
-		mChannelHandle = 0;
-		mInstance = 0;
-		mChannels = 2;
-	}
-	
-	BusInstance * Bus::createInstance()
-	{
-		if (mChannelHandle)
-		{
-			// We should be inside the mutex at the moment, so stop using the "internal" functions
-			mSoloud->stopVoice(mSoloud->getVoiceFromHandle(mChannelHandle));
-			mChannelHandle = 0;
-			mInstance = 0;
-		}
-		mInstance = new BusInstance(this);
-		return mInstance;
-	}
+        int i;
+        if (mParent->mFlags & AudioSource::VISUALIZATION_DATA)
+        {
+            if (aSamplesToRead > 255)
+            {
+                for (i = 0; i < 256; i++)
+                {
+                    int j;
+                    mVisualizationWaveData[i] = 0;
+                    for (j = 0; j < (signed)mChannels; j++)
+                        mVisualizationWaveData[i] += aBuffer[i + aBufferSize * j];
+                }
+            }
+            else
+            {
+                // Very unlikely failsafe branch
+                for (i = 0; i < 256; i++)
+                {
+                    int j;
+                    mVisualizationWaveData[i] = 0;
+                    for (j = 0; j < (signed)mChannels; j++)
+                        mVisualizationWaveData[i] += aBuffer[(i % aSamplesToRead) + aBufferSize * j];
+                }
+            }
+        }
+        return aSamplesToRead;
+    }
 
-	void Bus::findBusHandle()
-	{
-		if (mChannelHandle == 0)
-		{
-			// Find the channel the bus is playing on to calculate handle..
-			int i;
-			for (i = 0; mChannelHandle == 0 && i < (signed)mSoloud->mHighestVoice; i++)
-			{
-				if (mSoloud->mVoice[i] == mInstance)
-				{
-					mChannelHandle = mSoloud->getHandleFromVoice(i);
-				}
-			}
-		}
-	}
+    bool BusInstance::hasEnded()
+    {
+        // Busses never stop for fear of going under 50mph.
+        return 0;
+    }
 
-	handle Bus::play(AudioSource &aSound, float aVolume, float aPan, bool aPaused)
-	{
-		if (!mInstance || !mSoloud)
-		{
-			return 0;
-		}
+    BusInstance::~BusInstance()
+    {
+        Soloud *s = mParent->mSoloud;
+        int i;
+        for (i = 0; i < (signed)s->mHighestVoice; i++)
+        {
+            if (s->mVoice[i] && s->mVoice[i]->mBusHandle == mParent->mChannelHandle)
+            {
+                s->stopVoice(i);
+            }
+        }
+    }
 
-		findBusHandle();
+    Bus::Bus()
+    {
+        mChannelHandle = 0;
+        mInstance = 0;
+        mChannels = 2;
+    }
 
-		if (mChannelHandle == 0)
-		{
-			return 0;
-		}
-		return mSoloud->play(aSound, aVolume, aPan, aPaused, mChannelHandle);
-	}	
+    BusInstance * Bus::createInstance()
+    {
+        if (mChannelHandle)
+        {
+            stop();
+            mChannelHandle = 0;
+            mInstance = 0;
+        }
+        mInstance = new BusInstance(this);
+        return mInstance;
+    }
 
+    void Bus::findBusHandle()
+    {
+        if (mChannelHandle == 0)
+        {
+            // Find the channel the bus is playing on to calculate handle..
+            int i;
+            for (i = 0; mChannelHandle == 0 && i < (signed)mSoloud->mHighestVoice; i++)
+            {
+                if (mSoloud->mVoice[i] == mInstance)
+                {
+                    mChannelHandle = mSoloud->getHandleFromVoice(i);
+                }
+            }
+        }
+    }
 
-	handle Bus::playClocked(time aSoundTime, AudioSource &aSound, float aVolume, float aPan)
-	{
-		if (!mInstance || !mSoloud)
-		{
-			return 0;
-		}
+    handle Bus::play(AudioSource &aSound, float aVolume, float aPan, bool aPaused)
+    {
+        if (!mInstance || !mSoloud)
+        {
+            return 0;
+        }
 
-		findBusHandle();
+        findBusHandle();
 
-		if (mChannelHandle == 0)
-		{
-			return 0;
-		}
-
-		return mSoloud->playClocked(aSoundTime, aSound, aVolume, aPan, mChannelHandle);
-	}	
-
-	handle Bus::play3d(AudioSource &aSound, float aPosX, float aPosY, float aPosZ, float aVelX, float aVelY, float aVelZ, float aVolume, bool aPaused)
-	{
-		if (!mInstance || !mSoloud)
-		{
-			return 0;
-		}
-
-		findBusHandle();
-
-		if (mChannelHandle == 0)
-		{
-			return 0;
-		}
-		return mSoloud->play3d(aSound, aPosX, aPosY, aPosZ, aVelX, aVelY, aVelZ, aVolume, aPaused, mChannelHandle);
-	}
-
-	handle Bus::play3dClocked(time aSoundTime, AudioSource &aSound, float aPosX, float aPosY, float aPosZ, float aVelX, float aVelY, float aVelZ, float aVolume)
-	{
-		if (!mInstance || !mSoloud)
-		{
-			return 0;
-		}
-
-		findBusHandle();
-
-		if (mChannelHandle == 0)
-		{
-			return 0;
-		}
-		return mSoloud->play3dClocked(aSoundTime, aSound, aPosX, aPosY, aPosZ, aVelX, aVelY, aVelZ, aVolume, mChannelHandle);
-	}
+        if (mChannelHandle == 0)
+        {
+            return 0;
+        }
+        return mSoloud->play(aSound, aVolume, aPan, aPaused, mChannelHandle);
+    }
 
 
-	void Bus::setFilter(unsigned int aFilterId, Filter *aFilter)
-	{
-		if (aFilterId >= FILTERS_PER_STREAM)
-			return;
+    handle Bus::playClocked(time aSoundTime, AudioSource &aSound, float aVolume, float aPan)
+    {
+        if (!mInstance || !mSoloud)
+        {
+            return 0;
+        }
 
-		mFilter[aFilterId] = aFilter;
+        findBusHandle();
 
-		if (mInstance)
-		{
-			mSoloud->lockAudioMutex();
-			delete mInstance->mFilter[aFilterId];
-			mInstance->mFilter[aFilterId] = 0;
-		
-			if (aFilter)
-			{
-				mInstance->mFilter[aFilterId] = mFilter[aFilterId]->createInstance();
-			}
-			mSoloud->unlockAudioMutex();
-		}
-	}
+        if (mChannelHandle == 0)
+        {
+            return 0;
+        }
 
-	result Bus::setChannels(unsigned int aChannels)
-	{
-		if (aChannels == 0 || aChannels == 3 || aChannels == 5 || aChannels > 6)
-			return INVALID_PARAMETER;
-		mChannels = aChannels;
-		return SO_NO_ERROR;
-	}
+        return mSoloud->playClocked(aSoundTime, aSound, aVolume, aPan, mChannelHandle);
+    }
 
-	void Bus::setVisualizationEnable(bool aEnable)
-	{
-		if (aEnable)
-		{
-			mFlags |= AudioSource::VISUALIZATION_DATA;
-		}
-		else
-		{
-			mFlags &= ~AudioSource::VISUALIZATION_DATA;
-		}
-	}
-		
-	float * Bus::calcFFT()
-	{
-		if (mInstance && mSoloud)
-		{
-			mSoloud->lockAudioMutex();
-			float temp[1024];
-			int i;
-			for (i = 0; i < 256; i++)
-			{
-				temp[i*2] = mInstance->mVisualizationWaveData[i];
-				temp[i*2+1] = 0;
-				temp[i+512] = 0;
-				temp[i+768] = 0;
-			}
-			mSoloud->unlockAudioMutex();
+    handle Bus::play3d(AudioSource &aSound, float aPosX, float aPosY, float aPosZ, float aVelX, float aVelY, float aVelZ, float aVolume, bool aPaused)
+    {
+        if (!mInstance || !mSoloud)
+        {
+            return 0;
+        }
 
-			SoLoud::FFT::fft1024(temp);
+        findBusHandle();
 
-			for (i = 0; i < 256; i++)
-			{
-				float real = temp[i];
-				float imag = temp[i+512];
-				mFFTData[i] = (float)sqrt(real*real+imag*imag);
-			}
-		}
+        if (mChannelHandle == 0)
+        {
+            return 0;
+        }
+        return mSoloud->play3d(aSound, aPosX, aPosY, aPosZ, aVelX, aVelY, aVelZ, aVolume, aPaused, mChannelHandle);
+    }
 
-		return mFFTData;
-	}
+    handle Bus::play3dClocked(time aSoundTime, AudioSource &aSound, float aPosX, float aPosY, float aPosZ, float aVelX, float aVelY, float aVelZ, float aVolume)
+    {
+        if (!mInstance || !mSoloud)
+        {
+            return 0;
+        }
 
-	float * Bus::getWave()
-	{
-		if (mInstance && mSoloud)
-		{
-			int i;
-			mSoloud->lockAudioMutex();
-			for (i = 0; i < 256; i++)
-				mWaveData[i] = mInstance->mVisualizationWaveData[i];
-			mSoloud->unlockAudioMutex();
-		}
-		return mWaveData;
-	}
+        findBusHandle();
+
+        if (mChannelHandle == 0)
+        {
+            return 0;
+        }
+        return mSoloud->play3dClocked(aSoundTime, aSound, aPosX, aPosY, aPosZ, aVelX, aVelY, aVelZ, aVolume, mChannelHandle);
+    }
+
+
+    void Bus::setFilter(unsigned int aFilterId, Filter *aFilter)
+    {
+        if (aFilterId >= FILTERS_PER_STREAM)
+            return;
+
+        mFilter[aFilterId] = aFilter;
+
+        if (mInstance)
+        {
+            mSoloud->lockAudioMutex();
+            delete mInstance->mFilter[aFilterId];
+            mInstance->mFilter[aFilterId] = 0;
+
+            if (aFilter)
+            {
+                mInstance->mFilter[aFilterId] = mFilter[aFilterId]->createInstance();
+            }
+            mSoloud->unlockAudioMutex();
+        }
+    }
+
+    result Bus::setChannels(unsigned int aChannels)
+    {
+        if (aChannels == 0 || aChannels == 3 || aChannels == 5 || aChannels > 6)
+            return INVALID_PARAMETER;
+        mChannels = aChannels;
+        return SO_NO_ERROR;
+    }
+
+    void Bus::setVisualizationEnable(bool aEnable)
+    {
+        if (aEnable)
+        {
+            mFlags |= AudioSource::VISUALIZATION_DATA;
+        }
+        else
+        {
+            mFlags &= ~AudioSource::VISUALIZATION_DATA;
+        }
+    }
+
+    float * Bus::calcFFT()
+    {
+        if (mInstance && mSoloud)
+        {
+            mSoloud->lockAudioMutex();
+            float temp[1024];
+            int i;
+            for (i = 0; i < 256; i++)
+            {
+                temp[i*2] = mInstance->mVisualizationWaveData[i];
+                temp[i*2+1] = 0;
+                temp[i+512] = 0;
+                temp[i+768] = 0;
+            }
+            mSoloud->unlockAudioMutex();
+
+            SoLoud::FFT::fft1024(temp);
+
+            for (i = 0; i < 256; i++)
+            {
+                float real = temp[i * 2];
+                float imag = temp[i * 2 + 1];
+                mFFTData[i] = (float)sqrt(real*real+imag*imag);
+            }
+        }
+
+        return mFFTData;
+    }
+
+    float * Bus::getWave()
+    {
+        if (mInstance && mSoloud)
+        {
+            int i;
+            mSoloud->lockAudioMutex();
+            for (i = 0; i < 256; i++)
+                mWaveData[i] = mInstance->mVisualizationWaveData[i];
+            mSoloud->unlockAudioMutex();
+        }
+        return mWaveData;
+    }
 
 };
 //----soloud_core_3d.cpp-----------------------------------------------------------------------
@@ -3771,6 +3838,14 @@ namespace SoLoud
 		}
 
 		updateVoiceVolume(v);
+
+        // Fix initial voice volume ramp up
+        int i;
+        for (i = 0; i < MAX_CHANNELS; i++)
+        {
+            mVoice[v]->mCurrentChannelVolume[i] = mVoice[v]->mChannelVolume[i] * mVoice[v]->mOverallVolume;
+        }
+
 		if (mVoice[v]->mOverallVolume < 0.01f)
 		{
 			// Inaudible.
@@ -3833,6 +3908,14 @@ namespace SoLoud
 		}
 
 		updateVoiceVolume(v);
+
+        // Fix initial voice volume ramp up
+        int i;
+        for (i = 0; i < MAX_CHANNELS; i++)
+        {
+            mVoice[v]->mCurrentChannelVolume[i] = mVoice[v]->mChannelVolume[i] * mVoice[v]->mOverallVolume;
+        }
+
 		if (mVoice[v]->mOverallVolume < 0.01f)
 		{
 			// Inaudible.
@@ -6105,13 +6188,13 @@ namespace SoLoud
 		unsigned int i;
 		for (i = 4; i < aSamples; i++)
 		{
-			aFFTBuffer[i - 4] = aFFTBuffer[i];
-			aFFTBuffer[i + aSamples - 4] = aFFTBuffer[i + aSamples];
+            aFFTBuffer[(i - 4) * 2] = aFFTBuffer[i * 2];
+            aFFTBuffer[(i - 4) * 2 + 1] = aFFTBuffer[i * 2 + 1];
 		}
 		for (i = 0; i < 4; i++)
 		{
-			aFFTBuffer[aSamples - 4 + i] = 0;
-			aFFTBuffer[aSamples + aSamples - 4 + i] = 0;
+            aFFTBuffer[aSamples - 4 * 2 + i * 2] = 0;
+            aFFTBuffer[aSamples - 4 * 2 + i * 2 + 1] = 0;
 		}
 	}
 
@@ -6357,61 +6440,25 @@ namespace SoLoud
 		mOffset = 0;
 	}
 
-	void WavInstance::getAudio(float *aBuffer, unsigned int aSamples)
-	{		
-		if (mParent->mData == NULL)
-			return;
+    unsigned int WavInstance::getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)
+    {
+        if (mParent->mData == NULL)
+            return 0;
 
-		// Buffer size may be bigger than samples, and samples may loop..
+        unsigned int dataleft = mParent->mSampleCount - mOffset;
+        unsigned int copylen = dataleft;
+        if (copylen > aSamplesToRead)
+            copylen = aSamplesToRead;
 
-		unsigned int written = 0;
-		unsigned int maxwrite = (aSamples > mParent->mSampleCount) ?  mParent->mSampleCount : aSamples;
-		unsigned int channels = mChannels;
+        unsigned int i;
+        for (i = 0; i < mChannels; i++)
+        {
+            memcpy(aBuffer + i * aBufferSize, mParent->mData + mOffset + i * mParent->mSampleCount, sizeof(float) * copylen);
+        }
 
-		while (written < aSamples)
-		{
-			unsigned int copysize = maxwrite;
-			if (copysize + mOffset > mParent->mSampleCount)
-			{
-				copysize = mParent->mSampleCount - mOffset;
-			}
-
-			if (copysize + written > aSamples)
-			{
-				copysize = aSamples - written;
-			}
-
-			unsigned int i;
-			for (i = 0; i < channels; i++)
-			{
-				memcpy(aBuffer + i * aSamples + written, mParent->mData + mOffset + i * mParent->mSampleCount, sizeof(float) * copysize);
-			}
-
-			written += copysize;
-			mOffset += copysize;				
-		
-			if (copysize != maxwrite)
-			{
-				if (mFlags & AudioSourceInstance::LOOPING)
-				{
-					if (mOffset == mParent->mSampleCount)
-					{
-						mOffset = 0;
-						mLoopCount++;
-					}
-				}
-				else
-				{
-					for (i = 0; i < channels; i++)
-					{
-						memset(aBuffer + copysize + i * aSamples, 0, sizeof(float) * (aSamples - written));
-					}
-					mOffset += aSamples - written;
-					written = aSamples;
-				}
-			}
-		}
-	}
+        mOffset += copylen;
+        return copylen;
+    }
 
 	result WavInstance::rewind()
 	{
@@ -6422,8 +6469,8 @@ namespace SoLoud
 
 	bool WavInstance::hasEnded()
 	{
-		if (!(mFlags & AudioSourceInstance::LOOPING) && mOffset >= mParent->mSampleCount)
-		{
+        if (!(mFlags & AudioSourceInstance::LOOPING) && mOffset >= mParent->mSampleCount)
+        {
 			return 1;
 		}
 		return 0;
@@ -6443,514 +6490,552 @@ namespace SoLoud
 
 #define MAKEDWORD(a,b,c,d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
 
-    result Wav::loadwav(File *aReader)
-	{
-		/*int wavsize =*/ aReader->read32();
-		if (aReader->read32() != MAKEDWORD('W','A','V','E'))
-		{
-			return FILE_LOAD_FAILED;
-		}
-        //if (aReader->read32() != MAKEDWORD('f','m','t',' '))
-        int chunk = aReader->read32();
-        if (chunk == MAKEDWORD('J','U','N','K'))
-        {
-            int size = aReader->read32();
-            if (size & 1)
-                size += 1;
-            int i;
-            for (i = 0; i < size; i++)
-                aReader->read8();
-            chunk = aReader->read32();
-        }
-        if (chunk != MAKEDWORD('f','m','t',' '))
-		{
-			return FILE_LOAD_FAILED;
-		}
-		int subchunk1size = aReader->read32();
-		int audioformat = aReader->read16();
-		int channels = aReader->read16();
-		int samplerate = aReader->read32();
-		/*int byterate =*/ aReader->read32();
-		/*int blockalign =*/ aReader->read16();
-		int bitspersample = aReader->read16();
-
-		if (audioformat != 1 ||
-			subchunk1size != 16 ||
-			(bitspersample != 8 && bitspersample != 16))
-		{
-			return FILE_LOAD_FAILED;
-		}
-		
-        chunk = aReader->read32();
-		
-		if (chunk == MAKEDWORD('L','I','S','T'))
-		{
-			int size = aReader->read32();
-			int i;
-			for (i = 0; i < size; i++)
-				aReader->read8();
-			chunk = aReader->read32();
-		}
-		
-		if (chunk != MAKEDWORD('d','a','t','a'))
-		{
-			return FILE_LOAD_FAILED;
-		}
-
-		int readchannels = 1;
-
-		if (channels > 1)
-		{
-			readchannels = 2;
-			mChannels = 2;
-		}
-
-		int subchunk2size = aReader->read32();
-		
-		int samples = (subchunk2size / (bitspersample / 8)) / channels;
-		
-		mData = new float[samples * readchannels];
-		
-		int i, j;
-		if (bitspersample == 8)
-		{
-			for (i = 0; i < samples; i++)
-			{
-				for (j = 0; j < channels; j++)
-				{
-					if (j == 0)
-					{
-						mData[i] = ((signed)aReader->read8() - 128) / (float)0x80;
-					}
-					else
-					{
-						if (readchannels > 1 && j == 1)
-						{
-							mData[i + samples] = ((signed)aReader->read8() - 128) / (float)0x80;
-						}
-						else
-						{
-							aReader->read8();
-						}
-					}
-				}
-			}
-		}
-		else
-		if (bitspersample == 16)
-		{
-			for (i = 0; i < samples; i++)
-			{
-				for (j = 0; j < channels; j++)
-				{
-					if (j == 0)
-					{
-						mData[i] = ((signed short)aReader->read16()) / (float)0x8000;
-					}
-					else
-					{
-						if (readchannels > 1 && j == 1)
-						{
-							mData[i + samples] = ((signed short)aReader->read16()) / (float)0x8000;
-						}
-						else
-						{
-							aReader->read16();
-						}
-					}
-				}
-			}
-		}
-		mBaseSamplerate = (float)samplerate;
-		mSampleCount = samples;
-
-		return 0;
-	}
-
-	result Wav::loadogg(stb_vorbis *aVorbis)
-	{
-        stb_vorbis_info info = stb_vorbis_get_info(aVorbis);
-		mBaseSamplerate = (float)info.sample_rate;
-        int samples = stb_vorbis_stream_length_in_samples(aVorbis);
-
-		int readchannels = 1;
-		if (info.channels > 1)
-		{
-			readchannels = 2;
-			mChannels = 2;
-		}
-		mData = new float[samples * readchannels];
-		mSampleCount = samples;
-		samples = 0;
-		while(1)
-		{
-			float **outputs;
-            int n = stb_vorbis_get_frame_float(aVorbis, NULL, &outputs);
-			if (n == 0)
-            {
-				break;
-            }
-			if (readchannels == 1)
-			{
-				memcpy(mData + samples, outputs[0],sizeof(float) * n);
-			}
-			else
-			{
-				memcpy(mData + samples, outputs[0],sizeof(float) * n);
-				memcpy(mData + samples + mSampleCount, outputs[1],sizeof(float) * n);
-			}
-			samples += n;
-		}
-        stb_vorbis_close(aVorbis);
-
-		return 0;
-	}
-
-    result Wav::testAndLoadFile(File *aReader)
+    result Wav::loadwav(MemoryFile *aReader)
     {
-		delete[] mData;
-		mData = 0;
-		mSampleCount = 0;
-        int tag = aReader->read32();
-		if (tag == MAKEDWORD('O','g','g','S')) 
+        int filesize = aReader->read32();
+        if (aReader->read32() != MAKEDWORD('W', 'A', 'V', 'E'))
         {
-		 	aReader->seek(0);
-			int e = 0;
-			stb_vorbis *v = 0;
-			v = stb_vorbis_open_file((Soloud_Filehack*)aReader, 0, &e, 0);
+            return FILE_LOAD_FAILED;
+        }
+        filesize -= 4;
 
-			if (0 != v)
-            {
-				return loadogg(v);
-            }
-			return FILE_LOAD_FAILED;
-		} 
-        else if (tag == MAKEDWORD('R','I','F','F')) 
+        int channels = 0;
+        int bitspersample = 0;
+
+        while (filesize > 0)
         {
-			return loadwav(aReader);
-		}
-		return FILE_LOAD_FAILED;
+            int id = aReader->read32();
+            int chunkSize = aReader->read32();
+            if (chunkSize & 1)
+            {
+                chunkSize++;
+            }
+            filesize -= 8;
+
+            if (aReader->length() < aReader->pos() + chunkSize)
+            {
+                return FILE_LOAD_FAILED;
+            }
+
+            int chunkStart = aReader->pos();
+
+            if (id == MAKEDWORD('f', 'm', 't', ' '))
+            {
+                int audioformat = aReader->read16();
+                channels = aReader->read16();
+                mBaseSamplerate = (float)aReader->read32();
+                /*int byterate =*/ aReader->read32();
+                /*int blockalign =*/ aReader->read16();
+                bitspersample = aReader->read16();
+
+                if (audioformat != 1 || (bitspersample != 8 && bitspersample != 16))
+                {
+                    return FILE_LOAD_FAILED;
+                }
+            }
+            else if (id == MAKEDWORD('d', 'a', 't', 'a'))
+            {
+                if (channels == 0 || bitspersample == 0)
+                    return FILE_LOAD_FAILED;
+
+                int readchannels = 1;
+
+                if (channels > 1)
+                {
+                    readchannels = 2;
+                    mChannels = 2;
+                }
+
+                int samples = (chunkSize / (bitspersample / 8)) / channels;
+
+                mData = new float[samples * readchannels];
+                mSampleCount = samples;
+                int i, j;
+                if (bitspersample == 8)
+                {
+                    unsigned char * dataptr = (unsigned char*)(aReader->getMemPtr() + aReader->pos());
+                    for (i = 0; i < samples; i++)
+                    {
+                        for (j = 0; j < channels; j++)
+                        {
+                            if (j == 0)
+                            {
+                                mData[i] = ((signed)*dataptr - 128) / (float)0x80;
+                            }
+                            else
+                            {
+                                if (readchannels > 1 && j == 1)
+                                {
+                                    mData[i + samples] = ((signed)*dataptr - 128) / (float)0x80;
+                                }
+                            }
+                            dataptr++;
+                        }
+                    }
+                }
+                else if (bitspersample == 16)
+                {
+                    unsigned short * dataptr = (unsigned short*)(aReader->getMemPtr() + aReader->pos());
+                    for (i = 0; i < samples; i++)
+                    {
+                        for (j = 0; j < channels; j++)
+                        {
+                            if (j == 0)
+                            {
+                                mData[i] = ((signed short)*dataptr) / (float)0x8000;
+                            }
+                            else
+                            {
+                                if (readchannels > 1 && j == 1)
+                                {
+                                    mData[i + samples] = ((signed short)*dataptr) / (float)0x8000;
+                                }
+                            }
+                            dataptr++;
+                        }
+                    }
+                }
+            }
+
+            // skip rest of chunk
+            aReader->seek(chunkStart + chunkSize);
+
+            filesize -= chunkSize;
+        }
+
+        return 0;
     }
 
-	result Wav::load(const char *aFilename)
-	{
-		DiskFile dr;
-		int res = dr.open(aFilename);
-		if (res != SO_NO_ERROR)
+    result Wav::loadogg(MemoryFile *aReader)
+    {
+        int e = 0;
+        stb_vorbis *vorbis = 0;
+        vorbis = stb_vorbis_open_memory(aReader->getMemPtr(), aReader->length(), &e, 0);
+
+        if (0 == vorbis)
         {
-			return res;
+            return FILE_LOAD_FAILED;
         }
-		return testAndLoadFile(&dr);
-	}
 
-	result Wav::loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy, bool aTakeOwnership)
-	{
-		if (aMem == NULL || aLength == 0)
-			return INVALID_PARAMETER;
+        stb_vorbis_info info = stb_vorbis_get_info(vorbis);
+        mBaseSamplerate = (float)info.sample_rate;
+        int samples = stb_vorbis_stream_length_in_samples(vorbis);
 
-		MemoryFile dr;
+        int readchannels = 1;
+        if (info.channels > 1)
+        {
+            readchannels = 2;
+            mChannels = 2;
+        }
+        mData = new float[samples * readchannels];
+        mSampleCount = samples;
+        samples = 0;
+        while(1)
+        {
+            float **outputs;
+            int n = stb_vorbis_get_frame_float(vorbis, NULL, &outputs);
+            if (n == 0)
+            {
+                break;
+            }
+            if (readchannels == 1)
+            {
+                memcpy(mData + samples, outputs[0],sizeof(float) * n);
+            }
+            else
+            {
+                memcpy(mData + samples, outputs[0],sizeof(float) * n);
+                memcpy(mData + samples + mSampleCount, outputs[1],sizeof(float) * n);
+            }
+            samples += n;
+        }
+        stb_vorbis_close(vorbis);
+
+        return 0;
+    }
+
+    result Wav::testAndLoadFile(MemoryFile *aReader)
+    {
+        delete[] mData;
+        mData = 0;
+        mSampleCount = 0;
+        mChannels = 1;
+        int tag = aReader->read32();
+        if (tag == MAKEDWORD('O','g','g','S'))
+        {
+            return loadogg(aReader);
+
+        }
+        else if (tag == MAKEDWORD('R','I','F','F'))
+        {
+            return loadwav(aReader);
+        }
+        return FILE_LOAD_FAILED;
+    }
+
+    result Wav::load(const char *aFilename)
+    {
+        if (aFilename == 0)
+            return INVALID_PARAMETER;
+        stop();
+        DiskFile dr;
+        int res = dr.open(aFilename);
+        if (res == SO_NO_ERROR)
+            return loadFile(&dr);
+        return FILE_LOAD_FAILED;
+    }
+
+    result Wav::loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy, bool aTakeOwnership)
+    {
+        if (aMem == NULL || aLength == 0)
+            return INVALID_PARAMETER;
+        stop();
+
+        MemoryFile dr;
         dr.openMem(aMem, aLength, aCopy, aTakeOwnership);
-		return testAndLoadFile(&dr);
-	}
+        return testAndLoadFile(&dr);
+    }
 
-	result Wav::loadFile(File *aFile)
-	{
-		return testAndLoadFile(aFile);
-	}
+    result Wav::loadFile(File *aFile)
+    {
+        if (!aFile)
+            return INVALID_PARAMETER;
+        stop();
 
-	AudioSourceInstance *Wav::createInstance()
-	{
-		return new WavInstance(this);
-	}
+        MemoryFile mr;
+        result res = mr.openFileToMem(aFile);
 
-	double Wav::getLength()
-	{
-		if (mBaseSamplerate == 0)
-			return 0;
-		return mSampleCount / mBaseSamplerate;
-	}
+        if (res != SO_NO_ERROR)
+        {
+            return res;
+        }
+        return testAndLoadFile(&mr);
+    }
+
+    AudioSourceInstance *Wav::createInstance()
+    {
+        return new WavInstance(this);
+    }
+
+    double Wav::getLength()
+    {
+        if (mBaseSamplerate == 0)
+            return 0;
+        return mSampleCount / mBaseSamplerate;
+    }
+
+    result Wav::loadRawWave(unsigned char *aMem, unsigned int aLength, float aSamplerate, unsigned int aChannels)
+    {
+        if (aMem == 0 || aLength == 0 || aSamplerate <= 0 || aChannels < 1)
+            return INVALID_PARAMETER;
+        stop();
+        delete[] mData;
+        mData = new float[aLength];
+        mSampleCount = aLength / aChannels;
+        mChannels = aChannels;
+        mBaseSamplerate = aSamplerate;
+        unsigned int i;
+        for (i = 0; i < aLength; i++)
+            mData[i] = ((signed)aMem[i] - 128) / (float)0x80;
+        return SO_NO_ERROR;
+    }
+
+    result Wav::loadRawWave(short *aMem, unsigned int aLength, float aSamplerate, unsigned int aChannels)
+    {
+        if (aMem == 0 || aLength == 0 || aSamplerate <= 0 || aChannels < 1)
+            return INVALID_PARAMETER;
+        stop();
+        delete[] mData;
+        mData = new float[aLength];
+        mSampleCount = aLength / aChannels;
+        mChannels = aChannels;
+        mBaseSamplerate = aSamplerate;
+        unsigned int i;
+        for (i = 0; i < aLength; i++)
+            mData[i] = ((signed short)aMem[i]) / (float)0x8000;
+        return SO_NO_ERROR;
+    }
+
+    result Wav::loadRawWave(float *aMem, unsigned int aLength, float aSamplerate, unsigned int aChannels, bool aCopy, bool aTakeOwndership)
+    {
+        if (aMem == 0 || aLength == 0 || aSamplerate <= 0 || aChannels < 1)
+            return INVALID_PARAMETER;
+        stop();
+        delete[] mData;
+        if (aCopy == true || aTakeOwndership == false)
+        {
+            mData = new float[aLength];
+            memcpy(mData, aMem, sizeof(float) * aLength);
+        }
+        else
+        {
+            mData = aMem;
+        }
+        mSampleCount = aLength / aChannels;
+        mChannels = aChannels;
+        mBaseSamplerate = aSamplerate;
+        return SO_NO_ERROR;
+    }
 };
 //----../src/audiosource/speech/soloud_wavstream.cpp-----------------------------------------------------------------------
 namespace SoLoud
 {
-	WavStreamInstance::WavStreamInstance(WavStream *aParent)
-	{
-		mParent = aParent;
-		mOffset = 0;
-		mOgg = 0;
-		mFile = 0;
-		if (aParent->mMemFile)
-		{
-			MemoryFile *mf = new MemoryFile();
-			mFile = mf;
-			mf->openMem(aParent->mMemFile->getMemPtr(), aParent->mMemFile->length(), false, false);
-		}
-		else
-		if (aParent->mFilename)
-		{
-			DiskFile *df = new DiskFile;
-			mFile = df;
-			df->open(aParent->mFilename);
-		}
-		else
-		if (aParent->mStreamFile)
-		{
-			mFile = aParent->mStreamFile;
-			mFile->seek(0); // stb_vorbis assumes file offset to be at start of ogg
-		}
-		else
-		{
-			return;
-		}
-		
-		if (mFile)
-		{
-			if (mParent->mOgg)
-			{
-				int e;
+    WavStreamInstance::WavStreamInstance(WavStream *aParent)
+    {
+        mParent = aParent;
+        mOffset = 0;
+        mOgg = 0;
+        mFile = 0;
+        if (aParent->mMemFile)
+        {
+            MemoryFile *mf = new MemoryFile();
+            mFile = mf;
+            mf->openMem(aParent->mMemFile->getMemPtr(), aParent->mMemFile->length(), false, false);
+        }
+        else
+        if (aParent->mFilename)
+        {
+            DiskFile *df = new DiskFile;
+            mFile = df;
+            df->open(aParent->mFilename);
+        }
+        else
+        if (aParent->mStreamFile)
+        {
+            mFile = aParent->mStreamFile;
+            mFile->seek(0); // stb_vorbis assumes file offset to be at start of ogg
+        }
+        else
+        {
+            return;
+        }
 
-				mOgg = stb_vorbis_open_file((Soloud_Filehack *)mFile, 0, &e, 0);
+        if (mFile)
+        {
+            if (mParent->mOgg)
+            {
+                int e;
 
-				if (!mOgg)
-				{
-					if (mFile != mParent->mStreamFile)
-						delete mFile;
-					mFile = 0;
-				}
-				mOggFrameSize = 0;
-				mOggFrameOffset = 0;
-				mOggOutputs = 0;
-			}
-			else
-			{		
-				mFile->seek(aParent->mDataOffset);
-			}
-		}
-	}
+                mOgg = stb_vorbis_open_file((Soloud_Filehack *)mFile, 0, &e, 0);
 
-	WavStreamInstance::~WavStreamInstance()
-	{
-		if (mOgg)
-		{
-			stb_vorbis_close(mOgg);
-		}
-		if (mFile != mParent->mStreamFile)
-		{
-			delete mFile;
-		}
-	}
+                if (!mOgg)
+                {
+                    if (mFile != mParent->mStreamFile)
+                        delete mFile;
+                    mFile = 0;
+                }
+                mOggFrameSize = 0;
+                mOggFrameOffset = 0;
+                mOggOutputs = 0;
+            }
+            else
+            {
+                mFile->seek(aParent->mDataOffset);
+            }
+        }
+    }
 
-	static void getWavData(File * aFile, float * aBuffer, int aSamples, int aPitch, int aChannels, int aSrcChannels, int aBits)
-	{
-		int i, j;
-		if (aBits == 8)
-		{
-			for (i = 0; i < aSamples; i++)
-			{
-				for (j = 0; j < aSrcChannels; j++)
-				{
-					if (j == 0)
-					{
-						aBuffer[i] = ((signed)aFile->read8() - 128) / (float)0x80;
-					}
-					else
-					{
-						if (aChannels > 1 && j == 1)
-						{
-							aBuffer[i + aPitch] = ((signed)aFile->read8() - 128) / (float)0x80;
-						}
-						else
-						{
-							aFile->read8();
-						}
-					}
-				}
-			}
-		}
-		else
-		if (aBits == 16)
-		{
-			for (i = 0; i < aSamples; i++)
-			{
-				for (j = 0; j < aSrcChannels; j++)
-				{
-					if (j == 0)
-					{
-						aBuffer[i] = ((signed short)aFile->read16()) / (float)0x8000;
-					}
-					else
-					{
-						if (aChannels > 1 && j == 1)
-						{
-							aBuffer[i + aPitch] = ((signed short)aFile->read16()) / (float)0x8000;
-						}
-						else
-						{
-							aFile->read16();
-						}
-					}
-				}
-			}
-		}
-	}
+    WavStreamInstance::~WavStreamInstance()
+    {
+        if (mOgg)
+        {
+            stb_vorbis_close(mOgg);
+        }
+        if (mFile != mParent->mStreamFile)
+        {
+            delete mFile;
+        }
+    }
 
-	static int getOggData(float **aOggOutputs, float *aBuffer, int aSamples, int aPitch, int aFrameSize, int aFrameOffset, int aChannels)
-	{			
-		if (aFrameSize <= 0)
-			return 0;
+    static void getWavData(File * aFile, float * aBuffer, int aSamples, int aPitch, int aChannels, int aSrcChannels, int aBits)
+    {
+        int i, j;
+        if (aBits == 8)
+        {
+            for (i = 0; i < aSamples; i++)
+            {
+                for (j = 0; j < aSrcChannels; j++)
+                {
+                    if (j == 0)
+                    {
+                        aBuffer[i] = ((signed)aFile->read8() - 128) / (float)0x80;
+                    }
+                    else
+                    {
+                        if (aChannels > 1 && j == 1)
+                        {
+                            aBuffer[i + aPitch] = ((signed)aFile->read8() - 128) / (float)0x80;
+                        }
+                        else
+                        {
+                            aFile->read8();
+                        }
+                    }
+                }
+            }
+        }
+        else
+        if (aBits == 16)
+        {
+            for (i = 0; i < aSamples; i++)
+            {
+                for (j = 0; j < aSrcChannels; j++)
+                {
+                    if (j == 0)
+                    {
+                        aBuffer[i] = ((signed short)aFile->read16()) / (float)0x8000;
+                    }
+                    else
+                    {
+                        if (aChannels > 1 && j == 1)
+                        {
+                            aBuffer[i + aPitch] = ((signed short)aFile->read16()) / (float)0x8000;
+                        }
+                        else
+                        {
+                            aFile->read16();
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-		int samples = aSamples;
-		if (aFrameSize - aFrameOffset < samples)
-		{
-			samples = aFrameSize - aFrameOffset;
-		}
+    static int getOggData(float **aOggOutputs, float *aBuffer, int aSamples, int aPitch, int aFrameSize, int aFrameOffset, int aChannels)
+    {
+        if (aFrameSize <= 0)
+            return 0;
 
-		if (aChannels == 1)
-		{
-			memcpy(aBuffer, aOggOutputs[0] + aFrameOffset, sizeof(float) * samples);
-		}
-		else
-		{
-			memcpy(aBuffer, aOggOutputs[0] + aFrameOffset, sizeof(float) * samples);
-			memcpy(aBuffer + aPitch, aOggOutputs[1] + aFrameOffset, sizeof(float) * samples);
-		}
-		return samples;
-	}
+        int samples = aSamples;
+        if (aFrameSize - aFrameOffset < samples)
+        {
+            samples = aFrameSize - aFrameOffset;
+        }
 
-	void WavStreamInstance::getAudio(float *aBuffer, unsigned int aSamples)
-	{			
-		unsigned int channels = mChannels;
+        if (aChannels == 1)
+        {
+            memcpy(aBuffer, aOggOutputs[0] + aFrameOffset, sizeof(float) * samples);
+        }
+        else
+        {
+            memcpy(aBuffer, aOggOutputs[0] + aFrameOffset, sizeof(float) * samples);
+            memcpy(aBuffer + aPitch, aOggOutputs[1] + aFrameOffset, sizeof(float) * samples);
+        }
+        return samples;
+    }
 
-		if (mFile == NULL)
-			return;
+    unsigned int WavStreamInstance::getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)
+    {
+        unsigned int channels = mChannels;
 
-		if (mOgg)
-		{
-			unsigned int offset = 0;			
-			if (mOggFrameOffset < mOggFrameSize)
-			{
-				int b = getOggData(mOggOutputs, aBuffer, aSamples, aSamples, mOggFrameSize, mOggFrameOffset, channels);
-				mOffset += b;
-				offset += b;
-				mOggFrameOffset += b;
-			}
+        if (mFile == NULL)
+            return 0;
 
-			while (offset < aSamples)
-			{
-				mOggFrameSize = stb_vorbis_get_frame_float(mOgg, NULL, &mOggOutputs);
-				mOggFrameOffset = 0;
-				int b;
-				b = getOggData(mOggOutputs, aBuffer + offset, aSamples - offset, aSamples, mOggFrameSize, mOggFrameOffset, channels);
-				mOffset += b;
-				offset += b;
-				mOggFrameOffset += b;
-				if (mOffset >= mParent->mSampleCount)
-				{
-					if (mFlags & AudioSourceInstance::LOOPING)
-					{
-						stb_vorbis_seek_start(mOgg);
-						mOffset = aSamples - offset;
-						mLoopCount++;
-					}
-					else
-					{
-						unsigned int i;
-						for (i = 0; i < channels; i++)
-							memset(aBuffer + offset + i * aSamples, 0, sizeof(float) * (aSamples - offset));
-						mOffset += aSamples - offset;
-						offset = aSamples;
-					}
-				}
-			}
-		}
-		else
-		{
-			unsigned int copysize = aSamples;
-			if (copysize + mOffset > mParent->mSampleCount)
-			{
-				copysize = mParent->mSampleCount - mOffset;
-			}
+        if (mOgg)
+        {
+            unsigned int offset = 0;
+            if (mOggFrameOffset < mOggFrameSize)
+            {
+                int b = getOggData(mOggOutputs, aBuffer, aSamplesToRead, aBufferSize, mOggFrameSize, mOggFrameOffset, channels);
+                mOffset += b;
+                offset += b;
+                mOggFrameOffset += b;
+            }
 
-			getWavData(mFile, aBuffer, copysize, aSamples, channels, mParent->mChannels, mParent->mBits);
-		
-			if (copysize != aSamples)
-			{
-				if (mFlags & AudioSourceInstance::LOOPING)
-				{
-					mFile->seek(mParent->mDataOffset);
-					getWavData(mFile, aBuffer + copysize, aSamples - copysize, aSamples, channels, mParent->mChannels, mParent->mBits);
-					mOffset = aSamples - copysize;
-					mLoopCount++;
-				}
-				else
-				{					
-					unsigned int i;
-					for (i = 0; i < channels; i++)
-						memset(aBuffer + copysize + i * aSamples, 0, sizeof(float) * (aSamples - copysize));
-						
-					mOffset += aSamples;
-				}
-			}
-			else
-			{
-				mOffset += aSamples;
-			}
-		}
-	}
+            while (offset < aSamplesToRead)
+            {
+                mOggFrameSize = stb_vorbis_get_frame_float(mOgg, NULL, &mOggOutputs);
+                mOggFrameOffset = 0;
+                int b = getOggData(mOggOutputs, aBuffer + offset, aSamplesToRead - offset, aBufferSize, mOggFrameSize, mOggFrameOffset, channels);
+                mOffset += b;
+                offset += b;
+                mOggFrameOffset += b;
 
-	result WavStreamInstance::rewind()
-	{
-		if (mOgg)
-		{
-			stb_vorbis_seek_start(mOgg);
-		}
-		else
-		if (mFile)
-		{
-			mFile->seek(mParent->mDataOffset);
-		}
-		mOffset = 0;
-		mStreamTime = 0;
-		return 0;
-	}
+                if (mOffset >= mParent->mSampleCount || b == 0)
+                {
+                    mOffset += offset;
+                    return offset;
+                }
+            }
+        }
+        else
+        {
+            unsigned int copysize = aSamplesToRead;
+            unsigned int maxSamples = mParent->mSampleCount;
 
-	bool WavStreamInstance::hasEnded()
-	{
-		if (mOffset >= mParent->mSampleCount && !(mFlags & AudioSourceInstance::LOOPING))
-		{
-			return 1;
-		}
-		return 0;
-	}
+            if (copysize + mOffset > maxSamples)
+            {
+                copysize = maxSamples - mOffset;
+            }
 
-	WavStream::WavStream()
-	{
-		mFilename = 0;
-		mSampleCount = 0;
-		mOgg = 0;
-		mDataOffset = 0;
-		mBits = 0;
-		mMemFile = 0;
-		mStreamFile = 0;
-	}
-	
-	WavStream::~WavStream()
-	{
-		stop();
-		delete[] mFilename;
-		delete mMemFile;
-	}
-	
+            getWavData(mFile, aBuffer, copysize, aBufferSize, channels, mParent->mChannels, mParent->mBits);
+
+            if (copysize != aSamplesToRead)
+            {
+                mOffset += copysize;
+                return copysize;
+            }
+            else
+            {
+                mOffset += aSamplesToRead;
+            }
+        }
+        return aSamplesToRead;
+    }
+
+    result WavStreamInstance::rewind()
+    {
+        if (mOgg)
+        {
+            stb_vorbis_seek_start(mOgg);
+        }
+        else
+        if (mFile)
+        {
+            mFile->seek(mParent->mDataOffset);
+        }
+        mOffset = 0;
+        mStreamPosition = 0.0f;
+        return 0;
+    }
+
+    bool WavStreamInstance::hasEnded()
+    {
+        if (mOffset >= mParent->mSampleCount)
+        {
+            return 1;
+        }
+        return 0;
+    }
+
+    WavStream::WavStream()
+    {
+        mFilename = 0;
+        mSampleCount = 0;
+        mOgg = 0;
+        mDataOffset = 0;
+        mBits = 0;
+        mMemFile = 0;
+        mStreamFile = 0;
+    }
+
+    WavStream::~WavStream()
+    {
+        stop();
+        delete[] mFilename;
+        delete mMemFile;
+    }
+
 #define MAKEDWORD(a,b,c,d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
 
-	result WavStream::loadwav(File * fp)
-	{
-		fp->seek(4);
-		int wavsize = fp->read32();
-		if (fp->read32() != MAKEDWORD('W', 'A', 'V', 'E'))
-		{
-			return FILE_LOAD_FAILED;
-		}
+    result WavStream::loadwav(File * fp)
+    {
+        fp->seek(4);
+        int wavsize = fp->read32();
+        if (fp->read32() != MAKEDWORD('W', 'A', 'V', 'E'))
+        {
+            return FILE_LOAD_FAILED;
+        }
         int chunk = fp->read32();
         if (chunk == MAKEDWORD('J', 'U', 'N', 'K'))
         {
@@ -6965,244 +7050,243 @@ namespace SoLoud
             chunk = fp->read32();
         }
         if (chunk != MAKEDWORD('f', 'm', 't', ' '))
-		{
-			return FILE_LOAD_FAILED;
-		}
-		int subchunk1size = fp->read32();
-		int audioformat = fp->read16();
-		int channels = fp->read16();
-		int samplerate = fp->read32();
-		int byterate = fp->read32();
-		int blockalign = fp->read16();
-		int bitspersample = fp->read16();
+        {
+            return FILE_LOAD_FAILED;
+        }
+        int subchunk1size = fp->read32();
+        int audioformat = fp->read16();
+        int channels = fp->read16();
+        int samplerate = fp->read32();
+        int byterate = fp->read32();
+        int blockalign = fp->read16();
+        int bitspersample = fp->read16();
 
-		if (audioformat != 1 ||
-			subchunk1size != 16 ||
-			(bitspersample != 8 && bitspersample != 16))
-		{
-			return FILE_LOAD_FAILED;
-		}
-		
+        if (audioformat != 1 ||
+            subchunk1size != 16 ||
+            (bitspersample != 8 && bitspersample != 16))
+        {
+            return FILE_LOAD_FAILED;
+        }
+
         chunk = fp->read32();
-		
-		if (chunk == MAKEDWORD('L','I','S','T'))
-		{
-			int size = fp->read32();
-			int i;
-			for (i = 0; i < size; i++)
-				fp->read8();
-			chunk = fp->read32();
-		}
-		
-		if (chunk != MAKEDWORD('d','a','t','a'))
-		{
-			return FILE_LOAD_FAILED;
-		}
 
-		int readchannels = 1;
+        if (chunk == MAKEDWORD('L','I','S','T'))
+        {
+            int size = fp->read32();
+            int i;
+            for (i = 0; i < size; i++)
+                fp->read8();
+            chunk = fp->read32();
+        }
 
-		mChannels = channels;
+        if (chunk != MAKEDWORD('d','a','t','a'))
+        {
+            return FILE_LOAD_FAILED;
+        }
 
-		if (channels > 1)
-		{
-			readchannels = 2;
-			mChannels = 2;
-		}
+        int readchannels = 1;
 
-		int subchunk2size = fp->read32();
-		
-		int samples = (subchunk2size / (bitspersample / 8)) / channels;
-		
-		mDataOffset = fp->pos();
-		mBits = bitspersample;
-		mBaseSamplerate = (float)samplerate;
-		mSampleCount = samples;
-		mOgg = 0;
+        mChannels = channels;
 
-		return 0;
-	}
+        if (channels > 1)
+        {
+            readchannels = 2;
+            mChannels = 2;
+        }
 
-	result WavStream::loadogg(File * fp)
-	{
-		fp->seek(0);
-		int e;
-		stb_vorbis *v;
-		v = stb_vorbis_open_file((Soloud_Filehack *)fp, 0, &e, 0);
-		if (v == NULL)
-			return FILE_LOAD_FAILED;
-		stb_vorbis_info info = stb_vorbis_get_info(v);
-		mChannels = 1;
-		if (info.channels > 1)
-		{
-			mChannels = 2;
-		}
-		mBaseSamplerate = (float)info.sample_rate;
-		int samples = stb_vorbis_stream_length_in_samples(v);
-		stb_vorbis_close(v);
-		mOgg = 1;
+        int subchunk2size = fp->read32();
 
-		mSampleCount = samples;
+        int samples = (subchunk2size / (bitspersample / 8)) / channels;
 
-		return 0;
-	}
+        mDataOffset = fp->pos();
+        mBits = bitspersample;
+        mBaseSamplerate = (float)samplerate;
+        mSampleCount = samples;
+        mOgg = 0;
 
-	result WavStream::load(const char *aFilename)
-	{
-		delete[] mFilename;
-		delete mMemFile;
-		mMemFile = 0;
-		mFilename = 0;
-		mSampleCount = 0;
-		DiskFile fp;
-		int res = fp.open(aFilename);
-		if (res != SO_NO_ERROR)
-			return res;
-		
-		int len = (int)strlen(aFilename);
-		mFilename = new char[len+1];		
-		memcpy(mFilename, aFilename, len);
-		mFilename[len] = 0;
-		
-		res = parse(&fp);
+        return 0;
+    }
 
-		if (res != SO_NO_ERROR)
-		{
-			delete[] mFilename;
-			mFilename = 0;
-			return res;
-		}
+    result WavStream::loadogg(File * fp)
+    {
+        fp->seek(0);
+        int e;
+        stb_vorbis *v;
+        v = stb_vorbis_open_file((Soloud_Filehack *)fp, 0, &e, 0);
+        if (v == NULL)
+            return FILE_LOAD_FAILED;
+        stb_vorbis_info info = stb_vorbis_get_info(v);
+        mChannels = 1;
+        if (info.channels > 1)
+        {
+            mChannels = 2;
+        }
+        mBaseSamplerate = (float)info.sample_rate;
+        int samples = stb_vorbis_stream_length_in_samples(v);
+        stb_vorbis_close(v);
+        mOgg = 1;
 
-		return 0;
-	}
+        mSampleCount = samples;
 
-	result WavStream::loadMem(unsigned char *aData, unsigned int aDataLen, bool aCopy, bool aTakeOwnership)
-	{
-		delete[] mFilename;
-		delete mMemFile;
-		mStreamFile = 0;
-		mMemFile = 0;
-		mFilename = 0;
-		mSampleCount = 0;
+        return 0;
+    }
 
-		if (aData == NULL || aDataLen == 0)
-			return INVALID_PARAMETER;
+    result WavStream::load(const char *aFilename)
+    {
+        delete[] mFilename;
+        delete mMemFile;
+        mMemFile = 0;
+        mFilename = 0;
+        mSampleCount = 0;
+        DiskFile fp;
+        int res = fp.open(aFilename);
+        if (res != SO_NO_ERROR)
+            return res;
 
-		MemoryFile *mf = new MemoryFile();
-		int res = mf->openMem(aData, aDataLen, aCopy, aTakeOwnership);
-		if (res != SO_NO_ERROR)
-		{
-			delete mf;
-			return res;
-		}
+        int len = (int)strlen(aFilename);
+        mFilename = new char[len+1];
+        memcpy(mFilename, aFilename, len);
+        mFilename[len] = 0;
 
-		res = parse(mf);
+        res = parse(&fp);
 
-		if (res != SO_NO_ERROR)
-		{
-			delete mf;
-			return res;
-		}
+        if (res != SO_NO_ERROR)
+        {
+            delete[] mFilename;
+            mFilename = 0;
+            return res;
+        }
 
-		mMemFile = mf;
+        return 0;
+    }
 
-		return 0;
-	}
+    result WavStream::loadMem(unsigned char *aData, unsigned int aDataLen, bool aCopy, bool aTakeOwnership)
+    {
+        delete[] mFilename;
+        delete mMemFile;
+        mStreamFile = 0;
+        mMemFile = 0;
+        mFilename = 0;
+        mSampleCount = 0;
 
-	result WavStream::loadToMem(const char *aFilename)
-	{
-		DiskFile df;
-		int res = df.open(aFilename);
-		if (res == SO_NO_ERROR)
-		{
-			res = loadFileToMem(&df);
-		}
-		return res;
-	}
+        if (aData == NULL || aDataLen == 0)
+            return INVALID_PARAMETER;
 
-	result WavStream::loadFile(File *aFile)
-	{
-		delete[] mFilename;
-		delete mMemFile;
-		mStreamFile = 0;
-		mMemFile = 0;
-		mFilename = 0;
-		mSampleCount = 0;
+        MemoryFile *mf = new MemoryFile();
+        int res = mf->openMem(aData, aDataLen, aCopy, aTakeOwnership);
+        if (res != SO_NO_ERROR)
+        {
+            delete mf;
+            return res;
+        }
 
-		int res = parse(aFile);
+        res = parse(mf);
 
-		if (res != SO_NO_ERROR)
-		{
-			return res;
-		}
+        if (res != SO_NO_ERROR)
+        {
+            delete mf;
+            return res;
+        }
 
-		mStreamFile = aFile;
+        mMemFile = mf;
 
-		return 0;
-	}
+        return 0;
+    }
 
-	result WavStream::loadFileToMem(File *aFile)
-	{
-		delete[] mFilename;
-		delete mMemFile;
-		mStreamFile = 0;
-		mMemFile = 0;
-		mFilename = 0;
-		mSampleCount = 0;
+    result WavStream::loadToMem(const char *aFilename)
+    {
+        DiskFile df;
+        int res = df.open(aFilename);
+        if (res == SO_NO_ERROR)
+        {
+            res = loadFileToMem(&df);
+        }
+        return res;
+    }
 
-		MemoryFile *mf = new MemoryFile();
-		int res = mf->openFileToMem(aFile);
-		if (res != SO_NO_ERROR)
-		{
-			delete mf;
-			return res;
-		}
+    result WavStream::loadFile(File *aFile)
+    {
+        delete[] mFilename;
+        delete mMemFile;
+        mStreamFile = 0;
+        mMemFile = 0;
+        mFilename = 0;
+        mSampleCount = 0;
 
-		res = parse(mf);
+        int res = parse(aFile);
 
-		if (res != SO_NO_ERROR)
-		{
-			delete mf;
-			return res;
-		}
+        if (res != SO_NO_ERROR)
+        {
+            return res;
+        }
 
-		mMemFile = mf;
+        mStreamFile = aFile;
 
-		return res;
-	}
+        return 0;
+    }
+
+    result WavStream::loadFileToMem(File *aFile)
+    {
+        delete[] mFilename;
+        delete mMemFile;
+        mStreamFile = 0;
+        mMemFile = 0;
+        mFilename = 0;
+        mSampleCount = 0;
+
+        MemoryFile *mf = new MemoryFile();
+        int res = mf->openFileToMem(aFile);
+        if (res != SO_NO_ERROR)
+        {
+            delete mf;
+            return res;
+        }
+
+        res = parse(mf);
+
+        if (res != SO_NO_ERROR)
+        {
+            delete mf;
+            return res;
+        }
+
+        mMemFile = mf;
+
+        return res;
+    }
 
 
-	result WavStream::parse(File *aFile)
-	{
-		int tag = aFile->read32();
-		int res = SO_NO_ERROR;
-		if (tag == MAKEDWORD('O', 'g', 'g', 'S'))
-		{
-			res = loadogg(aFile);
-		}
-		else
-		if (tag == MAKEDWORD('R', 'I', 'F', 'F'))
-		{
-			res = loadwav(aFile);
-		}
-		else
-		{
-			res = FILE_LOAD_FAILED;
-		}
-		return res;
-	}
+    result WavStream::parse(File *aFile)
+    {
+        int tag = aFile->read32();
+        int res = SO_NO_ERROR;
+        if (tag == MAKEDWORD('O', 'g', 'g', 'S'))
+        {
+            res = loadogg(aFile);
+        }
+        else
+        if (tag == MAKEDWORD('R', 'I', 'F', 'F'))
+        {
+            res = loadwav(aFile);
+        }
+        else
+        {
+            res = FILE_LOAD_FAILED;
+        }
+        return res;
+    }
 
-	AudioSourceInstance *WavStream::createInstance()
-	{
-		return new WavStreamInstance(this);
-	}
+    AudioSourceInstance *WavStream::createInstance()
+    {
+        return new WavStreamInstance(this);
+    }
 
-	double WavStream::getLength()
-	{
-		if (mBaseSamplerate == 0)
-			return 0;
-		return mSampleCount / mBaseSamplerate;
-	}
-
+    double WavStream::getLength()
+    {
+        if (mBaseSamplerate == 0)
+            return 0;
+        return mSampleCount / mBaseSamplerate;
+    }
 };
 #endif //NO_IMGUISOLOUD_WAV
 
@@ -7250,40 +7334,72 @@ namespace SoLoud
 #endif
 	}
 
-	void ModplugInstance::getAudio(float *aBuffer, unsigned int aSamples)
+    // TODO: aBufferSize is not used.... probably wrong!
+    unsigned int ModplugInstance::getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)
 	{
 #ifdef WITH_MODPLUG
 		if (mModplugfile == NULL)
-			return;
-		int buf[1024];
-		int s = aSamples;
+            return NOT_IMPLEMENTED;
+
+        int buf[1024];
+        int s = aSamplesToRead;
 		unsigned int outofs = 0;
 		
 		while (s && mPlaying)
 		{
 			int samples = 512;
-			if (s < samples) s = samples;
+            //if (s < samples) s = samples; // This was in the original code
+            if (s < samples) samples = s;   // Taken from the openmpt version here (*) (not sure if appropriate)
 			int res = ModPlug_Read((ModPlugFile *)mModplugfile, (void*)&buf[0], sizeof(int) * 2 * samples);
-			int samples_in_buffer = res / (sizeof(int) * 2);
-			if (s != samples_in_buffer) mPlaying = 0;
+            int samples_in_buffer = res / (sizeof(int) * 2);
+            if (s != samples_in_buffer) {
+               mPlaying = 0;
+               return outofs;
+            }
 
 			int i;
 			for (i = 0; i < samples_in_buffer; i++)
 			{
 				aBuffer[outofs] = buf[i*2+0] / (float)0x7fffffff;
-				aBuffer[outofs + aSamples] = buf[i*2+1] / (float)0x7fffffff;
+                aBuffer[outofs + aSamplesToRead] = buf[i*2+1] / (float)0x7fffffff;
 				outofs++;
 			}
 			s -= samples_in_buffer;
 		}
 
-		if (outofs < aSamples)
+        if (outofs < aSamplesToRead)
 		{
 			// TODO: handle looping
 			unsigned int i;
-			for (i = outofs; i < aSamples; i++)
-				aBuffer[i] = aBuffer[i + aSamples] = 0;
+            for (i = outofs; i < aSamplesToRead; i++)
+                aBuffer[i] = aBuffer[i + aSamplesToRead] = 0;
 		}
+
+        return outofs;
+
+        /*
+        // (*) openmpt version of this method:
+        int s = aSamplesToRead;
+        unsigned int outofs = 0;
+
+        while (s && mPlaying)
+        {
+            int samples = 512;
+            if (s < samples) samples = s;
+            int res = openmpt_module_read_float_stereo(mModfile, (int)floor(mSamplerate), samples, aBuffer + outofs, aBuffer + outofs + aBufferSize);
+            if (res == 0)
+            {
+                mPlaying = 0;
+                return outofs;
+            }
+            outofs += samples;
+            s -= samples;
+        }
+
+        return outofs;
+        */
+#else
+        return NOT_IMPLEMENTED;
 #endif		
 	}
 
@@ -7405,445 +7521,446 @@ namespace SoLoud
 namespace SoLoud
 {
 
-	MonotoneInstance::MonotoneInstance(Monotone *aParent)
-	{
-		mParent = aParent;
-		mOrder = 0;
-		mRow = 0;
-		mTempo = 4;
-		mSampleCount = 0;
-		mNextChannel = 0;
-		mRowTick = 0;
-		int i;
-		for (i = 0; i < 12; i++)
-		{
-			mOutput[i].mSamplePos = 0;
-			mOutput[i].mSamplePosInc = 0;
-			mOutput[i].mEnabled = i < mParent->mHardwareChannels && i < mParent->mSong.mTotalTracks;			
-			mChannel[i].mEnabled = i < mParent->mSong.mTotalTracks;
-			mChannel[i].mActive = 0;
-			mChannel[i].mArpCounter = 0;
-			mChannel[i].mLastNote = 0;
-			mChannel[i].mPortamentoToNote = 0;
-			mChannel[i].mArp = 0;
-			mChannel[i].mVibrato = 0;
-			mChannel[i].mVibratoIndex = 0;
-			mChannel[i].mVibratoDepth = 1;
-			mChannel[i].mVibratoSpeed = 1;
-		}
-	}
+    MonotoneInstance::MonotoneInstance(Monotone *aParent)
+    {
+        mParent = aParent;
+        mOrder = 0;
+        mRow = 0;
+        mTempo = 4;
+        mSampleCount = 0;
+        mNextChannel = 0;
+        mRowTick = 0;
+        int i;
+        for (i = 0; i < 12; i++)
+        {
+            mOutput[i].mSamplePos = 0;
+            mOutput[i].mSamplePosInc = 0;
+            mOutput[i].mEnabled = i < mParent->mHardwareChannels && i < mParent->mSong.mTotalTracks;
+            mChannel[i].mEnabled = i < mParent->mSong.mTotalTracks;
+            mChannel[i].mActive = 0;
+            mChannel[i].mArpCounter = 0;
+            mChannel[i].mLastNote = 0;
+            mChannel[i].mPortamentoToNote = 0;
+            mChannel[i].mArp = 0;
+            mChannel[i].mVibrato = 0;
+            mChannel[i].mVibratoIndex = 0;
+            mChannel[i].mVibratoDepth = 1;
+            mChannel[i].mVibratoSpeed = 1;
+        }
+    }
 
-	void MonotoneInstance::getAudio(float *aBuffer, unsigned int aSamples)
-	{
-		int samplesPerTick = (int)floor(mSamplerate / 60);
-		unsigned int i;
-		for (i = 0; i < 12; i++)
-		{
-			mOutput[i].mEnabled = i < (unsigned int)mParent->mHardwareChannels && i < (unsigned int)mParent->mSong.mTotalTracks;
-		}
-		for (i = 0; i < aSamples; i++)
-		{
-			if ((mSampleCount % samplesPerTick) == 0)
-			{
-				// new tick
-				mRowTick++;
-				if (mRowTick >= mTempo)
-				{
-					mRowTick = 0;
-					// Process row
-					int patternjump = mOrder + 1;
-					int rowjump = 0;
-					int dojump = 0;
-					int pattern = mParent->mSong.mOrder[mOrder];
-					int j;
-					for (j = 0; j < mParent->mSong.mTotalTracks; j++)
-					{
-						unsigned int d = mParent->mSong.mPatternData[(pattern * 64 + mRow) * mParent->mSong.mTotalTracks + j];
-						unsigned int note = (d >> 9) & 127;
-						unsigned int effect = (d >> 6) & 7;
-						unsigned int effectdata = (d)& 63;
-						unsigned int effectdata1 = (d >> 3) & 7;
-						unsigned int effectdata2 = (d >> 0) & 7;
+    unsigned int MonotoneInstance::getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)
+    {
+        int samplesPerTick = (int)floor(mSamplerate / 60);
+        unsigned int i;
+        for (i = 0; i < 12; i++)
+        {
+            mOutput[i].mEnabled = i < (unsigned int)mParent->mHardwareChannels && i < (unsigned int)mParent->mSong.mTotalTracks;
+        }
+        for (i = 0; i < aSamplesToRead; i++)
+        {
+            if ((mSampleCount % samplesPerTick) == 0)
+            {
+                // new tick
+                mRowTick++;
+                if (mRowTick >= mTempo)
+                {
+                    mRowTick = 0;
+                    // Process row
+                    int patternjump = mOrder + 1;
+                    int rowjump = 0;
+                    int dojump = 0;
+                    int pattern = mParent->mSong.mOrder[mOrder];
+                    int j;
+                    for (j = 0; j < mParent->mSong.mTotalTracks; j++)
+                    {
+                        unsigned int d = mParent->mSong.mPatternData[(pattern * 64 + mRow) * mParent->mSong.mTotalTracks + j];
+                        unsigned int note = (d >> 9) & 127;
+                        unsigned int effect = (d >> 6) & 7;
+                        unsigned int effectdata = (d)& 63;
+                        unsigned int effectdata1 = (d >> 3) & 7;
+                        unsigned int effectdata2 = (d >> 0) & 7;
 
-						// by default, effects are off, and have to be set on every row.
-						mChannel[j].mPortamento = 0;
-						mChannel[j].mArp = 0;
-						mChannel[j].mVibrato = 0;
-						
-						int oldhz = mChannel[j].mFreq[0];
+                        // by default, effects are off, and have to be set on every row.
+                        mChannel[j].mPortamento = 0;
+                        mChannel[j].mArp = 0;
+                        mChannel[j].mVibrato = 0;
 
-						if (note == 127)
-						{
-							// noteEnd
-							mChannel[j].mActive = 0;
-							mChannel[j].mFreq[0] = 0;
-							mChannel[j].mFreq[1] = 0;
-							mChannel[j].mFreq[2] = 0;
-							mChannel[j].mPortamento = 0;
-							mChannel[j].mLastNote = 0;
-						}
-						else
-						if (note != 0)
-						{
-							mChannel[j].mActive = 1;
-							mChannel[j].mFreq[0] = mParent->mNotesHz[note * 8];
-							mChannel[j].mFreq[1] = mChannel[j].mFreq[0];
-							mChannel[j].mFreq[2] = mChannel[j].mFreq[0];
-							mChannel[j].mPortamento = 0;
-							mChannel[j].mLastNote = note;
-							mChannel[j].mVibratoIndex = 0;
-						}
-						else
-						if (note == 0)
-						{
-							note = mChannel[j].mLastNote;
-						}
+                        int oldhz = mChannel[j].mFreq[0];
 
-						switch (effect)
-						{
-						case 0x0:
-							// arp
-							mChannel[j].mFreq[1] = mParent->mNotesHz[(note + effectdata1) * 8];
-							mChannel[j].mFreq[2] = mParent->mNotesHz[(note + effectdata2) * 8];
-							if (effectdata1 || effectdata2)
-								mChannel[j].mArp = 1;
-							break;
-						case 0x1:
-							// portamento up
-							mChannel[j].mPortamento = effectdata;
-							break;
-						case 0x2:
-							// portamento down
-							mChannel[j].mPortamento = -(signed)effectdata;
-							break;
-						case 0x3:
-							// portamento to note
-							mChannel[j].mPortamentoToNote = mParent->mNotesHz[note * 8];
-							if (oldhz != mChannel[j].mPortamentoToNote)
-							{
-								mChannel[j].mFreq[0] = oldhz;
-								mChannel[j].mPortamento = effectdata;
-								if (oldhz > mChannel[j].mPortamentoToNote)
-									mChannel[j].mPortamento *= -1;							
-							}
-							else
-							{
-								mChannel[j].mPortamentoToNote = 0;
-							}
-							break;
-						case 0x4:
-							// vibrato
-							mChannel[j].mVibrato = 1;
-							if (effectdata2 != 0) mChannel[j].mVibratoDepth = effectdata2;
-							if (effectdata1 != 0) mChannel[j].mVibratoSpeed = effectdata1;
-							break;
-						case 0x5:
-							// pattern jump
-							patternjump = effectdata;
-							dojump = 1;
-							break;
-						case 0x6:
-							// row jump
-							rowjump = effectdata;
-							dojump = 1;
-							break;
-						case 0x7:
-							// set speed
-							mTempo = effectdata;
-							break;
-						}
-					}					
-					
-					mRow++;
+                        if (note == 127)
+                        {
+                            // noteEnd
+                            mChannel[j].mActive = 0;
+                            mChannel[j].mFreq[0] = 0;
+                            mChannel[j].mFreq[1] = 0;
+                            mChannel[j].mFreq[2] = 0;
+                            mChannel[j].mPortamento = 0;
+                            mChannel[j].mLastNote = 0;
+                        }
+                        else
+                        if (note != 0)
+                        {
+                            mChannel[j].mActive = 1;
+                            mChannel[j].mFreq[0] = mParent->mNotesHz[note * 8];
+                            mChannel[j].mFreq[1] = mChannel[j].mFreq[0];
+                            mChannel[j].mFreq[2] = mChannel[j].mFreq[0];
+                            mChannel[j].mPortamento = 0;
+                            mChannel[j].mLastNote = note;
+                            mChannel[j].mVibratoIndex = 0;
+                        }
+                        else
+                        if (note == 0)
+                        {
+                            note = mChannel[j].mLastNote;
+                        }
 
-					if (dojump)
-					{
-						mRow = rowjump;
-						mOrder = patternjump;
-					}
+                        switch (effect)
+                        {
+                        case 0x0:
+                            // arp
+                            mChannel[j].mFreq[1] = mParent->mNotesHz[(note + effectdata1) * 8];
+                            mChannel[j].mFreq[2] = mParent->mNotesHz[(note + effectdata2) * 8];
+                            if (effectdata1 || effectdata2)
+                                mChannel[j].mArp = 1;
+                            break;
+                        case 0x1:
+                            // portamento up
+                            mChannel[j].mPortamento = effectdata;
+                            break;
+                        case 0x2:
+                            // portamento down
+                            mChannel[j].mPortamento = -(signed)effectdata;
+                            break;
+                        case 0x3:
+                            // portamento to note
+                            mChannel[j].mPortamentoToNote = mParent->mNotesHz[note * 8];
+                            if (oldhz != mChannel[j].mPortamentoToNote)
+                            {
+                                mChannel[j].mFreq[0] = oldhz;
+                                mChannel[j].mPortamento = effectdata;
+                                if (oldhz > mChannel[j].mPortamentoToNote)
+                                    mChannel[j].mPortamento *= -1;
+                            }
+                            else
+                            {
+                                mChannel[j].mPortamentoToNote = 0;
+                            }
+                            break;
+                        case 0x4:
+                            // vibrato
+                            mChannel[j].mVibrato = 1;
+                            if (effectdata2 != 0) mChannel[j].mVibratoDepth = effectdata2;
+                            if (effectdata1 != 0) mChannel[j].mVibratoSpeed = effectdata1;
+                            break;
+                        case 0x5:
+                            // pattern jump
+                            patternjump = effectdata;
+                            dojump = 1;
+                            break;
+                        case 0x6:
+                            // row jump
+                            rowjump = effectdata;
+                            dojump = 1;
+                            break;
+                        case 0x7:
+                            // set speed
+                            mTempo = effectdata;
+                            break;
+                        }
+                    }
 
-					if (mRow == 64)
-					{
-						mRow = 0;
-						mOrder++;
-						if (mParent->mSong.mOrder[mOrder] == 0xff)
-							mOrder = 0;
-					}
-				}
+                    mRow++;
 
-				int j;
+                    if (dojump)
+                    {
+                        mRow = rowjump;
+                        mOrder = patternjump;
+                    }
 
-				// per tick events
-				for (j = 0; j < mParent->mSong.mTotalTracks; j++)
-				{
-					if (mChannel[j].mActive)
-					{
-						if (mChannel[j].mVibrato)
-						{
-							mChannel[j].mFreq[0] = mParent->mNotesHz[mChannel[j].mLastNote * 8 + (mParent->mVibTable[mChannel[j].mVibratoIndex] * mChannel[j].mVibratoDepth) / 64];
-							mChannel[j].mVibratoIndex += mChannel[j].mVibratoSpeed;
-							mChannel[j].mVibratoIndex %= 32;
-						}
-						if (mChannel[j].mPortamento && mRowTick != 0)
-						{
-							mChannel[j].mFreq[0] += mChannel[j].mPortamento;
-							if (mChannel[j].mPortamentoToNote)
-							{
-								if ((mChannel[j].mPortamento > 0 && mChannel[j].mFreq[0] >= mChannel[j].mPortamentoToNote) ||
-   									(mChannel[j].mPortamento < 0 && mChannel[j].mFreq[0] <= mChannel[j].mPortamentoToNote))
-								{
-									mChannel[j].mFreq[0] = mChannel[j].mPortamentoToNote;
-									mChannel[j].mPortamentoToNote = 0;
-								}
-							}
-						}
-					}
-				}
+                    if (mRow == 64)
+                    {
+                        mRow = 0;
+                        mOrder++;
+                        if (mParent->mSong.mOrder[mOrder] == 0xff)
+                            mOrder = 0;
+                    }
+                }
 
-				// Channel fill
+                int j;
 
-				int gotit = 0;
-				int tries = 0;
+                // per tick events
+                for (j = 0; j < mParent->mSong.mTotalTracks; j++)
+                {
+                    if (mChannel[j].mActive)
+                    {
+                        if (mChannel[j].mVibrato)
+                        {
+                            mChannel[j].mFreq[0] = mParent->mNotesHz[mChannel[j].mLastNote * 8 + (mParent->mVibTable[mChannel[j].mVibratoIndex] * mChannel[j].mVibratoDepth) / 64];
+                            mChannel[j].mVibratoIndex += mChannel[j].mVibratoSpeed;
+                            mChannel[j].mVibratoIndex %= 32;
+                        }
+                        if (mChannel[j].mPortamento && mRowTick != 0)
+                        {
+                            mChannel[j].mFreq[0] += mChannel[j].mPortamento;
+                            if (mChannel[j].mPortamentoToNote)
+                            {
+                                if ((mChannel[j].mPortamento > 0 && mChannel[j].mFreq[0] >= mChannel[j].mPortamentoToNote) ||
+                                    (mChannel[j].mPortamento < 0 && mChannel[j].mFreq[0] <= mChannel[j].mPortamentoToNote))
+                                {
+                                    mChannel[j].mFreq[0] = mChannel[j].mPortamentoToNote;
+                                    mChannel[j].mPortamentoToNote = 0;
+                                }
+                            }
+                        }
+                    }
+                }
 
-				for (j = 0; j < mParent->mHardwareChannels; j++)
-					mOutput[j].mSamplePosInc = 0;
+                // Channel fill
 
-				while (gotit < mParent->mHardwareChannels && tries < mParent->mSong.mTotalTracks)
-				{
-					if (mChannel[mNextChannel].mActive)
-					{
-						if (mChannel[mNextChannel].mArp)
-						{
-							mOutput[gotit].mSamplePosInc = 1.0f / (mSamplerate / mChannel[mNextChannel].mFreq[mChannel[mNextChannel].mArpCounter]);
-							mChannel[mNextChannel].mArpCounter++;
-							mChannel[mNextChannel].mArpCounter %= 3;
-						}
-						else
-						{
-							mOutput[gotit].mSamplePosInc = 1.0f / (mSamplerate / mChannel[mNextChannel].mFreq[0]);
-						}
-						gotit++;
-					}
-					mNextChannel++;
-					mNextChannel %= mParent->mSong.mTotalTracks;
-					tries++;
-				}								
-			}
-			
-			aBuffer[i] = 0;
-			int j;
-			switch (mParent->mWaveform)
-			{
-			case Monotone::SAW:
-				for (j = 0; j < 12; j++)
-				{
-					if (mOutput[j].mEnabled)
-					{
-						float bleh = mOutput[j].mSamplePos + mOutput[j].mSamplePosInc;
-						mOutput[j].mSamplePos = bleh - (long)bleh;
-						// saw:
-						aBuffer[i] += ((mOutput[j].mSamplePos) - 0.5f) * 0.5f;
-					}
-				}
-				break;
-			case Monotone::SIN:
-				for (j = 0; j < 12; j++)
-				{
-					if (mOutput[j].mEnabled)
-					{
-						float bleh = mOutput[j].mSamplePos + mOutput[j].mSamplePosInc;
-						mOutput[j].mSamplePos = bleh - (long)bleh;
-						// sin: 
-						aBuffer[i] += (float)sin(mOutput[j].mSamplePos * M_PI * 2) * 0.5f;
-					}
-				}
-				break;
-			case Monotone::SAWSIN:
-				for (j = 0; j < 12; j++)
-				{
-					if (mOutput[j].mEnabled)
-					{
-						float bleh = mOutput[j].mSamplePos + mOutput[j].mSamplePosInc;
-						mOutput[j].mSamplePos = bleh - (long)bleh;
-						// sawsin:
-						bleh = ((mOutput[j].mSamplePos) - 0.5f);
-						bleh *= (float)sin(mOutput[j].mSamplePos * M_PI * 2);
-						aBuffer[i] += bleh;
-					}
-				}
-				break;
-			case Monotone::SQUARE:
-			default:
-				for (j = 0; j < 12; j++)
-				{
-					if (mOutput[j].mEnabled)
-					{
-						float bleh = mOutput[j].mSamplePos + mOutput[j].mSamplePosInc;
-						mOutput[j].mSamplePos = bleh - (long)bleh;
-						// square:
-						aBuffer[i] += (mOutput[j].mSamplePos > 0.5f) ? 0.25f : -0.25f;
-					}
-				}
-				break;
-			}
+                int gotit = 0;
+                int tries = 0;
 
-			mSampleCount++;
-		}
-	}
+                for (j = 0; j < mParent->mHardwareChannels; j++)
+                    mOutput[j].mSamplePosInc = 0;
 
-	bool MonotoneInstance::hasEnded()
-	{
-		return 0;
-	}
+                while (gotit < mParent->mHardwareChannels && tries < mParent->mSong.mTotalTracks)
+                {
+                    if (mChannel[mNextChannel].mActive)
+                    {
+                        if (mChannel[mNextChannel].mArp)
+                        {
+                            mOutput[gotit].mSamplePosInc = 1.0f / (mSamplerate / mChannel[mNextChannel].mFreq[mChannel[mNextChannel].mArpCounter]);
+                            mChannel[mNextChannel].mArpCounter++;
+                            mChannel[mNextChannel].mArpCounter %= 3;
+                        }
+                        else
+                        {
+                            mOutput[gotit].mSamplePosInc = 1.0f / (mSamplerate / mChannel[mNextChannel].mFreq[0]);
+                        }
+                        gotit++;
+                    }
+                    mNextChannel++;
+                    mNextChannel %= mParent->mSong.mTotalTracks;
+                    tries++;
+                }
+            }
 
-	Monotone::Monotone()
-	{
-		int i;
-		float temphz = 27.5f;
-		int IBO = 12; // Intervals Between Octaves
-		int IBN = 8; // Intervals Between Notes
-		float interval = 1.00724641222f;//exp(ln(2)/(IBO*IBN));
-		int maxnote = 3 + (8 * IBO) + 1;
+            aBuffer[i] = 0;
+            int j;
+            switch (mParent->mWaveform)
+            {
+            case Monotone::SAW:
+                for (j = 0; j < 12; j++)
+                {
+                    if (mOutput[j].mEnabled)
+                    {
+                        float bleh = mOutput[j].mSamplePos + mOutput[j].mSamplePosInc;
+                        mOutput[j].mSamplePos = bleh - (long)bleh;
+                        // saw:
+                        aBuffer[i] += ((mOutput[j].mSamplePos) - 0.5f) * 0.5f;
+                    }
+                }
+                break;
+            case Monotone::SIN:
+                for (j = 0; j < 12; j++)
+                {
+                    if (mOutput[j].mEnabled)
+                    {
+                        float bleh = mOutput[j].mSamplePos + mOutput[j].mSamplePosInc;
+                        mOutput[j].mSamplePos = bleh - (long)bleh;
+                        // sin:
+                        aBuffer[i] += (float)sin(mOutput[j].mSamplePos * M_PI * 2) * 0.5f;
+                    }
+                }
+                break;
+            case Monotone::SAWSIN:
+                for (j = 0; j < 12; j++)
+                {
+                    if (mOutput[j].mEnabled)
+                    {
+                        float bleh = mOutput[j].mSamplePos + mOutput[j].mSamplePosInc;
+                        mOutput[j].mSamplePos = bleh - (long)bleh;
+                        // sawsin:
+                        bleh = ((mOutput[j].mSamplePos) - 0.5f);
+                        bleh *= (float)sin(mOutput[j].mSamplePos * M_PI * 2);
+                        aBuffer[i] += bleh;
+                    }
+                }
+                break;
+            case Monotone::SQUARE:
+            default:
+                for (j = 0; j < 12; j++)
+                {
+                    if (mOutput[j].mEnabled)
+                    {
+                        float bleh = mOutput[j].mSamplePos + mOutput[j].mSamplePosInc;
+                        mOutput[j].mSamplePos = bleh - (long)bleh;
+                        // square:
+                        aBuffer[i] += (mOutput[j].mSamplePos > 0.5f) ? 0.25f : -0.25f;
+                    }
+                }
+                break;
+            }
 
-		mNotesHz[0] = 440;
-		mNotesHz[1 * IBN] = (int)floor(temphz + 0.5f);
+            mSampleCount++;
+        }
+        return aSamplesToRead;
+    }
 
-		for (i = (1 * IBN) - 1; i > 1; i--)
-		{
-			temphz = temphz / interval;
-			if (temphz < 19) temphz = 19; // orig limitation, we could go lower though
-			mNotesHz[i] = (int)floor(temphz + 0.5f);
-		}
-		temphz = 27.5f;
-		for (i = (1 * IBN) + 1; i < maxnote * IBN; i++)
-		{
-			temphz = temphz * interval;
-			mNotesHz[i] = (int)floor(temphz + 0.5f);
-		}
+    bool MonotoneInstance::hasEnded()
+    {
+        return 0;
+    }
 
-		for (i = 0; i < 32; i++)
-			mVibTable[i] = (int)floor(0.5 + 64 * sin(i * M_PI / 32 * 2));
+    Monotone::Monotone()
+    {
+        int i;
+        float temphz = 27.5f;
+        int IBO = 12; // Intervals Between Octaves
+        int IBN = 8; // Intervals Between Notes
+        float interval = 1.00724641222f;//exp(ln(2)/(IBO*IBN));
+        int maxnote = 3 + (8 * IBO) + 1;
 
-		mSong.mTitle = 0;
-		mSong.mComment = 0;
-		mSong.mPatternData = 0;
+        mNotesHz[0] = 440;
+        mNotesHz[1 * IBN] = (int)floor(temphz + 0.5f);
 
-		mBaseSamplerate = 44100;
-		mChannels = 1;
+        for (i = (1 * IBN) - 1; i > 1; i--)
+        {
+            temphz = temphz / interval;
+            if (temphz < 19) temphz = 19; // orig limitation, we could go lower though
+            mNotesHz[i] = (int)floor(temphz + 0.5f);
+        }
+        temphz = 27.5f;
+        for (i = (1 * IBN) + 1; i < maxnote * IBN; i++)
+        {
+            temphz = temphz * interval;
+            mNotesHz[i] = (int)floor(temphz + 0.5f);
+        }
 
-		mHardwareChannels = 1;
-		mWaveform = SQUARE;
-	}
+        for (i = 0; i < 32; i++)
+            mVibTable[i] = (int)floor(0.5 + 64 * sin(i * M_PI / 32 * 2));
 
-	void Monotone::clear()
-	{
-		stop();
+        mSong.mTitle = 0;
+        mSong.mComment = 0;
+        mSong.mPatternData = 0;
 
-		delete[] mSong.mTitle;
-		delete[] mSong.mComment;
-		delete[] mSong.mPatternData;
+        mBaseSamplerate = 44100;
+        mChannels = 1;
 
-		mSong.mTitle = 0;
-		mSong.mComment = 0;
-		mSong.mPatternData = 0;
-	}
+        mHardwareChannels = 1;
+        mWaveform = SQUARE;
+    }
 
-	Monotone::~Monotone()
-	{
-		stop();
-		clear();
-	}
+    void Monotone::clear()
+    {
+        stop();
 
-	static char * mystrdup(const char *src)
-	{
-		int len = (int)strlen(src);
-		char * res = new char[len + 1];
-		memcpy(res, src, len);
-		res[len] = 0;
-		return res;
-	}
+        delete[] mSong.mTitle;
+        delete[] mSong.mComment;
+        delete[] mSong.mPatternData;
 
-	result Monotone::setParams(int aHardwareChannels, int aWaveform)
-	{
-		if (aHardwareChannels <= 0 || aWaveform < 0)
-			return INVALID_PARAMETER;
-		mHardwareChannels = aHardwareChannels;
-		mWaveform = aWaveform;
-		return SO_NO_ERROR;
-	}
-	
-	result Monotone::loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy, bool aTakeOwnership)
-	{
-		MemoryFile mf;
-		int res = mf.openMem(aMem, aLength, aCopy, aTakeOwnership);
-		if (res != SO_NO_ERROR)
-			return res;
-		return loadFile(&mf);
-	}
+        mSong.mTitle = 0;
+        mSong.mComment = 0;
+        mSong.mPatternData = 0;
+    }
 
-	result Monotone::load(const char *aFilename)
-	{
-		DiskFile df;
-		int res = df.open(aFilename);
-		if (res != SO_NO_ERROR)
-			return res;
-		return loadFile(&df);
-	}
+    Monotone::~Monotone()
+    {
+        stop();
+        clear();
+    }
 
-	result Monotone::loadFile(File *aFile)
-	{
-		if (aFile == NULL)
-			return INVALID_PARAMETER;
-		clear();
-		int i;
-		unsigned char temp[200];
-		aFile->read(temp, 9);
-		char magic[] = "\bMONOTONE";
-		for (i = 0; i < 9; i++)
-		{
-			if (temp[i] != magic[i])
-			{
-				return FILE_LOAD_FAILED;
-			}
-		}
-		aFile->read(temp, 41);
-		temp[temp[0] + 1] = 0; // pascal -> asciiz: pascal strings have length as first byte
-		mSong.mTitle = mystrdup((char*)temp + 1);
-		aFile->read(temp, 41);
-		temp[temp[0] + 1] = 0; // pascal -> asciiz: pascal strings have length as first byte
-		mSong.mComment = mystrdup((char*)temp + 1);
-		aFile->read(temp, 4);
-		mSong.mVersion = temp[0];
-		mSong.mTotalPatterns = temp[1];
-		mSong.mTotalTracks = temp[2];
-		mSong.mCellSize = temp[3];
-		if (mSong.mVersion != 1 || mSong.mCellSize != 2)
-		{
-			return FILE_LOAD_FAILED;
-		}
-		aFile->read(mSong.mOrder, 256);
-		int totalnotes = 64 * mSong.mTotalPatterns * mSong.mTotalTracks;
-		mSong.mPatternData = new unsigned int[totalnotes];
-		for (i = 0; i < totalnotes; i++)
-		{
-			aFile->read(temp, 2);
-			unsigned int datavalue = temp[0] | (temp[1] << 8);
-			mSong.mPatternData[i] = datavalue;
-			//unsigned int note = (datavalue >> 9) & 127;
-			//unsigned int effect = (datavalue >> 6) & 7;
-			//unsigned int effectdata = (datavalue)& 63;
-			//unsigned int effectdata1 = (datavalue >> 3) & 7;
-			//unsigned int effectdata2 = (datavalue >> 0) & 7;
-		}
+    static char * mystrdup(const char *src)
+    {
+        int len = (int)strlen(src);
+        char * res = new char[len + 1];
+        memcpy(res, src, len);
+        res[len] = 0;
+        return res;
+    }
 
-		return SO_NO_ERROR;
-	}
+    result Monotone::setParams(int aHardwareChannels, int aWaveform)
+    {
+        if (aHardwareChannels <= 0 || aWaveform < 0)
+            return INVALID_PARAMETER;
+        mHardwareChannels = aHardwareChannels;
+        mWaveform = aWaveform;
+        return SO_NO_ERROR;
+    }
+
+    result Monotone::loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy, bool aTakeOwnership)
+    {
+        MemoryFile mf;
+        int res = mf.openMem(aMem, aLength, aCopy, aTakeOwnership);
+        if (res != SO_NO_ERROR)
+            return res;
+        return loadFile(&mf);
+    }
+
+    result Monotone::load(const char *aFilename)
+    {
+        DiskFile df;
+        int res = df.open(aFilename);
+        if (res != SO_NO_ERROR)
+            return res;
+        return loadFile(&df);
+    }
+
+    result Monotone::loadFile(File *aFile)
+    {
+        if (aFile == NULL)
+            return INVALID_PARAMETER;
+        clear();
+        int i;
+        unsigned char temp[200];
+        aFile->read(temp, 9);
+        char magic[] = "\bMONOTONE";
+        for (i = 0; i < 9; i++)
+        {
+            if (temp[i] != magic[i])
+            {
+                return FILE_LOAD_FAILED;
+            }
+        }
+        aFile->read(temp, 41);
+        temp[temp[0] + 1] = 0; // pascal -> asciiz: pascal strings have length as first byte
+        mSong.mTitle = mystrdup((char*)temp + 1);
+        aFile->read(temp, 41);
+        temp[temp[0] + 1] = 0; // pascal -> asciiz: pascal strings have length as first byte
+        mSong.mComment = mystrdup((char*)temp + 1);
+        aFile->read(temp, 4);
+        mSong.mVersion = temp[0];
+        mSong.mTotalPatterns = temp[1];
+        mSong.mTotalTracks = temp[2];
+        mSong.mCellSize = temp[3];
+        if (mSong.mVersion != 1 || mSong.mCellSize != 2)
+        {
+            return FILE_LOAD_FAILED;
+        }
+        aFile->read(mSong.mOrder, 256);
+        int totalnotes = 64 * mSong.mTotalPatterns * mSong.mTotalTracks;
+        mSong.mPatternData = new unsigned int[totalnotes];
+        for (i = 0; i < totalnotes; i++)
+        {
+            aFile->read(temp, 2);
+            unsigned int datavalue = temp[0] | (temp[1] << 8);
+            mSong.mPatternData[i] = datavalue;
+            //unsigned int note = (datavalue >> 9) & 127;
+            //unsigned int effect = (datavalue >> 6) & 7;
+            //unsigned int effectdata = (datavalue)& 63;
+            //unsigned int effectdata1 = (datavalue >> 3) & 7;
+            //unsigned int effectdata2 = (datavalue >> 0) & 7;
+        }
+
+        return SO_NO_ERROR;
+    }
 
 
-	AudioSourceInstance * Monotone::createInstance() 
-	{
-		return new MonotoneInstance(this);
-	}
+    AudioSourceInstance * Monotone::createInstance()
+    {
+        return new MonotoneInstance(this);
+    }
 
 };
 #endif //YES_IMGUISOLOUD_MONOTONE
@@ -7853,588 +7970,603 @@ namespace SoLoud
 namespace SoLoud
 {
 
-	Prg::Prg()
-	{		
-	}
+    Prg::Prg()
+    {
+    }
 
-	void Prg::srand(int aSeed)
-	{
-		index = 0;
-		int i;
-		for (i = 0; i < 16; i++)
-			state[i] = aSeed + i * aSeed + i;
-	}
+    void Prg::srand(int aSeed)
+    {
+        index = 0;
+        int i;
+        for (i = 0; i < 16; i++)
+            state[i] = aSeed + i * aSeed + i;
+    }
 
-	// WELL512 implementation, public domain by Chris Lomont
-	unsigned int Prg::rand()
-	{
-		unsigned int a, b, c, d;
-		a = state[index];
-		c = state[(index+13)&15];
-		b = a^c^(a<<16)^(c<<15);
-		c = state[(index+9)&15];
-		c ^= (c>>11);
-		a = state[index] = b^c;
-		d = a^((a<<5)&0xDA442D24UL);
-		index = (index + 15)&15;
-		a = state[index];
-		state[index] = a^b^d^(a<<2)^(b<<18)^(c<<28);
-		return state[index];
-	}
+    // WELL512 implementation, public domain by Chris Lomont
+    unsigned int Prg::rand()
+    {
+        unsigned int a, b, c, d;
+        a = state[index];
+        c = state[(index+13)&15];
+        b = a^c^(a<<16)^(c<<15);
+        c = state[(index+9)&15];
+        c ^= (c>>11);
+        a = state[index] = b^c;
+        d = a^((a<<5)&0xDA442D24UL);
+        index = (index + 15)&15;
+        a = state[index];
+        state[index] = a^b^d^(a<<2)^(b<<18)^(c<<28);
+        return state[index];
+    }
 
-	SfxrInstance::SfxrInstance(Sfxr *aParent)
-	{
-		mParent = aParent;
-		mParams = aParent->mParams;
-		mRand.srand(0x792352);
-		resetSample(false);
-		playing_sample = 1;
-	}
+    SfxrInstance::SfxrInstance(Sfxr *aParent)
+    {
+        mParent = aParent;
+        mParams = aParent->mParams;
+        mRand.srand(0x792352);
+        resetSample(false);
+        playing_sample = 1;
+    }
 
 #define frnd(x) ((float)(mRand.rand()%10001)/10000*(x))
 
-	void SfxrInstance::getAudio(float *aBuffer, unsigned int aSamples)
-	{
-		float *buffer = aBuffer;
-		unsigned int i;
-		for(i = 0; i < aSamples; i++)
-		{
-			if(!playing_sample)
-			{
-				*aBuffer = 0;
-				aBuffer++;
-				continue;
-			}
+    unsigned int SfxrInstance::getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)
+    {
+        float *buffer = aBuffer;
+        unsigned int i;
+        for (i = 0; i < aSamplesToRead; i++)
+        {
+            rep_time++;
+            if (rep_limit != 0 && rep_time >= rep_limit)
+            {
+                rep_time = 0;
+                resetSample(true);
+            }
 
-			rep_time++;
-			if(rep_limit!=0 && rep_time>=rep_limit)
-			{
-				rep_time=0;
-				resetSample(true);
-			}
+            // frequency envelopes/arpeggios
+            arp_time++;
+            if (arp_limit != 0 && arp_time >= arp_limit)
+            {
+                arp_limit = 0;
+                fperiod *= arp_mod;
+            }
+            fslide += fdslide;
+            fperiod *= fslide;
+            if (fperiod > fmaxperiod)
+            {
+                fperiod = fmaxperiod;
+                if (mParams.p_freq_limit > 0.0f)
+                {
+                    if (mFlags & LOOPING)
+                    {
+                        resetSample(false);
+                    }
+                    else
+                    {
+                        playing_sample = false;
+                        return i;
+                    }
+                }
+            }
+            float rfperiod = (float)fperiod;
+            if (vib_amp > 0.0f)
+            {
+                vib_phase += vib_speed;
+                rfperiod = (float)(fperiod * (1.0 + sin(vib_phase) * vib_amp));
+            }
+            period = (int)rfperiod;
+            if (period < 8) period = 8;
+            square_duty += square_slide;
+            if (square_duty < 0.0f) square_duty = 0.0f;
+            if (square_duty > 0.5f) square_duty = 0.5f;
+            // volume envelope
+            env_time++;
+            if (env_time > env_length[env_stage])
+            {
+                env_time = 0;
+                env_stage++;
+                if (env_stage == 3)
+                {
+                    if (mFlags & LOOPING)
+                    {
+                        resetSample(false);
+                    }
+                    else
+                    {
+                        playing_sample = false;
+                        return i;
+                    }
+                }
+            }
+            if (env_stage == 0)
+            {
+                if (env_length[0])
+                {
+                    env_vol = (float)env_time / env_length[0];
+                }
+                else
+                {
+                    env_vol = 0;
+                }
+            }
+            if (env_stage == 1)
+            {
+                if (env_length[1])
+                {
+                    env_vol = 1.0f + (float)pow(1.0f - (float)env_time / env_length[1], 1.0f) * 2.0f * mParams.p_env_punch;
+                }
+                else
+                {
+                    env_vol = 0;
+                }
+            }
+            if (env_stage == 2)
+            {
+                if (env_length[2])
+                {
+                    env_vol = 1.0f - (float)env_time / env_length[2];
+                }
+                else
+                {
+                    env_vol = 0;
+                }
+            }
 
-			// frequency envelopes/arpeggios
-			arp_time++;
-			if(arp_limit!=0 && arp_time>=arp_limit)
-			{
-				arp_limit=0;
-				fperiod*=arp_mod;
-			}
-			fslide+=fdslide;
-			fperiod*=fslide;
-			if(fperiod>fmaxperiod)
-			{
-				fperiod=fmaxperiod;
-				if(mParams.p_freq_limit>0.0f)
-				{
-					if (mFlags & LOOPING)
-					{
-						resetSample(false);
-					}
-					else
-					{
-						playing_sample=false;
-					}
-				}
-			}
-			float rfperiod=(float)fperiod;
-			if(vib_amp>0.0f)
-			{
-				vib_phase+=vib_speed;
-				rfperiod=(float)(fperiod*(1.0+sin(vib_phase)*vib_amp));
-			}
-			period=(int)rfperiod;
-			if(period<8) period=8;
-			square_duty+=square_slide;
-			if(square_duty<0.0f) square_duty=0.0f;
-			if(square_duty>0.5f) square_duty=0.5f;		
-			// volume envelope
-			env_time++;
-			if(env_time>env_length[env_stage])
-			{
-				env_time=0;
-				env_stage++;
-				if(env_stage==3)
-				{
-					if (mFlags & LOOPING)
-					{
-						resetSample(false);
-					}
-					else
-					{
-						playing_sample=false;
-					}
-				}
-			}
-			if (env_stage == 0)
-			{
-				if (env_length[0])
-					env_vol = (float)env_time / env_length[0];
-				else
-					env_vol = 0;
-			}
-			if (env_stage == 1)
-			{
-				if (env_length[1])
-					env_vol = 1.0f + (float)pow(1.0f - (float)env_time / env_length[1], 1.0f)*2.0f*mParams.p_env_punch;
-				else
-					env_vol = 0;
-			}
-			if (env_stage == 2)
-			{
-				if (env_length[2])
-					env_vol = 1.0f - (float)env_time / env_length[2];
-				else
-					env_vol = 0;
-			}
+            // phaser step
+            fphase += fdphase;
+            iphase = abs((int)fphase);
+            if (iphase > 1023) iphase = 1023;
 
-			// phaser step
-			fphase+=fdphase;
-			iphase=abs((int)fphase);
-			if(iphase>1023) iphase=1023;
+            if (flthp_d != 0.0f)
+            {
+                flthp *= flthp_d;
+                if (flthp < 0.00001f) flthp = 0.00001f;
+                if (flthp > 0.1f) flthp = 0.1f;
+            }
 
-			if(flthp_d!=0.0f)
-			{
-				flthp*=flthp_d;
-				if(flthp<0.00001f) flthp=0.00001f;
-				if(flthp>0.1f) flthp=0.1f;
-			}
+            float ssample = 0.0f;
+            for (int si = 0; si < 8; si++) // 8x supersampling
+            {
+                float sample = 0.0f;
+                phase++;
+                if (phase >= period)
+                {
+                    phase %= period;
+                    if (mParams.wave_type == 3)
+                    {
+                        for (int k = 0; k < 32; k++)
+                        {
+                            noise_buffer[k] = frnd(2.0f) - 1.0f;
+                        }
+                    }
+                }
+                // base waveform
+                float fp = (float)phase / period;
+                switch (mParams.wave_type)
+                {
+                case 0: // square
+                    if (fp < square_duty)
+                    {
+                        sample = 0.5f;
+                    }
+                    else
+                    {
+                        sample = -0.5f;
+                    }
+                    break;
+                case 1: // sawtooth
+                    sample = 1.0f - fp * 2;
+                    break;
+                case 2: // sine
+                    sample = (float)sin(fp * 2 * M_PI);
+                    break;
+                case 3: // noise
+                    sample = noise_buffer[phase * 32 / period];
+                    break;
+                }
+                // lp filter
+                float pp = fltp;
+                fltw *= fltw_d;
+                if (fltw < 0.0f) fltw = 0.0f;
+                if (fltw > 0.1f) fltw = 0.1f;
+                if (mParams.p_lpf_freq != 1.0f)
+                {
+                    fltdp += (sample - fltp) * fltw;
+                    fltdp -= fltdp * fltdmp;
+                }
+                else
+                {
+                    fltp = sample;
+                    fltdp = 0.0f;
+                }
+                fltp += fltdp;
+                // hp filter
+                fltphp += fltp - pp;
+                fltphp -= fltphp * flthp;
+                sample = fltphp;
+                // phaser
+                phaser_buffer[ipp & 1023] = sample;
+                sample += phaser_buffer[(ipp - iphase + 1024) & 1023];
+                ipp = (ipp + 1) & 1023;
+                // final accumulation and envelope application
+                ssample += sample*env_vol;
+            }
+            ssample = ssample / 8 * mParams.master_vol;
 
-			float ssample=0.0f;
-			for(int si=0;si<8;si++) // 8x supersampling
-			{
-				float sample=0.0f;
-				phase++;
-				if(phase>=period)
-				{
-					//				phase=0;
-					phase%=period;
-					if(mParams.wave_type==3)
-						for(int i=0;i<32;i++)
-							noise_buffer[i]=frnd(2.0f)-1.0f;
-				}
-				// base waveform
-				float fp=(float)phase/period;
-				switch(mParams.wave_type)
-				{
-				case 0: // square
-					if(fp<square_duty)
-						sample=0.5f;
-					else
-						sample=-0.5f;
-					break;
-				case 1: // sawtooth
-					sample=1.0f-fp*2;
-					break;
-				case 2: // sine
-					sample=(float)sin(fp*2*M_PI);
-					break;
-				case 3: // noise
-					sample=noise_buffer[phase*32/period];
-					break;
-				}
-				// lp filter
-				float pp=fltp;
-				fltw*=fltw_d;
-				if(fltw<0.0f) fltw=0.0f;
-				if(fltw>0.1f) fltw=0.1f;
-				if(mParams.p_lpf_freq!=1.0f)
-				{
-					fltdp+=(sample-fltp)*fltw;
-					fltdp-=fltdp*fltdmp;
-				}
-				else
-				{
-					fltp=sample;
-					fltdp=0.0f;
-				}
-				fltp+=fltdp;
-				// hp filter
-				fltphp+=fltp-pp;
-				fltphp-=fltphp*flthp;
-				sample=fltphp;
-				// phaser
-				phaser_buffer[ipp&1023]=sample;
-				sample+=phaser_buffer[(ipp-iphase+1024)&1023];
-				ipp=(ipp+1)&1023;
-				// final accumulation and envelope application
-				ssample+=sample*env_vol;
-			}
-			ssample=ssample/8*mParams.master_vol;
+            ssample *= 2.0f * mParams.sound_vol;
 
-			ssample*=2.0f*mParams.sound_vol;
+            if (buffer != NULL)
+            {
+                if (ssample > 1.0f) ssample = 1.0f;
+                if (ssample < -1.0f) ssample = -1.0f;
+                *buffer = ssample;
+                buffer++;
+            }
+        }
+        return aSamplesToRead;
+    }
 
-			if(buffer!=NULL)
-			{
-				if(ssample>1.0f) ssample=1.0f;
-				if(ssample<-1.0f) ssample=-1.0f;
-				*buffer++=ssample;
-			}
-		}
+    bool SfxrInstance::hasEnded()
+    {
+        return !playing_sample;
+    }
 
-	}
+    void SfxrInstance::resetSample(bool aRestart)
+    {
+        if(!aRestart)
+            phase=0;
+        fperiod=100.0/(mParams.p_base_freq*mParams.p_base_freq+0.001);
+        period=(int)fperiod;
+        fmaxperiod=100.0/(mParams.p_freq_limit*mParams.p_freq_limit+0.001);
+        fslide=1.0-pow((double)mParams.p_freq_ramp, 3.0)*0.01;
+        fdslide=-pow((double)mParams.p_freq_dramp, 3.0)*0.000001;
+        square_duty=0.5f-mParams.p_duty*0.5f;
+        square_slide=-mParams.p_duty_ramp*0.00005f;
+        if(mParams.p_arp_mod>=0.0f)
+            arp_mod=1.0-pow((double)mParams.p_arp_mod, 2.0)*0.9;
+        else
+            arp_mod=1.0+pow((double)mParams.p_arp_mod, 2.0)*10.0;
+        arp_time=0;
+        arp_limit=(int)(pow(1.0f-mParams.p_arp_speed, 2.0f)*20000+32);
+        if(mParams.p_arp_speed==1.0f)
+            arp_limit=0;
+        if(!aRestart)
+        {
+            // reset filter
+            fltp=0.0f;
+            fltdp=0.0f;
+            fltw=(float)pow(mParams.p_lpf_freq, 3.0f)*0.1f;
+            fltw_d=1.0f+mParams.p_lpf_ramp*0.0001f;
+            fltdmp=5.0f/(1.0f+(float)pow(mParams.p_lpf_resonance, 2.0f)*20.0f)*(0.01f+fltw);
+            if(fltdmp>0.8f) fltdmp=0.8f;
+            fltphp=0.0f;
+            flthp=(float)pow(mParams.p_hpf_freq, 2.0f)*0.1f;
+            flthp_d=(float)(1.0+mParams.p_hpf_ramp*0.0003f);
+            // reset vibrato
+            vib_phase=0.0f;
+            vib_speed=(float)pow(mParams.p_vib_speed, 2.0f)*0.01f;
+            vib_amp=mParams.p_vib_strength*0.5f;
+            // reset envelope
+            env_vol=0.0f;
+            env_stage=0;
+            env_time=0;
+            env_length[0]=(int)(mParams.p_env_attack*mParams.p_env_attack*100000.0f);
+            env_length[1]=(int)(mParams.p_env_sustain*mParams.p_env_sustain*100000.0f);
+            env_length[2]=(int)(mParams.p_env_decay*mParams.p_env_decay*100000.0f);
 
-	bool SfxrInstance::hasEnded()
-	{
-		return !playing_sample;
-	}
+            fphase=(float)pow(mParams.p_pha_offset, 2.0f)*1020.0f;
+            if(mParams.p_pha_offset<0.0f) fphase=-fphase;
+            fdphase=(float)pow(mParams.p_pha_ramp, 2.0f)*1.0f;
+            if(mParams.p_pha_ramp<0.0f) fdphase=-fdphase;
+            iphase=abs((int)fphase);
+            ipp=0;
+            for(int i=0;i<1024;i++)
+                phaser_buffer[i]=0.0f;
 
-	void SfxrInstance::resetSample(bool aRestart)
-	{
-		if(!aRestart)
-			phase=0;
-		fperiod=100.0/(mParams.p_base_freq*mParams.p_base_freq+0.001);
-		period=(int)fperiod;
-		fmaxperiod=100.0/(mParams.p_freq_limit*mParams.p_freq_limit+0.001);
-		fslide=1.0-pow((double)mParams.p_freq_ramp, 3.0)*0.01;
-		fdslide=-pow((double)mParams.p_freq_dramp, 3.0)*0.000001;
-		square_duty=0.5f-mParams.p_duty*0.5f;
-		square_slide=-mParams.p_duty_ramp*0.00005f;
-		if(mParams.p_arp_mod>=0.0f)
-			arp_mod=1.0-pow((double)mParams.p_arp_mod, 2.0)*0.9;
-		else
-			arp_mod=1.0+pow((double)mParams.p_arp_mod, 2.0)*10.0;
-		arp_time=0;
-		arp_limit=(int)(pow(1.0f-mParams.p_arp_speed, 2.0f)*20000+32);
-		if(mParams.p_arp_speed==1.0f)
-			arp_limit=0;
-		if(!aRestart)
-		{
-			// reset filter
-			fltp=0.0f;
-			fltdp=0.0f;
-			fltw=(float)pow(mParams.p_lpf_freq, 3.0f)*0.1f;
-			fltw_d=1.0f+mParams.p_lpf_ramp*0.0001f;
-			fltdmp=5.0f/(1.0f+(float)pow(mParams.p_lpf_resonance, 2.0f)*20.0f)*(0.01f+fltw);
-			if(fltdmp>0.8f) fltdmp=0.8f;
-			fltphp=0.0f;
-			flthp=(float)pow(mParams.p_hpf_freq, 2.0f)*0.1f;
-			flthp_d=(float)(1.0+mParams.p_hpf_ramp*0.0003f);
-			// reset vibrato
-			vib_phase=0.0f;
-			vib_speed=(float)pow(mParams.p_vib_speed, 2.0f)*0.01f;
-			vib_amp=mParams.p_vib_strength*0.5f;
-			// reset envelope
-			env_vol=0.0f;
-			env_stage=0;
-			env_time=0;
-			env_length[0]=(int)(mParams.p_env_attack*mParams.p_env_attack*100000.0f);
-			env_length[1]=(int)(mParams.p_env_sustain*mParams.p_env_sustain*100000.0f);
-			env_length[2]=(int)(mParams.p_env_decay*mParams.p_env_decay*100000.0f);
+            for(int i=0;i<32;i++)
+                noise_buffer[i]=frnd(2.0f)-1.0f;
 
-			fphase=(float)pow(mParams.p_pha_offset, 2.0f)*1020.0f;
-			if(mParams.p_pha_offset<0.0f) fphase=-fphase;
-			fdphase=(float)pow(mParams.p_pha_ramp, 2.0f)*1.0f;
-			if(mParams.p_pha_ramp<0.0f) fdphase=-fdphase;
-			iphase=abs((int)fphase);
-			ipp=0;
-			for(int i=0;i<1024;i++)
-				phaser_buffer[i]=0.0f;
-
-			for(int i=0;i<32;i++)
-				noise_buffer[i]=frnd(2.0f)-1.0f;
-
-			rep_time=0;
-			rep_limit=(int)(pow(1.0f-mParams.p_repeat_speed, 2.0f)*20000+32);
-			if(mParams.p_repeat_speed==0.0f)
-				rep_limit=0;
-		}
-	}
+            rep_time=0;
+            rep_limit=(int)(pow(1.0f-mParams.p_repeat_speed, 2.0f)*20000+32);
+            if(mParams.p_repeat_speed==0.0f)
+                rep_limit=0;
+        }
+    }
 
 
-#define rnd(n) (mRand.rand()%(n+1))
+#define rnd(n) (mRand.rand()%((n)+1))
 #undef frnd
 #define frnd(x) ((float)(mRand.rand()%10001)/10000*(x))
 
 
-	result Sfxr::loadPreset(int aPresetNo, int aRandSeed)
-	{
-		if (aPresetNo < 0 || aPresetNo > 6)
-			return INVALID_PARAMETER;
+    result Sfxr::loadPreset(int aPresetNo, int aRandSeed)
+    {
+        if (aPresetNo < 0 || aPresetNo > 6)
+            return INVALID_PARAMETER;
 
-		resetParams();
-		mRand.srand(aRandSeed);
-		switch(aPresetNo)
-		{
-		case 0: // pickup/coin
-			mParams.p_base_freq=0.4f+frnd(0.5f);
-			mParams.p_env_attack=0.0f;
-			mParams.p_env_sustain=frnd(0.1f);
-			mParams.p_env_decay=0.1f+frnd(0.4f);
-			mParams.p_env_punch=0.3f+frnd(0.3f);
-			if(rnd(1))
-			{
-				mParams.p_arp_speed=0.5f+frnd(0.2f);
-				mParams.p_arp_mod=0.2f+frnd(0.4f);
-			}
-			break;
-		case 1: // laser/shoot
-			mParams.wave_type=rnd(2);
-			if(mParams.wave_type==2 && rnd(1))
-				mParams.wave_type=rnd(1);
-			mParams.p_base_freq=0.5f+frnd(0.5f);
-			mParams.p_freq_limit=mParams.p_base_freq-0.2f-frnd(0.6f);
-			if(mParams.p_freq_limit<0.2f) mParams.p_freq_limit=0.2f;
-			mParams.p_freq_ramp=-0.15f-frnd(0.2f);
-			if(rnd(2)==0)
-			{
-				mParams.p_base_freq=0.3f+frnd(0.6f);
-				mParams.p_freq_limit=frnd(0.1f);
-				mParams.p_freq_ramp=-0.35f-frnd(0.3f);
-			}
-			if(rnd(1))
-			{
-				mParams.p_duty=frnd(0.5f);
-				mParams.p_duty_ramp=frnd(0.2f);
-			}
-			else
-			{
-				mParams.p_duty=0.4f+frnd(0.5f);
-				mParams.p_duty_ramp=-frnd(0.7f);
-			}
-			mParams.p_env_attack=0.0f;
-			mParams.p_env_sustain=0.1f+frnd(0.2f);
-			mParams.p_env_decay=frnd(0.4f);
-			if(rnd(1))
-				mParams.p_env_punch=frnd(0.3f);
-			if(rnd(2)==0)
-			{
-				mParams.p_pha_offset=frnd(0.2f);
-				mParams.p_pha_ramp=-frnd(0.2f);
-			}
-			if(rnd(1))
-				mParams.p_hpf_freq=frnd(0.3f);
-			break;
-		case 2: // explosion
-			mParams.wave_type=3;
-			if(rnd(1))
-			{
-				mParams.p_base_freq=0.1f+frnd(0.4f);
-				mParams.p_freq_ramp=-0.1f+frnd(0.4f);
-			}
-			else
-			{
-				mParams.p_base_freq=0.2f+frnd(0.7f);
-				mParams.p_freq_ramp=-0.2f-frnd(0.2f);
-			}
-			mParams.p_base_freq*=mParams.p_base_freq;
-			if(rnd(4)==0)
-				mParams.p_freq_ramp=0.0f;
-			if(rnd(2)==0)
-				mParams.p_repeat_speed=0.3f+frnd(0.5f);
-			mParams.p_env_attack=0.0f;
-			mParams.p_env_sustain=0.1f+frnd(0.3f);
-			mParams.p_env_decay=frnd(0.5f);
-			if(rnd(1)==0)
-			{
-				mParams.p_pha_offset=-0.3f+frnd(0.9f);
-				mParams.p_pha_ramp=-frnd(0.3f);
-			}
-			mParams.p_env_punch=0.2f+frnd(0.6f);
-			if(rnd(1))
-			{
-				mParams.p_vib_strength=frnd(0.7f);
-				mParams.p_vib_speed=frnd(0.6f);
-			}
-			if(rnd(2)==0)
-			{
-				mParams.p_arp_speed=0.6f+frnd(0.3f);
-				mParams.p_arp_mod=0.8f-frnd(1.6f);
-			}
-			break;
-		case 3: // powerup
-			if(rnd(1))
-				mParams.wave_type=1;
-			else
-				mParams.p_duty=frnd(0.6f);
-			if(rnd(1))
-			{
-				mParams.p_base_freq=0.2f+frnd(0.3f);
-				mParams.p_freq_ramp=0.1f+frnd(0.4f);
-				mParams.p_repeat_speed=0.4f+frnd(0.4f);
-			}
-			else
-			{
-				mParams.p_base_freq=0.2f+frnd(0.3f);
-				mParams.p_freq_ramp=0.05f+frnd(0.2f);
-				if(rnd(1))
-				{
-					mParams.p_vib_strength=frnd(0.7f);
-					mParams.p_vib_speed=frnd(0.6f);
-				}
-			}
-			mParams.p_env_attack=0.0f;
-			mParams.p_env_sustain=frnd(0.4f);
-			mParams.p_env_decay=0.1f+frnd(0.4f);
-			break;
-		case 4: // hit/hurt
-			mParams.wave_type=rnd(2);
-			if(mParams.wave_type==2)
-				mParams.wave_type=3;
-			if(mParams.wave_type==0)
-				mParams.p_duty=frnd(0.6f);
-			mParams.p_base_freq=0.2f+frnd(0.6f);
-			mParams.p_freq_ramp=-0.3f-frnd(0.4f);
-			mParams.p_env_attack=0.0f;
-			mParams.p_env_sustain=frnd(0.1f);
-			mParams.p_env_decay=0.1f+frnd(0.2f);
-			if(rnd(1))
-				mParams.p_hpf_freq=frnd(0.3f);
-			break;
-		case 5: // jump
-			mParams.wave_type=0;
-			mParams.p_duty=frnd(0.6f);
-			mParams.p_base_freq=0.3f+frnd(0.3f);
-			mParams.p_freq_ramp=0.1f+frnd(0.2f);
-			mParams.p_env_attack=0.0f;
-			mParams.p_env_sustain=0.1f+frnd(0.3f);
-			mParams.p_env_decay=0.1f+frnd(0.2f);
-			if(rnd(1))
-				mParams.p_hpf_freq=frnd(0.3f);
-			if(rnd(1))
-				mParams.p_lpf_freq=1.0f-frnd(0.6f);
-			break;
-		case 6: // blip/select
-			mParams.wave_type=rnd(1);
-			if(mParams.wave_type==0)
-				mParams.p_duty=frnd(0.6f);
-			mParams.p_base_freq=0.2f+frnd(0.4f);
-			mParams.p_env_attack=0.0f;
-			mParams.p_env_sustain=0.1f+frnd(0.1f);
-			mParams.p_env_decay=frnd(0.2f);
-			mParams.p_hpf_freq=0.1f;
-			break;
-		}
-		return 0;
-	}
-	
-	void Sfxr::resetParams()
-	{
-		mParams.wave_type=0;
+        resetParams();
+        mRand.srand(aRandSeed);
+        switch(aPresetNo)
+        {
+        case 0: // pickup/coin
+            mParams.p_base_freq=0.4f+frnd(0.5f);
+            mParams.p_env_attack=0.0f;
+            mParams.p_env_sustain=frnd(0.1f);
+            mParams.p_env_decay=0.1f+frnd(0.4f);
+            mParams.p_env_punch=0.3f+frnd(0.3f);
+            if(rnd(1))
+            {
+                mParams.p_arp_speed=0.5f+frnd(0.2f);
+                mParams.p_arp_mod=0.2f+frnd(0.4f);
+            }
+            break;
+        case 1: // laser/shoot
+            mParams.wave_type=rnd(2);
+            if(mParams.wave_type==2 && rnd(1))
+                mParams.wave_type=rnd(1);
+            mParams.p_base_freq=0.5f+frnd(0.5f);
+            mParams.p_freq_limit=mParams.p_base_freq-0.2f-frnd(0.6f);
+            if(mParams.p_freq_limit<0.2f) mParams.p_freq_limit=0.2f;
+            mParams.p_freq_ramp=-0.15f-frnd(0.2f);
+            if(rnd(2)==0)
+            {
+                mParams.p_base_freq=0.3f+frnd(0.6f);
+                mParams.p_freq_limit=frnd(0.1f);
+                mParams.p_freq_ramp=-0.35f-frnd(0.3f);
+            }
+            if(rnd(1))
+            {
+                mParams.p_duty=frnd(0.5f);
+                mParams.p_duty_ramp=frnd(0.2f);
+            }
+            else
+            {
+                mParams.p_duty=0.4f+frnd(0.5f);
+                mParams.p_duty_ramp=-frnd(0.7f);
+            }
+            mParams.p_env_attack=0.0f;
+            mParams.p_env_sustain=0.1f+frnd(0.2f);
+            mParams.p_env_decay=frnd(0.4f);
+            if(rnd(1))
+                mParams.p_env_punch=frnd(0.3f);
+            if(rnd(2)==0)
+            {
+                mParams.p_pha_offset=frnd(0.2f);
+                mParams.p_pha_ramp=-frnd(0.2f);
+            }
+            if(rnd(1))
+                mParams.p_hpf_freq=frnd(0.3f);
+            break;
+        case 2: // explosion
+            mParams.wave_type=3;
+            if(rnd(1))
+            {
+                mParams.p_base_freq=0.1f+frnd(0.4f);
+                mParams.p_freq_ramp=-0.1f+frnd(0.4f);
+            }
+            else
+            {
+                mParams.p_base_freq=0.2f+frnd(0.7f);
+                mParams.p_freq_ramp=-0.2f-frnd(0.2f);
+            }
+            mParams.p_base_freq*=mParams.p_base_freq;
+            if(rnd(4)==0)
+                mParams.p_freq_ramp=0.0f;
+            if(rnd(2)==0)
+                mParams.p_repeat_speed=0.3f+frnd(0.5f);
+            mParams.p_env_attack=0.0f;
+            mParams.p_env_sustain=0.1f+frnd(0.3f);
+            mParams.p_env_decay=frnd(0.5f);
+            if(rnd(1)==0)
+            {
+                mParams.p_pha_offset=-0.3f+frnd(0.9f);
+                mParams.p_pha_ramp=-frnd(0.3f);
+            }
+            mParams.p_env_punch=0.2f+frnd(0.6f);
+            if(rnd(1))
+            {
+                mParams.p_vib_strength=frnd(0.7f);
+                mParams.p_vib_speed=frnd(0.6f);
+            }
+            if(rnd(2)==0)
+            {
+                mParams.p_arp_speed=0.6f+frnd(0.3f);
+                mParams.p_arp_mod=0.8f-frnd(1.6f);
+            }
+            break;
+        case 3: // powerup
+            if(rnd(1))
+                mParams.wave_type=1;
+            else
+                mParams.p_duty=frnd(0.6f);
+            if(rnd(1))
+            {
+                mParams.p_base_freq=0.2f+frnd(0.3f);
+                mParams.p_freq_ramp=0.1f+frnd(0.4f);
+                mParams.p_repeat_speed=0.4f+frnd(0.4f);
+            }
+            else
+            {
+                mParams.p_base_freq=0.2f+frnd(0.3f);
+                mParams.p_freq_ramp=0.05f+frnd(0.2f);
+                if(rnd(1))
+                {
+                    mParams.p_vib_strength=frnd(0.7f);
+                    mParams.p_vib_speed=frnd(0.6f);
+                }
+            }
+            mParams.p_env_attack=0.0f;
+            mParams.p_env_sustain=frnd(0.4f);
+            mParams.p_env_decay=0.1f+frnd(0.4f);
+            break;
+        case 4: // hit/hurt
+            mParams.wave_type=rnd(2);
+            if(mParams.wave_type==2)
+                mParams.wave_type=3;
+            if(mParams.wave_type==0)
+                mParams.p_duty=frnd(0.6f);
+            mParams.p_base_freq=0.2f+frnd(0.6f);
+            mParams.p_freq_ramp=-0.3f-frnd(0.4f);
+            mParams.p_env_attack=0.0f;
+            mParams.p_env_sustain=frnd(0.1f);
+            mParams.p_env_decay=0.1f+frnd(0.2f);
+            if(rnd(1))
+                mParams.p_hpf_freq=frnd(0.3f);
+            break;
+        case 5: // jump
+            mParams.wave_type=0;
+            mParams.p_duty=frnd(0.6f);
+            mParams.p_base_freq=0.3f+frnd(0.3f);
+            mParams.p_freq_ramp=0.1f+frnd(0.2f);
+            mParams.p_env_attack=0.0f;
+            mParams.p_env_sustain=0.1f+frnd(0.3f);
+            mParams.p_env_decay=0.1f+frnd(0.2f);
+            if(rnd(1))
+                mParams.p_hpf_freq=frnd(0.3f);
+            if(rnd(1))
+                mParams.p_lpf_freq=1.0f-frnd(0.6f);
+            break;
+        case 6: // blip/select
+            mParams.wave_type=rnd(1);
+            if(mParams.wave_type==0)
+                mParams.p_duty=frnd(0.6f);
+            mParams.p_base_freq=0.2f+frnd(0.4f);
+            mParams.p_env_attack=0.0f;
+            mParams.p_env_sustain=0.1f+frnd(0.1f);
+            mParams.p_env_decay=frnd(0.2f);
+            mParams.p_hpf_freq=0.1f;
+            break;
+        }
+        return 0;
+    }
 
-		mParams.p_base_freq=0.3f;
-		mParams.p_freq_limit=0.0f;
-		mParams.p_freq_ramp=0.0f;
-		mParams.p_freq_dramp=0.0f;
-		mParams.p_duty=0.0f;
-		mParams.p_duty_ramp=0.0f;
+    void Sfxr::resetParams()
+    {
+        mParams.wave_type=0;
 
-		mParams.p_vib_strength=0.0f;
-		mParams.p_vib_speed=0.0f;
-		mParams.p_vib_delay=0.0f;
+        mParams.p_base_freq=0.3f;
+        mParams.p_freq_limit=0.0f;
+        mParams.p_freq_ramp=0.0f;
+        mParams.p_freq_dramp=0.0f;
+        mParams.p_duty=0.0f;
+        mParams.p_duty_ramp=0.0f;
 
-		mParams.p_env_attack=0.0f;
-		mParams.p_env_sustain=0.3f;
-		mParams.p_env_decay=0.4f;
-		mParams.p_env_punch=0.0f;
+        mParams.p_vib_strength=0.0f;
+        mParams.p_vib_speed=0.0f;
+        mParams.p_vib_delay=0.0f;
 
-		mParams.filter_on=false;
-		mParams.p_lpf_resonance=0.0f;
-		mParams.p_lpf_freq=1.0f;
-		mParams.p_lpf_ramp=0.0f;
-		mParams.p_hpf_freq=0.0f;
-		mParams.p_hpf_ramp=0.0f;
-	
-		mParams.p_pha_offset=0.0f;
-		mParams.p_pha_ramp=0.0f;
+        mParams.p_env_attack=0.0f;
+        mParams.p_env_sustain=0.3f;
+        mParams.p_env_decay=0.4f;
+        mParams.p_env_punch=0.0f;
 
-		mParams.p_repeat_speed=0.0f;
+        mParams.filter_on=false;
+        mParams.p_lpf_resonance=0.0f;
+        mParams.p_lpf_freq=1.0f;
+        mParams.p_lpf_ramp=0.0f;
+        mParams.p_hpf_freq=0.0f;
+        mParams.p_hpf_ramp=0.0f;
 
-		mParams.p_arp_speed=0.0f;
-		mParams.p_arp_mod=0.0f;
+        mParams.p_pha_offset=0.0f;
+        mParams.p_pha_ramp=0.0f;
 
-		mParams.master_vol=0.05f;
-		mParams.sound_vol=0.5f;
-	}
+        mParams.p_repeat_speed=0.0f;
 
-	result Sfxr::loadParamsMem(unsigned char *aMem, unsigned int aLength, bool aCopy, bool aTakeOwnership)
-	{
-		MemoryFile mf;
-		int res = mf.openMem(aMem, aLength, aCopy, aTakeOwnership);
-		if (res != SO_NO_ERROR)
-			return res;
-		return loadParamsFile(&mf);
-	}
+        mParams.p_arp_speed=0.0f;
+        mParams.p_arp_mod=0.0f;
 
-	result Sfxr::loadParams(const char *aFilename)
-	{
-		DiskFile df;
-		int res = df.open(aFilename);
-		if (res != SO_NO_ERROR)
-			return res;
-		return loadParamsFile(&df);
-	}
+        mParams.master_vol=0.05f;
+        mParams.sound_vol=0.5f;
+    }
 
-	result Sfxr::loadParamsFile(File *aFile)
-	{
-		int version=0;
-		aFile->read((unsigned char*)&version, sizeof(int));
-		if(version!=100 && version!=101 && version!=102)
-		{
-			return FILE_LOAD_FAILED;
-		}
+    result Sfxr::loadParamsMem(unsigned char *aMem, unsigned int aLength, bool aCopy, bool aTakeOwnership)
+    {
+        MemoryFile mf;
+        int res = mf.openMem(aMem, aLength, aCopy, aTakeOwnership);
+        if (res != SO_NO_ERROR)
+            return res;
+        return loadParamsFile(&mf);
+    }
 
-		aFile->read((unsigned char*)&mParams.wave_type, sizeof(int));
+    result Sfxr::loadParams(const char *aFilename)
+    {
+        DiskFile df;
+        int res = df.open(aFilename);
+        if (res != SO_NO_ERROR)
+            return res;
+        return loadParamsFile(&df);
+    }
 
+    result Sfxr::loadParamsFile(File *aFile)
+    {
+        int version=0;
+        aFile->read((unsigned char*)&version, sizeof(int));
+        if(version!=100 && version!=101 && version!=102)
+        {
+            return FILE_LOAD_FAILED;
+        }
 
-		mParams.sound_vol=0.5f;
-		if(version==102)
-			aFile->read((unsigned char*)&mParams.sound_vol, sizeof(float));
-
-		aFile->read((unsigned char*)&mParams.p_base_freq, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_freq_limit, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_freq_ramp, sizeof(float));
-		if(version>=101)
-			aFile->read((unsigned char*)&mParams.p_freq_dramp, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_duty, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_duty_ramp, sizeof(float));
-
-		aFile->read((unsigned char*)&mParams.p_vib_strength, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_vib_speed, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_vib_delay, sizeof(float));
-
-		aFile->read((unsigned char*)&mParams.p_env_attack, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_env_sustain, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_env_decay, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_env_punch, sizeof(float));
-
-		aFile->read((unsigned char*)&mParams.filter_on, sizeof(bool));
-		aFile->read((unsigned char*)&mParams.p_lpf_resonance, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_lpf_freq, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_lpf_ramp, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_hpf_freq, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_hpf_ramp, sizeof(float));
-	
-		aFile->read((unsigned char*)&mParams.p_pha_offset, sizeof(float));
-		aFile->read((unsigned char*)&mParams.p_pha_ramp, sizeof(float));
-
-		aFile->read((unsigned char*)&mParams.p_repeat_speed, sizeof(float));
-
-		if(version>=101)
-		{
-			aFile->read((unsigned char*)&mParams.p_arp_speed, sizeof(float));
-			aFile->read((unsigned char*)&mParams.p_arp_mod, sizeof(float));
-		}
-
-		return 0;
-	}
-
-	Sfxr::~Sfxr()
-	{
-		stop();
-	}
-
-	Sfxr::Sfxr()
-	{
-		resetParams();
-		mBaseSamplerate = 44100;
-	}
+        aFile->read((unsigned char*)&mParams.wave_type, sizeof(int));
 
 
-	AudioSourceInstance * Sfxr::createInstance() 
-	{
-		return new SfxrInstance(this);
-	}
+        mParams.sound_vol=0.5f;
+        if(version==102)
+            aFile->read((unsigned char*)&mParams.sound_vol, sizeof(float));
+
+        aFile->read((unsigned char*)&mParams.p_base_freq, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_freq_limit, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_freq_ramp, sizeof(float));
+        if(version>=101)
+            aFile->read((unsigned char*)&mParams.p_freq_dramp, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_duty, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_duty_ramp, sizeof(float));
+
+        aFile->read((unsigned char*)&mParams.p_vib_strength, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_vib_speed, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_vib_delay, sizeof(float));
+
+        aFile->read((unsigned char*)&mParams.p_env_attack, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_env_sustain, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_env_decay, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_env_punch, sizeof(float));
+
+        aFile->read((unsigned char*)&mParams.filter_on, sizeof(bool));
+        aFile->read((unsigned char*)&mParams.p_lpf_resonance, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_lpf_freq, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_lpf_ramp, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_hpf_freq, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_hpf_ramp, sizeof(float));
+
+        aFile->read((unsigned char*)&mParams.p_pha_offset, sizeof(float));
+        aFile->read((unsigned char*)&mParams.p_pha_ramp, sizeof(float));
+
+        aFile->read((unsigned char*)&mParams.p_repeat_speed, sizeof(float));
+
+        if(version>=101)
+        {
+            aFile->read((unsigned char*)&mParams.p_arp_speed, sizeof(float));
+            aFile->read((unsigned char*)&mParams.p_arp_mod, sizeof(float));
+        }
+
+        return 0;
+    }
+
+    Sfxr::~Sfxr()
+    {
+        stop();
+    }
+
+    Sfxr::Sfxr()
+    {
+        resetParams();
+        mBaseSamplerate = 44100;
+    }
+
+
+    AudioSourceInstance * Sfxr::createInstance()
+    {
+        return new SfxrInstance(this);
+    }
 
 };
 #endif //YES_IMGUISOLOUD_SFXR
@@ -9517,220 +9649,224 @@ SIDsound::~SIDsound()
 namespace SoLoud
 {
 
-	TedSidInstance::TedSidInstance(TedSid *aParent)
-	{
-		mParent = aParent;
-		mSampleCount = 0;
-		mSID = new SIDsound(mParent->mModel, 0);
-		mSID->setFrequency(0);
-		mSID->setSampleRate(TED_SOUND_CLOCK);		
-		mSID->setFrequency(1);
+    TedSidInstance::TedSidInstance(TedSid *aParent)
+    {
+        mParent = aParent;
+        mSampleCount = 0;
+        mSID = new SIDsound(mParent->mModel, 0);
+        mSID->setFrequency(0);
+        mSID->setSampleRate(TED_SOUND_CLOCK);
+        mSID->setFrequency(1);
 
-		mTED = new TED();
-		mTED->oscillatorInit();
+        mTED = new TED();
+        mTED->oscillatorInit();
 
-		mNextReg = 100; // NOP
-		mNextVal = 0;
-		int i;
-		for (i = 0; i < 128; i++)
-			mRegValues[i] = 0;
-	}
+        mNextReg = 100; // NOP
+        mNextVal = 0;
+        int i;
+        for (i = 0; i < 128; i++)
+            mRegValues[i] = 0;
+    }
 
-	void TedSidInstance::getAudio(float *aBuffer, unsigned int aSamples)
-	{
-		unsigned int i;
-		for (i = 0; i < aSamples; i++)
-		{
-		    tick();
-			short sample;
-			mSID->calcSamples(&sample, 1);
-			short tedsample = 0;
-			mTED->renderSound(1, &tedsample);
-			aBuffer[i] = (sample + tedsample) / 8192.0f;
-			mSampleCount--;
-		}
-	}
-	
-	void TedSidInstance::tick()
-	{
-	    if (mParent->mFile == 0)
-	        return;
+    unsigned int TedSidInstance::getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)
+    {
+        unsigned int i;
+        for (i = 0; i < aSamplesToRead; i++)
+        {
+            tick();
+            short sample;
+            mSID->calcSamples(&sample, 1);
+            short tedsample = 0;
+            mTED->renderSound(1, &tedsample);
+            aBuffer[i] = (sample + tedsample) / 8192.0f;
+            mSampleCount--;
+        }
+        return aSamplesToRead;
+    }
 
-		while (mSampleCount == 0)
-		{
-			mRegValues[mNextReg] = mNextVal;
-			if (mNextReg < 64)
-			{
-				mSID->write(mNextReg, mNextVal);
-			}
-			else
-			if (mNextReg < 64 + 5)
-			{
-				mTED->writeSoundReg(mNextReg - 64, mNextVal);
-			}
+    void TedSidInstance::tick()
+    {
+        if (mParent->mFile == 0)
+            return;
+
+        while (mSampleCount == 0)
+        {
+            mRegValues[mNextReg] = mNextVal;
+            if (mNextReg < 64)
+            {
+                mSID->write(mNextReg, mNextVal);
+            }
+            else
+            if (mNextReg < 64 + 5)
+            {
+                mTED->writeSoundReg(mNextReg - 64, mNextVal);
+            }
 //			mSampleCount = mParent->mFile->read16();
-			mNextVal = mParent->mFile->read8();
-			mNextReg = mParent->mFile->read8();
-			if (mNextReg & 0x80)
-			{
-				// timestamp!
-				mSampleCount = ((int)(mNextReg & 0x7f) << 8) | mNextVal;
-				mNextVal = mParent->mFile->read8();
-				mNextReg = mParent->mFile->read8();
-			}
-			if (mParent->mFile->eof())
-				mParent->mFile->seek(8);
-		}
-	}
+            mNextVal = mParent->mFile->read8();
+            mNextReg = mParent->mFile->read8();
+            if (mNextReg & 0x80)
+            {
+                // timestamp!
+                mSampleCount = ((int)(mNextReg & 0x7f) << 8) | mNextVal;
+                mNextVal = mParent->mFile->read8();
+                mNextReg = mParent->mFile->read8();
+            }
+            if (mParent->mFile->eof())
+                mParent->mFile->seek(8);
+        }
+    }
 
-	float TedSidInstance::getInfo(unsigned int aInfoKey)
-	{
-		return (float)mRegValues[aInfoKey & 127];
-	}
+    float TedSidInstance::getInfo(unsigned int aInfoKey)
+    {
+        return (float)mRegValues[aInfoKey & 127];
+    }
 
-	bool TedSidInstance::hasEnded()
-	{
-		return 0;
-	}
+    bool TedSidInstance::hasEnded()
+    {
+        return 0;
+    }
 
-	TedSidInstance::~TedSidInstance()
-	{
-		delete mSID;
-		delete mTED;
-	}
+    TedSidInstance::~TedSidInstance()
+    {
+        delete mSID;
+        delete mTED;
+    }
 
-	TedSid::TedSid()
-	{
-		mBaseSamplerate = TED_SOUND_CLOCK;
-		mChannels = 1;
-		mFile = 0;
-		mFileOwned = false;
-	}
+    TedSid::TedSid()
+    {
+        mBaseSamplerate = TED_SOUND_CLOCK;
+        mChannels = 1;
+        mFile = 0;
+        mFileOwned = false;
+    }
 
-	TedSid::~TedSid()
-	{
-		stop();
-		if (mFileOwned)
-			delete mFile;
-	}
+    TedSid::~TedSid()
+    {
+        stop();
+        if (mFileOwned)
+            delete mFile;
+    }
 
-	result TedSid::loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy, bool aTakeOwnership)
-	{
-		if (!aMem || aLength == 0)
-			return INVALID_PARAMETER;
-		MemoryFile *mf = new MemoryFile;
-		if (!mf)
-			return OUT_OF_MEMORY;
-		int res = mf->openMem(aMem, aLength, aCopy, aTakeOwnership);
-		if (res != SO_NO_ERROR)
-		{
-			delete mf;
-			return res;
-		}
-		res = loadFile(mf);
-		if (res != SO_NO_ERROR)
-		{
-			delete mf;
-			return res;
-		}
-		mFileOwned = aCopy || aTakeOwnership;
+    result TedSid::loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy, bool aTakeOwnership)
+    {
+        if (!aMem || aLength == 0)
+            return INVALID_PARAMETER;
+        MemoryFile *mf = new MemoryFile;
+        if (!mf)
+            return OUT_OF_MEMORY;
+        int res = mf->openMem(aMem, aLength, aCopy, aTakeOwnership);
+        if (res != SO_NO_ERROR)
+        {
+            delete mf;
+            return res;
+        }
+        res = loadFile(mf);
+        if (res != SO_NO_ERROR)
+        {
+            delete mf;
+            return res;
+        }
+        mFileOwned = aCopy || aTakeOwnership;
 
-		return SO_NO_ERROR;
-	}
+        return SO_NO_ERROR;
+    }
 
-	result TedSid::load(const char *aFilename)
-	{
-		if (!aFilename)
-			return INVALID_PARAMETER;
-		DiskFile *df = new DiskFile;
-		if (!df) return OUT_OF_MEMORY;
-		int res = df->open(aFilename);
-		if (res != SO_NO_ERROR)
-			return res;
-		res = loadFile(df);
-		if (res != SO_NO_ERROR)
-		{
-			delete df;
-			return res;
-		}
-		mFileOwned = true;				
-		return SO_NO_ERROR;
-	}
+    result TedSid::load(const char *aFilename)
+    {
+        if (!aFilename)
+            return INVALID_PARAMETER;
+        DiskFile *df = new DiskFile;
+        if (!df) return OUT_OF_MEMORY;
+        int res = df->open(aFilename);
+        if (res != SO_NO_ERROR)
+        {
+            delete df;
+            return res;
+        }
+        res = loadFile(df);
+        if (res != SO_NO_ERROR)
+        {
+            delete df;
+            return res;
+        }
+        mFileOwned = true;
+        return SO_NO_ERROR;
+    }
 
-	result TedSid::loadToMem(const char *aFilename)
-	{
-		if (!aFilename)
-			return INVALID_PARAMETER;
-		MemoryFile *mf = new MemoryFile;
-		if (!mf) return OUT_OF_MEMORY;
-		int res = mf->openToMem(aFilename);
-		if (res != SO_NO_ERROR)
-		{
-			delete mf;
-			return res;
-		}
-		res = loadFile(mf);
-		if (res != SO_NO_ERROR)
-		{
-			delete mf;
-			return res;
-		}
-		mFileOwned = true;
-		return SO_NO_ERROR;
-	}
+    result TedSid::loadToMem(const char *aFilename)
+    {
+        if (!aFilename)
+            return INVALID_PARAMETER;
+        MemoryFile *mf = new MemoryFile;
+        if (!mf) return OUT_OF_MEMORY;
+        int res = mf->openToMem(aFilename);
+        if (res != SO_NO_ERROR)
+        {
+            delete mf;
+            return res;
+        }
+        res = loadFile(mf);
+        if (res != SO_NO_ERROR)
+        {
+            delete mf;
+            return res;
+        }
+        mFileOwned = true;
+        return SO_NO_ERROR;
+    }
 
-	result TedSid::loadFileToMem(File *aFile)
-	{
-		if (!aFile)
-			return INVALID_PARAMETER;
-		MemoryFile *mf = new MemoryFile;
-		if (!mf) return OUT_OF_MEMORY;
-		int res = mf->openFileToMem(aFile);
-		if (res != SO_NO_ERROR)
-		{
-			delete mf;
-			return res;
-		}
-		res = loadFile(mf);
-		if (res != SO_NO_ERROR)
-		{
-			delete mf;
-			return res;
-		}
-		mFileOwned = true;
-		return SO_NO_ERROR;
-	}
+    result TedSid::loadFileToMem(File *aFile)
+    {
+        if (!aFile)
+            return INVALID_PARAMETER;
+        MemoryFile *mf = new MemoryFile;
+        if (!mf) return OUT_OF_MEMORY;
+        int res = mf->openFileToMem(aFile);
+        if (res != SO_NO_ERROR)
+        {
+            delete mf;
+            return res;
+        }
+        res = loadFile(mf);
+        if (res != SO_NO_ERROR)
+        {
+            delete mf;
+            return res;
+        }
+        mFileOwned = true;
+        return SO_NO_ERROR;
+    }
 
-	result TedSid::loadFile(File *aFile)
-	{
-		if (aFile == NULL)
-			return INVALID_PARAMETER;
-		if (mFileOwned)
-			delete mFile;
-		// Expect a file wih header and at least one reg write
-		if (aFile->length() < 4+4+2+2) return FILE_LOAD_FAILED;
+    result TedSid::loadFile(File *aFile)
+    {
+        if (aFile == NULL)
+            return INVALID_PARAMETER;
+        if (mFileOwned)
+            delete mFile;
+        // Expect a file wih header and at least one reg write
+        if (aFile->length() < 4+4+2+2) return FILE_LOAD_FAILED;
 
-		aFile->seek(0);
-		if (aFile->read8() != 'D') return FILE_LOAD_FAILED;
-		if (aFile->read8() != 'u') return FILE_LOAD_FAILED;
-		if (aFile->read8() != 'm') return FILE_LOAD_FAILED;
-		if (aFile->read8() != 'p') return FILE_LOAD_FAILED;
-		if (aFile->read8() != 0) return FILE_LOAD_FAILED;
-		mModel = aFile->read8();
-		aFile->seek(8);
+        aFile->seek(0);
+        if (aFile->read8() != 'D') return FILE_LOAD_FAILED;
+        if (aFile->read8() != 'u') return FILE_LOAD_FAILED;
+        if (aFile->read8() != 'm') return FILE_LOAD_FAILED;
+        if (aFile->read8() != 'p') return FILE_LOAD_FAILED;
+        if (aFile->read8() != 0) return FILE_LOAD_FAILED;
+        mModel = aFile->read8();
+        aFile->seek(8);
 
-		mFile = aFile;
-		mFileOwned = false;
-
-
-		return SO_NO_ERROR;
-	}
+        mFile = aFile;
+        mFileOwned = false;
 
 
-	AudioSourceInstance * TedSid::createInstance() 
-	{
-		return new TedSidInstance(this);
-	}
+        return SO_NO_ERROR;
+    }
+
+
+    AudioSourceInstance * TedSid::createInstance()
+    {
+        return new TedSidInstance(this);
+    }
 
 };
 #endif //YES_IMGUISOLOUD_TEDSID
@@ -9740,126 +9876,126 @@ namespace SoLoud
 namespace SoLoud
 {
 
-	VicInstance::VicInstance(Vic *aParent)
-	{
-		m_parent = aParent;
+    VicInstance::VicInstance(Vic *aParent)
+    {
+        m_parent = aParent;
 
-		for(int i = 0; i < 4; i++)
-			m_phase[i] = 0;
+        for(int i = 0; i < 4; i++)
+            m_phase[i] = 0;
 
-		m_noisePos = 0;
-	}
+        m_noisePos = 0;
+    }
 
-	VicInstance::~VicInstance()
-	{
-	}
+    VicInstance::~VicInstance()
+    {
+    }
 
-	void VicInstance::getAudio(float *aBuffer, unsigned int aSamples)
-	{
-		unsigned int phaseAdder[4] = { 0, 0, 0, 0 };
-		for(int i = 0; i < 4; i++)
-		{
-			unsigned char reg = m_parent->getRegister(i);
-			if(reg >= 128)
-			{
-				float freq = m_parent->m_clocks[i] / (float)(reg < 255 ? 255 - reg : 1);
-				phaseAdder[i] = (unsigned int)(freq * 65536.0f / 44100.0f + 0.5f);
-			}
-		}
+    unsigned int VicInstance::getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)
+    {
+        unsigned int phaseAdder[4] = { 0, 0, 0, 0 };
+        for(int i = 0; i < 4; i++)
+        {
+            unsigned char reg = m_parent->getRegister(i);
+            if(reg >= 128)
+            {
+                float freq = m_parent->m_clocks[i] / (float)(reg < 255 ? 255 - reg : 1);
+                phaseAdder[i] = (unsigned int)(freq * 65536.0f / 44100.0f + 0.5f);
+            }
+        }
 
-		for(int i = 0; i < (signed)aSamples; i++)
-		{
-			float s = 0.0f;
+        for(int i = 0; i < (signed)aSamplesToRead; i++)
+        {
+            float s = 0.0f;
 
-			// square waves
-			for(int v = 0; v < 3; v++)
-			{
-				if(phaseAdder[v] != 0)
-				{
-					s += (m_phase[v] < 32768 ? 0.5f : -0.5f);
-					m_phase[v] = (m_phase[v] + phaseAdder[v]) & 65535;
-				}
-			}
+            // square waves
+            for(int v = 0; v < 3; v++)
+            {
+                if(phaseAdder[v] != 0)
+                {
+                    s += (m_phase[v] < 32768 ? 0.5f : -0.5f);
+                    m_phase[v] = (m_phase[v] + phaseAdder[v]) & 65535;
+                }
+            }
 
-			// noise
-			if(phaseAdder[3] != 0)
-			{
-				s += (float)m_parent->m_noise[m_noisePos] / 255.0f - 0.5f;
+            // noise
+            if(phaseAdder[3] != 0)
+            {
+                s += (float)m_parent->m_noise[m_noisePos] / 255.0f - 0.5f;
 
-				m_phase[3] += phaseAdder[3];
+                m_phase[3] += phaseAdder[3];
 
-				if(m_phase[3] >= 32768)
-				{
-					m_noisePos = (m_noisePos + 1) & 8191;
-					m_phase[3] &= 32767;
-				}
-			}
+                if(m_phase[3] >= 32768)
+                {
+                    m_noisePos = (m_noisePos + 1) & 8191;
+                    m_phase[3] &= 32767;
+                }
+            }
 
-			aBuffer[i] = s / 4.0f;
-		}
-	}
+            aBuffer[i] = s / 4.0f;
+        }
+        return aSamplesToRead;
+    }
 
-	bool VicInstance::hasEnded()
-	{
-		return false;
-	}
+    bool VicInstance::hasEnded()
+    {
+        return false;
+    }
 
-	Vic::Vic()
-	{
-		mBaseSamplerate = 44100;
-		setModel(PAL);
+    Vic::Vic()
+    {
+        mBaseSamplerate = 44100;
+        setModel(PAL);
 
-		for(int i = 0; i < MAX_REGS; i++)
-			m_regs[i] = 0;
+        for(int i = 0; i < MAX_REGS; i++)
+            m_regs[i] = 0;
 
-		// Galois LFSR (source: https://en.wikipedia.org/wiki/Linear_feedback_shift_register)
-	    unsigned short lfsr = 0xACE1u;
-		for(int i = 0; i < 8192; i++)
-		{
-		    unsigned lsb = lfsr & 1;
-		    lfsr >>= 1;
-            //lfsr ^= (-lsb) & 0xB400u;
+        // Galois LFSR (source: https://en.wikipedia.org/wiki/Linear_feedback_shift_register)
+        unsigned short lfsr = 0xACE1u;
+        for(int i = 0; i < 8192; i++)
+        {
+            unsigned lsb = lfsr & 1;
+            lfsr >>= 1;
             lfsr ^= (unsigned)(-(signed)lsb) & 0xB400u;
-		    m_noise[i] = (lfsr & 0xff) ^ (lfsr >> 8);
-		}
-	}
+            m_noise[i] = (lfsr & 0xff) ^ (lfsr >> 8);
+        }
+    }
 
-	Vic::~Vic()
-	{
-		stop();
-	}
+    Vic::~Vic()
+    {
+        stop();
+    }
 
-	void Vic::setModel(int model)
-	{
-		m_model = model;
+    void Vic::setModel(int model)
+    {
+        m_model = model;
 
-		switch(model)
-		{
-		case PAL:
-			m_clocks[0] = 4329.0f;
-			m_clocks[1] = 8659.0f;
-			m_clocks[2] = 17320.0f;
-			m_clocks[3] = 34640.0f;
-			break;
+        switch(model)
+        {
+        case PAL:
+            m_clocks[0] = 4329.0f;
+            m_clocks[1] = 8659.0f;
+            m_clocks[2] = 17320.0f;
+            m_clocks[3] = 34640.0f;
+            break;
 
-		case NTSC:
-			m_clocks[0] = 3995.0f;
-			m_clocks[1] = 7990.0f;
-			m_clocks[2] = 15980.0f;
-			m_clocks[3] = 31960.0f;
-			break;
-		}
-	}
+        case NTSC:
+            m_clocks[0] = 3995.0f;
+            m_clocks[1] = 7990.0f;
+            m_clocks[2] = 15980.0f;
+            m_clocks[3] = 31960.0f;
+            break;
+        }
+    }
 
-	int Vic::getModel() const
-	{
-		return m_model;
-	}
+    int Vic::getModel() const
+    {
+        return m_model;
+    }
 
-	AudioSourceInstance * Vic::createInstance() 
-	{
-		return new VicInstance(this);
-	}
+    AudioSourceInstance * Vic::createInstance()
+    {
+        return new VicInstance(this);
+    }
 
 };
 #endif //YES_IMGUISOLOUD_VIC
@@ -9877,47 +10013,48 @@ namespace SoLoud
         mOffset = 0;
     }
 
-    void BasicwaveInstance::getAudio(float *aBuffer, unsigned int aSamples)
+    unsigned int BasicwaveInstance::getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)
     {
         unsigned int i;
         switch (mParent->mWaveform)
         {
             case Basicwave::SINE:
-                for (i = 0; i < aSamples; i++)
+                for (i = 0; i < aSamplesToRead; i++)
                 {
                     aBuffer[i] = (float)sin(mParent->mFreq * mOffset * M_PI * 2);
                     mOffset++;
                 }
                 break;
             case Basicwave::SAW:
-                for (i = 0; i < aSamples; i++)
+                for (i = 0; i < aSamplesToRead; i++)
                 {
                     aBuffer[i] = (1 - (float)fmod(mParent->mFreq * mOffset, 1)) * 2 - 1;
                     mOffset++;
                 }
                 break;
             case Basicwave::INVERSESAW:
-                for (i = 0; i < aSamples; i++)
+                for (i = 0; i < aSamplesToRead; i++)
                 {
                     aBuffer[i] = ((float)fmod(mParent->mFreq * mOffset, 1)) * 2 - 1;
                     mOffset++;
                 }
                 break;
             case Basicwave::SQUARE:
-                for (i = 0; i < aSamples; i++)
+                for (i = 0; i < aSamplesToRead; i++)
                 {
                     aBuffer[i] = ((float)fmod(mParent->mFreq * mOffset, 1.0f) > 0.5f) ? -1.0f : 1.0f;
                     mOffset++;
                 }
                 break;
             case Basicwave::TRIANGLE:
-                for (i = 0; i < aSamples; i++)
+                for (i = 0; i < aSamplesToRead; i++)
                 {
                     aBuffer[i] = my_fabs(0.5f - (float)fmod(mParent->mFreq * mOffset, 1)) * 4 - 1;
                     mOffset++;
                 }
                 break;
         }
+        return aSamplesToRead;
     }
 
     bool BasicwaveInstance::hasEnded()
@@ -10111,105 +10248,105 @@ void darray::put(int aData)
 class Interp
 {
 public:
-	float mSteady;
-	float mFixed;
-	char  mProportion;
-	char  mExtDelay;
-	char  mIntDelay;
+    float mSteady;
+    float mFixed;
+    char  mProportion;
+    char  mExtDelay;
+    char  mIntDelay;
 };
 
 
 enum Eparm_e
 {
-  ELM_FN, ELM_F1, ELM_F2, ELM_F3, 
-  ELM_B1, ELM_B2, ELM_B3, ELM_AN, 
-  ELM_A1, ELM_A2, ELM_A3, ELM_A4, 
-  ELM_A5, ELM_A6, ELM_AB, ELM_AV, 
-  ELM_AVC, ELM_ASP, ELM_AF, 
+  ELM_FN, ELM_F1, ELM_F2, ELM_F3,
+  ELM_B1, ELM_B2, ELM_B3, ELM_AN,
+  ELM_A1, ELM_A2, ELM_A3, ELM_A4,
+  ELM_A5, ELM_A6, ELM_AB, ELM_AV,
+  ELM_AVC, ELM_ASP, ELM_AF,
   ELM_COUNT
 };
- 
+
 class Element
 {
 public:
-	  const char *mName; // unused
-	  const char mRK;
-	  const char mDU;
-	  const char mUD;
-	  unsigned char mFont; // unused
-	  const char  *mDict; // unused
-	  const char  *mIpa; // unused
-	  int   mFeat; // only ELM_FEATURE_VWL
-	  Interp mInterpolator[ELM_COUNT];
+      const char *mName; // unused
+      const char mRK;
+      const char mDU;
+      const char mUD;
+      unsigned char mFont; // unused
+      const char  *mDict; // unused
+      const char  *mIpa; // unused
+      int   mFeat; // only ELM_FEATURE_VWL
+      Interp mInterpolator[ELM_COUNT];
  };
 
 enum ELEMENT_FEATURES
 {
-	ELM_FEATURE_ALV = 0x00000001,
-	ELM_FEATURE_APR = 0x00000002,
-	ELM_FEATURE_BCK = 0x00000004,
-	ELM_FEATURE_BLB = 0x00000008,
-	ELM_FEATURE_CNT = 0x00000010,
-	ELM_FEATURE_DNT = 0x00000020,
-	ELM_FEATURE_FNT = 0x00000040,
-	ELM_FEATURE_FRC = 0x00000080,
-	ELM_FEATURE_GLT = 0x00000100,
-	ELM_FEATURE_HGH = 0x00000200,
-	ELM_FEATURE_LAT = 0x00000400,
-	ELM_FEATURE_LBD = 0x00000800,
-	ELM_FEATURE_LBV = 0x00001000,
-	ELM_FEATURE_LMD = 0x00002000,
-	ELM_FEATURE_LOW = 0x00004000,
-	ELM_FEATURE_MDL = 0x00008000,
-	ELM_FEATURE_NAS = 0x00010000,
-	ELM_FEATURE_PAL = 0x00020000,
-	ELM_FEATURE_PLA = 0x00040000,
-	ELM_FEATURE_RND = 0x00080000,
-	ELM_FEATURE_RZD = 0x00100000,
-	ELM_FEATURE_SMH = 0x00200000,
-	ELM_FEATURE_STP = 0x00400000,
-	ELM_FEATURE_UMD = 0x00800000,
-	ELM_FEATURE_UNR = 0x01000000,
-	ELM_FEATURE_VCD = 0x02000000,
-	ELM_FEATURE_VEL = 0x04000000,
-	ELM_FEATURE_VLS = 0x08000000,
-	ELM_FEATURE_VWL = 0x10000000
+    ELM_FEATURE_ALV = 0x00000001,
+    ELM_FEATURE_APR = 0x00000002,
+    ELM_FEATURE_BCK = 0x00000004,
+    ELM_FEATURE_BLB = 0x00000008,
+    ELM_FEATURE_CNT = 0x00000010,
+    ELM_FEATURE_DNT = 0x00000020,
+    ELM_FEATURE_FNT = 0x00000040,
+    ELM_FEATURE_FRC = 0x00000080,
+    ELM_FEATURE_GLT = 0x00000100,
+    ELM_FEATURE_HGH = 0x00000200,
+    ELM_FEATURE_LAT = 0x00000400,
+    ELM_FEATURE_LBD = 0x00000800,
+    ELM_FEATURE_LBV = 0x00001000,
+    ELM_FEATURE_LMD = 0x00002000,
+    ELM_FEATURE_LOW = 0x00004000,
+    ELM_FEATURE_MDL = 0x00008000,
+    ELM_FEATURE_NAS = 0x00010000,
+    ELM_FEATURE_PAL = 0x00020000,
+    ELM_FEATURE_PLA = 0x00040000,
+    ELM_FEATURE_RND = 0x00080000,
+    ELM_FEATURE_RZD = 0x00100000,
+    ELM_FEATURE_SMH = 0x00200000,
+    ELM_FEATURE_STP = 0x00400000,
+    ELM_FEATURE_UMD = 0x00800000,
+    ELM_FEATURE_UNR = 0x01000000,
+    ELM_FEATURE_VCD = 0x02000000,
+    ELM_FEATURE_VEL = 0x04000000,
+    ELM_FEATURE_VLS = 0x08000000,
+    ELM_FEATURE_VWL = 0x10000000
 };
 
-enum ELEMENTS 
+enum ELEMENTS
 {
-	ELM_END = 0,	
-	ELM_Q,	ELM_P,	ELM_PY,	ELM_PZ,	ELM_T,	ELM_TY,	
-	ELM_TZ,	ELM_K,	ELM_KY,	ELM_KZ,	ELM_B,	ELM_BY,	ELM_BZ,	
-	ELM_D,	ELM_DY,	ELM_DZ,	ELM_G,	ELM_GY,	ELM_GZ,	ELM_M,	
-	ELM_N,	ELM_NG,	ELM_F,	ELM_TH,	ELM_S,	ELM_SH,	ELM_X,
-	ELM_H,	ELM_V,	ELM_QQ,	ELM_DH,	ELM_DI,	ELM_Z,	ELM_ZZ,
-	ELM_ZH,	ELM_CH,	ELM_CI,	ELM_J,	ELM_JY,	ELM_L,	ELM_LL,
-	ELM_RX,	ELM_R,	ELM_W,	ELM_Y,	ELM_I,	ELM_E,	ELM_AA,
-	ELM_U,	ELM_O,	ELM_OO,	ELM_A,	ELM_EE,	ELM_ER,	ELM_AR,
-	ELM_AW,	ELM_UU,	ELM_AI,	ELM_IE,	ELM_OI,	ELM_OU,	ELM_OV,
-	ELM_OA,	ELM_IA,	ELM_IB,	ELM_AIR,ELM_OOR,ELM_OR
+    ELM_END = 0,
+    ELM_Q,	ELM_P,	ELM_PY,	ELM_PZ,	ELM_T,	ELM_TY,
+    ELM_TZ,	ELM_K,	ELM_KY,	ELM_KZ,	ELM_B,	ELM_BY,	ELM_BZ,
+    ELM_D,	ELM_DY,	ELM_DZ,	ELM_G,	ELM_GY,	ELM_GZ,	ELM_M,
+    ELM_N,	ELM_NG,	ELM_F,	ELM_TH,	ELM_S,	ELM_SH,	ELM_X,
+    ELM_H,	ELM_V,	ELM_QQ,	ELM_DH,	ELM_DI,	ELM_Z,	ELM_ZZ,
+    ELM_ZH,	ELM_CH,	ELM_CI,	ELM_J,	ELM_JY,	ELM_L,	ELM_LL,
+    ELM_RX,	ELM_R,	ELM_W,	ELM_Y,	ELM_I,	ELM_E,	ELM_AA,
+    ELM_U,	ELM_O,	ELM_OO,	ELM_A,	ELM_EE,	ELM_ER,	ELM_AR,
+    ELM_AW,	ELM_UU,	ELM_AI,	ELM_IE,	ELM_OI,	ELM_OU,	ELM_OV,
+    ELM_OA,	ELM_IA,	ELM_IB,	ELM_AIR,ELM_OOR,ELM_OR
 };
 
-#define PHONEME_COUNT 52
+#define PHONEME_COUNT 53
 #define AMP_ADJ 14
 #define StressDur(e,s) (s,((e->mDU + e->mUD)/2))
 
 
 
 
-class PhonemeToElements 
+class PhonemeToElements
 {
 public:
-	int mKey;
-	char mData[8];
+    int mKey;
+    char mData[8];
 };
 
 /* Order is important - 2 byte phonemes first, otherwise
    the search function will fail*/
-static PhonemeToElements phoneme_to_elements[PHONEME_COUNT] = 
+static PhonemeToElements phoneme_to_elements[PHONEME_COUNT] =
 {
-	/* mKey, count, 0-7 elements */
+    /* mKey, count, 0-7 elements */
 /* tS */ 0x5374, 2, ELM_CH, ELM_CI, 0, 0, 0, 0, 0,
 /* dZ */ 0x5a64, 4, ELM_J, ELM_JY, ELM_QQ, ELM_JY, 0, 0, 0,
 /* rr */ 0x7272, 3, ELM_R, ELM_QQ, ELM_R, 0, 0, 0, 0,
@@ -10262,6 +10399,7 @@ static PhonemeToElements phoneme_to_elements[PHONEME_COUNT] =
 /* O  */ 0x004f, 1, ELM_AW, 0, 0, 0, 0, 0, 0,
 /* u  */ 0x0075, 1, ELM_UU, 0, 0, 0, 0, 0, 0,
 /* o  */ 0x006f, 1, ELM_OI, 0, 0, 0, 0, 0, 0,
+/* .  */ 0x002e, 1, ELM_END,0, 0, 0, 0, 0, 0,
 };
 
 static Element gElement[] =
@@ -11923,136 +12061,136 @@ static Element gElement[] =
   {     0,      0,  50,  0,  0}, /* ELM_ASP      0 */
   {     0,      0,  50,  0,  0}  /* ELM_AF       0 */
  }
-} 
-
+}
 };
 
 static short clip(float input)
 {
-	int temp = (int)input;
-	/* clip on boundaries of 16-bit word */
+    int temp = (int)input;
+    /* clip on boundaries of 16-bit word */
 
-	if (temp < -32767)
-	{
-		//assert?
-		temp = -32767;
-	}
-	else
-	if (temp > 32767)
-	{
-		//assert?
-		temp = 32767;
-	}
+    if (temp < -32767)
+    {
+        //assert?
+        temp = -32767;
+    }
+    else
+    if (temp > 32767)
+    {
+        //assert?
+        temp = 32767;
+    }
 
-	return (short)(temp);
+    return (short)(temp);
 }
 
 /* Convert from decibels to a linear scale factor */
 static float DBtoLIN(int dB)
 {
-	/*
-	* Convertion table, db to linear, 87 dB --> 32767
-	*                                 86 dB --> 29491 (1 dB down = 0.5**1/6)
-	*                                 ...
-	*                                 81 dB --> 16384 (6 dB down = 0.5)
-	*                                 ...
-	*                                  0 dB -->     0
-	*
-	* The just noticeable difference for a change in intensity of a vowel
-	*   is approximately 1 dB.  Thus all amplitudes are quantized to 1 dB
-	*   steps.
-	*/
+    /*
+    * Convertion table, db to linear, 87 dB --> 32767
+    *                                 86 dB --> 29491 (1 dB down = 0.5**1/6)
+    *                                 ...
+    *                                 81 dB --> 16384 (6 dB down = 0.5)
+    *                                 ...
+    *                                  0 dB -->     0
+    *
+    * The just noticeable difference for a change in intensity of a vowel
+    *   is approximately 1 dB.  Thus all amplitudes are quantized to 1 dB
+    *   steps.
+    */
 
-	static const float amptable[88] =
-	{
-		0.0, 0.0, 0.0, 0.0, 0.0,
-		0.0, 0.0, 0.0, 0.0, 0.0,
-		0.0, 0.0, 0.0, 6.0, 7.0,
-		8.0, 9.0, 10.0, 11.0, 13.0,
-		14.0, 16.0, 18.0, 20.0, 22.0,
-		25.0, 28.0, 32.0, 35.0, 40.0,
-		45.0, 51.0, 57.0, 64.0, 71.0,
-		80.0, 90.0, 101.0, 114.0, 128.0,
-		142.0, 159.0, 179.0, 202.0, 227.0,
-		256.0, 284.0, 318.0, 359.0, 405.0,
-		455.0, 512.0, 568.0, 638.0, 719.0,
-		811.0, 911.0, 1024.0, 1137.0, 1276.0,
-		1438.0, 1622.0, 1823.0, 2048.0, 2273.0,
-		2552.0, 2875.0, 3244.0, 3645.0, 4096.0,
-		4547.0, 5104.0, 5751.0, 6488.0, 7291.0,
-		8192.0, 9093.0, 10207.0, 11502.0, 12976.0,
-		14582.0, 16384.0, 18350.0, 20644.0, 23429.0,
-		26214.0, 29491.0, 32767.0
-	};
+    static const float amptable[88] =
+    {
+        0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 6.0, 7.0,
+        8.0, 9.0, 10.0, 11.0, 13.0,
+        14.0, 16.0, 18.0, 20.0, 22.0,
+        25.0, 28.0, 32.0, 35.0, 40.0,
+        45.0, 51.0, 57.0, 64.0, 71.0,
+        80.0, 90.0, 101.0, 114.0, 128.0,
+        142.0, 159.0, 179.0, 202.0, 227.0,
+        256.0, 284.0, 318.0, 359.0, 405.0,
+        455.0, 512.0, 568.0, 638.0, 719.0,
+        811.0, 911.0, 1024.0, 1137.0, 1276.0,
+        1438.0, 1622.0, 1823.0, 2048.0, 2273.0,
+        2552.0, 2875.0, 3244.0, 3645.0, 4096.0,
+        4547.0, 5104.0, 5751.0, 6488.0, 7291.0,
+        8192.0, 9093.0, 10207.0, 11502.0, 12976.0,
+        14582.0, 16384.0, 18350.0, 20644.0, 23429.0,
+        26214.0, 29491.0, 32767.0
+    };
 
-	// Check limits or argument (can be removed in final product)
-	if (dB < 0)
-	{
-		dB = 0;
-	}
-	else
-	if (dB >= 88)
-	{
-		dB = 87;
-	}
+    // Check limits or argument (can be removed in final product)
+    if (dB < 0)
+    {
+        dB = 0;
+    }
+    else
+    if (dB >= 88)
+    {
+        dB = 87;
+    }
 
-	return amptable[dB] * 0.001f;
+    return amptable[dB] * 0.001f;
 }
 
 
 
 klatt_frame::klatt_frame() :
-	mF0FundamentalFreq(1330),	mVoicingAmpdb(60),				mFormant1Freq(500),  
-	mFormant1Bandwidth(60),		mFormant2Freq(1500),			mFormant2Bandwidth(90),
-	mFormant3Freq(2800),		mFormant3Bandwidth(150),		mFormant4Freq(3250), 
-	mFormant4Bandwidth(200),	mFormant5Freq(3700),			mFormant5Bandwidth(200),  
-	mFormant6Freq(4990),		mFormant6Bandwidth(500),		mNasalZeroFreq(270),  
-	mNasalZeroBandwidth(100),	mNasalPoleFreq(270),			mNasalPoleBandwidth(100), 
-	mAspirationAmpdb(0),		mNoSamplesInOpenPeriod(30),		mVoicingBreathiness(0),      
-	mVoicingSpectralTiltdb(10), mFricationAmpdb(0),				mSkewnessOfAlternatePeriods(0),   
-	mFormant1Ampdb(0),			mFormant1ParallelBandwidth(80), mFormant2Ampdb(0),      
-	mFormant2ParallelBandwidth(200), mFormant3Ampdb(0),			mFormant3ParallelBandwidth(350),
-	mFormant4Ampdb(0),			mFormant4ParallelBandwidth(500), mFormant5Ampdb(0),      
-	mFormant5ParallelBandwidth(600), mFormant6Ampdb(0),			mFormant6ParallelBandwidth(800),    
-	mParallelNasalPoleAmpdb(0), mBypassFricationAmpdb(0),       mPalallelVoicingAmpdb(0),   
-	mOverallGaindb(62)  
+    mF0FundamentalFreq(1330),	mVoicingAmpdb(60),				mFormant1Freq(500),
+    mFormant1Bandwidth(60),		mFormant2Freq(1500),			mFormant2Bandwidth(90),
+    mFormant3Freq(2800),		mFormant3Bandwidth(150),		mFormant4Freq(3250),
+    mFormant4Bandwidth(200),	mFormant5Freq(3700),			mFormant5Bandwidth(200),
+    mFormant6Freq(4990),		mFormant6Bandwidth(500),		mNasalZeroFreq(270),
+    mNasalZeroBandwidth(100),	mNasalPoleFreq(270),			mNasalPoleBandwidth(100),
+    mAspirationAmpdb(0),		mNoSamplesInOpenPeriod(30),		mVoicingBreathiness(0),
+    mVoicingSpectralTiltdb(10), mFricationAmpdb(0),				mSkewnessOfAlternatePeriods(0),
+    mFormant1Ampdb(0),			mFormant1ParallelBandwidth(80), mFormant2Ampdb(0),
+    mFormant2ParallelBandwidth(200), mFormant3Ampdb(0),			mFormant3ParallelBandwidth(350),
+    mFormant4Ampdb(0),			mFormant4ParallelBandwidth(500), mFormant5Ampdb(0),
+    mFormant5ParallelBandwidth(600), mFormant6Ampdb(0),			mFormant6ParallelBandwidth(800),
+    mParallelNasalPoleAmpdb(0), mBypassFricationAmpdb(0),       mPalallelVoicingAmpdb(0),
+    mOverallGaindb(62)
 {
 };
 
 
-klatt::klatt() : 
-	mF0Flutter(0), 
-	mSampleRate(0), 
-	mNspFr(0),
-	mF0FundamentalFreq(0),
-	mVoicingAmpdb(0),
-	mSkewnessOfAlternatePeriods(0),
-	mTimeCount(0), 
-	mNPer(0),
-	mT0(0),
-	mNOpen(0),
-	mNMod(0),
-	mAmpVoice(0),
-	mAmpBypas(0),
-	mAmpAspir(0),
-	mAmpFrica(0),
-	mAmpBreth(0),
-	mSkew(0),
-	mNatglotA(0),
-	mNatglotB(0),
-	mVWave(0),
-	mVLast(0),
-	mNLast(0),
-	mGlotLast(0),
-	mDecay(0),
-	mOneMd(0),
-	mElementCount(0),
-	mElement(0),
-	mElementIndex(0),
-	mLastElement(0),
-	mTStress(0),
-	mNTStress(0),
-	mTop(0)
+klatt::klatt() :
+    mBaseF0(1330),
+    mBaseSpeed(10.0f),
+    mBaseDeclination(0.5f),
+    mBaseWaveform(KW_SAW),
+    mF0Flutter(0),
+    mSampleRate(0),
+    mNspFr(0),
+    mF0FundamentalFreq(0),
+    mVoicingAmpdb(0),
+    mSkewnessOfAlternatePeriods(0),
+    mTimeCount(0),
+    mNPer(0),
+    mT0(0),
+    mNOpen(0),
+    mNMod(0),
+    mAmpVoice(0),
+    mAmpBypas(0),
+    mAmpAspir(0),
+    mAmpFrica(0),
+    mAmpBreth(0),
+    mSkew(0),
+    mVLast(0),
+    mNLast(0),
+    mGlotLast(0),
+    mDecay(0),
+    mOneMd(0),
+    mElementCount(0),
+    mElement(0),
+    mElementIndex(0),
+    mLastElement(0),
+    mTStress(0),
+    mNTStress(0),
+    mTop(0)
 {
 }
 
@@ -12066,16 +12204,16 @@ female and male talkers" D.H. Klatt and L.C. Klatt JASA 87(2) February 1990.
 Flutter is added by applying a quasi-random element constructed from three
 slowly varying sine waves.
 */
-void klatt::flutter(klatt_frame *pars)
+void klatt::flutter()
 {
-	int original_f0 = pars->mF0FundamentalFreq / 10;
-	float fla = (float) mF0Flutter / 50;
-	float flb = (float) original_f0 / 100;
-	float flc = (float)sin(2 * PI * 12.7 * mTimeCount);
-	float fld = (float)sin(2 * PI * 7.1 * mTimeCount);
-	float fle = (float)sin(2 * PI * 4.7 * mTimeCount);
-	float delta_f0 = fla * flb * (flc + fld + fle) * 10;
-	mF0FundamentalFreq += (int) delta_f0;
+    int original_f0 = mFrame.mF0FundamentalFreq / 10;
+    float fla = (float) mF0Flutter / 50;
+    float flb = (float) original_f0 / 100;
+    float flc = (float)sin(2 * PI * 12.7 * mTimeCount);
+    float fld = (float)sin(2 * PI * 7.1 * mTimeCount);
+    float fle = (float)sin(2 * PI * 4.7 * mTimeCount);
+    float delta_f0 = fla * flb * (flc + fld + fle) * 10;
+    mF0FundamentalFreq += (int) delta_f0;
 }
 
 /* Vwave is the differentiated glottal flow waveform, there is a weak
@@ -12084,183 +12222,133 @@ spectral zero around 800 Hz, magic constants a,b reset pitch-synch
 
 float klatt::natural_source(int aNper)
 {
-	// See if glottis open 
+    // See if glottis open
+    if (aNper < mNOpen)
+    {
+        switch (mBaseWaveform)
+        {
+        case KW_TRIANGLE:
+            return ((aNper % 200) - 100) * 81.92f; // triangle
+        case KW_SIN:
+            return (float)(sin(aNper * 0.0314) * 8192); // sin
+        case KW_SQUARE:
+            return ((aNper % 200) - 100) > 0 ? 8192.0f : -8192.0f; // square
+        case KW_PULSE:
+            return ((aNper % 200) - 100) > 50 ? 8192.0f : -8192.0f; // pulse
+        case KW_NOISE:
+            return (int)mNLast & 1 ? -8192.0f : 8192.0f;
+        case KW_WARBLE:
+                return (int)mNLast & 7 ? -8192.0f : 8192.0f;
+        case KW_SAW: // fallthrough
+        default:
+            return (abs((aNper % 200) - 100) - 50) * 163.84f; // saw
+        }
+    }
+    else
+    {
+        // Glottis closed
+        return (0.0);
+    }
 
-	if (aNper < mNOpen)
-	{
-		float lgtemp;
-		mNatglotA -= mNatglotB;
-		mVWave += mNatglotA;
-		lgtemp = mVWave * 0.028f;        /* function of samp_rate ? */
-		return (lgtemp);
-	}
-	else
-	{
-		// Glottis closed 
-		mVWave = 0.0;
-		return (0.0);
-	}
 }
 
 /* Reset selected parameters pitch-synchronously */
 
-void klatt::pitch_synch_par_reset(klatt_frame *frame, int ns)
+void klatt::pitch_synch_par_reset(int ns)
 {
-	/*
-	* Constant natglot[] controls shape of glottal pulse as a function
-	* of desired duration of open phase N0
-	* (Note that N0 is specified in terms of 40,000 samples/sec of speech)
-	*
-	*    Assume voicing waveform V(t) has form: k1 t**2 - k2 t**3
-	*
-	*    If the radiation characterivative, a temporal derivative
-	*      is folded in, and we go from continuous time to discrete
-	*      integers n:  dV/dt = mVWave[n]
-	*                         = sum over i=1,2,...,n of { a - (i * b) }
-	*                         = a n  -  b/2 n**2
-	*
-	*      where the  constants a and b control the detailed shape
-	*      and amplitude of the voicing waveform over the open
-	*      potion of the voicing cycle "mNOpen".
-	*
-	*    Let integral of dV/dt have no net dc flow --> a = (b * mNOpen) / 3
-	*
-	*    Let maximum of dUg(n)/dn be constant --> b = gain / (mNOpen * mNOpen)
-	*      meaning as mNOpen gets bigger, V has bigger peak proportional to n
-	*
-	*    Thus, to generate the table below for 40 <= mNOpen <= 263:
-	*
-	*      natglot[mNOpen - 40] = 1920000 / (mNOpen * mNOpen)
-	*/
-	static const short natglot[224] =
-	{
-		1200, 1142, 1088, 1038, 991, 948, 907, 869, 833, 799,
-		768, 738, 710, 683, 658, 634, 612, 590, 570, 551,
-		533, 515, 499, 483, 468, 454, 440, 427, 415, 403,
-		391, 380, 370, 360, 350, 341, 332, 323, 315, 307,
-		300, 292, 285, 278, 272, 265, 259, 253, 247, 242,
-		237, 231, 226, 221, 217, 212, 208, 204, 199, 195,
-		192, 188, 184, 180, 177, 174, 170, 167, 164, 161,
-		158, 155, 153, 150, 147, 145, 142, 140, 137, 135,
-		133, 131, 128, 126, 124, 122, 120, 119, 117, 115,
-		113, 111, 110, 108, 106, 105, 103, 102, 100, 99,
-		97, 96, 95, 93, 92, 91, 90, 88, 87, 86,
-		85, 84, 83, 82, 80, 79, 78, 77, 76, 75,
-		75, 74, 73, 72, 71, 70, 69, 68, 68, 67,
-		66, 65, 64, 64, 63, 62, 61, 61, 60, 59,
-		59, 58, 57, 57, 56, 56, 55, 55, 54, 54,
-		53, 53, 52, 52, 51, 51, 50, 50, 49, 49,
-		48, 48, 47, 47, 46, 46, 45, 45, 44, 44,
-		43, 43, 42, 42, 41, 41, 41, 41, 40, 40,
-		39, 39, 38, 38, 38, 38, 37, 37, 36, 36,
-		36, 36, 35, 35, 35, 35, 34, 34, 33, 33,
-		33, 33, 32, 32, 32, 32, 31, 31, 31, 31,
-		30, 30, 30, 30, 29, 29, 29, 29, 28, 28,
-		28, 28, 27, 27
-	};
+    if (mF0FundamentalFreq > 0)
+    {
+        mT0 = (40 * mSampleRate) / mF0FundamentalFreq;
 
-	if (mF0FundamentalFreq > 0)
-	{
-		mT0 = (40 * mSampleRate) / mF0FundamentalFreq;
+        /* Period in samp*4 */
+        mAmpVoice = DBtoLIN(mVoicingAmpdb);
 
-		/* Period in samp*4 */
-		mAmpVoice = DBtoLIN(mVoicingAmpdb);
+        /* Duration of period before amplitude modulation */
+        mNMod = mT0;
 
-		/* Duration of period before amplitude modulation */
-		mNMod = mT0;
+        if (mVoicingAmpdb > 0)
+        {
+            mNMod >>= 1;
+        }
 
-		if (mVoicingAmpdb > 0)
-		{
-			mNMod >>= 1;
-		}
+        /* Breathiness of voicing waveform */
 
-		/* Breathiness of voicing waveform */
+        mAmpBreth = DBtoLIN(mFrame.mVoicingBreathiness) * 0.1f;
 
-		mAmpBreth = DBtoLIN(frame->mVoicingBreathiness) * 0.1f;
+        /* Set open phase of glottal period */
+        /* where  40 <= open phase <= 263 */
 
-		/* Set open phase of glottal period */
-		/* where  40 <= open phase <= 263 */
+        mNOpen = 4 * mFrame.mNoSamplesInOpenPeriod;
 
-		mNOpen = 4 * frame->mNoSamplesInOpenPeriod;
+        if (mNOpen >= (mT0 - 1))
+        {
+            mNOpen = mT0 - 2;
+        }
 
-		if (mNOpen >= (mT0 - 1))
-		{
-			mNOpen = mT0 - 2;
-		}
+        if (mNOpen < 40)
+        {
+            mNOpen = 40;                  /* F0 max = 1000 Hz */
+        }
 
-		if (mNOpen < 40)
-		{
-			mNOpen = 40;                  /* F0 max = 1000 Hz */
-		}
+        int temp;
+        float temp1;
 
-		/* Reset a & b, which determine shape of "natural" glottal waveform */
+        temp = mSampleRate / mNOpen;
+        mCritDampedGlotLowPassFilter.initResonator(0L, temp, mSampleRate);
 
-		mNatglotB = natglot[mNOpen - 40];
-		mNatglotA = (mNatglotB * mNOpen) * .333f;
+        /* Make gain at F1 about constant */
 
-		/* Reset width of "impulsive" glottal pulse */
+        temp1 = mNOpen * .00833f;
+        mCritDampedGlotLowPassFilter.setGain(temp1 * temp1);
 
-		int temp;
-		float temp1;
+        /* Truncate skewness so as not to exceed duration of closed phase
+        of glottal period */
 
-		temp = mSampleRate / mNOpen;
-		mCritDampedGlotLowPassFilter.initResonator(0L, temp, mSampleRate);
+        temp = mT0 - mNOpen;
 
-		/* Make gain at F1 about constant */
+        if (mSkewnessOfAlternatePeriods > temp)
+        {
+            mSkewnessOfAlternatePeriods = temp;
+        }
 
-		temp1 = mNOpen * .00833f;
-		mCritDampedGlotLowPassFilter.setGain(temp1 * temp1);
+        if (mSkew >= 0)
+        {
+            mSkew = mSkewnessOfAlternatePeriods;                /* Reset mSkew to requested mSkewnessOfAlternatePeriods */
+        }
+        else
+        {
+            mSkew = -mSkewnessOfAlternatePeriods;
+        }
 
-		/* Truncate skewness so as not to exceed duration of closed phase
-		of glottal period */
+        /* Add skewness to closed portion of voicing period */
 
-		temp = mT0 - mNOpen;
+        mT0 = mT0 + mSkew;
+        mSkew = -mSkew;
+    }
+    else
+    {
+        mT0 = 4;                        /* Default for f0 undefined */
+        mAmpVoice = 0.0;
+        mNMod = mT0;
+        mAmpBreth = 0.0;
+    }
 
-		if (mSkewnessOfAlternatePeriods > temp)
-		{
-			mSkewnessOfAlternatePeriods = temp;
-		}
+    /* Reset these pars pitch synchronously or at update rate if f0=0 */
 
-		if (mSkew >= 0)
-		{
-			mSkew = mSkewnessOfAlternatePeriods;                /* Reset mSkew to requested mSkewnessOfAlternatePeriods */
-		}
-		else
-		{
-			mSkew = -mSkewnessOfAlternatePeriods;
-		}
+    if ((mT0 != 4) || (ns == 0))
+    {
+        /* Set one-pole ELM_FEATURE_LOW-pass filter that tilts glottal source */
+        mDecay = (0.033f * mFrame.mVoicingSpectralTiltdb);	/* Function of samp_rate ? */
 
-		/* Add skewness to closed portion of voicing period */
-
-		mT0 = mT0 + mSkew;
-		mSkew = -mSkew;
-	}
-	else
-	{
-		mT0 = 4;                        /* Default for f0 undefined */
-		mAmpVoice = 0.0;
-		mNMod = mT0;
-		mAmpBreth = 0.0;
-		mNatglotA = 0.0;
-		mNatglotB = 0.0;
-	}
-
-	/* Reset these pars pitch synchronously or at update rate if f0=0 */
-
-	if ((mT0 != 4) || (ns == 0))
-	{
-		/* Set one-pole ELM_FEATURE_LOW-pass filter that tilts glottal source */
-		mDecay = (0.033f * frame->mVoicingSpectralTiltdb);	/* Function of samp_rate ? */
-
-		if (mDecay > 0.0f)
-		{
-			mOneMd = 1.0f - mDecay;
-		}
-		else
-		{
-			mOneMd = 1.0f;
-		}
-	}
+        if (mDecay > 0.0f)
+        {
+            mOneMd = 1.0f - mDecay;
+        }
+        else
+        {
+            mOneMd = 1.0f;
+        }
+    }
 }
 
 
@@ -12268,86 +12356,86 @@ void klatt::pitch_synch_par_reset(klatt_frame *frame, int ns)
 initially also get definition of fixed pars
 */
 
-void klatt::frame_init(klatt_frame *frame)
+void klatt::frame_init()
 {
-	int mOverallGaindb;                       /* Overall gain, 60 dB is unity  0 to   60  */
-	float amp_parF1;                 /* mFormant1Ampdb converted to linear gain  */
-	float amp_parFN;                 /* mParallelNasalPoleAmpdb converted to linear gain  */
-	float amp_parF2;                 /* mFormant2Ampdb converted to linear gain  */
-	float amp_parF3;                 /* mFormant3Ampdb converted to linear gain  */
-	float amp_parF4;                 /* mFormant4Ampdb converted to linear gain  */
-	float amp_parF5;                 /* mFormant5Ampdb converted to linear gain  */
-	float amp_parF6;                 /* mFormant6Ampdb converted to linear gain  */
+    int mOverallGaindb;                       /* Overall gain, 60 dB is unity  0 to   60  */
+    float amp_parF1;                 /* mFormant1Ampdb converted to linear gain  */
+    float amp_parFN;                 /* mParallelNasalPoleAmpdb converted to linear gain  */
+    float amp_parF2;                 /* mFormant2Ampdb converted to linear gain  */
+    float amp_parF3;                 /* mFormant3Ampdb converted to linear gain  */
+    float amp_parF4;                 /* mFormant4Ampdb converted to linear gain  */
+    float amp_parF5;                 /* mFormant5Ampdb converted to linear gain  */
+    float amp_parF6;                 /* mFormant6Ampdb converted to linear gain  */
 
-	/* Read  speech frame definition into temp store
+    /* Read  speech frame definition into temp store
        and move some parameters into active use immediately
        (voice-excited ones are updated pitch synchronously
        to avoid waveform glitches).
-	 */
+     */
 
-	mF0FundamentalFreq = frame->mF0FundamentalFreq;
-	mVoicingAmpdb = frame->mVoicingAmpdb - 7;
+    mF0FundamentalFreq = mFrame.mF0FundamentalFreq;
+    mVoicingAmpdb = mFrame.mVoicingAmpdb - 7;
 
-	if (mVoicingAmpdb < 0) mVoicingAmpdb = 0;
+    if (mVoicingAmpdb < 0) mVoicingAmpdb = 0;
 
-	mAmpAspir = DBtoLIN(frame->mAspirationAmpdb) * .05f;
-	mAmpFrica = DBtoLIN(frame->mFricationAmpdb) * 0.25f;
-	mSkewnessOfAlternatePeriods = frame->mSkewnessOfAlternatePeriods;
+    mAmpAspir = DBtoLIN(mFrame.mAspirationAmpdb) * .05f;
+    mAmpFrica = DBtoLIN(mFrame.mFricationAmpdb) * 0.25f;
+    mSkewnessOfAlternatePeriods = mFrame.mSkewnessOfAlternatePeriods;
 
-	/* Fudge factors (which comprehend affects of formants on each other?)
+    /* Fudge factors (which comprehend affects of formants on each other?)
        with these in place ALL_PARALLEL should sound as close as
-	   possible to CASCADE_PARALLEL.
-	   Possible problem feeding in Holmes's amplitudes given this.
-	*/
-	amp_parF1 = DBtoLIN(frame->mFormant1Ampdb) * 0.4f;	/* -7.96 dB */
-	amp_parF2 = DBtoLIN(frame->mFormant2Ampdb) * 0.15f;	/* -16.5 dB */
-	amp_parF3 = DBtoLIN(frame->mFormant3Ampdb) * 0.06f;	/* -24.4 dB */
-	amp_parF4 = DBtoLIN(frame->mFormant4Ampdb) * 0.04f;	/* -28.0 dB */
-	amp_parF5 = DBtoLIN(frame->mFormant5Ampdb) * 0.022f;	/* -33.2 dB */
-	amp_parF6 = DBtoLIN(frame->mFormant6Ampdb) * 0.03f;	/* -30.5 dB */
-	amp_parFN = DBtoLIN(frame->mParallelNasalPoleAmpdb) * 0.6f;	/* -4.44 dB */
-	mAmpBypas = DBtoLIN(frame->mBypassFricationAmpdb) * 0.05f;	/* -26.0 db */
+       possible to CASCADE_PARALLEL.
+       Possible problem feeding in Holmes's amplitudes given this.
+    */
+    amp_parF1 = DBtoLIN(mFrame.mFormant1Ampdb) * 0.4f;	/* -7.96 dB */
+    amp_parF2 = DBtoLIN(mFrame.mFormant2Ampdb) * 0.15f;	/* -16.5 dB */
+    amp_parF3 = DBtoLIN(mFrame.mFormant3Ampdb) * 0.06f;	/* -24.4 dB */
+    amp_parF4 = DBtoLIN(mFrame.mFormant4Ampdb) * 0.04f;	/* -28.0 dB */
+    amp_parF5 = DBtoLIN(mFrame.mFormant5Ampdb) * 0.022f;	/* -33.2 dB */
+    amp_parF6 = DBtoLIN(mFrame.mFormant6Ampdb) * 0.03f;	/* -30.5 dB */
+    amp_parFN = DBtoLIN(mFrame.mParallelNasalPoleAmpdb) * 0.6f;	/* -4.44 dB */
+    mAmpBypas = DBtoLIN(mFrame.mBypassFricationAmpdb) * 0.05f;	/* -26.0 db */
 
-	// Set coeficients of nasal resonator and zero antiresonator 
-	mNasalPole.initResonator(frame->mNasalPoleFreq, frame->mNasalPoleBandwidth, mSampleRate);
+    // Set coeficients of nasal resonator and zero antiresonator
+    mNasalPole.initResonator(mFrame.mNasalPoleFreq, mFrame.mNasalPoleBandwidth, mSampleRate);
 
-	mNasalZero.initAntiresonator(frame->mNasalZeroFreq, frame->mNasalZeroBandwidth, mSampleRate);
+    mNasalZero.initAntiresonator(mFrame.mNasalZeroFreq, mFrame.mNasalZeroBandwidth, mSampleRate);
 
-	// Set coefficients of parallel resonators, and amplitude of outputs 
-	mParallelFormant1.initResonator(frame->mFormant1Freq, frame->mFormant1ParallelBandwidth, mSampleRate);
-	mParallelFormant1.setGain(amp_parF1);
+    // Set coefficients of parallel resonators, and amplitude of outputs
+    mParallelFormant1.initResonator(mFrame.mFormant1Freq, mFrame.mFormant1ParallelBandwidth, mSampleRate);
+    mParallelFormant1.setGain(amp_parF1);
 
-	mParallelResoNasalPole.initResonator(frame->mNasalPoleFreq, frame->mNasalPoleBandwidth, mSampleRate);
-	mParallelResoNasalPole.setGain(amp_parFN);
+    mParallelResoNasalPole.initResonator(mFrame.mNasalPoleFreq, mFrame.mNasalPoleBandwidth, mSampleRate);
+    mParallelResoNasalPole.setGain(amp_parFN);
 
-	mParallelFormant2.initResonator(frame->mFormant2Freq, frame->mFormant2ParallelBandwidth, mSampleRate);
-	mParallelFormant2.setGain(amp_parF2);
+    mParallelFormant2.initResonator(mFrame.mFormant2Freq, mFrame.mFormant2ParallelBandwidth, mSampleRate);
+    mParallelFormant2.setGain(amp_parF2);
 
-	mParallelFormant3.initResonator(frame->mFormant3Freq, frame->mFormant3ParallelBandwidth, mSampleRate);
-	mParallelFormant3.setGain(amp_parF3);
+    mParallelFormant3.initResonator(mFrame.mFormant3Freq, mFrame.mFormant3ParallelBandwidth, mSampleRate);
+    mParallelFormant3.setGain(amp_parF3);
 
-	mParallelFormant4.initResonator(frame->mFormant4Freq, frame->mFormant4ParallelBandwidth, mSampleRate);
-	mParallelFormant4.setGain(amp_parF4);
+    mParallelFormant4.initResonator(mFrame.mFormant4Freq, mFrame.mFormant4ParallelBandwidth, mSampleRate);
+    mParallelFormant4.setGain(amp_parF4);
 
-	mParallelFormant5.initResonator(frame->mFormant5Freq, frame->mFormant5ParallelBandwidth, mSampleRate);
-	mParallelFormant5.setGain(amp_parF5);
+    mParallelFormant5.initResonator(mFrame.mFormant5Freq, mFrame.mFormant5ParallelBandwidth, mSampleRate);
+    mParallelFormant5.setGain(amp_parF5);
 
-	mParallelFormant6.initResonator(frame->mFormant6Freq, frame->mFormant6ParallelBandwidth, mSampleRate);
-	mParallelFormant6.setGain(amp_parF6);
+    mParallelFormant6.initResonator(mFrame.mFormant6Freq, mFrame.mFormant6ParallelBandwidth, mSampleRate);
+    mParallelFormant6.setGain(amp_parF6);
 
 
-	/* fold overall gain into output resonator */
-	mOverallGaindb = frame->mOverallGaindb - 3;
+    /* fold overall gain into output resonator */
+    mOverallGaindb = mFrame.mOverallGaindb - 3;
 
-	if (mOverallGaindb <= 0)
-		mOverallGaindb = 57;
+    if (mOverallGaindb <= 0)
+        mOverallGaindb = 57;
 
-	/* output ELM_FEATURE_LOW-pass filter - resonator with freq 0 and BW = globals->mSampleRate
-	Thus 3db point is globals->mSampleRate/2 i.e. Nyquist limit.
-	Only 3db down seems rather mild...
-	*/
-	mOutputLowPassFilter.initResonator(0L, (int) mSampleRate, mSampleRate);
-	mOutputLowPassFilter.setGain(DBtoLIN(mOverallGaindb));
+    /* output ELM_FEATURE_LOW-pass filter - resonator with freq 0 and BW = globals->mSampleRate
+    Thus 3db point is globals->mSampleRate/2 i.e. Nyquist limit.
+    Only 3db down seems rather mild...
+    */
+    mOutputLowPassFilter.initResonator(0L, (int)mSampleRate, mSampleRate);
+    mOutputLowPassFilter.setGain(DBtoLIN(mOverallGaindb));
 }
 
 /*
@@ -12357,249 +12445,249 @@ CONVERT FRAME OF PARAMETER DATA TO A WAVEFORM CHUNK
 Synthesize globals->mNspFr samples of waveform and store in jwave[].
 */
 
-void klatt::parwave(klatt_frame *frame, short int *jwave)
+void klatt::parwave(short int *jwave)
 {
-	/* Output of cascade branch, also final output  */
+    /* Output of cascade branch, also final output  */
 
-	/* Initialize synthesizer and get specification for current speech
-	frame from host microcomputer */
+    /* Initialize synthesizer and get specification for current speech
+    frame from host microcomputer */
 
-	frame_init(frame);
+    frame_init();
 
-	if (mF0Flutter != 0)
-	{
-		mTimeCount++;                  /* used for f0 flutter */
-		flutter(frame);       /* add f0 flutter */
-	}
+    if (mF0Flutter != 0)
+    {
+        mTimeCount++;                  /* used for f0 flutter */
+        flutter();       /* add f0 flutter */
+    }
 
-	/* MAIN LOOP, for each output sample of current frame: */
+    /* MAIN LOOP, for each output sample of current frame: */
 
-	int ns;
-	for (ns = 0; ns < mNspFr; ns++)
-	{
-		static unsigned int seed = 5; /* Fixed staring value */
-		float noise;
-		int n4;
-		float sourc;                   /* Sound source if all-parallel config used  */
-		float glotout;                 /* Output of glottal sound source  */
-		float par_glotout;             /* Output of parallelglottal sound sourc  */
-		float voice = 0;               /* Current sample of voicing waveform  */
-		float frics;                   /* Frication sound source  */
-		float aspiration;              /* Aspiration sound source  */
-		int nrand;                    /* Varible used by random number generator  */
+    int ns;
+    for (ns = 0; ns < mNspFr; ns++)
+    {
+        static unsigned int seed = 5; /* Fixed staring value */
+        float noise;
+        int n4;
+        float sourc;                   /* Sound source if all-parallel config used  */
+        float glotout;                 /* Output of glottal sound source  */
+        float par_glotout;             /* Output of parallelglottal sound sourc  */
+        float voice = 0;               /* Current sample of voicing waveform  */
+        float frics;                   /* Frication sound source  */
+        float aspiration;              /* Aspiration sound source  */
+        int nrand;                    /* Varible used by random number generator  */
 
-		/* Our own code like rand(), but portable
-		whole upper 31 bits of seed random
-		assumes 32-bit unsigned arithmetic
-		with untested code to handle larger.
-		*/
-		seed = seed * 1664525 + 1;
+        /* Our own code like rand(), but portable
+        whole upper 31 bits of seed random
+        assumes 32-bit unsigned arithmetic
+        with untested code to handle larger.
+        */
+        seed = seed * 1664525 + 1;
 
-		if (8 * sizeof(unsigned int) > 32)
-			seed &= 0xFFFFFFFF;
+        seed &= 0xFFFFFFFF;
 
-		/* Shift top bits of seed up to top of int then back down to LS 14 bits */
-		/* Assumes 8 bits per sizeof unit i.e. a "byte" */
-		nrand = (((int) seed) << (8 * sizeof(int) - 32)) >> (8 * sizeof(int) - 14);
+        /* Shift top bits of seed up to top of int then back down to LS 14 bits */
+        /* Assumes 8 bits per sizeof unit i.e. a "byte" */
+        nrand = (((int) seed) << (8 * sizeof(int) - 32)) >> (8 * sizeof(int) - 14);
 
-		/* Tilt down noise spectrum by soft ELM_FEATURE_LOW-pass filter having
-		*    a pole near the origin in the z-plane, i.e.
-		*    output = input + (0.75 * lastoutput) */
+        /* Tilt down noise spectrum by soft ELM_FEATURE_LOW-pass filter having
+        *    a pole near the origin in the z-plane, i.e.
+        *    output = input + (0.75 * lastoutput) */
 
-		noise = nrand + (0.75f * mNLast);	/* Function of samp_rate ? */
+        noise = nrand + (0.75f * mNLast);	/* Function of samp_rate ? */
 
-		mNLast = noise;
+        mNLast = noise;
 
-		/* Amplitude modulate noise (reduce noise amplitude during
-		second half of glottal period) if voicing simultaneously present
-		*/
+        /* Amplitude modulate noise (reduce noise amplitude during
+        second half of glottal period) if voicing simultaneously present
+        */
 
-		if (mNPer > mNMod)
-		{
-			noise *= 0.5f;
-		}
+        if (mNPer > mNMod)
+        {
+            noise *= 0.5f;
+        }
 
-		/* Compute frication noise */
-		sourc = frics = mAmpFrica * noise;
+        /* Compute frication noise */
+        sourc = frics = mAmpFrica * noise;
 
-		/* Compute voicing waveform : (run glottal source simulation at
-		4 times normal sample rate to minimize quantization noise in
-		period of female voice)
-		*/
+        /* Compute voicing waveform : (run glottal source simulation at
+        4 times normal sample rate to minimize quantization noise in
+        period of female voice)
+        */
 
-		for (n4 = 0; n4 < 4; n4++)
-		{
-			/* use a more-natural-shaped source waveform with excitation
-			occurring both upon opening and upon closure, stronest at closure */
-			voice = natural_source(mNPer);
+        for (n4 = 0; n4 < 4; n4++)
+        {
+            /* use a more-natural-shaped source waveform with excitation
+            occurring both upon opening and upon closure, stronest at closure */
+            voice = natural_source(mNPer);
 
-			/* Reset period when counter 'mNPer' reaches mT0 */
+            /* Reset period when counter 'mNPer' reaches mT0 */
 
-			if (mNPer >= mT0)
-			{
-				mNPer = 0;
-				pitch_synch_par_reset(frame, ns);
-			}
+            if (mNPer >= mT0)
+            {
+                mNPer = 0;
+                pitch_synch_par_reset(ns);
+            }
 
-			/* Low-pass filter voicing waveform before downsampling from 4*globals->mSampleRate */
-			/* to globals->mSampleRate samples/sec.  Resonator f=.09*globals->mSampleRate, bw=.06*globals->mSampleRate  */
+            /* Low-pass filter voicing waveform before downsampling from 4*globals->mSampleRate */
+            /* to globals->mSampleRate samples/sec.  Resonator f=.09*globals->mSampleRate, bw=.06*globals->mSampleRate  */
 
-			voice = mDownSampLowPassFilter.resonate(voice);	/* in=voice, out=voice */
+            voice = mDownSampLowPassFilter.resonate(voice);	/* in=voice, out=voice */
 
-			/* Increment counter that keeps track of 4*globals->mSampleRate samples/sec */
-			mNPer++;
-		}
+            /* Increment counter that keeps track of 4*globals->mSampleRate samples/sec */
+            mNPer++;
+        }
 
-		/* Tilt spectrum of voicing source down by soft ELM_FEATURE_LOW-pass filtering, amount
-		of tilt determined by mVoicingSpectralTiltdb
-		*/
-		voice = (voice * mOneMd) + (mVLast * mDecay);
+        /* Tilt spectrum of voicing source down by soft ELM_FEATURE_LOW-pass filtering, amount
+        of tilt determined by mVoicingSpectralTiltdb
+        */
+        voice = (voice * mOneMd) + (mVLast * mDecay);
 
-		mVLast = voice;
+        mVLast = voice;
 
-		/* Add breathiness during glottal open phase */
-		if (mNPer < mNOpen)
-		{
-			/* Amount of breathiness determined by parameter mVoicingBreathiness */
-			/* Use nrand rather than noise because noise is ELM_FEATURE_LOW-passed */
-			voice += mAmpBreth * nrand;
-		}
+        /* Add breathiness during glottal open phase */
+        if (mNPer < mNOpen)
+        {
+            /* Amount of breathiness determined by parameter mVoicingBreathiness */
+            /* Use nrand rather than noise because noise is ELM_FEATURE_LOW-passed */
+            voice += mAmpBreth * nrand;
+        }
 
-		/* Set amplitude of voicing */
-		glotout = mAmpVoice * voice;
+        /* Set amplitude of voicing */
+        glotout = mAmpVoice * voice;
 
-		/* Compute aspiration amplitude and add to voicing source */
-		aspiration = mAmpAspir * noise;
+        /* Compute aspiration amplitude and add to voicing source */
+        aspiration = mAmpAspir * noise;
 
-		glotout += aspiration;
+        glotout += aspiration;
 
-		par_glotout = glotout;
+        par_glotout = glotout;
 
-		/* NIS - rsynth "hack"
-		As Holmes' scheme is weak at nasals and (physically) nasal cavity
-		is "back near glottis" feed glottal source through nasal resonators
-		Don't think this is quite right, but improves things a bit
-		*/
-		par_glotout = mNasalZero.antiresonate(par_glotout);
-		par_glotout = mNasalPole.resonate(par_glotout);
-		/* And just use mParallelFormant1 NOT mParallelResoNasalPole */		
-		float out = mParallelFormant1.resonate(par_glotout);
-		/* Sound sourc for other parallel resonators is frication
-		plus first difference of voicing waveform.
-		*/
-		sourc += (par_glotout - mGlotLast);
-		mGlotLast = par_glotout;
+        /* NIS - rsynth "hack"
+        As Holmes' scheme is weak at nasals and (physically) nasal cavity
+        is "back near glottis" feed glottal source through nasal resonators
+        Don't think this is quite right, but improves things a bit
+        */
+        par_glotout = mNasalZero.antiresonate(par_glotout);
+        par_glotout = mNasalPole.resonate(par_glotout);
+        /* And just use mParallelFormant1 NOT mParallelResoNasalPole */
+        float out = mParallelFormant1.resonate(par_glotout);
+        /* Sound sourc for other parallel resonators is frication
+        plus first difference of voicing waveform.
+        */
+        sourc += (par_glotout - mGlotLast);
+        mGlotLast = par_glotout;
 
-		/* Standard parallel vocal tract
-		Formants F6,F5,F4,F3,F2, outputs added with alternating sign
-		*/
-		out = mParallelFormant6.resonate(sourc) - out;
-		out = mParallelFormant5.resonate(sourc) - out;
-		out = mParallelFormant4.resonate(sourc) - out;
-		out = mParallelFormant3.resonate(sourc) - out;
-		out = mParallelFormant2.resonate(sourc) - out;
-		out = mAmpBypas * sourc - out;
-		out = mOutputLowPassFilter.resonate(out);
+        /* Standard parallel vocal tract
+        Formants F6,F5,F4,F3,F2, outputs added with alternating sign
+        */
+        out = mParallelFormant6.resonate(sourc) - out;
+        out = mParallelFormant5.resonate(sourc) - out;
+        out = mParallelFormant4.resonate(sourc) - out;
+        out = mParallelFormant3.resonate(sourc) - out;
+        out = mParallelFormant2.resonate(sourc) - out;
 
-		*jwave++ = clip(out); /* Convert back to integer */
-	}
+        out = mAmpBypas * sourc - out;
+        out = mOutputLowPassFilter.resonate(out);
+
+        *jwave++ = clip(out); /* Convert back to integer */
+    }
 }
 
 
 
 static char * phoneme_to_element_lookup(char *s, void ** data)
 {
-	int key8 = *s;
-	int key16 = key8 + (s[1] << 8);
-	if (s[1] == 0) key16 = -1; // avoid key8==key16
-	int i;
-	for (i = 0; i < PHONEME_COUNT; i++)
-	{
-		if (phoneme_to_elements[i].mKey == key16)
-		{
-			*data = &phoneme_to_elements[i].mData;
-			return s+2;
-		}
-		if (phoneme_to_elements[i].mKey == key8)
-		{
-			*data = &phoneme_to_elements[i].mData;
-			return s+1;
-		}
-	}
-	// should never happen
-	*data = NULL;
-	return s+1;
+    int key8 = *s;
+    int key16 = key8 + (s[1] << 8);
+    if (s[1] == 0) key16 = -1; // avoid key8==key16
+    int i;
+    for (i = 0; i < PHONEME_COUNT; i++)
+    {
+        if (phoneme_to_elements[i].mKey == key16)
+        {
+            *data = &phoneme_to_elements[i].mData;
+            return s+2;
+        }
+        if (phoneme_to_elements[i].mKey == key8)
+        {
+            *data = &phoneme_to_elements[i].mData;
+            return s+1;
+        }
+    }
+    // should never happen
+    *data = NULL;
+    return s+1;
 }
 
 
 
 int klatt::phone_to_elm(char *aPhoneme, int aCount, darray *aElement)
 {
-	int stress = 0;
-	char *s = aPhoneme;
-	int t = 0;
-	char *limit = s + aCount;
+    int stress = 0;
+    char *s = aPhoneme;
+    int t = 0;
+    char *limit = s + aCount;
 
-	while (s < limit && *s)
-	{
-		char *e = NULL;
-		s = phoneme_to_element_lookup(s, (void**)&e);
+    while (s < limit && *s)
+    {
+        char *e = NULL;
+        s = phoneme_to_element_lookup(s, (void**)&e);
 
-		if (e)
-		{
-			int n = *e++;
+        if (e)
+        {
+            int n = *e++;
 
-			while (n-- > 0)
-			{
-				int x = *e++;
-				Element * p = &gElement[x];
-				/* This works because only vowels have mUD != mDU,
-				and we set stress just before a vowel
-				*/
-				aElement->put(x);
+            while (n-- > 0)
+            {
+                int x = *e++;
+                Element * p = &gElement[x];
+                /* This works because only vowels have mUD != mDU,
+                and we set stress just before a vowel
+                */
+                aElement->put(x);
 
-				if (!(p->mFeat & ELM_FEATURE_VWL))
-					stress = 0;
+                if (!(p->mFeat & ELM_FEATURE_VWL))
+                    stress = 0;
 
                 int stressdur = StressDur(p,stress);
 
                 t += stressdur;
 
-				aElement->put(stressdur);
-				aElement->put(stress);
-			}
-		}
+                aElement->put(stressdur);
+                aElement->put(stress);
+            }
+        }
 
-		else
-		{
-			char ch = *s++;
+        else
+        {
+            char ch = *s++;
 
-			switch (ch)
-			{
+            switch (ch)
+            {
 
-			case '\'':                /* Primary stress */
-				stress = 3;
-				break;
+            case '\'':                /* Primary stress */
+                stress = 3;
+                break;
 
-			case ',':                 /* Secondary stress */
-				stress = 2;
-				break;
+            case ',':                 /* Secondary stress */
+                stress = 2;
+                break;
 
-			case '+':                 /* Tertiary stress */
-				stress = 1;
-				break;
+            case '+':                 /* Tertiary stress */
+                stress = 1;
+                break;
 
-			case '-':                 /* hyphen in input */
-				break;
+            case '-':                 /* hyphen in input */
+                break;
 
-			default:
+            default:
 //				fprintf(stderr, "Ignoring %c in '%.*s'\n", ch, aCount, aPhoneme);
-				break;
-			}
-		}
-	}
+                break;
+            }
+        }
+    }
 
-	return t;
+    return t;
 }
 
 
@@ -12611,253 +12699,267 @@ int klatt::phone_to_elm(char *aPhoneme, int aCount, darray *aElement)
 
 static void set_trans(Slope *t, Element * a, Element * b,int ext, int e)
 {
-	int i;
+    int i;
 
-	for (i = 0; i < ELM_COUNT; i++)
-	{
-		t[i].mTime = ((ext) ? a->mInterpolator[i].mExtDelay : a->mInterpolator[i].mIntDelay);
+    for (i = 0; i < ELM_COUNT; i++)
+    {
+        t[i].mTime = ((ext) ? a->mInterpolator[i].mExtDelay : a->mInterpolator[i].mIntDelay);
 
-		if (t[i].mTime)
-		{
-			t[i].mValue = a->mInterpolator[i].mFixed + (a->mInterpolator[i].mProportion * b->mInterpolator[i].mSteady) * 0.01f; // mProportion is in scale 0..100, so *0.01.
-		}
-		else
-		{
-			t[i].mValue = b->mInterpolator[i].mSteady;
-		}
-	}
+        if (t[i].mTime)
+        {
+            t[i].mValue = a->mInterpolator[i].mFixed + (a->mInterpolator[i].mProportion * b->mInterpolator[i].mSteady) * 0.01f; // mProportion is in scale 0..100, so *0.01.
+        }
+        else
+        {
+            t[i].mValue = b->mInterpolator[i].mSteady;
+        }
+    }
 }
 
 static float lerp(float a, float b, int t, int d)
 {
-	if (t <= 0)
-	{
-		return a;
-	}
+    if (t <= 0)
+    {
+        return a;
+    }
 
-	if (t >= d)
-	{
-		return b;
-	}
+    if (t >= d)
+    {
+        return b;
+    }
 
-	float f = (float)t / (float)d;
-	return a + (b - a) * f;
+    float f = (float)t / (float)d;
+    return a + (b - a) * f;
 }
 
 static float interpolate(Slope *aStartSlope, Slope *aEndSlope, float aMidValue, int aTime, int aDuration)
 {
-	int steadyTime = aDuration - (aStartSlope->mTime + aEndSlope->mTime);
+    int steadyTime = aDuration - (aStartSlope->mTime + aEndSlope->mTime);
 
-	if (steadyTime >= 0)
-	{
-		// Interpolate to a midpoint, stay there for a while, then interpolate to end
+    if (steadyTime >= 0)
+    {
+        // Interpolate to a midpoint, stay there for a while, then interpolate to end
 
-		if (aTime < aStartSlope->mTime)
-		{
-			// interpolate to the first value
-			return lerp(aStartSlope->mValue, aMidValue, aTime, aStartSlope->mTime);
-		}
-		// reached midpoint
+        if (aTime < aStartSlope->mTime)
+        {
+            // interpolate to the first value
+            return lerp(aStartSlope->mValue, aMidValue, aTime, aStartSlope->mTime);
+        }
+        // reached midpoint
 
-		aTime -= aStartSlope->mTime;
+        aTime -= aStartSlope->mTime;
 
-		if (aTime <= steadyTime)
-		{
-			// still at steady state
-			return aMidValue;  
-		}
+        if (aTime <= steadyTime)
+        {
+            // still at steady state
+            return aMidValue;
+        }
 
-		// interpolate to the end
-		return lerp(aMidValue, aEndSlope->mValue, aTime - steadyTime, aEndSlope->mTime);
-	}
-	else
-	{
-		// No steady state
-		float f = 1.0f - ((float) aTime / (float) aDuration);
-		float sp = lerp(aStartSlope->mValue, aMidValue, aTime, aStartSlope->mTime);
-		float ep = lerp(aEndSlope->mValue, aMidValue, aDuration - aTime, aEndSlope->mTime);
-		return f * sp + ((float) 1.0 - f) * ep;
-	}
+        // interpolate to the end
+        return lerp(aMidValue, aEndSlope->mValue, aTime - steadyTime, aEndSlope->mTime);
+    }
+    else
+    {
+        // No steady state
+        float f = 1.0f - ((float) aTime / (float) aDuration);
+        float sp = lerp(aStartSlope->mValue, aMidValue, aTime, aStartSlope->mTime);
+        float ep = lerp(aEndSlope->mValue, aMidValue, aDuration - aTime, aEndSlope->mTime);
+        return f * sp + ((float) 1.0 - f) * ep;
+    }
 }
 
 
 
 void klatt::initsynth(int aElementCount,unsigned char *aElement)
 {
-	mElement = aElement;
-	mElementCount = aElementCount;
-	mElementIndex = 0;
-	mLastElement = &gElement[0];
-	mTStress = 0;
-	mNTStress = 0;
-	mKlattFramePars.mF0FundamentalFreq = 1330;
-	mTop = 1.1f * mKlattFramePars.mF0FundamentalFreq;
-	mKlattFramePars.mNasalPoleFreq = (int)mLastElement->mInterpolator[ELM_FN].mSteady;
-	mKlattFramePars.mFormant1ParallelBandwidth = mKlattFramePars.mFormant1Bandwidth = 60;
-	mKlattFramePars.mFormant2ParallelBandwidth = mKlattFramePars.mFormant2Bandwidth = 90;
-	mKlattFramePars.mFormant3ParallelBandwidth = mKlattFramePars.mFormant3Bandwidth = 150;
-//	mKlattFramePars.mFormant4ParallelBandwidth = (default)
+    mElement = aElement;
+    mElementCount = aElementCount;
+    mElementIndex = 0;
+    mLastElement = &gElement[0];
+    mTStress = 0;
+    mNTStress = 0;
+    mFrame.mF0FundamentalFreq = mBaseF0;
+    mTop = 1.1f * mFrame.mF0FundamentalFreq;
+    mFrame.mNasalPoleFreq = (int)mLastElement->mInterpolator[ELM_FN].mSteady;
+    mFrame.mFormant1ParallelBandwidth = mFrame.mFormant1Bandwidth = 60;
+    mFrame.mFormant2ParallelBandwidth = mFrame.mFormant2Bandwidth = 90;
+    mFrame.mFormant3ParallelBandwidth = mFrame.mFormant3Bandwidth = 150;
+//	mFrame.mFormant4ParallelBandwidth = (default)
 
-	// Set stress attack/decay slope 
-	mStressS.mTime = 40;
-	mStressE.mTime = 40;
-	mStressE.mValue = 0.0;
+    // Set stress attack/decay slope
+    mStressS.mTime = 40;
+    mStressE.mTime = 40;
+    mStressE.mValue = 0.0;
 }
 
 int klatt::synth(int aSampleCount, short *aSamplePointer)
 {
-	short *samp = aSamplePointer;
+    short *samp = aSamplePointer;
 
-	if (mElementIndex >= mElementCount)
-		return -1;
+    if (mElementIndex >= mElementCount)
+        return -1;
 
-	Element * currentElement = &gElement[mElement[mElementIndex++]];
-	int dur = mElement[mElementIndex++];
-	mElementIndex++; // skip stress 
+    Element * currentElement = &gElement[mElement[mElementIndex++]];
+    int dur = mElement[mElementIndex++];
+    mElementIndex++; // skip stress
 
-	// Skip zero length elements which are only there to affect
-	// boundary values of adjacent elements		
+    if (currentElement->mRK == 31) // "END"
+    {
+        // Reset the fundamental frequency top
+        mFrame.mF0FundamentalFreq = mBaseF0;
+        mTop = 1.1f * mFrame.mF0FundamentalFreq;
+    }
 
-	if (dur > 0)
-	{
-		Element * ne = (mElementIndex < mElementCount) ? &gElement[mElement[mElementIndex]] : &gElement[0];
-		Slope start[ELM_COUNT];
-		Slope end[ELM_COUNT];
-		int t;
+    // Skip zero length elements which are only there to affect
+    // boundary values of adjacent elements
 
-		if (currentElement->mRK > mLastElement->mRK)
-		{
-			set_trans(start, currentElement, mLastElement, 0, 's');
-			// we dominate last 
-		}
-		else
-		{
-			set_trans(start, mLastElement, currentElement, 1, 's');
-			// last dominates us 
-		}
+    if (dur > 0)
+    {
+        Element * ne = (mElementIndex < mElementCount) ? &gElement[mElement[mElementIndex]] : &gElement[0];
+        Slope start[ELM_COUNT];
+        Slope end[ELM_COUNT];
+        int t;
 
-		if (ne->mRK > currentElement->mRK)
-		{
-			set_trans(end, ne, currentElement, 1, 'e');
-			// next dominates us 
-		}
-		else
-		{
-			set_trans(end, currentElement, ne, 0, 'e');
-			// we dominate next 
-		}
+        if (currentElement->mRK > mLastElement->mRK)
+        {
+            set_trans(start, currentElement, mLastElement, 0, 's');
+            // we dominate last
+        }
+        else
+        {
+            set_trans(start, mLastElement, currentElement, 1, 's');
+            // last dominates us
+        }
 
-		for (t = 0; t < dur; t++, mTStress++)
-		{
-			float base = mTop * 0.8f; // 3 * top / 5 
-			float tp[ELM_COUNT];
-			int j;
+        if (ne->mRK > currentElement->mRK)
+        {
+            set_trans(end, ne, currentElement, 1, 'e');
+            // next dominates us
+        }
+        else
+        {
+            set_trans(end, currentElement, ne, 0, 'e');
+            // we dominate next
+        }
 
-			if (mTStress == mNTStress)
-			{
-				int j = mElementIndex;
-				mStressS = mStressE;
-				mTStress = 0;
-				mNTStress = dur;
+        for (t = 0; t < dur; t++, mTStress++)
+        {
+            float base = mTop * 0.8f; // 3 * top / 5
+            float tp[ELM_COUNT];
+            int j;
 
-				while (j <= mElementCount)
-				{
-					Element * e   = (j < mElementCount) ? &gElement[mElement[j++]] : &gElement[0];
-					int du = (j < mElementCount) ? mElement[j++] : 0;
-					int s  = (j < mElementCount) ? mElement[j++] : 3;
+            if (mTStress == mNTStress)
+            {
+                int j = mElementIndex;
+                mStressS = mStressE;
+                mTStress = 0;
+                mNTStress = dur;
 
-					if (s || e->mFeat & ELM_FEATURE_VWL)
-					{
-						int d = 0;
+                while (j <= mElementCount)
+                {
+                    Element * e   = (j < mElementCount) ? &gElement[mElement[j++]] : &gElement[0];
+                    int du = (j < mElementCount) ? mElement[j++] : 0;
+                    int s  = (j < mElementCount) ? mElement[j++] : 3;
 
-						if (s)
-							mStressE.mValue = (float) s / 3;
-						else
-							mStressE.mValue = (float) 0.1;
+                    if (s || e->mFeat & ELM_FEATURE_VWL)
+                    {
+                        int d = 0;
 
-						do
-						{
-							d += du;
-							e = (j < mElementCount) ? &gElement[mElement[j++]] : &gElement[0];
-							du = mElement[j++];
-						}
+                        if (s)
+                            mStressE.mValue = (float) s / 3;
+                        else
+                            mStressE.mValue = (float) 0.1;
 
-						while ((e->mFeat & ELM_FEATURE_VWL) && mElement[j++] == s);
+                        do
+                        {
+                            d += du;
+                            e = (j < mElementCount) ? &gElement[mElement[j++]] : &gElement[0];
+                            du = mElement[j++];
+                        }
 
-						mNTStress += d / 2;
+                        while ((e->mFeat & ELM_FEATURE_VWL) && mElement[j++] == s);
 
-						break;
-					}
+                        mNTStress += d / 2;
 
-					mNTStress += du;
-				}
-			}
+                        break;
+                    }
 
-			for (j = 0; j < ELM_COUNT; j++)
-			{
-				tp[j] = interpolate(&start[j], &end[j], (float) currentElement->mInterpolator[j].mSteady, t, dur);
-			}
+                    mNTStress += du;
+                }
+            }
 
-			// Now call the synth for each frame 
+            for (j = 0; j < ELM_COUNT; j++)
+            {
+                tp[j] = interpolate(&start[j], &end[j], (float) currentElement->mInterpolator[j].mSteady, t, dur);
+            }
 
-			mKlattFramePars.mF0FundamentalFreq = (int)(base + (mTop - base) * interpolate(&mStressS, &mStressE, (float) 0, mTStress, mNTStress));
-			mKlattFramePars.mVoicingAmpdb = mKlattFramePars.mPalallelVoicingAmpdb = (int)tp[ELM_AV];
-			mKlattFramePars.mFricationAmpdb = (int)tp[ELM_AF];
-			mKlattFramePars.mNasalZeroFreq = (int)tp[ELM_FN];
-			mKlattFramePars.mAspirationAmpdb = (int)tp[ELM_ASP];
-			mKlattFramePars.mVoicingBreathiness = (int)tp[ELM_AVC];
-			mKlattFramePars.mFormant1ParallelBandwidth = mKlattFramePars.mFormant1Bandwidth = (int)tp[ELM_B1];
-			mKlattFramePars.mFormant2ParallelBandwidth = mKlattFramePars.mFormant2Bandwidth = (int)tp[ELM_B2];
-			mKlattFramePars.mFormant3ParallelBandwidth = mKlattFramePars.mFormant3Bandwidth = (int)tp[ELM_B3];
-			mKlattFramePars.mFormant1Freq = (int)tp[ELM_F1];
-			mKlattFramePars.mFormant2Freq = (int)tp[ELM_F2];
-			mKlattFramePars.mFormant3Freq = (int)tp[ELM_F3];
+            // Now call the synth for each frame
 
-			// AMP_ADJ + is a kludge to get amplitudes up to klatt-compatible levels
-				
-				
-			//pars.mParallelNasalPoleAmpdb  = AMP_ADJ + tp[ELM_AN];
-				
-			mKlattFramePars.mBypassFricationAmpdb = AMP_ADJ + (int)tp[ELM_AB];
-			mKlattFramePars.mFormant5Ampdb = AMP_ADJ + (int)tp[ELM_A5];
-			mKlattFramePars.mFormant6Ampdb = AMP_ADJ + (int)tp[ELM_A6];
-			mKlattFramePars.mFormant1Ampdb = AMP_ADJ + (int)tp[ELM_A1];
-			mKlattFramePars.mFormant2Ampdb = AMP_ADJ + (int)tp[ELM_A2];
-			mKlattFramePars.mFormant3Ampdb = AMP_ADJ + (int)tp[ELM_A3];
-			mKlattFramePars.mFormant4Ampdb = AMP_ADJ + (int)tp[ELM_A4];
+            mFrame.mF0FundamentalFreq = (int)(base + (mTop - base) * interpolate(&mStressS, &mStressE, (float)0, mTStress, mNTStress));
+            mFrame.mVoicingAmpdb = mFrame.mPalallelVoicingAmpdb = (int)tp[ELM_AV];
+            mFrame.mFricationAmpdb = (int)tp[ELM_AF];
+            mFrame.mNasalZeroFreq = (int)tp[ELM_FN];
+            mFrame.mAspirationAmpdb = (int)tp[ELM_ASP];
+            mFrame.mVoicingBreathiness = (int)tp[ELM_AVC];
+            mFrame.mFormant1ParallelBandwidth = mFrame.mFormant1Bandwidth = (int)tp[ELM_B1];
+            mFrame.mFormant2ParallelBandwidth = mFrame.mFormant2Bandwidth = (int)tp[ELM_B2];
+            mFrame.mFormant3ParallelBandwidth = mFrame.mFormant3Bandwidth = (int)tp[ELM_B3];
+            mFrame.mFormant1Freq = (int)tp[ELM_F1];
+            mFrame.mFormant2Freq = (int)tp[ELM_F2];
+            mFrame.mFormant3Freq = (int)tp[ELM_F3];
 
-			parwave(&mKlattFramePars, samp);
+            // AMP_ADJ + is a kludge to get amplitudes up to klatt-compatible levels
 
-			samp += mNspFr;
 
-			// Declination of f0 envelope 0.25Hz / cS 
-			mTop -= 0.5;
-		}
-	}
+            //pars.mParallelNasalPoleAmpdb  = AMP_ADJ + tp[ELM_AN];
 
-	mLastElement = currentElement;
+            mFrame.mBypassFricationAmpdb = AMP_ADJ + (int)tp[ELM_AB];
+            mFrame.mFormant5Ampdb = AMP_ADJ + (int)tp[ELM_A5];
+            mFrame.mFormant6Ampdb = AMP_ADJ + (int)tp[ELM_A6];
+            mFrame.mFormant1Ampdb = AMP_ADJ + (int)tp[ELM_A1];
+            mFrame.mFormant2Ampdb = AMP_ADJ + (int)tp[ELM_A2];
+            mFrame.mFormant3Ampdb = AMP_ADJ + (int)tp[ELM_A3];
+            mFrame.mFormant4Ampdb = AMP_ADJ + (int)tp[ELM_A4];
 
-	return (int)(samp - aSamplePointer);
+            parwave(samp);
+
+            samp += mNspFr;
+
+            // Declination of f0 envelope 0.25Hz / cS
+            mTop -= mBaseDeclination;// 0.5;
+        }
+    }
+
+    mLastElement = currentElement;
+
+    return (int)(samp - aSamplePointer);
 }
 
 
-void klatt::init()
+void klatt::init(int aBaseFrequency, float aBaseSpeed, float aBaseDeclination, int aBaseWaveform)
 {
+    mBaseF0 = aBaseFrequency;
+    mBaseSpeed = aBaseSpeed;
+    mBaseDeclination = aBaseDeclination;
+    mBaseWaveform = aBaseWaveform;
+
     mSampleRate = 11025;
     mF0Flutter = 0;
+    mF0FundamentalFreq = mBaseF0;
+    mFrame.mF0FundamentalFreq = mBaseF0;
 
-	int FLPhz = (950 * mSampleRate) / 10000;
-	int BLPhz = (630 * mSampleRate) / 10000;
-	mNspFr = (int)(mSampleRate * 10) / 1000;
+    int FLPhz = (950 * mSampleRate) / 10000;
+    int BLPhz = (630 * mSampleRate) / 10000;
+    mNspFr = (int)(mSampleRate * mBaseSpeed) / 1000;
 
-	mDownSampLowPassFilter.initResonator(FLPhz, BLPhz, mSampleRate);
+    mDownSampLowPassFilter.initResonator(FLPhz, BLPhz, mSampleRate);
 
-	mNPer = 0;                        /* LG */
-	mT0 = 0;                          /* LG */
+    mNPer = 0;                        /* LG */
+    mT0 = 0;                          /* LG */
 
-	mVLast = 0;                       /* Previous output of voice  */
-	mNLast = 0;                       /* Previous output of random number generator  */
-	mGlotLast = 0;                    /* Previous value of glotout  */
+    mVLast = 0;                       /* Previous output of voice  */
+    mNLast = 0;                       /* Previous output of random number generator  */
+    mGlotLast = 0;                    /* Previous value of glotout  */
 }
 #ifdef __clang__
 #   pragma clang diagnostic pop
@@ -14268,122 +14370,123 @@ int xlate_string(const char *string, darray *phone)
 //----../src/audiosource/speech/soloud_speech.cpp-----------------------------------------------------------------------
 namespace SoLoud
 {
-	SpeechInstance::SpeechInstance(Speech *aParent)
-	{
-		mParent = aParent;			
-		mSynth.init();
-		mSample = new short[mSynth.mNspFr * 100];
-		mSynth.initsynth(mParent->mElement.getSize(), (unsigned char *)mParent->mElement.getData());
-		mOffset = 10;
-		mSampleCount = 10;
-	}
+    SpeechInstance::SpeechInstance(Speech *aParent)
+    {
+        mParent = aParent;
+        mSynth.init(mParent->mBaseFrequency, mParent->mBaseSpeed, mParent->mBaseDeclination, mParent->mBaseWaveform);
+        mSample = new short[mSynth.mNspFr * 100];
+        mSynth.initsynth(mParent->mElement.getSize(), (unsigned char *)mParent->mElement.getData());
+        mOffset = 10;
+        mSampleCount = 10;
+    }
 
-	SpeechInstance::~SpeechInstance(){
-	    delete[] mSample;
-	}
+    SpeechInstance::~SpeechInstance()
+    {
+       delete[] mSample;
+    }
 
-	static void writesamples(short * aSrc, float * aDst, int aCount)
-	{
-		int i;
-		for (i = 0; i < aCount; i++)
-		{
-			aDst[i] = aSrc[i] * (1 / (float)0x8000);
-		}
-	}
+    static void writesamples(short * aSrc, float * aDst, int aCount)
+    {
+        int i;
+        for (i = 0; i < aCount; i++)
+        {
+            aDst[i] = aSrc[i] * (1 / (float)0x8000);
+        }
+    }
 
-	void SpeechInstance::getAudio(float *aBuffer, unsigned int aSamples)
-	{
-		unsigned int samples_out = 0;
-		if (mSampleCount > mOffset)
-		{
-			unsigned int copycount = mSampleCount - mOffset;
-			if (copycount > aSamples) 
-			{
-				copycount = aSamples;
-			}
-			writesamples(mSample + mOffset, aBuffer, copycount);
-			mOffset += copycount;
-			samples_out += copycount;
-		}
+    unsigned int SpeechInstance::getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)
+    {
+        mSynth.init(mParent->mBaseFrequency, mParent->mBaseSpeed, mParent->mBaseDeclination, mParent->mBaseWaveform);
+        unsigned int samples_out = 0;
+        if (mSampleCount > mOffset)
+        {
+            unsigned int copycount = mSampleCount - mOffset;
+            if (copycount > aSamplesToRead)
+            {
+                copycount = aSamplesToRead;
+            }
+            writesamples(mSample + mOffset, aBuffer, copycount);
+            mOffset += copycount;
+            samples_out += copycount;
+        }
 
-		while (mSampleCount >= 0 && samples_out < aSamples)
-		{
-			mOffset = 0;
-			mSampleCount = mSynth.synth(mSynth.mNspFr, mSample);
-			if (mSampleCount > 0)
-			{
-				unsigned int copycount = mSampleCount;
-				if (copycount > aSamples - samples_out)
-				{
-					copycount = aSamples - samples_out;
-				}
-				writesamples(mSample, aBuffer + samples_out, copycount);
-				mOffset += copycount;
-				samples_out += copycount;				
-			}
-			else
-			if (mSampleCount < 0 && mFlags & AudioSourceInstance::LOOPING)
-			{
-				mSynth.init();
-				mSynth.initsynth(mParent->mElement.getSize(), (unsigned char *)mParent->mElement.getData());
-				mOffset = 10;
-				mSampleCount = 10;
-				mLoopCount++;
-			}
-		}
+        while (mSampleCount >= 0 && samples_out < aSamplesToRead)
+        {
+            mOffset = 0;
+            mSampleCount = mSynth.synth(mSynth.mNspFr, mSample);
+            if (mSampleCount > 0)
+            {
+                unsigned int copycount = mSampleCount;
+                if (copycount > aSamplesToRead - samples_out)
+                {
+                    copycount = aSamplesToRead - samples_out;
+                }
+                writesamples(mSample, aBuffer + samples_out, copycount);
+                mOffset += copycount;
+                samples_out += copycount;
+            }
+        }
+        return samples_out;
+    }
 
-		if (mSampleCount < 0 && aSamples > samples_out)
-		{
-			memset(aBuffer + samples_out, 0, sizeof(float) * (aSamples - samples_out));				
-		}
-	}
+    result SpeechInstance::rewind()
+    {
+        mSynth.init(mParent->mBaseFrequency, mParent->mBaseSpeed, mParent->mBaseDeclination, mParent->mBaseWaveform);
+        mSynth.initsynth(mParent->mElement.getSize(), (unsigned char *)mParent->mElement.getData());
+        mOffset = 10;
+        mSampleCount = 10;
+        mStreamPosition = 0.0f;
+        return 0;
+    }
 
-	result SpeechInstance::rewind()
-	{
-		mSynth.init();
-		mSynth.initsynth(mParent->mElement.getSize(), (unsigned char *)mParent->mElement.getData());
-		mOffset = 10;
-		mSampleCount = 10;
-		mStreamTime = 0;
-		return 0;
-	}
+    bool SpeechInstance::hasEnded()
+    {
+        if (mSampleCount < 0)
+            return 1;
+        return 0;
+    }
 
-	bool SpeechInstance::hasEnded()
-	{
-			
-		if (mSampleCount < 0)
-			return 1;				
-		return 0;
-	}	
+    result Speech::setParams(unsigned int aBaseFrequency, float aBaseSpeed, float aBaseDeclination, int aBaseWaveform)
+    {
+        mBaseFrequency = aBaseFrequency;
+        mBaseSpeed = aBaseSpeed;
+        mBaseDeclination = aBaseDeclination;
+        mBaseWaveform = aBaseWaveform;
+        return 0;
+    }
 
-	result Speech::setText(const char *aText)
-	{
-		if (aText == NULL)
-			return INVALID_PARAMETER;
+    result Speech::setText(const char *aText)
+    {
+        if (aText == NULL)
+            return INVALID_PARAMETER;
 
-		stop();
-		mElement.clear();
-		darray phone;
-		xlate_string(aText, &phone);
-		mFrames = klatt::phone_to_elm(phone.getData(), phone.getSize(), &mElement);
-		return 0;
-	}
+        stop();
+        mElement.clear();
+        darray phone;
+        xlate_string(aText, &phone);
+        mFrames = klatt::phone_to_elm(phone.getData(), phone.getSize(), &mElement);
+        return 0;
+    }
 
-	Speech::Speech()
-	{
-		mBaseSamplerate = 11025;
-		mFrames = 0;
-	}
+    Speech::Speech()
+    {
+        mBaseSamplerate = 11025;
+        mFrames = 0;
+        mBaseFrequency = 1330;
+        mBaseSpeed = 10;
+        mBaseDeclination = 0.5f;
+        mBaseWaveform = KW_SQUARE;
+    }
 
-	Speech::~Speech()
-	{
-		stop();
-	}
+    Speech::~Speech()
+    {
+        stop();
+    }
 
-	AudioSourceInstance *Speech::createInstance()
-	{
-		return new SpeechInstance(this);
-	}	
+    AudioSourceInstance *Speech::createInstance()
+    {
+        return new SpeechInstance(this);
+    }
 };
 #endif // YES_IMGUISOLOUD_SPEECH
 
@@ -16680,6 +16783,9 @@ BasicPiano::BasicPiano() {
     gWaveSelect = 2; // SoLoud::Basicwave::SQUARE
     gWave.setWaveform(gWaveSelect);
 }
+BasicPiano::~BasicPiano() {
+    inited = false;
+}
 
 void BasicPiano::init(SoLoud::Soloud &gSoloud, const int *pOptional18KeysOverrideFromFDiesisToB) {
     inited = true;
@@ -16710,6 +16816,9 @@ void BasicPiano::init(SoLoud::Soloud &gSoloud, const int *pOptional18KeysOverrid
 int BasicPiano::DefaultKeys[18] = {(int)'1',(int)'q',(int)'2',(int)'w',(int)'3',(int)'e',(int)'r',(int)'5',(int)'t',(int)'6',
                                    (int)'y',(int)'u',(int)'8',(int)'i',(int)'9',(int)'o',(int)'0',(int)'p'};
 
+bool BasicPiano::DefaultKeysDown[18] = {false,false,false,false,false,false,false,false,false,false,
+                                       false,false,false,false,false,false,false,false};
+
 void BasicPiano::play() {
     if (!inited) return;
 
@@ -16725,8 +16834,8 @@ void BasicPiano::play() {
     static bool KeysDown[128]={0};
 
 #   define NOTEKEY(x, p)\
-    if (io.KeysDown[x] && !KeysDown[x]) { plonk((float)pow(0.943875f, p));KeysDown[x]=true;} \
-    if (!io.KeysDown[x] && KeysDown[x]) { unplonk((float)pow(0.943875f, p));KeysDown[x]=false;}
+    if (io.KeysDown[x] && !KeysDown[x]) { plonk((float)pow(0.943875f, p));KeysDown[x]=DefaultKeysDown[18-(p)]=true;} \
+    if (!io.KeysDown[x] && KeysDown[x]) { unplonk((float)pow(0.943875f, p));KeysDown[x]=DefaultKeysDown[18-(p)]=false;}
 
     for (int i=0;i<18;i++) {
         NOTEKEY(DefaultKeys[i],18-i);
@@ -16756,9 +16865,68 @@ void BasicPiano::play() {
 #   undef NOTEKEY
 }
 
+static void BasicPianoImDrawListPathFillAndStroke(ImDrawList *dl, const ImU32 &fillColor, const ImU32 &strokeColor, bool strokeClosed, float strokeThickness)    {
+    if (!dl) return;
+    if ((fillColor & IM_COL32_A_MASK) != 0) dl->AddConvexPolyFilled(dl->_Path.Data, dl->_Path.Size, fillColor);
+    if ((strokeColor& IM_COL32_A_MASK)!= 0 && strokeThickness>0) dl->AddPolyline(dl->_Path.Data, dl->_Path.Size, strokeColor, strokeClosed, strokeThickness);
+    dl->PathClear();
+}
+static void BasicPianoImDrawListAddRect(ImDrawList *dl, const ImVec2 &a, const ImVec2 &b, const ImU32 &fillColor, const ImU32 &strokeColor, float rounding, int rounding_corners, float strokeThickness) {
+    if (!dl || (((fillColor & IM_COL32_A_MASK) == 0) && ((strokeColor & IM_COL32_A_MASK) == 0)))  return;
+    dl->PathRect(a, b, rounding, rounding_corners);
+    BasicPianoImDrawListPathFillAndStroke(dl,fillColor,strokeColor,true,strokeThickness);
+}
+
 void BasicPiano::renderGUI() {
     if (!inited) return;
     ImGui::PushID(this);
+    // Start Draw Keyboard here
+    {
+        ImGui::Spacing();ImGui::Spacing();
+        const ImGuiWindow* currentWindow = ImGui::GetCurrentWindow();
+        const ImVec2 cursorPos = ImGui::GetCursorPos();
+        ImVec2 keyboardSize = ImGui::GetContentRegionAvail();
+        keyboardSize.y = keyboardSize.x*0.3f;
+        const ImVec2 keyboardStartPos(currentWindow->Pos.x-currentWindow->Scroll.x+cursorPos.x,currentWindow->Pos.y-currentWindow->Scroll.y+cursorPos.y);
+        const float whiteKeyWidth = keyboardSize.x/10.25f;   // 10 white keys + one half black key
+        const float blackKeyWidth = whiteKeyWidth*0.5f;
+        const ImVec2 whiteKeysStartPos(keyboardStartPos.x+whiteKeyWidth*0.25f,keyboardStartPos.y);
+
+        ImU32 white = IM_COL32(255,255,255,255);
+        ImU32 black = IM_COL32(0,0,0,255);
+        ImU32 pressedColor = IM_COL32(255,0,0,255);
+        float thickness=2.f;
+
+        {
+            static const int whiteKeysId[10] = {1,3,5,6,8,10,11,13,15,17};
+            static const int numWhiteKeys = (int) (sizeof(whiteKeysId)/sizeof(whiteKeysId[0]));
+            ImVec2 startPos = whiteKeysStartPos;
+            ImVec2 endPos(startPos.x+whiteKeyWidth,startPos.y+keyboardSize.y);
+            int id =0;
+            for (int i=0;i<numWhiteKeys;i++)    {
+                id = whiteKeysId[i];
+                endPos.x = startPos.x+whiteKeyWidth;
+                BasicPianoImDrawListAddRect(currentWindow->DrawList,startPos,endPos,DefaultKeysDown[id] ? pressedColor : white,black,0.f,0,thickness);
+                startPos.x = endPos.x;
+            }
+            static const int blackKeysId[8] = {0,2,4,7,9,12,14,16};
+            static const int numBlackKeys = (int) (sizeof(blackKeysId)/sizeof(blackKeysId[0]));
+            endPos.y = keyboardStartPos.y+keyboardSize.y*0.7f;
+            for (int i=0;i<numBlackKeys;i++)    {
+                id = blackKeysId[i];
+                startPos.x = keyboardStartPos.x + ((float)blackKeysId[i]*blackKeyWidth);
+                if (id>4) startPos.x+=blackKeyWidth;
+                if (id>9) startPos.x+=blackKeyWidth;
+                if (id>16) startPos.x+=blackKeyWidth;
+                endPos.x = startPos.x+blackKeyWidth;
+                BasicPianoImDrawListAddRect(currentWindow->DrawList,startPos,endPos,DefaultKeysDown[id] ? pressedColor : black,black,0.f,0,thickness);
+            }
+
+        }
+        ImGui::SetCursorPos(ImVec2(cursorPos.x,cursorPos.y+keyboardSize.y));
+        ImGui::Spacing();ImGui::Spacing();
+    }
+    // End Draw Keyboard here
     static const char* forms[] = {"Sine","Triangle","Square","Saw","InverseSaw"};
     ImGui::PushItemWidth(ImGui::GetWindowWidth()/3);
     if (ImGui::Combo("Waveform##SoLoudPianoWaveForm",&gWaveSelect,&forms[0],sizeof forms/sizeof forms[0],sizeof forms/sizeof forms[0])) {
@@ -16847,14 +17015,16 @@ void BasicPiano::plonk(float rel, float vol) {
     pSoloud->setRelativePlaySpeed(handle, 2 * rel);
     gPlonked[i].mHandle = handle;
     gPlonked[i].mRel = rel;
+    //printf("plonk(rel:%1.3f,vol:%1.3f): gPlonked[%d].mRel = %1.3f;\n",rel,vol,i,gPlonked[i].mRel);fflush(stdin);
 }
 void BasicPiano::unplonk(float rel) {
     int i = 0;
-    while (gPlonked[i].mRel != rel &&i < 128) i++;
+    while (fabs(gPlonked[i].mRel-rel)>0.000001f && i < 128) i++;
     if (i == 128) return;
     pSoloud->fadeVolume(gPlonked[i].mHandle, 0, gRelease);
     pSoloud->scheduleStop(gPlonked[i].mHandle, gRelease);
-    gPlonked[i].mHandle = 0;
+    gPlonked[i].mHandle = 0; gPlonked[i].mRel = 0.f;
+    //printf("unplonk(rel:%1.3f);\n",rel);fflush(stdin);
 }
 void BasicPiano::replonk(float vol)  {
     int i = 0;

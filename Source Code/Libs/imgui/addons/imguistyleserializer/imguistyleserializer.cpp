@@ -386,6 +386,9 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
     if (styleEnum<0 || styleEnum>=ImGuiStyle_Count) return false;
     style = ImGuiStyle();
     switch (styleEnum) {
+    case ImGuiStyle_DefaultClassic:
+	ImGui::StyleColorsClassic(&style);
+    break;
     case ImGuiStyle_DefaultDark:
 	ImGui::StyleColorsDark(&style);
     break;
@@ -454,9 +457,9 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(1.00f, 0.33f, 0.38f, 0.37f);
 	style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(1.00f, 0.73f, 0.69f, 0.41f);
 	style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(1.00f, 1.00f, 0.75f, 0.90f);
-	//style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.73f, 0.20f, 0.00f, 0.68f);
-	//style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(1.00f, 0.27f, 0.27f, 0.50f);
-	//style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.38f, 0.23f, 0.12f, 0.50f);
+	/*style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.73f, 0.20f, 0.00f, 0.68f);
+	style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(1.00f, 0.27f, 0.27f, 0.50f);
+	style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.38f, 0.23f, 0.12f, 0.50f);*/
 	style.Colors[ImGuiCol_PlotLines]             = ImVec4(0.73f, 0.68f, 0.65f, 1.00f);
 	style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -521,9 +524,9 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.61f, 0.22f, 0.22f, 1.00f);
 	style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.69f, 0.24f, 0.24f, 1.00f);
 	style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.80f, 0.28f, 0.28f, 1.00f);
-	//style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.67f, 0.00f, 0.00f, 0.50f);
-	//style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.78f, 0.00f, 0.00f, 0.60f);
-	//style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.92f, 0.00f, 0.00f, 1.00f);
+	/*style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.67f, 0.00f, 0.00f, 0.50f);
+	style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.78f, 0.00f, 0.00f, 0.60f);
+	style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.92f, 0.00f, 0.00f, 1.00f);*/
 	style.Colors[ImGuiCol_PlotLines]             = ImVec4(0.17f, 0.35f, 0.03f, 1.00f);
 	style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(0.41f, 0.81f, 0.06f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.81f, 0.00f, 0.00f, 1.00f);
@@ -569,9 +572,9 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(1.00f, 1.00f, 1.00f, 0.00f);
 	style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
 	style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-	//style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.59f, 0.59f, 0.59f, 0.50f);
-	//style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
-	//style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
+	/*style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.59f, 0.59f, 0.59f, 0.50f);
+	style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
+	style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);*/
 	style.Colors[ImGuiCol_PlotLines]             = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
 	style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -646,9 +649,9 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(1.00f, 1.00f, 1.00f, 0.30f);
 	style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(1.00f, 1.00f, 1.00f, 0.60f);
 	style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(1.00f, 1.00f, 1.00f, 0.90f);
-	//style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.70f, 0.72f, 0.71f, 1.00f);
-	//style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.83f, 0.86f, 0.84f, 1.00f);
-	//style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.70f, 0.70f, 0.70f, 1.00f);
+	/*style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.70f, 0.72f, 0.71f, 1.00f);
+	style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.83f, 0.86f, 0.84f, 1.00f);
+	style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.70f, 0.70f, 0.70f, 1.00f);*/
 	style.Colors[ImGuiCol_PlotLines]             = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(0.90f, 0.78f, 0.37f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.90f, 0.78f, 0.37f, 1.00f);
@@ -698,9 +701,9 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
 	style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
 	style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-	//style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.59f, 0.59f, 0.59f, 0.50f);
-	//style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
-	//style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
+	/*style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.59f, 0.59f, 0.59f, 0.50f);
+	style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
+	style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);*/
 	style.Colors[ImGuiCol_PlotLines]             = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
 	style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -777,9 +780,9 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.00f, 0.00f, 0.00f, 0.04f);
 	style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.25f, 1.00f, 0.00f, 0.78f);
 	style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
-	//style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.40f, 0.39f, 0.38f, 0.16f);
-	//style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.40f, 0.39f, 0.38f, 0.39f);
-	//style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.40f, 0.39f, 0.38f, 1.00f);
+	/*style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.40f, 0.39f, 0.38f, 0.16f);
+	style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.40f, 0.39f, 0.38f, 0.39f);
+	style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.40f, 0.39f, 0.38f, 1.00f);*/
 	style.Colors[ImGuiCol_PlotLines]             = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
 	style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
@@ -827,9 +830,9 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(1.00f, 1.00f, 1.00f, 0.30f);
 	style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(1.00f, 1.00f, 1.00f, 0.60f);
 	style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(1.00f, 1.00f, 1.00f, 0.90f);
-	//style.Colors[ImGuiCol_CloseButton]           = ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
-	//style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.90f, 0.90f, 0.90f, 0.60f);
-	//style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.70f, 0.70f, 0.70f, 1.00f);
+	/*style.Colors[ImGuiCol_CloseButton]           = ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
+	style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.90f, 0.90f, 0.90f, 0.60f);
+	style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.70f, 0.70f, 0.70f, 1.00f);*/
 	style.Colors[ImGuiCol_PlotLines]             = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -879,9 +882,9 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.00f, 0.00f, 0.00f, 0.30f);
 	style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.00f, 0.00f, 0.00f, 0.37f);
 	style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.00f, 0.00f, 0.00f, 0.47f);
-	//style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.00f, 0.00f, 0.00f, 0.18f);
-	//style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.10f, 0.10f, 0.10f, 0.12f);
-	//style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.30f, 0.30f, 0.30f, 0.08f);
+	/*style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.00f, 0.00f, 0.00f, 0.18f);
+	style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.10f, 0.10f, 0.10f, 0.12f);
+	style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.30f, 0.30f, 0.30f, 0.08f);*/
 	style.Colors[ImGuiCol_PlotLines]             = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
 	style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(0.69f, 0.56f, 0.12f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.64f, 0.50f, 0.00f, 1.00f);
@@ -935,9 +938,9 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.36f, 0.36f, 0.36f, 1.00f);
 	style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
 	style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-	//style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
-	//style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
-	///style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
+	/*style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
+	style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
+	style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);*/
 	style.Colors[ImGuiCol_PlotLines]             = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
 	style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
 	style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -953,7 +956,7 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 
     return true;
 }
-static const char* DefaultStyleNames[ImGuiStyle_Count]={"Default","DefaultDark","DefaultLight","Gray","Light","OSX","OSXOpaque","DarkOpaque","Soft","EdinBlack","EdinWhite","Maya","DefaultInverse","OSXInverse","OSXOpaqueInverse","DarkOpaqueInverse"};
+static const char* DefaultStyleNames[ImGuiStyle_Count]={"DefaultClassic","DefaultDark","DefaultLight","Gray","Light","OSX","OSXOpaque","DarkOpaque","Soft","EdinBlack","EdinWhite","Maya","DefaultInverse","OSXInverse","OSXOpaqueInverse","DarkOpaqueInverse"};
 const char** GetDefaultStyleNames() {return &DefaultStyleNames[0];}
 
 } // namespace ImGui

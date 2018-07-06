@@ -940,8 +940,8 @@ bool PdfPagePanel::imageZoomAndPan(const ImVec2& size)
             ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
         }
     }
-    else if (isRMBclickedForContextMenu) {if (!(isHoveredRect=ImGui::IsItemHoveredRect())) isRMBclickedForContextMenu = false;}
-    else if (isLMBMouseDragging) isHoveredRect=ImGui::IsItemHoveredRect();
+    else if (isRMBclickedForContextMenu) {if (!(isHoveredRect=ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly))) isRMBclickedForContextMenu = false;}
+    else if (isLMBMouseDragging) isHoveredRect=ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly);
 
     const float zoomFactor = .5/zoom;
     if (rv) {

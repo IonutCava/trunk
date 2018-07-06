@@ -14,7 +14,7 @@ static const bool* gpShowCentralWindow = NULL;    // We'll bind it to a "manual"
 
 
 #ifdef TEST_ICONS_INSIDE_TTF
-#include "fonts/Icons/FontAwesome/definitions.h"
+#include "fonts/Icons/FontAwesome4/definitions.h"
 static void DrawAllFontAwesomeIcons();  // defined at the bottom of this file
 
 #ifndef NO_IMGUIFILESYSTEM  // Optional stuff to enhance file system dialogs with icons
@@ -58,6 +58,7 @@ static ImVec4 gClearColor = gDefaultClearColor;
 
 // Here are two static methods useful to handle the change of size of the togglable mainMenu we will use
 // Returns the height of the main menu based on the current font (from: ImGui::CalcMainMenuHeight() in imguihelper.h)
+// However according to https://github.com/ocornut/imgui/issues/252 this approach can fail [Better call ImGui::GetWindowSize().y from inside the menu and store the result somewhere]
 inline static float CalcMainMenuHeight() {
     ImGuiIO& io = ImGui::GetIO();
     ImGuiStyle& style = ImGui::GetStyle();
@@ -258,14 +259,14 @@ void TabContentProvider(ImGui::TabWindow::TabLabel* tab,ImGui::TabWindow& parent
             ImGui::Spacing();
 
 #           ifdef IMGUISTYLESERIALIZER_H_
-            static int styleEnumNum = 0;
+            static int styleEnumNum = 1;
             ImGui::PushItemWidth(ImGui::GetWindowWidth()*0.44f);
             if (ImGui::Combo("Main Style Chooser",&styleEnumNum,ImGui::GetDefaultStyleNames(),(int) ImGuiStyle_Count,(int) ImGuiStyle_Count)) {
                 ImGui::ResetStyle(styleEnumNum);
             }
             ImGui::PopItemWidth();
             if (ImGui::IsItemHovered()) {
-                if   (styleEnumNum==ImGuiStyle_Default)      ImGui::SetTooltip("%s","\"Default\"\nThis is the default\nclassic ImGui theme");
+                if   (styleEnumNum==ImGuiStyle_DefaultClassic)      ImGui::SetTooltip("%s","\"Default\"\nThis is the default\nclassic ImGui theme");
                 else if (styleEnumNum==ImGuiStyle_DefaultDark)      ImGui::SetTooltip("%s","\"DefaultDark\"\nThis is the default\ndark ImGui theme");
                 else if (styleEnumNum==ImGuiStyle_DefaultLight)      ImGui::SetTooltip("%s","\"DefaultLight\"\nThis is the default\nlight ImGui theme");
                 else if (styleEnumNum==ImGuiStyle_Gray)   ImGui::SetTooltip("%s","\"Gray\"\nThis is the default theme of first demo");
@@ -994,12 +995,12 @@ void DrawDockedWindows(ImGui::PanelManagerWindowData& wd)    {
             // Here we test the Nav feature (not serialized)
             ImGui::Spacing();
             unsigned int* pNavFlags = (unsigned int*) &ImGui::GetIO().ConfigFlags;
-            ImGui::AlignFirstTextHeightToWidgets();ImGui::TextUnformatted("ConfigFlags:");
+            ImGui::AlignTextToFramePadding();ImGui::TextUnformatted("ConfigFlags:");
             ImGui::SameLine();ImGui::CheckboxFlags("NavEnableKeyboard",pNavFlags,ImGuiConfigFlags_NavEnableKeyboard);
-#           ifdef IMGUI_USE_GLFW_BINDING
-            ImGui::SameLine();ImGui::CheckboxFlags("NavEnableGamepad",pNavFlags,ImGuiConfigFlags_NavEnableGamepad);
-#           endif //IMGUI_USE_GLFW_BINDING
-            ImGui::SameLine();ImGui::CheckboxFlags("NavMoveMouse",pNavFlags,ImGuiConfigFlags_NavMoveMouse);
+            if (ImGui::GetIO().BackendFlags&ImGuiBackendFlags_HasGamepad)   {
+                ImGui::SameLine();ImGui::CheckboxFlags("NavEnableGamepad",pNavFlags,ImGuiConfigFlags_NavEnableGamepad);
+            }
+            ImGui::SameLine();ImGui::CheckboxFlags("NavMoveMouse",pNavFlags,ImGuiConfigFlags_NavEnableSetMousePos);
             //ImGui::SameLine();ImGui::CheckboxFlags("NavNoCaptureKeyboard",pNavFlags,ImGuiConfigFlags_NavNoCaptureKeyboard);
             if (ImGui::GetIO().ConfigFlags&ImGuiConfigFlags_NavEnableKeyboard) {ImGui::SameLine(0,30);ImGui::TextDisabled("%s","Keys: CTRL+TAB and CTRL+SHIFT+TAB, Space and Esc, Arrows");}
 
@@ -1047,19 +1048,22 @@ void DrawDockedWindows(ImGui::PanelManagerWindowData& wd)    {
     else {
         // Here we draw our toggle windows (in our case ToggleWindowNames) in the usual way:
         // We can use -1.f for alpha here, instead of mgr.getDockedWindowsAlpha(), that can be too low (but choose what you like)
-        if (ImGui::Begin(wd.name,&wd.open,wd.size,-1.f,ImGuiWindowFlags_NoSavedSettings))  {
+        //if (ImGui::Begin(wd.name,&wd.open,wd.size,-1.f,ImGuiWindowFlags_NoSavedSettings)) // Old API
+        ImGui::SetNextWindowSize(wd.size, ImGuiCond_FirstUseEver);
+        if (ImGui::Begin(wd.name,&wd.open,ImGuiWindowFlags_NoSavedSettings))
+        {
             if (strcmp(wd.name,ToggleWindowNames[0])==0)   {
                 // Draw Toggle Window 1
-                ImGui::SetWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x*0.15f,ImGui::GetIO().DisplaySize.y*0.24f),ImGuiSetCond_FirstUseEver);
-                ImGui::SetWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x*0.25f,ImGui::GetIO().DisplaySize.y*0.24f),ImGuiSetCond_FirstUseEver);
+                ImGui::SetWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x*0.15f,ImGui::GetIO().DisplaySize.y*0.24f),ImGuiCond_FirstUseEver);
+                ImGui::SetWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x*0.25f,ImGui::GetIO().DisplaySize.y*0.24f),ImGuiCond_FirstUseEver);
 
                 ImGui::Text("Hello world from toggle window \"%s\"",wd.name);                
             }
             else
             {
                 // Draw Toggle Window
-                ImGui::SetWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x*0.25f,ImGui::GetIO().DisplaySize.y*0.34f),ImGuiSetCond_FirstUseEver);
-                ImGui::SetWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x*0.5f,ImGui::GetIO().DisplaySize.y*0.34f),ImGuiSetCond_FirstUseEver);
+                ImGui::SetWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x*0.25f,ImGui::GetIO().DisplaySize.y*0.34f),ImGuiCond_FirstUseEver);
+                ImGui::SetWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x*0.5f,ImGui::GetIO().DisplaySize.y*0.34f),ImGuiCond_FirstUseEver);
                 ImGui::Text("Hello world from toggle window \"%s\"",wd.name);
 
                 //ImGui::Checkbox("wd.open",&wd.open);  // This can be used to close the window too
@@ -1084,7 +1088,8 @@ void DrawGL()	// Mandatory
             if (iqs.x>ImGui::GetStyle().WindowMinSize.x && iqs.y>ImGui::GetStyle().WindowMinSize.y) {
                 ImGui::SetNextWindowPos(mgr.getCentralQuadPosition());
                 ImGui::SetNextWindowSize(mgr.getCentralQuadSize());
-                if (ImGui::Begin("Central Window",NULL,ImVec2(0,0),mgr.getDockedWindowsAlpha(),ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove  | ImGuiWindowFlags_NoResize | mgr.getDockedWindowsExtraFlags() /*| ImGuiWindowFlags_NoBringToFrontOnFocus*/))    {
+                ImGui::SetNextWindowBgAlpha(mgr.getDockedWindowsAlpha());
+                if (ImGui::Begin("Central Window",NULL,ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove  | ImGuiWindowFlags_NoResize | mgr.getDockedWindowsExtraFlags() /*| ImGuiWindowFlags_NoBringToFrontOnFocus*/))    {
 #                   ifndef NO_IMGUITABWINDOW
                     tabWindows[0].render(); // Must be called inside "its" window (and sets isInited() to false). [ChildWindows can't be used here (but they can be used inside Tab Pages). Basically all the "Central Window" must be given to 'tabWindow'.]
 #                   else // NO_IMGUITABWINDOW
@@ -1206,7 +1211,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,LPSTR lpCmdLine,
     static const ImWchar iconFontRanges[] ={ICON_MIN_FA,ICON_MAX_FA,0};
     ImFontConfig fntCfg;fntCfg.MergeMode = true;fntCfg.PixelSnapH = true;
     fntCfg.OversampleV=fntCfg.OversampleH=1;    // To save texture memory (but commenting it out makes icons look better)
-    gImGuiInitParams.fonts.push_back(ImImpl_InitParams::FontData("fonts/Icons/FontAwesome/font.ttf",fontSizeInPixels,&iconFontRanges[0],&fntCfg));
+    gImGuiInitParams.fonts.push_back(ImImpl_InitParams::FontData("fonts/Icons/FontAwesome4/font.ttf",fontSizeInPixels,&iconFontRanges[0],&fntCfg));
     }
 #   endif //TEST_ICONS_INSIDE_TTF
 

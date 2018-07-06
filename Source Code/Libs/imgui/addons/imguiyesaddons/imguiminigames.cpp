@@ -314,11 +314,11 @@ namespace ImGuiMiniGames {
 
         ImGuiIO& io = ImGui::GetIO();
         if (mustReInit) ImGui::SetNextWindowFocus();
-        ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImGui::ColorConvertU32ToFloat4(style.colors[Mine::Style::Color_Background]));
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::ColorConvertU32ToFloat4(style.colors[Mine::Style::Color_Background]));
     ImGui::BeginChild("Mine Game Scrolling Region", ImVec2(0,0), false,fitToScreen ? (ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse) : ImGuiWindowFlags_HorizontalScrollbar);
 
         // Following line is important if we want to avoid clicking on the window just to get the focus back (AFAICS, but there's probably some better way...)
-        const bool isFocused = ImGui::IsWindowFocused() || ImGui::IsRootWindowFocused() || (ImGui::GetCurrentWindow() && ImGui::GetCurrentWindow()->Active);
+        const bool isFocused = ImGui::IsWindowFocused() || ImGui::IsWindowFocused(ImGuiFocusedFlags_RootWindow) || (ImGui::GetCurrentWindow() && ImGui::GetCurrentWindow()->Active);
         const bool isHovered = ImGui::IsWindowHovered();
         ImGuiWindow* window = ImGui::GetCurrentWindow();
 
@@ -1077,11 +1077,11 @@ namespace ImGuiMiniGames {
 
             ImGuiIO& io = ImGui::GetIO();
             if (mustReInit) ImGui::SetNextWindowFocus();
-            ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImGui::ColorConvertU32ToFloat4(style.colors[Sudoku::Style::Color_Background]));
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::ColorConvertU32ToFloat4(style.colors[Sudoku::Style::Color_Background]));
             ImGui::BeginChild("Sudoku Game Scrolling Region", ImVec2(0,0), false,ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);
 
             // Following line is important if we want to avoid clicking on the window just to get the focus back (AFAICS, but there's probably some better way...)
-            const bool isFocused = ImGui::IsWindowFocused() || ImGui::IsRootWindowFocused() || (ImGui::GetCurrentWindow() && ImGui::GetCurrentWindow()->Active);
+            const bool isFocused = ImGui::IsWindowFocused() || ImGui::IsWindowFocused(ImGuiFocusedFlags_RootWindow) || (ImGui::GetCurrentWindow() && ImGui::GetCurrentWindow()->Active);
             const bool isHovered = ImGui::IsWindowHovered();
             ImGuiWindow* window = ImGui::GetCurrentWindow();
 
@@ -1655,11 +1655,11 @@ namespace ImGuiMiniGames {
 
 	    //ImGuiIO& io = ImGui::GetIO();
             if (mustReInit) ImGui::SetNextWindowFocus();
-            ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImGui::ColorConvertU32ToFloat4(style.colors[Fifteen::Style::Color_Background]));
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::ColorConvertU32ToFloat4(style.colors[Fifteen::Style::Color_Background]));
             ImGui::BeginChild("Fifteen Game Scrolling Region", ImVec2(0,0), false,ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);
 
             // Following line is important if we want to avoid clicking on the window just to get the focus back (AFAICS, but there's probably some better way...)
-            const bool isFocused = ImGui::IsWindowFocused() || ImGui::IsRootWindowFocused() || (ImGui::GetCurrentWindow() && ImGui::GetCurrentWindow()->Active);
+            const bool isFocused = ImGui::IsWindowFocused() || ImGui::IsWindowFocused(ImGuiFocusedFlags_RootWindow) || (ImGui::GetCurrentWindow() && ImGui::GetCurrentWindow()->Active);
             const bool isHovered = ImGui::IsWindowHovered();
             ImGuiWindow* window = ImGui::GetCurrentWindow();
 

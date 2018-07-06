@@ -6026,7 +6026,7 @@ struct StbImage {
                 ImGui::PushItemWidth(ImGui::GetWindowWidth()*0.4f);
                 if (ImGui::InputInt("Size##GaussianBlurSize",&gaussianBlurKernelSize,2,5)) {if (gaussianBlurKernelSize%2==0) --gaussianBlurKernelSize;if (gaussianBlurKernelSize<3) gaussianBlurKernelSize=3;}
                 if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s","Kernel extension in pixels\nIt affects processing speed");
-                if (ImGui::InputFloat("Power##GaussianBlurPower",&gaussianBlurPower,0.02f,0.1f,2)) {if (gaussianBlurPower<0.001f) gaussianBlurPower=0.001f;}
+                if (ImGui::InputFloat("Power##GaussianBlurPower",&gaussianBlurPower,0.02f,0.1f,"%1.2f")) {if (gaussianBlurPower<0.001f) gaussianBlurPower=0.001f;}
                 if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s","Bigger values make\nthe result blurrier\n(using the same kernel size)");
                 ImGui::PopItemWidth();
                 ImGui::EndGroup();
@@ -6334,7 +6334,7 @@ struct StbImage {
 
             ImGui::BeginGroup();
             ImGui::Text("Zoom:");
-            if (ImGui::InputFloat("%",&zoom,1.f/16.f,1.f/8.f,2)) {if (zoom<1) zoom=1.f;}
+            if (ImGui::InputFloat("%",&zoom,1.f/16.f,1.f/8.f,"%1.2f")) {if (zoom<1) zoom=1.f;}
             if (ImGui::Button("Auto")) {zoom = 1.f;zoomCenter=ImVec2(0.5f,0.5f);}
             ImGui::EndGroup();
 

@@ -48,7 +48,8 @@ void DrawGL()	// Mandatory
     ImImpl_ClearColorBuffer(ImVec4(0.5f, 0.5f, 0.5f, 1.0f));    // Warning: it does not clear depth buffer
 
     static bool open = true;
-    ImGui::Begin("imguicodeeditor (WIP: UNUSABLE)", &open, ImVec2(800,600));
+    ImGui::SetNextWindowSize(ImVec2(800,600));
+    if (ImGui::Begin("imguicodeeditor (WIP: UNUSABLE)", &open)) {
     //io.FontDefault = io.Fonts->Fonts[FNT_ITALIC];
     //ImGui::Text("Hello, world!");   // This changes if we change the dafault ImGui Font
     //ImGui::TextColored(FNT_BOLDITALIC,KNOWNIMGUICOLOR_YELLOW,"%s","Hello,");ImGui::SameLine(0,0);ImGui::Text(FNT_NORMAL,"%s"," world!");   // This stays the same
@@ -64,7 +65,7 @@ void DrawGL()	// Mandatory
     ce.render();
 
     //static const std::string myText = ce.Lines.getText();
-
+    }
     ImGui::End();
 
     //ImGui::ShowTestWindow();

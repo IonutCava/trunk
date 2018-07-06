@@ -200,6 +200,15 @@ IMIMPL_BUILD_SDF				# builds Signed Distance Fonts for ImGui. To display them co
 						# (This happens because we use a single shader to display everything).
 						# Warning: I'm not sure this works with the imguifreetype addon (YES_IMGUIFREETYPE).
 
+IMIMPL_USE_ARB_TEXTURE_SWIZZLE_TO_SAVE_FONT_TEXTURE_MEMORY	    # It uses the GL_ARB_TEXTURE_SWIZZLE OpenGL extension (core in OpenGL 3.3, and present as an extension on many systems in previous OpenGL versions),
+								    # to reduce GPU font texture memory to about 0.25 times the full RGBA memory.
+								    # This is expecially useful for fonts with a lot of glyphs (e.g. Chinese fonts).
+								    # Note : this definition requires the GL_ARB_TEXTURE_SWIZZLE OpenGL extension, but IT DOES NOT CHECK if this extension is supported by the target platform (it just assumes it is).
+
+IMIMPL_USE_ARB_TEXTURE_COMPRESSION_TO_COMPRESS_FONT_TEXTURE	    # It uses the GL_ARB_TEXTURE_COMPRESSION OpenGL extension to try to compress the font texture (to reduce GPU memory). If it fails, a message is displayed to the console.
+								    # Note : this definition requires the GL_ARB_TEXTURE_COMPRESSION OpenGL extension, but IT DOES NOT CHECK if this extension is supported by the target platform (it just assumes it is).
+								    # On my system, it works only when IMIMPL_USE_ARB_TEXTURE_SWIZZLE_TO_SAVE_FONT_TEXTURE_MEMORY is not defined (otherwise it just does not compress it).
+
 The following definitions can be defined with any binding:
 
 IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON:	# Normally ImGui::GetIO()->Fonts->ClearInputData() and ImGui::GetIO()->Fonts->ClearTexData() are called as soon as possible to save some memory.

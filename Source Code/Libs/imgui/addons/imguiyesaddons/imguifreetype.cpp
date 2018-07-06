@@ -160,6 +160,8 @@ ImVector<ImU32> DefaultRasterizationFlagVector;
     bool FreeTypeFont::CalcGlyphInfo(uint32_t codepoint, GlyphInfo &glyph_info, FT_Glyph& ft_glyph, FT_BitmapGlyph& ft_bitmap)
     {
         uint32_t glyph_index = FT_Get_Char_Index(FreetypeFace, codepoint);
+        if (glyph_index == 0)
+            return false;
         FT_Error error = FT_Load_Glyph(FreetypeFace, glyph_index, FreetypeLoadFlags);
         if (error)
             return false;
@@ -289,11 +291,15 @@ bool BuildFontAtlas( ImFontAtlas* atlas, ImU32 extra_flags=0,const ImVector<ImU3
         FreeTypeFont& font_face = fonts[input_i];
         ImFont* dst_font = cfg.DstFont;
 
+        // New...----
+        if (cfg.MergeMode)  dst_font->BuildLookupTable();
+        //-----------
+
         const float ascent = font_face.Info.Ascender;
         const float descent = font_face.Info.Descender;
         ImFontAtlasBuildSetupFont(atlas, dst_font, &cfg, ascent, descent);
-        const float off_x = cfg.GlyphOffset.x;
-        const float off_y = cfg.GlyphOffset.y + (float)(int)(dst_font->Ascent + 0.5f);
+        const float font_off_x = cfg.GlyphOffset.x;
+        const float font_off_y = cfg.GlyphOffset.y + (float)(int)(dst_font->Ascent + 0.5f);
 
         bool multiply_enabled = (cfg.RasterizerMultiply != 1.0f);
         unsigned char multiply_table[256];
@@ -305,7 +311,7 @@ bool BuildFontAtlas( ImFontAtlas* atlas, ImU32 extra_flags=0,const ImVector<ImU3
         {
             for (uint32_t codepoint = in_range[0]; codepoint <= in_range[1]; ++codepoint)
             {
-                if (cfg.MergeMode && dst_font->FindGlyph((unsigned short)codepoint))
+                if (cfg.MergeMode && dst_font->FindGlyphNoFallback((unsigned short)codepoint))
                     continue;
 
                 FT_Glyph ft_glyph = NULL;
@@ -325,17 +331,24 @@ bool BuildFontAtlas( ImFontAtlas* atlas, ImU32 extra_flags=0,const ImVector<ImU3
                 font_face.BlitGlyph(ft_glyph_bitmap, blit_dst, atlas->TexWidth, multiply_enabled ? multiply_table : NULL);
                 FT_Done_Glyph(ft_glyph);
 
+                float char_advance_x_org = glyph_info.AdvanceX;
+                float char_advance_x_mod = ImClamp(char_advance_x_org, cfg.GlyphMinAdvanceX, cfg.GlyphMaxAdvanceX);
+                float char_off_x = font_off_x;
+                if (char_advance_x_org != char_advance_x_mod)
+                    char_off_x += cfg.PixelSnapH ? (float)(int)((char_advance_x_mod - char_advance_x_org) * 0.5f) : (char_advance_x_mod - char_advance_x_org) * 0.5f;
+
+
                 // Register glyph
                 dst_font->AddGlyph((ImWchar)codepoint,
-                    glyph_info.OffsetX + off_x,
-                    glyph_info.OffsetY + off_y,
-                    glyph_info.OffsetX + off_x + glyph_info.Width,
-                    glyph_info.OffsetY + off_y + glyph_info.Height,
+                    glyph_info.OffsetX + char_off_x,
+                    glyph_info.OffsetY + font_off_y,
+                    glyph_info.OffsetX + char_off_x + glyph_info.Width,
+                    glyph_info.OffsetY + font_off_y + glyph_info.Height,
                     rect.x / (float)atlas->TexWidth,
                     rect.y / (float)atlas->TexHeight,
                     (rect.x + glyph_info.Width) / (float)atlas->TexWidth,
                     (rect.y + glyph_info.Height) / (float)atlas->TexHeight,
-                    glyph_info.AdvanceX);
+                    char_advance_x_mod);
             }
         }
     }
