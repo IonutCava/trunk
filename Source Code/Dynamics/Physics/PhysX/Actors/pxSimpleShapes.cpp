@@ -19,7 +19,10 @@ bool PhysX::createPlane(const vec3<F32>& position,U32 size){
         ERROR_FN(Locale::get("ERROR_PHYSX_CREATE_PLANE_SHAPE"));
         return false;
     }
-    static_cast<PhysXSceneInterface* >(_targetScene)->addRigidStaticActor(plane);
+    PhysXActor* actorWrapper = New PhysXActor();
+    actorWrapper->_actor = plane;
+    actorWrapper->_isDynamic = false;
+    static_cast<PhysXSceneInterface* >(_targetScene)->addRigidActor(actorWrapper);
     return true;
 }
 
@@ -41,6 +44,10 @@ bool PhysX::createBox(const vec3<F32>& position, F32 size){
         ERROR_FN(Locale::get("ERROR_PHYSX_CREATE_BOX"));
         return false;
     }
-    static_cast<PhysXSceneInterface* >(_targetScene)->addRigidDynamicActor(actor);
+
+    PhysXActor* actorWrapper = New PhysXActor();
+    actorWrapper->_actor = actor;
+    actorWrapper->_isDynamic = true;
+    static_cast<PhysXSceneInterface* >(_targetScene)->addRigidActor(actorWrapper);
     return true;
 }

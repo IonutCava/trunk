@@ -57,13 +57,13 @@ protected:
     virtual bool exitPhysics() = 0;
     virtual void updateTimeStep(U8 timeStepFactor)  = 0;
     virtual void update() = 0;
-    virtual void process() = 0;
+    virtual void process(F32 dt) = 0;
     virtual void idle() = 0;
     virtual PhysicsSceneInterface* NewSceneInterface(Scene* scene) = 0;
 
     virtual bool createPlane(const vec3<F32>& position = vec3<F32>(0.0f), U32 size = 1) = 0;
     virtual bool createBox(const vec3<F32>& position = vec3<F32>(0.0f), F32 size = 1.0f) = 0;
-    virtual bool createActor(SceneGraphNode* const node, PhysicsActorMask mask,PhysicsCollisionGroup group) = 0;
+    virtual bool createActor(SceneGraphNode* const node, const std::string& sceneName, PhysicsActorMask mask,PhysicsCollisionGroup group) = 0;
     virtual void setPhysicsScene(PhysicsSceneInterface* const targetScene) = 0;
     virtual void initScene() = 0;
 

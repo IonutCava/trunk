@@ -211,7 +211,7 @@ namespace XML {
         par.setParam("locale",pt.get("language","enGB"));
         par.setParam("logFile",pt.get("debug.logFile","none"));
         par.setParam("memFile",pt.get("debug.memFile","none"));
-        par.setParam("simSpeed",pt.get("runtime.simSpeed",1));
+        par.setParam("simSpeed",pt.get("runtime.simSpeed",1.0f));
         par.setParam("appTitle",pt.get("title","DIVIDE Framework"));
         par.setParam("defaultTextureLocation",pt.get("defaultTextureLocation","textures/"));
         par.setParam("shaderLocation",pt.get("defaultShadersLocation","shaders/"));

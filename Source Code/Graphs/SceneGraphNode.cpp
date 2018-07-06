@@ -299,12 +299,12 @@ void  SceneGraphNode::setNavigationDetailOverride(const bool detailOverride){
     }
 }
 
-void  SceneGraphNode::cookCollisionMesh() {
-    for_each(NodeChildren::value_type& it, _children){
-        it.second->cookCollisionMesh();
-    }
-
+void  SceneGraphNode::cookCollisionMesh(const std::string& sceneName) {
     SceneNodeType nodeType = _node->getType();
+    if(nodeType != TYPE_SKY)
+        for_each(NodeChildren::value_type& it, _children){
+            it.second->cookCollisionMesh(sceneName);
+        }
 
     if(!bitCompare(TYPE_WATER | TYPE_TERRAIN | TYPE_OBJECT3D, nodeType))
         return;
@@ -314,8 +314,8 @@ void  SceneGraphNode::cookCollisionMesh() {
             return;
     }
 
-    PHYSICS_DEVICE.createActor(this,
+    PHYSICS_DEVICE.createActor(this,sceneName,
                                _usageContext == NODE_STATIC ? MASK_RIGID_STATIC : MASK_RIGID_DYNAMIC, 
                                _physicsCollisionGroup == NODE_COLLIDE_IGNORE ? GROUP_NON_COLLIDABLE : 
-                               (_physicsCollisionGroup == NODE_COLLIDE_NO_PUSH ? GROUP_COLLIDABLE_NON_PUSHABLE : GROUP_COLLIDABLE_PUSHABLE));
+                                (_physicsCollisionGroup == NODE_COLLIDE_NO_PUSH ? GROUP_COLLIDABLE_NON_PUSHABLE : GROUP_COLLIDABLE_PUSHABLE));
 }

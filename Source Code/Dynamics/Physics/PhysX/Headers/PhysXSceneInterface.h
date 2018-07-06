@@ -34,7 +34,11 @@ class Transform;
 class PhysXSceneInterface : public PhysicsSceneInterface {
 public:
     PhysXSceneInterface(Scene* parentScene) : PhysicsSceneInterface(parentScene),
-                                              _gScene(NULL){}
+                                              _gScene(NULL),
+                                              _cpuDispatcher(NULL)
+    {
+    }
+
     virtual ~PhysXSceneInterface(){exit();}
 
     virtual bool init();
@@ -44,31 +48,27 @@ public:
     virtual void update();
     virtual void process(F32 timeStep);
 
-    void addRigidStaticActor(physx::PxRigidStatic* const actor);
-    void addRigidDynamicActor(physx::PxRigidDynamic* const actor);
+    PhysXActor* getOrCreateRigidActor(const std::string& actorName);
+    void addRigidActor(PhysXActor* const actor, bool threaded = true);
     inline const vectorImpl<physx::PxMaterial* > getMaterials() {return _materials;}
     inline physx::PxScene* getPhysXScene() {return _gScene;}
 
 protected:
-    void updateActor(physx::PxRigidActor* const actor);
+    void updateActor(const PhysXActor& actor);
     void updateShape(physx::PxShape* const shape,Transform* const t);
     ///Adds the actor to the PhysX scene and the SceneGraph. Returns a pointer to the new SceneGraph node created;
-    SceneGraphNode* addToScene(physx::PxRigidActor* const actor);
-private:
-    typedef vectorImpl<physx::PxRigidStatic*  > RigidStaticMap;
-    typedef vectorImpl<physx::PxRigidDynamic* > RigidDynamicMap;
-    typedef vectorImpl<physx::PxRigidStatic*  > RigidStaticQueue;
-    typedef vectorImpl<physx::PxRigidDynamic* > RigidDynamicQueue;
+    SceneGraphNode* addToScene(PhysXActor& actor);
 
+private:
+    typedef vectorImpl<PhysXActor* >        RigidMap;
+    typedef vectorImpl<physx::PxMaterial* > MaterialMap;
     bool _addedPhysXPlane;
     physx::PxScene* _gScene;
-    vectorImpl<physx::PxMaterial* > _materials;
-    RigidStaticMap _sceneRigidStaticActors;
-    RigidDynamicMap _sceneRigidDynamicActors;
-    RigidStaticQueue _sceneRigidStaticQueue;
-    RigidDynamicQueue _sceneRigidDynamicQueue;
-    boost::atomic<I32> _rigidStaticCount;
-    boost::atomic<I32> _rigidDynamicCount;
+    physx::PxDefaultCpuDispatcher*	_cpuDispatcher;
+    MaterialMap _materials;
+    RigidMap    _sceneRigidActors;
+    RigidMap    _sceneRigidQueue;
+    boost::atomic<U32> _rigidCount;
     mutable SharedLock _queueLock;
 };
 

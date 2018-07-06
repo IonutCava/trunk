@@ -169,7 +169,7 @@ public:
            void  setNavigationContext(const NavigationContext& newContext);
            void  setNavigationDetailOverride(const bool detailOverride);
 
-    void cookCollisionMesh();
+    void cookCollisionMesh(const std::string& sceneName);
     void addBoundingBox(const BoundingBox& bb, const SceneNodeType& type);
     void setBBExclusionMask(U32 bbExclusionMask) {_bbAddExclusionList = bbExclusionMask;}
 

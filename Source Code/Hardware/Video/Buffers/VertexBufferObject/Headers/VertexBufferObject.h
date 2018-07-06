@@ -63,7 +63,8 @@ public:
 
     virtual bool Create(bool staticDraw = true) = 0;
     virtual void Destroy() = 0;
-
+    /// Some engine elements, like physics or some geometry shading techniques require a triangle list.
+    virtual bool computeTriangleList() = 0;
     virtual bool SetActive() = 0;
 
     virtual void Draw(const U8 LODindex = 0) = 0;
@@ -238,7 +239,6 @@ protected:
     virtual void checkStatus() = 0;
     virtual bool Refresh() = 0;
     virtual bool CreateInternal() = 0;
-    virtual bool computeTriangleList() = 0;
 
 protected:
 

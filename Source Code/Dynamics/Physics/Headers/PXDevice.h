@@ -38,7 +38,7 @@ public:
     inline bool exitPhysics() {return _api.exitPhysics();}
     inline void updateTimeStep(U8 timeStepFactor) {_api.updateTimeStep(timeStepFactor);}
     inline void update() {_api.update();}
-    inline void process() {_api.process();}
+    inline void process(F32 dt) {_api.process(dt);}
     inline void idle() {_api.idle();}
     inline void setPhysicsScene(PhysicsSceneInterface* const targetScene) {_api.setPhysicsScene(targetScene);}
     inline void initScene(){_api.initScene();}
@@ -55,8 +55,8 @@ public:
         return _api.createBox(position,size);
     }
 
-    inline bool createActor(SceneGraphNode* const node, PhysicsActorMask mask,PhysicsCollisionGroup group){
-        return _api.createActor(node,mask,group);
+    inline bool createActor(SceneGraphNode* const node, const std::string& sceneName, PhysicsActorMask mask,PhysicsCollisionGroup group){
+        return _api.createActor(node,sceneName,mask,group);
     }
 
 private:

@@ -78,8 +78,11 @@ void Kernel::Idle(){
     }
 }
 
+static F32 oldFrameTime = 0;
+
 void Kernel::MainLoopApp(){
     // Update time at every render loop
+    oldFrameTime = _currentTimeMS;
     Kernel::_currentTimeMS   = GETMSTIME();
     Kernel::_currentTime     = getMsToSec(Kernel::_currentTimeMS);
     FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
@@ -102,7 +105,7 @@ void Kernel::MainLoopApp(){
     frameMgr.createEvent(FRAME_EVENT_STARTED,evt);
     _keepAlive = frameMgr.frameStarted(evt);
     //Process physics
-    PHYSICS_DEVICE.process();
+    PHYSICS_DEVICE.process(_currentTimeMS - oldFrameTime);
     //Process the current frame
     _keepAlive = APP.getKernel()->MainLoopScene(evt);
     //Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
@@ -294,8 +297,6 @@ void Kernel::Shutdown(){
     PRINT_FN(Locale::get("STOP_GUI"));
     Console::getInstance().bindConsoleOutput(boost::function2<void, const char*, bool>());
     _GUI.DestroyInstance(); ///Deactivate GUI
-    PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
-    _PFX.exitPhysics();
     PRINT_FN(Locale::get("STOP_POST_FX"));
     PostFX::getInstance().DestroyInstance();
     PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
@@ -311,6 +312,8 @@ void Kernel::Shutdown(){
     PRINT_FN(Locale::get("STOP_ENGINE_OK"));
     _frameMgr.DestroyInstance();
     _shaderMgr.DestroyInstance();
+    PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
+    _PFX.exitPhysics();
     PRINT_FN(Locale::get("STOP_HARDWARE"));
     _inputInterface.terminate();
     _inputInterface.DestroyInstance();

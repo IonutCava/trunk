@@ -100,6 +100,7 @@ void Sky::render(SceneGraphNode* const sgn){
     vec3<F32> eyeTemp(Frustum::getInstance().getEyePos());
 
     sgn->getTransform()->setPosition(eyeTemp);
+    _sunNode->getTransform()->setPosition(eyeTemp - _sunVect);
 
     if (_drawSky){
         _skyShader->bind();
@@ -116,7 +117,6 @@ void Sky::render(SceneGraphNode* const sgn){
         if(l){
             _sun->getMaterial()->setDiffuse(l->getDiffuseColor());
         }
-        _sunNode->getTransform()->setPosition(eyeTemp - _sunVect);
         _sun->renderInstance()->transform(_sunNode->getTransform());
 
         GFX_DEVICE.renderInstance(_sun->renderInstance());

@@ -53,7 +53,8 @@
 #include < PxDefaultAllocator.h >
 #include < PxVisualDebuggerExt.h >
 #include < PxAllocatorCallback.h >
-
+//Connecting the SDK to Visual Debugger
+#include < pvd/PxVisualDebugger.h >
 #if defined(_MSC_VER)
 #	pragma warning( pop )
 #elif defined(__GNUC__)
@@ -84,6 +85,27 @@
 
 #define MAX_ACTOR_QUEUE 30
 
+class Transform;
+class PhysXActor {
+public:
+    PhysXActor() : _actor(NULL),
+                   _transform(NULL),
+                   _isDynamic(false),
+                   _isInScene(false)
+    {
+    }
+
+protected:
+    friend class PhysX;
+    friend class PhysXSceneInterface;
+    std::string          _actorName;
+    physx::PxRigidActor* _actor;
+    Transform*           _transform;
+    bool                 _isDynamic;
+    bool                 _isInScene;
+
+};
+
 class PxDefaultAllocator : public physx::PxAllocatorCallback
 {
     void* allocate(size_t size, const char*, const char*, int)
@@ -99,33 +121,38 @@ class PxDefaultAllocator : public physx::PxAllocatorCallback
 
 class SceneGraphNode;
 class PhysXSceneInterface;
-DEFINE_SINGLETON_EXT1( PhysX,PhysicsAPIWrapper)
+DEFINE_SINGLETON_EXT2( PhysX,PhysicsAPIWrapper,PVD::PvdConnectionHandler)
 
 private:
     PhysX();
+    ///////////////////////////////////////////////////////////////////////////////
+    // Implements PvdConnectionFactoryHandler
+    virtual	void onPvdSendClassDescriptions(PVD::PvdConnection&) {}
+    virtual	void onPvdConnected(PVD::PvdConnection& inFactory)   {}
+    virtual	void onPvdDisconnected(PVD::PvdConnection& inFactory){}
 
 public:
 
    I8   initPhysics(U8 targetFrameRate);
    bool exitPhysics();
    void update();
-   void process();
+   void process(F32 dt);
    void idle();
 
-   inline void updateTimeStep(U8 timeStepFactor) {
-       CLAMP<U8>(timeStepFactor,1,timeStepFactor);
-       _timeStep = 1.0f / timeStepFactor;
-   }
+   void updateTimeStep(U8 timeStepFactor);
 
    PhysicsSceneInterface* NewSceneInterface(Scene* scene);
 
   //Default Shapes:
    bool createPlane(const vec3<F32>& position = vec3<F32>(0.0f), U32 size = 1);
    bool createBox(const vec3<F32>& position = vec3<F32>(0.0f), F32 size = 1.0f);
-   bool createActor(SceneGraphNode* const node, PhysicsActorMask mask,PhysicsCollisionGroup group);
+   bool createActor(SceneGraphNode* const node, const std::string& sceneName, PhysicsActorMask mask,PhysicsCollisionGroup group);
    inline physx::PxPhysics* const getSDK() {return _gPhysicsSDK;}
    inline void setPhysicsScene(PhysicsSceneInterface* const targetScene) {assert(targetScene); _targetScene = targetScene;}
           void initScene();
+protected:
+    physx::PxProfileZone* getOrCreateProfileZone(physx::PxFoundation& inFoundation); 
+
 protected:
     PhysicsSceneInterface* _targetScene;
 
@@ -134,14 +161,14 @@ private:
     physx::PxCooking*            _cooking;
     physx::PxFoundation*         _foundation;
     physx::PxProfileZoneManager* _zoneManager;         
-    
+    physx::PxProfileZone*		 _profileZone;    
     physx::debugger::comm::PvdConnectionManager* _pvdConnection;
     boost::mutex _physxMutex;
     physx::PxReal _timeStep;
-
+    physx::PxReal _accumulator;
     static physx::PxDefaultAllocator              _gDefaultAllocatorCallback;
     static physx::PxDefaultErrorCallback          _gDefaultErrorCallback;
-    
+
 END_SINGLETON
 #endif
 #endif

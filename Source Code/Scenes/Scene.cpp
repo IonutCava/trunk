@@ -62,7 +62,7 @@ bool Scene::idle(){ //Called when application is idle
 
     if(_cookCollisionMeshesScheduled){
         if(SceneManager::getInstance().getFrameCount() > 2){
-            _sceneGraph->getRoot()->cookCollisionMesh();
+            _sceneGraph->getRoot()->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
         }
     }
@@ -248,6 +248,7 @@ bool Scene::preLoad() {
 
 bool Scene::load(const std::string& name, CameraManager* const cameraMgr){
     _cameraMgr = cameraMgr;
+    _name = name;
     addDefaultCamera();
     preLoad();
     loadXMLAssets();
