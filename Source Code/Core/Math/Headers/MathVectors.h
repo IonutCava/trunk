@@ -100,11 +100,11 @@ public:
     }
 
     inline bool operator==(const simd_vector& other) const {
-        return !fneq128(_reg, other._reg);
+        return !fneq128(_reg, other._reg, EPSILON_F32);
     }
 
     inline bool operator!=(const simd_vector& other) const {
-        return fneq128(_reg, other._reg);
+        return fneq128(_reg, other._reg, EPSILON_F32);
     }
 
     __m128 _reg;
