@@ -111,13 +111,13 @@ class Scene : public Resource {
     void updateSceneState(const U64 deltaTime);
     /// Override this for Scene specific updates
     virtual void updateSceneStateInternal(const U64 deltaTime) {}
-    inline SceneState& state() { return _sceneState; }
-    inline const SceneState& state() const { return _sceneState; }
-    inline SceneRenderState& renderState() { return _sceneState.renderState(); }
-    inline const SceneRenderState& renderState() const { return _sceneState.renderState(); }
+    inline SceneState& state() { return *_sceneState; }
+    inline const SceneState& state() const { return *_sceneState; }
+    inline SceneRenderState& renderState() { return _sceneState->renderState(); }
+    inline const SceneRenderState& renderState() const { return _sceneState->renderState(); }
     inline SceneInput& input() { return *_input; }
 
-    inline SceneGraph& getSceneGraph() { return *_sceneGraph; }
+    inline SceneGraph& sceneGraph() { return *_sceneGraph; }
     void registerTask(const TaskHandle& taskItem);
     void clearTasks();
     void removeTask(I64 jobIdentifier);
@@ -207,7 +207,6 @@ class Scene : public Resource {
     inline bool SCENE_LOAD(const stringImpl& name, GUI* const gui,
                            const bool contOnErrorRes,
                            const bool contOnErrorTasks) {
-        _lightPool.reset(new LightPool());
         if (!Scene::load(name, gui)) {
             Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load function");
             return false;
@@ -235,9 +234,9 @@ class Scene : public Resource {
        /// Global info
        GFXDevice& _GFX;
        GUI* _GUI;
-       ParamHandler& _paramHandler;
-       std::unique_ptr<SceneGraph> _sceneGraph;
-       std::unique_ptr<AI::AIManager> _aiManager;
+       ParamHandler&  _paramHandler;
+       SceneGraph*    _sceneGraph;
+       AI::AIManager* _aiManager;
 
        U64 _sceneTimer;
        vectorImpl<D64> _taskTimers;
@@ -266,15 +265,14 @@ class Scene : public Resource {
 
    private:
        vectorImpl<TaskHandle> _tasks;
-       /// Contains all game related info for the scene (wind speed, visibility
-       /// ranges, etc)
-       SceneState _sceneState;
+       /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
+       SceneState* _sceneState;
        vectorImpl<DELEGATE_CBK<> > _selectionChangeCallbacks;
        vectorImpl<SceneGraphNode_cwptr> _sceneSelectionCandidates;
 
    protected:
-       std::unique_ptr<LightPool> _lightPool;
-       std::unique_ptr<SceneInput> _input;
+       LightPool* _lightPool;
+       SceneInput* _input;
 #ifdef _DEBUG
        IMPrimitive* _linesPrimitive;
        vectorImpl<IMPrimitive*> _octreePrimitives;
@@ -286,7 +284,7 @@ namespace Attorney {
 class SceneManager {
    private:
     static LightPool* lightPool(Scene& scene) {
-        return scene._lightPool.get();
+        return scene._lightPool;
     }
 
     static bool updateCameraControls(Scene& scene) {

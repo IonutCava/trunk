@@ -13,7 +13,7 @@ namespace Divide {
 using namespace AI;
 
 AIManager::AIManager(Scene& parentScene)
-    : _parentScene(parentScene),
+    : SceneComponent(parentScene),
       _navMeshDebugDraw(false),
       _pauseUpdate(true),
       _updating(false),

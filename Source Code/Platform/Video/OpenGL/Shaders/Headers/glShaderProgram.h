@@ -189,7 +189,7 @@ class glShaderProgram final : public ShaderProgram {
     static std::array<U32, to_const_uint(ShaderType::COUNT)> _lineOffset;
     std::array<Shader*, to_const_uint(ShaderType::COUNT)> _shaderStage;
 
-    std::unique_ptr<glLockManager> _lockManager;
+    glLockManager* _lockManager;
 };
 
 namespace Attorney {

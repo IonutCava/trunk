@@ -20,7 +20,7 @@ glShaderProgram::glShaderProgram(GFXDevice& context, const stringImpl& name, con
       _loadedFromBinary(false),
       _validated(false),
       _shaderProgramIDTemp(0),
-     _lockManager(new glLockManager())
+      _lockManager(MemoryManager_NEW glLockManager())
 {
     _validationQueued = false;
     // each API has it's own invalid id. This is OpenGL's
@@ -32,6 +32,7 @@ glShaderProgram::glShaderProgram(GFXDevice& context, const stringImpl& name, con
 glShaderProgram::~glShaderProgram() {
     if (_lockManager) {
         _lockManager->Wait(true);
+        MemoryManager::DELETE(_lockManager);
     }
 
     // remove shader stages
@@ -82,7 +83,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
     if (_validationQueued && _shaderProgramID != 0) {
         if (_lockManager) {
             _lockManager->Wait(true);
-            _lockManager.reset(nullptr);
+            MemoryManager::DELETE(_lockManager);
         }
         // Call the internal validation function
         validateInternal();
@@ -520,7 +521,7 @@ bool glShaderProgram::bind() {
 
     if (_lockManager) {
         _lockManager->Wait(true);
-        _lockManager.reset(nullptr);
+        MemoryManager::DELETE(_lockManager);
     }
 
     // Set this program as the currently active one

@@ -92,7 +92,7 @@ class glUniformBuffer final : public ShaderBuffer {
         GLuint _readHead;
     };
 
-    std::unique_ptr<glBufferImpl> _buffer;
+    glBufferImpl* _buffer;
     size_t     _allignedBufferSize;
     GLsizeiptr _alignment;
     bufferPtr _mappedBuffer;

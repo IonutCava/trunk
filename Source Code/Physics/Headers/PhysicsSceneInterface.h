@@ -32,17 +32,17 @@
 #ifndef _PHYSICS_SCENE_INTERFACE_H_
 #define _PHYSICS_SCENE_INTERFACE_H_
 
+#include "Scenes/Headers/SceneComponent.h"
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 
-class Scene;
 class Transform;
 class PhysicsAsset;
 class SceneGraphNode;
-class NOINITVTABLE PhysicsSceneInterface {
+class NOINITVTABLE PhysicsSceneInterface : public SceneComponent {
    public:
-    PhysicsSceneInterface(Scene* parentScene);
+    explicit PhysicsSceneInterface(Scene& parentScene);
 
     virtual ~PhysicsSceneInterface() {}
     /// Pre PHYSICS_DEVICE initialisation call
@@ -55,11 +55,6 @@ class NOINITVTABLE PhysicsSceneInterface {
     virtual void update(const U64 deltaTime) = 0;
     /// Custom process step
     virtual void process(const U64 deltaTime) = 0;
-
-    Scene* getParentScene();
-
-   protected:
-    Scene* _parentScene;
 };
 
 };  // namespace Divide

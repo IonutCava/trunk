@@ -168,7 +168,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     /// The SceneManager/ Scene Pool
     SceneManager& _sceneMgr;
     /// Keep track of all active cameras used by the engine
-    std::unique_ptr<CameraManager> _cameraMgr;
+    CameraManager* _cameraMgr;
 
     LoopTimingData _timingData;
 

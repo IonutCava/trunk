@@ -29,15 +29,16 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     _alignmentRequirement = _unbound ? ParamHandler::instance().getParam<I32>(_ID("rendering.SSBOAligment"), 32)
                                      : ParamHandler::instance().getParam<I32>(_ID("rendering.UBOAligment"), 32);
     if (persistentMapped) {
-        _buffer = std::make_unique<glPersistentBuffer>(_target);
+        _buffer = MemoryManager_NEW glPersistentBuffer(_target);
     } else {
-        _buffer = std::make_unique<glRegularBuffer>(_target);
+        _buffer = MemoryManager_NEW glRegularBuffer(_target);
     }
 }
 
 glUniformBuffer::~glUniformBuffer() 
 {
     destroy();
+    MemoryManager::DELETE(_buffer);
 }
 
 GLuint glUniformBuffer::bufferID() const {

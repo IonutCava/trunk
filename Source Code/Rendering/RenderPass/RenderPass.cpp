@@ -199,7 +199,7 @@ bool RenderPass::postRender(SceneRenderState& renderState, U32 pass) {
     RenderQueue& renderQueue = RenderPassManager::instance().getQueue();
     renderQueue.postRender(renderState, _stageFlags[pass]);
 
-    Attorney::SceneRenderPass::debugDraw(SceneManager::instance().getActiveScene(), _stageFlags[pass]);
+    Attorney::SceneRenderPass::debugDraw(renderState.parentScene(), _stageFlags[pass]);
 
     switch (_stageFlags[pass]) {
         case RenderStage::DISPLAY:

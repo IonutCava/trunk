@@ -46,6 +46,7 @@ bool SceneManager::initStaticData() {
 SceneManager::SceneManager()
     : FrameListener(),
       _GUI(nullptr),
+      _renderer(nullptr),
       _activeScene(nullptr),
       _defaultScene(nullptr),
       _renderPassCuller(nullptr),
@@ -68,9 +69,9 @@ SceneManager::SceneManager()
 SceneManager::~SceneManager()
 {
     if (_defaultScene != nullptr) {
-        Scene* defaultScene = _defaultScene.get();
+        Scene* defaultScene = _defaultScene;
         unloadScene(defaultScene);
-        _defaultScene.reset(nullptr);
+        MemoryManager::DELETE(_defaultScene);
     }
 
     for (Scene* scene : _loadedScenes) {
@@ -78,13 +79,15 @@ SceneManager::~SceneManager()
     }
 
     _sceneShaderData->destroy();
+    MemoryManager::DELETE(_sceneShaderData);
+
     UNREGISTER_FRAME_LISTENER(&(this->instance()));
     Console::printfn(Locale::get(_ID("STOP_SCENE_MANAGER")));
     // Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
     Console::printfn(Locale::get(_ID("SCENE_MANAGER_REMOVE_SCENES")));
     MemoryManager::DELETE_HASHMAP(_sceneMap);
     MemoryManager::DELETE(_renderPassCuller);
-    _renderer.reset(nullptr);
+    MemoryManager::DELETE(_renderer);
     AI::Navigation::DivideRecast::destroyInstance();
 }
 
@@ -111,12 +114,12 @@ bool SceneManager::init(GUI* const gui) {
     _GUI = gui;
     _renderPassCuller = MemoryManager_NEW RenderPassCuller();
     _renderPassManager = &RenderPassManager::instance();
-    _sceneShaderData.reset(GFX_DEVICE.newSB("sceneShaderData", 1, false, false, BufferUpdateFrequency::OFTEN));
+    _sceneShaderData = GFX_DEVICE.newSB("sceneShaderData", 1, false, false, BufferUpdateFrequency::OFTEN);
     _sceneShaderData->create(1, sizeof(SceneShaderData));
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
     _sceneData.shadowingSettings(0.0000002f, 0.0002f, 150.0f, 250.0f);
 
-    _defaultScene.reset(new DefaultScene());
+    _defaultScene = MemoryManager_NEW DefaultScene();
 
     _init = true;
     return true;
@@ -143,21 +146,21 @@ Scene* SceneManager::load(stringImpl sceneName) {
     bool isAlreadyLoaded = loadingScene != nullptr;
     if (!isAlreadyLoaded) {
         if (loadDefaultScene) {
-            loadingScene = _defaultScene.get();
+            loadingScene = _defaultScene;
         } else {
             loadingScene = createScene(sceneName);
         }
     }
     
 
-    I64 guiSceneCache = _GUI->activeSceneGUID();
+    Scene* guiSceneCache = _GUI->activeScene();
 
     ParamHandler::instance().setParam(_ID("currentScene"), sceneName);
     if (!loadingScene) {
         Console::errorfn(Locale::get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
         return nullptr;
     } else {
-        _GUI->onChangeScene(loadingScene->getGUID());
+        _GUI->onChangeScene(loadingScene);
     }
 
     bool state = true;
@@ -225,7 +228,7 @@ bool SceneManager::unloadScene(Scene*& scene) {
             delete scene;
             scene = nullptr;
         } else {
-            _defaultScene.reset(nullptr);
+            MemoryManager::DELETE(_defaultScene);
         }
     }
 
@@ -242,7 +245,7 @@ void SceneManager::setActiveScene(Scene& scene) {
     }
     Attorney::SceneManager::onSetActive(scene);
     _activeScene = &scene;
-    _GUI->onChangeScene(scene.getGUID());
+    _GUI->onChangeScene(_activeScene);
     ParamHandler::instance().setParam(_ID("activeScene"), scene.getName());
 }
 
@@ -294,7 +297,7 @@ bool SceneManager::frameEnded(const FrameEvent& evt) {
 }
 
 void SceneManager::onCameraUpdate(Camera& camera) {
-    GET_ACTIVE_SCENEGRAPH().onCameraUpdate(camera);
+    _activeScene->sceneGraph().onCameraUpdate(camera);
 }
 
 void SceneManager::updateSceneState(const U64 deltaTime) {
@@ -430,7 +433,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
 
     // If we are rendering a high node count, we might want to use async frustum culling
     bool cullAsync = _renderPassManager->getLastTotalBinSize(stage) > g_asyncCullThreshold;
-    _renderPassCuller->frustumCull(GET_ACTIVE_SCENEGRAPH(), 
+    _renderPassCuller->frustumCull(_activeScene->sceneGraph(), 
                                    _activeScene->state(),
                                    stage,
                                    cullAsync,
@@ -516,10 +519,10 @@ void SceneManager::setRenderer(RendererType rendererType) {
 
     switch (rendererType) {
     case RendererType::RENDERER_FORWARD_PLUS: {
-        _renderer.reset(new ForwardPlusRenderer());
+        MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW ForwardPlusRenderer());
     } break;
     case RendererType::RENDERER_DEFERRED_SHADING: {
-        _renderer.reset(new DeferredShadingRenderer());
+        MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW DeferredShadingRenderer());
     } break;
     }
 }

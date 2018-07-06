@@ -83,7 +83,7 @@ class glTexture final : public Texture {
    private:
     GLenum _type;
     std::atomic_bool _allocatedStorage;
-    std::unique_ptr<glLockManager> _lockManager;
+    glLockManager* _lockManager;
 };
 
 };  // namespace Divide

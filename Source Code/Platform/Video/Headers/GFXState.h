@@ -110,7 +110,7 @@ class GPUState : private NonCopyable {
     bool _loadQueueDataReady;
     /// Atomic boolean value used to signal the loading thread to stop
     std::atomic_bool _closeLoadingThread;
-    std::unique_ptr<std::thread> _loaderThread;
+    std::thread* _loaderThread;
     // Display system
     vectorImpl<vectorImpl<GPUVideoMode>> _supportedDislpayModes;
 };

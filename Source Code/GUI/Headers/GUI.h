@@ -78,9 +78,9 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     /// Create the GUI
     bool init(const vec2<U16>& renderResolution);
     void onChangeResolution(U16 w, U16 h);
-    void onChangeScene(I64 newSceneGUID);
-    void onUnloadScene(I64 sceneGUID);
-    I64  activeSceneGUID() const;
+    void onChangeScene(Scene* newScene);
+    void onUnloadScene(Scene* scene);
+    
     /// Main update call
     void update(const U64 deltaTime);
     /// Add a text label
@@ -199,6 +199,13 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
         return _resolutionCache;
     }
 
+    Scene* activeScene() {
+        return _activeScene;
+    }
+    const Scene* activeScene() const {
+        return _activeScene;
+    }
+
   private:
     GUI();            //< Constructor
     ~GUI();           //< Destructor
@@ -220,7 +227,7 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     ShaderProgram_ptr _guiShader;  //<Used to apply color for text for now
 
     /// Each scene has its own gui elements! (0 = global)
-    I64 _activeSceneGUID;
+    Scene* _activeScene;
     vec2<U16> _resolutionCache;
     bool _enableCEGUIRendering;
 

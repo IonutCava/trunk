@@ -77,7 +77,7 @@ public:
 
 private:
     bufferPtr _mappedBuffer;
-    const std::unique_ptr<glBufferLockManager> _lockManager;
+    glBufferLockManager* _lockManager;
 };
 }; //namespace Divide
 

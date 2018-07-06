@@ -173,7 +173,7 @@ void PhysX::idle() {
     }
 }
 
-PhysicsSceneInterface* PhysX::NewSceneInterface(Scene* scene) {
+PhysicsSceneInterface* PhysX::NewSceneInterface(Scene& scene) {
     return MemoryManager_NEW PhysXSceneInterface(scene);
 }
 

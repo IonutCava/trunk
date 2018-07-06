@@ -154,7 +154,7 @@ bool WarSceneAIProcessor::DIE() {
 
     bool hadFlag = _localWorkingMemory._hasEnemyFlag.value();
     if (hadFlag == true) {
-        _globalWorkingMemory._flags[enemyTeamID].value().lock()->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
+        _globalWorkingMemory._flags[enemyTeamID].value().lock()->setParent(_parentManager.parentScene().sceneGraph().getRoot());
         PhysicsComponent* pComp = _globalWorkingMemory._flags[enemyTeamID]
                                   .value().lock()
                                   ->get<PhysicsComponent>();
@@ -449,7 +449,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
             _localWorkingMemory._hasEnemyFlag.value(false);
 
             _globalWorkingMemory._flags[enemyTeamID].value().lock()->setParent(
-                GET_ACTIVE_SCENEGRAPH().getRoot());
+                _parentManager.parentScene().sceneGraph().getRoot());
             PhysicsComponent* pComp = _globalWorkingMemory._flags[enemyTeamID]
                                   .value().lock()
                                   ->get<PhysicsComponent>();
@@ -705,7 +705,7 @@ void WarSceneAIProcessor::updatePositions() {
         if (!_globalWorkingMemory._flagsAtBase[teamID].value()) {
             if (nearOwnFlag() && !atHome) {
                 _globalWorkingMemory._flags[teamID].value().lock()->setParent(
-                    GET_ACTIVE_SCENEGRAPH().getRoot());
+                    _parentManager.parentScene().sceneGraph().getRoot());
                 PhysicsComponent* pComp =
                     _globalWorkingMemory._flags[teamID]
                         .value().lock()

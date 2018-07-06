@@ -308,7 +308,7 @@ class SceneGraphNode : public GUIDWrapper,
     }
 
     inline SGNComponent* getComponent(SGNComponent::ComponentType type) const {
-        return _components[getComponentIdx(type)].get();
+        return _components[getComponentIdx(type)];
     }
    private:
     friend class SGNRelationshipCache;
@@ -347,7 +347,7 @@ class SceneGraphNode : public GUIDWrapper,
 
     DELEGATE_CBK_PARAM<SceneGraphNode_cptr> _collisionCbk;
 
-    std::array<std::unique_ptr<SGNComponent>, to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
+    std::array<SGNComponent*, to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
     SGNRelationshipCache _relationshipCache;
 };
 

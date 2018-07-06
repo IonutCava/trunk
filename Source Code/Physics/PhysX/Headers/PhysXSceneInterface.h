@@ -46,7 +46,7 @@ class PhysXSceneInterface : public PhysicsSceneInterface {
         PhysXActor*, boost::lockfree::capacity<128> > LoadQueue;
 
    public:
-    PhysXSceneInterface(Scene* parentScene);
+    PhysXSceneInterface(Scene& parentScene);
     virtual ~PhysXSceneInterface();
 
     virtual bool init();

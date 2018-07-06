@@ -413,7 +413,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_1", currentName.c_str()));
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
-            tempLight.setUserPtr(_lightPool.get());
+            tempLight.setUserPtr(_lightPool);
             std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(25.0f);
@@ -426,7 +426,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_2", currentName.c_str()));
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
-            tempLight.setUserPtr(_lightPool.get());
+            tempLight.setUserPtr(_lightPool);
             std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(35.0f);
@@ -439,7 +439,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_spot_%s", currentName.c_str()));
             tempLight.setEnumValue(to_const_uint(LightType::SPOT));
-            tempLight.setUserPtr(_lightPool.get());
+            tempLight.setUserPtr(_lightPool);
             std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(55.0f);
@@ -581,7 +581,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         for (U8 col = 0; col < 4; col++) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%d_%d", row, col));
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
-            tempLight.setUserPtr(_lightPool.get());
+            tempLight.setUserPtr(_lightPool);
             std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(20.0f);

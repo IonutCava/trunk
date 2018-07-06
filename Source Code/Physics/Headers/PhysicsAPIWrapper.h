@@ -63,7 +63,7 @@ class NOINITVTABLE PhysicsAPIWrapper {
     virtual void update(const U64 deltaTime) = 0;
     virtual void process(const U64 deltaTime) = 0;
     virtual void idle() = 0;
-    virtual PhysicsSceneInterface* NewSceneInterface(Scene* scene) = 0;
+    virtual PhysicsSceneInterface* NewSceneInterface(Scene& scene) = 0;
 
     virtual void setPhysicsScene(PhysicsSceneInterface* const targetScene) = 0;
     virtual void initScene() = 0;

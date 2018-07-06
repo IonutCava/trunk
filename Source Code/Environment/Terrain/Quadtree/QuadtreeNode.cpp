@@ -24,6 +24,11 @@ QuadtreeNode::QuadtreeNode()
 
 QuadtreeNode::~QuadtreeNode()
 {
+    MemoryManager::DELETE(_terrainChunk);
+    MemoryManager::DELETE(_children[to_const_uint(ChildPosition::CHILD_NW)]);
+    MemoryManager::DELETE(_children[to_const_uint(ChildPosition::CHILD_NE)]);
+    MemoryManager::DELETE(_children[to_const_uint(ChildPosition::CHILD_SW)]);
+    MemoryManager::DELETE(_children[to_const_uint(ChildPosition::CHILD_SE)]);
 }
 
 void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos,
@@ -40,17 +45,17 @@ void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos,
     _terLoDOffset = (_minHMSize * 5.0f) / 100.0f;
 
     if (std::max(newsize.x, newsize.y) < _minHMSize) {
-        _terrainChunk.reset(new TerrainChunk(terrain, this));
+        _terrainChunk = MemoryManager_NEW TerrainChunk(terrain, this);
         _terrainChunk->load(depth, pos, _minHMSize, HMsize);
         chunkCount++;
         return;
     }
 
     // Create 4 children
-    _children[to_const_uint(ChildPosition::CHILD_NW)].reset(new QuadtreeNode());
-    _children[to_const_uint(ChildPosition::CHILD_NE)].reset(new QuadtreeNode());
-    _children[to_const_uint(ChildPosition::CHILD_SW)].reset(new QuadtreeNode());
-    _children[to_const_uint(ChildPosition::CHILD_SE)].reset(new QuadtreeNode());
+    _children[to_const_uint(ChildPosition::CHILD_NW)] = MemoryManager_NEW QuadtreeNode();
+    _children[to_const_uint(ChildPosition::CHILD_NE)] = MemoryManager_NEW QuadtreeNode();
+    _children[to_const_uint(ChildPosition::CHILD_SW)] = MemoryManager_NEW QuadtreeNode();
+    _children[to_const_uint(ChildPosition::CHILD_SE)] = MemoryManager_NEW QuadtreeNode();
 
     // Compute children bounding boxes
     const vec3<F32>& center = _boundingBox.getCenter();
@@ -148,9 +153,7 @@ bool QuadtreeNode::isInView(U32 options,
         const Camera& cam = sceneRenderState.getCameraConst();
         if (!BitCompare(options, to_const_uint(ChunkBit::CHUNK_BIT_SHADOWMAP))) {
             const vec3<F32>& eye = cam.getEye();
-            F32 visibilityDistance =
-                SceneManager::instance().getActiveScene().state().generalVisibility() +
-                _boundingSphere.getRadius();
+            F32 visibilityDistance = sceneRenderState.parentScene().state().generalVisibility() + _boundingSphere.getRadius();
             if (_boundingSphere.getCenter().distance(eye) >
                 visibilityDistance) {
                 if (_boundingBox.nearestDistanceFromPointSquared(eye) -

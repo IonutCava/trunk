@@ -711,5 +711,8 @@
     <ClInclude Include="..\..\Source Code\AI\Headers\AIManager.h">
       <Filter>AI\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneComponent.h">
+      <Filter>Scenes\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

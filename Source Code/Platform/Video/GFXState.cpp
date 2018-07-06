@@ -24,14 +24,14 @@ bool GPUState::startLoaderThread(const DELEGATE_CBK<>& loadingFunction) {
                   "GPUState::startLoaderThread error: double init detected!");
 
     if (Config::USE_GPU_THREADED_LOADING) {
-        _loaderThread.reset(new std::thread(loadingFunction));
+        _loaderThread = MemoryManager_NEW std::thread(loadingFunction);
     }
 
     return true;
 }
 
 bool GPUState::stopLoaderThread() {
-    if (_loaderThread.get()) {
+    if (_loaderThread != nullptr) {
         if (Config::USE_GPU_THREADED_LOADING) {
             DIVIDE_ASSERT(_loaderThread != nullptr,
                           "GPUState::stopLoaderThread error: stop called without "
@@ -46,7 +46,7 @@ bool GPUState::stopLoaderThread() {
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
             _loaderThread->join();
-            _loaderThread.reset(nullptr);
+            MemoryManager::DELETE(_loaderThread);
         }
         return true;
     }

@@ -116,7 +116,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     vectorImpl<stringImpl> sceneNameList() const;
 
     inline Scene& getActiveScene() { 
-        return _activeScene == nullptr ? *_defaultScene.get() 
+        return _activeScene == nullptr ? *_defaultScene 
                                        : *_activeScene; }
 
     void setActiveScene(Scene& scene);
@@ -226,7 +226,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     bool _processInput;
     /// Pointer to the currently active scene
     Scene* _activeScene;
-    std::unique_ptr<Scene> _defaultScene;
+    Scene* _defaultScene;
     vectorImpl<Scene*> _loadedScenes;
     /// Pointer to the GUI interface
     GUI* _GUI;
@@ -236,14 +236,14 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     /// Pointer to the render pass manager
     RenderPassManager* _renderPassManager;
     /// Generic scene data that doesn't change per shader
-    std::unique_ptr<ShaderBuffer> _sceneShaderData;
+    ShaderBuffer* _sceneShaderData;
     /// Scene pool
     SceneMap _sceneMap;
     SceneShaderData _sceneData;
     U64 _elapsedTime;
     U32 _elapsedTimeMS;
     U64 _saveTimer;
-    std::unique_ptr<Renderer> _renderer;
+    Renderer* _renderer;
     Material_ptr _defaultMaterial;
     RenderPassCuller::VisibleNodeList _reflectiveNodesCache;
     Time::ProfileTimer& _sceneGraphCullTimer;
@@ -279,11 +279,6 @@ class SceneManagerRenderPass {
 };
 
 };  // namespace Attorney
-
-/// Return a pointer to the currently active scene's scenegraph
-inline SceneGraph& GET_ACTIVE_SCENEGRAPH() {
-    return SceneManager::instance().getActiveScene().getSceneGraph();
-}
 
 };  // namespace Divide
 

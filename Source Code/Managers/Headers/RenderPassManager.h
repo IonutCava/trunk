@@ -55,7 +55,7 @@ DEFINE_SINGLETON(RenderPassManager)
     U16  getLastTotalBinSize(RenderStage displayStage) const;
 
     inline RenderQueue& getQueue() {
-        return *_renderQueue.get();
+        return *_renderQueue;
     }
 
   private:
@@ -65,7 +65,7 @@ DEFINE_SINGLETON(RenderPassManager)
   private:
     // Some vector implementations are not move-awarem so use STL in this case
     vectorImpl<RenderPass> _renderPasses;
-    std::unique_ptr<RenderQueue> _renderQueue;
+    RenderQueue* _renderQueue;
 
 END_SINGLETON
 

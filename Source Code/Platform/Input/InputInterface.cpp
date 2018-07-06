@@ -89,9 +89,10 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
             Console::printfn(Locale::get(_ID("WARN_INPUT_NO_FORCE_FEEDBACK")));
         } else {
             // Create force feedback effect manager.
-            _pEffectMgr.reset(new EffectManager(_pJoystickInterface, _nEffectUpdateFreq));
+            assert(_pEffectMgr == nullptr);
+            _pEffectMgr = MemoryManager_NEW EffectManager(_pJoystickInterface, _nEffectUpdateFreq);
             // Initialize the event handler.
-            _pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr.get());
+            _pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr);
         }
     } else {
         Console::printfn(Locale::get(_ID("ERROR_INPUT_CREATE_JOYSTICK")), "No joystick / gamepad devices detected!");
@@ -166,6 +167,8 @@ void InputInterface::terminate() {
     }
 
     MemoryManager::DELETE(_pEventHdlr);
+
+    MemoryManager::DELETE(_pEffectMgr);
 }
 
 InputState InputInterface::getKeyState(KeyCode keyCode) const {

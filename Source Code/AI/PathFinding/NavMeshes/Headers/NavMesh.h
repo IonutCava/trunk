@@ -224,7 +224,7 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     bool _renderConnections;
     RenderMode _renderMode;
     /// DebugDraw interface
-    std::unique_ptr<NavMeshDebugDraw> _debugDrawInterface;
+    NavMeshDebugDraw* _debugDrawInterface;
 };
 
 namespace Attorney {

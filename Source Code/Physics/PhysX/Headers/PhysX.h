@@ -83,7 +83,7 @@ DEFINE_SINGLETON_EXT2_W_SPECIFIER(PhysX, PhysicsAPIWrapper,
 
     void updateTimeStep(U8 timeStepFactor);
 
-    PhysicsSceneInterface* NewSceneInterface(Scene* scene);
+    PhysicsSceneInterface* NewSceneInterface(Scene& scene);
 
     inline physx::PxPhysics* const getSDK() { return _gPhysicsSDK; }
     void setPhysicsScene(PhysicsSceneInterface* const targetScene);

@@ -129,7 +129,7 @@ DEFINE_SINGLETON(Application)
     std::atomic_bool _mainLoopActive;
     std::atomic_bool _mainLoopPaused;
     std::atomic_bool _requestShutdown;
-    std::unique_ptr<Kernel> _kernel;
+    Kernel* _kernel;
     /// buffer to register all of the memory allocations recorded via
     /// "MemoryManager_NEW"
     stringImpl _memLogBuffer;

@@ -2,12 +2,9 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 
 namespace Divide {
-PhysicsSceneInterface::PhysicsSceneInterface(Scene* parentScene) 
-    : _parentScene(parentScene)
+PhysicsSceneInterface::PhysicsSceneInterface(Scene& parentScene) 
+    : SceneComponent(parentScene)
 {
 }
 
-Scene* PhysicsSceneInterface::getParentScene() {
-    return _parentScene;
-}
 };

@@ -25,8 +25,9 @@ Light* LightPool::_currentShadowCastingLight = nullptr;
 bool LightPool::_previewShadowMaps = false;
 bool LightPool::_shadowMapsEnabled = true;
 
-LightPool::LightPool()
-    : _init(false),
+LightPool::LightPool(Scene& parentScene)
+    : SceneComponent(parentScene),
+      _init(false),
       _lightImpostorShader(nullptr),
       _lightIconsTexture(nullptr),
      // shadowPassTimer is used to measure the CPU-duration of shadow map generation step
@@ -109,7 +110,7 @@ bool LightPool::clear() {
         return true;
     }
 
-    SceneGraph& sceneGraph = GET_ACTIVE_SCENEGRAPH();
+    SceneGraph& sceneGraph = _parentScene.sceneGraph();
     for (Light::LightList& lightList : _lights) {
         // Lights are removed by the sceneGraph
         // (range_based for-loops will fail due to iterator invalidation

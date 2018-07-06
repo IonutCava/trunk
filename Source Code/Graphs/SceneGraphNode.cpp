@@ -40,6 +40,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
     }
 
     setName(name);
+    _components.fill(nullptr);
 
     if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::ANIMATION))) {
         setComponent(SGNComponent::ComponentType::ANIMATION, new AnimationComponent(*this));
@@ -100,6 +101,10 @@ SceneGraphNode::~SceneGraphNode()
             _node.reset();
         }
     }
+
+    for (SGNComponent* component : _components) {
+        MemoryManager::DELETE(component);
+    }
 }
 
 void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent* component) {
@@ -114,7 +119,7 @@ void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent
         // We are adding a new component type
     }
 
-    _components[getComponentIdx(type)].reset(component);
+    MemoryManager::SAFE_UPDATE(_components[getComponentIdx(type)], component);
 }
 
 void SceneGraphNode::usageContext(const UsageContext& newContext) {
@@ -389,7 +394,7 @@ void SceneGraphNode::lockVisibility(const bool state) {
 void SceneGraphNode::setActive(const bool state) {
     if (_active != state) {
         _active = state;
-        for (std::unique_ptr<SGNComponent>& component : _components) {
+        for (SGNComponent* component : _components) {
             if (component != nullptr) {
                 component->setActive(state);
             }
@@ -422,7 +427,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _elapsedTime += deltaTime;
 
     // update all of the internal components (animation, physics, etc)
-    for (std::unique_ptr<SGNComponent>& component : _components) {
+    for (SGNComponent* component : _components) {
         if (component != nullptr) {
             component->update(deltaTime);
          }
@@ -449,7 +454,7 @@ void SceneGraphNode::onTransform() {
 
 bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
                                  RenderStage renderStage) {
-    for (std::unique_ptr<SGNComponent>& component : _components) {
+    for (SGNComponent* component : _components) {
         if (component && !component->onRender(renderStage)) {
             return false;
         }

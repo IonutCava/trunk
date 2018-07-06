@@ -24,7 +24,7 @@ NavigationMesh::NavigationMesh() : GUIDWrapper(),
                     par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
                     par.getParam<stringImpl>(_ID("currentScene")));
 
-    _debugDrawInterface.reset(new NavMeshDebugDraw());
+    _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw();
 
     _fileName = path + "/navMeshes/";
     _configFile = path + "/navMeshConfig.ini";
@@ -47,6 +47,7 @@ NavigationMesh::NavigationMesh() : GUIDWrapper(),
 NavigationMesh::~NavigationMesh()
 {
     unload();
+    MemoryManager::DELETE(_debugDrawInterface);
 }
 
 bool NavigationMesh::unload() {
@@ -602,36 +603,34 @@ void NavigationMesh::render() {
     switch (mode) {
         case RenderMode::RENDER_NAVMESH:
             if (_navMesh) {
-                duDebugDrawNavMesh(_debugDrawInterface.get(), *_navMesh, 0);
+                duDebugDrawNavMesh(_debugDrawInterface, *_navMesh, 0);
             }
             break;
         case RenderMode::RENDER_CONTOURS:
             if (_countourSet) {
-                duDebugDrawContours(_debugDrawInterface.get(), *_countourSet);
+                duDebugDrawContours(_debugDrawInterface, *_countourSet);
             }
             break;
         case RenderMode::RENDER_POLYMESH:
             if (_polyMesh) {
-                duDebugDrawPolyMesh(_debugDrawInterface.get(), *_polyMesh);
+                duDebugDrawPolyMesh(_debugDrawInterface, *_polyMesh);
             }
             break;
         case RenderMode::RENDER_DETAILMESH:
             if (_polyMeshDetail) {
-                duDebugDrawPolyMeshDetail(_debugDrawInterface.get(),
-                                          *_polyMeshDetail);
+                duDebugDrawPolyMeshDetail(_debugDrawInterface, *_polyMeshDetail);
             }
             break;
         case RenderMode::RENDER_PORTALS:
             if (_navMesh) {
-                duDebugDrawNavMeshPortals(_debugDrawInterface.get(), *_navMesh);
+                duDebugDrawNavMeshPortals(_debugDrawInterface, *_navMesh);
             }
             break;
     }
 
     if (!_building) {
         if (_countourSet && _renderConnections) {
-            duDebugDrawRegionConnections(_debugDrawInterface.get(),
-                                         *_countourSet);
+            duDebugDrawRegionConnections(_debugDrawInterface, *_countourSet);
         }
     }
 

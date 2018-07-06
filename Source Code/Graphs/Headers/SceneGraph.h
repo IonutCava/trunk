@@ -35,18 +35,23 @@
 #include "Octree.h"
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
+#include "Scenes/Headers/SceneComponent.h"
 #include "Rendering/Headers/FrameListener.h"
 
 namespace Divide {
 class Ray;
-class Scene;
 class SceneState;
 
 namespace Attorney {
     class SceneGraphSGN;
 };
 
-class SceneGraph : private NonCopyable, public GUIDWrapper, public FrameListener {
+class SceneGraph : private NonCopyable,
+                   public GUIDWrapper,
+                   public FrameListener,
+                   public SceneComponent
+{
+
     friend class Attorney::SceneGraphSGN;
    public:
     explicit SceneGraph(Scene& parentScene);
@@ -88,10 +93,6 @@ class SceneGraph : private NonCopyable, public GUIDWrapper, public FrameListener
 
     void postLoad();
 
-    inline Scene& parentScene() { return _parentScene; }
-
-    inline const Scene& parentScene() const { return _parentScene; }
-
    protected:
     void onNodeDestroy(SceneGraphNode& oldNode);
     void onNodeAdd(SceneGraphNode& newNode);
@@ -105,7 +106,6 @@ class SceneGraph : private NonCopyable, public GUIDWrapper, public FrameListener
    private:
     bool _loadComplete;
     bool _octreeChanged;
-    Scene& _parentScene;
     SceneRoot_ptr _rootNode;
     SceneGraphNode_ptr _root;
     std::shared_ptr<Octree> _octree;

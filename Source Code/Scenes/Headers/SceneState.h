@@ -38,6 +38,7 @@
 #include "Platform/Audio/Headers/AudioDescriptor.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Headers/Console.h"
+#include "Scenes/Headers/SceneComponent.h"
 #include "Utility/Headers/Localization.h"
 
 /// This class contains all the variables that define each scene's
@@ -63,7 +64,7 @@ namespace Attorney {
 
 /// Contains all the information needed to render the scene: camera position,
 /// render state, etc
-class SceneRenderState {
+class SceneRenderState : public SceneComponent {
     friend class Attorney::SceneRenderStateScene;
 
    public:
@@ -74,7 +75,7 @@ class SceneRenderState {
         ALL_GIZMO = SCENE_GIZMO | SELECTED_GIZMO
     };
 
-    SceneRenderState();
+    explicit SceneRenderState(Scene& parentScene);
 
     /// Render wireframe for all scene geometry
     void toggleWireframe();
@@ -193,7 +194,7 @@ class SceneRenderState {
     CameraManager* _cameraMgr;
 };
 
-class SceneState {
+class SceneState : public SceneComponent {
     friend class Attorney::SceneStateScene;
    public:
        enum class MoveDirection : I32 {
@@ -206,8 +207,10 @@ class SceneState {
     /// Background music map : trackName - track
     typedef hashMapImpl<ULL, std::shared_ptr<AudioDescriptor>> MusicPlaylist;
 
-    SceneState()
-        : _cameraUnderwater(false), 
+    SceneState(Scene& parentScene)
+        : SceneComponent(parentScene),
+          _renderState(parentScene),
+          _cameraUnderwater(false), 
           _cameraUpdated(false),
           _cameraLockedToMouse(false)
     {

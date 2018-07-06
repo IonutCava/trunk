@@ -84,7 +84,7 @@ class CascadedShadowMaps : public ShadowMap {
     vectorImpl<vec3<F32> > _splitFrustumCornersVS;
     vectorImpl<F32       > _splitDepths;
     std::array<mat4<F32>, Config::Lighting::MAX_SPLITS_PER_LIGHT> _shadowMatrices;
-    std::unique_ptr<ShaderBuffer> _shadowMatricesBuffer;
+    ShaderBuffer* _shadowMatricesBuffer;
 };
 
 };  // namespace Divide

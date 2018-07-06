@@ -166,14 +166,15 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
+    SceneGraph& sceneGraph = GUI::instance().activeScene()->sceneGraph();
     if (!args.empty()) {
-        SceneGraphNode_ptr sgn = GET_ACTIVE_SCENEGRAPH().findNode("args").lock();
+        SceneGraphNode_ptr sgn = sceneGraph.findNode("args").lock();
         if (!sgn) {
             Console::errorfn(Locale::get(_ID("CONSOLE_NAVMESH_NO_NODE")), args.c_str());
             return;
         }
     }
-    AI::AIManager& aiManager = GET_ACTIVE_SCENEGRAPH().parentScene().aiManager();
+    AI::AIManager& aiManager = sceneGraph.parentScene().aiManager();
     // Check if we already have a NavMesh created
     AI::Navigation::NavigationMesh* temp = aiManager.getNavMesh(AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL);
     // Create a new NavMesh if we don't currently have one
@@ -181,16 +182,16 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
         temp = MemoryManager_NEW AI::Navigation::NavigationMesh();
     }
     // Set it's file name
-    temp->setFileName(SceneManager::instance().getActiveScene().getName());
+    temp->setFileName(GUI::instance().activeScene()->getName());
     // Try to load it from file
-    bool loaded = temp->load(GET_ACTIVE_SCENEGRAPH().getRoot());
+    bool loaded = temp->load(sceneGraph.getRoot());
     if (!loaded) {
         // If we failed to load it from file, we need to build it first
         loaded = temp->build(
-            GET_ACTIVE_SCENEGRAPH().getRoot(),
+            sceneGraph.getRoot(),
             AI::Navigation::NavigationMesh::CreationCallback(), false);
         // Then save it to file
-        temp->save(GET_ACTIVE_SCENEGRAPH().getRoot());
+        temp->save(sceneGraph.getRoot());
     }
     // If we loaded/built the NavMesh correctly, add it to the AIManager
     if (loaded) {
@@ -239,12 +240,10 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
              ? ""
              : assetLocation) +
         args1;
-    model.position =
-        SceneManager::instance().getActiveScene().state().renderState().getCamera().getEye();
+    model.position = GUI::instance().activeScene()->state().renderState().getCamera().getEye();
     model.data = 1.0f;
     model.scale = vec3<F32>(scale);
-    model.orientation =
-        SceneManager::instance().getActiveScene().state().renderState().getCamera().getEuler();
+    model.orientation = GUI::instance().activeScene()->state().renderState().getCamera().getEuler();
     model.type = (args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0)
                      ? GeometryType::PRIMITIVE
                      : GeometryType::GEOMETRY;
@@ -254,7 +253,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     model.useHighDetailNavMesh = true;
     model.physicsUsage = true;
     model.physicsStatic = true;
-    SceneManager::instance().getActiveScene().addModel(model);
+    GUI::instance().activeScene()->addModel(model);
 }
 
 void GUIConsoleCommandParser::handleInvalidCommand(const stringImpl& args) {

@@ -55,6 +55,7 @@ glFramebuffer::glFramebuffer(GFXDevice& context, bool useResolveBuffer)
 
 glFramebuffer::~glFramebuffer() {
     destroy();
+    MemoryManager::DELETE(_resolveBuffer);
 }
 
 void glFramebuffer::initAttachment(AttachmentType type,

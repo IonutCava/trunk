@@ -56,9 +56,11 @@ Scene::Scene(const stringImpl& name)
       _paramHandler(ParamHandler::instance())
 {
     _sceneTimer = 0UL;
-    _input.reset(new SceneInput(*this));
-    _sceneGraph.reset(new SceneGraph(*this));
-    _aiManager.reset(new AI::AIManager(*this));
+    _sceneState = MemoryManager_NEW SceneState(*this);
+    _input = MemoryManager_NEW SceneInput(*this);
+    _sceneGraph = MemoryManager_NEW SceneGraph(*this);
+    _aiManager = MemoryManager_NEW AI::AIManager(*this);
+    _lightPool = MemoryManager_NEW LightPool(*this);
 #ifdef _DEBUG
 
     RenderStateBlock primitiveDescriptor;
@@ -74,6 +76,11 @@ Scene::~Scene()
 #ifdef _DEBUG
     _linesPrimitive->_canZombify = true;
 #endif
+    MemoryManager::DELETE(_sceneState);
+    MemoryManager::DELETE(_input);
+    MemoryManager::DELETE(_sceneGraph);
+    MemoryManager::DELETE(_aiManager);
+    MemoryManager::DELETE(_lightPool);
 }
 
 bool Scene::initStaticData() {
@@ -295,7 +302,7 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
         to_stringImpl(_lightPool->getLights(type).size()));
 
     defaultLight.setEnumValue(to_uint(type));
-    defaultLight.setUserPtr(_lightPool.get());
+    defaultLight.setUserPtr(_lightPool);
     std::shared_ptr<Light> light = CreateResource<Light>(defaultLight);
     if (type == LightType::DIRECTIONAL) {
         light->setCastShadows(true);
@@ -312,7 +319,7 @@ void Scene::toggleFlashlight() {
 
         ResourceDescriptor tempLightDesc("MainFlashlight");
         tempLightDesc.setEnumValue(to_const_uint(LightType::SPOT));
-        tempLightDesc.setUserPtr(_lightPool.get());
+        tempLightDesc.setUserPtr(_lightPool);
         std::shared_ptr<Light> tempLight = CreateResource<Light>(tempLightDesc);
         tempLight->setDrawImpostor(false);
         tempLight->setRange(30.0f);
@@ -555,8 +562,8 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     _GUI = guiInterface;
     _name = name;
 
-    SceneManager::instance().enableFog(_sceneState.fogDescriptor()._fogDensity,
-                                        _sceneState.fogDescriptor()._fogColor);
+    SceneManager::instance().enableFog(_sceneState->fogDescriptor()._fogDensity,
+                                       _sceneState->fogDescriptor()._fogColor);
 
     loadXMLAssets();
     SceneGraphNode& root = _sceneGraph->getRoot();
@@ -611,7 +618,7 @@ bool Scene::unload() {
     if (!checkLoadFlag()) {
         return false;
     }
-    _GUI->onUnloadScene(getGUID());
+    _GUI->onUnloadScene(this);
     clearTasks();
     _lightPool->clear();
     /// Destroy physics (:D)
@@ -637,7 +644,7 @@ void Scene::onRemoveActive() {
 }
 
 PhysicsSceneInterface* Scene::createPhysicsImplementation() {
-    return PHYSICS_DEVICE.NewSceneInterface(this);
+    return PHYSICS_DEVICE.NewSceneInterface(*this);
 }
 
 bool Scene::loadPhysics(bool continueOnErrors) {
@@ -654,7 +661,7 @@ bool Scene::loadPhysics(bool continueOnErrors) {
 }
 
 bool Scene::initializeAI(bool continueOnErrors) {
-    _aiTask = std::thread(DELEGATE_BIND(&AI::AIManager::update, _aiManager.get()));
+    _aiTask = std::thread(DELEGATE_BIND(&AI::AIManager::update, _aiManager));
     return true;
 }
 
@@ -712,9 +719,8 @@ bool Scene::updateCameraControls() {
 void Scene::updateSceneState(const U64 deltaTime) {
     _sceneTimer += deltaTime;
     updateSceneStateInternal(deltaTime);
-    state().cameraUnderwater(renderState().getCamera().getEye().y <
-                             state().waterLevel());
-    _sceneGraph->sceneUpdate(deltaTime, _sceneState);
+    state().cameraUnderwater(renderState().getCamera().getEye().y < state().waterLevel());
+    _sceneGraph->sceneUpdate(deltaTime, *_sceneState);
     findHoverTarget();
     SceneGraphNode_ptr flashLight = _flashLight.lock();
 
@@ -798,7 +804,7 @@ void Scene::debugDraw(RenderStage stage) {
         GFXDevice& gfx = GFX_DEVICE;
 
         _octreeBoundingBoxes.resize(0);
-        getSceneGraph().getOctree().getAllRegions(_octreeBoundingBoxes);
+        sceneGraph().getOctree().getAllRegions(_octreeBoundingBoxes);
 
         size_t primitiveCount = _octreePrimitives.size();
         size_t regionCount = _octreeBoundingBoxes.size();

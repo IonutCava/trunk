@@ -34,6 +34,7 @@
 
 #include "config.h"
 
+#include "Scenes/Headers/SceneComponent.h"
 #include "Rendering/Lighting/Headers/Light.h"
 
 namespace Divide {
@@ -42,7 +43,7 @@ class ShaderBuffer;
 class SceneGraphNode;
 class SceneRenderState;
 
-class LightPool {
+class LightPool : public SceneComponent {
   protected:
       struct LightProperties {
           /// rgb = diffuse
@@ -77,7 +78,7 @@ class LightPool {
         COUNT
     };
 
-    LightPool();
+    explicit LightPool(Scene& parentScene);
     ~LightPool();
 
     /// Add a new light to the manager

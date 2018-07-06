@@ -20,7 +20,7 @@ glTexture::glTexture(GFXDevice& context,
                      TextureType type,
                      bool asyncLoad)
     : Texture(context, name, resourceLocation, type, asyncLoad),
-    _lockManager(new glLockManager())
+     _lockManager(MemoryManager_NEW glLockManager())
 {
     _allocatedStorage = false;
 
@@ -36,6 +36,7 @@ glTexture::glTexture(GFXDevice& context,
 
 glTexture::~glTexture()
 {
+    MemoryManager::DELETE(_lockManager);
 }
 
 bool glTexture::unload() {
@@ -374,7 +375,7 @@ bool glTexture::flushTextureState() {
     if (getState() == ResourceState::RES_LOADED) {
         if (_lockManager) {
             _lockManager->Wait(true);
-            _lockManager.reset(nullptr);
+            MemoryManager::DELETE(_lockManager);
         }
         updateSampler();
         updateMipMaps();

@@ -17,12 +17,16 @@ enum class PhysXSceneInterfaceState : U32 {
     STATE_LOADING_ACTORS
 };
 
-PhysXSceneInterface::PhysXSceneInterface(Scene* parentScene)
+PhysXSceneInterface::PhysXSceneInterface(Scene& parentScene)
     : PhysicsSceneInterface(parentScene),
       _gScene(nullptr),
-      _cpuDispatcher(nullptr) {}
+      _cpuDispatcher(nullptr)
+{
+}
 
-PhysXSceneInterface::~PhysXSceneInterface() { release(); }
+PhysXSceneInterface::~PhysXSceneInterface() {
+    release();
+}
 
 bool PhysXSceneInterface::init() {
     physx::PxPhysics* gPhysicsSDK = PhysX::instance().getSDK();
@@ -199,7 +203,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
         case PxGeometryType::ePLANE: {
             sgnName = "PlaneActor";
             if (FindResourceImpl<Quad3D>(sgnName)) {
-                targetNode = GET_ACTIVE_SCENEGRAPH().findNode(sgnName).lock();
+                targetNode = parentScene.sceneGraph().findNode(sgnName).lock();
                 assert(targetNode);
                 actor.setParent(targetNode->get<PhysicsComponent>());
                 return;
@@ -225,7 +229,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
         if (sceneNode) {
             sceneNode->renderState().setDrawState(true);
             targetNode =
-                _parentScene->getSceneGraph().getRoot().addNode(sceneNode, normalMask, sgnName);
+                _parentScene->sceneGraph().getRoot().addNode(sceneNode, normalMask, sgnName);
             targetNode->get<RenderingComponent>()->castsShadows(
                 shadowState);
         }

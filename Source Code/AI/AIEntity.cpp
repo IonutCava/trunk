@@ -139,7 +139,7 @@ bool AIEntity::addSensor(SensorType type) {
 
 bool AIEntity::setAIProcessor(AIProcessor* processor) {
     WriteLock w_lock(_updateMutex);
-    _processor.reset(processor);
+    MemoryManager::SAFE_UPDATE(_processor, processor);
     if (_processor) {
         _processor->addEntityRef(this);
     }

@@ -124,7 +124,6 @@ do {                                                \
 #endif //TO_STRING
 
 #define TYPEDEF_SMART_POINTERS_FOR_CLASS(T)      \
-    typedef std::unique_ptr<T> T ## _uptr;       \
     typedef std::weak_ptr<T> T ## _wptr;         \
     typedef std::shared_ptr<T> T ## _ptr;        \
     typedef std::weak_ptr<const T> T ## _cwptr;  \

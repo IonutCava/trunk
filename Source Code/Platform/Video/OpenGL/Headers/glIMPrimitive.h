@@ -74,7 +74,7 @@ class glIMPrimitive : public IMPrimitive {
 
    protected:
     /// Rendering API specific implementation
-    std::unique_ptr<NS_GLIM::GLIM_BATCH> _imInterface;
+    NS_GLIM::GLIM_BATCH* _imInterface;
 };
 
 };  // namespace Divide

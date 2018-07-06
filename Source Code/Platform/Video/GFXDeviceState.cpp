@@ -77,7 +77,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // ViewMatrix, ProjectionMatrix, ViewProjectionMatrix, CameraPositionVec, ViewportRec, zPlanesVec4 and ClipPlanes[MAX_CLIP_PLANES]
     // It should translate to (as seen by OpenGL) a uniform buffer without persistent mapping.
     // (Many small updates with BufferSubData are recommended with the target usage of the buffer)
-    _gfxDataBuffer.reset(newSB("dvd_GPUBlock", 1, false, false, BufferUpdateFrequency::OFTEN));
+    _gfxDataBuffer = newSB("dvd_GPUBlock", 1, false, false, BufferUpdateFrequency::OFTEN);
     _gfxDataBuffer->create(1, sizeof(GPUBlock));
     _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
     // Every visible node will first update this buffer with required data (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
@@ -88,7 +88,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     for (U32 i = 0; i < _indirectCommandBuffers.size(); ++i) {
         U32 bufferIndex = getNodeBufferIndexForStage(static_cast<RenderStage>(i));
         for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
-            _indirectCommandBuffers[bufferIndex][j].reset(newSB(Util::StringFormat("dvd_GPUCmds%d_%d", i, j), 1, true, false, BufferUpdateFrequency::OFTEN));
+            _indirectCommandBuffers[bufferIndex][j] = newSB(Util::StringFormat("dvd_GPUCmds%d_%d", i, j), 1, true, false, BufferUpdateFrequency::OFTEN);
             _indirectCommandBuffers[bufferIndex][j]->create(to_uint(_drawCommandsCache.size()), sizeof(_drawCommandsCache.front()));
             _indirectCommandBuffers[bufferIndex][j]->addAtomicCounter(3);
         }
@@ -97,7 +97,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     for (U32 i = 0; i < _nodeBuffers.size(); ++i) {
         U32 bufferIndex = getNodeBufferIndexForStage(static_cast<RenderStage>(i));
         for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
-            _nodeBuffers[bufferIndex][j].reset(newSB(Util::StringFormat("dvd_MatrixBlock%d_%d", i, j), 1, true, true, BufferUpdateFrequency::OFTEN));
+            _nodeBuffers[bufferIndex][j] = newSB(Util::StringFormat("dvd_MatrixBlock%d_%d", i, j), 1, true, true, BufferUpdateFrequency::OFTEN);
             _nodeBuffers[bufferIndex][j]->create(to_uint(_matricesData.size()), sizeof(_matricesData.front()));
         }
     }
@@ -286,11 +286,13 @@ void GFXDevice::closeRenderingAPI() {
     // runtime
     MemoryManager::DELETE_VECTOR(_imInterfaces);
     _gfxDataBuffer->destroy();
+    MemoryManager::DELETE(_gfxDataBuffer);
 
     for (U32 i = 0; i < _indirectCommandBuffers.size(); ++i) {
         U32 bufferIndex = getNodeBufferIndexForStage(static_cast<RenderStage>(i));
         for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
             _indirectCommandBuffers[bufferIndex][j]->destroy();
+            MemoryManager::DELETE(_indirectCommandBuffers[bufferIndex][j]);
         }
     }
 
@@ -298,6 +300,7 @@ void GFXDevice::closeRenderingAPI() {
         U32 bufferIndex = getNodeBufferIndexForStage(static_cast<RenderStage>(i));
         for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
             _nodeBuffers[bufferIndex][j]->destroy();
+            MemoryManager::DELETE(_nodeBuffers[bufferIndex][j]);
         }
     }
 

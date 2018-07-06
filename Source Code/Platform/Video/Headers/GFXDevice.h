@@ -639,8 +639,8 @@ DEFINE_SINGLETON(GFXDevice)
     mutable SharedLock _renderQueueLock;
     vectorImpl<RenderQueue> _renderQueues;
 
-    std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
-    typedef std::array<std::unique_ptr<ShaderBuffer>, MAX_PASSES_PER_STAGE> RenderStageBuffer;
+    ShaderBuffer* _gfxDataBuffer;
+    typedef std::array<ShaderBuffer*, MAX_PASSES_PER_STAGE> RenderStageBuffer;
     // Z_PRE_PASS and display SHOULD SHARE THE SAME BUFFERS
     std::array<RenderStageBuffer, to_const_uint(RenderStage::COUNT) - 1> _indirectCommandBuffers;
     std::array<RenderStageBuffer, to_const_uint(RenderStage::COUNT) - 1> _nodeBuffers;

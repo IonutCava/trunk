@@ -120,7 +120,7 @@ DEFINE_SINGLETON(InputInterface)
     hashMapImpl<I32, Joystick> _joystickIdToEntry;
 
     JoystickInterface* _pJoystickInterface;
-    std::unique_ptr<EffectManager> _pEffectMgr;
+    EffectManager* _pEffectMgr;
 
     bool _bMustStop;
     bool _bIsInitialized;

@@ -72,7 +72,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
     OpenCLInterface::createInstance();
-    _cameraMgr.reset(new CameraManager(this));  // Camera manager
+    _cameraMgr = MemoryManager_NEW CameraManager(this);  // Camera manager
     assert(_cameraMgr != nullptr);
     // force all lights to update on camera change (to keep them still actually)
     _cameraMgr->addCameraUpdateListener(
@@ -84,6 +84,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
 
 Kernel::~Kernel()
 {
+    MemoryManager::DELETE(_cameraMgr);
 }
 
 void Kernel::idle() {
@@ -526,7 +527,7 @@ void Kernel::shutdown() {
     Console::bindConsoleOutput(std::function<void(const char*, bool)>());
     SceneManager::destroyInstance();
     GUI::destroyInstance();  /// Deactivate GUI
-    _cameraMgr.reset(nullptr);
+    MemoryManager::DELETE(_cameraMgr);
     ShadowMap::clearShadowMaps();
     Console::printfn(Locale::get(_ID("STOP_ENGINE_OK")));
     Console::printfn(Locale::get(_ID("STOP_PHYSICS_INTERFACE")));

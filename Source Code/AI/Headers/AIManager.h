@@ -33,6 +33,7 @@
 #define _AI_MANAGER_G_
 
 #include "AI/Headers/AIEntity.h"
+#include "Scenes/Headers/SceneComponent.h"
 
 namespace Divide {
 
@@ -43,14 +44,14 @@ namespace Navigation {
     class NavigationMesh;
 }; //namespace Navigation
 
-class AIManager
+class AIManager : public SceneComponent
 {
   public:
     typedef hashMapImpl<U32, AITeam*> AITeamMap;
     typedef hashMapImpl<AIEntity::PresetAgentRadius,
                         Navigation::NavigationMesh*> NavMeshMap;
 
-    AIManager(Scene& parentScene);
+    explicit AIManager(Scene& parentScene);
     ~AIManager();
 
     /// Clear all AI related data (teams, entities, NavMeshes, etc);
@@ -127,7 +128,6 @@ class AIManager
     bool updateEntities(const U64 deltaTime);  ///< react
 
   private:
-    Scene& _parentScene;
     U64 _deltaTime, _currentTime, _previousTime;
     std::atomic<bool> _navMeshDebugDraw;
     std::atomic<bool> _pauseUpdate;

@@ -71,8 +71,7 @@ class Quadtree {
    private:
     U32 _chunkCount;
     VertexBuffer* _parentVB;  //<Pointer to the terrain VB
-
-    std::unique_ptr<QuadtreeNode> _root;
+    QuadtreeNode* _root;
 };
 
 };  // namespace Divide

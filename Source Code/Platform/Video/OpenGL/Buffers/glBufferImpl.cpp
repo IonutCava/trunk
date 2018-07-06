@@ -107,12 +107,13 @@ void glRegularBuffer::updateData(GLintptr offset, GLintptr range, const bufferPt
 glPersistentBuffer::glPersistentBuffer(GLenum target) 
     : glBufferImpl(target),
       _mappedBuffer(nullptr),
-      _lockManager(std::make_unique<glBufferLockManager>())
+      _lockManager(MemoryManager_NEW glBufferLockManager())
 {
 }
 
 glPersistentBuffer::~glPersistentBuffer()
 {
+    MemoryManager::DELETE(_lockManager);
 }
 
 void glPersistentBuffer::create(BufferUpdateFrequency frequency, size_t size)

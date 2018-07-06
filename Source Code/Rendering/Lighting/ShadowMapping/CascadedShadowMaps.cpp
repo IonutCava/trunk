@@ -68,7 +68,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
                                TextureDescriptor::AttachmentType::Color0);
     _blurBuffer->setClearColor(DefaultColors::WHITE());
 
-    _shadowMatricesBuffer.reset(GFX_DEVICE.newSB("dvd_shadowMatrices", 1, false, false, BufferUpdateFrequency::OFTEN));
+    _shadowMatricesBuffer = GFX_DEVICE.newSB("dvd_shadowMatrices", 1, false, false, BufferUpdateFrequency::OFTEN);
     _shadowMatricesBuffer->create(Config::Lighting::MAX_SPLITS_PER_LIGHT, sizeof(mat4<F32>));
 
     STUBBED("Migrate to this: http://www.ogldev.org/www/tutorial49/tutorial49.html");
@@ -78,6 +78,7 @@ CascadedShadowMaps::~CascadedShadowMaps()
 {
     MemoryManager::DELETE(_blurBuffer);
     MemoryManager::DELETE(_renderPolicy);
+    MemoryManager::DELETE(_shadowMatricesBuffer);
 }
 
 void CascadedShadowMaps::init(ShadowMapInfo* const smi) {

@@ -4,13 +4,14 @@
 namespace Divide {
 
 RenderPassManager::RenderPassManager()
+    : _renderQueue(MemoryManager_NEW RenderQueue())
 {
-    _renderQueue = std::make_unique<RenderQueue>();
 }
 
 RenderPassManager::~RenderPassManager()
 {
     _renderPasses.clear();
+    MemoryManager::DELETE(_renderQueue);
 }
 
 void RenderPassManager::render(SceneRenderState& sceneRenderState) {

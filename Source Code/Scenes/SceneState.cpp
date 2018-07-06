@@ -5,8 +5,9 @@
 
 namespace Divide {
 
-SceneRenderState::SceneRenderState()
-    : _drawBB(false),
+SceneRenderState::SceneRenderState(Scene& parentScene)
+    : SceneComponent(parentScene),
+      _drawBB(false),
       _drawGeometry(true),
       _drawSkeletons(false),
       _drawBoundingBoxes(false),

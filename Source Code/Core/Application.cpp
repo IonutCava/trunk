@@ -73,7 +73,7 @@ Application::~Application()
     _windowManager.close();
     ParamHandler::destroyInstance();
     Time::ApplicationTimer::destroyInstance();
-    _kernel.reset(nullptr);
+    MemoryManager::DELETE(_kernel);
     Locale::clear();
     Console::stop();
 }
@@ -88,13 +88,13 @@ ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char**
     Console::printfn(Locale::get(_ID("START_APPLICATION")));
 
     // Create a new kernel
-    _kernel.reset(new Kernel(argc, argv, this->instance()));
-    assert(_kernel.get() != nullptr);
+    assert(_kernel == nullptr);
+    _kernel = MemoryManager_NEW Kernel(argc, argv, this->instance());
 
     // and load it via an XML file config
     ErrorCode err = Attorney::KernelApplication::initialize(*_kernel, entryPoint);
     if (err != ErrorCode::NO_ERR) {
-        _kernel.reset(nullptr);
+        MemoryManager::DELETE(_kernel);
     }
 
     return err;

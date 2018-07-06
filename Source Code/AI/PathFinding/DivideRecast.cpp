@@ -11,7 +11,7 @@ static const U16 DT_TILECACHE_NULL_IDX = 0xffff;
 DivideRecast::DivideRecast()
 {
     // Setup the default query filter
-    _filter.reset(new dtQueryFilter());
+    _filter = MemoryManager_NEW dtQueryFilter();
     _filter->setIncludeFlags(0xFFFF);  // Include all
     _filter->setExcludeFlags(0);       // Exclude none
     // Area flags for polys to consider in search, and their cost
@@ -28,6 +28,7 @@ DivideRecast::DivideRecast()
 
 DivideRecast::~DivideRecast()
 {
+    MemoryManager::DELETE(_filter);
 }
 
 PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
@@ -51,11 +52,10 @@ PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
     I32 nPathCount = 0;
     I32 nVertCount = 0;
 
-    dtQueryFilter* filter = _filter.get();
     // find the start polygon
     status = navQuery.findNearestPoly(pStartPos,
                                       extents,
-                                      filter,
+                                      _filter,
                                       &StartPoly,
                                       StartNearest);
 
@@ -67,7 +67,7 @@ PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
     // find the end polygon
     status = navQuery.findNearestPoly(pEndPos,
                                       extents,
-                                      filter,
+                                      _filter,
                                       &EndPoly,
                                       EndNearest);
 
@@ -80,7 +80,7 @@ PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
                                EndPoly,
                                StartNearest,
                                EndNearest,
-                               filter,
+                               _filter,
                                PolyPath,
                                &nPathCount,
                                MAX_PATHPOLY);
@@ -167,7 +167,7 @@ bool DivideRecast::getRandomNavMeshPoint(const NavigationMesh& navMesh,
                                          vec3<F32>& resultPt) {
     if (navMesh.getNavQuery().getAttachedNavMesh() != nullptr) {
         dtPolyRef resultPoly;
-        dtStatus status = navMesh.getNavQuery().findRandomPoint(_filter.get(),
+        dtStatus status = navMesh.getNavQuery().findRandomPoint(_filter,
                                                                 frand,
                                                                 &resultPoly,
                                                                 resultPt._v);
@@ -198,12 +198,11 @@ bool DivideRecast::getRandomPointAroundCircle(const NavigationMesh& navMesh,
                                                         resultPoly);
         if (pointOnPolyMesh) {
             dtStatus status;
-            dtQueryFilter* filter = _filter.get();
             for (U8 i = 0; i < maxIters; ++i) {
                 status = query.findRandomPointAroundCircle(resultPoly,
                                                            centerPosition._v,
                                                            radius,
-                                                           filter,
+                                                           _filter,
                                                            frand,
                                                            &resultPoly,
                                                            resultPt._v);
@@ -264,7 +263,7 @@ bool DivideRecast::findNearestPolyOnNavmesh(const NavigationMesh& navMesh,
     if (navMesh.getNavQuery().getAttachedNavMesh() != nullptr) {
         dtStatus status = navMesh.getNavQuery().findNearestPoly(position._v,
                                                                 extents._v,
-                                                                _filter.get(),
+                                                                _filter,
                                                                 &resultPoly,
                                                                 resultPt._v);
 

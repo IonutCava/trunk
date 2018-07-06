@@ -104,7 +104,7 @@ class glFramebuffer : public Framebuffer {
 
     vectorImpl<GLenum> _colorBuffers;
     vectorImpl<bool>   _colorBufferEnabled;
-    const std::unique_ptr<glFramebuffer> _resolveBuffer;
+    glFramebuffer* _resolveBuffer;
 
     using AttType = TextureDescriptor::AttachmentType;
     std::array<I32, to_const_uint(AttType::COUNT)> _attOffset;

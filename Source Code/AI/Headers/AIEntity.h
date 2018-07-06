@@ -189,7 +189,7 @@ class AIEntity : public GUIDWrapper {
    private:
     stringImpl _name;
     AITeam* _teamPtr;
-    std::unique_ptr<AIProcessor> _processor;
+    AIProcessor* _processor;
 
     mutable SharedLock _updateMutex;
     mutable SharedLock _managerQueryMutex;

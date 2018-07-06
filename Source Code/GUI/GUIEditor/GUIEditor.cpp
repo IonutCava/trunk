@@ -52,7 +52,9 @@ GUIEditor::GUIEditor()
     }
 }
 
-GUIEditor::~GUIEditor() { _init = false; }
+GUIEditor::~GUIEditor() {
+    _init = false;
+}
 
 bool GUIEditor::init() {
     if (_init) {
@@ -236,7 +238,8 @@ bool GUIEditor::update(const U64 deltaTime) {
     _wasControlClick = false;
     bool state = true;
     if (_createNavMeshQueued) {
-        AI::AIManager& aiManager = GET_ACTIVE_SCENEGRAPH().parentScene().aiManager();
+        Scene& activeScene = *GUI::instance().activeScene();
+        AI::AIManager& aiManager = GUI::instance().activeScene()->aiManager();
 
         state = false;
         // Check if we already have a NavMesh created
@@ -248,16 +251,16 @@ bool GUIEditor::update(const U64 deltaTime) {
             temp = MemoryManager_NEW AI::Navigation::NavigationMesh();
         }
         // Set it's file name
-        temp->setFileName(SceneManager::instance().getActiveScene().getName());
+        temp->setFileName(activeScene.getName());
         // Try to load it from file
-        bool loaded = temp->load(GET_ACTIVE_SCENEGRAPH().getRoot());
+        bool loaded = temp->load(activeScene.sceneGraph().getRoot());
         if (!loaded) {
             // If we failed to load it from file, we need to build it first
             loaded = temp->build(
-                GET_ACTIVE_SCENEGRAPH().getRoot(),
+                activeScene.sceneGraph().getRoot(),
                 AI::Navigation::NavigationMesh::CreationCallback(), false);
             // Then save it to file
-            temp->save(GET_ACTIVE_SCENEGRAPH().getRoot());
+            temp->save(activeScene.sceneGraph().getRoot());
         }
         // If we loaded/built the NavMesh correctly, add it to the AIManager
         if (loaded) {
@@ -948,7 +951,7 @@ bool GUIEditor::Handle_SaveSelection(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_DeleteSelection(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Deleting selection!");
-    GET_ACTIVE_SCENEGRAPH().deleteNode(_currentSelection, false);
+    GUI::instance().activeScene()->sceneGraph().deleteNode(_currentSelection, false);
     return true;
 }
 
@@ -1040,9 +1043,9 @@ bool GUIEditor::Handle_DrawNavMeshToggle(const CEGUI::EventArgs &e) {
     } else {
         Console::d_printfn("[Editor]: NavMesh rendering disabled!");
     }
-    GET_ACTIVE_SCENEGRAPH()
-        .parentScene()
-        .aiManager()
+    GUI::instance()
+        .activeScene()
+        ->aiManager()
         .toggleNavMeshDebugDraw(toggleButton(ToggleButtons::TOGGLE_NAV_MESH_DRAW)->isSelected());
     return true;
 }

@@ -6,14 +6,15 @@
 
 namespace Divide {
 
-glIMPrimitive::glIMPrimitive(GFXDevice& context) : IMPrimitive(context) {
-    _imInterface.reset(new NS_GLIM::GLIM_BATCH());
-    _imInterface->SetVertexAttribLocation(
-        to_const_uint(AttribLocation::VERTEX_POSITION));
+glIMPrimitive::glIMPrimitive(GFXDevice& context) : IMPrimitive(context)
+{
+    _imInterface = MemoryManager_NEW NS_GLIM::GLIM_BATCH();
+    _imInterface->SetVertexAttribLocation(to_const_uint(AttribLocation::VERTEX_POSITION));
 }
 
 glIMPrimitive::~glIMPrimitive()
 {
+    MemoryManager::DELETE(_imInterface);
 }
 
 void glIMPrimitive::beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) {

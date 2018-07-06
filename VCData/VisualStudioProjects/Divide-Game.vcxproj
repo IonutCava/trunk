@@ -164,6 +164,7 @@
     <ClInclude Include="..\..\Source Code\Scenes\DefaultScene\Headers\DefaultScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\FlashScene\Headers\FlashScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\Scene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneComponent.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInput.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInputActions.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h" />
