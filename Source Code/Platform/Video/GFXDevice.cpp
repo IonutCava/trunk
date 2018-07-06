@@ -252,7 +252,8 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
         // Point our camera to the correct face
         camera->lookAt(pos, TabCenter[i], TabUp[i]);
         // Pass our render function to the renderer
-        params._pass = passIndex + i;
+        params._passIndex = passIndex;
+        params._bufferIndex = i;
         passMgr.doCustomPass(params, bufferInOut);
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
     }
@@ -330,7 +331,8 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
             camera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS));
             // And generated required matrices
             // Pass our render function to the renderer
-            params._pass = passIndex + i;
+            params._passIndex = passIndex;
+            params._bufferIndex = i;
             passMgr.doCustomPass(params, bufferInOut);
             GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
         }

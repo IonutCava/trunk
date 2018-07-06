@@ -50,15 +50,16 @@ enum class RenderStage : U8;
 class RenderPassManager : public KernelComponent {
 public:
     struct PassParams {
+        Camera* _camera = nullptr;
         RenderTargetID _target;
         RTDrawDescriptor* _drawPolicy = nullptr;
         RenderStage _stage = RenderStage::COUNT;
-        Camera* _camera = nullptr;
+        FrustumClipPlanes _clippingPlanes;
+        U32 _passIndex = 0;
+        U32 _bufferIndex = 0;
         bool _occlusionCull = false;
         bool _doPrePass = true;
         bool _bindTargets = true;
-        U32 _pass = 0;
-        FrustumClipPlanes _clippingPlanes;
     };
 
 public:
@@ -77,8 +78,8 @@ public:
 
     inline RenderQueue& getQueue() { return _renderQueue; }
 
-    RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex);
-    const RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex) const;
+    RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex, I32 bufferOffset = 0);
+    const RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex, I32 bufferOffset = 0) const;
 
     void doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut);
 

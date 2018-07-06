@@ -223,6 +223,7 @@ END_COMMAND();
 BEGIN_COMMAND(ReadAtomicCounterCommand, CommandType::READ_ATOMIC_COUNTER, 4096);
     ShaderBuffer* _buffer = nullptr;
     U32* _target = nullptr;
+    U32  _offset = 0;
     bool _resetCounter = false;
 END_COMMAND();
 

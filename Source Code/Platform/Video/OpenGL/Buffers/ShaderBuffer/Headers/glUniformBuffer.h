@@ -72,13 +72,13 @@ class glUniformBuffer final : public ShaderBuffer {
 
     GLuint bufferID() const;
 
-    void addAtomicCounter(U16 sizeFactor = 1) override;
+    void addAtomicCounter(U32 sizeFactor, U16 ringSizeFactor = 1) override;
 
-    U32  getAtomicCounter(U8 counterIndex = 0) override;
+    U32  getAtomicCounter(U8 offset, U8 counterIndex = 0) override;
 
-    void bindAtomicCounter(U8 counterIndex = 0, U8 bindIndex = 0) override;
+    void bindAtomicCounter(U8 offset, U8 counterIndex = 0, U8 bindIndex = 0) override;
 
-    void resetAtomicCounter(U8 counterIndex = 0) override;
+    void resetAtomicCounter(U8 offset, U8 counterIndex = 0) override;
 
     static void onGLInit();
 

@@ -108,6 +108,8 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
     assert(!renderPassName.empty());
 
     _renderPasses.push_back(std::make_shared<RenderPass>(*this, _context, renderPassName, orderKey, renderStage));
+    _renderPasses.back()->initBufferData();
+
     //Secondary command buffers. Used in a threaded fashion
     _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer(true));
 
@@ -163,13 +165,13 @@ const RenderPass& RenderPassManager::getPassForStage(RenderStage renderStage) co
 }
 
 const RenderPass::BufferData& 
-RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex) const {
-    return getPassForStage(renderStage).getBufferData(bufferIndex);
+RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex, I32 bufferOffset) const {
+    return getPassForStage(renderStage).getBufferData(bufferIndex, bufferOffset);
 }
 
 RenderPass::BufferData&
-RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex) {
-    return getPassForStage(renderStage).getBufferData(bufferIndex);
+RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex, I32 bufferOffset) {
+    return getPassForStage(renderStage).getBufferData(bufferIndex, bufferOffset);
 }
 
 /// Prepare the list of visible nodes for rendering
@@ -245,27 +247,23 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassPar
         }
     }
 
-    RenderPass::BufferData& bufferData = getBufferData(stagePass._stage, params._pass);
+    RenderPass::BufferData& bufferData = getBufferData(stagePass._stage, params._passIndex, params._bufferIndex);
     bufferData._lastCommandCount = to_U32(g_drawCommands.size());
 
     assert(bufferData._lastCommandCount >= to_U32(g_nodeData.size()));
-    // If the buffer update required is large enough, just replace the entire thing
-    if (g_nodeData.size() > Config::MAX_VISIBLE_NODES / 2) {
-        bufferData._renderData->writeData(g_nodeData.data());
-    } else { // Otherwise, just update the needed range to save bandwidth
-        bufferData._renderData->writeData(0, g_nodeData.size(), g_nodeData.data());
-    }
+    bufferData._renderData->writeData(bufferData._renderDataElementOffset, g_nodeData.size(), g_nodeData.data());
 
-    bufferData._cmdBuffer->writeData(g_drawCommands.data());
+    bufferData._cmdBuffer->writeData(bufferData._cmdElementOffset, bufferData._lastCommandCount, g_drawCommands.data());
 
     ShaderBufferBinding shaderBufferCmds;
     shaderBufferCmds._binding = ShaderBufferLocation::CMD_BUFFER;
     shaderBufferCmds._buffer = bufferData._cmdBuffer;
+    shaderBufferCmds._range = vec2<U16>(bufferData._cmdElementOffset, to_U16(g_drawCommands.size()));
 
     ShaderBufferBinding shaderBufferData;
     shaderBufferData._binding = ShaderBufferLocation::NODE_INFO;
     shaderBufferData._buffer = bufferData._renderData;
-    shaderBufferData._range = vec2<U16>(0, to_U16(g_nodeData.size()));
+    shaderBufferData._range = vec2<U16>(bufferData._renderDataElementOffset, to_U16(g_nodeData.size()));
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set = _context.newDescriptorSet();
@@ -551,7 +549,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     if (params._occlusionCull) {
         _context.constructHIZ(params._target, bufferInOut);
-        _context.occlusionCull(getBufferData(params._stage, params._pass), target.getAttachment(RTAttachmentType::Depth, 0).texture(), bufferInOut);
+        _context.occlusionCull(getBufferData(params._stage, params._passIndex, params._bufferIndex), target.getAttachment(RTAttachmentType::Depth, 0).texture(), bufferInOut);
         if (params._stage == RenderStage::DISPLAY) {
             _context.updateCullCount(bufferInOut);
         }

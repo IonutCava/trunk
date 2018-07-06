@@ -136,7 +136,6 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     params._doPrePass = false;
     params._stage = RenderStage::SHADOW;
     params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
-    params._pass = passIdx;
     params._bindTargets = false;
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -163,7 +162,8 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
         beginRenderSubPassCmd._writeLayers.resize(1, drawParams);
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
-        params._pass += i;
+        params._passIndex = passIdx;
+        params._bufferIndex = i;
         params._camera = _shadowCameras[i];
         rpm.doCustomPass(params, bufferInOut);
 

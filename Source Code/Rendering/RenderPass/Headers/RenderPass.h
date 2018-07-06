@@ -52,8 +52,11 @@ enum class RenderStage : U8;
 class RenderPass : private NonCopyable {
    public:
        struct BufferData {
-           BufferData(GFXDevice& context, I32 index);
+           BufferData(GFXDevice& context, U32 sizeFactor, I32 index);
            ~BufferData();
+
+           U32 _cmdElementOffset = 0;
+           U32 _renderDataElementOffset = 0;
 
            ShaderBuffer* _renderData;
            ShaderBuffer* _cmdBuffer;
@@ -61,15 +64,23 @@ class RenderPass : private NonCopyable {
        };
    protected:
 
+    struct BufferDataPoolParams {
+        U32 _maxBuffers = 0;
+        U32 _maxPassesPerBuffer = 0;
+    };
+
     struct BufferDataPool {
-        explicit BufferDataPool(GFXDevice& context, U32 maxBuffers);
+        explicit BufferDataPool(GFXDevice& context, const BufferDataPoolParams& maxBuffers);
         ~BufferDataPool();
 
-        BufferData& getBufferData(I32 bufferIndex);
-        const BufferData& getBufferData(I32 bufferIndex) const;
+        BufferData& getBufferData(I32 bufferIndex, I32 bufferOffset);
+        const BufferData& getBufferData(I32 bufferIndex, I32 bufferOffset) const;
+
+        void initBuffers();
 
     private:
         GFXDevice& _context;
+        U32 _bufferSizeFactor = 0;
         vector<std::shared_ptr<BufferData>> _buffers;
     };
 
@@ -85,11 +96,14 @@ class RenderPass : private NonCopyable {
 
     inline RenderStage stageFlag() const { return _stageFlag; }
 
-    BufferData& getBufferData(I32 bufferIndex);
-    const BufferData& getBufferData(I32 bufferIndex) const;
+    BufferData& getBufferData(I32 bufferIndex, I32 bufferOffset);
+    const BufferData& getBufferData(I32 bufferIndex, I32 bufferOffset) const;
+
+    void initBufferData();
 
    protected:
-    U32 getBufferCountForStage(RenderStage stages) const;
+    
+    BufferDataPoolParams getBufferParamsForStage(RenderStage stages) const;
 
    private:
     GFXDevice & _context;

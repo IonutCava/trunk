@@ -74,9 +74,9 @@ class glGenericBuffer {
 
       GLuint bufferHandle() const;
       
-      void zeroMem(GLuint ringWriteOffset);
+      void zeroMem(GLuint elementOffset, GLuint ringWriteOffset);
 
-      void clearData(GLuint ringWriteOffset);
+      void clearData(GLuint elementOffset, GLuint ringWriteOffset);
 
       void writeData(GLuint elementCount,
                      GLuint elementOffset,

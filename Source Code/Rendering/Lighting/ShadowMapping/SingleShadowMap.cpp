@@ -53,7 +53,7 @@ void SingleShadowMap::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     params._stage = RenderStage::SHADOW;
     params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
     params._drawPolicy = &RenderTarget::defaultPolicy();
-    params._pass = passIdx;
+    params._passIndex = passIdx;
 
     passMgr.doCustomPass(params, bufferInOut);
 }

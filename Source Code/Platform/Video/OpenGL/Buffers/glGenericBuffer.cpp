@@ -89,10 +89,10 @@ void glGenericBuffer::lockData(GLuint elementCount,
     _buffer->lockRange(offsetInBytes, rangeInBytes);
 }
 
-void glGenericBuffer::clearData(GLuint ringWriteOffset)
+void glGenericBuffer::clearData(GLuint elementOffset, GLuint ringWriteOffset)
 {
     size_t rangeInBytes = _elementCount * _elementSize;
-    size_t offsetInBytes = 0;
+    size_t offsetInBytes = elementOffset * _elementSize;
 
     if (_ringSizeFactor > 1) {
         offsetInBytes += rangeInBytes * ringWriteOffset;
@@ -101,9 +101,9 @@ void glGenericBuffer::clearData(GLuint ringWriteOffset)
     _buffer->clearData(offsetInBytes, rangeInBytes);
 }
 
-void glGenericBuffer::zeroMem(GLuint ringWriteOffset) {
+void glGenericBuffer::zeroMem(GLuint elementOffset, GLuint ringWriteOffset) {
     size_t rangeInBytes = _elementCount * _elementSize;
-    size_t offsetInBytes = 0;
+    size_t offsetInBytes = elementOffset * _elementSize;
 
     if (_ringSizeFactor > 1) {
         offsetInBytes += rangeInBytes * ringWriteOffset;

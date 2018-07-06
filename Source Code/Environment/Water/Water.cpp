@@ -142,7 +142,7 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     params._stage = RenderStage::REFRACTION;
     params._target = renderParams._renderTarget;
     params._drawPolicy = params._doPrePass ? &RenderTarget::defaultPolicyKeepDepth() : &RenderTarget::defaultPolicy();
-    params._pass = renderParams._passIndex;
+    params._passIndex = renderParams._passIndex;
     params._clippingPlanes._planes[to_U32(underwater ? g_reflectionClipID : g_refractionClipID)] = refractionPlane;
     params._clippingPlanes._active[to_U32(g_refractionClipID)] = true;
     renderParams._context.parent().renderPassManager().doCustomPass(params, bufferInOut);
@@ -170,7 +170,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     params._stage = RenderStage::REFLECTION;
     params._target = renderParams._renderTarget;
     params._drawPolicy = params._doPrePass ? &RenderTarget::defaultPolicyKeepDepth() : &RenderTarget::defaultPolicy();
-    params._pass = renderParams._passIndex;
+    params._passIndex = renderParams._passIndex;
     params._clippingPlanes._planes[to_U32(underwater ? g_refractionClipID : g_reflectionClipID)] = reflectionPlane;
     params._clippingPlanes._active[to_U32(g_reflectionClipID)] = true;
     renderParams._context.parent().renderPassManager().doCustomPass(params, bufferInOut);

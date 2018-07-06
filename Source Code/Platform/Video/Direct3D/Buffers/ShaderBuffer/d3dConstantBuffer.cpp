@@ -55,21 +55,22 @@ bool d3dConstantBuffer::bind(U8 bindIndex) {
     return false;
 }
 
-void d3dConstantBuffer::addAtomicCounter(U16 sizeFactor) {
+void d3dConstantBuffer::addAtomicCounter(U32 sizeFactor, U16 ringSizeFactor) {
     ACKNOWLEDGE_UNUSED(sizeFactor);
+    ACKNOWLEDGE_UNUSED(ringSizeFactor);
 }
 
-U32 d3dConstantBuffer::getAtomicCounter(U8 counterIndex) {
+U32 d3dConstantBuffer::getAtomicCounter(U8 offset, U8 counterIndex) {
     ACKNOWLEDGE_UNUSED(counterIndex);
     return 0;
 }
 
-void d3dConstantBuffer::bindAtomicCounter(U8 counterIndex, U8 bindIndex) {
+void d3dConstantBuffer::bindAtomicCounter(U8 offset, U8 counterIndex, U8 bindIndex) {
     ACKNOWLEDGE_UNUSED(counterIndex);
     ACKNOWLEDGE_UNUSED(bindIndex);
 }
 
-void d3dConstantBuffer::resetAtomicCounter(U8 counterIndex) {
+void d3dConstantBuffer::resetAtomicCounter(U8 offset, U8 counterIndex) {
     ACKNOWLEDGE_UNUSED(counterIndex);
 }
 

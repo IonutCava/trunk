@@ -25,49 +25,34 @@ namespace {
     namespace ReflectionUtil {
         U32 g_reflectionBudget = 0;
 
-        inline bool isInBudget() {
-            return g_reflectionBudget < 
-                Config::MAX_REFLECTIVE_NODES_IN_VIEW;
-        }
+        inline bool isInBudget() { return g_reflectionBudget < Config::MAX_REFLECTIVE_NODES_IN_VIEW; }
 
-        inline void resetBudget() {
-            g_reflectionBudget = 0;
-        }
+        inline void resetBudget() { g_reflectionBudget = 0; }
 
-        inline void updateBudget() {
-            ++g_reflectionBudget;
-        }
-        inline U32 currentEntry() {
-            return g_reflectionBudget;
-        }
+        inline void updateBudget() { ++g_reflectionBudget; }
+
+        inline U32 currentEntry() { return g_reflectionBudget; }
     };
+
     namespace RefractionUtil {
         U32 g_refractionBudget = 0;
 
-        inline bool isInBudget() {
-            return g_refractionBudget <
-                Config::MAX_REFRACTIVE_NODES_IN_VIEW;
-        }
+        inline bool isInBudget() { return g_refractionBudget < Config::MAX_REFRACTIVE_NODES_IN_VIEW;  }
 
-        inline void resetBudget() {
-            g_refractionBudget = 0;
-        }
+        inline void resetBudget() { g_refractionBudget = 0; }
 
-        inline void updateBudget() {
-            ++g_refractionBudget;
-        }
-        inline U32 currentEntry() {
-            return g_refractionBudget;
-        }
+        inline void updateBudget() { ++g_refractionBudget;  }
+
+        inline U32 currentEntry() { return g_refractionBudget; }
     };
     
 };
 
-RenderPass::BufferData::BufferData(GFXDevice& context, I32 index)
+RenderPass::BufferData::BufferData(GFXDevice& context, U32 sizeFactor, I32 index)
   : _lastCommandCount(0)
 {
     ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._primitiveCount = Config::MAX_VISIBLE_NODES;
+    bufferDescriptor._primitiveCount = Config::MAX_VISIBLE_NODES * sizeFactor;
     bufferDescriptor._primitiveSizeInBytes = sizeof(GFXDevice::NodeData);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
@@ -80,22 +65,18 @@ RenderPass::BufferData::BufferData(GFXDevice& context, I32 index)
     bufferDescriptor._primitiveSizeInBytes = sizeof(IndirectDrawCommand);
     bufferDescriptor._name = Util::StringFormat("CMD_DATA_%d", index).c_str();
     _cmdBuffer = context.newSB(bufferDescriptor);
-    _cmdBuffer->addAtomicCounter(5);
+    _cmdBuffer->addAtomicCounter(1, 5);
 }
 
 RenderPass::BufferData::~BufferData()
 {
 }
 
-RenderPass::BufferDataPool::BufferDataPool(GFXDevice& context, U32 maxBuffers)
-    : _context(context)
+RenderPass::BufferDataPool::BufferDataPool(GFXDevice& context, const BufferDataPoolParams& params)
+    : _context(context),
+      _bufferSizeFactor(params._maxPassesPerBuffer)
 {
-    // Every visible node will first update this buffer with required data (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
-    // Due to it's potentially huge size, it translates to (as seen by OpenGL) a Shader Storage Buffer that's persistently and coherently mapped
-    // We make sure the buffer is large enough to hold data for all of our rendering stages to minimize the number of writes per frame
-    // Create a shader buffer to hold all of our indirect draw commands
-    // Useful if we need access to the buffer in GLSL/Compute programs
-    _buffers.resize(maxBuffers, nullptr);
+    _buffers.resize(params._maxBuffers, nullptr);
 }
 
 RenderPass::BufferDataPool::~BufferDataPool()
@@ -103,25 +84,33 @@ RenderPass::BufferDataPool::~BufferDataPool()
     _buffers.clear();
 }
 
-RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferIndex) {
+RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferIndex, I32 bufferOffset) {
     assert(IS_IN_RANGE_INCLUSIVE(bufferIndex, 0, to_I32(_buffers.size())));
+    assert(IS_IN_RANGE_INCLUSIVE(bufferOffset, 0, 6));
 
     std::shared_ptr<BufferData>& buffer = _buffers[bufferIndex];
-    // More likely case
-    if (buffer) {
-        return *buffer;
-    }
-
-    buffer = std::make_shared<BufferData>(_context, bufferIndex);
+    assert(buffer != nullptr);
+    buffer->_cmdElementOffset = Config::MAX_VISIBLE_NODES * bufferOffset;
+    buffer->_renderDataElementOffset = Config::MAX_VISIBLE_NODES * bufferOffset;
     return *buffer;
 }
 
-const RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferIndex) const {
+const RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferIndex, I32 bufferOffset) const {
     assert(IS_IN_RANGE_INCLUSIVE(bufferIndex, 0, to_I32(_buffers.size())));
+    assert(IS_IN_RANGE_INCLUSIVE(bufferOffset, 0, 6));
 
     const std::shared_ptr<BufferData>& buffer = _buffers[bufferIndex];
     assert(buffer != nullptr);
+    buffer->_cmdElementOffset = Config::MAX_VISIBLE_NODES * bufferOffset;
+    buffer->_renderDataElementOffset = Config::MAX_VISIBLE_NODES * bufferOffset;
     return *buffer;
+}
+
+void RenderPass::BufferDataPool::initBuffers() {
+    I32 i = 0;
+    for (std::shared_ptr<BufferData>& buffer : _buffers) {
+        buffer = std::make_shared<BufferData>(_context, _bufferSizeFactor, i++);
+    }
 }
 
 RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlag)
@@ -133,8 +122,8 @@ RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl
 {
     _lastTotalBinSize = 0;
 
-    U32 count = getBufferCountForStage(_stageFlag);
-    _passBuffers = MemoryManager_NEW BufferDataPool(_context, count);
+    BufferDataPoolParams params = getBufferParamsForStage(_stageFlag);
+    _passBuffers = MemoryManager_NEW BufferDataPool(_context, params);
 }
 
 RenderPass::~RenderPass() 
@@ -142,12 +131,16 @@ RenderPass::~RenderPass()
     MemoryManager::DELETE(_passBuffers);
 }
 
-RenderPass::BufferData&  RenderPass::getBufferData(I32 bufferIndex) {
-    return _passBuffers->getBufferData(bufferIndex);
+RenderPass::BufferData&  RenderPass::getBufferData(I32 bufferIndex, I32 bufferOffset) {
+    return _passBuffers->getBufferData(bufferIndex, bufferOffset);
 }
 
-const RenderPass::BufferData&  RenderPass::getBufferData(I32 bufferIndex) const {
-    return _passBuffers->getBufferData(bufferIndex);
+const RenderPass::BufferData&  RenderPass::getBufferData(I32 bufferIndex, I32 bufferOffset) const {
+    return _passBuffers->getBufferData(bufferIndex, bufferOffset);
+}
+
+void RenderPass::initBufferData() {
+    _passBuffers->initBuffers();
 }
 
 void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut) {
@@ -169,7 +162,6 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
 
             params._stage = _stageFlag;
             params._target = RenderTargetID(RenderTargetUsage::SCREEN);
-            params._pass = 0;
             params._doPrePass = screenRT.getAttachment(RTAttachmentType::Depth, 0).used();
             _parent.doCustomPass(params, bufferInOut);
 
@@ -193,7 +185,6 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
         case RenderStage::REFLECTION: {
             SceneManager& mgr = _parent.parent().sceneManager();
             RenderPassManager::PassParams params;
-            params._pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
             params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
             
             {
@@ -257,7 +248,6 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
             // Get list of refractive nodes from the scene manager
             SceneManager& mgr = _parent.parent().sceneManager();
             RenderPassManager::PassParams params;
-            params._pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
             params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
 
             {
@@ -305,35 +295,32 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
 }
 
 // This is very hackish but should hold up fine
-U32 RenderPass::getBufferCountForStage(RenderStage stage) const {
-    U32 maxPasses = 0;
-    U32 maxStages = 0;
+RenderPass::BufferDataPoolParams RenderPass::getBufferParamsForStage(RenderStage stage) const {
 
+    RenderPass::BufferDataPoolParams ret;
+    ret._maxPassesPerBuffer = 6;
     //We only care about the first parameter as it will determine the properties for the rest of the stages
     switch (stage) {
         case RenderStage::REFLECTION: { //Both planar and cube
             // max reflective nodes and an extra buffer for environment maps
-            maxPasses = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 2+ 1;
-            maxStages = 6u; // number of cube faces
+            ret._maxBuffers = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 2 + 1;
         }; break;
         case RenderStage::REFRACTION: { //Both planar and cube
-            // max reflective nodes and an extra buffer for environment maps
-            maxPasses = Config::MAX_REFRACTIVE_NODES_IN_VIEW * 2 + 1;
-            maxStages = 1u;
+            ret._maxBuffers = Config::MAX_REFRACTIVE_NODES_IN_VIEW * 2 + 1;
         } break;
         case RenderStage::SHADOW: {
-            maxPasses = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
-            // Either CSM or cube map will have the highest stage count.
-            maxStages = std::max(Config::Lighting::MAX_SPLITS_PER_LIGHT, 6u);// number of cube faces
+            ret._maxBuffers = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
         }; break;
         case RenderStage::DISPLAY: {
-            maxPasses = 1;
-            maxStages = 1;
+            ret._maxBuffers = 1;
+            ret._maxPassesPerBuffer = 1;
         }; break;
     };
 
+    // We might need new buffer data for each pass type (prepass, main, oit, etc)
+    ret._maxPassesPerBuffer *= to_base(RenderPassType::COUNT);
 
-    return maxPasses * maxStages;
+    return ret;
 }
 
 };

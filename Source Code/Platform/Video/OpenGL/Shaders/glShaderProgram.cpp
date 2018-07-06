@@ -322,7 +322,7 @@ bool glShaderProgram::link() {
         Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), name().c_str(), getLog().c_str());
         MemoryManager::SAFE_DELETE(_lockManager);
     } else {
-        Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), name().c_str(), getLog().c_str());
+        Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), name().c_str(), getLog().c_str());
         if (Config::ENABLE_GPU_VALIDATION) {
             glObjectLabel(GL_PROGRAM, _shaderProgramIDTemp, -1, name().c_str());
         }
