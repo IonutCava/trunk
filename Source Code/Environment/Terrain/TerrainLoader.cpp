@@ -264,9 +264,7 @@ bool TerrainLoader::loadThreadedResources(
     terrainScaleFactor.set(terrainDescriptor->getScale());
 
     const vec2<U16>& terrainDimensions = terrainDescriptor->getDimensions();
-    const vectorImpl<vec3<F32> >& normalData = groundVB->getNormal();
-    const vectorImpl<vec3<F32> >& tangentData = groundVB->getTangent();
-
+    
     U16 heightmapWidth = terrainDimensions.width;
     U16 heightmapHeight = terrainDimensions.height;
     vectorImpl<U16> heightValues;
@@ -292,7 +290,7 @@ bool TerrainLoader::loadThreadedResources(
         fclose(terrainFile);
         for (U32 i = 0; i < positionCount + 1; i += 2) {
             heightValues.push_back(((U8)dataTemp[i + 1] << 8) |
-                                   (U8)dataTemp[i]);
+                                    (U8)dataTemp[i]);
         }
         MemoryManager::DELETE_ARRAY(dataTemp);
     } else {
@@ -324,9 +322,7 @@ bool TerrainLoader::loadThreadedResources(
     F32 maxAltitude = terrainDescriptor->getAltitudeRange().y;
     F32 altitudeRange = maxAltitude - minAltitude;
 
-    groundVB->resizePositionCount(terrainWidth * terrainHeight);
-    groundVB->resizeNormalCount(terrainWidth * terrainHeight);
-    groundVB->resizeTangentCount(terrainWidth * terrainHeight);
+    groundVB->resizeVertexCount(terrainWidth * terrainHeight);
 
     BoundingBox& terrainBB = Attorney::TerrainLoader::boundingBox(*terrain);
 
@@ -349,23 +345,18 @@ bool TerrainLoader::loadThreadedResources(
             for (I32 i = 0; i < terrainWidth; i++) {
                 U32 idxHM = TER_COORD(i, j, terrainWidth);
 
-                vec3<F32> vertexData;
-                vertexData.x =
-                    bMin.x + (to_float(i)) * (bMax.x - bMin.x) / (terrainWidth - 1);
-                vertexData.z =
-                    bMin.z + (to_float(j)) * (bMax.z - bMin.z) / (terrainHeight - 1);
+                F32 x = bMin.x + (to_float(i)) * (bMax.x - bMin.x) / (terrainWidth - 1);
+                F32 z = bMin.z + (to_float(j)) * (bMax.z - bMin.z) / (terrainHeight - 1);
 
                 U32 idxIMG = TER_COORD<U32>(
                     i < to_int(heightmapWidth) ? i : i - 1,
                     j < to_int(heightmapHeight) ? j : j - 1, heightmapWidth);
 
-                vertexData.y =
-                    minAltitude +
-                    altitudeRange * to_float(heightValues[idxIMG]) / 65536.0f;
-                vertexData.y *= yScaleFactor;
-                vertexData.y += yOffset;
+                F32 y = minAltitude + altitudeRange * to_float(heightValues[idxIMG]) / 65536.0f;
+                y *= yScaleFactor;
+                y += yOffset;
 #pragma omp critical
-                { groundVB->modifyPositionValue(idxHM, vertexData); }
+                { groundVB->modifyPositionValue(idxHM, x, y, z); }
             }
         }
     } else {
@@ -400,8 +391,6 @@ bool TerrainLoader::loadThreadedResources(
 
     heightValues.clear();
 
-    const vectorImpl<vec3<F32> >& groundPos = groundVB->getPosition();
-
     I32 offset = 2;
     vec3<F32> vU, vV, vUV;
     U32 idx = 0, idx0 = 0, idx1 = 0;
@@ -409,10 +398,10 @@ bool TerrainLoader::loadThreadedResources(
         for (I32 i = offset; i < terrainWidth - offset; i++) {
             idx = TER_COORD(i, j, terrainWidth);
 
-            vU.set(groundPos[TER_COORD(i + offset, j + 0, terrainWidth)] -
-                   groundPos[TER_COORD(i - offset, j + 0, terrainWidth)]);
-            vV.set(groundPos[TER_COORD(i + 0, j + offset, terrainWidth)] -
-                   groundPos[TER_COORD(i + 0, j - offset, terrainWidth)]);
+            vU.set(groundVB->getPosition(TER_COORD(i + offset, j + 0, terrainWidth)) -
+                   groundVB->getPosition(TER_COORD(i - offset, j + 0, terrainWidth)));
+            vV.set(groundVB->getPosition(TER_COORD(i + 0, j + offset, terrainWidth)) -
+                   groundVB->getPosition(TER_COORD(i + 0, j - offset, terrainWidth)));
             vUV.cross(vV, vU);
             vUV.normalize();
             groundVB->modifyNormalValue(idx, vUV);
@@ -422,19 +411,26 @@ bool TerrainLoader::loadThreadedResources(
         }
     }
 
+    vec3<F32> normal, tangent;
     for (I32 j = 0; j < offset; j++) {
         for (I32 i = 0; i < terrainWidth; i++) {
             idx0 = TER_COORD(i, j, terrainWidth);
             idx1 = TER_COORD(i, offset, terrainWidth);
 
-            groundVB->modifyNormalValue(idx0, normalData[idx1]);
-            groundVB->modifyTangentValue(idx0, tangentData[idx1]);
+            normal.set(groundVB->getNormal(idx1));
+            tangent.set(groundVB->getTangent(idx1));
+
+            groundVB->modifyNormalValue(idx0, normal);
+            groundVB->modifyTangentValue(idx0, tangent);
 
             idx0 = TER_COORD(i, terrainHeight - 1 - j, terrainWidth);
             idx1 = TER_COORD(i, terrainHeight - 1 - offset, terrainWidth);
 
-            groundVB->modifyNormalValue(idx0, normalData[idx1]);
-            groundVB->modifyTangentValue(idx0, tangentData[idx1]);
+            normal.set(groundVB->getNormal(idx1));
+            tangent.set(groundVB->getTangent(idx1));
+
+            groundVB->modifyNormalValue(idx0, normal);
+            groundVB->modifyTangentValue(idx0, tangent);
         }
     }
 
@@ -443,14 +439,20 @@ bool TerrainLoader::loadThreadedResources(
             idx0 = TER_COORD(i, j, terrainWidth);
             idx1 = TER_COORD(offset, j, terrainWidth);
 
-            groundVB->modifyNormalValue(idx0, normalData[idx1]);
-            groundVB->modifyTangentValue(idx0, normalData[idx1]);
+            normal.set(groundVB->getNormal(idx1));
+            tangent.set(groundVB->getTangent(idx1));
+
+            groundVB->modifyNormalValue(idx0, normal[idx1]);
+            groundVB->modifyTangentValue(idx0, tangent[idx1]);
 
             idx0 = TER_COORD(terrainWidth - 1 - i, j, terrainWidth);
             idx1 = TER_COORD(terrainWidth - 1 - offset, j, terrainWidth);
 
-            groundVB->modifyNormalValue(idx0, normalData[idx1]);
-            groundVB->modifyTangentValue(idx0, normalData[idx1]);
+            normal.set(groundVB->getNormal(idx1));
+            tangent.set(groundVB->getTangent(idx1));
+
+            groundVB->modifyNormalValue(idx0, normal[idx1]);
+            groundVB->modifyTangentValue(idx0, tangent[idx1]);
         }
     }
     groundVB->create();

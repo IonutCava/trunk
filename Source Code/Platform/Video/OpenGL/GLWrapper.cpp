@@ -429,7 +429,7 @@ bool GL_API::initShaders() {
         ShaderType::VERTEX,
         "layout(location = " +
             std::to_string(to_uint(AttribLocation::VERTEX_NORMAL)) +
-            ") in vec3  inNormalData;",
+            ") in float  inNormalData;",
         lineOffsets);
 
     appendToShaderHeader(

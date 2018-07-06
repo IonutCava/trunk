@@ -43,20 +43,33 @@ class ShaderProgram;
 /// D3DVERTEXBUFFER
 /// It is only a "buffer" for "vertex info" abstract of implementation. (e.g.:
 /// OGL uses a vertex array object for this)
-class NOINITVTABLE VertexBuffer : public VertexDataInterface {
+
+class NOINITVTABLE VertexBuffer : public VertexDataInterface
+{
    protected:
     enum class VertexAttribute : U32 {
         ATTRIB_POSITION = 0,
-        ATTRIB_COLOR = 1,
-        ATTRIB_NORMAL = 2,
+        ATTRIB_COLOR    = 1,
+        ATTRIB_NORMAL   = 2,
         ATTRIB_TEXCOORD = 3,
-        ATTRIB_TANGENT = 4,
+        ATTRIB_TANGENT  = 4,
         ATTRIB_BONE_WEIGHT = 5,
         ATTRIB_BONE_INDICE = 6,
-        COUNT
+        COUNT = 7
     };
 
    public:
+       
+    struct Vertex {
+        vec3<F32> _position;
+        F32       _normal;
+        F32       _tangent;
+        vec4<U8>  _color;
+        vec2<F32> _texcoord;
+        vec4<F32> _weights;
+        P32       _indices;
+    };
+
     VertexBuffer()
         : VertexDataInterface(),
           _LODcount(0),
@@ -96,67 +109,59 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
                         : GFXDataFormat::UNSIGNED_SHORT;
     }
 
-    inline void reservePositionCount(U32 size) { _dataPosition.reserve(size); }
-    inline void reserveColourCount(U32 size) { _dataColor.reserve(size); }
-    inline void reserveNormalCount(U32 size) { _dataNormal.reserve(size); }
-    inline void reserveTangentCount(U32 size) { _dataTangent.reserve(size); }
+    inline void setVertexCount(U32 size) { _data.resize(size); }
+
+    inline size_t getVertexCount() const {
+        return _data.size();
+    }
+
+    inline const vectorImpl<Vertex>& getVertices() const {
+        return _data;
+    }
 
     inline void reserveIndexCount(U32 size) {
         usesLargeIndices() ? _hardwareIndicesL.reserve(size)
                            : _hardwareIndicesS.reserve(size);
     }
 
-    inline void resizePositionCount(
-        U32 size, const vec3<F32>& defaultValue = VECTOR3_ZERO) {
-        _dataPosition.resize(size, defaultValue);
+    inline void resizeVertexCount(U32 size, const Vertex& defaultValue = Vertex()) {
+        _data.resize(size, defaultValue);
     }
 
-    inline void resizeColoCount(U32 size,
-                                const vec4<U8>& defaultValue = vec4<U8>(255)) {
-        _dataColor.resize(size, defaultValue);
-    }
-
-    inline void resizeNormalCount(
-        U32 size, const vec3<F32>& defaultValue = VECTOR3_ZERO) {
-        _dataNormal.resize(size, defaultValue);
-    }
-
-    inline void resizeTangentCount(
-        U32 size, const vec3<F32>& defaultValue = VECTOR3_ZERO) {
-        _dataTangent.resize(size, defaultValue);
-    }
-
-    inline vectorImpl<vec2<F32> >& getTexcoord() {
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] = true;
-        return _dataTexcoord;
-    }
-    inline vectorImpl<P32 >& getBoneIndices() {
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = true;
-        return _boneIndices;
-    }
-    inline vectorImpl<vec4<F32> >& getBoneWeights() {
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = true;
-        return _boneWeights;
-    }
-
-    inline const vectorImpl<vec3<F32> >& getPosition() const {
-        return _dataPosition;
-    }
-    inline const vectorImpl<vec4<U8> >& getColor() const { return _dataColor; }
-    inline const vectorImpl<vec3<F32> >& getNormal() const {
-        return _dataNormal;
-    }
-    inline const vectorImpl<vec3<F32> >& getTangent() const {
-        return _dataTangent;
-    }
     inline const vec3<F32>& getPosition(U32 index) const {
-        return _dataPosition[index];
+        return _data[index]._position;
     }
-    inline const vec3<F32>& getNormal(U32 index) const {
-        return _dataNormal[index];
+
+    inline const vec2<F32>& getTexCoord(U32 index) const {
+        return _data[index]._texcoord;
     }
-    inline const vec3<F32>& getTangent(U32 index) const {
-        return _dataTangent[index];
+
+    inline F32 getNormal(U32 index) const {
+        return _data[index]._normal;
+    }
+
+    inline F32 getNormal(U32 index, vec3<F32>& normalOut) const {
+        F32 normal = getNormal(index);
+        Util::UNPACK_VEC3(normal, normalOut.x, normalOut.y, normalOut.z);
+        return normal;
+    }
+
+    inline F32 getTangent(U32 index) const {
+        return _data[index]._tangent;
+    }
+
+    inline F32 getTangent(U32 index, vec3<F32>& tangentOut) const {
+        F32 tangent = getTangent(index);
+        Util::UNPACK_VEC3(tangent, tangentOut.x, tangentOut.y, tangentOut.z);
+        return tangent;
+    }
+
+    inline P32 getBoneIndices(U32 index) const {
+        return _data[index]._indices;
+    }
+
+    inline const vec4<F32>& getBoneWeights(U32 index) const {
+        return _data[index]._weights;
     }
 
     virtual bool queueRefresh() = 0;
@@ -199,80 +204,82 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         }
     }
 
-    inline void addPosition(const vec3<F32>& pos) {
-        _dataPosition.push_back(pos);
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_POSITION)] = true;
-    }
-
-    inline void addColor(const vec4<U8>& col) {
-        _dataColor.push_back(col);
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_COLOR)] = true;
-    }
-
-    inline void addTexCoord(const vec2<F32>& texCoord) {
-        _dataTexcoord.push_back(texCoord);
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] = true;
-    }
-
-    inline void addNormal(const vec3<F32>& norm) {
-        _dataNormal.push_back(norm);
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_NORMAL)] = true;
-    }
-
-    inline void addTangent(const vec3<F32>& tangent) {
-        _dataTangent.push_back(tangent);
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_TANGENT)] = true;
-    }
-
-    inline void addBoneIndex(const P32& idx) {
-        _boneIndices.push_back(idx);
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = true;
-    }
-
-    inline void addBoneWeight(const vec4<F32>& idx) {
-        _boneWeights.push_back(idx);
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = true;
-    }
-
     inline void modifyPositionValue(U32 index, const vec3<F32>& newValue) {
-        /*DIVIDE_ASSERT(index < _dataPosition.size(),
-                      "VertexBuffer error: Invalid position offset!");*/
-        _dataPosition[index].set(newValue);
+        modifyPositionValue(index, newValue.x, newValue.y, newValue.z);
+    }
+
+    inline void modifyPositionValue(U32 index, F32 x, F32 y, F32 z) {
+        assert(index < _data.size());
+
+        _data[index]._position.set(x, y, z);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_POSITION)] = true;
     }
 
     inline void modifyColorValue(U32 index, const vec4<U8>& newValue) {
-        DIVIDE_ASSERT(index < _dataColor.size(),
-                      "VertexBuffer error: Invalid color offset!");
-        _dataColor[index].set(newValue);
+        modifyColorValue(index, newValue.r, newValue.g, newValue.b, newValue.a);
+    }
+
+    inline void modifyColorValue(U32 index, U8 r, U8 g, U8 b, U8 a) {
+        assert(index < _data.size());
+
+        _data[index]._color.set(r, g, b, a);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_COLOR)] = true;
     }
 
     inline void modifyNormalValue(U32 index, const vec3<F32>& newValue) {
-        DIVIDE_ASSERT(index < _dataNormal.size(),
-                      "VertexBuffer error: Invalid normal offset!");
-        _dataNormal[index].set(newValue);
+        modifyNormalValue(index, newValue.x, newValue.y, newValue.z);
+    }
+
+    inline void modifyNormalValue(U32 index, F32 x, F32 y, F32 z) {
+        assert(index < _data.size());
+
+        _data[index]._normal = Util::PACK_VEC3(x, y, z);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_NORMAL)] = true;
     }
 
     inline void modifyTangentValue(U32 index, const vec3<F32>& newValue) {
-        DIVIDE_ASSERT(index < _dataTangent.size(),
-                      "VertexBuffer error: Invalid tangent offset!");
-        _dataTangent[index].set(newValue);
+        modifyTangentValue(index, newValue.x, newValue.y, newValue.z);
+    }
+
+    inline void modifyTangentValue(U32 index, F32 x, F32 y, F32 z) {
+        assert(index < _data.size());
+
+        _data[index]._tangent = Util::PACK_VEC3(x, y, z);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_TANGENT)] = true;
     }
 
-    inline void shrinkAllDataToFit() {
-        shrinkToFit(_dataPosition);
-        shrinkToFit(_dataColor);
-        shrinkToFit(_dataNormal);
-        shrinkToFit(_dataTexcoord);
-        shrinkToFit(_dataTangent);
-        shrinkToFit(_boneWeights);
-        shrinkToFit(_boneIndices);
+    inline void modifyTexCoordValue(U32 index, const vec2<F32>& newValue) {
+        modifyTexCoordValue(index, newValue.s, newValue.t);
     }
 
-    inline size_t partitionBuffer(U32 currentIndexCount) {
+    inline void modifyTexCoordValue(U32 index, F32 s, F32 t) {
+        assert(index < _data.size());
+
+        _data[index]._texcoord.set(s, t);
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] = true;
+    }
+
+    inline void modifyBoneIndices(U32 index, P32 indices) {
+        assert(index < _data.size());
+
+        _data[index]._indices = indices;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = true;
+    }
+
+    inline void modifyBoneWeights(U32 index, const vec4<F32>& weights) {
+        assert(index < _data.size());
+
+        _data[index]._weights = weights;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = true;
+    }
+
+    inline void shrinkAllDataToFit() {
+        shrinkToFit(_data);
+    }
+
+    inline size_t partitionBuffer() {
+        U32 currentIndexCount = getIndexCount();
+
         _partitions.push_back(std::make_pair(
             getIndexCount() - currentIndexCount, currentIndexCount));
         _currentPartitionIndex = to_uint(_partitions.size());
@@ -309,17 +316,10 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _created = false;
         _primitiveRestartEnabled = false;
         _partitions.clear();
-        _dataPosition.clear();
-        _dataColor.clear();
-        _dataNormal.clear();
-        _dataTexcoord.clear();
-        _dataTangent.clear();
-        _boneIndices.clear();
-        _boneWeights.clear();
+        _data.clear();
         _hardwareIndicesL.clear();
         _hardwareIndicesS.clear();
-        _attribDirty.fill(true);
-        _VBoffset.fill(0);
+        _attribDirty.fill(false);
     }
 
    protected:
@@ -339,21 +339,13 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     GFXDataFormat _format;
     /// An index value that separates objects (OGL: primitive restart index)
     U32 _indexDelimiter;
-    std::array<ptrdiff_t, to_const_uint(VertexAttribute::COUNT)> _VBoffset;
-
     // first: offset, second: count
     vectorImpl<std::pair<U32, U32> > _partitions;
     /// Used for creating an "IB". If it's empty, then an outside source should
     /// provide the indices
     vectorImpl<U32> _hardwareIndicesL;
     vectorImpl<U16> _hardwareIndicesS;
-    vectorImpl<vec3<F32> > _dataPosition;
-    vectorImpl<vec4<U8>  > _dataColor;
-    vectorImpl<vec3<F32> > _dataNormal;
-    vectorImpl<vec2<F32> > _dataTexcoord;
-    vectorImpl<vec3<F32> > _dataTangent;
-    vectorImpl<P32 >       _boneIndices;
-    vectorImpl<vec4<F32> > _boneWeights;
+    vectorImpl<Vertex> _data;
     /// Cache system to update only required data
     std::array<bool, to_const_uint(VertexAttribute::COUNT)> _attribDirty;
     bool _primitiveRestartEnabled;

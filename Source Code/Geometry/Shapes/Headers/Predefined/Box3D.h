@@ -40,28 +40,19 @@ namespace Divide {
 class Box3D : public Object3D {
    public:
     Box3D(const vec3<F32>& size) : Object3D(ObjectType::BOX_3D, ObjectFlag::OBJECT_FLAG_NONE) {
+        _halfExtent.set(size / 2);
+
         static const vec3<F32> vertices[] = {
             vec3<F32>(-1.0f, -1.0f,  1.0f),
-            vec3<F32>( 1.0f, -1.0f,  1.0f),
+            vec3<F32>(1.0f, -1.0f,  1.0f),
             vec3<F32>(-1.0f,  1.0f,  1.0f),
-            vec3<F32>( 1.0f,  1.0f,  1.0f),
+            vec3<F32>(1.0f,  1.0f,  1.0f),
             vec3<F32>(-1.0f, -1.0f, -1.0f),
-            vec3<F32>( 1.0f, -1.0f, -1.0f),
+            vec3<F32>(1.0f, -1.0f, -1.0f),
             vec3<F32>(-1.0f,  1.0f, -1.0f),
-            vec3<F32>( 1.0f,  1.0f, -1.0f)
+            vec3<F32>(1.0f,  1.0f, -1.0f)
         };
-
-        static const vec3<F32> normals[] = {
-            vec3<F32>(-1.0f, -1.0f,  1.0f),
-            vec3<F32>( 1.0f, -1.0f,  1.0f),
-            vec3<F32>(-1.0f,  1.0f,  1.0f),
-            vec3<F32>( 1.0f,  1.0f,  1.0f),
-            vec3<F32>(-1.0f, -1.0f, -1.0f),
-            vec3<F32>( 1.0f, -1.0f, -1.0f),
-            vec3<F32>(-1.0f,  1.0f, -1.0f),
-            vec3<F32>( 1.0f,  1.0f, -1.0f)
-        };
-
+ 
         static const U16 indices[] = {
             0, 1, 2,
             3, 7, 1,
@@ -69,17 +60,14 @@ class Box3D : public Object3D {
             6, 2, 4,
             0, 1
         };
-
-        _halfExtent.set(size / 2);
-
+        
         VertexBuffer* vb = getGeometryVB();
 
-        vb->reservePositionCount(8);
-        vb->reserveNormalCount(8);
+        vb->setVertexCount(8);
 
         for (U8 i = 0; i < 8; i++) {
-            vb->addPosition(vertices[i] * _halfExtent);
-            vb->addNormal(normals[i]);
+            vb->modifyPositionValue(i , vertices[i] * _halfExtent);
+            vb->modifyNormalValue(i, vertices[i]);
         }
 
         for (U8 i = 0; i < 14; i++) {

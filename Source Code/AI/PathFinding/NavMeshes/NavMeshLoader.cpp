@@ -411,7 +411,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, std::weak_ptr<SceneGra
             }
             assert(geometry != nullptr);
 
-            const vectorImpl<vec3<F32> >& vertices = geometry->getPosition();
+            const vectorImpl<VertexBuffer::Vertex >& vertices = geometry->getVertices();
             if (vertices.empty()) {
                 return false;
             }
@@ -428,13 +428,13 @@ bool parse(const BoundingBox& box, NavModelData& outData, std::weak_ptr<SceneGra
                 for (U32 i = 0; i < vertices.size(); ++i) {
                     // Apply the node's transform and add the vertex to the
                     // NavMesh
-                    addVertex(&outData, nodeTransform * (vertices[i]));
+                    addVertex(&outData, nodeTransform * (vertices[i]._position));
                 }
             } else {
                 for (U32 i = 0; i < vertices.size(); ++i) {
                     // Apply the node's transform and add the vertex to the
                     // NavMesh
-                    addVertex(&outData, (vertices[i]));
+                    addVertex(&outData, (vertices[i]._position));
                 }
             }
 

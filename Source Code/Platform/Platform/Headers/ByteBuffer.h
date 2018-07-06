@@ -288,7 +288,7 @@ class ByteBuffer {
         return guid;
     }
 
-    const U8 *contents() const { return &_storage[0]; }
+    const U8 *contents() const { return _storage.data(); }
 
     size_t size() const { return _storage.size(); }
     bool empty() const { return _storage.empty(); }

@@ -47,9 +47,7 @@ class Sphere3D : public Object3D {
     {
         _dirty = true;
         _vertexCount = resolution * resolution;
-        getGeometryVB()->reservePositionCount(_vertexCount);
-        getGeometryVB()->reserveNormalCount(_vertexCount);
-        getGeometryVB()->getTexcoord().reserve(_vertexCount);
+        getGeometryVB()->setVertexCount(_vertexCount);
         getGeometryVB()->reserveIndexCount(_vertexCount);
         if (_vertexCount + 1 > std::numeric_limits<U16>::max()) {
             getGeometryVB()->useLargeIndices(true);
@@ -110,6 +108,8 @@ class Sphere3D : public Object3D {
         U32 i, j;  // Looping variables
         U32 index = 0;  /// for the index buffer
 
+        vb->setVertexCount(stacks * ((slices + 1) * 2));
+
         for (i = 0; i < stacks; i++) {
             F32 rho = i * drho;
             F32 srho = std::sin(rho);
@@ -130,9 +130,9 @@ class Sphere3D : public Object3D {
                 F32 y = ctheta * srho;
                 F32 z = crho;
 
-                vb->addPosition(vec3<F32>(x * _radius, y * _radius, z * _radius));
-                vb->getTexcoord().push_back(vec2<F32>(s, t));
-                vb->addNormal(vec3<F32>(x, y, z));
+                vb->modifyPositionValue(index, x * _radius, y * _radius, z * _radius);
+                vb->modifyTexCoordValue(index, s, t);
+                vb->modifyNormalValue(index, x, y, z);
                 vb->addIndex(index++);
 
                 x = stheta * srhodrho;
@@ -140,9 +140,9 @@ class Sphere3D : public Object3D {
                 z = crhodrho;
                 s += ds;
 
-                vb->addPosition(vec3<F32>(x * _radius, y * _radius, z * _radius));
-                vb->getTexcoord().push_back(vec2<F32>(s, t - dt));
-                vb->addNormal(vec3<F32>(x, y, z));
+                vb->modifyPositionValue(index, x * _radius, y * _radius, z * _radius);
+                vb->modifyTexCoordValue(index, s, t - dt);
+                vb->modifyNormalValue(index, x, y, z);
                 vb->addIndex(index++);
             }
             t -= dt;

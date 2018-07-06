@@ -238,20 +238,17 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
         _boundingBox.getMin().z +
             z_clampf * (_boundingBox.getMax().z - _boundingBox.getMin().z));
 
-    const vectorImpl<vec3<F32> >& position = getGeometryVB()->getPosition();
 
-    pos.y = (position[TER_COORD(posI.x, posI.y,
-                                to_int(_terrainDimensions.x))].y) *
-                (1.0f - posD.x) * (1.0f - posD.y) +
-            (position[TER_COORD(posI.x + 1, posI.y,
-                                to_int(_terrainDimensions.x))].y) *
-                posD.x * (1.0f - posD.y) +
-            (position[TER_COORD(posI.x, posI.y + 1,
-                                to_int(_terrainDimensions.x))].y) *
-                (1.0f - posD.x) * posD.y +
-            (position[TER_COORD(posI.x + 1, posI.y + 1,
-                                to_int(_terrainDimensions.x))].y) *
-                posD.x * posD.y;
+    const VertexBuffer* const vb = getGeometryVB();
+
+    pos.y = (vb->getPosition(TER_COORD(posI.x, posI.y, to_int(_terrainDimensions.x))).y) *
+            (1.0f - posD.x) * (1.0f - posD.y) + 
+            (vb->getPosition(TER_COORD(posI.x + 1, posI.y, to_int(_terrainDimensions.x))).y) *
+            posD.x * (1.0f - posD.y) +
+            (vb->getPosition(TER_COORD(posI.x, posI.y + 1, to_int(_terrainDimensions.x))).y) *
+            (1.0f - posD.x) * posD.y +
+            (vb->getPosition(TER_COORD(posI.x + 1, posI.y + 1,to_int(_terrainDimensions.x))).y) *
+            posD.x * posD.y;
 
     return pos;
 }
@@ -275,20 +272,18 @@ vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const {
     assert(posI.x >= 0 && posI.x < to_int(_terrainDimensions.x) - 1 &&
            posI.y >= 0 && posI.y < to_int(_terrainDimensions.y) - 1);
 
-    const vectorImpl<vec3<F32> >& normals = getGeometryVB()->getNormal();
+    const VertexBuffer* const vb = getGeometryVB();
+    vec3<F32> normals[4];
 
-    return (normals[TER_COORD(posI.x, posI.y,
-                              to_int(_terrainDimensions.x))]) *
-               (1.0f - posD.x) * (1.0f - posD.y) +
-           (normals[TER_COORD(posI.x + 1, posI.y,
-                              to_int(_terrainDimensions.x))]) *
-               posD.x * (1.0f - posD.y) +
-           (normals[TER_COORD(posI.x, posI.y + 1,
-                              to_int(_terrainDimensions.x))]) *
-               (1.0f - posD.x) * posD.y +
-           (normals[TER_COORD(posI.x + 1, posI.y + 1,
-                              to_int(_terrainDimensions.x))]) *
-               posD.x * posD.y;
+    vb->getNormal(TER_COORD(posI.x, posI.y, to_int(_terrainDimensions.x)), normals[0]);
+    vb->getNormal(TER_COORD(posI.x + 1, posI.y, to_int(_terrainDimensions.x)), normals[1]);
+    vb->getNormal(TER_COORD(posI.x, posI.y + 1, to_int(_terrainDimensions.x)), normals[2]);
+    vb->getNormal(TER_COORD(posI.x + 1, posI.y + 1, to_int(_terrainDimensions.x)), normals[3]);
+
+    return normals[0] * (1.0f - posD.x) * (1.0f - posD.y) +
+           normals[1] * posD.x * (1.0f - posD.y) +
+           normals[2] * (1.0f - posD.x) * posD.y + 
+           normals[3] * posD.x * posD.y;
 }
 
 vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const {
@@ -310,20 +305,19 @@ vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const {
     assert(posI.x >= 0 && posI.x < to_int(_terrainDimensions.x) - 1 &&
            posI.y >= 0 && posI.y < to_int(_terrainDimensions.y) - 1);
 
-    const vectorImpl<vec3<F32> >& tangents = getGeometryVB()->getTangent();
+    const VertexBuffer* const vb = getGeometryVB();
+    vec3<F32> tangents[4];
 
-    return (tangents[TER_COORD(posI.x, posI.y,
-                               to_int(_terrainDimensions.x))]) *
-               (1.0f - posD.x) * (1.0f - posD.y) +
-           (tangents[TER_COORD(posI.x + 1, posI.y,
-                               to_int(_terrainDimensions.x))]) *
-               posD.x * (1.0f - posD.y) +
-           (tangents[TER_COORD(posI.x, posI.y + 1,
-                               to_int(_terrainDimensions.x))]) *
-               (1.0f - posD.x) * posD.y +
-           (tangents[TER_COORD(posI.x + 1, posI.y + 1,
-                               to_int(_terrainDimensions.x))]) *
-               posD.x * posD.y;
+
+    vb->getTangent(TER_COORD(posI.x, posI.y, to_int(_terrainDimensions.x)), tangents[0]);
+    vb->getTangent(TER_COORD(posI.x + 1, posI.y, to_int(_terrainDimensions.x)), tangents[1]);
+    vb->getTangent(TER_COORD(posI.x, posI.y + 1, to_int(_terrainDimensions.x)), tangents[2]);
+    vb->getTangent(TER_COORD(posI.x + 1, posI.y + 1, to_int(_terrainDimensions.x)), tangents[3]);
+
+    return tangents[0] * (1.0f - posD.x) * (1.0f - posD.y) +
+           tangents[1] * posD.x * (1.0f - posD.y) +
+           tangents[2] * (1.0f - posD.x) * posD.y +
+           tangents[3] * posD.x * posD.y;
 }
 
 TerrainTextureLayer::~TerrainTextureLayer() {

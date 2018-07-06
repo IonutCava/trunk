@@ -282,8 +282,17 @@ vec3<F32> ToFloatColor(const vec3<U8>& byteColor);
 vec4<F32> ToFloatColor(const vec4<U32>& uintColor);
 vec3<F32> ToFloatColor(const vec3<U32>& uintColor);
 
+inline F32 PACK_VEC3(const F32 x, const F32 y, const F32 z) {
+    return PACK_FLOAT(FLOAT_TO_CHAR(x),
+                      FLOAT_TO_CHAR(y),
+                      FLOAT_TO_CHAR(z));
+}
+
 F32 PACK_VEC3(const vec3<F32>& value);
-vec3<F32> UNPACK_VEC3(F32 value);
+
+inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) {
+    UNPACK_FLOAT(src, x, y, z);
+}
 
 namespace Mat4 {
 template <typename T>

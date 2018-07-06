@@ -8,15 +8,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Networking\ASIO.cpp" />
-    <ClCompile Include="..\..\Source Code\Networking\ByteBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Networking\Client.cpp" />
     <ClCompile Include="..\..\Source Code\Networking\tcp_session_tpl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Networking\Headers\ASIO.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Networking\Headers\ByteBuffer.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Networking\Headers\ByteConverter.h">

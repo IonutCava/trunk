@@ -79,11 +79,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
     U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionID);
     U32 partitionCount = parentVB->getPartitionCount(_geometryPartitionID) +
                          partitionOffset;
-
-    const vectorImpl<vec3<F32> >& verts = parentVB->getPosition();
-    const vectorImpl<P32 >& indices = parentVB->getBoneIndices();
-    const vectorImpl<vec4<F32> >& weights = parentVB->getBoneWeights();
-
+                         
     U32 frameCount = to_uint(animComp->frameCount(animationIndex));
 
     for (U32 i = 0; i < frameCount; ++i) {
@@ -93,9 +89,9 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
         // loop through all vertex weights of all bones
         for (U32 j = partitionOffset; j < partitionCount; ++j) {
             U32 idx = parentVB->getIndex(j);
-            P32 ind = indices[idx];
-            const vec4<F32>& wgh = weights[idx];
-            const vec3<F32>& curentVert = verts[idx];
+            P32 ind = parentVB->getBoneIndices(idx);
+            const vec4<F32>& wgh = parentVB->getBoneWeights(idx);
+            const vec3<F32>& curentVert = parentVB->getPosition(idx);
 
             F32 fwgh = 1.0f - (wgh.x + wgh.y + wgh.z);
             bb.Add((wgh.x * (transforms[ind.b[0]] * curentVert)) +

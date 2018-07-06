@@ -13,16 +13,19 @@ namespace Divide {
 glVertexArray::glVertexArray()
     : VertexBuffer(),
       _refreshQueued(false),
-      _animationData(false),
-      _formatInternal(GL_NONE) {
+      _formatInternal(GL_NONE)
+{
     // We assume everything is static draw
     _usage = GL_STATIC_DRAW;
-    _prevSize.fill(-1);
+    _prevSize = -1;
     _prevSizeIndices = -1;
     _VAOid = _VBid = _IBid = 0;
+
+    _useAttribute.fill(false);
 }
 
-glVertexArray::~glVertexArray() {
+glVertexArray::~glVertexArray()
+{
     destroy();
 }
 
@@ -30,9 +33,57 @@ glVertexArray::~glVertexArray() {
 void glVertexArray::destroy() {
     GLUtil::freeBuffer(_IBid);
     GLUtil::freeBuffer(_VBid);
-    if (_VAOid > 0)
+    if (_VAOid > 0) {
         glDeleteVertexArrays(1, &_VAOid);
+    }
     _VAOid = 0;
+}
+
+/// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
+std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
+    bool useColor = _useAttribute[to_uint(VertexAttribute::ATTRIB_COLOR)];
+    bool useNormals = _useAttribute[to_uint(VertexAttribute::ATTRIB_NORMAL)];
+    bool useTangents = _useAttribute[to_uint(VertexAttribute::ATTRIB_TANGENT)];
+    bool useTexcoords = _useAttribute[to_uint(VertexAttribute::ATTRIB_TEXCOORD)];
+    bool useBoneData = _useAttribute[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)];
+
+    for (Vertex& data : _data) {
+        _smallData << data._position.x;
+        _smallData << data._position.y;
+        _smallData << data._position.z;
+        if (useNormals) {
+            _smallData << data._normal;
+        }
+
+        if (useTangents) {
+            _smallData << data._tangent;
+        }
+
+        if (useColor) {
+            _smallData << data._color.r;
+            _smallData << data._color.g;
+            _smallData << data._color.b;
+            _smallData << data._color.a;
+        }
+
+        if (useTexcoords) {
+            _smallData << data._texcoord.s;
+            _smallData << data._texcoord.t;
+        }
+
+        if (useBoneData) {
+            _smallData << data._indices.i;
+            _smallData << data._weights.x;
+            _smallData << data._weights.y;
+            _smallData << data._weights.z;
+            _smallData << data._weights.w;
+        }
+    }
+    
+    //Enable this when vertex attributes are adjusted accordingly
+    //return std::make_pair((bufferPtr)_smallData.contents(), _smallData.size());
+
+    return  std::make_pair((bufferPtr)_data.data(), _data.size() * sizeof(Vertex));
 }
 
 /// Create a dynamic or static VB
@@ -61,121 +112,48 @@ bool glVertexArray::refresh() {
     // rendering system)
     DIVIDE_ASSERT(!_hardwareIndicesL.empty() || !_hardwareIndicesS.empty(),
                   "glVertexArray error: Invalid index data on Refresh()!");
-    // Get the size of each data container
-    std::array<GLsizei, to_const_uint(VertexAttribute::COUNT)> nSize = { 0 };
 
-    nSize[to_uint(VertexAttribute::ATTRIB_POSITION)] =
-        (GLsizei)(_dataPosition.size() * sizeof(vec3<F32>));
-    nSize[to_uint(VertexAttribute::ATTRIB_COLOR)] =
-        (GLsizei)(_dataColor.size() * sizeof(vec4<U8>));
-    nSize[to_uint(VertexAttribute::ATTRIB_NORMAL)] =
-        (GLsizei)(_dataNormal.size() * sizeof(vec3<F32>));
-    nSize[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] =
-        (GLsizei)(_dataTexcoord.size() * sizeof(vec2<F32>));
-    nSize[to_uint(VertexAttribute::ATTRIB_TANGENT)] =
-        (GLsizei)(_dataTangent.size() * sizeof(F32));
-    nSize[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] =
-        (GLsizei)(_boneWeights.size() * sizeof(vec4<F32>));
-    nSize[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] =
-        (GLsizei)(_boneIndices.size() * sizeof(P32));
     GLsizei nSizeIndices =
         (GLsizei)(usesLargeIndices() ? _hardwareIndicesL.size() * sizeof(U32)
                                      : _hardwareIndicesS.size() * sizeof(U16));
-    // If any of the VBO's components changed size, we need to recreate the
-    // entire buffer.
-    bool sizeChanged = false;
-    for (U8 i = 0; i < to_uint(VertexAttribute::COUNT); ++i) {
-        if (nSize[i] != _prevSize[i]) {
-            sizeChanged = true;
-            _prevSize[i] = nSize[i];
-        }
-    }
-    // Same logic applies to indices.
+
     bool indicesChanged = (nSizeIndices != _prevSizeIndices);
     _prevSizeIndices = nSizeIndices;
-    _refreshQueued = sizeChanged || indicesChanged;
+    _refreshQueued = indicesChanged;
 
-    if (!_refreshQueued) {
-        for (U8 i = 0; i < to_uint(VertexAttribute::COUNT); ++i) {
-            if (_attribDirty[i]) {
-                _refreshQueued = true;
-                break;
-            }
+    /// Can only add attributes for now. No removal support. -Ionut
+    for (U8 i = 0; i < to_uint(VertexAttribute::COUNT); ++i) {
+        _useAttribute[i] = _useAttribute[i] || _attribDirty[i];
+        if (!_refreshQueued) {
+           if (_attribDirty[i]) {
+               _refreshQueued = true;
+           }
         }
     }
+    _attribDirty.fill(false);
 
-    if (!_refreshQueued) {
+    std::pair<bufferPtr, size_t> bufferData = getMinimalData();
+    // If any of the VBO's components changed size, we need to recreate the
+    // entire buffer.
+
+    size_t size = bufferData.second;
+    bool sizeChanged = size != _prevSize;
+    _prevSize = size;
+
+    if (!_refreshQueued && !sizeChanged) {
         return false;
     }
 
-    // Check if we have any animation data.
-    _animationData = (!_boneWeights.empty() && !_boneIndices.empty());
     // Refresh buffer data (if this is the first call to refresh, this will be
     // true)
     if (sizeChanged) {
-        // Calculated the needed size for our buffer
-        GLsizei vbSize = 0;
-        for (U8 i = 0; i < to_uint(VertexAttribute::COUNT); ++i) {
-            vbSize += nSize[i];
-        }
-        Console::d_printfn(Locale::get("DISPLAY_VB_METRICS"), vbSize,
-                           4 * 1024 * 1024);
+         Console::d_printfn(Locale::get("DISPLAY_VB_METRICS"), size,  4 * 1024 * 1024);
         // Allocate sufficient space in our buffer
-        glNamedBufferData(_VBid, vbSize, NULL, _usage);
-        // Refresh all attributes
-        _attribDirty.fill(true);
+        glNamedBufferData(_VBid, size, NULL, _usage);
     }
 
-    if (_attribDirty[to_uint(VertexAttribute::ATTRIB_TANGENT)]) {
-        _tangentSmall.resize(0);
-        _tangentSmall.reserve(_dataTangent.size());
-        for (const vec3<F32>& tangent : _dataTangent) {
-            _tangentSmall.push_back(Util::PACK_VEC3(tangent));
-        }
-    }
+    glNamedBufferSubData(_VBid, 0, size, bufferData.first);
 
-    // Get the buffer data for each attribute
-    std::array<bufferPtr, to_const_uint(VertexAttribute::COUNT)> dataBuffer = {
-        nullptr};
-
-    dataBuffer[to_uint(VertexAttribute::ATTRIB_POSITION)] =
-        _dataPosition.data();
-    dataBuffer[to_uint(VertexAttribute::ATTRIB_COLOR)] = _dataColor.data();
-    dataBuffer[to_uint(VertexAttribute::ATTRIB_NORMAL)] = _dataNormal.data();
-    dataBuffer[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] =
-        _dataTexcoord.data();
-    dataBuffer[to_uint(VertexAttribute::ATTRIB_TANGENT)] = _tangentSmall.data();
-    dataBuffer[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] =
-        _boneWeights.data();
-    dataBuffer[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] =
-        _boneIndices.data();
-
-    // Get position data offset
-    U32 attrib = to_uint(VertexAttribute::ATTRIB_POSITION);
-    _VBoffset[attrib] = 0;
-    GLsizei previousOffset = static_cast<GLsizei>(_VBoffset[attrib]);
-    GLsizei previousCount = nSize[attrib];
-    // Loop over all possible attributes
-    for (; attrib < to_uint(VertexAttribute::COUNT); ++attrib) {
-        // Only process available attributes
-        if (nSize[attrib] > 0) {
-            // Get it's offset
-            if (attrib > to_uint(VertexAttribute::ATTRIB_POSITION)) {
-                _VBoffset[attrib] = previousOffset + previousCount;
-                previousOffset = static_cast<GLsizei>(_VBoffset[attrib]);
-                previousCount = nSize[attrib];
-            }
-            // Add it to the VBO
-            if (_attribDirty[attrib]) {
-                glNamedBufferSubData(_VBid, _VBoffset[attrib], nSize[attrib], dataBuffer[attrib]);
-                if (attrib == to_uint(VertexAttribute::ATTRIB_TANGENT)) {
-                    _tangentSmall.clear();
-                }
-            }
-        }
-    }
-
-    _attribDirty.fill(false);
     // Check if we need to update the IBO (will be true for the first Refresh()
     // call)
     if (indicesChanged) {
@@ -203,14 +181,12 @@ bool glVertexArray::createInternal() {
                   "glVertexArray error: Attempted to double create a VB");
     _created = false;
     // Position data is a minim requirement
-    if (_dataPosition.empty()) {
+    if (_data.empty()) {
         Console::errorfn(Locale::get("ERROR_VB_POSITION"));
         return _created;
     }
 
     _formatInternal = GLUtil::glDataFormat[to_uint(_format)];
-    // Enforce all update flags. Kind of useless, but it doesn't hurt
-    _attribDirty.fill(true);
     // Generate a "Vertex Array Object"
     glCreateVertexArrays(1, &_VAOid);
     // Generate a new Vertex Buffer Object
@@ -314,63 +290,58 @@ void glVertexArray::uploadVBAttributes() {
     GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
 
     glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_POSITION));
-    glVertexAttribPointer(
-        to_uint(AttribLocation::VERTEX_POSITION), 3, GL_FLOAT, GL_FALSE,
-        sizeof(vec3<F32>),
-        (bufferPtr)(_VBoffset[to_uint(VertexAttribute::ATTRIB_POSITION)]));
 
-    if (!_dataColor.empty()) {
+    glVertexAttribPointer(to_uint(AttribLocation::VERTEX_POSITION),
+                          3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (bufferPtr)(offsetof(Vertex, _position)));
+
+    if (_useAttribute[to_uint(AttribLocation::VERTEX_COLOR)]) {
         glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_COLOR));
-        glVertexAttribIPointer(
-            to_uint(AttribLocation::VERTEX_COLOR), 4, GL_UNSIGNED_BYTE,
-            sizeof(vec4<U8>),
-            (bufferPtr)(_VBoffset[to_uint(VertexAttribute::ATTRIB_COLOR)]));
+        glVertexAttribIPointer(to_uint(AttribLocation::VERTEX_COLOR),
+                               4, GL_UNSIGNED_BYTE, sizeof(Vertex),
+                               (bufferPtr)(offsetof(Vertex, _color)));
     } else {
         glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_COLOR));
     }
 
-    if (!_dataNormal.empty()) {
+    if (_useAttribute[to_uint(AttribLocation::VERTEX_NORMAL)]) {
         glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_NORMAL));
-        glVertexAttribPointer(
-            to_uint(AttribLocation::VERTEX_NORMAL), 3, GL_FLOAT, GL_FALSE,
-            sizeof(vec3<F32>),
-            (bufferPtr)(_VBoffset[to_uint(VertexAttribute::ATTRIB_NORMAL)]));
+        glVertexAttribPointer(to_uint(AttribLocation::VERTEX_NORMAL),
+                              1, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                              (bufferPtr)(offsetof(Vertex, _normal)));
     } else {
         glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_NORMAL));
     }
 
-    if (!_dataTexcoord.empty()) {
+    if (_useAttribute[to_uint(AttribLocation::VERTEX_TEXCOORD)]) {
         glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_TEXCOORD));
-        glVertexAttribPointer(
-            to_uint(AttribLocation::VERTEX_TEXCOORD), 2, GL_FLOAT, GL_FALSE,
-            sizeof(vec2<F32>),
-            (bufferPtr)(_VBoffset[to_uint(VertexAttribute::ATTRIB_TEXCOORD)]));
+        glVertexAttribPointer(to_uint(AttribLocation::VERTEX_TEXCOORD),
+                              2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                              (bufferPtr)(offsetof(Vertex, _texcoord)));
     } else {
         glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_TEXCOORD));
     }
 
-    if (!_dataTangent.empty()) {
+    if (_useAttribute[to_uint(AttribLocation::VERTEX_TANGENT)]) {
         glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_TANGENT));
-        glVertexAttribPointer(
-            to_uint(AttribLocation::VERTEX_TANGENT), 1, GL_FLOAT, GL_FALSE,
-            sizeof(F32),
-            (bufferPtr)(_VBoffset[to_uint(VertexAttribute::ATTRIB_TANGENT)]));
+        glVertexAttribPointer(to_uint(AttribLocation::VERTEX_TANGENT),
+                              1, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                              (bufferPtr)(offsetof(Vertex, _tangent)));
     } else {
         glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_TANGENT));
     }
 
-    if (_animationData) {
-        glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_BONE_WEIGHT));
-        glVertexAttribPointer(
-            to_uint(AttribLocation::VERTEX_BONE_WEIGHT), 4, GL_FLOAT, GL_FALSE,
-            sizeof(vec4<F32>),
-            (bufferPtr)(_VBoffset[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)]));
+    if (_useAttribute[to_uint(AttribLocation::VERTEX_BONE_WEIGHT)]) {
+        assert(_useAttribute[to_uint(AttribLocation::VERTEX_BONE_INDICE)]);
 
+        glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_BONE_WEIGHT));
         glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_BONE_INDICE));
-        glVertexAttribIPointer(
-            to_uint(AttribLocation::VERTEX_BONE_INDICE), 1, GL_UNSIGNED_INT,
-            sizeof(P32),
-            (bufferPtr)(_VBoffset[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)]));
+        glVertexAttribPointer(to_uint(AttribLocation::VERTEX_BONE_WEIGHT),
+                              4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                              (bufferPtr)(offsetof(Vertex, _weights)));
+        glVertexAttribIPointer(to_uint(AttribLocation::VERTEX_BONE_INDICE),
+                               1, GL_UNSIGNED_INT, sizeof(Vertex),
+                               (bufferPtr)(offsetof(Vertex, _indices)));
     } else {
         glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_BONE_WEIGHT));
         glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_BONE_INDICE));

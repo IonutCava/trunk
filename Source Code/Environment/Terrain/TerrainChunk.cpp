@@ -59,8 +59,6 @@ void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, U32 minHMSize,
         ComputeIndicesArray(i, depth, pos, HMsize);
     }
 
-    const vectorImpl<vec3<F32>>& vertices = _terrainVB->getPosition();
-
     F32 tempMin = std::numeric_limits<F32>::max();
     F32 tempMax = std::numeric_limits<F32>::min();
     F32 height = 0.0f;
@@ -69,7 +67,7 @@ void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, U32 minHMSize,
         if (idx == Config::PRIMITIVE_RESTART_INDEX_L) {
             continue;
         }
-        height = vertices[idx].y;
+        height = _terrainVB->getPosition(idx).y;
 
         if (height > tempMax) {
             tempMax = height;

@@ -56,5 +56,6 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Utility\EASTLImport.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Platform\ByteBuffer.cpp" />
   </ItemGroup>
 </Project>

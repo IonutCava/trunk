@@ -105,75 +105,81 @@ void Object3D::computeNormals() {
     // Code from
     // http://devmaster.net/forums/topic/1065-calculating-normals-of-a-mesh/
 
-    vectorImpl<vec3<F32> >* normal_buffer = nullptr;
-    normal_buffer = MemoryManager_NEW
-        vectorImpl<vec3<F32> >[getGeometryVB()->getPosition().size()];
+    VertexBuffer* const vb = getGeometryVB();
 
-    for (U32 i = 0; i < getGeometryVB()->getIndexCount(); i += 3) {
+    size_t vertCount = vb->getVertexCount();
+    size_t indexCount = vb->getIndexCount();
+
+    typedef vectorImpl<vec3<F32>> normalVector;
+
+    vectorImpl<normalVector> normalBuffer(vertCount);
+    for (U32 i = 0; i < indexCount; i += 3) {
+
+        U32 idx0 = vb->getIndex(i + 0);
+        U32 idx1 = vb->getIndex(i + 1);
+        U32 idx2 = vb->getIndex(i + 2);
         // get the three vertices that make the faces
-        const vec3<F32>& p1 =
-            getGeometryVB()->getPosition(getGeometryVB()->getIndex(i + 0));
-        const vec3<F32>& p2 =
-            getGeometryVB()->getPosition(getGeometryVB()->getIndex(i + 1));
-        const vec3<F32>& p3 =
-            getGeometryVB()->getPosition(getGeometryVB()->getIndex(i + 2));
+        const vec3<F32>& p1 = vb->getPosition(idx0);
+        const vec3<F32>& p2 = vb->getPosition(idx1);
+        const vec3<F32>& p3 = vb->getPosition(idx2);
 
         v1.set(p2 - p1);
         v2.set(p3 - p1);
         normal.cross(v1, v2);
         normal.normalize();
 
-        // Store the face's normal for each of the vertices that make up the
-        // face.
-        normal_buffer[getGeometryVB()->getIndex(i + 0)].push_back(normal);
-        normal_buffer[getGeometryVB()->getIndex(i + 1)].push_back(normal);
-        normal_buffer[getGeometryVB()->getIndex(i + 2)].push_back(normal);
+        // Store the face's normal for each of the vertices that make up the face.
+        normalBuffer[idx0].push_back(normal);
+        normalBuffer[idx1].push_back(normal);
+        normalBuffer[idx2].push_back(normal);
     }
 
-    getGeometryVB()->resizeNormalCount(
-        to_uint(getGeometryVB()->getPosition().size()));
     // Now loop through each vertex vector, and average out all the normals
     // stored.
     vec3<F32> currentNormal;
-    for (U32 i = 0; i < getGeometryVB()->getPosition().size(); ++i) {
+    for (U32 i = 0; i < vertCount; ++i) {
         currentNormal.reset();
-        for (U32 j = 0; j < normal_buffer[i].size(); ++j) {
-            currentNormal += normal_buffer[i][j];
+        for (U32 j = 0; j < normalBuffer[i].size(); ++j) {
+            currentNormal += normalBuffer[i][j];
         }
-        currentNormal /= to_float(normal_buffer[i].size());
+        currentNormal /= to_float(normalBuffer[i].size());
 
-        getGeometryVB()->modifyNormalValue(i, currentNormal);
+        vb->modifyNormalValue(i, currentNormal);
     }
-    MemoryManager::DELETE_ARRAY(normal_buffer);
+
+    normalBuffer.clear();
 }
 
 void Object3D::computeTangents() {
-    if (!getGeometryVB())
+    if (!getGeometryVB()) {
         return;
+    }
+
+
+    VertexBuffer* const vb = getGeometryVB();
+    size_t indexCount = vb->getIndexCount();
 
     // Code from:
     // http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#header-1
-    // inputs
-    const vectorImpl<vec2<F32> >& uvs = getGeometryVB()->getTexcoord();
-    // const vectorImpl<vec3<F32> > & normals  = _geometry->getNormal();
 
     vec3<F32> deltaPos1, deltaPos2;
     vec2<F32> deltaUV1, deltaUV2;
     vec3<F32> tangent;
 
-    for (U32 i = 0; i < getGeometryVB()->getIndexCount(); i += 3) {
+    for (U32 i = 0; i < indexCount; i += 3) {
         // get the three vertices that make the faces
-        const vec3<F32>& v0 =
-            getGeometryVB()->getPosition(getGeometryVB()->getIndex(i + 0));
-        const vec3<F32>& v1 =
-            getGeometryVB()->getPosition(getGeometryVB()->getIndex(i + 1));
-        const vec3<F32>& v2 =
-            getGeometryVB()->getPosition(getGeometryVB()->getIndex(i + 2));
+        U32 idx0 = vb->getIndex(i + 0);
+        U32 idx1 = vb->getIndex(i + 1);
+        U32 idx2 = vb->getIndex(i + 2);
+
+        const vec3<F32>& v0 = vb->getPosition(idx0);
+        const vec3<F32>& v1 = vb->getPosition(idx1);
+        const vec3<F32>& v2 = vb->getPosition(idx2);
 
         // Shortcuts for UVs
-        const vec2<F32>& uv0 = uvs[getGeometryVB()->getIndex(i + 0)];
-        const vec2<F32>& uv1 = uvs[getGeometryVB()->getIndex(i + 1)];
-        const vec2<F32>& uv2 = uvs[getGeometryVB()->getIndex(i + 2)];
+        const vec2<F32>& uv0 = vb->getTexCoord(idx0);
+        const vec2<F32>& uv1 = vb->getTexCoord(idx1);
+        const vec2<F32>& uv2 = vb->getTexCoord(idx2);
 
         // Edges of the triangle : position delta
         deltaPos1.set(v1 - v0);
@@ -188,9 +194,9 @@ void Object3D::computeTangents() {
 
         // Set the same tangent for all three vertices of the triangle.
         // They will be merged later, in vbindexer.cpp
-        getGeometryVB()->addTangent(tangent);
-        getGeometryVB()->addTangent(tangent);
-        getGeometryVB()->addTangent(tangent);
+        vb->modifyTangentValue(idx0, tangent);
+        vb->modifyTangentValue(idx1, tangent);
+        vb->modifyTangentValue(idx2, tangent);
     }
 }
 
@@ -198,6 +204,7 @@ void Object3D::computeTangents() {
 // primitive type
 bool Object3D::computeTriangleList(bool force) {
     VertexBuffer* geometry = getGeometryVB();
+
     DIVIDE_ASSERT(geometry != nullptr,
                   "Object3D error: Please specify a valid VertexBuffer before "
                   "calculating the triangle list!");
@@ -209,15 +216,17 @@ bool Object3D::computeTriangleList(bool force) {
                               ? PrimitiveType::TRIANGLES
                               : PrimitiveType::TRIANGLE_STRIP);
     // We can't have a VB without vertex positions
-    DIVIDE_ASSERT(!geometry->getPosition().empty(),
+    DIVIDE_ASSERT(!geometry->getVertices().empty(),
                   "Object3D error: computeTriangleList called with no position "
                   "data available!");
 
-    if (!_geometryTriangles.empty() && force)
+    if (!_geometryTriangles.empty() && force) {
         _geometryTriangles.resize(0);
+    }
 
-    if (geometry->getIndexCount() == 0)
+    if (geometry->getIndexCount() == 0) {
         return false;
+    }
 
     U32 indiceCount = partitionCount;
     bool largeIndices = geometry->usesLargeIndices();

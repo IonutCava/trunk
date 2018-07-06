@@ -335,8 +335,8 @@ class TextureData;
 class IMPrimitive;
 class PixelBuffer;
 class Framebuffer;
-class VertexBuffer;
 class ShaderBuffer;
+class VertexBuffer;
 class ShaderProgram;
 
 class HardwareQuery {

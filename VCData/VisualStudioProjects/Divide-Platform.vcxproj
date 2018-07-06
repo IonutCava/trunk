@@ -46,6 +46,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Input\Headers\InputInterface.h" />
     <ClInclude Include="..\..\Source Code\Platform\Input\Headers\InputVariables.h" />
     <ClInclude Include="..\..\Source Code\Platform\Input\Headers\JoystickInterface.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\ByteBuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\PlatformDefines.h" />
     <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\PlatformDefinesApple.h" />
     <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\PlatformDefinesUnix.h" />
@@ -118,6 +119,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Input\EffectManager.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\EventHandler.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\InputInterface.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Platform\ByteBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Platform\PlatformDefines.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Platform\PlatformDefinesApple.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

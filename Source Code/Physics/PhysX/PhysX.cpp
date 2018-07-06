@@ -12,6 +12,8 @@
 #include <Samples/PxToolkit/include/PxTkNamespaceMangle.h>
 #include <Source/foundation/include/PsFile.h>
 
+#include <cstddef>
+
 namespace Divide {
 
 physx::PxDefaultAllocator PhysX::_gDefaultAllocatorCallback;
@@ -228,9 +230,9 @@ void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
         physx::PxDefaultFileOutputStream stream(nodeName.c_str());
 
         physx::PxTriangleMeshDesc meshDesc;
-        meshDesc.points.count = (physx::PxU32)nodeVB->getPosition().size();
-        meshDesc.points.stride = sizeof(vec3<F32>);
-        meshDesc.points.data = &nodeVB->getPosition()[0];
+        meshDesc.points.count = (physx::PxU32)nodeVB->getVertexCount();
+        meshDesc.points.stride = offsetof(VertexBuffer::Vertex, _position);
+        meshDesc.points.data = nodeVB->getVertices().data();
         meshDesc.triangles.count = (physx::PxU32)triangles.size();
         meshDesc.triangles.stride = 3 * sizeof(U32);
         meshDesc.triangles.data = triangles.data();

@@ -34,6 +34,8 @@
 
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/OpenGL/Headers/glResources.h"
+#include "Platform/Platform/Headers/ByteBuffer.h"
+
 /// Always bind a shader, even a dummy one when rendering geometry. No more
 /// fixed matrix API means no more VBs or VAs
 /// One VAO contains: one VB for data, one IB for indices and uploads to the
@@ -80,22 +82,20 @@ class glVertexArray : public VertexBuffer {
     void uploadVBAttributes();
     /// Integrity checks
     void checkStatus();
-
+    /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
+    std::pair<bufferPtr, size_t> getMinimalData();
    protected:
     GLenum _formatInternal;
     GLuint _IBid;
     GLuint _VBid;
     GLuint _VAOid;
     GLenum _usage;
-    bool _animationData;  ///< Used to bind an extra set of vertex attributes
-                          ///for bone indices and bone weights
     bool _refreshQueued;  ///< A refresh call might be called before "Create()".
                           ///This should help with that
-    vectorImpl<F32 > _normalsSmall;
-    vectorImpl<F32 > _tangentSmall;
-
-    std::array<GLsizei, to_const_uint(VertexAttribute::COUNT)> _prevSize;
+    GLsizei _prevSize;
     GLsizei _prevSizeIndices;
+    ByteBuffer _smallData;
+    std::array<bool, to_const_uint(VertexAttribute::COUNT)> _useAttribute;
 };
 
 };  // namespace Divide

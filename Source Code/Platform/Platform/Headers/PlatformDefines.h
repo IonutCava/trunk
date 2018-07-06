@@ -218,6 +218,14 @@ constexpr T toBit(const T X) {
     return 1 << X;
 }
 
+inline U32 powerOfTwo(U32 X) {
+    U32 r = 0;
+    while (X >>= 1) {
+        r++;
+    }
+    return r;
+}
+
 template<typename T>
 T to_bitwise(T X) {
     DIVIDE_ASSERT(X > 0, "to_bitwise(0) is currently disabled!");
