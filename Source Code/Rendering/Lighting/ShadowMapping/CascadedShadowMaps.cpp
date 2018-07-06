@@ -198,14 +198,14 @@ void CascadedShadowMaps::applyFrustumSplits() {
         }
 
         F32 frustumSphereRadius = BoundingSphere(_frustumCornersLS).getRadius();
-        vec2<F32> clipPlanes(std::max(1.0f, minZ - _nearClipOffset), frustumSphereRadius * 1.75f + _nearClipOffset);
+        vec2<F32> clipPlanes(std::max(1.0f, minZ - _nearClipOffset), frustumSphereRadius * 2 + _nearClipOffset * 2);
         _shadowCamera->setProjection(UNIT_RECT * frustumSphereRadius,
                                      clipPlanes,
                                      true);
         _shadowMatrices[pass].set(viewMatrix * _shadowCamera->getProjectionMatrix());
 
         // http://www.gamedev.net/topic/591684-xna-40---shimmering-shadow-maps/
-        F32 halfShadowMapSize = (getDepthMap()->getWidth())*0.5f;
+        F32 halfShadowMapSize = getDepthMap()->getWidth() * 0.5f;
         vec3<F32> testPoint = _shadowMatrices[pass].transformHomogeneous(VECTOR3_ZERO) * halfShadowMapSize;
         vec3<F32> testPointRounded(testPoint);
         testPointRounded.round();

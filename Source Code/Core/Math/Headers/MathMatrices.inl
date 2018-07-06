@@ -1606,6 +1606,17 @@ void mat4<T>::set(const mat4<U> &matrix) {
 
 template<typename T>
 template<typename U>
+inline void mat4<T>::set(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation) {
+    set(scale.x,           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
+        static_cast<U>(0), scale.y,           static_cast<U>(0), static_cast<U>(0),
+        static_cast<U>(0), static_cast<U>(0), scale.z,           static_cast<U>(0),
+        static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(1));
+    set(*this * rotation);
+    setTranslation(translation);
+}
+
+template<typename T>
+template<typename U>
 void mat4<T>::setRow(I32 index, const U value) {
     _vec[index].set(value);
 }

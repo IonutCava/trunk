@@ -566,9 +566,6 @@ bool Scene::load(const stringImpl& name) {
     STUBBED("ToDo: load skyboxes from XML")
     _name = name;
 
-    SceneManager::instance().enableFog(_sceneState->fogDescriptor()._fogDensity,
-                                       _sceneState->fogDescriptor()._fogColour);
-
     loadXMLAssets();
     SceneGraphNode& root = _sceneGraph->getRoot();
     // Add terrain from XML
@@ -591,27 +588,22 @@ bool Scene::load(const stringImpl& name) {
     _terrainInfoArray.clear();
 
     // Camera position is overridden in the scene's XML configuration file
-    if (ParamHandler::instance().getParam<bool>(_ID("options.cameraStartPositionOverride"))) {
+    if (ParamHandler::instance().getParam<bool>(_ID_RT((getName() + "options.cameraStartPositionOverride").c_str()))) {
         renderState().getCamera().setEye(vec3<F32>(
-            _paramHandler.getParam<F32>(_ID("options.cameraStartPosition.x")),
-            _paramHandler.getParam<F32>(_ID("options.cameraStartPosition.y")),
-            _paramHandler.getParam<F32>(_ID("options.cameraStartPosition.z"))));
-        vec2<F32> camOrientation(
-            _paramHandler.getParam<F32>(
-                _ID("options.cameraStartOrientation.xOffsetDegrees")),
-            _paramHandler.getParam<F32>(
-                _ID("options.cameraStartOrientation.yOffsetDegrees")));
-        renderState().getCamera().setGlobalRotation(camOrientation.y /*yaw*/,
-                                                    camOrientation.x /*pitch*/);
+            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.x").c_str())),
+            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.y").c_str())),
+            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.z").c_str()))));
+        vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
+                                 _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
+        renderState().getCamera().setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
     } else {
         renderState().getCamera().setEye(vec3<F32>(0, 50, 0));
     }
 
-    renderState().getCamera().setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID("options.cameraSpeed.move"), 1.0f));
-    renderState().getCamera().setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID("options.cameraSpeed.turn"), 1.0f));
+    renderState().getCamera().setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.move").c_str()), 1.0f));
+    renderState().getCamera().setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
 
-    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback,
-                                       &GUI::instance(), this));
+    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &GUI::instance(), this));
 
     _loadComplete = true;
     return _loadComplete;

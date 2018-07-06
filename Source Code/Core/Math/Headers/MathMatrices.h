@@ -532,6 +532,8 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     void set(const mat3<U> &matrix);
     template<typename U>
     void set(const mat4<U> &matrix);
+    template<typename U>
+    void set(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation);
 
     template<typename U>
     void setRow(I32 index, const U value);

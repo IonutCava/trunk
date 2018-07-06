@@ -13,12 +13,14 @@ float reduceLightBleeding(float pMax, float amount) {
 }
 
 float chebyshevUpperBound(vec2 moments, float depth, float minVariance) {
-    if (depth <= moments.x) {
+    if (depth <= moments.x + dvd_shadowingSettings.x) {
         return 1.0;
     }
+
     float variance = max(moments.y - (moments.x * moments.x), minVariance);
     float d = (depth - moments.x);
-    return variance / (variance + d*d);
+    float p_max = variance / (variance + d*d);
+    return max(1.0 - p_max, 0.0);
 }
 
 float applyShadowDirectional(int shadowIndex, int splitCount, in float fragDepth) {
@@ -54,7 +56,7 @@ float applyShadowDirectional(int shadowIndex, int splitCount, in float fragDepth
     }
 
     vec4 sc = currentShadowSource._lightVP[_shadowTempInt] * VAR._vertexW;
-    vec4 scPostW = sc / sc.w;
+    vec3 scPostW = sc.xyz / sc.w;
     if (!(sc.w <= 0.0f || (scPostW.x < 0 || scPostW.y < 0) || (scPostW.x >= 1 || scPostW.y >= 1))){
         float layer = float(_shadowTempInt + currentShadowSource._arrayOffset.x);
 
@@ -65,8 +67,7 @@ float applyShadowDirectional(int shadowIndex, int splitCount, in float fragDepth
         //return mix(chebyshevUpperBound(moments, shadowWarpedz1, dvd_shadowingSettings.y), 
         //             1.0, 
         //             clamp(((gl_FragCoord.z + dvd_shadowingSettings.z) - dvd_shadowingSettings.w) / dvd_shadowingSettings.z, 0.0, 1.0));
-        //return reduceLightBleeding(chebyshevUpperBound(moments, scPostW.z, dvd_shadowingSettings.y), 0.8);
-        return chebyshevUpperBound(moments, scPostW.z, dvd_shadowingSettings.y);
+        return reduceLightBleeding(chebyshevUpperBound(moments, scPostW.z, dvd_shadowingSettings.y), 0.1);
     }
 
     return 1.0;

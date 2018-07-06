@@ -17,7 +17,7 @@ int _shadowTempInt = -2;
 #include "shadow_point.frag"
 #include "shadow_spot.frag"
 
-float getShadowFactor(int lightIndex, float fragDepth) {
+float getShadowFactor(in int lightIndex, in float fragDepth) {
     Light light = dvd_LightSource[lightIndex];
 
     switch (light._options.x) {
@@ -34,7 +34,7 @@ float shadow_loop(){
         return 1.0;
     }
 
-    fragDepth = gl_FragCoord.z;
+    float fragDepth = gl_FragCoord.z;
 
     float shadow = 1.0;
     int offset = 0;

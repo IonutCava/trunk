@@ -13,7 +13,6 @@
 #include "AI/PathFinding/Headers/DivideRecast.h"
 
 #include "Core/Debugging/Headers/DebugInterface.h"
-
 namespace Divide {
 
 /*
@@ -273,9 +272,15 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
 
     _sceneData->toggleShadowMapping(lightPool->shadowMappingEnabled());
 
-    _sceneData->fogDensity(par.getParam<bool>(_ID("rendering.enableFog"))
-                            ? par.getParam<F32>(_ID("rendering.sceneState.fogDensity"))
-                            : 0.0f);
+    FogDescriptor& fog = activeScene.state().fogDescriptor();
+    bool fogEnabled = par.getParam<bool>(_ID("rendering.enableFog"));
+    if (fog.dirty() || fogEnabled != fog.active()) {
+        const vec3<F32>& colour = fog.colour();
+        F32 density = fogEnabled ? fog.density() : 0.0f;
+        _sceneData->fogDetails(colour.r, colour.g, colour.b, density);
+        fog.clean();
+        fog.active(fogEnabled);
+    }
 
     const SceneState& activeSceneState = activeScene.state();
     _sceneData->windDetails(activeSceneState.windDirX(),
@@ -305,18 +310,6 @@ bool SceneManager::generateShadowMaps() {
     LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
     assert(lightPool != nullptr);
     return lightPool->generateShadowMaps(activeScene.renderState());
-}
-
-/// Update fog values
-void SceneManager::enableFog(F32 density, const vec3<F32>& colour) {
-    ParamHandler& par = ParamHandler::instance();
-    par.setParam(_ID("rendering.sceneState.fogColour.r"), colour.r);
-    par.setParam(_ID("rendering.sceneState.fogColour.g"), colour.g);
-    par.setParam(_ID("rendering.sceneState.fogColour.b"), colour.b);
-    par.setParam(_ID("rendering.sceneState.fogDensity"), density);
-
-    _sceneData->fogDetails(colour.r, colour.g, colour.b,
-                          par.getParam<bool>(_ID("rendering.enableFog")) ? density : 0.0f);
 }
 
 const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes() {

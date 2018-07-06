@@ -52,8 +52,36 @@
 namespace Divide {
 
 struct FogDescriptor {
-    F32 _fogDensity;
-    vec3<F32> _fogColour;
+  public:
+    FogDescriptor();
+
+    inline bool dirty() const { return _dirty; }
+    inline F32 density() const { return _density; }
+    inline const vec3<F32>& colour() const { return _colour; }
+
+    inline void set(const vec3<F32>& colour, F32 density) {
+        _colour.set(colour);
+        _density = density;
+        _dirty = true;
+    }
+
+
+  protected:
+    friend class SceneManager;
+    inline void clean() {
+        _dirty = false;
+    }
+    inline void active(const bool state) {
+        _active = state;
+    }
+    inline bool active() const {
+        return _active;
+    }
+  private:
+    bool _dirty;
+    bool _active;
+    F32 _density;
+    vec3<F32> _colour;
 };
 
 class Scene;
@@ -241,8 +269,7 @@ class SceneState : public SceneComponent {
           _saveLoadDisabled(false)
     {
         resetMovement();
-        _fog._fogColour = vec3<F32>(0.2f, 0.2f, 0.2f);
-        _fog._fogDensity = 0.01f;
+        _fog.set(vec3<F32>(0.2f, 0.2f, 0.2f), 0.01f);
     }
 
     virtual ~SceneState()

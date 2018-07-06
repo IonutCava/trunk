@@ -279,9 +279,8 @@ void loadConfig(const stringImpl &file) {
                  pt.get("GUI.consoleLayoutFile", "console.layout"));
     par.setParam(_ID("GUI.editorLayout"),
                  pt.get("GUI.editorLayoutFile", "editor.layout"));
-    par.setParam(
-        _ID("rendering.anisotropicFilteringLevel"),
-        std::max(pt.get<I32>("rendering.anisotropicFilteringLevel", 1), 1));
+    par.setParam(_ID("rendering.anisotropicFilteringLevel"),
+                 std::max(pt.get<I32>("rendering.anisotropicFilteringLevel", 1), 1));
     par.setParam(_ID("rendering.shadowDetailLevel"), shadowDetailLevel);
     par.setParam(_ID("rendering.enableFog"), pt.get("rendering.enableFog", true));
 
@@ -312,14 +311,10 @@ void loadConfig(const stringImpl &file) {
 
 
     // global fog values
-    par.setParam(_ID("rendering.sceneState.fogDensity"),
-                 pt.get("rendering.fogDensity", 0.01f));
-    par.setParam(_ID("rendering.sceneState.fogColour.r"),
-                 pt.get<F32>("rendering.fogColour.<xmlattr>.r", 0.2f));
-    par.setParam(_ID("rendering.sceneState.fogColour.g"),
-                 pt.get<F32>("rendering.fogColour.<xmlattr>.g", 0.2f));
-    par.setParam(_ID("rendering.sceneState.fogColour.b"),
-                 pt.get<F32>("rendering.fogColour.<xmlattr>.b", 0.2f));
+    par.setParam(_ID("rendering.sceneState.fogDensity"),  pt.get("rendering.fogDensity", 0.01f));
+    par.setParam(_ID("rendering.sceneState.fogColour.r"), pt.get<F32>("rendering.fogColour.<xmlattr>.r", 0.2f));
+    par.setParam(_ID("rendering.sceneState.fogColour.g"), pt.get<F32>("rendering.fogColour.<xmlattr>.g", 0.2f));
+    par.setParam(_ID("rendering.sceneState.fogColour.b"), pt.get<F32>("rendering.fogColour.<xmlattr>.b", 0.2f));
 }
 
 void populatePressRelease(PressReleaseActions& actions, const ptree & attributes) {
@@ -434,64 +429,48 @@ void loadScene(const stringImpl &sceneName, Scene* scene) {
     scene->state().waterLevel(pt.get("water.waterLevel", 0.0f));
     scene->state().waterDepth(pt.get("water.waterDepth", -75.0f));
 
-    if (boost::optional<ptree &> cameraPositionOverride =
-            pt.get_child_optional("options.cameraStartPosition")) {
-        par.setParam(_ID("options.cameraStartPosition.x"),
-                     pt.get("options.cameraStartPosition.<xmlattr>.x", 0.0f));
-        par.setParam(_ID("options.cameraStartPosition.y"),
-                     pt.get("options.cameraStartPosition.<xmlattr>.y", 0.0f));
-        par.setParam(_ID("options.cameraStartPosition.z"),
-                     pt.get("options.cameraStartPosition.<xmlattr>.z", 0.0f));
-        par.setParam(
-            _ID("options.cameraStartOrientation.xOffsetDegrees"),
-            pt.get("options.cameraStartPosition.<xmlattr>.xOffsetDegrees",
-                   0.0f));
-        par.setParam(
-            _ID("options.cameraStartOrientation.yOffsetDegrees"),
-            pt.get("options.cameraStartPosition.<xmlattr>.yOffsetDegrees",
-                   0.0f));
-        par.setParam(_ID("options.cameraStartPositionOverride"), true);
+    if (boost::optional<ptree &> cameraPositionOverride =  pt.get_child_optional("options.cameraStartPosition")) {
+        par.setParam(_ID_RT((sceneName + ".options.cameraStartPosition.x").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.x", 0.0f));
+        par.setParam(_ID_RT((sceneName + ".options.cameraStartPosition.y").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.y", 0.0f));
+        par.setParam(_ID_RT((sceneName + ".options.cameraStartPosition.z").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.z", 0.0f));
+        par.setParam(_ID_RT((sceneName + ".options.cameraStartOrientation.xOffsetDegrees").c_str()),
+                     pt.get("options.cameraStartPosition.<xmlattr>.xOffsetDegrees", 0.0f));
+        par.setParam(_ID_RT((sceneName + ".options.cameraStartOrientation.yOffsetDegrees").c_str()),
+                     pt.get("options.cameraStartPosition.<xmlattr>.yOffsetDegrees", 0.0f));
+        par.setParam(_ID_RT((sceneName + ".options.cameraStartPositionOverride").c_str()), true);
     } else {
-        par.setParam(_ID("options.cameraStartPositionOverride"), false);
+        par.setParam(_ID_RT((sceneName + ".options.cameraStartPositionOverride").c_str()), false);
     }
 
-    if (boost::optional<ptree &> physicsCook =
-            pt.get_child_optional("options.autoCookPhysicsAssets")) {
-        par.setParam(_ID("options.autoCookPhysicsAssets"),
-                     pt.get<bool>("options.autoCookPhysicsAssets", false));
+    if (boost::optional<ptree &> physicsCook = pt.get_child_optional("options.autoCookPhysicsAssets")) {
+        par.setParam(_ID_RT((sceneName + ".options.autoCookPhysicsAssets").c_str()), pt.get<bool>("options.autoCookPhysicsAssets", false));
     } else {
-        par.setParam(_ID("options.autoCookPhysicsAssets"), false);
+        par.setParam(_ID_RT((sceneName + ".options.autoCookPhysicsAssets").c_str()), false);
     }
 
-    if (boost::optional<ptree &> cameraPositionOverride =
-            pt.get_child_optional("options.cameraSpeed")) {
-        par.setParam(_ID("options.cameraSpeed.move"),
-                     pt.get("options.cameraSpeed.<xmlattr>.move", 35.0f));
-        par.setParam(_ID("options.cameraSpeed.turn"),
-                     pt.get("options.cameraSpeed.<xmlattr>.turn", 35.0f));
+    if (boost::optional<ptree &> cameraPositionOverride = pt.get_child_optional("options.cameraSpeed")) {
+        par.setParam(_ID_RT((sceneName + ".options.cameraSpeed.move").c_str()), pt.get("options.cameraSpeed.<xmlattr>.move", 35.0f));
+        par.setParam(_ID_RT((sceneName + ".options.cameraSpeed.turn").c_str()), pt.get("options.cameraSpeed.<xmlattr>.turn", 35.0f));
     } else {
-        par.setParam(_ID("options.cameraSpeed.move"), 35.0f);
-        par.setParam(_ID("options.cameraSpeed.turn"), 35.0f);
+        par.setParam(_ID_RT((sceneName + ".options.cameraSpeed.move").c_str()), 35.0f);
+        par.setParam(_ID_RT((sceneName + ".options.cameraSpeed.turn").c_str()), 35.0f);
     }
 
+    vec3<F32> fogColour;
+    F32 fogDensity;
     if (boost::optional<ptree &> fog = pt.get_child_optional("fog")) {
-        par.setParam(_ID("rendering.sceneState.fogDensity"),
-                     pt.get("fog.fogDensity", 0.01f));
-        par.setParam(_ID("rendering.sceneState.fogColour.r"),
-                     pt.get<F32>("fog.fogColour.<xmlattr>.r", 0.2f));
-        par.setParam(_ID("rendering.sceneState.fogColour.g"),
-                     pt.get<F32>("fog.fogColour.<xmlattr>.g", 0.2f));
-        par.setParam(_ID("rendering.sceneState.fogColour.b"),
-                     pt.get<F32>("fog.fogColour.<xmlattr>.b", 0.2f));
+        fogDensity = pt.get("fog.fogDensity", 0.01f);
+        fogColour.set(pt.get<F32>("fog.fogColour.<xmlattr>.r", 0.2f),
+                      pt.get<F32>("fog.fogColour.<xmlattr>.g", 0.2f),
+                      pt.get<F32>("fog.fogColour.<xmlattr>.b", 0.2f));
+    } else {
+        fogDensity = par.getParam<F32>(_ID("rendering.sceneState.fogDensity"));
+        fogColour.set(par.getParam<F32>(_ID("rendering.sceneState.fogColour.r")),
+                      par.getParam<F32>(_ID("rendering.sceneState.fogColour.g")),
+                      par.getParam<F32>(_ID("rendering.sceneState.fogColour.b")));
     }
 
-    scene->state().fogDescriptor()._fogDensity =
-        par.getParam<F32>(_ID("rendering.sceneState.fogDensity")) / 1000.0f;
-    scene->state().fogDescriptor()._fogColour.set(
-        par.getParam<F32>(_ID("rendering.sceneState.fogColour.r")),
-        par.getParam<F32>(_ID("rendering.sceneState.fogColour.g")),
-        par.getParam<F32>(_ID("rendering.sceneState.fogColour.b")));
-
+    scene->state().fogDescriptor().set(fogColour, fogDensity);
     loadTerrain((sceneLocation + "/" + pt.get("terrain", "terrain.xml")).c_str(), scene);
     loadGeometry((sceneLocation + "/" + pt.get("assets", "assets.xml")).c_str(), scene);
 }
@@ -503,9 +482,7 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
     read_xml(file.c_str(), pt);
     ptree::iterator itTerrain;
     ptree::iterator itTexture;
-    stringImpl assetLocation(
-        ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) +
-        "/");
+    stringImpl assetLocation(ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) + "/");
 
     for (itTerrain = std::begin(pt.get_child("terrainList"));
          itTerrain != std::end(pt.get_child("terrainList")); ++itTerrain) {
@@ -520,19 +497,11 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
         // Load the rest of the terrain
         TerrainDescriptor *ter = MemoryManager_NEW TerrainDescriptor((name + "_descriptor").c_str());
         ter->addVariable("terrainName", name.c_str());
-        ter->addVariable("heightmap",
-                         assetLocation + pt.get<stringImpl>(name + ".heightmap"));
-        ter->addVariable("waterCaustics",
-                         assetLocation + pt.get<stringImpl>(name + ".waterCaustics"));
-        ter->addVariable(
-            "underwaterAlbedoTexture",
-            assetLocation + pt.get<stringImpl>(name + ".underwaterAlbedoTexture"));
-        ter->addVariable(
-            "underwaterDetailTexture",
-            assetLocation + pt.get<stringImpl>(name + ".underwaterDetailTexture"));
-
-        ter->addVariable("underwaterDiffuseScale",
-                         pt.get<F32>(name + ".underwaterDiffuseScale"));
+        ter->addVariable("heightmap", assetLocation + pt.get<stringImpl>(name + ".heightmap"));
+        ter->addVariable("waterCaustics", assetLocation + pt.get<stringImpl>(name + ".waterCaustics"));
+        ter->addVariable("underwaterAlbedoTexture", assetLocation + pt.get<stringImpl>(name + ".underwaterAlbedoTexture"));
+        ter->addVariable("underwaterDetailTexture", assetLocation + pt.get<stringImpl>(name + ".underwaterDetailTexture"));
+        ter->addVariable("underwaterDiffuseScale", pt.get<F32>(name + ".underwaterDiffuseScale"));
 
         I32 i = 0;
         stringImpl temp;
@@ -557,103 +526,67 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
 
             temp = pt.get<stringImpl>(layerName + ".redAlbedo", "");
             if (!temp.empty()) {
-                ter->addVariable("redAlbedo" + layerOffsetStr,
-                                 assetLocation + temp);
+                ter->addVariable("redAlbedo" + layerOffsetStr, assetLocation + temp);
             }
             temp = pt.get<stringImpl>(layerName + ".redDetail", "");
             if (!temp.empty()) {
-                ter->addVariable("redDetail" + layerOffsetStr,
-                                 assetLocation + temp);
+                ter->addVariable("redDetail" + layerOffsetStr, assetLocation + temp);
             }
             temp = pt.get<stringImpl>(layerName + ".greenAlbedo", "");
             if (!temp.empty()) {
-                ter->addVariable("greenAlbedo" + layerOffsetStr,
-                                 assetLocation + temp);
+                ter->addVariable("greenAlbedo" + layerOffsetStr, assetLocation + temp);
             }
             temp = pt.get<stringImpl>(layerName + ".greenDetail", "");
             if (!temp.empty()) {
-                ter->addVariable("greenDetail" + layerOffsetStr,
-                                 assetLocation + temp);
+                ter->addVariable("greenDetail" + layerOffsetStr, assetLocation + temp);
             }
             temp = pt.get<stringImpl>(layerName + ".blueAlbedo", "");
             if (!temp.empty()) {
-                ter->addVariable("blueAlbedo" + layerOffsetStr,
-                                 assetLocation + temp);
+                ter->addVariable("blueAlbedo" + layerOffsetStr, assetLocation + temp);
             }
             temp = pt.get<stringImpl>(layerName + ".blueDetail", "");
             if (!temp.empty()) {
-                ter->addVariable("blueDetail" + layerOffsetStr,
-                                 assetLocation + temp);
+                ter->addVariable("blueDetail" + layerOffsetStr, assetLocation + temp);
             }
             temp = pt.get<stringImpl>(layerName + ".alphaAlbedo", "");
             if (!temp.empty()) {
-                ter->addVariable("alphaAlbedo" + layerOffsetStr,
-                                 assetLocation + temp);
+                ter->addVariable("alphaAlbedo" + layerOffsetStr, assetLocation + temp);
             }
             temp = pt.get<stringImpl>(layerName + ".alphaDetail", "");
             if (!temp.empty()) {
-                ter->addVariable("alphaDetail" + layerOffsetStr,
-                                 assetLocation + temp);
+                ter->addVariable("alphaDetail" + layerOffsetStr, assetLocation + temp);
             }
 
-            ter->addVariable("diffuseScaleR" + layerOffsetStr,
-                             pt.get<F32>(layerName + ".redDiffuseScale", 0.0f));
-            ter->addVariable("detailScaleR" + layerOffsetStr,
-                             pt.get<F32>(layerName + ".redDetailScale", 0.0f));
-            ter->addVariable(
-                "diffuseScaleG" + layerOffsetStr,
-                pt.get<F32>(layerName + ".greenDiffuseScale", 0.0f));
-            ter->addVariable(
-                "detailScaleG" + layerOffsetStr,
-                pt.get<F32>(layerName + ".greenDetailScale", 0.0f));
-            ter->addVariable(
-                "diffuseScaleB" + layerOffsetStr,
-                pt.get<F32>(layerName + ".blueDiffuseScale", 0.0f));
-            ter->addVariable("detailScaleB" + layerOffsetStr,
-                             pt.get<F32>(layerName + ".blueDetailScale", 0.0f));
-            ter->addVariable(
-                "diffuseScaleA" + layerOffsetStr,
-                pt.get<F32>(layerName + ".alphaDiffuseScale", 0.0f));
-            ter->addVariable(
-                "detailScaleA" + layerOffsetStr,
-                pt.get<F32>(layerName + ".alphaDetailScale", 0.0f));
+            ter->addVariable("diffuseScaleR" + layerOffsetStr, pt.get<F32>(layerName + ".redDiffuseScale", 0.0f));
+            ter->addVariable("detailScaleR" + layerOffsetStr, pt.get<F32>(layerName + ".redDetailScale", 0.0f));
+            ter->addVariable("diffuseScaleG" + layerOffsetStr, pt.get<F32>(layerName + ".greenDiffuseScale", 0.0f));
+            ter->addVariable("detailScaleG" + layerOffsetStr, pt.get<F32>(layerName + ".greenDetailScale", 0.0f));
+            ter->addVariable( "diffuseScaleB" + layerOffsetStr, pt.get<F32>(layerName + ".blueDiffuseScale", 0.0f));
+            ter->addVariable("detailScaleB" + layerOffsetStr, pt.get<F32>(layerName + ".blueDetailScale", 0.0f));
+            ter->addVariable("diffuseScaleA" + layerOffsetStr, pt.get<F32>(layerName + ".alphaDiffuseScale", 0.0f));
+            ter->addVariable("detailScaleA" + layerOffsetStr, pt.get<F32>(layerName + ".alphaDetailScale", 0.0f));
         }
 
         ter->setTextureLayerCount(to_ubyte(i));
-        ter->addVariable("grassMap",
-                         assetLocation + pt.get<stringImpl>(name + ".vegetation.map"));
-        ter->addVariable(
-            "grassBillboard1",
-            assetLocation + pt.get<stringImpl>(name + ".vegetation.grassBillboard1", ""));
-        ter->addVariable(
-            "grassBillboard2",
-            assetLocation + pt.get<stringImpl>(name + ".vegetation.grassBillboard2", ""));
-        ter->addVariable(
-            "grassBillboard3",
-            assetLocation + pt.get<stringImpl>(name + ".vegetation.grassBillboard3", ""));
-        ter->addVariable(
-            "grassBillboard4",
-            assetLocation + pt.get<stringImpl>(name + ".vegetation.grassBillboard4", ""));
-        ter->setGrassDensity(
-            pt.get<F32>(name + ".vegetation.<xmlattr>.grassDensity"));
-        ter->setTreeDensity(
-            pt.get<F32>(name + ".vegetation.<xmlattr>.treeDensity"));
-        ter->setGrassScale(
-            pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale"));
-        ter->setTreeScale(
-            pt.get<F32>(name + ".vegetation.<xmlattr>.treeScale"));
+        ter->addVariable("grassMap", assetLocation + pt.get<stringImpl>(name + ".vegetation.map"));
+        ter->addVariable("grassBillboard1", assetLocation + pt.get<stringImpl>(name + ".vegetation.grassBillboard1", ""));
+        ter->addVariable("grassBillboard2", assetLocation + pt.get<stringImpl>(name + ".vegetation.grassBillboard2", ""));
+        ter->addVariable("grassBillboard3", assetLocation + pt.get<stringImpl>(name + ".vegetation.grassBillboard3", ""));
+        ter->addVariable("grassBillboard4", assetLocation + pt.get<stringImpl>(name + ".vegetation.grassBillboard4", ""));
+        ter->setGrassDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.grassDensity"));
+        ter->setTreeDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.treeDensity"));
+        ter->setGrassScale(pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale"));
+        ter->setTreeScale(pt.get<F32>(name + ".vegetation.<xmlattr>.treeScale"));
         ter->set16Bit(pt.get<bool>(name + ".is16Bit", false));
-        ter->setPosition(
-            vec3<F32>(pt.get<F32>(name + ".position.<xmlattr>.x", 0.0f),
-                      pt.get<F32>(name + ".position.<xmlattr>.y", 0.0f),
-                      pt.get<F32>(name + ".position.<xmlattr>.z", 0.0f)));
+        ter->setPosition(vec3<F32>(pt.get<F32>(name + ".position.<xmlattr>.x", 0.0f),
+                                   pt.get<F32>(name + ".position.<xmlattr>.y", 0.0f),
+                                   pt.get<F32>(name + ".position.<xmlattr>.z", 0.0f)));
         ter->setScale(vec2<F32>(pt.get<F32>(name + ".scale", 1.0f),
                                 pt.get<F32>(name + ".heightFactor", 1.0f)));
         ter->setDimensions(vec2<U16>(pt.get<U16>(name + ".terrainWidth", 0),
                                      pt.get<U16>(name + ".terrainHeight", 0)));
-        ter->setAltitudeRange(vec2<F32>(
-            pt.get<F32>(name + ".altitudeRange.<xmlattr>.min", 0.0f),
-            pt.get<F32>(name + ".altitudeRange.<xmlattr>.max", 255.0f)));
+        ter->setAltitudeRange(vec2<F32>(pt.get<F32>(name + ".altitudeRange.<xmlattr>.min", 0.0f),
+                                        pt.get<F32>(name + ".altitudeRange.<xmlattr>.max", 255.0f)));
         ter->setActive(pt.get<bool>(name + ".active", true));
         ter->setChunkSize(pt.get<U32>(name + ".nodeChunkSize", 256));
 
@@ -687,58 +620,47 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
             model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x", 1);
             model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y", 1);
             model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z", 1);
-            model.orientation.x =
-                pt.get<F32>(name + ".orientation.<xmlattr>.x");
-            model.orientation.y =
-                pt.get<F32>(name + ".orientation.<xmlattr>.y");
-            model.orientation.z =
-                pt.get<F32>(name + ".orientation.<xmlattr>.z");
+            model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
+            model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
+            model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
             model.scale.x = pt.get<F32>(name + ".scale.<xmlattr>.x");
             model.scale.y = pt.get<F32>(name + ".scale.<xmlattr>.y");
             model.scale.z = pt.get<F32>(name + ".scale.<xmlattr>.z");
             model.type = GeometryType::GEOMETRY;
             model.version = pt.get<F32>(name + ".version");
 
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".castsShadows")) {
-                model.castsShadows =
-                    pt.get<bool>(name + ".castsShadows", false);
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".castsShadows")) {
+                model.castsShadows = pt.get<bool>(name + ".castsShadows", false);
             } else {
                 model.castsShadows = true;
             }
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".receivesShadows")) {
-                model.receivesShadows =
-                    pt.get<bool>(name + ".receivesShadows", false);
+
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".receivesShadows")) {
+                model.receivesShadows = pt.get<bool>(name + ".receivesShadows", false);
             } else {
                 model.receivesShadows = true;
             }
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".staticObject")) {
+
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")) {
                 model.staticUsage = pt.get<bool>(name + ".staticObject", false);
             } else {
                 model.staticUsage = false;
             }
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".addToNavigation")) {
-                model.navigationUsage =
-                    pt.get<bool>(name + ".addToNavigation", false);
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".addToNavigation")) {
+                model.navigationUsage = pt.get<bool>(name + ".addToNavigation", false);
             } else {
                 model.navigationUsage = false;
             }
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".useHighNavigationDetail")) {
-                model.useHighDetailNavMesh =
-                    pt.get<bool>(name + ".useHighNavigationDetail", false);
+
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".useHighNavigationDetail")) {
+                model.useHighDetailNavMesh = pt.get<bool>(name + ".useHighNavigationDetail", false);
             } else {
                 model.useHighDetailNavMesh = false;
             }
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".addToPhysics")) {
-                model.physicsUsage =
-                    pt.get<bool>(name + ".addToPhysics", false);
-                model.physicsStatic =
-                    !pt.get<bool>(name + ".addToPhysicsGroupPushable", false);
+
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".addToPhysics")) {
+                model.physicsUsage = pt.get<bool>(name + ".addToPhysics", false);
+                model.physicsStatic = !pt.get<bool>(name + ".addToPhysicsGroupPushable", false);
             } else {
                 model.physicsUsage = false;
             }

@@ -12,7 +12,7 @@ void SceneShaderData::init() {
     _sceneShaderData = GFX_DEVICE.newSB(1, false, false, BufferUpdateFrequency::OFTEN);
     _sceneShaderData->create(1, sizeof(SceneShaderData));
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
-    shadowingSettings(0.0000002f, 0.00002f, 200.0f, 350.0f);
+    shadowingSettings(0.0000002f, 0.0002f, 200.0f, 350.0f);
 }
 
 SceneShaderData::~SceneShaderData()

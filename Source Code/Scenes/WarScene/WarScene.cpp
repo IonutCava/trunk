@@ -271,10 +271,10 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
             initPosSet = true;
         }
 
-        pComp->setPositionX(radius * std::cos(phi) + initPos.x);
+        /*pComp->setPositionX(radius * std::cos(phi) + initPos.x);
         pComp->setPositionZ(radius * std::sin(phi) + initPos.z);
         pComp->setPositionY((radius * 0.5f) * std::sin(phi) + initPos.y);
-        pComp->rotateY(phi);
+        pComp->rotateY(phi);*/
     }
 
     if (!_aiManager->getNavMesh(_army[0][0]->getAgentRadiusCategory())) {

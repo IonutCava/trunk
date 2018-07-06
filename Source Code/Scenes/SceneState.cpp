@@ -3,7 +3,17 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 
+#include "Utility/Headers/Colours.h"
+
 namespace Divide {
+
+FogDescriptor::FogDescriptor()
+    : _dirty(true),
+     _active(true),
+     _density(0.0f),
+     _colour(DefaultColours::WHITE().rgb())
+{
+}
 
 SceneRenderState::SceneRenderState(Scene& parentScene)
     : SceneComponent(parentScene),

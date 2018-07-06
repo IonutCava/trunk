@@ -271,12 +271,9 @@ class Material : public Resource, public FrameListener {
     /// The above strings becomes, in the shader:
     ///#define MAX_LIGHT_COUNT 4
     ///#define MAX_SHADOW_CASTERS 2
-    inline void setShaderDefines(RenderStage renderStage,
-                                 const stringImpl& shaderDefines) {
-        vectorImplAligned<stringImpl>& defines =
-            _shaderInfo[to_uint(renderStage)]._shaderDefines;
-        if (std::find(std::begin(defines), std::end(defines), shaderDefines) ==
-            std::end(defines)) {
+    inline void setShaderDefines(RenderStage renderStage,  const stringImpl& shaderDefines) {
+        vectorImplAligned<stringImpl>& defines =  _shaderInfo[to_uint(renderStage)]._shaderDefines;
+        if (std::find(std::cbegin(defines), std::cend(defines), shaderDefines) == std::cend(defines)) {
             defines.push_back(shaderDefines);
         }
     }

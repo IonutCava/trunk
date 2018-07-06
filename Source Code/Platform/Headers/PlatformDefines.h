@@ -226,32 +226,32 @@ constexpr D64 to_const_double(const T value) {
 
 template <typename T>
 U32 to_uint(const T value) {
-    return safe_static_cast<U32>(to_underlying_type(value));
+    return static_cast<U32>(to_underlying_type(value));
 }
 
 template <typename T>
 U16 to_ushort(const T value) {
-    return safe_static_cast<U16>(to_underlying_type(value));
+    return static_cast<U16>(to_underlying_type(value));
 }
 
 template <typename T>
 U8 to_ubyte(const T value) {
-    return safe_static_cast<U8>(to_underlying_type(value));
+    return static_cast<U8>(to_underlying_type(value));
 }
 
 template <typename T>
 I32 to_int(const T value) {
-    return safe_static_cast<I32>(to_underlying_type(value));
+    return static_cast<I32>(to_underlying_type(value));
 }
 
 template <typename T>
 I16 to_short(const T value) {
-    return safe_static_cast<I16>(to_underlying_type(value));
+    return static_cast<I16>(to_underlying_type(value));
 }
 
 template <typename T>
 I8 to_byte(const T value) {
-    return safe_static_cast<I8>(to_underlying_type(value));
+    return static_cast<I8>(to_underlying_type(value));
 }
 template <typename T>
 F32 to_float(const T value) {
@@ -624,6 +624,7 @@ struct safe_static_cast_helper<true, true>
     }
 };
 
+#if 0
 template <typename TO, typename FROM>
 inline TO safe_static_cast(FROM from)
 {
@@ -647,8 +648,8 @@ template <typename TO>
 inline TO safe_static_cast(D64 from)
 {
     return static_cast<TO>(from);
-}
-
+} 
+#endif
 /// Performes extra asserts steps (logging, message boxes, etc). 
 /// Returns true if the assert should be processed.
 bool preAssert(const bool expression, const char* failMessage);

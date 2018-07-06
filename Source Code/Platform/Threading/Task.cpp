@@ -43,7 +43,7 @@ void Task::reset() {
     }
 
     _stopRequested = false;
-    _callback = DELEGATE_CBK_PARAM<bool>();
+    //_callback = DELEGATE_CBK_PARAM<bool>();
     _jobIdentifier = -1;
     _priority = TaskPriority::DONT_CARE;
     _parentTask = nullptr;

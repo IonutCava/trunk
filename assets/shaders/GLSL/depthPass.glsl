@@ -37,9 +37,9 @@ void main()
         for (int i = 0; i < gl_in.length(); ++i)
         {
             passVertex(i);
-            geom_vertexWVP = gl_in[i].gl_Position;
+            geom_vertexWVP = vp * gl_in[i].gl_Position;
             gl_Layer = gl_InvocationID + dvd_shadowArrayOffset;
-            gl_Position = vp * geom_vertexWVP;
+            gl_Position = geom_vertexWVP;
             EmitVertex();
         }
         EndPrimitive();

@@ -101,8 +101,6 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
         getActiveScene().processGUI(deltaTime);
     }
 
-    void enableFog(F32 density, const vec3<F32>& colour);
-
     RenderPassCuller::VisibleNodeList& getVisibleNodesCache(RenderStage stage);
 
     template <typename T, class Factory>

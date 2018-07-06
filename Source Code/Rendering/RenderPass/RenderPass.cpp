@@ -66,10 +66,12 @@ RenderPass::BufferData::BufferData()
   : _lastCommandCount(0),
     _lasNodeCount(0)
 {
-    _renderData = GFX_DEVICE.newSB(1, true, true, BufferUpdateFrequency::OFTEN);
+    // This do not need to be persistently mapped as, hopefully, they will only be update once per frame
+    // Each pass should have its own set of buffers (shadows, reflection, etc)
+    _renderData = GFX_DEVICE.newSB(1, true, false, BufferUpdateFrequency::OCASSIONAL);
     _renderData->create(to_uint(Config::MAX_VISIBLE_NODES), sizeof(GFXDevice::NodeData));
 
-    _cmdBuffer = GFX_DEVICE.newSB(1, true, false, BufferUpdateFrequency::OFTEN);
+    _cmdBuffer = GFX_DEVICE.newSB(1, true, false, BufferUpdateFrequency::OCASSIONAL);
     _cmdBuffer->create(Config::MAX_VISIBLE_NODES, sizeof(IndirectDrawCommand));
     _cmdBuffer->addAtomicCounter(3);
 }

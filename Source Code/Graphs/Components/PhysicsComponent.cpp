@@ -275,13 +275,12 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix(D64 interpolationFactor) {
                   _parentDirty);
 
     if (dirty) {
-        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
-        _worldMatrixInterp = mat4<F32>(getLocalPosition(interpolationFactor),
-                                       getLocalScale(interpolationFactor),
-                                       GetMatrix(getLocalOrientation(interpolationFactor)));
-        if (grandParent) {
-            _worldMatrixInterp *=
-                 grandParent->get<PhysicsComponent>()->getWorldMatrix(interpolationFactor);
+        SceneGraphNode_wptr grandParentPtr = _parentSGN.getParent();
+        _worldMatrixInterp.set(getLocalPosition(interpolationFactor),
+                               getLocalScale(interpolationFactor),
+                               GetMatrix(getLocalOrientation(interpolationFactor)));
+        if (!grandParentPtr.expired()) {
+            _worldMatrixInterp *= grandParentPtr.lock()->get<PhysicsComponent>()->getWorldMatrix(interpolationFactor);
         }
         clean(true);
     }
@@ -297,10 +296,9 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix() {
     if (_dirty || _parentDirty){
         _worldMatrix.set(getMatrix());
 
-        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
-        if (grandParent) {
-            _worldMatrix *=
-                grandParent->get<PhysicsComponent>()->getWorldMatrix();
+        SceneGraphNode_wptr grandParentPtr = _parentSGN.getParent();
+        if (!grandParentPtr.expired()) {
+            _worldMatrix *= grandParentPtr.lock()->get<PhysicsComponent>()->getWorldMatrix();
         }
         clean(false);
     }
