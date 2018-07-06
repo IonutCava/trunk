@@ -36,6 +36,17 @@ const ptree& empty_ptree() {
     return t;
 }
 
+const char* getPrimitiveName(Object3D::ObjectType type) {
+    switch (type) {
+        case Object3D::ObjectType::BOX_3D: return "Box3D";
+        case Object3D::ObjectType::QUAD_3D: return "Quad3D";
+        case Object3D::ObjectType::SPHERE_3D: return "Sphere3D";
+        case Object3D::ObjectType::PATCH_3D: return "Patch3D";
+    }
+
+    return "";
+}
+
 const char *getComponentName(ComponentType type) {
     switch (type) {
         case ComponentType::ANIMATION: return "Animation";
@@ -585,15 +596,15 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
             if (format.find("<xmlcomment>") != stringImpl::npos || !pt.get_child_optional(name)) {
                 continue;
             }
-            FileData model;
+            FileData model = {};
             model.ItemName = name.c_str();
             model.ModelName = pt.get<stringImpl>(name + ".model");
             model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x", 1);
             model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y", 1);
             model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z", 1);
-            model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
-            model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
-            model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
+            model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x", 0.0f);
+            model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y", 0.0f);
+            model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z", 0.0f);
             model.scale.x = pt.get<F32>(name + ".scale.<xmlattr>.x");
             model.scale.y = pt.get<F32>(name + ".scale.<xmlattr>.y");
             model.scale.z = pt.get<F32>(name + ".scale.<xmlattr>.z");
@@ -774,30 +785,18 @@ void dumpMaterial(PlatformContext& context, Material &mat) {
     PREPARE_FILE_FOR_WRITING(fileLocation.c_str());
 
     pt.put("material.name", file);
-    pt.put("material.diffuse.<xmlattr>.r",
-                  mat.getColourData()._diffuse.r);
-    pt.put("material.diffuse.<xmlattr>.g",
-                  mat.getColourData()._diffuse.g);
-    pt.put("material.diffuse.<xmlattr>.b",
-                  mat.getColourData()._diffuse.b);
-    pt.put("material.diffuse.<xmlattr>.a",
-                  mat.getColourData()._diffuse.a);
-    pt.put("material.specular.<xmlattr>.r",
-                  mat.getColourData()._specular.r);
-    pt.put("material.specular.<xmlattr>.g",
-                  mat.getColourData()._specular.g);
-    pt.put("material.specular.<xmlattr>.b",
-                  mat.getColourData()._specular.b);
-    pt.put("material.specular.<xmlattr>.a",
-                  mat.getColourData()._specular.a);
-    pt.put("material.shininess.<xmlattr>.v",
-                  mat.getColourData()._shininess);
-    pt.put("material.emissive.<xmlattr>.r",
-                  mat.getColourData()._emissive.y);
-    pt.put("material.emissive.<xmlattr>.g",
-                  mat.getColourData()._emissive.z);
-    pt.put("material.emissive.<xmlattr>.b",
-                  mat.getColourData()._emissive.w);
+    pt.put("material.diffuse.<xmlattr>.r", mat.getColourData()._diffuse.r);
+    pt.put("material.diffuse.<xmlattr>.g", mat.getColourData()._diffuse.g);
+    pt.put("material.diffuse.<xmlattr>.b", mat.getColourData()._diffuse.b);
+    pt.put("material.diffuse.<xmlattr>.a", mat.getColourData()._diffuse.a);
+    pt.put("material.specular.<xmlattr>.r", mat.getColourData()._specular.r);
+    pt.put("material.specular.<xmlattr>.g", mat.getColourData()._specular.g);
+    pt.put("material.specular.<xmlattr>.b", mat.getColourData()._specular.b);
+    pt.put("material.specular.<xmlattr>.a", mat.getColourData()._specular.a);
+    pt.put("material.shininess.<xmlattr>.v", mat.getColourData()._shininess);
+    pt.put("material.emissive.<xmlattr>.r", mat.getColourData()._emissive.y);
+    pt.put("material.emissive.<xmlattr>.g", mat.getColourData()._emissive.z);
+    pt.put("material.emissive.<xmlattr>.b", mat.getColourData()._emissive.w);
     pt.put("material.doubleSided", mat.isDoubleSided());
 
     std::weak_ptr<Texture> texture;
@@ -835,5 +834,150 @@ void dumpMaterial(PlatformContext& context, Material &mat) {
 
     SAVE_FILE(fileLocation.c_str());
 }
+
+
+void saveSceneGraphNode(ptree& pt, const SceneGraphNode& node) {
+    const SceneNode_ptr& sceneNode = node.getNode();
+    SceneNodeType type = sceneNode->type();
+
+    // Only 3D objects for now
+    if (type != SceneNodeType::TYPE_OBJECT3D) {
+        return;
+    }
+
+    const stringImpl& nodeName = node.name();
+
+    if (node.getNode<Object3D>()->isPrimitive()) {
+        pt.put(nodeName + ".model", getPrimitiveName(node.getNode<Object3D>()->getObjectType()));
+    } else {
+        pt.put(nodeName + ".model", sceneNode->name());
+    }
+
+    TransformComponent* tComp = node.get<TransformComponent>();
+    pt.put(nodeName + ".position.<xmlattr>.x", tComp->getLocalPosition().x);
+    pt.put(nodeName + ".position.<xmlattr>.y", tComp->getLocalPosition().y);
+    pt.put(nodeName + ".position.<xmlattr>.z", tComp->getLocalPosition().z);
+
+    vec3<Angle::RADIANS<F32>> euler;
+    tComp->getLocalOrientation().getEuler(euler);
+    pt.put(nodeName + ".orientation.<xmlattr>.x", Angle::to_DEGREES(euler.z)); // <- these are swapped
+    pt.put(nodeName + ".orientation.<xmlattr>.y", Angle::to_DEGREES(euler.y));
+    pt.put(nodeName + ".orientation.<xmlattr>.z", Angle::to_DEGREES(euler.x)); // <- these are swapped
+
+    pt.put(nodeName + ".scale.<xmlattr>.x", tComp->getLocalScale().x);
+    pt.put(nodeName + ".scale.<xmlattr>.y", tComp->getLocalScale().y);
+    pt.put(nodeName + ".scale.<xmlattr>.z", tComp->getLocalScale().z);
+
+    const Material_ptr& mat = node.get<RenderingComponent>()->getMaterialInstance();
+    if (mat) {
+        pt.put(nodeName + ".colour.<xmlattr>.r", mat->getColourData()._diffuse.r);
+        pt.put(nodeName + ".colour.<xmlattr>.g", mat->getColourData()._diffuse.g);
+        pt.put(nodeName + ".colour.<xmlattr>.b", mat->getColourData()._diffuse.b);
+    }
+
+    pt.put(nodeName + ".static", node.usageContext() == NodeUsageContext::NODE_STATIC);
+
+    if (Util::CompareIgnoreCase(sceneNode->name(), "Box3D")) {
+        pt.put(nodeName + ".size", node.getNode<Box3D>()->getHalfExtent().x * 2);
+    } else if (Util::CompareIgnoreCase(sceneNode->name(), "Sphere3D")) {
+        pt.put(nodeName + ".radius", node.getNode<Sphere3D>()->getRadius());
+    }
+
+    stringImpl componentList = "";
+    for (U8 i = 1; i < to_U8(ComponentType::COUNT); ++i) {
+        ComponentType crtComponent = static_cast<ComponentType>(1 << i);
+        if (BitCompare(node.componentMask(), to_base(crtComponent))) {
+            const char* name = getComponentName(crtComponent);
+            if (name != nullptr) {
+                componentList += (componentList.empty() ? "" : ",");
+                componentList += name;
+            }
+        }
+    }
+
+    pt.put(nodeName + ".components", componentList);
+}
+
+void saveScene(const stringImpl& scenePath, const stringImpl& sceneName, Scene* scene, const Configuration& config) {
+    if (scene == nullptr) {
+        return;
+    }
+
+    Console::printfn(Locale::get(_ID("XML_SAVE_SCENE")), sceneName.c_str());
+    std::string sceneLocation(scenePath + "/" + sceneName.c_str());
+    std::string sceneDataFile(sceneLocation + ".xml");
+
+    boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
+
+    // A scene does not necessarily need external data files
+    // Data can be added in code for simple scenes
+    {
+        ParamHandler& par = ParamHandler::instance();
+
+        ptree pt;
+        pt.put("assets", "assets.xml");
+        pt.put("terrain", "terrain.xml");
+        pt.put("musicPlaylist", "musicPlaylist.xml");
+
+        pt.put("vegetation.grassVisibility", scene->state().renderState().grassVisibility());
+        pt.put("vegetation.treeVisibility", scene->state().renderState().treeVisibility());
+
+        pt.put("wind.windDirX", scene->state().windDirX());
+        pt.put("wind.windDirZ", scene->state().windDirZ());
+        pt.put("wind.windSpeed", scene->state().windSpeed());
+
+        pt.put("water.waterLevel", scene->state().waterLevel());
+        pt.put("water.waterDepth", scene->state().waterDepth());
+
+        pt.put("options.visibility", scene->state().renderState().generalVisibility());
+        pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID_RT((sceneName + ".options.cameraSpeed.move").c_str())));
+        pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID_RT((sceneName + ".options.cameraSpeed.turn").c_str())));
+        pt.put("options.autoCookPhysicsAssets", true);
+
+        pt.put("fog.fogDensity", scene->state().fogDescriptor().density());
+        pt.put("fog.fogColour.<xmlattr>.r", scene->state().fogDescriptor().colour().r);
+        pt.put("fog.fogColour.<xmlattr>.g", scene->state().fogDescriptor().colour().g);
+        pt.put("fog.fogColour.<xmlattr>.b", scene->state().fogDescriptor().colour().b);
+
+        copyFile(scenePath, sceneName + ".xml", scenePath, sceneName + ".xml.bak", true);
+        write_xml(sceneDataFile.c_str(), pt, std::locale(), settings);
+    }
+
+    //save terrain
+    {
+        ptree pt;
+        copyFile(sceneLocation + "/", "terrain.xml", sceneLocation + "/", "terrain.xml.bak", true);
+        write_xml((sceneLocation + "/" + "terrain.xml.dev").c_str(), pt, std::locale(), settings);
+    }
+    //save geometry
+    {
+        ptree pt;
+
+        SceneGraph& sceneGraph = scene->sceneGraph();
+
+        sceneGraph.getRoot().forEachChild([&pt](const SceneGraphNode& child) {
+            if (child.getNode()->type() != SceneNodeType::TYPE_OBJECT3D) {
+                return;
+            }
+
+            pt.add("entities.item", child.name());
+        });
+
+        sceneGraph.getRoot().forEachChild([&pt](const SceneGraphNode& child) {
+            saveSceneGraphNode(pt, child);
+        });
+
+        copyFile(sceneLocation + "/", "assets.xml", sceneLocation + "/", "assets.xml.bak", true);
+        write_xml((sceneLocation + "/" + "assets.xml").c_str(), pt, std::locale(), settings);
+    }
+    //save music
+    {
+        ptree pt;
+        copyFile(sceneLocation + "/", "musicPlaylist.xml", sceneLocation + "/", "musicPlaylist.xml.bak", true);
+        write_xml((sceneLocation + "/" + "musicPlaylist.xml.dev").c_str(), pt, std::locale(), settings);
+    }
+}
+
 };  // namespace XML
 };  // namespace Divide
+

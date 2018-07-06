@@ -1,101 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
 <entities>
-  <item>Soldier1</item>
-  <item>Soldier2</item>
-  <item>Soldier3</item>
-  <item>cylinderNE</item>
-	<item>cylinderNW</item>
-	<item>cylinderSE</item>
-	<item>cylinderSW</item>
-	<item>cylinderC</item>
-  <item>flag</item>
-  <item>Ground_placeholder</item>
+    <item>Soldier1</item>
+    <item>Soldier2</item>
+    <item>Soldier3</item>
+    <item>cylinderNE</item>
+    <item>cylinderNW</item>
+    <item>cylinderSE</item>
+    <item>cylinderSW</item>
+    <item>cylinderC</item>
+    <item>flag</item>
+    <item>Ground_placeholder</item>
 </entities>
-
-<flag>
-	<model>models/flag_obj.obj</model>
-	<scale x="0.01" y="0.01" z="0.01" />
-	<position x="0" y="0" z="0" />
-	<orientation x="0" y="0" z="0" />
-  <static>true</static>
-</flag>
-
 <Soldier1>
-	<model>models/dwarf.x</model>
-	<scale x="0.05" y="0.05" z="0.05" />
-	<position x="0" y="0" z="-7" />
-	<orientation x="0" y="0" z="0" />
-  <components>Unit</components>
+    <model>models/dwarf.x</model>
+    <position x="0" y="0" z="-7"/>
+    <orientation x="0" y="0" z="0"/>
+    <scale x="0.0500000007" y="0.0500000007" z="0.0500000007"/>
+    <colour r="0" g="0" b="0"/>
+    <static>true</static>
+    <components>Unit</components>
 </Soldier1>
-
-
 <Soldier2>
-	<model>models/Testwuson.X</model>
-	<scale x="2" y="2" z="2" />
-	<position x="-3.5" y="0" z="7.5" />
-	<orientation x="0" y="0" z="0" />
-  <components>Unit</components>
+    <model>models/Testwuson.X</model>
+    <position x="-3.5" y="0" z="7.5"/>
+    <orientation x="0" y="0" z="0"/>
+    <scale x="2" y="2" z="2"/>
+    <colour r="0" g="0" b="0"/>
+    <static>true</static>
+    <components>Unit</components>
 </Soldier2>
-
 <Soldier3>
-	<model>models/Bob.md5mesh</model>
-	<scale x="0.1" y="0.1" z="0.1" />
-	<position x="4.5" y="0" z="5.5" />
-	<orientation x="0" y="0" z="0" />
-  <components>Unit</components>
+    <model>models/Bob.md5mesh</model>
+    <position x="4.5" y="0" z="5.5"/>
+    <orientation x="0" y="0" z="0"/>
+    <scale x="0.100000001" y="0.100000001" z="0.100000001"/>
+    <colour r="0" g="0" b="0"/>
+    <static>true</static>
+    <components>Unit</components>
 </Soldier3>
-
-
-<Ground_placeholder>
-	<model>Quad3D</model>
-	<scale x="500" y="500" z="500" />
-	<position x="-250" y="0" z="-250" />
-	<orientation x="0" y="0" z="-90" />
-	<colour r="0.1" g="0.4" b="0.1"/>
-  <static>true</static>
-  <components>Navigation,Selection</components>
-</Ground_placeholder>
-
 <cylinderNE>
-	<model>models/cylinder.obj</model>
-	<scale x="2" y="2" z="2" />
-	<position x="-100" y="0" z="-100" />
-	<orientation x="0" y="0" z="0" />
-  <static>true</static>
-  <components>Navigation,Selection</components>
+    <model>models/cylinder.obj</model>
+    <position x="-100" y="0" z="-100"/>
+    <orientation x="0" y="0" z="0"/>
+    <scale x="2" y="2" z="2"/>
+    <colour r="0" g="0" b="0"/>
+    <static>true</static>
+    <components>Navigation,Selection</components>
 </cylinderNE>
-
 <cylinderNW>
-	<model>models/cylinder.obj</model>
-	<scale x="3" y="3" z="3" />
-	<position x="100" y="0" z="-100" />
-	<orientation x="0" y="0" z="0" />
-  <static>true</static>
-  <components>Navigation,Selection</components>
+    <model>models/cylinder.obj</model>
+    <position x="100" y="0" z="-100"/>
+    <orientation x="0" y="0" z="0"/>
+    <scale x="3" y="3" z="3"/>
+    <colour r="0" g="0" b="0"/>
+    <static>true</static>
+    <components>Navigation,Selection</components>
 </cylinderNW>
-
 <cylinderSE>
-	<model>models/cylinder.obj</model>
-	<scale x="2" y="2" z="2" />
-	<position x="-100" y="0" z="100" />
-	<orientation x="0" y="0" z="0" />
-  <static>true</static>
-  <components>Navigation,Selection</components>
+    <model>models/cylinder.obj</model>
+    <position x="-100" y="0" z="100"/>
+    <orientation x="0" y="0" z="0"/>
+    <scale x="2" y="2" z="2"/>
+    <colour r="0" g="0" b="0"/>
+    <static>true</static>
+    <components>Navigation,Selection</components>
 </cylinderSE>
-
 <cylinderSW>
-	<model>models/cylinder.obj</model>
-	<scale x="2.5" y="2.5" z="2.5" />
-	<position x="100" y="0" z="100" />
-	<orientation x="0" y="0" z="0" />
-  <static>true</static>
-  <components>Navigation,Selection</components>
+    <model>models/cylinder.obj</model>
+    <position x="100" y="0" z="100"/>
+    <orientation x="0" y="0" z="0"/>
+    <scale x="2.5" y="2.5" z="2.5"/>
+    <colour r="0" g="0" b="0"/>
+    <static>true</static>
+    <components>Navigation,Selection</components>
 </cylinderSW>
-
 <cylinderC>
-	<model>models/cylinder.obj</model>
-	<scale x="4" y="4" z="4" />
-	<position x="0" y="0" z="0" />
-	<orientation x="0" y="0" z="0" />
-  <static>true</static>
-  <components>Navigation</components>
+    <model>models/cylinder.obj</model>
+    <position x="0" y="0" z="0"/>
+    <orientation x="0" y="0" z="0"/>
+    <scale x="4" y="4" z="4"/>
+    <colour r="0" g="0" b="0"/>
+    <static>true</static>
+    <components>Navigation</components>
 </cylinderC>
+<flag>
+    <model>models/flag_obj.obj</model>
+    <position x="0" y="0" z="0"/>
+    <orientation x="0" y="0" z="0"/>
+    <scale x="0.00999999978" y="0.00999999978" z="0.00999999978"/>
+    <colour r="0" g="0" b="0"/>
+    <static>true</static>
+    <components/>
+</flag>
+<Ground_placeholder>
+    <model>Quad3D</model>
+    <position x="-250" y="0" z="-250"/>
+    <orientation x="0" y="0" z="-90"/>
+    <scale x="500" y="500" z="500"/>
+    <colour r="0.100000001" g="0.400000006" b="0.100000001"/>
+    <static>true</static>
+    <components>Navigation,Selection</components>
+</Ground_placeholder>

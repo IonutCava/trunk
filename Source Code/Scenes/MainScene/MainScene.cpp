@@ -149,7 +149,7 @@ void MainScene::processTasks(const U64 deltaTimeUS) {
 
 bool MainScene::load(const stringImpl& name) {
     // Load scene resources
-    bool loadState = SCENE_LOAD(name, true, true);
+    bool loadState = SCENE_LOAD(name);
     Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
     baseCamera->setMoveSpeedFactor(10.0f);
 

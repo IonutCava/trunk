@@ -83,4 +83,8 @@ void Box3D::updateBoundsInternal() {
     Object3D::updateBoundsInternal();
 }
 
+const vec3<F32>& Box3D::getHalfExtent() const {
+    return _halfExtent;
+}
+
 }; //namespace Divide

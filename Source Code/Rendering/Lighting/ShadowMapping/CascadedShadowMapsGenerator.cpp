@@ -55,7 +55,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
 
     _blurDepthMapConstants.set("blurSizes", GFX::PushConstantType::VEC2, blurSizes);
 
-    SamplerDescriptor sampler;
+    SamplerDescriptor sampler = {};
     sampler.setFilters(TextureFilter::LINEAR);
     sampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     sampler.setAnisotropy(0);
@@ -130,25 +130,25 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     SplitDepths splitDepths = calculateSplitDepths(playerCamera.getProjectionMatrix(), dirLight, nearFarPlanes);
     applyFrustumSplits(dirLight, playerCamera.getWorldMatrix(), numSplits, splitDepths, nearFarPlanes, frustumCornersWS, frustumCornersVS);
     
-    RenderPassManager::PassParams params;
+    RenderPassManager::PassParams params = {};
     params._doPrePass = false;
     params._stage = RenderStage::SHADOW;
     params._target = _drawBuffer._targetID;
     params._bindTargets = false;
     params._bufferIndex = lightIndex;
 
-    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = params._target;
     beginRenderPassCmd._name = "DO_CSM_PASS";
     beginRenderPassCmd._descriptor = RenderTarget::defaultPolicy();
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::EndRenderSubPassCommand endRenderSubPassCommand;
+    GFX::EndRenderSubPassCommand endRenderSubPassCommand = {};
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCommand;
-    GFX::EndDebugScopeCommand endDebugScopeCommand;
+    GFX::BeginDebugScopeCommand beginDebugScopeCommand = {};
+    GFX::EndDebugScopeCommand endDebugScopeCommand = {};
 
-    RenderTarget::DrawLayerParams drawParams;
+    RenderTarget::DrawLayerParams drawParams = {};
     drawParams._type = RTAttachmentType::Colour;
     drawParams._index = 0;
     drawParams._layer = 0;
@@ -159,7 +159,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         beginDebugScopeCommand._scopeName = Util::StringFormat("CSM_PASS_%d", i).c_str();
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCommand);
 
-        GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
+        GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
         beginRenderSubPassCmd._writeLayers.push_back(drawParams);
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
@@ -173,13 +173,13 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         ++drawParams._layer;
     }
     
-    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
+    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
     drawParams._layer = 0;
     beginRenderSubPassCmd._writeLayers.push_back(drawParams);
     GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
     GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
 
-    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::EndRenderPassCommand endRenderPassCmd = {};
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
     postRender(dirLight, bufferInOut);
@@ -285,20 +285,20 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLight& light, GFX:
     RenderTargetID depthMapID(RenderTargetUsage::SHADOW, to_base(ShadowType::LAYERED));
 
     if (g_shadowSettings.enableBlurring) {
-        PipelineDescriptor pipelineDescriptor;
+        PipelineDescriptor pipelineDescriptor = {};
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
         pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].push_back(_horizBlur);
 
-        GenericDrawCommand pointsCmd;
+        GenericDrawCommand pointsCmd = {};
         pointsCmd._primitiveType = PrimitiveType::API_POINTS;
         pointsCmd._drawCount = 1;
         
-        GFX::BeginRenderPassCommand beginRenderPassCmd;
-        GFX::BindPipelineCommand pipelineCmd;
-        GFX::SendPushConstantsCommand pushConstantsCommand;
-        GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        GFX::EndRenderPassCommand endRenderPassCmd;
-        GFX::DrawCommand drawCmd;
+        GFX::BeginRenderPassCommand beginRenderPassCmd = {};
+        GFX::BindPipelineCommand pipelineCmd = {};
+        GFX::SendPushConstantsCommand pushConstantsCommand = {};
+        GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
+        GFX::EndRenderPassCommand endRenderPassCmd = {};
+        GFX::DrawCommand drawCmd = {};
         drawCmd._drawCommands.push_back(pointsCmd);
 
         // Blur horizontally
@@ -346,7 +346,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLight& light, GFX:
 
         GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
     } else {
-        GFX::BlitRenderTargetCommand blitRenderTargetCommand;
+        GFX::BlitRenderTargetCommand blitRenderTargetCommand = {};
         blitRenderTargetCommand._source = _drawBuffer._targetID;
         blitRenderTargetCommand._destination = depthMapID;
 

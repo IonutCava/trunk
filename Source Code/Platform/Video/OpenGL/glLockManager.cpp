@@ -6,7 +6,7 @@
 namespace Divide {
 
 GLuint64 kOneSecondInNanoSeconds = 1000000000;
-U8 kMaxWaitRetry = 5;
+U8 kMaxWaitRetry = 10;
 
 glLockManager::glLockManager() noexcept
     : _defaultSync(nullptr)
@@ -57,7 +57,7 @@ void glLockManager::wait(GLsync* syncObj, bool blockClient) {
             waitDuration = kOneSecondInNanoSeconds;
 
             if (++retryCount > kMaxWaitRetry) {
-                DIVIDE_ASSERT(waitDuration == 0 || (waitDuration > 0 && waitRet != GL_TIMEOUT_EXPIRED), "glLockManager::wait error: Lock timeout");
+                //DIVIDE_ASSERT(waitDuration == 0 || (waitDuration > 0 && waitRet != GL_TIMEOUT_EXPIRED), "glLockManager::wait error: Lock timeout");
                 return;
             }
         }

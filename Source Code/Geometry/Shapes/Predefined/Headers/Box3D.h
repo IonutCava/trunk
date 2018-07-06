@@ -43,6 +43,8 @@ class Box3D : public Object3D {
 
    void setHalfExtent(const vec3<F32>& halfExtent);
 
+   const vec3<F32>& getHalfExtent() const;
+
    void fromPoints(const std::initializer_list<vec3<F32>>& points,
                    const vec3<F32>& halfExtent);
 

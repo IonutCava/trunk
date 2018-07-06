@@ -80,6 +80,10 @@ bool copyFile(const stringImpl& sourcePath, const stringImpl& sourceName, const 
         return false;
     }
 
+    if (!fileExists((sourcePath + sourceName).c_str())) {
+        return false;
+    }
+
     if (!overwrite && fileExists((targetPath + targetName).c_str())) {
         return false;
     }

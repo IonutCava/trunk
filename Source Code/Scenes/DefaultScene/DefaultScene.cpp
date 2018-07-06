@@ -22,7 +22,7 @@ DefaultScene::DefaultScene(PlatformContext& context, ResourceCache& cache, Scene
 }
 
 bool DefaultScene::load(const stringImpl& name) {
-    bool loadState = SCENE_LOAD(name, true, true);
+    bool loadState = SCENE_LOAD(name);
     SceneGraphNode* light = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _currentSky = addSky();
     // Add a light

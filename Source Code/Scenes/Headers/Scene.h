@@ -140,7 +140,6 @@ class Scene : public Resource, public PlatformContextComponent {
     inline void addModel(FileData& model) { _modelDataArray.push(model); }
     inline void addTerrain(const std::shared_ptr<TerrainDescriptor>& ter) { _terrainInfoArray.push_back(ter); }
     void addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile);
-    void addPatch(vector<FileData>& data);
 
     // DIRECTIONAL lights have shadow mapping enabled automatically
     SceneGraphNode* addLight(LightType type, SceneGraphNode& parentNode);
@@ -160,8 +159,6 @@ class Scene : public Resource, public PlatformContextComponent {
     SceneGraphNode* addParticleEmitter(const stringImpl& name,
                                           std::shared_ptr<ParticleData> data,
                                           SceneGraphNode& parentNode);
-
-    inline vector<Mesh_ptr>& getVegetationDataArray() { return _vegetationDataArray; }
 
     inline AI::AIManager& aiManager() { return *_aiManager; }
     inline const AI::AIManager& aiManager() const { return *_aiManager; }
@@ -193,6 +190,8 @@ class Scene : public Resource, public PlatformContextComponent {
     /// if singleStep is true, only the first model from the modelArray will be loaded.
     /// Useful for loading one model per frame
     virtual void loadXMLAssets(bool singleStep = false);
+    virtual void saveXMLAssets();
+
     virtual void loadDefaultCamera();
 
     virtual bool loadFromCache(const stringImpl& name);
@@ -229,9 +228,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void onPlayerRemove(const Player_ptr& player);
 
     /// simple function to load the scene elements.
-    inline bool SCENE_LOAD(const stringImpl& name,
-                           const bool contOnErrorRes,
-                           const bool contOnErrorTasks) {
+    inline bool SCENE_LOAD(const stringImpl& name) {
         if (!Scene::load(name)) {
             Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load function");
             return false;
@@ -269,7 +266,6 @@ class Scene : public Resource, public PlatformContextComponent {
        /// Datablocks for models,vegetation,terrains,tasks etc
        std::atomic_uint _loadingTasks;
        FileDataStack _modelDataArray;
-       vector<Mesh_ptr> _vegetationDataArray;
 
        vector<std::shared_ptr<TerrainDescriptor>> _terrainInfoArray;
        F32 _LRSpeedFactor;

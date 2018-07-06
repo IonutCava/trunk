@@ -181,7 +181,8 @@ void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& s
                     CreateResource<AudioDescriptor>(_resCache, music));
 }
 
-void Scene::addPatch(vector<FileData>& data) {
+void Scene::saveXMLAssets() {
+    XML::saveScene(Paths::g_xmlDataLocation + Paths::g_scenesLocation, name(), this, _context.config());
 }
 
 void Scene::loadXMLAssets(bool singleStep) {
@@ -789,6 +790,7 @@ bool Scene::load(const stringImpl& name) {
     }
 
     _loadComplete = true;
+
     return _loadComplete;
 }
 
@@ -845,6 +847,9 @@ void Scene::postLoad() {
 
 void Scene::postLoadMainThread() {
     assert(Runtime::isMainThread());
+
+    saveXMLAssets();
+
     setState(ResourceState::RES_LOADED);
 }
 
@@ -997,7 +1002,7 @@ void Scene::clearObjects() {
     while (!_modelDataArray.empty()) {
         _modelDataArray.pop();
     }
-    _vegetationDataArray.clear();
+
     _flashLight.clear();
     _sceneGraph->unload();
 }

@@ -45,7 +45,7 @@ I64 DebugInterface::addDebugVar(const DebugVarDescriptor& descriptor) {
     DebugVar temp(descriptor);
 
     WriteLock lock(_varMutex);
-    hashAlg::insert(_debugVariables, hashAlg::make_pair(temp.getGUID(), temp));
+    _debugVariables.insert(hashAlg::make_pair(temp.getGUID(), temp));
 
     _dirty = true;
 

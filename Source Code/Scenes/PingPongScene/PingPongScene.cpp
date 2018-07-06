@@ -281,7 +281,7 @@ bool PingPongScene::load(const stringImpl& name) {
     _wasInFreeFly = false;
 
     // Load scene resources
-    bool loadState = SCENE_LOAD(name, true, true);
+    bool loadState = SCENE_LOAD(name);
     // Add a light
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _currentSky = addSky();
