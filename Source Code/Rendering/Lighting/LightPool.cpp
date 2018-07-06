@@ -250,14 +250,13 @@ Light* LightPool::getLight(I64 lightGUID, LightType type) {
     return *it;
 }
 
-void LightPool::waitForTasks(RenderStagePass stagePass) {
-    _lightUpdateTask[to_base(stagePass._stage)].wait();
+void LightPool::waitForTasks(U8 stageIndex) {
+    _lightUpdateTask[stageIndex].wait();
 }
 
 void LightPool::prepareLightData(RenderStagePass stagePass, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
-    waitForTasks(stagePass);
-
     U8 stageIndex = to_U8(stagePass._stage);
+    waitForTasks(stageIndex);
 
     // Create and upload light data for current pass
     _activeLightCount[stageIndex].fill(0);
@@ -309,6 +308,7 @@ void LightPool::prepareLightData(RenderStagePass stagePass, const vec3<F32>& eye
             ++totalLightCount;
             ++_activeLightCount[stageIndex][typeIndex];
         }
+        uploadLightBuffers(stageIndex);
         _buffersUpdated[stageIndex] = false;
     };
 
@@ -324,8 +324,7 @@ void LightPool::uploadLightData(RenderStagePass stagePass,
 
     GFX::ExternalCommand externalCmd;
     externalCmd._cbk = [this, stagePass]() {
-        waitForTasks(stagePass);
-        uploadLightBuffers(stagePass);
+        waitForTasks(to_U8(stagePass._stage));
     };
     GFX::EnqueueCommand(bufferInOut, externalCmd);
 
@@ -336,17 +335,16 @@ void LightPool::uploadLightData(RenderStagePass stagePass,
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
-void LightPool::uploadLightBuffers(RenderStagePass stagePass) {
-    U8 stageIndex = to_U8(stagePass._stage);
+void LightPool::uploadLightBuffers(U8 stageIndex) {
 
     if (!_buffersUpdated[stageIndex]) {
         // Passing 0 elements is fine (early out in the buffer code)
-        vec_size lightPropertyCount = _sortedLightProperties.size();
+        vec_size lightPropertyCount = _sortedLightProperties[stageIndex].size();
 
         lightPropertyCount = std::min(lightPropertyCount, static_cast<size_t>(Config::Lighting::MAX_POSSIBLE_LIGHTS));
 
         if (lightPropertyCount > 0) {
-            _lightShaderBuffer[stageIndex]->writeData(0, lightPropertyCount, _sortedLightProperties.data());
+            _lightShaderBuffer[stageIndex]->writeData(0, lightPropertyCount, _sortedLightProperties[stageIndex].data());
         } else {
             _lightShaderBuffer[stageIndex]->writeData(nullptr);
         }

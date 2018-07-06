@@ -153,8 +153,8 @@ class LightPool : public SceneComponent {
 
   private:
       void init();
-      void waitForTasks(RenderStagePass stagePass);
-      void uploadLightBuffers(RenderStagePass stagePass);
+      void waitForTasks(U8 stageIndex);
+      void uploadLightBuffers(U8 stageIndex);
 
   private:
     typedef vector<LightProperties> LightPropertiesVec;

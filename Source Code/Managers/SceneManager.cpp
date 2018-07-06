@@ -683,7 +683,7 @@ void SceneManager::updateVisibleNodes(RenderStagePass stagePass, bool refreshNod
 
 bool SceneManager::populateRenderQueue(RenderStagePass stagePass, const Camera& camera, bool doCulling, U32 passIndex, GFX::CommandBuffer& bufferInOut) {
 
-    if (stagePass._passType != RenderPassType::DEPTH_PASS && stagePass._passType != RenderPassType::OIT_PASS) {
+    if (stagePass._passType == RenderPassType::COLOUR_PASS) {
         LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
         lightPool->prepareLightData(stagePass, camera.getEye(), camera.getViewMatrix());
     }
