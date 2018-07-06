@@ -99,7 +99,6 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     virtual bool create(U16 width, U16 height) = 0;
     virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest = true);
     virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index) const;
-    virtual const RTAttachment& getPrevFrameAttachment(RTAttachment::Type type, U8 index) const;
 
     /// Use by multilayered FB's
     virtual void drawToLayer(RTAttachment::Type type, U8 index, U16 layer, bool includeDepth = true) = 0;
@@ -115,7 +114,7 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     virtual void blitFrom(RenderTarget* inputFB, U8 index, bool blitColour = true, bool blitDepth = false) = 0;
 
     TextureDescriptor& getDescriptor(RTAttachment::Type type, U8 index);
-    void addAttachment(const TextureDescriptor& descriptor, RTAttachment::Type type, U8 index, bool keepPreviousFrame);
+    void addAttachment(const TextureDescriptor& descriptor, RTAttachment::Type type, U8 index);
     bool create(U16 widthAndHeight);
     /// Used by cubemap FB's
     void drawToFace(RTAttachment::Type type, U8 index, U16 nFace, bool includeDepth = true);

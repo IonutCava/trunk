@@ -19,6 +19,28 @@ OrbitCamera::OrbitCamera(const stringImpl& name, const CameraType& type, const v
     setMouseSensitivity(0.5f);
 }
 
+void OrbitCamera::fromCamera(Camera& camera) {
+    Camera::fromCamera(camera);
+    if (camera.getType() != CameraType::THIRD_PERSON && camera.getType() != CameraType::ORBIT) {
+        return;
+    }
+
+    OrbitCamera& orbitCam = static_cast<OrbitCamera&>(camera);
+
+    _targetNode = orbitCam._targetNode;
+    _maxRadius = orbitCam._maxRadius;
+    _minRadius = orbitCam._minRadius;
+    _curRadius = orbitCam._curRadius;
+    _currentRotationX = orbitCam._currentRotationX;
+    _currentRotationY = orbitCam._currentRotationY;
+    _offsetDir.set(orbitCam._offsetDir);
+    _cameraRotation.set(orbitCam._cameraRotation);
+    _newEye.set(orbitCam._newEye);
+
+    _rotationDirty = true;
+
+}
+
 void OrbitCamera::setTarget(SceneGraphNode_wptr sgn, const vec3<F32>& offsetDirection) {
     _targetNode = sgn;
     _offsetDir = offsetDirection;

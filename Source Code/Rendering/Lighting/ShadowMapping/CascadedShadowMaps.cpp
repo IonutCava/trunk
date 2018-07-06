@@ -59,7 +59,7 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, Camera*
     blurMapDescriptor.setSampler(blurMapSampler);
     
     _blurBuffer = _context.allocateRT("CSM_Blur");
-    _blurBuffer._rt->addAttachment(blurMapDescriptor, RTAttachment::Type::Colour, 0, false);
+    _blurBuffer._rt->addAttachment(blurMapDescriptor, RTAttachment::Type::Colour, 0);
     _blurBuffer._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 
     _shadowMatricesBuffer = _context.newSB(1, false, false, BufferUpdateFrequency::OFTEN);
@@ -109,8 +109,8 @@ void CascadedShadowMaps::render(GFXDevice& context, U32 passIdx) {
         SceneManager::instance().cullSceneGraph(RenderStage::SHADOW);
 
     _previousFrustumBB.reset();
-    for (SceneGraphNode_wptr node_wptr : nodes) {
-        SceneGraphNode_ptr node_ptr = node_wptr.lock();
+    for (RenderPassCuller::VisibleNode node : nodes) {
+        SceneGraphNode* node_ptr = node.second;
         if (node_ptr) {
             _previousFrustumBB.add(node_ptr->getBoundingBoxConst());
         }

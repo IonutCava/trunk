@@ -355,6 +355,9 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
 }
 
 void glTexture::copy(const Texture_ptr& other) {
+    if (_lockManager) {
+        _lockManager->Wait(false);
+    }
 
     U32 numFaces = 1;
     if (_textureData._textureType == TextureType::TEXTURE_CUBE_MAP ||

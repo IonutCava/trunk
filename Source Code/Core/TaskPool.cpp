@@ -255,24 +255,27 @@ TaskHandle parallel_for(TaskPool& pool,
                         U32 taskFlags,
                         bool waitForResult)
 {
-    U32 crtPartitionSize = std::min(partitionSize, count);
-    U32 partitionCount = count / crtPartitionSize;
-    U32 remainder = count % crtPartitionSize;
-
     TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK_PARAM<const Task&>());
-    for (U32 i = 0; i < partitionCount; ++i) {
-        U32 start = i * crtPartitionSize;
-        U32 end = start + crtPartitionSize;
-        updateTask.addChildTask(CreateTask(pool,
-                                           [&cbk, start, end](const Task& parentTask) {
-                                               cbk(parentTask, start, end);
-                                           })._task)->startTask(priority, taskFlags);
-    }
-    if (remainder > 0) {
-        updateTask.addChildTask(CreateTask(pool,
-                                          [&cbk, count, remainder](const Task& parentTask) {
-                                              cbk(parentTask, count - remainder, count);
-                                          })._task)->startTask(priority, taskFlags);
+    if (count > 0) {
+
+        U32 crtPartitionSize = std::min(partitionSize, count);
+        U32 partitionCount = count / crtPartitionSize;
+        U32 remainder = count % crtPartitionSize;
+
+        for (U32 i = 0; i < partitionCount; ++i) {
+            U32 start = i * crtPartitionSize;
+            U32 end = start + crtPartitionSize;
+            updateTask.addChildTask(CreateTask(pool,
+                                               [&cbk, start, end](const Task& parentTask) {
+                                                   cbk(parentTask, start, end);
+                                               })._task)->startTask(priority, taskFlags);
+        }
+        if (remainder > 0) {
+            updateTask.addChildTask(CreateTask(pool,
+                                              [&cbk, count, remainder](const Task& parentTask) {
+                                                  cbk(parentTask, count - remainder, count);
+                                              })._task)->startTask(priority, taskFlags);
+        }
     }
 
     updateTask.startTask(priority, taskFlags);

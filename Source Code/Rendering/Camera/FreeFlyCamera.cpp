@@ -7,6 +7,14 @@ FreeFlyCamera::FreeFlyCamera(const stringImpl& name, const vec3<F32>& eye)
 {
 }
 
+void FreeFlyCamera::fromCamera(Camera& camera) {
+    Camera::fromCamera(camera);
+
+    FreeFlyCamera& cam = static_cast<FreeFlyCamera&>(camera);
+    _targetPosition.set(cam._targetPosition);
+    _currentVelocity.set(cam._currentVelocity);
+}
+
 void FreeFlyCamera::update(const U64 deltaTime) {
     Camera::update(deltaTime);
 }

@@ -41,24 +41,37 @@ Camera::~Camera()
 void Camera::fromCamera(Camera& camera) {
     camera.updateLookAt();
 
+    setMoveSpeedFactor(camera.getMoveSpeedFactor());
+    setTurnSpeedFactor(camera.getTurnSpeedFactor());
+    setZoomSpeedFactor(camera.getZoomSpeedFactor());
+    setFixedYawAxis(camera._yawFixed, camera._fixedYawAxis);
+    lockMovement(camera._movementLocked);
+    lockRotation(camera._rotationLocked);
+    _mouseSensitivity = camera._mouseSensitivity;
+    _cameraMoveSpeed = camera._cameraMoveSpeed;
+    _cameraTurnSpeed = camera._cameraTurnSpeed;
+    _cameraZoomSpeed = camera._cameraZoomSpeed;
+
+    lockView(camera._viewMatrixLocked);
+    lockFrustum(camera._frustumLocked);
+    _accumPitchDegrees = camera._accumPitchDegrees;
+
     if (camera._isOrthoCamera) {
+        setAspectRatio(camera.getAspectRatio());
+        setVerticalFoV(camera.getVerticalFoV());
+
         setProjection(camera._orthoRect,
                       camera.getZPlanes());
     } else {
+        _orthoRect.set(camera._orthoRect);
+
         setProjection(camera.getAspectRatio(),
                       camera.getVerticalFoV(),
                       camera.getZPlanes());
     }
 
-    lookAt(camera.getEye(), camera.getTarget(), camera.getUpDir());
-    setMoveSpeedFactor(camera.getMoveSpeedFactor());
-    setTurnSpeedFactor(camera.getTurnSpeedFactor());
-    setZoomSpeedFactor(camera.getZoomSpeedFactor());
-    setFixedYawAxis(camera._yawFixed, camera._fixedYawAxis);
-    lockView(camera._viewMatrixLocked);
-    lockFrustum(camera._frustumLocked);
-
-    _accumPitchDegrees = camera._accumPitchDegrees;
+    setEye(camera.getEye());
+    setRotation(camera._orientation);
 }
 
 void Camera::updateInternal(const U64 deltaTime) {

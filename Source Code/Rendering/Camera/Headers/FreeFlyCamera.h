@@ -44,6 +44,8 @@ class FreeFlyCamera : public Camera {
     void move(F32 dx, F32 dy, F32 dz);
     void update(const U64 deltaTime);
 
+    void fromCamera(Camera& camera) override;
+
    protected:
      vec3<F32> _targetPosition;
      vec3<F32> _currentVelocity;

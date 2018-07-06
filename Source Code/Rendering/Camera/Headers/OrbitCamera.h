@@ -50,6 +50,8 @@ class OrbitCamera : public Camera {
     void setTarget(SceneGraphNode_wptr sgn,
                    const vec3<F32>& offsetDirection = vec3<F32>(0, 0.75, 1.0));
 
+    void fromCamera(Camera& camera) override;
+
     inline void maxRadius(F32 radius) { _maxRadius = radius; }
 
     inline void minRadius(F32 radius) { _minRadius = radius; }

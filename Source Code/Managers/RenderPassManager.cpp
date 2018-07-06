@@ -219,10 +219,8 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             const RTAttachment& velocityAttachment = target.getAttachment(RTAttachment::Type::Colour,
                                                                           to_const_ubyte(GFXDevice::ScreenTargets::VELOCITY));
             if (velocityAttachment.used()) {
-                const RTAttachment& prevDepthBuffer = target.getPrevFrameAttachment(RTAttachment::Type::Depth, 0);
-                const Texture_ptr& prevDepthTexture = prevDepthBuffer.used() ? prevDepthBuffer.asTexture()
-                                                                             : depthBufferTexture;
-                prevDepthTexture->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH_PREV), 0);
+                const Texture_ptr& prevDepthTexture = _context.getPrevDepthBuffer();
+                (prevDepthTexture ? prevDepthTexture : depthBufferTexture)->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH_PREV), 0);
             }
         }
 

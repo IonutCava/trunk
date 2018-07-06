@@ -169,7 +169,7 @@ void RenderPass::render(SceneRenderState& renderState) {
             }
             RenderPassCuller::VisibleNodeList& mainNodeCache = mgr.getVisibleNodesCache(RenderStage::DISPLAY);
             for (const RenderPassCuller::VisibleNode& node : mainNodeCache) {
-                SceneGraphNode_cptr nodePtr = node.second.lock();
+                SceneGraphNode* nodePtr = node.second;
                 RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
                 Attorney::RenderingCompRenderPass::updateEnvProbeList(*rComp, probes);
             }
@@ -181,7 +181,7 @@ void RenderPass::render(SceneRenderState& renderState) {
             // While in budget, update reflections
             ReflectionUtil::resetBudget();
             for (const RenderPassCuller::VisibleNode& node : nodeCache) {
-                SceneGraphNode_cptr nodePtr = node.second.lock();
+                SceneGraphNode* nodePtr = node.second;
                 RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
                 if (ReflectionUtil::isInBudget()) {
                     Attorney::SceneRenderStateRenderPass::currentStagePass(renderState, ReflectionUtil::currentEntry());
@@ -205,7 +205,7 @@ void RenderPass::render(SceneRenderState& renderState) {
             // While in budget, update refractions
             RefractionUtil::resetBudget();
             for (const RenderPassCuller::VisibleNode& node : nodeCache) {
-                SceneGraphNode_cptr nodePtr = node.second.lock();
+                SceneGraphNode* nodePtr = node.second;
                 RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
                 if (RefractionUtil::isInBudget()) {
                     Attorney::SceneRenderStateRenderPass::currentStagePass(renderState, RefractionUtil::currentEntry());

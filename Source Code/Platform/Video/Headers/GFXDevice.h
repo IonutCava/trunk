@@ -232,6 +232,9 @@ public:  // GPU interface
     ShaderComputeQueue& shaderComputeQueue();
     const ShaderComputeQueue& shaderComputeQueue() const;
 
+    void resizeHistory(U8 historySize);
+    void historyIndex(U8 index, bool copyPrevious);
+
 public:  // Accessors and Mutators
     inline const GPUState& gpuState() const { return _state; }
 
@@ -265,12 +268,8 @@ public:  // Accessors and Mutators
                 : _defaultStateBlockHash);
     }
 
-    inline void resizePool(U8 poolSize) {
-        _rtPool->resize(poolSize);
-    }
-
-    inline void poolIndex(U8 index) {
-        _rtPool->poolIndex(index);
+    inline const Texture_ptr& getPrevDepthBuffer() const {
+        return _prevDepthBuffers[_historyIndex];
     }
 
     inline RenderTarget& renderTarget(RenderTargetID target) {
@@ -397,9 +396,6 @@ private:
 
     NodeData& processVisibleNode(const SceneGraphNode& node, U32 dataIndex);
 
-    RenderTarget& activeRenderTarget();
-    const RenderTarget& activeRenderTarget() const;
-
     mat4<F32>& getMatrixInternal(const MATRIX& mode);
     const mat4<F32>& getMatrixInternal(const MATRIX& mode) const;
 
@@ -431,6 +427,10 @@ protected:
     GPUState _state;
     /* Rendering buffers.*/
     GFXRTPool* _rtPool;
+
+    U8 _historyIndex;
+    vectorImpl<Texture_ptr> _prevDepthBuffers;
+
     /*State management */
     bool _stateBlockByDescription;
     size_t _defaultStateBlockHash;

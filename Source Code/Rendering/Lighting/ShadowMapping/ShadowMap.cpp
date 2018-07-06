@@ -69,7 +69,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapDescriptor.setSampler(depthMapSampler);
 
                 crtTarget = context.allocateRT(RenderTargetUsage::SHADOW, "Single_ShadowMap");
-                crtTarget._rt->addAttachment(depthMapDescriptor, RTAttachment::Type::Depth, 0, false);
+                crtTarget._rt->addAttachment(depthMapDescriptor, RTAttachment::Type::Depth, 0);
             } break;
 
             case ShadowType::LAYERED: {
@@ -96,8 +96,8 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT *
                                               Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthDescriptor.setSampler(depthSampler);
-                crtTarget._rt->addAttachment(depthMapDescriptor, RTAttachment::Type::Colour, 0, false);
-                crtTarget._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0, false);
+                crtTarget._rt->addAttachment(depthMapDescriptor, RTAttachment::Type::Colour, 0);
+                crtTarget._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
                 crtTarget._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
             } break;
 
@@ -116,7 +116,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
                 crtTarget = context.allocateRT(RenderTargetUsage::SHADOW, "Cube_ShadowMap");
-                crtTarget._rt->addAttachment(depthMapDescriptor, RTAttachment::Type::Depth, 0, false);
+                crtTarget._rt->addAttachment(depthMapDescriptor, RTAttachment::Type::Depth, 0);
             } break;
         };
 

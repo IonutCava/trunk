@@ -50,9 +50,8 @@ void RenderTarget::copy(const RenderTarget& other) {
 
 void RenderTarget::addAttachment(const TextureDescriptor& descriptor,
                                  RTAttachment::Type type,
-                                 U8 index,
-                                 bool keepPreviousFrame) {
-    _attachmentPool->add(type, index, descriptor, keepPreviousFrame);
+                                 U8 index) {
+    _attachmentPool->add(type, index, descriptor);
 }
 
 const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest) {
@@ -65,10 +64,6 @@ const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 inde
 
 const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index) const {
     return *_attachmentPool->get(type, index);
-}
-
-const RTAttachment& RenderTarget::getPrevFrameAttachment(RTAttachment::Type type, U8 index) const {
-    return *_attachmentPool->getPrevFrame(type, index);
 }
 
 RTDrawDescriptor& RenderTarget::defaultPolicy() {

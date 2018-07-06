@@ -480,7 +480,6 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
 
     for (U8 i = 0; i < playerCount; ++i) {
         Attorney::SceneManagerKernel::currentPlayerPass(*_sceneManager, i);
-        _platformContext->gfx().poolIndex(i);
         {
             Time::ScopedTimer time2(getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer"));
             _renderPassManager->render(_sceneManager->getActiveScene().renderState());

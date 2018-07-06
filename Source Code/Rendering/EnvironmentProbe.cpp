@@ -71,8 +71,8 @@ void EnvironmentProbe::onStartup(GFXDevice& context) {
 
     RenderTargetHandle tempHandle;
     s_reflection = context.allocateRT(RenderTargetUsage::ENVIRONMENT, "EnviromentProbe");
-    s_reflection._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0, false);
-    s_reflection._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0, false);
+    s_reflection._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
+    s_reflection._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
     s_reflection._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
     s_reflection._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 }
@@ -157,7 +157,7 @@ void EnvironmentProbe::updateInternal() {
     _boundingBoxPrimitive->fromBox(_aabb.getMin(), _aabb.getMax(), vec4<U8>(255, 255, 255, 255));
     const vec3<F32>& bbPos = _aabb.getCenter();
     _impostorShader->Uniform("dvd_WorldMatrixOverride", mat4<F32>(bbPos.x, bbPos.y, bbPos.z));
-    _impostorShader->Uniform("dvd_LayerIndex", _currentArrayIndex);
+    _impostorShader->Uniform("dvd_LayerIndex", to_uint(_currentArrayIndex));
 }
 
 }; //namespace Divide

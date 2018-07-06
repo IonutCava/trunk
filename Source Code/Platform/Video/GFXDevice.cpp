@@ -55,6 +55,7 @@ GFXDevice::GFXDevice(Kernel& parent)
     _rtPool = nullptr;
 
     // Integers
+    _historyIndex = 0;
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
@@ -308,8 +309,18 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
     // Update render targets with the new resolution
     _rtPool->resizeTargets(RenderTargetUsage::SCREEN, w, h);
 
+    for (Texture_ptr& tex : _prevDepthBuffers) {
+        vec2<U16> mipLevel(0,
+            tex->getDescriptor().getSampler().generateMipMaps()
+            ? 1 + Texture::computeMipCount(w, h)
+            : 1);
+
+        tex->resize(NULL, vec2<U16>(w, h), mipLevel);
+    }
+
     // Update post-processing render targets and buffers
     PostFX::instance().updateResolution(w, h);
+
     // Update the 2D camera so it matches our new rendering viewport
     _2DCamera->setProjection(vec4<F32>(0, to_float(w), 0, to_float(h)), vec2<F32>(-1, 1));
 }

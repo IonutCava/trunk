@@ -17,12 +17,12 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
 {
     for (U8 i = 0; i < 2; ++i) {
         _bloomBlurBuffer[i] = _context.allocateRT(Util::StringFormat("Bloom_Blur_%d", i));
-        _bloomBlurBuffer[i]._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
+        _bloomBlurBuffer[i]._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
         _bloomBlurBuffer[i]._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
     }
 
     _bloomOutput = _context.allocateRT("Bloom");
-    _bloomOutput._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
+    _bloomOutput._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
     _bloomOutput._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
 
     ResourceDescriptor bloomCalc("bloom.BloomCalc");

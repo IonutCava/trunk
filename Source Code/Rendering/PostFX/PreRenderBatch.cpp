@@ -56,7 +56,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
                                        GFXDataFormat::UNSIGNED_BYTE);
     outputDescriptor.setSampler(screenSampler);
     //Colour0 holds the LDR screen texture
-    _postFXOutput._rt->addAttachment(outputDescriptor, RTAttachment::Type::Colour, 0, false);
+    _postFXOutput._rt->addAttachment(outputDescriptor, RTAttachment::Type::Colour, 0);
 
     SamplerDescriptor lumaSampler;
     lumaSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
@@ -67,12 +67,12 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
                                      GFXDataFormat::FLOAT_16);
     lumaDescriptor.setSampler(lumaSampler);
     lumaDescriptor.toggleAutomaticMipMapGeneration(false);
-    _currentLuminance._rt->addAttachment(lumaDescriptor, RTAttachment::Type::Colour, 0, false);
+    _currentLuminance._rt->addAttachment(lumaDescriptor, RTAttachment::Type::Colour, 0);
 
     lumaSampler.setFilters(TextureFilter::LINEAR);
     lumaSampler.toggleMipMaps(false);
     lumaDescriptor.setSampler(lumaSampler);
-    _previousLuminance._rt->addAttachment(lumaDescriptor, RTAttachment::Type::Colour, 0, false);
+    _previousLuminance._rt->addAttachment(lumaDescriptor, RTAttachment::Type::Colour, 0);
     _previousLuminance._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
 
     // Order is very important!

@@ -70,7 +70,7 @@ bool RenderPassCuller::wasNodeInView(I64 GUID, RenderStage stage) const {
     VisibleNodeList::const_iterator it;
     it = std::find_if(std::cbegin(cache), std::cend(cache),
         [GUID](VisibleNode node) {
-            SceneGraphNode_cptr nodePtr = node.second.lock();
+            const SceneGraphNode* nodePtr = node.second;
             return (nodePtr != nullptr && nodePtr->getGUID() == GUID);
         });
 
@@ -82,32 +82,29 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
                                    RenderStage stage,
                                    const CullingFunction& cullingFunction)
 {
-
-    VisibleNodeList& nodeCache = getNodeCache(stage);
-    vectorImpl<VisibleNodeList>& nodeList = _perThreadNodeList[to_uint(stage)];
-    nodeCache.resize(0);
     const SceneRenderState& renderState = sceneState.renderState();
     if (renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
         _cullingFunction[to_uint(stage)] = cullingFunction;
-        // No point in updating visual information if the scene disabled object
-        // rendering or rendering of their bounding boxes
-        SceneGraphNode& root = sceneGraph.getRoot();
-        U32 childCount = root.getChildCount();
-        nodeList.resize(childCount);
         const Camera& camera = *Camera::activeCamera();
         F32 cullMaxDistance = renderState.generalVisibility();
 
-        auto cullIterFunction = [this, &root, &camera, &stage, &cullMaxDistance](const Task& parentTask, U32 start, U32 end) {
-            auto perChildCull = [this, &parentTask, &camera, stage, cullMaxDistance](const SceneGraphNode& child, I32 i) {
-                frustumCullNode(parentTask, child, camera, stage, cullMaxDistance, _perThreadNodeList[to_uint(stage)][i], true);
-            };
+        SceneGraphNode& root = sceneGraph.getRoot();
+        U32 childCount = root.getChildCount();
+        vectorImpl<VisibleNodeList>& nodes = _perThreadNodeList[to_uint(stage)];
+        nodes.resize(childCount);
 
+        auto cullIterFunction = [this, &root, &camera, &nodes, stage, cullMaxDistance](const Task& parentTask, U32 start, U32 end) {
+            auto perChildCull = [this, &parentTask, &camera, &nodes, start, stage, cullMaxDistance](const SceneGraphNode& child, I32 i) {
+                frustumCullNode(parentTask, child, camera, stage, cullMaxDistance, nodes[i], true);
+            };
             root.forEachChild(perChildCull, start, end);
         };
 
         parallel_for(cullIterFunction, childCount, g_nodesPerCullingPartition, Task::TaskPriority::MAX);
 
-        for (const VisibleNodeList& nodeListEntry : nodeList) {
+        VisibleNodeList& nodeCache = getNodeCache(stage);
+        nodeCache.resize(0);
+        for (const VisibleNodeList& nodeListEntry : nodes) {
             nodeCache.insert(std::end(nodeCache), std::cbegin(nodeListEntry), std::cend(nodeListEntry));
         }
     }
@@ -144,7 +141,7 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
     isVisible = isVisible && !currentNode.cullNode(currentCamera, cullMaxDistance, currentStage, collisionResult);
 
     if (isVisible && !parentTask.stopRequested()) {
-        vectorAlg::emplace_back(nodes, 0, currentNode.shared_from_this());
+        vectorAlg::emplace_back(nodes, 0, &currentNode);
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
             // Parent node intersects the view, so check children
             auto childCull = [this, &parentTask, &currentCamera, &nodes, currentStage, cullMaxDistance](const SceneGraphNode& child) {
@@ -163,7 +160,7 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderS
     currentNode.forEachChild([this, &currentNode, currentStage, &nodes](const SceneGraphNode& child) {
         if (!(currentStage == RenderStage::SHADOW &&   !currentNode.get<RenderingComponent>()->castsShadows())) {
             if (child.isActive() && !_cullingFunction[to_uint(currentStage)](child)) {
-                vectorAlg::emplace_back(nodes, 0, child.shared_from_this());
+                vectorAlg::emplace_back(nodes, 0, &child);
                 addAllChildren(child, currentStage, nodes);
             }
         }

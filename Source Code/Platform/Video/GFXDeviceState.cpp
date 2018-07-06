@@ -166,10 +166,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Add the attachments to the render targets
     RenderTarget& screenTarget = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::ALBEDO), false);
-    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::NORMALS), false);
-    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::VELOCITY), false);
-    screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0, true);
+    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::ALBEDO));
+    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::NORMALS));
+    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::VELOCITY));
+    screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0);
     screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE());
     screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::NORMALS), DefaultColours::WHITE());
     screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::VELOCITY), DefaultColours::WHITE());
@@ -193,16 +193,16 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     RenderTargetHandle tempHandle;
     for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
         tempHandle = allocateRT(RenderTargetUsage::REFLECTION, Util::StringFormat("Reflection_%d", i));
-        tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0, false);
-        tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0, false);
+        tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
+        tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
         tempHandle._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
         tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }
 
     for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
         tempHandle = allocateRT(RenderTargetUsage::REFRACTION, Util::StringFormat("Refraction_%d", i));
-        tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0, false);
-        tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0, false);
+        tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
+        tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
         tempHandle._rt->create(Config::REFRACTION_TARGET_RESOLUTION);
         tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }
@@ -362,6 +362,38 @@ void GFXDevice::endFrame(bool swapBuffers) {
             _renderDocManager->EndFrameCapture();
         }
     }
+}
+
+void GFXDevice::resizeHistory(U8 historySize) {
+    while (_prevDepthBuffers.size() > historySize) {
+        _prevDepthBuffers.pop_back();
+    }
+
+    while (_prevDepthBuffers.size() < historySize) {
+        const Texture_ptr& src = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+        const TextureDescriptor& srcDesc = src->getDescriptor();
+
+        ResourceDescriptor prevDepthTex(Util::StringFormat("PREV_DEPTH_%d", _prevDepthBuffers.size()));
+        prevDepthTex.setPropertyDescriptor(srcDesc.getSampler());
+        prevDepthTex.setEnumValue(to_uint(srcDesc._type));
+        Texture_ptr tex = CreateResource<Texture>(parent().resourceCache(), prevDepthTex);
+        assert(tex);
+        Texture::TextureLoadInfo info;
+        info._type = srcDesc._type;
+        tex->setNumLayers(srcDesc._layerCount);
+        tex->lockAutomaticMipMapGeneration(!srcDesc.automaticMipMapGeneration());
+        tex->loadData(info, srcDesc, NULL, vec2<U16>(src->getWidth(), src->getHeight()), vec2<U16>(src->getMinMipLevel(), src->getMaxMipLevel()));
+
+        _prevDepthBuffers.push_back(tex);
+    }
+}
+
+void GFXDevice::historyIndex(U8 index, bool copyPrevious) {
+    if (copyPrevious) {
+        getPrevDepthBuffer()->copy(renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).asTexture());
+    }
+
+    _historyIndex = index;
 }
 
 ErrorCode GFXDevice::createAPIInstance() {

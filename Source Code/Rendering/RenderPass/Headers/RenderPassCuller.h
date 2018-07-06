@@ -50,7 +50,7 @@ FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 class RenderPassCuller {
    public:
     // draw order, node pointer
-    typedef std::pair<U32, SceneGraphNode_cwptr> VisibleNode;
+    typedef std::pair<U32, const SceneGraphNode*> VisibleNode;
     typedef vectorImpl<VisibleNode> VisibleNodeList;
 
     //Should return true if the node is not inside the frustum

@@ -33,12 +33,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _RENDER_TARGET_ATTACHMENT_POOL_H_
 
 #include "RTAttachment.h"
-#include "Managers/Headers/FrameListenerManager.h"
 
 namespace Divide {
 
 class RenderTarget;
-class RTAttachmentPool : public FrameListener {
+class RTAttachmentPool {
 public:
     typedef std::array<vectorImpl<RTAttachment_ptr>, to_const_uint(RTAttachment::Type::COUNT)> AttachmentPool;
 
@@ -50,28 +49,16 @@ public:
 
     void add(RTAttachment::Type type,
         U8 index,
-        const TextureDescriptor& descriptor,
-        bool keepPreviousFrame);
+        const TextureDescriptor& descriptor);
 
     RTAttachment_ptr& get(RTAttachment::Type type, U8 index);
     const RTAttachment_ptr& get(RTAttachment::Type type, U8 index) const;
 
     void get(RTAttachment::Type type, vectorImpl<RTAttachment_ptr>& attachments) const;
 
-    RTAttachment_ptr& getPrevFrame(RTAttachment::Type type, U8 index);
-    const RTAttachment_ptr& getPrevFrame(RTAttachment::Type type, U8 index) const;
-
-    void getPrevFrame(RTAttachment::Type type, vectorImpl<RTAttachment_ptr>& attachments) const;
-
-
-    bool keepPrevFrame(RTAttachment::Type type, U8 index) const;
-
     U8 attachmentCount(RTAttachment::Type type) const;
 
     void onClear();
-
-protected:
-    bool frameEnded(const FrameEvent& evt) override;
 
 private:
     RTAttachment_ptr& getInternal(AttachmentPool& pool, RTAttachment::Type type, U8 index);
@@ -79,8 +66,6 @@ private:
 
 private:
     AttachmentPool _attachment;
-    AttachmentPool _attachmentHistory;
-    vectorImpl<std::pair<RTAttachment::Type, U8>> _attachmentHistoryIndex;
     std::array < U8, to_const_uint(RTAttachment::Type::COUNT)> _attachmentCount;
 
     bool _isFrameListener;

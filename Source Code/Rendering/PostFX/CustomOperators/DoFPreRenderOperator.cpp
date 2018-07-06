@@ -13,7 +13,7 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
     : PreRenderOperator(context, parent, cache, FilterType::FILTER_DEPTH_OF_FIELD)
 {
     _samplerCopy = _context.allocateRT("DoF");
-    _samplerCopy._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
+    _samplerCopy._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
 
     ResourceDescriptor dof("DepthOfField");
     dof.setThreadedLoading(false);

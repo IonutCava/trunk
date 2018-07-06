@@ -50,7 +50,7 @@ class Camera : public Resource {
 
    public:
 
-    void fromCamera(Camera& camera);
+    virtual void fromCamera(Camera& camera);
 
     void updateLookAt();
 

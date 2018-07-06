@@ -42,7 +42,7 @@ class ThirdPersonCamera : public OrbitCamera {
   protected:
     friend class Camera;
     explicit ThirdPersonCamera(const stringImpl& name, const vec3<F32>& eye = VECTOR3_ZERO);
-    
+
   public:
     bool moveRelative(const vec3<I32>& relMovement) override;
     void setActiveInternal(bool state) override;

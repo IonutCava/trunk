@@ -403,7 +403,8 @@ U16 Scene::registerInputActions() {
     auto none = [](InputParams param) {};
     auto deleteSelection = [this](InputParams param) { _sceneGraph->deleteNode(_currentSelection[0], false); };
     auto increaseCameraSpeed = [this](InputParams param){
-        Camera& cam = *Camera::activeCamera();
+        Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
+
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor < 50) {
             cam.setMoveSpeedFactor(currentCamMoveSpeedFactor + 1.0f);
@@ -411,7 +412,8 @@ U16 Scene::registerInputActions() {
         }
     };
     auto decreaseCameraSpeed = [this](InputParams param) {
-        Camera& cam = *Camera::activeCamera();
+        Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
+
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor > 1.0f) {
             cam.setMoveSpeedFactor(currentCamMoveSpeedFactor - 1.0f);
@@ -1030,7 +1032,7 @@ bool Scene::checkCameraUnderwater(U8 playerIndex) const {
 
     RenderPassCuller::VisibleNodeList& nodes = _parent.getVisibleNodesCache(RenderStage::DISPLAY);
     for (RenderPassCuller::VisibleNode& node : nodes) {
-        SceneGraphNode_cptr nodePtr = node.second.lock();
+        const SceneGraphNode* nodePtr = node.second;
         if (nodePtr) {
             const std::shared_ptr<SceneNode>& sceneNode = nodePtr->getNode();
             if (sceneNode->getType() == SceneNodeType::TYPE_WATER) {
@@ -1065,7 +1067,7 @@ void Scene::findHoverTarget(U8 playerIndex) {
     // Cast the picking ray and find items between the nearPlane and far Plane
     Ray mouseRay(startRay, startRay.direction(endRay));
     for (RenderPassCuller::VisibleNode& node : nodes) {
-        SceneGraphNode_cptr nodePtr = node.second.lock();
+        const SceneGraphNode* nodePtr = node.second;
         if (nodePtr) {
             nodePtr->intersect(mouseRay, zPlanes.x, zPlanes.y, _sceneSelectionCandidates, false);                   
         }

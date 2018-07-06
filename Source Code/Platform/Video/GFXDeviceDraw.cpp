@@ -79,13 +79,12 @@ void GFXDevice::flushCommandBuffer(const CommandBuffer& commandBuffer) {
 }
 
 void GFXDevice::addToRenderQueue(U32 queueIndex, const RenderPackage& package) {
-    ReadLock lock(_renderQueueLock);
-    assert(_renderQueues.size() > queueIndex);
-
     if (!package.isRenderable()) {
         return;
     }
 
+    ReadLock lock(_renderQueueLock);
+    assert(_renderQueues.size() > queueIndex);
     RenderPackageQueue& queue = _renderQueues[queueIndex];
 
     if (!queue.empty()) {
@@ -200,7 +199,7 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
     U32 cmdCount = 0;
     std::for_each(std::begin(visibleNodes), std::end(visibleNodes),
         [&](RenderPassCuller::VisibleNode& node) -> void {
-        SceneGraphNode_cptr nodeRef = node.second.lock();
+        const SceneGraphNode* nodeRef = node.second;
 
         RenderingComponent* renderable = nodeRef->get<RenderingComponent>();
         RenderPackage& pkg = Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable,

@@ -54,9 +54,6 @@ class glFramebuffer : public RenderTarget {
                                       U8 index,
                                       bool flushStateOnRequest = true) override;
 
-    const RTAttachment& getPrevFrameAttachment(RTAttachment::Type type,
-                                               U8 index) const override;
-
     void drawToLayer(RTAttachment::Type type,
                      U8 index,
                      U16 layer,

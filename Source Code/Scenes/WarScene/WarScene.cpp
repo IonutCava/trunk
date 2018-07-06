@@ -75,7 +75,7 @@ WarScene::~WarScene()
 void WarScene::processGUI(const U64 deltaTime) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay) {
-        const Camera& cam = *Camera::activeCamera();
+        const Camera& cam = _scenePlayers.front()->getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
         _GUI->modifyText(_ID("fpsDisplay"),

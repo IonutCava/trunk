@@ -162,10 +162,6 @@ void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index ) {
     }
 
     initAttachment(attachment, type, index, 0);
-
-    if (_attachmentPool->keepPrevFrame(type, index)) {
-        initAttachment(_attachmentPool->getPrevFrame(type, index), type, index, 1);
-    }
 }
 
 void glFramebuffer::toggleAttachment(const RTAttachment_ptr& attachment, AttachmentState state) {
@@ -380,14 +376,6 @@ const RTAttachment& glFramebuffer::getAttachment(RTAttachment::Type type, U8 ind
     }
 
     return RenderTarget::getAttachment(type, index, flushStateOnRequest);
-}
-
-const RTAttachment& glFramebuffer::getPrevFrameAttachment(RTAttachment::Type type, U8 index) const {
-    if (_resolveBuffer) {
-        return _resolveBuffer->getPrevFrameAttachment(type, index);
-    }
-
-    return RenderTarget::getPrevFrameAttachment(type, index);
 }
 
 void glFramebuffer::bind(U8 unit, RTAttachment::Type type, U8 index, bool flushStateOnRequest) {

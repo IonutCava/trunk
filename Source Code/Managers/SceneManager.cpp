@@ -1,5 +1,6 @@
 #include "Headers/SceneManager.h"
 #include "Headers/RenderPassManager.h"
+#include "Headers/FrameListenerManager.h"
 
 #include "GUI/Headers/GUI.h"
 #include "Core/Headers/ParamHandler.h"
@@ -35,10 +36,8 @@ namespace {
         }
 
         bool operator()(const RenderPassCuller::VisibleNode& a, const RenderPassCuller::VisibleNode& b) const {
-            F32 distASQ = a.second.lock()->get<BoundsComponent>()->getBoundingSphere()
-                .getCenter().distanceSquared(_camPos);
-            F32 distBSQ = b.second.lock()->get<BoundsComponent>()->getBoundingSphere()
-                .getCenter().distanceSquared(_camPos);
+            F32 distASQ = a.second->get<BoundsComponent>()->getBoundingSphere().getCenter().distanceSquared(_camPos);
+            F32 distBSQ = b.second->get<BoundsComponent>()->getBoundingSphere().getCenter().distanceSquared(_camPos);
             return distASQ < distBSQ;
         }
 
@@ -326,7 +325,7 @@ void SceneManager::addPlayerInternal(Scene& parentScene, const SceneGraphNode_pt
     playerNode->get<UnitComponent>()->setUnit(player);
 
     _players.push_back(player);
-    _platformContext->gfx().resizePool(to_ubyte(_players.size()));
+    _platformContext->gfx().resizeHistory(to_ubyte(_players.size()));
      Attorney::SceneManager::onPlayerAdd(parentScene, player);
 }
 
@@ -352,7 +351,7 @@ void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) 
             std::end(_players));
 
         if (initialSize != _players.size()) {
-            _platformContext->gfx().resizePool(to_ubyte(_players.size()));
+            _platformContext->gfx().resizeHistory(to_ubyte(_players.size()));
             Attorney::SceneManager::onPlayerRemove(parentScene, player);
         }
         player.reset();
@@ -469,6 +468,7 @@ Camera* SceneManager::getActiveCamera() const {
 
 void SceneManager::currentPlayerPass(U8 playerIndex) {
     _currentPlayerPass = playerIndex;
+    _platformContext->gfx().historyIndex(playerIndex, true);
     Camera& playerCam = getPlayers().at(_currentPlayerPass)->getCamera();
     _platformContext->gfx().setSceneZPlanes(playerCam.getZPlanes());
     Camera::activeCamera(&playerCam);
@@ -502,7 +502,7 @@ SceneManager::getSortedCulledNodes(const std::function<bool(const RenderPassCull
 
 const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes() {
     auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        SceneGraphNode_cptr sgnNode = node.second.lock();
+        const SceneGraphNode* sgnNode = node.second;
         SceneNodeType type = sgnNode->getNode()->getType();
         if (type != SceneNodeType::TYPE_OBJECT3D && type != SceneNodeType::TYPE_WATER) {
             return true;
@@ -520,7 +520,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes(
 
 const RenderPassCuller::VisibleNodeList& SceneManager::getSortedRefractiveNodes() {
     auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        SceneGraphNode_cptr sgnNode = node.second.lock();
+        const SceneGraphNode* sgnNode = node.second;
         SceneNodeType type = sgnNode->getNode()->getType();
         if (type != SceneNodeType::TYPE_OBJECT3D && type != SceneNodeType::TYPE_WATER) {
             return true;
@@ -553,7 +553,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
     };
 
     auto meshCullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        SceneGraphNode_cptr sgnNode = node.second.lock();
+        const SceneGraphNode* sgnNode = node.second;
         if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
             Object3D::ObjectType type = sgnNode->getNode<Object3D>()->getObjectType();
             return (type == Object3D::ObjectType::MESH);
@@ -562,7 +562,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
     };
 
     auto shadowCullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        SceneNodeType type = node.second.lock()->getNode()->getType();
+        SceneNodeType type = node.second->getNode()->getType();
         return type == SceneNodeType::TYPE_LIGHT || type == SceneNodeType::TYPE_TRIGGER;
     };
 
@@ -602,14 +602,20 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, b
         queue.refresh();
         const vec3<F32>& eyePos = Camera::activeCamera()->getEye();
         for (RenderPassCuller::VisibleNode& node : visibleNodes) {
-            queue.addNodeToQueue(*node.second.lock(), isPrePass ? RenderStage::Z_PRE_PASS : stage, eyePos);
+            queue.addNodeToQueue(*node.second, isPrePass ? RenderStage::Z_PRE_PASS : stage, eyePos);
         }
     }
     
     queue.sort(isPrePass ? RenderStage::Z_PRE_PASS : stage);
-    for (RenderPassCuller::VisibleNode& node : visibleNodes) {
-        node.first = node.second.lock()->get<RenderingComponent>()->drawOrder();
-    }
+
+    auto setOrder = [&visibleNodes](const Task& parentTask, U32 start, U32 end) { 
+        for (U32 i = start; i < end; ++i) {
+            RenderPassCuller::VisibleNode& node = visibleNodes[i];
+            node.first = node.second->get<RenderingComponent>()->drawOrder();
+        }
+    };
+
+    parallel_for(setOrder, to_uint(visibleNodes.size()), 10);
 
     std::sort(std::begin(visibleNodes), std::end(visibleNodes),
         [](const RenderPassCuller::VisibleNode& nodeA,
