@@ -61,7 +61,6 @@ class AIManager : public SceneComponent
     explicit AIManager(Scene& parentScene, TaskPool& pool);
     ~AIManager();
 
-    void initialize();
     /// Clear all AI related data (teams, entities, NavMeshes, etc);
     void destroy();
     /// Called at a fixed interval (preferably in a separate thread);

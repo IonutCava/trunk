@@ -38,15 +38,8 @@
 
 // Factory scenes:
 #include "Scenes/MainScene/Headers/MainScene.h"
-#include "Scenes/CubeScene/Headers/CubeScene.h"
-#include "Scenes/NetworkScene/Headers/NetworkScene.h"
 #include "Scenes/PingPongScene/Headers/PingPongScene.h"
-#include "Scenes/FlashScene/Headers/FlashScene.h"
-#include "Scenes/TenisScene/Headers/TenisScene.h"
-#include "Scenes/PhysXScene/Headers/PhysXScene.h"
 #include "Scenes/WarScene/Headers/WarScene.h"
-#include "Scenes/ShadowScene/Headers/ShadowScene.h"
-#include "Scenes/ReflectionScene/Headers/ReflectionScene.h"
 
 #define STRUCT_NAME(M) BOOST_PP_CAT(M, RegisterStruct)
 #define VAR_NAME(M) BOOST_PP_CAT(M, RegisterVariable)
@@ -68,16 +61,9 @@ STRUCT_NAME(scene)::STRUCT_NAME(scene)()  {             \
         typedef hashMap<stringImpl, SceneConstructor> SceneFactory; \
         SceneFactory g_sceneFactory; \
     };\
-    REGISTER_SCENE(CubeScene)\
     REGISTER_SCENE(DefaultScene)\
-    REGISTER_SCENE(FlashScene)\
     REGISTER_SCENE(MainScene)\
-    REGISTER_SCENE(NetworkScene)\
-    REGISTER_SCENE(PhysXScene)\
     REGISTER_SCENE(PingPongScene)\
-    REGISTER_SCENE(ReflectionScene)\
-    REGISTER_SCENE(ShadowScene)\
-    REGISTER_SCENE(TenisScene)\
     REGISTER_SCENE(WarScene)
     
 

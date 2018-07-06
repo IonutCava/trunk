@@ -51,10 +51,8 @@ class WarScene : public Scene {
     ~WarScene();
 
     bool load(const stringImpl& name) override;
+    bool unload() override;
     void postLoadMainThread() override;
-    bool loadResources(bool continueOnErrors) override;
-    bool initializeAI(bool continueOnErrors) override;
-    bool deinitializeAI(bool continueOnErrors) override;
     void processTasks(const U64 deltaTimeUS) override;
     void processGUI(const U64 deltaTimeUS) override;
     void updateSceneStateInternal(const U64 deltaTimeUS);
@@ -74,6 +72,8 @@ class WarScene : public Scene {
     void checkGameCompletion();
     void weaponCollision(const RigidBodyComponent& collider);
     AI::AIEntity* findAI(SceneGraphNode* node);
+    bool initializeAI(bool continueOnErrors);
+    bool deinitializeAI(bool continueOnErrors);
 
    private:
     SceneGraphNode* _sun;

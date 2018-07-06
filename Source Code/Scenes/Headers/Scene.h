@@ -190,26 +190,21 @@ class Scene : public Resource, public PlatformContextComponent {
 
     virtual bool frameStarted();
     virtual bool frameEnded();
-    /// Description in SceneManager
-    virtual bool loadResources(bool continueOnErrors);
-    virtual bool loadTasks(bool continueOnErrors) { ACKNOWLEDGE_UNUSED(continueOnErrors); return true; }
-    virtual bool loadPhysics(bool continueOnErrors);
     /// if singleStep is true, only the first model from the modelArray will be loaded.
     /// Useful for loading one model per frame
     virtual void loadXMLAssets(bool singleStep = false);
     virtual void loadDefaultCamera();
+
+    virtual bool loadFromCache(const stringImpl& name);
+    virtual bool saveToCache(const stringImpl& name);
 
     virtual bool load(const stringImpl& name);
     Mesh_ptr loadModel(const FileData& data, bool addToSceneGraph);
     Object3D_ptr loadGeometry(const FileData& data, bool addToSceneGraph);
     virtual bool unload();
     virtual void postLoad();
-    // gets called on the main thread when the scene finishes loading
-    // used by the GUI system
+    // gets called on the main thread when the scene finishes loading (e.g. used by the GUI system)
     virtual void postLoadMainThread();
-    /// Description in SceneManager
-    virtual bool initializeAI(bool continueOnErrors);
-    virtual bool deinitializeAI(bool continueOnErrors);
     /// Check if Scene::load() was called
     bool checkLoadFlag() const { return _loadComplete; }
     /// Unload scenegraph
@@ -240,18 +235,6 @@ class Scene : public Resource, public PlatformContextComponent {
         if (!Scene::load(name)) {
             Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load function");
             return false;
-        }
-        if (!loadResources(contOnErrorRes)) {
-            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load resources");
-            if (!contOnErrorRes) return false;
-        }
-        if (!loadTasks(contOnErrorTasks)) {
-            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load tasks");
-            if (!contOnErrorTasks) return false;
-        }
-        if (!loadPhysics(contOnErrorTasks)) {
-            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load physics");
-            if (!contOnErrorTasks) return false;
         }
 
         registerInputActions();
@@ -340,10 +323,6 @@ class SceneManager {
         return scene.checkLoadFlag();
     }
 
-    static bool deinitializeAI(Scene& scene) {
-        return scene.deinitializeAI(true);
-    }
-
     static void onPlayerAdd(Scene& scene, const Player_ptr& player) {
         scene.onPlayerAdd(player);
     }
@@ -363,9 +342,16 @@ class SceneManager {
 
     static bool frameStarted(Scene& scene) { return scene.frameStarted(); }
     static bool frameEnded(Scene& scene) { return scene.frameEnded(); }
+
+        
+    static bool loadFromCache(Scene& scene, const stringImpl& name) {
+        return scene.loadFromCache(name);
+    }
+
     static bool load(Scene& scene, const stringImpl& name) {
         return scene.load(name);
     }
+
     static bool unload(Scene& scene) { 
         return scene.unload();
     }

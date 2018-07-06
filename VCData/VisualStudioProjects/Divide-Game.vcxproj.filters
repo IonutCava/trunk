@@ -151,35 +151,11 @@
     <Filter Include="Scenes">
       <UniqueIdentifier>{133dd875-3bf4-42bc-8c3b-68d5c868770b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scenes\CubeScene">
-      <UniqueIdentifier>{2beac0e8-234a-46e0-8ca4-9d1498f1f1ba}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\CubeScene\Headers">
-      <UniqueIdentifier>{20e0128b-f2e0-40ba-a9e5-f573726705c2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\FlashScene">
-      <UniqueIdentifier>{bd241af7-f8af-41d2-8f95-d45f54919b8f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\FlashScene\Headers">
-      <UniqueIdentifier>{a9ee051e-dba2-41f8-b9f5-40adceebcbc3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scenes\MainScene">
       <UniqueIdentifier>{ebe6a7bc-2322-4484-80f8-a5cc0750d5d5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Scenes\MainScene\Headers">
       <UniqueIdentifier>{9c3db2f4-7f6e-413c-87bc-58498c36ff20}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\PhysXScene">
-      <UniqueIdentifier>{db501e70-fd3f-458d-abce-f11c8843e191}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\PhysXScene\Headers">
-      <UniqueIdentifier>{cf8b15da-56f4-4c30-90b3-d16b8596f577}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\NetworkScene">
-      <UniqueIdentifier>{75985586-a447-4de4-b371-596cf8fc2fce}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\NetworkScene\Headers">
-      <UniqueIdentifier>{6a8c498b-eab7-402c-b18e-b2cc4135edb2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Scenes\PingPongScene">
       <UniqueIdentifier>{7fc067e3-414e-4807-87f5-ff8c7a3da755}</UniqueIdentifier>
@@ -202,12 +178,6 @@
     <Filter Include="Scenes\WarScene\AESOPActions\Headers">
       <UniqueIdentifier>{9b02077f-22ce-4899-b436-25d2991a620a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scenes\TenisScene">
-      <UniqueIdentifier>{232b7cd4-caf2-4f4e-a466-091e3df55ab2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\TenisScene\Headers">
-      <UniqueIdentifier>{0cf3d47e-edf2-4487-84a6-9c2e4c5fc754}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scenes\DefaultScene">
       <UniqueIdentifier>{db3ffd4f-d955-4148-bdcb-75dbe778c509}</UniqueIdentifier>
     </Filter>
@@ -216,18 +186,6 @@
     </Filter>
     <Filter Include="GUI\Headers">
       <UniqueIdentifier>{32875ac5-aea9-45bf-8f5f-4caad227e673}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\ShadowScene">
-      <UniqueIdentifier>{581f3320-5bf0-4809-a507-466fdba52c9d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\ReflectionScene">
-      <UniqueIdentifier>{928ef2e0-f585-4cd9-8d61-ea48de8b2eed}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\ShadowScene\Headers">
-      <UniqueIdentifier>{98a41b22-1305-48ad-9a8f-311e6cabb040}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\ReflectionScene\Headers">
-      <UniqueIdentifier>{ff852d32-4bb2-42cb-bafe-14a73e79f572}</UniqueIdentifier>
     </Filter>
     <Filter Include="XML">
       <UniqueIdentifier>{74b390db-e360-4bda-801a-d95346f48b9d}</UniqueIdentifier>
@@ -444,20 +402,8 @@
     <ClCompile Include="..\../Source Code/Scenes\SceneState.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Scenes\CubeScene\CubeScene.cpp">
-      <Filter>Scenes\CubeScene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Scenes\FlashScene\FlashScene.cpp">
-      <Filter>Scenes\FlashScene</Filter>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Scenes\MainScene\MainScene.cpp">
       <Filter>Scenes\MainScene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Scenes\PhysXScene\PhysXScene.cpp">
-      <Filter>Scenes\PhysXScene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Scenes\NetworkScene\NetworkScene.cpp">
-      <Filter>Scenes\NetworkScene</Filter>
     </ClCompile>
     <ClCompile Include="..\../Source Code/Scenes\PingPongScene\PingPongScene.cpp">
       <Filter>Scenes\PingPongScene</Filter>
@@ -474,12 +420,6 @@
     <ClCompile Include="..\../Source Code/Scenes\WarScene\AESOPActions\WarSceneActions.cpp">
       <Filter>Scenes\WarScene\AESOPActions</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Scenes\TenisScene\TenisScene.cpp">
-      <Filter>Scenes\TenisScene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Scenes\TenisScene\TenisSceneAIProcessor.cpp">
-      <Filter>Scenes\TenisScene</Filter>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Scenes\DefaultScene\DefaultScene.cpp">
       <Filter>Scenes\DefaultScene</Filter>
     </ClCompile>
@@ -491,12 +431,6 @@
     </ClCompile>
     <ClCompile Include="..\../Source Code/GUI\SceneGUIElements.cpp">
       <Filter>GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Scenes\ShadowScene\ShadowScene.cpp">
-      <Filter>Scenes\ShadowScene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Scenes\ReflectionScene\ReflectionScene.cpp">
-      <Filter>Scenes\ReflectionScene</Filter>
     </ClCompile>
     <ClCompile Include="..\../Source Code/Scenes\SceneShaderData.cpp">
       <Filter>Scenes</Filter>
@@ -694,20 +628,8 @@
     <ClInclude Include="..\../Source Code/Environment\Vegetation\Headers\Vegetation.h">
       <Filter>Environment\Vegetation\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Scenes\CubeScene\Headers\CubeScene.h">
-      <Filter>Scenes\CubeScene\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Scenes\FlashScene\Headers\FlashScene.h">
-      <Filter>Scenes\FlashScene\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\../Source Code/Scenes\MainScene\Headers\MainScene.h">
       <Filter>Scenes\MainScene\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Scenes\PhysXScene\Headers\PhysXScene.h">
-      <Filter>Scenes\PhysXScene\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Scenes\NetworkScene\Headers\NetworkScene.h">
-      <Filter>Scenes\NetworkScene\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Scenes\PingPongScene\Headers\PingPongScene.h">
       <Filter>Scenes\PingPongScene\Headers</Filter>
@@ -730,12 +652,6 @@
     <ClInclude Include="..\../Source Code/Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h">
       <Filter>Scenes\WarScene\AESOPActions\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Scenes\TenisScene\Headers\TenisScene.h">
-      <Filter>Scenes\TenisScene\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Scenes\TenisScene\Headers\TenisSceneAIProcessor.h">
-      <Filter>Scenes\TenisScene\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\../Source Code/SceneList.h" />
     <ClInclude Include="..\../Source Code/Scenes\DefaultScene\Headers\DefaultScene.h">
       <Filter>Scenes\DefaultScene\Headers</Filter>
@@ -751,12 +667,6 @@
     </ClInclude>
     <ClInclude Include="..\../Source Code/GUI\Headers\SceneGUIElements.h">
       <Filter>GUI\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Scenes\ShadowScene\Headers\ShadowScene.h">
-      <Filter>Scenes\ShadowScene\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Scenes\ReflectionScene\Headers\ReflectionScene.h">
-      <Filter>Scenes\ReflectionScene\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Scenes\Headers\SceneShaderData.h">
       <Filter>Scenes\Headers</Filter>

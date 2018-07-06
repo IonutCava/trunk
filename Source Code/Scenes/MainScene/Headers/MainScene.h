@@ -46,7 +46,6 @@ class MainScene : public Scene {
     /*General Scene Requirement*/
     bool load(const stringImpl& name);
     bool unload();
-    bool loadResources(bool continueOnErrors);
     void postLoadMainThread() override;
 
    private:

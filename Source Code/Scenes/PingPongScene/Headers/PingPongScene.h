@@ -45,7 +45,6 @@ class PingPongScene : public Scene {
     ~PingPongScene() {}
 
     bool load(const stringImpl& name) override;
-    bool loadResources(bool continueOnErrors) override;
     void postLoadMainThread() override;
     void processInput(PlayerIndex idx, const U64 deltaTimeUS) override;
     void processTasks(const U64 deltaTimeUS) override;

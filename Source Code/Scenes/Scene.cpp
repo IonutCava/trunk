@@ -787,17 +787,42 @@ void Scene::loadDefaultCamera() {
 
 }
 
+bool Scene::saveToCache(const stringImpl& name) {
+    const stringImpl cachePath(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
+
+    ByteBuffer saveBuffer;
+    if (_sceneGraph->save(saveBuffer)) {
+        return saveBuffer.dumpToFile(cachePath, name + ".parsed");
+    }
+
+    return false;
+}
+
+bool Scene::loadFromCache(const stringImpl& name) {
+    setState(ResourceState::RES_LOADING);
+
+    const stringImpl cachePath(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
+
+    _name = name;
+    ByteBuffer saveBuffer;
+    if (saveBuffer.loadFromFile(cachePath, name + ".parsed")) {
+        // Load camera
+        loadDefaultCamera();
+        if (_sceneGraph->load(saveBuffer)) {
+            //return true;
+        }
+    }
+
+    return false;
+}
+
 bool Scene::load(const stringImpl& name) {
     setState(ResourceState::RES_LOADING);
 
-    STUBBED("ToDo: load skyboxes from XML")
     _name = name;
 
     loadDefaultCamera();
     loadXMLAssets();
-    addSelectionCallback([this](U8 pIndex, SceneGraphNode* node){
-        _context.gui().selectionChangeCallback(this, pIndex, node);
-    });
 
     U32 totalLoadingTasks = _loadingTasks.load();
     Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
@@ -821,6 +846,9 @@ bool Scene::unload() {
         return false;
     }
 
+    _aiManager->stop();
+    WAIT_FOR_CONDITION(!_aiManager->running());
+
     U32 totalLoadingTasks = _loadingTasks.load();
     while (totalLoadingTasks > 0) {
         U32 actualTasks = _loadingTasks.load();
@@ -843,15 +871,24 @@ bool Scene::unload() {
     return true;
 }
 
-bool Scene::loadResources(bool continueOnErrors) {
-    return true;
-}
-
 void Scene::postLoad() {
     _sceneGraph->postLoad();
-    Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_START")));
-    initializeAI(true);
-    Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_END")));
+
+    addSelectionCallback([this](U8 pIndex, SceneGraphNode* node) {
+        _context.gui().selectionChangeCallback(this, pIndex, node);
+    });
+
+    if (_pxScene == nullptr) {
+        _pxScene = _context.pfx().NewSceneInterface(*this);
+        _pxScene->init();
+    }
+
+    // Cook geometry
+    if (_paramHandler.getParam<bool>(_ID((name() + ".options.autoCookPhysicsAssets").c_str()), true)) {
+        _cookCollisionMeshesScheduled = true;
+    }
+
+    saveToCache(name());
 }
 
 void Scene::postLoadMainThread() {
@@ -1006,32 +1043,6 @@ U8 Scene::getPlayerIndexForDevice(U8 deviceIndex) const {
     return input().getPlayerIndexForDevice(deviceIndex);
 }
 
-bool Scene::loadPhysics(bool continueOnErrors) {
-    if (_pxScene == nullptr) {
-        _pxScene = _context.pfx().NewSceneInterface(*this);
-        _pxScene->init();
-    }
-
-    // Cook geometry
-    if (_paramHandler.getParam<bool>(_ID((name() + ".options.autoCookPhysicsAssets").c_str()), true)) {
-        _cookCollisionMeshesScheduled = true;
-    }
-    return true;
-}
-
-bool Scene::initializeAI(bool continueOnErrors) {
-    _aiManager->initialize();
-    return true;
-}
-
- /// Shut down AIManager thread
-bool Scene::deinitializeAI(bool continueOnErrors) { 
-    _aiManager->stop();
-    WAIT_FOR_CONDITION(!_aiManager->running());
-
-    return true;
-}
-
 void Scene::clearObjects() {
     while (!_modelDataArray.empty()) {
         _modelDataArray.pop();
@@ -1064,7 +1075,7 @@ bool Scene::updateCameraControls(PlayerIndex idx) {
     SceneStatePerPlayer& playerState = state().playerState(idx);
 
     playerState.cameraUpdated(false);
-    switch (cam.getType()) {
+    switch (cam.type()) {
         default:
         case Camera::CameraType::FREE_FLY: {
             if (playerState.angleLR() != MoveDirection::NONE) {
