@@ -319,11 +319,11 @@ bool PingPongScene::onKeyUp(const OIS::KeyEvent& key){
 
 
 
-bool PingPongScene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone){
-    return Scene::onJoystickMoveAxis(key,axis,deadZone);
+bool PingPongScene::joystickAxisMoved(const OIS::JoyStickEvent& key,I8 axis){
+    return Scene::joystickAxisMoved(key,axis);
 }
 
-bool PingPongScene::onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){
+bool PingPongScene::joystickButtonReleased(const OIS::JoyStickEvent& key, I8 button){
     if(button == 0 && key.device->getID() != InputInterface::JOY_1)  serveBall();
-    return Scene::onJoystickButtonUp(key, button);
+    return Scene::joystickButtonReleased(key, button);
 }

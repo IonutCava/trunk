@@ -44,7 +44,7 @@ public:
     virtual void update(const U64 deltaTime);
     virtual void move(F32 dx, F32 dy, F32 dz);
     virtual void rotate(F32 yaw, F32 pitch, F32 roll);
-    virtual bool onMouseMove(const OIS::MouseEvent& arg);
+    virtual bool mouseMoved(const OIS::MouseEvent& arg);
     virtual void onActivate();
     virtual void onDeactivate();
 

@@ -46,7 +46,7 @@ public:
     void addCameraChangeListener(const DELEGATE_CBK& f) {_changeCameralisteners.push_back(f);}
     void addCameraUpdateListener(const DELEGATE_CBK& f) {_updateCameralisteners.push_back(f); _addNewListener = true;}
 
-    inline bool onMouseMove(const OIS::MouseEvent& arg) { return _camera->onMouseMove(arg); }
+    inline bool mouseMoved(const OIS::MouseEvent& arg) { return _camera->mouseMoved(arg); }
 
     inline void pushActiveCamera(const std::string& name, bool callActivate = true) { 
         _cameraStack.push(findCamera(name));

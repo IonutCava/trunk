@@ -40,8 +40,8 @@ public:
     void processGUI(const U64 deltaTime);
 
     bool onKeyUp(const OIS::KeyEvent& key);
-    bool onMouseMove(const OIS::MouseEvent& key);
-    bool onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    bool mouseMoved(const OIS::MouseEvent& key);
+    bool mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
     void createStack(U32 size = 10);

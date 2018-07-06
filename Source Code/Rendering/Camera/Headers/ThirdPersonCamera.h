@@ -30,7 +30,7 @@ class ThirdPersonCamera : public OrbitCamera {
 public:
     ThirdPersonCamera(const vec3<F32>& eye = VECTOR3_ZERO);
 
-    bool onMouseMove(const OIS::MouseEvent& arg);
+    bool mouseMoved(const OIS::MouseEvent& arg);
     void onActivate();
 };
 

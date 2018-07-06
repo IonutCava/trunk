@@ -50,7 +50,7 @@ public:
     void setFont(const std::string& fontName, const std::string& fontFileName, U32 size);
 
 protected:
-    bool buttonPressed(const CEGUI::EventArgs& /*e*/);
+    bool joystickButtonPressed(const CEGUI::EventArgs& /*e*/);
 
 protected:
     std::string _text;

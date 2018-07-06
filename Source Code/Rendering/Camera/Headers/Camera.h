@@ -159,7 +159,7 @@ public:
     ///Clear all listeners from the current camera
     virtual void clearListeners() { _listeners.clear(); }
     ///Inject mouse events
-    virtual bool onMouseMove(const OIS::MouseEvent& arg) {return true;}
+    virtual bool mouseMoved(const OIS::MouseEvent& arg) {return true;}
     ///Called when the camera becomes active
     virtual void onActivate();
     ///Called when the camera becomes inactive

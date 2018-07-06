@@ -444,6 +444,9 @@
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\EffectManager.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputAggregatorInterface.h">
+      <Filter>Input\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.cpp">

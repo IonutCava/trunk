@@ -5,7 +5,7 @@ void GUIText::onResize(const vec2<I32>& newSize){
 	_position.y -= newSize.y;
 }
 
-void GUIText::onMouseMove(const GUIEvent &event){
+void GUIText::mouseMoved(const GUIEvent &event){
 }
 
 void GUIText::onMouseUp(const GUIEvent &event){

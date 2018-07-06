@@ -72,7 +72,7 @@ public:
     virtual void onResize(const vec2<I32>& newSize){_position.x -= newSize.x;_position.y -= newSize.y;}
 
     inline  void lastDrawTimer(const U64 time) { _lastDrawTimer = time; }
-    virtual void onMouseMove(const GUIEvent &event){};
+    virtual void mouseMoved(const GUIEvent &event){};
     virtual void onMouseUp(const GUIEvent &event){};
     virtual void onMouseDown(const GUIEvent &event){};
 /*  virtual void onRightMouseUp(const GUIEvent &event);

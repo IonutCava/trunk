@@ -502,7 +502,7 @@ bool WarScene::onKeyUp(const OIS::KeyEvent& key){
     return keyState;
 }
 
-bool WarScene::onMouseMove(const OIS::MouseEvent& key){
+bool WarScene::mouseMoved(const OIS::MouseEvent& key){
     if(_mousePressed[OIS::MB_Right]){
         if(_previousMousePos.x - key.state.X.abs > 1 )   	 state()._angleLR = -1;
         else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
@@ -513,15 +513,15 @@ bool WarScene::onMouseMove(const OIS::MouseEvent& key){
         else 	                                             state()._angleUD =  0;
     }
 
-    return Scene::onMouseMove(key);
+    return Scene::mouseMoved(key);
 }
 
-bool WarScene::onMouseClickDown(const OIS::MouseEvent& key, OIS::MouseButtonID button){
-    return Scene::onMouseClickDown(key,button);
+bool WarScene::mouseButtonPressed(const OIS::MouseEvent& key, OIS::MouseButtonID button){
+    return Scene::mouseButtonPressed(key,button);
 }
 
-bool WarScene::onMouseClickUp(const OIS::MouseEvent& key, OIS::MouseButtonID button){
-    bool keyState = Scene::onMouseClickUp(key,button);
+bool WarScene::mouseButtonReleased(const OIS::MouseEvent& key, OIS::MouseButtonID button){
+    bool keyState = Scene::mouseButtonReleased(key,button);
     if(!_mousePressed[OIS::MB_Right]){
         state()._angleUD = 0;
         state()._angleLR = 0;

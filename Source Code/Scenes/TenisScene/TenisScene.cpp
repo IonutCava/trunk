@@ -400,7 +400,7 @@ bool TenisScene::onKeyUp(const OIS::KeyEvent& key){
     return Scene::onKeyUp(key);
 }
 
-bool TenisScene::onMouseMove(const OIS::MouseEvent& key){
+bool TenisScene::mouseMoved(const OIS::MouseEvent& key){
     if(_mousePressed[OIS::MB_Right]){
         if(_previousMousePos.x - key.state.X.abs > 1 )		 state()._angleLR = -1;
         else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
@@ -411,11 +411,11 @@ bool TenisScene::onMouseMove(const OIS::MouseEvent& key){
         else 			                                     state()._angleUD =  0;
     }
 
-    return Scene::onMouseMove(key);
+    return Scene::mouseMoved(key);
 }
 
-bool TenisScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
-    bool keyState = Scene::onMouseClickUp(key,button);
+bool TenisScene::mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+    bool keyState = Scene::mouseButtonReleased(key,button);
     if(!_mousePressed[OIS::MB_Right]){
         state()._angleUD = 0;
         state()._angleLR = 0;

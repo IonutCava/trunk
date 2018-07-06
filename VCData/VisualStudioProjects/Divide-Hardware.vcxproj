@@ -316,6 +316,7 @@
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\AutoKeyRepeat.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\EffectManager.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\EventHandler.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputAggregatorInterface.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputInterface.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputVariables.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\JoystickInterface.h" />

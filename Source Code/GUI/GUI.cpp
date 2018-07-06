@@ -22,7 +22,7 @@ GUI::GUI() : _init(false),
              _textRenderInterval(getMsToUs(10))
 {
     //500ms
-    _input.setInitialDelay(0.500f);
+    _ceguiInput.setInitialDelay(0.500f);
     GUIEditor::createInstance();
 }
 
@@ -74,7 +74,7 @@ void GUI::update(const U64 deltaTime) {
         return;
     }
 
-    _input.update(deltaTime);
+    _ceguiInput.update(deltaTime);
     CEGUI::System::getSingleton().injectTimePulse(getUsToSec(deltaTime));
     CEGUI::System::getSingleton().getDefaultGUIContext().injectTimePulse(getUsToSec(deltaTime));
 
@@ -157,9 +157,11 @@ bool GUI::onKeyDown(const OIS::KeyEvent& key) {
         return true;
     }
 
-    _input.injectOISKey(true, key);
+    if (_ceguiInput.onKeyDown(key) ) {
+        return (!_console->isVisible() && !GUIEditor::getInstance().isVisible());
+    }
 
-    return (!_console->isVisible() && !GUIEditor::getInstance().isVisible());
+    return false;
 }
 
 bool GUI::onKeyUp(const OIS::KeyEvent& key) {
@@ -176,12 +178,15 @@ bool GUI::onKeyUp(const OIS::KeyEvent& key) {
             GUIEditor::getInstance().setVisible(!GUIEditor::getInstance().isVisible());
         }
 #   endif
-    _input.injectOISKey(false, key);
 
-    return (!_console->isVisible() && !GUIEditor::getInstance().isVisible());
+    if (_ceguiInput.onKeyUp(key)) {
+        return (!_console->isVisible() && !GUIEditor::getInstance().isVisible());
+    }
+
+    return false;
 }
 
-bool GUI::onMouseMove(const OIS::MouseEvent& arg) {
+bool GUI::mouseMoved(const OIS::MouseEvent& arg) {
     if (!_init) { 
         return true;
     }
@@ -191,99 +196,71 @@ bool GUI::onMouseMove(const OIS::MouseEvent& arg) {
     event.mousePoint.y = arg.state.Y.abs;
 
     FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
-        guiStackIterator.second->onMouseMove(event);
+        guiStackIterator.second->mouseMoved(event);
     }
 
-    CEGUI_DEFAULT_CONTEXT.injectMouseWheelChange(arg.state.Z.abs);
-    CEGUI_DEFAULT_CONTEXT.injectMouseMove(arg.state.X.rel, arg.state.Y.rel);
-    return true;
+    return _ceguiInput.mouseMoved(arg);
 }
 
-bool GUI::onMouseClickDown(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+bool GUI::mouseButtonPressed(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
     if (!_init) {
         return true;
     }
-    //CEGUI_DEFAULT_CONTEXT.injectMousePosition(arg.state.X.abs, arg.state.Y.abs);
-    switch (button) {
-        case OIS::MB_Left : {
-            CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::LeftButton);
+
+    if (_ceguiInput.mouseButtonPressed(arg, button) ) {
+        if (button == OIS::MB_Left) {
             GUIEvent event;
             event.mouseClickCount = 0;
             FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
                 guiStackIterator.second->onMouseDown(event);
             }
-        } break;
-        case OIS::MB_Middle : {
-            CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::MiddleButton);
-        } break;
-        case OIS::MB_Right : {
-            CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::RightButton);
-        } break;
-        case OIS::MB_Button3 : {
-            CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::X1Button);
-        } break;
-        case OIS::MB_Button4 : {
-            CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::X2Button);
-        } break;
-    };
- 
+        }
+    }
+
     return !_console->isVisible() && !GUIEditor::getInstance().wasControlClick();
 }
 
-bool GUI::onMouseClickUp(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+bool GUI::mouseButtonReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
     if (!_init) {
         return true;
     }
-    //CEGUI_DEFAULT_CONTEXT.injectMousePosition(arg.state.X.abs, arg.state.Y.abs);
-    switch (button) {
-        case OIS::MB_Left : {
-            CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::LeftButton);
+    if (_ceguiInput.mouseButtonReleased(arg, button) ) {
+        if (button == OIS::MB_Left) {
             GUIEvent event;
             event.mouseClickCount = 1;
             FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
                 guiStackIterator.second->onMouseUp(event);
             }
-        } break;
-        case OIS::MB_Middle : {
-            CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::MiddleButton);
-        } break;
-        case OIS::MB_Right : {
-            CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::RightButton);
-        } break;
-        case OIS::MB_Button3 : {
-            CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::X1Button);
-        } break;
-        case OIS::MB_Button4 : {
-            CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::X2Button);
-        } break;
-    };
- 
+        }
+    }
+
     return !_console->isVisible() && !GUIEditor::getInstance().wasControlClick();
 }
 
-bool GUI::onJoystickMoveAxis(const OIS::JoyStickEvent& arg, I8 axis, I32 deadZone) {
-    return true;
+bool GUI::joystickAxisMoved(const OIS::JoyStickEvent& arg, I8 axis) {
+    return _ceguiInput.joystickAxisMoved(arg, axis);
 }
 
-bool GUI::onJoystickMovePOV(const OIS::JoyStickEvent& arg, I8 pov){
-    return true;
+bool GUI::joystickPovMoved(const OIS::JoyStickEvent& arg, I8 pov){
+    return _ceguiInput.joystickPovMoved(arg, pov);
 }
 
-bool GUI::onJoystickButtonDown(const OIS::JoyStickEvent& arg, I8 button){
-    return true;
+bool GUI::joystickButtonPressed(const OIS::JoyStickEvent& arg, I8 button){
+    return _ceguiInput.joystickButtonPressed(arg, button);
 }
 
-bool GUI::onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button){
-    return true;
+bool GUI::joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button){
+    return _ceguiInput.joystickButtonReleased(arg, button);
 }
 
-bool GUI::sliderMoved( const OIS::JoyStickEvent &arg, I8 index){
-    return true;
+bool GUI::joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index){
+    return _ceguiInput.joystickSliderMoved(arg, index);
 }
 
-bool GUI::vector3Moved( const OIS::JoyStickEvent &arg, I8 index){
-    return true;
+bool GUI::joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index){
+    return _ceguiInput.joystickVector3DMoved(arg, index);
 }
+
 GUIButton* GUI::addButton(const std::string& id, const std::string& text,
                     const vec2<I32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,
                     ButtonCallback callback,const std::string& rootSheetId){

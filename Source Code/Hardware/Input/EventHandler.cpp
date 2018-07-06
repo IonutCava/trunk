@@ -2,8 +2,6 @@
 #include "Headers/InputInterface.h"
 #include "Core/Headers/Kernel.h"
 
-static I32 axisDeadZone = 256;
-
 EventHandler::EventHandler(InputInterface* pApp, Kernel* const kernel) :
 												   _kernel(kernel),
 												   _pApplication(pApp),
@@ -19,17 +17,49 @@ void EventHandler::initialize(JoystickInterface* pJoystickInterface, EffectManag
 }
 
 /// Input events are either handled by the kernel
-bool EventHandler::keyPressed( const OIS::KeyEvent &arg )                    {return _kernel->onKeyDown(arg); }
-bool EventHandler::keyReleased( const OIS::KeyEvent &arg )                   {return _kernel->onKeyUp(arg); }
-bool EventHandler::buttonPressed( const OIS::JoyStickEvent &arg, I8 button ) {return _kernel->onJoystickButtonDown(arg,button); }
-bool EventHandler::buttonReleased( const OIS::JoyStickEvent &arg, I8 button ){return _kernel->onJoystickButtonUp(arg,button); }
-bool EventHandler::axisMoved( const OIS::JoyStickEvent &arg, I8 axis)        {return _kernel->onJoystickMoveAxis(arg,axis,axisDeadZone); }
-bool EventHandler::povMoved( const OIS::JoyStickEvent &arg, I8 pov )         {return _kernel->onJoystickMovePOV(arg,pov); }
-bool EventHandler::sliderMoved( const OIS::JoyStickEvent &arg, I8 index)     {return _kernel->sliderMoved(arg,index); }
-bool EventHandler::vector3Moved( const OIS::JoyStickEvent &arg, I8 index)    {return _kernel->vector3Moved(arg,index); }
-bool EventHandler::mouseMoved( const OIS::MouseEvent &arg )                            {return _kernel->onMouseMove(arg); }
-bool EventHandler::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )   {return _kernel->onMouseClickDown(arg,id); }
-bool EventHandler::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )  {return _kernel->onMouseClickUp(arg,id); }
+bool EventHandler::onKeyDown( const OIS::KeyEvent &arg ) {
+    return _kernel->onKeyDown(arg); 
+}
+
+bool EventHandler::onKeyUp( const OIS::KeyEvent &arg ) {
+    return _kernel->onKeyUp(arg); 
+}
+
+bool EventHandler::joystickButtonPressed( const OIS::JoyStickEvent &arg, I8 button ) {
+    return _kernel->joystickButtonPressed(arg,button); 
+}
+
+bool EventHandler::joystickButtonReleased( const OIS::JoyStickEvent &arg, I8 button ) {
+    return _kernel->joystickButtonReleased(arg,button); 
+}
+
+bool EventHandler::joystickAxisMoved( const OIS::JoyStickEvent &arg, I8 axis) {
+    return _kernel->joystickAxisMoved(arg,axis); 
+}
+
+bool EventHandler::joystickPovMoved( const OIS::JoyStickEvent &arg, I8 pov ) {
+    return _kernel->joystickPovMoved(arg,pov); 
+}
+
+bool EventHandler::joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index) {
+    return _kernel->joystickSliderMoved(arg,index); 
+}
+
+bool EventHandler::joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index) {
+    return _kernel->joystickVector3DMoved(arg,index); 
+}
+
+bool EventHandler::mouseMoved( const OIS::MouseEvent &arg ) {
+    return _kernel->mouseMoved(arg);
+}
+
+bool EventHandler::mouseButtonPressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
+    return _kernel->mouseButtonPressed(arg,id); 
+}
+
+bool EventHandler::mouseButtonReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
+    return _kernel->mouseButtonReleased(arg,id); 
+}
 
 //////////// Effect variables applier functions /////////////////////////////////////////////
 // These functions apply the given Variables to the given OIS::Effect

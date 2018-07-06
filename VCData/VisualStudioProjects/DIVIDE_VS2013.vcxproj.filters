@@ -746,9 +746,6 @@
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIFormattedListBox.cpp">
       <Filter>GUI\CEGUIAddons</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIKeyRepeat.cpp">
-      <Filter>GUI\CEGUIAddons</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Utility\CommandParser.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -877,6 +874,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysicsSceneInterface.cpp">
       <Filter>Dynamics\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIInput.cpp">
+      <Filter>GUI\CEGUIAddons</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1247,9 +1247,6 @@
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIFormattedListBox.h">
       <Filter>GUI\CEGUIAddons\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIKeyRepeat.h">
-      <Filter>GUI\CEGUIAddons\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\CommandParser.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
@@ -1405,6 +1402,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Headers\ForwardPlusRenderer.h">
       <Filter>Rendering\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIInput.h">
+      <Filter>GUI\CEGUIAddons\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

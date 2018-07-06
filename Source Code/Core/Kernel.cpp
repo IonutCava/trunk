@@ -545,74 +545,74 @@ bool Kernel::onKeyUp(const OIS::KeyEvent& key) {
     return false;
 }
 
-bool Kernel::onMouseMove(const OIS::MouseEvent& arg) {
-    _cameraMgr->onMouseMove(arg);
-    if(_GUI.onMouseMove(arg)) {
-        return _sceneMgr.onMouseMove(arg); 
+bool Kernel::mouseMoved(const OIS::MouseEvent& arg) {
+    _cameraMgr->mouseMoved(arg);
+    if(_GUI.mouseMoved(arg)) {
+        return _sceneMgr.mouseMoved(arg); 
     }
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::onMouseClickDown(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
-    if(_GUI.onMouseClickDown(arg, button)) {
-        return _sceneMgr.onMouseClickDown(arg,button); 
+bool Kernel::mouseButtonPressed(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+    if(_GUI.mouseButtonPressed(arg, button)) {
+        return _sceneMgr.mouseButtonPressed(arg,button); 
     }
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::onMouseClickUp(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
-    if(_GUI.onMouseClickUp(arg, button)) {
-        return _sceneMgr.onMouseClickUp(arg,button); 
+bool Kernel::mouseButtonReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+    if(_GUI.mouseButtonReleased(arg, button)) {
+        return _sceneMgr.mouseButtonReleased(arg,button); 
     }
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::onJoystickMoveAxis(const OIS::JoyStickEvent& arg, I8 axis, I32 deadZone) {
-    if(_GUI.onJoystickMoveAxis(arg,axis,deadZone)) {
-        return _sceneMgr.onJoystickMoveAxis(arg,axis,deadZone); 
+bool Kernel::joystickAxisMoved(const OIS::JoyStickEvent& arg, I8 axis) {
+    if(_GUI.joystickAxisMoved(arg,axis)) {
+        return _sceneMgr.joystickAxisMoved(arg,axis); 
     }
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::onJoystickMovePOV(const OIS::JoyStickEvent& arg, I8 pov){
-    if(_GUI.onJoystickMovePOV(arg,pov)) {
-        return _sceneMgr.onJoystickMovePOV(arg,pov); 
+bool Kernel::joystickPovMoved(const OIS::JoyStickEvent& arg, I8 pov){
+    if(_GUI.joystickPovMoved(arg,pov)) {
+        return _sceneMgr.joystickPovMoved(arg,pov); 
     }
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::onJoystickButtonDown(const OIS::JoyStickEvent& arg, I8 button){
-    if(_GUI.onJoystickButtonDown(arg,button)) {
-        return _sceneMgr.onJoystickButtonDown(arg,button); 
+bool Kernel::joystickButtonPressed(const OIS::JoyStickEvent& arg, I8 button){
+    if(_GUI.joystickButtonPressed(arg,button)) {
+        return _sceneMgr.joystickButtonPressed(arg,button); 
     }
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button){
-    if(_GUI.onJoystickButtonUp(arg,button)) {
-        return _sceneMgr.onJoystickButtonUp(arg,button); 
+bool Kernel::joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button){
+    if(_GUI.joystickButtonReleased(arg,button)) {
+        return _sceneMgr.joystickButtonReleased(arg,button); 
     }
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::sliderMoved( const OIS::JoyStickEvent &arg, I8 index){
-    if(_GUI.sliderMoved(arg,index)) {
-        return _sceneMgr.sliderMoved(arg,index); 
+bool Kernel::joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index){
+    if(_GUI.joystickSliderMoved(arg,index)) {
+        return _sceneMgr.joystickSliderMoved(arg,index); 
     }
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::vector3Moved( const OIS::JoyStickEvent &arg, I8 index){
-    if(_GUI.vector3Moved(arg,index)) {
-        return _sceneMgr.vector3Moved(arg,index); 
+bool Kernel::joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index){
+    if(_GUI.joystickVector3DMoved(arg,index)) {
+        return _sceneMgr.joystickVector3DMoved(arg,index); 
     }
     // InputInterface needs to know when this is completed
     return false;

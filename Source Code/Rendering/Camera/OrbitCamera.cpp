@@ -62,12 +62,12 @@ void OrbitCamera::update(const U64 deltaTime) {
     _viewMatrixDirty = true;
 }
 
-bool OrbitCamera::onMouseMove(const OIS::MouseEvent& arg) {
+bool OrbitCamera::mouseMoved(const OIS::MouseEvent& arg) {
     I32 zoom = arg.state.Z.rel;
     if (zoom != 0)
         curRadius(_curRadius += (zoom * _cameraZoomSpeed * -0.01f));
     
-    return Camera::onMouseMove(arg);
+    return Camera::mouseMoved(arg);
 }
 
 void OrbitCamera::move(F32 dx, F32 dy, F32 dz) {

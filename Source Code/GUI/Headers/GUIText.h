@@ -38,7 +38,7 @@ public:
                                    TextLabel(text, font, color, textHeight)
     {
     }
-    void onMouseMove(const GUIEvent &event);
+    void mouseMoved(const GUIEvent &event);
     void onMouseUp(const GUIEvent &event);
     void onMouseDown(const GUIEvent &event);
     void onResize(const vec2<I32>& newSize);

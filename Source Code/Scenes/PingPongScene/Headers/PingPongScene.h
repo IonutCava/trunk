@@ -52,8 +52,8 @@ public:
     void processGUI(const U64 deltaTime);
 
 	bool onKeyUp(const OIS::KeyEvent& key);
-	bool onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone);
-	bool onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button);
+	bool joystickAxisMoved(const OIS::JoyStickEvent& key,I8 axis);
+	bool joystickButtonReleased(const OIS::JoyStickEvent& key, I8 button);
 
 private:
 	void test(cdiggins::any a, CallbackParam b);

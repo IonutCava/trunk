@@ -60,9 +60,9 @@ public:
     void updateSceneStateInternal(const U64 deltaTime);
 
     bool onKeyUp(const OIS::KeyEvent& key);
-    bool onMouseMove(const OIS::MouseEvent& key);
-    bool onMouseClickDown(const OIS::MouseEvent& key, OIS::MouseButtonID button);
-    bool onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    bool mouseMoved(const OIS::MouseEvent& key);
+    bool mouseButtonPressed(const OIS::MouseEvent& key, OIS::MouseButtonID button);
+    bool mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
     void processSimulation(cdiggins::any a, CallbackParam b);

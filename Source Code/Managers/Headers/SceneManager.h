@@ -30,7 +30,7 @@
 enum RenderStage;
 class RenderPassCuller;
 
-DEFINE_SINGLETON_EXT1(SceneManager, FrameListener)
+DEFINE_SINGLETON_EXT2(SceneManager, FrameListener, InputAggregatorInterface)
 
 public:
     ///Lookup the factory methods table and return the pointer to a newly constructed scene bound to that name
@@ -81,21 +81,21 @@ public: ///Input
     ///Key released
     bool onKeyUp(const OIS::KeyEvent& key);
     ///Joystic axis change
-    bool onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis,I32 deadZone);
+    bool joystickAxisMoved(const OIS::JoyStickEvent& arg,I8 axis);
     ///Joystick direction change
-    bool onJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov);
+    bool joystickPovMoved(const OIS::JoyStickEvent& arg,I8 pov);
     ///Joystick button pressed
-    bool onJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button);
+    bool joystickButtonPressed(const OIS::JoyStickEvent& arg,I8 button);
     ///Joystick button released
-    bool onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button);
-    bool sliderMoved( const OIS::JoyStickEvent &arg, I8 index);
-    bool vector3Moved( const OIS::JoyStickEvent &arg, I8 index);
+    bool joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button);
+    bool joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index);
+    bool joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index);
     ///Mouse moved
-    bool onMouseMove(const OIS::MouseEvent& arg);
+    bool mouseMoved(const OIS::MouseEvent& arg);
     ///Mouse button pressed
-    bool onMouseClickDown(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonPressed(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
     ///Mouse button released
-    bool onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonReleased(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
 
 
 protected:

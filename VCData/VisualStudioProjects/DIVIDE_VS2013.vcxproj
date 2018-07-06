@@ -459,7 +459,7 @@
     <ClCompile Include="..\..\Source Code\Graphs\SceneNodeRenderState.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SGNRenderCalls.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIFormattedListBox.cpp" />
-    <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIKeyRepeat.cpp" />
+    <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIInput.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUI.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIButton.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIConsole.cpp" />
@@ -610,7 +610,7 @@
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\SGNComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNodeRenderState.h" />
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIFormattedListBox.h" />
-    <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIKeyRepeat.h" />
+    <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIInput.h" />
     <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditor.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUI.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIButton.h" />

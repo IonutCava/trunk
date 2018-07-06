@@ -151,7 +151,9 @@ void GUIConsole::setVisible(bool visible){
     }
 
     printText(visible ? "Toggling console display: ON" : "Toggling console display: OFF", false);
-    _outputWindow->ensureItemIsVisible(_outputWindow->getListboxItemFromIndex(_outputWindow->getItemCount() - 1));
+    if (_outputWindow->getItemCount() > 0 && visible) {
+        _outputWindow->ensureItemIsVisible(_outputWindow->getListboxItemFromIndex(_outputWindow->getItemCount() - 1));
+    }
 }
 
 bool GUIConsole::isVisible(){

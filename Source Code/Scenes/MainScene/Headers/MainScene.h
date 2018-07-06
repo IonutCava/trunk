@@ -52,8 +52,8 @@ private:
     void processGUI(const U64 deltaTime);
     void test(cdiggins::any a, CallbackParam b);
     bool onKeyUp(const OIS::KeyEvent& key);
-    bool onMouseMove(const OIS::MouseEvent& key);
-    bool onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    bool mouseMoved(const OIS::MouseEvent& key);
+    bool mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
 

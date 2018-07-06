@@ -59,7 +59,7 @@ class TerrainDescriptor;
 class ParticleEmitter;
 struct ParticleEmitterDescriptor;
 class PhysicsSceneInterface;
-class Scene : public Resource{
+class Scene : public Resource, public InputAggregatorInterface {
 protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
 #ifdef _DEBUG
@@ -237,15 +237,15 @@ protected:
 public: //Input
     virtual bool onKeyDown(const OIS::KeyEvent& key);
     virtual bool onKeyUp(const OIS::KeyEvent& key);
-    virtual bool onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone);
-    virtual bool onJoystickMovePOV(const OIS::JoyStickEvent& key, I8 pov);
-    virtual bool onJoystickButtonDown(const OIS::JoyStickEvent& key,I8 button){ return true;}
-    virtual bool onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button) { return true; }
-    virtual bool sliderMoved( const OIS::JoyStickEvent &arg, I8 index) { return true; }
-    virtual bool vector3Moved( const OIS::JoyStickEvent &arg, I8 index){ return true; }
-    virtual bool onMouseMove(const OIS::MouseEvent& key);
-    virtual bool onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
-    virtual bool onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    virtual bool joystickAxisMoved(const OIS::JoyStickEvent& key,I8 axis);
+    virtual bool joystickPovMoved(const OIS::JoyStickEvent& key, I8 pov);
+    virtual bool joystickButtonPressed(const OIS::JoyStickEvent& key,I8 button){ return true;}
+    virtual bool joystickButtonReleased(const OIS::JoyStickEvent& key, I8 button) { return true; }
+    virtual bool joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index) { return true; }
+    virtual bool joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index){ return true; }
+    virtual bool mouseMoved(const OIS::MouseEvent& key);
+    virtual bool mouseButtonPressed(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    virtual bool mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 protected: //Input
     vec2<F32> _previousMousePos;

@@ -26,7 +26,8 @@
 #include "Utility/Headers/UnorderedMap.h"
 #include "Core/Math/Headers/MathClasses.h"
 #include "GUI/GUIEditor/Headers/GUIEditor.h"
-#include "GUI/CEGUIAddons/Headers/CEGUIKeyRepeat.h"
+#include "GUI/CEGUIAddons/Headers/CEGUIInput.h"
+#include "Hardware/Input/Headers/InputAggregatorInterface.h"
 
 namespace Font {
     const static std::string	DIVIDE_DEFAULT ("DroidSerif-Regular.ttf"/*"Test.ttf"*/);
@@ -46,13 +47,6 @@ namespace CEGUI{
     class Renderer;
 };
 
-namespace OIS {
-    class KeyEvent;
-    class MouseEvent;
-    class JoyStickEvent;
-    enum MouseButtonID;
-}
-
 #define CEGUI_DEFAULT_CONTEXT CEGUI::System::getSingleton().getDefaultGUIContext()
 
 class Scene;
@@ -60,7 +54,7 @@ class GUIText;
 class GUIFlash;
 class GUIButton;
 /// Grafical User Interface
-DEFINE_SINGLETON( GUI )
+DEFINE_SINGLETON_EXT1( GUI, InputAggregatorInterface )
     typedef Unordered_map<std::string, GUIElement*> guiMap;
     typedef DELEGATE_CBK ButtonCallback;
 
@@ -98,21 +92,21 @@ public:
     ///Key released
     bool onKeyUp(const OIS::KeyEvent& key);
     ///Joystick axis change
-    bool onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis,I32 deadZone);
+    bool joystickAxisMoved(const OIS::JoyStickEvent& arg,I8 axis);
     ///Joystick direction change
-    bool onJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov);
+    bool joystickPovMoved(const OIS::JoyStickEvent& arg,I8 pov);
     ///Joystick button pressed
-    bool onJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button);
+    bool joystickButtonPressed(const OIS::JoyStickEvent& arg,I8 button);
     ///Joystick button released
-    bool onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button);
-    bool sliderMoved( const OIS::JoyStickEvent &arg, I8 index);
-    bool vector3Moved( const OIS::JoyStickEvent &arg, I8 index);
+    bool joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button);
+    bool joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index);
+    bool joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index);
     ///Mouse moved
-    bool onMouseMove(const OIS::MouseEvent& arg);
+    bool mouseMoved(const OIS::MouseEvent& arg);
     ///Mouse button pressed
-    bool onMouseClickDown(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonPressed(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
     ///Mouse button released
-    bool onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonReleased(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
 private:
     GUI();               //< Constructor
     ~GUI();              //< Destructor
@@ -121,7 +115,7 @@ private:
 
 private:
     bool _init;                     //< Set to true when the GUI has finished loading
-    GUIInput    _input;             //< Used to implement key repeat
+    CEGUIInput  _ceguiInput;        //< Used to implement key repeat
     GUIConsole* _console;           //< Pointer to the GUIConsole object
     guiMap      _guiStack;          //< All the GUI elements created
     vec2<U16>   _cachedResolution;  //< We keep a cache of the current resolution to avoid useless queries

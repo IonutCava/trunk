@@ -161,67 +161,67 @@ bool SceneManager::onKeyUp(const OIS::KeyEvent& key) {
     return _activeScene->onKeyUp(key);
 }
 
-bool SceneManager::onMouseMove(const OIS::MouseEvent& arg) {
+bool SceneManager::mouseMoved(const OIS::MouseEvent& arg) {
     if (!_processInput) {
         return false;
     }
 
-    return _activeScene->onMouseMove(arg);
+    return _activeScene->mouseMoved(arg);
 }
 
-bool SceneManager::onMouseClickDown(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+bool SceneManager::mouseButtonPressed(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->onMouseClickDown(arg,button);
+    return _activeScene->mouseButtonPressed(arg,button);
 }
 
-bool SceneManager::onMouseClickUp(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+bool SceneManager::mouseButtonReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
     if (!_processInput) {
         return false;
     }
 
-    return _activeScene->onMouseClickUp(arg,button);
+    return _activeScene->mouseButtonReleased(arg,button);
 }
 
-bool SceneManager::onJoystickMoveAxis(const OIS::JoyStickEvent& arg, I8 axis, I32 deadZone) {
+bool SceneManager::joystickAxisMoved(const OIS::JoyStickEvent& arg, I8 axis) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->onJoystickMoveAxis(arg,axis,deadZone);
+    return _activeScene->joystickAxisMoved(arg,axis);
 }
 
-bool SceneManager::onJoystickMovePOV(const OIS::JoyStickEvent& arg, I8 pov){
+bool SceneManager::joystickPovMoved(const OIS::JoyStickEvent& arg, I8 pov){
     if (!_processInput) {
         return false;
     }
-    return _activeScene->onJoystickMovePOV(arg,pov);
+    return _activeScene->joystickPovMoved(arg,pov);
 }
 
-bool SceneManager::onJoystickButtonDown(const OIS::JoyStickEvent& arg, I8 button){
+bool SceneManager::joystickButtonPressed(const OIS::JoyStickEvent& arg, I8 button){
     if (!_processInput) {
         return false;
     }
-    return _activeScene->onJoystickButtonDown(arg,button);
+    return _activeScene->joystickButtonPressed(arg,button);
 }
 
-bool SceneManager::onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button){
+bool SceneManager::joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button){
     if (!_processInput) {
         return false;
     }
-    return _activeScene->onJoystickButtonUp(arg,button);
+    return _activeScene->joystickButtonReleased(arg,button);
 }
 
-bool SceneManager::sliderMoved( const OIS::JoyStickEvent &arg, I8 index){
+bool SceneManager::joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index){
     if (!_processInput) {
         return false;
     }
-    return _activeScene->sliderMoved(arg,index);
+    return _activeScene->joystickSliderMoved(arg,index);
 }
 
-bool SceneManager::vector3Moved( const OIS::JoyStickEvent &arg, I8 index){
+bool SceneManager::joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index){
     if (!_processInput) {
         return false;
     }
-    return _activeScene->vector3Moved(arg,index);
+    return _activeScene->joystickVector3DMoved(arg,index);
 }

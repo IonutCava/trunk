@@ -12,7 +12,7 @@ void ThirdPersonCamera::onActivate() {
     OrbitCamera::onActivate();
 }
 
-bool ThirdPersonCamera::onMouseMove(const OIS::MouseEvent& arg) {
+bool ThirdPersonCamera::mouseMoved(const OIS::MouseEvent& arg) {
     static vec2<F32> mousePos;
     static const F32 rotationLimitRollLower = M_PI * 0.30f - RADIANS(1);
     static const F32 rotationLimitRollUpper = M_PI * 0.175f - RADIANS(1);
@@ -23,7 +23,7 @@ bool ThirdPersonCamera::onMouseMove(const OIS::MouseEvent& arg) {
     Application::getInstance().snapCursorToCenter();
 
     if (IS_ZERO(mousePos.x) && IS_ZERO(mousePos.y)){
-        return OrbitCamera::onMouseMove(arg);
+        return OrbitCamera::mouseMoved(arg);
     }
 
     mousePos.set((mousePos / _mouseSensitivity) * _turnSpeedFactor);
@@ -46,5 +46,5 @@ bool ThirdPersonCamera::onMouseMove(const OIS::MouseEvent& arg) {
     if(_rotationDirty)
         Util::normalize(_cameraRotation, false,true, false, true);
 
-    return OrbitCamera::onMouseMove(arg);
+    return OrbitCamera::mouseMoved(arg);
 }

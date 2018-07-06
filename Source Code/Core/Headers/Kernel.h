@@ -24,10 +24,12 @@
 #define _KERNEL_H_
 
 #include "core.h"
-#include <boost/noncopyable.hpp>
-#include "Hardware/Platform/Headers/Task.h"
-#include <boost/lockfree/queue.hpp>
 #include "Managers/Headers/CameraManager.h"
+#include "Hardware/Platform/Headers/Task.h"
+#include "Hardware/Input/Headers/InputAggregatorInterface.h"
+
+#include <boost/noncopyable.hpp>
+#include <boost/lockfree/queue.hpp>
 
 class GUI;
 class Scene;
@@ -44,13 +46,6 @@ class FrameListenerManager;
 
 enum RenderStage;
 
-///Input
-namespace OIS {
-    class KeyEvent;
-    class MouseEvent;
-    class JoyStickEvent;
-    enum MouseButtonID;
-}
 struct FrameEvent;
 
 ///The kernel is the main interface to our engine components:
@@ -59,7 +54,7 @@ struct FrameEvent;
 ///-physx
 ///-scene manager
 ///-etc
-class Kernel : private boost::noncopyable {
+class Kernel : public InputAggregatorInterface, private boost::noncopyable {
 public:
     Kernel(I32 argc, char **argv, Application& parentApp);
     ~Kernel();
@@ -91,22 +86,22 @@ public:
     bool onKeyDown(const OIS::KeyEvent& key);
     ///Key released
     bool onKeyUp(const OIS::KeyEvent& key);
-    ///Joystic axis change
-    bool onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis,I32 deadZone);
+    ///Joystick axis change
+    bool joystickAxisMoved(const OIS::JoyStickEvent& arg,I8 axis);
     ///Joystick direction change
-    bool onJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov);
+    bool joystickPovMoved(const OIS::JoyStickEvent& arg,I8 pov);
     ///Joystick button pressed
-    bool onJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button);
+    bool joystickButtonPressed(const OIS::JoyStickEvent& arg,I8 button);
     ///Joystick button released
-    bool onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button);
-    bool sliderMoved( const OIS::JoyStickEvent &arg, I8 index);
-    bool vector3Moved( const OIS::JoyStickEvent &arg, I8 index);
+    bool joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button);
+    bool joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index);
+    bool joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index);
     ///Mouse moved
-    bool onMouseMove(const OIS::MouseEvent& arg);
+    bool mouseMoved(const OIS::MouseEvent& arg);
     ///Mouse button pressed
-    bool onMouseClickDown(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonPressed(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
     ///Mouse button released
-    bool onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonReleased(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
 
     inline Task* AddTask(D32 tickInterval, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK& threadedFunction, const DELEGATE_CBK& onCompletionFunction = DELEGATE_CBK()) {
          Task* taskPtr = New Task(getThreadPool(), tickInterval, startOnCreate, numberOfTicks, threadedFunction);

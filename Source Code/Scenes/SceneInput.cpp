@@ -62,7 +62,7 @@ void Scene::findSelection(F32 mouseX, F32 mouseY) {
     }
 }
 
-bool Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+bool Scene::mouseButtonPressed(const OIS::MouseEvent& key,OIS::MouseButtonID button){
     _mousePressed[button] = true;
     switch (button){
         default:       return false;
@@ -79,7 +79,7 @@ bool Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID butto
     return true;
 }
 
-bool Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+bool Scene::mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button){
     _mousePressed[button] = false;
     switch (button){
         default:       return false;
@@ -96,7 +96,7 @@ bool Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button)
     return true;
 }
   
-bool Scene::onMouseMove(const OIS::MouseEvent& key){ 
+bool Scene::mouseMoved(const OIS::MouseEvent& key){ 
     _previousMousePos.set(key.state.X.abs, key.state.Y.abs);
     return true;
 }
@@ -204,44 +204,67 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
     return true;
 }
 
-bool Scene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone){
-    if(key.device->getID() != InputInterface::JOY_1) return false;
+static I32 axisDeadZone = 256;
 
+bool Scene::joystickAxisMoved(const OIS::JoyStickEvent& key,I8 axis) {
+    STUBBED("ToDo: Store input from multiple joysticks in scene state! - Ionut");
+    if (key.device->getID() != InputInterface::JOY_1) {
+        return false;
+    }
     I32 axisABS = key.state.mAxes[axis].abs;
-
-    if(axis == 1){
-        if(axisABS > deadZone)   	 state()._angleLR = 1;
-        else if(axisABS < -deadZone) state()._angleLR = -1;
-        else 			             state()._angleLR = 0;
-    }else if(axis == 0){
-        if(axisABS > deadZone)       state()._angleUD = 1;
-        else if(axisABS < -deadZone) state()._angleUD = -1;
-        else 			             state()._angleUD = 0;
-    }else if(axis == 2){
-        if(axisABS < -deadZone)  	 state()._moveFB = 1;
-        else if(axisABS > deadZone)  state()._moveFB = -1;
-        else			             state()._moveFB = 0;
-    }else if(axis == 3){
-        if(axisABS < -deadZone)      state()._moveLR = -1;
-        else if(axisABS > deadZone)  state()._moveLR = 1;
-        else                         state()._moveLR = 0;
+    
+    switch (axis) {
+        case 0 : {
+            if (axisABS > axisDeadZone) {
+                state()._angleUD = 1;
+            } else if (axisABS < -axisDeadZone) {
+                state()._angleUD = -1;
+            } else {
+                state()._angleUD = 0;
+            }
+        } break;
+        case 1 : {
+            if (axisABS > axisDeadZone) {
+                state()._angleLR = 1;
+            } else if(axisABS < -axisDeadZone) {
+                state()._angleLR = -1;
+            } else {
+                state()._angleLR = 0;
+            }
+        } break;
+    
+        case 2 : {
+            if (axisABS < -axisDeadZone) {
+                state()._moveFB = 1;
+            } else if (axisABS > axisDeadZone) {
+                state()._moveFB = -1;
+            } else {
+                state()._moveFB = 0;
+            }
+        } break;
+        case 3 : {
+            if (axisABS < -axisDeadZone) {
+                state()._moveLR = -1;
+            } else if(axisABS > axisDeadZone) {
+                state()._moveLR = 1;
+            } else {
+                state()._moveLR = 0;
+            }
+        } break;
     }
     return true;
 }
 
-bool Scene::onJoystickMovePOV(const OIS::JoyStickEvent& key, I8 pov){
-    if (key.state.mPOV[pov].direction & OIS::Pov::North) //Going up
+bool Scene::joystickPovMoved(const OIS::JoyStickEvent& key, I8 pov){
+    if (key.state.mPOV[pov].direction & OIS::Pov::North) { //Going up
         state()._moveFB = 1;
-    else if (key.state.mPOV[pov].direction & OIS::Pov::South) //Going down
+    } else if (key.state.mPOV[pov].direction & OIS::Pov::South) {//Going down
         state()._moveFB = -1;
-
-    if (key.state.mPOV[pov].direction & OIS::Pov::East) //Going right
+    } else if (key.state.mPOV[pov].direction & OIS::Pov::East) {//Going right
         state()._moveLR = 1;
-
-    else if (key.state.mPOV[pov].direction & OIS::Pov::West) //Going left
+    } else if (key.state.mPOV[pov].direction & OIS::Pov::West) {//Going left
         state()._moveLR = -1;
-
-    if (key.state.mPOV[pov].direction == OIS::Pov::Centered){ //stopped/centered out
+    } else /*if (key.state.mPOV[pov].direction == OIS::Pov::Centered)*/ { //stopped/centered out
         state()._moveLR = 0;
         state()._moveFB = 0;
     }
