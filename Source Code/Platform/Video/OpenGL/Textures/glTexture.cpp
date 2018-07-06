@@ -91,8 +91,7 @@ void glTexture::updateMipMaps() {
 
 void glTexture::updateSampler() {
     if (_samplerDirty) {
-        _textureData._samplerHash = 
-            GL_API::getOrCreateSamplerObject(_descriptor._samplerDescriptor);
+        _textureData._samplerHash = GL_API::getOrCreateSamplerObject(_descriptor._samplerDescriptor);
         _samplerDirty = false;
     }
 }

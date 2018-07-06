@@ -6,12 +6,17 @@
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
+namespace {
+    const bool USE_THREADED_SHADER_LOAD = false;
+};
+
 namespace Divide {
 
 template<>
 ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
+
     ParamHandler& par = ParamHandler::getInstance();
-    ShaderProgram* ptr = GFX_DEVICE.newShaderProgram(_descriptor.getThreaded());
+    ShaderProgram* ptr = GFX_DEVICE.newShaderProgram(USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded() : false);
 
     if (_descriptor.getResourceLocation().compare("default") == 0) {
         ptr->setResourceLocation(

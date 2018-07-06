@@ -103,6 +103,7 @@ ErrorCode GL_API::createGLContext() {
         "GL_API::createGLContext error: Tried to create an OpenGL context with no valid window!");
 
     SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+    GLUtil::_glSecondaryContexts.push_back(SDL_GL_CreateContext(GLUtil::_mainWindow));
     GLUtil::_glRenderContext = SDL_GL_CreateContext(GLUtil::_mainWindow);
     if (GLUtil::_glRenderContext == nullptr)
     {
@@ -625,9 +626,7 @@ void GL_API::setCursorPosition(I32 x, I32 y) {
 void GL_API::threadedLoadCallback() {
     glbinding::ContextHandle glCtx = glbinding::getCurrentContext();
     if (glCtx == 0) {
-        SDL_GLContext ctx = SDL_GL_CreateContext(GLUtil::_mainWindow);
-        GLUtil::_glSecondaryContexts.push_back(ctx);
-        SDL_GL_MakeCurrent(GLUtil::_mainWindow, ctx);
+        SDL_GL_MakeCurrent(GLUtil::_mainWindow, GLUtil::_glSecondaryContexts.front());
         glbinding::Binding::initialize(false);
     // Enable OpenGL debug callbacks for this context as well
     #if defined(ENABLE_GPU_VALIDATION)
@@ -635,7 +634,7 @@ void GL_API::threadedLoadCallback() {
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         // Debug callback in a separate thread requires a flag to distinguish it
         // from the main thread's callbacks
-        glDebugMessageCallback(GLUtil::DebugCallback, ctx);
+        glDebugMessageCallback(GLUtil::DebugCallback, GLUtil::_glSecondaryContexts.front());
     #endif
     } else {
         glbinding::Binding::useCurrentContext();

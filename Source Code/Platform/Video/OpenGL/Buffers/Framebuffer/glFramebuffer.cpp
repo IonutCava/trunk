@@ -192,9 +192,11 @@ void glFramebuffer::addDepthBuffer() {
                               desc.getSampler().wrapW());
     
     TextureDescriptor depthDescriptor(
-        texType, fpDepth ? GFXImageFormat::DEPTH_COMPONENT32F
-                         : GFXImageFormat::DEPTH_COMPONENT,
-        fpDepth ? dataType : GFXDataFormat::UNSIGNED_INT);
+        texType,
+        fpDepth ? GFXImageFormat::DEPTH_COMPONENT32F
+                : GFXImageFormat::DEPTH_COMPONENT,
+        fpDepth ? GFXDataFormat::FLOAT_32 
+                : GFXDataFormat::UNSIGNED_INT);
 
     //screenSampler._useRefCompare = true;  //< Use compare function
     screenSampler._cmpFunc = ComparisonFunction::LEQUAL;  //< Use less or equal

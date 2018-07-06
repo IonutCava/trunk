@@ -29,8 +29,8 @@ Texture::~Texture()
 bool Texture::load() {
     assert(!getName().empty());
 
-    _context.loadInContext(_asyncLoad ? CurrentContext::GFX_RENDERING_CTX
-                                      : CurrentContext::GFX_LOADING_CTX,
+    _context.loadInContext(_asyncLoad ? CurrentContext::GFX_LOADING_CTX
+                                      : CurrentContext::GFX_RENDERING_CTX,
         [&]() {
             threadedLoad(getName());
         }

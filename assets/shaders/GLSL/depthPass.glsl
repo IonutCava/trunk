@@ -65,12 +65,6 @@ layout(binding = TEXTURE_UNIT1)   uniform sampler2D texDiffuse1;
 #endif
 #endif
 
-#if !defined(SHADOW_PASS) && defined(COMPUTE_TBN)
-//Normal or BumpMap
-layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
-#endif
-
-
 vec2 computeMoments(in float depth) {
     // Compute partial derivatives of depth.  
     float dx = dFdx(depth);

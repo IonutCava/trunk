@@ -57,8 +57,7 @@ void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
         // Actual render
         switch(stageFlag) {
             case RenderStage::Z_PRE_PASS:
-            case RenderStage::DISPLAY: 
-            {
+            case RenderStage::DISPLAY: {
                 renderer.render(
                     [stageFlag, refreshNodeData, idx]() {
                         SceneManager::getInstance().renderVisibleNodes(stageFlag, refreshNodeData);
@@ -111,7 +110,6 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
         case RenderStage::SHADOW: {
         } break;
         case RenderStage::Z_PRE_PASS: {
-            GFX.toggleDepthWrites(true);
             GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer->begin(_depthOnly);
         } break;
     };
@@ -141,6 +139,8 @@ bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pa
                 LightManager::getInstance().updateAndUploadLightData(renderState.getCameraConst().getEye(), GFX.getMatrix(MATRIX::VIEW));
                 SceneManager::getInstance().getRenderer().preRender();
                 renderTarget.cacheSettings();
+            } else {
+                GFX.toggleDepthWrites(true);
             }
         } break;
 

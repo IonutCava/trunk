@@ -21,7 +21,7 @@ void main(void)
 out vec4 _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texLeftEye;
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texRightEye;
+layout(binding = TEXTURE_UNIT1) uniform sampler2D texRightEye;
 
 uniform bool anaglyphEnabled;
 

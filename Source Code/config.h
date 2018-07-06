@@ -58,7 +58,7 @@ const unsigned long long SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
 /// AI update frequency
 const unsigned int AI_THREAD_UPDATE_FREQUENCY = TICKS_PER_SECOND;
 /// Toggle multi-threaded resource loading on or off
-const bool USE_GPU_THREADED_LOADING = false;
+const bool USE_GPU_THREADED_LOADING = true;
 /// Maximum number of instances of a single mesh with a single draw call
 const unsigned int MAX_INSTANCE_COUNT = 512;
 /// Maximum number of points that can be sent to the GPU per batch
