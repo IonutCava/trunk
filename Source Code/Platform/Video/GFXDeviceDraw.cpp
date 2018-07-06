@@ -73,8 +73,6 @@ void GFXDevice::uploadGPUBlock() {
 /// A draw command is composed of a target buffer and a command. The command
 /// part is processed here
 bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
-    DIVIDE_ASSERT(cmd.cmd().primCount > 0 && cmd.drawCount() > 0,
-                  "GFXDevice error: Invalid draw command!");
     // We need a valid shader as no fixed function pipeline is available
     DIVIDE_ASSERT(cmd.shaderProgram() != nullptr,
                   "GFXDevice error: Draw shader state is not valid for the "
@@ -137,15 +135,6 @@ void GFXDevice::flushRenderQueue() {
                     previousCommandIndex = currentCommandIndex;
                 }
             }
-            // Is this really faster than just letting the various draw commands handle the checks? Needs testing. -Ionut
-            drawCommands.erase(
-                std::remove_if(std::begin(drawCommands), std::end(drawCommands),
-                               [](const GenericDrawCommand& cmd) -> bool {
-                                   return cmd.drawCount() == 0 ||
-                                          cmd.cmd().primCount == 0;
-                               }),
-                std::end(drawCommands));
-
             for (ShaderBufferList::value_type& it : package._shaderBuffers) {
                 it._buffer->bindRange(it._slot, it._range.x, it._range.y);
             }
@@ -292,6 +281,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     
     if (refreshNodeData) {
         getNodeBuffer(currentStage, pass).updateData(0, nodeCount, _matricesData.data());
+
         ShaderBuffer& cmdBuffer = getCommandBuffer(currentStage, pass);
         _api->registerCommandBuffer(cmdBuffer);
         cmdBuffer.updateData(0, cmdCount, _drawCommandsCache.data());

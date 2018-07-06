@@ -1,20 +1,22 @@
 #ifndef _PHONG_LIGHTING_FRAG_
 #define _PHONG_LIGHTING_FRAG_
 
-void Phong(const in LightPropertiesFrag lightProp, inout MaterialProperties materialProp, in vec3 normal) {
-    if (lightProp._NDotL > 0.0) {
-        vec4 lightColor = dvd_LightSource[lightProp._lightIndex]._color;
+void Phong(in uint lightIndex, in vec3 normal, inout vec3 colorInOut, inout vec3 specularInOut) {
+    vec4 dirAndDot = getLightDirectionAndDot(lightIndex, normal);
+
+    if (dirAndDot.w > 0.0) {
+        vec4 lightColor = dvd_LightSource[lightIndex]._color;
         //add the lighting contributions
-        float att = lightProp._att;
+        float att = getLightAttenuation(lightIndex, dirAndDot.xyz);
 #if defined(USE_SHADING_BLINN_PHONG)
-        vec3 halfDir = normalize(lightProp._lightDir + lightProp._viewDirNorm);
+        vec3 halfDir = normalize(dirAndDot.xyz + dvd_ViewDirNormAndDist.xyz);
         float specAngle = max(dot(normal, halfDir), 0.0);
 #else
-        vec3 reflectDir = reflect(-lightProp._lightDir, normal);
-        float specAngle = max(dot(reflectDir, lightProp._viewDirNorm), 0.0);
+        vec3 reflectDir = reflect(-dirAndDot.xyz, normal);
+        float specAngle = max(dot(reflectDir, dvd_ViewDirNormAndDist.xyz), 0.0);
 #endif
-        materialProp.diffuse += lightColor.rgb * dvd_MatDiffuse.rgb * lightProp._NDotL * att;
-        materialProp.specular += lightColor.rgb * materialProp.specularColor * pow(specAngle, dvd_MatShininess) * att;
+        colorInOut += lightColor.rgb * dvd_MatDiffuse.rgb * dirAndDot.w * att;
+        specularInOut += lightColor.rgb * dvd_MatSpecular.rgb * pow(specAngle, dvd_MatShininess) * att;
     }
 }
 

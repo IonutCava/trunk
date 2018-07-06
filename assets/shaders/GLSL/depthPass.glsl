@@ -51,7 +51,7 @@ out vec3 _colorOut;
 
 #include "nodeBufferedInput.cmn"
 
-#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
+#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP)
 #define HAS_TRANSPARENCY
 #if defined(USE_OPACITY_DIFFUSE)
 uniform mat4 material;
@@ -59,7 +59,7 @@ uniform mat4 material;
 #if defined(USE_OPACITY_MAP)
 layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 #endif
-#if defined(USE_OPACITY_DIFFUSE_MAP)
+#if defined(USE_OPACITY_DIFFUSE) && !defined(SKIP_TEXTURES)
 layout(binding = TEXTURE_UNIT0)   uniform sampler2D texDiffuse0;
 layout(binding = TEXTURE_UNIT1)   uniform sampler2D texDiffuse1;
 #endif
@@ -76,16 +76,18 @@ vec2 computeMoments(in float depth) {
 void main() {
     float alpha = 1.0;
 #if defined(HAS_TRANSPARENCY)
-#if defined(USE_OPACITY_DIFFUSE_MAP)
+#if defined(USE_OPACITY_DIFFUSE)
+#   if defined(SKIP_TEXTURES)
+        alpha *= dvd_MatDiffuse.a;
+#   else 
     if (dvd_BufferIntegerValues().w == 0) {
         alpha *= texture(texDiffuse0, VAR._texCoord).a;
     } else {
         alpha *= texture(texDiffuse1, VAR._texCoord).a;
     }
+#   endif
 #endif
-#if defined(USE_OPACITY_DIFFUSE)
-    alpha *= dvd_MatDiffuse.a;
-#endif
+
 #if defined(USE_OPACITY_MAP)
     vec4 opacityMap = texture(texOpacityMap, VAR._texCoord);
     alpha *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));

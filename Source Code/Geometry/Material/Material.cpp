@@ -352,8 +352,7 @@ bool Material::computeShader(RenderStage renderStage,
     // What kind of effects do we need?
     if (_textures[slot0]) {
         // Bump mapping?
-        if (_textures[to_uint(
-                ShaderProgram::TextureUsage::NORMALMAP)] &&
+        if (_textures[to_uint(ShaderProgram::TextureUsage::NORMALMAP)] &&
             _bumpMethod != BumpMethod::NONE) {
             setShaderDefines(renderStage, "COMPUTE_TBN");
             shader += ".Bump";  // Normal Mapping
@@ -379,21 +378,23 @@ bool Material::computeShader(RenderStage renderStage,
     }
 
     if (isTranslucent()) {
+        bool diffuseOpacityDefined = false;
         for (Material::TranslucencySource source : _translucencySource) {
-            if (source == TranslucencySource::DIFFUSE) {
-                shader += ".DiffuseAlpha";
-                setShaderDefines(renderStage, "USE_OPACITY_DIFFUSE");
-            }
             if (source == TranslucencySource::OPACITY_MAP) {
                 shader += ".OpacityMap";
                 setShaderDefines(renderStage, "USE_OPACITY_MAP");
             }
-            if (source == TranslucencySource::DIFFUSE_MAP) {
-                shader += ".TextureAlpha";
-                setShaderDefines(renderStage, "USE_OPACITY_DIFFUSE_MAP");
+            if (source == TranslucencySource::DIFFUSE ||
+                source == TranslucencySource::DIFFUSE_MAP) {
+                if (!diffuseOpacityDefined) {
+                    shader += ".DiffuseAlpha";
+                    setShaderDefines(renderStage, "USE_OPACITY_DIFFUSE");
+                    diffuseOpacityDefined = true;
+                }
             }
         }
     }
+
     if (_doubleSided) {
         shader += ".DoubleSided";
         setShaderDefines(renderStage, "USE_DOUBLE_SIDED");

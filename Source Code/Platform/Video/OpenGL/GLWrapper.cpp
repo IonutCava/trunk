@@ -196,6 +196,7 @@ void GL_API::appendToShaderHeader(ShaderType type, const stringImpl& entry,
 /// Prepare our shader loading system
 bool GL_API::initShaders() {
     static const std::string shaderVaryings[] = { "flat uint dvd_drawID;",
+                                                  "vec2 _texCoord;",
                                                   "vec4 _vertex;",
                                                   "vec4 _vertexW;",
                                                   "vec4 _vertexWV;",
@@ -204,8 +205,7 @@ bool GL_API::initShaders() {
                                                   "vec3 _tangentWV;",
                                                   "vec3 _bitangentWV;",
                                                   "vec3 _viewDirection;",
-                                                  "flat uint _lightCount;",
-                                                  "vec2 _texCoord;" };
+                                                  "flat uint _lightCount;" };
     // Initialize GLSW
     GLint glswState = glswInit();
 

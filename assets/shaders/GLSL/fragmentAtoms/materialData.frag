@@ -1,12 +1,8 @@
 #ifndef _MATERIAL_DATA_FRAG_
 #define _MATERIAL_DATA_FRAG_
 
-#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
+#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP)
     #define HAS_TRANSPARENCY
-#endif
-
-#if defined(USE_OPACITY_MAP) && defined(USE_OPACITY_DIFFUSE_MAP)
-	#undef USE_OPACITY_DIFFUSE_MAP
 #endif
 
 #if !defined(SKIP_TEXTURES)
@@ -27,11 +23,9 @@ layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #endif
 
-struct MaterialProperties {
-    vec3 diffuse;
-    vec3 specular;
-    vec3 specularColor;
-};
+#if defined(USE_REFLECTIVE_CUBEMAP)
+layout(binding = TEXTURE_REFLECTION) uniform samplerCubeArray texEnvironmentCube;
+#endif
 
 float Gloss(in vec3 bump, in vec2 texCoord)
 {
@@ -92,4 +86,28 @@ vec4 getTextureColor(in vec2 uv) {
     return saturate(color);
 }
 #endif
-#endif
+
+vec4 dvd_MatDiffuse;
+vec3 dvd_MatSpecular;
+vec3 dvd_MatEmissive;
+float dvd_MatShininess;
+
+void parseMaterial() {
+    
+    dvd_MatEmissive = dvd_Matrices[VAR.dvd_drawID]._colorMatrix[2].rgb;
+    dvd_MatShininess = dvd_Matrices[VAR.dvd_drawID]._colorMatrix[2].w;
+
+    #if defined(SKIP_TEXTURES)
+        dvd_MatDiffuse = dvd_Matrices[VAR.dvd_drawID]._colorMatrix[0];
+    #else
+        dvd_MatDiffuse = getTextureColor(VAR._texCoord);
+    #endif
+
+    #if defined(USE_SPECULAR_MAP)
+        dvd_MatSpecular = texture(texSpecularMap, VAR._texCoord).rgb;
+    #else
+        dvd_MatSpecular = dvd_Matrices[VAR.dvd_drawID]._colorMatrix[1].rgb;
+    #endif
+}
+
+#endif //_MATERIAL_DATA_FRAG_
