@@ -44,7 +44,7 @@ class d3dRenderTarget : public RenderTarget {
     
     bool resize(U16 width, U16 height) override;
 
-    void drawToLayer(RTAttachment::Type type,
+    void drawToLayer(RTAttachmentType type,
                      U8 index,
                      U16 layer,
                      bool includeDepth = true) override;
@@ -54,7 +54,7 @@ class d3dRenderTarget : public RenderTarget {
     void end() override;
 
     void bind(U8 unit,
-              RTAttachment::Type type,
+              RTAttachmentType type,
               U8 index) override;
 
     void readData(const vec4<U16>& rect,
@@ -70,11 +70,6 @@ class d3dRenderTarget : public RenderTarget {
                   U8 index,
                   bool blitColour = true,
                   bool blitDepth = false) override;
-
-    void clear(const RTDrawDescriptor& drawPolicy) const override;
-
-   protected:
-    bool checkStatus() const;
 };
 
 };  // namespace Divide

@@ -45,16 +45,16 @@ FWD_DECLARE_MANAGED_CLASS(Material);
 namespace XML {
 
 #ifndef GET_PARAM
-#define LOAD_FILE(X) boost::property_tree::ptree pt; \
+#define LOAD_FILE(X) boost::property_tree::iptree pt; \
                      read_xml(X, pt);
 
-#define PREPARE_FILE_FOR_WRITING(X) boost::property_tree::ptree pt; \
+#define PREPARE_FILE_FOR_WRITING(X) boost::property_tree::iptree pt; \
                                     createFile(X, true);
 
 #define SAVE_FILE(X) write_xml(X, \
                                pt, \
                                std::locale(), \
-                               boost::property_tree::xml_writer_make_settings<boost::property_tree::ptree::key_type>('\t', 1));
+                               boost::property_tree::xml_writer_make_settings<boost::property_tree::iptree::key_type>('\t', 1));
 
 #define FILE_VALID() (!pt.empty())
 #define CONCAT(first, second) first second

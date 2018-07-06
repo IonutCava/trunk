@@ -375,7 +375,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
    protected:
     static std::array<AttribFlags, to_base(RenderStagePass::count())> _attribMaskPerStage;
 
-    virtual void checkStatus() = 0;
     virtual bool refresh() = 0;
     virtual bool createInternal();
 

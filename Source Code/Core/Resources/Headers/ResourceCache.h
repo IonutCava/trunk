@@ -99,19 +99,6 @@ private:
 
 };
 
-// This will copy the pointer but will still call unload on it if that is the case
-template <typename T>
-typename std::enable_if<std::is_base_of<CachedResource, T>::value, bool>::type
-RemoveResource(ResourceCache& cache, std::shared_ptr<T>& resource) {
-    if (resource && 
-        cache.remove(*resource, resource.use_count()) ){
-        resource.reset();
-        return true;
-    }
-
-    return false;
-}
-
 template <typename T>
 typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
 CreateResource(ResourceCache& cache, const ResourceDescriptor& descriptor) {

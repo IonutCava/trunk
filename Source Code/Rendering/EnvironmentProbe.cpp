@@ -78,14 +78,14 @@ void EnvironmentProbe::onStartup(GFXDevice& context) {
     depthDescriptor.setSampler(reflectionSampler);
 
     vectorImpl<RTAttachmentDescriptor> att = {
-        { environmentDescriptor, RTAttachment::Type::Colour, 0, DefaultColours::WHITE() },
-        { depthDescriptor, RTAttachment::Type::Depth },
+        { environmentDescriptor, RTAttachmentType::Colour, 0, DefaultColours::WHITE() },
+        { depthDescriptor, RTAttachmentType::Depth },
     };
 
     RenderTargetDescriptor desc = {};
     desc._name = "EnvironmentProbe";
     desc._resolution = vec2<U16>(Config::REFLECTION_TARGET_RESOLUTION_ENVIRONMENT_PROBE);
-    desc._attachmentCount = to_U32(att.size());
+    desc._attachmentCount = to_U8(att.size());
     desc._attachments = att.data();
 
     s_reflection = context.allocateRT(RenderTargetUsage::ENVIRONMENT, desc);
@@ -150,7 +150,7 @@ U32 EnvironmentProbe::getRTIndex() const {
 void EnvironmentProbe::debugDraw(RenderSubPassCmds& subPassesInOut) {
     _boundingBoxPrimitive->paused(false);
 
-    const Texture_ptr& reflectTex = s_reflection._rt->getAttachment(RTAttachment::Type::Colour, 0).texture();
+    const Texture_ptr& reflectTex = s_reflection._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
 
     VertexBuffer* vb = _impostor->getGeometryVB();
 

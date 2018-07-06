@@ -326,12 +326,10 @@ bool glVertexArray::refresh() {
 
     vaoCachesDirty.fill(false);
 
-    
-    // Validate the buffer
-    checkStatus();
     // Possibly clear client-side buffer for all non-required attributes?
     // foreach attribute if !required then delete else skip ?
     _refreshQueued = false;
+
     return true;
 }
 
@@ -467,7 +465,4 @@ void glVertexArray::uploadVBAttributes(GLuint VAO) {
     }
 }
 
-/// Various post-create checks
-void glVertexArray::checkStatus() {
-}
 };

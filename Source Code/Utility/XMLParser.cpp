@@ -165,7 +165,7 @@ Material::TextureOperation getTextureOperation(const stringImpl& operation) {
     return Material::TextureOperation::REPLACE;
 }
 
-void saveTextureXML(const stringImpl &textureNode, std::weak_ptr<Texture> texturePtr, ptree &tree, const stringImpl& operation = "") {
+void saveTextureXML(const stringImpl &textureNode, std::weak_ptr<Texture> texturePtr, boost::property_tree::iptree &tree, const stringImpl& operation = "") {
     Texture_ptr texture = texturePtr.lock();
 
     const SamplerDescriptor &sampler = texture->getCurrentSampler();

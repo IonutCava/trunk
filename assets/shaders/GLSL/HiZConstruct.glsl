@@ -16,11 +16,10 @@ void main(void)
 
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D depthTex;
 
-out float _colourOut;
-
 uniform ivec2 depthInfo;
 
 void main() {
+    
     int depthLoD = depthInfo.x;
 
     ivec2 lodSize = textureSize(depthTex, depthLoD);

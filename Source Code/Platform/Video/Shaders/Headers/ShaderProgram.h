@@ -139,8 +139,9 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
     virtual bool unload() override;
 
-    /// Uniforms (update constant buffer for D3D. Use index as location in
-    /// buffer)
+    /// Uniforms (update constant buffer for D3D. Use index as location in buffer)
+    virtual I32 Binding(const char* name) = 0;
+
     virtual void Uniform(const stringImplFast& location, U32 value) = 0;
     virtual void Uniform(const stringImplFast& location, I32 value) = 0;
     virtual void Uniform(const stringImplFast& location, F32 value) = 0;

@@ -10,26 +10,26 @@ RTDrawMask::RTDrawMask()
 {
 }
 
-bool RTDrawMask::isEnabled(RTAttachment::Type type, U8 index) const {
-    assert(index < RTDrawMask::MAX_RT_COLOUR_ATTACHMENTS);
+bool RTDrawMask::isEnabled(RTAttachmentType type, U8 index) const {
+    assert(index < MAX_RT_COLOUR_ATTACHMENTS);
 
     switch (type) {
-        case RTAttachment::Type::Depth   : return !_disabledDepth;
-        case RTAttachment::Type::Stencil : return !_disabledStencil;
-        case RTAttachment::Type::Colour  : return !_disabledColours[index];
+        case RTAttachmentType::Depth   : return !_disabledDepth;
+        case RTAttachmentType::Stencil : return !_disabledStencil;
+        case RTAttachmentType::Colour  : return !_disabledColours[index];
         default : break;
     }
 
     return true;
 }
 
-void RTDrawMask::setEnabled(RTAttachment::Type type, U8 index, const bool state) {
-    assert(index < RTDrawMask::MAX_RT_COLOUR_ATTACHMENTS);
+void RTDrawMask::setEnabled(RTAttachmentType type, U8 index, const bool state) {
+    assert(index < MAX_RT_COLOUR_ATTACHMENTS);
 
     switch (type) {
-        case RTAttachment::Type::Depth   : _disabledDepth   = !state; break;
-        case RTAttachment::Type::Stencil : _disabledStencil = !state; break;
-        case RTAttachment::Type::Colour  : _disabledColours[index] = !state; break;
+        case RTAttachmentType::Depth   : _disabledDepth   = !state; break;
+        case RTAttachmentType::Stencil : _disabledStencil = !state; break;
+        case RTAttachmentType::Colour  : _disabledColours[index] = !state; break;
         default : break;
     }
 }
@@ -55,6 +55,18 @@ bool RTDrawMask::operator!=(const RTDrawMask& other) const {
     return _disabledDepth   != other._disabledDepth ||
            _disabledStencil != other._disabledStencil ||
            _disabledColours != other._disabledColours;
+}
+
+bool RTBlendState::operator==(const RTBlendState& other) const {
+    return _blendEnable == other._blendEnable &&
+           _blendProperties == other._blendProperties &&
+           _blendColour == other._blendColour;
+}
+
+bool RTBlendState::operator!=(const RTBlendState& other) const {
+    return _blendEnable != other._blendEnable ||
+           _blendProperties != other._blendProperties ||
+           _blendColour != other._blendColour;
 }
 
 RTDrawDescriptor::RTDrawDescriptor()
@@ -103,12 +115,14 @@ bool RTDrawDescriptor::isEnabledState(State state) const {
 
 bool RTDrawDescriptor::operator==(const RTDrawDescriptor& other) const {
     return _stateMask == other._stateMask &&
-           _drawMask == other._drawMask;
+           _drawMask == other._drawMask &&
+           _blendStates == other._blendStates;
 }
 
 bool RTDrawDescriptor::operator!=(const RTDrawDescriptor& other) const {
     return _stateMask != other._stateMask ||
-           _drawMask != other._drawMask;
+           _drawMask != other._drawMask ||
+           _blendStates != other._blendStates;
 }
 
 }; //namespace Divide

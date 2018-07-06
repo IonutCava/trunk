@@ -20,13 +20,13 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
     {
         vectorImpl<RTAttachmentDescriptor> att = {
-            { parent.inputRT().getAttachment(RTAttachment::Type::Colour, 0).texture()->getDescriptor(), RTAttachment::Type::Colour },
+            { parent.inputRT().getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour },
         };
 
         RenderTargetDescriptor desc = {};
         desc._name = "SSAO";
         desc._resolution = res;
-        desc._attachmentCount = to_U32(att.size());
+        desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
 
         _samplerCopy = _context.allocateRT(desc);
@@ -88,13 +88,13 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
     {
         vectorImpl<RTAttachmentDescriptor> att = {
-            { outputDescriptor, RTAttachment::Type::Colour },
+            { outputDescriptor, RTAttachmentType::Colour },
         };
 
         RenderTargetDescriptor desc = {};
         desc._name = "SSAO_Out";
         desc._resolution = res;
-        desc._attachmentCount = to_U32(att.size());
+        desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
 
         //Colour0 holds the AO texture
@@ -156,8 +156,8 @@ void SSAOPreRenderOperator::execute() {
 
     RenderTarget* screen = &_parent.inputRT();
 
-    screen->bind(to_U8(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);  // depth
-    screen->bind(to_U8(ShaderProgram::TextureUsage::NORMALMAP), RTAttachment::Type::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS));  // normals
+    screen->bind(to_U8(ShaderProgram::TextureUsage::DEPTH), RTAttachmentType::Depth, 0);  // depth
+    screen->bind(to_U8(ShaderProgram::TextureUsage::NORMALMAP), RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS));  // normals
     
     _ssaoOutput._rt->begin(RenderTarget::defaultPolicy());
         pipelineDescriptor._shaderProgram = _ssaoGenerateShader;
@@ -166,7 +166,7 @@ void SSAOPreRenderOperator::execute() {
     _ssaoOutput._rt->end();
 
 
-    _ssaoOutput._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // AO texture
+    _ssaoOutput._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);  // AO texture
     _ssaoOutputBlurred._rt->begin(RenderTarget::defaultPolicy());
         pipelineDescriptor._shaderProgram = _ssaoBlurShader;
         triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
@@ -174,8 +174,8 @@ void SSAOPreRenderOperator::execute() {
     _ssaoOutputBlurred._rt->end();
     
     _samplerCopy._rt->blitFrom(screen);
-    _samplerCopy._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // screen
-    _ssaoOutputBlurred._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);  // AO texture
+    _samplerCopy._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);  // screen
+    _ssaoOutputBlurred._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachmentType::Colour, 0);  // AO texture
 
     screen->begin(_screenOnlyDraw);
         pipelineDescriptor._shaderProgram = _ssaoApplyShader;
@@ -186,7 +186,7 @@ void SSAOPreRenderOperator::execute() {
 }
 
 void SSAOPreRenderOperator::debugPreview(U8 slot) const {
-    _ssaoOutputBlurred._rt->bind(slot, RTAttachment::Type::Colour, 0);
+    _ssaoOutputBlurred._rt->bind(slot, RTAttachmentType::Colour, 0);
 }
 
 };

@@ -52,9 +52,6 @@ class d3dPixelBuffer : public PixelBuffer {
     void bind(U8 unit = 0) const override;
 
     void updatePixels(const F32* const pixels, U32 pixelCount) override;
-
-   private:
-    bool checkStatus();
 };
 
 };  // namespace Divide

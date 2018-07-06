@@ -31,9 +31,4 @@ void d3dPixelBuffer::bind(U8 unit) const {
 
 void d3dPixelBuffer::updatePixels(const F32* const pixels, U32 pixelCount) {
 }
-
-bool d3dPixelBuffer::checkStatus() {
-    return true;
-}
-
 };

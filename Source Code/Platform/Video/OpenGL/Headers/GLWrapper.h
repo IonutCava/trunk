@@ -156,6 +156,10 @@ public:
     /// Switch the current framebuffer by binding it as either a R/W buffer, read
     /// buffer or write buffer
     static bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID);
+    /// Set a new depth range. Default is 0 - 1 with 0 mapping to the near plane and 1 to the far plane
+    static void setDepthRange(F32 nearVal, F32 farVal);
+    /// Set the blending properties for the specified draw buffer
+    static void setBlending(GLuint drawBufferIdx, bool enable, const BlendingProperties& blendingProperties, const vec4<U8>& blendColour);
     /// Switch the current framebuffer by binding it as either a R/W buffer, read
     /// buffer or write buffer
     static bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID);
@@ -240,7 +244,7 @@ protected:
     static GLint s_maxTextureUnits;
     /// Number of available attribute binding indices
     static GLint s_maxAttribBindings;
-    /// Max nubmer of texture attachmentes to an FBO
+    /// Max number of texture attachments to an FBO
     static GLint s_maxFBOAttachments;
 
 public:
@@ -274,8 +278,7 @@ private:
     hashAlg::pair<stringImpl, I32> _fontCache;
     /// Current active vertex array object's handle
     static GLuint s_activeVAOID;
-    /// 0 - current framebuffer, 1 - current read only framebuffer, 2 - current
-    /// write only framebuffer
+    /// 0 - current framebuffer, 1 - current read only framebuffer, 2 - current write only framebuffer
     static GLuint s_activeFBID[3];
     /// VB, IB, SB, TB, UB, PUB, DIB
     static GLuint s_activeBufferID[7];
@@ -285,7 +288,11 @@ private:
     static GLint  s_activePackUnpackSkipPixels[2];
     static GLint  s_activePackUnpackSkipRows[2];
     static GLuint s_activeShaderProgram;
-
+    static GLfloat s_depthNearVal;
+    static GLfloat s_depthFarVal;
+    static GLboolean s_blendEnabled;
+    static vectorImpl<BlendingProperties> s_blendProperties;
+    static vec4<U8> s_blendColour;
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;
 

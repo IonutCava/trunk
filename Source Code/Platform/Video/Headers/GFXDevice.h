@@ -126,7 +126,9 @@ public:
         ALBEDO = 0,
         NORMALS = 1,
         VELOCITY = 2,
-        COUNT
+        COUNT,
+        ACCUMULATION = ALBEDO,
+        REVEALAGE = NORMALS,
     };
 
     struct NodeData : private NonCopyable {
@@ -199,6 +201,7 @@ public:  // GPU interface
 
     void lockQueue(RenderBinType type);
     void unlockQueue(RenderBinType type);
+    U32  renderQueueSize(RenderBinType queueType);
     void addToRenderQueue(RenderBinType queueType, const RenderPackage& package);
     void renderQueueToSubPasses(RenderBinType queueType, RenderSubPassCmd& commandsInOut);
     void flushCommandBuffer(const CommandBuffer& commandBuffer);

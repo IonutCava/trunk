@@ -292,7 +292,7 @@ void Material::updateReflectionIndex(ReflectorType type, I32 index) {
                                                        ? RenderTargetUsage::REFLECTION_PLANAR
                                                        : RenderTargetUsage::REFLECTION_CUBE,
                                   index));
-        const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachment::Type::Colour, 0).texture();
+        const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
         setTexture(type == ReflectorType::PLANAR_REFLECTOR
                          ? ShaderProgram::TextureUsage::REFLECTION_PLANAR
                          : ShaderProgram::TextureUsage::REFLECTION_CUBE,
@@ -313,7 +313,7 @@ void Material::updateRefractionIndex(ReflectorType type, I32 index) {
                                                        ? RenderTargetUsage::REFRACTION_PLANAR
                                                        : RenderTargetUsage::REFRACTION_CUBE,
                                   index));
-        const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachment::Type::Colour, 0).texture();
+        const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
         setTexture(type == ReflectorType::PLANAR_REFLECTOR
                          ? ShaderProgram::TextureUsage::REFRACTION_PLANAR
                          : ShaderProgram::TextureUsage::REFRACTION_CUBE,
@@ -447,6 +447,10 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
         case TranslucencyType::FULL_TRANSPARENT: {
             shader += ".AlphaDiscard";
             setShaderDefines(renderStagePass, "USE_ALPHA_DISCARD");
+        } break;
+        case TranslucencyType::TRANSLUCENT: {
+            shader += ".OIT";
+            setShaderDefines(renderStagePass, "USE_WB_OIT");
         } break;
         default: break;
     };
@@ -582,9 +586,6 @@ void Material::setDoubleSided(const bool state) {
                 const size_t hash = _defaultRenderStates[i][variant];
                 RenderStateBlock descriptor(RenderStateBlock::get(hash));
                 descriptor.setCullMode(CullMode::NONE);
-                if (_translucencySource != TranslucencySource::COUNT) {
-                    descriptor.setBlend(true);
-                }
                 setRenderStateBlock(descriptor.getHash(), RenderStagePass::stagePass(i), variant);
             }
         }

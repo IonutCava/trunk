@@ -15,13 +15,13 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
     : PreRenderOperator(context, parent, cache, FilterType::FILTER_DEPTH_OF_FIELD)
 {
     vectorImpl<RTAttachmentDescriptor> att = {
-        { parent.inputRT().getAttachment(RTAttachment::Type::Colour, 0).texture()->getDescriptor(), RTAttachment::Type::Colour },
+        { parent.inputRT().getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour },
     };
 
     RenderTargetDescriptor desc = {};
     desc._name = "DoF";
     desc._resolution = vec2<U16>(parent.inputRT().getWidth(), parent.inputRT().getHeight());
-    desc._attachmentCount = to_U32(att.size());
+    desc._attachmentCount = to_U8(att.size());
     desc._attachments = att.data();
 
     _samplerCopy = _context.allocateRT(desc);
@@ -48,8 +48,8 @@ void DoFPreRenderOperator::execute() {
     /*
     RenderTarget* screen = &_parent.inputRT();
     _samplerCopy._rt->blitFrom(screen);
-    _samplerCopy._rt->bind(to_base(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // screenFB
-    screen->bind(to_base(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Depth, 0);  // depthFB
+    _samplerCopy._rt->bind(to_base(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);  // screenFB
+    screen->bind(to_base(ShaderProgram::TextureUsage::UNIT1), RTAttachmentType::Depth, 0);  // depthFB
         
     screen->begin(_screenOnlyDraw);
         GenericDrawCommand triangleCmd;

@@ -12,8 +12,8 @@
 
 namespace Divide {
 
-RTAttachment::RTAttachment()
-    : _clearColour(DefaultColours::WHITE()),
+RTAttachment::RTAttachment(const RTAttachmentDescriptor& descriptor)
+    : _descriptor(descriptor),
       _texture(nullptr),
       _changed(false),
       _mipWriteLevel(0),
@@ -60,11 +60,11 @@ bool RTAttachment::changed() const {
 }
 
 void RTAttachment::clearColour(const vec4<F32>& clearColour) {
-    _clearColour.set(clearColour);
+    _descriptor._clearColour.set(clearColour);
 }
 
 const vec4<F32>& RTAttachment::clearColour() const {
-    return _clearColour;
+    return _descriptor._clearColour;
 }
 
 void RTAttachment::clearChanged() {
@@ -79,4 +79,7 @@ void RTAttachment::binding(U32 binding) {
     _binding = binding;
 }
 
+const RTAttachmentDescriptor& RTAttachment::descriptor() const {
+    return _descriptor;
+}
 }; //namespace Divide

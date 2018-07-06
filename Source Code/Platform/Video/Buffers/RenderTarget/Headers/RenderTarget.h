@@ -105,44 +105,40 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     /// Resize all attachments
     virtual bool resize(U16 width, U16 height) = 0;
 
-    virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index) const;
+    virtual const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const;
 
     /// Use by multilayered FB's
-    virtual void drawToLayer(RTAttachment::Type type, U8 index, U16 layer, bool includeDepth = true) = 0;
+    virtual void drawToLayer(RTAttachmentType type, U8 index, U16 layer, bool includeDepth = true) = 0;
     // This call sets the target mip level to write to
     // If an attachment does not support the specified mip level, it will be DISABLED to avoid completeness errors
     virtual void setMipLevel(U16 writeLevel) = 0;
     virtual void begin(const RTDrawDescriptor& drawPolicy) = 0;
     virtual void end() = 0;
-    virtual void bind(U8 unit, RTAttachment::Type type, U8 index) = 0;
+    virtual void bind(U8 unit, RTAttachmentType type, U8 index) = 0;
     virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) = 0;
-    virtual void clear(const RTDrawDescriptor& drawPolicy) const = 0;
     virtual void blitFrom(RenderTarget* inputFB, bool blitColour = true, bool blitDepth = false) = 0;
     virtual void blitFrom(RenderTarget* inputFB, U8 index, bool blitColour = true, bool blitDepth = false) = 0;
 
     /// Used by cubemap FB's
-    void drawToFace(RTAttachment::Type type, U8 index, U16 nFace, bool includeDepth = true);
+    void drawToFace(RTAttachmentType type, U8 index, U16 nFace, bool includeDepth = true);
 
     void readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData);
-    void setClearDepth(F32 depthValue);
 
     U16 getWidth()  const;
     U16 getHeight() const;
 
+    F32& depthClearValue();
+
     const stringImpl& getName() const;
 
    protected:
-    virtual bool checkStatus() const = 0;
+    RTAttachmentPool* _attachmentPool;
+    RenderTargetDescriptor _descriptor;
 
    protected:
     static RTDrawDescriptor s_policyDefault;
     static RTDrawDescriptor s_policyKeepDepth;
     static RTDrawDescriptor s_policyDepthOnly;
-
-    U16 _width, _height;
-    F32 _depthValue;
-    stringImpl _name;
-    RTAttachmentPool* _attachmentPool;
 };
 
 };  // namespace Divide

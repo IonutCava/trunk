@@ -20,16 +20,14 @@ void d3dRenderTarget::begin(const RTDrawDescriptor& drawPolicy) {}
 
 void d3dRenderTarget::end() {}
 
-void d3dRenderTarget::bind(U8 unit, RTAttachment::Type type, U8 index) {}
+void d3dRenderTarget::bind(U8 unit, RTAttachmentType type, U8 index) {}
 
-void d3dRenderTarget::drawToLayer(RTAttachment::Type type,
+void d3dRenderTarget::drawToLayer(RTAttachmentType type,
                                   U8 index,
                                   U16 layer,
                                   bool includeDepth) {}
 
 void d3dRenderTarget::setMipLevel(U16 writeLevel) {}
-
-bool d3dRenderTarget::checkStatus() const { return true; }
 
 void d3dRenderTarget::readData(const vec4<U16>& rect,
                                GFXImageFormat imageFormat,
@@ -42,7 +40,4 @@ void d3dRenderTarget::blitFrom(RenderTarget* inputFB,
 void d3dRenderTarget::blitFrom(RenderTarget* inputFB,
                                U8 index,
                                bool blitColour, bool blitDepth) {}
-
-void d3dRenderTarget::clear(const RTDrawDescriptor& drawPolicy) const {}
-
 };

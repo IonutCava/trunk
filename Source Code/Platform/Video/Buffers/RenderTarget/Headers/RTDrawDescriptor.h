@@ -33,18 +33,19 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _RENDER_TARGET_DRAW_DESCRIPTOR_H_
 
 #include "RTAttachment.h"
+#include "Platform/Video/Headers/BlendingProperties.h"
 
 namespace Divide {
 
+// 4 should be more than enough even for batching multiple render targets together
+constexpr U8 MAX_RT_COLOUR_ATTACHMENTS = 4;
+
 class RTDrawMask {
   public:
-    // 16 should be more than enough even for batching multiple render targets together
-    static constexpr U8 MAX_RT_COLOUR_ATTACHMENTS = 16;
-
     RTDrawMask();
 
-    bool isEnabled(RTAttachment::Type type, U8 index) const;
-    void setEnabled(RTAttachment::Type type, U8 index, const bool state);
+    bool isEnabled(RTAttachmentType type, U8 index) const;
+    void setEnabled(RTAttachmentType type, U8 index, const bool state);
 
     void enableAll();
     void disableAll();
@@ -56,6 +57,15 @@ class RTDrawMask {
     bool _disabledDepth;
     bool _disabledStencil;
     std::array<bool, MAX_RT_COLOUR_ATTACHMENTS> _disabledColours;
+};
+
+struct RTBlendState {
+    bool _blendEnable = false;
+    vec4<U8> _blendColour = vec4<U8>(0);
+    BlendingProperties _blendProperties;
+
+    bool operator==(const RTBlendState& other) const;
+    bool operator!=(const RTBlendState& other) const;
 };
 
 class RTDrawDescriptor {
@@ -79,12 +89,16 @@ class RTDrawDescriptor {
     inline const RTDrawMask& drawMask() const { return _drawMask; }
     inline U32 stateMask() const { return _stateMask; }
 
+    inline RTBlendState& blendState(U8 index) { return _blendStates[index]; }
+    inline const RTBlendState& blendState(U8 index) const{ return _blendStates[index]; }
+
     bool operator==(const RTDrawDescriptor& other) const;
     bool operator!=(const RTDrawDescriptor& other) const;
 
   protected:
     RTDrawMask _drawMask;
     U32 _stateMask;
+    std::array<RTBlendState, MAX_RT_COLOUR_ATTACHMENTS> _blendStates;
 };
 
 }; //namespace Divide

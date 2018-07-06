@@ -41,7 +41,7 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
 
     for (U32 i = 0; i < _numSplits; ++i) {
         GFXDevice::DebugView_ptr shadow = std::make_shared<GFXDevice::DebugView>();
-        shadow->_texture = getDepthMap().getAttachment(RTAttachment::Type::Colour, 0).texture();
+        shadow->_texture = getDepthMap().getAttachment(RTAttachmentType::Colour, 0).texture();
         shadow->_shader = _previewDepthMapShader;
         shadow->_shaderData._intValues.push_back(std::make_pair("layer", i + _arrayOffset));
         _context.addDebugView(shadow);
@@ -69,13 +69,13 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
     const RenderTarget& depthMap = getDepthMap();
 
     vectorImpl<RTAttachmentDescriptor> att = {
-        { blurMapDescriptor, RTAttachment::Type::Colour },
+        { blurMapDescriptor, RTAttachmentType::Colour },
     };
 
     RenderTargetDescriptor desc = {};
     desc._name = "CSM_Blur";
     desc._resolution = vec2<U16>(depthMap.getWidth(), depthMap.getHeight());
-    desc._attachmentCount = to_U32(att.size());
+    desc._attachmentCount = to_U8(att.size());
     desc._attachments = att.data();
 
     _blurBuffer = _context.allocateRT(desc);
@@ -143,7 +143,7 @@ void CascadedShadowMaps::render(U32 passIdx) {
 
     target.begin(RenderTarget::defaultPolicy());
     for (U8 i = 0; i < _numSplits; ++i) {
-        target.drawToLayer(RTAttachment::Type::Colour, 0, to_U16(i + getArrayOffset()));
+        target.drawToLayer(RTAttachmentType::Colour, 0, to_U16(i + getArrayOffset()));
         params.camera = _shadowCameras[i];
         _context.parent().renderPassManager().doCustomPass(params);
     }
@@ -253,7 +253,7 @@ void CascadedShadowMaps::postRender() {
 
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
     _blurBuffer._rt->begin(RenderTarget::defaultPolicy());
-    depthMap.bind(0, RTAttachment::Type::Colour, 0);
+    depthMap.bind(0, RTAttachmentType::Colour, 0);
         _context.draw(pointsCmd);
     depthMap.end();
 
@@ -263,7 +263,7 @@ void CascadedShadowMaps::postRender() {
 
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _vertBlur);
     depthMap.begin(RenderTarget::defaultPolicy());
-    _blurBuffer._rt->bind(0, RTAttachment::Type::Colour, 0);
+    _blurBuffer._rt->bind(0, RTAttachmentType::Colour, 0);
         _context.draw(pointsCmd);
     depthMap.end();
 }

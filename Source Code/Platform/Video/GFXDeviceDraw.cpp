@@ -77,6 +77,14 @@ void GFXDevice::unlockQueue(RenderBinType type) {
     _renderQueues[type._to_integral()].unlock();
 }
 
+U32 GFXDevice::renderQueueSize(RenderBinType queueType) {
+    U32 queueIndex = queueType._to_integral();
+    assert(_renderQueues[queueIndex].locked() == false);
+    const RenderPackageQueue& queue = _renderQueues[queueIndex];
+
+    return queue.size();
+}
+
 void GFXDevice::addToRenderQueue(RenderBinType queueType, const RenderPackage& package) {
     U32 queueIndex = queueType._to_integral();
 
@@ -332,7 +340,7 @@ void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
 
     RenderTarget& screen = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     screen.bind(to_U8(ShaderProgram::TextureUsage::UNIT0),
-                RTAttachment::Type::Colour,
+                RTAttachmentType::Colour,
                 to_U8(ScreenTargets::ALBEDO));
 
 

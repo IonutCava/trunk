@@ -173,16 +173,16 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     
     {
         vectorImpl<RTAttachmentDescriptor> attachments = {
-            { screenDescriptor,   RTAttachment::Type::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE() },
-            { normalDescriptor,   RTAttachment::Type::Colour, to_U8(ScreenTargets::NORMALS) },
-            { velocityDescriptor, RTAttachment::Type::Colour, to_U8(ScreenTargets::VELOCITY) },
-            { hiZDescriptor,      RTAttachment::Type::Depth }
+            { screenDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE() },
+            { normalDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS) },
+            { velocityDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY) },
+            { hiZDescriptor,      RTAttachmentType::Depth }
         };
 
         RenderTargetDescriptor screenDesc = {};
         screenDesc._name = "Screen";
         screenDesc._resolution = renderResolution;
-        screenDesc._attachmentCount = to_U32(attachments.size());
+        screenDesc._attachmentCount = to_U8(attachments.size());
         screenDesc._attachments = attachments.data();
 
         // Our default render targets hold the screen buffer, depth buffer, and a special, on demand,
@@ -190,7 +190,35 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         // Screen FB should use MSAA if available
         allocateRT(RenderTargetUsage::SCREEN, screenDesc);
     }
+    {
+        TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D,
+                                                 GFXImageFormat::RGBA16F,
+                                                 GFXDataFormat::FLOAT_16);
+        accumulationDescriptor.toggleAutomaticMipMapGeneration(false);
 
+        SamplerDescriptor accumulationSampler;
+        accumulationSampler.setFilters(TextureFilter::NEAREST);
+        accumulationSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+        accumulationDescriptor.setSampler(accumulationSampler);
+
+        TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D,
+                                              GFXImageFormat::RED8,
+                                              GFXDataFormat::UNSIGNED_BYTE);
+        revealageDescriptor.setSampler(accumulationSampler);
+
+        vectorImpl<RTAttachmentDescriptor> attachments = {
+            { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
+            { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
+        };
+
+        RenderTargetDescriptor oitDesc = {};
+        oitDesc._name = "OIT";
+        oitDesc._resolution = renderResolution;
+        oitDesc._attachmentCount = to_U8(attachments.size());
+        oitDesc._attachments = attachments.data();
+
+        allocateRT(RenderTargetUsage::OIT, oitDesc);
+    }
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
     reflectionSampler.setFilters(TextureFilter::NEAREST);
@@ -221,13 +249,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     U16 reflectRes = std::max(renderResolution.width, renderResolution.height) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
     {
         vectorImpl<RTAttachmentDescriptor> attachments = {
-            { environmentDescriptorPlanar, RTAttachment::Type::Colour },
-            { depthDescriptorPlanar, RTAttachment::Type::Depth },
+            { environmentDescriptorPlanar, RTAttachmentType::Colour },
+            { depthDescriptorPlanar, RTAttachmentType::Depth },
         };
 
         RenderTargetDescriptor refDesc = {};
         refDesc._resolution = vec2<U16>(reflectRes);
-        refDesc._attachmentCount = to_U32(attachments.size());
+        refDesc._attachmentCount = to_U8(attachments.size());
         refDesc._attachments = attachments.data();
 
         for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
@@ -245,13 +273,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
     {
         vectorImpl<RTAttachmentDescriptor> attachments = {
-            { environmentDescriptorCube, RTAttachment::Type::Colour },
-            { depthDescriptorCube, RTAttachment::Type::Depth },
+            { environmentDescriptorCube, RTAttachmentType::Colour },
+            { depthDescriptorCube, RTAttachmentType::Depth },
         };
 
         RenderTargetDescriptor refDesc = {};
         refDesc._resolution = vec2<U16>(reflectRes);
-        refDesc._attachmentCount = to_U32(attachments.size());
+        refDesc._attachmentCount = to_U8(attachments.size());
         refDesc._attachments = attachments.data();
 
         refDesc._name = "Reflection_Cube_Array";
@@ -432,7 +460,7 @@ void GFXDevice::resizeHistory(U8 historySize) {
     }
 
     while (_prevDepthBuffers.size() < historySize) {
-        const Texture_ptr& src = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).texture();
+        const Texture_ptr& src = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
 
         ResourceDescriptor prevDepthTex(Util::StringFormat("PREV_DEPTH_%d", _prevDepthBuffers.size()));
         prevDepthTex.setPropertyDescriptor(src->getDescriptor());
@@ -449,7 +477,7 @@ void GFXDevice::resizeHistory(U8 historySize) {
 
 void GFXDevice::historyIndex(U8 index, bool copyPrevious) {
     if (copyPrevious) {
-        getPrevDepthBuffer()->copy(renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).texture());
+        getPrevDepthBuffer()->copy(renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture());
     }
 
     _historyIndex = index;

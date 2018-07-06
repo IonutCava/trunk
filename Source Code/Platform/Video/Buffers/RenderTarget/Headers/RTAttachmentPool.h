@@ -39,7 +39,7 @@ namespace Divide {
 class RenderTarget;
 class RTAttachmentPool {
 public:
-    typedef std::array<vectorImpl<RTAttachment_ptr>, to_base(RTAttachment::Type::COUNT)> AttachmentPool;
+    typedef std::array<vectorImpl<RTAttachment_ptr>, to_base(RTAttachmentType::COUNT)> AttachmentPool;
 
 public:
     explicit RTAttachmentPool(RenderTarget& parent, U8 colourAttCount);
@@ -50,22 +50,22 @@ public:
     RTAttachment_ptr& update(const RTAttachmentDescriptor& descriptor);
 
     // Return true if the attachment was used. False if the call had no effect
-    bool clear(RTAttachment::Type type, U8 index);
+    bool clear(RTAttachmentType type, U8 index);
 
-    RTAttachment_ptr& get(RTAttachment::Type type, U8 index);
-    const RTAttachment_ptr& get(RTAttachment::Type type, U8 index) const;
+    RTAttachment_ptr& get(RTAttachmentType type, U8 index);
+    const RTAttachment_ptr& get(RTAttachmentType type, U8 index) const;
 
-    void get(RTAttachment::Type type, vectorImpl<RTAttachment_ptr>& attachments) const;
+    void get(RTAttachmentType type, vectorImpl<RTAttachment_ptr>& attachments) const;
 
-    U8 attachmentCount(RTAttachment::Type type) const;
+    U8 attachmentCount(RTAttachmentType type) const;
 
 private:
-    RTAttachment_ptr& getInternal(AttachmentPool& pool, RTAttachment::Type type, U8 index);
-    const RTAttachment_ptr& getInternal(const AttachmentPool& pool, RTAttachment::Type type, U8 index) const;
+    RTAttachment_ptr& getInternal(AttachmentPool& pool, RTAttachmentType type, U8 index);
+    const RTAttachment_ptr& getInternal(const AttachmentPool& pool, RTAttachmentType type, U8 index) const;
 
 private:
     AttachmentPool _attachment;
-    std::array < U8, to_base(RTAttachment::Type::COUNT)> _attachmentCount;
+    std::array < U8, to_base(RTAttachmentType::COUNT)> _attachmentCount;
 
     bool _isFrameListener;
 

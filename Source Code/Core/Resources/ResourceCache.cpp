@@ -41,7 +41,7 @@ void ResourceCache::clear() {
             ++it;
         }
     }
-    WAIT_FOR_CONDITION_TIMEOUT(_resDB.empty(), Time::SecondsToMilliseconds(2.0))
+    WAIT_FOR_CONDITION_TIMEOUT(_resDB.empty(), Time::SecondsToMilliseconds(5.0))
     assert(_resDB.empty());
 }
 

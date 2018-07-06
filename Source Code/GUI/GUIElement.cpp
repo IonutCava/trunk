@@ -19,8 +19,6 @@ GUIElement::GUIElement(U64 guiID, CEGUI::Window* const parent, const GUIType& ty
     RenderStateBlock stateBlock;
     stateBlock.setCullMode(CullMode::NONE);
     stateBlock.setZRead(false);
-    stateBlock.setBlend(true, BlendProperty::SRC_ALPHA,
-                        BlendProperty::INV_SRC_ALPHA);
     _guiSBHash = stateBlock.getHash();
 }
 

@@ -69,13 +69,13 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapDescriptor.setSampler(depthMapSampler);
 
                 vectorImpl<RTAttachmentDescriptor> att = {
-                    { depthMapDescriptor, RTAttachment::Type::Depth },
+                    { depthMapDescriptor, RTAttachmentType::Depth },
                 };
 
                 RenderTargetDescriptor desc = {};
                 desc._name = "Single_ShadowMap";
                 desc._resolution = resolutions[i];
-                desc._attachmentCount = to_U32(att.size());
+                desc._attachmentCount = to_U8(att.size());
                 desc._attachments = att.data();
 
                 crtTarget = context.allocateRT(RenderTargetUsage::SHADOW, desc);
@@ -108,14 +108,14 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthDescriptor.setSampler(depthSampler);
 
                 vectorImpl<RTAttachmentDescriptor> att = {
-                    { depthMapDescriptor, RTAttachment::Type::Colour },
-                    { depthDescriptor, RTAttachment::Type::Depth },
+                    { depthMapDescriptor, RTAttachmentType::Colour },
+                    { depthDescriptor, RTAttachmentType::Depth },
                 };
 
                 RenderTargetDescriptor desc = {};
                 desc._name = "CSM_ShadowMap";
                 desc._resolution = resolutions[i];
-                desc._attachmentCount = to_U32(att.size());
+                desc._attachmentCount = to_U8(att.size());
                 desc._attachments = att.data();
 
                 crtTarget = context.allocateRT(RenderTargetUsage::SHADOW, desc);
@@ -137,13 +137,13 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
                 vectorImpl<RTAttachmentDescriptor> att = {
-                    { depthMapDescriptor, RTAttachment::Type::Depth },
+                    { depthMapDescriptor, RTAttachmentType::Depth },
                 };
 
                 RenderTargetDescriptor desc = {};
                 desc._name = "Cube_ShadowMap";
                 desc._resolution = resolutions[i];
-                desc._attachmentCount = to_U32(att.size());
+                desc._attachmentCount = to_U8(att.size());
                 desc._attachments = att.data();
 
                 crtTarget = context.allocateRT(RenderTargetUsage::SHADOW, desc);
@@ -162,10 +162,10 @@ void ShadowMap::clearShadowMaps(GFXDevice& context) {
 
 void ShadowMap::bindShadowMaps(GFXDevice& context) {
     for (U8 i = 0; i < to_base(ShadowType::COUNT); ++i) {
-        RTAttachment::Type attachment
+        RTAttachmentType attachment
             = static_cast<ShadowType>(i) == ShadowType::LAYERED
-                                          ? RTAttachment::Type::Colour
-                                          : RTAttachment::Type::Depth;
+                                          ? RTAttachmentType::Colour
+                                          : RTAttachmentType::Depth;
 
         U8 bindSlot = LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i));
         context.renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).bind(bindSlot, attachment, 0);
@@ -173,9 +173,9 @@ void ShadowMap::bindShadowMaps(GFXDevice& context) {
 }
 
 void ShadowMap::clearShadowMapBuffers(GFXDevice& context) {
-    for (U8 i = 0; i < to_base(ShadowType::COUNT); ++i) {
+    /*for (U8 i = 0; i < to_base(ShadowType::COUNT); ++i) {
         context.renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).clear(RenderTarget::defaultPolicy());
-    }
+    }*/
 }
 
 U16 ShadowMap::findDepthMapLayer(ShadowType shadowType) {

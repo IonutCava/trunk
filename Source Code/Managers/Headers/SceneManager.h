@@ -186,6 +186,7 @@ protected:
     void onCameraChange(const Camera& camera);
     void preRender(const Camera& camera, RenderTarget& target);
     void postRender(const Camera& camera, RenderSubPassCmds& subPassesInOut);
+    void debugDraw(const Camera& camera, RenderSubPassCmds& subPassesInOut);
     bool generateShadowMaps();
     bool populateRenderQueue(const Camera& camera, bool doCulling, U32 passIndex);
     Camera* getActiveCamera() const;
@@ -303,6 +304,10 @@ class SceneManagerRenderPass {
 
     static void postRender(Divide::SceneManager& mgr, const Camera& camera, RenderSubPassCmds& subPassesInOut) {
         mgr.postRender(camera, subPassesInOut);
+    }
+
+    static void debugDraw(Divide::SceneManager& mgr, const Camera& camera, RenderSubPassCmds& subPassesInOut) {
+        mgr.debugDraw(camera, subPassesInOut);
     }
 
     static bool generateShadowMaps(Divide::SceneManager& mgr) {

@@ -54,6 +54,7 @@ U32 d3dShaderProgram::GetSubroutineUniformCount(ShaderType type) const {
 }
 
 // Uniforms
+I32  d3dShaderProgram::Binding(const char* name) { return -1; }
 void d3dShaderProgram::Uniform(const stringImplFast& location, U32 value) {}
 void d3dShaderProgram::Uniform(const stringImplFast& location, I32 value) {}
 void d3dShaderProgram::Uniform(const stringImplFast& location, F32 value) {}

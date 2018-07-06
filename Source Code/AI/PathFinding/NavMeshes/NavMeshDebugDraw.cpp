@@ -48,7 +48,6 @@ void NavMeshDebugDraw::beginBatch() {
         // Generate a render state
         RenderStateBlock navigationDebugStateBlock;
         navigationDebugStateBlock.setCullMode(CullMode::NONE);
-        navigationDebugStateBlock.setBlend(true);
 
         PipelineDescriptor pipeDesc;
         pipeDesc._stateHash = navigationDebugStateBlock.getHash();

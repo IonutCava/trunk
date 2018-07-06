@@ -36,7 +36,7 @@ PostFX::PostFX()
 
     _postFXTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
     _postFXTarget.drawMask().disableAll();
-    _postFXTarget.drawMask().setEnabled(RTAttachment::Type::Colour, 0, true);
+    _postFXTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
 
     _filterStackCount.fill(0);
 }
@@ -154,7 +154,7 @@ void PostFX::apply() {
     _noise->bind(to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
     _screenBorder->bind(to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
     RenderTarget& screenRT = _gfx->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    Texture_ptr depth = screenRT.getAttachment(RTAttachment::Type::Depth, 0).texture();
+    Texture_ptr depth = screenRT.getAttachment(RTAttachmentType::Depth, 0).texture();
     depth->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
 
     screenRT.begin(_postFXTarget);

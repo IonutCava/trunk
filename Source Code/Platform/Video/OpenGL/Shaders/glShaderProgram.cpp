@@ -538,25 +538,23 @@ bool glShaderProgram::isBound() const {
 }
 
 /// Cache uniform/attribute locations for shader programs
-/// When we call this function, we check our name<->address map to see if we
-/// queried the location before
-/// If we didn't, ask the GPU to give us the variables address and save it for
-/// later use
-I32 glShaderProgram::getUniformLocation(const stringImplFast& name) {
+/// When we call this function, we check our name<->address map to see if we queried the location before
+/// If we didn't, ask the GPU to give us the variables address and save it for later use
+I32 glShaderProgram::Binding(const char* name) {
     // If the shader can't be used for rendering, just return an invalid address
     if (_shaderProgramID == 0 || !isValid()) {
         return -1;
     }
 
     // Check the cache for the location
-    U64 nameHash = _ID_RT(name.c_str());
+    U64 nameHash = _ID_RT(name);
     ShaderVarMap::const_iterator it = _shaderVarLocation.find(nameHash);
     if (it != std::end(_shaderVarLocation)) {
         return it->second;
     }
 
     // Cache miss. Query OpenGL for the location
-    GLint location = glGetUniformLocation(_shaderProgramID, name.c_str());
+    GLint location = glGetUniformLocation(_shaderProgramID, name);
 
     // Save it for later reference
     hashAlg::emplace(_shaderVarLocation, nameHash, location);

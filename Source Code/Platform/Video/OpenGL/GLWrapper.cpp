@@ -213,6 +213,16 @@ bool GL_API::initShaders() {
       { "vec3" , "_bitangentWV"}
     };
 
+    static const stringImpl crossTypeGLSLHLSL = "#define float2 vec2\n"
+                                                "#define float3 vec3\n"
+                                                "#define float4 vec4\n"
+                                                "#define int2 ivec2\n"
+                                                "#define int3 ivec3\n"
+                                                "#define int4 ivec4\n"
+                                                "#define float2x2 mat2\n"
+                                                "#define float3x3 mat3\n"
+                                                "#define float4x4 mat4";
+
     auto getPassData = [](ShaderType type) -> stringImpl {
         stringImpl baseString = "     _out.%s = _in[index].%s;";
         if (type == ShaderType::TESSELATION_CTRL) {
@@ -251,6 +261,9 @@ bool GL_API::initShaders() {
                          lineOffsets);
     appendToShaderHeader(ShaderType::VERTEX, "invariant gl_Position;", lineOffsets);
 
+    appendToShaderHeader(ShaderType::COUNT,
+                         crossTypeGLSLHLSL,
+                         lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,
                          Util::StringFormat("#define GPU_VENDOR_AMD %d", to_base(GPUVendor::AMD)),
                          lineOffsets);
@@ -754,10 +767,15 @@ I32 GL_API::getFont(const stringImpl& fontName) {
     return _fontCache.second;
 }
 
-/// Text rendering is handled exclusively by Mikko Mononen's FontStash library
-/// (https://github.com/memononen/fontstash)
+/// Text rendering is handled exclusively by Mikko Mononen's FontStash library (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
 void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
+    static BlendingProperties textBlend;
+    textBlend._blendSrc = BlendProperty::SRC_ALPHA;
+    textBlend._blendDest = BlendProperty::INV_SRC_ALPHA;
+
+    GL_API::setBlending(0, true, textBlend, Util::ToByteColour(DefaultColours::DIVIDE_BLUE()));
+
     if (Config::ENABLE_GPU_VALIDATION) {
         pushDebugMessage("OpenGL render text start!", 2);
     }
@@ -814,10 +832,8 @@ bool GL_API::setState(const GenericDrawCommand& cmd) {
     // Set the proper render states
     setStateBlock(cmd.pipeline().stateHash());
     // We need a valid shader as no fixed function pipeline is available
-    DIVIDE_ASSERT(cmd.pipeline().shaderProgram() != nullptr,
-                  "GFXDevice error: Draw shader state is not valid for the current draw operation!");
-    // Try to bind the shader program. If it failed to load, or isn't loaded
-    // yet, cancel the draw request for this frame
+    DIVIDE_ASSERT(cmd.pipeline().shaderProgram() != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
+    // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
     return cmd.pipeline().shaderProgram()->bind();
 }
 

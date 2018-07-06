@@ -38,6 +38,38 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+enum class PushConstantType : U8 {
+    BOOL = 0,
+    INT,
+    UINT,
+    FLOAT,
+    DOUBLE,
+    BVEC2,
+    BVEC3,
+    BVEC4,
+    IVEC2,
+    IVEC3,
+    IVEC4,
+    UVEC2,
+    UVEC3,
+    UVEC4,
+    VEC2,
+    VEC3,
+    VEC4,
+    DVEC2,
+    DVEC3,
+    DVEC4,
+    MAT2,
+    MAT3,
+    //MAT_N_x_M
+};
+    
+struct PushConstant {
+    I32              _binding;
+    PushConstantType _type;
+    AnyParam         _value;
+};
+
 class ShaderBuffer;
 struct ShaderBufferBindCmd {
     explicit ShaderBufferBindCmd(ShaderBuffer* buffer,
@@ -109,9 +141,16 @@ typedef vectorImpl<ShaderBufferBinding> ShaderBufferList;
 typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;
 
 struct RenderSubPassCmd {
+    U8 _targetWriteLevel = 0;
     TextureDataContainer _textures;
     GenericDrawCommands  _commands;
+    vectorImpl<vec4<I32>> _viewports;
+    vectorImpl<PushConstant> _pushConstants;
     vectorImpl<ShaderBufferBindCmd> _shaderBuffers;
+
+    inline void pushConstant(PushConstantType type, I32 binding, const AnyParam& value) {
+        _pushConstants.emplace_back(PushConstant{ binding, type, value });
+    }
 };
 
 typedef vectorImpl<RenderSubPassCmd> RenderSubPassCmds;

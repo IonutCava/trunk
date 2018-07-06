@@ -33,7 +33,4 @@ bool d3dVertexBuffer::createInternal() {
 bool d3dVertexBuffer::refresh() {
     return true;
 }
-
-void d3dVertexBuffer::checkStatus() {
-}
 };

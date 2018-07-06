@@ -38,19 +38,24 @@ namespace Divide {
 
 FWD_DECLARE_MANAGED_CLASS(Texture);
 
+/// This enum is used when creating render targets to define the channel that the texture will attach to
+enum class RTAttachmentType : U8 {
+    Colour = 0,
+    Depth = 1,
+    Stencil = 2,
+    COUNT
+};
+
+struct RTAttachmentDescriptor {
+    TextureDescriptor _texDescriptor;
+    RTAttachmentType _type = RTAttachmentType::COUNT;
+    U8 _index = 0;
+    vec4<F32> _clearColour = DefaultColours::WHITE();
+};
+
 class RTAttachment {
     public:
-        /// This enum is used when creating render targets to define the channel that
-        /// the texture will attach to
-        enum class Type : U8 {
-            Colour = 0,
-            Depth = 1,
-            Stencil = 2,
-            COUNT
-        };
-
-    public:
-        RTAttachment();
+        explicit RTAttachment(const RTAttachmentDescriptor& descriptor);
         virtual ~RTAttachment();
 
         bool used() const;
@@ -73,23 +78,19 @@ class RTAttachment {
         U32 binding() const;
         void binding(U32 binding);
 
+        const RTAttachmentDescriptor& descriptor() const;
+
     protected:
         bool _changed;
         U32  _binding;
         U16  _mipWriteLevel;
         U16  _writeLayer;
-        vec4<F32> _clearColour;
         Texture_ptr _texture;
+
+        RTAttachmentDescriptor _descriptor;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(RTAttachment);
-
-struct RTAttachmentDescriptor {
-    TextureDescriptor _texDescriptor;
-    RTAttachment::Type _type = RTAttachment::Type::COUNT;
-    U8 _index = 0;
-    vec4<F32> _clearColour = DefaultColours::WHITE();
-};
 
 }; //namespace Divide
 

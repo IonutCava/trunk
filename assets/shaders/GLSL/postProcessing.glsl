@@ -21,7 +21,6 @@ layout(binding = TEX_BIND_POINT_SCREEN)     uniform sampler2D texScreen;
 layout(binding = TEX_BIND_POINT_NOISE)      uniform sampler2D texNoise;
 layout(binding = TEX_BIND_POINT_BORDER)     uniform sampler2D texVignette;
 layout(binding = TEX_BIND_POINT_UNDERWATER) uniform sampler2D texWaterNoiseNM;
-layout(binding = TEXTURE_DEPTH_MAP)         uniform sampler2D texDepthMap;
 
 uniform float _noiseTile;
 uniform float _noiseFactor;

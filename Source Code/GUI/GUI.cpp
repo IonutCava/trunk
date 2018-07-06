@@ -48,7 +48,6 @@ GUI::GUI(Kernel& parent)
     _init(false),
     _rootSheet(nullptr),
     _defaultMsgBox(nullptr),
-    _enableCEGUIRendering(false),
     _debugVarCacheCount(0),
     _activeScene(nullptr),
     _guiEditor(nullptr),
@@ -138,9 +137,8 @@ void GUI::draw(GFXDevice& context) const {
         it->second->draw(context);
     }
 
-    // CEGUI handles its own states, so render it after we clear our states but
-    // before we swap buffers
-    if (_enableCEGUIRendering) {
+    // CEGUI handles its own states, so render it after we clear our states but before we swap buffers
+    if (!parent().platformContext().config().gui.cegui.skipRendering) {
         CEGUI::System::getSingleton().renderAllGUIContexts();
     }
 }
@@ -168,8 +166,6 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     }
 
     onChangeResolution(renderResolution.width, renderResolution.height);
-
-    _enableCEGUIRendering = !context.config().gui.cegui.skipRendering;
 
     _guiEditor = MemoryManager_NEW GUIEditor(context, cache);
     _console = MemoryManager_NEW GUIConsole(context, cache);

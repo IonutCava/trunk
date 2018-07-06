@@ -53,7 +53,8 @@ enum class RenderTargetUsage : U32 {
     REFRACTION_CUBE = 4,
     ENVIRONMENT = 5,
     SHADOW = 6,
-    OTHER = 7,
+    OIT = 7,
+    OTHER = 8,
     COUNT
 };
 
@@ -180,8 +181,7 @@ enum class BlendProperty : U32 {
     ONE,
     SRC_COLOR,
     INV_SRC_COLOR,
-    /// Transparency is best implemented using blend function (SRC_ALPHA,
-    /// ONE_MINUS_SRC_ALPHA)
+    /// Transparency is best implemented using blend function (SRC_ALPHA, ONE_MINUS_SRC_ALPHA)
     /// with primitives sorted from farthest to nearest.
     SRC_ALPHA,
     INV_SRC_ALPHA,

@@ -371,6 +371,9 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glHardwareQueryPool.h">
       <Filter>Video\OpenGL\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\BlendingProperties.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -1144,6 +1147,9 @@
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\terrainTess.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\OITComposition.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
   </ItemGroup>

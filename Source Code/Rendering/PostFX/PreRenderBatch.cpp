@@ -58,13 +58,13 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     {
         //Colour0 holds the LDR screen texture
         vectorImpl<RTAttachmentDescriptor> att = {
-            { outputDescriptor, RTAttachment::Type::Colour },
+            { outputDescriptor, RTAttachmentType::Colour },
         };
 
         RenderTargetDescriptor desc = {};
         desc._name = "PostFXOutput";
         desc._resolution = vec2<U16>(rt.getWidth(), rt.getHeight());
-        desc._attachmentCount = to_U32(att.size());
+        desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
 
         _postFXOutput = _context.allocateRT(desc);
@@ -84,13 +84,13 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
         U16 lumaRez = to_U16(nextPOW2(to_U32(rt.getWidth() / 3.0f)));
 
         vectorImpl<RTAttachmentDescriptor> att = {
-            { lumaDescriptor, RTAttachment::Type::Colour },
+            { lumaDescriptor, RTAttachmentType::Colour },
         };
 
         RenderTargetDescriptor desc = {};
         desc._name = "Luminance";
         desc._resolution = vec2<U16>(lumaRez);
-        desc._attachmentCount = to_U32(att.size());
+        desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
 
         _currentLuminance = _context.allocateRT(desc);
@@ -99,13 +99,13 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     lumaDescriptor.setSampler(lumaSampler);
     {
         vectorImpl<RTAttachmentDescriptor> att = {
-            { lumaDescriptor, RTAttachment::Type::Colour, 0, DefaultColours::BLACK() },
+            { lumaDescriptor, RTAttachmentType::Colour, 0, DefaultColours::BLACK() },
         };
 
         RenderTargetDescriptor desc = {};
         desc._name = "PreviousLuminance";
         desc._resolution = vec2<U16>(1);
-        desc._attachmentCount = to_U32(att.size());
+        desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
 
         _previousLuminance = _context.allocateRT(desc);
@@ -140,7 +140,7 @@ void PreRenderBatch::bindOutput(U8 slot) {
     if (_debugOperator != nullptr) {
         _debugOperator->debugPreview(slot);
     } else {
-        _postFXOutput._rt->bind(slot, RTAttachment::Type::Colour, 0);
+        _postFXOutput._rt->bind(slot, RTAttachmentType::Colour, 0);
     }
 }
 
@@ -176,8 +176,8 @@ void PreRenderBatch::execute(const FilterStack& stack) {
     if (_adaptiveExposureControl) {
         // Compute Luminance
         // Step 1: Luminance calc
-        inputRT().bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
-        _previousLuminance._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);
+        inputRT().bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
+        _previousLuminance._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachmentType::Colour, 0);
 
         _currentLuminance._rt->begin(RenderTarget::defaultPolicy());
             pipelineDescriptor._shaderProgram = _luminanceCalc;
@@ -197,10 +197,10 @@ void PreRenderBatch::execute(const FilterStack& stack) {
     }
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
-    inputRT().bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
+    inputRT().bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
 
     if (_adaptiveExposureControl) {
-        _currentLuminance._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);
+        _currentLuminance._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachmentType::Colour, 0);
     }
 
     _postFXOutput._rt->begin(RenderTarget::defaultPolicy());
@@ -227,7 +227,7 @@ void PreRenderBatch::reshape(U16 width, U16 height) {
     _toneMap->Uniform("luminanceMipLevel",
                       _currentLuminance
                       ._rt
-                      ->getAttachment(RTAttachment::Type::Colour, 0)
+                      ->getAttachment(RTAttachmentType::Colour, 0)
                       .texture()
                       ->getMaxMipLevel());
 

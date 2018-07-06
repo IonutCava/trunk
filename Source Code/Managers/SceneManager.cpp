@@ -477,11 +477,17 @@ void SceneManager::preRender(const Camera& camera, RenderTarget& target) {
 }
 
 void SceneManager::postRender(const Camera& camera, RenderSubPassCmds& subPassesInOut) {
+    SceneRenderState& activeSceneRenderState = getActiveScene().renderState();
+    const RenderStagePass& stagePass = _platformContext->gfx().getRenderStage();
+
+    parent().renderPassManager().getQueue().postRender(activeSceneRenderState, stagePass, subPassesInOut);
+}
+
+void SceneManager::debugDraw(const Camera& camera, RenderSubPassCmds& subPassesInOut) {
     Scene& activeScene = getActiveScene();
     SceneRenderState& activeSceneRenderState = activeScene.renderState();
 
     const RenderStagePass& stagePass = _platformContext->gfx().getRenderStage();
-    parent().renderPassManager().getQueue().postRender(activeSceneRenderState, stagePass, subPassesInOut);
     Attorney::SceneManager::debugDraw(activeScene, camera, stagePass, subPassesInOut);
     // Draw bounding boxes, skeletons, axis gizmo, etc.
     _platformContext->gfx().debugDraw(activeSceneRenderState, camera, subPassesInOut);

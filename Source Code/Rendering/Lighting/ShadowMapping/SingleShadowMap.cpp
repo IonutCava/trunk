@@ -23,7 +23,7 @@ SingleShadowMap::SingleShadowMap(GFXDevice& context, Light* light, const ShadowC
     _previewDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), shadowPreviewShader);
 
     GFXDevice::DebugView_ptr shadow = std::make_shared<GFXDevice::DebugView>();
-    shadow->_texture = getDepthMap().getAttachment(RTAttachment::Type::Depth, 0).texture();
+    shadow->_texture = getDepthMap().getAttachment(RTAttachmentType::Depth, 0).texture();
     shadow->_shader = _previewDepthMapShader;
     shadow->_shaderData._intValues.push_back(std::make_pair("layer", _arrayOffset));
     context.addDebugView(shadow);

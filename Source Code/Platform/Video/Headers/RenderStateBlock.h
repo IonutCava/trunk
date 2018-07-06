@@ -56,12 +56,6 @@ class RenderStateBlock : public GUIDWrapper {
     /// Colour Writes
     P32 _colourWrite;
 
-    // Blending
-    bool _blendEnable;
-    BlendProperty _blendSrc;
-    BlendProperty _blendDest;
-    BlendOperation _blendOp;
-
     /// Rasterizer
     CullMode _cullMode;
     bool _cullEnabled;
@@ -105,21 +99,12 @@ class RenderStateBlock : public GUIDWrapper {
     void setCullMode(CullMode mode);
     void setZRead(const bool enable);
 
-    void setBlend(
-        bool enable,
-        BlendProperty src = BlendProperty::SRC_ALPHA,
-        BlendProperty dest = BlendProperty::INV_SRC_ALPHA,
-        BlendOperation op = BlendOperation::ADD);
-
-    void setStencil(
-        bool enable, U32 stencilRef = 0,
-        StencilOperation stencilFailOp =
-            StencilOperation::KEEP,
-        StencilOperation stencilZFailOp =
-            StencilOperation::KEEP,
-        StencilOperation stencilPassOp =
-            StencilOperation::KEEP,
-        ComparisonFunction stencilFunc = ComparisonFunction::NEVER);
+    void setStencil(bool enable,
+                    U32 stencilRef = 0,
+                    StencilOperation stencilFailOp  = StencilOperation::KEEP,
+                    StencilOperation stencilZFailOp = StencilOperation::KEEP,
+                    StencilOperation stencilPassOp  = StencilOperation::KEEP,
+                    ComparisonFunction stencilFunc = ComparisonFunction::NEVER);
 
     void setStencilReadWriteMask(U32 read, U32 write);
 
@@ -128,18 +113,7 @@ class RenderStateBlock : public GUIDWrapper {
     inline P32 colourWrite() const {
         return _colourWrite;
     }
-    inline bool blendEnable() const {
-        return _blendEnable;
-    }
-    inline BlendProperty blendSrc() const {
-        return _blendSrc;
-    }
-    inline BlendProperty blendDest() const {
-        return _blendDest;
-    }
-    inline BlendOperation blendOp() const {
-        return _blendOp;
-    }
+   
     inline CullMode cullMode() const {
         return _cullMode;
     }

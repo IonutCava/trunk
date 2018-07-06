@@ -30,25 +30,22 @@ RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
 RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor)
     : GUIDWrapper(),
       GraphicsResource(context, getGUID()),
-      _width(descriptor._resolution.w),
-      _height(descriptor._resolution.h),
-      _depthValue(1.0),
-      _name(descriptor._name)
+      _descriptor(descriptor)
 {
     if (!g_policiesInitialised) {
         s_policyKeepDepth.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
         s_policyDepthOnly.drawMask().disableAll();
-        s_policyDepthOnly.drawMask().setEnabled(RTAttachment::Type::Depth, 0, true);
+        s_policyDepthOnly.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
         g_policiesInitialised = true;
     }
 
     if (Config::Profile::USE_2x2_TEXTURES) {
-        _width = _height = 2;
+        _descriptor._resolution.set(2u);
     }
 
     U8 colourAttachmentCount = 0;
     for (U8 i = 0; i < descriptor._attachmentCount; ++i) {
-        if (descriptor._attachments[i]._type == RTAttachment::Type::Colour) {
+        if (descriptor._attachments[i]._type == RTAttachmentType::Colour) {
             ++colourAttachmentCount;
         }
     }
@@ -65,33 +62,32 @@ RenderTarget::~RenderTarget()
     MemoryManager::DELETE(_attachmentPool);
 }
 
-const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index) const {
+const RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index) const {
     return *_attachmentPool->get(type, index);
 }
 
 /// Used by cubemap FB's
-void RenderTarget::drawToFace(RTAttachment::Type type, U8 index, U16 nFace, bool includeDepth) {
+void RenderTarget::drawToFace(RTAttachmentType type, U8 index, U16 nFace, bool includeDepth) {
     drawToLayer(type, index, nFace, includeDepth);
 }
 
 void RenderTarget::readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) {
-    readData(vec4<U16>(0, 0, _width, _height), imageFormat, dataType, outData);
-}
-
-void RenderTarget::setClearDepth(F32 depthValue) {
-    _depthValue = depthValue;
+    readData(vec4<U16>(0u, 0u, _descriptor._resolution.w, _descriptor._resolution.h), imageFormat, dataType, outData);
 }
 
 U16 RenderTarget::getWidth()  const {
-    return _width;
+    return _descriptor._resolution.w;
 }
 
 U16 RenderTarget::getHeight() const {
-    return _height;
+    return _descriptor._resolution.h;
 }
 
 const stringImpl& RenderTarget::getName() const {
-    return _name;
+    return _descriptor._name;
 }
 
+F32& RenderTarget::depthClearValue() {
+    return _descriptor._depthValue;
+}
 };

@@ -64,7 +64,7 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     depthDescriptor.setSampler(depthSampler);
 
     vectorImpl<RTAttachmentDescriptor> att = {
-        { depthDescriptor, RTAttachment::Type::Depth },
+        { depthDescriptor, RTAttachmentType::Depth },
     };
 
     RenderTargetDescriptor desc = {};
@@ -74,7 +74,7 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     desc._attachments = att.data();
 
     for (U8 i = 0; i < 4; ++i) {
-        att.push_back(RTAttachmentDescriptor{ gBuffer[i], RTAttachment::Type::Colour, i, (i == 0 ? DefaultColours::BLACK() : DefaultColours::WHITE()) });
+        att.push_back(RTAttachmentDescriptor{ gBuffer[i], RTAttachmentType::Colour, i, (i == 0 ? DefaultColours::BLACK() : DefaultColours::WHITE()) });
     }
 
     _deferredBuffer = _context.gfx().allocateRT(desc);
@@ -186,10 +186,10 @@ void DeferredShadingRenderer::secondPass(
     // textures bound to that shader
     GFX::Scoped2DRendering scoped2D(_context.gfx());
 
-    _deferredBuffer._rt->bind(0, RTAttachment::Type::Colour, 0);
-    _deferredBuffer._rt->bind(1, RTAttachment::Type::Colour, 1);
-    _deferredBuffer._rt->bind(2, RTAttachment::Type::Colour, 2);
-    _deferredBuffer._rt->bind(3, RTAttachment::Type::Colour, 3);
+    _deferredBuffer._rt->bind(0, RTAttachmentType::Colour, 0);
+    _deferredBuffer._rt->bind(1, RTAttachmentType::Colour, 1);
+    _deferredBuffer._rt->bind(2, RTAttachmentType::Colour, 2);
+    _deferredBuffer._rt->bind(3, RTAttachmentType::Colour, 3);
     _lightTexture->bind(4);
 
     PipelineDescriptor pipelineDescriptor;

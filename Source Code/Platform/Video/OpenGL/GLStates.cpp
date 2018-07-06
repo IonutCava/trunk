@@ -4,6 +4,9 @@
 
 #include "Headers/GLWrapper.h"
 
+#include "Core/Headers/Kernel.h"
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
@@ -42,6 +45,11 @@ GLuint GL_API::s_activeBufferID[] = {GLUtil::_invalidObjectID,
                                      GLUtil::_invalidObjectID,
                                      GLUtil::_invalidObjectID};
 VAOBindings GL_API::s_vaoBufferData;
+GLfloat GL_API::s_depthNearVal = 0.0f;
+GLboolean GL_API::s_blendEnabled = GL_FALSE;
+
+vec4<U8> GL_API::s_blendColour = vec4<U8>(0u);
+GLfloat GL_API::s_depthFarVal = 1.0f;
 bool GL_API::s_primitiveRestartEnabled = false;
 bool GL_API::s_rasterizationEnabled = true;
 U32 GL_API::s_patchVertexCount = 0;
@@ -52,6 +60,7 @@ GL_API::samplerObjectMap GL_API::s_samplerMap;
 SharedLock GL_API::s_samplerMapLock;
 GLUtil::glVAOPool GL_API::s_vaoPool;
 glHardwareQueryPool* GL_API::s_hardwareQueryPool = nullptr;
+vectorImpl<BlendingProperties> GL_API::s_blendProperties;
 
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates() {
@@ -75,9 +84,14 @@ void GL_API::clearStates() {
     setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
     setActiveTransformFeedback(0);
+
     
-    glDisable(GL_SCISSOR_TEST);
     glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
+
+    if (!_context.parent().platformContext().config().gui.cegui.skipRendering) {
+        glDisable(GL_SCISSOR_TEST);
+        
+    }
 }
 
 /// Pixel pack alignment is usually changed by textures, PBOs, etc
@@ -305,6 +319,7 @@ bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID) {
     GLuint temp = 0;
     return setActiveFB(usage, ID, temp);
 }
+
 /// Switch the current framebuffer by binding it as either a R/W buffer, read
 /// buffer or write buffer
 bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID) {
@@ -348,6 +363,7 @@ bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuin
 
     // Remember the new binding state for future reference
     s_activeFBID[to_U32(usage)] = ID;
+
     return true;
 }
 
@@ -462,6 +478,59 @@ bool GL_API::setActiveProgram(GLuint programHandle) {
     return false;
 }
 
+void GL_API::setDepthRange(F32 nearVal, F32 farVal) {
+    CLAMP(nearVal, 0.0f, 1.0f);
+    CLAMP(farVal, 0.0f, 1.0f);
+    if (!COMPARE(nearVal, s_depthNearVal) && !COMPARE(farVal, s_depthFarVal)) {
+        glDepthRange(nearVal, farVal);
+        GL_API::s_depthNearVal = nearVal;
+        GL_API::s_depthFarVal = farVal;
+    }
+}
+
+void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProperties& blendingProperties, const vec4<U8>& blendColour) {
+    assert(drawBufferIdx < (GLuint)(GL_API::s_maxFBOAttachments));
+
+    if ((GL_API::s_blendEnabled == GL_TRUE) != enable) {
+        enable ? glEnablei(GL_BLEND, drawBufferIdx) : glDisablei(GL_BLEND, drawBufferIdx);
+        GL_API::s_blendEnabled = enable ? GL_TRUE : GL_FALSE;
+    }
+
+    if (enable) {
+        if (GL_API::s_blendProperties[drawBufferIdx] != blendingProperties) {
+            if (blendingProperties._blendSrcAlpha != BlendProperty::COUNT) {
+                glBlendFuncSeparatei(drawBufferIdx,
+                                     GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
+                                     GLUtil::glBlendTable[to_base(blendingProperties._blendDest)],
+                                     GLUtil::glBlendTable[to_base(blendingProperties._blendSrcAlpha)],
+                                     GLUtil::glBlendTable[to_base(blendingProperties._blendDestAlpha)]);
+
+                glBlendEquationSeparatei(drawBufferIdx, 
+                                         GLUtil::glBlendOpTable[to_base(blendingProperties._blendOp)],
+                                         GLUtil::glBlendOpTable[to_base(blendingProperties._blendOpAlpha)]);
+            } else {
+                glBlendFunci(drawBufferIdx,
+                             GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
+                             GLUtil::glBlendTable[to_base(blendingProperties._blendDest)]);
+                glBlendEquationi(drawBufferIdx,
+                                 GLUtil::glBlendOpTable[to_base(blendingProperties._blendOp)]);
+            }
+
+            GL_API::s_blendProperties[drawBufferIdx] = blendingProperties;
+        }
+
+        if (GL_API::s_blendColour != blendColour) {
+            vec4<F32> floatColour = Util::ToFloatColour(blendColour);
+            glBlendColor(static_cast<GLfloat>(floatColour.r),
+                         static_cast<GLfloat>(floatColour.g),
+                         static_cast<GLfloat>(floatColour.b),
+                         static_cast<GLfloat>(floatColour.a));
+
+            GL_API::s_blendColour.set(blendColour);
+        }
+    }
+}
+
 /// Change the current viewport area. Redundancy check is performed in GFXDevice
 /// class
 void GL_API::changeViewport(const vec4<I32>& newViewport) const {
@@ -482,11 +551,7 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
         flag ? glEnable(state) : glDisable(state);
     };
 
-    // Compare toggle-only states with the previous block
-    if (oldBlock.blendEnable() != newBlock.blendEnable()) {
-        toggle(newBlock.blendEnable(), GL_BLEND);
-    }
-
+  
     if (oldBlock.cullEnabled() != newBlock.cullEnabled()) {
         toggle(newBlock.cullEnabled(), GL_CULL_FACE);
     }
@@ -496,19 +561,7 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     if (oldBlock.zEnable() != newBlock.zEnable()) {
         toggle(newBlock.zEnable(), GL_DEPTH_TEST);
     }
-    // Check separate blend functions
-    if (oldBlock.blendSrc() != newBlock.blendSrc() ||
-        oldBlock.blendDest() != newBlock.blendDest()) {
-        glBlendFuncSeparate(GLUtil::glBlendTable[to_U32(newBlock.blendSrc())],
-                            GLUtil::glBlendTable[to_U32(newBlock.blendDest())],
-                            GL_ONE,
-                            GL_ZERO);
-    }
 
-    // Check the blend equation
-    if (oldBlock.blendOp() != newBlock.blendOp()) {
-        glBlendEquation(GLUtil::glBlendOpTable[to_U32(newBlock.blendOp())]);
-    }
     // Check culling mode (back (CW) / front (CCW) by default)
     if (oldBlock.cullMode() != newBlock.cullMode()) {
         if (newBlock.cullMode() != CullMode::NONE) {
@@ -572,15 +625,10 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock) const {
         flag ? glEnable(state) : glDisable(state);
     };
 
-    toggle(newBlock.blendEnable(), GL_BLEND);
     toggle(newBlock.cullEnabled(), GL_CULL_FACE);
     toggle(newBlock.stencilEnable(), GL_STENCIL_TEST);
     toggle(newBlock.zEnable(), GL_DEPTH_TEST);
-    glBlendFuncSeparate(GLUtil::glBlendTable[to_U32(newBlock.blendSrc())],
-                        GLUtil::glBlendTable[to_U32(newBlock.blendDest())],
-                        GL_ONE,
-                        GL_ZERO);
-    glBlendEquation(GLUtil::glBlendOpTable[to_U32(newBlock.blendOp())]);
+
     if (newBlock.cullMode() != CullMode::NONE) {
         glCullFace(GLUtil::glCullModeTable[to_U32(newBlock.cullMode())]);
     }

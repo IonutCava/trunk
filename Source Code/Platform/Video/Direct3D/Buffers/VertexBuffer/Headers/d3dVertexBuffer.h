@@ -53,7 +53,6 @@ class d3dVertexBuffer : public VertexBuffer {
     bool createInternal();
 
     bool refresh();
-    void checkStatus();
 };
 
 };  // namespace Divide

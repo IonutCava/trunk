@@ -72,26 +72,32 @@ public:
         _samplerHash = other._samplerHash;
     }
 
+    /// ID
     inline void setHandleHigh(U32 handle) {
         _textureHandle = (U64)handle << 32 | getHandleLow();
     }
 
+    /// ID
     inline U32 getHandleHigh() const {
         return to_U32(_textureHandle >> 32);
     }
 
+    /// ID
     inline void getHandleHigh(U32& handle) const {
         handle = getHandleHigh();
     }
 
+    /// Slot
     inline void setHandleLow(U32 handle) {
         _textureHandle |= handle;
     }
 
+    /// Slot
     inline U32 getHandleLow() const {
         return to_U32(_textureHandle);
     }
 
+    /// Slot
     inline void getHandleLow(U32& handle) const {
         handle = getHandleLow();
     }

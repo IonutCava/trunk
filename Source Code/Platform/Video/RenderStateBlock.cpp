@@ -24,10 +24,6 @@ RenderStateBlock::RenderStateBlock()
 RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
     : GUIDWrapper(other),
      _colourWrite(other._colourWrite),
-     _blendEnable(other._blendEnable),
-     _blendSrc(other._blendSrc),
-     _blendDest(other._blendDest),
-     _blendOp(other._blendOp),
      _cullMode(other._cullMode),
      _cullEnabled(other._cullEnabled),
      _zEnable(other._zEnable),
@@ -71,18 +67,6 @@ void RenderStateBlock::setCullMode(CullMode mode) {
 
 void RenderStateBlock::setZRead(const bool enable) {
     _zEnable = enable;
-
-    clean();
-}
-
-void RenderStateBlock::setBlend(bool enable,
-                                BlendProperty src,
-                                BlendProperty dest,
-                                BlendOperation op) {
-    _blendEnable = enable;
-    _blendSrc = src;
-    _blendDest = dest;
-    _blendOp = op;
 
     clean();
 }
@@ -146,10 +130,6 @@ void RenderStateBlock::setDefaultValues() {
     _zUnits = 1.0f;
     _zFunc = ComparisonFunction::LEQUAL;
     _colourWrite.b[0] = _colourWrite.b[1] = _colourWrite.b[2] = _colourWrite.b[3] = 1;
-    _blendEnable = false;
-    _blendSrc = BlendProperty::ONE;
-    _blendDest = BlendProperty::ONE;
-    _blendOp = BlendOperation::ADD;
     _zEnable = true;
     _cullMode = CullMode::CW;
     _cullEnabled = true;
@@ -174,10 +154,6 @@ void RenderStateBlock::clean() {
 
     _cachedHash = 0;
     Util::Hash_combine(_cachedHash, _colourWrite.i);
-    Util::Hash_combine(_cachedHash, _blendEnable);
-    Util::Hash_combine(_cachedHash, to_U32(_blendSrc));
-    Util::Hash_combine(_cachedHash, to_U32(_blendDest));
-    Util::Hash_combine(_cachedHash, to_U32(_blendOp));
     Util::Hash_combine(_cachedHash, to_U32(_cullMode));
     Util::Hash_combine(_cachedHash, _cullEnabled);
     Util::Hash_combine(_cachedHash, _zEnable);

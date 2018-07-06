@@ -64,7 +64,9 @@ class d3dShaderProgram final : public ShaderProgram {
     U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const override;
 
     U32 GetSubroutineUniformCount(ShaderType type) const override;
+
     // Uniforms
+    I32 Binding(const char* name) override;
     void Uniform(const stringImplFast& location, U32 value) override;
     void Uniform(const stringImplFast& location, I32 value) override;
     void Uniform(const stringImplFast& location, F32 value) override;

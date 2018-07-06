@@ -47,7 +47,7 @@ TiledForwardShadingRenderer::~TiledForwardShadingRenderer()
 void TiledForwardShadingRenderer::preRender(RenderTarget& target, LightPool& lightPool) {
     Renderer::preRender(target, lightPool);
 
-    target.bind(to_U8(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
+    target.bind(to_U8(ShaderProgram::TextureUsage::DEPTH), RTAttachmentType::Depth, 0);
 
     _flag = getMaxNumLightsPerTile();
     _lightCullComputeShader->bind();

@@ -93,10 +93,6 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     // Generate a render state
     RenderStateBlock particleRenderState;
     particleRenderState.setCullMode(CullMode::NONE);
-    particleRenderState.setBlend(true,
-                                 BlendProperty::SRC_ALPHA,
-                                 BlendProperty::INV_SRC_ALPHA);
-    particleRenderState.setZFunc(ComparisonFunction::LEQUAL);
     _particleStateBlockHash = particleRenderState.getHash();
 
     particleRenderState.setZFunc(ComparisonFunction::LESS);

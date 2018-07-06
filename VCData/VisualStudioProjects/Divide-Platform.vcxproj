@@ -104,6 +104,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Headers\DXWrapper.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Shaders\Headers\d3dShaderProgram.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Textures\Headers\d3dTexture.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\BlendingProperties.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericCommandPool.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericDrawCommand.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXDevice.h" />
@@ -330,6 +331,7 @@
     <None Include="..\..\assets\shaders\GLSL\lightImpostorShader.glsl" />
     <None Include="..\..\assets\shaders\GLSL\material.glsl" />
     <None Include="..\..\assets\shaders\GLSL\luminanceCalc.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\OITComposition.glsl" />
     <None Include="..\..\assets\shaders\GLSL\particles.glsl" />
     <None Include="..\..\assets\shaders\GLSL\passThrough.glsl" />
     <None Include="..\..\assets\shaders\GLSL\postProcessing.glsl" />

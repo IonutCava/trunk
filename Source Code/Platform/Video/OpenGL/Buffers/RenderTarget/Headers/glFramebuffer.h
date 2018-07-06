@@ -42,6 +42,7 @@ class glFramebuffer : public RenderTarget,
                       public glObject {
 
     USE_CUSTOM_ALLOCATOR
+
    public:
     /// if resolveBuffer is not null, we add all of our attachments to it and
     /// initialize it with this buffer
@@ -50,9 +51,9 @@ class glFramebuffer : public RenderTarget,
 
     bool resize(U16 width, U16 height) override;
 
-    const RTAttachment& getAttachment(RTAttachment::Type type, U8 index) const override;
+    const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const override;
 
-    void drawToLayer(RTAttachment::Type type,
+    void drawToLayer(RTAttachmentType type,
                      U8 index,
                      U16 layer,
                      bool includeDepth = true) override;
@@ -63,7 +64,7 @@ class glFramebuffer : public RenderTarget,
     void end()  override;
 
     void bind(U8 unit,
-              RTAttachment::Type type,
+              RTAttachmentType type,
               U8 index) override;
 
     void readData(const vec4<U16>& rect,
@@ -84,19 +85,37 @@ class glFramebuffer : public RenderTarget,
     enum class AttachmentState : U8 {
         STATE_DISABLED = 0,
         STATE_ENABLED,
-        STATE_LAYERED,
         COUNT
+    };
+
+    struct BindingState {
+        AttachmentState _attState = AttachmentState::COUNT;
+        GLint _writeLevel = -1;
+        GLint _writeLayer = -1;
+
+        inline bool operator==(const BindingState& other) const {
+            return _attState == other._attState &&
+                   _writeLevel == other._writeLevel &&
+                   _writeLayer == other._writeLayer;
+        }
+
+        inline bool operator!=(const BindingState& other) const {
+            return _attState != other._attState ||
+                   _writeLevel != other._writeLevel ||
+                   _writeLayer != other._writeLayer;
+        }
     };
 
     /// Bake in all settings and attachments to prepare it for rendering
     bool create();
     void resolve();
-    void clear(const RTDrawDescriptor& drawPolicy) const override;
     bool checkStatus() const;
-    void resetAttachments();
-    void prepareBuffers(const RTDrawDescriptor& drawPolicy);
+    
+    void setBlendState(const RTDrawDescriptor& drawPolicy, const vectorImpl<RTAttachment_ptr>& activeAttachments);
+    void prepareBuffers(const RTDrawDescriptor& drawPolicy, const vectorImpl<RTAttachment_ptr>& activeAttachments);
+    void clear(const RTDrawDescriptor& drawPolicy, const vectorImpl<RTAttachment_ptr>& activeAttachments) const;
 
-    void initAttachment(RTAttachment::Type type, U8 index);
+    void initAttachment(RTAttachmentType type, U8 index);
 
     void toggleAttachment(const RTAttachment_ptr& attachment, AttachmentState state);
 
@@ -104,8 +123,12 @@ class glFramebuffer : public RenderTarget,
 
     bool hasColour() const;
 
-    void setAttachmentState(GLenum binding, AttachmentState state);
-    AttachmentState getAttachmentState(GLenum binding) const;
+    void setAttachmentState(GLenum binding, BindingState state);
+    BindingState getAttachmentState(GLenum binding) const;
+
+    void setDefaultState(const RTDrawDescriptor& drawPolicy);
+
+    void toggleAttachments(const RTDrawDescriptor& drawPolicy);
 
    protected:
     bool _resolved;
@@ -117,13 +140,10 @@ class glFramebuffer : public RenderTarget,
     RTDrawDescriptor _previousPolicy;
 
     bool _activeDepthBuffer;
-    vectorImpl<GLenum> _activeColourBuffers;
 
     bool _hasMultisampledColourAttachments;
 
-    vectorImpl<RTAttachment_ptr> _activeAttachmentsCache;
-
-    hashMapImpl<GLenum, AttachmentState> _attachmentState;
+    hashMapImpl<GLenum, BindingState> _attachmentState;
 };
 
 };  // namespace Divide

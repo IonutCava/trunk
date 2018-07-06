@@ -182,7 +182,6 @@ private:
 
     /// Each scene has its own gui elements! (0 = global)
     Scene* _activeScene;
-    bool _enableCEGUIRendering;
 
     U32 _debugVarCacheCount;
     // GROUP, VAR

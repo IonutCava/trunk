@@ -4,6 +4,8 @@
 #include "nodeBufferedInput.cmn"
 
 uniform float projectedTextureMixWeight;
+
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
 layout(binding = TEXTURE_PROJECTION) uniform sampler2D texDiffuseProjected;
 
 #define PRECISION 0.000001
@@ -16,6 +18,10 @@ float saturate(float v) { return clamp(v, 0.0, 1.0); }
 vec2  saturate(vec2 v)  { return clamp(v, 0.0, 1.0); }
 vec3  saturate(vec3 v)  { return clamp(v, 0.0, 1.0); }
 vec4  saturate(vec4 v)  { return clamp(v, 0.0, 1.0); }
+
+float maxComponent(vec2 v) { return max(v.x, v.y); }
+float maxComponent(vec3 v) { return max(maxComponent(v.xy), v.z); }
+float maxComponent(vec4 v) { return max(maxComponent(v.xyz), v.w); }
 
 float ToLinearDepth(in float depthIn);
 
@@ -151,4 +157,12 @@ vec2 getScreenPositionNormalised() {
     return gl_FragCoord.xy * dvd_invScreenDimensions();
 }
 
+float private_depth = -1.0;
+float getDepthValue(vec2 screenNormalisedPos) {
+    if (private_depth < 0.0) {
+        private_depth = textureLod(texDepthMap, screenNormalisedPos, 0).r;
+    }
+
+    return private_depth;
+}
 #endif //_LIGHTING_DEFAULTS_FRAG_

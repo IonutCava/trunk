@@ -20,13 +20,13 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
       _idleCount(0)
 {
     vectorImpl<RTAttachmentDescriptor> att = {
-        { parent.inputRT().getAttachment(RTAttachment::Type::Colour, 0).texture()->getDescriptor(), RTAttachment::Type::Colour },
+        { parent.inputRT().getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour },
     };
 
     RenderTargetDescriptor desc = {};
     desc._name = "PostAA";
     desc._resolution = vec2<U16>(parent.inputRT().getWidth(), parent.inputRT().getHeight());
-    desc._attachmentCount = to_U32(att.size());
+    desc._attachmentCount = to_U8(att.size());
     desc._attachments = att.data();
 
     _samplerCopy = _context.allocateRT(desc);
@@ -70,7 +70,7 @@ void PostAAPreRenderOperator::execute() {
     RenderTarget& ldrTarget = _parent.outputRT();
 
     _samplerCopy._rt->blitFrom(&ldrTarget);
-    _samplerCopy._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
+    _samplerCopy._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
 
     // Apply FXAA/SMAA to the specified render target
     ldrTarget.begin(RenderTarget::defaultPolicy());

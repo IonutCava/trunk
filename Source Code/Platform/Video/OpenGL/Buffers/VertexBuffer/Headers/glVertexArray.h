@@ -83,8 +83,6 @@ class glVertexArray : public VertexBuffer {
     bool createInternal();
     /// Enable full VAO based VB (all pointers are tracked by VAO's)
     void uploadVBAttributes(GLuint VAO);
-    /// Integrity checks
-    void checkStatus();
     /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
     std::pair<bufferPtr, size_t> getMinimalData();
 

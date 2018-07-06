@@ -180,6 +180,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     
     // Maximum number of colour attachments per framebuffer
     s_maxFBOAttachments = GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS);
+    GL_API::s_blendProperties.resize(s_maxFBOAttachments);
 
     // Query GPU vendor to enable/disable vendor specific features
     GPUVendor vendor = GPUVendor::COUNT;
@@ -320,8 +321,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, &s_lineWidthLimit);
     }
 
-    // Culling is enabled by default, but RenderStateBlocks can toggle it on a
-    // per-draw call basis
+    // Culling is enabled by default, but RenderStateBlocks can toggle it on a per-draw call basis
     glEnable(GL_CULL_FACE);
 
     // Prepare font rendering subsystem

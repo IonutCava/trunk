@@ -155,6 +155,10 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// specified stage. Not cached!
     U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const override;
     U32 GetSubroutineUniformCount(ShaderType type) const override;
+
+    /// Cache uniform/attribute locations for shader programs
+    I32 Binding(const char* name) override;
+
     /// Set an uniform value
     void Uniform(const stringImplFast& location, U32 value) override;
     void Uniform(const stringImplFast& location, I32 value) override;
@@ -197,8 +201,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// This should be called in the loading thread, but some issues are still
     /// present, and it's not recommended (yet)
     void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback, bool skipRegister);
-    /// Cache uniform/attribute locations for shader programs
-    I32 getUniformLocation(const stringImplFast& name);
 
     struct fake_dependency: public std::false_type {};
     template <typename T>

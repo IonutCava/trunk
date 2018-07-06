@@ -1099,10 +1099,6 @@ void Scene::processTasks(const U64 deltaTime) {
 }
 
 void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, RenderSubPassCmds& subPassesInOut) {
-    if (stagePass.stage() != RenderStage::DISPLAY || stagePass.pass() == RenderPassType::DEPTH_PASS) {
-        return;
-    }
-
     RenderSubPassCmd& subPass = subPassesInOut.back();
     if (Config::Build::IS_DEBUG_BUILD) {
         const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();

@@ -177,8 +177,8 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     // Only the first colour attachment or the depth attachment is used for now
     // and it must be a cube map texture
     RenderTarget& cubeMapTarget = renderTarget(cubeMap);
-    const RTAttachment& colourAttachment = cubeMapTarget.getAttachment(RTAttachment::Type::Colour, 0);
-    const RTAttachment& depthAttachment = cubeMapTarget.getAttachment(RTAttachment::Type::Depth, 0);
+    const RTAttachment& colourAttachment = cubeMapTarget.getAttachment(RTAttachmentType::Colour, 0);
+    const RTAttachment& depthAttachment = cubeMapTarget.getAttachment(RTAttachmentType::Depth, 0);
     // Colour attachment takes precedent over depth attachment
     bool hasColour = colourAttachment.used();
     bool hasDepth = depthAttachment.used();
@@ -229,8 +229,8 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     params.bindTargets = false;
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
-        cubeMapTarget.drawToFace(hasColour ? RTAttachment::Type::Colour
-                                           : RTAttachment::Type::Depth,
+        cubeMapTarget.drawToFace(hasColour ? RTAttachmentType::Colour
+                                           : RTAttachmentType::Depth,
                                  0,
                                  i + arrayOffset);
         // Point our camera to the correct face
@@ -259,8 +259,8 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     }
 
     RenderTarget& paraboloidTarget = renderTarget(targetBuffer);
-    const RTAttachment& colourAttachment = paraboloidTarget.getAttachment(RTAttachment::Type::Colour, 0);
-    const RTAttachment& depthAttachment = paraboloidTarget.getAttachment(RTAttachment::Type::Depth, 0);
+    const RTAttachment& colourAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Colour, 0);
+    const RTAttachment& depthAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Depth, 0);
     // Colour attachment takes precedent over depth attachment
     bool hasColour = colourAttachment.used();
     bool hasDepth = depthAttachment.used();
@@ -295,8 +295,8 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     // Enable our render target
     paraboloidTarget.begin(RenderTarget::defaultPolicy());
         for (U8 i = 0; i < 2; ++i) {
-            paraboloidTarget.drawToLayer(hasColour ? RTAttachment::Type::Colour
-                                                   : RTAttachment::Type::Depth,
+            paraboloidTarget.drawToLayer(hasColour ? RTAttachmentType::Colour
+                                                   : RTAttachmentType::Depth,
                                          0,
                                          i + arrayOffset);
             // Point our camera to the correct face
@@ -380,6 +380,7 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
 
     // Update render targets with the new resolution
     _rtPool->resizeTargets(RenderTargetUsage::SCREEN, w, h);
+    _rtPool->resizeTargets(RenderTargetUsage::OIT, w, h);
 
     U16 reflectRes = std::max(w, h) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
 
@@ -631,7 +632,7 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
         depthOnlyTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
         depthOnlyTarget.disableState(RTDrawDescriptor::State::CHANGE_VIEWPORT);
         depthOnlyTarget.drawMask().disableAll();
-        depthOnlyTarget.drawMask().setEnabled(RTAttachment::Type::Depth, 0, true);
+        depthOnlyTarget.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
         firstRun = false;
     }
 
@@ -649,7 +650,7 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     vec4<I32> previousViewport(_viewport.top());
 
     // Bind the depth texture to the first texture unit
-    Texture_ptr depth = screenTarget.getAttachment(RTAttachment::Type::Depth, 0).texture();
+    Texture_ptr depth = screenTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
     if (depth->getDescriptor().automaticMipMapGeneration()) {
         return;
     }
@@ -666,8 +667,7 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     depth->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
     screenTarget.begin(depthOnlyTarget);
     // We skip the first level as that's our full resolution image
-    
-    vec2<I32> depthInfo;
+
     while (dim) {
         if (level) {
             twidth = twidth < 1 ? 1 : twidth;
@@ -676,8 +676,7 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
             updateViewportInternal(0, 0, twidth, theight);
             // Bind next mip level for rendering but first restrict fetches only to previous level
             screenTarget.setMipLevel(level);
-            depthInfo.set(level - 1, wasEven ? 1 : 0);
-            _HIZConstructProgram->Uniform("depthInfo", depthInfo);
+            _HIZConstructProgram->Uniform("depthInfo", vec2<I32>(level - 1, wasEven ? 1 : 0));
             // Dummy draw command as the full screen quad is generated completely in the vertex shader
             draw(triangleCmd);
         }
@@ -691,8 +690,6 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     }
 
     updateViewportInternal(previousViewport);
-    // Reset mipmap level range for the depth buffer
-    screenTarget.setMipLevel(0);
     // Unbind the render target
     screenTarget.end();
 }
@@ -730,8 +727,7 @@ const ShaderComputeQueue& GFXDevice::shaderComputeQueue() const {
     return *_shaderComputeQueue;
 }
 
-/// Extract the pixel data from the main render target's first colour attachment
-/// and save it as a TGA image
+/// Extract the pixel data from the main render target's first colour attachment and save it as a TGA image
 void GFXDevice::Screenshot(const stringImpl& filename) {
     // Get the screen's resolution
     RenderTarget& screenRT = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
