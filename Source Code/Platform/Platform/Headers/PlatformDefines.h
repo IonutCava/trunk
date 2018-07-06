@@ -78,7 +78,7 @@ typedef void* bufferPtr;
 
 #ifdef _DEBUG
 #define STUBBED(x)                                                   \
-    \
+                                                                     \
 do {                                                                 \
         static bool seen_this = false;                               \
         if (!seen_this) {                                            \
@@ -86,8 +86,8 @@ do {                                                                 \
             Console::errorfn("STUBBED: %s (%s : %d)\n", x, __FILE__, \
                              __LINE__);                              \
         }                                                            \
-    \
-}                                                             \
+                                                                     \
+}                                                                    \
     while (0)                                                        \
         ;
 
@@ -129,6 +129,10 @@ typedef int64_t I64;
 typedef float F32;
 typedef double D32;
 typedef void* bufferPtr;
+
+inline bufferPtr bufferOffset(size_t offset) {
+    return ((char *)NULL + (offset));
+}
 
 /*
 template<typename Enum>

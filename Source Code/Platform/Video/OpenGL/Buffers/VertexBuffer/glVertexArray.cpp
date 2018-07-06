@@ -321,10 +321,10 @@ void glVertexArray::draw(const GenericDrawCommand& command,
             }
         } else {
             if (command.renderGeometry()) {
-                glDrawElements(mode, command.cmd().indexCount, _formatInternal, (bufferPtr)command.cmd().firstIndex);
+                glDrawElements(mode, command.cmd().indexCount, _formatInternal, bufferOffset(command.cmd().firstIndex));
             }
             if (command.renderWireframe()) {
-                glDrawElements(GL_LINE_LOOP, command.cmd().indexCount, _formatInternal, (bufferPtr)command.cmd().firstIndex);
+                glDrawElements(GL_LINE_LOOP, command.cmd().indexCount, _formatInternal, bufferOffset(command.cmd().firstIndex));
             }
         }
     }

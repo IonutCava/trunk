@@ -261,10 +261,10 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
             } else {
                 if (_indexBuffer > 0) {
                     if (command.renderGeometry()) {
-                        glDrawElements(mode, cmd.indexCount, GL_UNSIGNED_INT, (bufferPtr)(cmd.firstIndex));
+                        glDrawElements(mode, cmd.indexCount, GL_UNSIGNED_INT, bufferOffset(cmd.firstIndex));
                     }
                     if (command.renderWireframe()) {
-                        glDrawElements(GL_LINE_LOOP, cmd.indexCount, GL_UNSIGNED_INT, (bufferPtr)(cmd.firstIndex));
+                        glDrawElements(GL_LINE_LOOP, cmd.indexCount, GL_UNSIGNED_INT, bufferOffset(cmd.firstIndex));
                     }
                 } else {
                     if (command.renderGeometry()) {
