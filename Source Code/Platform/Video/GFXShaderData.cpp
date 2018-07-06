@@ -20,7 +20,7 @@ GFXShaderData::GPUData::GPUData()
     _renderProperties.set(0.0f);
     for (U8 i = 0; i < to_const_ubyte(Frustum::FrustPlane::COUNT); ++i) {
         _frustumPlanes[i].set(0.0f);
-        _clipPlanes[i].set(1.0f);
+        _clipPlanes[i].set(0.0f);
     }
 }
 

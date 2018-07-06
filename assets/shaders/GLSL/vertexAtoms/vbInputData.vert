@@ -1,8 +1,6 @@
 #ifndef _VB_INPUT_DATA_VERT_
 #define _VB_INPUT_DATA_VERT_
 
-invariant gl_Position;
-
 #include "nodeBufferedInput.cmn"
 
 #if defined(USE_GPU_SKINNING)

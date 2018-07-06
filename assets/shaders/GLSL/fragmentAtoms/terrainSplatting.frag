@@ -17,11 +17,11 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texUnderwaterDetail;
 uniform float underwaterDiffuseScale;
 
 vec4 getFinalColour1(const in vec4 blendMap, const in uint index, const in vec4 diffSize) {
-    return texture(texTileMaps[index], vec3(scaledTextureCoords(VAR._texCoord, diffSize.r), 0))/* * blendMap.r*/;
+    return texture(texTileMaps[index], vec3(scaledTextureCoords(VAR._texCoord, diffSize.r), 0));
 }
 
 vec3 getFinalTBN1(const in vec4 blendMap, const in uint index, const in vec4 normSize){
-    return texture(texNormalMaps[index], vec3(scaledTextureCoords(VAR._texCoord, normSize.r), 0)).rgb * blendMap.r;
+    return texture(texNormalMaps[index], vec3(scaledTextureCoords(VAR._texCoord, normSize.r), 0)).rgb;
 }
 
 vec4 getFinalColour2(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
