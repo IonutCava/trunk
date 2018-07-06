@@ -48,6 +48,7 @@ void GFXDevice::previewDepthBuffer() {
 /// Render all of our immediate mode primitives. This isn't very optimised and
 /// most are recreated per frame!
 void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
+    uploadGlobalBufferData();
     // We need a shader that emulates the fixed pipeline in order to continue
     if (!_imShader->bind()) {
         return;

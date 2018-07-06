@@ -248,13 +248,12 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline RenderStage getRenderStage() const { return _renderStage; }
     /// Renders the result of plotting the specified 2D graph
     void plot2DGraph(const Util::GraphPlot2D& plot2D,
-                     const vec4<U8>& color) const;
+                     const vec4<U8>& color);
     /// Renders the result of plotting the specified 3D graph
     void plot3DGraph(const Util::GraphPlot3D& plot3D,
-                     const vec4<U8>& color) const;
+                     const vec4<U8>& color);
     /// Some Scene Node Types are excluded from certain operations (lights
-    /// triggers,
-    /// etc)
+    /// triggers, etc)
     inline bool excludeFromStateChange(const SceneNodeType& currentType) {
         return (_stateExclusionMask & to_int(currentType)) ==
                to_int(currentType);
@@ -382,7 +381,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     inline void threadedLoadCallback() override { _api->threadedLoadCallback(); }
 
-    inline void drawPoints(U32 numPoints) override { _api->drawPoints(numPoints); }
+    inline void drawPoints(U32 numPoints) override { 
+        uploadGlobalBufferData();
+        _api->drawPoints(numPoints); 
+    }
 
     void drawDebugAxis(const SceneRenderState& sceneRenderState);
 
@@ -421,6 +423,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// returns false if there was an invalid state detected that could prevent
     /// rendering
     bool setBufferData(const GenericDrawCommand& cmd);
+    /// Upload all relevant buffer data to GPU memory (if needed): node data,
+    /// draw commands, gpu matrices, etc
+    void uploadGlobalBufferData();
     /// Update the graphics pipeline using the current rendering API with the state
     /// block passed
     inline void activateStateBlock(
@@ -431,6 +436,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     inline void drawText(const TextLabel& textLabel,
                          const vec2<I32>& position) override {
+        uploadGlobalBufferData();
         _api->drawText(textLabel, position);
     }
 

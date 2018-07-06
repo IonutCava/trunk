@@ -623,7 +623,7 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
 }
 /// Renders the result of plotting the specified 2D graph
 void GFXDevice::plot2DGraph(const Util::GraphPlot2D& plot2D,
-                            const vec4<U8>& color) const {
+                            const vec4<U8>& color) {
     if (plot2D.empty()) {
         return;
     }
@@ -638,10 +638,11 @@ void GFXDevice::plot2DGraph(const Util::GraphPlot2D& plot2D,
 
 /// Renders the result of plotting the specified 3D graph
 void GFXDevice::plot3DGraph(const Util::GraphPlot3D& plot3D,
-                            const vec4<U8>& color) const {
+                            const vec4<U8>& color) {
     if (plot3D.empty()) {
         return;
     }
+
     vectorImpl<Line> plotLines;
     plotLines.reserve(plot3D._coords.size());
     vectorAlg::vecSize coordCount = plot3D._coords.size();
@@ -650,6 +651,8 @@ void GFXDevice::plot3DGraph(const Util::GraphPlot3D& plot3D,
         const vec3<F32>& endCoord = plot3D._coords[i + 1];
         vectorAlg::emplace_back(plotLines, startCoord, endCoord, color);
     }
+
+    drawLines(plotLines, mat4<F32>(), vec4<I32>(), false, false);
 }
 
 /// Extract the pixel data from the main render target's first color attachment

@@ -419,6 +419,7 @@ void GL_API::drawPoints(GLuint numPoints) {
 
 void GL_API::uploadDrawCommands(
     const vectorImpl<IndirectDrawCommand>& drawCommands) const {
+    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
     GLUtil::allocBuffer(_indirectDrawBuffer,
                         static_cast<GLsizeiptr>(sizeof(IndirectDrawCommand) *
                                                 drawCommands.size()),

@@ -55,6 +55,27 @@ bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
     return true;
 }
 
+void GFXDevice::uploadGlobalBufferData() {
+     if (_buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)]) {
+        _nodeBuffer->UpdateData(0, _matricesData.size() * sizeof(NodeData),
+                        _matricesData.data());
+        _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = false;
+    }
+
+    if (_buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)]) {
+        uploadDrawCommands(_drawCommandsCache);
+        //assert(_matricesData.size() == _drawCommandsCache.size());
+        _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = false;
+    }
+     
+    if (_buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)]) {
+        // We flush the entire buffer on update to inform the GPU that we don't need
+        // the previous data. Might avoid some driver sync
+        _gfxDataBuffer->SetData(&_gpuBlock);
+        _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = false;
+    }
+}
+
 /// A draw command is composed of a target buffer and a command. The command
 /// part is processed here
 bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
@@ -71,25 +92,6 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     DIVIDE_ASSERT(cmd.shaderProgram() != nullptr,
                   "GFXDevice error: Draw shader state is not valid for the "
                   "current draw operation!");
-
-     if (_buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)]) {
-        _nodeBuffer->UpdateData(0, _matricesData.size() * sizeof(NodeData),
-                        _matricesData.data());
-        _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = false;
-    }
-
-    if (_buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)]) {
-        uploadDrawCommands(_drawCommandsCache);
-        _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = false;
-    }
-     
-    if (_buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)]) {
-        // We flush the entire buffer on update to inform the GPU that we don't need
-        // the previous data. Might avoid some driver sync
-        _gfxDataBuffer->SetData(&_gpuBlock);
-        _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = false;
-    }
-
     // Try to bind the shader program. If it failed to load, or isn't loaded
     // yet, cancel the draw request for this frame
     if (!cmd.shaderProgram()->bind()) {
@@ -152,7 +154,7 @@ void GFXDevice::flushRenderQueue() {
     if (_renderQueue.empty()) {
         return;
     }
-
+    uploadGlobalBufferData();
     for (RenderPackage& package : _renderQueue) {
         vectorAlg::vecSize commandCount = package._drawCommands.size();
         if (commandCount > 0) {
@@ -344,9 +346,14 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
         previousIDC.primitiveType() == currentIDC.primitiveType() &&
         previousIDC.renderWireframe() == currentIDC.renderWireframe())
     {
+        U32 prevCount = previousIDC.drawCount();
+        U32 crtCount = currentIDC.drawCount();
+        /*if (previousIDC.drawID() + prevCount + 1 != currentIDC.drawID()) {
+            return false;
+        }*/
         // If the rendering commands are batchable, increase the draw count for
         // the previous one
-        previousIDC.drawCount(previousIDC.drawCount() + currentIDC.drawCount());
+        previousIDC.drawCount(prevCount + crtCount);
         // And set the current command's draw count to zero so it gets removed
         // from the list later on
         currentIDC.drawCount(0);
@@ -457,7 +464,8 @@ void GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max,
 /// Render a list of lines within the specified constraints
 void GFXDevice::drawLines(const vectorImpl<Line>& lines,
                           const mat4<F32>& globalOffset,
-                          const vec4<I32>& viewport, const bool inViewport,
+                          const vec4<I32>& viewport, 
+                          const bool inViewport,
                           const bool disableDepth) {
     // Check if we have a valid list. The list can be programmatically
     // generated, so this check is required

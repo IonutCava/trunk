@@ -257,6 +257,8 @@ void GFXDevice::endFrame() {
     // - 3 seconds at 60 fps)
     static const I32 IM_MAX_FRAMES_ZOMBIE_COUNT = 180;
 
+    uploadGlobalBufferData();
+
     if (Application::getInstance().mainLoopActive()) {
         // Render all 2D debug info and call API specific flush function
         GFX::Scoped2DRendering scoped2D(true);
