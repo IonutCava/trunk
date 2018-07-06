@@ -9,6 +9,7 @@ U32 SceneNodeRenderState::getDepthStateBlock() {
     if (_depthStateBlockHash == 0) {
         RenderStateBlock depthDesc;
         depthDesc.setColorWrites(false, false, false, false);
+        depthDesc.setZFunc(ComparisonFunction::LESS);
         _depthStateBlockHash = depthDesc.getHash();
     }
     return _depthStateBlockHash;

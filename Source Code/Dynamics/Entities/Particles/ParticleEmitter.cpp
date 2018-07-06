@@ -22,6 +22,7 @@ ParticleEmitter::ParticleEmitter()
     : SceneNode(SceneNodeType::TYPE_PARTICLE_EMITTER),
       _drawImpostor(false),
       _particleStateBlockHash(0),
+      _particleStateBlockHashDepth(0),
       _enabled(false),
       _uploaded(false),
       _particleTexture(nullptr),
@@ -69,6 +70,9 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     particleRenderState.setZReadWrite(true, false);
     particleRenderState.setZFunc(ComparisonFunction::LEQUAL);
     _particleStateBlockHash = particleRenderState.getHash();
+
+    particleRenderState.setZFunc(ComparisonFunction::LESS);
+    _particleStateBlockHashDepth = particleRenderState.getHash();
 
     bool useTexture = _particleTexture != nullptr;
     ResourceDescriptor particleShaderDescriptor(useTexture ? "particles.WithTexture" : "particles.NoTexture");
@@ -219,13 +223,15 @@ bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
 
     cmd.renderGeometry(renderable->renderGeometry());
     cmd.renderWireframe(renderable->renderWireframe());
-    cmd.stateHash(_particleStateBlockHash);
     cmd.cmd().primCount = particleCount;
 
-    cmd.shaderProgram(GFX_DEVICE.isDepthStage()
-                                  ? _particleDepthShader
-                                  : _particleShader);
-
+    if (GFX_DEVICE.isDepthStage()) {
+        cmd.stateHash(_particleStateBlockHash);
+        cmd.shaderProgram(_particleDepthShader);
+    } else {
+        cmd.stateHash(_particleStateBlockHashDepth);
+        cmd.shaderProgram( _particleShader);
+    }
     return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 

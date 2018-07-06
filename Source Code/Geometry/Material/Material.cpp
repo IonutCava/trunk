@@ -31,6 +31,7 @@ Material::Material()
 
     /// Normal state for final rendering
     RenderStateBlock stateDescriptor;
+    stateDescriptor.setZFunc(ComparisonFunction::LEQUAL);
     setRenderStateBlock(stateDescriptor.getHash(), RenderStage::DISPLAY);
     /// the reflection descriptor is the same as the normal descriptor
     RenderStateBlock reflectorDescriptor(stateDescriptor);
@@ -38,6 +39,7 @@ Material::Material()
     /// the z-pre-pass descriptor does not process colors
     RenderStateBlock zPrePassDescriptor(stateDescriptor);
     zPrePassDescriptor.setColorWrites(true, true, true, false);
+    zPrePassDescriptor.setZFunc(ComparisonFunction::LESS);
     setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::Z_PRE_PASS);
     /// A descriptor used for rendering to depth map
     RenderStateBlock shadowDescriptor(stateDescriptor);
