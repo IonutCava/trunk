@@ -30,17 +30,97 @@ SceneInput::SceneInput(Scene& parentScene, Input::InputInterface& context)
 {
 }
 
-Input::InputState SceneInput::getKeyState(Input::KeyCode key) const {
-    return _context.getKeyState(key);
+bool SceneInput::isDeviceInUse(I32 deviceID) {
+    return std::find_if(std::cbegin(_usedInputDevices),
+                        std::cend(_usedInputDevices),
+                        [deviceID](I32 device) {
+                            return device == deviceID;
+                        }) != std::cend(_usedInputDevices);
 }
 
-Input::InputState SceneInput::getMouseButtonState(Input::MouseButton button) const {
-   return _context.getMouseButtonState(button);
+void SceneInput::onSetActive() {
+    _playerControlDevices.clear();
+    _usedInputDevices.clear();
 }
 
-Input::InputState SceneInput::getJoystickButtonState(Input::Joystick device,
+void SceneInput::onRemoveActive() {
+
+}
+
+void SceneInput::onPlayerAdd(U8 index) {
+    _keyLog.insert(std::make_pair(index, KeyLog()));
+    _mouseBtnLog.insert(std::make_pair(index, MouseBtnLog()));
+
+    std::pair<I32, I32>& devices = _playerControlDevices[index];
+    
+    // Keyboard + Mouse pairs have priority
+    I32 numKBMousePairs = _context.kbMousePairCount();
+    for (I32 i = 0; i < numKBMousePairs; ++i) {
+        Input::InputInterface::KBMousePair pair = _context.getKeyboardMousePair(to_ubyte(i));
+
+        std::pair<I32, I32> deviceIndices(pair.first ? pair.first->getID() : -1,
+                                          pair.second ? pair.second->getID() : -1);
+
+        if (!isDeviceInUse(deviceIndices.first) && !isDeviceInUse(deviceIndices.second)) {
+            devices = deviceIndices;
+            _usedInputDevices.push_back(devices.first);
+            _usedInputDevices.push_back(devices.second);
+            return;
+        }
+    }
+
+    // Fallback to gamepads
+    I32 numJoysticks = _context.joystickCount();
+    for (I32 i = 0; i < numJoysticks; ++i) {
+        OIS::JoyStick* joy = _context.getJoystick(static_cast<Input::Joystick>(i));
+        I32 deviceIndex = joy ? joy->getID() : -1;
+        if (!isDeviceInUse(deviceIndex)) {
+            devices.first = deviceIndex;
+            devices.second = -1;
+            _usedInputDevices.push_back(deviceIndex);
+            return;
+        }
+    }
+}
+
+void SceneInput::onPlayerRemove(U8 index) {
+    _keyLog.find(index)->second.clear();
+    _mouseBtnLog.find(index)->second.clear();
+
+    std::pair<I32, I32>& devices = _playerControlDevices[index];
+    _usedInputDevices.erase(std::remove_if(std::begin(_usedInputDevices),
+                                           std::end(_usedInputDevices),
+                                           [devices](I32 device) {
+                                                return device == devices.first ||
+                                                       device == devices.second;
+                                           }),
+                            std::end(_usedInputDevices));
+
+    devices.first = devices.second = -1;
+}
+
+U8 SceneInput::getPlayerIndexForDevice(U8 deviceIndex) const {
+    for (hashMapImpl<U8 /*player index*/, std::pair<I32, I32>>::value_type it : _playerControlDevices) {
+        if (it.second.first == deviceIndex || it.second.second == deviceIndex) {
+            return it.first;
+        }
+    }
+
+    DIVIDE_UNEXPECTED_CALL("No player for current device");
+    return 0;
+}
+
+Input::InputState SceneInput::getKeyState(U8 deviceIndex, Input::KeyCode key) const {
+    return _context.getKeyState(deviceIndex, key);
+}
+
+Input::InputState SceneInput::getMouseButtonState(U8 deviceIndex, Input::MouseButton button) const {
+   return _context.getMouseButtonState(deviceIndex, button);
+}
+
+Input::InputState SceneInput::getJoystickButtonState(Input::Joystick deviceIndex,
                                                      Input::JoystickButton button) const {
-    return _context.getJoystickeButtonState(device, button);
+    return _context.getJoystickeButtonState(deviceIndex, button);
 }
 
 bool SceneInput::handleCallbacks(const PressReleaseActionCbks& cbks,
@@ -53,22 +133,22 @@ bool SceneInput::handleCallbacks(const PressReleaseActionCbks& cbks,
     const DELEGATE_CBK_PARAM<InputParams>& rCtrl = (onPress ? cbks._onRCtrlPressAction : cbks._onRCtrlReleaseAction);
     const DELEGATE_CBK_PARAM<InputParams>& noMod = (onPress ? cbks._onPressAction      : cbks._onReleaseAction);
 
-    if (getKeyState(Input::KeyCode::KC_LMENU) == Input::InputState::PRESSED && lAlt) {
+    if (getKeyState(params._deviceIndex, Input::KeyCode::KC_LMENU) == Input::InputState::PRESSED && lAlt) {
         lAlt(params);
         return true;
     }
 
-    if (getKeyState(Input::KeyCode::KC_RMENU) == Input::InputState::PRESSED && rAlt) {
+    if (getKeyState(params._deviceIndex, Input::KeyCode::KC_RMENU) == Input::InputState::PRESSED && rAlt) {
         rAlt(params);
         return true;
     }
 
-    if (getKeyState(Input::KeyCode::KC_LCONTROL) == Input::InputState::PRESSED && lCtrl) {
+    if (getKeyState(params._deviceIndex, Input::KeyCode::KC_LCONTROL) == Input::InputState::PRESSED && lCtrl) {
         lCtrl(params);
         return true;
     }
 
-    if (getKeyState(Input::KeyCode::KC_RCONTROL) == Input::InputState::PRESSED && rCtrl) {
+    if (getKeyState(params._deviceIndex, Input::KeyCode::KC_RCONTROL) == Input::InputState::PRESSED && rCtrl) {
         rCtrl(params);
         return true;
     }
@@ -194,23 +274,18 @@ bool SceneInput::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index
 
 bool SceneInput::mouseMoved(const Input::MouseEvent& arg) {
     SceneStatePerPlayer& state = _parentScene.state().playerState(arg._deviceIndex);
-    
-    vec2<I32>& mousePos = _mousePos[arg._deviceIndex];
-
-    state.mouseXDelta(mousePos.x - arg._event.state.X.abs);
-    state.mouseYDelta(mousePos.y - arg._event.state.Y.abs);
-    mousePos.set(arg._event.state.X.abs, arg._event.state.Y.abs);
+    state.aimPos(vec2<I32>(arg._event.state.X.abs, arg._event.state.Y.abs));
 
     if (state.cameraLockedToMouse()) {
-        state.angleLR(state.mouseXDelta() < 0
+        state.angleLR(state.aimDelta().x < 0
                         ? MoveDirection::POSITIVE
                         : MoveDirection::NEGATIVE);
-        state.angleUD(state.mouseYDelta() < 0
+        state.angleUD(state.aimDelta().x < 0
                         ? MoveDirection::POSITIVE
                         : MoveDirection::NEGATIVE);
     }
 
-    return true;
+    return Attorney::SceneInput::mouseMoved(_parentScene, arg);
 }
 
 bool SceneInput::mouseButtonPressed(const Input::MouseEvent& arg,
@@ -218,7 +293,7 @@ bool SceneInput::mouseButtonPressed(const Input::MouseEvent& arg,
 
     if (g_recordInput) {
         vectorAlg::emplace_back(_mouseBtnLog[arg._deviceIndex],
-            vectorAlg::make_tuple(id, Input::InputState::PRESSED, getMousePosition(arg._deviceIndex)));
+            vectorAlg::make_tuple(id, Input::InputState::PRESSED, vec2<I32>(arg._event.state.X.abs, arg._event.state.Y.abs)));
     }
 
     PressReleaseActionCbks cbks;
@@ -233,7 +308,7 @@ bool SceneInput::mouseButtonReleased(const Input::MouseEvent& arg,
                                      Input::MouseButton id) {
     if (g_recordInput) {
         vectorAlg::emplace_back(_mouseBtnLog[arg._deviceIndex],
-                                vectorAlg::make_tuple(id, Input::InputState::RELEASED,   getMousePosition(arg._deviceIndex)));
+                                vectorAlg::make_tuple(id, Input::InputState::RELEASED, vec2<I32>(arg._event.state.X.abs, arg._event.state.Y.abs)));
     }
 
     PressReleaseActionCbks cbks;

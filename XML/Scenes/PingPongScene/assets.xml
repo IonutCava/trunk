@@ -53,4 +53,5 @@
 	<!--<size>6</size>-->
 	<model>models/dwarf.x</model>
 	<version>1.0</version>
+  <isUnit>true</isUnit>
 </opponent>

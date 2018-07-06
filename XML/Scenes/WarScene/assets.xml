@@ -30,6 +30,7 @@
 	<position x="0" y="0" z="-7" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
+  <isUnit>true</isUnit>
 </Soldier1>
 
 
@@ -39,6 +40,7 @@
 	<position x="-3.5" y="0" z="7.5" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
+  <isUnit>true</isUnit>
 </Soldier2>
 
 <Soldier3>
@@ -47,6 +49,7 @@
 	<position x="4.5" y="0" z="5.5" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
+  <isUnit>true</isUnit>
 </Soldier3>
 
 

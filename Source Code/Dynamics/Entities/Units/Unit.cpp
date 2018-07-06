@@ -7,8 +7,7 @@
 namespace Divide {
 
 Unit::Unit(UnitType type, SceneGraphNode_ptr node)
-    : GUIDWrapper(),
-      FrameListener(),
+    : FrameListener(),
       _type(type),
       _node(node),
       _moveSpeed(Metric::Base(1.0f)),

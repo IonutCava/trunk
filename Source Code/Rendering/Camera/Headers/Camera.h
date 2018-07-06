@@ -315,11 +315,12 @@ class Camera : public Resource {
 
     vec3<F32> unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, const vec4<I32>& viewport) const;
 
+    virtual bool moveRelative(const vec3<I32>& relMovement) { return true; }
+
    protected:
     virtual bool updateViewMatrix();
     virtual bool updateProjection();
     /// Inject mouse events
-    virtual bool mouseMovedInternal(const Input::MouseEvent& arg) { return true; }
     virtual void updateInternal(const U64 deltaTime);
     /// Called when the camera becomes active/ is deactivated
     virtual void setActiveInternal(bool state);
@@ -380,7 +381,6 @@ class Camera : public Resource {
        static bool    destroyCamera(Camera*& camera);
        static Camera* findCamera(U64 nameHash);
 
-       static bool mouseMoved(const Input::MouseEvent& arg);
        static void addChangeListener(const DELEGATE_CBK_PARAM<const Camera& /*new camera*/>& f);
        static void addUpdateListener(const DELEGATE_CBK_PARAM<const Camera& /*updated camera*/>& f);
 

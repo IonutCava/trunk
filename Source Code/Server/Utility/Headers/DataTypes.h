@@ -24,6 +24,7 @@ class FileData {
     F32 data;  // general purpose
     stringImpl data2;
     F32 version;
+    bool isUnit;
 };
 
 };  // namespace Divide

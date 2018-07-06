@@ -63,8 +63,8 @@ enum class SceneNodeType : U32 {
     TYPE_SKY = toBit(8),                //< sky node
     TYPE_VEGETATION_GRASS = toBit(9),   //< grass node
     TYPE_VEGETATION_TREES = toBit(10),  //< trees node (to do later)
-                                        /// Place types above
-                                        COUNT
+    COUNT                               //< Place types above
+                                        
 };
 
 class NOINITVTABLE SceneNode : public Resource {
@@ -178,7 +178,6 @@ class NOINITVTABLE SceneNode : public Resource {
     Material_ptr _materialTemplate;
 
     vectorImpl<SGNParentData> _sgnParents;
-    
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneNode);

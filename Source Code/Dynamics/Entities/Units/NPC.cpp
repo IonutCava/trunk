@@ -4,14 +4,25 @@
 namespace Divide {
 
 NPC::NPC(SceneGraphNode_ptr node, AI::AIEntity* const aiEntity)
-    : Character(Character::CharacterType::CHARACTER_TYPE_NPC, node), _aiUnit(aiEntity) {
+    : Character(Character::CharacterType::CHARACTER_TYPE_NPC, node),
+      _aiUnit(aiEntity)
+{
     if (_aiUnit) {
         assert(!_aiUnit->getUnitRef());
         _aiUnit->addUnitRef(this);
     }
 }
 
-NPC::~NPC() {}
+NPC::~NPC()
+{
+}
 
-void NPC::update(const U64 deltaTime) { Character::update(deltaTime); }
+void NPC::update(const U64 deltaTime) {
+    Character::update(deltaTime);
+}
+
+AI::AIEntity* NPC::getAIEntity() const {
+    return _aiUnit;
+}
+
 };

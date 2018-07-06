@@ -91,12 +91,12 @@ void ParticleData::sort(bool invalidateCache) {
         idx.second = _misc[i].w;
     }
     
-    auto sortFunc = 
-    [](const std::pair<U32, F32>& indexA, const std::pair<U32, F32>& indexB) {
-        return indexA.second > indexB.second;
-    };
 
-    std::sort(std::begin(_indices), std::end(_indices), sortFunc);
+    std::sort(std::begin(_indices),
+             std::end(_indices),
+             [](const std::pair<U32, F32>& indexA, const std::pair<U32, F32>& indexB) {
+                 return indexA.second > indexB.second;
+             });
 
    auto parsePositions = [count, this](const Task& parentTask) -> void {
         for (U32 i = 0; i < count; ++i) {

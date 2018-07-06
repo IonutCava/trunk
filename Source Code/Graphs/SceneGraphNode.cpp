@@ -69,6 +69,10 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
     if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::BOUNDS))) {
         setComponent(SGNComponent::ComponentType::BOUNDS, new BoundsComponent(*this));
     }
+
+    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::UNIT))) {
+        setComponent(SGNComponent::ComponentType::UNIT, new UnitComponent(*this));
+    }
     
     if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::RENDERING))) {
         GFXDevice& gfxContext = _sceneGraph.parentScene().platformContext().gfx();

@@ -248,6 +248,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
                      ? GeometryType::PRIMITIVE
                      : GeometryType::GEOMETRY;
     model.version = 1.0f;
+    model.isUnit = false;
     model.staticUsage = false;
     model.navigationUsage = true;
     model.useHighDetailNavMesh = true;

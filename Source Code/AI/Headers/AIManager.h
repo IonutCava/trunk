@@ -65,8 +65,7 @@ class AIManager : public SceneComponent
     /// Entities can be added to multiple teams. Caller is responsible for the
     /// lifetime of entity
     bool registerEntity(U32 teamID, AIEntity* entity);
-    /// Remove an AI Entity from a specific teams. Entities can be added to multiple
-    /// teams.
+    /// Remove an AI Entity from a specific teams. Entities can be added to multiple teams.
     /// Caller is responsible for the lifetime of entity
     void unregisterEntity(U32 teamID, AIEntity* entity);
     /// Remove an AI Entity from all teams. Entities can be added to multiple teams.

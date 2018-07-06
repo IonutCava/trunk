@@ -33,13 +33,16 @@
 #define _PHYSICS_SCENE_INTERFACE_H_
 
 #include "Scenes/Headers/SceneComponent.h"
+#include "Core/Headers/GUIDWrapper.h"
+#include "Platform/Headers/PlatformDataTypes.h"
 
 namespace Divide {
 
 class Transform;
 class PhysicsAsset;
 class SceneGraphNode;
-class PhysicsSceneInterface : public SceneComponent {
+class PhysicsSceneInterface : public SceneComponent,
+                              public GUIDWrapper {
    public:
     explicit PhysicsSceneInterface(Scene& parentScene);
 

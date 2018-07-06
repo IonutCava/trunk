@@ -22,8 +22,6 @@ InputInterface::InputInterface(Kernel& parent)
      : KernelComponent(parent), 
       _pInputInterface(nullptr),
       _pEventHdlr(nullptr),
-      _pKeyboard(nullptr),
-      _pMouse(nullptr),
       _pJoystickInterface(nullptr),
       _pEffectMgr(nullptr),
       _bMustStop(false),
@@ -73,24 +71,37 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
     _pEventHdlr = MemoryManager_NEW EventHandler(this, kernel);
     assert(_pEventHdlr != nullptr && "InputInterface error: EventHandler allocation failed!");
 
-    if (_pInputInterface->getNumberOfDevices(OIS::OISKeyboard) > 0) {
-        // Create a simple keyboard
-        _pKeyboard = static_cast<OIS::Keyboard*>( _pInputInterface->createInputObject(OIS::OISKeyboard, true));
-        _pKeyboard->setEventCallback(_pEventHdlr);
-    } else {
+    I32 numKB = _pInputInterface->getNumberOfDevices(OIS::OISKeyboard);
+    I32 numMouse = _pInputInterface->getNumberOfDevices(OIS::OISMouse);
+
+    if (numKB == 0) {
         Console::printfn(Locale::get(_ID("ERROR_INPUT_CREATE_KB")), "No keyboards detected");
     }
-
-
-    if (_pInputInterface->getNumberOfDevices(OIS::OISMouse) > 0) {
-        _pMouse = static_cast<OIS::Mouse*>(_pInputInterface->createInputObject(OIS::OISMouse, true));
-        _pMouse->setEventCallback(_pEventHdlr);
-
-        const OIS::MouseState& ms = _pMouse->getMouseState();  // width and height are mutable
-        ms.width = inputAreaDimensions.width;
-        ms.height = inputAreaDimensions.height;
-    } else {
+    if (numMouse == 0) {
         Console::printfn(Locale::get(_ID("ERROR_INPUT_CREATE_MOUSE")), "No mice detected");
+    }
+
+    for (I32 i = 0; i < std::max(numKB, numMouse); ++i) {
+        OIS::Keyboard* kb = nullptr;
+        OIS::Mouse* mouse = nullptr;
+
+        if (i < numKB) {
+            // Create a simple keyboard
+            kb = static_cast<OIS::Keyboard*>(_pInputInterface->createInputObject(OIS::OISKeyboard, true));
+            kb->setEventCallback(_pEventHdlr);
+            _keyboardIDToEntry[kb->getID()] = i;
+        }
+        if (i < numMouse) {
+            mouse = static_cast<OIS::Mouse*>(_pInputInterface->createInputObject(OIS::OISMouse, true));
+            mouse->setEventCallback(_pEventHdlr);
+
+            const OIS::MouseState& ms = mouse->getMouseState();  // width and height are mutable
+            ms.width = inputAreaDimensions.width;
+            ms.height = inputAreaDimensions.height;
+            _mouseIdToEntry[mouse->getID()] = i;
+        }
+
+        _kbMouseDevices.emplace_back(kb, mouse);
     }
 
     // Limit max joysticks to MAX_ALLOWED_JOYSTICKS
@@ -99,20 +110,18 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
     if (numJoysticks > 0) {
         U32 entryNum = to_const_uint(Joystick::JOYSTICK_1);
 
-        _pJoysticks.resize(numJoysticks);
-        vectorImpl<OIS::JoyStick*>::iterator it;
-        for (it =  std::begin(_pJoysticks);  it != std::end(_pJoysticks); ++it) {
-            (*it) = static_cast<OIS::JoyStick*>(_pInputInterface->createInputObject(OIS::OISJoyStick, true));
-            (*it)->setEventCallback(_pEventHdlr);
-
-            _joystickIdToEntry[(*it)->getID()] = static_cast<Joystick>(entryNum++);
+        for (I32 i = 0; i < numJoysticks; ++i) {
+            OIS::JoyStick* joystick = static_cast<OIS::JoyStick*>(_pInputInterface->createInputObject(OIS::OISJoyStick, true));
+            joystick->setEventCallback(_pEventHdlr);
+            _joystickIdToEntry[joystick->getID()] = static_cast<Joystick>(entryNum++);
+            _joysticks.push_back(joystick);
         }
 
         // Create the joystick manager.
         _pJoystickInterface = MemoryManager_NEW JoystickInterface(_pInputInterface, _pEventHdlr);
 
         for (I32 i = 0; i < numJoysticks; ++i) {
-            I32 max = _pJoysticks[i]->MAX_AXIS - 4000;
+            I32 max = _joysticks[i]->MAX_AXIS - 4000;
             _pJoystickInterface->setJoystickData(static_cast<Joystick>(i), JoystickData(max / 10, max));
         }
 
@@ -134,23 +143,33 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
     return ErrorCode::NO_ERR;
 }
 
+void InputInterface::onChangeWindowSize(U16 w, U16 h) {
+    for (KBMousePair& it : _kbMouseDevices) {
+        if (it.second) {
+            const OIS::MouseState& ms = it.second->getMouseState();
+            ms.width = w;
+            ms.height = h;
+        }
+    }
+}
+
 void InputInterface::terminate() {
     if (_pInputInterface) {
-        _pInputInterface->destroyInputObject(_pKeyboard);
-        _pKeyboard = nullptr;
-
-        _pInputInterface->destroyInputObject(_pMouse);
-        _pMouse = nullptr;
-
-        if (_pJoysticks.size() > 0) {
-            for (vectorImpl<OIS::JoyStick*>::iterator it =
-                std::begin(_pJoysticks);
-                it != std::end(_pJoysticks); ++it) {
-                _pInputInterface->destroyInputObject(*it);
+        for (KBMousePair& it : _kbMouseDevices) {
+            if (it.first) {
+                _pInputInterface->destroyInputObject(it.first);
             }
-            _pJoysticks.clear();
-            MemoryManager::DELETE(_pJoystickInterface);
+            if (it.second) {
+                _pInputInterface->destroyInputObject(it.second);
+            }
         }
+        _kbMouseDevices.clear();
+
+        for (OIS::JoyStick* it : _joysticks) {
+             _pInputInterface->destroyInputObject(it);
+        }
+        _joysticks.clear();
+        MemoryManager::DELETE(_pJoystickInterface);
 
         OIS::InputManager::destroyInputSystem(_pInputInterface);
         _pInputInterface = nullptr;
@@ -176,16 +195,18 @@ U8 InputInterface::update(const U64 deltaTime) {
     }
 
     // This fires off buffered events for keyboards
-    if (_pKeyboard != nullptr) {
-        _pKeyboard->capture();
+    for (KBMousePair& it : _kbMouseDevices) {
+        if (it.first) {
+            it.first->capture();
+        }
+        if (it.second) {
+            it.second->capture();
+        }
     }
-    if (_pMouse != nullptr) {
-        _pMouse->capture();
-    }
-    if (_pJoysticks.size() > 0) {
-        for (vectorImpl<OIS::JoyStick*>::iterator it = std::begin(_pJoysticks);
-             it != std::end(_pJoysticks); ++it) {
-            (*it)->capture();
+
+    if (_joysticks.size() > 0) {
+        for (OIS::JoyStick* it : _joysticks) {
+            it->capture();
         }
 
         // This fires off buffered events for each joystick we have
@@ -204,28 +225,30 @@ U8 InputInterface::update(const U64 deltaTime) {
     return 1;
 }
 
-InputState InputInterface::getKeyState(KeyCode keyCode) const {
-    if (_pKeyboard != nullptr) {
-        return _pKeyboard->isKeyDown(keyCode) ? InputState::PRESSED 
-                                              : InputState::RELEASED;
+InputState InputInterface::getKeyState(U8 deviceIndex, KeyCode keyCode) const {
+    I32 kbID = keyboard(deviceIndex);
+    if (kbID != -1) {
+        return _kbMouseDevices[kbID].first->isKeyDown(keyCode) ? InputState::PRESSED
+                                                               : InputState::RELEASED;
     }
 
     return InputState::COUNT;
 }
 
-InputState InputInterface::getMouseButtonState(MouseButton button) const {
-    if (_pMouse != nullptr) {
-        return _pMouse->getMouseState().buttonDown(button) ? InputState::PRESSED
-                                                           : InputState::RELEASED;
+InputState InputInterface::getMouseButtonState(U8 deviceIndex, MouseButton button) const {
+    I32 mouseID = mouse(deviceIndex);
+    if (mouseID != -1) {
+        return _kbMouseDevices[mouseID].second->getMouseState().buttonDown(button) ? InputState::PRESSED
+                                                                                   : InputState::RELEASED;
     }
 
     return InputState::COUNT;
 }
 
-InputState InputInterface::getJoystickeButtonState(Input::Joystick device, JoystickButton button) const {
+InputState InputInterface::getJoystickeButtonState(Input::Joystick deviceIndex, JoystickButton button) const {
     for (hashMapImpl<I32, Joystick>::value_type it : _joystickIdToEntry) {
-        if (it.second == device) {
-            for (OIS::JoyStick* deviceIt : _pJoysticks) {
+        if (it.second == deviceIndex) {
+            for (OIS::JoyStick* deviceIt : _joysticks) {
                 if (deviceIt->getID() == it.first) {
                     const OIS::JoyStickState& joyState = deviceIt->getJoyStickState();
                     return joyState.mButtons[button] ? InputState::PRESSED
@@ -247,6 +270,23 @@ Joystick InputInterface::joystick(I32 deviceID) const {
     return Joystick::COUNT;
 }
 
+I32 InputInterface::keyboard(I32 deviceID) const {
+    hashMapImpl<I32, I32>::const_iterator it = _keyboardIDToEntry.find(deviceID);
+    if (it != std::cend(_keyboardIDToEntry)) {
+        return it->second;
+    }
+
+    return -1;
+}
+
+I32 InputInterface::mouse(I32 deviceID) const {
+    hashMapImpl<I32, I32>::const_iterator it = _mouseIdToEntry.find(deviceID);
+    if (it != std::cend(_mouseIdToEntry)) {
+        return it->second;
+    }
+
+    return -1;
+}
 
 MouseButton  InputInterface::mouseButtonByName(const stringImpl& buttonName) {
     if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Left")) {

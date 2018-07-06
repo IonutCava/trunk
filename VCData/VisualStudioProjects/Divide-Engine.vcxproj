@@ -548,6 +548,7 @@
     <ClCompile Include="..\..\Source Code\Graphs\Components\RagdollComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\RenderingComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\SGNComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\Graphs\Components\UnitComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\IntersectionRecord.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Octree.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SceneNodeRenderState.cpp" />
@@ -679,6 +680,7 @@
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\RagdollComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\RenderingComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\SGNComponent.h" />
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\UnitComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\IntersectionRecord.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNodeRenderState.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SGNRelationshipCache.h" />

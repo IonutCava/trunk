@@ -46,6 +46,9 @@ namespace Attorney {
 class InputInterface : public KernelComponent {
     friend class Attorney::InputInterfaceEvent;
 public:
+    typedef std::pair<OIS::Keyboard*, OIS::Mouse*> KBMousePair;
+
+public:
     explicit InputInterface(Kernel& parent);
     ~InputInterface();
 
@@ -54,44 +57,49 @@ public:
     U8 update(const U64 deltaTime);
     void terminate();
 
-    inline bool isInit() const {
-        return _bIsInitialized;
-    }
+    void onChangeWindowSize(U16 w, U16 h);
+
+    inline bool isInit() const { return _bIsInitialized; }
 
     inline void stop() { _bMustStop = true; }
-    inline JoystickInterface* getJoystickInterface() {
-        return _pJoystickInterface;
-    }
+
+    inline JoystickInterface* getJoystickInterface() { return _pJoystickInterface; }
+
     inline EffectManager& getEffectManager() { return *_pEffectMgr; }
-    inline OIS::Keyboard& getKeyboard() const { return *_pKeyboard; }
-    inline OIS::Mouse& getMouse() const { return *_pMouse; }
 
-    inline bool isKeyDown(Input::KeyCode keyCode) const {
-        if (!_pKeyboard) {
+    inline I32 joystickCount() const { return to_int(_joysticks.size()); }
+    inline OIS::JoyStick* getJoystick(Joystick index) const { return _joysticks[to_int(index)]; }
+
+    inline I32 kbMousePairCount() const { return to_int(_kbMouseDevices.size()); }
+    inline KBMousePair getKeyboardMousePair(U8 index) const { return _kbMouseDevices[index]; }
+
+    inline bool isKeyDown(U8 deviceIndex, Input::KeyCode keyCode) const {
+        if (!_kbMouseDevices[deviceIndex].first) {
             return false;
         }
-        return _pKeyboard->isKeyDown(keyCode);
+        return _kbMouseDevices[deviceIndex].first->isKeyDown(keyCode);
     }
 
-    inline bool isModifierDown(KeyModifier keyModifier) const {
-        if (!_pKeyboard) {
+    inline bool isModifierDown(U8 deviceIndex, KeyModifier keyModifier) const {
+        if (!_kbMouseDevices[deviceIndex].first) {
             return false;
         }
-        return _pKeyboard->isModifierDown(keyModifier);
+        return _kbMouseDevices[deviceIndex].first->isModifierDown(keyModifier);
     }
 
-    inline const KeyEvent& getKey(KeyCode keyCode) const {
-        return _keys[to_uint(keyCode)];
-    }
+    inline const KeyEvent& getKey(KeyCode keyCode) const { return _keys[to_uint(keyCode)]; }
 
     static OIS::KeyCode keyCodeByName(const stringImpl& keyName);
     static MouseButton mouseButtonByName(const stringImpl& buttonName);
     static JoystickElement joystickElementByName(const stringImpl& elementName);
 
+    InputState getKeyState(U8 deviceIndex, KeyCode keyCode) const;
+    InputState getMouseButtonState(U8 deviceIndex, MouseButton button) const;
+    InputState getJoystickeButtonState(Input::Joystick deviceIndex, JoystickButton button) const;
+
     Joystick joystick(I32 deviceID) const;
-    InputState getKeyState(KeyCode keyCode) const;
-    InputState getMouseButtonState(MouseButton button) const;
-    InputState getJoystickeButtonState(Input::Joystick device, JoystickButton button) const;
+    I32 keyboard(I32 deviceID) const;
+    I32 mouse(I32 deviceID) const;
 
 protected:
     inline KeyEvent& getKeyRef(U32 index) { return _keys[index]; }
@@ -99,10 +107,13 @@ protected:
 protected:
     OIS::InputManager* _pInputInterface;
     EventHandler* _pEventHdlr;
-    OIS::Keyboard* _pKeyboard;
-    OIS::Mouse* _pMouse;
+
+    vectorImpl<KBMousePair> _kbMouseDevices;
+    hashMapImpl<I32, I32> _keyboardIDToEntry;
+    hashMapImpl<I32, I32> _mouseIdToEntry;
+
     /// multiple joystick support
-    vectorImpl<OIS::JoyStick*> _pJoysticks;
+    vectorImpl<OIS::JoyStick*> _joysticks;
     hashMapImpl<I32, Joystick> _joystickIdToEntry;
 
     JoystickInterface* _pJoystickInterface;

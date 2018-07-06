@@ -3,7 +3,8 @@
 
 namespace Divide {
 PhysicsSceneInterface::PhysicsSceneInterface(Scene& parentScene) 
-    : SceneComponent(parentScene)
+    : SceneComponent(parentScene),
+      GUIDWrapper()
 {
 }
 

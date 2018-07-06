@@ -563,6 +563,9 @@
     <ClCompile Include="..\..\Source Code\Core\PlatformContext.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Graphs\Components\UnitComponent.cpp">
+      <Filter>Graphs\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -996,6 +999,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\PlatformContext.h">
       <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\UnitComponent.h">
+      <Filter>Graphs\Components\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

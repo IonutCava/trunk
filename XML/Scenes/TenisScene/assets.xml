@@ -30,6 +30,7 @@
 	<position x="3.5" y="0" z="7.5" />
 	<orientation x="0" y="180" z="0" />
 	<version>1.0</version>
+  <isUnit>true</isUnit>
 </Player1>
 
 <Player2>
@@ -38,6 +39,7 @@
 	<position x="-3.5" y="0" z="7.5" />
 	<orientation x="0" y="-180" z="0" />
 	<version>1.0</version>
+  <isUnit>true</isUnit>
 </Player2>
 
 <Player3>
@@ -47,6 +49,7 @@
 	<colour r="0.8" g="0.7" b="0.4"/>
 	<model>models/dwarf.x</model>
 	<version>1.0</version>
+  <isUnit>true</isUnit>
 </Player3>
 
 <Player4>
@@ -56,6 +59,7 @@
 	<colour r="0.8" g="0.7" b="0.4"/>
 	<model>models/dwarf.x</model>
 	<version>1.0</version>
+  <isUnit>true</isUnit>
 </Player4>
 
 <Floor>

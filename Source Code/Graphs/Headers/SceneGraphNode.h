@@ -36,6 +36,7 @@
 #include "SGNRelationshipCache.h"
 #include "Utility/Headers/StateTracker.h"
 #include "Graphs/Components/Headers/IKComponent.h"
+#include "Graphs/Components/Headers/UnitComponent.h"
 #include "Graphs/Components/Headers/BoundsComponent.h"
 #include "Graphs/Components/Headers/RagdollComponent.h"
 #include "Graphs/Components/Headers/PhysicsComponent.h"
@@ -403,6 +404,11 @@ inline PhysicsComponent* SceneGraphNode::get() const {
 template <>
 inline RenderingComponent* SceneGraphNode::get() const {
     return static_cast<RenderingComponent*>(getComponent(SGNComponent::ComponentType::RENDERING));
+}
+
+template <>
+inline UnitComponent* SceneGraphNode::get() const {
+    return static_cast<UnitComponent*>(getComponent(SGNComponent::ComponentType::UNIT));
 }
 
 };  // namespace Divide

@@ -98,6 +98,16 @@ void SceneManager::idle() {
                     _sceneSwitchTarget.loadInSeparateThread());
         WaitForAllTasks(true, true);
     } else {
+        while (!_playerAddQueue.empty()) {
+            std::pair<Scene*, SceneGraphNode_ptr>& playerToAdd = _playerAddQueue.front();
+            addPlayerInternal(*playerToAdd.first, playerToAdd.second);
+            _playerAddQueue.pop();
+        }
+        while (!_playerRemoveQueue.empty()) {
+            std::pair<Scene*, Player_ptr>& playerToRemove = _playerRemoveQueue.front();
+            removePlayerInternal(*playerToRemove.first, playerToRemove.second);
+            _playerRemoveQueue.pop();
+        }
         getActiveScene().idle();
     }
 }
@@ -278,45 +288,62 @@ void SceneManager::initPostLoadState() {
 }
 
 void SceneManager::onChangeResolution(U16 w, U16 h) {
-    const ParamHandler& par = ParamHandler::instance();
-    for (const Player_ptr& player : getPlayers()) {
-        player->getCamera().setProjection(to_float(w) / to_float(h),
-                                          par.getParam<F32>(_ID("rendering.verticalFOV")),
-                                          vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),
-                                                    par.getParam<F32>(_ID("rendering.zFar"))));
+    F32 aspectRatio = to_float(w) / h;
+
+    ParamHandler& par = ParamHandler::instance();
+    par.setParam<F32>(_ID("rendering.aspectRatio"), aspectRatio);
+
+    if (_init) {
+        for (const Player_ptr& player : getPlayers()) {
+            player->getCamera().setProjection(aspectRatio,
+                                              par.getParam<F32>(_ID("rendering.verticalFOV")),
+                                              vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),
+                                                        par.getParam<F32>(_ID("rendering.zFar"))));
+        }
+
+        Camera& baseCam = Attorney::SceneManager::baseCamera(getActiveScene());
+        baseCam.setProjection(aspectRatio,
+                              par.getParam<F32>(_ID("rendering.verticalFOV")),
+                              vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),
+                                        par.getParam<F32>(_ID("rendering.zFar"))));
     }
 }
 
-Player_ptr SceneManager::addPlayer(Scene& parentScene, const SceneGraphNode_ptr& playerNode) {
-    // If the player isn't in the list already
+void SceneManager::addPlayer(Scene& parentScene, const SceneGraphNode_ptr& playerNode, bool queue) {
+    if (queue) {
+        _playerAddQueue.push(std::make_pair(&parentScene, playerNode));
+    } else {
+        addPlayerInternal(parentScene, playerNode);
+    }
+}
 
+void SceneManager::addPlayerInternal(Scene& parentScene, const SceneGraphNode_ptr& playerNode) {
     I64 sgnGUID = playerNode->getGUID();
     for (const Player_ptr& crtPlayer : _players) {
         if (crtPlayer->getBoundNode().lock()->getGUID() == sgnGUID) {
-            return crtPlayer;
+            return;
         }
     }
 
-    Player_ptr player(MemoryManager_NEW Player(playerNode, to_ubyte(_players.size())));
+    Player_ptr player = std::make_shared<Player>(playerNode, to_ubyte(_players.size()));
+    player->getCamera().fromCamera(Attorney::SceneManager::baseCamera(parentScene));
+    player->getCamera().setFixedYawAxis(true);
+    playerNode->get<UnitComponent>()->setUnit(player);
 
-    I64 targetGUID = player->getGUID();
-    if (std::find_if(std::begin(_players),
-                     std::end(_players),
-                     [targetGUID](const Player_ptr& crtPlayer) {
-                        return crtPlayer && crtPlayer->getGUID() == targetGUID;
-                     }) == std::end(_players)) {
-
-        _players.push_back(player);
-        _platformContext->gfx().resizePool(to_ubyte(_players.size()));
-        player->getCamera().fromCamera(Attorney::SceneManager::baseCamera(parentScene));
-        player->getCamera().setFixedYawAxis(true);
-        Attorney::SceneManager::onPlayerAdd(parentScene, player);
-    }
-
-    return player;
+    _players.push_back(player);
+    _platformContext->gfx().resizePool(to_ubyte(_players.size()));
+     Attorney::SceneManager::onPlayerAdd(parentScene, player);
 }
 
-bool SceneManager::removePlayer(Scene& parentScene, Player_ptr& player) {
+void SceneManager::removePlayer(Scene& parentScene, Player_ptr& player, bool queue) {
+    if (queue) {
+        _playerRemoveQueue.push(std::make_pair(&parentScene, player));
+    } else {
+        removePlayerInternal(parentScene, player);
+    }
+}
+
+void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) {
     if (player) {
         I64 targetGUID = player->getGUID();
         vectorAlg::vecSize initialSize = _players.size();
@@ -332,11 +359,9 @@ bool SceneManager::removePlayer(Scene& parentScene, Player_ptr& player) {
         if (initialSize != _players.size()) {
             _platformContext->gfx().resizePool(to_ubyte(_players.size()));
             Attorney::SceneManager::onPlayerRemove(parentScene, player);
-            return true;
         }
+        player.reset();
     }
-
-    return false;
 }
 
 const SceneManager::PlayerList& SceneManager::getPlayers() const {
@@ -447,6 +472,7 @@ Camera* SceneManager::getActiveCamera() const {
 void SceneManager::currentPlayerPass(U8 playerIndex) {
     _currentPlayerPass = playerIndex;
     Camera::activeCamera(&getPlayers().at(_currentPlayerPass)->getCamera());
+    Attorney::SceneManager::currentPlayerPass(getActiveScene(), playerIndex);
 }
 
 const RenderPassCuller::VisibleNodeList&

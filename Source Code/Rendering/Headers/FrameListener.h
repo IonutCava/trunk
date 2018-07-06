@@ -32,7 +32,7 @@
 #ifndef _FRAME_LISTENER_H_
 #define _FRAME_LISTENER_H_
 
-#include "Platform/Headers/PlatformDataTypes.h"
+#include "Core/Headers/GUIDWrapper.h"
 #include "Core/TemplateLibraries/Headers/String.h"
 
 /// As you might of guessed it, it's the same system used in Ogre3D
@@ -64,17 +64,25 @@ struct FrameEvent {
 /// Has 3 events, associated with the start of rendering a frame,
 /// the end of rendering and the end of buffer swapping after frames
 /// All events have timers associated with them for update timing
-class FrameListener {
+class FrameListener : public GUIDWrapper {
    public:
     /// Either give it a name
-    FrameListener(const stringImpl& name) : _callOrder(0) {
+    FrameListener(const stringImpl& name) 
+        : GUIDWrapper(),
+          _callOrder(0)
+    {
         _listenerName = name;
     }
+
     /// Or the frame listenr manager will assing it an ID
-    FrameListener() : _callOrder(0) {
+    FrameListener()
+        : FrameListener("")
+    {
     }
 
-    virtual ~FrameListener() {}
+    virtual ~FrameListener()
+    {
+    }
 
     inline const stringImpl& getListenerName() const {
         return _listenerName;

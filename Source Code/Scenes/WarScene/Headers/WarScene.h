@@ -89,10 +89,8 @@ class WarScene : public Scene {
     bool _sceneReady;
     bool _resetUnits;
     U64 _lastNavMeshBuildTime;
-    /// AIEntities are the "processors" behing the NPC's
-    vectorImpl<AI::AIEntity*> _army[2];
     /// NPC's are the actual game entities
-    vectorImpl<NPC*> _armyNPCs[2];
+    vectorImpl<SceneGraphNode_wptr> _armyNPCs[2];
     IMPrimitive* _targetLines;
     SceneGraphNode_wptr _flag[2];
     SceneGraphNode_wptr _particleEmitter;

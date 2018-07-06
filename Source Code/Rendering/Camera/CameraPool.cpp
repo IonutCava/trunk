@@ -43,12 +43,11 @@ void Camera::update(const U64 deltaTime) {
 }
 
 void Camera::activeCamera(Camera* cam) {
-    Camera* activeCam = activeCamera();
-    if (activeCam) {
-        if (cam && activeCam->getGUID() == cam->getGUID()) {
+    if (_activeCamera) {
+        if (cam && _activeCamera->getGUID() == cam->getGUID()) {
             return;
         }
-        activeCam->setActiveInternal(false);
+        _activeCamera->setActiveInternal(false);
     }
 
     _previousCamera = _activeCamera;
@@ -70,11 +69,9 @@ Camera* Camera::previousCamera() {
 }
 
 Camera* Camera::activeCamera() {
-    return _activeCamera;
-}
+    assert(_activeCamera != nullptr);
 
-bool Camera::mouseMoved(const Input::MouseEvent& arg) {
-    return activeCamera() ? activeCamera()->mouseMovedInternal(arg) : false;
+    return _activeCamera;
 }
 
 void Camera::destroyPool() {
@@ -124,8 +121,7 @@ Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
 
 bool Camera::destroyCamera(Camera*& camera) {
     if (camera != nullptr) {
-        Camera* activeCam = activeCamera();
-        if (activeCam && activeCam->getGUID() == camera->getGUID()) {
+        if (_activeCamera && _activeCamera->getGUID() == camera->getGUID()) {
             activeCamera(nullptr);
         }
 

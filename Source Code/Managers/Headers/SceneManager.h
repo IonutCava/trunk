@@ -57,6 +57,7 @@ FWD_DECLARE_MANAGED_CLASS(Player);
 class SceneManager : public FrameListener,
                      public Input::InputAggregatorInterface,
                      public KernelComponent {
+
     friend class Attorney::SceneManagerKernel;
     friend class Attorney::SceneManagerRenderPass;
 public:
@@ -82,12 +83,11 @@ public:
     void destroy();
 
     // Add a new player to the simulation
-    // Returns not null if the specified player is already active
-    Player_ptr addPlayer(Scene& parentScene, const SceneGraphNode_ptr& playerNode);
+    void addPlayer(Scene& parentScene, const SceneGraphNode_ptr& playerNode, bool queue);
     // Removes the specified player from the active simulation
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
-    bool removePlayer(Scene& parentScene, Player_ptr& player);
+    void removePlayer(Scene& parentScene, Player_ptr& player, bool queue);
     const PlayerList& getPlayers() const;
 
     /*Base Scene Operations*/
@@ -129,6 +129,8 @@ public:
 
     RenderPassCuller::VisibleNodeList& getVisibleNodesCache(RenderStage stage);
 
+    inline U8 playerPass() const { return _currentPlayerPass; }
+
     template <typename T, class Factory>
     bool register_new_ptr(Factory& factory, BOOST_DEDUCED_TYPENAME Factory::id_param_type id) {
         return factory.register_creator(id, new_ptr<T>());
@@ -168,6 +170,13 @@ protected:
     Scene* load(stringImpl name);
     bool   unloadScene(Scene* scene);
 
+    // Add a new player to the simulation
+    void addPlayerInternal(Scene& parentScene, const SceneGraphNode_ptr& playerNode);
+    // Removes the specified player from the active simulation
+    // Returns true if the player was previously registered
+    // On success, player pointer will be reset
+    void removePlayerInternal(Scene& parentScene, Player_ptr& player);
+
 protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
@@ -205,6 +214,9 @@ private:
     typedef std::array<Time::ProfileTimer*, to_const_uint(RenderStage::COUNT)> CullTimersPerPass;
     std::array<CullTimersPerPass, 2> _sceneGraphCullTimers;
     PlayerList _players;
+
+    std::queue<std::pair<Scene*, SceneGraphNode_ptr>>  _playerAddQueue;
+    std::queue<std::pair<Scene*, Player_ptr>>  _playerRemoveQueue;
 
     struct SwitchSceneTarget {
         SwitchSceneTarget()

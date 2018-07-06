@@ -82,6 +82,7 @@ namespace Attorney {
     class SceneRenderPass;
     class SceneLoadSave;
     class SceneGUI;
+    class SceneInput;
 };
 
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2 states:
@@ -93,6 +94,7 @@ class Scene : public Resource {
     friend class Attorney::SceneRenderPass;
     friend class Attorney::SceneLoadSave;
     friend class Attorney::SceneGUI;
+    friend class Attorney::SceneInput;
 
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
@@ -124,6 +126,7 @@ class Scene : public Resource {
     inline SceneRenderState& renderState() { return _sceneState->renderState(); }
     inline const SceneRenderState& renderState() const { return _sceneState->renderState(); }
     inline SceneInput& input() { return *_input; }
+    inline const SceneInput& input() const { return *_input; }
 
     inline SceneGraph& sceneGraph() { return *_sceneGraph; }
     void registerTask(const TaskHandle& taskItem);
@@ -160,7 +163,6 @@ class Scene : public Resource {
         return _vegetationDataArray;
     }
 
-
     inline AI::AIManager& aiManager() { return *_aiManager; }
     inline const AI::AIManager& aiManager() const { return *_aiManager; }
 
@@ -181,7 +183,7 @@ class Scene : public Resource {
 
     void resetSelection();
     void findHoverTarget(U8 playerIndex);
-    bool checkCameraUnderwater() const;
+    bool checkCameraUnderwater(U8 playerIndex) const;
     void toggleFlashlight();
 
     virtual bool save(ByteBuffer& outputBuffer) const;
@@ -197,6 +199,8 @@ class Scene : public Resource {
     /// loaded.
     /// Useful for loading one model per frame
     virtual void loadXMLAssets(bool singleStep = false);
+    virtual void loadBaseCamera();
+
     virtual bool load(const stringImpl& name);
     bool loadModel(const FileData& data);
     bool loadGeometry(const FileData& data);
@@ -218,8 +222,19 @@ class Scene : public Resource {
     /// Draw debug entities
     virtual void debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPassCmds& subPassesInOut);
 
+    inline Camera& baseCamera() { return *_baseCamera; }
+
     inline const Camera& baseCamera() const { return *_baseCamera; }
 
+    bool mouseMoved(const Input::MouseEvent& arg);
+
+    U8 getSceneIndexForPlayer(U8 playerIndex) const;
+    const Player_ptr& getPlayerForIndex(U8 playerIndex) const;
+
+    U8 getPlayerIndexForDevice(U8 deviceIndex) const;
+
+    void addPlayerInternal(bool queue);
+    void removePlayerInternal(U8 playerIndex);
     void onPlayerAdd(const Player_ptr& player);
     void onPlayerRemove(const Player_ptr& player);
 
@@ -252,6 +267,8 @@ class Scene : public Resource {
 
     stringImpl getPlayerSGNName(U8 playerIndex);
 
+    void currentPlayerPass(U8 playerIndex);
+
    protected:
        /// Global info
        SceneManager& _parent;
@@ -275,8 +292,9 @@ class Scene : public Resource {
        vectorImpl<TerrainDescriptor*> _terrainInfoArray;
        F32 _LRSpeedFactor;
        /// Current selection
-       hashMapImpl<U8, SceneGraphNode_wptr> _currentSelection;
-       hashMapImpl<U8, SceneGraphNode_wptr> _currentHoverTarget;
+       hashMapImpl<U8 /*player index*/, SceneGraphNode_wptr> _currentSelection;
+       hashMapImpl<U8 /*player index*/, SceneGraphNode_wptr> _currentHoverTarget;
+
        SceneGraphNode_wptr _currentSky;
        SceneGraphNode_wptr _flashLight;
 
@@ -329,6 +347,10 @@ class SceneManager {
         return scene.deinitializeAI(true);
     }
 
+    static Camera& baseCamera(Scene& scene) {
+        return scene.baseCamera();
+    }
+
     static const Camera& baseCamera(const Scene& scene) {
         return scene.baseCamera();
     }
@@ -339,6 +361,10 @@ class SceneManager {
 
     static void onPlayerRemove(Scene& scene, const Player_ptr& player) {
         scene.onPlayerRemove(player);
+    }
+
+    static void currentPlayerPass(Scene& scene, U8 playerIndex) {
+        scene.currentPlayerPass(playerIndex);
     }
 
     /// Draw debug entities
@@ -427,6 +453,15 @@ private:
     }
 
     friend class Divide::GUI;
+};
+
+class SceneInput {
+private:
+    static bool mouseMoved(Scene& scene, const Input::MouseEvent& arg) {
+        return scene.mouseMoved(arg);
+    }
+
+    friend class Divide::SceneInput;
 };
 
 };  // namespace Attorney

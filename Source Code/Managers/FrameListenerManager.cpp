@@ -9,28 +9,31 @@ namespace Divide {
 /// Register a new Frame Listener to be processed every frame
 void FrameListenerManager::registerFrameListener(FrameListener* listener,
                                                  U32 callOrder) {
+    assert(listener != nullptr);
+
     // Check if the listener has a name or we should assign an id
     if (listener->getListenerName().empty()) {
-        listener->setName(Util::StringFormat("generic_f_listener_%d", _listeners.size()));
+        listener->setName(Util::StringFormat("generic_f_listener_%d", listener->getGUID()));
     }
 
     listener->setCallOrder(callOrder);
 
     WriteLock w_lock(_listenerLock);
-    _listeners.push_back(listener);
-    std::sort(std::begin(_listeners), std::end(_listeners));
+    insert_sorted(_listeners, listener, std::less<>());
 }
 
 /// Remove an existent Frame Listener from our collection
 void FrameListenerManager::removeFrameListener(FrameListener* const listener) {
-    const stringImpl& name = listener->getListenerName();
+    assert(listener != nullptr);
+
+    I64 targetGUID = listener->getGUID();
 
     UpgradableReadLock ur_lock(_listenerLock);
     vectorImpl<FrameListener*>::const_iterator it;
     it = std::find_if(std::cbegin(_listeners), std::cend(_listeners),
-                      [&name](FrameListener const* fl) -> bool
+                      [targetGUID](FrameListener const* fl) -> bool
                       {
-                        return fl->getListenerName().compare(name) == 0;
+                        return fl->getGUID() == targetGUID;
                       });
 
     if (it != std::cend(_listeners)) {

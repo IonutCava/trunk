@@ -247,6 +247,9 @@
     <Filter Include="XML\Scenes">
       <UniqueIdentifier>{cc279e81-c977-4f11-8ca2-941e72dda610}</UniqueIdentifier>
     </Filter>
+    <Filter Include="XML\Scenes\assets">
+      <UniqueIdentifier>{f696a20f-3d3a-4db5-a023-e2659b61bae6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp">
@@ -811,6 +814,30 @@
     </Xml>
     <Xml Include="..\..\XML\Scenes\WarScene.xml">
       <Filter>XML\Scenes</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\WarScene\assets.xml">
+      <Filter>XML\Scenes\assets</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\MainScene\assets.xml">
+      <Filter>XML\Scenes\assets</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\TenisScene\assets.xml">
+      <Filter>XML\Scenes\assets</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\PingPongScene\assets.xml">
+      <Filter>XML\Scenes\assets</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\CubeScene\assets.xml">
+      <Filter>XML\Scenes\assets</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\PhysXScene\assets.xml">
+      <Filter>XML\Scenes\assets</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\FlashScene\assets.xml">
+      <Filter>XML\Scenes\assets</Filter>
+    </Xml>
+    <Xml Include="..\..\XML\Scenes\NetworkScene\assets.xml">
+      <Filter>XML\Scenes\assets</Filter>
     </Xml>
   </ItemGroup>
 </Project>

@@ -32,16 +32,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SCENE_COMPONENT_H_
 #define _SCENE_COMPONENT_H_
 
-#include "Core/Headers/GUIDWrapper.h"
-
 namespace Divide {
 
 class Scene;
-class SceneComponent : public GUIDWrapper {
+class SceneComponent {
     public:
         explicit SceneComponent(Scene& parentScene)
-            : GUIDWrapper(),
-              _parentScene(parentScene)
+            : _parentScene(parentScene)
         {
         }
 

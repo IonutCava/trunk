@@ -52,6 +52,7 @@ class Player : public Character {
     inline const U8 index() const { return _index; }
    private:
     U8 _index;
+    vec3<F32> _extents;
     bool _lockedControls;
     Camera* _playerCam;
 };

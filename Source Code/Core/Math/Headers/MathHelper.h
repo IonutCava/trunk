@@ -311,9 +311,9 @@ stringImpl Rtrim(const stringImpl& s);
 
 stringImpl& Trim(stringImpl& s);
 stringImpl  Trim(const stringImpl& s);
-//fmt_str is passed by value to conform with the requirements of va_start.
-//http://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
-stringImpl StringFormat(const stringImpl fmt_str, ...);
+//format is passed by value to conform with the requirements of va_start.
+//ref: http://codereview.stackexchange.com/questions/115760/use-va-list-to-format-a-string
+stringImpl StringFormat(const char *const format, ...);
 void CStringRemoveChar(char* str, char charToRemove);
 bool FileExists(const char* filePath);
 /** Ogre3D

@@ -48,8 +48,10 @@ class NPC : public Character {
     NPC(SceneGraphNode_ptr node, AI::AIEntity* const aiEntity = nullptr);
     ~NPC();
     void update(const U64 deltaTime);
+    
+    AI::AIEntity* getAIEntity() const;
 
-   protected:
+protected:
     AI::AIEntity* _aiUnit;
 };
 

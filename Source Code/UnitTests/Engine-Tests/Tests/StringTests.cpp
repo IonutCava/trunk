@@ -8,6 +8,14 @@ namespace Divide {
 // We are using third party string libraries (STL, Boost, EASTL) that went through proper testing
 // This list of tests only verifies utility functions
 
+namespace {
+    template <U64 NUM>
+    struct test_const
+    {
+        static const U64 value = NUM;
+    };
+};
+
 TEST(TestReplaceInPlace)
 {
     stringImpl input("STRING TO BE TESTED");
@@ -100,8 +108,8 @@ TEST(TestStringTrim) {
 }
 
 TEST(TestStringFormat) {
-    const stringImpl input1("A %s b is %d %s");
-    const stringImpl input2("%2.2f");
+    const char* input1("A %s b is %d %s");
+    const char* input2("%2.2f");
     const stringImpl result1("A is ok, b is 2 \n");
     const stringImpl result2("12.21");
 
@@ -126,7 +134,16 @@ TEST(TestCharRemove) {
     }
 }
 
-TEST(TestRuntimeID) {
+TEST(HashIsConstantExpr)
+{
+    constexpr char* str = "TEST test TEST";
+
+    constexpr U64 value = test_const<_ID(str)>::value;
+    CHECK_EQUAL(value, _ID_RT(str));
+}
+
+TEST(TestRuntimeID)
+{
     const char* str = "TEST String garbagegarbagegarbage";
     U64 input1 = _ID(str);
     CHECK_EQUAL(input1, _ID_RT(str));

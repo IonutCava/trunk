@@ -85,10 +85,6 @@ class SceneInput : public Input::InputAggregatorInterface {
 
     explicit SceneInput(Scene &parentScene, Input::InputInterface& context);
 
-    inline const vec2<I32>& getMousePosition(U8 index) const {
-        return _mousePos.find(index)->second;
-    }
-
     bool onKeyDown(const Input::KeyEvent &arg);
     bool onKeyUp(const Input::KeyEvent &arg);
     /// Joystick or Gamepad
@@ -134,32 +130,36 @@ class SceneInput : public Input::InputAggregatorInterface {
     /// output to the mapping's function
     bool getJoystickMapping(Input::Joystick device, Input::JoystickElement element, PressReleaseActionCbks& btnCbksOut);
 
-    Input::InputState getKeyState(Input::KeyCode key) const;
-    Input::InputState getMouseButtonState(Input::MouseButton button) const;
-    Input::InputState getJoystickButtonState(Input::Joystick device, Input::JoystickButton button) const;
+    Input::InputState getKeyState(U8 deviceIndex, Input::KeyCode key) const;
+    Input::InputState getMouseButtonState(U8 deviceIndex, Input::MouseButton button) const;
+    Input::InputState getJoystickButtonState(Input::Joystick deviceIndex, Input::JoystickButton button) const;
 
     InputActionList& actionList();
 
+    U8 getPlayerIndexForDevice(U8 deviceIndex) const;
+
     void flushCache();
 
-    inline void onPlayerAdd(U8 index) {
-        _mousePos.insert(std::make_pair(index, vec2<I32>()));
-        _keyLog.insert(std::make_pair(index, KeyLog()));
-        _mouseBtnLog.insert(std::make_pair(index, MouseBtnLog()));
-    }
+    void onPlayerAdd(U8 index);
+    void onPlayerRemove(U8 index);
 
-    inline void onPlayerRemove(U8 index) {
-        _mousePos.find(index)->second.reset();
-        _keyLog.find(index)->second.clear();
-        _mouseBtnLog.find(index)->second.clear();
-    }
+    void onSetActive();
+    void onRemoveActive();
 
    protected:
        bool handleCallbacks(const PressReleaseActionCbks& cbks,
                             const InputParams& params,
                             bool onPress);
 
+       bool isDeviceInUse(I32 deviceID);
+
    private:
+    // Up to 2 devices per player: KB + Mouse or Nintendo Switch type controllers
+    // If one current player only uses one device, leave pair.second to -1
+    hashMapImpl<U8 /*player index*/, std::pair<I32, I32>> _playerControlDevices;
+
+    vectorImpl<I32> _usedInputDevices;
+
     Input::InputInterface& _context;
     Scene &_parentScene;
 
@@ -170,8 +170,6 @@ class SceneInput : public Input::InputAggregatorInterface {
     KeyMapCache _keyMapCache;
     MouseMapCache _mouseMapCache;
     JoystickMapCache _joystickMapCache;
-
-    hashMapImpl<U8, vec2<I32>> _mousePos;
 
     InputActionList _actionList;
 

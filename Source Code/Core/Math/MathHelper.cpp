@@ -89,26 +89,20 @@ vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter) {
     return elems;
 }
 
-stringImpl StringFormat(const stringImpl fmt_str, ...) {
-    // Reserve two times as much as the length of the fmt_str
-    I32 final_n, n = to_int(fmt_str.size()) * 2; 
-    std::unique_ptr<char[]> formatted;
-    va_list ap;
-    while(true) {
-        /// Wrap the plain char array into the unique_ptr
-        formatted.reset(new char[n]); 
-        strcpy(&formatted[0], fmt_str.c_str());
-        va_start(ap, fmt_str);
-        final_n = vsnprintf(&formatted[0], n, fmt_str.c_str(), ap);
-        va_end(ap);
-        if (final_n < 0 || final_n >= n) {
-            n += std::abs(final_n - n + 1);
-        } else {
-            break;
-        }
+stringImpl StringFormat(const char *const format, ...) {
+    auto temp = vectorImpl<char>{};
+    auto length = std::size_t{ 63 };
+    std::va_list args;
+    while (temp.size() <= length) {
+        temp.resize(length + 1);
+        va_start(args, format);
+        const auto status = std::vsnprintf(temp.data(), temp.size(), format, args);
+        va_end(args);
+        assert(status >= 0 && "string formatting error");
+        length = static_cast<std::size_t>(status);
     }
 
-    return stringImpl(formatted.get());
+    return stringImpl{ temp.data(), length };
 }
 
 bool CompareIgnoreCase(const stringImpl& a, const stringImpl&b) {

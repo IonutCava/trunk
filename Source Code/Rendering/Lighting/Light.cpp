@@ -106,13 +106,6 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sc
     _positionAndRange.xyz(_lightSGN->get<PhysicsComponent>()->getPosition());
     setFlag(UpdateFlag::BOUNDS_CHANGED);
 
-    /*if (_type == LightType::DIRECTIONAL) {
-        if (sceneState.overrideCamera() == nullptr) {
-            sceneState.overrideCamera(_shadowCamera);
-            GFXDevice::instance().debugDrawFrustum(&Camera::activeCamera()->getFrustum());
-        }
-    }*/
-
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
@@ -135,6 +128,13 @@ void Light::updateBoundsInternal(SceneGraphNode& sgn) {
 }
 
 bool Light::onRender(RenderStage currentStage) {
+    /*if (_type == LightType::DIRECTIONAL) {
+        if (sceneState.playerState(0).overrideCamera() == nullptr) {
+            sceneState.playerState(0).overrideCamera(_shadowCamera);
+            GFXDevice::instance().debugDrawFrustum(&Camera::activeCamera()->getFrustum());
+        }
+    }*/
+
     if (!_drawImpostor) {
         return true;
     }

@@ -271,7 +271,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     _guiShader->Uniform("dvd_WorldMatrix", mat4<F32>());
     context.gfx().add2DRenderFunction(GUID_DELEGATE_CBK(DELEGATE_BIND(&GUI::draw, this, std::ref(context.gfx()))),
                                       std::numeric_limits<U32>::max() - 1);
-    const OIS::MouseState& mouseState = context.input().getMouse().getMouseState();
+    const OIS::MouseState& mouseState = context.input().getKeyboardMousePair(0).second->getMouseState();
 
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 

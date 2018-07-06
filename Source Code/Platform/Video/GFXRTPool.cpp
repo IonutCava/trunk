@@ -86,7 +86,11 @@ void GFXRTPool::resize(U8 size) {
             }
         }
         _renderTargets.pop_back();
+
         --_poolSize;
+        if (_poolIndex == _poolSize) {
+            poolIndex(_poolIndex - 1);
+        }
     }
 }
 

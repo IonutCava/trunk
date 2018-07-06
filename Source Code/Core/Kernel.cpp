@@ -334,7 +334,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
     }
 
     // Update the graphical user interface
-    const OIS::MouseState& mouseState = _platformContext->input().getMouse().getMouseState();
+    const OIS::MouseState& mouseState = _platformContext->input().getKeyboardMousePair(0).second->getMouseState();
     _platformContext->gui().update(_timingData._currentTimeDelta);
     _platformContext->gui().setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
     return presentToScreen(evt, deltaTime);
@@ -494,6 +494,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
             Attorney::GFXDeviceKernel::flushDisplay(_platformContext->gfx(), targetViewports[i]);
         }
     }
+    Camera::activeCamera(nullptr);
 
     for (U8 i = playerCount; i < to_ubyte(_renderTimer.size()); ++i) {
         Time::ProfileTimer::removeTimer(*_renderTimer[i]);
@@ -672,7 +673,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                    Attorney::SceneManagerKernel::onCameraUpdate(*_sceneManager, cam);
                               });
 
-
     if (!_sceneManager->switchScene(startupScene, true, false)) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), startupScene.c_str());
         return ErrorCode::MISSING_SCENE_DATA;
@@ -717,9 +717,7 @@ void Kernel::onChangeWindowSize(U16 w, U16 h) {
     Attorney::GFXDeviceKernel::onChangeWindowSize(_platformContext->gfx(), w, h);
 
     if (_platformContext->input().isInit()) {
-        const OIS::MouseState& ms = _platformContext->input().getMouse().getMouseState();
-        ms.width = w;
-        ms.height = h;
+        _platformContext->input().onChangeWindowSize(w, h);
     }
 
     _platformContext->gui().onChangeResolution(w, h);
@@ -754,7 +752,6 @@ bool Kernel::onKeyUp(const Input::KeyEvent& key) {
 }
 
 bool Kernel::mouseMoved(const Input::MouseEvent& arg) {
-    Camera::mouseMoved(arg);
     if (_platformContext->gui().mouseMoved(arg)) {
         return _sceneManager->mouseMoved(arg);
     }

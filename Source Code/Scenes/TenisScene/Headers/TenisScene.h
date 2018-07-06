@@ -90,10 +90,8 @@ class TenisScene : public Scene {
     mutable std::atomic_int _scoreTeam1;
     mutable std::atomic_int _scoreTeam2;
     F32 _sideImpulseFactor;
-    /// AIEntities are the "processors" behing the NPC's
-    AI::AIEntity* _aiPlayer1, *_aiPlayer2, *_aiPlayer3, *_aiPlayer4;
-    /// NPC's are the actual game entities
-    NPC* _player1, *_player2, *_player3, *_player4;
+    
+    SceneGraphNode_wptr _aiPlayer[4];
     /// Team's are factions for AIEntites so they can manage friend/foe
     /// situations
     AI::AITeam* _team1, *_team2;

@@ -66,7 +66,7 @@ class OrbitCamera : public Camera {
     virtual void update(const U64 deltaTime);
     virtual void move(F32 dx, F32 dy, F32 dz);
     virtual void rotate(F32 yaw, F32 pitch, F32 roll);
-    virtual bool mouseMovedInternal(const Input::MouseEvent& arg);
+    virtual bool moveRelative(const vec3<I32>& relMovement) override;
     virtual void setActiveInternal(bool state) override;
 
    protected:

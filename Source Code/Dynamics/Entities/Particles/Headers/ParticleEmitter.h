@@ -90,6 +90,9 @@ class ParticleEmitter : public SceneNode {
                             RenderStage renderStage,
                             const SceneRenderState& sceneRenderState,
                             GenericDrawCommands& drawCommandsInOut) override;
+
+    void prepareForRender();
+
    private:
     GFXDevice& _context;
     std::shared_ptr<ParticleData> _particles;
@@ -108,7 +111,6 @@ class ParticleEmitter : public SceneNode {
     size_t _particleStateBlockHashDepth;
     U64 _lastUpdateTimer;
 
-    std::atomic_bool _updating;
     std::atomic_bool _needsUpdate;
     ShaderProgram_ptr _particleShader;
     ShaderProgram_ptr _particleDepthShader;

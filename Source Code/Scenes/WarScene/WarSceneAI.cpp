@@ -145,20 +145,12 @@ bool WarScene::initializeAI(bool continueOnErrors) {
 
 bool WarScene::removeUnits(bool removeNodesOnCall) {
     WAIT_FOR_CONDITION(!_aiManager->updating());
-
     for (U8 i = 0; i < 2; ++i) {
-        for (AI::AIEntity* const entity : _army[i]) {
-            _aiManager->unregisterEntity(entity);
+        for (SceneGraphNode_wptr npc : _armyNPCs[i]) {
+            _aiManager->unregisterEntity(npc.lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity());
+            _sceneGraph->deleteNode(npc, removeNodesOnCall);
         }
-
-        MemoryManager::DELETE_VECTOR(_army[i]);
-        MemoryManager::DELETE_VECTOR(_armyNPCs[i]);
-    }
-
-    for (U8 i = 0; i < 2; ++i) {
-        for (NPC* npc : _armyNPCs[i]) {
-            _sceneGraph->deleteNode(npc->getBoundNode(), removeNodesOnCall);
-        }
+        _armyNPCs[i].clear();
     }
 
     return true;
@@ -275,7 +267,6 @@ bool WarScene::addUnits() {
     std::shared_ptr<SceneNode> heavyNodeMesh = heavyNode->getNode();
     assert(lightNodeMesh && animalNodeMesh && heavyNodeMesh);
 
-    NPC* soldier = nullptr;
     AIEntity* aiSoldier = nullptr;
     std::shared_ptr<SceneNode> currentMesh;
 
@@ -285,7 +276,8 @@ bool WarScene::addUnits() {
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_uint(SGNComponent::ComponentType::UNIT);
 
     SceneGraphNode& root = _sceneGraph->getRoot();
     for (I32 k = 0; k < 2; ++k) {
@@ -361,36 +353,30 @@ bool WarScene::addUnits() {
             // GOAP
             brain->registerGOAPPackage(goapPackages[to_uint(type)]);
             aiSoldier->setAIProcessor(brain);
-            soldier = MemoryManager_NEW NPC(currentNode, aiSoldier);
+            std::shared_ptr<NPC> soldier = std::make_shared<NPC>(currentNode, aiSoldier);
             soldier->setAttribute(to_const_uint(AI::UnitAttributes::HEALTH_POINTS), 100);
             soldier->setAttribute(to_const_uint(AI::UnitAttributes::DAMAGE), damage);
             soldier->setAttribute(to_const_uint(AI::UnitAttributes::ALIVE_FLAG), 1);
             soldier->setMovementSpeed(speed);
             soldier->setAcceleration(acc);
-
-            _army[k].push_back(aiSoldier);
-            _armyNPCs[k].push_back(soldier);
+            currentNode->get<UnitComponent>()->setUnit(soldier);
+            _armyNPCs[k].push_back(currentNode);
+            _aiManager->registerEntity(k, aiSoldier);
             
         }
     }
 
     //----------------------- AI controlled units ---------------------//
-    for (U8 i = 0; i < 2; ++i) {
-        for (U8 j = 0; j < _army[i].size(); ++j) {
-            _aiManager->registerEntity(i, _army[i][j]);
-        }
-    }
-
-    return !(_army[0].empty() || _army[1].empty());
+    return !(_armyNPCs[0].empty() || _armyNPCs[1].empty());
 }
 
 AI::AIEntity* WarScene::findAI(SceneGraphNode_ptr node) {
     I64 targetGUID = node->getGUID();
 
     for (U8 i = 0; i < 2; ++i) {
-        for (AI::AIEntity* entity : _army[i]) {
-            if (entity->getUnitRef()->getBoundNode().lock()->getGUID() == targetGUID) {
-                return entity;
+        for (SceneGraphNode_cwptr npc : _armyNPCs[i]) {
+            if (npc.lock()->getGUID() == targetGUID) {
+                return npc.lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity();
             }
         }
     }
@@ -434,20 +420,22 @@ void WarScene::startSimulation(I64 btnGUID) {
     bool loadedFromFile = true;
     U64 currentTime = Time::ElapsedMicroseconds(true);
     U64 diffTime = currentTime - _lastNavMeshBuildTime;
+
+    AI::AIEntity* aiEntity = _armyNPCs[0][0].lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity();
     if (_lastNavMeshBuildTime == 0UL ||
         diffTime > Time::SecondsToMicroseconds(10)) {
-        AI::Navigation::NavigationMesh* navMesh = _aiManager->getNavMesh(_army[0][0]->getAgentRadiusCategory());
+        AI::Navigation::NavigationMesh* navMesh = 
+            _aiManager->getNavMesh(aiEntity->getAgentRadiusCategory());
         if (navMesh) {
             previousMesh = true;
-            _aiManager->destroyNavMesh(_army[0][0]->getAgentRadiusCategory());
+            _aiManager->destroyNavMesh(aiEntity->getAgentRadiusCategory());
         }
         navMesh = MemoryManager_NEW AI::Navigation::NavigationMesh(_context);
         navMesh->setFileName(getName());
 
         if (!navMesh->load(_sceneGraph->getRoot())) {
             loadedFromFile = false;
-            AI::AIEntity::PresetAgentRadius radius =
-                _army[0][0]->getAgentRadiusCategory();
+            AI::AIEntity::PresetAgentRadius radius = aiEntity->getAgentRadiusCategory();
             navMesh->build(
                 _sceneGraph->getRoot(),
                 [&radius, this](AI::Navigation::NavigationMesh* navMesh) {
@@ -456,7 +444,7 @@ void WarScene::startSimulation(I64 btnGUID) {
                 g_navMeshStarted = false;
             });
         } else {
-            _aiManager->addNavMesh(_army[0][0]->getAgentRadiusCategory(), navMesh);
+            _aiManager->addNavMesh(aiEntity->getAgentRadiusCategory(), navMesh);
             if (Config::Build::IS_DEBUG_BUILD) {
                 navMesh->debugDraw(true);
             }

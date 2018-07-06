@@ -49,7 +49,8 @@ class SGNComponent : private NonCopyable {
         PHYSICS = toBit(5),
         BOUNDS = toBit(6),
         RENDERING = toBit(7),
-        COUNT = 7
+        UNIT = toBit(8),
+        COUNT = 8
     };
     
     SGNComponent(ComponentType type, SceneGraphNode& parentSGN);

@@ -53,6 +53,7 @@ private:
     void loadScene(I64 btnGUID);
 
 private:
+    hashMapImpl<U8, F32> _camAngle;
     hashMapImpl<I64, stringImpl> _buttonToSceneMap;
     stringImpl _sceneToLoad;
 };

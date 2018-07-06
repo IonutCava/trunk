@@ -216,12 +216,20 @@
     <Xml Include="..\..\XML\scenes.xml" />
     <Xml Include="..\..\XML\Scenes\AITenisScene.xml" />
     <Xml Include="..\..\XML\Scenes\CubeScene.xml" />
+    <Xml Include="..\..\XML\Scenes\CubeScene\assets.xml" />
     <Xml Include="..\..\XML\Scenes\FlashScene.xml" />
+    <Xml Include="..\..\XML\Scenes\FlashScene\assets.xml" />
     <Xml Include="..\..\XML\Scenes\MainScene.xml" />
+    <Xml Include="..\..\XML\Scenes\MainScene\assets.xml" />
     <Xml Include="..\..\XML\Scenes\NetworkScene.xml" />
+    <Xml Include="..\..\XML\Scenes\NetworkScene\assets.xml" />
     <Xml Include="..\..\XML\Scenes\PhysXScene.xml" />
+    <Xml Include="..\..\XML\Scenes\PhysXScene\assets.xml" />
     <Xml Include="..\..\XML\Scenes\PingPongScene.xml" />
+    <Xml Include="..\..\XML\Scenes\PingPongScene\assets.xml" />
+    <Xml Include="..\..\XML\Scenes\TenisScene\assets.xml" />
     <Xml Include="..\..\XML\Scenes\WarScene.xml" />
+    <Xml Include="..\..\XML\Scenes\WarScene\assets.xml" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}</ProjectGuid>

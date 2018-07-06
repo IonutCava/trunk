@@ -182,15 +182,17 @@ void WarScene::processTasks(const U64 deltaTime) {
     }
 
     if (_taskTimers[1] >= AnimationTimer1) {
-        for (NPC* const npc : _armyNPCs[0]) {
-            npc->playNextAnimation();
+        for (SceneGraphNode_wptr npc : _armyNPCs[0]) {
+            assert(npc.lock());
+            npc.lock()->get<UnitComponent>()->getUnit<NPC>()->playNextAnimation();
         }
         _taskTimers[1] = 0.0;
     }
 
     if (_taskTimers[2] >= AnimationTimer2) {
-        for (NPC* const npc : _armyNPCs[1]) {
-            npc->playNextAnimation();
+        for (SceneGraphNode_wptr npc : _armyNPCs[1]) {
+            assert(npc.lock());
+            npc.lock()->get<UnitComponent>()->getUnit<NPC>()->playNextAnimation();
         }
         _taskTimers[2] = 0.0;
     }
@@ -285,7 +287,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
         pComp->rotateY(phi);*/
     }
 
-    if (!_aiManager->getNavMesh(_army[0][0]->getAgentRadiusCategory())) {
+    if (!_aiManager->getNavMesh(_armyNPCs[0][0].lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity()->getAgentRadiusCategory())) {
         return;
     }
 
@@ -294,10 +296,11 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
     vec4<U8> redLine(255,0,0,128);
     vec4<U8> blueLine(0,0,255,128);
     vectorImpl<Line> paths;
-    paths.reserve(_army[0].size() + _army[1].size());
+    paths.reserve(_armyNPCs[0].size() + _armyNPCs[1].size());
     for (U8 i = 0; i < 2; ++i) {
-        for (AI::AIEntity* const character : _army[i]) {
-            if (!character->getUnitRef()->getBoundNode().lock()->isActive()) {
+        for (SceneGraphNode_wptr node : _armyNPCs[i]) {
+            AI::AIEntity* const character = node.lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity();
+            if (!node.lock()->isActive()) {
                 continue;
             }
             tempDestination.set(character->getDestination());
@@ -674,22 +677,21 @@ void WarScene::toggleCamera() {
         }
     }
     if (tpsCameraActive) {
-        Camera::activeCamera(&_scenePlayers[0]->getCamera());
+        Camera::activeCamera(&_scenePlayers[_parent.playerPass()]->getCamera());
         tpsCameraActive = false;
         flyCameraActive = true;
     }
 }
 
 bool WarScene::loadResources(bool continueOnErrors) {
-    Camera* defaultCam = &_scenePlayers[0]->getCamera();
     // Add a first person camera
     Camera* cam = Camera::createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);
-    cam->fromCamera(*defaultCam);
+    cam->fromCamera(*_baseCamera);
     cam->setMoveSpeedFactor(10.0f);
     cam->setTurnSpeedFactor(10.0f);
     // Add a third person camera
     cam = Camera::createCamera("tpsCamera", Camera::CameraType::THIRD_PERSON);
-    cam->fromCamera(*defaultCam);
+    cam->fromCamera(*_baseCamera);
     cam->setMoveSpeedFactor(0.02f);
     cam->setTurnSpeedFactor(0.01f);
 
@@ -730,11 +732,7 @@ void WarScene::postLoadMainThread() {
         Font::DIVIDE_DEFAULT,
         vec4<U8>(50, 192, 50, 255),
         Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
-            Camera::activeCamera()->getEye().x,
-            Camera::activeCamera()->getEye().y,
-            Camera::activeCamera()->getEye().z,
-            Camera::activeCamera()->getEuler().pitch,
-            Camera::activeCamera()->getEuler().yaw));
+            0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 
     _GUI->addText(_ID("scoreDisplay"),
         vec2<I32>(60, 123),  // Position

@@ -48,7 +48,7 @@ void RTDrawMask::enableAll() {
 void RTDrawMask::disableAll() {
     _disabledDepth = _disabledStencil = true;
     _disabledColours.resize(std::numeric_limits<U8>::max());
-    std::iota(std::begin(_disabledColours), std::end(_disabledColours), 0);
+    std::iota(std::begin(_disabledColours), std::end(_disabledColours), to_ubyte(0));
 }
 
 

@@ -130,6 +130,7 @@ struct FileData {
     stringImpl data2;
     stringImpl data3;
     F32 version;
+    bool isUnit;
     bool castsShadows;
     bool receivesShadows;
     /// Used to determine if it's a static object or dynamic. Affects lighting,

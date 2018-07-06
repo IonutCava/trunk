@@ -73,12 +73,11 @@ GFXDevice::setPrePass(const bool state) {
 inline void 
 GFXDevice::add2DRenderFunction(const GUID_DELEGATE_CBK& callback, U32 callOrder) {
     WriteLock w_lock(_2DRenderQueueLock);
-    _2dRenderQueue.push_back(std::make_pair(callOrder, std::make_pair(callback.getGUID(), callback._callback)));
-    
-    std::sort(std::begin(_2dRenderQueue), std::end(_2dRenderQueue),
-              [](const std::pair<U32, GUID2DCbk >& a,
-                 const std::pair<U32, GUID2DCbk >& b)
-                  -> bool { return a.first < b.first; });
+    insert_sorted(_2dRenderQueue,
+                  std::make_pair(callOrder, std::make_pair(callback.getGUID(), callback._callback)),
+                  [](const std::pair<U32, GUID2DCbk >& a, const std::pair<U32, GUID2DCbk >& b) -> bool {
+                      return a.first < b.first;
+                  });
 }
 
 inline void

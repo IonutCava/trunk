@@ -87,32 +87,16 @@ void DefaultScene::postLoadMainThread() {
         vec2<I32>(0, resolution.height - playerButtonHeight * 1.5f),
         vec2<U32>(quitButtonWidth, playerButtonHeight),
         [this](I64 btnGUID) {
-
-        const SceneManager::PlayerList& scenePlayers = _parent.getPlayers();
-
-        SceneGraphNode& root = _sceneGraph->getRoot();
-        SceneGraphNode_ptr playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache)),
-                                                    to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                                    to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                                    to_const_uint(SGNComponent::ComponentType::BOUNDS),
-                                                    PhysicsGroup::GROUP_KINEMATIC,
-                                                    getPlayerSGNName(to_ubyte(scenePlayers.size())));
-
-        const Player_ptr& player = _parent.addPlayer(*this, playerSGN);
-        if (player) {
-            _scenePlayers.emplace_back(player);
-        }
-    });
+            addPlayerInternal(true);
+        });
 
     _GUI->addButton(_ID_RT("RemovePlayer"), "Remove Player",
         vec2<I32>(0, resolution.height - playerButtonHeight * 1.5f - playerButtonHeight * 1.5f),
         vec2<U32>(quitButtonWidth, playerButtonHeight),
         [this](I64 btnGUID) {
-
-        if (_scenePlayers.size() > 1) {
-            _parent.removePlayer(*this, _scenePlayers.back());
-            _scenePlayers.pop_back();
-        }
+            if (_scenePlayers.size() > 1) {
+                removePlayerInternal(_scenePlayers.back()->index());
+            }
     });
 
     _GUI->addText(_ID("globalMessage"),
@@ -133,19 +117,21 @@ void DefaultScene::processInput(U8 playerIndex, const U64 deltaTime) {
         _sceneToLoad.clear();
     }
 
+    getPlayerForIndex(playerIndex)->getCamera().setYaw(_camAngle[getSceneIndexForPlayer(playerIndex)]);
+
     Scene::processInput(playerIndex, deltaTime);
 }
 
 void DefaultScene::processTasks(const U64 deltaTime) {
-    static F32 angle = 0;
-
     D64 SpinTimer = Time::Milliseconds(16);
     if (_taskTimers[0] >= SpinTimer) {
-        angle += 0.025f;
-        if (angle >= 360.0f) {
-            angle = 0.0f;
+        for (hashMapImpl<U8, F32>::value_type& it : _camAngle) {
+            F32& angle = it.second;
+            angle += 0.025f * ((it.first * 5.0f) + 1.0f);
+            if (angle >= 360.0f) {
+                angle -= 360.0f;
+            }
         }
-        Camera::activeCamera()->setYaw(angle);
 
         _taskTimers[0] = 0.0;
     }

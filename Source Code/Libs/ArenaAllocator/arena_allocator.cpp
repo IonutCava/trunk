@@ -28,7 +28,6 @@ void arena_simple_usage()
 
 	Arena arena;
 	SomeSt* p1   = new (arena) SomeSt[20];
-	double* darr = new (arena) double[4000];
 
 	arena.DTOR(p1, 20);
 
@@ -71,7 +70,6 @@ void my_arena_usage()
 
 	arena.clear();
 
-	int st_size = sizeof(SomeSt);
 	p4 = new (arena) SomeSt[3];
 	p5 = new (arena) SomeSt(10., 30);
 
@@ -128,11 +126,6 @@ void arena_usecases()
 {
 	arena_simple_usage();
 	my_arena_usage();
-	return;
-
-	return;
-
-	slist_usecase();
 	return;
 }
 

@@ -43,7 +43,7 @@ void MainScene::updateLights() {
 
 void MainScene::processInput(U8 playerIndex, const U64 deltaTime) {
     if (state().playerState(playerIndex).cameraUpdated()) {
-        Camera& cam = _scenePlayers[playerIndex]->getCamera();
+        Camera& cam = getPlayerForIndex(playerIndex)->getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
         if (!_freeflyCamera) {

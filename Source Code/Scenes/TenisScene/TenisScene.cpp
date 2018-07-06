@@ -23,14 +23,6 @@ namespace {
 
 TenisScene::TenisScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
     : Scene(context, cache, parent, name),
-    _aiPlayer1(nullptr),
-    _aiPlayer2(nullptr),
-    _aiPlayer3(nullptr),
-    _aiPlayer4(nullptr),
-    _player1(nullptr),
-    _player2(nullptr),
-    _player3(nullptr),
-    _player4(nullptr),
     _ball(nullptr)
 {
     _sideImpulseFactor = 0;
@@ -121,19 +113,14 @@ void TenisScene::startGame(I64 btnGUID) {
 }
 
 void TenisScene::checkCollisions() {
-    SceneGraphNode_ptr Player1(_aiPlayer1->getUnitRef()->getBoundNode().lock());
-    SceneGraphNode_ptr Player2(_aiPlayer2->getUnitRef()->getBoundNode().lock());
-    SceneGraphNode_ptr Player3(_aiPlayer3->getUnitRef()->getBoundNode().lock());
-    SceneGraphNode_ptr Player4(_aiPlayer4->getUnitRef()->getBoundNode().lock());
-
     BoundingBox ballBB = _ballSGN.lock()->get<BoundsComponent>()->getBoundingBox();
     BoundingBox floorBB = _floor.lock()->get<BoundsComponent>()->getBoundingBox();
 
     WriteLock w_lock(_gameLock);
-    _collisionPlayer1 = ballBB.collision(Player1->get<BoundsComponent>()->getBoundingBox());
-    _collisionPlayer2 = ballBB.collision(Player2->get<BoundsComponent>()->getBoundingBox());
-    _collisionPlayer3 = ballBB.collision(Player3->get<BoundsComponent>()->getBoundingBox());
-    _collisionPlayer4 = ballBB.collision(Player4->get<BoundsComponent>()->getBoundingBox());
+    _collisionPlayer1 = ballBB.collision(_aiPlayer[0].lock()->get<BoundsComponent>()->getBoundingBox());
+    _collisionPlayer2 = ballBB.collision(_aiPlayer[1].lock()->get<BoundsComponent>()->getBoundingBox());
+    _collisionPlayer3 = ballBB.collision(_aiPlayer[2].lock()->get<BoundsComponent>()->getBoundingBox());
+    _collisionPlayer4 = ballBB.collision(_aiPlayer[3].lock()->get<BoundsComponent>()->getBoundingBox());
     _collisionNet = ballBB.collision(_net.lock()->get<BoundsComponent>()->getBoundingBox());
     _collisionFloor = floorBB.collision(ballBB);
 }
@@ -149,26 +136,14 @@ void TenisScene::playGame(const Task& parentTask, cdiggins::any a, CallbackParam
         }
 
         UpgradableReadLock ur_lock(_gameLock);
-        // Shortcut to the scene graph nodes containing our agents
-        SceneGraphNode_ptr Player1(_aiPlayer1->getUnitRef()->getBoundNode().lock());
-        SceneGraphNode_ptr Player2(_aiPlayer2->getUnitRef()->getBoundNode().lock());
-        SceneGraphNode_ptr Player3(_aiPlayer3->getUnitRef()->getBoundNode().lock());
-        SceneGraphNode_ptr Player4(_aiPlayer4->getUnitRef()->getBoundNode().lock());
-
         // Store by copy (thread-safe) current ball position (getPosition()) should
         // be threadsafe
-        vec3<F32> netPosition =
-            _net.lock()->get<PhysicsComponent>()->getPosition();
-        vec3<F32> ballPosition =
-            _ballSGN.lock()->get<PhysicsComponent>()->getPosition();
-        vec3<F32> player1Pos =
-            Player1->get<PhysicsComponent>()->getPosition();
-        vec3<F32> player2Pos =
-            Player2->get<PhysicsComponent>()->getPosition();
-        vec3<F32> player3Pos =
-            Player3->get<PhysicsComponent>()->getPosition();
-        vec3<F32> player4Pos =
-            Player4->get<PhysicsComponent>()->getPosition();
+        vec3<F32> netPosition = _net.lock()->get<PhysicsComponent>()->getPosition();
+        vec3<F32> ballPosition = _ballSGN.lock()->get<PhysicsComponent>()->getPosition();
+        vec3<F32> player1Pos = _aiPlayer[0].lock()->get<PhysicsComponent>()->getPosition();
+        vec3<F32> player2Pos = _aiPlayer[1].lock()->get<PhysicsComponent>()->getPosition();
+        vec3<F32> player3Pos = _aiPlayer[2].lock()->get<PhysicsComponent>()->getPosition();
+        vec3<F32> player4Pos = _aiPlayer[3].lock()->get<PhysicsComponent>()->getPosition();
         vec3<F32> netBBMax = _net.lock()->get<BoundsComponent>()->getBoundingBox().getMax();
         vec3<F32> netBBMin = _net.lock()->get<BoundsComponent>()->getBoundingBox().getMin();
 
@@ -330,62 +305,42 @@ bool TenisScene::load(const stringImpl& name) {
 bool TenisScene::initializeAI(bool continueOnErrors) {
     bool state = false;
     SceneGraphNode_ptr player[4];
-    //----------------------------ARTIFICIAL
-    //INTELLIGENCE------------------------------//
-    player[0] = _sceneGraph->findNode("Player1").lock();
-    player[1] = _sceneGraph->findNode("Player2").lock();
-    player[2] = _sceneGraph->findNode("Player3").lock();
-    player[3] = _sceneGraph->findNode("Player4").lock();
-    player[0]->setSelectable(true);
-    player[1]->setSelectable(true);
-    player[2]->setSelectable(true);
-    player[3]->setSelectable(true);
+    //----------------------------ARTIFICIAL INTELLIGENCE------------------------------//
+    AI::AIEntity* aiPlayer[4];
+    for (U8 i = 0; i < 4; ++i) {
+        stringImpl nodeName = Util::StringFormat("Player%d", i);
+        player[i] = _sceneGraph->findNode(nodeName).lock();
+        player[i]->setSelectable(true);
+        UnitComponent* unitComp = player[i]->get<UnitComponent>();
 
-    _aiPlayer1 = MemoryManager_NEW AI::AIEntity(
-        player[0]->get<PhysicsComponent>()->getPosition(), "Player1");
-    _aiPlayer2 = MemoryManager_NEW AI::AIEntity(
-        player[1]->get<PhysicsComponent>()->getPosition(), "Player2");
-    _aiPlayer3 = MemoryManager_NEW AI::AIEntity(
-        player[2]->get<PhysicsComponent>()->getPosition(), "Player3");
-    _aiPlayer4 = MemoryManager_NEW AI::AIEntity(
-        player[3]->get<PhysicsComponent>()->getPosition(), "Player4");
-    _aiPlayer1->addSensor(AI::SensorType::VISUAL_SENSOR);
-    _aiPlayer2->addSensor(AI::SensorType::VISUAL_SENSOR);
-    _aiPlayer3->addSensor(AI::SensorType::VISUAL_SENSOR);
-    _aiPlayer4->addSensor(AI::SensorType::VISUAL_SENSOR);
+        aiPlayer[i] = MemoryManager_NEW AI::AIEntity(player[i]->get<PhysicsComponent>()->getPosition(), nodeName);
+        aiPlayer[i]->addSensor(AI::SensorType::VISUAL_SENSOR);
+        aiPlayer[i]->setAIProcessor(MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN, *_aiManager));
 
-    _aiPlayer1->setAIProcessor(MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN, *_aiManager));
-    _aiPlayer2->setAIProcessor(MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN, *_aiManager));
-    _aiPlayer3->setAIProcessor(MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN, *_aiManager));
-    _aiPlayer4->setAIProcessor(MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN, *_aiManager));
+        unitComp->setUnit(std::make_shared<NPC>(player[i], aiPlayer[i]));
+    }
 
     _team1 = MemoryManager_NEW AI::AITeam(1, *_aiManager);
     _team2 = MemoryManager_NEW AI::AITeam(2, *_aiManager);
 
     if (state || continueOnErrors) {
-        state = _aiManager->registerEntity(0, _aiPlayer1);
+        state = _aiManager->registerEntity(0, aiPlayer[0]);
     }
     if (state || continueOnErrors) {
-        state = _aiManager->registerEntity(0, _aiPlayer2);
+        state = _aiManager->registerEntity(0, aiPlayer[1]);
     }
     if (state || continueOnErrors) {
-        state = _aiManager->registerEntity(1, _aiPlayer3);
+        state = _aiManager->registerEntity(1, aiPlayer[2]);
     }
     if (state || continueOnErrors) {
-        state = _aiManager->registerEntity(1, _aiPlayer4);
+        state = _aiManager->registerEntity(1, aiPlayer[3]);
     }
     if (state || continueOnErrors) {
-        //----------------------- AI controlled units (NPC's)
-        //---------------------//
-        _player1 = MemoryManager_NEW NPC(player[0], _aiPlayer1);
-        _player2 = MemoryManager_NEW NPC(player[1], _aiPlayer2);
-        _player3 = MemoryManager_NEW NPC(player[2], _aiPlayer3);
-        _player4 = MemoryManager_NEW NPC(player[3], _aiPlayer4);
-
-        _player1->setMovementSpeed(1.45f);
-        _player2->setMovementSpeed(1.5f);
-        _player3->setMovementSpeed(1.475f);
-        _player4->setMovementSpeed(1.45f);
+        //----------------------- AI controlled units (NPC's)---------------------//
+        player[0]->get<UnitComponent>()->getUnit<NPC>()->setMovementSpeed(1.45f);
+        player[1]->get<UnitComponent>()->getUnit<NPC>()->setMovementSpeed(1.5f);
+        player[2]->get<UnitComponent>()->getUnit<NPC>()->setMovementSpeed(1.475f);
+        player[3]->get<UnitComponent>()->getUnit<NPC>()->setMovementSpeed(1.45f);
         Scene::initializeAI(continueOnErrors);
     }
 
@@ -394,19 +349,9 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
 
 bool TenisScene::deinitializeAI(bool continueOnErrors) {
     _aiManager->pauseUpdate(true);
-
-    _aiManager->unregisterEntity(_aiPlayer1);
-    _aiManager->unregisterEntity(_aiPlayer2);
-    _aiManager->unregisterEntity(_aiPlayer3);
-    _aiManager->unregisterEntity(_aiPlayer4);
-    MemoryManager::DELETE(_aiPlayer1);
-    MemoryManager::DELETE(_aiPlayer2);
-    MemoryManager::DELETE(_aiPlayer3);
-    MemoryManager::DELETE(_aiPlayer4);
-    MemoryManager::DELETE(_player1);
-    MemoryManager::DELETE(_player2);
-    MemoryManager::DELETE(_player3);
-    MemoryManager::DELETE(_player4);
+    for (U8 i = 0; i < 4; ++i) {
+        _aiManager->unregisterEntity(_aiPlayer[i].lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity());
+    }
     MemoryManager::DELETE(_team1);
     MemoryManager::DELETE(_team2);
     return Scene::deinitializeAI(continueOnErrors);

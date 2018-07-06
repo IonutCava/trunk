@@ -198,7 +198,7 @@ bool Scene::loadModel(const FileData& data) {
 
     SceneGraphNode_ptr meshNode =
         _sceneGraph->getRoot().addNode(thisObj,
-                                       normalMask,
+                                       data.isUnit ? normalMask | to_const_uint(SGNComponent::ComponentType::UNIT) : normalMask,
                                        data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
                                                                               : PhysicsGroup::GROUP_DYNAMIC
                                                          : PhysicsGroup::GROUP_IGNORE,
@@ -420,21 +420,21 @@ U16 Scene::registerInputActions() {
     };
     auto increaseResolution = [this](InputParams param) {_context.gfx().increaseResolution();};
     auto decreaseResolution = [this](InputParams param) {_context.gfx().decreaseResolution();};
-    auto moveForward = [this](InputParams param) {state().playerState(param._playerIndex).moveFB(MoveDirection::POSITIVE);};
-    auto moveBackwards = [this](InputParams param) {state().playerState(param._playerIndex).moveFB(MoveDirection::NEGATIVE);};
-    auto stopMoveFWDBCK = [this](InputParams param) {state().playerState(param._playerIndex).moveFB(MoveDirection::NONE);};
-    auto strafeLeft = [this](InputParams param) {state().playerState(param._playerIndex).moveLR(MoveDirection::NEGATIVE);};
-    auto strafeRight = [this](InputParams param) {state().playerState(param._playerIndex).moveLR(MoveDirection::POSITIVE);};
-    auto stopStrafeLeftRight = [this](InputParams param) {state().playerState(param._playerIndex).moveLR(MoveDirection::NONE);};
-    auto rollCCW = [this](InputParams param) {state().playerState(param._playerIndex).roll(MoveDirection::POSITIVE);};
-    auto rollCW = [this](InputParams param) {state().playerState(param._playerIndex).roll(MoveDirection::NEGATIVE);};
-    auto stopRollCCWCW = [this](InputParams param) {state().playerState(param._playerIndex).roll(MoveDirection::NONE);};
-    auto turnLeft = [this](InputParams param) { state().playerState(param._playerIndex).angleLR(MoveDirection::NEGATIVE);};
-    auto turnRight = [this](InputParams param) { state().playerState(param._playerIndex).angleLR(MoveDirection::POSITIVE);};
-    auto stopTurnLeftRight = [this](InputParams param) { state().playerState(param._playerIndex).angleLR(MoveDirection::NONE);};
-    auto turnUp = [this](InputParams param) {state().playerState(param._playerIndex).angleUD(MoveDirection::NEGATIVE);};
-    auto turnDown = [this](InputParams param) {state().playerState(param._playerIndex).angleUD(MoveDirection::POSITIVE);};
-    auto stopTurnUpDown = [this](InputParams param) {state().playerState(param._playerIndex).angleUD(MoveDirection::NONE);};
+    auto moveForward = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);};
+    auto moveBackwards = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE);};
+    auto stopMoveFWDBCK = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE);};
+    auto strafeLeft = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE);};
+    auto strafeRight = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE);};
+    auto stopStrafeLeftRight = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);};
+    auto rollCCW = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::POSITIVE);};
+    auto rollCW = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NEGATIVE);};
+    auto stopRollCCWCW = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NONE);};
+    auto turnLeft = [this](InputParams param) { state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NEGATIVE);};
+    auto turnRight = [this](InputParams param) { state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::POSITIVE);};
+    auto stopTurnLeftRight = [this](InputParams param) { state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NONE);};
+    auto turnUp = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NEGATIVE);};
+    auto turnDown = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::POSITIVE);};
+    auto stopTurnUpDown = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);};
     auto togglePauseState = [](InputParams param){
         ParamHandler& par = ParamHandler::instance();
         par.setParam(_ID("freezeLoopTime"), !par.getParam(_ID("freezeLoopTime"), false));
@@ -473,30 +473,30 @@ U16 Scene::registerInputActions() {
     auto toggleFlashLight = [this](InputParams param) {toggleFlashlight(); };
     auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);};
     auto select = [this](InputParams  param) {findSelection(); };
-    auto lockCameraToMouse = [this](InputParams  param) {state().playerState(param._playerIndex).cameraLockedToMouse(true); };
+    auto lockCameraToMouse = [this](InputParams  param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).cameraLockedToMouse(true); };
     auto releaseCameraFromMouse = [this](InputParams  param) {
-        state().playerState(param._playerIndex).cameraLockedToMouse(false);
-        state().playerState(param._playerIndex).angleLR(MoveDirection::NONE);
-        state().playerState(param._playerIndex).angleUD(MoveDirection::NONE);
+        state().playerState(getPlayerIndexForDevice(param._deviceIndex)).cameraLockedToMouse(false);
+        state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NONE);
+        state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);
     };
     auto rendererDebugView = [this](InputParams param) {_context.gfx().getRenderer().toggleDebugView();};
     auto shutdown = [](InputParams param) {Application::instance().RequestShutdown();};
     auto povNavigation = [this](InputParams param) {
         if (param._var[0] & OIS::Pov::North) {  // Going up
-            state().playerState(param._playerIndex).moveFB(MoveDirection::POSITIVE);
+            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);
         }
         if (param._var[0] & OIS::Pov::South) {  // Going down
-            state().playerState(param._playerIndex).moveFB(MoveDirection::NEGATIVE);
+            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE);
         }
         if (param._var[0] & OIS::Pov::East) {  // Going right
-            state().playerState(param._playerIndex).moveLR(MoveDirection::POSITIVE);
+            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE);
         }
         if (param._var[0] & OIS::Pov::West) {  // Going left
-            state().playerState(param._playerIndex).moveLR(MoveDirection::NEGATIVE);
+            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE);
         }
         if (param._var[0] == OIS::Pov::Centered) {  // stopped/centered out
-            state().playerState(param._playerIndex).moveLR(MoveDirection::NONE);
-            state().playerState(param._playerIndex).moveFB(MoveDirection::NONE);
+            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);
+            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE);
         }
     };
 
@@ -513,39 +513,39 @@ U16 Scene::registerInputActions() {
         switch (axis) {
             case 0: {
                 if (axisABS > deadZone) {
-                    state().playerState(param._playerIndex).angleUD(MoveDirection::POSITIVE);
+                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::POSITIVE);
                 } else if (axisABS < -deadZone) {
-                    state().playerState(param._playerIndex).angleUD(MoveDirection::NEGATIVE);
+                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NEGATIVE);
                 } else {
-                    state().playerState(param._playerIndex).angleUD(MoveDirection::NONE);
+                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);
                 }
             } break;
             case 1: {
                 if (axisABS > deadZone) {
-                    state().playerState(param._playerIndex).angleLR(MoveDirection::POSITIVE);
+                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::POSITIVE);
                 } else if (axisABS < -deadZone) {
-                    state().playerState(param._playerIndex).angleLR(MoveDirection::NEGATIVE);
+                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NEGATIVE);
                 } else {
-                    state().playerState(param._playerIndex).angleLR(MoveDirection::NONE);
+                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NONE);
                 }
             } break;
 
             case 2: {
                 if (axisABS < -deadZone) {
-                    state().playerState(param._playerIndex).moveFB(MoveDirection::POSITIVE);
+                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);
                 } else if (axisABS > deadZone) {
-                    state().playerState(param._playerIndex).moveFB(MoveDirection::NEGATIVE);
+                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE);
                 } else {
-                    state().playerState(param._playerIndex).moveFB(MoveDirection::NONE);
+                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE);
                 }
             } break;
             case 3: {
                 if (axisABS < -deadZone) {
-                    state().playerState(param._playerIndex).moveLR(MoveDirection::NEGATIVE);
+                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE);
                 } else if (axisABS > deadZone) {
-                    state().playerState(param._playerIndex).moveLR(MoveDirection::POSITIVE);
+                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE);
                 } else {
-                    state().playerState(param._playerIndex).moveLR(MoveDirection::NONE);
+                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);
                 }
             } break;
         }
@@ -603,20 +603,9 @@ void Scene::loadKeyBindings() {
     XML::loadDefaultKeybindings("keyBindings.xml", this);
 }
 
-bool Scene::load(const stringImpl& name) {
-    setState(ResourceState::RES_LOADING);
-
-    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
-
-    STUBBED("ToDo: load skyboxes from XML")
-    _name = name;
-    _baseCamera = Camera::createCamera(Util::StringFormat("BaseCamera_%s", name.c_str()), Camera::CameraType::FREE_FLY);
-
-    loadXMLAssets();
-    SceneGraphNode& root = _sceneGraph->getRoot();
+void Scene::loadBaseCamera() {
+    _baseCamera = Camera::createCamera(Util::StringFormat("BaseCamera_%s", _name.c_str()), Camera::CameraType::FREE_FLY);
+    
 
     // Camera position is overridden in the scene's XML configuration file
     if (ParamHandler::instance().getParam<bool>(_ID_RT((getName() + "options.cameraStartPositionOverride").c_str()))) {
@@ -627,13 +616,32 @@ bool Scene::load(const stringImpl& name) {
         vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
             _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
         _baseCamera->setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
-    }
-    else {
+    } else {
         _baseCamera->setEye(vec3<F32>(0, 50, 0));
     }
 
     _baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.move").c_str()), 1.0f));
     _baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
+    _baseCamera->setProjection(_paramHandler.getParam<F32>(_ID("rendering.aspectRatio"), 1.77f),
+                               _paramHandler.getParam<F32>(_ID("rendering.verticalFOV")),
+                              vec2<F32>(_paramHandler.getParam<F32>(_ID("rendering.zNear")),
+                                        _paramHandler.getParam<F32>(_ID("rendering.zFar"))));
+}
+
+bool Scene::load(const stringImpl& name) {
+    setState(ResourceState::RES_LOADING);
+
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+
+    STUBBED("ToDo: load skyboxes from XML")
+    _name = name;
+
+    loadBaseCamera();
+    loadXMLAssets();
+    SceneGraphNode& root = _sceneGraph->getRoot();
 
      // Add terrain from XML
     if (!_terrainInfoArray.empty()) {
@@ -708,10 +716,19 @@ stringImpl Scene::getPlayerSGNName(U8 playerIndex) {
     return Util::StringFormat(g_defaultPlayerName, playerIndex + 1);
 }
 
+void Scene::currentPlayerPass(U8 playerIndex) {
+    if (state().playerState(playerIndex).cameraUnderwater()) {
+        PostFX::instance().pushFilter(FilterType::FILTER_UNDERWATER);
+    } else {
+        PostFX::instance().popFilter(FilterType::FILTER_UNDERWATER);
+    }
+}
+
 void Scene::onSetActive() {
     _context.pfx().setPhysicsScene(_pxScene);
     _aiManager->pauseUpdate(false);
 
+    input().onSetActive();
     _context.sfx().stopMusic();
     _context.sfx().dumpPlaylists();
 
@@ -725,45 +742,77 @@ void Scene::onSetActive() {
     }
     _context.sfx().playMusic(0);
 
-    const SceneManager::PlayerList& scenePlayers = _parent.getPlayers();
-    assert(scenePlayers.empty());
-
-    SceneGraphNode& root = _sceneGraph->getRoot();
-
-    stringImpl playerName = getPlayerSGNName(0);
-
-    SceneGraphNode_ptr playerSGN(_sceneGraph->findNode(playerName).lock());
-    if (!playerSGN) {
-        playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache)),
-                                 to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                 to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                 to_const_uint(SGNComponent::ComponentType::BOUNDS),
-                                 PhysicsGroup::GROUP_KINEMATIC,
-                                 playerName);
-    }
-    const Player_ptr& player = _parent.addPlayer(*this, playerSGN);
-    if (player) {
-        _scenePlayers.emplace_back(player);
-    }
+    assert(_parent.getPlayers().empty());
+    addPlayerInternal(false);
 }
 
 void Scene::onRemoveActive() {
     _aiManager->pauseUpdate(true);
 
-    for (Player_ptr& player : _scenePlayers) {
-        _parent.removePlayer(*this, player);
+    while(!_scenePlayers.empty()) {
+        _parent.removePlayer(*this, _scenePlayers.back(), false);
     }
-    _scenePlayers.clear();
+
+    input().onRemoveActive();
+}
+
+void Scene::addPlayerInternal(bool queue) {
+    stringImpl playerName = getPlayerSGNName(to_ubyte(_parent.getPlayers().size()));
+    
+    SceneGraphNode_ptr playerSGN(_sceneGraph->findNode(playerName).lock());
+    if (!playerSGN) {
+        SceneGraphNode& root = _sceneGraph->getRoot();
+        playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache)),
+                                to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                to_const_uint(SGNComponent::ComponentType::UNIT),
+                                PhysicsGroup::GROUP_KINEMATIC,
+                                playerName);
+        _parent.addPlayer(*this, playerSGN, queue);
+    } else {
+        assert(playerSGN->get<UnitComponent>()->getUnit() != nullptr);
+    }
+}
+
+void Scene::removePlayerInternal(U8 playerIndex) {
+    assert(playerIndex < _scenePlayers.size());
+    
+    _parent.removePlayer(*this, _scenePlayers[getSceneIndexForPlayer(playerIndex)], true);
 }
 
 void Scene::onPlayerAdd(const Player_ptr& player) {
+    _scenePlayers.push_back(player);
     state().onPlayerAdd(player->index());
     input().onPlayerAdd(player->index());
 }
 
 void Scene::onPlayerRemove(const Player_ptr& player) {
-    state().onPlayerRemove(player->index());
-    input().onPlayerRemove(player->index());
+    U8 playerIndex = player->index();
+
+    input().onPlayerRemove(playerIndex);
+    state().onPlayerRemove(playerIndex);
+
+    _scenePlayers.erase(std::cbegin(_scenePlayers) + getSceneIndexForPlayer(playerIndex));
+}
+
+U8 Scene::getSceneIndexForPlayer(U8 playerIndex) const {
+    for (U8 i = 0; i < to_ubyte(_scenePlayers.size()); ++i) {
+        if (_scenePlayers[i]->index() == playerIndex) {
+            return i;
+        }
+    }
+
+    DIVIDE_UNEXPECTED_CALL("Player not found!");
+    return 0;
+}
+
+const Player_ptr& Scene::getPlayerForIndex(U8 playerIndex) const {
+    return _scenePlayers[getSceneIndexForPlayer(playerIndex)];
+}
+
+U8 Scene::getPlayerIndexForDevice(U8 deviceIndex) const {
+    return input().getPlayerIndexForDevice(deviceIndex);
 }
 
 bool Scene::loadPhysics(bool continueOnErrors) {
@@ -803,8 +852,17 @@ void Scene::clearObjects() {
     _sceneGraph->unload();
 }
 
+bool Scene::mouseMoved(const Input::MouseEvent& arg) {
+    // ToDo: Use mapping between device ID an player index -Ionut
+    U8 playerIndex = getPlayerIndexForDevice(arg._deviceIndex);
+
+    return _scenePlayers[playerIndex]->getCamera().moveRelative(vec3<I32>(arg._event.state.X.rel,
+                                                                          arg._event.state.Y.rel,
+                                                                          arg._event.state.Z.rel));
+}
+
 bool Scene::updateCameraControls(U8 playerIndex) {
-    Camera& cam = _scenePlayers[playerIndex]->getCamera();
+    Camera& cam = getPlayerForIndex(playerIndex)->getCamera();
     
     SceneStatePerPlayer& playerState = state().playerState(playerIndex);
 
@@ -835,13 +893,7 @@ bool Scene::updateCameraControls(U8 playerIndex) {
         } break;
     }
 
-    if (checkCameraUnderwater()) {
-        playerState.cameraUnderwater(true);
-        PostFX::instance().pushFilter(FilterType::FILTER_UNDERWATER);
-    } else {
-        playerState.cameraUnderwater(false);
-        PostFX::instance().popFilter(FilterType::FILTER_UNDERWATER);
-    }
+    playerState.cameraUnderwater(checkCameraUnderwater(playerIndex));
 
     return playerState.cameraUpdated();
 }
@@ -866,7 +918,7 @@ void Scene::updateSceneState(const U64 deltaTime) {
 
 void Scene::onLostFocus() {
     for (U8 i = 0; i < to_ubyte(_scenePlayers.size()); ++i) {
-        state().playerState(i).resetMovement();
+        state().playerState(_scenePlayers[i]->index()).resetMovement();
     }
 
     if (!Config::Build::IS_DEBUG_BUILD) {
@@ -970,8 +1022,8 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPa
     _envProbePool->debugDraw(subPassesInOut);
 }
 
-bool Scene::checkCameraUnderwater() const {
-    const Camera& crtCamera = *Camera::activeCamera();
+bool Scene::checkCameraUnderwater(U8 playerIndex) const {
+    const Camera& crtCamera = getPlayerForIndex(playerIndex)->getCamera();
     const vec3<F32>& eyePos = crtCamera.getEye();
 
     RenderPassCuller::VisibleNodeList& nodes = _parent.getVisibleNodesCache(RenderStage::DISPLAY);
@@ -991,20 +1043,18 @@ bool Scene::checkCameraUnderwater() const {
 }
 
 void Scene::findHoverTarget(U8 playerIndex) {
-    assert(playerIndex < to_ubyte(_scenePlayers.size()));
-
-    const Camera& crtCamera = _scenePlayers[playerIndex]->getCamera();
+    const Camera& crtCamera = getPlayerForIndex(playerIndex)->getCamera();
 
     const vec2<U16>& displaySize = Application::instance().windowManager().getActiveWindow().getDimensions();
     const vec2<F32>& zPlanes = crtCamera.getZPlanes();
-    const vec2<I32>& mousePos = _input->getMousePosition(playerIndex);
+    const vec2<I32>& aimPos = state().playerState(playerIndex).aimDelta();
 
-    F32 mouseX = to_float(mousePos.x);
-    F32 mouseY = displaySize.height - to_float(mousePos.y) - 1;
+    F32 aimX = to_float(aimPos.x);
+    F32 aimY = displaySize.height - to_float(aimPos.y) - 1;
 
     const vec4<I32>& viewport = _context.gfx().getCurrentViewport();
-    vec3<F32> startRay = crtCamera.unProject(mouseX, mouseY, 0.0f, viewport);
-    vec3<F32> endRay = crtCamera.unProject(mouseX, mouseY, 1.0f, viewport);
+    vec3<F32> startRay = crtCamera.unProject(aimX, aimY, 0.0f, viewport);
+    vec3<F32> endRay = crtCamera.unProject(aimX, aimY, 1.0f, viewport);
     // see if we select another one
     _sceneSelectionCandidates.clear();
     // get the list of visible nodes (use Z_PRE_PASS because the nodes are sorted by depth, front to back)
@@ -1075,8 +1125,13 @@ void Scene::findSelection() {
 }
 
 bool Scene::save(ByteBuffer& outputBuffer) const {
-    const Camera& cam = *Camera::activeCamera();
-    outputBuffer << cam.getEye() << cam.getEuler();
+    U8 playerCount = to_ubyte(_scenePlayers.size());
+    outputBuffer << playerCount;
+    for (U8 i = 0; i < playerCount; ++i) {
+        const Camera& cam = _scenePlayers[i]->getCamera();
+        outputBuffer << i << cam.getEye() << cam.getEuler();
+    }
+
     return true;
 }
 
@@ -1084,11 +1139,19 @@ bool Scene::load(ByteBuffer& inputBuffer) {
     if (!inputBuffer.empty()) {
         vec3<F32> camPos;
         vec3<F32> camEuler;
+        U8 currentPlayerIndex = 0;
+        U8 currentPlayerCount = to_ubyte(_scenePlayers.size());
 
-        inputBuffer >> camPos >> camEuler;
-
-        _baseCamera->setEye(camPos);
-        _baseCamera->setGlobalRotation(-camEuler);
+        U8 previousPlayerCount = 0;
+        inputBuffer >> previousPlayerCount;
+        for (U8 i = 0; i < previousPlayerCount; ++i) {
+            inputBuffer >> currentPlayerIndex >> camPos >> camEuler;
+            if (currentPlayerIndex < currentPlayerCount) {
+                Camera& cam = _scenePlayers[currentPlayerIndex]->getCamera();
+                cam.setEye(camPos);
+                cam.setGlobalRotation(-camEuler);
+            }
+        }
     }
 
     return true;
