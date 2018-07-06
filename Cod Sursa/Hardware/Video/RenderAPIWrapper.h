@@ -151,7 +151,8 @@ protected:
 
 	virtual void setLight(U32 slot, tr1::unordered_map<string,vec4>& properties) = 0;
 	virtual void createLight(U32 slot) = 0;
-
+	
+	virtual void toggleWireframe(bool state) = 0;
 	virtual ~RenderAPI(){};
 
 public: //RenderAPI global
@@ -164,7 +165,7 @@ private:
 
 protected:
 	RenderState _state;
-	
+
 };
 
 #endif

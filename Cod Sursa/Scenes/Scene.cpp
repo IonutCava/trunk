@@ -1,11 +1,15 @@
 #include "Scene.h"
 #include "Managers/ResourceManager.h"
+#include "Managers/SceneManager.h" //Object selection
 #include "PhysX/PhysX.h"
 #include "ASIO.h"
+#include "Utility/Headers/Guardian.h"
 #include "Geometry/Predefined/Box3D.h"
 #include "Geometry/Predefined/Quad3D.h"
 #include "Geometry/Predefined/Sphere3D.h"
 #include "Geometry/Predefined/Text3D.h"
+#include "GUI/GUI.h"
+#include "GUI/GLUIManager.h"
 
 Scene::~Scene()
 {
@@ -14,7 +18,13 @@ Scene::~Scene()
 		_events.erase(it);
 		delete *it;
 	}
+	for(vector<Light*>::iterator it = _lights.begin(); it !=  _lights.end(); it++)
+	{
+		_lights.erase(it);
+		delete *it;
+	}
 	_events.clear();
+	_inputManager.terminate();
 }
 
 void Scene::clean() //Called when application is idle
@@ -241,3 +251,166 @@ bool Scene::unload()
 	clearEvents();
 	return true;
 }
+
+
+void Scene::onMouseMove(const OIS::MouseEvent& key)
+{
+	GUI::getInstance().checkItem(key.state.X.abs,key.state.Y.abs);
+}
+
+void Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button)
+{
+	switch(button)
+	{
+		case OIS::MB_Left:
+		{
+			GUI::getInstance().clickCheck();
+		}break;
+
+		case OIS::MB_Right:
+		{
+		}break;
+
+		case OIS::MB_Middle:
+		{
+		}break;
+
+		case OIS::MB_Button3:
+		case OIS::MB_Button4:
+		case OIS::MB_Button5:
+		case OIS::MB_Button6:
+		case OIS::MB_Button7:
+		default:
+			break;
+	}
+}
+
+void Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button)
+{
+	switch(button)
+	{
+		case OIS::MB_Left:
+		{
+			SceneManager::getInstance().findSelection(key.state.X.rel,key.state.Y.rel);
+			GUI::getInstance().clickReleaseCheck();
+		}break;
+
+		case OIS::MB_Right:
+		{
+		}break;
+
+		case OIS::MB_Middle:
+		{
+		}break;
+
+		case OIS::MB_Button3:
+		case OIS::MB_Button4:
+		case OIS::MB_Button5:
+		case OIS::MB_Button6:
+		case OIS::MB_Button7:
+		default:
+			break;
+	}
+}
+
+static F32 speedFactor = 0.25f;
+void Scene::onKeyDown(const OIS::KeyEvent& key)
+{
+	switch(key.key)
+	{
+		case OIS::KC_LEFT : 
+			Engine::getInstance().angleLR = -(speedFactor/10);
+			break;
+		case OIS::KC_RIGHT : 
+			Engine::getInstance().angleLR = speedFactor/10;
+			break;
+		case OIS::KC_UP : 
+			Engine::getInstance().angleUD = -(speedFactor/10);
+			break;
+		case OIS::KC_DOWN : 
+			Engine::getInstance().angleUD = speedFactor/10;
+			break;
+		case OIS::KC_END:
+			SceneManager::getInstance().deleteSelection();
+			break;
+		case OIS::KC_R:
+			Guardian::getInstance().ReloadEngine();
+			break;
+		case OIS::KC_P:
+			Guardian::getInstance().RestartPhysX();
+			break;
+		case OIS::KC_N:
+			GFXDevice::getInstance().toggleWireframe();
+			break;
+		case OIS::KC_B:
+			SceneManager::getInstance().toggleBoundingBoxes();
+			break;
+		case OIS::KC_ADD:
+			if (speedFactor < 10)  speedFactor += 0.1f;
+			break;
+			case OIS::KC_SUBTRACT:
+			if (speedFactor > 0.1f)   speedFactor -= 0.1f;
+			break;
+		//1+2+3+4 = cream diversi actori prin scena
+		case OIS::KC_1:
+			glui_cb(10);
+			break;
+		case OIS::KC_2:
+			glui_cb(30);
+			break;
+		case OIS::KC_3:
+			glui_cb(50);
+			break;
+		case OIS::KC_4:
+			glui_cb(40);
+			break;
+		case OIS::KC_5:
+			glui_cb(60);
+			break;
+		case OIS::KC_6:
+			PhysX::getInstance().ApplyForceToActor(PhysX::getInstance().GetSelectedActor(), NxVec3(+1,0,0), 3000); 
+			break;
+		case OIS::KC_7:
+			glui_cb(QUIT_ID);
+			break;
+		default:
+			break;
+	}
+}
+
+void Scene::onKeyUp(const OIS::KeyEvent& key)
+{
+	switch( key.key )
+	{
+		case OIS::KC_LEFT:
+		case OIS::KC_RIGHT:
+			Engine::getInstance().angleLR = 0.0f;
+			break;
+		case OIS::KC_UP:
+		case OIS::KC_DOWN:
+			Engine::getInstance().angleUD = 0.0f;
+			break;
+	}
+}
+
+void Scene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I32 axis)
+	{
+	if(axis == 1)
+	{
+		if(key.state.mAxes[axis].abs > 0)
+			Engine::getInstance().angleLR = speedFactor/10;
+		else if(key.state.mAxes[axis].abs < 0)
+			Engine::getInstance().angleLR = -(speedFactor/10);
+		else
+			Engine::getInstance().angleLR = 0;
+	}
+	else if(axis == 0)
+	{
+		if(key.state.mAxes[axis].abs > 0)
+			Engine::getInstance().angleUD = speedFactor/10;
+		else if(key.state.mAxes[axis].abs < 0)
+			Engine::getInstance().angleUD = -(speedFactor/10);
+		else
+			Engine::getInstance().angleUD = 0;
+	}
+	}

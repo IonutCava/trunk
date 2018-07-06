@@ -65,7 +65,8 @@ public:
 
 	void			setSelected(bool state)   {_selected = state;}
 	void            setVisibility(bool state) {_render = state;}
-	
+	virtual inline  vector<Shader* >&   getShaders()     {return _shaders; }
+	virtual void    addShader(Shader* s) {_shaders.push_back(s);}
 	virtual void    computeBoundingBox(){_originalBB = _bb;}
 	virtual void    onDraw();
 	virtual void    drawBBox();
@@ -78,6 +79,7 @@ protected:
 	BoundingBox			         _bb, _originalBB; //_originalBB is a copy of the initialy calculate BB for transformation
 												   //it should be copied in every computeBoungingBox call;
 	PrimitiveType				_geometryType;
+	vector<Shader*>				 _shaders;
 };
 
 #endif

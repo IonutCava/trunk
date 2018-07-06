@@ -3,6 +3,7 @@
 
 #include "resource.h"
 #include "Importer/DVDConverter.h"
+#include "Geometry/Object3DFlyWeight.h"
 
 #define TERRAIN_CHUNKS_LOD 3
 
@@ -20,7 +21,7 @@ public:
 
 	inline vector<U32>&				getIndiceArray(U32 lod)	{return m_tIndice[lod];}
 	inline vector<U32>&				getGrassIndiceArray()		{return m_tGrassIndice;}
-	inline vector<DVDFile* >&       getTreeArray()              {return m_tTrees;}
+	inline vector<Object3DFlyWeight* >&       getTreeArray()              {return m_tTrees;}
 	void								addObject(DVDFile* obj);
 	void								addTree(const vec3& pos, F32 rotation, F32 scale,Shader* tree_shader, const FileData& tree);
 	TerrainChunk() {}
@@ -38,8 +39,8 @@ private:
 
 	//ToDo: Eliminate this hack. Trees hold a pointer to an Object3D object that represents the tree's geometry,
 	//      and has a position, orientation and scale different from that of the object itself.
-	vector<DVDFile* >           m_tTrees;
-	vector<DVDFile* >::iterator m_tTreesIterator;
+	vector<Object3DFlyWeight* >           m_tTrees;
+	vector<Object3DFlyWeight* >::iterator m_tTreesIterator;
 
 	string				    previousModel;
 };

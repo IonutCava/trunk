@@ -4,7 +4,6 @@
 
 #include "GUI/GLUIManager.h"
 #include "Utility/Headers/Guardian.h"
-#include "Managers/TextureManager.h"
 #include "Managers/ResourceManager.h"
 #include "Managers/TerrainManager.h"
 #include "Managers/SceneManager.h"
@@ -36,7 +35,7 @@ Engine::Engine() :
 	 time = 0;
 	 timebase = 0;
 	 angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
-	 m_bWireframe = false;
+
  
 	 mainWindowId = -1;
 	 //END CONSTRUCTOR
@@ -77,16 +76,6 @@ void Engine::DrawScene()
 	_scene.processEvents(abs(GETTIME()));
 }
 
-void Engine::ToggleWireframeRendering()
-{
-	m_bWireframe = !m_bWireframe;
-	if(m_bWireframe)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	else
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-
-
 void Engine::RefreshMetrics()
 {
 	time=(int)(GETTIME()*1000);
@@ -98,10 +87,9 @@ void Engine::Initialize()
 	ResourceManager& res = ResourceManager::getInstance();
 	_GFX.setApi(OpenGL32);
 	_GFX.initHardware();
-	ZPR::Init();
 	_camera.setEye(vec3(0,50,0));
 	F32 fogColor[4] = {0.5, 0.5, 0.5, 1.0}; 
-	//_GFX.enableFog(0.3f,fogColor);
+	_GFX.enableFog(0.3f,fogColor);
 }
 
 void Engine::Quit()
@@ -110,23 +98,4 @@ void Engine::Quit()
 	SceneManager::getInstance().getTerrainManager()->destroy();
 	Con::getInstance().printfn("Closing the rendering engine ...");
 	_GFX.closeRenderingApi();
-}
-
-
-// takes a screen shot and saves it to a TGA image
-void Engine::Screenshot(char *filename, int xmin,int ymin, int xmax, int ymax)
-{
-// compute width and heidth of the image
-	int w = xmax - xmin;
-	int h = ymax - ymin;
-
-// allocate memory for the pixels
-   U8 *imageData = new U8[w * h * 4];
-
-// read the pixels from the frame buffer
-   //glReadPixels(xmin,ymin,xmax,ymax,GL_RGBA,GL_UNSIGNED_BYTE, (void*)imageData);
-
-// save the image 
-	TextureManager::getInstance().SaveSeries(filename,w,h,32,imageData);
-  delete[] imageData;
 }

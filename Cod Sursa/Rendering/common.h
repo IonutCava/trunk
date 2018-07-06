@@ -2,7 +2,6 @@
 #define ENGINE_H_
 
 #include "resource.h"
-#include "GUI/zpr.h"
 #include "Utility/Headers/Singleton.h"
 
 class PhysX;
@@ -19,7 +18,6 @@ private:
 	int time, timebase;
 	static int status;
 	int mainWindowId;
-	bool m_bWireframe;
 	int width, height;
 
 	GFXDevice&    _GFX;
@@ -47,10 +45,7 @@ public:
    void Quit();
    int  getMainWindowId(){return mainWindowId;}
    void setMainWindowId(U32 id){mainWindowId = id;}
-   void Screenshot(char *filename, int xmin, int ymin, int xmax, int ymax);
-   void ToggleWireframeRendering();
-   bool isWireframeRendering() {return m_bWireframe;}
-   
+ 
    SINGLETON_END()
 
 #endif

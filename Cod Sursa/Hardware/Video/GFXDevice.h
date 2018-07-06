@@ -5,6 +5,8 @@
 #include "Direct3D\DXWrapper.h"
 
 class Object3D;
+class Object3DFlyWeight;
+
 SINGLETON_BEGIN_EXT1(GFXDevice,RenderAPI)
 
 public:
@@ -66,6 +68,7 @@ public:
 	void renderElements(unordered_map<string,Object3D*>&  primitiveArray);
 	void renderElements(unordered_map<string,DVDFile*>&  geometryArray);
 	void renderElements(vector<DVDFile*>& geometryArray);
+	void renderElements(vector<Object3DFlyWeight*>& geometryArray);
 	
 	void setMaterial(Material& mat){_api.setMaterial(mat);}
 	void setColor(const vec4& v){_api.setColor(v);}
@@ -74,11 +77,18 @@ public:
 	void setLight(U32 slot, unordered_map<string,vec4>& properties){_api.setLight(slot,properties);}
 	void createLight(U32 slot){_api.createLight(slot);}
 
+   void toggleWireframe(bool state = false);
+
+   bool wireframeRendering() {return _wireframeMode;}  
+   void Screenshot(char *filename, int xmin, int ymin, int xmax, int ymax);
 private:
 	GFXDevice() :
 	   _api(GL_API::getInstance()) //Defaulting to OpenGL if no api has been defined
-	   {}
+	   {
+		   _wireframeMode = false;
+	   }
 	RenderAPI& _api;
+	bool _wireframeMode;
 SINGLETON_END()
 
 #endif

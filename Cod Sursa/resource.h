@@ -11,6 +11,7 @@
 #define GETTIME()   GFXDevice::getInstance().getTime()
 #define GETMSTIME() GFXDevice::getInstance().getMSTime()
 #define CLAMP(n, min, max) (((n)<(min))?(min):(((n)>(max))?(max):(n)))
+#define BIT(x) (1 << (x))
 
 #ifndef NOMINMAX
 #define NOMINMAX

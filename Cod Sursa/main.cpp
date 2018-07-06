@@ -7,8 +7,11 @@ using namespace std;
 /* Entry point */
 //GLEWContext _renderingContext;
 //GLEWContext* glewGetContext() {return &_renderingContext; }
+#ifdef main
+#undef main
+#endif 
 
-void main()
+int main(int argc, char **argv)
 {
 	//Target FPS is 60. So all movement is capped around that value
 	freopen(OUTPUT_LOG_FILE, "w", stdout);
@@ -16,6 +19,6 @@ void main()
 	Framerate::getInstance().Init(60);
 	ParamHandler::getInstance().setDebugOutput(false);
 	Guardian::getInstance().LoadApplication("main.xml");   
-	return;
+	return 0;
 }
 

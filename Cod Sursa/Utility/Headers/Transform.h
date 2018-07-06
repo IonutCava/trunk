@@ -7,10 +7,19 @@
 class Transform
 {
 public:
+	Transform()
+	{
+		_dirty = false;
+		_worldMatrix.identity();
+		_rotationMatrix.identity();
+		_scaleMatrix.identity();
+		_translationMatrix.identity();
+	}
+
 	Transform(const Quaternion& orientation, const vec3& translation, const vec3& scale) : 
 			  _orientation(orientation), _translation(translation), _scale(scale)
 	{
-		_dirty = false;
+		_dirty = true;
 		_worldMatrix.identity();
 		_rotationMatrix.identity();
 		_scaleMatrix.identity();

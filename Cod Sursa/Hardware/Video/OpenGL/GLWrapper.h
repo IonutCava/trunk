@@ -70,6 +70,7 @@ private:
 	void setLight(U32 slot, tr1::unordered_map<string,vec4>& properties);
 	void createLight(U32 slot);
 
+	void toggleWireframe(bool state);
 
 private: //OpenGL specific:
 	void beginRenderStateProcessing();

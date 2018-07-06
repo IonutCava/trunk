@@ -2,13 +2,12 @@
 #define _PINGPONG_SCENE_H
 
 #include "Scene.h"
-#include "ASIO.h"
 
 class PingPongScene : public Scene
 {
 
 public:
-	PingPongScene() : _asio(ASIO::getInstance()){}
+	PingPongScene() {}
 	~PingPongScene() {_events[0]->stopEvent();  _events.erase(_events.begin()); _events.clear();}
 	void render();
 	void preRender();
@@ -18,6 +17,11 @@ public:
 	void processInput();
 	void processEvents(F32 time);
 
+	void onKeyDown(const OIS::KeyEvent& key);
+	void onKeyUp(const OIS::KeyEvent& key);
+	void OnJoystickMovePOV(const OIS::JoyStickEvent& event,I32 pov);
+	void OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I32 axis);
+	void OnJoystickButtonUp(const OIS::JoyStickEvent& key, I32 button);
 private:
 	void test(boost::any a, CallbackParam b);
 	void servesteMingea();
@@ -28,8 +32,6 @@ private:
 	I32 _scor;
 	vector<string> _quotes;
 
-	/*Cred ca's utile astea, nu?*/
-	ASIO& _asio;
 	Sphere3D* _minge;
 
 };

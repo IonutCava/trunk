@@ -1,0 +1,22 @@
+<vegetation>
+	<!---<tree>pin</tree>
+	<tree>copacel</tree>
+	<tree>copac</tree>--->
+</vegetation>
+
+<geometry>
+	<!--<item>box</item>
+	<item>dwarf</item>
+	<item>rifle</item>
+	<item>copacel</item>
+	<item>copac</item>-->
+</geometry>
+
+
+<primitives>
+	<!--<item>Cutia1</item>
+	<item>QuadMic</item>
+	<item>QuadMare</item>
+	<item>HelloText</item>
+	<item>Bila</item>-->
+</primitives>

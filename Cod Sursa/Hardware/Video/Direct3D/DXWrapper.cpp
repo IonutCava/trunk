@@ -163,3 +163,7 @@ void DX_API::setColor(const vec3& color)
 void DX_API::initDevice()
 {
 }
+
+void DX_API::toggleWireframe(bool state)
+{
+}

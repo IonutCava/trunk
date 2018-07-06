@@ -29,13 +29,10 @@ public:
 	void addSubMesh(SubMesh* subMesh){_subMeshes.push_back(subMesh);}
 	
 	bool optimizeSubMeshes();
-
 	
 	inline vector<SubMesh*>&   getSubMeshes()   {return _subMeshes;}
-	inline vector<Shader* >&   getShaders()     {return _shaders; }
 	inline SubMesh*            getSubMesh(const string& name);
 
-	void                addShader(Shader* s) {_shaders.push_back(s);}
 	bool				isVisible();
 	void				onDraw();
 
@@ -49,7 +46,6 @@ protected:
 	bool _visibleToNetwork, _loaded, _computedLightShaders;
 	vector<SubMesh* >			 _subMeshes;
 	vector<SubMesh* >::iterator  _subMeshIterator;
-	vector<Shader*>				 _shaders;
 };
 
 #endif

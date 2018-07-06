@@ -9,6 +9,7 @@ SceneManager::SceneManager()
 	_scenes.insert(make_pair("CubeScene", New CubeScene()));
 	_scenes.insert(make_pair("NetworkScene", New NetworkScene()));
 	_scenes.insert(make_pair("PingPongScene", New PingPongScene()));
+	_scenes.insert(make_pair("FlashScene", New FlashScene()));
 	_currentSelection = NULL;
 }
 

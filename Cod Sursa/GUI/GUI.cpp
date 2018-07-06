@@ -57,6 +57,8 @@ void GUI::close()
 
 void GUI::checkItem(int x, int y)
 {
+	GuiEvent event;
+	event.mousePoint.x = x;event.mousePoint.y = y;
 	for(_guiStackIterator = _guiStack.begin(); _guiStackIterator != _guiStack.end(); _guiStackIterator++)
 	{
 		GuiElement* _gui = (*_guiStackIterator).second;
@@ -65,15 +67,19 @@ void GUI::checkItem(int x, int y)
 			case GUI_BUTTON :
 			{
 				Button *b = dynamic_cast<Button*>(_gui);
-				if( x > b->_position.x   &&  x < b->_position.x+b->_dimensions.x &&	y > b->_position.y   &&  y < b->_position.y+b->_dimensions.y ) 
-				{
-					if(b->isActive()) b->_highlight = true;
-				}
-	    		else
-					b->_highlight = false;
+				b->onMouseMove(event);
 				
 			}break;
+			case GUI_FLASH:
+			{
+				GuiFlash* f = dynamic_cast<GuiFlash*>(_gui);
+				f->onMouseMove(event);
+			}break;
 			case GUI_TEXT:
+			{
+				Text *t = dynamic_cast<Text*>(_gui);
+				t->onMouseMove(event);
+			}break;
 			default:
 				break;
 		}
@@ -82,6 +88,8 @@ void GUI::checkItem(int x, int y)
 
 void GUI::clickCheck()
 {
+	GuiEvent event;
+	event.mouseClickCount = 0;
 	for(_guiStackIterator = _guiStack.begin(); _guiStackIterator != _guiStack.end(); _guiStackIterator++)
 	{
 		GuiElement* _gui = (*_guiStackIterator).second;
@@ -90,12 +98,18 @@ void GUI::clickCheck()
 			case GUI_BUTTON :
 			{
 				Button *b = dynamic_cast<Button*>(_gui);
-				if (b->_highlight)
-					b->_pressed = true;
-				else
-					b->_pressed = false;
+				b->onMouseDown(event);
+			}break;
+			case GUI_FLASH:
+			{
+				GuiFlash* f = dynamic_cast<GuiFlash*>(_gui);
+				f->onMouseDown(event);
 			}break;
 			case GUI_TEXT:
+			{
+				Text *t = dynamic_cast<Text*>(_gui);
+				t->onMouseDown(event);
+			}break;
 			default:
 				break;
 		}
@@ -104,6 +118,8 @@ void GUI::clickCheck()
 
 void GUI::clickReleaseCheck()
 {
+	GuiEvent event;
+	event.mouseClickCount = 1;
 	for(_guiStackIterator = _guiStack.begin(); _guiStackIterator != _guiStack.end(); _guiStackIterator++)
 	{
 		GuiElement* _gui = (*_guiStackIterator).second;
@@ -112,14 +128,18 @@ void GUI::clickReleaseCheck()
 			case GUI_BUTTON :
 			{
 				Button *b = dynamic_cast<Button*>(_gui);
-				if (b->_pressed)
-				{
-					if (b->_callbackFunction) 
-						b->_callbackFunction();
-					b->_pressed = false;
-				}
+				b->onMouseUp(event);
+			}break;
+			case GUI_FLASH:
+			{
+				GuiFlash* f = dynamic_cast<GuiFlash*>(_gui);
+				f->onMouseUp(event);
 			}break;
 			case GUI_TEXT:
+			{
+				Text* t = dynamic_cast<Text*>(_gui);
+				t->onMouseUp(event);
+			}break;
 			default:
 				break;
 		}
@@ -155,8 +175,6 @@ void GUI::addText(const string& id,const vec3 &position, Font font,const vec3 &c
 void GUI::addFlash(const string& id, string movie, const vec2& position, const vec2& extent)
 {
 	GuiFlash *flash = new GuiFlash();
-	flash->loadMovie(movie,position,extent);
-	flash->setLooping(true);
 	_resultGuiElement = _guiStack.insert(pair<string,GuiElement*>(id,dynamic_cast<GuiElement*>(flash)));
 	if(!_resultGuiElement.second) (_resultGuiElement.first)->second = dynamic_cast<GuiElement*>(flash);
 }
@@ -179,3 +197,47 @@ void GUI::modifyText(const string& id, char* format, ...)
 		dynamic_cast<Text*>(_guiStack[id])->_text = fmt_text;
 	fmt_text.empty();
 }
+
+void Button::onMouseMove(const GuiEvent &event)
+{
+	if(event.mousePoint.x > _position.x   &&  event.mousePoint.x < _position.x+_dimensions.x &&
+	   event.mousePoint.y > _position.y   &&  event.mousePoint.y < _position.y+_dimensions.y )	{
+		if(isActive()) _highlight = true;
+	}
+	else
+		_highlight = false;
+}
+
+void Button::onMouseUp(const GuiEvent &event)
+{
+	if (_pressed){
+		if (_callbackFunction) 	_callbackFunction();
+		_pressed = false;
+	}
+}
+
+void Button::onMouseDown(const GuiEvent &event)
+{
+	if (_highlight) _pressed = true;
+	else _pressed = false;
+}
+
+void Text::onMouseMove(const GuiEvent &event)
+{
+
+}
+
+void Text::onMouseUp(const GuiEvent &event)
+{
+
+}
+
+void Text::onMouseDown(const GuiEvent &event)
+{
+}
+
+/*   void onRightMouseUp(const GuiEvent &event);
+     void onRightMouseDown(const GuiEvent &event);
+     bool onKeyUp(const GuiEvent &event);
+     bool onKeyDown(const GuiEvent &event);
+*/

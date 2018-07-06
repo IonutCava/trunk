@@ -1,6 +1,7 @@
 #include "QuadtreeNode.h"
 #include "Rendering/Frustum.h"
 #include "Utility/Headers/BoundingBox.h"
+#include "Geometry/Object3DFlyWeight.h"
 
 void QuadtreeNode::Build(U32 depth,		
 						 ivec2 pos,					
@@ -72,7 +73,7 @@ void QuadtreeNode::ComputeBoundingBox(const vec3* vertices)
 				terrain_BBox.setMin(vec3(terrain_BBox.getMin().x,vertex.y,terrain_BBox.getMin().z));
 		}
 		for(U32 i = 0; i < m_pTerrainChunk->getTreeArray().size(); i++)
-			terrain_BBox.Add(m_pTerrainChunk->getTreeArray()[i]->getBoundingBox());
+			terrain_BBox.Add(m_pTerrainChunk->getTreeArray()[i]->getObject()->getBoundingBox());
 
 
 	}

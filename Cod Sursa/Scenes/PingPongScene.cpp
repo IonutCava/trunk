@@ -10,6 +10,7 @@
 
 vec4 _lightPosition(0,20,6,1.0);
 
+//begin copy-paste: randarea scenei
 void PingPongScene::render()
 {
 	RenderState s(true,true,true,true);
@@ -22,11 +23,12 @@ void PingPongScene::render()
 
 	_lights[0]->setLightProperties(string("position"),_lightPosition);
 }
+//end copy-paste
 
-
+//begin copy-paste: Desenam un cer standard
 void PingPongScene::preRender()
 {
-	//Desenam un cer standard (copy/paste)
+	
 	vec2 _sunAngle = vec2(0.0f, RADIANS(45.0f));
 	vec4 _sunVector = vec4(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 							-cosf(_sunAngle.y),
@@ -37,6 +39,7 @@ void PingPongScene::preRender()
 	sky.draw();
 	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
 }
+//<<end copy-paste
 
 void PingPongScene::servesteMingea()
 {
@@ -57,23 +60,11 @@ void PingPongScene::servesteMingea()
 
 void PingPongScene::processEvents(F32 time)
 {
-	F32 refresh = 0.25f;
-	if (time - _eventTimers[0] >= refresh)
+	F32 FpsDisplay = 0.3f;
+	if (time - _eventTimers[0] >= FpsDisplay)
 	{
-		/*
-		WorldPacket p(CMSG_MISCARE_MINGE);
-		p << _minge->getPosition().x;
-		p << _minge->getPosition().y;
-		p << _minge->getPosition().z;
-		_asio.sendPacket(p);
-
-		WorldPacket p(CMSG_MISCARE_PALETA);
-		p << ModelArray["paleta"]->getPosition().x;
-		p << ModelArray["paleta"]->getPosition().y;
-		p << ModelArray["paleta"]->getPosition().z;
-		_asio.sendPacket(p);
-		*/
-		_eventTimers[0] += refresh;
+		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
+		_eventTimers[0] += FpsDisplay;
 	}
 }
 
@@ -221,6 +212,7 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 
 void PingPongScene::processInput()
 {
+	_inputManager.tick();
 	//Move FB = Forward/Back = sus/jos
 	//Move LR = Left/Right = stanga/dreapta
 	moveFB  = Engine::getInstance().moveFB;
@@ -292,8 +284,11 @@ bool PingPongScene::loadResources(bool continueOnErrors)
 							   BITMAP_8_BY_13,vec3(1,0,0), "");
 	GUI::getInstance().addText("insulte",vec3(Engine::getInstance().getWindowWidth()/4, Engine::getInstance().getWindowHeight()/3, 0),
 							   BITMAP_TIMES_ROMAN_24,vec3(0,1,0), "");
-	GUI::getInstance().addFlash("flashGui","test.swf",vec2(0,0),vec2(200,200));
-
+	GUI::getInstance().addText("fpsDisplay",           //Unique ID
+		                       vec3(60,60,0),          //Position
+							   BITMAP_8_BY_13,    //Font
+							   vec3(0.0f,0.2f, 1.0f),  //Color
+							   "FPS: %s",0);    //Text and arguments
 	//Cateva replici motivationale
 	_quotes.push_back("Ha ha ... pana si Odin rade de tine!");
 	_quotes.push_back("Daca tu esti jucator de ping-pong, eu sunt Jimmy Page");
@@ -301,6 +296,77 @@ bool PingPongScene::loadResources(bool continueOnErrors)
 	_quotes.push_back("Ai noroc ca sala-i goala, ca eu unul as fi murit de rusine");
 	_quotes.push_back("Nu e atat de greu; si o maimuta poate juca jocul asta.");
 	
-	_eventTimers.push_back(0.0f);
+	_eventTimers.push_back(0.0f); //Fps
 	return true;
+}
+
+void PingPongScene::onKeyDown(const OIS::KeyEvent& key)
+{
+	Scene::onKeyDown(key);
+	switch(key.key)
+	{
+		case OIS::KC_W:
+			Engine::getInstance().moveFB = 0.25f;
+			break;
+		case OIS::KC_A:
+			Engine::getInstance().moveLR = 0.25f;
+			break;
+		case OIS::KC_S:
+			Engine::getInstance().moveFB = -0.25f;
+			break;
+		case OIS::KC_D:
+			Engine::getInstance().moveLR = -0.25f;
+			break;
+		default:
+			break;
+	}
+}
+
+void PingPongScene::onKeyUp(const OIS::KeyEvent& key)
+{
+	Scene::onKeyUp(key);
+	switch(key.key)
+	{
+		case OIS::KC_W:
+		case OIS::KC_S:
+			Engine::getInstance().moveFB = 0;
+			break;
+		case OIS::KC_A:
+		case OIS::KC_D:
+			Engine::getInstance().moveLR = 0;
+			break;
+		default:
+			break;
+	}
+
+}
+
+void PingPongScene::OnJoystickMovePOV(const OIS::JoyStickEvent& key,I32 pov)
+{
+	Scene::OnJoystickMovePOV(key,pov);
+	if( key.state.mPOV[pov].direction & OIS::Pov::North ) //Going up
+		Engine::getInstance().moveFB = 0.25f;
+	else if( key.state.mPOV[pov].direction & OIS::Pov::South ) //Going down
+		Engine::getInstance().moveFB = -0.25f;
+
+	if( key.state.mPOV[pov].direction & OIS::Pov::East ) //Going right
+		Engine::getInstance().moveLR = -0.25f;
+	else if( key.state.mPOV[pov].direction & OIS::Pov::West ) //Going left
+		Engine::getInstance().moveLR = 0.25f;
+
+	if( key.state.mPOV[pov].direction == OIS::Pov::Centered ) //stopped/centered out
+	{
+		Engine::getInstance().moveLR = 0;
+		Engine::getInstance().moveFB = 0;
+	}
+}
+
+void PingPongScene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I32 axis)
+{
+	Scene::OnJoystickMoveAxis(key,axis);
+}
+
+void PingPongScene::OnJoystickButtonUp(const OIS::JoyStickEvent& key, I32 button)
+{
+	if(button == 0)  servesteMingea();
 }

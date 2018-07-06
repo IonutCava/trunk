@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "glShader.h"
 #include "Utility/Headers/ParamHandler.h"
+#include "Hardware/Video/GFXDevice.h"
 #include "Rendering/common.h"
 
 void glShader::validateShader(U32 shader, const string &file) {
@@ -177,7 +178,7 @@ U32 glShader::getId() {
 }
 
 void glShader::bind() {
-	if(!_shaderId || Engine::getInstance().isWireframeRendering()) return;
+	if(!_shaderId || GFXDevice::getInstance().wireframeRendering()) return;
 	glUseProgram(_shaderId);
 }
 

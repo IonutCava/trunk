@@ -3,6 +3,7 @@
 #include "Utility/Headers/ParamHandler.h"
 #include "Managers/SceneManager.h"
 #include "Managers/TerrainManager.h"
+#include "Geometry/Object3DFlyWeight.h"
 
 void TerrainChunk::Load(U32 depth, ivec2 pos, ivec2 HMsize)
 {
@@ -17,10 +18,11 @@ void TerrainChunk::addTree(const vec3& pos,F32 rotation,F32 scale, Shader* tree_
 	if(t)
 	{	
 		t->addShader(tree_shader);
-		t->getTransform()->scale(scale * tree.scale);
-		t->getTransform()->rotateY(rotation);
-		t->getTransform()->setPosition(pos);
-		m_tTrees.push_back(new DVDFile(*t));
+		Transform* tran = new Transform();
+		tran->scale(scale * tree.scale);
+		tran->rotateY(rotation);
+		tran->setPosition(pos);
+		m_tTrees.push_back(new Object3DFlyWeight(t,tran));
 
 	}
 	else
@@ -93,7 +95,7 @@ void TerrainChunk::DrawTrees(U32 lod, F32 d,bool drawDepthMap)
 	Shader* treeShader;
 	for(U32 i=0; i <  m_tTrees.size(); i++)
 	{
-		treeShader = m_tTrees[i]->getShaders()[0];
+		treeShader = m_tTrees[i]->getObject()->getShaders()[0];
 		treeShader->bind();
 			treeShader->Uniform("time", time);
 			treeShader->Uniform("scale", m_tTrees[i]->getTransform()->getScale().y);

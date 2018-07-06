@@ -3,16 +3,19 @@
 #include "Rendering/Camera.h"
 #include "Rendering/common.h"
 #include "PhysX/PhysX.h"
-#include "Importer/DVDConverter.h"
-#include "Terrain/Sky.h"
+#include "GUI/GUI.h"
 
 void CubeScene::render()
 {
+	
 	RenderState s(true,true,true,true);
 	GFXDevice::getInstance().setRenderState(s);
 
 	GFXDevice::getInstance().renderElements(ModelArray);
 	GFXDevice::getInstance().renderElements(GeometryArray);
+
+	GUI::getInstance().draw();
+	
 }
 
 int j = 1;
@@ -76,6 +79,5 @@ bool CubeScene::loadResources(bool continueOnErrors)
 							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
 							0.0f );
     i = 0;
-
 	return true;
 }

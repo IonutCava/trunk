@@ -197,8 +197,9 @@ void GL_API::swapBuffers()
 
 void GL_API::enableFog(F32 density, F32* color)
 {
+	return; //Fog ... disabled. Really buggy - Ionut
 	glFogi (GL_FOG_MODE, GL_EXP2); 
-	glFogfv (GL_FOG_COLOR, color); 
+	glFogfv(GL_FOG_COLOR, color); 
 	glFogf (GL_FOG_DENSITY, density); 
 	glHint (GL_FOG_HINT, GL_NICEST); 
 	glFogf (GL_FOG_START,  6700.0f);
@@ -253,11 +254,11 @@ void GL_API::drawCharacterToScreen(void* font,char text)
 void GL_API::drawFlash(GuiFlash* flash)
 {
 	flash->playMovie();
-	flash->onRender();
 }
 
 void GL_API::drawButton(Button* b)
 {
+
 	F32 fontx;
 	F32 fonty;
 	Text *t = NULL;
@@ -669,4 +670,12 @@ void GL_API::createLight(U32 slot)
 {
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0+slot);
+}
+
+void GL_API::toggleWireframe(bool state)
+{
+	if(state)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

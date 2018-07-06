@@ -1,7 +1,9 @@
 #include "GFXDevice.h"
 #include "Rendering/common.h"
 #include "Geometry/Object3D.h"
+#include "Geometry/Object3DFlyWeight.h"
 #include "Importer/DVDConverter.h"
+#include "Managers/TextureManager.h"
 
 void GFXDevice::setApi(GraphicsAPI api)
 {
@@ -61,6 +63,20 @@ void GFXDevice::renderElements(unordered_map<string,Object3D*>& primitiveArray)
 		};
 	}
 }
+
+void GFXDevice::renderElements(vector<Object3DFlyWeight*>& geometryArray)
+{
+	vector<Object3DFlyWeight*>::iterator _iter;
+	for(_iter = geometryArray.begin();  _iter != geometryArray.end(); ++ _iter)
+	{
+		DVDFile *temp = dynamic_cast<DVDFile*>((*_iter)->getObject());
+		temp->getTransform()->setPosition((*_iter)->getTransform()->getPosition());
+		temp->getTransform()->scale((*_iter)->getTransform()->getScale());
+		temp->getTransform()->rotateQuaternion((*_iter)->getTransform()->getOrientation());
+		renderModel(temp);
+	}
+}
+
 void GFXDevice::renderElements(vector<DVDFile*>& geometryArray)
 {
 	vector<DVDFile*>::iterator _iter;
@@ -77,4 +93,28 @@ void GFXDevice::renderElements(unordered_map<string,DVDFile*>& geometryArray)
 	{
 		renderModel(_iter->second);
 	}
+}
+
+void GFXDevice::toggleWireframe(bool state)
+{
+	_wireframeMode = !_wireframeMode;
+	_api.toggleWireframe(_wireframeMode);
+}
+
+// takes a screen shot and saves it to a TGA image
+void GFXDevice::Screenshot(char *filename, int xmin,int ymin, int xmax, int ymax)
+{
+	// compute width and heidth of the image
+	int w = xmax - xmin;
+	int h = ymax - ymin;
+
+	// allocate memory for the pixels
+	U8 *imageData = new U8[w * h * 4];
+
+	// read the pixels from the frame buffer
+	//glReadPixels(xmin,ymin,xmax,ymax,GL_RGBA,GL_UNSIGNED_BYTE, (void*)imageData);
+
+	// save the image 
+	TextureManager::getInstance().SaveSeries(filename,w,h,32,imageData);
+	delete[] imageData;
 }

@@ -2,12 +2,14 @@
 #define _SCENE_H
 
 #include "resource.h"
+#include "Hardware/Input/InputManager.h"
 #include "Utility/Headers/BaseClasses.h"
 #include "Utility/Headers/Event.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Importer/DVDConverter.h"
 #include "Managers/TerrainManager.h"
 #include "Hardware/Video/Light.h"
+
 
 class Scene : public Resource
 {
@@ -17,15 +19,16 @@ public:
 	  _GFX(GFXDevice::getInstance()),
 	  _terMgr(new TerrainManager()),
 	  _drawBB(false),
-	  _drawObjects(true)
+	  _drawObjects(true),
+	  _inputManager(InputManagerInterface::getInstance())
 	  {
 		  _white = vec4(1.0f,1.0f,1.0f,1.0f);
 		  _black = vec4(0.0f,0.0f,0.0f,0.0f);
 	  };
+
 	  ~Scene();
 	void addGeometry(Object3D* const object);
 	void addModel(DVDFile* const model);
-
 	virtual bool unload();
 
 	virtual void render() = 0;
@@ -86,7 +89,7 @@ protected:
 	boost::mutex _mutex;
 
 	vec4 _white, _black;
-
+	InputManagerInterface& _inputManager;
 	
 protected:
 
@@ -100,6 +103,16 @@ protected:
 	bool loadGeometry(const FileData& data);
 	bool addDefaultLight();
 
+public: //Input
+	virtual void onKeyDown(const OIS::KeyEvent& key);
+	virtual void onKeyUp(const OIS::KeyEvent& key);
+	virtual void OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I32 axis);
+	virtual void OnJoystickMovePOV(const OIS::JoyStickEvent& key,I32 pov){}
+	virtual void OnJoystickButtonDown(const OIS::JoyStickEvent& key,I32 button){}
+	virtual void OnJoystickButtonUp(const OIS::JoyStickEvent& key, I32 button){}
+	virtual void onMouseMove(const OIS::MouseEvent& key);
+	virtual void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+	virtual void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 };
 
 #endif
