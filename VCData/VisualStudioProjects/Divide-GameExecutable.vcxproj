@@ -209,6 +209,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <AdditionalOptions> </AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
