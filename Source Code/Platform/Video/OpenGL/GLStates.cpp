@@ -51,6 +51,7 @@ glPixelBuffer* GL_API::s_activePixelBuffer = nullptr;
 
 vec4<U8> GL_API::s_blendColour = vec4<U8>(0u);
 vec4<I32> GL_API::s_activeViewport = vec4<I32>(-1);
+vec4<I32> GL_API::s_previousViewport = vec4<I32>(-1);
 vec4<I32> GL_API::s_activeScissor = vec4<I32>(-1);
 GLfloat GL_API::s_depthFarVal = 1.0f;
 bool GL_API::s_primitiveRestartEnabled = false;
@@ -95,6 +96,7 @@ void GL_API::clearStates() {
     s_activeRenderTarget = nullptr;
     s_activePixelBuffer = nullptr;
     s_activeViewport.set(-1);
+    s_previousViewport.set(-1);
     s_activeScissor.set(-1);
 
     Attorney::GLAPIShaderProgram::unbind();
@@ -104,9 +106,6 @@ void GL_API::clearStates() {
                  DefaultColours::DIVIDE_BLUE.b,
                  DefaultColours::DIVIDE_BLUE.a);
 
-    if (!_context.parent().platformContext().config().gui.cegui.skipRendering) {
-        glDisable(GL_SCISSOR_TEST);
-    }
 }
 
 /// Pixel pack alignment is usually changed by textures, PBOs, etc
@@ -186,19 +185,19 @@ bool GL_API::setPixelUnpackAlignment(GLint unpackAlignment,
         changed = true;
     }
 
-    if (s_activePackUnpackRowLength[1] != rowLength) {
+    if (rowLength != -1 && s_activePackUnpackRowLength[1] != rowLength) {
         glPixelStorei(GL_UNPACK_ROW_LENGTH, rowLength);
         s_activePackUnpackRowLength[1] = rowLength;
         changed = true;
     }
 
-    if (s_activePackUnpackSkipRows[1] != skipRows) {
+    if (skipRows != -1 && s_activePackUnpackSkipRows[1] != skipRows) {
         glPixelStorei(GL_UNPACK_SKIP_ROWS, skipRows);
         s_activePackUnpackSkipRows[1] = skipRows;
         changed = true;
     }
 
-    if (s_activePackUnpackSkipPixels[1] != skipPixels) {
+    if (skipPixels != -1 && s_activePackUnpackSkipPixels[1] != skipPixels) {
         glPixelStorei(GL_UNPACK_SKIP_PIXELS, skipPixels);
         s_activePackUnpackSkipPixels[1] = skipPixels;
         changed = true;
@@ -616,12 +615,20 @@ bool GL_API::changeViewport(I32 x, I32 y, I32 width, I32 height) {
         } else {
             glViewport(x, y, width, height);
         }
+        GL_API::s_previousViewport.set(GL_API::s_activeViewport);
         GL_API::s_activeViewport.set(x, y, width, height);
         
         return true;
     }
 
     return false;
+}
+
+bool GL_API::restoreViewport() {
+    return changeViewport(GL_API::s_previousViewport.x,
+                          GL_API::s_previousViewport.y,
+                          GL_API::s_previousViewport.z,
+                          GL_API::s_previousViewport.w);
 }
 
 bool GL_API::setScissor(I32 x, I32 y, I32 width, I32 height) {
@@ -634,6 +641,9 @@ bool GL_API::setScissor(I32 x, I32 y, I32 width, I32 height) {
     return false;
 }
 
+GLuint GL_API::getBoundTextureHandle(GLuint slot) {
+    return s_textureBoundMap[slot];
+}
 /// A state block should contain all rendering state changes needed for the next draw call.
 /// Some may be redundant, so we check each one individually
 void GL_API::activateStateBlock(const RenderStateBlock& newBlock,

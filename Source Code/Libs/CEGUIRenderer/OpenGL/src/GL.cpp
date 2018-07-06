@@ -51,7 +51,6 @@ OpenGLInfo::OpenGLInfo() :
     d_isNpotTextureSupported(false),
     d_isReadBufferSupported(false),
     d_isPolygonModeSupported(false),
-    d_isSeperateReadAndDrawFramebufferSupported(false),
     d_isSizedInternalFormatSupported(false)
 {
 }
@@ -72,33 +71,10 @@ void OpenGLInfo::verForce(GLint verMajor_, GLint verMinor_)
 //----------------------------------------------------------------------------//
 void OpenGLInfo::initTypeAndVer()
 {
-#if defined CEGUI_USE_EPOXY
-    d_type = epoxy_is_desktop_gl() ? TYPE_DESKTOP : TYPE_ES;
-    if (d_verMajorForce >= 0)
-    {
-        d_verMajor = d_verMajorForce;
-        d_verMinor = d_verMinorForce;
-    }
-    else
-    {
-        int ver(epoxy_gl_version());
-        if (!ver)
-        {
-            if (isUsingDesktopOpengl())
-                CEGUI_THROW(RendererException
-                  ("Failed to obtain desktop OpenGL version."));
-            else
-                CEGUI_THROW(RendererException
-                  ("Failed to obtain OpenGL ES version."));
-        }
-        d_verMajor = ver / 10;
-        d_verMinor = ver % 10;
-    }
-#elif defined CEGUI_USE_GLEW
     d_type = TYPE_DESKTOP;
     glGetError ();
-    d_verMajor = d_verMinor = -1;
-#endif
+    d_verMajor = 4;
+    d_verMinor = 5;
 }
 
 //----------------------------------------------------------------------------//
@@ -126,7 +102,6 @@ void OpenGLInfo::initSupportedFeatures()
     
     d_isNpotTextureSupported = true;
     d_isPolygonModeSupported = d_isSizedInternalFormatSupported;
-    d_isSeperateReadAndDrawFramebufferSupported = true;
 }
 
 } // namespace CEGUI

@@ -77,11 +77,8 @@ void OpenGL3FBOTextureTarget::activate()
 {
     // remember previously bound FBO to make sure we set it back
     // when deactivating
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING,
-            reinterpret_cast<GLint*>(&d_previousFrameBuffer));
-
     // switch to rendering to the texture
-    glBindFramebuffer(GL_FRAMEBUFFER, d_frameBuffer);
+    Divide::GL_API::setActiveFB(Divide::RenderTarget::RenderTargetUsage::RT_READ_WRITE, d_frameBuffer, d_previousFrameBuffer);
 
     OpenGLTextureTarget::activate();
 }
@@ -92,7 +89,7 @@ void OpenGL3FBOTextureTarget::deactivate()
     OpenGLTextureTarget::deactivate();
 
     // switch back to rendering to the previously bound framebuffer
-    glBindFramebuffer(GL_FRAMEBUFFER, d_previousFrameBuffer);
+    Divide::GL_API::setActiveFB(Divide::RenderTarget::RenderTargetUsage::RT_READ_WRITE, d_previousFrameBuffer);
 }
 
 //----------------------------------------------------------------------------//
@@ -104,91 +101,50 @@ void OpenGL3FBOTextureTarget::clear()
     if (sz.d_width < 1.0f || sz.d_height < 1.0f)
         return;
 
-    // save old clear colour
-    GLfloat old_col[4];
-    glGetFloatv(GL_COLOR_CLEAR_VALUE, old_col);
-
-    // remember previously bound FBO to make sure we set it back
-    GLuint previousFBO = 0;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING,
-            reinterpret_cast<GLint*>(&previousFBO));
-
-    // switch to our FBO
-    glBindFramebuffer(GL_FRAMEBUFFER, d_frameBuffer);
-    // Clear it.
-    glClearColor(0,0,0,0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    // switch back to rendering to the previously bound FBO
-    glBindFramebuffer(GL_FRAMEBUFFER, previousFBO);
-
-    // restore previous clear colour
-    glClearColor(old_col[0], old_col[1], old_col[2], old_col[3]);
+    static GLint clear[4] = { 0, 0, 0, 0 };
+    glClearNamedFramebufferiv(d_frameBuffer, GL_COLOR, 0, &clear[0]);
 }
 
 //----------------------------------------------------------------------------//
 void OpenGL3FBOTextureTarget::initialiseRenderTexture()
 {
-    // save old texture binding
-    GLuint old_tex;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&old_tex));
-
     // create FBO
-    glGenFramebuffers(1, &d_frameBuffer);
-
-    // remember previously bound FBO-s to make sure we set them back
-    GLint previousFBO_read(-1), previousFBO_draw(-1), previousFBO(-1);
-    if (OpenGLInfo::getSingleton().isSeperateReadAndDrawFramebufferSupported())
-    {
-        glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &previousFBO_read);
-        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &previousFBO_draw);
-    }
-    else
-        glGetIntegerv(GL_FRAMEBUFFER_BINDING,  &previousFBO);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, d_frameBuffer);
+    glCreateFramebuffers(1, &d_frameBuffer);
 
     // set up the texture the FBO will draw to
-    glGenTextures(1, &d_texture);
-    glBindTexture(GL_TEXTURE_2D, d_texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glCreateTextures(GL_TEXTURE_2D, 1, &d_texture);
+    glTextureParameteri(d_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(d_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(d_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(d_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0,
+    GLuint old_tex = Divide::GL_API::getBoundTextureHandle(0);
+    Divide::GL_API::bindTexture(0, d_texture, 0);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
                  OpenGLInfo::getSingleton().isSizedInternalFormatSupported() ?
                    GL_RGBA8 : GL_RGBA,
                  static_cast<GLsizei>(DEFAULT_SIZE),
                  static_cast<GLsizei>(DEFAULT_SIZE),
                  0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              GL_TEXTURE_2D, d_texture, 0);
+
+    glNamedFramebufferTexture(d_frameBuffer, GL_COLOR_ATTACHMENT0, d_texture, 0);
 
     //Check for framebuffer completeness
     checkFramebufferStatus();
-
-    // switch from our frame buffers back to the previously bound buffers.
-    if (OpenGLInfo::getSingleton().isSeperateReadAndDrawFramebufferSupported())
-    {
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, static_cast<GLuint>(previousFBO_read));
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<GLuint>(previousFBO_draw));
-    }
-    else
-        glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(previousFBO));
 
     // ensure the CEGUI::Texture is wrapping the gl texture and has correct size
     d_CEGUITexture->setOpenGLTexture(d_texture, d_area.getSize());
 
     // restore previous texture binding.
-    glBindTexture(GL_TEXTURE_2D, old_tex);
+    Divide::GL_API::bindTexture(0, old_tex);
 }
 
 //----------------------------------------------------------------------------//
 void OpenGL3FBOTextureTarget::resizeRenderTexture()
 {
     // save old texture binding
-    GLuint old_tex;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&old_tex));
+    GLuint old_tex = Divide::GL_API::getBoundTextureHandle(0);
 
     // Some drivers (hint: Intel) segfault when glTexImage2D is called with
     // any of the dimensions being 0. The downside of this workaround is very
@@ -202,7 +158,7 @@ void OpenGL3FBOTextureTarget::resizeRenderTexture()
     }
 
     // set the texture to the required size
-    glBindTexture(GL_TEXTURE_2D, d_texture);
+    Divide::GL_API::bindTexture(0, d_texture, 0);
 
     glTexImage2D(GL_TEXTURE_2D, 0,
                  OpenGLInfo::getSingleton().isSizedInternalFormatSupported() ?
@@ -216,7 +172,7 @@ void OpenGL3FBOTextureTarget::resizeRenderTexture()
     d_CEGUITexture->setOpenGLTexture(d_texture, sz);
 
     // restore previous texture binding.
-    glBindTexture(GL_TEXTURE_2D, old_tex);
+    Divide::GL_API::bindTexture(0, old_tex);
 }
 
 //----------------------------------------------------------------------------//

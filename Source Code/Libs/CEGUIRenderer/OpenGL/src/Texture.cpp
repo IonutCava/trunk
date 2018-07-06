@@ -270,19 +270,15 @@ void OpenGLTexture::loadFromMemory(const void* buffer, const Sizef& buffer_size,
 void OpenGLTexture::loadUncompressedTextureBuffer(const Rectf& dest_area,
                                                   const GLvoid* buffer) const
 {
-    GLint old_pack;
-    glGetIntegerv(GL_UNPACK_ALIGNMENT, &old_pack);
 
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
+    Divide::GL_API::setPixelUnpackAlignment(1);
     glTexSubImage2D(GL_TEXTURE_2D, 0,
                     static_cast<GLint>(dest_area.left()),
                     static_cast<GLint>(dest_area.top()),
                     static_cast<GLsizei>(dest_area.getWidth()),
                     static_cast<GLsizei>(dest_area.getHeight()),
                     d_format, d_subpixelFormat, buffer);
-
-    glPixelStorei(GL_UNPACK_ALIGNMENT, old_pack);
+    Divide::GL_API::setPixelUnpackAlignment();
 }
 
 //----------------------------------------------------------------------------//
@@ -330,21 +326,23 @@ void OpenGLTexture::setTextureSize(const Sizef& sz)
 //----------------------------------------------------------------------------//
 void OpenGLTexture::setTextureSize_impl(const Sizef& sz)
 {
+    static GLfloat maxSize = -1;
     const Sizef size(d_owner.getAdjustedTextureSize(sz));
     d_size = size;
 
     // make sure size is within boundaries
-    GLfloat maxSize;
-    glGetFloatv(GL_MAX_TEXTURE_SIZE, &maxSize);
+    if (maxSize < 0.0f) {
+        glGetFloatv(GL_MAX_TEXTURE_SIZE, &maxSize);
+    }
+
     if ((size.d_width > maxSize) || (size.d_height > maxSize))
         CEGUI_THROW(RendererException("size too big"));
 
     // save old texture binding
-    GLuint old_tex;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&old_tex));
+    GLuint old_tex = Divide::GL_API::getBoundTextureHandle(0);
 
     // set texture to required size
-    glBindTexture(GL_TEXTURE_2D, d_ogltexture);
+    Divide::GL_API::bindTexture(0, d_ogltexture);
 
     if (d_isCompressed)
     {
@@ -363,7 +361,7 @@ void OpenGLTexture::setTextureSize_impl(const Sizef& sz)
     }
 
     // restore previous texture binding.
-    glBindTexture(GL_TEXTURE_2D, old_tex);
+    Divide::GL_API::bindTexture(0, old_tex);
 }
 
 //----------------------------------------------------------------------------//
@@ -420,11 +418,11 @@ void OpenGLTexture::restoreTexture()
 void OpenGLTexture::blitFromMemory(const void* sourceData, const Rectf& area)
 {
     // save old texture binding
-    GLuint old_tex;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&old_tex));
+    // save old texture binding
+    GLuint old_tex = Divide::GL_API::getBoundTextureHandle(0);
 
-    // do the real work of getting the data into the texture
-    glBindTexture(GL_TEXTURE_2D, d_ogltexture);
+    // set texture to required size
+    Divide::GL_API::bindTexture(0, d_ogltexture);
 
     if (d_isCompressed)
         loadCompressedTextureBuffer(area, sourceData);
@@ -432,7 +430,7 @@ void OpenGLTexture::blitFromMemory(const void* sourceData, const Rectf& area)
         loadUncompressedTextureBuffer(area, sourceData);
 
     // restore previous texture binding.
-    glBindTexture(GL_TEXTURE_2D, old_tex);
+    Divide::GL_API::bindTexture(0, old_tex);
 }
 
 //----------------------------------------------------------------------------//
@@ -444,57 +442,43 @@ void OpenGLTexture::blitToMemory(void* targetData)
            "glGetTexImage"/"glGetCompressedTexImage", so we need to emulate it
            using "glReadPixels". */
         
-        GLint old_pack;
-        glGetIntegerv(GL_PACK_ALIGNMENT, &old_pack);
         GLuint texture_framebuffer(0);
-        GLint framebuffer_old(0), pack_alignment_old(0);
-        glGenFramebuffers(1, &texture_framebuffer);
+        GLuint framebuffer_old(0);
+
+        glCreateFramebuffers(1, &texture_framebuffer);
         GLenum framebuffer_target(GL_NONE), framebuffer_param(GL_NONE);
-        if (OpenGLInfo::getSingleton()
-              .isSeperateReadAndDrawFramebufferSupported())
-        {
-            framebuffer_param = GL_READ_FRAMEBUFFER_BINDING;
-            framebuffer_target = GL_READ_FRAMEBUFFER;
-        }
-        else
-        {
-            framebuffer_param = GL_FRAMEBUFFER_BINDING;
-            framebuffer_target = GL_FRAMEBUFFER;
-        }
-        glGetIntegerv(framebuffer_param, &framebuffer_old);
-        glBindFramebuffer(framebuffer_target, texture_framebuffer);
-        glFramebufferTexture2D(framebuffer_target, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, d_ogltexture, 0);
+
+        //glNamedFramebufferTexture(texture_framebuffer, GL_COLOR_ATTACHMENT0, d_ogltexture, 0);
+
+        Divide::GL_API::setActiveFB(Divide::RenderTarget::RenderTargetUsage::RT_READ_ONLY, texture_framebuffer, framebuffer_old);
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, d_ogltexture, 0);
         GLenum read_buffer_old(GL_NONE);
         GLint pixel_pack_buffer_old(0);
-        if (OpenGLInfo::getSingleton().isReadBufferSupported())
-        {
-            glGetIntegerv(GL_READ_BUFFER, &read_buffer_old);
-            glReadBuffer(GL_COLOR_ATTACHMENT0);
-            glGetIntegerv(GL_PIXEL_PACK_BUFFER_BINDING, &pixel_pack_buffer_old);
-            glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-        }
-        glGetIntegerv(GL_PACK_ALIGNMENT, &pack_alignment_old);
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  
+        glGetIntegerv(GL_READ_BUFFER, &read_buffer_old);
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        glGetIntegerv(GL_PIXEL_PACK_BUFFER_BINDING, &pixel_pack_buffer_old);
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+        Divide::GL_API::setPixelPackAlignment(1);
         glReadPixels(0, 0, static_cast<GLsizei>(d_dataSize.d_width),
           static_cast<GLsizei>(d_dataSize.d_height), GL_RGBA, GL_UNSIGNED_BYTE, targetData);
-        glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment_old);
-        if (OpenGLInfo::getSingleton().isReadBufferSupported())
-        {
-            glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_pack_buffer_old);
-            glReadBuffer(read_buffer_old);
-        }
-        glBindFramebuffer(framebuffer_target, framebuffer_old);
+
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_pack_buffer_old);
+        glReadBuffer(read_buffer_old);
+
+        Divide::GL_API::setActiveFB(Divide::RenderTarget::RenderTargetUsage::RT_READ_ONLY, framebuffer_old);
         glDeleteFramebuffers(1, &texture_framebuffer);
+        Divide::GL_API::setPixelPackAlignment();
 
     }
     else // Desktop OpenGL
     {
 
         // save existing config
-        GLuint old_tex;
-        glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&old_tex));
+        GLuint old_tex = Divide::GL_API::getBoundTextureHandle(0);
 
-        glBindTexture(GL_TEXTURE_2D, d_ogltexture);
+        Divide::GL_API::bindTexture(0, d_ogltexture);
 
         if (d_isCompressed)
         {
@@ -502,17 +486,13 @@ void OpenGLTexture::blitToMemory(void* targetData)
         }
         else
         {
-            GLint old_pack;
-            glGetIntegerv(GL_PACK_ALIGNMENT, &old_pack);
-
-            glPixelStorei(GL_PACK_ALIGNMENT, 1);
+            Divide::GL_API::setPixelPackAlignment(1);
             glGetTexImage(GL_TEXTURE_2D, 0, d_format, d_subpixelFormat, targetData);
-
-            glPixelStorei(GL_PACK_ALIGNMENT, old_pack);
+            Divide::GL_API::setPixelPackAlignment();
         }
 
         // restore previous config.
-        glBindTexture(GL_TEXTURE_2D, old_tex);
+        Divide::GL_API::bindTexture(0, old_tex);
 
     }
 }
@@ -528,13 +508,12 @@ void OpenGLTexture::updateCachedScaleValues()
 void OpenGLTexture::generateOpenGLTexture()
 {
     // save old texture binding
-    GLuint old_tex;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&old_tex));
+    GLuint old_tex = Divide::GL_API::getBoundTextureHandle(0);
 
-    glGenTextures(1, &d_ogltexture);
+    glCreateTextures(GL_TEXTURE_2D, 1, &d_ogltexture);
 
     // set some parameters for this texture.
-    glBindTexture(GL_TEXTURE_2D, d_ogltexture);
+    Divide::GL_API::bindTexture(0, d_ogltexture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -546,7 +525,7 @@ void OpenGLTexture::generateOpenGLTexture()
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, (float)GL_MODULATE);
 
     // restore previous texture binding.
-    glBindTexture(GL_TEXTURE_2D, old_tex);
+    Divide::GL_API::bindTexture(0, old_tex);
 }
 
 //----------------------------------------------------------------------------//

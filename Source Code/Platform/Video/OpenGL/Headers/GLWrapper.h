@@ -189,20 +189,18 @@ public:
                                    const RenderStateBlock& oldBlock);
     static void activateStateBlock(const RenderStateBlock& newBlock);
     /// Pixel pack and unpack alignment is usually changed by textures, PBOs, etc
-    static bool setPixelPackUnpackAlignment(GLint packAlignment = 1,
-        GLint unpackAlignment = 1) {
+    static bool setPixelPackUnpackAlignment(GLint packAlignment = 4,
+                                            GLint unpackAlignment = 4) {
         return (setPixelPackAlignment(packAlignment) &&
-            setPixelUnpackAlignment(unpackAlignment));
+                setPixelUnpackAlignment(unpackAlignment));
     }
     /// Pixel pack alignment is usually changed by textures, PBOs, etc
-    static bool setPixelPackAlignment(GLint packAlignment = 1, GLint rowLength = 0,
-        GLint skipRows = 0, GLint skipPixels = 0);
+    static bool setPixelPackAlignment(GLint packAlignment = 4, GLint rowLength = 0,
+                                      GLint skipRows = 0, GLint skipPixels = 0);
     /// Pixel unpack alignment is usually changed by textures, PBOs, etc
-    static bool setPixelUnpackAlignment(GLint unpackAlignment = 1,
-        GLint rowLength = 0, GLint skipRows = 0,
-        GLint skipPixels = 0);
-    /// Bind a texture specified by a GL handle and GL type to the specified
-    /// unit
+    static bool setPixelUnpackAlignment(GLint unpackAlignment = 4, GLint rowLength = 0,
+                                        GLint skipRows = 0, GLint skipPixels = 0);
+    /// Bind a texture specified by a GL handle and GL type to the specified unit
     /// using the sampler object defined by hash value
     static bool bindTexture(GLushort unit, GLuint handle, size_t samplerHash = 0);
     static bool bindTextureImage(GLushort unit, GLuint handle, GLint level,
@@ -240,7 +238,9 @@ public:
     inline static bool changeViewport(const vec4<I32>& newViewport) {
         changeViewport(newViewport.x, newViewport.y, newViewport.z, newViewport.w);
     }
-    
+    static bool restoreViewport();
+    static GLuint getBoundTextureHandle(GLuint slot);
+
 private:
     /// Prepare our shader loading system
     bool initShaders();
@@ -324,6 +324,7 @@ private:
 
     static vec4<U8> s_blendColour;
     static vec4<I32> s_activeViewport;
+    static vec4<I32> s_previousViewport;
     static vec4<I32> s_activeScissor;
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;

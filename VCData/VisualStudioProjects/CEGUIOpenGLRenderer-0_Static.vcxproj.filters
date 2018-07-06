@@ -9,9 +9,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/ApplePBTextureTarget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GeometryBufferBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -27,19 +24,7 @@
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GLFBOTextureTarget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GLGeometryBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GlmPimpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GLRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GLXPBTextureTarget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/RendererBase.h">
@@ -72,14 +57,8 @@
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/ViewportTarget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/WGLPBTextureTarget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\ApplePBTextureTarget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GeometryBufferBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -93,18 +72,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3Renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GLFBOTextureTarget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GLGeometryBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GLRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GLXPBTextureTarget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\RendererBase.cpp">
@@ -126,9 +93,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\ViewportTarget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\WGLPBTextureTarget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\stdafx-cegui-renderer-opengl.cpp">

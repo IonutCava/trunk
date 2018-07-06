@@ -29,6 +29,17 @@
 #include "GL.h"
 #include "StateChangeWrapper.h"  
 
+namespace Divide {
+    BlendProperty getProperty(GLenum property) {
+        for (U32 i = 0; i < to_U32(BlendProperty::COUNT); ++i) {
+            if (GLUtil::glBlendTable[i] == property) {
+                return static_cast<BlendProperty>(i);
+            }
+        }
+        return BlendProperty::COUNT;
+    }
+};
+
 namespace CEGUI
 {
 
@@ -164,15 +175,28 @@ void OpenGL3StateChangeWrapper::blendFunc(GLenum sfactor, GLenum dfactor)
     bool callIsRedundant = d_blendFuncParams.equal(sfactor, dfactor);
     if(!callIsRedundant)
     {
-        glBlendFunc(sfactor, dfactor);
+        Divide::GL_API::setBlending(true,
+                                    Divide::BlendingProperties{
+                                        Divide::getProperty(sfactor),
+                                        Divide::getProperty(dfactor)
+                                    });
     }
 }
 
 void OpenGL3StateChangeWrapper::blendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
 {
     bool callIsRedundant = d_blendFuncSeperateParams.equal(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
-    if(!callIsRedundant)
-        glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+    if (!callIsRedundant) {
+        Divide::GL_API::setBlending(true,
+                                    Divide::BlendingProperties{
+                                        Divide::getProperty(sfactorRGB),
+                                        Divide::getProperty(dfactorRGB),
+                                        Divide::BlendOperation::ADD,
+                                        Divide::getProperty(sfactorAlpha),
+                                        Divide::getProperty(dfactorAlpha),
+                                        Divide::BlendOperation::ADD
+                                    });
+    }
 }
 
 void OpenGL3StateChangeWrapper::viewport(GLint x, GLint y, GLsizei width, GLsizei height)

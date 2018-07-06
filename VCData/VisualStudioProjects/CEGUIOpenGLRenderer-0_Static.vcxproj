@@ -172,17 +172,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/ApplePBTextureTarget.h" />
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GeometryBufferBase.h" />
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL.h" />
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3FBOTextureTarget.h" />
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3GeometryBuffer.h" />
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3Renderer.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GLFBOTextureTarget.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GLGeometryBuffer.h" />
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GlmPimpl.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GLRenderer.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/GLXPBTextureTarget.h" />
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/RendererBase.h" />
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/RenderTarget.h" />
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/Shader.h" />
@@ -193,31 +188,13 @@
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/Texture.h" />
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/TextureTarget.h" />
     <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/ViewportTarget.h" />
-    <ClInclude Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\include/WGLPBTextureTarget.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\ApplePBTextureTarget.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GeometryBufferBase.cpp" />
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL.cpp" />
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3FBOTextureTarget.cpp" />
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3GeometryBuffer.cpp" />
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3Renderer.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GLFBOTextureTarget.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GLGeometryBuffer.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GLRenderer.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\GLXPBTextureTarget.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\RendererBase.cpp" />
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\Shader.cpp" />
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\ShaderManager.cpp" />
@@ -230,11 +207,6 @@
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\Texture.cpp" />
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\TextureTarget.cpp" />
     <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\ViewportTarget.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\WGLPBTextureTarget.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\../Source Code/Libs/CEGUIRenderer\OpenGL\src\RenderTarget.inl" />

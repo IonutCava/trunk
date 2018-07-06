@@ -149,15 +149,6 @@ namespace CEGUI {
             return d_isPolygonModeSupported;
         }
 
-        /*!
-        \brief
-        Returns true if working with the read/draw framebuffers seperately is
-        supported.
-        */
-        bool isSeperateReadAndDrawFramebufferSupported() const
-        {
-            return d_isSeperateReadAndDrawFramebufferSupported;
-        }
 
         bool isSizedInternalFormatSupported() const
         {
@@ -189,7 +180,6 @@ namespace CEGUI {
         bool d_isNpotTextureSupported;
         bool d_isReadBufferSupported;
         bool d_isPolygonModeSupported;
-        bool d_isSeperateReadAndDrawFramebufferSupported;
         bool d_isSizedInternalFormatSupported;
     };
 

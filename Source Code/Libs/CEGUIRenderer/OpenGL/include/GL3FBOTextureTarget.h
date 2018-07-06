@@ -83,4 +83,4 @@ protected:
 #   pragma warning(pop)
 #endif
 
-#endif  // end of guard _CEGUIOpenGLFBOTextureTarget_h_
+#endif  // end of guard _CEGUIOpenGL3FBOTextureTarget_h_

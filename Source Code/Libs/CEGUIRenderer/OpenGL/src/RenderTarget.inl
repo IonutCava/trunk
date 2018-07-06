@@ -96,10 +96,11 @@ const Rectf& OpenGLRenderTarget<T>::getArea() const
 template <typename T>
 void OpenGLRenderTarget<T>::activate()
 {
-    glViewport(static_cast<GLsizei>(d_area.left()),
-               static_cast<GLsizei>(d_area.top()),
-               static_cast<GLsizei>(d_area.getWidth()),
-               static_cast<GLsizei>(d_area.getHeight()));
+    Divide::GL_API::changeViewport(
+               static_cast<Divide::I32>(d_area.left()),
+               static_cast<Divide::I32>(d_area.top()),
+               static_cast<Divide::I32>(d_area.getWidth()),
+               static_cast<Divide::I32>(d_area.getHeight()));
 
     if (!d_matrixValid)
         updateMatrix();
@@ -113,6 +114,7 @@ void OpenGLRenderTarget<T>::activate()
 template <typename T>
 void OpenGLRenderTarget<T>::deactivate()
 {
+    Divide::GL_API::restoreViewport();
 }
 
 //----------------------------------------------------------------------------//
