@@ -2,7 +2,7 @@
 #include "Headers/PreRenderOperator.h"
 
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Managers/Headers/SceneManager.h"

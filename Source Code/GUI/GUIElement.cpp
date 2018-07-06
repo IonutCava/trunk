@@ -3,11 +3,11 @@
 
 namespace Divide {
 
-GUIElement::GUIElement(CEGUI::Window* const parent, const GUIType& type)
+GUIElement::GUIElement(ULL ID, CEGUI::Window* const parent, const GUIType& type)
     : _guiType(type),
       _parent(parent),
       _active(false),
-      _lastDrawTimer(0)
+      _ID(ID)
 {
     _name = "defaultGuiControl";
     _visible = true;

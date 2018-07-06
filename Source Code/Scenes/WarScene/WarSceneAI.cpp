@@ -4,7 +4,7 @@
 #include "GUI/Headers/GUIMessageBox.h"
 #include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
 namespace Divide {

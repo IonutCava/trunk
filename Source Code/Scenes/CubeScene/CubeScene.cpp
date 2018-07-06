@@ -4,7 +4,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/Headers/DeferredShadingRenderer.h"
 
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Math/Headers/Transform.h"
 
 namespace Divide {

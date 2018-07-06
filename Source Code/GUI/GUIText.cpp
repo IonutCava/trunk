@@ -2,14 +2,14 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
-GUIText::GUIText(const stringImpl& id,
+GUIText::GUIText(ULL ID,
                  const stringImpl& text,
                  const vec2<F32>& relativePosition,
                  const stringImpl& font,
                  const vec3<F32>& color,
                  CEGUI::Window* parent,
                  U32 textHeight)
-    : GUIElement(parent, GUIType::GUI_TEXT),
+    : GUIElement(ID, parent, GUIType::GUI_TEXT),
       TextLabel(text, font, color, textHeight),
       _heightCache(0.0f),
       _position(relativePosition)

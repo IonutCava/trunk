@@ -2,7 +2,7 @@
 
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Headers/ParamHandler.h"
 
 namespace Divide {
@@ -26,11 +26,11 @@ void PhysXScene::preRender() {
 void PhysXScene::processGUI(const U64 deltaTime) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay) {
-        _GUI->modifyText("fpsDisplay",
+        _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
                                             Time::ApplicationTimer::instance().getFps(),
                                             Time::ApplicationTimer::instance().getFrameTime()));
-        _GUI->modifyText("RenderBinCount",
+        _GUI->modifyText(_ID("RenderBinCount"),
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
                                             GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT));
         _guiTimers[0] = 0.0;
@@ -92,12 +92,12 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
 }
 
 bool PhysXScene::loadResources(bool continueOnErrors) {
-    _GUI->addText("fpsDisplay",  // Unique ID
+    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
                   vec2<I32>(60, 20),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec4<U8>(0, 64, 255, 255),  // Color
                   Util::StringFormat("FPS: %d", 0));  // Text and arguments
-    _GUI->addText("RenderBinCount", vec2<I32>(60, 30), Font::DIVIDE_DEFAULT,
+    _GUI->addText(_ID("RenderBinCount"), vec2<I32>(60, 30), Font::DIVIDE_DEFAULT,
                   vec4<U8>(164, 64, 64, 255),
                   Util::StringFormat("Number of items in Render Bin: %d", 0));
 

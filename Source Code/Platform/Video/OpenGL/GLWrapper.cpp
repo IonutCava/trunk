@@ -13,7 +13,7 @@
 #include "GUI/Headers/GUIText.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/ProfileTimer.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/LightManager.h"
 #include "Geometry/Material/Headers/Material.h"
 

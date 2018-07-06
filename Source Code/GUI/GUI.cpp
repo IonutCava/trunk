@@ -9,7 +9,6 @@
 
 #include "Scenes/Headers/Scene.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/ApplicationTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Debugging/Headers/DebugInterface.h"
 
@@ -70,8 +69,6 @@ void GUI::draw() const {
         // Skip hidden elements
         if (element.isVisible()) {
             element.draw();
-             // Update internal timer
-            element.lastDrawTimer(Time::ElapsedMicroseconds());
         }
     }
     
@@ -224,7 +221,8 @@ bool GUI::init(const vec2<U16>& renderResolution) {
 
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 
-    _defaultMsgBox = addMsgBox("AssertMsgBox", "Assertion failure",
+    _defaultMsgBox = addMsgBox(_ID("AssertMsgBox"),
+                               "Assertion failure",
                                "Assertion failed with message: ");
 
     _init = true;
@@ -361,7 +359,7 @@ bool GUI::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
     return !_ceguiInput.joystickVector3DMoved(arg, index);
 }
 
-GUIButton* GUI::addButton(const stringImpl& ID,
+GUIButton* GUI::addButton(ULL ID,
                           const stringImpl& text,
                           const vec2<I32>& position,
                           const vec2<U32>& dimensions,
@@ -384,37 +382,37 @@ GUIButton* GUI::addButton(const stringImpl& ID,
     GUIButton* btn =
         MemoryManager_NEW GUIButton(ID, text, _defaultGUIScheme, relOffset,
                                     relDim, color, parent, callback);
-    ULL idHash = _ID_RT(ID);
-    guiMap::iterator it = _guiStack.find(idHash);
+
+    guiMap::iterator it = _guiStack.find(ID);
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, btn);
     } else {
-        hashAlg::insert(_guiStack, std::make_pair(idHash, static_cast<GUIElement*>(btn)));
+        hashAlg::insert(_guiStack, std::make_pair(ID, static_cast<GUIElement*>(btn)));
     }
 
     return btn;
 }
 
-GUIMessageBox* GUI::addMsgBox(const stringImpl& ID, const stringImpl& title,
+GUIMessageBox* GUI::addMsgBox(ULL ID,
+                              const stringImpl& title,
                               const stringImpl& message,
                               const vec2<I32>& offsetFromCentre) {
-    ULL idHash = _ID_RT(ID);
     GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(
         ID, title, message, offsetFromCentre, _rootSheet);
-    guiMap::iterator it = _guiStack.find(idHash);
+    guiMap::iterator it = _guiStack.find(ID);
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, box);
     } else {
-        hashAlg::insert(_guiStack, std::make_pair(idHash, static_cast<GUIElement*>(box)));
+        hashAlg::insert(_guiStack, std::make_pair(ID, static_cast<GUIElement*>(box)));
     }
 
     return box;
 }
 
-GUIText* GUI::addText(const stringImpl& ID, const vec2<I32>& position,
+GUIText* GUI::addText(ULL ID,
+                      const vec2<I32>& position,
                       const stringImpl& font, const vec4<U8>& color,
                       const stringImpl& text) {
-    ULL idHash = _ID_RT(ID);
 
     GUIText* t = MemoryManager_NEW GUIText(ID,
                                            text,
@@ -423,33 +421,32 @@ GUIText* GUI::addText(const stringImpl& ID, const vec2<I32>& position,
                                            font,
                                            color,
                                            _rootSheet);
-    guiMap::iterator it = _guiStack.find(idHash);
+    guiMap::iterator it = _guiStack.find(ID);
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, t);
     } else {
-        hashAlg::insert(_guiStack, std::make_pair(idHash, static_cast<GUIElement*>(t)));
+        hashAlg::insert(_guiStack, std::make_pair(ID, static_cast<GUIElement*>(t)));
     }
 
     return t;
 }
 
-GUIFlash* GUI::addFlash(const stringImpl& ID, stringImpl movie,
+GUIFlash* GUI::addFlash(ULL ID,
+                        stringImpl movie,
                         const vec2<U32>& position, const vec2<U32>& extent) {
-    ULL idHash = _ID_RT(ID);
-    GUIFlash* flash = MemoryManager_NEW GUIFlash(_rootSheet);
-    guiMap::iterator it = _guiStack.find(idHash);
+
+    GUIFlash* flash = MemoryManager_NEW GUIFlash(ID, _rootSheet);
+    guiMap::iterator it = _guiStack.find(ID);
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, flash);
     } else {
-        hashAlg::insert(_guiStack, std::make_pair(idHash, static_cast<GUIElement*>(flash)));
+        hashAlg::insert(_guiStack, std::make_pair(ID, static_cast<GUIElement*>(flash)));
     }
     return flash;
 }
 
-GUIText* GUI::modifyText(const char* ID, const stringImpl& text) {
-    ULL idHash = _ID_RT(ID);
-    
-    guiMap::iterator it = _guiStack.find(idHash);
+GUIText* GUI::modifyText(ULL ID, const stringImpl& text) {
+    guiMap::iterator it = _guiStack.find(ID);
     if (it == std::cend(_guiStack)) {
         return nullptr;
     }

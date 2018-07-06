@@ -3,7 +3,6 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/ProfileTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Platform/Video/Headers/IMPrimitive.h"

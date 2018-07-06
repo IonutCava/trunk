@@ -1,10 +1,9 @@
 #include "Headers/Application.h"
 
 #include "Headers/Kernel.h"
-#include "Headers/ApplicationTimer.h"
+#include "Headers/ParamHandler.h"
 
-#include "Core/Headers/ParamHandler.h"
-#include "Platform/Video/Headers/GFXDevice.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 
 #if defined(_DEBUG)
 #include "Utility/Headers/MemoryTracker.h"
@@ -82,8 +81,6 @@ Application::~Application()
 ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char** argv) {
     assert(!entryPoint.empty());
     Console::start();
-    // Target FPS is usually 60. So all movement is capped around that value
-    Time::ApplicationTimer::instance().init(Config::TARGET_FRAME_RATE);
     // Read language table
     if (!Locale::init()) {
         return errorCode();

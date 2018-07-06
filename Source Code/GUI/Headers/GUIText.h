@@ -40,9 +40,13 @@ class GUIText : public GUIElement, public TextLabel {
     friend class GUI;
 
    public:
-    GUIText(const stringImpl& id, const stringImpl& text,
-            const vec2<F32>& relativePosition, const stringImpl& font,
-            const vec3<F32>& color, CEGUI::Window* parent, U32 textHeight = 16);
+    GUIText(ULL ID, 
+            const stringImpl& text,
+            const vec2<F32>& relativePosition,
+            const stringImpl& font,
+            const vec3<F32>& color,
+            CEGUI::Window* parent,
+            U32 textHeight = 16);
 
     void draw() const;
     void mouseMoved(const GUIEvent& event);

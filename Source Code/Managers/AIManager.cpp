@@ -3,7 +3,7 @@
 #include "AI/ActionInterface/Headers/AITeam.h"
 #include "AI/PathFinding/Headers/DivideRecast.h"
 
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 
 namespace Divide {
 
@@ -49,7 +49,7 @@ void AIManager::Destroy() {
 
 void AIManager::update() {
     static const U64 updateFreq = Time::MillisecondsToMicroseconds(Config::AI_THREAD_UPDATE_FREQUENCY);
-    _previousTime = Time::ApplicationTimer::instance().getElapsedTime(true);
+    _previousTime = Time::ElapsedMicroseconds(true);
     _running = true;
 
     while(true) {
@@ -57,7 +57,7 @@ void AIManager::update() {
             break;
         }
 
-        _currentTime = Time::ApplicationTimer::instance().getElapsedTime(true);
+        _currentTime = Time::ElapsedMicroseconds(true);
         if (_currentTime >= _previousTime + updateFreq) {
             
             /// use internal delta time calculations
@@ -82,7 +82,7 @@ void AIManager::update() {
                     _updating = false;
                 }
             }
-            _previousTime = Time::ApplicationTimer::instance().getElapsedTime(true);
+            _previousTime = Time::ElapsedMicroseconds(true);
 
             if (Config::AI_THREAD_UPDATE_FREQUENCY > Config::MIN_SLEEP_THRESHOLD_MS) {
                 //ToDo: this needs adjustment to account for AI execution time

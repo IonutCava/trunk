@@ -3,7 +3,7 @@
 
 #include "SceneList.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/ProfileTimer.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Rendering/Headers/ForwardPlusRenderer.h"

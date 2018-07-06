@@ -1,7 +1,7 @@
 #include "Headers/GFXDevice.h"
 
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/ProfileTimer.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
 
 #include "Rendering/Headers/Renderer.h"

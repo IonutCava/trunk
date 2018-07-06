@@ -2,8 +2,7 @@
 #include "Headers/SceneManager.h"
 
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/ProfileTimer.h"
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -163,8 +162,6 @@ bool LightManager::removeLight(I64 lightGUID, LightType type) {
 void LightManager::idle() {
     _shadowMapsEnabled =
         ParamHandler::instance().getParam<bool>(_ID("rendering.enableShadows"));
-
-    _shadowPassTimer.pause(!_shadowMapsEnabled);
 }
 
 U8 LightManager::getShadowBindSlotOffset(ShadowType type) {

@@ -1,7 +1,7 @@
 #include "Headers/NavMeshContext.h"
 
 #include "Core/Headers/Console.h"
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 #include "Utility/Headers/Localization.h"
 
 namespace Divide {

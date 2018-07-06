@@ -8,8 +8,8 @@
 #include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Core/Headers/ProfileTimer.h"
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ProfileTimer.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -56,6 +56,14 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _cameraMgrTimer(Time::ADD_TIMER("Camera Manager Update Timer")),
       _flushToScreenTimer(Time::ADD_TIMER("Flush To Screen Timer"))
 {
+
+    _appLoopTimer.addChildTimer(_appIdleTimer);
+    _appLoopTimer.addChildTimer(_frameTimer);
+    _frameTimer.addChildTimer(_appScenePass);
+    _appScenePass.addChildTimer(_cameraMgrTimer);
+    _appScenePass.addChildTimer(_physicsTimer);
+    _appScenePass.addChildTimer(_flushToScreenTimer);
+
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
     // General light management and rendering (individual lights are handled by each scene)
@@ -168,24 +176,35 @@ void Kernel::onLoop() {
         }
     }
 
-#if !defined(_RELEASE)
+if (Config::Profile::BENCHMARK_PERFORMANCE ||
+    Config::Profile::ENABLE_FUNCTION_PROFILING)
+{
     U32 frameCount = _GFX.getFrameCount();
-    if (frameCount % (Config::TARGET_FRAME_RATE * 10) == 0) {
-        Console::printfn(
-            "GPU: [ %5.5f ] [DrawCalls: %d]",
-            Time::MicrosecondsToSeconds<F32>(_GFX.getFrameDurationGPU()),
-            _GFX.getDrawCallCount());
+    if (frameCount % 5 == 0) {
+        stringImpl profileData(Time::ApplicationTimer::instance().benchmarkReport());
+        if (Config::Profile::BENCHMARK_PERFORMANCE) {
+            profileData.append("\n");
+            profileData.append(Util::StringFormat("GPU: [ %5.5f ] [DrawCalls: %d]",
+                                                  Time::MicrosecondsToSeconds<F32>(_GFX.getFrameDurationGPU()),
+                                                  _GFX.getDrawCallCount()));
+        }
+        if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
+            profileData.append("\n");
+            profileData.append(Time::ProfileTimer::printAll());
+        }
+        Console::printfn(profileData.c_str());
 
-        Util::FlushFloatEvents();
-    }
-    if (frameCount % Config::TARGET_FRAME_RATE == 0) {
-        Time::ProfileTimer::printAll();
+        _GUI.modifyText(_ID("ProfileData"), profileData);
     }
 
     Util::RecordFloatEvent("kernel.mainLoopApp",
                            to_float(_appLoopTimer.get()),
                            _timingData._currentTime);
-#endif
+
+    if (frameCount % (Config::TARGET_FRAME_RATE * 10) == 0) {
+        Util::FlushFloatEvents();
+    }
+}
 }
 
 bool Kernel::mainLoopScene(FrameEvent& evt) {
@@ -352,9 +371,6 @@ void Kernel::warmup() {
 
     par.setParam(_ID("freezeGUITime"), false);
     par.setParam(_ID("freezeLoopTime"), false);
-#if defined(_DEBUG) || defined(_PROFILE)
-    Time::ApplicationTimer::instance().benchmark(true);
-#endif
     Attorney::SceneManagerKernel::initPostLoadState();
 
     _timingData._currentTime = _timingData._nextGameTick = Time::ElapsedMicroseconds();
@@ -468,7 +484,11 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     // Initialize GUI with our current resolution
     _GUI.init(renderResolution);
-
+    _GUI.addText(_ID("ProfileData"),  // Unique ID
+        vec2<I32>(renderResolution.width - 300, 60),  // Position
+        Font::DIVIDE_DEFAULT,            // Font
+        vec4<U8>(0, 64, 255, 255),       // Color
+        "PROFILE DATA");                 // Text
     LightManager::instance().init();
 
     _sceneMgr.init(&_GUI);

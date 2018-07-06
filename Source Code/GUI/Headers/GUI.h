@@ -79,32 +79,40 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     /// Main update call
     void update(const U64 deltaTime);
     /// Add a text label
-    GUIText* addText(const stringImpl& id, const vec2<I32>& position,
-                     const stringImpl& font, const vec4<U8>& color,
+    GUIText* addText(ULL ID,
+                     const vec2<I32>& position,
+                     const stringImpl& font,
+                     const vec4<U8>& color,
                      const stringImpl& text);
     /// Modify a text label
-    GUIText* modifyText(const char* id, const stringImpl& text);
-    GUIMessageBox* addMsgBox(const stringImpl& id, const stringImpl& title,
+    GUIText* modifyText(ULL ID,
+                        const stringImpl& text);
+    GUIMessageBox* addMsgBox(ULL ID, 
+                             const stringImpl& title,
                              const stringImpl& message,
                              const vec2<I32>& offsetFromCentre = vec2<I32>(0));
     /// Add a button with a specific callback.
     /// The root of the window positioning system is bottom left, so 100,60 will
     /// place the button 100 pixels to the right and 60 up
     /// from the bottom
-    GUIButton* addButton(const stringImpl& id, const stringImpl& text,
-                         const vec2<I32>& position, const vec2<U32>& dimensions,
-                         const vec3<F32>& color, ButtonCallback callback,
+    GUIButton* addButton(ULL ID, 
+                         const stringImpl& text,
+                         const vec2<I32>& position,
+                         const vec2<U32>& dimensions,
+                         const vec3<F32>& color,
+                         ButtonCallback callback,
                          const stringImpl& rootSheetID = "");
     /// Add a flash element -DEPRECATED-
-    GUIFlash* addFlash(const stringImpl& id, stringImpl movie,
+    GUIFlash* addFlash(ULL ID, 
+                       stringImpl movie,
                        const vec2<U32>& position, const vec2<U32>& extent);
     /// Get a pointer to our console window
     inline GUIConsole* const getConsole() { return _console; }
     inline const GUIEditor& getEditor() { return GUIEditor::instance(); }
     /// Get a const pointer to an element by name/id
-    inline GUIElement* const getItem(const stringImpl& id) { return _guiStack[_ID_RT(id)]; }
+    inline GUIElement* const getItem(ULL ID) { return _guiStack[ID]; }
     /// Get a pointer to an element by name/id
-    inline GUIElement* getGuiElement(const stringImpl& id) { return _guiStack[_ID_RT(id)]; }
+    inline GUIElement* getGuiElement(ULL ID) { return _guiStack[ID]; }
     /// Used by CEGUI to setup rendering (D3D/OGL/OGRE/etc)
     bool bindRenderer(CEGUI::Renderer& renderer);
     void selectionChangeCallback(Scene* const activeScene);

@@ -2,7 +2,7 @@
 #include "Network/Headers/ASIOImpl.h"
 
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
 
 namespace Divide {
@@ -25,22 +25,22 @@ void NetworkScene::processGUI(const U64 deltaTime) {
     D64 TimeDisplay = Time::SecondsToMilliseconds(0.01);
     D64 ServerPing = Time::SecondsToMilliseconds(1.0);
     if (_guiTimers[0] >= FpsDisplay) {
-        _GUI->modifyText("fpsDisplay",
+        _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %5.2f", Time::ApplicationTimer::instance().getFps()));
         _guiTimers[0] = 0.0;
     }
 
     if (_guiTimers[1] >= TimeDisplay) {
-        _GUI->modifyText("timeDisplay",
+        _GUI->modifyText(_ID("timeDisplay"),
                          Util::StringFormat("Elapsed time: %5.0f", time));
         _guiTimers[1] = 0.0;
     }
 
     if (_taskTimers[2] >= ServerPing) {
         _GUI->modifyText(
-            "statusText",
+            _ID("statusText"),
             (char*)_paramHandler.getParam<stringImpl>(_ID("asioStatus")).c_str());
-        _GUI->modifyText("serverMessage",
+        _GUI->modifyText(_ID("serverMessage"),
                          (char*)_paramHandler.getParam<stringImpl>(
                              _ID("serverResponse")).c_str());
         _guiTimers[2] = 0.0;
@@ -83,13 +83,13 @@ void NetworkScene::test() {
 }
 
 void NetworkScene::connect() {
-    _GUI->modifyText("statusText", "Connecting to server ...");
+    _GUI->modifyText(_ID("statusText"), "Connecting to server ...");
     ASIOImpl::instance().connect(_paramHandler.getParam<stringImpl>(_ID("serverAddress")), "443");
 }
 
 void NetworkScene::disconnect() {
     if (!ASIOImpl::instance().isConnected()) {
-        _GUI->modifyText("statusText", "Disconnecting to server ...");
+        _GUI->modifyText(_ID("statusText"), "Disconnecting to server ...");
     }
     ASIOImpl::instance().disconnect();
 }
@@ -103,22 +103,22 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
     const vec2<U16>& resolution
         = Application::instance().windowManager().getActiveWindow().getDimensions();
 
-    _GUI->addText("fpsDisplay",  // Unique ID
+    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
                   vec2<I32>(60, 60),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec4<U8>(0, 164, 255, 255),  // Color
                   Util::StringFormat("FPS: %d", 0));  // Text and arguments
-    _GUI->addText("timeDisplay", vec2<I32>(60, 70), Font::DIVIDE_DEFAULT,
+    _GUI->addText(_ID("timeDisplay"), vec2<I32>(60, 70), Font::DIVIDE_DEFAULT,
                   vec4<U8>(164, 64, 64, 255),
                   Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
 
-    _GUI->addText("serverMessage",
+    _GUI->addText(_ID("serverMessage"),
                   vec2<I32>(resolution.width / 4,
                             resolution.height / 1),
                   Font::DIVIDE_DEFAULT, 
                   vec4<U8>(128, 128, 64, 255),
                   Util::StringFormat("Server says: %s", "<< nothing yet >>"));
-    _GUI->addText("statusText",
+    _GUI->addText(_ID("statusText"),
                   vec2<I32>(resolution.width / 3,
                             resolution.height / 2),
                   Font::DIVIDE_DEFAULT,
@@ -126,22 +126,22 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
                   "");
 
     _GUI->addButton(
-        "getPing", "ping me",
+        _ID("getPing"), "ping me",
         vec2<I32>(60, to_int(resolution.height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.6f, 0.6f, 0.6f),
         DELEGATE_BIND(&NetworkScene::test, this));
     _GUI->addButton(
-        "disconnect", "disconnect",
+        _ID("disconnect"), "disconnect",
         vec2<I32>(180, to_int(resolution.height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.5f, 0.5f, 0.5f),
         DELEGATE_BIND(&NetworkScene::disconnect, this));
     _GUI->addButton(
-        "connect", "connect",
+        _ID("connect"), "connect",
         vec2<I32>(300, to_int(resolution.height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
         DELEGATE_BIND(&NetworkScene::connect, this));
     _GUI->addButton(
-        "patch", "patch",
+        _ID("patch"), "patch",
         vec2<I32>(420, to_int(resolution.height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
         DELEGATE_BIND(&NetworkScene::checkPatches, this));

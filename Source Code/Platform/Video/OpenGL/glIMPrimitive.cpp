@@ -1,7 +1,6 @@
 #include "Headers/glIMPrimitive.h"
 #include "Headers/glResources.h"
 #include "Headers/GLWrapper.h"
-//#include "Platform/Video/Headers/GFXDevice.h"
 
 #include <GLIM/glim.h>
 

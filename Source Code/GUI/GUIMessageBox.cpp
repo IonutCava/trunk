@@ -7,11 +7,12 @@
 
 namespace Divide {
 
-GUIMessageBox::GUIMessageBox(const stringImpl& id, const stringImpl& title,
+GUIMessageBox::GUIMessageBox(ULL ID,
+                             const stringImpl& title,
                              const stringImpl& message,
                              const vec2<I32>& offsetFromCentre,
                              CEGUI::Window* parent)
-    : GUIElement(parent, GUIType::GUI_MESSAGE_BOX)
+    : GUIElement(ID, parent, GUIType::GUI_MESSAGE_BOX)
 {
     // Get a local pointer to the CEGUI Window Manager, Purely for convenience
     // to reduce typing
@@ -19,7 +20,7 @@ GUIMessageBox::GUIMessageBox(const stringImpl& id, const stringImpl& title,
         CEGUI::WindowManager::getSingletonPtr();
     // load the messageBox Window from the layout file
     _msgBoxWindow = pWindowManager->loadLayoutFromFile("messageBox.layout");
-    _msgBoxWindow->setName((id + "_MesageBox").c_str());
+    _msgBoxWindow->setName((title + "_MesageBox").c_str());
     _parent->addChild(_msgBoxWindow);
     CEGUI::PushButton* confirmBtn =
         dynamic_cast<CEGUI::PushButton*>(_msgBoxWindow->getChild("ConfirmBtn"));

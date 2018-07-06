@@ -29,11 +29,19 @@
 
  */
 
-#ifndef _CORE_PROFILE_TIMER_INL_
-#define _CORE_PROFILE_TIMER_INL_
+#ifndef _CORE_TIME_PROFILE_TIMER_INL_
+#define _CORE_TIME_PROFILE_TIMER_INL_
 
 namespace Divide {
 namespace Time {
+
+inline U64 ProfileTimer::get() const {
+    return _timerAverage / _timerCounter;
+}
+
+inline const stringImpl& ProfileTimer::name() const {
+    return _name;
+}
 
 inline ProfileTimer& ADD_TIMER(const char* timerName) {
     return ProfileTimer::getNewTimer(timerName);
@@ -58,4 +66,4 @@ inline void REMOVE_TIMER(ProfileTimer*& timer) {
 };  // namespace Time
 };  // namespace Divide
 
-#endif  //_CORE_PROFILE_TIMER_INL_
+#endif  //_CORE_TIME_PROFILE_TIMER_INL_

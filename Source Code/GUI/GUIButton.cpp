@@ -7,7 +7,7 @@
 
 namespace Divide {
 
-GUIButton::GUIButton(const stringImpl& id,
+GUIButton::GUIButton(ULL ID,
                      const stringImpl& text,
                      const stringImpl& guiScheme,
                      const vec2<F32>& relativeOffset,
@@ -15,7 +15,7 @@ GUIButton::GUIButton(const stringImpl& id,
                      const vec3<F32>& color,
                      CEGUI::Window* parent,
                      ButtonCallback callback)
-    : GUIElement(parent, GUIType::GUI_BUTTON),
+    : GUIElement(ID, parent, GUIType::GUI_BUTTON),
       _text(text),
       _color(color),
       _callbackFunction(callback),
@@ -24,7 +24,7 @@ GUIButton::GUIButton(const stringImpl& id,
       _btnWindow(nullptr)
 {
     
-    _btnWindow = CEGUI::WindowManager::getSingleton().createWindow((guiScheme + "/Button").c_str(), id.c_str());
+    _btnWindow = CEGUI::WindowManager::getSingleton().createWindow((guiScheme + "/Button").c_str(), text.c_str());
     _btnWindow->setPosition(CEGUI::UVector2(CEGUI::UDim(relativeOffset.x / 100, 0.0f),
                                             CEGUI::UDim(relativeOffset.y / 100, 0.0f)));
     _btnWindow->setSize(CEGUI::USize(CEGUI::UDim(relativeDimensions.x / 100, 0.0f),

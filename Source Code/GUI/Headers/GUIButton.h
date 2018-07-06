@@ -48,7 +48,7 @@ class GUIButton : public GUIElement {
     friend class GUI;
 
    protected:
-    GUIButton(const stringImpl& id,
+    GUIButton(ULL ID,
               const stringImpl& text,
               const stringImpl& guiScheme, 
               const vec2<F32>& relativeOffset,

@@ -68,7 +68,7 @@ class GUIElement {
     friend class GUI;
 
    public:
-    GUIElement(CEGUI::Window* const parent, const GUIType& type);
+    GUIElement(ULL ID, CEGUI::Window* const parent, const GUIType& type);
     virtual ~GUIElement();
 
     virtual void draw() const = 0;
@@ -87,7 +87,6 @@ class GUIElement {
 
     virtual void setTooltip(const stringImpl& tooltipText) {}
 
-    inline void lastDrawTimer(const U64 time) { _lastDrawTimer = time; }
     virtual void mouseMoved(const GUIEvent& event){}
     virtual void onMouseUp(const GUIEvent& event){}
     virtual void onMouseDown(const GUIEvent& event){}
@@ -97,13 +96,13 @@ class GUIElement {
    protected:
     GUIType _guiType;
     U32 _guiSBHash;
-    U64 _lastDrawTimer;
     CEGUI::Window* _parent;
 
    private:
     stringImpl _name;
     bool _visible;
     bool _active;
+    ULL  _ID;
 };
 
 };  // namespace Divide

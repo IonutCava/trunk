@@ -2,7 +2,7 @@
 #include "Headers/DVDConverter.h"
 
 #include "Core/Headers/Console.h"
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Geometry/Shapes/Headers/Mesh.h"
@@ -164,9 +164,9 @@ namespace Import {
     }
 };
     bool MeshImporter::loadMeshDataFromFile(Import::ImportData& dataOut) {
-        D64 start = 0.0;
-        D64 elapsed = 0.0;
-        start = Time::ElapsedMilliseconds(true);
+        Time::ProfileTimer importTimer;
+        importTimer.start();
+
         stringImpl modelName = dataOut._modelPath.substr(dataOut._modelPath.find_last_of('/') + 1);
         stringImpl path = dataOut._modelPath.substr(0, dataOut._modelPath.find_last_of('/'));
 
@@ -189,17 +189,17 @@ namespace Import {
             success = true;
         }
 
-        elapsed = Time::ElapsedMilliseconds(true) - start;
-        Console::d_printfn(Locale::get(_ID("LOAD_MESH_TIME")), modelName.c_str(), Time::MillisecondsToSeconds(elapsed));
+        importTimer.stop();
+        Console::d_printfn(Locale::get(_ID("LOAD_MESH_TIME")),
+                           modelName.c_str(),
+                           Time::MillisecondsToSeconds(importTimer.get()));
 
         return success;
     }
 
     Mesh* MeshImporter::loadMesh(const stringImpl& name, const Import::ImportData& dataIn) {
-
-        D64 start = 0.0;
-        D64 elapsed = 0.0;
-        start = Time::ElapsedMilliseconds(true);
+        Time::ProfileTimer importTimer;
+        importTimer.start();
 
         std::shared_ptr<SceneAnimator> animator;
         if (dataIn._hasAnimations) {
@@ -278,8 +278,10 @@ namespace Import {
 
         mesh->getGeometryVB()->create(!mesh->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         
-        elapsed = Time::ElapsedMilliseconds(true) - start;
-        Console::d_printfn(Locale::get(_ID("PARSE_MESH_TIME")), dataIn._modelName.c_str(),Time::MillisecondsToSeconds(elapsed));
+        importTimer.stop();
+        Console::d_printfn(Locale::get(_ID("PARSE_MESH_TIME")),
+                           dataIn._modelName.c_str(),
+                           Time::MillisecondsToSeconds(importTimer.get()));
 
         return mesh;
     }

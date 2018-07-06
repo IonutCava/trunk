@@ -2,7 +2,7 @@
 
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Environment/Water/Headers/Water.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -54,11 +54,11 @@ void MainScene::processInput(const U64 deltaTime) {
                     break;
                 }
             }
-            _GUI->modifyText("camPosition",
+            _GUI->modifyText(_ID("camPosition"),
                              Util::StringFormat("[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f] [TerHght: %5.2f ]",
                                                  eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw, terrainHeight));
         } else {
-            _GUI->modifyText("camPosition",
+            _GUI->modifyText(_ID("camPosition"),
                              Util::StringFormat("[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
                                                 eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw));
         }
@@ -70,22 +70,22 @@ void MainScene::processGUI(const U64 deltaTime) {
     D64 TimeDisplay = Time::SecondsToMilliseconds(1.0);
 
     if (_guiTimers[0] >= FpsDisplay) {
-        _GUI->modifyText("fpsDisplay",
+        _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
                                              Time::ApplicationTimer::instance().getFps(),
                                              Time::ApplicationTimer::instance().getFrameTime()));
-        _GUI->modifyText("underwater",
+        _GUI->modifyText(_ID("underwater"),
                          Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]",
                                              state().cameraUnderwater() ? "true" : "false",
                                              state().waterLevel()));
-        _GUI->modifyText("RenderBinCount",
+        _GUI->modifyText(_ID("RenderBinCount"),
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
                                             GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT));
         _guiTimers[0] = 0.0;
     }
 
     if (_guiTimers[1] >= TimeDisplay) {
-        _GUI->modifyText("timeDisplay",
+        _GUI->modifyText(_ID("timeDisplay"),
                          Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
         _guiTimers[1] = 0.0;
     }
@@ -248,19 +248,19 @@ void MainScene::test(const std::atomic_bool& stopRequested, cdiggins::any a, Cal
 }
 
 bool MainScene::loadResources(bool continueOnErrors) {
-    _GUI->addText("fpsDisplay",  // Unique ID
+    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
                   vec2<I32>(60, 60),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
                   Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
-    _GUI->addText("timeDisplay", vec2<I32>(60, 80), Font::DIVIDE_DEFAULT,
+    _GUI->addText(_ID("timeDisplay"), vec2<I32>(60, 80), Font::DIVIDE_DEFAULT,
                   vec4<U8>(164, 64, 64, 255),
                   Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
-    _GUI->addText("underwater", vec2<I32>(60, 115), Font::DIVIDE_DEFAULT,
+    _GUI->addText(_ID("underwater"), vec2<I32>(60, 115), Font::DIVIDE_DEFAULT,
                   vec4<U8>(64, 200, 64, 255),
                   Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]", "false", 0));
-    _GUI->addText("RenderBinCount", vec2<I32>(60, 135), Font::BATANG,
+    _GUI->addText(_ID("RenderBinCount"), vec2<I32>(60, 135), Font::BATANG,
                   vec4<U8>(164, 64, 64, 255),
                   Util::StringFormat("Number of items in Render Bin: %d", 0));
     _taskTimers.push_back(0.0);  // Sun
@@ -298,7 +298,7 @@ bool MainScene::loadResources(bool continueOnErrors) {
 
     const vec3<F32>& eyePos = renderState().getCamera().getEye();
     const vec3<F32>& euler = renderState().getCamera().getEuler();
-    _GUI->addText("camPosition", vec2<I32>(60, 100), Font::DIVIDE_DEFAULT,
+    _GUI->addText(_ID("camPosition"), vec2<I32>(60, 100), Font::DIVIDE_DEFAULT,
                   vec4<U8>(64, 200, 64, 255),
                   Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
                   eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw));

@@ -4,7 +4,7 @@
 #include "GUI/Headers/GUIMessageBox.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Core/Math/Headers/Transform.h"
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
@@ -53,9 +53,9 @@ WarScene::WarScene(const stringImpl& name)
     addSelectionCallback([&]() {
         SceneGraphNode_ptr selection(_currentSelection.lock());
         if (selection) {
-            _GUI->modifyText("entityState", selection->getName().c_str());
+            _GUI->modifyText(_ID("entityState"), selection->getName().c_str());
         } else {
-            _GUI->modifyText("entityState", "");
+            _GUI->modifyText(_ID("entityState"), "");
         }
     });
 
@@ -78,15 +78,15 @@ void WarScene::processGUI(const U64 deltaTime) {
         const Camera& cam = renderState().getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
-        _GUI->modifyText("fpsDisplay",
+        _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
                                             Time::ApplicationTimer::instance().getFps(),
                                             Time::ApplicationTimer::instance().getFrameTime()));
-        _GUI->modifyText("RenderBinCount",
+        _GUI->modifyText(_ID("RenderBinCount"),
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
                                             GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT));
 
-        _GUI->modifyText("camPosition",
+        _GUI->modifyText(_ID("camPosition"),
                          Util::StringFormat("Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
                                             eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw));
 
@@ -98,7 +98,7 @@ void WarScene::processGUI(const U64 deltaTime) {
         if (selection) {
             AI::AIEntity* entity = findAI(selection);
             if (entity) {
-                _GUI->modifyText("entityState", entity->toString().c_str());
+                _GUI->modifyText(_ID("entityState"), entity->toString().c_str());
             }
         }
     }
@@ -113,7 +113,7 @@ void WarScene::processGUI(const U64 deltaTime) {
         U32 limitTimeSeconds = 0;
         U32 limitTimeMilliseconds = 0;
 
-        _GUI->modifyText("scoreDisplay",
+        _GUI->modifyText(_ID("scoreDisplay"),
             Util::StringFormat("Score: A -  %d B - %d [Limit: %d]\nElapsed game time [ %d:%d:%d / %d:%d:%d]",
                                AI::WarSceneAIProcessor::getScore(0),
                                AI::WarSceneAIProcessor::getScore(1),
@@ -675,23 +675,23 @@ bool WarScene::loadResources(bool continueOnErrors) {
     const vec2<U16>& resolution
         = Application::instance().windowManager().getActiveWindow().getDimensions();
 
-    _GUI->addButton("Simulate", "Simulate",
+    _GUI->addButton(_ID("Simulate"), "Simulate",
                     vec2<I32>(resolution.width - 220, 60),
                     vec2<U32>(100, 25), 
                     vec3<F32>(0.65f),
                     DELEGATE_BIND(&WarScene::startSimulation, this));
 
-    _GUI->addText("fpsDisplay",  // Unique ID
+    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
                   vec2<I32>(60, 63),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec4<U8>(0, 50, 255, 255), // Color
                   Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f", 0.0f, 0.0f));  // Text and arguments
-    _GUI->addText("RenderBinCount",
+    _GUI->addText(_ID("RenderBinCount"),
                   vec2<I32>(60, 83),
                   Font::DIVIDE_DEFAULT,
                   vec4<U8>(164, 50, 50, 255),
                   Util::StringFormat("Number of items in Render Bin: %d", 0));
-    _GUI->addText("camPosition", vec2<I32>(60, 103),
+    _GUI->addText(_ID("camPosition"), vec2<I32>(60, 103),
                   Font::DIVIDE_DEFAULT,
                   vec4<U8>(50, 192, 50, 255),
                   Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
@@ -701,17 +701,17 @@ bool WarScene::loadResources(bool continueOnErrors) {
                                      renderState().getCamera().getEuler().pitch,
                                      renderState().getCamera().getEuler().yaw));
 
-    _GUI->addText("scoreDisplay",
+    _GUI->addText(_ID("scoreDisplay"),
         vec2<I32>(60, 123),  // Position
         Font::DIVIDE_DEFAULT,  // Font
         vec4<U8>(50, 192, 50, 255),// Color
         Util::StringFormat("Score: A -  %d B - %d", 0, 0));  // Text and arguments
 
-    _GUI->addText("entityState", vec2<I32>(60, 163), Font::DIVIDE_DEFAULT,
+    _GUI->addText(_ID("entityState"), vec2<I32>(60, 163), Font::DIVIDE_DEFAULT,
                   vec4<U8>(0, 0, 0, 255),
                   "");
 
-    _infoBox = _GUI->addMsgBox("infoBox", "Info", "Blabla");
+    _infoBox = _GUI->addMsgBox(_ID("infoBox"), "Info", "Blabla");
     // Add a first person camera
     Camera* cam = renderState().getCameraMgr().createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);
     cam->fromCamera(renderState().getCameraConst());

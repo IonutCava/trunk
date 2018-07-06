@@ -29,44 +29,68 @@
 
  */
 
-#ifndef _CORE_APPLICATION_TIMER_INL_
-#define _CORE_APPLICATION_TIMER_INL_
+#ifndef _CORE_TIME_PROFILE_TIMER_H_
+#define _CORE_TIME_PROFILE_TIMER_H_
+
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 namespace Time {
 
-inline void ApplicationTimer::benchmark(bool state) { _benchmark = state; }
+class ProfileTimer {
+   public:
+    ProfileTimer();
+    ~ProfileTimer();
 
-inline bool ApplicationTimer::benchmark() const { return _benchmark; }
+    void start();
+    void stop();
+    void reset();
+    stringImpl print(U32 level = 0) const;
 
-inline F32 ApplicationTimer::getFps() const { return _frameRateHandler.frameRate(); }
+    U64 get() const;
+    const stringImpl& name() const;
 
-inline F32 ApplicationTimer::getFrameTime() const { return _frameRateHandler.frameTime(); }
+    static stringImpl printAll();
+    static ProfileTimer& getNewTimer(const char* timerName);
+    static void removeTimer(ProfileTimer& timer);
 
-inline F32 ApplicationTimer::getSpeedfactor() const { return _speedfactor; }
+    static U64 overhead();
 
+   // time data
+   protected:
+    stringImpl _name;
+    U64 _timer;
+    U64 _timerAverage;
+    U32 _timerCounter;
+    U32 _globalIndex;
 
-inline TimeValue ApplicationTimer::getCurrentTicksInternal() const {
-    return std::chrono::high_resolution_clock::now();
-}
+   // timer <-> timer relationship
+   public:
+    void addChildTimer(ProfileTimer& child);
+   protected:
+     vectorImpl<U32> _children;
+     U32 _parent;
+};
 
-inline U64 ApplicationTimer::getElapsedTimeInternal(const TimeValue& currentTicks) const {
-    return static_cast<U64>(std::chrono::duration_cast<USec>(currentTicks - _startupTicks).count());
-}
+class ScopedTimer : private NonCopyable {
+public:
+    explicit ScopedTimer(ProfileTimer& timer);
+    ~ScopedTimer();
 
-inline U64 ApplicationTimer::getElapsedTime(bool forceUpdate) {
-    if (forceUpdate) {
-        return getElapsedTimeInternal(getCurrentTicksInternal());
-    }
-     
-    return _elapsedTimeUs;
-}
+private:
+    ProfileTimer& _timer;
+};
 
-inline F32 FRAME_SPEED_FACTOR() {
-    return ApplicationTimer::instance().getSpeedfactor();
-}
+ProfileTimer& ADD_TIMER(const char* timerName);
+void REMOVE_TIMER(ProfileTimer*& timer);
+
+void START_TIMER(ProfileTimer& timer);
+void STOP_TIMER(ProfileTimer& timer);
+void PRINT_TIMER(ProfileTimer& timer);
 
 };  // namespace Time
 };  // namespace Divide
 
-#endif  //_CORE_APPLICATION_TIMER_INL_
+#endif  //_CORE_TIME_PROFILE_TIMER_H_
+
+#include "ProfileTimer.inl"

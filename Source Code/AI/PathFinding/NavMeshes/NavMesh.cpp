@@ -3,7 +3,7 @@
 #include "../Headers/DivideRecast.h"
 
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
 
 #include <ReCast/DebugUtils/Include/RecastDump.h>
@@ -194,9 +194,13 @@ bool NavigationMesh::buildThreaded() {
 void NavigationMesh::buildInternal(const std::atomic_bool& stopRequested) {
     _building = true;
     // Create mesh
-    D64 timeStart = Time::ElapsedSeconds();
-    if (generateMesh()) {
-        Console::printfn(Locale::get(_ID("NAV_MESH_GENERATION_COMPLETE")),  Time::ElapsedSeconds(true) - timeStart);
+    Time::ProfileTimer importTimer;
+    importTimer.start();
+    bool state = generateMesh();
+    importTimer.stop();
+    if (state) {
+        Console::printfn(Locale::get(_ID("NAV_MESH_GENERATION_COMPLETE")),
+                         Time::MicrosecondsToSeconds<F32>(importTimer.get()));
 
         {
             std::lock_guard<std::mutex> lock (_navigationMeshLock);
@@ -223,7 +227,8 @@ void NavigationMesh::buildInternal(const std::atomic_bool& stopRequested) {
 
         _building = false;
     } else {
-        Console::errorfn(Locale::get(_ID("NAV_MESH_GENERATION_INCOMPLETE")), Time::ElapsedSeconds(true) - timeStart);
+        Console::errorfn(Locale::get(_ID("NAV_MESH_GENERATION_INCOMPLETE")),
+                         Time::MicrosecondsToSeconds<F32>(importTimer.get()));
         return;
     }
 }
@@ -231,16 +236,18 @@ void NavigationMesh::buildInternal(const std::atomic_bool& stopRequested) {
 bool NavigationMesh::buildProcess() {
     _building = true;
     // Create mesh
-    D64 timeStart = Time::ElapsedSeconds();
+    Time::ProfileTimer importTimer;
+    importTimer.start();
     bool success = generateMesh();
+    importTimer.stop();
     if (!success) {
         Console::errorfn(Locale::get(_ID("NAV_MESH_GENERATION_INCOMPLETE")),
-                         Time::ElapsedSeconds(true) - timeStart);
+                         Time::MicrosecondsToSeconds<F32>(importTimer.get()));
         return false;
     }
 
     Console::printfn(Locale::get(_ID("NAV_MESH_GENERATION_COMPLETE")),
-                     Time::ElapsedSeconds(true) - timeStart);
+                     Time::MicrosecondsToSeconds<F32>(importTimer.get()));
 
     _navigationMeshLock.lock();
     {

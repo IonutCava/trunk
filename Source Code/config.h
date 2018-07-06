@@ -113,13 +113,11 @@ const bool BATCH_DRAW_COMMANDS = false;
 /// If true, load shader source coude from cache files
 /// If false, materials recompute shader source code from shader atoms
 /// If true, clear shader cache to apply changes to shader atom source code
-const bool USE_SHADER_TEXT_CACHE =
 #if defined(_DEBUG)
-false;
+const bool USE_SHADER_TEXT_CACHE = false;
 #else
-true;
+const bool USE_SHADER_TEXT_CACHE = true;
 #endif
-
 /// If true, Hi-Z based occlusion culling is used
 const bool USE_HIZ_CULLING = true;
 /// If true, Hi-Z culling is disabled and potentially culled nodes are drawn in bright red and double in size
@@ -135,6 +133,20 @@ namespace Compute {
 
 /// Profiling options
 namespace Profile {
+/// enable function level profiling
+#if defined(_DEBUG) || defined(_PROFILE)
+const bool ENABLE_FUNCTION_PROFILING = true;
+#else
+const bool ENABLE_FUNCTION_PROFILING = true;
+#endif
+/// run performance profiling code
+#if defined(_DEBUG) || defined(_PROFILE)
+const bool BENCHMARK_PERFORMANCE = true;
+#else
+const bool BENCHMARK_PERFORMANCE = false;
+#endif
+/// Benchmark reset frequency in seconds
+const unsigned int BENCHMARK_FREQUENCY = 10;
 /// use only a basic shader
 const bool DISABLE_SHADING = false;
 /// skip all draw calls

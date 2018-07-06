@@ -1,7 +1,7 @@
 #include "Headers/PingPongScene.h"
 
 #include "Core/Math/Headers/Transform.h"
-#include "Core/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
@@ -25,7 +25,7 @@ void PingPongScene::preRender() {
 void PingPongScene::processGUI(const U64 deltaTime) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay) {
-        _GUI->modifyText("fpsDisplay",
+        _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
                                             Time::ApplicationTimer::instance().getFps(),
                                             Time::ApplicationTimer::instance().getFrameTime()));
@@ -73,7 +73,7 @@ void PingPongScene::resetGame() {
 }
 
 void PingPongScene::serveBall() {
-    _GUI->modifyText("insults", "");
+    _GUI->modifyText(_ID("insults"), "");
     resetGame();
 
     removeTask(getGUID());
@@ -202,15 +202,15 @@ void PingPongScene::test(const std::atomic_bool& stopRequested, cdiggins::any a,
                 if (b == CallbackParam::TYPE_INTEGER) {
                     I32 quote = a.constant_cast<I32>();
                     if (_score % 3 == 0)
-                        _GUI->modifyText("insults", (char*)_quotes[quote].c_str());
+                        _GUI->modifyText(_ID("insults"), _quotes[quote]);
                 }
             } else {
                 message = "You won!";
                 _score++;
             }
 
-            _GUI->modifyText("Score", Util::StringFormat("Score: %d", _score));
-            _GUI->modifyText("Message", (char*)message.c_str());
+            _GUI->modifyText(_ID("Score"), Util::StringFormat("Score: %d", _score));
+            _GUI->modifyText(_ID("Message"), (char*)message.c_str());
             resetGame();
         }
 
@@ -325,32 +325,32 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     const vec2<U16>& resolution
         = Application::instance().windowManager().getActiveWindow().getDimensions();
     // Buttons and text labels
-    _GUI->addButton("Serve", "Serve",
+    _GUI->addButton(_ID("Serve"), "Serve",
                     vec2<I32>(to_int(resolution.width - 120),
                               to_int(resolution.height / 1.1f)),
                     vec2<U32>(100, 25), vec3<F32>(0.65f),
                     DELEGATE_BIND(&PingPongScene::serveBall, this));
 
-    _GUI->addText("Score",
+    _GUI->addText(_ID("Score"),
                   vec2<I32>(to_int(resolution.width - 120),
                             to_int(resolution.height / 1.3f)),
                   Font::DIVIDE_DEFAULT,
                   vec4<U8>(255, 0, 0, 255),
                   Util::StringFormat("Score: %d", 0));
 
-    _GUI->addText("Message",
+    _GUI->addText(_ID("Message"),
                   vec2<I32>(to_int(resolution.width - 120),
                             to_int(resolution.height / 1.5f)),
                   Font::DIVIDE_DEFAULT,
                   vec4<U8>(255, 0, 0, 255),
                   "");
-    _GUI->addText("insults",
+    _GUI->addText(_ID("insults"),
                   vec2<I32>(resolution.width / 4,
                             resolution.height / 3),
                   Font::DIVIDE_DEFAULT,
                   vec4<U8>(0, 255, 0, 255),
                   "");
-    _GUI->addText("fpsDisplay",  // Unique ID
+    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
                   vec2<I32>(60, 60),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec4<U8>(0, 50, 255, 255),// Color
