@@ -31,7 +31,6 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     ResourceDescriptor deferred("DeferredShadingPass2");
     deferred.setThreadedLoading(false);
     _deferredShader = CreateResource<ShaderProgram>(cache, deferred);
-    _deferredBuffer = _context.gfx().allocateRT(winManager.getActiveWindow().getDimensions(),  "Deferred");
 
     ResourceDescriptor deferredPreview("deferredPreview");
     deferredPreview.setThreadedLoading(false);
@@ -64,12 +63,22 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     depthDescriptor.setSampler(depthSampler);
 
+    vectorImpl<RTAttachmentDescriptor> att = {
+        { depthDescriptor, RTAttachment::Type::Depth },
+    };
+
+    RenderTargetDescriptor desc = {};
+    desc._name = "Deferred";
+    desc._resolution = winManager.getActiveWindow().getDimensions();
+    desc._attachmentCount = to_U8(att.size());
+    desc._attachments = att.data();
+
     for (U8 i = 0; i < 4; ++i) {
-        _deferredBuffer._rt->addAttachment(gBuffer[i], RTAttachment::Type::Colour, i);
+        att.push_back(RTAttachmentDescriptor{ gBuffer[i], RTAttachment::Type::Colour, i, (i == 0 ? DefaultColours::BLACK() : DefaultColours::WHITE()) });
     }
 
-    _deferredBuffer._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
-    _deferredBuffer._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
+    _deferredBuffer = _context.gfx().allocateRT(desc);
+
     ResourceDescriptor mrtPreviewSmall("MRT RenderQuad SmallPreview");
     mrtPreviewSmall.setFlag(true);  // no default material
     ResourceDescriptor mrt("MRT RenderQuad");

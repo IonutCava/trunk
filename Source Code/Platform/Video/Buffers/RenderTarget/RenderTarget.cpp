@@ -8,34 +8,55 @@
 namespace Divide {
 
 namespace {
-    // We don't need more than 4 colour attachments for now.
-    const U8 g_maxColourAttachments = 4;
     bool g_policiesInitialised = false;
 };
 
-RTDrawDescriptor RenderTarget::_policyDefault;
-RTDrawDescriptor RenderTarget::_policyKeepDepth;
-RTDrawDescriptor RenderTarget::_policyDepthOnly;
+RTDrawDescriptor RenderTarget::s_policyDefault;
+RTDrawDescriptor RenderTarget::s_policyKeepDepth;
+RTDrawDescriptor RenderTarget::s_policyDepthOnly;
 
-RenderTarget::RenderTarget(GFXDevice& context, const vec2<U16>& resolution, const stringImpl& name)
+RTDrawDescriptor& RenderTarget::defaultPolicy() {
+    return s_policyDefault;
+}
+
+RTDrawDescriptor& RenderTarget::defaultPolicyKeepDepth() {
+    return s_policyKeepDepth;
+}
+
+RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
+    return s_policyDepthOnly;
+}
+
+RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor)
     : GUIDWrapper(),
       GraphicsResource(context, getGUID()),
-      _width(resolution.w),
-      _height(resolution.h),
+      _width(descriptor._resolution.w),
+      _height(descriptor._resolution.h),
       _depthValue(1.0),
-      _name(name)
+      _name(descriptor._name)
 {
+    if (!g_policiesInitialised) {
+        s_policyKeepDepth.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+        s_policyDepthOnly.drawMask().disableAll();
+        s_policyDepthOnly.drawMask().setEnabled(RTAttachment::Type::Depth, 0, true);
+        g_policiesInitialised = true;
+    }
+
     if (Config::Profile::USE_2x2_TEXTURES) {
         _width = _height = 2;
     }
 
-    _attachmentPool = MemoryManager_NEW RTAttachmentPool(*this, g_maxColourAttachments);
+    U8 colourAttachmentCount = 0;
+    for (U8 i = 0; i < descriptor._attachmentCount; ++i) {
+        if (descriptor._attachments[i]._type == RTAttachment::Type::Colour) {
+            ++colourAttachmentCount;
+        }
+    }
 
-    if (!g_policiesInitialised) {
-        _policyKeepDepth.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-        _policyDepthOnly.drawMask().disableAll();
-        _policyDepthOnly.drawMask().setEnabled(RTAttachment::Type::Depth, 0, true);
-        g_policiesInitialised = true;
+    _attachmentPool = MemoryManager_NEW RTAttachmentPool(*this, colourAttachmentCount);
+
+    for (U8 i = 0; i < descriptor._attachmentCount; ++i) {
+        _attachmentPool->update(descriptor._attachments[i]);
     }
 }
 
@@ -44,41 +65,8 @@ RenderTarget::~RenderTarget()
     MemoryManager::DELETE(_attachmentPool);
 }
 
-void RenderTarget::copy(const RenderTarget& other) {
-    _attachmentPool->copy(*other._attachmentPool);
-    _width = other._width;
-    _height = other._height;
-    _depthValue = other._depthValue;
-}
-
-void RenderTarget::addAttachment(const RTAttachment& attachment, RTAttachment::Type type, U8 index) {
-    if (attachment.used()) {
-        _attachmentPool->update(type, index, attachment.texture()->getDescriptor());
-    } else {
-        _attachmentPool->clear(type, index);
-    }
-}
-
-void RenderTarget::addAttachment(const TextureDescriptor& descriptor,
-                                 RTAttachment::Type type,
-                                 U8 index) {
-    _attachmentPool->update(type, index, descriptor);
-}
-
 const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index) const {
     return *_attachmentPool->get(type, index);
-}
-
-RTDrawDescriptor& RenderTarget::defaultPolicy() {
-    return _policyDefault;
-}
-
-RTDrawDescriptor& RenderTarget::defaultPolicyKeepDepth() {
-    return _policyKeepDepth;
-}
-
-RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
-    return _policyDepthOnly;
 }
 
 /// Used by cubemap FB's
@@ -88,20 +76,6 @@ void RenderTarget::drawToFace(RTAttachment::Type type, U8 index, U16 nFace, bool
 
 void RenderTarget::readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) {
     readData(vec4<U16>(0, 0, _width, _height), imageFormat, dataType, outData);
-}
-
-// Set the colour the FB will clear to when drawing to it
-void RenderTarget::setClearColour(RTAttachment::Type type, U8 index, const vec4<F32>& clearColour) {
-    if (type == RTAttachment::Type::COUNT) {
-        for (U8 i = 0; i < to_base(RTAttachment::Type::COUNT); ++i) {
-            type = static_cast<RTAttachment::Type>(i);
-            for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
-                _attachmentPool->get(type, j)->clearColour(clearColour);
-            }
-        }
-    } else {
-        _attachmentPool->get(type, index)->clearColour(clearColour);
-    }
 }
 
 void RenderTarget::setClearDepth(F32 depthValue) {

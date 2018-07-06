@@ -19,18 +19,24 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     : PreRenderOperator(context, parent, cache, FilterType::FILTER_BLOOM)
 {
     vec2<U16> res(parent.inputRT().getWidth(), parent.inputRT().getHeight());
-    for (U8 i = 0; i < 2; ++i) {
-        _bloomBlurBuffer[i] = _context.allocateRT(res, Util::StringFormat("Bloom_Blur_%d", i));
-        _bloomBlurBuffer[i]._rt->addAttachment(parent.inputRT().getAttachment(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
-        _bloomBlurBuffer[i]._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
-        _bloomBlurBuffer[i]._rt->create();
-    }
 
-    vec2<U16> qRes(to_U16(res.w / 4.0f), to_U16(res.h / 4.0f));
-    _bloomOutput = _context.allocateRT(qRes, "Bloom");
-    _bloomOutput._rt->addAttachment(parent.inputRT().getAttachment(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
-    _bloomOutput._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
-    _bloomOutput._rt->create();
+    vectorImpl<RTAttachmentDescriptor> att = {
+        { parent.inputRT().getAttachment(RTAttachment::Type::Colour, 0).texture()->getDescriptor(), RTAttachment::Type::Colour, 0, DefaultColours::BLACK() },
+    };
+
+    RenderTargetDescriptor desc = {};
+    desc._resolution = res;
+    desc._attachmentCount = to_U32(att.size());
+    desc._attachments = att.data();
+
+    desc._name = "Bloom_Blur_0";
+    _bloomBlurBuffer[0] = _context.allocateRT(desc);
+    desc._name = "Bloom_Blur_1";
+    _bloomBlurBuffer[1] = _context.allocateRT(desc);
+
+    desc._name = "Bloom";
+    desc._resolution = vec2<U16>(to_U16(res.w / 4.0f), to_U16(res.h / 4.0f));
+    _bloomOutput = _context.allocateRT(desc);
 
     ResourceDescriptor bloomCalc("bloom.BloomCalc");
     bloomCalc.setThreadedLoading(false);

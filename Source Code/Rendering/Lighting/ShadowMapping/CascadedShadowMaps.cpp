@@ -68,10 +68,18 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
     
     const RenderTarget& depthMap = getDepthMap();
 
-    _blurBuffer = _context.allocateRT(vec2<U16>(depthMap.getWidth(), depthMap.getHeight()), "CSM_Blur");
-    _blurBuffer._rt->addAttachment(blurMapDescriptor, RTAttachment::Type::Colour, 0);
-    _blurBuffer._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
-    _blurBuffer._rt->create();
+    vectorImpl<RTAttachmentDescriptor> att = {
+        { blurMapDescriptor, RTAttachment::Type::Colour },
+    };
+
+    RenderTargetDescriptor desc = {};
+    desc._name = "CSM_Blur";
+    desc._resolution = vec2<U16>(depthMap.getWidth(), depthMap.getHeight());
+    desc._attachmentCount = to_U32(att.size());
+    desc._attachments = att.data();
+
+    _blurBuffer = _context.allocateRT(desc);
+
     STUBBED("Migrate to this: http://www.ogldev.org/www/tutorial49/tutorial49.html");
 }
 

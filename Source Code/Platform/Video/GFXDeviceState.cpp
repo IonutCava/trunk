@@ -137,11 +137,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
            "GFXDevice error: Invalid default state hash detected!");
     // Activate the default render states
     _api->setStateBlock(_defaultStateBlockHash);
-    // Our default render targets hold the screen buffer, depth buffer, and a
-    // special, on demand,
-    // down-sampled version of the depth buffer
-    // Screen FB should use MSAA if available
-    allocateRT(RenderTargetUsage::SCREEN, renderResolution, "Screen");
+
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -174,17 +170,26 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                                          GFXImageFormat::RG16F,
                                          GFXDataFormat::FLOAT_16);
     velocityDescriptor.setSampler(screenSampler);
+    
+    {
+        vectorImpl<RTAttachmentDescriptor> attachments = {
+            { screenDescriptor,   RTAttachment::Type::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE() },
+            { normalDescriptor,   RTAttachment::Type::Colour, to_U8(ScreenTargets::NORMALS) },
+            { velocityDescriptor, RTAttachment::Type::Colour, to_U8(ScreenTargets::VELOCITY) },
+            { hiZDescriptor,      RTAttachment::Type::Depth }
+        };
 
-    // Add the attachments to the render targets
-    RenderTarget& screenTarget = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, to_U8(ScreenTargets::ALBEDO));
-    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, to_U8(ScreenTargets::NORMALS));
-    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, to_U8(ScreenTargets::VELOCITY));
-    screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0);
-    screenTarget.setClearColour(RTAttachment::Type::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE());
-    screenTarget.setClearColour(RTAttachment::Type::Colour, to_U8(ScreenTargets::NORMALS), DefaultColours::WHITE());
-    screenTarget.setClearColour(RTAttachment::Type::Colour, to_U8(ScreenTargets::VELOCITY), DefaultColours::WHITE());
-    screenTarget.create();
+        RenderTargetDescriptor screenDesc = {};
+        screenDesc._name = "Screen";
+        screenDesc._resolution = renderResolution;
+        screenDesc._attachmentCount = to_U32(attachments.size());
+        screenDesc._attachments = attachments.data();
+
+        // Our default render targets hold the screen buffer, depth buffer, and a special, on demand,
+        // down-sampled version of the depth buffer
+        // Screen FB should use MSAA if available
+        allocateRT(RenderTargetUsage::SCREEN, screenDesc);
+    }
 
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
@@ -212,37 +217,50 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                                             GFXDataFormat::FLOAT_32);
     depthDescriptorPlanar.setSampler(reflectionSampler);
 
-    U16 reflectRes = std::max(renderResolution.width, renderResolution.height) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
-
     RenderTargetHandle tempHandle;
-    for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
-        tempHandle = allocateRT(RenderTargetUsage::REFLECTION_PLANAR, vec2<U16>(reflectRes), Util::StringFormat("Reflection_Planar_%d", i));
-        tempHandle._rt->addAttachment(environmentDescriptorPlanar, RTAttachment::Type::Colour, 0);
-        tempHandle._rt->addAttachment(depthDescriptorPlanar, RTAttachment::Type::Depth, 0);
-        tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
-        tempHandle._rt->create();
+    U16 reflectRes = std::max(renderResolution.width, renderResolution.height) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
+    {
+        vectorImpl<RTAttachmentDescriptor> attachments = {
+            { environmentDescriptorPlanar, RTAttachment::Type::Colour },
+            { depthDescriptorPlanar, RTAttachment::Type::Depth },
+        };
+
+        RenderTargetDescriptor refDesc = {};
+        refDesc._resolution = vec2<U16>(reflectRes);
+        refDesc._attachmentCount = to_U32(attachments.size());
+        refDesc._attachments = attachments.data();
+
+        for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
+            refDesc._name = Util::StringFormat("Reflection_Planar_%d", i);
+
+            tempHandle = allocateRT(RenderTargetUsage::REFLECTION_PLANAR, refDesc);
+        }
+
+        for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
+            refDesc._name = Util::StringFormat("Refraction_Planar_%d", i);
+
+            tempHandle = allocateRT(RenderTargetUsage::REFRACTION_PLANAR, refDesc);
+        }
+
     }
+    {
+        vectorImpl<RTAttachmentDescriptor> attachments = {
+            { environmentDescriptorCube, RTAttachment::Type::Colour },
+            { depthDescriptorCube, RTAttachment::Type::Depth },
+        };
 
-    for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
-        tempHandle = allocateRT(RenderTargetUsage::REFRACTION_PLANAR, vec2<U16>(reflectRes), Util::StringFormat("Refraction_Planar_%d", i));
-        tempHandle._rt->addAttachment(environmentDescriptorPlanar, RTAttachment::Type::Colour, 0);
-        tempHandle._rt->addAttachment(depthDescriptorPlanar, RTAttachment::Type::Depth, 0);
-        tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
-        tempHandle._rt->create();
+        RenderTargetDescriptor refDesc = {};
+        refDesc._resolution = vec2<U16>(reflectRes);
+        refDesc._attachmentCount = to_U32(attachments.size());
+        refDesc._attachments = attachments.data();
+
+        refDesc._name = "Reflection_Cube_Array";
+        tempHandle = allocateRT(RenderTargetUsage::REFLECTION_CUBE, refDesc);
+
+        refDesc._name = "Refraction_Cube_Array";
+
+        tempHandle = allocateRT(RenderTargetUsage::REFRACTION_CUBE, refDesc);
     }
-
-
-    tempHandle = allocateRT(RenderTargetUsage::REFLECTION_CUBE, vec2<U16>(reflectRes), "Reflection_Cube_Array");
-    tempHandle._rt->addAttachment(environmentDescriptorCube, RTAttachment::Type::Colour, 0);
-    tempHandle._rt->addAttachment(depthDescriptorCube, RTAttachment::Type::Depth, 0);
-    tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
-    tempHandle._rt->create();
-
-    tempHandle = allocateRT(RenderTargetUsage::REFRACTION_CUBE, vec2<U16>(reflectRes), "Refraction_Cube_Array");
-    tempHandle._rt->addAttachment(environmentDescriptorCube, RTAttachment::Type::Colour, 0);
-    tempHandle._rt->addAttachment(depthDescriptorCube, RTAttachment::Type::Depth, 0);
-    tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
-    tempHandle._rt->create();
 
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)

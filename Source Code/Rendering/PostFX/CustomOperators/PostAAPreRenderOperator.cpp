@@ -19,10 +19,19 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
       _postAASamples(0),
       _idleCount(0)
 {
-    _samplerCopy = _context.allocateRT(vec2<U16>(parent.inputRT().getWidth(), parent.inputRT().getHeight()), "PostAA");
-    _samplerCopy._rt->addAttachment(parent.outputRT().getAttachment(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
-    _samplerCopy._rt->create();
+    vectorImpl<RTAttachmentDescriptor> att = {
+        { parent.inputRT().getAttachment(RTAttachment::Type::Colour, 0).texture()->getDescriptor(), RTAttachment::Type::Colour },
+    };
 
+    RenderTargetDescriptor desc = {};
+    desc._name = "PostAA";
+    desc._resolution = vec2<U16>(parent.inputRT().getWidth(), parent.inputRT().getHeight());
+    desc._attachmentCount = to_U32(att.size());
+    desc._attachments = att.data();
+
+    _samplerCopy = _context.allocateRT(desc);
+
+    
     ResourceDescriptor fxaa("FXAA");
     fxaa.setThreadedLoading(false);
     _fxaa = CreateResource<ShaderProgram>(cache, fxaa);

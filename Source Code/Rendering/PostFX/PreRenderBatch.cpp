@@ -45,13 +45,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     _renderTarget = renderTarget;
 
     const RenderTarget& rt = inputRT();
-    // make the texture square sized and power of two
-    U16 lumaRez = to_U16(nextPOW2(to_U32(rt.getWidth() / 3.0f)));
-    
-    _previousLuminance = _context.allocateRT(vec2<U16>(1), "PreviousLuminance");
-    _currentLuminance = _context.allocateRT(vec2<U16>(lumaRez), "Luminance");
 
-    _postFXOutput = _context.allocateRT(vec2<U16>(rt.getWidth(), rt.getHeight()), "PostFXOutput");
     SamplerDescriptor screenSampler;
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.setFilters(TextureFilter::LINEAR);
@@ -61,9 +55,20 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
                                        GFXImageFormat::RGBA8,
                                        GFXDataFormat::UNSIGNED_BYTE);
     outputDescriptor.setSampler(screenSampler);
-    //Colour0 holds the LDR screen texture
-    _postFXOutput._rt->addAttachment(outputDescriptor, RTAttachment::Type::Colour, 0);
-    _postFXOutput._rt->create();
+    {
+        //Colour0 holds the LDR screen texture
+        vectorImpl<RTAttachmentDescriptor> att = {
+            { outputDescriptor, RTAttachment::Type::Colour },
+        };
+
+        RenderTargetDescriptor desc = {};
+        desc._name = "PostFXOutput";
+        desc._resolution = vec2<U16>(rt.getWidth(), rt.getHeight());
+        desc._attachmentCount = to_U32(att.size());
+        desc._attachments = att.data();
+
+        _postFXOutput = _context.allocateRT(desc);
+    }
 
     SamplerDescriptor lumaSampler;
     lumaSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
@@ -74,14 +79,37 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
                                      GFXDataFormat::FLOAT_16);
     lumaDescriptor.setSampler(lumaSampler);
     lumaDescriptor.toggleAutomaticMipMapGeneration(false);
-    _currentLuminance._rt->addAttachment(lumaDescriptor, RTAttachment::Type::Colour, 0);
-    _currentLuminance._rt->create();
+    {
+        // make the texture square sized and power of two
+        U16 lumaRez = to_U16(nextPOW2(to_U32(rt.getWidth() / 3.0f)));
 
+        vectorImpl<RTAttachmentDescriptor> att = {
+            { lumaDescriptor, RTAttachment::Type::Colour },
+        };
+
+        RenderTargetDescriptor desc = {};
+        desc._name = "Luminance";
+        desc._resolution = vec2<U16>(lumaRez);
+        desc._attachmentCount = to_U32(att.size());
+        desc._attachments = att.data();
+
+        _currentLuminance = _context.allocateRT(desc);
+    }
     lumaSampler.setFilters(TextureFilter::LINEAR);
     lumaDescriptor.setSampler(lumaSampler);
-    _previousLuminance._rt->addAttachment(lumaDescriptor, RTAttachment::Type::Colour, 0);
-    _previousLuminance._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
-    _previousLuminance._rt->create();
+    {
+        vectorImpl<RTAttachmentDescriptor> att = {
+            { lumaDescriptor, RTAttachment::Type::Colour, 0, DefaultColours::BLACK() },
+        };
+
+        RenderTargetDescriptor desc = {};
+        desc._name = "PreviousLuminance";
+        desc._resolution = vec2<U16>(1);
+        desc._attachmentCount = to_U32(att.size());
+        desc._attachments = att.data();
+
+        _previousLuminance = _context.allocateRT(desc);
+    }
 
     // Order is very important!
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];

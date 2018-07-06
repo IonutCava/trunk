@@ -47,9 +47,7 @@ public:
 
     void copy(const RTAttachmentPool& other);
 
-    RTAttachment_ptr& update(RTAttachment::Type type,
-                             U8 index,
-                             const TextureDescriptor& descriptor);
+    RTAttachment_ptr& update(const RTAttachmentDescriptor& descriptor);
 
     // Return true if the attachment was used. False if the call had no effect
     bool clear(RTAttachment::Type type, U8 index);

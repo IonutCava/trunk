@@ -37,6 +37,7 @@
 #include "Platform/Video/Headers/GraphicsResource.h"
 
 namespace Divide {
+    constexpr U32 RT_MAX_ATTACHMENTS = 32;
 
 struct RenderTargetID {
     RenderTargetID() : RenderTargetID(RenderTargetUsage::COUNT)
@@ -49,7 +50,7 @@ struct RenderTargetID {
 
     RenderTargetID(RenderTargetUsage usage, U32 index)
         : _index(index),
-        _usage(usage)
+          _usage(usage)
     {
     }
 
@@ -74,6 +75,15 @@ struct RenderTargetHandle {
     RenderTargetID _targetID;
 };
 
+struct RenderTargetDescriptor {
+    U8 _attachmentCount = 0;
+    stringImpl _name = "";
+    vec2<U16>  _resolution = vec2<U16>(1u);
+    RTAttachmentDescriptor* _attachments;
+    F32 _depthValue = 1.0f;
+    vec2<F32> _depthRange = vec2<F32>(0.0f, 1.0f);
+};
+
 class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
    public:
     enum class RenderTargetUsage : U32 {
@@ -83,19 +93,15 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     };
 
    protected:
-    explicit RenderTarget(GFXDevice& context, const vec2<U16>& resolution, const stringImpl& name);
+    explicit RenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor);
 
    public:
     virtual ~RenderTarget();
-
-    virtual void copy(const RenderTarget& other);
 
     static RTDrawDescriptor& defaultPolicy();
     static RTDrawDescriptor& defaultPolicyKeepDepth();
     static RTDrawDescriptor& defaultPolicyDepthOnly();
 
-    /// Bake in all settings and attachments to prepare it for rendering
-    virtual bool create() = 0;
     /// Resize all attachments
     virtual bool resize(U16 width, U16 height) = 0;
 
@@ -114,14 +120,10 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     virtual void blitFrom(RenderTarget* inputFB, bool blitColour = true, bool blitDepth = false) = 0;
     virtual void blitFrom(RenderTarget* inputFB, U8 index, bool blitColour = true, bool blitDepth = false) = 0;
 
-    void addAttachment(const RTAttachment& attachment, RTAttachment::Type type, U8 index);
-    void addAttachment(const TextureDescriptor& descriptor, RTAttachment::Type type, U8 index);
     /// Used by cubemap FB's
     void drawToFace(RTAttachment::Type type, U8 index, U16 nFace, bool includeDepth = true);
 
     void readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData);
-    // Set the colour the FB will clear to when drawing to it
-    void setClearColour(RTAttachment::Type type, U8 index, const vec4<F32>& clearColour);
     void setClearDepth(F32 depthValue);
 
     U16 getWidth()  const;
@@ -133,9 +135,9 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     virtual bool checkStatus() const = 0;
 
    protected:
-    static RTDrawDescriptor _policyDefault;
-    static RTDrawDescriptor _policyKeepDepth;
-    static RTDrawDescriptor _policyDepthOnly;
+    static RTDrawDescriptor s_policyDefault;
+    static RTDrawDescriptor s_policyKeepDepth;
+    static RTDrawDescriptor s_policyDepthOnly;
 
     U16 _width, _height;
     F32 _depthValue;

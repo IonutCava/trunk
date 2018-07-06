@@ -45,12 +45,8 @@ class glFramebuffer : public RenderTarget,
    public:
     /// if resolveBuffer is not null, we add all of our attachments to it and
     /// initialize it with this buffer
-    explicit glFramebuffer(GFXDevice& context, const vec2<U16>& resolution, const stringImpl& name);
+    explicit glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& descriptor);
     ~glFramebuffer();
-
-    void copy(const RenderTarget& other) override;
-
-    bool create() override;
 
     bool resize(U16 width, U16 height) override;
 
@@ -92,6 +88,8 @@ class glFramebuffer : public RenderTarget,
         COUNT
     };
 
+    /// Bake in all settings and attachments to prepare it for rendering
+    bool create();
     void resolve();
     void clear(const RTDrawDescriptor& drawPolicy) const override;
     bool checkStatus() const;
@@ -120,6 +118,8 @@ class glFramebuffer : public RenderTarget,
 
     bool _activeDepthBuffer;
     vectorImpl<GLenum> _activeColourBuffers;
+
+    bool _hasMultisampledColourAttachments;
 
     vectorImpl<RTAttachment_ptr> _activeAttachmentsCache;
 

@@ -39,13 +39,9 @@ namespace Divide {
 class d3dRenderTarget : public RenderTarget {
     USE_CUSTOM_ALLOCATOR
    public:
-    explicit d3dRenderTarget(GFXDevice& context, const vec2<U16>& resolution, const stringImpl& name);
+    explicit d3dRenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor);
     ~d3dRenderTarget();
-
-    void copy(const RenderTarget& other) override;
-
-    bool create() override;
-
+    
     bool resize(U16 width, U16 height) override;
 
     void drawToLayer(RTAttachment::Type type,

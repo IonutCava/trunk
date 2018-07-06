@@ -44,17 +44,21 @@ void RTAttachmentPool::copy(const RTAttachmentPool& other) {
         for (U8 j = 0; j < other._attachment[i].size(); ++j) {
             const RTAttachment_ptr& att = other._attachment[i][j];
             if (att != nullptr) {
-                RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
-                update(type, j, att->texture()->getDescriptor());
+                RTAttachmentDescriptor descriptor = {};
+                descriptor._clearColour = att->clearColour();
+                descriptor._index = j;
+                descriptor._type = static_cast<RTAttachment::Type>(i);
+                descriptor._texDescriptor = att->texture()->getDescriptor();
+
+                update(descriptor);
             }
         }
     }
 }
 
-RTAttachment_ptr& RTAttachmentPool::update(RTAttachment::Type type,
-                                           U8 index,
-                                           const TextureDescriptor& descriptor) {
-
+RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descriptor) {
+    U8 index = descriptor._index;
+    RTAttachment::Type type = descriptor._type;
     assert(index < to_U8(_attachment[to_U32(type)].size()));
 
     RTAttachment_ptr& ptr = getInternal(_attachment, type, index);
@@ -75,7 +79,7 @@ RTAttachment_ptr& RTAttachmentPool::update(RTAttachment::Type type,
                                                             index,
                                                             _parent.getGUID()));
     textureAttachment.setThreadedLoading(false);
-    textureAttachment.setPropertyDescriptor(descriptor);
+    textureAttachment.setPropertyDescriptor(descriptor._texDescriptor);
 
     GFXDevice& context = _parent.context();
     ResourceCache& parentCache = context.parent().resourceCache();
@@ -86,6 +90,7 @@ RTAttachment_ptr& RTAttachmentPool::update(RTAttachment::Type type,
     tex->loadData(info, NULL, vec2<U16>(_parent.getWidth(), _parent.getHeight()));
 
     ptr->texture(tex);
+    ptr->clearColour(descriptor._clearColour);
 
     _attachmentCount[to_U32(type)]++;
 

@@ -42,7 +42,7 @@ class RTAttachment {
     public:
         /// This enum is used when creating render targets to define the channel that
         /// the texture will attach to
-        enum class Type : U32 {
+        enum class Type : U8 {
             Colour = 0,
             Depth = 1,
             Stencil = 2,
@@ -83,6 +83,13 @@ class RTAttachment {
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(RTAttachment);
+
+struct RTAttachmentDescriptor {
+    TextureDescriptor _texDescriptor;
+    RTAttachment::Type _type = RTAttachment::Type::COUNT;
+    U8 _index = 0;
+    vec4<F32> _clearColour = DefaultColours::WHITE();
+};
 
 }; //namespace Divide
 
