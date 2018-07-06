@@ -29,8 +29,8 @@ namespace Navigation {
 		~Waypoint();
 
 		inline U32 getID() const {return _id;}
+	public: 
 
-	public: //ToDo: add accessors 
 		vec3<F32>  _position;
 		Quaternion<F32> _orientation;
 		U32        _time;

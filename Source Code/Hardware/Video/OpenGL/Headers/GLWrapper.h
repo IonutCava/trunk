@@ -73,8 +73,10 @@ private:
 	GL_API() : RenderAPIWrapper(),
 			   _currentGLRenderStateBlock(NULL),
 			   _state2DRendering(NULL),
+			   _previousStateBlock(NULL),
 			   _depthMapRendering(false),
 			   _useMSAA(false),
+               _2DRendering(false),
 			   _msaaSamples(0)
 	{
 	}
@@ -92,10 +94,11 @@ private:
 	void lookAt(const vec3<GLfloat>& eye,const vec3<GLfloat>& center,const vec3<GLfloat>& up = vec3<GLfloat>(0,1,0), bool invertx = false, bool inverty = false);
 	void idle();
 	void flush();
+    void clearStates(bool skipShader, bool skipTextures, bool skipBuffers);
     void getMatrix(MATRIX_MODE mode, mat4<GLfloat>& mat);
 
-	FrameBufferObject* newFBO(FBOType type);
-	VertexBufferObject* newVBO();
+	FrameBufferObject*  newFBO(FBOType type);
+	VertexBufferObject* newVBO(PrimitiveType type);
 	PixelBufferObject*  newPBO(PBOType type);
 
 	inline Texture2D*          newTexture2D(bool flipped = false)                   {return New glTexture(glTextureTypeTable[TEXTURE_2D],flipped);}
@@ -105,9 +108,9 @@ private:
 
 	void clearBuffers(GLushort buffer_mask);
 	void swapBuffers();
-	void enableFog(GLfloat density, GLfloat* color);
+	void enableFog(FogMode mode, GLfloat density, GLfloat* color, GLfloat startDist, GLfloat endDist);
 
-	void lockProjection();
+    void lockProjection();
 	void releaseProjection();
 	void lockModelView();
 	void releaseModelView();
@@ -118,8 +121,6 @@ private:
 	void toggle2D(bool state);
 
 	void drawTextToScreen(GUIElement* const);
-	void drawButton(GUIElement* const);
-	void drawFlash(GUIElement* const);
 	void render3DText(Text3D* const text);
 	void drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const mat4<GLfloat>& globalOffset);
 	void drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,const vectorImpl<vec3<GLfloat> >& pointsB,const vectorImpl<vec4<GLfloat> >& colors, const mat4<GLfloat>& globalOffset);
@@ -127,10 +128,8 @@ private:
 	void renderInViewport(const vec4<GLfloat>& rect, boost::function0<GLvoid> callback);
 
 	void renderModel(Object3D* const model);
-	void renderElements(PrimitiveType t, GFXDataFormat f, GLuint count, const GLvoid* first_element);
+	void renderModel(VertexBufferObject* const vbo, GFXDataFormat f, GLuint count, const void* first_element);
 	
-	void setMaterial(Material* mat);
-
 	void setAmbientLight(const vec4<GLfloat>& light);
 	void setLight(Light* const light);
 
@@ -146,6 +145,28 @@ private:
 
 	GLfloat applyCropMatrix(frustum &f,SceneGraph* sceneGraph);
     bool loadInContext(const CurrentContext& context, boost::function0<GLvoid> callback);
+
+    inline static void setActiveVBOIdInternal(GLuint id)               {_activeVBOId = id;}
+    inline static void setActiveVAOIdInternal(GLuint id)               {_activeVAOId = id;}
+    inline static void setActiveShaderId(GLuint id)                    {_activeShaderId = id;}
+    inline static void setActiveTextureUnitInternal(GLuint unit)       {_activeTextureUnit = unit;}
+    inline static void setClientActiveTextureUnitInternal(GLuint unit) {_activeClientTextureUnit = unit;}
+
+    inline static GLuint getActiveClientTextureUnit()                    {return _activeClientTextureUnit;}
+    inline static GLuint getActiveTextureUnit()                          {return _activeTextureUnit;}
+    inline static GLuint getActiveVBOId()                                {return _activeVBOId;}
+    inline static GLuint getActiveVAOId()                                {return _activeVAOId;}
+
+protected:
+    friend class glShaderProgram;
+    inline static GLuint getActiveShaderId()                             {return _activeShaderId;}
+
+public:
+    static void setActiveTextureUnit(GLuint unit);
+    static void setClientActiveTextureUnit(GLuint unit);
+    static void setActiveVBO(GLuint id);
+    static void setActiveIBO(GLuint id);
+    static void setActiveVAO(GLuint id);
 
 public:
 	static bool _applicationClosing;
@@ -179,8 +200,9 @@ private: //OpenGL specific:
 	//Render state specific:
 	glRenderStateBlock*   _currentGLRenderStateBlock; ///<Currently active rendering states used by OpenGL
 	RenderStateBlock*     _state2DRendering;  ///<Special render state for 2D rendering
+	RenderStateBlock*     _previousStateBlock; ///<The active state block before any 2D rendering
 	bool                  _depthMapRendering; ///<Tell the OpenGL to use flat shading
-
+    bool                  _2DRendering;
 	glUniformBufferObject*  _lightUBO;
 	glUniformBufferObject*  _materialsUBO;
 	glUniformBufferObject*  _transformsUBO;
@@ -197,6 +219,12 @@ private: //OpenGL specific:
 	FontCache  _3DFonts;
 	GLuint     _msaaSamples;
 	bool       _useMSAA;///<set to falls for FXAA or SMAA
+
+    static GLuint _activeShaderId ;
+    static GLuint _activeVBOId;
+    static GLuint _activeVAOId;
+    static GLuint _activeTextureUnit;
+    static GLuint _activeClientTextureUnit;
 END_SINGLETON
 
 #endif

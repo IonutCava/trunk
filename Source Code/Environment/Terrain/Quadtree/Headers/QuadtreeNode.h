@@ -27,6 +27,7 @@ enum ChildPosition{
 	CHILD_SW = 2,
 	CHILD_SE = 3
 };
+
 enum ChunkBit{
 	CHUNK_BIT_TESTCHILDREN	  = toBit(1),
 	CHUNK_BIT_WATERREFLECTION = toBit(2),
@@ -37,17 +38,18 @@ class Frustum;
 class TerrainChunk;
 class Terrain;
 class ShaderProgram;
+class VertexBufferObject;
 class QuadtreeNode {
 public:
 	///recursive node building function
-	void Build(U8 depth, vec2<U32> pos, vec2<U32> HMsize, U32 minHMSize);
+	void Build(U8 depth, vec2<U32> pos, vec2<U32> HMsize, U32 minHMSize,VertexBufferObject* const groundVBO);
 	bool computeBoundingBox(const vectorImpl<vec3<F32> >& vertices);
 	void Destroy();
 
 	inline void setParentShaderProgram(ShaderProgram* const shaderProgram) {_parentShaderProgram = shaderProgram;}
 
-	void DrawGround(I32 options);
-	void DrawGrass();
+	void DrawGround(I32 options,VertexBufferObject* const terrainVBO);
+	void DrawGrass(VertexBufferObject* const grassVBO);
 	void DrawBBox();
 
 	inline bool isALeaf() const							{return _children==0;}

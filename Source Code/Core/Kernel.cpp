@@ -21,11 +21,12 @@
 #include "Rendering/Headers/DeferredShadingRenderer.h"
 #include "Rendering/Headers/DeferredLightingRenderer.h"
 
-
 U32 Kernel::_currentTime = 0;
 U32 Kernel::_currentTimeMS = 0;
 bool Kernel::_keepAlive = true;
 bool Kernel::_applicationReady = false;
+bool Kernel::_renderingPaused = false;
+
 boost::function0<void> Kernel::_mainLoopCallback;
 
 Kernel::Kernel(I32 argc, char **argv) :
@@ -51,12 +52,19 @@ Kernel::Kernel(I32 argc, char **argv) :
 	 _camera->addUpdateListener(boost::bind(&LightManager::update, boost::ref(_lightPool), true));
 	 ///As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
 	 _cameraMgr->addNewCamera("defaultCamera",_camera);
+	 ///We have an A.I. thread, a networking thread, a PhysX thread, the main update/rendering thread
+	 // so how many threads do we allocate for tasks? That's up to the programmer to decide for each app
+	 //we add the A.I. thread in the same pool as it's a task. ReCast should also use this ...
+	 _mainTaskPool = New boost::threadpool::pool(THREAD_LIMIT + 1 /*A.I.*/);
 }
 
 Kernel::~Kernel(){
 	SAFE_DELETE(_cameraMgr);
 	_inputInterface.terminate();
 	_inputInterface.DestroyInstance();
+#pragma message("ToDo: stop all Tasks first before deleting the thread pool! -Ionut")
+    _mainTaskPool->wait(); 
+	SAFE_DELETE(_mainTaskPool);
 }
 
 void Kernel::Idle(){
@@ -116,61 +124,63 @@ void Kernel::FirstLoop(){
 	vec2<U16> resolution(par.getParam<I32>("runtime.resolutionWidth"),par.getParam<I32>("runtime.resolutionHeight"));
 	GFX_DEVICE.setWindowSize(resolution.width,resolution.height);
 	GFX_DEVICE.setWindowPos(10,50);
-	//Initialize GUI with our current resolution
-	GUI::getInstance().init();
 	///Bind main render loop
 	_mainLoopCallback = boost::ref(Kernel::MainLoopApp);
 }
 
 const I32 SKIP_TICKS = 1000 / TICKS_PER_SECOND;
 bool Kernel::MainLoopScene(){
+    if(_renderingPaused) {
+        Idle();
+        return true;
+    }
 	///Update camera position
 	_camera->RenderLookAt();
 	///Set the current scene's active camera
 	_sceneMgr.updateCamera(_camera);
 	_loops = 0;
-//	while(_currentTimeMS > _nextGameTick && _loops < MAX_FRAMESKIP) {
+	//while(_currentTimeMS > _nextGameTick && _loops < MAX_FRAMESKIP) {
 		/// Update scene based on input
 		_sceneMgr.processInput();
 		/// process all scene events
-		_sceneMgr.processEvents(_currentTimeMS);
+		_sceneMgr.processTasks(_currentTimeMS);
 
 		///Update the scene state based on current time
 		_sceneMgr.updateSceneState(_currentTimeMS);
 		///Update physics
 		_PFX.update();
-		///Prepare scene for rendering
-		_sceneMgr.preRender();
 	
-		/// Inform listeners that we finished pre-rendering
-		FrameEvent evt;
-		FrameListenerManager::getInstance().createEvent(FRAME_PRERENDER_END,evt);
-
-		if(!FrameListenerManager::getInstance().framePreRenderEnded(evt)){
-			return false;
-		}
-
 		_nextGameTick += SKIP_TICKS;
         _loops++;
-//	}
+	//}
 
-	presentToScreen();
+	bool sceneRenderState = presentToScreen();
 	/// Get input events
 	_inputInterface.tick();
-	/// Preview depthmaps if needed
-	_lightPool.previewShadowMaps();
-	///unbind all shaders
-	ShaderManager::getInstance().unbind();
+    ///unbind all state (shaders, textures, buffers)
+    GFX_DEVICE.clearStates();
 	/// Draw the GUI
 	GUI::getInstance().draw(_currentTimeMS);
-	return true;
+	return sceneRenderState;
 }
 
-void Kernel::presentToScreen(){
+bool Kernel::presentToScreen(){
+    ///Prepare scene for rendering
+	_sceneMgr.preRender();
+	
+	/// Inform listeners that we finished pre-rendering
+	FrameEvent evt;
+	FrameListenerManager::getInstance().createEvent(FRAME_PRERENDER_END,evt);
+
+	if(!FrameListenerManager::getInstance().framePreRenderEnded(evt)){
+		return false;
+	}
 	/// When the entire scene is ready for rendering, generate the shadowmaps
 	_lightPool.generateShadowMaps(_sceneMgr.getActiveScene()->renderState());
 	/// Render the scene adding any post-processing effects that we have active
 	PostFX::getInstance().render(_camera);
+    _sceneMgr.postRender();
+    return true;
 }
 
 I8 Kernel::Initialize(const std::string& entryPoint) {
@@ -195,6 +205,7 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 		///If we could not initialize the graphics device, exit
 		return windowId;
 	}
+    _GFX.setRenderStage(FINAL_STAGE);
 	///Load the splash screen 
 	GUISplash splashScreen("divideLogo.jpg",resolution/2);
 	_GFX.setWindowSize(resolution.width/2,resolution.height/2);
@@ -221,6 +232,8 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 	///Load default material
 	PRINT_FN(Locale::get("LOAD_DEFAULT_MATERIAL"));
 	XML::loadMaterialXML(par.getParam<std::string>("scriptLocation")+"/defaultMaterial");
+    //Initialize GUI with our current resolution
+	GUI::getInstance().init();
 	if(!_sceneMgr.load(startupScene, resolution, _camera)){       ///< Load the scene with a default camera
 		ERROR_FN(Locale::get("ERROR_SCENE_LOAD"),startupScene.c_str());
 		return MISSING_SCENE_DATA;
@@ -265,7 +278,6 @@ void Kernel::Shutdown(){
 	PostFX::getInstance().DestroyInstance();
 	PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
 	_sceneMgr.deinitializeAI(true);
-
 	AIManager::getInstance().Destroy();
 	AIManager::getInstance().DestroyInstance();
 	_sceneMgr.DestroyInstance();
@@ -284,15 +296,20 @@ void Kernel::Shutdown(){
 
 void Kernel::updateResolutionCallback(I32 w, I32 h){
 	if(!_applicationReady) return;
-
+    //minimized
+    if(w == 0 || h == 0){
+        _renderingPaused = true;
+    }else{
+        _renderingPaused = false;
+    }
 	Application::getInstance().setResolutionWidth(w);
 	Application::getInstance().setResolutionHeight(h);
-	///Update post-processing render targets and buffers
+	//Update post-processing render targets and buffers
 	PostFX::getInstance().reshapeFBO(w, h);
 	vec2<U16> newResolution(w,h);
-	///Update the graphical user interface
+	//Update the graphical user interface
 	GUI::getInstance().onResize(newResolution);
-	/// Cache resolution for faster access
+	// Cache resolution for faster access
 	SceneManager::getInstance().cacheResolution(newResolution);
 }
 
@@ -333,8 +350,8 @@ bool Kernel::onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button
 	return true;
 }
 
-bool Kernel::onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis) {
-	GET_ACTIVE_SCENE()->onJoystickMoveAxis(arg,axis);
+bool Kernel::onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis,I32 deadZone) {
+	GET_ACTIVE_SCENE()->onJoystickMoveAxis(arg,axis,deadZone);
 	return true;
 }
 

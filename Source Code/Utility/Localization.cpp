@@ -28,6 +28,8 @@ namespace Locale {
                 value   = keyValuePairIt->second;
 				_languageTable.insert(std::make_pair(keyName,value));
             }
+        }else{
+            _languageTable[key] = defaultValue;
         }
 		///Return our desired value now
 		return (char*)_languageTable[key].c_str();

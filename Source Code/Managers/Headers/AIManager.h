@@ -32,6 +32,7 @@ public:
 	void destroyEntity(U32 guid);
 	/// Destroy all entities
 	void Destroy();
+	inline void setSceneCallback(boost::function0<void> callback) {WriteLock w_lock(_updateMutex); _sceneCallback = callback;}
 
 private:
 	void processInput();  ///< sensors
@@ -39,10 +40,10 @@ private:
 	void updateEntities();///< react
 
 private:
-	///ToDo: Maybe create the "Unit" class and agregate it with AIEntity? -Ionut
+
 	AIEntityMap _aiEntities;
 	mutable SharedLock _updateMutex;
-
+	boost::function0<void> _sceneCallback;
 END_SINGLETON
 
 #endif

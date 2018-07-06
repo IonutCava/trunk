@@ -22,6 +22,9 @@
 #define TRACKED_OBJECT_H_
 #include <list>
 #include <boost/noncopyable.hpp>
+#include <boost/atomic.hpp>
+#include "Hardware/Platform/Headers/SharedMutex.h"
+
 ///A tracked object takes car of it's own reference counting and knows it's own size
 ///It also schedules it's own deletion (a pompous name for a smart pointer)
 class TrackedObject : private boost::noncopyable  {
@@ -50,8 +53,9 @@ class TrackedObject : private boost::noncopyable  {
 	  virtual ~TrackedObject();
 
    private:
-      long _refCount;
-	  bool	_shouldDelete;
+      //mutable SharedLock _dependencyLock;
+      boost::atomic<long> _refCount;
+      boost::atomic<bool> _shouldDelete;
 	  std::list<TrackedObject* > _dependencyList;
 
 };

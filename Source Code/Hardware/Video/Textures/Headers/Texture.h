@@ -56,12 +56,12 @@ public:
 		};
 	}   
 
-	inline U32 getFilter(U8 index){
+	inline I32 getFilter(U8 index){
 		switch(index){
 			case 0:
-				return _minFilter;
+				return static_cast<I32>(_minFilter);
 			case 1:
-				return _magFilter;
+				return static_cast<I32>(_magFilter);
 		};
 		return -1;
 	}

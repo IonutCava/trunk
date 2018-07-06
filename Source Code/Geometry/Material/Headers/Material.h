@@ -33,6 +33,24 @@ enum BlendProperty;
 class Material : public Resource{
 
 public:
+    struct ShaderData{
+        vec4<F32> _diffuse;  /* diffuse component */
+        vec4<F32> _ambient;  /* ambient component */
+        vec4<F32> _specular; /* specular component*/
+        vec4<F32> _emissive; /* emissive component*/
+        F32 _shininess;      /* specular exponent */
+        F32 _opacity;        /* material opacity value*/    
+        I32 _textureCount;
+
+        ShaderData() : _textureCount(0),
+                       _ambient(vec4<F32>(vec3<F32>(1.0f,1.0f,1.0f)/1.5f,1)),
+                       _diffuse(vec4<F32>(vec3<F32>(1.0f,1.0f,1.0f)/1.5f,1)),
+                       _specular(1.0f,1.0f,1.0f,1.0f),
+                       _emissive(0.6f,0.6f,0.6f,1.0f),
+                       _shininess(5),
+                       _opacity(1.0f) {}
+    };
+
   enum BumpMethod{
 	  BUMP_NONE = 0,   //<Use phong
 	  BUMP_NORMAL = 1, //<Normal mapping
@@ -95,13 +113,21 @@ public:
 
   bool unload();
 
-  inline void setHardwareSkinning(bool state)    {_hardwareSkinning = state;}
-  inline void setAmbient(const vec4<F32>& value) {_ambient = value; _materialMatrix.setCol(0,value);}
-  inline void setDiffuse(const vec4<F32>& value) {_diffuse = value; _materialMatrix.setCol(1,value);}
-  inline void setSpecular(const vec4<F32>& value) {_specular = value; _materialMatrix.setCol(2,value);}
-  inline void setEmissive(const vec3<F32>& value) {_emissive = value; _materialMatrix.setCol(3,vec4<F32>(_shininess,value.x,value.y,value.z));}
-  inline void setShininess(F32 value) {_shininess = value; _materialMatrix.setCol(3,vec4<F32>(value,_emissive.x,_emissive.y,_emissive.z));}
-  inline void setOpacityValue(F32 value) {_opacity = value;}
+  inline void setHardwareSkinning(bool state)     {_hardwareSkinning = state;}
+  inline void setAmbient(const vec4<F32>& value)  {_shaderData._ambient = value; _materialMatrix.setCol(0,value);}
+  inline void setDiffuse(const vec4<F32>& value)  {_shaderData._diffuse = value; _materialMatrix.setCol(1,value);}
+  inline void setSpecular(const vec4<F32>& value) {_shaderData._specular = value; _materialMatrix.setCol(2,value);}
+  inline void setEmissive(const vec3<F32>& value) {_shaderData._emissive = value; _materialMatrix.setCol(3,vec4<F32>(_shaderData._shininess,value.x,value.y,value.z));}
+
+  inline void setShininess(F32 value) {
+      _shaderData._shininess = value;
+      _materialMatrix.setCol(3,vec4<F32>(value,
+                                         _shaderData._emissive.x,
+                                         _shaderData._emissive.y,
+                                         _shaderData._emissive.z));
+  }
+
+  inline void setOpacityValue(F32 value) {_shaderData._opacity = value;}
   void setCastsShadows(bool state);
   inline void setReceivesShadows(bool state) {_receiveShadows = state;}
   inline void setShadingMode(ShadingMode mode) {_shadingMode = mode;}
@@ -129,8 +155,8 @@ public:
          P32   getMaterialId(RenderStage renderStage = FINAL_STAGE);
   inline bool  getCastsShadows()    {return _castsShadows;}
   inline bool  getReceivesShadows() {return _receiveShadows;}
-  inline F32   getOpacityValue()    {return _opacity;}
-  inline U8    getTextureCount()    {return _textures.size();}
+  inline F32   getOpacityValue()    {return _shaderData._opacity;}
+  inline U8    getTextureCount()    {return _shaderData._textureCount;}
   inline U32                     getBumpMethod()                                {return _bumpMethodTable[_bumpMethod];}
   inline ShadingMode             getShadingMode()                               {return _shadingMode;}
   inline RenderStateBlock*       getRenderState(RenderStage currentStage)       {return _defaultRenderStates[currentStage];}
@@ -138,6 +164,7 @@ public:
   inline Texture2D*	       const getTexture(TextureUsage textureUsage)          {return _textures[textureUsage];}
 
   inline ShaderProgram*    const getShaderProgram(RenderStage renderStage = FINAL_STAGE)      {return _shaderRef[renderStage];}
+  inline const ShaderData&       getShaderData() {return _shaderData;}
 
   inline bool isDirty()       {return _dirty;}
   inline bool isDoubleSided() {return _doubleSided;}
@@ -159,12 +186,7 @@ public:
   inline void dumpToXML() {XML::dumpMaterial(this);}
 
 private:
-  vec4<F32> _diffuse;           /* diffuse component */
-  vec4<F32> _ambient;           /* ambient component */
-  vec4<F32> _specular;          /* specular component */
-  vec3<F32> _emissive;          /* emissive component */
-  F32 _shininess;          /* specular exponent */
-  F32 _opacity;			   /* material opacity value*/
+  
   mat4<F32> _materialMatrix; /* all properties bundled togheter */
   ShadingMode _shadingMode;
   std::string _shaderModifier; //<use for special shader tokens, such as "Tree"
@@ -192,9 +214,9 @@ private:
   U32 _textureOperationTable[TextureOperation_PLACEHOLDER];
   U32 _bumpMethodTable[BUMP_PLACEHOLDER];
 
-  boost::mutex _materialMutex;
-
   BumpMethod _bumpMethod;
+
+  ShaderData _shaderData;
 };
 
 #endif

@@ -102,9 +102,11 @@ public: //RenderAPIWrapper global
 protected:
 	RenderAPIWrapper() : _apiId(GFX_RENDER_API_PLACEHOLDER),
 		                 _apiVersionId(GFX_RENDER_API_VER_PLACEHOLDER),
-					     _GPUVendor(GPU_VENDOR_PLACEHOLDER){}
+					     _GPUVendor(GPU_VENDOR_PLACEHOLDER)
+    {
+    }
 
-	friend class GFXDevice;
+    friend class GFXDevice;
 	
 	inline void setId(RenderAPI apiId)                       {_apiId = apiId;}
 	inline void setVersionId(RenderAPIVersion apiVersionId)  {_apiVersionId = apiVersionId;}
@@ -126,7 +128,7 @@ protected:
 	virtual void setWindowPos(U16 w, U16 h) = 0;
 
 	virtual FrameBufferObject*  newFBO(FBOType type = FBO_2D_COLOR) = 0;
-	virtual VertexBufferObject* newVBO() = 0;
+	virtual VertexBufferObject* newVBO(PrimitiveType type = TRIANGLES) = 0;
 	virtual PixelBufferObject*  newPBO(PBOType type = PBO_TEXTURE_2D) = 0;
 	virtual Texture2D*          newTexture2D(bool flipped = false) = 0;
 	virtual TextureCubemap*     newTextureCubemap(bool flipped = false) = 0;
@@ -138,11 +140,11 @@ protected:
 	virtual void closeRenderingApi() = 0;
 	virtual void initDevice(U32 targetFrameRate) = 0;
 	virtual void flush() = 0;
-
+    virtual void clearStates(bool skipShader, bool skipTextures, bool skipBuffers) = 0;
 	/*Rendering States*/
 	virtual void clearBuffers(U16 buffer_mask) = 0;
 	virtual void swapBuffers() = 0;
-	virtual void enableFog(F32 density, F32* color) = 0;
+	virtual void enableFog(FogMode mode, F32 density, F32* color, F32 startDist, F32 endDist) = 0;
 	/*Rendering States*/
 
 	/*State Matrix Manipulation*/
@@ -156,11 +158,7 @@ protected:
 
 	virtual void toggle2D(bool _2D) = 0;
 
-	/*GUI Rendering*/
 	virtual void drawTextToScreen(GUIElement* const) = 0;
-	virtual void drawButton(GUIElement* const) = 0;
-	virtual void drawFlash(GUIElement* const) = 0;
-	/*GUI Rendering*/
 
 	/*Object viewing*/
 	virtual void renderInViewport(const vec4<F32>& rect, boost::function0<void> callback) = 0;
@@ -173,12 +171,8 @@ protected:
 
 	/*Mesh Rendering*/
 	virtual void renderModel(Object3D* const model) = 0;
-	virtual void renderElements(PrimitiveType t, GFXDataFormat f, U32 count, const void* first_element) = 0;
+	virtual void renderModel(VertexBufferObject* const vbo, GFXDataFormat f, U32 count, const void* first_element) = 0;
 	/*Mesh Rendering*/
-
-	/*Color Management*/
-	virtual void setMaterial(Material* mat) = 0;
-	/*Color Management*/
 
 	/*Light Management*/
 	virtual void setAmbientLight(const vec4<F32>& light) = 0;

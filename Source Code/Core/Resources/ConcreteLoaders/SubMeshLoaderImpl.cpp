@@ -5,7 +5,7 @@
 SubMesh* ImplResourceLoader<SubMesh>::operator()(){
 
 	SubMesh* ptr = NULL;
-	if(_descriptor.getEnumValue() == Object3D::PRIMITIVE_FLAG_SKINNED){
+	if(_descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED){
 		ptr = New SkinnedSubMesh(_descriptor.getName());
 	}else{
 		ptr = New SubMesh(_descriptor.getName());

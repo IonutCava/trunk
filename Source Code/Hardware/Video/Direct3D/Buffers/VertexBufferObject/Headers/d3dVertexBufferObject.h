@@ -23,17 +23,17 @@
 class d3dVertexBufferObject : public VertexBufferObject {
 
 public:
-	bool        Create(bool staticDraw = true) {return true;}
+	bool Create(bool staticDraw = true) {return true;}
 
-	void		Destroy() {}
+	void Destroy() {}
 	
-	void		Enable() {}
-	void		Disable() {}
-	void        Draw(PrimitiveType type, U8 LODindex = 0) {}
-
+	void Enable() {}
+	void Disable() {}
+	void Draw(U8 LODindex = 0) {}
+    void Draw(GFXDataFormat f, U32 count, const void* first_element){}
 	bool queueRefresh() {return Refresh();}
 
-	d3dVertexBufferObject() : VertexBufferObject(), _created(false) {}
+	d3dVertexBufferObject(PrimitiveType type) : VertexBufferObject(type), _created(false) {}
 	~d3dVertexBufferObject() {Destroy();}
 
      void setShaderProgram(ShaderProgram* const shaderProgram);
@@ -42,6 +42,7 @@ private:
 	bool CreateInternal() {return true;}
 	bool Refresh() {return true;}
 	void checkStatus() {}
+    bool computeTriangleList() {return true;}
 private:
 	bool _created; 
 

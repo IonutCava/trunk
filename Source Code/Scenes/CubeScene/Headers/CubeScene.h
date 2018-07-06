@@ -31,7 +31,7 @@ public:
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 	void processInput();
-	void processEvents(U32 time);
+	void processTasks(U32 time);
 
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);

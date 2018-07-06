@@ -53,9 +53,12 @@ public:
 	void drawGround() const;
 	void drawInfinitePlain();
 	void render(SceneGraphNode* const sgn);
+    void onDraw();
 	void postDraw();
 	void prepareMaterial(SceneGraphNode* const sgn);
 	void releaseMaterial();
+    void prepareDepthMaterial(SceneGraphNode* const sgn);
+	void releaseDepthMaterial();
 	void sceneUpdate(U32 sceneTime);
 	void drawBoundingBox(SceneGraphNode* const sgn);
 
@@ -69,18 +72,19 @@ public:
 		   void  terrainSmooth(F32 k);
 		   void  postLoad(SceneGraphNode* const sgn);	
 		   void  initializeVegetation(TerrainDescriptor* const terrain,SceneGraphNode* const terrainSGN);
-
+        
+    inline VertexBufferObject* const getGeometryVBO() {return _groundVBO;}
     inline Quadtree&         getQuadtree()   const {return *_terrainQuadtree;}
 	inline Vegetation* const getVegetation() const {return _veg;}
 	inline void addVegetation(Vegetation* veg, std::string grassShader){_veg = veg; _grassShader = grassShader;} 
 	inline void toggleVegetation(bool state){ _veg->toggleRendering(state); }
-	inline void setRenderingOptions(bool drawInReflection, const vec3<F32>& eyePos = vec3<F32>(0,0,0)){_drawInReflection = drawInReflection; _eyePos = eyePos;}
+    inline void toggleReflection(bool state){ _drawReflected = state;}
 	bool computeBoundingBox(SceneGraphNode* const sgn);
 	inline bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
-
+   
 	void addTexture(TerrainTextureUsage channel, Texture2D* const texture);
 	inline Texture2D* getTexture(TerrainTextureUsage channel) {return _terrainTextures[channel];}
-
+    
 protected:
 	template<typename T>
 	friend class ImplResourceLoader;
@@ -99,11 +103,10 @@ private:
 	F32	 _farPlane;
 	F32  _stateRefreshInterval;
 	F32  _stateRefreshIntervalBuffer;
-	bool _drawInReflection;
 	bool _alphaTexturePresent;
 	bool _drawBBoxes;
 	bool _shadowMapped;
-
+    bool _drawReflected;
 	TerrainTextureMap       _terrainTextures;
 	Vegetation*             _veg;
 	std::string             _grassShader;
@@ -114,6 +117,7 @@ private:
 	SceneGraphNode*         _node;
 	SceneGraphNode*			_planeSGN;
 	RenderStateBlock*       _terrainRenderState;
+    RenderStateBlock*       _terrainDepthRenderState;
 };
 
 #endif

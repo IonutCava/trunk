@@ -72,6 +72,9 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
 			case RenderBin::RBT_MESH :
 				temp = New RenderBinMesh(RenderBin::RBT_MESH,RenderingOrder::FRONT_TO_BACK,0.1);
 				break;
+            case RenderBin::RBT_IMPOSTOR:
+                temp = New RenderBinDelegate(RenderBin::RBT_IMPOSTOR,RenderingOrder::NONE,0.95);
+                break;
 			case RenderBin::RBT_TERRAIN:
 				temp = New RenderBinDelegate(RenderBin::RBT_TERRAIN,RenderingOrder::NONE,0.2);
 				break;
@@ -119,6 +122,9 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
 		case TYPE_TERRAIN :
 			rb = getOrCreateBin(RenderBin::RBT_TERRAIN);
 			break;
+        case TYPE_LIGHT :
+            rb = getOrCreateBin(RenderBin::RBT_IMPOSTOR);
+            break;
 		case TYPE_WATER :
 			rb = getOrCreateBin(RenderBin::RBT_WATER);
 			break;

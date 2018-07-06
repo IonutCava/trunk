@@ -53,7 +53,6 @@ void BloomPreRenderOperator::operation(){
 		ERROR_FN(Locale::get("ERROR_BLOOM_INPUT_FBO"));
 	}
 	GFXDevice& gfx = GFX_DEVICE;
-	ParamHandler& par = ParamHandler::getInstance();
 
 	gfx.toggle2D(true);
 	_outputFBO->Begin();

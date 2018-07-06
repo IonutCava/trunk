@@ -26,6 +26,7 @@ PostFX::PostFX(): _underwaterTexture(NULL),
 	_currentCamera(NULL),
 	_underwater(false),
 	_FXAAinit(false),
+    _bloomFactor(0.4f),
 	_gfx(GFX_DEVICE){
 	_anaglyphFBO[0] = NULL;
 	_anaglyphFBO[1] = NULL;
@@ -81,8 +82,9 @@ void PostFX::init(const vec2<U16>& resolution){
 	_enableDOF = par.getParam<bool>("postProcessing.enableDepthOfField");
 	_enableNoise = par.getParam<bool>("postProcessing.enableNoise");
 	_enableFXAA = par.getParam<bool>("postProcessing.enableFXAA");
-
+    
 	if(_enablePostProcessing){
+        _bloomFactor = par.getParam<F32>("postProcessing.bloomFactor");
 		///Screen FBO should use MSAA if available, else fallback to normal color FBO (no AA or FXAA)
 		_screenFBO = _gfx.newFBO(FBO_2D_COLOR_MS);
 		_depthFBO  = _gfx.newFBO(FBO_2D_DEPTH);
@@ -122,7 +124,6 @@ void PostFX::init(const vec2<U16>& resolution){
 
 		createOperators();
 		_postProcessingShader->bind();
-			_postProcessingShader->Uniform("bloom_factor", 0.8f);
 			_postProcessingShader->Uniform("noise_tile", 0.05f);
 			_postProcessingShader->Uniform("noise_factor", 0.02f);
 		_postProcessingShader->unbind();
@@ -167,7 +168,7 @@ void PostFX::createOperators(){
 	}
 	if(_enableSSAO && !_SSAO_FBO){
 		_SSAO_FBO = _gfx.newFBO(FBO_2D_COLOR);
-		PreRenderOperator* ssaOp = PreRenderStageBuilder::getInstance().addPreRenderOperator<SSAOPreRenderOperator>(_renderQuad,_enableSSAO, _SSAO_FBO,resolution);
+		PreRenderStageBuilder::getInstance().addPreRenderOperator<SSAOPreRenderOperator>(_renderQuad,_enableSSAO, _SSAO_FBO,resolution);
 	}
 	if(_enableDOF && !_depthOfFieldFBO){
 		_depthOfFieldFBO = _gfx.newFBO(FBO_2D_COLOR);
@@ -245,11 +246,10 @@ void PostFX::displaySceneWithAnaglyph(bool deferred){
 void PostFX::displaySceneWithoutAnaglyph(bool deferred){
 
 	_currentCamera->RenderLookAt();
-	ParamHandler& par = ParamHandler::getInstance();
 
 	if(_enableDOF){
 		_depthFBO->Begin();
-			SceneManager::getInstance().render(DEPTH_STAGE);
+			SceneManager::getInstance().render(DOF_STAGE);
 		_depthFBO->End();
 	}
 	_screenFBO->Begin();
@@ -349,10 +349,12 @@ void PostFX::idle(){
 		_enableSSAO  = par.getParam<bool>("postProcessing.enableSSAO");
 		_enableDOF   = par.getParam<bool>("postProcessing.enableDepthOfField");
 		_enableNoise = par.getParam<bool>("postProcessing.enableNoise");
-
+        _bloomFactor = par.getParam<F32>("postProcessing.bloomFactor");
 		createOperators();
 
 		_postProcessingShader->bind();
+     
+	    _postProcessingShader->Uniform("bloom_factor", _bloomFactor);
 		_postProcessingShader->Uniform("enable_bloom",_enableBloom);
 		_postProcessingShader->Uniform("enable_ssao",_enableSSAO);
 		_postProcessingShader->Uniform("enable_vignette",_enableNoise);

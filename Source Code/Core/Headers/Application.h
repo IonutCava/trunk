@@ -42,7 +42,8 @@ public:
 
 	inline void setMemoryLogFile(const std::string& fileName) {memLogBuffer.open(fileName.c_str());}
 	inline void logMemoryAllocation(const std::stringstream& buffer) {if(memLogBuffer.is_open()){ memLogBuffer << buffer.str();}}
-
+    inline boost::thread::id&  getMainThreadId() {return _threadId;}
+    inline bool isMainThread() {return (_threadId == boost::this_thread::get_id());}
 private:
 	Application();
 	~Application();
@@ -54,7 +55,7 @@ private:
 	Kernel* _kernel;
 	///buffer to register all of the memory allocations recorded via "New"
 	std::ofstream memLogBuffer;
-	
+    boost::thread::id _threadId;
 END_SINGLETON
 
 #endif

@@ -28,6 +28,8 @@ enum ReflectorType{
 	TYPE_REFLECTOR_PLACEHOLDER
 };
 
+class Quad3D;
+class ShaderProgram;
 class FrameBufferObject;
 /// Virtual interface for reflective surfaces
 class Reflector : public FrameListener{
@@ -48,8 +50,11 @@ public:
 
 	///This is inherited from FrameListener and is used to queue up reflection on every frame start
 	bool framePreRenderEnded(const FrameEvent& evt);
+    void togglePreviewReflection() {_previewReflection = !_previewReflection;}
+    ///Draw a small quad with our reflection buffer as a texture
+    void previewReflection();
 
-private:
+protected:
 
 	ReflectorType _type;
 	/// How often do we need to update this instance's reflection?
@@ -60,7 +65,7 @@ private:
 	vec2<U16> _resolution;
 	/// Use this to force current reflector to draw itself in reflection
 	bool _excludeSelfReflection;
-
+    bool _previewReflection;
 private:
 	/// Create FBO
 	bool  build();
@@ -68,6 +73,8 @@ private:
 protected:
 	boost::function0<void> _renderCallback;
 	FrameBufferObject* _reflectedTexture;
+    Quad3D* _renderQuad;
+	ShaderProgram* _previewReflectionShader;
 	/// used for render exclusion. Do not render self in own reflection
 	bool _updateSelf;
 	/// Have we initialized our FBO?

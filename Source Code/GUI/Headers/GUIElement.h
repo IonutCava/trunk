@@ -46,17 +46,19 @@ struct GUIEvent {
    U8                   mouseClickCount;
 };
 
+namespace CEGUI{
+    class Window;
+};
 class RenderStateBlock;
 class GUIElement{
-	typedef GUIElement Parent;
 	friend class GUI;
 
 public:
-	GUIElement(GUIType type,const vec2<F32>& position) ;
+	GUIElement(CEGUI::Window* parent, GUIType type,const vec2<U32>& position) ;
 	virtual ~GUIElement();
 	inline const std::string& getName() const {return _name;}
-	inline const vec2<F32>&   getPosition()  const {return _position;}
-	inline void  setPosition(vec2<F32>& pos)        {_position = pos;}
+	inline const vec2<U32>&   getPosition()  const {return _position;}
+	inline void  setPosition(vec2<U32>& pos)        {_position = pos;}
 	inline const GUIType getGuiType()   const {return _guiType;}
 
 	inline const bool isActive()  const {return _active;}
@@ -65,9 +67,10 @@ public:
 	inline void    setName(const std::string& name) {_name = name;}
 	inline void    setVisible(bool visible)		    {_visible = visible;}
 	inline void    setActive(bool active)			{_active = active;}
-
+    
 	inline void    addChildElement(GUIElement* child)    {}
 
+    virtual void setTooltip(const std::string& tooltipText) {}
 	virtual void onResize(const vec2<I32>& newSize){_position.x -= newSize.x;_position.y -= newSize.y;}
 
 	virtual void onMouseMove(const GUIEvent &event){};
@@ -79,11 +82,10 @@ public:
     virtual bool onKeyDown(const GUIEvent &event);
 */
 protected:
-	vec2<F32> _position;
+	vec2<U32> _position;
 	GUIType   _guiType;
-	Parent*   _parent;
 	RenderStateBlock* _guiSB;
-
+    CEGUI::Window*    _parent;
 private:
 	std::string _name;
 	bool	    _visible;

@@ -67,15 +67,6 @@ protected:
 	U32		    _textureType;
 	U8          _fboType;
 
-	struct TextureBind {
-		U8 _prevTextureID;
-		U8 _prevTextureUnit;
-		bool _bound;
-		TextureBind() : _prevTextureID(-1), _prevTextureUnit(-1), _bound(false) {}
-	};
-
-	vectorImpl<TextureBind > _prevTextureBind;
-
 	TextureAttachements _attachement;	
 	Unordered_map<TextureDescriptor::AttachmentType, bool > _attachementDirty;
 };

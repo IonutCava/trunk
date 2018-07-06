@@ -38,8 +38,8 @@ Note: all transformations applied to the mesh affect every submesh that compose 
 class Mesh : public Object3D {
 public:
 
-	Mesh(PrimitiveFlag flag = PRIMITIVE_FLAG_NONE) : Object3D(MESH,flag),
-													 _visibleToNetwork(true)
+	Mesh(ObjectFlag flag = OBJECT_FLAG_NONE) : Object3D(MESH,TRIANGLES,flag),
+											  _visibleToNetwork(true)
 	{
 		_refreshVBO = false;
 	}

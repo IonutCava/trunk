@@ -23,7 +23,7 @@
 class SkinnedMesh : public Mesh {
 
 public: 
-	SkinnedMesh() : Mesh(PRIMITIVE_FLAG_SKINNED),
+	SkinnedMesh() : Mesh(OBJECT_FLAG_SKINNED),
 				   _playAnimations(true)
 	{
 	}

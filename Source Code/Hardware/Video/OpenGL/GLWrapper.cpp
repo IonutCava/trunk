@@ -1,14 +1,12 @@
-
 #include "Headers/GLWrapper.h"
 #include "Headers/glRenderStateBlock.h"
 
-#include "GUI/Headers/GUI.h"
-#include "GUI/Headers/GUIFlash.h"
-#include "GUI/Headers/GUIButton.h"
+#include "GUI/Headers/GUIText.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Utility/Headers/ImageTools.h"
 #include "Rendering/Headers/Frustum.h"
+#include "Utility/Headers/ImageTools.h"
+#include "Managers/Headers/ShaderManager.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
@@ -49,8 +47,37 @@ namespace IMPrimitiveValidation{
 	bool isValid(const IMPrimitive* priv){ return !priv->_inUse; }
 }
 
+GLuint GL_API::_activeShaderId = 0;
+GLuint GL_API::_activeVBOId = 0;
+GLuint GL_API::_activeVAOId = 0;
+GLuint GL_API::_activeTextureUnit = 0;
+GLuint GL_API::_activeClientTextureUnit = 0;
+
+void GL_API::clearStates(bool skipShader, bool skipTextures, bool skipBuffers){
+    if(_activeShaderId != 0 && !skipShader) {
+        ShaderManager::getInstance().unbind();
+    }
+    if(_activeTextureUnit != 0 && !skipTextures){
+        GLCheck(glActiveTexture(GL_TEXTURE0));
+        _activeTextureUnit = 0;
+    }
+    if(_activeClientTextureUnit != 0 && !skipTextures){
+        GLCheck(glClientActiveTexture(GL_TEXTURE0));
+        _activeClientTextureUnit = 0;
+    }
+    if(_activeVBOId != 0 && !skipBuffers){
+        GLCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+        GLCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+        _activeVBOId = 0;
+    }
+    if(_activeVAOId != 0 && !skipBuffers){
+        GLCheck(glBindVertexArray(0));
+        _activeVAOId = 0;
+    }
+}
+
 void GL_API::flush(){
-	
+
 	_imShader->bind();
 
 	for_each(IMPrimitive* priv, _glimInterfaces){
@@ -99,10 +126,9 @@ void GL_API::flush(){
 	}
 	///3) Remove all the zombie objects once the memory is freed
 	_glimInterfaces.erase(zombie, _glimInterfaces.end());
-
 }
 
-//ToDo: convert to OpenGL 3.2 and GLSL 1.5 standards. No more matrix queries to GPU - Ionut
+#pragma message("ToDo: convert to OpenGL 3.2 and GLSL 1.5 standards. No more matrix queries to GPU - Ionut")
 void GL_API::getMatrix(MATRIX_MODE mode, mat4<GLfloat>& mat){
 	switch(mode){
 		case MODEL_VIEW_MATRIX:
@@ -125,12 +151,24 @@ void GL_API::clearBuffers(GLushort buffer_mask){
 	GLCheck(glClear(buffers));
 }
 
-void GL_API::enableFog(GLfloat density, GLfloat* color){
-	GLCheck(glFogi (GL_FOG_MODE, GL_EXP2)); 
+void GL_API::enableFog(FogMode mode, GLfloat density, GLfloat* color, GLfloat startDist, GLfloat endDist){
+    switch(mode){
+        default:
+        case FOG_NONE: break;
+        case FOG_EXP:
+            GLCheck(glFogi (GL_FOG_MODE, GL_EXP)); 
+            break;
+        case FOG_EXP2:
+	        GLCheck(glFogi (GL_FOG_MODE, GL_EXP2)); 
+            break;
+        case FOG_LINEAR:
+            GLCheck(glFogi (GL_FOG_MODE, GL_LINEAR)); 
+            break;
+    }
 	GLCheck(glFogfv(GL_FOG_COLOR, color)); 
 	GLCheck(glFogf (GL_FOG_DENSITY, density)); 
-	GLCheck(glFogf (GL_FOG_START,  ParamHandler::getInstance().getParam<GLfloat>("rendering.fogStartDistance",300.0f)));
-	GLCheck(glFogf (GL_FOG_END,    ParamHandler::getInstance().getParam<GLfloat>("rendering.fogEndDistance",800.0f)));
+	GLCheck(glFogf (GL_FOG_START, startDist));
+	GLCheck(glFogf (GL_FOG_END, endDist));
 }
 
 void GL_API::drawTextToScreen(GUIElement* const textElement){
@@ -161,129 +199,13 @@ void GL_API::drawTextToScreen(GUIElement* const textElement){
 		glLoadIdentity();
 		_modelViewMatrix.push(mat4<GLfloat>()); //glPushMatrix(); glLoadIdentity();
 
-			GLCheck(glRasterPos2f(text->getPosition().x,text->getPosition().y));
+			GLCheck(glRasterPos2f(text->getPosition().x,_cachedResolution.height - text->getPosition().y));
 			_fonts[fontName]->Render(text->_text.c_str());
 
 	glPopMatrix();
 	_modelViewMatrix.pop();
 	glColor3i(1,1,1);
 	glPopAttrib();
-}
-
-void GL_API::drawFlash(GUIElement* const flash){
-	assert(flash != NULL);
-	dynamic_cast<GUIFlash* >(flash)->playMovie();
-}
-
-void GL_API::drawButton(GUIElement* const button){
-	GUIButton* b = dynamic_cast<GUIButton* >(button);
-
-	if(b){
-		if(!b->isVisible()) return;
-
-		const char* fontName = b->_font.c_str();
-		FontCache::iterator itr = _fonts.find(fontName);
-		if(itr == _fonts.end()){
-			std::string fontPath = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/";
-			fontPath += "GUI/";
-			fontPath += "fonts/";
-			fontPath += b->_font;
-			FTFont* tempFont = New FTGLBitmapFont(fontPath.c_str());
-			if (!tempFont) {
-				ERROR_FN(Locale::get("ERROR_FONT_FILE"),b->_font.c_str());
-			}else {
-				if (!tempFont->FaceSize(b->_fontHeight)) {
-					ERROR_FN(Locale::get("ERROR_FONT_HEIGHT"),b->_fontHeight);
-				}
-			}
-			_fonts.insert(std::make_pair(fontName, tempFont));
-		}
-		FTFont* font = _fonts[fontName];
-		glPushAttrib(GL_COLOR_BUFFER_BIT);
-		/*
-		 *	We will indicate that the mouse cursor is over the button by changing its
-		 *	colour.
-		 */
-		
-		if (b->_highlight) {
-			glColor3f(b->_color.r + 0.1f,b->_color.g + 0.1f,b->_color.b + 0.2f);
-		}else {
-			glColor3f(b->_color.r,b->_color.g,b->_color.b);
-		}
-
-		/*
-		 *	draw background for the button.
-		 */
-		glBegin(GL_QUADS);
-			glVertex2f( b->getPosition().x     , b->getPosition().y      );
-			glVertex2f( b->getPosition().x     , b->getPosition().y+b->_dimensions.y );
-			glVertex2f( b->getPosition().x+b->_dimensions.x, b->getPosition().y+b->_dimensions.y );
-			glVertex2f( b->getPosition().x+b->_dimensions.x, b->getPosition().y      );
-		glEnd();
-
-		/*
-		 *	Draw an outline around the button with width 3
-		 */
-		glLineWidth(3);
-
-		/*
-		 *	The colours for the outline are reversed when the button. 
-		 */
-		if (b->_pressed && b->isActive()) {
-			glColor3f((b->_color.r + 0.1f)/2.0f,(b->_color.g+ 0.1f)/2.0f,(b->_color.b+ 0.1f)/2.0f);
-		}else {
-			glColor3f(b->_color.r + 0.1f,b->_color.g+ 0.1f,b->_color.b+ 0.1f);
-		}
-
-		glBegin(GL_LINE_STRIP);
-			glVertex2f( b->getPosition().x+b->_dimensions.x, b->getPosition().y      );
-			glVertex2f( b->getPosition().x     , b->getPosition().y      );
-			glVertex2f( b->getPosition().x     , b->getPosition().y+b->_dimensions.y );
-		glEnd();
-
-		if(b->_pressed) {
-			glColor3f(0.8f,0.8f,0.8f);
-		}else {
-			glColor3f(0.4f,0.4f,0.4f);
-		}
-
-		glBegin(GL_LINE_STRIP);
-			glVertex2f( b->getPosition().x     , b->getPosition().y+b->_dimensions.y );
-			glVertex2f( b->getPosition().x+b->_dimensions.x, b->getPosition().y+b->_dimensions.y );
-			glVertex2f( b->getPosition().x+b->_dimensions.x, b->getPosition().y      );
-		glEnd();
-
-		glLineWidth(1); 
-		GLfloat fontx = b->getPosition().x + (b->_dimensions.x - font->Advance(b->_text.c_str())) / 2 ;
-		GLfloat fonty = b->getPosition().y + (b->_dimensions.y+10)/2;
-
-		/*
-		 *	if the button is pressed, make it look as though the string has been pushed
-		 *	down. It's just a visual thing to help with the overall look....
-		 */
-		if (b->_pressed) {
-			fontx+=2;
-			fonty+=2;
-		}
-
-		/*
-		 *	If the cursor is currently over the button we offset the text string and draw a shadow
-		 */
-		if(!b->_guiText){/* delete t;*/
-			b->_guiText = new GUIText(std::string("1"),b->_text,vec2<GLfloat>(fontx,fonty),b->_font,vec3<GLfloat>(0,0,0),b->_fontHeight);
-		}
-		if(b->_highlight){
-			fontx--;
-			fonty--;
-			b->_guiText->_color = vec3<GLfloat>(0,0,0);
-		}else{
-			b->_guiText->_color = vec3<GLfloat>(1,1,1);
-		}
-		
-		b->_guiText->setPosition(vec2<GLfloat>(fontx,fonty));
-		drawTextToScreen(b->_guiText);
-		glPopAttrib();
-	}
 }
 
 void GL_API::toggleDepthMapRendering(bool state) {
@@ -301,8 +223,8 @@ void GL_API::toggleDepthMapRendering(bool state) {
 }
 
 void GL_API::updateStateInternal(RenderStateBlock* block, bool force){
-   assert(dynamic_cast<glRenderStateBlock*>(block));
    glRenderStateBlock* glBlock = static_cast<glRenderStateBlock*>(block);
+   assert(glBlock != NULL);
    glRenderStateBlock* glCurrent = static_cast<glRenderStateBlock*>(GFX_DEVICE._currentStateBlock);
    if (force){
       glCurrent = NULL;
@@ -340,16 +262,6 @@ void GL_API::releaseObjectState(Transform* const transform, ShaderProgram* const
 		glPopMatrix();
 		_modelViewMatrix.pop();
 	}
-}
-
-void GL_API::setMaterial(Material* mat){
-	assert(mat != NULL);
-	GLCheck(glColor4fv(&mat->getMaterialMatrix().getCol(1)[0]));
-	GLCheck(glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,mat->getMaterialMatrix().getCol(1)));
-	GLCheck(glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mat->getMaterialMatrix().getCol(0)));
-	GLCheck(glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mat->getMaterialMatrix().getCol(2)));
-	GLCheck(glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat->getMaterialMatrix().getCol(3).r));
-	GLCheck(glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,vec4<GLfloat>(mat->getMaterialMatrix().getCol(3).y,mat->getMaterialMatrix().getCol(3).z,mat->getMaterialMatrix().getCol(3).w,1.0f)));
 }
  
 void GL_API::renderInViewport(const vec4<GLfloat>& rect, boost::function0<void> callback){
@@ -502,66 +414,62 @@ void GL_API::render3DText(Text3D* const text){
 }
 
 void GL_API::renderModel(Object3D* const model){
-	PrimitiveType type;
-	switch(model->getType()){
-		//We should never enter the default case!
-		default:{
-			ERROR_FN(Locale::get("ERROR_GL_INVALID_OBJECT_TYPE"),model->getName().c_str());
-			return;
-				}
-		case Object3D::TEXT_3D:{
-			render3DText(dynamic_cast<Text3D*>(model));
-			return;
-				}
-		
-		case Object3D::BOX_3D:
-		case Object3D::SUBMESH:
-		case Object3D::GENERIC:
-			type = TRIANGLES;
-			break;
-		case Object3D::QUAD_3D:
-		case Object3D::SPHERE_3D:
-			type = QUADS;
-			break;
+    if(model->getType() == Object3D::TEXT_3D){
+		render3DText(dynamic_cast<Text3D*>(model));
+		return;
 	}
 
+    if(model->getType() ==	Object3D::OBJECT_3D_PLACEHOLDER){
+		ERROR_FN(Locale::get("ERROR_GL_INVALID_OBJECT_TYPE"),model->getName().c_str());
+		return;
+	}		
+	
 	VertexBufferObject* vbo = model->getGeometryVBO();
 	assert(vbo != NULL);
-	vbo->Draw(type,model->getCurrentLOD());
+    //Choose optimal VAO/VBO combo
+    vbo->setDepthPass(GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE));
+    //Render selected combo
+	vbo->Draw(model->getCurrentLOD());
 }
 
-void GL_API::renderElements(PrimitiveType t, GFXDataFormat f, GLuint count, const GLvoid* first_element){
-	GLCheck(glDrawElements(t, count, glDataFormat[f], first_element ));
+void GL_API::renderModel(VertexBufferObject* const vbo, GFXDataFormat f, U32 count, const void* first_element){
+    assert(vbo != NULL);
+    vbo->setDepthPass(GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE));
+    vbo->Draw(f,count,first_element);
 }
 
 void GL_API::toggle2D(bool state){
 	if(!_state2DRendering){
 		RenderStateBlockDescriptor state2DRenderingDesc;
 		state2DRenderingDesc.setCullMode(CULL_MODE_NONE);
-		//state2DRenderingDesc.setZReadWrite(false,false);
 		state2DRenderingDesc._fixedLighting = false;
 		_state2DRendering = GFX_DEVICE.createStateBlock(state2DRenderingDesc);
 	}
 
 	if(state){ //2D
-		SET_STATE_BLOCK(_state2DRendering);
+        if(_2DRendering) return;
+        _2DRendering = true;
+		_previousStateBlock = SET_STATE_BLOCK(_state2DRendering);
 
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix(); //1
 		glLoadIdentity();
 		//glPushMatrix();glLoadIdentity();glOrtho();
-		_projectionMatrix.push(Divide::GL::_ortho(0,_cachedResolution.width,_cachedResolution.height,0,-1,1)); 
+		_projectionMatrix.push(Divide::GL::_ortho(0,_cachedResolution.width,0,_cachedResolution.height,-1,1)); 
 
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix(); //2
 		glLoadIdentity();
 		_modelViewMatrix.push(mat4<GLfloat>()); //glPushMatrix();glLoadIdentity();
 	}else{ //3D
+        if(!_2DRendering) return;
 		_modelViewMatrix.pop(); //glPopMatrix();
 		glPopMatrix(); //2 
 		_projectionMatrix.pop(); //glPopMatrix();
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix(); //1
+		SET_STATE_BLOCK(_previousStateBlock);
+        _2DRendering = false;
 	}
 }
 
@@ -817,10 +725,34 @@ FrameBufferObject* GL_API::newFBO(FBOType type)  {
 	}
 }
 
-VertexBufferObject* GL_API::newVBO() {
-	return New glVertexArrayObject(); 
+VertexBufferObject* GL_API::newVBO(PrimitiveType type) {
+	return New glVertexArrayObject(type); 
 }
 
 PixelBufferObject* GL_API::newPBO(PBOType type) {
 	return New glPixelBufferObject(type); 
+}
+
+void GL_API::setActiveTextureUnit(U32 unit){
+    setActiveTextureUnitInternal(unit);
+	GLCheck(glActiveTexture(GL_TEXTURE0 + unit));
+}
+
+void GL_API::setClientActiveTextureUnit(U32 unit){
+    setClientActiveTextureUnitInternal(unit);
+    GLCheck(glClientActiveTexture(GL_TEXTURE0 + unit));
+}
+
+void GL_API::setActiveVBO(U32 id){
+    setActiveVBOIdInternal(id);
+    GLCheck(glBindBuffer(GL_ARRAY_BUFFER, id));
+}
+
+void GL_API::setActiveIBO(U32 id){
+    GLCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id));
+}
+
+void GL_API::setActiveVAO(U32 id){
+    setActiveVAOIdInternal(id);
+    GLCheck(glBindVertexArray(id));
 }

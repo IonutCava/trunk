@@ -37,6 +37,7 @@ public:
 	void Attribute(const std::string& ext, const vec3<GLfloat>& value);
 	void Attribute(const std::string& ext, const vec4<GLfloat>& value);
 	//Uniforms
+    void Uniform(const std::string& ext, GLuint value);
 	void Uniform(const std::string& ext, GLint value);
 	void Uniform(const std::string& ext, GLfloat value);
 	void Uniform(const std::string& ext, const vec2<GLfloat>& value);
@@ -59,6 +60,7 @@ private:
 	GLint  cachedLoc(const std::string& name,bool uniform = true);
 	bool flushLocCache();
 	void validateInternal();
+    bool checkBinding();
 
 private:
 	Unordered_map<std::string, GLint > _shaderVars;

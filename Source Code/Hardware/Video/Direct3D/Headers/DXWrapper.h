@@ -48,6 +48,7 @@ private:
 	void lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up = vec3<F32>(0,1,0), bool invertx = false, bool inverty = false);
 	void idle();
 	void flush();
+    void clearStates(bool skipShader, bool skipTextures, bool skipBuffers) {}
 	void getMatrix(MATRIX_MODE mode, mat4<F32>& mat);
 
 	inline FrameBufferObject*  newFBO(FBOType type)  {
@@ -64,7 +65,7 @@ private:
 		}
 	}
 
-	inline VertexBufferObject* newVBO()                                             {return New d3dVertexBufferObject();}
+	inline VertexBufferObject* newVBO(PrimitiveType type)                           {return New d3dVertexBufferObject(type);}
 	inline PixelBufferObject*  newPBO(PBOType type)                                 {return New d3dPixelBufferObject(type);}
 	inline Texture2D*          newTexture2D(bool flipped = false)                   {return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D]);}
 	inline TextureCubemap*     newTextureCubemap(bool flipped = false)              {return New d3dTexture(d3dTextureTypeTable[TEXTURE_CUBE_MAP]);}
@@ -73,7 +74,7 @@ private:
 	
 	void clearBuffers(U16 buffer_mask);
 	void swapBuffers();
-	void enableFog(F32 density, F32* color);
+	void enableFog(FogMode mode, F32 density, F32* color, F32 startDist, F32 endDist);
 	
 	void lockProjection();
 	void releaseProjection();
@@ -85,18 +86,13 @@ private:
 	void toggle2D(bool _2D);
 
 	void drawTextToScreen(GUIElement* const);
-	void drawButton(GUIElement* const);
-	void drawFlash(GUIElement* const);
-
 	void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset);
 	void drawLines(const vectorImpl<vec3<F32> >& pointsA,const vectorImpl<vec3<F32> >& pointsB,const vectorImpl<vec4<F32> >& colors, const mat4<F32>& globalOffset);
 
 	void renderModel(Object3D* const model);
-	void renderElements(PrimitiveType t, GFXDataFormat f, U32 count, const void* first_element);
+	void renderModel(VertexBufferObject* const vbo, GFXDataFormat f, U32 count, const void* first_element);
 
 	void renderInViewport(const vec4<F32>& rect, boost::function0<void> callback);
-
-	void setMaterial(Material* mat);
 
 	friend class GFXDevice;
 	typedef void (*callback)();

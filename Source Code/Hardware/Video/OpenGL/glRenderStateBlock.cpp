@@ -19,9 +19,10 @@
 											} \
 									   }
 
-glRenderStateBlock::glRenderStateBlock(const RenderStateBlockDescriptor& descriptor) :
+glRenderStateBlock::glRenderStateBlock(const RenderStateBlockDescriptor& descriptor) : RenderStateBlock(),
    _descriptor(descriptor),
-   _hashValue(descriptor.getHash()){
+   _hashValue(descriptor.getHash())
+{
 }
 
 glRenderStateBlock::~glRenderStateBlock(){
@@ -102,8 +103,6 @@ void glRenderStateBlock::activate(glRenderStateBlock* oldState){
    if(SHOULD_TOGGLE(_stencilWriteMask)){
       GLCheck(glStencilMask(_descriptor._stencilWriteMask));
    }
-
-   GLCheck(glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE));
 
    if(SHOULD_TOGGLE(_fillMode)){
       GLCheck(glPolygonMode(GL_FRONT_AND_BACK, glFillModeTable[_descriptor._fillMode]));

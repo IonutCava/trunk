@@ -56,7 +56,7 @@ public:
 	~Vegetation();
 	void initialize(const std::string& grassShader, Terrain* const terrain,SceneGraphNode* const terrainSGN);
 	inline void toggleRendering(bool state){_render = state;}
-	void draw(bool drawInReflection);
+	void draw();
 	void sceneUpdate(U32 sceneTime);
 
 private:
@@ -81,7 +81,7 @@ private:
 
 	bool _shadowMapped;
 	vectorImpl<VertexBufferObject*>	_grassVBO;
-	RenderStateBlock*                   _grassStateBlock;
+	RenderStateBlock*               _grassStateBlock;
 };
 
 #endif

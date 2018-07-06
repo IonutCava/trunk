@@ -29,12 +29,13 @@ struct RenderPassItem{
 	}
 };
 
+class SceneRenderState;
 
 DEFINE_SINGLETON (RenderPassManager)
 
 public:
 	///Call every renderqueue's render function in order
-	void render();
+	void render(SceneRenderState* const sceneRenderState = NULL);
 	///Add a new pass with the specified key
 	void addRenderPass(RenderPass* const renderPass, U8 orderKey);
 	///Remove a renderpass from the manager, optionally not deleting it

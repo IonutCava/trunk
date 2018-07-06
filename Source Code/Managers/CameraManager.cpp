@@ -7,7 +7,6 @@ CameraManager::CameraManager() : _camera(NULL) {
 CameraManager::~CameraManager() {
 	PRINT_FN(Locale::get("CAMERA_MANAGER_DELETE"));
 	PRINT_FN(Locale::get("CAMERA_MANAGER_REMOVE_CAMERAS"));
-	CameraPool::iterator& it = _cameraPool.begin();
 	for_each(CameraPool::value_type& it, _cameraPool){
 		it.second->unload();
 		SAFE_DELETE(it.second);

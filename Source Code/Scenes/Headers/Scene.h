@@ -19,7 +19,7 @@
 #define _SCENE_H_
 
 #include "SceneState.h"
-#include "Utility/Headers/Event.h"
+#include "Hardware/Platform/Headers/Task.h"
 
 class Sky;
 class Light;
@@ -30,6 +30,8 @@ class TerrainDescriptor;
   to make them available in every scene source file. To reduce compile times, forward declare the "Scene" class instead
 */
 //Core files
+#include "Core/Headers/Kernel.h"
+#include "Core/Headers/Application.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Rendering/Camera/Headers/Camera.h"
 //Managers
@@ -40,10 +42,12 @@ class TerrainDescriptor;
 //Scene Elements
 #include "Environment/Sky/Headers/Sky.h"
 #include "Rendering/Lighting/Headers/Light.h"
+#include "Dynamics/Physics/Headers/PXDevice.h"
 //GUI
 #include "GUI/Headers/GUI.h"
 
 ///The scene is a resource (to enforce load/unload and setName) and it has a 2 states: one for game information and one for rendering information
+class PhysicsSceneInterface;
 class Scene : public Resource{
 
 public:
@@ -51,13 +55,14 @@ public:
 	Scene();
 	virtual ~Scene();
 
-	SceneGraphNode* addGeometry(Object3D* const object);
+    SceneGraphNode* addGeometry(SceneNode* const object,const std::string& sgnName = "");
 	bool removeGeometry(SceneNode* node);
 
 	/**Begin scene logic loop*/
 	virtual void processInput() = 0;          ///<Get all input commands from the user
-	virtual void processEvents(U32 time) = 0; ///<Update the scene based on the inputs
+	virtual void processTasks(U32 time) = 0;  ///<Update the scene based on the inputs
 	virtual void preRender() = 0;             ///<Prepare the scene for rendering after the update
+    virtual void postRender();                ///<Perform any post rendering operations (such as showing texture previews)
 	bool idle();                              ///<Scene is rendering, so add intensive tasks here to save CPU cycles
 	/**End scene logic loop*/
 
@@ -67,12 +72,14 @@ public:
 	inline vectorImpl<TerrainDescriptor*>& getTerrainInfoArray()    {return _terrainInfoArray;}
 	inline vectorImpl<FileData>&           getModelDataArray()      {return _modelDataArray;}
 	inline vectorImpl<FileData>&           getVegetationDataArray() {return _vegetationDataArray;}
-	inline vectorImpl<Event_ptr>&          getEvents()              {return _events;}
+	inline const vectorImpl<Task_ptr>&     getTasks()               {return _tasks;}
 	inline SceneGraph*					   getSceneGraph()	        {return _sceneGraph;}
 	inline SceneState*                     state()                  {return _sceneState;}
 	inline SceneRenderState*               renderState()            {return _sceneRenderState;}
-
-	inline void addEvent(Event_ptr eventItem)          {_events.push_back(eventItem);}
+           void removeTasks();
+           void removeTask(Task_ptr taskItem);
+           void removeTask(U32 guid);
+	       void addTask(Task_ptr taskItem);
 	inline void addModel(FileData& model)              {_modelDataArray.push_back(model);}
 	inline void addTerrain(TerrainDescriptor* ter)     {_terrainInfoArray.push_back(ter);}
 	       void addPatch(vectorImpl<FileData>& data);
@@ -88,14 +95,18 @@ public:
 	void renderCallback(boost::function0<void> renderCallback) {_renderCallback = renderCallback;}
 	boost::function0<void> renderCallback() {return _renderCallback;}
 
+    ///Override this if you need a custom physics implementation (idle,update,process,etc)
+    virtual PhysicsSceneInterface* createPhysicsImplementation();
+
 protected:
 	///Global info
 	GFXDevice&    _GFX;
 	ParamHandler& _paramHandler;
 	SceneGraph*   _sceneGraph;
 
-	///Datablocks for models,vegetation,terrains,events etc
-	vectorImpl<F32>                _eventTimers;
+	PhysicsSceneInterface*         _physicsInterface;
+	///Datablocks for models,vegetation,terrains,tasks etc
+	vectorImpl<F32>                _taskTimers;
 	vectorImpl<FileData>           _modelDataArray;
 	vectorImpl<FileData>           _vegetationDataArray;
 	vectorImpl<FileData>           _pendingDataArray;
@@ -111,11 +122,12 @@ protected:
 	///Scene::load must be called by every scene. Add a load flag to make sure!
 	bool _loadComplete;
 
-	///_aiEvent is the thread handling the AIManager. It is started before each scene's "initializeAI" is called
+	///_aiTask is the thread handling the AIManager. It is started before each scene's "initializeAI" is called
 	///It is destroyed after each scene's "deinitializeAI" is called
-	std::tr1::shared_ptr<Event>  _aiEvent;
+	std::tr1::shared_ptr<Task>  _aiTask;
+
 private: 
-	vectorImpl<Event_ptr> _events;
+	vectorImpl<Task_ptr> _tasks;
 	///saves all the rendering information for the scene (camera position, light info, draw states)
 	SceneRenderState* _sceneRenderState;
 	///Contains all game related info for the scene (wind speed, visibility ranges, etc)
@@ -129,7 +141,8 @@ protected:
 	virtual bool preLoad();
 	///Description in SceneManager
 	virtual bool loadResources(bool continueOnErrors)  {return true;}
-	virtual bool loadEvents(bool continueOnErrors)     {return true;}
+	virtual bool loadTasks(bool continueOnErrors)      {return true;}
+    virtual bool loadPhysics(bool continueOnErrors);
 	virtual void loadXMLAssets();
 	virtual bool load(const std::string& name);
 			bool loadModel(const FileData& data);
@@ -142,11 +155,13 @@ protected:
 	///Check if Scene::load() was called
 	bool checkLoadFlag() {return _loadComplete;}
 	///End all tasks
-	void clearEvents();
+	void clearTasks();
 	///Unload scenegraph
 	void clearObjects();
 	///Destroy lights
 	void clearLights();
+    ///Destroy physics (:D)
+    void clearPhysics();
 	/**End loading and unloading logic*/
 
 	Light* addDefaultLight();
@@ -155,7 +170,7 @@ protected:
 public: //Input
 	virtual void onKeyDown(const OIS::KeyEvent& key);
 	virtual void onKeyUp(const OIS::KeyEvent& key);
-	virtual void onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis);
+	virtual void onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone);
 	virtual void onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){}
 	virtual void onJoystickButtonDown(const OIS::JoyStickEvent& key,I8 button){}
 	virtual void onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){}
@@ -173,9 +188,10 @@ public: //Input
 ///same as REGISTER_SCENE(A,B) but in this case the scene's name in XML must be the same as the class name
 #define REGISTER_SCENE(scene) bool scene ## _registered = SceneManager::getInstance().registerScene<scene>(#scene);
 ///simple macro to load the scene elements. Use "loadState' as loading flag
-#define SCENE_LOAD(Name, ContOnErrorRes, ContOnErrorEvents) bool loadState = Scene::load(Name); \
+#define SCENE_LOAD(Name, ContOnErrorRes, ContOnErrorTasks) bool loadState = Scene::load(Name); \
 											                if(loadState) loadState = loadResources(ContOnErrorRes); \
-															if(loadState) loadState = loadEvents(ContOnErrorEvents); \
+															if(loadState) loadState = loadTasks(ContOnErrorTasks); \
+                                                            if(loadState) loadState = loadPhysics(ContOnErrorTasks); \
 															if(!loadState) return false;
 
 ///Add all of the hardware headers in one:

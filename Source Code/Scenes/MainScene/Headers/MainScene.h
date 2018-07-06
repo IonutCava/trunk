@@ -34,6 +34,7 @@ public:
 
 	/*General Scene Requirement*/
 	void preRender();
+    void postRender();
 	bool load(const std::string& name);
 	bool unload();
 	bool loadResources(bool continueOnErrors);
@@ -44,7 +45,7 @@ private:
 	void renderEnvironment(bool waterReflection);
 	bool updateLights();
 	void processInput();
-	void processEvents(U32 time);
+	void processTasks(U32 time);
 	void test(boost::any a, CallbackParam b);
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);

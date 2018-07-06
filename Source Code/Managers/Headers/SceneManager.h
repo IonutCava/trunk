@@ -48,9 +48,10 @@ public:
 	inline void updateCamera(Camera* const camera)  { _activeScene->renderState()->updateCamera(camera); }
 	inline void updateSceneState(U32 sceneTime)     { _activeScene->updateSceneState(sceneTime); }
 	inline void preRender()                         { _activeScene->preRender(); }
+    inline void postRender()                        { _activeScene->postRender(); }
 	///Gather input events and process them in the current scene
 	inline void processInput()                      { _activeScene->processInput(); }
-	inline void processEvents(U32 time)             { _activeScene->processEvents(time); }
+	inline void processTasks(U32 time)              { _activeScene->processTasks(time); }
 	
 	inline void cacheResolution(const vec2<U16>& newResolution) {_activeScene->cacheResolution(newResolution);}
 

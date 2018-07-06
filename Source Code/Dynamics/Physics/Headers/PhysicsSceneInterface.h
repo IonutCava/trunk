@@ -26,13 +26,20 @@ public:
 	PhysicsSceneInterface(Scene* parentScene) :  _parentScene(parentScene){}
 
 	virtual ~PhysicsSceneInterface(){}
-	virtual bool init() = 0;
-	virtual bool exit() = 0;
-	virtual void idle() = 0;
-	virtual void release() = 0;
-	virtual void update() = 0;
-	virtual void process(F32 timeStep) = 0;
+    ///Pre PHYSICS_DEVICE initialization call
+    virtual bool init() = 0;
+    ///Extra cleanup calls on physics device destruction
+    virtual bool exit() = 0;
+    ///Custom physics idle calls
+    virtual void idle() = 0;
+    ///Called on interface destruction
+    virtual void release() = 0;
+    ///Physics update callback for custom behaviour
+    virtual void update() = 0;
+    ///Custom process step
+    virtual void process(F32 timeStep) = 0;
 
+    inline Scene* getParentScene() {return _parentScene;}
 protected:
 	Scene* _parentScene;
 };

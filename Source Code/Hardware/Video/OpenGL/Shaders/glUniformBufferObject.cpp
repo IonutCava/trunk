@@ -10,22 +10,15 @@ glUniformBufferObject::glUniformBufferObject() : _UBOid(0)
 
 glUniformBufferObject::~glUniformBufferObject()
 {
-	GLCheck(glDeleteBuffers(1, &_UBOid));
+	if(_UBOid > 0) GLCheck(glDeleteBuffers(1, &_UBOid));
 }
 
-void glUniformBufferObject::Create(GLushort dataSize, GLint bufferIndex){
+void glUniformBufferObject::Create(GLint bufferIndex, bool dynamic, bool stream){
+
+    _usage = (dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW) : GL_STATIC_DRAW);
 
 	GLint maxUniformIndex;
 	GLCheck(glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUniformIndex));
     CLAMP<GLint>(bufferIndex, 0, maxUniformIndex);
 	GLCheck(glGenBuffers(1, &_UBOid)); // Generate the buffer
-	GLCheck(glBindBuffer(GL_UNIFORM_BUFFER, _UBOid));
-	GLCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(GLfloat) * dataSize, NULL, GL_STREAM_DRAW));
-	GLCheck(glBindBufferRange(GL_UNIFORM_BUFFER, bufferIndex, _UBOid, 0, sizeof(GLfloat) * dataSize));
-}
-
-void glUniformBufferObject::FillData(GLint size, void* data){
-	GLCheck(glBindBuffer(GL_UNIFORM_BUFFER, _UBOid));
-	GLCheck(glBufferSubData(GL_UNIFORM_BUFFER, 0, (sizeof(GLfloat) * 8 * size), data));
-	GLCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
 }

@@ -54,6 +54,7 @@ namespace Navigation {
 		SAMPLE_POLYAREA_DOOR,
 		SAMPLE_POLYAREA_GRASS,
 		SAMPLE_POLYAREA_JUMP,
+        SAMPLE_AREA_OBSTACLE
 	};
 
 	enum SamplePolyFlags
@@ -79,9 +80,11 @@ namespace Navigation {
 			tri_ct= 0;
 			tri_cap = 0;
 			tris = 0;
+            valid = false;
 		}
 
 		void clear(bool del = true)  {
+            valid = false;
 			vert_ct = 0;
 			tri_ct = 0;
 			if(del)	SAFE_DELETE_ARRAY(verts)
@@ -94,6 +97,8 @@ namespace Navigation {
 			tri_ct = 0;
 			if(del)	SAFE_DELETE_ARRAY(normals)
 			else normals = 0;
+            triangleAreaType.clear();
+            navMeshName = "";
 		}
 
 		F32* verts;
@@ -103,16 +108,22 @@ namespace Navigation {
 		U32  tri_ct;
 		U32  tri_cap;
 		I32* tris;
+        vectorImpl<SamplePolyAreas > triangleAreaType;
+        bool valid;
+        std::string navMeshName;
 
+        inline void  setName(const std::string& name) {navMeshName = name;}
+        inline const std::string& getName() {return navMeshName;}
 		inline const F32* getVerts() const { return verts; }
 		inline const F32* getNormals() const { return normals; }
 		inline const I32* getTris() const { return tris; }
 		inline U32 getVertCount() const { return vert_ct; }
 		inline U32 getTriCount() const { return tri_ct; }
+        inline vectorImpl<SamplePolyAreas >& getAreaTypes() {return triangleAreaType;}
 	};
 
 	enum MeshDetailLevel{
-		DETAIL_ABSOLUTE,
+		DETAIL_ABSOLUTE = 0,
 		DETAIL_HIGH,
 		DETAIL_MEDIUM,
 		DETAIL_LOW,
@@ -128,12 +139,12 @@ namespace Navigation {
 		static NavModelData loadMeshFile(const char* fileName);
 		static NavModelData mergeModels(NavModelData a, NavModelData b, bool delOriginals = false);
 		static bool saveModelData(NavModelData data, const char* filename, const char* activeScene = NULL);
-		static NavModelData parseNode(SceneGraphNode* sgn = NULL);
+        static NavModelData parseNode(SceneGraphNode* sgn = NULL, const std::string& navMeshName = "");
 
 	private:
 		static NavModelData parse(const BoundingBox& box, NavModelData& data, SceneGraphNode* set = NULL);
-		static void addVertex(NavModelData* modelData, F32 x, F32 y, F32 z);
-		static void addTriangle(NavModelData* modelData, I32 a, I32 b, I32 c);
+		static void addVertex(NavModelData* modelData, const vec3<F32>& vertex);
+		static void addTriangle(NavModelData* modelData,const vec3<U32>& triangleIndices, SamplePolyAreas areaType = SAMPLE_POLYAREA_GROUND);
 		static char* parseRow(char* buf, char* bufEnd, char* row, I32 len);
 		static I32 parseFace(char* row, I32* data, I32 n, I32 vcnt);
 	};

@@ -48,8 +48,9 @@
 				StructMemberAlignment="0"
 				EnableEnhancedInstructionSet="2"
 				OpenMP="true"
-				WarningLevel="3"
+				WarningLevel="4"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4913, 4512"
 				ShowIncludes="false"
 			/>
 			<Tool
@@ -130,12 +131,16 @@
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;CEGUI_STATIC"
 				StringPooling="true"
 				MinimalRebuild="true"
+				BasicRuntimeChecks="0"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="2"
 				OpenMP="true"
-				WarningLevel="3"
+				WarningLevel="4"
+				WarnAsError="false"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4913, 4512"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -149,7 +154,97 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking.lib SDL.lib SDL_mixer.lib OIS_static.lib freetype.lib expat.lib SILLY.lib pcre.lib libpng.lib libtiff.lib zlib.lib jpeg.lib ftgl_static.lib glim.lib GLFW.lib glew32s.lib CEGUIBase_Static.lib CEGUIExpatParser_Static.lib CEGUISILLYImageCodec_Static.lib CEGUIOpenGLRenderer_Static.lib CEGUIFalagardWRBase_Static.lib Winmm.lib vcomp.lib"
+				ShowProgress="2"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90.exe"
+				AdditionalLibraryDirectories="&quot;$(EngineLibraries)\openmp\lib&quot;;&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\glfw\lib&quot;;&quot;$(EngineLibraries)\glim\lib&quot;;&quot;$(EngineLibraries)\ftgl\lib&quot;;&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="LIBCMT.lib; LIBCPMT.lib; LIBCMTD.lib;"
+				GenerateDebugInformation="true"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+				EmbedManifest="true"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="ReleaseRTC|Win32"
+			OutputDirectory="$(SolutionDir)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(OutDir)../Source Code/Libs\src\ReCast&quot;;&quot;$(EngineLibraries)\glm&quot;;&quot;$(EngineLibraries)\glfw\include&quot;;&quot;$(EngineLibraries)\glim\include&quot;;&quot;$(EngineLibraries)\ftgl\include&quot;;&quot;$(EngineLibraries)\freetype\include&quot;;&quot;$(EngineLibraries)\GLEW\include&quot;;&quot;$(EngineLibraries)\SimpleINI\include&quot;;&quot;$(EngineLibraries)\DevIL\include&quot;;&quot;$(EngineLibraries)\OIS\include&quot;;&quot;$(EngineLibraries)\sdl\include&quot;;&quot;$(EngineLibraries)\Threadpool\include&quot;;&quot;$(EngineLibraries)\cegui\include&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\&quot;;&quot;$(EngineLibraries)\physx\include\foundation&quot;;&quot;$(EngineLibraries)\physx\include\extensions&quot;;&quot;$(EngineLibraries)\physx\include\common&quot;;&quot;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include&quot;"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;CEGUI_STATIC"
+				StringPooling="true"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="0"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="2"
+				OpenMP="true"
+				WarningLevel="4"
+				WarnAsError="false"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4913, 4512"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking.lib SDL.lib SDL_mixer.lib OIS_static.lib freetype.lib expat.lib SILLY.lib pcre.lib libpng.lib libtiff.lib zlib.lib jpeg.lib ftgl_static.lib glim.lib GLFW.lib glew32s.lib CEGUIBase_Static.lib CEGUIExpatParser_Static.lib CEGUISILLYImageCodec_Static.lib CEGUIOpenGLRenderer_Static.lib CEGUIFalagardWRBase_Static.lib Winmm.lib vcomp.lib"
+				ShowProgress="2"
+				OutputFile="$(OutDir)../$(ProjectName)_VC90_RTC.exe"
 				AdditionalLibraryDirectories="&quot;$(EngineLibraries)\openmp\lib&quot;;&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\glfw\lib&quot;;&quot;$(EngineLibraries)\glim\lib&quot;;&quot;$(EngineLibraries)\ftgl\lib&quot;;&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT.lib; LIBCPMT.lib; LIBCMTD.lib;"
@@ -943,10 +1038,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Source Code\Utility\Event.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\Source Code\Utility\ImageTools.cpp"
 				>
 			</File>
@@ -967,10 +1058,6 @@
 				</File>
 				<File
 					RelativePath="..\..\Source Code\Utility\Headers\CRC.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Utility\Headers\Event.h"
 					>
 				</File>
 				<File
@@ -1306,20 +1393,12 @@
 				Name="PhysXScene"
 				>
 				<File
-					RelativePath="..\..\Source Code\Scenes\PhysXScene\PhysXImplementation.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\Source Code\Scenes\PhysXScene\PhysXScene.cpp"
 					>
 				</File>
 				<Filter
 					Name="Headers"
 					>
-					<File
-						RelativePath="..\..\Source Code\Scenes\PhysXScene\Headers\PhysXImplementation.h"
-						>
-					</File>
 					<File
 						RelativePath="..\..\Source Code\Scenes\PhysXScene\Headers\PhysXScene.h"
 						>
@@ -1646,11 +1725,19 @@
 								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexArrayObject.cpp"
 								>
 							</File>
+							<File
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexArrayObjectInterleaved.cpp"
+								>
+							</File>
 							<Filter
 								Name="Headers"
 								>
 								<File
 									RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexArrayObject.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexArrayObjectInterleaved.h"
 									>
 								</File>
 							</Filter>
@@ -1659,6 +1746,18 @@
 					<Filter
 						Name="Shaders"
 						>
+						<File
+							RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glLightUniformBufferObject.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glMaterialUniformBufferObject.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glMatrixUniformBufferObject.cpp"
+							>
+						</File>
 						<File
 							RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glShader.cpp"
 							>
@@ -1674,6 +1773,18 @@
 						<Filter
 							Name="Headers"
 							>
+							<File
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glLightUniformBufferObject.h"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glMaterialUniformBufferObject.h"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glMatrixUniformBufferObject.h"
+								>
+							</File>
 							<File
 								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShader.h"
 								>
@@ -2081,6 +2192,10 @@
 			<Filter
 				Name="Platform"
 				>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Platform\Task.cpp"
+					>
+				</File>
 				<Filter
 					Name="Headers"
 					>
@@ -2094,6 +2209,10 @@
 					</File>
 					<File
 						RelativePath="..\..\Source Code\Hardware\Platform\Headers\SimpleMutex.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Platform\Headers\Task.h"
 						>
 					</File>
 					<File
@@ -2354,6 +2473,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\assets\shaders\GLSL\fboPreview.glsl"
+					>
+				</File>
+				<File
 					RelativePath="..\..\assets\shaders\GLSL\FXAA.glsl"
 					>
 				</File>
@@ -2371,10 +2494,6 @@
 				</File>
 				<File
 					RelativePath="..\..\assets\shaders\GLSL\postProcessing.glsl"
-					>
-				</File>
-				<File
-					RelativePath="..\..\assets\shaders\GLSL\shadowPreviewDirectional.glsl"
 					>
 				</File>
 				<File
@@ -2678,58 +2797,58 @@
 				Name="ReCast"
 				>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Recast.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Source\Recast.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastAlloc.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastAlloc.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastArea.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastArea.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastContour.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastContour.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastFilter.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastFilter.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastLayers.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastLayers.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastMesh.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastMesh.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastMeshDetail.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastMeshDetail.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastRasterization.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastRasterization.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastRegion.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastRegion.cpp"
 					>
 				</File>
 				<Filter
 					Name="Headers"
 					>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\Recast.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Include\Recast.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\RecastAlloc.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Include\RecastAlloc.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\RecastAssert.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Include\RecastAssert.h"
 						>
 					</File>
 				</Filter>
@@ -2738,62 +2857,62 @@
 				Name="Detour"
 				>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\DetourAlloc.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourAlloc.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\DetourCommon.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourCommon.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\DetourNavMesh.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNavMesh.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\DetourNavMeshBuilder.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNavMeshBuilder.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\DetourNavMeshQuery.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNavMeshQuery.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\DetourNode.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNode.cpp"
 					>
 				</File>
 				<Filter
 					Name="Headers"
 					>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourAlloc.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourAlloc.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourAssert.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourAssert.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourCommon.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourCommon.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourNavMesh.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNavMesh.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourNavMeshBuilder.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNavMeshBuilder.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourNavMeshQuery.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNavMeshQuery.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourNode.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNode.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Headers\DetourStatus.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourStatus.h"
 						>
 					</File>
 				</Filter>
@@ -2802,54 +2921,118 @@
 				Name="DetourCrowd"
 				>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourCrowd.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourCrowd.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourLocalBoundary.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourLocalBoundary.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourObstacleAvoidance.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourObstacleAvoidance.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourPathCorridor.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourPathCorridor.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourPathQueue.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourPathQueue.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\DetourProximityGrid.cpp"
+					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Source\DetourProximityGrid.cpp"
 					>
 				</File>
 				<Filter
 					Name="Headers"
 					>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourCrowd.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourCrowd.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourLocalBoundary.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourLocalBoundary.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourObstacleAvoidance.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourObstacleAvoidance.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourPathCorridor.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourPathCorridor.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourPathQueue.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourPathQueue.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Headers\DetourProximityGrid.h"
+						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourCrowd\Include\DetourProximityGrid.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="DebugUtils"
+				>
+				<File
+					RelativePath="..\..\Source Code\Libs\src\ReCast\DebugUtils\Source\DebugDraw.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\src\ReCast\DebugUtils\Source\DetourDebugDraw.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\src\ReCast\DebugUtils\Source\RecastDebugDraw.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\src\ReCast\DebugUtils\Source\RecastDump.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Libs\src\ReCast\DebugUtils\Include\DebugDraw.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\src\ReCast\DebugUtils\Include\DetourDebugDraw.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\src\ReCast\DebugUtils\Include\RecastDebugDraw.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\src\ReCast\DebugUtils\Include\RecastDump.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="DetourTileCache"
+				>
+				<File
+					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Source\DetourTileCache.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Source\DetourTileCacheBuilder.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Include\DetourTileCache.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Include\DetourTileCacheBuilder.h"
 						>
 					</File>
 				</Filter>

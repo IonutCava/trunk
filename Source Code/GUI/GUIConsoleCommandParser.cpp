@@ -1,8 +1,8 @@
 #include "Headers/GUIConsoleCommandParser.h"
-#include "Core/Headers/Application.h"
+
 #include "Core/Headers/ParamHandler.h"
-#include "Hardware/Audio/Headers/SFXDevice.h"
-#include "Core/Resources/Headers/ResourceCache.h"
+#include "Managers/Headers/SceneManager.h"
+#include "AI/PathFinding/Headers/NavigationMesh.h" ///< For NavMesh creation
 
 GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(NULL)
 {
@@ -11,6 +11,7 @@ GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(NULL)
 	_commandMap.insert(std::make_pair("help",boost::bind(&GUIConsoleCommandParser::handleHelpCommand,this,_1)));
 	_commandMap.insert(std::make_pair("editparam",boost::bind(&GUIConsoleCommandParser::handleEditParamCommand,this,_1)));
 	_commandMap.insert(std::make_pair("playsound",boost::bind(&GUIConsoleCommandParser::handlePlaySoundCommand,this,_1)));
+    _commandMap.insert(std::make_pair("createnavmesh",boost::bind(&GUIConsoleCommandParser::handleNavMeshCommand,this,_1)));
 	_commandMap.insert(std::make_pair("invalidcommand",boost::bind(&GUIConsoleCommandParser::handleInvalidCommand,this,_1)));
 
 
@@ -19,6 +20,7 @@ GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(NULL)
 	_commandHelp.insert(std::make_pair("help",Locale::get("CONSOLE_HELP_COMMAND_HELP")));
 	_commandHelp.insert(std::make_pair("editparam",Locale::get("CONSOLE_EDITPARAM_COMMAND_HELP")));
 	_commandHelp.insert(std::make_pair("playsound",Locale::get("CONSOLE_PLAYSOUND_COMMAND_HELP")));
+    _commandHelp.insert(std::make_pair("createNavMesh",Locale::get("CONSOLE_NAVMESH_COMMAND_HELP")));
 	_commandHelp.insert(std::make_pair("invalidhelp",Locale::get("CONSOLE_INVALID_HELP_ARGUMENT")));
 }
 
@@ -72,7 +74,9 @@ void GUIConsoleCommandParser::handleHelpCommand(const std::string& args){
 	if(args.empty()){
 		PRINT_FN(Locale::get("HELP_CONSOLE_COMMAND"));
 		for_each(CommandMap::value_type& it,_commandMap){
-			PRINT_FN("/%s - %s",it.first.c_str(),_commandHelp[it.first]);
+            if(it.first.find("invalid") == std::string::npos){
+			    PRINT_FN("/%s - %s",it.first.c_str(),_commandHelp[it.first]);
+            }
 		}
 	}else{
 		if(_commandHelp.find(args) != _commandHelp.end()){
@@ -123,6 +127,20 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const std::string& args){
 		ERROR_FN(Locale::get("CONSOLE_PLAY_SOUND_INVALID_FILE"),filename.c_str());
 	}
 	
+}
+
+void GUIConsoleCommandParser::handleNavMeshCommand(const std::string& args){
+    SceneGraphNode* sgn = NULL;
+    if(!args.empty()){
+        sgn = GET_ACTIVE_SCENE()->getSceneGraph()->findNode("args");
+        if(!sgn){
+            ERROR_FN(Locale::get("CONSOLE_NAVMESH_NO_NODE"),args.c_str());
+            return;
+        }
+    }
+    Navigation::NavigationMesh* temp = New Navigation::NavigationMesh();
+    temp->build(sgn,false);
+    SAFE_DELETE(temp);
 }
 
 void GUIConsoleCommandParser::handleInvalidCommand(const std::string& args){

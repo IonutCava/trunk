@@ -34,8 +34,8 @@ I8 Frustum::ContainsSphere(const vec3<F32>& center, F32 radius) const {
 
 I8 Frustum::ContainsBoundingBox(BoundingBox& bbox) const {
 
-	vec3<F32>& min = bbox.getMin();
-	vec3<F32>& max = bbox.getMax();
+	const vec3<F32>& min = bbox.getMin();
+	const vec3<F32>& max = bbox.getMax();
 	vec3<F32> tCorners[8] = {	vec3<F32>(min.x, min.y, min.z),
 							    vec3<F32>(max.x, min.y, min.z),
 							    vec3<F32>(min.x, max.y, min.z),

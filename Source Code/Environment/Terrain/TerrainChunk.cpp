@@ -5,11 +5,17 @@
 #include "Geometry/Shapes/Headers/Mesh.h" 
 
 typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
-void TerrainChunk::Load(U8 depth, vec2<U32> pos, vec2<U32> HMsize){
+void TerrainChunk::Load(U8 depth, vec2<U32> pos, vec2<U32> HMsize,VertexBufferObject* const groundVBO){
 
 	for(U8 i=0; i < TERRAIN_CHUNKS_LOD; i++)
 		ComputeIndicesArray(i, depth, pos, HMsize);
+
+    for(U32 i =0; i < _indice[0].size(); i++)
+        groundVBO->getHWIndices().push_back(_indice[0][i]);
+
 	_grassVisibility = GET_ACTIVE_SCENE()->state()->getGrassVisibility();
+
+
 }
 
 
@@ -36,6 +42,12 @@ void TerrainChunk::addTree(const vec4<F32>& pos,F32 scale, const FileData& tree,
 				m->addShaderModifier("Tree");///<Just to create a different shader in the ResourceCahe
 			}
 		}
+        if(tree.staticUsage){
+            treeNode->setUsageContext(SceneGraphNode::NODE_STATIC);
+        }
+        if(tree.navigationUsage){
+            treeNode->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
+        }
 		
 	}else{
 		ERROR_FN(Locale::get("ERROR_ADD_TREE"),tree.ModelName.c_str());
@@ -57,7 +69,7 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, vec2<U32> pos, vec2<U32
 	U32 nHMOffsetY = vHeightmapDataPos.y;
 
 	U32 nHMTotalWidth  = HMsize.x;
-	U32 nHMTotalHeight = HMsize.y;
+	//U32 nHMTotalHeight = HMsize.y;
 
 	_indOffsetW[lod] = nHMWidth*2;
 	_indOffsetH[lod] = nHMWidth-1;
@@ -89,21 +101,21 @@ void TerrainChunk::Destroy(){
 	_grassIndice.clear();
 }
 
-int TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, bool drawInReflection){
+int TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBufferObject* const vbo){
 
 	assert(lod < TERRAIN_CHUNKS_LOD);
 
 	if(lod>0) lod--;
-	program->Uniform("LOD", lod+2);
+	program->Uniform("LOD", GLint(lod+2));
 
 	for(U16 j=0; j < _indOffsetH[lod]; j++){
-		GFX_DEVICE.renderElements(TRIANGLE_STRIP,UNSIGNED_INT,_indOffsetW[lod],&(_indice[lod][j*_indOffsetW[lod]]));
+		GFX_DEVICE.renderModel(vbo,UNSIGNED_INT,_indOffsetW[lod],&(_indice[lod][j*_indOffsetW[lod]]));
 	}
 
 	return 1;
 }
 
-void  TerrainChunk::DrawGrass(I8 lod, F32 d){
+void  TerrainChunk::DrawGrass(I8 lod, F32 d,VertexBufferObject* const grassVBO){
 
 	assert(lod < TERRAIN_CHUNKS_LOD);
 	if(lod != 0) return;
@@ -120,7 +132,7 @@ void  TerrainChunk::DrawGrass(I8 lod, F32 d){
 		indices_count -= indices_count%4; 
 
 		if(indices_count > 0)
-			GFX_DEVICE.renderElements(QUADS,UNSIGNED_SHORT,indices_count, &(_grassIndice[0]));
+			GFX_DEVICE.renderModel(grassVBO,UNSIGNED_SHORT,indices_count, &(_grassIndice.front()));
 			
 	}
 

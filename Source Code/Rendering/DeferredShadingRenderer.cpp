@@ -63,15 +63,16 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
 	_renderQuads.push_back(CreateResource<Quad3D>(mrt3));
 	_renderQuads.push_back(CreateResource<Quad3D>(mrt4));
 	_renderQuads.push_back(CreateResource<Quad3D>(mrtPreviewSmall));
+#ifdef _DEBUG
 	for_each(Quad3D* renderQuad, _renderQuads){ assert(renderQuad); }
-
+#endif
 	ParamHandler& par = ParamHandler::getInstance();
 	#pragma message("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
 	par.setParam("rendering.enableShadows",false);
 	F32 width  = par.getParam<I32>("runtime.resolutionWidth");
 	F32 height = par.getParam<I32>("runtime.resolutionHeight");
 	_deferredBuffer->Create(width,height);
-	//In 2D mode, Quad's are flipped!!!!
+	
 	_renderQuads[0]->setDimensions(vec4<F32>(0,0,width,height));
 	_renderQuads[1]->setDimensions(vec4<F32>(width/2,0,width,height/2));
 	_renderQuads[2]->setCorner(Quad3D::TOP_LEFT, vec3<F32>(0, height, 0));
@@ -85,26 +86,26 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
 	//Using a separate, smaller render quad for debug view because it's faster than resizing a quad back and forth -Ionut
 	_renderQuads[4]->setDimensions(vec4<F32>(0,0,width/2,height/2));
 	GUI& gui = GUI::getInstance();
-	gui.addText("FinalImage",           //Unique ID
-		        vec2<F32>(60,60),          //Position
-				Font::DIVIDE_DEFAULT,		    //Font
-				vec3<F32>(0.0f,0.2f, 1.0f),  //Color
-				"FINAL IMAGE",0);    //Text and arguments
-	gui.addText("LightTexture",           //Unique ID
-		        vec2<F32>(60+width/2,60),          //Position
-				Font::DIVIDE_DEFAULT,		    //Font
-				vec3<F32>(0.0f,0.2f, 1.0f),  //Color
-				"LIGHT TEXTURE",0);    //Text and arguments
 	gui.addText("PositionData",           //Unique ID
-				vec2<F32>(60,60+height/2),  //Position
+		        vec2<U32>(60,60),          //Position
 				Font::DIVIDE_DEFAULT,		    //Font
 				vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 				"POSITION DATA",0);    //Text and arguments
 	gui.addText("NormalData",           //Unique ID
-	        vec2<F32>(60+width/2,60+height/2),          //Position
+		        vec2<U32>(60+width/2,60),          //Position
+				Font::DIVIDE_DEFAULT,		    //Font
+				vec3<F32>(0.0f,0.2f, 1.0f),  //Color
+				"NORMAL DATA",0);    //Text and arguments
+	gui.addText("FinalImage",           //Unique ID
+				vec2<U32>(60,60+height/2),  //Position
+				Font::DIVIDE_DEFAULT,		    //Font
+				vec3<F32>(0.0f,0.2f, 1.0f),  //Color
+				"FINAL IMAGE",0);    //Text and arguments
+	gui.addText("LightTexture",           //Unique ID
+	        vec2<U32>(60+width/2,60+height/2),          //Position
 			Font::DIVIDE_DEFAULT,		    //Font
 			vec3<F32>(0.0f,0.2f, 1.0f),  //Color
-			"NORMAL DATA",0);    //Text and arguments
+			"LIGHT TEXTURE",0);    //Text and arguments
 }
 
 DeferredShadingRenderer::~DeferredShadingRenderer()
@@ -126,6 +127,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
 
 void DeferredShadingRenderer::render(boost::function0<void> renderCallback, SceneRenderState* const sceneRenderState) {
 	GFX_DEVICE.setRenderStage(DEFERRED_STAGE);
+	SET_DEFAULT_STATE_BLOCK();
 	LightManager::LightMap& lights = LightManager::getInstance().getLights();
 	if(lights.size() != _cachedLightCount){
 		_cachedLightCount = lights.size();
@@ -148,16 +150,16 @@ void DeferredShadingRenderer::render(boost::function0<void> renderCallback, Scen
 		}
 	}
 	_lightTexture->End();
-	firstPass(renderCallback);
+	firstPass(renderCallback,sceneRenderState);
 	secondPass(sceneRenderState);
 }
 
-void DeferredShadingRenderer::firstPass(boost::function0<void> renderCallback){
+void DeferredShadingRenderer::firstPass(boost::function0<void> renderCallback, SceneRenderState* const sceneRenderState){
 	//Pass 1
 	//Draw the geometry, saving parameters into the buffer
 	_deferredBuffer->Begin();	
 		renderCallback();
-		RenderPassManager::getInstance().render();
+		RenderPassManager::getInstance().render(sceneRenderState);
 	_deferredBuffer->End();
 }
 
@@ -184,17 +186,14 @@ void DeferredShadingRenderer::secondPass(SceneRenderState* const sceneRenderStat
 			_deferredShader->UniformTexture("tImage1",1);
 			_deferredShader->UniformTexture("tImage2",2);
 			_deferredShader->UniformTexture("lightTexture",3);
-			_deferredShader->Uniform("lightCount",(I32)LightManager::getInstance().getLights().size());
+			_deferredShader->Uniform("lightCount",(I32)_cachedLightCount);
 
 			GFX_DEVICE.renderModel(_renderQuads[ _debugView ? 4 : 0]);
-		_deferredShader->unbind();
-		
 
 	_lightTexture->Unbind(3);
 	_deferredBuffer->Unbind(2);
 	_deferredBuffer->Unbind(1);
 	_deferredBuffer->Unbind(0);
-
 	
 	GFX_DEVICE.toggle2D(false);
 	GUI& gui = GUI::getInstance();
@@ -215,7 +214,6 @@ void DeferredShadingRenderer::secondPass(SceneRenderState* const sceneRenderStat
 		guiElement->setVisible(_debugView);
 	}
 }
-
 
 void DeferredShadingRenderer::toggleDebugView(){
 	_debugView = !_debugView;

@@ -127,7 +127,9 @@ public:
 	///SceneNode concrete implementations
 	bool unload();
 	void postLoad(SceneGraphNode* const sgn);	
-
+    bool computeBoundingBox(SceneGraphNode* const sgn);
+    bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere);
+    void updateBBatCurrentFrame(SceneGraphNode* const sgn);
 	///When the SceneGraph calls the light's render function, we draw the impostor if needed
 	virtual void render(SceneGraphNode* const sgn);
 	 

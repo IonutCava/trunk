@@ -4,39 +4,43 @@
 
 using namespace physx;
 
-bool PhysX::createPlane(PhysicsSceneInterface* targetScene,const vec3<F32>& position,U32 size){
-	assert(targetScene != NULL);
+bool PhysX::createPlane(const vec3<F32>& position,U32 size){
+	assert(_targetScene != NULL);
 	PxTransform pose = PxTransform(PxVec3(position.x,position.y,position.z),PxQuat(PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f)));
 	PxRigidStatic* plane = _gPhysicsSDK->createRigidStatic(pose);
+
 	if (!plane){
 		ERROR_FN(Locale::get("ERROR_PHYSX_CREATE_PLANE"));
 		return false;
 	}
-	PxShape* shape = plane->createShape(PxPlaneGeometry(), *(_gPhysicsSDK->createMaterial(0.5,0.5,0.5)));
+	PxShape* shape = plane->createShape(PxPlaneGeometry(),
+                                        *(static_cast<PhysXSceneInterface* >(_targetScene)->getMaterials()[1]));
 	if (!shape){
 		ERROR_FN(Locale::get("ERROR_PHYSX_CREATE_PLANE_SHAPE"));
 		return false;
 	}
-	static_cast<PhysXSceneInterface* >(targetScene)->addRigidStaticActor(plane);
+	static_cast<PhysXSceneInterface* >(_targetScene)->addRigidStaticActor(plane);
 	return true;
 }
 
-bool PhysX::createBox(PhysicsSceneInterface* targetScene,const vec3<F32>& position, F32 size){
+bool PhysX::createBox(const vec3<F32>& position, F32 size){
+    assert(_targetScene != NULL);
 	PxReal density = 1.0f;
 	PxTransform transform(PxVec3(position.x,position.y,position.z), PxQuat::createIdentity());
-	PxVec3 dimensions(size ,size ,size );
+	PxVec3 dimensions(size);
 	PxBoxGeometry geometry(dimensions);
 	PxRigidDynamic *actor = PxCreateDynamic(*_gPhysicsSDK,
 											 transform, 
 											 geometry,
-											 *(_gPhysicsSDK->createMaterial(0.5,0.5,0.5)),
+                                             *(static_cast<PhysXSceneInterface* >(_targetScene)->getMaterials()[1]),
 											 density);
     actor->setAngularDamping(0.75);
-    actor->setLinearVelocity(PxVec3(0,0,0)); 
+    actor->setLinearVelocity(PxVec3(0)); 
+
 	if (!actor){
 		ERROR_FN(Locale::get("ERROR_PHYSX_CREATE_BOX"));
 		return false;
 	}
-	static_cast<PhysXSceneInterface* >(targetScene)->addRigidDynamicActor(actor);
+	static_cast<PhysXSceneInterface* >(_targetScene)->addRigidDynamicActor(actor);
 	return true;
 }

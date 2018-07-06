@@ -24,7 +24,7 @@ class ShaderProgram;
 class Quad3D : public Object3D {
 
 public:
-	Quad3D() :  Object3D(QUAD_3D){
+	Quad3D() :  Object3D(QUAD_3D,TRIANGLE_STRIP){
 
 		vec3<F32> vertices[] = {vec3<F32>(-1.0f,  1.0f, 0.0f),   //TOP LEFT
 						        vec3<F32>( 1.0f,  1.0f, 0.0f),   //TOP RIGHT
@@ -41,10 +41,10 @@ public:
 				                vec3<F32>(0.0f, 1.0f, 0.0f),
 				                vec3<F32>(0.0f, 1.0f, 0.0f)};
 
-		vec2<F32> texcoords[] = {vec2<F32>(0,0),
-							     vec2<F32>(1,0),
-							     vec2<F32>(0,1),
-							     vec2<F32>(1,1)};
+		vec2<F32> texcoords[] = {vec2<F32>(0,1),
+							     vec2<F32>(1,1),
+							     vec2<F32>(0,0),
+							     vec2<F32>(1,0)};
 
 		_geometry->reservePositionCount(4);
 		_geometry->getNormal().reserve(4);
@@ -59,11 +59,13 @@ public:
 			_geometry->getTexcoord().push_back(texcoords[i]);
 		}
 
-	   //CW draw order
-	   _geometry->getHWIndices().push_back(2); //  v1----v2
+	   //CCW draw order
+	   _geometry->getHWIndices().push_back(2); //  v0----v1
 	   _geometry->getHWIndices().push_back(0); //   |    |
 	   _geometry->getHWIndices().push_back(1); //   |    |
-	   _geometry->getHWIndices().push_back(3); //  v0----v3
+	   _geometry->getHWIndices().push_back(1); //  v2----v3
+       _geometry->getHWIndices().push_back(2);
+       _geometry->getHWIndices().push_back(3);
   	   _geometry->setIndiceLimits(vec2<U16>(0,3));
 	   _refreshVBO = true;
 	   //computeTangents();
@@ -77,7 +79,7 @@ public:
 	};
 
 	vec3<F32> getCorner(CornerLocation corner){
-		//In 2D mode, Quad's are flipped!!!!
+		
 		switch(corner){
 			case TOP_LEFT: return _geometry->getPosition()[0];
 			case TOP_RIGHT: return _geometry->getPosition()[1];
@@ -89,7 +91,7 @@ public:
 	}
 
 	void setCorner(CornerLocation corner, const vec3<F32>& value){
-		//In 2D mode, Quad's are flipped!!!!
+		
 		switch(corner){
 	     	case TOP_LEFT:     _geometry->modifyPositionValue(0,value); break;
 			case TOP_RIGHT:    _geometry->modifyPositionValue(1,value); break;

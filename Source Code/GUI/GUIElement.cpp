@@ -2,9 +2,9 @@
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-GUIElement::GUIElement(GUIType type,const vec2<F32>& position) : 
+GUIElement::GUIElement(CEGUI::Window* parent, GUIType type,const vec2<U32>& position) : 
                            _guiType(type),
-						   _parent(NULL),
+						   _parent(parent),
 						   _active(false),
 						   _position(position){
 						   _name = "defaultGuiControl";

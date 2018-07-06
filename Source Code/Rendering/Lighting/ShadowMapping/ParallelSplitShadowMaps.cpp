@@ -25,7 +25,7 @@ PSShadowMaps::PSShadowMaps(Light* light) : ShadowMap(light)
 	ss << "Light " << (U32)light->getId() << " viewport ";
 	_renderQuad = New Quad3D();
 	_renderQuad->setName(ss.str());
-	ResourceDescriptor shadowPreviewShader("shadowPreviewDirectional");
+	ResourceDescriptor shadowPreviewShader("fboPreview.Layered");
 	_previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
 	_jitterTexture = GFX_DEVICE.newPBO(PBO_TEXTURE_3D);
 	createJitterTexture(JITTER_SIZE,8,8);

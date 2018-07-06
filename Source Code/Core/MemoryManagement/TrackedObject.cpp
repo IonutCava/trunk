@@ -31,7 +31,6 @@ void TrackedObject::AddRef() {
 }
 
 bool TrackedObject::SubRef() {
-
 	/// For each object in our dependency map
 	for(std::list<TrackedObject *>::iterator it = _dependencyList.begin();
 		                                     it != _dependencyList.end(); ) {
@@ -46,8 +45,7 @@ bool TrackedObject::SubRef() {
 		}
 		++it;
 	}
-	
-	
+	//r_lock.unlock();	
 	///Substract ref count and check if object is still used 
 	if(--_refCount <= 0){
 		/// if not, schedule it's deletion
@@ -66,6 +64,7 @@ void TrackedObject::addDependency(TrackedObject* obj){
 
 void TrackedObject::removeDependency(TrackedObject* obj){
 	std::list<TrackedObject *>::iterator it;
+
 	for(it = _dependencyList.begin(); it != _dependencyList.end(); ) {
 		if(*it == obj){ 
 			it = _dependencyList.erase(it);

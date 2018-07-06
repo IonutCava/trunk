@@ -77,12 +77,6 @@ namespace XML {
 		par.setParam("rendering.shadowResolutionFactor", shadowResolutionFactor);
 		par.setParam("rendering.enableShadows",pt.get("rendering.enableShadows", true));
 		par.setParam("rendering.enableFog", pt.get("rendering.enableFog",true));
-		par.setParam("rendering.fogStartDistance",pt.get("rendering.fogStartDistance",300.0f));
-		par.setParam("rendering.fogEndDistance",pt.get("rendering.fogEndDistance",800.0f));
-		par.setParam("rendering.fogDensity",pt.get("rendering.fogDensity",0.01f));
-		par.setParam("rendering.fogColor",vec3<F32>(pt.get<F32>("rendering.fogColor.<xmlattr>.r"),
-													pt.get<F32>("rendering.fogColor.<xmlattr>.g"),
-													pt.get<F32>("rendering.fogColor.<xmlattr>.b"))); 
 		I32 resWidth = pt.get("runtime.resolutionWidth",1024.0f);
 		I32 resHeight = pt.get("runtime.resolutionHeight",768.0f);
 		par.setParam("runtime.zNear",(F32)pt.get("runtime.zNear",0.1f));
@@ -109,8 +103,16 @@ namespace XML {
 			par.setParam("postProcessing.enableDepthOfField",pt.get("rendering.enableDepthOfField",false));
 			par.setParam("postProcessing.enableBloom",pt.get("rendering.enableBloom",false));
 			par.setParam("postProcessing.enableSSAO",pt.get("rendering.enableSSAO",false));
+            par.setParam("postProcessing.bloomFactor",pt.get("rendering.bloomFactor",0.4f));
 		}
 		par.setParam("mesh.playAnimations",pt.get("mesh.playAnimations",true));
+
+        par.setParam("rendering.fogStartDistance", pt.get("rendering.fogStartDistance",300.0f));
+        par.setParam("rendering.fogEndDistance", pt.get("rendering.fogEndDistance",800.0f));
+        par.setParam("rendering.fogDensity", pt.get("rendering.fogDensity",0.01f));
+        par.setParam("rendering.fogColor", vec4<F32>(pt.get<F32>("rendering.fogColor.<xmlattr>.r"),
+													       pt.get<F32>("rendering.fogColor.<xmlattr>.g"),
+													       pt.get<F32>("rendering.fogColor.<xmlattr>.b"),1.0f)); 
 	}
 
 	void loadScene(const std::string& sceneName, SceneManager& sceneMgr) {
@@ -137,7 +139,6 @@ namespace XML {
 
 		sceneMgr.setActiveScene(scene);
 		scene->setName(sceneName);
-
 		scene->state()->getGrassVisibility() = pt.get("vegetation.grassVisibility",1000.0f);
 		scene->state()->getTreeVisibility()  = pt.get("vegetation.treeVisibility",1000.0f);
 		scene->state()->getGeneralVisibility()  = pt.get("options.visibility",1000.0f);
@@ -160,6 +161,11 @@ namespace XML {
 		}
 		loadTerrain(sceneLocation + "/" + pt.get("terrain","terrain.xml"),scene);
 		loadGeometry(sceneLocation + "/" + pt.get("assets","assets.xml"),scene);
+
+        scene->state()->getFogDesc()._fogStartDist = par.getParam<F32>("rendering.fogStartDistance");
+        scene->state()->getFogDesc()._fogEndDist = par.getParam<F32>("rendering.fogEndDistance");
+        scene->state()->getFogDesc()._fogDensity = par.getParam<F32>("rendering.fogDensity");
+        scene->state()->getFogDesc()._fogColor = par.getParam<vec4<F32> >("rendering.fogColor");
 	}
 
 
@@ -205,6 +211,7 @@ namespace XML {
 							   
 
 			ter->setActive(pt.get<bool>(name + ".active"));
+            ter->setChunkSize(pt.get<U32>(name + ".nodeChunkSize"));
 			
 			scene->addTerrain(ter);
 			count++;
@@ -240,6 +247,16 @@ namespace XML {
 			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
 			model.type = GEOMETRY;
 			model.version = pt.get<F32>(name + ".version");
+            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")){
+                model.staticUsage = pt.get<bool>(name + ".staticObject",false);
+            }else{
+                model.staticUsage = false;
+            }
+            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".addToNavigation")){
+                model.navigationUsage = pt.get<bool>(name + ".addToNavigation",false);
+            }else{
+                model.navigationUsage = false;
+            }
 			scene->addModel(model);
 		}
 
@@ -263,6 +280,16 @@ namespace XML {
 			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
 			model.type = VEGETATION;
 			model.version = pt.get<F32>(name + ".version");
+            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")){
+                model.staticUsage = pt.get<bool>(name + ".staticObject",false);
+            }else{
+                model.staticUsage = false;
+            }
+            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".addToNavigation")){
+                model.navigationUsage = pt.get<bool>(name + ".addToNavigation",false);
+            }else{
+                model.navigationUsage = false;
+            }
 			scene->addModel(model);
 		}
 
@@ -302,6 +329,16 @@ namespace XML {
 			
 			model.type = PRIMITIVE;
 			model.version = pt.get<F32>(name + ".version");
+            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")){
+                model.staticUsage = pt.get<bool>(name + ".staticObject",false);
+            }else{
+                model.staticUsage = false;
+            }
+            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".addToNavigation")){
+                model.navigationUsage = pt.get<bool>(name + ".addToNavigation",false);
+            }else{
+                model.navigationUsage = false;
+            }
 			scene->addModel(model);
 		}
 	}
@@ -450,7 +487,7 @@ namespace XML {
 		if(s){
 			pt.put("shaderProgram.effect",s->getName());
 		}
-		s = mat->getShaderProgram(SHADOW_STAGE);
+		s = mat->getShaderProgram(DEPTH_STAGE);
 		if(s){
 			pt.put("shaderProgram.depthEffect",s->getName());
 		}
@@ -464,6 +501,7 @@ namespace XML {
 
 	void saveTextureXML(const std::string& textureNode, U32 operation, Texture* texture){
 			pt.put(textureNode+".file",texture->getResourceLocation());
+            pt.put(textureNode+".flip",texture->isFlipped());
 			pt.put(textureNode+".MapU", texture->getTextureWrap(0));
 			pt.put(textureNode+".MapV", texture->getTextureWrap(1));
 			pt.put(textureNode+".MapW", texture->getTextureWrap(2));
@@ -479,7 +517,7 @@ namespace XML {
 
 		ResourceDescriptor texture(img_name);
 		texture.setResourceLocation(pathName + img_name);
-		texture.setFlag(true);
+		texture.setFlag(pt.get(textureNode+".flip",true));
 		Texture* tex = CreateResource<Texture2D>(texture);
 		I32 wrapU = pt.get(textureNode+".MapU",0);;
 		I32 wrapV = pt.get(textureNode+".MapV",0);

@@ -35,11 +35,13 @@ public:
 	inline void update() {_api.update();}
 	inline void process() {_api.process();}
 	inline void idle() {_api.idle();}
+    inline void setPhysicsScene(PhysicsSceneInterface* const targetScene) {_api.setPhysicsScene(targetScene);}
+    inline void initScene(){_api.initScene();}
 	inline PhysicsSceneInterface* NewSceneInterface(Scene* scene) {return _api.NewSceneInterface(scene);}
 
-	inline bool createPlane(PhysicsSceneInterface* targetScene,const vec3<F32>& position = vec3<F32>(0,0,0), U32 size = 1){return _api.createPlane(targetScene,position,size);}
-	inline bool createBox(PhysicsSceneInterface* targetScene,const vec3<F32>& position = vec3<F32>(0,0,0), F32 size = 1){return _api.createBox(targetScene,position,size);}
-	inline bool createActor(PhysicsSceneInterface* targetScene, SceneGraphNode* node, PhysicsActorMask mask,PhysicsCollisionGroup group){return _api.createActor(targetScene, node,mask,group);}
+	inline bool createPlane(const vec3<F32>& position = vec3<F32>(0,0,0), U32 size = 1){return _api.createPlane(position,size);}
+	inline bool createBox(const vec3<F32>& position = vec3<F32>(0,0,0), F32 size = 1){return _api.createBox(position,size);}
+	inline bool createActor(SceneGraphNode* const node, PhysicsActorMask mask,PhysicsCollisionGroup group){return _api.createActor(node,mask,group);}
 private:
 	PXDevice() :
 	   _api(PhysX::getInstance()) //Defaulting to nothig if no api has been defined

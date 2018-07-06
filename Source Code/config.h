@@ -33,6 +33,10 @@
 #define TICKS_PER_SECOND 25
 ///Maximum frameskip
 #define  MAX_FRAMESKIP 5
+///Minimum triangle count for a mesh to apply depth rendering optimisations
+#define DEPTH_VBO_MIN_TRIANGLES 1000
+///Minimum vbo size in bytes for a mesh to apply depth rendering optimisations (4MB default)
+#define DEPTH_VBO_MIN_BYTES 4 * 1024 * 1024
 
 #define TARGET_D3D_VERSION D3D11 /*or D3D10*/
 
@@ -60,7 +64,6 @@
 ///Current platform
 #ifndef _WIN32
 #define _WIN32
-#define _WIN32_WINNT=0x501
 #endif
 #ifndef WIN32
 #define WIN32 //for Physx
@@ -78,10 +81,10 @@
 //#define __GNUC__
 #endif
 
-///Edit the maximum number of concurrent threads that this application may start excluding events.
-///Default 5: Rendering + Update + A.I. + Networking + PhysX
+///Edit the maximum number of concurrent threads that this application may start excluding tasks.
+///Default 2 without: Rendering + Update + A.I. + Networking + PhysX
 #ifndef THREAD_LIMIT
-#define THREAD_LIMIT 5
+#define THREAD_LIMIT 2
 #endif //THREAD_LIMIT
 
 ///Comment this out to show the debug console
@@ -141,7 +144,6 @@
 ///Use boost or std for_each
 #ifndef FOR_EACH_IMPLEMENTATION
 #define FOR_EACH_IMPLEMENTATION BOOST
-///ToDo: Define a macro for this using lambda expressions. Not supported in VS2008 - Ionut
 //#define FOR_EACH_IMPLEMENTATION STD 
 #endif //FOR_EACH_IMPLEMENTATION
 

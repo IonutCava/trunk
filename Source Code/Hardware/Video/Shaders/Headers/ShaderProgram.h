@@ -41,6 +41,7 @@ public:
 	virtual void Attribute(const std::string& ext, const vec3<F32>& value) = 0;
 	virtual void Attribute(const std::string& ext, const vec4<F32>& value) = 0;
 	///Uniforms
+    virtual void Uniform(const std::string& ext, U32 value) = 0;
 	virtual void Uniform(const std::string& ext, I32 value) = 0;
 	virtual void Uniform(const std::string& ext, F32 value) = 0 ;
 	virtual void Uniform(const std::string& ext, const vec2<F32>& value) = 0;
@@ -76,18 +77,15 @@ protected:
 	template<typename T>
 	friend class ImplResourceLoader;
 	virtual bool generateHWResource(const std::string& name);
-	static  bool checkBinding(U32 newShaderProgramId);
 
 protected:
 	bool _compiled;
 	bool _bound;
 	I32  _maxCombinedTextureUnits;
-	U32 _shaderProgramId;
+	I32 _shaderProgramId;
 	///A list of preprocessor defines,comma separated, if needed
 	std::string _definesList;
 	vectorImpl<Shader* > _shaders;
-	static U32 _prevShaderProgramId;
-	static U32 _newShaderProgramId;
 };
 
 

@@ -11,6 +11,7 @@ void main(){
   gl_Position = projectionMatrix * gl_ModelViewMatrix * gl_Vertex;
 } 
 
+
 -- Fragment
 
 uniform sampler2D texture;
@@ -21,6 +22,6 @@ void main(){
 	if(!useTexture){
 		gl_FragColor = gl_Color;
 	}else{
-		gl_FragColor = texture(texture, _texCoord) * gl_Color;
+		gl_FragColor = texture(texture, _texCoord)/* * gl_Color*/;
 	}
 }

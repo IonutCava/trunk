@@ -35,7 +35,6 @@ namespace XML {
 	void loadTerrain(const std::string& file, Scene* const scene);
 	Material* loadMaterial(const std::string &file);
 	void dumpMaterial(Material* const mat);
-	///ToDo: ....... Add more
 
 	Material* loadMaterialXML(const std::string& location);
 	Texture*  loadTextureXML(const std::string& textureNode, const std::string& textureName);

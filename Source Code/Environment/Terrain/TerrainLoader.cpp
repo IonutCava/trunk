@@ -41,14 +41,21 @@ void Terrain::loadVisualResources(){
 		_alphaTexturePresent = true;
 	}
 
-	///Generate a render state
+	//Generate a render state
 	RenderStateBlockDescriptor terrainDesc;
 	terrainDesc.setCullMode(CULL_MODE_CW);
 	terrainDesc._fixedLighting = true;
+	terrainDesc.setZEnable(true);
 	_terrainRenderState = GFX_DEVICE.createStateBlock(terrainDesc);
 
-	///For now, terrain doesn't cast shadows
-	getSceneNodeRenderState().addToDrawExclusionMask(SHADOW_STAGE);
+    //Generate a shadow render state
+    RenderStateBlockDescriptor terrainDepthDesc;
+    terrainDepthDesc.setCullMode(CULL_MODE_CCW);
+    terrainDepthDesc._fixedLighting = true;
+    terrainDepthDesc.setZEnable(true);
+    _terrainDepthRenderState = GFX_DEVICE.createStateBlock(terrainDepthDesc);
+	//For now, terrain doesn't cast shadows
+	getSceneNodeRenderState().addToDrawExclusionMask(DEPTH_STAGE);
 }
 
 bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
@@ -71,7 +78,9 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 	_boundingBox.Multiply(vec3<F32>(terrain->getScale().x,1,terrain->getScale().x));
 	_boundingBox.MultiplyMax(vec3<F32>(1,_terrainHeightScaleFactor,1));
 
-	_groundVBO = GFX_DEVICE.newVBO();
+	_groundVBO = GFX_DEVICE.newVBO(TRIANGLE_STRIP);
+    _groundVBO->useHWIndices(false);//<Use custom LOD indices;
+    //_groundVBO->optimizeForDepth(true,true);
 	vectorImpl<vec3<F32> >&		normalData	= _groundVBO->getNormal();
 	vectorImpl<vec3<F32> >&		tangentData	= _groundVBO->getTangent();
 
@@ -168,10 +177,9 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 		}
 	}
 
-	U32 chunkSize = 16;
 	_terrainQuadtree->setParentShaderProgram(getMaterial()->getShaderProgram());
-	_terrainQuadtree->Build(_boundingBox, vec2<U32>(_terrainWidth, _terrainHeight), chunkSize);
-
+    _terrainQuadtree->setParentVBO(_groundVBO);
+	_terrainQuadtree->Build(_boundingBox, vec2<U32>(_terrainWidth, _terrainHeight), terrain->getChunkSize(), _groundVBO);
 	
 	ResourceDescriptor infinitePlane("infinitePlane");
 	infinitePlane.setFlag(true); //No default material

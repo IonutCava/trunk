@@ -25,10 +25,11 @@ friend class GUI;
 public:
 	GUIText(const std::string& id,
 		    const std::string& text,
-			const vec2<F32>& position,
+			const vec2<U32>& position,
 			const std::string& font,
 			const vec3<F32>& color,
-			U32 textHeight = 16) : GUIElement(GUI_TEXT,position),
+            CEGUI::Window* parent,
+			U32 textHeight = 16) : GUIElement(parent,GUI_TEXT,position),
 	  _text(text),
 	  _font(font),
 	  _height(textHeight),

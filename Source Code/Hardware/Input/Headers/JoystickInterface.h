@@ -34,7 +34,7 @@ class JoystickInterface {
     vectorImpl<OIS::ForceFeedback*> _vecFFDev;
 
     // Selected joystick
-    U8 _nCurrJoyInd;
+    I8 _nCurrJoyInd;
 
     // Force feedback detected ?
     bool _bFFFound;

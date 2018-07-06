@@ -13,8 +13,21 @@
 
 GUI::GUI() : _prevElapsedTime(0),
 			 _init(false),
+             _rootSheet(NULL),
 			 _console(New GUIConsole())
 {
+    //500ms
+    _input.setInitialDelay(0.500f);
+	RenderStateBlockDescriptor CEGUIStateBlock;
+	CEGUIStateBlock.setCullMode(CULL_MODE_NONE);
+	CEGUIStateBlock._fixedLighting = false;
+	//CEGUIStateBlock.setZReadWrite(false,false);
+	CEGUIStateBlock.setFillMode(FILL_MODE_SOLID);
+	CEGUIStateBlock.setZEnable(false);
+	CEGUIStateBlock.setCullMode(CULL_MODE_NONE);
+	_CEGUIStateBlock = GFX_DEVICE.createStateBlock(CEGUIStateBlock);
+
+	
 }
 
 GUI::~GUI()
@@ -61,6 +74,8 @@ void GUI::draw(U32 timeElapsed){
 	F32 timeElapsedSec = getMsToSec(timeDiffInMs);
 	_input.update(timeElapsedSec);
 	CEGUI::System::getSingleton().injectTimePulse(timeElapsedSec);
+	SET_STATE_BLOCK(_CEGUIStateBlock);
+	GFX_DEVICE.updateStates();
 	CEGUI::System::getSingleton().renderGUI();
 	_prevElapsedTime = timeElapsed;
 }
@@ -99,11 +114,12 @@ bool GUI::init(){
 	if ( parser->isPropertyPresent( "SchemaDefaultResourceGroup" ) ){
 		parser->setProperty( "SchemaDefaultResourceGroup", "schemas" ) ;
 	}
-	std::string defaultGUIScheme = ParamHandler::getInstance().getParam<std::string>("GUI.defaultScheme");
-	CEGUI::SchemeManager::getSingleton().create(  defaultGUIScheme + ".scheme") ;
+	_defaultGUIScheme = ParamHandler::getInstance().getParam<std::string>("GUI.defaultScheme");
+	CEGUI::SchemeManager::getSingleton().create(  _defaultGUIScheme + ".scheme") ;
 
-	CEGUI::Window* rootSheet = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow","root_window");
-	CEGUI::System::getSingleton().setGUISheet( rootSheet );
+	_rootSheet = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow","root_window");
+	CEGUI::System::getSingleton().setGUISheet( _rootSheet );
+    CEGUI::System::getSingleton().setDefaultTooltip(_defaultGUIScheme + "/Tooltip" );
 	assert(_console);
 	_console->CreateCEGUIWindow();
 	_init = true;
@@ -117,6 +133,7 @@ void GUI::close(){
 	_guiStack.clear();
 	SAFE_DELETE(_console);
 	CEGUI::System::destroy();
+	SAFE_DELETE(_CEGUIStateBlock);
 }
 
 bool GUI::checkItem(const OIS::MouseEvent& arg ){
@@ -201,12 +218,21 @@ bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
 	return !_console->isVisible();
 }
 
-void GUI::addButton(const std::string& id, std::string text,const vec2<F32>& position,const vec2<F32>& dimensions,const vec3<F32>& color,ButtonCallback callback){
-
-	_guiStack[id] = New GUIButton(id,text,position,dimensions,color,callback);
+GUIElement* GUI::addButton(const std::string& id, const std::string& text,
+                    const vec2<U32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,
+                    ButtonCallback callback,const std::string& rootSheetId){
+    
+    CEGUI::Window* parent = NULL;
+    if(!rootSheetId.empty()){
+        parent = CEGUI::WindowManager::getSingletonPtr()->getWindow(rootSheetId);
+    }
+    if(!parent) parent = _rootSheet;
+    GUIButton* btn = New GUIButton(id,text,_defaultGUIScheme,position,dimensions,color,parent,callback); 
+    _guiStack[id] = btn;
+    return btn;
 }
 
-void GUI::addText(const std::string& id,const vec2<F32> &position, const std::string& font,const vec3<F32> &color, char* format, ...){
+GUIElement* GUI::addText(const std::string& id,const vec2<U32> &position, const std::string& font,const vec3<F32> &color, char* format, ...){
 
 	va_list args;
 	std::string fmt_text;
@@ -219,20 +245,25 @@ void GUI::addText(const std::string& id,const vec2<F32> &position, const std::st
 	SAFE_DELETE_ARRAY(text);
     va_end(args);
 
-	GUIElement *t = New GUIText(id,fmt_text,position,font,color);
+	GUIElement *t = New GUIText(id,fmt_text,position,font,color,_rootSheet);
 	_resultGuiElement = _guiStack.insert(make_pair(id,t));
 	if(!_resultGuiElement.second) (_resultGuiElement.first)->second = t;
 	fmt_text.empty();
+
+    return t;
 }
 
-void GUI::addFlash(const std::string& id, std::string movie, const vec2<F32>& position, const vec2<F32>& extent){
+GUIElement* GUI::addFlash(const std::string& id, std::string movie, const vec2<U32>& position, const vec2<U32>& extent){
 
-	GUIFlash *flash = New GUIFlash();
+	GUIFlash *flash = New GUIFlash(_rootSheet);
 	_resultGuiElement = _guiStack.insert(make_pair(id,flash));
 	if(!_resultGuiElement.second) (_resultGuiElement.first)->second = flash;
+
+    return flash;
 }
 
-void GUI::modifyText(const std::string& id, char* format, ...){
+GUIElement* GUI::modifyText(const std::string& id, char* format, ...){
+    if(_guiStack.find(id) == _guiStack.end()) return NULL;
 
 	va_list args;   
 	std::string fmt_text;
@@ -245,9 +276,11 @@ void GUI::modifyText(const std::string& id, char* format, ...){
 	SAFE_DELETE_ARRAY(text);
     va_end(args);
 
-	if(_guiStack[id]->getGuiType() == GUI_TEXT)
-		dynamic_cast<GUIText*>(_guiStack[id])->_text = fmt_text;
+    GUIElement* element = _guiStack[id];
+	if(element->getGuiType() == GUI_TEXT)
+		dynamic_cast<GUIText*>(element)->_text = fmt_text;
 	fmt_text.empty();
+    return element;
 }
 
 /*   void onRightMouseUp(const GuiEvent &event);

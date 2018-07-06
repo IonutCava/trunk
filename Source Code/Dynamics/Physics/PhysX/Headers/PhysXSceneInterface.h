@@ -20,10 +20,14 @@
 
 #include "PhysX.h"
 #include "Dynamics/Physics/Headers/PhysicsSceneInterface.h"
+#include <boost/thread/locks.hpp>
+#include <boost/atomic.hpp>
+#include <boost/lockfree/stack.hpp>
 
 class Scene;
 class Transform;
-class PhysXSceneInterface : public PhysicsSceneInterface{
+class PhysXSceneInterface : public PhysicsSceneInterface {
+
 public:
 	PhysXSceneInterface(Scene* parentScene) : PhysicsSceneInterface(parentScene),
 											  _gScene(NULL){}
@@ -36,19 +40,32 @@ public:
 	virtual void update();
 	virtual void process(F32 timeStep);
 
-	void addRigidStaticActor(physx::PxRigidStatic* actor);
-	void addRigidDynamicActor(physx::PxRigidDynamic* actor);
+	void addRigidStaticActor(physx::PxRigidStatic* const actor);
+	void addRigidDynamicActor(physx::PxRigidDynamic* const actor);
+    inline const vectorImpl<physx::PxMaterial* > getMaterials() {return _materials;}
+    inline physx::PxScene* getPhysXScene() {return _gScene;}
 
 protected:
-	void updateActor(physx::PxRigidActor* actor);
-	void updateShape(physx::PxShape* shape,Transform* t);
-	void addToSceneGraph(physx::PxRigidActor* actor);
-
+    void updateActor(physx::PxRigidActor* const actor);
+	void updateShape(physx::PxShape* const shape,Transform* const t);
+    ///Adds the actor to the PhysX scene and the SceneGraph. Returns a pointer to the new SceneGraph node created;
+    SceneGraphNode* addToScene(physx::PxRigidActor* const actor);
 private:
+    typedef vectorImpl<physx::PxRigidStatic*  > RigidStaticMap;
+    typedef vectorImpl<physx::PxRigidDynamic* > RigidDynamicMap;
+    typedef vectorImpl<physx::PxRigidStatic*  > RigidStaticQueue;
+    typedef vectorImpl<physx::PxRigidDynamic* > RigidDynamicQueue;
+
+    bool _addedPhysXPlane;
 	physx::PxScene* _gScene;
-	vectorImpl<physx::PxRigidStatic* > _sceneRigidStaticActors;
-	vectorImpl<physx::PxRigidDynamic* > _sceneRigidDynamicActors;
-	boost::mutex _creationMutex;
+    vectorImpl<physx::PxMaterial* > _materials;
+    RigidStaticMap _sceneRigidStaticActors;
+    RigidDynamicMap _sceneRigidDynamicActors;
+    RigidStaticQueue _sceneRigidStaticQueue;
+    RigidDynamicQueue _sceneRigidDynamicQueue;
+    boost::atomic<I32> _rigidStaticCount;
+    boost::atomic<I32> _rigidDynamicCount;
+    mutable SharedLock _queueLock;
 };
 
 #endif

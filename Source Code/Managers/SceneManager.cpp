@@ -10,7 +10,6 @@ SceneManager::SceneManager() : _activeScene(NULL){
 SceneManager::~SceneManager(){
 	PRINT_FN(Locale::get("SCENE_MANAGER_DELETE"));
 	PRINT_FN(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
-	SceneMap::iterator& it = _sceneMap.begin();
 	for_each(SceneMap::value_type& it, _sceneMap){
 		it.second->unload();
 		SAFE_DELETE(it.second);

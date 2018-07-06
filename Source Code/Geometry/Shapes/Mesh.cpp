@@ -7,7 +7,7 @@ void Mesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 	if(!ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")) return;
 	if(sgn->updateBB()){
 		BoundingBox& bb = sgn->getBoundingBox();
-		bb.set(vec3<F32>(100000.0f, 100000.0f, 100000.0f),vec3<F32>(-100000.0f, -100000.0f, -100000.0f));
+        bb.reset();
 		for_each(childrenNodes::value_type& s, sgn->getChildren()){
 			bb.Add(s.second->getBoundingBox());
 		}
@@ -20,7 +20,7 @@ void Mesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 bool Mesh::computeBoundingBox(SceneGraphNode* const sgn){
 	BoundingBox& bb = sgn->getBoundingBox();
 	if(bb.isComputed()) return true;
-	bb.set(vec3<F32>(100000.0f, 100000.0f, 100000.0f),vec3<F32>(-100000.0f, -100000.0f, -100000.0f));
+	bb.reset();
 	for_each(childrenNodes::value_type& s, sgn->getChildren()){
 		bb.Add(s.second->getBoundingBox());
 	}
@@ -38,7 +38,7 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
 
 		/// Add the SubMesh resource as a child
 		SceneGraphNode* subMeshSGN  = sgn->addNode(s,sgn->getName()+"_"+it);
-		///Set SubMesh transform to this transform - HACK. ToDo <- Fix this. Use parent matrix
+#pragma message("Set SubMesh transform to Mesh transform - HACK. ToDo <- Fix this. Use parent matrix")
 		subMeshSGN->getTransform()->setParentMatrix(sgn->getTransform()->getMatrix());
 		///Hold a reference to the submesh by ID (used for animations)
 		_subMeshRefMap.insert(std::make_pair(s->getId(), s));

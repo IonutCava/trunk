@@ -10,7 +10,8 @@
 void QuadtreeNode::Build(U8 depth,		
 						 vec2<U32> pos,					
 						 vec2<U32> HMsize,				
-						 U32 minHMSize)	
+						 U32 minHMSize,
+                         VertexBufferObject* const groundVBO)	
 {
 	_LOD = 0;
 
@@ -25,7 +26,7 @@ void QuadtreeNode::Build(U8 depth,
 	if((U32)std::max(newsize.x, newsize.y) < minHMSize)	{
 		
 		_terrainChunk = New TerrainChunk();
-		_terrainChunk->Load(depth, pos, HMsize);
+		_terrainChunk->Load(depth, pos, HMsize,groundVBO);
 
 		_children = NULL;
 		return;
@@ -52,7 +53,7 @@ void QuadtreeNode::Build(U8 depth,
 	
 	for(I8 i=0; i<4; i++){
 		_children[i].setParentShaderProgram(_parentShaderProgram);
-		_children[i].Build(depth+1, tNewHMpos[i], HMsize, minHMSize);
+		_children[i].Build(depth+1, tNewHMpos[i], HMsize, minHMSize,groundVBO);
 	}
 }
 
@@ -87,7 +88,7 @@ bool QuadtreeNode::computeBoundingBox(const vectorImpl<vec3<F32> >& vertices){
 				_boundingBox.setMax(vec3<F32>(_boundingBox.getMax().x,_children[i]._boundingBox.getMax().y,_boundingBox.getMax().z));
 		}
 	}
-	_boundingBox.isComputed() = true;
+	_boundingBox.setComputed(true);
 	return true;
 }
 
@@ -96,19 +97,19 @@ void QuadtreeNode::Destroy(){
 	SAFE_DELETE_ARRAY(_children);
 	SAFE_DELETE(_terrainChunk);
 }
-///ToDo: Change vegetation rendering and generation! -Ionut
-void QuadtreeNode::DrawGrass(){
+#pragma message("ToDo: Change vegetation rendering and generation system. Stop relying on terrain! -Ionut")
+void QuadtreeNode::DrawGrass(VertexBufferObject* const grassVBO){
 	if(!_children) {
 		assert(_terrainChunk);
 		if( _LOD>=0 ){
-			_terrainChunk->DrawGrass(_LOD, _camDistance);
+			_terrainChunk->DrawGrass(_LOD, _camDistance,grassVBO);
 		}else
 			return;
 	}
 	else {
 		if( _LOD>=0 )
 			for(I8 i=0; i<4; i++)
-				_children[i].DrawGrass();
+				_children[i].DrawGrass(grassVBO);
 		return;		
 	}
 }
@@ -125,8 +126,8 @@ void QuadtreeNode::DrawBBox(){
 }
 
 
-void QuadtreeNode::DrawGround(I32 options)
-{
+void QuadtreeNode::DrawGround(I32 options,VertexBufferObject* const terrainVBO){
+
 	_LOD = -1;
 	Frustum& pFrust = Frustum::getInstance();
 	vec3<F32> center = _boundingBox.getCenter();				
@@ -159,7 +160,7 @@ void QuadtreeNode::DrawGround(I32 options)
 		assert(_terrainChunk);
 
 		if(options & CHUNK_BIT_WATERREFLECTION) {
-			_terrainChunk->DrawGround(TERRAIN_CHUNKS_LOD-1,_parentShaderProgram,true);
+			_terrainChunk->DrawGround(TERRAIN_CHUNKS_LOD-1,_parentShaderProgram,terrainVBO);
 		}
 		else {
 			
@@ -169,12 +170,12 @@ void QuadtreeNode::DrawGround(I32 options)
 			if(_camDistance > TERRAIN_CHUNK_LOD1)		lod = 2;
 			else if(_camDistance > TERRAIN_CHUNK_LOD0)	lod = 1;
 			_LOD = lod;
-			_terrainChunk->DrawGround(lod,_parentShaderProgram);
+			_terrainChunk->DrawGround(lod,_parentShaderProgram,terrainVBO);
 		}
 	}
 	else {
 		for(I8 i=0; i<4; i++)
-			_children[i].DrawGround(options);
+			_children[i].DrawGround(options,terrainVBO);
 	}
 
 }

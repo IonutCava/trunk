@@ -16,9 +16,9 @@ RenderPass::RenderPass(const std::string& name) : _name(name)
 RenderPass::~RenderPass()
 {
 }
+#pragma message("ToDo: Optimize material bind/unbind for each node -Ionut")
+void RenderPass::render(SceneRenderState* const sceneRenderState){
 
-void RenderPass::render()
-{
 	///Sort the render queue by the specified key
 	///This only affects the final rendering stage
 	RenderQueue::getInstance().sort();
@@ -30,7 +30,7 @@ void RenderPass::render()
 	_lastTotalBinSize = RenderQueue::getInstance().getRenderQueueStackSize();
 	///Draw the entire queue;
 	///Limited to 65536 (2^16) items per queue pass!
-	if(GET_ACTIVE_SCENE()->renderState()->drawObjects()){
+	if(sceneRenderState->drawObjects()){
 		for(U16 i = 0; i < renderBinCount; i++){
 			RenderBin* currentBin = RenderQueue::getInstance().getBinSorted(i);
 			for(U16 j = 0; j < currentBin->getBinSize(); j++){
@@ -50,8 +50,8 @@ void RenderPass::render()
 				ShaderProgram* s = NULL;
 				Material* m = sn->getMaterial();
 				if(m){
-					//m->computeShader(_updateMaterials,currentStage == SHADOW_STAGE ? SHADOW_STAGE : FINAL_STAGE);
-					s = m->getShaderProgram(currentStage == SHADOW_STAGE ? SHADOW_STAGE : FINAL_STAGE);
+					//m->computeShader(_updateMaterials,currentStage == DEPTH_STAGE ? DEPTH_STAGE : FINAL_STAGE);
+					s = m->getShaderProgram(currentStage == DEPTH_STAGE ? DEPTH_STAGE : FINAL_STAGE);
 				}
 				///Check if we should draw the node. (only after onDraw as it may contain exclusion mask changes before draw)
 				if(sn->getDrawState(currentStage)){
@@ -60,17 +60,17 @@ void RenderPass::render()
 						GFX_DEVICE.setObjectState(t,false,s);
 					}
 					U8 lightCount = 0;
-					if(currentStage != SHADOW_STAGE){
+					if(!bitCompare(DEPTH_STAGE,currentStage)){
 						///Find the most influental lights for this node. 
 						///Use MAX_LIGHTS_PER_SCENE_NODE to allow more lights to affect this node
 						lightCount = LightManager::getInstance().findLightsForSceneNode(sgn);
 						///Update lights for this node
 						LightManager::getInstance().update();
 						///Only 2 sets of shadow maps for every node
-					}
+                    }
 					CLAMP<U8>(lightCount, 0, MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
 					///Apply shadows only from the most important 2 lights
-					if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)){
+					if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE | REFLECTION_STAGE)){
 						U8 offset = 9;
 						for(U8 n = 0; n < lightCount; n++, offset++){
 							Light* l = LightManager::getInstance().getLightForCurrentNode(n);
@@ -80,7 +80,7 @@ void RenderPass::render()
 					///setup materials and render the node
 					///As nodes are sorted, this should be very fast
 					///We need to apply different materials for each stage
-					switch(currentStage){
+					switch(currentStage){ //switch stat. with bit operatations? don't quite work ...
 						default: ///All stages except shadow, including:
 						case DISPLAY_STAGE: 
 						case POSTFX_STAGE:
@@ -88,14 +88,16 @@ void RenderPass::render()
 						case ENVIRONMENT_MAPPING_STAGE: 
 							sn->prepareMaterial(sgn);
 							break;
-						case SHADOW_STAGE:
-							sn->prepareShadowMaterial(sgn);
+						case DEPTH_STAGE:
+                        case SHADOW_STAGE:
+                        case SSAO_STAGE:
+                        case DOF_STAGE:
+							sn->prepareDepthMaterial(sgn);
 							break;
 					}
 					///Call stage exclusion mask should do the rest
 					sn->render(sgn); 
 					///Unbind current material properties
-					///ToDo: Optimize this!!!! -Ionut
 					switch(currentStage){
 						default: ///All stages except shadow, including:
 						case DISPLAY_STAGE:
@@ -104,8 +106,11 @@ void RenderPass::render()
 						case ENVIRONMENT_MAPPING_STAGE:
 							sn->releaseMaterial();
 							break;
-						case SHADOW_STAGE:
-							sn->releaseShadowMaterial();
+						case DEPTH_STAGE:
+                        case SHADOW_STAGE:
+                        case SSAO_STAGE:
+                        case DOF_STAGE:
+							sn->releaseDepthMaterial();
 							break;
 					}
 					///Drop all applied transformations so that they do not affect the next node
@@ -113,7 +118,7 @@ void RenderPass::render()
 						GFX_DEVICE.releaseObjectState(t,s);
 					}
 					///Apply shadows only from the most important 2 lights
-					if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)){
+					if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE | REFLECTION_STAGE)){
 						U8 offset = (lightCount - 1) + 9;
 						for(I32 n = lightCount - 1; n >= 0; n--,offset--){
 							Light* l = LightManager::getInstance().getLightForCurrentNode(n);

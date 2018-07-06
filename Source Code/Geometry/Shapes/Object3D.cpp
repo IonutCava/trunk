@@ -3,25 +3,23 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-	Object3D::Object3D(PrimitiveType type,PrimitiveFlag flag) : 
+	Object3D::Object3D(ObjectType type, PrimitiveType vboType, ObjectFlag flag) : 
 											  SceneNode(TYPE_OBJECT3D),
 											  _update(false),
 											  _geometryType(type),
 											  _geometryFlag(flag),
-											  _geometry(GFX_DEVICE.newVBO()),
-											  _refreshVBO(true),
-											  _usageContext(OBJECT_STATIC)
+											  _geometry(GFX_DEVICE.newVBO(vboType)),
+											  _refreshVBO(true)
 
 	{}
 
-	Object3D::Object3D(const std::string& name, PrimitiveType type, PrimitiveFlag flag) : 
+	Object3D::Object3D(const std::string& name, ObjectType type, PrimitiveType vboType, ObjectFlag flag) : 
 																		SceneNode(name,TYPE_OBJECT3D),
 																	    _update(false),
 																		_geometryType(type),
 																		_geometryFlag(flag),
-																		_geometry(GFX_DEVICE.newVBO()),
-																		_refreshVBO(true),
-																		_usageContext(OBJECT_STATIC)
+																		_geometry(GFX_DEVICE.newVBO(vboType)),
+																		_refreshVBO(true)
 	{}
 
 void Object3D::render(SceneGraphNode* const sgn){
@@ -55,7 +53,7 @@ void Object3D::computeTangents(){
 	//Code from: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#header-1
     // inputs
     vectorImpl<vec2<F32> > & uvs      = _geometry->getTexcoord();
-    vectorImpl<vec3<F32> > & normals  = _geometry->getNormal();
+    //vectorImpl<vec3<F32> > & normals  = _geometry->getNormal();
     // outputs
     vectorImpl<vec3<F32> > & tangents = _geometry->getTangent();
     vectorImpl<vec3<F32> > & bitangents = _geometry->getBiTangent();

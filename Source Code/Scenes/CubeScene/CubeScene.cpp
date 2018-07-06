@@ -10,11 +10,11 @@ void CubeScene::render(){
 		
 }
 
-void CubeScene::processEvents(U32 time){
+void CubeScene::processTasks(U32 time){
 	LightManager::LightMap& lights = LightManager::getInstance().getLights();
 	F32 updateLights = 0.005f;
 
-	if(time - _eventTimers[0] >= updateLights){
+	if(time - _taskTimers[0] >= updateLights){
 		for(U8 row=0; row<3; row++)
 			for(U8 col=0; col < lights.size()/3.0f; col++){
 				F32 x = col * 150.0f - 5.0f + cos(GETMSTIME()*(col-row+2)*0.008f)*200.0f;
@@ -28,7 +28,7 @@ void CubeScene::processEvents(U32 time){
 				lights[row*10+col]->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vec4<F32>(r,g,b,1));
 			}
 
-		_eventTimers[0] += updateLights;
+		_taskTimers[0] += updateLights;
 	}
 
 }
@@ -93,7 +93,7 @@ bool CubeScene::loadResources(bool continueOnErrors){
 			addLight(light);
 	}
 	
-	_eventTimers.push_back(0.0f);
+	_taskTimers.push_back(0.0f);
 	
 	return true;
 }

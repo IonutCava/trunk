@@ -12,7 +12,7 @@ WaterPlane* ImplResourceLoader<WaterPlane>::operator()(){
 
 	return ptr;
 }
-
+#pragma message("HACK: ToDo: add proper water alpha controls")
 template<>
 bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const std::string& name) {
 
@@ -32,17 +32,17 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const std::stri
 	res->setWaterNormalMap(waterNM);
 	res->setShaderProgram(waterShaderProgram);
 	res->setGeometry(CreateResource<Quad3D>(waterPlane));
+    Material* waterMat = res->getMaterial();
+	assert(waterMat != NULL);
 
-	assert(res->getMaterial() != NULL);
-
-	res->getMaterial()->setTexture(Material::TEXTURE_BASE, waterNM);
-	res->getMaterial()->setShaderProgram(waterShaderProgram->getName());
-	vec3<F32> waterDiffuse = res->getMaterial()->getMaterialMatrix().getCol(1);
-	res->getMaterial()->getMaterialMatrix().setCol(1,vec4<F32>(waterDiffuse, 0.5f)); ///HACK: ToDo: add proper water alpha controls
-	RenderStateBlockDescriptor waterMatDesc = res->getMaterial()->getRenderState(FINAL_STAGE)->getDescriptor();
+	waterMat->setTexture(Material::TEXTURE_BASE, waterNM);
+	waterMat->setShaderProgram(waterShaderProgram->getName());
+	vec3<F32> waterDiffuse = waterMat->getMaterialMatrix().getCol(1);
+	waterMat->getMaterialMatrix().setCol(1,vec4<F32>(waterDiffuse, 0.5f)); 
+	RenderStateBlockDescriptor waterMatDesc = waterMat->getRenderState(FINAL_STAGE)->getDescriptor();
 	waterMatDesc.setCullMode(CULL_MODE_NONE);
 	waterMatDesc.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
-	res->getMaterial()->setRenderStateBlock(waterMatDesc,FINAL_STAGE);
+	waterMat->setRenderStateBlock(waterMatDesc,FINAL_STAGE);
 
 	return res->setInitialData(name);
 }

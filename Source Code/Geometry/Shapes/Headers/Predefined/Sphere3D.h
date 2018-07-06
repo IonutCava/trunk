@@ -24,7 +24,7 @@ class Sphere3D : public Object3D {
 
 public:
 
-	Sphere3D(F32 radius, F32 resolution) : Object3D(SPHERE_3D),
+	Sphere3D(F32 radius, F32 resolution) : Object3D(SPHERE_3D,QUADS),
 										_radius(radius),
 										_resolution(resolution){
 										_dirty = true;

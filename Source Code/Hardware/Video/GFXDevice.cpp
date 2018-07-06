@@ -2,6 +2,7 @@
 #include "Headers/RenderStateBlock.h"
 
 #include "GUI/Headers/GUI.h"
+#include "GUI/Headers/GUIFlash.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Frustum.h"
@@ -26,8 +27,10 @@ GFXDevice::GFXDevice() : _api(GL_API::getInstance()) ///<Defaulting to OpenGL if
    _prevTextureId = 0;
    _currentStateBlock = NULL;
    _newStateBlock = NULL;
+   _previousStateBlock = NULL;
    _stateBlockDirty = false;
    _renderer = NULL;
+   _renderStage = INVALID_STAGE;
    RenderPass* diffusePass = New RenderPass("diffusePass");
    RenderPassManager::getInstance().addRenderPass(diffusePass,1);
    //RenderPassManager::getInstance().addRenderPass(shadowPass,2);
@@ -79,11 +82,11 @@ void GFXDevice::renderModel(Object3D* const model){
 
 }
 
-void GFXDevice::renderElements(PrimitiveType t, GFXDataFormat f, U32 count, const void* first_element){
+void GFXDevice::renderModel(VertexBufferObject* const vbo, GFXDataFormat f, U32 count, const void* first_element){
 	if(_stateBlockDirty){
 		updateStates();
 	}
-	_api.renderElements(t,f,count,first_element);
+	_api.renderModel(vbo,f,count,first_element);
 }
 
 void GFXDevice::drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset){
@@ -109,11 +112,8 @@ void GFXDevice::renderGUIElement(GUIElement* const element){
 		case GUI_TEXT:
 			drawTextToScreen(element);
 			break;
-		case GUI_BUTTON:
-			drawButton(element);
-			break;
 		case GUI_FLASH:
-			drawFlash(element);
+			dynamic_cast<GUIFlash* >(element)->playMovie();
 			break;
 		default:
 			break;
@@ -128,8 +128,7 @@ void GFXDevice::render(boost::function0<void> renderFunction,SceneRenderState* c
 
 bool GFXDevice::isCurrentRenderStage(U16 renderStageMask){
 	assert((renderStageMask & ~(INVALID_STAGE-1)) == 0);
-	if(renderStageMask & _renderStage) {return true;}
-	return false;
+	return bitCompare(renderStageMask,_renderStage);
 }
 
 void GFXDevice::setRenderer(Renderer* const renderer) {
@@ -157,8 +156,6 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
 		ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FBO_CUBEMAP"));
 		return;
 	}
-	///Get some global vars
-	ParamHandler& par = ParamHandler::getInstance();
 	///Save our current camera settings
 	activeCamera->SaveCamera();
 	///And save all camera transform matrices
@@ -202,23 +199,25 @@ RenderStateBlock* GFXDevice::createStateBlock(const RenderStateBlockDescriptor& 
    return result;
 }
 
-void GFXDevice::setStateBlock(RenderStateBlock* block) {
+RenderStateBlock* GFXDevice::setStateBlock(RenderStateBlock* block) {
    assert(block != NULL);
 
    if (block != _currentStateBlock) {
       _deviceStateDirty = true;
       _stateBlockDirty = true;
+	  _previousStateBlock = _newStateBlock;
       _newStateBlock = block;
    } else {
       _stateBlockDirty = false;
      _newStateBlock = _currentStateBlock;
    }
+   return _previousStateBlock;
 }
 
-void GFXDevice::setStateBlockByDesc( const RenderStateBlockDescriptor &desc ){
+RenderStateBlock* GFXDevice::setStateBlockByDesc( const RenderStateBlockDescriptor &desc ){
    RenderStateBlock *block = createStateBlock( desc );
    _stateBlockByDescription = true;
-   SET_STATE_BLOCK( block );
+   return SET_STATE_BLOCK( block );
 }
 
 void GFXDevice::updateStates(bool force) {

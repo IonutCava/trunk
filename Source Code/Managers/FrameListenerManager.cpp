@@ -101,5 +101,5 @@ F32 FrameListenerManager::calculateEventTime(F32 currentTime, FrameEventType typ
 			}
         }
         times.erase(times.begin(), it);
-        return F32(times.back() - times.front()) / ((times.size()-1) * 1000);
+        return F32(times.back() - times.front()) / getSecToMs(times.size()-1);
 }

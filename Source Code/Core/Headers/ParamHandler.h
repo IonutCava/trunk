@@ -20,11 +20,9 @@
 
 #include "core.h"
 #include <typeinfo>
-//#include <boost/any.hpp>
 #include "cdigginsAny.h"
 
 DEFINE_SINGLETON (ParamHandler)
-//typedef Unordered_map<std::string, boost::any> ParamMap;
 typedef Unordered_map<std::string, cdiggins::any> ParamMap;
 typedef Unordered_map<std::string, const char* >  ParamTypeMap;
 typedef cdiggins::anyimpl::bad_any_cast BadAnyCast;

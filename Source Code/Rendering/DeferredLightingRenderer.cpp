@@ -11,5 +11,5 @@ DeferredLightingRenderer::~DeferredLightingRenderer()
 
 void DeferredLightingRenderer::render(boost::function0<void> renderCallback, SceneRenderState* const sceneRenderState) {
 	renderCallback();
-	RenderPassManager::getInstance().render();
+	RenderPassManager::getInstance().render(sceneRenderState);
 }

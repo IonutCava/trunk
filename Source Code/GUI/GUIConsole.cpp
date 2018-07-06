@@ -4,10 +4,15 @@
 #include "Headers/GUIConsoleCommandParser.h"
 #include "CEGUIAddons/Headers/CEGUIFormattedListBox.h"
 
+#include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 
 ///Maximum number of lines to display in the console window
-#define CEGUI_MAX_CONSOLE_ENTRIES 64
+#ifdef _DEBUG
+    #define CEGUI_MAX_CONSOLE_ENTRIES 64
+#else
+    #define CEGUI_MAX_CONSOLE_ENTRIES 128
+#endif
 #define CEGUI_MAX_INPUT_HISTORY 5
 
 int GUIConsole::_instanceNumber; 
@@ -97,8 +102,6 @@ bool GUIConsole::Handle_TextInput(const CEGUI::EventArgs &e){
 
 bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs &e){
 	assert(_editBox != NULL);
-    //We need window events, specifically
-    const CEGUI::WindowEventArgs* args = static_cast<const CEGUI::WindowEventArgs*>(&e);
     // Since we have that string, lets send it to the TextParser which will handle it from here
     _cmdParser->processCommand(_inputBuffer.c_str());
     // Now that we've finished with the text, we need to ensure that we clear out the EditBox.  
@@ -136,26 +139,27 @@ bool GUIConsole::isVisible(){
 }
 
 void GUIConsole::printText(const std::string& output,bool error){
-	if(!_init){
+	if(!_init || !Application::getInstance().isMainThread()){
 		//If the console widget isn't loaded, create an output buffer
+        WriteLock w_lock(_outputMutex);
 		_outputBuffer.push_back(std::make_pair(output,error));
 		return;
 	}
 	//print it all at once
-#ifdef _DEBUG
+
 	U16 count = 0;
+    ReadLock r_lock(_outputMutex);
 	reverse_for_each(bufferMap::value_type& iter, _outputBuffer){
 		OutputText(iter.first,iter.second ? CEGUI::colour(1.0f,0.0f,0.0f) : CEGUI::colour(0.4f,0.4f,0.3f));
 		if(++count > CEGUI_MAX_CONSOLE_ENTRIES) break;
 	}
-#else
-	for_each(bufferMap::value_type& iter, _outputBuffer){
-		OutputText(iter.first,iter.second ? CEGUI::colour(1.0f,0.0f,0.0f) : CEGUI::colour(0.4f,0.4f,0.3f));
-	}
-#endif
+    r_lock.unlock();
+    WriteLock w_lock(_outputMutex);
 	_outputBuffer.clear();
+    w_lock.unlock();
+    
+	 OutputText(output,error ? CEGUI::colour(1.0f,0.0f,0.0f) : CEGUI::colour(0.4f,0.4f,0.3f));
 
-	OutputText(output,error ? CEGUI::colour(1.0f,0.0f,0.0f) : CEGUI::colour(0.4f,0.4f,0.3f));
 }
 
 void GUIConsole::OutputText(const std::string& inMsg, CEGUI::colour colour){
@@ -168,12 +172,12 @@ void GUIConsole::OutputText(const std::string& inMsg, CEGUI::colour colour){
 	newItem->setTextColours(colour);
 	// Add the new ListBoxTextItem to the ListBox
 	_outputWindow->addItem(newItem); 
-#ifdef _DEBUG
+
 	// Try to not overfill the listbox.
     while(_outputWindow->getItemCount() > CEGUI_MAX_CONSOLE_ENTRIES) {
          _outputWindow->removeItem(_outputWindow->getListboxItemFromIndex(0));
     }
-#endif
+
 	// Always make sure the last item is visible (auto-scroll)
 	_outputWindow->ensureItemIsVisible(newItem);
 }

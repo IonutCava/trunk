@@ -40,6 +40,7 @@ class SceneGraph  {
 	}
 
 	inline  vectorImpl<BoundingBox >& getBBoxes(){
+        _boundingBoxes.clear();
 		return _root->getBBoxes(_boundingBoxes);
 	}
 

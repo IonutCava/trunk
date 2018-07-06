@@ -15,9 +15,9 @@ RenderPassManager::~RenderPassManager()
 	_renderPasses.clear();
 }
 
-void RenderPassManager::render() {
+void RenderPassManager::render(SceneRenderState* const sceneRenderState) {
 	for_each(RenderPassItem& rpi, _renderPasses){
-		rpi._rp->render();
+		rpi._rp->render(sceneRenderState);
 	}
 }
 

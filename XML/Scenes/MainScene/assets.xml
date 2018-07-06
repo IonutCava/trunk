@@ -4,11 +4,11 @@
 	<!-- <collada>test</collada> -->
 	<!-- <3ds>test2</3ds> -->
 </geometry>
-
+<!-- 
 <primitives>
 	<item>HelloText</item>
 </primitives>
-
+-->
 <vegetation>
 	<tree>pin</tree>
 	<tree>copacel</tree>
@@ -21,6 +21,7 @@
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
+	<addToNavigation>true</addToNavigation>
 </pin>
 
 <copacel>
@@ -29,6 +30,7 @@
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
+	<addToNavigation>true</addToNavigation>
 </copacel>
 
 <copac>
@@ -37,6 +39,7 @@
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
+	<addToNavigation>true</addToNavigation>
 </copac>
 
 <box>
@@ -53,6 +56,7 @@
 	<position x="-10" y="340" z="0" />
 	<orientation x="50" y="0" z="0" />
 	<version>1.0</version>
+	<addToNavigation>true</addToNavigation>
 </adi>
 
 <HelloText>

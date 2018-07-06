@@ -23,36 +23,32 @@
 class Box3D : public Object3D
 {
 public:
-	Box3D(F32 size) :  Object3D(BOX_3D), _size(size){
+	Box3D(F32 size) :  Object3D(BOX_3D,TRIANGLE_STRIP), _size(size){
 	
-		vec3<F32> vertices[] = {vec3<F32>(-1.0f, -1.0f, 1.0f), 
-							    vec3<F32>(1.0f, -1.0f, 1.0f), 
-							    vec3<F32>(1.0f, 1.0f, 1.0f), 
-							    vec3<F32>(-1.0f, 1.0f, 1.0f), 
-							    vec3<F32>(-1.0f, -1.0f, -1.0f), 
-							    vec3<F32>(1.0f, -1.0f, -1.0f), 
-							    vec3<F32>(1.0f, 1.0f, -1.0f), 
-							    vec3<F32>(-1.0f, 1.0f, -1.0f)};
+		vec3<F32> vertices[] = {vec3<F32>(-1.0, -1.0,  1.0), 
+							    vec3<F32>( 1.0, -1.0,  1.0), 
+							    vec3<F32>(-1.0,  1.0,  1.0), 
+							    vec3<F32>( 1.0,  1.0,  1.0), 
+							    vec3<F32>(-1.0, -1.0, -1.0), 
+							    vec3<F32>( 1.0, -1.0, -1.0), 
+							    vec3<F32>(-1.0,  1.0, -1.0), 
+							    vec3<F32>( 1.0,  1.0, -1.0)};
 
-		vec3<F32> normals[] = {vec3<F32>(-1, -1, 1), 
-							   vec3<F32>(1, -1, 1), 
-							   vec3<F32>(1, 1, 1), 
-							   vec3<F32>(-1, 1, 1), 
+        vec3<F32> normals[] = {vec3<F32>(-1, -1,  1), 
+							   vec3<F32>( 1, -1,  1), 
+							   vec3<F32>(-1,  1,  1), 
+							   vec3<F32>( 1,  1,  1), 
 							   vec3<F32>(-1, -1, -1), 
-							   vec3<F32>(1, -1, -1), 
-							   vec3<F32>(1, 1, -1), 
-							   vec3<F32>(-1, 1, -1)};
+							   vec3<F32>( 1, -1, -1), 
+							   vec3<F32>(-1,  1, -1), 
+							   vec3<F32>( 1,  1, -1)};
 
-		U16 indices[] = {0, 1, 2, 2, 3, 0, 
-						 3, 2, 6, 6, 7, 3, 
-						 7, 6, 5, 5, 4, 7, 
-						 4, 0, 3, 3, 7, 4, 
-						 0, 1, 5, 5, 4, 0,
-						 1, 5, 6, 6, 2, 1 };
+		U16 indices[] = {0, 1, 2, 3, 7, 1, 5,
+                         4, 7, 6, 2, 4, 0, 1};
 
 		_geometry->reservePositionCount(8);
 		_geometry->getNormal().reserve(8);
-		_geometry->getHWIndices().reserve(36);
+		_geometry->getHWIndices().reserve(14);
 		_geometry->setIndiceLimits(vec2<U16>(0,7));
 		F32 halfExtent = size*0.5f;
 
@@ -61,7 +57,7 @@ public:
 			_geometry->getNormal().push_back(normals[i]);
 		}
 
-		for(U8 i = 0; i < 36; i++){
+		for(U8 i = 0; i < 14; i++){
 			_geometry->getHWIndices().push_back(indices[i]);
 		}
 

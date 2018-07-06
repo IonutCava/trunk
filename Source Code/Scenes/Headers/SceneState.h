@@ -20,11 +20,21 @@
 
 #include "core.h"
 #include "Hardware/Audio/Headers/SFXDevice.h"
+#include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Hardware/Audio/Headers/AudioDescriptor.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+
 ///This class contains all the variables that define each scene's "unique"-ness:
 ///background music, wind information, visibility settings, camera movement,
 ///BB and Skeleton visibility, fog info, etc
+	///Fog information (fog is so game specific, that it belongs in SceneState not SceneRenderState
+struct FogDescriptor{
+    FogMode _fogMode;
+    F32 _fogDensity;
+    F32 _fogStartDist;
+    F32 _fogEndDist;
+    vec4<F32> _fogColor;
+};
 
 class SceneState{
 
@@ -36,8 +46,11 @@ public:
 	  _angleLR(0.0f),
 	  _isRunning(false)
 	{
-		_fogColor = vec4<F32>(0.2f, 0.2f, 0.2f, 1.0f);
-		_fogDensity = 0.01f;
+		_fog._fogColor = vec4<F32>(0.2f, 0.2f, 0.2f, 1.0f);
+		_fog._fogDensity = 0.01f;
+        _fog._fogMode = FOG_EXP2;
+        _fog._fogStartDist = 10;
+        _fog._fogEndDist = 1000;
 	}
 
 	virtual ~SceneState(){
@@ -48,6 +61,7 @@ public:
 		}
 		_backgroundMusic.clear();
 	}
+    inline FogDescriptor& getFogDesc()         {return _fog;}
 	inline F32& getWindSpeed()                 {return _windSpeed;}
 	inline F32& getWindDirX()                  {return _windDirX;}
 	inline F32& getWindDirZ()                  {return _windDirZ;}
@@ -63,16 +77,16 @@ public:
 	F32 _moveLR;  ///< left-right move change detected
 	F32 _angleUD; ///< up-down angle change detected
 	F32 _angleLR; ///< left-right angle change detected
-	///Fog information (fog is so game specific, that it belongs in SceneState not SceneRenderState
-	vec4<F32> _fogColor;
-	F32       _fogDensity;
+
 	F32 _waterHeight;
 	F32 _waterDepth;
 	///Background music map
 	typedef Unordered_map<std::string /*trackName*/, AudioDescriptor* /*track*/> MusicPlaylist;
 	MusicPlaylist _backgroundMusic;
+
 protected:
 	friend class Scene;
+    FogDescriptor _fog;
 	bool _isRunning;
 	F32  _grassVisibility;
 	F32  _treeVisibility;

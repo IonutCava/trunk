@@ -24,8 +24,8 @@ bool PhysXSceneInterface::init(){
 	if(!sceneDesc.filterShader){
 		sceneDesc.filterShader  = PhysX::getInstance().getFilterShader();
 	}
-
-	_gScene = PhysX::getInstance().getSDK()->createScene(sceneDesc);
+    physx::PxPhysics* gPhysicsSDK = PhysX::getInstance().getSDK();
+	_gScene = gPhysicsSDK->createScene(sceneDesc);
 	if (!_gScene){
 		ERROR_FN(Locale::get("ERROR_PHYSX_INTERFACE_CREATE_SCENE"));
 		return false;
@@ -33,7 +33,15 @@ bool PhysXSceneInterface::init(){
 
 	_gScene->setVisualizationParameter(PxVisualizationParameter::eSCALE,     1.0);
 	_gScene->setVisualizationParameter(PxVisualizationParameter::eCOLLISION_SHAPES, 1.0f);
-	PhysX::getInstance().registerActiveScene(this);
+    PxMaterial* planeMaterial = gPhysicsSDK->createMaterial(0.9f, 0.1f, 1.0f);
+    _materials.push_back(planeMaterial);
+    PxMaterial* cubeMaterial = gPhysicsSDK->createMaterial(0.1f, 0.4f, 1.0f);
+    _materials.push_back(cubeMaterial);
+    PxMaterial* sphereMaterial = gPhysicsSDK->createMaterial(0.6f, 0.1f, 0.6f);
+    _materials.push_back(sphereMaterial);
+    _addedPhysXPlane = false;
+    _rigidStaticCount = 0;
+    _rigidDynamicCount = 0;
 	return true;
 }
 
@@ -43,6 +51,27 @@ bool PhysXSceneInterface::exit(){
 }
 
 void PhysXSceneInterface::idle(){
+    UpgradableReadLock ur_lock(_queueLock);
+    I32 tempDynamic = _rigidDynamicCount;
+    for(I32 i = 0; i < tempDynamic; i++){
+        PxRigidDynamic* actor = _sceneRigidDynamicQueue[i];
+        _sceneRigidDynamicActors.push_back(actor);
+        addToScene(actor);
+    }
+
+    I32 tempStatic = _rigidStaticCount;
+    for(I32 i = 0; i < tempStatic; i++){
+        PxRigidStatic* actor = _sceneRigidStaticQueue[i];
+        _sceneRigidStaticActors.push_back(actor);
+        addToScene(actor);
+    }
+
+    UpgradeToWriteLock uw_lock(ur_lock);
+    _sceneRigidStaticQueue.clear();
+    _sceneRigidDynamicQueue.clear();
+
+    _rigidStaticCount = 0;
+    _rigidDynamicCount = 0;
 }
 
 void PhysXSceneInterface::release(){
@@ -55,119 +84,130 @@ void PhysXSceneInterface::release(){
 
 void PhysXSceneInterface::update(){
 	if(!_gScene) return;
-	boost::lock_guard<boost::mutex> lock(_creationMutex);
-	for_each(PxRigidDynamic* actor, _sceneRigidDynamicActors){
-		updateActor(actor);
-
+    for(RigidDynamicMap::iterator it = _sceneRigidDynamicActors.begin(); 
+                                  it != _sceneRigidDynamicActors.end();
+                                  it++){
+		updateActor(*it);
 	}
-	for_each(PxRigidStatic* actor, _sceneRigidStaticActors){
-		updateActor(actor);
+
+    for(RigidStaticMap::iterator it =  _sceneRigidStaticActors.begin();
+                                 it != _sceneRigidStaticActors.end(); 
+                                 it++){
+		updateActor(*it);
 	}
 }
 
-void PhysXSceneInterface::updateActor(PxRigidActor* actor){
+void PhysXSceneInterface::updateActor(PxRigidActor* const actor){
    PxU32 nShapes = actor->getNbShapes(); 
    PxShape** shapes=New PxShape*[nShapes];
    actor->getShapes(shapes, nShapes);
-   Transform* t = static_cast<Transform*>(actor->userData);
    while (nShapes--){ 
-      updateShape(shapes[nShapes], t); 
+       updateShape(shapes[nShapes], static_cast<Transform*>(actor->userData)); 
    } 
    SAFE_DELETE_ARRAY(shapes);
 }
 
-void PhysXSceneInterface::updateShape(PxShape* shape, Transform* t){
+#pragma message("ToDo: Remove hack! Find out why plane isn't rotating - Ionut")
+void PhysXSceneInterface::updateShape(PxShape* const shape, Transform* const t){
 	if(!t || !shape) return;
 	PxTransform pT = PxShapeExt::getGlobalPose(*shape);
 	if(shape->getGeometryType() == PxGeometryType::ePLANE){
 		t->scale(shape->getActor().getObjectSize());
-		//ToDo: Remove hack! Find out why plane isn't rotating - Ionut
 		t->rotate(vec3<F32>(1,0,0),90);
 	}else{
 		t->rotateQuaternion(Quaternion<F32>(pT.q.x,pT.q.y,pT.q.z,pT.q.w));
 	}
 	t->setPosition(vec3<F32>(pT.p.x,pT.p.y,pT.p.z));
-	
-	
 }
 
 void PhysXSceneInterface::process(F32 timeStep){
 	if(!_gScene) return;
 	_gScene->simulate((physx::PxReal)timeStep);  
-	_gScene->fetchResults(true);
+    while(!_gScene->fetchResults()){
+        idle();   
+    }
 }
 
-void PhysXSceneInterface::addRigidStaticActor(physx::PxRigidStatic* actor) {
-
-	if(!PhysX::getInstance().getSDK()) return;
-
-	if(!_gScene) return;
-
-	_creationMutex.lock();
-
-	_sceneRigidStaticActors.push_back(actor);
-
-	_creationMutex.unlock();
-
-	_gScene->addActor(*actor);
-
-	addToSceneGraph(actor);
-
+void PhysXSceneInterface::addRigidStaticActor(physx::PxRigidStatic* const actor) {
+    WriteLock w_lock(_queueLock);
+    _sceneRigidStaticQueue.push_back(actor);
+    w_lock.unlock();
+    _rigidStaticCount++;
 }
 
-void PhysXSceneInterface::addRigidDynamicActor(physx::PxRigidDynamic* actor) {
-	if(!PhysX::getInstance().getSDK()) return;
-	if(!_gScene) return;
-	_creationMutex.lock();
-	_sceneRigidDynamicActors.push_back(actor); 
-	_creationMutex.unlock();
-	_gScene->addActor(*actor);
-	addToSceneGraph(actor);
+void PhysXSceneInterface::addRigidDynamicActor(physx::PxRigidDynamic* const actor) {
+    WriteLock w_lock(_queueLock);
+   _sceneRigidDynamicQueue.push_back(actor);
+   w_lock.unlock();
+   _rigidDynamicCount++;
 }
 
-bool _addedPhysXPlane = false;
-void PhysXSceneInterface::addToSceneGraph(PxRigidActor* actor){
 
-	if(!actor) return;
+#pragma message("ToDo: Only 1 shape per actor for now. Fix This! -Ionut")
+SceneGraphNode* PhysXSceneInterface::addToScene(PxRigidActor* const actor){
+    if(!actor){
+         return NULL;
+    }
+    SceneNode* sceneNode = NULL;
+    SceneGraphNode* tempNode = NULL;
 
-	U32 nbActors = _gScene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC | PxActorTypeSelectionFlag::eRIGID_STATIC);
-	std::stringstream ss;
+    _gScene->addActor(*actor);
+	U32 nbActors = _gScene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC | 
+                                        PxActorTypeSelectionFlag::eRIGID_STATIC);
 	PxShape** shapes=New PxShape*[actor->getNbShapes()];
 	actor->getShapes(shapes, actor->getNbShapes());   
-	//ToDo: Only 1 shape per actor for now. Fix This! -Ionut
-	Object3D* actorGeometry = NULL;
 
+    std::string sgnName = "";
 	switch(shapes[0]->getGeometryType()){
 		 case PxGeometryType::eBOX: {
-			ss << "BoxActor_" << nbActors;
-			actorGeometry = CreateResource<Box3D>(ResourceDescriptor(ss.str()));
-			PxBoxGeometry box;
+            PxBoxGeometry box;
 			shapes[0]->getBoxGeometry(box);
-			dynamic_cast<Box3D*>(actorGeometry)->setSize(box.halfExtents.x * 2);
-			dynamic_cast<SceneNode*>(actorGeometry)->getMaterial()->setDiffuse(vec4<F32>(0.0f,0.0f,1.0f,1.0f));
-			dynamic_cast<SceneNode*>(actorGeometry)->getMaterial()->setAmbient(vec4<F32>(0.0f,0.0f,1.0f,1.0f));
+            std::string meshName = "BoxActor_";
+            meshName.append(Util::toString(box.halfExtents.x * 2));
+            sgnName = meshName + "_node_";
+            sgnName.append(Util::toString(nbActors));
+
+            ResourceDescriptor boxDescriptor(meshName);
+            boxDescriptor.setPropertyList(Util::toString(box.halfExtents.x * 2));
+			sceneNode = CreateResource<Box3D>(boxDescriptor);
+            Material* boxMaterial = CreateResource<Material>(ResourceDescriptor(meshName+"_material"));
+            if(sceneNode->getRefCount() == 1){
+			    boxMaterial->setDiffuse(vec4<F32>(0.0f,0.0f,1.0f,1.0f));
+			    boxMaterial->setAmbient(vec4<F32>(0.0f,0.0f,1.0f,1.0f));
+                boxMaterial->setEmissive(vec4<F32>(0.1f,0.1f,0.1f,1.0f));
+                boxMaterial->setShininess(2);
+            }
+            sceneNode->setMaterial(boxMaterial);
 	   }
        break;
 		 case PxGeometryType::ePLANE: {
 		   if(!_addedPhysXPlane){
-				ss << "PlaneActor_" << nbActors;
+                sgnName = "PlaneActor_node_";
+                sgnName.append(Util::toString(nbActors));
 				Material* planeMaterial = CreateResource<Material>(ResourceDescriptor("planeMaterial"));
-				ResourceDescriptor planeDescriptor(ss.str());
+				ResourceDescriptor planeDescriptor("PlaneActor");
 				planeDescriptor.setFlag(true);
-				actorGeometry = CreateResource<Quad3D>(planeDescriptor);
-				planeMaterial->setDiffuse(vec4<F32>(1.0f,0.0f,0.0f,1.0f));
-				planeMaterial->setAmbient(vec4<F32>(1.0f,0.0f,0.0f,1.0f));
-				actorGeometry->setMaterial(planeMaterial);
+				sceneNode = CreateResource<Quad3D>(planeDescriptor);
+                if(planeMaterial->getRefCount() == 1){
+				    planeMaterial->setDiffuse(vec4<F32>(0.4f,0.1f,0.1f,1.0f));
+				    planeMaterial->setAmbient(vec4<F32>(0.4f,0.1f,0.1f,1.0f));
+                    planeMaterial->setEmissive(vec4<F32>(0.3f,0.3f,0.3f,1.0f));
+                    planeMaterial->setShininess(0);
+                    planeMaterial->setCastsShadows(false);
+                }
+				sceneNode->setMaterial(planeMaterial);
 				_addedPhysXPlane = true;
 		   }
 		}break;
 	} 
     SAFE_DELETE_ARRAY(shapes);
 
-	if(actorGeometry){
-		_creationMutex.lock();
-		SceneGraphNode* tempNode = _parentScene->addGeometry(actorGeometry);
-		_creationMutex.unlock();
-		actor->userData = (void*)tempNode->getTransform();
+	if(sceneNode){
+		tempNode = _parentScene->addGeometry(sceneNode,sgnName);
+        actor->userData = static_cast<void* >(tempNode->getTransform());
 	}
+    if(!tempNode){
+        ERROR_FN(Locale::get("ERROR_ACTOR_CAST"),sgnName.c_str());
+    }
+    return tempNode;
 }

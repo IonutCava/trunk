@@ -1,5 +1,5 @@
 #include "Headers/Trigger.h"
-#include "Utility/Headers/Event.h"
+#include "Hardware/Platform/Headers/Task.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
 #include "Dynamics/Entities/Units/Headers/Unit.h"
 
@@ -13,7 +13,7 @@ Trigger::~Trigger()
 
 }
 
-void Trigger::setParams( Event_ptr triggeredEvent, const vec3<F32>& triggerPosition, F32 radius){
+void Trigger::setParams( Task_ptr triggeredTask, const vec3<F32>& triggerPosition, F32 radius){
 	/// Check if position has changed
    if(!_triggerPosition.compare(triggerPosition)){
 	   _triggerPosition = triggerPosition;
@@ -30,8 +30,8 @@ void Trigger::setParams( Event_ptr triggeredEvent, const vec3<F32>& triggerPosit
 			_triggerImpostor->setRadius(radius);
 		  }
    }
-   /// swap event anyway
-   	_triggeredEvent.swap(triggeredEvent);
+   /// swap Task anyway
+   	_triggeredTask.swap(triggeredTask);
 }
 
 bool Trigger::unload(){
@@ -65,9 +65,9 @@ bool Trigger::check(Unit* const unit,const vec3<F32>& camEyePos){
 	}else{ ///< use unit position
 		position = unit->getCurrentPosition();
 	}
-	/// Should we trigger the event?
+	/// Should we trigger the Task?
 	if(position.compare(_triggerPosition, _radius)){
-		/// Check if the event is valid, and trigger if it is
+		/// Check if the Task is valid, and trigger if it is
 		return trigger();
 	}
 	/// Not triggered
@@ -75,9 +75,9 @@ bool Trigger::check(Unit* const unit,const vec3<F32>& camEyePos){
 }
 
 bool Trigger::trigger(){
-	if(!_triggeredEvent){
+	if(!_triggeredTask){
 		return false;
 	}
-	_triggeredEvent.get()->startEvent();
+	_triggeredTask.get()->startTask();
 	return true;
 }

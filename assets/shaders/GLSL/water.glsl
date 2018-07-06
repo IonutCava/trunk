@@ -33,7 +33,7 @@ uniform float noise_tile;
 uniform float noise_factor;
 uniform float time;
 uniform float water_shininess;
-
+uniform mat4  material;
 uniform sampler2D texWaterReflection;
 uniform sampler2D texWaterNoiseNM;
 
@@ -74,8 +74,8 @@ void main (void)
 	vec3 V = normalize(vPixToEye);
 	float iSpecular = pow(clamp(dot(reflect(-L, N), V), 0.0, 1.0), water_shininess);
 	iDiffuse = max(dot(L, N), 0.0);
-	//vec4 cAmbient = gl_LightSource[0].ambient * gl_FrontMaterial.ambient;
-	vec4 cSpecular = gl_LightSource[0].specular * gl_FrontMaterial.specular * iSpecular;
+	//vec4 cAmbient = gl_LightSource[0].ambient * material[0];
+	vec4 cSpecular = gl_LightSource[0].specular * material[2] * iSpecular;
 	/////////////////////////
 	// SHADOW MAPS
 	float distance_max = 200.0;
@@ -86,11 +86,12 @@ void main (void)
 	}
 	/////////////////////////
 
-	gl_FragColor = (0.2 + 0.8 * shadow) * cDiffuse + shadow * cSpecular;
-	gl_FragColor = applyFog(gl_FragColor);
+	vec4 color = (0.2 + 0.8 * shadow) * cDiffuse + shadow * cSpecular;
 	// FRESNEL ALPHA
-	gl_FragColor.a	= Fresnel(V, N, 0.5, 2.0);
+	color.a	= Fresnel(V, N, 0.5, 2.0);
+    applyFog(color);
 
+	gl_FragColor = color;
 }
 
 

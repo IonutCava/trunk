@@ -20,13 +20,10 @@
 
 #include "Scenes/Headers/Scene.h"
 
-///For this scene, we will be using PhysX, so name members accordingly for more readable code
-class PhysXImplementation;
 class PhysXScene : public Scene {
 
 public:
 	PhysXScene() : Scene(),
-				  _physx(NULL),
 				  _mousePressed(false){}
 
 	void preRender();
@@ -35,7 +32,7 @@ public:
 	bool loadResources(bool continueOnErrors);
 	bool unload();
 	void processInput();
-	void processEvents(U32 time);
+	void processTasks(U32 time);
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onMouseMove(const OIS::MouseEvent& key);
@@ -43,14 +40,14 @@ public:
 	void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
-	void createStack();
+	void createStack(U32 size = 10);
+    void createTower(U32 size = 10);
 
 private:
-	vectorImpl<F32> _eventTimers;
 	vec3<F32> _sunvector;
-	PhysXImplementation* _physx;
-	bool _mousePressed;
+	bool      _mousePressed;
 	vec2<F32> _prevMouse;
+    boost::atomic<bool> _addingActors;
 };
 
 #endif

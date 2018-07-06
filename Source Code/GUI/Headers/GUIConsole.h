@@ -1,10 +1,26 @@
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
+/* This file is part of DIVIDE Framework.
+
+   DIVIDE Framework is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   DIVIDE Framework is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #ifndef _GUI_CONSOLE_H_
 #define _GUI_CONSOLE_H_
 
 #include "CEGUI.h"
 #include "Utility/Headers/Vector.h" 
 #include "Hardware/Platform/Headers/PlatformDefines.h"
-
+#include "Hardware/Platform/Headers/SharedMutex.h"           //For multi-threading
 #include <deque>
 
 class GUIConsoleCommandParser;
@@ -43,6 +59,7 @@ class GUIConsole{
 	   bufferMap   _outputBuffer;           //< Used to queue output text to be displayed when '_init' becomes true   
 	   std::deque<std::string >_inputHistory; //< Used to manage the input history
 	   I16 _inputHistoryIndex;                //< Used to cycle through history
+       mutable SharedLock _outputMutex;
 };
 
 #endif

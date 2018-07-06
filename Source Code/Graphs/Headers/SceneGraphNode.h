@@ -21,6 +21,7 @@
 #define SCENE_GRAPH_PROCESS(pointer) boost::bind(&SceneGraph::process(),pointer)
 
 #include "SceneNode.h"
+#include <boost/atomic.hpp>
 
 class SceneGraph;
 class SceneRoot : public SceneNode{
@@ -38,6 +39,17 @@ public:
 
 class SceneGraphNode{
 public:
+    ///Usage context affects lighting, navigation,etc
+	enum UsageContext {
+		NODE_DYNAMIC = 0, 
+		NODE_STATIC
+	};
+
+    enum NavigationContext {
+        NODE_OBSTACLE = 0,
+        NODE_IGNORE
+    };
+
 	typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
 	SceneGraphNode(SceneNode* node);
 
@@ -49,6 +61,8 @@ public:
 	void checkBoundingBoxes();
 	/// Position, rotation, scale updates
 	void updateTransforms();
+    /// Apply current transform to the node's BB
+    void updateBoundingBoxTransform();
 	/// Culling and visibility checks
 	void updateVisualInformation();
 	/// Called from SceneGraph "sceneUpdate"
@@ -80,12 +94,13 @@ inline       void             setGrandParent(SceneGraphNode* grandParent) {_gran
 /*Bounding Box Management*/
 inline   	 void    		  setInitialBoundingBox(BoundingBox& initialBoundingBox){WriteLock w_lock(_queryLock); _initialBoundingBox = initialBoundingBox;}
 inline const BoundingBox&     getInitialBoundingBox()		  {ReadLock r_lock(_queryLock); return _initialBoundingBox;}
-inline       BoundingBox&	  getBoundingBox()                {ReadLock r_lock(_queryLock); return _boundingBox;}
+inline       BoundingBox&     getBoundingBox()                {ReadLock r_lock(_queryLock); return _boundingBox;}
+inline       void             updateBoundingBox(const BoundingBox& box) {WriteLock w_lock(_queryLock); _boundingBox = box;}  
+
 vectorImpl<BoundingBox >&     getBBoxes(vectorImpl<BoundingBox >& boxes );
-inline       void             updateBB(bool state) {WriteLock w_lock(_queryLock); _updateBB = state;}
-inline       bool             updateBB()           {ReadLock r_lock(_queryLock); return _updateBB;}
+inline       void             updateBB(bool state) { _updateBB = state;}
+inline       bool             updateBB()           { return _updateBB;}
 inline       BoundingSphere&  getBoundingSphere()  {ReadLock r_lock(_queryLock); return _boundingSphere;}         
-	         bool             computeBoundingSphere();
 /*Bounding Box Management*/
 
 /*Transform management*/
@@ -100,11 +115,17 @@ inline   	 void             setActive(bool state) {_wasActive = _active; _active
 inline       bool             isActive() {return _active;}
 inline       void             restoreActive() {_active = _wasActive;}
 inline       void			  scheduleDeletion(){_shouldDelete = true;}
+inline       bool             isReady(){return _isReady;}
 /*Node State*/
 
 inline       U32              getChildQueue() {return _childQueue;}
 inline       void             incChildQueue() {_childQueue++;}
 inline       void             decChildQueue() {_childQueue--;}
+
+inline  UsageContext              getUsageContext() const {return _usageContext;}
+inline  void                      setUsageContext(UsageContext newContext) {_usageContext = newContext;}
+inline  NavigationContext         getNavigationContext() const {return _navigationContext;}
+inline  void                      setNavigationContext(NavigationContext newContext) {_navigationContext = newContext;}
 
 private:
 	inline void setName(const std::string& name){_name = name;}
@@ -113,12 +134,14 @@ private:
 	SceneNode* _node;
 	NodeChildren _children;
 	SceneGraphNode *_parent, *_grandParent;
-	bool _active, _wasActive;
+    boost::atomic<bool> _active;
+    bool _wasActive;
 	bool _noDefaultTransform;
 	bool _inView;
 	bool _sorted;
 	bool _silentDispose;
-	bool _updateBB;
+    boost::atomic<bool> _updateBB;
+    boost::atomic<bool> _isReady; //<is created and has a valid transform
 	bool _shouldDelete;
 	///_initialBoundingBox is a copy of the initialy calculate BB for transformation
 	///it should be copied in every computeBoungingBox call;
@@ -127,12 +150,12 @@ private:
 	BoundingSphere _boundingSphere; ///<For faster visibility culling
 
 	Transform*	_transform;
-	SceneGraph* _sceneGraph;
 	U32 _childQueue,_updateTimer;
 	std::string _name;
 	mutable SharedLock _queryLock;
-	boost::mutex _transformLock;
-	boost::mutex _renderQueueLock;
+
+    UsageContext _usageContext;
+    NavigationContext _navigationContext;
 };
 
 #endif

@@ -6,7 +6,9 @@
 #include "Rendering/Headers/Frustum.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Shaders/Headers/glUniformBufferObject.h"
+#include "Shaders/Headers/glLightUniformBufferObject.h"
+#include "Shaders/Headers/glMatrixUniformBufferObject.h"
+#include "Shaders/Headers/glMaterialUniformBufferObject.h"
 
 #define FTGL_LIBRARY_STATIC
 #include <FTGL/ftgl.h>
@@ -211,18 +213,18 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 	
 	I32 numberOfDisplayModes = glfwGetVideoModes(_modes, 20 );
 	PRINT_FN(Locale::get("AVAILABLE_VIDEO_MODES"),numberOfDisplayModes);
-
-	_lightUBO = New glUniformBufferObject();
-	_materialsUBO = New glUniformBufferObject();
-	_transformsUBO = New glUniformBufferObject();
-
+/*
+	_lightUBO = New glLightUniformBufferObject();
+	_materialsUBO = New glMaterialUniformBufferObject();
+	_transformsUBO = New glMatrixUniformBufferObject();
+*/
 	//That's it. Everything should be ready for draw calls
 	PRINT_FN(Locale::get("START_OGL_API_OK"));
 	
 	RenderStateBlockDescriptor defaultGLStateDescriptor;
 	GFX_DEVICE._defaultStateBlock = GFX_DEVICE.createStateBlock(defaultGLStateDescriptor);
 	SET_DEFAULT_STATE_BLOCK();
-
+    GLCheck(glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE));
 	//Create an immediate mode shader
 	ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
 	_imShader = CreateResource<ShaderProgram>(immediateModeShader);
@@ -257,9 +259,9 @@ void GL_API::closeRenderingApi(){
 	for_each(IMPrimitive* priv, _glimInterfaces){
 		SAFE_DELETE(priv);
 	}
-	SAFE_DELETE(_lightUBO);
-	SAFE_DELETE(_materialsUBO);
-	SAFE_DELETE(_transformsUBO);
+	//SAFE_DELETE(_lightUBO);
+	//SAFE_DELETE(_materialsUBO);
+	//SAFE_DELETE(_transformsUBO);
 	_fonts.clear();
 	_3DFonts.clear();
 	_glimInterfaces.clear(); //<Should call all destructors

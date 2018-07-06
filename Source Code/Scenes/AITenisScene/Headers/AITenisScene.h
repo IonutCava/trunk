@@ -51,6 +51,8 @@ public:
 		_scoreTeam1 = 0;
 		_scoreTeam2 = 0;
 		_mousePressed = false;
+		_gamePlaying = false;
+        _gameGUID = 0;
 	}
 
 	void preRender();
@@ -60,7 +62,7 @@ public:
 	bool initializeAI(bool continueOnErrors);
 	bool deinitializeAI(bool continueOnErrors);
 	void processInput();
-	void processEvents(U32 time);
+	void processTasks(U32 time);
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onMouseMove(const OIS::MouseEvent& key);
@@ -69,12 +71,13 @@ public:
 	void onJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov);
 
 private:
+    //ToDo: replace with Physics system collision detection
+    void checkCollisions();
 	void playGame(boost::any a, CallbackParam b);
 	void startGame();
 	void resetGame();
 
 private:
-	vectorImpl<F32> _eventTimers;
 	vec3<F32> _sunvector;
 	Sphere3D* _ball;
 	SceneGraphNode* _ballSGN;
@@ -84,22 +87,29 @@ private:
 	bool _mousePressed;
 
 private: //Game stuff
-	F32 _sideImpulseFactor;
-	bool _directionTeam1ToTeam2;
-	bool _upwardsDirection;
-	bool _touchedTerrainTeam1;
-	bool _touchedTerrainTeam2;
-	bool _lostTeam1;
-	bool _applySideImpulse;
-	I8 _scoreTeam1;
-	I8 _scoreTeam2;
+	mutable SharedLock _gameLock;
+    mutable boost::atomic<bool> _collisionPlayer1;
+    mutable boost::atomic<bool> _collisionPlayer2;
+    mutable boost::atomic<bool> _collisionPlayer3;
+    mutable boost::atomic<bool> _collisionPlayer4;
+    mutable boost::atomic<bool> _collisionNet;
+    mutable boost::atomic<bool> _collisionFloor;
+	mutable boost::atomic<bool> _directionTeam1ToTeam2;
+	mutable boost::atomic<bool> _upwardsDirection;
+	mutable boost::atomic<bool> _touchedTerrainTeam1;
+	mutable boost::atomic<bool> _touchedTerrainTeam2;
+	mutable boost::atomic<bool> _lostTeam1;
+    mutable boost::atomic<bool> _applySideImpulse;
+	mutable boost::atomic<bool> _gamePlaying;
+	mutable boost::atomic<I8>   _scoreTeam1;
+	mutable boost::atomic<I8>   _scoreTeam2;
+    F32 _sideImpulseFactor;
+    U32 _gameGUID;
 	///AIEntities are the "processors" behing the NPC's
 	AIEntity *_aiPlayer1, *_aiPlayer2, *_aiPlayer3, *_aiPlayer4;
 	///NPC's are the actual game entities
 	NPC *_player1, *_player2, *_player3, *_player4;
 	///Team's are factions for AIEntites so they can manage friend/foe situations
 	AICoordination *_team1, *_team2;
-	boost::mutex _ballPositionQuery;
-	boost::mutex _ballPositionUpdate;
 };
 #endif

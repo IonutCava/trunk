@@ -125,4 +125,5 @@ public:
 
 #define SET_STATE_BLOCK(X) GFX_DEVICE.setStateBlock(X)
 #define SET_DEFAULT_STATE_BLOCK() GFX_DEVICE.setDefaultStateBlock()
+#define SET_PREVIOUS_STATE_BLOCK() GFX_DEVICE.setPreviousStateBlock()
 #endif

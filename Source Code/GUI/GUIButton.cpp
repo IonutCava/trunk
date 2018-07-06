@@ -1,25 +1,52 @@
-#include "Headers\GUIButton.h"
+#include "Headers/GUIButton.h"
 
-void GUIButton::onMouseMove(const GUIEvent &event){
+#include "CEGUI.h"
 
-	if(event.mousePoint.x > _position.x   &&  event.mousePoint.x < _position.x+_dimensions.x &&
-	   event.mousePoint.y > _position.y   &&  event.mousePoint.y < _position.y+_dimensions.y )	{
-		if(isActive()) _highlight = true;
-	}else{
-		_highlight = false;
-	}
+GUIButton::GUIButton(const std::string& id, const std::string& text,const std::string& guiScheme,
+			         const vec2<U32>& position, const vec2<U32>& dimensions,
+			         const vec3<F32>& color, CEGUI::Window* parent, 
+                     ButtonCallback callback) : GUIElement(parent,GUI_BUTTON,position),
+                                                _text(text),
+                                                _dimensions(dimensions),
+                                                _color(color),
+                                                _callbackFunction(callback),
+                                                _highlight(false),
+                                                _pressed(false),
+                                                _btnWindow(NULL)
+{
+  _btnWindow = CEGUI::WindowManager::getSingleton().createWindow(guiScheme+"/Button",id);
+  _btnWindow->setPosition(CEGUI::UVector2(CEGUI::UDim(0,position.x),CEGUI::UDim(1,-1.0f * position.y)));
+  _btnWindow->setSize(CEGUI::UVector2(CEGUI::UDim(0,dimensions.x),CEGUI::UDim(0,dimensions.y)));
+  _btnWindow->setText(text);
+  _btnWindow->subscribeEvent(CEGUI::PushButton::EventClicked,CEGUI::Event::Subscriber(&GUIButton::buttonPressed,this));
+  _parent->addChildWindow(_btnWindow); 
+  setActive(true);
 }
 
-void GUIButton::onMouseUp(const GUIEvent &event){
-
-	if (_pressed){
-		if (_callbackFunction) 	_callbackFunction();
-		_pressed = false;
-	}
+GUIButton::~GUIButton(){
+    _parent->removeChildWindow(_btnWindow);
 }
 
-void GUIButton::onMouseDown(const GUIEvent &event){
+void GUIButton::setTooltip(const std::string& tooltipText){
+    _btnWindow->setTooltipText(tooltipText);
+}
 
-	if (_highlight) _pressed = true;
-	else _pressed = false;
+void GUIButton::setFont(const std::string& fontName,const std::string& fontFileName, U32 size){
+    if(!fontName.empty()){
+        if(!CEGUI::FontManager::getSingleton().isDefined(fontName)){
+            CEGUI::FontManager::getSingleton().createFreeTypeFont(fontName,size,true,fontFileName);
+        }
+
+        if(CEGUI::FontManager::getSingleton().isDefined(fontName)){
+            _btnWindow->setFont(fontName);
+        }
+    } 
+}
+
+bool GUIButton::buttonPressed(const CEGUI::EventArgs& /*e*/){
+    if(!_callbackFunction.empty()){
+        _callbackFunction();
+        return true;
+    }
+    return false;
 }

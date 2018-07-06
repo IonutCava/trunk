@@ -215,7 +215,7 @@ bool glFrameBufferObject::Create(GLushort width,
 			///set up render buffer storage, either normal or multisampled if needed
 			if(_textureType == GL_TEXTURE_2D_MULTISAMPLE){
 				U8 msaaSamples = ParamHandler::getInstance().getParam<U8>("rendering.FSAAsamples",2);
-				GLCheck(glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaaSamples, GL_DEPTH_COMPONENT, _width, _height));
+				GLCheck(glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaaSamples, internalFormat, _width, _height));
 			}else{
 				GLCheck(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthBufferHandle));
 			}
@@ -260,17 +260,13 @@ bool glFrameBufferObject::Create(GLushort width,
 	}
 	checkStatus();
 	GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-	
+	GLCheck(glBindRenderbuffer(GL_RENDERBUFFER,0));
 	return true;
 }
 
 void glFrameBufferObject::Destroy() {
-	for_each(TextureBind& bind, _prevTextureBind){
-		if(bind._bound){
-			Unbind();
-			break;
-		}
-	}
+	Unbind();
+
 	for(U8 i = 0; i < 4; i++){
 		if(_textureId[i] > 0){
 			GLCheck(glDeleteTextures(1, &_textureId[i]));
@@ -301,17 +297,17 @@ void glFrameBufferObject::Bind(GLubyte unit, GLubyte texture) {
 	if(_fixedPipeline){
 		GLCheck(glEnable(_textureType));
 	}
-	GLCheck(glActiveTexture(GL_TEXTURE0 + (GLuint)unit));
+    GL_API::setActiveTextureUnit(unit);
 	GLCheck(glBindTexture(_textureType, _textureId[texture]));
 }
 
 void glFrameBufferObject::Unbind(GLubyte unit) {
-	if(_fixedPipeline){
+	FrameBufferObject::Unbind(unit);
+    GL_API::setActiveTextureUnit(unit);
+	GLCheck(glBindTexture(_textureType, 0 ));
+    if(_fixedPipeline){
 		GLCheck(glDisable(_textureType));
 	}
-	FrameBufferObject::Unbind(unit);
-	GLCheck(glActiveTexture(GL_TEXTURE0 + (GLuint)unit));
-	GLCheck(glBindTexture(_textureType, 0 ));
 }
 
 void glFrameBufferObject::Begin(GLubyte nFace) const {
@@ -324,7 +320,7 @@ void glFrameBufferObject::Begin(GLubyte nFace) const {
 		GLCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X+nFace, _textureId[0], 0));
 	}
 	GLCheck(glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ));
-	GLCheck(glClearColor( 0.0f, 0.0f, 0.0f, 1.0f ));
+	GLCheck(glClearColor( 0.0f, 0.0f, 0.3f, 1.0f ));
 }
 
 void glFrameBufferObject::End(GLubyte nFace) const {

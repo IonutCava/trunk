@@ -45,8 +45,7 @@ bool LightManager::addLight(Light* const light){
 		light->setId(generateNewID());
 	}
 	light->addShadowMapInfo(New ShadowMapInfo(light));
-	LightMap::iterator& it = _lights.find(light->getId());
-	if(it != _lights.end()){
+	if(_lights.find(light->getId()) != _lights.end()){
 		ERROR_FN(Locale::get("ERROR_LIGHT_MANAGER_DUPLICATE"),light->getId());
 		return false;
 	}
@@ -137,8 +136,7 @@ void LightManager::generateShadowMaps(SceneRenderState* renderState){
 
 void LightManager::previewShadowMaps(Light* light){
 	//Stop if we have shadows disabled
-	if(!_shadowMapsEnabled) return;
-	if(_previewShadowMaps && GFX_DEVICE.getRenderStage() != DEFERRED_STAGE){
+	if(_shadowMapsEnabled && _previewShadowMaps && GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)){
 		Light* localLight = light;
 		if(_dominantLight){
 			localLight = _dominantLight;
@@ -166,8 +164,7 @@ vectorImpl<I32> LightManager::getDepthMapResolution() {
 //Always bind shadowmaps to slots 8, 9, 10, 11, 12, 13;
 void LightManager::bindDepthMaps(Light* light, U8 lightIndex, U8 offset, bool overrideDominant){
 	//Skip applying shadows if we are rendering to depth map, or we have shadows disabled
-	if(!_shadowMapsEnabled) return;
-	
+	if(!_shadowMapsEnabled ||_lightProjectionMatricesCache.empty()) return;
 	Light* lightLocal = light;
 	///If we have a dominant light, then both shadow casting lights are the same = the dominant one
 	///Shadow map binding has a failsafe check for this, so it's ok to call bind twice
@@ -187,7 +184,8 @@ void LightManager::bindDepthMaps(Light* light, U8 lightIndex, U8 offset, bool ov
 
 
 void LightManager::unbindDepthMaps(Light* light, U8 offset, bool overrideDominant){
-	if(!_shadowMapsEnabled) return;
+    if(!_shadowMapsEnabled || _lightProjectionMatricesCache.empty()) return;
+
 	Light* lightLocal = light;
 	if(_dominantLight && !overrideDominant){
 		lightLocal = _dominantLight;

@@ -100,9 +100,10 @@ void Camera::RenderLookAt(bool invertx, bool inverty, F32 planey) {
 	///Tell the Rendering API to draw from our desired PoV
 	if(inverty){							 
 		///If we need to flip the camera upside down (ex: for reflections)
-		GFX_DEVICE.lookAt(vec3<F32>(_eye.x,2.0f*planey-_eye.y,_eye.z),
-						  vec3<F32>(_center.x,2.0f*planey-_center.y,_center.z),
-						  vec3<F32>(-_up.x,-_up.y,-_up.z),invertx);
+		GFX_DEVICE.lookAt(vec3<F32>(_eye.x,   planey-_eye.y,   _eye.z),
+						  vec3<F32>(_center.x,planey-_center.y,_center.z),
+						  vec3<F32>(-_up.x,   -_up.y,          -_up.z),
+                          invertx);
 	}else{
 		GFX_DEVICE.lookAt(_eye,_center,_up);
 	}

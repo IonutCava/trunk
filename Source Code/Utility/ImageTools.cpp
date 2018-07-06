@@ -148,13 +148,14 @@ U8* OpenImageDevIL(const std::string& filename, U16& w, U16& h, U8& d, U32& t,U3
 
 
 U8* OpenImage(const std::string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture,bool& alpha,bool flip) {
-
+    U8* returnData = NULL;
 	if(filename.find(".ppm") != std::string::npos){
 		alpha = false;
-		return OpenImagePPM(filename, w, h, d,t,ilTexture,flip);
-	}else 
-		return OpenImageDevIL(filename,w,h,d,t,ilTexture,alpha,flip);
-	return NULL;
+		returnData = OpenImagePPM(filename, w, h, d,t,ilTexture,flip);
+    }else {
+		returnData = OpenImageDevIL(filename,w,h,d,t,ilTexture,alpha,flip);
+    }
+	return returnData;
 }
 
 void OpenImage(const std::string& filename, ImageData& img, bool& alpha){

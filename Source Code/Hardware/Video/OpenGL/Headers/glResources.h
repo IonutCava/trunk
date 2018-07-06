@@ -45,7 +45,7 @@
 #include <GL/glfw.h>
 #include <RendererModules/OpenGL/CEGUIOpenGLRenderer.h>
 
-
+#pragma warning(disable:4505) ///<unreferenced local function removal
 #ifdef _DEBUG
 namespace Divide {
 	namespace GL {
@@ -143,7 +143,7 @@ namespace glDataConversion {
 		h.ieee.s = f.ieee.s;
 
 		// handle special cases
-		const GLfloat half_denorm = (1.0f/16384.0f);
+		//const GLfloat half_denorm = (1.0f/16384.0f);
 
 		if ( (f.ieee.e==0) && (f.ieee.m==0) ) { // zero
 			h.ieee.m = 0;
@@ -192,8 +192,8 @@ namespace glDataConversion {
 	}
 
 	///For use with GL_INT_2_10_10_10_REV
-	inline static GLuint ftopacked(GLfloat val) {
-	}
+	//inline static GLuint ftopacked(GLfloat val) {
+	//}
 };
 /* ARB_vertex_type_2_10_10_10_rev */
 #define P10(f) ((I32)((f) * 0x1FF))

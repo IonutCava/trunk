@@ -18,41 +18,40 @@ void WarScene::preRender(){
 							-cosf(_sunAngle.y),
 							-sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-	LightManager::getInstance().getLight(0)->setPosition(_sunvector);
-	getSkySGN(0)->getNode<Sky>()->setRenderingOptions(renderState()->getCamera()->getEye(),_sunvector);
+	//LightManager::getInstance().getLight(0)->setPosition(_sunvector);
+	getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 
-void WarScene::processEvents(U32 time){
+void WarScene::processTasks(U32 time){
 	F32 FpsDisplay = 0.3f;
-	if (time - _eventTimers[0] >= FpsDisplay){
+	if (time - _taskTimers[0] >= FpsDisplay){
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
 		GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
-		_eventTimers[0] += FpsDisplay;
+		_taskTimers[0] += FpsDisplay;
 	}
 }
 
 void WarScene::resetSimulation(){
-	getEvents().clear();
+	removeTasks();
 }
 
 void WarScene::startSimulation(){
 
 	resetSimulation();
 
-	if(getEvents().empty()){//Maxim un singur eveniment
-		Event_ptr newSim(New Event(12,true,false,boost::bind(&WarScene::processSimulation,this,rand() % 5,TYPE_INTEGER)));
-		addEvent(newSim);
+	if(getTasks().empty()){
+		Kernel* kernel = Application::getInstance().getKernel();
+		Task_ptr newSim(New Task(kernel->getThreadPool(),12,true,false,boost::bind(&WarScene::processSimulation,this,rand() % 5,TYPE_INTEGER)));
+		addTask(newSim);
 	}
 }
 
 void WarScene::processSimulation(boost::any a, CallbackParam b){
 
-	if(getEvents().empty()) return;
-	bool updated = false;
-	std::string mesaj;
-	SceneGraphNode* Soldier1 = _sceneGraph->findNode("Soldier1");
-
-	assert(Soldier1);assert(_groundPlaceholder);
+	if(getTasks().empty()) return;
+	//SceneGraphNode* Soldier1 = _sceneGraph->findNode("Soldier1");
+	//assert(Soldier1);
+    //assert(_groundPlaceholder);
 }
 
 void WarScene::processInput(){
@@ -82,8 +81,8 @@ bool WarScene::load(const std::string& name){
 	_faction2 = New AICoordination(2);
 
 	//------------------------ The rest of the scene elements -----------------------------///
-	_groundPlaceholder = _sceneGraph->findNode("Ground_placeholder");
-	_groundPlaceholder->getNode<SceneNode>()->getMaterial()->setCastsShadows(false);
+//	_groundPlaceholder = _sceneGraph->findNode("Ground_placeholder");
+//	_groundPlaceholder->getNode<SceneNode>()->getMaterial()->setCastsShadows(false);
 
 	return loadState;
 }
@@ -116,14 +115,14 @@ bool WarScene::initializeAI(bool continueOnErrors){
 	//----------------------- Unitati ce vor fi controlate de AI ---------------------//
 	for(U8 i = 0; i < _army1.size(); i++){
 		NPC* soldier = New NPC(_army1[i]);
-		soldier->setMovementSpeed(2); /// 2 m/s
+		soldier->setMovementSpeed(1.2f); /// 1.2 m/s
 		_army1NPCs.push_back(soldier);
 		AIManager::getInstance().addEntity(_army1[i]);
 	}
 
 	for(U8 i = 0; i < _army2.size(); i++){
 		NPC* soldier = New NPC(_army2[i]);
-		soldier->setMovementSpeed(2); /// 2 m/s
+		soldier->setMovementSpeed(1.23f); /// 1.23 m/s
 		_army2NPCs.push_back(soldier);
 		AIManager::getInstance().addEntity(_army2[i]);
 	}
@@ -159,24 +158,24 @@ bool WarScene::deinitializeAI(bool continueOnErrors){
 
 bool WarScene::loadResources(bool continueOnErrors){
 	
-	GUI::getInstance().addButton("Simulate", "Simulate", vec2<F32>(renderState()->cachedResolution().width-220 ,
+	GUI::getInstance().addButton("Simulate", "Simulate", vec2<U32>(renderState()->cachedResolution().width-220 ,
 																   renderState()->cachedResolution().height/1.1f),
-													     vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
+													     vec2<U32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 														 boost::bind(&WarScene::startSimulation,this));
 
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec2<F32>(60,60),          //Position
+		                       vec2<U32>(60,60),          //Position
 							    Font::DIVIDE_DEFAULT,    //Font
 							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
 	GUI::getInstance().addText("RenderBinCount",
-								vec2<F32>(60,70),
+								vec2<U32>(60,70),
 								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
 
 	
-	_eventTimers.push_back(0.0f); //Fps
+	_taskTimers.push_back(0.0f); //Fps
 	return true;
 }
 

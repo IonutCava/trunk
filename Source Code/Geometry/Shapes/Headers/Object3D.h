@@ -26,48 +26,42 @@ class BoundingBox;
 class VertexBufferObject;
 class Object3D : public SceneNode {
 public:
-	enum PrimitiveType {
-		OBJECT_3D = 0,
-		SPHERE_3D,
+	enum ObjectType {
+		SPHERE_3D = 0,
 		BOX_3D,
 		QUAD_3D,
 		TEXT_3D,
 		MESH,
 		SUBMESH,
 		GENERIC,
-		OBJECT_3D_FLYWEIGHT
+		OBJECT_3D_FLYWEIGHT,
+        OBJECT_3D_PLACEHOLDER
 	};
 
-	enum PrimitiveFlag {
-		PRIMITIVE_FLAG_NONE = 0,
-		PRIMITIVE_FLAG_SKINNED,
-		PRIMITIVE_FLAG_PLACEHOLDER
+	enum ObjectFlag {
+		OBJECT_FLAG_NONE = 0,
+		OBJECT_FLAG_SKINNED,
+		OBJECT_FLAG_PLACEHOLDER
 
 	};
-	enum UsageContext {
-		OBJECT_DYNAMIC = 0,
-		OBJECT_STATIC
-	};
 
-	Object3D(PrimitiveType type = OBJECT_3D,PrimitiveFlag flag = PRIMITIVE_FLAG_NONE);
-	Object3D(const std::string& name, PrimitiveType type = OBJECT_3D, PrimitiveFlag flag = PRIMITIVE_FLAG_NONE);
+	Object3D(ObjectType type = OBJECT_3D_PLACEHOLDER, PrimitiveType vboType = TRIANGLES, ObjectFlag flag = OBJECT_FLAG_NONE);
+	Object3D(const std::string& name, ObjectType type = OBJECT_3D_PLACEHOLDER, PrimitiveType vboType = TRIANGLES, ObjectFlag flag = OBJECT_FLAG_NONE);
 
 	virtual ~Object3D(){
 		SAFE_DELETE(_geometry);
 	};
 
 	        VertexBufferObject* const getGeometryVBO(); ///<Please use IBO's ...
-	inline  PrimitiveType             getType()         const {return _geometryType;}
-	inline  PrimitiveFlag             getFlag()         const {return _geometryFlag;}
-	inline  UsageContext              getUsageContext() const {return _usageContext;}
-	inline  void                      setUsageContext(UsageContext newContext) {_usageContext = newContext;}
+	inline  ObjectType                getType()         const {return _geometryType;}
+	inline  ObjectFlag                getFlag()         const {return _geometryFlag;}
 
 	/// Called from SceneGraph "sceneUpdate"
 	virtual void  sceneUpdate(U32 sceneTime) {}           ///<To avoid a lot of typing
 	virtual void  postLoad(SceneGraphNode* const sgn) {} ///<To avoid a lot of typing
 	virtual	void  render(SceneGraphNode* const sgn);
 	virtual void  onDraw();
-
+    //virtual void  optimizeForDepth(bool state = true,bool force = false) {if(_geometry) _geometry->optimizeForDepth(state,force);}
 
 protected:
 	virtual void computeNormals() {};
@@ -76,9 +70,8 @@ protected:
 protected:
 	bool		          _update;
 	bool                  _refreshVBO;
-	PrimitiveType         _geometryType;
-	PrimitiveFlag         _geometryFlag;
-	UsageContext          _usageContext;
+	ObjectType            _geometryType;
+	ObjectFlag            _geometryFlag;
 	VertexBufferObject*   _geometry;
 };
 

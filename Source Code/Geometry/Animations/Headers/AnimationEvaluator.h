@@ -41,7 +41,7 @@ struct aiAnimation;
 class AnimEvaluator{
 public:
 
-	AnimEvaluator(): _lastFrameIndex(-1),
+	AnimEvaluator(): _lastFrameIndex(0),
 		             _lastTime(0.0),
 					 _ticksPerSecond(0.0),
 					 _duration(0.0),

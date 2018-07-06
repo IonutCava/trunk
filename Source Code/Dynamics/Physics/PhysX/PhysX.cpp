@@ -4,10 +4,10 @@
 
 using namespace physx;
 
-PhysX::PhysX() : _currentScene(NULL), 
-                 _gPhysicsSDK(NULL),
+PhysX::PhysX() : _gPhysicsSDK(NULL),
 				 _foundation(NULL), 
-				 _pvdConnection(NULL){}
+				 _pvdConnection(NULL),
+                 _targetScene(NULL){}
 
 I8 PhysX::initPhysics(U8 targetFrameRate){
   _gDefaultFilterShader=physx::PxDefaultSimulationFilterShader;
@@ -48,15 +48,15 @@ bool PhysX::exitPhysics(){
 
 ///Process results
 void PhysX::process(){
-	if(_currentScene){
-		_currentScene->process(_timeStep); 
+	if(_targetScene){
+		_targetScene->process(_timeStep); 
 	}
 }
 
 ///Update actors
 void PhysX::update(){
-	if(_currentScene){
-		_currentScene->update();   
+	if(_targetScene){
+		_targetScene->update();   
 	}
 }
 
@@ -67,9 +67,14 @@ PhysicsSceneInterface* PhysX::NewSceneInterface(Scene* scene) {
 	return New PhysXSceneInterface(scene);
 }
 
-bool PhysX::createActor(PhysicsSceneInterface* targetScene, SceneGraphNode* node, PhysicsActorMask mask,PhysicsCollisionGroup group){
+void PhysX::initScene(){
+    assert(_targetScene);
+    _targetScene->init();
+}
+
+bool PhysX::createActor(SceneGraphNode* const node, PhysicsActorMask mask,PhysicsCollisionGroup group){
 	assert(node != NULL);
-	assert(targetScene != NULL);
+	assert(_targetScene != NULL);
 	PxTransform transform(PxVec3(node->getTransform()->getPosition().x,
 								 node->getTransform()->getPosition().y,
 								 node->getTransform()->getPosition().z),
@@ -80,10 +85,10 @@ bool PhysX::createActor(PhysicsSceneInterface* targetScene, SceneGraphNode* node
 	switch(mask){
 		default:
 		case MASK_RIGID_STATIC:
-			dynamic_cast<PhysXSceneInterface* >(targetScene)->addRigidStaticActor(NULL);
+			dynamic_cast<PhysXSceneInterface* >(_targetScene)->addRigidStaticActor(NULL);
 			break;
 		case MASK_RIGID_DYNAMIC:
-			dynamic_cast<PhysXSceneInterface* >(targetScene)->addRigidDynamicActor(NULL);
+			dynamic_cast<PhysXSceneInterface* >(_targetScene)->addRigidDynamicActor(NULL);
 			break;
 	};
 	return true;

@@ -20,9 +20,10 @@
 
 #include "core.h"
 #include <boost/noncopyable.hpp>
+#include "Hardware/Platform/Headers/Thread.h" 
 
 class GUI;
-class Event;
+class Task;
 class Camera;
 class PXDevice;
 class GFXDevice;
@@ -67,7 +68,7 @@ public: ///Input
 	///Key released
 	bool onKeyUp(const OIS::KeyEvent& key);
 	///Joystic axis change
-	bool onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis);
+	bool onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis,I32 deadZone);
 	///Joystick direction change
 	bool onJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov);
 	///Joystick button pressed
@@ -86,11 +87,15 @@ public: ///Input
 	GFXDevice& getGFXDevice() const {return _GFX;}
 	SFXDevice& getSFXDevice() const {return _SFX;}
 	PXDevice&  getPXDevice()  const {return _PFX;}
+	/// get elapsed time since kernel initialization
+	inline static U32 getCurrentTime()   {return _currentTime;}
+	inline static U32 getCurrentTimeMS() {return _currentTimeMS;}
+	boost::threadpool::pool* const getThreadPool() {assert(_mainTaskPool != NULL); return _mainTaskPool;}
 
 private:
    static void FirstLoop();
    bool MainLoopScene();
-   void presentToScreen();
+   bool presentToScreen();
 
 private:
 	///Access to the GPU
@@ -112,12 +117,11 @@ private:
 	LightManager&   _lightPool;
 	static bool   _keepAlive;
 	static bool   _applicationReady;
-	/// get elapsed time since kernel initialization
-	inline static U32 getCurrentTime()   {return _currentTime;}
-	inline static U32 getCurrentTimeMS() {return _currentTimeMS;}
+    static bool   _renderingPaused;
 
 private:
    static boost::function0<void> _mainLoopCallback;
+   boost::threadpool::pool*      _mainTaskPool;
    static U32     _currentTime;
    static U32     _currentTimeMS;
    CameraManager* _cameraMgr;

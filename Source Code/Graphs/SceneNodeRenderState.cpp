@@ -1,17 +1,17 @@
 #include "Headers/SceneNodeRenderState.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-RenderStateBlock* SceneNodeRenderState::getShadowStateBlock(){
-	if(!_shadowStateBlock){
-		RenderStateBlockDescriptor shadowDesc;
+RenderStateBlock* SceneNodeRenderState::getDepthStateBlock(){
+	if(!_depthStateBlock){
+		RenderStateBlockDescriptor depthDesc;
 		/// Cull back faces for shadow rendering
-		shadowDesc.setCullMode(CULL_MODE_CCW);
-		shadowDesc._fixedLighting = false;
-		shadowDesc._zBias = 1.0f;
-		shadowDesc.setColorWrites(false,false,false,true);
-		_shadowStateBlock = GFX_DEVICE.createStateBlock(shadowDesc);
+		depthDesc.setCullMode(CULL_MODE_CCW);
+		depthDesc._fixedLighting = false;
+		depthDesc._zBias = 1.0f;
+		depthDesc.setColorWrites(false,false,false,true);
+		_depthStateBlock = GFX_DEVICE.createStateBlock(depthDesc);
 	}
-	return _shadowStateBlock;
+	return _depthStateBlock;
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(I32 stageMask) {
@@ -25,5 +25,5 @@ void SceneNodeRenderState::addToDrawExclusionMask(I32 stageMask) {
 }
 
 bool SceneNodeRenderState::getDrawState(RenderStage currentStage)  const {
-	return (_exclusionMask & currentStage) == currentStage ? false : true;
+	return !bitCompare(_exclusionMask,currentStage);
 }

@@ -1,5 +1,6 @@
 #include "Headers/Sky.h"
 
+#include "Rendering/Headers/Frustum.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/LightManager.h"
@@ -11,12 +12,16 @@ Sky::Sky(const std::string& name) : SceneNode(TYPE_SKY),
                                     _skyShader(NULL),
 									_skybox(NULL),
 									_skyGeom(NULL),
+                                    _drawSky(true),
+                                    _drawSun(true),
 									_init(false),
+                                    _invert(false),
+                                    _invertPlaneY(0),
 									_exclusionMask(0)
 {
 	setInitialData(name);
 	///The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
-	addToDrawExclusionMask(SHADOW_STAGE | SSAO_STAGE | DEPTH_STAGE);
+	addToDrawExclusionMask(DEPTH_STAGE);
 
 	///Generate a render state
 	RenderStateBlockDescriptor skyboxDesc;
@@ -79,20 +84,24 @@ void Sky::onDraw(){
 }
 
 void Sky::render(SceneGraphNode* const sgn){
-	
-	if (_drawSky){
-		sgn->getTransform()->setPosition(_eyePos);
+    if(!_invert){
+        const vec3<F32>& eyePos = Frustum::getInstance().getEyePos();
+        sgn->getTransform()->setPosition(eyePos);
+        _sunNode->getTransform()->setPosition(eyePos - _sunVect);
+    }else{
+        vec3<F32> eyeTemp(Frustum::getInstance().getEyePos());
+        eyeTemp.y = _invertPlaneY - eyeTemp.y;
+        sgn->getTransform()->setPosition(eyeTemp);
+        _sunNode->getTransform()->setPosition(eyeTemp - _sunVect);
+    }
 
+	if (_drawSky){
 		_skybox->Bind(0);
 		_skyShader->bind();
 	
 		_skyShader->UniformTexture("texSky", 0);
-		if(_drawSun){
-			_skyShader->Uniform("enable_sun", true);
-			_skyShader->Uniform("sun_vector", _sunVect);
-		}else{
-			_skyShader->Uniform("enable_sun", false);
-		}
+		_skyShader->Uniform("enable_sun", _drawSun);
+		_skyShader->Uniform("sun_vector", _sunVect);
 
 		GFX_DEVICE.setObjectState(sgn->getTransform());
 		GFX_DEVICE.renderModel(_sky);
@@ -105,25 +114,20 @@ void Sky::render(SceneGraphNode* const sgn){
 		if(l){
 			_sun->getMaterial()->setDiffuse(l->getDiffuseColor());
 		}
-		_sunNode->getTransform()->setPosition(_eyePos - _sunVect);
 
-		GFX_DEVICE.setMaterial(_sun->getMaterial());
 		GFX_DEVICE.setObjectState(_sunNode->getTransform());
 		GFX_DEVICE.renderModel(_sun);
 		GFX_DEVICE.releaseObjectState(_sunNode->getTransform());
 	}
 }
 
-void Sky::setRenderingOptions(const vec3<F32>& eyePos, 
-							  const vec3<F32>& sunVect,
-							  bool invert,
-							  bool drawSun,
-							  bool drawSky) {
-	_eyePos = eyePos;
-	_sunVect = sunVect;
-	_invert = invert;
+void Sky::setRenderingOptions(bool drawSun, bool drawSky) {
 	_drawSun = drawSun;
 	_drawSky = drawSky;
+}
+
+void Sky::setInvertPlane(F32 invertPlaneY){
+    _invertPlaneY = invertPlaneY;
 }
 
 void Sky::removeFromDrawExclusionMask(I32 stageMask) {
@@ -138,5 +142,5 @@ void Sky::addToDrawExclusionMask(I32 stageMask) {
 
 bool Sky::getDrawState(RenderStage currentStage)  const{
 	if(!_init) return false;
-	return (_exclusionMask & currentStage) == currentStage ? false : true;
+	return !bitCompare(_exclusionMask,currentStage);
 }

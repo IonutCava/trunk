@@ -77,10 +77,9 @@ bool glMSTextureBufferObject::Create(GLushort width, GLushort height, GLubyte im
 
 	GLCheck(glBindTexture(_textureType, 0));
 
-// create a new fbo with multisampled color and depth attachements
+   // create a new fbo with multisampled color and depth attachements
 	GLCheck(glGenFramebuffers(1, &_frameBufferHandle));
 	GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle));
-	GLint samples = 0;
 
 	GLCheck(glGenRenderbuffers(1, &_colorBufferHandle));
     GLCheck(glBindRenderbuffer(GL_RENDERBUFFER, _colorBufferHandle));
@@ -95,6 +94,7 @@ bool glMSTextureBufferObject::Create(GLushort width, GLushort height, GLubyte im
     GLCheck(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthBufferHandle));
 	checkStatus();
 	GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    GLCheck(glBindRenderbuffer(GL_RENDERBUFFER,0));
 	return true;
 }
 

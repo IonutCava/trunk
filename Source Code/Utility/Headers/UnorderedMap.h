@@ -33,7 +33,7 @@
 #include <Unordered_map>
 #include <algorithm>
 #define Unordered_map std::tr1::unordered_map
-///ToDo: fix these 3 to use std::for_each and lambda expressions
+#pragma message("ToDo: fix std::for_each and lambda expressions -Ionut")
 #include <boost/foreach.hpp>
 #define for_each BOOST_FOREACH 
 #define reverse_for_each BOOST_REVERSE_FOREACH

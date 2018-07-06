@@ -37,13 +37,15 @@ public:
 
 	/// General SceneNode stuff
 	void onDraw();
+    void postDraw();
 	void render(SceneGraphNode* const sgn);
 	void postLoad(SceneGraphNode* const sgn);
 	void prepareMaterial(SceneGraphNode* const sgn);
 	void releaseMaterial();
+    void prepareDepthMaterial(SceneGraphNode* const sgn){}
+    void releaseDepthMaterial(){}
 	bool getDrawState(RenderStage currentStage)  const;
 
-	/// ToDo: check water visibility - Ionut
 	bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
 
 	void setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 transparency);
@@ -52,9 +54,7 @@ public:
 	/// Reflector overwrite
 	void updateReflection();
 	/// Used for many things, such as culling switches, and underwater effects
-	inline bool isCameraUnderWater() { return (_eyePos.y < _waterLevel); }
-	/// Used to set rendering options for the water
-	inline void setRenderingOptions(const vec3<F32> eyePos = vec3<F32>(0,0,0)) {_eyePos = eyePos;}
+	inline bool isPointUnderWater(const vec3<F32>& pos) { return (pos.y < _waterLevel); }
 
 protected:
 	template<typename T>

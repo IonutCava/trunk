@@ -69,16 +69,17 @@ public:
 
 	inline void idle() {_api.idle();}
 	inline void flush() {_api.flush();}
+    inline void clearStates(bool skipShader = false, bool skipTextures = false, bool skipBuffers = false) {_api.clearStates(skipShader,skipTextures,skipBuffers);}
 
 	inline FrameBufferObject*  newFBO(FBOType type = FBO_2D_COLOR){return _api.newFBO(type); }
-	inline VertexBufferObject* newVBO(){return _api.newVBO(); }
+	inline VertexBufferObject* newVBO(PrimitiveType type = TRIANGLES){return _api.newVBO(type); }
 	inline PixelBufferObject*  newPBO(PBOType type = PBO_TEXTURE_2D){return _api.newPBO(type); }
 
 	inline Texture2D*      newTexture2D(bool flipped = false)                   {return _api.newTexture2D(flipped);}
 	inline TextureCubemap* newTextureCubemap(bool flipped = false)              {return _api.newTextureCubemap(flipped);}
 	inline ShaderProgram*  newShaderProgram()                                   {return _api.newShaderProgram(); }
 	inline Shader*         newShader(const std::string& name, ShaderType type) {return _api.newShader(name,type); }
-	inline void enableFog(F32 density, F32* color){_api.enableFog(density,color);}
+	inline void enableFog(FogMode mode, F32 density, F32* color, F32 startDist, F32 endDist){_api.enableFog(mode, density,color,startDist,endDist);}
 
 	inline void swapBuffers()               {_api.swapBuffers();}
 	inline void clearBuffers(U16 buffer_mask){_api.clearBuffers(buffer_mask);}
@@ -97,14 +98,12 @@ public:
 	void drawLines(const vectorImpl<vec3<F32> >& pointsA,const vectorImpl<vec3<F32> >& pointsB,const vectorImpl<vec4<F32> >& colors, const mat4<F32>& globalOffset);
 
 	void renderModel(Object3D* const model);
-	void renderElements(PrimitiveType t, GFXDataFormat f, U32 count, const void* first_element);
+	void renderModel(VertexBufferObject* const vbo, GFXDataFormat f, U32 count, const void* first_element);
 	void renderGUIElement(GUIElement* const guiElement);
 	///The render callback must update all visual information and populate the "RenderBin"'s!
 	///Use the sceneGraph::update callback as default using the macro SCENE_GRAPH_UPDATE(pointer)
 	///pointer = a pointer to the sceneGraph instance used for rendering
 	void render(boost::function0<void> renderFunction,SceneRenderState* const sceneRenderState);
-	///Set the current material properties
-	inline void setMaterial(Material* mat)             {_api.setMaterial(mat);}
 	///Instruct the Rendering API to modify the ambient light
 	inline void setAmbientLight(const vec4<F32>& light){_api.setAmbientLight(light);}
 	///Update light properties internally in the Rendering API
@@ -138,11 +137,13 @@ public:
 
 	///Sets the current state block to the one passed as a param
 	///It is not set immediately, but a call to "updateStates" is required
-           void setStateBlock(RenderStateBlock* block);
-	///Sets a standard state block
-	inline void setDefaultStateBlock() {assert(_defaultStateBlock != NULL); setStateBlock(_defaultStateBlock);}
+    RenderStateBlock* setStateBlock(RenderStateBlock* block);
 	///Same as setStateBlock(RenderStateBlock* block), but uses a blank description
-		   void setStateBlockByDesc(const RenderStateBlockDescriptor &desc);
+    RenderStateBlock* setStateBlockByDesc(const RenderStateBlockDescriptor &desc);
+	///Set previous state block - (deep, I know -Ionut)
+    inline RenderStateBlock* setPreviousStateBlock() {assert(_previousStateBlock != NULL);return setStateBlock(_previousStateBlock);}
+	///Sets a standard state block
+	inline RenderStateBlock* setDefaultStateBlock() {assert(_defaultStateBlock != NULL);return setStateBlock(_defaultStateBlock);}
 	///If a new state has been set, update the Graphics pipeline
 		   void updateStates(bool force = false);
 	///Update the graphics pipeline using the current rendering API with the state block passed
@@ -179,10 +180,8 @@ private:
 	inline RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor) {
 		return _api.newRenderStateBlock(descriptor);
 	}
-	/// Delegate specifig GUI drawing functionality to the Rendering API
+
 	inline void drawTextToScreen(GUIElement* const text)        {_api.drawTextToScreen(text);}
-	inline void drawButton(GUIElement* const button)            {_api.drawButton(button);}
-	inline void drawFlash(GUIElement* const flash)              {_api.drawFlash(flash);}
 	inline void getMatrix(MATRIX_MODE mode, mat4<F32>& mat)     {_api.getMatrix(mode, mat);}
 
 private:
@@ -202,6 +201,7 @@ protected:
 	bool _stateBlockByDescription;
 	RenderStateBlock* _currentStateBlock;
     RenderStateBlock* _newStateBlock;
+	RenderStateBlock* _previousStateBlock;
 	RenderStateBlock* _defaultStateBlock;
 	///Pointer to current kernel
 	Kernel* _kernel;

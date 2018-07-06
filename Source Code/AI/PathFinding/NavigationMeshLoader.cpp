@@ -1,8 +1,14 @@
 #include "Headers/NavigationMeshLoader.h"
+
+#include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
+#include "Environment/Terrain/Headers/Terrain.h"
+#include "Environment/Water/Headers/Water.h"
 
 namespace Navigation {
+
+        static vec3<F32> _minVertValue, _maxVertValue;
 
 	NavigationMeshLoader::NavigationMeshLoader(){
 	}
@@ -76,6 +82,7 @@ namespace Navigation {
 		FILE* fp = fopen(filename, "rb");
 		if (!fp)
 			return modelData;
+        modelData.setName(filename);
 		fseek(fp, 0, SEEK_END);
 		I32 bufSize = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
@@ -105,7 +112,7 @@ namespace Navigation {
 			if (row[0] == 'v' && row[1] != 'n' && row[1] != 't') {
 				// Vertex pos
 				sscanf(row+1, "%f %f %f", &x, &y, &z);
-				addVertex(&modelData, x, y, z);
+				addVertex(&modelData, vec3<F32>(x, y, z));
 			}
 			if (row[0] == 'f')  {
 				// Faces
@@ -117,7 +124,7 @@ namespace Navigation {
 					const I32 c = face[i];
 					if (a < 0 || a >= (I32)modelData.vert_ct || b < 0 || b >= (I32)modelData.vert_ct || c < 0 || c >= (I32)modelData.vert_ct)
 						continue;
-					addTriangle(&modelData, a, b, c);
+					addTriangle(&modelData, vec3<U32>(a, b, c));
 				}
 			}
 		}
@@ -203,6 +210,7 @@ namespace Navigation {
 			}else
 				mergedData.clear();
 		}
+        mergedData.setName(a.getName()+"+"+b.getName());
 		return mergedData;
 	}
 
@@ -210,7 +218,7 @@ namespace Navigation {
 		if( ! data.getVertCount() || ! data.getTriCount())
 			return false;
 	    
-		std::string path("navigationCache/");
+        std::string path(ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/navMeshes/");
 		std::string filenamestring(filename);
 		//CreatePath //IsDirectory
 
@@ -247,7 +255,7 @@ namespace Navigation {
 		return true;
 	}
 
-	void NavigationMeshLoader::addVertex(NavModelData* modelData, F32 x, F32 y, F32 z){
+	void NavigationMeshLoader::addVertex(NavModelData* modelData, const vec3<F32>& vertex){
 
 		if (modelData->vert_ct+1 > modelData->vert_cap)  {
 			modelData->vert_cap = ! modelData->vert_cap ? 8 : modelData->vert_cap*2;
@@ -260,13 +268,24 @@ namespace Navigation {
 		}
 
 		F32* dst = &modelData->verts[modelData->vert_ct*3];
-		*dst++ = x;
-		*dst++ = y;
-		*dst++ = z;
+		*dst++ = vertex.x;
+		*dst++ = vertex.y;
+		*dst++ = vertex.z;
 		modelData->vert_ct++;
+
+        if(vertex.x > _maxVertValue.x)	_maxVertValue.x = vertex.x;
+		if(vertex.x < _minVertValue.x)	_minVertValue.x = vertex.x;
+		if(vertex.y > _maxVertValue.y)	_maxVertValue.y = vertex.y;
+		if(vertex.y < _minVertValue.y)	_minVertValue.y = vertex.y;
+		if(vertex.z > _maxVertValue.z)	_maxVertValue.z = vertex.z;
+		if(vertex.z < _minVertValue.z)	_minVertValue.z = vertex.z;
+
+        //assert(vertex.x > -5000 && vertex.x < 5000);
+        //assert(vertex.y > -5000 && vertex.y < 5000);
+        //assert(vertex.z > -5000 && vertex.z < 5000);
 	}
 
-	void NavigationMeshLoader::addTriangle(NavModelData* modelData,I32 a, I32 b, I32 c){
+	void NavigationMeshLoader::addTriangle(NavModelData* modelData,const vec3<U32>& triangleIndices, SamplePolyAreas areaType){
 
 		if (modelData->tri_ct+1 > modelData->tri_cap)  {
 			modelData->tri_cap = !modelData->tri_cap ? 8 : modelData->tri_cap*2;
@@ -279,16 +298,29 @@ namespace Navigation {
 		}
 
 		I32* dst = &modelData->tris[modelData->tri_ct*3];
-		*dst++ = a;
-		*dst++ = b;
-		*dst++ = c;
+		*dst++ = triangleIndices.x;
+		*dst++ = triangleIndices.y;
+		*dst++ = triangleIndices.z;
+        modelData->getAreaTypes().push_back(areaType); 
 		modelData->tri_ct++;
 	}
 
-	NavModelData NavigationMeshLoader::parseNode(SceneGraphNode* sgn/* = NULL*/){
-		NavModelData data;
+	NavModelData NavigationMeshLoader::parseNode(SceneGraphNode* sgn/* = NULL*/, const std::string& navMeshName/* = ""*/){
+        std::string nodeName((sgn->getNode<SceneNode>()->getType() != TYPE_ROOT) ? "node [ " + sgn->getName() + " ]." : " root node.");
+        PRINT_FN(Locale::get("NAV_MESH_GENERATION_START"),nodeName.c_str());
+        U32 timeStart = GETMSTIME();
+		NavModelData data,returnData;
 		data.clear(false);
-		return parse(sgn->getBoundingBox(), data, sgn);
+        data.setName(navMeshName.empty() ? nodeName : navMeshName);
+		returnData = parse(sgn->getBoundingBox(), data, sgn);
+        U32 timeEnd = GETMSTIME();
+        U32 timeDiff = timeEnd - timeStart;
+        if(returnData.valid){
+            PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"),getMsToSec(timeDiff));
+        }else{
+            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"),getMsToSec(timeDiff));
+        }
+        return returnData;
 	}
 
 	static const vec3<F32> cubePoints[8] = {
@@ -304,27 +336,32 @@ namespace Navigation {
 	};
 
 	NavModelData NavigationMeshLoader::parse(const BoundingBox& box,NavModelData& data, SceneGraphNode* sgn) {
+        BoundingBox bb = box;
+        //Ignore if specified
+        if(sgn->getNavigationContext() == SceneGraphNode::NODE_IGNORE)
+            goto next;
+
 		SceneNode* sn = sgn->getNode<SceneNode>();
+        SceneNodeType nodeType = sn->getType();
 		assert(sn != NULL);
-		if(sn->getType() != TYPE_WATER || 
-		   sn->getType() != TYPE_TERRAIN ||
-		   sn->getType() != TYPE_OBJECT3D ||
-		   sn->getType() != TYPE_SKY){
-			PRINT_FN(Locale::get("WARN_NAV_UNSUPPORTED"),sn->getName().c_str());
-			return data;
+		if(nodeType != TYPE_WATER && nodeType != TYPE_TERRAIN && nodeType != TYPE_OBJECT3D){
+               if(nodeType == TYPE_LIGHT ||
+                  nodeType == TYPE_ROOT ||
+                  nodeType == TYPE_PARTICLE_EMITTER ||
+                  nodeType == TYPE_TRIGGER ||
+                  nodeType == TYPE_SKY){
+                      //handle special case
+               }else{
+			        PRINT_FN(Locale::get("WARN_NAV_UNSUPPORTED"),sn->getName().c_str());
+			        goto next;
+               }
 		}
-	    
+
 		U32 numVert = 1;
-
-		Unordered_map<U32, vec3<F32> > globalPointIdxMap;
-		Unordered_map<U32, U32> translationMap;
-		vectorImpl<vec3<F32> > vertexvector;
-		vectorImpl<vec3<I32> > facevector;
-
+        U32 curNumVert = numVert;
 		MeshDetailLevel level = DETAIL_LOW;
-		U32 mask = sn->getType();
-	
-		switch(mask){
+
+		switch(nodeType){
 			case TYPE_WATER: {
 				level = DETAIL_BOUNDINGBOX;
 				 }break;
@@ -332,7 +369,7 @@ namespace Navigation {
 				level = DETAIL_ABSOLUTE;
 				}break;
 			case TYPE_OBJECT3D: {
-				if(sgn->getNode<Object3D>()->getUsageContext() == Object3D::OBJECT_DYNAMIC){
+                if(sgn->getUsageContext() == SceneGraphNode::NODE_DYNAMIC){
 					level = DETAIL_BOUNDINGBOX;
 				}else{
 					level = DETAIL_ABSOLUTE;
@@ -340,17 +377,87 @@ namespace Navigation {
 				}break;
 			default:{
 				PRINT_FN(Locale::get("WARN_NAV_INCOMPLETE"));
-				return data;
-					}break;
+				goto next;
+				}break;
 		};
-		
+        VertexBufferObject* geometry = NULL;
+        SamplePolyAreas areType = SAMPLE_AREA_OBSTACLE;
 
-		for_each(SceneGraphNode::NodeChildren::value_type& it,sgn->getChildren()){
-			parse(it.second->getBoundingBox(), data, it.second);
-		}
-		PRINT_FN(Locale::get("WARN_NAV_INCOMPLETE"));
+        if(level == DETAIL_ABSOLUTE){
+            if(sn->getType() == TYPE_OBJECT3D){
+		        geometry = dynamic_cast<Object3D* >(sn)->getGeometryVBO();
+            }else if(sn->getType() == TYPE_TERRAIN){
+                geometry = dynamic_cast<Terrain* >(sn)->getGeometryVBO();
+                areType = SAMPLE_POLYAREA_GROUND;
+            }else if(sn->getType() == TYPE_WATER){
+                geometry = dynamic_cast<WaterPlane* >(sn)->getQuad()->getGeometryVBO();
+                areType = SAMPLE_POLYAREA_WATER;
+            }else{
+                ERROR_FN(Locale::get("ERROR_NAV_UNKNOWN_NODE_FOR_ABSOLUTE"),sn->getType());
+                goto next;
+            }
 
-		return data;
+			for (U32 i = 0; i < geometry->getPosition().size(); ++i ){
+                addVertex(&data,geometry->getPosition()[i]);
+                if(geometry->getPosition()[i].x < -5000 || geometry->getPosition()[i].y < -5000 || geometry->getPosition()[i].z < -5000){
+                    PRINT_FN("opa ..");
+                }
+		    }
+ 			for (U32 i = 0; i < geometry->getTriangles().size(); ++i){
+			    addTriangle(&data,geometry->getTriangles()[i],areType);
+			}
+		}else if( level == DETAIL_LOW || level == DETAIL_BOUNDINGBOX ){
+           
+            if(sn->getType() == TYPE_WATER){
+                areType = SAMPLE_POLYAREA_WATER;
+                sgn = sgn->getChildren()["waterPlane"];
+            }
+            mat4<F32> transform = sgn->getTransform()->getMatrix();
+            //Skip small objects
+            if(box.getWidth() < 0.05f || box.getDepth() < 0.05f || box.getHeight() < 0.05f)  goto next;
+
+            vectorImpl<vec3<F32> > verts;
+            for(U32 i = 0; i < 8; i++){
+               verts.push_back(cubePoints[i]);
+            }
+        
+            const vec3<F32>& boxCenter = bb.getCenter();
+            const vec3<F32>& halfSize = bb.getHalfExtent();
+     
+
+            for(U32 i = 0; i < 8; i++){
+                vec3<F32> half = verts[i] * halfSize;
+                vec3<F32> tmp = (transform * half) + boxCenter;
+                numVert++;
+                addVertex(&data, tmp);
+                if(tmp.x < -5000 || tmp.y < -5000 || tmp.z < -5000){
+                    PRINT_FN("opa ..");
+                }
+            }
+            for(U32 f = 0; f < 6; f++){
+               for(U32 v = 2; v < 4; v++){
+                   // Note: We reverse normal on the polygons to prevent things from going inside out
+                      
+                   addTriangle(&data,  vec3<U32>(curNumVert+cubeFaces[f][0]+1, 
+                                                 curNumVert+cubeFaces[f][v]+1,
+                                                 curNumVert+cubeFaces[f][v-1]+1), 
+                               areType);
+               }
+            }
+        }else if( level == DETAIL_MEDIUM || level == DETAIL_HIGH){
+            ERROR_FN(Locale::get("ERROR_RECAST_MEDIUM_DETAIL"));
+        }else{
+            ERROR_FN(Locale::get("ERROR_RECAST_DETAIL_LEVEL"),level);
+    }
+    PRINT_FN("Added [ %s ] with values MAX [ %5.2f | %5.2f | %5.2f ] MIN [ %5.2f | %5.2f | %5.2f ]",
+             sn->getName().c_str(), _maxVertValue.x,_maxVertValue.y,_maxVertValue.z,
+                                    _minVertValue.y,_minVertValue.x,_minVertValue.z);
+    //altough labels are bad, skipping here using them is the easiest solution to follow -Ionut
+    next:;
+	for_each(SceneGraphNode::NodeChildren::value_type& it,sgn->getChildren()){
+		parse(it.second->getBoundingBox(), data, it.second);
 	}
+	return data;
+}
 
 };

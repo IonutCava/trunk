@@ -12,7 +12,7 @@ RenderBinItem::RenderBinItem(P32 sortKey, SceneGraphNode* const node ) : _node( 
 	/// If we have a material
 	if(mat){
 		/// Sort by state hash depending on the current rendering stage
-		if(GFX_DEVICE.getRenderStage() == REFLECTION_STAGE){
+		if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)){
 			/// Check if we have a reflection state
 			RenderStateBlock* reflectionState = mat->getRenderState(REFLECTION_STAGE);
 			if(reflectionState != NULL){
@@ -24,14 +24,14 @@ RenderBinItem::RenderBinItem(P32 sortKey, SceneGraphNode* const node ) : _node( 
 				assert(finalState != NULL);
 				_stateHash = finalState->getHash();
 			}
-		}else if(GFX_DEVICE.getRenderStage() == SHADOW_STAGE){
+		}else if(GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)){
 			/// Check if we have a shadow state
-			RenderStateBlock* shadowState = mat->getRenderState(SHADOW_STAGE);
+			RenderStateBlock* depthState = mat->getRenderState(DEPTH_STAGE);
 			/// If we do not have a special shadow state, don't worry, just use 0 for all similar nodes
 			/// the SceneGraph will use a global state on them, so using 0 is still sort-correct
-			if(shadowState != NULL){
+			if(depthState != NULL){
 				/// Save the render state hash value for sorting
-				_stateHash = shadowState->getHash();
+				_stateHash = depthState->getHash();
 			}
 		}else{
 			/// all materials should have at least one final render state
@@ -50,7 +50,7 @@ struct RenderQueueKeyCompare{
 	///Sort 
 	bool operator()( const RenderBinItem &a, const RenderBinItem &b ) const{
 		/// No need to sort by shaders in shadow stage -Update: Since animation update, shadow stage uses shaders as well
-		//if(GFX_DEVICE.getRenderStage() != SHADOW_STAGE){ ///Sort by shader in all states
+		//if(GFX_DEVICE.getRenderStage() != DEPTH_STAGE){ ///Sort by shader in all states
 
 			/// The sort key is the shader id (for now)
 			if(  a._sortKey.i < b._sortKey.i ) 

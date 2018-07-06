@@ -4,7 +4,9 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
-WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<U16>(2048,2048)), 
+#pragma message("ToDo: check water visibility - Ionut")
+
+WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<U16>(1024,1024)), 
 						   _plane(NULL),_texture(NULL), _shader(NULL),_planeTransform(NULL),
 						   _node(NULL),_planeSGN(NULL),_waterLevel(0),_reflectionRendering(false){}
 
@@ -30,10 +32,11 @@ bool WaterPlane::setInitialData(const std::string& name){
 void WaterPlane::postLoad(SceneGraphNode* const sgn){
 	_node = sgn;
 	_planeSGN = _node->addNode(_plane);
+    assert(_planeSGN);
 	_planeSGN->setActive(false);
 	_planeTransform = _planeSGN->getTransform();
 	///The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
-	getSceneNodeRenderState().addToDrawExclusionMask(SHADOW_STAGE | SSAO_STAGE | DEPTH_STAGE);
+	getSceneNodeRenderState().addToDrawExclusionMask(DEPTH_STAGE);
 }
 
 bool WaterPlane::computeBoundingBox(SceneGraphNode* const sgn){
@@ -59,7 +62,6 @@ bool WaterPlane::unload(){
 	return state;
 }
 
-
 void WaterPlane::setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 transparency){
 	_shader->bind();
 		_shader->Uniform("water_shininess",shininess );
@@ -69,14 +71,19 @@ void WaterPlane::setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 tr
 }
 
 void WaterPlane::onDraw(){
+    _eyePos = GET_ACTIVE_SCENE()->renderState()->getCamera()->getEye();
 	BoundingBox& bb = _node->getBoundingBox();
 	_planeTransform->setPosition(vec3<F32>(_eyePos.x,bb.getMax().y,_eyePos.z));
 }
 
+void WaterPlane::postDraw(){
+   
+}
+
 void WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
-	///ToDo: Add multiple local lights for terrain, such as torches, rockets, flashlights etc - Ionut 
+
 	///Prepare the main light (directional light only, sun) for now.
-	if(GFX_DEVICE.getRenderStage() != SHADOW_STAGE){
+	if(!GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)){
 		///Find the most influental light for the terrain. Usually the Sun
 		_lightCount = LightManager::getInstance().findLightsForSceneNode(sgn,LIGHT_TYPE_DIRECTIONAL);
 		///Update lights for this node
@@ -92,16 +99,17 @@ void WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
 		}
 	}
 	SET_STATE_BLOCK(getMaterial()->getRenderState(FINAL_STAGE));
-	GFX_DEVICE.setMaterial(getMaterial());
 	
 	_reflectedTexture->Bind(0);
 	_texture->Bind(1);	
 	_shader->bind();
+    _shader->Uniform("material",getMaterial()->getMaterialMatrix());
 	_shader->UniformTexture("texWaterReflection", 0);
 	_shader->UniformTexture("texWaterNoiseNM", 1);
 }
 
 void WaterPlane::releaseMaterial(){
+
 	_texture->Unbind(1);
 	_reflectedTexture->Unbind(0);
 	
@@ -115,6 +123,7 @@ void WaterPlane::releaseMaterial(){
 }
 
 void WaterPlane::render(SceneGraphNode* const sgn){
+
 	GFX_DEVICE.setObjectState(_planeTransform);
 	GFX_DEVICE.renderModel(_plane);
 	GFX_DEVICE.releaseObjectState(_planeTransform);
@@ -143,7 +152,7 @@ void WaterPlane::updateReflection(){
 	///If we are above water, process the plane's reflection. If we are below, we render the scene normally
 	 /// Set the correct stage
 	RenderStage prev = GFX_DEVICE.getRenderStage();
-	if(!isCameraUnderWater()){
+	if(!isPointUnderWater(_eyePos)){
 		GFX_DEVICE.setRenderStage(REFLECTION_STAGE);
 	}
 	

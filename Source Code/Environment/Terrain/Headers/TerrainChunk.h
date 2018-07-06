@@ -25,13 +25,14 @@ class Terrain;
 struct FileData;
 class ShaderProgram;
 class SceneGraphNode;
+class VertexBufferObject;
 
 class TerrainChunk{
 public:
 	void Destroy();
-	int  DrawGround(I8 lod,ShaderProgram* const program, bool drawInReflection = false);
-	void DrawGrass(I8 lod, F32 d);
-	void Load(U8 depth, vec2<U32> pos, vec2<U32> HMsize);
+	int  DrawGround(I8 lod,ShaderProgram* const program, VertexBufferObject* const vbo);
+	void DrawGrass(I8 lod, F32 d,VertexBufferObject* const grassVBO);
+	void Load(U8 depth, vec2<U32> pos, vec2<U32> HMsize,VertexBufferObject* const groundVBO);
 
 	inline vectorImpl<U32>&			getIndiceArray(I8 lod)		   {return _indice[lod];}
 	inline vectorImpl<U16>&			getGrassIndiceArray()		   {return _grassIndice;}
@@ -46,7 +47,6 @@ private:
 	void ComputeIndicesArray(I8 lod, U8 depth, vec2<U32> pos, vec2<U32> HMsize);
 
 private:
-	///ToDo: U16 doesn't work for terrain. Find out why. -Ionut
 	vectorImpl<U32> 	_indice[TERRAIN_CHUNKS_LOD];
 	U16					_indOffsetW[TERRAIN_CHUNKS_LOD];
 	U16  				_indOffsetH[TERRAIN_CHUNKS_LOD];

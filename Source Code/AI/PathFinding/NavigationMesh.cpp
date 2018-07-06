@@ -1,6 +1,24 @@
 #include "Headers/NavigationMesh.h"
 #include "Managers/Headers/SceneManager.h"
+
+#include <DebugUtils/Include/RecastDump.h>
+
 namespace Navigation {
+
+    void rcContextDivide::doLog(const rcLogCategory category, const char* msg, const int len){
+        switch(category){
+            default:
+            case RC_LOG_PROGRESS:
+                PRINT_FN(Locale::get("RECAST_CONTEXT_LOG_PROGRESS"),msg);
+                break;
+            case RC_LOG_WARNING:
+                PRINT_FN(Locale::get("RECAST_CONTEXT_LOG_WARNING"),msg);
+                break;
+            case RC_LOG_ERROR:
+                ERROR_FN(Locale::get("RECAST_CONTEXT_LOG_ERROR"),msg);
+                break;
+        }
+    }
 
 	const U32 NavigationMesh::_maxVertsPerPoly = 3;
 
@@ -39,7 +57,7 @@ namespace Navigation {
 	NavigationMesh::~NavigationMesh(){
 
 		if(mThread)	{
-			mThread->interruptEvent();
+			mThread->stopTask();
 		}
 
 		freeIntermediates(true);
@@ -65,7 +83,7 @@ namespace Navigation {
 		_navigationMeshLock.unlock();
 	}
 
-	bool NavigationMesh::build(SceneGraphNode* const sgn){
+	bool NavigationMesh::build(SceneGraphNode* const sgn,bool threaded){
 
 		if(sgn){
 			_sgn = sgn;
@@ -73,12 +91,13 @@ namespace Navigation {
 			_sgn = GET_ACTIVE_SCENE()->getSceneGraph()->getRoot();
 		}
 
-		if(_buildThreaded)
+		if(_buildThreaded && threaded)
 		 return buildThreaded();
 
 		boost::mutex::scoped_lock(_buildLock);
-		if(!_buildLock.owns_lock()) return false;
-
+        if(_buildThreaded && threaded){
+		    if(!_buildLock.owns_lock()) return false;
+        }
 		return buildProcess();
 	}
 
@@ -88,10 +107,10 @@ namespace Navigation {
 		if(!_buildLock.owns_lock()) return false;
 
 		if(mThread) {
-			mThread->interruptEvent();
+			mThread->stopTask();
 		}
-
-		mThread.reset(New Event(3,true,true,boost::bind(&NavigationMesh::launchThreadedBuild,this)));
+		Kernel* kernel = Application::getInstance().getKernel();
+		mThread.reset(New Task(kernel->getThreadPool(),3,true,true,boost::bind(&NavigationMesh::launchThreadedBuild,this)));
 
 		return true;
 	}
@@ -137,7 +156,7 @@ namespace Navigation {
 
 
 		// Recast initialisation data
-		rcContext ctx(false);
+		rcContextDivide ctx(true);
 		rcConfig cfg;
 
 		memset(&cfg, 0, sizeof(cfg));
@@ -161,9 +180,10 @@ namespace Navigation {
 		cfg.tileSize               = _tileSize;
 
 
-		if(!createPolyMesh(cfg, data, &ctx))
-		 return false;
-
+        if(!createPolyMesh(cfg, data, &ctx)){
+            data.valid = false;
+		    return false;
+        }
 		//Detour initialisation data
 		dtNavMeshCreateParams params;
 		memset(&params, 0, sizeof(params));
@@ -194,15 +214,27 @@ namespace Navigation {
 		params.detailTris = pmd->tris;
 		params.detailTriCount = pmd->ntris;
 
-		if(!createNavigationMesh(params))
-		 return false;
-
+        if(!createNavigationMesh(params)){
+            data.valid = false;
+		    return false;
+        }
+        data.valid = true;
 		return true;
 	}
 
-	bool NavigationMesh::createPolyMesh(rcConfig &cfg, NavModelData &data, rcContext *ctx){
+	bool NavigationMesh::createPolyMesh(rcConfig &cfg, NavModelData &data, rcContextDivide *ctx){
+        if(_fileName.empty()){
+            _fileName = data.getName();
+        }
 		// Create a heightfield to voxelise our input geometry
 		hf = rcAllocHeightfield();
+        // Reset build times gathering.
+	    ctx->resetTimers();
+    	// Start the build process.	
+	    ctx->startTimer(RC_TIMER_TOTAL);
+		ctx->log(RC_LOG_PROGRESS, "Building navigation:");
+	    ctx->log(RC_LOG_PROGRESS, " - %d x %d cells", cfg.width, cfg.height);
+        ctx->log(RC_LOG_PROGRESS, " - %.1fK verts, %.1fK tris", data.getVertCount()/1000.0f, data.getTriCount()/1000.0f);
 
 		if(!hf || !rcCreateHeightfield(ctx, *hf, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch)){
 			ERROR_FN(Locale::get("ERROR_NAV_HEIGHTFIELD"), _fileName.c_str());
@@ -281,6 +313,13 @@ namespace Navigation {
 			ERROR_FN(Locale::get("ERROR_NAV_POLY_MESH_DETAIL"), _fileName.c_str());
 			return false;
 		}
+        ctx->stopTimer(RC_TIMER_TOTAL);
+    	// Show performance stats.
+	    duLogBuildTimes(*ctx, ctx->getAccumulatedTime(RC_TIMER_TOTAL));
+	    ctx->log(RC_LOG_PROGRESS, ">> Polymesh: %d vertices  %d polygons", pm->nverts, pm->npolys);
+	    F32 totalBuildTimeMs = ctx->getAccumulatedTime(RC_TIMER_TOTAL)/1000.0f;
+	
+	    PRINT_FN("[RC_LOG_PROGRESS] Polymesh: %d vertices  %d polygons %5.2f ms\n", pm->nverts, pm->npolys,totalBuildTimeMs);
 		return true;
 	}
 

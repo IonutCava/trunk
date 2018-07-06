@@ -6,6 +6,7 @@ Application::Application() : _kernel(NULL),
 							 _mainWindowId(-1),
 							 _requestShutdown(false)
 {
+    _threadId = boost::this_thread::get_id();
 }
 
 Application::~Application(){

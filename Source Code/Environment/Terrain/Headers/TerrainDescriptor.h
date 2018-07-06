@@ -40,13 +40,14 @@ public:
 	void setGrassScale(F32 grassScale)     {_grassScale = grassScale;}
 	void setTreeScale(F32 treeScale)       {_treeScale = treeScale;}
 	void setActive(bool active)            {_active = active;}
+    void setChunkSize(U32 size)            {_chunkSize = size;}
 
 	U32   getGrassDensity() {return _grassDensity;}
 	U16   getTreeDensity()  {return _treeDensity;}
 	F32   getGrassScale()   {return _grassScale;}
 	F32   getTreeScale()    {return _treeScale;}
 	bool  getActive()       {return _active;}
-
+    U32   getChunkSize()    {return _chunkSize;}
 	vec3<F32>& getPosition()	 {return _position;}
 	vec2<F32>& getScale()        {return _scale;}
 	
@@ -60,6 +61,7 @@ public:
 private:
 	Unordered_map<std::string,std::string> _variables;
 	U32    _grassDensity;
+    U32    _chunkSize;
 	U16    _treeDensity;
 	F32	   _grassScale;
 	F32    _treeScale;

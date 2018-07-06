@@ -25,7 +25,7 @@ bool glDeferredBufferObject::Create(GLushort width,
 
 	GLCheck(glGenFramebuffers(1, &_frameBufferHandle));
 	GLCheck(glGenRenderbuffers(1, &_depthBufferHandle));
-	GLCheck(glGenFramebuffers(1, &_diffuseBufferHandle));
+	GLCheck(glGenRenderbuffers(1, &_diffuseBufferHandle));
 	GLCheck(glGenRenderbuffers(1, &_positionBufferHandle));
 	GLCheck(glGenRenderbuffers(1, &_normalBufferHandle));
 	GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle));
@@ -143,6 +143,7 @@ bool glDeferredBufferObject::Create(GLushort width,
 	
 	checkStatus();
 	GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    GLCheck(glBindRenderbuffer(GL_RENDERBUFFER,0));
 	return true;
 }
 

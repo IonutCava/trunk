@@ -79,8 +79,9 @@ void main (void){
 	gl_FragDepth = gl_FragCoord.z;
 
 	vec4 color = Phong(_normalMV);
+    applyFog(color);
 
-	gl_FragData[0] = applyFog(color);
+	gl_FragData[0] = color;
 }
 
 -- Fragment.Texture
@@ -92,8 +93,9 @@ void main (void){
 	gl_FragDepth = gl_FragCoord.z;
 
 	vec4 color = Phong(_texCoord, _normalMV);
-	
-	gl_FragData[0] = applyFog(color);
+	applyFog(color);
+
+	gl_FragData[0] = color;
 }
 	
 -- Fragment.Bump
@@ -109,8 +111,9 @@ void main (void){
 	vec4 color = NormalMapping(_texCoord);
 	
 	if(color.a < 0.2) discard;	
-	
-	gl_FragData[0] = applyFog(color);
+	applyFog(color);
+
+	gl_FragData[0] = color;
 }
 
 -- Fragment.Bump.Parallax
@@ -126,8 +129,9 @@ void main (void){
 	vec4 color = ParallaxMapping(_texCoord, vPixToEyeTBN[bumpMapLightId], vPixToLightTBN[bumpMapLightId]);
 	
 	if(color.a < 0.2) discard;	
-	
-	gl_FragData[0] = applyFog(color);
+	applyFog(color);
+
+	gl_FragData[0] = color;
 }
 
 -- Fragment.Bump.Relief
@@ -143,6 +147,7 @@ void main (void){
 	vec4 color = ReliefMapping(bumpMapLightId,_texCoord);
 
 	if(color.a < 0.2) discard;	
-	
-	gl_FragData[0] = applyFog(color);
+	applyFog(color);
+
+	gl_FragData[0] = color;
 }

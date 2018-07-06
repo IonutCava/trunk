@@ -6,17 +6,6 @@
 #include "Core/Headers/ParamHandler.h" 
 #include "Core/Headers/Application.h" 
 
-U32 ShaderProgram::_prevShaderProgramId = 0;
-U32 ShaderProgram::_newShaderProgramId = 0;
-
-bool ShaderProgram::checkBinding(U32 newShaderProgramId){
-	if(_prevShaderProgramId != newShaderProgramId){
-		_newShaderProgramId = newShaderProgramId;
-		return true;
-	}
-	return false;
-}
-
 ShaderProgram::~ShaderProgram(){
 	D_PRINT_FN(Locale::get("SHADER_PROGRAM_REMOVE"), getName().c_str());
 	for_each(Shader* s, _shaders){
@@ -45,7 +34,6 @@ bool ShaderProgram::generateHWResource(const std::string& name){
 
 void ShaderProgram::bind(){
 	_bound = true;
-	_prevShaderProgramId = _newShaderProgramId;
 	//Apply global shader values valid throughout current render call:
 	Frustum& frust = Frustum::getInstance();
 	ParamHandler& par = ParamHandler::getInstance();
@@ -63,7 +51,6 @@ void ShaderProgram::bind(){
 }
 
 void ShaderProgram::unbind(){
-	_prevShaderProgramId = 0;
 	_bound = false;
 }
 

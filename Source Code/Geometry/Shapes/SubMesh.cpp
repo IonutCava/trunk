@@ -9,11 +9,7 @@ SubMesh::~SubMesh(){
 bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
 	BoundingBox& bb = sgn->getBoundingBox();
 	if(bb.isComputed()) return true;
-	//bb.set(_geometry->getMinPosition(),_geometry->getMinPosition());
-	bb.set(vec3<F32>(100000.0f, 100000.0f, 100000.0f),vec3<F32>(-100000.0f, -100000.0f, -100000.0f));
-	for( size_t j = 0; j < _geometry->getPosition().size(); ++j) { 
-		bb.Add(_geometry->getPosition(j));
-	}
+	bb.set(getGeometryVBO()->getMinPosition(),getGeometryVBO()->getMaxPosition());
 	return SceneNode::computeBoundingBox(sgn);
 }
 

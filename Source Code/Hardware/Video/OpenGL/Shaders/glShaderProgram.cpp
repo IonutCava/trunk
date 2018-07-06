@@ -9,7 +9,7 @@
 #include "Managers/Headers/ShaderManager.h"
 #include <boost/algorithm/string.hpp>
 
-glShaderProgram::glShaderProgram() : ShaderProgram(), _shaderProgramIdInternal(-1),_validationQueued(false) {}
+glShaderProgram::glShaderProgram() : ShaderProgram(), _shaderProgramIdInternal(std::numeric_limits<U32>::max()),_validationQueued(false) {}
 
 glShaderProgram::~glShaderProgram() {
 	if(_shaderProgramIdInternal > 0){
@@ -36,7 +36,7 @@ void glShaderProgram::validateInternal(){
 	GLCheck(glGetProgramInfoLog(_shaderProgramIdInternal, BUFFER_SIZE, &length, buffer));
 	GLint status = 0;
 	GLCheck(glGetProgramiv(_shaderProgramIdInternal, GL_VALIDATE_STATUS, &status));
-	// ToDo: Problem with AMD(ATI) cards. GLSL validation errors about multiple samplers to same uniform, but they still work. Fix that. -Ionut
+#pragma message("ToDo: Problem with AMD(ATI) cards. GLSL validation errors about multiple samplers to same uniform, but they still work. Fix that. -Ionut")
 	if (status == GL_FALSE){
 		ERROR_FN(Locale::get("GLSL_VALIDATING_PROGRAM"), getName().c_str(), buffer);
 	}else{
@@ -259,21 +259,31 @@ void glShaderProgram::link(){
 	_compiled = true;
 }
 
+bool glShaderProgram::checkBinding(){
+    if(GL_API::getActiveShaderId() != _shaderProgramIdInternal){
+        GL_API::setActiveShaderId(_shaderProgramIdInternal);
+		return true;
+	}
+	return false;
+}
+
 void glShaderProgram::bind() {
 	///If we did not create the hardware resource, do not try and bind it, as it is invalid
-	if(_shaderProgramIdInternal == -1) return; 
-	if(_shaderProgramIdInternal == 0) GLCheck(glUseProgram(0));
+	if(_shaderProgramIdInternal == std::numeric_limits<U32>::max()) return; 
 	///prevent double bind
-	if(checkBinding(_shaderProgramIdInternal)){
+	if(checkBinding()){
 		GLCheck(glUseProgram(_shaderProgramIdInternal));
 		///send default uniforms to GPU;
-		ShaderProgram::bind();
+        if(_shaderProgramIdInternal != 0){
+            ShaderProgram::bind();
+        }
 	}
 }
 
 void glShaderProgram::unbind() {
 	if(_bound){
 		GLCheck(glUseProgram(0));
+        GL_API::setActiveShaderId(0);
 		ShaderProgram::unbind();
 	}
 }
@@ -313,6 +323,12 @@ void glShaderProgram::Attribute(const std::string& ext, const vec4<GLfloat>& val
 	}
 }
 
+void glShaderProgram::Uniform(const std::string& ext, GLuint value){
+	GLint loc = cachedLoc(ext);
+	if(loc != -1){
+		GLCheck(glUniform1ui(loc, value));
+	}
+}
 
 void glShaderProgram::Uniform(const std::string& ext, GLint value){
 	GLint loc = cachedLoc(ext);
@@ -381,7 +397,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<GLint >& 
 	if(values.empty()) return;
 	GLint loc = cachedLoc(ext);
 	if(loc != -1){
-		GLCheck(glUniform1iv(loc,values.size(),&values[0]));
+		GLCheck(glUniform1iv(loc,values.size(),&values.front()));
 	}
 }
 
@@ -389,7 +405,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<GLfloat >
 	if(values.empty()) return;
 	GLint loc = cachedLoc(ext);
 	if(loc != -1){
-		GLCheck(glUniform1fv(loc,values.size(),&values[0]));
+		GLCheck(glUniform1fv(loc,values.size(),&values.front()));
 	}
 }
 
@@ -397,7 +413,7 @@ void glShaderProgram::Uniform(const std::string& ext, const vectorImpl<mat4<GLfl
 	if(values.empty()) return;
 	GLint loc = cachedLoc(ext);
 	if(loc != -1){
-		GLCheck(glUniformMatrix4fv(loc,values.size(), rowMajor,values[0]));
+		GLCheck(glUniformMatrix4fv(loc,values.size(), rowMajor,values.front()));
 	}
 }
 

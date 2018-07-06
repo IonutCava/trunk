@@ -4,13 +4,13 @@
  
 void Quadtree::DrawGround(bool drawInReflection) {
 	assert(_root);
-	_root->DrawGround(drawInReflection);
+    _root->DrawGround(drawInReflection ? CHUNK_BIT_WATERREFLECTION : 0, _parentVBO);
 }
 
-void Quadtree::DrawGrass()
+void Quadtree::DrawGrass(VertexBufferObject* const grassVBO)
 {
 	assert(_root);
-	_root->DrawGrass();
+	_root->DrawGrass(grassVBO);
 }
 
 void Quadtree::DrawBBox() {
@@ -19,7 +19,7 @@ void Quadtree::DrawBBox() {
 }
 
 
-QuadtreeNode* Quadtree::FindLeaf(vec2<F32>& pos) {
+QuadtreeNode* Quadtree::FindLeaf(const vec2<F32>& pos) {
 	assert(_root);
 	QuadtreeNode* node = _root;
 
@@ -45,7 +45,8 @@ QuadtreeNode* Quadtree::FindLeaf(vec2<F32>& pos) {
 
 void Quadtree::Build(BoundingBox& terrainBBox,		
 					 vec2<U32> HMsize,				
-					 U32 minHMSize)	
+					 U32 minHMSize,
+                     VertexBufferObject* const groundVBO)	
 {
 	
 	_root = New QuadtreeNode();
@@ -53,7 +54,7 @@ void Quadtree::Build(BoundingBox& terrainBBox,
 	_root->setParentShaderProgram(_parentShaderProgram);
 
 	
-	_root->Build(0, vec2<U32>(0,0), HMsize, minHMSize);
+	_root->Build(0, vec2<U32>(0,0), HMsize, minHMSize,groundVBO);
 }
 
 BoundingBox& Quadtree::computeBoundingBox(const vectorImpl<vec3<F32> >& vertices){

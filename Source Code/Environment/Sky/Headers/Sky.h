@@ -36,11 +36,16 @@ class Sky : public SceneNode {
 public:
 	Sky(const std::string& name);
 	~Sky();
+
+    void onDraw();
 	void render(SceneGraphNode* const sgn);
-	void setRenderingOptions(const vec3<F32>& eyePos,const vec3<F32>& sunVect, bool invert = false, bool drawSun = true, bool drawSky = true) ;
-	void onDraw();
+	void setRenderingOptions(bool drawSun = true, bool drawSky = true) ;
 	void prepareMaterial(SceneGraphNode* const sgn);
 	void releaseMaterial();
+
+    void setInvertPlane(F32 invertPlaneY);
+    void setInverted(bool state){_invert = state;}
+    void setSunVector(const vec3<F32>& sunVect) {_sunVect = sunVect;}
 
 	void addToDrawExclusionMask(I32 stageMask);
 	void removeFromDrawExclusionMask(I32 stageMask);
@@ -49,6 +54,7 @@ public:
 	///Skies are always visible (for now. Interiors will change that. Windows will reuqire a occlusion querry(?))
 	bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
 	void postLoad(SceneGraphNode* const sgn);
+
 private:
 	bool load();
 
@@ -56,7 +62,8 @@ private:
 	bool			  _init,_invert,_drawSky,_drawSun;
 	ShaderProgram*	  _skyShader;
 	TextureCubemap*	  _skybox;
-	vec3<F32>		  _sunVect,	_eyePos;
+	vec3<F32>		  _sunVect;
+    F32               _invertPlaneY;
 	Sphere3D          *_sky,*_sun;
 	SceneGraphNode    *_sunNode, *_skyGeom;
 	U8				  _exclusionMask;

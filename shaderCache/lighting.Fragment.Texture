@@ -427,7 +427,7 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN){
 	}
 	
 	//Ambient color	
-	vec4 cAmbient = gl_FrontLightModelProduct.sceneColor * material[0];
+	vec4 cAmbient = gl_LightModel.ambient * material[0];
 	//Diffuse color
 	vec4 cDiffuse;
 	//Specular color
@@ -458,10 +458,16 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN){
 	return vec4(shadow,shadow,shadow,1.0) * (cAmbient * tBase + (cDiffuse * tBase + cSpecular));	
 }
 
-uniform bool enableFog;
+uniform bool  enableFog;
+uniform float fogStart;
+uniform float fogEnd;
+uniform float fogDensitySqrtNeg;
+uniform vec3  fogColor;
+
 const float LOG2 = 1.442695;
 float zDepth = gl_FragCoord.z / gl_FragCoord.w;
-vec4 applyFog(in vec4 color){
+
+void applyFog(inout vec4 color){
 	if(enableFog){
 		
 		float fogFactor = exp2( -gl_Fog.density * 
@@ -470,10 +476,8 @@ vec4 applyFog(in vec4 color){
 								 zDepth * 
 								 LOG2 );
 		fogFactor = clamp(fogFactor, 0.0, 1.0);
-
-		return mix(gl_Fog.color, color, fogFactor );
+		color = mix(gl_Fog.color, color, fogFactor );
 	}
-	return color;
 }
 
 
@@ -481,7 +485,8 @@ void main (void){
 	gl_FragDepth = gl_FragCoord.z;
 
 	vec4 color = Phong(_texCoord, _normalMV);
-	
-	gl_FragData[0] = applyFog(color);
+	applyFog(color);
+
+	gl_FragData[0] = color;
 }
 	

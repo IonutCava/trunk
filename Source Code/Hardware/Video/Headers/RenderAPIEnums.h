@@ -31,6 +31,13 @@ enum CurrentContext {
 	GFX_LOADING_CONTEXT
 };
 
+enum FogMode {
+    FOG_NONE = 0,
+    FOG_LINEAR,
+    FOG_EXP,
+    FOG_EXP2
+};
+
 enum RenderStage {
     DEFERRED_STAGE			   = toBit(1),
     SHADOW_STAGE			   = toBit(2),
@@ -40,13 +47,13 @@ enum RenderStage {
 	DOF_STAGE                  = toBit(6),
 	LIGHT_SHAFT_STAGE          = toBit(7),
     FINAL_STAGE				   = toBit(8),
-    DEPTH_STAGE				   = toBit(9),
-	ENVIRONMENT_MAPPING_STAGE  = toBit(10),
-	FXAA_STAGE                 = toBit(11),
+	ENVIRONMENT_MAPPING_STAGE  = toBit(9),
+	FXAA_STAGE                 = toBit(10),
 	DISPLAY_STAGE              = DEFERRED_STAGE | FINAL_STAGE,
 	POSTFX_STAGE               = SSAO_STAGE | BLOOM_STAGE | DOF_STAGE | LIGHT_SHAFT_STAGE,
+    DEPTH_STAGE                = SSAO_STAGE | DOF_STAGE | SHADOW_STAGE,
 	//Place all stages above this
-	INVALID_STAGE		       = toBit(12)
+	INVALID_STAGE		       = toBit(11)
 };
 
 enum PBOType {

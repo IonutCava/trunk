@@ -47,7 +47,6 @@ class SceneNode : public Resource {
 	friend class RenderQueue;
 
 public:
-
 	SceneNode(SceneNodeType type);
 	SceneNode(std::string name, SceneNodeType type);
 	virtual ~SceneNode();
@@ -72,8 +71,8 @@ public:
 	///setup any derived class special constants, such as animation information or reflection stuff)
 	virtual void            setSpecialShaderConstants(ShaderProgram* const shader);
 	/* Depth map material */
-	virtual	void            prepareShadowMaterial(SceneGraphNode* const sgn);
-	virtual	void            releaseShadowMaterial();
+	virtual	void            prepareDepthMaterial(SceneGraphNode* const sgn);
+	virtual	void            releaseDepthMaterial();
 
 	/// Every SceneNode computes a bounding box in it's own way. 
 	virtual	bool    computeBoundingBox(SceneGraphNode* const sgn);
@@ -103,6 +102,7 @@ public:
 	inline void decLODcount() {_LODcount--;}
 	inline U8   getLODcount() {return _LODcount;}
 	inline U8   getCurrentLOD() {return (_lodLevel < (_LODcount-1) ? _lodLevel : (_LODcount-1));}
+    
 protected:
 
 	SceneNodeRenderState  _renderState;
@@ -113,9 +113,9 @@ protected:
 	U8                    _LODcount; ///<Maximum available LOD levels
 
 private:
-	
-	Material*	_material;				   
-	bool        _selected;
+    //mutable SharedLock _materialLock;
+	Material*	  _material;				   
+	bool          _selected;
 	SceneNodeType _type;
 };
 

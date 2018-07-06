@@ -19,15 +19,21 @@
 #define GL_UNIFORM_BUFFER_OBJECT_H_
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 
+///Base class for shader uniform blocks
 class glUniformBufferObject {
 public:
 	glUniformBufferObject();
 	~glUniformBufferObject();
+    ///Create a new buffer object to hold our uniform shader data
+    ///if "dynamic" is false, the buffer will be created using GL_STATIC_DRAW
+    ///if "dynamic" is true, the buffer will use eiter GL_STREAM_DRAW or GL_DYNAMIC_DRAW depending on the "stream" param
+    ///default value will be a GL_DYNAMIC_DRAW, as most data will change once every few frames 
+    ///(lights might change per frame, so stream will be better in that case)
+	void Create(GLint bufferIndex, bool dynamic = true, bool stream = false);
+	virtual void FillData() = 0;
 
-	void Create(GLushort dataSize, GLint bufferIndex);
-	void FillData(GLint size, void* data);
-
-private:
+protected:
 	GLuint _UBOid;
+    GLenum _usage;
 };
 #endif

@@ -20,11 +20,12 @@
 #define _RENDER_PASS_H_
 
 #include "core.h"
+class SceneRenderState;
 class RenderPass {
 public:
 	RenderPass(const std::string& name);
 	~RenderPass();
-	virtual void render();
+	virtual void render(SceneRenderState* const sceneRenderState = NULL);
 	inline U16 getLasTotalBinSize() {return _lastTotalBinSize;}
 	inline void updateMaterials(bool state) {_updateMaterials = state;}
 	inline const std::string& getName() {return _name;}

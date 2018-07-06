@@ -50,7 +50,7 @@
 
 #include "Dynamics/Physics/Headers/PhysicsAPIWrapper.h"
 
-
+#define MAX_ACTOR_QUEUE 30
 
 class SceneGraphNode;
 class PhysXSceneInterface;
@@ -75,15 +75,17 @@ public:
    PhysicsSceneInterface* NewSceneInterface(Scene* scene);
 
   //Default Shapes:
-   bool createPlane(PhysicsSceneInterface* targetScene,const vec3<F32>& position = vec3<F32>(0,0,0), U32 size = 1);
-   bool createBox(PhysicsSceneInterface* targetScene,const vec3<F32>& position = vec3<F32>(0,0,0), F32 size = 1);
-   bool createActor(PhysicsSceneInterface* targetScene, SceneGraphNode* node, PhysicsActorMask mask,PhysicsCollisionGroup group);
-   inline void registerActiveScene(PhysXSceneInterface* activeScene) {_currentScene = activeScene;}
+   bool createPlane(const vec3<F32>& position = vec3<F32>(0,0,0), U32 size = 1);
+   bool createBox(const vec3<F32>& position = vec3<F32>(0,0,0), F32 size = 1);
+   bool createActor(SceneGraphNode* const node, PhysicsActorMask mask,PhysicsCollisionGroup group);
    inline physx::PxPhysics* const getSDK() {return _gPhysicsSDK;}
    inline const physx::PxSimulationFilterShader& getFilterShader() {return _gDefaultFilterShader;}
+   inline void setPhysicsScene(PhysicsSceneInterface* const targetScene) {assert(targetScene); _targetScene = targetScene;}
+          void initScene();
+protected:
+    PhysicsSceneInterface* _targetScene;
 
 private:
-	PhysXSceneInterface* _currentScene;
 	physx::PxPhysics* _gPhysicsSDK ;
 	physx::PxFoundation* _foundation;
 	physx::PxDefaultErrorCallback _gDefaultErrorCallback;

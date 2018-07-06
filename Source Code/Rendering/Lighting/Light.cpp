@@ -38,7 +38,7 @@ Light::Light(U8 slot, F32 range, LightType type) : SceneNode(TYPE_LIGHT),
 	_lightProperties_f[LIGHT_PROPERTY_QUAD_ATT] = 0.0f;
 	_lightProperties_f[LIGHT_PROPERTY_RANGE] = range;
 	setShadowMappingCallback(SCENE_GRAPH_UPDATE(GET_ACTIVE_SCENE()->getSceneGraph()));
-	
+	setRange(1);//<Default range of 1
 	_dirty = true;
 	_enabled = true;
 }
@@ -65,7 +65,13 @@ void Light::postLoad(SceneGraphNode* const sgn) {
 
 void Light::updateState(bool force){
 	if(_dirty || force){
-		if(_drawImpostor && _impostor){
+        if(_drawImpostor){
+            if(!_impostor){
+                _impostor = New Impostor(_name,_lightProperties_f[LIGHT_PROPERTY_RANGE]);	
+                _impostor->getDummy()->getSceneNodeRenderState().setDrawState(false);
+		        _impostorSGN = _lightSGN->addNode(_impostor->getDummy());
+                _impostorSGN->setActive(false);
+            }
 			_lightSGN->getTransform()->setPosition(_position);
 			_impostor->getDummy()->getMaterial()->setDiffuse(getDiffuseColor());
 			_impostor->getDummy()->getMaterial()->setAmbient(getDiffuseColor());
@@ -170,12 +176,30 @@ F32 Light::getFProperty(LightPropertiesF key){
 	}
 	return _lightProperties_f[key];
 }
+
+void Light::updateBBatCurrentFrame(SceneGraphNode* const sgn){
+    ///Check if range changed
+    if(getRange() != sgn->getBoundingBox().getMax().x){
+        sgn->getBoundingBox().setComputed(false);
+    }
+    return SceneNode::updateBBatCurrentFrame(sgn);
+}
+
+bool Light::computeBoundingBox(SceneGraphNode* const sgn){
+    if(sgn->getBoundingBox().isComputed()) return true;
+    F32 range = getRange() * 0.5f; //diameter to radius
+	sgn->getBoundingBox().set(vec3<F32>(-range,-range,-range),vec3<F32>(range,range,range));
+	return SceneNode::computeBoundingBox(sgn);
+}
+
+bool Light::isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere){
+    if(!_drawImpostor) return false;
+    return (_impostorSGN != NULL);
+}
+
 void Light::render(SceneGraphNode* const sgn){
 	///The isInView call should stop impostor rendering if needed
-	if(!_impostor){
-		_impostor = New Impostor(_name,_lightProperties_f[LIGHT_PROPERTY_RANGE]);	
-		_impostorSGN = _lightSGN->addNode(_impostor->getDummy()); 
-	}
+	if(!_impostor) return;
 	_impostor->render(_impostorSGN);
 }
 

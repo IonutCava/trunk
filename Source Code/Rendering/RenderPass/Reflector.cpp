@@ -1,5 +1,7 @@
 #include "Headers/Reflector.h"
 #include "Hardware/Video/Headers/GFXDevice.h" 
+#include "Core/Resources/Headers/ResourceCache.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameListener(),
 																	 _type(type),
@@ -9,13 +11,20 @@ Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameLis
 																	 _reflectedTexture(NULL),
 																	 _createdFBO(false),
 																	 _updateSelf(false),
-																	 _excludeSelfReflection(true)
+																	 _excludeSelfReflection(true),
+                                                                     _previewReflection(false)
 {
 	REGISTER_FRAME_LISTENER(this);
+    _renderQuad = New Quad3D();
+	_renderQuad->setName("reflectorPreviewQuad");
+    ResourceDescriptor reflectionPreviewShader("fboPreview");
+	_previewReflectionShader = CreateResource<ShaderProgram>(reflectionPreviewShader);
 }
 
 Reflector::~Reflector(){
 	SAFE_DELETE(_reflectedTexture);
+    RemoveResource(_previewReflectionShader);
+	SAFE_DELETE(_renderQuad);
 }
 
 /// Returning false in any of the FrameListener methods will exit the entire application!
@@ -53,7 +62,7 @@ bool Reflector::build(){
 	reflectionDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
 	reflectionDescriptor._generateMipMaps = false; 
 	
-	_reflectedTexture = GFX_DEVICE.newFBO(FBO_2D_COLOR_MS);
+	_reflectedTexture = GFX_DEVICE.newFBO(FBO_2D_COLOR);
 	_reflectedTexture->AddAttachment(reflectionDescriptor,TextureDescriptor::Color0);
 
 	if(!_reflectedTexture->Create(_resolution.x, _resolution.y)){
@@ -61,4 +70,21 @@ bool Reflector::build(){
 	}
 	_createdFBO = true;
 	return true;
+}
+
+void Reflector::previewReflection(){
+
+    if(!_previewReflection || (_previewReflection && !GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE))) return;
+
+	_previewReflectionShader->bind();
+	_previewReflectionShader->UniformTexture("tex",0);
+	_reflectedTexture->Bind(0);
+	GFX_DEVICE.toggle2D(true);
+		GFX_DEVICE.renderInViewport(vec4<F32>(128,128,512,512),
+								    boost::bind(&GFXDevice::renderModel,
+									            boost::ref(GFX_DEVICE),
+												_renderQuad));
+	GFX_DEVICE.toggle2D(false);
+	_reflectedTexture->Unbind(0);
+	
 }

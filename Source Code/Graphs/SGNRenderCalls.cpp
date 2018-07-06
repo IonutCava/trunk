@@ -13,11 +13,13 @@ void SceneGraphNode::checkBoundingBoxes(){
 	}
 	// don't update root;
 	if(!getParent()) return; 
+
 	if(!_node->isLoaded()) return;
 	//Compute the BoundingBox if it isn't already
-	if(!_boundingBox.isComputed()){
-		_node->computeBoundingBox(this);
-	}
+    if(!_boundingBox.isComputed()){
+        _node->computeBoundingBox(this);
+        _boundingSphere.fromBoundingBox(_boundingBox);
+    }
 	///Recreate bounding boxes for current frame	
 	_node->updateBBatCurrentFrame(this);
 }
@@ -25,40 +27,39 @@ void SceneGraphNode::checkBoundingBoxes(){
 //This function eats up a lot of processing power
 //It compute's the BoundingBoxes of all transformed nodes and updates transforms
 void SceneGraphNode::updateTransforms(){
-	//update every ten milliseconds - DISABLED. 
 	//Better version: move to new thread with DoubleBuffering?
-	//if(GETMSTIME() - _updateTimer  < 10) return; 
 	//Get our transform and our parent's as well
 	Transform* transform = getTransform();
-	if(transform && getParent()){
-		Transform* parentTransform = getParent()->getTransform();
-		if(parentTransform){
-			//If we have a transform and a parent's transform 
-			//Update the relationship between the two
+	if(transform && _parent && _parent->getTransform()){
+		Transform* parentTransform = _parent->getTransform();
+		//If we have a transform and a parent's transform 
+		//Update the relationship between the two
+        if(transform->getParentMatrix() != parentTransform->getMatrix()){
 			transform->setParentMatrix(parentTransform->getMatrix());
-		}
+        }
+        updateBoundingBoxTransform();
+    }
 
-		//Transform the bounding box if we have a new transform 
-		if(transform->isDirty()){
-			_node->updateTransform(this);
-			getBoundingBox().Transform(_initialBoundingBox, transform->getGlobalMatrix());
-			///Update the bounding sphere
-			computeBoundingSphere();
-		}
-	}
-
-	for_each(NodeChildren::value_type& it, _children){
+ 	for_each(NodeChildren::value_type& it, _children){
 		it.second->updateTransforms();
 	}
-	//update every ten milliseconds - DISABLED. 
-	//_updateTimer = GETMSTIME();
 }
 
-//Another resource hungry subroutine
-//After all bounding boxes and transforms have been updated, 
-//perform Frustum Culling on the entire scene.
-//ToDo: implement an early cull so that we don't check the entire scene -Ionut
-//Previous attempts have proven buggy
+void SceneGraphNode::updateBoundingBoxTransform(){
+    //Transform the bounding box if we have a new transform 
+	if(_transform->isDirty()){
+		_node->updateTransform(this);
+
+        WriteLock w_lock(_queryLock);
+		_boundingBox.Transform(_initialBoundingBox,_transform->getGlobalMatrix());
+        //Update the bounding sphere
+        _boundingSphere.fromBoundingBox(_boundingBox);
+    }
+}
+
+///Another resource hungry subroutine
+///After all bounding boxes and transforms have been updated, 
+///perform Frustum Culling on the entire scene.
 void SceneGraphNode::updateVisualInformation(){
 	//Hold a pointer to the current active scene
 	Scene* curentScene = GET_ACTIVE_SCENE();
@@ -66,16 +67,12 @@ void SceneGraphNode::updateVisualInformation(){
 	//or rendering of their bounding boxes
 	if(!curentScene->renderState()->drawObjects() && !curentScene->renderState()->drawBBox()) return;
 	//Bounding Boxes should be updated, so we can early cull now.
-	//Early cull switch
-	bool _skipChildren = false;
+	bool skipChildren = false;
 	//Skip all of this for inactive nodes.
-	if(_active && getParent()) {
-		//Hold a pointer to the scenegraph of the current active scene
-		if(!_sceneGraph){
-			_sceneGraph = curentScene->getSceneGraph();
-		}
+	if(_active && _parent) {
 		//If this node isn't render-disabled, check if it is visible
 		//Skip expensive frustum culling if we shouldn't draw the node in the first place
+
 		if(_node->getSceneNodeRenderState().getDrawState()){ 
 			switch(GFX_DEVICE.getRenderStage()){
 				default: {
@@ -95,7 +92,7 @@ void SceneGraphNode::updateVisualInformation(){
 		}else{
 			//If the current SceneGraphNode isn't visible, it's children aren't visible as well
 			_inView = false;
-			_skipChildren = true;
+			skipChildren = true;
 		}
 
 		if(_inView){
@@ -104,7 +101,7 @@ void SceneGraphNode::updateVisualInformation(){
 		}
 	}
 	//If we don't need to skip child testing
-	if(!_skipChildren){
+	if(!skipChildren){
 		for_each(NodeChildren::value_type& it, _children){
 			it.second->updateVisualInformation();
 		}
@@ -115,10 +112,11 @@ void SceneGraphNode::sceneUpdate(U32 sceneTime) {
 	for_each(NodeChildren::value_type& it, _children){
 		it.second->sceneUpdate(sceneTime);
 	}
+
 	if(_node){
 		_node->sceneUpdate(sceneTime);
 	}
 	if(_shouldDelete){
-		_sceneGraph->addToDeletionQueue(this);
+		GET_ACTIVE_SCENE()->getSceneGraph()->addToDeletionQueue(this);
 	}
 }

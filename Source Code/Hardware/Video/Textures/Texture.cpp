@@ -64,7 +64,6 @@ bool Texture::LoadFile(U32 target, const std::string& name){
 
 void Texture::resize(U16 width, U16 height){
 	//_img.resize(width,height);
-	/// ToDo: use gluScaleImage if this is needed!
 }
 
 bool Texture::checkBinding(U16 unit, U32 handle){

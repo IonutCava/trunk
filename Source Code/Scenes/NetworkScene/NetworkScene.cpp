@@ -17,8 +17,7 @@ void NetworkScene::preRender(){
 	light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vSunColor);
 	light->setLightProperties(LIGHT_PROPERTY_SPECULAR,vSunColor);
 
-	getSkySGN(0)->getNode<Sky>()->setRenderingOptions(renderState()->getCamera()->getEye(),vec3<F32>(_sunvector),false,true,false);
-
+    getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 
 void NetworkScene::processInput(){
@@ -29,28 +28,28 @@ void NetworkScene::processInput(){
 	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR * (FRAME_SPEED_FACTOR/5));
 }
 
-void NetworkScene::processEvents(U32 time){
+void NetworkScene::processTasks(U32 time){
 
 	F32 FpsDisplay = 0.3f;
 	F32 TimeDisplay = 0.01f;
 	F32 ServerPing = 1.0f;
-	if (time - _eventTimers[0] >= FpsDisplay){
+	if (time - _taskTimers[0] >= FpsDisplay){
 		
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
-		_eventTimers[0] += FpsDisplay;
+		_taskTimers[0] += FpsDisplay;
 	}
     
 	
-	if (time - _eventTimers[1] >= TimeDisplay){ 
+	if (time - _taskTimers[1] >= TimeDisplay){ 
 		GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", time);
-		_eventTimers[1] += TimeDisplay;
+		_taskTimers[1] += TimeDisplay;
 	}
 
-	if (time - _eventTimers[2] >= ServerPing){
+	if (time - _taskTimers[2] >= ServerPing){
 
 		GUI::getInstance().modifyText("statusText", (char*)_paramHandler.getParam<std::string>("asioStatus").c_str());
 		GUI::getInstance().modifyText("serverMessage",(char*)_paramHandler.getParam<std::string>("serverResponse").c_str());
-		_eventTimers[2] += ServerPing;
+		_taskTimers[2] += ServerPing;
 	}
 
 }
@@ -76,8 +75,9 @@ bool NetworkScene::preLoad(){
 }
 
 bool NetworkScene::load(const std::string& name){
-
-	ASIO::getInstance().init(_paramHandler.getParam<std::string>("serverAddress"),std::string("443"));
+    std::string ipAdress = _paramHandler.getParam<std::string>("serverAddress");
+    std::string port = "443";
+	ASIO::getInstance().init(ipAdress,port);
 	///Load scene resources
 	SCENE_LOAD(name,true,true);
 	
@@ -97,9 +97,10 @@ void NetworkScene::test(){
 }
 
 void NetworkScene::connect(){
-
+    std::string ipAdress = _paramHandler.getParam<std::string>("serverAddress");
+    std::string port = "443";
 	GUI::getInstance().modifyText("statusText",(char*)std::string("Connecting to server ...").c_str());
-	ASIO::getInstance().connect(_paramHandler.getParam<std::string>("serverAddress"),std::string("433"));
+	ASIO::getInstance().connect(ipAdress,port);
 }
 
 void NetworkScene::disconnect()
@@ -120,44 +121,44 @@ bool NetworkScene::loadResources(bool continueOnErrors)
 	GUI& gui = GUI::getInstance();
 
 	gui.addText("fpsDisplay",           //Unique ID
-		                       vec2<F32>(60,60),          //Position
+		                       vec2<U32>(60,60),          //Position
 							    Font::DIVIDE_DEFAULT,    //Font
 							   vec3<F32>(0.0f,0.6f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
 	gui.addText("timeDisplay",
-								vec2<F32>(60,70),
+								vec2<U32>(60,70),
 								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Elapsed time: %5.0f",GETTIME());
 
-	gui.addText("serverMessage", vec2<F32>(renderState()->cachedResolution().width / 4.0f,
+	gui.addText("serverMessage", vec2<U32>(renderState()->cachedResolution().width / 4.0f,
 		                                   renderState()->cachedResolution().height / 1.6f),
 								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.5f,0.5f,0.2f),
 								"Server says: %s", "<< nothing yet >>");
 	gui.addText("statusText",
-								vec2<F32>(renderState()->cachedResolution().width / 3.0f,
+								vec2<U32>(renderState()->cachedResolution().width / 3.0f,
 								          renderState()->cachedResolution().height / 1.2f),
 								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.2f,0.5f,0.2f),
 								"");
 
-	gui.addButton("getPing", "ping me", vec2<F32>(60 , renderState()->cachedResolution().height/1.1f),
-										vec2<F32>(100,25),vec3<F32>(0.6f,0.6f,0.6f),
+	gui.addButton("getPing", "ping me", vec2<U32>(60 , renderState()->cachedResolution().height/1.1f),
+										vec2<U32>(100,25),vec3<F32>(0.6f,0.6f,0.6f),
 										boost::bind(&NetworkScene::test,this));
-	gui.addButton("disconnect", "disconnect", vec2<F32>(180 , renderState()->cachedResolution().height/1.1f),
-										vec2<F32>(100,25),vec3<F32>(0.5f,0.5f,0.5f),
+	gui.addButton("disconnect", "disconnect", vec2<U32>(180 , renderState()->cachedResolution().height/1.1f),
+										vec2<U32>(100,25),vec3<F32>(0.5f,0.5f,0.5f),
 										boost::bind(&NetworkScene::disconnect,this));
-	gui.addButton("connect", "connect", vec2<F32>(300 , renderState()->cachedResolution().height/1.1f),
-										vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
+	gui.addButton("connect", "connect", vec2<U32>(300 , renderState()->cachedResolution().height/1.1f),
+										vec2<U32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 										boost::bind(&NetworkScene::connect,this));
-	gui.addButton("patch", "patch",     vec2<F32>(420 , renderState()->cachedResolution().height/1.1f),
-										vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
+	gui.addButton("patch", "patch",     vec2<U32>(420 , renderState()->cachedResolution().height/1.1f),
+										vec2<U32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 										boost::bind(&NetworkScene::checkPatches,this));
 		
 
-	_eventTimers.push_back(0.0f); //Fps
-	_eventTimers.push_back(0.0f); //Time
-	_eventTimers.push_back(0.0f); //Server Ping
+	_taskTimers.push_back(0.0f); //Fps
+	_taskTimers.push_back(0.0f); //Time
+	_taskTimers.push_back(0.0f); //Server Ping
 	return true;
 }

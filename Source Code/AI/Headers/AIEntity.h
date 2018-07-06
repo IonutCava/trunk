@@ -45,7 +45,7 @@ public:
 	Sensor* getSensor(SensorType type);
 	CommunicationInterface* getCommunicationInterface() {return _comInterface;}
 	inline AICoordination* getTeam() {return _coordination; }
-	inline U32  getTeamID() const    {if(_coordination != NULL) { return _coordination->getTeamID();} return -1; }
+	inline U32  getTeamID() const    {if(_coordination != NULL) { return _coordination->getTeamID();} return 0; }
 	inline U32  getGUID()   const    {return _GUID;}
 
 	///Set a team for this Entity. If the enitity belonged to a different team, remove it from that team first

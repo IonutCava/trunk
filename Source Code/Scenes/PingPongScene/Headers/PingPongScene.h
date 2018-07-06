@@ -42,20 +42,19 @@ public:
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 	void processInput();
-	void processEvents(U32 time);
+	void processTasks(U32 time);
 
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onJoystickMovePOV(const OIS::JoyStickEvent& event,I8 pov);
-	void onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis);
+	void onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone);
 	void onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button);
 private:
 	void test(boost::any a, CallbackParam b);
 	void serveBall();
 	void resetGame();
 private:
-	vectorImpl<F32> _eventTimers;
-	I8 _scor;
+	I8 _score;
 	vectorImpl<std::string> _quotes;
 	vec3<F32> _sunvector;
 	Sphere3D* _ball;

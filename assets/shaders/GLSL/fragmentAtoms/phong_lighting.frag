@@ -22,7 +22,7 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN){
 	}
 	
 	//Ambient color	
-	vec4 cAmbient = gl_FrontLightModelProduct.sceneColor * material[0];
+	vec4 cAmbient = gl_LightModel.ambient * material[0];
 	//Diffuse color
 	vec4 cDiffuse;
 	//Specular color

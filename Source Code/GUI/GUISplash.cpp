@@ -11,8 +11,10 @@ GUISplash::GUISplash(const std::string& splashImageName,const vec2<U16>& dimensi
 	_renderQuad = CreateResource<Quad3D>(mrt);
 	assert(_renderQuad);
 	_renderQuad->setDimensions(vec4<F32>(0,0,dimensions.width,dimensions.height));
+    //as the splash screen is loaded before any actual rendering, the draw stage may be undefined. So, a simple VBO should suffice
+    //_renderQuad->optimizeForDepth(false);
 	ResourceDescriptor splashImage("SplashScreen Texture");
-	splashImage.setFlag(true);//<flip image
+	splashImage.setFlag(true);
 	std::string splashImageLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/misc_images/";
 	splashImageLocation += splashImageName;
 	splashImage.setResourceLocation(splashImageLocation);

@@ -30,7 +30,7 @@ public:
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 
-	void processEvents(U32 time);
+	void processTasks(U32 time);
 	void processInput();
 
 private: 
@@ -42,7 +42,6 @@ private:
 private:
 	vec2<F32> _sunAngle;
 	vec3<F32> _sunvector;
-	vectorImpl<F32> _eventTimers;
 };
 
 #endif

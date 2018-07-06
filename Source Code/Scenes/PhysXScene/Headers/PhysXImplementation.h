@@ -19,9 +19,9 @@
 #define _PHYSX_PROCESSPR_H_
 
 #include "Dynamics/Physics/Headers/PXDevice.h"
-#include "Dynamics/Physics/Headers/PhysicsSceneInterface.h"
+#include "Dynamics/Physics/PhysX/Headers/PhysicsSceneInterface.h"
 
-class PhysXImplementation : public PhysicsSceneInterface {
+class PhysXImplementation : public PhysXSceneInterface {
 public:
 	PhysXImplementation(Scene* currentScene);
 	~PhysXImplementation();

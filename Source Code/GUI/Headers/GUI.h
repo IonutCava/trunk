@@ -45,13 +45,13 @@ public:
 	/// Destroy items and close the GUI
 	void close();
 	/// Add a text label
-	void addText(const std::string& id,const vec2<F32>& position, const std::string& font,const vec3<F32>& color, char* format, ...);
-	/// Add a button with a specific callback
-	void addButton(const std::string& id, std::string text,const vec2<F32>& position,const vec2<F32>& dimensions,const vec3<F32>& color,ButtonCallback callback);
+	GUIElement* addText(const std::string& id,const vec2<U32>& position, const std::string& font,const vec3<F32>& color, char* format, ...);
+	/// Add a button with a specific callback. The root of the window positioning system is bottom left, so 100,60 will place the button 100 pixels to the right and 60 up from the bottom
+    GUIElement* addButton(const std::string& id,const std::string& text,const vec2<U32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,ButtonCallback callback,const std::string& rootSheetId = "");
 	/// Add a flash element -DEPRECATED-
-	void addFlash(const std::string& id, std::string movie, const vec2<F32>& position, const vec2<F32>& extent);
+	GUIElement* addFlash(const std::string& id, std::string movie, const vec2<U32>& position, const vec2<U32>& extent);
 	/// Modify a text label
-	void modifyText(const std::string& id, char* format, ...);
+	GUIElement* modifyText(const std::string& id, char* format, ...);
 	/// Called on window resize to adjust the dimensions of all the GUI elements
 	void onResize(const vec2<U16>& newResolution);
 	/// Mouse Button Up/Down callback
@@ -77,7 +77,6 @@ private:
 	GUI();               //< Constructor
 	~GUI();              //< Destructor
 	void drawText();     //< TextLabel rendering
-	void drawButtons();  //< Button rendering
 
 private:
 	bool _init;                     //< Set to true when the GUI has finished loading
@@ -88,6 +87,8 @@ private:
 	vec2<U16>   _cachedResolution;  //< We keep a cache of the current resolution to avoid useless queries
 	/// Used to check if we need to add a new GUIElement or modify an existing one
 	std::pair<guiMap::iterator, bool > _resultGuiElement;
-
+    CEGUI::Window* _rootSheet; //< gui root window
+	RenderStateBlock* _CEGUIStateBlock; //<No culling, no depth tests, etc.
+    std::string _defaultGUIScheme;
 END_SINGLETON
 #endif

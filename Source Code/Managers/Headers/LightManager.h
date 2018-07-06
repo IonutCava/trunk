@@ -60,7 +60,7 @@ public:
 	vectorImpl<I32 > getDepthMapResolution();
 	inline const vectorImpl<mat4<F32> >& getLightProjectionMatricesCache() {return _lightProjectionMatricesCache;}
 	inline U16   getLightCountForCurrentNode() {return _currLightsPerNode.size();}
-	inline vectorImpl<I32> getLightTypesForCurrentNode() {return _currLightTypes;}
+	inline const vectorImpl<I32>& getLightTypesForCurrentNode() {return _currLightTypes;}
 
 	bool checkId(U32 value);
 	void drawDepthMap(U8 light, U8 index);

@@ -22,6 +22,12 @@
 #include "GUIText.h"
 #include <boost/function.hpp>
 
+namespace CEGUI{
+	class Window;
+    class Font;
+    class EventArgs;
+};
+
 class GUIButton : public GUIElement {
 
 typedef boost::function0<void> ButtonCallback;
@@ -29,51 +35,27 @@ friend class GUI;
 public:
 	GUIButton(const std::string& id,
 			  const std::string& text,
-			  const vec2<F32>& position,
-			  const vec2<F32>& dimensions,
-			  const vec3<F32>& color
-			  /*, Texture2D& image*/,
-			  ButtonCallback callback)  : GUIElement(GUI_BUTTON,position),
-		_text(text),
-		_dimensions(dimensions),
-		_color(color),
-		_callbackFunction(callback),
-		_highlight(false),
-		_pressed(false),
-		_font(Font::DIVIDE_DEFAULT),
-		_fontHeight(16),
-		_guiText(NULL)
-		/*_image(image)*/{
-			setActive(true);
-	}
-	~GUIButton() {SAFE_DELETE(_guiText);}
-	std::string _text;
-	std::string _font;
-	U8          _fontHeight;
-	vec2<F32>	_dimensions;
+              const std::string& guiScheme,
+			  const vec2<U32>& position,
+			  const vec2<U32>& dimensions,
+			  const vec3<F32>& color,
+              CEGUI::Window* parent,
+			  ButtonCallback callback);
+	~GUIButton();
+
+    void setTooltip(const std::string& tooltipText);
+    void setFont(const std::string& fontName, const std::string& fontFileName, U32 size);
+
+protected:
+    bool buttonPressed(const CEGUI::EventArgs& /*e*/);
+
+protected:
+   	std::string _text;
+	vec2<U32>	_dimensions;
 	vec3<F32>	_color;
 	bool		_pressed;
 	bool		_highlight;
 	ButtonCallback _callbackFunction;	/* A pointer to a function to call if the button is pressed */
-	GUIText*    _guiText; ///<Cached text element to display over the button rectangle
-	//Texture2D image;
-
-	void onResize(const vec2<I32>& newSize){
-		if(_dimensions.x - newSize.x/_dimensions.x > 0.075f &&
-		   _dimensions.y - newSize.y/_dimensions.y > 0.05f){
-			_position.x -= newSize.x;
-			_position.y -= newSize.y;
-			_dimensions.x -= newSize.x/_dimensions.x; 
-			_dimensions.y -= newSize.y/_dimensions.y; 
-		}
-	}
-    void onMouseMove(const GUIEvent &event);
-    void onMouseUp(const GUIEvent &event);
-    void onMouseDown(const GUIEvent &event);
-/*  void onRightMouseUp(const GUIEvent &event);
-    void onRightMouseDown(const GUIEvent &event);
-    bool onKeyUp(const GUIEvent &event);
-    bool onKeyDown(const GUIEvent &event);
-*/
+    CEGUI::Window *_btnWindow;
 };
 #endif

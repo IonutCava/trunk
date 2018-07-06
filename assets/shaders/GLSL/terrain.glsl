@@ -72,7 +72,6 @@ varying vec2 _texCoord;
 varying vec3 _normalMV;
 varying vec4 _vertexMV;
 
-uniform int  lightType[MAX_LIGHT_COUNT];
 uniform sampler2D texDiffuseMap;
 uniform sampler2D texNormalHeightMap;
 uniform sampler2D texDiffuse0;
@@ -81,15 +80,15 @@ uniform sampler2D texDiffuse2;
 uniform sampler2D texDiffuse3;
 uniform sampler2D texWaterCaustics;
 
+uniform int LOD;
+uniform int lightType[MAX_LIGHT_COUNT];
 uniform float detail_scale;
 uniform float diffuse_scale;
-uniform int   LOD;
-uniform bool water_reflection_rendering;
-uniform bool alphaTexture;
 uniform float water_height;
 uniform float time;
-
-// Bounding Box du terrain
+uniform bool water_reflection_rendering;
+uniform bool alphaTexture;
+uniform mat4 material;
 uniform vec3 bbox_min;
 
 #define LIGHT_DIRECTIONAL		0
@@ -123,8 +122,9 @@ void main (void)
 		float alpha = (water_height - _vertexMV.y) / (2*(water_height - bbox_min.y));
 		color = (1-alpha) * color + alpha * CausticsColor();
 	}
+    applyFog(color);
 
-	gl_FragData[0] = applyFog(color);
+	gl_FragData[0] = color;
 }
 
 vec4 CausticsColor()
@@ -143,15 +143,13 @@ vec4 CausticsColor()
 	return (color0 + color1) /2;	
 }
 
-
-
 vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec3 vPixToLightTBN, bool underwater)
 {	
 	vec3 lightVecTBN = normalize(vPixToLightTBN);
 	vec3 viewVecTBN = normalize(vPixToEyeTBN);
 
 	vec2 uv_detail = uv * detail_scale;
-	vec2 uv_diffuse = uv * diffuse_scale / LOD;
+	vec2 uv_diffuse = uv * diffuse_scale/* / LOD*/;
 
 	
 	vec3 normalTBN = texture(texNormalHeightMap, uv_detail).rgb * 2.0 - 1.0;
@@ -189,16 +187,15 @@ vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec3 vPixToLightTBN, bool underwa
 
 	iDiffuse = max(dot(lightVecTBN.xyz, normalTBN), 0.0);	// diffuse intensity. NDotL
 
-	vec4 cAmbient = gl_LightSource[0].ambient * gl_FrontMaterial.ambient;
-	vec4 cDiffuse = gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * iDiffuse * shadow;	
+	vec4 cAmbient = gl_LightSource[0].ambient * material[0] + gl_LightModel.ambient * material[0];
+	vec4 cDiffuse = gl_LightSource[0].diffuse * material[1] * iDiffuse * shadow;	
 	vec4 cSpecular = 0;
 	if(underwater){
 		///Add specular intensity
-		cSpecular =  gl_LightSource[0].specular * gl_FrontMaterial.specular;
-		cSpecular *= pow(clamp(dot(reflect(-lightVecTBN.xyz, normalTBN), viewVecTBN), 0.0, 1.0), gl_FrontMaterial.shininess )/2.0;
+		cSpecular =  gl_LightSource[0].specular * material[2];
+		cSpecular *= pow(clamp(dot(reflect(-lightVecTBN.xyz, normalTBN), viewVecTBN), 0.0, 1.0), material[3].x )/2.0;
 		cSpecular *= shadow;
 	}
-
 
 	return cAmbient * cBase +  cDiffuse * cBase + cSpecular;
 }

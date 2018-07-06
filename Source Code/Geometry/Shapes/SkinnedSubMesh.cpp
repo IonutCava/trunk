@@ -126,7 +126,7 @@ void SkinnedSubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 
 	if(_boundingBoxes.find(_currentAnimationID) == _boundingBoxes.end()){
 		tempHolder.clear();
-		vectorImpl<vec3<F32> > verts   = _geometry->getPosition();
+		const vectorImpl<vec3<F32> >& verts   = _geometry->getPosition();
 		vectorImpl<vec4<U8>  >& indices = _geometry->getBoneIndices();
 		vectorImpl<vec4<F32> >& weights = _geometry->getBoneWeights();
 
@@ -134,22 +134,22 @@ void SkinnedSubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 
 			vectorImpl<mat4<F32> > transforms = _animator->GetTransformsByIndex(i);
 
-			BoundingBox bb(vec3<F32>(100000.0f, 100000.0f, 100000.0f),vec3<F32>(-100000.0f, -100000.0f, -100000.0f));
+			BoundingBox bb;
 
 			/// loop through all vertex weights of all bones 
-			for( size_t j = 0; j < _geometry->getPosition().size(); ++j) { 
+			for( size_t j = 0; j < verts.size(); ++j) { 
 				vec4<U8>&  ind = indices[j];
 				vec4<F32>& wgh = weights[j];
 				F32 finalWeight = 1.0f - ( wgh.x + wgh.y + wgh.z );
-
-				vec4<F32> pos1 = wgh.x       * (transforms[ind.x] * _geometry->getPosition(j));
-				vec4<F32> pos2 = wgh.y       * (transforms[ind.y] * _geometry->getPosition(j));
-				vec4<F32> pos3 = wgh.z       * (transforms[ind.z] * _geometry->getPosition(j));
-				vec4<F32> pos4 = finalWeight * (transforms[ind.w] * _geometry->getPosition(j));
+                const vec3<F32>& curentVert = verts[j];
+				vec4<F32> pos1 = wgh.x       * (transforms[ind.x] * curentVert);
+				vec4<F32> pos2 = wgh.y       * (transforms[ind.y] * curentVert);
+				vec4<F32> pos3 = wgh.z       * (transforms[ind.z] * curentVert);
+				vec4<F32> pos4 = finalWeight * (transforms[ind.w] * curentVert);
 				vec4<F32> finalPosition =  pos1 + pos2 + pos3 + pos4;
-				bb.Add( finalPosition );
+ 				bb.Add( finalPosition );
 			}
-			bb.isComputed() = true;
+			bb.setComputed(true);
 			tempHolder[i] = bb;
 		}
 		_boundingBoxes.insert(std::make_pair(_currentAnimationID,tempHolder));
@@ -158,7 +158,7 @@ void SkinnedSubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 	BoundingBox& bb1 = _boundingBoxes[_currentAnimationID][_currentFrameIndex];
 	BoundingBox& bb2 = sgn->getBoundingBox();
 	if(!bb1.Compare(bb2)){
-		bb2 = bb1;
+		sgn->updateBoundingBox(bb1);
 		SceneNode::computeBoundingBox(sgn);
 		sgn->getParent()->updateBB(true);
 	}

@@ -18,17 +18,18 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
+#include "Dynamics/Physics/Headers/PhysicsSceneInterface.h"
+
 Scene::Scene() :  Resource(),
 			   _GFX(GFX_DEVICE),
 			   _loadComplete(false),
 			   _paramHandler(ParamHandler::getInstance()),
 			   _currentSelection(NULL),
+ 			   _physicsInterface(NULL),
 			   _sceneGraph(New SceneGraph()),
 			   _sceneState(New SceneState()),
 			   _sceneRenderState(New SceneRenderState())
 {
-	_sceneState->_fogColor = ParamHandler::getInstance().getParam<vec3<F32> >("rendering.fogColor");
-	_sceneState->_fogDensity = ParamHandler::getInstance().getParam<F32>("rendering.fogDensity");
 }
 
 Scene::~Scene() {
@@ -70,6 +71,11 @@ bool Scene::idle(){ //Called when application is idle
 		}
 	}
 	return true;
+}
+
+void Scene::postRender(){
+    /// Preview depthmaps if needed
+    LightManager::getInstance().previewShadowMaps();
 }
 
 void Scene::addPatch(vectorImpl<FileData>& data){
@@ -118,7 +124,12 @@ bool Scene::loadModel(const FileData& data){
 	meshNode->getTransform()->scale(data.scale);
 	meshNode->getTransform()->rotateEuler(data.orientation);
 	meshNode->getTransform()->translate(data.position);
-	
+    if(data.staticUsage){
+        meshNode->setUsageContext(SceneGraphNode::NODE_STATIC);
+    }
+    if(data.navigationUsage){
+        meshNode->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
+    }
 	return true;
 }
 
@@ -166,6 +177,12 @@ bool Scene::loadGeometry(const FileData& data){
 	thisObjSGN->getTransform()->scale(data.scale);
 	thisObjSGN->getTransform()->rotateEuler(data.orientation);
 	thisObjSGN->getTransform()->translate(data.position);
+    if(data.staticUsage){
+        thisObjSGN->setUsageContext(SceneGraphNode::NODE_STATIC);
+    }
+    if(data.navigationUsage){
+        thisObjSGN->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
+    }
 	return true;
 }
 
@@ -187,16 +204,16 @@ Light* Scene::addDefaultLight(){
 	LightManager::getInstance().setAmbientLight(ambientColor);
 	return l;	
 }
-
+///Add skies
 Sky* Scene::addDefaultSky(){
-	///Add skies (ToDo: from XML)
+#pragma message("ToDo: load skyboxes from XML")
 	Sky* tempSky = New Sky("Default Sky");
 	_skiesSGN.push_back(_sceneGraph->getRoot()->addNode(tempSky));
 	return tempSky;
 }
 
-SceneGraphNode* Scene::addGeometry(Object3D* const object){
-	return _sceneGraph->getRoot()->addNode(object);
+SceneGraphNode* Scene::addGeometry(SceneNode* const object,const std::string& sgnName){
+	return _sceneGraph->getRoot()->addNode(object,sgnName);
 }
 
 bool Scene::removeGeometry(SceneNode* node){
@@ -211,8 +228,13 @@ bool Scene::removeGeometry(SceneNode* node){
 }
 
 bool Scene::preLoad() {
-	_GFX.enableFog(_sceneState->_fogDensity,_sceneState->_fogColor);
-	_sceneRenderState->shadowMapResolutionFactor() = ParamHandler::getInstance().getParam<U8>("rendering.shadowResolutionFactor");
+    ParamHandler& par = ParamHandler::getInstance();
+    _GFX.enableFog(_sceneState->getFogDesc()._fogMode,
+                   _sceneState->getFogDesc()._fogDensity,
+                   _sceneState->getFogDesc()._fogColor,
+                   _sceneState->getFogDesc()._fogStartDist,
+                   _sceneState->getFogDesc()._fogEndDist);
+	_sceneRenderState->shadowMapResolutionFactor() = par.getParam<U8>("rendering.shadowResolutionFactor");
 	return true;
 }
 
@@ -227,13 +249,15 @@ bool Scene::load(const std::string& name){
 			terrainTemp->useDefaultTransform(false);
 			terrainTemp->setTransform(NULL);
 			terrainTemp->setActive(_terrainInfoArray[i]->getActive());
+            terrainTemp->setUsageContext(SceneGraphNode::NODE_STATIC);
+            terrainTemp->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
 			temp->initializeVegetation(_terrainInfoArray[i],terrainTemp);
 		}
 	}
 	///Camera position is overriden in the scene's XML configuration file
 	if(ParamHandler::getInstance().getParam<bool>("options.cameraStartPositionOverride")){
 		renderState()->getCamera()->setEye(_paramHandler.getParam<vec3<F32> >("options.cameraStartPosition"));
-		vec2<F32>& camOrientation = _paramHandler.getParam<vec2<F32> >("options.cameraStartOrientation");
+		vec2<F32> camOrientation = _paramHandler.getParam<vec2<F32> >("options.cameraStartOrientation");
 		renderState()->getCamera()->setAngleX(RADIANS(camOrientation.x));
 		renderState()->getCamera()->setAngleY(RADIANS(camOrientation.y));
 	}else{
@@ -241,29 +265,51 @@ bool Scene::load(const std::string& name){
 	}
 	
 	///Create an AI thread, but start it only if needed
-	_aiEvent.reset(New Event(10,false,false,boost::bind(&AIManager::tick, boost::ref(AIManager::getInstance()))));
+	Kernel* kernel = Application::getInstance().getKernel();
+	_aiTask.reset(New Task(kernel->getThreadPool(),10,false,false,boost::bind(&AIManager::tick, boost::ref(AIManager::getInstance()))));
 	_loadComplete = true;
 	return _loadComplete;
 }
 
 bool Scene::unload(){
-	clearEvents();
+	clearTasks();
 	clearObjects();
 	clearLights();
+    clearPhysics();
 	return true;
 }
 
+PhysicsSceneInterface* Scene::createPhysicsImplementation(){
+    return PHYSICS_DEVICE.NewSceneInterface(this);
+}
+
+bool Scene::loadPhysics(bool continueOnErrors){
+    //Add a new physics scene (can be overriden in each scene for custom behaviour)
+	_physicsInterface = createPhysicsImplementation();
+    PHYSICS_DEVICE.setPhysicsScene(_physicsInterface);
+	//Initialize the physics scene
+	PHYSICS_DEVICE.initScene();
+    return true;
+}
+
+void Scene::clearPhysics(){
+    if(_physicsInterface){
+		_physicsInterface->exit();
+		delete _physicsInterface;
+	}
+}
+
 bool Scene::initializeAI(bool continueOnErrors)   {
-	_aiEvent->startEvent();
+	_aiTask->startTask();
 	return true;
 }
 
 bool Scene::deinitializeAI(bool continueOnErrors) {	///Shut down AIManager thread
-	if(_aiEvent.get()){
-		_aiEvent->stopEvent();
-		_aiEvent.reset();
+	if(_aiTask.get()){
+		_aiTask->stopTask();
+		_aiTask.reset();
 	}
-	while(_aiEvent.get()){};
+	while(_aiTask.get()){};
 	return true;
 }
 
@@ -285,9 +331,9 @@ void Scene::clearLights(){
 	LightManager::getInstance().clear();
 }
 
-void Scene::clearEvents(){
-	PRINT_FN(Locale::get("STOP_SCENE_EVENTS"));
-	_events.clear();
+void Scene::clearTasks(){
+	PRINT_FN(Locale::get("STOP_SCENE_TASKS"));
+    removeTasks();
 }
 
 void Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
@@ -358,35 +404,35 @@ void Scene::onKeyUp(const OIS::KeyEvent& key){
 	}
 }
 
-void Scene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis){
+void Scene::onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone){
 	if(key.device->getID() != InputInterface::JOY_1) return;
 	if(axis == 1){
-		if(key.state.mAxes[axis].abs > 0)
+		if(key.state.mAxes[axis].abs > deadZone)
 			state()->_angleLR = speedFactor/5;
-		else if(key.state.mAxes[axis].abs < 0)
+		else if(key.state.mAxes[axis].abs < -deadZone)
 			state()->_angleLR = -(speedFactor/5);
 		else
 			state()->_angleLR = 0;
 
 	}else if(axis == 0){
 
-		if(key.state.mAxes[axis].abs > 0)
+		if(key.state.mAxes[axis].abs > deadZone)
 			state()->_angleUD = speedFactor/5;
-		else if(key.state.mAxes[axis].abs < 0)
+		else if(key.state.mAxes[axis].abs < -deadZone)
 			state()->_angleUD = -(speedFactor/5);
 		else
 			state()->_angleUD = 0;
 	}else if(axis == 2){
-		if(key.state.mAxes[axis].abs < 0)
+		if(key.state.mAxes[axis].abs < -deadZone)
 			state()->_moveFB = 0.25f;
-		else if(key.state.mAxes[axis].abs > 0)
+		else if(key.state.mAxes[axis].abs > deadZone)
 			state()->_moveFB = -0.25f;
 		else
 			state()->_moveFB = 0;
 	}else if(axis == 3){
-		if(key.state.mAxes[axis].abs < 0)
+		if(key.state.mAxes[axis].abs < -deadZone)
 			state()->_moveLR = 0.25f;
-		else if(key.state.mAxes[axis].abs > 0)
+		else if(key.state.mAxes[axis].abs > deadZone)
 			state()->_moveLR = -0.25f;
 		else
 			state()->_moveLR = 0;
@@ -491,4 +537,36 @@ void Scene::deleteSelection(){
 	if(_currentSelection != NULL){
 		_currentSelection->scheduleDeletion();
 	}
+}
+
+void Scene::removeTasks(){
+    for_each(Task_ptr& task, _tasks){
+        task->stopTask();
+    }
+    _tasks.clear();
+}
+
+void Scene::removeTask(Task_ptr taskItem){
+    taskItem->stopTask();
+
+    for(vectorImpl<Task_ptr>::iterator it = _tasks.begin(); it != _tasks.end(); it++){
+        if((*it)->getGUID() == taskItem->getGUID()){
+            _tasks.erase(it);
+            return;
+        }
+    }
+}
+
+void Scene::removeTask(U32 guid){
+    for(vectorImpl<Task_ptr>::iterator it = _tasks.begin(); it != _tasks.end(); it++){
+        if((*it)->getGUID() == guid){
+            (*it)->stopTask();
+            _tasks.erase(it);
+            return;
+        }
+    }
+}
+
+void Scene::addTask(Task_ptr taskItem) {
+	_tasks.push_back(taskItem);
 }

@@ -2,6 +2,8 @@
 #include "Headers/InputInterface.h"
 #include "Core/Headers/Kernel.h"
 
+static I32 axisDeadZone = 256;
+
 EventHandler::EventHandler(InputInterface* pApp, Kernel* const kernel) :
 												   _kernel(kernel),
 												   _pApplication(pApp),
@@ -22,7 +24,7 @@ bool EventHandler::keyPressed( const OIS::KeyEvent &arg )                    {re
 bool EventHandler::keyReleased( const OIS::KeyEvent &arg )                   {return _kernel->onKeyUp(arg); }
 bool EventHandler::buttonPressed( const OIS::JoyStickEvent &arg, I8 button ) {return _kernel->onJoystickButtonDown(arg,button); }
 bool EventHandler::buttonReleased( const OIS::JoyStickEvent &arg, I8 button ){return _kernel->onJoystickButtonUp(arg,button); }
-bool EventHandler::axisMoved( const OIS::JoyStickEvent &arg, I8 axis )       {return _kernel->onJoystickMoveAxis(arg,axis); }
+bool EventHandler::axisMoved( const OIS::JoyStickEvent &arg, I8 axis)        {return _kernel->onJoystickMoveAxis(arg,axis,axisDeadZone); }
 bool EventHandler::povMoved( const OIS::JoyStickEvent &arg, I8 pov )         {return _kernel->onJoystickMovePOV(arg,pov); }
 bool EventHandler::sliderMoved( const OIS::JoyStickEvent &arg, I8 index)     {return _kernel->sliderMoved(arg,index); }
 bool EventHandler::vector3Moved( const OIS::JoyStickEvent &arg, I8 index)    {return _kernel->vector3Moved(arg,index); }

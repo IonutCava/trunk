@@ -60,11 +60,9 @@ void Vegetation::sceneUpdate(U32 sceneTime){
 	}
 }
 
-void Vegetation::draw(bool drawInReflection){
+void Vegetation::draw(){
 	if(!_render || !_success) return;
-	if(GFX_DEVICE.getRenderStage() == SHADOW_STAGE) return;
-
-
+	if(GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)) return;
 
      SET_STATE_BLOCK(_grassStateBlock);
 
@@ -78,7 +76,7 @@ void Vegetation::draw(bool drawInReflection){
 				_grassShader->UniformTexture("texDiffuse", 0);
 		
 					_grassVBO[index]->Enable();
-						_terrain->getQuadtree().DrawGrass();
+						_terrain->getQuadtree().DrawGrass(_grassVBO[index]);
 					_grassVBO[index]->Disable();
 
 			_grassBillboards[index]->Unbind(0);
@@ -105,7 +103,7 @@ bool Vegetation::generateGrass(U32 index){
 		vec2<F32>(0.0f, 0.49f), vec2<F32>(0.0f, 0.01f), vec2<F32>(1.0f, 0.01f), vec2<F32>(1.0f, 0.49f)
 	};
 
-	_grassVBO.push_back(GFX_DEVICE.newVBO());
+	_grassVBO.push_back(GFX_DEVICE.newVBO(QUADS));
 	U32 size = (U32) ceil(_grassDensity) * 3 * 4;
 	_grassVBO[index]->reservePositionCount( size );
 	_grassVBO[index]->getNormal().reserve( size );
@@ -116,7 +114,7 @@ bool Vegetation::generateGrass(U32 index){
 		U16 map_x = (U16)(x * _map.w);
 		U16 map_y = (U16)(y * _map.h);
 		vec2<F32> uv_offset = vec2<F32>(0.0f, random(3)==0 ? 0.0f : 0.5f);
-		F32 size = random(0.5f);
+
 		vec3<I32> map_color = _map.getColor(map_x, map_y);
 		if(map_color.g < 150) {
 			k--;

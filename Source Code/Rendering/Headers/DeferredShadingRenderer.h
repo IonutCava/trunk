@@ -34,7 +34,7 @@ public:
 	void render(boost::function0<void> renderCallback, SceneRenderState* const sceneRenderState);
 	void toggleDebugView();
 private:
-	void firstPass(boost::function0<void> renderCallback);
+	void firstPass(boost::function0<void> renderCallback, SceneRenderState* const sceneRenderState);
 	void secondPass(SceneRenderState* const sceneRenderState);
 
 private:

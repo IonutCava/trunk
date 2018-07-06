@@ -85,17 +85,17 @@ void glPixelBufferObject::End(GLubyte nFace) const {
 	assert(nFace<6);
 	GLCheck(glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER)); // release the mapped buffer
 	GLCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+    GLCheck(glBindTexture(_textureType, 0));
 }
 
 void glPixelBufferObject::Bind(GLubyte unit) const {
-	GLCheck(glActiveTexture(GL_TEXTURE0 + unit));
+    GL_API::setActiveTextureUnit(unit);
 	GLCheck(glBindTexture(_textureType, _textureId));
-
 }
 
 void glPixelBufferObject::Unbind(GLubyte unit) const {
-	GLCheck(glActiveTexture(GL_TEXTURE0 + unit));
-	GLCheck(glBindTexture( _textureType, 0 ));
+    GL_API::setActiveTextureUnit(unit);
+	GLCheck(glBindTexture(_textureType, 0 ));
 }
 
 

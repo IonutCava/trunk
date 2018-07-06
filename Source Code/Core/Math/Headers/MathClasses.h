@@ -130,7 +130,7 @@ const  F32 INV_RAND_MAX = 1.0 / (RAND_MAX + 1);
 inline F32 random(F32 max=1.0) { return max * rand() * INV_RAND_MAX; }
 inline F32 random(F32 min, F32 max) { return min + (max - min) * INV_RAND_MAX * rand(); }
 inline I32 random(I32 max=RAND_MAX) { return rand()%(max+1); }
-
+inline bool bitCompare(U32 bitMask, U32 bit) {return ((bitMask & bit) == bit);}
 
 template<class T>
 class vec2;
@@ -257,17 +257,20 @@ public:
 	const vec3 operator+(const vec3 &_v) const { return vec3(this->x + _v.x,this->y + _v.y,this->z + _v.z); }
 	const vec3 operator-() const { return vec3(-this->x,-this->y,-this->z); }
 	const vec3 operator-(const vec3 &_v) const { return vec3(this->x - _v.x,this->y - _v.y,this->z - _v.z); }
-
+    const vec3 operator*(const vec3 &_v) const { return vec3(this->x * _v.x,this->y * _v.y,this->z * _v.z);}
 	vec3 &operator*=(T _f) { return *this = *this * _f; }
 	vec3 &operator/=(T _f) { return *this = *this / _f; }
 	vec3 &operator+=(const vec3 &_v) { return *this = *this + _v; }
 	vec3 &operator-=(const vec3 &_v) { return *this = *this - _v; }
 
-	T operator*(const vec3 &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z; }
+	//T operator*(const vec3 &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z; }
+    
 	T operator*(const vec4<T> &_v) const;
 	//T operator[](const I32 i) {switch(i){case 0: return this->x; case 1: return this->y; case 2: return this->z;};}
 	operator T*() { return this->v; }
 	operator const T*() const { return this->v; }
+    inline vec2<T> rg() {return vec2<T>(this->r,this->g);}
+    inline vec2<T> xy() {return this->rg();}
 
 	inline void set(T _x,T _y,T _z) { this->x = _x; this->y = _y; this->z = _z; }
 	inline void reset(void) { this->x = this->y = this->z = 0; }
@@ -438,6 +441,10 @@ public:
 //	T &operator[](I32 _i) { return this->v[_i]; }
 //	const T &operator[](I32 _i) const { return this->v[_i]; }
 
+    inline vec2<T> rg() {return vec2<T>(this->r,this->g);}
+    inline vec2<T> xy() {return this->rg();}
+    inline vec3<T> rgb() {return vec3<T>(this->r,this->g,this->b);}
+    inline vec3<T> xyz() {return this->rgb();}
 	inline void set(T _x,T _y,T _z,T _w) { this->x=_x; this->y=_y; this->z=_z; this->w=_w;}
 
 	inline void reset(void) { this->x = this->y = this->z = this->w = 0;}
@@ -541,7 +548,14 @@ public:
 	mat3 &operator*=(const mat3 &m) { return *this = *this * m; }
 	mat3 &operator+=(const mat3 &m) { return *this = *this + m; }
 	mat3 &operator-=(const mat3 &m) { return *this = *this - m; }
-	
+	bool operator == (mat3& B){
+        for (I32 i = 0; i < 9; i++){
+            if (m[i] != B[i]) return false;
+        }
+        return true;
+    }
+    bool operator != (mat3& B){ return !(*this == B);}
+
 	operator T*() { return mat; }
 	operator const T*() const { return mat; }
 	
@@ -770,6 +784,14 @@ public:
 		Mat4::Multiply(this->mat,m.mat,ret.mat);
 		return ret;
 	}
+
+    bool operator == (mat4& B){
+        for (I32 i = 0; i < 16; i++){
+            if (m[i] != B[i]) return false;
+        }
+        return true;
+    }
+    bool operator != (mat4& B){ return !(*this == B);}
 
 	inline vec4<T> getCol(int index){
 		return vec4<T>(this->mat[0 + (index*4)],this->mat[1 + (index*4)],this->mat[2 + (index*4)],this->mat[3 + (index*4)]);

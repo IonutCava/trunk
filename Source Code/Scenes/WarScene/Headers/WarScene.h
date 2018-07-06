@@ -43,7 +43,7 @@ public:
 	bool initializeAI(bool continueOnErrors);
 	bool deinitializeAI(bool continueOnErrors);
 	void processInput();
-	void processEvents(U32 time);
+	void processTasks(U32 time);
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onMouseMove(const OIS::MouseEvent& key);
@@ -54,8 +54,8 @@ private:
 	void processSimulation(boost::any a, CallbackParam b);
 	void startSimulation();
 	void resetSimulation();
+
 private:
-	vectorImpl<F32> _eventTimers;
 	I8 _score;
 	vec4<F32> _sunvector;
 	SceneGraphNode* _groundPlaceholder;

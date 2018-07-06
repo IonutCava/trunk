@@ -41,7 +41,7 @@ namespace Util {
 
 		//=========================================
 		// HashBase stuff
-		virtual void        Reset()                     { mCrc = ~0;                }
+		virtual void        Reset()                     { mCrc = (U32)~0;                }
 		virtual void        Hash(const void* buf,size_t siz);
 
 	private:

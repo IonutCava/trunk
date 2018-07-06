@@ -68,7 +68,6 @@ void CubeShadowMap::renderInternal(SceneRenderState* renderState) const {
 	vec3<F32> lightPosition = _light->getPosition();
 	Camera* activeCamera = GET_ACTIVE_SCENE()->renderState()->getCamera();
 	///Get some global vars. We limit ourselves to drawing only the objects in the light's range. If range is infinit (-1) we use the GFX limit
-	ParamHandler& par = ParamHandler::getInstance();
 	F32 zNear  = Frustum::getInstance().getZPlanes().x;
 	F32 zFar   = _light->getRange();
 	if(zFar < zNear){

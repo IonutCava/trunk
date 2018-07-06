@@ -21,14 +21,15 @@ Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
 	_groundVBO(NULL),
 	_terrainQuadtree(New Quadtree()),
 	_plane(NULL),
-	_drawInReflection(false),
 	_drawBBoxes(false),
 	_shadowMapped(true),
+    _drawReflected(false),
 	_veg(NULL),
 	_planeTransform(NULL),
 	_node(NULL),
 	_planeSGN(NULL),
 	_terrainRenderState(NULL),
+    _terrainDepthRenderState(NULL),
 	_stateRefreshIntervalBuffer(0),
 	_stateRefreshInterval(500) ///<Every half a second
 {
@@ -55,11 +56,11 @@ void Terrain::sceneUpdate(U32 sceneTime){
 	}
 	_veg->sceneUpdate(sceneTime);
 }
-
+#pragma message("ToDo: Add multiple local lights for terrain, such as torches, rockets, flashlights etc - Ionut")
 void Terrain::prepareMaterial(SceneGraphNode* const sgn){
-	///ToDo: Add multiple local lights for terrain, such as torches, rockets, flashlights etc - Ionut 
+
 	///Prepare the main light (directional light only, sun) for now.
-	if(GFX_DEVICE.getRenderStage() != SHADOW_STAGE){
+	if(!GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)){
 		///Find the most influental light for the terrain. Usually the Sun
 		_lightCount = LightManager::getInstance().findLightsForSceneNode(sgn,LIGHT_TYPE_DIRECTIONAL);
 		///Update lights for this node
@@ -77,8 +78,7 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
 	
 	ShaderProgram* terrainShader = getMaterial()->getShaderProgram();
 	SET_STATE_BLOCK(_terrainRenderState);
-	GFX_DEVICE.setMaterial(getMaterial());
-	vectorImpl<I32>& types = LightManager::getInstance().getLightTypesForCurrentNode();
+	const vectorImpl<I32>& types = LightManager::getInstance().getLightTypesForCurrentNode();
 	_terrainTextures[TERRAIN_TEXTURE_DIFFUSE]->Bind(0);
 	_terrainTextures[TERRAIN_TEXTURE_NORMALMAP]->Bind(1);
 	_terrainTextures[TERRAIN_TEXTURE_CAUSTICS]->Bind(2); //Water Caustics
@@ -87,8 +87,8 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
 	_terrainTextures[TERRAIN_TEXTURE_BLUE]->Bind(5);     //AlphaMap: BLUE
 
 	terrainShader->bind();
-
-	terrainShader->Uniform("water_reflection_rendering", _drawInReflection);
+    terrainShader->Uniform("material",getMaterial()->getMaterialMatrix());
+	terrainShader->Uniform("water_reflection_rendering", GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE));
 	terrainShader->UniformTexture("texDiffuseMap", 0);
 	terrainShader->UniformTexture("texNormalHeightMap", 1);
 	terrainShader->UniformTexture("texWaterCaustics", 2);
@@ -107,7 +107,6 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
 }
 
 void Terrain::releaseMaterial(){
-
 	if(_alphaTexturePresent) _terrainTextures[TERRAIN_TEXTURE_ALPHA]->Unbind(6);
 	_terrainTextures[TERRAIN_TEXTURE_BLUE]->Unbind(5);
 	_terrainTextures[TERRAIN_TEXTURE_GREEN]->Unbind(4);
@@ -125,6 +124,13 @@ void Terrain::releaseMaterial(){
 	}
 }
 
+void Terrain::prepareDepthMaterial(SceneGraphNode* const sgn){
+    SET_STATE_BLOCK(_terrainDepthRenderState);
+}
+
+void Terrain::releaseDepthMaterial(){
+}
+
 void Terrain::render(SceneGraphNode* const sgn){
 	drawInfinitePlain();
 	drawGround();
@@ -136,18 +142,22 @@ void Terrain::drawBoundingBox(SceneGraphNode* const sgn){
 	}
 }
 
+void Terrain::onDraw(){
+    _eyePos = GET_ACTIVE_SCENE()->renderState()->getCamera()->getEye();
+}
+
 void Terrain::postDraw(){
-	_veg->draw(_drawInReflection);
+	//_veg->draw();
 }
 
 void Terrain::drawInfinitePlain(){
-	if(_drawInReflection) return;
-
 	_planeTransform->setPositionX(_eyePos.x);
 	_planeTransform->setPositionZ(_eyePos.z);
 	_planeSGN->getBoundingBox().Transform(_planeSGN->getInitialBoundingBox(),
 										  _planeTransform->getMatrix());
 
+	if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)) return;
+    if(GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) return;
 	GFX_DEVICE.setObjectState(_planeTransform);
 	GFX_DEVICE.renderModel(_plane);
 	GFX_DEVICE.releaseObjectState(_planeTransform);
@@ -157,7 +167,7 @@ void Terrain::drawInfinitePlain(){
 void Terrain::drawGround() const{
 	assert(_groundVBO);
 	_groundVBO->Enable();
-		_terrainQuadtree->DrawGround(_drawInReflection);
+		_terrainQuadtree->DrawGround(_drawReflected);
 	_groundVBO->Disable();
 }
 

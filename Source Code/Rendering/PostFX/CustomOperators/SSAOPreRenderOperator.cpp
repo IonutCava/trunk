@@ -56,7 +56,6 @@ void SSAOPreRenderOperator::operation(){
 	if(!_enabled) return;
 	if(!_renderQuad) return;
 	GFXDevice& gfx = GFX_DEVICE;
-	ParamHandler& par = ParamHandler::getInstance();
 
 	_normalsFBO->Begin();
 		_stage1Shader->bind();

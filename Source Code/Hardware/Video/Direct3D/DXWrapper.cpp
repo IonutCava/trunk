@@ -61,7 +61,7 @@ void DX_API::swapBuffers()
 {
 }
 
-void DX_API::enableFog(F32 density, F32* color)
+void DX_API::enableFog(FogMode mode, F32 density, F32* color, F32 startDist, F32 endDist)
 {
 }
 
@@ -95,14 +95,6 @@ void DX_API::drawTextToScreen(GUIElement* const text)
 {
 }
 
-void DX_API::drawButton(GUIElement* const button)
-{
-}
-
-void DX_API::drawFlash(GUIElement* const flash)
-{
-}
-
 void DX_API::drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset)
 {
 }
@@ -111,50 +103,17 @@ void DX_API::drawLines(const vectorImpl<vec3<F32> >& pointsA,const vectorImpl<ve
 {
 }
 
-void DX_API::renderInViewport(const vec4<F32>& rect, boost::function0<void> callback){
+void DX_API::renderInViewport(const vec4<F32>& rect, boost::function0<void> callback)
+{
 }
 
 void DX_API::renderModel(Object3D* const model)
 {
-	PrimitiveType type = TRIANGLES;
-	//render in the switch or after. hacky, but works -Ionut
-	bool b_continue = true;
-	switch(model->getType()){
-		case Object3D::TEXT_3D:{
-			Text3D* text = dynamic_cast<Text3D*>(model);
-			b_continue = false;
-			}break;
-		
-		case Object3D::BOX_3D:
-		case Object3D::SUBMESH:
-			type = TRIANGLES;
-			break;
-		case Object3D::QUAD_3D:
-		case Object3D::SPHERE_3D:
-			type = QUADS;
-			break;
-		//We should never enter the default case!
-		default:
-			ERROR_FN("ERROR_D3D_INVALID_OBJECT_TYPE",model->getName().c_str());
-			b_continue = false;
-			break;
-	}
-
-	if(b_continue){	
-		model->getGeometryVBO()->Enable();
-			renderElements(type,UNSIGNED_SHORT,model->getGeometryVBO()->getHWIndices().size(), &(model->getGeometryVBO()->getHWIndices()[0]));
-		model->getGeometryVBO()->Disable();
-	}
 }
 
-void DX_API::renderElements(PrimitiveType t, GFXDataFormat f, U32 count, const void* first_element)
+void DX_API::renderModel(VertexBufferObject* const vbo, GFXDataFormat f, U32 count, const void* first_element)
 {
 }
-
-void DX_API::setMaterial(Material* mat)
-{
-}
-
 
 void DX_API::initDevice(U32 targetFrameRate)
 {

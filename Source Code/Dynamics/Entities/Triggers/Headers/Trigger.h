@@ -22,23 +22,23 @@
 #include "Graphs/Headers/SceneNode.h"
 
 class Unit;
-class Event;
+class Task;
 class Impostor;
 /// When a unit touches the circle described by
 class Trigger  : public SceneNode {
 
-	typedef std::tr1::shared_ptr<Event> Event_ptr;
+	typedef std::tr1::shared_ptr<Task> Task_ptr;
 
 public:
 	Trigger();
 	~Trigger();
 
-	/// Checks if the unit has activated this trigger and launches the event
+	/// Checks if the unit has activated this trigger and launches the Task
 	/// If we receive a NULL unit as a param, we use the camera position
 	bool check(Unit* const unit,const vec3<F32>& camEyePos = vec3<F32>(0,0,0));
-	/// Sets a new event for this trigger
-	void updateTriggeredEvent(Event_ptr triggeredEvent);
-	/// Trigger's the event regardless of position
+	/// Sets a new Task for this trigger
+	void updateTriggeredTask(Task_ptr triggeredTask);
+	/// Trigger's the Task regardless of position
 	bool trigger();
 	///Draw a sphere at the trigger's position
 	///The impostor has the radius of the trigger's radius
@@ -46,9 +46,9 @@ public:
 	///Enable or disable the trigger
 	inline void  setEnabled(bool state) {_enabled = state;}
     /// Set the callback, the position and the radius of the trigger
-	void setParams(Event_ptr triggeredEvent, const vec3<F32>& triggerPosition, F32 radius);
+	void setParams(Task_ptr triggeredTask, const vec3<F32>& triggerPosition, F32 radius);
 	/// Just update the callback
-	inline void setParams(Event_ptr triggeredEvent) {setParams(triggeredEvent,_triggerPosition,_radius);}
+	inline void setParams(Task_ptr triggeredTask) {setParams(triggeredTask,_triggerPosition,_radius);}
 
 	///Dummy function from SceneNode;
 	void onDraw() {};
@@ -64,8 +64,8 @@ public:
 	bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere){return _drawImpostor;}
 
 private:
-	/// The event to be launched when triggered
-	Event_ptr _triggeredEvent;
+	/// The Task to be launched when triggered
+	Task_ptr _triggeredTask;
 	/// The trigger circle's center position
 	vec3<F32> _triggerPosition;
 	/// The trigger's radius

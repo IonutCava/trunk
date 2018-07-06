@@ -41,8 +41,8 @@ struct aiScene;
 class SubMesh : public Object3D {
 
 public:
-	SubMesh(const std::string& name, PrimitiveFlag flag= PRIMITIVE_FLAG_NONE) : 
-									   Object3D(name,SUBMESH,flag),
+	SubMesh(const std::string& name, ObjectFlag flag = OBJECT_FLAG_NONE) : 
+									   Object3D(name,SUBMESH,TRIANGLES,flag),
 									   _visibleToNetwork(true),
 									   _render(true),
 									   _id(0),

@@ -81,6 +81,7 @@ private:
 	bool _enableFXAA;
 	bool _FXAAinit;
 	bool _underwater;
+    F32  _bloomFactor;
 
 public:
 	void init(const vec2<U16>& resolution);

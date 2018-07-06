@@ -5,7 +5,12 @@
 template<>
 Box3D* ImplResourceLoader<Box3D>::operator()(){
 
-	Box3D* ptr = New Box3D(1);
+    F32 size = 1.0f;
+    if(!_descriptor.getPropertyListString().empty()){
+        size = atof(_descriptor.getPropertyListString().c_str());//<should work
+    }
+
+	Box3D* ptr = New Box3D(size);
 
 	if(!ptr) return NULL;
 	if(!load(ptr,_descriptor.getName())) return NULL;

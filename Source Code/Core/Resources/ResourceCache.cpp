@@ -3,12 +3,12 @@
 #include "Core/Headers/ParamHandler.h"
 
 ResourceCache::ResourceCache(){
-	_loadingPool = New boost::threadpool::pool(3);
+	//_loadingPool = New boost::threadpool::pool(3);
 }
 
 ResourceCache::~ResourceCache(){
 	Destroy();
-	SAFE_DELETE(_loadingPool);
+	//SAFE_DELETE(_loadingPool);
 	PRINT_FN(Locale::get("RESOURCE_CACHE_DELETE"));
 }
 

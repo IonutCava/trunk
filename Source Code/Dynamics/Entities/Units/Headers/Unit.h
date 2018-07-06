@@ -50,7 +50,7 @@ public:
 	inline const vec3<F32>& getCurrentPosition() {return _currentPosition;}
 	/// Get the units target coordinates in the world
 	inline const vec3<F32>& getTargetPosition() {return _currentTargetPosition;}
-	/// Set the units movement speed (minimum is 0 = the unit does not move / is rooted)
+	/// Set the units movement speed in metres per second (minimum is 0 = the unit does not move / is rooted) 
 	inline void setMovementSpeed(F32 movementSpeed) {_moveSpeed = movementSpeed; CLAMP<F32>(_moveSpeed,0.0f,100.0f);}
 	/// Get the units current movement speed
 	inline F32  getMovementSpeed()                  {return _moveSpeed;}

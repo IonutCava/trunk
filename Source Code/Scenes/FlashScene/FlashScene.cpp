@@ -21,12 +21,12 @@ void FlashScene::processInput(){
 
 }
 
-void FlashScene::processEvents(U32 time){
+void FlashScene::processTasks(U32 time){
 	F32 FpsDisplay = 0.3f;
-	if (time - _eventTimers[0] >= FpsDisplay)	{
+	if (time - _taskTimers[0] >= FpsDisplay)	{
 		
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
-		_eventTimers[0] += FpsDisplay;
+		_taskTimers[0] += FpsDisplay;
 	}
 }
 
@@ -47,11 +47,11 @@ bool FlashScene::loadResources(bool continueOnErrors){
 							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
 							0.0f );
 		GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec2<F32>(60,60),           //Position
+		                       vec2<U32>(60,60),           //Position
 							   Font::DIVIDE_DEFAULT,       //Font
 							   vec3<F32>(0.0f,0.2f, 1.0f), //Color
 							   "FPS: %s",0);    //Text and arguments
-		_eventTimers.push_back(0.0f);
+		_taskTimers.push_back(0.0f);
     i = 0;
 	return true;
 }

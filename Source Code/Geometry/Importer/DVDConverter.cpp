@@ -63,7 +63,7 @@ Mesh* DVDConverter::load(const std::string& file){
 	for(U16 n = 0; n < _aiScenePointer->mNumMeshes; n++){
 		
 		//Skip points and lines ... for now -Ionut
-		//ToDo: Fix this -Ionut
+#pragma message("ToDo: Fix skipping points and lines on geometry import -Ionut")
 		if(_aiScenePointer->mMeshes[n]->mPrimitiveTypes == aiPrimitiveType_LINE || 
 			_aiScenePointer->mMeshes[n]->mPrimitiveTypes == aiPrimitiveType_POINT ||
 			_aiScenePointer->mMeshes[n]->mNumVertices == 0)
@@ -72,7 +72,7 @@ Mesh* DVDConverter::load(const std::string& file){
 		
 
 		if(SubMesh* s = loadSubMeshGeometry(_aiScenePointer->mMeshes[n], n)){
-			bool skinnedSubMesh = (s->getFlag() == Object3D::PRIMITIVE_FLAG_SKINNED ? true : false);
+			bool skinnedSubMesh = (s->getFlag() == Object3D::OBJECT_FLAG_SKINNED ? true : false);
 			if(!tempMesh){
 				tempMesh  = (skinnedSubMesh ? New SkinnedMesh() : New Mesh());
 				tempMesh->setName(_modelName);
@@ -127,7 +127,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 		submeshdesc.setFlag(true);
 		submeshdesc.setId(count);
 		if(skinned) 
-			submeshdesc.setEnumValue(Object3D::PRIMITIVE_FLAG_SKINNED); 
+			submeshdesc.setEnumValue(Object3D::OBJECT_FLAG_SKINNED); 
 		tempSubMesh = CreateResource<SubMesh>(submeshdesc);
 		///it may be already loaded
 		if(!tempSubMesh->getGeometryVBO()->getPosition().empty()){
@@ -212,13 +212,20 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 	U16 lowestInd = 0;
 	U16 highestInd = 0;
 	for(U32 k = 0; k < source->mNumFaces; k++){
-		for(U32 m = 0; m < source->mFaces[k].mNumIndices; m++){
+		U32 indiceCount = source->mFaces[k].mNumIndices;
+		if(indiceCount == 3){
+			vec3<U32> triangleTemp(source->mFaces[k].mIndices[0],source->mFaces[k].mIndices[1],source->mFaces[k].mIndices[2]);
+			tempSubMesh->getGeometryVBO()->getTriangles().push_back(triangleTemp);
+		}
+
+		for(U32 m = 0; m < indiceCount; m++){
 			currentIndice = source->mFaces[k].mIndices[m];
 			if(currentIndice < lowestInd)  lowestInd  = currentIndice;
 			if(currentIndice > highestInd) highestInd = currentIndice;
 
 			tempSubMesh->getGeometryVBO()->getHWIndices().push_back(currentIndice);
 		}
+
 	}
 	tempSubMesh->getGeometryVBO()->setIndiceLimits(vec2<U16>(lowestInd,highestInd), tempSubMesh->getLODcount() - 1);
 
@@ -363,9 +370,8 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 		/// if we have a name and an extension
 		if(!img_name.substr(img_name.find_first_of(".")).empty()){
 			/// Is this the base texture or the secondary?
-			Material::TextureUsage item;
-			if(count == 0) item = Material::TEXTURE_BASE;
-			else if(count == 1) item = Material::TEXTURE_SECOND;
+			Material::TextureUsage item = Material::TEXTURE_BASE;
+			if(count == 1) item = Material::TEXTURE_SECOND;
 			/// Load the texture resource
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
@@ -379,7 +385,8 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 
 		tName.Clear();
 		count++;
-		if(count == 2) break; //ToDo: Only 2 texture for now. Fix This! -Ionut;
+#pragma message("ToDo: Use more than 2 textures for each material. Fix This! -Ionut")
+		if(count == 2) break; 
 	}//endwhile
 
 	result = source->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping, &uvInd, &blend, &op, mode);

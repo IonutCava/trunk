@@ -22,12 +22,12 @@
 class SceneAnimator;
 class SkinnedSubMesh : public SubMesh {
 public:
-	SkinnedSubMesh(const std::string& name) : SubMesh(name,Object3D::PRIMITIVE_FLAG_SKINNED),
+	SkinnedSubMesh(const std::string& name) : SubMesh(name,Object3D::OBJECT_FLAG_SKINNED),
 									          _skeletonAvailable(false),
 									          _softwareSkinning(false),
 											  _deltaTime(0),
-											  _currentAnimationID(-1),
-											  _currentFrameIndex(-1),
+											  _currentAnimationID(0),
+											  _currentFrameIndex(0),
 											  _animator(NULL)
 	{
 	}

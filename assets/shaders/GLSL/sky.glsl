@@ -16,9 +16,11 @@ void main(void){
 
 varying vec3 vertex;
 varying vec3 vertexMV;
-uniform samplerCube texSky;
+
 uniform bool enable_sun;
 uniform vec3 sun_vector;
+
+uniform samplerCube texSky;
 
 void main (void){
 

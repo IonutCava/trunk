@@ -7,13 +7,6 @@
 
 
 Material::Material() : Resource(),
-					   _ambient(vec4<F32>(vec3<F32>(1.0f,1.0f,1.0f)/1.5f,1)),
-					   _diffuse(vec4<F32>(vec3<F32>(1.0f,1.0f,1.0f)/1.5f,1)),
-					   _specular(1.0f,1.0f,1.0f,1.0f),
-					   _emissive(0.6f,0.6f,0.6f),
-					   _shininess(5),
-					   _opacity(1.0f),
-					   _materialMatrix(_ambient,_diffuse,_specular,vec4<F32>(_shininess,_emissive.x,_emissive.y,_emissive.z)),
 					   _dirty(false),
 					   _doubleSided(false),
 					   _castsShadows(true),
@@ -23,6 +16,13 @@ Material::Material() : Resource(),
 					   _shadingMode(SHADING_PHONG), /// phong shading by default
 					   _bumpMethod(BUMP_NONE)
 {
+   _materialMatrix.setCol(0,_shaderData._ambient);
+   _materialMatrix.setCol(1,_shaderData._diffuse);
+   _materialMatrix.setCol(2,_shaderData._specular);
+   _materialMatrix.setCol(3,vec4<F32>(_shaderData._shininess,
+                                      _shaderData._emissive.x,
+                                      _shaderData._emissive.y,
+                                      _shaderData._emissive.z));
 	_bumpMethodTable[BUMP_NONE] = 0;
 	_bumpMethodTable[BUMP_NORMAL] = 1;
 	_bumpMethodTable[BUMP_PARALLAX] = 2;
@@ -51,30 +51,30 @@ Material::Material() : Resource(),
 	   normalStateDescriptor._fixedLighting = false;
    }
 
-   /// A descriptor used for rendering to shadow depth map
-   RenderStateBlockDescriptor shadowDescriptor;
-   shadowDescriptor.setCullMode(CULL_MODE_CCW);
+   /// A descriptor used for rendering to depth map
+   RenderStateBlockDescriptor depthDescriptor;
+   depthDescriptor.setCullMode(CULL_MODE_CCW);
    /// do not used fixed lighting
-   shadowDescriptor._fixedLighting = false;
+   depthDescriptor._fixedLighting = false;
    /// set a polygon offset
-   shadowDescriptor._zBias = 1.0f;
+   depthDescriptor._zBias = 1.0f;
    /// ignore colors
-   shadowDescriptor.setColorWrites(false,false,false,true);
+   depthDescriptor.setColorWrites(false,false,false,true);
 
    /// the reflection descriptor is the same as the normal descriptor, but with special culling
    RenderStateBlockDescriptor reflectionStateDescriptor;
    reflectionStateDescriptor.fromDescriptor(normalStateDescriptor);
 
    _defaultRenderStates.insert(std::make_pair(FINAL_STAGE, GFX_DEVICE.createStateBlock(normalStateDescriptor)));
-   _defaultRenderStates.insert(std::make_pair(SHADOW_STAGE, GFX_DEVICE.createStateBlock(shadowDescriptor)));
+   _defaultRenderStates.insert(std::make_pair(DEPTH_STAGE, GFX_DEVICE.createStateBlock(depthDescriptor)));
    _defaultRenderStates.insert(std::make_pair(REFLECTION_STAGE, GFX_DEVICE.createStateBlock(reflectionStateDescriptor)));
 
     assert(_defaultRenderStates[FINAL_STAGE] != NULL);
-	assert(_defaultRenderStates[SHADOW_STAGE] != NULL);
+	assert(_defaultRenderStates[DEPTH_STAGE] != NULL);
 	assert(_defaultRenderStates[REFLECTION_STAGE] != NULL);
 
 	_shaderRef[FINAL_STAGE] = NULL;
-	_shaderRef[SHADOW_STAGE] = NULL;
+	_shaderRef[DEPTH_STAGE] = NULL;
 	_computedShader[0] = false;
 	_computedShader[1] = false;
 	_matId[0].i = 0;
@@ -85,7 +85,7 @@ Material::Material() : Resource(),
 Material::~Material(){
 
 	SAFE_DELETE(_defaultRenderStates[FINAL_STAGE]);
-	SAFE_DELETE(_defaultRenderStates[SHADOW_STAGE]);
+	SAFE_DELETE(_defaultRenderStates[DEPTH_STAGE]);
 	SAFE_DELETE(_defaultRenderStates[REFLECTION_STAGE]);
 	_defaultRenderStates.clear();
 }
@@ -105,7 +105,6 @@ RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor
 //second = second texture used for multitexturing
 //bump = bump map
 void Material::setTexture(TextureUsage textureUsage, Texture2D* const texture, TextureOperation op) {
-	boost::unique_lock< boost::mutex > lock_access_here(_materialMutex);
 	if(_textures[textureUsage]){
 		UNREGISTER_TRACKED_DEPENDENCY(_textures[textureUsage]);
 		RemoveResource(_textures[textureUsage]);
@@ -116,6 +115,9 @@ void Material::setTexture(TextureUsage textureUsage, Texture2D* const texture, T
 	_textures[textureUsage] = texture;
 	_operations[textureUsage] = op;
 	REGISTER_TRACKED_DEPENDENCY(_textures[textureUsage]);
+    if(textureUsage == TEXTURE_BASE || textureUsage == TEXTURE_SECOND){
+        texture ? _shaderData._textureCount++ : _shaderData._textureCount--;
+    }
 	_dirty = true;
 }
 
@@ -205,7 +207,7 @@ void Material::computeShader(bool force, RenderStage renderStage){
 	if(_shader[id].empty()){
 		///the base shader is either for a Forward Renderer ...
 		std::string shader;
-		if(renderStage == SHADOW_STAGE){
+		if(renderStage == DEPTH_STAGE){
 			shader = "depthPass";
 		}else{
 			shader = "lighting";
@@ -292,9 +294,9 @@ void Material::addShaderDefines(const std::string& shaderDefines,bool force) {
 	_shaderDefines.push_back(shaderDefines);
 	if(force){
 		_shader[FINAL_STAGE].clear();
-		_shader[SHADOW_STAGE].clear();
+		_shader[DEPTH_STAGE].clear();
 		computeShader(true);
-		computeShader(true,SHADOW_STAGE);
+		computeShader(true,DEPTH_STAGE);
 	}
 }
 
@@ -360,7 +362,7 @@ P32 Material::getMaterialId(RenderStage renderStage){
 	
 	if(_dirty){
 		_matId[0].i = (_shaderRef[FINAL_STAGE] != NULL ?  _shaderRef[FINAL_STAGE]->getId() : 0);
-		_matId[1].i = (_shaderRef[SHADOW_STAGE] != NULL ?  _shaderRef[SHADOW_STAGE]->getId() : 0);
+		_matId[1].i = (_shaderRef[DEPTH_STAGE] != NULL ?  _shaderRef[DEPTH_STAGE]->getId() : 0);
 		dumpToXML();
 		_dirty = false;
 	}

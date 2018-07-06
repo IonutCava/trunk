@@ -34,7 +34,7 @@ void SceneNode::onDraw(){
 	Material* mat = getMaterial();
 	if(mat){
 		mat->computeShader(false);
-		mat->computeShader(false,SHADOW_STAGE);
+		mat->computeShader(false,DEPTH_STAGE);
 	}
 }
 void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn){
@@ -84,9 +84,11 @@ bool SceneNode::isInView(bool distanceCheck,BoundingBox& boundingBox,const Bound
 }
 
 Material* SceneNode::getMaterial(){
+    //UpgradableReadLock ur_lock(_materialLock); 
 	if(_material == NULL){
 		if(!_renderState._noDefaultMaterial){
 			ResourceDescriptor defaultMat("defaultMaterial");
+            //UpgradeToWriteLock uw_lock(ur_lock);
 			_material = CreateResource<Material>(defaultMat);
 			REGISTER_TRACKED_DEPENDENCY(_material);
 		}
@@ -96,19 +98,27 @@ Material* SceneNode::getMaterial(){
 
 void SceneNode::setMaterial(Material* m){
 	if(m){ //If we need to update the material
+        //UpgradableReadLock ur_lock(_materialLock); 
 		if(_material){ //If we had an old material
 			if(_material->getMaterialId().i != m->getMaterialId().i){ //if the old material isn't the same as the new one
 				PRINT_FN(Locale::get("REPLACE_MATERIAL"),_material->getName().c_str(),m->getName().c_str());
+                //UpgradeToWriteLock uw_lock(ur_lock);
 				RemoveResource(_material);			//remove the old material
 				UNREGISTER_TRACKED_DEPENDENCY(_material);
+                //ur_lock.lock();
 			}
 		}
+        //UpgradeToWriteLock uw_lock(ur_lock);
 		_material = m;				   //set the new material
 		REGISTER_TRACKED_DEPENDENCY(_material);
+
 	}else{ //if we receive a null material, the we need to remove this node's material
+        //UpgradableReadLock ur_lock(_materialLock); 
 		if(_material){
+            //UpgradeToWriteLock uw_lock(ur_lock);
 			UNREGISTER_TRACKED_DEPENDENCY(_material);
 			RemoveResource(_material);
+ 
 		}
 	}
 }
@@ -118,13 +128,13 @@ void SceneNode::clearMaterials(){
 }
 
 void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
+    //UpgradableReadLock ur_lock(_materialLock); 
 	if(!_material/* || !sgn*/) return;
-	if(GFX_DEVICE.getRenderStage() == REFLECTION_STAGE){
+	if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)){
 		SET_STATE_BLOCK(_material->getRenderState(REFLECTION_STAGE));
 	}else{
 		SET_STATE_BLOCK(_material->getRenderState(FINAL_STAGE));
 	}
-	GFX_DEVICE.setMaterial(_material);
 
 	ShaderProgram* s = _material->getShaderProgram();
 	Scene* activeScene = GET_ACTIVE_SCENE();
@@ -135,15 +145,8 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 	Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
 	Texture2D* specularMap = _material->getTexture(Material::TEXTURE_SPECULAR);
 
-	U8 count = 0;
-	if(baseTexture){
-		baseTexture->Bind(0);
-		count++;
-	}
-	if(secondTexture){
-		secondTexture->Bind(1);
-		count++;
-	}
+	if(baseTexture)	  baseTexture->Bind(0);
+	if(secondTexture) secondTexture->Bind(1);
 	if(bumpTexture)	bumpTexture->Bind(2);
 	if(opacityMap)	opacityMap->Bind(3);
 	if(specularMap) specularMap->Bind(4);
@@ -180,7 +183,7 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 	}
 	s->Uniform("material",_material->getMaterialMatrix());
 	s->Uniform("opacity", _material->getOpacityValue());
-	s->Uniform("textureCount",count);
+	s->Uniform("textureCount",_material->getTextureCount());
 	s->Uniform("bumpMapLightId",0);
 	if(LightManager::getInstance().shadowMappingEnabled()){
 		s->Uniform("enable_shadow_mapping",_material->getReceivesShadows());
@@ -190,7 +193,7 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 		s->Uniform("enable_shadow_mapping",false);
 	}
 	s->Uniform("light_count", LightManager::getInstance().getLightCountForCurrentNode());
-	vectorImpl<I32>& types = LightManager::getInstance().getLightTypesForCurrentNode();
+	const vectorImpl<I32>& types = LightManager::getInstance().getLightTypesForCurrentNode();
 	s->Uniform("lightType",types);
 	s->Uniform("windDirection",vec2<F32>(activeScene->state()->getWindDirX(),activeScene->state()->getWindDirZ()));
 	s->Uniform("windSpeed", activeScene->state()->getWindSpeed());
@@ -202,6 +205,7 @@ void SceneNode::setSpecialShaderConstants(ShaderProgram* const shader) {
 }
 
 void SceneNode::releaseMaterial(){
+    //UpgradableReadLock ur_lock(_materialLock); 
 	if(!_material) return;
 
 	Texture2D* baseTexture = _material->getTexture(Material::TEXTURE_BASE);
@@ -217,17 +221,17 @@ void SceneNode::releaseMaterial(){
 	if(baseTexture) baseTexture->Unbind(0);
 }
 
-void SceneNode::prepareShadowMaterial(SceneGraphNode* const sgn){
+void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
 	if(getType() != TYPE_OBJECT3D && getType() != TYPE_TERRAIN) return;
-	/// general shadow descriptor for objects without material
+     //UpgradableReadLock ur_lock(_materialLock); 
+	/// general depth descriptor for objects without material
 	if(!_material) { 
-		SET_STATE_BLOCK(_renderState.getShadowStateBlock());
+		SET_STATE_BLOCK(_renderState.getDepthStateBlock());
 
 	}else{
 
-		SET_STATE_BLOCK(_material->getRenderState(SHADOW_STAGE));
-		GFX_DEVICE.setMaterial(_material);
-		ShaderProgram* s = _material->getShaderProgram(SHADOW_STAGE);
+		SET_STATE_BLOCK(_material->getRenderState(DEPTH_STAGE));
+		ShaderProgram* s = _material->getShaderProgram(DEPTH_STAGE);
 
 		if(s){
 			Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
@@ -248,7 +252,8 @@ void SceneNode::prepareShadowMaterial(SceneGraphNode* const sgn){
 }
 
 
-void SceneNode::releaseShadowMaterial(){
+void SceneNode::releaseDepthMaterial(){
+    //UpgradableReadLock ur_lock(_materialLock); 
 	if(!_material) return;
 	Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
 	if(opacityMap) opacityMap->Unbind(0);
@@ -257,7 +262,7 @@ void SceneNode::releaseShadowMaterial(){
 bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {
 	BoundingBox& bb = sgn->getBoundingBox();
 	sgn->setInitialBoundingBox(bb);
-	bb.isComputed() = true;
+	bb.setComputed(true);
 	return true;
 }
 

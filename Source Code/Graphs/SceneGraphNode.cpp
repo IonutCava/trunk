@@ -8,7 +8,6 @@ SceneGraphNode::SceneGraphNode(SceneNode* node) : _node(node),
 												  _parent(NULL),
 												  _grandParent(NULL),
 												  _transform(NULL),
-												  _sceneGraph(NULL),
 												  _wasActive(true),
 											      _active(true),
 												  _noDefaultTransform(false),
@@ -17,8 +16,11 @@ SceneGraphNode::SceneGraphNode(SceneNode* node) : _node(node),
 												  _silentDispose(false),
 												  _updateBB(true),
 												  _shouldDelete(false),
+                                                  _isReady(false),
 												  _updateTimer(GETMSTIME()),
-												  _childQueue(0)
+												  _childQueue(0),
+                                                  _usageContext(NODE_DYNAMIC),
+                                                  _navigationContext(NODE_IGNORE)
 {
 }
 
@@ -35,18 +37,13 @@ SceneGraphNode::~SceneGraphNode(){
 
 }
 
-bool SceneGraphNode::computeBoundingSphere(){
-	_boundingSphere.fromBoundingBox(getBoundingBox());
-	return true;
-}
-
 vectorImpl<BoundingBox >&  SceneGraphNode::getBBoxes(vectorImpl<BoundingBox >& boxes ){
-	ReadLock r_lock(_queryLock); 
 	//Unload every sub node recursively
 	for_each(NodeChildren::value_type& it, _children){
 		it.second->getBBoxes(boxes);
 	}
-	boxes.push_back(getBoundingBox());
+    ReadLock r_lock(_queryLock);
+	boxes.push_back(_boundingBox);
 	return boxes;
 }
 
@@ -81,6 +78,7 @@ void SceneGraphNode::print(){
 	}
 	//get out material's name
 	Material* mat = _node->getMaterial();
+
 	//Some strings to hold the names of our material and shader
 	std::string material("none"),shader("none"),depthShader("none");
 	//If we have a material
@@ -92,9 +90,9 @@ void SceneGraphNode::print(){
 			//Get the shader's name
 			shader = mat->getShaderProgram()->getName();
 		}
-		if(mat->getShaderProgram(SHADOW_STAGE)){
+		if(mat->getShaderProgram(DEPTH_STAGE)){
 			//Get the depth shader's name
-			depthShader = mat->getShaderProgram(SHADOW_STAGE)->getName();
+			depthShader = mat->getShaderProgram(DEPTH_STAGE)->getName();
 		}
 	}
 	//Print our current node's information
@@ -117,7 +115,7 @@ void SceneGraphNode::print(){
 void SceneGraphNode::setParent(SceneGraphNode* parent) {
 	if(_parent){
 		//Remove us from the old parent's children map
-		NodeChildren::iterator& it = _parent->getChildren().find(getName());
+		NodeChildren::iterator it = _parent->getChildren().find(getName());
 		_parent->getChildren().erase(it);
 	}
 	//Set the parent pointer to the new parent
@@ -178,7 +176,7 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string&
 //Remove a child node from this Node
 void SceneGraphNode::removeNode(SceneGraphNode* node){
 	//find the node in the children map
-	NodeChildren::iterator& it = _children.find(node->getName());
+	NodeChildren::iterator it = _children.find(node->getName());
 	//If we found the node we are looking for
 	if(it != _children.end()) {
 		//Remove it from the map
@@ -231,12 +229,13 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
 }
 
 SceneGraphNode* SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end){
-	ReadLock r_lock(_queryLock); 
 	//Null return value as default
 	SceneGraphNode* returnValue = NULL;
-	if(getBoundingBox().Intersect(ray,start,end)){
+    ReadLock r_lock(_queryLock); 
+	if(_boundingBox.Intersect(ray,start,end)){
 		return this;
 	}
+    r_lock.unlock();
 
 	for_each(NodeChildren::value_type& it, _children){
 		returnValue = it.second->Intersect(ray,start,end);
@@ -252,19 +251,18 @@ SceneGraphNode* SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end){
 
 //This updates the SceneGraphNode's transform by deleting the old one first
 void SceneGraphNode::setTransform(Transform* const t) {
-	WriteLock w_lock(_queryLock); 
 	SAFE_UPDATE(_transform,t); 
 }
 
 //Get the node's transform
 Transform* const SceneGraphNode::getTransform(){
-	ReadLock r_lock(_queryLock); 
 	//A node does not necessarily have a transform
 	//If this is the case, we can either create a default one
 	//Or return NULL. When creating a node we can specify if we do not want a default transform
 	if(!_noDefaultTransform && !_transform){
 		_transform = New Transform();
 		assert(_transform);
+        _isReady = true;
 	}
 	return _transform;
 }

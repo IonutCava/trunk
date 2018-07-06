@@ -28,13 +28,15 @@
 #define _NAVIGATION_MESH_H_
 
 #include "core.h"
-#include "Utility/Headers/Event.h"
+#include "Hardware/Platform/Headers/Task.h"
 #include "NavigationMeshLoader.h" 
-
-#include <ReCast/Headers/Recast.h>
-#include <Detour/Headers/DetourNavMesh.h>
-#include <Detour/Headers/DetourNavMeshQuery.h>
-#include <Detour/Headers/DetourNavMeshBuilder.h>
+#ifndef RECAST_UTIL_PROPERTIES
+#define RECAST_UTIL_PROPERTIES
+#endif
+#include <ReCast/Include/Recast.h>
+#include <Detour/Include/DetourNavMesh.h>
+#include <Detour/Include/DetourNavMeshQuery.h>
+#include <Detour/Include/DetourNavMeshBuilder.h>
 
 class SceneGraphNode;
 
@@ -55,6 +57,19 @@ namespace Navigation {
 		int dataSize;
 	};
 
+    class rcContextDivide : public rcContext{
+    public:
+        rcContextDivide(bool state) : rcContext(state) {}
+        ~rcContextDivide() {}
+    private:
+        /// Logs a message.
+	    ///  @param[in]		category	The category of the message.
+	    ///  @param[in]		msg			The formatted message.
+	    ///  @param[in]		len			The length of the formatted message.
+	    void doLog(const rcLogCategory /*category*/, const char* /*msg*/, const int /*len*/);
+
+    };
+
 	/// @class NavigationMesh
 	/// Represents a set of bounds within which a Recast navigation mesh is generated.
 
@@ -69,8 +84,8 @@ namespace Navigation {
 		bool _buildThreaded;
 
 		/// Initiates the NavigationMesh build process, which includes notifying the
-		/// clients and posting an event.
-		bool build(SceneGraphNode* const sgn);
+		/// clients and posting a task.
+		bool build(SceneGraphNode* const sgn,bool threaded = true);
 		/// Save the NavigationMesh to a file.
 		bool save();
 
@@ -123,7 +138,7 @@ namespace Navigation {
 		/// mesh. Returns true if successful. Stores the created mesh in tnm.
 		bool generateMesh();
 		/// Performs the Recast part of the build process.
-		bool createPolyMesh(rcConfig &cfg, NavModelData &data, rcContext *ctx);
+		bool createPolyMesh(rcConfig &cfg, NavModelData &data, rcContextDivide *ctx);
 		/// Performs the Detour part of the build process.
 		bool createNavigationMesh(dtNavMeshCreateParams &params);
 
@@ -142,7 +157,7 @@ namespace Navigation {
 		/// @}
 
 		/// A thread for us to update in.
-		std::tr1::shared_ptr<Event> mThread;
+		std::tr1::shared_ptr<Task> mThread;
 		/// A mutex for NavigationMesh builds.
 		boost::mutex _buildLock;
 		/// A mutex for accessing our actual NavigationMesh.
