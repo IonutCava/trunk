@@ -65,6 +65,7 @@ enum class CommandType : U8 {
     DRAW_TEXT,
     DRAW_IMGUI,
     DISPATCH_COMPUTE,
+    READ_ATOMIC_COUNTER,
     BEGIN_DEBUG_SCOPE,
     END_DEBUG_SCOPE,
     SWITCH_WINDOW,
@@ -181,7 +182,7 @@ struct BeginDebugScopeCommand final : Command<BeginDebugScopeCommand, CommandTyp
     eastl::fixed_string<char, 128 + 1, true> _scopeName;
     I32 _scopeID = -1;
 
-    const char* toString() const override { 
+    const char* toString() const override {
         return (stringImpl(_typeName) + _scopeName.c_str()).c_str();
     }
 };
@@ -199,6 +200,12 @@ struct DrawIMGUICommand final : Command<DrawIMGUICommand, CommandType::DRAW_IMGU
 
 struct DispatchComputeCommand final : Command<DispatchComputeCommand, CommandType::DISPATCH_COMPUTE> {
     ComputeParams _params;
+};
+
+struct ReadAtomicCounterCommand final : Command<ReadAtomicCounterCommand, CommandType::READ_ATOMIC_COUNTER > {
+    ShaderBuffer* _buffer = nullptr;
+    U32* _target = nullptr;
+    bool _resetCounter = false;
 };
 
 struct SwitchWindowCommand final : Command<SwitchWindowCommand, CommandType::SWITCH_WINDOW> {

@@ -955,145 +955,113 @@ void GL_API::popDebugMessage() {
     }
 }
 
-void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
-    U32 drawCallCount = 0;
-
-    const vectorEASTL<GFX::CommandBuffer::CommandEntry>& commands = commandBuffer();
-    for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
-        switch (cmd.first) {
-            case GFX::CommandType::BEGIN_RENDER_PASS: {
-                const GFX::BeginRenderPassCommand& crtCmd = commandBuffer.getCommand<GFX::BeginRenderPassCommand>(cmd);
-                glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd._target));
-                Attorney::GLAPIRenderTarget::begin(rt, crtCmd._descriptor);
-                GL_API::s_activeRenderTarget = &rt;
-            }break;
-            case GFX::CommandType::END_RENDER_PASS: {
-                assert(GL_API::s_activeRenderTarget != nullptr);
-                Attorney::GLAPIRenderTarget::end(*GL_API::s_activeRenderTarget);
-            }break;
-            case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
-                const GFX::BeginPixelBufferCommand& crtCmd = commandBuffer.getCommand<GFX::BeginPixelBufferCommand>(cmd);
-                assert(crtCmd._buffer != nullptr);
-                glPixelBuffer* buffer = static_cast<glPixelBuffer*>(crtCmd._buffer);
-                bufferPtr data = Attorney::GLAPIPixelBuffer::begin(*buffer);
-                if (crtCmd._command) {
-                    crtCmd._command(data);
-                }
-                GL_API::s_activePixelBuffer = buffer;
-            }break;
-            case GFX::CommandType::END_PIXEL_BUFFER: {
-                assert(GL_API::s_activePixelBuffer != nullptr);
-                Attorney::GLAPIPixelBuffer::end(*GL_API::s_activePixelBuffer);
-            }break;
-            case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
-                assert(s_activeRenderTarget != nullptr);
-                const GFX::BeginRenderSubPassCommand& crtCmd = commandBuffer.getCommand<GFX::BeginRenderSubPassCommand>(cmd);
-                GL_API::s_activeRenderTarget->setMipLevel(crtCmd._mipWriteLevel);
-            }break;
-            case GFX::CommandType::END_RENDER_SUB_PASS: {
-            }break;
-            case GFX::CommandType::BLIT_RT: {
-                const GFX::BlitRenderTargetCommand& crtCmd = commandBuffer.getCommand<GFX::BlitRenderTargetCommand>(cmd);
-                _context.renderTargetPool().renderTarget(crtCmd._destination).blitFrom(&_context.renderTargetPool().renderTarget(crtCmd._source),
-                                                                                        crtCmd._blitColour,
-                                                                                        crtCmd._blitDepth);
-            }break;
-            case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-                const GFX::BindDescriptorSetsCommand& crtCmd = commandBuffer.getCommand<GFX::BindDescriptorSetsCommand>(cmd);
-                const DescriptorSet_ptr& set = crtCmd._set;
-
-                makeTexturesResident(set->_textureData);
-                for (const ShaderBufferBinding& shaderBufCmd : set->_shaderBuffers) {
-                    if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
-                        registerCommandBuffer(*shaderBufCmd._buffer);
-                    } else {
-                        shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
-                                                        shaderBufCmd._range.x,
-                                                        shaderBufCmd._range.y);
-                        if (shaderBufCmd._atomicCounter.first) {
-                            shaderBufCmd._buffer->bindAtomicCounter(shaderBufCmd._atomicCounter.second.x,
-                                                                    shaderBufCmd._atomicCounter.second.y);
-                        }
-                    }
-                }
-            }break;
-            case GFX::CommandType::BIND_PIPELINE: {
-                const Pipeline* pipeline = commandBuffer.getCommand<GFX::BindPipelineCommand>(cmd)._pipeline;
-                assert(pipeline != nullptr);
-                bindPipeline(*pipeline);
-            } break;
-            case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-                sendPushConstants(commandBuffer.getCommand<GFX::SendPushConstantsCommand>(cmd)._constants);
-            } break;
-            case GFX::CommandType::SET_SCISSOR: {
-                setScissor(commandBuffer.getCommand<GFX::SetScissorCommand>(cmd)._rect);
-            }break;
-            case GFX::CommandType::SET_BLEND: {
-                const GFX::SetBlendCommand& blendCmd = commandBuffer.getCommand<GFX::SetBlendCommand>(cmd);
-                setBlending(blendCmd._blendProperties);
-            }break;
-            case GFX::CommandType::SET_VIEWPORT: {
-                _context.setViewport(commandBuffer.getCommand<GFX::SetViewportCommand>(cmd)._viewport);
-            }break;
-            case GFX::CommandType::SET_CAMERA: {
-                Attorney::GFXDeviceAPI::renderFromCamera(_context, *(commandBuffer.getCommand<GFX::SetCameraCommand>(cmd)._camera));
-            }break;
-            case GFX::CommandType::SET_CLIP_PLANES: {
-                Attorney::GFXDeviceAPI::setClippingPlanes(_context, commandBuffer.getCommand<GFX::SetClipPlanesCommand>(cmd)._clippingPlanes);
-            }break;
-            case GFX::CommandType::BEGIN_DEBUG_SCOPE: {
-                 const GFX::BeginDebugScopeCommand& crtCmd = commandBuffer.getCommand<GFX::BeginDebugScopeCommand>(cmd);
-                 pushDebugMessage(crtCmd._scopeName.c_str(), crtCmd._scopeID);
-            } break;
-            case GFX::CommandType::END_DEBUG_SCOPE: {
-                popDebugMessage();
-            } break;
-            case GFX::CommandType::DRAW_TEXT: {
-                Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
-
-                const GFX::DrawTextCommand& crtCmd = commandBuffer.getCommand<GFX::DrawTextCommand>(cmd);
-                drawText(crtCmd._batch);
-            }break;
-            case GFX::CommandType::SWITCH_WINDOW: {
-                const GFX::SwitchWindowCommand& crtCmd = commandBuffer.getCommand<GFX::SwitchWindowCommand>(cmd);
-                switchWindow(crtCmd.windowGUID);
-            }break;
-            case GFX::CommandType::DRAW_IMGUI: {
-                Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
-
-                const GFX::DrawIMGUICommand& crtCmd = commandBuffer.getCommand<GFX::DrawIMGUICommand>(cmd);
-                drawIMGUI(crtCmd._data);
-            }break;
-            case GFX::CommandType::DRAW_COMMANDS : {
-                Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
-
-                const vectorEASTL<GenericDrawCommand>& drawCommands = commandBuffer.getCommand<GFX::DrawCommand>(cmd)._drawCommands;
-                for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
-                    if (draw(currentDrawCommand)) {
-                        if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
-                            drawCallCount++;
-                        }
-                        if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
-                            drawCallCount++;
-                        }
-                    }
-                }
-            }break;
-            case GFX::CommandType::DISPATCH_COMPUTE: {
-                Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
-
-                const GFX::DispatchComputeCommand& crtCmd = commandBuffer.getCommand<GFX::DispatchComputeCommand>(cmd);
-                dispatchCompute(crtCmd._params);
-            }break;
-
-            case GFX::CommandType::EXTERNAL: {
-                const GFX::ExternalCommand& crtCmd = commandBuffer.getCommand<GFX::ExternalCommand>(cmd);
-                crtCmd._cbk();
+void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
+    switch (entry.first) {
+        case GFX::CommandType::BEGIN_RENDER_PASS: {
+            const GFX::BeginRenderPassCommand& crtCmd = commandBuffer.getCommand<GFX::BeginRenderPassCommand>(entry);
+            glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd._target));
+            Attorney::GLAPIRenderTarget::begin(rt, crtCmd._descriptor);
+            GL_API::s_activeRenderTarget = &rt;
+        }break;
+        case GFX::CommandType::END_RENDER_PASS: {
+            assert(GL_API::s_activeRenderTarget != nullptr);
+            Attorney::GLAPIRenderTarget::end(*GL_API::s_activeRenderTarget);
+        }break;
+        case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
+            const GFX::BeginPixelBufferCommand& crtCmd = commandBuffer.getCommand<GFX::BeginPixelBufferCommand>(entry);
+            assert(crtCmd._buffer != nullptr);
+            glPixelBuffer* buffer = static_cast<glPixelBuffer*>(crtCmd._buffer);
+            bufferPtr data = Attorney::GLAPIPixelBuffer::begin(*buffer);
+            if (crtCmd._command) {
+                crtCmd._command(data);
             }
-        };
-    }
+            GL_API::s_activePixelBuffer = buffer;
+        }break;
+        case GFX::CommandType::END_PIXEL_BUFFER: {
+            assert(GL_API::s_activePixelBuffer != nullptr);
+            Attorney::GLAPIPixelBuffer::end(*GL_API::s_activePixelBuffer);
+        }break;
+        case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
+            assert(s_activeRenderTarget != nullptr);
+            const GFX::BeginRenderSubPassCommand& crtCmd = commandBuffer.getCommand<GFX::BeginRenderSubPassCommand>(entry);
+            GL_API::s_activeRenderTarget->setMipLevel(crtCmd._mipWriteLevel);
+        }break;
+        case GFX::CommandType::END_RENDER_SUB_PASS: {
+        }break;
+        
+        case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
+            const GFX::BindDescriptorSetsCommand& crtCmd = commandBuffer.getCommand<GFX::BindDescriptorSetsCommand>(entry);
+            const DescriptorSet_ptr& set = crtCmd._set;
 
-    _context.registerDrawCalls(drawCallCount);
+            makeTexturesResident(set->_textureData);
+            for (const ShaderBufferBinding& shaderBufCmd : set->_shaderBuffers) {
+                if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
+                    registerCommandBuffer(*shaderBufCmd._buffer);
+                } else {
+                    shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
+                                                    shaderBufCmd._range.x,
+                                                    shaderBufCmd._range.y);
+                    if (shaderBufCmd._atomicCounter.first) {
+                        shaderBufCmd._buffer->bindAtomicCounter(shaderBufCmd._atomicCounter.second.x,
+                                                                shaderBufCmd._atomicCounter.second.y);
+                    }
+                }
+            }
+        }break;
+        case GFX::CommandType::BIND_PIPELINE: {
+            const Pipeline* pipeline = commandBuffer.getCommand<GFX::BindPipelineCommand>(entry)._pipeline;
+            assert(pipeline != nullptr);
+            bindPipeline(*pipeline);
+        } break;
+        case GFX::CommandType::SEND_PUSH_CONSTANTS: {
+            sendPushConstants(commandBuffer.getCommand<GFX::SendPushConstantsCommand>(entry)._constants);
+        } break;
+        case GFX::CommandType::SET_SCISSOR: {
+            setScissor(commandBuffer.getCommand<GFX::SetScissorCommand>(entry)._rect);
+        }break;
+        case GFX::CommandType::SET_BLEND: {
+            const GFX::SetBlendCommand& blendCmd = commandBuffer.getCommand<GFX::SetBlendCommand>(entry);
+            setBlending(blendCmd._blendProperties);
+        }break;
+        case GFX::CommandType::BEGIN_DEBUG_SCOPE: {
+             const GFX::BeginDebugScopeCommand& crtCmd = commandBuffer.getCommand<GFX::BeginDebugScopeCommand>(entry);
+             pushDebugMessage(crtCmd._scopeName.c_str(), crtCmd._scopeID);
+        } break;
+        case GFX::CommandType::END_DEBUG_SCOPE: {
+            popDebugMessage();
+        } break;
+        case GFX::CommandType::DRAW_TEXT: {
+            const GFX::DrawTextCommand& crtCmd = commandBuffer.getCommand<GFX::DrawTextCommand>(entry);
+            drawText(crtCmd._batch);
+        }break;
+        case GFX::CommandType::SWITCH_WINDOW: {
+            const GFX::SwitchWindowCommand& crtCmd = commandBuffer.getCommand<GFX::SwitchWindowCommand>(entry);
+            switchWindow(crtCmd.windowGUID);
+        }break;
+        case GFX::CommandType::DRAW_IMGUI: {
+            const GFX::DrawIMGUICommand& crtCmd = commandBuffer.getCommand<GFX::DrawIMGUICommand>(entry);
+            drawIMGUI(crtCmd._data);
+        }break;
+        case GFX::CommandType::DRAW_COMMANDS : {
+            const vectorEASTL<GenericDrawCommand>& drawCommands = commandBuffer.getCommand<GFX::DrawCommand>(entry)._drawCommands;
+            for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
+                if (draw(currentDrawCommand)) {
+                    if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
+                        if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
+                            _context.registerDrawCalls(2);
+                        } else {
+                            _context.registerDrawCall();
+                        }
+                    }
+                }
+            }
+        }break;
+        case GFX::CommandType::DISPATCH_COMPUTE: {
+            const GFX::DispatchComputeCommand& crtCmd = commandBuffer.getCommand<GFX::DispatchComputeCommand>(entry);
+            dispatchCompute(crtCmd._params);
+        }break;
+
+    };
 }
 
 /// Activate the render state block described by the specified hash value (0 == default state block)

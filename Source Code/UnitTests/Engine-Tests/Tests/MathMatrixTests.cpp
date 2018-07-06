@@ -417,14 +417,8 @@ TEST_MEMBER_FUNCTION(mat4, addSubtractOperator, scalar)
                              12.0f, 11.0f, 10.0f,  9.0f,
                               8.0f,  7.0f,  6.0f,  5.0f);
 
-
-    const mat4<F32> result4C(4.0f, 5.0f, 6.0f, 7.0f,
-        8.0f, 9.0f, 10.0f, 11.0f,
-        12.0f, 11.0f, 10.0f, 9.0f,
-        8.0f, 7.0f, 6.0f, 5.0f);
-
-    CHECK_TRUE((input4 - 3) == result4A);
-    CHECK_TRUE((input4 + 3) == result4B);
+    CHECK_EQUAL((input4 - 3), result4A);
+    CHECK_EQUAL((input4 + 3), result4B);
 }
 
 // this depends on multiply tests!

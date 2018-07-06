@@ -121,6 +121,7 @@ GFXDevice::GFXDevice(Kernel& parent)
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
+    LAST_CULL_COUNT = 0;
     // Booleans
     _2DRendering = false;
     // Enumerated Types
@@ -543,7 +544,7 @@ void GFXDevice::setBaseViewport(const Rect<I32>& viewport) {
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
 /// Based on RasterGrid implementation: http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
-void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) {
+void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) const {
     // We use a special shader that downsamples the buffer
     // We will use a state block that disables colour writes as we will render only a depth image,
     // disables depth testing but allows depth writes
@@ -652,6 +653,16 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
 
     GFX::EndDebugScopeCommand endDebugScopeCmd;
     GFX::EnqueueCommand(cmdBufferInOut, endDebugScopeCmd);
+}
+
+void GFXDevice::updateCullCount(GFX::CommandBuffer& cmdBufferInOut) {
+    const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStage::DISPLAY, 0);
+
+    GFX::ReadAtomicCounterCommand readAtomicCounter;
+    readAtomicCounter._buffer = bufferData._cmdBuffer;
+    readAtomicCounter._target = &LAST_CULL_COUNT;
+    readAtomicCounter._resetCounter = true;
+    GFX::EnqueueCommand(cmdBufferInOut, readAtomicCounter);
 }
 
 Renderer& GFXDevice::getRenderer() const {

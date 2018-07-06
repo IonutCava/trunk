@@ -1703,24 +1703,19 @@ mat4<T>& mat4<T>::operator-=(const mat4<U> &matrix) {
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator*(U f) const {
-     mat4<T> ret(mat[0]  * f, mat[1]  * f, mat[2]  * f, mat[3]  * f,
+     return mat4(mat[0]  * f, mat[1]  * f, mat[2]  * f, mat[3]  * f,
                  mat[4]  * f, mat[5]  * f, mat[6]  * f, mat[7]  * f,
                  mat[8]  * f, mat[9]  * f, mat[10] * f, mat[11] * f,
                  mat[12] * f, mat[13] * f, mat[14] * f, mat[15] * f);
-     ret.mat[15] = static_cast<T>(mat[15] * f);
-     return ret;
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator/(U f) const {
-    mat4<T> ret(mat[0]  / f, mat[1]  / f, mat[2]  / f, mat[3]  / f,
+    return mat4(mat[0]  / f, mat[1]  / f, mat[2]  / f, mat[3]  / f,
                 mat[4]  / f, mat[5]  / f, mat[6]  / f, mat[7]  / f,
                 mat[8]  / f, mat[9]  / f, mat[10] / f, mat[11] / f,
                 mat[12] / f, mat[13] / f, mat[14] / f, mat[15] / f);
-
-    ret.mat[15] = static_cast<T>(mat[15] / f);
-    return ret;
 }
 
 template<typename T>

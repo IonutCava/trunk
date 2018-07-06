@@ -86,7 +86,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) = 0;
     virtual void closeRenderingAPI() = 0;
 
-    virtual void updateClipPlanes() = 0;
+    virtual void updateClipPlanes(const FrustumClipPlanes& list) = 0;
 
     // Returns the time in milliseconds that it took to render one frame
     // Queries are expensive, so this result MAY BE SEVERAL frames out of date!
@@ -94,7 +94,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
 
     virtual size_t setStateBlock(size_t stateBlockHash) = 0;
 
-    virtual void flushCommandBuffer(GFX::CommandBuffer& commandBuffer) = 0;
+    virtual void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) = 0;
 
     static GFXConfig& config() { return _config; }
 

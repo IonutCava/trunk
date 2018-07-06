@@ -173,15 +173,6 @@ public:
 
     FWD_DECLARE_MANAGED_CLASS(DebugView);
 
-    struct BuildDrawCommandsParams {
-        const RenderQueue::SortedQueues* _sortedQueues = nullptr;
-        const SceneRenderState* _sceneRenderState = nullptr;
-        RenderPass::BufferData* _bufferData = nullptr;
-        RenderStagePass _renderStagePass;
-        const Camera* _camera = nullptr;
-        bool _refreshNodeData = false;
-    };
-
 public:  // GPU interface
     explicit GFXDevice(Kernel& parent);
     ~GFXDevice();
@@ -202,7 +193,6 @@ public:  // GPU interface
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut);
 
     void flushCommandBuffer(GFX::CommandBuffer& commandBuffer);
-    void flushAndClearCommandBuffer(GFX::CommandBuffer& commandBuffer);
     
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
@@ -262,9 +252,6 @@ public:  // Accessors and Mutators
 
     inline void debugDrawFrustum(Frustum* frustum) { _debugFrustum = frustum; }
 
-    /// Return the last number of HIZ culled items
-    U32 getLastCullCount() const;
-
     /// returns the standard state block
     inline size_t getDefaultStateBlock(bool noDepth) const {
         return noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash;
@@ -301,6 +288,8 @@ public:  // Accessors and Mutators
     inline U32 getFrameCount() const { return FRAME_COUNT; }
 
     inline I32 getDrawCallCount() const { return FRAME_DRAW_CALLS_PREV; }
+    /// Return the last number of HIZ culled items
+    inline U32 getLastCullCount() const { return LAST_CULL_COUNT; }
 
     inline Arena::Statistics getObjectAllocStats() const { return _gpuObjectArena.statistics_; }
 
@@ -387,7 +376,7 @@ protected:
     void blitToScreen(const Rect<I32>& targetViewport);
 
     void blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport);
-    void blitToBuffer(GFX::CommandBuffer& bufferInOut, const Rect<I32>& targetViewport);
+    void blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
 
 protected:
     friend class SceneManager;
@@ -396,11 +385,11 @@ protected:
 
     void occlusionCull(const RenderPass::BufferData& bufferData,
                        const Texture_ptr& depthBuffer,
-                       GFX::CommandBuffer& bufferInOut);
+                       GFX::CommandBuffer& bufferInOut) const;
 
-    void buildDrawCommands(const BuildDrawCommandsParams& params, GFX::CommandBuffer& bufferInOut);
+    void constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) const;
 
-    void constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut);
+    void updateCullCount(GFX::CommandBuffer& cmdBufferInOut);
 
     RenderAPIWrapper& getAPIImpl() { return *_api; }
     const RenderAPIWrapper& getAPIImpl() const { return *_api; }
@@ -412,18 +401,6 @@ private:
     void renderFromCamera(Camera& camera);
 
     ErrorCode createAPIInstance();
-
-    struct VisibleNodeProcessParams {
-        RenderStage _stage = RenderStage::COUNT;
-        bool _isOcclusionCullable = true;
-        U32 _dataIndex = 0;
-        const Camera* _camera = nullptr;
-        const SceneRenderState* _sceneRenderState = nullptr;
-        SceneGraphNode* _node = nullptr;
-
-    };
-
-    NodeData processVisibleNode(const VisibleNodeProcessParams& state) const;
 
 private:
     std::unique_ptr<RenderAPIWrapper> _api;
@@ -467,6 +444,9 @@ protected:
     I32 FRAME_DRAW_CALLS;
     U32 FRAME_DRAW_CALLS_PREV;
     U32 FRAME_COUNT;
+
+    U32 LAST_CULL_COUNT = 0;
+
     /// shader used to preview the depth buffer
     ShaderProgram_ptr _previewDepthMapShader;
     ShaderProgram_ptr _renderTargetDraw;
@@ -570,29 +550,6 @@ namespace Attorney {
    
        }
        friend class Divide::GraphicsResource;
-    };
-
-    class GFXDeviceAPI {
-        private:
-        static void uploadGPUBlock(GFXDevice& device) {
-            device.uploadGPUBlock();
-        }
-
-        static void renderFromCamera(GFXDevice& device, Camera& camera) {
-            device.renderFromCamera(camera);
-        }
-
-        static void setClippingPlanes(GFXDevice& device, const FrustumClipPlanes& clippingPlanes) {
-            device.setClipPlanes(clippingPlanes);
-        }
-
-        /// Get the entire list of clipping planes
-        static const FrustumClipPlanes& getClippingPlanes(GFXDevice& device) {
-            return device._clippingPlanes;
-        }
-
-        friend class Divide::GL_API;
-        friend class Divide::DX_API;
     };
 
     class GFXDeviceGFXRTPool {

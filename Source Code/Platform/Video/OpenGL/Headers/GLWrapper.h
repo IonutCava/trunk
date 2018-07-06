@@ -111,7 +111,7 @@ protected:
     static size_t getOrCreateSamplerObject(const SamplerDescriptor& descriptor);
     /// Clipping planes are only enabled/disabled if they differ from the current
     /// state
-    void updateClipPlanes() override;
+    void updateClipPlanes(const FrustumClipPlanes& list) override;
     /// Text rendering is handled exclusively by Mikko Mononen's FontStash library
     /// (https://github.com/memononen/fontstash)
     /// with his OpenGL frontend adapted for core context profiles
@@ -123,7 +123,7 @@ protected:
     /// Sets the current state block to the one passed as a param
     size_t setStateBlock(size_t stateBlockHash) override;
 
-    void flushCommandBuffer(GFX::CommandBuffer& commandBuffer) override;
+    void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
 
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds

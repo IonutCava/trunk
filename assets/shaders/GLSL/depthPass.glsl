@@ -28,10 +28,10 @@ out vec2 _colourOut;
 in vec4 vert_vertexWVP;
 #endif
 
-#include "nodeBufferedInput.cmn"
-
 #if defined(HAS_TRANSPARENCY)
 #include "materialData.frag"
+#else
+#include "nodeBufferedInput.cmn"
 #endif
 
 #if defined(SHADOW_PASS)
