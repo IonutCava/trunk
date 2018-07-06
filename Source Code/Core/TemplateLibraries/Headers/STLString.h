@@ -48,6 +48,17 @@ typedef std::basic_istringstream<wchar_t, std::char_traits<wchar_t>, stl_allocat
 typedef std::basic_stringbuf<char, std::char_traits<char>, stl_allocator<char> > stringbufImpl;
 typedef std::basic_stringbuf<wchar_t, std::char_traits<wchar_t>, stl_allocator<wchar_t> > wstringbufImpl;
 
+typedef std::basic_string<char, std::char_traits<char>> stringImplAligned;
+typedef std::basic_string<wchar_t, std::char_traits<wchar_t>> wstringImplAligned;
+typedef std::basic_stringstream<char, std::char_traits<char>> stringstreamImplAligned;
+typedef std::basic_ostringstream<char, std::char_traits<char>> ostringstreamImplAligned;
+typedef std::basic_stringstream<wchar_t, std::char_traits<wchar_t>> wstringstreamImplAligned;
+typedef std::basic_ostringstream<wchar_t, std::char_traits<wchar_t>> wostringstreamImplAligned;
+typedef std::basic_istringstream<char, std::char_traits<char>> istringstreamImplAligned;
+typedef std::basic_istringstream<wchar_t, std::char_traits<wchar_t>> wistringstreamImplAligned;
+typedef std::basic_stringbuf<char, std::char_traits<char>> stringbufImplAligned;
+typedef std::basic_stringbuf<wchar_t, std::char_traits<wchar_t>> wstringbufImplAligned;
+
 namespace std {
     typedef size_t stringSize;
 };

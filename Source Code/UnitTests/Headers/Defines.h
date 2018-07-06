@@ -34,41 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 //Using: https://github.com/cppocl/cppocl
 #include "Platform/Headers/PlatformDefines.h"
+#include <Test.hpp>
 
-#ifdef NO_ERROR
-#undef NO_ERROR
-#endif
-
-namespace Divide {
-    const U32 NO_ERROR = 0;
-    const U32 GENERAL_ERROR = 1;
-    const U32 EXCEPTION_ERROR = 2;
-
-    I32 Error();
-
-    // Test a function that can throw an exception and see if we were expecting it.
-    #define EXCEPTION_CHECK(func, exception_type, expect_exception) \
-    { \
-        bool found_exception = false; \
-        try \
-        { \
-            func; \
-        } \
-        catch (exception_type&) \
-        { \
-            found_exception = true; \
-        } \
-        if ((expect_exception && !found_exception) || (!expect_exception && found_exception)) \
-            return Error(); \
-    }
-
-    #define EXCEPTION_RANGE_CHECK(func, want_exception) \
-        EXCEPTION_CHECK(func, std::out_of_range, want_exception)
-
-    #define CHECK_TRUE(exp) if (!(exp)) return Error()
-    #define CHECK_FALSE(exp) if (exp) return Error()
-    #define CHECK_EQUAL(exp, value) if (exp != value) return Error()
-    #define CHECK_NOT_EQUAL(exp, value) if (exp == value) return Error()
-
-}; //namespace Divide
 #endif //_DEFINES_H_

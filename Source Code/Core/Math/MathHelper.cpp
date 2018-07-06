@@ -128,14 +128,12 @@ bool HasExtension(const stringImpl& filePath, const stringImpl& extension) {
 }
 
 void CStringRemoveChar(char* str, char charToRemove) {
-    char *src, *dst;
-    for (src = dst = str; *src != '\0'; src++) {
-        *dst = *src;
-        if (*dst != charToRemove) {
-            dst++;
-        }
+    char *pr = str, *pw = str;
+    while (*pr) {
+        *pw = *pr++;
+        pw += (*pw != charToRemove);
     }
-    *dst = '\0';
+    *pw = '\0';
 }
 
 void ToByteColor(const vec4<F32>& floatColor, vec4<U8>& colorOut) {

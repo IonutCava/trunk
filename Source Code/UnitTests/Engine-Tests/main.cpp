@@ -1,28 +1,12 @@
 #include "Headers/TestList.h"
 #include <iostream>
-
-namespace Divide {
-
-I32 Error() {
-    return GENERAL_ERROR;
-}
-
-U32 runTests() {
-    U32 ret = NO_ERROR;
-    if ((ret = run_StringTests()) != NO_ERROR) {
-        return ret;
-    }
-
-    return ret;
-}
-
-}; //namespace Divide;
+#include <TestClass.cpp>
 
 int main(int argc, char **argv) {
     int state = 0;
 
     std::cout << "Running Engine Unit Tests!" << std::endl;
-    if (Divide::runTests() == Divide::NO_ERROR) {
+    if (true) {
         std::cout << "No errors detected!" << std::endl;
     } else {
         std::cout << "Errors detected!" << std::endl;
