@@ -74,4 +74,37 @@ void unchecked_copy(vectorImpl<T>& dst, const vectorImpl<T>& src)
     memcpy(dst.data(), src.data(), src.size() * sizeof(T));
 }
 
+//ref: https://stackoverflow.com/questions/7571937/how-to-delete-items-from-a-stdvector-given-a-list-of-indices
+template<typename T>
+inline vectorImpl<T> erase_indices(const vectorImpl<T>& data, vectorImpl<vectorAlg::vecSize>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
+{
+    if (indicesToDelete.empty())
+        return data;
+
+    vectorImpl<T> ret;
+    ret.reserve(data.size() - indicesToDelete.size());
+
+    std::sort(indicesToDelete.begin(), indicesToDelete.end());
+
+    // new we can assume there is at least 1 element to delete. copy blocks at a time.
+    vectorImpl<T>::const_iterator itBlockBegin = data.begin();
+    for (vectorImpl<size_t>::const_iterator it = indicesToDelete.begin(); it != indicesToDelete.end(); ++it)
+    {
+        vectorImpl<T>::const_iterator itBlockEnd = data.begin() + *it;
+        if (itBlockBegin != itBlockEnd)
+        {
+            std::copy(itBlockBegin, itBlockEnd, std::back_inserter(ret));
+        }
+        itBlockBegin = itBlockEnd + 1;
+    }
+
+    // copy last block.
+    if (itBlockBegin != data.end())
+    {
+        std::copy(itBlockBegin, data.end(), std::back_inserter(ret));
+    }
+
+    return ret;
+}
+
 #endif

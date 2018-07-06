@@ -122,8 +122,8 @@ void NavMeshDebugDraw::end() {
     }
 }
 
-GenericDrawCommand NavMeshDebugDraw::toDrawCommand() const {
-    return _primitive->toDrawCommand();
+GenericCommandBuffer NavMeshDebugDraw::toDrawCommands() const {
+    return _primitive->toDrawCommands();
 }
 
 void NavMeshDebugDraw::overrideColour(U32 col) {

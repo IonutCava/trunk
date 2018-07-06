@@ -26,16 +26,10 @@ class SceneNodeRenderState {
     void addToDrawExclusionMask(RenderStage currentStage);
     void removeFromDrawExclusionMask(RenderStage currentStage);
 
-    size_t getDepthStateBlock();
-    size_t getShadowStateBlock();
-
    protected:
     bool _drawState;
     bool _noDefaultMaterial;
     vectorImpl<U32> _exclusionMask;
-
-    size_t _depthStateBlockHash;
-    size_t _shadowStateBlockHash;
 };
 
 };  // namespace Divide

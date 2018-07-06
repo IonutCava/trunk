@@ -27,18 +27,20 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
       _lodLevel(0),
       _commandIndex(0),
       _commandOffset(0),
-      _castsShadows(true),
-      _receiveShadows(true),
-      _renderWireframe(false),
-      _renderGeometry(true),
-      _renderBoundingBox(false),
-      _renderBoundingSphere(false),
-      _renderSkeleton(false),
-      _isVisible(true),
+      _renderMask(0),
+      _depthStateBlockHash(0),
+      _shadowStateBlockHash(0),
+      _renderPackagesDirty(true),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
 {
+
+    toggleRenderOption(RenderOptions::RENDER_GEOMETRY, true);
+    toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
+    toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, true);
+    toggleRenderOption(RenderOptions::IS_VISIBLE, true);
+
     Object3D_ptr node = parentSGN.getNode<Object3D>();
     Object3D::ObjectType type = node->getObjectType();
     SceneNodeType nodeType = node->getType();
@@ -61,13 +63,24 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         }
     }
 
+    RenderStateBlock depthDesc;
+    depthDesc.setColourWrites(false, false, false, false);
+    depthDesc.setZFunc(ComparisonFunction::LESS);
+    _depthStateBlockHash = depthDesc.getHash();
+
+    RenderStateBlock shadowDesc;
+    /// Cull back faces for shadow rendering
+    shadowDesc.setCullMode(CullMode::CCW);
+    // depthDesc.setZBias(1.0f, 2.0f);
+    shadowDesc.setColourWrites(true, true, false, false);
+    _shadowStateBlockHash = shadowDesc.getHash();
+
     // Prepare it for rendering lines
     RenderStateBlock primitiveStateBlock;
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
     Pipeline pipeline = _context.newPipeline(pipelineDescriptor);
-    
 
     _boundingBoxPrimitive[0] = _context.newIMP();
     _boundingBoxPrimitive[0]->name("BoundingBox_" + parentSGN.getName());
@@ -93,7 +106,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     }
     
     if (Config::Build::IS_DEBUG_BUILD) {
-
         ResourceDescriptor previewReflectionRefractionColour("fbPreview");
         previewReflectionRefractionColour.setThreadedLoading(true);
         _previewRenderTargetColour = CreateResource<ShaderProgram>(context.parent().resourceCache(), previewReflectionRefractionColour);
@@ -103,14 +115,11 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         _previewRenderTargetDepth = CreateResource<ShaderProgram>(context.parent().resourceCache(), previewReflectionRefractionDepth);
 
         // Red X-axis
-        _axisLines.push_back(
-            Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255), 5.0f));
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255), 5.0f));
         // Green Y-axis
-        _axisLines.push_back(
-            Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255), 5.0f));
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255), 5.0f));
         // Blue Z-axis
-        _axisLines.push_back(
-            Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 5.0f));
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 5.0f));
         _axisGizmo = _context.newIMP();
         // Prepare it for line rendering
         size_t noDepthStateBlock = _context.getDefaultStateBlock(true);
@@ -119,7 +128,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         pipelineDescriptor._stateHash = stateBlock.getHash();
         _axisGizmo->name("AxisGizmo_" + parentSGN.getName());
         _axisGizmo->pipeline(_context.newPipeline(pipelineDescriptor));
-        _axisGizmo->paused(true);
         // Create the object containing all of the lines
         _axisGizmo->beginBatch(true, to_U32(_axisLines.size()) * 2, 1);
         _axisGizmo->attribute4f(to_base(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(_axisLines[0]._colourStart));
@@ -134,6 +142,8 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         _axisGizmo->end();
         // Finish our object
         _axisGizmo->endBatch();
+
+        _axisGizmo->paused(true);
     } else {
         _axisGizmo = nullptr;
     }
@@ -154,13 +164,25 @@ RenderingComponent::~RenderingComponent()
     }
 }
 
-void RenderingComponent::postLoad() {
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        const RenderStagePass& stagePass = RenderStagePass::stagePass(i);
+void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
+    RenderPackage& pkg = renderData(stagePass);
 
-        RenderPackage& pkg = renderData(stagePass);
-        _parentSGN.getNode()->initialiseDrawCommands(_parentSGN, stagePass, pkg._drawCommands);
-    }
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = getMaterialStateHash(stagePass);
+    pipelineDescriptor._shaderProgram = getDrawShader(stagePass);
+
+    BindPipelineCommand pipelineCommand;
+    pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
+    pkg._commands.add(pipelineCommand);
+
+    SendPushConstantsCommand pushConstantsCommand;
+    pushConstantsCommand._constants = _globalPushConstants;
+    pkg._commands.add(pushConstantsCommand);
+
+    _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, pkg);
+}
+
+void RenderingComponent::postLoad() {
 }
 
 void RenderingComponent::update(const U64 deltaTime) {
@@ -170,7 +192,6 @@ void RenderingComponent::update(const U64 deltaTime) {
     }
 
     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
-    // Continue only for skinned submeshes
     if (type == Object3D::ObjectType::SUBMESH)
     {
         StateTracker<bool>& parentStates = _parentSGN.getParent().lock()->getTrackedBools();
@@ -178,10 +199,8 @@ void RenderingComponent::update(const U64 deltaTime) {
 
         if (_parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
             parentStates.setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
-            _skeletonPrimitive->paused(true);
         }
     }
-
 }
 
 bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass) {
@@ -192,7 +211,7 @@ bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass) {
                 return false;
             }
         }
-        return isVisible();
+        return renderOptionEnabled(RenderOptions::IS_VISIBLE);
     }
 
     return false;
@@ -238,115 +257,6 @@ bool RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
     return _parentSGN.getNode()->onRender(renderStagePass);
 }
 
-void RenderingComponent::renderGeometry(const bool state) {
-    if (_renderGeometry != state) {
-        _renderGeometry = state;
-
-        _parentSGN.forEachChild([state](const SceneGraphNode& child) {
-            RenderingComponent* const renderable = child.get<RenderingComponent>();
-            if (renderable) {
-                renderable->renderGeometry(state);
-            }
-        });
-    }
-}
-
-void RenderingComponent::renderWireframe(const bool state) {
-    if (_renderWireframe != state) {
-        _renderWireframe = state;
-    
-        _parentSGN.forEachChild([state](const SceneGraphNode& child) {
-            RenderingComponent* const renderable = child.get<RenderingComponent>();
-            if (renderable) {
-                renderable->renderWireframe(state);
-            }
-        });
-    }
-}
-
-void RenderingComponent::renderBoundingBox(const bool state) {
-    if (_renderBoundingBox != state) {
-        _renderBoundingBox = state;
-        if (!state) {
-            _boundingBoxPrimitive[0]->paused(true);
-            _boundingBoxPrimitive[1]->paused(true);
-        }
-
-        _parentSGN.forEachChild([state](const SceneGraphNode& child) {
-            RenderingComponent* const renderable = child.get<RenderingComponent>();
-            if (renderable) {
-                renderable->renderBoundingBox(state);
-            }
-        });
-    }
-}
-
-void RenderingComponent::renderBoundingSphere(const bool state) {
-    if (_renderBoundingSphere != state) {
-        _renderBoundingSphere = state;
-        if (!state) {
-            _boundingSpherePrimitive->paused(true);
-        }
-
-        _parentSGN.forEachChild([state](const SceneGraphNode& child) {
-            RenderingComponent* const renderable = child.get<RenderingComponent>();
-            if (renderable) {
-                renderable->renderBoundingSphere(state);
-            }
-        });
-    }
-}
-
-void RenderingComponent::renderSkeleton(const bool state) {
-    if (_renderSkeleton != state) {
-        _renderSkeleton = state;
-        if (!state && _skeletonPrimitive) {
-            _skeletonPrimitive->paused(true);
-        }
-
-        _parentSGN.forEachChild([state](const SceneGraphNode& child) {
-            RenderingComponent* const renderable = child.get<RenderingComponent>();
-            if (renderable) {
-                renderable->renderSkeleton(state);
-            }
-        });
-    }
-}
-
-void RenderingComponent::castsShadows(const bool state) {
-    if (_castsShadows != state) {
-        _castsShadows = state;
-
-        _parentSGN.forEachChild([state](const SceneGraphNode& child) {
-            RenderingComponent* const renderable = child.get<RenderingComponent>();
-            if (renderable) {
-                renderable->castsShadows(state);
-            }
-        });
-    }
-}
-
-void RenderingComponent::receivesShadows(const bool state) {
-    if (_receiveShadows != state) {
-        _receiveShadows = state;
-    
-        _parentSGN.forEachChild([state](const SceneGraphNode& child) {
-            RenderingComponent* const renderable = child.get<RenderingComponent>();
-            if (renderable) {
-                renderable->receivesShadows(state);
-            }
-        });
-    }
-}
-
-bool RenderingComponent::castsShadows() const {
-    return _castsShadows;
-}
-
-bool RenderingComponent::receivesShadows() const {
-    return _receiveShadows;
-}
-
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
     matOut.zero();
 
@@ -362,7 +272,7 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& r
                                                      : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_HOVER
                                                                                       ? 1.0f
                                                                                       : 0.0f,
-                      receivesShadows() ? 1.0f : 0.0f,
+                      renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS) ? 1.0f : 0.0f,
                       _lodLevel,
                       0.0);
     const Material_ptr& mat = getMaterialInstance();
@@ -412,15 +322,17 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
     StateTracker<bool>& parentStates = grandParent->getTrackedBools();
 
     // Draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
-    if (renderBoundingBox() || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB)) {
+    bool renderBBox = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB);
+    renderBBox = renderBBox || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
+
+    bool renderBSphere = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE);
+
+    if (renderBBox) {
         const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBox();
         _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255));
 
-        if (_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
-            renderBoundingSphere(true);
-        } else {
-            renderBoundingSphere(false);
-        }
+        renderBSphere = renderBSphere || _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED;
+        toggleRenderOption(RenderOptions::RENDER_BOUNDS_SPHERE, renderBSphere);
 
         Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
         bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
@@ -436,40 +348,33 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
                                      vec4<U8>(0, 128, 128, 255));
             }
         }
-    } else {
-        _boundingBoxPrimitive[0]->paused(true);
-        _boundingBoxPrimitive[1]->paused(true);
-        renderBoundingSphere(false);
     }
 
-    
-    if (renderBoundingSphere()) {
+    if (renderBSphere) {
         const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
         _boundingSpherePrimitive->fromSphere(bs.getCenter(), bs.getRadius(), vec4<U8>(0, 255, 0, 255));
-    } else {
-        _boundingSpherePrimitive->paused(true);
     }
 
-    if (_renderSkeleton || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS)) {
+    bool renderSkeleton = renderOptionEnabled(RenderOptions::RENDER_SKELETON);
+    renderSkeleton = renderSkeleton || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);
+
+    if (renderSkeleton) {
         // Continue only for skinned submeshes
         Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
         bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
         if (isSubMesh && _parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
         {
             bool renderSkeletonFlagInitialized = false;
-            bool renderSkeleton = parentStates.getTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED,
-                                                               renderSkeletonFlagInitialized);
-            if (!renderSkeleton || !renderSkeletonFlagInitialized) {
+            bool renderParentSkeleton = parentStates.getTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, renderSkeletonFlagInitialized);
+            if (!renderParentSkeleton || !renderSkeletonFlagInitialized) {
                 // Get the animation component of any submesh. They should be synced anyway.
-                AnimationComponent* childAnimComp =
-                    _parentSGN.get<AnimationComponent>();
+                AnimationComponent* childAnimComp = _parentSGN.get<AnimationComponent>();
                 // Get the skeleton lines from the submesh's animation component
                 const vectorImpl<Line>& skeletonLines = childAnimComp->skeletonLines();
                 _skeletonPrimitive->worldMatrix(_parentSGN.get<PhysicsComponent>()->getWorldMatrix());
                 // Submit the skeleton lines to the GPU for rendering
                 _skeletonPrimitive->fromLines(skeletonLines);
-                parentStates.setTrackedValue(
-                    StateTracker<bool>::State::SKELETON_RENDERED, true);
+                parentStates.setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, true);
             }
         }
     } else {
@@ -479,30 +384,27 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
     }
 
     RenderSubPassCmd& subPassInOut = subPassesInOut.back();
-    subPassInOut._commands.reserve(subPassInOut._commands.size() + 5);
-
-    subPassInOut._commands.push_back(_boundingBoxPrimitive[0]->toDrawCommand());
-    subPassInOut._commands.push_back(_boundingBoxPrimitive[1]->toDrawCommand());
-    subPassInOut._commands.push_back(_boundingSpherePrimitive->toDrawCommand());
+    subPassInOut._commands.add(_boundingBoxPrimitive[0]->toDrawCommands());
+    subPassInOut._commands.add(_boundingBoxPrimitive[1]->toDrawCommands());
+    subPassInOut._commands.add(_boundingSpherePrimitive->toDrawCommands());
     if (_skeletonPrimitive) {
-        subPassInOut._commands.push_back(_skeletonPrimitive->toDrawCommand());
+        subPassInOut._commands.add(_skeletonPrimitive->toDrawCommands());
     }
     if (Config::Build::IS_DEBUG_BUILD) {
-        subPassInOut._commands.push_back(_axisGizmo->toDrawCommand());
-     }
+        subPassInOut._commands.add(_axisGizmo->toDrawCommands());
+    }
 }
 
 void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
                                               vec2<U32> bindRange,
                                               ShaderBuffer& shaderBuffer) {
-
     ShaderBufferList::iterator it;
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         for (RenderPackage& pkg : _renderData[pass]) {
             ShaderBufferList::iterator itEnd = std::end(pkg._shaderBuffers);
             it = std::find_if(std::begin(pkg._shaderBuffers), itEnd,
                 [slot](const ShaderBufferBinding& binding)
-                        -> bool { return binding._slot == slot; });
+                        -> bool { return binding._binding == slot; });
 
             if (it == itEnd) {
                vectorAlg::emplace_back(pkg._shaderBuffers, slot, &shaderBuffer, bindRange);
@@ -519,25 +421,26 @@ void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
             pkg._shaderBuffers.erase(
                 std::remove_if(std::begin(pkg._shaderBuffers), std::end(pkg._shaderBuffers),
                     [&slot](const ShaderBufferBinding& binding)
-                    -> bool { return binding._slot == slot; }),
+                    -> bool { return binding._binding == slot; }),
                 std::end(pkg._shaderBuffers));
         }
     }
 }
 
 ShaderProgram_ptr RenderingComponent::getDrawShader(const RenderStagePass& renderStagePass) {
-    return _materialInstance->getShaderInfo(renderStagePass).getProgram();
+    if (_materialInstance) {
+        return _materialInstance->getShaderInfo(renderStagePass).getProgram();
+    }
+
+    return nullptr;
 }
 
-size_t RenderingComponent::getDrawStateHash(const RenderStagePass& renderStagePass) {
+size_t RenderingComponent::getMaterialStateHash(const RenderStagePass& renderStagePass) {
     bool shadowStage = renderStagePass.stage() == RenderStage::SHADOW;
     bool depthPass   = renderStagePass.pass() == RenderPassType::DEPTH_PASS || shadowStage;
 
     if (!getMaterialInstance() && depthPass) {
-        
-        return shadowStage
-                   ? _parentSGN.getNode()->renderState().getShadowStateBlock()
-                   : _parentSGN.getNode()->renderState().getDepthStateBlock();
+        return shadowStage ? _shadowStateBlockHash : _depthStateBlockHash;
     }
 
     if (!_materialInstance) {
@@ -545,7 +448,7 @@ size_t RenderingComponent::getDrawStateHash(const RenderStagePass& renderStagePa
     }
 
     I32 variant = 0;
-    if (shadowStage) {
+    if (shadowStage && LightPool::currentShadowCastingLight()) {
         LightType type = LightPool::currentShadowCastingLight()->getLightType();
         variant = (type == LightType::DIRECTIONAL
                          ? 0
@@ -555,7 +458,6 @@ size_t RenderingComponent::getDrawStateHash(const RenderStagePass& renderStagePa
     }
 
     return _materialInstance->getRenderStateBlock(renderStagePass, variant);
-    
 }
 
 void RenderingComponent::updateLoDLevel(const Camera& camera, const RenderStagePass& renderStagePass) {
@@ -578,23 +480,6 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, const RenderStageP
     }
 }
 
-U32 RenderingComponent::renderMask(U32 baseMask) const {
-    if (renderGeometry()) {
-        SetBit(baseMask, to_base(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
-    }
-    if (renderWireframe()) {
-        SetBit(baseMask, to_base(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
-    }
-    if (renderBoundingBox()) {
-        SetBit(baseMask, to_base(GenericDrawCommand::RenderOptions::RENDER_BOUNDS_AABB));
-    }
-    if (renderBoundingSphere()) {
-        SetBit(baseMask, to_base(GenericDrawCommand::RenderOptions::RENDER_BOUNDS_SPHERE));
-    }
-
-    return baseMask;
-}
-
 void RenderingComponent::setDrawIDs(const RenderStagePass& renderStagePass,
                                     U32 cmdOffset,
                                     U32 cmdIndex) {
@@ -602,9 +487,12 @@ void RenderingComponent::setDrawIDs(const RenderStagePass& renderStagePass,
     commandIndex(cmdIndex);
 
     RenderPackage& pkg = renderData(renderStagePass);
-    for (GenericDrawCommand& cmd : pkg._drawCommands) {
-        cmd.commandOffset(cmdOffset++);
-        cmd.cmd().baseInstance = cmdIndex;
+    
+    const vectorImpl<GenericDrawCommand*>& commands = pkg._commands.getDrawCommands();
+
+    for (GenericDrawCommand* cmd : commands) {
+        cmd->commandOffset(cmdOffset++);
+        cmd->cmd().baseInstance = cmdIndex;
     }
 }
 
@@ -612,28 +500,36 @@ void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderS
     RenderPackage& pkg = renderData(renderStagePass);
     pkg.isRenderable(false);
     if (canDraw(renderStagePass) && _parentSGN.prepareDraw(sceneRenderState, renderStagePass)) {
-        PipelineDescriptor pipelineDescriptor;
-        for (GenericDrawCommand& cmd : pkg._drawCommands) {
-            cmd.renderMask(renderMask(cmd.renderMask()));
-            pipelineDescriptor._stateHash = getDrawStateHash(renderStagePass);
-            pipelineDescriptor._shaderProgram = getDrawShader(renderStagePass);
-            cmd.pipeline(_context.newPipeline(pipelineDescriptor));
+
+        if (_renderPackagesDirty) {
+            for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+                rebuildDrawCommands(RenderStagePass::stagePass(i));
+            }
+            _renderPackagesDirty = false;
         }
 
-        _parentSGN.getNode()->updateDrawCommands(_parentSGN, renderStagePass, sceneRenderState, pkg._drawCommands);
+        _parentSGN.getNode()->updateDrawCommands(_parentSGN, renderStagePass, sceneRenderState, pkg);
 
         updateLoDLevel(*Camera::activeCamera(), renderStagePass);
 
-        bool sceneRenderWireframe = sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
-        for (GenericDrawCommand& cmd : pkg._drawCommands) {
-            bool renderWireframe = cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME) || sceneRenderWireframe;
-            cmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME, renderWireframe);
-            cmd.LoD(_lodLevel);
+        bool renderGeometry = renderOptionEnabled(RenderOptions::RENDER_GEOMETRY);
+        renderGeometry = renderGeometry || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);
+
+        bool renderWireframe = renderOptionEnabled(RenderOptions::RENDER_WIREFRAME);
+        renderWireframe = renderWireframe || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
+
+        const vectorImpl<GenericDrawCommand*>& commands = pkg._commands.getDrawCommands();
+        for (GenericDrawCommand* cmd : commands) {
+            cmd->toggleOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY,
+                              renderGeometry  || cmd->isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
+
+            cmd->toggleOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME,
+                              renderWireframe || cmd->isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
+
+            cmd->LoD(_lodLevel);
         }
-
-        pkg.isRenderable(!pkg._drawCommands.empty());
-
-        if (pkg.isRenderable()) {
+        if (!commands.empty()) {
+            pkg.isRenderable(true);
             setDrawIDs(renderStagePass, commandOffset(), commandIndex());
         }
     }
@@ -643,16 +539,6 @@ const RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& r
     const RenderPackage& ret = renderData(renderStagePass);
     //ToDo: Some validation? -Ionut
     return ret;
-}
-
-
-void RenderingComponent::setActive(const bool state) {
-    if (!state) {
-        renderSkeleton(false);
-        renderBoundingBox(false);
-        renderBoundingSphere(false);
-    }
-    SGNComponent::setActive(state);
 }
 
 bool RenderingComponent::clearReflection() {
@@ -693,9 +579,10 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
             viewPtr = std::make_shared<GFXDevice::DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _previewRenderTargetColour;
-            viewPtr->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
-            viewPtr->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
-            viewPtr->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
+            viewPtr->_shaderData.set("lodLevel", PushConstantType::FLOAT, 0.0f);
+            viewPtr->_shaderData.set("linearSpace", PushConstantType::BOOL, false);
+            viewPtr->_shaderData.set("unpack2Channel", PushConstantType::BOOL, false);
+
             viewPtr->_name = Util::StringFormat("Reflection_", reflectRTID);
             _context.addDebugView(viewPtr);
         } else {
@@ -773,9 +660,9 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
             viewPtr = std::make_shared<GFXDevice::DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _previewRenderTargetColour;
-            viewPtr->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
-            viewPtr->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
-            viewPtr->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
+            viewPtr->_shaderData.set("lodLevel", PushConstantType::FLOAT, 0.0f);
+            viewPtr->_shaderData.set("linearSpace", PushConstantType::BOOL, false);
+            viewPtr->_shaderData.set("unpack2Channel", PushConstantType::BOOL, false);
             viewPtr->_name = Util::StringFormat("Refraction", refractRTID);
             _context.addDebugView(viewPtr);
         } else {

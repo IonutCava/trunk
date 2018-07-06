@@ -10,36 +10,12 @@ namespace Divide {
 SceneNodeRenderState::SceneNodeRenderState()
   : _drawState(true),
     _noDefaultMaterial(false),
-    _depthStateBlockHash(0),
-    _shadowStateBlockHash(0),
     _exclusionMask(to_base(RenderPassType::COUNT), 0u)
 {
 }
 
 SceneNodeRenderState::~SceneNodeRenderState()
 {
-}
-
-size_t SceneNodeRenderState::getDepthStateBlock() {
-    if (_depthStateBlockHash == 0) {
-        RenderStateBlock depthDesc;
-        depthDesc.setColourWrites(false, false, false, false);
-        depthDesc.setZFunc(ComparisonFunction::LESS);
-        _depthStateBlockHash = depthDesc.getHash();
-    }
-    return _depthStateBlockHash;
-}
-
-size_t SceneNodeRenderState::getShadowStateBlock() {
-    if (_shadowStateBlockHash == 0) {
-        RenderStateBlock depthDesc;
-        /// Cull back faces for shadow rendering
-        depthDesc.setCullMode(CullMode::CCW);
-        // depthDesc.setZBias(1.0f, 2.0f);
-        depthDesc.setColourWrites(true, true, false, false);
-        _shadowStateBlockHash = depthDesc.getHash();
-    }
-    return _shadowStateBlockHash;
 }
 
 bool SceneNodeRenderState::getDrawState(const RenderStagePass& currentStagePass) const {

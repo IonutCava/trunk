@@ -343,6 +343,8 @@ void LightPool::drawLightImpostors(RenderSubPassCmds& subPassesInOut) const {
     const U32 spotLightCount = _activeLightCount[to_base(LightType::SPOT)];
     const U32 totalLightCount = directionalLightCount + pointLightCount + spotLightCount;
     if (totalLightCount > 0) {
+        RenderSubPassCmd newSubPass;
+
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
         pipelineDescriptor._shaderProgram = _lightImpostorShader;
@@ -350,14 +352,19 @@ void LightPool::drawLightImpostors(RenderSubPassCmds& subPassesInOut) const {
         GenericDrawCommand pointsCmd;
         pointsCmd.primitiveType(PrimitiveType::API_POINTS);
         pointsCmd.drawCount(to_U16(totalLightCount));
-        pointsCmd.pipeline(_context.newPipeline(pipelineDescriptor));
 
-        RenderSubPassCmd newSubPass;
+        BindPipelineCommand bindPipeline;
+        bindPipeline._pipeline = _context.newPipeline(pipelineDescriptor);
+        newSubPass._commands.add(bindPipeline);
+        
+        DrawCommand drawCommand;
+        drawCommand._drawCommands.push_back(pointsCmd);
+        newSubPass._commands.add(drawCommand);
+
         newSubPass._textures.addTexture(TextureData(_lightIconsTexture->getTextureType(),
                                                     _lightIconsTexture->getHandle(),
                                                     to_U8(ShaderProgram::TextureUsage::UNIT0)));
 
-        newSubPass._commands.push_back(pointsCmd);
         subPassesInOut.push_back(newSubPass);
     }
 }

@@ -247,8 +247,6 @@ void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
     _nullShader = CreateResource<ShaderProgram>(parentCache, ResourceDescriptor("NULL"));
     // The null shader should never be nullptr!!!!
     assert(_nullShader != nullptr);  // LoL -Ionut
-
-    _pushConstants = std::make_unique<PushConstants>(context);
 }
 
 void ShaderProgram::onShutdown() {
@@ -256,7 +254,6 @@ void ShaderProgram::onShutdown() {
     _shaderPrograms.clear();
     _nullShader.reset();
     _imShader.reset();
-    _pushConstants.reset();
     while (!_recompileQueue.empty()) {
         _recompileQueue.pop();
     }

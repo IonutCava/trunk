@@ -350,12 +350,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
     immediateModeShader.setThreadedLoading(false);
     _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
-    PushConstant textRender;
-    textRender._type = PushConstantType::MAT4;
-    textRender._binding = "dvd_WorldMatrix";
-    textRender._values = { mat4<F32>() };
     assert(_textRenderShader != nullptr);
-    _textRenderConstants._data.push_back(textRender);
+    _textRenderConstants.set("dvd_WorldMatrix", PushConstantType::MAT4, mat4<F32>());
     PipelineDescriptor descriptor;
     descriptor._shaderProgram = _textRenderShader;
     descriptor._stateHash = _defaultStateNoDepthHash;
@@ -370,6 +366,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                              to_I32(renderResolution.height));
     setBaseViewport(vec4<I32>(0, 0, to_I32(renderResolution.width), to_I32(renderResolution.height)));
 
+
+    for (RenderPackageQueue& queue : _renderQueues) {
+        queue.reserve(Config::MAX_VISIBLE_NODES);
+    }
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
 }
@@ -493,7 +493,7 @@ void GFXDevice::resizeHistory(U8 historySize) {
 }
 
 void GFXDevice::historyIndex(U8 index, bool copyPrevious) {
-    if (copyPrevious) {
+    if (copyPrevious && index < _historyIndex) {
         getPrevDepthBuffer()->copy(_rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture());
     }
 

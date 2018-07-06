@@ -55,8 +55,13 @@ GFXDevice::setViewport(I32 x, I32 y, I32 width, I32 height) {
 
 inline bool 
 GFXDevice::isDepthStage() const {
-    return getRenderStage().stage() == RenderStage::SHADOW ||
-           getRenderStage().pass() == RenderPassType::DEPTH_PASS;
+    return isDepthStage(getRenderStage());
+}
+
+inline bool 
+GFXDevice::isDepthStage(const RenderStagePass& renderStagePass) const {
+    return renderStagePass.stage() == RenderStage::SHADOW ||
+           renderStagePass.pass() == RenderPassType::DEPTH_PASS;
 }
 
 /// Register a function to be called in the 2D rendering fase of the GFX Flush

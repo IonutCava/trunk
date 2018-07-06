@@ -653,11 +653,7 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer) {
         triangleCmd.drawCount(1);
         pipeline = newPipeline(pipelineDesc);
 
-        PushConstant constant;
-        constant._type = PushConstantType::IVEC2;
-        constant._binding = "depthInfo";
-
-        constants._data.push_back(constant);
+        constants.set("depthInfo", PushConstantType::IVEC2, vec2<I32>(0));
         firstRun = false;
     }
 
@@ -694,7 +690,7 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer) {
             updateViewportInternal(0, 0, twidth, theight);
             // Bind next mip level for rendering but first restrict fetches only to previous level
             screenTarget.setMipLevel(level);
-            constants._data[0]._values[0] = vec2<I32>(level - 1, wasEven ? 1 : 0);
+            constants.set("depthInfo", PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
             // Dummy draw command as the full screen quad is generated completely in the vertex shader
             draw(triangleCmd, pipeline, constants);
         }

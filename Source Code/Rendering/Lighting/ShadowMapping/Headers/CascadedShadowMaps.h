@@ -33,6 +33,7 @@
 #define _C_SM_H_
 
 #include "ShadowMap.h"
+#include "Platform/Video/Headers/PushConstants.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
 namespace Divide {
@@ -72,6 +73,7 @@ class CascadedShadowMaps : public ShadowMap {
     mat4<F32> _viewInvMatrixCache;
     ShaderProgram_ptr _previewDepthMapShader;
     ShaderProgram_ptr _blurDepthMapShader;
+    PushConstants     _blurDepthMapConstants;
     /// Shortcut for the owning directional light
     DirectionalLight* _dirLight;
     RenderTargetHandle _blurBuffer;

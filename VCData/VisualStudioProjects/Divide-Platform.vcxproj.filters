@@ -374,6 +374,12 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\BlendingProperties.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\CommandBuffer.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\PushConstants.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -1151,6 +1157,9 @@
     </None>
     <None Include="..\..\assets\shaders\GLSL\OITComposition.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
+    <None Include="..\..\Source Code\Platform\Video\Headers\GenericDrawCommand.inl">
+      <Filter>Video\Headers</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -32,6 +32,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PIPELINE_H_
 #define _PIPELINE_H_
 
+#include "PushConstants.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {

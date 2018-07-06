@@ -112,6 +112,7 @@ protected:
     void drawText(const TextElementBatch& batch,
                   const Pipeline& pipeline,
                   const PushConstants& pushConstants) override;
+    bool draw(const GenericDrawCommand& cmd);
     bool draw(const GenericDrawCommand& cmd,
               const Pipeline& pipeline,
               const PushConstants& pushConstants) override;
@@ -230,7 +231,7 @@ private:
     bool deInitShaders();
 
     bool bindPipeline(const Pipeline& pipeline);
-    void sendPushConstants(const Pipeline& pipeline, const PushConstants& pushConstants);
+    void sendPushConstants(const PushConstants& pushConstants);
 
     ErrorCode createGLContext(const DisplayWindow& window);
     ErrorCode destroyGLContext();
@@ -280,6 +281,7 @@ private:
     typedef hashMapImpl<U64, I32> FontCache;
     FontCache _fonts;
     hashAlg::pair<stringImpl, I32> _fontCache;
+    static Pipeline const* s_activePipeline;
     /// Current active vertex array object's handle
     static GLuint s_activeVAOID;
     /// 0 - current framebuffer, 1 - current read only framebuffer, 2 - current write only framebuffer

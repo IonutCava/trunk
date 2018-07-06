@@ -18,15 +18,12 @@ WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const 
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_WATER),
       _plane(nullptr),
       _dimensions(dimensions),
-      _paramsDirty(true),
       _reflectionCam(nullptr)
 {
     // Set water plane to be single-sided
     P32 quadMask;
     quadMask.i = 0;
     quadMask.b[0] = true;
-
-    setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f), 0.34f);
 
     ResourceDescriptor waterPlane("waterPlane");
     waterPlane.setFlag(true);  // No default material
@@ -84,12 +81,10 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
 }
 
 void WaterPlane::updateBoundsInternal(SceneGraphNode& sgn) {
-    if (_paramsDirty) {
-        F32 halfWidth = _dimensions.width * 0.5f;
-        F32 halfLength = _dimensions.height * 0.5f;
+    F32 halfWidth = _dimensions.width * 0.5f;
+    F32 halfLength = _dimensions.height * 0.5f;
 
-        _boundingBox.set(vec3<F32>(-halfWidth, _dimensions.depth, -halfLength), vec3<F32>(halfWidth, 0, halfLength));
-    }
+    _boundingBox.set(vec3<F32>(-halfWidth, _dimensions.depth, -halfLength), vec3<F32>(halfWidth, 0, halfLength));
 
     SceneNode::updateBoundsInternal(sgn);
 }
@@ -100,32 +95,6 @@ bool WaterPlane::unload() {
     return state;
 }
 
-void WaterPlane::setParams(F32 shininess, const vec2<F32>& noiseTile,
-                           const vec2<F32>& noiseFactor, F32 transparency) {
-    _shininess = shininess;
-    _noiseTile = noiseTile;
-    _noiseFactor = noiseFactor;
-    _paramsDirty = true;
-    //ToDo: handle transparency?
-}
-
-void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,  SceneState& sceneState) {
-    if (_paramsDirty) {
-        RenderingComponent* rComp = sgn.get<RenderingComponent>();
-        for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-            for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-                const ShaderProgram_ptr& shader = rComp->getMaterialInstance()->getShaderInfo(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass))).getProgram();
-                shader->Uniform("_waterShininess", _shininess);
-                shader->Uniform("_noiseFactor", _noiseFactor);
-                shader->Uniform("_noiseTile", _noiseTile);
-            }
-        }
-        _paramsDirty = false;
-    }
-    
-    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
-}
-
 bool WaterPlane::pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& point) {
     return sgn.get<BoundsComponent>()->getBoundingBox().containsPoint(point);
 }
@@ -134,23 +103,19 @@ bool WaterPlane::onRender(const RenderStagePass& renderStagePass) {
     return _plane->onRender(renderStagePass);
 }
 
-void WaterPlane::initialiseDrawCommands(SceneGraphNode& sgn,
-                                        const RenderStagePass& renderStagePass,
-                                        GenericDrawCommands& drawCommandsInOut) {
+void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
+                                   const RenderStagePass& renderStagePass,
+                                   RenderPackage& pkgInOut) {
     GenericDrawCommand cmd;
     cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
     cmd.sourceBuffer(_plane->getGeometryVB());
     cmd.cmd().indexCount = to_U32(_plane->getGeometryVB()->getIndexCount());
-    drawCommandsInOut.push_back(cmd);
 
-    SceneNode::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
-}
+    DrawCommand drawCommand;
+    drawCommand._drawCommands.push_back(cmd);
+    pkgInOut._commands.add(drawCommand);
 
-void WaterPlane::updateDrawCommands(SceneGraphNode& sgn,
-                                    const RenderStagePass& renderStagePass,
-                                    const SceneRenderState& sceneRenderState,
-                                    GenericDrawCommands& drawCommandsInOut) {
-    SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsInOut);
+    SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }
 
 /// update water refraction
@@ -160,7 +125,6 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams) {
     bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
     Plane<F32> refractionPlane;
     updatePlaneEquation(renderParams._sgn, refractionPlane, underwater);
-    
 
     RenderPassManager::PassParams params;
     params.doPrePass = true;

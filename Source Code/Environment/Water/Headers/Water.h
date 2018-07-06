@@ -53,13 +53,6 @@ class WaterPlane : public SceneNode {
 
     bool pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& point);
 
-    void setParams(F32 shininess, const vec2<F32>& noiseTile,
-                   const vec2<F32>& noiseFactor, F32 transparency);
-
-    void sceneUpdate(const U64 deltaTime,
-                     SceneGraphNode& sgn,
-                     SceneState& sceneState) override;
-
     inline const std::shared_ptr<Quad3D>& getQuad() const { return _plane; }
 
     void updatePlaneEquation(const SceneGraphNode& sgn,
@@ -70,13 +63,9 @@ class WaterPlane : public SceneNode {
     const vec3<F32>& getDimensions() const;
 
    protected:
-    void initialiseDrawCommands(SceneGraphNode& sgn,
+    void buildDrawCommands(SceneGraphNode& sgn,
                                 const RenderStagePass& renderStagePass,
-                                GenericDrawCommands& drawCommandsInOut) override;
-    void updateDrawCommands(SceneGraphNode& sgn,
-                            const RenderStagePass& renderStagePass,
-                            const SceneRenderState& sceneRenderState,
-                            GenericDrawCommands& drawCommandsInOut) override;
+                                RenderPackage& pkgInOut) override;
 
     void postLoad(SceneGraphNode& sgn) override;
 
@@ -90,10 +79,6 @@ class WaterPlane : public SceneNode {
     vec3<F32> _dimensions;
     /// the water's "geometry"
     std::shared_ptr<Quad3D> _plane;
-    bool _paramsDirty;
-    F32 _shininess;
-    vec2<F32> _noiseTile;
-    vec2<F32> _noiseFactor;
 
     Camera* _reflectionCam;
 };

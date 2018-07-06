@@ -27,7 +27,7 @@ RenderBinItem::RenderBinItem(const RenderStagePass& currentStage,
 {
     // Sort by state hash depending on the current rendering stage
     // Save the render state hash value for sorting
-    _stateHash = renderable.getDrawStateHash(currentStage);
+    _stateHash = renderable.getDrawPackage(currentStage).getSortKeyHash();
 }
 
 /// Sorting opaque items is a 3 step process:
@@ -141,8 +141,7 @@ void RenderBin::populateRenderQueue(const RenderStagePass& renderStagePass) {
     RenderBinType type = getType();
     _context.lockQueue(type);
     for (const RenderBinItem& item : _renderBinStack) {
-        _context.addToRenderQueue(type,
-                                  Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStagePass));
+        _context.addToRenderQueue(type, Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStagePass));
     }
     _context.unlockQueue(type);
 }

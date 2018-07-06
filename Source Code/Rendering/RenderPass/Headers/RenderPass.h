@@ -101,7 +101,6 @@ class RenderPass : private NonCopyable {
     U16 _lastTotalBinSize;
     RenderStage _stageFlag;
     BufferDataPool* _passBuffers;
-    GenericDrawCommands _drawCommandsCache;
 };
 
 };  // namespace Divide

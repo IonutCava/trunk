@@ -79,45 +79,55 @@ void glIMPrimitive::pipeline(const Pipeline& pipeline) {
     _imInterface->SetShaderProgramHandle(shaderProgram->getID());
 }
 
-void glIMPrimitive::draw(const GenericDrawCommand& command) {
-    if (paused() || command.drawCount() == 0) {
+void glIMPrimitive::draw(const GenericDrawCommand& cmd) {
+    if (paused()) {
         return;
     }
 
     setupStates();
 
     // Check if any texture is present
-    bool texture = (_texture != nullptr);
-    // And bind it to the first diffuse texture slot
-    if (texture) {
+    if (_texture != nullptr) {
+        // And bind it to the first diffuse texture slot
         _texture->bind(to_U8(ShaderProgram::TextureUsage::UNIT0));
     }
 
-    // Inform the shader if we have (or don't have) a texture
-    command.pipeline().shaderProgram()->Uniform("useTexture", texture);
-    // Upload the primitive's world matrix to the shader
-    command.pipeline().shaderProgram()->Uniform("dvd_WorldMatrix", worldMatrix());
-
-    _imInterface->RenderBatchInstanced(command.cmd().primCount,
-                                       command.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
+    _imInterface->RenderBatchInstanced(cmd.cmd().primCount,
+                                       cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
 
     // Call any "postRender" function the primitive may have attached
     resetStates();
 }
 
-GenericDrawCommand glIMPrimitive::toDrawCommand() const {
-    GenericDrawCommand cmd;
+GenericCommandBuffer glIMPrimitive::toDrawCommands() const {
+    GenericCommandBuffer buffer;
     if (!paused()) {
         DIVIDE_ASSERT(_pipeline.shaderProgram() != nullptr,
                       "glIMPrimitive error: Draw call received without a valid shader defined!");
 
+        GenericDrawCommand cmd;
         cmd.sourceBuffer(const_cast<glIMPrimitive*>(this));
-        cmd.pipeline(_pipeline);
-    } else {
-        cmd.drawCount(0);
+
+        PushConstants pushConstants;
+        // Inform the shader if we have (or don't have) a texture
+        pushConstants.set("useTexture", PushConstantType::BOOL, _texture != nullptr);
+        // Upload the primitive's world matrix to the shader
+        pushConstants.set("dvd_WorldMatrix", PushConstantType::MAT4, worldMatrix());
+
+        BindPipelineCommand pipelineCommand;
+        pipelineCommand._pipeline = _pipeline;
+        buffer.add(pipelineCommand);
+        
+        SendPushConstantsCommand pushConstantsCommand;
+        pushConstantsCommand._constants = pushConstants;
+        buffer.add(pushConstantsCommand);
+
+        DrawCommand drawCommand;
+        drawCommand._drawCommands.push_back(cmd);
+        buffer.add(drawCommand);
     }
 
-    return cmd;
+    return buffer;
 }
 
 };

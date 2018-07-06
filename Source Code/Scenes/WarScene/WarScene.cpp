@@ -147,7 +147,7 @@ namespace {
 };
 
 void WarScene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, RenderSubPassCmds& subPassesInOut) {
-    subPassesInOut.back()._commands.push_back(_targetLines->toDrawCommand());
+    subPassesInOut.back()._commands.add(_targetLines->toDrawCommands());
     Scene::debugDraw(activeCamera, stagePass, subPassesInOut);
 }
 
@@ -178,7 +178,11 @@ void WarScene::processTasks(const U64 deltaTime) {
         vec4<F32> sunColour = vec4<F32>(1.0f, 1.0f, 0.2f, 1.0f);
 
         _sun.lock()->getNode<Light>()->setDiffuseColour(sunColour);
-        _currentSky.lock()->getNode<Sky>()->setSunProperties(sunVector, _sun.lock()->getNode<Light>()->getDiffuseColour());
+
+        PushConstants& constants = _currentSky.lock()->get<RenderingComponent>()->pushConstants();
+        constants.set("enable_sun", PushConstantType::BOOL, true);
+        constants.set("sun_vector", PushConstantType::VEC3, sunVector);
+        constants.set("sun_colour", PushConstantType::VEC3, _sun.lock()->getNode<Light>()->getDiffuseColour());
 
         _taskTimers[0] = 0.0;
     }

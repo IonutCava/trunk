@@ -348,8 +348,8 @@ bool WarScene::addUnits() {
             aiSoldier = MemoryManager_NEW AI::AIEntity(pComp->getPosition(),
                                                        currentNode->getName());
             aiSoldier->addSensor(AI::SensorType::VISUAL_SENSOR);
-            currentNode->get<RenderingComponent>()->renderBoundingBox(k == 0);
-            currentNode->get<RenderingComponent>()->renderSkeleton(k != 0);
+            currentNode->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_BOUNDS_AABB, k == 0);
+            currentNode->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_SKELETON, k != 0);
 
             AI::WarSceneAIProcessor* brain = MemoryManager_NEW AI::WarSceneAIProcessor(type, *_aiManager);
 

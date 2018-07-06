@@ -78,13 +78,13 @@ class Vegetation : public SceneNode {
 
     inline void toggleRendering(bool state) { _render = state; }
 
-    void initialiseDrawCommands(SceneGraphNode& sgn,
+    void buildDrawCommands(SceneGraphNode& sgn,
                                 const RenderStagePass& renderStagePass,
-                                GenericDrawCommands& drawCommandsInOut) override;
+                                RenderPackage& pkgInOut) override;
     void updateDrawCommands(SceneGraphNode& sgn,
                             const RenderStagePass& renderStagePass,
                             const SceneRenderState& sceneRenderState,
-                            GenericDrawCommands& drawCommandsInOut) override;
+                            RenderPackage& pkgInOut) override;
 
    protected:
     void sceneUpdate(const U64 deltaTime,
@@ -138,6 +138,9 @@ class Vegetation : public SceneNode {
     U32 _instanceCountTrees;
     std::array<U32, to_base(CullType::COUNT)> _instanceRoutineIdx;
     vectorImpl<F32> _grassScales;
+    vectorImpl<mat3<F32> > _rotationMatrices;
+    vectorImpl<vec3<F32> > _grassBlades;
+    vectorImpl<vec2<F32> > _texCoord;
     vectorImplBest<vec4<F32> > _grassPositions;
     GenericVertexData* _grassGPUBuffer[2];
     GenericVertexData* _treeGPUBuffer[2];

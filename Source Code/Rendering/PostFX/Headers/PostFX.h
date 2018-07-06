@@ -133,6 +133,8 @@ DEFINE_SINGLETON(PostFX)
 
 
     GenericDrawCommand _drawCommand;
+    Pipeline _drawPipeline;
+    PushConstants _drawConstants;
 END_SINGLETON
 
 };  // namespace Divide

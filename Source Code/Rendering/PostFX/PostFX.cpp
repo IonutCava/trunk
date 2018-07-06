@@ -67,9 +67,9 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
                         to_base(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER)).c_str());
 
     _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader);
-    _postProcessingShader->Uniform("_noiseTile", 0.05f);
-    _postProcessingShader->Uniform("_noiseFactor", 0.02f);
-    _postProcessingShader->Uniform("_fadeActive", false);
+    _drawConstants.set("_noiseTile", PushConstantType::FLOAT, 0.05f);
+    _drawConstants.set("_noiseFactor", PushConstantType::FLOAT, 0.02f);
+    _drawConstants.set("_fadeActive", PushConstantType::BOOL, false);
     
     _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
             ShaderType::FRAGMENT, "Vignette"));  // 0
@@ -116,7 +116,7 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
 
      _drawCommand.primitiveType(PrimitiveType::TRIANGLES);
      _drawCommand.drawCount(1);
-     _drawCommand.pipeline(context.newPipeline(pipelineDescriptor));
+     _drawPipeline = context.newPipeline(pipelineDescriptor);
 
      _preRenderBatch->init(RenderTargetID(RenderTargetUsage::SCREEN));
 
@@ -158,7 +158,7 @@ void PostFX::apply() {
     depth->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
 
     _gfx->renderTargetPool().drawToTargetBegin(RenderTargetID(RenderTargetUsage::SCREEN), _postFXTarget);
-        _gfx->draw(_drawCommand);
+        _gfx->draw(_drawCommand, _drawPipeline, _drawConstants);
     _gfx->renderTargetPool().drawToTargetEnd();
 }
 
@@ -172,8 +172,8 @@ void PostFX::idle(const Configuration& config) {
             _randomFlashCoefficient = Random(1000) * 0.001f;
         }
 
-        _postProcessingShader->Uniform("randomCoeffNoise", _randomNoiseCoefficient);
-        _postProcessingShader->Uniform("randomCoeffFlash", _randomFlashCoefficient);
+        _drawConstants.set("randomCoeffNoise", PushConstantType::FLOAT, _randomNoiseCoefficient);
+        _drawConstants.set("randomCoeffNoise", PushConstantType::FLOAT, _randomFlashCoefficient);
     }
 
     _preRenderBatch->idle(config);
@@ -198,11 +198,11 @@ void PostFX::update(const U64 deltaTime) {
             }
         }
 
-        _postProcessingShader->Uniform("_fadeStrength", fadeStrength);
+        _drawConstants.set("_fadeStrength", PushConstantType::FLOAT, fadeStrength);
         
         _fadeActive = fadeStrength > EPSILON_D64;
         if (!_fadeActive) {
-            _postProcessingShader->Uniform("_fadeActive", false);
+            _drawConstants.set("_fadeActive", PushConstantType::BOOL, false);
             if (_fadeInComplete) {
                 _fadeInComplete();
                 _fadeInComplete = DELEGATE_CBK<void>();
@@ -212,13 +212,13 @@ void PostFX::update(const U64 deltaTime) {
 }
 
 void PostFX::setFadeOut(const vec4<U8>& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<void> onComplete) {
-    _postProcessingShader->Uniform("_fadeColour", Util::ToFloatColour(targetColour));
+    _drawConstants.set("_fadeColour", PushConstantType::VEC4, Util::ToFloatColour(targetColour));
+    _drawConstants.set("_fadeActive", PushConstantType::BOOL, true);
     _targetFadeTimeMS = durationMS;
     _currentFadeTimeMS = 0.0;
     _fadeWaitDurationMS = waitDurationMS;
     _fadeOut = true;
     _fadeActive = true;
-    _postProcessingShader->Uniform("_fadeActive", true);
     _fadeOutComplete = onComplete;
 }
 
@@ -229,7 +229,7 @@ void PostFX::setFadeIn(D64 durationMS, DELEGATE_CBK<void> onComplete) {
     _currentFadeTimeMS = 0.0;
     _fadeOut = false;
     _fadeActive = true;
-    _postProcessingShader->Uniform("_fadeActive", true);
+    _drawConstants.set("_fadeActive", PushConstantType::BOOL, true);
     _fadeInComplete = onComplete;
 }
 

@@ -20,7 +20,7 @@ bool RenderPackage::isCompatible(const RenderPackage& other) const {
 
             I64 guid1 = buffer1._buffer ? buffer1._buffer->getGUID() : -1;
             I64 guid2 = buffer2._buffer ? buffer2._buffer->getGUID() : -1;
-            if (buffer1._slot != buffer2._slot ||
+            if (buffer1._binding != buffer2._binding ||
                 buffer1._range != buffer2._range ||
                 guid1 != guid2)
             {
@@ -55,38 +55,24 @@ bool RenderPackage::isCompatible(const RenderPackage& other) const {
 }
 void RenderPackage::clear() {
     _shaderBuffers.resize(0);
-    _drawCommands.resize(0);
     _textureData.clear(false);
+    _commands.clear();
 }
 
 void RenderPackage::set(const RenderPackage& other) {
-#if 0
-    size_t shaderBufferSize = other._shaderBuffers.size();
-    size_t textureDataSize = other._textureData.size();
-    size_t drawCommandSize = other._drawCommands.size();
-
-    _shaderBuffers.resize(shaderBufferSize);
-    _textureData.resize(textureDataSize);
-    _drawCommands.resize(drawCommandSize);
-    for (size_t i = 0; i < shaderBufferSize; ++i) {
-        _shaderBuffers.at(i).set(other._shaderBuffers.at(i));
-    }
-
-    for (size_t i = 0; i < textureDataSize; ++i) {
-        _textureData.at(i).set(other._textureData.at(i));
-    }
-
-    for (size_t i = 0; i < drawCommandSize; ++i) {
-        _drawCommands.at(i).set(other._drawCommands.at(i));
-    }
-#else
     _shaderBuffers = other._shaderBuffers;
     _textureData = other._textureData;
-    _drawCommands = other._drawCommands;
-#endif
+    _commands = other._commands;
 }
 
+size_t RenderPackage::getSortKeyHash() const {
+    const vectorImpl<Pipeline*>& pipelines = _commands.getPipelines();
+    if (!pipelines.empty()) {
+        return pipelines.front()->getHash();
+    }
 
+    return 0;
+}
 
 void RenderPackageQueue::clear() {
     for (U32 idx = 0; idx < _currentCount; ++idx) {
@@ -139,6 +125,21 @@ void RenderPackageQueue::lock() {
 
 void RenderPackageQueue::unlock() {
     _locked = false;
+}
+
+void RenderPackageQueue::batch() {
+    assert(!locked());
+
+    lock();
+    for (vectorAlg::vecSize i = 0; i < _packages.size() - 1; ++i) {
+        RenderPackage& prev = _packages[i];
+        RenderPackage& next = _packages[i + 1];
+
+        if (prev.isCompatible(next)) {
+
+        }
+    }
+    unlock();
 }
 
 }; //namespace Divide

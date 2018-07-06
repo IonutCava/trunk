@@ -44,7 +44,11 @@ void MainScene::updateLights() {
 
     _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
     _sun.lock()->getNode<Light>()->setDiffuseColour(_sunColour);
-    _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, _sunColour);
+
+    PushConstants& constants = _currentSky.lock()->get<RenderingComponent>()->pushConstants();
+    constants.set("enable_sun", PushConstantType::BOOL, true);
+    constants.set("sun_vector", PushConstantType::VEC3, _sunvector);
+    constants.set("sun_colour", PushConstantType::VEC3, _sunColour.rgb());
 
     _updateLights = false;
     return;
@@ -166,12 +170,14 @@ bool MainScene::load(const stringImpl& name) {
     ResourceDescriptor infiniteWater("waterEntity");
     infiniteWater.setUserPtr(g_waterDimensions);
     WaterPlane_ptr water = CreateResource<WaterPlane>(_resCache, infiniteWater);
-    water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),  0.34f);
     SceneGraphNode_ptr waterGraphNode = _sceneGraph->getRoot().addNode(water, normalMask, PhysicsGroup::GROUP_IGNORE);
     waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     waterGraphNode->get<PhysicsComponent>()->setPositionY(state().waterLevel());
-
+    PushConstants& constants = waterGraphNode->get<RenderingComponent>()->pushConstants();
+    constants.set("_waterShininess", PushConstantType::FLOAT, 50.0f);
+    constants.set("_noiseFactor", PushConstantType::VEC2, vec2<F32>(10.0f, 10.0f));
+    constants.set("_noiseTile", PushConstantType::VEC2, vec2<F32>(0.1f, 0.1f));
     return loadState;
 }
 

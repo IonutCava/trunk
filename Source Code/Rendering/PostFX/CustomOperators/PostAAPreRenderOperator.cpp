@@ -50,7 +50,7 @@ void PostAAPreRenderOperator::idle(const Configuration& config) {
 
     if (_postAASamples != samples) {
         _postAASamples = samples;
-        _fxaa->Uniform("dvd_qualityMultiplier", _postAASamples);
+        _fxaaConstants.set("dvd_qualityMultiplier", PushConstantType::INT, _postAASamples);
     }
 
     if (_idleCount == 0) {
@@ -81,9 +81,8 @@ void PostAAPreRenderOperator::execute() {
         GenericDrawCommand pointsCmd;
         pointsCmd.primitiveType(PrimitiveType::API_POINTS);
         pointsCmd.drawCount(1);
-        pointsCmd.pipeline(_context.newPipeline(pipelineDescriptor));
 
-        _context.draw(pointsCmd);
+        _context.draw(pointsCmd, _context.newPipeline(pipelineDescriptor), _fxaaConstants);
     _context.renderTargetPool().drawToTargetEnd();
 }
 

@@ -19,7 +19,8 @@ GUIText::GUIText(U64 guiID,
 
 void GUIText::draw(GFXDevice& context) const {
     if (!text().empty()) {
-        Attorney::GFXDeviceGUI::drawText(context, TextElement(this, getPosition()));
+        TextElement element(this, getPosition());
+        Attorney::GFXDeviceGUI::drawText(context, element);
     }
 }
 

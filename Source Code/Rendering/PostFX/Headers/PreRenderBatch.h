@@ -77,6 +77,7 @@ class PreRenderBatch {
     ShaderProgram_ptr _toneMap;
     ShaderProgram_ptr _toneMapAdaptive;
     ShaderProgram_ptr _luminanceCalc;
+    PushConstants     _toneMapConstants;
 };
 
 };  // namespace Divide

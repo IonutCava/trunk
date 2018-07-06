@@ -141,9 +141,9 @@ class Object3D : public SceneNode {
     /// Please manually delete the old VB if available before replacing!
     virtual void setGeometryVB(VertexBuffer* const vb);
 
-    virtual void initialiseDrawCommands(SceneGraphNode& sgn,
-                                        const RenderStagePass& renderStagePass,
-                                        GenericDrawCommands& drawCommandsInOut) override;
+    virtual void buildDrawCommands(SceneGraphNode& sgn,
+                                   const RenderStagePass& renderStagePass,
+                                   RenderPackage& pkgInOut) override;
    protected:
     GFXDevice& _context;
     bool _update;

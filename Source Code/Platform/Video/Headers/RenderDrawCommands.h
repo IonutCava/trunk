@@ -38,67 +38,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-enum class PushConstantType : U8 {
-    BOOL = 0,
-    INT,
-    UINT,
-    FLOAT,
-    DOUBLE,
-    //BVEC2, use vec2<I32>(1/0, 1/0)
-    //BVEC3, use vec3<I32>(1/0, 1/0)
-    //BVEC4, use vec4<I32>(1/0, 1/0)
-    IVEC2,
-    IVEC3,
-    IVEC4,
-    UVEC2,
-    UVEC3,
-    UVEC4,
-    VEC2,
-    VEC3,
-    VEC4,
-    DVEC2,
-    DVEC3,
-    DVEC4,
-    MAT2,
-    MAT3,
-    MAT4,
-    //MAT_N_x_M,
-    COUNT
-};
-    
-struct PushConstant {
-    //I32              _binding = -1;
-    stringImplFast   _binding;
-    PushConstantType _type = PushConstantType::COUNT;
-    vectorImplFast<AnyParam> _values;
-    union {
-        bool _flag = false;
-        bool _transpose;
-    };
-};
-
-struct PushConstants {
-    vectorImpl<PushConstant> _data;
-};
-
 class ShaderBuffer;
-struct ShaderBufferBindCmd {
-    explicit ShaderBufferBindCmd(ShaderBuffer* buffer,
-                                 ShaderBufferLocation binding,
-                                 vec2<U32> dataRange)
-        : _buffer(buffer),
-          _binding(binding),
-          _dataRange(dataRange)
-    {
-    }
-
-    ShaderBuffer* _buffer;
-    ShaderBufferLocation _binding;
-    vec2<U32> _dataRange;
-};
-
 struct ShaderBufferBinding {
-    ShaderBufferLocation _slot;
+    ShaderBufferLocation _binding;
     ShaderBuffer* _buffer;
     vec2<U32>    _range;
 
@@ -112,20 +54,20 @@ struct ShaderBufferBinding {
     ShaderBufferBinding(ShaderBufferLocation slot,
         ShaderBuffer* buffer,
         const vec2<U32>& range)
-        : _slot(slot),
-        _buffer(buffer),
-        _range(range)
+        : _binding(slot),
+          _buffer(buffer),
+          _range(range)
     {
     }
 
     inline void set(const ShaderBufferBinding& other) {
-        set(other._slot, other._buffer, other._range);
+        set(other._binding, other._buffer, other._range);
     }
 
-    inline void set(ShaderBufferLocation slot,
+    inline void set(ShaderBufferLocation binding,
                     ShaderBuffer* buffer,
                     const vec2<U32>& range) {
-        _slot = slot;
+        _binding = binding;
         _buffer = buffer;
         _range.set(range);
     }
@@ -154,9 +96,8 @@ typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandLi
 struct RenderSubPassCmd {
     U8 _targetWriteLevel = 0;
     TextureDataContainer _textures;
-    GenericDrawCommands  _commands;
-    vectorImpl<vec4<I32>> _viewports;
-    vectorImpl<ShaderBufferBindCmd> _shaderBuffers;
+    vectorImpl<ShaderBufferBinding> _shaderBuffers;
+    GenericCommandBuffer _commands;
 };
 
 typedef vectorImpl<RenderSubPassCmd> RenderSubPassCmds;

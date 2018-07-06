@@ -57,6 +57,7 @@ class Transform;
 class SceneState;
 class IMPrimitive;
 class VertexBuffer;
+class RenderPackage;
 class ShaderProgram;
 class SceneGraphNode;
 class SceneRenderState;
@@ -79,7 +80,7 @@ class QuadtreeNode {
 
     bool computeBoundingBox();
     
-    void drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut);
+    void drawBBox(GFXDevice& context, RenderPackage& packageOut);
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);

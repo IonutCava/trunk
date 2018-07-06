@@ -117,7 +117,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     ssaoApply.setThreadedLoading(false);
     _ssaoApplyShader = CreateResource<ShaderProgram>(cache, ssaoApply);
 
-    _ssaoGenerateShader->Uniform("sampleKernel", kernel);
+    _ssaoGenerateConstants.set("sampleKernel",PushConstantType::VEC3, kernel);
 }
 
 SSAOPreRenderOperator::~SSAOPreRenderOperator() 
@@ -136,9 +136,10 @@ void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
     _ssaoOutput._rt->resize(width, height);
     _ssaoOutputBlurred._rt->resize(width, height);
 
-    _ssaoGenerateShader->Uniform("noiseScale", vec2<F32>(width, height) / to_F32(_noiseTexture->getWidth()));
-    _ssaoBlurShader->Uniform("ssaoTexelSize", vec2<F32>(1.0f / _ssaoOutput._rt->getWidth(),
-                                                        1.0f / _ssaoOutput._rt->getHeight()));
+    _ssaoGenerateConstants.set("noiseScale", PushConstantType::VEC2, vec2<F32>(width, height) / to_F32(_noiseTexture->getWidth()));
+
+    _ssaoBlurConstants.set("ssaoTexelSize", PushConstantType::VEC2, vec2<F32>(1.0f / _ssaoOutput._rt->getWidth(),
+                                                                              1.0f / _ssaoOutput._rt->getHeight()));
 }
 
 void SSAOPreRenderOperator::execute() {
@@ -149,8 +150,8 @@ void SSAOPreRenderOperator::execute() {
      triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
      triangleCmd.drawCount(1);
 
-    _ssaoGenerateShader->Uniform("projectionMatrix", PreRenderOperator::s_mainCamProjectionMatrixCache);
-    _ssaoGenerateShader->Uniform("invProjectionMatrix", PreRenderOperator::s_mainCamProjectionMatrixCache.getInverse());
+    _ssaoGenerateConstants.set("projectionMatrix", PushConstantType::MAT4, PreRenderOperator::s_mainCamProjectionMatrixCache);
+    _ssaoGenerateConstants.set("invProjectionMatrix", PushConstantType::MAT4, PreRenderOperator::s_mainCamProjectionMatrixCache.getInverse());
 
     _noiseTexture->bind(to_U8(ShaderProgram::TextureUsage::UNIT0)); // noise texture
 
@@ -161,8 +162,7 @@ void SSAOPreRenderOperator::execute() {
     
     _context.renderTargetPool().drawToTargetBegin(_ssaoOutput._targetID);
         pipelineDescriptor._shaderProgram = _ssaoGenerateShader;
-        triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
-        _context.draw(triangleCmd);
+        _context.draw(triangleCmd, _context.newPipeline(pipelineDescriptor), _ssaoGenerateConstants);
     _context.renderTargetPool().drawToTargetEnd();
 
 
@@ -170,8 +170,7 @@ void SSAOPreRenderOperator::execute() {
     
     _context.renderTargetPool().drawToTargetBegin(_ssaoOutputBlurred._targetID);
         pipelineDescriptor._shaderProgram = _ssaoBlurShader;
-        triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
-        _context.draw(triangleCmd);
+        _context.draw(triangleCmd, _context.newPipeline(pipelineDescriptor), _ssaoBlurConstants);
     _context.renderTargetPool().drawToTargetEnd();
     
     _samplerCopy._rt->blitFrom(screen._rt);
@@ -180,8 +179,7 @@ void SSAOPreRenderOperator::execute() {
 
     _context.renderTargetPool().drawToTargetBegin(screen._targetID);
         pipelineDescriptor._shaderProgram = _ssaoApplyShader;
-        triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
-        _context.draw(triangleCmd);
+        _context.draw(triangleCmd, _context.newPipeline(pipelineDescriptor));
     _context.renderTargetPool().drawToTargetEnd();
 }
 

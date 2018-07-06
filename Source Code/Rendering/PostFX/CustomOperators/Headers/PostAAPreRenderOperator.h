@@ -54,6 +54,7 @@ class PostAAPreRenderOperator : public PreRenderOperator {
     I32 _postAASamples;
     ShaderProgram_ptr _fxaa;
     ShaderProgram_ptr _smaa;
+    PushConstants _fxaaConstants;
 };
 
 };  // namespace Divide

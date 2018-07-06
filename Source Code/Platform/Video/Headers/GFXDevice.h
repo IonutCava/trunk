@@ -201,6 +201,8 @@ public:  // GPU interface
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, RenderSubPassCmds& subPassesInOut);
 
     bool draw(const GenericDrawCommand& cmd,
+              const Pipeline& pipeline);
+    bool draw(const GenericDrawCommand& cmd,
               const Pipeline& pipeline,
               const PushConstants& pushConstants);
 
@@ -215,6 +217,8 @@ public:  // GPU interface
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc
     inline bool isDepthStage() const;
+    inline bool isDepthStage(const RenderStagePass& renderStagePass) const;
+
     /// Clipping plane management. All the clipping planes are handled by shader programs only!
     void updateClipPlanes();
     /// disable or enable a clip plane by index
@@ -424,7 +428,6 @@ protected:
                            RenderPass::BufferData& bufferData,
                            bool refreshNodeData);
 
-    bool batchCommands(GenericDrawCommands& commands) const;
     void constructHIZ(RenderTargetID depthBuffer);
 
     RenderAPIWrapper& getAPIImpl() { return *_api; }

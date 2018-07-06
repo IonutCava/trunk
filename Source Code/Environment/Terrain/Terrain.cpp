@@ -84,24 +84,10 @@ void Terrain::buildQuadtree() {
     // The terrain's final bounding box is the QuadTree's root bounding box
     _boundingBox.set(_terrainQuadtree.computeBoundingBox());
 
-    const Material_ptr& mat = getMaterialTpl();
-
-    const vec3<F32>& bbMin = _boundingBox.getMin();
-    const vec3<F32>& bbExtent = _boundingBox.getExtent();
-
     TerrainTextureLayer* textureLayer = _terrainTextures;
     getMaterialTpl()->addExternalTexture(textureLayer->blendMaps(),  to_U8(ShaderProgram::TextureUsage::COUNT) + 0/*, true*/);
     getMaterialTpl()->addExternalTexture(textureLayer->tileMaps(),   to_U8(ShaderProgram::TextureUsage::COUNT) + 1);
     getMaterialTpl()->addExternalTexture(textureLayer->normalMaps(), to_U8(ShaderProgram::TextureUsage::COUNT) + 2/*, true*/);
-    
-    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        const ShaderProgram_ptr& drawShader = mat->getShaderInfo(RenderStagePass::stagePass(i)).getProgram();
-
-        drawShader->Uniform("bbox_min", bbMin);
-        drawShader->Uniform("bbox_extent", bbExtent);
-        drawShader->Uniform("diffuseScale", copy_array_to_vector(textureLayer->getDiffuseScales()));
-        drawShader->Uniform("detailScale", copy_array_to_vector(textureLayer->getDetailScales()));
-    }
 }
 
 void Terrain::sceneUpdate(const U64 deltaTime,
@@ -124,18 +110,33 @@ void Terrain::onCameraUpdate(SceneGraphNode& sgn,
     _cameraUpdated[to_base(_context.getRenderStage().stage())] = true;
 }
 
-void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
-                                     const RenderStagePass& renderStagePass,
-                                     GenericDrawCommands& drawCommandsInOut) {
-   
+void Terrain::buildDrawCommands(SceneGraphNode& sgn,
+                                const RenderStagePass& renderStagePass,
+                                RenderPackage& pkgInOut) {
+
+    const vec3<F32>& bbMin = _boundingBox.getMin();
+    const vec3<F32>& bbExtent = _boundingBox.getExtent();
+    TerrainTextureLayer* textureLayer = _terrainTextures;
+
+    RenderingComponent* comp = sgn.get<RenderingComponent>();
+    PushConstants& pushConstants = comp->pushConstants();
+
+    pushConstants.set("bbox_min", PushConstantType::VEC3, bbMin);
+    pushConstants.set("bbox_extent", PushConstantType::VEC3, bbExtent);
+    pushConstants.set("diffuseScale", PushConstantType::VEC4, copy_array_to_vector(textureLayer->getDiffuseScales()));
+    pushConstants.set("detailScale", PushConstantType::VEC4, copy_array_to_vector(textureLayer->getDetailScales()));
+
     GenericDrawCommand cmd;
     cmd.primitiveType(PrimitiveType::PATCH);
     cmd.enableOption(GenericDrawCommand::RenderOptions::RENDER_TESSELLATED);
     cmd.sourceBuffer(getGeometryVB());
     cmd.patchVertexCount(4);
     cmd.cmd().indexCount = getGeometryVB()->getIndexCount();
-    drawCommandsInOut.push_back(cmd);
-
+    {
+        DrawCommand drawCommand;
+        drawCommand._drawCommands.push_back(cmd);
+        pkgInOut._commands.add(drawCommand);
+    }
     if (renderStagePass.stage() == RenderStage::DISPLAY) {
 
         PipelineDescriptor pipelineDescriptor;
@@ -143,7 +144,11 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
             (renderStagePass.pass() == RenderPassType::DEPTH_PASS
                                      ? _planeDepthShader
                                      : _planeShader);
-
+        {
+            BindPipelineCommand pipelineCommand;
+            pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
+            pkgInOut._commands.add(pipelineCommand);
+        }
         //infinite plane
         GenericDrawCommand planeCmd;
         planeCmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
@@ -151,20 +156,17 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
         planeCmd.cmd().indexCount = _plane->getGeometryVB()->getIndexCount();
         planeCmd.LoD(0);
         planeCmd.sourceBuffer(_plane->getGeometryVB());
-        planeCmd.pipeline(_context.newPipeline(pipelineDescriptor));
-        drawCommandsInOut.push_back(planeCmd);
 
-        //BoundingBoxes
-        GenericDrawCommands commands;
-        commands.reserve(getQuadtree().getChunkCount());
-
-        _terrainQuadtree.drawBBox(_context, commands);
-        for (const GenericDrawCommand& crtCmd : commands) {
-            drawCommandsInOut.push_back(crtCmd);
+        {
+            DrawCommand drawCommand;
+            drawCommand._drawCommands.push_back(planeCmd);
+            pkgInOut._commands.add(drawCommand);
         }
+        //BoundingBoxes
+        _terrainQuadtree.drawBBox(_context, pkgInOut);
     }
 
-    Object3D::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
+    Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 
     _cameraUpdated[to_base(renderStagePass.stage())] = true;
 }
@@ -172,7 +174,7 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
 void Terrain::updateDrawCommands(SceneGraphNode& sgn,
                                  const RenderStagePass& renderStagePass,
                                  const SceneRenderState& sceneRenderState,
-                                 GenericDrawCommands& drawCommandsInOut) {
+                                 RenderPackage& pkgInOut) {
     _context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, Plane<F32>(WORLD_Y_AXIS, _waterHeight), false);
 
     const U8 stageIndex = to_U8(renderStagePass.stage());
@@ -191,7 +193,10 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
         cameraUpdated = false;
     }
 
-    drawCommandsInOut.front().drawCount(tessellator.renderDepth());
+    const vectorImpl<GenericDrawCommand*>& commands = pkgInOut._commands.getDrawCommands();
+    const vectorImpl<Pipeline*>& pipelines = pkgInOut._commands.getPipelines();
+
+    commands[0]->drawCount(tessellator.renderDepth());
 
     U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
 
@@ -205,36 +210,24 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
 
     if (renderStagePass.stage() == RenderStage::DISPLAY) {
         // draw infinite plane
-        assert(drawCommandsInOut[1].drawCount() == 1);
+        assert(commands[1]->drawCount() == 1);
 
-        PipelineDescriptor descriptor = drawCommandsInOut[1].pipeline().toDescriptor();
+        PipelineDescriptor descriptor = pipelines[1]->toDescriptor();
         descriptor._shaderProgram = (renderStagePass.pass() == RenderPassType::DEPTH_PASS
                                                              ? _planeDepthShader
                                                              : _planeShader);
 
-        drawCommandsInOut[1].pipeline(_context.newPipeline(descriptor));
+        pipelines[1]->fromDescriptor(descriptor);
 
         size_t i = 2;
-
-        if (_drawBBoxes) {
-            GenericDrawCommands commands;
-            commands.reserve(getQuadtree().getChunkCount());
-            _terrainQuadtree.drawBBox(_context, commands);
-
-            for (const GenericDrawCommand& bbCmd : commands) {
-                drawCommandsInOut[i++] = bbCmd;
-            }
-
-        } else {
-            std::for_each(std::begin(drawCommandsInOut) + i,
-                          std::end(drawCommandsInOut),
-                          [](GenericDrawCommand& bbCmd) {
-                                bbCmd.drawCount(0);
-                          });
-        }
+        std::for_each(std::begin(commands) + i,
+                        std::end(commands),
+                        [this](GenericDrawCommand* bbCmd) {
+                            bbCmd->drawCount(_drawBBoxes ? 1 : 0);
+                        });
     }
 
-    Object3D::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsInOut);
+    Object3D::updateDrawCommands(sgn, renderStagePass, sceneRenderState, pkgInOut);
 }
 
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {

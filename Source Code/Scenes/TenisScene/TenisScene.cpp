@@ -77,8 +77,11 @@ void TenisScene::processTasks(const U64 deltaTime) {
             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
     _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
-    _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector,
-        _sun.lock()->getNode<Light>()->getDiffuseColour());
+
+    PushConstants& constants = _currentSky.lock()->get<RenderingComponent>()->pushConstants();
+    constants.set("enable_sun", PushConstantType::BOOL, true);
+    constants.set("sun_vector", PushConstantType::VEC3, _sunvector);
+    constants.set("sun_colour", PushConstantType::VEC3, _sun.lock()->getNode<Light>()->getDiffuseColour());
 }
 
 void TenisScene::resetGame() {
@@ -299,7 +302,7 @@ bool TenisScene::load(const stringImpl& name) {
     //});
 
     _floor = _sceneGraph->findNode("Floor");
-    _floor.lock()->get<RenderingComponent>()->castsShadows(false);
+    _floor.lock()->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, false);
 
     _aiManager->pauseUpdate(false);
     return loadState;

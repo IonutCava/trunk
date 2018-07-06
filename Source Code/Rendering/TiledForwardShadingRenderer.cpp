@@ -52,8 +52,10 @@ void TiledForwardShadingRenderer::preRender(RenderTarget& target, LightPool& lig
     _flag = getMaxNumLightsPerTile();
     _lightCullComputeShader->bind();
 
-    _lightCullComputeShader->Uniform("maxNumLightsPerTile", _flag);
-    _lightCullComputeShader->DispatchCompute(getNumTilesX(), getNumTilesY(), 1);
+    PushConstants constants;
+    constants.set("maxNumLightsPerTile", PushConstantType::UINT, _flag);
+
+    _lightCullComputeShader->DispatchCompute(getNumTilesX(), getNumTilesY(), 1, constants);
     _lightCullComputeShader->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::SHADER_BUFFER);
 }
 

@@ -58,8 +58,6 @@ Vegetation::Vegetation(GFXDevice& context, ResourceCache& parentCache, size_t de
 
     auto setShaderData = [this](Resource_wptr res) {
         ShaderProgram_ptr shader = std::dynamic_pointer_cast<ShaderProgram>(res.lock());
-
-        shader->Uniform("ObjectExtent", vec3<F32>(1.0f, 1.0f, 1.0f));
         _instanceRoutineIdx[to_base(CullType::PASS_THROUGH)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "PassThrough");
         _instanceRoutineIdx[to_base(CullType::INSTANCE_CLOUD_REDUCTION)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "InstanceCloudReduction");
         _instanceRoutineIdx[to_base(CullType::HI_Z_CULL)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "HiZOcclusionCull");
@@ -173,20 +171,20 @@ void Vegetation::uploadGrassData() {
                                           vec2<F32>(1.0f, 0.01f),
                                           vec2<F32>(1.0f, 0.99f)};
 
-    vectorImpl<vec3<F32> > grassBlades;
-    vectorImpl<vec2<F32> > texCoord;
 
-    U32 indexOffset = 0;
-    for (U8 j = 0; j < 3; ++j) {
-        indexOffset = (j * 4);
-        for (U8 l = 0; l < 12; ++l) {
-            grassBlades.push_back(vertices[indices[l] + indexOffset]);
-            texCoord.push_back(texcoords[(indices[l] + indexOffset) % 4]);
+
+    if (_grassBlades.empty()) {
+        U32 indexOffset = 0;
+        for (U8 j = 0; j < 3; ++j) {
+            indexOffset = (j * 4);
+            for (U8 l = 0; l < 12; ++l) {
+                _grassBlades.push_back(vertices[indices[l] + indexOffset]);
+                _texCoord.push_back(texcoords[(indices[l] + indexOffset) % 4]);
+            }
         }
     }
 
-    static vectorImpl<mat3<F32> > rotationMatrices;
-    if (rotationMatrices.empty()) {
+    if (_rotationMatrices.empty()) {
         vectorImpl<F32> angles;
         angles.resize(18, 0.0f);
         for (U8 i = 0; i < 18; ++i) {
@@ -202,19 +200,7 @@ void Vegetation::uploadGrassData() {
         for (U8 i = 0; i < 18; ++i) {
             temp.identity();
             temp.fromYRotation(angles[i]);
-            rotationMatrices.push_back(temp);
-        }
-    }
-
-    const Material_ptr& mat = getMaterialTpl();
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-            const ShaderProgram_ptr& drawShader = mat->getShaderInfo(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass))).getProgram();
-
-            drawShader->Uniform("positionOffsets", grassBlades);
-            drawShader->Uniform("texCoordOffsets", texCoord);
-            drawShader->Uniform("rotationMatrices", rotationMatrices);
-            drawShader->Uniform("lod_metric", 100.0f);
+            _rotationMatrices.push_back(temp);
         }
     }
 
@@ -287,8 +273,6 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
                 _windZ = sceneState.windDirZ();
                 _windS = sceneState.windSpeed();
                 _stateRefreshIntervalBuffer -= _stateRefreshInterval;
-                _cullShader->Uniform("dvd_visibilityDistance",
-                                     sceneState.renderState().grassVisibility());
                 _staticDataUpdated = true;
             }
         }
@@ -342,8 +326,6 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
         GenericVertexData* buffer = _grassGPUBuffer[_writeBuffer];
         //_cullShader->SetSubroutine(VERTEX,
         //_instanceRoutineIdx[HI_Z_CULL]);
-        _cullShader->Uniform("cullType",
-                             /*queryID*/ to_base(CullType::INSTANCE_CLOUD_REDUCTION));
 
         _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).bind(0, RTAttachmentType::Depth, 0);
         buffer->bindFeedbackBufferRange(to_base(BufferUsage::CulledPositionBuffer),
@@ -362,11 +344,15 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
         _cullDrawCommand.cmd().primCount = _instanceCountGrass;
         _cullDrawCommand.enableOption(GenericDrawCommand::RenderOptions::RENDER_NO_RASTERIZE);
         _cullDrawCommand.drawToBuffer(to_U8(queryID));
-        _cullDrawCommand.pipeline(_context.newPipeline(pipeDesc));
         _cullDrawCommand.sourceBuffer(buffer);
         buffer->incQueryQueue();
 
-        _context.draw(_cullDrawCommand);
+        PushConstants constants;
+        constants.set("ObjectExtent", PushConstantType::VEC3, vec3<F32>(1.0f, 1.0f, 1.0f));
+        constants.set("dvd_visibilityDistance",PushConstantType::FLOAT, sceneRenderState.grassVisibility());
+        constants.set("cullType", PushConstantType::UINT, /*queryID*/ to_base(CullType::INSTANCE_CLOUD_REDUCTION));
+
+        _context.draw(_cullDrawCommand, _context.newPipeline(pipeDesc), constants);
 
         //_cullDrawCommand.setInstanceCount(_instanceCountTrees);
         //_cullDrawCommand.sourceBuffer(_treeGPUBuffer);
@@ -374,24 +360,39 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
     }
 }
 
-void Vegetation::initialiseDrawCommands(SceneGraphNode& sgn,
-                                        const RenderStagePass& renderStagePass,
-                                        GenericDrawCommands& drawCommandsInOut) {
+void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
+                                   const RenderStagePass& renderStagePass,
+                                   RenderPackage& pkgInOut) {
 
     GenericDrawCommand cmd;
     cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
     cmd.cmd().firstIndex = 0;
     cmd.cmd().indexCount = 12 * 3;
     cmd.LoD(1);
-    drawCommandsInOut.push_back(cmd);
+    DrawCommand drawCommand;
+    drawCommand._drawCommands.push_back(cmd);
+    pkgInOut._commands.add(drawCommand);
 
-    SceneNode::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
+    const vectorImpl<Pipeline*>& pipelines = pkgInOut._commands.getPipelines();
+    PipelineDescriptor pipeDesc = pipelines.front()->toDescriptor();
+    pipeDesc._stateHash = _grassStateBlockHash;
+    pipelines.front()->fromDescriptor(pipeDesc);
+
+    RenderingComponent* comp = sgn.get<RenderingComponent>();
+    PushConstants& constants = comp->pushConstants();
+    constants.set("grassScale", PushConstantType::FLOAT, 1.0f);
+    constants.set("positionOffsets", PushConstantType::VEC3, _grassBlades);
+    constants.set("texCoordOffsets", PushConstantType::VEC2, _texCoord);
+    constants.set("rotationMatrices", PushConstantType::MAT3, _rotationMatrices, true);
+    constants.set("lod_metric", PushConstantType::FLOAT, 100.0f);
+
+    SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }
 
 void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
                                     const RenderStagePass& renderStagePass,
                                     const SceneRenderState& sceneRenderState,
-                                    GenericDrawCommands& drawCommandsOut) {
+                                    RenderPackage& pkgInOut) {
 
     GenericVertexData* buffer = _grassGPUBuffer[_readBuffer];
     U32 queryID = getQueryID();
@@ -401,17 +402,11 @@ void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
     buffer->attribDescriptor(scaleLocation).offset(_instanceCountGrass * queryID);
     buffer->attribDescriptor(instLocation).offset(_instanceCountGrass * queryID);
 
-    GenericDrawCommand& cmd = drawCommandsOut.front();
+    GenericDrawCommand* cmd = pkgInOut._commands.getDrawCommands().front();
+    cmd->cmd().primCount = buffer->getFeedbackPrimitiveCount(to_U8(queryID));
+    cmd->sourceBuffer(buffer);
 
-    PipelineDescriptor pipeDesc = cmd.pipeline().toDescriptor();
-    pipeDesc._stateHash = _grassStateBlockHash;
-    pipeDesc._shaderProgram.lock()->Uniform("grassScale", /*_grassScale*/1.0f);
-
-    cmd.cmd().primCount = buffer->getFeedbackPrimitiveCount(to_U8(queryID));
-    cmd.sourceBuffer(buffer);
-    cmd.pipeline(_context.newPipeline(pipeDesc));
-
-    SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsOut);
+    SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, pkgInOut);
 }
 
 bool Vegetation::onRender(const RenderStagePass& renderStagePass) {

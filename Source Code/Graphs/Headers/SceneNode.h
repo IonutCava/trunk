@@ -40,14 +40,16 @@
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
+
 class Scene;
 class Camera;
 class SceneGraph;
 class SceneState;
 class WorldPacket;
+class RenderPackage;
+class RenderStagePass;
 class SceneRenderState;
 class NetworkingComponent;
-class RenderStagePass;
 
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 FWD_DECLARE_MANAGED_CLASS(Material);
@@ -114,13 +116,13 @@ class NOINITVTABLE SceneNode : public CachedResource {
     /// render itself in REFLECTION
     virtual bool getDrawState(const RenderStagePass& renderStage);
 
-    virtual void initialiseDrawCommands(SceneGraphNode& sgn,
+    virtual void buildDrawCommands(SceneGraphNode& sgn,
                                         const RenderStagePass& renderStage,
-                                        GenericDrawCommands& drawCommandsInOut);
+                                        RenderPackage& pkgInOut);
     virtual void updateDrawCommands(SceneGraphNode& sgn,
                                     const RenderStagePass& renderStagePass,
                                     const SceneRenderState& sceneRenderState,
-                                    GenericDrawCommands& drawCommandsInOut);
+                                    RenderPackage& pkgInOut);
     /*//Rendering/Processing*/
 
     virtual bool unload();

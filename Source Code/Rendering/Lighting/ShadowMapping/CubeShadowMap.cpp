@@ -22,14 +22,14 @@ CubeShadowMap::CubeShadowMap(GFXDevice& context, Light* light, const ShadowCamer
     shadowPreviewShader.setThreadedLoading(false);
     shadowPreviewShader.setPropertyList("USE_SCENE_ZPLANES");
     _previewDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), shadowPreviewShader);
-    _previewDepthMapShader->Uniform("useScenePlanes", false);
 
     for (U32 i = 0; i < 6; ++i) {
         GFXDevice::DebugView_ptr shadow = std::make_shared<GFXDevice::DebugView>();
         shadow->_texture = getDepthMap().getAttachment(RTAttachmentType::Depth, 0).texture();
         shadow->_shader = _previewDepthMapShader;
-        shadow->_shaderData._intValues.push_back(std::make_pair("layer", _arrayOffset));
-        shadow->_shaderData._intValues.push_back(std::make_pair("face", i));
+        shadow->_shaderData.set("layer", PushConstantType::INT, _arrayOffset);
+        shadow->_shaderData.set("face", PushConstantType::INT, i);
+        shadow->_shaderData.set("useScenePlanes", PushConstantType::BOOL, false);
         shadow->_name = Util::StringFormat("CubeSM_%d_face_%d", _arrayOffset, i);
         context.addDebugView(shadow);
     }

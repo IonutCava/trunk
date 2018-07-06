@@ -181,8 +181,7 @@ void PreRenderBatch::execute(const FilterStack& stack) {
 
         _context.renderTargetPool().drawToTargetBegin(_currentLuminance._targetID);
             pipelineDescriptor._shaderProgram = _luminanceCalc;
-            triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
-            _context.draw(triangleCmd);
+            _context.draw(triangleCmd, _context.newPipeline(pipelineDescriptor));
         _context.renderTargetPool().drawToTargetEnd();
 
         // Use previous luminance to control adaptive exposure
@@ -205,8 +204,7 @@ void PreRenderBatch::execute(const FilterStack& stack) {
 
     _context.renderTargetPool().drawToTargetBegin(_postFXOutput._targetID);
         pipelineDescriptor._shaderProgram = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap);
-        triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
-        _context.draw(triangleCmd);
+        _context.draw(triangleCmd, _context.newPipeline(pipelineDescriptor), _toneMapConstants);
     _context.renderTargetPool().drawToTargetEnd();
 
     // Execute all LDR based operators
@@ -224,12 +222,13 @@ void PreRenderBatch::reshape(U16 width, U16 height) {
     _currentLuminance._rt->resize(lumaRez, lumaRez);
     _previousLuminance._rt->resize(1, 1);
 
-    _toneMap->Uniform("luminanceMipLevel",
-                      _currentLuminance
-                      ._rt
-                      ->getAttachment(RTAttachmentType::Colour, 0)
-                      .texture()
-                      ->getMaxMipLevel());
+    _toneMapConstants.set("luminanceMipLevel",
+                          PushConstantType::UINT, 
+                          _currentLuminance
+                          ._rt
+                          ->getAttachment(RTAttachmentType::Colour, 0)
+                          .texture()
+                          ->getMaxMipLevel());
 
     for (OperatorBatch& batch : _operators) {
         for (PreRenderOperator* op : batch) {

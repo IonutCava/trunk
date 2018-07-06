@@ -644,7 +644,7 @@ void NavigationMesh::draw(RenderSubPassCmds& subPassesInOut) {
 
     _debugDrawInterface->endBatch();
 
-    subPassesInOut.back()._commands.push_back(_debugDrawInterface->toDrawCommand());
+    subPassesInOut.back()._commands.add(_debugDrawInterface->toDrawCommands());
 }
 
 

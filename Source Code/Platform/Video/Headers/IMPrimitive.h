@@ -42,6 +42,7 @@
 namespace Divide {
 
 class Texture;
+class GenericCommandBuffer;
 enum class PrimitiveType : U32;
 
 FWD_DECLARE_MANAGED_CLASS(IMPrimitive);
@@ -78,7 +79,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 
     virtual void pipeline(const Pipeline& pipeline);
 
-    virtual void draw(const GenericDrawCommand& command) = 0;
+    virtual void draw(const GenericDrawCommand& cmd) = 0;
 
     virtual void beginBatch(bool reserveBuffers, 
                             unsigned int vertexCount,
@@ -127,7 +128,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 #       endif
     }
 
-    virtual GenericDrawCommand toDrawCommand() const = 0;
+    virtual GenericCommandBuffer toDrawCommands() const = 0;
 
     void fromBox(const vec3<F32>& min,
                  const vec3<F32>& max,

@@ -159,23 +159,34 @@ void EnvironmentProbe::debugDraw(RenderSubPassCmds& subPassesInOut) {
     pipelineDescriptor._shaderProgram = _impostorShader;
 
     GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, vb->getIndexCount());
-    cmd.pipeline(_context.newPipeline(pipelineDescriptor));
     cmd.sourceBuffer(vb);
 
     RenderSubPassCmd newSubPass;
     newSubPass._textures.addTexture(TextureData(reflectTex->getTextureType(),
                                                 reflectTex->getHandle(),
                                                 to_U8(ShaderProgram::TextureUsage::REFLECTION_CUBE)));
-    newSubPass._commands.push_back(cmd);
-    newSubPass._commands.push_back(_boundingBoxPrimitive->toDrawCommand());
+
+    BindPipelineCommand bindPipelineCmd;
+    bindPipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    newSubPass._commands.add(bindPipelineCmd);
+
+    SendPushConstantsCommand pushConstantsCmd;
+    PushConstants& constants = pushConstantsCmd._constants;
+    const vec3<F32>& bbPos = _aabb.getCenter();
+    constants.set("dvd_WorldMatrixOverride", PushConstantType::MAT4, mat4<F32>(bbPos.x, bbPos.y, bbPos.z));
+    constants.set("dvd_LayerIndex", PushConstantType::UINT, to_U32(_currentArrayIndex));
+    newSubPass._commands.add(pushConstantsCmd);
+
+    DrawCommand drawCommand;
+    drawCommand._drawCommands.push_back(cmd);
+    newSubPass._commands.add(drawCommand);
+
+    newSubPass._commands.add(_boundingBoxPrimitive->toDrawCommands());
     subPassesInOut.push_back(newSubPass);
 }
 
 void EnvironmentProbe::updateInternal() {
     _boundingBoxPrimitive->fromBox(_aabb.getMin(), _aabb.getMax(), vec4<U8>(255, 255, 255, 255));
-    const vec3<F32>& bbPos = _aabb.getCenter();
-    _impostorShader->Uniform("dvd_WorldMatrixOverride", mat4<F32>(bbPos.x, bbPos.y, bbPos.z));
-    _impostorShader->Uniform("dvd_LayerIndex", to_U32(_currentArrayIndex));
 }
 
 }; //namespace Divide

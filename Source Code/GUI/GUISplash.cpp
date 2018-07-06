@@ -57,9 +57,8 @@ void GUISplash::render(GFXDevice& context) {
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
-    triangleCmd.pipeline(context.newPipeline(pipelineDescriptor));
 
-    context.draw(triangleCmd);
+    context.draw(triangleCmd, context.newPipeline(pipelineDescriptor));
 }
 
 };

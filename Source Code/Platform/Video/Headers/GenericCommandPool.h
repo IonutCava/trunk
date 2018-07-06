@@ -44,8 +44,7 @@ class GenericCommandPool {
       GenericDrawCommand& aquire();
 
   private:
-      GenericDrawCommands _commandPool;
-
+      vectorImpl<GenericDrawCommand> _commandPool;
 };
 
 }; //namespace Divide

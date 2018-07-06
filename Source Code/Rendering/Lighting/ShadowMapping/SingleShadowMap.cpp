@@ -26,7 +26,8 @@ SingleShadowMap::SingleShadowMap(GFXDevice& context, Light* light, const ShadowC
     GFXDevice::DebugView_ptr shadow = std::make_shared<GFXDevice::DebugView>();
     shadow->_texture = getDepthMap().getAttachment(RTAttachmentType::Depth, 0).texture();
     shadow->_shader = _previewDepthMapShader;
-    shadow->_shaderData._intValues.push_back(std::make_pair("layer", _arrayOffset));
+    shadow->_shaderData.set("layer", PushConstantType::INT, _arrayOffset);
+    shadow->_shaderData.set("useScenePlanes", PushConstantType::BOOL, false);
     shadow->_name = Util::StringFormat("SM_%d", _arrayOffset);
     context.addDebugView(shadow);
 }

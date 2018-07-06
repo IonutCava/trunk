@@ -675,7 +675,8 @@ I32 glShaderProgram::cachedValueUpdate(const PushConstant& constant) {
     return binding;
 }
 
-void glShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) {
+void glShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups, const PushConstants& constants) {
+    UploadPushConstants(constants);
     glDispatchCompute(xGroups, yGroups, zGroups);
 }
 

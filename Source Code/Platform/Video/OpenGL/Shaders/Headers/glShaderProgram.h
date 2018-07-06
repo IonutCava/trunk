@@ -110,8 +110,9 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     I32 Binding(const char* name) override;
 
     inline void UploadPushConstant(const PushConstant& constant);
+    inline void UploadPushConstants(const PushConstants& constants);
 
-    void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) override;
+    void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups, const PushConstants& constants) override;
 
     void SetMemoryBarrier(MemoryBarrierType type) override;
 

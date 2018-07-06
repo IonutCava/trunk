@@ -53,6 +53,8 @@ class SSAOPreRenderOperator : public PreRenderOperator {
     ShaderProgram_ptr _ssaoApplyShader;
     ShaderProgram_ptr _ssaoBlurShader;
     Texture_ptr _noiseTexture;
+    PushConstants _ssaoBlurConstants;
+    PushConstants _ssaoGenerateConstants;
 };
 
 };  // namespace Divide

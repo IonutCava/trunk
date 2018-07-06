@@ -127,8 +127,6 @@ RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl
 
     U32 count = getBufferCountForStage(_stageFlag);
     _passBuffers = MemoryManager_NEW BufferDataPool(_context, count);
-
-    _drawCommandsCache.reserve(Config::MAX_VISIBLE_NODES);
 }
 
 RenderPass::~RenderPass() 
@@ -141,7 +139,6 @@ RenderPass::BufferData&  RenderPass::getBufferData(I32 bufferIndex) {
 }
 
 void RenderPass::generateDrawCommands() {
-    _drawCommandsCache.resize(0);
 }
 
 void RenderPass::render(SceneRenderState& renderState) {
@@ -207,8 +204,8 @@ void RenderPass::render(SceneRenderState& renderState) {
                     RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
                     if (ReflectionUtil::isInBudget()) {
                         // Excluse node from rendering itself into the pass
-                        bool isVisile = rComp->isVisible();
-                        rComp->setVisible(false);
+                        bool isVisile = rComp->renderOptionEnabled(RenderingComponent::RenderOptions::IS_VISIBLE);
+                        rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, false);
                         if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
                                                                                  ReflectionUtil::currentEntry(),
                                                                                  params.camera,
@@ -216,7 +213,7 @@ void RenderPass::render(SceneRenderState& renderState) {
 
                             ReflectionUtil::updateBudget();
                         }
-                        rComp->setVisible(isVisile);
+                        rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, isVisile);
                     }
                     else {
                         Attorney::RenderingCompRenderPass::clearReflection(*rComp);
@@ -243,8 +240,8 @@ void RenderPass::render(SceneRenderState& renderState) {
                     const SceneGraphNode* nodePtr = node.second;
                     RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
                     if (RefractionUtil::isInBudget()) {
-                        bool isVisile = rComp->isVisible();
-                        rComp->setVisible(false);
+                        bool isVisile = rComp->renderOptionEnabled(RenderingComponent::RenderOptions::IS_VISIBLE);
+                        rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, false);
                         if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
                                                                                 RefractionUtil::currentEntry(),
                                                                                 params.camera,
@@ -252,7 +249,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                         {
                             RefractionUtil::updateBudget();
                         }
-                        rComp->setVisible(isVisile);
+                        rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, isVisile);
                     }
                     else {
                         Attorney::RenderingCompRenderPass::clearRefraction(*rComp);

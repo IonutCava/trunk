@@ -50,7 +50,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     blur.setThreadedLoading(false);
     _blur = CreateResource<ShaderProgram>(cache, blur);
 
-    _blur->Uniform("kernelSize", 10);
+    _bloomCalcConstants.set("kernelSize", PushConstantType::INT, 10);
     _horizBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
     _vertBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
 }
@@ -62,7 +62,7 @@ BloomPreRenderOperator::~BloomPreRenderOperator() {
 }
 
 void BloomPreRenderOperator::idle(const Configuration& config) {
-    _bloomApply->Uniform("bloomFactor", config.rendering.bloomFactor);
+    _bloomApplyConstants.set("bloomFactor", PushConstantType::FLOAT, config.rendering.bloomFactor);
 }
 
 void BloomPreRenderOperator::reshape(U16 width, U16 height) {
@@ -74,7 +74,7 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
     _bloomBlurBuffer[0]._rt->resize(width, height);
     _bloomBlurBuffer[1]._rt->resize(width, height);
 
-    _blur->Uniform("size", vec2<F32>(width, height));
+    _bloomCalcConstants.set("size", PushConstantType::VEC2, vec2<F32>(width, height));
 }
 
 // Order: luminance calc -> bloom -> tonemap
@@ -94,8 +94,7 @@ void BloomPreRenderOperator::execute() {
     // render all of the "bright spots"
     _context.renderTargetPool().drawToTargetBegin(_bloomOutput._targetID);
         pipelineDescriptor._shaderProgram = _bloomCalc;
-        triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
-        _context.draw(triangleCmd);
+        _context.draw(triangleCmd, _context.newPipeline(pipelineDescriptor));
     _context.renderTargetPool().drawToTargetEnd();
 
     // Step 2: blur bloom
@@ -104,10 +103,10 @@ void BloomPreRenderOperator::execute() {
     _blur->SetSubroutine(ShaderType::FRAGMENT, _horizBlur);
     _bloomOutput._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
 
+    Pipeline blurPipeline = _context.newPipeline(pipelineDescriptor);
     _context.renderTargetPool().drawToTargetBegin(_bloomBlurBuffer[0]._targetID);
         pipelineDescriptor._shaderProgram = _blur;
-        triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
-        _context.draw(triangleCmd);
+        _context.draw(triangleCmd, blurPipeline, _bloomCalcConstants);
     _context.renderTargetPool().drawToTargetEnd();
 
     // Blur vertically (recycle the render target. We have a copy)
@@ -115,7 +114,7 @@ void BloomPreRenderOperator::execute() {
     _bloomBlurBuffer[0]._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
     
     _context.renderTargetPool().drawToTargetBegin(_bloomBlurBuffer[1]._targetID);
-        _context.draw(triangleCmd);
+        _context.draw(triangleCmd, blurPipeline, _bloomCalcConstants);
     _context.renderTargetPool().drawToTargetEnd();
         
     // Step 3: apply bloom
@@ -125,8 +124,7 @@ void BloomPreRenderOperator::execute() {
     
     _context.renderTargetPool().drawToTargetBegin(screen._targetID, _screenOnlyDraw);
         pipelineDescriptor._shaderProgram = _bloomApply;
-        triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
-        _context.draw(triangleCmd);
+        _context.draw(triangleCmd, _context.newPipeline(pipelineDescriptor), _bloomApplyConstants);
     _context.renderTargetPool().drawToTargetEnd();
 }
 

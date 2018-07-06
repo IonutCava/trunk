@@ -43,29 +43,7 @@ void RenderPassManager::destroy() {
 }
 
 void RenderPassManager::render(SceneRenderState& sceneRenderState) {
-    // Attempt to build draw commands in parallel
-
-
-    TaskPool& pool = _context.parent().taskPool();
-
-    U8 passCount = to_U8(_renderPasses.size());
-    _renderCmdTasks.clear();
-    _renderCmdTasks.reserve(passCount);
-
-    for (U8 i = 0; i < passCount; ++i)
-    {
-        RenderPass* rp  =  _renderPasses[i];
-        _renderCmdTasks.emplace_back(CreateTask(pool,
-            [rp](const Task& parentTask) mutable
-            {
-                rp->generateDrawCommands();
-            }));
-        _renderCmdTasks[i].startTask(Task::TaskPriority::HIGH);
-    }
-
-    for (U8 i = 0; i < passCount; ++i) {
-        RenderPass* rp = _renderPasses[i];
-        _renderCmdTasks[i].wait();
+    for (RenderPass* rp : _renderPasses) {
         rp->render(sceneRenderState);
     }
 }
@@ -133,19 +111,13 @@ void cleanCommandBuffer(CommandBuffer& cmdBuffer) {
     for (RenderPassCmd& pass : cmdBuffer) {
         RenderSubPassCmds& subPasses = pass._subPassCmds;
         for (RenderSubPassCmd& subPass : subPasses) {
-            GenericDrawCommands& drawCommands = subPass._commands;
-            drawCommands.erase(std::remove_if(std::begin(drawCommands),
-                                              std::end(drawCommands),
-                                              [](const GenericDrawCommand& cmd) -> bool {
-                                                  return cmd.drawCount() == 0;
-                                              }),
-                              std::end(drawCommands));
+            subPass._commands.clean();
         }
 
         subPasses.erase(std::remove_if(std::begin(subPasses),
                                        std::end(subPasses),
                                        [](const RenderSubPassCmd& subPassCmd) -> bool {
-                                           return subPassCmd._commands.empty();
+                                           return subPassCmd._commands.getDrawCommands().empty();
                                        }),
                         std::end(subPasses));
 
@@ -340,12 +312,16 @@ RenderPassManager::woitPass(const PassParams& params, const RenderTarget& target
             pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
             pipelineDescriptor._shaderProgram = _OITCompositionShader;
 
+            BindPipelineCommand bindPipelineCmd;
+            bindPipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+            compSubPass._commands.add(bindPipelineCmd);
+
             GenericDrawCommand drawCommand;
             drawCommand.primitiveType(PrimitiveType::TRIANGLES);
             drawCommand.drawCount(1);
-            drawCommand.pipeline(_context.newPipeline(pipelineDescriptor));
-
-            compSubPass._commands.push_back(drawCommand);
+            DrawCommand drawCmd;
+            drawCmd._drawCommands.push_back(drawCommand);
+            compSubPass._commands.add(drawCmd);
 
             init = true;
         } else {

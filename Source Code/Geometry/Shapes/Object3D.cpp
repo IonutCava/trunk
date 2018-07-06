@@ -104,18 +104,21 @@ bool Object3D::onRender(const RenderStagePass& renderStagePass) {
     return getState() == ResourceState::RES_LOADED;
 }
 
-void Object3D::initialiseDrawCommands(SceneGraphNode& sgn,
+void Object3D::buildDrawCommands(SceneGraphNode& sgn,
                                       const RenderStagePass& renderStagePass,
-                                      GenericDrawCommands& drawCommandsInOut) {
-    if (drawCommandsInOut.empty()) {
+                                      RenderPackage& pkgInOut) {
+    if (pkgInOut._commands.getDrawCommands().empty()) {
         GenericDrawCommand cmd;
         VertexBuffer* const vb = getGeometryVB();
         cmd.sourceBuffer(vb);
         cmd.cmd().indexCount = to_U32(vb->getIndexCount());
-        drawCommandsInOut.push_back(cmd);
+        
+        DrawCommand drawCommand;
+        drawCommand._drawCommands.push_back(cmd);
+        pkgInOut._commands.add(drawCommand);
     }
 
-    SceneNode::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
+    SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }
 
 // Create a list of triangles from the vertices + indices lists based on

@@ -46,6 +46,7 @@ GLuint GL_API::s_activeBufferID[] = {GLUtil::_invalidObjectID,
 VAOBindings GL_API::s_vaoBufferData;
 GLfloat GL_API::s_depthNearVal = 0.0f;
 GLboolean GL_API::s_blendEnabled = GL_FALSE;
+Pipeline const* GL_API::s_activePipeline = nullptr;
 
 vec4<U8> GL_API::s_blendColour = vec4<U8>(0u);
 GLfloat GL_API::s_depthFarVal = 1.0f;
@@ -78,7 +79,8 @@ void GL_API::clearStates() {
     setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
     setActiveTransformFeedback(0);
 
-    
+    s_activePipeline = nullptr;
+
     glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
 
     if (!_context.parent().platformContext().config().gui.cegui.skipRendering) {

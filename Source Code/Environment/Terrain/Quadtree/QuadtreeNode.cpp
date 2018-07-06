@@ -180,7 +180,7 @@ bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderStat
     return true;
 }
 
-void QuadtreeNode::drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut) {
+void QuadtreeNode::drawBBox(GFXDevice& context, RenderPackage& packageOut) {
     if (!_bbPrimitive) {
         _bbPrimitive = context.newIMP();
         _bbPrimitive->name("QuadtreeNodeBoundingBox");
@@ -193,13 +193,14 @@ void QuadtreeNode::drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut
     _bbPrimitive->fromBox(_boundingBox.getMin(),
                           _boundingBox.getMax(),
                           vec4<U8>(0, 128, 255, 255));
-    commandsOut.push_back(_bbPrimitive->toDrawCommand());
+
+    packageOut._commands.add(_bbPrimitive->toDrawCommands());
 
     if (!isALeaf()) {
-        getChild(ChildPosition::CHILD_NW).drawBBox(context, commandsOut);
-        getChild(ChildPosition::CHILD_NE).drawBBox(context, commandsOut);
-        getChild(ChildPosition::CHILD_SW).drawBBox(context, commandsOut);
-        getChild(ChildPosition::CHILD_SE).drawBBox(context, commandsOut);
+        getChild(ChildPosition::CHILD_NW).drawBBox(context, packageOut);
+        getChild(ChildPosition::CHILD_NE).drawBBox(context, packageOut);
+        getChild(ChildPosition::CHILD_SW).drawBBox(context, packageOut);
+        getChild(ChildPosition::CHILD_SE).drawBBox(context, packageOut);
     }
 }
 };

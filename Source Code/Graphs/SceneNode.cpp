@@ -129,22 +129,22 @@ bool SceneNode::unload() {
     return true;
 }
 
-void SceneNode::initialiseDrawCommands(SceneGraphNode& sgn,
+void SceneNode::buildDrawCommands(SceneGraphNode& sgn,
                                        const RenderStagePass& renderStagePass,
-                                       GenericDrawCommands& drawCommandsInOut) {
+                                       RenderPackage& pkgInOut) {
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(renderStagePass);
-    ACKNOWLEDGE_UNUSED(drawCommandsInOut);
+    ACKNOWLEDGE_UNUSED(pkgInOut);
 }
 
 void SceneNode::updateDrawCommands(SceneGraphNode& sgn,
                                    const RenderStagePass& renderStagePass,
                                    const SceneRenderState& sceneRenderState,
-                                   GenericDrawCommands& drawCommandsInOut) {
+                                   RenderPackage& pkgInOut) {
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(renderStagePass);
     ACKNOWLEDGE_UNUSED(sceneRenderState);
-    ACKNOWLEDGE_UNUSED(drawCommandsInOut);
+    ACKNOWLEDGE_UNUSED(pkgInOut);
 }
 
 void SceneNode::onCameraUpdate(SceneGraphNode& sgn,

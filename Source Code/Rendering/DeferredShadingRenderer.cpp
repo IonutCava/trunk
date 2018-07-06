@@ -196,35 +196,36 @@ void DeferredShadingRenderer::secondPass(
     pipelineDescriptor._stateHash = _context.gfx().getDefaultStateBlock(true);
     pipelineDescriptor._shaderProgram = _previewDeferredShader;
 
+    Pipeline pipeline = _context.gfx().newPipeline(pipelineDescriptor);
+    PushConstants constants;
+
     GenericDrawCommand cmd;
-    cmd.pipeline(_context.gfx().newPipeline(pipelineDescriptor));
-    
     if (_debugView) {
-        _previewDeferredShader->Uniform("texDiffuse0", 4);
+        constants.set("texDiffuse0", PushConstantType::UINT, 4);
         if (_renderQuads[1]->onRender(_context.gfx().getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[1]->getGeometryVB());
-            _context.gfx().draw(cmd);
+            _context.gfx().draw(cmd, pipeline, constants);
         }
-        _previewDeferredShader->Uniform("texDiffuse0", 1);
+        constants.set("texDiffuse0", PushConstantType::UINT, 1);
         if (_renderQuads[2]->onRender(_context.gfx().getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[2]->getGeometryVB());
-            _context.gfx().draw(cmd);
+            _context.gfx().draw(cmd, pipeline, constants);
         }
-        _previewDeferredShader->Uniform("texDiffuse0", 2);
+        constants.set("texDiffuse0", PushConstantType::UINT, 2);
         if (_renderQuads[3]->onRender(_context.gfx().getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[3]->getGeometryVB());
-            _context.gfx().draw(cmd);
+            _context.gfx().draw(cmd, pipeline, constants);
         }
     }
 
-    _deferredShader->Uniform("lightCount", (I32)_cachedLightCount);
+    constants.set("lightCount", PushConstantType::INT, (I32)_cachedLightCount);
 
     pipelineDescriptor._shaderProgram = _deferredShader;
-    cmd.pipeline(_context.gfx().newPipeline(pipelineDescriptor));
+    pipeline = _context.gfx().newPipeline(pipelineDescriptor);
 
     if (_renderQuads[_debugView ? 4 : 0]->onRender(_context.gfx().getRenderStage())) {
         cmd.sourceBuffer(_renderQuads[_debugView ? 4 : 0]->getGeometryVB());
-        _context.gfx().draw(cmd);
+        _context.gfx().draw(cmd, pipeline, constants);
     }
 
     GUI& gui = _context.gui();

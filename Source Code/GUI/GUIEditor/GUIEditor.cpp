@@ -148,16 +148,11 @@ void GUIEditor::TrackSelection() {
             }
         }
 
-        RenderingComponent *rComp =
-            node->get<RenderingComponent>();
-        toggleButton(ToggleButtons::TOGGLE_SKELETONS)
-            ->setSelected(rComp->renderSkeleton());
-        toggleButton(ToggleButtons::TOGGLE_SHADOW_MAPPING)
-            ->setSelected(rComp->castsShadows());
-        toggleButton(ToggleButtons::TOGGLE_WIREFRAME)
-            ->setSelected(rComp->renderWireframe());
-        toggleButton(ToggleButtons::TOGGLE_BOUNDING_BOXES)
-            ->setSelected(rComp->renderBoundingBox());
+        RenderingComponent *rComp =  node->get<RenderingComponent>();
+        toggleButton(ToggleButtons::TOGGLE_SKELETONS)->setSelected(rComp->renderOptionEnabled(RenderingComponent::RenderOptions::RENDER_SKELETON));
+        toggleButton(ToggleButtons::TOGGLE_SHADOW_MAPPING)->setSelected(rComp->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS));
+        toggleButton(ToggleButtons::TOGGLE_WIREFRAME)->setSelected(rComp->renderOptionEnabled(RenderingComponent::RenderOptions::RENDER_WIREFRAME));
+        toggleButton(ToggleButtons::TOGGLE_BOUNDING_BOXES)->setSelected(rComp->renderOptionEnabled(RenderingComponent::RenderOptions::RENDER_BOUNDS_AABB));
     }
 }
 
@@ -166,8 +161,7 @@ void GUIEditor::UpdateControls() {
 
     bool hasValidTransform = false;
     if (node) {
-        hasValidTransform =
-            (node->get<PhysicsComponent>() != nullptr);
+        hasValidTransform = (node->get<PhysicsComponent>() != nullptr);
         toggleButton(ToggleButtons::TOGGLE_WIREFRAME)->setEnabled(true);
         toggleButton(ToggleButtons::TOGGLE_BOUNDING_BOXES)->setEnabled(true);
         toggleButton(ToggleButtons::TOGGLE_SKELETONS)->setEnabled(true);
@@ -972,7 +966,7 @@ bool GUIEditor::Handle_WireframeToggle(const CEGUI::EventArgs &e) {
     }
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->get<RenderingComponent>()->renderWireframe(
+        node->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_WIREFRAME,
             toggleButton(ToggleButtons::TOGGLE_WIREFRAME)->isSelected());
     }
     return true;
@@ -996,7 +990,7 @@ bool GUIEditor::Handle_ShadowMappingToggle(const CEGUI::EventArgs &e) {
     }
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->get<RenderingComponent>()->castsShadows(
+        node->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS,
             toggleButton(ToggleButtons::TOGGLE_SHADOW_MAPPING)->isSelected());
     }
     return true;
@@ -1033,7 +1027,7 @@ bool GUIEditor::Handle_BoundingBoxesToggle(const CEGUI::EventArgs &e) {
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
         RenderingComponent *rComp = node->get<RenderingComponent>();
-        rComp->renderBoundingBox(
+        rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_BOUNDS_AABB,
             toggleButton(ToggleButtons::TOGGLE_BOUNDING_BOXES)->isSelected());
     }
     return true;
@@ -1061,7 +1055,7 @@ bool GUIEditor::Handle_SkeletonsToggle(const CEGUI::EventArgs &e) {
 
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->get<RenderingComponent>()->renderSkeleton(
+        node->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_SKELETON,
             toggleButton(ToggleButtons::TOGGLE_SKELETONS)->isSelected());
     }
     return true;

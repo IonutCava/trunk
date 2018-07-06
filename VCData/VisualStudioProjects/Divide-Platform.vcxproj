@@ -105,6 +105,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Shaders\Headers\d3dShaderProgram.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Textures\Headers\d3dTexture.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\BlendingProperties.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\CommandBuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericCommandPool.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericDrawCommand.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXDevice.h" />
@@ -115,6 +116,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\IMPrimitive.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\OcclusionQuery.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\Pipeline.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\PushConstants.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIEnums.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIWrapper.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderDrawCommands.h" />
@@ -350,6 +352,7 @@
     <None Include="..\..\assets\shaders\GLSL\water.glsl" />
     <None Include="..\..\Source Code\Platform\File\Headers\FileManagement.inl" />
     <None Include="..\..\Source Code\Platform\Headers\DisplayWindow.inl" />
+    <None Include="..\..\Source Code\Platform\Video\Headers\GenericDrawCommand.inl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\GFXDevice.inl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\GFXShaderData.inl" />
     <None Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glResources.inl" />

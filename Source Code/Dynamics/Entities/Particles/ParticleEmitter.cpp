@@ -200,18 +200,53 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void ParticleEmitter::initialiseDrawCommands(SceneGraphNode& sgn,
-                                             const RenderStagePass& renderStagePass,
-                                             GenericDrawCommands& drawCommandsInOut) {
+void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
+                                        const RenderStagePass& renderStagePass,
+                                        RenderPackage& pkgInOut) {
+
     U32 indexCount = to_U32(_particles->particleGeometryIndices().size());
     if (indexCount == 0) {
         indexCount = to_U32(_particles->particleGeometryVertices().size());
     }
 
     GenericDrawCommand cmd(_particles->particleGeometryType(), 0, indexCount);
-    drawCommandsInOut.push_back(cmd);
+    DrawCommand drawCommand;
+    drawCommand._drawCommands.push_back(cmd);
+    pkgInOut._commands.add(drawCommand);
 
-    SceneNode::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
+    const vectorImpl<Pipeline*>& pipelines = pkgInOut._commands.getPipelines();
+    PipelineDescriptor pipeDesc = pipelines.front()->toDescriptor();
+
+    pipeDesc._stateHash = (_context.isDepthStage(renderStagePass) ? _particleStateBlockHashDepth
+                                                                  : _particleStateBlockHash); 
+    pipelines.front()->fromDescriptor(pipeDesc);
+    
+
+    SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
+}
+
+void ParticleEmitter::updateDrawCommands(SceneGraphNode& sgn,
+                                         const RenderStagePass& renderStagePass,
+                                         const SceneRenderState& sceneRenderState,
+                                         RenderPackage& pkgInOut) {
+    for(TaskHandle& task : _bufferUpdate) {
+        task.wait();
+    }
+    _bufferUpdate.clear();
+
+    if (renderStagePass.pass() != RenderPassType::DEPTH_PASS && _buffersDirty[to_U32(renderStagePass.stage())]) {
+        GenericVertexData& buffer = getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass());
+        buffer.updateBuffer(g_particlePositionBuffer, to_U32(_particles->_renderingPositions.size()), 0, _particles->_renderingPositions.data());
+        buffer.updateBuffer(g_particleColourBuffer, to_U32(_particles->_renderingColours.size()), 0, _particles->_renderingColours.data());
+        buffer.incQueue();
+        _buffersDirty[to_U32(renderStagePass.stage())] = false;
+    }
+
+    GenericDrawCommand* cmd = pkgInOut._commands.getDrawCommands().front();
+    cmd->cmd().primCount = to_U32(_particles->_renderingPositions.size());
+    cmd->sourceBuffer(&getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass()));
+
+    SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, pkgInOut);
 }
 
 void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, const Camera& crtCamera) {
@@ -235,41 +270,12 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
 
     _bufferUpdate.emplace_back(CreateTask(_context.parent().platformContext(),
         [this, aliveCount, &renderStagePass](const Task& parentTask) {
-            // invalidateCache means that the existing particle data is no longer partially sorted
-            _particles->sort(true);
-            _buffersDirty[to_U32(renderStagePass.stage())] = true;
-        }));
-    
+        // invalidateCache means that the existing particle data is no longer partially sorted
+        _particles->sort(true);
+        _buffersDirty[to_U32(renderStagePass.stage())] = true;
+    }));
+
     _bufferUpdate.back().startTask(Task::TaskPriority::HIGH);
-}
-
-void ParticleEmitter::updateDrawCommands(SceneGraphNode& sgn,
-                                         const RenderStagePass& renderStagePass,
-                                         const SceneRenderState& sceneRenderState,
-                                         GenericDrawCommands& drawCommandsInOut) {
-    for(TaskHandle& task : _bufferUpdate) {
-        task.wait();
-    }
-    _bufferUpdate.clear();
-
-    if (renderStagePass.pass() != RenderPassType::DEPTH_PASS && _buffersDirty[to_U32(renderStagePass.stage())]) {
-        GenericVertexData& buffer = getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass());
-        buffer.updateBuffer(g_particlePositionBuffer, to_U32(_particles->_renderingPositions.size()), 0, _particles->_renderingPositions.data());
-        buffer.updateBuffer(g_particleColourBuffer, to_U32(_particles->_renderingColours.size()), 0, _particles->_renderingColours.data());
-        buffer.incQueue();
-        _buffersDirty[to_U32(renderStagePass.stage())] = false;
-    }
-
-    GenericDrawCommand& cmd = drawCommandsInOut.front();
-    PipelineDescriptor pipeDesc = cmd.pipeline().toDescriptor();
-    pipeDesc._stateHash = (_context.isDepthStage() ? _particleStateBlockHashDepth
-                                                   : _particleStateBlockHash);;
-    
-
-    cmd.cmd().primCount = to_U32(_particles->_renderingPositions.size());
-    cmd.pipeline(_context.newPipeline(pipeDesc));
-    cmd.sourceBuffer(&getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass()));
-    SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsInOut);
 }
 
 /// The onDraw call will emit particles

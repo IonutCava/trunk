@@ -38,13 +38,12 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
     shadowPreviewShader.setThreadedLoading(false);
     shadowPreviewShader.setPropertyList("USE_SCENE_ZPLANES");
     _previewDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), shadowPreviewShader);
-    _previewDepthMapShader->Uniform("useScenePlanes", false);
-
     for (U32 i = 0; i < _numSplits; ++i) {
         GFXDevice::DebugView_ptr shadow = std::make_shared<GFXDevice::DebugView>();
         shadow->_texture = getDepthMap().getAttachment(RTAttachmentType::Colour, 0).texture();
         shadow->_shader = _previewDepthMapShader;
-        shadow->_shaderData._intValues.push_back(std::make_pair("layer", i + _arrayOffset));
+        shadow->_shaderData.set("layer", PushConstantType::INT, i+ _arrayOffset);
+        shadow->_shaderData.set("useScenePlanes", PushConstantType::BOOL, false);
         shadow->_name = Util::StringFormat("CSM_%d", i + _arrayOffset);
         _context.addDebugView(shadow);
     }
@@ -52,9 +51,8 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
     ResourceDescriptor blurDepthMapShader("blur.GaussBlur");
     blurDepthMapShader.setThreadedLoading(false);
     _blurDepthMapShader = CreateResource<ShaderProgram>(light->parentResourceCache(), blurDepthMapShader);
-    _blurDepthMapShader->Uniform("layerTotalCount", (I32)_numSplits);
-    _blurDepthMapShader->Uniform("layerCount",  (I32)_numSplits);
-
+    _blurDepthMapConstants.set("layerTotalCount", PushConstantType::INT, (I32)_numSplits);
+    _blurDepthMapConstants.set("layerCount", PushConstantType::INT, (I32)_numSplits);
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), light->getGUID(), "EVCSM");
 
     SamplerDescriptor blurMapSampler;
@@ -103,8 +101,7 @@ void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
         blurSizes[i].set(blurSizes[i - 1] / 2.0f);
     }
 
-    _blurDepthMapShader->Uniform("blurSizes", blurSizes);
-
+    _blurDepthMapConstants.set("blurSizes", PushConstantType::VEC2, blurSizes);
     _init = true;
 }
 
@@ -248,27 +245,28 @@ void CascadedShadowMaps::postRender() {
     GenericDrawCommand pointsCmd;
     pointsCmd.primitiveType(PrimitiveType::API_POINTS);
     pointsCmd.drawCount(1);
-    pointsCmd.pipeline(_context.newPipeline(pipelineDescriptor));
+    
+    Pipeline blurPipeline = _context.newPipeline(pipelineDescriptor);
 
     // Blur horizontally
-    _blurDepthMapShader->Uniform("layerOffsetRead", (I32)getArrayOffset());
-    _blurDepthMapShader->Uniform("layerOffsetWrite", 0);
+    _blurDepthMapConstants.set("layerOffsetRead", PushConstantType::INT, (I32)getArrayOffset());
+    _blurDepthMapConstants.set("layerOffsetWrite", PushConstantType::INT, (I32)0);
 
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
 
     _context.renderTargetPool().drawToTargetBegin(_blurBuffer._targetID);
         depthMap.bind(0, RTAttachmentType::Colour, 0);
-        _context.draw(pointsCmd);
+       _context.draw(pointsCmd, blurPipeline, _blurDepthMapConstants);
     _context.renderTargetPool().drawToTargetEnd();
 
     // Blur vertically
-    _blurDepthMapShader->Uniform("layerOffsetRead", 0);
-    _blurDepthMapShader->Uniform("layerOffsetWrite", (I32)getArrayOffset());
+    _blurDepthMapConstants.set("layerOffsetRead", PushConstantType::INT, (I32)0);
+    _blurDepthMapConstants.set("layerOffsetWrite", PushConstantType::INT, (I32)getArrayOffset());
 
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _vertBlur);
     _context.renderTargetPool().drawToTargetBegin(getDepthMapID());
         _blurBuffer._rt->bind(0, RTAttachmentType::Colour, 0);
-        _context.draw(pointsCmd);
+        _context.draw(pointsCmd, blurPipeline, _blurDepthMapConstants);
     _context.renderTargetPool().drawToTargetEnd();
 }
 

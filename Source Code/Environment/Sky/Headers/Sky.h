@@ -51,18 +51,13 @@ class Sky : public SceneNode {
     ~Sky();
 
     bool onRender(const RenderStagePass& renderStagePass) override;
-    void setSunProperties(const vec3<F32>& sunVect, const vec4<F32>& sunColour);
 
    protected:
     void postLoad(SceneGraphNode& sgn) override;
 
-    void initialiseDrawCommands(SceneGraphNode& sgn,
+    void buildDrawCommands(SceneGraphNode& sgn,
                                 const RenderStagePass& renderStagePass,
-                                GenericDrawCommands& drawCommandsInOut) override;
-    void updateDrawCommands(SceneGraphNode& sgn,
-                            const RenderStagePass& renderStagePass,
-                            const SceneRenderState& sceneRenderState,
-                            GenericDrawCommands& drawCommandsInOut) override;
+                                RenderPackage& pkgInOut) override;
 
     void sceneUpdate(const U64 deltaTime,
                      SceneGraphNode& sgn,

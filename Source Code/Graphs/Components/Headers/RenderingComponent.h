@@ -97,47 +97,42 @@ class RenderingComponent : public SGNComponent {
     friend class Attorney::RenderingCompRenderBin;
 
    public:
+       enum class RenderOptions : U32 {
+           RENDER_GEOMETRY = toBit(1),
+           RENDER_WIREFRAME = toBit(2),
+           RENDER_BOUNDS_AABB = toBit(3),
+           RENDER_BOUNDS_SPHERE = toBit(4),
+           RENDER_SKELETON = toBit(5),
+           CAST_SHADOWS = toBit(6),
+           RECEIVE_SHADOWS = toBit(7),
+           IS_VISIBLE = toBit(8)
+       };
+
+   public:
     bool onRender(const RenderStagePass& renderStagePass) override;
     void update(const U64 deltaTime) override;
 
     void setActive(const bool state) override;
     void postLoad() override;
 
-    void renderGeometry(const bool state);
-    void renderWireframe(const bool state);
-    void renderBoundingBox(const bool state);
-    void renderBoundingSphere(const bool state);
-    void renderSkeleton(const bool state);
+    inline PushConstants& pushConstants() { return _globalPushConstants; }
+    inline const PushConstants& pushConstants() const { return _globalPushConstants; }
 
-    inline bool renderGeometry() const { return _renderGeometry; }
-    inline bool renderWireframe() const { return _renderWireframe; }
-    inline bool renderBoundingBox() const { return _renderBoundingBox; }
-    inline bool renderBoundingSphere() const { return _renderBoundingSphere; }
-    inline bool renderSkeleton() const { return _renderSkeleton; }
+    void toggleRenderOption(RenderOptions option, bool state);
+    bool renderOptionEnabled(RenderOptions option) const;
+    bool renderOptionsEnabled(U32 mask) const;
 
-
-    inline bool isVisible() const { return _isVisible; }
-    inline void setVisible(bool state) { _isVisible = state; }
-
-    U32 renderMask(U32 baseMask) const;
-
-    void castsShadows(const bool state);
-    void receivesShadows(const bool state);
-
-    bool castsShadows() const;
-    bool receivesShadows() const;
-    
     inline U32 commandIndex() const { return _commandIndex; }
 
     inline U32 commandOffset() const { return _commandOffset; }
 
     ShaderProgram_ptr getDrawShader(const RenderStagePass& renderStagePass);
 
-    size_t getDrawStateHash(const RenderStagePass& renderStagePass);
-
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
     void getRenderingProperties(vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const;
+
+    const RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass) const;
 
     inline const Material_ptr& getMaterialInstance() const { return _materialInstance; }
 
@@ -168,15 +163,17 @@ class RenderingComponent : public SGNComponent {
    protected:
     bool canDraw(const RenderStagePass& renderStagePass);
     void updateLoDLevel(const Camera& camera, const RenderStagePass& renderStagePass);
+    size_t getMaterialStateHash(const RenderStagePass& renderStagePass);
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,
                     const RenderStagePass& renderStagePass,
                     RenderSubPassCmds& subPassesInOut);
 
+    void rebuildDrawCommands(const RenderStagePass& stagePass);
+
     void prepareDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass);
 
-    const RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass) const;
     void setDrawIDs(const RenderStagePass& renderStagePass,
                     U32 cmdOffset,
                     U32 cmdIndex);
@@ -214,17 +211,13 @@ class RenderingComponent : public SGNComponent {
     U8  _lodLevel;  ///<Relative to camera distance
     U32 _commandIndex;
     U32 _commandOffset;
-    bool _castsShadows;
-    bool _receiveShadows;
-    bool _renderGeometry;
-    bool _renderWireframe;
-    bool _renderBoundingBox;
-    bool _renderBoundingSphere;
-    bool _renderSkeleton;
-    bool _isVisible;
+    U32 _renderMask;
     TextureDataContainer _textureDependencies;
     std::array<RenderPackage, to_base(RenderStage::COUNT)> _renderData[to_base(RenderPassType::COUNT)];
     
+    bool _renderPackagesDirty;
+    PushConstants _globalPushConstants;
+
     IMPrimitive* _boundingBoxPrimitive[2];
     IMPrimitive* _boundingSpherePrimitive;
     IMPrimitive* _skeletonPrimitive;
@@ -236,7 +229,11 @@ class RenderingComponent : public SGNComponent {
     vectorImpl<Line> _axisLines;
     IMPrimitive* _axisGizmo;
 
+    size_t _depthStateBlockHash;
+    size_t _shadowStateBlockHash;
+
     ReflectorType _reflectorType;
+
     hashMapImpl<U32, GFXDevice::DebugView_ptr> _debugViews[2];
     ShaderProgram_ptr _previewRenderTargetColour;
     ShaderProgram_ptr _previewRenderTargetDepth;

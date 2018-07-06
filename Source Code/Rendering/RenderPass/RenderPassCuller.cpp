@@ -124,7 +124,7 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
 
     // Early out for non-shadow casters during shadow pass
     if (stage == RenderStage::SHADOW && !(currentNode.get<RenderingComponent>() &&
-                                          currentNode.get<RenderingComponent>()->castsShadows()))
+                                          currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS)))
     {
         return;
     }
@@ -152,7 +152,7 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
 
 void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderStage stage, VisibleNodeList& nodes) const {
     currentNode.forEachChild([this, &currentNode, &stage, &nodes](const SceneGraphNode& child) {
-        if (!(stage == RenderStage::SHADOW &&   !currentNode.get<RenderingComponent>()->castsShadows())) {
+        if (!(stage == RenderStage::SHADOW &&   !currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS))) {
             if (child.isActive() && !_cullingFunction[to_U32(stage)](child)) {
                 vectorAlg::emplace_back(nodes, 0, &child);
                 addAllChildren(child, stage, nodes);

@@ -44,6 +44,7 @@ class BoundingBox;
 class IMPrimitive;
 class VertexBuffer;
 class QuadtreeNode;
+class RenderPackage;
 class ShaderProgram;
 class SceneGraphNode;
 class SceneRenderState;
@@ -62,7 +63,7 @@ class Quadtree {
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
 
-    void drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut);
+    void drawBBox(GFXDevice& context, RenderPackage& packageOut);
 
     QuadtreeNode* findLeaf(const vec2<F32>& pos);
 

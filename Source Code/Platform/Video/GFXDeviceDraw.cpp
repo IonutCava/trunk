@@ -39,26 +39,18 @@ void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, RenderSubPassCmd
 
     assert(renderQueue.locked() == false);
     if (!renderQueue.empty()) {
+        renderQueue.batch();
+
         U32 queueSize = renderQueue.size();
         for (U32 idx = 0; idx < queueSize; ++idx) {
             RenderPackage& package = renderQueue.getPackage(idx);
-            GenericDrawCommands& drawCommands = package._drawCommands;
-            if (drawCommands.size() > 0 && batchCommands(drawCommands)) {
-                std::for_each(std::begin(drawCommands),
-                                std::end(drawCommands),
-                                [&](GenericDrawCommand& cmd) -> void {
-                                    cmd.enableOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT);
-                                });
 
-                for (ShaderBufferList::value_type& it : package._shaderBuffers) {
-                    subPassCmd._shaderBuffers.emplace_back(it._buffer, it._slot, it._range);
-                }
+            subPassCmd._shaderBuffers.insert(std::end(subPassCmd._shaderBuffers),
+                                             std::begin(package._shaderBuffers),
+                                             std::end(package._shaderBuffers));
 
-                subPassCmd._textures.set(package._textureData);
-                subPassCmd._commands.insert(std::cbegin(subPassCmd._commands),
-                                            std::cbegin(drawCommands),
-                                            std::cend(drawCommands));
-            }
+            subPassCmd._textures.set(package._textureData);
+            subPassCmd._commands.add(package._commands);
         }
         renderQueue.clear();
     }
@@ -87,30 +79,15 @@ U32 GFXDevice::renderQueueSize(RenderBinType queueType) {
 }
 
 void GFXDevice::addToRenderQueue(RenderBinType queueType, const RenderPackage& package) {
-    U32 queueIndex = queueType._to_integral();
-
-    assert(_renderQueues[queueIndex].locked() == true);
-
     if (!package.isRenderable()) {
         return;
     }
 
-    RenderPackageQueue& queue = _renderQueues[queueIndex];
+    U32 queueIndex = queueType._to_integral();
 
-    if (!queue.empty()) {
-        RenderPackage& previous = queue.back();
+    assert(_renderQueues[queueIndex].locked() == true);
 
-        if (previous.isCompatible(package)) {
-            previous._drawCommands.insert(std::cend(previous._drawCommands),
-                                          std::cbegin(package._drawCommands),
-                                          std::cend(package._drawCommands));
-            return;
-        }
-    } else {
-        queue.reserve(Config::MAX_VISIBLE_NODES);
-    }
-
-    queue.push_back(package);
+    _renderQueues[queueIndex].push_back(package);
 }
 
 /// Prepare the list of visible nodes for rendering
@@ -208,9 +185,10 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
 
                         processVisibleNode(*node, nodeCount, pkg.isOcclusionCullable());
 
-                        for (const GenericDrawCommand& cmd : pkg._drawCommands) {
-                            for (U32 i = 0; i < cmd.drawCount(); ++i) {
-                                _drawCommandsCache[cmdCount++].set(cmd.cmd());
+                        const vectorImpl<GenericDrawCommand*>& cmds = pkg._commands.getDrawCommands();
+                        for ( GenericDrawCommand* cmd : cmds) {
+                            for (U32 i = 0; i < cmd->drawCount(); ++i) {
+                                _drawCommandsCache[cmdCount++].set(cmd->cmd());
                             }
                         }
                     }
@@ -243,6 +221,7 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
 
 void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData, const Texture_ptr& depthBuffer) {
     static const U32 GROUP_SIZE_AABB = 64;
+
     uploadGPUBlock();
 
     bufferData._cmdBuffer->bind(ShaderBufferLocation::GPU_COMMANDS);
@@ -251,9 +230,13 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData, const Te
     depthBuffer->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
     U32 cmdCount = bufferData._lastCommandCount;
 
+    PushConstant constant;
+    constant._type = PushConstantType::UINT;
+    constant._binding = "dvd_numEntities";
+    constant._values = { cmdCount };
+
     _HIZCullProgram->bind();
-    _HIZCullProgram->Uniform("dvd_numEntities", cmdCount);
-    _HIZCullProgram->DispatchCompute((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
+    _HIZCullProgram->DispatchCompute((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1, PushConstants(constant));
     _HIZCullProgram->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::COUNTER);
 }
 
@@ -272,53 +255,16 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
     _api->drawText(batch, _textRenderPipeline, _textRenderConstants);
 }
 
-bool GFXDevice::batchCommands(GenericDrawCommands& commands) const {
-    auto batch = [](GenericDrawCommand& previousIDC,
-                    GenericDrawCommand& currentIDC)  -> bool {
-            if (previousIDC.compatible(currentIDC) &&
-                // Batchable commands must share the same buffer
-                previousIDC.sourceBuffer()->getGUID() == currentIDC.sourceBuffer()->getGUID())
-            {
-                U32 prevCount = previousIDC.drawCount();
-                if (previousIDC.cmd().baseInstance + prevCount != currentIDC.cmd().baseInstance) {
-                    return false;
-                }
-                // If the rendering commands are batchable, increase the draw count for the previous one
-                previousIDC.drawCount(to_U16(prevCount + currentIDC.drawCount()));
-                // And set the current command's draw count to zero so it gets removed from the list later on
-                currentIDC.drawCount(0);
-
-                return true;
-            }
-
-            return false;
-    };
-
-
-    vectorAlg::vecSize previousCommandIndex = 0;
-    vectorAlg::vecSize currentCommandIndex = 1;
-    const vectorAlg::vecSize commandCount = commands.size();
-    for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
-        GenericDrawCommand& previousCommand = commands[previousCommandIndex];
-        GenericDrawCommand& currentCommand = commands[currentCommandIndex];
-        if (!batch(previousCommand, currentCommand))
-        {
-            previousCommandIndex = currentCommandIndex;
-        }
-    }
-
-    commands.erase(std::remove_if(std::begin(commands),
-                   std::end(commands),
-                   [](const GenericDrawCommand& cmd) -> bool {
-                       return cmd.drawCount() == 0;
-                   }),
-                   std::end(commands));
-    return true;
+bool GFXDevice::draw(const GenericDrawCommand& cmd,
+                     const Pipeline& pipeline) {
+    return draw(cmd, pipeline, PushConstants());
 }
 
-bool GFXDevice::draw(const GenericDrawCommand& cmd) {
+bool GFXDevice::draw(const GenericDrawCommand& cmd,
+                     const Pipeline& pipeline,
+                     const PushConstants& pushConstants) {
     uploadGPUBlock();
-    if (_api->draw(cmd)) {
+    if (_api->draw(cmd, pipeline, pushConstants)) {
         if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
             registerDrawCall();
         }
@@ -340,7 +286,6 @@ void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
-    triangleCmd.pipeline(newPipeline(pipelineDescriptor));
 
     RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     screen.bind(to_U8(ShaderProgram::TextureUsage::UNIT0),
@@ -352,7 +297,7 @@ void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
     GFX::ScopedViewport targetArea(*this, targetViewport);
 
     // Blit render target to screen
-    draw(triangleCmd);
+    draw(triangleCmd, newPipeline(pipelineDescriptor));
 
     // Render all 2D debug info and call API specific flush function
     ReadLock r_lock(_2DRenderQueueLock);

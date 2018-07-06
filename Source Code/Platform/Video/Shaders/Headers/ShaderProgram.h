@@ -49,7 +49,9 @@ namespace Divide {
 class Camera;
 class Material;
 class ShaderBuffer;
+class PushConstants;
 class GenericDrawCommand;
+
 enum class FileUpdateEvent : U8;
 
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
@@ -122,7 +124,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const = 0;
     virtual U32 GetSubroutineUniformCount(ShaderType type) const = 0;
   
-    virtual void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) = 0;
+    virtual void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups, const PushConstants& constants) = 0;
 
     virtual void SetMemoryBarrier(MemoryBarrierType type) = 0;
 

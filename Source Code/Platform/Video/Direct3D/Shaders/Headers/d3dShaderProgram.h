@@ -67,7 +67,7 @@ class d3dShaderProgram final : public ShaderProgram {
 
     U32 GetSubroutineUniformCount(ShaderType type) const override;
 
-    void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) override;
+    void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups, const PushConstants& constants) override;
 
     void SetMemoryBarrier(MemoryBarrierType type) override;
 

@@ -76,7 +76,6 @@ bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     _skyShaderPrePass = CreateResource<ShaderProgram>(_parentCache, skyShaderPrePassDescriptor);
 
     assert(_skyShader && _skyShaderPrePass);
-    _skyShader->Uniform("enable_sun", true);
     _boundingBox.set(vec3<F32>(-radius), vec3<F32>(radius));
     Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));
 
@@ -95,7 +94,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     if (renderable) {
-        renderable->castsShadows(false);
+        renderable->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, false);
         TextureData skyTextureData = _skybox->getData();
         skyTextureData.setHandleLow(to_base(ShaderProgram::TextureUsage::UNIT0));
         renderable->registerTextureDependency(skyTextureData);
@@ -115,43 +114,32 @@ bool Sky::onRender(const RenderStagePass& renderStagePass) {
     return _sky->onRender(renderStagePass);
 }
 
-void Sky::initialiseDrawCommands(SceneGraphNode& sgn,
-                                 const RenderStagePass& renderStagePass,
-                                 GenericDrawCommands& drawCommandsInOut) {
+void Sky::buildDrawCommands(SceneGraphNode& sgn,
+                            const RenderStagePass& renderStagePass,
+                            RenderPackage& pkgInOut) {
     GenericDrawCommand cmd;
     cmd.sourceBuffer(_sky->getGeometryVB());
     cmd.cmd().indexCount = _sky->getGeometryVB()->getIndexCount();
-    drawCommandsInOut.push_back(cmd);
 
-    SceneNode::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
-}
+    DrawCommand drawCommand;
+    drawCommand._drawCommands.push_back(cmd);
+    pkgInOut._commands.add(drawCommand);
 
-void Sky::updateDrawCommands(SceneGraphNode& sgn,
-                             const RenderStagePass& renderStagePass,
-                             const SceneRenderState& sceneRenderState,
-                             GenericDrawCommands& drawCommandsInOut) {
-
-    PipelineDescriptor pipeDesc;
-
-    GenericDrawCommand& cmd = drawCommandsInOut.front();
+    const vectorImpl<Pipeline*>& pipelines = pkgInOut._commands.getPipelines();
+    PipelineDescriptor pipeDesc = pipelines.front()->toDescriptor();
     if (renderStagePass.pass() == RenderPassType::DEPTH_PASS) {
         pipeDesc._stateHash = _skyboxRenderStateHashPrePass;
         pipeDesc._shaderProgram = _skyShaderPrePass;
-    }  else {
+    } else {
         pipeDesc._stateHash = (renderStagePass.stage() == RenderStage::REFLECTION
                                                         ? _skyboxRenderStateReflectedHash
                                                         : _skyboxRenderStateHash);
         pipeDesc._shaderProgram = _skyShader;
     }
 
-    cmd.pipeline(_context.newPipeline(pipeDesc));
-    SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsInOut);
-}
+    pipelines.front()->fromDescriptor(pipeDesc);
 
-void Sky::setSunProperties(const vec3<F32>& sunVect,
-                           const vec4<F32>& sunColour) {
-    _skyShader->Uniform("sun_vector", sunVect);
-    _skyShader->Uniform("sun_colour", sunColour.rgb());
+    SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }
 
 };

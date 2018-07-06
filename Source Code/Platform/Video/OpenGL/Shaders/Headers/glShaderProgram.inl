@@ -151,6 +151,14 @@ namespace Divide {
             Uniform(binding, constant._type, constant._values, constant._flag);
         }
     }
+
+    inline void glShaderProgram::UploadPushConstants(const PushConstants& constants) {
+        for (auto constant : constants.data()) {
+            if (!constant.second._binding.empty() && constant.second._type != PushConstantType::COUNT) {
+                UploadPushConstant(constant.second);
+            }
+        }
+    }
 }; //namespace Divide
 
 #endif //_PLATFORM_VIDEO_OPENGLS_PROGRAM_INL_

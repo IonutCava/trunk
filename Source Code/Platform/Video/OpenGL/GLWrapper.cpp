@@ -804,7 +804,7 @@ void GL_API::drawText(const TextElementBatch& batch,
     GFX::ScopedDebugMessage(_context, "OpenGL render text start!", 2);
 
     if (bindPipeline(pipeline)) {
-        sendPushConstants(pipeline, pushConstants);
+        sendPushConstants(pushConstants);
 
         GL_API::setBlending(0, true, textBlendProperties, textBlendColour);
     
@@ -854,6 +854,11 @@ void GL_API::drawText(const TextElementBatch& batch,
 }
 
 bool GL_API::bindPipeline(const Pipeline& pipeline) {
+    if (s_activePipeline && *s_activePipeline == pipeline) {
+        return true;
+    }
+    s_activePipeline = &pipeline;
+
     // Set the proper render states
     setStateBlock(pipeline.stateHash());
     // We need a valid shader as no fixed function pipeline is available
@@ -862,36 +867,38 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
     return pipeline.shaderProgram()->bind();
 }
 
-void GL_API::sendPushConstants(const Pipeline& pipeline, const PushConstants& pushConstants) {
-    glShaderProgram* program = static_cast<glShaderProgram*>(pipeline.shaderProgram());
-    for (const PushConstant& constant : pushConstants._data) {
-        if (!constant._binding.empty() && constant._type != PushConstantType::COUNT) {
-            program->UploadPushConstant(constant);
+void GL_API::sendPushConstants(const PushConstants& pushConstants) {
+    assert(s_activePipeline != nullptr);
+
+    glShaderProgram* program = static_cast<glShaderProgram*>(s_activePipeline->shaderProgram());
+    program->UploadPushConstants(pushConstants);
+}
+
+bool GL_API::draw(const GenericDrawCommand& cmd) {
+    if (cmd.sourceBuffer() == nullptr) {
+        GL_API::setActiveVAO(s_dummyVAO);
+
+        U32 indexCount = 0;
+        switch (cmd.primitiveType()) {
+            case PrimitiveType::TRIANGLES: indexCount = cmd.drawCount() * 3; break;
+            case PrimitiveType::API_POINTS: indexCount = cmd.drawCount(); break;
+            default: indexCount = cmd.cmd().indexCount; break;
         }
+
+        glDrawArrays(GLUtil::glPrimitiveTypeTable[to_U32(cmd.primitiveType())], cmd.cmd().firstIndex, indexCount);
+    } else {
+        cmd.sourceBuffer()->draw(cmd);
     }
+
+    return true;
 }
 
 bool GL_API::draw(const GenericDrawCommand& cmd,
                   const Pipeline& pipeline,
                   const PushConstants& pushConstants) {
     if (bindPipeline(pipeline)) {
-        sendPushConstants(pipeline, pushConstants);
-        if (cmd.sourceBuffer() == nullptr) {
-            GL_API::setActiveVAO(s_dummyVAO);
-        
-            U32 indexCount = 0;
-            switch(cmd.primitiveType()) {
-                case PrimitiveType::TRIANGLES : indexCount = cmd.drawCount() * 3; break;
-                case PrimitiveType::API_POINTS: indexCount = cmd.drawCount(); break;
-                default: indexCount = cmd.cmd().indexCount; break;
-            }
-
-            glDrawArrays(GLUtil::glPrimitiveTypeTable[to_U32(cmd.primitiveType())], cmd.cmd().firstIndex, indexCount);
-        } else {
-            cmd.sourceBuffer()->draw(cmd);
-        }
-
-        return true;
+        sendPushConstants(pushConstants);
+        return draw(cmd);
     }
 
     return false;
@@ -904,21 +911,38 @@ void GL_API::flushCommandBuffer(CommandBuffer& commandBuffer) {
 
         for (const RenderSubPassCmd& subPass : pass._subPassCmds) {
             makeTexturesResident(subPass._textures);
-            for (const ShaderBufferBindCmd& shaderBufCmd : subPass._shaderBuffers) {
+            for (const ShaderBufferBinding& shaderBufCmd : subPass._shaderBuffers) {
                 shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
-                                                shaderBufCmd._dataRange.x,
-                                                shaderBufCmd._dataRange.y);
+                                                shaderBufCmd._range.x,
+                                                shaderBufCmd._range.y);
             }
             Attorney::GFXDeviceAPI::onRenderSubPass(_context);
-            for (const GenericDrawCommand& cmd : subPass._commands) {
-                if (draw(cmd)) {
-                    if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
-                        drawCallCount++;
-                    }
-                    if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
-                        drawCallCount++;
-                    }
-                }
+
+            for (const std::shared_ptr<Command>& cmd : subPass._commands()) {
+                switch (cmd->_type) {
+                    case CommandType::BIND_PIPELINE: {
+                        bindPipeline(std::dynamic_pointer_cast<BindPipelineCommand>(cmd)->_pipeline);
+                    } break;
+                    case CommandType::SEND_PUSH_CONSTANTS: {
+                        sendPushConstants(std::dynamic_pointer_cast<SendPushConstantsCommand>(cmd)->_constants);
+                    } break;
+                    case CommandType::SET_VIEWPORT: {
+                        assert(false && "ToDo");
+                    }break;
+                    case CommandType::DRAW_COMMANDS : {
+                        const vectorImpl<GenericDrawCommand>& drawCommands = std::dynamic_pointer_cast<DrawCommand>(cmd)->_drawCommands;
+                        for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
+                            if (draw(currentDrawCommand)) {
+                                if (currentDrawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
+                                    drawCallCount++;
+                                }
+                                if (currentDrawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
+                                    drawCallCount++;
+                                }
+                            }
+                        }
+                    }break;
+                };
             }
         }
 

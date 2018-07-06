@@ -277,8 +277,8 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
                                                                                       : PhysicsGroup::GROUP_DYNAMIC
                                                                  : PhysicsGroup::GROUP_IGNORE,
                                                data.ItemName);
-            meshNode->get<RenderingComponent>()->castsShadows(data.castsShadows);
-            meshNode->get<RenderingComponent>()->receivesShadows(data.receivesShadows);
+            meshNode->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, data.castsShadows);
+            meshNode->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RECEIVE_SHADOWS, data.receivesShadows);
             meshNode->get<PhysicsComponent>()->setScale(data.scale);
             meshNode->get<PhysicsComponent>()->setRotation(data.orientation);
             meshNode->get<PhysicsComponent>()->setPosition(data.position);
@@ -364,8 +364,8 @@ Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
         thisObjSGN->get<PhysicsComponent>()->setScale(data.scale);
         thisObjSGN->get<PhysicsComponent>()->setRotation(data.orientation);
         thisObjSGN->get<PhysicsComponent>()->setPosition(data.position);
-        thisObjSGN->get<RenderingComponent>()->castsShadows(data.castsShadows);
-        thisObjSGN->get<RenderingComponent>()->receivesShadows(data.receivesShadows);
+        thisObjSGN->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, data.castsShadows);
+        thisObjSGN->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RECEIVE_SHADOWS, data.receivesShadows);
         if (data.staticUsage) {
             thisObjSGN->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
         }
@@ -1132,12 +1132,12 @@ void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePa
             for (size_t i = 0; i < regionCount; ++i) {
                 const BoundingBox& box = _octreeBoundingBoxes[i];
                 _octreePrimitives[i]->fromBox(box.getMin(), box.getMax(), vec4<U8>(255, 0, 255, 255));
-                subPass._commands.push_back(_octreePrimitives[i]->toDrawCommand());
+                subPass._commands.add(_octreePrimitives[i]->toDrawCommands());
             }
         }
     }
     if (Config::Build::IS_DEBUG_BUILD) {
-        subPass._commands.push_back(_linesPrimitive->toDrawCommand());
+        subPass._commands.add(_linesPrimitive->toDrawCommands());
     }
     // Show NavMeshes
     _aiManager->debugDraw(subPassesInOut, false);

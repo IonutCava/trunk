@@ -508,7 +508,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
         }
         {
             Time::ScopedTimer time3(getTimer(_flushToScreenTimer, _postFxRenderTimer, i, "PostFX Timer"));
-            PostFX::instance().apply();
+            //PostFX::instance().apply();
         }
         {
             Time::ScopedTimer time4(getTimer(_flushToScreenTimer, _blitToDisplayTimer, i, "Blit to screen Timer"));

@@ -27,7 +27,10 @@ bool DefaultScene::load(const stringImpl& name) {
                         -sinf(sunAngle.x) * sinf(sunAngle.y));
     
     light.lock()->get<PhysicsComponent>()->setPosition(sunvector);
-    _currentSky.lock()->getNode<Sky>()->setSunProperties(sunvector, light.lock()->getNode<Light>()->getDiffuseColour());
+    PushConstants& constants = _currentSky.lock()->get<RenderingComponent>()->pushConstants();
+    constants.set("enable_sun", PushConstantType::BOOL, true);
+    constants.set("sun_vector", PushConstantType::VEC3, sunvector);
+    constants.set("sun_colour", PushConstantType::VEC3, light.lock()->getNode<Light>()->getDiffuseColour());
 
     state().saveLoadDisabled(true);
 

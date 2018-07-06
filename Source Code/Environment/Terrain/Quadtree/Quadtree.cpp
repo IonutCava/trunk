@@ -27,9 +27,9 @@ void Quadtree::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     _root->sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-void Quadtree::drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut) {
+void Quadtree::drawBBox(GFXDevice& context, RenderPackage& packageOut) {
     assert(_root);
-    _root->drawBBox(context, commandsOut);
+    _root->drawBBox(context, packageOut);
     
     if (!_bbPrimitive) {
         _bbPrimitive = context.newIMP();
@@ -44,7 +44,7 @@ void Quadtree::drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut) {
                           _root->getBoundingBox().getMax(),
                           vec4<U8>(0, 64, 255, 255));
 
-    commandsOut.push_back(_bbPrimitive->toDrawCommand());
+    packageOut._commands.add(_bbPrimitive->toDrawCommands());
 }
 
 QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) {

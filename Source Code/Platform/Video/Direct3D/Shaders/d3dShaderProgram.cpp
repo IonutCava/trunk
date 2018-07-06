@@ -58,7 +58,7 @@ I32 d3dShaderProgram::Binding(const char* name) {
     return -1;
 }
 
-void d3dShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) {
+void d3dShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups, const PushConstants& constants) {
 }
 
 void d3dShaderProgram::SetMemoryBarrier(MemoryBarrierType type) {

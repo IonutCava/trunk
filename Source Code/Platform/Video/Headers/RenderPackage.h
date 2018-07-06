@@ -36,7 +36,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-struct RenderPackage {
+class RenderPackage {
+public:
     RenderPackage() : _isRenderable(false),
         _isOcclusionCullable(true)
     {
@@ -63,9 +64,11 @@ struct RenderPackage {
         _isOcclusionCullable = state;
     }
 
+    size_t getSortKeyHash() const;
+
     ShaderBufferList _shaderBuffers;
     TextureDataContainer _textureData;
-    GenericDrawCommands _drawCommands;
+    GenericCommandBuffer _commands;
 
 private:
     bool _isRenderable;
@@ -76,7 +79,7 @@ struct RenderPackageQueue {
 public:
     RenderPackageQueue()
         : _locked(false),
-        _currentCount(0)
+          _currentCount(0)
     {
     }
 
@@ -84,6 +87,7 @@ public:
     U32 size() const;
     bool empty() const;
     bool locked() const;
+    void batch();
     const RenderPackage& getPackage(U32 idx) const;
 
 protected:

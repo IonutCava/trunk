@@ -32,8 +32,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _GENERIC_DRAW_COMMAND_H_
 #define _GENERIC_DRAW_COMMAND_H_
 
+#include "Pipeline.h"
+
 #include "Platform/Headers/PlatformDefines.h"
-#include "Platform/Video/Headers/Pipeline.h"
 
 namespace Divide {
 
@@ -67,15 +68,13 @@ public:
     enum class RenderOptions : U32 {
         RENDER_GEOMETRY = toBit(1),
         RENDER_WIREFRAME = toBit(2),
-        RENDER_BOUNDS_AABB = toBit(3),
-        RENDER_BOUNDS_SPHERE = toBit(4),
-        RENDER_NO_RASTERIZE = toBit(5),
-        RENDER_INDIRECT = toBit(6),
-        RENDER_TESSELLATED = toBit(7),
-        QUERY_PRIMITIVE_COUNT = toBit(8),
-        QUERY_SAMPLE_COUNT = toBit(9),
-        QUERY_ANY_SAMPLE_RENDERED = toBit(10),
-        COUNT = 9
+        RENDER_NO_RASTERIZE = toBit(3),
+        RENDER_INDIRECT = toBit(4),
+        RENDER_TESSELLATED = toBit(5),
+        QUERY_PRIMITIVE_COUNT = toBit(6),
+        QUERY_SAMPLE_COUNT = toBit(7),
+        QUERY_ANY_SAMPLE_RENDERED = toBit(8),
+        COUNT = 8
     };
 
 private:
@@ -101,35 +100,123 @@ public:
     void set(const GenericDrawCommand& base);
     bool compatible(const GenericDrawCommand& other) const;
 
-    void renderMask(U32 mask);
     bool isEnabledOption(RenderOptions option) const;
     void enableOption(RenderOptions option);
     void disableOption(RenderOptions option);
     void toggleOption(RenderOptions option);
     void toggleOption(RenderOptions option, const bool state);
 
-    inline U32  renderMask() const { return _renderOptions; }
+    inline U32  renderMask() const;
 
-    inline void LoD(U8 lod)                                           { _lodIndex = lod; }
-    inline void drawCount(U16 count)                                  { _drawCount = count; }
-    inline void drawToBuffer(U8 index)                                { _drawToBuffer = index; }
-    inline void commandOffset(U32 offset)                             { _commandOffset = offset; }
-    inline void patchVertexCount(U32 vertexCount)                     { _patchVertexCount = vertexCount; }
-    inline void primitiveType(PrimitiveType type)                     { _type = type; }
-    inline void sourceBuffer(VertexDataInterface* sourceBuffer)       { _sourceBuffer = sourceBuffer; }
+    inline void LoD(U8 lod);
+    inline void drawCount(U16 count);
+    inline void drawToBuffer(U8 index);
+    inline void commandOffset(U32 offset);
+    inline void patchVertexCount(U32 vertexCount);
+    inline void primitiveType(PrimitiveType type);
+    inline void sourceBuffer(VertexDataInterface* sourceBuffer);
 
-    inline U8 LoD()                            const { return _lodIndex; }
-    inline U16 drawCount()                     const { return _drawCount; }
-    inline U8  drawToBuffer()                  const { return _drawToBuffer; }
-    inline U32 commandOffset()                 const { return _commandOffset; }
-    inline U32 patchVertexCount()              const { return _patchVertexCount; }
-    inline IndirectDrawCommand& cmd()                { return _cmd; }
-    inline PrimitiveType primitiveType()       const { return _type; }
-    inline VertexDataInterface* sourceBuffer() const { return _sourceBuffer; }
-    inline const IndirectDrawCommand& cmd()    const { return _cmd; }
+    inline U8 LoD() const;
+    inline U16 drawCount() const;
+    inline U8  drawToBuffer() const;
+    inline U32 commandOffset() const;
+    inline U32 patchVertexCount() const;
+    inline IndirectDrawCommand& cmd();
+    inline PrimitiveType primitiveType() const;
+    inline VertexDataInterface* sourceBuffer() const;
+    inline const IndirectDrawCommand& cmd() const;
 };
 
-typedef vectorImpl<GenericDrawCommand> GenericDrawCommands;
+enum class CommandType : U8 {
+    BIND_PIPELINE = 0,
+    SEND_PUSH_CONSTANTS,
+    DRAW_COMMANDS,
+    SET_VIEWPORT
+};
+
+struct Command {
+    explicit Command(CommandType type)
+        : _type(type)
+    {
+    }
+
+    virtual void execute() = 0;
+
+    CommandType _type;
+};
+
+struct BindPipelineCommand : Command {
+    BindPipelineCommand() : Command(CommandType::BIND_PIPELINE)
+    {
+    }
+
+    void execute() override {};
+
+    Pipeline _pipeline;
+};
+
+struct SendPushConstantsCommand : Command {
+    SendPushConstantsCommand() : Command(CommandType::SEND_PUSH_CONSTANTS)
+    {
+    }
+
+    void execute() override {};
+
+    PushConstants _constants;
+};
+
+struct DrawCommand : Command {
+    DrawCommand() : Command(CommandType::DRAW_COMMANDS)
+    {
+    }
+
+    void execute() override {};
+
+    vectorImpl<GenericDrawCommand> _drawCommands;
+};
+
+struct SetViewportCommand : Command {
+    SetViewportCommand() : Command(CommandType::SET_VIEWPORT)
+    {
+    }
+
+    void execute() override {};
+
+    vec4<I32> _viewport;
+};
+
+class GenericCommandBuffer {
+public:
+    GenericCommandBuffer();
+
+    template<typename T>
+    inline void add(const T& command);
+
+    inline void add(const GenericCommandBuffer& other);
+
+    void clean();
+
+    inline void batch();
+
+    inline vectorImpl<std::shared_ptr<Command>>& operator()();
+    inline const vectorImpl<std::shared_ptr<Command>>& operator()() const;
+
+    inline const vectorImpl<Pipeline*>& getPipelines() const;
+    inline const vectorImpl<GenericDrawCommand*>& getDrawCommands() const;
+
+    inline vectorAlg::vecSize size() const { return _data.size(); }
+    inline void clear();
+
+protected:
+    void rebuildCaches();
+
+protected:
+    vectorImpl<std::shared_ptr<Command>> _data;
+    vectorImpl<Pipeline*> _pipelineCache;
+    vectorImpl<GenericDrawCommand*> _drawCommandsCache;
+};
 }; //namespace Divide
 
 #endif //_GENERIC_DRAW_COMMAND_H_
+
+#include "GenericDrawCommand.inl"
