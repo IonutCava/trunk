@@ -1069,7 +1069,7 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             case GFX::CommandType::SET_BLEND: {
                 GFX::SetBlendCommand* blendCmd = static_cast<GFX::SetBlendCommand*>(cmd.get());
                 setBlending(blendCmd->_enabled, blendCmd->_blendProperties);
-            }
+            }break;
             case GFX::CommandType::SET_VIEWPORT: {
                 _context.setViewport(static_cast<GFX::SetViewportCommand*>(cmd.get())->_viewport);
             }break;

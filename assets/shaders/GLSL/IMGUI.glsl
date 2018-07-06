@@ -9,7 +9,7 @@ void main()
 {
     Frag_UV = inTexCoordData;
     Frag_Color = inColourData;
-    gl_Position = dvd_ProjectionMatrix * vec4(Position.xy,0,1);
+    gl_Position = dvd_ViewProjectionMatrix * vec4(Position.xy,0,1);
 };
 
 -- Fragment

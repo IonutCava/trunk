@@ -81,6 +81,7 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* parent)
 
         ResourceDescriptor textureDescriptor(Util::StringFormat("ImWindow_%d", m_windowCount));
         textureDescriptor.setThreadedLoading(false);
+        textureDescriptor.setFlag(false);
         textureDescriptor.setPropertyDescriptor(descriptor);
         
         ResourceCache& parentCache = m_context.gfx().parent().resourceCache();
