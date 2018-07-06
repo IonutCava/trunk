@@ -53,8 +53,8 @@ protected:
 
 class ResourceDescriptor{
 public:
-    explicit ResourceDescriptor(const std::string& name = "default",
-                                const std::string& resourceLocation = "default",
+    explicit ResourceDescriptor(const stringImpl& name = "default",
+                                const stringImpl& resourceLocation = "default",
                                 bool flag = false, U32 id = 0, U8 enumValue = 0);
 
     ~ResourceDescriptor();
@@ -62,9 +62,9 @@ public:
     ResourceDescriptor(const ResourceDescriptor& old);
     ResourceDescriptor& operator= (ResourceDescriptor const& old);
 
-    inline const  std::string&         getPropertyListString()  const {return _properties;}
-    inline const  std::string&         getResourceLocation()    const {return _resourceLocation;}
-    inline const  std::string&         getName()			    const {return _name;}
+    inline const  stringImpl&         getPropertyListString()  const {return _properties;}
+    inline const  stringImpl&         getResourceLocation()    const {return _resourceLocation;}
+    inline const  stringImpl&         getName()			    const {return _name;}
 
     template<typename T>
     inline const T* getPropertyDescriptor() const {
@@ -78,10 +78,10 @@ public:
     inline U32  getId()						    const {return _id;}
     inline P32  getMask()                       const {return _mask;}
 
-    inline void setPropertyList(const std::string& propertyListString)    {_properties = propertyListString;}
-    inline void setResourceLocation(const std::string& resourceLocation)  {_resourceLocation = resourceLocation;}
+    inline void setPropertyList(const stringImpl& propertyListString)    {_properties = propertyListString;}
+    inline void setResourceLocation(const stringImpl& resourceLocation)  {_resourceLocation = resourceLocation;}
     inline void setEnumValue(U8 enumValue)                                {_enumValue = enumValue;}
-    inline void setName(const std::string& name)					      {_name = name;}
+    inline void setName(const stringImpl& name)					      {_name = name;}
     inline void setFlag(bool flag)				                          {_flag = flag;}
     inline void setId(U32 id)					                          {_id = id;}
     inline void setBoolMask(P32 mask)                                     {_mask = mask;}
@@ -93,9 +93,9 @@ public:
     }
 
 private:
-    std::string _name;			   ///< Item name
-    std::string _resourceLocation; ///< Physical file location
-    std::string _properties;       ///< Comma separated list of properties
+    stringImpl _name;			   ///< Item name
+    stringImpl _resourceLocation; ///< Physical file location
+    stringImpl _properties;       ///< Comma separated list of properties
     bool        _flag;
     bool        _threaded;
     U32         _id;

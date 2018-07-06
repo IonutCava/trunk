@@ -46,11 +46,11 @@ class Variable
 
     virtual void setValue(D32 dValue) { _dValue = dValue; }
 
-    virtual std::string toString() const
+    virtual stringImpl toString() const
     {
       std::ostringstream oss;
       oss << _dValue;
-      return oss.str();
+      return stringAlg::toBase(oss.str());
     }
 
     virtual void update() {};
@@ -129,7 +129,7 @@ class TriangleVariable : public LimitedVariable
 
 //////////// Variable effect class //////////////////////////////////////////////////////////
 
-typedef Unordered_map<std::string, Variable*> MapVariables;
+typedef hashMapImpl<stringImpl, Variable*> MapVariables;
 typedef void (*EffectVariablesApplier)(MapVariables& mapVars, OIS::Effect* pEffect);
 
 class VariableEffect
@@ -195,9 +195,9 @@ class VariableEffect
       _pfApplyVariables(_mapVariables, _pEffect);
     }
 
-    std::string toString() const
+    stringImpl toString() const
     {
-      std::string str;
+      stringImpl str;
       MapVariables::const_iterator iterVars;
       for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
         str += iterVars->first + ":" + iterVars->second->toString() + " ";

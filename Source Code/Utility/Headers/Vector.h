@@ -27,16 +27,60 @@
 #include "config.h"
 //#endif
 
-#if defined(VECTOR_IMP) && VECTOR_IMP == 0
+#if defined(VECTOR_IMP) /*&& VECTOR_IMP == 0*/ && VECTOR_IMP != 2
 
+/// vector.hpp has some issues in 1.55 (fixed in 1.56)
+/*
 #include <boost/container/vector.hpp>
-#define vectorImpl boost::container::vector
 
-#else
+namespace vectorAlg = boost;
+
+template<typename Type>
+using vectorImpl = boost::container::vector<Type>;
+
+namespace boost {
+    typedef size_t vecSize;
+
+    template<typename T>
+    inline void shrinkToFit(vectorImpl<T>& inputVector) {
+        inputVector.shrink_to_fit();
+    }
+};
+
+#elif defined(VECTOR_IMP) && VECTOR_IMP == 1*/
+
+#include <EASTL/vector.h>
+
+namespace vectorAlg  = eastl;
+
+template<typename Type>
+using vectorImpl = vectorAlg::vector<Type>;
+
+namespace eastl {
+    typedef eastl_size_t vecSize;
+
+    template<typename T>
+    inline void shrinkToFit(vectorImpl<T>& inputVector) {
+        inputVector.set_capacity(inputVector.size()  * sizeof(T));
+    }
+};
+#else //defined(VECTOR_IMP) && VECTOR_IMP == 2
 
 #include <vector>
-#define vectorImpl std::vector
 
-#endif
+namespace vectorAlg = std;
+
+template<typename Type>
+using vectorImpl = vectorAlg::vector<Type>;
+
+namespace std {
+    typedef size_t vecSize;
+
+    template<typename T>
+    inline void shrinkToFit(vectorImpl<T>& inputVector) {
+        inputVector.shrink_to_fit();
+    }
+};
+#endif //defined(VECTOR_IMP)
 
 #endif

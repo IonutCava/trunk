@@ -99,7 +99,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
 #endif
     CEGUI::DefaultResourceProvider* rp = static_cast<CEGUI::DefaultResourceProvider*>( CEGUI::System::getSingleton().getResourceProvider() ) ;
-    std::string CEGUIInstallSharePath = ParamHandler::getInstance().getParam<std::string>("assetsLocation");
+    CEGUI::String CEGUIInstallSharePath(ParamHandler::getInstance().getParam<std::string>("assetsLocation"));
     CEGUIInstallSharePath += "/GUI/" ;
     rp->setResourceGroupDirectory( "schemes",    CEGUIInstallSharePath + "schemes/" ) ;
     rp->setResourceGroupDirectory( "imagesets",  CEGUIInstallSharePath + "imagesets/" ) ;
@@ -126,13 +126,13 @@ bool GUI::init(const vec2<U16>& resolution) {
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12.font");
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-10-NoScale.font");
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12-NoScale.font");
-    _defaultGUIScheme = ParamHandler::getInstance().getParam<std::string>("GUI.defaultScheme");
-    CEGUI::SchemeManager::getSingleton().createFromFile(  _defaultGUIScheme + ".scheme") ;
+	_defaultGUIScheme = ParamHandler::getInstance().getParam<stringImpl>("GUI.defaultScheme");
+    CEGUI::SchemeManager::getSingleton().createFromFile(stringAlg::fromBase(_defaultGUIScheme + ".scheme")) ;
 
     _rootSheet = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow","root_window");
     _rootSheet->setMousePassThroughEnabled(true);
     CEGUI_DEFAULT_CONTEXT.setRootWindow( _rootSheet );
-    CEGUI_DEFAULT_CONTEXT.setDefaultTooltipType( _defaultGUIScheme + "/Tooltip" );
+    CEGUI_DEFAULT_CONTEXT.setDefaultTooltipType(stringAlg::fromBase(_defaultGUIScheme + "/Tooltip"));
 
     assert(_console);
     //_console->CreateCEGUIWindow();
@@ -266,12 +266,12 @@ bool GUI::joystickVector3DMoved( const Input::JoystickEvent &arg, I8 index){
     return _ceguiInput.joystickVector3DMoved(arg, index);
 }
 
-GUIButton* GUI::addButton(const std::string& id, const std::string& text,
+GUIButton* GUI::addButton(const stringImpl& id, const stringImpl& text,
                           const vec2<I32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,
-                          ButtonCallback callback,const std::string& rootSheetId){
+                          ButtonCallback callback,const stringImpl& rootSheetId){
     CEGUI::Window* parent = nullptr;
     if (!rootSheetId.empty()) {
-        parent = CEGUI_DEFAULT_CONTEXT.getRootWindow()->getChild(rootSheetId);
+        parent = CEGUI_DEFAULT_CONTEXT.getRootWindow()->getChild(rootSheetId.c_str());
     }
     if (!parent) {
         parent = _rootSheet;
@@ -281,27 +281,27 @@ GUIButton* GUI::addButton(const std::string& id, const std::string& text,
     if (it != _guiStack.end()) {
         SAFE_UPDATE(it->second, btn);
     }else {
-        _guiStack.insert(std::make_pair(id,  btn));
+        hashAlg::insert(_guiStack, hashAlg::makePair(id,  btn));
     }
     
     return btn;
 }
 
-GUIMessageBox* GUI::addMsgBox(const std::string& id, const std::string& title, const std::string& message, const vec2<I32>& offsetFromCentre ) {
+GUIMessageBox* GUI::addMsgBox(const stringImpl& id, const stringImpl& title, const stringImpl& message, const vec2<I32>& offsetFromCentre ) {
     GUIMessageBox* box = New GUIMessageBox(id, title, message, offsetFromCentre, _rootSheet);
     guiMap::iterator it = _guiStack.find(id);
     if (it != _guiStack.end()) {
         SAFE_UPDATE(it->second, box);
     }else {
-        _guiStack.insert(std::make_pair(id,  box));
+        hashAlg::insert(_guiStack, hashAlg::makePair(id,  box));
     }
     
     return box;
 }
 
-GUIText* GUI::addText(const std::string& id,const vec2<I32> &position, const std::string& font,const vec3<F32> &color, char* format, ...){
+GUIText* GUI::addText(const stringImpl& id,const vec2<I32> &position, const stringImpl& font,const vec3<F32> &color, char* format, ...){
     va_list args;
-    std::string fmt_text;
+    stringImpl fmt_text;
 
     va_start(args, format);
     I32 len = _vscprintf(format, args) + 1;
@@ -316,7 +316,7 @@ GUIText* GUI::addText(const std::string& id,const vec2<I32> &position, const std
     if (it != _guiStack.end()) {
         SAFE_UPDATE(it->second, t);
     }else {
-        _guiStack.insert(std::make_pair(id,  t));
+        hashAlg::insert(_guiStack, hashAlg::makePair(id, t));
     }
 
     fmt_text.empty();
@@ -324,22 +324,22 @@ GUIText* GUI::addText(const std::string& id,const vec2<I32> &position, const std
     return t;
 }
 
-GUIFlash* GUI::addFlash(const std::string& id, std::string movie, const vec2<U32>& position, const vec2<U32>& extent){
+GUIFlash* GUI::addFlash(const stringImpl& id, stringImpl movie, const vec2<U32>& position, const vec2<U32>& extent){
     GUIFlash *flash = New GUIFlash(_rootSheet);
     guiMap::iterator it = _guiStack.find(id);
     if (it != _guiStack.end()) {
         SAFE_UPDATE(it->second, flash);
     }else {
-        _guiStack.insert(std::make_pair(id,  flash));
+        hashAlg::insert(_guiStack, hashAlg::makePair(id, flash));
     }
     return flash;
 }
 
-GUIText* GUI::modifyText(const std::string& id, char* format, ...){
+GUIText* GUI::modifyText(const stringImpl& id, char* format, ...){
     if(_guiStack.find(id) == _guiStack.end()) return nullptr;
 
     va_list args;
-    std::string fmt_text;
+    stringImpl fmt_text;
 
     va_start(args, format);
     I32 len = _vscprintf(format, args) + 1;

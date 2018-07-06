@@ -17,7 +17,7 @@ using namespace AI;
 
 static const D32 DESTINATION_RADIUS = 3 * 3;
 
-AIEntity::AIEntity(const vec3<F32>& currentPosition, const std::string& name)  : GUIDWrapper(),
+AIEntity::AIEntity(const vec3<F32>& currentPosition, const stringImpl& name)  : GUIDWrapper(),
                                                                                 _name(name),
                                                                                 _AISceneImpl(nullptr),
                                                                                 _unitRef(nullptr),
@@ -114,7 +114,7 @@ bool AIEntity::addSensor(SensorType type) {
         if (it != _sensorList.end()) {
             SAFE_UPDATE(it->second, sensor);
         } else {
-            _sensorList.emplace(type,sensor);
+            hashAlg::emplace(_sensorList, type, sensor);
         }
         return true;
     }

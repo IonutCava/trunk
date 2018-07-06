@@ -36,7 +36,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener, Input::InputAggregatorInterfa
 
 public:
     ///Lookup the factory methods table and return the pointer to a newly constructed scene bound to that name
-    Scene* createScene(const std::string& name);
+    Scene* createScene(const stringImpl& name);
 
     inline Scene* getActiveScene()                   { return _activeScene; }
     inline void   setActiveScene(Scene* const scene) { SAFE_UPDATE(_activeScene, scene); }
@@ -54,7 +54,7 @@ public:
     inline void onLostFocus()                          { _activeScene->onLostFocus(); }
     inline void idle()                                 { _activeScene->idle(); }
     bool unloadCurrentScene();
-    bool load(const std::string& name, const vec2<U16>& resolution,  CameraManager* const cameraMgr);
+    bool load(const stringImpl& name, const vec2<U16>& resolution,  CameraManager* const cameraMgr);
     ///Check if the scene was loaded properly
     inline bool checkLoadFlag()                 const  {return _activeScene->checkLoadFlag();}
     ///Create AI entities, teams, NPC's etc
@@ -72,8 +72,8 @@ public:
     inline void cacheResolution(const vec2<U16>& newResolution) {_activeScene->cacheResolution(newResolution);}
     ///Insert a new scene factory method for the given name
     template<class DerivedScene>
-    inline bool registerScene(const std::string& sceneName) {
-        _sceneFactory.emplace(sceneName, boost::factory<DerivedScene*>());
+    inline bool registerScene(const stringImpl& sceneName) {
+        _sceneFactory[sceneName] = boost::factory<DerivedScene*>();
         return true;
     }
    
@@ -116,7 +116,7 @@ private:
     ~SceneManager();
 
 private:
-    typedef Unordered_map<std::string, Scene*> SceneMap;
+    typedef hashMapImpl<stringImpl, Scene*> SceneMap;
     bool _init;
     bool _processInput;
     bool _loadPreRenderComplete;
@@ -131,7 +131,7 @@ private:
     ///Scene pool
     SceneMap _sceneMap;
     ///Scene_Name -Scene_Factory table
-    Unordered_map<std::string, boost::function<Scene*()> > _sceneFactory;
+    hashMapImpl<stringImpl, boost::function<Scene*()> > _sceneFactory;
     Material* _defaultMaterial;
 
 END_SINGLETON

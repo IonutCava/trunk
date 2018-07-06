@@ -101,7 +101,7 @@ U8 ShaderProgram::update(const U64 deltaTime) {
 }
 
 /// Rendering API specific loading (called after the API specific derived calls processed the request)
-bool ShaderProgram::generateHWResource(const std::string& name) {
+bool ShaderProgram::generateHWResource(const stringImpl& name) {
     _name = name;
 
     if (!HardwareResource::generateHWResource(name)) {
@@ -138,9 +138,9 @@ void ShaderProgram::unbind(bool resetActiveProgram) {
 }
 
 /// Add a define to the shader. The defined must not have been added previously
-void ShaderProgram::addShaderDefine(const std::string& define) {
+void ShaderProgram::addShaderDefine(const stringImpl& define) {
     // Find the string in the list of program defines
-    vectorImpl<std::string >::iterator it = find(_definesList.begin(), _definesList.end(), define);
+    vectorImpl<stringImpl >::iterator it = find(_definesList.begin(), _definesList.end(), define);
     // If we can't find it, we add it
     if (it == _definesList.end()) {
         _definesList.push_back(define);
@@ -152,9 +152,9 @@ void ShaderProgram::addShaderDefine(const std::string& define) {
 }
 
 /// Remove a define from the shader. The defined must have been added previously
-void ShaderProgram::removeShaderDefine(const std::string& define) {
+void ShaderProgram::removeShaderDefine(const stringImpl& define) {
     // Find the string in the list of program defines
-    vectorImpl<std::string >::iterator it = find(_definesList.begin(), _definesList.end(), define);
+    vectorImpl<stringImpl >::iterator it = find(_definesList.begin(), _definesList.end(), define);
     // If we find it, we remove it
     if (it != _definesList.end()) {
         _definesList.erase(it);
@@ -164,9 +164,9 @@ void ShaderProgram::removeShaderDefine(const std::string& define) {
     }
 }
 
-void ShaderProgram::addShaderUniform(const std::string& uniform, const ShaderType& type) {
+void ShaderProgram::addShaderUniform(const stringImpl& uniform, const ShaderType& type) {
     // Find the string in the list of uniforms
-    vectorImpl<std::string >::iterator it = find(_customUniforms[type].begin(), _customUniforms[type].end(), uniform);
+    vectorImpl<stringImpl >::iterator it = find(_customUniforms[type].begin(), _customUniforms[type].end(), uniform);
     // If we can't find it, we add it
     if (it == _definesList.end()) {
         _customUniforms[type].push_back(uniform);
@@ -177,9 +177,9 @@ void ShaderProgram::addShaderUniform(const std::string& uniform, const ShaderTyp
 }
 
 /// Remove an uniform from the shader. The uniform must have been added previously for the specified shader type
-void ShaderProgram::removeUniform(const std::string& uniform, const ShaderType& type) {
+void ShaderProgram::removeUniform(const stringImpl& uniform, const ShaderType& type) {
     // Find the string in the list of uniforms
-    vectorImpl<std::string >::const_iterator it = find(_customUniforms[type].begin(), _customUniforms[type].end(), uniform);
+    vectorImpl<stringImpl >::iterator it = find(_customUniforms[type].begin(), _customUniforms[type].end(), uniform);
     // If we find it, we remove it
     if (it != _customUniforms[type].end()) {
         _customUniforms[type].erase(it);

@@ -11,7 +11,7 @@ Object3D::Object3D(const ObjectType& type, U32 flag) : Object3D("", type, flag)
 {
 }
 
-Object3D::Object3D(const std::string& name, const ObjectType& type, U32 flag) : SceneNode(name,TYPE_OBJECT3D),
+Object3D::Object3D(const stringImpl& name, const ObjectType& type, U32 flag) : SceneNode(name,TYPE_OBJECT3D),
                                                                                 _update(false),
                                                                                 _geometryType(type),
                                                                                 _geometryFlagMask(flag),

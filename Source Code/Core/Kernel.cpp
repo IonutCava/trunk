@@ -34,7 +34,7 @@ ProfileTimer* s_appLoopTimer = nullptr;
 
 SharedLock Kernel::_threadedCallbackLock;
 vectorImpl<U64> Kernel::_threadedCallbackBuffer;
-Unordered_map<U64, DELEGATE_CBK > Kernel::_threadedCallbackFunctions;
+hashMapImpl<U64, DELEGATE_CBK > Kernel::_threadedCallbackFunctions;
 
 #if defined(USE_FIXED_TIMESTEP)
 static const U64 SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
@@ -68,6 +68,8 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
     //we add the A.I. thread in the same pool as it's a task. ReCast should also use this ...
     _mainTaskPool = New boost::threadpool::pool(Config::THREAD_LIMIT + 1 /*A.I.*/);
 
+	ParamHandler::getInstance().setParam<stringImpl>("language", Locale::currentLanguage());
+
     s_appLoopTimer = ADD_TIMER("MainLoopTimer");
 }
 
@@ -99,7 +101,7 @@ void Kernel::idle(){
         Application::getInstance().mainLoopPaused(_freezeLoopTime);
     }
 
-    std::string pendingLanguage = par.getParam<std::string>("language");
+	const stringImpl& pendingLanguage = par.getParam<stringImpl>("language");
     if(pendingLanguage.compare(Locale::currentLanguage()) != 0){
         Locale::changeLanguage(pendingLanguage);
     }
@@ -375,7 +377,7 @@ void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& 
     _GFX.getRenderer()->render(sceneRenderCallback, sceneRenderState);
 }
 
-ErrorCode Kernel::initialize(const std::string& entryPoint) {
+ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     ParamHandler& par = ParamHandler::getInstance();
 
     Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(), _1, _2));
@@ -386,10 +388,10 @@ ErrorCode Kernel::initialize(const std::string& entryPoint) {
     ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
 
     //Load info from XML files
-    std::string startupScene = XML::loadScripts(entryPoint);
+    stringImpl startupScene(stringAlg::toBase(XML::loadScripts(stringAlg::fromBase(entryPoint))));
 
     //Create mem log file
-    std::string mem = par.getParam<std::string>("memFile");
+	const stringImpl& mem = par.getParam<stringImpl>("memFile");
     _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
 
     PRINT_FN(Locale::get("START_RENDER_INTERFACE"));
@@ -430,7 +432,7 @@ ErrorCode Kernel::initialize(const std::string& entryPoint) {
     }
 
     //Bind the kernel with the input interface
-    Input::InputInterface::getInstance().init(this, par.getParam<std::string>("appTitle"));
+	Input::InputInterface::getInstance().init(this, par.getParam<stringImpl>("appTitle"));
 
     //Initialize GUI with our current resolution
     _GUI.init(resolution);

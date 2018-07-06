@@ -12,15 +12,15 @@ void Resource::refModifyCallback(bool increase){
 namespace Memory {
     char outputLogBuffer[512];
     U32 maxAlloc = 0;
-    char* zMaxFile = "";
+    char zMaxFile[256];
     I16 nMaxLine = 0;
 };
 
 
-void log_new(size_t t ,char* zFile, I32 nLine){
+void log_new(size_t t, const char* zFile, I32 nLine){
     if (t > Memory::maxAlloc)	{
         Memory::maxAlloc = (U32)t;
-        Memory::zMaxFile = zFile;
+        strcpy(Memory::zMaxFile, zFile);
         Memory::nMaxLine = nLine;
     }
 
@@ -42,21 +42,43 @@ void log_delete(size_t t,char* zFile, I32 nLine){
 }; //namespace Divide
 
 #if !defined(NDEBUG)
-void* operator new[]( size_t t,char* zFile, int nLine ){
-    Divide::log_new(t ,zFile, nLine);
-    return malloc (t);
+void* operator new[]( size_t size,char* zFile, int nLine ){
+    Divide::log_new(size ,zFile, nLine);
+    return malloc (size);
 }
 
-void  operator delete[]( void *p,char* zFile, int nLine ){
-    free(p);
+void  operator delete[]( void *ptr,char* zFile, int nLine ){
+    free(ptr);
 }
 
-void* operator new(size_t t ,char* zFile, int nLine){
-    return malloc (t);
+void* operator new(size_t size ,char* zFile, int nLine){
+    return malloc (size);
 }
 
-void  operator delete( void *p, char* zFile, int nLine){
-    free(p);
+void  operator delete( void *ptr, char* zFile, int nLine){
+    free(ptr);
 }
-
 #endif
+
+void* operator new[](size_t size, const char* pName, int flags, unsigned int debugFlags, const char* file, int line)
+{
+    //Divide::log_new(size ,file, line);
+    return malloc(size);
+}
+
+void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* pName, int flags, unsigned int debugFlags, const char* file, int line)
+{
+    //Divide::log_new(size ,file, line);
+    // this allocator doesn't support alignment
+    assert(alignment <= 8);
+    return malloc(size);
+}
+// E
+int Vsnprintf8(char* pDestination, size_t n, const char* pFormat, va_list arguments)
+{
+    #ifdef _MSC_VER
+    return _vsnprintf(pDestination, n, pFormat, arguments);
+    #else
+    return vsnprintf(pDestination, n, pFormat, arguments);
+    #endif
+}

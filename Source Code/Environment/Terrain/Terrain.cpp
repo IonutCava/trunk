@@ -73,10 +73,10 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
 
     U8 textureOffset = ShaderProgram::TEXTURE_NORMALMAP + 1;
     U8 layerOffset = 0;
-    std::string layerIndex;
+    stringImpl layerIndex;
     for (U32 i = 0; i < _terrainTextures.size(); ++i){
         layerOffset = i * 2 + textureOffset;
-        layerIndex = Util::toString(i);
+        layerIndex = stringAlg::toBase(Util::toString(i));
         TerrainTextureLayer* textureLayer = _terrainTextures[i];
         drawShader->UniformTexture("texBlend[" + layerIndex + "]",    layerOffset);
         drawShader->UniformTexture("texTileMaps[" + layerIndex + "]", layerOffset + 1);

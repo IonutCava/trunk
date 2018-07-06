@@ -107,8 +107,8 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
         } break;
     };
 
-    _renderBins.emplace(rbType, temp);
-    _renderBinId.emplace(static_cast<U16>(_renderBins.size() - 1),  rbType);
+    hashAlg::emplace(_renderBins, rbType, temp);
+    hashAlg::emplace(_renderBinId, static_cast<U16>(_renderBins.size() - 1),  rbType);
 
     _sortedRenderBins.insert(std::lower_bound(_sortedRenderBins.begin(), 
                                               _sortedRenderBins.end(), 

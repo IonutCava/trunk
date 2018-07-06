@@ -99,7 +99,7 @@ namespace Divide {
     public:
 		typedef boost::function1<void, NavigationMesh* > CreationCallback;
 
-        inline void setFileName(const std::string& fileName) {_fileName.append(fileName);}
+        inline void setFileName(const stringImpl& fileName) {_fileName.append(fileName);}
         /// Initiates the NavigationMesh build process, which includes notifying the
         /// clients and posting a task.
         bool build(SceneGraphNode* const sgn, CreationCallback creationCompleteCallback, bool threaded = true);
@@ -186,9 +186,9 @@ namespace Divide {
 		/// A callback function to call after building is complete
 		CreationCallback   _loadCompleteClbk;
         /// Data file to store this nav mesh in. (From engine executable dir.)
-        std::string _fileName;
+        stringImpl _fileName;
         /// Configuration file
-        std::string _configFile;
+        stringImpl _configFile;
         /// NavMesh extents
         vec3<F32> _extents;
         ///  Query object used for this mesh

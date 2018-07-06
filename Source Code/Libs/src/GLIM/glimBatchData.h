@@ -18,7 +18,8 @@
 
 #include "Declarations.h"
 #include <map>
-#include <string>
+#include "Utility/Headers/String.h"
+#include "Utility/Headers/Vector.h"
 
 namespace NS_GLIM
 {
@@ -45,7 +46,7 @@ namespace NS_GLIM
         // the current value that shall be used for all new elements
         Glim4ByteData m_CurrentValue[4];
         // the actual array of accumulated elements
-        std::vector<Glim4ByteData> m_ArrayData;
+        vectorImpl<Glim4ByteData> m_ArrayData;
 
         // the offset into the GL buffer, needed for binding it
         unsigned int m_uiBufferOffset;
@@ -106,20 +107,20 @@ namespace NS_GLIM
         // Used for error detection.
         GLIM_BATCH_STATE m_State;
 
-        // All attributes accessable by name.
-        std::map<std::string, GlimArrayData> m_Attributes;
+        // All attributes accessible by name.
+        std::map<stringImpl, GlimArrayData> m_Attributes;
 
         // Position data is stored separately, not as an attribute.
-        std::vector<float> m_PositionData;
+        vectorImpl<float> m_PositionData;
 
         // Index Buffer for points.
-        std::vector<unsigned int> m_IndexBuffer_Points;
+        vectorImpl<unsigned int> m_IndexBuffer_Points;
         // Index Buffer for Lines.
-        std::vector<unsigned int> m_IndexBuffer_Lines;
+        vectorImpl<unsigned int> m_IndexBuffer_Lines;
         // Index Buffer for Triangles.
-        std::vector<unsigned int> m_IndexBuffer_Triangles;
+        vectorImpl<unsigned int> m_IndexBuffer_Triangles;
         // Index Buffer for wireframe rendering of polygons.
-        std::vector<unsigned int> m_IndexBuffer_Wireframe;
+        vectorImpl<unsigned int> m_IndexBuffer_Wireframe;
 
         // Number of Points to render. Used after m_IndexBuffer_Points has been cleared. 
         unsigned int m_uiPointElements;
@@ -163,7 +164,7 @@ namespace NS_GLIM
         ID3D11Buffer* m_pIndexBuffer_Triangles;
         ID3D11Buffer* m_pIndexBuffer_Wireframe;
 
-        std::vector<D3D11_INPUT_ELEMENT_DESC> m_Signature;
+        vectorImpl<D3D11_INPUT_ELEMENT_DESC> m_Signature;
 #endif
 
         // AABB 

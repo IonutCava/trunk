@@ -32,7 +32,7 @@ namespace Divide {
 class Text3D : public Object3D
 {
 public:
-    Text3D(const std::string& text,const std::string& font) :  Object3D(TEXT_3D),
+    Text3D(const stringImpl& text,const stringImpl& font) :  Object3D(TEXT_3D),
                                                                _text(text),
                                                                _font(font),
                                                                _height(16),
@@ -42,8 +42,8 @@ public:
         getGeometryVB()->queueRefresh();
     }
 
-    inline std::string&  getText()    {return _text;}
-    inline std::string&	 getFont()    {return _font;}
+    inline stringImpl&  getText()    {return _text;}
+    inline stringImpl&	 getFont()    {return _font;}
     inline F32&			 getWidth()   {return _width;}
     inline U32&          getHeight()  {return _height;}
 
@@ -56,8 +56,8 @@ public:
     }
 
 private:
-    std::string _text;
-    std::string _font;
+    stringImpl _text;
+    stringImpl _font;
     F32   _width;
     U32   _height;
 };

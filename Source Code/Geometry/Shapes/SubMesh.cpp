@@ -9,7 +9,7 @@
 
 namespace Divide {
 
-SubMesh::SubMesh(const std::string& name, ObjectFlag flag) : Object3D(name, SUBMESH, flag | OBJECT_FLAG_NO_VB),
+SubMesh::SubMesh(const stringImpl& name, ObjectFlag flag) : Object3D(name, SUBMESH, flag | OBJECT_FLAG_NO_VB),
                                                              _visibleToNetwork(true),
                                                              _render(true),
                                                              _id(0),

@@ -39,7 +39,7 @@ void NetworkScene::processGUI(const U64 deltaTime){
     }
 
     if (_taskTimers[2] >= ServerPing){
-        _GUI->modifyText("statusText", (char*)_paramHandler.getParam<std::string>("asioStatus").c_str());
+        _GUI->modifyText("statusText",    (char*)_paramHandler.getParam<std::string>("asioStatus").c_str());
         _GUI->modifyText("serverMessage", (char*)_paramHandler.getParam<std::string>("serverResponse").c_str());
         _guiTimers[2] = 0.0;
     }
@@ -48,7 +48,7 @@ void NetworkScene::processGUI(const U64 deltaTime){
 void NetworkScene::checkPatches(){
     if(_modelDataArray.empty()) return;
     WorldPacket p(CMSG_GEOMETRY_LIST);
-    p << std::string("NetworkScene");
+    p << stringImpl("NetworkScene");
     p << _modelDataArray.size();
 
     /*for(vectorImpl<FileData>::iterator _iter = _modelDataArray.begin(); _iter != _modelDataArray.end(); ++_iter)	{
@@ -64,14 +64,12 @@ bool NetworkScene::preLoad(){
     return Scene::preLoad();
 }
 
-bool NetworkScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
-    std::string ipAdress = _paramHandler.getParam<std::string>("serverAddress");
-    std::string port = "443";
-    ASIOImpl::getInstance().init(ipAdress,port);
+bool NetworkScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
+    ASIOImpl::getInstance().init(_paramHandler.getParam<std::string>("serverAddress").c_str(), "443");
     //Load scene resources
-    bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
+    bool loadState = SCENE_LOAD(name, cameraMgr, gui, true, true);
 
-    _paramHandler.setParam("serverResponse",std::string("waiting"));
+    _paramHandler.setParam("serverResponse", "waiting");
     addDefaultLight();
     addDefaultSky();
     renderState().getCamera().setEye(vec3<F32>(0,30,-30));
@@ -86,16 +84,15 @@ void NetworkScene::test(){
 }
 
 void NetworkScene::connect(){
-    std::string ipAdress = _paramHandler.getParam<std::string>("serverAddress");
-    std::string port = "443";
-    _GUI->modifyText("statusText",(char*)std::string("Connecting to server ...").c_str());
-    ASIOImpl::getInstance().connect(ipAdress,port);
+    _GUI->modifyText("statusText", "Connecting to server ...");
+    ASIOImpl::getInstance().connect(stringAlg::toBase(_paramHandler.getParam<std::string>("serverAddress")), "443");
 }
 
 void NetworkScene::disconnect()
 {
-    if(!ASIOImpl::getInstance().isConnected())
-        _GUI->modifyText("statusText",(char*)std::string("Disconnecting to server ...").c_str());
+    if(!ASIOImpl::getInstance().isConnected()) {
+        _GUI->modifyText("statusText", "Disconnecting to server ...");
+    }
     ASIOImpl::getInstance().disconnect();
 }
 

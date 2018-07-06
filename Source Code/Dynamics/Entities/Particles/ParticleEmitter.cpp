@@ -180,8 +180,8 @@ void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor)
 
     SamplerDescriptor textureSampler;
     ResourceDescriptor texture(descriptor._textureFileName);
-    texture.setResourceLocation(ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/"+
-                                ParamHandler::getInstance().getParam<std::string>("defaultTextureLocation")+"/"+
+	texture.setResourceLocation(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/" +
+		                        ParamHandler::getInstance().getParam<stringImpl>("defaultTextureLocation") + "/" +
                                 descriptor._textureFileName);
     texture.setFlag(true);
     texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);

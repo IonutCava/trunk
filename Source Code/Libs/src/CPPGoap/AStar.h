@@ -14,7 +14,7 @@
 
 #include <ostream>
 #include <unordered_map>
-#include <vector>
+#include "Utility/Headers/Vector.h"
 
 // To support Google Test for private members
 #ifndef TEST_FRIENDS
@@ -27,8 +27,8 @@ namespace goap {
         // A master lookup table of ID-to-Node; useful during the action replay
         std::unordered_map<int, Node> known_nodes_;
 
-        std::vector<Node> open_;   // The A* open list
-        std::vector<Node> closed_; // The A* closed list
+        vectorImpl<Node> open_;   // The A* open list
+        vectorImpl<Node> closed_; // The A* closed list
 
         /**
          Is the given worldstate a member of the closed list? (And by that we mean,
@@ -44,7 +44,7 @@ namespace goap {
          @param ws the worldstate in question
          @return a pointer to the note if found, nullptr if not
          */
-        std::vector<goap::Node>::iterator goap::AStar::memberOfOpen(const WorldState& ws);
+        vectorImpl<goap::Node>::iterator goap::AStar::memberOfOpen(const WorldState& ws);
 
         /**
          Pops the first Node from the 'open' list, moves it to the 'closed' list, and
@@ -73,16 +73,6 @@ namespace goap {
         AStar();
 
         /**
-         Useful when you're debugging a GOAP plan: simply dumps the open list to stdout.
-        */
-        std::string printOpenList() const;
-
-        /**
-         Useful when you're debugging a GOAP plan: simply dumps the closed list to stdout.
-        */
-        std::string printClosedList() const;
-
-        /**
          Actually attempt to formulate a plan to get from start to goal, given a pool of
          available actions.
          @param start the starting worldstate
@@ -95,7 +85,7 @@ namespace goap {
         /**
         Same as above, but the plan is returned by a ref parameter and the function returns true if a plan is found, and false otherwise
         */
-        bool plan(const WorldState& start, const WorldState& goal, const std::vector<Action*>& actions, std::vector<const Action*>& plan);
+        bool plan(const WorldState& start, const WorldState& goal, const vectorImpl<Action*>& actions, vectorImpl<const Action*>& plan);
         TEST_FRIENDS;
     };
 };

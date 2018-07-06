@@ -21,8 +21,7 @@ void ASIOImpl::handlePacket(WorldPacket& p){
 			HandleGeometryAppendOpCode(p);
 			break;
 		default:
-			ParamHandler::getInstance().setParam("serverResponse",
-				std::string("Unknown OpCode: [ 0x") + Util::toString(p.getOpcode()) + std::string(" ]"));
+			ParamHandler::getInstance().setParam("serverResponse", "Unknown OpCode: [ 0x" + Util::toString(p.getOpcode()) + " ]");
 			break;
 	};
 }
@@ -31,8 +30,7 @@ void ASIOImpl::HandlePongOpCode(WorldPacket& p){
 	F32 time = 0;
 	p >> time;
 	D32 result = GETMSTIME() - time;
-	ParamHandler::getInstance().setParam("serverResponse",std::string("Server says: Pinged with : ") +
-					Util::toString(floor(result+0.5f)) + std::string(" ms latency"));
+	ParamHandler::getInstance().setParam("serverResponse", "Server says: Pinged with : " + Util::toString(floor(result+0.5f)) + " ms latency");
 }
 
 void ASIOImpl::HandleDisconnectOpCode(WorldPacket& p){

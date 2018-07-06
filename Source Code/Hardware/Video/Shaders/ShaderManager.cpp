@@ -49,19 +49,19 @@ bool ShaderManager::init() {
 }
 
 /// Whenever a new program is created, it's registered with the manager
-void ShaderManager::registerShaderProgram(const std::string& name, ShaderProgram* const shaderProgram) {
+void ShaderManager::registerShaderProgram(const stringImpl& name, ShaderProgram* const shaderProgram) {
     ShaderProgramMap::iterator it = _shaderPrograms.find(name);
     // Either update an existing shader
     if (it != _shaderPrograms.end()) {
         SAFE_UPDATE(it->second, shaderProgram);
     } else {
         // Or register a new one
-        _shaderPrograms.emplace(name,shaderProgram);
+        hashAlg::emplace(_shaderPrograms, name, shaderProgram);
     }
 }
 
 /// Unloading/Deleting a program will unregister it from the manager
-void ShaderManager::unregisterShaderProgram(const std::string& name) {
+void ShaderManager::unregisterShaderProgram(const stringImpl& name) {
     // The shader program must be registered in order to unregister it
     ShaderProgramMap::iterator it = _shaderPrograms.find(name);
     if (it != _shaderPrograms.end()) {
@@ -86,13 +86,13 @@ U8 ShaderManager::update(const U64 deltaTime) {
 }
 
 /// Calling this will force a recompilation of all shader stages for the program that matches the name specified
-bool ShaderManager::recompileShaderProgram(const std::string& name) {
+bool ShaderManager::recompileShaderProgram(const stringImpl& name) {
     bool state = false;
     // Find the shader program
     FOR_EACH(ShaderProgramMap::value_type& it, _shaderPrograms) {
-        const std::string& shaderName = it.second->getName();
+        const stringImpl& shaderName = it.second->getName();
         // Check if the name matches any of the program's name components
-        if (shaderName.find(name) != std::string::npos || shaderName.compare(name) == 0) {
+        if (shaderName.find(name) != stringImpl::npos || shaderName.compare(name) == 0) {
             // We process every partial match. So add it to the recompilation queue
             _recompileQueue.push(it.second);
             // Mark as found
@@ -135,7 +135,7 @@ void ShaderManager::refreshSceneData() {
 }
 
 /// Open the file found at 'location' matching 'atomName' and return it's source code
-const char* ShaderManager::shaderFileRead(const std::string &atomName, const std::string& location) {
+const char* ShaderManager::shaderFileRead(const stringImpl &atomName, const stringImpl& location) {
     // See if the atom was previously loaded and still in cache
     AtomMap::iterator it = _atoms.find(atomName);
     // If that's the case, return the code from cache
@@ -147,7 +147,7 @@ const char* ShaderManager::shaderFileRead(const std::string &atomName, const std
         return nullptr;
     }
     // Open the atom file
-    std::string file = location+"/"+atomName;
+    stringImpl file = location+"/"+atomName;
     FILE *fp = nullptr;
     fopen_s(&fp,file.c_str(),"r");
     // Read the contents
@@ -162,7 +162,7 @@ const char* ShaderManager::shaderFileRead(const std::string &atomName, const std
             content[count] = '\0';
             retContent = strdup(content);
             // Add the code to the atom cache for future reference
-            _atoms.emplace(atomName, retContent);
+            hashAlg::emplace(_atoms, atomName, retContent);
             SAFE_DELETE_ARRAY(content);
         }
         fclose(fp);
@@ -194,7 +194,7 @@ I8 ShaderManager::shaderFileWrite(char *atomName, const char *s) {
 /// Remove a shader entity. The shader is deleted only if it isn't referenced by a program
 void ShaderManager::removeShader(Shader* s) {
     // Keep a copy of it's name
-    std::string name(s->getName());
+    stringImpl name(s->getName());
     // Try to find it
     ShaderMap::iterator it = _shaderNameMap.find(name);
     if (it != _shaderNameMap.end()) {
@@ -208,7 +208,7 @@ void ShaderManager::removeShader(Shader* s) {
 }
 
 /// Return a new shader reference
-Shader* ShaderManager::getShader(const std::string& name, const bool recompile) {
+Shader* ShaderManager::getShader(const stringImpl& name, const bool recompile) {
     // Try to find the shader
     ShaderMap::iterator it = _shaderNameMap.find(name);
     if (it != _shaderNameMap.end()) {
@@ -224,7 +224,7 @@ Shader* ShaderManager::getShader(const std::string& name, const bool recompile) 
 }
 
 /// Load a shader by name, source code and stage
-Shader* ShaderManager::loadShader(const std::string& name, const std::string& source, const ShaderType& type,const bool recompile) {
+Shader* ShaderManager::loadShader(const stringImpl& name, const stringImpl& source, const ShaderType& type,const bool recompile) {
     // See if we have the shader already loaded
     Shader* shader = getShader(name, recompile);
     if (!recompile) {
@@ -244,7 +244,7 @@ Shader* ShaderManager::loadShader(const std::string& name, const std::string& so
         if(recompile) {
             _shaderNameMap[name] = shader;
         } else {
-            _shaderNameMap.emplace(name,shader);
+            hashAlg::emplace(_shaderNameMap, name, shader);
         }
     }
 

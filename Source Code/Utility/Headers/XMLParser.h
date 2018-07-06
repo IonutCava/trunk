@@ -31,6 +31,7 @@
 #		//pragma GCC diagnostic ignored "-Wall"
 #endif
 
+#include "Utility/Headers/String.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 

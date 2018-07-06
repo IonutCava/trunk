@@ -14,7 +14,7 @@ SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type)
 {
 }
 
-SceneNode::SceneNode(const std::string& name, const SceneNodeType& type) : Resource(name),
+SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type) : Resource(name),
                                                              _material(nullptr),
                                                              _refreshMaterialData(true),
                                                              _nodeReady(false),

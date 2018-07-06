@@ -25,7 +25,7 @@
 
 #include "Console.h"
 #include "cdigginsAny.h"
-#include "Utility/Headers/UnorderedMap.h"
+#include "Utility/Headers/HashMap.h"
 #include "Utility/Headers/Localization.h"
 #include "Hardware/Platform/Headers/SharedMutex.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
@@ -34,13 +34,17 @@
 namespace Divide {
 
 DEFINE_SINGLETON (ParamHandler)
-typedef Unordered_map<std::string, cdiggins::any> ParamMap;
-typedef Unordered_map<std::string, const char* >  ParamTypeMap;
+typedef hashMapImpl<stringImpl, cdiggins::any> ParamMap;
+/// A special map for string types (small perf. optimization for add/retrieve)
+typedef hashMapImpl<stringImpl, stringImpl >   ParamStringMap;
 
 public:
+	inline void setDebugOutput(bool logState) {
+		_logState = logState;
+	}
 
-	template <class T>
-	inline const T& getParam(const std::string& name, const T& defaultValue = T()) const {
+	template <typename T>
+	inline T getParam(const stringImpl& name, T defaultValue = T()) const {
 		ReadLock r_lock(_mutex);
 		ParamMap::const_iterator it = _params.find(name);
 		if(it != _params.end()) {
@@ -48,30 +52,31 @@ public:
 		    const T& ret = it->second.constant_cast<T>(success);
 #           ifdef _DEBUG		
 		        if (!success) {
-			        ERROR_FN(Locale::get("ERROR_PARAM_CAST"),name.c_str(),typeid(T).name());
-		        } else {
+			        ERROR_FN(Locale::get("ERROR_PARAM_CAST"),name.c_str());
+					DIVIDE_ASSERT(success, "ParamHandler error: Can't cast requested param to specified type!");
+		        } 
 #           endif
 
 		    return ret;
-
-#           ifdef _DEBUG	
-                }
-#           endif
-		}
+		} 
+		
+		ERROR_FN(Locale::get("ERROR_PARAM_GET"), name.c_str());
 	    return defaultValue; //integrals will be 0, string will be empty, etc;
 	}
 
-	void setParam(const std::string& name, const cdiggins::any& value) {
+    template<typename T>
+	void setParam(const stringImpl& name, const T& value) {
 		WriteLock w_lock(_mutex);
 		ParamMap::iterator it = _params.find(name); 
         if (it == _params.end()) {
-            _params.emplace(name,value);
+			DIVIDE_ASSERT(emplace(_params, name, cdiggins::any(value)).second, "ParamHandler error: can't add specified value to map!");
         } else {
-			it->second = value;
+			it->second = cdiggins::any(value);
         }
 	}
 
-	inline void delParam(const std::string& name) {
+	template<typename T>
+	inline void delParam(const stringImpl& name) {
 		if (isParam(name)) {
 			WriteLock w_lock(_mutex);
 			_params.erase(name);
@@ -83,24 +88,76 @@ public:
 		}
 	}
 
-	inline void setDebugOutput(bool logState) {
-		_logState = logState;
-	}
-
-	inline U32 getSize() const {
-		ReadLock r_lock(_mutex);
-		return (U32)_params.size();
-	}
-
-	inline bool isParam(const std::string& param) const {
+	template<typename T>
+	inline bool isParam(const stringImpl& param) const {
 		ReadLock r_lock(_mutex);
 		return _params.find(param) != _params.end();
 	}
 
+	template<>
+	inline stringImpl getParam(const stringImpl& name, stringImpl defaultValue) const {
+		ReadLock r_lock(_mutex);
+		ParamStringMap::const_iterator it = _paramsStr.find(name);
+		if (it != _paramsStr.end()) {
+			return it->second;
+		}
+
+		ERROR_FN(Locale::get("ERROR_PARAM_GET"), name.c_str());
+		return defaultValue;
+	}
+
+	template<>
+	void setParam(const stringImpl& name, const stringImpl& value) {
+		WriteLock w_lock(_mutex);
+		ParamStringMap::iterator it = _paramsStr.find(name);
+		if (it == _paramsStr.end()) {
+			DIVIDE_ASSERT(emplace(_paramsStr, name, value).second, "ParamHandler error: can't add specified value to map!");
+		} else {
+			it->second = value;
+		}
+	}
+
+#if defined(STRING_IMP) && STRING_IMP != 1
+	template<>
+	inline std::string getParam(const stringImpl& name, std::string defaultValue) const {
+		return stringAlg::fromBase(getParam<stringImpl>(name, stringAlg::toBase(defaultValue)));
+	}
+
+	template<>
+	inline void setParam(const stringImpl& name, const std::string& value) {
+		setParam(name, stringImpl(value.c_str()));
+	}
+	
+	template<>
+	inline void delParam<std::string>(const stringImpl& name) {
+		delParam<stringImpl>(name);
+	}
+#endif
+
+	template<>
+	inline void delParam<stringImpl>(const stringImpl& name) {
+		if (isParam<stringImpl>(name)) {
+			WriteLock w_lock(_mutex);
+			_paramsStr.erase(name);
+			if (_logState) {
+				PRINT_FN(Locale::get("PARAM_REMOVE"), name.c_str());
+			}
+		} else {
+			ERROR_FN(Locale::get("ERROR_PARAM_REMOVE"), name.c_str());
+		}
+	}
+
+	template<>
+	inline bool isParam<stringImpl>(const stringImpl& param) const {
+		ReadLock r_lock(_mutex);
+		return _paramsStr.find(param) != _paramsStr.end();
+	}
+
 private:
-	boost::atomic_bool _logState;
 	ParamMap _params;
+	ParamStringMap _paramsStr;
 	mutable SharedLock _mutex;
+	boost::atomic_bool _logState;
 
 END_SINGLETON
 

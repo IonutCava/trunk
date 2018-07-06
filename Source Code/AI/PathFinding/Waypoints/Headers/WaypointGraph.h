@@ -28,8 +28,8 @@ namespace Divide {
     namespace Navigation {
 
 	class WaypointGraph {
-		typedef Unordered_map<I32, Waypoint*> WaypointMap;
-		//typedef Unordered_map<I32, WaypointPath> PathMap;
+		typedef hashMapImpl<U32, Waypoint*> WaypointMap;
+		//typedef hashMapImpl<I32, WaypointPath> PathMap;
 	public:
 		WaypointGraph();
 		~WaypointGraph();
@@ -47,7 +47,7 @@ namespace Divide {
 		WaypointMap _waypoints;
 		//PathMap     _paths;
 
-		U32 _id;
+		U32  _id;
 		bool _loop;
 
 		vectorImpl<vec3<F32> >         _positions;

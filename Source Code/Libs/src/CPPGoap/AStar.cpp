@@ -14,10 +14,10 @@ int goap::AStar::calculateHeuristic(const WorldState& now, const WorldState& goa
 
 void goap::AStar::addToOpenList(Node&& n) {
     // insert maintaining sort order
-    auto it = std::lower_bound(begin(open_),
-                               end(open_),
+    auto it = std::lower_bound(open_.begin(),
+                               open_.end(),
                                n);
-    open_.emplace(it, std::move(n));
+    open_.insert(it, std::move(n));
 }
 
 goap::Node& goap::AStar::popAndClose() {
@@ -33,34 +33,18 @@ goap::Node& goap::AStar::popAndClose() {
 }
 
 bool goap::AStar::memberOfClosed(const WorldState& ws) const {
-    if (std::find_if(begin(closed_), end(closed_), [&](const Node& n) { return n.ws_ == ws; }) == end(closed_)) {
+    if (vectorAlg::find_if(closed_.begin(), closed_.end(), [&](const Node& n) { return n.ws_ == ws; }) == closed_.end()) {
         return false;
     } else {
         return true;
     }
 }
 
-std::vector<goap::Node>::iterator goap::AStar::memberOfOpen(const WorldState& ws) {
-    return std::find_if(begin(open_), end(open_), [&](const Node& n) { return n.ws_ == ws; });
+vectorImpl<goap::Node>::iterator goap::AStar::memberOfOpen(const WorldState& ws) {
+    return vectorAlg::find_if(open_.begin(), open_.end(), [&](const Node& n) { return n.ws_ == ws; });
 }
 
-std::string goap::AStar::printOpenList() const {
-    std::ostringstream oss;
-    for (const auto& n : open_) {
-        oss << n << std::endl;
-    }
-    return oss.str();
-}
-
-std::string goap::AStar::printClosedList() const {
-    std::ostringstream oss;
-    for (const auto& n : closed_) {
-        oss << n << std::endl;
-    }
-    return oss.str();
-}
-
-bool goap::AStar::plan(const WorldState& start, const WorldState& goal, const std::vector<Action*>& actions, std::vector<const Action*>& plan) {
+bool goap::AStar::plan(const WorldState& start, const WorldState& goal, const vectorImpl<Action*>& actions, vectorImpl<const Action*>& plan) {
     // Feasible we'd re-use a planner, so clear out the prior results
     open_.clear();
     closed_.clear();
@@ -111,7 +95,7 @@ bool goap::AStar::plan(const WorldState& start, const WorldState& goal, const st
                 }
 
                 auto needle = memberOfOpen(possibility);
-                if (needle==end(open_)) { // not a member of open list
+                if (needle==open_.end()) { // not a member of open list
                     // Make a new node, with current as its parent, recording G & H
                     Node found(possibility, current.g_ + action->cost(), calculateHeuristic(possibility, goal), current.id_, action);
                     known_nodes_[found.id_] = found;

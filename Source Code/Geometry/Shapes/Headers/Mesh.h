@@ -66,14 +66,14 @@ protected:
 
 protected:
 
-    typedef Unordered_map<std::string, SceneGraphNode*> childrenNodes;
-    typedef Unordered_map<U32, SubMesh*> subMeshRefMap;
+    typedef hashMapImpl<stringImpl, SceneGraphNode*> childrenNodes;
+    typedef hashMapImpl<U32, SubMesh*> subMeshRefMap;
 
     bool _visibleToNetwork;
     bool _playAnimations;
     bool _playAnimationsCurrent;
 
-    vectorImpl<std::string > _subMeshes;
+    vectorImpl<stringImpl > _subMeshes;
     subMeshRefMap            _subMeshRefMap;
     BoundingBox              _maxBoundingBox;
 };

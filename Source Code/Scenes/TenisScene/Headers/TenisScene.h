@@ -65,7 +65,7 @@ public:
 
     void preRender();
 
-    bool load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui);
+    bool load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui);
     bool loadResources(bool continueOnErrors);
     bool initializeAI(bool continueOnErrors);
     bool deinitializeAI(bool continueOnErrors);

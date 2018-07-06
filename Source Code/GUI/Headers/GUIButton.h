@@ -38,9 +38,9 @@ class GUIButton : public GUIElement {
 typedef DELEGATE_CBK ButtonCallback;
 friend class GUI;
 protected:
-    GUIButton(const std::string& id,
-              const std::string& text,
-              const std::string& guiScheme,
+    GUIButton(const stringImpl& id,
+              const stringImpl& text,
+              const stringImpl& guiScheme,
               const vec2<I32>& position,
               const vec2<U32>& dimensions,
               const vec3<F32>& color,
@@ -48,12 +48,12 @@ protected:
               ButtonCallback callback);
     ~GUIButton();
 
-    void setTooltip(const std::string& tooltipText);
-    void setFont(const std::string& fontName, const std::string& fontFileName, U32 size);
+    void setTooltip(const stringImpl& tooltipText);
+    void setFont(const stringImpl& fontName, const stringImpl& fontFileName, U32 size);
     bool joystickButtonPressed(const CEGUI::EventArgs& /*e*/);
 
 protected:
-    std::string _text;
+    stringImpl _text;
     vec2<U32>	_dimensions;
     vec3<F32>	_color;
     bool		_pressed;

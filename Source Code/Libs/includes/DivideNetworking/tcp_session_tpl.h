@@ -77,7 +77,7 @@ public:
   virtual void sendPacket(const WorldPacket& p);
 
   //Push a new file in the output queue
-  virtual void sendFile(const std::string& fileName);
+  virtual void sendFile(const stringImpl& fileName);
 
 private:
   virtual void stop();
@@ -112,7 +112,7 @@ private:
   boost::asio::streambuf input_buffer_;
   deadline_timer input_deadline_;
   std::deque<WorldPacket> output_queue_;
-  std::deque<std::string> output_file_queue_;
+  std::deque<stringImpl> output_file_queue_;
   deadline_timer non_empty_output_queue_;
   deadline_timer output_deadline_;
   boost::asio::strand _strand;

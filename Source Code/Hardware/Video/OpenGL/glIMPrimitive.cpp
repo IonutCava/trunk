@@ -32,15 +32,15 @@ void glIMPrimitive::vertex(const vec3<F32>& vert) {
     _imInterface->Vertex( vert.x, vert.y, vert.z );
 }
 
-void glIMPrimitive::attribute4ub(const std::string& attribName, const vec4<U8>& value) {
+void glIMPrimitive::attribute4ub(const stringImpl& attribName, const vec4<U8>& value) {
     _imInterface->Attribute4ub(attribName.c_str(), value.x, value.y, value.z, value.w);
 }
 
-void glIMPrimitive::attribute4f(const std::string& attribName, const vec4<F32>& value) {
+void glIMPrimitive::attribute4f(const stringImpl& attribName, const vec4<F32>& value) {
     _imInterface->Attribute4f(attribName.c_str(), value.x, value.y, value.z, value.w);
 }
 
-void glIMPrimitive::attribute1i(const std::string& attribName, I32 value) {
+void glIMPrimitive::attribute1i(const stringImpl& attribName, I32 value) {
     _imInterface->Attribute1i(attribName.c_str(), value);
 }
 

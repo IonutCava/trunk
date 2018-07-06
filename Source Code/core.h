@@ -37,8 +37,6 @@
 #include "Core/Headers/ApplicationTimer.h"       //For time management
 #include "Core/Headers/Console.h"              //For printing to the standard output
 #include "Utility/Headers/Localization.h"      //For language parsing
-#include "Utility/Headers/UnorderedMap.h"
-#include "Utility/Headers/Vector.h"
 
 namespace Divide {
 

@@ -105,7 +105,7 @@ void Client::handle_read_file(const boost::system::error_code& ec,size_t bytes_t
         request_stream.read(buf.c_array(), 2); // eat the "\n\n"
         std::cout << file_path << " size is " << file_size << ", tellg=" << request_stream.tellg()<< std::endl;
         size_t pos = file_path.find_last_of('\\');
-        if (pos!=std::string::npos)
+        if (pos!=stringImpl::npos)
             file_path = file_path.substr(pos+1);
         output_file.open(file_path.c_str(), std::ios_base::binary);
         if (!output_file)
@@ -141,10 +141,10 @@ void Client::handle_read_file_content(const boost::system::error_code& err, std:
      start_read();
  }
 
-void handle_error(const std::string& function_name, const boost::system::error_code& err)
+void handle_error(const stringImpl& function_name, const boost::system::error_code& err)
 {
-     std::cout << __FUNCTION__ << " in " << function_name <<" due to " << err <<" " << err.message()<< std::endl;
- }
+     std::cout << __FUNCTION__ << " in " << function_name.c_str() <<" due to " << err <<" " << err.message()<< std::endl;
+}
 
 void Client::start_write(){
     if (stopped_) return;

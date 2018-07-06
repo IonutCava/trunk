@@ -34,25 +34,25 @@ public:
     GUIConsoleCommandParser();
     ~GUIConsoleCommandParser();
 
-    bool processCommand(const std::string& commandString);
+    bool processCommand(const stringImpl& commandString);
 
 private:
-    typedef Unordered_map<std::string/*command name*/, boost::function1<void, std::string /*args*/ > > CommandMap;
+    typedef hashMapImpl<stringImpl/*command name*/, boost::function1<void, stringImpl /*args*/ > > CommandMap;
 
-    void handleSayCommand(const std::string& args);
-    void handleQuitCommand(const std::string& args);
-    void handleHelpCommand(const std::string& args);
-    void handleEditParamCommand(const std::string& args);
-    void handlePlaySoundCommand(const std::string& args);
-    void handleNavMeshCommand(const std::string& args);
-    void handleShaderRecompileCommand(const std::string& args);
-    void handleFOVCommand(const std::string& args);
-    void handleInvalidCommand(const std::string& args);
-    void handleAddObject(const std::string& args/*type or name,size or scale*/);
+    void handleSayCommand(const stringImpl& args);
+    void handleQuitCommand(const stringImpl& args);
+    void handleHelpCommand(const stringImpl& args);
+    void handleEditParamCommand(const stringImpl& args);
+    void handlePlaySoundCommand(const stringImpl& args);
+    void handleNavMeshCommand(const stringImpl& args);
+    void handleShaderRecompileCommand(const stringImpl& args);
+    void handleFOVCommand(const stringImpl& args);
+    void handleInvalidCommand(const stringImpl& args);
+    void handleAddObject(const stringImpl& args/*type or name,size or scale*/);
 
 private:
     ///Help text for every command
-    Unordered_map<std::string, const char* > _commandHelp;
+    hashMapImpl<stringImpl, const char* > _commandHelp;
     ///used for sound playback
     AudioDescriptor* _sound;
 };

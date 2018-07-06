@@ -98,7 +98,7 @@ protected:
     friend class PhysXSceneInterface;
     physx::PxRigidActor*        _actor;
     physx::PxGeometryType::Enum _type;
-    std::string                 _actorName;
+    stringImpl                 _actorName;
     bool                        _isDynamic;
     bool                        _isInScene;
     F32                         _userData;
@@ -146,7 +146,7 @@ public:
   //Default Shapes:
    bool createPlane(const vec3<F32>& position = VECTOR3_ZERO, U32 size = 1);
    bool createBox(const vec3<F32>& position = VECTOR3_ZERO, F32 size = 1.0f);
-   bool createActor(SceneGraphNode* const node, const std::string& sceneName, PhysicsActorMask mask,PhysicsCollisionGroup group);
+   bool createActor(SceneGraphNode* const node, const stringImpl& sceneName, PhysicsActorMask mask,PhysicsCollisionGroup group);
    inline physx::PxPhysics* const getSDK() {return _gPhysicsSDK;}
    inline void setPhysicsScene(PhysicsSceneInterface* const targetScene) {assert(targetScene); _targetScene = targetScene;}
           void initScene();

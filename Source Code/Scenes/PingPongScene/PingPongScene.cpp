@@ -83,7 +83,7 @@ void PingPongScene::serveBall(){
 void PingPongScene::test(cdiggins::any a, CallbackParam b){
     if(getTasks().empty()) return;
     bool updated = false;
-    std::string message;
+    stringImpl message;
     PhysicsComponent* ballTransform = _ballSGN->getComponent<PhysicsComponent>();
     vec3<F32> ballPosition  = ballTransform->getConstTransform()->getPosition();
 
@@ -229,7 +229,7 @@ void PingPongScene::processInput(const U64 deltaTime){
     }
 }
 
-bool PingPongScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
+bool PingPongScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
     _freeFly = false;
     _wasInFreeFly = false;
 

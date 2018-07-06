@@ -60,7 +60,7 @@ public:
     Kernel(I32 argc, char **argv, Application& parentApp);
     ~Kernel();
 
-    ErrorCode initialize(const std::string& entryPoint);
+    ErrorCode initialize(const stringImpl& entryPoint);
 
     void runLogicLoop();
     ///Our main application rendering loop. Call input requests, physics calculations, pre-rendering, rendering,post-rendering etc
@@ -108,7 +108,7 @@ public:
          Task* taskPtr = New Task(getThreadPool(), tickIntervalMS, startOnCreate, numberOfTicks, threadedFunction);
          taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, _1));
          if (!onCompletionFunction.empty()){
-             _threadedCallbackFunctions.emplace(taskPtr->getGUID(), onCompletionFunction);
+            emplace(_threadedCallbackFunctions, static_cast<U64>(taskPtr->getGUID()), onCompletionFunction);
          }
          return taskPtr;
     }
@@ -117,7 +117,7 @@ public:
         Task* taskPtr = New Task(getThreadPool(), tickIntervalMS, startOnCreate, runOnce, threadedFunction);
         taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, _1));
         if (!onCompletionFunction.empty()){
-            _threadedCallbackFunctions.emplace(taskPtr->getGUID(), onCompletionFunction);
+            emplace(_threadedCallbackFunctions, static_cast<U64>(taskPtr->getGUID()), onCompletionFunction);
         }
         return taskPtr;
     }
@@ -166,7 +166,7 @@ private:
 
     static SharedLock _threadedCallbackLock;
     static vectorImpl<U64 >  _threadedCallbackBuffer;
-    static Unordered_map<U64, DELEGATE_CBK > _threadedCallbackFunctions;
+    static hashMapImpl<U64, DELEGATE_CBK > _threadedCallbackFunctions;
 
     //Command line arguments
     I32    _argc;

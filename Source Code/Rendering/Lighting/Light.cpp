@@ -54,7 +54,7 @@ Light::~Light()
     unload();
 }
 
-bool Light::load(const std::string& name){
+bool Light::load(const stringImpl& name){
     setName(name);
     setShadowMappingCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance())));
     assert(LightManager::hasInstance());

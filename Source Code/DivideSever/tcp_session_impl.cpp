@@ -72,7 +72,7 @@ void tcp_session_impl::HandleGeometryListOpCode(WorldPacket& p)
 	std::cout << "Received [ CMSG_GEOMERTY_LIST ] with : " << data.size << " models" << std::endl;
 	for(U32 i = 0; i < data.size; i++)
 	{
-		std::string name, modelname;
+		stringImpl name, modelname;
 		U32 version = 0;
 		p >> name;
 		p >> modelname;
@@ -118,10 +118,10 @@ void tcp_session_impl::HandleGeometryListOpCode(WorldPacket& p)
 
 void tcp_session_impl::HandleRequestGeometry(WorldPacket& p)
 {
-	std::string file;
+	stringImpl file;
 	p >> file;
 
-	std::cout << "Sending SMSG_SEND_FILE with item: " << file << std::endl;
+	std::cout << "Sending SMSG_SEND_FILE with item: " << stringAlg::fromBase(file) << std::endl;
 	WorldPacket r(SMSG_SEND_FILE);
 	r << (U8)0;
 	sendPacket(r);

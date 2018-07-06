@@ -79,7 +79,7 @@ void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution, co
 
     I32 totalus = 0;
     {
-        for (size_t i = 0; i < m_screenRects.size(); ++i) {
+        for (vectorAlg::vecSize i = 0; i < m_screenRects.size(); ++i) {
             ScreenRect r = m_screenRects[i];
             LightInternal light = m_viewSpaceLights[i];
 
@@ -123,7 +123,7 @@ void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution, co
     }
     if (m_screenRects.size() && !m_tileLightIndexLists.empty()) {
         I32 *data = &m_tileLightIndexLists[0];
-        for (size_t i = 0; i < m_screenRects.size(); ++i) {
+        for (vectorAlg::vecSize i = 0; i < m_screenRects.size(); ++i) {
             U32 lightId = U32(i);
 
             LightInternal light = m_viewSpaceLights[i];

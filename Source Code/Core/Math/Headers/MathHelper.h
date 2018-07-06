@@ -30,8 +30,6 @@
 #define _MATH_HELPER_H_
 
 #include "Hardware/Platform/Headers/PlatformDefines.h"
-#include "Utility/Headers/Vector.h"
-#include <string>
 #include <sstream>
 
 #define M_PIDIV2			1.570796326794896619231321691639f		//  PI / 2
@@ -141,9 +139,9 @@ template <typename T>
 class Quaternion;
 
 namespace Util {
-    inline void replaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace) {
-        size_t pos = 0;
-        while((pos = subject.find(search, pos)) != std::string::npos) {
+    inline void replaceStringInPlace(stringImpl& subject, const stringImpl& search, const stringImpl& replace) {
+        stringAlg::stringSize pos = 0;
+        while((pos = subject.find(search, pos)) != stringImpl::npos) {
              subject.replace(pos, search.length(), replace);
             pos += replace.length();
         }
@@ -155,7 +153,7 @@ namespace Util {
         *second = temp;
     }
 
-    inline void permute(char* input, U32 startingIndex, U32 stringLength, vectorImpl<std::string>& container){
+    inline void permute(char* input, U32 startingIndex, U32 stringLength, vectorImpl<stringImpl>& container){
         if(startingIndex == stringLength -1){
             container.push_back(input);
         }else{
@@ -167,17 +165,17 @@ namespace Util {
         }
     }
 
-    inline vectorImpl<std::string> getPermutations(const std::string& inputString){
-        vectorImpl<std::string> permutationContainer;
+    inline vectorImpl<stringImpl> getPermutations(const stringImpl& inputString){
+        vectorImpl<stringImpl> permutationContainer;
         permute((char*)inputString.c_str(), 0, (U32)inputString.length()-1, permutationContainer);
         return permutationContainer;
     }
 
     static std::stringstream _ssBuffer;
 
-    inline bool isNumber(const std::string& s){
-        _ssBuffer.str(std::string());
-        _ssBuffer << s;
+    inline bool isNumber(const stringImpl& s) {
+        _ssBuffer.str("");
+        _ssBuffer << s.c_str();
         F32 number;
         _ssBuffer >> number;
         if (_ssBuffer.good()) return false;
@@ -187,7 +185,7 @@ namespace Util {
 
     template<typename T>
     inline std::string toString(const T& data){
-        _ssBuffer.str(std::string());
+        _ssBuffer.str("");
         _ssBuffer << data;
         return _ssBuffer.str();
     }
@@ -200,7 +198,19 @@ namespace Util {
         iStream >> floatValue;
         return floatValue;
     }
-
+    /// http://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c
+    inline void split(const stringImpl& input, const char* delimiter,  vectorImpl<stringImpl>& outputVector) {
+        stringAlg::stringSize delLen = static_cast<stringAlg::stringSize>(strlen(delimiter));
+        assert(!input.empty() &&  delLen > 0);
+        stringAlg::stringSize start = 0, end = 0;
+        while ( end != stringImpl::npos) {
+            end = input.find(delimiter, start);
+            // If at end, use length=maxLength.  Else use length=end-start.
+            outputVector.push_back(input.substr(start, (end == stringImpl::npos) ? stringImpl::npos : end - start));
+            // If at end, use start=maxSize.  Else use start=end+delimiter.
+            start = ((end > (stringImpl::npos - delLen) ) ? stringImpl::npos : end + delLen);
+    }
+}
     inline F32 xfov_to_yfov(F32 xfov, F32 aspect) {
         return DEGREES(2.0f * std::atan(tan(RADIANS(xfov) * 0.5f) / aspect));
     }

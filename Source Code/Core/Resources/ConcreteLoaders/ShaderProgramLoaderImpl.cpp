@@ -6,8 +6,10 @@
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
 #include <boost/algorithm/string.hpp>
+#include <EASTL/string.h>
 
 namespace Divide {
+
 
 ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
     ParamHandler& par = ParamHandler::getInstance();
@@ -16,8 +18,8 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
     ptr->setState(RES_LOADING);
     ptr->enableThreadedLoading(_descriptor.getThreaded() && Application::getInstance().mainLoopActive());
     if(_descriptor.getResourceLocation().compare("default") == 0){
-        ptr->setResourceLocation(par.getParam<std::string>("assetsLocation") + "/" +
-                                 par.getParam<std::string>("shaderLocation") + "/" );
+		ptr->setResourceLocation(par.getParam<stringImpl>("assetsLocation") + "/" +
+			                     par.getParam<stringImpl>("shaderLocation") + "/");
     }else{
         ptr->setResourceLocation(_descriptor.getResourceLocation());
     }
@@ -27,8 +29,8 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
 
     //get all of the preprocessor defines
     if(!_descriptor.getPropertyListString().empty()){
-        vectorImpl<std::string> defines;
-        boost::split(defines, _descriptor.getPropertyListString(), boost::is_any_of(","), boost::token_compress_on);
+        vectorImpl<stringImpl> defines;
+        Util::split(_descriptor.getPropertyListString(), ",", defines);
         for(U8 i = 0; i < defines.size(); i++){
             if(!defines[i].empty())ptr->addShaderDefine(defines[i]);
         }

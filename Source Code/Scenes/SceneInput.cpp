@@ -51,7 +51,7 @@ void Scene::findSelection(F32 mouseX, F32 mouseY) {
         // set it's state to selected
         _currentSelection->setSelected(true);
 #ifdef _DEBUG
-        _lines[DEBUG_LINE_RAY_PICK].emplace_back(startRay, endRay, vec4<U8>(0, 255, 0, 255));
+        _lines[DEBUG_LINE_RAY_PICK].push_back(Line(startRay, endRay, vec4<U8>(0, 255, 0, 255)));
 #endif
     }
 

@@ -46,7 +46,7 @@ public:
         return _boundingBoxes;
     }
 
-    inline  SceneGraphNode* findNode(const std::string& name, bool sceneNodeName = false){
+    inline  SceneGraphNode* findNode(const stringImpl& name, bool sceneNodeName = false){
         return _root->findNode(name,sceneNodeName);
     }
 

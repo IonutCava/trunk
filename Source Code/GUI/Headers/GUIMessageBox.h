@@ -45,8 +45,8 @@ public:
     };
 
     bool onConfirm(const CEGUI::EventArgs& /*e*/);
-    void setTitle(const std::string& titleText);
-    void setMessage(const std::string& message);
+    void setTitle(const stringImpl& titleText);
+    void setMessage(const stringImpl& message);
     void setOffset(const vec2<I32>& offsetFromCentre);
     void setMessageType(MessageType type);
     inline void show() {
@@ -54,9 +54,9 @@ public:
         setVisible(true);
     }
 protected:
-    GUIMessageBox(const std::string& id,
-              const std::string& title,
-              const std::string& message,
+    GUIMessageBox(const stringImpl& id,
+              const stringImpl& title,
+              const stringImpl& message,
               const vec2<I32>& offsetFromCentre = vec2<I32>(0),
               CEGUI::Window* parent = nullptr);
     ~GUIMessageBox();

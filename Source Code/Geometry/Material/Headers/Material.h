@@ -106,10 +106,10 @@ public:
     /// ShaderInfo stores information about the shader programs used by this material
     struct ShaderInfo {
         ShaderProgram* _shaderRef;
-        std::string _shader;
+        stringImpl _shader;
         bool _computedShader;
         bool _isCustomShader;
-        vectorImpl<std::string> _shaderDefines;
+        vectorImpl<stringImpl> _shaderDefines;
 
         ShaderProgram* const getProgram();
 
@@ -160,10 +160,10 @@ public:
 
     /// Remove the custom texture assigned to the specified offset
     inline bool removeCustomTexture(U32 index) {
-        vectorImpl<std::pair<Texture*, U32 > >::const_iterator it = std::find_if(_customTextures.begin(), _customTextures.end(), 
-                                                                                [&index](const std::pair<Texture*, U32>& tex) {
-                                                                                    return tex.second == index;
-                                                                                });
+        vectorImpl<std::pair<Texture*, U32 > >::iterator it = std::find_if(_customTextures.begin(), _customTextures.end(), 
+                                                                            [&index](const std::pair<Texture*, U32>& tex) {
+                                                                                return tex.second == index;
+                                                                            });
         if(it == _customTextures.end())
             return false;
 
@@ -176,7 +176,7 @@ public:
     void setBumpMethod(const BumpMethod& newBumpMethod);
     ///Shader modifiers add tokens to the end of the shader name.
     ///Add as many tokens as needed but separate them with a ".". i.e: "Tree.NoWind.Glow"
-    inline void addShaderModifier(const std::string& shaderModifier) { _shaderModifier = shaderModifier; }
+    inline void addShaderModifier(const stringImpl& shaderModifier) { _shaderModifier = shaderModifier; }
     ///Shader defines, separated by commas, are added to the generated shader
     ///The shader generator appends "#define " to the start of each define
     ///For example, to define max light count and max shadow casters add this string:
@@ -184,11 +184,11 @@ public:
     ///The above strings becomes, in the shader:
     ///#define MAX_LIGHT_COUNT 4
     ///#define MAX_SHADOW_CASTERS 2
-    inline void addShaderDefines(RenderStage renderStage, const std::string& shaderDefines) {
+    inline void addShaderDefines(RenderStage renderStage, const stringImpl& shaderDefines) {
         _shaderInfo[renderStage]._shaderDefines.push_back(shaderDefines);
     }
 
-    inline void addShaderDefines(const std::string& shaderDefines)	{
+    inline void addShaderDefines(const stringImpl& shaderDefines)	{
         addShaderDefines(FINAL_STAGE, shaderDefines);
         addShaderDefines(Z_PRE_PASS_STAGE, shaderDefines);
         addShaderDefines(SHADOW_STAGE, shaderDefines);
@@ -196,7 +196,7 @@ public:
 
     ///toggle multi-threaded shader loading on or off for this material
     inline void setShaderLoadThreaded(const bool state) {_shaderThreadedLoad = state;}
-    void setShaderProgram(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE, const bool computeOnAdd = false);
+    void setShaderProgram(const stringImpl& shader, const RenderStage& renderStage = FINAL_STAGE, const bool computeOnAdd = false);
     size_t setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, const RenderStage& renderStage);
 
     void getSortKeys(I32& shaderKey, I32& textureKey) const;
@@ -238,7 +238,7 @@ public:
 private:
     void recomputeShaders();
     void computeShaderInternal();
-    void setShaderProgramInternal(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE, const bool computeOnAdd = false);
+    void setShaderProgramInternal(const stringImpl& shader, const RenderStage& renderStage = FINAL_STAGE, const bool computeOnAdd = false);
     static bool isShaderQueueLocked() {return _shaderQueueLocked; }
     static void lockShaderQueue()     {if(_serializeShaderLoad) _shaderQueueLocked = true; }
     
@@ -248,7 +248,7 @@ private:
 
     std::queue<std::pair<RenderStage, ResourceDescriptor> > _shaderComputeQueue;
     ShadingMode _shadingMode;
-    std::string _shaderModifier; //<use for special shader tokens, such as "Tree"
+    stringImpl _shaderModifier; //<use for special shader tokens, such as "Tree"
     vectorImpl<TranslucencySource > _translucencySource;
     bool _dirty;
     bool _dumpToFile;
@@ -256,14 +256,14 @@ private:
     bool _useAlphaTest; //< use discard if true / blend if otherwise
     bool _doubleSided;
     bool _hardwareSkinning;     ///< Use shaders that have bone transforms implemented
-    typedef Unordered_map<RenderStage, ShaderInfo > shaderInfoMap;
+    typedef hashMapImpl<RenderStage, ShaderInfo, hashAlg::hash<I32>> shaderInfoMap;
     shaderInfoMap _shaderInfo;
 
     bool        _shaderThreadedLoad;
     bool        _computedShaderTextures;//<if we should recompute only fragment shader on texture change
     /// use this map to add more render states mapped to a specific state
     /// 3 render state's: Normal, reflection and shadow
-    typedef Unordered_map<RenderStage, size_t /*renderStateBlockHash*/ > renderStateBlockMap;
+    typedef hashMapImpl<RenderStage, size_t /*renderStateBlockHash*/, hashAlg::hash<I32>> renderStateBlockMap;
     renderStateBlockMap _defaultRenderStates;
     
     /// use this map to add textures to the material

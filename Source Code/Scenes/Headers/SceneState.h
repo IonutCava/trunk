@@ -187,7 +187,7 @@ public:
     bool _cameraUnderwater;
     bool _cameraUpdated; //was the camera moved or rotated this frame
     ///Background music map
-    typedef Unordered_map<std::string /*trackName*/, AudioDescriptor* /*track*/> MusicPlaylist;
+    typedef hashMapImpl<stringImpl /*trackName*/, AudioDescriptor* /*track*/> MusicPlaylist;
     MusicPlaylist _backgroundMusic;
 
 protected:

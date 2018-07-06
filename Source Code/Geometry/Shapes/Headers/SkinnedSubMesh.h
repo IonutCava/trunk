@@ -30,7 +30,7 @@ namespace Divide {
 class AnimationComponent;
 class SkinnedSubMesh : public SubMesh {
 public:
-    SkinnedSubMesh(const std::string& name);
+    SkinnedSubMesh(const stringImpl& name);
     ~SkinnedSubMesh();
 
 public:

@@ -47,8 +47,8 @@ public:
     //Subroutines
     void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const {}
     void SetSubroutine(ShaderType type, U32 index) const {}
-    U32  GetSubroutineIndex(ShaderType type, const std::string& name) const { return 0; }
-    U32  GetSubroutineUniformLocation(ShaderType type, const std::string& name) const { return 0; }
+    U32  GetSubroutineIndex(ShaderType type, const stringImpl& name) const { return 0; }
+    U32  GetSubroutineUniformLocation(ShaderType type, const stringImpl& name) const { return 0; }
     U32  GetSubroutineUniformCount(ShaderType type) const { return 0; }
     //Attributes
     void Attribute(I32 location, D32 value) const {}
@@ -78,14 +78,14 @@ public:
     void UniformTexture(I32 location, U16 slot) {}
 
 private:
-    I32  cachedLoc(const std::string& name, const bool uniform = true) { return -1; }
+    I32  cachedLoc(const stringImpl& name, const bool uniform = true) { return -1; }
     void flushLocCache(){}
 
 private:
-    Unordered_map<std::string, I32 > _shaderVars;
+    hashMapImpl<stringImpl, I32 > _shaderVars;
 
 protected:
-    inline bool generateHWResource(const std::string& name){return ShaderProgram::generateHWResource(name);}
+    inline bool generateHWResource(const stringImpl& name){return ShaderProgram::generateHWResource(name);}
 };
 
 }; //namespace Divide

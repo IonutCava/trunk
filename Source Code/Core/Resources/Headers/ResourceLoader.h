@@ -46,17 +46,17 @@ public:
     ResourceType* operator()();
 
 protected:
-    virtual bool load(ResourceType* const res, const std::string& name);
+    virtual bool load(ResourceType* const res, const stringImpl& name);
 };
 
 #define DEFAULT_LOADER_IMPL(X)	template<> \
-                                bool ImplResourceLoader<X>::load(X* const res, const std::string& name){ \
+                                bool ImplResourceLoader<X>::load(X* const res, const stringImpl& name){ \
                                     res->setState(RES_LOADING); \
                                     return ResourceCache::getInstance().load(res, name);\
                                 }
 
 #define DEFAULT_HW_LOADER_IMPL(X) template<> \
-                                  bool ImplResourceLoader<X>::load(X* const res, const std::string& name){ \
+                                  bool ImplResourceLoader<X>::load(X* const res, const stringImpl& name){ \
                                     res->setState(RES_LOADING); \
                                     return ResourceCache::getInstance().loadHW(res, name);\
                                   }

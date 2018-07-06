@@ -63,7 +63,7 @@ void GUIConsole::CreateCEGUIWindow(){
         ERROR_FN(Locale::get("ERROR_CONSOLE_DOUBLE_INIT"));
     }
     // load the console Window from the layout file
-    std::string layoutFile = ParamHandler::getInstance().getParam<std::string>("GUI.consoleLayout");
+    const std::string& layoutFile = ParamHandler::getInstance().getParam<std::string>("GUI.consoleLayout");
     _consoleWindow = CEGUI::WindowManager::getSingletonPtr()->loadLayoutFromFile(layoutFile);
 
     if (_consoleWindow){
@@ -102,13 +102,13 @@ bool GUIConsole::Handle_TextInput(const CEGUI::EventArgs &e){
             _inputHistoryIndex--;
             if(_inputHistoryIndex < 0)
                 _inputHistoryIndex = (I16)_inputHistory.size()-1;
-            _editBox->setText(_inputHistory[_inputHistoryIndex]);
+            _editBox->setText(_inputHistory[_inputHistoryIndex].c_str());
         }
         if(keyEvent->scancode == CEGUI::Key::ArrowDown){
             _inputHistoryIndex++;
             if(_inputHistoryIndex >= (I32)_inputHistory.size())
                 _inputHistoryIndex = 0;
-            _editBox->setText(_inputHistory[_inputHistoryIndex]);
+            _editBox->setText(_inputHistory[_inputHistoryIndex].c_str());
         }
     }
 
@@ -167,7 +167,7 @@ bool GUIConsole::isVisible(){
 
 void GUIConsole::printText(const char* output, bool error){
     WriteLock w_lock(_outputLock);
-    _outputBuffer.push_back(std::make_pair(std::string(output), error));
+    _outputBuffer.push_back(std::make_pair(output, error));
 }
 
 void GUIConsole::OutputText(const char* inMsg, const bool error) {
@@ -193,7 +193,7 @@ void GUIConsole::update(const U64 deltaTime){
         return;
     }
     WriteLock w_lock(_outputLock);
-    std::pair<std::string, bool> message;
+    std::pair<CEGUI::String, bool> message;
     while(!_outputBuffer.empty()){
         message = _outputBuffer.front();
         if (_lastMsgError != message.second){

@@ -17,7 +17,7 @@
 namespace Divide {
 
 namespace {
-    size_t GetMatchingFormat(const Assimp::Exporter& exporter, const std::string& extension)
+    size_t GetMatchingFormat(const Assimp::Exporter& exporter, const stringImpl& extension)
     {
         for (size_t i = 0, end = exporter.GetExportFormatCount(); i < end; ++i) {
             const aiExportFormatDesc* const e = exporter.GetExportFormatDescription(i);
@@ -94,7 +94,7 @@ bool DVDConverter::init(){
     return _ppsteps != 0;
 }
 
-Mesh* DVDConverter::load(const std::string& file){
+Mesh* DVDConverter::load(const stringImpl& file){
     if (_ppsteps == 0){
         ERROR_FN(Locale::get("ERROR_NO_INIT_IMPORTER_LOAD"));
         return nullptr;
@@ -105,7 +105,7 @@ Mesh* DVDConverter::load(const std::string& file){
     _fileLocation = file;
 
     _modelName = _fileLocation.substr( _fileLocation.find_last_of( '/' ) + 1 );
-    std::string processedModel = _fileLocation.substr(0, _fileLocation.find_last_of("/")) + "/bin/" + _modelName;
+    stringImpl processedModel = _fileLocation.substr(0, _fileLocation.find_last_of("/")) + "/bin/" + _modelName;
     /*FILE* fp = fopen(processedModel.c_str(), "rb");
     if (fp || false){
         fclose(fp);
@@ -114,7 +114,7 @@ Mesh* DVDConverter::load(const std::string& file){
         elapsed = GETMSTIME() - start;
     }else{*/
         start = GETMSTIME();
-        _aiScenePointer = importer->ReadFile(file, _ppsteps);
+        _aiScenePointer = importer->ReadFile(file.c_str(), _ppsteps);
         elapsed = GETMSTIME() - start;
        
        /* Assimp::Exporter exporter;
@@ -165,7 +165,7 @@ Mesh* DVDConverter::load(const std::string& file){
 
         if (tempSubMesh){
             if(!tempSubMesh->getMaterial()){
-                tempSubMesh->setMaterial(loadSubMeshMaterial(skinned, _aiScenePointer->mMaterials[currentMesh->mMaterialIndex], std::string(tempSubMesh->getName() + "_material")));
+                tempSubMesh->setMaterial(loadSubMeshMaterial(skinned, _aiScenePointer->mMaterials[currentMesh->mMaterialIndex], stringImpl(tempSubMesh->getName() + "_material")));
             }
           
             tempMesh->addSubMesh(tempSubMesh);
@@ -188,21 +188,21 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, Mesh* parentMes
     ///an assert is added in the LODn, where n >= 1, loading code to make sure the LOD0 submesh exists first
     bool baseMeshLoading = false;
 
-    std::string temp(source->mName.C_Str());
+    stringImpl temp(source->mName.C_Str());
 
     if(temp.empty()){
         std::stringstream ss;
-        ss << _fileLocation.substr(_fileLocation.rfind("/")+1,_fileLocation.length());
+        ss << stringAlg::fromBase(_fileLocation.substr(_fileLocation.rfind("/")+1,_fileLocation.length()));
         ss << "-submesh-";
         ss << (U32)count;
-        temp = ss.str();
+        temp = stringAlg::toBase(ss.str());
     }
 
     SubMesh* tempSubMesh = nullptr;
     bool skinned = source->HasBones();
-    if(temp.find(".LOD1") != std::string::npos ||
-        temp.find(".LOD2") != std::string::npos/* ||
-        temp.find(".LODn") != std::string::npos*/){ ///Add as many LOD levels as you please
+    if(temp.find(".LOD1") != stringImpl::npos ||
+        temp.find(".LOD2") != stringImpl::npos/* ||
+        temp.find(".LODn") != stringImpl::npos*/){ ///Add as many LOD levels as you please
         tempSubMesh = FindResourceImpl<SubMesh>(_fileLocation.substr(0,_fileLocation.rfind(".LOD")));
         assert(tempSubMesh != nullptr);
         tempSubMesh->incLODcount();
@@ -309,28 +309,28 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, Mesh* parentMes
             idxCount++;
             triangleTemp[m] = currentIndice;
 
-            if(currentIndice < lowestInd)  lowestInd  = currentIndice;
-            if(currentIndice > highestInd) highestInd = currentIndice;
+            lowestInd  = std::min(currentIndice, lowestInd);
+            highestInd = std::max(currentIndice, highestInd);
         }
 
         tempSubMesh->addTriangle(triangleTemp);
     }
 
     tempSubMesh->setGeometryPartitionId(vb->partitionBuffer(idxCount));
-    vb->shrinkToFit();
-    if(baseMeshLoading)	return tempSubMesh;
-    else  		        return nullptr;
+    vb->shrinkAllDataToFit();
+
+    return baseMeshLoading ? tempSubMesh : nullptr;
 }
 
 /// Load the material for the current SubMesh
-Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* source, const std::string& materialName) {
+Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* source, const stringImpl& materialName) {
     // See if the material already exists in a cooked state (XML file)
     STUBBED("LOADING MATERIALS FROM XML IS DISABLED FOR NOW! - Ionut")
     const bool DISABLE_MAT_FROM_FILE = true;
 
     Material* tempMaterial = nullptr;
     if(!DISABLE_MAT_FROM_FILE){
-        tempMaterial = XML::loadMaterial(materialName);
+        tempMaterial = XML::loadMaterial(materialName.c_str());
         if(tempMaterial) return tempMaterial;
     }
 
@@ -443,13 +443,13 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
                                     mode);
         if(result != AI_SUCCESS) break;
         // get full path
-        std::string path = tName.data;
+        stringImpl path = tName.data;
         // get only image name
-        std::string img_name = path.substr( path.find_last_of( '/' ) + 1 );
+        stringImpl img_name = path.substr( path.find_last_of( '/' ) + 1 );
         // try to find a path name
-        std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+        stringImpl pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
         // look in default texture folder
-        path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
+		path = par.getParam<stringImpl>("assetsLocation") + "/" + par.getParam<stringImpl>("defaultTextureLocation") + "/" + path;
         // if we have a name and an extension
         if(!img_name.substr(img_name.find_first_of(".")).empty()){
             // Load the texture resource
@@ -478,12 +478,12 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
 
     result = source->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
     if(result == AI_SUCCESS){
-        std::string path = tName.data;
-        std::string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-        path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
+        stringImpl path = tName.data;
+        stringImpl img_name = path.substr( path.find_last_of( '/' ) + 1 );
+		path = par.getParam<stringImpl>("assetsLocation") + "/" + par.getParam<stringImpl>("defaultTextureLocation") + "/" + path;
 
-        std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
-        if(img_name.rfind('.') !=  std::string::npos){
+        stringImpl pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+        if(img_name.rfind('.') !=  stringImpl::npos){
             if(mode[0] != _aiTextureMapMode_Force32Bit)
                 textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
                                            aiTextureMapModeTable[mode[1]],
@@ -500,11 +500,11 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
 
     result = source->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
     if(result == AI_SUCCESS){
-        std::string path = tName.data;
-        std::string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-        path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
-        std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
-        if(img_name.rfind('.') !=  std::string::npos){
+        stringImpl path = tName.data;
+        stringImpl img_name = path.substr( path.find_last_of( '/' ) + 1 );
+		path = par.getParam<stringImpl>("assetsLocation") + "/" + par.getParam<stringImpl>("defaultTextureLocation") + "/" + path;
+        stringImpl pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+        if(img_name.rfind('.') !=  stringImpl::npos){
             if(mode[0] != _aiTextureMapMode_Force32Bit)
                 textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
                                            aiTextureMapModeTable[mode[1]],
@@ -520,13 +520,13 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
     }//endif
     result = source->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
     if(result == AI_SUCCESS){
-        std::string path = tName.data;
-        std::string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-        std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+        stringImpl path = tName.data;
+        stringImpl img_name = path.substr( path.find_last_of( '/' ) + 1 );
+        stringImpl pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 
-        path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
+		path = par.getParam<stringImpl>("assetsLocation") + "/" + par.getParam<stringImpl>("defaultTextureLocation") + "/" + path;
 
-        if(img_name.rfind('.') !=  std::string::npos){
+        if(img_name.rfind('.') !=  stringImpl::npos){
             if(mode[0] != _aiTextureMapMode_Force32Bit)
                 textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
                                            aiTextureMapModeTable[mode[1]],
@@ -556,13 +556,13 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
 
     result = source->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
     if(result == AI_SUCCESS){
-        std::string path = tName.data;
-        std::string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-        std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+        stringImpl path = tName.data;
+        stringImpl img_name = path.substr( path.find_last_of( '/' ) + 1 );
+        stringImpl pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 
-        path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
+		path = par.getParam<stringImpl>("assetsLocation") + "/" + par.getParam<stringImpl>("defaultTextureLocation") + "/" + path;
 
-        if(img_name.rfind('.') !=  std::string::npos){
+        if(img_name.rfind('.') !=  stringImpl::npos){
             if(mode[0] != _aiTextureMapMode_Force32Bit)
                 textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
                                            aiTextureMapModeTable[mode[1]],

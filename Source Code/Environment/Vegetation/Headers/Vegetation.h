@@ -49,9 +49,9 @@ struct VegetationDetails {
     F32 grassScale;
     F32 treeDensity;
     F32 treeScale;
-    std::string map;
-    std::string name;
-    std::string grassShaderName;
+    stringImpl map;
+    stringImpl name;
+    stringImpl grassShaderName;
     Terrain* parentTerrain;
     Texture* grassBillboards;
 };
@@ -105,7 +105,7 @@ private:
     ImageTools::ImageData _map;  ///< Dispersion map for vegetation placement
     Texture*               _grassBillboards;
     ShaderProgram*         _cullShader;
-    std::string            _grassShaderName;
+    stringImpl            _grassShaderName;
     bool                   _shadowMapped;
     size_t                 _grassStateBlockHash;
     bool                   _culledFinal;

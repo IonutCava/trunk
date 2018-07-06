@@ -43,8 +43,8 @@ public:
                   GFXImageFormat format, GFXImageFormat internalFormat, bool usePOW2 = false);
 
 protected:
-    bool generateHWResource(const std::string& name);
-    void threadedLoad(const std::string& name);
+    bool generateHWResource(const stringImpl& name);
+    void threadedLoad(const stringImpl& name);
     void reserveStorage();
     void updateMipMaps();
     void updateSampler();

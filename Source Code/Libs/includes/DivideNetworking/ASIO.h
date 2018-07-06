@@ -21,9 +21,9 @@ public:
 	///Send a packet to the target server
 	virtual void sendPacket(WorldPacket& p) const;
 	///Init a connection to the target address:port
-	virtual void init(const std::string& address,const std::string& port);
+	virtual void init(const stringImpl& address,const stringImpl& port);
 	///Connect to target address:port only if we have a new IP:PORT combo or our connection timed out
-	virtual void connect(const std::string& address,const std::string& port);
+	virtual void connect(const stringImpl& address,const stringImpl& port);
 	///Disconnect from the server
 	virtual void disconnect();
 	///Check connection state;
@@ -49,7 +49,7 @@ protected:
 	bool _connected;
 	bool _debugOutput;
 	io_service io_service_;
-	std::string _address,_port;
+	stringImpl _address,_port;
 };
 
 }; //namespace Divide

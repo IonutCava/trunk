@@ -25,7 +25,7 @@
 
 #include "RenderBin.h"
 #include "Core/Headers/Singleton.h"
-#include "Utility/Headers/UnorderedMap.h"
+#include "Utility/Headers/HashMap.h"
 
 namespace Divide {
 
@@ -33,8 +33,8 @@ class SceneNode;
 
 ///This class manages all of the RenderBins and renders them in the correct order
 DEFINE_SINGLETON( RenderQueue )
-    typedef Unordered_map<RenderBin::RenderBinType, RenderBin* > RenderBinMap;
-    typedef Unordered_map<U16, RenderBin::RenderBinType > RenderBinIDType;
+    typedef hashMapImpl<RenderBin::RenderBinType, RenderBin*, hashAlg::hash<I32> > RenderBinMap;
+    typedef hashMapImpl<U16, RenderBin::RenderBinType > RenderBinIDType;
 
 public:
     ///

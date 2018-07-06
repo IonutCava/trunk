@@ -169,7 +169,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\DivideServer\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\EASTL\src;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\DivideServer\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -213,7 +213,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\DivideServer\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\EASTL\src;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\DivideServer\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>
@@ -260,7 +260,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\DivideServer\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\EASTL\src;$(EngineLibraries)\EASTL\include;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\includes\;$(SolutionDir)..\Source Code\DivideServer\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>

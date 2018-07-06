@@ -51,9 +51,8 @@ bool GUIEditor::init() {
     // Get a local pointer to the CEGUI Window Manager, Purely for convenience to reduce typing
     CEGUI::WindowManager *pWindowManager = CEGUI::WindowManager::getSingletonPtr();
     // load the editor Window from the layout file
-    std::string layoutFile(ParamHandler::getInstance().getParam<std::string>("GUI.editorLayout"));
-
-    _editorWindow = pWindowManager->loadLayoutFromFile(layoutFile);
+	const stringImpl& layoutFile = ParamHandler::getInstance().getParam<stringImpl>("GUI.editorLayout");
+    _editorWindow = pWindowManager->loadLayoutFromFile(layoutFile.c_str());
 
     if (_editorWindow) {
          // Add the Window to the GUI Root Sheet

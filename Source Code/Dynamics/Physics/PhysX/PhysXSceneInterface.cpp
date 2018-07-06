@@ -176,7 +176,7 @@ void PhysXSceneInterface::addRigidActor(PhysXActor* const actor, bool threaded) 
     }
 }
 
-PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(const std::string& actorName) {
+PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(const stringImpl& actorName) {
     if(!_gScene)
         return nullptr;
 
@@ -200,14 +200,14 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
     PxShape** shapes=New PxShape*[actor._actor->getNbShapes()];
     actor._actor->getShapes(shapes, actor._actor->getNbShapes());
 
-    std::string sgnName = "";
+    stringImpl sgnName = "";
     bool shadowState = true;
     switch(actor._type){
         case PxGeometryType::eBOX: {
             ResourceDescriptor boxDescriptor("BoxActor");
             sceneNode = CreateResource<Box3D>(boxDescriptor);
 
-            sgnName = "BoxActor_" + Util::toString(nbActors);
+            sgnName = stringAlg::toBase("BoxActor_" + Util::toString(nbActors));
 
             if(sceneNode->getRefCount() == 1){
                 Material* boxMaterial = CreateResource<Material>(ResourceDescriptor("BoxActor_material"));

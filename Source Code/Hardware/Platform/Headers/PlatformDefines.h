@@ -23,6 +23,10 @@
 #ifndef _PLATFORM_DEFINES_H_
 #define _PLATFORM_DEFINES_H_
 
+#include "Utility/Headers/Vector.h"
+#include "Utility/Headers/String.h"
+#include "Utility/Headers/HashMap.h"
+
 #include <limits.h>
 #include <boost/function.hpp>
 
@@ -156,9 +160,15 @@ inline bool DOUBLE_COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) {  return Almo
 inline bool FLOAT_COMPARE(F32 X, F32 Y)  { return FLOAT_COMPARE_TOLERANCE(X, Y, EPSILON_F32); }
 inline bool DOUBLE_COMPARE(D32 X, D32 Y) { return DOUBLE_COMPARE_TOLERANCE(X, Y, EPSILON_D32); }
 
-inline void DIVIDE_ASSERT(const bool expression, const char* failMessage){
+/// It is safe to call evaluate expressions and call functions inside the assert check as it will compile for every build type
+inline bool DIVIDE_ASSERT(const bool expression, const char* failMessage) {
     assert(expression && failMessage);
+	return expression;
 }
+
+#ifndef DIVIDE_STATIC_ASSERT
+#define DIVIDE_STATIC_ASSERT(expression, failMessage) static_assert(expression && failMessage)
+#endif
 
 typedef struct packed_int {
     U8 b0; U8 b1; U8 b2; U8 b3;
@@ -178,7 +188,7 @@ typedef union {
 #define SAFE_DELETE_ARRAY(R)	   if(R){ LOG(R); Del [] R; R=nullptr; }
 #define SAFE_DELETE_CHECK(R)       if(R){ LOG(R); Del R; R=nullptr; return true;}else{return false;}
 #define SAFE_DELETE_ARRAY_CHECK(R) if(R){ LOG(R); Del [] R; R=nullptr; return true;}else{return false;}
-#define SAFE_DELETE_vector(R)      for(size_t r_iter(0); r_iter< R.size(); r_iter++){ LOG(R); Del R[r_iter]; }
+#define SAFE_DELETE_vector(R)      for(vectorAlg::vecSize r_iter(0); r_iter< R.size(); r_iter++){ LOG(R); Del R[r_iter]; }
 #define SAFE_UPDATE(OLD,NEW)       if(OLD || NEW){ LOG(OLD); Del OLD; OLD=NEW;} ///OLD or NEW check is kinda' useless, but it's there for consistency
 
 #define DELEGATE_BIND boost::bind
@@ -186,6 +196,11 @@ typedef union {
 #define DELEGATE_CBK  boost::function0<void>
 
 }; //namespace Divide
+
+void* operator new[](size_t size, const char* pName, int flags, unsigned debugFlags, const char* file, int line);
+void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* pName, int flags, unsigned debugFlags, const char* file, int line);
+// EASTL also wants us to define this (see string.h line 197)
+int Vsnprintf8(char* pDestination, size_t n, const char* pFormat, va_list arguments);
 
 #if defined(NDEBUG)
 #   define New new

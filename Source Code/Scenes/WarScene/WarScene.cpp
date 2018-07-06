@@ -171,7 +171,7 @@ void WarScene::startSimulation() {
             }
         }
     } else {    
-        _infoBox->setMessage(std::string("Can't reload the navigation mesh this soon.\n Please wait \\[ " + Util::toString(getUsToSec<U64>(diffTime)) + " ] seconds more!"));
+        _infoBox->setMessage(stringAlg::toBase("Can't reload the navigation mesh this soon.\n Please wait \\[ " + Util::toString(getUsToSec<U64>(diffTime)) + " ] seconds more!"));
         _infoBox->setMessageType(GUIMessageBox::MESSAGE_WARNING);
         _infoBox->show();
     }
@@ -215,7 +215,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
 #endif
 }
 
-bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
+bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
     navMeshStarted = false;
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
@@ -254,30 +254,30 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
         if(i < 10){
             baseNode = cylinderNW;
             currentMesh = cylinderMeshNW;
-            currentName = std::string("Cylinder_NW_" + Util::toString((I32)i));
+            currentName = "Cylinder_NW_" + Util::toString((I32)i);
             currentPos.first  = -200 + 40 * i + 50;
             currentPos.second = -200 + 40 * i + 50;
         }else if(i >= 10 && i < 20){
             baseNode = cylinderNE;
             currentMesh = cylinderMeshNE;
-            currentName = std::string("Cylinder_NE_" + Util::toString((I32)i));
+            currentName = "Cylinder_NE_" + Util::toString((I32)i);
             currentPos.first  =  200 - 40 * (i%10) - 50;
             currentPos.second = -200 + 40 * (i%10) + 50;
         }else if(i >= 20 && i < 30){
             baseNode = cylinderSW;
             currentMesh = cylinderMeshSW;
-            currentName = std::string("Cylinder_SW_" + Util::toString((I32)i));
+            currentName = "Cylinder_SW_" + Util::toString((I32)i);
             currentPos.first  = -200 + 40 * (i%20) + 50;
             currentPos.second =  200 - 40 * (i%20) - 50;
         }else{
             baseNode = cylinderSE;
             currentMesh = cylinderMeshSE;
-            currentName = std::string("Cylinder_SE_" + Util::toString((I32)i));
+            currentName = "Cylinder_SE_" + Util::toString((I32)i);
             currentPos.first  = 200 - 40 * (i%30) - 50;
             currentPos.second = 200 - 40 * (i%30) - 50;
         }
 
-        currentNode = _sceneGraph->getRoot()->addNode(currentMesh, currentName);
+        currentNode = _sceneGraph->getRoot()->addNode(currentMesh, stringAlg::toBase(currentName));
         assert(currentNode);
         currentNode->setSelectable(true);
         currentNode->usageContext(baseNode->usageContext());
@@ -421,22 +421,22 @@ bool WarScene::initializeAI(bool continueOnErrors){
             if(i < 5){
                 currentMesh = soldierMesh1;
                 currentScale = soldierNode1->getComponent<PhysicsComponent>()->getConstTransform()->getScale();
-                currentName = std::string("Soldier_1_" + Util::toString((I32)k) + "_" + Util::toString((I32)i));
+                currentName = "Soldier_1_" + Util::toString((I32)k) + "_" + Util::toString((I32)i);
             }else if(i >= 5 && i < 10){
                 currentMesh = soldierMesh2;
                 currentScale = soldierNode2->getComponent<PhysicsComponent>()->getConstTransform()->getScale();
-                currentName = std::string("Soldier_2_" + Util::toString((I32)k) + "_" + Util::toString((I32)i%5));
+                currentName = "Soldier_2_" + Util::toString((I32)k) + "_" + Util::toString((I32)i%5);
                 speed = 5.75f;
                 zFactor = 1;
             }else{
                 currentMesh = soldierMesh3;
                 currentScale = soldierNode3->getComponent<PhysicsComponent>()->getConstTransform()->getScale();
-                currentName = std::string("Soldier_3_" + Util::toString((I32)k) + "_" + Util::toString((I32)i%10));
+                currentName = "Soldier_3_" + Util::toString((I32)k) + "_" + Util::toString((I32)i%10);
                 speed = 5.35f;
                 zFactor = 2;
             }
 
-            currentNode = _sceneGraph->getRoot()->addNode(currentMesh, currentName);
+            currentNode = _sceneGraph->getRoot()->addNode(currentMesh, stringAlg::toBase(currentName));
             currentNode->getComponent<PhysicsComponent>()->setScale(currentScale);
             DIVIDE_ASSERT(currentNode != nullptr, "WarScene error: INVALID SOLDIER NODE TEMPLATE!");
             currentNode->setSelectable(true);

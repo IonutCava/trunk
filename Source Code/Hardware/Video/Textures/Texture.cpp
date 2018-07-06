@@ -23,7 +23,7 @@ Texture::~Texture()
 }
 
 /// Load texture data using the specified file name
-bool Texture::generateHWResource(const std::string& name) {
+bool Texture::generateHWResource(const stringImpl& name) {
     // Make sure we have a valid file path
     if (getResourceLocation().empty() || getResourceLocation().compare("default") == 0) {
         return false;
@@ -37,7 +37,7 @@ bool Texture::generateHWResource(const std::string& name) {
     // Cube maps and texture arrays need to load each face/layer separately
     } else if (_textureType == TEXTURE_CUBE_MAP || _textureType == TEXTURE_2D_ARRAY) {
         // Each texture face/layer must be in a comma separated list
-        std::stringstream textureLocationList( getResourceLocation() );
+        std::stringstream textureLocationList( getResourceLocation().c_str() );
         // We loop over every texture in the above list and store it in this temporary string
         std::string currentTexture;
         U8 idx = 0;
@@ -45,7 +45,7 @@ bool Texture::generateHWResource(const std::string& name) {
             // Skip invalid entries
             if (!currentTexture.empty()) {
                 // Attempt to load the current entry
-                if (!LoadFile(idx, currentTexture)) {
+                if (!LoadFile(idx, stringAlg::toBase(currentTexture))) {
                     // Invalid texture files are not handled yet, so stop loading
                     return false;
                 }
@@ -74,7 +74,7 @@ bool Texture::generateHWResource(const std::string& name) {
 }
 
 /// Use DevIL to load a file into a Texture Object
-bool Texture::LoadFile(U32 target, const std::string& name) {
+bool Texture::LoadFile(U32 target, const stringImpl& name) {
     // Create a new imageData object
     ImageTools::ImageData img;
     // Flip image if needed
@@ -88,8 +88,8 @@ bool Texture::LoadFile(U32 target, const std::string& name) {
         ParamHandler& par = ParamHandler::getInstance();
         img.flip(false);
         // missing_texture.jpg must be something that really stands out
-        img.create(par.getParam<std::string>("assetsLocation")+"/"+
-                   par.getParam<std::string>("defaultTextureLocation") +"/"+
+		img.create(par.getParam<stringImpl>("assetsLocation", "assets") + "/" +
+			       par.getParam<stringImpl>("defaultTextureLocation", "textures") + "/" +
                    "missing_texture.jpg");
     }
 

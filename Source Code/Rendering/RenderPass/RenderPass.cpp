@@ -9,7 +9,7 @@
 
 namespace Divide {
 
-RenderPass::RenderPass(const std::string& name) : _name(name)
+RenderPass::RenderPass(const stringImpl& name) : _name(name)
 {
     _lastTotalBinSize = 0;
 }

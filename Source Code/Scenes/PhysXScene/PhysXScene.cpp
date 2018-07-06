@@ -36,7 +36,7 @@ void PhysXScene::processInput(const U64 deltaTime){
 
 }
 
-bool PhysXScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
+bool PhysXScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
     s_sceneState = STATE_LOADING;
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);

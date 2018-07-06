@@ -75,7 +75,7 @@ public:
     Scene();
     virtual ~Scene();
 
-    SceneGraphNode* addGeometry(SceneNode* const object,const std::string& sgnName = "");
+    SceneGraphNode* addGeometry(SceneNode* const object,const stringImpl& sgnName = "");
     bool removeGeometry(SceneNode* node);
 
     /**Begin scene logic loop*/
@@ -126,10 +126,10 @@ public:
     ///Override this if you need a custom physics implementation (idle,update,process,etc)
     virtual PhysicsSceneInterface* createPhysicsImplementation();
 
-    ParticleEmitter* addParticleEmitter(const std::string& name, const ParticleEmitterDescriptor& descriptor);
-    ParticleEmitter* getParticleEmitter(const std::string& name);
+    ParticleEmitter* addParticleEmitter(const stringImpl& name, const ParticleEmitterDescriptor& descriptor);
+    ParticleEmitter* getParticleEmitter(const stringImpl& name);
 
-    TerrainDescriptor* getTerrainInfo(const std::string& terrainName);
+    TerrainDescriptor* getTerrainInfo(const stringImpl& terrainName);
     inline vectorImpl<FileData>& getVegetationDataArray() { return _vegetationDataArray; }
 
 
@@ -163,7 +163,7 @@ protected:
     ///It is destroyed after each scene's "deinitializeAI" is called
     std::shared_ptr<Task>  _aiTask;
 
-    typedef Unordered_map<std::string, ParticleEmitter *> ParticleEmitterMap;
+    typedef hashMapImpl<stringImpl, ParticleEmitter *> ParticleEmitterMap;
     ParticleEmitterMap _particleEmitters;
 
 private:
@@ -187,7 +187,7 @@ protected:
     ///if singleStep is true, only the first model from the modelArray will be loaded. 
     ///Useful for loading one model per frame
     virtual void loadXMLAssets(bool singleStep = false);
-    virtual bool load(const std::string& name, CameraManager* const cameraMgr, GUI* const guiInterface);
+    virtual bool load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const guiInterface);
             bool loadModel(const FileData& data);
             bool loadGeometry(const FileData& data);
     virtual bool unload();
@@ -215,7 +215,7 @@ protected:
     DirectionalLight*  addDefaultLight();
     
     ///simple function to load the scene elements.
-    inline bool SCENE_LOAD(const std::string& name, CameraManager* const cameraMgr, GUI* const gui, const bool contOnErrorRes, const bool contOnErrorTasks){
+    inline bool SCENE_LOAD(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui, const bool contOnErrorRes, const bool contOnErrorTasks){
         if(!Scene::load(name,cameraMgr,gui)) {
             ERROR_FN(Locale::get("ERROR_SCENE_LOAD"), "scene load function");
             return false;

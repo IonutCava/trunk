@@ -24,8 +24,6 @@
 #define _GUI_SPLASH_H
 
 #include "Hardware/Platform/Headers/PlatformDefines.h"
-#include <string>
-
 
 namespace Divide {
 
@@ -36,7 +34,7 @@ class ShaderProgram;
 
 class GUISplash {
 public:
-    GUISplash(const std::string& splashImageName, const vec2<U16>& dimensions);
+    GUISplash(const stringImpl& splashImageName, const vec2<U16>& dimensions);
     ~GUISplash();
     void render();
 

@@ -4,7 +4,7 @@
 namespace Divide {
     namespace Input {
 
-U8 InputInterface::init(Kernel* const kernel, const std::string& windowTitle) {
+U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
     if (_bIsInitialized) {
         return NO_ERR;
     }
@@ -13,7 +13,7 @@ U8 InputInterface::init(Kernel* const kernel, const std::string& windowTitle) {
 
     OIS::ParamList pl;
 #   if defined OIS_WIN32_PLATFORM
-        U32 hwnd = (U32)FindWindow(nullptr, ParamHandler::getInstance().getParam<std::string>("appTitle").c_str());
+		U32 hwnd = (U32)FindWindow(nullptr, ParamHandler::getInstance().getParam<stringImpl>("appTitle", "Divide").c_str());
         // Create OIS input manager
         pl.insert(std::make_pair(std::string("WINDOW"), Util::toString(hwnd)));
         pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_FOREGROUND")));

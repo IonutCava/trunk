@@ -78,7 +78,7 @@ public:
         RBT_PLACEHOLDER
     };
 
-    std::string renderBinTypeToNameMap[RBT_PLACEHOLDER+1];
+    stringImpl renderBinTypeToNameMap[RBT_PLACEHOLDER+1];
 
     friend class RenderQueue;
 

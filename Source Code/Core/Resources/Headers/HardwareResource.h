@@ -31,7 +31,7 @@ namespace Divide {
 ///singlethreaded hardware initialization (textures, shaders, etc)
 class HardwareResource : public Resource {
 public:
-	explicit HardwareResource(const std::string& name) : Resource(name),
+	explicit HardwareResource(const stringImpl& name) : Resource(name),
 											             _hardwareInitComplete(false)
 	{
 	}
@@ -41,7 +41,7 @@ public:
 	inline bool isHWInitComplete() const {return _hardwareInitComplete;}
 	///Use this as a callback for multi-threaded loading.
 	///Generate hardware elements (buffers, textures, shaders etc. after joining main loading thread.
-	virtual bool generateHWResource(const std::string& name)  {_hardwareInitComplete = true; return true;}
+	virtual bool generateHWResource(const stringImpl& name)  {_hardwareInitComplete = true; return true;}
 
 private:
 	boost::atomic_bool _hardwareInitComplete;

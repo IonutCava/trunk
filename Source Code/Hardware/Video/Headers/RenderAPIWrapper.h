@@ -174,7 +174,7 @@ protected:
     virtual Texture*            newTexture2D(const bool flipped = false) const = 0;
     virtual Texture*            newTextureCubemap(const bool flipped = false) const = 0;
     virtual ShaderProgram*      newShaderProgram(const bool optimise = false) const = 0;
-    virtual Shader*             newShader(const std::string& name,const ShaderType& type,const bool optimise = false) const = 0;
+    virtual Shader*             newShader(const stringImpl& name,const ShaderType& type,const bool optimise = false) const = 0;
     virtual bool                initShaders() = 0;
     virtual bool                deInitShaders() = 0;
 
@@ -208,4 +208,5 @@ private:
 };
 
 }; //namespace Divide
+
 #endif

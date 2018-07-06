@@ -7,13 +7,11 @@
 #ifndef GLIM_DECLARATIONS_H
 #define GLIM_DECLARATIONS_H
 
-#include <stdexcept>
-#include <string>
-#include <vector>
-
 #ifndef AE_RENDERAPI_OPENGL
 #define AE_RENDERAPI_OPENGL
 #endif
+
+#include <string>
 
 namespace NS_GLIM
 {
@@ -78,7 +76,7 @@ namespace NS_GLIM
 	typedef void (*GLIM_CALLBACK)(void);
 
 #ifdef AE_RENDERAPI_D3D11
-	typedef void (*GLIM_CALLBACK_SETINPUTLAYOUT)(GLIM_Interface* pBatch, const std::vector<D3D11_INPUT_ELEMENT_DESC>& Signature);
+	typedef void (*GLIM_CALLBACK_SETINPUTLAYOUT)(GLIM_Interface* pBatch, const vectorImpl<D3D11_INPUT_ELEMENT_DESC>& Signature);
 	typedef void (*GLIM_CALLBACK_RELEASERESOURCE)(ID3D11Resource* pResource);
 #endif
 

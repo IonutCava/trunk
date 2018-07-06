@@ -89,8 +89,8 @@ namespace Divide {
         inline bool  isValid()           const {return _valid;}
         inline void  isValid(bool state)       {_valid = state;}
 
-        inline void  setName(const std::string& name)      {_navMeshName = name;}
-        inline const std::string& getName()          const {return _navMeshName;}
+        inline void  setName(const stringImpl& name)      {_navMeshName = name;}
+        inline const stringImpl& getName()          const {return _navMeshName;}
 
         inline const F32* getVerts()     const { return _vertices; }
         inline const F32* getNormals()   const { return _normals; }
@@ -110,7 +110,7 @@ namespace Divide {
 
     private:
         bool _valid;
-        std::string _navMeshName;
+        stringImpl _navMeshName;
         vectorImpl<SamplePolyAreas > _triangleAreaType;
     };
 

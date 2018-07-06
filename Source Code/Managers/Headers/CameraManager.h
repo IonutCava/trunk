@@ -34,8 +34,8 @@ class Kernel;
 /// Multiple camera managers can be created if needed in the future
 /// No need for singletons here
 class CameraManager : private boost::noncopyable, public FrameListener {
-typedef Unordered_map<std::string, Camera*> CameraPool;
-typedef Unordered_map<U64,         Camera*> CameraPoolGUID;
+typedef hashMapImpl<stringImpl, Camera*> CameraPool;
+typedef hashMapImpl<I64,        Camera*> CameraPoolGUID;
 
 public:
     CameraManager(Kernel* const kernelPtr);
@@ -43,14 +43,14 @@ public:
 
     inline Camera* const getActiveCamera() { assert(_camera); return _camera; }
 
-    void addNewCamera(const std::string& cameraName, Camera* const camera);
+    void addNewCamera(const stringImpl& cameraName, Camera* const camera);
 
     void addCameraChangeListener(const DELEGATE_CBK& f) {_changeCameralisteners.push_back(f);}
     void addCameraUpdateListener(const DELEGATE_CBK& f) {_updateCameralisteners.push_back(f); _addNewListener = true;}
 
     inline bool mouseMoved(const Input::MouseEvent& arg) { return _camera->mouseMoved(arg); }
 
-    inline void pushActiveCamera(const std::string& name, bool callActivate = true) { 
+    inline void pushActiveCamera(const stringImpl& name, bool callActivate = true) { 
         _cameraStack.push(findCamera(name));
         setActiveCamera(_cameraStack.top(), callActivate); 
     }
@@ -68,7 +68,7 @@ public:
 protected:
     ///This is inherited from FrameListener and is used to update the view matrix every frame
     bool frameStarted(const FrameEvent& evt);
-    Camera* findCamera(const std::string& name);
+    Camera* findCamera(const stringImpl& name);
     Camera* findCamera(U64 cameraGUID);
     void setActiveCamera(Camera* cam, bool callActivate = true);
 

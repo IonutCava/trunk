@@ -45,7 +45,7 @@ namespace Divide {
 
 class SubMesh : public Object3D {
 public:
-    SubMesh(const std::string& name, ObjectFlag flag = OBJECT_FLAG_NONE);
+    SubMesh(const stringImpl& name, ObjectFlag flag = OBJECT_FLAG_NONE);
 
     virtual ~SubMesh();
 

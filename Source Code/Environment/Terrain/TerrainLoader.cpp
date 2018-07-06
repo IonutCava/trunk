@@ -21,7 +21,7 @@ TerrainLoader::~TerrainLoader()
 }
 
 bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDescriptor){
-    const std::string& name = terrainDescriptor->getVariable("terrainName");
+    const stringImpl& name = terrainDescriptor->getVariable("terrainName");
   
     terrain->setUnderwaterDiffuseScale(terrainDescriptor->getVariablef("underwaterDiffuseScale"));
 
@@ -31,9 +31,9 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
     blendMapSampler.toggleMipMaps(false);
 
     TerrainTextureLayer* textureLayer = nullptr;
-    std::string layerOffsetStr;
-    std::string currentTexture;
-    std::string arrayLocation;
+    stringImpl layerOffsetStr;
+    stringImpl currentTexture;
+    stringImpl arrayLocation;
     U32 textureCount = 0;
     U32 textureCountAlbedo = 0;
     U32 textureCountDetail = 0;
@@ -41,7 +41,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
         textureCountAlbedo = 0;
         textureCountDetail = 0;
 
-        layerOffsetStr = Util::toString(i);
+        layerOffsetStr = stringAlg::toBase(Util::toString(i));
         textureLayer = New TerrainTextureLayer();
         
         ResourceDescriptor textureBlendMap("Terrain Blend Map_" + name + "_layer_" + layerOffsetStr);
@@ -122,8 +122,8 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
     terrainMaterial->setShininess(20.0f);
     terrainMaterial->addShaderDefines("COMPUTE_TBN");
     terrainMaterial->addShaderDefines("SKIP_TEXTURES");
-    terrainMaterial->addShaderDefines("MAX_TEXTURE_LAYERS " + Util::toString(terrain->_terrainTextures.size()));
-    terrainMaterial->addShaderDefines("CURRENT_TEXTURE_COUNT " + Util::toString(textureCount));
+    terrainMaterial->addShaderDefines(stringAlg::toBase("MAX_TEXTURE_LAYERS " + Util::toString(terrain->_terrainTextures.size())));
+    terrainMaterial->addShaderDefines(stringAlg::toBase("CURRENT_TEXTURE_COUNT " + Util::toString(textureCount)));
     terrainMaterial->setShaderProgram("terrain", FINAL_STAGE, true);
     terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", SHADOW_STAGE, true);
     terrainMaterial->setShaderProgram("depthPass.PrePass.Terrain", Z_PRE_PASS_STAGE, true);
@@ -182,7 +182,7 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* t
     vectorImpl<U16> heightValues;
     if (terrainDescriptor->is16Bit()){
         assert(heightmapWidth != 0 && heightmapHeight != 0);
-        std::string terrainRawFile(terrainDescriptor->getVariable("heightmap"));
+        stringImpl terrainRawFile(terrainDescriptor->getVariable("heightmap"));
         assert(terrainRawFile.substr(terrainRawFile.length() - 4, terrainRawFile.length()).compare(".raw") == 0); // only raw files for 16 bit support
         // Read File Data
         FILE* terrainFile = nullptr;
@@ -352,9 +352,9 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* t
 
 void TerrainLoader::initializeVegetation(Terrain* terrain, TerrainDescriptor* terrainDescriptor) {
     U8 textureCount = 0;
-    std::string textureLocation;
+    stringImpl textureLocation;
 
-    std::string currentImage = terrainDescriptor->getVariable("grassBillboard1");
+    stringImpl currentImage = terrainDescriptor->getVariable("grassBillboard1");
     if (!currentImage.empty()){
         textureLocation += currentImage;
         textureCount++;

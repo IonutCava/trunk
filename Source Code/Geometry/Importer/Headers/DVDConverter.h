@@ -64,14 +64,14 @@ class  SubMesh;
 DEFINE_SINGLETON( DVDConverter )
 
 public:
-    Mesh* load(const std::string& file);
+    Mesh* load(const stringImpl& file);
     bool init();
 
 private:
     DVDConverter();
     ~DVDConverter();
     SubMesh* loadSubMeshGeometry(const aiMesh* source, Mesh* parentMesh, U16 count);
-    Material* loadSubMeshMaterial(bool skinned, const aiMaterial* source, const std::string& materialName);
+    Material* loadSubMeshMaterial(bool skinned, const aiMaterial* source, const stringImpl& materialName);
 
 private:
     struct vertexWeight {
@@ -84,8 +84,8 @@ private:
 
     const aiScene* _aiScenePointer;
     U32   _ppsteps;
-    std::string _fileLocation;
-    std::string _modelName;
+    stringImpl _fileLocation;
+    stringImpl _modelName;
 
     TextureWrap                aiTextureMapModeTable[TextureWrap_PLACEHOLDER];
     Material::ShadingMode      aiShadingModeInternalTable[Material::ShadingMode_PLACEHOLDER];

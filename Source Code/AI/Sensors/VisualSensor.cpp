@@ -14,31 +14,31 @@ VisualSensor::VisualSensor(AIEntity* const parentEntity) : Sensor(parentEntity, 
 
 void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* const node) {
     DIVIDE_ASSERT(node != nullptr, "VisualSensor error: Invalid node specified for follow function");
-    NodeContainerMap::iterator container = findContainer(containerID);
+	NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
 
     if (container != _nodeContainerMap.end()) {
-        NodeContainer::const_iterator nodeEntry = findNodeEntry(container, node->getGUID());
+        NodeContainer::const_iterator nodeEntry = container->second.find(node->getGUID());
         if (nodeEntry == container->second.end()) {
-            container->second.emplace(node->getGUID(), node);
+            hashAlg::emplace(container->second, node->getGUID(), node);
             node->registerdeletionCallback(DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode, this, containerID, node->getGUID()));
         } else {
             ERROR_FN("VisualSensor: Added the same node to follow twice!");
         }
     } else {
         NodeContainer& newContainer = _nodeContainerMap[containerID];
-        newContainer.emplace(node->getGUID(), node);
+        hashAlg::emplace(newContainer, node->getGUID(), node);
         node->registerdeletionCallback(DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode, this, containerID, node->getGUID()));
     }
 
     NodePositions& positions = _nodePositionsMap[containerID];
-    positions.emplace(node->getGUID(), node->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
+    hashAlg::emplace(positions, node->getGUID(), node->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
 }
 
 void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
     DIVIDE_ASSERT(nodeGUID != 0, "VisualSensor error: Invalid node GUID specified for unfollow function");
-    NodeContainerMap::iterator container = findContainer(containerID);
+	NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
     if (container != _nodeContainerMap.end()) {
-        NodeContainer::const_iterator nodeEntry = findNodeEntry(container, nodeGUID);
+        NodeContainer::iterator nodeEntry = container->second.find(nodeGUID);
         if (nodeEntry != container->second.end()) {
             container->second.erase(nodeEntry);
         } else {
@@ -60,7 +60,7 @@ void VisualSensor::update(const U64 deltaTime) {
 }
 
 SceneGraphNode* const VisualSensor::getClosestNode(U32 containerID) {
-    NodeContainerMap::iterator container = findContainer(containerID);
+    NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
     if (container != _nodeContainerMap.end()) {
         NodePositions& positions = _nodePositionsMap[container->first];
         NPC* const unit = _parentEntity->getUnitRef();
@@ -76,7 +76,7 @@ SceneGraphNode* const VisualSensor::getClosestNode(U32 containerID) {
                 }
             }
             if (currentNearest != 0) {
-                NodeContainer::const_iterator nodeEntry = findNodeEntry(container, currentNearest);
+                NodeContainer::const_iterator nodeEntry = container->second.find(currentNearest);
                 if (nodeEntry != container->second.end()) {
                     return nodeEntry->second;
                 }
@@ -98,7 +98,7 @@ F32 VisualSensor::getDistanceToNodeSq(U32 containerID, U64 nodeGUID) {
 
 vec3<F32> VisualSensor::getNodePosition(U32 containerID, U64 nodeGUID) {
     DIVIDE_ASSERT(nodeGUID != 0, "VisualSensor error: Invalid node GUID specified for position request");
-    NodeContainerMap::iterator container = findContainer(containerID);
+	NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
     if (container != _nodeContainerMap.end()) {
         NodePositions& positions = _nodePositionsMap[container->first];
         NodePositions::iterator it = positions.find(nodeGUID);
@@ -108,14 +108,6 @@ vec3<F32> VisualSensor::getNodePosition(U32 containerID, U64 nodeGUID) {
     }
 
     return vec3<F32>(std::numeric_limits<F32>::max());
-}
-
-NodeContainerMap::iterator VisualSensor::findContainer(U32 container)  {
-    return _nodeContainerMap.find(container);
-}
-
-NodeContainer::const_iterator VisualSensor::findNodeEntry(NodeContainerMap::const_iterator containerIt, U64 GUID) const {
-    return containerIt->second.find(GUID);
 }
 
 }; //namespace Divide

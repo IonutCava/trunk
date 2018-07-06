@@ -103,7 +103,7 @@ void TenisSceneAISceneImpl::processInput(const U64 deltaTime){
 void TenisSceneAISceneImpl::processData(const U64 deltaTime){
     AIEntity* nearestEntity = _entity;
     F32 distance = _entity->getTeam()->getMemberVariable()[_entity];
-    typedef Unordered_map<AIEntity*, F32 > memberVariable;
+    typedef hashMapImpl<AIEntity*, F32 > memberVariable;
     FOR_EACH(memberVariable::value_type& member, _entity->getTeam()->getMemberVariable()){
         if(member.second < distance && member.first->getGUID() != _entity->getGUID()){
             distance = member.second;

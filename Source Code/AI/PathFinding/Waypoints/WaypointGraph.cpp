@@ -13,7 +13,7 @@ namespace Navigation {
 
 	void WaypointGraph::addWaypoint(Waypoint* wp){
 		if(_waypoints.find(wp->getID()) != _waypoints.end()) return;
-		_waypoints.emplace(wp->getID(), wp);
+		hashAlg::emplace(_waypoints, wp->getID(), wp);
 		updateGraph();
 	}
 
@@ -27,7 +27,7 @@ namespace Navigation {
 	}
 
 	void WaypointGraph::updateGraph(){
-	   typedef Unordered_map<U32, Waypoint*> wp;
+	   typedef hashMapImpl<U32, Waypoint*> wp;
 	   _positions.clear();
 	   _rotations.clear();
 	   _times.clear();

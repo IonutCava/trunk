@@ -98,12 +98,13 @@ public:
         
     ~JoystickInterface()
     {
-        for(size_t nJoyInd = 0; nJoyInd < _vecJoys.size(); ++nJoyInd)
+        for(vectorAlg::vecSize nJoyInd = 0; nJoyInd < _vecJoys.size(); ++nJoyInd) {
             _pInputInterface->destroyInputObject( _vecJoys[nJoyInd] );
+        }
     }
         
-    inline size_t getNumberOfJoysticks() const { return _vecJoys.size(); }
-    inline bool   wasFFDetected()        const { return _bFFFound; }
+    inline vectorAlg::vecSize getNumberOfJoysticks() const { return _vecJoys.size(); }
+    inline bool    wasFFDetected()        const { return _bFFFound; }
         
     enum EWhichJoystick { 
         ePrevious=-1,
@@ -164,9 +165,11 @@ public:
 
     void captureEvents() {
         // This fires off buffered events for each joystick we have
-        for(size_t nJoyInd = 0; nJoyInd < _vecJoys.size(); ++nJoyInd)
-            if( _vecJoys[nJoyInd] )
+        for(vectorAlg::vecSize nJoyInd = 0; nJoyInd < _vecJoys.size(); ++nJoyInd) {
+            if( _vecJoys[nJoyInd] ) {
                 _vecJoys[nJoyInd]->capture();
+            }
+        }
     }
 };
 

@@ -48,7 +48,7 @@ class SceneRenderState;
 
 /// Rough around the edges Adapter pattern abstracting the actual rendering API and access to the GPU
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
-    typedef Unordered_map<size_t, RenderStateBlock* > RenderStateMap;
+    typedef hashMapImpl<size_t, RenderStateBlock* > RenderStateMap;
     typedef std::stack<vec4<I32>, vectorImpl<vec4<I32> > > ViewportStack;
     typedef boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<15> > LoadQueue;
 
@@ -133,7 +133,7 @@ public:
     inline Texture*            newTexture2D(const bool flipped = false)      const { return _api.newTexture2D(flipped); }
     inline Texture*            newTextureCubemap(const bool flipped = false) const { return _api.newTextureCubemap(flipped);}
     inline ShaderProgram*      newShaderProgram(const bool optimise = false) const { return _api.newShaderProgram(optimise); }
-    inline Shader*             newShader(const std::string& name, const  ShaderType& type, const bool optimise = false) const {
+    inline Shader*             newShader(const stringImpl& name, const  ShaderType& type, const bool optimise = false) const {
         return _api.newShader(name,type,optimise); 
     }
     inline ShaderBuffer* newSB(const bool unbound = false, const bool persistentMapped = true) const {
@@ -173,7 +173,7 @@ public:
     bool setBufferData(const GenericDrawCommand& cmd);
 
     inline I32 getDrawID(I64 drawIDIndex) {
-        Unordered_map<I64, I32>::const_iterator it = _sgnToDrawIDMap.find(drawIDIndex);
+        hashMapImpl<I64, I32>::const_iterator it = _sgnToDrawIDMap.find(drawIDIndex);
         assert(it != _sgnToDrawIDMap.end());
         return it->second;
     }
@@ -428,7 +428,7 @@ protected:
 
     vectorImpl<NodeData >     _matricesData;
     vectorImpl<GPUVideoMode > _supportedDislpayModes;
-    Unordered_map<I64, I32>   _sgnToDrawIDMap;
+    hashMapImpl<I64, I32>   _sgnToDrawIDMap;
 
     ShaderBuffer*  _gfxDataBuffer;
     ShaderBuffer*  _nodeBuffer;
@@ -440,5 +440,6 @@ END_SINGLETON
 }; //namespace Divide
 
 #include "GFXDevice-Inl.h"
+
 
 #endif

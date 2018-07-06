@@ -33,8 +33,8 @@ namespace Divide {
 namespace AI {
 DEFINE_SINGLETON(AIManager)
 public:
-    typedef Unordered_map<U32, AITeam*> AITeamMap;
-    typedef Unordered_map<AIEntity::PresetAgentRadius, Navigation::NavigationMesh* > NavMeshMap;
+    typedef hashMapImpl<U32, AITeam*> AITeamMap;
+    typedef hashMapImpl<AIEntity::PresetAgentRadius, Navigation::NavigationMesh*, hashAlg::hash<I32> > NavMeshMap;
 
     /// Clear all AI related data (teams, entities, NavMeshes, etc);
     void Destroy();

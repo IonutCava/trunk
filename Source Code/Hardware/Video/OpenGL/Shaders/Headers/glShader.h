@@ -29,15 +29,15 @@ namespace Divide {
 
 class glShader : public Shader {
 public:
-	glShader(const std::string& name,const ShaderType& type,const bool optimise = false);
+	glShader(const stringImpl& name,const ShaderType& type,const bool optimise = false);
 	~glShader();
 
-	bool load(const std::string& source);
+	bool load(const stringImpl& source);
 	bool compile();
 	void validate();
 
 private:
-	std::string preprocessIncludes(const std::string& source, const std::string& filename, GLint level /*= 0 */ );
+	stringImpl preprocessIncludes(const stringImpl& source, const stringImpl& filename, GLint level /*= 0 */ );
 };
 
 }; //namespace Divide

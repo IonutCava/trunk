@@ -60,7 +60,7 @@ public:
         return _physicsAsset;
     }
 
-    void cookCollisionMesh(const std::string& sceneName);
+    void cookCollisionMesh(const stringImpl& sceneName);
 
     /*Transform management*/
     inline const Transform* getConstTransform() { return getTransform(); }

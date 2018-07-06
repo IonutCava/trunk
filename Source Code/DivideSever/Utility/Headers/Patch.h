@@ -9,9 +9,9 @@ namespace Divide {
 
 struct PatchData
 {
-	std::string sceneName;
+	stringImpl sceneName;
 	U32 size;
-	vectorImpl<std::string> name, modelName;
+	vectorImpl<stringImpl> name, modelName;
 	vectorImpl<F32> version;
 };
 

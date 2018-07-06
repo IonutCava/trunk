@@ -37,7 +37,7 @@ class Shader : public TrackedObject {
 public:
 
     /// The shader's name is the period-separated list of properties, type is the render stage this shader is used for
-    Shader(const std::string& name, const ShaderType& type, const bool optimise = false);
+    Shader(const stringImpl& name, const ShaderType& type, const bool optimise = false);
     /// The shader is deleted only by the ShaderManager when no shader programs are referencing it
     virtual ~Shader();
 
@@ -46,7 +46,7 @@ public:
     /// The pipeline stage this shader is used for
     inline const ShaderType   getType()     const {return _type;}
     /// The shader's name is a period-separated list of strings used to define the main shader file and the properties to load
-    inline const std::string& getName()     const {return _name;}
+    inline const stringImpl& getName()     const {return _name;}
     
     /// Register the given shader program with this shader
     void  addParentProgram(ShaderProgram* const shaderProgram);
@@ -54,14 +54,14 @@ public:
     void  removeParentProgram(ShaderProgram* const shaderProgram);
 
     /// API dependent loading
-    virtual bool load(const std::string& name) = 0;
+    virtual bool load(const stringImpl& name) = 0;
     /// API conversion from text source to binary
     virtual bool compile() = 0; 
     /// API dependent validation
     virtual void validate() = 0;
 
 protected:
-    std::string _name;
+    stringImpl _name;
     ShaderType  _type;
     /// Use a pre-compile optimisation parser
     bool _optimise;

@@ -220,7 +220,7 @@ namespace NS_GLIM
         m_PositionData.push_back (y);
         m_PositionData.push_back (z);
 
-        std::map<std::string, GlimArrayData>::iterator it, itend;
+        std::map<stringImpl, GlimArrayData>::iterator it, itend;
         itend = m_Attributes.end ();
 
         for (it = m_Attributes.begin (); it != itend; ++it)
@@ -246,7 +246,7 @@ namespace NS_GLIM
 
         m_Signature.push_back (sig);
 
-        std::map<std::string, GlimArrayData>::const_iterator it, itend;
+        std::map<stringImpl, GlimArrayData>::const_iterator it, itend;
         itend = m_Attributes.end ();
 
         unsigned int uiOffset = sizeof (float) * 3;
@@ -323,7 +323,7 @@ namespace NS_GLIM
     {
         unsigned int uiVertexDataSize = sizeof (float) * 3;
 
-        std::map<std::string, GlimArrayData>::const_iterator it, itend;
+        std::map<stringImpl, GlimArrayData>::const_iterator it, itend;
         itend = m_Attributes.end ();
 
         for (it = m_Attributes.begin (); it != itend; ++it)
@@ -386,7 +386,7 @@ namespace NS_GLIM
         Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
         Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        std::map<std::string, GlimArrayData>::iterator it, itend;
+        std::map<stringImpl, GlimArrayData>::iterator it, itend;
         itend = m_Attributes.end ();
 
         for (it = m_Attributes.begin (); it != itend; ++it)
@@ -476,7 +476,7 @@ namespace NS_GLIM
         
         // now upload each attribute array one after another
 
-        std::map<std::string, GlimArrayData>::iterator it, itend;
+        std::map<stringImpl, GlimArrayData>::iterator it, itend;
         itend = m_Attributes.end ();
 
         for (it = m_Attributes.begin (); it != itend; ++it)

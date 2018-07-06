@@ -52,7 +52,7 @@ void RenderPassManager::removeRenderPass(RenderPass* const renderPass,bool delet
     }
 }
 
-void RenderPassManager::removeRenderPass(const std::string& name,bool deleteRP) {
+void RenderPassManager::removeRenderPass(const stringImpl& name,bool deleteRP) {
     for(vectorImpl<RenderPassItem >::iterator it = _renderPasses.begin(); it != _renderPasses.end(); it++){
         if(it->_rp->getName().compare(name) == 0){
             if(deleteRP)

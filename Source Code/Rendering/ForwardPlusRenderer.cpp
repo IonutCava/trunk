@@ -11,7 +11,8 @@ ForwardPlusRenderer::ForwardPlusRenderer() : Renderer(RENDERER_FORWARD_PLUS)
     _transparentGrid = New LightGrid();
     /// Initialize our depth ranges construction shader (see LightManager.cpp for more documentation)
     ResourceDescriptor rangesDesc("DepthRangesConstruct");
-    rangesDesc.setPropertyList("LIGHT_GRID_TILE_DIM_X " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_X) + "," + "LIGHT_GRID_TILE_DIM_Y " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_Y));
+    rangesDesc.setPropertyList(stringAlg::toBase("LIGHT_GRID_TILE_DIM_X " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_X) + "," +
+                                                 "LIGHT_GRID_TILE_DIM_Y " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_Y)));
     _depthRangesConstructProgram = CreateResource<ShaderProgram>(rangesDesc);
     _depthRangesConstructProgram->UniformTexture("depthTex", 0);
     /// Depth ranges are used for grid based light culling
@@ -60,7 +61,7 @@ bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
     const Light::LightMap& lights = LightManager::getInstance().getLights();
 
     _omniLightList.clear();
-    _omniLightList.reserve(lights.size());
+    _omniLightList.reserve(static_cast<vectorAlg::vecSize>(lights.size()));
 
     FOR_EACH(const Light::LightMap::value_type& it, lights) {
         const Light& light = *it.second;

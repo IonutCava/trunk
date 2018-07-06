@@ -28,7 +28,7 @@ Application::~Application(){
     ApplicationTimer::destroyInstance();
 }
 
-ErrorCode Application::initialize(const std::string& entryPoint, I32 argc, char **argv){
+ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char **argv){
     assert(!entryPoint.empty());
     //Read language table
     ParamHandler::getInstance().setDebugOutput(false);

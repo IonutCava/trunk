@@ -42,25 +42,25 @@ void ASIO::disconnect(){
 	sendPacket(p);
 }
 
-void ASIO::init(const std::string& address,const std::string& port){
+void ASIO::init(const stringImpl& address,const stringImpl& port){
 	try{
 		tcp::resolver res(io_service_);
 		_localClient = new Client(this, io_service_,_debugOutput);
 		_work.reset(new boost::asio::io_service::work(io_service_));
-	    _localClient->start(res.resolve(tcp::resolver::query(address, port)));
+	    _localClient->start(res.resolve(tcp::resolver::query(address.c_str(), port.c_str())));
 		_thread = new boost::thread(boost::bind(&boost::asio::io_service::run, &io_service_));
 	    io_service_.poll();
 		_connected = true;
 	}catch (std::exception& e){
 		if(_debugOutput){
-			std::string msg("ASIO Exception: ");
+			stringImpl msg("ASIO Exception: ");
 			msg.append(e.what());
-			std::cout << msg << std::endl;
+			std::cout << msg.c_str() << std::endl;
 		}
 	}
 }
 
-void ASIO::connect(const std::string& address,const std::string& port){
+void ASIO::connect(const stringImpl& address,const stringImpl& port){
 	if(!_connected) {
 		init(address,port);
 	}
@@ -81,7 +81,7 @@ void ASIO::sendPacket(WorldPacket& p)const {
 	_localClient->sendPacket(p);
 
 	if(_debugOutput){
-		std::string msg = "ASIO: sent opcode [ 0x" + Util::toString(p.getOpcode()) + std::string("]");
+		std::string msg = "ASIO: sent opcode [ 0x" + Util::toString(p.getOpcode()) + "]";
 		std::cout << msg << std::endl;
 	}
 }

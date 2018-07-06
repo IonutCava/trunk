@@ -7,7 +7,7 @@
 
 namespace Divide {
 
-Impostor::Impostor(const std::string& name, F32 radius) : Sphere3D(radius, 8)
+Impostor::Impostor(const stringImpl& name, F32 radius) : Sphere3D(radius, 8)
 {
     getSceneNodeRenderState().setDrawState(false);
     

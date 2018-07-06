@@ -30,10 +30,10 @@ namespace Divide {
 class GUIText : public GUIElement, public TextLabel {
 friend class GUI;
 public:
-    GUIText(const std::string& id,
-            const std::string& text,
+    GUIText(const stringImpl& id,
+            const stringImpl& text,
             const vec2<I32>& position,
-            const std::string& font,
+            const stringImpl& font,
             const vec3<F32>& color,
             CEGUI::Window* parent,
             U32 textHeight = 16) : GUIElement(parent,GUI_TEXT,position), 

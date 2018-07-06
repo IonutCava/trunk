@@ -59,7 +59,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     glfwWindowHint(GLFW_DEPTH_BITS,  24);
     
     // Open an OpenGL window; resolution and windowed mode is specified in the external XML files
-    GLUtil::_mainWindow = glfwCreateWindow(resolution.width, resolution.height, par.getParam<std::string>("appTitle").c_str(),
+	GLUtil::_mainWindow = glfwCreateWindow(resolution.width, resolution.height, par.getParam<stringImpl>("appTitle", "Divide").c_str(),
                                            par.getParam<bool>("runtime.windowedMode", true) ? nullptr : glfwGetPrimaryMonitor(), nullptr);
     // Check if we have a valid window
     if (!GLUtil::_mainWindow) {
@@ -119,7 +119,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // Maximum number of color attachments per framebuffer
     GFX_DEVICE.setMaxRenderTargetOutputs(GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
     // Query GPU vendor to enable/disable vendor specific features
-    std::string gpuVendorByte(reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+    stringImpl gpuVendorByte(reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
     if (!gpuVendorByte.empty()) {
              if(gpuVendorByte.compare(0,5,"Intel")  == 0) { setGPUVendor(GPU_VENDOR_INTEL);  }
         else if(gpuVendorByte.compare(0,6,"NVIDIA") == 0) { setGPUVendor(GPU_VENDOR_NVIDIA); }

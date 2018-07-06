@@ -145,9 +145,7 @@ namespace XML {
                 //texture not fully loaded yet
             }
 
-            std::string fileLocation = texture->getResourceLocation();
-            DIVIDE_ASSERT(!fileLocation.empty(), "INVALID TEXTURE SAVE FILE -------------------------------------");
-            tree.put(textureNode+".file",fileLocation);
+            tree.put(textureNode+".file", stringAlg::fromBase(texture->getResourceLocation()));
             tree.put(textureNode+".flip",texture->isVerticallyFlipped());
             tree.put(textureNode+".MapU", getWrapModeName(sampler.wrapU()));
             tree.put(textureNode+".MapV", getWrapModeName(sampler.wrapV()));
@@ -162,8 +160,8 @@ namespace XML {
         }
 
         Texture* loadTextureXML(const std::string& textureNode, const std::string& textureName) {
-            std::string img_name = textureName.substr( textureName.find_last_of( '/' ) + 1 );
-            std::string pathName = textureName.substr( 0, textureName.rfind("/")+1 );
+            std::string img_name(textureName.substr( textureName.find_last_of( '/' ) + 1 ));
+            std::string pathName(textureName.substr( 0, textureName.rfind("/")+1 ));
 
             TextureWrap wrapU = getWrapMode(pt.get<std::string>(textureNode+".MapU","TEXTURE_REPEAT").c_str());
             TextureWrap wrapV = getWrapMode(pt.get<std::string>(textureNode+".MapV","TEXTURE_REPEAT").c_str());
@@ -177,8 +175,8 @@ namespace XML {
             sampDesc.setFilters(minFilterValue,magFilterValue);
             sampDesc.setAnisotropy(anisotropy);
 
-            ResourceDescriptor texture(img_name);
-            texture.setResourceLocation(pathName + img_name);
+            ResourceDescriptor texture(stringAlg::toBase(img_name));
+            texture.setResourceLocation(stringAlg::toBase(pathName + img_name));
             texture.setFlag(pt.get(textureNode+".flip",true));
             texture.setPropertyDescriptor<SamplerDescriptor>(sampDesc);
 
@@ -198,14 +196,16 @@ namespace XML {
     std::string loadScripts(const std::string& file) {
         ParamHandler &par = ParamHandler::getInstance();
         PRINT_FN(Locale::get("XML_LOAD_SCRIPTS"));
-        read_xml(file,pt);
+        read_xml(file.c_str(), pt);
         std::string activeScene("MainScene");
-        par.setParam("scriptLocation",pt.get("scriptLocation","XML"));
-        par.setParam("assetsLocation",pt.get("assets","assets"));
-        par.setParam("scenesLocation",pt.get("scenesLocation","Scenes"));
-        par.setParam("serverAddress",pt.get("server","127.0.0.1"));
-        loadConfig(par.getParam<std::string>("scriptLocation") + "/" + pt.get("config","config.xml"));
-        read_xml(par.getParam<std::string>("scriptLocation") + "/" + pt.get("startupScene","scenes.xml"),pt);
+		par.setParam("testInt", 2);
+		par.setParam("testFloat", 3.2f);
+        par.setParam("scriptLocation",pt.get<std::string>("scriptLocation","XML"));
+        par.setParam("assetsLocation",pt.get<std::string>("assets","assets"));
+        par.setParam("scenesLocation",pt.get<std::string>("scenesLocation","Scenes"));
+        par.setParam("serverAddress",pt.get<std::string>("server","127.0.0.1"));
+        loadConfig(par.getParam<std::string>("scriptLocation", "XML") + "/" + pt.get("config","config.xml"));
+        read_xml(par.getParam<std::string>("scriptLocation", "XML") + "/" + pt.get("startupScene","scenes.xml"),pt);
         activeScene = pt.get("StartupScene",activeScene);
 
         return activeScene;
@@ -215,7 +215,7 @@ namespace XML {
         ParamHandler &par = ParamHandler::getInstance();
         pt.clear();
         PRINT_FN(Locale::get("XML_LOAD_CONFIG"), file.c_str());
-        read_xml(file,pt);
+        read_xml(file.c_str(),pt);
         par.setParam("locale",pt.get("language","enGB"));
         par.setParam("logFile",pt.get("debug.logFile","none"));
         par.setParam("memFile",pt.get("debug.memFile","none"));
@@ -273,19 +273,19 @@ namespace XML {
         ParamHandler &par = ParamHandler::getInstance();
         pt.clear();
         PRINT_FN(Locale::get("XML_LOAD_SCENE"), sceneName.c_str());
-        std::string sceneLocation = par.getParam<std::string>("scriptLocation") + "/" +
-                                    par.getParam<std::string>("scenesLocation") + "/" + sceneName;
+        std::string sceneLocation(par.getParam<std::string>("scriptLocation") + "/" +
+                                  par.getParam<std::string>("scenesLocation") + "/" + sceneName);
         try {
             read_xml(sceneLocation + ".xml", pt);
         } catch ( boost::property_tree::xml_parser_error & e) {
             ERROR_FN(Locale::get("ERROR_XML_INVALID_SCENE"),sceneName.c_str());
-            std::string error = e.what();
+            std::string error(e.what());
             error += " [check error log!]";
             throw error.c_str();
         }
 
-        par.setParam("currentScene",sceneName);
-        Scene* scene = sceneMgr.createScene(sceneName);
+        par.setParam("currentScene", sceneName);
+        Scene* scene = sceneMgr.createScene(sceneName.c_str());
 
         if (!scene)	{
             ERROR_FN(Locale::get("ERROR_XML_LOAD_INVALID_SCENE"));
@@ -293,7 +293,7 @@ namespace XML {
         }
 
         sceneMgr.setActiveScene(scene);
-        scene->setName(sceneName);
+        scene->setName(sceneName.c_str());
         scene->state().getGrassVisibility() = pt.get("vegetation.grassVisibility",1000.0f);
         scene->state().getTreeVisibility()  = pt.get("vegetation.treeVisibility",1000.0f);
         scene->state().getGeneralVisibility()  = pt.get("options.visibility",1000.0f);
@@ -353,28 +353,31 @@ namespace XML {
         read_xml(file,pt);
         ptree::iterator itTerrain;
         ptree::iterator itTexture;
-        std::string assetLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/";
+        std::string assetLocation(ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/");
 
         for (itTerrain = pt.get_child("terrainList").begin(); itTerrain != pt.get_child("terrainList").end(); ++itTerrain) {
             std::string name = itTerrain->second.data(); //The actual terrain name
             std::string tag = itTerrain->first.data();   //The <name> tag for valid terrains or <xmlcomment> for comments
             //Check and skip commented terrain
-            if(tag.find("<xmlcomment>") != std::string::npos) continue;
+            if (tag.find("<xmlcomment>") != std::string::npos) {
+                continue;
+            }
             //Load the rest of the terrain
-            TerrainDescriptor* ter = CreateResource<TerrainDescriptor>(ResourceDescriptor(name+"_descriptor"));
-            ter->addVariable("terrainName",name);
-            ter->addVariable("heightmap",assetLocation + pt.get<std::string>(name + ".heightmap"));
-            ter->addVariable("waterCaustics", assetLocation + pt.get<std::string>(name + ".waterCaustics"));
-            ter->addVariable("underwaterAlbedoTexture", assetLocation + pt.get<std::string>(name + ".underwaterAlbedoTexture"));
-            ter->addVariable("underwaterDetailTexture", assetLocation + pt.get<std::string>(name + ".underwaterDetailTexture"));
+            TerrainDescriptor* ter = CreateResource<TerrainDescriptor>(ResourceDescriptor(stringAlg::toBase(name +"_descriptor")));
+            ter->addVariable("terrainName", stringAlg::toBase(name));
+            ter->addVariable("heightmap", stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".heightmap")));
+            ter->addVariable("waterCaustics", stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".waterCaustics")));
+            ter->addVariable("underwaterAlbedoTexture", stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".underwaterAlbedoTexture")));
+            ter->addVariable("underwaterDetailTexture", stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".underwaterDetailTexture")));
             ter->addVariable("underwaterDiffuseScale", pt.get<F32>(name + ".underwaterDiffuseScale"));
 
             I32 i = 0;
             std::string temp;
             std::string layerOffsetStr;
             for (itTexture = pt.get_child(name + ".textureLayers").begin(); itTexture != pt.get_child(name + ".textureLayers").end(); ++itTexture, ++i) {
-                std::string layerName = itTexture->second.data();
-                std::string format = itTexture->first.data();
+                std::string layerName(itTexture->second.data());
+                std::string format(itTexture->first.data());
+
                 if (format.find("<xmlcomment>") != std::string::npos) {
                     i--;
                     continue;
@@ -384,57 +387,57 @@ namespace XML {
                 layerOffsetStr = Util::toString(i);
                 temp = pt.get<std::string>(layerName + ".blendMap", "");
                 DIVIDE_ASSERT(!temp.empty(), "Blend Map for terrain missing!");
-                ter->addVariable("blendMap" + layerOffsetStr, assetLocation + temp);
+                ter->addVariable(stringAlg::toBase("blendMap" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
 
                 temp = pt.get<std::string>(layerName + ".redAlbedo", "");
                 if (!temp.empty()) {
-                    ter->addVariable("redAlbedo" + layerOffsetStr, assetLocation + temp);
+                    ter->addVariable(stringAlg::toBase("redAlbedo" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
                 }
                 temp = pt.get<std::string>(layerName + ".redDetail", "");
                 if (!temp.empty()) {
-                    ter->addVariable("redDetail" + layerOffsetStr, assetLocation + temp);
+                    ter->addVariable(stringAlg::toBase("redDetail" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
                 }
                 temp = pt.get<std::string>(layerName + ".greenAlbedo", "");
                 if (!temp.empty()) {
-                    ter->addVariable("greenAlbedo" + layerOffsetStr, assetLocation + temp);
+                    ter->addVariable(stringAlg::toBase("greenAlbedo" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
                 }
                 temp = pt.get<std::string>(layerName + ".greenDetail", "");
                 if (!temp.empty()) {
-                    ter->addVariable("greenDetail" + layerOffsetStr, assetLocation + temp);
+                    ter->addVariable(stringAlg::toBase("greenDetail" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
                 }
                 temp = pt.get<std::string>(layerName + ".blueAlbedo", "");
                 if (!temp.empty()) {
-                    ter->addVariable("blueAlbedo" + layerOffsetStr, assetLocation + temp);
+                    ter->addVariable(stringAlg::toBase("blueAlbedo" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
                 }
                 temp = pt.get<std::string>(layerName + ".blueDetail", "");
                 if (!temp.empty()) {
-                    ter->addVariable("blueDetail" + layerOffsetStr, assetLocation + temp);
+                    ter->addVariable(stringAlg::toBase("blueDetail" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
                 }
                 temp = pt.get<std::string>(layerName + ".alphaAlbedo", "");
                 if (!temp.empty()) {
-                    ter->addVariable("alphaAlbedo" + layerOffsetStr, assetLocation + temp);
+                    ter->addVariable(stringAlg::toBase("alphaAlbedo" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
                 }
                 temp = pt.get<std::string>(layerName + ".alphaDetail", "");
                 if (!temp.empty()) {
-                    ter->addVariable("alphaDetail" + layerOffsetStr, assetLocation + temp);
+                    ter->addVariable(stringAlg::toBase("alphaDetail" + layerOffsetStr), stringAlg::toBase(assetLocation + temp));
                 }
 
-                ter->addVariable("diffuseScaleR" + layerOffsetStr, pt.get<F32>(layerName + ".redDiffuseScale", 0.0f));
-                ter->addVariable("detailScaleR"  + layerOffsetStr, pt.get<F32>(layerName + ".redDetailScale", 0.0f));
-                ter->addVariable("diffuseScaleG" + layerOffsetStr, pt.get<F32>(layerName + ".greenDiffuseScale", 0.0f));
-                ter->addVariable("detailScaleG"  + layerOffsetStr, pt.get<F32>(layerName + ".greenDetailScale", 0.0f));
-                ter->addVariable("diffuseScaleB" + layerOffsetStr, pt.get<F32>(layerName + ".blueDiffuseScale", 0.0f));
-                ter->addVariable("detailScaleB"  + layerOffsetStr, pt.get<F32>(layerName + ".blueDetailScale", 0.0f));
-                ter->addVariable("diffuseScaleA" + layerOffsetStr, pt.get<F32>(layerName + ".alphaDiffuseScale", 0.0f));
-                ter->addVariable("detailScaleA"  + layerOffsetStr, pt.get<F32>(layerName + ".alphaDetailScale", 0.0f));
+                ter->addVariable(stringAlg::toBase("diffuseScaleR" + layerOffsetStr), pt.get<F32>(layerName + ".redDiffuseScale",   0.0f));
+                ter->addVariable(stringAlg::toBase("detailScaleR"  + layerOffsetStr), pt.get<F32>(layerName + ".redDetailScale",    0.0f));
+                ter->addVariable(stringAlg::toBase("diffuseScaleG" + layerOffsetStr), pt.get<F32>(layerName + ".greenDiffuseScale", 0.0f));
+                ter->addVariable(stringAlg::toBase("detailScaleG"  + layerOffsetStr), pt.get<F32>(layerName + ".greenDetailScale",  0.0f));
+                ter->addVariable(stringAlg::toBase("diffuseScaleB" + layerOffsetStr), pt.get<F32>(layerName + ".blueDiffuseScale",  0.0f));
+                ter->addVariable(stringAlg::toBase("detailScaleB"  + layerOffsetStr), pt.get<F32>(layerName + ".blueDetailScale",   0.0f));
+                ter->addVariable(stringAlg::toBase("diffuseScaleA" + layerOffsetStr), pt.get<F32>(layerName + ".alphaDiffuseScale", 0.0f));
+                ter->addVariable(stringAlg::toBase("detailScaleA"  + layerOffsetStr), pt.get<F32>(layerName + ".alphaDetailScale",  0.0f));
             }
 
             ter->setTextureLayerCount(i);
-            ter->addVariable("grassMap",assetLocation + pt.get<std::string>(name + ".vegetation.map"));
-            ter->addVariable("grassBillboard1", assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard1", ""));
-            ter->addVariable("grassBillboard2", assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard2", ""));
-            ter->addVariable("grassBillboard3", assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard3", ""));
-            ter->addVariable("grassBillboard4", assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard4", ""));
+            ter->addVariable("grassMap", stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".vegetation.map")));
+            ter->addVariable("grassBillboard1", stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard1", "")));
+            ter->addVariable("grassBillboard2", stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard2", "")));
+            ter->addVariable("grassBillboard3", stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard3", "")));
+            ter->addVariable("grassBillboard4", stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard4", "")));
             ter->setGrassDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.grassDensity"));
             ter->setTreeDensity(pt.get<F32>(name + ".vegetation.<xmlattr>.treeDensity"));
             ter->setGrassScale(pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale"));
@@ -464,12 +467,12 @@ namespace XML {
 
         if(boost::optional<ptree &> geometry = pt.get_child_optional("geometry")) {
             for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); ++it ) {
-                std::string name = it->second.data();
-                std::string format = it->first.data();
+                std::string name(it->second.data());
+                std::string format(it->first.data());
                 if(format.find("<xmlcomment>") != std::string::npos) continue;
                 FileData model;
-                model.ItemName = name;
-                model.ModelName  = assetLocation + pt.get<std::string>(name + ".model");
+                model.ItemName = stringAlg::toBase(name);
+                model.ModelName  = stringAlg::toBase(assetLocation + pt.get<std::string>(name + ".model"));
                 model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x",1);
                 model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y",1);
                 model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z",1);
@@ -524,8 +527,8 @@ namespace XML {
                 std::string format = it->first.data();
                 if(format.find("<xmlcomment>") != std::string::npos) continue;
                 FileData model;
-                model.ItemName = name;
-                model.ModelName  = assetLocation + pt.get<std::string>(name + ".model");
+                model.ItemName = name.c_str();
+                model.ModelName  = (assetLocation + pt.get<std::string>(name + ".model")).c_str();
                 model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
                 model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
                 model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
@@ -573,13 +576,14 @@ namespace XML {
 
         if(boost::optional<ptree &> primitives = pt.get_child_optional("primitives")) {
             for (it = pt.get_child("primitives").begin(); it != pt.get_child("primitives").end(); ++it ) {
-                std::string name = it->second.data();
-                std::string format = it->first.data();
-                if(format.find("<xmlcomment>") != std::string::npos) continue;
-
+                std::string name(it->second.data());
+                std::string format(it->first.data());
+                if(format.find("<xmlcomment>") != std::string::npos) {
+                    continue;
+                }
                 FileData model;
-                model.ItemName = name;
-                model.ModelName = pt.get<std::string>(name + ".model");
+                model.ItemName = stringAlg::toBase(name);
+                model.ModelName = stringAlg::toBase(pt.get<std::string>(name + ".model"));
                 model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
                 model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
                 model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
@@ -596,8 +600,8 @@ namespace XML {
                 /*For Text3D, it's the line width and for Box3D it's the edge length*/
                 if (model.ModelName.compare("Text3D") == 0) {
                     model.data = pt.get<F32>(name + ".lineWidth");
-                    model.data2 = pt.get<std::string>(name + ".text");
-                    model.data3 = pt.get<std::string>(name + ".fontName");
+                    model.data2 = stringAlg::toBase(pt.get<std::string>(name + ".text"));
+                    model.data3 = stringAlg::toBase(pt.get<std::string>(name + ".fontName"));
                 } else if (model.ModelName.compare("Box3D") == 0) {
                     model.data = pt.get<F32>(name + ".size");
                 } else if (model.ModelName.compare("Sphere3D") == 0) {
@@ -677,11 +681,11 @@ namespace XML {
 
         std::string materialName = matName.substr(matName.rfind("/")+1,matName.length());
 
-        if (FindResourceImpl<Material>(materialName)) {
+        if (FindResourceImpl<Material>(materialName.c_str())) {
             skip = true;
         }
 
-        Material* mat = CreateResource<Material>(ResourceDescriptor(materialName));
+        Material* mat = CreateResource<Material>(ResourceDescriptor(materialName.c_str()));
         if (skip) {
             return mat;
         }
@@ -742,14 +746,14 @@ namespace XML {
 
         ptree pt_writer;
         ParamHandler &par = ParamHandler::getInstance();
-        std::string file = mat.getName();
+        std::string file(mat.getName().c_str());
         file = file.substr(file.rfind("/")+1,file.length());
 
-        std::string location = par.getParam<std::string>("scriptLocation") + "/" +
-                               par.getParam<std::string>("scenesLocation") + "/" +
-                               par.getParam<std::string>("currentScene") + "/materials/";
+        std::string location(par.getParam<std::string>("scriptLocation") + "/" +
+                             par.getParam<std::string>("scenesLocation") + "/" +
+                             par.getParam<std::string>("currentScene") + "/materials/");
 
-        std::string fileLocation = location +  file + "-" + getRendererTypeName(GFX_DEVICE.getRenderer()->getType()) + ".xml";
+        std::string fileLocation(location +  file + "-" + getRendererTypeName(GFX_DEVICE.getRenderer()->getType()) + ".xml");
         pt_writer.clear();
         pt_writer.put("material.name",file);
         pt_writer.put("material.ambient.<xmlattr>.r",  mat.getShaderData()._ambient.r);
@@ -795,23 +799,23 @@ namespace XML {
 
         ShaderProgram* shaderProg = mat.getShaderInfo().getProgram();
         if (shaderProg) {
-            pt_writer.put("shaderProgram.effect", shaderProg->getName());
+            pt_writer.put("shaderProgram.effect", stringAlg::fromBase(shaderProg->getName()));
         }
 
         shaderProg = mat.getShaderInfo(SHADOW_STAGE).getProgram();
         if (shaderProg) {
-            pt_writer.put("shaderProgram.shadowEffect", shaderProg->getName());
+            pt_writer.put("shaderProgram.shadowEffect", stringAlg::fromBase(shaderProg->getName()));
         }
 
         shaderProg = mat.getShaderInfo(Z_PRE_PASS_STAGE).getProgram();
         if (shaderProg) {
-            pt_writer.put("shaderProgram.zPrePassEffect", shaderProg->getName());
+            pt_writer.put("shaderProgram.zPrePassEffect", stringAlg::fromBase(shaderProg->getName()));
         }
 
         boost::property_tree::xml_writer_settings<char> settings('\t', 1);
         FILE * xml = fopen(fileLocation.c_str(), "w");
         fclose(xml);
-        write_xml(fileLocation, pt_writer,std::locale(),settings);
+        write_xml(fileLocation, pt_writer, std::locale(), settings);
     }
 }; //namespace XML
 }; //namespace Divide

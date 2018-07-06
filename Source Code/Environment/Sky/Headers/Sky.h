@@ -38,7 +38,7 @@ enum RenderStage;
 
 class Sky : public SceneNode {
 public:
-    Sky(const std::string& name);
+    Sky(const stringImpl& name);
     ~Sky();
 
     bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);

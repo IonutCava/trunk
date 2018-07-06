@@ -26,7 +26,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SGNComponent.h"
 
 #include "Utility/Headers/Vector.h"
-#include "Utility/Headers/UnorderedMap.h"
+#include "Utility/Headers/HashMap.h"
 #include "Core/Math/Headers/MathClasses.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
@@ -39,8 +39,8 @@ class SceneGraphNode;
 class AnimationComponent : public SGNComponent {
 
 public:
-    typedef Unordered_map<U32 /*frame index*/, BoundingBox>  boundingBoxPerFrame;
-    typedef Unordered_map<U32 /*animation ID*/, boundingBoxPerFrame> boundingBoxPerAnimation;
+    typedef hashMapImpl<U32 /*frame index*/, BoundingBox>  boundingBoxPerFrame;
+    typedef hashMapImpl<U32 /*animation ID*/, boundingBoxPerFrame> boundingBoxPerAnimation;
 
     AnimationComponent(SceneAnimator* animator, SceneGraphNode* const parentSGN);
     ~AnimationComponent();
@@ -50,7 +50,7 @@ public:
 
     void renderSkeleton();
     /// Select an animation by name
-    bool playAnimation(const std::string& name);
+    bool playAnimation(const stringImpl& name);
     /// Select an animation by index
     bool playAnimation(I32  pAnimIndex);
     /// Select next available animation
@@ -62,9 +62,9 @@ public:
     U32 boneCount()  const;
 
     const vectorImpl<mat4<F32> >& transformsByIndex(U32 index) const;
-    const mat4<F32>& currentBoneTransform(const std::string& name);
-    Bone* getBoneByName(const std::string& bname) const;
-    const mat4<F32>& getBoneTransform(const std::string& name);
+    const mat4<F32>& currentBoneTransform(const stringImpl& name);
+    Bone* getBoneByName(const stringImpl& bname) const;
+    const mat4<F32>& getBoneTransform(const stringImpl& name);
 
     inline bool playAnimations()           const { return _playAnimations; }
     inline void playAnimations(bool state)       { _playAnimations = state; }

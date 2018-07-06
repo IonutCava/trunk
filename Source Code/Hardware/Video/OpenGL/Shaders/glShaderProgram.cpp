@@ -79,7 +79,7 @@ U8 glShaderProgram::update(const U64 deltaTime){
             // and fill the buffer with the binary code
             glGetProgramBinary(_shaderProgramId, binaryLength, NULL, &_binaryFormat, binary);
             // dump the buffer to file
-            std::string outFileName("shaderCache/Binary/"+getName()+".bin");
+            stringImpl outFileName("shaderCache/Binary/"+getName()+".bin");
             FILE* outFile = fopen(outFileName.c_str(), "wb");
             if (outFile != NULL) {
                 fwrite(binary, binaryLength, 1, outFile);
@@ -104,9 +104,9 @@ U8 glShaderProgram::update(const U64 deltaTime){
 }
 
 /// Retrieve the program's validation log if we need it
-std::string glShaderProgram::getLog() const {
+stringImpl glShaderProgram::getLog() const {
     // We default to a simple OK message if the log is empty (hopefully, that means validation was successful, nVidia ... )
-    std::string validationBuffer("[OK]");
+    stringImpl validationBuffer("[OK]");
     // Query the size of the log
     GLint length = 0;
     glGetProgramiv(_shaderProgramIDTemp, GL_INFO_LOG_LENGTH, &length);
@@ -122,7 +122,7 @@ std::string glShaderProgram::getLog() const {
         // To avoid overflowing the output buffers (both CEGUI and Console), limit the maximum output size
         if (validationBuffer.size() > 4096 * 16) {
             // On some systems, the program's disassembly is printed, and that can get quite large
-            validationBuffer.resize(4096 * 16 - strlen(Locale::get("GLSL_LINK_PROGRAM_LOG")) - 10);
+            validationBuffer.resize(static_cast<stringAlg::stringSize>(4096 * 16 - strlen(Locale::get("GLSL_LINK_PROGRAM_LOG")) - 10));
             // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
             validationBuffer.append(" ... ");
         }
@@ -159,7 +159,7 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh){
         }
     }else{
         // If refresh == false, we are adding a new stage
-        _shaderIdMap.emplace(shaderId, shader);
+        hashAlg::emplace(_shaderIdMap, shaderId, shader);
     }
 
     // Attach the shader
@@ -171,7 +171,7 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh){
 }
 
 /// This should be called in the loading thread, but some issues are still present, and it's not recommended (yet)
-void glShaderProgram::threadedLoad(const std::string& name) {
+void glShaderProgram::threadedLoad(const stringImpl& name) {
     // Loading from binary gives us a linked program ready for usage.
     if (!_loadedFromBinary) {
         // If this wasn't loaded from binary, we need a new API specific object 
@@ -219,7 +219,7 @@ void glShaderProgram::link(){
         // This isn't as optimised as it should/could be, but it works
         vectorImpl<const char* > vars;
         for (U32 i = 0; i < _outputCount; ++i) {
-            vars.push_back(strdup(std::string("outData" + Util::toString(i)).c_str()));
+            vars.push_back(strdup(("outData" + Util::toString(i)).c_str()));
         }
         // Only separate attributes are supported for now. Interleaved not top prio
         glTransformFeedbackVaryings(_shaderProgramIDTemp, _outputCount, vars.data(), GL_SEPARATE_ATTRIBS);
@@ -240,7 +240,7 @@ void glShaderProgram::link(){
 }
 
 /// Creation of a new shader program. Pass in a shader token and use glsw to load the corresponding effects
-bool glShaderProgram::generateHWResource(const std::string& name) {
+bool glShaderProgram::generateHWResource(const stringImpl& name) {
     _name = name;
     
     // NULL_SHADER shader means use shaderProgram(0), so bypass the normal loading routine
@@ -268,9 +268,9 @@ bool glShaderProgram::generateHWResource(const std::string& name) {
     if (Config::USE_SHADER_BINARY && !refresh && GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) {
         // Only available for new programs
         assert(_shaderProgramIDTemp == 0);
-        std::string fileName("shaderCache/Binary/" + _name + ".bin");
+        stringImpl fileName("shaderCache/Binary/" + _name + ".bin");
         // Load the program's binary format from file
-        FILE* inFile = fopen(std::string(fileName + ".fmt").c_str(), "wb");
+        FILE* inFile = fopen((fileName + ".fmt").c_str(), "wb");
         if (inFile) {
             fread(&_binaryFormat, sizeof(GLenum), 1, inFile);
             fclose(inFile);
@@ -313,14 +313,14 @@ bool glShaderProgram::generateHWResource(const std::string& name) {
     // The program wasn't loaded from binary, so process shaders
     if (!_loadedFromBinary) {
         // Use the specified shader path
-        glswSetPath(std::string(getResourceLocation() + "GLSL/").c_str(), ".glsl");
+        glswSetPath((getResourceLocation() + "GLSL/").c_str(), ".glsl");
         // Mirror initial shader defines to match line count
         GLint initialOffset = 19;
         if (GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) { //nVidia specific
             initialOffset += 6;
         }
         // Get all of the preprocessor defines and add them to the general shader header for this program
-        std::string shaderSourceHeader;
+        stringImpl shaderSourceHeader;
         for (U8 i = 0; i < _definesList.size(); ++i) {
             // Placeholders are ignored
             if (_definesList[i].compare("DEFINE_PLACEHOLDER") == 0) {
@@ -334,7 +334,7 @@ bool glShaderProgram::generateHWResource(const std::string& name) {
         // Now that we have an offset for the general header, we need to move to per-stage offsets
         GLint lineCountOffset[ShaderType_PLACEHOLDER];
         // Every stage has it's own uniform specific header
-        std::string shaderSourceUniforms[ShaderType_PLACEHOLDER];
+        stringImpl shaderSourceUniforms[ShaderType_PLACEHOLDER];
         for (U8 i = 0; i < ShaderType_PLACEHOLDER; ++i) {
             // We start off from the general offset
             lineCountOffset[i] = initialOffset;
@@ -352,26 +352,26 @@ bool glShaderProgram::generateHWResource(const std::string& name) {
 
         // Split the shader name to get the effect file name and the effect properties
         // The effect file name is the part up until the first period or comma symbol
-        std::string shaderName = name.substr(0, name.find_first_of(".,"));
+        stringImpl shaderName = name.substr(0, name.find_first_of(".,"));
         // We also differentiate between general properties, and vertex properties
-        std::string shaderProperties, vertexProperties;
+        stringImpl shaderProperties, vertexProperties;
         // Get the position of the first "," symbol. Must be added at the end of the program's name!!
-        size_t propPositionVertex = name.find_first_of(",");
+        stringAlg::stringSize propPositionVertex = name.find_first_of(",");
         // Get the position of the first "." symbol
-        size_t propPosition = name.find_first_of(".");
+        stringAlg::stringSize propPosition = name.find_first_of(".");
         // If we have effect properties, we extract them from the name (starting from the first "." symbol to the first "," symbol)
-        if (propPosition != std::string::npos) {
+        if (propPosition != stringImpl::npos) {
             shaderProperties = "." + name.substr(propPosition + 1, propPositionVertex - propPosition - 1);
         }
         // Vertex properties start off identically to the rest of the stages' names
         vertexProperties += shaderProperties;
         // But we also add the shader specific properties
-        if (propPositionVertex != std::string::npos) {
+        if (propPositionVertex != stringImpl::npos) {
             vertexProperties += "." + name.substr(propPositionVertex + 1);
         }
 
         // Create an appropriate name for every shader stage
-        std::string shaderCompileName[ShaderType_PLACEHOLDER];
+        stringImpl shaderCompileName[ShaderType_PLACEHOLDER];
         shaderCompileName[VERTEX_SHADER]           = shaderName + ".Vertex"        + vertexProperties;
         shaderCompileName[FRAGMENT_SHADER]         = shaderName + ".Fragment"      + shaderProperties;
         shaderCompileName[GEOMETRY_SHADER]         = shaderName + ".Geometry"      + shaderProperties;
@@ -397,7 +397,7 @@ bool glShaderProgram::generateHWResource(const std::string& name) {
                 // GLSW may fail for various reasons (not a valid effect stage, invalid name, etc)
                 if (sourceCode) {
                     // If reading was successful, grab the entire code in a string
-                    std::string codeString(sourceCode);
+                    stringImpl codeString(sourceCode);
                     // And replace in place with our program's headers created earlier
                     Util::replaceStringInPlace(codeString, "//__CUSTOM_DEFINES__",  shaderSourceHeader);
                     Util::replaceStringInPlace(codeString, "//__CUSTOM_UNIFORMS__", shaderSourceUniforms[type]);
@@ -433,7 +433,7 @@ bool glShaderProgram::isValid() const {
 /// Cache uniform/attribute locations for shader programs
 /// When we call this function, we check our name<->address map to see if we queried the location before
 /// If we didn't, ask the GPU to give us the variables address and save it for later use
-GLint glShaderProgram::cachedLoc(const std::string& name, const bool uniform) {
+GLint glShaderProgram::cachedLoc(const stringImpl& name, const bool uniform) {
     // If the shader can't be used for rendering, just return an invalid address
     if (!isValid()) {
         return -1;
@@ -451,7 +451,7 @@ GLint glShaderProgram::cachedLoc(const std::string& name, const bool uniform) {
     GLint location = uniform ? glGetUniformLocation(_shaderProgramId, name.c_str()) : glGetAttribLocation(_shaderProgramId, name.c_str());
 
     // Save it for later reference
-    _shaderVars.emplace(name, location);
+    hashAlg::emplace(_shaderVars, name, location);
 
     // Return the location
     return location;
@@ -522,14 +522,14 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) const {
     return std::max(subroutineCount, 0);
 }
 /// Get the uniform location of the specified subroutine uniform for the specified stage. Not cached!
-U32 glShaderProgram::GetSubroutineUniformLocation(ShaderType type, const std::string& name) const {
+U32 glShaderProgram::GetSubroutineUniformLocation(ShaderType type, const stringImpl& name) const {
     DIVIDE_ASSERT(isValid(), "glShaderProgram error: tried to query subroutines on an invalid program!");
 
     return glGetSubroutineUniformLocation(_shaderProgramId, _shaderStageTable[type], name.c_str());
 }
 
 /// Get the index of the specified subroutine name for the specified stage. Not cached!
-U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const std::string& name) const {
+U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const stringImpl& name) const {
     DIVIDE_ASSERT(isValid(), "glShaderProgram error: tried to query subroutines on an invalid program!");
 
     return glGetSubroutineIndex(_shaderProgramId, _shaderStageTable[type], name.c_str());

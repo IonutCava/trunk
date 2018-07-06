@@ -10,7 +10,7 @@
 
 namespace Divide {
 
-SkinnedSubMesh::SkinnedSubMesh(const std::string& name) : SubMesh(name, Object3D::OBJECT_FLAG_SKINNED)
+SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name) : SubMesh(name, Object3D::OBJECT_FLAG_SKINNED)
 {
    _animator =  New SceneAnimator();
 }

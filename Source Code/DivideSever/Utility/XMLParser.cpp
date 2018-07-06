@@ -8,28 +8,34 @@ namespace XML
 	using boost::property_tree::ptree;
 	ptree pt;
 
-	void loadScene(const std::string& sceneName)
+	void loadScene(const stringImpl& sceneName)
 	{
 		pt.clear();
-		std::cout << "XML: Loading scene [ " << sceneName << " ] " << std::endl;
-		read_xml("Scenes/" + sceneName + ".xml", pt);
-		loadGeometry("Scenes/" + sceneName + "/" + pt.get("assets","assets.xml"));
+		std::cout << "XML: Loading scene [ " << stringAlg::fromBase(sceneName) << " ] " << std::endl;
+		read_xml(stringAlg::fromBase("Scenes/" + sceneName + ".xml"), pt);
+        std::string assetLocation(stringAlg::fromBase("Scenes/" + sceneName + "/"));
+		loadGeometry(stringAlg::toBase(assetLocation + pt.get("assets", "assets.xml")));
 	}
 
-	void loadGeometry(const std::string &file)
+	void loadGeometry(const stringImpl &file)
 	{
 		pt.clear();
-		std::cout << "XML: Loading Geometry: [ " << file << " ] " << std::endl;
-		read_xml(file,pt);
+		std::cout << "XML: Loading Geometry: [ " << stringAlg::fromBase(file) << " ] " << std::endl;
+		read_xml(stringAlg::fromBase(file), pt);
 		ptree::iterator it;
 		for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); ++it )
 		{
-			std::string name = it->second.data();
-			std::string format = it->first.data();
-			if(format.find("<xmlcomment>") != std::string::npos) continue;
+			std::string name(it->second.data());
+			std::string format(it->first.data());
+
+			if (format.find("<xmlcomment>") != stringImpl::npos) {
+                continue;
+            }
+
 			FileData model;
-			model.ItemName = name;
-			model.ModelName  = "Assets/" + pt.get<std::string>(name + ".model");
+			model.ItemName = name.c_str();
+			model.ModelName  = "Assets/";
+            model.ModelName.append(stringAlg::toBase(pt.get<std::string>(name + ".model")));
 			model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
 			model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
 			model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
@@ -45,12 +51,15 @@ namespace XML
 		}
 		for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); ++it )
 		{
-			std::string name = it->second.data();
-			std::string format = it->first.data();
-			if(format.find("<xmlcomment>") != std::string::npos) continue;
+			std::string name(it->second.data());
+			std::string format(it->first.data());
+			if (format.find("<xmlcomment>") != stringImpl::npos) {
+                continue;
+            }
 			FileData model;
-			model.ItemName = name;
-			model.ModelName  = "Assets/" + pt.get<std::string>(name + ".model");
+			model.ItemName = stringAlg::toBase(name);
+			model.ModelName  = "Assets/";
+            model.ModelName.append(stringAlg::toBase(pt.get<std::string>(name + ".model")));
 			model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
 			model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
 			model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
@@ -68,13 +77,13 @@ namespace XML
 		if(boost::optional<ptree &> primitives = pt.get_child_optional("primitives"))
 		for (it = pt.get_child("primitives").begin(); it != pt.get_child("primitives").end(); ++it )
 		{
-			std::string name = it->second.data();
-			std::string format = it->first.data();
-			if(format.find("<xmlcomment>") != std::string::npos) continue;
+			std::string name(it->second.data());
+			std::string format(it->first.data());
+			if(format.find("<xmlcomment>") != stringImpl::npos) continue;
 
 			FileData model;
-			model.ItemName = name;
-			model.ModelName = pt.get<std::string>(name + ".model");
+			model.ItemName = stringAlg::toBase(name);
+			model.ModelName = stringAlg::toBase(pt.get<std::string>(name + ".model"));
 			model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
 			model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
 			model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
@@ -93,7 +102,7 @@ namespace XML
 			if(model.ModelName.compare("Text3D") == 0)
 			{
 				model.data = pt.get<F32>(name + ".lineWidth");
-				model.data2 = pt.get<std::string>(name + ".text");
+				model.data2 = stringAlg::toBase(pt.get<std::string>(name + ".text"));
 			}
 			else if(model.ModelName.compare("Box3D") == 0)
 				model.data = pt.get<F32>(name + ".size");

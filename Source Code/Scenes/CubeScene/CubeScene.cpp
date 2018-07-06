@@ -60,7 +60,7 @@ void CubeScene::preRender() {
 void CubeScene::processInput(const U64 deltaTime){
 }
 
-bool CubeScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
+bool CubeScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
     GFX_DEVICE.setRenderer(New DeferredShadingRenderer());
     //Load scene resources
     return SCENE_LOAD(name,cameraMgr,gui,true,true);
@@ -73,7 +73,7 @@ bool CubeScene::loadResources(bool continueOnErrors){
         for(U8 col=0; col < 10; col++){
             U8 lightId = (U8)(row*10+col);
             std::stringstream ss; ss << (U32)lightId;
-            ResourceDescriptor tempLight("Light Deferred " + ss.str());
+            ResourceDescriptor tempLight(stringAlg::toBase("Light Deferred " + ss.str()));
             tempLight.setId(lightId);
             tempLight.setEnumValue(LIGHT_TYPE_POINT);
             Light* light = CreateResource<Light>(tempLight);

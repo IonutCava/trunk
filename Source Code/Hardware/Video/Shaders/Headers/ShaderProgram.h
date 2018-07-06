@@ -55,37 +55,37 @@ public:
     virtual U8   update(const U64 deltaTime);
     virtual bool unload() { return true; }
     ///Attributes
-    inline void Attribute(const std::string& ext, D32 value) { Attribute(cachedLoc(ext,false), value); }
-    inline void Attribute(const std::string& ext, F32 value) { Attribute(cachedLoc(ext, false), value); }
-    inline void Attribute(const std::string& ext, const vec2<F32>& value) { Attribute(cachedLoc(ext, false), value); }
-    inline void Attribute(const std::string& ext, const vec3<F32>& value) { Attribute(cachedLoc(ext, false), value); }
-    inline void Attribute(const std::string& ext, const vec4<F32>& value) { Attribute(cachedLoc(ext, false), value); }
+    inline void Attribute(const stringImpl& ext, D32 value) { Attribute(cachedLoc(ext,false), value); }
+    inline void Attribute(const stringImpl& ext, F32 value) { Attribute(cachedLoc(ext, false), value); }
+    inline void Attribute(const stringImpl& ext, const vec2<F32>& value) { Attribute(cachedLoc(ext, false), value); }
+    inline void Attribute(const stringImpl& ext, const vec3<F32>& value) { Attribute(cachedLoc(ext, false), value); }
+    inline void Attribute(const stringImpl& ext, const vec4<F32>& value) { Attribute(cachedLoc(ext, false), value); }
     ///Uniforms (update constant buffer for D3D. Use index as location in buffer)
-    inline void Uniform(const std::string& ext, U32 value) { Uniform(cachedLoc(ext), value); }
-    inline void Uniform(const std::string& ext, I32 value) { Uniform(cachedLoc(ext), value); }
-    inline void Uniform(const std::string& ext, F32 value) { Uniform(cachedLoc(ext), value); }
-    inline void Uniform(const std::string& ext, bool value) { Uniform(cachedLoc(ext), value); }
-    inline void Uniform(const std::string& ext, const vec2<F32>& value) { Uniform(cachedLoc(ext), value); }
-    inline void Uniform(const std::string& ext, const vec2<I32>& value) { Uniform(cachedLoc(ext), value); }
-    inline void Uniform(const std::string& ext, const vec2<U16>& value) { Uniform(cachedLoc(ext), value); }
-    inline void Uniform(const std::string& ext, const vec3<F32>& value) { Uniform(cachedLoc(ext), value); }
-    inline void Uniform(const std::string& ext, const vec4<F32>& value) { Uniform(cachedLoc(ext), value); }
-    inline void Uniform(const std::string& ext, const mat3<F32>& value, bool rowMajor = false) { Uniform(cachedLoc(ext), value, rowMajor); }
-    inline void Uniform(const std::string& ext, const mat4<F32>& value, bool rowMajor = false) { Uniform(cachedLoc(ext), value, rowMajor); }
-    inline void Uniform(const std::string& ext, const vectorImpl<I32 >& values) { Uniform(cachedLoc(ext), values); }
-    inline void Uniform(const std::string& ext, const vectorImpl<F32 >& values) { Uniform(cachedLoc(ext), values); }
-    inline void Uniform(const std::string& ext, const vectorImpl<vec2<F32> >& values) { Uniform(cachedLoc(ext), values); }
-    inline void Uniform(const std::string& ext, const vectorImpl<vec3<F32> >& values) { Uniform(cachedLoc(ext), values); }
-    inline void Uniform(const std::string& ext, const vectorImpl<vec4<F32> >& values) { Uniform(cachedLoc(ext), values); }
-    inline void Uniform(const std::string& ext, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) { Uniform(cachedLoc(ext), values, rowMajor); }
-    inline void Uniform(const std::string& ext, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) { Uniform(cachedLoc(ext), values, rowMajor); }
+    inline void Uniform(const stringImpl& ext, U32 value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const stringImpl& ext, I32 value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const stringImpl& ext, F32 value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const stringImpl& ext, bool value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const stringImpl& ext, const vec2<F32>& value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const stringImpl& ext, const vec2<I32>& value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const stringImpl& ext, const vec2<U16>& value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const stringImpl& ext, const vec3<F32>& value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const stringImpl& ext, const vec4<F32>& value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const stringImpl& ext, const mat3<F32>& value, bool rowMajor = false) { Uniform(cachedLoc(ext), value, rowMajor); }
+    inline void Uniform(const stringImpl& ext, const mat4<F32>& value, bool rowMajor = false) { Uniform(cachedLoc(ext), value, rowMajor); }
+    inline void Uniform(const stringImpl& ext, const vectorImpl<I32 >& values) { Uniform(cachedLoc(ext), values); }
+    inline void Uniform(const stringImpl& ext, const vectorImpl<F32 >& values) { Uniform(cachedLoc(ext), values); }
+    inline void Uniform(const stringImpl& ext, const vectorImpl<vec2<F32> >& values) { Uniform(cachedLoc(ext), values); }
+    inline void Uniform(const stringImpl& ext, const vectorImpl<vec3<F32> >& values) { Uniform(cachedLoc(ext), values); }
+    inline void Uniform(const stringImpl& ext, const vectorImpl<vec4<F32> >& values) { Uniform(cachedLoc(ext), values); }
+    inline void Uniform(const stringImpl& ext, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) { Uniform(cachedLoc(ext), values, rowMajor); }
+    inline void Uniform(const stringImpl& ext, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) { Uniform(cachedLoc(ext), values, rowMajor); }
     ///Uniform Texture
-    inline void UniformTexture(const std::string& ext, U16 slot) { UniformTexture(cachedLoc(ext), slot); }
+    inline void UniformTexture(const stringImpl& ext, U16 slot) { UniformTexture(cachedLoc(ext), slot); }
     ///Subroutine
     virtual void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const = 0;
     virtual void SetSubroutine(ShaderType type, U32 index) const = 0;
-    virtual U32  GetSubroutineIndex(ShaderType type, const std::string& name) const = 0;
-    virtual U32  GetSubroutineUniformLocation(ShaderType type, const std::string& name) const = 0;
+    virtual U32  GetSubroutineIndex(ShaderType type, const stringImpl& name) const = 0;
+    virtual U32  GetSubroutineUniformLocation(ShaderType type, const stringImpl& name) const = 0;
     virtual U32  GetSubroutineUniformCount(ShaderType type) const = 0;
     ///Attribute+Uniform+UniformTexture implementation
     virtual void Attribute(I32 location, D32 value) const = 0;
@@ -126,26 +126,26 @@ public:
     ///  Calling recompile will re-create the marked shaders from source files and update them in the ShaderManager if needed
     void recompile(const bool vertex, const bool fragment, const bool geometry = false, const bool tessellation = false, const bool compute = false);
     /// Add a define to the shader. The defined must not have been added previously
-    void addShaderDefine(const std::string& define);
+    void addShaderDefine(const stringImpl& define);
     /// Remove a define from the shader. The defined must have been added previously
-    void removeShaderDefine(const std::string& define);
+    void removeShaderDefine(const stringImpl& define);
     /// Add either fragment or vertex uniforms (without the "uniform" word. e.g. addShaderUniform("vec3 eyePos", VERTEX_SHADER);)
-    void addShaderUniform(const std::string& uniform, const ShaderType& type);
+    void addShaderUniform(const stringImpl& uniform, const ShaderType& type);
     /// Remove an uniform from the shader. The uniform must have been added previously for the specified shader type
-    void removeUniform(const std::string& uniform, const ShaderType& type);
+    void removeUniform(const stringImpl& uniform, const ShaderType& type);
     /// Flush stored uniform locations
     virtual void flushLocCache() = 0;
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
-    inline size_t getFunctionCount(ShaderType shader, U8 LoD){
+    inline vectorAlg::vecSize getFunctionCount(ShaderType shader, U8 LoD){
         return _functionIndex[shader][LoD].size();
     }
 
-    inline void setFunctionCount(ShaderType shader, U8 LoD, size_t count){
+    inline void setFunctionCount(ShaderType shader, U8 LoD, vectorAlg::vecSize count){
         _functionIndex[shader][LoD].resize(count, 0);
     }
 
-    inline void setFunctionCount(ShaderType shader, size_t count){
+    inline void setFunctionCount(ShaderType shader, vectorAlg::vecSize count){
         for (U8 i = 0; i < Config::SCENE_NODE_LOD; ++i) {
             setFunctionCount(shader, i, count);
         }
@@ -180,10 +180,10 @@ protected:
 
     ShaderProgram(const bool optimise = false);
 
-    virtual I32 cachedLoc(const std::string& name, const bool uniform = true) = 0;
+    virtual I32 cachedLoc(const stringImpl& name, const bool uniform = true) = 0;
     template<typename T>
     friend class ImplResourceLoader;
-    virtual bool generateHWResource(const std::string& name);
+    virtual bool generateHWResource(const stringImpl& name);
     void updateMatrices();
     const vectorImpl<U32>& getAvailableFunctions(ShaderType type) const;
 
@@ -198,11 +198,11 @@ protected:
     F32 _elapsedTimeMS;
     U8  _outputCount;
     ///A list of preprocessor defines
-    vectorImpl<std::string > _definesList;
+    vectorImpl<stringImpl > _definesList;
     ///A list of custom shader uniforms
-    vectorImpl<std::string > _customUniforms[ShaderType_PLACEHOLDER];
+    vectorImpl<stringImpl > _customUniforms[ShaderType_PLACEHOLDER];
     ///ID<->shaders pair
-    typedef Unordered_map<U32, Shader* > ShaderIdMap;
+    typedef hashMapImpl<U32, Shader* > ShaderIdMap;
     ShaderIdMap _shaderIdMap;
 
 private:

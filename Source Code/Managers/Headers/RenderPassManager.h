@@ -51,7 +51,7 @@ public:
     ///Remove a renderpass from the manager, optionally not deleting it
     void removeRenderPass(RenderPass* const renderPass,bool deleteRP = true);
     ///Find a renderpass by name and remove it from the manager, optionally not deleting it
-    void removeRenderPass(const std::string& name,bool deleteRP = true);
+    void removeRenderPass(const stringImpl& name,bool deleteRP = true);
     U16 getLastTotalBinSize(U8 renderPassId) const;
 
     ///Lock or unlock the render bin (if nothing changes: camera, nodes' positions, etc)

@@ -104,7 +104,7 @@ void TenisScene::checkCollisions(){
 //Team 2: Player3 + Player4
 void TenisScene::playGame(cdiggins::any a, CallbackParam b){
     bool updated = false;
-    std::string message;
+    stringImpl message;
     if(!_gamePlaying){
         return;
     }
@@ -241,7 +241,7 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b){
 void TenisScene::processInput(const U64 deltaTime){
 }
 
-bool TenisScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
+bool TenisScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
     s_gameStarted = false;
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);

@@ -55,11 +55,11 @@ public:
         return ptr;
     }
 
-    Resource* const find(const std::string& name);
-    void add(const std::string& name, Resource* const resource);
+    Resource* const find(const stringImpl& name);
+    void add(const stringImpl& name, Resource* const resource);
     bool remove(Resource* const res, bool force = false);
-    bool load(Resource* const res, const std::string& name);
-    bool loadHW(Resource* const res, const std::string& name);
+    bool load(Resource* const res, const stringImpl& name);
+    bool loadHW(Resource* const res, const stringImpl& name);
 
 protected:
     ResourceCache();
@@ -67,13 +67,13 @@ protected:
     ///Empty the entire cache of resources
     void Destroy();
     ///this method handles cache lookups and reference counting
-    Resource* loadResource(const std::string& name);
+    Resource* loadResource(const stringImpl& name);
     ///unload a single resource and pend deletion
     bool removeInternal(Resource* const resource, bool force);
     ///multithreaded resource creation
     SharedLock _creationMutex;
 
-    typedef Unordered_map<std::string, Resource*> ResourceMap;
+    typedef hashMapImpl<stringImpl, Resource*> ResourceMap;
     ResourceMap _resDB;
     //boost::threadpool::pool* _loadingPool;
 
@@ -98,7 +98,7 @@ inline T* CreateResource(const ResourceDescriptor& descriptor){
 }
 
 template<typename T>
-inline T* const FindResourceImpl(const std::string& name){
+inline T* const FindResourceImpl(const stringImpl& name){
     return static_cast<T*>(ResourceCache::getInstance().find(name));
 }
 

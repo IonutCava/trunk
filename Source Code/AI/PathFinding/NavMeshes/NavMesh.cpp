@@ -18,9 +18,9 @@ namespace Navigation {
     {
 
         ParamHandler& par = ParamHandler::getInstance();
-        std::string path = par.getParam<std::string>("scriptLocation") + "/" +
-                           par.getParam<std::string>("scenesLocation") + "/" +
-                           par.getParam<std::string>("currentScene");
+		stringImpl path(par.getParam<stringImpl>("scriptLocation") + "/" +
+						par.getParam<stringImpl>("scenesLocation") + "/" +
+						par.getParam<stringImpl>("currentScene"));
 
         _debugDrawInterface = New NavMeshDebugDraw();
         assert(_debugDrawInterface != nullptr);
@@ -200,7 +200,7 @@ namespace Navigation {
     bool NavigationMesh::generateMesh() {
         assert(_sgn != nullptr);
 
-        std::string nodeName((_sgn->getNode()->getType() != TYPE_ROOT) ?
+        stringImpl nodeName((_sgn->getNode()->getType() != TYPE_ROOT) ?
                              "_node_[_" + _sgn->getName() + "_]" : 
                              "_root_node");
 
@@ -210,7 +210,7 @@ namespace Navigation {
         PRINT_FN(Locale::get("NAV_MESH_GENERATION_START"),nodeName.c_str());
 
         NavModelData data;
-        std::string geometrySaveFile(_fileName);
+        stringImpl geometrySaveFile(_fileName);
         Util::replaceStringInPlace(geometrySaveFile,".nm",".ig");
 
         data.clear(false);
@@ -516,7 +516,7 @@ namespace Navigation {
         if (!_fileName.length()) {
             return false;
         }
-        std::string file = _fileName;
+        stringImpl file = _fileName;
 
         if (sgn == nullptr) {
             file.append("_root_node");

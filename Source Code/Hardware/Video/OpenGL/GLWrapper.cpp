@@ -139,45 +139,45 @@ bool GL_API::initShaders() {
         glswAddDirectiveToken("","//#pragma optionNV(unroll all)");
     }
     // Try to sync engine specific data and values with GLSL
-    glswAddDirectiveToken("", std::string("#define MAX_CLIP_PLANES " + Util::toString(Config::MAX_CLIP_PLANES)).c_str());
-    glswAddDirectiveToken("", std::string("#define MAX_SHADOW_CASTING_LIGHTS " + Util::toString(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE)).c_str());
-    glswAddDirectiveToken("", std::string("const uint MAX_SPLITS_PER_LIGHT = " + Util::toString(Config::Lighting::MAX_SPLITS_PER_LIGHT) + ";").c_str());
-    glswAddDirectiveToken("", std::string("const uint MAX_LIGHTS_PER_SCENE = " + Util::toString(Config::Lighting::MAX_LIGHTS_PER_SCENE) + ";").c_str());
-    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_LIGHT_NORMAL " + Util::toString(SHADER_BUFFER_LIGHT_NORMAL)).c_str());
-    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_GPU_BLOCK " + Util::toString(SHADER_BUFFER_GPU_BLOCK)).c_str());
-    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_NODE_INFO " + Util::toString(SHADER_BUFFER_NODE_INFO)).c_str());
+    glswAddDirectiveToken("", ("#define MAX_CLIP_PLANES " + Util::toString(Config::MAX_CLIP_PLANES)).c_str());
+    glswAddDirectiveToken("", ("#define MAX_SHADOW_CASTING_LIGHTS " + Util::toString(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE)).c_str());
+    glswAddDirectiveToken("", ("const uint MAX_SPLITS_PER_LIGHT = " + Util::toString(Config::Lighting::MAX_SPLITS_PER_LIGHT) + ";").c_str());
+    glswAddDirectiveToken("", ("const uint MAX_LIGHTS_PER_SCENE = " + Util::toString(Config::Lighting::MAX_LIGHTS_PER_SCENE) + ";").c_str());
+    glswAddDirectiveToken("", ("#define SHADER_BUFFER_LIGHT_NORMAL " + Util::toString(SHADER_BUFFER_LIGHT_NORMAL)).c_str());
+    glswAddDirectiveToken("", ("#define SHADER_BUFFER_GPU_BLOCK " + Util::toString(SHADER_BUFFER_GPU_BLOCK)).c_str());
+    glswAddDirectiveToken("", ("#define SHADER_BUFFER_NODE_INFO " + Util::toString(SHADER_BUFFER_NODE_INFO)).c_str());
     glswAddDirectiveToken("", "const float Z_TEST_SIGMA = 0.0001;");
     glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.25;");
     
-    glswAddDirectiveToken("Fragment", std::string("#define VARYING in").c_str()); 
-    glswAddDirectiveToken("Fragment", std::string("#define SHADER_BUFFER_LIGHT_SHADOW " + Util::toString(SHADER_BUFFER_LIGHT_SHADOW)).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define MAX_TEXTURE_SLOTS " + Util::toString(GFX_DEVICE.getMaxTextureSlots())).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT0 " + Util::toString(ShaderProgram::TEXTURE_UNIT0)).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT1 " + Util::toString(ShaderProgram::TEXTURE_UNIT1)).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_NORMALMAP " + Util::toString(ShaderProgram::TEXTURE_NORMALMAP)).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_OPACITY " + Util::toString(ShaderProgram::TEXTURE_OPACITY)).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_SPECULAR " + Util::toString(ShaderProgram::TEXTURE_SPECULAR)).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_PROJECTION " + Util::toString(ShaderProgram::TEXTURE_PROJECTION)).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define SHADOW_CUBE_START " + Util::toString((U32)LightManager::getInstance().getShadowBindSlotOffset(LightManager::SHADOW_SLOT_TYPE_CUBE))).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define SHADOW_NORMAL_START " + Util::toString((U32)LightManager::getInstance().getShadowBindSlotOffset(LightManager::SHADOW_SLOT_TYPE_NORMAL))).c_str());
-    glswAddDirectiveToken("Fragment", std::string("#define SHADOW_ARRAY_START " + Util::toString((U32)LightManager::getInstance().getShadowBindSlotOffset(LightManager::SHADOW_SLOT_TYPE_ARRAY))).c_str());
+    glswAddDirectiveToken("Fragment", "#define VARYING in"); 
+    glswAddDirectiveToken("Fragment", ("#define SHADER_BUFFER_LIGHT_SHADOW " + Util::toString(SHADER_BUFFER_LIGHT_SHADOW)).c_str());
+    glswAddDirectiveToken("Fragment", ("#define MAX_TEXTURE_SLOTS " + Util::toString(GFX_DEVICE.getMaxTextureSlots())).c_str());
+    glswAddDirectiveToken("Fragment", ("#define TEXTURE_UNIT0 " + Util::toString(ShaderProgram::TEXTURE_UNIT0)).c_str());
+    glswAddDirectiveToken("Fragment", ("#define TEXTURE_UNIT1 " + Util::toString(ShaderProgram::TEXTURE_UNIT1)).c_str());
+    glswAddDirectiveToken("Fragment", ("#define TEXTURE_NORMALMAP " + Util::toString(ShaderProgram::TEXTURE_NORMALMAP)).c_str());
+    glswAddDirectiveToken("Fragment", ("#define TEXTURE_OPACITY " + Util::toString(ShaderProgram::TEXTURE_OPACITY)).c_str());
+    glswAddDirectiveToken("Fragment", ("#define TEXTURE_SPECULAR " + Util::toString(ShaderProgram::TEXTURE_SPECULAR)).c_str());
+    glswAddDirectiveToken("Fragment", ("#define TEXTURE_PROJECTION " + Util::toString(ShaderProgram::TEXTURE_PROJECTION)).c_str());
+    glswAddDirectiveToken("Fragment", ("#define SHADOW_CUBE_START " + Util::toString((U32)LightManager::getInstance().getShadowBindSlotOffset(LightManager::SHADOW_SLOT_TYPE_CUBE))).c_str());
+    glswAddDirectiveToken("Fragment", ("#define SHADOW_NORMAL_START " + Util::toString((U32)LightManager::getInstance().getShadowBindSlotOffset(LightManager::SHADOW_SLOT_TYPE_NORMAL))).c_str());
+    glswAddDirectiveToken("Fragment", ("#define SHADOW_ARRAY_START " + Util::toString((U32)LightManager::getInstance().getShadowBindSlotOffset(LightManager::SHADOW_SLOT_TYPE_ARRAY))).c_str());
     glswAddDirectiveToken("Fragment", "const uint DEPTH_EXP_WARP = 32;");
 
     // GLSL <-> VBO intercommunication 
-    glswAddDirectiveToken("Vertex", std::string("#define VARYING out").c_str());
-    glswAddDirectiveToken("Vertex", std::string("const uint MAX_BONE_COUNT_PER_NODE = " + Util::toString(Config::MAX_BONE_COUNT_PER_NODE) + ";").c_str());
-    glswAddDirectiveToken("Vertex", std::string("#define SHADER_BUFFER_BONE_TRANSFORMS " + Util::toString(SHADER_BUFFER_BONE_TRANSFORMS)).c_str());
+    glswAddDirectiveToken("Vertex", "#define VARYING out");
+    glswAddDirectiveToken("Vertex", ("const uint MAX_BONE_COUNT_PER_NODE = " + Util::toString(Config::MAX_BONE_COUNT_PER_NODE) + ";").c_str());
+    glswAddDirectiveToken("Vertex", ("#define SHADER_BUFFER_BONE_TRANSFORMS " + Util::toString(SHADER_BUFFER_BONE_TRANSFORMS)).c_str());
     // Vertex data has a fixed format
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_POSITION_LOCATION)    + ") in vec3  inVertexData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_COLOR_LOCATION)       + ") in vec4  inColorData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_NORMAL_LOCATION)      + ") in vec3  inNormalData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_TEXCOORD_LOCATION)    + ") in vec2  inTexCoordData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_TANGENT_LOCATION)     + ") in vec3  inTangentData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_BITANGENT_LOCATION)   + ") in vec3  inBiTangentData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_BONE_WEIGHT_LOCATION) + ") in vec4  inBoneWeightData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_BONE_INDICE_LOCATION) + ") in ivec4 inBoneIndiceData;").c_str());
+    glswAddDirectiveToken("Vertex", ("layout(location = " + Util::toString(VERTEX_POSITION_LOCATION)    + ") in vec3  inVertexData;").c_str());
+    glswAddDirectiveToken("Vertex", ("layout(location = " + Util::toString(VERTEX_COLOR_LOCATION)       + ") in vec4  inColorData;").c_str());
+    glswAddDirectiveToken("Vertex", ("layout(location = " + Util::toString(VERTEX_NORMAL_LOCATION)      + ") in vec3  inNormalData;").c_str());
+    glswAddDirectiveToken("Vertex", ("layout(location = " + Util::toString(VERTEX_TEXCOORD_LOCATION)    + ") in vec2  inTexCoordData;").c_str());
+    glswAddDirectiveToken("Vertex", ("layout(location = " + Util::toString(VERTEX_TANGENT_LOCATION)     + ") in vec3  inTangentData;").c_str());
+    glswAddDirectiveToken("Vertex", ("layout(location = " + Util::toString(VERTEX_BITANGENT_LOCATION)   + ") in vec3  inBiTangentData;").c_str());
+    glswAddDirectiveToken("Vertex", ("layout(location = " + Util::toString(VERTEX_BONE_WEIGHT_LOCATION) + ") in vec4  inBoneWeightData;").c_str());
+    glswAddDirectiveToken("Vertex", ("layout(location = " + Util::toString(VERTEX_BONE_INDICE_LOCATION) + ") in ivec4 inBoneIndiceData;").c_str());
     // GPU specific data, such as GFXDevice's main uniform block and clipping planes are defined in an external file included in every shader
-    glswAddDirectiveToken("", std::string("#include \"nodeDataInput.cmn\"").c_str());
+    glswAddDirectiveToken("", "#include \"nodeDataInput.cmn\"");
     // After we finish with all of the defines, add all of the custom uniform variables defined by each material
     glswAddDirectiveToken("", "//__CUSTOM_UNIFORMS__");
     // Create an optimisation context used for post-processing shaders (using Aras Pranckevičius's glsl-optimizer: https://github.com/aras-p/glsl-optimizer )
@@ -195,13 +195,13 @@ bool GL_API::deInitShaders() {
 }
 
 /// Try to find the requested font in the font cache. Load on cache miss.
-I32 GL_API::getFont(const std::string& fontName) {
+I32 GL_API::getFont(const stringImpl& fontName) {
     // Search for the requested font by name
     FontCache::const_iterator it = _fonts.find(fontName);
     // If we failed to find it, it wasn't loaded yet
     if (it == _fonts.end()) {
         // Fonts are stored in the general asset directory
-        std::string fontPath = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/";
+		stringImpl fontPath(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation", "assets") + "/");
         // In the GUI subfolder
         fontPath += "GUI/";
         // In the fonts subfolder
@@ -214,7 +214,7 @@ I32 GL_API::getFont(const std::string& fontName) {
             ERROR_FN(Locale::get("ERROR_FONT_FILE"),fontName.c_str());
         }
         // Save the font in the font cache
-        _fonts.emplace(fontName, tempFont);
+        hashAlg::emplace(_fonts, fontName, tempFont);
         // Return the font
         return tempFont;
     }
@@ -273,7 +273,7 @@ size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
     // If we fail to find it, we need to create a new sampler object
     if (it == _samplerMap.end()) {
         // Create and store the newly created sample object. GL_API is responsible for deleting these!
-        _samplerMap.emplace(hashValue, New glSamplerObject(descriptor));
+        hashAlg::emplace(_samplerMap, hashValue, New glSamplerObject(descriptor));
     }
     // Return the sampler object's hash value
     return hashValue;
@@ -352,7 +352,7 @@ ShaderProgram* GL_API::newShaderProgram(const bool optimise) const {
 }
 
 /// Create and return a new shader of the specified type by loading the specified name (optionally, post load optimised). The callee is responsible for it's deletion!
-Shader* GL_API::newShader(const std::string& name, const ShaderType& type, const bool optimise) const {
+Shader* GL_API::newShader(const stringImpl& name, const ShaderType& type, const bool optimise) const {
     return New glShader(name,type,optimise);
 }
 

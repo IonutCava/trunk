@@ -166,16 +166,25 @@ namespace Config {
     #define ERROR_LOG_FILE "errors.log"
 #endif //ERROR_LOG_FILE
 
-///Use boost or std unordered_map
-///0 = BOOST
+///Use eastl or stl string classes
+///0 = EASTL
 ///1 = STL
-#ifndef UNORDERED_MAP_IMP
-    #define UNORDERED_MAP_IMP 0
-#endif //UNORDERED_MAP_IMP
+#ifndef STRING_IMP
+    #define STRING_IMP 0
+#endif //STRING_IMP
 
-///Use stlport or stl vector
-///0 = Boost
-///1 = STL
+///Use boost, eastl or stl hash maps / unordered maps
+///0 = BOOST
+///1 = EASTL
+///2 = STL
+#ifndef HASH_MAP_IMP
+    #define HASH_MAP_IMP 1
+#endif //HASH_MAP_IMP
+
+///Use boost, eastl or stl vector
+///0 = BOOST
+///1 = EASTL
+///2 = STL
 #ifndef VECTOR_IMP
     #define VECTOR_IMP 1
 #endif //VECTOR_IMP

@@ -38,8 +38,8 @@ namespace Divide {
 
 class SceneAnimator{
 public:
-    typedef Unordered_map<U32/*frameIndex*/, vectorImpl<Line >> LineMap;
-    typedef Unordered_map<U32/*animationId*/, LineMap > LineCollection;
+    typedef hashMapImpl<U32/*frameIndex*/, vectorImpl<Line >> LineMap;
+    typedef hashMapImpl<U32/*animationId*/, LineMap> LineCollection;
 
     SceneAnimator(): _skeleton(0)
     {
@@ -73,9 +73,9 @@ public:
     inline I32 GetFrameIndex(I32 animationIndex) const { return _animations[animationIndex].GetFrameIndex(); }
     inline U32 GetFrameCount(I32 animationIndex) const { return _animations[animationIndex].GetFrameCount(); }
     inline const vectorImpl<AnimEvaluator>& GetAnimations() const { return _animations; }
-    inline const std::string& GetAnimationName(I32 animationIndex) const { return _animations[animationIndex]._name; }
-    inline bool GetAnimationID(const std::string& animationName, U32& id){
-        Unordered_map<std::string, U32>::iterator itr = _animationNameToId.find(animationName);
+    inline const stringImpl& GetAnimationName(I32 animationIndex) const { return _animations[animationIndex]._name; }
+    inline bool GetAnimationID(const stringImpl& animationName, U32& id){
+        hashMapImpl<stringImpl, U32>::iterator itr = _animationNameToId.find(animationName);
         if (itr != _animationNameToId.end()) {
             id = itr->second;
             return true;
@@ -83,7 +83,7 @@ public:
         return false;
     }
     ///GetBoneTransform will return the matrix of the bone given its name and the time. be careful with this to make sure and send the correct dt. If the dt is different from what the model is currently at, the transform will be off
-    inline const mat4<F32>& GetBoneTransform(I32 animationIndex, const D32 dt, const std::string& bname) { 
+    inline const mat4<F32>& GetBoneTransform(I32 animationIndex, const D32 dt, const stringImpl& bname) { 
         I32 bindex = GetBoneIndex(bname);
         if (bindex == -1) 
             return _cacheIdentity;
@@ -93,7 +93,7 @@ public:
     /// same as above, except takes the index
     inline const mat4<F32>& GetBoneTransform(I32 animationIndex, const D32 dt, U32 bindex) { return _animations[animationIndex].GetTransforms(dt)[bindex]; }
 	/// get the bone's global transform
-	inline const mat4<F32>& GetBoneOffsetTransform(const std::string& bname) {
+	inline const mat4<F32>& GetBoneOffsetTransform(const stringImpl& bname) {
 		I32 bindex=GetBoneIndex(bname);
 		if(bindex != -1) {
 			AnimUtils::TransformMatrix(_bonesByName[bname]->_offsetMatrix, _cacheIdentity);
@@ -102,10 +102,10 @@ public:
 	}
 
     vectorImpl<AnimEvaluator> _animations;// a vector that holds each animation
-    Bone* GetBoneByName(const std::string& name) const;
+    Bone* GetBoneByName(const stringImpl& name) const;
 	///GetBoneIndex will return the index of the bone given its name. The index can be used to index directly into the vector returned from GetTransform
-    I32 GetBoneIndex(const std::string& bname) const;
-    const vectorImpl<Line >& getSkeletonLines(I32 animationIndex, const D32 dt);
+    I32 GetBoneIndex(const stringImpl& bname) const;
+    const vectorImpl<Line >& getSkeletonLines(U32 animationIndex, const D32 dt);
 
     size_t GetBoneCount() const { return _bones.size(); }
 
@@ -129,9 +129,9 @@ private:
 private:
     Bone* _skeleton;/** Root node of the internal scene structure */
 
-    Unordered_map<std::string, Bone*> _bonesByName;/** Name to node map to quickly find nodes by their name */
-    Unordered_map<std::string, U32>   _bonesToIndex;/** Name to node map to quickly find nodes by their name */
-    Unordered_map<std::string, U32>   _animationNameToId;// find animations quickly
+    hashMapImpl<stringImpl, Bone*> _bonesByName;/** Name to node map to quickly find nodes by their name */
+    hashMapImpl<stringImpl, U32>   _bonesToIndex;/** Name to node map to quickly find nodes by their name */
+    hashMapImpl<stringImpl, U32>   _animationNameToId;// find animations quickly
 
     vectorImpl<Bone*> _bones;// DO NOT DELETE THESE when the destructor runs... THEY ARE JUST REFERENCES!!
     vectorImpl<aiMatrix4x4 > _transforms;// temp array of transforms

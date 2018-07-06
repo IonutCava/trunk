@@ -305,7 +305,7 @@ size_t GFXDevice::getOrCreateStateBlock(const RenderStateBlockDescriptor& descri
     // Find the corresponding render state block
     if (_stateBlockMap.find(hashValue) == _stateBlockMap.end()) {
         // Create a new one if none are found. The GFXDevice class is responsible for deleting these!
-        _stateBlockMap.emplace(hashValue, New RenderStateBlock(descriptor));
+        hashAlg::emplace(_stateBlockMap, hashValue, New RenderStateBlock(descriptor));
     }
     // Return the descriptor's hash value
     return hashValue;
@@ -590,21 +590,21 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
     if (visibleNodes.empty()) {
         return;
     }
-    size_t nodeCount = visibleNodes.size();
+    vectorAlg::vecSize nodeCount = visibleNodes.size();
     // Pass the list of nodes to the renderer for a pre-render pass
     getRenderer()->processVisibleNodes(visibleNodes, _gpuBlock);
     // Generate and upload all lighting data
     LightManager::getInstance().updateAndUploadLightData(_gpuBlock._ViewMatrix);
     // Clear previous node data
-    _sgnToDrawIDMap.clear();
+    hashAlg::fastClear(_sgnToDrawIDMap);
     // Allocate sufficient space in the buffers
-    _sgnToDrawIDMap.reserve(nodeCount + 1);
+    //_sgnToDrawIDMap.reserve(nodeCount + 1);
     // The first entry has identity values (e.g. for rendering points)
     _matricesData.resize(nodeCount + 1);
     // Non SGN entries point to the identity values in the buffer
     _sgnToDrawIDMap[0] = 0;
     // Loop over the list of nodes
-    for (size_t i = 0; i < nodeCount; ++i) {
+    for (vectorAlg::vecSize i = 0; i < nodeCount; ++i) {
         SceneGraphNode* const crtNode = visibleNodes[i];
         NodeData& temp = _matricesData[i + 1];
         // Extract transform data

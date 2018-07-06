@@ -4,9 +4,9 @@
 
 namespace Divide {
 
-GUIMessageBox::GUIMessageBox(const std::string& id,  
-                             const std::string& title, 
-                             const std::string& message,
+GUIMessageBox::GUIMessageBox(const stringImpl& id,  
+                             const stringImpl& title, 
+                             const stringImpl& message,
                              const vec2<I32>& offsetFromCentre,  
                              CEGUI::Window* parent) : GUIElement(parent,GUI_MESSAGE_BOX, offsetFromCentre)
 {
@@ -46,12 +46,12 @@ void GUIMessageBox::setActive(const bool active) {
     GUIElement::setActive(active);
 }
 
-void GUIMessageBox::setTitle(const std::string& titleText) {
-    _msgBoxWindow->setText(titleText);
+void GUIMessageBox::setTitle(const stringImpl& titleText) {
+    _msgBoxWindow->setText(titleText.c_str());
 }
 
-void GUIMessageBox::setMessage(const std::string& message) {
-    _msgBoxWindow->getChild("MessageText")->setText(message);
+void GUIMessageBox::setMessage(const stringImpl& message) {
+    _msgBoxWindow->getChild("MessageText")->setText(message.c_str());
 }
 
 void GUIMessageBox::setOffset(const vec2<I32>& offsetFromCentre) {

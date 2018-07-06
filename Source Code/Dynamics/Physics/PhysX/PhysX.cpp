@@ -157,14 +157,14 @@ void PhysX::initScene() {
     _targetScene->init();
 }
 
-bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName, PhysicsActorMask mask, PhysicsCollisionGroup group) {
+bool PhysX::createActor(SceneGraphNode* const node, const stringImpl& sceneName, PhysicsActorMask mask, PhysicsCollisionGroup group) {
     assert(node != nullptr);
     assert(_targetScene != nullptr);
 
     Object3D* sNode = node->getNode<Object3D>();
 
     //Load cached version from file first
-    std::string nodeName("XML/Scenes/" + sceneName + "/collisionMeshes/node_[_" + sNode->getName() + "_]");
+    stringImpl nodeName("XML/Scenes/" + sceneName + "/collisionMeshes/node_[_" + sNode->getName() + "_]");
     nodeName.append(".cm");
 
     FILE* fp = fopen(nodeName.c_str(), "rb");

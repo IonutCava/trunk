@@ -6,7 +6,7 @@ namespace Divide {
 void FrameListenerManager::registerFrameListener(FrameListener* listener, U32 callOrder) {
     //Check if the listener has a name or we should assign an id
     if (listener->getName().empty()) {
-        listener->setName("generic_f_listener_" + Util::toString(_listeners.size()));
+        listener->setName(stringAlg::toBase("generic_f_listener_" + Util::toString(_listeners.size())));
     }  
 
     listener->setCallOrder(callOrder);
@@ -18,7 +18,7 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener, U32 ca
 
 ///Remove an existent Frame Listener from our collection
 void FrameListenerManager::removeFrameListener(FrameListener* listener) {
-    std::string name = listener->getName();
+    stringImpl name = listener->getName();
     vectorImpl<FrameListener* >::iterator it;
     it = std::find_if(_listeners.begin(), _listeners.end(), [&name](FrameListener const* fl) { 
                                                                 return fl->getName().compare(name) == 0; 

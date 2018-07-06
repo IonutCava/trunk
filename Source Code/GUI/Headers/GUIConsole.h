@@ -76,16 +76,16 @@ class GUIConsole{
         bool _init;                          //< used to check if the console is ready
         bool _closing;
         bool _lastMsgError;
-        std::string _lastMsg;
+        CEGUI::String _lastMsg;
         CEGUI::Editbox* _editBox;            //< pointer to the editBox to reduce typing and casting
         CEGUI::Listbox* _outputWindow;       //< pointer to the listbox that will contain all of the text we output to the console
         GUIConsoleCommandParser* _cmdParser; //< pointer to the command parser instance used
         CEGUI::Window *_consoleWindow;       //< This will be a pointer to the ConsoleRoot Window.
-        std::string _inputBuffer;            //< Used to check the text we are typing so that we don't close the console in the middle of a sentence/command
-        std::deque<std::string >_inputHistory; //< Used to manage the input history
+        CEGUI::String _inputBuffer;            //< Used to check the text we are typing so that we don't close the console in the middle of a sentence/command
+        std::deque<CEGUI::String >_inputHistory; //< Used to manage the input history
         I16 _inputHistoryIndex;                //< Used to cycle through history
         SharedLock _outputLock;
-        boost::circular_buffer<std::pair<std::string, bool >> _outputBuffer;
+        boost::circular_buffer<std::pair<CEGUI::String, bool >> _outputBuffer;
 };
 
 }; //namespace Divide

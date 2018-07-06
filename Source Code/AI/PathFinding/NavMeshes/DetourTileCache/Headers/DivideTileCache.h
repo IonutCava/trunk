@@ -245,7 +245,7 @@ namespace Divide {
           * Will issue a configure() call so the entities specified will determine the world bounds
           * of the tilecache.
           **/
-        //bool TileCacheBuild(std::vector<Ogre::Entity*> srcMeshes);
+        //bool TileCacheBuild(vectorImpl<Ogre::Entity*> srcMeshes);
 
         /**
           * Build all navmesh tiles from specified input geom.
@@ -253,7 +253,7 @@ namespace Divide {
           * Will issue a configure() call so the inputGeom specified will determine the world bounds
           * of the tilecache. Therefore you must specify the inputGeom for the entire world.
           *
-          * @see OgreDetourTileCache::TileCacheBuild(std::vector<Ogre::Entity*>)
+          * @see OgreDetourTileCache::TileCacheBuild(vectorImpl<Ogre::Entity*>)
           **/
         bool TileCacheBuild(SceneGraphNode* const inputGeom);
 
@@ -297,7 +297,7 @@ namespace Divide {
           * Build or rebuild tile from list of entities.
           * @see{buildTiles(InputGeom*, const Ogre::AxisAlignedBox*)}
           **/
-        //void buildTiles(std::vector<Ogre::Entity*> srcEntities, const BoundingBox *areaToUpdate = nullptr);
+        //void buildTiles(vectorImpl<Ogre::Entity*> srcEntities, const BoundingBox *areaToUpdate = nullptr);
 
     // TODO maybe also add a unloadAllTilesExcept(boundingBox) method
 
@@ -337,9 +337,9 @@ namespace Divide {
 
         TileSelection getBounds(void);
 
-        bool saveAll(const std::string& filename);
+        bool saveAll(const stringImpl& filename);
 
-        bool loadAll(const std::string& filename);
+        bool loadAll(const stringImpl& filename);
 
         /**
           * Update (tick) the tilecache.
@@ -395,13 +395,13 @@ namespace Divide {
           * Returns a list of tile references to compressed tiles that cover the specified bounding
           * box area.
           **/
-        std::vector<dtCompressedTileRef> getTilesContainingBox(vec3<F32> boxMin, vec3<F32> boxMax);
+        vectorImpl<dtCompressedTileRef> getTilesContainingBox(vec3<F32> boxMin, vec3<F32> boxMax);
 
         /**
           * Returns a list of tile references to compressed tiles that cover the area of a circle with
           * specified radius around the specified position.
           **/
-        std::vector<dtCompressedTileRef> getTilesAroundPoint(vec3<F32> point, F32 radius);
+        vectorImpl<dtCompressedTileRef> getTilesAroundPoint(vec3<F32> point, F32 radius);
 
         /**
           * Add a convex shaped temporary obstacle to the tilecache in pretty much the same way as cylindrical
@@ -523,7 +523,7 @@ namespace Divide {
         /**
           * Debug draw a navmesh poly
           **/
-        void drawPolyMesh(const std::string& tileName, const struct dtTileCachePolyMesh &mesh, const F32 *orig, const F32 cs, const F32 ch, const struct dtTileCacheLayer &regionLayers, bool colorRegions=true);
+        void drawPolyMesh(const stringImpl& tileName, const struct dtTileCachePolyMesh &mesh, const F32 *orig, const F32 cs, const F32 ch, const struct dtTileCacheLayer &regionLayers, bool colorRegions=true);
 
         /**
           * Inits the tilecache. Helper used by constructors.

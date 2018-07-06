@@ -156,8 +156,8 @@ namespace Navigation {
     }
 
     vectorImpl<I32> DivideDtCrowd::getActiveAgentIds() {
-        vectorImpl<I32> result = std::vector<I32>();
-
+        vectorImpl<I32> result;
+        result.reserve(getMaxNbAgents());
         const dtCrowdAgent* agent = nullptr;
         for(I32 i = 0; i < getMaxNbAgents(); i++) {
             agent = _crowd->getAgent(i);

@@ -29,6 +29,7 @@ LightManager::LightManager() : FrameListener(),
     _cubeShadowLocation  = 255;
     _normShadowLocation  = 255;
     _arrayShadowLocation = 255;
+	ParamHandler::getInstance().setParam<bool>("rendering.debug.showSplits", false);
 }
 
 LightManager::~LightManager()
@@ -85,7 +86,7 @@ bool LightManager::addLight(Light* const light){
     }
 
     light->setSlot((U8)_lights.size());
-    _lights.emplace(light->getGUID(), light);
+    hashAlg::emplace(_lights, light->getGUID(), light);
     GET_ACTIVE_SCENE()->renderState().getCameraMgr().addNewCamera(light->getName(), light->shadowCamera());
     return true;
 }
@@ -95,7 +96,7 @@ bool LightManager::removeLight(U32 lightId){
     /// we can't remove a light if the light list is empty. That light has to exist somewhere!
     assert(!_lights.empty());
 
-    Light::LightMap::const_iterator it = _lights.find(lightId);
+    Light::LightMap::iterator it = _lights.find(lightId);
 
     if(it == _lights.end()){
         ERROR_FN(Locale::get("ERROR_LIGHT_MANAGER_REMOVE_LIGHT"),lightId);
@@ -260,10 +261,10 @@ Light* LightManager::getLight(U32 slot) {
 
 void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix){
     _lightProperties.clear();
-    _lightProperties.reserve(_lights.size());
+    _lightProperties.reserve(static_cast<vectorAlg::vecSize>(_lights.size()));
 
     _lightShadowProperties.clear();
-    _lightShadowProperties.reserve(_lights.size());
+    _lightShadowProperties.reserve(static_cast<vectorAlg::vecSize>(_lights.size()));
 
     FOR_EACH(Light::LightMap::value_type& lightIt, _lights){
         Light* light = lightIt.second;

@@ -79,9 +79,9 @@ protected:
     Texture(TextureType type, const bool flipped = false);
     virtual ~Texture();
     /// Use DevIL to load a file into a Texture Object
-    bool LoadFile(U32 target, const std::string& name);
+    bool LoadFile(U32 target, const stringImpl& name);
     /// Load texture data using the specified file name
-    virtual bool generateHWResource(const std::string& name);
+    virtual bool generateHWResource(const stringImpl& name);
     /// Force a refresh of the entire mipmap chain
     virtual void updateMipMaps() = 0;
 

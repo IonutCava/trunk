@@ -50,7 +50,7 @@ DEFINE_SINGLETON( InputInterface )
  public:
   
 
-    U8 init(Kernel* const kernel, const std::string& windowTitle);
+    U8 init(Kernel* const kernel, const stringImpl& windowTitle);
 
     void updateResolution(U16 w,U16 h);
 

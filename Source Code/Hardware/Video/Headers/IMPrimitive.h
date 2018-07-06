@@ -64,9 +64,9 @@ public:
     virtual void beginBatch()  { _inUse = true; _zombieCounter = 0; }
     virtual void begin(PrimitiveType type) = 0;
     virtual void vertex(const vec3<F32>& vert) = 0;
-    virtual void attribute1i(const std::string& attribName, I32 value) = 0;
-    virtual void attribute4ub(const std::string& attribName, const vec4<U8>& value) = 0;
-    virtual void attribute4f(const std::string& attribName, const vec4<F32>& value) = 0;
+    virtual void attribute1i(const stringImpl& attribName, I32 value) = 0;
+    virtual void attribute4ub(const stringImpl& attribName, const vec4<U8>& value) = 0;
+    virtual void attribute4f(const stringImpl& attribName, const vec4<F32>& value) = 0;
     virtual void end() = 0;
     virtual void endBatch() = 0;
 

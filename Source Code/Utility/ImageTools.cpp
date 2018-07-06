@@ -35,7 +35,7 @@ namespace ImageTools {
 		ilTypeFunc(IL_UNSIGNED_BYTE);
 	}
 
-	void ImageData::throwLoadError(const std::string& fileName){
+	void ImageData::throwLoadError(const stringImpl& fileName){
 		ERROR_FN(Locale::get("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE"),fileName.c_str());
 		ILenum error;
 		while((error = ilGetError()) != IL_NO_ERROR) {
@@ -119,7 +119,7 @@ namespace ImageTools {
 		return setInternalData();
 	}
 
-	bool ImageData::create(const std::string& filename) {
+	bool ImageData::create(const stringImpl& filename) {
 		WriteLock w_lock(_loadingMutex);
 		prepareInternalData();
 		_name = filename;
@@ -198,10 +198,10 @@ namespace ImageTools {
 	/// saves a series of files with names "filenameX.tga"
 	I8 SaveSeries(char *filename, const vec2<U16>& dimensions, U8 pixelDepth, U8 *imageData) {
 		static I32 savedImages = 0;
-        std::string newFilename(filename);
+        stringImpl newFilename(filename);
 		// compute the new filename by adding the
 		// series number and the extension
-		newFilename += Util::toString(savedImages) + ".tga";
+		newFilename.append(stringAlg::toBase(Util::toString(savedImages) + ".tga"));
 
 		// save the image
 		I8 status = SaveToTGA(newFilename.c_str(),dimensions,pixelDepth,imageData);

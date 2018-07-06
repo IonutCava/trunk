@@ -22,7 +22,7 @@ ResourceCache::~ResourceCache(){
     PRINT_FN(Locale::get("RESOURCE_CACHE_DELETE"));
 }
 
-void ResourceCache::add(const std::string& name,Resource* const res){
+void ResourceCache::add(const stringImpl& name,Resource* const res){
     UpgradableReadLock ur_lock(_creationMutex);
     if(res == nullptr) {
         ERROR_FN(Locale::get("ERROR_RESOURCE_CACHE_LOAD_RES"),name.c_str());
@@ -30,10 +30,10 @@ void ResourceCache::add(const std::string& name,Resource* const res){
     }
     UpgradeToWriteLock uw_lock(ur_lock);
     res->setName(name);
-    _resDB.insert(make_pair(name,res));
+    hashAlg::insert(_resDB, hashAlg::makePair(name, res));
 }
 
-Resource* ResourceCache::loadResource(const std::string& name){
+Resource* ResourceCache::loadResource(const stringImpl& name){
     ReadLock r_lock(_creationMutex);
     Resource* res = find(name);
     if(res){
@@ -60,7 +60,7 @@ void ResourceCache::Destroy(){
     _resDB.clear();
 }
 
-Resource* const ResourceCache::find(const std::string& name){
+Resource* const ResourceCache::find(const stringImpl& name){
     ///Search in our resource cache
     ResourceMap::const_iterator resDBiter = _resDB.find(name);
     if(resDBiter != _resDB.end()){
@@ -77,7 +77,7 @@ bool ResourceCache::remove(Resource* const res, bool force){
         ERROR_FN(Locale::get("RESOURCE_CACHE_REMOVE_NO_DB"), res->getName().c_str());
         return false;
     }
-    ResourceMap::const_iterator resDBiter = _resDB.find(res->getName());
+    ResourceMap::iterator resDBiter = _resDB.find(res->getName());
     // If it's not in the resource database, it must've been created manually
     if (resDBiter == _resDB.end()) {
         return true;
@@ -95,7 +95,7 @@ bool ResourceCache::remove(Resource* const res, bool force){
 bool ResourceCache::removeInternal(Resource* const resource,bool force){
     assert(resource != nullptr);
 
-    std::string name(resource->getName());
+    stringImpl name(resource->getName());
 
     if(name.empty()){
         ERROR_FN(Locale::get("ERROR_RESOURCE_CACHE_INVALID_NAME"));
@@ -126,13 +126,13 @@ bool ResourceCache::removeInternal(Resource* const resource,bool force){
     return force;
 }
 
-bool ResourceCache::load(Resource* const res, const std::string& name) {
+bool ResourceCache::load(Resource* const res, const stringImpl& name) {
     assert(res != nullptr);
     res->setName(name);
     return true;
 }
 
-bool ResourceCache::loadHW(Resource* const res, const std::string& name){
+bool ResourceCache::loadHW(Resource* const res, const stringImpl& name){
     if(load(res,name)){
         HardwareResource* hwRes = dynamic_cast<HardwareResource* >(res);
         assert(hwRes);

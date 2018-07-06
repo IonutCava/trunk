@@ -6,7 +6,7 @@
 
 namespace Divide {
 namespace Locale {
-    char* get(const std::string& key, const std::string& defaultValue) {
+    char* get(const stringImpl& key, const stringImpl& defaultValue) {
         //When we ask for a string for the given key, we check our language cache first
         if(_languageTable.find(key) != _languageTable.end()){
             //Usually, the entire language table is loaded.
@@ -14,7 +14,7 @@ namespace Locale {
         }
         //If we did not find our key in the cache, we need to populate the cache table
         //This may occur, for example, on language change
-        std::string file = "localisation/" + _localeFile + ".ini";
+        stringImpl file = "localisation/" + _localeFile + ".ini";
         //Use SimpleIni library for cross-platform INI parsing
         CSimpleIniA ini;
         ini.SetUnicode();
@@ -31,7 +31,7 @@ namespace Locale {
             for ( ;keyValuePairIt != keyValue->end(); ++keyValuePairIt) {
                 keyName = keyValuePairIt->first.pItem;
                 value   = keyValuePairIt->second;
-                _languageTable.emplace(keyName,value);
+                hashAlg::emplace(_languageTable, stringImpl(keyName), stringImpl(value));
             }
         }else{
             _languageTable[key] = defaultValue;

@@ -58,7 +58,7 @@ class SceneNode : public Resource {
 
 public:
     SceneNode(const SceneNodeType& type);
-    SceneNode(const std::string& name, const SceneNodeType& type);
+    SceneNode(const stringImpl& name, const SceneNodeType& type);
     virtual ~SceneNode();
 
     /// Perform any pre-draw operations (this is after sort and transform updates)

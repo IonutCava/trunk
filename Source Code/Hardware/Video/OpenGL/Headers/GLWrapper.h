@@ -90,7 +90,7 @@ protected:
     /// Create and return a new shader program (optionally, post load optimised). The callee is responsible for it's deletion!
     ShaderProgram*      newShaderProgram(const bool optimise = false) const;
     /// Create and return a new shader of the specified type by loading the specified name (optionally, post load optimised). The callee is responsible for it's deletion!
-    Shader*             newShader(const std::string& name, const ShaderType& type, const bool optimise = false) const;
+    Shader*             newShader(const stringImpl& name, const ShaderType& type, const bool optimise = false) const;
     /// Enable or disable rasterization (useful for transform feedback)
     inline void toggleRasterization(bool state) { state ? glDisable(GL_RASTERIZER_DISCARD) : glEnable(GL_RASTERIZER_DISCARD); }
     /// Modify the line width used by OpenGL when rendering lines. It's upper limit is capped to what the hardware supports
@@ -124,7 +124,7 @@ protected:
         clearColor(color.r,color.g,color.b,color.a);
     }
     /// Try to find the requested font in the font cache. Load on cache miss.
-    I32 getFont(const std::string& fontName);
+    I32 getFont(const stringImpl& fontName);
     /// changeResolutionInternal is simply asking GLFW to do the resizing and updating the resolution cache
     void changeResolutionInternal(GLushort w, GLushort h);
     /// Change the current viewport area. Redundancy check is performed in GFXDevice class
@@ -190,7 +190,7 @@ private:
     /// Used to render points (e.g. to render full screen quads with geometry shaders)
     GLuint _pointDummyVAO; 
     /// A cache of all fonts used 
-    typedef Unordered_map<std::string , I32 > FontCache;
+    typedef hashMapImpl<stringImpl , I32 > FontCache;
     FontCache  _fonts;
     /// Atomic boolean value used to signal the loading thread to stop
     boost::atomic_bool _closeLoadingThread;
@@ -232,13 +232,13 @@ private:
     /// FontStash's context
     FONScontext* _fonsContext;
     /// /*texture slot*/ /*<texture handle , texture type>*/
-    typedef Unordered_map<GLushort, std::pair<GLuint, GLenum> > textureBoundMapDef;
+    typedef hashMapImpl<GLushort, std::pair<GLuint, GLenum> > textureBoundMapDef;
     static textureBoundMapDef _textureBoundMap;
     /// /*texture slot*/ /*sampler hash value*/
-    typedef Unordered_map<GLushort, size_t> samplerBoundMapDef;
+    typedef hashMapImpl<GLushort, size_t> samplerBoundMapDef;
     static samplerBoundMapDef _samplerBoundMap;
     /// /*sampler hash value*/ /*sampler object*/
-    typedef Unordered_map<size_t, glSamplerObject* > samplerObjectMap;
+    typedef hashMapImpl<size_t, glSamplerObject* > samplerObjectMap;
     static samplerObjectMap _samplerMap;
 
 END_SINGLETON

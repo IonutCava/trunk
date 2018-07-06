@@ -213,22 +213,22 @@ public:
         _attribDirty[ATTRIB_BITANGENT] = true;
     }
 
-    inline void shrinkToFit() {
-        _dataPosition.shrink_to_fit();
-        _dataColor.shrink_to_fit();
-        _dataNormal.shrink_to_fit();
-        _dataTexcoord.shrink_to_fit();
-        _dataTangent.shrink_to_fit();
-        _dataBiTangent.shrink_to_fit();
-        _boneWeights.shrink_to_fit();
-        _boneIndices.shrink_to_fit();
+    inline void shrinkAllDataToFit() {
+        shrinkToFit(_dataPosition);
+        shrinkToFit(_dataColor);
+        shrinkToFit(_dataNormal);
+        shrinkToFit(_dataTexcoord);
+        shrinkToFit(_dataTangent);
+        shrinkToFit(_dataBiTangent);
+        shrinkToFit(_boneWeights);
+        shrinkToFit(_boneIndices);
     }
 
     inline size_t partitionBuffer(U32 currentIndexCount){
-        _partitions.emplace_back(getIndexCount() - currentIndexCount, currentIndexCount);
+		_partitions.push_back(vectorAlg::makePair(getIndexCount() - currentIndexCount, currentIndexCount));
         _currentPartitionIndex = (U32)_partitions.size();
-        _minPosition.emplace_back(std::numeric_limits<F32>::max());
-        _maxPosition.emplace_back(std::numeric_limits<F32>::min());
+        _minPosition.push_back(std::numeric_limits<F32>::max());
+        _maxPosition.push_back(std::numeric_limits<F32>::min());
         return _currentPartitionIndex - 1;
     }
 
@@ -308,7 +308,7 @@ protected:
     ptrdiff_t	_VBoffset[VertexAttribute_PLACEHOLDER];
         
     // first: offset, second: count
-    vectorImpl<std::pair<U32, U32> >   _partitions;
+    vectorImpl<vectorAlg::pair<U32, U32> >   _partitions;
     ///Used for creating an "IB". If it's empty, then an outside source should provide the indices
     vectorImpl<U32>        _hardwareIndicesL;
     vectorImpl<U16>        _hardwareIndicesS;

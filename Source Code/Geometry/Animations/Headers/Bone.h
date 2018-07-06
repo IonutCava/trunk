@@ -34,7 +34,7 @@ namespace Divide {
 class Bone {
 public:
 
-    std::string _name;
+    stringImpl _name;
 
     aiMatrix4x4 _offsetMatrix;
     aiMatrix4x4 _localTransform;
@@ -45,9 +45,11 @@ public:
     vectorImpl<Bone*> _children;
 
     //index in the current animation's channel array.
-    Bone(const std::string& name) : _name(name), _parent(0){}
+    Bone(const stringImpl& name) : _name(name), _parent(0){}
     Bone() : _parent(0){ }
-    ~Bone(){SAFE_DELETE_vector(_children); }
+    ~Bone() {
+        SAFE_DELETE_vector(_children); 
+    }
 };
 
 }; //namespace Divide

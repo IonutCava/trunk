@@ -134,7 +134,7 @@ public:
     }
 
 protected:
-    typedef Unordered_map<U32, AttributeDescriptor > attributeMap;
+    typedef hashMapImpl<U32, AttributeDescriptor > attributeMap;
     bool _persistentMapped;
     bool _doubleBufferedQuery;
     vectorImpl<U32 > _feedbackBuffers;

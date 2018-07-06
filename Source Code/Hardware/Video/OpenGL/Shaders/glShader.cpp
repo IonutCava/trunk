@@ -12,7 +12,7 @@ namespace Divide {
 
 #define _COMPILE_SHADER_OUTPUT_IN_RELEASE
 
-glShader::glShader(const std::string& name, const ShaderType& type, const bool optimise) : Shader(name, type, optimise)
+glShader::glShader(const stringImpl& name, const ShaderType& type, const bool optimise) : Shader(name, type, optimise)
 {
     switch (type) {
         default:      ERROR_FN(Locale::get("ERROR_GLSL_UNKNOWN_ShaderType"),type);     break;
@@ -30,12 +30,12 @@ glShader::~glShader()
     glDeleteShader(_shader);
 }
 
-bool glShader::load(const std::string& source){
+bool glShader::load(const stringImpl& source){
     if(source.empty()){
         ERROR_FN(Locale::get("ERROR_GLSL_SHADER_NOT_FOUND"),getName().c_str());
         return false;
     }
-    std::string parsedSource = preprocessIncludes(source,getName(),0);
+    stringImpl parsedSource = preprocessIncludes(source,getName(),0);
     boost::trim(parsedSource);
     
 #ifdef NDEBUG
@@ -48,7 +48,7 @@ bool glShader::load(const std::string& source){
         if (glslopt_get_status (shader)) {
             parsedSource = glslopt_get_output(shader);
         } else {
-            std::string errorLog("\n -- "); errorLog.append(glslopt_get_log(shader));
+            stringImpl errorLog("\n -- "); errorLog.append(glslopt_get_log(shader));
             ERROR_FN(Locale::get("ERROR_GLSL_OPTIMISE"), getName().c_str(), errorLog.c_str());
         }
         glslopt_shader_delete (shader);
@@ -59,7 +59,7 @@ bool glShader::load(const std::string& source){
     GLsizei sourceLength = (GLsizei)parsedSource.length();
     glShaderSource(_shader, 1, &src, &sourceLength);
 #ifndef NDEBUG
-    ShaderManager::getInstance().shaderFileWrite((char*)(std::string("shaderCache/Text/"+getName()).c_str()), src);
+    ShaderManager::getInstance().shaderFileWrite((char*)(stringImpl("shaderCache/Text/"+getName()).c_str()), src);
 #endif
     return true;
 }
@@ -94,7 +94,7 @@ void glShader::validate() {
 #endif
 }
 
-std::string glShader::preprocessIncludes( const std::string& source, const std::string& filename, I32 level /*= 0 */ ){
+stringImpl glShader::preprocessIncludes( const stringImpl& source, const stringImpl& filename, I32 level /*= 0 */ ){
     if(level > 32){
         ERROR_FN(Locale::get("ERROR_GLSL_INCLUD_LIMIT"));
     }
@@ -102,47 +102,48 @@ std::string glShader::preprocessIncludes( const std::string& source, const std::
     static const boost::regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
     std::stringstream input, output;
 
-    input << source;
+    input << source.c_str();
 
     size_t line_number = 1;
     boost::smatch matches;
 
-    std::string line, include_file, include_string, loc;
+    std::string line;
+    stringImpl include_file, include_string, loc;
     ParamHandler& par = ParamHandler::getInstance();
-    std::string shaderAtomLocationPrefix = par.getParam<std::string>("assetsLocation") + "/" +
-                                           par.getParam<std::string>("shaderLocation")+"/GLSL/";
-    while(std::getline(input,line))	{
+	stringImpl shaderAtomLocationPrefix(par.getParam<stringImpl>("assetsLocation", "assets") + "/" +
+									    par.getParam<stringImpl>("shaderLocation", "shaders") + "/GLSL/");
+    while(std::getline(input, line))	{
         if (boost::regex_search(line, matches, re))	{
-            include_file = matches[1];
+            include_file = stringAlg::toBase(matches[1].str());
 
-            if(include_file.find("frag") != std::string::npos){
+            if(include_file.find("frag") != stringImpl::npos){
                 loc =  "fragmentAtoms";
-            }else if(include_file.find("vert") != std::string::npos){
+            }else if(include_file.find("vert") != stringImpl::npos){
                 loc =  "vertexAtoms";
-            }else if(include_file.find("geom") != std::string::npos){
+            }else if(include_file.find("geom") != stringImpl::npos){
                 loc =  "geometryAtoms";
-            }else if(include_file.find("tesc") != std::string::npos){
+            }else if(include_file.find("tesc") != stringImpl::npos){
                 loc =  "tessellationCAtoms";
-            }else if (include_file.find("tese") != std::string::npos){
+            }else if (include_file.find("tese") != stringImpl::npos){
                 loc = "tessellationEAtoms";
-            }else if (include_file.find("cpt") != std::string::npos){
+            }else if (include_file.find("cpt") != stringImpl::npos){
                 loc = "computeAtoms";
-            }else if(include_file.find("cmn") != std::string::npos){
+            }else if(include_file.find("cmn") != stringImpl::npos){
                 loc = "common";
             }
 
-            include_string = ShaderManager::getInstance().shaderFileRead(include_file,shaderAtomLocationPrefix+loc);
+            include_string = ShaderManager::getInstance().shaderFileRead(include_file, shaderAtomLocationPrefix+loc);
 
             if(include_string.empty()){
-                ERROR_FN(Locale::get("ERROR_GLSL_NO_INCLUDE_FILE"),getName().c_str(), line_number, include_file.c_str());
+                ERROR_FN(Locale::get("ERROR_GLSL_NO_INCLUDE_FILE"), getName().c_str(), line_number, include_file.c_str());
             }
-            output << preprocessIncludes(include_string, include_file, level + 1) << std::endl;
+            output << stringAlg::fromBase(preprocessIncludes(include_string, include_file, level + 1)) << std::endl;
         }else{
             output <<  line << std::endl;
         }
         ++line_number;
     }
-    return output.str();
+    return stringAlg::toBase(output.str());
 }
 
 };

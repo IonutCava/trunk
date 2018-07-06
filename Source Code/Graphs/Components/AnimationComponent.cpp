@@ -60,7 +60,7 @@ void AnimationComponent::reset(){
 }
 
 /// Select an animation by name
-bool AnimationComponent::playAnimation(const std::string& name){
+bool AnimationComponent::playAnimation(const stringImpl& name){
     U32 animIndex = 0;
     I32 oldindex = _currentAnimIndex;
 
@@ -134,7 +134,7 @@ const vectorImpl<mat4<F32> >& AnimationComponent::transformsByIndex(U32 index) c
     return _animator->GetTransformsByIndex(_currentAnimIndex, index);
 }
 
-const mat4<F32>& AnimationComponent::getBoneTransform(const std::string& name) {
+const mat4<F32>& AnimationComponent::getBoneTransform(const stringImpl& name) {
     Object3D* node = _parentSGN->getNode<Object3D>();
     assert(node != nullptr);
 
@@ -146,7 +146,7 @@ const mat4<F32>& AnimationComponent::getBoneTransform(const std::string& name) {
     return currentBoneTransform(name);
 }
 
-const mat4<F32>& AnimationComponent::currentBoneTransform(const std::string& name){
+const mat4<F32>& AnimationComponent::currentBoneTransform(const stringImpl& name){
     assert(_animator != nullptr);
     I32 boneIndex = _animator->GetBoneIndex(name);
     if (boneIndex == -1){
@@ -157,7 +157,7 @@ const mat4<F32>& AnimationComponent::currentBoneTransform(const std::string& nam
     return _animationTransforms[boneIndex];
 }
 
-Bone* AnimationComponent::getBoneByName(const std::string& bname) const {
+Bone* AnimationComponent::getBoneByName(const stringImpl& bname) const {
     return _animator ? _animator->GetBoneByName(bname) : nullptr;
 }
 

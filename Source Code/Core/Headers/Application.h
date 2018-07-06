@@ -40,7 +40,7 @@ DEFINE_SINGLETON( Application )
 
 public:
     ///Startup and shutdown
-    ErrorCode initialize(const std::string& entryPoint,I32 argc, char **argv);
+    ErrorCode initialize(const stringImpl& entryPoint,I32 argc, char **argv);
     void deinitialize();
     void run();
 
@@ -59,7 +59,7 @@ public:
 
     inline const boost::thread::id&  getMainThreadId()               const { return _threadId; }
     inline bool isMainThread()                                       const { return (_threadId == boost::this_thread::get_id()); }
-    inline void setMemoryLogFile(const std::string& fileName)              { _memLogBuffer.open(fileName.c_str()); }
+    inline void setMemoryLogFile(const stringImpl& fileName)              { _memLogBuffer.open(fileName.c_str()); }
     ///Append to "_memLogBuffer" the string contained in "logMsg" and update _totalMemoryOcuppied with "size" accordingly based on the "allocation" flag
     void logMemoryOperation(bool allocation, const char* logMsg, size_t size);
 

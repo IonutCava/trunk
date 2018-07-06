@@ -47,12 +47,12 @@ public:
 
     bool  unload() {return true;}
 
-    void addVariable(const std::string& name, const std::string& value){
-        _variables.insert(make_pair(name,value));
+    void addVariable(const stringImpl& name, const stringImpl& value){
+        hashAlg::insert(_variables, hashAlg::makePair(name, value));
     }
 
-    void addVariable(const std::string& name, F32 value){
-        _variablesf.insert(make_pair(name, value));
+    void addVariable(const stringImpl& name, F32 value){
+        hashAlg::insert(_variablesf, hashAlg::makePair(name, value));
     }
 
     void setTextureLayerCount(U8 count)         { _textureLayers = count; }
@@ -84,16 +84,16 @@ public:
     const vec3<F32>& getPosition()	    const { return _position; }
     const vec2<F32>& getScale()         const { return _scale; }
 
-    std::string getVariable(const std::string& name) {
-        Unordered_map<std::string, std::string>::const_iterator it = _variables.find(name);
+    stringImpl getVariable(const stringImpl& name) {
+        hashMapImpl<stringImpl, stringImpl>::const_iterator it = _variables.find(name);
         if (it != _variables.end())
             return it->second;
 
         return "";
     }
 
-    F32 getVariablef(const std::string& name){
-        Unordered_map<std::string, F32>::const_iterator it = _variablesf.find(name);
+    F32 getVariablef(const stringImpl& name){
+        hashMapImpl<stringImpl, F32>::const_iterator it = _variablesf.find(name);
         if (it != _variablesf.end())
             return it->second;
 
@@ -101,8 +101,8 @@ public:
     }
 
 private:
-    Unordered_map<std::string, std::string> _variables;
-    Unordered_map<std::string, F32>         _variablesf;
+    hashMapImpl<stringImpl, stringImpl> _variables;
+    hashMapImpl<stringImpl, F32>         _variablesf;
     F32    _grassDensity;
     U32    _chunkSize;
     F32    _treeDensity;

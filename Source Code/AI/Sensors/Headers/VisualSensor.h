@@ -24,20 +24,20 @@
 #define _AI_VISUAL_SENSOR_H_
 
 #include "Sensor.h"
-#include "Utility/Headers/UnorderedMap.h"
+#include "Utility/Headers/HashMap.h"
 
 namespace Divide {
     class SceneGraphNode;
     namespace AI {
 
 /// SGN GUID, SGN pointer
-typedef Unordered_map<U64, SceneGraphNode* > NodeContainer;
+typedef hashMapImpl<I64, SceneGraphNode* > NodeContainer;
 /// Container ID, NodeContainer
-typedef Unordered_map<U32, NodeContainer> NodeContainerMap;
+typedef hashMapImpl<U32, NodeContainer> NodeContainerMap;
 /// SGN GUID, Last position
-typedef Unordered_map<U64, vec3<F32> > NodePositions;
+typedef hashMapImpl<I64, vec3<F32> > NodePositions;
 /// Container ID, NodePositions
-typedef Unordered_map<U32, NodePositions> NodePositionsMap;
+typedef hashMapImpl<U32, NodePositions> NodePositionsMap;
 
 class VisualSensor : public Sensor {
 public: 
@@ -58,9 +58,6 @@ public:
 protected:
     friend class AIEntity;
 	VisualSensor(AIEntity* const parentEntity);
-
-    NodeContainerMap::iterator findContainer(U32 container);
-    NodeContainer::const_iterator findNodeEntry(NodeContainerMap::const_iterator containerIt, U64 GUID) const;
 
 protected:
     NodeContainerMap _nodeContainerMap;

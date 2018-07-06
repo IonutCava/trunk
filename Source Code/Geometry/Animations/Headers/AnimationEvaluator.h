@@ -29,7 +29,7 @@
 
 #include "Bone.h"
 #include <assimp/anim.h>
-#include "Utility/Headers/UnorderedMap.h"
+#include "Utility/Headers/HashMap.h"
 
 struct aiAnimation;
 
@@ -37,7 +37,7 @@ namespace Divide {
 
 class AnimationChannel {
 public:
-	std::string _name;
+	stringImpl _name;
 	vectorImpl<aiVectorKey > _positionKeys;
 	vectorImpl<aiQuatKey   > _rotationKeys;
 	vectorImpl<aiVectorKey > _scalingKeys;
@@ -60,7 +60,7 @@ public:
 
 	AnimEvaluator( const aiAnimation* pAnim);
 
-	void Evaluate(const D32 dt, Unordered_map<std::string, Bone*>& bones);
+	void Evaluate(const D32 dt, hashMapImpl<stringImpl, Bone*>& bones);
 	void Save(std::ofstream& file);
 	void Load(std::ifstream& file);
 	I32 GetFrameIndexAt(const D32 elapsedTime);
@@ -69,13 +69,13 @@ public:
 	inline U32 GetFrameCount() const {return (U32)_transforms.size();}
 	inline vectorImpl<mat4<F32> >& GetTransforms(const D32 elapsedTime) {
         I32 frameIndex = GetFrameIndexAt(elapsedTime);
-        assert(frameIndex < _transforms.size());
+        assert(frameIndex < static_cast<I32>(_transforms.size()));
         return _transforms[frameIndex];
     }
 
 protected:
 	friend class SceneAnimator;
-	std::string _name;
+	stringImpl _name;
 
 	/// Array to return transformations results inside.
 	vectorImpl<vectorImpl<mat4<F32> >> _transforms;

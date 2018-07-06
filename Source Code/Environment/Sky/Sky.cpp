@@ -11,7 +11,7 @@
 
 namespace Divide {
 
-Sky::Sky(const std::string& name) : SceneNode(name, TYPE_SKY),
+Sky::Sky(const stringImpl& name) : SceneNode(name, TYPE_SKY),
                                     _skyShader(nullptr),
                                     _skybox(nullptr),
                                     _skyGeom(nullptr),
@@ -37,7 +37,7 @@ Sky::~Sky(){
 bool Sky::load() {
     if (getState() == RES_LOADED) return false;
 
-    std::string location = ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/misc_images/";
+	stringImpl location(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/misc_images/");
 
     SamplerDescriptor skyboxSampler;
     skyboxSampler.toggleMipMaps(false);

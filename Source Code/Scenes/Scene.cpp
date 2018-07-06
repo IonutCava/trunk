@@ -225,7 +225,7 @@ bool Scene::loadGeometry(const FileData& data){
         ERROR_FN(Locale::get("ERROR_SCENE_UNSUPPORTED_GEOM"),data.ModelName.c_str());
         return false;
     }
-    Material* tempMaterial = XML::loadMaterial(data.ItemName+"_material");
+    Material* tempMaterial = XML::loadMaterial(stringAlg::fromBase(data.ItemName+"_material"));
     if(!tempMaterial){
         ResourceDescriptor materialDescriptor(data.ItemName+"_material");
         tempMaterial = CreateResource<Material>(materialDescriptor);
@@ -254,7 +254,7 @@ bool Scene::loadGeometry(const FileData& data){
     return true;
 }
 
-ParticleEmitter* Scene::getParticleEmitter(const std::string& name){
+ParticleEmitter* Scene::getParticleEmitter(const stringImpl& name){
     ParticleEmitterMap::const_iterator emitterIt = _particleEmitters.find(name);
     if(emitterIt != _particleEmitters.end()){
         return _particleEmitters[name];
@@ -262,7 +262,7 @@ ParticleEmitter* Scene::getParticleEmitter(const std::string& name){
     return nullptr;
 }
 
-ParticleEmitter* Scene::addParticleEmitter(const std::string& name, const ParticleEmitterDescriptor& descriptor){
+ParticleEmitter* Scene::addParticleEmitter(const stringImpl& name, const ParticleEmitterDescriptor& descriptor){
    ParticleEmitterMap::const_iterator emitterIt = _particleEmitters.find(name);
    if(emitterIt != _particleEmitters.end()){
        RemoveResource(_particleEmitters[name]);
@@ -287,7 +287,7 @@ SceneGraphNode* Scene::addLight(Light* const lightItem, SceneGraphNode* const pa
 
 DirectionalLight* Scene::addDefaultLight(){
     std::stringstream ss; ss << LightManager::getInstance().getLights().size();
-    ResourceDescriptor defaultLight("Default directional light "+ss.str());
+    ResourceDescriptor defaultLight(stringAlg::toBase("Default directional light "+ss.str()));
     defaultLight.setId(0); //descriptor ID is not the same as light ID. This is the light's slot!!
     defaultLight.setResourceLocation("root");
     defaultLight.setEnumValue(LIGHT_TYPE_DIRECTIONAL);
@@ -306,7 +306,7 @@ Sky* Scene::addDefaultSky(){
     return tempSky;
 }
 
-SceneGraphNode* Scene::addGeometry(SceneNode* const object,const std::string& sgnName){
+SceneGraphNode* Scene::addGeometry(SceneNode* const object,const stringImpl& sgnName){
     return _sceneGraph->getRoot()->addNode(object,sgnName);
 }
 
@@ -326,7 +326,7 @@ bool Scene::preLoad() {
     return true;
 }
 
-bool Scene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const guiInterface){
+bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const guiInterface){
     _GUI = guiInterface;
     _name = name;
     renderState()._cameraMgr = cameraMgr;
@@ -517,7 +517,7 @@ void Scene::processTasks(const U64 deltaTime){
         _taskTimers[i] += getUsToMs(deltaTime);
 }
 
-TerrainDescriptor* Scene::getTerrainInfo(const std::string& terrainName) {
+TerrainDescriptor* Scene::getTerrainInfo(const stringImpl& terrainName) {
     for (U8 i = 0; i < _terrainInfoArray.size(); i++)
     if (terrainName.compare(_terrainInfoArray[i]->getVariable("terrainName")) == 0)
         return _terrainInfoArray[i];

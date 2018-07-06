@@ -160,6 +160,15 @@ class ByteBuffer
             return *this;
         }
 
+#if defined(STRING_IMP) && STRING_IMP != 1
+        ByteBuffer &operator<<(const stringImpl &value)
+        {
+            append((U8 const *)value.c_str(), value.length());
+            append((U8)0);
+            return *this;
+        }
+#endif
+
         ByteBuffer &operator<<(const char *str)
         {
             append((U8 const *)str, str ? strlen(str) : 0);
@@ -247,6 +256,20 @@ class ByteBuffer
             return *this;
         }
 
+#if defined(STRING_IMP) && STRING_IMP != 1
+        ByteBuffer &operator>>(stringImpl& value)
+        {
+            value.clear();
+            while (rpos() < size()) // prevent crash at wrong string format in packet
+            {
+                char c = read<char>();
+                if (c == 0)
+                    break;
+                value += c;
+            }
+            return *this;
+        }
+#endif
         template<typename T>
         ByteBuffer &operator>>(Unused<T> const&)
         {
@@ -521,7 +544,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::map<K, V> &m)
         K k;
         V v;
         b >> k >> v;
-        m.insert(make_pair(k, v));
+        m.insert(std::make_pair(k, v));
     }
     return b;
 }

@@ -58,7 +58,7 @@ public:
         return _api.createBox(position,size);
     }
 
-    inline bool createActor(SceneGraphNode* const node, const std::string& sceneName, PhysicsActorMask mask,PhysicsCollisionGroup group){
+    inline bool createActor(SceneGraphNode* const node, const stringImpl& sceneName, PhysicsActorMask mask,PhysicsCollisionGroup group){
         return _api.createActor(node,sceneName,mask,group);
     }
 

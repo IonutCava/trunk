@@ -50,7 +50,7 @@ public:
 
     bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) { return true; }
     bool unload()                                      {return true;}
-    bool load(const std::string& name)                 {return true;}
+    bool load(const stringImpl& name)                 {return true;}
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
 protected:
@@ -72,14 +72,14 @@ public:
 
     void postLoad(SceneGraphNode* const sgn)           {return;}
     bool unload()                                      {return true;}
-    bool load(const std::string& name)                 {return true;}
+    bool load(const stringImpl& name)                 {return true;}
     bool computeBoundingBox(SceneGraphNode* const sgn) {return true;}
 };
 
 class IMPrimitive;
 class SceneGraphNode : public GUIDWrapper, private boost::noncopyable{
 public:
-    typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
+    typedef hashMapImpl<stringImpl, SceneGraphNode*> NodeChildren;
 
      ///Usage context affects lighting, navigation, physics, etc
     enum UsageContext {
@@ -107,11 +107,11 @@ public:
     template<typename T = SceneNode>
     inline T* getNode() const {assert(_node != nullptr); return dynamic_cast<T*>(_node);}
 
-    SceneGraphNode* addNode(SceneNode* const node,const std::string& name = "");
+    SceneGraphNode* addNode(SceneNode* const node,const stringImpl& name = "");
     void			removeNode(SceneGraphNode* node);
     ///Find a node in the graph based on the SceneGraphNode's name
     ///If sceneNodeName = true, find a node in the graph based on the SceneNode's name
-    SceneGraphNode* findNode(const std::string& name, bool sceneNodeName = false);
+    SceneGraphNode* findNode(const stringImpl& name, bool sceneNodeName = false);
     ///Find the graph nodes whom's bounding boxes intersects the given ray
     void Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits);
 
@@ -121,7 +121,7 @@ public:
     inline bool isSelectable()                  const {return _isSelectable;}
     inline void setSelectable(const bool state)       {_isSelectable = state;}
 
-    const  std::string& getName() const {return _name;}
+    const  stringImpl& getName() const {return _name;}
     /*Node Management*/
 
     /*Parent <-> Children*/
@@ -234,7 +234,7 @@ protected:
     inline void inView(const bool isInView) { _inView = isInView; isInViewCallback(); }
 
 private:
-    inline void setName(const std::string& name){_name = name;}
+    inline void setName(const stringImpl& name){_name = name;}
     inline void scheduleDrawReset(RenderStage currentStage) { _drawReset[currentStage] = true; }
            void isInViewCallback();
 
@@ -280,12 +280,12 @@ private:
     U32 _childQueue;
     D32 _updateTimer;
     U64 _elapsedTime;//< the total amount of time that passed since this node was created
-    std::string _name;
+    stringImpl _name;
 
     UsageContext _usageContext;
     SGNComponent* _components[SGNComponent::ComponentType_PLACEHOLDER];
     vectorImpl<DELEGATE_CBK> _deletionCallbacks; 
-    Unordered_map<RenderStage, bool> _drawReset;
+    hashMapImpl<RenderStage, bool, hashAlg::hash<I32>> _drawReset;
 
     StateTracker<bool> _trackedBools;
 

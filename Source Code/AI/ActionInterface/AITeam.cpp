@@ -27,7 +27,7 @@ AITeam::~AITeam()
 
 void AITeam::addCrowd(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* navMesh) {
     DIVIDE_ASSERT(_aiTeamCrowd.find(radius) == _aiTeamCrowd.end(), "AITeam error: DtCrowd already existed for new navmesh!");
-    _aiTeamCrowd.emplace(radius, New Navigation::DivideDtCrowd(navMesh));
+    hashAlg::emplace(_aiTeamCrowd, radius, New Navigation::DivideDtCrowd(navMesh));
 }
 
 void AITeam::removeCrowd(AIEntity::PresetAgentRadius radius) {
@@ -88,7 +88,7 @@ bool AITeam::addTeamMember(AIEntity* entity) {
         return true;
     }
     UpgradeToWriteLock uw_lock(ur_lock);
-    _team.emplace(entity->getGUID(),entity);
+    hashAlg::emplace(_team, entity->getGUID(), entity);
     entity->setTeamPtr(this);
     return true;
 }
@@ -116,7 +116,7 @@ bool AITeam::addEnemyTeam(U32 enemyTeamID) {
 }
 
 bool AITeam::removeEnemyTeam(U32 enemyTeamID) {
-    vectorImpl<U32>::const_iterator it = findEnemyTeamEntry(enemyTeamID);
+    vectorImpl<U32>::iterator it = findEnemyTeamEntry(enemyTeamID);
     if (it != _enemyTeams.end()) {
         WriteLock w_lock(_updateMutex); 
         _enemyTeams.erase(it);

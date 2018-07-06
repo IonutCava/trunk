@@ -117,9 +117,9 @@ void EffectManager::checkPlayableEffects() {
 
     // Get the list of indices of effects that the selected device can play
     _vecPlayableEffectInd.clear();
-    for (size_t nEffInd = 0; nEffInd < _vecEffects.size(); ++nEffInd) {
+    for (vectorAlg::vecSize nEffInd = 0; nEffInd < _vecEffects.size(); ++nEffInd) {
         const OIS::Effect::EForce& eForce = _vecEffects[nEffInd]->getFFEffect()->force;
-        const OIS::Effect::EType& eType = _vecEffects[nEffInd]->getFFEffect()->type;
+        const OIS::Effect::EType& eType  = _vecEffects[nEffInd]->getFFEffect()->type;
         if (_pJoystickInterface->getCurrentFFDevice()->supportsEffect(eForce, eType))
             _vecPlayableEffectInd.push_back(nEffInd);
     }
@@ -131,8 +131,9 @@ void EffectManager::checkPlayableEffects() {
     else {
         PRINT_FN(Locale::get("INPUT_DEVICE_EFFECT_SUPPORT"));
 
-        for (size_t nEffIndInd = 0; nEffIndInd < _vecPlayableEffectInd.size(); ++nEffIndInd)
+        for (vectorAlg::vecSize nEffIndInd = 0; nEffIndInd < _vecPlayableEffectInd.size(); ++nEffIndInd) {
             printEffect(_vecPlayableEffectInd[nEffIndInd]);
+        }
 
         PRINT_FN("");
     }

@@ -122,7 +122,7 @@ bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::Navig
     DIVIDE_ASSERT(navMesh != nullptr, "AIManager error: Invalid navmesh specified!");
 
     navMesh->debugDraw(_navMeshDebugDraw);
-    _navMeshes.emplace(radius, navMesh);
+    hashAlg::emplace(_navMeshes, radius, navMesh);
     w_lock.unlock();
 
     WriteLock w_lock2(_updateMutex);
@@ -152,13 +152,13 @@ void AIManager::registerTeam(AITeam* const team) {
     U32 teamID = team->getTeamID();
     DIVIDE_ASSERT(_aiTeams.find(teamID) == _aiTeams.end(), "AIManager error: attempt to double register an AI team!");
 
-    _aiTeams.insert(std::make_pair(teamID, team));
+    hashAlg::insert(_aiTeams, hashAlg::makePair(teamID, team));
 }
 
 void AIManager::unregisterTeam(AITeam* const team) {
     WriteLock w_lock(_updateMutex);
     U32 teamID = team->getTeamID();
-    AITeamMap::const_iterator it = _aiTeams.find(teamID);
+    AITeamMap::iterator it = _aiTeams.find(teamID);
     DIVIDE_ASSERT(it != _aiTeams.end(), "AIManager error: attempt to unregister an invalid AI team!");
     _aiTeams.erase(it);
 }

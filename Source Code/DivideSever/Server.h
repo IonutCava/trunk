@@ -4,7 +4,6 @@
 #include "Core/Headers/Singleton.h"
 #include "tcp_session_impl.h"
 #include <boost/asio.hpp>
-#include <string>
 
 //----------------------------------------------------------------------
 namespace Divide {
@@ -12,7 +11,7 @@ namespace Divide {
 DEFINE_SINGLETON(Server)
 
 public:
-	void init(U16 port,const std::string& broadcast_endpoint_address,bool debugOutput);
+	void init(U16 port,const stringImpl& broadcast_endpoint_address,bool debugOutput);
 
 private:
   Server();

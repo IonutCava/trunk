@@ -47,7 +47,7 @@ namespace Divide {
             }
 
             /// creates this image instance from the specified data
-            bool create(const std::string& fileName);
+            bool create(const stringImpl& fileName);
             /// creates this image by reading a portion of memory from sistem RAM defined by a starting position and a size
             bool create(const void* ptr, U32 size);
             /// destroy the image data allocated by the create call
@@ -70,7 +70,7 @@ namespace Divide {
             /// image width and height
             inline const vec2<U16>& dimensions() const {return _dimensions;}
             /// the filename from which the image is created
-            inline const std::string& name()     const {return _name;}
+            inline const stringImpl& name()     const {return _name;}
             /// the image handle as given by DevIL
             inline U32  handle()                 const {return _ilTexture;}
             /// the image format as given by DevIL
@@ -84,7 +84,7 @@ namespace Divide {
             /// this is called by either of the create functions to set the image info (depth, resolution, pixel data, etc)
             bool setInternalData();
             /// outputs a generic error and sets DevIL's image handle back to 0 so it can be reused on the next "create" call
-            void throwLoadError(const std::string& fileName);
+            void throwLoadError(const stringImpl& fileName);
 
         private:
             /// the image data as it was read from the file / memory
@@ -106,13 +106,13 @@ namespace Divide {
             /// the DevIL texture handle
             U32 _ilTexture;
             /// the actual image filename
-            std::string _name;
+            stringImpl _name;
     };
 
     /// prepares the image loading system
     void initialize();
     /// open an image file and save it's contents in the ImageData object
-    inline void OpenImage(const std::string& filename, ImageData& img) {img.create(filename);}
+    inline void OpenImage(const stringImpl& filename, ImageData& img) {img.create(filename);}
     /// read an image file from a block of memory and save it's contents in the ImageData object
     inline void OpenImage(const void* ptr, U32 size, ImageData& img)   { img.create(ptr, size); }
     /// save a single file to TGA

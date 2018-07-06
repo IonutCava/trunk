@@ -2,8 +2,8 @@
 
 namespace Divide {
 
-ResourceDescriptor::ResourceDescriptor(const std::string& name,
-                                       const std::string& resourceLocation,
+ResourceDescriptor::ResourceDescriptor(const stringImpl& name,
+                                       const stringImpl& resourceLocation,
                                        bool flag, U32 id, U8 enumValue) : _propertyDescriptor(nullptr),
                                                                           _name(name),
                                                                           _resourceLocation(resourceLocation),

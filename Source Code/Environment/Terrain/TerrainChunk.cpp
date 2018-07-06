@@ -27,7 +27,7 @@ TerrainChunk::TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const par
     _terrainVB = _parentTerrain->getGeometryVB();
 
     VegetationDetails vegDetails = _parentTerrain->_vegDetails;
-    vegDetails.name += "_chunk_" + Util::toString(_chunkID);
+    vegDetails.name += stringAlg::toBase("_chunk_" + Util::toString(_chunkID));
     _vegetation = New Vegetation(vegDetails); //<Deleted by the sceneGraph on "unload"
     _vegetation->getSceneNodeRenderState().useDefaultMaterial(false);
     _vegetation->setMaterial(nullptr);

@@ -49,7 +49,7 @@ class EffectManager {
     U32 _nUpdateFreq;
 
     // Indices (in _vecEffects) of the variable effects that are playable by the selected joystick.
-    vectorImpl<size_t> _vecPlayableEffectInd;
+    vectorImpl<vectorAlg::vecSize> _vecPlayableEffectInd;
 
 public:
     enum EWhichEffect { ePrevious = -1, eNone = 0, eNext = +1 };
@@ -61,12 +61,12 @@ public:
     void checkPlayableEffects();
     void selectEffect(EWhichEffect eWhich);
 
-    inline void printEffect(size_t nEffInd){
+    inline void printEffect(vectorAlg::vecSize nEffInd){
         PRINT_FN(Locale::get("INPUT_PRINT_EFFECT"),nEffInd,_vecEffects[nEffInd]->getDescription());
     }
 
     inline void printEffects(){
-        for (size_t nEffInd = 0; nEffInd < _vecEffects.size(); nEffInd++){
+        for (vectorAlg::vecSize nEffInd = 0; nEffInd < _vecEffects.size(); nEffInd++){
           printEffect(nEffInd);
         }
     }

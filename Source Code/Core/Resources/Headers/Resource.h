@@ -23,7 +23,7 @@
 #ifndef _RESOURCE_H_
 #define _RESOURCE_H_
 
-#include "Utility/Headers/UnorderedMap.h"
+#include "Utility/Headers/HashMap.h"
 #include "Core/Math/Headers/MathClasses.h"
 #include "Core/MemoryManagement/Headers/TrackedObject.h"
 
@@ -50,7 +50,7 @@ class Resource : public TrackedObject {
     friend class ImplResourceLoader;
 
 public:
-    explicit Resource(const std::string& name) : TrackedObject(),
+    explicit Resource(const stringImpl& name) : TrackedObject(),
                                                  _name(name),
                                                  _threadedLoading(true),
                                                  _threadedLoadComplete(false),
@@ -64,24 +64,24 @@ public:
     virtual bool unload() = 0;
 
     ///Name management
-    const  std::string& getName()                       const {return _name;}
-    inline void         setName(const std::string& name)      {_name = name;}
+    const  stringImpl& getName()                       const {return _name;}
+    inline void         setName(const stringImpl& name)      {_name = name;}
     ///Physical file location
-    const std::string& getResourceLocation()                                   const {return _resourceLocation;}
-          void         setResourceLocation(const std::string& resourceLocation)      {_resourceLocation = resourceLocation;}
+    const stringImpl& getResourceLocation()                                   const {return _resourceLocation;}
+          void         setResourceLocation(const stringImpl& resourceLocation)      {_resourceLocation = resourceLocation;}
 
     inline ResourceState getState() const {return _resourceState;}
     ///Toggle loading in background thread
     inline void enableThreadedLoading(const bool enableThreadedLoading) {_threadedLoading = enableThreadedLoading;}
-    virtual void threadedLoad(const std::string& name)                  {_threadedLoadComplete = true;}
+    virtual void threadedLoad(const stringImpl& name)                  {_threadedLoadComplete = true;}
 
 protected:
     inline void setState(const ResourceState& currentState) {_resourceState = currentState;}
     virtual void refModifyCallback(bool increase);
 
 protected:
-    std::string	  _name;
-    std::string   _resourceLocation; ///< Physical file location
+    stringImpl	  _name;
+    stringImpl   _resourceLocation; ///< Physical file location
     boost::atomic<ResourceState> _resourceState;
     ///Should load resource in a background thread
     boost::atomic_bool _threadedLoading;
@@ -96,16 +96,16 @@ enum GeometryType {
 };
 
 struct FileData {
-    std::string ItemName;
-    std::string ModelName;
+    stringImpl ItemName;
+    stringImpl ModelName;
     vec3<F32> scale;
     vec3<F32> position;
     vec3<F32> orientation;
     vec3<F32> color;
     GeometryType type;
     F32 data; ///< general purpose
-    std::string data2;
-    std::string data3;
+    stringImpl data2;
+    stringImpl data3;
     F32 version;
     bool castsShadows;
     bool receivesShadows;
@@ -119,7 +119,7 @@ struct FileData {
 struct TerrainInfo {
     TerrainInfo(){position.set(0,0,0);}
     ///"variables" contains the various strings needed for each terrain such as texture names, terrain name etc.
-    Unordered_map<std::string,std::string> variables;
+    hashMapImpl<stringImpl,stringImpl> variables;
     F32  grassDensity;
     F32  treeDensity;
     F32  grassScale;

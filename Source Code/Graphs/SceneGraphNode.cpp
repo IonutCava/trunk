@@ -174,9 +174,9 @@ void SceneGraphNode::setParent(SceneGraphNode* const parent) {
     _parent = parent;
     //Add ourselves in the new parent's children map
     //Time to add it to the children map
-    std::pair<Unordered_map<std::string, SceneGraphNode*>::iterator, bool > result;
+    hashAlg::pair<hashMapImpl<stringImpl, SceneGraphNode*>::iterator, bool > result;
     //Try and add it to the map
-    result = _parent->getChildren().insert(std::make_pair(getName(),this));
+    result = hashAlg::insert(_parent->getChildren(), hashAlg::makePair(getName(), this));
     //If we had a collision (same name?)
     if(!result.second){
         ///delete the old SceneGraphNode and add this one instead
@@ -186,7 +186,7 @@ void SceneGraphNode::setParent(SceneGraphNode* const parent) {
 }
 
 ///Add a new SceneGraphNode to the current node's child list based on a SceneNode
-SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string& name) {
+SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const stringImpl& name) {
     assert(node);
     //Create a new SceneGraphNode with the SceneNode's info
     SceneGraphNode* sceneGraphNode = New SceneGraphNode(_sceneGraph, node);
@@ -194,7 +194,7 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string&
     assert(sceneGraphNode);
     //We need to name the new SceneGraphNode
     //If we did not supply a custom name use the SceneNode's name
-    std::string sgName(name.empty() ? node->getName() : name);
+    stringImpl sgName(name.empty() ? node->getName() : name);
     //Name the new SceneGraphNode
     sceneGraphNode->setName(sgName);
      //Get the new node's transform
@@ -237,7 +237,7 @@ void SceneGraphNode::removeNode(SceneGraphNode* node) {
 //Finding a node based on the name of the SceneGraphNode or the SceneNode it holds
 //Switching is done by setting sceneNodeName to false if we pass a SceneGraphNode name
 //or to true if we search by a SceneNode's name
-SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNodeName){
+SceneGraphNode* SceneGraphNode::findNode(const stringImpl& name, bool sceneNodeName){
     //Null return value as default
     SceneGraphNode* returnValue = nullptr;
      //Make sure a name exists

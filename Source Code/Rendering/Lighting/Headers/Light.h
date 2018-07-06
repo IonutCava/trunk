@@ -73,7 +73,7 @@ public:
         PropertyType_PLACEHOLDER = 3
     };
 
-    typedef Unordered_map<I64, Light*> LightMap;
+    typedef hashMapImpl<I64, Light*> LightMap;
 
     ///Create a new light assigned to the specified slot with the specified range
     /// @param slot = the slot the light is assigned to (as in OpenGL slot for example)
@@ -155,7 +155,7 @@ protected:
     friend class LightManager;
     template<typename T>
     friend class ImplResourceLoader;
-    bool load(const std::string& name);
+    bool load(const stringImpl& name);
 
     ///When the SceneGraph calls the light's render function, we draw the impostor if needed
     virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);

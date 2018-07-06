@@ -55,11 +55,11 @@ struct FrameEvent {
 class FrameListener{
 public:
 	///Either give it a name
-    FrameListener(const std::string& name) : _callOrder(0) { _listenerName = name; }
+    FrameListener(const stringImpl& name) : _callOrder(0) { _listenerName = name; }
 	///Or the frame listenr manager will assing it an ID
     FrameListener() : _callOrder(0) {}
 	virtual ~FrameListener(){}
-	inline const std::string& getName() const {return _listenerName;}
+	inline const stringImpl& getName() const {return _listenerName;}
 
     bool operator<(FrameListener& that){
         return this->_callOrder < that._callOrder;
@@ -67,7 +67,7 @@ public:
 
 protected:
 	friend class FrameListenerManager;
-	inline void  setName(const std::string& name) { _listenerName = name; }
+	inline void  setName(const stringImpl& name) { _listenerName = name; }
     inline void  setCallOrder(U32 order)          { _callOrder = order; }
 	///Adapter patern instead of pure interface for the same reason as the Ogre boys pointed out:
 	///Implement what you need without filling classes with dummy functions
@@ -88,7 +88,7 @@ protected:
     
 private:
 	///not _name so that it doesn't conflict with Resource base class
-	std::string _listenerName;
+	stringImpl _listenerName;
     ///if multiple frame listeners are handling the same event, this call order variable is used for sorting
     U32 _callOrder;
 };

@@ -68,7 +68,7 @@ namespace Divide {
             }
 
         protected:
-            WarSceneAction(ActionType type, const std::string& name, F32 cost = 1.0f);
+            WarSceneAction(ActionType type, const stringImpl& name, F32 cost = 1.0f);
             virtual ~WarSceneAction();
 
         protected:
@@ -84,28 +84,28 @@ namespace Divide {
 
     class ApproachFlag : public WarSceneAction {
         public:
-            ApproachFlag(std::string name, F32 cost = 1.0f);
+            ApproachFlag(stringImpl name, F32 cost = 1.0f);
             ApproachFlag(WarSceneAction const & other) : WarSceneAction(other)
             {
             }
     };
     class CaptureFlag : public WarSceneAction {
         public:
-            CaptureFlag(std::string name, F32 cost = 1.0f);
+            CaptureFlag(stringImpl name, F32 cost = 1.0f);
             CaptureFlag(WarSceneAction const & other) : WarSceneAction(other)
             {
             }
     };
     class ReturnFlag : public WarSceneAction {
         public:
-            ReturnFlag(std::string name, F32 cost = 1.0f);
+            ReturnFlag(stringImpl name, F32 cost = 1.0f);
             ReturnFlag(WarSceneAction const & other) : WarSceneAction(other)
             {
             }
     };
     class ProtectFlagCarrier : public WarSceneAction {
         public:
-            ProtectFlagCarrier(std::string name, F32 cost = 1.0f);
+            ProtectFlagCarrier(stringImpl name, F32 cost = 1.0f);
             ProtectFlagCarrier(WarSceneAction const & other) : WarSceneAction(other)
             {
             }
@@ -113,7 +113,7 @@ namespace Divide {
     };
     class RecoverFlag : public WarSceneAction {
         public:
-            RecoverFlag(std::string name, F32 cost = 1.0f);
+            RecoverFlag(stringImpl name, F32 cost = 1.0f);
             RecoverFlag(WarSceneAction const & other) : WarSceneAction(other)
             {
             }

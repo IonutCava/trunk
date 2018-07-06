@@ -56,7 +56,7 @@ public:
         AgentRadius_PLACEHOLDER = 4
     };
 
-    AIEntity(const vec3<F32>& currentPosition, const std::string& name);
+    AIEntity(const vec3<F32>& currentPosition, const stringImpl& name);
     ~AIEntity();
 
     void load(const vec3<F32>& position);
@@ -71,7 +71,7 @@ public:
 
     inline AITeam* getTeam()   const { return _teamPtr; }
            I32     getTeamID() const;
-    const std::string& getName() const {return _name;}
+    const stringImpl& getName() const {return _name;}
 
            void addUnitRef(NPC* const npc);
     inline NPC* getUnitRef()                {return _unitRef;}
@@ -158,14 +158,14 @@ protected:
     void init();
 
 private:
-    std::string           _name;
+    stringImpl           _name;
     AITeam*               _teamPtr;
     AISceneImpl*          _AISceneImpl;
 
     mutable SharedLock    _updateMutex;
     mutable SharedLock    _managerQueryMutex;
 
-    typedef Unordered_map<SensorType, Sensor*> SensorMap;
+    typedef hashMapImpl<SensorType, Sensor*, hashAlg::hash<I32> > SensorMap;
     SensorMap               _sensorList;
     NPC*                    _unitRef;
     /// PathFinding
@@ -195,4 +195,5 @@ private:
 
     };//namespace AI
 }; //namespace Divide
+
 #endif

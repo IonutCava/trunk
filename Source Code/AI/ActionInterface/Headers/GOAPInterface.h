@@ -48,7 +48,7 @@ namespace Divide {
     class AISceneImpl;
     class GOAPGoal : public goap::WorldState {
         public:
-            GOAPGoal(const std::string& name);
+            GOAPGoal(const  std::string& name);
             virtual ~GOAPGoal();
 
             inline F32  relevancy()              const { return _relevancy; }

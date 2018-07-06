@@ -16,27 +16,27 @@ namespace Divide {
 
 GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(nullptr)
 {
-    _commandMap.insert(std::make_pair("say",DELEGATE_BIND(&GUIConsoleCommandParser::handleSayCommand,this,_1)));
-    _commandMap.insert(std::make_pair("quit",DELEGATE_BIND(&GUIConsoleCommandParser::handleQuitCommand,this,_1)));
-    _commandMap.insert(std::make_pair("help",DELEGATE_BIND(&GUIConsoleCommandParser::handleHelpCommand,this,_1)));
-    _commandMap.insert(std::make_pair("editparam",DELEGATE_BIND(&GUIConsoleCommandParser::handleEditParamCommand,this,_1)));
-    _commandMap.insert(std::make_pair("playsound",DELEGATE_BIND(&GUIConsoleCommandParser::handlePlaySoundCommand,this,_1)));
-    _commandMap.insert(std::make_pair("createnavmesh",DELEGATE_BIND(&GUIConsoleCommandParser::handleNavMeshCommand,this,_1)));
-    _commandMap.insert(std::make_pair("recompileshader",DELEGATE_BIND(&GUIConsoleCommandParser::handleShaderRecompileCommand,this,_1)));
-    _commandMap.insert(std::make_pair("setfov",DELEGATE_BIND(&GUIConsoleCommandParser::handleFOVCommand,this,_1)));
-    _commandMap.insert(std::make_pair("invalidcommand",DELEGATE_BIND(&GUIConsoleCommandParser::handleInvalidCommand,this,_1)));
-    _commandMap.insert(std::make_pair("addobject", DELEGATE_BIND(&GUIConsoleCommandParser::handleAddObject, this, _1)));
+    _commandMap["say"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleSayCommand, this, _1);
+    _commandMap["quit"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleQuitCommand,this,_1);
+    _commandMap["help"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleHelpCommand,this,_1);
+    _commandMap["editparam"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleEditParamCommand,this,_1);
+    _commandMap["playsound"] = DELEGATE_BIND(&GUIConsoleCommandParser::handlePlaySoundCommand,this,_1);
+    _commandMap["createnavmesh"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleNavMeshCommand,this,_1);
+    _commandMap["recompileshader"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleShaderRecompileCommand,this,_1);
+    _commandMap["setfov"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleFOVCommand,this,_1);
+    _commandMap["invalidcommand"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleInvalidCommand,this,_1);
+    _commandMap["addobject"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleAddObject, this, _1);
 
-    _commandHelp.insert(std::make_pair("say",Locale::get("CONSOLE_SAY_COMMAND_HELP")));
-    _commandHelp.insert(std::make_pair("quit",Locale::get("CONSOLE_QUIT_COMMAND_HELP")));
-    _commandHelp.insert(std::make_pair("help",Locale::get("CONSOLE_HELP_COMMAND_HELP")));
-    _commandHelp.insert(std::make_pair("editparam",Locale::get("CONSOLE_EDITPARAM_COMMAND_HELP")));
-    _commandHelp.insert(std::make_pair("playsound",Locale::get("CONSOLE_PLAYSOUND_COMMAND_HELP")));
-    _commandHelp.insert(std::make_pair("createnavmesh",Locale::get("CONSOLE_NAVMESH_COMMAND_HELP")));
-    _commandHelp.insert(std::make_pair("recompileshader",Locale::get("CONSOLE_SHADER_RECOMPILE_COMMAND_HELP")));
-    _commandHelp.insert(std::make_pair("setfov",Locale::get("CONSOLE_CHANGE_FOV_COMMAND_HELP")));
-    _commandHelp.insert(std::make_pair("addObject",Locale::get("CONSOLE_ADD_OBJECT_COMMAND_HELP")));
-    _commandHelp.insert(std::make_pair("invalidhelp",Locale::get("CONSOLE_INVALID_HELP_ARGUMENT")));
+    _commandHelp["say"] = Locale::get("CONSOLE_SAY_COMMAND_HELP");
+    _commandHelp["quit"] = Locale::get("CONSOLE_QUIT_COMMAND_HELP");
+    _commandHelp["help"] = Locale::get("CONSOLE_HELP_COMMAND_HELP");
+    _commandHelp["editparam"] = Locale::get("CONSOLE_EDITPARAM_COMMAND_HELP");
+    _commandHelp["playsound"] = Locale::get("CONSOLE_PLAYSOUND_COMMAND_HELP");
+    _commandHelp["createnavmesh"] = Locale::get("CONSOLE_NAVMESH_COMMAND_HELP");
+    _commandHelp["recompileshader"] = Locale::get("CONSOLE_SHADER_RECOMPILE_COMMAND_HELP");
+    _commandHelp["setfov"] = Locale::get("CONSOLE_CHANGE_FOV_COMMAND_HELP");
+    _commandHelp["addObject"] = Locale::get("CONSOLE_ADD_OBJECT_COMMAND_HELP");
+    _commandHelp["invalidhelp"] = Locale::get("CONSOLE_INVALID_HELP_ARGUMENT");
 }
 
 GUIConsoleCommandParser::~GUIConsoleCommandParser()
@@ -46,17 +46,17 @@ GUIConsoleCommandParser::~GUIConsoleCommandParser()
     }
 }
 
-bool GUIConsoleCommandParser::processCommand(const std::string& commandString){
+bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString){
     // Be sure we have a string longer than 0
     if (commandString.length() >= 1) {
         // Check if the first letter is a 'command' operator
         if (commandString.at(0) == '/') 	{
-            std::string::size_type commandEnd = commandString.find(" ", 1);
-            std::string command = commandString.substr(1, commandEnd - 1);
-            std::string commandArgs = commandString.substr(commandEnd + 1, commandString.length() - (commandEnd + 1));
+            stringImpl::size_type commandEnd = commandString.find(" ", 1);
+            stringImpl command = commandString.substr(1, commandEnd - 1);
+            stringImpl commandArgs = commandString.substr(commandEnd + 1, commandString.length() - (commandEnd + 1));
             if(commandString.compare(commandArgs) == 0) commandArgs.clear();
             //convert command to lower case
-            for(std::string::size_type i=0; i < command.length(); i++){
+            for(stringImpl::size_type i=0; i < command.length(); i++){
                 command[i] = tolower(command[i]);
             }
             if(_commandMap.find(command) != _commandMap.end()){
@@ -73,11 +73,11 @@ bool GUIConsoleCommandParser::processCommand(const std::string& commandString){
     return true;
 }
 
-void GUIConsoleCommandParser::handleSayCommand(const std::string& args){
+void GUIConsoleCommandParser::handleSayCommand(const stringImpl& args){
     PRINT_FN(Locale::get("CONSOLE_SAY_NAME_TAG"),args.c_str());
 }
 
-void GUIConsoleCommandParser::handleQuitCommand(const std::string& args){
+void GUIConsoleCommandParser::handleQuitCommand(const stringImpl& args){
     if(!args.empty()){
         //quit command can take an extra argument. A reason, for example
         PRINT_FN(Locale::get("CONSOLE_QUIT_COMMAND_ARGUMENT"), args.c_str());
@@ -85,11 +85,11 @@ void GUIConsoleCommandParser::handleQuitCommand(const std::string& args){
     Application::getInstance().RequestShutdown();
 }
 
-void GUIConsoleCommandParser::handleHelpCommand(const std::string& args){
+void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args){
     if(args.empty()){
         PRINT_FN(Locale::get("HELP_CONSOLE_COMMAND"));
         FOR_EACH(CommandMap::value_type& it,_commandMap){
-            if(it.first.find("invalid") == std::string::npos){
+            if(it.first.find("invalid") == stringImpl::npos){
                 PRINT_FN("/%s - %s",it.first.c_str(),_commandHelp[it.first]);
             }
         }
@@ -102,16 +102,16 @@ void GUIConsoleCommandParser::handleHelpCommand(const std::string& args){
     }
 }
 
-void GUIConsoleCommandParser::handleEditParamCommand(const std::string& args){
-    if(ParamHandler::getInstance().isParam(args)){
+void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args){
+    if(ParamHandler::getInstance().isParam<stringImpl>(args)){
         PRINT_FN(Locale::get("CONSOLE_EDITPARAM_FOUND"), args.c_str(), "N/A", "N/A", "N/A");
     }else{
         PRINT_FN(Locale::get("CONSOLE_EDITPARAM_NOT_FOUND"), args.c_str());
     }
 }
 
-void GUIConsoleCommandParser::handlePlaySoundCommand(const std::string& args){
-    std::string filename = ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/" + args;
+void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args){
+    std::string filename = ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/" + stringAlg::fromBase(args);
     std::ifstream soundfile(filename.c_str());
     if (soundfile) {
         //Check extensions (not really, musicwav.abc would still be valid, but still ...)
@@ -125,10 +125,10 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const std::string& args){
 
         //The file is valid, so create a descriptor for it
         ResourceDescriptor sound("consoleFilePlayback");
-        sound.setResourceLocation(filename);
+        sound.setResourceLocation(stringAlg::toBase(filename));
         sound.setFlag(false);
         _sound = CreateResource<AudioDescriptor>(sound);
-        if(filename.find("music") != std::string::npos){
+        if(filename.find("music") != stringImpl::npos){
             //play music
             SFXDevice::getInstance().playMusic(_sound);
         }else{
@@ -141,7 +141,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const std::string& args){
     }
 }
 
-void GUIConsoleCommandParser::handleNavMeshCommand(const std::string& args){
+void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args){
     SceneGraphNode* sgn = nullptr;
     if(!args.empty()){
         sgn = GET_ACTIVE_SCENEGRAPH()->findNode("args");
@@ -172,11 +172,11 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const std::string& args){
 	}
 }
 
-void GUIConsoleCommandParser::handleShaderRecompileCommand(const std::string& args){
+void GUIConsoleCommandParser::handleShaderRecompileCommand(const stringImpl& args){
     ShaderManager::getInstance().recompileShaderProgram(args);
 }
 
-void GUIConsoleCommandParser::handleFOVCommand(const std::string& args){
+void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args){
     if(!Util::isNumber(args)){
         ERROR_FN(Locale::get("CONSOLE_INVALID_NUMBER"));
         return;
@@ -187,23 +187,23 @@ void GUIConsoleCommandParser::handleFOVCommand(const std::string& args){
     Application::getInstance().getKernel()->getCameraMgr().getActiveCamera()->setHorizontalFoV(FoV);
 }
 
-void GUIConsoleCommandParser::handleAddObject(const std::string& args){
-    std::istringstream ss(args);
+void GUIConsoleCommandParser::handleAddObject(const stringImpl& args){
+    std::istringstream ss(args.c_str());
     std::string args1, args2;
     std::getline(ss, args1, ',');
     std::getline(ss, args2, ',');
 
     float scale = 1.0f;
-    if(!Util::isNumber(args2)){
+    if(!Util::isNumber(args2.c_str())){
         ERROR_FN(Locale::get("CONSOLE_INVALID_NUMBER"));
     }else{
         scale = (F32)atof(args2.c_str());
     }
-    std::string assetLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/";
+    std::string assetLocation(ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/");
 
     FileData model;
-    model.ItemName = args1 + "_console" + args2;
-    model.ModelName  = ((args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0) ? "" : assetLocation) + args1;
+    model.ItemName = stringAlg::toBase(args1 + "_console" + args2);
+    model.ModelName  = stringAlg::toBase(((args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0) ? "" : assetLocation) + args1);
     model.position = GET_ACTIVE_SCENE()->state().getRenderState().getCamera().getEye();
     model.data = 1.0f;
     model.scale    = vec3<F32>(scale);
@@ -218,7 +218,7 @@ void GUIConsoleCommandParser::handleAddObject(const std::string& args){
     GET_ACTIVE_SCENE()->addModel(model);
 }
 
-void GUIConsoleCommandParser::handleInvalidCommand(const std::string& args){
+void GUIConsoleCommandParser::handleInvalidCommand(const stringImpl& args){
     ERROR_FN(Locale::get("CONSOLE_INVALID_COMMAND"),args.c_str());
 }
 

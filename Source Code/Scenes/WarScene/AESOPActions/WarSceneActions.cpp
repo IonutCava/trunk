@@ -6,7 +6,7 @@
 namespace Divide {
 namespace AI {
 
-    WarSceneAction::WarSceneAction(ActionType type, const std::string& name, F32 cost) : GOAPAction(name, cost)
+    WarSceneAction::WarSceneAction(ActionType type, const stringImpl& name, F32 cost) : GOAPAction(stringAlg::fromBase(name), cost)
     {
         _type = type;
         _parentScene = nullptr;
@@ -24,23 +24,23 @@ namespace AI {
         return _parentScene->postAction(_type, this);
     }
 
-    ApproachFlag::ApproachFlag(std::string name, F32 cost) : WarSceneAction(ACTION_APPROACH_FLAG, name, cost)
+    ApproachFlag::ApproachFlag(stringImpl name, F32 cost) : WarSceneAction(ACTION_APPROACH_FLAG, name, cost)
     {
     }
 
-    CaptureFlag::CaptureFlag(std::string name, F32 cost) : WarSceneAction(ACTION_CAPTURE_FLAG, name, cost)
+    CaptureFlag::CaptureFlag(stringImpl name, F32 cost) : WarSceneAction(ACTION_CAPTURE_FLAG, name, cost)
     {
     }
 
-    ReturnFlag::ReturnFlag(std::string name, F32 cost) : WarSceneAction(ACTION_RETURN_FLAG, name, cost)
+    ReturnFlag::ReturnFlag(stringImpl name, F32 cost) : WarSceneAction(ACTION_RETURN_FLAG, name, cost)
     {
     }
 
-    ProtectFlagCarrier::ProtectFlagCarrier(std::string name, F32 cost) : WarSceneAction(ACTION_PROTECT_FLAG_CARRIER, name, cost)
+    ProtectFlagCarrier::ProtectFlagCarrier(stringImpl name, F32 cost) : WarSceneAction(ACTION_PROTECT_FLAG_CARRIER, name, cost)
     {
     }
 
-    RecoverFlag::RecoverFlag(std::string name, F32 cost) : WarSceneAction(ACTION_RECOVER_FLAG, name, cost)
+    RecoverFlag::RecoverFlag(stringImpl name, F32 cost) : WarSceneAction(ACTION_RECOVER_FLAG, name, cost)
     {
     }
 }; //namespace AI

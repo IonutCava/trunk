@@ -43,7 +43,7 @@ struct ParticleEmitterDescriptor {
 
     I32 _lifetime;                  ///< lifetime , in milliseconds of each particle
     I32 _lifetimeVariance;          ///< liftime variance (_lifetime + rand(-_lifetimeVariance, _lifetimeVariance))
-    std::string _textureFileName;
+    stringImpl _textureFileName;
     ParticleEmitterDescriptor();
 };
 

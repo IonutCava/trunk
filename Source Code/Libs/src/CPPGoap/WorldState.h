@@ -9,7 +9,6 @@
 #pragma once
 
 #include <ostream>
-#include <string>
 #include <map>
 
 namespace goap {

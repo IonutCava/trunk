@@ -25,10 +25,9 @@
 
 #include "Core/Headers/Singleton.h"
 #include "Utility/Headers/Vector.h"
-#include "Utility/Headers/UnorderedMap.h"
+#include "Utility/Headers/HashMap.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
-#include <string>
 #include <stack>
 
 namespace Divide {
@@ -40,9 +39,9 @@ enum  ShaderType;
 
 DEFINE_SINGLETON(ShaderManager)
 
-typedef Unordered_map<std::string, Shader* >        ShaderMap;
-typedef Unordered_map<std::string, ShaderProgram* > ShaderProgramMap;
-typedef Unordered_map<std::string, const char* >    AtomMap;
+typedef hashMapImpl<stringImpl, Shader* >        ShaderMap;
+typedef hashMapImpl<stringImpl, ShaderProgram* > ShaderProgramMap;
+typedef hashMapImpl<stringImpl, const char* >    AtomMap;
 typedef std::stack<ShaderProgram*, vectorImpl<ShaderProgram* > > ShaderQueue;
 
 private:
@@ -65,17 +64,17 @@ public:
     /// Remove a shader from the cache
     void removeShader(Shader* s);
     /// Return a new shader reference
-    Shader* getShader(const std::string& name, const bool recompile = false );
+    Shader* getShader(const stringImpl& name, const bool recompile = false );
     /// Add or refresh a shader from the cache
-    Shader* loadShader(const std::string& name, const std::string& location,const ShaderType& type,const bool recompile = false);
+    Shader* loadShader(const stringImpl& name, const stringImpl& location,const ShaderType& type,const bool recompile = false);
     /// Remove a shaderProgram from the program cache
-    void unregisterShaderProgram(const std::string& name);
+    void unregisterShaderProgram(const stringImpl& name);
     /// Add a shaderProgram to the program cache
-    void registerShaderProgram(const std::string& name, ShaderProgram* const shaderProgram);
+    void registerShaderProgram(const stringImpl& name, ShaderProgram* const shaderProgram);
     /// Queue a shaderProgram recompile request
-    bool recompileShaderProgram(const std::string& name);
+    bool recompileShaderProgram(const stringImpl& name);
     /// Load a shader from file
-    const char* shaderFileRead(const std::string &atomName, const std::string& location);
+    const char* shaderFileRead(const stringImpl &atomName, const stringImpl& location);
     /// Save a shader to file
     I8 shaderFileWrite(char *atomName, const char *s);
     /// Bind the null shader

@@ -23,7 +23,6 @@
 #ifndef _RENDERING_RENDER_PASS_RENDERPASS_H_
 #define _RENDERING_RENDER_PASS_RENDERPASS_H_
 
-#include <string>
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
@@ -33,15 +32,15 @@ class SceneRenderState;
 
 class RenderPass {
 public:
-	RenderPass(const std::string& name);
+	RenderPass(const stringImpl& name);
 	~RenderPass();
 
 	virtual void render(const SceneRenderState& renderState, SceneGraph* activeSceneGraph);
 	inline U16 getLasTotalBinSize()     const {return _lastTotalBinSize;}
-	inline const std::string& getName() const {return _name;}
+	inline const stringImpl& getName() const {return _name;}
 
 private:
-	std::string _name;
+	stringImpl _name;
 	U16 _lastTotalBinSize;
 };
 

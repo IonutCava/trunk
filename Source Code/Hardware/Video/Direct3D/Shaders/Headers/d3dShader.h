@@ -29,10 +29,10 @@ namespace Divide {
 
 class d3dShader : public Shader {
 public:
-	d3dShader(const std::string& name,const ShaderType& type, const bool optimise = false) : Shader(name,type,optimise) {}
+	d3dShader(const stringImpl& name,const ShaderType& type, const bool optimise = false) : Shader(name,type,optimise) {}
 	~d3dShader(){}
 
-	bool load(const std::string& source){return true;}
+	bool load(const stringImpl& source){return true;}
 	bool compile() {return true;}
 	void validate(){}
 };

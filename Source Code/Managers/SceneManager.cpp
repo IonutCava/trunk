@@ -53,14 +53,14 @@ bool SceneManager::init(GUI* const gui){
     return true;
 }
 
-bool SceneManager::load(const std::string& sceneName, const vec2<U16>& resolution, CameraManager* const cameraMgr){
+bool SceneManager::load(const stringImpl& sceneName, const vec2<U16>& resolution, CameraManager* const cameraMgr){
     assert(_init == true && _GUI != nullptr);
     PRINT_FN(Locale::get("SCENE_MANAGER_LOAD_SCENE_DATA"));
     //Initialize the model importer:
     if(!DVDConverter::getInstance().init()){
         return false;
     }
-    XML::loadScene(sceneName, *this);
+    XML::loadScene(stringAlg::fromBase(sceneName), *this);
     if(!_activeScene){
         return false;
     }
@@ -68,7 +68,7 @@ bool SceneManager::load(const std::string& sceneName, const vec2<U16>& resolutio
     return _activeScene->load(sceneName, cameraMgr, _GUI);
 }
 
-Scene* SceneManager::createScene(const std::string& name){
+Scene* SceneManager::createScene(const stringImpl& name){
     Scene* scene = nullptr;
 
     if (!name.empty()) {
@@ -76,7 +76,7 @@ Scene* SceneManager::createScene(const std::string& name){
     }
 
     if (scene != nullptr) {
-        _sceneMap.emplace(name, scene);
+        hashAlg::emplace(_sceneMap, name, scene);
     }
 
     return scene;

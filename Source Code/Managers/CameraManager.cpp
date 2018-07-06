@@ -54,7 +54,7 @@ void CameraManager::setActiveCamera(Camera* cam, bool callActivate) {
     for(const DELEGATE_CBK& listener : _changeCameralisteners) listener();
 }
 
-void CameraManager::addNewCamera(const std::string& cameraName, Camera* const camera){
+void CameraManager::addNewCamera(const stringImpl& cameraName, Camera* const camera){
     if(camera == nullptr) {
         ERROR_FN(Locale::get("ERROR_CAMERA_MANAGER_CREATION"),cameraName.c_str());
         return;
@@ -65,11 +65,11 @@ void CameraManager::addNewCamera(const std::string& cameraName, Camera* const ca
 
     for(const DELEGATE_CBK& listener : _updateCameralisteners) camera->addUpdateListener(listener);
     
-    _cameraPool.emplace(cameraName,camera);
-    _cameraPoolGUID.emplace(camera->getGUID(), camera);
+    hashAlg::emplace(_cameraPool, cameraName, camera);
+    hashAlg::emplace(_cameraPoolGUID, camera->getGUID(), camera);
 }
 
-Camera* CameraManager::findCamera(const std::string& name){
+Camera* CameraManager::findCamera(const stringImpl& name){
     const CameraPool::const_iterator& it = _cameraPool.find(name);
     assert (it != _cameraPool.end());
 

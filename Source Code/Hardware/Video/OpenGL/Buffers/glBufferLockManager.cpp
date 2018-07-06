@@ -27,7 +27,7 @@ glBufferLockManager::~glBufferLockManager()
 void glBufferLockManager::WaitForLockedRange(size_t _lockBeginBytes, size_t _lockLength)
 {
     BufferRange testRange = { _lockBeginBytes, _lockLength };
-    std::vector<BufferLock> swapLocks;
+    vectorImpl<BufferLock> swapLocks;
     for (auto it = mBufferLocks.begin(); it != mBufferLocks.end(); ++it)
     {
         if (testRange.Overlaps(it->mRange)) {

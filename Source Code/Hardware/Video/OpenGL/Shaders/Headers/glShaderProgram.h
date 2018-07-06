@@ -56,9 +56,9 @@ public:
     /// This works exactly like SetSubroutines, but for a single index. 
     void SetSubroutine(ShaderType type, U32 index) const;
     /// Get the index of the specified subroutine name for the specified stage. Not cached!
-    U32  GetSubroutineIndex(ShaderType type, const std::string& name) const;
+    U32  GetSubroutineIndex(ShaderType type, const stringImpl& name) const;
     /// Get the uniform location of the specified subroutine uniform for the specified stage. Not cached!
-    U32  GetSubroutineUniformLocation(ShaderType type, const std::string& name) const;
+    U32  GetSubroutineUniformLocation(ShaderType type, const stringImpl& name) const;
     U32  GetSubroutineUniformCount(ShaderType type) const;
     /// Set an attribute value
     void Attribute(GLint location, GLdouble value) const;
@@ -91,23 +91,23 @@ public:
 
 protected:
     /// Creation of a new shader program. Pass in a shader token and use glsw to load the corresponding effects
-    bool generateHWResource(const std::string& name);
+    bool generateHWResource(const stringImpl& name);
     /// Linking a shader program also sets up all pre-link properties for the shader (varying locations, attrib bindings, etc)
     void link();
     /// This should be called in the loading thread, but some issues are still present, and it's not recommended (yet)
-    void threadedLoad(const std::string& name);
+    void threadedLoad(const stringImpl& name);
     /// Cache uniform/attribute locations for shader programs
-    GLint cachedLoc(const std::string& name, const bool uniform = true);
+    GLint cachedLoc(const stringImpl& name, const bool uniform = true);
     /// Basic OpenGL shader program validation (both in debug and in release)
     void validateInternal();
     /// Retrieve the program's validation log if we need it
-    std::string getLog() const;
+    stringImpl getLog() const;
     /// Prevent binding multiple textures to the same slot.
     bool checkSlotUsage(GLint location, GLushort slot);
  
 private:
-    typedef Unordered_map<std::string, GLint > ShaderVarMap;
-    typedef Unordered_map<GLushort, GLint >    TextureSlotMap;
+    typedef hashMapImpl<stringImpl, GLint > ShaderVarMap;
+    typedef hashMapImpl<GLushort, GLint >    TextureSlotMap;
 
     ShaderVarMap _shaderVars;
     TextureSlotMap _textureSlots;

@@ -99,7 +99,7 @@ void MainScene::processTasks(const U64 deltaTime){
     Scene::processTasks(deltaTime);
 }
 
-bool MainScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
+bool MainScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     renderState().getCamera().setMoveSpeedFactor(10.0f);
@@ -211,14 +211,14 @@ bool MainScene::loadResources(bool continueOnErrors){
                             0.0f );
 
     Kernel* kernel = Application::getInstance().getKernel();
-    Task_ptr boxMove(kernel->AddTask(30, true, false, DELEGATE_BIND(&MainScene::test, this, std::string("test"), TYPE_STRING)));
+    Task_ptr boxMove(kernel->AddTask(30, true, false, DELEGATE_BIND(&MainScene::test, this, stringImpl("test"), TYPE_STRING)));
     addTask(boxMove);
     ResourceDescriptor backgroundMusic("background music");
-    backgroundMusic.setResourceLocation(_paramHandler.getParam<std::string>("assetsLocation")+"/music/background_music.ogg");
+	backgroundMusic.setResourceLocation(_paramHandler.getParam<stringImpl>("assetsLocation") + "/music/background_music.ogg");
     backgroundMusic.setFlag(true);
 
     ResourceDescriptor beepSound("beep sound");
-    beepSound.setResourceLocation(_paramHandler.getParam<std::string>("assetsLocation")+"/sounds/beep.wav");
+	beepSound.setResourceLocation(_paramHandler.getParam<stringImpl>("assetsLocation") + "/sounds/beep.wav");
     beepSound.setFlag(false);
     state()._backgroundMusic["generalTheme"] = CreateResource<AudioDescriptor>(backgroundMusic);
     _beep = CreateResource<AudioDescriptor>(beepSound);

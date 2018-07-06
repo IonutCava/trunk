@@ -848,6 +848,9 @@
     <ClCompile Include="..\..\Source Code\AI\Sensors\AudioSensor.cpp">
       <Filter>AI\Sensors</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Utility\EASTLImport.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -1139,9 +1142,6 @@
     <ClInclude Include="..\..\Source Code\Utility\Headers\Localization.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\UnorderedMap.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\DirectionalLight.h">
       <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
@@ -1375,6 +1375,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Headers\FrameListener.h">
       <Filter>Rendering\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\HashMap.h">
+      <Filter>Utility\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\String.h">
+      <Filter>Utility\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

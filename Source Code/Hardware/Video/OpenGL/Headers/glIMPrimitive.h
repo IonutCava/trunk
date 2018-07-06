@@ -53,11 +53,11 @@ public:
     void vertex(const vec3<F32>& vert);
     /// Specify each attribute at least once(even with dummy values) before calling begin!
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute1i(const std::string& attribName, I32 value);
+    void attribute1i(const stringImpl& attribName, I32 value);
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute4ub(const std::string& attribName, const vec4<U8>& value);
+    void attribute4ub(const stringImpl& attribName, const vec4<U8>& value);
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute4f(const std::string& attribName, const vec4<F32>& value);
+    void attribute4f(const stringImpl& attribName, const vec4<F32>& value);
     /// Restore the primitive to it's initial state
     void clear();
     /// Submit the created batch to the GPU for rendering

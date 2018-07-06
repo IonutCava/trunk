@@ -110,9 +110,9 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
     if (_attachmentTexture[slot]) {
         RemoveResource(_attachmentTexture[slot]);
     }
-    std::string attachmentName("Framebuffer_Att_");
+    stringImpl attachmentName("Framebuffer_Att_");
     attachmentName.append(getAttachmentName(type));
-    attachmentName.append(Util::toString(getGUID()));
+    attachmentName.append(stringAlg::toBase(Util::toString(getGUID())));
     ResourceDescriptor textureAttachment(attachmentName);
     textureAttachment.setThreadedLoading(false);
     textureAttachment.setPropertyDescriptor(sampler);

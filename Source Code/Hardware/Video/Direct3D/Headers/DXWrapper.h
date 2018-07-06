@@ -65,7 +65,7 @@ protected:
     inline Texture*            newTextureCubemap(const bool flipped = false) const { return New d3dTexture(TEXTURE_CUBE_MAP, flipped); }
     inline ShaderProgram*      newShaderProgram(const bool optimise = false) const { return New d3dShaderProgram(optimise); }
 
-    inline Shader*             newShader(const std::string& name,const  ShaderType& type,const bool optimise = false) const {return New d3dShader(name,type,optimise);}
+    inline Shader*             newShader(const stringImpl& name,const  ShaderType& type,const bool optimise = false) const {return New d3dShader(name,type,optimise);}
            bool                initShaders();
            bool                deInitShaders();
 

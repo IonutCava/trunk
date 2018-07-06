@@ -33,7 +33,7 @@ public:
     d3dTexture(TextureType type, bool flipped = false);
     ~d3dTexture() {}
 
-    bool generateHWResource(const std::string& name){return true;}
+    bool generateHWResource(const stringImpl& name){return true;}
     bool unload() {return true;}
 
     void Bind(U16 unit){}

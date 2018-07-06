@@ -33,18 +33,18 @@ bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
 
     for (U32 n = 0; n < mesh->mNumBones;++n){
         const aiBone* bone = mesh->mBones[n];
-        Unordered_map<std::string, Bone*>::iterator found = _bonesByName.find(bone->mName.data);
+        hashMapImpl<stringImpl, Bone*>::iterator found = _bonesByName.find(bone->mName.data);
         if(found != _bonesByName.end()){// FOUND IT!!! woohoo, make sure its not already in the bone list
             bool skip = false;
-            for(size_t j(0); j< _bones.size(); j++){
-                std::string bname = bone->mName.data;
+            for(vectorAlg::vecSize j(0); j< _bones.size(); j++){
+                stringImpl bname = bone->mName.data;
                 if(_bones[j]->_name == bname) {
                     skip = true;// already inserted, skip this so as not to insert the same bone multiple times
                     break;
                 }
             }
             if(!skip){// only insert the bone if it has not already been inserted
-                std::string tes = found->second->_name;
+                stringImpl tes = found->second->_name;
                 found->second->_offsetMatrix =  bone->mOffsetMatrix;
                 _bones.push_back(found->second);
                 _bonesToIndex[found->first] = (U32)_bones.size()-1;
@@ -56,7 +56,7 @@ bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
     D32 timestep = 1.0/ANIMATION_TICKS_PER_SECOND;// ANIMATION_TICKS_PER_SECOND
     mat4<F32> rotationmat;
     vectorImpl<mat4<F32> > vec;
-    for(size_t i(0); i< _animations.size(); i++){// pre calculate the animations
+    for(vectorAlg::vecSize i(0); i< _animations.size(); i++){// pre calculate the animations
         D32 dt = 0;
         for(D32 ticks = 0; ticks < _animations[i]._duration; ticks += _animations[i]._ticksPerSecond/ANIMATION_TICKS_PER_SECOND){
             dt +=timestep;
@@ -64,12 +64,12 @@ bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
             _animations[i]._transforms.push_back(vec);
             vectorImpl<mat4<F32> >& trans = _animations[i]._transforms.back();
             if(GFX_DEVICE.getApi() == Direct3D){
-                for( size_t a = 0; a < _transforms.size(); ++a){
+                for( vectorAlg::vecSize a = 0; a < _transforms.size(); ++a){
                     AnimUtils::TransformMatrix(_bones[a]->_offsetMatrix * _bones[a]->_globalTransform, rotationmat);
                     trans.push_back(rotationmat);
                 }
             }else{
-                for( size_t a = 0; a < _transforms.size(); ++a){
+                for( vectorAlg::vecSize a = 0; a < _transforms.size(); ++a){
                     AnimUtils::TransformMatrix(_bones[a]->_globalTransform * _bones[a]->_offsetMatrix, rotationmat);
                     trans.push_back(rotationmat);
                 }
@@ -91,7 +91,7 @@ void SceneAnimator::ExtractAnimations(const aiScene* pScene){
     // get all the animation names so I can reference them by name and get the correct id
     U16 i = 0;
     for(AnimEvaluator& animation : _animations){
-        _animationNameToId.insert(Unordered_map<std::string, U32>::value_type(animation._name, i++));
+        _animationNameToId.insert(hashMapImpl<stringImpl, U32>::value_type(animation._name, i++));
     }
 }
 
@@ -135,16 +135,16 @@ void SceneAnimator::UpdateTransforms(Bone* pNode) {
     }
 }
 
-Bone* SceneAnimator::GetBoneByName(const std::string& bname) const {
-    Unordered_map<std::string, Bone*>::const_iterator found = _bonesByName.find(bname);
+Bone* SceneAnimator::GetBoneByName(const stringImpl& bname) const {
+    hashMapImpl<stringImpl, Bone*>::const_iterator found = _bonesByName.find(bname);
     if(found != _bonesByName.end()) 
         return found->second; 
     else 
         return nullptr;
 }
 
-I32 SceneAnimator::GetBoneIndex(const std::string& bname) const {
-    Unordered_map<std::string, U32>::const_iterator found = _bonesToIndex.find(bname);
+I32 SceneAnimator::GetBoneIndex(const stringImpl& bname) const {
+    hashMapImpl<stringImpl, U32>::const_iterator found = _bonesToIndex.find(bname);
     if(found != _bonesToIndex.end()) 
         return found->second; 
     else 
@@ -171,11 +171,11 @@ void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
 }
 
 ///Renders the current skeleton pose at time index dt
-const vectorImpl<Line >& SceneAnimator::getSkeletonLines(I32 animationIndex, const D32 dt) {
+const vectorImpl<Line >& SceneAnimator::getSkeletonLines(U32 animationIndex, const D32 dt) {
     I32 frameIndex = _animations[animationIndex].GetFrameIndexAt(dt);
     LineCollection::iterator it = _skeletonLines.find(animationIndex);
     if (it == _skeletonLines.end()) {
-        std::pair<LineCollection::iterator, bool > result = _skeletonLines.insert(std::make_pair(animationIndex, LineMap()));
+        hashAlg::pair<LineCollection::iterator, bool> result = hashAlg::insert(_skeletonLines, hashAlg::makePair(animationIndex, LineMap()));
         assert(result.second);
         it = result.first;
     }

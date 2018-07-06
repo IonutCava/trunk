@@ -28,14 +28,14 @@ Material::Material() : Resource("temp_material"),
 
     /// Normal state for final rendering
     RenderStateBlockDescriptor stateDescriptor;
-    _defaultRenderStates.insert(std::make_pair(FINAL_STAGE,      GFX_DEVICE.getOrCreateStateBlock(stateDescriptor)));
+    hashAlg::insert(_defaultRenderStates, hashAlg::makePair(FINAL_STAGE, GFX_DEVICE.getOrCreateStateBlock(stateDescriptor)));
     /// the reflection descriptor is the same as the normal descriptor
     RenderStateBlockDescriptor reflectorDescriptor(stateDescriptor);
-    _defaultRenderStates.insert(std::make_pair(REFLECTION_STAGE, GFX_DEVICE.getOrCreateStateBlock(reflectorDescriptor)));
+    hashAlg::insert(_defaultRenderStates, hashAlg::makePair(REFLECTION_STAGE, GFX_DEVICE.getOrCreateStateBlock(reflectorDescriptor)));
     /// the z-pre-pass descriptor does not process colors
     RenderStateBlockDescriptor zPrePassDescriptor(stateDescriptor);
     zPrePassDescriptor.setColorWrites(false, false, false, false);
-    _defaultRenderStates.insert(std::make_pair(Z_PRE_PASS_STAGE, GFX_DEVICE.getOrCreateStateBlock(zPrePassDescriptor)));
+    hashAlg::insert(_defaultRenderStates, hashAlg::makePair(Z_PRE_PASS_STAGE, GFX_DEVICE.getOrCreateStateBlock(zPrePassDescriptor)));
     /// A descriptor used for rendering to depth map
     RenderStateBlockDescriptor shadowDescriptor(stateDescriptor);
     shadowDescriptor.setCullMode(CULL_MODE_CCW);
@@ -43,7 +43,7 @@ Material::Material() : Resource("temp_material"),
     //shadowDescriptor.setZBias(1.0f, 2.0f);
     /// ignore colors - Some shadowing techniques require drawing to the a color buffer
     shadowDescriptor.setColorWrites(true, true, false, false);
-    _defaultRenderStates.insert(std::make_pair(SHADOW_STAGE, GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor)));
+    hashAlg::insert(_defaultRenderStates, hashAlg::makePair(SHADOW_STAGE, GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor)));
    
     assert(_defaultRenderStates[FINAL_STAGE]      != 0);
     assert(_defaultRenderStates[Z_PRE_PASS_STAGE] != 0);
@@ -74,7 +74,7 @@ size_t Material::setRenderStateBlock(const RenderStateBlockDescriptor& descripto
     renderStateBlockMap::iterator it = _defaultRenderStates.find(renderStage);
     size_t stateBlockHash = GFX_DEVICE.getOrCreateStateBlock(descriptor);
     if(it == _defaultRenderStates.end()){
-        _defaultRenderStates.insert(std::make_pair(renderStage, stateBlockHash));
+        hashAlg::insert(_defaultRenderStates, hashAlg::makePair(renderStage, stateBlockHash));
         return stateBlockHash;
     }
 
@@ -119,12 +119,12 @@ void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot, Texture*
 }
 
 //Here we set the shader's name
-void Material::setShaderProgram(const std::string& shader, const RenderStage& renderStage, const bool computeOnAdd) {
+void Material::setShaderProgram(const stringImpl& shader, const RenderStage& renderStage, const bool computeOnAdd) {
     _shaderInfo[renderStage]._isCustomShader = true;
     setShaderProgramInternal(shader, renderStage, computeOnAdd);
 }
 
-void Material::setShaderProgramInternal(const std::string& shader, const RenderStage& renderStage, const bool computeOnAdd) {
+void Material::setShaderProgramInternal(const stringImpl& shader, const RenderStage& renderStage, const bool computeOnAdd) {
     ShaderProgram* shaderReference = _shaderInfo[renderStage]._shaderRef;
     //if we already had a shader assigned ...
     if (!_shaderInfo[renderStage]._shader.empty()){
@@ -141,13 +141,13 @@ void Material::setShaderProgramInternal(const std::string& shader, const RenderS
     ResourceDescriptor shaderDescriptor(_shaderInfo[renderStage]._shader);
     std::stringstream ss;
     if (!_shaderInfo[renderStage]._shaderDefines.empty()){
-        for(std::string& shaderDefine : _shaderInfo[renderStage]._shaderDefines){
-            ss << shaderDefine;
+        for(stringImpl& shaderDefine : _shaderInfo[renderStage]._shaderDefines){
+            ss << stringAlg::fromBase(shaderDefine);
             ss << ",";
         }
     }
     ss << "DEFINE_PLACEHOLDER";
-    shaderDescriptor.setPropertyList(ss.str());
+    shaderDescriptor.setPropertyList(stringAlg::toBase(ss.str()));
     shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
 
     _computedShaderTextures = true;
@@ -190,7 +190,7 @@ bool Material::computeShader(const RenderStage& renderStage){
     bool depthPassShader = renderStage == SHADOW_STAGE || renderStage == Z_PRE_PASS_STAGE;
 
     //the base shader is either for a Deferred Renderer or a Forward  one ...
-    std::string shader = (deferredPassShader ? "DeferredShadingPass1" : (depthPassShader ? "depthPass" : "lighting"));
+    stringImpl shader = (deferredPassShader ? "DeferredShadingPass1" : (depthPassShader ? "depthPass" : "lighting"));
 
     if(Config::Profile::DISABLE_SHADING)
         shader = "passThrough";
@@ -307,11 +307,9 @@ ShaderProgram* const Material::ShaderInfo::getProgram(){
 }
 
 Material::ShaderInfo& Material::getShaderInfo(RenderStage renderStage) {
-    Unordered_map<RenderStage, ShaderInfo >::iterator it = _shaderInfo.find(renderStage);
-    if(it == _shaderInfo.end())
-        return _shaderInfo[FINAL_STAGE];
+    shaderInfoMap::iterator it = _shaderInfo.find(renderStage);
 
-    return it->second;
+    return (it == _shaderInfo.end() ? _shaderInfo[FINAL_STAGE] : it->second);
 }
 
 void Material::setBumpMethod(const BumpMethod& newBumpMethod){
@@ -384,7 +382,7 @@ bool Material::isTranslucent() {
 }
 
 void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
-    Unordered_map<RenderStage, ShaderInfo >::const_iterator it = _shaderInfo.find(FINAL_STAGE);
+    shaderInfoMap::const_iterator it = _shaderInfo.find(FINAL_STAGE);
 
     shaderKey  = (it != _shaderInfo.end() && it->second._shaderRef) ? it->second._shaderRef->getId() : GFXDevice::SORT_NO_VALUE;
     textureKey = _textures[ShaderProgram::TEXTURE_UNIT0] ? _textures[ShaderProgram::TEXTURE_UNIT0]->getHandle() : GFXDevice::SORT_NO_VALUE;
