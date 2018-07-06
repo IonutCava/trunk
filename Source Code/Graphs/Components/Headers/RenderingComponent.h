@@ -90,8 +90,7 @@ class RenderingComponent : public SGNComponent {
     inline Material* const getMaterialInstance() { return _materialInstance; }
 
     const vectorImpl<GenericDrawCommand>& getDrawCommands(
-        vectorAlg::vecSize commandOffset, SceneRenderState& sceneRenderState,
-        RenderStage renderStage);
+        SceneRenderState& sceneRenderState, RenderStage renderStage);
 
 #ifdef _DEBUG
     void drawDebugAxis();

@@ -271,9 +271,9 @@ bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type,
         currentMapping.first = handle;
         currentMapping.second = type;
         // Switch the texture unit to the one requested
-        /*GL_API::setActiveTextureUnit(unit);
+        GL_API::setActiveTextureUnit(unit);
         // Bind the texture to the current unit
-        glBindTexture(type, handle);*/
+        //glBindTexture(type, handle);
 #ifdef GL_VERSION_4_5
         glBindMultiTexture(GL_TEXTURE0 + unit, type, handle);
 #else

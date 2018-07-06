@@ -118,8 +118,8 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     // We also need a valid draw command ID so we can index the node buffer
     // properly
     DIVIDE_ASSERT(
-        cmd.drawID() < std::max(static_cast<U32>(_matricesData.size()), 1u) &&
-            cmd.drawID() >= 0,
+        cmd.cmd().baseInstance < std::max(static_cast<U32>(_matricesData.size()), 1u) &&
+            cmd.cmd().baseInstance >= 0,
         "GFXDevice error: Invalid draw ID encountered!");
     if (cmd.instanceCount() == 0) {
         return false;
@@ -717,7 +717,7 @@ void GFXDevice::buildDrawCommands(
     }
     vectorAlg::vecSize nodeCount = visibleNodes.size();
     vectorImpl<IndirectDrawCommand> drawCommands;
-    drawCommands.resize(nodeCount + 1);
+    drawCommands.reserve(nodeCount + 1);
     // Loop over the list of nodes
     for (vectorAlg::vecSize i = 0; i < nodeCount; ++i) {
         SceneGraphNode* const crtNode = visibleNodes[i];
@@ -727,10 +727,10 @@ void GFXDevice::buildDrawCommands(
             continue;
         }
         const vectorImpl<GenericDrawCommand>& nodeDrawCommands =
-            renderable->getDrawCommands(1 + i, sceneRenderState,
+            renderable->getDrawCommands(sceneRenderState,
                                         getRenderStage());
         for (const GenericDrawCommand& cmd : nodeDrawCommands) {
-            drawCommands[cmd.drawID()] = cmd.cmd();
+            drawCommands.push_back(cmd.cmd());
         }
     }
 
@@ -739,6 +739,11 @@ void GFXDevice::buildDrawCommands(
                        [](IndirectDrawCommand& indirectCommand)
                        -> bool { return indirectCommand.count == 0; }),
         std::end(drawCommands));
+
+    U32 currentIndex = 0;
+    for (IndirectDrawCommand& indirectCommand : drawCommands) {
+        indirectCommand.baseInstance = currentIndex++;
+    }
 
     uploadDrawCommands(drawCommands);
 }

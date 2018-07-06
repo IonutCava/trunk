@@ -14,9 +14,10 @@ Framebuffer::Framebuffer(bool multiSampled)
       _useDepthBuffer(false),
       _disableColorWrites(false),
       _clearBuffersState(true),
-      _layeredRendering(false) {
+      _layeredRendering(false)
+{
     _clearColor.set(DefaultColors::WHITE());
-    for (U8 i = 0; i < 5; ++i) {
+    for (U8 i = 0; i < to_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
         _attachmentDirty[i] = false;
         _attachmentTexture[i] = nullptr;
     }

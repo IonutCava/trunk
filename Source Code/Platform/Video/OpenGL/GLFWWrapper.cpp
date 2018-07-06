@@ -45,9 +45,9 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
 #endif
     // Toggle multi-sampling if requested. This options requires a
     // client-restart, sadly.
-    if (GFX_DEVICE.gpuState().MSAAEnabled()) {
-        glfwWindowHint(GLFW_SAMPLES, GFX_DEVICE.gpuState().MSAASamples());
-    }
+    glfwWindowHint(GLFW_SAMPLES, GFX_DEVICE.gpuState().MSAAEnabled()
+                                     ? GFX_DEVICE.gpuState().MSAASamples()
+                                     : 0);
 
     // I REALLY think re-sizable windows are a bad idea. Increase the resolution
     // instead of messing up render targets
@@ -70,7 +70,11 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     } else {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+#ifdef GL_VERSION_4_5
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+#else
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+#endif
     }
 
     // Open an OpenGL window; resolution and windowed mode is specified in the

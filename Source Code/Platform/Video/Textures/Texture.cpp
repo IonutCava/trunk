@@ -16,6 +16,7 @@ Texture::Texture(TextureType type, const bool flipped)
       _hasTransparency(false),
       _power2Size(true)
 {
+    _width = _height = 0;
     _textureData._textureType = type;
 }
 

@@ -441,11 +441,13 @@ void Material::bindTexture(ShaderProgram::TextureUsage slot) {
     Texture* crtTexture = _textures[slotValue];
     if (crtTexture) {
         crtTexture->Bind(slotValue);
-        //_textureData.push_back(std::make_pair(slotValue, crtTexture->getData()));
+        _textureData.push_back(std::make_pair(slotValue, crtTexture->getData()));
     }
 }
 
 void Material::bindTextures() {
+    _textureData.resize(0);
+
     bindTexture(ShaderProgram::TextureUsage::TEXTURE_OPACITY);
     bindTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0);
 
@@ -456,7 +458,7 @@ void Material::bindTextures() {
 
         for (std::pair<Texture*, U8>& tex : _customTextures) {
             tex.first->Bind(tex.second);
-            //_textureData.push_back(std::make_pair(tex.second, tex.first->getData()));
+            _textureData.push_back(std::make_pair(tex.second, tex.first->getData()));
         }
     }
 }

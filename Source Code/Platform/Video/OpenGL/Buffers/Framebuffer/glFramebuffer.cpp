@@ -27,38 +27,6 @@ const char* getAttachmentName(TextureDescriptor::AttachmentType type) {
     }
     return "ERROR_TYPE";
 }
-
-U8 getAttachmentSlot(TextureDescriptor::AttachmentType type) {
-    switch (type) {
-        case TextureDescriptor::AttachmentType::Depth:
-            return 4;
-        case TextureDescriptor::AttachmentType::Color0:
-            return 0;
-        case TextureDescriptor::AttachmentType::Color1:
-            return 1;
-        case TextureDescriptor::AttachmentType::Color2:
-            return 2;
-        case TextureDescriptor::AttachmentType::Color3:
-            return 3;
-    }
-    return 255;
-}
-
-TextureDescriptor::AttachmentType getAttachmentType(U8 slot) {
-    switch (slot) {
-        case 4:
-            return TextureDescriptor::AttachmentType::Depth;
-        case 0:
-            return TextureDescriptor::AttachmentType::Color0;
-        case 1:
-            return TextureDescriptor::AttachmentType::Color1;
-        case 2:
-            return TextureDescriptor::AttachmentType::Color2;
-        case 3:
-            return TextureDescriptor::AttachmentType::Color3;
-    }
-    return TextureDescriptor::AttachmentType::COUNT;
-}
 };
 
 glFramebuffer::glFramebuffer(bool useResolveBuffer)
@@ -68,11 +36,9 @@ glFramebuffer::glFramebuffer(bool useResolveBuffer)
       _hasDepth(false),
       _hasColor(false),
       _resolved(false),
-      _isLayeredDepth(false) {
-    for (U8 i = 0; i < to_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
-        _mipMapLevel[i].set(0);
-        _attOffset[i] = 0;
-    }
+      _isLayeredDepth(false)
+{
+    memset(_attOffset, 0, to_uint(TextureDescriptor::AttachmentType::COUNT) * sizeof(GLint));
 }
 
 glFramebuffer::~glFramebuffer() {
@@ -95,7 +61,7 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
         _hasDepth = true;
     }
 
-    U8 slot = getAttachmentSlot(type);
+    U8 slot = to_uint(type);
 
     TextureType currentType = texDescriptor._type;
 
@@ -187,8 +153,7 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
         _isLayeredDepth = isLayeredTexture;
     } else {
         GLint offset = 0;
-        if (slot >
-            getAttachmentSlot(TextureDescriptor::AttachmentType::Color0)) {
+        if (slot > to_uint(TextureDescriptor::AttachmentType::Color0)) {
             offset = _attOffset[slot - 1];
         }
         if (texDescriptor.isCubeTexture() && !_layeredRendering) {

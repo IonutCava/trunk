@@ -65,10 +65,7 @@ class glUniformBuffer final : public ShaderBuffer {
                    U32 bindIndex);
 
    protected:
-    typedef hashMapImpl<U32, U32> bindIndexMap;
-    typedef hashMapImpl<U32, vec3<U32>> bindRangeIndexMap;
-    static bindIndexMap _bindIndexMap;
-    static bindRangeIndexMap _bindRangeIndexMap;
+    vec3<U32> _currentBindConfig;
 
     GLuint _UBOid;
     bufferPtr _mappedBuffer;
