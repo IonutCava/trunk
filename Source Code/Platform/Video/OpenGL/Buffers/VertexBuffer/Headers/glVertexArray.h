@@ -32,10 +32,11 @@
 #ifndef _GL_VERTEX_ARRAY_H_
 #define _GL_VERTEX_ARRAY_H_
 
+#include "Core/Headers/ByteBuffer.h"
+
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/OpenGL/Headers/glResources.h"
-#include "Platform/Headers/ByteBuffer.h"
 
 /// Always bind a shader, even a dummy one when rendering geometry. No more
 /// fixed matrix API means no more VBs or VAs

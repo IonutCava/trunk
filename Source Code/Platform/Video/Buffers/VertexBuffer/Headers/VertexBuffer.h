@@ -35,7 +35,7 @@
 #include "config.h"
 
 #include "VertexDataInterface.h"
-#include "Platform/Headers/ByteBuffer.h"
+#include "Core/Headers/ByteBuffer.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {

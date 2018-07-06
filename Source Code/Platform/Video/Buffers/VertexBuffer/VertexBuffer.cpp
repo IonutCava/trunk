@@ -150,82 +150,40 @@ void VertexBuffer::fromBuffer(VertexBuffer& other) {
 
 bool VertexBuffer::deserialize(ByteBuffer& dataIn) {
     assert(!dataIn.empty());
-    stringImpl idString;
+    U64 idString;
     dataIn >> idString;
-    if (idString.compare("VB") != 0) {
-        return false;
+    if (idString == _ID("VB")) {
+        reset();
+        U32 format;
+
+        dataIn >> _staticBuffer;
+        dataIn >> _keepDataInMemory;
+        dataIn >> format;
+        _format = static_cast<GFXDataFormat>(format);
+        dataIn >> _partitions;
+        dataIn >> _hardwareIndicesL;
+        dataIn >> _hardwareIndicesS;
+        dataIn >> _data;
+        dataIn >> _attribDirty;
+        dataIn >> _primitiveRestartEnabled;
+
+        return true;
     }
 
-    reset();
-    U32 format, data1, data2, count;
-
-    dataIn >> _staticBuffer;
-    dataIn >> _keepDataInMemory;
-    dataIn >> format;
-    _format = static_cast<GFXDataFormat>(format);
-
-    dataIn >> count;
-    _partitions.reserve(count);
-    for (U32 i = 0; i < count; ++i) {
-        dataIn >> data1;
-        dataIn >> data2;
-        _partitions.push_back(std::make_pair(data1, data2));
-    }
-    dataIn >> _hardwareIndicesL;
-    dataIn >> _hardwareIndicesS;
-
-    dataIn >> count;
-    _data.resize(count);
-    for (U32 i = 0; i < count; ++i) {
-        Vertex& vert = _data[i];
-        dataIn >> vert._colour;
-        dataIn >> vert._indices.i;
-        dataIn >> vert._normal;
-        dataIn >> vert._position;
-        dataIn >> vert._tangent;
-        dataIn >> vert._texcoord;
-        dataIn >> vert._weights;
-    }
-
-    for (bool& state : _attribDirty) {
-        dataIn >> state;
-    }
-
-    dataIn >> _primitiveRestartEnabled;
-
-    return true;
+    return false;
 }
 
 bool VertexBuffer::serialize(ByteBuffer& dataOut) const {
     if (!_data.empty()) {
-        dataOut << stringImpl("VB");
+        dataOut << _ID("VB");
         dataOut << _staticBuffer;
         dataOut << _keepDataInMemory;
         dataOut << to_uint(_format);
-        dataOut << to_uint(_partitions.size());
-        for (const std::pair<U32, U32>& partition : _partitions) {
-            dataOut << partition.first;
-            dataOut << partition.second;
-        }
-
+        dataOut << _partitions;
         dataOut << _hardwareIndicesL;
         dataOut << _hardwareIndicesS;
-
-        dataOut << to_uint(_data.size());
-        for (Vertex vert : _data) {
-            dataOut << vert._colour;
-            dataOut << vert._indices.i;
-            dataOut << vert._normal;
-            dataOut << vert._position;
-            dataOut << vert._tangent;
-            dataOut << vert._texcoord;
-            dataOut << vert._weights;
-        }
-
-        for (bool state : _attribDirty) {
-            dataOut << state;
-        }
-
+        dataOut << _data;
+        dataOut << _attribDirty;
         dataOut << _primitiveRestartEnabled;
 
         return true;

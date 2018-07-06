@@ -32,10 +32,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PLATFORM_FILE_FILE_MANAGEMENT_H_
 #define _PLATFORM_FILE_FILE_MANAGEMENT_H_
 
-#include <regex>
 #include "Platform/Headers/PlatformDataTypes.h"
 #include "Core/TemplateLibraries/Headers/String.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
+
+#include <regex>
 
 namespace Divide {
 
@@ -117,22 +118,9 @@ struct FileWithPath {
 bool fileExists(const char* filePath);
 bool createFile(const char* filePath, bool overwriteExisting);
 
-bool readFile(const stringImpl& filePath, stringImpl& contentOut, FileType fileType);
-bool readFile(const stringImpl& filePath, vectorImpl<U8>& contentOut, FileType fileType);
-bool readFile(const stringImpl& filePath, vectorImpl<Byte>& contentOut, FileType fileType);
-bool readFile(const stringImpl& filePath, vectorImplFast<U8>& contentOut, FileType fileType);
-bool readFile(const stringImpl& filePath, vectorImplFast<Byte>& contentOut, FileType fileType);
-
-bool writeFile(const stringImpl& filePath, const char* content, FileType fileType);
-bool writeFile(const stringImpl& filePath, const char* content, size_t length, FileType fileType);
-bool writeFile(const stringImpl& filePath, const vectorImpl<U8>& content, FileType fileType);
-bool writeFile(const stringImpl& filePath, const vectorImpl<U8>& content, size_t length, FileType fileType);
-bool writeFile(const stringImpl& filePath, const vectorImpl<Byte>& content, FileType fileType);
-bool writeFile(const stringImpl& filePath, const vectorImpl<Byte>& content, size_t length, FileType fileType);
-bool writeFile(const stringImpl& filePath, const vectorImplFast<U8>& content, FileType fileType);
-bool writeFile(const stringImpl& filePath, const vectorImplFast<U8>& content, size_t length, FileType fileType);
-bool writeFile(const stringImpl& filePath, const vectorImplFast<Byte>& content, FileType fileType);
-bool writeFile(const stringImpl& filePath, const vectorImplFast<Byte>& content, size_t length, FileType fileType);
+template<typename T /*requirement: has_assign<T> == true*/>
+bool readFile(const stringImpl& filePath, T& contentOut, FileType fileType);
+bool writeFile(const stringImpl& filePath, const bufferPtr content, size_t length, FileType fileType);
 
 /// will add '.' automatically at the start of 'extension'
 bool hasExtension(const stringImpl& filePath, const stringImpl& extension);
@@ -142,3 +130,5 @@ FileWithPath splitPathToNameAndLocation(const stringImpl& input);
 }; //namespace Divide
 
 #endif //_PLATFORM_FILE_FILE_MANAGEMENT_H_
+
+#include "FileManagement.inl"

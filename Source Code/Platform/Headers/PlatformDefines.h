@@ -231,6 +231,9 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 #endif
 
 #if !defined(CPP_14_SUPPORT)
+template <bool B, class T = void>
+using enable_if_t = typename enable_if<B, T>::type;
+
 namespace std {
     // TEMPLATE FUNCTIONS cbegin AND cend
     template<class _Container>
@@ -337,10 +340,46 @@ void for_each_interval(Iterator from, Iterator to, std::ptrdiff_t partition_size
         }
     }
 }
+
+//ref: http://stackoverflow.com/questions/9530928/checking-a-member-exists-possibly-in-a-base-class-c11-version
+template< typename C, typename = void >
+struct has_reserve
+    : std::false_type
+{};
+
+template< typename C >
+struct has_reserve< C, typename std::enable_if<
+                                    std::is_same<
+                                        decltype(std::declval<C>().reserve(std::declval<typename C::size_type>())),
+                                        void
+                                    >::value
+                                >::type >
+    : std::true_type
+{};
+
+template<typename>
+static constexpr std::false_type has_assign(...) { 
+    return std::false_type();
+};
+
+//ref: https://github.com/ParBLiSS/kmerind/blob/master/src/utils/container_traits.hpp
+template<typename T>
+static constexpr auto has_assign(T*) ->
+decltype(std::declval<T>().assign(std::declval<decltype(std::declval<T>().begin())>(),
+                                  std::declval<decltype(std::declval<T>().end())>()), std::true_type()) {
+    return std::true_type();
+};
+
+template< typename C >
+std::enable_if_t< !has_reserve< C >::value > optional_reserve(C&, std::size_t) {}
+
+template< typename C >
+std::enable_if_t< has_reserve< C >::value > optional_reserve(C& c, std::size_t n) {
+    c.reserve(c.size() + n);
+}
+
 /* See
-
 http://randomascii.wordpress.com/2012/01/11/tricks-with-the-floating-point-format/
-
 for the potential portability problems with the union and bit-fields below.
 */
 union Float_t {

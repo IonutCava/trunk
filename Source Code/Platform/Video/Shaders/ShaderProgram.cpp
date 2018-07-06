@@ -204,15 +204,13 @@ void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sour
     stringImpl variant = atomName;
     if (Config::Build::IS_DEBUG_BUILD) {
         variant.append(".debug");
-    }
-    else if (Config::Build::IS_PROFILE_BUILD) {
+    } else if (Config::Build::IS_PROFILE_BUILD) {
         variant.append(".profile");
-    }
-    else {
+    } else {
         variant.append(".release");
     }
 
-    writeFile(variant, sourceCode, FileType::TEXT);
+    writeFile(variant, (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT);
 }
 
 void ShaderProgram::onStartup(ResourceCache& parentCache) {

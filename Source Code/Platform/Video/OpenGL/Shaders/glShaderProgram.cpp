@@ -132,7 +132,8 @@ bool glShaderProgram::update(const U64 deltaTime) {
                 writeFile(outFileName, binary, (size_t)binaryLength, FileType::BINARY);
                 // dump the format to a separate file (highly non-optimised. Should dump formats to a database instead)
                 outFileName += ".fmt";
-                writeFile(outFileName, to_stringImpl(to_uint(_binaryFormat)).c_str(), FileType::BINARY);
+                stringImpl binaryFormatStr = to_stringImpl(to_uint(_binaryFormat));
+                writeFile(outFileName, (bufferPtr)binaryFormatStr.c_str(), binaryFormatStr.size(), FileType::BINARY);
              }
             // delete our local code buffer
             MemoryManager::DELETE(binary);

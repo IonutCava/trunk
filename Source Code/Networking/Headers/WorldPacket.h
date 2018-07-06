@@ -1,7 +1,7 @@
 #ifndef MANGOSSERVER_WORLDPACKET_H
 #define MANGOSSERVER_WORLDPACKET_H
 
-#include "Platform/Headers/ByteBuffer.h"
+#include "Core/Headers/ByteBuffer.h"
 #include "OPCodesTpl.h"
 #include <boost/serialization/base_object.hpp>
 

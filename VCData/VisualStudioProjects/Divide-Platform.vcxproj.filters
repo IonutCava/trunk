@@ -235,9 +235,6 @@
     <ClInclude Include="..\..\Source Code\Libs\SimpleCL\include\simpleCL.h">
       <Filter>Compute\SimpleCL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Headers\ByteBuffer.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Headers\ByteConverter.h">
       <Filter>Headers</Filter>
     </ClInclude>
@@ -507,7 +504,6 @@
     <ClCompile Include="..\..\Source Code\Libs\SimpleCL\src\simpleCL.c">
       <Filter>Compute\SimpleCL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\ByteBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\PlatformDefines.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\PlatformDefinesApple.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\PlatformDefinesUnix.cpp" />
@@ -1080,6 +1076,9 @@
     </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\velocityCalc.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\Source Code\Platform\File\Headers\FileManagement.inl">
+      <Filter>File\Headers</Filter>
     </None>
   </ItemGroup>
 </Project>

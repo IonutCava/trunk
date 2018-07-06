@@ -51,7 +51,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Compute\Headers\OpenCLInterface.h" />
     <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileManagement.h" />
     <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileUpdateMonitor.h" />
-    <ClInclude Include="..\..\Source Code\Platform\Headers\ByteBuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Headers\ByteConverter.h" />
     <ClInclude Include="..\..\Source Code\Platform\Headers\ConditionalWait.h" />
     <ClInclude Include="..\..\Source Code\Platform\Headers\DisplayWindow.h" />
@@ -151,7 +150,6 @@
     <ClCompile Include="..\..\Source Code\Platform\Audio\openAl\ALWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\sdl_mixer\SDLWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Audio\SFXDevice.cpp" />
-    <ClCompile Include="..\..\Source Code\Platform\ByteBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Compute\OpenCLInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\DisplayWindow.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\File\FileManagementFunctions.cpp" />
@@ -280,6 +278,7 @@
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vbInputData.vert" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vertexDefault.vert" />
     <None Include="..\..\assets\shaders\GLSL\water.glsl" />
+    <None Include="..\..\Source Code\Platform\File\Headers\FileManagement.inl" />
     <None Include="..\..\Source Code\Platform\Headers\DisplayWindow.inl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\GFXDevice.inl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\GFXShaderData.inl" />

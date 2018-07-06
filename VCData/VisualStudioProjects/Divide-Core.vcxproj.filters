@@ -40,6 +40,9 @@
     <None Include="..\..\Source Code\Core\Time\Headers\ProfileTimer.inl">
       <Filter>Core\Time\Headers</Filter>
     </None>
+    <None Include="..\..\Source Code\Core\Headers\ByteBuffer.inl">
+      <Filter>Core\Headers</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Core">
@@ -224,6 +227,9 @@
     <ClCompile Include="..\..\Source Code\Libs\nv_dds\nv_dds.cpp">
       <Filter>Utility\NV_DDS</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\ByteBuffer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h">
@@ -384,6 +390,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\config.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\ErrorCodes.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\ByteBuffer.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
   </ItemGroup>

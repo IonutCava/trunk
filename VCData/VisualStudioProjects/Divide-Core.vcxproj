@@ -15,6 +15,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\Core\ByteBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Console.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Debugging\DebugInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Core\GUIDWrapper.cpp" />
@@ -57,6 +58,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\config.h" />
     <ClInclude Include="..\..\Source Code\Core\Debugging\Headers\DebugInterface.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\ByteBuffer.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Console.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\ErrorCodes.h" />
@@ -110,6 +112,7 @@
     <ClInclude Include="..\..\Source Code\Utility\Headers\XMLParser.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Source Code\Core\Headers\ByteBuffer.inl" />
     <None Include="..\..\Source Code\Core\Headers\Console.inl" />
     <None Include="..\..\Source Code\Core\Headers\ParamHandler.inl" />
     <None Include="..\..\Source Code\Core\Headers\StringHelper.inl" />
