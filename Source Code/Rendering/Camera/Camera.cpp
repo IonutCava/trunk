@@ -72,6 +72,7 @@ void Camera::fromCamera(Camera& camera) {
 
     setEye(camera.getEye());
     setRotation(camera._orientation);
+    updateLookAt();
 }
 
 void Camera::updateInternal(const U64 deltaTime) {
@@ -193,38 +194,12 @@ void Camera::move(F32 dx, F32 dy, F32 dz) {
 const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
                                 const vec3<F32>& target,
                                 const vec3<F32>& up) {
-    vec3<F32> xAxis, yAxis, zAxis;
-
     _eye.set(eye);
     _target.set(target);
-
-    zAxis.set(eye - target);
-
-    zAxis.normalize();
-    xAxis.cross(up, zAxis);
-    xAxis.normalize();
-    yAxis.cross(zAxis, xAxis);
-    yAxis.normalize();
-    
-    _viewMatrix.m[0][0] = xAxis.x;
-    _viewMatrix.m[1][0] = xAxis.y;
-    _viewMatrix.m[2][0] = xAxis.z;
-    _viewMatrix.m[3][0] = xAxis.dot(eye);
-
-    _viewMatrix.m[0][1] = yAxis.x;
-    _viewMatrix.m[1][1] = yAxis.y;
-    _viewMatrix.m[2][1] = yAxis.z;
-    _viewMatrix.m[3][1] = yAxis.dot(eye);
-
-    _viewMatrix.m[0][2] = zAxis.x;
-    _viewMatrix.m[1][2] = zAxis.y;
-    _viewMatrix.m[2][2] = zAxis.z;
-    _viewMatrix.m[3][2] = zAxis.dot(eye);
-
+    _viewMatrix.lookAt(_eye, _target, up);
     // Extract the pitch angle from the view matrix.
-    _accumPitchDegrees = Angle::RadiansToDegrees(asinf(zAxis.y));
-
-    _orientation.fromMatrix(_viewMatrix);
+    _accumPitchDegrees = Angle::RadiansToDegrees(std::asinf(getForwardDir().y));
+    _orientation.fromLookAt(_eye - _target, up);
 
     _viewMatrixDirty = false;
     _frustumDirty = true;
@@ -243,11 +218,12 @@ void Camera::updateLookAt() {
 }
 
 void Camera::reflect(const Plane<F32>& reflectionPlane) {
-    updateLookAt();
-
-    mat4<F32> reflectedMatrix(getViewMatrix());
+    mat4<F32> reflectedMatrix;
     reflectedMatrix.reflect(reflectionPlane);
-    lookAt(reflectedMatrix * getEye(), getTarget(), reflectedMatrix * getUpDir());
+
+    lookAt(reflectedMatrix * getEye(),
+           getTarget(),
+           reflectedMatrix * getUpDir());
 }
 
 bool Camera::updateProjection() {

@@ -72,6 +72,16 @@ inline T Dot(const vec2<T> &a, const vec2<T> &b) {
 }
 
 template <typename T>
+inline void OrthoNormalize(vec2<T> &v1, vec2<T> &v2) {
+    vec2<T>& n(v1); vec2<T>& u(v2);
+
+    n.normalize();
+    vec2<T> v(Cross(n, u));
+    v.normalize();
+    u.set(Cross(v, n));
+}
+
+template <typename T>
 inline vec3<T> Normalize(vec3<T> &vector) {
     vector.normalize();
     return vector;
@@ -106,6 +116,16 @@ inline vec3<T> Cross(const vec3<T> &v1, const vec3<T> &v2) {
 template <typename T>
 inline vec3<T> Inverse(const vec3<T> &v) {
     return vec3<T>(v.z, v.y, v.x);
+}
+
+template <typename T>
+inline void OrthoNormalize(vec3<T> &v1, vec3<T> &v2) {
+    vec3<T>& n(v1); vec3<T>& u(v2);
+
+    n.normalize();
+    vec3<T> v(Cross(n, u));
+    v.normalize();
+    u.set(Cross(v, n));
 }
 
 /// min/max functions

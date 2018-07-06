@@ -366,6 +366,9 @@ template <typename T>
 inline vec2<T> Normalize(const vec2<T> &vector);
 template <typename T>
 inline T Dot(const vec2<T> &a, const vec2<T> &b);
+template <typename T>
+inline void OrthoNormalize(vec2<T> &v1, vec2<T> &v2);
+
 /// multiply a vector by a value
 template <typename T>
 inline vec2<T> operator*(T fl, const vec2<T> &v);
@@ -685,6 +688,9 @@ template <typename T>
 inline vec3<T> Inverse(const vec3<T> &v);
 template <typename T>
 inline vec3<T> operator*(T fl, const vec3<T> &v);
+template <typename T>
+inline void OrthoNormalize(vec3<T> &v1, vec3<T> &v2);
+
 /*************************************************************************************
  * vec4 -  A 4-tuple used to represent things like a vector in 4D space
 (w-component)

@@ -55,7 +55,7 @@ void main (void)
 #   define texWaterNoiseDUDV texDiffuse1
 
     float time2 = float(dvd_time) * 0.00001;
-    const float kDistortion = 0.015;
+    const float kDistortion = 1.0;// 0.015;
     vec4 distOffset = texture(texWaterNoiseDUDV, VAR._texCoord + vec2(time2)) * kDistortion;
 
     vec4 uvReflection = _vertexWVP * vec4(1.0 / _vertexWVP.w);
@@ -88,6 +88,4 @@ void main (void)
 
     _normalOut = packNormal(N);
     _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
-
-    _colourOut.rgb = ToSRGB(texture(texWaterReflection, VAR._texCoord).rgb);
 }

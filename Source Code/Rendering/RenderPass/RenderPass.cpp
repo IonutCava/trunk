@@ -265,14 +265,14 @@ U32 RenderPass::getBufferCountForStage(RenderStage stage) const {
 
     //We only care about the first parameter as it will determine the properties for the rest of the stages
     switch (stage) {
-        case RenderStage::REFLECTION: {
+        case RenderStage::REFLECTION: { //Both planar and cube
             // max reflective nodes and an extra buffer for environment maps
-            maxPasses = Config::MAX_REFLECTIVE_NODES_IN_VIEW + 1;
+            maxPasses = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 2+ 1;
             maxStages = 6u; // number of cube faces
         }; break;
-        case RenderStage::REFRACTION: {
+        case RenderStage::REFRACTION: { //Both planar and cube
             // max reflective nodes and an extra buffer for environment maps
-            maxPasses = Config::MAX_REFRACTIVE_NODES_IN_VIEW + 1;
+            maxPasses = Config::MAX_REFRACTIVE_NODES_IN_VIEW * 2 + 1;
             maxStages = 1u;
         } break;
         case RenderStage::SHADOW: {

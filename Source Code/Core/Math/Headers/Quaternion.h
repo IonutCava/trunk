@@ -120,6 +120,8 @@ class Quaternion {
     //! Convert from Euler Angles
     void fromEuler(T pitch, T yaw, T roll, bool inDegrees = true);
 
+    void fromLookAt(const vec3<F32>& fwdDirection, const vec3<F32>& upDirection);
+
     // a la Ogre3D
     void fromMatrix(const mat3<T>& rotationMatrix);
 

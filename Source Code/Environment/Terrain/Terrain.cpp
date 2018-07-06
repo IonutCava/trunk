@@ -151,21 +151,22 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
     }
 
     g_PlaneCommandIndex = drawCommandsInOut.size();
-    //infinite plane
-    VertexBuffer* const vb = _plane->getGeometryVB();
-    cmd.cmd().firstIndex = 0;
-    cmd.cmd().indexCount = vb->getIndexCount();
-    cmd.LoD(0);
-    cmd.sourceBuffer(vb);
-    drawCommandsInOut.push_back(cmd);
+    if (renderStagePass._stage == RenderStage::DISPLAY) {
+        //infinite plane
+        VertexBuffer* const vb = _plane->getGeometryVB();
+        cmd.cmd().firstIndex = 0;
+        cmd.cmd().indexCount = vb->getIndexCount();
+        cmd.LoD(0);
+        cmd.sourceBuffer(vb);
+        drawCommandsInOut.push_back(cmd);
 
-    //BoundingBoxes
-    GenericDrawCommand bbCommand;
-    bbCommand.drawCount(0);
-    for (U32 i = 0; i < chunkCount + 2; ++i) {
-        drawCommandsInOut.push_back(bbCommand);
+        //BoundingBoxes
+        GenericDrawCommand bbCommand;
+        bbCommand.drawCount(0);
+        for (U32 i = 0; i < chunkCount + 2; ++i) {
+            drawCommandsInOut.push_back(bbCommand);
+        }
     }
-
     Object3D::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
 }
 
@@ -199,24 +200,26 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
         }
     }
 
-    // draw infinite plane
-    GenericDrawCommand& planeCmd = drawCommandsInOut[g_PlaneCommandIndex];
-    planeCmd.drawCount((renderStagePass._stage == RenderStage::DISPLAY ? 1 : 0));
+    if (renderStagePass._stage == RenderStage::DISPLAY) {
+        // draw infinite plane
+        GenericDrawCommand& planeCmd = drawCommandsInOut[g_PlaneCommandIndex];
+        planeCmd.drawCount((renderStagePass._stage == RenderStage::DISPLAY ? 1 : 0));
 
-    i = g_PlaneCommandIndex + 1;
+        i = g_PlaneCommandIndex + 1;
 
-    if (_drawBBoxes) {
-        GenericDrawCommands commands;
-        commands.reserve(chunkCount);
-        _terrainQuadtree.drawBBox(_context, commands);
+        if (_drawBBoxes) {
+            GenericDrawCommands commands;
+            commands.reserve(chunkCount);
+            _terrainQuadtree.drawBBox(_context, commands);
 
-        for (const GenericDrawCommand& cmd : commands) {
-            drawCommandsInOut[i++] = cmd;
-        }
+            for (const GenericDrawCommand& cmd : commands) {
+                drawCommandsInOut[i++] = cmd;
+            }
 
-    } else {
-        for (; i < chunkCount; ++i) {
-            drawCommandsInOut[i].drawCount(0);
+        } else {
+            for (; i < chunkCount; ++i) {
+                drawCommandsInOut[i].drawCount(0);
+            }
         }
     }
 

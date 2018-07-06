@@ -2132,7 +2132,7 @@ void mat4<T>::lookAt(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &u
     m[0][3] = static_cast<T>(0);
     m[1][3] = static_cast<T>(0);
     m[2][3] = static_cast<T>(0);
-    m[3][3] = static_cast<T>(0);
+    m[3][3] = static_cast<T>(1);
 }
 
 template<typename T>

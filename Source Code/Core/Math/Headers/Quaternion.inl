@@ -297,6 +297,34 @@ void Quaternion<T>::fromEuler(T pitch, T yaw, T roll, bool inDegrees) {
     // normalize(); this method does produce a normalized quaternion
 }
 
+//ref: https://www.gamedev.net/topic/613595-quaternion-lookrotationlookat-up/
+template <typename T>
+void Quaternion<T>::fromLookAt(const vec3<F32>& fwdDirection, const vec3<F32>& upDirection) {
+        vec3<F32> forward(fwdDirection);
+        vec3<F32> up(upDirection);
+
+        OrthoNormalize(forward, up);
+        vec3<F32> right(Cross(up, forward));
+
+        const F32& m00 = right.x;
+        const F32& m01 = up.x;
+        const F32& m02 = forward.x;
+        const F32& m10 = right.y;
+        const F32& m11 = up.y;
+        const F32& m12 = forward.y;
+        const F32& m20 = right.z;
+        const F32& m21 = up.z;
+        const F32& m22 = forward.z;
+
+        F32 w = sqrtf(1.0f + m00 + m11 + m22) * 0.5f;
+        F32 w4_recip = 1.0f / (4.0f * w);
+        F32 x = (m21 - m12) * w4_recip;
+        F32 y = (m02 - m20) * w4_recip;
+        F32 z = (m10 - m01) * w4_recip;
+
+        set(x, y, z, w);
+}
+
 template <typename T>
 void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
     // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
