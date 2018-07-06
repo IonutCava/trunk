@@ -6,6 +6,8 @@
 #include "Core/Math/Headers/MathHelper.h"
 #include "Utility/Headers/Localization.h"
 
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+
 namespace Divide {
 
 size_t TextureData::getHash() const {
@@ -17,6 +19,7 @@ size_t TextureData::getHash() const {
 
 TextureDataContainer::TextureDataContainer()
 {
+    _textures.reserve(to_base(ShaderProgram::TextureUsage::COUNT));
 }
 
 TextureDataContainer::~TextureDataContainer()

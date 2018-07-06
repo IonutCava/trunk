@@ -5,6 +5,10 @@
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include <iomanip>
 
+#ifndef USE_BLOCKING_QUEUE
+//#define USE_BLOCKING_QUEUE
+#endif //USE_BLOCKING_QUEUE
+
 namespace Divide {
 
 bool Console::_timestamps = false;
@@ -24,11 +28,33 @@ namespace {
         static const size_t BLOCK_SIZE = MAX_CONSOLE_ENTRIES;
     };
 
+#if defined(USE_BLOCKING_QUEUE)
     moodycamel::BlockingConcurrentQueue<Console::OutputEntry, MyTraits>& outBuffer() {
         static moodycamel::BlockingConcurrentQueue<Console::OutputEntry, MyTraits> outputBuffer;
         return outputBuffer;
     }
+#else
+    moodycamel::ConcurrentQueue<Console::OutputEntry, MyTraits>& outBuffer() {
+        static moodycamel::ConcurrentQueue<Console::OutputEntry, MyTraits> outputBuffer;
+        return outputBuffer;
+    }
 
+    std::mutex& condMutex() noexcept {
+        static std::mutex condMutex;
+        return condMutex;
+    }
+
+    std::condition_variable& entryEnqueCV() {
+        static std::condition_variable entryEnqueCV;
+        return entryEnqueCV;
+    }
+
+    std::atomic_bool& entryAdded() noexcept {
+        static std::atomic_bool entryAdded;
+        return entryAdded;
+    }
+
+#endif
 };
 
 //! Do not remove the following license without express permission granted by DIVIDE-Studio
@@ -101,6 +127,12 @@ void Console::output(const char* text, const bool newline, const EntryType type)
         if (!outBuffer().enqueue(/*ptok, */entry)) {
             // ToDo: Something happened. Handle it, maybe? -Ionut
         }
+
+#if !defined(USE_BLOCKING_QUEUE)
+        UniqueLock lk(condMutex());
+        entryAdded() = true;
+        entryEnqueCV().notify_one();
+#endif
     }
 }
 
@@ -108,7 +140,14 @@ void Console::outThread() {
     //moodycamel::ConsumerToken ctok(outBuffer());
     OutputEntry entry;
     while (_running) {
+#if defined(USE_BLOCKING_QUEUE)
         if (outBuffer().wait_dequeue_timed(/*ctok, */entry, Time::Milliseconds(16))) {
+#else
+        UniqueLock lk(condMutex());
+        entryEnqueCV().wait(lk, []() -> bool { return entryAdded(); });
+
+        if (outBuffer().try_dequeue(/*ctok, */entry)) {
+#endif
             ((entry._type == EntryType::Error && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
 
             for (const Console::ConsolePrintCallback& cbk : _guiConsoleCallbacks) {
