@@ -26,11 +26,13 @@ DisplayWindow::~DisplayWindow()
 }
 
 ErrorCode DisplayWindow::destroyWindow() {
-    DIVIDE_ASSERT(_mainWindow != nullptr,
-        "DisplayWindow::destroyWindow error: Tried to double-delete the same window!");
+    if (_type != WindowType::COUNT) {
+        DIVIDE_ASSERT(_mainWindow != nullptr,
+            "DisplayWindow::destroyWindow error: Tried to double-delete the same window!");
 
-    SDL_DestroyWindow(_mainWindow);
-    _mainWindow = nullptr;
+        SDL_DestroyWindow(_mainWindow);
+        _mainWindow = nullptr;
+    }
 
     return ErrorCode::NO_ERR;
 }

@@ -158,12 +158,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     inline void processGUI(const U64 deltaTime) {
         _activeScene->processGUI(deltaTime);
     }
-    /// Insert a new scene factory method for the given name
-    template <typename DerivedScene>
-    inline bool registerScene(ULL sceneNameHash) {
-        _sceneFactory[sceneNameHash] = boost::factory<DerivedScene*>();
-        return true;
-    }
 
     void enableFog(F32 density, const vec3<F32>& color);
 
@@ -173,6 +167,12 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     }
 
     RenderPassCuller::VisibleNodeList& getVisibleNodesCache(RenderStage stage);
+
+    template<typename Scene>
+    static U32 registerScene(ULL sceneName) {
+        g_sceneFactory[sceneName] = boost::factory<Scene*>();
+        return to_uint(g_sceneFactory.size());
+    }
 
   public:  /// Input
     /// Key pressed
@@ -229,8 +229,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     std::unique_ptr<ShaderBuffer> _sceneShaderData;
     /// Scene pool
     SceneMap _sceneMap;
-    /// Scene_Name -Scene_Factory table
-    hashMapImpl<ULL, std::function<Scene*()> > _sceneFactory;
     Material* _defaultMaterial;
     SceneShaderData _sceneData;
     Time::ProfileTimer* _sceneGraphCullTimer;
@@ -240,6 +238,8 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     std::unique_ptr<Renderer> _renderer;
     RenderPassCuller::VisibleNodeList _reflectiveNodesCache;
 
+    /// Scene_Name -Scene_Factory table
+    static hashMapImpl<ULL, std::function<Scene*()> > g_sceneFactory;
 END_SINGLETON
 
 namespace Attorney {

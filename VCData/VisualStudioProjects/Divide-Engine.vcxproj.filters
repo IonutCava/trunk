@@ -940,6 +940,9 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\TaskPool.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Line.h">
+      <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">

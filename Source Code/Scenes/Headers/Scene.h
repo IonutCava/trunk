@@ -336,13 +336,8 @@ private:
 ///                                    -B is the name used to refer to that
 ///                                      scene in the XML files
 /// Call this function after each scene declaration
-#define REGISTER_SCENE_W_NAME(scene, sceneName) \
-    bool scene##_registered =                   \
-        SceneManager::instance().registerScene<scene>(_ID(#sceneName));
-/// same as REGISTER_SCENE(A,B) but in this case the scene's name in XML must be
-/// the same as the class name
-#define REGISTER_SCENE(scene) \
-    bool scene##_registered = \
-        SceneManager::instance().registerScene<scene>(_ID(#scene));
+#define REGISTER_SCENE_W_NAME(scene, sceneName) U32 g_index_##scene = SceneManager::registerScene<scene>(_ID(sceneName));
+/// same as REGISTER_SCENE(A,B) but in this case the scene's name in XML must be the same as the class name
+#define REGISTER_SCENE(scene) REGISTER_SCENE_W_NAME(scene, #scene)
 
 #endif

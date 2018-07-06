@@ -439,7 +439,7 @@ F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
     }
 
     if (updated) {
-        Util::Mat4::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
+        mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
         computeFrustumPlanes();
         _gpuBlock._updated = true;
     }
@@ -457,7 +457,7 @@ F32* GFXDevice::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
 
     data._ZPlanesCombined.xy(planes);
 
-    Util::Mat4::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
+    mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
 
     computeFrustumPlanes();
 
@@ -480,7 +480,7 @@ F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio,
     data._cameraPosition.w = aspectRatio;
     data._renderProperties.z = FoV;
     data._renderProperties.w = std::tan(FoV * 0.5f);
-    Util::Mat4::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
+    mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
     computeFrustumPlanes();
     _gpuBlock._updated = true;
 

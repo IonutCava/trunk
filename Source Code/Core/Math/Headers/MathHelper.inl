@@ -92,6 +92,11 @@ inline U32 nextPOW2(U32 n) {
     return ++n;
 }
 
+template <typename T, typename U>
+inline T Lerp(const T v1, const T v2, const U t) {
+    return v1 + (v2 - v1 * t);
+}
+
 ///(thx sqrt[-1] and canuckle of opengl.org forums)
 
 // Helper method to emulate GLSL
@@ -347,123 +352,6 @@ void insertion_sort(FwdIt first, FwdIt last, Compare cmp)
     }
 }
 
-namespace Mat4 {
-
-template <typename T>
-inline T Det(const T* mat) {
-    return ((mat[0] * mat[5] * mat[10]) + (mat[4] * mat[9] * mat[2]) +
-            (mat[8] * mat[1] * mat[6]) - (mat[8] * mat[5] * mat[2]) -
-            (mat[4] * mat[1] * mat[10]) - (mat[0] * mat[9] * mat[6]));
-}
-
-// Copyright 2011 The Closure Library Authors. All Rights Reserved.
-template <typename T>
-inline void Inverse(const T* in, T* out) {
-    T m00 = in[0], m10 = in[1], m20 = in[2], m30 = in[3];
-    T m01 = in[4], m11 = in[5], m21 = in[6], m31 = in[7];
-    T m02 = in[8], m12 = in[9], m22 = in[10], m32 = in[11];
-    T m03 = in[12], m13 = in[13], m23 = in[14], m33 = in[15];
-
-    T a0 = m00 * m11 - m10 * m01;
-    T a1 = m00 * m21 - m20 * m01;
-    T a2 = m00 * m31 - m30 * m01;
-    T a3 = m10 * m21 - m20 * m11;
-    T a4 = m10 * m31 - m30 * m11;
-    T a5 = m20 * m31 - m30 * m21;
-    T b0 = m02 * m13 - m12 * m03;
-    T b1 = m02 * m23 - m22 * m03;
-    T b2 = m02 * m33 - m32 * m03;
-    T b3 = m12 * m23 - m22 * m13;
-    T b4 = m12 * m33 - m32 * m13;
-    T b5 = m22 * m33 - m32 * m23;
-
-    T idet = a0 * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0;
-    assert(!IS_ZERO(idet));
-
-    idet = 1 / idet;
-
-    out[0] = (m11 * b5 - m21 * b4 + m31 * b3) * idet;
-    out[1] = (-m10 * b5 + m20 * b4 - m30 * b3) * idet;
-    out[2] = (m13 * a5 - m23 * a4 + m33 * a3) * idet;
-    out[3] = (-m12 * a5 + m22 * a4 - m32 * a3) * idet;
-    out[4] = (-m01 * b5 + m21 * b2 - m31 * b1) * idet;
-    out[5] = (m00 * b5 - m20 * b2 + m30 * b1) * idet;
-    out[6] = (-m03 * a5 + m23 * a2 - m33 * a1) * idet;
-    out[7] = (m02 * a5 - m22 * a2 + m32 * a1) * idet;
-    out[8] = (m01 * b4 - m11 * b2 + m31 * b0) * idet;
-    out[9] = (-m00 * b4 + m10 * b2 - m30 * b0) * idet;
-    out[10] = (m03 * a4 - m13 * a2 + m33 * a0) * idet;
-    out[11] = (-m02 * a4 + m12 * a2 - m32 * a0) * idet;
-    out[12] = (-m01 * b3 + m11 * b1 - m21 * b0) * idet;
-    out[13] = (m00 * b3 - m10 * b1 + m20 * b0) * idet;
-    out[14] = (-m03 * a3 + m13 * a1 - m23 * a0) * idet;
-    out[15] = (m02 * a3 - m12 * a1 + m22 * a0) * idet;
-}
-
-template <typename T, typename U>
-FORCE_INLINE void Add(const T* a, const U* b, T* r) {
-    T rTemp[] = {
-        a[0]  + b[0],  a[1]  + b[1],  a[2]  + b[2],  a[3]  + b[3],
-        a[4]  + b[4],  a[5]  + b[5],  a[6]  + b[6],  a[7]  + b[7],
-        a[8]  + b[8],  a[9]  + b[9],  a[10] + b[10], a[11] + b[11],
-        a[12] + b[12], a[13] + b[13], a[14] + b[14], a[15] + b[15]};
-
-    memcpy(r, rTemp, 16 * sizeof(T));
-}
-
-template <typename T, typename U>
-FORCE_INLINE void Subtract(const T* a, const U* b, T* r) {
-    T rTemp[] = {
-        a[0]  - b[0],  a[1]  - b[1],  a[2]  - b[2],  a[3]  - b[3],
-        a[4]  - b[4],  a[5]  - b[5],  a[6]  - b[6],  a[7]  - b[7],
-        a[8]  - b[8],  a[9]  - b[9],  a[10] - b[10], a[11] - b[11],
-        a[12] - b[12], a[13] - b[13], a[14] - b[14], a[15] - b[15]};
-
-    memcpy(r, rTemp, 16 * sizeof(T));
-}
-
-template <typename T, typename U>
-FORCE_INLINE void Multiply(const T* _RESTRICT_ a, const U* _RESTRICT_ b, T* _RESTRICT_ r) {
-    T rTemp[] = 
-        {(a[0]  * b[0]) + (a[1]  * b[4]) + (a[2]  * b[8] ) + (a[3]  * b[12]),
-         (a[0]  * b[1]) + (a[1]  * b[5]) + (a[2]  * b[9] ) + (a[3]  * b[13]),
-         (a[0]  * b[2]) + (a[1]  * b[6]) + (a[2]  * b[10]) + (a[3]  * b[14]),
-         (a[0]  * b[3]) + (a[1]  * b[7]) + (a[2]  * b[11]) + (a[3]  * b[15]),
-         (a[4]  * b[0]) + (a[5]  * b[4]) + (a[6]  * b[8] ) + (a[7]  * b[12]),
-         (a[4]  * b[1]) + (a[5]  * b[5]) + (a[6]  * b[9] ) + (a[7]  * b[13]),
-         (a[4]  * b[2]) + (a[5]  * b[6]) + (a[6]  * b[10]) + (a[7]  * b[14]),
-         (a[4]  * b[3]) + (a[5]  * b[7]) + (a[6]  * b[11]) + (a[7]  * b[15]),
-         (a[8]  * b[0]) + (a[9]  * b[4]) + (a[10] * b[8] ) + (a[11] * b[12]),
-         (a[8]  * b[1]) + (a[9]  * b[5]) + (a[10] * b[9] ) + (a[11] * b[13]),
-         (a[8]  * b[2]) + (a[9]  * b[6]) + (a[10] * b[10]) + (a[11] * b[14]),
-         (a[8]  * b[3]) + (a[9]  * b[7]) + (a[10] * b[11]) + (a[11] * b[15]),
-         (a[12] * b[0]) + (a[13] * b[4]) + (a[14] * b[8] ) + (a[15] * b[12]),
-         (a[12] * b[1]) + (a[13] * b[5]) + (a[14] * b[9] ) + (a[15] * b[13]),
-         (a[12] * b[2]) + (a[13] * b[6]) + (a[14] * b[10]) + (a[15] * b[14]),
-         (a[12] * b[3]) + (a[13] * b[7]) + (a[14] * b[11]) + (a[15] * b[15])};
-
-    memcpy(r, rTemp, 16 * sizeof(T));
-}
-
-template <typename T, typename U>
-FORCE_INLINE void MultiplyScalar(const T* a, U b, T* r){
-    T rTemp[] = { static_cast<T>(a[0]  * b), static_cast<T>(a[1]  * b), static_cast<T>(a[2]  * b), static_cast<T>(a[3]  * b),
-                  static_cast<T>(a[4]  * b), static_cast<T>(a[5]  * b), static_cast<T>(a[6]  * b), static_cast<T>(a[7]  * b),
-                  static_cast<T>(a[8]  * b), static_cast<T>(a[9]  * b), static_cast<T>(a[10] * b), static_cast<T>(a[11] * b),
-                  static_cast<T>(a[12] * b), static_cast<T>(a[13] * b), static_cast<T>(a[14] * b), static_cast<T>(a[15] * b) };
-
-   memcpy(r, rTemp, 16 * sizeof(T));
-}
-template <typename T, typename U>
-FORCE_INLINE void DivideScalar(const T* a, U b, T* r) {
-    T rTemp[] = { static_cast<T>(a[0]  / b), static_cast<T>(a[1]  / b), static_cast<T>(a[2]  / b), static_cast<T>(a[3]  / b),
-                  static_cast<T>(a[4]  / b), static_cast<T>(a[5]  / b), static_cast<T>(a[6]  / b), static_cast<T>(a[7]  / b),
-                  static_cast<T>(a[8]  / b), static_cast<T>(a[9]  / b), static_cast<T>(a[10] / b), static_cast<T>(a[11] / b),
-                  static_cast<T>(a[12] / b), static_cast<T>(a[13] / b), static_cast<T>(a[14] / b), static_cast<T>(a[15] / b) };
-
-    memcpy(r, rTemp, 16 * sizeof(T));
-}
-};  // namespace Mat4
 };  // namespace Util
 };  // namespace Divide
 

@@ -80,6 +80,9 @@ T CLAMPED(const T& n, const T min, const T max);
 
 U32 nextPOW2(U32 n);
 
+template <typename T, typename U>
+T Lerp(const T v1, const T v2, const U t);
+
 ///Helper methods to go from a float to packed char and back
 U8 FLOAT_TO_CHAR(const F32 value);
 U8 FLOAT_TO_CHAR_SNORM(const F32 value);
@@ -331,25 +334,6 @@ F32 PACK_VEC3(const vec3<F32>& value);
 inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) {
     UNPACK_FLOAT(src, x, y, z);
 }
-
-namespace Mat4 {
-template <typename T, typename U>
-FORCE_INLINE void Add(const T* a, const U* b, T* r);
-template <typename T, typename U>
-FORCE_INLINE void Subtract(const T* a, const U* b, T* r);
-template <typename T, typename U>
-FORCE_INLINE void Multiply(const T* _RESTRICT_ a, const U* _RESTRICT_ b, T* _RESTRICT_ r);
-FORCE_INLINE void Multiply(const mat4<F32>& matrixA, const mat4<F32>& matrixB, mat4<F32>& ret);
-template <typename T, typename U>
-FORCE_INLINE void MultiplyScalar(const T* a, U b, T* r);
-template <typename T, typename U>
-FORCE_INLINE void DivideScalar(const T* a, U b, T* r);
-template <typename T>
-FORCE_INLINE T Det(const T* mat);
-// Copyright 2011 The Closure Library Authors. All Rights Reserved.
-template <typename T>
-FORCE_INLINE void Inverse(const T* in, T* out);
-};  // namespace Mat4
 };  // namespace Util
 };  // namespace Divide
 

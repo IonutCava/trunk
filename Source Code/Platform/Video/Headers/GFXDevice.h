@@ -35,6 +35,7 @@
 #include "GFXState.h"
 #include "ScopedStates.h"
 
+#include "Core/Math/Headers/Line.h"
 #include "Managers/Headers/RenderPassManager.h"
 
 #include "Platform/Video/Headers/RenderAPIWrapper.h"

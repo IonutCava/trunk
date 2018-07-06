@@ -33,6 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _ANIMATION_COMPONENT_H_
 
 #include "SGNComponent.h"
+#include "Core/Math/Headers/Line.h"
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 

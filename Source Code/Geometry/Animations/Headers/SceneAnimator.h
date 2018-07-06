@@ -37,6 +37,7 @@
 #define SCENE_ANIMATOR_H_
 
 #include "AnimationEvaluator.h"
+#include "Core/Math/Headers/Line.h"
 
 struct aiMesh;
 struct aiNode;
