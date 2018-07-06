@@ -257,19 +257,6 @@ void glShaderProgram::link() {
                         GL_PROGRAM_SEPARABLE,
                         1);
     */
-    // If we require specific outputs from the shader for transform feedback, we
-    // need to set them up before linking
-    if (_outputCount > 0) {
-        // This isn't as optimised as it should/could be, but it works
-        vectorImpl<const char*> vars;
-        for (U32 i = 0; i < _outputCount; ++i) {
-            vars.push_back(strdup(("outData" + std::to_string(i)).c_str()));
-        }
-        // Only separate attributes are supported for now. Interleaved not top
-        // prio
-        glTransformFeedbackVaryings(_shaderProgramIDTemp, _outputCount,
-                                    vars.data(), GL_SEPARATE_ATTRIBS);
-    }
     // Link the program
     glLinkProgram(_shaderProgramIDTemp);
     // And check the result

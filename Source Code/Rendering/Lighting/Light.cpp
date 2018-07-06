@@ -5,7 +5,6 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Dynamics/Entities/Headers/Impostor.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"

@@ -38,6 +38,10 @@
 #pragma warning(disable : 4127)  //< Constant conditional expressions
 #pragma warning(disable : 4201)  //< nameless struct
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif //_CRT_SECURE_NO_WARNINGS
+
 /// Reduce Build time on Windows Platform
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
@@ -70,10 +74,6 @@
 #define WIN64
 #else
 #define WIN32
-#endif
-
-#ifdef strdup
-#define strdup _strdup
 #endif
 
 LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

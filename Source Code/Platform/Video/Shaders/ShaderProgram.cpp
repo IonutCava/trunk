@@ -15,7 +15,6 @@ namespace Divide {
 ShaderProgram::ShaderProgram()
     : HardwareResource("temp_shader_program"),
       _dirty(true),
-      _outputCount(0),
       _elapsedTime(0ULL),
       _elapsedTimeMS(0.0f)
 {

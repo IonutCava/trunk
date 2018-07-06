@@ -116,6 +116,8 @@ class RenderingComponent : public SGNComponent {
 
     void setActive(const bool state);
 
+    inline ImpostorBox* const getImpostor() const { return _impostor; }
+
    protected:
     friend class SceneGraphNode;
     RenderingComponent(Material* const materialInstance,

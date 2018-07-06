@@ -456,7 +456,19 @@ void RenderingComponent::inViewCallback() {
 }
 
 void RenderingComponent::boundingBoxUpdatedCallback() {
-    _impostor->mirrorBoundingBox(_parentSGN.getBoundingBoxConst());
+    static std::array<vec3<F32>, 8> points;
+
+    const vec3<F32>* bbPoints = _parentSGN.getInitialBoundingBox().getPoints();
+    points[0].set(bbPoints[1]);
+    points[1].set(bbPoints[5]);
+    points[2].set(bbPoints[3]);
+    points[3].set(bbPoints[7]);
+    points[4].set(bbPoints[0]);
+    points[5].set(bbPoints[4]);
+    points[6].set(bbPoints[2]);
+    points[7].set(bbPoints[6]);
+
+    _impostor->fromPoints(points, _parentSGN.getInitialBoundingBox().getHalfExtent());
 }
 
 void RenderingComponent::setActive(const bool state) {

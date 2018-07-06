@@ -140,9 +140,9 @@ flat in int OrigData2[1];
 
 flat in int objectVisible[1];
 
-out vec4 outData0;
-out float outData1;
-flat out int outData2;
+layout (xfb_buffer=0) out vec4 outData0;
+layout (xfb_buffer=1) out float outData1;
+layout (xfb_buffer=2) flat out int outData2;
 
 //uniform uint queryID;
 //layout(binding = 0, offset = 0) uniform atomic_uint primitiveCount[5];

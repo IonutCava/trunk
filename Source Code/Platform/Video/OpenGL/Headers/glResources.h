@@ -41,8 +41,8 @@
 #define GLBINDING_STATIC
 #endif
 
-#define GL_VERSION_4_4
-//#define GL_VERSION_4_5
+//#define GL_VERSION_4_4
+#define GL_VERSION_4_5
 
 #ifdef GL_VERSION_4_5
 #include <glbinding/gl45/gl.h>

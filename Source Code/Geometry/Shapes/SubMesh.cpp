@@ -6,6 +6,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Dynamics/Entities/Headers/Impostor.h"
 
 namespace Divide {
 
@@ -67,6 +68,12 @@ void SubMesh::getDrawCommands(SceneGraphNode& sgn,
     _drawCmd.stateHash(renderable->getDrawStateHash(renderStage));
     _drawCmd.shaderProgram(renderable->getDrawShader(renderStage));
     _drawCmd.sourceBuffer(_parentMesh->getGeometryVB());
+    //render impostor example
+    {
+        _drawCmd.sourceBuffer(sgn.getComponent<RenderingComponent>()->getImpostor()->getGeometryVB());
+        _drawCmd.indexCount(8);
+        _drawCmd.firstIndex(0);
+    }
     drawCommandsOut.push_back(_drawCmd);
 }
 };

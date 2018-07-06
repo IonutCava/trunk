@@ -72,10 +72,15 @@ class Box3D : public Object3D {
 
     inline void setHalfExtent(const vec3<F32> halfExtent) {
         vec3<F32> vertices[] = {
-            vec3<F32>(-1.0, -1.0, 1.0),  vec3<F32>(1.0, -1.0, 1.0),
-            vec3<F32>(-1.0, 1.0, 1.0),   vec3<F32>(1.0, 1.0, 1.0),
-            vec3<F32>(-1.0, -1.0, -1.0), vec3<F32>(1.0, -1.0, -1.0),
-            vec3<F32>(-1.0, 1.0, -1.0),  vec3<F32>(1.0, 1.0, -1.0)};
+            vec3<F32>(-1.0, -1.0, 1.0),
+            vec3<F32>(1.0, -1.0, 1.0),
+            vec3<F32>(-1.0, 1.0, 1.0),
+            vec3<F32>(1.0, 1.0, 1.0),
+            vec3<F32>(-1.0, -1.0, -1.0),
+            vec3<F32>(1.0, -1.0, -1.0),
+            vec3<F32>(-1.0, 1.0, -1.0),
+            vec3<F32>(1.0, 1.0, -1.0)
+        };
 
         _halfExtent = halfExtent;
 
@@ -87,13 +92,13 @@ class Box3D : public Object3D {
         
     }
 
-    inline void mirrorBoundingBox(const BoundingBox& boundingBox) {
-        const vec3<F32>* points = boundingBox.getPoints();
-        for (U8 i = 0; i < 8; ++i) {
+    inline void fromPoints(const std::array<vec3<F32>, 8>& points, 
+                           const vec3<F32>& halfExtent) {
+         for (U8 i = 0; i < 8; ++i) {
             getGeometryVB()->modifyPositionValue(i, points[i]);
-        }
+         }
          getGeometryVB()->queueRefresh();
-        _halfExtent = boundingBox.getHalfExtent();
+        _halfExtent = halfExtent;
     }
 
     virtual bool computeBoundingBox(SceneGraphNode& sgn) {

@@ -168,10 +168,6 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
         Uniform(location, value ? 1 : 0);
     }
 
-    inline void SetOutputCount(U8 count) {
-        _outputCount = std::min(std::max(count, (U8)1), (U8)4);
-    }
-
     virtual void attachShader(Shader* const shader,
                               const bool refresh = false) = 0;
     virtual void detachShader(Shader* const shader) = 0;
@@ -270,7 +266,6 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
     // with a mutex or something
     U64 _elapsedTime;
     F32 _elapsedTimeMS;
-    U8 _outputCount;
     /// A list of preprocessor defines
     vectorImpl<stringImpl> _definesList;
     /// ID<->shaders pair
