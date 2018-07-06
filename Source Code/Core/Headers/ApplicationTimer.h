@@ -79,20 +79,18 @@ DEFINE_SINGLETON(ApplicationTimer)
     F32 _frameTime;
     F32 _speedfactor;
     U32 _targetFrameRate;
-    D32 _ticksPerMicrosecond;
     LI _ticksPerSecond;  // Processor's ticks per second
-    LI _frameDelay;  // Previous frame's number of ticks
-    LI _startupTicks;  // Ticks at class initialization
-    bool _benchmark;  // Measure average FPS and output max/min/average fps to
-                      // console
+    LI _frameDelay;      // Previous frame's number of ticks
+    LI _startupTicks;    // Ticks at class initialization
+    bool _benchmark;     // Measure average FPS and output max/min/average fps to
+                         // console
     bool _init;
 
     std::atomic<U64> _elapsedTimeUs;
 END_SINGLETON
 
-/// The following functions force a timer update (a call to query performance
-/// timer.
-/// Use these for profiling!
+/// The following functions force a timer update 
+/// (a call to query performance timer).
 inline U64 ElapsedMicroseconds(bool forceUpdate = false) {
     return ApplicationTimer::getInstance().getElapsedTime(forceUpdate);
 }

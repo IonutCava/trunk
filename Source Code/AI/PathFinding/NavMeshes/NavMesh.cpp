@@ -86,11 +86,11 @@ void NavigationMesh::freeIntermediates(bool freeAll) {
 
 namespace {
 inline F32 charToFloat(const char* val) {
-    return Util::convertData<F32, stringImpl>(stringImpl(val));
+    return Util::convertData<F32, const char*>(val);
 }
 
 inline bool charToBool(const char* val) {
-    return Util::convertData<bool, stringImpl>(stringImpl(val));
+    return _stricmp(val, "true") == 0;
 }
 };
 
@@ -175,7 +175,7 @@ bool NavigationMesh::buildThreaded() {
 
     Kernel& kernel = Application::getInstance().getKernel();
     _buildThread.reset(kernel.AddTask(
-        0, 0, DELEGATE_BIND(&NavigationMesh::buildInternal, this)));
+        0, 1, DELEGATE_BIND(&NavigationMesh::buildInternal, this)));
     _buildThread->startTask();
     return true;
 }
@@ -368,12 +368,23 @@ bool NavigationMesh::generateMesh() {
     params.detailTris = _polyMeshDetail->tris;
     params.detailTriCount = _polyMeshDetail->ntris;
 
-    if (!createNavigationMesh(params)) {
+    
+    if (_navMesh) {
+        dtFreeNavMesh(_navMesh);
+    }
+
+    load(*_sgn);
+    if (_navMesh == nullptr) {
+        createNavigationMesh(params);
+    }
+
+    if (_navMesh == nullptr) {
         data.isValid(false);
         return false;
     }
 
     data.isValid(true);
+    save(*_sgn);
 
     return NavigationMeshLoader::saveMeshFile(
         data, geometrySaveFile.c_str());  // input geometry;
@@ -519,6 +530,7 @@ bool NavigationMesh::createPolyMesh(rcConfig& cfg, NavModelData& data,
 }
 
 bool NavigationMesh::createNavigationMesh(dtNavMeshCreateParams& params) {
+    
     U8* tileData = nullptr;
     I32 tileDataSize = 0;
     if (!dtCreateNavMeshData(&params, &tileData, &tileDataSize)) {
@@ -621,11 +633,18 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
     if (!_fileName.length()) {
         return false;
     }
+
+    dtNavMesh* temp = nullptr;
     stringImpl file = _fileName;
 
-    file.append("_node_[_" + sgn.getName() + "_]");
-
+    stringImpl nodeName((sgn.getNode()->getType() != SceneNodeType::TYPE_ROOT)
+                         ? "_node_[_" + sgn.getName() + "_]"
+                         : "_root_node");
+    
+    // Parse objects from level into RC-compatible format
+    file.append(nodeName);
     file.append(".nm");
+
     // Parse objects from level into RC-compatible format
     FILE* fp = fopen(file.c_str(), "rb");
     if (!fp) {
@@ -647,18 +666,14 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
 
     boost::mutex::scoped_lock lock(_navigationMeshLock);
 
-    if (_navMesh) {
-        dtFreeNavMesh(_navMesh);
-    }
+    temp = dtAllocNavMesh();
 
-    _navMesh = dtAllocNavMesh();
-
-    if (!_navMesh) {
+    if (!temp) {
         fclose(fp);
         return false;
     }
 
-    dtStatus status = _navMesh->init(&header.params);
+    dtStatus status = temp->init(&header.params);
 
     if (dtStatusFailed(status)) {
         fclose(fp);
@@ -681,22 +696,32 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
         memset(data, 0, tileHeader.dataSize);
         fread(data, tileHeader.dataSize, 1, fp);
 
-        _navMesh->addTile(data, tileHeader.dataSize, DT_TILE_FREE_DATA,
-                          tileHeader.tileRef, 0);
+        temp->addTile(data, tileHeader.dataSize, DT_TILE_FREE_DATA,
+                     tileHeader.tileRef, 0);
     }
     fclose(fp);
 
     _extents.set(header.extents[0], header.extents[1], header.extents[2]);
-
+    _navMesh = temp;
     return createNavigationQuery();
 }
 
-bool NavigationMesh::save() {
+bool NavigationMesh::save(SceneGraphNode& sgn) {
     if (!_fileName.length() || !_navMesh) {
         return false;
     }
+
+    stringImpl file = _fileName;
+    stringImpl nodeName((sgn.getNode()->getType() != SceneNodeType::TYPE_ROOT)
+                         ? "_node_[_" + sgn.getName() + "_]"
+                         : "_root_node");
+    // Parse objects from level into RC-compatible format
+    file.append(nodeName);
+    file.append(".nm");
+
+
     // Save our NavigationMesh into a file to load from next time
-    FILE* fp = fopen(_fileName.c_str(), "wb");
+    FILE* fp = fopen(file.c_str(), "wb");
     if (!fp) {
         return false;
     }

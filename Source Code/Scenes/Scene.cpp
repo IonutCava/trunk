@@ -361,10 +361,8 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     // Create an AI thread, but start it only if needed
     Kernel& kernel = Application::getInstance().getKernel();
     _aiTask.reset(kernel.AddTask(
-        Time::MillisecondsToMicroseconds(1000.0 /
-                                         Config::AI_THREAD_UPDATE_FREQUENCY),
-        0,
-        DELEGATE_BIND(&AI::AIManager::update, &AI::AIManager::getInstance())));
+        Time::MillisecondsToMicroseconds(Config::AI_THREAD_UPDATE_FREQUENCY),
+        0, DELEGATE_BIND(&AI::AIManager::update, &AI::AIManager::getInstance())));
 
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback,
                                        &GUI::getInstance(), this));

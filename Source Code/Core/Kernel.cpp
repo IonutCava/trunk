@@ -427,8 +427,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _SFX.setAPI(SFXDevice::AudioAPI::SDL);
     // Using OpenGL for rendering as default
     _GFX.setAPI(GFXDevice::RenderAPI::OpenGL);
-    // Target FPS is usually 60. So all movement is capped around that value
-    Time::ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
     // Load info from XML files
     stringImpl startupScene(
         stringAlg::toBase(XML::loadScripts(stringAlg::fromBase(entryPoint))));

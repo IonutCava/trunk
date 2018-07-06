@@ -62,8 +62,6 @@ void WarScene::processGUI(const U64 deltaTime) {
         const Camera& cam = renderState().getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
-        // const vec3<F32>& lampPos =
-        // _lampLightNode->getComponent<PhysicsComponent>()->getPosition();
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f",
                          Time::ApplicationTimer::getInstance().getFps(),
                          Time::ApplicationTimer::getInstance().getFrameTime());
@@ -136,13 +134,11 @@ void WarScene::processTasks(const U64 deltaTime) {
 
 static std::atomic_bool navMeshStarted;
 
-void navMeshCreationCompleteCallback(AI::AIEntity::PresetAgentRadius radius,
-                                     AI::Navigation::NavigationMesh* navMesh) {
-    navMesh->save();
-    AI::AIManager::getInstance().addNavMesh(radius, navMesh);
-}
-
 void WarScene::startSimulation() {
+    if (navMeshStarted) {
+        return;
+    }
+    navMeshStarted = true;
     AI::AIManager::getInstance().pauseUpdate(true);
     _infoBox->setTitle("NavMesh state");
     _infoBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_INFO);
@@ -164,10 +160,14 @@ void WarScene::startSimulation() {
 
         if (!navMesh->load(GET_ACTIVE_SCENEGRAPH().getRoot())) {
             loadedFromFile = false;
+            AI::AIEntity::PresetAgentRadius radius = _army[0][0]->getAgentRadiusCategory();
             navMesh->build(
                 GET_ACTIVE_SCENEGRAPH().getRoot(),
-                DELEGATE_BIND(navMeshCreationCompleteCallback,
-                              _army[0][0]->getAgentRadiusCategory(), navMesh));
+                [&radius](AI::Navigation::NavigationMesh* navMesh) {
+                    AI::AIManager::getInstance().toggleNavMeshDebugDraw(true);
+                    AI::AIManager::getInstance().addNavMesh(radius, navMesh);
+                    navMeshStarted = false;
+                });
         } else {
             AI::AIManager::getInstance().addNavMesh(
                 _army[0][0]->getAgentRadiusCategory(), navMesh);
@@ -194,7 +194,6 @@ void WarScene::startSimulation() {
             }
         }
         _infoBox->show();
-        navMeshStarted = true;
         _lastNavMeshBuildTime = currentTime;
         for (U8 i = 0; i < 2; ++i) {
             _faction[i]->clearOrders();
@@ -225,15 +224,6 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
     static U64 totalTime = 0;
 
     totalTime += deltaTime;
-
-/*if(_lampLightNode && _bobNodeBody){
-    static mat4<F32> position =
-_lampLightNode->getComponent<PhysicsComponent>()->getWorldMatrix();
-    const mat4<F32>& fingerPosition =
-_bobNodeBody->getAnimationComponent()->getBoneTransform("fingerstip.R");
-    mat4<F32> finalTransform(fingerPosition * position);
-    _lampLightNode->getComponent<PhysicsComponent>()->setTransforms(finalTransform.getTranspose());
-}*/
 
 #ifdef _DEBUG
     if (!AI::AIManager::getInstance().getNavMesh(
@@ -382,30 +372,6 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     AI::WarSceneAISceneImpl::registerFlags(*_flag[0], *_flag[1]);
 
-/*_bobNode = _sceneGraph.findNode("Soldier3");
-_bobNodeBody = _sceneGraph.findNode("Soldier3_Bob.md5mesh-submesh-0");
-_lampLightNode = nullptr;
-if(_bobNodeBody != nullptr){
-    ResourceDescriptor tempLight("Light_lamp");
-    tempLight.setEnumValue(LIGHT_TYPE_POINT);
-    // Create a point light for Bob's lamp
-    /*Light* light = CreateResource<Light>(tempLight);
-    light->setDrawImpostor(true);
-    // Make it small and yellow
-    light->setCastShadows(false);
-    light->setRange(2.0f);
-    light->setDiffuseColor(vec3<F32>(1.0f, 0.5f, 0.0f));
-    _lampTransform = MemoryManager_NEW SceneTransform();
-    // Add it to Bob's body
-    _lampTransformNode = _bobNodeBody->addNode(_lampTransform, "lampTransform");
-    _lampLightNode = addLight(light, _lampTransformNode);
-    // Move it to the lamp's position
-    _lampTransformNode->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(-75.0f,
--45.0f, -5.0f));
-}*/
-//------------------------ The rest of the scene elements
-//-----------------------------///
-
 #ifdef _DEBUG
     const U32 particleCount = 200;
 #else
@@ -414,7 +380,7 @@ if(_bobNodeBody != nullptr){
 
     const F32 emitRate = particleCount / 4;
 
-    ParticleData particles(
+    /*ParticleData particles(
         particleCount,
         to_uint(ParticleData::Properties::PROPERTIES_POS) |
         to_uint(ParticleData::Properties::PROPERTIES_VEL) |
@@ -451,7 +417,7 @@ if(_bobNodeBody != nullptr){
     test->addUpdater(eulerUpdater);
     test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>());
     test->addUpdater(std::make_shared<ParticleBasicColorUpdater>());
-    test->addUpdater(std::make_shared<ParticleFloorUpdater>());
+    test->addUpdater(std::make_shared<ParticleFloorUpdater>());*/
 
     state().generalVisibility(state().generalVisibility() * 2);
 
@@ -475,10 +441,6 @@ void WarScene::toggleCamera() {
     static bool flyCameraActive = true;
 
     if (_currentSelection != nullptr) {
-        /*if(flyCameraActive){
-        renderState().getCameraMgr().pushActiveCamera("fpsCamera");
-        flyCameraActive = false; fpsCameraActive = true;
-        }else if(fpsCameraActive){*/
         if (flyCameraActive) {
             if (fpsCameraActive) {
                 renderState().getCameraMgr().popActiveCamera();
@@ -486,7 +448,7 @@ void WarScene::toggleCamera() {
             renderState().getCameraMgr().pushActiveCamera("tpsCamera");
             static_cast<ThirdPersonCamera&>(renderState().getCamera())
                 .setTarget(*_currentSelection);
-            /*fpsCameraActive*/ flyCameraActive = false;
+            flyCameraActive = false;
             tpsCameraActive = true;
             return;
         }
@@ -496,7 +458,6 @@ void WarScene::toggleCamera() {
         tpsCameraActive = false;
         flyCameraActive = true;
     }
-    //renderState().getCamera().setTargetNode(_currentSelection);
 }
 
 bool WarScene::initializeAI(bool continueOnErrors) {
@@ -591,7 +552,7 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                              AI::GOAPValue(true));
 
     for (U8 k = 0; k < 2; ++k) {
-        for (U8 i = 0; i < /*15*/ 1; ++i) {
+        for (U8 i = 0; i < 15; ++i) {
             F32 speed = 5.5f;  // 5.5 m/s
             U8 zFactor = 0;
             if (i < 5) {

@@ -123,9 +123,9 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     bool build(SceneGraphNode& sgn,
                CreationCallback creationCompleteCallback, bool threaded = true);
     /// Save the NavigationMesh to a file.
-    bool save();
+    bool save(SceneGraphNode& sgn);
     /// Load a saved NavigationMesh from a file.
-    bool load(SceneGraphNode& node);
+    bool load(SceneGraphNode& sgn);
     /// Unload the navmesh reverting the instance to an empty container
     bool unload();
     /// Called once per frame with the time diff between this and the last frame

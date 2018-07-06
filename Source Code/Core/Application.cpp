@@ -66,7 +66,8 @@ ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc,
     if (!Locale::init()) {
         return errorCode();
     }
-
+    // Target FPS is usually 60. So all movement is capped around that value
+    Time::ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
     Console::printfn(Locale::get("START_APPLICATION"));
 
     // Create a new kernel

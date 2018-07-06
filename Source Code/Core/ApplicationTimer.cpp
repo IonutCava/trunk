@@ -15,17 +15,19 @@ namespace Time {
 
 ApplicationTimer::ApplicationTimer()
     : _targetFrameRate(Config::TARGET_FRAME_RATE),
-      _ticksPerMicrosecond(0.0),
       _speedfactor(1.0f),
       _elapsedTimeUs(0ULL),
       _init(false),
-      _benchmark(false) {
+      _benchmark(false)
+{
     _ticksPerSecond.QuadPart = 0LL;
     _frameDelay.QuadPart = 0LL;
     _startupTicks.QuadPart = 0LL;
 }
 
-ApplicationTimer::~ApplicationTimer() {}
+ApplicationTimer::~ApplicationTimer()
+{
+}
 
 void ApplicationTimer::addTimer(ProfileTimer* const timer) {
     _profileTimers.push_back(timer);
@@ -56,9 +58,6 @@ void ApplicationTimer::init(U8 targetFrameRate) {
 #else
     gettimeofday(&_startupTicks, nullptr);
 #endif
-
-    _ticksPerMicrosecond =
-        static_cast<D32>(_ticksPerSecond.QuadPart / 1000000.0);
     _frameDelay = _startupTicks;
     _init = true;
 }
@@ -75,8 +74,8 @@ ApplicationTimer::LI ApplicationTimer::getCurrentTicksInternal() const {
 }
 
 U64 ApplicationTimer::getElapsedTimeInternal(LI currentTicks) const {
-    return static_cast<U64>((currentTicks.QuadPart - _startupTicks.QuadPart) /
-                            _ticksPerMicrosecond);
+    return Time::SecondsToMicroseconds(currentTicks.QuadPart - _startupTicks.QuadPart) /
+                            _ticksPerSecond.QuadPart;
 }
 
 void ApplicationTimer::update(U32 frameCount) {

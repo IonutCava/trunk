@@ -43,7 +43,7 @@ void Task::pauseTask(bool state) { _paused = state; }
 void Task::run() {
     Console::d_printfn(Locale::get("TASK_START_THREAD"),
                        std::this_thread::get_id());
-    U64 lastCallTime = Time::ElapsedSeconds();
+    U64 lastCallTime = Time::ElapsedMicroseconds(true);
 
     // 0 == run forever
     if (_numberOfTicks == 0) {

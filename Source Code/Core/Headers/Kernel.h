@@ -129,6 +129,13 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     bool mouseButtonReleased(const Input::MouseEvent& arg,
                              Input::MouseButton button);
 
+     /**
+     * @brief Creates a new Task that runs in a separate thread
+     * @param tickInterval The delay (in microseconds) between each callback
+     * @param numberOfTicks The number of times to call the callback function
+     * before the Task is deleted. 0 = run forever
+     * @param onCompletionFunction The callback function to call when the thread finishes
+     */
     Task* AddTask(
         U64 tickInterval, I32 numberOfTicks,
         const DELEGATE_CBK<>& threadedFunction,

@@ -201,7 +201,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
             GET_ACTIVE_SCENEGRAPH().getRoot(), 
             AI::Navigation::NavigationMesh::CreationCallback(), false);
         // Then save it to file
-        temp->save();
+        temp->save(GET_ACTIVE_SCENEGRAPH().getRoot());
     }
     // If we loaded/built the NavMesh correctly, add it to the AIManager
     if (loaded) {

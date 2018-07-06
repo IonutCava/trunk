@@ -53,7 +53,7 @@ const unsigned int TARGET_FRAME_RATE = 60;
 /// Application update rate divisor (how many draw calls per render call
 /// e.g. 2 = 30Hz update rate at 60Hz rendering)
 const unsigned int TICK_DIVISOR = 2;
-///    Application update rate
+/// Application update rate
 const unsigned int TICKS_PER_SECOND = TARGET_FRAME_RATE / TICK_DIVISOR;
 /// Maximum frameskip
 const unsigned int MAX_FRAMESKIP = 5;

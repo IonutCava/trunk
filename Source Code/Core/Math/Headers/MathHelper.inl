@@ -205,7 +205,7 @@ template <typename T>
 
 template <typename T>
 /*constexpr*/ U64 MillisecondsToMicroseconds(T a) {
-    return SecondsToMicroseconds(a);
+    return Metric::Kilo(static_cast<U64>(a));
 }
 
 template <typename T>
@@ -237,7 +237,7 @@ U convertData(const T& data) {
     U targetValue;
     std::istringstream iss(data);
     iss >> targetValue;
-    DIVIDE_ASSERT(iss.good(), "Util::convertData error : invalid conversion!");
+    DIVIDE_ASSERT(!iss.fail(), "Util::convertData error : invalid conversion!");
     return targetValue;
 }
 
