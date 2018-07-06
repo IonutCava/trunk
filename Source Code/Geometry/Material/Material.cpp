@@ -491,7 +491,7 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
     if (crtTexture && crtTexture->flushTextureState()) {
         TextureData& data = crtTexture->getData();
         data.setHandleLow(slotValue);
-        vectorAlg::emplace_back(container, data);
+        container.addTexture(data);
     }
 }
 
@@ -499,7 +499,6 @@ void Material::getTextureData(TextureDataContainer& textureData) {
     const U32 textureCount = to_const_uint(ShaderProgram::TextureUsage::COUNT);
 
     if (!GFX_DEVICE.isDepthStage()) {
-        textureData.reserve(textureCount + _customTextures.size());
         getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
         getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData);
         getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
@@ -510,12 +509,12 @@ void Material::getTextureData(TextureDataContainer& textureData) {
 
         for (std::pair<Texture_ptr, U8>& tex : _customTextures) {
             if (tex.first->flushTextureState()) {
-                textureData.push_back(tex.first->getData());
-                textureData.back().setHandleLow(to_uint(tex.second));
+                TextureData& data = tex.first->getData();
+                data.setHandleLow(to_uint(tex.second));
+                textureData.addTexture(data);
             }
         }
     } else {
-        textureData.reserve(2);
         getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
         switch(_translucencySource) {
             case TranslucencySource::OPACITY_MAP : {

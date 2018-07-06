@@ -31,10 +31,7 @@ NavMeshDebugDraw::NavMeshDebugDraw()
 }
 
 NavMeshDebugDraw::~NavMeshDebugDraw() {
-    // Allow the primitive to be deleted
-    if (_primitive) {
-        _primitive->_canZombify = true;
-    }
+    MemoryManager::DELETE(_primitive);
 }
 
 void NavMeshDebugDraw::paused(bool state) {
@@ -47,7 +44,7 @@ void NavMeshDebugDraw::paused(bool state) {
 void NavMeshDebugDraw::beginBatch() {
     if (!_primitive) {
         _dirty = true;
-        _primitive = GFX_DEVICE.getOrCreatePrimitive(false);
+        _primitive = GFX_DEVICE.newIMP();
         _primitive->stateHash(_navMeshStateBlockHash);
     }
 
@@ -115,6 +112,10 @@ void NavMeshDebugDraw::end() {
     if (_dirty && _primitive) {
         _primitive->end();
     }
+}
+
+GenericDrawCommand NavMeshDebugDraw::toDrawCommand() const {
+    return _primitive->toDrawCommand();
 }
 
 void NavMeshDebugDraw::overrideColour(U32 col) {

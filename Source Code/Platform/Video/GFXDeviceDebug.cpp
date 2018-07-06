@@ -89,72 +89,19 @@ void GFXDevice::previewDepthBuffer() {
 
 /// Render all of our immediate mode primitives. This isn't very optimised and
 /// most are recreated per frame!
-void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
-    uploadGPUBlock();
-    // We need a shader that emulates the fixed pipeline in order to continue
-    if (!_imShader->bind()) {
-        return;
-    }
+void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, RenderSubPassCmds& subPassesInOut) {
     // Debug axis form the axis arrow gizmo in the corner of the screen
-    drawDebugAxis(sceneRenderState);
-    bool previousTextureFlag = false;
-    // Loop over all available primitives and find active ones
-    _activeImInterfaces.resize(0);
-    {
-        ReadLock r_lock(_imInterfaceLock);
-        for (IMPrimitive* prim : _imInterfaces) {
-            // A primitive may be paused if drawing it isn't desired at the current point in time
-            if (!prim->paused()) {
-                _activeImInterfaces.push_back(prim);
-            }
-        }
-    }
-    for (IMPrimitive* prim : _activeImInterfaces) {
-        // Inform the primitive that we're using the imShader
-        // A primitive can be rendered with any shader program available, so
-        // make sure we actually use the right one for this stage
-        if (prim->drawShader() == nullptr) {
-            prim->drawShader(_imShader.get());
-        }
-        // Set the primitive's render state block
-        _api->setStateBlock(prim->stateHash());
-        // Call any "onDraw" function the primitive may have attached
-        prim->setupStates();
-        // Check if any texture is present
-        bool texture = (prim->_texture != nullptr);
-        // And bind it to the first diffuse texture slot
-        if (texture) {
-            prim->_texture->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
-        }
-        if (previousTextureFlag != texture) {
-            previousTextureFlag = texture;
-            // Inform the shader if we have (or don't have) a texture
-            _imShader->Uniform(_imShaderTextureFlag, texture);
-        }
-        // Upload the primitive's world matrix to the shader
-        _imShader->Uniform(_imShaderWorldMatrix, prim->worldMatrix());
-        // Submit the render call. We do not support instancing yet!
-        prim->render(prim->forceWireframe(), 1);
-        registerDrawCall();
-        // Call any "postRender" function the primitive may have attached
-        prim->resetStates();
-        if (prim->_canZombify) {
-            prim->paused(true);
-        }
-    }
-}
-
-/// Draw the axis arrow gizmo
-void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     // This is togglable, so check if it's actually requested
     if (!drawDebugAxis()) {
         return;
     }
-  
+
     // Apply the inverse view matrix so that it cancels out in the shader
     // Submit the draw command, rendering it in a tiny viewport in the lower
     // right corner
     U16 windowWidth = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getWidth();
     _axisGizmo->fromLines(_axisLines, vec4<I32>(windowWidth - 120, 8, 128, 128));
+    subPassesInOut.back()._commands.push_back(_axisGizmo->toDrawCommand());
 }
+
 };

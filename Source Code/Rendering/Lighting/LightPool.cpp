@@ -341,7 +341,7 @@ void LightPool::uploadLightData(ShaderBufferLocation location) {
     _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->bind(location);
 }
 
-void LightPool::drawLightImpostors() const {
+void LightPool::drawLightImpostors(RenderSubPassCmds& subPassesInOut) const {
     if (!_previewShadowMaps) {
         return;
     }
@@ -352,16 +352,19 @@ void LightPool::drawLightImpostors() const {
     const U32 spotLightCount = _activeLightCount[to_const_uint(LightType::SPOT)];
     const U32 totalLightCount = directionalLightCount + pointLightCount + spotLightCount;
     if (totalLightCount > 0) {
-        _lightIconsTexture->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
-
-
         GenericDrawCommand pointsCmd;
         pointsCmd.primitiveType(PrimitiveType::API_POINTS);
         pointsCmd.drawCount(to_ushort(totalLightCount));
         pointsCmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
         pointsCmd.shaderProgram(_lightImpostorShader);
 
-        GFX_DEVICE.draw(pointsCmd);
+        RenderSubPassCmd newSubPass;
+        newSubPass._textures.addTexture(TextureData(_lightIconsTexture->getTextureType(),
+                                                    _lightIconsTexture->getHandle(),
+                                                    to_const_ubyte(ShaderProgram::TextureUsage::UNIT0)));
+
+        newSubPass._commands.push_back(pointsCmd);
+        subPassesInOut.push_back(newSubPass);
     }
 }
 

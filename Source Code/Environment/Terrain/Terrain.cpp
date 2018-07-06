@@ -138,6 +138,13 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
     cmd.sourceBuffer(vb);
     drawCommandsInOut.push_back(cmd);
 
+    //BoundingBoxes
+    for (U32 i = 0; i < _terrainQuadtree.getChunkCount(); ++i) {
+        GenericDrawCommand bbCommand;
+        bbCommand.drawCount(0);
+        drawCommandsInOut.push_back(bbCommand);
+    }
+
     Object3D::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
 }
 
@@ -171,16 +178,25 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
     }
 
     // draw infinite plane
-    drawCommandsInOut[i + 1].drawCount((renderStage == RenderStage::DISPLAY ||
-                                        renderStage == RenderStage::Z_PRE_PASS) ? 1 : 0);
+    drawCommandsInOut[i++].drawCount((renderStage == RenderStage::DISPLAY ||
+                                      renderStage == RenderStage::Z_PRE_PASS) ? 1 : 0);
+
+    if (_drawBBoxes) {
+        GenericDrawCommands commands;
+        commands.reserve(chunkCount);
+        _terrainQuadtree.drawBBox(commands);
+
+        for (const GenericDrawCommand& cmd : commands) {
+            drawCommandsInOut[i++] = cmd;
+        }
+
+    } else {
+        for (; i < chunkCount; ++i) {
+            drawCommandsInOut[i].drawCount(0);
+        }
+    }
 
     Object3D::updateDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsInOut);
-}
-
-void Terrain::postRender(SceneGraphNode& sgn) const {
-    if (_drawBBoxes) {
-        _terrainQuadtree.drawBBox();
-    }
 }
 
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {

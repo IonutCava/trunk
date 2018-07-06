@@ -39,6 +39,7 @@
 namespace Divide {
 class IMPrimitive;
 class RenderStateBlock;
+class GenericDrawCommand;
 namespace AI {
 namespace Navigation {
 
@@ -83,6 +84,7 @@ class NavMeshDebugDraw : public duDebugDraw {
         vertex(x, y, z, colour);
     }
 
+    GenericDrawCommand toDrawCommand() const;
    private:
     PrimitiveType _primType;
     IMPrimitive* _primitive;

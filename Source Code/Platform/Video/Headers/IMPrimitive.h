@@ -36,14 +36,19 @@
 #include "Core/Math/Headers/Line.h"
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
 
 namespace Divide {
 
 class Texture;
 class ShaderProgram;
 enum class PrimitiveType : U32;
+FWD_DECLARE_MANAGED_CLASS(ShaderProgram)
+
+FWD_DECLARE_MANAGED_CLASS(IMPrimitive);
+
 /// IMPrimitive replaces immediate mode calls to VB based rendering
-class NOINITVTABLE IMPrimitive : protected GraphicsResource, public GUIDWrapper {
+class NOINITVTABLE IMPrimitive : public VertexDataInterface {
    public:
     inline void setRenderStates(const DELEGATE_CBK<>& setupStatesCallback,
                                 const DELEGATE_CBK<>& releaseStatesCallback) {
@@ -68,15 +73,12 @@ class NOINITVTABLE IMPrimitive : protected GraphicsResource, public GUIDWrapper 
         }
     }
 
-    inline void drawShader(ShaderProgram* const shaderProgram) {
-        _drawShader = shaderProgram;
-    }
-
-    inline ShaderProgram* const drawShader() const {
+    inline const ShaderProgram_ptr& drawShader() const {
         return _drawShader;
     }
 
-    virtual void render(bool forceWireframe = false, U32 instanceCount = 1) = 0;
+    virtual void drawShader(const ShaderProgram_ptr& shaderProgram);
+    virtual void draw(const GenericDrawCommand& command) = 0;
     virtual void beginBatch(bool reserveBuffers, 
                             unsigned int vertexCount,
                             unsigned int attributeCount) = 0;
@@ -104,10 +106,6 @@ class NOINITVTABLE IMPrimitive : protected GraphicsResource, public GUIDWrapper 
 
     inline void paused(bool state) { _paused = state; }
     inline bool paused() const { return _paused; }
-    inline void inUse(bool state) { _inUse = state; }
-    inline bool inUse() const { return _inUse; }
-    inline void zombieCounter(U32 count) { _zombieCounter = count; }
-    inline U32  zombieCounter() const { return _zombieCounter; }
     inline void forceWireframe(bool state) { _forceWireframe = state; }
     inline bool forceWireframe() const { return _forceWireframe; }
     inline bool hasRenderStates() const {
@@ -132,6 +130,7 @@ class NOINITVTABLE IMPrimitive : protected GraphicsResource, public GUIDWrapper 
 #       endif
     }
 
+    virtual GenericDrawCommand toDrawCommand() const = 0;
 
     void fromBox(const vec3<F32>& min,
                  const vec3<F32>& max,
@@ -156,17 +155,14 @@ class NOINITVTABLE IMPrimitive : protected GraphicsResource, public GUIDWrapper 
 
    public:
 
-    ShaderProgram* _drawShader;
+    ShaderProgram_ptr _drawShader;
     Texture* _texture;
-    bool _canZombify;
 
    protected:
     // render in wireframe mode
     bool _forceWireframe;
 
    private:
-    U32  _zombieCounter;
-    bool _inUse;
     /// If _pause is true, rendering for the current primitive is skipped and
     /// nothing is modified (e.g. zombie counters)
     bool _paused;

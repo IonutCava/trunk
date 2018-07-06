@@ -112,7 +112,7 @@ class LightPool : public SceneComponent {
     void updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
     void uploadLightData(ShaderBufferLocation location);
 
-    void drawLightImpostors() const;
+    void drawLightImpostors(RenderSubPassCmds& subPassesInOut) const;
 
     static void idle();
     /// shadow mapping

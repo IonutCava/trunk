@@ -96,7 +96,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// (https://github.com/memononen/fontstash)
     /// with his OpenGL frontend adapted for core context profiles
     void drawText(const TextLabel& textLabel, const vec2<F32>& position, size_t stateHash) override;
-    void draw(const GenericDrawCommand& cmd) override;
+    bool draw(const GenericDrawCommand& cmd) override;
 
     /// Sets the current state block to the one passed as a param
     size_t setStateBlock(size_t stateBlockHash) override;
@@ -106,7 +106,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// This functions should be run in a separate, consumer thread.
     /// The main app thread, the producer, adds tasks via a lock-free queue that is
     /// checked every 20 ms
-    void syncToThread(std::thread::id threadID) override;
+    void syncToThread(const std::thread::id& threadID) override;
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
     GLuint64 getFrameDurationGPU() override;

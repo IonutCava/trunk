@@ -81,6 +81,7 @@ namespace Attorney {
     class GFXDeviceGUI;
     class GFXDeviceKernel;
     class GFXDeviceRenderer;
+    class GFXDeviceGraphicsResource;
 };
 
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
@@ -89,6 +90,8 @@ DEFINE_SINGLETON(GFXDevice)
     friend class Attorney::GFXDeviceGUI;
     friend class Attorney::GFXDeviceKernel;
     friend class Attorney::GFXDeviceRenderer;
+    friend class Attorney::GFXDeviceGraphicsResource;
+
   protected:
     typedef std::stack<vec4<I32>> ViewportStack;
 
@@ -299,17 +302,9 @@ DEFINE_SINGLETON(GFXDevice)
     /// (Perspective) rendering
     void toggle2D(bool state);
 
-    /**
-     *@brief Returns an immediate mode emulation buffer that can be used to
-     *construct geometry in a vertex by vertex manner.
-     *@param allowPrimitiveRecycle If false, do not reuse old primitives and do not
-     *delete it after x-frames.
-     *(Don't use the primitive zombie feature)
-     */
-    IMPrimitive* getOrCreatePrimitive(bool allowPrimitiveRecycle = true);
-    void debugDraw(const SceneRenderState& sceneRenderState);
+    void debugDraw(const SceneRenderState& sceneRenderState, RenderSubPassCmds& subPassesInOut);
 
-    void draw(const GenericDrawCommand& cmd);
+    bool draw(const GenericDrawCommand& cmd);
 
     void addToRenderQueue(U32 queueIndex, const RenderPackage& package);
     void renderQueueToSubPasses(RenderPassCmd& commandsInOut);
@@ -479,7 +474,7 @@ DEFINE_SINGLETON(GFXDevice)
         return _api->getFrameDurationGPU();
     }
 
-    inline void syncThreadToGPU(std::thread::id threadID, bool beginSync) {
+    inline void syncThreadToGPU(const std::thread::id& threadID, bool beginSync) {
         if (beginSync) {
             _api->syncToThread(threadID);
         }
@@ -496,8 +491,6 @@ DEFINE_SINGLETON(GFXDevice)
         uploadGPUBlock();
         _api->drawText(text, position, stateHash);
     }
-
-    void drawDebugAxis(const SceneRenderState& sceneRenderState);
 
     void onChangeResolution(U16 w, U16 h);
 
@@ -608,14 +601,7 @@ DEFINE_SINGLETON(GFXDevice)
     mutable SharedLock _2DRenderQueueLock;
     vectorImpl<std::pair<U32, GUID2DCbk > > _2dRenderQueue;
 
-    /// Immediate mode emulation shader
-    ShaderProgram_ptr _imShader;
-    I32 _imShaderTextureFlag;
-    I32 _imShaderWorldMatrix;
-    /// The interface that coverts IM calls to VB data
-    SharedLock _imInterfaceLock;
-    vectorImpl<IMPrimitive*> _imInterfaces;
-    vectorImpl<IMPrimitive*> _activeImInterfaces;
+    std::atomic_int _graphicResources;
     /// Current viewport stack
     ViewportStack _viewport;
 
@@ -675,7 +661,7 @@ namespace Attorney {
             GFXDevice::instance().onChangeResolution(w, h);
         }
 
-        static void syncThreadToGPU(std::thread::id threadID, bool beginSync) {
+        static void syncThreadToGPU(const std::thread::id& threadID, bool beginSync) {
             if (beginSync) {
                 GFXDevice::instance().syncThreadToGPU(threadID, beginSync);
             }
@@ -690,6 +676,17 @@ namespace Attorney {
             GFXDevice::instance().uploadGPUBlock();
         }
         friend class Divide::Renderer;
+    };
+
+    class GFXDeviceGraphicsResource {
+       private:
+       static void onResourceCreate(GFXDevice& device) {
+           device._graphicResources++;
+       }
+       static void onResourceDestroy(GFXDevice& device) {
+           device._graphicResources--;
+       }
+       friend class Divide::GraphicsResource;
     };
 };  // namespace Attorney
 };  // namespace Divide

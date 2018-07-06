@@ -39,13 +39,8 @@ namespace Divide {
 class GFXDevice;
 class GraphicsResource : private NonCopyable {
 protected:
-    explicit GraphicsResource(GFXDevice& context) : _context(context)
-    {
-    }
-
-    virtual ~GraphicsResource()
-    {
-    }
+    explicit GraphicsResource(GFXDevice& context);
+    virtual ~GraphicsResource();
 
     GFXDevice& _context;
 };

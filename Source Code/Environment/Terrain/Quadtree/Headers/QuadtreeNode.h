@@ -55,6 +55,7 @@ class Terrain;
 class TerrainChunk;
 class Transform;
 class SceneState;
+class IMPrimitive;
 class VertexBuffer;
 class ShaderProgram;
 class SceneGraphNode;
@@ -71,7 +72,7 @@ class QuadtreeNode {
     void getBufferOffsetAndSize(U32 options,
                                 const SceneRenderState& sceneRenderState,
                                 vectorImpl<vec3<U32>>& chunkBufferData) const;
-    void drawBBox() const;
+    void drawBBox(GenericDrawCommands& commandsOut);
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
@@ -107,6 +108,7 @@ class QuadtreeNode {
     BoundingSphere _boundingSphere;  ///< Node BoundingSphere
     QuadtreeNode* _children[4];      ///< Node children
     TerrainChunk* _terrainChunk;     ///< Terrain Chunk contained in node
+    IMPrimitive*  _bbPrimitive;
 };
 
 };  // namespace Divide

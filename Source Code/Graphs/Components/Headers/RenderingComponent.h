@@ -153,7 +153,8 @@ class RenderingComponent : public SGNComponent {
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,
-                    RenderStage renderStage);
+                    RenderStage renderStage,
+                    RenderSubPassCmds& subPassesInOut);
 
     GFXDevice::RenderPackage& getDrawPackage(const SceneRenderState& sceneRenderState,
                                              RenderStage renderStage);
@@ -296,8 +297,9 @@ class RenderingCompRenderBin {
 
     static void postRender(RenderingComponent& renderable,
                            const SceneRenderState& sceneRenderState,
-                           RenderStage renderStage) {
-        renderable.postRender(sceneRenderState, renderStage);
+                           RenderStage renderStage,
+                           RenderSubPassCmds& subPassesInOut) {
+        renderable.postRender(sceneRenderState, renderStage, subPassesInOut);
     }
 
     static void drawOrder(RenderingComponent& renderable, U32 index) {

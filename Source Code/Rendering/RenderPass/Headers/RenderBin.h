@@ -87,6 +87,8 @@ enum class RenderBitProperty : U32 {
 };
 
 class SceneRenderState;
+struct RenderSubPassCmd;
+typedef vectorImpl<RenderSubPassCmd> RenderSubPassCmds;
 /// This class contains a list of "RenderBinItem"'s and stores them sorted
 /// depending on designation
 class RenderBin {
@@ -103,7 +105,7 @@ class RenderBin {
 
     void sort(const std::atomic_bool& stopRequested, RenderStage renderStage);
     void populateRenderQueue(const std::atomic_bool& stopRequested, RenderStage renderStage);
-    void postRender(const SceneRenderState& renderState, RenderStage renderStage);
+    void postRender(const SceneRenderState& renderState, RenderStage renderStage, RenderSubPassCmds& subPassesInOut);
     void refresh();
 
     void addNodeToBin(const SceneGraphNode& sgn,

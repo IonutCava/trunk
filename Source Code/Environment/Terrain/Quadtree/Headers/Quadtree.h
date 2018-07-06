@@ -41,6 +41,7 @@ class Terrain;
 class Transform;
 class SceneState;
 class BoundingBox;
+class IMPrimitive;
 class VertexBuffer;
 class QuadtreeNode;
 class ShaderProgram;
@@ -61,7 +62,7 @@ class Quadtree {
     void getChunkBufferData(const SceneRenderState& sceneRenderState, 
                             vectorImpl<vec3<U32>>& chunkBufferData) const;
 
-    void drawBBox() const;
+    void drawBBox(GenericDrawCommands& commandsOut);
 
     QuadtreeNode* findLeaf(const vec2<F32>& pos);
 
@@ -72,6 +73,7 @@ class Quadtree {
     U32 _chunkCount;
     VertexBuffer* _parentVB;  //<Pointer to the terrain VB
     QuadtreeNode* _root;
+    IMPrimitive*  _bbPrimitive;
 };
 
 };  // namespace Divide

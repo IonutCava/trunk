@@ -8,7 +8,8 @@
 namespace Divide {
 
 Quadtree::Quadtree() : _parentVB(nullptr),
-                       _root(nullptr)
+                       _root(nullptr),
+                       _bbPrimitive(nullptr)
 {
     _chunkCount = 0;
 }
@@ -37,17 +38,21 @@ void Quadtree::getChunkBufferData(const SceneRenderState& sceneRenderState,
     _root->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
 }
 
-void Quadtree::drawBBox() const {
+void Quadtree::drawBBox(GenericDrawCommands& commandsOut) {
     assert(_root);
-    _root->drawBBox();
+    _root->drawBBox(commandsOut);
     
-    IMPrimitive* primitive = GFX_DEVICE.getOrCreatePrimitive();
-    primitive->name("QuadtreeBoundingBox");
-    RenderStateBlock primitiveRenderState;
-    primitive->stateHash(primitiveRenderState.getHash());
-    primitive->fromBox(_root->getBoundingBox().getMin(),
-                       _root->getBoundingBox().getMax(),
-                       vec4<U8>(0, 64, 255, 255));
+    if (!_bbPrimitive) {
+        _bbPrimitive = GFX_DEVICE.newIMP();
+        _bbPrimitive->name("QuadtreeBoundingBox");
+        RenderStateBlock primitiveRenderState;
+        _bbPrimitive->stateHash(primitiveRenderState.getHash());
+    }
+
+    _bbPrimitive->fromBox(_root->getBoundingBox().getMin(),
+                          _root->getBoundingBox().getMax(),
+                          vec4<U8>(0, 64, 255, 255));
+    commandsOut.push_back(_bbPrimitive->toDrawCommand());
 }
 
 QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) {

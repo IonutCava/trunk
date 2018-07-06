@@ -337,10 +337,10 @@ void SceneManager::preRender(RenderTarget& target) {
     }
 }
 
-void SceneManager::postRender(RenderStage stage) {
+void SceneManager::postRender(RenderStage stage, RenderSubPassCmds& subPassesInOut) {
     RenderPassManager& passMgr = RenderPassManager::instance();
-    passMgr.getQueue().postRender(getActiveScene().renderState(), stage);
-    Attorney::SceneManager::debugDraw(getActiveScene(), stage);
+    passMgr.getQueue().postRender(getActiveScene().renderState(), stage, subPassesInOut);
+    Attorney::SceneManager::debugDraw(getActiveScene(), stage, subPassesInOut);
 }
 
 bool SceneManager::generateShadowMaps() {

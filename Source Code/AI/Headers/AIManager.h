@@ -38,6 +38,9 @@
 namespace Divide {
 
 class Scene;
+struct RenderSubPassCmd;
+typedef vectorImpl<RenderSubPassCmd> RenderSubPassCmds;
+
 namespace AI {
 
 namespace Navigation {
@@ -101,7 +104,7 @@ class AIManager : public SceneComponent
     inline bool updating() const { return _updating; }
     /// Handle any debug information rendering (nav meshes, AI paths, etc).
     /// Called by Scene::postRender after depth map preview call
-    void debugDraw(bool forceAll = true);
+    void debugDraw(RenderSubPassCmds& subPassesInOut, bool forceAll = true);
     inline bool isDebugDraw() const { return _navMeshDebugDraw; }
     /// Toggle debug draw for all NavMeshes
     void toggleNavMeshDebugDraw(bool state);

@@ -57,7 +57,7 @@ WarScene::WarScene(const stringImpl& name)
         }
     });
 
-    _targetLines = GFX_DEVICE.getOrCreatePrimitive(false);
+    _targetLines = GFX_DEVICE.newIMP();
 
     _runCount = 0;
     _timeLimitMinutes = 5;
@@ -67,7 +67,7 @@ WarScene::WarScene(const stringImpl& name)
 
 WarScene::~WarScene()
 {
-    _targetLines->_canZombify = true;
+    MemoryManager::DELETE(_targetLines);
 }
 
 void WarScene::processGUI(const U64 deltaTime) {
@@ -140,6 +140,11 @@ namespace {
                          std::sin(angle) * (point.x - center.x) + std::cos(angle) * (point.y - center.y) + center.y);
     }
 };
+
+void WarScene::debugDraw(RenderStage stage, RenderSubPassCmds& subPassesInOut) {
+    subPassesInOut.back()._commands.push_back(_targetLines->toDrawCommand());
+    Scene::debugDraw(stage, subPassesInOut);
+}
 
 void WarScene::processTasks(const U64 deltaTime) {
     if (!_sceneReady) {

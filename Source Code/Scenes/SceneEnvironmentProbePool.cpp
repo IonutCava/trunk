@@ -44,9 +44,9 @@ void SceneEnvironmentProbePool::addLocalProbe(const vec3<F32>& bbMin,
     _envProbes.push_back(probe);
 }
 
-void SceneEnvironmentProbePool::debugDraw() {
+void SceneEnvironmentProbePool::debugDraw(RenderSubPassCmds& subPassesInOut) {
     for (EnvironmentProbe* probe : _envProbes) {
-        probe->debugDraw();
+        probe->debugDraw(subPassesInOut);
     }
 }
 

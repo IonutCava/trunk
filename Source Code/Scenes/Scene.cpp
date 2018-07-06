@@ -67,7 +67,7 @@ Scene::Scene(const stringImpl& name)
 
     if (Config::Build::IS_DEBUG_BUILD) {
         RenderStateBlock primitiveDescriptor;
-        _linesPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
+        _linesPrimitive = GFX_DEVICE.newIMP();
         _linesPrimitive->name("LinesRayPick");
         _linesPrimitive->stateHash(primitiveDescriptor.getHash());
         _linesPrimitive->paused(true);
@@ -79,10 +79,7 @@ Scene::Scene(const stringImpl& name)
 
 Scene::~Scene()
 {
-    if (Config::Build::IS_DEBUG_BUILD) {
-        _linesPrimitive->_canZombify = true;
-    }
-
+    MemoryManager::DELETE(_linesPrimitive);
     MemoryManager::DELETE(_sceneState);
     MemoryManager::DELETE(_input);
     MemoryManager::DELETE(_sceneGraph);
@@ -90,6 +87,9 @@ Scene::~Scene()
     MemoryManager::DELETE(_lightPool);
     MemoryManager::DELETE(_envProbePool);
     MemoryManager::DELETE(_GUI);
+    for (IMPrimitive*& prim : _octreePrimitives) {
+        MemoryManager::DELETE(prim);
+    }
 }
 
 bool Scene::onStartup() {
@@ -836,11 +836,12 @@ void Scene::processTasks(const U64 deltaTime) {
     }
 }
 
-void Scene::debugDraw(RenderStage stage) {
+void Scene::debugDraw(RenderStage stage, RenderSubPassCmds& subPassesInOut) {
     if (stage != RenderStage::DISPLAY || GFX_DEVICE.isPrePass()) {
         return;
     }
 
+    RenderSubPassCmd& subPass = subPassesInOut.back();
     if (Config::Build::IS_DEBUG_BUILD) {
         const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
 
@@ -868,7 +869,7 @@ void Scene::debugDraw(RenderStage stage) {
             if (regionCount > primitiveCount) {
                 size_t diff = regionCount - primitiveCount;
                 for (size_t i = 0; i < diff; ++i) {
-                    _octreePrimitives.push_back(gfx.getOrCreatePrimitive(false));
+                    _octreePrimitives.push_back(gfx.newIMP());
                 }
             }
 
@@ -877,16 +878,18 @@ void Scene::debugDraw(RenderStage stage) {
             for (size_t i = 0; i < regionCount; ++i) {
                 const BoundingBox& box = _octreeBoundingBoxes[i];
                 _octreePrimitives[i]->fromBox(box.getMin(), box.getMax(), vec4<U8>(255, 0, 255, 255));
+                subPass._commands.push_back(_octreePrimitives[i]->toDrawCommand());
             }
         }
     }
 
+    subPass._commands.push_back(_linesPrimitive->toDrawCommand());
     // Draw bounding boxes, skeletons, axis gizmo, etc.
-    GFX_DEVICE.debugDraw(renderState());
+    GFX_DEVICE.debugDraw(renderState(), subPassesInOut);
     // Show NavMeshes
-    _aiManager->debugDraw(false);
-    _lightPool->drawLightImpostors();
-    _envProbePool->debugDraw();
+    _aiManager->debugDraw(subPassesInOut, false);
+    _lightPool->drawLightImpostors(subPassesInOut);
+    _envProbePool->debugDraw(subPassesInOut);
 }
 
 void Scene::findHoverTarget() {

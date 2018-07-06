@@ -11,7 +11,8 @@
 namespace Divide {
 
 QuadtreeNode::QuadtreeNode()
-    : _terrainChunk(nullptr)
+    : _terrainChunk(nullptr),
+      _bbPrimitive(nullptr)
 {
     _children[to_const_uint(ChildPosition::CHILD_NW)] = nullptr;
     _children[to_const_uint(ChildPosition::CHILD_NE)] = nullptr;
@@ -188,21 +189,24 @@ bool QuadtreeNode::isInView(U32 options,
     return true;
 }
 
-void QuadtreeNode::drawBBox() const {
-    IMPrimitive* primitive = GFX_DEVICE.getOrCreatePrimitive();
-    primitive->name("QuadtreeNodeBoundingBox");
-    RenderStateBlock primitiveRenderState;
-    primitive->stateHash(primitiveRenderState.getHash());
-    primitive->fromBox(_boundingBox.getMin(),
-                       _boundingBox.getMax(),
-                       vec4<U8>(0, 128, 255, 255));
-    
+void QuadtreeNode::drawBBox(GenericDrawCommands& commandsOut) {
+    if (!_bbPrimitive) {
+        _bbPrimitive = GFX_DEVICE.newIMP();
+        _bbPrimitive->name("QuadtreeNodeBoundingBox");
+        RenderStateBlock primitiveRenderState;
+        _bbPrimitive->stateHash(primitiveRenderState.getHash());
+    }
+
+    _bbPrimitive->fromBox(_boundingBox.getMin(),
+                          _boundingBox.getMax(),
+                          vec4<U8>(0, 128, 255, 255));
+    commandsOut.push_back(_bbPrimitive->toDrawCommand());
 
     if (!isALeaf()) {
-        _children[to_const_uint(ChildPosition::CHILD_NW)]->drawBBox();
-        _children[to_const_uint(ChildPosition::CHILD_NE)]->drawBBox();
-        _children[to_const_uint(ChildPosition::CHILD_SW)]->drawBBox();
-        _children[to_const_uint(ChildPosition::CHILD_SE)]->drawBBox();
+        _children[to_const_uint(ChildPosition::CHILD_NW)]->drawBBox(commandsOut);
+        _children[to_const_uint(ChildPosition::CHILD_NE)]->drawBBox(commandsOut);
+        _children[to_const_uint(ChildPosition::CHILD_SW)]->drawBBox(commandsOut);
+        _children[to_const_uint(ChildPosition::CHILD_SE)]->drawBBox(commandsOut);
     }
 }
 

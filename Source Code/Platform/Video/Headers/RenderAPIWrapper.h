@@ -33,9 +33,10 @@
 #define _RENDER_API_H_
 
 #include "RenderDrawCommands.h"
-#include "Core/Math/Headers/MathMatrices.h"
 
-#include <thread>
+namespace std {
+    class thread::id;
+};
 
 namespace Divide {
 
@@ -56,6 +57,10 @@ enum class ErrorCode : I32;
 template <typename T>
 class Plane;
 typedef vectorImpl<Plane<F32> > PlaneList;
+
+template <typename T>
+class vec4;
+
 class SceneGraph;
 
 class GenericVertexData;
@@ -75,82 +80,6 @@ typedef struct {
 } VideoModes;
 // FWD DECLARE CLASSES
 
-class TextureData {
-    public:
-    TextureData()
-        : _textureType(TextureType::TEXTURE_2D),
-          _samplerHash(0),
-          _textureHandle(0)
-    {
-    }
-
-    TextureData(const TextureData& other)
-        : _textureType(other._textureType),
-          _samplerHash(other._samplerHash),
-          _textureHandle(other._textureHandle)
-    {
-    }
-
-    TextureData& operator=(const TextureData& other) {
-        _textureType = other._textureType;
-        _samplerHash = other._samplerHash;
-        _textureHandle = other._textureHandle;
-
-        return *this;
-    }
-
-    inline void set(const TextureData& other) {
-        _textureHandle = other._textureHandle;
-        _textureType = other._textureType;
-        _samplerHash = other._samplerHash;
-    }
-
-    inline void setHandleHigh(U32 handle) {
-        _textureHandle = (U64)handle << 32 | getHandleLow();
-    }
-
-    inline U32 getHandleHigh() const {
-        return to_uint(_textureHandle >> 32);
-    }
-
-    inline void getHandleHigh(U32& handle) const {
-        handle = getHandleHigh();
-    }
-
-    inline void setHandleLow(U32 handle) {
-        _textureHandle |= handle;
-    }
-
-    inline U32 getHandleLow() const{
-        return to_uint(_textureHandle);
-    }
-        
-    inline void getHandleLow(U32& handle) const {
-        handle = getHandleLow();
-    }
-
-    inline void setHandle(U64 handle) {
-        _textureHandle = handle;
-    }
-        
-    inline void getHandle(U64& handle) const {
-        handle = _textureHandle;
-    }
-
-    // No need to cache this as it should already be pretty fast
-    inline size_t getHash() const {
-        size_t hash = 0;
-        Util::Hash_combine(hash, to_uint(_textureType));
-        Util::Hash_combine(hash, _samplerHash);
-        Util::Hash_combine(hash, _textureHandle);
-        return hash;
-    }
-
-    TextureType _textureType;
-    size_t _samplerHash;
-private:
-    U64  _textureHandle;
-};
 
 class RingBuffer {
     public:
@@ -232,13 +161,13 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual U64  getFrameDurationGPU() = 0;
 
     virtual size_t setStateBlock(size_t stateBlockHash) = 0;
-    virtual void draw(const GenericDrawCommand& cmd) = 0;
+    virtual bool draw(const GenericDrawCommand& cmd) = 0;
 
     virtual void flushCommandBuffer(const CommandBuffer& commandBuffer) = 0;
 
    protected:
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
-    virtual void syncToThread(std::thread::id threadID) = 0;
+    virtual void syncToThread(const std::thread::id& threadID) = 0;
     virtual void registerCommandBuffer(const ShaderBuffer& commandBuffer) const = 0;
 };
 

@@ -385,7 +385,7 @@ void GL_API::closeRenderingAPI() {
     destroyGLContext();
 }
 
-void GL_API::syncToThread(std::thread::id threadID) {
+void GL_API::syncToThread(const std::thread::id& threadID) {
     if (glbinding::getCurrentContext() == 0) {
         std::hash<std::thread::id> hasher;
         size_t threadHash = hasher(threadID);

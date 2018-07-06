@@ -34,7 +34,6 @@ GFXDevice::GFXDevice()
     _stateDepthOnlyRenderingHash = 0;
     // Pointers
     _axisGizmo = nullptr;
-    _imShader = nullptr;
     _gfxDataBuffer = nullptr;
     _HIZConstructProgram = nullptr;
     _HIZCullProgram = nullptr;
@@ -46,8 +45,7 @@ GFXDevice::GFXDevice()
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
-    _imShaderTextureFlag = -1;
-    _imShaderWorldMatrix = -1;
+    _graphicResources = 0;
     // Floats
     _interpolationFactor = 1.0;
     // Cameras
@@ -650,35 +648,6 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     screenTarget.resetMipLevel(RTAttachment::Type::Depth, 0);
     // Unbind the render target
     screenTarget.end();
-}
-
-/// Find an unused primitive object or create a new one and return it
-IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
-    UpgradableReadLock ur_lock(_imInterfaceLock);
-    IMPrimitive* tempPriv = nullptr;
-    // Find an available and unused primitive (a zombie primitive)
-    vectorImpl<IMPrimitive*>::iterator it;
-    it = std::find_if(std::begin(_imInterfaces), std::end(_imInterfaces),
-                      [](IMPrimitive* const priv) { 
-                            return (priv && !priv->inUse()); 
-                      });
-    // If we allow resurrected primitives check if we have one available
-    if (allowPrimitiveRecycle && it != std::end(_imInterfaces)) {
-        tempPriv = *it;
-        // If we have a valid zombie, resurrect it
-        tempPriv->clear();
-
-    } else {
-        // If we do not have a valid zombie, we create a new primitive
-        tempPriv = newIMP();
-        // And add it to our container. The GFXDevice class is responsible for deleting these!
-        UpgradeToWriteLock w_lock(ur_lock);
-        _imInterfaces.push_back(tempPriv);
-    }
-    // Toggle zombification of the primitive on or off depending on our request
-    tempPriv->_canZombify = allowPrimitiveRecycle;
-
-    return tempPriv;
 }
 
 /// Extract the pixel data from the main render target's first colour attachment

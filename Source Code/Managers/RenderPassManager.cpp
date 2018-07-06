@@ -95,6 +95,36 @@ RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex) {
 }
 
 
+void cleanCommandBuffer(CommandBuffer& cmdBuffer) {
+    cmdBuffer.erase(std::remove_if(std::begin(cmdBuffer),
+                                   std::end(cmdBuffer),
+                                   [](const RenderPassCmd& passCmd) -> bool {
+                                       return passCmd._subPassCmds.empty();
+                                   }),
+                    std::end(cmdBuffer));
+
+    for (RenderPassCmd& pass : cmdBuffer) {
+        RenderSubPassCmds& subPasses = pass._subPassCmds;
+        for (RenderSubPassCmd& subPass : subPasses) {
+            GenericDrawCommands& drawCommands = subPass._commands;
+            drawCommands.erase(std::remove_if(std::begin(drawCommands),
+                                              std::end(drawCommands),
+                                              [](const GenericDrawCommand& cmd) -> bool {
+                                                  return cmd.drawCount() == 0;
+                                              }),
+                              std::end(drawCommands));
+        }
+
+        subPasses.erase(std::remove_if(std::begin(subPasses),
+                                       std::end(subPasses),
+                                       [](const RenderSubPassCmd& subPassCmd) -> bool {
+                                           return subPassCmd._commands.empty();
+                                       }),
+                        std::end(subPasses));
+
+    }
+}
+
 void RenderPassManager::doCustomPass(PassParams& params) {
     static CommandBuffer commandBuffer;
     commandBuffer.resize(0);
@@ -119,22 +149,19 @@ void RenderPassManager::doCustomPass(PassParams& params) {
                                                               params.pass);
 
         if (params.target._usage != RenderTargetUsage::COUNT) {
-            RenderTarget& target = GFX.renderTarget(params.target);
-            target.begin(RenderTarget::defaultPolicyDepthOnly());
-
             RenderPassCmd cmd;
             cmd._renderTarget = params.target;
-            cmd._renderTargetDescriptor = *(params.drawPolicy); |
+            cmd._renderTargetDescriptor = RenderTarget::defaultPolicyDepthOnly();
             GFX.renderQueueToSubPasses(cmd);
+            RenderSubPassCmds postRenderSubPasses(1);
+            Attorney::SceneManagerRenderPass::postRender(mgr, params.stage, postRenderSubPasses);
+            cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(postRenderSubPasses), std::cend(postRenderSubPasses));
             commandBuffer.push_back(cmd);
+            cleanCommandBuffer(commandBuffer);
             GFX.flushCommandBuffer(commandBuffer);
             commandBuffer.resize(0);
 
-
-            Attorney::SceneManagerRenderPass::postRender(mgr, params.stage);
-
-            target.end();
-    
+            RenderTarget& target = GFX.renderTarget(params.target);
             GFX.constructHIZ(target);
 
             if (params.occlusionCull) {
@@ -154,35 +181,30 @@ void RenderPassManager::doCustomPass(PassParams& params) {
                                                           !params.doPrePass,
                                                           params.pass);
     if (params.target._usage != RenderTargetUsage::COUNT) {
-        RenderTarget& target = GFX.renderTarget(params.target);
-
-
         bool drawToDepth = true;
         if (params.stage != RenderStage::SHADOW) {
-            Attorney::SceneManagerRenderPass::preRender(mgr, target);
+            Attorney::SceneManagerRenderPass::preRender(mgr, GFX.renderTarget(params.target));
             if (params.doPrePass && !Config::DEBUG_HIZ_CULLING) {
                 drawToDepth = false;
             }
         }
 
-        RTDrawDescriptor* drawPolicy = params.drawPolicy ? params.drawPolicy
-                                                         : &(!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyKeepDepth()
-                                                                                        : RenderTarget::defaultPolicy());
-        drawPolicy->drawMask().setEnabled(RTAttachment::Type::Depth, 0, drawToDepth);
+        RTDrawDescriptor& drawPolicy = params.drawPolicy ? *params.drawPolicy
+                                                         : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyKeepDepth()
+                                                                                       : RenderTarget::defaultPolicy());
+        drawPolicy.drawMask().setEnabled(RTAttachment::Type::Depth, 0, drawToDepth);
 
-        target.begin(*drawPolicy);
-    
         RenderPassCmd cmd;
         cmd._renderTarget = params.target;
-        cmd._renderTargetDescriptor = *(params.drawPolicy);|
+        cmd._renderTargetDescriptor = drawPolicy;
         GFX.renderQueueToSubPasses(cmd);
+        RenderSubPassCmds postRenderSubPasses(1);
+        Attorney::SceneManagerRenderPass::postRender(mgr, params.stage, postRenderSubPasses);
+        cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(postRenderSubPasses), std::cend(postRenderSubPasses));
         commandBuffer.push_back(cmd);
+        cleanCommandBuffer(commandBuffer);
         GFX.flushCommandBuffer(commandBuffer);
         commandBuffer.resize(0);
-
-        Attorney::SceneManagerRenderPass::postRender(mgr, params.stage);
-
-        target.end();
     }
 }
 

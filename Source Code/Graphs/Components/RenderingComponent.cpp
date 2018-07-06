@@ -50,31 +50,30 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
     }
 
     for (GFXDevice::RenderPackage& pkg : _renderData) {
-        pkg._textureData.reserve(ParamHandler::instance().getParam<I32>(_ID("rendering.maxTextureSlots"), 16));
         pkg.isOcclusionCullable(nodeType != SceneNodeType::TYPE_SKY);
     }
 
     // Prepare it for rendering lines
     RenderStateBlock primitiveStateBlock;
 
-    _boundingBoxPrimitive[0] = GFX_DEVICE.getOrCreatePrimitive(false);
+    _boundingBoxPrimitive[0] = GFX_DEVICE.newIMP();
     _boundingBoxPrimitive[0]->name("BoundingBox_" + parentSGN.getName());
     _boundingBoxPrimitive[0]->stateHash(primitiveStateBlock.getHash());
     _boundingBoxPrimitive[0]->paused(true);
 
-    _boundingBoxPrimitive[1] = GFX_DEVICE.getOrCreatePrimitive(false);
+    _boundingBoxPrimitive[1] = GFX_DEVICE.newIMP();
     _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + parentSGN.getName());
     _boundingBoxPrimitive[1]->stateHash(primitiveStateBlock.getHash());
     _boundingBoxPrimitive[1]->paused(true);
 
-    _boundingSpherePrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
+    _boundingSpherePrimitive = GFX_DEVICE.newIMP();
     _boundingSpherePrimitive->name("BoundingSphere_" + parentSGN.getName());
     _boundingSpherePrimitive->stateHash(primitiveStateBlock.getHash());
     _boundingSpherePrimitive->paused(true);
 
     if (nodeSkinned) {
         primitiveStateBlock.setZRead(false);
-        _skeletonPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
+        _skeletonPrimitive = GFX_DEVICE.newIMP();
         _skeletonPrimitive->name("Skeleton_" + parentSGN.getName());
         _skeletonPrimitive->stateHash(primitiveStateBlock.getHash());
         _skeletonPrimitive->paused(true);
@@ -90,7 +89,7 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
         // Blue Z-axis
         _axisLines.push_back(
             Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 5.0f));
-        _axisGizmo = GFX_DEVICE.getOrCreatePrimitive(false);
+        _axisGizmo = GFX_DEVICE.newIMP();
         // Prepare it for line rendering
         size_t noDepthStateBlock = GFX_DEVICE.getDefaultStateBlock(true);
         RenderStateBlock stateBlock(RenderStateBlock::get(noDepthStateBlock));
@@ -118,14 +117,12 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
 
 RenderingComponent::~RenderingComponent()
 {
-    _boundingBoxPrimitive[0]->_canZombify = true;
-    _boundingBoxPrimitive[1]->_canZombify = true;
-    _boundingSpherePrimitive->_canZombify = true;
-    if (_skeletonPrimitive) {
-        _skeletonPrimitive->_canZombify = true;
-    }
+    MemoryManager::DELETE(_boundingBoxPrimitive[0]);
+    MemoryManager::DELETE(_boundingBoxPrimitive[1]);
+    MemoryManager::DELETE(_boundingSpherePrimitive);
+    MemoryManager::DELETE(_skeletonPrimitive);
     if (Config::Build::IS_DEBUG_BUILD) {
-        _axisGizmo->_canZombify = true;
+        MemoryManager::DELETE(_axisGizmo);
     }
 }
 
@@ -187,29 +184,11 @@ void RenderingComponent::rebuildMaterial() {
 }
 
 void RenderingComponent::registerTextureDependency(const TextureData& additionalTexture) {
-    size_t inputHash = additionalTexture.getHash();
-    TextureDataContainer::const_iterator it;
-    it = std::find_if(std::begin(_textureDependencies), std::end(_textureDependencies),
-                      [&inputHash](const TextureData& textureData) { 
-                            return (textureData.getHash() == inputHash); 
-                      });
-
-    if (it == std::end(_textureDependencies)) {
-        _textureDependencies.push_back(additionalTexture);
-    }
+    _textureDependencies.addTexture(additionalTexture);
 }
 
 void RenderingComponent::removeTextureDependency(const TextureData& additionalTexture) {
-    size_t inputHash = additionalTexture.getHash();
-    TextureDataContainer::iterator it;
-    it = std::find_if(std::begin(_textureDependencies), std::end(_textureDependencies),
-                      [&inputHash](const TextureData& textureData) { 
-                            return (textureData.getHash() == inputHash); 
-                      });
-
-    if (it != std::end(_textureDependencies)) {
-        _textureDependencies.erase(it);
-    }
+    _textureDependencies.removeTexture(additionalTexture);
 }
 
 bool RenderingComponent::onRender(RenderStage currentStage) {
@@ -218,14 +197,14 @@ bool RenderingComponent::onRender(RenderStage currentStage) {
 
     GFXDevice::RenderPackage& pkg = _renderData[to_uint(currentStage)];
 
-    pkg._textureData.resize(0);
+    pkg._textureData.clear(false);
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {
         mat->getTextureData(pkg._textureData);
     }
 
-    for (const TextureData& texture : _textureDependencies) {
-        pkg._textureData.push_back(texture);
+    for (const TextureData& texture : _textureDependencies.textures()) {
+        pkg._textureData.addTexture(texture);
     }
 
     return _parentSGN.getNode()->onRender(currentStage);
@@ -371,7 +350,7 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, vec4<F
 }
 
 /// Called after the current node was rendered
-void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, RenderStage renderStage) {
+void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, RenderStage renderStage, RenderSubPassCmds& subPassesInOut) {
     
     if (renderStage != RenderStage::DISPLAY || GFX_DEVICE.isPrePass()) {
         return;
@@ -475,7 +454,14 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         }
     }
 
-    node->postRender(_parentSGN);
+    RenderSubPassCmd& subPassInOut = subPassesInOut.back();
+    subPassInOut._commands.push_back(_boundingBoxPrimitive[0]->toDrawCommand());
+    subPassInOut._commands.push_back(_boundingBoxPrimitive[1]->toDrawCommand());
+    subPassInOut._commands.push_back(_boundingSpherePrimitive->toDrawCommand());
+    if (_skeletonPrimitive) {
+        subPassInOut._commands.push_back(_skeletonPrimitive->toDrawCommand());
+    }
+    subPassInOut._commands.push_back(_axisGizmo->toDrawCommand());
 }
 
 void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,

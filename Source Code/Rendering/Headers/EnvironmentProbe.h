@@ -40,6 +40,10 @@ namespace Divide {
 class IMPrimitive;
 class ShaderProgram;
 class ImpostorSphere;
+
+struct RenderSubPassCmd;
+typedef vectorImpl<RenderSubPassCmd> RenderSubPassCmds;
+
 class EnvironmentProbe : public GUIDWrapper {
 public:
     enum class ProbeType {
@@ -65,7 +69,7 @@ public:
     F32 distanceSqTo(const vec3<F32>& pos) const;
     U32 getRTIndex() const;
 
-    void debugDraw();
+    void debugDraw(RenderSubPassCmds& subPassesInOut);
 
 protected:
     void updateInternal();

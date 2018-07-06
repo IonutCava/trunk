@@ -1,17 +1,14 @@
 #include "Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
 
 IMPrimitive::IMPrimitive(GFXDevice& context)
-    : GraphicsResource(context),
-      GUIDWrapper(),
-      _inUse(true),
-      _canZombify(true),
+    : VertexDataInterface(context),
       _forceWireframe(false),
       _paused(true),
-      _zombieCounter(0u),
       _texture(nullptr),
       _drawShader(nullptr),
       _stateHash(0)
@@ -24,11 +21,9 @@ IMPrimitive::~IMPrimitive()
 }
 
 void IMPrimitive::clear() {
-    zombieCounter(0);
     stateHash(0);
     clearRenderStates();
     _worldMatrix.identity();
-    _canZombify = true;
     _texture = nullptr;
     _drawShader = nullptr;
 }
@@ -200,4 +195,9 @@ void IMPrimitive::fromLines(const vectorImpl<Line>& lines,
         endBatch();
     }
 }
+
+void IMPrimitive::drawShader(const ShaderProgram_ptr& shaderProgram) {
+    _drawShader = shaderProgram;
+}
+
 };

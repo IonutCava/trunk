@@ -158,9 +158,9 @@ void RenderBin::populateRenderQueue(const std::atomic_bool& stopRequested, Rende
     }
 }
 
-void RenderBin::postRender(const SceneRenderState& renderState, RenderStage renderStage) {
+void RenderBin::postRender(const SceneRenderState& renderState, RenderStage renderStage, RenderSubPassCmds& subPassesInOut) {
     for (const RenderBinItem& item : _renderBinStack) {
-        Attorney::RenderingCompRenderBin::postRender(*item._renderable, renderState, renderStage);
+        Attorney::RenderingCompRenderBin::postRender(*item._renderable, renderState, renderStage, subPassesInOut);
     }
 }
 };

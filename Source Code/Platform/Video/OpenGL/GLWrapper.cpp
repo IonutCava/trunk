@@ -712,7 +712,7 @@ bool GL_API::setState(const GenericDrawCommand& cmd) {
     return cmd.shaderProgram()->bind();
 }
 
-void GL_API::draw(const GenericDrawCommand& cmd) {
+bool GL_API::draw(const GenericDrawCommand& cmd) {
     if (setState(cmd)) {
         if (cmd.sourceBuffer() == nullptr) {
             GL_API::setActiveVAO(_dummyVAO);
@@ -728,16 +728,23 @@ void GL_API::draw(const GenericDrawCommand& cmd) {
         } else {
             cmd.sourceBuffer()->draw(cmd);
         }
+
+        return true;
     }
+
+    return false;
 }
 
 void GL_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {
     U32 drawCallCount = 0;
     
     for (const RenderPassCmd& pass : commandBuffer) {
-        //RenderTarget& target = GFX_DEVICE.renderTarget(pass._renderTarget.first,
-        //                                               pass._renderTarget.second);
-        //target.begin(pass._renderTargetDescriptor);
+        RenderTarget* target = nullptr; 
+        if (pass._renderTarget._usage != RenderTargetUsage::COUNT) {
+            target = &GFX_DEVICE.renderTarget(pass._renderTarget);
+            target->begin(pass._renderTargetDescriptor);
+        }
+
         for (const RenderSubPassCmd& subPass : pass._subPassCmds) {
             makeTexturesResident(subPass._textures);
             for (const ShaderBufferBindCmd& shaderBufCmd : subPass._shaderBuffers) {
@@ -747,12 +754,7 @@ void GL_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {
             }
 
             for (const GenericDrawCommand& cmd : subPass._commands) {
-                // Set the proper render states
-                if (setState(cmd)) {
-                    /// Submit a single draw command
-                    DIVIDE_ASSERT(cmd.sourceBuffer() != nullptr, "GFXDevice error: Invalid vertex buffer submitted!");
-                    // Same rules about pre-processing the draw command apply
-                    cmd.sourceBuffer()->draw(cmd);
+                if (draw(cmd)) {
                     if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
                         drawCallCount++;
                     }
@@ -762,7 +764,10 @@ void GL_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {
                 }
             }
         }
-        //target.end();
+
+        if (target != nullptr) {
+            target->end();
+        }
     }
     
 
@@ -810,7 +815,7 @@ void GL_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
-    for (const TextureData& data : textureData) {
+    for (const TextureData& data : textureData.textures()) {
         makeTextureResident(data);
     }
 

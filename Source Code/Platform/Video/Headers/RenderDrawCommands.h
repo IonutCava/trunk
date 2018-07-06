@@ -32,7 +32,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _RENDER_DRAW_COMMANDS_H_
 #define _RENDER_DRAW_COMMANDS_H_
 
-#include "RenderAPIEnums.h"
+#include "TextureData.h"
 #include "GenericDrawCommand.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
@@ -54,8 +54,6 @@ struct ShaderBufferBindCmd {
     vec2<U32> _dataRange;
 };
 
-class TextureData;
-typedef vectorImpl<TextureData> TextureDataContainer;
 typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;
 
 struct RenderSubPassCmd {
@@ -64,10 +62,12 @@ struct RenderSubPassCmd {
     vectorImpl<ShaderBufferBindCmd> _shaderBuffers;
 };
 
+typedef vectorImpl<RenderSubPassCmd> RenderSubPassCmds;
+
 struct RenderPassCmd {
     RenderTargetID _renderTarget;
     RTDrawDescriptor _renderTargetDescriptor;
-    vectorImpl<RenderSubPassCmd> _subPassCmds;
+    RenderSubPassCmds _subPassCmds;
 };
 
 typedef vectorImpl<RenderPassCmd> CommandBuffer;

@@ -48,7 +48,7 @@ public:
     void addInfiniteProbe(const vec3<F32>& position);
     void addLocalProbe(const vec3<F32>& bbMin, const vec3<F32>& bbMax);
 
-    void debugDraw();
+    void debugDraw(RenderSubPassCmds& subPassesInOut);
 
 protected:
     EnvironmentProbeList _envProbes;

@@ -588,7 +588,7 @@ void NavigationMesh::update(const U64 deltaTime) {
     _debugDrawInterface->paused(!_debugDraw);
 }
 
-void NavigationMesh::render() {
+void NavigationMesh::draw(RenderSubPassCmds& subPassesInOut) {
     RenderMode mode = _renderMode;
 
     if (_building) {
@@ -637,6 +637,8 @@ void NavigationMesh::render() {
     _navigationMeshLock.unlock();
 
     _debugDrawInterface->endBatch();
+
+    subPassesInOut.back()._commands.push_back(_debugDrawInterface->toDrawCommand());
 }
 
 

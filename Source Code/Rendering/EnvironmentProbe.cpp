@@ -4,6 +4,7 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
@@ -27,7 +28,7 @@ EnvironmentProbe::EnvironmentProbe(ProbeType type) :
     _currentArrayIndex = allocateSlice();
 
     RenderStateBlock primitiveStateBlock;
-    _boundingBoxPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
+    _boundingBoxPrimitive = GFX_DEVICE.newIMP();
     _boundingBoxPrimitive->name(Util::StringFormat("EnvironmentProbe_%d", getGUID()));
     _boundingBoxPrimitive->stateHash(primitiveStateBlock.getHash());
 
@@ -40,7 +41,7 @@ EnvironmentProbe::EnvironmentProbe(ProbeType type) :
 EnvironmentProbe::~EnvironmentProbe()
 {
     s_availableSlices[_currentArrayIndex] = false;
-    _boundingBoxPrimitive->_canZombify = true;
+    MemoryManager::DELETE(_boundingBoxPrimitive);
 }
 
 void EnvironmentProbe::onStartup() {
@@ -126,20 +127,26 @@ U32 EnvironmentProbe::getRTIndex() const {
     return _currentArrayIndex;
 }
 
-void EnvironmentProbe::debugDraw() {
+void EnvironmentProbe::debugDraw(RenderSubPassCmds& subPassesInOut) {
     static RenderStateBlock stateBlock;
 
     _boundingBoxPrimitive->paused(false);
-    s_reflection._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::REFLECTION),
-                           RTAttachment::Type::Colour,
-                           0);
+
+    const Texture_ptr& reflectTex = s_reflection._rt->getAttachment(RTAttachment::Type::Colour, 0).asTexture();
 
     VertexBuffer* vb = _impostor->getGeometryVB();
     GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, vb->getIndexCount());
     cmd.stateHash(stateBlock.getHash());
     cmd.shaderProgram(_impostorShader);
     cmd.sourceBuffer(vb);
-    GFX_DEVICE.draw(cmd);
+
+    RenderSubPassCmd newSubPass;
+    newSubPass._textures.addTexture(TextureData(reflectTex->getTextureType(),
+                                                reflectTex->getHandle(),
+                                                to_const_ubyte(ShaderProgram::TextureUsage::REFLECTION)));
+    newSubPass._commands.push_back(cmd);
+    newSubPass._commands.push_back(_boundingBoxPrimitive->toDrawCommand());
+    subPassesInOut.push_back(newSubPass);
 }
 
 void EnvironmentProbe::updateInternal() {

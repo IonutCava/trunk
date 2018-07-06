@@ -102,7 +102,7 @@ public:
     inline void stateHash(size_t hashValue)                           { _stateHash = static_cast<U64>(hashValue); }
     inline void primitiveType(PrimitiveType type)                     { _type = type; }
     inline void shaderProgram(const ShaderProgram_ptr& program)       { _shaderProgram = program.get(); }
-    inline void sourceBuffer(VertexDataInterface* const sourceBuffer) { _sourceBuffer = sourceBuffer; }
+    inline void sourceBuffer(VertexDataInterface* sourceBuffer)       { _sourceBuffer = sourceBuffer; }
 
     inline U8 LoD()                            const { return _lodIndex; }
     inline U16 drawCount()                     const { return _drawCount; }

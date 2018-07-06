@@ -122,8 +122,6 @@ class NOINITVTABLE SceneNode : public Resource {
     virtual void setMaterialTpl(const Material_ptr& material);
     const Material_ptr& getMaterialTpl();
 
-    virtual void postRender(SceneGraphNode& sgn) const;
-
     inline void setType(const SceneNodeType& type) { _type = type; }
     inline const SceneNodeType& getType() const { return _type; }
 

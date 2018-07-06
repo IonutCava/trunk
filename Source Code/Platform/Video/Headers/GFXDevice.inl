@@ -86,8 +86,8 @@ GFXDevice::ShaderBufferBinding::set(ShaderBufferLocation slot,
 inline void 
 GFXDevice::RenderPackage::clear() {
     _shaderBuffers.resize(0);
-    _textureData.resize(0);
     _drawCommands.resize(0);
+    _textureData.clear(false);
 }
 
 inline void 

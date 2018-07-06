@@ -128,7 +128,4 @@ void SceneNode::updateDrawCommands(SceneGraphNode& sgn,
                                    GenericDrawCommands& drawCommandsInOut) {
 }
 
-void SceneNode::postRender(SceneGraphNode& sgn) const {
-}
-
 };

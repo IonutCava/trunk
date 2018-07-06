@@ -6,7 +6,10 @@
 
 namespace Divide {
 
-glIMPrimitive::glIMPrimitive(GFXDevice& context) : IMPrimitive(context)
+glIMPrimitive::glIMPrimitive(GFXDevice& context)
+    : IMPrimitive(context),
+      _shaderTextureFlag(-1),
+      _shaderWorldMatrix(-1)
 {
     _imInterface = MemoryManager_NEW NS_GLIM::GLIM_BATCH();
     _imInterface->SetVertexAttribLocation(to_const_uint(AttribLocation::VERTEX_POSITION));
@@ -51,16 +54,65 @@ void glIMPrimitive::end() {
 
 void glIMPrimitive::endBatch() {
     _imInterface->EndBatch();
+    if (IMPrimitive::drawShader() == nullptr) {
+        drawShader(ShaderProgram::defaultShader());
+    }
 }
 
-void glIMPrimitive::render(bool forceWireframe, U32 instanceCount) {
-    DIVIDE_ASSERT(_drawShader != nullptr,
-                  "glIMPrimitive error: Draw call received without a valid "
-                  "shader defined!");
-
-    _imInterface->SetShaderProgramHandle(_drawShader->getID());
-    _imInterface->RenderBatchInstanced(instanceCount,
-                                       forceWireframe || _forceWireframe);
-    zombieCounter(0);
+void glIMPrimitive::drawShader(const ShaderProgram_ptr& shaderProgram) {
+    if (shaderProgram == nullptr) {
+        // Inform the primitive that we're using the imShader
+        // A primitive can be rendered with any shader program available, so
+        // make sure we actually use the right one for this stage
+        drawShader(ShaderProgram::defaultShader());
+    } else {
+        IMPrimitive::drawShader(shaderProgram);
+        _imInterface->SetShaderProgramHandle(_drawShader->getID());
+        _shaderTextureFlag = _drawShader->getUniformLocation("useTexture");
+        _shaderWorldMatrix = _drawShader->getUniformLocation("dvd_WorldMatrix");
+    }
 }
+
+void glIMPrimitive::draw(const GenericDrawCommand& command) {
+    if (paused() || command.drawCount() == 0) {
+        return;
+    }
+
+    setupStates();
+
+    // Check if any texture is present
+    bool texture = (_texture != nullptr);
+    // And bind it to the first diffuse texture slot
+    if (texture) {
+        _texture->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    }
+
+    // Inform the shader if we have (or don't have) a texture
+    command.shaderProgram()->Uniform(_shaderTextureFlag, texture);
+    // Upload the primitive's world matrix to the shader
+    command.shaderProgram()->Uniform(_shaderWorldMatrix, worldMatrix());
+
+    _imInterface->RenderBatchInstanced(command.cmd().primCount,
+                                       command.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
+   
+    // Call any "postRender" function the primitive may have attached
+    resetStates();
+}
+
+GenericDrawCommand glIMPrimitive::toDrawCommand() const {
+    GenericDrawCommand cmd;
+    if (!paused()) {
+        DIVIDE_ASSERT(_drawShader != nullptr,
+                      "glIMPrimitive error: Draw call received without a valid shader defined!");
+
+        cmd.sourceBuffer(const_cast<glIMPrimitive*>(this));
+        cmd.shaderProgram(_drawShader);
+        cmd.stateHash(stateHash());
+    } else {
+        cmd.drawCount(0);
+    }
+
+    return cmd;
+}
+
 };

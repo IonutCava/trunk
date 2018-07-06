@@ -17,7 +17,7 @@ MemoryManager::MemoryTracker MemoryManager::AllocTracer;
 
 std::thread::id Application::_threadID;
 
-std::thread::id Application::mainThreadID() {
+const std::thread::id& Application::mainThreadID() {
     return _threadID;
 }
 
@@ -25,7 +25,7 @@ bool Application::isMainThread() {
     return (_threadID == std::this_thread::get_id());
 }
 
-void Application::mainThreadID(std::thread::id threadID) {
+void Application::mainThreadID(const std::thread::id& threadID) {
     _threadID = threadID;
 }
 
@@ -188,7 +188,7 @@ void Application::mainThreadTask(const DELEGATE_CBK<>& task, bool wait) {
     }
 }
 
-void Attorney::ApplicationTask::syncThreadToGPU(std::thread::id threadID, bool beginSync) {
+void Attorney::ApplicationTask::syncThreadToGPU(const std::thread::id& threadID, bool beginSync) {
     Attorney::KernelApplication::syncThreadToGPU(*Application::instance()._kernel, threadID, beginSync);
 }
 

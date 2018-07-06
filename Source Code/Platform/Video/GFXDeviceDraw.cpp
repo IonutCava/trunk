@@ -43,12 +43,14 @@ bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
         return false;
     }
 
-    vectorAlg::vecSize textureCount = other._textureData.size();
-    if (_textureData.size() == textureCount) {
+    const vectorImpl<TextureData>& textures = _textureData.textures();
+    const vectorImpl<TextureData>& otherTextures = other._textureData.textures();
+    vectorAlg::vecSize textureCount = otherTextures.size();
+    if (textures.size() == textureCount) {
         U64 handle1 = 0, handle2 = 0;
         for (vectorAlg::vecSize i = 0; i < textureCount; ++i) {
-            const TextureData& data1 = _textureData[i];
-            const TextureData& data2 = other._textureData[i];
+            const TextureData& data1 = textures[i];
+            const TextureData& data2 = otherTextures[i];
             data1.getHandle(handle1);
             data2.getHandle(handle2);
             if (handle1 != handle2 ||
@@ -113,7 +115,6 @@ void GFXDevice::renderQueueToSubPasses(RenderPassCmd& commandsInOut) {
         }
         renderQueue.unlock();
     }
-    lock.unlock();
 }
 
 void GFXDevice::flushCommandBuffer(const CommandBuffer& commandBuffer) {
@@ -257,7 +258,7 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
             if (refreshNodeData) {
                 NodeData& dataOut = processVisibleNode(*nodeRef, nodeCount);
                 if (isDepthStage()) {
-                    for (TextureData& data : pkg._textureData) {
+                    for (TextureData& data : pkg._textureData.textures()) {
                         if (data.getHandleLow() == to_const_uint(ShaderProgram::TextureUsage::UNIT0)) {
                             textureHandle = data.getHandleHigh();
                             if ((!(lastUnit0Handle == 0 || textureHandle == lastUnit0Handle) &&
@@ -358,15 +359,19 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
     return false;
 }
 
-void GFXDevice::draw(const GenericDrawCommand& cmd) {
+bool GFXDevice::draw(const GenericDrawCommand& cmd) {
     uploadGPUBlock();
-    _api->draw(cmd);
-    if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
-        registerDrawCall();
+    if (_api->draw(cmd)) {
+        if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
+            registerDrawCall();
+        }
+        if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
+            registerDrawCall();
+        }
+        return true;
     }
-    if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
-        registerDrawCall();
-    }
+
+    return false;
 }
 
 

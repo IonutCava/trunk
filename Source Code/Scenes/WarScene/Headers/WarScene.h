@@ -62,6 +62,7 @@ class WarScene : public Scene {
 
     void registerPoint(U8 teamID, const stringImpl& unitName);
     void printMessage(U8 eventId, const stringImpl& unitName);
+    void debugDraw(RenderStage stage, RenderSubPassCmds& subPassesInOut);
 
    private:
     void startSimulation(I64 btnGUID);

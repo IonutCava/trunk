@@ -34,11 +34,11 @@ void DX_API::updateClipPlanes() {}
 
 void DX_API::drawText(const TextLabel& textLabel, const vec2<F32>& position, size_t stateHash) {}
 
-void DX_API::draw(const GenericDrawCommand& cmd) {}
+bool DX_API::draw(const GenericDrawCommand& cmd) { return false; }
 
 void DX_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {}
 
-void DX_API::syncToThread(std::thread::id threadID) {}
+void DX_API::syncToThread(const std::thread::id& threadID) {}
 
 size_t DX_API::setStateBlock(size_t stateBlockHash) { return 0; }
 

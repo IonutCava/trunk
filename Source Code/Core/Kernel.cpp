@@ -676,7 +676,7 @@ bool Kernel::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
     return false;
 }
 
-void Attorney::KernelApplication::syncThreadToGPU(Kernel& kernel, std::thread::id threadID, bool beginSync) {
+void Attorney::KernelApplication::syncThreadToGPU(Kernel& kernel, const std::thread::id& threadID, bool beginSync) {
     kernel._GFX.syncThreadToGPU(threadID, beginSync);
 }
 

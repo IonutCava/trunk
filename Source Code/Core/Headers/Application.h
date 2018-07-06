@@ -81,8 +81,8 @@ namespace Attorney {
 DEFINE_SINGLETON(Application)
     friend class Attorney::ApplicationTask;
   public:
-    static bool             isMainThread();
-    static std::thread::id  mainThreadID();
+    static bool                    isMainThread();
+    static const std::thread::id&  mainThreadID();
 
     /// Startup and shutdown
     ErrorCode start(const stringImpl& entryPoint, I32 argc, char** argv);
@@ -129,7 +129,7 @@ DEFINE_SINGLETON(Application)
 
     Application();
     ~Application();
-    static void mainThreadID(std::thread::id threadID);
+    static void mainThreadID(const std::thread::id& threadID);
 
     //ToDo: Remove this hack - Ionut
     void warmup();
@@ -163,7 +163,7 @@ namespace Attorney {
     private:
         // threadID = calling thread
         // beginSync = true, called before thread processes data / false, called when thread finished processing data
-        static void syncThreadToGPU(std::thread::id threadID, bool beginSync);
+        static void syncThreadToGPU(const std::thread::id& threadID, bool beginSync);
 
         friend class Divide::Task;
     };
