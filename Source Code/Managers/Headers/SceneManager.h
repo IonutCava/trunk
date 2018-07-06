@@ -185,7 +185,9 @@ protected:
     void postRender(const Camera& camera, RenderStage stage, RenderSubPassCmds& subPassesInOut);
     bool generateShadowMaps();
     bool populateRenderQueue(RenderStage stage,
+        const Camera& camera,
         bool doCulling,
+        bool isPrePass,
         U32 passIndex);
     Camera* getActiveCamera() const;
     void currentPlayerPass(U8 playerIndex);
@@ -290,9 +292,11 @@ class SceneManagerRenderPass {
    private:
     static bool populateRenderQueue(Divide::SceneManager& mgr,
                                     RenderStage stage,
+                                    const Camera& camera,
                                     bool doCulling,
+                                    bool isPrePass,
                                     U32 passIndex) {
-        return mgr.populateRenderQueue(stage, doCulling, passIndex);
+        return mgr.populateRenderQueue(stage, camera, doCulling, isPrePass, passIndex);
     }
 
     static void preRender(Divide::SceneManager& mgr, const Camera& camera, RenderTarget& target) {

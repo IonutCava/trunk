@@ -142,7 +142,7 @@ void RenderQueue::populateRenderQueues(RenderStage renderStage) {
                                                  DELEGATE_BIND(&RenderBin::populateRenderQueue,
                                                                renderBin,
                                                                std::placeholders::_1,
-                                                               renderStage))._task)->startTask(Task::TaskPriority::HIGH);      
+                                                               renderStage))._task)->startTask(Task::TaskPriority::HIGH);
         }
     }
     populateTask.startTask(Task::TaskPriority::MAX);

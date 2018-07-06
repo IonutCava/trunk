@@ -165,8 +165,9 @@ struct TaskHandle {
     }
 
     inline void wait() {
-        assert(_task != nullptr);
-        _task->wait();
+        if (_task != nullptr) {
+            _task->wait();
+        }
     }
 
     Task* _task;

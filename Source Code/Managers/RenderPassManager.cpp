@@ -51,7 +51,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState) {
             [rp](const Task& parentTask) mutable
             {
                 rp->generateDrawCommands();
-        }));
+            }));
         _renderCmdTasks[i].startTask(Task::TaskPriority::HIGH);
     }
 
@@ -161,6 +161,8 @@ void RenderPassManager::doCustomPass(PassParams& params) {
         
         Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
                                                               params.stage,
+                                                              *params.camera,
+                                                              true,
                                                               true,
                                                               params.pass);
 
@@ -195,7 +197,9 @@ void RenderPassManager::doCustomPass(PassParams& params) {
 
     Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
                                                           params.stage,
+                                                          *params.camera,
                                                           !params.doPrePass,
+                                                          false,
                                                           params.pass);
     if (params.target._usage != RenderTargetUsage::COUNT) {
         bool drawToDepth = true;

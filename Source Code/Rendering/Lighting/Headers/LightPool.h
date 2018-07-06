@@ -110,8 +110,9 @@ class LightPool : public SceneComponent {
     /// shadow mapping
     void previewShadowMaps(Light* light);
 
-    void updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
-    void uploadLightData(ShaderBufferLocation location);
+    void prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
+    void uploadLightData(ShaderBufferLocation lightDataLocation,
+                         ShaderBufferLocation shadowDataLocation);
 
     void drawLightImpostors(RenderSubPassCmds& subPassesInOut) const;
 
@@ -160,7 +161,7 @@ class LightPool : public SceneComponent {
   private:
     GFXDevice& _context;
 
-    vectorImpl<TaskHandle> _lightCullTasks;
+    vectorImpl<TaskHandle> _lightUpdateTask;
 
     std::array<bool, to_const_uint(LightType::COUNT)> _lightTypeState;
     std::array<Light::LightList, to_const_uint(LightType::COUNT)> _lights;
@@ -171,10 +172,14 @@ class LightPool : public SceneComponent {
 
     std::array<ShaderBuffer*, to_const_uint(ShaderBufferType::COUNT)>  _lightShaderBuffer;
 
-    typedef std::array<LightProperties, Config::Lighting::MAX_POSSIBLE_LIGHTS> LightPropertiesArray;
-    std::array<LightPropertiesArray, to_const_uint(LightType::COUNT)> _lightProperties;
-    std::array<Light::ShadowProperties, Config::Lighting::MAX_POSSIBLE_LIGHTS> _lightShadowProperties;
-    std::array<Light*, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _shadowCastingLights;
+    typedef vectorImpl<LightProperties> LightPropertiesVec;
+    typedef vectorImpl<Light::ShadowProperties> LightShadowProperties;
+    typedef vectorImpl<Light*> LightVec;
+
+    LightVec _sortedLights;
+    LightVec _sortedShadowCastingLights;
+    LightPropertiesVec _sortedLightProperties;
+    LightShadowProperties _sortedShadowProperties;
 
     GUID_DELEGATE_CBK _previewShadowMapsCBK;
     Time::ProfileTimer& _shadowPassTimer;

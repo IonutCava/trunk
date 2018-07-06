@@ -148,7 +148,11 @@ void glPersistentBuffer::updateData(size_t offset, size_t range, const bufferPtr
 {
     _lockManager->WaitForLockedRange(offset, range, true);
     assert(_mappedBuffer != nullptr && "PersistentBuffer::UpdateData error: was called for an unmapped buffer!");
-    memcpy((U8*)(_mappedBuffer)+offset, data, range);
+    if (data) {
+        memcpy((U8*)(_mappedBuffer)+offset, data, range);
+    } else {
+        memset((U8*)(_mappedBuffer)+offset, NULL, range);
+    }
 }
 
 void glPersistentBuffer::readData(size_t offset, size_t range, const bufferPtr data)

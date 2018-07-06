@@ -433,7 +433,6 @@ void SceneManager::preRender(const Camera& camera, RenderTarget& target) {
     const GFXDevice& gfx = _platformContext->gfx();
 
     LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
-    lightPool->updateAndUploadLightData(camera.getEye(), gfx.getMatrix(MATRIX::VIEW));
     gfx.getRenderer().preRender(target, *lightPool);
 
     if (gfx.getRenderStage() == RenderStage::DISPLAY) {
@@ -629,11 +628,15 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, b
 }
 
 bool SceneManager::populateRenderQueue(RenderStage stage, 
+                                       const Camera& camera,
                                        bool doCulling,
+                                       bool isPrePass,
                                        U32 passIndex) {
 
-    RenderQueue& queue = parent().renderPassManager().getQueue();
-    bool isPrePass = _platformContext->gfx().isPrePass();
+    if (!isPrePass) {
+        LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
+        lightPool->prepareLightData(camera.getEye(), _platformContext->gfx().getMatrix(MATRIX::VIEW));
+    }
 
     if (doCulling) {
         Time::ScopedTimer timer(*_sceneGraphCullTimers[isPrePass ? 0 : 1][to_uint(stage)]);
@@ -642,6 +645,7 @@ bool SceneManager::populateRenderQueue(RenderStage stage,
 
     updateVisibleNodes(stage, doCulling, isPrePass, passIndex);
 
+    RenderQueue& queue = parent().renderPassManager().getQueue();
     if (getActiveScene().renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
         queue.populateRenderQueues(isPrePass ? RenderStage::Z_PRE_PASS : stage);
     }

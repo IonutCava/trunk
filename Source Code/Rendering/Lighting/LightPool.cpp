@@ -14,6 +14,10 @@
 
 namespace Divide {
 
+namespace {
+    const bool g_usePersistentMapping = false;
+};
+
 std::array<U8, to_const_uint(ShadowType::COUNT)> LightPool::_shadowLocation = { {
     to_const_ubyte(ShaderProgram::TextureUsage::COUNT) + 2u, //Single
     to_const_ubyte(ShaderProgram::TextureUsage::COUNT) + 3u, //Layered
@@ -35,9 +39,7 @@ LightPool::LightPool(Scene& parentScene, GFXDevice& context)
      // shadowPassTimer is used to measure the CPU-duration of shadow map generation step
      _shadowPassTimer(Time::ADD_TIMER("Shadow Pass Timer"))
 {
-    _activeLightCount.fill(0);
     _lightTypeState.fill(true);
-    _shadowCastingLights.fill(nullptr);
     // NORMAL holds general info about the currently active
     // lights: position, colour, etc.
     _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = nullptr;
@@ -47,6 +49,11 @@ LightPool::LightPool(Scene& parentScene, GFXDevice& context)
     _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = nullptr;
 
     ParamHandler::instance().setParam<bool>(_ID("rendering.debug.displayShadowDebugInfo"), false);
+
+    _sortedLights.reserve(Config::Lighting::MAX_POSSIBLE_LIGHTS);
+    _sortedShadowCastingLights.reserve(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+    _sortedLightProperties.reserve(Config::Lighting::MAX_POSSIBLE_LIGHTS);
+    _sortedShadowProperties.reserve(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
     init();
 }
@@ -65,14 +72,14 @@ void LightPool::init() {
     // NORMAL holds general info about the currently active lights: position, colour, etc.
     _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = _context.newSB(1,
                                                                                  true,
-                                                                                 false,
+                                                                                 g_usePersistentMapping,
                                                                                  BufferUpdateFrequency::OCASSIONAL);
     // SHADOWS holds info about the currently active shadow casting lights:
     // ViewProjection Matrices, View Space Position, etc
     // Should be SSBO (not UBO) to use std430 alignment. Structures should not be padded
     _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = _context.newSB(1,
                                                                                  true,
-                                                                                 false,
+                                                                                 g_usePersistentMapping,
                                                                                  BufferUpdateFrequency::OCASSIONAL);
 
     _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]
@@ -173,7 +180,7 @@ bool LightPool::generateShadowMaps(GFXDevice& context, SceneRenderState& sceneRe
     Time::ScopedTimer timer(_shadowPassTimer);
     // generate shadowmaps for each light
     I32 idx = 0;
-    for (Light* light : _shadowCastingLights) {
+    for (Light* light : _sortedShadowCastingLights) {
         if(light != nullptr) {
             _currentShadowCastingLight = light;
             light->validateOrCreateShadowMaps(context, sceneRenderState);
@@ -209,7 +216,7 @@ void LightPool::previewShadowMaps(Light* light) {
     // If no light is specified show as many shadowmaps as possible
     if (!light) {
         U32 rowIndex = 0;
-        for (Light* shadowLight : _shadowCastingLights) {
+        for (Light* shadowLight : _sortedShadowCastingLights) {
             if (shadowLight != nullptr &&
                 shadowLight->getShadowMapInfo()->getShadowMap() != nullptr)
             {
@@ -247,100 +254,110 @@ Light* LightPool::getLight(I64 lightGUID, LightType type) {
     return *it;
 }
 
-void LightPool::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
-    // Sort all lights (Sort in parallel by type)
-    TaskPool& pool = Application::instance().kernel().taskPool();
-    _lightCullTasks.clear();
-    _lightCullTasks.reserve(to_const_uint(LightType::COUNT));
-    for (U8 i = 0; i < to_const_uint(LightType::COUNT); ++i) {
-        Light::LightList& lights = _lights[i];
-        if (!lights.empty()) {
-            _lightCullTasks.emplace_back(CreateTask(pool,
-                [&eyePos, &lights](const Task& parentTask) mutable
-                {
-                    std::sort(std::begin(lights), std::end(lights),
-                              [&eyePos](Light* a, Light* b) -> bool
-                    {
-                        return a->getPosition().distanceSquared(eyePos) <
-                               b->getPosition().distanceSquared(eyePos);
-                    });
-            }));
-            _lightCullTasks.back().startTask(Task::TaskPriority::HIGH);
-        }
+void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
+    for (TaskHandle& task : _lightUpdateTask) {
+        task.wait();
     }
 
-    vec3<F32> tempColour;
+    _lightUpdateTask.clear();
     // Create and upload light data for current pass
     _activeLightCount.fill(0);
-    _shadowCastingLights.fill(nullptr);
-    U32 totalLightCount = 0;
-    U32 lightShadowPropertiesCount = 0;
-    for (U8 i = 0; i < to_const_uint(LightType::COUNT); ++i) {
-        Light::LightList& lights = _lights[i];
-        if (!lights.empty()) {
-            _lightCullTasks[i].wait();
-        }
-        for (Light* light : lights) {
-            LightType type = light->getLightType();
-            U32 typeUint = to_uint(type);
+    // Sort all lights (Sort in parallel by type)
+    TaskPool& pool = Application::instance().kernel().taskPool();
 
-            if (!light->getEnabled() || !_lightTypeState[typeUint]) {
+    _sortedLights.resize(0);
+    _sortedShadowCastingLights.resize(0);
+    _sortedLightProperties.resize(0);
+    _sortedShadowProperties.resize(0);
+
+    for (U8 i = 0; i < to_const_uint(LightType::COUNT); ++i) {
+        _sortedLights.insert(std::end(_sortedLights), std::begin(_lights[i]), std::end(_lights[i]));
+    }
+
+    auto lightUpdate = [this, &eyePos, &viewMatrix](const Task& parentTask) mutable
+    {
+        std::sort(std::begin(_sortedLights),
+                    std::end(_sortedLights),
+                    [&eyePos](Light* a, Light* b) -> bool
+        {
+            return a->getPosition().distanceSquared(eyePos) <
+                    b->getPosition().distanceSquared(eyePos);
+        });
+
+        U32 totalLightCount = 0;
+        vec3<F32> tempColour;
+        for (Light* light : _sortedLights) {
+            LightType type = static_cast<LightType>(light->getLightType());
+            I32 typeIndex = to_int(type);
+
+            if (!light->getEnabled() || !_lightTypeState[typeIndex]) {
                 continue;
             }
-
             if (totalLightCount >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
                 break;
             }
 
-            LightProperties& temp = _lightProperties[typeUint][_activeLightCount[typeUint]];
+            _sortedLightProperties.emplace_back();
+            LightProperties& temp = _sortedLightProperties.back();
             light->getDiffuseColour(tempColour);
             temp._diffuse.set(tempColour, light->getSpotCosOuterConeAngle());
             // Non directional lights are positioned at specific point in space
             // So we need W = 1 for a valid positional transform
             // Directional lights use position for the light direction. 
             // So we need W = 0 for an infinite distance.
-            temp._position.set(viewMatrix.transform(light->getPosition(), type != LightType::DIRECTIONAL),
-                               light->getRange());
+            temp._position.set(viewMatrix.transform(light->getPosition(), type != LightType::DIRECTIONAL), light->getRange());
             // spot direction is not considered a point in space, so W = 0
-            temp._direction.set(viewMatrix.transformNonHomogeneous(light->getSpotDirection()),
-                                light->getSpotAngle());
+            temp._direction.set(viewMatrix.transformNonHomogeneous(light->getSpotDirection()), light->getSpotAngle());
 
-            temp._options.x = typeUint;
+            temp._options.x = typeIndex;
             temp._options.y = light->castsShadows();
             if (light->getLightType() == LightType::DIRECTIONAL) {
                 temp._options.w = static_cast<DirectionalLight*>(light)->csmSplitCount();
             }
 
-            if (light->castsShadows() &&
-                lightShadowPropertiesCount < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
-
-                temp._options.z = to_int(lightShadowPropertiesCount);
-                _lightShadowProperties[lightShadowPropertiesCount] = light->getShadowProperties();
-                _shadowCastingLights[lightShadowPropertiesCount] = light;
-                lightShadowPropertiesCount++;
+            if (light->castsShadows() && _sortedShadowProperties.size() < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
+                temp._options.z = to_int(_sortedShadowProperties.size());
+                _sortedShadowProperties.emplace_back(light->getShadowProperties());
+                _sortedShadowCastingLights.emplace_back(light);
             }
-
-            totalLightCount++;
-            _activeLightCount[typeUint]++;
+            ++totalLightCount;
+            ++_activeLightCount[typeIndex];
         }
-    }
 
-    // Passing 0 elements is fine (early out in the buffer code)
-    U32 offset = 0;
-    for (U32 type = 0; type < to_const_uint(LightType::COUNT); ++type) {
-        U32 range = _activeLightCount[type];
-        _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->updateData(offset, range, _lightProperties[type].data());
-        offset = range;
-    }
+        // Passing 0 elements is fine (early out in the buffer code)
+        vectorAlg::vecSize lightPropertyCount = _sortedLightProperties.size();
+        vectorAlg::vecSize lightShadowCount = _sortedShadowProperties.size();
 
-    uploadLightData(ShaderBufferLocation::LIGHT_NORMAL);
-    
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->updateData(0, lightShadowPropertiesCount, _lightShadowProperties.data());
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->bind(ShaderBufferLocation::LIGHT_SHADOW);
+        lightPropertyCount = std::min(lightPropertyCount, static_cast<size_t>(Config::Lighting::MAX_POSSIBLE_LIGHTS));
+        lightShadowCount = std::min(lightShadowCount, static_cast<size_t>(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS));
+
+        if (lightPropertyCount > 0) {
+            _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->updateData(0, lightPropertyCount, _sortedLightProperties.data());
+        } else {
+            _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->setData(nullptr);
+        }
+
+        if (lightShadowCount > 0) {
+            _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->updateData(0, lightShadowCount, _sortedShadowProperties.data());
+        } else {
+            _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->setData(nullptr);
+        }
+    };
+
+    if (!_sortedLights.empty()) {
+        _lightUpdateTask.emplace_back(CreateTask(pool, lightUpdate));
+        _lightUpdateTask.back().startTask(Task::TaskPriority::HIGH, g_usePersistentMapping ? 0 : to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
+    }
 }
 
-void LightPool::uploadLightData(ShaderBufferLocation location) {
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->bind(location);
+void LightPool::uploadLightData(ShaderBufferLocation lightDataLocation,
+                                ShaderBufferLocation shadowDataLocation) {
+    for (TaskHandle& task : _lightUpdateTask) {
+        task.wait();
+    }
+
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->bind(lightDataLocation);
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->bind(shadowDataLocation);
 }
 
 void LightPool::drawLightImpostors(RenderSubPassCmds& subPassesInOut) const {

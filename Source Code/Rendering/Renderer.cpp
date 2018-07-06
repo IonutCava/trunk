@@ -1,6 +1,7 @@
 #include "Headers/Renderer.h"
 
 #include "Core/Headers/PlatformContext.h"
+#include "Rendering/Lighting/Headers/LightPool.h"
 
 namespace Divide {
 
@@ -18,6 +19,9 @@ Renderer::~Renderer()
 }
 
 void Renderer::preRender(RenderTarget& target, LightPool& lightPool) {
+    lightPool.uploadLightData(ShaderBufferLocation::LIGHT_NORMAL,
+                              ShaderBufferLocation::LIGHT_SHADOW);
+
     Attorney::GFXDeviceRenderer::uploadGPUBlock(_context.gfx());
 }
 };
