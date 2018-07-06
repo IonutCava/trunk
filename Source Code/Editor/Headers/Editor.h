@@ -153,7 +153,7 @@ class Editor : public PlatformContextComponent,
     bool renderMinimal(const U64 deltaTime);
     bool renderFull(const U64 deltaTime);
     bool needInput();
-
+    void checkPreviewRectState();
 
   protected: // window events
     bool OnClose();
@@ -162,10 +162,10 @@ class Editor : public PlatformContextComponent,
     void OnUTF8(const char* text);
     void dim(bool hovered, bool focused);
     bool toggleScenePreview(bool state);
-    void setScenePreviewRect(const Rect<I32>& rect, bool hovered);
+    void setScenePreviewRect(const Rect<I32>& rect);
 
   protected: // attorney
-    void renderDrawList(ImDrawData* pDrawData, I64 windowGUID);
+    void renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPass);
     void savePanelLayout() const;
     void loadPanelLayout();
     void saveTabLayout() const;
@@ -176,7 +176,9 @@ class Editor : public PlatformContextComponent,
     void showSampleWindow(bool state);
     bool showDebugWindow() const;
     bool showSampleWindow() const;
+
     void setTransformSettings(const TransformSettings& settings);
+    const TransformSettings& getTransformSettings() const;
 
   private:
     Theme _currentTheme;
@@ -193,6 +195,7 @@ class Editor : public PlatformContextComponent,
 
     bool              _running;
     bool              _sceneHovered;
+    bool              _gizmosVisible;
     bool              _sceneWasHovered;
     bool              _scenePreviewFocused;
     bool              _scenePreviewWasFocused;
@@ -224,12 +227,16 @@ namespace Attorney {
     class EditorPanelManager {
         //private:
         public: //ToDo: fix this -Ionut
-        static void setScenePreviewRect(Editor& editor, const Rect<I32>& rect, bool hovered) {
-            editor.setScenePreviewRect(rect, hovered);
+        static void setScenePreviewRect(Editor& editor, const Rect<I32>& rect) {
+            editor.setScenePreviewRect(rect);
         }
 
         static void setTransformSettings(Editor& editor, const TransformSettings& settings) {
             editor.setTransformSettings(settings);
+        }
+
+        static const TransformSettings& getTransformSettings(const Editor& editor) {
+            return editor.getTransformSettings();
         }
 
         static void savePanelLayout(const Editor& editor) {

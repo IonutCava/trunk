@@ -414,7 +414,7 @@ bool WarScene::deinitializeAI(bool continueOnErrors) {
 }
 
 void WarScene::startSimulation(I64 btnGUID) {
-    if (g_navMeshStarted) {
+    if (g_navMeshStarted || _armyNPCs[0].empty()) {
         return;
     }
 

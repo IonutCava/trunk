@@ -177,8 +177,7 @@ void Kernel::onLoop() {
         {
             Time::ScopedTimer timer3(_frameTimer);
             // Launch the FRAME_STARTED event
-            frameMgr.createEvent(Time::ElapsedMicroseconds(), FrameEventType::FRAME_EVENT_STARTED, evt);
-            _timingData._keepAlive = frameMgr.frameEvent(evt);
+            _timingData._keepAlive = frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(), FrameEventType::FRAME_EVENT_STARTED, evt);
 
             U64 deltaTimeUS = 0ULL;
             if (!_timingData.freezeTime()) {
@@ -190,15 +189,13 @@ void Kernel::onLoop() {
             _timingData._keepAlive = mainLoopScene(evt, deltaTimeUS) && _timingData._keepAlive;
 
             // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
-            frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_PROCESS, evt);
-
-            _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
+            _timingData._keepAlive = _timingData._keepAlive && frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_PROCESS, evt);
         }
         _platformContext->endFrame();
 
         // Launch the FRAME_ENDED event (buffers have been swapped)
-        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_ENDED, evt);
-        _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
+
+        _timingData._keepAlive = _timingData._keepAlive && frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_ENDED, evt);
 
         _timingData._keepAlive = !_platformContext->app().ShutdownRequested() && _timingData._keepAlive;
     
@@ -496,9 +493,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 
     {
         Time::ScopedTimer time1(_preRenderTimer);
-        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_PRERENDER_START, evt);
-
-        if (!frameMgr.frameEvent(evt)) {
+        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_PRERENDER_START, evt)) {
             return false;
         }
 
@@ -507,8 +502,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
             return false;
         }
 
-        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_PRERENDER_END, evt);
-        if (!frameMgr.frameEvent(evt)) {
+        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_PRERENDER_END, evt)) {
             return false;
         }
     }
@@ -520,7 +514,10 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
     computeViewports(mainViewport, targetViewports, playerCount);
 
     for (U8 i = 0; i < playerCount; ++i) {
-        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_START, evt);
+        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_START, evt)) {
+            return false;
+        }
+
         Attorney::SceneManagerKernel::currentPlayerPass(*_sceneManager, i);
         {
             Time::ScopedTimer time2(getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer"));
@@ -530,7 +527,10 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
             Time::ScopedTimer time3(getTimer(_flushToScreenTimer, _postFxRenderTimer, i, "PostFX Timer"));
             PostFX::instance().apply();
         }
-        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_END, evt);
+
+        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_END, evt)) {
+            return false;
+        }
         {
             Time::ScopedTimer time4(getTimer(_flushToScreenTimer, _blitToDisplayTimer, i, "Blit to screen Timer"));
             if (Config::Build::ENABLE_EDITOR && _platformContext->editor().running()) {
@@ -552,15 +552,11 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 
     {
         Time::ScopedTimer time5(_postRenderTimer);
-        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_START, evt);
-
-        if (!frameMgr.frameEvent(evt)) {
+        if(!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_START, evt)) {
             return false;
         }
 
-        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_END, evt);
-
-        if (!frameMgr.frameEvent(evt)) {
+        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_END, evt)) {
             return false;
         }
     }

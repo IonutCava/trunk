@@ -55,6 +55,8 @@ DEFINE_SINGLETON(FrameListenerManager)
     /// pass the current time in microseconds as the first parameter
     void createEvent(const U64 currentTimeUS, FrameEventType type, FrameEvent& evt);
 
+    /// Calls createEvent and frameEvent
+    bool createAndProcessEvent(const U64 currentTimeUS, FrameEventType type, FrameEvent& evt);
   private:
     FrameListenerManager();
     ~FrameListenerManager();

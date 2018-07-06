@@ -1311,6 +1311,11 @@ class Rect : public vec4<T> {
     inline bool contains(T _x, T _y) const {
         return COORDS_IN_RECT(_x, _y, *this);
     }
+
+    template<typename U>
+    inline bool contains(U _x, U _y) const {
+        return COORDS_IN_RECT(static_cast<T>(_x), static_cast<T>(_y), *this);
+    }
 };
 
 };  // namespace Divide

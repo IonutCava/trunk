@@ -670,7 +670,7 @@ class GUID_DELEGATE_CBK : public GUIDWrapper {
 U32 HARDWARE_THREAD_COUNT();
 
 template<typename T, typename U>
-constexpr void assert_type(const U& value) {
+constexpr void assert_type(const U& ) {
     static_assert(std::is_same<U, T>::value, "value type not satisfied");
 }
 

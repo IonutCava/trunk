@@ -225,12 +225,9 @@ namespace Divide {
                             const ImGuiID id = (ImGuiID)((U64)mgr) + 1;
                             ImGui::PushID(id);
 
-                            bool sceneHovered = false;
-                            ImGui::ButtonBehavior(ImRect(startPos, endPos), id, &sceneHovered, NULL);
-
                             window->DrawList->AddImage((void *)(intptr_t)gameView->getHandle(), startPos, endPos, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
 
-                            Attorney::EditorPanelManager::setScenePreviewRect(mgr->context().editor(), Rect<I32>(startPos.x, startPos.y, endPos.x, endPos.y), sceneHovered);
+                            Attorney::EditorPanelManager::setScenePreviewRect(mgr->context().editor(), Rect<I32>(startPos.x, startPos.y, endPos.x, endPos.y));
 
                             ImGui::PopID();
                         }
@@ -981,5 +978,9 @@ namespace Divide {
 
     void PanelManager::setTransformSettings(const TransformSettings& settings) {
         Attorney::EditorPanelManager::setTransformSettings(context().editor(), settings);
+    }
+
+    const TransformSettings& PanelManager::getTransformSettings() const {
+        return Attorney::EditorPanelManager::getTransformSettings(context().editor());
     }
 }; //namespace Divide

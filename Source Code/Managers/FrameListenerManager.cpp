@@ -191,6 +191,11 @@ void FrameListenerManager::createEvent(const U64 currentTimeUS, FrameEventType t
     evt._type = type;
 }
 
+bool FrameListenerManager::createAndProcessEvent(const U64 currentTimeUS, FrameEventType type, FrameEvent& evt) {
+    createEvent(currentTimeUS, type, evt);
+    return frameEvent(evt);
+}
+
 U64 FrameListenerManager::calculateEventTime(const U64 currentTimeUS, FrameEventType type) {
     EventTimeMap& times = _eventTimers[to_U32(type)];
     times.push_back(currentTimeUS);

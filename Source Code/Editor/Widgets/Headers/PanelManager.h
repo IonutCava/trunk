@@ -104,6 +104,7 @@ namespace Divide {
         }
 
         void setTransformSettings(const TransformSettings& settings);
+        const TransformSettings& getTransformSettings() const;
 
       protected:
         F32 calcMainMenuHeight();

@@ -63,6 +63,7 @@ Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Them
       _scenePreviewWasFocused(false),
       _showDebugWindow(false),
       _showSampleWindow(false),
+      _gizmosVisible(false),
       _activeWindowGUID(0),
       _consoleCallbackIndex(0),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
@@ -300,22 +301,23 @@ bool Editor::frameRenderingQueued(const FrameEvent& evt) {
 }
 
 bool Editor::renderGizmos(const U64 deltaTime) {
-    //const Camera* utilityCam = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
-    const Camera* utilityCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager(), 0);
-    const mat4<F32>& cameraView = utilityCam->getViewMatrix();
-    const mat4<F32>& cameraProjection = utilityCam->getProjectionMatrix();
-    
-    ImGuizmo::DrawCube(cameraView, cameraProjection, mat4<F32>());
-
+    ACKNOWLEDGE_UNUSED(deltaTime);
+   
     TransformValues valuesOut;
     if (!_selectedNodes.empty()) {
         SceneGraphNode* sgn = _selectedNodes.front();
         if (sgn != nullptr) {
             TransformComponent* const transform = sgn->get<TransformComponent>();
             if (transform != nullptr) {
-                mat4<F32> matrix = transform->getWorldMatrix();
-                ImGuiIO& io = ImGui::GetIO();
+                const ImGuiIO& io = ImGui::GetIO();
+                const Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
+                const mat4<F32>& cameraView = camera->getViewMatrix();
+                const mat4<F32>& cameraProjection = camera->getProjectionMatrix();
+
+                mat4<F32> matrix(transform->getWorldMatrix());
+
                 ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+
                 ImGuizmo::Manipulate(cameraView,
                                      cameraProjection,
                                      _transformSettings.currentGizmoOperation,
@@ -329,12 +331,12 @@ bool Editor::renderGizmos(const U64 deltaTime) {
                 values._orientation.fromEuler(euler);
                 transform->setTransform(values);
 
-                
+                return true;
             }
         }
     }
 
-    return true;
+    return false;
 }
 
 bool Editor::renderMinimal(const U64 deltaTime) {
@@ -352,23 +354,30 @@ bool Editor::renderMinimal(const U64 deltaTime) {
 bool Editor::renderFull(const U64 deltaTime) {
     drawMenuBar();
     _panelManager->draw(deltaTime);
-    if (renderMinimal(deltaTime)) {
-        return renderGizmos(deltaTime);
-    }
-
-    return false;
+    return renderMinimal(deltaTime);
 }
 
 bool Editor::frameSceneRenderEnded(const FrameEvent& evt) {
+
     if (!_running) {
     //    return true;
     }
 
-    ImGui::NewFrame();
-    ImGuizmo::BeginFrame();
-    renderGizmos(evt._timeSinceLastFrameUS);
-    ImGui::Render();
-    renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID());
+    _gizmosVisible = false;
+    if (!_selectedNodes.empty()) {
+        SceneGraphNode* sgn = _selectedNodes.front();
+        if (sgn != nullptr) {
+
+            ImGui::NewFrame();
+            ImGuizmo::BeginFrame();
+            if (renderGizmos(evt._timeSinceLastFrameUS)) {
+                ImGui::Render();
+                renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID(), false);
+                _gizmosVisible = true;
+            }
+        }
+    }
+
     return true;
 }
 
@@ -390,7 +399,7 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     }
   
     ImGui::Render();
-    renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID());
+    renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID(), true);
     
     return true;
 }
@@ -438,6 +447,10 @@ void Editor::setTransformSettings(const TransformSettings& settings) {
     _transformSettings = settings;
 }
 
+const TransformSettings& Editor::getTransformSettings() const {
+    return _transformSettings;
+}
+
 void Editor::savePanelLayout() const {
     if (_panelManager) {
         _panelManager->saveToFile();
@@ -462,7 +475,7 @@ void Editor::loadTabLayout() {
 }
 
 // Needs to be rendered immediately. *IM*GUI. IMGUI::NewFrame invalidates this data
-void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID)
+void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPass)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
     ImGuiIO& io = ImGui::GetIO();
@@ -474,7 +487,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID)
 
     I64 previousGUID = -1;
     bool switchWindow = windowGUID != _activeWindowGUID;
-    if (switchWindow) {
+    if (isPostPass && switchWindow) {
         previousGUID = _activeWindowGUID;
         _activeWindowGUID = windowGUID;
     }
@@ -499,10 +512,10 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID)
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = std::numeric_limits<U16>::max();
-    beginDebugScopeCmd._scopeName = "Render IMGUI";
+    beginDebugScopeCmd._scopeName = isPostPass ? "Render IMGUI [Post]" : "Render IMGUI [Pre]";
     GFX::BeginDebugScope(buffer, beginDebugScopeCmd);
 
-    if (switchWindow) {
+    if (isPostPass && switchWindow) {
         GFX::SwitchWindowCommand switchWindowCmd;
         switchWindowCmd.windowGUID = _activeWindowGUID;
         GFX::AddSwitchWindow(buffer, switchWindowCmd);
@@ -528,14 +541,34 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID)
     cameraCmd._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y);
     GFX::SetCamera(buffer, cameraCmd);
 
+    if (!isPostPass) {
+        // Draw the gizmos to the main render target but don't clear anything
+        RTDrawDescriptor screenTarget;
+        screenTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+        screenTarget.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
+        screenTarget.drawMask().disableAll();
+        screenTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
+
+        GFX::BeginRenderPassCommand beginRenderPassCmd;
+        beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
+        beginRenderPassCmd._descriptor = screenTarget;
+        beginRenderPassCmd._name = "DO_IMGUI_PRE_PASS";
+        GFX::BeginRenderPass(buffer, beginRenderPassCmd);
+    }
+
     GFX::DrawIMGUICommand drawIMGUI;
     drawIMGUI._data = pDrawData;
     GFX::AddDrawIMGUICommand(buffer, drawIMGUI);
 
-    if (switchWindow) {
-        GFX::SwitchWindowCommand switchWindowCmd;
-        switchWindowCmd.windowGUID = previousGUID;
-        GFX::AddSwitchWindow(buffer, switchWindowCmd);
+    if (isPostPass) {
+        if (switchWindow) {
+            GFX::SwitchWindowCommand switchWindowCmd;
+            switchWindowCmd.windowGUID = previousGUID;
+            GFX::AddSwitchWindow(buffer, switchWindowCmd);
+        }
+    } else {
+        GFX::EndRenderPassCommand endRenderPassCmd;
+        GFX::EndRenderPass(buffer, endRenderPassCmd);
     }
 
     GFX::EndDebugScopeCommand endDebugScope;
@@ -551,7 +584,6 @@ void Editor::dim(bool hovered, bool focused) {
 }
 
 bool Editor::toggleScenePreview(bool state) {
-    state = state ? _sceneHovered : false;
     if (_scenePreviewFocused != state) {
         _scenePreviewWasFocused = _scenePreviewFocused;
         _scenePreviewFocused = state;
@@ -562,12 +594,19 @@ bool Editor::toggleScenePreview(bool state) {
     return _scenePreviewFocused;
 }
 
-void Editor::setScenePreviewRect(const Rect<I32>& rect, bool hovered) {
+void Editor::checkPreviewRectState() {
+    bool hovered = ImGuizmo::IsOver();
+    if (!hovered) {
+        hovered = _scenePreviewRect.contains(ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
+    }
+
     if (_sceneWasHovered != hovered) {
         _sceneWasHovered = _sceneHovered;
         _sceneHovered = hovered;
-        dim(_sceneHovered, _scenePreviewFocused);
     }
+}
+
+void Editor::setScenePreviewRect(const Rect<I32>& rect) {
     _scenePreviewRect.set(rect);
 }
 
@@ -638,12 +677,13 @@ bool Editor::mouseMoved(const Input::MouseEvent& arg) {
                          (float)arg.Y(false).abs);
     io.MouseWheel += (float)arg.Z(false).rel / 60.0f;
 
-    if (!_scenePreviewFocused) {
-        bool ret = ImGui::GetIO().WantCaptureMouse;
-        return ret;
+    checkPreviewRectState();
+
+    if (_scenePreviewFocused) {
+        return false;
     }
 
-    return false;
+    return ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsUsing();
 }
 
 /// Mouse button pressed: return true if input was consumed
@@ -657,8 +697,7 @@ bool Editor::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton
     ImGuiIO& io = ImGui::GetIO();
     io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = true;
 
-    bool ret = ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsUsing();
-    return ret;
+    return  ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsOver();
 }
 
 /// Mouse button released: return true if input was consumed
@@ -666,7 +705,7 @@ bool Editor::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButto
     ACKNOWLEDGE_UNUSED(arg);
 
     if (button == OIS::MB_Left) {
-        toggleScenePreview(_running);
+        toggleScenePreview(_sceneHovered && _running);
     }
 
     if (!needInput()) {
@@ -677,8 +716,7 @@ bool Editor::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButto
     io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = false;
 
     if (!_scenePreviewFocused) {
-        bool ret = ImGui::GetIO().WantCaptureMouse;
-        return ret;
+        return  ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsOver();
     }
 
     return false;
@@ -823,6 +861,6 @@ void Editor::drawIMGUIDebug(const U64 deltaTime) {
 }
 
 bool Editor::needInput() {
-    return _running || showDebugWindow() || showSampleWindow();
+    return _running || showDebugWindow() || showSampleWindow() || _gizmosVisible;
 }
 }; //namespace Divide
