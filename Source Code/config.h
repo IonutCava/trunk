@@ -206,6 +206,34 @@ const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
 #endif  // HASH_MAP_IMP
 
 /// Enable move semantings in EASTL libraries
+#ifndef EA_COMPILER_HAS_MOVE_SEMANTICS
 #define EA_COMPILER_HAS_MOVE_SEMANTICS
+#endif
+
+#ifndef GPU_VALIDATION_IN_RELEASE_BUILD
+//#define GPU_VALIDATION_IN_RELEASE_BUILD
+#endif
+
+#ifndef GPU_VALIDATION_IN_PROFILE_BUILD
+#define GPU_VALIDATION_IN_PROFILE_BUILD
+#endif
+
+#ifndef GPU_VALIDATION_IN_DEBUG_BUILD
+#define GPU_VALIDATION_IN_DEBUG_BUILD
+#endif
+
+#ifndef ENABLE_GPU_VALIDATION
+    #if defined(_RELEASE) && defined(GPU_VALIDATION_IN_RELEASE_BUILD)
+    #define ENABLE_GPU_VALIDATION
+    #endif
+
+    #if defined(_PROFILE) && defined(GPU_VALIDATION_IN_PROFILE_BUILD)
+    #define ENABLE_GPU_VALIDATION
+    #endif
+
+    #if defined(_DEBUG) && defined(GPU_VALIDATION_IN_DEBUG_BUILD)
+    #define ENABLE_GPU_VALIDATION
+    #endif
+#endif
 
 #endif  //_DIVIDE_CONFIG_H_

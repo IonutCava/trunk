@@ -61,39 +61,39 @@ static const D32 M_PIDIV360 = M_PIDIV180 / 2;
 static const F32 INV_RAND_MAX = 1.0f / RAND_MAX ;
 
 template <typename T>
-T Random(T max = RAND_MAX);
+T Random(const T max = RAND_MAX);
 
 template <>
-I32 Random(I32 max);
+I32 Random(const I32 max);
 
 template <typename T>
-T Random(T min, T max);
+T Random(const T min, const T max);
 
 template<typename T>
-bool BitCompare(T bitMask, T bit);
+bool BitCompare(const T bitMask, const T bit);
 
 /// Clamps value n between min and max
 template <typename T>
-void CLAMP(T& n, T min, T max);
+void CLAMP(T& n, const T min, const T max);
 
 template <typename T>
-T CLAMPED(const T& n, T min, T max);
+T CLAMPED(const T& n, const T min, const T max);
 
 ///Helper method to go from a float to packed char
-U8 FLOAT_TO_CHAR(F32 value);
+U8 FLOAT_TO_CHAR(const F32 value);
 
 /// Helper method to emulate GLSL
-F32 FRACT(F32 floatValue);
+F32 FRACT(const F32 floatValue);
 
 /// Packs a floating point value into the [0...255] range (thx sqrt[-1] of
 /// opengl.org forums)
-U8 PACK_FLOAT(F32 floatValue);
+U8 PACK_FLOAT(const F32 floatValue);
 
 // Pack 3 values into 1 float
-F32 PACK_FLOAT(U8 x, U8 y, U8 z);
+F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z);
 
 // UnPack 3 values from 1 float
-void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b);
+void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b);
 
 // bit manipulation
 #define BitSet(arg, posn) (arg |= 1 << posn)
@@ -123,82 +123,82 @@ class Quaternion;
 namespace Angle {
 /// Return the radian equivalent of the given degree value
 template <typename T>
-T DegreesToRadians(T angleDegrees);
+T DegreesToRadians(const T angleDegrees);
 /// Return the degree equivalent of the given radian value
 template <typename T>
-T RadiansToDegrees(T angleRadians);
+T RadiansToDegrees(const T angleRadians);
 /// Returns the specified value. Used only for emphasis
 template <typename T>
-T Degrees(T degrees);
+T Degrees(const T degrees);
 /// Returns the specified value. Used only for emphasis
 template <typename T>
-T Radians(T radians);
+T Radians(const T radians);
 };
 
 namespace Metric {
 /// Base value * 1000000000000
 template <typename T>
-T Tera(T a);
+T Tera(const T a);
 /// Base value * 1000000000
 template <typename T>
-T Giga(T a);
+T Giga(const T a);
 /// Base value * 1000000
 template <typename T>
-T Mega(T a);
+T Mega(const T a);
 /// Base value * 1000
 template <typename T>
-T Kilo(T a);
+T Kilo(const T a);
 /// Base value * 100
 template <typename T>
-T Hecto(T a);
+T Hecto(const T a);
 /// Base value * 10
 template <typename T>
-T Deca(T a);
+T Deca(const T a);
 /// Base value
 template <typename T>
-T Base(T a);
+T Base(const T a);
 /// Base value * 0.1
 template <typename T>
-T Deci(T a);
+T Deci(const T a);
 /// Base value * 0.01
 template <typename T>
-T Centi(T a);
+T Centi(const T a);
 /// Base value * 0.001
 template <typename T>
-T Milli(T a);
+T Milli(const T a);
 /// Base value * 0.000001
 template <typename T>
-T Micro(T a);
+T Micro(const T a);
 /// Base value * 0.000000001
 template <typename T>
-T Nano(T a);
+T Nano(const T a);
 /// Base value * 0.000000000001
 template <typename T>
-T Pico(T a);
+T Pico(const T a);
 };
 
 namespace Time {
 /// Return the passed param without any modification
 /// Used only for emphasis
 template <typename T>
-T Seconds(T a);
+T Seconds(const T a);
 template <typename T>
-T Milliseconds(T a);
+T Milliseconds(const T a);
 template <typename T>
-U64 Microseconds(T a);
+U64 Microseconds(const T a);
 
 template <typename T>
-T MicrosecondsToSeconds(U64 a);
+T MicrosecondsToSeconds(const U64 a);
 template <typename T>
-T MicrosecondsToMilliseconds(U64 a);
+T MicrosecondsToMilliseconds(const U64 a);
 template <typename T>
-T MillisecondsToSeconds(T a);
+T MillisecondsToSeconds(const T a);
 template <typename T>
-T SecondsToMilliseconds(T a);
+T SecondsToMilliseconds(const T a);
 template <typename T>
-U64 SecondsToMicroseconds(T a);
+U64 SecondsToMicroseconds(const T a);
 template <typename T>
-U64 MillisecondsToMicroseconds(T a);
+U64 MillisecondsToMicroseconds(const T a);
 };  // namespace Time
 
 namespace Util {
@@ -207,8 +207,8 @@ struct GraphPlot2D;
 struct GraphPlot3D;
 struct GlobalFloatEvent {
     explicit GlobalFloatEvent(const stringImpl& name,
-                              F32 eventValue,
-                              U64 timeStamp)
+                              const F32 eventValue,
+                              const U64 timeStamp)
         : _eventName(name),
           _eventValue(eventValue),
           _timeStamp(timeStamp)

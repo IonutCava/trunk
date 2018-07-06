@@ -115,60 +115,50 @@ void PhysXSceneInterface::update(const U64 deltaTime) {
     for (PhysXActor* actor : _sceneRigidActors) {
         updateActor(*actor);
     }
-}
 
-namespace {
-std::array<PxShape*, 2048> g_shapes;  // = MemoryManager_NEW PxShape*[nShapes];
+
+    // retrieve array of actors that moved
+    PxU32 nbActiveTransforms;
+    const PxActiveTransform* activeTransforms = _gScene->getActiveTransforms(nbActiveTransforms);
+
+    // update each SGN with the new transform
+    for (PxU32 i = 0; i < nbActiveTransforms; ++i) {
+        PxRigidActor* actor = static_cast<PxRigidActor*>(activeTransforms[i].actor);
+        PhysicsComponent* pComp = static_cast<PhysicsComponent*>(actor->userData);
+        PxTransform pT = actor->getGlobalPose();
+        PxQuat pQ = pT.q.getConjugate();
+        PxVec3 pP = pT.p;
+        pComp->setRotation(Quaternion<F32>(pQ.x, pQ.y, pQ.z, pQ.w));
+        pComp->setPosition(vec3<F32>(pP.x, pP.y, pP.z));
+    }
 }
 
 void PhysXSceneInterface::updateActor(PhysXActor& actor) {
-    STUBBED(
-        "ToDo: Add a better synchronization method between SGN's transform and "
-        "PhysXActor's pose!! -Ionut")
-    if (actor.resetTransforms()) {
-        const vec3<F32>& position = actor.getParent()->getPosition();
-        const vec4<F32>& orientation =
-            actor.getParent()->getOrientation().asVec4();
-
-        physx::PxTransform posePxTransform(
-            PxVec3(position.x, position.y, position.z),
-            PxQuat(orientation.x, orientation.y, orientation.z, orientation.w)
-                .getConjugate());
-        actor._actor->setGlobalPose(posePxTransform);
-        actor.resetTransforms(false);
-
-    } else {
-        PxU32 nShapes = actor._actor->getNbShapes();
-        assert(nShapes < g_shapes.size());
-        actor._actor->getShapes(g_shapes.data(), nShapes);
-
-        while (nShapes--) {
-            updateShape(g_shapes[nShapes], actor);
-        }
-    }
-}
-
-void PhysXSceneInterface::updateShape(PxShape* const shape, PhysXActor& actor) {
-    if (!shape) {
+    if (!actor.resetTransforms()) {
         return;
     }
 
-    PxTransform pT = PxShapeExt::getGlobalPose(*shape, *actor._actor);
-    PxQuat pQ = pT.q.getConjugate();
-
-    if (actor._type == physx::PxGeometryType::ePLANE) std::swap(pQ.x, pQ.z);
-
-    actor.getParent()->setRotation(Quaternion<F32>(pQ.x, pQ.y, pQ.z, pQ.w));
-    actor.getParent()->setPosition(vec3<F32>(pT.p.x, pT.p.y, pT.p.z));
+    const vec3<F32>& position = actor.getParent()->getPosition();
+    const vec4<F32>& orientation = actor.getParent()->getOrientation().asVec4();
+    actor._actor->setGlobalPose(physx::PxTransform(
+                                    PxVec3(position.x, position.y, position.z),
+                                    PxQuat(orientation.x, orientation.y, orientation.z, orientation.w).getConjugate()));
+    actor.resetTransforms(false);
 }
 
 void PhysXSceneInterface::process(const U64 deltaTime) {
-    if (!_gScene) return;
+    if (!_gScene) {
+        return;
+    }
 
-    _gScene->simulate(
-        Time::MicrosecondsToMilliseconds<physx::PxReal>(deltaTime));
+    physx::PxReal deltaTimeMS = 
+        Time::MicrosecondsToMilliseconds<physx::PxReal>(deltaTime);
 
-    while (!_gScene->fetchResults()) idle();
+    _gScene->simulate(deltaTimeMS);
+
+    while (!_gScene->fetchResults()) {
+        idle();
+    }
 }
 
 void PhysXSceneInterface::addRigidActor(PhysXActor* const actor,
@@ -184,8 +174,7 @@ void PhysXSceneInterface::addRigidActor(PhysXActor* const actor,
     }
 }
 
-PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(
-    const stringImpl& actorName) {
+PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(const stringImpl& actorName) {
     if (!_gScene) {
         return nullptr;
     }
@@ -203,7 +192,7 @@ PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(
 }
 
 void PhysXSceneInterface::addToScene(PhysXActor& actor) {
-    STUBBED("ToDo: Only 1 shape per actor for now. Fix This! -Ionut")
+    STUBBED("ToDo: Only 1 shape per actor for now. Also, maybe use a factory or something. Fix This! -Ionut")
     SceneNode* sceneNode = nullptr;
 
     _gScene->addActor(*(actor._actor));
@@ -273,6 +262,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
 
         actor._actorName = sgnName;
         actor.getParent()->setScale(actor._userData);
+        actor._actor->userData = actor.getParent();
     } 
 
     assert(targetNode != nullptr);

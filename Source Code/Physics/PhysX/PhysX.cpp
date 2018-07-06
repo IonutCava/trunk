@@ -299,12 +299,13 @@ void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
     }
 
     const vec3<F32>& scale = tempActor->getParent()->getScale();
-    physx::PxTriangleMeshGeometry triangleGeometry(
-        triangleMesh,
-        physx::PxMeshScale(physx::PxVec3(scale.x, scale.y, scale.z), 
-                           physx::PxQuat(physx::PxIdentity)));
-    tempActor->_actor->createShape(
-        triangleGeometry, *_gPhysicsSDK->createMaterial(0.7f, 0.7f, 1.0f));
+    STUBBED("PhysX implementation only uses one shape per actor for now! -Ionut")
+    tempActor->_actor->createShape(physx::PxTriangleMeshGeometry(
+                                       triangleMesh,
+                                        physx::PxMeshScale(
+                                            physx::PxVec3(scale.x, scale.y, scale.z),
+                                            physx::PxQuat(physx::PxIdentity))),
+                                   *_gPhysicsSDK->createMaterial(0.7f, 0.7f, 1.0f));
 
     return;
 };

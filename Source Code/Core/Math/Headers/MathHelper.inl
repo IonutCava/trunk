@@ -35,17 +35,17 @@
 namespace Divide {
 
 template <typename T>
-T Random(T max) {
+T Random(const T max) {
     return max * rand() * static_cast<T>(INV_RAND_MAX);
 }
 
 template <>
-inline I32 Random(I32 max) {
+inline I32 Random(const I32 max) {
     return rand() % (max + 1);
 }
 
 template <typename T>
-inline T Random(T min, T max) {
+inline T Random(const T min, const T max) {
     return min + (max - min) * 
            static_cast<T>(INV_RAND_MAX) * 
            static_cast<T>(rand());
@@ -53,41 +53,40 @@ inline T Random(T min, T max) {
 
 /// Clamps value n between min and max
 template <typename T>
-inline void CLAMP(T& n, T min, T max) {
+inline void CLAMP(T& n, const T min, const T max) {
     n = std::min(std::max(n, min), max);
 }
 
 template <typename T>
-inline T CLAMPED(const T& n, T min, T max) {
+inline T CLAMPED(const T& n, const T min, const T max) {
     return std::min(std::max(n, min), max);
 }
 
 
 template<typename T>
-inline bool BitCompare(T bitMask, T bit) {
+inline bool BitCompare(const T bitMask, const T bit) {
     return BitCompare(to_uint(bitMask), to_uint(bit));
 }
 
 template<>
-inline bool BitCompare<U32>(U32 bitMask, U32 bit) {
+inline bool BitCompare<U32>(const U32 bitMask, const U32 bit) {
     return ((bitMask & bit) == bit);
 }
 
 ///(thx sqrt[-1] and canuckle of opengl.org forums)
 
 // Helper method to emulate GLSL
-inline F32 FRACT(F32 floatValue) {
+inline F32 FRACT(const F32 floatValue) {
     return to_float(fmod(floatValue, 1.0f));
 }
 
 //Helper method to go from a float to packed char
-inline U8 FLOAT_TO_CHAR(F32 value) {
-    value = (value + 1.0f) * 0.5f;
-    return static_cast<U8>(value * 255.0f);
+inline U8 FLOAT_TO_CHAR(const F32 value) {
+    return static_cast<U8>(((value + 1.0f) * 0.5f) * 255.0f);
 }
 
 // Pack 3 values into 1 float
-inline F32 PACK_FLOAT(U8 x, U8 y, U8 z) {
+inline F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z) {
     static const D32 offset = to_double(1 << 24);
 
     U32 packedColor = (x << 16) | (y << 8) | z;
@@ -95,7 +94,7 @@ inline F32 PACK_FLOAT(U8 x, U8 y, U8 z) {
 }
 
 // UnPack 3 values from 1 float
-inline void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b) {
+inline void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b) {
     r = FRACT(src);
     g = FRACT(src * 256.0f);
     b = FRACT(src * 65536.0f);
@@ -108,24 +107,24 @@ inline void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b) {
 
 namespace Angle {
 template <typename T>
-/*constexpr*/ T DegreesToRadians(T angleDegrees) {
+/*constexpr*/ T DegreesToRadians(const T angleDegrees) {
     return static_cast<T>(angleDegrees * M_PIDIV180);
 }
 
 template <typename T>
-/*constexpr*/ T RadiansToDegrees(T angleRadians) {
+/*constexpr*/ T RadiansToDegrees(const T angleRadians) {
     return static_cast<T>(angleRadians * M_180DIVPI);
 }
 
 /// Returns the specified value. Used only for emphasis
 template <typename T>
-/*constexpr*/ T Degrees(T degrees) {
+/*constexpr*/ T Degrees(const T degrees) {
     return degrees;
 }
 
 /// Returns the specified value. Used only for emphasis
 template <typename T>
-/*constexpr*/ T Radians(T radians) {
+/*constexpr*/ T Radians(const T radians) {
     return radians;
 }
 
@@ -133,114 +132,114 @@ template <typename T>
 
 namespace Metric {
 template <typename T>
-/*constexpr*/ T Tera(T a) {
+/*constexpr*/ T Tera(const T a) {
     return static_cast<T>(a * 1000000000000.0);
 }
 
 template <typename T>
-/*constexpr*/ T Giga(T a) {
+/*constexpr*/ T Giga(const T a) {
     return static_cast<T>(a * 1000000000.0);
 }
 
 template <typename T>
-/*constexpr*/ T Mega(T a) {
+/*constexpr*/ T Mega(const T a) {
     return static_cast<T>(a * 1000000.0);
 }
 
 template <typename T>
-/*constexpr*/ T Kilo(T a) {
+/*constexpr*/ T Kilo(const T a) {
     return static_cast<T>(a * 1000.0);
 }
 
 template <typename T>
-/*constexpr*/ T Hecto(T a) {
+/*constexpr*/ T Hecto(const T a) {
     return static_cast<T>(a * 100.0);
 }
 
 template <typename T>
-/*constexpr*/ T Deca(T a) {
+/*constexpr*/ T Deca(const T a) {
     return static_cast<T>(a * 10.0);
 }
 
 template <typename T>
-/*constexpr*/ T Base(T a) {
+/*constexpr*/ T Base(const T a) {
     return a;
 }
 
 template <typename T>
-/*constexpr*/ T Deci(T a) {
+/*constexpr*/ T Deci(const T a) {
     return static_cast<T>(a * 0.1);
 }
 
 template <typename T>
-/*constexpr*/ T Centi(T a) {
+/*constexpr*/ T Centi(const T a) {
     return static_cast<T>(a * 0.01);
 }
 
 template <typename T>
-/*constexpr*/ T Milli(T a) {
+/*constexpr*/ T Milli(const T a) {
     return static_cast<T>(a * 0.001);
 }
 
 template <typename T>
-/*constexpr*/ T Micro(T a) {
+/*constexpr*/ T Micro(const T a) {
     return static_cast<T>(a * 0.000001);
 }
 
 template <typename T>
-/*constexpr*/ T Nano(T a) {
+/*constexpr*/ T Nano(const T a) {
     return static_cast<T>(a * 0.000000001);
 }
 
 template <typename T>
-/*constexpr*/ T Pico(T a) {
+/*constexpr*/ T Pico(const T a) {
     return static_cast<T>(a * 0.000000000001);
 }
 };  // namespace Metric
 
 namespace Time {
 template <typename T>
-T Seconds(T a) {
+T Seconds(const T a) {
     return a;
 }
 
 template <typename T>
-T Milliseconds(T a) {
+T Milliseconds(const T a) {
     return a;
 }
 
 template <typename T>
-U64 Microseconds(T a) {
+U64 Microseconds(const T a) {
     return static_cast<U64>(a);
 }
 
 template <typename T>
-/*constexpr*/ T MicrosecondsToSeconds(U64 a) {
+/*constexpr*/ T MicrosecondsToSeconds(const U64 a) {
     return Metric::Micro(static_cast<T>(a));
 }
 
 template <typename T>
-/*constexpr*/ T MicrosecondsToMilliseconds(U64 a) {
+/*constexpr*/ T MicrosecondsToMilliseconds(const U64 a) {
     return Metric::Milli(static_cast<T>(a));
 }
 
 template <typename T>
-/*constexpr*/ T SecondsToMilliseconds(T a) {
+/*constexpr*/ T SecondsToMilliseconds(const T a) {
     return Metric::Kilo(a);
 }
 
 template <typename T>
-/*constexpr*/ U64 SecondsToMicroseconds(T a) {
+/*constexpr*/ U64 SecondsToMicroseconds(const T a) {
     return static_cast<U64>(Metric::Mega(a));
 }
 
 template <typename T>
-/*constexpr*/ U64 MillisecondsToMicroseconds(T a) {
+/*constexpr*/ U64 MillisecondsToMicroseconds(const T a) {
     return static_cast<U64>(Metric::Kilo(a));
 }
 
 template <typename T>
-/*constexpr*/ T MillisecondsToSeconds(T a) {
+/*constexpr*/ T MillisecondsToSeconds(const T a) {
     return Metric::Milli(a);
 }
 };  // namespace Time
@@ -253,7 +252,8 @@ void Hash_combine(std::size_t& seed, const T& v) {
     seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
-inline void ReplaceStringInPlace(stringImpl& subject, const stringImpl& search,
+inline void ReplaceStringInPlace(stringImpl& subject, 
+                                 const stringImpl& search,
                                  const stringImpl& replace) {
     stringAlg::stringSize pos = 0;
     while ((pos = subject.find(search, pos)) != stringImpl::npos) {

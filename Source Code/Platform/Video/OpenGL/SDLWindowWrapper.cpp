@@ -25,7 +25,7 @@ ErrorCode GL_API::createWindow() {
     ParamHandler& par = ParamHandler::getInstance();
 
     Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
-#if defined(_DEBUG) || defined(_GLDEBUG_IN_RELEASE)
+#if defined(ENABLE_GPU_VALIDATION)
     // OpenGL error handling is available in any build configuration
     // if the proper defines are in place.
     OpenGLFlags |= SDL_GL_CONTEXT_DEBUG_FLAG | 
@@ -245,7 +245,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     glbinding::Binding::useCurrentContext();
     // OpenGL has a nifty error callback system, available in every build
     // configuration if required
-#if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
+#if defined(ENABLE_GPU_VALIDATION)
     // GL_DEBUG_OUTPUT_SYNCHRONOUS is essential for debugging gl commands in the IDE
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -620,7 +620,7 @@ void GL_API::threadedLoadCallback() {
     glbinding::Binding::initialize();
 
 // Enable OpenGL debug callbacks for this context as well
-#if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
+#if defined(ENABLE_GPU_VALIDATION)
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     // Debug callback in a separate thread requires a flag to distinguish it

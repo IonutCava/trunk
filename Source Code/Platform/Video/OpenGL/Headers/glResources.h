@@ -32,8 +32,6 @@
 #ifndef _GL_RESOURCES_H_
 #define _GL_RESOURCES_H_
 
-//#define _GLDEBUG_IN_RELEASE
-
 #include "config.h"
 
 #include "Platform/Platform/Headers/PlatformDefines.h"
@@ -61,10 +59,14 @@ namespace GLUtil {
 
 /// Wrapper for glGetIntegerv
 GLint getIntegerv(GLenum param);
+
+#ifdef ENABLE_GPU_VALIDATION
 /// Check the current operation for errors
 void
 DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
               GLsizei length, const GLchar* message, const void* userParam);
+#endif
+
 /// Invalid object value. Used to compare handles and determine if they were
 /// properly created
 extern GLuint _invalidObjectID;

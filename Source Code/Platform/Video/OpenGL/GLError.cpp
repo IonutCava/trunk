@@ -1,5 +1,6 @@
 #include "Headers/GLWrapper.h"
 
+#ifdef ENABLE_GPU_VALIDATION
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
@@ -59,3 +60,5 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 }
 }  // namespace GLUtil
 }  // namespace Divide
+
+#endif //ENABLE_GPU_VALIDATION

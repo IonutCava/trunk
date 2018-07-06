@@ -8,8 +8,6 @@
 
 namespace Divide {
 
-#define _COMPILE_OUTPUT_IN_RELEASE
-
 glShader::glShader(const stringImpl& name,
                    const ShaderType& type,
                    const bool optimise)
@@ -75,7 +73,7 @@ bool glShader::compile() {
 }
 
 void glShader::validate() {
-#if defined(_DEBUG) || defined(_PROFILE) || defined(COMPILE_OUTPUT_IN_RELEASE)
+#if defined(ENABLE_GPU_VALIDATION)
     GLint length = 0, status = 0;
 
     glGetShaderiv(_shader, GL_COMPILE_STATUS, &status);
