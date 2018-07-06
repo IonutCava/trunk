@@ -65,6 +65,12 @@ layout(binding = TEXTURE_UNIT1)   uniform sampler2D texDiffuse1;
 #endif
 #endif
 
+#if !defined(SHADOW_PASS) && defined(COMPUTE_TBN)
+//Normal or BumpMap
+layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
+#endif
+
+
 vec2 computeMoments(in float depth) {
     // Compute partial derivatives of depth.  
     float dx = dFdx(depth);
@@ -101,7 +107,11 @@ void main() {
     //_colorOut = vec4(computeMoments(exp(DEPTH_EXP_WARP * gl_FragCoord.z)), 0.0, alpha);
     _colorOut = computeMoments(gl_FragCoord.z);
 #else
-    _colorOut = normalize(dvd_NormalMatrix() * f_in._normal);
+#   if defined(COMPUTE_TBN)
+        _colorOut = normalize(2.0 * texture(texNormalMap, VAR._texCoord).rgb - 1.0);
+#   else
+        _colorOut = normalize(dvd_NormalMatrixWV() * f_in._normal);
+#   endif
 #endif
 
 }

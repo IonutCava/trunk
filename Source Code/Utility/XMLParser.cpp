@@ -893,9 +893,9 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
                   pt.get<F32>("material.specular.<xmlattr>.b", 1.f),
                   pt.get<F32>("material.specular.<xmlattr>.a", 1.f)));
     mat->setEmissive(
-        vec3<F32>(pt.get<F32>("material.emissive.<xmlattr>.r", 1.f),
-                  pt.get<F32>("material.emissive.<xmlattr>.g", 1.f),
-                  pt.get<F32>("material.emissive.<xmlattr>.b", 1.f)));
+        vec3<F32>(pt.get<F32>("material.emissive.<xmlattr>.r", 0.f),
+                  pt.get<F32>("material.emissive.<xmlattr>.g", 0.f),
+                  pt.get<F32>("material.emissive.<xmlattr>.b", 0.f)));
 
     mat->setShininess(pt.get<F32>("material.shininess.<xmlattr>.v", 50.f));
 

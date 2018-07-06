@@ -178,20 +178,19 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32
     AnimationComponent* const animComp = nodePtr->getComponent<AnimationComponent>();
     PhysicsComponent* const transform = nodePtr->getComponent<PhysicsComponent>();
 
-    mat4<F32>& normalMatrix = dataOut._normalMatrix;
-
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
     if (transform) {
+        mat4<F32> normalMatrix;
         // ... get the node's world matrix properly interpolated
         dataOut._worldMatrix.set(transform->getWorldMatrix(_interpolationFactor, normalMatrix));
         // Calculate the normal matrix (world * view)
-        normalMatrix.set(normalMatrix * _gpuBlock._data._ViewMatrix);
+        Util::Mat4::Multiply(normalMatrix, _gpuBlock._data._ViewMatrix, dataOut._normalMatrixWV);
     }
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
-    normalMatrix.element(0, 3) = to_float(animComp ? animComp->boneCount() : 0);
-    normalMatrix.setRow(3, nodePtr->getBoundingSphereConst().asVec4());
+    dataOut._normalMatrixWV.element(0, 3) = to_float(animComp ? animComp->boneCount() : 0);
+    dataOut._normalMatrixWV.setRow(3, nodePtr->getBoundingSphereConst().asVec4());
     // Get the color matrix (diffuse, specular, etc.)
     renderable->getMaterialColorMatrix(dataOut._colorMatrix);
     // Get the material property matrix (alpha test, texture count,
@@ -234,11 +233,15 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         SceneGraphNode_ptr nodeRef = node.lock();
 
         RenderingComponent* renderable = nodeRef->getComponent<RenderingComponent>();
-        if (refreshNodeData) {
-            Attorney::RenderingCompGFXDevice::commandIndex(*renderable, nodeCount, cmdCount);
-        }
-
-        RenderPackage& pkg = Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable, sceneRenderState, currentStage);
+        RenderPackage& pkg = 
+            refreshNodeData ? Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable,
+                                                                               sceneRenderState,
+                                                                               currentStage,
+                                                                               nodeCount,
+                                                                               cmdCount)
+                            : Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable,
+                                                                               sceneRenderState,
+                                                                               currentStage);
 
         if (pkg.isRenderable()) {
             if (refreshNodeData) {

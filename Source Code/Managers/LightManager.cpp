@@ -287,7 +287,7 @@ Light* LightManager::getLight(I64 lightGUID, LightType type) {
 void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
     U32 lightShadowCount = std::min(to_uint(_lights.size()), Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
-    U32 lightPropertiesCount = 0;
+    _activeLightCount = 0;
     U32 lightShadowPropertiesCount = 0;
     for(Light::LightList& lights : _lights) {
         for (Light* light : lights) {
@@ -295,35 +295,26 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
                 continue;
             }
 
-            if (lightPropertiesCount >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
+            if (_activeLightCount >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
                 break;
             }
 
-            LightType type = light->getLightType();
-
-            LightProperties& temp = _lightProperties[lightPropertiesCount];
+            LightProperties& temp = _lightProperties[_activeLightCount];
             temp._diffuse.set(light->getDiffuseColor());
-            temp._position.set(light->getPosition(), light->getRange());
-            temp._direction.set(light->getSpotDirection(), light->getSpotAngle());
-            temp._options.x = type == LightType::DIRECTIONAL ? 0
-                                                             : type == LightType::POINT ? 1
-                                                                                        : 2;
+            temp._position.set((viewMatrix * vec4<F32>(light->getPosition(), 0.0f)).xyz(), light->getRange());
+            temp._direction.set((viewMatrix * vec4<F32>(light->getSpotDirection(), 0.0f)).xyz(), light->getSpotAngle());
+            temp._options.x = to_uint(light->getLightType());
             temp._options.y = light->castsShadows();
-            lightPropertiesCount++;
-
-            temp._position.xyz(viewMatrix * vec4<F32>(temp._position.xyz(), 0.0f));
-            temp._direction.xyz(viewMatrix * vec4<F32>(temp._direction.xyz(), 0.0f));
-
             if (light->castsShadows() && lightShadowPropertiesCount < lightShadowCount) {
 
                 temp._options.z = to_int(lightShadowPropertiesCount);
                 _lightShadowProperties[lightShadowPropertiesCount++] = light->getShadowProperties();
             }
+
+            _activeLightCount++;
         }
 
     }
-
-    _activeLightCount = to_uint(lightPropertiesCount);
 
     if (_activeLightCount > 0) {
         _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->updateData(0, _activeLightCount, _lightProperties.data());

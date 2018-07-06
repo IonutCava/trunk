@@ -3,6 +3,11 @@
 
 uniform int bumpMapLightID = 0;
 
+vec3 getTBNNormal(vec2 uv) {
+    mat3 TBN = mat3(VAR._tangentWV, VAR._bitangentWV, VAR._normalWV);
+    return TBN * normalize(2.0 * texture(texNormalMap, uv).rgb - 1.0);
+}
+
 float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
     const int num_steps_lin = 10;
     const int num_steps_bin = 15;
@@ -41,15 +46,15 @@ vec4 ParallaxMapping(in uint bumpMapLightID, in vec2 uv){
     vec3 lightVecTBN = vec3(0.0);
     switch (dvd_LightSource[bumpMapLightID]._options.x){
         case LIGHT_DIRECTIONAL      : 
-            lightVecTBN = -normalize(dvd_LightSource[bumpMapLightID]._position.xyz); 
+            lightVecTBN = -normalize(dvd_LightSource[bumpMapLightID]._positionWV.xyz);
             break;
         case LIGHT_OMNIDIRECTIONAL  : 
         case LIGHT_SPOT             : 
-            lightVecTBN = normalize(VAR._viewDirection + dvd_LightSource[bumpMapLightID]._position.xyz); 
+            lightVecTBN = normalize(-VAR._vertexWV.xyz + dvd_LightSource[bumpMapLightID]._positionWV.xyz);
             break;
     };
 
-    vec3 viewVecTBN = normalize(VAR._viewDirection);
+    vec3 viewVecTBN = normalize(-VAR._vertexWV.xyz);
     
     //Offset, scale and bias
     vec2 vTexCoord = uv + 
@@ -58,12 +63,12 @@ vec4 ParallaxMapping(in uint bumpMapLightID, in vec2 uv){
                      (vec2(viewVecTBN.x, -viewVecTBN.y) / 
                      viewVecTBN.z));
 
-    //Normal mapping in TBN space
-    return getPixelColor(vTexCoord, normalize(2.0 * texture(texNormalMap, vTexCoord).xyz - 1.0));
+    
+    return getPixelColor(vTexCoord, getTBNNormal(vTexCoord));
 }
 
 vec4 ReliefMapping(in int _light, in vec2 uv){
-    vec3 viewVecTBN = normalize(VAR._viewDirection);
+    vec3 viewVecTBN = normalize(-VAR._vertexWV.xyz);
     //Size and search starting position in texture space
     vec2 AB = dvd_reliefFactor * vec2(-viewVecTBN.x, viewVecTBN.y)/viewVecTBN.z;
 
@@ -82,7 +87,7 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
 
     gl_FragDepth =((planes.x * p.z + planes.y) / -p.z);
     
-    return getPixelColor(uv + uv_offset, normalize(2.0 * texture(texNormalMap, uv + uv_offset).xyz - 1.0));
+    return getPixelColor(uv + uv_offset, getTBNNormal(uv + uv_offset));
 }
 
 #endif //_BUMP_MAPPING_FRAG_

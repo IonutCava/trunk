@@ -45,7 +45,7 @@ vec3 sunColor(){
 void main (void){
 
     if (isDepthPass) {
-        _skyColor.rgb = normalize(dvd_NormalMatrix() * _normal);
+        _skyColor.rgb = normalize(dvd_NormalMatrixWV() * _normal);
         _skyColor.a = 1.0;
     } else {
         vec3 sky_color = textureLod(texSky, vec4(_vertex.xyz, 0), 0).rgb;

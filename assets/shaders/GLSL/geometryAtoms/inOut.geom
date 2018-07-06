@@ -10,7 +10,6 @@ void passVertex(int index) {
     g_out._normalWV = VAR[index]._normalWV;
     g_out._tangentWV = VAR[index]._tangentWV;
     g_out._bitangentWV = VAR[index]._bitangentWV;
-    g_out._viewDirection = VAR[index]._viewDirection;
     g_out._lightCount = VAR[index]._lightCount;
     g_out._texCoord = VAR[index]._texCoord;
 }

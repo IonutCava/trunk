@@ -1,8 +1,6 @@
 #ifndef _BRDF_FRAG_
 #define _BRDF_FRAG_
 
-vec4 dvd_ViewDirNormAndDist;
-
 #include "lightInput.cmn"
 #include "lightData.frag"
 #include "utility.frag"
@@ -10,27 +8,24 @@ vec4 dvd_ViewDirNormAndDist;
 #include "shadowMapping.frag"
 #include "phong_lighting.frag"
 
-void getBRDFFactors(in uint lightIndex,
-                    in vec3 normal,
-                    inout vec3 colorInOut,
-                    inout vec3 specularInOut)
+void getBRDFFactors(in int lightIndex,
+                    in vec3 normalWV,
+                    inout vec3 colorInOut)
 {
 #if defined(USE_SHADING_PHONG) || defined (USE_SHADING_BLINN_PHONG)
-    Phong(lightIndex, normal, colorInOut, specularInOut);
+    Phong(lightIndex, normalWV, colorInOut);
 #elif defined(USE_SHADING_TOON)
 #elif defined(USE_SHADING_OREN_NAYAR)
 #else //if defined(USE_SHADING_COOK_TORRANCE)
 #endif
 }
 
-vec4 getPixelColor(const in vec2 texCoord, in vec3 normal) {
+vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
     if (dvd_lodLevel > 2 && (texCoord.x + texCoord.y == 0)) {
         discard;
     }
     
     parseMaterial();
-    dvd_ViewDirNormAndDist.xyz = normalize(VAR._viewDirection);
-    dvd_ViewDirNormAndDist.a = length(dvd_ViewDirNormAndDist.xyz);
 
 #if defined(HAS_TRANSPARENCY)
 #   if defined(USE_OPACITY_DIFFUSE)
@@ -48,25 +43,22 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal) {
 #   endif
 
 #if defined (USE_DOUBLE_SIDED)
-        normal = normalize(gl_FrontFacing ? normal : -normal);
-#else
-        normal = normalize(normal);
+        normalWV = gl_FrontFacing ? normalWV : -normalWV;
 #endif
 
 #if defined(USE_SHADING_FLAT)
     vec3 color = dvd_MatDiffuse.rgb;
 #else
     vec3 lightColor = vec3(0.0);
-    vec3 specularColor = vec3(0.0);
     // Apply all lighting contributions
-    for (uint i = 0; i < VAR._lightCount; ++i){
-        getBRDFFactors(i, normal, lightColor, specularColor);
+    for (int i = 0; i < int(VAR._lightCount); ++i){
+        getBRDFFactors(i, normalWV, lightColor);
     }
-    vec3 color = mix(dvd_MatEmissive, lightColor + specularColor, DIST_TO_ZERO(length(lightColor)));
+    vec3 color = mix(dvd_MatEmissive, lightColor, DIST_TO_ZERO(length(lightColor)));
 #endif
 
 #if defined(USE_REFLECTIVE_CUBEMAP)
-    vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), normal);
+    vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), normalWV);
     reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0));
     color = mix(texture(texEnvironmentCube, vec4(reflectDirection, 0.0)).rgb,
                 color,
@@ -77,7 +69,6 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal) {
     // Apply shadowing
     color *= mix(1.0, shadow_loop(), dvd_shadowMapping);
 
-    //return vec4(dvd_LightSource[0]._position.xyz, 1.0);
 #if defined(_DEBUG) && defined(DEBUG_SHADOWMAPPING)
     if (dvd_showDebugInfo == 1) {
         switch (_shadowTempInt){

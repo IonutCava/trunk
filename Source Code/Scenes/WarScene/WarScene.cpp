@@ -129,6 +129,12 @@ void WarScene::processGUI(const U64 deltaTime) {
     Scene::processGUI(deltaTime);
 }
 
+namespace {
+    F32 phiLight = 0.0f;
+    vec3<F32> initPosLight[9];
+    bool initPosSetLight = false;
+};
+
 void WarScene::processTasks(const U64 deltaTime) {
     if (!_sceneReady) {
         return;
@@ -137,20 +143,14 @@ void WarScene::processTasks(const U64 deltaTime) {
     D32 SunTimer = Time::Milliseconds(10);
     D32 AnimationTimer1 = Time::SecondsToMilliseconds(5);
     D32 AnimationTimer2 = Time::SecondsToMilliseconds(10);
-    //D32 updateLights = Time::SecondsToMilliseconds(0.15);
+    D32 updateLights = Time::Milliseconds(10);
 
     if (_taskTimers[0] >= SunTimer) {
-        if (!g_direction) {
-            g_sunAngle.y += 0.00025f;
-            g_sunAngle.x += 0.00025f;
-        } else {
-            g_sunAngle.y -= 0.00025f;
-            g_sunAngle.x -= 0.00025f;
-        }
+        g_sunAngle += 0.000125f * (g_direction ? 1.0f : -1.0f);
 
         if (!IS_IN_RANGE_INCLUSIVE(g_sunAngle.y, 
-                                   Angle::DegreesToRadians(25.0f),
-                                   Angle::DegreesToRadians(55.0f))) {
+                                   Angle::Degrees(20.0f),
+                                   Angle::Degrees(55.0f))) {
             g_direction = !g_direction;
         }
 
@@ -158,10 +158,10 @@ void WarScene::processTasks(const U64 deltaTime) {
                             -cosf(g_sunAngle.y),
                             -sinf(g_sunAngle.x) * sinf(g_sunAngle.y));
 
-       _sun.lock()->getComponent<PhysicsComponent>()->setPosition(sunVector);
-       vec4<F32> sunColor = vec4<F32>(1.0f, 1.0f, 0.2f, 1.0f);
+        _sun.lock()->getComponent<PhysicsComponent>()->setPosition(sunVector);
+        vec4<F32> sunColor = vec4<F32>(1.0f, 1.0f, 0.2f, 1.0f);
 
-       _sun.lock()->getNode<Light>()->setDiffuseColor(sunColor);
+        _sun.lock()->getNode<Light>()->setDiffuseColor(sunColor);
         _currentSky.lock()->getNode<Sky>()->setSunProperties(sunVector, _sun.lock()->getNode<Light>()->getDiffuseColor());
 
         _taskTimers[0] = 0.0;
@@ -181,22 +181,30 @@ void WarScene::processTasks(const U64 deltaTime) {
         _taskTimers[2] = 0.0;
     }
 
-    /*if (_taskTimers[3] >= updateLights && false) {
-        for (U8 row = 0; row < 3; row++)
-            for (U8 col = 0; col < _lightNodes.size() / 3; col++) {
-                F32 x = col * 150.0f - 5.0f +  cos(to_float(Time::ElapsedMilliseconds()) * (col - row + 2) *   0.008f) * 200.0f;
-                F32 y = cos(to_float(Time::ElapsedSeconds()) * (col - row + 2) * 0.01f) * 200.0f +  20;
-                F32 z = row * 500.0f - 500.0f - cos(to_float(Time::ElapsedMilliseconds()) * (col - row + 2) * 0.009f) * 200.0f + 10;
-                F32 r = 1.0f - (col / 3.0f);
-                F32 g = 1.0f - (row / 3.0f);
-                F32 b = col / (_lightNodes.size() / 3.0f);
+    if (!initPosSetLight) {
+        for (U8 i = 0; i < 9; ++i) {
+            initPosLight[i].set(_lightNodes[i].lock()->getComponent<PhysicsComponent>()->getPosition());
+        }
+        initPosSetLight = true;
+    }
 
-                _lightNodes[row * 2 + col].lock()->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(x, y, z));
-                _lightNodes[row * 2 + col].lock()->getNode<Light>()->setDiffuseColor(vec3<F32>(r, g, b));
-            }
+    if (_taskTimers[3] >= updateLights) {
 
+        phiLight += 0.1f;
+        if (phiLight > 360.0f) {
+            phiLight = 0.0f;
+        }
+        const F32 radius = 10;
+        for (U8 i = 0; i < 9; ++i) {
+            F32 angle = i % 2 == 0 ? phiLight : -phiLight;
+            SceneGraphNode_ptr light = _lightNodes[i].lock();
+            PhysicsComponent* pComp = light->getComponent<PhysicsComponent>();
+            pComp->setPositionX(radius * std::cos(angle) + initPosLight[i].x);
+            pComp->setPositionZ(radius * std::sin(angle) + initPosLight[i].z);
+            pComp->setPositionY((radius * 0.5f) * std::sin(angle) + initPosLight[i].y);
+        }
         _taskTimers[3] = 0.0;
-    }*/
+    }
 
     Scene::processTasks(deltaTime);
 }
@@ -282,6 +290,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     // Position camera
     renderState().getCamera().setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
     renderState().getCamera().setGlobalRotation(-90 /*yaw*/, 59.21 /*pitch*/);
+
     _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
     _sun.lock()->getNode<DirectionalLight>()->csmSplitLogFactor(0.85f);
     _sun.lock()->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
@@ -482,18 +491,18 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
 
     for (U8 row = 0; row < 3; row++) {
-        for (U8 col = 0; col < 2; col++) {
-            ResourceDescriptor tempLight("Light_point_" + std::to_string(to_uint(row * 2 + col)));
+        for (U8 col = 0; col < 3; col++) {
+            ResourceDescriptor tempLight(Util::StringFormat("Light_point_%d_%d", row, col));
             tempLight.setEnumValue(to_uint(LightType::POINT));
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(true);
-            light->setRange(1.0f);
+            light->setRange(20.0f);
             light->setCastShadows(false);
-            light->setDiffuseColor(col == 0 ? DefaultColors::GREEN()
-                                            : col == 1 ? DefaultColors::BLUE()
+            light->setDiffuseColor(col == row ? DefaultColors::GREEN()
+                                            : col > row ? DefaultColors::BLUE()
                                                        : DefaultColors::RED());
             SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot()->addNode(*light);
-            lightSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(-100.0f + (100 * row), 10.0f, (-100.0f + (100 * col))));
+            lightSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(-115.0f + (115 * row), 15.0f, (-115.0f + (115 * col))));
             _lightNodes.push_back(lightSGN);
         }
     }

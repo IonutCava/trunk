@@ -496,6 +496,7 @@ void Material::getTextureData(TextureDataContainer& textureData) {
         }
     } else {
         textureData.reserve(2);
+        getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
         for (Material::TranslucencySource source : _translucencySource) {
             if (source == TranslucencySource::OPACITY_MAP) {
                 getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);

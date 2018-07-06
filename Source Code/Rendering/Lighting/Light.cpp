@@ -163,8 +163,7 @@ bool Light::removeShadowMapInfo() {
 }
 
 void Light::validateOrCreateShadowMaps(SceneRenderState& sceneRenderState) {
-    ShadowMap* sm = _shadowMapInfo->createShadowMap(sceneRenderState, shadowCamera());
-    assert(sm != nullptr);
+    _shadowMapInfo->createShadowMap(sceneRenderState, shadowCamera());
 }
 
 void Light::generateShadowMaps(SceneRenderState& sceneRenderState) {

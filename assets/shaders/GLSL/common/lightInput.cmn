@@ -17,10 +17,10 @@ struct Light {
     vec4   _color;
     /// xyz = light positoon (or direction for Directional lights)
     /// w = range
-    vec4   _position; 
+    vec4   _positionWV; 
     /// xyz = spot direction
     /// w = spot angle   
-    vec4   _direction;
+    vec4   _directionWV;
     /// x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot
     /// y = casts shadows
     /// z = shadow block index

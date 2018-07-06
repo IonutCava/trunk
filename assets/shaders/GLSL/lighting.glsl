@@ -42,7 +42,7 @@ vec4 mappingFlat(){
 #if defined(COMPUTE_TBN)
 //subroutine(MappingRoutineType)
 vec4 mappingNormal(){
-    return getPixelColor(VAR._texCoord, normalize(2.0 * texture(texNormalMap, VAR._texCoord).rgb - 1.0));
+    return getPixelColor(VAR._texCoord, getTBNNormal(VAR._texCoord));
 }
 
 //subroutine(MappingRoutineType)

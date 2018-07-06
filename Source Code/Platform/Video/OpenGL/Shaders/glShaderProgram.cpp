@@ -83,7 +83,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
         // Call the internal validation function
         validateInternal();
         // We dump the shader binary only if it wasn't loaded from one
-        if (!_loadedFromBinary && GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
+        if (!_loadedFromBinary && GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA && false) {
             STUBBED(
                 "GLSL binary dump/load is only enabled for nVidia GPUS. "
                 "Catalyst 13.x  - 15.x destroys uniforms on shader dump, for whatever "

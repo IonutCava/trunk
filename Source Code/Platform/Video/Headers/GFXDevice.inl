@@ -37,7 +37,7 @@ namespace Divide {
 inline void 
 GFXDevice::NodeData::set(const GFXDevice::NodeData& other) {
     this->_worldMatrix.set(other._worldMatrix);
-    this->_normalMatrix.set(other._normalMatrix);
+    this->_normalMatrixWV.set(other._normalMatrixWV);
     this->_colorMatrix.set(other._colorMatrix);
     this->_properties.set(other._properties);
 }

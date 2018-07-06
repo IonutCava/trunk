@@ -201,6 +201,16 @@ class RenderingCompGFXDevice {
         return renderable.getDrawPackage(sceneRenderState, renderStage);
     }
 
+    static GFXDevice::RenderPackage& getDrawPackage(RenderingComponent& renderable,
+                                                    const SceneRenderState& sceneRenderState,
+                                                    RenderStage renderStage,
+                                                    U32 cmdOffset,
+                                                    U32 cmdIndex) {
+
+        commandIndex(renderable, cmdOffset, cmdIndex);
+        return getDrawPackage(renderable, sceneRenderState, renderStage);
+    }
+
     static void commandIndex(RenderingComponent& renderable, U32 index, U32 offset) {
         renderable.commandIndex(index);
         renderable.commandOffset(index);
