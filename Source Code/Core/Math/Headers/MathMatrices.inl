@@ -1419,7 +1419,7 @@ void mat3<T>::setScale(const vec3<U> &v) {
 }
 
 template<typename T>
-void mat3<T>::orthonormalize(void) {
+void mat3<T>::orthoNormalize(void) {
     vec3<T> x(mat[0], mat[1], mat[2]);
     x.normalize();
     vec3<T> y(mat[3], mat[4], mat[5]);
@@ -2069,6 +2069,13 @@ T mat4<T>::elementSum() const {
            mat[4]  + mat[5]  + mat[6]  + mat[7]  +
            mat[8]  + mat[9]  + mat[10] + mat[11] +
            mat[12] + mat[13] + mat[14] + mat[15];
+}
+
+template<typename T>
+void mat4<T>::orthoNormalize() {
+    _comp.right.normalize();
+    _comp.up.normalize();
+    _comp.dir.normalize();
 }
 
 template<typename T>

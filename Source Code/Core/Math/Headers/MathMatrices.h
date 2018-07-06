@@ -428,7 +428,7 @@ class mat3 {
     template<typename U>
     void setScale(const vec3<U> &v);
 
-    void orthonormalize();
+    void orthoNormalize();
 
     union {
         struct {
@@ -589,6 +589,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
 
     T det() const noexcept;
     T elementSum() const;
+    void orthoNormalize();
     void inverse();
     void transpose();
     void inverseTranspose();
@@ -679,6 +680,10 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         T m[4][4];
         simd_vector<T> _reg[4];
         vec4<T> _vec[4];
+        struct
+        {
+            vec4<T> right, up, dir, position;
+        } _comp;
     };
 };
 

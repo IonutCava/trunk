@@ -340,11 +340,12 @@ bool Editor::renderGizmos(const U64 deltaTime) {
                                      NULL, 
                                      _transformSettings.useSnap ? &_transformSettings.snap[0] : NULL);
 
+                //ToDo: This seems slow as hell, but it works. Should I bother? -Ionut
                 TransformValues values;  vec3<F32> euler;
                 ImGuizmo::DecomposeMatrixToComponents(matrix, values._translation, euler._v, values._scale);
-                values._orientation.fromEuler(euler);
+                matrix.orthoNormalize();
+                values._orientation.fromMatrix(mat3<F32>(matrix));
                 transform->setTransform(values);
-                //transform->setTransforms(matrix);
 
                 ImGui::Render();
                 renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID(), false);

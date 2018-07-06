@@ -162,6 +162,8 @@ class MemoryTracker {
         if (!MemoryTracker::LogAllAllocations && sizeLeaked > 0) {
             output.append("Total leaked bytes: ");
             output.append(to_stringImpl(sizeLeaked).c_str());
+            output.append(" / MB: ");
+            output.append(to_stringImpl((sizeLeaked / 1024.0f) / 1024).c_str());
             output.append("\n");
         } 
         return output;

@@ -68,8 +68,12 @@ glShaderProgram::~glShaderProgram()
 
     // delete shader program
     if (_shaderProgramID > 0 && _shaderProgramID != GLUtil::_invalidObjectID) {
-        GL_API::deleteShaderPrograms(1, &_shaderProgramID);
-        // glDeleteProgramPipelines(1, &_shaderProgramID);
+        if (Config::USE_SEPARATE_SHADER_OBJECTS) {
+            glDeleteProgramPipelines(1, &_shaderProgramID);
+        } else {
+            GL_API::deleteShaderPrograms(1, &_shaderProgramID);
+        }
+        
     }
 }
 
@@ -98,12 +102,16 @@ bool glShaderProgram::validateInternal() {
     }
 
     GLint status = 0;
-    glValidateProgram(_shaderProgramID);
-    glGetProgramiv(_shaderProgramID, GL_VALIDATE_STATUS, &status);
-    // glValidateProgramPipeline(_shaderProgramID);
-    // glGetProgramPipelineiv(_shaderProgramID, GL_VALIDATE_STATUS, &status);
-    // we print errors in debug and in release, but everything else only in
-    // debug
+
+    if (Config::USE_SEPARATE_SHADER_OBJECTS) {
+        glValidateProgramPipeline(_shaderProgramID);
+        glGetProgramPipelineiv(_shaderProgramID, GL_VALIDATE_STATUS, &status);
+    } else {
+        glValidateProgram(_shaderProgramID);
+        glGetProgramiv(_shaderProgramID, GL_VALIDATE_STATUS, &status);
+    }
+    
+    // we print errors in debug and in release, but everything else only in debug
     // the validation log is only retrieved if we request it. (i.e. in release,
     // if the shader is validated, it isn't retrieved)
     if (status == 0) {
@@ -173,9 +181,13 @@ bool glShaderProgram::update(const U64 deltaTimeUS) {
 stringImpl glShaderProgram::getLog() const {
     // Query the size of the log
     GLint length = 0;
-    glGetProgramiv(_shaderProgramIDTemp, GL_INFO_LOG_LENGTH, &length);
-    // glGetProgramPipelineiv(_shaderProgramIDTemp, GL_INFO_LOG_LENGTH,
-    // &length);
+
+    if (Config::USE_SEPARATE_SHADER_OBJECTS) {
+        glGetProgramPipelineiv(_shaderProgramIDTemp, GL_INFO_LOG_LENGTH, &length);
+    } else {
+        glGetProgramiv(_shaderProgramIDTemp, GL_INFO_LOG_LENGTH, &length);
+    }
+
     // If we actually have something in the validation log
     if (length > 1) {
         stringImpl validationBuffer;

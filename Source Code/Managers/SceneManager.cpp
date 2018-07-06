@@ -860,16 +860,15 @@ bool LoadSave::loadScene(Scene& activeScene) {
     }
 
     ByteBuffer save;
-    save.loadFromFile(path, saveFile);
-
-    if (!Attorney::SceneLoadSave::load(activeScene, save)) {
-        //Remove the save and try the backup
-        deleteFile(path, saveFile);
-        if (!isLoadFromBackup) {
-            return loadScene(activeScene);
+    if (save.loadFromFile(path, saveFile)) {
+        if (!Attorney::SceneLoadSave::load(activeScene, save)) {
+            //Remove the save and try the backup
+            deleteFile(path, saveFile);
+            if (!isLoadFromBackup) {
+                return loadScene(activeScene);
+            }
         }
     }
-
     return false;
 }
 
@@ -883,7 +882,9 @@ bool LoadSave::saveScene(const Scene& activeScene) {
     stringImpl saveFile = "current_save.sav";
     stringImpl bakSaveFile = "save.bak";
 
-    copyFile(path, saveFile, path, bakSaveFile, true);
+    if (fileExists((path + saveFile).c_str())) {
+        copyFile(path, saveFile, path, bakSaveFile, true);
+    }
 
     ByteBuffer save;
     if (Attorney::SceneLoadSave::save(activeScene, save)) {
