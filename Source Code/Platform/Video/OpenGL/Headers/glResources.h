@@ -105,10 +105,8 @@ extern GLuint _invalidObjectID;
 extern GLFWwindow* _mainWindow;
 /// Background thread for loading resources
 extern GLFWwindow* _loaderWindow;
-/// GFXDevice enums to OpenGL enum translation tables
-namespace GL_ENUM_TABLE {
 /// Populate enumeration tables with appropriate API values
-void fill();
+void fillEnumTables();
 
 extern GLenum
     glBlendTable[to_const_uint(BlendProperty::COUNT)];
@@ -119,7 +117,7 @@ extern GLenum glCompareFuncTable[to_const_uint(
 extern GLenum glStencilOpTable[to_const_uint(
     StencilOperation::COUNT)];
 extern GLenum
-    glCullModeTable[to_const_uint(CullMode::COUNT)];
+    glCullModeTable[to_const_uint(CullMode::COUNT) - 1];
 extern GLenum
     glFillModeTable[to_const_uint(FillMode::COUNT)];
 extern GLenum glTextureTypeTable[to_const_uint(
@@ -136,7 +134,6 @@ extern GLenum glTextureFilterTable[to_const_uint(
 extern NS_GLIM::GLIM_ENUM glimPrimitiveType[to_const_uint(
     PrimitiveType::COUNT)];
 
-};  // namespace GL_ENUM_TABLE
 };  // namespace GLUtil
 };  // namespace Divide
 

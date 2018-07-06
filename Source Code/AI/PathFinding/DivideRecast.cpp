@@ -49,19 +49,19 @@ PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
     // find the start polygon
     status = navQuery.findNearestPoly(pStartPos, extents, _filter.get(),
                                       &StartPoly, StartNearest);
-    if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK))
+    if ((status & DT_FAILURE) || (status & DT_STATUS_MASK))
         return PathErrorCode::PATH_ERROR_NO_NEAREST_POLY_START;  // couldn't find a polygon
 
     // find the end polygon
     status = navQuery.findNearestPoly(pEndPos, extents, _filter.get(), &EndPoly,
                                       EndNearest);
-    if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK))
+    if ((status & DT_FAILURE) || (status & DT_STATUS_MASK))
         return PathErrorCode::PATH_ERROR_NO_NEAREST_POLY_END;  // couldn't find a polygon
 
     status =
         navQuery.findPath(StartPoly, EndPoly, StartNearest, EndNearest,
                           _filter.get(), PolyPath, &nPathCount, MAX_PATHPOLY);
-    if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) {
+    if ((status & DT_FAILURE) || (status & DT_STATUS_MASK)) {
         return PathErrorCode::PATH_ERROR_COULD_NOT_CREATE_PATH;  // couldn't create a path
     }
 
@@ -71,7 +71,7 @@ PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
     status = navQuery.findStraightPath(StartNearest, EndNearest, PolyPath,
                                        nPathCount, StraightPath, nullptr,
                                        nullptr, &nVertCount, MAX_PATHVERT);
-    if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) {
+    if ((status & DT_FAILURE) || (status & DT_STATUS_MASK)) {
         return PathErrorCode::PATH_ERROR_NO_STRAIGHT_PATH_CREATE;  // couldn't create a path
     }
 
@@ -192,7 +192,7 @@ bool DivideRecast::findNearestPolyOnNavmesh(const NavigationMesh& navMesh,
 
     dtStatus status = navMesh.getNavQuery().findNearestPoly(
         position._v, extents._v, _filter.get(), &resultPoly, resultPt._v);
-    if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) {
+    if ((status & DT_FAILURE) || (status & DT_STATUS_MASK)) {
         return false;  // couldn't find a polygon
     }
     return true;

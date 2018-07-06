@@ -85,7 +85,7 @@ class RenderingComponent : public SGNComponent {
     inline U32 drawOrder() const { return _drawOrder; }
 
     ShaderProgram* const getDrawShader(
-        RenderStage renderStage = RenderStage::DISPLAY_STAGE);
+        RenderStage renderStage = RenderStage::DISPLAY);
 
     size_t getDrawStateHash(RenderStage renderStage);
 

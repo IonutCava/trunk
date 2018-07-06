@@ -166,8 +166,8 @@ class Material : public Resource {
             return *this;
         }
 
-        U32 _shadingFunction[to_const_uint(ShaderType::COUNT)][to_const_uint(
-            BumpMethod::COUNT)];
+        U32 _shadingFunction[to_const_uint(ShaderType::COUNT)]
+                            [to_const_uint(BumpMethod::COUNT)];
 
        protected:
         StateTracker<bool> _trackedBools;
@@ -276,10 +276,10 @@ class Material : public Resource {
     }
 
     inline void setShaderDefines(const stringImpl& shaderDefines) {
-        setShaderDefines(RenderStage::DISPLAY_STAGE, shaderDefines);
-        setShaderDefines(RenderStage::Z_PRE_PASS_STAGE, shaderDefines);
-        setShaderDefines(RenderStage::SHADOW_STAGE, shaderDefines);
-        setShaderDefines(RenderStage::REFLECTION_STAGE, shaderDefines);
+        setShaderDefines(RenderStage::DISPLAY, shaderDefines);
+        setShaderDefines(RenderStage::Z_PRE_PASS, shaderDefines);
+        setShaderDefines(RenderStage::SHADOW, shaderDefines);
+        setShaderDefines(RenderStage::REFLECTION, shaderDefines);
     }
 
     /// toggle multi-threaded shader loading on or off for this material
@@ -295,13 +295,13 @@ class Material : public Resource {
         const stringImpl& shader,
         const bool computeOnAdd,
         const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>()) {
-        setShaderProgram(shader, RenderStage::DISPLAY_STAGE, computeOnAdd,
+        setShaderProgram(shader, RenderStage::DISPLAY, computeOnAdd,
                          shaderCompileCallback);
-        setShaderProgram(shader, RenderStage::Z_PRE_PASS_STAGE, computeOnAdd,
+        setShaderProgram(shader, RenderStage::Z_PRE_PASS, computeOnAdd,
                          shaderCompileCallback);
-        setShaderProgram(shader, RenderStage::SHADOW_STAGE, computeOnAdd,
+        setShaderProgram(shader, RenderStage::SHADOW, computeOnAdd,
                          shaderCompileCallback);
-        setShaderProgram(shader, RenderStage::REFLECTION_STAGE, computeOnAdd,
+        setShaderProgram(shader, RenderStage::REFLECTION, computeOnAdd,
                          shaderCompileCallback);
     }
     size_t setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,
@@ -328,8 +328,7 @@ class Material : public Resource {
     inline Texture* const getTexture(ShaderProgram::TextureUsage textureUsage) {
         return _textures[to_uint(textureUsage)];
     }
-    ShaderInfo& getShaderInfo(
-        RenderStage renderStage = RenderStage::DISPLAY_STAGE);
+    ShaderInfo& getShaderInfo(RenderStage renderStage = RenderStage::DISPLAY);
 
     inline const TextureOperation& getTextureOperation() const {
         return _operation;
@@ -381,7 +380,7 @@ class Material : public Resource {
    private:
     static bool _shaderQueueLocked;
     static bool _serializeShaderLoad;
-    static I32  _invalidShaderKey;
+    static I32 _invalidShaderKey;
 
     typedef std::tuple<U32, ResourceDescriptor, DELEGATE_CBK<>>
         ShaderQueueElement;

@@ -8,7 +8,7 @@ namespace Divide {
 
 AnimationComponent::AnimationComponent(SceneAnimator* animator,
                                        SceneGraphNode& parentSGN)
-    : SGNComponent(SGNComponent::ComponentType::SGN_COMP_ANIMATION, parentSGN),
+    : SGNComponent(SGNComponent::ComponentType::ANIMATION, parentSGN),
       _animator(animator),
       _skeletonAvailable(false),
       _playAnimations(true),
@@ -30,7 +30,7 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator,
                                               sizeof(mat4<F32>));
 
     parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
-        ShaderBufferLocation::SHADER_BUFFER_BONE_TRANSFORMS,
+        ShaderBufferLocation::BONE_TRANSFORMS,
        *_boneTransformBuffer[_readBuffer]);
 }
 
@@ -133,10 +133,10 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
     _skeletonAvailable = false;
 
     _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
-        ShaderBufferLocation::SHADER_BUFFER_BONE_TRANSFORMS,
+        ShaderBufferLocation::BONE_TRANSFORMS,
         *_boneTransformBuffer[_readBuffer]);
 
-    if (GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY_STAGE ||
+    if (GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY ||
         !_playAnimations || _currentTimeStamp < 0.0) {
         return true;
     }

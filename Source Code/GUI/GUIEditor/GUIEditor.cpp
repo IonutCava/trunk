@@ -64,7 +64,7 @@ bool GUIEditor::init() {
 
     if (_editorWindow) {
         // Add the Window to the GUI Root Sheet
-        CEGUI_DEFAULT_CONTEXT.getRootWindow()->addChild(_editorWindow);
+        CEGUI_DEFAULT_CTX.getRootWindow()->addChild(_editorWindow);
         // Now register the handlers for the events (Clicking, typing, etc)
         RegisterHandlers();
     } else {

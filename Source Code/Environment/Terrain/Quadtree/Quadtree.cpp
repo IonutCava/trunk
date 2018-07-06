@@ -20,9 +20,9 @@ void Quadtree::createDrawCommands(
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     assert(_root);
     U32 options = to_uint(ChunkBit::CHUNK_BIT_TESTCHILDREN);
-    if (GFX_DEVICE.getRenderStage() == RenderStage::REFLECTION_STAGE) {
+    if (GFX_DEVICE.getRenderStage() == RenderStage::REFLECTION) {
         options |= to_uint(ChunkBit::CHUNK_BIT_WATERREFLECTION);
-    } else if (GFX_DEVICE.getRenderStage() == RenderStage::SHADOW_STAGE) {
+    } else if (GFX_DEVICE.getRenderStage() == RenderStage::SHADOW) {
         options |= to_uint(ChunkBit::CHUNK_BIT_SHADOWMAP);
     }
     _root->createDrawCommand(options, sceneRenderState, drawCommandsOut);

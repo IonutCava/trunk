@@ -36,19 +36,22 @@ char* parseRow(char* buf, char* bufEnd, char* row, I32 len) {
                 cont = true;
                 break;  // multi row
             case '\n': {
-                if (start) break;
+                if (start)
+                    break;
                 done = true;
             } break;
             case '\r':
                 break;
             case '\t':
             case ' ':
-                if (start) break;
+                if (start)
+                    break;
             default: {
                 start = false;
                 cont = false;
                 row[n++] = c;
-                if (n >= len - 1) done = true;
+                if (n >= len - 1)
+                    done = true;
             } break;
         }
     }
@@ -60,26 +63,31 @@ I32 parseFace(char* row, I32* data, I32 n, I32 vcnt) {
     I32 j = 0;
     while (*row != '\0') {
         // Skip initial white space
-        while (*row != '\0' && (*row == ' ' || *row == '\t')) row++;
+        while (*row != '\0' && (*row == ' ' || *row == '\t'))
+            row++;
         char* s = row;
         // Find vertex delimiter and terminated the string there for conversion.
         while (*row != '\0' && *row != ' ' && *row != '\t') {
-            if (*row == '/') *row = '\0';
+            if (*row == '/')
+                *row = '\0';
             row++;
         }
 
-        if (*s == '\0') continue;
+        if (*s == '\0')
+            continue;
 
         I32 vi = atoi(s);
         data[j++] = vi < 0 ? vi + vcnt : vi - 1;
-        if (j >= n) return j;
+        if (j >= n)
+            return j;
     }
     return j;
 }
 
 bool loadMeshFile(NavModelData& outData, const char* filename) {
     FILE* fp = fopen(filename, "rb");
-    if (!fp) return false;
+    if (!fp)
+        return false;
 
     outData.setName(filename);
     fseek(fp, 0, SEEK_END);
@@ -108,12 +116,14 @@ bool loadMeshFile(NavModelData& outData, const char* filename) {
         row[0] = '\0';
         src = parseRow(src, srcEnd, row, sizeof(row) / sizeof(char));
         // Skip comments
-        if (row[0] == '#') continue;
+        if (row[0] == '#')
+            continue;
 
         if (row[0] == 'v' && row[1] != 'n' && row[1] != 't') {
             // Vertex pos
             result = sscanf(row + 1, "%f %f %f", &x, &y, &z);
-            if (result != 0) addVertex(&outData, vec3<F32>(x, y, z));
+            if (result != 0)
+                addVertex(&outData, vec3<F32>(x, y, z));
         }
         if (row[0] == 'f') {
             // Faces
@@ -166,16 +176,19 @@ bool loadMeshFile(NavModelData& outData, const char* filename) {
 }
 
 bool saveMeshFile(const NavModelData& inData, const char* filename) {
-    if (!inData.getVertCount() || !inData.getTriCount()) return false;
+    if (!inData.getVertCount() || !inData.getTriCount())
+        return false;
 
     // Create the file if it doesn't exists
     FILE* fp = nullptr;
     fopen_s(&fp, filename, "w");
-    if (fp) fclose(fp);
+    if (fp)
+        fclose(fp);
 
     std::ofstream myfile;
     myfile.open(filename);
-    if (!myfile.is_open()) return false;
+    if (!myfile.is_open())
+        return false;
 
     F32* vstart = inData._vertices;
     I32* tstart = inData._triangles;
@@ -194,7 +207,8 @@ bool saveMeshFile(const NavModelData& inData, const char* filename) {
     return true;
 }
 
-NavModelData mergeModels(NavModelData& a, NavModelData& b,
+NavModelData mergeModels(NavModelData& a,
+                         NavModelData& b,
                          bool delOriginals /* = false*/) {
     NavModelData mergedData;
     if (a.getVerts() || b.getVerts()) {
@@ -208,7 +222,8 @@ NavModelData mergeModels(NavModelData& a, NavModelData& b,
         I32 totalVertCt = (a.getVertCount() + b.getVertCount());
         I32 newCap = 8;
 
-        while (newCap < totalVertCt) newCap *= 2;
+        while (newCap < totalVertCt)
+            newCap *= 2;
 
         mergedData._vertices = MemoryManager_NEW F32[newCap * 3];
         mergedData._vertexCapacity = newCap;
@@ -222,7 +237,8 @@ NavModelData mergeModels(NavModelData& a, NavModelData& b,
         I32 totalTriCt = (a.getTriCount() + b.getTriCount());
         newCap = 8;
 
-        while (newCap < totalTriCt) newCap *= 2;
+        while (newCap < totalTriCt)
+            newCap *= 2;
 
         mergedData._triangles = MemoryManager_NEW I32[newCap * 3];
         mergedData._triangleCapacity = newCap;
@@ -276,8 +292,10 @@ void addVertex(NavModelData* modelData, const vec3<F32>& vertex) {
     modelData->_vertexCount++;
 }
 
-void addTriangle(NavModelData* modelData, const vec3<U32>& triangleIndices,
-                 U32 triangleIndexOffset, const SamplePolyAreas& areaType) {
+void addTriangle(NavModelData* modelData,
+                 const vec3<U32>& triangleIndices,
+                 U32 triangleIndexOffset,
+                 const SamplePolyAreas& areaType) {
     if (modelData->getTriCount() + 1 > modelData->_triangleCapacity) {
         modelData->_triangleCapacity = !modelData->_triangleCapacity
                                            ? 8
@@ -309,7 +327,8 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
     assert(sgn != nullptr);
 
     if (sgn->getComponent<NavigationComponent>()->navigationContext() !=
-            NavigationComponent::NavigationContext::NODE_IGNORE &&  // Ignore if specified
+            NavigationComponent::NavigationContext::NODE_IGNORE &&  // Ignore if
+                                                                    // specified
         box.getHeight() > 0.05f)  // Skip small objects
     {
         SceneNode* sn = sgn->getNode();
@@ -318,14 +337,13 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
         U32 ignoredNodeType = to_uint(SceneNodeType::TYPE_ROOT) |
                               to_uint(SceneNodeType::TYPE_LIGHT) |
                               to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
-                              to_uint(SceneNodeType::TYPE_TRIGGER) | 
-                              to_uint(SceneNodeType::TYPE_SKY) | 
+                              to_uint(SceneNodeType::TYPE_TRIGGER) |
+                              to_uint(SceneNodeType::TYPE_SKY) |
                               to_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
 
-        U32 allowedNodeType =
-            to_uint(SceneNodeType::TYPE_WATER) |
-            to_uint(SceneNodeType::TYPE_OBJECT3D) |
-            to_uint(SceneNodeType::TYPE_VEGETATION_TREES);
+        U32 allowedNodeType = to_uint(SceneNodeType::TYPE_WATER) |
+                              to_uint(SceneNodeType::TYPE_OBJECT3D) |
+                              to_uint(SceneNodeType::TYPE_VEGETATION_TREES);
 
         if (!bitCompare(allowedNodeType, to_uint(nodeType))) {
             if (!bitCompare(ignoredNodeType, to_uint(nodeType))) {
@@ -336,15 +354,16 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
         }
 
         if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
-            Object3D::ObjectType crtType = dynamic_cast<Object3D*>(sn)->getObjectType();
-            if (crtType == Object3D::ObjectType::TEXT_3D || 
-                crtType == Object3D::ObjectType::MESH || 
+            Object3D::ObjectType crtType =
+                dynamic_cast<Object3D*>(sn)->getObjectType();
+            if (crtType == Object3D::ObjectType::TEXT_3D ||
+                crtType == Object3D::ObjectType::MESH ||
                 crtType == Object3D::ObjectType::FLYWEIGHT) {
-                    goto next;
+                goto next;
             }
         }
 
-        MeshDetailLevel level = MeshDetailLevel::DETAIL_ABSOLUTE;
+        MeshDetailLevel level = MeshDetailLevel::MAXIMUM;
         VertexBuffer* geometry = nullptr;
         SamplePolyAreas areaType = SamplePolyAreas::SAMPLE_AREA_OBSTACLE;
 
@@ -352,15 +371,16 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
             case SceneNodeType::TYPE_WATER: {
                 if (!sgn->getComponent<NavigationComponent>()
                          ->navMeshDetailOverride())
-                    level = MeshDetailLevel::DETAIL_BOUNDINGBOX;
+                    level = MeshDetailLevel::BOUNDINGBOX;
                 areaType = SamplePolyAreas::SAMPLE_POLYAREA_WATER;
             } break;
             case SceneNodeType::TYPE_OBJECT3D: {
                 // Check if we need to override detail level
                 if (!sgn->getComponent<NavigationComponent>()
                          ->navMeshDetailOverride() &&
-                    sgn->usageContext() == SceneGraphNode::UsageContext::NODE_STATIC) {
-                    level = MeshDetailLevel::DETAIL_BOUNDINGBOX;
+                    sgn->usageContext() ==
+                        SceneGraphNode::UsageContext::NODE_STATIC) {
+                    level = MeshDetailLevel::BOUNDINGBOX;
                 }
                 if (dynamic_cast<Object3D*>(sn)->getObjectType() ==
                     Object3D::ObjectType::TERRAIN) {
@@ -383,7 +403,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
 
         U32 currentTriangleIndexOffset = outData.getVertCount();
 
-        if (level == MeshDetailLevel::DETAIL_ABSOLUTE) {
+        if (level == MeshDetailLevel::MAXIMUM) {
             if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
                 geometry = dynamic_cast<Object3D*>(sn)->getGeometryVB();
             } else /*nodeType == TYPE_WATER*/ {
@@ -402,7 +422,8 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
                 dynamic_cast<Object3D*>(sn)->getTriangles();
             if (nodeType != SceneNodeType::TYPE_OBJECT3D ||
                 (nodeType == SceneNodeType::TYPE_OBJECT3D &&
-                 dynamic_cast<Object3D*>(sn)->getObjectType() != Object3D::ObjectType::TERRAIN)) {
+                 dynamic_cast<Object3D*>(sn)->getObjectType() !=
+                     Object3D::ObjectType::TERRAIN)) {
                 mat4<F32> nodeTransform =
                     sgn->getComponent<PhysicsComponent>()->getWorldMatrix();
                 for (U32 i = 0; i < vertices.size(); ++i) {
@@ -422,7 +443,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
                 addTriangle(&outData, triangles[i], currentTriangleIndexOffset,
                             areaType);
             }
-        } else if (level == MeshDetailLevel::DETAIL_BOUNDINGBOX) {
+        } else if (level == MeshDetailLevel::BOUNDINGBOX) {
             const vec3<F32>* vertices = box.getPoints();
 
             for (U32 i = 0; i < 8; i++) {
@@ -440,7 +461,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
                 }
             }
         } else {
-            Console::errorfn(Locale::get("ERROR_RECAST_DETAIL_LEVEL"), level);
+            Console::errorfn(Locale::get("ERROR_RECAST_LEVEL"), level);
         }
 
         Console::printfn(Locale::get("NAV_MESH_ADD_NODE"),

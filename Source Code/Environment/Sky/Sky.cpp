@@ -18,15 +18,15 @@ Sky::Sky(const stringImpl& name)
       _exclusionMask(0) {
     // The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't
     // have real "depth"
-    _renderState.addToDrawExclusionMask(RenderStage::SHADOW_STAGE);
+    _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
 
     // Generate a render state
     RenderStateBlockDescriptor skyboxDesc;
-    skyboxDesc.setCullMode(CullMode::CULL_MODE_CCW);
+    skyboxDesc.setCullMode(CullMode::CCW);
     // skyboxDesc.setZReadWrite(false, false); - not needed anymore. Using
     // gl_Position.z = gl_Position.w - 0.0001 in GLSL -Ionut
     _skyboxRenderStateHash = GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
-    skyboxDesc.setCullMode(CullMode::CULL_MODE_CW);
+    skyboxDesc.setCullMode(CullMode::CW);
     _skyboxRenderStateReflectedHash =
         GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
 }
@@ -48,7 +48,7 @@ bool Sky::load() {
     skyboxSampler.toggleMipMaps(false);
     skyboxSampler.toggleSRGBColorSpace(true);
     skyboxSampler.setAnisotropy(16);
-    skyboxSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
+    skyboxSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
 
     ResourceDescriptor skyboxTextures("SkyboxTextures");
     skyboxTextures.setResourceLocation(
@@ -68,7 +68,7 @@ bool Sky::load() {
     _skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
 
     assert(_skyShader);
-    _skyShader->Uniform("texSky", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+    _skyShader->Uniform("texSky", ShaderProgram::TextureUsage::UNIT0);
     _skyShader->Uniform("enable_sun", true);
     _sky->setResolution(4);
     Console::printfn(Locale::get("CREATE_SKY_RES_OK"));
@@ -92,7 +92,7 @@ void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
 bool Sky::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     if (_sky->onDraw(sgn, currentStage)) {
         sgn.getComponent<RenderingComponent>()->makeTextureResident(
-            *_skybox, to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
+            *_skybox, to_uint(ShaderProgram::TextureUsage::UNIT0));
         return true;
     }
     return false;
@@ -105,7 +105,7 @@ void Sky::getDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand cmd;
     cmd.renderWireframe(
         sgn.getComponent<RenderingComponent>()->renderWireframe());
-    cmd.stateHash(renderStage == RenderStage::REFLECTION_STAGE
+    cmd.stateHash(renderStage == RenderStage::REFLECTION
                       ? _skyboxRenderStateReflectedHash
                       : _skyboxRenderStateHash);
     cmd.shaderProgram(_skyShader);

@@ -10,7 +10,7 @@
 namespace Divide {
 
 CubeShadowMap::CubeShadowMap(Light* light, Camera* shadowCamera)
-    : ShadowMap(light, shadowCamera, ShadowType::SHADOW_TYPE_CubeMap) {
+    : ShadowMap(light, shadowCamera, ShadowType::CubeMap) {
     Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(),
                      "Single Shadow Map");
     // Default filters, LINEAR is OK for this
@@ -19,11 +19,11 @@ CubeShadowMap::CubeShadowMap(Light* light, Camera* shadowCamera)
                                          GFXDataFormat::UNSIGNED_INT);
 
     SamplerDescriptor depthMapSampler;
-    depthMapSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
+    depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     depthMapSampler.toggleMipMaps(false);
     depthMapSampler._useRefCompare = true;  //< Use compare function
     depthMapSampler._cmpFunc =
-        ComparisonFunction::CMP_FUNC_LEQUAL;  //< Use less or equal
+        ComparisonFunction::LEQUAL;  //< Use less or equal
     depthMapDescriptor.setSampler(depthMapSampler);
 
     _depthMap = GFX_DEVICE.newFB();
@@ -63,6 +63,6 @@ void CubeShadowMap::render(SceneRenderState& renderState,
                                 _light->getPosition(),
                                 sceneRenderFunction,
                                 vec2<F32>(0.1f, _light->getRange()),
-                                RenderStage::SHADOW_STAGE);
+                                RenderStage::SHADOW);
 }
 };

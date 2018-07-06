@@ -10,7 +10,7 @@
 namespace Divide {
 
 PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN)
-    : SGNComponent(SGNComponent::ComponentType::SGN_COMP_PHYSICS, parentSGN),
+    : SGNComponent(SGNComponent::ComponentType::PHYSICS, parentSGN),
       _physicsCollisionGroup(PhysicsGroup::NODE_COLLIDE_IGNORE),
       _transformUpdated(true),
       _physicsAsset(nullptr),

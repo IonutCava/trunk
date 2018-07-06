@@ -25,8 +25,8 @@ glGenericVertexData::glGenericVertexData(bool persistentMapped)
     _currentReadQuery = 0;
     _transformFeedback = 0;
     _currentWriteQuery = 0;
-    _vertexArray[to_uint(GVDUsage::GVD_USAGE_DRAW)] = 0;
-    _vertexArray[to_uint(GVDUsage::GVD_USAGE_FDBCK)] = 0;
+    _vertexArray[to_uint(GVDUsage::DRAW)] = 0;
+    _vertexArray[to_uint(GVDUsage::FDBCK)] = 0;
 
     for (U8 i = 0; i < 2; ++i) {
         _feedbackQueries[i] = nullptr;
@@ -43,16 +43,14 @@ glGenericVertexData::~glGenericVertexData() {
     // Make sure we don't have any of our VAOs bound
     GL_API::setActiveVAO(0);
     // Delete the rendering VAO
-    if (_vertexArray[to_uint(GVDUsage::GVD_USAGE_DRAW)] > 0) {
-        glDeleteVertexArrays(1,
-                             &_vertexArray[to_uint(GVDUsage::GVD_USAGE_DRAW)]);
-        _vertexArray[to_uint(GVDUsage::GVD_USAGE_DRAW)] = 0;
+    if (_vertexArray[to_uint(GVDUsage::DRAW)] > 0) {
+        glDeleteVertexArrays(1, &_vertexArray[to_uint(GVDUsage::DRAW)]);
+        _vertexArray[to_uint(GVDUsage::DRAW)] = 0;
     }
     // Delete the transform feedback VAO
-    if (_vertexArray[to_uint(GVDUsage::GVD_USAGE_FDBCK)] > 0) {
-        glDeleteVertexArrays(1,
-                             &_vertexArray[to_uint(GVDUsage::GVD_USAGE_FDBCK)]);
-        _vertexArray[to_uint(GVDUsage::GVD_USAGE_FDBCK)] = 0;
+    if (_vertexArray[to_uint(GVDUsage::FDBCK)] > 0) {
+        glDeleteVertexArrays(1, &_vertexArray[to_uint(GVDUsage::FDBCK)]);
+        _vertexArray[to_uint(GVDUsage::FDBCK)] = 0;
     }
     // Make sure we don't have the indirect draw buffer bound
     // glBindBuffer(GL_QUERY_BUFFER_AMD, 0);
@@ -198,9 +196,8 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
     bool feedbackActive = (command.drawToBuffer() && !_feedbackBuffers.empty());
     // Activate the appropriate vertex array object for the type of rendering we
     // requested
-    GL_API::setActiveVAO(
-        _vertexArray[to_uint(feedbackActive ? GVDUsage::GVD_USAGE_FDBCK
-                                            : GVDUsage::GVD_USAGE_DRAW)]);
+    GL_API::setActiveVAO(_vertexArray[to_uint(
+        feedbackActive ? GVDUsage::FDBCK : GVDUsage::DRAW)]);
     // Update vertex attributes if needed (e.g. if offsets changed)
     SetAttributes(feedbackActive);
 
@@ -208,8 +205,7 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
     if (feedbackActive) {
         GL_API::setActiveTransformFeedback(_transformFeedback);
         glBeginTransformFeedback(
-            GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[to_uint(
-                command.primitiveType())]);
+            GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())]);
         // Count the number of primitives written to the buffer
         glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN,
                      _feedbackQueries[_currentWriteQuery][command.queryID()]);
@@ -219,7 +215,7 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
     if (!Config::Profile::DISABLE_DRAWS) {
         GLenum type = command.renderWireframe()
                           ? GL_LINE_LOOP
-                          : GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[to_uint(
+                          : GLUtil::glPrimitiveTypeTable[to_uint(
                                 command.primitiveType())];
 
         GLUtil::bufferPtr offset =
@@ -251,7 +247,8 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
 }
 
 void glGenericVertexData::SetIndexBuffer(const vectorImpl<U32>& indices,
-                                         bool dynamic, bool stream) {
+                                         bool dynamic,
+                                         bool stream) {
     bool addBuffer = !indices.empty();
 
     if (addBuffer) {
@@ -271,9 +268,13 @@ void glGenericVertexData::SetIndexBuffer(const vectorImpl<U32>& indices,
 }
 
 /// Specify the structure and data of the given buffer
-void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount,
-                                    size_t elementSize, U8 sizeFactor,
-                                    void* data, bool dynamic, bool stream,
+void glGenericVertexData::SetBuffer(U32 buffer,
+                                    U32 elementCount,
+                                    size_t elementSize,
+                                    U8 sizeFactor,
+                                    void* data,
+                                    bool dynamic,
+                                    bool stream,
                                     bool persistentMapped) {
     // Make sure the buffer exists
     DIVIDE_ASSERT(buffer >= 0 && buffer < _bufferObjects.size(),
@@ -340,8 +341,10 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount,
 
 /// Update the elementCount worth of data contained in the buffer starting from
 /// elementCountOffset size offset
-void glGenericVertexData::UpdateBuffer(U32 buffer, U32 elementCount,
-                                       U32 elementCountOffset, void* data) {
+void glGenericVertexData::UpdateBuffer(U32 buffer,
+                                       U32 elementCount,
+                                       U32 elementCountOffset,
+                                       void* data) {
     // Calculate the size of the data that needs updating
     size_t dataCurrentSize = elementCount * _elementSize[buffer];
     // Calculate the offset in the buffer in bytes from which to start writing
@@ -362,7 +365,7 @@ void glGenericVertexData::UpdateBuffer(U32 buffer, U32 elementCount,
         // Offset the data pointer by the required offset taking in account the
         // current data copy we are writing into
         GLUtil::bufferPtr dst = (U8*)_bufferPersistentData[buffer] +
-                  _startDestOffset[buffer] + offset;
+                                _startDestOffset[buffer] + offset;
         // Update the data
         memcpy(dst, data, dataCurrentSize);
         // Lock the current buffer copy until uploading to GPU visible memory is
@@ -411,7 +414,7 @@ void glGenericVertexData::SetAttributeInternal(
     // Update the attribute data
     glVertexAttribPointer(
         descriptor.attribIndex(), descriptor.componentsPerElement(),
-        GLUtil::GL_ENUM_TABLE::glDataFormat[to_uint(descriptor.dataType())],
+        GLUtil::glDataFormat[to_uint(descriptor.dataType())],
         descriptor.normalized() ? GL_TRUE : GL_FALSE,
         (GLsizei)descriptor.stride(),
         (void*)(descriptor.offset() * _elementSize[descriptor.bufferIndex()]));

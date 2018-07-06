@@ -10,7 +10,7 @@ namespace Divide {
 FXAAPreRenderOperator::FXAAPreRenderOperator(Framebuffer* result,
                                              const vec2<U16>& resolution,
                                              SamplerDescriptor* const sampler)
-    : PreRenderOperator(PostFXRenderStage::FXAA_STAGE, resolution, sampler),
+    : PreRenderOperator(PostFXRenderStage::FXAA, resolution, sampler),
       _outputFB(result),
       _ready(false) {
     _samplerCopy = GFX_DEVICE.newFB();
@@ -24,7 +24,7 @@ FXAAPreRenderOperator::FXAAPreRenderOperator(Framebuffer* result,
     ResourceDescriptor fxaa("FXAA");
     fxaa.setThreadedLoading(false);
     _fxaa = CreateResource<ShaderProgram>(fxaa);
-    _fxaa->Uniform("texScreen", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+    _fxaa->Uniform("texScreen", ShaderProgram::TextureUsage::UNIT0);
     reshape(resolution.width, resolution.height);
 }
 

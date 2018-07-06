@@ -53,11 +53,11 @@ WaterPlane::WaterPlane()
     _plane->renderState().setDrawState(false);
     // The water doesn't cast shadows, doesn't need ambient occlusion and
     // doesn't have real "depth"
-    renderState().addToDrawExclusionMask(RenderStage::SHADOW_STAGE);
+    renderState().addToDrawExclusionMask(RenderStage::SHADOW);
     Console::printfn(Locale::get("REFRACTION_INIT_FB"), _resolution.x,
                      _resolution.y);
     SamplerDescriptor refractionSampler;
-    refractionSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
+    refractionSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     refractionSampler.toggleMipMaps(false);
     // Less precision for reflections
     TextureDescriptor refractionDescriptor(TextureType::TEXTURE_2D,
@@ -122,7 +122,7 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     if (_paramsDirty) {
         RenderingComponent* rComp = sgn.getComponent<RenderingComponent>();
         ShaderProgram* shader = rComp->getMaterialInstance()
-                                    ->getShaderInfo(RenderStage::DISPLAY_STAGE)
+                                    ->getShaderInfo(RenderStage::DISPLAY)
                                     .getProgram();
         shader->Uniform("_waterShininess", _shininess);
         shader->Uniform("_noiseFactor", _noiseFactor);
@@ -169,12 +169,12 @@ void WaterPlane::getDrawCommands(
     assert(renderable != nullptr);
 
     ShaderProgram* drawShader =
-        renderable->getDrawShader(depthPass ? RenderStage::Z_PRE_PASS_STAGE : RenderStage::DISPLAY_STAGE);
+        renderable->getDrawShader(depthPass ? RenderStage::Z_PRE_PASS : RenderStage::DISPLAY);
     drawShader->Uniform("underwater", _cameraUnderWater);
     GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 0);
     cmd.renderWireframe(renderable->renderWireframe());
     cmd.stateHash(
-        renderable->getMaterialInstance()->getRenderStateBlock(RenderStage::DISPLAY_STAGE));
+        renderable->getMaterialInstance()->getRenderStateBlock(RenderStage::DISPLAY));
     cmd.shaderProgram(drawShader);
     cmd.sourceBuffer(_plane->getGeometryVB());
     drawCommandsOut.push_back(cmd);
@@ -188,7 +188,7 @@ bool WaterPlane::getDrawState(RenderStage currentStage) {
     }
 
     // Make sure we are not drawing our self unless this is desired
-    if ((currentStage == RenderStage::REFLECTION_STAGE || _reflectionRendering ||
+    if ((currentStage == RenderStage::REFLECTION || _reflectionRendering ||
          _refractionRendering) &&
         !_updateSelf) {
         return false;
@@ -210,7 +210,7 @@ void WaterPlane::updateRefraction() {
     _refractionRendering = true;
     // If we are above water, process the plane's reflection. If we are below,
     // we render the scene normally
-    RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(RenderStage::DISPLAY_STAGE);
+    RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(RenderStage::DISPLAY);
     GFX_DEVICE.toggleClipPlane(_refractionPlaneID, true);
     _cameraMgr.getActiveCamera()->renderLookAt();
     // bind the refractive texture
@@ -234,7 +234,7 @@ void WaterPlane::updateReflection() {
         _reflectionRendering = true;
 
         RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(
-            _cameraUnderWater ? RenderStage::DISPLAY_STAGE : RenderStage::REFLECTION_STAGE);
+            _cameraUnderWater ? RenderStage::DISPLAY : RenderStage::REFLECTION);
         GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, true);
 
         _cameraUnderWater ? _cameraMgr.getActiveCamera()->renderLookAt()

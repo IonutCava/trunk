@@ -16,63 +16,63 @@ ptree pt;
 
 namespace {
 const char *getFilterName(TextureFilter filter) {
-    if (filter == TextureFilter::TEXTURE_FILTER_LINEAR) {
-        return "TEXTURE_FILTER_LINEAR";
-    } else if (filter == TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST) {
-        return "TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST";
-    } else if (filter == TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST) {
-        return "TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST";
-    } else if (filter == TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR) {
-        return "TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR";
-    } else if (filter == TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR) {
-        return "TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR";
+    if (filter == TextureFilter::LINEAR) {
+        return "LINEAR";
+    } else if (filter == TextureFilter::NEAREST_MIPMAP_NEAREST) {
+        return "NEAREST_MIPMAP_NEAREST";
+    } else if (filter == TextureFilter::LINEAR_MIPMAP_NEAREST) {
+        return "LINEAR_MIPMAP_NEAREST";
+    } else if (filter == TextureFilter::NEAREST_MIPMAP_LINEAR) {
+        return "NEAREST_MIPMAP_LINEAR";
+    } else if (filter == TextureFilter::LINEAR_MIPMAP_LINEAR) {
+        return "LINEAR_MIPMAP_LINEAR";
     }
 
-    return "TEXTURE_FILTER_NEAREST";
+    return "NEAREST";
 }
 
 TextureFilter getFilter(const char *filter) {
-    if (strcmp(filter, "TEXTURE_FILTER_LINEAR") == 0) {
-        return TextureFilter::TEXTURE_FILTER_LINEAR;
-    } else if (strcmp(filter, "TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST") == 0) {
-        return TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST;
-    } else if (strcmp(filter, "TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST") == 0) {
-        return TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST;
-    } else if (strcmp(filter, "TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR") == 0) {
-        return TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR;
-    } else if (strcmp(filter, "TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR") == 0) {
-        return TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+    if (strcmp(filter, "LINEAR") == 0) {
+        return TextureFilter::LINEAR;
+    } else if (strcmp(filter, "NEAREST_MIPMAP_NEAREST") == 0) {
+        return TextureFilter::NEAREST_MIPMAP_NEAREST;
+    } else if (strcmp(filter, "LINEAR_MIPMAP_NEAREST") == 0) {
+        return TextureFilter::LINEAR_MIPMAP_NEAREST;
+    } else if (strcmp(filter, "NEAREST_MIPMAP_LINEAR") == 0) {
+        return TextureFilter::NEAREST_MIPMAP_LINEAR;
+    } else if (strcmp(filter, "LINEAR_MIPMAP_LINEAR") == 0) {
+        return TextureFilter::LINEAR_MIPMAP_LINEAR;
     }
 
-    return TextureFilter::TEXTURE_FILTER_NEAREST;
+    return TextureFilter::NEAREST;
 }
 
 const char *getWrapModeName(TextureWrap wrapMode) {
-    if (wrapMode == TextureWrap::TEXTURE_CLAMP) {
-        return "TEXTURE_CLAMP";
-    } else if (wrapMode == TextureWrap::TEXTURE_CLAMP_TO_EDGE) {
-        return "TEXTURE_CLAMP_TO_EDGE";
-    } else if (wrapMode == TextureWrap::TEXTURE_CLAMP_TO_BORDER) {
-        return "TEXTURE_CLAMP_TO_BORDER";
-    } else if (wrapMode == TextureWrap::TEXTURE_DECAL) {
-        return "TEXTURE_DECAL";
+    if (wrapMode == TextureWrap::CLAMP) {
+        return "CLAMP";
+    } else if (wrapMode == TextureWrap::CLAMP_TO_EDGE) {
+        return "CLAMP_TO_EDGE";
+    } else if (wrapMode == TextureWrap::CLAMP_TO_BORDER) {
+        return "CLAMP_TO_BORDER";
+    } else if (wrapMode == TextureWrap::DECAL) {
+        return "DECAL";
     }
 
-    return "TEXTURE_REPEAT";
+    return "REPEAT";
 }
 
 TextureWrap getWrapMode(const char *wrapMode) {
-    if (strcmp(wrapMode, "TEXTURE_CLAMP") == 0) {
-        return TextureWrap::TEXTURE_CLAMP;
-    } else if (strcmp(wrapMode, "TEXTURE_CLAMP_TO_EDGE") == 0) {
-        return TextureWrap::TEXTURE_CLAMP_TO_EDGE;
-    } else if (strcmp(wrapMode, "TEXTURE_CLAMP_TO_BORDER") == 0) {
-        return TextureWrap::TEXTURE_CLAMP_TO_BORDER;
-    } else if (strcmp(wrapMode, "TEXTURE_DECAL") == 0) {
-        return TextureWrap::TEXTURE_DECAL;
+    if (strcmp(wrapMode, "CLAMP") == 0) {
+        return TextureWrap::CLAMP;
+    } else if (strcmp(wrapMode, "CLAMP_TO_EDGE") == 0) {
+        return TextureWrap::CLAMP_TO_EDGE;
+    } else if (strcmp(wrapMode, "CLAMP_TO_BORDER") == 0) {
+        return TextureWrap::CLAMP_TO_BORDER;
+    } else if (strcmp(wrapMode, "DECAL") == 0) {
+        return TextureWrap::DECAL;
     }
 
-    return TextureWrap::TEXTURE_REPEAT;
+    return TextureWrap::REPEAT;
 }
 
 const char *getBumpMethodName(Material::BumpMethod bumpMethod) {
@@ -172,17 +172,17 @@ Texture *loadTextureXML(const std::string &textureNode,
     std::string pathName(textureName.substr(0, textureName.rfind("/") + 1));
 
     TextureWrap wrapU = getWrapMode(
-        pt.get<std::string>(textureNode + ".MapU", "TEXTURE_REPEAT").c_str());
+        pt.get<std::string>(textureNode + ".MapU", "REPEAT").c_str());
     TextureWrap wrapV = getWrapMode(
-        pt.get<std::string>(textureNode + ".MapV", "TEXTURE_REPEAT").c_str());
+        pt.get<std::string>(textureNode + ".MapV", "REPEAT").c_str());
     TextureWrap wrapW = getWrapMode(
-        pt.get<std::string>(textureNode + ".MapW", "TEXTURE_REPEAT").c_str());
+        pt.get<std::string>(textureNode + ".MapW", "REPEAT").c_str());
     TextureFilter minFilterValue =
         getFilter(pt.get<std::string>(textureNode + ".minFilter",
-                                      "TEXTURE_FILTER_LINEAR").c_str());
+                                      "LINEAR").c_str());
     TextureFilter magFilterValue =
         getFilter(pt.get<std::string>(textureNode + ".magFilter",
-                                      "TEXTURE_FILTER_LINEAR").c_str());
+                                      "LINEAR").c_str());
     U32 anisotropy = pt.get(textureNode + ".anisotropy", 0);
 
     SamplerDescriptor sampDesc;
@@ -251,7 +251,7 @@ void loadConfig(const std::string &file) {
 
     I32 shadowDetailLevel = pt.get<I32>("rendering.shadowDetailLevel", 2);
     if (shadowDetailLevel <= 0) {
-        GFX_DEVICE.shadowDetailLevel(RenderDetailLevel::DETAIL_LOW);
+        GFX_DEVICE.shadowDetailLevel(RenderDetailLevel::LOW);
         par.setParam("rendering.enableShadows", false);
     } else {
         GFX_DEVICE.shadowDetailLevel(
@@ -930,14 +930,14 @@ Material *loadMaterialXML(const std::string &matName, bool rendererDependent) {
     mat->setDoubleSided(pt.get<bool>("material.doubleSided", false));
     if (boost::optional<ptree &> child =
             pt.get_child_optional("diffuseTexture1")) {
-        mat->setTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0,
+        mat->setTexture(ShaderProgram::TextureUsage::UNIT0,
                         loadTextureXML("diffuseTexture1",
                                        pt.get("diffuseTexture1.file", "none")));
     }
 
     if (boost::optional<ptree &> child =
             pt.get_child_optional("diffuseTexture2")) {
-        mat->setTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT1,
+        mat->setTexture(ShaderProgram::TextureUsage::UNIT1,
                         loadTextureXML("diffuseTexture2",
                                        pt.get("diffuseTexture2.file", "none")),
                         getTextureOperation(
@@ -947,7 +947,7 @@ Material *loadMaterialXML(const std::string &matName, bool rendererDependent) {
 
     if (boost::optional<ptree &> child = pt.get_child_optional("bumpMap")) {
         mat->setTexture(
-            ShaderProgram::TextureUsage::TEXTURE_NORMALMAP,
+            ShaderProgram::TextureUsage::NORMALMAP,
             loadTextureXML("bumpMap", pt.get("bumpMap.file", "none")));
         if (boost::optional<ptree &> child =
                 pt.get_child_optional("bumpMap.method")) {
@@ -958,13 +958,13 @@ Material *loadMaterialXML(const std::string &matName, bool rendererDependent) {
 
     if (boost::optional<ptree &> child = pt.get_child_optional("opacityMap")) {
         mat->setTexture(
-            ShaderProgram::TextureUsage::TEXTURE_OPACITY,
+            ShaderProgram::TextureUsage::OPACITY,
             loadTextureXML("opacityMap", pt.get("opacityMap.file", "none")));
     }
 
     if (boost::optional<ptree &> child = pt.get_child_optional("specularMap")) {
         mat->setTexture(
-            ShaderProgram::TextureUsage::TEXTURE_SPECULAR,
+            ShaderProgram::TextureUsage::SPECULAR,
             loadTextureXML("specularMap", pt.get("specularMap.file", "none")));
     }
 
@@ -1028,29 +1028,29 @@ void dumpMaterial(Material &mat) {
     Texture *texture = nullptr;
 
     if ((texture = mat.getTexture(
-             ShaderProgram::TextureUsage::TEXTURE_UNIT0)) != nullptr) {
+             ShaderProgram::TextureUsage::UNIT0)) != nullptr) {
         saveTextureXML("diffuseTexture1", texture, pt_writer);
     }
 
     if ((texture = mat.getTexture(
-             ShaderProgram::TextureUsage::TEXTURE_UNIT1)) != nullptr) {
+             ShaderProgram::TextureUsage::UNIT1)) != nullptr) {
         saveTextureXML("diffuseTexture2", texture, pt_writer,
                        getTextureOperationName(mat.getTextureOperation()));
     }
 
     if ((texture = mat.getTexture(
-             ShaderProgram::TextureUsage::TEXTURE_NORMALMAP)) != nullptr) {
+             ShaderProgram::TextureUsage::NORMALMAP)) != nullptr) {
         saveTextureXML("bumpMap", texture, pt_writer);
         pt_writer.put("bumpMap.method", getBumpMethodName(mat.getBumpMethod()));
     }
 
     if ((texture = mat.getTexture(
-             ShaderProgram::TextureUsage::TEXTURE_OPACITY)) != nullptr) {
+             ShaderProgram::TextureUsage::OPACITY)) != nullptr) {
         saveTextureXML("opacityMap", texture, pt_writer);
     }
 
     if ((texture = mat.getTexture(
-             ShaderProgram::TextureUsage::TEXTURE_SPECULAR)) != nullptr) {
+             ShaderProgram::TextureUsage::SPECULAR)) != nullptr) {
         saveTextureXML("specularMap", texture, pt_writer);
     }
 
@@ -1060,13 +1060,13 @@ void dumpMaterial(Material &mat) {
                       stringAlg::fromBase(shaderProg->getName()));
     }
 
-    shaderProg = mat.getShaderInfo(RenderStage::SHADOW_STAGE).getProgram();
+    shaderProg = mat.getShaderInfo(RenderStage::SHADOW).getProgram();
     if (shaderProg) {
         pt_writer.put("shaderProgram.shadowEffect",
                       stringAlg::fromBase(shaderProg->getName()));
     }
 
-    shaderProg = mat.getShaderInfo(RenderStage::Z_PRE_PASS_STAGE).getProgram();
+    shaderProg = mat.getShaderInfo(RenderStage::Z_PRE_PASS).getProgram();
     if (shaderProg) {
         pt_writer.put("shaderProgram.zPrePassEffect",
                       stringAlg::fromBase(shaderProg->getName()));

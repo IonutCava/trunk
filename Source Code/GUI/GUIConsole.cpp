@@ -17,8 +17,8 @@
 #pragma GCC diagnostic ignored "-Wall"
 #endif
 
-#ifndef CEGUI_DEFAULT_CONTEXT
-#define CEGUI_DEFAULT_CONTEXT \
+#ifndef CEGUI_DEFAULT_CTX
+#define CEGUI_DEFAULT_CTX \
     CEGUI::System::getSingleton().getDefaultGUIContext()
 #endif
 
@@ -49,7 +49,7 @@ GUIConsole::~GUIConsole() {
     if (_consoleWindow) {
         setVisible(false);
         _init = false;
-        CEGUI_DEFAULT_CONTEXT.getRootWindow()->removeChild(_consoleWindow);
+        CEGUI_DEFAULT_CTX.getRootWindow()->removeChild(_consoleWindow);
         MemoryManager::DELETE(_consoleWindow);
     }
     MemoryManager::DELETE(_cmdParser);
@@ -69,7 +69,7 @@ void GUIConsole::CreateCEGUIWindow() {
 
     if (_consoleWindow) {
         // Add the Window to the GUI Root Sheet
-        CEGUI_DEFAULT_CONTEXT.getRootWindow()->addChild(_consoleWindow);
+        CEGUI_DEFAULT_CTX.getRootWindow()->addChild(_consoleWindow);
         _outputWindow =
             static_cast<CEGUI::Listbox*>(_consoleWindow->getChild("ChatBox"));
         _editBox =

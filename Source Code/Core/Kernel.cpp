@@ -289,22 +289,22 @@ void Kernel::renderScene() {
     colorPassPolicy._colorOnly = true;
 
     // Z-prePass
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
         ->Begin(Framebuffer::defaultPolicy());
-    _sceneMgr.render(RenderStage::Z_PRE_PASS_STAGE, *this);
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)->End();
+    _sceneMgr.render(RenderStage::Z_PRE_PASS, *this);
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->End();
 
     _GFX.ConstructHIZ();
 
     if (postProcessing) {
-        _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
+        _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)
             ->Begin(Framebuffer::defaultPolicy());
     }
 
-    _sceneMgr.render(RenderStage::DISPLAY_STAGE, *this);
+    _sceneMgr.render(RenderStage::DISPLAY, *this);
 
     if (postProcessing) {
-        _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)->End();
+        _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->End();
         PostFX::getInstance().displayScene();
     }
 }
@@ -320,29 +320,29 @@ void Kernel::renderSceneAnaglyph() {
     currentCamera->setAnaglyph(true);
     currentCamera->renderLookAt();
     // Z-prePass
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
         ->Begin(Framebuffer::defaultPolicy());
-    SceneManager::getInstance().render(RenderStage::Z_PRE_PASS_STAGE, *this);
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)->End();
+    SceneManager::getInstance().render(RenderStage::Z_PRE_PASS, *this);
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->End();
     // first screen buffer
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)
         ->Begin(Framebuffer::defaultPolicy());
-    SceneManager::getInstance().render(RenderStage::DISPLAY_STAGE, *this);
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)->End();
+    SceneManager::getInstance().render(RenderStage::DISPLAY, *this);
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->End();
 
     // Render to left eye
     currentCamera->setAnaglyph(false);
     currentCamera->renderLookAt();
     // Z-prePass
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
         ->Begin(Framebuffer::defaultPolicy());
-    SceneManager::getInstance().render(RenderStage::Z_PRE_PASS_STAGE, *this);
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)->End();
+    SceneManager::getInstance().render(RenderStage::Z_PRE_PASS, *this);
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->End();
     // second screen buffer
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_ANAGLYPH)
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::ANAGLYPH)
         ->Begin(Framebuffer::defaultPolicy());
-    SceneManager::getInstance().render(RenderStage::DISPLAY_STAGE, *this);
-    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_ANAGLYPH)->End();
+    SceneManager::getInstance().render(RenderStage::DISPLAY, *this);
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::ANAGLYPH)->End();
 
     PostFX::getInstance().displayScene();
 }
@@ -466,7 +466,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _cameraMgr->pushActiveCamera(camera);
 
     // Load and render the splash screen
-    _GFX.setRenderStage(RenderStage::DISPLAY_STAGE);
+    _GFX.setRenderStage(RenderStage::DISPLAY);
     _GFX.beginFrame();
     GUISplash("divideLogo.jpg", vec2<U16>(400, 300)).render();
     _GFX.endFrame();

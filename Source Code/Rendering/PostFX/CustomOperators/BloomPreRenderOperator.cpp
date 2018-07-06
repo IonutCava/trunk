@@ -11,7 +11,7 @@ namespace Divide {
 BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* result,
                                                const vec2<U16>& resolution,
                                                SamplerDescriptor* const sampler)
-    : PreRenderOperator(PostFXRenderStage::BLOOM_STAGE, resolution, sampler),
+    : PreRenderOperator(PostFXRenderStage::BLOOM, resolution, sampler),
       _outputFB(result),
       _tempHDRFB(nullptr),
       _luminaMipLevel(0) {
@@ -38,13 +38,13 @@ BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* result,
 
     _bright = CreateResource<ShaderProgram>(bright);
     _blur = CreateResource<ShaderProgram>(blur);
-    _bright->Uniform("texScreen", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
-    _bright->Uniform("texExposure", ShaderProgram::TextureUsage::TEXTURE_UNIT1);
+    _bright->Uniform("texScreen", ShaderProgram::TextureUsage::UNIT0);
+    _bright->Uniform("texExposure", ShaderProgram::TextureUsage::UNIT1);
     _bright->Uniform("texPrevExposure", 2);
-    _blur->Uniform("texScreen", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+    _blur->Uniform("texScreen", ShaderProgram::TextureUsage::UNIT0);
     _blur->Uniform("kernelSize", 10);
-    _horizBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT_SHADER, "blurHorizontal");
-    _vertBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT_SHADER, "blurVertical");
+    _horizBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
+    _vertBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
     reshape(width, height);
 }
 
@@ -103,28 +103,28 @@ void BloomPreRenderOperator::operation() {
     _outputFB->Begin(Framebuffer::defaultPolicy());
     {
         // screen FB
-        _inputFB[0]->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
+        _inputFB[0]->Bind(to_uint(ShaderProgram::TextureUsage::UNIT0));
         GFX_DEVICE.drawPoints(1, defaultStateHash, _bright);
     }
     _outputFB->End();
 
     _blur->bind();
     // Blur horizontally
-    _blur->SetSubroutine(ShaderType::FRAGMENT_SHADER, _horizBlur);
+    _blur->SetSubroutine(ShaderType::FRAGMENT, _horizBlur);
     _tempBloomFB->Begin(Framebuffer::defaultPolicy());
     {
         // bright spots
-        _outputFB->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
+        _outputFB->Bind(to_uint(ShaderProgram::TextureUsage::UNIT0));
         GFX_DEVICE.drawPoints(1, defaultStateHash, _blur);
     }
     _tempBloomFB->End();
 
     // Blur vertically
-    _blur->SetSubroutine(ShaderType::FRAGMENT_SHADER, _vertBlur);
+    _blur->SetSubroutine(ShaderType::FRAGMENT, _vertBlur);
     _outputFB->Begin(Framebuffer::defaultPolicy());
     {
         // horizontally blurred bright spots
-        _tempBloomFB->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
+        _tempBloomFB->Bind(to_uint(ShaderProgram::TextureUsage::UNIT0));
         GFX_DEVICE.drawPoints(1, defaultStateHash, _blur);
         // clear states
     }
@@ -147,8 +147,8 @@ void BloomPreRenderOperator::toneMapScreen() {
         _luminaFB[1] = GFX_DEVICE.newFB();
 
         SamplerDescriptor lumaSampler;
-        lumaSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
-        lumaSampler.setMinFilter(TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR);
+        lumaSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+        lumaSampler.setMinFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
         lumaSampler.toggleMipMaps(true);
 
         TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D,
@@ -160,7 +160,7 @@ void BloomPreRenderOperator::toneMapScreen() {
         // make the texture square sized and power of two
         _luminaFB[0]->Create(lumaRez, lumaRez);
 
-        lumaSampler.setFilters(TextureFilter::TEXTURE_FILTER_LINEAR);
+        lumaSampler.setFilters(TextureFilter::LINEAR);
         lumaSampler.toggleMipMaps(false);
         lumaDescriptor.setSampler(lumaSampler);
         _luminaFB[1]->AddAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Color0);

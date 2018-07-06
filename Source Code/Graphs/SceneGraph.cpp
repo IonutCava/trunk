@@ -95,15 +95,15 @@ void SceneGraph::printInternal(SceneGraphNode& sgn) {
             // Get the shader's name
             shader = mat->getShaderInfo().getProgram()->getName();
         }
-        if (mat->getShaderInfo(RenderStage::SHADOW_STAGE).getProgram()) {
+        if (mat->getShaderInfo(RenderStage::SHADOW).getProgram()) {
             // Get the depth shader's name
-            depthShader = mat->getShaderInfo(RenderStage::SHADOW_STAGE)
+            depthShader = mat->getShaderInfo(RenderStage::SHADOW)
                               .getProgram()
                               ->getName();
         }
-        if (mat->getShaderInfo(RenderStage::Z_PRE_PASS_STAGE).getProgram()) {
+        if (mat->getShaderInfo(RenderStage::Z_PRE_PASS).getProgram()) {
             // Get the depth shader's name
-            depthShader = mat->getShaderInfo(RenderStage::Z_PRE_PASS_STAGE)
+            depthShader = mat->getShaderInfo(RenderStage::Z_PRE_PASS)
                               .getProgram()
                               ->getName();
         }

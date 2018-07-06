@@ -12,7 +12,7 @@ namespace Divide {
 
 RenderingComponent::RenderingComponent(Material* const materialInstance,
                                        SceneGraphNode& parentSGN)
-    : SGNComponent(SGNComponent::ComponentType::SGN_COMP_ANIMATION, parentSGN),
+    : SGNComponent(SGNComponent::ComponentType::ANIMATION, parentSGN),
       _lodLevel(0),
       _drawOrder(0),
       _castsShadows(true),
@@ -279,8 +279,8 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
     }
 
     bool depthPass = GFX_DEVICE.isDepthStage();
-    bool shadowStage = GFX_DEVICE.getRenderStage() == RenderStage::SHADOW_STAGE;
-    bool reflectionStage = GFX_DEVICE.getRenderStage() == RenderStage::REFLECTION_STAGE;
+    bool shadowStage = GFX_DEVICE.getRenderStage() == RenderStage::SHADOW;
+    bool reflectionStage = GFX_DEVICE.getRenderStage() == RenderStage::REFLECTION;
 
     if (!_materialInstance && depthPass) {
         return shadowStage
@@ -289,10 +289,10 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
     }
 
     return _materialInstance->getRenderStateBlock(
-        depthPass ? (shadowStage ? RenderStage::SHADOW_STAGE
-                                 : RenderStage::Z_PRE_PASS_STAGE)
-                  : (reflectionStage ? RenderStage::REFLECTION_STAGE
-                                     : RenderStage::DISPLAY_STAGE));
+        depthPass ? (shadowStage ? RenderStage::SHADOW
+                                 : RenderStage::Z_PRE_PASS)
+                  : (reflectionStage ? RenderStage::REFLECTION
+                                     : RenderStage::DISPLAY));
 }
 
 vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
@@ -325,7 +325,7 @@ void RenderingComponent::inViewCallback() {
         bool isTranslucent =
             mat->isTranslucent()
                 ? (mat->useAlphaTest() ||
-                   GFX_DEVICE.getRenderStage() == RenderStage::SHADOW_STAGE)
+                   GFX_DEVICE.getRenderStage() == RenderStage::SHADOW)
                 : false;
         _materialPropertyMatrix.setCol(
             1, vec4<F32>(

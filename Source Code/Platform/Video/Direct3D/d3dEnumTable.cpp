@@ -5,8 +5,7 @@ namespace Divide {
 U32 d3dTextureTypeTable[to_const_uint(
     TextureType::COUNT)];
 
-namespace D3D_ENUM_TABLE {
-void fill() {
+void fillEnumTables() {
     d3dTextureTypeTable[to_uint(TextureType::TEXTURE_1D)] = 0;
     d3dTextureTypeTable[to_uint(TextureType::TEXTURE_2D)] = 1;
     d3dTextureTypeTable[to_uint(TextureType::TEXTURE_3D)] = 2;
@@ -15,6 +14,5 @@ void fill() {
     d3dTextureTypeTable[to_uint(TextureType::TEXTURE_CUBE_ARRAY)] = 5;
     d3dTextureTypeTable[to_uint(TextureType::TEXTURE_2D_MS)] = 6;
     d3dTextureTypeTable[to_uint(TextureType::TEXTURE_2D_ARRAY_MS)] = 7;
-}
 }
 };

@@ -109,26 +109,26 @@ void PostFX::init(const vec2<U16>& resolution) {
         _postProcessingShader->Uniform("_noiseTile", 0.05f);
         _postProcessingShader->Uniform("_noiseFactor", 0.02f);
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT_SHADER, "Vignette"));  // 0
+            ShaderType::FRAGMENT, "Vignette"));  // 0
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT_SHADER, "Noise"));  // 1
+            ShaderType::FRAGMENT, "Noise"));  // 1
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT_SHADER, "Bloom"));  // 2
+            ShaderType::FRAGMENT, "Bloom"));  // 2
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT_SHADER, "SSAO"));  // 3
+            ShaderType::FRAGMENT, "SSAO"));  // 3
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT_SHADER, "screenUnderwater"));  // 4
+            ShaderType::FRAGMENT, "screenUnderwater"));  // 4
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT_SHADER, "screenNormal"));  // 5
+            ShaderType::FRAGMENT, "screenNormal"));  // 5
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT_SHADER, "ColorPassThrough"));  // 6
+            ShaderType::FRAGMENT, "ColorPassThrough"));  // 6
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT_SHADER, "outputScreen"));  // 7
+            ShaderType::FRAGMENT, "outputScreen"));  // 7
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT_SHADER, "outputDepth"));  // 8
+            ShaderType::FRAGMENT, "outputDepth"));  // 8
         _shaderFunctionSelection.resize(
             _postProcessingShader->GetSubroutineUniformCount(
-                ShaderType::FRAGMENT_SHADER),
+                ShaderType::FRAGMENT),
             0);
     }
 
@@ -148,9 +148,9 @@ void PostFX::createOperators() {
 
     PreRenderStageBuilder& stageBuilder = PreRenderStageBuilder::getInstance();
     Framebuffer* screenBuffer =
-        _gfx->getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN);
+        _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN);
     Framebuffer* depthBuffer =
-        _gfx->getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH);
+        _gfx->getRenderTarget(GFXDevice::RenderTarget::DEPTH);
 
     if (_gfx->anaglyphEnabled()) {
         ResourceDescriptor anaglyph("anaglyph");
@@ -236,29 +236,29 @@ void PostFX::displayScene() {
     if (_gfx->anaglyphEnabled()) {
         drawShader = _anaglyphShader;
         _anaglyphShader->bind();
-        _gfx->getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
+        _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)
             ->Bind(to_uint(
                 TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));  // right eye
                                                                    // buffer
-        _gfx->getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_ANAGLYPH)
+        _gfx->getRenderTarget(GFXDevice::RenderTarget::ANAGLYPH)
             ->Bind(to_uint(
                 TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));  // left eye
                                                                   // buffer
     } else {
         drawShader = _postProcessingShader;
         _postProcessingShader->bind();
-        _postProcessingShader->SetSubroutines(ShaderType::FRAGMENT_SHADER,
+        _postProcessingShader->SetSubroutines(ShaderType::FRAGMENT,
                                               _shaderFunctionSelection);
 
 #ifdef _DEBUG
         _gfx->getRenderTarget(
-                  _depthPreview ? GFXDevice::RenderTarget::RENDER_TARGET_DEPTH
-                                : GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
+                  _depthPreview ? GFXDevice::RenderTarget::DEPTH
+                                : GFXDevice::RenderTarget::SCREEN)
             ->Bind(to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
                    _depthPreview ? TextureDescriptor::AttachmentType::Depth
                                  : TextureDescriptor::AttachmentType::Color0);
 #else
-        _gfx->getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
+        _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)
             ->Bind(to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
 #endif
 
@@ -298,7 +298,7 @@ void PostFX::idle() {
 
     if (!_postProcessingShader) {
         init(GFX_DEVICE.getRenderTarget(
-                            GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
+                            GFXDevice::RenderTarget::SCREEN)
                  ->getResolution());
     }
 

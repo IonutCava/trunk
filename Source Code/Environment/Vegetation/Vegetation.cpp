@@ -93,18 +93,18 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     _terrainChunk = terrainChunk;
 
     _cullShader->Uniform("ObjectExtent", vec3<F32>(1.0f, 1.0f, 1.0f));
-    _cullShader->Uniform("HiZBuffer", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+    _cullShader->Uniform("HiZBuffer", ShaderProgram::TextureUsage::UNIT0);
     _cullShader->Uniform("dvd_frustumBias", 12.5f);
     _instanceRoutineIdx[to_uint(CullType::PASS_THROUGH)] = _cullShader->GetSubroutineIndex(
-        ShaderType::VERTEX_SHADER, "PassThrough");
+        ShaderType::VERTEX, "PassThrough");
     _instanceRoutineIdx[to_uint(CullType::INSTANCE_CLOUD_REDUCTION)] =
-        _cullShader->GetSubroutineIndex(ShaderType::VERTEX_SHADER,
+        _cullShader->GetSubroutineIndex(ShaderType::VERTEX,
                                         "InstanceCloudReduction");
     _instanceRoutineIdx[to_uint(CullType::HI_Z_CULL)] = _cullShader->GetSubroutineIndex(
-        ShaderType::VERTEX_SHADER, "HiZOcclusionCull");
+        ShaderType::VERTEX, "HiZOcclusionCull");
 
     RenderStateBlockDescriptor transparent;
-    transparent.setCullMode(CullMode::CULL_MODE_CW);
+    transparent.setCullMode(CullMode::CW);
     // transparent.setBlend(true);
     _grassStateBlockHash = GFX_DEVICE.getOrCreateStateBlock(transparent);
 
@@ -117,14 +117,14 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     vegMaterial->setShininess(5.0f);
     vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     vegMaterial->setShaderDefines("SKIP_TEXTURES");
-    vegMaterial->setShaderProgram(_grassShaderName, RenderStage::DISPLAY_STAGE,
+    vegMaterial->setShaderProgram(_grassShaderName, RenderStage::DISPLAY,
                                   true);
     vegMaterial->setShaderProgram(_grassShaderName + ".Shadow",
-                                  RenderStage::SHADOW_STAGE, true);
+                                  RenderStage::SHADOW, true);
     vegMaterial->setShaderProgram(_grassShaderName + ".PrePass",
-                                  RenderStage::Z_PRE_PASS_STAGE, true);
+                                  RenderStage::Z_PRE_PASS, true);
     vegMaterial->addCustomTexture(_grassBillboards,
-                                  to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
+                                  to_uint(ShaderProgram::TextureUsage::UNIT0));
     vegMaterial->setShaderLoadThreaded(false);
     vegMaterial->dumpToFile(false);
     setMaterialTpl(vegMaterial);
@@ -225,16 +225,16 @@ void Vegetation::uploadGrassData() {
     for (U8 i = 0; i < 3; ++i) {
         ShaderProgram* const shaderProg =
             mat->getShaderInfo(i == 0
-                                   ? RenderStage::DISPLAY_STAGE
-                                   : (i == 1 ? RenderStage::SHADOW_STAGE
-                                             : RenderStage::Z_PRE_PASS_STAGE))
+                                   ? RenderStage::DISPLAY
+                                   : (i == 1 ? RenderStage::SHADOW
+                                             : RenderStage::Z_PRE_PASS))
                 .getProgram();
 
         shaderProg->Uniform("positionOffsets", grassBlades);
         shaderProg->Uniform("texCoordOffsets", texCoord);
         shaderProg->Uniform("rotationMatrices", rotationMatrices);
         shaderProg->Uniform("lod_metric", 100.0f);
-        shaderProg->Uniform("texDiffuseGrass", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+        shaderProg->Uniform("texDiffuseGrass", ShaderProgram::TextureUsage::UNIT0);
     }
 
     for (U8 i = 0; i < 2; ++i) {
@@ -317,8 +317,8 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
                 sgn.getComponent<RenderingComponent>()->getMaterialInstance();
             for (U8 i = 0; i < 3; ++i) {
                 RenderStage stage =
-                    (i == 0 ? RenderStage::DISPLAY_STAGE
-                            : (i == 1 ? RenderStage::SHADOW_STAGE : RenderStage::Z_PRE_PASS_STAGE));
+                    (i == 0 ? RenderStage::DISPLAY
+                            : (i == 1 ? RenderStage::SHADOW : RenderStage::Z_PRE_PASS));
                 mat->getShaderInfo(stage).getProgram()->Uniform(
                     "grassScale", /* _grassSize*/ 1.0f);
             }
@@ -337,9 +337,9 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
 
 U32 Vegetation::getQueryID() {
     switch (GFX_DEVICE.getRenderStage()) {
-        case RenderStage::SHADOW_STAGE:
+        case RenderStage::SHADOW:
             return 0;
-        case RenderStage::REFLECTION_STAGE:
+        case RenderStage::REFLECTION:
             return 1;
         default:
             return 2;
@@ -354,11 +354,11 @@ void Vegetation::gpuCull() {
 
     bool draw = false;
     switch (queryID) {
-        case 0 /*SHADOW_STAGE*/: {
+        case 0 /*SHADOW*/: {
             draw = LightManager::getInstance().currentShadowPass() == 0;
             _culledFinal = false;
         } break;
-        case 1 /*REFLECTION_STAGE*/: {
+        case 1 /*REFLECTION*/: {
             draw = true;
             _culledFinal = false;
         } break;
@@ -370,13 +370,13 @@ void Vegetation::gpuCull() {
 
     if (draw && _threadedLoadComplete && _terrainChunk->getLoD() == 0) {
         GenericVertexData* buffer = _grassGPUBuffer[_writeBuffer];
-        //_cullShader->SetSubroutine(VERTEX_SHADER,
+        //_cullShader->SetSubroutine(VERTEX,
         //_instanceRoutineIdx[HI_Z_CULL]);
         _cullShader->Uniform("cullType",
                              /*queryID*/ to_uint(CullType::INSTANCE_CLOUD_REDUCTION));
 
         GFX::ScopedRasterizer scoped2D(false);
-        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
             ->Bind(0, TextureDescriptor::AttachmentType::Depth);
         buffer->BindFeedbackBufferRange(to_uint(BufferUsage::CulledPositionBuffer),
                                         _instanceCountGrass * queryID,
@@ -440,7 +440,7 @@ bool Vegetation::onDraw(SceneGraphNode& sgn, RenderStage renderStage) {
     return !(!_render || !_success || !_threadedLoadComplete ||
              _terrainChunk->getLoD() > 0 ||
              (LightManager::getInstance().currentShadowPass() > 0 &&
-              renderStage == RenderStage::SHADOW_STAGE));
+              renderStage == RenderStage::SHADOW));
 }
 
 void Vegetation::generateTrees() {

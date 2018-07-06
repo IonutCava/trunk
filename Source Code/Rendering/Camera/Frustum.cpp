@@ -70,7 +70,7 @@ Frustum::FrustCollision Frustum::ContainsBoundingBox(
 
 void Frustum::Extract() {
     _viewProjectionMatrixCache.set(
-        GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW_PROJECTION_MATRIX));
+        GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW_PROJECTION));
 
     if (_viewProjectionMatrixCacheOld == _viewProjectionMatrixCache) {
         return;

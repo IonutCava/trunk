@@ -42,8 +42,8 @@ namespace Divide {
 
 class glGenericVertexData : public GenericVertexData {
     enum class GVDUsage : U32 {
-        GVD_USAGE_DRAW = 0,
-        GVD_USAGE_FDBCK = 1,
+        DRAW = 0,
+        FDBCK = 1,
         COUNT
     };
 

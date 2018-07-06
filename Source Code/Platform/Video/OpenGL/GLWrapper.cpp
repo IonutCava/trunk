@@ -30,6 +30,7 @@ GL_API::GL_API()
     : RenderAPIWrapper(),
       _prevWidthNode(0),
       _prevWidthString(0),
+      _prevLineWidth(0),
       _prevSizeNode(0),
       _prevSizeString(0),
       _lineWidthLimit(1),
@@ -54,7 +55,8 @@ GL_API::GL_API()
     }
 }
 
-GL_API::~GL_API() {}
+GL_API::~GL_API() {
+}
 
 /// FontStash library initialization
 void GL_API::createFonsContext() {
@@ -129,8 +131,8 @@ bool GL_API::initShaders() {
         "", "#version 440 core\n/*“Copyright 2009-2015 DIVIDE-Studio”*/");
     glswAddDirectiveToken("",
                           "#extension GL_ARB_shader_draw_parameters : require");
-    glswAddDirectiveToken("",
-                          "#extension GL_ARB_shader_storage_buffer_object : require");
+    glswAddDirectiveToken(
+        "", "#extension GL_ARB_shader_storage_buffer_object : require");
 // Add current build environment information to the shaders
 #if defined(_DEBUG)
     glswAddDirectiveToken("", "#define _DEBUG");
@@ -152,7 +154,7 @@ bool GL_API::initShaders() {
     // defines specified by the material
     glswAddDirectiveToken("", "//__CUSTOM_DEFINES__");
     // Add some nVidia specific pragma directives
-    if (GFX_DEVICE.getGPUVendor() == GPUVendor::GPU_VENDOR_NVIDIA) {
+    if (GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
         glswAddDirectiveToken("", "//#pragma optionNV(fastmath on)");
         glswAddDirectiveToken("", "//#pragma optionNV(fastprecision on)");
         glswAddDirectiveToken("", "//#pragma optionNV(inline all)");
@@ -181,62 +183,58 @@ bool GL_API::initShaders() {
         "", ("const int MAX_VISIBLE_NODES = " +
              std::to_string(Config::MAX_VISIBLE_NODES) + ";").c_str());
     glswAddDirectiveToken(
-        "", ("#define SHADER_BUFFER_LIGHT_NORMAL " +
-             std::to_string(to_uint(
-                 ShaderBufferLocation::SHADER_BUFFER_LIGHT_NORMAL))).c_str());
+        "",
+        ("#define BUFFER_LIGHT_NORMAL " +
+         std::to_string(to_uint(ShaderBufferLocation::LIGHT_NORMAL))).c_str());
     glswAddDirectiveToken(
-        "", ("#define SHADER_BUFFER_GPU_BLOCK " +
-             std::to_string(to_uint(
-                 ShaderBufferLocation::SHADER_BUFFER_GPU_BLOCK))).c_str());
+        "", ("#define BUFFER_GPU_BLOCK " +
+             std::to_string(to_uint(ShaderBufferLocation::GPU_BLOCK))).c_str());
     glswAddDirectiveToken(
-        "", ("#define SHADER_BUFFER_NODE_INFO " +
-             std::to_string(to_uint(
-                 ShaderBufferLocation::SHADER_BUFFER_NODE_INFO))).c_str());
+        "", ("#define BUFFER_NODE_INFO " +
+             std::to_string(to_uint(ShaderBufferLocation::NODE_INFO))).c_str());
     glswAddDirectiveToken(
-        "", ("#define SHADER_BUFFER_UNIFORMS " +
-             std::to_string(to_uint(
-                 ShaderBufferLocation::SHADER_BUFFER_UNIFORMS))).c_str());
-    
+        "", ("#define BUFFER_UNIFORMS " +
+             std::to_string(to_uint(ShaderBufferLocation::UNIFORMS))).c_str());
+
     glswAddDirectiveToken("", "const float Z_TEST_SIGMA = 0.0001;");
     glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.25;");
 
     glswAddDirectiveToken("Fragment", "#define VARYING in");
     glswAddDirectiveToken(
         "Fragment",
-        ("#define SHADER_BUFFER_LIGHT_SHADOW " +
-         std::to_string(to_uint(
-             ShaderBufferLocation::SHADER_BUFFER_LIGHT_SHADOW))).c_str());
+        ("#define BUFFER_LIGHT_SHADOW " +
+         std::to_string(to_uint(ShaderBufferLocation::LIGHT_SHADOW))).c_str());
+    glswAddDirectiveToken("Fragment",
+                          ("#define MAX_TEXTURE_SLOTS " +
+                           std::to_string(GL_API::_maxTextureUnits)).c_str());
     glswAddDirectiveToken(
-        "Fragment", ("#define MAX_TEXTURE_SLOTS " +
-                     std::to_string(GL_API::_maxTextureUnits)).c_str());
+        "Fragment",
+        ("#define TEXTURE_UNIT0 " +
+         std::to_string(to_uint(ShaderProgram::TextureUsage::UNIT0))).c_str());
     glswAddDirectiveToken(
-        "Fragment", ("#define TEXTURE_UNIT0 " +
-                     std::to_string(to_uint(
-                         ShaderProgram::TextureUsage::TEXTURE_UNIT0))).c_str());
-    glswAddDirectiveToken(
-        "Fragment", ("#define TEXTURE_UNIT1 " +
-                     std::to_string(to_uint(
-                         ShaderProgram::TextureUsage::TEXTURE_UNIT1))).c_str());
+        "Fragment",
+        ("#define TEXTURE_UNIT1 " +
+         std::to_string(to_uint(ShaderProgram::TextureUsage::UNIT1))).c_str());
     glswAddDirectiveToken(
         "Fragment",
         ("#define TEXTURE_NORMALMAP " +
-         std::to_string(to_uint(
-             ShaderProgram::TextureUsage::TEXTURE_NORMALMAP))).c_str());
+         std::to_string(to_uint(ShaderProgram::TextureUsage::NORMALMAP)))
+            .c_str());
     glswAddDirectiveToken(
         "Fragment",
         ("#define TEXTURE_OPACITY " +
-         std::to_string(to_uint(
-             ShaderProgram::TextureUsage::TEXTURE_OPACITY))).c_str());
+         std::to_string(to_uint(ShaderProgram::TextureUsage::OPACITY)))
+            .c_str());
     glswAddDirectiveToken(
         "Fragment",
         ("#define TEXTURE_SPECULAR " +
-         std::to_string(to_uint(
-             ShaderProgram::TextureUsage::TEXTURE_SPECULAR))).c_str());
+         std::to_string(to_uint(ShaderProgram::TextureUsage::SPECULAR)))
+            .c_str());
     glswAddDirectiveToken(
         "Fragment",
         ("#define TEXTURE_PROJECTION " +
-         std::to_string(to_uint(
-             ShaderProgram::TextureUsage::TEXTURE_PROJECTION))).c_str());
+         std::to_string(to_uint(ShaderProgram::TextureUsage::PROJECTION)))
+            .c_str());
     glswAddDirectiveToken(
         "Fragment",
         ("#define SHADOW_CUBE_START " +
@@ -268,50 +266,42 @@ bool GL_API::initShaders() {
          std::to_string(Config::MAX_BONE_COUNT_PER_NODE) + ";").c_str());
     glswAddDirectiveToken(
         "Vertex",
-        ("#define SHADER_BUFFER_BONE_TRANSFORMS " +
-         std::to_string(to_uint(
-             ShaderBufferLocation::SHADER_BUFFER_BONE_TRANSFORMS))).c_str());
+        ("#define BUFFER_BONE_TRANSFORMS " +
+         std::to_string(to_uint(ShaderBufferLocation::BONE_TRANSFORMS)))
+            .c_str());
     // Vertex data has a fixed format
     glswAddDirectiveToken(
         "Vertex", ("layout(location = " +
-                   std::to_string(
-                       to_uint(AttribLocation::VERTEX_POSITION_LOCATION)) +
+                   std::to_string(to_uint(AttribLocation::VERTEX_POSITION)) +
                    ") in vec3  inVertexData;").c_str());
     glswAddDirectiveToken(
-        "Vertex",
-        ("layout(location = " +
-         std::to_string(to_uint(AttribLocation::VERTEX_COLOR_LOCATION)) +
-         ") in vec4  inColorData;").c_str());
-    glswAddDirectiveToken(
-        "Vertex",
-        ("layout(location = " +
-         std::to_string(to_uint(AttribLocation::VERTEX_NORMAL_LOCATION)) +
-         ") in vec3  inNormalData;").c_str());
+        "Vertex", ("layout(location = " +
+                   std::to_string(to_uint(AttribLocation::VERTEX_COLOR)) +
+                   ") in vec4  inColorData;").c_str());
     glswAddDirectiveToken(
         "Vertex", ("layout(location = " +
-                   std::to_string(
-                       to_uint(AttribLocation::VERTEX_TEXCOORD_LOCATION)) +
+                   std::to_string(to_uint(AttribLocation::VERTEX_NORMAL)) +
+                   ") in vec3  inNormalData;").c_str());
+    glswAddDirectiveToken(
+        "Vertex", ("layout(location = " +
+                   std::to_string(to_uint(AttribLocation::VERTEX_TEXCOORD)) +
                    ") in vec2  inTexCoordData;").c_str());
     glswAddDirectiveToken(
-        "Vertex",
-        ("layout(location = " +
-         std::to_string(to_uint(AttribLocation::VERTEX_TANGENT_LOCATION)) +
-         ") in vec3  inTangentData;").c_str());
-    glswAddDirectiveToken("Vertex",
-                          ("layout(location = " +
-                           std::to_string(to_uint(
-                               AttribLocation::VERTEX_BITANGENT_LOCATION)) +
-                           ") in vec3  inBiTangentData;").c_str());
-    glswAddDirectiveToken("Vertex",
-                          ("layout(location = " +
-                           std::to_string(to_uint(
-                               AttribLocation::VERTEX_BONE_WEIGHT_LOCATION)) +
-                           ") in vec4  inBoneWeightData;").c_str());
-    glswAddDirectiveToken("Vertex",
-                          ("layout(location = " +
-                           std::to_string(to_uint(
-                               AttribLocation::VERTEX_BONE_INDICE_LOCATION)) +
-                           ") in ivec4 inBoneIndiceData;").c_str());
+        "Vertex", ("layout(location = " +
+                   std::to_string(to_uint(AttribLocation::VERTEX_TANGENT)) +
+                   ") in vec3  inTangentData;").c_str());
+    glswAddDirectiveToken(
+        "Vertex", ("layout(location = " +
+                   std::to_string(to_uint(AttribLocation::VERTEX_BITANGENT)) +
+                   ") in vec3  inBiTangentData;").c_str());
+    glswAddDirectiveToken(
+        "Vertex", ("layout(location = " +
+                   std::to_string(to_uint(AttribLocation::VERTEX_BONE_WEIGHT)) +
+                   ") in vec4  inBoneWeightData;").c_str());
+    glswAddDirectiveToken(
+        "Vertex", ("layout(location = " +
+                   std::to_string(to_uint(AttribLocation::VERTEX_BONE_INDICE)) +
+                   ") in ivec4 inBoneIndiceData;").c_str());
     // GPU specific data, such as GFXDevice's main uniform block and clipping
     // planes
     // are defined in an external file included in every shader
@@ -431,7 +421,6 @@ void GL_API::uploadDrawCommands(
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
-
     for (const TextureData& data : textureData) {
         makeTextureResident(data);
     }
@@ -440,10 +429,10 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
 }
 
 bool GL_API::makeTextureResident(const TextureData& textureData) {
-    return bindTexture(textureData.getHandleLow(), textureData.getHandleHigh(),
-                       GLUtil::GL_ENUM_TABLE::glTextureTypeTable[to_uint(
-                           textureData._textureType)],
-                       textureData._samplerHash);
+    return bindTexture(
+        textureData.getHandleLow(), textureData.getHandleHigh(),
+        GLUtil::glTextureTypeTable[to_uint(textureData._textureType)],
+        textureData._samplerHash);
 }
 
 /// Verify if we have a sampler object created and available for the given
@@ -526,7 +515,8 @@ GenericVertexData* GL_API::newGVD(const bool persistentMapped) const {
 /// The OpenGL implementation creates either an 'Uniform Buffer Object' if
 /// unbound is false
 /// or a 'Shader Storage Block Object' otherwise
-ShaderBuffer* GL_API::newSB(const stringImpl& bufferName, const bool unbound,
+ShaderBuffer* GL_API::newSB(const stringImpl& bufferName,
+                            const bool unbound,
                             const bool persistentMapped) const {
     // The shader buffer can also be persistently mapped, if requested
     return MemoryManager_NEW glUniformBuffer(bufferName, unbound,
@@ -560,7 +550,8 @@ ShaderProgram* GL_API::newShaderProgram(const bool optimise) const {
 /// Create and return a new shader of the specified type by loading the
 /// specified name (optionally, post load optimised).
 /// The callee is responsible for it's deletion!
-Shader* GL_API::newShader(const stringImpl& name, const ShaderType& type,
+Shader* GL_API::newShader(const stringImpl& name,
+                          const ShaderType& type,
                           const bool optimise) const {
     return MemoryManager_NEW glShader(name, type, optimise);
 }

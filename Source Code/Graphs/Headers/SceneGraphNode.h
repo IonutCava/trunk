@@ -222,22 +222,22 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     template <>
     inline AnimationComponent* getComponent() const {
         return static_cast<AnimationComponent*>(
-            _components[to_uint(SGNComponent::ComponentType::SGN_COMP_ANIMATION)].get());
+            _components[to_uint(SGNComponent::ComponentType::ANIMATION)].get());
     }
     template <>
     inline NavigationComponent* getComponent() const {
         return static_cast<NavigationComponent*>(
-            _components[to_uint(SGNComponent::ComponentType::SGN_COMP_NAVIGATION)].get());
+            _components[to_uint(SGNComponent::ComponentType::NAVIGATION)].get());
     }
     template <>
     inline PhysicsComponent* getComponent() const {
         return static_cast<PhysicsComponent*>(
-            _components[to_uint(SGNComponent::ComponentType::SGN_COMP_PHYSICS)].get());
+            _components[to_uint(SGNComponent::ComponentType::PHYSICS)].get());
     }
     template <>
     inline RenderingComponent* getComponent() const {
         return static_cast<RenderingComponent*>(
-            _components[to_uint(SGNComponent::ComponentType::SGN_COMP_RENDERING)].get());
+            _components[to_uint(SGNComponent::ComponentType::RENDERING)].get());
     }
 
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
@@ -308,6 +308,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
 
     U32 _instanceID;
     U32 _childQueue;
+    U32 _renderPasses;
     D32 _updateTimer;
     U64 _elapsedTime;  //< the total amount of time that passed since this node
                        //was created

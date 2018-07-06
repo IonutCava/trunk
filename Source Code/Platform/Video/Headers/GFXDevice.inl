@@ -43,8 +43,8 @@ inline void GFXDevice::renderInViewport(const vec4<I32>& rect,
 }
 
 inline bool GFXDevice::isDepthStage() const {
-    return _renderStage == RenderStage::SHADOW_STAGE ||
-           _renderStage == RenderStage::Z_PRE_PASS_STAGE;
+    return _renderStage == RenderStage::SHADOW ||
+           _renderStage == RenderStage::Z_PRE_PASS;
 }
 
 /// Change the width of rendered lines to the specified value

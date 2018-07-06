@@ -132,13 +132,13 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
     tex->loadData(
         isLayeredTexture
             ? 0
-            : to_uint(GLUtil::GL_ENUM_TABLE::glTextureTypeTable[to_uint(
+            : to_uint(GLUtil::glTextureTypeTable[to_uint(
                   currentType)]),
         NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], internalFormat,
         internalFormat);
 
     tex->refreshMipMaps();
-    tex->Bind(to_const_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
+    tex->Bind(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
 
     // Attach to frame buffer
     if (type == TextureDescriptor::AttachmentType::Depth) {
@@ -224,8 +224,8 @@ void glFramebuffer::AddDepthBuffer() {
     bool fpDepth = (dataType == GFXDataFormat::FLOAT_16 ||
                     dataType == GFXDataFormat::FLOAT_32);
     SamplerDescriptor screenSampler;
-    screenSampler.setFilters(TextureFilter::TEXTURE_FILTER_NEAREST,
-                             TextureFilter::TEXTURE_FILTER_NEAREST);
+    screenSampler.setFilters(TextureFilter::NEAREST,
+                             TextureFilter::NEAREST);
     screenSampler.setWrapMode(desc.getSampler().wrapU(),
                               desc.getSampler().wrapV(),
                               desc.getSampler().wrapW());
@@ -237,7 +237,7 @@ void glFramebuffer::AddDepthBuffer() {
 
     screenSampler._useRefCompare = true;  //< Use compare function
     screenSampler._cmpFunc =
-        ComparisonFunction::CMP_FUNC_LEQUAL;  //< Use less or equal
+        ComparisonFunction::LEQUAL;  //< Use less or equal
     depthDescriptor.setSampler(screenSampler);
     _attachmentDirty[to_uint(TextureDescriptor::AttachmentType::Depth)] = true;
     _attachment[to_uint(TextureDescriptor::AttachmentType::Depth)] =
@@ -477,7 +477,7 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot,
     DIVIDE_ASSERT(slot < TextureDescriptor::AttachmentType::COUNT,
                   "glFrameBuffer::DrawToLayer Error: invalid slot received!");
 
-    GLenum textureType = GLUtil::GL_ENUM_TABLE::glTextureTypeTable[to_uint(
+    GLenum textureType = GLUtil::glTextureTypeTable[to_uint(
         _attachmentTexture[to_uint(slot)]->getTextureType())];
     // only for array textures (it's better to simply ignore the command if the
     // format isn't supported (debugging reasons)
@@ -528,7 +528,7 @@ void glFramebuffer::SetMipLevel(GLushort mipLevel,
                                 GLushort mipMaxLevel,
                                 GLushort writeLevel,
                                 TextureDescriptor::AttachmentType slot) {
-    GLenum textureType = GLUtil::GL_ENUM_TABLE::glTextureTypeTable[to_uint(
+    GLenum textureType = GLUtil::glTextureTypeTable[to_uint(
         _attachmentTexture[to_uint(slot)]->getTextureType())];
     // Only 2D texture support for now
     DIVIDE_ASSERT(textureType == GL_TEXTURE_2D,
@@ -560,8 +560,8 @@ void glFramebuffer::ReadData(const vec4<U16>& rect,
                             Framebuffer::FramebufferUsage::FB_READ_ONLY);
         glReadPixels(
             rect.x, rect.y, rect.z, rect.w,
-            GLUtil::GL_ENUM_TABLE::glImageFormatTable[to_uint(imageFormat)],
-            GLUtil::GL_ENUM_TABLE::glDataFormat[to_uint(dataType)], outData);
+            GLUtil::glImageFormatTable[to_uint(imageFormat)],
+            GLUtil::glDataFormat[to_uint(dataType)], outData);
     }
 }
 

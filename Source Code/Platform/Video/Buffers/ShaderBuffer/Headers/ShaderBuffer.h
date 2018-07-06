@@ -129,4 +129,4 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
 };
 
 };  // namespace Divide
-#endif
+#endif //_SHADER_BUFFER_H_

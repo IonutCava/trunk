@@ -31,13 +31,13 @@ Terrain::Terrain()
     getGeometryVB()->useLargeIndices(true);  //<32bit indices
 
     _albedoSampler = MemoryManager_NEW SamplerDescriptor();
-    _albedoSampler->setWrapMode(TextureWrap::TEXTURE_REPEAT);
+    _albedoSampler->setWrapMode(TextureWrap::REPEAT);
     _albedoSampler->setAnisotropy(8);
     _albedoSampler->toggleMipMaps(true);
     _albedoSampler->toggleSRGBColorSpace(true);
 
     _normalSampler = MemoryManager_NEW SamplerDescriptor();
-    _normalSampler->setWrapMode(TextureWrap::TEXTURE_REPEAT);
+    _normalSampler->setWrapMode(TextureWrap::REPEAT);
     _normalSampler->setAnisotropy(8);
     _normalSampler->toggleMipMaps(true);
 }
@@ -78,24 +78,24 @@ void Terrain::buildQuadtree() {
     for (U8 i = 0; i < 3; ++i) {
         ShaderProgram* const drawShader =
             mat->getShaderInfo(i == 0
-                                   ? RenderStage::DISPLAY_STAGE
-                                   : (i == 1 ? RenderStage::SHADOW_STAGE
-                                             : RenderStage::Z_PRE_PASS_STAGE))
+                                   ? RenderStage::DISPLAY
+                                   : (i == 1 ? RenderStage::SHADOW
+                                             : RenderStage::Z_PRE_PASS))
                 .getProgram();
         drawShader->Uniform("dvd_waterHeight",
                             GET_ACTIVE_SCENE()->state().getWaterLevel());
         drawShader->Uniform("bbox_min", _boundingBox.getMin());
         drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
         drawShader->Uniform("texWaterCaustics",
-                            ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+                            ShaderProgram::TextureUsage::UNIT0);
         drawShader->Uniform("texUnderwaterAlbedo",
-                            ShaderProgram::TextureUsage::TEXTURE_UNIT1);
+                            ShaderProgram::TextureUsage::UNIT1);
         drawShader->Uniform("texUnderwaterDetail",
-                            ShaderProgram::TextureUsage::TEXTURE_NORMALMAP);
+                            ShaderProgram::TextureUsage::NORMALMAP);
         drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
         U8 textureOffset =
-            to_uint(ShaderProgram::TextureUsage::TEXTURE_NORMALMAP) + 1;
+            to_uint(ShaderProgram::TextureUsage::NORMALMAP) + 1;
         U8 layerOffset = 0;
         stringImpl layerIndex;
         for (U32 k = 0; k < _terrainTextures.size(); ++k) {
@@ -155,11 +155,11 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
     size_t drawStateHash = 0;
 
     if (GFX_DEVICE.isDepthStage()) {
-        drawStateHash = renderStage == RenderStage::Z_PRE_PASS_STAGE
+        drawStateHash = renderStage == RenderStage::Z_PRE_PASS
                             ? _terrainRenderStateHash
                             : _terrainDepthRenderStateHash;
     } else {
-        drawStateHash = renderStage == RenderStage::REFLECTION_STAGE
+        drawStateHash = renderStage == RenderStage::REFLECTION
                             ? _terrainReflectionRenderStateHash
                             : _terrainRenderStateHash;
     }
@@ -169,8 +169,8 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
     assert(renderable != nullptr);
 
     ShaderProgram* drawShader = renderable->getDrawShader(
-        renderStage == RenderStage::REFLECTION_STAGE
-            ? RenderStage::DISPLAY_STAGE
+        renderStage == RenderStage::REFLECTION
+            ? RenderStage::DISPLAY
             : renderStage);
 
     if (_terrainInView) {
@@ -195,8 +195,8 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
     }
 
     // draw infinite plane
-    if ((GFX_DEVICE.getRenderStage() == RenderStage::DISPLAY_STAGE ||
-         GFX_DEVICE.getRenderStage() == RenderStage::Z_PRE_PASS_STAGE) &&
+    if ((GFX_DEVICE.getRenderStage() == RenderStage::DISPLAY ||
+         GFX_DEVICE.getRenderStage() == RenderStage::Z_PRE_PASS) &&
         _planeInView) {
         GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 1);
         cmd.renderWireframe(renderable->renderWireframe());

@@ -24,14 +24,14 @@ LightManager::LightManager()
     // shadowPassTimer is used to measure the CPU-duration of shadow map
     // generation step
     s_shadowPassTimer = Time::ADD_TIMER("ShadowPassTimer");
-    // SHADER_BUFFER_NORMAL holds general info about the currently active
+    // NORMAL holds general info about the currently active
     // lights: position, color, etc.
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADER_BUFFER_NORMAL)] =
+    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)] =
         nullptr;
-    // SHADER_BUFFER_SHADOWS holds info about the currently active shadow
+    // SHADOWS holds info about the currently active shadow
     // casting lights:
     // ViewProjection Matrices, View Space Position, etc
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADER_BUFFER_SHADOW)] =
+    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)] =
         nullptr;
     // We bind shadow maps to the last available texture slots that the hardware
     // supports.
@@ -47,9 +47,9 @@ LightManager::~LightManager() {
     clear();
     Time::REMOVE_TIMER(s_shadowPassTimer);
     MemoryManager::DELETE(_lightShaderBuffer[to_uint(
-        ShaderBufferType::SHADER_BUFFER_NORMAL)]);
+        ShaderBufferType::NORMAL)]);
     MemoryManager::DELETE(_lightShaderBuffer[to_uint(
-        ShaderBufferType::SHADER_BUFFER_SHADOW)]);
+        ShaderBufferType::SHADOW)]);
 }
 
 void LightManager::init() {
@@ -64,31 +64,31 @@ void LightManager::init() {
 
     GFX_DEVICE.add2DRenderFunction(
         DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
-    // SHADER_BUFFER_NORMAL holds general info about the currently active
+    // NORMAL holds general info about the currently active
     // lights: position, color, etc.
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADER_BUFFER_NORMAL)] =
+    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)] =
         GFX_DEVICE.newSB("dvd_LightBlock");
-    // SHADER_BUFFER_SHADOWS holds info about the currently active shadow
+    // SHADOWS holds info about the currently active shadow
     // casting lights:
     // ViewProjection Matrices, View Space Position, etc
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADER_BUFFER_SHADOW)] =
+    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)] =
         GFX_DEVICE.newSB("dvd_ShadowBlock");
 
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADER_BUFFER_NORMAL)]
+    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]
         ->Create(Config::Lighting::MAX_LIGHTS_PER_SCENE,
                  sizeof(LightProperties));
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADER_BUFFER_NORMAL)]
-        ->Bind(ShaderBufferLocation::SHADER_BUFFER_LIGHT_NORMAL);
+    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]
+        ->Bind(ShaderBufferLocation::LIGHT_NORMAL);
 
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADER_BUFFER_SHADOW)]
+    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]
         ->Create(Config::Lighting::MAX_LIGHTS_PER_SCENE,
                  sizeof(LightShadowProperties));
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADER_BUFFER_SHADOW)]
-        ->Bind(ShaderBufferLocation::SHADER_BUFFER_LIGHT_SHADOW);
+    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]
+        ->Bind(ShaderBufferLocation::LIGHT_SHADOW);
 
     _cachedResolution.set(
         GFX_DEVICE.getRenderTarget(
-                       GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
+                       GFXDevice::RenderTarget::SCREEN)
             ->getResolution());
     _init = true;
 }
@@ -211,9 +211,9 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt) {
     Time::START_TIMER(s_shadowPassTimer);
 
     // Tell the engine that we are drawing to depth maps
-    // set the current render stage to SHADOW_STAGE
+    // set the current render stage to SHADOW
     RenderStage previousRS =
-        GFX_DEVICE.setRenderStage(RenderStage::SHADOW_STAGE);
+        GFX_DEVICE.setRenderStage(RenderStage::SHADOW);
     // generate shadowmaps for each light
     for (Light::LightMap::value_type& light : _lights) {
         setCurrentLight(light.second);
@@ -232,7 +232,7 @@ void LightManager::togglePreviewShadowMaps() {
     _previewShadowMaps = !_previewShadowMaps;
     // Stop if we have shadows disabled
     if (!_shadowMapsEnabled ||
-        GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY_STAGE) {
+        GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
         return;
     }
 
@@ -249,7 +249,7 @@ void LightManager::previewShadowMaps(Light* light) {
 #ifdef _DEBUG
     // Stop if we have shadows disabled
     if (!_shadowMapsEnabled || !_previewShadowMaps ||
-        GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY_STAGE) {
+        GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
         return;
     }
     if (!light) {
@@ -364,12 +364,12 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
     }
 
     if (!_lightProperties.empty()) {
-        _lightShaderBuffer[to_uint(ShaderBufferType::SHADER_BUFFER_NORMAL)]
+        _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]
             ->UpdateData(0, _lightProperties.size() * sizeof(LightProperties),
                          _lightProperties.data());
     }
     if (!_lightShadowProperties.empty()) {
-        _lightShaderBuffer[to_uint(ShaderBufferType::SHADER_BUFFER_SHADOW)]
+        _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]
             ->UpdateData(0, _lightShadowProperties.size() *
                                 sizeof(LightShadowProperties),
                          _lightShadowProperties.data());

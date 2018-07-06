@@ -185,7 +185,7 @@ dtStatus dtPathQueue::getPathResult(dtPathQueueRef ref, dtPolyRef* path, int* pa
         if (m_queue[i].ref == ref)
         {
             PathQuery& q = m_queue[i];
-            dtStatus details = q.status & DT_STATUS_DETAIL_MASK;
+            dtStatus details = q.status & DT_STATUS_MASK;
             // Free request for reuse.
             q.ref = DT_PATHQ_INVALID;
             q.status = 0;

@@ -27,7 +27,7 @@ void ShaderManager::destroy() {
 bool ShaderManager::init() {
     // Avoid double init requests
     if (_init) {
-        Console::errorfn(Locale::get("WARNING_SHADER_MANAGER_DOUBLE_INIT"));
+        Console::errorfn(Locale::get("WARNING_MANAGER_DOUBLE_INIT"));
         return false;
     }
     // Initialize the rendering-API specific shader loading system
@@ -41,7 +41,7 @@ bool ShaderManager::init() {
     // Create a null shader (basically telling the API to not use any shaders
     // when bound)
     _nullShader =
-        CreateResource<ShaderProgram>(ResourceDescriptor("NULL_SHADER"));
+        CreateResource<ShaderProgram>(ResourceDescriptor("NULL"));
     // The null shader should never be nullptr!!!!
     assert(_nullShader != nullptr);  // LoL -Ionut
 
@@ -69,7 +69,7 @@ void ShaderManager::unregisterShaderProgram(const stringImpl& name) {
         _shaderPrograms.erase(it);
     } else {
         // Show an error if this isn't the case
-        Console::errorfn(Locale::get("ERROR_SHADER_REMOVE_NOT_FOUND"),
+        Console::errorfn(Locale::get("ERROR_REMOVE_NOT_FOUND"),
                          name.c_str());
     }
 }
@@ -105,7 +105,7 @@ bool ShaderManager::recompileShaderProgram(const stringImpl& name) {
     }
     // If no shaders were found, show an error
     if (!state) {
-        Console::errorfn(Locale::get("ERROR_SHADER_RECOMPILE_NOT_FOUND"),
+        Console::errorfn(Locale::get("ERROR_RECOMPILE_NOT_FOUND"),
                          name.c_str());
     }
 
@@ -223,7 +223,7 @@ Shader* ShaderManager::getShader(const stringImpl& name, const bool recompile) {
             // We don't need a ref count increase if we just recompile the
             // shader
             it->second->AddRef();
-            Console::d_printfn(Locale::get("SHADER_MANAGER_GET_SHADER_INC"),
+            Console::d_printfn(Locale::get("SHADER_MANAGER_GET_INC"),
                                name.c_str(), it->second->GetRef());
         }
         return it->second;

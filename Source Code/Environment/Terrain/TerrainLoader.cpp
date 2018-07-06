@@ -17,7 +17,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         *terrain, terrainDescriptor->getVariablef("underwaterDiffuseScale"));
 
     SamplerDescriptor blendMapSampler;
-    blendMapSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP);
+    blendMapSampler.setWrapMode(TextureWrap::CLAMP);
     blendMapSampler.setAnisotropy(0);
     blendMapSampler.toggleMipMaps(false);
 
@@ -170,18 +170,18 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         std::to_string(Attorney::TerrainLoader::textureLayerCount(*terrain)));
     terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " +
                                       std::to_string(textureCount));
-    terrainMaterial->setShaderProgram("terrain", RenderStage::DISPLAY_STAGE, true);
-    terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", RenderStage::SHADOW_STAGE,
+    terrainMaterial->setShaderProgram("terrain", RenderStage::DISPLAY, true);
+    terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", RenderStage::SHADOW,
                                       true);
     terrainMaterial->setShaderProgram("depthPass.PrePass.Terrain",
-                                      RenderStage::Z_PRE_PASS_STAGE, true);
+                                      RenderStage::Z_PRE_PASS, true);
 
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.setResourceLocation(
         terrainDescriptor->getVariable("waterCaustics"));
     textureWaterCaustics.setPropertyDescriptor(
         Attorney::TerrainLoader::getAlbedoSampler(*terrain));
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0,
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0,
                                 CreateResource<Texture>(textureWaterCaustics));
 
     ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" +
@@ -191,7 +191,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     underwaterAlbedoTexture.setPropertyDescriptor(
         Attorney::TerrainLoader::getAlbedoSampler(*terrain));
     terrainMaterial->setTexture(
-        ShaderProgram::TextureUsage::TEXTURE_UNIT1,
+        ShaderProgram::TextureUsage::UNIT1,
         CreateResource<Texture>(underwaterAlbedoTexture));
 
     ResourceDescriptor underwaterDetailTexture("Terrain Underwater Detail_" +
@@ -201,7 +201,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     underwaterDetailTexture.setPropertyDescriptor(
         Attorney::TerrainLoader::getNormalSampler(*terrain));
     terrainMaterial->setTexture(
-        ShaderProgram::TextureUsage::TEXTURE_NORMALMAP,
+        ShaderProgram::TextureUsage::NORMALMAP,
         CreateResource<Texture>(underwaterDetailTexture));
 
     terrainMaterial->setShaderLoadThreaded(false);
@@ -210,12 +210,12 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
 
     // Generate a render state
     RenderStateBlockDescriptor terrainDesc;
-    terrainDesc.setCullMode(CullMode::CULL_MODE_CW);
+    terrainDesc.setCullMode(CullMode::CW);
     RenderStateBlockDescriptor terrainDescRef;
-    terrainDescRef.setCullMode(CullMode::CULL_MODE_CCW);
+    terrainDescRef.setCullMode(CullMode::CCW);
     // Generate a shadow render state
     RenderStateBlockDescriptor terrainDescDepth;
-    terrainDescDepth.setCullMode(CullMode::CULL_MODE_CCW);
+    terrainDescDepth.setCullMode(CullMode::CCW);
     // terrainDescDepth.setZBias(1.0f, 2.0f);
     terrainDescDepth.setColorWrites(true, true, false, false);
 
@@ -494,7 +494,7 @@ void TerrainLoader::initializeVegetation(Terrain* terrain,
 
     SamplerDescriptor grassSampler;
     grassSampler.setAnisotropy(0);
-    grassSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP);
+    grassSampler.setWrapMode(TextureWrap::CLAMP);
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
     textureDetailMaps.setEnumValue(to_uint(TextureType::TEXTURE_2D_ARRAY));
     textureDetailMaps.setID(textureCount);

@@ -10,7 +10,7 @@ namespace Divide {
 DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* result,
                                            const vec2<U16>& resolution,
                                            SamplerDescriptor* const sampler)
-    : PreRenderOperator(PostFXRenderStage::DOF_STAGE, resolution, sampler), _outputFB(result) {
+    : PreRenderOperator(PostFXRenderStage::DOF, resolution, sampler), _outputFB(result) {
     TextureDescriptor dofDescriptor(TextureType::TEXTURE_2D,
                                     GFXImageFormat::RGBA8,
                                     GFXDataFormat::UNSIGNED_BYTE);
@@ -22,8 +22,8 @@ DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* result,
     ResourceDescriptor dof("DepthOfField");
     dof.setThreadedLoading(false);
     _dofShader = CreateResource<ShaderProgram>(dof);
-    _dofShader->Uniform("texScreen", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
-    _dofShader->Uniform("texDepth", ShaderProgram::TextureUsage::TEXTURE_UNIT1);
+    _dofShader->Uniform("texScreen", ShaderProgram::TextureUsage::UNIT0);
+    _dofShader->Uniform("texDepth", ShaderProgram::TextureUsage::UNIT1);
 }
 
 DoFPreRenderOperator::~DoFPreRenderOperator() {

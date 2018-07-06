@@ -92,7 +92,7 @@ bool ShaderProgram::update(const U64 deltaTime) {
     if (_dirty) {
         // Inverse screen resolution
         const vec2<U16>& screenRes =
-            GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
+            GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)
                 ->getResolution();
         this->Uniform("dvd_invScreenDimension", vec2<F32>(1.0f / screenRes.width,
                                                           1.0f / screenRes.height));
@@ -147,7 +147,7 @@ void ShaderProgram::addShaderDefine(const stringImpl& define) {
     } else {
         // If we did find it, we'll show an error message in debug builds about
         // double add
-        Console::d_errorfn(Locale::get("ERROR_INVALID_SHADER_DEFINE_ADD"),
+        Console::d_errorfn(Locale::get("ERROR_INVALID_DEFINE_ADD"),
                            define.c_str(), getName().c_str());
     }
 }
@@ -162,7 +162,7 @@ void ShaderProgram::removeShaderDefine(const stringImpl& define) {
         _definesList.erase(it);
     } else {
         // If we did not find it, we'll show an error message in debug builds
-        Console::d_errorfn(Locale::get("ERROR_INVALID_SHADER_DEFINE_DELETE"),
+        Console::d_errorfn(Locale::get("ERROR_INVALID_DEFINE_DELETE"),
                            define.c_str(), getName().c_str());
     }
 }
@@ -178,14 +178,14 @@ void ShaderProgram::recompile(const bool vertex, const bool fragment,
         unbind();
     }
     // Update refresh flags
-    _refreshStage[to_uint(ShaderType::VERTEX_SHADER)] = vertex;
-    _refreshStage[to_uint(ShaderType::FRAGMENT_SHADER)] = fragment;
-    _refreshStage[to_uint(ShaderType::GEOMETRY_SHADER)] = geometry;
-    _refreshStage[to_uint(ShaderType::TESSELATION_CTRL_SHADER)] =
+    _refreshStage[to_uint(ShaderType::VERTEX)] = vertex;
+    _refreshStage[to_uint(ShaderType::FRAGMENT)] = fragment;
+    _refreshStage[to_uint(ShaderType::GEOMETRY)] = geometry;
+    _refreshStage[to_uint(ShaderType::TESSELATION_CTRL)] =
         tessellation;
-    _refreshStage[to_uint(ShaderType::TESSELATION_EVAL_SHADER)] =
+    _refreshStage[to_uint(ShaderType::TESSELATION_EVAL)] =
         tessellation;
-    _refreshStage[to_uint(ShaderType::COMPUTE_SHADER)] = compute;
+    _refreshStage[to_uint(ShaderType::COMPUTE)] = compute;
     // Recreate all of the needed shaders
     generateHWResource(getName());
     // Restore bind state

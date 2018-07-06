@@ -22,11 +22,13 @@ GLuint GL_API::_activeTransformFeedback = GLUtil::_invalidObjectID;
 GLuint GL_API::_activeFBID[] = {GLUtil::_invalidObjectID,
                                 GLUtil::_invalidObjectID,
                                 GLUtil::_invalidObjectID};
-GLuint GL_API::_activeBufferID[] = {
-    GLUtil::_invalidObjectID, GLUtil::_invalidObjectID,
-    GLUtil::_invalidObjectID, GLUtil::_invalidObjectID,
-    GLUtil::_invalidObjectID, GLUtil::_invalidObjectID,
-    GLUtil::_invalidObjectID};
+GLuint GL_API::_activeBufferID[] = {GLUtil::_invalidObjectID,
+                                    GLUtil::_invalidObjectID,
+                                    GLUtil::_invalidObjectID,
+                                    GLUtil::_invalidObjectID,
+                                    GLUtil::_invalidObjectID,
+                                    GLUtil::_invalidObjectID,
+                                    GLUtil::_invalidObjectID};
 
 bool GL_API::_primitiveRestartEnabled = false;
 vec4<GLfloat> GL_API::_prevClearColor;
@@ -37,8 +39,10 @@ ShaderProgram* GL_API::_activeShaderProgram = nullptr;
 
 /// Reset as much of the GL default state as possible within the limitations
 /// given
-void GL_API::clearStates(const bool skipShader, const bool skipTextures,
-                         const bool skipBuffers, const bool skipScissor) {
+void GL_API::clearStates(const bool skipShader,
+                         const bool skipTextures,
+                         const bool skipBuffers,
+                         const bool skipScissor) {
     if (!skipShader) {
         setActiveProgram(nullptr);
     }
@@ -72,8 +76,10 @@ void GL_API::clearStates(const bool skipShader, const bool skipTextures,
 }
 
 /// Pixel pack alignment is usually changed by textures, PBOs, etc
-bool GL_API::setPixelPackAlignment(GLint packAlignment, GLint rowLength,
-                                   GLint skipRows, GLint skipPixels) {
+bool GL_API::setPixelPackAlignment(GLint packAlignment,
+                                   GLint rowLength,
+                                   GLint skipRows,
+                                   GLint skipPixels) {
     // Keep track if we actually affect any OpenGL state
     bool changed = false;
     if (_activePackUnpackAlignments[0] != packAlignment) {
@@ -105,8 +111,10 @@ bool GL_API::setPixelPackAlignment(GLint packAlignment, GLint rowLength,
 }
 
 /// Pixel unpack alignment is usually changed by textures, PBOs, etc
-bool GL_API::setPixelUnpackAlignment(GLint unpackAlignment, GLint rowLength,
-                                     GLint skipRows, GLint skipPixels) {
+bool GL_API::setPixelUnpackAlignment(GLint unpackAlignment,
+                                     GLint rowLength,
+                                     GLint skipRows,
+                                     GLint skipPixels) {
     // Keep track if we actually affect any OpenGL state
     bool changed = false;
     if (_activePackUnpackAlignments[1] != unpackAlignment) {
@@ -180,11 +188,13 @@ bool GL_API::setActiveTextureUnit(GLuint unit) {
     return true;
 }
 
-bool GL_API::bindSamplers(GLuint unitOffset, GLuint samplerCount,
+bool GL_API::bindSamplers(GLuint unitOffset,
+                          GLuint samplerCount,
                           GLuint* samplerHandles) {
     if (samplerCount > 0 &&
-        unitOffset + samplerCount < static_cast<GLuint>(GL_API::_maxTextureUnits)) {
-        GLuint offset = static_cast<GLuint>(GL_TEXTURE0)+unitOffset;
+        unitOffset + samplerCount <
+            static_cast<GLuint>(GL_API::_maxTextureUnits)) {
+        GLuint offset = static_cast<GLuint>(GL_TEXTURE0) + unitOffset;
         glBindSamplers(offset, samplerCount, samplerHandles);
 
         if (!samplerHandles) {
@@ -225,11 +235,14 @@ bool GL_API::bindSampler(GLuint unit, size_t samplerHash) {
     return true;
 }
 
-bool GL_API::bindTextures(GLuint unitOffset, GLuint textureCount,
-                          GLuint* textureHandles, GLenum* types,
+bool GL_API::bindTextures(GLuint unitOffset,
+                          GLuint textureCount,
+                          GLuint* textureHandles,
+                          GLenum* types,
                           GLuint* samplerHandles) {
     if (textureCount > 0 &&
-        unitOffset + textureCount < static_cast<GLuint>(GL_API::_maxTextureUnits)) {
+        unitOffset + textureCount <
+            static_cast<GLuint>(GL_API::_maxTextureUnits)) {
         GLuint offset = static_cast<GLuint>(GL_TEXTURE0) + unitOffset;
         GL_API::bindSamplers(unitOffset, textureCount, samplerHandles);
         glBindTextures(offset, textureCount, textureHandles);
@@ -254,11 +267,14 @@ bool GL_API::bindTextures(GLuint unitOffset, GLuint textureCount,
 
 // Bind a texture specified by a GL handle and GL type to the specified unit
 /// using the sampler object defined by hash value
-bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type,
+bool GL_API::bindTexture(GLuint unit,
+                         GLuint handle,
+                         GLenum type,
                          size_t samplerHash) {
     // Fail if we specified an invalid unit. Assert instead of returning false
     // because this might be related to a bad algorithm
-    DIVIDE_ASSERT(unit < static_cast<GLuint>(GL_API::_maxTextureUnits),
+    DIVIDE_ASSERT(
+        unit < static_cast<GLuint>(GL_API::_maxTextureUnits),
         "GLStates error: invalid texture unit specified as a texture binding "
         "slot!");
     // Bind the sampler object first, as we may just require a sampler update
@@ -270,13 +286,13 @@ bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type,
         // Remember the new binding state for future reference
         currentMapping.first = handle;
         currentMapping.second = type;
-        // Bind the texture to the current unit
+// Bind the texture to the current unit
 #ifdef GL_VERSION_4_5
         glBindMultiTexture(GL_TEXTURE0 + unit, type, handle);
 #else
         gl44ext::glBindMultiTextureEXT(GL_TEXTURE0 + unit, type, handle);
 #endif
-        
+
         return true;
     }
 
@@ -314,10 +330,10 @@ bool GL_API::setActiveFB(GLuint ID, Framebuffer::FramebufferUsage usage) {
             // bindFramebuffer(read, ID) and bindFramebuffer(write, ID)
             glBindFramebuffer(GL_FRAMEBUFFER, ID);
             // This also overrides the read and write bindings
-            _activeFBID[to_uint(
-                Framebuffer::FramebufferUsage::FB_READ_ONLY)] = ID;
-            _activeFBID[to_uint(
-                Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] = ID;
+            _activeFBID[to_uint(Framebuffer::FramebufferUsage::FB_READ_ONLY)] =
+                ID;
+            _activeFBID[to_uint(Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] =
+                ID;
         } break;
         case Framebuffer::FramebufferUsage::FB_READ_ONLY: {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);
@@ -473,7 +489,8 @@ void GL_API::changeViewport(const vec4<I32>& newViewport) const {
 #define TOGGLE_NO_CHECK(state, enumValue) \
     newDescriptor.state ? glEnable(enumValue) : glDisable(enumValue)
 #define TOGGLE_WITH_CHECK(state, enumValue) \
-    if (SHOULD_TOGGLE(state)) TOGGLE_NO_CHECK(state, enumValue);
+    if (SHOULD_TOGGLE(state))               \
+        TOGGLE_NO_CHECK(state, enumValue);
 #endif
 
 /// A state block should contain all rendering state changes needed for the next
@@ -490,32 +507,32 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     TOGGLE_WITH_CHECK(_zEnable, GL_DEPTH_TEST);
     // Check separate blend functions
     if (SHOULD_TOGGLE_2(_blendSrc, _blendDest)) {
-        glBlendFuncSeparate(GLUtil::GL_ENUM_TABLE::glBlendTable[to_uint(
-                                newDescriptor._blendSrc)],
-                            GLUtil::GL_ENUM_TABLE::glBlendTable[to_uint(
-                                newDescriptor._blendDest)],
-                            GL_ONE, GL_ZERO);
+        glBlendFuncSeparate(
+            GLUtil::glBlendTable[to_uint(newDescriptor._blendSrc)],
+            GLUtil::glBlendTable[to_uint(newDescriptor._blendDest)], GL_ONE,
+            GL_ZERO);
     }
     // Check the blend equation
     if (SHOULD_TOGGLE(_blendOp)) {
-        glBlendEquation(GLUtil::GL_ENUM_TABLE::glBlendOpTable[to_uint(
-            newDescriptor._blendOp)]);
+        glBlendEquation(
+            GLUtil::glBlendOpTable[to_uint(newDescriptor._blendOp)]);
     }
     // Check culling mode (back (CW) / front (CCW) by default)
     if (SHOULD_TOGGLE(_cullMode)) {
-        glCullFace(GLUtil::GL_ENUM_TABLE::glCullModeTable[to_uint(
-            newDescriptor._cullMode)]);
+        if (newDescriptor._cullMode != CullMode::NONE) {
+            glCullFace(
+                GLUtil::glCullModeTable[to_uint(newDescriptor._cullMode)]);
+        }
     }
     // Check rasterization mode
     if (SHOULD_TOGGLE(_fillMode)) {
-        glPolygonMode(GL_FRONT_AND_BACK,
-                      GLUtil::GL_ENUM_TABLE::glFillModeTable[to_uint(
-                          newDescriptor._fillMode)]);
+        glPolygonMode(
+            GL_FRONT_AND_BACK,
+            GLUtil::glFillModeTable[to_uint(newDescriptor._fillMode)]);
     }
     // Check the depth function
     if (SHOULD_TOGGLE(_zFunc)) {
-        glDepthFunc(GLUtil::GL_ENUM_TABLE::glCompareFuncTable[to_uint(
-            newDescriptor._zFunc)]);
+        glDepthFunc(GLUtil::glCompareFuncTable[to_uint(newDescriptor._zFunc)]);
     }
     // Check if we need to toggle the depth mask
     if (SHOULD_TOGGLE(_zWriteEnable)) {
@@ -527,18 +544,16 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     }
     // Stencil function is dependent on 3 state parameters set together
     if (SHOULD_TOGGLE_3(_stencilFunc, _stencilRef, _stencilMask)) {
-        glStencilFunc(GLUtil::GL_ENUM_TABLE::glCompareFuncTable[to_uint(
-                          newDescriptor._stencilFunc)],
-                      newDescriptor._stencilRef, newDescriptor._stencilMask);
+        glStencilFunc(
+            GLUtil::glCompareFuncTable[to_uint(newDescriptor._stencilFunc)],
+            newDescriptor._stencilRef, newDescriptor._stencilMask);
     }
     // Stencil operation is also dependent  on 3 state parameters set together
     if (SHOULD_TOGGLE_3(_stencilFailOp, _stencilZFailOp, _stencilPassOp)) {
-        glStencilOp(GLUtil::GL_ENUM_TABLE::glStencilOpTable[to_uint(
-                        newDescriptor._stencilFailOp)],
-                    GLUtil::GL_ENUM_TABLE::glStencilOpTable[to_uint(
-                        newDescriptor._stencilZFailOp)],
-                    GLUtil::GL_ENUM_TABLE::glStencilOpTable[to_uint(
-                        newDescriptor._stencilPassOp)]);
+        glStencilOp(
+            GLUtil::glStencilOpTable[to_uint(newDescriptor._stencilFailOp)],
+            GLUtil::glStencilOpTable[to_uint(newDescriptor._stencilZFailOp)],
+            GLUtil::glStencilOpTable[to_uint(newDescriptor._stencilPassOp)]);
     }
     // Check and set polygon offset
     if (SHOULD_TOGGLE(_zBias)) {

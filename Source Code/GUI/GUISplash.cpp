@@ -12,7 +12,7 @@ GUISplash::GUISplash(const stringImpl& splashImageName,
     SamplerDescriptor splashSampler;
     splashSampler.toggleMipMaps(true);
     splashSampler.setAnisotropy(16);
-    splashSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP);
+    splashSampler.setWrapMode(TextureWrap::CLAMP);
     ResourceDescriptor splashImage("SplashScreen Texture");
     splashImage.setFlag(true);
     splashImage.setThreadedLoading(false);
@@ -35,7 +35,7 @@ GUISplash::~GUISplash() {
 }
 
 void GUISplash::render() {
-    _splashImage->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
+    _splashImage->Bind(to_uint(ShaderProgram::TextureUsage::UNIT0));
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
                           _splashShader);
 }

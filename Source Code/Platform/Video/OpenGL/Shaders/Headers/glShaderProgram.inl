@@ -28,8 +28,8 @@
 
  */
 
-#ifndef _PLATFORM_VIDEO_OPENGL_SHADERS_SHADER_PROGRAM_INL_
-#define _PLATFORM_VIDEO_OPENGL_SHADERS_SHADER_PROGRAM_INL_
+#ifndef _PLATFORM_VIDEO_OPENGLS_PROGRAM_INL_
+#define _PLATFORM_VIDEO_OPENGLS_PROGRAM_INL_
 
 namespace Divide {
 
@@ -366,4 +366,4 @@ void glShaderProgram::Uniform(const stringImpl& ext, U8 slot) {
 
 }; //namespace Divide
 
-#endif //_PLATFORM_VIDEO_OPENGL_SHADERS_SHADER_PROGRAM_INL_
+#endif //_PLATFORM_VIDEO_OPENGLS_PROGRAM_INL_

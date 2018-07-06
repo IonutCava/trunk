@@ -29,6 +29,7 @@ bool SceneRoot::computeBoundingBox(SceneGraphNode& sgn) {
 SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
     : GUIDWrapper(),
       _node(node),
+      _renderPasses(0),
       _elapsedTime(0ULL),
       _parent(nullptr),
       _loaded(true),
@@ -52,16 +53,16 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
     _instanceID = (node->GetRef() - 1);
     Material* const materialTpl = _node->getMaterialTpl();
 
-    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_ANIMATION)].reset(
+    _components[to_uint(SGNComponent::ComponentType::ANIMATION)].reset(
         nullptr);
 
-    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_NAVIGATION)]
+    _components[to_uint(SGNComponent::ComponentType::NAVIGATION)]
         .reset(MemoryManager_NEW NavigationComponent(*this));
 
-    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_PHYSICS)].reset(
+    _components[to_uint(SGNComponent::ComponentType::PHYSICS)].reset(
         MemoryManager_NEW PhysicsComponent(*this));
 
-    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_RENDERING)].reset(
+    _components[to_uint(SGNComponent::ComponentType::RENDERING)].reset(
         MemoryManager_NEW RenderingComponent(
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                    : nullptr,
@@ -302,7 +303,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 
     if (_firstDraw) {
         _firstDraw = false;
-        //GFX_DEVICE.refreshBuffers();
+        _renderPasses = 1;
         if (getParent()) {
             if (getComponent<AnimationComponent>()) {
                 getComponent<AnimationComponent>()->resetTimers();
@@ -368,7 +369,7 @@ bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
         }
     }
 
-    return true;
+    return (_renderPasses++ >= 3);
 }
 
 void SceneGraphNode::setInView(const bool state) {
@@ -381,13 +382,14 @@ void SceneGraphNode::setInView(const bool state) {
 
 bool SceneGraphNode::canDraw(const SceneRenderState& sceneRenderState,
                              RenderStage currentStage) {
-    if ((currentStage == RenderStage::SHADOW_STAGE &&
+
+    if ((currentStage == RenderStage::SHADOW &&
          !getComponent<RenderingComponent>()->castsShadows())) {
         return false;
     }
 
     return Attorney::SceneNodeGraph::isInView(
         *getNode(), sceneRenderState, *this,
-        currentStage != RenderStage::SHADOW_STAGE);
+        currentStage != RenderStage::SHADOW);
 }
 };

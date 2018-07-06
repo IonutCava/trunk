@@ -29,8 +29,8 @@
 
  */
 
-#ifndef _SHADER_HANDLER_H_
-#define _SHADER_HANDLER_H_
+#ifndef _HANDLER_H_
+#define _HANDLER_H_
 
 #include "Core/Resources/Headers/HardwareResource.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
@@ -48,14 +48,14 @@ class ShaderProgram : public HardwareResource {
    public:
     /// A list of built-in sampler slots. Use these if possible
     enum class TextureUsage : U32 {
-        TEXTURE_UNIT0 = 0,
-        TEXTURE_UNIT1 = 1,
-        TEXTURE_NORMALMAP = 2,
-        TEXTURE_OPACITY = 3,
-        TEXTURE_SPECULAR = 4,
-        TEXTURE_PROJECTION = 5,
-        TEXTURE_GLOSS = TEXTURE_SPECULAR,
-        TEXTURE_ROUGHNESS = TEXTURE_GLOSS,
+        UNIT0 = 0,
+        UNIT1 = 1,
+        NORMALMAP = 2,
+        OPACITY = 3,
+        SPECULAR = 4,
+        PROJECTION = 5,
+        GLOSS = SPECULAR,
+        ROUGHNESS = GLOSS,
         COUNT
     };
 

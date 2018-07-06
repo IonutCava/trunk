@@ -38,14 +38,14 @@
 /// fixed matrix API means no more VBs or VAs
 /// One VAO contains: one VB for data, one IB for indices and uploads to the
 /// shader vertex attribs for:
-///- Vertex Data  bound to location Divide::VERTEX_POSITION_LOCATION
-///- Colors       bound to location Divide::VERTEX_COLOR_LOCATION
-///- Normals      bound to location Divide::VERTEX_NORMAL_LOCATION
-///- TexCoords    bound to location Divide::VERTEX_TEXCOORD_LOCATION
-///- Tangents     bound to location Divide::VERTEX_TANGENT_LOCATION
-///- BiTangents   bound to location Divide::VERTEX_BITANGENT_LOCATION
-///- Bone weights bound to location Divide::VERTEX_BONE_WEIGHT_LOCATION
-///- Bone indices bound to location Divide::VERTEX_BONE_INDICE_LOCATION
+///- Vertex Data  bound to location Divide::VERTEX_POSITION
+///- Colors       bound to location Divide::VERTEX_COLOR
+///- Normals      bound to location Divide::VERTEX_NORMAL
+///- TexCoords    bound to location Divide::VERTEX_TEXCOORD
+///- Tangents     bound to location Divide::VERTEX_TANGENT
+///- BiTangents   bound to location Divide::VERTEX_BITANGENT
+///- Bone weights bound to location Divide::VERTEX_BONE_WEIGHT
+///- Bone indices bound to location Divide::VERTEX_BONE_INDICE
 
 namespace Divide {
 

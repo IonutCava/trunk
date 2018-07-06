@@ -21,23 +21,21 @@ glShaderProgram::glShaderProgram(const bool optimise)
     // each API has it's own invalid id. This is OpenGL's
     _shaderProgramID = GLUtil::_invalidObjectID;
     // some basic translation tables for shade types
-    _shaderStageTable[to_uint(ShaderType::VERTEX_SHADER)] = GL_VERTEX_SHADER;
-    _shaderStageTable[to_uint(ShaderType::FRAGMENT_SHADER)] =
-        GL_FRAGMENT_SHADER;
-    _shaderStageTable[to_uint(ShaderType::GEOMETRY_SHADER)] =
-        GL_GEOMETRY_SHADER;
-    _shaderStageTable[to_uint(ShaderType::TESSELATION_CTRL_SHADER)] =
+    _shaderStageTable[to_uint(ShaderType::VERTEX)] = GL_VERTEX_SHADER;
+    _shaderStageTable[to_uint(ShaderType::FRAGMENT)] = GL_FRAGMENT_SHADER;
+    _shaderStageTable[to_uint(ShaderType::GEOMETRY)] = GL_GEOMETRY_SHADER;
+    _shaderStageTable[to_uint(ShaderType::TESSELATION_CTRL)] =
         GL_TESS_CONTROL_SHADER;
-    _shaderStageTable[to_uint(ShaderType::TESSELATION_EVAL_SHADER)] =
+    _shaderStageTable[to_uint(ShaderType::TESSELATION_EVAL)] =
         GL_TESS_EVALUATION_SHADER;
-    _shaderStageTable[to_uint(ShaderType::COMPUTE_SHADER)] = GL_COMPUTE_SHADER;
+    _shaderStageTable[to_uint(ShaderType::COMPUTE)] = GL_COMPUTE_SHADER;
     // pointers to all of our shader stages
-    _shaderStage[to_uint(ShaderType::VERTEX_SHADER)] = nullptr;
-    _shaderStage[to_uint(ShaderType::FRAGMENT_SHADER)] = nullptr;
-    _shaderStage[to_uint(ShaderType::GEOMETRY_SHADER)] = nullptr;
-    _shaderStage[to_uint(ShaderType::TESSELATION_CTRL_SHADER)] = nullptr;
-    _shaderStage[to_uint(ShaderType::TESSELATION_EVAL_SHADER)] = nullptr;
-    _shaderStage[to_uint(ShaderType::COMPUTE_SHADER)] = nullptr;
+    _shaderStage[to_uint(ShaderType::VERTEX)] = nullptr;
+    _shaderStage[to_uint(ShaderType::FRAGMENT)] = nullptr;
+    _shaderStage[to_uint(ShaderType::GEOMETRY)] = nullptr;
+    _shaderStage[to_uint(ShaderType::TESSELATION_CTRL)] = nullptr;
+    _shaderStage[to_uint(ShaderType::TESSELATION_EVAL)] = nullptr;
+    _shaderStage[to_uint(ShaderType::COMPUTE)] = nullptr;
 }
 
 glShaderProgram::~glShaderProgram() {
@@ -81,7 +79,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
         validateInternal();
         // We dump the shader binary only if it wasn't loaded from one
         if (!_loadedFromBinary &&
-            GFX_DEVICE.getGPUVendor() == GPUVendor::GPU_VENDOR_NVIDIA) {
+            GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
             STUBBED(
                 "GLSL binary dump/load is only enabled for nVidia GPUS. "
                 "Catalyst 14.x destroys uniforms on shader dump, for whatever "
@@ -193,9 +191,8 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh) {
             // and detach the shader
             detachShader(shader);
         } else {
-            Console::errorfn(
-                Locale::get("ERROR_SHADER_RECOMPILE_NOT_FOUND_ATOM"),
-                shader->getName().c_str());
+            Console::errorfn(Locale::get("ERROR_RECOMPILE_NOT_FOUND_ATOM"),
+                             shader->getName().c_str());
         }
     } else {
         // If refresh == false, we are adding a new stage
@@ -314,9 +311,9 @@ void glShaderProgram::link() {
 bool glShaderProgram::generateHWResource(const stringImpl& name) {
     _name = name;
 
-    // NULL_SHADER shader means use shaderProgram(0), so bypass the normal
+    // NULL shader means use shaderProgram(0), so bypass the normal
     // loading routine
-    if (name.compare("NULL_SHADER") == 0) {
+    if (name.compare("NULL") == 0) {
         _validationQueued = false;
         _shaderProgramID = 0;
         _threadedLoadComplete = HardwareResource::generateHWResource(name);
@@ -339,7 +336,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
     // Load the program from the binary file, if available and allowed, to avoid
     // linking.
     if (Config::USE_SHADER_BINARY && !refresh &&
-        GFX_DEVICE.getGPUVendor() == GPUVendor::GPU_VENDOR_NVIDIA) {
+        GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
         // Only available for new programs
         assert(_shaderProgramIDTemp == 0);
         stringImpl fileName("shaderCache/Binary/" + _name + ".bin");
@@ -406,7 +403,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         // Mirror initial shader defines to match line count
         GLint initialOffset = 20;
         // nVidia specific
-        if (GFX_DEVICE.getGPUVendor() == GPUVendor::GPU_VENDOR_NVIDIA) {
+        if (GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
             initialOffset += 6;
         }
         // Get all of the preprocessor defines and add them to the general
@@ -436,8 +433,8 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
             lineCountOffset[i] += 42;
         }
         // GLSW directives are accounted here
-        lineCountOffset[to_uint(ShaderType::VERTEX_SHADER)] += 18;
-        lineCountOffset[to_uint(ShaderType::FRAGMENT_SHADER)] += 10;
+        lineCountOffset[to_uint(ShaderType::VERTEX)] += 18;
+        lineCountOffset[to_uint(ShaderType::FRAGMENT)] += 10;
 
         // Split the shader name to get the effect file name and the effect
         // properties
@@ -470,17 +467,17 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
 
         // Create an appropriate name for every shader stage
         stringImpl shaderCompileName[to_const_uint(ShaderType::COUNT)];
-        shaderCompileName[to_uint(ShaderType::VERTEX_SHADER)] =
+        shaderCompileName[to_uint(ShaderType::VERTEX)] =
             shaderName + ".Vertex" + vertexProperties;
-        shaderCompileName[to_uint(ShaderType::FRAGMENT_SHADER)] =
+        shaderCompileName[to_uint(ShaderType::FRAGMENT)] =
             shaderName + ".Fragment" + shaderProperties;
-        shaderCompileName[to_uint(ShaderType::GEOMETRY_SHADER)] =
+        shaderCompileName[to_uint(ShaderType::GEOMETRY)] =
             shaderName + ".Geometry" + shaderProperties;
-        shaderCompileName[to_uint(ShaderType::TESSELATION_CTRL_SHADER)] =
+        shaderCompileName[to_uint(ShaderType::TESSELATION_CTRL)] =
             shaderName + ".TessellationC" + shaderProperties;
-        shaderCompileName[to_uint(ShaderType::TESSELATION_EVAL_SHADER)] =
+        shaderCompileName[to_uint(ShaderType::TESSELATION_EVAL)] =
             shaderName + ".TessellationE" + shaderProperties;
-        shaderCompileName[to_uint(ShaderType::COMPUTE_SHADER)] =
+        shaderCompileName[to_uint(ShaderType::COMPUTE)] =
             shaderName + ".Compute" + shaderProperties;
 
         // For every stage
@@ -527,13 +524,13 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
             // Show a message, in debug, if we don't have a shader for this
             // stage
             if (!_shaderStage[i]) {
-                Console::d_printfn(Locale::get("WARN_GLSL_SHADER_LOAD"),
+                Console::d_printfn(Locale::get("WARN_GLSL_LOAD"),
                                    shaderCompileName[i].c_str());
             } else {
                 // Try to compile the shader (it doesn't double compile shaders,
                 // so it's safe to call it multiple types)
                 if (!_shaderStage[i]->compile()) {
-                    Console::errorfn(Locale::get("ERROR_GLSL_SHADER_COMPILE"),
+                    Console::errorfn(Locale::get("ERROR_GLSL_COMPILE"),
                                      _shaderStage[i]->getShaderID());
                 }
             }
@@ -542,8 +539,8 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
 
     // try to link the program in a separate thread
     return GFX_DEVICE.loadInContext(/*_threadedLoading && !_loadedFromBinary ?
-                                       CurrentContext::GFX_LOADING_CONTEXT : */
-                                    CurrentContext::GFX_RENDERING_CONTEXT,
+                                       CurrentContext::GFX_LOADING_CTX : */
+                                    CurrentContext::GFX_RENDERING_CTX,
                                     DELEGATE_BIND(
                                         &glShaderProgram::threadedLoad, this,
                                         name));
@@ -751,7 +748,6 @@ void glShaderProgram::Uniform(GLint location, const vec4<F32>& value) {
 void glShaderProgram::Uniform(GLint location,
                               const mat3<F32>& value,
                               bool rowMajor) {
-
     if (cachedValueUpdate(location, value)) {
         glProgramUniformMatrix3fv(_shaderProgramID, location, 1,
                                   rowMajor ? GL_TRUE : GL_FALSE, value.mat);
@@ -762,7 +758,6 @@ void glShaderProgram::Uniform(GLint location,
 void glShaderProgram::Uniform(GLint location,
                               const mat4<F32>& value,
                               bool rowMajor) {
-
     if (cachedValueUpdate(location, value)) {
         glProgramUniformMatrix4fv(_shaderProgramID, location, 1,
                                   rowMajor ? GL_TRUE : GL_FALSE, value.mat);

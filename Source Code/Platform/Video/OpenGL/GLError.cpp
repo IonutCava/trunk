@@ -13,7 +13,7 @@ void glfw_error_callback(GLint errorCode, const char* msg) {
             errorDesc = "GLFW_NOT_INITIALIZED";
         } break;
         case GLFW_NO_CURRENT_CONTEXT: {
-            errorDesc = "GLFW_NO_CURRENT_CONTEXT";
+            errorDesc = "GLFW_NO_CURRENT_CTX";
         } break;
         case GLFW_INVALID_ENUM: {
             errorDesc = "GLFW_INVALID_ENUM";

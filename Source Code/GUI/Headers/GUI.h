@@ -58,7 +58,7 @@ class GUIElement;
 class ShaderProgram;
 class RenderStateBlock;
 
-#define CEGUI_DEFAULT_CONTEXT \
+#define CEGUI_DEFAULT_CTX \
     CEGUI::System::getSingleton().getDefaultGUIContext()
 
 class GUIText;

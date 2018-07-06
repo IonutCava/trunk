@@ -23,7 +23,7 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
     res->setState(ResourceState::RES_LOADING);
 
     SamplerDescriptor defaultSampler;
-    defaultSampler.setWrapMode(TextureWrap::TEXTURE_REPEAT);
+    defaultSampler.setWrapMode(TextureWrap::REPEAT);
     defaultSampler.toggleMipMaps(false);
     ResourceDescriptor waterMaterial("waterMaterial_" + name);
     ResourceDescriptor waterShader("water_" + name);
@@ -43,8 +43,8 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
 
     ShaderProgram* waterShaderProgram =
         CreateResource<ShaderProgram>(waterShader);
-    waterShaderProgram->Uniform("texWaterNoiseNM", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
-    waterShaderProgram->Uniform("texWaterReflection", ShaderProgram::TextureUsage::TEXTURE_UNIT1);
+    waterShaderProgram->Uniform("texWaterNoiseNM", ShaderProgram::TextureUsage::UNIT0);
+    waterShaderProgram->Uniform("texWaterReflection", ShaderProgram::TextureUsage::UNIT1);
     waterShaderProgram->Uniform("texWaterRefraction", 2);
     waterShaderProgram->Uniform("texWaterNoiseDUDV", 3);
     assert(waterShaderProgram != nullptr);
@@ -57,15 +57,15 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
 
     waterMat->dumpToFile(false);
     waterMat->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-    waterMat->setTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0, waterNM);
-    waterMat->setShaderProgram(waterShaderProgram->getName(), RenderStage::DISPLAY_STAGE,
+    waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterNM);
+    waterMat->setShaderProgram(waterShaderProgram->getName(), RenderStage::DISPLAY,
                                true);
-    waterMat->setShaderProgram("depthPass.PrePass", RenderStage::Z_PRE_PASS_STAGE, true);
+    waterMat->setShaderProgram("depthPass.PrePass", RenderStage::Z_PRE_PASS, true);
 
     RenderStateBlockDescriptor waterMatDesc(GFX_DEVICE.getStateBlockDescriptor(
-        waterMat->getRenderStateBlock(RenderStage::DISPLAY_STAGE)));
-    waterMatDesc.setCullMode(CullMode::CULL_MODE_NONE);
-    waterMat->setRenderStateBlock(waterMatDesc, RenderStage::DISPLAY_STAGE);
+        waterMat->getRenderStateBlock(RenderStage::DISPLAY)));
+    waterMatDesc.setCullMode(CullMode::NONE);
+    waterMat->setRenderStateBlock(waterMatDesc, RenderStage::DISPLAY);
 
     return true;
 }

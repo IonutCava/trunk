@@ -83,7 +83,7 @@ class SceneNode : public Resource {
                         RenderStage currentStage) = 0;
     virtual bool getDrawState() const { return _renderState.getDrawState(); }
     /// Some SceneNodes may need special case handling. I.E. water shouldn't
-    /// render itself in REFLECTION_STAGE
+    /// render itself in REFLECTION
     virtual bool getDrawState(RenderStage currentStage);
     virtual void getDrawCommands(
         SceneGraphNode& sgn, RenderStage renderStage,

@@ -132,8 +132,8 @@ class NavModelData {
 
 namespace NavigationMeshLoader {
 enum class MeshDetailLevel : U32 { 
-    DETAIL_ABSOLUTE = 0,
-    DETAIL_BOUNDINGBOX = 1
+    MAXIMUM = 0,
+    BOUNDINGBOX = 1
 };
 
 /// Load the input geometry from file (Wavefront OBJ format) and save it in

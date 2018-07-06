@@ -88,7 +88,7 @@ class RenderStateBlockDescriptor : public GUIDWrapper {
 
     void setFillMode(FillMode mode);
     void setZBias(F32 zBias, F32 zUnits);
-    void setZFunc(ComparisonFunction zFunc = ComparisonFunction::CMP_FUNC_LEQUAL);
+    void setZFunc(ComparisonFunction zFunc = ComparisonFunction::LEQUAL);
     void flipCullMode();
     void setCullMode(CullMode mode);
     void setZEnable(bool enable);
@@ -96,19 +96,19 @@ class RenderStateBlockDescriptor : public GUIDWrapper {
 
     void setBlend(
         bool enable,
-        BlendProperty src = BlendProperty::BLEND_PROPERTY_SRC_ALPHA,
-        BlendProperty dest = BlendProperty::BLEND_PROPERTY_INV_SRC_ALPHA,
-        BlendOperation op = BlendOperation::BLEND_OPERATION_ADD);
+        BlendProperty src = BlendProperty::SRC_ALPHA,
+        BlendProperty dest = BlendProperty::INV_SRC_ALPHA,
+        BlendOperation op = BlendOperation::ADD);
 
     void setStencil(
         bool enable, U32 stencilRef = 0,
         StencilOperation stencilFailOp =
-            StencilOperation::STENCIL_OPERATION_KEEP,
+            StencilOperation::KEEP,
         StencilOperation stencilZFailOp =
-            StencilOperation::STENCIL_OPERATION_KEEP,
+            StencilOperation::KEEP,
         StencilOperation stencilPassOp =
-            StencilOperation::STENCIL_OPERATION_KEEP,
-        ComparisonFunction stencilFunc = ComparisonFunction::CMP_FUNC_NEVER);
+            StencilOperation::KEEP,
+        ComparisonFunction stencilFunc = ComparisonFunction::NEVER);
 
     void setStencilReadWriteMask(U32 read, U32 write);
 

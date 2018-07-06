@@ -129,7 +129,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Modify the line width used by OpenGL when rendering lines. It's upper limit
     /// is capped to what the hardware supports
     inline void setLineWidth(GLfloat width) override {
-        glLineWidth(std::min(width, (GLfloat)_lineWidthLimit));
+        width = std::min(width, (GLfloat)_lineWidthLimit);
+        if (!FLOAT_COMPARE(_prevLineWidth, width)) {
+            glLineWidth(width);
+            _prevLineWidth = width;
+        }
     }
     /// Verify if we have a sampler object created and available for the given
     /// descriptor
@@ -261,6 +265,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     GLfloat _prevWidthNode;
     /// The previous plain text string's line width
     GLfloat _prevWidthString;
+    /// The previous line width
+    GLfloat _prevLineWidth;
     /// Current window resolution
     vec2<GLushort> _cachedResolution;
     /// Line width limit (hardware upper limit)

@@ -47,22 +47,22 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
                                   false);
     _particleGPUBuffer->getDrawAttribDescriptor(
                             to_uint(
-                                AttribLocation::VERTEX_POSITION_LOCATION))
+                                AttribLocation::VERTEX_POSITION))
         .set(0, 0, 3, false, 0, 0, GFXDataFormat::FLOAT_32);
 
     updateData(particleData);
 
     // Generate a render state
     RenderStateBlockDescriptor particleStateDesc;
-    particleStateDesc.setCullMode(CullMode::CULL_MODE_NONE);
-    particleStateDesc.setBlend(true, BlendProperty::BLEND_PROPERTY_SRC_ALPHA,
-                               BlendProperty::BLEND_PROPERTY_INV_SRC_ALPHA);
+    particleStateDesc.setCullMode(CullMode::NONE);
+    particleStateDesc.setBlend(true, BlendProperty::SRC_ALPHA,
+                               BlendProperty::INV_SRC_ALPHA);
     _particleStateBlockHash =
         GFX_DEVICE.getOrCreateStateBlock(particleStateDesc);
 
     ResourceDescriptor particleShaderDescriptor("particles");
     _particleShader = CreateResource<ShaderProgram>(particleShaderDescriptor);
-    _particleShader->Uniform("depthBuffer", ShaderProgram::TextureUsage::TEXTURE_UNIT1);
+    _particleShader->Uniform("depthBuffer", ShaderProgram::TextureUsage::UNIT1);
     REGISTER_TRACKED_DEPENDENCY(_particleShader);
 
     ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
@@ -76,7 +76,7 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     _impostor->getMaterialTpl()->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
     _impostor->getMaterialTpl()->setAmbient(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
 
-    //_renderState.addToDrawExclusionMask(RenderStage::SHADOW_STAGE);
+    //_renderState.addToDrawExclusionMask(RenderStage::SHADOW);
 
     return (_particleShader != nullptr);
 }
@@ -97,7 +97,7 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
     _particleGPUBuffer->getDrawAttribDescriptor(13)
         .set(1, 1, 4, false, 0, 0, GFXDataFormat::FLOAT_32);
     _particleGPUBuffer->getDrawAttribDescriptor(
-                            to_uint(AttribLocation::VERTEX_COLOR_LOCATION))
+                            to_uint(AttribLocation::VERTEX_COLOR))
         .set(2, 1, 4, true, 0, 0, GFXDataFormat::UNSIGNED_BYTE);
 
     for (U32 i = 0; i < particleCount; ++i) {
@@ -174,7 +174,7 @@ bool ParticleEmitter::computeBoundingBox(SceneGraphNode& sgn) {
 
 void ParticleEmitter::onCameraChange(SceneGraphNode& sgn) {
     const mat4<F32>& viewMatrixCache =
-        GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW_MATRIX);
+        GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW);
     _particleShader->Uniform(
         "CameraRight_worldspace",
         vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0],
@@ -206,7 +206,7 @@ void ParticleEmitter::getDrawCommands(
         sgn.getComponent<RenderingComponent>()->renderWireframe());
     _drawCommand.stateHash(_particleStateBlockHash);
     _drawCommand.primCount(particleCount);
-    _drawCommand.shaderProgram(renderStage == RenderStage::DISPLAY_STAGE
+    _drawCommand.shaderProgram(renderStage == RenderStage::DISPLAY
                                    ? _particleShader
                                    : _particleDepthShader);
     _drawCommand.sourceBuffer(_particleGPUBuffer);
@@ -233,7 +233,7 @@ void ParticleEmitter::uploadToGPU() {
     _particleGPUBuffer->getDrawAttribDescriptor(13)
         .set(1, 1, 4, false, 0, readOffset, GFXDataFormat::FLOAT_32);
     _particleGPUBuffer->getDrawAttribDescriptor(
-                            to_uint(AttribLocation::VERTEX_COLOR_LOCATION))
+                            to_uint(AttribLocation::VERTEX_COLOR))
         .set(2, 1, 4, true, 0, readOffset, GFXDataFormat::UNSIGNED_BYTE);
 
     _writeOffset = (_writeOffset + 1) % 3;
@@ -257,9 +257,9 @@ bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
 
     /*if (particleCount > 0 && _enabled) {
         _particleTexture->Bind(
-            to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
-        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
-            ->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT1),
+            to_uint(ShaderProgram::TextureUsage::UNIT0));
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
+            ->Bind(to_uint(ShaderProgram::TextureUsage::UNIT1),
                    TextureDescriptor::AttachmentType::Depth);
         GFX_DEVICE.submitRenderCommand(
             sgn.getComponent<RenderingComponent>()->getDrawCommands());

@@ -64,7 +64,7 @@ class SamplerDescriptor : public PropertyDescriptor {
         toggleMipMaps(true);
         toggleSRGBColorSpace(false);
         // The following 2 are mainly used by depthmaps for hardware comparisons
-        _cmpFunc = ComparisonFunction::CMP_FUNC_LEQUAL;
+        _cmpFunc = ComparisonFunction::LEQUAL;
         _useRefCompare = false;
         _borderColor.set(DefaultColors::BLACK());
     }
@@ -89,14 +89,14 @@ class SamplerDescriptor : public PropertyDescriptor {
         _borderColor.set(color);
     }
 
-    inline void setWrapMode(TextureWrap wrapUVW = TextureWrap::TEXTURE_REPEAT) {
+    inline void setWrapMode(TextureWrap wrapUVW = TextureWrap::REPEAT) {
         setWrapModeU(wrapUVW);
         setWrapModeV(wrapUVW);
         setWrapModeW(wrapUVW);
     }
 
     inline void setWrapMode(TextureWrap wrapU, TextureWrap wrapV,
-                            TextureWrap wrapW = TextureWrap::TEXTURE_REPEAT) {
+                            TextureWrap wrapW = TextureWrap::REPEAT) {
         setWrapModeU(wrapU);
         setWrapModeV(wrapV);
         setWrapModeW(wrapW);
@@ -113,8 +113,8 @@ class SamplerDescriptor : public PropertyDescriptor {
     inline void setWrapModeW(TextureWrap wrapW) { _wrapW = wrapW; }
 
     inline void setFilters(
-        TextureFilter minFilter = TextureFilter::TEXTURE_FILTER_LINEAR,
-        TextureFilter magFilter = TextureFilter::TEXTURE_FILTER_LINEAR) {
+        TextureFilter minFilter = TextureFilter::LINEAR,
+        TextureFilter magFilter = TextureFilter::LINEAR) {
         setMinFilter(minFilter);
         setMagFilter(magFilter);
     }
@@ -129,12 +129,12 @@ class SamplerDescriptor : public PropertyDescriptor {
     inline void toggleMipMaps(const bool state) {
         _generateMipMaps = state;
         if (state) {
-            if (_minFilter == TextureFilter::TEXTURE_FILTER_LINEAR)
-                _minFilter = TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+            if (_minFilter == TextureFilter::LINEAR)
+                _minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
         } else {
             if (_minFilter ==
-                TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR)
-                _minFilter = TextureFilter::TEXTURE_FILTER_LINEAR;
+                TextureFilter::LINEAR_MIPMAP_LINEAR)
+                _minFilter = TextureFilter::LINEAR;
         }
     }
 

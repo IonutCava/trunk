@@ -32,10 +32,10 @@ RenderPassCuller::VisibleNodeCache& RenderPassCuller::getNodeCache(RenderStage s
         default:
             nodes = _visibleNodes[0];
             break;
-        case RenderStage::REFLECTION_STAGE:
+        case RenderStage::REFLECTION:
             nodes = _visibleNodes[1];
             break;
-        case RenderStage::SHADOW_STAGE:
+        case RenderStage::SHADOW:
             nodes = _visibleNodes[2];
             break;
     }

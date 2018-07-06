@@ -40,24 +40,24 @@ void RenderStateBlockDescriptor::fromDescriptor(
 }
 
 void RenderStateBlockDescriptor::flipCullMode() {
-    if (_cullMode == CullMode::CULL_MODE_NONE) {
-        _cullMode = CullMode::CULL_MODE_ALL;
+    if (_cullMode == CullMode::NONE) {
+        _cullMode = CullMode::ALL;
     }
-    if (_cullMode == CullMode::CULL_MODE_ALL) {
-        _cullMode = CullMode::CULL_MODE_NONE;
+    if (_cullMode == CullMode::ALL) {
+        _cullMode = CullMode::NONE;
     }
-    if (_cullMode == CullMode::CULL_MODE_CW) {
-        _cullMode = CullMode::CULL_MODE_CCW;
+    if (_cullMode == CullMode::CW) {
+        _cullMode = CullMode::CCW;
     }
-    if (_cullMode == CullMode::CULL_MODE_CCW) {
-        _cullMode = CullMode::CULL_MODE_CW;
+    if (_cullMode == CullMode::CCW) {
+        _cullMode = CullMode::CW;
     }
     clean();
 }
 
 void RenderStateBlockDescriptor::setCullMode(CullMode mode) {
     _cullMode = mode;
-    _cullEnabled = _cullMode == CullMode::CULL_MODE_NONE ? false : true;
+    _cullEnabled = _cullMode == CullMode::NONE ? false : true;
     clean();
 }
 
@@ -141,12 +141,12 @@ void RenderStateBlockDescriptor::setDefaultValues() {
     setZBias(0.0f, 1.0f);
     setZFunc();
     setColorWrites(true, true, true, true);
-    setBlend(false, BlendProperty::BLEND_PROPERTY_ONE,
-             BlendProperty::BLEND_PROPERTY_ONE,
-             BlendOperation::BLEND_OPERATION_ADD);
+    setBlend(false, BlendProperty::ONE,
+             BlendProperty::ONE,
+             BlendOperation::ADD);
     setZReadWrite(true, true);
-    setCullMode(CullMode::CULL_MODE_CW);
-    setFillMode(FillMode::FILL_MODE_SOLID);
+    setCullMode(CullMode::CW);
+    setFillMode(FillMode::SOLID);
     setStencilReadWriteMask(0xFFFFFFFF, 0xFFFFFFFF);
     setStencil(false);
     _lockHash = false;

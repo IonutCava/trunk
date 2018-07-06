@@ -114,8 +114,8 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
 
   private:
     enum class ShaderBufferType : U32 {
-        SHADER_BUFFER_NORMAL = 0,
-        SHADER_BUFFER_SHADOW = 1,
+        NORMAL = 0,
+        SHADOW = 1,
         COUNT
     };
 

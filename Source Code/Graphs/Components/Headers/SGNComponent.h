@@ -41,10 +41,10 @@ class SceneGraphNode;
 class SGNComponent : private NonCopyable {
    public:
     enum class ComponentType : U32 {
-        SGN_COMP_ANIMATION = 0,
-        SGN_COMP_NAVIGATION = 1,
-        SGN_COMP_PHYSICS = 2,
-        SGN_COMP_RENDERING = 3,
+        ANIMATION = 0,
+        NAVIGATION = 1,
+        PHYSICS = 2,
+        RENDERING = 3,
         COUNT
     };
 

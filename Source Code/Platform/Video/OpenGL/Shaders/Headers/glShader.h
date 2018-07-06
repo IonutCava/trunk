@@ -29,8 +29,8 @@
 
  */
 
-#ifndef GL_SHADER_H_
-#define GL_SHADER_H_
+#ifndef GL_H_
+#define GL_H_
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 #include "Platform/Video/Shaders/Headers/Shader.h"
 

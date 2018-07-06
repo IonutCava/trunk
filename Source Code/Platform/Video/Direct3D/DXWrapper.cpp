@@ -15,7 +15,7 @@ namespace Divide {
 ErrorCode DX_API::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
                                    char** argv) {
     Console::printfn(Locale::get("START_D3D_API"));
-    D3D_ENUM_TABLE::fill();
+    fillEnumTables();
     // CEGUI::System::create(CEGUI::Direct3D10Renderer::create(
     // /*myD3D10Device*/nullptr ));
     return ErrorCode::DX_INIT_ERROR;

@@ -1,7 +1,7 @@
 #ifndef _NODE_DATA_INPUT_CMN_
 #define _NODE_DATA_INPUT_CMN_
 
-layout(binding = SHADER_BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
+layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 {
     mat4 dvd_ProjectionMatrix;
     mat4 dvd_ViewMatrix;

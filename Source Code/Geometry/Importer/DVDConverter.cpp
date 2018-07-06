@@ -32,12 +32,12 @@ size_t GetMatchingFormat(const Assimp::Exporter& exporter,
 };
 
 DVDConverter::DVDConverter() : _ppsteps(0) {
-    aiTextureMapModeTable[aiTextureMapMode_Wrap] = TextureWrap::TEXTURE_CLAMP;
+    aiTextureMapModeTable[aiTextureMapMode_Wrap] = TextureWrap::CLAMP;
     aiTextureMapModeTable[aiTextureMapMode_Clamp] =
-        TextureWrap::TEXTURE_CLAMP_TO_EDGE;
-    aiTextureMapModeTable[aiTextureMapMode_Decal] = TextureWrap::TEXTURE_DECAL;
+        TextureWrap::CLAMP_TO_EDGE;
+    aiTextureMapModeTable[aiTextureMapMode_Decal] = TextureWrap::DECAL;
     aiTextureMapModeTable[aiTextureMapMode_Mirror] =
-        TextureWrap::TEXTURE_REPEAT;
+        TextureWrap::REPEAT;
     aiShadingModeInternalTable[aiShadingMode_Fresnel] =
         Material::ShadingMode::COOK_TORRANCE;
     aiShadingModeInternalTable[aiShadingMode_NoShading] =
@@ -561,8 +561,8 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             assert(textureRes != nullptr);
             // The first texture is always "Replace"
             tempMaterial->setTexture(
-                count == 1 ? ShaderProgram::TextureUsage::TEXTURE_UNIT1
-                           : ShaderProgram::TextureUsage::TEXTURE_UNIT0,
+                count == 1 ? ShaderProgram::TextureUsage::UNIT1
+                           : ShaderProgram::TextureUsage::UNIT0,
                 textureRes,
                 count == 0
                     ? Material::TextureOperation::REPLACE
@@ -606,7 +606,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_NORMALMAP,
+            tempMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP,
                                      textureRes, aiTextureOperationTable[op]);
             tempMaterial->setBumpMethod(Material::BumpMethod::NORMAL);
         }  // endif
@@ -638,7 +638,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_NORMALMAP,
+            tempMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP,
                                      textureRes, aiTextureOperationTable[op]);
             tempMaterial->setBumpMethod(Material::BumpMethod::NORMAL);
         }  // endif
@@ -671,7 +671,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_OPACITY, textureRes,
+            tempMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, textureRes,
                                      aiTextureOperationTable[op]);
             tempMaterial->setDoubleSided(true);
         }  // endif
@@ -681,15 +681,15 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
 
         // try to find out whether the diffuse texture has any
         // non-opaque pixels. If we find a few, use it as opacity texture
-        if (tempMaterial->getTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0)) {
+        if (tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0)) {
             if (!(flags & aiTextureFlags_IgnoreAlpha) &&
-                tempMaterial->getTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0)
+                tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0)
                     ->hasTransparency()) {
                 ResourceDescriptor texDesc(
-                    tempMaterial->getTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0)
+                    tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0)
                         ->getName());
                 Texture* textureRes = CreateResource<Texture>(texDesc);
-                tempMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_OPACITY,
+                tempMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY,
                                          textureRes);
             }
         }
@@ -723,7 +723,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_SPECULAR,
+            tempMaterial->setTexture(ShaderProgram::TextureUsage::SPECULAR,
                                      textureRes, aiTextureOperationTable[op]);
         }  // endif
     }      // endif

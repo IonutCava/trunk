@@ -15,10 +15,10 @@ GUIElement::GUIElement(CEGUI::Window* const parent, const GUIType& type,
     _visible = true;
 
     RenderStateBlockDescriptor desc;
-    desc.setCullMode(CullMode::CULL_MODE_NONE);
+    desc.setCullMode(CullMode::NONE);
     desc.setZEnable(false);
-    desc.setBlend(true, BlendProperty::BLEND_PROPERTY_SRC_ALPHA,
-                  BlendProperty::BLEND_PROPERTY_INV_SRC_ALPHA);
+    desc.setBlend(true, BlendProperty::SRC_ALPHA,
+                  BlendProperty::INV_SRC_ALPHA);
     _guiSBHash = GFX_DEVICE.getOrCreateStateBlock(desc);
 }
 

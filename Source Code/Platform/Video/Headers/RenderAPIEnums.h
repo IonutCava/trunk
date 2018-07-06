@@ -38,36 +38,36 @@ namespace Divide {
 
 /// State the various attribute locations to use in shaders with VAO/VB's
 enum class AttribLocation : U32 {
-    VERTEX_POSITION_LOCATION = 0,
-    VERTEX_COLOR_LOCATION = 1,
-    VERTEX_NORMAL_LOCATION = 2,
-    VERTEX_TEXCOORD_LOCATION = 3,
-    VERTEX_TANGENT_LOCATION = 4,
-    VERTEX_BITANGENT_LOCATION = 5,
-    VERTEX_BONE_WEIGHT_LOCATION = 6,
-    VERTEX_BONE_INDICE_LOCATION = 7
+    VERTEX_POSITION = 0,
+    VERTEX_COLOR = 1,
+    VERTEX_NORMAL = 2,
+    VERTEX_TEXCOORD = 3,
+    VERTEX_TANGENT = 4,
+    VERTEX_BITANGENT = 5,
+    VERTEX_BONE_WEIGHT = 6,
+    VERTEX_BONE_INDICE = 7
 };
 
 enum class ShaderBufferLocation : U32 {
-    SHADER_BUFFER_GPU_BLOCK = 0,
-    SHADER_BUFFER_LIGHT_NORMAL = 1,
-    SHADER_BUFFER_LIGHT_SHADOW = 2,
-    SHADER_BUFFER_NODE_INFO = 3,
-    SHADER_BUFFER_BONE_TRANSFORMS = 4,
-    SHADER_BUFFER_UNIFORMS = 5
+    GPU_BLOCK = 0,
+    LIGHT_NORMAL = 1,
+    LIGHT_SHADOW = 2,
+    NODE_INFO = 3,
+    BONE_TRANSFORMS = 4,
+    UNIFORMS = 5
 };
 
 /// Fixed pipeline functionality should be avoided. Both D3D and OGL should have
 /// these matrices
 enum class MATRIX_MODE : U32 {
-    VIEW_MATRIX = 0,
-    VIEW_INV_MATRIX = 1,
-    PROJECTION_MATRIX = 2,
-    PROJECTION_INV_MATRIX = 3,
-    VIEW_PROJECTION_MATRIX = 4,
-    // ViewProjection matrix's invers: inverse (VIEW_PROJECTION_MATRIX)
-    VIEW_PROJECTION_INV_MATRIX = 5,  
-    TEXTURE_MATRIX = 6
+    VIEW = 0,
+    VIEW_INV = 1,
+    PROJECTION = 2,
+    PROJECTION_INV = 3,
+    VIEW_PROJECTION = 4,
+    // ViewProjection matrix's invers: inverse (VIEW_PROJECTION)
+    VIEW_PROJECTION_INV = 5,  
+    TEXTURE = 6
 };
 
 /// Using multiple threads for streaming and issuing API specific construction
@@ -77,15 +77,15 @@ enum class MATRIX_MODE : U32 {
 /// display list, one for rendering and one for loading seems the best approach
 /// (for now)
 enum class CurrentContext : U32 { 
-    GFX_RENDERING_CONTEXT = 0, 
-    GFX_LOADING_CONTEXT = 1
+    GFX_RENDERING_CTX = 0, 
+    GFX_LOADING_CTX = 1
 };
 
 enum class RenderStage : U32 {
-    SHADOW_STAGE = 0,
-    REFLECTION_STAGE = 1,
-    DISPLAY_STAGE = 2,
-    Z_PRE_PASS_STAGE = 3,
+    SHADOW = 0,
+    REFLECTION = 1,
+    DISPLAY = 2,
+    Z_PRE_PASS = 3,
     COUNT = 4
 };
 
@@ -120,33 +120,33 @@ enum class PrimitiveType : U32 {
 };
 
 enum class RenderDetailLevel : U32 {
-    DETAIL_LOW = 0,
-    DETAIL_MEDIUM = 1,
-    DETAIL_HIGH = 2,
-    DETAIL_ULTRA = 3,
+    LOW = 0,
+    MEDIUM = 1,
+    HIGH = 2,
+    ULTRA = 3,
     COUNT
 };
 
 /// Specifies how the red, green, blue, and alpha source blending factors are
 /// computed.
 enum class BlendProperty : U32 {
-    BLEND_PROPERTY_ZERO = 0,
-    BLEND_PROPERTY_ONE,
-    BLEND_PROPERTY_SRC_COLOR,
-    BLEND_PROPERTY_INV_SRC_COLOR,
+    ZERO = 0,
+    ONE,
+    SRC_COLOR,
+    INV_SRC_COLOR,
     /// Transparency is best implemented using blend function (SRC_ALPHA,
     /// ONE_MINUS_SRC_ALPHA)
     /// with primitives sorted from farthest to nearest.
-    BLEND_PROPERTY_SRC_ALPHA,
-    BLEND_PROPERTY_INV_SRC_ALPHA,
-    BLEND_PROPERTY_DEST_ALPHA,
-    BLEND_PROPERTY_INV_DEST_ALPHA,
-    BLEND_PROPERTY_DEST_COLOR,
-    BLEND_PROPERTY_INV_DEST_COLOR,
+    SRC_ALPHA,
+    INV_SRC_ALPHA,
+    DEST_ALPHA,
+    INV_DEST_ALPHA,
+    DEST_COLOR,
+    INV_DEST_COLOR,
     /// Polygon antialiasing is optimized using blend function
     /// (SRC_ALPHA_SATURATE, GL_ONE)
     /// with polygons sorted from nearest to farthest.
-    BLEND_PROPERTY_SRC_ALPHA_SAT,
+    SRC_ALPHA_SAT,
     /// Place all properties above this.
     COUNT
 };
@@ -155,17 +155,17 @@ enum class BlendProperty : U32 {
 enum class BlendOperation : U32 {
     /// The ADD equation is useful for antialiasing and transparency, among
     /// other things.
-    BLEND_OPERATION_ADD = 0,
-    BLEND_OPERATION_SUBTRACT,
-    BLEND_OPERATION_REV_SUBTRACT,
+    ADD = 0,
+    SUBTRACT,
+    REV_SUBTRACT,
     /// The MIN and MAX equations are useful for applications that analyze image
     /// data
     /// (image thresholding against a constant color, for example).
-    BLEND_OPERATION_MIN,
+    MIN,
     /// The MIN and MAX equations are useful for applications that analyze image
     /// data
     /// (image thresholding against a constant color, for example).
-    BLEND_OPERATION_MAX,
+    MAX,
     /// Place all properties above this.
     COUNT
 };
@@ -174,74 +174,74 @@ enum class BlendOperation : U32 {
 /// YYY = test value using this function
 enum class ComparisonFunction : U32 {
     /// Never passes.
-    CMP_FUNC_NEVER = 0,
+    NEVER = 0,
     /// Passes if the incoming YYY value is less than the stored YYY value.
-    CMP_FUNC_LESS,
+    LESS,
     /// Passes if the incoming YYY value is equal to the stored YYY value.
-    CMP_FUNC_EQUAL,
+    EQUAL,
     /// Passes if the incoming YYY value is less than or equal to the stored YYY
     /// value.
-    CMP_FUNC_LEQUAL,
+    LEQUAL,
     /// Passes if the incoming YYY value is greater than the stored YYY value.
-    CMP_FUNC_GREATER,
+    GREATER,
     /// Passes if the incoming YYY value is not equal to the stored YYY value.
-    CMP_FUNC_NEQUAL,
+    NEQUAL,
     /// Passes if the incoming YYY value is greater than or equal to the stored
     /// YYY value.
-    CMP_FUNC_GEQUAL,
+    GEQUAL,
     /// Always passes.
-    CMP_FUNC_ALWAYS,
+    ALWAYS,
     /// Place all properties above this.
     COUNT
 };
 
 /// Specifies whether front- or back-facing facets are candidates for culling.
 enum class CullMode : U32 {
-    CULL_MODE_NONE = 0,
+    NONE = 0,
     /// Cull Back facing polygons
-    CULL_MODE_CW,
+    CW,
     /// Cull Front facing polygons
-    CULL_MODE_CCW,
+    CCW,
     /// Cull All polygons
-    CULL_MODE_ALL,
+    ALL,
     /// Place all properties above this.
     COUNT
 };
 
 /// Available shader stages
 enum class ShaderType : U32 {
-    FRAGMENT_SHADER = 0,
-    VERTEX_SHADER = 1,
-    GEOMETRY_SHADER = 2,
-    TESSELATION_CTRL_SHADER = 3,
-    TESSELATION_EVAL_SHADER = 4,
-    COMPUTE_SHADER = 5,
+    FRAGMENT = 0,
+    VERTEX = 1,
+    GEOMETRY = 2,
+    TESSELATION_CTRL = 3,
+    TESSELATION_EVAL = 4,
+    COMPUTE = 5,
     COUNT
 };
 
 /// Valid front and back stencil test actions
 enum class StencilOperation : U32 {
     /// Keeps the current value.
-    STENCIL_OPERATION_KEEP = 0,
+    KEEP = 0,
     /// Sets the stencil buffer value to 0.
-    STENCIL_OPERATION_ZERO,
+    ZERO,
     /// Sets the stencil buffer value to ref, as specified by StencilFunc.
-    STENCIL_OPERATION_REPLACE,
+    REPLACE,
     /// Increments the current stencil buffer value. Clamps to the maximum
     /// representable unsigned value.
-    STENCIL_OPERATION_INCR,
+    INCR,
     ///  Decrements the current stencil buffer value. Clamps to 0.
-    STENCIL_OPERATION_DECR,
+    DECR,
     /// Bitwise inverts the current stencil buffer value.
-    STENCIL_OPERATION_INV,
+    INV,
     /// Increments the current stencil buffer value.
     /// Wraps stencil buffer value to zero when incrementing the maximum
     /// representable unsigned value.
-    STENCIL_OPERATION_INCR_WRAP,
+    INCR_WRAP,
     /// Decrements the current stencil buffer value.
     /// Wraps stencil buffer value to the maximum representable unsigned value
     /// when decrementing a stencil buffer value of zero.
-    STENCIL_OPERATION_DECR_WRAP,
+    DECR_WRAP,
     /// Place all properties above this.
     COUNT
 };
@@ -250,11 +250,11 @@ enum class StencilOperation : U32 {
 enum class FillMode : U32 {
     /// Polygon vertices that are marked as the start of a boundary edge are
     /// drawn as points.
-    FILL_MODE_POINT = 1,
+    POINT = 1,
     /// Boundary edges of the polygon are drawn as line segments.
-    FILL_MODE_WIREFRAME,
+    WIREFRAME,
     /// The interior of the polygon is filled.
-    FILL_MODE_SOLID,
+    SOLID,
     /// Place all properties above this.
     COUNT
 };
@@ -272,26 +272,26 @@ enum class TextureType : U32 {
 };
 
 enum class TextureFilter : U32 {
-    TEXTURE_FILTER_LINEAR = 0x0000,
-    TEXTURE_FILTER_NEAREST = 0x0001,
-    TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST = 0x0002,
-    TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST = 0x0003,
-    TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR = 0x0004,
-    TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR = 0x0005,
+    LINEAR = 0x0000,
+    NEAREST = 0x0001,
+    NEAREST_MIPMAP_NEAREST = 0x0002,
+    LINEAR_MIPMAP_NEAREST = 0x0003,
+    NEAREST_MIPMAP_LINEAR = 0x0004,
+    LINEAR_MIPMAP_LINEAR = 0x0005,
     COUNT
 };
 
 enum class TextureWrap : U32 {
     /** Texture coordinates outside [0...1] are clamped to the nearest valid
        value.     */
-    TEXTURE_CLAMP = 0x0,
-    TEXTURE_CLAMP_TO_EDGE = 0x1,
-    TEXTURE_CLAMP_TO_BORDER = 0x2,
+    CLAMP = 0x0,
+    CLAMP_TO_EDGE = 0x1,
+    CLAMP_TO_BORDER = 0x2,
     /** If the texture coordinates for a pixel are outside [0...1] the texture
        is not applied to that pixel */
-    TEXTURE_DECAL = 0x3,
-    TEXTURE_REPEAT = 0x4,
-    TEXTURE_MIRROR_REPEAT = 0x5,
+    DECAL = 0x3,
+    REPEAT = 0x4,
+    MIRROR_REPEAT = 0x5,
     COUNT
 };
 
@@ -352,10 +352,10 @@ enum class GFXDataFormat : U32 {
 };
 
 enum class GPUVendor : U32 {
-    GPU_VENDOR_NVIDIA = 0,
-    GPU_VENDOR_AMD,
-    GPU_VENDOR_INTEL,
-    GPU_VENDOR_OTHER,
+    NVIDIA = 0,
+    AMD,
+    INTEL,
+    OTHER,
     COUNT
 };
 

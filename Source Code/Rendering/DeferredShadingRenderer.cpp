@@ -28,8 +28,8 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     deferredPreview.setThreadedLoading(false);
     _previewDeferredShader = CreateResource<ShaderProgram>(deferredPreview);
     SamplerDescriptor gBufferSampler;
-    gBufferSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
-    gBufferSampler.setFilters(TextureFilter::TEXTURE_FILTER_NEAREST);
+    gBufferSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    gBufferSampler.setFilters(TextureFilter::NEAREST);
     gBufferSampler.toggleMipMaps(false);
 
     TextureDescriptor gBuffer[4];  /// 4 Gbuffer elements (mipmaps are ignored

@@ -25,10 +25,10 @@ ShadowMap::~ShadowMap() { MemoryManager::DELETE(_depthMap); }
 
 ShadowMapInfo::ShadowMapInfo(Light* light)
     : _light(light), _shadowMap(nullptr) {
-    if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::DETAIL_ULTRA) {
+    if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::ULTRA) {
         _resolution = 2048;
     } else if (GFX_DEVICE.shadowDetailLevel() ==
-               RenderDetailLevel::DETAIL_HIGH) {
+               RenderDetailLevel::HIGH) {
         _resolution = 1024;
     } else {
         _resolution = 512;

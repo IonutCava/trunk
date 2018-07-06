@@ -37,11 +37,7 @@
 
 namespace Divide {
 
-namespace D3D_ENUM_TABLE {
-
-void fill();
-
-};
+void fillEnumTables();
 
 extern U32 d3dTextureTypeTable[to_const_uint(
     TextureType::COUNT)];

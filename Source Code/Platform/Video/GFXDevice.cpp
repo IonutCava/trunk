@@ -70,7 +70,7 @@ GFXDevice::GFXDevice()
     _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
     _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = true;
     // Enumerated Types
-    _shadowDetailLevel = RenderDetailLevel::DETAIL_HIGH;
+    _shadowDetailLevel = RenderDetailLevel::HIGH;
     _GPUVendor = GPUVendor::COUNT;
     _API_ID = RenderAPI::COUNT;
     // Utility cameras
@@ -248,12 +248,12 @@ const RenderStateBlockDescriptor& GFXDevice::getStateBlockDescriptor(
 /// The main entry point for any resolution change request
 void GFXDevice::changeResolution(U16 w, U16 h) {
     // Make sure we are in a valid state that allows resolution updates
-    if (_renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)] !=
+    if (_renderTarget[to_uint(RenderTarget::SCREEN)] !=
         nullptr) {
         // Update resolution only if it's different from the current one.
         // Avoid resolution change on minimize so we don't thrash render targets
         if (vec2<U16>(w, h) ==
-                _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)]
+                _renderTarget[to_uint(RenderTarget::SCREEN)]
                     ->getResolution() ||
             !(w > 1 && h > 1)) {
             return;
@@ -299,20 +299,20 @@ void GFXDevice::enableFog(F32 density, const vec3<F32>& color) {
 /// Return a GFXDevice specific matrix or a derivative of it
 void GFXDevice::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) {
     // The matrix names are self-explanatory
-    if (mode == MATRIX_MODE::VIEW_PROJECTION_MATRIX) {
+    if (mode == MATRIX_MODE::VIEW_PROJECTION) {
         mat.set(_gpuBlock._ViewProjectionMatrix);
-    } else if (mode == MATRIX_MODE::VIEW_MATRIX) {
+    } else if (mode == MATRIX_MODE::VIEW) {
         mat.set(_gpuBlock._ViewMatrix);
-    } else if (mode == MATRIX_MODE::PROJECTION_MATRIX) {
+    } else if (mode == MATRIX_MODE::PROJECTION) {
         mat.set(_gpuBlock._ProjectionMatrix);
-    } else if (mode == MATRIX_MODE::TEXTURE_MATRIX) {
+    } else if (mode == MATRIX_MODE::TEXTURE) {
         mat.identity();
         Console::errorfn(Locale::get("ERROR_TEXTURE_MATRIX_ACCESS"));
-    } else if (mode == MATRIX_MODE::VIEW_INV_MATRIX) {
+    } else if (mode == MATRIX_MODE::VIEW_INV) {
         _gpuBlock._ViewMatrix.getInverse(mat);
-    } else if (mode == MATRIX_MODE::PROJECTION_INV_MATRIX) {
+    } else if (mode == MATRIX_MODE::PROJECTION_INV) {
         _gpuBlock._ProjectionMatrix.getInverse(mat);
-    } else if (mode == MATRIX_MODE::VIEW_PROJECTION_INV_MATRIX) {
+    } else if (mode == MATRIX_MODE::VIEW_PROJECTION_INV) {
         _gpuBlock._ViewProjectionMatrix.getInverse(mat);
     } else {
         DIVIDE_ASSERT(
@@ -526,7 +526,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
     }
     // If we want and can call the function in the loading thread, add it to the
     // lock-free, single-producer, single-consumer queue
-    if (context == CurrentContext::GFX_LOADING_CONTEXT &&
+    if (context == CurrentContext::GFX_LOADING_CTX &&
         _state.loadingThreadAvailable()) {
         while (!_state.getLoadQueue().push(callback))
             ;
@@ -548,7 +548,7 @@ void GFXDevice::ConstructHIZ() {
     hizTarget._changeViewport = false;
     // The depth buffer's resolution should be equal to the screen's resolution
     vec2<U16> resolution =
-        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]
+        _renderTarget[to_uint(RenderTarget::DEPTH)]
             ->getResolution();
     // We use a special shader that downsamples the buffer
     _HIZConstructProgram->bind();
@@ -556,11 +556,10 @@ void GFXDevice::ConstructHIZ() {
     // only a depth image,
     // disables depth testing but allows depth writes
     // Set the depth buffer as the currently active render target
-    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]->Begin(
-        hizTarget);
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->Begin(hizTarget);
     // Bind the depth texture to the first texture unit
-    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]->Bind(
-        to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0),
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->Bind(
+        to_uint(ShaderProgram::TextureUsage::UNIT0),
         TextureDescriptor::AttachmentType::Depth);
     // Calculate the number of mipmap levels we need to generate
     U16 numLevels = 1 + (U16)floorf(log2f(fmaxf((F32)resolution.width,
@@ -568,6 +567,7 @@ void GFXDevice::ConstructHIZ() {
     // Store the current width and height of each mip
     U16 currentWidth = resolution.width;
     U16 currentHeight = resolution.height;
+    vec4<I32> previousViewport(_viewport.top());
     // We skip the first level as that's our full resolution image
     for (U16 i = 1; i < numLevels; ++i) {
         // Inform the shader of the resolution we are downsampling from
@@ -580,22 +580,21 @@ void GFXDevice::ConstructHIZ() {
         currentWidth = currentWidth > 0 ? currentWidth : 1;
         currentHeight = currentHeight > 0 ? currentHeight : 1;
         // Update the viewport with the new resolution
-        GFX::ScopedViewport viewport(
-            vec4<I32>(0, 0, currentWidth, currentHeight));
+        updateViewportInternal(vec4<I32>(0, 0, currentWidth, currentHeight));
         // Bind next mip level for rendering but first restrict fetches only to
         // previous level
-        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]
-            ->SetMipLevel(i - 1, i - 1, i,
-                          TextureDescriptor::AttachmentType::Depth);
+        _renderTarget[to_uint(RenderTarget::DEPTH)]->SetMipLevel(
+            i - 1, i - 1, i, TextureDescriptor::AttachmentType::Depth);
         // Dummy draw command as the full screen quad is generated completely by
         // a geometry shader
         drawPoints(1, _stateDepthOnlyRenderingHash, _HIZConstructProgram);
     }
+    updateViewportInternal(previousViewport);
     // Reset mipmap level range for the depth buffer
-    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]
+    _renderTarget[to_uint(RenderTarget::DEPTH)]
         ->ResetMipLevel(TextureDescriptor::AttachmentType::Depth);
     // Unbind the render target
-    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]->End();
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->End();
 }
 
 /// Find an unused primitive object or create a new one and return it
@@ -661,13 +660,13 @@ void GFXDevice::plot3DGraph(const Util::GraphPlot3D& plot3D,
 void GFXDevice::Screenshot(char* filename) {
     // Get the screen's resolution
     const vec2<U16>& resolution =
-        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)]
+        _renderTarget[to_uint(RenderTarget::SCREEN)]
             ->getResolution();
     // Allocate sufficiently large buffers to hold the pixel data
     U32 bufferSize = resolution.width * resolution.height * 4;
     U8* imageData = MemoryManager_NEW U8[bufferSize];
     // Read the pixels from the main render target (RGBA16F)
-    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)]->ReadData(
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->ReadData(
         GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, imageData);
     // Save to file
     ImageTools::SaveSeries(filename,

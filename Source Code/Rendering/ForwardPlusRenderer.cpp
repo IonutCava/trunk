@@ -23,11 +23,11 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     rangesDesc.setPropertyList(gridDim);
 
     _depthRangesConstructProgram = CreateResource<ShaderProgram>(rangesDesc);
-    _depthRangesConstructProgram->Uniform("depthTex", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+    _depthRangesConstructProgram->Uniform("depthTex", ShaderProgram::TextureUsage::UNIT0);
     /// Depth ranges are used for grid based light culling
     SamplerDescriptor depthRangesSampler;
-    depthRangesSampler.setFilters(TextureFilter::TEXTURE_FILTER_NEAREST);
-    depthRangesSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
+    depthRangesSampler.setFilters(TextureFilter::NEAREST);
+    depthRangesSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     depthRangesSampler.toggleMipMaps(false);
     TextureDescriptor depthRangesDescriptor(TextureType::TEXTURE_2D,
                                             GFXImageFormat::RGBA32F,
@@ -42,7 +42,7 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     _depthRanges->toggleDepthBuffer(false);
     _depthRanges->setClearColor(vec4<F32>(0.0f, 1.0f, 0.0f, 1.0f));
     vec2<U16> screenRes =
-        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
             ->getResolution();
     vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X,
                        Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
@@ -71,7 +71,7 @@ void ForwardPlusRenderer::updateResolution(U16 width, U16 height) {
     vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X,
                        Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
     vec2<U16> resTemp(
-        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
             ->getResolution() +
         tileSize);
     _depthRanges->Create(resTemp.x / tileSize.x - 1,
@@ -132,9 +132,9 @@ void ForwardPlusRenderer::downSampleDepthBuffer(
         _depthRangesConstructProgram->bind();
         _depthRangesConstructProgram->Uniform(
             "dvd_ProjectionMatrixInverse",
-            GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION_INV_MATRIX));
-        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
-            ->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0),
+            GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION_INV));
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
+            ->Bind(to_uint(ShaderProgram::TextureUsage::UNIT0),
                    TextureDescriptor::AttachmentType::Depth);
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
                               _depthRangesConstructProgram);

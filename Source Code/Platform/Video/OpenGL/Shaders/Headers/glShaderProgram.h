@@ -29,8 +29,8 @@
 
  */
 
-#ifndef _PLATFORM_VIDEO_OPENGL_SHADERS_SHADER_PROGRAM_H_
-#define _PLATFORM_VIDEO_OPENGL_SHADERS_SHADER_PROGRAM_H_
+#ifndef _PLATFORM_VIDEO_OPENGLS_PROGRAM_H_
+#define _PLATFORM_VIDEO_OPENGLS_PROGRAM_H_
 
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
@@ -198,6 +198,6 @@ class glShaderProgram : public ShaderProgram {
 
 };  // namespace Divide
 
-#endif  //_PLATFORM_VIDEO_OPENGL_SHADERS_SHADER_PROGRAM_H_
+#endif  //_PLATFORM_VIDEO_OPENGLS_PROGRAM_H_
 
 #include "glShaderProgram.inl"

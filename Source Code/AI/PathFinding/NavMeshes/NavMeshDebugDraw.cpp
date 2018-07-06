@@ -20,7 +20,7 @@ NavMeshDebugDraw::NavMeshDebugDraw()
       _primitive(nullptr) {
     // Generate a render state
     RenderStateBlockDescriptor navigationDebugDesc;
-    navigationDebugDesc.setCullMode(CullMode::CULL_MODE_NONE);
+    navigationDebugDesc.setCullMode(CullMode::NONE);
     navigationDebugDesc.setBlend(true);
     _navMeshStateBlockHash =
         GFX_DEVICE.getOrCreateStateBlock(navigationDebugDesc);

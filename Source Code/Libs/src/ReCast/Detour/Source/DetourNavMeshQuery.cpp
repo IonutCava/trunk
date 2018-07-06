@@ -1232,7 +1232,7 @@ dtStatus dtNavMeshQuery::updateSlicedFindPath(const int maxIter, int* doneIters)
         if (bestNode->id == m_query.endRef)
         {
             m_query.lastBestNode = bestNode;
-            const dtStatus details = m_query.status & DT_STATUS_DETAIL_MASK;
+            const dtStatus details = m_query.status & DT_STATUS_MASK;
             m_query.status = DT_SUCCESS | details;
             if (doneIters)
                 *doneIters = iter;
@@ -1410,7 +1410,7 @@ dtStatus dtNavMeshQuery::updateSlicedFindPath(const int maxIter, int* doneIters)
     // Exhausted all nodes, but could not find path.
     if (m_openList->empty())
     {
-        const dtStatus details = m_query.status & DT_STATUS_DETAIL_MASK;
+        const dtStatus details = m_query.status & DT_STATUS_MASK;
         m_query.status = DT_SUCCESS | details;
     }
 
@@ -1484,9 +1484,9 @@ dtStatus dtNavMeshQuery::finalizeSlicedFindPath(dtPolyRef* path, int* pathCount,
                     status = DT_BUFFER_TOO_SMALL;
             }
 
-            if (status & DT_STATUS_DETAIL_MASK)
+            if (status & DT_STATUS_MASK)
             {
-                m_query.status |= status & DT_STATUS_DETAIL_MASK;
+                m_query.status |= status & DT_STATUS_MASK;
                 break;
             }
             node = next;
@@ -1494,7 +1494,7 @@ dtStatus dtNavMeshQuery::finalizeSlicedFindPath(dtPolyRef* path, int* pathCount,
         while (node);
     }
     
-    const dtStatus details = m_query.status & DT_STATUS_DETAIL_MASK;
+    const dtStatus details = m_query.status & DT_STATUS_MASK;
 
     // Reset query.
     memset(&m_query, 0, sizeof(dtQueryData));
@@ -1584,9 +1584,9 @@ dtStatus dtNavMeshQuery::finalizeSlicedFindPathPartial(const dtPolyRef* existing
                     status = DT_BUFFER_TOO_SMALL;
             }
 
-            if (status & DT_STATUS_DETAIL_MASK)
+            if (status & DT_STATUS_MASK)
             {
-                m_query.status |= status & DT_STATUS_DETAIL_MASK;
+                m_query.status |= status & DT_STATUS_MASK;
                 break;
             }
             node = next;
@@ -1594,7 +1594,7 @@ dtStatus dtNavMeshQuery::finalizeSlicedFindPathPartial(const dtPolyRef* existing
         while (node);
     }
     
-    const dtStatus details = m_query.status & DT_STATUS_DETAIL_MASK;
+    const dtStatus details = m_query.status & DT_STATUS_MASK;
 
     // Reset query.
     memset(&m_query, 0, sizeof(dtQueryData));

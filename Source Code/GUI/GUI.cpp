@@ -151,8 +151,8 @@ bool GUI::init(const vec2<U16>& resolution) {
     _rootSheet = CEGUI::WindowManager::getSingleton().createWindow(
         "DefaultWindow", "root_window");
     _rootSheet->setMousePassThroughEnabled(true);
-    CEGUI_DEFAULT_CONTEXT.setRootWindow(_rootSheet);
-    CEGUI_DEFAULT_CONTEXT.setDefaultTooltipType(
+    CEGUI_DEFAULT_CTX.setRootWindow(_rootSheet);
+    CEGUI_DEFAULT_CTX.setDefaultTooltipType(
         stringAlg::fromBase(_defaultGUIScheme + "/Tooltip"));
 
     assert(_console);
@@ -180,7 +180,7 @@ void GUI::selectionChangeCallback(Scene* const activeScene) {
 }
 
 void GUI::setCursorPosition(U16 x, U16 y) const {
-    CEGUI_DEFAULT_CONTEXT.injectMousePosition(x, y);
+    CEGUI_DEFAULT_CTX.injectMousePosition(x, y);
 }
 
 bool GUI::onKeyDown(const Input::KeyEvent& key) {
@@ -307,7 +307,7 @@ GUIButton* GUI::addButton(const stringImpl& ID, const stringImpl& text,
                           const stringImpl& rootSheetID) {
     CEGUI::Window* parent = nullptr;
     if (!rootSheetID.empty()) {
-        parent = CEGUI_DEFAULT_CONTEXT.getRootWindow()->getChild(
+        parent = CEGUI_DEFAULT_CTX.getRootWindow()->getChild(
             rootSheetID.c_str());
     }
     if (!parent) {

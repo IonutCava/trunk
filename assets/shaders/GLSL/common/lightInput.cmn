@@ -15,7 +15,7 @@ struct Light {
     ivec4  _options;     //< x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot, y = casts shadows, zw = reserved
 };
 
-layout(binding = SHADER_BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock
+layout(binding = BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock
 {
     Light dvd_LightSource[MAX_LIGHTS_PER_SCENE];
 };
@@ -26,7 +26,7 @@ struct Shadow {
     vec4  _lightPosition[4];
 };
 
-layout(binding = SHADER_BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
+layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 {
     Shadow dvd_ShadowSource[MAX_LIGHTS_PER_SCENE];
 }; 

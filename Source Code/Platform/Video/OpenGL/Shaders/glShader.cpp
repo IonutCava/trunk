@@ -9,7 +9,7 @@
 
 namespace Divide {
 
-#define _COMPILE_SHADER_OUTPUT_IN_RELEASE
+#define _COMPILE_OUTPUT_IN_RELEASE
 
 glShader::glShader(const stringImpl& name,
                    const ShaderType& type,
@@ -20,22 +20,22 @@ glShader::glShader(const stringImpl& name,
             Console::errorfn(Locale::get("ERROR_GLSL_UNKNOWN_ShaderType"),
                              type);
             break;
-        case ShaderType::VERTEX_SHADER:
+        case ShaderType::VERTEX:
             _shader = glCreateShader(GL_VERTEX_SHADER);
             break;
-        case ShaderType::FRAGMENT_SHADER:
+        case ShaderType::FRAGMENT:
             _shader = glCreateShader(GL_FRAGMENT_SHADER);
             break;
-        case ShaderType::GEOMETRY_SHADER:
+        case ShaderType::GEOMETRY:
             _shader = glCreateShader(GL_GEOMETRY_SHADER);
             break;
-        case ShaderType::TESSELATION_CTRL_SHADER:
+        case ShaderType::TESSELATION_CTRL:
             _shader = glCreateShader(GL_TESS_CONTROL_SHADER);
             break;
-        case ShaderType::TESSELATION_EVAL_SHADER:
+        case ShaderType::TESSELATION_EVAL:
             _shader = glCreateShader(GL_TESS_EVALUATION_SHADER);
             break;
-        case ShaderType::COMPUTE_SHADER:
+        case ShaderType::COMPUTE:
             _shader = glCreateShader(GL_COMPUTE_SHADER);
             break;
     };
@@ -47,7 +47,7 @@ glShader::~glShader() {
 
 bool glShader::load(const stringImpl& source) {
     if (source.empty()) {
-        Console::errorfn(Locale::get("ERROR_GLSL_SHADER_NOT_FOUND"),
+        Console::errorfn(Locale::get("ERROR_GLSL_NOT_FOUND"),
                          getName().c_str());
         return false;
     }
@@ -56,15 +56,14 @@ bool glShader::load(const stringImpl& source) {
 
 #ifdef NDEBUG
 
-    if ((_type == ShaderType::FRAGMENT_SHADER ||
-         _type == ShaderType::VERTEX_SHADER) &&
+    if ((_type == ShaderType::FRAGMENT || _type == ShaderType::VERTEX) &&
         _optimise) {
         glslopt_ctx* ctx = GL_API::getInstance().getGLSLOptContext();
         DIVIDE_ASSERT(ctx != nullptr,
                       "glShader error: Invalid shader optimization context!");
         glslopt_shader_type shaderType =
-            (_type == ShaderType::FRAGMENT_SHADER ? kGlslOptShaderFragment
-                                                  : kGlslOptShaderVertex);
+            (_type == ShaderType::FRAGMENT ? kGlslOptShaderFragment
+                                           : kGlslOptShaderVertex);
         glslopt_shader* shader =
             glslopt_optimize(ctx, shaderType, parsedSource.c_str(), 0);
         if (glslopt_get_status(shader)) {
@@ -102,8 +101,7 @@ bool glShader::compile() {
 }
 
 void glShader::validate() {
-#if defined(_DEBUG) || defined(_PROFILE) || \
-    defined(COMPILE_SHADER_OUTPUT_IN_RELEASE)
+#if defined(_DEBUG) || defined(_PROFILE) || defined(COMPILE_OUTPUT_IN_RELEASE)
     GLint length = 0, status = 0;
 
     glGetShaderiv(_shader, GL_COMPILE_STATUS, &status);

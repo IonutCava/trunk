@@ -19,11 +19,11 @@ enum class RenderStage : U32;
 class PreRenderOperator {
    protected:
     enum class PostFXRenderStage : U32 {
-        FXAA_STAGE = toBit(1),
-        SSAO_STAGE = toBit(2),
-        DOF_STAGE = toBit(3),
-        BLOOM_STAGE = toBit(4),
-        LIGHT_SHAFT_STAGE = toBit(5)
+        FXAA = toBit(1),
+        SSAO = toBit(2),
+        DOF = toBit(3),
+        BLOOM = toBit(4),
+        LIGHT_SHAFT = toBit(5)
     };
 
    public:

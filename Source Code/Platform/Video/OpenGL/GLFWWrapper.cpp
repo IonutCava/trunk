@@ -21,7 +21,7 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
                                    char** argv) {
     // Fill our (abstract API <-> openGL) enum translation tables with proper
     // values
-    GLUtil::GL_ENUM_TABLE::fill();
+    GLUtil::fillEnumTables();
     // Most runtime variables are stored in the ParamHandler, including
     // initialization settings retrieved from XML
     ParamHandler& par = ParamHandler::getInstance();
@@ -169,16 +169,16 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
         reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
     if (!gpuVendorByte.empty()) {
         if (gpuVendorByte.compare(0, 5, "Intel") == 0) {
-            GFX_DEVICE.setGPUVendor(GPUVendor::GPU_VENDOR_INTEL);
+            GFX_DEVICE.setGPUVendor(GPUVendor::INTEL);
         } else if (gpuVendorByte.compare(0, 6, "NVIDIA") == 0) {
-            GFX_DEVICE.setGPUVendor(GPUVendor::GPU_VENDOR_NVIDIA);
+            GFX_DEVICE.setGPUVendor(GPUVendor::NVIDIA);
         } else if (gpuVendorByte.compare(0, 3, "ATI") == 0 ||
                    gpuVendorByte.compare(0, 3, "AMD") == 0) {
-            GFX_DEVICE.setGPUVendor(GPUVendor::GPU_VENDOR_AMD);
+            GFX_DEVICE.setGPUVendor(GPUVendor::AMD);
         }
     } else {
         gpuVendorByte = "Unknown GPU Vendor";
-        GFX_DEVICE.setGPUVendor(GPUVendor::GPU_VENDOR_OTHER);
+        GFX_DEVICE.setGPUVendor(GPUVendor::OTHER);
     }
 
     // Cap max anisotropic level to what the hardware supports
@@ -327,7 +327,7 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
 
     // Prepare immediate mode emulation rendering
     NS_GLIM::glim.SetVertexAttribLocation(
-        to_uint(AttribLocation::VERTEX_POSITION_LOCATION));
+        to_uint(AttribLocation::VERTEX_POSITION));
 
     // We need a dummy VAO object for point rendering
     glGenVertexArrays(1, &_pointDummyVAO);

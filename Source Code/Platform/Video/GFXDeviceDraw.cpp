@@ -57,9 +57,9 @@ bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
 }
 
 void GFXDevice::uploadGlobalBufferData() {
-     if (_buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)]) {
+    if (_buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)]) {
         _nodeBuffer->UpdateData(0, _matricesData.size() * sizeof(NodeData),
-                        _matricesData.data());
+                                _matricesData.data());
         _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = false;
     }
 
@@ -67,9 +67,10 @@ void GFXDevice::uploadGlobalBufferData() {
         uploadDrawCommands(_drawCommandsCache);
         _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = false;
     }
-     
+
     if (_buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)]) {
-        // We flush the entire buffer on update to inform the GPU that we don't need
+        // We flush the entire buffer on update to inform the GPU that we don't
+        // need
         // the previous data. Might avoid some driver sync
         _gfxDataBuffer->SetData(&_gpuBlock);
         _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = false;
@@ -100,8 +101,8 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     // Finally, set the proper render states
     setStateBlock(cmd.stateHash());
     // Bind the valid range for node buffer data
-    _nodeBuffer->BindRange(ShaderBufferLocation::SHADER_BUFFER_NODE_INFO,
-                           cmd.drawID(), cmd.drawCount());
+    _nodeBuffer->BindRange(ShaderBufferLocation::NODE_INFO, cmd.drawID(),
+                           cmd.drawCount());
     // Continue with the draw call
     return true;
 }
@@ -111,7 +112,8 @@ void GFXDevice::submitRenderCommand(const GenericDrawCommand& cmd) {
     processCommand(cmd);
 }
 
-void GFXDevice::submitRenderCommands(const vectorImpl<GenericDrawCommand>& cmds) {
+void GFXDevice::submitRenderCommands(
+    const vectorImpl<GenericDrawCommand>& cmds) {
     _useIndirectCommands = false;
     processCommands(cmds);
 }
@@ -121,11 +123,11 @@ void GFXDevice::submitIndirectRenderCommand(const GenericDrawCommand& cmd) {
     processCommand(cmd);
 }
 
-void GFXDevice::submitIndirectRenderCommands(const vectorImpl<GenericDrawCommand>& cmds) {
+void GFXDevice::submitIndirectRenderCommands(
+    const vectorImpl<GenericDrawCommand>& cmds) {
     _useIndirectCommands = true;
     processCommands(cmds);
 }
-
 
 void GFXDevice::processCommand(const GenericDrawCommand& cmd) {
     /// Submit a single draw command
@@ -158,8 +160,7 @@ void GFXDevice::flushRenderQueue() {
         if (commandCount > 0) {
             GenericDrawCommand& previousCmd = package._drawCommands[0];
             for (vectorAlg::vecSize i = 1; i < commandCount; i++) {
-                GenericDrawCommand& currentCmd =
-                    package._drawCommands[i];
+                GenericDrawCommand& currentCmd = package._drawCommands[i];
                 if (!batchCommands(previousCmd, currentCmd)) {
                     previousCmd = currentCmd;
                 }
@@ -216,7 +217,8 @@ void GFXDevice::processVisibleNode(RenderPassCuller::RenderableNode& node,
         // Calculate the normal matrix (world * view)
         // If the world matrix is uniform scaled, inverseTranspose is a
         // double transpose (no-op) so we can skip it
-        dataOut._matrix[1].set(mat3<F32>(dataOut._matrix[0] * _gpuBlock._ViewMatrix));
+        dataOut._matrix[1].set(
+            mat3<F32>(dataOut._matrix[0] * _gpuBlock._ViewMatrix));
         if (!transform->isUniformScaled()) {
             // Non-uniform scaling requires an inverseTranspose to negate
             // scaling contribution but preserve rotation
@@ -257,7 +259,8 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         // Pass the list of nodes to the renderer for a pre-render pass
         getRenderer().processVisibleNodes(visibleNodes, _gpuBlock);
         // Generate and upload all lighting data
-        LightManager::getInstance().updateAndUploadLightData(_gpuBlock._ViewMatrix);
+        LightManager::getInstance().updateAndUploadLightData(
+            _gpuBlock._ViewMatrix);
         // The first entry has identity values (e.g. for rendering points)
         _matricesData.resize(nodeCount + 1);
     }
@@ -277,13 +280,14 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
                 *node._visibleNode->getComponent<RenderingComponent>(),
                 sceneRenderState, currentStage);
 
-        if (!nodeDrawCommands.empty()){
+        if (!nodeDrawCommands.empty()) {
             for (GenericDrawCommand& cmd : nodeDrawCommands) {
                 cmd.drawID(drawID);
                 nonBatchedCommands.push_back(cmd);
             }
             if (refreshNodeData) {
-                processVisibleNode(node, sceneRenderState, _matricesData[drawID]);
+                processVisibleNode(node, sceneRenderState,
+                                   _matricesData[drawID]);
             }
             drawID += 1;
         }
@@ -316,8 +320,7 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
             currentIDC.sourceBuffer()->getGUID() &&
         // And the same shader program
         previousIDC.shaderProgram()->getID() ==
-            currentIDC.shaderProgram()->getID())
-    {
+            currentIDC.shaderProgram()->getID()) {
         U32 prevCount = previousIDC.drawCount();
         if (previousIDC.drawID() + prevCount != currentIDC.drawID()) {
             return false;
@@ -337,7 +340,8 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
 /// This is just a short-circuit system (hack) to send a list of points to the
 /// shader
 /// It's used, mostly, to draw full screen quads using geometry shaders
-void GFXDevice::drawPoints(U32 numPoints, size_t stateHash,
+void GFXDevice::drawPoints(U32 numPoints,
+                           size_t stateHash,
                            ShaderProgram* const shaderProgram) {
     // We need a valid amount of points. Check lower limit
     if (numPoints == 0) {
@@ -391,7 +395,8 @@ void GFXDevice::drawGUIElement(GUIElement* guiElement) {
 
 /// Draw the outlines of a box defined by min and max as extents using the
 /// specified world matrix
-void GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max,
+void GFXDevice::drawBox3D(const vec3<F32>& min,
+                          const vec3<F32>& max,
                           const vec4<U8>& color) {
     // Grab an available primitive
     IMPrimitive* priv = getOrCreatePrimitive();
@@ -401,33 +406,33 @@ void GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max,
     priv->stateHash(_defaultStateBlockHash);
     // Create the object
     priv->beginBatch();
-        // Set it's color
-        priv->attribute4ub("inColorData", color);
-        // Draw the bottom loop
-        priv->begin(PrimitiveType::LINE_LOOP);
-            priv->vertex(min.x, min.y, min.z);
-            priv->vertex(max.x, min.y, min.z);
-            priv->vertex(max.x, min.y, max.z);
-            priv->vertex(min.x, min.y, max.z);
-        priv->end();
-        // Draw the top loop
-        priv->begin(PrimitiveType::LINE_LOOP);
-            priv->vertex(min.x, max.y, min.z);
-            priv->vertex(max.x, max.y, min.z);
-            priv->vertex(max.x, max.y, max.z);
-            priv->vertex(min.x, max.y, max.z);
-        priv->end();
-        // Connect the top to the bottom
-        priv->begin(PrimitiveType::LINES);
-            priv->vertex(min.x, min.y, min.z);
-            priv->vertex(min.x, max.y, min.z);
-            priv->vertex(max.x, min.y, min.z);
-            priv->vertex(max.x, max.y, min.z);
-            priv->vertex(max.x, min.y, max.z);
-            priv->vertex(max.x, max.y, max.z);
-            priv->vertex(min.x, min.y, max.z);
-            priv->vertex(min.x, max.y, max.z);
-        priv->end();
+    // Set it's color
+    priv->attribute4ub("inColorData", color);
+    // Draw the bottom loop
+    priv->begin(PrimitiveType::LINE_LOOP);
+    priv->vertex(min.x, min.y, min.z);
+    priv->vertex(max.x, min.y, min.z);
+    priv->vertex(max.x, min.y, max.z);
+    priv->vertex(min.x, min.y, max.z);
+    priv->end();
+    // Draw the top loop
+    priv->begin(PrimitiveType::LINE_LOOP);
+    priv->vertex(min.x, max.y, min.z);
+    priv->vertex(max.x, max.y, min.z);
+    priv->vertex(max.x, max.y, max.z);
+    priv->vertex(min.x, max.y, max.z);
+    priv->end();
+    // Connect the top to the bottom
+    priv->begin(PrimitiveType::LINES);
+    priv->vertex(min.x, min.y, min.z);
+    priv->vertex(min.x, max.y, min.z);
+    priv->vertex(max.x, min.y, min.z);
+    priv->vertex(max.x, max.y, min.z);
+    priv->vertex(max.x, min.y, max.z);
+    priv->vertex(max.x, max.y, max.z);
+    priv->vertex(min.x, min.y, max.z);
+    priv->vertex(min.x, max.y, max.z);
+    priv->end();
     // Finish our object
     priv->endBatch();
 }
@@ -435,7 +440,7 @@ void GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max,
 /// Render a list of lines within the specified constraints
 void GFXDevice::drawLines(const vectorImpl<Line>& lines,
                           const mat4<F32>& globalOffset,
-                          const vec4<I32>& viewport, 
+                          const vec4<I32>& viewport,
                           const bool inViewport,
                           const bool disableDepth) {
     // Check if we have a valid list. The list can be programmatically

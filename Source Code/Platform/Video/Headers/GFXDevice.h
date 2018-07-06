@@ -109,9 +109,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
    };
 
    enum class RenderTarget : U32 {
-       RENDER_TARGET_SCREEN = 0,
-       RENDER_TARGET_ANAGLYPH = 1,
-       RENDER_TARGET_DEPTH = 2,
+       SCREEN = 0,
+       ANAGLYPH = 1,
+       DEPTH = 2,
        COUNT
    };
 
@@ -211,7 +211,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void generateCubeMap(
         Framebuffer& cubeMap, const vec3<F32>& pos,
         const DELEGATE_CBK<>& renderFunction, const vec2<F32>& zPlanes,
-        RenderStage renderStage = RenderStage::REFLECTION_STAGE);
+        RenderStage renderStage = RenderStage::REFLECTION);
 
     void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
     /// Alternative to the normal version of getMatrix

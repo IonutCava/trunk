@@ -66,9 +66,8 @@ const unsigned int MAX_INSTANCE_COUNT = 512;
 const unsigned int MAX_POINTS_PER_BATCH = static_cast<unsigned int>(1 << 31);
 /// Maximum number of bones available per node
 const unsigned int MAX_BONE_COUNT_PER_NODE = 256;
-/// Estimated maximum number of visible objects per render pass (This includes
-/// debug primitives);
-/// 1024 with 4 * sizeof(mat4) = 64Kb (UBO max size)
+/// Estimated maximum number of visible objects per render pass
+//(This includes debug primitives)
 const unsigned int MAX_VISIBLE_NODES = 1024;
 /// How many clip planes should the shaders us
 const unsigned int MAX_CLIP_PLANES = 6;
@@ -97,7 +96,7 @@ const unsigned int SCENE_NODE_LOD1 = 180;
 /// Default 2 without: Rendering + Update + A.I. + Networking + PhysX
 const unsigned int THREAD_LIMIT = 2;
 /// Use "precompiled" shaders if possible
-const bool USE_SHADER_BINARY = true;
+const bool USE_SHADER_BINARYUSE_BINARY = true;
 /// Use HW AA'ed lines
 const bool USE_HARDWARE_AA_LINES = true;
 /// Multi-draw causes some problems with profiling software (e.g.
@@ -164,8 +163,7 @@ const unsigned int LIGHT_GRID_MAX_DIM_Y =
     ((1080 + LIGHT_GRID_TILE_DIM_Y - 1) / LIGHT_GRID_TILE_DIM_Y);
 
 /// the maximum number of lights supported, this is limited by constant buffer
-/// size, commonly
-/// this is 64kb, but AMD only seem to allow 2048 lights...
+/// size, commonly this is 64kb, but AMD only seem to allow 2048 lights...
 const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
 };  // namespace Lighting
 };  // namespace Config

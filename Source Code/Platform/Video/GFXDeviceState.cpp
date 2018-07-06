@@ -42,7 +42,7 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // usage of the buffer)
     _gfxDataBuffer.reset(newSB("dvd_GPUBlock", false, false));
     _gfxDataBuffer->Create(1, sizeof(GPUBlock));
-    _gfxDataBuffer->Bind(ShaderBufferLocation::SHADER_BUFFER_GPU_BLOCK);
+    _gfxDataBuffer->Bind(ShaderBufferLocation::GPU_BLOCK);
     // Every visible node will first update this buffer with required data
     // (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a
@@ -61,12 +61,12 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     _defaultStateNoDepthHash =
         getOrCreateStateBlock(defaultStateDescriptorNoDepth);
     RenderStateBlockDescriptor state2DRenderingDesc;
-    state2DRenderingDesc.setCullMode(CullMode::CULL_MODE_NONE);
+    state2DRenderingDesc.setCullMode(CullMode::NONE);
     state2DRenderingDesc.setZReadWrite(false, true);
     _state2DRenderingHash = getOrCreateStateBlock(state2DRenderingDesc);
     RenderStateBlockDescriptor stateDepthOnlyRendering;
     stateDepthOnlyRendering.setColorWrites(false, false, false, false);
-    stateDepthOnlyRendering.setZFunc(ComparisonFunction::CMP_FUNC_ALWAYS);
+    stateDepthOnlyRendering.setZFunc(ComparisonFunction::ALWAYS);
     _stateDepthOnlyRenderingHash =
         getOrCreateStateBlock(stateDepthOnlyRendering);
     // Block with hash 0 is null, and it's used to force a block update,
@@ -86,9 +86,9 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // special, on demand,
     // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
-    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)] = newFB(true);
+    _renderTarget[to_uint(RenderTarget::SCREEN)] = newFB(true);
     // The depth buffer should probably be merged into the screen buffer
-    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)] = newFB(false);
+    _renderTarget[to_uint(RenderTarget::DEPTH)] = newFB(false);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -96,20 +96,20 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
                                        GFXImageFormat::RGBA16F,
                                        GFXDataFormat::FLOAT_16);
     SamplerDescriptor screenSampler;
-    screenSampler.setFilters(TextureFilter::TEXTURE_FILTER_NEAREST,
-                             TextureFilter::TEXTURE_FILTER_NEAREST);
-    screenSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
+    screenSampler.setFilters(TextureFilter::NEAREST,
+                             TextureFilter::NEAREST);
+    screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.toggleMipMaps(false);
     screenDescriptor.setSampler(screenSampler);
     // Next, create a depth attachment for the screen render target.
     // Must also multisampled. Use full float precision for long view distances
     SamplerDescriptor depthSampler;
-    depthSampler.setFilters(TextureFilter::TEXTURE_FILTER_NEAREST);
-    depthSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
+    depthSampler.setFilters(TextureFilter::NEAREST);
+    depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     depthSampler.toggleMipMaps(false);
     // Use greater or equal depth compare function, but depth comparison is
     // disabled, anyway.
-    depthSampler._cmpFunc = ComparisonFunction::CMP_FUNC_GEQUAL;
+    depthSampler._cmpFunc = ComparisonFunction::GEQUAL;
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS,
                                       GFXImageFormat::DEPTH_COMPONENT32F,
                                       GFXDataFormat::FLOAT_32);
@@ -119,36 +119,36 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // Must be as close as possible to the screen's depth buffer
     SamplerDescriptor depthSamplerHiZ;
     depthSamplerHiZ.setFilters(
-        TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST,
-        TextureFilter::TEXTURE_FILTER_NEAREST);
-    depthSamplerHiZ.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
+        TextureFilter::NEAREST_MIPMAP_NEAREST,
+        TextureFilter::NEAREST);
+    depthSamplerHiZ.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     depthSamplerHiZ.toggleMipMaps(true);
     TextureDescriptor depthDescriptorHiZ(TextureType::TEXTURE_2D_MS,
                                          GFXImageFormat::DEPTH_COMPONENT32F,
                                          GFXDataFormat::FLOAT_32);
     depthDescriptorHiZ.setSampler(depthSamplerHiZ);
     // Add the attachments to the render targets
-    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)]->AddAttachment(
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->AddAttachment(
         screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)]->AddAttachment(
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->AddAttachment(
         depthDescriptor, TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)]->Create(
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->Create(
         resolution.width, resolution.height);
-    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]->AddAttachment(
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->AddAttachment(
         depthDescriptorHiZ, TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]->toggleColorWrites(false);
-    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]->Create(resolution.width,
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->toggleColorWrites(false);
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->Create(resolution.width,
                                                              resolution.height);
     // If we enabled anaglyph rendering, we need a second target, identical to
     // the screen target
     // used to render the scene at an offset
     if (_enableAnaglyph) {
-        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_ANAGLYPH)] = newFB(true);
-        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_ANAGLYPH)]->AddAttachment(
+        _renderTarget[to_uint(RenderTarget::ANAGLYPH)] = newFB(true);
+        _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->AddAttachment(
             screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_ANAGLYPH)]->AddAttachment(
+        _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->AddAttachment(
             depthDescriptor, TextureDescriptor::AttachmentType::Depth);
-        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_ANAGLYPH)]->Create(
+        _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->Create(
             resolution.width, resolution.height);
     }
     // If render targets ready, we initialize our post processing system
@@ -164,7 +164,7 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // attachment and down-samples it for every mip level)
     _HIZConstructProgram =
         CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
-    _HIZConstructProgram->Uniform("LastMip", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+    _HIZConstructProgram->Uniform("LastMip", ShaderProgram::TextureUsage::UNIT0);
     // Store our target z distances
     _gpuBlock._ZPlanesCombined.z =
         ParamHandler::getInstance().getParam<F32>("rendering.zNear");

@@ -67,7 +67,7 @@ bool Reflector::build() {
     Console::printfn(Locale::get("REFLECTOR_INIT_FB"), _resolution.x,
                      _resolution.y);
     SamplerDescriptor reflectionSampler;
-    reflectionSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
+    reflectionSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     reflectionSampler.toggleMipMaps(false);
     // Less precision for reflections
     TextureDescriptor reflectionDescriptor(TextureType::TEXTURE_2D,
@@ -90,7 +90,7 @@ void Reflector::previewReflection() {
     if (_previewReflection) {
         F32 height = _resolution.y * 0.333f;
         _reflectedTexture->Bind(
-            to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
+            to_uint(ShaderProgram::TextureUsage::UNIT0));
         vec4<I32> viewport(
             0, Application::getInstance().getResolution().y - height,
             _resolution.x * 0.333f, height);
