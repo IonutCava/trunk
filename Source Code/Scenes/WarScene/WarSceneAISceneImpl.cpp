@@ -133,6 +133,13 @@ void WarSceneAISceneImpl::requestOrders() {
                 if (_globalWorkingMemory._score[currentTeam->getTeamID()].value() == 1) {
                     weight = 2;
                 }
+                // If we have the enemy flag and the enemy has our flag,
+                // we MUST wait for someone else to retrieve it
+                if (_localWorkingMemory._hasEnemyFlag.value() && 
+                    _localWorkingMemory._enemyHasFlag.value()) {
+                    // Invalidate everything else and make sure we IDLE
+                    weight = 255;
+                }
             } break;
             case WarSceneOrder::WarOrder::ORDER_SCORE_ENEMY_FLAG: {
                 if (_localWorkingMemory._hasEnemyFlag.value()) {
@@ -237,7 +244,6 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
     U8 enemyTeamID = 1 - ownTeamID;
 
     switch (type) {
-        
         case ActionType::ACTION_IDLE: {
             Console::d_printfn(_WarAIOutputStream, "Idle action over");
         } break;
@@ -278,6 +284,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
                 targetNode->getComponent<PhysicsComponent>()->getScale());
 
             _localWorkingMemory._hasEnemyFlag.value(true);
+            _globalWorkingMemory._flagCarriers[ownTeamID].value(targetNode);
 
             for (const AITeam::TeamMap::value_type& member :
                  currentTeam->getTeamMembers()) {
@@ -341,6 +348,10 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction& planStep)
             state = true;
         } break;
         case ActionType::ACTION_SCORE_FLAG:
+            if (_localWorkingMemory._enemyHasFlag.value()) {
+                invalidateCurrentPlan();
+                return false;
+            }
         case ActionType::ACTION_RETURN_FLAG_TO_BASE: {
             state = _entity->getPosition().distanceSquared(
                 _initialFlagPositions[ownTeamID]) < g_ATTACK_RADIUS_SQ;
@@ -366,6 +377,9 @@ void WarSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg,
         case AIMsg::HAVE_FLAG: {
         } break;
         case AIMsg::ENEMY_HAS_FLAG: {
+            _localWorkingMemory._enemyHasFlag.value(true);
+            worldState().setVariable(AI::GOAPFact(Fact::EnemyHasFlag),
+                                     AI::GOAPValue(true));
         } break;
     };
 }

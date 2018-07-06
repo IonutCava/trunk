@@ -3,7 +3,7 @@
 layout(location = 13) in vec4 particleNormalData;
 // Output data ; will be interpolated for each fragment.
 out vec2 texCoord;
-out vec4 particleColor;
+out uvec4 particleColor;
 out vec4 vertexVP;
 
 // Values that stay constant for the whole mesh.
@@ -44,7 +44,7 @@ void main(){
 
 // Interpolated values from the vertex shaders
 in vec2 texCoord;
-in vec4 particleColor;
+in uvec4 particleColor;
 in vec4 vertexVP;
 
 // Ouput data

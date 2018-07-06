@@ -45,8 +45,8 @@
 #define GLFW_INCLUDE_NONE
 #endif
 
-#define GL_VERSION_4_4
-//#define GL_VERSION_4_5
+//#define GL_VERSION_4_4
+#define GL_VERSION_4_5
 
 #ifdef GL_VERSION_4_5
 #include <glbinding/gl/gl45.h>
@@ -149,10 +149,6 @@ namespace DSAWrapper {
     // Textures
     void dsaCreateTextures(GLenum target, GLsizei count, GLuint* textures);
     void dsaGenerateTextureMipmap(GLuint texture, GLenum target);
-    void dsaTextureImage(GLuint texture, GLenum target, GLsizei levels,
-                         GLenum internalformat, GLsizei width,
-                         GLsizei height, GLsizei depth, GLint border,
-                         GLenum format, GLenum type);
     void dsaTextureStorage(GLuint texture, GLenum target, GLsizei levels,
                            GLenum internalformat, GLsizei width,
                            GLsizei height, GLsizei depth);

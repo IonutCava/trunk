@@ -520,6 +520,8 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                                    AI::GOAPValue(true));
     scoreEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::HasEnemyFlag),
                                    AI::GOAPValue(true));
+    scoreEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::EnemyHasFlag),
+                                   AI::GOAPValue(false));
     scoreEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::HasEnemyFlag),
                              AI::GOAPValue(false));
 
@@ -613,6 +615,8 @@ bool WarScene::initializeAI(bool continueOnErrors) {
             brain->worldState().setVariable(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
                                             AI::GOAPValue(true));
             brain->worldState().setVariable(AI::GOAPFact(AI::Fact::HasEnemyFlag),
+                                            AI::GOAPValue(false));
+            brain->worldState().setVariable(AI::GOAPFact(AI::Fact::EnemyHasFlag),
                                             AI::GOAPValue(false));
             brain->worldState().setVariable(AI::GOAPFact(AI::Fact::Idling),
                                             AI::GOAPValue(true));

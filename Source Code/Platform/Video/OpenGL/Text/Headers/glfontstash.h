@@ -52,9 +52,9 @@ static int glfons__renderCreate(void* userPtr, int width, int height) {
     gl->width = width;
     gl->height = height;
 
-    Divide::GLUtil::DSAWrapper::dsaTextureImage(
-        gl->tex, GL_TEXTURE_2D, 0, GL_R8, gl->width,
-        gl->height, -1, 0, GL_RED, GL_UNSIGNED_BYTE);
+    Divide::GLUtil::DSAWrapper::dsaTextureStorage(
+        gl->tex, GL_TEXTURE_2D, 1, GL_R8, gl->width,
+        gl->height, -1);
         
     Divide::GLUtil::DSAWrapper::dsaTextureParameter(
         gl->tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
@@ -89,11 +89,7 @@ static void glfons__renderDraw(void* userPtr,
     if (gl->tex == 0) {
         return;
     }
-    Divide::GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
-
-    Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     GLuint vertDataSize = sizeof(float) * 2 * nverts;
-
     GLuint bufferID = gl->glfons_vboID;
     Divide::GLUtil::DSAWrapper::dsaNamedBufferData(
         bufferID, 2 * vertDataSize + sizeof(unsigned char) * 4 * nverts, NULL,
@@ -106,18 +102,16 @@ static void glfons__renderDraw(void* userPtr,
         bufferID, 2 * vertDataSize, sizeof(unsigned char) * 4 * nverts,
         (Divide::bufferPtr)colors);
 
+    Divide::GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
+    Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2,
-                          (void*)(0));
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void*)(0));
     glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2,
-                          (char*)0 + (vertDataSize));
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2,  (char*)0 + (vertDataSize));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE,
-                          sizeof(unsigned char) * 4,
-                          (char*)0 + (2 * vertDataSize));
-
+    glVertexAttribIPointer(1, 4, GL_UNSIGNED_BYTE, sizeof(unsigned char) * 4, (char*)0 + (2 * vertDataSize));
+    
     glDrawArrays(GL_TRIANGLES, 0, nverts);
 }
 

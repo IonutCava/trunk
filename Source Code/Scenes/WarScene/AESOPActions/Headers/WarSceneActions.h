@@ -41,7 +41,8 @@ enum class Fact : U32 {
     AtEnemyFlagLoc = 0,
     AtHomeFlagLoc = 1,
     HasEnemyFlag = 2,
-    Idling = 3,
+    EnemyHasFlag = 3,
+    Idling = 4,
     COUNT
 };
 
@@ -53,6 +54,8 @@ inline const char* WarSceneFactName(GOAPFact fact) {
             return "At home location";
         case Fact::HasEnemyFlag:
             return "Has enemy flag";
+        case Fact::EnemyHasFlag:
+            return "Enemy has flag";
         case Fact::Idling:
             return "Idling";
     };

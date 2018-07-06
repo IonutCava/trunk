@@ -15,7 +15,7 @@ uniform uint baseInstance = 0;
 #endif
 
 vec4   dvd_Vertex;
-uvec4  dvd_Color;
+vec4   dvd_Color;
 vec3   dvd_Normal;
 vec3   dvd_Tangent;
 
@@ -27,7 +27,7 @@ void computeData(){
     dvd_drawID  = /*gl_BaseInstanceARB*/baseInstance + gl_DrawIDARB;
     dvd_Vertex  = vec4(inVertexData,1.0);
     dvd_Normal  = inNormalData;
-    dvd_Color   = inColorData;
+    dvd_Color   = inColorData / vec4(255.0);
     dvd_Tangent = UNPACK_FLOAT(inTangentData); 
 
 #   if defined(USE_GPU_SKINNING)

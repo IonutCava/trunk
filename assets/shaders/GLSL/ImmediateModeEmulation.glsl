@@ -6,18 +6,18 @@ uniform mat4 dvd_WorldMatrix;
 
 void main(){
   _texCoord = inTexCoordData;
-  _color = inColorData;
+  _color = inColorData / vec4(255.0);
   gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix * vec4(inVertexData,1.0);
 } 
 
 -- Vertex.GUI
 
 out vec2 _texCoord;
-out vec3 _color;
+out vec4 _color;
 
 void main(){
   _texCoord = inTexCoordData;
-  _color = inColorData.rgb;
+  _color = inColorData / vec4(255.0);
   gl_Position = dvd_ProjectionMatrix * vec4(inVertexData,1.0);
 } 
 
@@ -46,10 +46,10 @@ void main(){
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 in  vec2 _texCoord;
-in  vec3 _color;
+in  vec4 _color;
 
 out vec4 _colorOut;
 
 void main(){
-    _colorOut = vec4(_color, texture(texDiffuse0, _texCoord).r);
+    _colorOut = vec4(_color.rgb, texture(texDiffuse0, _texCoord).r);
 }

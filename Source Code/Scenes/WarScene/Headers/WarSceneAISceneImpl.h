@@ -99,9 +99,12 @@ public:
     GlobalWorkingMemory() {
         _flags[0].value(nullptr);
         _flags[1].value(nullptr);
+        _flagCarriers[0].value(nullptr);
+        _flagCarriers[1].value(nullptr);
     }
 
     SGNNodeFact _flags[2];
+    SGNNodeFact _flagCarriers[2];
     SmallCounterFact _score[2];
     PositionFact _teamFlagPosition[2];
 };
@@ -110,9 +113,11 @@ class LocalWorkingMemory {
    public:
     LocalWorkingMemory() {
         _hasEnemyFlag.value(false);
+        _enemyHasFlag.value(false);
     }
 
     ToggleStateFact _hasEnemyFlag;
+    ToggleStateFact _enemyHasFlag;
 };
 
 class WarSceneOrder : public Order {
