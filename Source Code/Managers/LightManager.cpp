@@ -296,7 +296,7 @@ void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<
                            b->getPosition().distanceSquared(eyePos);
                 });
             })._task
-        );
+        )->startTask(Task::TaskPriority::HIGH);
     }
 
     cullTask.startTask(Task::TaskPriority::HIGH);

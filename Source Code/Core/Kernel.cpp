@@ -96,7 +96,11 @@ TaskHandle Kernel::getTaskHandle(I64 taskGUID) {
 
 Task& Kernel::getAvailableTask() {
     Task* task = &_tasksPool[(++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u)];
-    while (task->isLocked()) {
+    U32 failCount = 0;
+    while (!task->isFinished()) {
+        failCount++;
+        assert(failCount < Config::MAX_POOLED_TASKS * 2);
+
         task = &_tasksPool[(++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u)];
     }
     task->reset();
@@ -123,7 +127,6 @@ TaskHandle Kernel::AddTask(I64 jobIdentifier,
         hashAlg::emplace(_threadedCallbackFunctions,
                          freeTask.getGUID(),
                          onCompletionFunction);
-        freeTask.lock();
     }
 
     return TaskHandle(&freeTask, jobIdentifier);
@@ -153,7 +156,7 @@ void Kernel::idle() {
     }
 
     I64 taskGUID = -1;
-    if (_threadedCallbackBuffer.pop(taskGUID)) {
+    while (_threadedCallbackBuffer.pop(taskGUID)) {
         CallbackFunctions::const_iterator it = _threadedCallbackFunctions.find(taskGUID);
         if(it != std::end(_threadedCallbackFunctions) && it->second) {
             it->second();
@@ -422,7 +425,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::NOT_ENOUGH_RAM;
     }
 
-    _mainTaskPool.size_controller().resize(std::max(threadCount - 1, 1U));
+    _mainTaskPool.size_controller().resize(std::max(threadCount - 1, 2U));
 
     Console::bindConsoleOutput(
         DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(),

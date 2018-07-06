@@ -97,8 +97,8 @@ void ParticleData::sort(bool invalidateCache) {
     
     Kernel& kernel = Application::getInstance().getKernel();
     TaskHandle updateTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
-    updateTask.addChildTask(kernel.AddTask(parsePositions)._task);
-    updateTask.addChildTask(kernel.AddTask(parseColors)._task);
+    updateTask.addChildTask(kernel.AddTask(parsePositions)._task)->startTask(Task::TaskPriority::HIGH);
+    updateTask.addChildTask(kernel.AddTask(parseColors)._task)->startTask(Task::TaskPriority::HIGH);
     updateTask.startTask(Task::TaskPriority::HIGH);
     updateTask.wait();
 

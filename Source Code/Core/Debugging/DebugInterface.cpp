@@ -5,6 +5,7 @@ namespace Divide {
 DebugInterface::DebugVar::DebugVar()
     : GUIDWrapper(),
      _varPointer(nullptr),
+     _locked(true),
      _type(CallbackParam::TYPE_VOID),
      _locationLine(0),
      _group(-1)
@@ -17,10 +18,11 @@ DebugInterface::DebugGroup::DebugGroup()
 {
 }
 
-I64 DebugInterface::addDebugVar(const char* file, I32 line, void* variable, CallbackParam type, I64 debugGroup) {
+I64 DebugInterface::addDebugVar(const char* file, I32 line, void* variable, CallbackParam type, I64 debugGroup, bool locked) {
     DebugVar temp;
     temp._varPointer = variable;
     temp._type = type;
+    temp._locked = locked;
     temp._locationFile = file;
     temp._locationLine = static_cast<U16>(line);
     temp._group = debugGroup;
@@ -36,54 +38,56 @@ void DebugInterface::onDebugVarTrigger(I64 guid, bool invert) {
     hashMapImpl<I64, DebugVar>::iterator it = _debugVariables.find(guid);
     if (it != std::end(_debugVariables)) {
         DebugVar& var = it->second;
-        switch (var._type) {
-            case CallbackParam::TYPE_BOOL: {
-                bool& variable = *reinterpret_cast<bool*>(var._varPointer);
-                variable = !variable;
-            } break;
-            case CallbackParam::TYPE_SMALL_INTEGER: {
-                I8& variable = *reinterpret_cast<I8*>(var._varPointer);
-                variable = invert ? (variable - 1) : (variable + 1);
-            } break;
-            case CallbackParam::TYPE_MEDIUM_INTEGER: {
-                I16& variable = *reinterpret_cast<I16*>(var._varPointer);
-                variable = invert ? (variable - 1) : (variable + 1);
-            } break;
-            case CallbackParam::TYPE_INTEGER: {
-                I32& variable = *reinterpret_cast<I32*>(var._varPointer);
-                variable = invert ? (variable - 1) : (variable + 1);
-            } break;
-            case CallbackParam::TYPE_LARGE_INTEGER: {
-                I64& variable = *reinterpret_cast<I64*>(var._varPointer);
-                variable = invert ? (variable - 1) : (variable + 1);
-            } break;
-            case CallbackParam::TYPE_SMALL_UNSIGNED_INTEGER: {
-                U8& variable = *reinterpret_cast<U8*>(var._varPointer);
-                variable = invert ? (std::max(variable, (U8)1) - 1) : (variable + 1);
-            } break;
-            case CallbackParam::TYPE_MEDIUM_UNSIGNED_INTEGER: {
-                U16& variable = *reinterpret_cast<U16*>(var._varPointer);
-                variable = invert ? (std::max(variable, (U16)1) - 1) : (variable + 1);
-            } break;
-            case CallbackParam::TYPE_UNSIGNED_INTEGER: {
-                U32& variable = *reinterpret_cast<U32*>(var._varPointer);
-                variable = invert ? (std::max(variable, 1u) - 1) : (variable + 1);
-            } break;
-            case CallbackParam::TYPE_LARGE_UNSIGNED_INTEGER: {
-                U64& variable = *reinterpret_cast<U64*>(var._varPointer);
-                variable = invert ? (std::max(variable, (U64)1) - 1) : (variable + 1);
-            } break;
-            case CallbackParam::TYPE_FLOAT: {
-                F32& variable = *reinterpret_cast<F32*>(var._varPointer);
-                variable = invert ? (variable - 1.0f) : (variable + 1.0f);
-            } break;
-            case CallbackParam::TYPE_DOUBLE: {
-                D32& variable = *reinterpret_cast<D32*>(var._varPointer);
-                variable = invert ? (variable - 1.0) : (variable + 1.0);
-            } break;
-            // unsupported
-            default: break;
-        };
+        if (!var._locked) {
+            switch (var._type) {
+                case CallbackParam::TYPE_BOOL: {
+                    bool& variable = *reinterpret_cast<bool*>(var._varPointer);
+                    variable = !variable;
+                } break;
+                case CallbackParam::TYPE_SMALL_INTEGER: {
+                    I8& variable = *reinterpret_cast<I8*>(var._varPointer);
+                    variable = invert ? (variable - 1) : (variable + 1);
+                } break;
+                case CallbackParam::TYPE_MEDIUM_INTEGER: {
+                    I16& variable = *reinterpret_cast<I16*>(var._varPointer);
+                    variable = invert ? (variable - 1) : (variable + 1);
+                } break;
+                case CallbackParam::TYPE_INTEGER: {
+                    I32& variable = *reinterpret_cast<I32*>(var._varPointer);
+                    variable = invert ? (variable - 1) : (variable + 1);
+                } break;
+                case CallbackParam::TYPE_LARGE_INTEGER: {
+                    I64& variable = *reinterpret_cast<I64*>(var._varPointer);
+                    variable = invert ? (variable - 1) : (variable + 1);
+                } break;
+                case CallbackParam::TYPE_SMALL_UNSIGNED_INTEGER: {
+                    U8& variable = *reinterpret_cast<U8*>(var._varPointer);
+                    variable = invert ? (std::max(variable, (U8)1) - 1) : (variable + 1);
+                } break;
+                case CallbackParam::TYPE_MEDIUM_UNSIGNED_INTEGER: {
+                    U16& variable = *reinterpret_cast<U16*>(var._varPointer);
+                    variable = invert ? (std::max(variable, (U16)1) - 1) : (variable + 1);
+                } break;
+                case CallbackParam::TYPE_UNSIGNED_INTEGER: {
+                    U32& variable = *reinterpret_cast<U32*>(var._varPointer);
+                    variable = invert ? (std::max(variable, 1u) - 1) : (variable + 1);
+                } break;
+                case CallbackParam::TYPE_LARGE_UNSIGNED_INTEGER: {
+                    U64& variable = *reinterpret_cast<U64*>(var._varPointer);
+                    variable = invert ? (std::max(variable, (U64)1) - 1) : (variable + 1);
+                } break;
+                case CallbackParam::TYPE_FLOAT: {
+                    F32& variable = *reinterpret_cast<F32*>(var._varPointer);
+                    variable = invert ? (variable - 1.0f) : (variable + 1.0f);
+                } break;
+                case CallbackParam::TYPE_DOUBLE: {
+                    D32& variable = *reinterpret_cast<D32*>(var._varPointer);
+                    variable = invert ? (variable - 1.0) : (variable + 1.0);
+                } break;
+                // unsupported
+                default: break;
+            };
+        }
     }
 }
 

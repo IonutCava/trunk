@@ -50,6 +50,7 @@ public:
        public:
         DebugVar();
         void* _varPointer;
+        bool  _locked;
         CallbackParam _type;
         stringImpl _locationFile;
         U16  _locationLine;
@@ -65,7 +66,7 @@ public:
     };
 
 public:
-    I64 addDebugVar(const char* file, I32 line, void* variable, CallbackParam type, I64 debugGroup);
+    I64 addDebugVar(const char* file, I32 line, void* variable, CallbackParam type, I64 debugGroup, bool locked);
     void onDebugVarTrigger(I64 guid, bool invert);
 
     I64 addDebugGroup(const char* name, I64 parentGUID);
@@ -102,11 +103,11 @@ END_SINGLETON
 #define ADD_FILE_DEBUG_GROUP() \
     ADD_DEBUG_GROUP(__FILE__);
 
-#define ADD_DEBUG_VAR(pointer, type, group) \
-    DebugInterface::getInstance().addDebugVar(__FILE__, __LINE__, pointer, type, group);
+#define ADD_DEBUG_VAR(pointer, type, group, locked) \
+    DebugInterface::getInstance().addDebugVar(__FILE__, __LINE__, pointer, type, group, locked);
 
-#define ADD_DEBUG_VAR_FILE(pointer, type) \
-    ADD_DEBUG_VAR(pointer, type, DebugInterface::getInstance().getDebugGroup(__FILE__));
+#define ADD_DEBUG_VAR_FILE(pointer, type, locked) \
+    ADD_DEBUG_VAR(pointer, type, DebugInterface::getInstance().getDebugGroup(__FILE__), locked);
 
 namespace Attorney {
     class DebugInterfaceGUI {

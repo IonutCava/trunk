@@ -62,12 +62,12 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
 
     void stopTask();
 
-    inline bool isFinished() const { 
-        return _done;
+    inline bool isRunning() const {
+        return _isRunning;
     }
 
-    inline bool isLocked() const {
-        return _locked;
+    inline bool isFinished() const { 
+        return _done;
     }
 
     inline I64 jobIdentifier() const {
@@ -86,24 +86,18 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
     bool reset();
 
     void addChildTask(Task* task) {
+        task->_parentTask = this;
         _childTasks.push_back(task);
         _childTaskCount += 1;
-        task->_parentTask = this;
     }
 
-    inline void lock() {
-        _locked = true;
-    }
-
-    inline void unlock() {
-        _locked = false;
-    }
    protected:
     void run();
+    void waitForChildren(bool yeld, I64 timeout);
 
    private:
     std::atomic_bool _done;
-    std::atomic_bool _locked;
+    std::atomic_bool _isRunning;
     std::atomic_bool _stopRequested;
     std::atomic<I64> _jobIdentifier;
 
@@ -134,8 +128,9 @@ struct TaskHandle {
         return _task->isFinished();
     }
 
-    inline void addChildTask(Task* task) {
+    inline Task* addChildTask(Task* task) {
         _task->addChildTask(task);
+        return task;
     }
 
     inline void wait() {

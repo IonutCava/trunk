@@ -136,8 +136,8 @@ void GUI::update(const U64 deltaTime) {
         _debugVarCacheCount = debugVarEntries;
 
         for (std::pair<I64, I64>& entry : _debugDisplayEntries) {
-            I64 groupID = entry.first;
-            I64 varID = entry.second;
+            //I64 groupID = entry.first;
+            //I64 varID = entry.second;
             // Add a clickable text field for each
         }
 

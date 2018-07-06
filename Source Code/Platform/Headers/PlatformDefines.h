@@ -157,13 +157,12 @@ constexpr U32 operator"" _u32 ( Enum value )
 }*/
 
 template <typename Type, typename = void>
-/*constexpr*/ auto to_underlying_type(const Type value) -> Type {
+constexpr auto to_underlying_type(const Type value) -> Type {
     return value;
 }
 
 template <typename Type, typename std::enable_if<std::is_enum<Type>::value>::type>
-/*constexpr*/ auto to_underlying_type(const Type value) ->
-    typename std::underlying_type<Type>::type {
+constexpr auto to_underlying_type(const Type value) -> typename std::underlying_type<Type>::type {
     return static_cast<typename std::underlying_type<Type>::type>(value);
 }
 
@@ -208,32 +207,32 @@ constexpr D32 to_const_double(const T value) {
 
 template <typename T>
 U32 to_uint(const T value) {
-    return static_cast<U32>(to_underlying_type(value));
+    return safe_static_cast<U32>(to_underlying_type(value));
 }
 
 template <typename T>
 U16 to_ushort(const T value) {
-    return static_cast<U16>(to_underlying_type(value));
+    return safe_static_cast<U16>(to_underlying_type(value));
 }
 
 template <typename T>
 U8 to_ubyte(const T value) {
-    return static_cast<U8>(to_underlying_type(value));
+    return safe_static_cast<U8>(to_underlying_type(value));
 }
 
 template <typename T>
 I32 to_int(const T value) {
-    return static_cast<I32>(to_underlying_type(value));
+    return safe_static_cast<I32>(to_underlying_type(value));
 }
 
 template <typename T>
 I16 to_short(const T value) {
-    return static_cast<I16>(to_underlying_type(value));
+    return safe_static_cast<I16>(to_underlying_type(value));
 }
 
 template <typename T>
 I8 to_byte(const T value) {
-    return static_cast<I8>(to_underlying_type(value));
+    return safe_static_cast<I8>(to_underlying_type(value));
 }
 template <typename T>
 F32 to_float(const T value) {
@@ -417,6 +416,14 @@ template <typename T>
 inline bool IS_VALID_CONTAINER_RANGE(T elementCount, T min, T max) {
     return min >= 0 && max < elementCount;
 }
+template <typename T, typename U>
+inline bool IS_IN_RANGE_INCLUSIVE(T x, U min, U max) {
+    return x >= min && x <= max;
+}
+template <typename T, typename U>
+inline bool IS_IN_RANGE_EXCLUSIVE(T x, U min, U max) {
+    return x > min && x < max;
+}
 template <typename T>
 inline bool IS_IN_RANGE_INCLUSIVE(T x, T min, T max) {
     return x >= min && x <= max;
@@ -510,6 +517,106 @@ inline bool IS_LEQUAL(F32 X, F32 Y) {
 template <>
 inline bool IS_LEQUAL(D32 X, D32 Y) {
     return X < Y || COMPARE(X, Y);
+}
+
+///ref: http://blog.molecular-matters.com/2011/08/12/a-safer-static_cast/#more-120
+// base template
+template <bool IsFromSigned, bool IsToSigned>
+struct safe_static_cast_helper;
+
+// template specialization for casting from an unsigned type into an unsigned type
+template <>
+struct safe_static_cast_helper<false, false>
+{
+    template <typename TO, typename FROM>
+    static inline TO cast(FROM from)
+    {
+        assert(IS_IN_RANGE_INCLUSIVE(std::is_enum<FROM>::value 
+                                         ? static_cast<U32>(to_underlying_type(from))
+                                         : from,
+                                     std::numeric_limits<TO>::min(),
+                                     std::numeric_limits<TO>::max()) &&
+            "Number to cast exceeds numeric limits.");
+
+        return static_cast<TO>(from);
+    }
+};
+
+// template specialization for casting from an unsigned type into a signed type
+template <>
+struct safe_static_cast_helper<false, true>
+{
+    template <typename TO, typename FROM>
+    static inline TO cast(FROM from)
+    {
+        assert(IS_IN_RANGE_INCLUSIVE(from,
+                                     std::numeric_limits<TO>::min(),
+                                     std::numeric_limits<TO>::max()) &&
+            "Number to cast exceeds numeric limits.");
+
+        return static_cast<TO>(from);
+    }
+};
+
+// template specialization for casting from a signed type into an unsigned type
+template <>
+struct safe_static_cast_helper<true, false>
+{
+    template <typename TO, typename FROM>
+    static inline TO cast(FROM from)
+    {
+        // make sure the input is not negative
+        assert(from >= 0 && "Number to cast exceeds numeric limits.");
+
+        // assuring a positive input, we can safely cast it into its unsigned type and check the numeric limits
+        typedef typename std::make_unsigned<FROM>::type UnsignedFrom;
+        assert(IS_IN_RANGE_INCLUSIVE(static_cast<UnsignedFrom>(from),
+                                     std::numeric_limits<TO>::min(),
+                                     std::numeric_limits<TO>::max()) &&
+            "Number to cast exceeds numeric limits.");
+        return static_cast<TO>(from);
+    }
+};
+
+// template specialization for casting from a signed type into a signed type
+template <>
+struct safe_static_cast_helper<true, true>
+{
+    template <typename TO, typename FROM>
+    static inline TO cast(FROM from)
+    {
+        assert(IS_IN_RANGE_INCLUSIVE(std::is_enum<FROM>::value ? to_underlying_type(from) : from,
+                                     std::numeric_limits<TO>::min(),
+                                     std::numeric_limits<TO>::max()) &&
+            "Number to cast exceeds numeric limits.");
+
+        return static_cast<TO>(from);
+    }
+};
+
+template <typename TO, typename FROM>
+inline TO safe_static_cast(FROM from)
+{
+/*#if defined(_DEBUG)
+    // delegate the call to the proper helper class, depending on the signedness of both types
+    return safe_static_cast_helper<std::numeric_limits<FROM>::is_signed,
+                                   std::numeric_limits<TO>::is_signed>
+           ::cast<TO>(from);
+#else*/
+    return static_cast<TO>(from);
+//#endif
+}
+
+template <typename TO>
+inline TO safe_static_cast(F32 from)
+{
+    return static_cast<TO>(from);
+}
+
+template <typename TO>
+inline TO safe_static_cast(D32 from)
+{
+    return static_cast<TO>(from);
 }
 
 /// Performes extra asserts steps (logging, message boxes, etc). 

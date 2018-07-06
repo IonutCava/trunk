@@ -98,7 +98,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
                                                                cullMaxDistance,
                                                                i,
                                                                true)
-                                                 )._task);
+                                                 )._task)->startTask(Task::TaskPriority::MAX);
         }
         cullTask.startTask(Task::TaskPriority::MAX);
         cullTask.wait();

@@ -148,7 +148,10 @@ void RenderQueue::sort(RenderStage renderStage) {
     TaskHandle sortTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
     for (RenderBin* renderBin : _renderBins) {
         if (renderBin != nullptr) {
-            sortTask.addChildTask(kernel.AddTask(DELEGATE_BIND(&RenderBin::sort, renderBin, std::placeholders::_1, renderStage))._task);
+            sortTask.addChildTask(kernel.AddTask(DELEGATE_BIND(&RenderBin::sort,
+                                                               renderBin,
+                                                               std::placeholders::_1,
+                                                               renderStage))._task)->startTask(Task::TaskPriority::MAX);
         }
     }
     sortTask.startTask(Task::TaskPriority::MAX);

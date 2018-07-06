@@ -56,7 +56,7 @@ SceneManager::SceneManager()
     AI::AIManager::createInstance();
 
     ADD_FILE_DEBUG_GROUP();
-    ADD_DEBUG_VAR_FILE(&_elapsedTime, CallbackParam::TYPE_LARGE_INTEGER);
+    ADD_DEBUG_VAR_FILE(&_elapsedTime, CallbackParam::TYPE_LARGE_INTEGER, false);
 }
 
 SceneManager::~SceneManager()

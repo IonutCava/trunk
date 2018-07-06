@@ -41,10 +41,16 @@ void ParticleEulerUpdater::update(const U64 deltaTime, ParticleData& p) {
     for (U32 i = 0; i < partitionCount; ++i) {
         U32 start = i * crtPartitionSize;
         U32 end = start + crtPartitionSize;
-        updateTask.addChildTask(kernel.AddTask(DELEGATE_BIND(parseRange, std::placeholders::_1, start, end))._task);
+        updateTask.addChildTask(kernel.AddTask(DELEGATE_BIND(parseRange,
+                                                             std::placeholders::_1,
+                                                             start,
+                                                             end))._task)->startTask(Task::TaskPriority::HIGH);
     }
     if (remainder > 0) {
-        updateTask.addChildTask(kernel.AddTask(DELEGATE_BIND(parseRange, std::placeholders::_1, endID - remainder, endID))._task);
+        updateTask.addChildTask(kernel.AddTask(DELEGATE_BIND(parseRange,
+                                                             std::placeholders::_1,
+                                                             endID - remainder,
+                                                             endID))._task)->startTask(Task::TaskPriority::HIGH);
     }
     updateTask.startTask(Task::TaskPriority::HIGH);
     updateTask.wait();
