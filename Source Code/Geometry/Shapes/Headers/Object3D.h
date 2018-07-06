@@ -73,14 +73,14 @@ class Object3D : public SceneNode {
     inline ObjectType getObjectType() const { return _geometryType; }
 
     inline void setObjectFlag(ObjectFlag flag) {
-        SetBit(_geometryFlagMask, to_uint(flag));
+        SetBit(_geometryFlagMask, to_U32(flag));
     }
     inline void clearObjectFlag(ObjectFlag flag) {
-        ClearBit(_geometryFlagMask, to_uint(flag));
+        ClearBit(_geometryFlagMask, to_U32(flag));
     }
 
     inline bool getObjectFlag(ObjectFlag flag) {
-        return BitCompare(_geometryFlagMask, to_uint(flag));
+        return BitCompare(_geometryFlagMask, to_U32(flag));
     }
 
     inline U32 getObjectFlagMask() const {
@@ -98,7 +98,7 @@ class Object3D : public SceneNode {
     inline bool playAnimations() const { return _playAnimations; }
 
     inline void setGeometryPartitionID(size_t ID) {
-        _geometryPartitionID = to_ushort(ID);
+        _geometryPartitionID = to_U16(ID);
     }
 
     inline const vectorImpl<vec3<U32> >& getTriangles() const {
@@ -111,7 +111,7 @@ class Object3D : public SceneNode {
         _geometryTriangles.push_back(triangle);
     }
     inline void addTriangles(const vectorImpl<vec3<U32>>& triangles) {
-        reserveTriangleCount(to_uint(triangles.size() + _geometryTriangles.size()));
+        reserveTriangleCount(to_U32(triangles.size() + _geometryTriangles.size()));
         _geometryTriangles.insert(std::end(_geometryTriangles),
                                   std::begin(triangles),
                                   std::end(triangles));

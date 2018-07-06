@@ -202,12 +202,12 @@ class Material : public CachedResource {
     /// Add as many tokens as needed but separate them with a ".". i.e:
     /// "Tree.NoWind.Glow"
     inline void addShaderModifier(const RenderStagePass& renderStagePass, const stringImpl& shaderModifier) {
-        _shaderModifier[to_uint(renderStagePass._passType)][to_uint(renderStagePass._stage)] = shaderModifier;
+        _shaderModifier[to_U32(renderStagePass._passType)][to_U32(renderStagePass._stage)] = shaderModifier;
     }
 
     inline void addShaderModifier(const stringImpl& shaderModifier) {
-        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
-            for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+        for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+            for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
                 addShaderModifier(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), shaderModifier);
             }
         }
@@ -228,8 +228,8 @@ class Material : public CachedResource {
     }
 
     inline void setShaderDefines(const stringImpl& shaderDefines) {
-        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
-            for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+        for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+            for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
                 setShaderDefines(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), shaderDefines);
             }
         }
@@ -257,8 +257,8 @@ class Material : public CachedResource {
 
     inline void setShaderProgram(const stringImpl& shader,
                                  const bool computeOnAdd) {
-        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
-            for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+        for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+            for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
                 setShaderProgram(shader, RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), computeOnAdd);
             }
         }
@@ -266,8 +266,8 @@ class Material : public CachedResource {
 
     inline void setRenderStateBlock(size_t renderStateBlockHash,
                                     I32 variant = -1) {
-        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
-            for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+        for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+            for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
                 setRenderStateBlock(renderStateBlockHash, RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), variant);
             }
         }
@@ -276,7 +276,7 @@ class Material : public CachedResource {
     inline void setRenderStateBlock(size_t renderStateBlockHash,
                                     RenderStage renderStage,
                                     I32 variant = -1) {
-        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
             RenderStagePass renderStagePass(renderStage, static_cast<RenderPassType>(pass));
 
             if (variant < 0 || variant >= defaultRenderStates(renderStagePass).size()) {
@@ -292,7 +292,7 @@ class Material : public CachedResource {
     inline void setRenderStateBlock(size_t renderStateBlockHash,
                                     RenderPassType renderPassType,
                                     I32 variant = -1) {
-        for (U8 stage = 0; stage < to_const_ubyte(RenderStage::COUNT); ++stage) {
+        for (U8 stage = 0; stage < to_const_U8(RenderStage::COUNT); ++stage) {
             RenderStagePass renderStagePass(static_cast<RenderStage>(stage), renderPassType);
 
             if (variant < 0 || variant >= defaultRenderStates(renderStagePass).size()) {
@@ -330,7 +330,7 @@ class Material : public CachedResource {
 
     size_t getRenderStateBlock(const RenderStagePass& renderStagePass, I32 variant = 0);
     inline std::weak_ptr<Texture> getTexture(ShaderProgram::TextureUsage textureUsage) const {
-        return _textures[to_uint(textureUsage)];
+        return _textures[to_U32(textureUsage)];
     }
 
     ShaderProgramInfo& getShaderInfo(const RenderStagePass& renderStagePass);
@@ -364,8 +364,8 @@ class Material : public CachedResource {
     void defaultReflectionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
     void defaultRefractionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
 
-    inline U32 defaultReflectionTextureIndex() const { return _reflectionIndex > -1 ? to_uint(_reflectionIndex) : _defaultReflection.second; }
-    inline U32 defaultRefractionTextureIndex() const { return _refractionIndex > -1 ? to_uint(_refractionIndex) : _defaultRefraction.second; }
+    inline U32 defaultReflectionTextureIndex() const { return _reflectionIndex > -1 ? to_U32(_reflectionIndex) : _defaultReflection.second; }
+    inline U32 defaultRefractionTextureIndex() const { return _refractionIndex > -1 ? to_U32(_refractionIndex) : _defaultRefraction.second; }
 
    private:
     void getTextureData(ShaderProgram::TextureUsage slot,
@@ -377,19 +377,19 @@ class Material : public CachedResource {
                                   const bool computeOnAdd);
 
     inline bool isExternalTexture(ShaderProgram::TextureUsage slot) const {
-        return _textureExtenalFlag[to_uint(slot)];
+        return _textureExtenalFlag[to_U32(slot)];
     }
 
     inline ShaderProgramInfo& shaderInfo(const RenderStagePass& renderStagePass) {
-        return _shaderInfo[to_uint(renderStagePass._passType)][to_uint(renderStagePass._stage)];
+        return _shaderInfo[to_U32(renderStagePass._passType)][to_U32(renderStagePass._stage)];
     }
 
     inline const ShaderProgramInfo& shaderInfo(const RenderStagePass& renderStagePass) const {
-        return _shaderInfo[to_uint(renderStagePass._passType)][to_uint(renderStagePass._stage)];
+        return _shaderInfo[to_U32(renderStagePass._passType)][to_U32(renderStagePass._stage)];
     }
 
     inline std::array<size_t, 3>& defaultRenderStates(const RenderStagePass& renderStagePass) {
-        return _defaultRenderStates[to_uint(renderStagePass._passType)][to_uint(renderStagePass._stage)];
+        return _defaultRenderStates[to_U32(renderStagePass._passType)][to_U32(renderStagePass._stage)];
     }
 
    private:
@@ -397,7 +397,7 @@ class Material : public CachedResource {
     ResourceCache& _parentCache;
     ShadingMode _shadingMode;
     /// use for special shader tokens, such as "Tree"
-    std::array<stringImpl, to_const_uint(RenderStage::COUNT)> _shaderModifier[to_const_uint(RenderPassType::COUNT)];
+    std::array<stringImpl, to_const_U32(RenderStage::COUNT)> _shaderModifier[to_const_U32(RenderPassType::COUNT)];
     TranslucencySource _translucencySource;
     /// parallax/relief factor (higher value > more pronounced effect)
     F32 _parallaxFactor;
@@ -409,14 +409,14 @@ class Material : public CachedResource {
     bool _doubleSided;
     /// Use shaders that have bone transforms implemented
     bool _hardwareSkinning;
-    std::array<ShaderProgramInfo, to_const_uint(RenderStage::COUNT)> _shaderInfo[to_const_uint(RenderPassType::COUNT)];
-    std::array<std::array<size_t, 3>,  to_const_uint(RenderStage::COUNT)> _defaultRenderStates[to_const_uint(RenderPassType::COUNT)];
+    std::array<ShaderProgramInfo, to_const_U32(RenderStage::COUNT)> _shaderInfo[to_const_U32(RenderPassType::COUNT)];
+    std::array<std::array<size_t, 3>,  to_const_U32(RenderStage::COUNT)> _defaultRenderStates[to_const_U32(RenderPassType::COUNT)];
 
     bool _shaderThreadedLoad;
     bool _highPriority;
     /// use this map to add textures to the material
-    std::array<Texture_ptr, to_const_uint(ShaderProgram::TextureUsage::COUNT)> _textures;
-    std::array<bool, to_const_uint(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;
+    std::array<Texture_ptr, to_const_U32(ShaderProgram::TextureUsage::COUNT)> _textures;
+    std::array<bool, to_const_U32(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;
     vectorImpl<std::pair<Texture_ptr, U8>> _customTextures;
 
     /// use the below map to define texture operation

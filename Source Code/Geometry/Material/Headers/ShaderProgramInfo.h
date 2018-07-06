@@ -52,6 +52,8 @@ public:
     ShaderProgramInfo& operator=(const ShaderProgramInfo& other);
     const ShaderProgram_ptr& getProgram() const;
 
+    bool update();
+
     BuildStage computeStage() const;
     void computeStage(BuildStage stage);
 

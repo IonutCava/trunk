@@ -240,8 +240,8 @@ class Camera : public Resource {
     inline const F32 getVerticalFoV() const { return _verticalFoV; }
 
     inline const F32 getHorizontalFoV() const {
-        F32 halfFoV = Angle::DegreesToRadians(_verticalFoV) * 0.5f;
-        return Angle::RadiansToDegrees(2.0f *
+        F32 halfFoV = Angle::to_RADIANS(_verticalFoV) * 0.5f;
+        return Angle::to_DEGREES(2.0f *
                                        std::atan(tan(halfFoV) * _aspectRatio));
     }
 

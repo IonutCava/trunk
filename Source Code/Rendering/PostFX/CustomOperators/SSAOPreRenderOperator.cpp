@@ -37,7 +37,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
               Random(-1.0f, 1.0f),
               Random( 0.0f, 1.0f));
         k.normalize();
-        F32 scale = to_float(i) / to_float(kernelSize);
+        F32 scale = to_F32(i) / to_F32(kernelSize);
         k *= Lerp(0.1f, 1.0f, scale * scale);
     }
     
@@ -51,7 +51,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     ResourceDescriptor textureAttachment(attachmentName);
     textureAttachment.setThreadedLoading(false);
     textureAttachment.setPropertyDescriptor(noiseSampler);
-    textureAttachment.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
+    textureAttachment.setEnumValue(to_const_U32(TextureType::TEXTURE_2D));
     _noiseTexture = CreateResource<Texture>(cache, textureAttachment);
 
     TextureDescriptor noiseDescriptor;
@@ -115,7 +115,7 @@ void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
     _ssaoOutput._rt->create(width, height);
     _ssaoOutputBlurred._rt->create(width, height);
 
-    _ssaoGenerateShader->Uniform("noiseScale", vec2<F32>(width, height) / to_float(_noiseTexture->getWidth()));
+    _ssaoGenerateShader->Uniform("noiseScale", vec2<F32>(width, height) / to_F32(_noiseTexture->getWidth()));
     _ssaoBlurShader->Uniform("ssaoTexelSize", vec2<F32>(1.0f / _ssaoOutput._rt->getWidth(),
                                                         1.0f / _ssaoOutput._rt->getHeight()));
 }
@@ -129,12 +129,12 @@ void SSAOPreRenderOperator::execute() {
     _ssaoGenerateShader->Uniform("projectionMatrix", PreRenderOperator::s_mainCamProjectionMatrixCache);
     _ssaoGenerateShader->Uniform("invProjectionMatrix", PreRenderOperator::s_mainCamProjectionMatrixCache.getInverse());
 
-    _noiseTexture->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0)); // noise texture
+    _noiseTexture->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0)); // noise texture
 
     RenderTarget* screen = &_parent.inputRT();
 
-    screen->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);  // depth
-    screen->bind(to_const_ubyte(ShaderProgram::TextureUsage::NORMALMAP), RTAttachment::Type::Colour, to_const_ubyte(GFXDevice::ScreenTargets::NORMALS));  // normals
+    screen->bind(to_const_U8(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);  // depth
+    screen->bind(to_const_U8(ShaderProgram::TextureUsage::NORMALMAP), RTAttachment::Type::Colour, to_const_U8(GFXDevice::ScreenTargets::NORMALS));  // normals
     
     _ssaoOutput._rt->begin(RenderTarget::defaultPolicy());
         triangleCmd.shaderProgram(_ssaoGenerateShader);
@@ -142,15 +142,15 @@ void SSAOPreRenderOperator::execute() {
     _ssaoOutput._rt->end();
 
 
-    _ssaoOutput._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // AO texture
+    _ssaoOutput._rt->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // AO texture
     _ssaoOutputBlurred._rt->begin(RenderTarget::defaultPolicy());
         triangleCmd.shaderProgram(_ssaoBlurShader);
         _context.draw(triangleCmd);
     _ssaoOutputBlurred._rt->end();
     
     _samplerCopy._rt->blitFrom(screen);
-    _samplerCopy._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // screen
-    _ssaoOutputBlurred._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);  // AO texture
+    _samplerCopy._rt->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // screen
+    _ssaoOutputBlurred._rt->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);  // AO texture
 
     screen->begin(_screenOnlyDraw);
         triangleCmd.shaderProgram(_ssaoApplyShader);

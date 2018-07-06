@@ -16,7 +16,7 @@ DivideRecast::DivideRecast()
     _filter->setExcludeFlags(0);       // Exclude none
     // Area flags for polys to consider in search, and their cost
     // TODO have a way of configuring the filter
-    _filter->setAreaCost(to_int(SamplePolyAreas::SAMPLE_POLYAREA_GROUND), 1.0f);
+    _filter->setAreaCost(to_I32(SamplePolyAreas::SAMPLE_POLYAREA_GROUND), 1.0f);
     _filter->setAreaCost(DT_TILECACHE_WALKABLE_AREA, 1.0f);
 
     // Init path store. MaxVertex 0 means empty path slot

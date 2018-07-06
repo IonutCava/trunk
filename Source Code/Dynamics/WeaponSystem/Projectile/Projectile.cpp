@@ -14,7 +14,7 @@ Projectile::~Projectile() {}
 
 bool Projectile::addProperties(ProjectileProperty property) {
     assert(property != ProjectileProperty::COUNT);
-    _properyMask |= to_uint(property);
+    _properyMask |= to_U32(property);
     return true;
 }
 };

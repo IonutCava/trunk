@@ -50,9 +50,13 @@ class Quaternion {
     Quaternion();
     Quaternion(T x, T y, T z, T w);
     Quaternion(const vec4<T>& values);
+
+    template <typename U = T>
+    Quaternion(__m128 reg, typename std::enable_if<std::is_same<U, F32>::value>::type* = nullptr);
+
     Quaternion(const mat3<T>& rotationMatrix);
-    Quaternion(const vec3<T>& axis, T angle, bool inDegrees = true);
-    Quaternion(T pitch, T yaw, T roll, bool inDegrees = true);
+    Quaternion(const vec3<T>& axis, Angle::DEGREES<T> angle);
+    Quaternion(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, Angle::DEGREES<T> roll);
     Quaternion(const Quaternion& q);
 
     Quaternion& operator=(const Quaternion& q);
@@ -61,7 +65,7 @@ class Quaternion {
     inline T magnitude() const;
     inline T magnituteSq() const;
 
-    inline bool compare(const Quaternion& rq, F32 tolerance = 1e-3f) const;
+    inline bool compare(const Quaternion& rq, Angle::DEGREES<T> tolerance = 1e-3f) const;
 
     inline void set(const vec4<T>& values);
     inline void set(T x, T y, T z, T w);
@@ -85,6 +89,11 @@ class Quaternion {
 
     //! Multiply so that rotations are applied in a left to right order.
     inline Quaternion& operator*=(const Quaternion& rq);
+
+
+    //! Dividing q1 by q2
+    inline Quaternion operator/(const Quaternion& rq) const;
+    inline Quaternion& operator/=(const Quaternion& rq);
 
     //! Multiplying a quaternion q with a vector v applies the q-rotation to v
     vec3<T> operator*(const vec3<T>& vec) const;
@@ -113,12 +122,12 @@ class Quaternion {
     void slerp(const Quaternion& q0, const Quaternion& q1, F32 t);
 
     //! Convert from Axis Angle
-    void fromAxisAngle(const vec3<T>& v, T angle, bool inDegrees = true);
+    void fromAxisAngle(const vec3<T>& v, Angle::DEGREES<T> angle);
 
-    inline void fromEuler(const vec3<T>& v, bool inDegrees = true);
+    inline void fromEuler(const vec3<Angle::DEGREES<T>>& v);
 
     //! Convert from Euler Angles
-    void fromEuler(T pitch, T yaw, T roll, bool inDegrees = true);
+    void fromEuler(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, Angle::DEGREES<T> roll);
 
     void fromLookAt(const vec3<F32>& fwdDirection, const vec3<F32>& upDirection);
 
@@ -129,9 +138,9 @@ class Quaternion {
     void getMatrix(mat4<F32>& outMatrix) const;
 
     //! Convert to Axis/Angles
-    void getAxisAngle(vec3<T>* axis, T* angle, bool inDegrees) const;
+    void getAxisAngle(vec3<T>* axis, Angle::DEGREES<T>* angle) const;
 
-    void getEuler(vec3<T>& euler, bool toDegrees = false) const;
+    void getEuler(vec3<Angle::RADIANS<T>>& euler) const;
 
     inline F32 X() const;
     inline F32 Y() const;
@@ -163,7 +172,7 @@ template <typename T>
 inline mat4<T> GetMatrix(const Quaternion<T>& q);
 
 template <typename T>
-inline vec3<T> GetEuler(const Quaternion<T>& q, const bool toDegrees = false);
+inline vec3<Angle::RADIANS<T>> GetEuler(const Quaternion<T>& q);
 
 };  // namespace Divide
 

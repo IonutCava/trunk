@@ -175,7 +175,7 @@ void saveTextureXML(const stringImpl &textureNode, std::weak_ptr<Texture> textur
     tree.put(node + ".MapW", getWrapModeName(sampler.wrapW()));
     tree.put(node + ".minFilter", getFilterName(sampler.minFilter()));
     tree.put(node + ".magFilter", getFilterName(sampler.magFilter()));
-    tree.put(node + ".anisotropy", to_uint(sampler.anisotropyLevel()));
+    tree.put(node + ".anisotropy", to_U32(sampler.anisotropyLevel()));
 
     if (!operation.empty()) {
         tree.put(node + ".operation", operation);
@@ -201,7 +201,7 @@ Texture_ptr loadTextureXML(ResourceCache& targetCache,
     TextureFilter magFilterValue =
         getFilter(pt.get<stringImpl>(node + ".magFilter", "LINEAR"));
 
-    U8 anisotropy = to_ubyte(pt.get(node + ".anisotropy", 0U));
+    U8 anisotropy = to_U8(pt.get(node + ".anisotropy", 0U));
 
     SamplerDescriptor sampDesc;
     sampDesc.setWrapMode(wrapU, wrapV, wrapW);
@@ -283,7 +283,7 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
     }
 
     const std::string label("joystickButtons.joystick");
-    for (U32 i = 0 ; i < to_const_uint(Input::Joystick::COUNT); ++i) {
+    for (U32 i = 0 ; i < to_const_U32(Input::Joystick::COUNT); ++i) {
         Input::Joystick joystick = static_cast<Input::Joystick>(i);
         
         for (const ptree::value_type & f : pt.get_child(label + std::to_string(i + 1), empty_ptree()))
@@ -496,7 +496,7 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
             ter->addVariable("detailScaleA" + layerOffsetStr, pt.get<F32>(layerName + ".alphaDetailScale", 0.0f));
         }
 
-        ter->setTextureLayerCount(to_ubyte(i));
+        ter->setTextureLayerCount(to_U8(i));
         ter->addVariable("grassMapLocation", Paths::g_assetsLocation + pt.get<stringImpl>(name + ".vegetation.vegetationTextureLocation", Paths::g_imagesLocation) + "/");
         ter->addVariable("grassMap", pt.get<stringImpl>(name + ".vegetation.map"));
         ter->addVariable("grassBillboard1", pt.get<stringImpl>(name + ".vegetation.grassBillboard1", ""));
@@ -851,8 +851,8 @@ Material_ptr loadMaterialXML(PlatformContext& context, const stringImpl &matName
             loadTextureXML(cache, "specularMap", pt.get("specularMap.file", "none").c_str(), pt));
     }
 
-    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
             RenderStage stage = static_cast<RenderStage>(i);
             RenderPassType passType = static_cast<RenderPassType>(pass);
 
@@ -937,8 +937,8 @@ void dumpMaterial(PlatformContext& context, Material &mat) {
         saveTextureXML("specularMap", texture, pt);
     }
 
-    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
             RenderStage stage = static_cast<RenderStage>(i);
             RenderPassType passType = static_cast<RenderPassType>(pass);
 

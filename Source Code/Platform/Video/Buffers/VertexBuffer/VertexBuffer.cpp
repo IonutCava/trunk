@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-std::array<VertexBuffer::AttribFlags, to_const_uint(RenderStage::COUNT)> VertexBuffer::_attribMaskPerStage[to_const_uint(RenderPassType::COUNT)];
+std::array<VertexBuffer::AttribFlags, to_const_U32(RenderStage::COUNT)> VertexBuffer::_attribMaskPerStage[to_const_U32(RenderPassType::COUNT)];
 
 VertexBuffer::VertexBuffer(GFXDevice& context)
     : VertexDataInterface(context),
@@ -32,7 +32,7 @@ bool VertexBuffer::createInternal() {
 
 
 void VertexBuffer::setAttribMasks(const AttribFlags& flagMask) {
-    for (U8 i = 0; i < to_const_uint(RenderPassType::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_U32(RenderPassType::COUNT); ++i) {
         for (AttribFlags& flags : _attribMaskPerStage[i]) {
             flags = flagMask;
         }
@@ -40,7 +40,7 @@ void VertexBuffer::setAttribMasks(const AttribFlags& flagMask) {
 }
 
 void VertexBuffer::setAttribMask(const RenderStagePass& stagePass, const AttribFlags& flagMask) {
-    _attribMaskPerStage[to_uint(stagePass._passType)][to_uint(stagePass._stage)] = flagMask;
+    _attribMaskPerStage[to_U32(stagePass._passType)][to_U32(stagePass._stage)] = flagMask;
 }
 
 
@@ -84,7 +84,7 @@ void VertexBuffer::computeNormals() {
         for (U32 j = 0; j < normalBuffer[i].size(); ++j) {
             currentNormal += normalBuffer[i][j];
         }
-        currentNormal /= to_float(normalBuffer[i].size());
+        currentNormal /= to_F32(normalBuffer[i].size());
 
         modifyNormalValue(i, currentNormal);
     }
@@ -178,7 +178,7 @@ bool VertexBuffer::serialize(ByteBuffer& dataOut) const {
         dataOut << _ID("VB");
         dataOut << _staticBuffer;
         dataOut << _keepDataInMemory;
-        dataOut << to_uint(_format);
+        dataOut << to_U32(_format);
         dataOut << _partitions;
         dataOut << _hardwareIndicesL;
         dataOut << _hardwareIndicesS;

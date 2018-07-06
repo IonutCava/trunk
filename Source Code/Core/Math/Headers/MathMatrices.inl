@@ -1093,17 +1093,13 @@ void mat3<T>::getInverseTranspose(mat3<T> &ret) const {
 
 template<typename T>
 template<typename U>
-void mat3<T>::fromRotation(const vec3<U> &v, U angle, bool inDegrees = true) {
-    fromRotation(v.x, v.y, v.z, angle, inDegrees);
+void mat3<T>::fromRotation(const vec3<U> &v, Angle::RADIANS<U> angle) {
+    fromRotation(v.x, v.y, v.z, angle);
 }
 
 template<typename T>
 template<typename U>
-void mat3<T>::fromRotation(U x, U y, U z, U angle, bool inDegrees = true) {
-    if (inDegrees) {
-        angle = Angle::DegreesToRadians(angle);
-    }
-
+void mat3<T>::fromRotation(U x, U y, U z, Angle::RADIANS<U> angle) {
     U c = std::cos(angle);
     U s = std::sin(angle);
     U l = static_cast<U>(Divide::Sqrt(static_cast<D64>(x * x + y * y + z * z)));
@@ -1128,14 +1124,9 @@ void mat3<T>::fromRotation(U x, U y, U z, U angle, bool inDegrees = true) {
 
 template<typename T>
 template<typename U>
-void mat3<T>::fromXRotation(U angle, bool inDegrees = true) {
+void mat3<T>::fromXRotation(Angle::RADIANS<U> angle) {
     const U zero = static_cast<U>(0);
     const U one = static_cast<U>(1);
-
-    if (inDegrees) {
-        angle = Angle::DegreesToRadians(angle);
-    }
-
     U c = std::cos(angle);
     U s = std::sin(angle);
 
@@ -1146,13 +1137,9 @@ void mat3<T>::fromXRotation(U angle, bool inDegrees = true) {
 
 template<typename T>
 template<typename U>
-void mat3<T>::fromYRotation(U angle, bool inDegrees = true) {
+void mat3<T>::fromYRotation(Angle::RADIANS<U> angle) {
     const U zero = static_cast<U>(0);
     const U one = static_cast<U>(1);
-
-    if (inDegrees) {
-        angle = Angle::DegreesToRadians(angle);
-    }
 
     U c = std::cos(angle);
     U s = std::sin(angle);
@@ -1164,13 +1151,9 @@ void mat3<T>::fromYRotation(U angle, bool inDegrees = true) {
 
 template<typename T>
 template<typename U>
-void mat3<T>::fromZRotation(U angle, bool inDegrees = true) {
+void mat3<T>::fromZRotation(Angle::RADIANS<U> angle) {
     const U zero = static_cast<U>(0);
     const U one = static_cast<U>(1);
-
-    if (inDegrees) {
-        angle = Angle::DegreesToRadians(angle);
-    }
 
     U c = std::cos(angle);
     U s = std::sin(angle);
@@ -1330,17 +1313,17 @@ mat4<T>::mat4(U translationX, U translationY, U translationZ) noexcept
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const vec3<U> &axis, U angle, bool inDegrees = true) noexcept
-    : mat4(axis.x, axis.y, axis.z, angle, inDegrees)
+mat4<T>::mat4(const vec3<U> &axis, Angle::RADIANS<U> angle) noexcept
+    : mat4(axis.x, axis.y, axis.z, angle)
 {
 }
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(U x, U y, U z, U angle, bool inDegrees = true) noexcept
+mat4<T>::mat4(U x, U y, U z, Angle::RADIANS<U> angle) noexcept
     : mat4()
 {
-    fromRotation(x, y, z, angle, inDegrees);
+    fromRotation(x, y, z, angle);
 }
 
 template<typename T>
@@ -1941,11 +1924,7 @@ void mat4<T>::getTransposeRotation(mat4 &ret) const {
 
 template<typename T>
 template<typename U>
-void mat4<T>::fromRotation(U x, U y, U z, U angle, bool inDegrees = true) {
-    if (inDegrees) {
-        angle = Angle::DegreesToRadians(angle);
-    }
-
+void mat4<T>::fromRotation(U x, U y, U z, Angle::RADIANS<U> angle) {
     vec3<U> v(x, y, z);
     v.normalize();
 
@@ -1970,11 +1949,7 @@ void mat4<T>::fromRotation(U x, U y, U z, U angle, bool inDegrees = true) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::fromXRotation(U angle, bool inDegrees = true) {
-    if (inDegrees) {
-        angle = Angle::DegreesToRadians(angle);
-    }
-
+void mat4<T>::fromXRotation(Angle::RADIANS<U> angle) {
     U c = std::cos(angle);
     U s = std::sin(angle);
 
@@ -1986,11 +1961,7 @@ void mat4<T>::fromXRotation(U angle, bool inDegrees = true) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::fromYRotation(U angle, bool inDegrees = true) {
-    if (inDegrees) {
-        angle = Angle::DegreesToRadians(angle);
-    }
-
+void mat4<T>::fromYRotation(Angle::RADIANS<U> angle) {
     U c = std::cos(angle);
     U s = std::sin(angle);
 
@@ -2002,11 +1973,7 @@ void mat4<T>::fromYRotation(U angle, bool inDegrees = true) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::fromZRotation(U angle, bool inDegrees = true) {
-    if (inDegrees) {
-        angle = Angle::DegreesToRadians(angle);
-    }
-
+void mat4<T>::fromZRotation(Angle::RADIANS<U> angle) {
     U c = std::cos(angle);
     U s = std::sin(angle);
 
@@ -2189,9 +2156,9 @@ void mat4<T>::ortho(U left, U right, U bottom, U top, U zNear, U zFar) {
     m[3][3] =  static_cast<T>(1);
 
 
-    m[3][0] = -static_cast<T>(to_float(right + left) / (right - left));
-    m[3][1] = -static_cast<T>(to_float(top + bottom) / (top - bottom));
-    m[3][2] = -static_cast<T>(to_float(zFar + zNear) / (zFar - zNear));
+    m[3][0] = -static_cast<T>(to_F32(right + left) / (right - left));
+    m[3][1] = -static_cast<T>(to_F32(top + bottom) / (top - bottom));
+    m[3][2] = -static_cast<T>(to_F32(zFar + zNear) / (zFar - zNear));
 }
 
 template<typename T>
@@ -2206,7 +2173,7 @@ void mat4<T>::perspective(U fovyRad, U aspect, U zNear, U zFar) {
 
     m[0][0] =  static_cast<T>(1.0f / (aspect * tanHalfFovy));
     m[1][1] =  static_cast<T>(1.0f / (tanHalfFovy));
-    m[2][2] = -static_cast<T>(to_float(zFar + zNear) / (zFar - zNear));
+    m[2][2] = -static_cast<T>(to_F32(zFar + zNear) / (zFar - zNear));
     m[2][3] = -static_cast<T>(1);
     m[3][2] = -static_cast<T>((2.0f * zFar * zNear) / (zFar - zNear));
 }
@@ -2218,9 +2185,9 @@ void mat4<T>::frustum(U left, U right, U bottom, U top, U nearVal, U farVal) {
 
     m[0][0] = static_cast<T>((2.0f * nearVal) / (right - left));
     m[1][1] = static_cast<T>((2.0f * nearVal) / (top - bottom));
-    m[2][0] = static_cast<T>(to_float(right + left) / (right - left));
-    m[2][1] = static_cast<T>(to_float(top + bottom) / (top - bottom));
-    m[2][2] = -static_cast<T>(to_float(farVal + nearVal) / (farVal - nearVal));
+    m[2][0] = static_cast<T>(to_F32(right + left) / (right - left));
+    m[2][1] = static_cast<T>(to_F32(top + bottom) / (top - bottom));
+    m[2][2] = -static_cast<T>(to_F32(farVal + nearVal) / (farVal - nearVal));
     m[2][3] = static_cast<T>(-1);
     m[3][2] = -static_cast<T>((2.0f * farVal * nearVal) / (farVal - nearVal));
 }
@@ -2274,7 +2241,7 @@ FORCE_INLINE void mat4<T>::Inverse(const T* in, T* out) {
     T b5 = m22 * m33 - m32 * m23;
 
     // should be accurate enough
-    F32 idet = to_float(a0) * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0;
+    F32 idet = to_F32(a0) * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0;
 
     if (!IS_ZERO(idet)) {
         idet = 1.0f / idet;

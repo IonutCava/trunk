@@ -116,7 +116,7 @@ protected:
     void popDebugMessage() override;
     /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
     inline static GLuint getActiveFB(RenderTarget::RenderTargetUsage usage) {
-        return s_activeFBID[to_uint(usage)];
+        return s_activeFBID[to_U32(usage)];
     }
     /// Try to find the requested font in the font cache. Load on cache miss.
     I32 getFont(const stringImpl& fontName);
@@ -218,7 +218,7 @@ private:
     void deleteFonsContext();
     /// Use GLSW to append tokens to shaders. Use ShaderType::COUNT to append to
     /// all stages
-    typedef std::array<GLint, to_const_uint(ShaderType::COUNT) + 1> ShaderOffsetArray;
+    typedef std::array<GLint, to_const_U32(ShaderType::COUNT) + 1> ShaderOffsetArray;
     void appendToShaderHeader(ShaderType type, const stringImpl& entry,
         ShaderOffsetArray& inOutOffset);
 protected:
@@ -277,7 +277,7 @@ private:
     static bool s_primitiveRestartEnabled;
     static bool s_rasterizationEnabled;
     /// Current state of all available clipping planes
-    std::array<bool, to_const_uint(Frustum::FrustPlane::COUNT)> _activeClipPlanes;
+    std::array<bool, to_const_U32(Frustum::FrustPlane::COUNT)> _activeClipPlanes;
     /// Hardware query objects used for performance measurements
     vectorImpl<glHardwareQueryRing*> _hardwareQueries;
     /// Duration in nanoseconds to render a frame

@@ -33,6 +33,29 @@
 #define _QUATERNION_INL_
 
 namespace Divide {
+
+namespace {
+    //ref: http://stackoverflow.com/questions/22215217/why-is-my-straightforward-quaternion-multiplication-faster-than-sse
+    inline static __m128 multiplynew(__m128 a, __m128 b) {
+        __m128 a1123 = _mm_shuffle_ps(a, a, 0xE5);
+        __m128 a2231 = _mm_shuffle_ps(a, a, 0x7A);
+        __m128 b1000 = _mm_shuffle_ps(b, b, 0x01);
+        __m128 b2312 = _mm_shuffle_ps(b, b, 0x9E);
+        __m128 t1 = _mm_mul_ps(a1123, b1000);
+        __m128 t2 = _mm_mul_ps(a2231, b2312);
+        __m128 t12 = _mm_add_ps(t1, t2);
+        const __m128i mask = _mm_set_epi32(0, 0, 0, 0x80000000);
+        __m128 t12m = _mm_xor_ps(t12, _mm_castsi128_ps(mask)); // flip sign bits
+        __m128 a3312 = _mm_shuffle_ps(a, a, 0x9F);
+        __m128 b3231 = _mm_shuffle_ps(b, b, 0x7B);
+        __m128 a0000 = _mm_shuffle_ps(a, a, 0x00);
+        __m128 t3 = _mm_mul_ps(a3312, b3231);
+        __m128 t0 = _mm_mul_ps(a0000, b);
+        __m128 t03 = _mm_sub_ps(t0, t3);
+        return _mm_add_ps(t03, t12m);
+    }
+};
+
 template <typename T>
 Quaternion<T>::Quaternion()
 {
@@ -41,14 +64,21 @@ Quaternion<T>::Quaternion()
 
 template <typename T>
 Quaternion<T>::Quaternion(T x, T y, T z, T w)
+    : _elements(x, y, z, w)
 {
-    _elements.set(x, y, z, w);
 }
 
 template <typename T>
 Quaternion<T>::Quaternion(const vec4<T>& values)
+    : _elements(values)
 {
-    _elements.set(values);
+}
+
+template <typename T>
+template <typename U>
+Quaternion<T>::Quaternion(__m128 reg, typename std::enable_if<std::is_same<U, F32>::value>::type* = nullptr)
+    : _elements(reg)
+{
 }
 
 template <typename T>
@@ -58,21 +88,21 @@ Quaternion<T>::Quaternion(const mat3<T>& rotationMatrix)
 }
 
 template <typename T>
-Quaternion<T>::Quaternion(const vec3<T>& axis, T angle, bool inDegrees)
+Quaternion<T>::Quaternion(const vec3<T>& axis, Angle::DEGREES<T> angle)
 {
-    fromAxisAngle(axis, angle, inDegrees);
+    fromAxisAngle(axis, angle);
 }
 
 template <typename T>
-Quaternion<T>::Quaternion(T pitch, T yaw, T roll, bool inDegrees)
+Quaternion<T>::Quaternion(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, Angle::DEGREES<T> roll)
 {
-    fromEuler(pitch, yaw, roll, inDegrees);
+    fromEuler(pitch, yaw, roll);
 }
 
 template <typename T>
 Quaternion<T>::Quaternion(const Quaternion& q)
+    : _elements(q._elements)
 {
-    set(q);
 }
 
 template <typename T>
@@ -97,13 +127,11 @@ inline T Quaternion<T>::magnituteSq() const {
 }
 
 template <typename T>
-inline bool Quaternion<T>::compare(const Quaternion<T>& rq,
-                                   F32 tolerance) const {
-    T angleRad = Angle::DegreesToRadians((T)std::acos(to_double(dot(rq))));
-    F32 toleranceRad = Angle::DegreesToRadians(tolerance);
+inline bool Quaternion<T>::compare(const Quaternion<T>& rq, Angle::DEGREES<T> tolerance) const {
+    T angleRad = Angle::to_RADIANS((T)std::acos(to_D64(dot(rq))));
+    F32 toleranceRad = Angle::to_RADIANS(tolerance);
 
-    return  IS_TOLERANCE(angleRad, toleranceRad) ||
-            COMPARE_TOLERANCE(angleRad, to_float(M_PI), toleranceRad);
+    return IS_TOLERANCE(angleRad, toleranceRad) || COMPARE_TOLERANCE(angleRad, to_F32(M_PI), toleranceRad);
 }
 
 template <typename T>
@@ -138,16 +166,31 @@ inline Quaternion<T> Quaternion<T>::getConjugate() const {
 
 template <typename T>
 inline Quaternion<T> Quaternion<T>::operator*(const Quaternion<T>& rq) const {
-    return Quaternion<T>(
-        W() * rq.X() + X() * rq.W() + Y() * rq.Z() - Z() * rq.Y(),
-        W() * rq.Y() + Y() * rq.W() + Z() * rq.X() - X() * rq.Z(),
-        W() * rq.Z() + Z() * rq.W() + X() * rq.Y() - Y() * rq.X(),
-        W() * rq.W() - X() * rq.X() - Y() * rq.Y() - Z() * rq.Z());
+    return Quaternion<T>(W() * rq.X() + X() * rq.W() + Y() * rq.Z() - Z() * rq.Y(),
+                         W() * rq.Y() + Y() * rq.W() + Z() * rq.X() - X() * rq.Z(),
+                         W() * rq.Z() + Z() * rq.W() + X() * rq.Y() - Y() * rq.X(),
+                         W() * rq.W() - X() * rq.X() - Y() * rq.Y() - Z() * rq.Z());
+}
+
+template <>
+inline Quaternion<F32> Quaternion<F32>::operator*(const Quaternion<F32>& rq) const {
+    return Quaternion<F32>(multiplynew(_elements._reg._reg, rq._elements._reg._reg));
 }
 
 template <typename T>
 inline Quaternion<T>& Quaternion<T>::operator*=(const Quaternion<T>& rq) {
     (*this) = rq * (*this);
+    return (*this);
+}
+
+template <typename T>
+inline Quaternion<T> Quaternion<T>::operator/(const Quaternion& rq) const {
+    return ((*this) * (rq.inverse()));
+}
+
+template <typename T>
+inline Quaternion<T>& Quaternion<T>::operator/=(const Quaternion& rq) {
+    (*this) = rq / (*this);
     return (*this);
 }
 
@@ -165,7 +208,7 @@ bool Quaternion<T>::operator==(const Quaternion<T>& rq) const {
 
 template <typename T>
 bool Quaternion<T>::operator!=(const Quaternion<T>& rq) const {
-    return !(*this == rq);
+    return !compare(rq);
 }
 
 template <typename T>
@@ -238,10 +281,10 @@ void Quaternion<T>::slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 
     }
 
     if (1.0 - cosomega > 1e-6) {
-        F32 omega = to_float(std::acos(cosomega));
-        F32 sinomega = to_float(std::sin(omega));
-        k0 = to_float(std::sin((1.0f - t) * omega) / sinomega);
-        k1 = to_float(std::sin(t * omega) / sinomega);
+        F32 omega = to_F32(std::acos(cosomega));
+        F32 sinomega = to_F32(std::sin(omega));
+        k0 = to_F32(std::sin((1.0f - t) * omega) / sinomega);
+        k1 = to_F32(std::sin(t * omega) / sinomega);
     } else {
         k0 = 1.0f - t;
         k1 = t;
@@ -250,34 +293,26 @@ void Quaternion<T>::slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 
 }
 
 template <typename T>
-void Quaternion<T>::fromAxisAngle(const vec3<T>& v, T angle,
-                                  bool inDegrees) {
-    if (inDegrees) {
-        angle = Angle::DegreesToRadians(angle);
-    }
-    angle *= 0.5f;
+void Quaternion<T>::fromAxisAngle(const vec3<T>& v, Angle::DEGREES<T> angle) {
+    Angle::RADIANS<T> angleRad = Angle::to_RADIANS(angle);
+
+    angleRad *= 0.5f;
     vec3<T> vn(v);
     vn.normalize();
 
-    _elements.set(vn * std::sin(angle), std::cos(angle));
+    _elements.set(vn * std::sin(angleRad), std::cos(angleRad));
 }
 
 template <typename T>
-inline void Quaternion<T>::fromEuler(const vec3<T>& v, bool inDegrees) {
-    fromEuler(v.pitch, v.yaw, v.roll, inDegrees);
+inline void Quaternion<T>::fromEuler(const vec3<Angle::DEGREES<T>>& v) {
+    fromEuler(v.pitch, v.yaw, v.roll);
 }
 
 template <typename T>
-void Quaternion<T>::fromEuler(T pitch, T yaw, T roll, bool inDegrees) {
-    T attitude = pitch;
-    T heading = yaw;
-    T bank = roll;
-
-    if (inDegrees) {
-        attitude = Angle::DegreesToRadians(attitude);
-        heading = Angle::DegreesToRadians(heading);
-        bank = Angle::DegreesToRadians(bank);
-    }
+void Quaternion<T>::fromEuler(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, Angle::DEGREES<T> roll) {
+    Angle::RADIANS<T> attitude = Angle::to_RADIANS(pitch);
+    Angle::RADIANS<T> heading = Angle::to_RADIANS(yaw);
+    Angle::RADIANS<T> bank = Angle::to_RADIANS(roll);
 
     D64 c1 = std::cos(heading * 0.5);
     D64 s1 = std::sin(heading * 0.5);
@@ -336,7 +371,7 @@ void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
 
     if (fTrace > 0.0) {
         // |w| > 1/2, may as well choose w > 1/2
-        fRoot = (T)Divide::Sqrt(to_float(fTrace) + 1.0f);  // 2w
+        fRoot = (T)Divide::Sqrt(to_F32(fTrace) + 1.0f);  // 2w
         W(0.5f * fRoot);
         fRoot = 0.5f / fRoot;  // 1/(4w)
         X((rotationMatrix.m[2][1] - rotationMatrix.m[1][2]) * fRoot);
@@ -356,7 +391,7 @@ void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
         size_t k = s_iNext[j];
 
         fRoot = static_cast<T>(Divide::Sqrt(
-                    to_float(rotationMatrix.m[i][i] - rotationMatrix.m[j][j] -
+                    to_F32(rotationMatrix.m[i][i] - rotationMatrix.m[j][j] -
                              rotationMatrix.m[k][k] + 1.0f)));
         T* apkQuat[3] = {&_elements.x, &_elements.y, &_elements.z};
         *apkQuat[i] = 0.5f * fRoot;
@@ -395,14 +430,13 @@ void Quaternion<T>::getMatrix(mat4<F32>& outMatrix) const {
 }
 
 template <typename T>
-void Quaternion<T>::getAxisAngle(vec3<T>* axis, T* angle, bool inDegrees) const {
+void Quaternion<T>::getAxisAngle(vec3<T>* axis, Angle::DEGREES<T>* angle) const {
     axis->set(_elements / _elements.xyz().length());
-    *angle = inDegrees ? Angle::RadiansToDegrees(std::acos(W()) * 2.0f)
-                       : std::acos(W()) * 2.0f;
+    *angle = Angle::to_DEGREES(std::acos(W()) * 2.0f);
 }
 
 template <typename T>
-void Quaternion<T>::getEuler(vec3<T>& euler, bool toDegrees) const {
+void Quaternion<T>::getEuler(vec3<Angle::RADIANS<T>>& euler) const {
     T heading = 0, attitude = 0, bank = 0;
     const T& x = X();
     const T& y = Y();
@@ -433,15 +467,9 @@ void Quaternion<T>::getEuler(vec3<T>& euler, bool toDegrees) const {
         bank = std::atan2(x2 * w - y2 * z, -sqx + sqy - sqz + sqw);
     }
     // Convert back from Z = pitch to Z = roll
-    if (toDegrees) {
-        euler.yaw = Angle::RadiansToDegrees(heading);
-        euler.pitch = Angle::RadiansToDegrees(bank);
-        euler.roll = Angle::RadiansToDegrees(attitude);
-    } else {
-        euler.yaw = heading;
-        euler.pitch = bank;
-        euler.roll = attitude;
-    }
+    euler.yaw = heading;
+    euler.pitch = bank;
+    euler.roll = attitude;
 }
 
 template <typename T>
@@ -516,7 +544,7 @@ inline Quaternion<T> RotationFromVToU(
     } else if (d < (1e-6f - 1.0f)) {
         if (!fallbackAxis.compare(VECTOR3_ZERO)) {
             // rotate 180 degrees about the fallback axis
-            q.fromAxisAngle(fallbackAxis, Angle::DegreesToRadians(to_float(M_PI)));
+            q.fromAxisAngle(fallbackAxis, Angle::to_RADIANS(to_F32(M_PI)));
         } else {
             // Generate an axis
             vec3<T> axis;
@@ -526,7 +554,7 @@ inline Quaternion<T> RotationFromVToU(
                 axis.cross(WORLD_Y_AXIS, v);
 
             axis.normalize();
-            q.fromAxisAngle(axis, Angle::DegreesToRadians(to_float(M_PI)));
+            q.fromAxisAngle(axis, Angle::to_RADIANS(to_F32(M_PI)));
         }
     } else {
         F32 s = Divide::Sqrt((1 + d) * 2.0f);
@@ -555,9 +583,9 @@ inline mat4<T> GetMatrix(const Quaternion<T>& q) {
 }
 
 template <typename T>
-inline vec3<T> GetEuler(const Quaternion<T>& q, const bool toDegrees) {
+inline vec3<Angle::RADIANS<T>> GetEuler(const Quaternion<T>& q) {
     vec3<T> euler;
-    q.getEuler(euler, toDegrees);
+    q.getEuler(euler);
     return euler;
 }
 };  // namespace Divide

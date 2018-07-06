@@ -133,7 +133,7 @@ class glGenericVertexData : public GenericVertexData {
     GLuint _currentWriteQuery;
     GLuint _currentReadQuery;
     vectorImpl<glGenericBuffer*> _bufferObjects;
-    std::array<GLuint, to_const_uint(GVDUsage::COUNT)> _vertexArray;
+    std::array<GLuint, to_const_U32(GVDUsage::COUNT)> _vertexArray;
 };
 
 };  // namespace Divide

@@ -13,7 +13,7 @@ CachedResource_ptr ImplResourceLoader<Sphere3D>::operator()() {
                                                              _descriptor.getName(),
                                                              _descriptor.getEnumValue() == 0
                                                                                          ? 1.0f
-                                                                                         : to_float(_descriptor.getEnumValue()),
+                                                                                         : to_F32(_descriptor.getEnumValue()),
                                                              _descriptor.getID() == 0 
                                                                                   ? 32 
                                                                                   : _descriptor.getID()),
@@ -24,7 +24,7 @@ CachedResource_ptr ImplResourceLoader<Sphere3D>::operator()() {
     } else {
 
         ResourceDescriptor matDesc("Material_" + _descriptor.getName());
-        matDesc.setEnumValue(to_uint(Material::ShadingMode::BLINN_PHONG));
+        matDesc.setEnumValue(to_U32(Material::ShadingMode::BLINN_PHONG));
         Material_ptr matTemp = CreateResource<Material>(_cache, matDesc);
         ptr->setMaterialTpl(matTemp);
     }

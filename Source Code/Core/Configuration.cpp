@@ -81,13 +81,13 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.postAASamples);
         GET_PARAM(rendering.msaaSamples);
         GET_PARAM(rendering.anisotropicFilteringLevel);
-        U32 detail = to_int(rendering.shadowDetailLevel);
+        U32 detail = to_I32(rendering.shadowDetailLevel);
         GET_TEMP_PARAM(rendering.shadowDetailLevel, detail);
-        CLAMP(detail, to_uint(RenderDetailLevel::OFF), to_uint(RenderDetailLevel::COUNT) - 1);
+        CLAMP(detail, to_U32(RenderDetailLevel::OFF), to_U32(RenderDetailLevel::COUNT) - 1);
         rendering.shadowDetailLevel = static_cast<RenderDetailLevel>(detail);
-        detail = to_int(rendering.renderDetailLevel);
+        detail = to_I32(rendering.renderDetailLevel);
         GET_TEMP_PARAM(rendering.renderDetailLevel, detail);
-        CLAMP(detail, to_uint(RenderDetailLevel::OFF), to_uint(RenderDetailLevel::COUNT) - 1);
+        CLAMP(detail, to_U32(RenderDetailLevel::OFF), to_U32(RenderDetailLevel::COUNT) - 1);
         rendering.renderDetailLevel = static_cast<RenderDetailLevel>(detail);
         GET_PARAM(rendering.enableFog);
         GET_PARAM(rendering.fogDensity);
@@ -136,8 +136,8 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(rendering.postAASamples);
     PUT_PARAM(rendering.msaaSamples);
     PUT_PARAM(rendering.anisotropicFilteringLevel);
-    PUT_TEMP_PARAM(rendering.shadowDetailLevel, to_int(rendering.shadowDetailLevel));
-    PUT_TEMP_PARAM(rendering.renderDetailLevel, to_int(rendering.renderDetailLevel));
+    PUT_TEMP_PARAM(rendering.shadowDetailLevel, to_I32(rendering.shadowDetailLevel));
+    PUT_TEMP_PARAM(rendering.renderDetailLevel, to_I32(rendering.renderDetailLevel));
     PUT_PARAM(rendering.enableFog);
     PUT_PARAM(rendering.fogDensity);
     PUT_PARAM_ATTRIB(rendering.fogColour, r);

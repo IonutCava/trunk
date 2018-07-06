@@ -79,34 +79,34 @@ class StateTracker {
     }
 
     inline bool isTrackedValueInitialized(State state) const {
-        return _trackedValues[to_uint(state)].initialized;
+        return _trackedValues[to_U32(state)].initialized;
     }
 
     inline T getTrackedValue(State state, bool& isInitialized) const {
-        const optionalValue& value = _trackedValues[to_uint(state)];
+        const optionalValue& value = _trackedValues[to_U32(state)];
         isInitialized = value.initialized;
         return value.value;
     }
 
     inline T getTrackedValue(State state) const {
-        return _trackedValues[to_uint(state)].value;
+        return _trackedValues[to_U32(state)].value;
     }
 
     inline void setTrackedValue(State state, T value) {
-        _trackedValues[to_uint(state)].value = value;
-        _trackedValues[to_uint(state)].initialized = true;
+        _trackedValues[to_U32(state)].value = value;
+        _trackedValues[to_U32(state)].initialized = true;
     }
 
     /// Init will not change an already initialized value
     inline void initTrackedValue(State state, const T value) {
         getTrackedValue(state);
-        if (!_trackedValues[to_uint(state)].initialized) {
+        if (!_trackedValues[to_U32(state)].initialized) {
             setTrackedValue(state, value);
         }
     }
 
    protected:
-    std::array<optionalValue, to_const_uint(State::COUNT)> _trackedValues;
+    std::array<optionalValue, to_const_U32(State::COUNT)> _trackedValues;
 };
 
 };  // namespace Divide

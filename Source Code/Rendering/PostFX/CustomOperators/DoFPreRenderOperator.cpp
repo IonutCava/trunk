@@ -37,8 +37,8 @@ void DoFPreRenderOperator::execute() {
     /*
     RenderTarget* screen = &_parent.inputRT();
     _samplerCopy._rt->blitFrom(screen);
-    _samplerCopy._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // screenFB
-    screen->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Depth, 0);  // depthFB
+    _samplerCopy._rt->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // screenFB
+    screen->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Depth, 0);  // depthFB
         
     screen->begin(_screenOnlyDraw);
         GenericDrawCommand triangleCmd;

@@ -157,10 +157,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration&
     s_maxAttribBindings = GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS);
     s_vaoBufferData.init(s_maxAttribBindings);
 
-    assert(to_const_uint(ShaderProgram::TextureUsage::COUNT) < to_uint(s_maxTextureUnits) &&
+    assert(to_const_U32(ShaderProgram::TextureUsage::COUNT) < to_U32(s_maxTextureUnits) &&
            "GL Wrapper: insufficient number of texture image units available on current hardware!");
 
-    assert(to_const_uint(AttribLocation::COUNT) < to_uint(s_maxAttribBindings) &&
+    assert(to_const_U32(AttribLocation::COUNT) < to_U32(s_maxAttribBindings) &&
            "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
 
     Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS_FRAG")), s_maxTextureUnits);
@@ -226,7 +226,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration&
     _context.setGPUVendor(vendor);
     // Cap max anisotropic level to what the hardware supports
     GL_API::s_anisoLevel = config.rendering.anisotropicFilteringLevel;
-    CLAMP(GL_API::s_anisoLevel, 1u, to_uint(GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
+    CLAMP(GL_API::s_anisoLevel, 1u, to_U32(GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
 
     Console::printfn(Locale::get(_ID("GL_MAX_VERSION")),
                      GLUtil::getIntegerv(GL_MAJOR_VERSION),
@@ -320,7 +320,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration&
     }
 
     // Prepare immediate mode emulation rendering
-    NS_GLIM::glim.SetVertexAttribLocation(to_const_uint(AttribLocation::VERTEX_POSITION));
+    NS_GLIM::glim.SetVertexAttribLocation(to_const_U32(AttribLocation::VERTEX_POSITION));
     // Initialize our VAO pool
     GLUtil::_vaoPool.init(g_maxVAOS);
     // Initialize shader buffers

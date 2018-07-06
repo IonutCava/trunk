@@ -167,30 +167,30 @@ void RenderStateBlock::clean() {
     size_t previousCache = _cachedHash;
 
     // Avoid small float rounding errors offsetting the general hash value
-    U32 zBias = to_uint(std::floor((_zBias * 1000.0f) + 0.5f));
-    U32 zUnits = to_uint(std::floor((_zUnits * 1000.0f) + 0.5f));
+    U32 zBias = to_U32(std::floor((_zBias * 1000.0f) + 0.5f));
+    U32 zUnits = to_U32(std::floor((_zUnits * 1000.0f) + 0.5f));
 
     _cachedHash = 0;
     Util::Hash_combine(_cachedHash, _colourWrite.i);
     Util::Hash_combine(_cachedHash, _blendEnable);
-    Util::Hash_combine(_cachedHash, to_uint(_blendSrc));
-    Util::Hash_combine(_cachedHash, to_uint(_blendDest));
-    Util::Hash_combine(_cachedHash, to_uint(_blendOp));
-    Util::Hash_combine(_cachedHash, to_uint(_cullMode));
+    Util::Hash_combine(_cachedHash, to_U32(_blendSrc));
+    Util::Hash_combine(_cachedHash, to_U32(_blendDest));
+    Util::Hash_combine(_cachedHash, to_U32(_blendOp));
+    Util::Hash_combine(_cachedHash, to_U32(_cullMode));
     Util::Hash_combine(_cachedHash, _cullEnabled);
     Util::Hash_combine(_cachedHash, _zEnable);
-    Util::Hash_combine(_cachedHash, to_uint(_zFunc));
+    Util::Hash_combine(_cachedHash, to_U32(_zFunc));
     Util::Hash_combine(_cachedHash, zBias);
     Util::Hash_combine(_cachedHash, zUnits);
     Util::Hash_combine(_cachedHash, _stencilEnable);
     Util::Hash_combine(_cachedHash, _stencilRef);
     Util::Hash_combine(_cachedHash, _stencilMask);
     Util::Hash_combine(_cachedHash, _stencilWriteMask);
-    Util::Hash_combine(_cachedHash, to_uint(_stencilFailOp));
-    Util::Hash_combine(_cachedHash, to_uint(_stencilZFailOp));
-    Util::Hash_combine(_cachedHash, to_uint(_stencilPassOp));
-    Util::Hash_combine(_cachedHash, to_uint(_stencilFunc));
-    Util::Hash_combine(_cachedHash, to_uint(_fillMode));
+    Util::Hash_combine(_cachedHash, to_U32(_stencilFailOp));
+    Util::Hash_combine(_cachedHash, to_U32(_stencilZFailOp));
+    Util::Hash_combine(_cachedHash, to_U32(_stencilPassOp));
+    Util::Hash_combine(_cachedHash, to_U32(_stencilFunc));
+    Util::Hash_combine(_cachedHash, to_U32(_fillMode));
 
     if (previousCache != _cachedHash) {
         WriteLock w_lock(s_stateBlockMapMutex);

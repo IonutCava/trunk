@@ -67,10 +67,10 @@ public:
 
     inline EffectManager& getEffectManager() { return *_pEffectMgr; }
 
-    inline I32 joystickCount() const { return to_int(_joysticks.size()); }
-    inline OIS::JoyStick* getJoystick(Joystick index) const { return _joysticks[to_int(index)]; }
+    inline I32 joystickCount() const { return to_I32(_joysticks.size()); }
+    inline OIS::JoyStick* getJoystick(Joystick index) const { return _joysticks[to_I32(index)]; }
 
-    inline I32 kbMousePairCount() const { return to_int(_kbMouseDevices.size()); }
+    inline I32 kbMousePairCount() const { return to_I32(_kbMouseDevices.size()); }
     inline KBMousePair getKeyboardMousePair(U8 index) const { return _kbMouseDevices[index]; }
 
     inline bool isKeyDown(U8 deviceIndex, Input::KeyCode keyCode) const {
@@ -87,7 +87,7 @@ public:
         return _kbMouseDevices[deviceIndex].first->isModifierDown(keyModifier);
     }
 
-    inline const KeyEvent& getKey(KeyCode keyCode) const { return _keys[to_uint(keyCode)]; }
+    inline const KeyEvent& getKey(KeyCode keyCode) const { return _keys[to_U32(keyCode)]; }
 
     static OIS::KeyCode keyCodeByName(const stringImpl& keyName);
     static MouseButton mouseButtonByName(const stringImpl& buttonName);

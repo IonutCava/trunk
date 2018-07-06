@@ -43,9 +43,9 @@ bool CEGUIInput::onKeyUp(const Input::KeyEvent& key) {
 }
 
 bool CEGUIInput::mouseMoved(const Input::MouseEvent& arg) {
-    return (CEGUI_DEFAULT_CTX.injectMouseWheelChange(to_float(arg._event.state.Z.abs)) ||
-            CEGUI_DEFAULT_CTX.injectMouseMove(to_float(arg._event.state.X.rel),
-                                              to_float(arg._event.state.Y.rel)));
+    return (CEGUI_DEFAULT_CTX.injectMouseWheelChange(to_F32(arg._event.state.Z.abs)) ||
+            CEGUI_DEFAULT_CTX.injectMouseMove(to_F32(arg._event.state.X.rel),
+                                              to_F32(arg._event.state.Y.rel)));
 }
 
 bool CEGUIInput::mouseButtonPressed(const Input::MouseEvent& arg,

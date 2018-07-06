@@ -143,7 +143,7 @@ void BoundingBox::transform(const BoundingBox& initialBoundingBox,
 
     // UpgradeToWriteLock uw_lock(ur_lock);
     _min.set(mat[12], mat[13], mat[14]);
-    _max.set(mat[12], mat[13], mat[14]);
+    _max.set(_min);
 
     F32 a, b;
     for (U8 i = 0; i < 3; ++i) {

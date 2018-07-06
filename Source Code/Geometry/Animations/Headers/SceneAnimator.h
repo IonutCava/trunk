@@ -112,14 +112,14 @@ class SceneAnimator {
     }
 
     inline const AnimEvaluator& animationByIndex(I32 animationIndex) const {
-        assert(IS_IN_RANGE_INCLUSIVE(animationIndex, 0, to_int(_animations.size()) - 1));
+        assert(IS_IN_RANGE_INCLUSIVE(animationIndex, 0, to_I32(_animations.size()) - 1));
         const std::shared_ptr<AnimEvaluator>& animation = _animations.at(animationIndex);
         assert(animation != nullptr);
         return *animation;
     }
 
     inline AnimEvaluator& animationByIndex(I32 animationIndex) {
-        assert(IS_IN_RANGE_INCLUSIVE(animationIndex, 0, to_int(_animations.size()) - 1));
+        assert(IS_IN_RANGE_INCLUSIVE(animationIndex, 0, to_I32(_animations.size()) - 1));
         const std::shared_ptr<AnimEvaluator>& animation = _animations.at(animationIndex);
         assert(animation != nullptr);
         return *animation;
@@ -237,7 +237,7 @@ namespace Attorney {
             animator._animations.reserve(animationCount);
             for (size_t i = 0; i < animationCount; ++i) {
                 animator._animations.push_back(animations[i]);
-                hashAlg::emplace(animator._animationNameToID, _ID_RT(animator._animations[i]->name()), to_uint(i));
+                hashAlg::emplace(animator._animationNameToID, _ID_RT(animator._animations[i]->name()), to_U32(i));
             }
         }
 

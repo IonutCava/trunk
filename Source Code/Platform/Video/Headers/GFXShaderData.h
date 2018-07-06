@@ -51,8 +51,8 @@ class GFXShaderData {
         vec4<F32> _ViewPort;
         vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
         vec4<F32> _renderProperties;
-        vec4<F32> _frustumPlanes[to_const_uint(Frustum::FrustPlane::COUNT)];
-        vec4<F32> _clipPlanes[to_const_uint(Frustum::FrustPlane::COUNT)];
+        vec4<F32> _frustumPlanes[to_const_U32(Frustum::FrustPlane::COUNT)];
+        vec4<F32> _clipPlanes[to_const_U32(Frustum::FrustPlane::COUNT)];
 
         inline F32 aspectRatio() const;
         inline vec2<F32> currentZPlanes() const;

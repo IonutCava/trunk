@@ -47,7 +47,7 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
 
     assert(!_materialInstance || (_materialInstance && !_materialInstance->getName().empty()));
 
-    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
         if (_materialInstance) {
             if (!isSubMesh) {
                 _materialInstance->addShaderModifier(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "TriangleStrip");
@@ -114,13 +114,13 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         _axisGizmo->stateHash(stateBlock.getHash());
         _axisGizmo->paused(true);
         // Create the object containing all of the lines
-        _axisGizmo->beginBatch(true, to_uint(_axisLines.size()) * 2, 1);
-        _axisGizmo->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(_axisLines[0]._colourStart));
+        _axisGizmo->beginBatch(true, to_U32(_axisLines.size()) * 2, 1);
+        _axisGizmo->attribute4f(to_const_U32(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(_axisLines[0]._colourStart));
         // Set the mode to line rendering
         _axisGizmo->begin(PrimitiveType::LINES);
         // Add every line in the list to the batch
         for (const Line& line : _axisLines) {
-            _axisGizmo->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(line._colourStart));
+            _axisGizmo->attribute4f(to_const_U32(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(line._colourStart));
             _axisGizmo->vertex(line._startPoint);
             _axisGizmo->vertex(line._endPoint);
         }
@@ -148,8 +148,8 @@ RenderingComponent::~RenderingComponent()
 }
 
 void RenderingComponent::postLoad() {
-    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
             RenderStagePass stagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass));
 
             RenderPackage& pkg = renderData(stagePass);
@@ -168,10 +168,11 @@ void RenderingComponent::update(const U64 deltaTime) {
     // Continue only for skinned submeshes
     if (type == Object3D::ObjectType::SUBMESH)
     {
-        _parentSGN.getParent().lock()->getTrackedBools().setTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED, false);
+        StateTracker<bool>& parentStates = _parentSGN.getParent().lock()->getTrackedBools();
+        parentStates.setTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED, false);
 
         if (_parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
-            _parentSGN.getParent().lock()->getTrackedBools().setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
+            parentStates.setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
             _skeletonPrimitive->paused(true);
         }
     }
@@ -361,8 +362,8 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& r
                       0.0);
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {
-        reflectionIndex = to_float(mat->defaultReflectionTextureIndex());
-        refractionIndex = to_float(mat->defaultRefractionTextureIndex());
+        reflectionIndex = to_F32(mat->defaultReflectionTextureIndex());
+        refractionIndex = to_F32(mat->defaultRefractionTextureIndex());
     } else {
         reflectionIndex = refractionIndex = 0.0f;
     }
@@ -492,7 +493,7 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
                                               ShaderBuffer& shaderBuffer) {
 
     ShaderBufferList::iterator it;
-    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
         for (RenderPackage& pkg : _renderData[pass]) {
             ShaderBufferList::iterator itEnd = std::end(pkg._shaderBuffers);
             it = std::find_if(std::begin(pkg._shaderBuffers), itEnd,
@@ -509,7 +510,7 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
 }
 
 void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
-    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
         for (RenderPackage& pkg : _renderData[pass]) {
             pkg._shaderBuffers.erase(
                 std::remove_if(std::begin(pkg._shaderBuffers), std::end(pkg._shaderBuffers),
@@ -523,7 +524,7 @@ void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
 ShaderProgram_ptr RenderingComponent::getDrawShader(const RenderStagePass& renderStagePass) {
     return (getMaterialInstance()
                 ? _materialInstance->getShaderInfo(renderStagePass).getProgram()
-                : _customShaders[to_uint(renderStagePass._passType)][to_uint(renderStagePass._stage)]);
+                : _customShaders[to_U32(renderStagePass._passType)][to_U32(renderStagePass._stage)]);
 }
 
 size_t RenderingComponent::getDrawStateHash(const RenderStagePass& renderStagePass) {
@@ -559,7 +560,7 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, const RenderStageP
     static const U32 SCENE_NODE_LOD0_SQ = Config::SCENE_NODE_LOD0 * Config::SCENE_NODE_LOD0;
     static const U32 SCENE_NODE_LOD1_SQ = Config::SCENE_NODE_LOD1 * Config::SCENE_NODE_LOD1;
 
-    _lodLevel = to_ubyte(_parentSGN.getNode()->getLODcount() - 1);
+    _lodLevel = to_U8(_parentSGN.getNode()->getLODcount() - 1);
 
     // ToDo: Hack for lower LoD rendering in reflection and refraction passes
     if (renderStagePass._stage != RenderStage::REFLECTION && renderStagePass._stage != RenderStage::REFRACTION) {
@@ -571,7 +572,7 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, const RenderStageP
                                            ? cameraDistanceSQ > SCENE_NODE_LOD1_SQ ? 2 : 1
                                            : 0;
 
-        _lodLevel = std::min(_lodLevel, std::max(lodLevelTemp, to_ubyte(0)));
+        _lodLevel = std::min(_lodLevel, std::max(lodLevelTemp, to_U8(0)));
     }
 }
 

@@ -18,7 +18,7 @@ namespace {
     size_t g_validationBufferMaxSize = 4096 * 16;
 };
 
-std::array<U32, to_const_uint(ShaderType::COUNT)> glShaderProgram::_lineOffset;
+std::array<U32, to_const_U32(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glShaderProgram, 0, 0);
 glShaderProgram::glShaderProgram(GFXDevice& context,
@@ -133,7 +133,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
                 writeFile(outFileName, binary, (size_t)binaryLength, FileType::BINARY);
                 // dump the format to a separate file (highly non-optimised. Should dump formats to a database instead)
                 outFileName += ".fmt";
-                stringImpl binaryFormatStr = to_stringImpl(to_uint(_binaryFormat));
+                stringImpl binaryFormatStr = to_stringImpl(to_U32(_binaryFormat));
                 writeFile(outFileName, (bufferPtr)binaryFormatStr.c_str(), binaryFormatStr.size(), FileType::BINARY);
              }
             // delete our local code buffer
@@ -194,7 +194,7 @@ void glShaderProgram::detachShader(glShader* const shader) {
                                      : _shaderProgramID,
                    shader->getShaderID());
     // glUseProgramStages(_shaderProgramID,
-    // GLUtil::glShaderStageTable[to_uint(shader->getType())], 0);
+    // GLUtil::glShaderStageTable[to_U32(shader->getType())], 0);
 }
 
 /// Add a new shader stage to this program
@@ -208,7 +208,7 @@ void glShaderProgram::attachShader(glShader* const shader) {
                                      : _shaderProgramID,
                    shader->getShaderID());
     // glUseProgramStages(_shaderProgramIDTemp,
-    // GLUtil::glShaderStageTable[to_uint(shader->getType())], shaderID);
+    // GLUtil::glShaderStageTable[to_U32(shader->getType())], shaderID);
     // Clear the 'linked' flag. Program must be re-linked before usage
     _linked = false;
 }
@@ -412,7 +412,7 @@ std::pair<bool, stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
             // And replace in place with our program's headers created earlier
             Util::ReplaceStringInPlace(sourceCode.second, "//__CUSTOM_DEFINES__", header);
             Util::ReplaceStringInPlace(sourceCode.second, "//__LINE_OFFSET_",
-                Util::StringFormat("#line %d\n", 1 + _lineOffset[to_uint(stage)] + to_uint(_definesList.size())));
+                Util::StringFormat("#line %d\n", 1 + _lineOffset[to_U32(stage)] + to_U32(_definesList.size())));
         }
     }
 
@@ -457,7 +457,7 @@ void glShaderProgram::reloadShaders(bool reparseShaderSource) {
     glswSetPath(info._resourcePath.c_str(), ".glsl");
 
     // For every stage
-    for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_U32(ShaderType::COUNT); ++i) {
         // Brute force conversion to an enum
         ShaderType type = static_cast<ShaderType>(i);
         stringImpl shaderCompileName(info._programName +
@@ -583,7 +583,7 @@ void glShaderProgram::SetSubroutines(ShaderType type,
                   "unbound or unlinked program!");
     // Validate data and send to GPU
     if (!indices.empty() && indices[0] != GLUtil::_invalidObjectID) {
-        glUniformSubroutinesuiv(GLUtil::glShaderStageTable[to_uint(type)],
+        glUniformSubroutinesuiv(GLUtil::glShaderStageTable[to_U32(type)],
                                 (GLsizei)indices.size(), indices.data());
     }
 }
@@ -597,7 +597,7 @@ void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
 
     if (index != GLUtil::_invalidObjectID) {
         U32 value[] = {index};
-        glUniformSubroutinesuiv(GLUtil::glShaderStageTable[to_uint(type)], 1,
+        glUniformSubroutinesuiv(GLUtil::glShaderStageTable[to_U32(type)], 1,
                                 value);
     }
 }
@@ -610,7 +610,7 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) const {
 
     I32 subroutineCount = 0;
     glGetProgramStageiv(_shaderProgramID,
-                        GLUtil::glShaderStageTable[to_uint(type)],
+                        GLUtil::glShaderStageTable[to_U32(type)],
                         GL_ACTIVE_SUBROUTINE_UNIFORMS, &subroutineCount);
 
     return std::max(subroutineCount, 0);
@@ -625,7 +625,7 @@ U32 glShaderProgram::GetSubroutineUniformLocation(
                   "invalid program!");
 
     return glGetSubroutineUniformLocation(
-        _shaderProgramID, GLUtil::glShaderStageTable[to_uint(type)],
+        _shaderProgramID, GLUtil::glShaderStageTable[to_U32(type)],
         name);
 }
 
@@ -636,7 +636,7 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) const
                   "invalid program!");
 
     return glGetSubroutineIndex(_shaderProgramID,
-                                GLUtil::glShaderStageTable[to_uint(type)],
+                                GLUtil::glShaderStageTable[to_U32(type)],
                                 name);
 }
 

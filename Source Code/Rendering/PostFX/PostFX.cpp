@@ -59,10 +59,10 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
                        "TEX_BIND_POINT_NOISE %d, "
                        "TEX_BIND_POINT_BORDER %d, "
                        "TEX_BIND_POINT_UNDERWATER %d",
-                        to_const_uint(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
-                        to_const_uint(TexOperatorBindPoint::TEX_BIND_POINT_NOISE),
-                        to_const_uint(TexOperatorBindPoint::TEX_BIND_POINT_BORDER),
-                        to_const_uint(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER)).c_str());
+                        to_const_U32(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
+                        to_const_U32(TexOperatorBindPoint::TEX_BIND_POINT_NOISE),
+                        to_const_U32(TexOperatorBindPoint::TEX_BIND_POINT_BORDER),
+                        to_const_U32(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER)).c_str());
 
     _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader);
     _postProcessingShader->Uniform("_noiseTile", 0.05f);
@@ -86,19 +86,19 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
     ResourceDescriptor textureWaterCaustics("Underwater Caustics");
     textureWaterCaustics.setResourceName("terrain_water_NM.jpg");
     textureWaterCaustics.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    textureWaterCaustics.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
+    textureWaterCaustics.setEnumValue(to_const_U32(TextureType::TEXTURE_2D));
     _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics);
 
      ResourceDescriptor noiseTexture("noiseTexture");
      noiseTexture.setResourceName("bruit_gaussien.jpg");
      noiseTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-     noiseTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
+     noiseTexture.setEnumValue(to_const_U32(TextureType::TEXTURE_2D));
      _noise = CreateResource<Texture>(cache, noiseTexture);
 
      ResourceDescriptor borderTexture("borderTexture");
      borderTexture.setResourceName("vignette.jpeg");
      borderTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-     borderTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
+     borderTexture.setEnumValue(to_const_U32(TextureType::TEXTURE_2D));
      _screenBorder = CreateResource<Texture>(cache, borderTexture);
 
      _drawCommand.primitiveType(PrimitiveType::TRIANGLES);
@@ -136,10 +136,10 @@ void PostFX::apply(GFXDevice& context) {
     _postProcessingShader->bind();
     _postProcessingShader->SetSubroutines(ShaderType::FRAGMENT, _shaderFunctionSelection);
 
-    _preRenderBatch->bindOutput(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
-    _underwaterTexture->bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
-    _noise->bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
-    _screenBorder->bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
+    _preRenderBatch->bindOutput(to_const_U8(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
+    _underwaterTexture->bind(to_const_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
+    _noise->bind(to_const_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
+    _screenBorder->bind(to_const_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
 
     RenderTarget& screenRT = _gfx->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
@@ -169,7 +169,7 @@ void PostFX::idle(const Configuration& config) {
 void PostFX::update(const U64 deltaTime) {
     if (_fadeActive) {
         _currentFadeTimeMS += Time::MicrosecondsToMilliseconds<D64>(deltaTime);
-        F32 fadeStrength = to_float(std::min(_currentFadeTimeMS / _targetFadeTimeMS , 1.0));
+        F32 fadeStrength = to_F32(std::min(_currentFadeTimeMS / _targetFadeTimeMS , 1.0));
         if (!_fadeOut) {
             fadeStrength = 1.0f - fadeStrength;
         }

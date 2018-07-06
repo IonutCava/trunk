@@ -17,15 +17,15 @@ void CubeScene::processTasks(const U64 deltaTime) {
         for (U8 row = 0; row < 3; row++)
             for (U8 col = 0; col < _lightNodes.size() / 3.0f; col++) {
                 F32 x = col * 150.0f - 5.0f +
-                        cos(to_float(Time::ElapsedMilliseconds()) * (col - row + 2) *
+                        cos(to_F32(Time::ElapsedMilliseconds()) * (col - row + 2) *
                             0.008f) *
                             200.0f;
-                F32 y = cos(to_float(Time::ElapsedSeconds()) * (col - row + 2) * 0.01f) *
+                F32 y = cos(to_F32(Time::ElapsedSeconds()) * (col - row + 2) * 0.01f) *
                             200.0f +
                         20;
                 ;
                 F32 z = row * 500.0f - 500.0f -
-                        cos(to_float(Time::ElapsedMilliseconds()) * (col - row + 2) *
+                        cos(to_F32(Time::ElapsedMilliseconds()) * (col - row + 2) *
                             0.009f) *
                             200.0f +
                         10;
@@ -82,18 +82,18 @@ bool CubeScene::load(const stringImpl& name) {
 
 bool CubeScene::loadResources(bool continueOnErrors) {
     // 30 lights? >:)
-    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
 
     for (U8 row = 0; row < 3; row++) {
         for (U8 col = 0; col < 10; col++) {
-            U8 lightID = to_ubyte(row * 10 + col);
+            U8 lightID = to_U8(row * 10 + col);
             stringstreamImpl ss;
-            ss << to_uint(lightID);
+            ss << to_U32(lightID);
             ResourceDescriptor tempLight("Light Deferred " + ss.str());
-            tempLight.setEnumValue(to_const_uint(LightType::POINT));
+            tempLight.setEnumValue(to_const_U32(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
 
             std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);

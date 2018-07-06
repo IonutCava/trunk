@@ -204,7 +204,7 @@ void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
     I32 FoV = (atoi(args.c_str()));
     CLAMP<I32>(FoV, 40, 140);
 
-    Camera::activeCamera()->setHorizontalFoV(to_float(FoV));
+    Camera::activeCamera()->setHorizontalFoV(to_F32(FoV));
 }
 
 void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
@@ -217,7 +217,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     if (!Util::IsNumber(args2.c_str())) {
         Console::errorfn(Locale::get(_ID("CONSOLE_INVALID_NUMBER")));
     } else {
-        scale = to_float(atof(args2.c_str()));
+        scale = to_F32(atof(args2.c_str()));
     }
     stringImpl assetLocation(Paths::g_assetsLocation);
 

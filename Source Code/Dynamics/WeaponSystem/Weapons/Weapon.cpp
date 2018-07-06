@@ -14,7 +14,7 @@ Weapon::~Weapon() {}
 
 bool Weapon::addProperty(WeaponProperty property) {
     assert(property != WeaponProperty::COUNT);
-    _properyMask |= to_uint(property);
+    _properyMask |= to_U32(property);
     return true;
 }
 };

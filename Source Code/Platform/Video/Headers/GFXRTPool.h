@@ -40,7 +40,7 @@ namespace Divide {
 class GFXRTPool {
 protected:
     typedef vectorImpl<RenderTarget*> TargetsPerUsage;
-    typedef std::array<TargetsPerUsage, to_const_uint(RenderTargetUsage::COUNT)> RenderTargets;
+    typedef std::array<TargetsPerUsage, to_const_U32(RenderTargetUsage::COUNT)> RenderTargets;
 
 protected:
     friend class GFXDevice;
@@ -58,15 +58,15 @@ protected:
     }
 
     inline RenderTarget& renderTarget(RenderTargetID target) {
-        return *_renderTargets[to_uint(target._usage)][target._index];
+        return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
     inline const RenderTarget& renderTarget(RenderTargetID target) const {
-        return *_renderTargets[to_uint(target._usage)][target._index];
+        return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
     inline vectorImpl<RenderTarget*>& renderTargets(RenderTargetUsage target) {
-        return _renderTargets[to_uint(target)];
+        return _renderTargets[to_U32(target)];
     }
 
     inline void set(const RenderTargetHandle& handle, RenderTarget* newTarget) {

@@ -60,9 +60,9 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, const
 template<>
 CachedResource_ptr ImplResourceLoader<WaterPlane>::operator()() {
     U32 sideLength = _descriptor.getID();
-    assert(sideLength > 0 && sideLength < to_uint(std::numeric_limits<I32>::max()));
+    assert(sideLength > 0 && sideLength < to_U32(std::numeric_limits<I32>::max()));
 
-    std::shared_ptr<WaterPlane> ptr(MemoryManager_NEW WaterPlane(_cache, _loadingDescriptorHash, _descriptor.getName(), to_int(sideLength)),
+    std::shared_ptr<WaterPlane> ptr(MemoryManager_NEW WaterPlane(_cache, _loadingDescriptorHash, _descriptor.getName(), to_I32(sideLength)),
                                     DeleteResource(_cache));
 
     if (!load(ptr, _descriptor.onLoadCallback())) {

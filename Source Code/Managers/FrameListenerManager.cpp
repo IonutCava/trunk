@@ -167,7 +167,7 @@ void FrameListenerManager::createEvent(const U64 currentTime, FrameEventType typ
 }
 
 D64 FrameListenerManager::calculateEventTime(const D64 currentTime, FrameEventType type) {
-    EventTimeMap& times = _eventTimers[to_uint(type)];
+    EventTimeMap& times = _eventTimers[to_U32(type)];
     times.push_back(currentTime);
 
     if (times.size() == 1) {

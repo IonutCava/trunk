@@ -59,7 +59,7 @@ class CRC32 {
 
     //=========================================
     // HashBase stuff
-    virtual void Reset() { mCrc = to_uint(~0); }
+    virtual void Reset() { mCrc = to_U32(~0); }
     virtual void Hash(const void* buf, size_t siz);
 
    private:

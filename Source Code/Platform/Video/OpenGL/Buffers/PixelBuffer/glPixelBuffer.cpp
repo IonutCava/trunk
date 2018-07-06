@@ -37,13 +37,13 @@ glPixelBuffer::glPixelBuffer(GFXDevice& context, PBType type) : PixelBuffer(cont
 
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:
-            _textureType = to_const_uint(GL_TEXTURE_1D);
+            _textureType = to_const_U32(GL_TEXTURE_1D);
             break;
         case PBType::PB_TEXTURE_2D:
-            _textureType = to_const_uint(GL_TEXTURE_2D);
+            _textureType = to_const_U32(GL_TEXTURE_2D);
             break;
         case PBType::PB_TEXTURE_3D:
-            _textureType = to_const_uint(GL_TEXTURE_3D);
+            _textureType = to_const_U32(GL_TEXTURE_3D);
             break;
         default:
             Console::errorfn(Locale::get(_ID("ERROR_PB_INVALID_TYPE")));
@@ -119,9 +119,9 @@ bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
                            GFXImageFormat formatEnum,
                            GFXDataFormat dataTypeEnum) {
     GLenum textureTypeEnum = static_cast<GLenum>(_textureType);
-    _internalFormat = GLUtil::glImageFormatTable[to_uint(internalFormatEnum)];
-    _format = GLUtil::glImageFormatTable[to_uint(formatEnum)];
-    _dataType = GLUtil::glDataFormat[to_uint(dataTypeEnum)];
+    _internalFormat = GLUtil::glImageFormatTable[to_U32(internalFormatEnum)];
+    _format = GLUtil::glImageFormatTable[to_U32(formatEnum)];
+    _dataType = GLUtil::glDataFormat[to_U32(dataTypeEnum)];
 
     Console::printfn(Locale::get(_ID("GL_PB_GEN")), width, height);
     _width = width;
@@ -161,20 +161,20 @@ bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
 
     glCreateTextures(textureTypeEnum, 1, &_textureID);
     glTextureParameteri(_textureID, GL_GENERATE_MIPMAP, 0);
-    glTextureParameteri(_textureID, GL_TEXTURE_MIN_FILTER, to_const_int(GL_NEAREST));
-    glTextureParameteri(_textureID, GL_TEXTURE_MAG_FILTER, to_const_int(GL_NEAREST));
+    glTextureParameteri(_textureID, GL_TEXTURE_MIN_FILTER, to_const_I32(GL_NEAREST));
+    glTextureParameteri(_textureID, GL_TEXTURE_MAG_FILTER, to_const_I32(GL_NEAREST));
     glTextureParameteri(_textureID, GL_TEXTURE_BASE_LEVEL, 0);
     glTextureParameteri(_textureID, GL_TEXTURE_MAX_LEVEL, 1000);
-    glTextureParameteri(_textureID, GL_TEXTURE_WRAP_S, to_const_int(GL_REPEAT));
+    glTextureParameteri(_textureID, GL_TEXTURE_WRAP_S, to_const_I32(GL_REPEAT));
 
     if (_pbtype != PBType::PB_TEXTURE_1D) {
-        glTextureParameteri(_textureID, GL_TEXTURE_WRAP_T, to_const_int(GL_REPEAT));
+        glTextureParameteri(_textureID, GL_TEXTURE_WRAP_T, to_const_I32(GL_REPEAT));
     }
     if (_pbtype == PBType::PB_TEXTURE_3D) {
-        glTextureParameteri(_textureID, GL_TEXTURE_WRAP_R, to_const_int(GL_REPEAT));
+        glTextureParameteri(_textureID, GL_TEXTURE_WRAP_R, to_const_I32(GL_REPEAT));
     }
 
-    U16 mipLevels = to_ushort(std::floor(std::log2(std::max(_width, _height))) + 1);
+    U16 mipLevels = to_U16(std::floor(std::log2(std::max(_width, _height))) + 1);
     GL_API::setPixelPackUnpackAlignment();
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:

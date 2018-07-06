@@ -87,7 +87,7 @@ class NOINITVTABLE ShadowMap {
     GFXDevice& _context;
 
     typedef std::array<bool, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> LayerUsageMask;
-    static std::array<LayerUsageMask, to_const_uint(ShadowType::COUNT)> _depthMapUsage;
+    static std::array<LayerUsageMask, to_const_U32(ShadowType::COUNT)> _depthMapUsage;
     
     ShadowType _shadowMapType;
     U16 _arrayOffset;
@@ -109,7 +109,7 @@ class ShadowMapInfo {
     inline U8 numLayers() const { return _numLayers; }
 
     inline void numLayers(U8 layerCount) {
-        _numLayers = std::min(layerCount, to_const_ubyte(Config::Lighting::MAX_SPLITS_PER_LIGHT));
+        _numLayers = std::min(layerCount, to_const_U8(Config::Lighting::MAX_SPLITS_PER_LIGHT));
     }
 
    private:

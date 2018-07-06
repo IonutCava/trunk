@@ -62,7 +62,7 @@ public:
     size_t operator()(const Input::JoystickElement& k) const
     {
         size_t hash = 0;
-        Util::Hash_combine(hash, to_uint(k._type));
+        Util::Hash_combine(hash, to_U32(k._type));
         Util::Hash_combine(hash, k._data);
         return hash;
     }

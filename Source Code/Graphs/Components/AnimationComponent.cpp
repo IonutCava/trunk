@@ -90,7 +90,7 @@ bool AnimationComponent::playAnimation(I32 pAnimIndex) {
         return false;
     }
 
-    if (pAnimIndex >= to_int(_animator->animations().size())) {
+    if (pAnimIndex >= to_I32(_animator->animations().size())) {
         return false;  // no change, or the animations data is out of bounds
     }
     I32 oldIndex = _currentAnimIndex;
@@ -123,7 +123,7 @@ bool AnimationComponent::playPreviousAnimation() {
 
     I32 oldIndex = _currentAnimIndex;
     if (_currentAnimIndex == 0) {
-        _currentAnimIndex = to_int(_animator->animations().size());
+        _currentAnimIndex = to_I32(_animator->animations().size());
     }
     --_currentAnimIndex;
 
@@ -159,7 +159,7 @@ I32 AnimationComponent::frameCount(U32 animationID) const {
 }
 
 U32 AnimationComponent::boneCount() const {
-    return _animator != nullptr ? to_uint(_animator->boneCount()) : 0;
+    return _animator != nullptr ? to_U32(_animator->boneCount()) : 0;
 }
 
 const vectorImplBest<mat4<F32>>& AnimationComponent::transformsByIndex(U32 animationID, U32 index) const {

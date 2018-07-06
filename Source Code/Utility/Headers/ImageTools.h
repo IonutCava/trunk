@@ -95,7 +95,7 @@ class ImageData : private NonCopyable {
     /// set and get the image's compression state
     inline bool compressed() const { return _compressed; }
     /// get the number of pre-loaded mip maps
-    inline U32 mipCount() const { return to_uint(_data.size()); }
+    inline U32 mipCount() const { return to_U32(_data.size()); }
     /// image transparency information
     inline bool alpha() const { return _alpha; }
     /// image depth information

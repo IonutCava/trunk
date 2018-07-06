@@ -106,8 +106,8 @@ void DisplayWindow::update() {
             case SDL_WINDOWEVENT_RESIZED: {
                 _externalResizeEvent = true;
                 setDimensions(type(),
-                              to_ushort(event.window.data1),
-                              to_ushort(event.window.data2));
+                              to_U16(event.window.data1),
+                              to_U16(event.window.data2));
                 _externalResizeEvent = false;
             }break;
             case SDL_WINDOWEVENT_SIZE_CHANGED: {
@@ -194,8 +194,8 @@ void DisplayWindow::setDimensionsInternal(U16 w, U16 h) {
             mode.w = w;
             mode.h = h;
             SDL_GetClosestDisplayMode(_context.targetDisplay(), &mode, &closestMode);
-            w = to_ushort(closestMode.w);
-            h = to_ushort(closestMode.h);
+            w = to_U16(closestMode.w);
+            h = to_U16(closestMode.h);
         }
 
         SDL_SetWindowSize(_mainWindow, w, h);

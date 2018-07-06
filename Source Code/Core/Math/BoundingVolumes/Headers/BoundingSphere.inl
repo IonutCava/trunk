@@ -92,7 +92,7 @@ inline void BoundingSphere::addRadius(const vec3<F32>& point) {
 
 inline void BoundingSphere::createFromPoints(const vectorImpl<vec3<F32>>& points) {
     _radius = 0;
-    F32 numPoints = to_float(points.size());
+    F32 numPoints = to_F32(points.size());
 
     for (const vec3<F32>& p : points) {
         _center += p / numPoints;

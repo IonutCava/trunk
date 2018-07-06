@@ -77,19 +77,19 @@ class Transform : public TransformInterface, public GUIDWrapper, private NonCopy
     void scaleY(const F32 ammount) override;
     void scaleZ(const F32 ammount) override;
 
-    void setRotation(const vec3<F32>& axis, F32 degrees, bool inDegrees = true) override;
-    void setRotation(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) override;
+    void setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
+    void setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
     void setRotation(const Quaternion<F32>& quat) override;
-    void setRotationX(const F32 angle, bool inDegrees = true) override;
-    void setRotationY(const F32 angle, bool inDegrees = true) override;
-    void setRotationZ(const F32 angle, bool inDegrees = true) override;
-    void rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees = true) override;
-    void rotate(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) override;
+    void setRotationX(const Angle::DEGREES<F32> angle) override;
+    void setRotationY(const Angle::DEGREES<F32> angle) override;
+    void setRotationZ(const Angle::DEGREES<F32> angle) override;
+    void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
+    void rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
     void rotate(const Quaternion<F32>& quat) override;
     void rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime) override;
-    void rotateX(const F32 angle, bool inDegrees = true) override;
-    void rotateY(const F32 angle, bool inDegrees = true) override;
-    void rotateZ(const F32 angle, bool inDegrees = true) override;
+    void rotateX(const Angle::DEGREES<F32> angle) override;
+    void rotateY(const Angle::DEGREES<F32> angle) override;
+    void rotateZ(const Angle::DEGREES<F32> angle) override;
 
     void getScale(vec3<F32>& scaleOut) const override;
     void getPosition(vec3<F32>& posOut) const override;

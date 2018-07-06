@@ -126,7 +126,7 @@ void glFramebuffer::initAttachment(const RTAttachment_ptr& attachment, RTAttachm
                                              getGUID()));
         textureAttachment.setThreadedLoading(false);
         textureAttachment.setPropertyDescriptor(texDescriptor.getSampler());
-        textureAttachment.setEnumValue(to_uint(texDescriptor._type));
+        textureAttachment.setEnumValue(to_U32(texDescriptor._type));
         textureAttachment.setID(texDescriptor._layerCount);
         Texture_ptr tex = CreateResource<Texture>(_context.parent().resourceCache(), textureAttachment);
         assert(tex);
@@ -150,7 +150,7 @@ void glFramebuffer::initAttachment(const RTAttachment_ptr& attachment, RTAttachm
         attachmentEnum = GLenum((U32)GL_COLOR_ATTACHMENT0 + index);
     }
 
-    attachment->binding(to_uint(attachmentEnum));
+    attachment->binding(to_U32(attachmentEnum));
     attachment->clearChanged();
 }
 
@@ -188,7 +188,7 @@ void glFramebuffer::toggleAttachment(const RTAttachment_ptr& attachment, Attachm
 }
 
 bool glFramebuffer::create(U16 width, U16 height) {
-    for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_U8(RTAttachment::Type::COUNT); ++i) {
         RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
         for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
             updateDescriptor(type, j);
@@ -196,7 +196,7 @@ bool glFramebuffer::create(U16 width, U16 height) {
     }
     
     if (_resolveBuffer) {
-        for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
+        for (U8 i = 0; i < to_const_U8(RTAttachment::Type::COUNT); ++i) {
             RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
             for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
                 const RTAttachment_ptr& att = _attachmentPool->get(type, j);
@@ -235,7 +235,7 @@ bool glFramebuffer::create(U16 width, U16 height) {
 
     // For every attachment, be it a colour or depth attachment ...
     I32 attachmentCountTotal = 0;
-    for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_U8(RTAttachment::Type::COUNT); ++i) {
         for (U8 j = 0; j < _attachmentPool->attachmentCount(static_cast<RTAttachment::Type>(i)); ++j) {
             initAttachment(static_cast<RTAttachment::Type>(i), j);
             assert(GL_API::s_maxFBOAttachments > ++attachmentCountTotal);
@@ -280,7 +280,7 @@ void glFramebuffer::blitFrom(RenderTarget* inputFB,
         _attachmentPool->get(RTAttachment::Type::Colour, _activeAttachmentsCache);
         input->_attachmentPool->get(RTAttachment::Type::Colour, inputAttachments);
         
-        U8 colourCount = std::min(to_ubyte(_activeAttachmentsCache.size()), to_ubyte(inputAttachments.size()));
+        U8 colourCount = std::min(to_U8(_activeAttachmentsCache.size()), to_U8(inputAttachments.size()));
         for (U8 i = 0; i < colourCount; ++i) {
             glDrawBuffer(static_cast<GLenum>(_activeAttachmentsCache[i]->binding()));
             glReadBuffer(static_cast<GLenum>(inputAttachments[i]->binding()));
@@ -422,7 +422,7 @@ void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy) {
 
 void glFramebuffer::resetAttachments() {
     // Reset attachments if they changed (e.g. after layered rendering);
-    for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_U8(RTAttachment::Type::COUNT); ++i) {
         _attachmentPool->get(static_cast<RTAttachment::Type>(i), _activeAttachmentsCache);
         for (const RTAttachment_ptr& attachment : _activeAttachmentsCache) {
             attachment->writeLayer(0);
@@ -476,7 +476,7 @@ void glFramebuffer::end() {
 
 void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy) const {
     if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS) && hasColour()) {
-        for (U8 i = 0; i < to_ubyte(_activeColourBuffers.size()); ++i) {
+        for (U8 i = 0; i < to_U8(_activeColourBuffers.size()); ++i) {
             if (_activeColourBuffers[i] != GL_NONE) {
                 const RTAttachment_ptr& att = _attachmentPool->get(RTAttachment::Type::Colour, i);
                 GFXDataFormat dataType = att->descriptor().dataType();
@@ -507,7 +507,7 @@ void glFramebuffer::drawToLayer(RTAttachment::Type type,
 
     const RTAttachment_ptr& att = _attachmentPool->get(type, index);
 
-    GLenum textureType = GLUtil::glTextureTypeTable[to_uint(att->descriptor().type())];
+    GLenum textureType = GLUtil::glTextureTypeTable[to_U32(att->descriptor().type())];
     // only for array textures (it's better to simply ignore the command if the format isn't supported (debugging reasons)
     if (textureType != GL_TEXTURE_2D_ARRAY &&
         textureType != GL_TEXTURE_CUBE_MAP_ARRAY &&
@@ -538,7 +538,7 @@ void glFramebuffer::drawToLayer(RTAttachment::Type type,
 void glFramebuffer::setMipLevel(U16 writeLevel) {
     // This is needed because certain drivers need all attachments to use the same mip level
     // This is also VERY SLOW so it might be worth optimising it per-driver version / IHV
-    for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_U8(RTAttachment::Type::COUNT); ++i) {
         _attachmentPool->get(static_cast<RTAttachment::Type>(i), _activeAttachmentsCache);
         for (const RTAttachment_ptr& attachment : _activeAttachmentsCache) {
             const Texture_ptr& texture = attachment->asTexture();
@@ -577,8 +577,8 @@ void glFramebuffer::readData(const vec4<U16>& rect,
         GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_ONLY, _framebufferHandle);
         glReadPixels(
             rect.x, rect.y, rect.z, rect.w,
-            GLUtil::glImageFormatTable[to_uint(imageFormat)],
-            GLUtil::glDataFormat[to_uint(dataType)], outData);
+            GLUtil::glImageFormatTable[to_U32(imageFormat)],
+            GLUtil::glDataFormat[to_U32(dataType)], outData);
     }
 }
 

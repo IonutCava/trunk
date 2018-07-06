@@ -57,7 +57,7 @@ class JoystickInterface {
     // Selected joystick auto-center mode.
     bool _bAutoCenter;
     // Per joystick data
-    std::array<JoystickData, to_const_uint(Joystick::COUNT)> _joystickData;
+    std::array<JoystickData, to_const_U32(Joystick::COUNT)> _joystickData;
 
     public:
     JoystickInterface(OIS::InputManager* pInputInterface,
@@ -131,11 +131,11 @@ class JoystickInterface {
     }
     
     inline const JoystickData& getJoystickData(Joystick joystick) const {
-        return _joystickData[to_uint(joystick)];
+        return _joystickData[to_U32(joystick)];
     }
 
     inline void setJoystickData(Joystick joystick, const JoystickData& data) {
-        _joystickData[to_uint(joystick)] = data;
+        _joystickData[to_U32(joystick)] = data;
     }
 
     inline vectorAlg::vecSize getNumberOfJoysticks() const {
@@ -158,8 +158,8 @@ class JoystickInterface {
             _dMasterGain = 0.5;  // Half the maximum.
             changeMasterGain(0.0);
         } else {
-            _nCurrJoyInd += to_int(eWhich);
-            if (_nCurrJoyInd < -1 || _nCurrJoyInd >= to_int(_vecJoys.size()))
+            _nCurrJoyInd += to_I32(eWhich);
+            if (_nCurrJoyInd < -1 || _nCurrJoyInd >= to_I32(_vecJoys.size()))
                 _nCurrJoyInd = -1;
             if (_vecJoys.size() > 1 && _nCurrJoyInd >= 0) {
                 _dMasterGain = 0.5;  // Half the maximum.

@@ -159,7 +159,7 @@ class WarSceneOrder : public Order {
         COUNT
     };
 
-    WarSceneOrder(WarOrder order) : Order(to_uint(order))
+    WarSceneOrder(WarOrder order) : Order(to_U32(order))
     {
     }
 
@@ -264,7 +264,7 @@ class WarSceneAIProcessor : public AIProcessor {
     /// Keep this in memory at this level
     vectorImpl<WarSceneAction> _actionList;
     NodeToUnitMap _nodeToUnitMap[2];
-    std::array<bool, to_const_uint(ActionType::COUNT)> _actionState;
+    std::array<bool, to_const_U32(ActionType::COUNT)> _actionState;
     static DELEGATE_CBK<void, U8, const stringImpl&> _scoreCallback;
     static DELEGATE_CBK<void, U8, const stringImpl&> _messageCallback;
     static GlobalWorkingMemory _globalWorkingMemory;

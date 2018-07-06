@@ -181,11 +181,11 @@ void Scene::addPatch(vectorImpl<FileData>& data) {
 void Scene::loadXMLAssets(bool singleStep) {
     constexpr bool terrainThreadedLoading = true;
 
-    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
 
     while (!_modelDataArray.empty()) {
         const FileData& it = _modelDataArray.top();
@@ -243,11 +243,11 @@ void Scene::loadXMLAssets(bool singleStep) {
 Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
     constexpr bool modelThreadedLoading = true;
 
-    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
 
     auto loadModelComplete = [this](Resource_wptr res) {
         ACKNOWLEDGE_UNUSED(res);
@@ -267,7 +267,7 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
         if (addToSceneGraph) {
             SceneGraphNode_ptr meshNode =
                 _sceneGraph->getRoot().addNode(thisObj,
-                                               data.isUnit ? normalMask | to_const_uint(SGNComponent::ComponentType::UNIT) : normalMask,
+                                               data.isUnit ? normalMask | to_const_U32(SGNComponent::ComponentType::UNIT) : normalMask,
                                                data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
                                                                                       : PhysicsGroup::GROUP_DYNAMIC
                                                                  : PhysicsGroup::GROUP_IGNORE,
@@ -295,11 +295,11 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
 }
 
 Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
-    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
 
     auto loadModelComplete = [this](Resource_wptr res) {
         ACKNOWLEDGE_UNUSED(res);
@@ -379,10 +379,10 @@ Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
 SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
                                              std::shared_ptr<ParticleData> data,
                                              SceneGraphNode& parentNode) {
-    static const U32 particleMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                    to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                    to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                    to_const_uint(SGNComponent::ComponentType::NETWORKING);
+    static const U32 particleMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                    to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                    to_const_U32(SGNComponent::ComponentType::RENDERING) |
+                                    to_const_U32(SGNComponent::ComponentType::NETWORKING);
     DIVIDE_ASSERT(!name.empty(),
                   "Scene::addParticleEmitter error: invalid name specified!");
 
@@ -404,10 +404,10 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
 
 SceneGraphNode_ptr Scene::addLight(LightType type,
                                    SceneGraphNode& parentNode) {
-    static const U32 lightMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                 to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                 to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                 to_const_uint(SGNComponent::ComponentType::NETWORKING);
+    static const U32 lightMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                 to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                 to_const_U32(SGNComponent::ComponentType::RENDERING) |
+                                 to_const_U32(SGNComponent::ComponentType::NETWORKING);
 
     const char* lightType = "";
     switch (type) {
@@ -427,7 +427,7 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
         lightType +
         to_stringImpl(_lightPool->getLights(type).size()));
 
-    defaultLight.setEnumValue(to_uint(type));
+    defaultLight.setEnumValue(to_U32(type));
     defaultLight.setUserPtr(_lightPool);
     std::shared_ptr<Light> light = CreateResource<Light>(_resCache, defaultLight);
     if (type == LightType::DIRECTIONAL) {
@@ -437,15 +437,15 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
 }
 
 void Scene::toggleFlashlight(U8 playerIndex) {
-    static const U32 lightMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                 to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                 to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                 to_const_uint(SGNComponent::ComponentType::NETWORKING);
+    static const U32 lightMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                 to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                 to_const_U32(SGNComponent::ComponentType::RENDERING) |
+                                 to_const_U32(SGNComponent::ComponentType::NETWORKING);
 
     SceneGraphNode_ptr flashLight = _flashLight[playerIndex];
     if (!flashLight) {
         ResourceDescriptor tempLightDesc(Util::StringFormat("Flashlight_%d", playerIndex));
-        tempLightDesc.setEnumValue(to_const_uint(LightType::SPOT));
+        tempLightDesc.setEnumValue(to_const_U32(LightType::SPOT));
         tempLightDesc.setUserPtr(_lightPool);
         std::shared_ptr<Light> tempLight = CreateResource<Light>(_resCache, tempLightDesc);
         tempLight->setDrawImpostor(false);
@@ -461,17 +461,17 @@ void Scene::toggleFlashlight(U8 playerIndex) {
 
 SceneGraphNode_ptr Scene::addSky(const stringImpl& nodeName) {
     ResourceDescriptor skyDescriptor("Default Sky");
-    skyDescriptor.setID(to_uint(std::floor(_baseCamera->getZPlanes().y * 2)));
+    skyDescriptor.setID(to_U32(std::floor(_baseCamera->getZPlanes().y * 2)));
 
     std::shared_ptr<Sky> skyItem = CreateResource<Sky>(_resCache, skyDescriptor);
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
 
     static const U32 normalMask = 
-        to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-        to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-        to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-        to_const_uint(SGNComponent::ComponentType::RENDERING) |
-        to_const_uint(SGNComponent::ComponentType::NETWORKING);
+        to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
+        to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+        to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+        to_const_U32(SGNComponent::ComponentType::RENDERING) |
+        to_const_U32(SGNComponent::ComponentType::NETWORKING);
 
     SceneGraphNode_ptr skyNode = _sceneGraph->getRoot().addNode(skyItem,
                                                                 normalMask,
@@ -796,7 +796,7 @@ void Scene::onSetActive() {
     _context.sfx().stopMusic();
     _context.sfx().dumpPlaylists();
 
-    for (U32 i = 0; i < to_const_uint(MusicType::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_U32(MusicType::COUNT); ++i) {
         const SceneState::MusicPlaylist& playlist = state().music(static_cast<MusicType>(i));
         if (!playlist.empty()) {
             for (const SceneState::MusicPlaylist::value_type& song : playlist) {
@@ -821,17 +821,17 @@ void Scene::onRemoveActive() {
 }
 
 void Scene::addPlayerInternal(bool queue) {
-    stringImpl playerName = getPlayerSGNName(to_ubyte(_parent.getPlayers().size()));
+    stringImpl playerName = getPlayerSGNName(to_U8(_parent.getPlayers().size()));
     
     SceneGraphNode_ptr playerSGN(_sceneGraph->findNode(playerName).lock());
     if (!playerSGN) {
         SceneGraphNode& root = _sceneGraph->getRoot();
         playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache, 12345678 + _parent.getPlayers().size(), g_PlayerExtents)),
-                                to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                to_const_uint(SGNComponent::ComponentType::UNIT) |
-                                to_const_uint(SGNComponent::ComponentType::NETWORKING),
+                                to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
+                                to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                to_const_U32(SGNComponent::ComponentType::UNIT) |
+                                to_const_U32(SGNComponent::ComponentType::NETWORKING),
                                 PhysicsGroup::GROUP_KINEMATIC,
                                 playerName);
         _parent.addPlayer(*this, playerSGN, queue);
@@ -864,7 +864,7 @@ void Scene::onPlayerRemove(const Player_ptr& player) {
 }
 
 U8 Scene::getSceneIndexForPlayer(U8 playerIndex) const {
-    for (U8 i = 0; i < to_ubyte(_scenePlayers.size()); ++i) {
+    for (U8 i = 0; i < to_U8(_scenePlayers.size()); ++i) {
         if (_scenePlayers[i]->index() == playerIndex) {
             return i;
         }
@@ -940,23 +940,23 @@ bool Scene::updateCameraControls(U8 playerIndex) {
         default:
         case Camera::CameraType::FREE_FLY: {
             if (playerState.angleLR() != MoveDirection::NONE) {
-                cam.rotateYaw(to_float(playerState.angleLR()));
+                cam.rotateYaw(to_F32(playerState.angleLR()));
                 playerState.cameraUpdated(true);
             }
             if (playerState.angleUD() != MoveDirection::NONE) {
-                cam.rotatePitch(to_float(playerState.angleUD()));
+                cam.rotatePitch(to_F32(playerState.angleUD()));
                 playerState.cameraUpdated(true);
             }
             if (playerState.roll() != MoveDirection::NONE) {
-                cam.rotateRoll(to_float(playerState.roll()));
+                cam.rotateRoll(to_F32(playerState.roll()));
                 playerState.cameraUpdated(true);
             }
             if (playerState.moveFB() != MoveDirection::NONE) {
-                cam.moveForward(to_float(playerState.moveFB()));
+                cam.moveForward(to_F32(playerState.moveFB()));
                 playerState.cameraUpdated(true);
             }
             if (playerState.moveLR() != MoveDirection::NONE) {
-                cam.moveStrafe(to_float(playerState.moveLR()));
+                cam.moveStrafe(to_F32(playerState.moveLR()));
                 playerState.cameraUpdated(true);
             }
         } break;
@@ -971,7 +971,7 @@ void Scene::updateSceneState(const U64 deltaTime) {
     _sceneTimer += deltaTime;
     updateSceneStateInternal(deltaTime);
     _sceneGraph->sceneUpdate(deltaTime, *_sceneState);
-    for (U8 i = 0; i < to_ubyte(_scenePlayers.size()); ++i) {
+    for (U8 i = 0; i < to_U8(_scenePlayers.size()); ++i) {
         U8 playerIndex = _scenePlayers[i]->index();
         findHoverTarget(playerIndex);
         if (_flashLight[playerIndex]) {
@@ -984,7 +984,7 @@ void Scene::updateSceneState(const U64 deltaTime) {
 }
 
 void Scene::onLostFocus() {
-    for (U8 i = 0; i < to_ubyte(_scenePlayers.size()); ++i) {
+    for (U8 i = 0; i < to_U8(_scenePlayers.size()); ++i) {
         state().playerState(_scenePlayers[i]->index()).resetMovement();
     }
 
@@ -1121,8 +1121,8 @@ void Scene::findHoverTarget(U8 playerIndex) {
     const vec2<F32>& zPlanes = crtCamera.getZPlanes();
     const vec2<I32>& aimPos = state().playerState(playerIndex).aimPos();
 
-    F32 aimX = to_float(aimPos.x);
-    F32 aimY = displaySize.height - to_float(aimPos.y) - 1;
+    F32 aimX = to_F32(aimPos.x);
+    F32 aimY = displaySize.height - to_F32(aimPos.y) - 1;
 
     const vec4<I32>& viewport = _context.gfx().getCurrentViewport();
     vec3<F32> startRay = crtCamera.unProject(aimX, aimY, 0.0f, viewport);
@@ -1197,7 +1197,7 @@ void Scene::findSelection(U8 playerIndex) {
 }
 
 bool Scene::save(ByteBuffer& outputBuffer) const {
-    U8 playerCount = to_ubyte(_scenePlayers.size());
+    U8 playerCount = to_U8(_scenePlayers.size());
     outputBuffer << playerCount;
     for (U8 i = 0; i < playerCount; ++i) {
         const Camera& cam = _scenePlayers[i]->getCamera();
@@ -1212,7 +1212,7 @@ bool Scene::load(ByteBuffer& inputBuffer) {
         vec3<F32> camPos;
         vec3<F32> camEuler;
         U8 currentPlayerIndex = 0;
-        U8 currentPlayerCount = to_ubyte(_scenePlayers.size());
+        U8 currentPlayerCount = to_U8(_scenePlayers.size());
 
         U8 previousPlayerCount = 0;
         inputBuffer >> previousPlayerCount;

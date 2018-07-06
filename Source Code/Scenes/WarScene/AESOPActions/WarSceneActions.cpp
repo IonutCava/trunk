@@ -9,7 +9,7 @@ namespace AI {
 WarSceneAction::WarSceneAction(ActionType type,
                                const stringImpl& name,
                                F32 cost)
-    : GOAPAction(name.c_str(), to_int(cost)),
+    : GOAPAction(name.c_str(), to_I32(cost)),
     _type(type)
 {
 }

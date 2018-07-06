@@ -42,10 +42,10 @@ ErrorCode WindowManager::init(PlatformContext& context,
     systemInfo._systemResolutionWidth = displayMode.w;
     systemInfo._systemResolutionHeight = displayMode.h;
 
-    initialResolutions[to_const_uint(WindowType::FULLSCREEN)].set(to_ushort(displayMode.w),
-                                                                  to_ushort(displayMode.h));
-    initialResolutions[to_const_uint(WindowType::FULLSCREEN_WINDOWED)].set(to_ushort(displayMode.w),
-                                                                           to_ushort(displayMode.h));
+    initialResolutions[to_const_U32(WindowType::FULLSCREEN)].set(to_U16(displayMode.w),
+                                                                  to_U16(displayMode.h));
+    initialResolutions[to_const_U32(WindowType::FULLSCREEN_WINDOWED)].set(to_U16(displayMode.w),
+                                                                           to_U16(displayMode.h));
 
     ErrorCode err = initWindow(0,
                                createAPIFlags(api),
@@ -71,9 +71,9 @@ ErrorCode WindowManager::init(PlatformContext& context,
                     tempDisplayMode._resolution.set(displayMode.w, displayMode.h);
                     tempDisplayMode._bitDepth = SDL_BITSPERPIXEL(displayMode.format);
                     tempDisplayMode._formatName = SDL_GetPixelFormatName(displayMode.format);
-                    tempDisplayMode._refreshRate.push_back(to_ubyte(displayMode.refresh_rate));
+                    tempDisplayMode._refreshRate.push_back(to_U8(displayMode.refresh_rate));
                     Util::ReplaceStringInPlace(tempDisplayMode._formatName, "SDL_PIXELFORMAT_", "");
-                    gState.registerDisplayMode(to_ubyte(display), tempDisplayMode);
+                    gState.registerDisplayMode(to_U8(display), tempDisplayMode);
                     tempDisplayMode._refreshRate.clear();
                 }
             }
@@ -97,7 +97,7 @@ ErrorCode WindowManager::initWindow(U32 index,
                                     bool startFullScreen,
                                     I32 targetDisplayIndex,
                                     const char* windowTitle) {
-    index = std::min(index, to_uint(_windows.size() - 1));
+    index = std::min(index, to_U32(_windows.size() - 1));
 
     return _windows[index]->init(windowFlags,
                                  startFullScreen ? WindowType::FULLSCREEN
@@ -107,7 +107,7 @@ ErrorCode WindowManager::initWindow(U32 index,
 }
 
 void WindowManager::setActiveWindow(U32 index) {
-    index = std::min(index, to_uint(_windows.size() -1));
+    index = std::min(index, to_U32(_windows.size() -1));
     _activeWindowGUID = _windows[index]->getGUID();
     SysInfo& systemInfo = sysInfo();
     getWindowHandle(_windows[index]->getRawWindow(), systemInfo);
@@ -198,8 +198,8 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
         case WindowEvent::RESIZED_INTERNAL: {
             // Only if rendering window
             if (_activeWindowGUID == winGUID) {
-                Application::instance().onChangeWindowSize(to_ushort(data1), 
-                                                              to_ushort(data2));
+                Application::instance().onChangeWindowSize(to_U16(data1), 
+                                                              to_U16(data2));
             }
         } break;
         case WindowEvent::RESIZED_EXTERNAL: {
@@ -207,8 +207,8 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
         case WindowEvent::RESOLUTION_CHANGED: {
             // Only if rendering window
             if (_activeWindowGUID == winGUID) {
-                Application::instance().onChangeRenderResolution(to_ushort(data1),
-                                                                    to_ushort(data2));
+                Application::instance().onChangeRenderResolution(to_U16(data1),
+                                                                    to_U16(data2));
             }
         } break;
         case WindowEvent::APP_LOOP: {

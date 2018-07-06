@@ -48,17 +48,17 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface,
     pEffect->trigger_button = 0;
     pEffect->trigger_interval = 0;
     pEffect->replay_length =
-        OIS::Effect::OIS_INFINITE;  // to_uint(1000000.0/_nUpdateFreq);
+        OIS::Effect::OIS_INFINITE;  // to_U32(1000000.0/_nUpdateFreq);
                                     // // Linux: Does not work.
     pEffect->replay_delay = 0;
     pEffect->setNumAxes(1);
     pConstForce = dynamic_cast<OIS::ConstantEffect*>(pEffect->getForceEffect());
     pConstForce->level = 5000;  //-10K to +10k
     pConstForce->envelope.attackLength =
-        to_uint(1000000.0 / _nUpdateFreq / 2);
-    pConstForce->envelope.attackLevel = to_ushort(pConstForce->level * 0.1);
+        to_U32(1000000.0 / _nUpdateFreq / 2);
+    pConstForce->envelope.attackLevel = to_U16(pConstForce->level * 0.1);
     pConstForce->envelope.fadeLength = 0;  // Never reached, actually.
-    pConstForce->envelope.fadeLevel = to_ushort(pConstForce->level);  // Idem
+    pConstForce->envelope.fadeLevel = to_U16(pConstForce->level);  // Idem
 
     mapVars.clear();
     mapVars[_ID("Force")] = MemoryManager_NEW TriangleVariable(
@@ -187,9 +187,9 @@ void EffectManager::selectEffect(EWhichEffect eWhich) {
         _pJoystickInterface->getCurrentFFDevice()->remove(effect);
 
         _vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->setActive(false);
-        _nCurrEffectInd += to_int(eWhich);
+        _nCurrEffectInd += to_I32(eWhich);
         if (_nCurrEffectInd < -1 ||
-            _nCurrEffectInd >= to_int(_vecPlayableEffectInd.size())) {
+            _nCurrEffectInd >= to_I32(_vecPlayableEffectInd.size())) {
             _nCurrEffectInd = -1;
         }
     }

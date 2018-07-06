@@ -121,7 +121,7 @@ T CLAMPED(const T& n, const T min, const T max) {
 
 template<typename T>
 bool BitCompare(const T bitMask, const T bit) {
-    return BitCompare(to_uint(bitMask), to_uint(bit));
+    return BitCompare(to_U32(bitMask), to_U32(bit));
 }
 
 template<>
@@ -179,26 +179,26 @@ inline F32 Sqrt(__m128 input) {
 
 // Helper method to emulate GLSL
 inline F32 FRACT(const F32 floatValue) {
-    return to_float(fmod(floatValue, 1.0f));
+    return to_F32(fmod(floatValue, 1.0f));
 }
 
 ///Helper methods to go from a float [0 ... 1] to packed char and back
 inline I8 FLOAT_TO_SCHAR_SNORM(const F32 value) {
     assert(value > 0.0f);
-    return to_byte(std::min(255, (I32)(value * 256.0f)));
+    return to_I8(std::min(255, (I32)(value * 256.0f)));
 }
 
 inline I8 FLOAT_TO_SCHAR(const F32 value) {
     assert(value > 0.0f);
-    return to_byte(((value + 1.0f) * 0.5f) * 255.0f);
+    return to_I8(((value + 1.0f) * 0.5f) * 255.0f);
 }
 
 inline U8 FLOAT_TO_CHAR_SNORM(const F32 value) {
-    return to_ubyte(std::min(255, (I32)(value * 256.0f)));
+    return to_U8(std::min(255, (I32)(value * 256.0f)));
 }
 
 inline U8 FLOAT_TO_CHAR(const F32 value) {
-    return to_ubyte(((value + 1.0f) * 0.5f) * 255.0f);
+    return to_U8(((value + 1.0f) * 0.5f) * 255.0f);
 }
 
 inline F32 CHAR_TO_FLOAT(const U8 value) {
@@ -211,10 +211,10 @@ inline F32 CHAR_TO_FLOAT_SNORM(const U8 value) {
 
 // Pack 3 values into 1 float
 inline F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z) {
-    static const D64 offset = to_double(1 << 24);
+    static const D64 offset = to_D64(1 << 24);
 
     U32 packedColour = (x << 16) | (y << 8) | z;
-    return to_float(to_double(packedColour) / offset);
+    return to_F32(to_D64(packedColour) / offset);
 }
 
 // UnPack 3 values from 1 float
@@ -230,26 +230,51 @@ inline void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b) {
 }
 
 namespace Angle {
+
+template<typename T>
+using RADIANS = T;
+
+template<typename T>
+using DEGREES = T;
+
 template <typename T>
-constexpr T DegreesToRadians(const T angleDegrees) {
-    return static_cast<T>(angleDegrees * M_PIDIV180);
+constexpr RADIANS<T> to_RADIANS(const DEGREES<T> angle) {
+    return static_cast<RADIANS<T>>(angle * M_PIDIV180);
 }
 
 template <typename T>
-constexpr T RadiansToDegrees(const T angleRadians) {
-    return static_cast<T>(angleRadians * M_180DIVPI);
+constexpr DEGREES<T> to_DEGREES(const RADIANS<T> angle) {
+    return static_cast<DEGREES<T>>(angle * M_180DIVPI);
 }
 
-/// Returns the specified value. Used only for emphasis
 template <typename T>
-constexpr T Degrees(const T degrees) {
-    return degrees;
+constexpr vec2<RADIANS<T>> to_RADIANS(const vec2<DEGREES<T>>& angle) {
+    return vec2<RADIANS<T>>(angle * M_PIDIV180);
 }
 
-/// Returns the specified value. Used only for emphasis
 template <typename T>
-constexpr T Radians(const T radians) {
-    return radians;
+constexpr vec2<DEGREES<T>> to_DEGREES(const vec2<RADIANS<T>>& angle) {
+    return vec2<RADIANS<T>>(angle * M_180DIVPI);
+}
+
+template <typename T>
+constexpr vec3<RADIANS<T>> to_RADIANS(const vec3<DEGREES<T>>& angle) {
+    return vec3<RADIANS<T>>(angle * M_PIDIV180);
+}
+
+template <typename T>
+constexpr vec3<DEGREES<T>> to_DEGREES(const vec3<RADIANS<T>>& angle) {
+    return vec3<RADIANS<T>>(angle * M_180DIVPI);
+}
+
+template <typename T>
+constexpr vec4<RADIANS<T>> to_RADIANS(const vec4<DEGREES<T>>& angle) {
+    return vec4<RADIANS<T>>(angle * M_PIDIV180);
+}
+
+template <typename T>
+constexpr vec4<DEGREES<T>> to_DEGREES(const vec4<RADIANS<T>>& angle) {
+    return vec4<RADIANS<T>>(angle * M_180DIVPI);
 }
 
 };  // namespace Angle

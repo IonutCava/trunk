@@ -12,16 +12,16 @@ namespace {
 GFXRTPool::GFXRTPool(GFXDevice& parent)
     : _parent(parent)
 {
-    _renderTargets[to_uint(RenderTargetUsage::SCREEN)].resize(1, nullptr);
-    _renderTargets[to_uint(RenderTargetUsage::SHADOW)].resize(to_const_uint(ShadowType::COUNT), nullptr);
-    _renderTargets[to_uint(RenderTargetUsage::REFLECTION_PLANAR)].resize(Config::MAX_REFLECTIVE_NODES_IN_VIEW, nullptr);
-    _renderTargets[to_uint(RenderTargetUsage::REFRACTION_PLANAR)].resize(Config::MAX_REFRACTIVE_NODES_IN_VIEW, nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::SCREEN)].resize(1, nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::SHADOW)].resize(to_const_U32(ShadowType::COUNT), nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::REFLECTION_PLANAR)].resize(Config::MAX_REFLECTIVE_NODES_IN_VIEW, nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::REFRACTION_PLANAR)].resize(Config::MAX_REFRACTIVE_NODES_IN_VIEW, nullptr);
 
-    _renderTargets[to_uint(RenderTargetUsage::REFLECTION_CUBE)].resize(1, nullptr);
-    _renderTargets[to_uint(RenderTargetUsage::REFRACTION_CUBE)].resize(1, nullptr);
-    _renderTargets[to_uint(RenderTargetUsage::ENVIRONMENT)].resize(1, nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::REFLECTION_CUBE)].resize(1, nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::REFRACTION_CUBE)].resize(1, nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::ENVIRONMENT)].resize(1, nullptr);
 
-    _renderTargets[to_uint(RenderTargetUsage::OTHER)].resize(g_maxAdditionalRenderTargets, nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::OTHER)].resize(g_maxAdditionalRenderTargets, nullptr);
 }
 
 GFXRTPool::~GFXRTPool()
@@ -31,15 +31,15 @@ GFXRTPool::~GFXRTPool()
 
 void GFXRTPool::clear() {
     // Delete all of our rendering targets
-    for (U8 i = 0; i < to_const_ubyte(RenderTargetUsage::COUNT); ++i) {
-        for (U32 j = 0; j < to_uint(_renderTargets[i].size()); ++j) {
+    for (U8 i = 0; i < to_const_U8(RenderTargetUsage::COUNT); ++i) {
+        for (U32 j = 0; j < to_U32(_renderTargets[i].size()); ++j) {
             set(RenderTargetID(static_cast<RenderTargetUsage>(i), j), nullptr);
         }
     }
 }
 
 void GFXRTPool::resizeTargets(RenderTargetUsage target, U16 width, U16 height) {
-    for (RenderTarget* rt : _renderTargets[to_uint(target)]) {
+    for (RenderTarget* rt : _renderTargets[to_U32(target)]) {
         if (rt) {
             rt->create(width, height);
         }
@@ -47,7 +47,7 @@ void GFXRTPool::resizeTargets(RenderTargetUsage target, U16 width, U16 height) {
 }
 
 void GFXRTPool::set(RenderTargetID target, RenderTarget* newTarget) {
-    RenderTarget*& oldTarget = _renderTargets[to_uint(target._usage)][target._index];
+    RenderTarget*& oldTarget = _renderTargets[to_U32(target._usage)][target._index];
     if (oldTarget) {
         //overriding old target
     }
@@ -56,9 +56,9 @@ void GFXRTPool::set(RenderTargetID target, RenderTarget* newTarget) {
 }
 
 RenderTargetHandle GFXRTPool::add(RenderTargetUsage targetUsage, RenderTarget* newTarget) {
-    vectorImpl<RenderTarget*>& rts = _renderTargets[to_uint(targetUsage)];
+    vectorImpl<RenderTarget*>& rts = _renderTargets[to_U32(targetUsage)];
 
-    for (U32 i = 0; i < to_uint(rts.size()); ++i) {
+    for (U32 i = 0; i < to_U32(rts.size()); ++i) {
         if (rts[i] == nullptr) {
             rts[i] = newTarget;
             return RenderTargetHandle(RenderTargetID(targetUsage, i), newTarget);

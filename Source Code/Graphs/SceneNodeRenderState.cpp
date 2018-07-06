@@ -10,7 +10,7 @@ SceneNodeRenderState::SceneNodeRenderState()
     _noDefaultMaterial(false),
     _depthStateBlockHash(0),
     _shadowStateBlockHash(0),
-    _exclusionMask(to_const_uint(RenderPassType::COUNT), 0u)
+    _exclusionMask(to_const_U32(RenderPassType::COUNT), 0u)
 {
 }
 
@@ -42,25 +42,25 @@ size_t SceneNodeRenderState::getShadowStateBlock() {
 
 bool SceneNodeRenderState::getDrawState(const RenderStagePass& currentStagePass) const {
     return _drawState &&
-           !BitCompare(_exclusionMask[to_uint(currentStagePass._passType)], to_uint(1 << (to_uint(currentStagePass._stage) + 1)));
+           !BitCompare(_exclusionMask[to_U32(currentStagePass._passType)], to_U32(1 << (to_U32(currentStagePass._stage) + 1)));
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(const RenderStagePass& currentStagePass) {
-    _exclusionMask[to_uint(currentStagePass._passType)] |= (1 << (to_uint(currentStagePass._stage) + 1));
+    _exclusionMask[to_U32(currentStagePass._passType)] |= (1 << (to_U32(currentStagePass._stage) + 1));
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(const RenderStagePass& currentStagePass) {
-    _exclusionMask[to_uint(currentStagePass._passType)] &= ~(1 << (to_uint(currentStagePass._stage) + 1));
+    _exclusionMask[to_U32(currentStagePass._passType)] &= ~(1 << (to_U32(currentStagePass._stage) + 1));
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(RenderStage currentStage) {
-    for (U8 pass = 0; pass < to_const_uint(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_const_U32(RenderPassType::COUNT); ++pass) {
         addToDrawExclusionMask(RenderStagePass(currentStage, static_cast<RenderPassType>(pass)));
     }
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(RenderStage currentStage) {
-    for (U8 pass = 0; pass < to_const_uint(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_const_U32(RenderPassType::COUNT); ++pass) {
         removeFromDrawExclusionMask(RenderStagePass(currentStage, static_cast<RenderPassType>(pass)));
     }
 }

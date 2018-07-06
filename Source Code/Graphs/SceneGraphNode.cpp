@@ -43,23 +43,23 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
     setName(name);
     _components.fill(nullptr);
 
-    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::ANIMATION))) {
+    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::ANIMATION))) {
         setComponent(SGNComponent::ComponentType::ANIMATION, new AnimationComponent(*this));
     }
-    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::INVERSE_KINEMATICS))) {
+    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::INVERSE_KINEMATICS))) {
         setComponent(SGNComponent::ComponentType::INVERSE_KINEMATICS, new IKComponent(*this));
     }
-    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::NETWORKING))) {
+    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::NETWORKING))) {
         LocalClient& client = _sceneGraph.parentScene().platformContext().client();
         setComponent(SGNComponent::ComponentType::NETWORKING, new NetworkingComponent(*this, client));
     }
-    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::RAGDOLL))) {
+    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::RAGDOLL))) {
         setComponent(SGNComponent::ComponentType::RAGDOLL, new RagdollComponent(*this));
     }
-    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::NAVIGATION))) {
+    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::NAVIGATION))) {
         setComponent(SGNComponent::ComponentType::NAVIGATION, new NavigationComponent(*this));
     }
-    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::PHYSICS))) {
+    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::PHYSICS))) {
         STUBBED("Rigid body physics disabled for now - Ionut");
         physicsGroup = PhysicsGroup::GROUP_IGNORE;
         PXDevice& pxContext = _sceneGraph.parentScene().platformContext().pfx();
@@ -70,15 +70,15 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
         pComp->addTransformUpdateCbk([this]() { onTransform(); });
     }
 
-    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::BOUNDS))) {
+    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::BOUNDS))) {
         setComponent(SGNComponent::ComponentType::BOUNDS, new BoundsComponent(*this));
     }
 
-    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::UNIT))) {
+    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::UNIT))) {
         setComponent(SGNComponent::ComponentType::UNIT, new UnitComponent(*this));
     }
     
-    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::RENDERING))) {
+    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::RENDERING))) {
         GFXDevice& gfxContext = _sceneGraph.parentScene().platformContext().gfx();
 
         const Material_ptr& materialTpl = _node->getMaterialTpl();
@@ -264,11 +264,11 @@ void SceneGraphNode::postLoad() {
 
 bool SceneGraphNode::isChildOfType(U32 typeMask, bool ignoreRoot) const {
     if (ignoreRoot) {
-        ClearBit(typeMask, to_const_uint(SceneNodeType::TYPE_ROOT));
+        ClearBit(typeMask, to_const_U32(SceneNodeType::TYPE_ROOT));
     }
     SceneGraphNode_ptr parent = getParent().lock();
     while (parent != nullptr) {
-        if (BitCompare(typeMask, to_uint(parent->getNode<>()->getType()))) {
+        if (BitCompare(typeMask, to_U32(parent->getNode<>()->getType()))) {
             return true;
         }
         parent = parent->getParent().lock();

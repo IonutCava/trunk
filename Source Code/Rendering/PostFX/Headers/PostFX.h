@@ -67,19 +67,19 @@ DEFINE_SINGLETON(PostFX)
     void updateResolution(U16 newWidth, U16 newHeight);
 
     inline void pushFilter(FilterType filter) {
-        ++_filterStackCount[to_uint(filter)];
+        ++_filterStackCount[to_U32(filter)];
     }
 
     inline void popFilter(FilterType filter) {
         // Since this is scriptable, we may pop without a previous push
         // just to make sure we are in a proper state
-        if (_filterStackCount[to_uint(filter)] > 0) {
-            --_filterStackCount[to_uint(filter)];
+        if (_filterStackCount[to_U32(filter)] > 0) {
+            --_filterStackCount[to_U32(filter)];
         }
     }
 
     inline bool getFilterState(FilterType filter) const {
-        return _filterStackCount[to_uint(filter)] > 0;
+        return _filterStackCount[to_U32(filter)] > 0;
     }
 
     // fade the screen to the specified colour lerping over the specified time interval

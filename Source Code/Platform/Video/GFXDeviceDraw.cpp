@@ -108,7 +108,7 @@ void GFXDevice::addToRenderQueue(U32 queueIndex, const RenderPackage& package) {
 I32 GFXDevice::reserveRenderQueue() {
     UpgradableReadLock ur_lock(_renderQueueLock);
     //ToDo: Nothing about this bloody thing is threadsafe
-    I32 queueCount = to_int(_renderQueues.size());
+    I32 queueCount = to_I32(_renderQueues.size());
     for (I32 i = 0; i < queueCount; ++i) {
         RenderPackageQueue& queue = _renderQueues[i];
         if (queue.empty() && !queue.locked()) {
@@ -152,7 +152,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
     }
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
-    dataOut._normalMatrixWV.element(0, 3) = to_float(animComp ? animComp->boneCount() : 0);
+    dataOut._normalMatrixWV.element(0, 3) = to_F32(animComp ? animComp->boneCount() : 0);
     dataOut._normalMatrixWV.setRow(3, node.get<BoundsComponent>()->getBoundingSphere().asVec4());
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
     renderable->getRenderingProperties(dataOut._properties, dataOut._normalMatrixWV.element(1, 3), dataOut._normalMatrixWV.element(2, 3));
@@ -185,14 +185,14 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
         Light* shadowLight = LightPool::currentShadowCastingLight();
         assert(shadowLight != nullptr);
         if (!COMPARE(_gpuBlock._data._renderProperties.x, shadowLight->getShadowProperties()._arrayOffset.x)) {
-            _gpuBlock._data._renderProperties.x = to_float(shadowLight->getShadowProperties()._arrayOffset.x);
+            _gpuBlock._data._renderProperties.x = to_F32(shadowLight->getShadowProperties()._arrayOffset.x);
             _gpuBlock._needsUpload = true;
         }
         U8 shadowPasses = shadowLight->getLightType() == LightType::DIRECTIONAL
                                                        ? shadowLight->getShadowMapInfo()->numLayers()
                                                        : 1;
-        if (!COMPARE(_gpuBlock._data._renderProperties.y, to_float(shadowPasses))) {
-            _gpuBlock._data._renderProperties.y = to_float(shadowPasses);
+        if (!COMPARE(_gpuBlock._data._renderProperties.y, to_F32(shadowPasses))) {
+            _gpuBlock._data._renderProperties.y = to_F32(shadowPasses);
             _gpuBlock._needsUpload = true;
         }
     }
@@ -227,13 +227,13 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
                 NodeData& dataOut = processVisibleNode(*nodeRef, nodeCount);
                 if (isDepthStage()) {
                     for (TextureData& data : pkg._textureData.textures()) {
-                        if (data.getHandleLow() == to_const_uint(ShaderProgram::TextureUsage::UNIT0)) {
+                        if (data.getHandleLow() == to_const_U32(ShaderProgram::TextureUsage::UNIT0)) {
                             textureHandle = data.getHandleHigh();
                             if ((!(lastUnit0Handle == 0 || textureHandle == lastUnit0Handle) &&
                                   (lastUnit1Handle == 0 || textureHandle == lastUnit1Handle))                              
                                 || (lastUsedSlot == 0 && lastUnit0Handle != 0))
                             {
-                                data.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::UNIT1));
+                                data.setHandleLow(to_const_U32(ShaderProgram::TextureUsage::UNIT1));
                                     // Set this to 1 if we need to use texture UNIT1 instead of UNIT0 as the main texture
                                     dataOut._properties.w = 1;
                                     lastUnit1Handle = textureHandle;
@@ -300,7 +300,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData, const Te
     bufferData._cmdBuffer->bind(ShaderBufferLocation::GPU_COMMANDS);
     bufferData._cmdBuffer->bindAtomicCounter();
 
-    depthBuffer->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH));
+    depthBuffer->bind(to_const_U8(ShaderProgram::TextureUsage::DEPTH));
     U32 cmdCount = bufferData._lastCommandCount;
 
     _HIZCullProgram->bind();
@@ -335,7 +335,7 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
         }
         // If the rendering commands are batchable, increase the draw count for
         // the previous one
-        previousIDC.drawCount(to_ushort(prevCount + currentIDC.drawCount()));
+        previousIDC.drawCount(to_U16(prevCount + currentIDC.drawCount()));
         // And set the current command's draw count to zero so it gets removed
         // from the list later on
         currentIDC.drawCount(0);
@@ -364,9 +364,9 @@ bool GFXDevice::draw(const GenericDrawCommand& cmd) {
 
 void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
     RenderTarget& screen = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    screen.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
+    screen.bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0),
                 RTAttachment::Type::Colour,
-                to_const_ubyte(ScreenTargets::ALBEDO));
+                to_const_U8(ScreenTargets::ALBEDO));
 
 
     GFX::ScopedViewport targetArea(*this, targetViewport);

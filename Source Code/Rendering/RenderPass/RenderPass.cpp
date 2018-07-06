@@ -102,7 +102,7 @@ RenderPass::BufferDataPool::~BufferDataPool()
 }
 
 RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferIndex) {
-    assert(IS_IN_RANGE_INCLUSIVE(bufferIndex, 0, to_int(_buffers.size())));
+    assert(IS_IN_RANGE_INCLUSIVE(bufferIndex, 0, to_I32(_buffers.size())));
 
     std::shared_ptr<BufferData>& buffer = _buffers[bufferIndex];
     // More likely case

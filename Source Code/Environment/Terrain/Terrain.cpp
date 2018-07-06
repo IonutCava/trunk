@@ -41,11 +41,11 @@ bool Terrain::unload() {
 }
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
-    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
 
     SceneGraphNode_ptr planeSGN(sgn.addNode(_plane, normalMask, PhysicsGroup::GROUP_STATIC));
     planeSGN->setActive(false);
@@ -76,8 +76,8 @@ void Terrain::buildQuadtree() {
     const vec3<F32>& bbMin = _boundingBox.getMin();
     const vec3<F32>& bbExtent = _boundingBox.getExtent();
 
-    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
             RenderStage stage = static_cast<RenderStage>(i);
 
             const ShaderProgram_ptr& drawShader = mat->getShaderInfo(RenderStagePass(stage, static_cast<RenderPassType>(pass))).getProgram();
@@ -86,7 +86,7 @@ void Terrain::buildQuadtree() {
             drawShader->Uniform("bbox_extent", bbExtent);
             drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
-            U8 textureOffset = to_const_ubyte(ShaderProgram::TextureUsage::COUNT);
+            U8 textureOffset = to_const_U8(ShaderProgram::TextureUsage::COUNT);
             U8 layerOffset = 0;
             stringImpl layerIndex;
             for (U8 k = 0; k < _terrainTextures.size(); ++k) {
@@ -180,7 +180,7 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
             const vec3<U32>& cmdData = chunkData[i];
             cmd.cmd().firstIndex = cmdData.x;
             cmd.cmd().indexCount = cmdData.y;
-            cmd.LoD(to_byte(cmdData.z));
+            cmd.LoD(to_I8(cmdData.z));
             cmd.drawCount(1);
         }  else {
             cmd.drawCount(0);
@@ -233,7 +233,7 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
 
     vec2<F32> posF(x_clampf * _terrainDimensions.x,
                    z_clampf * _terrainDimensions.y);
-    vec2<I32> posI(to_int(posF.x), to_int(posF.y));
+    vec2<I32> posI(to_I32(posF.x), to_I32(posF.y));
     vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
 
     if (posI.x >= (I32)_terrainDimensions.x - 1)
@@ -241,8 +241,8 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
     if (posI.y >= (I32)_terrainDimensions.y - 1)
         posI.y = _terrainDimensions.y - 2;
 
-    assert(posI.x >= 0 && posI.x < to_int(_terrainDimensions.x) - 1 &&
-           posI.y >= 0 && posI.y < to_int(_terrainDimensions.y) - 1);
+    assert(posI.x >= 0 && posI.x < to_I32(_terrainDimensions.x) - 1 &&
+           posI.y >= 0 && posI.y < to_I32(_terrainDimensions.y) - 1);
 
     vec3<F32> pos(
         _boundingBox.getMin().x +
@@ -254,13 +254,13 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
 
     const VertexBuffer* const vb = getGeometryVB();
 
-    pos.y = (vb->getPosition(TER_COORD(posI.x, posI.y, to_int(_terrainDimensions.x))).y) *
+    pos.y = (vb->getPosition(TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x))).y) *
             (1.0f - posD.x) * (1.0f - posD.y) + 
-            (vb->getPosition(TER_COORD(posI.x + 1, posI.y, to_int(_terrainDimensions.x))).y) *
+            (vb->getPosition(TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x))).y) *
             posD.x * (1.0f - posD.y) +
-            (vb->getPosition(TER_COORD(posI.x, posI.y + 1, to_int(_terrainDimensions.x))).y) *
+            (vb->getPosition(TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x))).y) *
             (1.0f - posD.x) * posD.y +
-            (vb->getPosition(TER_COORD(posI.x + 1, posI.y + 1,to_int(_terrainDimensions.x))).y) *
+            (vb->getPosition(TER_COORD(posI.x + 1, posI.y + 1,to_I32(_terrainDimensions.x))).y) *
             posD.x * posD.y;
 
     return pos;
@@ -272,26 +272,26 @@ vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const {
 
     vec2<F32> posF(x_clampf * _terrainDimensions.x,
                    z_clampf * _terrainDimensions.y);
-    vec2<I32> posI(to_int(x_clampf * _terrainDimensions.x),
-                   to_int(z_clampf * _terrainDimensions.y));
+    vec2<I32> posI(to_I32(x_clampf * _terrainDimensions.x),
+                   to_I32(z_clampf * _terrainDimensions.y));
     vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
 
-    if (posI.x >= to_int(_terrainDimensions.x) - 1) {
-        posI.x = to_int(_terrainDimensions.x) - 2;
+    if (posI.x >= to_I32(_terrainDimensions.x) - 1) {
+        posI.x = to_I32(_terrainDimensions.x) - 2;
     }
-    if (posI.y >= to_int(_terrainDimensions.y) - 1) {
-        posI.y = to_int(_terrainDimensions.y) - 2;
+    if (posI.y >= to_I32(_terrainDimensions.y) - 1) {
+        posI.y = to_I32(_terrainDimensions.y) - 2;
     }
-    assert(posI.x >= 0 && posI.x < to_int(_terrainDimensions.x) - 1 &&
-           posI.y >= 0 && posI.y < to_int(_terrainDimensions.y) - 1);
+    assert(posI.x >= 0 && posI.x < to_I32(_terrainDimensions.x) - 1 &&
+           posI.y >= 0 && posI.y < to_I32(_terrainDimensions.y) - 1);
 
     const VertexBuffer* const vb = getGeometryVB();
     vec3<F32> normals[4];
 
-    vb->getNormal(TER_COORD(posI.x, posI.y, to_int(_terrainDimensions.x)), normals[0]);
-    vb->getNormal(TER_COORD(posI.x + 1, posI.y, to_int(_terrainDimensions.x)), normals[1]);
-    vb->getNormal(TER_COORD(posI.x, posI.y + 1, to_int(_terrainDimensions.x)), normals[2]);
-    vb->getNormal(TER_COORD(posI.x + 1, posI.y + 1, to_int(_terrainDimensions.x)), normals[3]);
+    vb->getNormal(TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x)), normals[0]);
+    vb->getNormal(TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x)), normals[1]);
+    vb->getNormal(TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x)), normals[2]);
+    vb->getNormal(TER_COORD(posI.x + 1, posI.y + 1, to_I32(_terrainDimensions.x)), normals[3]);
 
     return normals[0] * (1.0f - posD.x) * (1.0f - posD.y) +
            normals[1] * posD.x * (1.0f - posD.y) +
@@ -305,27 +305,27 @@ vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const {
 
     vec2<F32> posF(x_clampf * _terrainDimensions.x,
                    z_clampf * _terrainDimensions.y);
-    vec2<I32> posI(to_int(x_clampf * _terrainDimensions.x),
-                   to_int(z_clampf * _terrainDimensions.y));
+    vec2<I32> posI(to_I32(x_clampf * _terrainDimensions.x),
+                   to_I32(z_clampf * _terrainDimensions.y));
     vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
 
-    if (posI.x >= to_int(_terrainDimensions.x) - 1) {
-        posI.x = to_int(_terrainDimensions.x) - 2;
+    if (posI.x >= to_I32(_terrainDimensions.x) - 1) {
+        posI.x = to_I32(_terrainDimensions.x) - 2;
     }
-    if (posI.y >= to_int(_terrainDimensions.y) - 1) {
-        posI.y = to_int(_terrainDimensions.y) - 2;
+    if (posI.y >= to_I32(_terrainDimensions.y) - 1) {
+        posI.y = to_I32(_terrainDimensions.y) - 2;
     }
-    assert(posI.x >= 0 && posI.x < to_int(_terrainDimensions.x) - 1 &&
-           posI.y >= 0 && posI.y < to_int(_terrainDimensions.y) - 1);
+    assert(posI.x >= 0 && posI.x < to_I32(_terrainDimensions.x) - 1 &&
+           posI.y >= 0 && posI.y < to_I32(_terrainDimensions.y) - 1);
 
     const VertexBuffer* const vb = getGeometryVB();
     vec3<F32> tangents[4];
 
 
-    vb->getTangent(TER_COORD(posI.x, posI.y, to_int(_terrainDimensions.x)), tangents[0]);
-    vb->getTangent(TER_COORD(posI.x + 1, posI.y, to_int(_terrainDimensions.x)), tangents[1]);
-    vb->getTangent(TER_COORD(posI.x, posI.y + 1, to_int(_terrainDimensions.x)), tangents[2]);
-    vb->getTangent(TER_COORD(posI.x + 1, posI.y + 1, to_int(_terrainDimensions.x)), tangents[3]);
+    vb->getTangent(TER_COORD(posI.x, posI.y, to_I32(_terrainDimensions.x)), tangents[0]);
+    vb->getTangent(TER_COORD(posI.x + 1, posI.y, to_I32(_terrainDimensions.x)), tangents[1]);
+    vb->getTangent(TER_COORD(posI.x, posI.y + 1, to_I32(_terrainDimensions.x)), tangents[2]);
+    vb->getTangent(TER_COORD(posI.x + 1, posI.y + 1, to_I32(_terrainDimensions.x)), tangents[3]);
 
     return tangents[0] * (1.0f - posD.x) * (1.0f - posD.y) +
            tangents[1] * posD.x * (1.0f - posD.y) +

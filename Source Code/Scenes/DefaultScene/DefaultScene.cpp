@@ -17,7 +17,7 @@ bool DefaultScene::load(const stringImpl& name) {
     SceneGraphNode_wptr light = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _currentSky = addSky();
     // Add a light
-    vec2<F32> sunAngle(0.0f, Angle::DegreesToRadians(45.0f));
+    vec2<F32> sunAngle(0.0f, Angle::to_RADIANS(45.0f));
     vec3<F32> sunvector(-cosf(sunAngle.x) * sinf(sunAngle.y),
                         -cosf(sunAngle.y),
                         -sinf(sunAngle.x) * sinf(sunAngle.y));
@@ -49,13 +49,13 @@ void DefaultScene::postLoadMainThread() {
     const I32 spacingX = 10;
     const I32 spacingY = 10;
     const I32 numColumns = 3;
-    const I32 numRows = to_int(std::ceil(to_float(scenes.size()) / numColumns));
+    const I32 numRows = to_I32(std::ceil(to_F32(scenes.size()) / numColumns));
     const I32 btnWidth = 100;
     const I32 btnHeight = 100;
-    const I32 windowCenterX = to_int(resolution.width * 0.5f);
-    const I32 windowCenterY = to_int(resolution.height * 0.5f);
-    const I32 btnStartXOffset = to_int(windowCenterX - numColumns * 0.5f * btnWidth);
-    const I32 btnStartYOffset = to_int(windowCenterY - numRows * 0.5f * btnHeight);
+    const I32 windowCenterX = to_I32(resolution.width * 0.5f);
+    const I32 windowCenterY = to_I32(resolution.height * 0.5f);
+    const I32 btnStartXOffset = to_I32(windowCenterX - numColumns * 0.5f * btnWidth);
+    const I32 btnStartYOffset = to_I32(windowCenterY - numRows * 0.5f * btnHeight);
     const I32 quitButtonWidth = 100;
     const I32 quitButtonHeight = 100;
     const I32 playerButtonHeight = 25;

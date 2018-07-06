@@ -19,8 +19,8 @@ glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBuffe
     _currentReadQuery = 0;
     _transformFeedback = 0;
     _currentWriteQuery = 0;
-    _vertexArray[to_const_uint(GVDUsage::DRAW)] = 0;
-    _vertexArray[to_const_uint(GVDUsage::FDBCK)] = 0;
+    _vertexArray[to_const_U32(GVDUsage::DRAW)] = 0;
+    _vertexArray[to_const_U32(GVDUsage::FDBCK)] = 0;
     _feedbackQueries.fill(nullptr);
     _resultAvailable.fill(nullptr);
 }
@@ -36,12 +36,12 @@ glGenericVertexData::~glGenericVertexData()
     // Make sure we don't have any of our VAOs bound
     GL_API::setActiveVAO(0);
     // Delete the rendering VAO
-    if (_vertexArray[to_const_uint(GVDUsage::DRAW)] > 0) {
-        GLUtil::_vaoPool.deallocate(_vertexArray[to_const_uint(GVDUsage::DRAW)]);
+    if (_vertexArray[to_const_U32(GVDUsage::DRAW)] > 0) {
+        GLUtil::_vaoPool.deallocate(_vertexArray[to_const_U32(GVDUsage::DRAW)]);
     }
     // Delete the transform feedback VAO
-    if (_vertexArray[to_const_uint(GVDUsage::FDBCK)] > 0) {
-        GLUtil::_vaoPool.deallocate(_vertexArray[to_const_uint(GVDUsage::FDBCK)]);
+    if (_vertexArray[to_const_U32(GVDUsage::FDBCK)] > 0) {
+        GLUtil::_vaoPool.deallocate(_vertexArray[to_const_U32(GVDUsage::FDBCK)]);
     }
     // Make sure we don't have the indirect draw buffer bound
     // Make sure we don't have our transform feedback object bound
@@ -70,7 +70,7 @@ void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     // Prevent double create
     assert(_bufferObjects.empty() && "glGenericVertexData error: create called with no buffers specified!");
     // Create two vertex array objects. One for rendering and one for transform feedback
-    GLUtil::_vaoPool.allocate(to_const_uint(GVDUsage::COUNT), &_vertexArray[0]);
+    GLUtil::_vaoPool.allocate(to_const_U32(GVDUsage::COUNT), &_vertexArray[0]);
     // Transform feedback may not be used, but it simplifies the class interface a lot
     // Create a transform feedback object
     glGenTransformFeedbacks(1, &_transformFeedback);
@@ -128,8 +128,8 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
     // Check if we are rendering to the screen or to a buffer
     bool feedbackActive = (drawBufferID > 0 && !_feedbackBuffers.empty());
     // Activate the appropriate vertex array object for the type of rendering we requested
-    GLuint activeVAO = _vertexArray[feedbackActive ? to_const_uint(GVDUsage::FDBCK)
-                                                   : to_const_uint(GVDUsage::DRAW)];
+    GLuint activeVAO = _vertexArray[feedbackActive ? to_const_U32(GVDUsage::FDBCK)
+                                                   : to_const_U32(GVDUsage::DRAW)];
     // Update buffer bindings
     setBufferBindings(activeVAO);
     // Update vertex attributes if needed (e.g. if offsets changed)
@@ -140,7 +140,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
     // Activate transform feedback if needed
     if (feedbackActive) {
         GL_API::setActiveTransformFeedback(_transformFeedback);
-        glBeginTransformFeedback(GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())]);
+        glBeginTransformFeedback(GLUtil::glPrimitiveTypeTable[to_U32(command.primitiveType())]);
         // Count the number of primitives written to the buffer
         glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][drawBufferID]);
     }
@@ -184,7 +184,7 @@ void glGenericVertexData::setIndexBuffer(U32 indicesCount, bool dynamic,  bool s
 }
 
 void glGenericVertexData::updateIndexBuffer(const vectorImpl<U32>& indices) {
-    DIVIDE_ASSERT(!indices.empty() && _indexBufferSize >= to_uint(indices.size()),
+    DIVIDE_ASSERT(!indices.empty() && _indexBufferSize >= to_U32(indices.size()),
         "glGenericVertexData::UpdateIndexBuffer error: Invalid index buffer data!");
 
     assert(_indexBuffer != 0 && "glGenericVertexData::UpdateIndexBuffer error: no valid index buffer found!");
@@ -281,7 +281,7 @@ void glGenericVertexData::setAttributeInternal(GLuint activeVAO, AttributeDescri
 
     // If the attribute wasn't activate until now, enable it
     if (!descriptor.wasSet()) {
-        assert(descriptor.attribIndex() < to_uint(GL_API::s_maxAttribBindings) &&
+        assert(descriptor.attribIndex() < to_U32(GL_API::s_maxAttribBindings) &&
                "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
 
         glEnableVertexArrayAttrib(activeVAO, descriptor.attribIndex());
@@ -299,15 +299,15 @@ void glGenericVertexData::setAttributeInternal(GLuint activeVAO, AttributeDescri
         glVertexArrayAttribFormat(activeVAO,
                                   descriptor.attribIndex(),
                                   descriptor.componentsPerElement(),
-                                  GLUtil::glDataFormat[to_uint(format)],
+                                  GLUtil::glDataFormat[to_U32(format)],
                                   descriptor.normalized() ? GL_TRUE : GL_FALSE,
-                                  to_uint(descriptor.offset() * dataSizeForType(format)));
+                                  to_U32(descriptor.offset() * dataSizeForType(format)));
     } else {
         glVertexArrayAttribIFormat(activeVAO,
                                    descriptor.attribIndex(),
                                    descriptor.componentsPerElement(),
-                                   GLUtil::glDataFormat[to_uint(format)],
-                                   to_uint(descriptor.offset() * dataSizeForType(format)));
+                                   GLUtil::glDataFormat[to_U32(format)],
+                                   to_U32(descriptor.offset() * dataSizeForType(format)));
     }
 
     glVertexArrayBindingDivisor(activeVAO, descriptor.bufferIndex(), descriptor.instanceDivisor());

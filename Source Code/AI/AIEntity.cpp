@@ -17,8 +17,8 @@ using namespace AI;
 static const D64 DESTINATION_RADIUS = 2;
 static const D64 DESTINATION_RADIUS_SQ = DESTINATION_RADIUS *
                                          DESTINATION_RADIUS;
-static const F32 DESTINATION_RADIUS_F = to_const_float(DESTINATION_RADIUS);
-static const F32 DESTINATION_RADIUS_SQ_F = to_const_float(DESTINATION_RADIUS_SQ);
+static const F32 DESTINATION_RADIUS_F = to_const_F32(DESTINATION_RADIUS);
+static const F32 DESTINATION_RADIUS_SQ_F = to_const_F32(DESTINATION_RADIUS_SQ);
 
 AIEntity::AIEntity(const vec3<F32>& currentPosition, const stringImpl& name)
     : GUIDWrapper(),
@@ -58,7 +58,7 @@ void AIEntity::load(const vec3<F32>& position) {
         _agentID = _detourCrowd->addAgent(position,
                                           _unitRef
                                               ? _unitRef->getMovementSpeed()
-                                              : to_float((_detourCrowd->getAgentHeight() / 2) * 3.5f),
+                                              : to_F32((_detourCrowd->getAgentHeight() / 2) * 3.5f),
                                            _unitRef
                                               ? _unitRef->getAcceleration()
                                               : 5.0f);
@@ -249,7 +249,7 @@ bool AIEntity::setPosition(const vec3<F32>& position) {
     _agentID = _detourCrowd->addAgent(result,
                                       _unitRef
                                           ? _unitRef->getMovementSpeed()
-                                          : to_float((_detourCrowd->getAgentHeight() / 2) * 3.5f),
+                                          : to_F32((_detourCrowd->getAgentHeight() / 2) * 3.5f),
                                       _unitRef
                                           ? _unitRef->getAcceleration()
                                           : 5.0f);
@@ -372,7 +372,7 @@ void AIEntity::moveForward() {
                                ? Normalize(_unitRef->getLookingDirection())
                                : WORLD_Z_NEG_AXIS);
 
-    setVelocity(lookDirection * to_float(getMaxSpeed()));
+    setVelocity(lookDirection * to_F32(getMaxSpeed()));
 }
 
 void AIEntity::moveBackwards() {
@@ -380,7 +380,7 @@ void AIEntity::moveBackwards() {
                                ? Normalize(_unitRef->getLookingDirection())
                                : WORLD_Z_NEG_AXIS);
 
-    setVelocity(lookDirection * to_float(getMaxSpeed()) * -1.0f);
+    setVelocity(lookDirection * to_F32(getMaxSpeed()) * -1.0f);
 }
 
 void AIEntity::setVelocity(const vec3<F32>& velocity) {

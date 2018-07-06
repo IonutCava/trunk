@@ -20,12 +20,9 @@ void ThirdPersonCamera::setActiveInternal(bool state) {
 
 bool ThirdPersonCamera::moveRelative(const vec3<I32>& relMovement) {
     static vec2<F32> movePos;
-    static const F32 rotationLimitRollLower =
-        to_float(M_PI) * 0.30f - Angle::DegreesToRadians(1);
-    static const F32 rotationLimitRollUpper =
-        to_float(M_PI) * 0.175f - Angle::DegreesToRadians(1);
-    static const F32 rotationLimitYaw = 
-        to_float(M_PI) - Angle::DegreesToRadians(1);
+    static const F32 rotationLimitRollLower = to_F32(M_PI) * 0.30f - Angle::to_RADIANS(1);
+    static const F32 rotationLimitRollUpper = to_F32(M_PI) * 0.175f - Angle::to_RADIANS(1);
+    static const F32 rotationLimitYaw = to_F32(M_PI) - Angle::to_RADIANS(1);
 
     movePos.set(relMovement.x, relMovement.y);
 

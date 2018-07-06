@@ -123,11 +123,11 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) 
 
         _scenePool = MemoryManager_NEW ScenePool(*this);
 
-        for (U8 i = 0; i < to_const_ubyte(RenderPassType::COUNT); ++i) {
-            _sceneGraphCullTimers[i][to_uint(RenderStage::DISPLAY)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Display [pass: %d]", i).c_str());
-            _sceneGraphCullTimers[i][to_uint(RenderStage::REFLECTION)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Reflection [pass: %d]", i).c_str());
-            _sceneGraphCullTimers[i][to_uint(RenderStage::REFRACTION)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Refraction [pass: %d]", i).c_str());
-            _sceneGraphCullTimers[i][to_uint(RenderStage::SHADOW)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Shadow [pass: %d]", i).c_str());
+        for (U8 i = 0; i < to_const_U8(RenderPassType::COUNT); ++i) {
+            _sceneGraphCullTimers[i][to_U32(RenderStage::DISPLAY)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Display [pass: %d]", i).c_str());
+            _sceneGraphCullTimers[i][to_U32(RenderStage::REFLECTION)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Reflection [pass: %d]", i).c_str());
+            _sceneGraphCullTimers[i][to_U32(RenderStage::REFRACTION)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Refraction [pass: %d]", i).c_str());
+            _sceneGraphCullTimers[i][to_U32(RenderStage::SHADOW)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Shadow [pass: %d]", i).c_str());
         }
 
         // Load default material
@@ -284,7 +284,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
             
         })._task->startTask(threaded ? Task::TaskPriority::HIGH
                                      : Task::TaskPriority::REALTIME_WITH_CALLBACK,
-                            to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
+                            to_const_U32(Task::TaskFlags::SYNC_WITH_GPU));
 
     _sceneSwitchTarget.reset();
 
@@ -300,7 +300,7 @@ void SceneManager::initPostLoadState() {
 }
 
 void SceneManager::onChangeResolution(U16 w, U16 h) {
-    F32 aspectRatio = to_float(w) / h;
+    F32 aspectRatio = to_F32(w) / h;
 
     if (_init) {
         
@@ -332,13 +332,13 @@ void SceneManager::addPlayerInternal(Scene& parentScene, const SceneGraphNode_pt
         }
     }
 
-    Player_ptr player = std::make_shared<Player>(to_ubyte(_players.size()));
+    Player_ptr player = std::make_shared<Player>(to_U8(_players.size()));
     player->getCamera().fromCamera(Attorney::SceneManager::baseCamera(parentScene));
     player->getCamera().setFixedYawAxis(true);
     playerNode->get<UnitComponent>()->setUnit(player);
 
     _players.push_back(player);
-    _platformContext->gfx().resizeHistory(to_ubyte(_players.size()));
+    _platformContext->gfx().resizeHistory(to_U8(_players.size()));
      Attorney::SceneManager::onPlayerAdd(parentScene, player);
 }
 
@@ -364,7 +364,7 @@ void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) 
             std::end(_players));
 
         if (initialSize != _players.size()) {
-            _platformContext->gfx().resizeHistory(to_ubyte(_players.size()));
+            _platformContext->gfx().resizeHistory(to_U8(_players.size()));
             Attorney::SceneManager::onPlayerRemove(parentScene, player);
         }
         player.reset();
@@ -637,7 +637,7 @@ void SceneManager::updateVisibleNodes(const RenderStagePass& stage, bool refresh
         }
     };
 
-    parallel_for(setOrder, to_uint(visibleNodes.size()), 10);
+    parallel_for(setOrder, to_U32(visibleNodes.size()), 10);
 
     std::sort(std::begin(visibleNodes), std::end(visibleNodes),
         [](const RenderPassCuller::VisibleNode& nodeA,
@@ -664,7 +664,7 @@ bool SceneManager::populateRenderQueue(const Camera& camera,
     }
 
     if (doCulling) {
-        Time::ScopedTimer timer(*_sceneGraphCullTimers[to_uint(stage._passType)][to_uint(stage._stage)]);
+        Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage._passType)][to_U32(stage._stage)]);
         cullSceneGraph(stage);
     }
 

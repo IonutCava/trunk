@@ -12,7 +12,7 @@ glIMPrimitive::glIMPrimitive(GFXDevice& context)
       _shaderWorldMatrix(-1)
 {
     _imInterface = MemoryManager_NEW NS_GLIM::GLIM_BATCH();
-    _imInterface->SetVertexAttribLocation(to_const_uint(AttribLocation::VERTEX_POSITION));
+    _imInterface->SetVertexAttribLocation(to_const_U32(AttribLocation::VERTEX_POSITION));
 }
 
 glIMPrimitive::~glIMPrimitive()
@@ -25,7 +25,7 @@ void glIMPrimitive::beginBatch(bool reserveBuffers, U32 vertexCount, U32 attribu
 }
 
 void glIMPrimitive::begin(PrimitiveType type) {
-    _imInterface->Begin(GLUtil::glimPrimitiveType[to_uint(type)]);
+    _imInterface->Begin(GLUtil::glimPrimitiveType[to_U32(type)]);
 }
 
 void glIMPrimitive::vertex(F32 x, F32 y, F32 z) {
@@ -84,7 +84,7 @@ void glIMPrimitive::draw(const GenericDrawCommand& command) {
     bool texture = (_texture != nullptr);
     // And bind it to the first diffuse texture slot
     if (texture) {
-        _texture->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
+        _texture->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0));
     }
 
     // Inform the shader if we have (or don't have) a texture

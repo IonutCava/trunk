@@ -153,15 +153,15 @@ class SamplerDescriptor : public PropertyDescriptor {
 
     inline size_t getHash() const override {
         size_t hash = 0;
-        Util::Hash_combine(hash, to_uint(_cmpFunc));
+        Util::Hash_combine(hash, to_U32(_cmpFunc));
         Util::Hash_combine(hash, _useRefCompare);
         Util::Hash_combine(hash, _srgb);
         Util::Hash_combine(hash, _mipmaps);
-        Util::Hash_combine(hash, to_uint(_wrapU));
-        Util::Hash_combine(hash, to_uint(_wrapV));
-        Util::Hash_combine(hash, to_uint(_wrapW));
-        Util::Hash_combine(hash, to_uint(_minFilter));
-        Util::Hash_combine(hash, to_uint(_magFilter));
+        Util::Hash_combine(hash, to_U32(_wrapU));
+        Util::Hash_combine(hash, to_U32(_wrapV));
+        Util::Hash_combine(hash, to_U32(_wrapW));
+        Util::Hash_combine(hash, to_U32(_minFilter));
+        Util::Hash_combine(hash, to_U32(_magFilter));
         Util::Hash_combine(hash, _minLOD);
         Util::Hash_combine(hash, _maxLOD);
         Util::Hash_combine(hash, _biasLOD);
@@ -331,8 +331,8 @@ class TextureDescriptor : public PropertyDescriptor {
     inline size_t getHash() const override {
         size_t hash = 0;
         Util::Hash_combine(hash, _layerCount);
-        Util::Hash_combine(hash, to_uint(_internalFormat));
-        Util::Hash_combine(hash, to_uint(_type));
+        Util::Hash_combine(hash, to_U32(_internalFormat));
+        Util::Hash_combine(hash, to_U32(_type));
         Util::Hash_combine(hash, _compressed);
         Util::Hash_combine(hash, _automaticMipMaps);
 

@@ -45,7 +45,7 @@ void PingPongScene::processGUI(const U64 deltaTime) {
 
 void PingPongScene::processTasks(const U64 deltaTime) {
     static vec2<F32> _sunAngle =
-        vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
+        vec2<F32>(0.0f, Angle::to_RADIANS(45.0f));
     static bool direction = false;
     if (!direction) {
         _sunAngle.y += 0.005f;
@@ -55,8 +55,8 @@ void PingPongScene::processTasks(const U64 deltaTime) {
         _sunAngle.x -= 0.005f;
     }
 
-    if (_sunAngle.y <= Angle::DegreesToRadians(25) ||
-        _sunAngle.y >= Angle::DegreesToRadians(70))
+    if (_sunAngle.y <= Angle::to_RADIANS(25) ||
+        _sunAngle.y >= Angle::to_RADIANS(70))
         direction = !direction;
 
     _sunvector =
@@ -239,10 +239,10 @@ void PingPongScene::processInput(U8 playerIndex, const U64 deltaTime) {
     static F32 paddleMovementDivisor = 10;
     // Camera controls
     if (state().playerState(playerIndex).angleLR() != MoveDirection::NONE) {
-        _paddleCam->rotateYaw(to_float(state().playerState(playerIndex).angleLR()));
+        _paddleCam->rotateYaw(to_F32(state().playerState(playerIndex).angleLR()));
     }
     if (state().playerState(playerIndex).angleUD() != MoveDirection::NONE) {
-        _paddleCam->rotatePitch(to_float(state().playerState(playerIndex).angleUD()));
+        _paddleCam->rotatePitch(to_F32(state().playerState(playerIndex).angleUD()));
     }
 
     SceneGraphNode_ptr paddle(_sceneGraph->findNode("paddle").lock());
@@ -256,7 +256,7 @@ void PingPongScene::processInput(U8 playerIndex, const U64 deltaTime) {
             Scene::processInput(playerIndex, deltaTime);
             return;
         }
-        paddle->get<PhysicsComponent>()->translateY(to_int(state().playerState(playerIndex).moveFB()) / paddleMovementDivisor);
+        paddle->get<PhysicsComponent>()->translateY(to_I32(state().playerState(playerIndex).moveFB()) / paddleMovementDivisor);
     }
 
     if (state().playerState(playerIndex).moveLR() != MoveDirection::NONE) {
@@ -266,7 +266,7 @@ void PingPongScene::processInput(U8 playerIndex, const U64 deltaTime) {
             Scene::processInput(playerIndex, deltaTime);
             return;
         }
-        paddle->get<PhysicsComponent>()->translateX(to_int(state().playerState(playerIndex).moveLR()) / paddleMovementDivisor);
+        paddle->get<PhysicsComponent>()->translateX(to_I32(state().playerState(playerIndex).moveLR()) / paddleMovementDivisor);
     }
 
     Scene::processInput(playerIndex, deltaTime);
@@ -311,13 +311,13 @@ U16 PingPongScene::registerInputActions() {
 }
 
 bool PingPongScene::loadResources(bool continueOnErrors) {
-    static const U32 lightMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                 to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                 to_const_uint(SGNComponent::ComponentType::RENDERING);
+    static const U32 lightMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                 to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                 to_const_U32(SGNComponent::ComponentType::RENDERING);
 
     static const U32 normalMask = lightMask | 
-                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
+                                  to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
         
 
     // Create a ball
@@ -369,21 +369,21 @@ void PingPongScene::postLoadMainThread() {
     const vec2<U16>& resolution = _GUI->getDisplayResolution();
     // Buttons and text labels
     _GUI->addButton(_ID("Serve"), "Serve",
-        vec2<I32>(to_int(resolution.width - 120),
-            to_int(resolution.height / 1.1f)),
+        vec2<I32>(to_I32(resolution.width - 120),
+            to_I32(resolution.height / 1.1f)),
         vec2<U32>(100, 25),
         DELEGATE_BIND(&PingPongScene::serveBall, this, std::placeholders::_1));
 
     _GUI->addText(_ID("Score"),
-        vec2<I32>(to_int(resolution.width - 120),
-            to_int(resolution.height / 1.3f)),
+        vec2<I32>(to_I32(resolution.width - 120),
+            to_I32(resolution.height / 1.3f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(255, 0, 0, 255),
         Util::StringFormat("Score: %d", 0));
 
     _GUI->addText(_ID("Message"),
-        vec2<I32>(to_int(resolution.width - 120),
-            to_int(resolution.height / 1.5f)),
+        vec2<I32>(to_I32(resolution.width - 120),
+            to_I32(resolution.height / 1.5f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(255, 0, 0, 255),
         "");

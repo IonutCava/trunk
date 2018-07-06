@@ -148,7 +148,7 @@ void EnvironmentProbe::debugDraw(RenderSubPassCmds& subPassesInOut) {
     RenderSubPassCmd newSubPass;
     newSubPass._textures.addTexture(TextureData(reflectTex->getTextureType(),
                                                 reflectTex->getHandle(),
-                                                to_const_ubyte(ShaderProgram::TextureUsage::REFLECTION_CUBE)));
+                                                to_const_U8(ShaderProgram::TextureUsage::REFLECTION_CUBE)));
     newSubPass._commands.push_back(cmd);
     newSubPass._commands.push_back(_boundingBoxPrimitive->toDrawCommand());
     subPassesInOut.push_back(newSubPass);
@@ -158,7 +158,7 @@ void EnvironmentProbe::updateInternal() {
     _boundingBoxPrimitive->fromBox(_aabb.getMin(), _aabb.getMax(), vec4<U8>(255, 255, 255, 255));
     const vec3<F32>& bbPos = _aabb.getCenter();
     _impostorShader->Uniform("dvd_WorldMatrixOverride", mat4<F32>(bbPos.x, bbPos.y, bbPos.z));
-    _impostorShader->Uniform("dvd_LayerIndex", to_uint(_currentArrayIndex));
+    _impostorShader->Uniform("dvd_LayerIndex", to_U32(_currentArrayIndex));
 }
 
 }; //namespace Divide

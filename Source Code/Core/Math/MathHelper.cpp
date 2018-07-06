@@ -31,9 +31,9 @@ void ToIntColour(const vec4<F32>& floatColour, vec4<I32>& colourOut) {
 }
 
 void ToIntColour(const vec3<F32>& floatColour, vec3<I32>& colourOut) {
-    colourOut.set(to_uint(FLOAT_TO_SCHAR_SNORM(floatColour.r)),
-                  to_uint(FLOAT_TO_SCHAR_SNORM(floatColour.g)),
-                  to_uint(FLOAT_TO_SCHAR_SNORM(floatColour.b)));
+    colourOut.set(to_U32(FLOAT_TO_SCHAR_SNORM(floatColour.r)),
+                  to_U32(FLOAT_TO_SCHAR_SNORM(floatColour.g)),
+                  to_U32(FLOAT_TO_SCHAR_SNORM(floatColour.b)));
 }
 
 void ToUIntColour(const vec4<F32>& floatColour, vec4<U32>& colourOut) {
@@ -44,9 +44,9 @@ void ToUIntColour(const vec4<F32>& floatColour, vec4<U32>& colourOut) {
 }
 
 void ToUIntColour(const vec3<F32>& floatColour, vec3<U32>& colourOut) {
-    colourOut.set(to_uint(FLOAT_TO_CHAR_SNORM(floatColour.r)),
-                 to_uint(FLOAT_TO_CHAR_SNORM(floatColour.g)),
-                 to_uint(FLOAT_TO_CHAR_SNORM(floatColour.b)));
+    colourOut.set(to_U32(FLOAT_TO_CHAR_SNORM(floatColour.r)),
+                 to_U32(FLOAT_TO_CHAR_SNORM(floatColour.g)),
+                 to_U32(FLOAT_TO_CHAR_SNORM(floatColour.b)));
 }
 
 void ToFloatColour(const vec4<U8>& byteColour, vec4<F32>& colourOut) {
@@ -142,55 +142,55 @@ F32 PACK_VEC3(const vec3<F32>& value) {
 void Normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw,
                bool normPitch, bool normRoll) {
     if (normYaw) {
-        F32 yaw = degrees ? Angle::DegreesToRadians(inputRotation.yaw)
+        F32 yaw = degrees ? Angle::to_RADIANS(inputRotation.yaw)
                           : inputRotation.yaw;
         if (yaw < -M_PI) {
-            yaw = fmod(yaw, to_float(M_PI) * 2.0f);
+            yaw = fmod(yaw, to_F32(M_PI) * 2.0f);
             if (yaw < -M_PI) {
-                yaw += to_float(M_PI) * 2.0f;
+                yaw += to_F32(M_PI) * 2.0f;
             }
-            inputRotation.yaw = Angle::RadiansToDegrees(yaw);
+            inputRotation.yaw = Angle::to_DEGREES(yaw);
         } else if (yaw > M_PI) {
-            yaw = fmod(yaw, to_float(M_PI) * 2.0f);
+            yaw = fmod(yaw, to_F32(M_PI) * 2.0f);
             if (yaw > M_PI) {
-                yaw -= to_float(M_PI) * 2.0f;
+                yaw -= to_F32(M_PI) * 2.0f;
             }
-            inputRotation.yaw = degrees ? Angle::RadiansToDegrees(yaw) : yaw;
+            inputRotation.yaw = degrees ? Angle::to_DEGREES(yaw) : yaw;
         }
     }
     if (normPitch) {
-        F32 pitch = degrees ? Angle::DegreesToRadians(inputRotation.pitch)
+        F32 pitch = degrees ? Angle::to_RADIANS(inputRotation.pitch)
                             : inputRotation.pitch;
         if (pitch < -M_PI) {
-            pitch = fmod(pitch, to_float(M_PI) * 2.0f);
+            pitch = fmod(pitch, to_F32(M_PI) * 2.0f);
             if (pitch < -M_PI) {
-                pitch += to_float(M_PI) * 2.0f;
+                pitch += to_F32(M_PI) * 2.0f;
             }
-            inputRotation.pitch = Angle::RadiansToDegrees(pitch);
+            inputRotation.pitch = Angle::to_DEGREES(pitch);
         } else if (pitch > M_PI) {
-            pitch = fmod(pitch, to_float(M_PI) * 2.0f);
+            pitch = fmod(pitch, to_F32(M_PI) * 2.0f);
             if (pitch > M_PI) {
-                pitch -= to_float(M_PI) * 2.0f;
+                pitch -= to_F32(M_PI) * 2.0f;
             }
             inputRotation.pitch =
-                degrees ? Angle::RadiansToDegrees(pitch) : pitch;
+                degrees ? Angle::to_DEGREES(pitch) : pitch;
         }
     }
     if (normRoll) {
-        F32 roll = degrees ? Angle::DegreesToRadians(inputRotation.roll)
+        F32 roll = degrees ? Angle::to_RADIANS(inputRotation.roll)
                            : inputRotation.roll;
         if (roll < -M_PI) {
-            roll = fmod(roll, to_float(M_PI) * 2.0f);
+            roll = fmod(roll, to_F32(M_PI) * 2.0f);
             if (roll < -M_PI) {
-                roll += to_float(M_PI) * 2.0f;
+                roll += to_F32(M_PI) * 2.0f;
             }
-            inputRotation.roll = Angle::RadiansToDegrees(roll);
+            inputRotation.roll = Angle::to_DEGREES(roll);
         } else if (roll > M_PI) {
-            roll = fmod(roll, to_float(M_PI) * 2.0f);
+            roll = fmod(roll, to_F32(M_PI) * 2.0f);
             if (roll > M_PI) {
-                roll -= to_float(M_PI) * 2.0f;
+                roll -= to_F32(M_PI) * 2.0f;
             }
-            inputRotation.roll = degrees ? Angle::RadiansToDegrees(roll) : roll;
+            inputRotation.roll = degrees ? Angle::to_DEGREES(roll) : roll;
         }
     }
 }

@@ -18,8 +18,8 @@ void ParticlePositionColourUpdater::update(const U64 deltaTime, ParticleData& p)
             (p._position[i].z - _minPos.z) /
                 diffb,  // lerp(p._startColour[i].b, p._endColour[i].b,
                          // scaleb),
-             Lerp(to_float(p._startColour[i].a) / 255.0f,
-                  to_float(p._endColour[i].a) / 255.0f,
+             Lerp(to_F32(p._startColour[i].a) / 255.0f,
+                  to_F32(p._endColour[i].a) / 255.0f,
                   p._misc[i].y) * 255.0f);
     }
 }

@@ -35,7 +35,7 @@ inline ByteBuffer& ByteBuffer::operator<<(const T& value) {
 
 template<>
 inline ByteBuffer& ByteBuffer::operator<<(const bool& value) {
-    append(value ? to_byte(1) : to_byte(0));
+    append(value ? to_I8(1) : to_I8(0));
     return *this;
 }
 
@@ -54,7 +54,7 @@ inline ByteBuffer& ByteBuffer::operator>>(T& value) {
 
 template<>
 inline ByteBuffer& ByteBuffer::operator>>(bool& value) {
-    value = (read<I8>() == to_byte(1));
+    value = (read<I8>() == to_I8(1));
     return *this;
 }
 
@@ -64,7 +64,7 @@ inline ByteBuffer& ByteBuffer::operator>>(stringImpl& value) {
     // prevent crash at wrong string format in packet
     while (rpos() < size()) {
         char c = read<char>();
-        if (c == to_ubyte(0)) {
+        if (c == to_U8(0)) {
             break;
         }
         value += c;
@@ -149,7 +149,7 @@ inline U64 ByteBuffer::readPackGUID() {
     (*this) >> guidmark;
 
     for (I32 i = 0; i < 8; ++i) {
-        if (guidmark & (to_ubyte(1) << i)) {
+        if (guidmark & (to_U8(1) << i)) {
             U8 bit;
             (*this) >> bit;
             guid |= (static_cast<U64>(bit) << (i * 8));
@@ -176,9 +176,9 @@ inline void ByteBuffer::append(const ByteBuffer &buffer) {
 
 inline void ByteBuffer::appendPackXYZ(F32 x, F32 y, F32 z) {
     U32 packed = 0;
-    packed |= (to_int(x / 0.25f) & 0x7FF);
-    packed |= (to_int(y / 0.25f) & 0x7FF) << 11;
-    packed |= (to_int(z / 0.25f) & 0x3FF) << 22;
+    packed |= (to_I32(x / 0.25f) & 0x7FF);
+    packed |= (to_I32(y / 0.25f) & 0x7FF) << 11;
+    packed |= (to_I32(z / 0.25f) & 0x3FF) << 22;
     *this << packed;
 }
 
@@ -188,8 +188,8 @@ inline void ByteBuffer::appendPackGUID(U64 guid) {
     size_t size = 1;
     for (U8 i = 0; guid != 0; ++i) {
         if (guid & 0xFF) {
-            packGUID[0] |= to_ubyte(1 << i);
-            packGUID[size] = to_ubyte(guid & 0xFF);
+            packGUID[0] |= to_U8(1 << i);
+            packGUID[size] = to_U8(guid & 0xFF);
             ++size;
         }
 
@@ -359,7 +359,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::array<stringImpl, N>& a) {
 
 template <typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, vectorImpl<T> const &v) {
-    b << to_uint(v.size());
+    b << to_U32(v.size());
     b.append(v.data(), v.size());
 
     return b;
@@ -376,7 +376,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, vectorImpl<T> &v) {
 
 template <>
 inline ByteBuffer &operator<<(ByteBuffer &b, vectorImpl<stringImpl> const &v) {
-    b << to_uint(v.size());
+    b << to_U32(v.size());
     for (const stringImpl& str : v) {
         b << str;
     }
@@ -396,7 +396,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, vectorImpl<stringImpl> &v) {
 }
 template <typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::list<T> const &v) {
-    b << to_uint(v.size());
+    b << to_U32(v.size());
     for (const T& i : v) {
         b << i;
     }
@@ -419,7 +419,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::list<T> &v) {
 
 template <typename K, typename V>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::map<K, V> &m) {
-    b << to_uint(m.size());
+    b << to_U32(m.size());
     for (typename std::map<K, V>::value_type i : m) {
         b << i.first;
         b << i.second;

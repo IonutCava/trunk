@@ -207,8 +207,8 @@ class glShaderProgram final : public ShaderProgram {
     bool _validated;
     bool _loadedFromBinary;
     GLuint _shaderProgramIDTemp;
-    static std::array<U32, to_const_uint(ShaderType::COUNT)> _lineOffset;
-    std::array<glShader*, to_const_uint(ShaderType::COUNT)> _shaderStage;
+    static std::array<U32, to_const_U32(ShaderType::COUNT)> _lineOffset;
+    std::array<glShader*, to_const_U32(ShaderType::COUNT)> _shaderStage;
 
     glLockManager* _lockManager;
 };
@@ -220,7 +220,7 @@ namespace Attorney {
             glShaderProgram::_lineOffset.fill(offset);
         }
         static void addLineOffset(ShaderType stage, U32 offset) {
-            glShaderProgram::_lineOffset[to_uint(stage)] += offset;
+            glShaderProgram::_lineOffset[to_U32(stage)] += offset;
         }
 
         friend class Divide::GL_API;

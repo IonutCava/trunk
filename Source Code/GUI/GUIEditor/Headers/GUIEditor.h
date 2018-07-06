@@ -148,30 +148,30 @@ private:
     F32& currentValues(TransformFields transform, ControlFields control) {
         assert(transform < TransformFields::COUNT &&
             control < ControlFields::COUNT);
-        return _currentValues[to_uint(transform)][to_uint(control)];
+        return _currentValues[to_U32(transform)][to_U32(control)];
     }
 
     CEGUI::Editbox*& valuesField(TransformFields transform, ControlFields control) {
         assert(transform < TransformFields::COUNT &&
             control < ControlFields::COUNT);
-        return _valuesField[to_uint(transform)][to_uint(control)];
+        return _valuesField[to_U32(transform)][to_U32(control)];
     }
 
     CEGUI::ToggleButton*& toggleButton(ToggleButtons button) {
         assert(button < ToggleButtons::COUNT);
-        return _toggleButtons[to_uint(button)];
+        return _toggleButtons[to_U32(button)];
     }
 
     CEGUI::Window*& transformButtonsInc(TransformFields transform, ControlFields control) {
         assert(transform < TransformFields::COUNT &&
             control < ControlFields::COUNT);
-        return _transformButtonsInc[to_uint(transform)][to_uint(control)];
+        return _transformButtonsInc[to_U32(transform)][to_U32(control)];
     }
 
     CEGUI::Window*& transformButtonsDec(TransformFields transform, ControlFields control) {
         assert(transform < TransformFields::COUNT &&
             control < ControlFields::COUNT);
-        return _transformButtonsDec[to_uint(transform)][to_uint(control)];
+        return _transformButtonsDec[to_U32(transform)][to_U32(control)];
     }
 private:
     PlatformContext& _context;
@@ -185,19 +185,19 @@ private:
         _editorWindow;  //< This will be a pointer to the EditorRoot window.
     CEGUI::Window *_saveSelectionButton;
     CEGUI::Window *_deleteSelectionButton;
-    std::array<CEGUI::ToggleButton *, to_const_uint(ToggleButtons::COUNT)>
+    std::array<CEGUI::ToggleButton *, to_const_U32(ToggleButtons::COUNT)>
         _toggleButtons;
     std::array<
-        std::array<CEGUI::Window *, to_const_uint(ControlFields::COUNT)>,
-        to_const_uint(TransformFields::COUNT)> _transformButtonsInc;
+        std::array<CEGUI::Window *, to_const_U32(ControlFields::COUNT)>,
+        to_const_U32(TransformFields::COUNT)> _transformButtonsInc;
     std::array<
-        std::array<CEGUI::Window *, to_const_uint(ControlFields::COUNT)>,
-        to_const_uint(TransformFields::COUNT)> _transformButtonsDec;
+        std::array<CEGUI::Window *, to_const_U32(ControlFields::COUNT)>,
+        to_const_U32(TransformFields::COUNT)> _transformButtonsDec;
     std::array<
-        std::array<CEGUI::Editbox *, to_const_uint(ControlFields::COUNT)>,
-        to_const_uint(TransformFields::COUNT)> _valuesField;
-    std::array<std::array<F32, to_const_uint(ControlFields::COUNT)>,
-        to_const_uint(TransformFields::COUNT)> _currentValues;
+        std::array<CEGUI::Editbox *, to_const_U32(ControlFields::COUNT)>,
+        to_const_U32(TransformFields::COUNT)> _valuesField;
+    std::array<std::array<F32, to_const_U32(ControlFields::COUNT)>,
+        to_const_U32(TransformFields::COUNT)> _currentValues;
 
 };
 

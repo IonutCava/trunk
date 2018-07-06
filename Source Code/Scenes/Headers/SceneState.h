@@ -280,11 +280,11 @@ class SceneState : public SceneComponent {
 
     inline FogDescriptor& fogDescriptor()   { return _fog; }
     inline SceneRenderState& renderState()  { return _renderState; }
-    inline MusicPlaylist& music(MusicType type) { return _music[to_uint(type)]; }
+    inline MusicPlaylist& music(MusicType type) { return _music[to_U32(type)]; }
 
     inline const FogDescriptor& fogDescriptor() const { return _fog; }
     inline const SceneRenderState& renderState() const { return _renderState; }
-    inline const MusicPlaylist& music(MusicType type) const { return _music[to_uint(type)]; }
+    inline const MusicPlaylist& music(MusicType type) const { return _music[to_U32(type)]; }
 
     inline void windSpeed(F32 speed) { _windSpeed = speed; }
     inline F32  windSpeed()    const { return _windSpeed; }
@@ -306,7 +306,7 @@ class SceneState : public SceneComponent {
 
 protected:
 
-    std::array<MusicPlaylist, to_const_uint(MusicType::COUNT)> _music;
+    std::array<MusicPlaylist, to_const_U32(MusicType::COUNT)> _music;
     hashMapImpl<U8, SceneStatePerPlayer> _playerState;
 
     bool _saveLoadDisabled;
@@ -329,9 +329,9 @@ class SceneRenderStateScene {
     static void playAnimations(SceneRenderState& sceneRenderState,
                                bool playAnimations) {
         if (playAnimations) {
-            SetBit(sceneRenderState._stateMask, to_const_uint(SceneRenderState::RenderOptions::PLAY_ANIMATIONS));
+            SetBit(sceneRenderState._stateMask, to_const_U32(SceneRenderState::RenderOptions::PLAY_ANIMATIONS));
         } else {
-            ClearBit(sceneRenderState._stateMask, to_const_uint(SceneRenderState::RenderOptions::PLAY_ANIMATIONS));
+            ClearBit(sceneRenderState._stateMask, to_const_U32(SceneRenderState::RenderOptions::PLAY_ANIMATIONS));
         }
     }
     friend class Divide::Scene;

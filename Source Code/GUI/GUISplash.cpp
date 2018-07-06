@@ -25,7 +25,7 @@ GUISplash::GUISplash(ResourceCache& cache,
     splashImage.setPropertyDescriptor<SamplerDescriptor>(splashSampler);
     splashImage.setResourceName(splashImageName);
     splashImage.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    splashImage.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
+    splashImage.setEnumValue(to_const_U32(TextureType::TEXTURE_2D));
     _splashImage = CreateResource<Texture>(cache, splashImage);
     ResourceDescriptor splashShader("fbPreview");
     splashShader.setThreadedLoading(false);
@@ -38,7 +38,7 @@ GUISplash::~GUISplash()
 
 void GUISplash::render(GFXDevice& context) {
     GFX::ScopedViewport splashViewport(context, vec4<I32>(0, 0, _dimensions.width, _dimensions.height));
-    _splashImage->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    _splashImage->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0));
 
 
     GenericDrawCommand triangleCmd;

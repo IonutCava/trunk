@@ -9,7 +9,7 @@ void ParticleSphereVelocityGenerator::generate(TaskHandle& packagedTasksParent,
                                                U32 endIndex) {
 
     F32 phi, theta, v, r;
-    F32 floatPI = to_float(M_PI);
+    F32 floatPI = to_F32(M_PI);
     for (U32 i = startIndex; i < endIndex; ++i) {
         phi = Random(-floatPI, floatPI);
         theta = Random(-floatPI, floatPI);

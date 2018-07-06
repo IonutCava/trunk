@@ -72,57 +72,58 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
            }
 
            inline bool hasSetFlags() const {
-                return getFlag(TransformType::SCALE) ||
-                       getFlag(TransformType::ROTATION) ||
-                       getFlag(TransformType::TRANSLATION) ||
-                       getFlag(TransformType::VIEW_OFFSET);
+               for (bool flag : _transformFlags) {
+                   if (flag) {
+                       return true;
+                   }
+               }
+               return false;
            }
 
            inline bool hasSetAllFlags() const {
-               return getFlag(TransformType::SCALE) &&
-                      getFlag(TransformType::ROTATION) &&
-                      getFlag(TransformType::TRANSLATION) &&
-                      getFlag(TransformType::VIEW_OFFSET);
+               for (bool flag : _transformFlags) {
+                   if (!flag) {
+                       return false;
+                   }
+               }
+
+               return true;
            }
 
            inline bool getFlag(TransformType type) const {
-               return _transformFlags[to_uint(type)] == true;
+               return _transformFlags[to_U32(type)] == true;
            }
 
            inline void clearAllFlags() {
-               _transformFlags[to_const_uint(TransformType::SCALE)] = false;
-               _transformFlags[to_const_uint(TransformType::ROTATION)] = false;
-               _transformFlags[to_const_uint(TransformType::TRANSLATION)] = false;
-               _transformFlags[to_const_uint(TransformType::VIEW_OFFSET)] = false;
+               _transformFlags[to_const_U32(TransformType::SCALE)] = false;
+               _transformFlags[to_const_U32(TransformType::ROTATION)] = false;
+               _transformFlags[to_const_U32(TransformType::TRANSLATION)] = false;
+               _transformFlags[to_const_U32(TransformType::VIEW_OFFSET)] = false;
            }
 
            inline void setAllFlags() {
-               _transformFlags[to_const_uint(TransformType::SCALE)] = true;
-               _transformFlags[to_const_uint(TransformType::ROTATION)] = true;
-               _transformFlags[to_const_uint(TransformType::TRANSLATION)] = true;
+               _transformFlags[to_const_U32(TransformType::SCALE)] = true;
+               _transformFlags[to_const_U32(TransformType::ROTATION)] = true;
+               _transformFlags[to_const_U32(TransformType::TRANSLATION)] = true;
            }
 
            inline bool clearFlag(TransformType type) {
-               _transformFlags[to_uint(type)] = false;
+               _transformFlags[to_U32(type)] = false;
            }
 
            inline void setFlag(TransformType type) {
-               _transformFlags[to_uint(type)] = true;
+               _transformFlags[to_U32(type)] = true;
            }
 
            inline void setFlags(const TransformMask& other) {
-               _transformFlags[to_const_uint(TransformType::SCALE)] =
-                       other.getFlag(TransformType::SCALE);
-               _transformFlags[to_const_uint(TransformType::ROTATION)] =
-                       other.getFlag(TransformType::ROTATION);
-               _transformFlags[to_const_uint(TransformType::TRANSLATION)] =
-                       getFlag(TransformType::TRANSLATION);
-               _transformFlags[to_const_uint(TransformType::VIEW_OFFSET)] =
-                       getFlag(TransformType::VIEW_OFFSET);
+               _transformFlags[to_const_U32(TransformType::SCALE)] = other.getFlag(TransformType::SCALE);
+               _transformFlags[to_const_U32(TransformType::ROTATION)] = other.getFlag(TransformType::ROTATION);
+               _transformFlags[to_const_U32(TransformType::TRANSLATION)] = other.getFlag(TransformType::TRANSLATION);
+               _transformFlags[to_const_U32(TransformType::VIEW_OFFSET)] = other.getFlag(TransformType::VIEW_OFFSET);
 
            }
         private:
-           std::array<AtomicWrapper<bool>, to_const_uint(TransformType::COUNT)> _transformFlags;
+           std::array<std::atomic_bool, to_const_U32(TransformType::COUNT)> _transformFlags;
     };
 
     struct IgnoreViewSettings {
@@ -169,21 +170,21 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     void scaleZ(const F32 ammount) override;
     using TransformInterface::setScale;
 
-    void setRotation(const vec3<F32>& axis, F32 degrees, bool inDegrees = true) override;
-    void setRotation(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) override;
+    void setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
+    void setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
     void setRotation(const Quaternion<F32>& quat) override;
-    void setRotationX(const F32 angle, bool inDegrees = true) override;
-    void setRotationY(const F32 angle, bool inDegrees = true) override;
-    void setRotationZ(const F32 angle, bool inDegrees = true) override;
+    void setRotationX(const Angle::DEGREES<F32> angle) override;
+    void setRotationY(const Angle::DEGREES<F32> angle) override;
+    void setRotationZ(const Angle::DEGREES<F32> angle) override;
     using TransformInterface::setRotation;
 
-    void rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees = true) override;
-    void rotate(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) override;
+    void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
+    void rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
     void rotate(const Quaternion<F32>& quat) override;
     void rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime) override;
-    void rotateX(const F32 angle, bool inDegrees = true) override;
-    void rotateY(const F32 angle, bool inDegrees = true) override;
-    void rotateZ(const F32 angle, bool inDegrees = true) override;
+    void rotateX(const Angle::DEGREES<F32> angle) override;
+    void rotateY(const Angle::DEGREES<F32> angle) override;
+    void rotateZ(const Angle::DEGREES<F32> angle) override;
     using TransformInterface::rotate;
 
     inline void setTransform(const TransformValues& values) {
@@ -251,6 +252,8 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
 
    private:
     void clean(bool interp);
+    bool dirty() const;
+
     void setTransformDirty(TransformType type);
     bool isParentTransformDirty() const;
 

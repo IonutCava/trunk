@@ -24,7 +24,7 @@ glTexture::glTexture(GFXDevice& context,
 {
     _allocatedStorage = false;
 
-    _type = GLUtil::glTextureTypeTable[to_uint(type)];
+    _type = GLUtil::glTextureTypeTable[to_U32(type)];
 
     U32 tempHandle = 0;
     glCreateTextures(_type, 1, &tempHandle);
@@ -112,7 +112,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
 
     GLenum glInternalFormat = _descriptor._internalFormat == GFXImageFormat::DEPTH_COMPONENT
                             ? GL_DEPTH_COMPONENT32
-                            : GLUtil::glImageFormatTable[to_uint(_descriptor._internalFormat)];
+                            : GLUtil::glImageFormatTable[to_U32(_descriptor._internalFormat)];
     GLuint handle = _textureData.getHandleHigh();
 
     switch (_textureData._textureType) {
@@ -256,7 +256,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 
 void glTexture::loadDataCompressed(const TextureLoadInfo& info,
                                    const vectorImpl<ImageTools::ImageLayer>& imageLayers) {
-    GLenum glFormat = GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())];
+    GLenum glFormat = GLUtil::glImageFormatTable[to_U32(_descriptor.baseFormat())];
     GLint numMips = static_cast<GLint>(imageLayers.size());
 
     GL_API::setPixelPackUnpackAlignment();
@@ -316,8 +316,8 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
 
 void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data) {
     if (data) {
-        GLenum format = GLUtil::glImageFormatTable[to_uint(_descriptor.baseFormat())];
-        GLenum type = GLUtil::glDataFormat[to_uint(_descriptor.dataType())];
+        GLenum format = GLUtil::glImageFormatTable[to_U32(_descriptor.baseFormat())];
+        GLenum type = GLUtil::glDataFormat[to_U32(_descriptor.dataType())];
         GLuint handle = _textureData.getHandleHigh();
 
         GL_API::setPixelPackUnpackAlignment();
@@ -366,7 +366,7 @@ void glTexture::copy(const Texture_ptr& other) {
         numFaces = 6;
     }
 
-    glCopyImageSubData(other->getData().getHandleHigh(), GLUtil::glTextureTypeTable[to_uint(other->getTextureType())], 0, 0, 0, 0,
+    glCopyImageSubData(other->getData().getHandleHigh(), GLUtil::glTextureTypeTable[to_U32(other->getTextureType())], 0, 0, 0, 0,
                        _textureData.getHandleHigh(), _type, 0, 0, 0, 0,
                        getWidth(), getHeight(), _numLayers * numFaces);
 }
@@ -401,7 +401,7 @@ void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, 
     GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
                             : (write ? GL_WRITE_ONLY : GL_NONE);
     GL_API::bindTextureImage(slot, _textureData.getHandleHigh(), level, layered, layer, access, 
-                                GLUtil::glImageFormatTable[to_uint(_descriptor._internalFormat)]);
+                                GLUtil::glImageFormatTable[to_U32(_descriptor._internalFormat)]);
 }
 
 };

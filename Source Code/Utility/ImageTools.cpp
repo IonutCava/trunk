@@ -92,10 +92,10 @@ bool ImageData::create(const stringImpl& filename) {
     image._size = width * height * _bpp / 8;
 
     if (isHDR) {
-        image.setData(dataf, to_uint(image._size / 4));
+        image.setData(dataf, to_U32(image._size / 4));
         stbi_image_free(dataf);
     } else {
-        image.setData(data, to_uint(image._size));
+        image.setData(data, to_U32(image._size));
         stbi_image_free(data);
     }
 
@@ -125,7 +125,7 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
     assert(ilGetInteger(IL_IMAGE_TYPE) == IL_UNSIGNED_BYTE);
 
     I32 dxtc = ilGetInteger(IL_DXTC_DATA_FORMAT);
-    _bpp = to_const_ubyte(ilGetInteger(IL_IMAGE_BPP));
+    _bpp = to_const_U8(ilGetInteger(IL_IMAGE_BPP));
 
     if (ilGetInteger(IL_IMAGE_CUBEFLAGS) > 0) {
         _compressedTextureType = TextureType::TEXTURE_CUBE_MAP;

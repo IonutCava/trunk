@@ -76,12 +76,12 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     _previousLuminance._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
 
     // Order is very important!
-    OperatorBatch& hdrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_HDR)];
+    OperatorBatch& hdrBatch = _operators[to_const_U32(FilterSpace::FILTER_SPACE_HDR)];
     hdrBatch.push_back(MemoryManager_NEW SSAOPreRenderOperator(_context, *this, _resCache));
     hdrBatch.push_back(MemoryManager_NEW DoFPreRenderOperator(_context, *this, _resCache));
     hdrBatch.push_back(MemoryManager_NEW BloomPreRenderOperator(_context, *this, _resCache));
 
-    OperatorBatch& ldrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_LDR)];
+    OperatorBatch& ldrBatch = _operators[to_const_U32(FilterSpace::FILTER_SPACE_LDR)];
     ldrBatch.push_back(MemoryManager_NEW PostAAPreRenderOperator(_context, *this, _resCache));
 
     ResourceDescriptor toneMap("bloom.ToneMap");
@@ -127,8 +127,8 @@ RenderTarget& PreRenderBatch::outputRT() const {
 }
 
 void PreRenderBatch::execute(const FilterStack& stack) {
-    OperatorBatch& hdrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_HDR)];
-    OperatorBatch& ldrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_LDR)];
+    OperatorBatch& hdrBatch = _operators[to_const_U32(FilterSpace::FILTER_SPACE_HDR)];
+    OperatorBatch& ldrBatch = _operators[to_const_U32(FilterSpace::FILTER_SPACE_LDR)];
 
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
@@ -138,8 +138,8 @@ void PreRenderBatch::execute(const FilterStack& stack) {
     if (_adaptiveExposureControl) {
         // Compute Luminance
         // Step 1: Luminance calc
-        inputRT().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
-        _previousLuminance._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);
+        inputRT().bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
+        _previousLuminance._rt->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);
 
         _currentLuminance._rt->begin(RenderTarget::defaultPolicy());
             triangleCmd.shaderProgram(_luminanceCalc);
@@ -152,16 +152,16 @@ void PreRenderBatch::execute(const FilterStack& stack) {
 
     // Execute all HDR based operators
     for (PreRenderOperator* op : hdrBatch) {
-        if (op != nullptr && stack[to_uint(op->operatorType())] > 0) {
+        if (op != nullptr && stack[to_U32(op->operatorType())] > 0) {
             op->execute();
         }
     }
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
-    inputRT().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
+    inputRT().bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
 
     if (_adaptiveExposureControl) {
-        _currentLuminance._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);
+        _currentLuminance._rt->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0);
     }
 
     _postFXOutput._rt->begin(RenderTarget::defaultPolicy());
@@ -171,14 +171,14 @@ void PreRenderBatch::execute(const FilterStack& stack) {
 
     // Execute all LDR based operators
     for (PreRenderOperator* op : ldrBatch) {
-        if (op != nullptr && stack[to_uint(op->operatorType())] > 0) {
+        if (op != nullptr && stack[to_U32(op->operatorType())] > 0) {
             op->execute();
         }
     }
 }
 
 void PreRenderBatch::reshape(U16 width, U16 height) {
-    U16 lumaRez = to_ushort(nextPOW2(to_uint(width / 3.0f)));
+    U16 lumaRez = to_U16(nextPOW2(to_U32(width / 3.0f)));
     // make the texture square sized and power of two
     _currentLuminance._rt->create(lumaRez, lumaRez);
     _previousLuminance._rt->create(1, 1);

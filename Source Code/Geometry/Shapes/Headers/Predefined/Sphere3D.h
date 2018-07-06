@@ -87,8 +87,8 @@ class Sphere3D : public Object3D {
         VertexBuffer* const vb = getGeometryVB();
 
         vb->reset();
-        F32 drho = to_float(M_PI) / stacks;
-        F32 dtheta = 2.0f * to_float(M_PI) / slices;
+        F32 drho = to_F32(M_PI) / stacks;
+        F32 dtheta = 2.0f * to_F32(M_PI) / slices;
         F32 ds = 1.0f / slices;
         F32 dt = 1.0f / stacks;
         F32 t = 1.0f;

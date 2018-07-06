@@ -134,7 +134,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual void Uniform(const char* ext, const vectorImplBest<mat4<F32> >& values, bool rowMajor = false) = 0;
 
     inline void Uniform(const char* ext, TextureUsage slot) {
-        Uniform(ext, to_int(slot));
+        Uniform(ext, to_I32(slot));
     }
         
     inline void Uniform(const char* ext, bool value) {
@@ -184,7 +184,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual void SetMemoryBarrier(MemoryBarrierType type) = 0;
 
     inline void Uniform(I32 location, TextureUsage slot) {
-        Uniform(location, to_ubyte(slot));
+        Uniform(location, to_U8(slot));
     }
 
     inline void Uniform(I32 location, bool value) {
@@ -206,13 +206,13 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
     inline vectorAlg::vecSize getFunctionCount(ShaderType shader, U8 LoD) {
-        return _functionIndex[to_uint(shader)][LoD].size();
+        return _functionIndex[to_U32(shader)][LoD].size();
     }
 
     inline void setFunctionCount(ShaderType shader,
                                  U8 LoD,
                                  vectorAlg::vecSize count) {
-        _functionIndex[to_uint(shader)][LoD].resize(count, 0);
+        _functionIndex[to_U32(shader)][LoD].resize(count, 0);
     }
 
     inline void setFunctionCount(ShaderType shader, vectorAlg::vecSize count) {
@@ -225,7 +225,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
                                  U8 LoD,
                                  U32 index,
                                  U32 functionEntry) {
-        U32 shaderTypeValue = to_uint(shader);
+        U32 shaderTypeValue = to_U32(shader);
 
         if (_functionIndex[shaderTypeValue][LoD].empty()) {
             return;
@@ -246,7 +246,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     }
 
     inline U32 addFunctionIndex(ShaderType shader, U32 index) {
-        U32 shaderTypeValue = to_uint(shader);
+        U32 shaderTypeValue = to_U32(shader);
 
         _availableFunctionIndex[shaderTypeValue].push_back(index);
         return U32(_availableFunctionIndex[shaderTypeValue].size() - 1);
@@ -311,8 +311,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     vectorImpl<stringImpl> _usedAtoms;
 
    private:
-    std::array<std::array<vectorImpl<U32>, Config::SCENE_NODE_LOD>, to_const_uint(ShaderType::COUNT)> _functionIndex;
-    std::array<vectorImpl<U32>, to_const_uint(ShaderType::COUNT)>  _availableFunctionIndex;
+    std::array<std::array<vectorImpl<U32>, Config::SCENE_NODE_LOD>, to_const_U32(ShaderType::COUNT)> _functionIndex;
+    std::array<vectorImpl<U32>, to_const_U32(ShaderType::COUNT)>  _availableFunctionIndex;
 
     static std::unique_ptr<FW::FileWatcher> s_shaderFileWatcher;
 };

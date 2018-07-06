@@ -46,7 +46,7 @@ void SingleShadowMap::render(GFXDevice& context, U32 passIdx) {
     params.occlusionCull = false;
     params.camera = _shadowCamera;
     params.stage = RenderStage::SHADOW;
-    params.target = RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType()));
+    params.target = RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
     params.drawPolicy = &RenderTarget::defaultPolicy();
     params.pass = passIdx;
 

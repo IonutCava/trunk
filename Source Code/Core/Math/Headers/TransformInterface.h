@@ -67,37 +67,37 @@ public:
 
     /// Set the local orientation using the Axis-Angle system.
     /// The angle can be in either degrees(default) or radians
-    virtual void setRotation(const vec3<F32>& axis, F32 degrees, bool inDegrees = true) = 0;
+    virtual void setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) = 0;
     /// Set the local orientation using the Euler system.
     /// The angles can be in either degrees(default) or radians
-    virtual void setRotation(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) = 0;
+    virtual void setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) = 0;
     /// Set the local orientation so that it matches the specified quaternion.
     virtual void setRotation(const Quaternion<F32>& quat) = 0;
     /// Set the rotation on the X axis (Axis-Angle used) by the specified angle
     /// (either degrees or radians)
-    virtual void setRotationX(const F32 angle, bool inDegrees = true) = 0;
+    virtual void setRotationX(const Angle::DEGREES<F32> angle) = 0;
     /// Set the rotation on the Y axis (Axis-Angle used) by the specified angle
     /// (either degrees or radians)
-    virtual void setRotationY(const F32 angle, bool inDegrees = true) = 0;
+    virtual void setRotationY(const Angle::DEGREES<F32> angle) = 0;
     /// Set the rotation on the Z axis (Axis-Angle used) by the specified angle
     /// (either degrees or radians)
-    virtual void setRotationZ(const F32 angle, bool inDegrees = true) = 0;
+    virtual void setRotationZ(const Angle::DEGREES<F32> angle) = 0;
     /// Apply the specified Axis-Angle rotation starting from the current orientation.
     /// The angles can be in either degrees(default) or radians
-    virtual void rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees = true) = 0;
+    virtual void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) = 0;
     /// Apply the specified Euler rotation starting from the current orientation.
     /// The angles can be in either degrees(default) or radians
-    virtual void rotate(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) = 0;
+    virtual void rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) = 0;
     /// Apply the specified Quaternion rotation starting from the current orientation.
     virtual void rotate(const Quaternion<F32>& quat) = 0;
     /// Perform a SLERP rotation towards the specified quaternion
     virtual void rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime) = 0;
     /// Rotate on the X axis (Axis-Angle used) by the specified angle (either degrees or radians)
-    virtual void rotateX(const F32 angle, bool inDegrees = true) = 0;
+    virtual void rotateX(const Angle::DEGREES<F32> angle) = 0;
     /// Rotate on the Y axis (Axis-Angle used) by the specified angle (either degrees or radians)
-    virtual void rotateY(const F32 angle, bool inDegrees = true) = 0;
+    virtual void rotateY(const Angle::DEGREES<F32> angle) = 0;
     /// Rotate on the Z axis (Axis-Angle used) by the specified angle (either degrees or radians)
-    virtual void rotateZ(const F32 angle, bool inDegrees = true) = 0;
+    virtual void rotateZ(const Angle::DEGREES<F32> angle) = 0;
 
     inline void setPosition(F32 x, F32 y, F32 z) {
         setPosition(vec3<F32>(x, y, z));
@@ -112,8 +112,8 @@ public:
         setScale(vec3<F32>(x, y, z));
     }
 
-    inline void setRotation(const vec3<F32>& euler, bool inDegrees = true) {
-        setRotation(euler.pitch, euler.yaw, euler.roll, inDegrees);
+    inline void setRotation(const vec3<F32>& euler) {
+        setRotation(euler.pitch, euler.yaw, euler.roll);
     }
 
     inline void translate(F32 x, F32 y, F32 z) {
@@ -143,12 +143,12 @@ public:
         scale(vec3<F32>(x, y, z));
     }
 
-    inline void rotate(F32 xAxis, F32 yAxis, F32 zAxis, F32 degrees, bool inDegrees = true) {
-        rotate(vec3<F32>(xAxis, yAxis, zAxis), degrees, inDegrees);
+    inline void rotate(F32 xAxis, F32 yAxis, F32 zAxis, Angle::DEGREES<F32> degrees) {
+        rotate(vec3<F32>(xAxis, yAxis, zAxis), degrees);
     }
 
-    inline void rotate(const vec3<F32>& euler, bool inDegrees = true) {
-        rotate(euler.pitch, euler.yaw, euler.roll, inDegrees);
+    inline void rotate(const vec3<F32>& euler) {
+        rotate(euler.pitch, euler.yaw, euler.roll);
     }
     
     /// Return the scale factor

@@ -116,7 +116,7 @@ RenderPackage& RenderPackageQueue::getPackage(U32 idx) {
 }
 
 RenderPackage& RenderPackageQueue::back() {
-    return _packages[std::max(to_int(_currentCount) - 1, 0)];
+    return _packages[std::max(to_I32(_currentCount) - 1, 0)];
 }
 
 bool RenderPackageQueue::push_back(const RenderPackage& package) {

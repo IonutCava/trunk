@@ -40,7 +40,7 @@ ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache& parentCache,
 {
     _tempBB.set(-VECTOR3_UNIT, VECTOR3_UNIT);
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
-        for (U8 j = 0; j < to_const_uint(RenderStage::COUNT); ++j) {
+        for (U8 j = 0; j < to_const_U32(RenderStage::COUNT); ++j) {
             _particleGPUBuffers[i][j] = _context.newGVD(g_particleBufferSizeFactor);
         }
     }
@@ -54,7 +54,7 @@ ParticleEmitter::~ParticleEmitter()
 }
 
 GenericVertexData& ParticleEmitter::getDataBuffer(RenderStage stage, U8 playerIndex) {
-    return *_particleGPUBuffers[playerIndex % s_MaxPlayerBuffers][to_uint(stage)];
+    return *_particleGPUBuffers[playerIndex % s_MaxPlayerBuffers][to_U32(stage)];
 }
 
 bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData) {
@@ -65,22 +65,22 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     const vectorImpl<U32>& indices = particleData->particleGeometryIndices();
 
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
-        for (U8 j = 0; j < to_const_uint(RenderStage::COUNT); ++j) {
+        for (U8 j = 0; j < to_const_U32(RenderStage::COUNT); ++j) {
             GenericVertexData& buffer = getDataBuffer(static_cast<RenderStage>(j), i);
 
             buffer.create(3);
             buffer.setBuffer(g_particleGeometryBuffer,
-                             to_uint(geometry.size()),
+                             to_U32(geometry.size()),
                              sizeof(vec3<F32>),
                              false,
                              (bufferPtr)geometry.data(),
                              false,
                              false);
             if (!indices.empty()) {
-                buffer.setIndexBuffer(to_uint(indices.size()), false, false, indices);
+                buffer.setIndexBuffer(to_U32(indices.size()), false, false, indices);
             }
 
-            AttributeDescriptor& desc = buffer.attribDescriptor(to_const_uint(AttribLocation::VERTEX_POSITION));
+            AttributeDescriptor& desc = buffer.attribDescriptor(to_const_U32(AttribLocation::VERTEX_POSITION));
             desc.set(g_particleGeometryBuffer, 0, 3, false, 0, GFXDataFormat::FLOAT_32);
         }
     }
@@ -114,12 +114,12 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
 
 bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleData) {
     static const U32 positionAttribLocation = 13;
-    static const U32 colourAttribLocation = to_const_uint(AttribLocation::VERTEX_COLOR);
+    static const U32 colourAttribLocation = to_const_U32(AttribLocation::VERTEX_COLOR);
 
     U32 particleCount = _particles->totalCount();
 
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
-        for (U8 j = 0; j < to_const_uint(RenderStage::COUNT); ++j) {
+        for (U8 j = 0; j < to_const_U32(RenderStage::COUNT); ++j) {
             GenericVertexData& buffer = getDataBuffer(static_cast<RenderStage>(j), i);
 
             buffer.setBuffer(g_particlePositionBuffer,
@@ -155,7 +155,7 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
         ResourceDescriptor texture(_particles->_textureFileName);
 
         texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-        texture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
+        texture.setEnumValue(to_const_U32(TextureType::TEXTURE_2D));
         _particleTexture = CreateResource<Texture>(_parentCache, texture);
     }
 
@@ -176,7 +176,7 @@ bool ParticleEmitter::unload() {
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
 if (_particleTexture && _particleTexture->flushTextureState()) {
         TextureData particleTextureData = _particleTexture->getData();
-        particleTextureData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
+        particleTextureData.setHandleLow(to_const_U32(ShaderProgram::TextureUsage::UNIT0));
         sgn.get<RenderingComponent>()->registerTextureDependency(particleTextureData);
     }
 
@@ -197,9 +197,9 @@ if (_particleTexture && _particleTexture->flushTextureState()) {
 void ParticleEmitter::initialiseDrawCommands(SceneGraphNode& sgn,
                                              const RenderStagePass& renderStagePass,
                                              GenericDrawCommands& drawCommandsInOut) {
-    U32 indexCount = to_uint(_particles->particleGeometryIndices().size());
+    U32 indexCount = to_U32(_particles->particleGeometryIndices().size());
     if (indexCount == 0) {
-        indexCount = to_uint(_particles->particleGeometryVertices().size());
+        indexCount = to_U32(_particles->particleGeometryVertices().size());
     }
 
     GenericDrawCommand cmd(_particles->particleGeometryType(), 0, indexCount);
@@ -231,7 +231,7 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
         [this, aliveCount, &renderStagePass](const Task& parentTask) {
             // invalidateCache means that the existing particle data is no longer partially sorted
             _particles->sort(true);
-            _buffersDirty[to_uint(renderStagePass._stage)] = true;
+            _buffersDirty[to_U32(renderStagePass._stage)] = true;
         }));
     
     _bufferUpdate.back().startTask(Task::TaskPriority::HIGH);
@@ -246,16 +246,16 @@ void ParticleEmitter::updateDrawCommands(SceneGraphNode& sgn,
     }
     _bufferUpdate.clear();
 
-    if (renderStagePass._passType != RenderPassType::DEPTH_PASS && _buffersDirty[to_uint(renderStagePass._stage)]) {
+    if (renderStagePass._passType != RenderPassType::DEPTH_PASS && _buffersDirty[to_U32(renderStagePass._stage)]) {
         GenericVertexData& buffer = getDataBuffer(renderStagePass._stage, sceneRenderState.playerPass());
-        buffer.updateBuffer(g_particlePositionBuffer, to_uint(_particles->_renderingPositions.size()), 0, _particles->_renderingPositions.data());
-        buffer.updateBuffer(g_particleColourBuffer, to_uint(_particles->_renderingColours.size()), 0, _particles->_renderingColours.data());
+        buffer.updateBuffer(g_particlePositionBuffer, to_U32(_particles->_renderingPositions.size()), 0, _particles->_renderingPositions.data());
+        buffer.updateBuffer(g_particleColourBuffer, to_U32(_particles->_renderingColours.size()), 0, _particles->_renderingColours.data());
         buffer.incQueue();
-        _buffersDirty[to_uint(renderStagePass._stage)] = false;
+        _buffersDirty[to_U32(renderStagePass._stage)] = false;
     }
 
     GenericDrawCommand& cmd = drawCommandsInOut.front();
-    cmd.cmd().primCount = to_uint(_particles->_renderingPositions.size());
+    cmd.cmd().primCount = to_U32(_particles->_renderingPositions.size());
     cmd.stateHash(_context.isDepthStage() ? _particleStateBlockHashDepth
                                           : _particleStateBlockHash);
 
@@ -328,7 +328,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
         _bufferUpdate.clear();
         _bbUpdate.emplace_back(CreateTask([this, aliveCount, averageEmitRate](const Task& parentTask) {
             _tempBB.reset();
-            for (U32 i = 0; i < aliveCount; i += to_uint(averageEmitRate) / 4) {
+            for (U32 i = 0; i < aliveCount; i += to_U32(averageEmitRate) / 4) {
                 _tempBB.add(_particles->_position[i]);
             }
             setFlag(UpdateFlag::BOUNDS_CHANGED);

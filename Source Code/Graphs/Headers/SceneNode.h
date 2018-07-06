@@ -90,13 +90,13 @@ class NOINITVTABLE SceneNode : public CachedResource {
 
         inline I64 sgnGUID() const { return _GUID; }
 
-        inline bool getFlag(UpdateFlag flag) const { return _updateFlags[to_uint(flag)]; }
-        inline void clearFlag(UpdateFlag flag) { _updateFlags[to_uint(flag)] = false; }
-        inline void setFlag(UpdateFlag flag) { _updateFlags[to_uint(flag)] = true; }
+        inline bool getFlag(UpdateFlag flag) const { return _updateFlags[to_U32(flag)]; }
+        inline void clearFlag(UpdateFlag flag) { _updateFlags[to_U32(flag)] = false; }
+        inline void setFlag(UpdateFlag flag) { _updateFlags[to_U32(flag)] = true; }
 
     private:
         I64 _GUID;
-        std::array<bool, to_const_uint(UpdateFlag::COUNT)> _updateFlags;
+        std::array<bool, to_const_U32(UpdateFlag::COUNT)> _updateFlags;
     };
 
    public:
@@ -158,7 +158,7 @@ class NOINITVTABLE SceneNode : public CachedResource {
     inline vectorImpl<SceneNode::SGNParentData>::iterator getSGNData(I64 sgnGUID) {
         vectorImpl<SceneNode::SGNParentData>::iterator it;
         it = std::find_if(std::begin(_sgnParents), std::end(_sgnParents),
-            [&sgnGUID](SceneNode::SGNParentData sgnIter) {
+            [&sgnGUID](const SceneNode::SGNParentData& sgnIter) {
                 return (sgnIter.sgnGUID() == sgnGUID);
             });
         return it;

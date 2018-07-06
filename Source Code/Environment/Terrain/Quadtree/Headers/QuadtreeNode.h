@@ -85,18 +85,13 @@ class QuadtreeNode {
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
 
-    inline bool isALeaf() const {
-        return !(getChild(ChildPosition::CHILD_NW) && 
-                 getChild(ChildPosition::CHILD_NE) &&
-                 getChild(ChildPosition::CHILD_SW) && 
-                 getChild(ChildPosition::CHILD_SE));
-    }
+    inline bool isALeaf() const { return !_children[0]; }
 
     inline BoundingBox& getBoundingBox() { return _boundingBox; }
     inline void setBoundingBox(const BoundingBox& bbox) { _boundingBox = bbox; }
     inline TerrainChunk* getChunk() { return _terrainChunk; }
 
-    inline QuadtreeNode* getChild(ChildPosition pos) const { return getChild(to_uint(pos)); }
+    inline QuadtreeNode* getChild(ChildPosition pos) const { return getChild(to_U32(pos)); }
     inline QuadtreeNode* getChild(U32 index) const { return _children[index]; }
 
     U8 getLoD(const SceneRenderState& sceneState) const;

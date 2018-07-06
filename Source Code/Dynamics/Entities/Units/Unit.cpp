@@ -53,7 +53,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
     _prevTime = currentTime;
     // 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms
     // distance = timeDif * 0.001 * moveSpeed
-    F32 moveDistance = std::min(to_float(_moveSpeed * (Time::MillisecondsToSeconds(timeDif))),
+    F32 moveDistance = std::min(to_F32(_moveSpeed * (Time::MillisecondsToSeconds(timeDif))),
                                 0.0f);
 
     bool returnValue = IS_TOLERANCE(moveDistance, Metric::Centi(1.0f));

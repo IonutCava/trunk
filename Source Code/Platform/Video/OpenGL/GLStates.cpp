@@ -53,7 +53,7 @@ SharedLock GL_API::s_samplerMapLock;
 void GL_API::clearStates() {
     static const vec4<F32> clearColour = DefaultColours::DIVIDE_BLUE();
 
-    for(U16 i = 0; i < to_ushort(GL_API::s_maxTextureUnits); ++i) {
+    for(U16 i = 0; i < to_U16(GL_API::s_maxTextureUnits); ++i) {
         const std::pair<GLuint, GLenum>& it  = s_textureBoundMap[i];
         if (it.second != GL_ZERO) {
             GL_API::bindTexture(i, 0, it.second);
@@ -173,7 +173,7 @@ void GL_API::updateClipPlanes() {
     // Get the clip planes from the GFXDevice object
     const PlaneList& list = Attorney::GFXDeviceAPI::getClippingPlanes(_context);
     // For every clip plane that we support (usually 6)
-    for (U32 i = 0; i < to_const_uint(Frustum::FrustPlane::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_U32(Frustum::FrustPlane::COUNT); ++i) {
         // Check its state
         const bool& clipPlaneActive = list[i].active();
         // And compare it with OpenGL's current state
@@ -305,12 +305,12 @@ bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuin
     if (ID == GLUtil::_invalidObjectID) {
         ID = 0;
     }
-    previousID = s_activeFBID[to_uint(usage)];
+    previousID = s_activeFBID[to_U32(usage)];
     // Prevent double bind
-    if (s_activeFBID[to_uint(usage)] == ID) {
+    if (s_activeFBID[to_U32(usage)] == ID) {
         if (usage == RenderTarget::RenderTargetUsage::RT_READ_WRITE) {
-            if (s_activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] == ID &&
-                s_activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] == ID) {
+            if (s_activeFBID[to_const_U32(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] == ID &&
+                s_activeFBID[to_const_U32(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] == ID) {
                 return false;
             }
         } else {
@@ -325,8 +325,8 @@ bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuin
             // bindFramebuffer(read, ID) and bindFramebuffer(write, ID)
             glBindFramebuffer(GL_FRAMEBUFFER, ID);
             // This also overrides the read and write bindings
-            s_activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] = ID;
-            s_activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] = ID;
+            s_activeFBID[to_const_U32(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] = ID;
+            s_activeFBID[to_const_U32(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] = ID;
         } break;
         case RenderTarget::RenderTargetUsage::RT_READ_ONLY: {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);
@@ -337,7 +337,7 @@ bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuin
     };
 
     // Remember the new binding state for future reference
-    s_activeFBID[to_uint(usage)] = ID;
+    s_activeFBID[to_U32(usage)] = ID;
     return true;
 }
 
@@ -489,30 +489,30 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     // Check separate blend functions
     if (oldBlock.blendSrc() != newBlock.blendSrc() ||
         oldBlock.blendDest() != newBlock.blendDest()) {
-        glBlendFuncSeparate(GLUtil::glBlendTable[to_uint(newBlock.blendSrc())],
-                            GLUtil::glBlendTable[to_uint(newBlock.blendDest())],
+        glBlendFuncSeparate(GLUtil::glBlendTable[to_U32(newBlock.blendSrc())],
+                            GLUtil::glBlendTable[to_U32(newBlock.blendDest())],
                             GL_ONE,
                             GL_ZERO);
     }
 
     // Check the blend equation
     if (oldBlock.blendOp() != newBlock.blendOp()) {
-        glBlendEquation(GLUtil::glBlendOpTable[to_uint(newBlock.blendOp())]);
+        glBlendEquation(GLUtil::glBlendOpTable[to_U32(newBlock.blendOp())]);
     }
     // Check culling mode (back (CW) / front (CCW) by default)
     if (oldBlock.cullMode() != newBlock.cullMode()) {
         if (newBlock.cullMode() != CullMode::NONE) {
-            glCullFace(GLUtil::glCullModeTable[to_uint(newBlock.cullMode())]);
+            glCullFace(GLUtil::glCullModeTable[to_U32(newBlock.cullMode())]);
         }
     }
     // Check rasterization mode
     if (oldBlock.fillMode() != newBlock.fillMode()) {
         glPolygonMode(GL_FRONT_AND_BACK,
-                      GLUtil::glFillModeTable[to_uint(newBlock.fillMode())]);
+                      GLUtil::glFillModeTable[to_U32(newBlock.fillMode())]);
     }
     // Check the depth function
     if (oldBlock.zFunc() != newBlock.zFunc()) {
-        glDepthFunc(GLUtil::glCompareFuncTable[to_uint(newBlock.zFunc())]);
+        glDepthFunc(GLUtil::glCompareFuncTable[to_U32(newBlock.zFunc())]);
     }
 
     // Check if we need to change the stencil mask
@@ -523,7 +523,7 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     if (oldBlock.stencilFunc() != newBlock.stencilFunc() ||
         oldBlock.stencilRef()  != newBlock.stencilRef() ||
         oldBlock.stencilMask() != newBlock.stencilMask()) {
-        glStencilFunc(GLUtil::glCompareFuncTable[to_uint(newBlock.stencilFunc())],
+        glStencilFunc(GLUtil::glCompareFuncTable[to_U32(newBlock.stencilFunc())],
                       newBlock.stencilRef(),
                       newBlock.stencilMask());
     }
@@ -531,9 +531,9 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     if (oldBlock.stencilFailOp() != newBlock.stencilFailOp() ||
         oldBlock.stencilZFailOp() != newBlock.stencilZFailOp() ||
         oldBlock.stencilPassOp() != newBlock.stencilPassOp()) {
-        glStencilOp(GLUtil::glStencilOpTable[to_uint(newBlock.stencilFailOp())],
-                    GLUtil::glStencilOpTable[to_uint(newBlock.stencilZFailOp())],
-                    GLUtil::glStencilOpTable[to_uint(newBlock.stencilPassOp())]);
+        glStencilOp(GLUtil::glStencilOpTable[to_U32(newBlock.stencilFailOp())],
+                    GLUtil::glStencilOpTable[to_U32(newBlock.stencilZFailOp())],
+                    GLUtil::glStencilOpTable[to_U32(newBlock.stencilPassOp())]);
     }
     // Check and set polygon offset
     if (!COMPARE(oldBlock.zBias(), newBlock.zBias())) {
@@ -566,24 +566,24 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock) const {
     toggle(newBlock.cullEnabled(), GL_CULL_FACE);
     toggle(newBlock.stencilEnable(), GL_STENCIL_TEST);
     toggle(newBlock.zEnable(), GL_DEPTH_TEST);
-    glBlendFuncSeparate(GLUtil::glBlendTable[to_uint(newBlock.blendSrc())],
-                        GLUtil::glBlendTable[to_uint(newBlock.blendDest())],
+    glBlendFuncSeparate(GLUtil::glBlendTable[to_U32(newBlock.blendSrc())],
+                        GLUtil::glBlendTable[to_U32(newBlock.blendDest())],
                         GL_ONE,
                         GL_ZERO);
-    glBlendEquation(GLUtil::glBlendOpTable[to_uint(newBlock.blendOp())]);
+    glBlendEquation(GLUtil::glBlendOpTable[to_U32(newBlock.blendOp())]);
     if (newBlock.cullMode() != CullMode::NONE) {
-        glCullFace(GLUtil::glCullModeTable[to_uint(newBlock.cullMode())]);
+        glCullFace(GLUtil::glCullModeTable[to_U32(newBlock.cullMode())]);
     }
 
-    glPolygonMode(GL_FRONT_AND_BACK, GLUtil::glFillModeTable[to_uint(newBlock.fillMode())]);
-    glDepthFunc(GLUtil::glCompareFuncTable[to_uint(newBlock.zFunc())]);
+    glPolygonMode(GL_FRONT_AND_BACK, GLUtil::glFillModeTable[to_U32(newBlock.fillMode())]);
+    glDepthFunc(GLUtil::glCompareFuncTable[to_U32(newBlock.zFunc())]);
     glStencilMask(newBlock.stencilWriteMask());
-    glStencilFunc(GLUtil::glCompareFuncTable[to_uint(newBlock.stencilFunc())],
+    glStencilFunc(GLUtil::glCompareFuncTable[to_U32(newBlock.stencilFunc())],
                   newBlock.stencilRef(),
                   newBlock.stencilMask());
-    glStencilOp(GLUtil::glStencilOpTable[to_uint(newBlock.stencilFailOp())],
-                GLUtil::glStencilOpTable[to_uint(newBlock.stencilZFailOp())],
-                GLUtil::glStencilOpTable[to_uint(newBlock.stencilPassOp())]);
+    glStencilOp(GLUtil::glStencilOpTable[to_U32(newBlock.stencilFailOp())],
+                GLUtil::glStencilOpTable[to_U32(newBlock.stencilZFailOp())],
+                GLUtil::glStencilOpTable[to_U32(newBlock.stencilPassOp())]);
 
     if (IS_ZERO(newBlock.zBias())) {
         glDisable(GL_POLYGON_OFFSET_FILL);

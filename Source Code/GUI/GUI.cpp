@@ -105,8 +105,8 @@ void GUI::draw(GFXDevice& context) const {
     // global elements
     textBatch.resize(0);
 
-    for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
-        if (i != to_const_uint(GUIType::GUI_TEXT)) {
+    for (U8 i = 0; i < to_const_U32(GUIType::COUNT); ++i) {
+        if (i != to_const_U32(GUIType::GUI_TEXT)) {
             for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
                 GUIElement& element = *guiStackIterator.second.first;
                 // Skip hidden elements
@@ -118,7 +118,7 @@ void GUI::draw(GFXDevice& context) const {
     }
 
     //cache text elements
-    for (const GUIMap::value_type& guiStackIterator : _guiElements[to_const_uint(GUIType::GUI_TEXT)]) {
+    for (const GUIMap::value_type& guiStackIterator : _guiElements[to_const_U32(GUIType::GUI_TEXT)]) {
         GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
         if (!textElement.text().empty()) {
             textBatch.emplace_back(&textElement, textElement.getPosition(), textElement.getStateBlockHash());
@@ -159,7 +159,7 @@ void GUI::update(const U64 deltaTime) {
     _guiEditor->update(deltaTime);
 
     const DebugInterface& debugInterface = DebugInterface::instance();
-    U32 debugVarEntries = to_uint(debugInterface.debugVarCount());
+    U32 debugVarEntries = to_U32(debugInterface.debugVarCount());
     if (_debugVarCacheCount != debugVarEntries) {
 
         Attorney::DebugInterfaceGUI::lockVars(false);
@@ -299,7 +299,7 @@ void GUI::destroy() {
         {
             WriteLock w_lock(_guiStackLock);
             assert(_guiStack.empty());
-            for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
+            for (U8 i = 0; i < to_const_U32(GUIType::COUNT); ++i) {
                 for (GUIMap::value_type& it : _guiElements[i]) {
                     MemoryManager::DELETE(it.second.first);
                 }
@@ -341,7 +341,7 @@ void GUI::selectionChangeCallback(Scene* const activeScene, U8 playerIndex) {
 }
 
 void GUI::setCursorPosition(I32 x, I32 y) const {
-    CEGUI_DEFAULT_CTX.injectMousePosition(to_float(x), to_float(y));
+    CEGUI_DEFAULT_CTX.injectMousePosition(to_F32(x), to_F32(y));
 }
 
 bool GUI::onKeyDown(const Input::KeyEvent& key) {
@@ -376,8 +376,8 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     }
 
     GUIEvent event;
-    event.mousePoint.x = to_float(arg._event.state.X.abs);
-    event.mousePoint.y = to_float(arg._event.state.Y.abs);
+    event.mousePoint.x = to_F32(arg._event.state.X.abs);
+    event.mousePoint.y = to_F32(arg._event.state.Y.abs);
 
     GUIInterface::mouseMoved(event);
 

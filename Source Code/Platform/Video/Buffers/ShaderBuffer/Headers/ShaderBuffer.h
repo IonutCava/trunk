@@ -84,13 +84,13 @@ class NOINITVTABLE ShaderBuffer : public GraphicsResource,
     virtual bool bind(U32 bindIndex) = 0;
 
     inline bool bind(ShaderBufferLocation bindIndex) {
-        return bind(to_uint(bindIndex));
+        return bind(to_U32(bindIndex));
     }
 
     inline bool bindRange(ShaderBufferLocation bindIndex,
                           U32 offsetElementCount,
                           U32 rangeElementCount) {
-        return bindRange(to_uint(bindIndex),
+        return bindRange(to_U32(bindIndex),
                          offsetElementCount,
                          rangeElementCount);
 

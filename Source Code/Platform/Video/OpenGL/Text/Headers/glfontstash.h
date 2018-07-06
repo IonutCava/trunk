@@ -66,7 +66,7 @@ static int glfons__renderCreate(void* userPtr, int width, int height) {
     gl->height = height;
 
     glTextureStorage2D(gl->tex, 1, GL_R8, gl->width, gl->height);
-    glTextureParameteri(gl->tex, GL_TEXTURE_MIN_FILTER, Divide::to_const_int(GL_LINEAR));
+    glTextureParameteri(gl->tex, GL_TEXTURE_MIN_FILTER, Divide::to_const_I32(GL_LINEAR));
 
     return 1;
 }

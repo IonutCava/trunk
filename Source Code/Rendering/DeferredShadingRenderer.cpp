@@ -229,8 +229,8 @@ void DeferredShadingRenderer::secondPass(
 void DeferredShadingRenderer::updateResolution(U16 width, U16 height) {
     _deferredBuffer._rt->create(width, height);
 
-    F32 widthF = to_float(width);
-    F32 heightF = to_float(height);
+    F32 widthF = to_F32(width);
+    F32 heightF = to_F32(height);
 
     _renderQuads[0]->setDimensions(vec4<F32>(0.0f, 0.0f, widthF, heightF));
 

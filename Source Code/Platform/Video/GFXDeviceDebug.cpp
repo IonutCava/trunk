@@ -36,7 +36,7 @@ void GFXDevice::renderDebugViews() {
             DebugView_ptr HiZ = std::make_shared<DebugView>();
             HiZ->_shader = _previewDepthMapShader;
             HiZ->_texture = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).asTexture();
-            HiZ->_shaderData._floatValues.push_back(std::make_pair("lodLevel", to_float(HiZ->_texture->getMaxMipLevel() - 1)));
+            HiZ->_shaderData._floatValues.push_back(std::make_pair("lodLevel", to_F32(HiZ->_texture->getMaxMipLevel() - 1)));
 
             DebugView_ptr DepthPreview = std::make_shared<DebugView>();
             DepthPreview->_shader = _previewDepthMapShader;
@@ -45,13 +45,13 @@ void GFXDevice::renderDebugViews() {
 
             DebugView_ptr NormalPreview = std::make_shared<DebugView>();
             NormalPreview->_shader = _renderTargetDraw;
-            NormalPreview->_texture = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::NORMALS)).asTexture();
+            NormalPreview->_texture = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Colour, to_const_U8(ScreenTargets::NORMALS)).asTexture();
             NormalPreview->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
             NormalPreview->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", true));
 
             DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
             VelocityPreview->_shader = _renderTargetDraw;
-            VelocityPreview->_texture = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::VELOCITY)).asTexture();
+            VelocityPreview->_texture = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Colour, to_const_U8(ScreenTargets::VELOCITY)).asTexture();
             VelocityPreview->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
             VelocityPreview->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
 
@@ -68,15 +68,15 @@ void GFXDevice::renderDebugViews() {
             //HiZ preview
             I32 LoDLevel = 0;
             if (Config::USE_HIZ_CULLING && Config::USE_Z_PRE_PASS) {
-                LoDLevel = to_int(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) %
+                LoDLevel = to_I32(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) %
                     (renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getMaxMipLevel() - 1);
             }
-            HiZPtr->_shaderData._floatValues[0].second = to_float(LoDLevel);
+            HiZPtr->_shaderData._floatValues[0].second = to_F32(LoDLevel);
         }
     
 
         constexpr I32 maxViewportColumnCount = 10;
-        I32 viewCount = to_int(_debugViews.size());
+        I32 viewCount = to_I32(_debugViews.size());
         I32 columnCount = std::min(viewCount, maxViewportColumnCount);
         I32 rowCount = viewCount / maxViewportColumnCount;
         if (viewCount % maxViewportColumnCount > 0) {
@@ -84,12 +84,12 @@ void GFXDevice::renderDebugViews() {
         }
 
         RenderTarget& screenRT = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-        U16 screenWidth = std::max(screenRT.getWidth(), to_const_ushort(1280));
-        U16 screenHeight = std::max(screenRT.getHeight(), to_const_ushort(720));
-        F32 aspectRatio = to_float(screenWidth) / screenHeight;
+        U16 screenWidth = std::max(screenRT.getWidth(), to_const_U16(1280));
+        U16 screenHeight = std::max(screenRT.getHeight(), to_const_U16(720));
+        F32 aspectRatio = to_F32(screenWidth) / screenHeight;
 
         I32 viewportWidth = screenWidth / maxViewportColumnCount;
-        I32 viewportHeight = to_int(viewportWidth / aspectRatio);
+        I32 viewportHeight = to_I32(viewportWidth / aspectRatio);
         vec4<I32> viewport(screenWidth - viewportWidth, 0, viewportWidth, viewportHeight);
 
         GenericDrawCommand triangleCmd;
@@ -168,8 +168,8 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
 
         // Debug axis form the axis arrow gizmo in the corner of the screen
         // This is togglable, so check if it's actually requested
-        if (BitCompare(to_uint(sceneRenderState.gizmoState()),
-                       to_const_uint(SceneRenderState::GizmoState::SCENE_GIZMO))) {
+        if (BitCompare(to_U32(sceneRenderState.gizmoState()),
+                       to_const_U32(SceneRenderState::GizmoState::SCENE_GIZMO))) {
 
             // Apply the inverse view matrix so that it cancels out in the shader
             // Submit the draw command, rendering it in a tiny viewport in the lower

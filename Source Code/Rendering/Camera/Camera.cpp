@@ -198,7 +198,7 @@ const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
     _target.set(target);
     _viewMatrix.lookAt(_eye, _target, up);
     // Extract the pitch angle from the view matrix.
-    _accumPitchDegrees = Angle::RadiansToDegrees(std::asinf(getForwardDir().y));
+    _accumPitchDegrees = Angle::to_DEGREES(std::asinf(getForwardDir().y));
     _orientation.fromLookAt(_eye - _target, up);
 
     _viewMatrixDirty = false;
@@ -236,7 +236,7 @@ bool Camera::updateProjection() {
                                     _zPlanes.x,
                                     _zPlanes.y);
         } else {
-            _projectionMatrix.perspective(Angle::DegreesToRadians(_verticalFoV),
+            _projectionMatrix.perspective(Angle::to_RADIANS(_verticalFoV),
                                           _aspectRatio,
                                           _zPlanes.x,
                                           _zPlanes.y);
@@ -283,10 +283,7 @@ void Camera::setVerticalFoV(F32 verticalFoV) {
 }
 
 void Camera::setHorizontalFoV(F32 horizontalFoV) {
-    _verticalFoV = Angle::RadiansToDegrees(
-        2.0f *
-        std::atan(tan(Angle::DegreesToRadians(horizontalFoV) * 0.5f) /
-            _aspectRatio));
+    _verticalFoV = Angle::to_DEGREES(2.0f * std::atan(tan(Angle::to_RADIANS(horizontalFoV) * 0.5f) / _aspectRatio));
     _projectionDirty = true;
 }
 
@@ -311,7 +308,8 @@ bool Camera::updateViewMatrix() {
     _viewMatrix.m[3][0] = -xAxis.dot(_eye);
     _viewMatrix.m[3][1] = -yAxis.dot(_eye);
     _viewMatrix.m[3][2] = -zAxis.dot(_eye);
-    _orientation.getEuler(_euler, true);
+    _orientation.getEuler(_euler);
+    _euler = Angle::to_DEGREES(_euler);
 
     _viewMatrixDirty = false;
     _frustumDirty = true;

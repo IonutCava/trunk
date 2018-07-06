@@ -9,7 +9,7 @@
 namespace Divide {
 
 Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, ObjectType type, ObjectFlag flag)
-    : Object3D(context, parentCache, descriptorHash, name, name, "", type, to_uint(flag))
+    : Object3D(context, parentCache, descriptorHash, name, name, "", type, to_U32(flag))
 {
 }
 
@@ -19,7 +19,7 @@ Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descri
 }
 
 Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag)
-    : Object3D(context, parentCache, descriptorHash, name, resourceName, resourceLocation, type, to_uint(flag))
+    : Object3D(context, parentCache, descriptorHash, name, resourceName, resourceLocation, type, to_U32(flag))
 {
 }
 
@@ -108,7 +108,7 @@ void Object3D::initialiseDrawCommands(SceneGraphNode& sgn,
         GenericDrawCommand cmd;
         VertexBuffer* const vb = getGeometryVB();
         cmd.sourceBuffer(vb);
-        cmd.cmd().indexCount = to_uint(vb->getIndexCount());
+        cmd.cmd().indexCount = to_U32(vb->getIndexCount());
         drawCommandsInOut.push_back(cmd);
     }
 

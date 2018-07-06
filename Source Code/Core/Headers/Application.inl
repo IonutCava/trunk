@@ -183,7 +183,7 @@ inline void Application::mainLoopPaused(bool state) {
 
 inline void Application::snapCursorToCenter() const {
     const vec2<U16>& center = _windowManager.getActiveWindow().getDimensions();
-    setCursorPosition(to_int(center.x / 2), to_int(center.y / 2));
+    setCursorPosition(to_I32(center.x / 2), to_I32(center.y / 2));
 }
 
 inline void Application::throwError(ErrorCode err) {

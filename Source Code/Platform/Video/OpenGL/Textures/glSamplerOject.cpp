@@ -14,19 +14,19 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor) {
     glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_LOD, descriptor.maxLOD());
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_MIN_FILTER,
-        to_uint(GLUtil::glTextureFilterTable[to_uint(descriptor.minFilter())]));
+        to_U32(GLUtil::glTextureFilterTable[to_U32(descriptor.minFilter())]));
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_MAG_FILTER,
-        to_uint(GLUtil::glTextureFilterTable[to_uint(descriptor.magFilter())]));
+        to_U32(GLUtil::glTextureFilterTable[to_U32(descriptor.magFilter())]));
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_WRAP_S,
-        to_uint(GLUtil::glWrapTable[to_uint(descriptor.wrapU())]));
+        to_U32(GLUtil::glWrapTable[to_U32(descriptor.wrapU())]));
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_WRAP_T,
-        to_uint(GLUtil::glWrapTable[to_uint(descriptor.wrapV())]));
+        to_U32(GLUtil::glWrapTable[to_U32(descriptor.wrapV())]));
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_WRAP_R,
-        to_uint(GLUtil::glWrapTable[to_uint(descriptor.wrapW())]));
+        to_U32(GLUtil::glWrapTable[to_U32(descriptor.wrapW())]));
     if (descriptor.wrapU() == TextureWrap::CLAMP_TO_BORDER ||
         descriptor.wrapV() == TextureWrap::CLAMP_TO_BORDER ||
         descriptor.wrapW() == TextureWrap::CLAMP_TO_BORDER) {
@@ -37,16 +37,16 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor) {
     if (descriptor._useRefCompare) {
         glSamplerParameteri(
             _samplerID, GL_TEXTURE_COMPARE_FUNC,
-            to_uint(GLUtil::glCompareFuncTable[to_uint(descriptor._cmpFunc)]));
+            to_U32(GLUtil::glCompareFuncTable[to_U32(descriptor._cmpFunc)]));
 
         glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_MODE,
-                            to_const_uint(GL_COMPARE_REF_TO_TEXTURE));
+                            to_const_U32(GL_COMPARE_REF_TO_TEXTURE));
     }
 
     if (descriptor.anisotropyLevel() > 1 && descriptor.generateMipMaps()) {
         glSamplerParameterf(_samplerID, gl::GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                            std::min<GLfloat>(to_float(descriptor.anisotropyLevel()),
-                                              to_float(GL_API::s_anisoLevel)));
+                            std::min<GLfloat>(to_F32(descriptor.anisotropyLevel()),
+                                              to_F32(GL_API::s_anisoLevel)));
     }
     // glSamplerParameterfv(_samplerID, GL_TEXTURE_BORDER_COLOR,
     // &vec4<F32>(0.0f).r));

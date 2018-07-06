@@ -150,7 +150,7 @@ void Octree::update(const U64 deltaTime) {
 bool Octree::addNode(SceneGraphNode_wptr node) {
     SceneGraphNode_ptr nodePtr = node.lock();
     if (nodePtr && // check for valid node
-        !BitCompare(_nodeMask, to_uint(nodePtr->getNode<>()->getType())) &&  // check for valid type
+        !BitCompare(_nodeMask, to_U32(nodePtr->getNode<>()->getType())) &&  // check for valid type
         !nodePtr->isChildOfType(_nodeMask, true)) // parent is valid type as well
     {
         WriteLock w_lock(s_pendingInsertLock);
@@ -398,12 +398,12 @@ void Octree::findEnclosingCube() {
     const vec3<F32>& regionMax = _region.getMax();
     //A 3D rectangle has a length, height, and width. Of those three dimensions, we want to find the largest dimension.
     //the largest dimension will be the minimum dimensions of the cube we're creating.
-    I32 highX = to_int(std::floor(std::max(std::max(regionMax.x, regionMax.y), regionMax.z)));
+    I32 highX = to_I32(std::floor(std::max(std::max(regionMax.x, regionMax.y), regionMax.z)));
 
     //see if our cube dimension is already at a power of 2. If it is, we don't have to do any work.
     for (I32 bit = 0; bit < 32; ++bit) {
         if (highX == 1 << bit) {
-            _region.setMax(to_float(highX));
+            _region.setMax(to_F32(highX));
             _region.translate(-offset);
             return;
         }
@@ -411,7 +411,7 @@ void Octree::findEnclosingCube() {
 
     //We have a cube with non-power of two dimensions. We want to find the next highest power of two.
     //example: 63 -> 64; 65 -> 128;
-    _region.setMax(to_float(nextPOW2(highX)));
+    _region.setMax(to_F32(nextPOW2(highX)));
     _region.translate(-offset);
 }
 
@@ -480,7 +480,7 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U
         SceneGraphNode_ptr obj = objPtr.lock();
         assert(obj);
         //skip any objects which don't meet our type criteria
-        if (BitCompare(typeFilterMask, to_const_uint(obj->getNode<>()->getType()))) {
+        if (BitCompare(typeFilterMask, to_const_U32(obj->getNode<>()->getType()))) {
             continue;
         }
 
@@ -520,7 +520,7 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, 
         SceneGraphNode_ptr obj = objPtr.lock();
         assert(obj);
         //skip any objects which don't meet our type criteria
-        if (BitCompare(typeFilterMask, to_const_uint(obj->getNode<>()->getType()))) {
+        if (BitCompare(typeFilterMask, to_const_U32(obj->getNode<>()->getType()))) {
             continue;
         }
 

@@ -13,7 +13,7 @@ namespace Divide {
 
 SharedLock glShader::_shaderNameLock;
 glShader::ShaderMap glShader::_shaderNameMap;
-stringImpl glShader::shaderAtomLocationPrefix[to_const_uint(ShaderType::COUNT) + 1];
+stringImpl glShader::shaderAtomLocationPrefix[to_const_U32(ShaderType::COUNT) + 1];
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glShader, 0, 0);
 glShader::glShader(GFXDevice& context,
@@ -53,16 +53,16 @@ glShader::glShader(GFXDevice& context,
             break;
     };
 
-    if (shaderAtomLocationPrefix[to_const_uint(ShaderType::VERTEX)].empty()) {
+    if (shaderAtomLocationPrefix[to_const_U32(ShaderType::VERTEX)].empty()) {
         stringImpl locPrefix(Paths::g_assetsLocation + Paths::g_shadersLocation + Paths::Shaders::GLSL::g_parentShaderLoc);
 
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::FRAGMENT)] = locPrefix + Paths::Shaders::GLSL::g_fragAtomLoc;
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::VERTEX)] = locPrefix + Paths::Shaders::GLSL::g_vertAtomLoc;
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::GEOMETRY)] = locPrefix + Paths::Shaders::GLSL::g_geomAtomLoc;
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::TESSELATION_CTRL)] = locPrefix + Paths::Shaders::GLSL::g_tescAtomLoc;
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::TESSELATION_EVAL)] = locPrefix + Paths::Shaders::GLSL::g_teseAtomLoc;
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::COMPUTE)] = locPrefix + Paths::Shaders::GLSL::g_compAtomLoc;
-        shaderAtomLocationPrefix[to_const_uint(ShaderType::COUNT)] = locPrefix + Paths::Shaders::GLSL::g_comnAtomLoc;
+        shaderAtomLocationPrefix[to_const_U32(ShaderType::FRAGMENT)] = locPrefix + Paths::Shaders::GLSL::g_fragAtomLoc;
+        shaderAtomLocationPrefix[to_const_U32(ShaderType::VERTEX)] = locPrefix + Paths::Shaders::GLSL::g_vertAtomLoc;
+        shaderAtomLocationPrefix[to_const_U32(ShaderType::GEOMETRY)] = locPrefix + Paths::Shaders::GLSL::g_geomAtomLoc;
+        shaderAtomLocationPrefix[to_const_U32(ShaderType::TESSELATION_CTRL)] = locPrefix + Paths::Shaders::GLSL::g_tescAtomLoc;
+        shaderAtomLocationPrefix[to_const_U32(ShaderType::TESSELATION_EVAL)] = locPrefix + Paths::Shaders::GLSL::g_teseAtomLoc;
+        shaderAtomLocationPrefix[to_const_U32(ShaderType::COMPUTE)] = locPrefix + Paths::Shaders::GLSL::g_compAtomLoc;
+        shaderAtomLocationPrefix[to_const_U32(ShaderType::COUNT)] = locPrefix + Paths::Shaders::GLSL::g_comnAtomLoc;
     }
 }
 
@@ -170,7 +170,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source, I32 level /*= 
                 DIVIDE_UNEXPECTED_CALL("Invalid shader include type");
             }
 
-            include_string = ShaderProgram::shaderFileRead(include_file, shaderAtomLocationPrefix[to_uint(typeIndex)]);
+            include_string = ShaderProgram::shaderFileRead(include_file, shaderAtomLocationPrefix[to_U32(typeIndex)]);
             
             if (include_string.empty()) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")),

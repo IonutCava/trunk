@@ -53,9 +53,9 @@ TerrainChunk::~TerrainChunk() {
 void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimension, const vec2<U32>& HMsize) {
     _chunkIndOffset = _terrainVB->getIndexCount();
 
-    _xOffset = to_float(pos.x);
-    _yOffset = to_float(pos.y);
-    _sizeX = _sizeY = to_float(_targetChunkDimension);
+    _xOffset = to_F32(pos.x);
+    _yOffset = to_F32(pos.y);
+    _sizeX = _sizeY = to_F32(_targetChunkDimension);
 
     for (U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++) {
         ComputeIndicesArray(i, depth, pos, HMsize);
@@ -95,8 +95,8 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth,
                                        const vec2<U32>& heightMapSize) {
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
 
-    U32 offset = to_uint(std::pow(2.0f, to_float(lod)));
-    U32 div = to_uint(std::pow(2.0f, to_float(depth + lod)));
+    U32 offset = to_U32(std::pow(2.0f, to_F32(lod)));
+    U32 div = to_U32(std::pow(2.0f, to_F32(depth + lod)));
     vec2<U32> heightmapDataSize = heightMapSize / (div);
 
     U32 nHMWidth = heightmapDataSize.x + 1;
@@ -130,10 +130,10 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth,
 
     if (lod > 0) {
         _lodIndOffset[lod] =
-            to_uint(_indice[lod - 1].size() + _lodIndOffset[lod - 1]);
+            to_U32(_indice[lod - 1].size() + _lodIndOffset[lod - 1]);
     }
 
-    _lodIndCount[lod] = to_uint(_indice[lod].size());
+    _lodIndCount[lod] = to_U32(_indice[lod].size());
     assert(nIndice == _lodIndCount[lod]);
 }
 
@@ -142,7 +142,7 @@ vec3<U32> TerrainChunk::getBufferOffsetAndSize(I8 targetLoD) const {
     if (targetLoD > 0) {
         targetLoD--;
     }
-    return vec3<U32>(_lodIndOffset[targetLoD] + _chunkIndOffset, _lodIndCount[targetLoD], to_uint(targetLoD));
+    return vec3<U32>(_lodIndOffset[targetLoD] + _chunkIndOffset, _lodIndCount[targetLoD], to_U32(targetLoD));
 
 }
 

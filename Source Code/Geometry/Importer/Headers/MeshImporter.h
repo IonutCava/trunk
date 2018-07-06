@@ -78,7 +78,7 @@ namespace Divide {
             Material::ColourData   _colourData;
             Material::ShadingMode  _shadingMode;
             Material::BumpMethod   _bumpMethod;
-            std::array<TextureEntry, to_const_uint(ShaderProgram::TextureUsage::COUNT)> _textures;
+            std::array<TextureEntry, to_const_U32(ShaderProgram::TextureUsage::COUNT)> _textures;
         };
 
         struct SubMeshData {

@@ -55,9 +55,9 @@ public:
               camera(nullptr),
               occlusionCull(false),
               doPrePass(true),
-              pass(0)
+              pass(0),
+              clippingPlanes(to_const_U32(ClipPlaneIndex::COUNT), Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
         {
-            clippingPlanes.resize(to_const_uint(ClipPlaneIndex::COUNT), Plane<F32>(0, 0, 0, 0));
         }
 
         RenderTargetID target;

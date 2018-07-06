@@ -53,7 +53,7 @@ inline vec4<U8> RANDOM() {
     return vec4<U8>(Random<U8>(255),
                     Random<U8>(255),
                     Random<U8>(255),
-                    to_ubyte(255));
+                    to_U8(255));
 }
 
 inline vec4<F32> RANDOM_NORMALIZED() {

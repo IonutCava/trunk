@@ -198,7 +198,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
     inline const GOAPAction* getActiveAction() const {
         assert(_activeGoal != nullptr);
         const GOAPPlan& plan = _activeGoal->getCurrentPlan();
-        if (to_uint(_currentStep) >= plan.size()) {
+        if (to_U32(_currentStep) >= plan.size()) {
             return nullptr;
         }
         return plan[_currentStep];

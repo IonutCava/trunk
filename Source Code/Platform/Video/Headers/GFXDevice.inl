@@ -96,7 +96,7 @@ GFXDevice::setRenderStagePass(const RenderStagePass& stage) {
 inline void 
 GFXDevice::toggleClipPlane(ClipPlaneIndex index, const bool state) {
     assert(index != ClipPlaneIndex::COUNT);
-    U32 idx = to_uint(index);
+    U32 idx = to_U32(index);
     if (state != _clippingPlanes[idx].active()) {
         _clippingPlanes[idx].active(state);
     }
@@ -105,7 +105,7 @@ GFXDevice::toggleClipPlane(ClipPlaneIndex index, const bool state) {
 inline void 
 GFXDevice::setClipPlane(ClipPlaneIndex index, const Plane<F32>& p) {
     assert(index != ClipPlaneIndex::COUNT);
-    _clippingPlanes[to_uint(index)] = p;
+    _clippingPlanes[to_U32(index)] = p;
     updateClipPlanes();
 }
 /// set a new list of clipping planes. The old one is discarded
@@ -119,7 +119,7 @@ GFXDevice::setClipPlanes(const PlaneList& clipPlanes) {
 /// clear all clipping planes
 inline void 
 GFXDevice::resetClipPlanes() {
-    _clippingPlanes.resize(to_const_uint(ClipPlaneIndex::COUNT), Plane<F32>(0, 0, 0, 0));
+    _clippingPlanes.resize(to_const_U32(ClipPlaneIndex::COUNT), Plane<F32>(0, 0, 0, 0));
     updateClipPlanes();
 }
 /// Alternative to the normal version of getMatrix

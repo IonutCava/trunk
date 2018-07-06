@@ -16,8 +16,8 @@ namespace Divide {
 
 template<>
 CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
-    assert(_descriptor.getEnumValue() >= to_const_uint(TextureType::TEXTURE_1D) &&
-           _descriptor.getEnumValue() < to_const_uint(TextureType::COUNT));
+    assert(_descriptor.getEnumValue() >= to_const_U32(TextureType::TEXTURE_1D) &&
+           _descriptor.getEnumValue() < to_const_U32(TextureType::COUNT));
 
     assert((!_descriptor.getResourceLocation().empty() && !_descriptor.getResourceName().empty()) ||
             _descriptor.getResourceLocation().empty());
@@ -70,7 +70,7 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
                     DeleteResource(_cache));
 
     if (_descriptor.getID() > 0) {
-        ptr->setNumLayers(to_ubyte(_descriptor.getID()));
+        ptr->setNumLayers(to_U8(_descriptor.getID()));
     }
     // Add the specified sampler, if any
     if (_descriptor.hasPropertyDescriptor()) {

@@ -41,12 +41,12 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
 {
     _textures.fill(nullptr);
     _textureExtenalFlag.fill(false);
-    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFLECTION_PLANAR)] = true;
-    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFRACTION_PLANAR)] = true;
-    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFLECTION_CUBE)] = true;
-    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFRACTION_CUBE)] = true;
-    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::DEPTH)] = true;
-    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::DEPTH_PREV)] = true;
+    _textureExtenalFlag[to_const_U32(ShaderProgram::TextureUsage::REFLECTION_PLANAR)] = true;
+    _textureExtenalFlag[to_const_U32(ShaderProgram::TextureUsage::REFRACTION_PLANAR)] = true;
+    _textureExtenalFlag[to_const_U32(ShaderProgram::TextureUsage::REFLECTION_CUBE)] = true;
+    _textureExtenalFlag[to_const_U32(ShaderProgram::TextureUsage::REFRACTION_CUBE)] = true;
+    _textureExtenalFlag[to_const_U32(ShaderProgram::TextureUsage::DEPTH)] = true;
+    _textureExtenalFlag[to_const_U32(ShaderProgram::TextureUsage::DEPTH_PREV)] = true;
     defaultReflectionTexture(nullptr, 0);
     defaultRefractionTexture(nullptr, 0);
 
@@ -117,8 +117,8 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_defaultRefraction = base._defaultRefraction;
     cloneMat->_translucencySource = base._translucencySource;
 
-    for (U8 pass = 0; pass < to_const_uint(RenderPassType::COUNT); ++pass) {
-        for (U8 i = 0; i < to_const_uint(RenderStage::COUNT); i++) {
+    for (U8 pass = 0; pass < to_const_U32(RenderPassType::COUNT); ++pass) {
+        for (U8 i = 0; i < to_const_U32(RenderStage::COUNT); i++) {
             cloneMat->_shaderModifier[pass][i] = base._shaderModifier[pass][i];
             cloneMat->_shaderInfo[pass][i] = _shaderInfo[pass][i];
             for (U8 j = 0; j < _defaultRenderStates[pass][i].size(); ++j) {
@@ -127,7 +127,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
         }
     }
 
-    for (U8 i = 0; i < to_ubyte(base._textures.size()); ++i) {
+    for (U8 i = 0; i < to_U8(base._textures.size()); ++i) {
         ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
         if (!isExternalTexture(usage)) {
             Texture_ptr tex = base._textures[i];
@@ -148,13 +148,10 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
 }
 
 void Material::update(const U64 deltaTime) {
-    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
         for (ShaderProgramInfo& info : _shaderInfo[pass]) {
-            if (info.computeStage() == ShaderProgramInfo::BuildStage::COMPUTED) {
-                if (info._shaderRef->getState() == ResourceState::RES_LOADED) {
-                    info.computeStage(ShaderProgramInfo::BuildStage::READY);
-                    _dirty = true;
-                }
+            if (info.update()) {
+                _dirty = true;
             }
         }
     }
@@ -174,14 +171,14 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
                           const Texture_ptr& texture,
                           const TextureOperation& op) {
     bool computeShaders = false;
-    U32 slot = to_uint(textureUsageSlot);
+    U32 slot = to_U32(textureUsageSlot);
 
     if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT1) {
         _operation = op;
     }
 
     if (texture && textureUsageSlot == ShaderProgram::TextureUsage::OPACITY) {
-        Texture_ptr& diffuseMap = _textures[to_const_uint(ShaderProgram::TextureUsage::UNIT0)];
+        Texture_ptr& diffuseMap = _textures[to_const_U32(ShaderProgram::TextureUsage::UNIT0)];
         if (diffuseMap && texture->getGUID() == diffuseMap->getGUID()) {
             return false;
         }
@@ -228,7 +225,7 @@ void Material::setShaderProgram(const stringImpl& shader,
 void Material::setShaderProgram(const stringImpl& shader,
                                 RenderStage stage,
                                 const bool computeOnAdd) {
-    for (U8 pass = 0; pass < to_const_uint(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_const_U32(RenderPassType::COUNT); ++pass) {
         setShaderProgram(shader, RenderStagePass(stage, static_cast<RenderPassType>(pass)), computeOnAdd);
     }
 }
@@ -236,7 +233,7 @@ void Material::setShaderProgram(const stringImpl& shader,
 void Material::setShaderProgram(const stringImpl& shader,
                                 RenderPassType passType,
                                 const bool computeOnAdd) {
-    for (U8 stage = 0; stage < to_const_uint(RenderStage::COUNT); ++stage) {
+    for (U8 stage = 0; stage < to_const_U32(RenderStage::COUNT); ++stage) {
         setShaderProgram(shader, RenderStagePass(static_cast<RenderStage>(stage), passType), computeOnAdd);
     }
 }
@@ -292,7 +289,7 @@ void Material::clean() {
 }
 
 void Material::recomputeShaders() {
-    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
         for (ShaderProgramInfo& info : _shaderInfo[pass]) {
             if (!info._customShader) {
                 info.computeStage(ShaderProgramInfo::BuildStage::REQUESTED);
@@ -302,9 +299,9 @@ void Material::recomputeShaders() {
 }
 
 bool Material::canDraw(const RenderStagePass& renderStage) {
-    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
-        const std::array<ShaderProgramInfo, to_const_uint(RenderStage::COUNT)>& passInfo = _shaderInfo[pass];
-        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+        const std::array<ShaderProgramInfo, to_const_U32(RenderStage::COUNT)>& passInfo = _shaderInfo[pass];
+        for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
             const ShaderProgramInfo& info = passInfo[i];
             if (info.computeStage() != ShaderProgramInfo::BuildStage::READY) {
                 computeShader(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), _highPriority);
@@ -386,9 +383,9 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
     // At this point, only computation requests are processed
     assert(info.computeStage() == ShaderProgramInfo::BuildStage::REQUESTED);
 
-    const U32 slot0 = to_const_uint(ShaderProgram::TextureUsage::UNIT0);
-    const U32 slot1 = to_const_uint(ShaderProgram::TextureUsage::UNIT1);
-    const U32 slotOpacity = to_const_uint(ShaderProgram::TextureUsage::OPACITY);
+    const U32 slot0 = to_const_U32(ShaderProgram::TextureUsage::UNIT0);
+    const U32 slot1 = to_const_U32(ShaderProgram::TextureUsage::UNIT1);
+    const U32 slotOpacity = to_const_U32(ShaderProgram::TextureUsage::OPACITY);
 
     if ((_textures[slot0] && _textures[slot0]->getState() != ResourceState::RES_LOADED) ||
         (_textures[slotOpacity] && _textures[slotOpacity]->getState() != ResourceState::RES_LOADED)) {
@@ -433,7 +430,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
     // What kind of effects do we need?
     if (_textures[slot0]) {
         // Bump mapping?
-        if (_textures[to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)] &&  _bumpMethod != BumpMethod::NONE) {
+        if (_textures[to_const_U32(ShaderProgram::TextureUsage::NORMALMAP)] &&  _bumpMethod != BumpMethod::NONE) {
             setShaderDefines(renderStagePass, "COMPUTE_TBN");
             shader += ".Bump";  // Normal Mapping
             if (_bumpMethod == BumpMethod::PARALLAX) {
@@ -452,7 +449,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
         shader += ".NoTexture";
     }
 
-    if (_textures[to_const_uint(ShaderProgram::TextureUsage::SPECULAR)]) {
+    if (_textures[to_const_U32(ShaderProgram::TextureUsage::SPECULAR)]) {
         shader += ".Specular";
         setShaderDefines(renderStagePass, "USE_SPECULAR_MAP");
     }
@@ -513,7 +510,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
         } break;
     }
     // Add any modifiers you wish
-    stringImpl& modifier = _shaderModifier[to_uint(renderStagePass._passType)][to_uint(renderStagePass._stage)];
+    stringImpl& modifier = _shaderModifier[to_U32(renderStagePass._passType)][to_U32(renderStagePass._stage)];
     if (!modifier.empty()) {
         shader += ".";
         shader += modifier;
@@ -548,7 +545,7 @@ bool Material::removeCustomTexture(U8 index) {
 
 void Material::getTextureData(ShaderProgram::TextureUsage slot,
                               TextureDataContainer& container) {
-    U32 slotValue = to_uint(slot);
+    U32 slotValue = to_U32(slot);
     Texture_ptr& crtTexture = _textures[slotValue];
     if (crtTexture && crtTexture->flushTextureState()) {
         TextureData& data = crtTexture->getData();
@@ -558,7 +555,7 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
 }
 
 void Material::getTextureData(TextureDataContainer& textureData) {
-    const U32 textureCount = to_const_uint(ShaderProgram::TextureUsage::COUNT);
+    const U32 textureCount = to_const_U32(ShaderProgram::TextureUsage::COUNT);
 
     if (!_context.isDepthStage()) {
         getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
@@ -574,7 +571,7 @@ void Material::getTextureData(TextureDataContainer& textureData) {
         for (std::pair<Texture_ptr, U8>& tex : _customTextures) {
             if (tex.first->flushTextureState()) {
                 TextureData& data = tex.first->getData();
-                data.setHandleLow(to_uint(tex.second));
+                data.setHandleLow(to_U32(tex.second));
                 textureData.addTexture(data);
             }
         }
@@ -609,7 +606,7 @@ bool Material::unload() {
 
     _textures.fill(nullptr);
     _customTextures.clear();
-    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
         _shaderInfo[pass].fill(ShaderProgramInfo());
     }
 
@@ -624,9 +621,9 @@ void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
     _useAlphaTest = useAlphaTest;
     // Update all render states for this item
     if (_doubleSided) {
-        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
-            for (U32 index = 0; index < to_const_uint(RenderStage::COUNT); ++index) {
-                for (U8 variant = 0; variant < to_ubyte(_defaultRenderStates[pass][index].size()); ++variant) {
+        for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+            for (U32 index = 0; index < to_const_U32(RenderStage::COUNT); ++index) {
+                for (U8 variant = 0; variant < to_U8(_defaultRenderStates[pass][index].size()); ++variant) {
                     size_t hash = _defaultRenderStates[pass][index][variant];
                     RenderStateBlock descriptor(RenderStateBlock::get(hash));
                     descriptor.setCullMode(CullMode::NONE);
@@ -655,14 +652,14 @@ bool Material::updateTranslucency() {
         }
 
         // base texture is translucent
-        if (_textures[to_const_uint(ShaderProgram::TextureUsage::UNIT0)] &&
-            _textures[to_const_uint(ShaderProgram::TextureUsage::UNIT0)]->hasTransparency()) {
+        if (_textures[to_const_U32(ShaderProgram::TextureUsage::UNIT0)] &&
+            _textures[to_const_U32(ShaderProgram::TextureUsage::UNIT0)]->hasTransparency()) {
             _translucencySource = TranslucencySource::DIFFUSE_MAP;
             useAlphaTest = true;
         }
 
         // opacity map
-        if (_textures[to_const_uint(ShaderProgram::TextureUsage::OPACITY)]) {
+        if (_textures[to_const_U32(ShaderProgram::TextureUsage::OPACITY)]) {
             _translucencySource = TranslucencySource::OPACITY_MAP;
             useAlphaTest = false;
         }
@@ -696,14 +693,14 @@ void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
     retMatrix.setRow(0, _colourData._diffuse);
     retMatrix.setRow(1, _colourData._specular);
     retMatrix.setRow(2, vec4<F32>(_colourData._emissive.rgb(), _colourData._shininess));
-    retMatrix.setRow(3, vec4<F32>(isTranslucent() ? 1.0f : 0.0f,  to_float(getTextureOperation()), getParallaxFactor(), 0.0));
+    retMatrix.setRow(3, vec4<F32>(isTranslucent() ? 1.0f : 0.0f,  to_F32(getTextureOperation()), getParallaxFactor(), 0.0));
 }
 
 void Material::rebuild() {
     recomputeShaders();
 
-    for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
             computeShader(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), _highPriority);
             _shaderInfo[pass][i]._shaderRef->recompile();
         }

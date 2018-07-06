@@ -39,12 +39,12 @@ namespace Divide {
     }
 
     inline const vec2<U16>& DisplayWindow::getPreviousDimensions(WindowType windowType) const {
-        return _prevDimensions[to_const_uint(windowType)];
+        return _prevDimensions[to_const_U32(windowType)];
     }
 
     inline void DisplayWindow::setDimensions(WindowType windowType, U16 dimensionX, U16 dimensionY) {
-        _prevDimensions[to_const_uint(type())].set(_windowDimensions[to_const_uint(type())]);
-        _windowDimensions[to_const_uint(type())].set(dimensionX, dimensionY);
+        _prevDimensions[to_const_U32(type())].set(_windowDimensions[to_const_U32(type())]);
+        _windowDimensions[to_const_U32(type())].set(dimensionX, dimensionY);
 
         if (windowType == type()) {
             setDimensionsInternal(dimensionX, dimensionY);
@@ -56,7 +56,7 @@ namespace Divide {
     }
 
     inline const vec2<U16>& DisplayWindow::getDimensions(WindowType windowType) const {
-        return _windowDimensions[to_uint(windowType)];
+        return _windowDimensions[to_U32(windowType)];
     }
 
     inline const vec2<U16>& DisplayWindow::getDimensions() const {
@@ -68,7 +68,7 @@ namespace Divide {
     }
 
     inline void DisplayWindow::setPosition(WindowType windowType, I32 positionX, I32 positionY) {
-        _windowPosition[to_const_uint(windowType)].set(positionX, positionY);
+        _windowPosition[to_const_U32(windowType)].set(positionX, positionY);
 
         if (windowType == type()) {
             setPositionInternal(positionX, positionY);
@@ -80,7 +80,7 @@ namespace Divide {
     }
 
     inline const vec2<I32>& DisplayWindow::getPosition(WindowType windowType) const {
-        return _windowPosition[to_const_uint(windowType)];
+        return _windowPosition[to_const_U32(windowType)];
     }
 
     inline bool DisplayWindow::hasFocus() const {

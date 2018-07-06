@@ -12,7 +12,7 @@ DirectionalLight::DirectionalLight(ResourceCache& parentCache, size_t descriptor
       _csmSplitLogFactor(0.95f),
       _csmNearClipOffset(100.0f)
 {
-    setRange(to_float(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE));
+    setRange(to_F32(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE));
 }
 
 DirectionalLight::~DirectionalLight()

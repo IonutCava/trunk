@@ -36,15 +36,28 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <type_traits>
 
 namespace Divide {
-// Data Types (double is 8 bytes with Microsoft's compiler)
-typedef uint8_t U8;
+
+// "Exact" number of bits
+typedef uint8_t  U8;
 typedef uint16_t U16;
 typedef uint32_t U32;
 typedef uint64_t U64;
-typedef int8_t I8;
-typedef int16_t I16;
-typedef int32_t I32;
-typedef int64_t I64;
+typedef int8_t   I8;
+typedef int16_t  I16;
+typedef int32_t  I32;
+typedef int64_t  I64;
+
+// "At least" number of bits
+typedef uint_least8_t  U8x;
+typedef uint_least16_t U16x;
+typedef uint_least32_t U32x;
+typedef uint_least64_t U64x;
+typedef int_least8_t   I8x;
+typedef int_least16_t  I16x;
+typedef int_least32_t  I32x;
+typedef int_least64_t  I64x;
+
+//double is 8 bytes with Microsoft's compiler)
 typedef float F32;
 typedef double D64;
 
@@ -95,80 +108,80 @@ constexpr auto to_underlying_type(const Type value) -> typename std::underlying_
 }
 
 template<typename T>
-constexpr U8 to_const_ubyte(const T value) {
+constexpr U8 to_const_U8(const T value) {
     return static_cast<U8>(value);
 }
 
 template<typename T>
-constexpr U16 to_const_ushort(const T value) {
+constexpr U16 to_const_U16(const T value) {
     return static_cast<U16>(value);
 }
 
 template<typename T>
-constexpr U32 to_const_uint(const T value) {
+constexpr U32 to_const_U32(const T value) {
     return static_cast<U32>(value);
 }
 
 template<typename T>
-constexpr I8 to_const_byte(const T value) {
+constexpr I8 to_const_I8(const T value) {
     return static_cast<I8>(value);
 }
 
 template<typename T>
-constexpr I16 to_const_short(const T value) {
+constexpr I16 to_const_I16(const T value) {
     return static_cast<I16>(value);
 }
 template<typename T>
-constexpr I32 to_const_int(const T value) {
+constexpr I32 to_const_I32(const T value) {
     return static_cast<I32>(value);
 }
 
 template<typename T>
-constexpr F32 to_const_float(const T value) {
+constexpr F32 to_const_F32(const T value) {
     return static_cast<F32>(value);
 }
 
 template<typename T>
-constexpr D64 to_const_double(const T value) {
+constexpr D64 to_const_D64(const T value) {
     return static_cast<D64>(value);
 }
 
 template <typename T>
-U32 to_uint(const T value) {
+U32 to_U32(const T value) {
     return static_cast<U32>(to_underlying_type(value));
 }
 
 template <typename T>
-U16 to_ushort(const T value) {
+U16 to_U16(const T value) {
     return static_cast<U16>(to_underlying_type(value));
 }
 
 template <typename T>
-U8 to_ubyte(const T value) {
+U8 to_U8(const T value) {
     return static_cast<U8>(to_underlying_type(value));
 }
 
 template <typename T>
-I32 to_int(const T value) {
+I32 to_I32(const T value) {
     return static_cast<I32>(to_underlying_type(value));
 }
 
 template <typename T>
-I16 to_short(const T value) {
+I16 to_I16(const T value) {
     return static_cast<I16>(to_underlying_type(value));
 }
 
 template <typename T>
-I8 to_byte(const T value) {
+I8 to_I8(const T value) {
     return static_cast<I8>(to_underlying_type(value));
 }
 template <typename T>
-F32 to_float(const T value) {
+F32 to_F32(const T value) {
     return static_cast<F32>(to_underlying_type(value));
 }
 
 template <typename T>
-D64 to_double(const T value) {
+D64 to_D64(const T value) {
     return static_cast<D64>(to_underlying_type(value));
 }
 

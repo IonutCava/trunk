@@ -68,7 +68,7 @@ bool Engine::init(int argc, char** argv) {
 
     }
 
-    _errorCode = to_int(err);
+    _errorCode = to_I32(err);
 
     return err == ErrorCode::NO_ERR;
 }
@@ -77,7 +77,7 @@ void Engine::shutdown() {
     _app.stop();
 
     if (!PlatformClose()) {
-        _errorCode = to_int(ErrorCode::PLATFORM_CLOSE_ERROR);
+        _errorCode = to_I32(ErrorCode::PLATFORM_CLOSE_ERROR);
     }
 }
 
@@ -88,7 +88,7 @@ bool Engine::step() {
 }
 
 int Engine::errorCode() const {
-    return to_int(_errorCode);
+    return to_I32(_errorCode);
 }
 
 };

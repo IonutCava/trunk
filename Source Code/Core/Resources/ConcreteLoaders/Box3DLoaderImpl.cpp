@@ -16,7 +16,7 @@ CachedResource_ptr ImplResourceLoader<Box3D>::operator()() {
                                                        _cache,
                                                        _loadingDescriptorHash,
                                                        _descriptor.getName(),
-                                                       vec3<F32>(to_float(size))),
+                                                       vec3<F32>(to_F32(size))),
                                 DeleteResource(_cache));
 
     if (!load(ptr, _descriptor.onLoadCallback())) {

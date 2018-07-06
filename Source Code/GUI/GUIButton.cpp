@@ -72,7 +72,7 @@ void GUIButton::setFont(const stringImpl& fontName,
     if (!fontName.empty()) {
         if (!CEGUI::FontManager::getSingleton().isDefined(fontName.c_str())) {
             CEGUI::FontManager::getSingleton().createFreeTypeFont(
-                fontName.c_str(), to_float(size), true, fontFileName.c_str());
+                fontName.c_str(), to_F32(size), true, fontFileName.c_str());
         }
 
         if (CEGUI::FontManager::getSingleton().isDefined(fontName.c_str())) {

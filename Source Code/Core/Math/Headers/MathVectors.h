@@ -194,7 +194,7 @@ class vec2 {
     template<typename U>
     bool operator!=(const vec2<U> &v) const { return !this->compare(v); }
     template<typename U>
-    bool operator==(const vec2<T> &v) const { return this->compare(v); }
+    bool operator==(const vec2<U> &v) const { return this->compare(v); }
 
     vec2 &operator=(T _f) noexcept {
         this->set(_f);
@@ -215,6 +215,52 @@ class vec2 {
     const vec2 operator+(const vec2 &v) const {
         return vec2(this->x + v.x, this->y + v.y);
     }
+
+    const vec2 operator+(T _f) const {
+        return vec2(this->x + _f, this->y + _f);
+    }
+
+    const vec2 operator-(T _f) const {
+        return vec2(this->x - _f, this->y - _f);
+    }
+
+    template<typename U>
+    vec2 &operator=(U _f) noexcept {
+        this->set(_f);
+        return (*this);
+    }
+
+    template<typename U>
+    vec2 &operator=(const vec2<U>& other) noexcept {
+        this->set(other);
+        return (*this);
+    }
+
+    template<typename U>
+    const vec2 operator*(U _f) const {
+        return vec2(this->x * _f, this->y * _f);
+    }
+
+    template<typename U>
+    const vec2 operator/(U _i) const {
+        return vec2(this->x / _i, this->y / _i);
+    }
+
+    template<typename U>
+    const vec2 operator+(const vec2<U> &v) const {
+        return vec2(this->x + v.x, this->y + v.y);
+    }
+
+    template<typename U>
+    const vec2 operator+(U _f) const {
+        return vec2(this->x + _f, this->y + _f);
+    }
+
+    template<typename U>
+    const vec2 operator-(U _f) const {
+        return vec2(this->x - _f, this->y - _f);
+    }
+
     const vec2 operator-() const { return vec2(-this->x, -this->y); }
     const vec2 operator-(const vec2 &v) const {
         return vec2(this->x - v.x, this->y - v.y);
@@ -462,7 +508,7 @@ class vec3 {
     template<typename U>
     bool operator!=(const vec3<U> &v) const { return !this->compare(v); }
     template<typename U>
-    bool operator==(const vec3<T> &v) const { return this->compare(v); }
+    bool operator==(const vec3<U> &v) const { return this->compare(v); }
 
     vec3 &operator=(T _f) noexcept {
         this->set(_f);
@@ -485,6 +531,46 @@ class vec3 {
     const vec3 operator+(const vec3 &v) const {
         return vec3(this->x + v.x, this->y + v.y, this->z + v.z);
     }
+    const vec3 operator-(T _f) const {
+        return vec3(this->x - _f, this->y - _f, this->z - _f);
+    }
+
+    template <typename U>
+    vec3 &operator=(U _f) noexcept {
+        this->set(_f);
+        return (*this);
+    }
+
+    template <typename U>
+    vec3 &operator=(const vec3<U>& other) noexcept {
+        this->set(other);
+        return (*this);
+    }
+
+    template <typename U>
+    const vec3 operator*(U _f) const {
+        return vec3(this->x * _f, this->y * _f, this->z * _f);
+    }
+
+    template <typename U>
+    const vec3 operator/(U _f) const {
+        if (IS_ZERO(_f)) {
+            return *this;
+        }
+
+        return (*this) * (1.0f / _f);
+    }
+
+    template <typename U>
+    const vec3 operator+(const vec3<U> &v) const {
+        return vec3(this->x + v.x, this->y + v.y, this->z + v.z);
+    }
+
+    template <typename U>
+    const vec3 operator-(U _f) const {
+        return vec3(this->x - _f, this->y - _f, this->z - _f);
+    }
+
     const vec3 operator-() const { return vec3(-this->x, -this->y, -this->z); }
     const vec3 operator-(const vec3 &v) const {
         return vec3(this->x - v.x, this->y - v.y, this->z - v.z);
@@ -791,9 +877,10 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     bool operator!=(const vec4<U> &v) const { return !this->compare(v); }
     template<typename U>
-    bool operator==(const vec4<T> &v) const { return this->compare(v); }
+    bool operator==(const vec4<U> &v) const { return this->compare(v); }
 
     vec4 &operator=(T _f) noexcept { this->set(_f); return *this; }
+
     vec4 &operator=(const vec4& other) noexcept { this->set(other); return *this; }
 
     const vec4 operator-(T _f) const {
@@ -817,6 +904,40 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
                     static_cast<T>(this->y * (1.0f / _f)),
                     static_cast<T>(this->z * (1.0f / _f)),
                     static_cast<T>(this->w * (1.0f / _f)));
+    }
+
+
+    template<typename U>
+    vec4 &operator=(U _f) noexcept { this->set(_f); return *this; }
+
+    template<typename U>
+    vec4 &operator=(const vec4& other) noexcept { this->set(other); return *this; }
+
+    template<typename U>
+    const vec4 operator-(U _f) const {
+        return vec4(this->x - _f, this->y - _f, this->z - _f, this->w - _f);
+    }
+
+    template<typename U>
+    const vec4 operator+(U _f) const {
+        return vec4(this->x + _f, this->y + _f, this->z + _f, this->w + _f);
+    }
+
+    template<typename U>
+    const vec4 operator*(U _f) const {
+        return vec4(this->x * _f, this->y * _f, this->z * _f, this->w * _f);
+    }
+
+    template<typename U>
+    const vec4 operator/(U _f) const {
+        if (IS_ZERO(_f)) {
+            return *this;
+        }
+
+        return vec4(static_cast<T>(this->x * (1.0f / _f)),
+            static_cast<T>(this->y * (1.0f / _f)),
+            static_cast<T>(this->z * (1.0f / _f)),
+            static_cast<T>(this->w * (1.0f / _f)));
     }
 
     const vec4 operator-() const { return vec4(-x, -y, -z, -w); }

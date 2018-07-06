@@ -10,7 +10,7 @@ CachedResource_ptr ImplResourceLoader<SubMesh>::operator()() {
     SubMesh_ptr ptr;
 
     if (_descriptor.getEnumValue() ==
-        to_const_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
+        to_const_U32(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
         ptr.reset(MemoryManager_NEW SkinnedSubMesh(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.getName()), DeleteResource(_cache));
     } else {
         ptr.reset(MemoryManager_NEW SubMesh(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.getName()), DeleteResource(_cache));

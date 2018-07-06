@@ -47,7 +47,7 @@ GenericDrawCommand::GenericDrawCommand(PrimitiveType type,
     _commandOffset(0),
     _shaderProgram(nullptr),
     _sourceBuffer(nullptr),
-    _renderOptions(to_const_uint(RenderOptions::RENDER_GEOMETRY))
+    _renderOptions(to_const_U32(RenderOptions::RENDER_GEOMETRY))
 {
     _cmd.indexCount = indexCount;
     _cmd.firstIndex = firstIndex;
@@ -87,7 +87,7 @@ void GenericDrawCommand::renderMask(U32 mask) {
     if (Config::Build::IS_DEBUG_BUILD) {
         auto validateMask = [mask]() -> U32 {
             U32 validMask = 0;
-            for (U32 stateIt = 1; stateIt <= to_const_uint(RenderOptions::COUNT); ++stateIt) {
+            for (U32 stateIt = 1; stateIt <= to_const_U32(RenderOptions::COUNT); ++stateIt) {
                 U32 bitState = toBit(stateIt);
 
                 if (BitCompare(mask, bitState)) {
@@ -107,15 +107,15 @@ void GenericDrawCommand::renderMask(U32 mask) {
 }
 
 bool GenericDrawCommand::isEnabledOption(RenderOptions option) const {
-    return BitCompare(_renderOptions, to_uint(option));
+    return BitCompare(_renderOptions, to_U32(option));
 }
 
 void GenericDrawCommand::enableOption(RenderOptions option) {
-    SetBit(_renderOptions, to_uint(option));
+    SetBit(_renderOptions, to_U32(option));
 }
 
 void GenericDrawCommand::disableOption(RenderOptions option) {
-    ClearBit(_renderOptions, to_uint(option));
+    ClearBit(_renderOptions, to_U32(option));
 }
 
 void GenericDrawCommand::toggleOption(RenderOptions option) {

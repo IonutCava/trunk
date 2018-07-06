@@ -47,7 +47,7 @@ bool PhysXScene::load(const stringImpl& name) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name, true, true);
     // Add a light
-    vec2<F32> sunAngle(0.0f, Angle::DegreesToRadians(45.0f));
+    vec2<F32> sunAngle(0.0f, Angle::to_RADIANS(45.0f));
     _sunvector =
         vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y), -cosf(sunAngle.y),
                   -sinf(sunAngle.x) * sinf(sunAngle.y));
@@ -85,7 +85,7 @@ U16 PhysXScene::registerInputActions() {
 
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
-        TaskHandle e(CreateTask(getGUID(), DELEGATE_BIND(&PhysXScene::createTower, this, std::placeholders::_1, to_uint(Random(5, 20)))));
+        TaskHandle e(CreateTask(getGUID(), DELEGATE_BIND(&PhysXScene::createTower, this, std::placeholders::_1, to_U32(Random(5, 20)))));
         registerTask(e);
     });
     actions._onReleaseAction = actionID;
@@ -93,7 +93,7 @@ U16 PhysXScene::registerInputActions() {
     actionID++;
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
-        TaskHandle e(CreateTask(getGUID(), DELEGATE_BIND(&PhysXScene::createStack, this, std::placeholders::_1, to_uint(Random(5, 10)))));
+        TaskHandle e(CreateTask(getGUID(), DELEGATE_BIND(&PhysXScene::createStack, this, std::placeholders::_1, to_U32(Random(5, 10)))));
         registerTask(e);
     });
     actions._onReleaseAction = actionID;

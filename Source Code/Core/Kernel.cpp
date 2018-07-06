@@ -238,7 +238,7 @@ void Kernel::onLoop() {
         }
 
         Util::RecordFloatEvent("kernel.mainLoopApp",
-                               to_float(_appLoopTimer.get()),
+                               to_F32(_appLoopTimer.get()),
                                _timingData._currentTime);
 
         if (frameCount % (Config::TARGET_FRAME_RATE * 10) == 0) {
@@ -275,7 +275,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
         Time::ScopedTimer timer2(_sceneUpdateTimer);
 
         const SceneManager::PlayerList& activePlayers = _sceneManager->getPlayers();
-        U8 playerCount = to_ubyte(activePlayers.size());
+        U8 playerCount = to_U8(activePlayers.size());
 
         _timingData._updateLoops = 0;
         while (_timingData._currentTime > _timingData._nextGameTick &&
@@ -399,7 +399,7 @@ void computeViewports(const vec4<I32>& mainViewport, vectorImpl<vec4<I32>>& targ
         //Try to fit all viewports into an appropriately sized matrix.
         //If the number of resulting rows is too large, drop empty rows.
         //If the last row has an odd number of elements, center them later.
-        U8 matrixSize = to_ubyte(minSquareMatrixSize(numViewports));
+        U8 matrixSize = to_U8(minSquareMatrixSize(numViewports));
         rows.resize(matrixSize);
         std::for_each(std::begin(rows), std::end(rows), [matrixSize](ViewportRow& row) { row.resize(matrixSize); });
 
@@ -418,18 +418,18 @@ void computeViewports(const vec4<I32>& mainViewport, vectorImpl<vec4<I32>>& targ
         rows.back().pop_back();
     }
 
-    U8 rowCount = to_ubyte(rows.size());
+    U8 rowCount = to_U8(rows.size());
 
     // Calculate and set viewport dimensions
     // The number of columns is valid for the width;
     I32 playerWidth = width / columnCount;
     // The number of rows is valid for the height;
-    I32 playerHeight = height / to_int(rowCount);
+    I32 playerHeight = height / to_I32(rowCount);
 
     for (U8 i = 0; i < rowCount; ++i) {
         ViewportRow& row = rows[i];
         I32 playerYOffset = playerHeight * (rowCount - i - 1);
-        for (U8 j = 0; j < to_ubyte(row.size()); ++j) {
+        for (U8 j = 0; j < to_U8(row.size()); ++j) {
             I32 playerXOffset = playerWidth * j;
             row[j].set(playerXOffset, playerYOffset, playerWidth, playerHeight);
         }
@@ -439,7 +439,7 @@ void computeViewports(const vec4<I32>& mainViewport, vectorImpl<vec4<I32>>& targ
     if (extraColumns > 0) {
         ViewportRow& lastRow = rows.back();
         I32 screenMidPoint = width / 2;
-        I32 rowMidPoint = to_int((lastRow.size() * playerWidth) / 2);
+        I32 rowMidPoint = to_I32((lastRow.size() * playerWidth) / 2);
         I32 slideFactor = screenMidPoint - rowMidPoint;
         for (vec4<I32>& viewport : lastRow) {
             viewport.x += slideFactor;
@@ -492,7 +492,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
     const SceneManager::PlayerList& activePlayers = _sceneManager->getPlayers();
     const vec4<I32>& mainViewport = _platformContext->gfx().getCurrentViewport();
 
-    U8 playerCount = to_ubyte(activePlayers.size());
+    U8 playerCount = to_U8(activePlayers.size());
     computeViewports(mainViewport, targetViewports, playerCount);
 
     for (U8 i = 0; i < playerCount; ++i) {
@@ -512,7 +512,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
     }
     Camera::activeCamera(nullptr);
 
-    for (U8 i = playerCount; i < to_ubyte(_renderTimer.size()); ++i) {
+    for (U8 i = playerCount; i < to_U8(_renderTimer.size()); ++i) {
         Time::ProfileTimer::removeTimer(*_renderTimer[i]);
         Time::ProfileTimer::removeTimer(*_postFxRenderTimer[i]);
         Time::ProfileTimer::removeTimer(*_blitToDisplayTimer[i]);
@@ -620,8 +620,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     // Fulscreen is automatically calculated
     ResolutionByType initRes;
-    initRes[to_const_uint(WindowType::WINDOW)].set(config.runtime.resolution.w, config.runtime.resolution.h);
-    initRes[to_const_uint(WindowType::SPLASH)].set(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
+    initRes[to_const_U32(WindowType::WINDOW)].set(config.runtime.resolution.w, config.runtime.resolution.h);
+    initRes[to_const_U32(WindowType::SPLASH)].set(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
 
     bool startFullScreen = !config.runtime.windowedMode;
     WindowManager& winManager = _APP.windowManager();
@@ -667,7 +667,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     winManager.handleWindowEvent(WindowEvent::APP_LOOP, -1, -1, -1);
     // Load and render the splash screen
     _platformContext->gfx().beginFrame();
-    GUISplash(*_resCache, "divideLogo.jpg", initRes[to_const_uint(WindowType::SPLASH)]).render(_platformContext->gfx());
+    GUISplash(*_resCache, "divideLogo.jpg", initRes[to_const_U32(WindowType::SPLASH)]).render(_platformContext->gfx());
     _platformContext->gfx().endFrame(true);
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));

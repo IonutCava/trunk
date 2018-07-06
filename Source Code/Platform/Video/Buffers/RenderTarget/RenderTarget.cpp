@@ -91,7 +91,7 @@ void RenderTarget::readData(GFXImageFormat imageFormat, GFXDataFormat dataType, 
 // Set the colour the FB will clear to when drawing to it
 void RenderTarget::setClearColour(RTAttachment::Type type, U8 index, const vec4<F32>& clearColour) {
     if (type == RTAttachment::Type::COUNT) {
-        for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
+        for (U8 i = 0; i < to_const_U8(RTAttachment::Type::COUNT); ++i) {
             type = static_cast<RTAttachment::Type>(i);
             for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
                 _attachmentPool->get(type, j)->clearColour(clearColour);

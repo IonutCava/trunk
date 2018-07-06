@@ -34,7 +34,7 @@ bool FlashScene::load(const stringImpl& name) {
 }
 
 bool FlashScene::loadResources(bool continueOnErrors) {
-    _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
+    _sunAngle = vec2<F32>(0.0f, Angle::to_RADIANS(45.0f));
     _sunvector =
         vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);

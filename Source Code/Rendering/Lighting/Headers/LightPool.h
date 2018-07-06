@@ -95,16 +95,16 @@ class LightPool : public SceneComponent {
         toggleLightType(type, !lightTypeEnabled(type));
     }
     inline void toggleLightType(LightType type, const bool state) {
-        _lightTypeState[to_uint(type)] = state;
+        _lightTypeState[to_U32(type)] = state;
     }
     inline bool lightTypeEnabled(LightType type) const {
-        return _lightTypeState[to_uint(type)];
+        return _lightTypeState[to_U32(type)];
     }
     /// Retrieve the number of active lights in the scene;
-    inline const U32 getActiveLightCount(LightType type) const { return _activeLightCount[to_uint(type)]; }
+    inline const U32 getActiveLightCount(LightType type) const { return _activeLightCount[to_U32(type)]; }
 
     bool clear();
-    inline Light::LightList& getLights(LightType type) { return _lights[to_uint(type)]; }
+    inline Light::LightList& getLights(LightType type) { return _lights[to_U32(type)]; }
     Light* getLight(I64 lightGUID, LightType type);
 
     void prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
@@ -120,7 +120,7 @@ class LightPool : public SceneComponent {
 
     /// Get the appropriate shadow bind slot for every light's shadow
     static U8 getShadowBindSlotOffset(ShadowType type) {
-        return _shadowLocation[to_uint(type)];
+        return _shadowLocation[to_U32(type)];
     }
 
     /// Get the appropriate shadow bind slot offset for every light's shadow
@@ -145,7 +145,7 @@ class LightPool : public SceneComponent {
     bool generateShadowMaps(GFXDevice& context, SceneRenderState& sceneRenderState);
 
     inline Light::LightList::const_iterator findLight(I64 GUID, LightType type) const {
-        return std::find_if(std::begin(_lights[to_uint(type)]), std::end(_lights[to_uint(type)]),
+        return std::find_if(std::begin(_lights[to_U32(type)]), std::end(_lights[to_U32(type)]),
                             [&GUID](Light* const light) {
                                 return (light && light->getGUID() == GUID);
                             });
@@ -162,14 +162,14 @@ class LightPool : public SceneComponent {
     vectorImpl<TaskHandle> _lightUpdateTask;
 
     bool _buffersUpdated;
-    std::array<bool, to_const_uint(LightType::COUNT)> _lightTypeState;
-    std::array<Light::LightList, to_const_uint(LightType::COUNT)> _lights;
+    std::array<bool, to_const_U32(LightType::COUNT)> _lightTypeState;
+    std::array<Light::LightList, to_const_U32(LightType::COUNT)> _lights;
     bool _init;
     Texture_ptr _lightIconsTexture;
     ShaderProgram_ptr _lightImpostorShader;
-    std::array<U32, to_const_uint(LightType::COUNT)> _activeLightCount;
+    std::array<U32, to_const_U32(LightType::COUNT)> _activeLightCount;
 
-    std::array<ShaderBuffer*, to_const_uint(ShaderBufferType::COUNT)>  _lightShaderBuffer;
+    std::array<ShaderBuffer*, to_const_U32(ShaderBufferType::COUNT)>  _lightShaderBuffer;
 
     typedef vectorImpl<LightProperties> LightPropertiesVec;
     typedef vectorImpl<Light::ShadowProperties> LightShadowProperties;
@@ -184,7 +184,7 @@ class LightPool : public SceneComponent {
 
     static bool _previewShadowMaps;
     static Light* _currentShadowCastingLight;
-    static std::array<U8, to_const_uint(ShadowType::COUNT)> _shadowLocation;
+    static std::array<U8, to_const_U32(ShadowType::COUNT)> _shadowLocation;
 };
 
 };  // namespace Divide

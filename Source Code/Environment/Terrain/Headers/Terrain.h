@@ -65,11 +65,11 @@ struct TerrainTextureLayer {
     inline void setNormalMaps(const Texture_ptr& texture) { _normalMaps = texture; }
     inline void setDiffuseScale(TerrainTextureChannel textureChannel,
                                 F32 scale) {
-        _diffuseUVScale[to_uint(textureChannel)] = scale;
+        _diffuseUVScale[to_U32(textureChannel)] = scale;
     }
     inline void setDetailScale(TerrainTextureChannel textureChannel,
                                F32 scale) {
-        _detailUVScale[to_uint(textureChannel)] = scale;
+        _detailUVScale[to_U32(textureChannel)] = scale;
     }
 
     inline const vec4<F32>& getDiffuseScales() const { return _diffuseUVScale; }
@@ -184,7 +184,7 @@ class TerrainLoader {
         terrain._terrainTextures.push_back(textureLayer);
     }
     static U32 textureLayerCount(Terrain& terrain) {
-        return to_uint(terrain._terrainTextures.size());
+        return to_U32(terrain._terrainTextures.size());
     }
 
     static VegetationDetails& vegetationDetails(Terrain& terrain) {

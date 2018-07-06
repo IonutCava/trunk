@@ -35,7 +35,7 @@ bool EventHandler::joystickButtonPressed(const JoystickEvent &arg,
 
 bool EventHandler::buttonPressed(const OIS::JoyStickEvent& arg,
                                  JoystickButton button) {
-    return joystickButtonPressed(JoystickEvent(to_ubyte(arg.device->getID()), arg), button);
+    return joystickButtonPressed(JoystickEvent(to_U8(arg.device->getID()), arg), button);
 }
 
 bool EventHandler::joystickButtonReleased(const JoystickEvent &arg,
@@ -45,7 +45,7 @@ bool EventHandler::joystickButtonReleased(const JoystickEvent &arg,
 
 bool EventHandler::buttonReleased(const OIS::JoyStickEvent& arg,
     JoystickButton button) {
-    return joystickButtonReleased(JoystickEvent(to_ubyte(arg.device->getID()), arg), button);
+    return joystickButtonReleased(JoystickEvent(to_U8(arg.device->getID()), arg), button);
 }
 
 bool EventHandler::joystickAxisMoved(const JoystickEvent &arg, I8 axis) {
@@ -53,7 +53,7 @@ bool EventHandler::joystickAxisMoved(const JoystickEvent &arg, I8 axis) {
 }
 
 bool EventHandler::axisMoved(const OIS::JoyStickEvent& arg, I8 axis) {
-    return joystickAxisMoved(JoystickEvent(to_ubyte(arg.device->getID()), arg), axis);
+    return joystickAxisMoved(JoystickEvent(to_U8(arg.device->getID()), arg), axis);
 }
 
 bool EventHandler::joystickPovMoved(const JoystickEvent &arg, I8 pov) {
@@ -61,14 +61,14 @@ bool EventHandler::joystickPovMoved(const JoystickEvent &arg, I8 pov) {
 }
 
 bool EventHandler::povMoved(const OIS::JoyStickEvent& arg, I8 pov) {
-    return joystickPovMoved(JoystickEvent(to_ubyte(arg.device->getID()), arg), pov);
+    return joystickPovMoved(JoystickEvent(to_U8(arg.device->getID()), arg), pov);
 }
 bool EventHandler::joystickSliderMoved(const JoystickEvent &arg, I8 index) {
     return _kernel->joystickSliderMoved(arg, index);
 }
 
 bool EventHandler::sliderMoved(const OIS::JoyStickEvent& arg, I8 index) {
-    return joystickSliderMoved(JoystickEvent(to_ubyte(arg.device->getID()), arg), index);
+    return joystickSliderMoved(JoystickEvent(to_U8(arg.device->getID()), arg), index);
 }
 
 bool EventHandler::joystickVector3DMoved(const JoystickEvent &arg, I8 index) {
@@ -76,7 +76,7 @@ bool EventHandler::joystickVector3DMoved(const JoystickEvent &arg, I8 index) {
 }
 
 bool EventHandler::vector3DMoved(const OIS::JoyStickEvent& arg, I8 index) {
-    return joystickVector3DMoved(JoystickEvent(to_ubyte(arg.device->getID()), arg), index);
+    return joystickVector3DMoved(JoystickEvent(to_U8(arg.device->getID()), arg), index);
 }
 
 bool EventHandler::mouseMoved(const MouseEvent &arg) {
@@ -84,7 +84,7 @@ bool EventHandler::mouseMoved(const MouseEvent &arg) {
 }
 
 bool EventHandler::mouseMoved(const OIS::MouseEvent &arg) {
-    return mouseMoved(MouseEvent(to_ubyte(arg.device->getID()), arg));
+    return mouseMoved(MouseEvent(to_U8(arg.device->getID()), arg));
 }
 
 bool EventHandler::mouseButtonPressed(const MouseEvent &arg, MouseButton id) {
@@ -92,7 +92,7 @@ bool EventHandler::mouseButtonPressed(const MouseEvent &arg, MouseButton id) {
 }
 
 bool EventHandler::mousePressed(const OIS::MouseEvent& arg, OIS::MouseButtonID id) {
-    return mouseButtonPressed(MouseEvent(to_ubyte(arg.device->getID()), arg), id);
+    return mouseButtonPressed(MouseEvent(to_U8(arg.device->getID()), arg), id);
 }
 
 bool EventHandler::mouseButtonReleased(const MouseEvent &arg, MouseButton id) {
@@ -100,24 +100,24 @@ bool EventHandler::mouseButtonReleased(const MouseEvent &arg, MouseButton id) {
 }
 
 bool EventHandler::mouseReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID id) {
-    return mouseButtonReleased(MouseEvent(to_ubyte(arg.device->getID()), arg), id);
+    return mouseButtonReleased(MouseEvent(to_U8(arg.device->getID()), arg), id);
 }
 
 bool EventHandler::keyPressed(const OIS::KeyEvent &arg) {
     KeyEvent &key =
-        Attorney::InputInterfaceEvent::getKeyRef(*_pApplication, to_uint(arg.key));
+        Attorney::InputInterfaceEvent::getKeyRef(*_pApplication, to_U32(arg.key));
     key._text = arg.text;
     key._pressed = true;
-    key._deviceIndex = to_ubyte(arg.device->getID());
+    key._deviceIndex = to_U8(arg.device->getID());
     return onKeyDown(key);
 }
 
 bool EventHandler::keyReleased(const OIS::KeyEvent &arg) {
     KeyEvent &key =
-        Attorney::InputInterfaceEvent::getKeyRef(*_pApplication, to_uint(arg.key));
+        Attorney::InputInterfaceEvent::getKeyRef(*_pApplication, to_U32(arg.key));
     key._text = arg.text;
     key._pressed = false;
-    key._deviceIndex = to_ubyte(arg.device->getID());
+    key._deviceIndex = to_U8(arg.device->getID());
     return onKeyUp(key);
 }
 
@@ -147,7 +147,7 @@ void periodVariableApplier(MapVariables &mapVars, OIS::Effect *pEffect) {
 
     OIS::PeriodicEffect *pPeriodForce =
         dynamic_cast<OIS::PeriodicEffect *>(pEffect->getForceEffect());
-    pPeriodForce->period = to_uint(dPeriod);
+    pPeriodForce->period = to_U32(dPeriod);
 }
 
 };  // namespace Input

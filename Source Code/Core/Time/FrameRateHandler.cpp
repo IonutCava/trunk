@@ -26,7 +26,7 @@ void FrameRateHandler::init(U32 targetFrameRate)
 }
 
 void FrameRateHandler::reset() {
-    _fps = to_float(_targetFrameRate) * 0.5f;
+    _fps = to_F32(_targetFrameRate) * 0.5f;
     _frameCount = 0;
     _averageFps = 0.0f;
     _averageFpsCount = 0;

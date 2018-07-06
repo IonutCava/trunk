@@ -119,7 +119,7 @@ bool SceneAnimator::init(PlatformContext& context, Bone* skeleton, const vectorI
     release(false);
     _skeleton = skeleton;
     _bones = bones;
-    _skeletonDepthCache = to_int(_bones.size());
+    _skeletonDepthCache = to_I32(_bones.size());
     return init(context);
    
 }
@@ -170,7 +170,7 @@ const vectorImpl<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
     I32& vecIndex = _skeletonLines.at(animationIndex).at(frameIndex);
 
     if (vecIndex == -1) {
-        vecIndex = to_int(_skeletonLinesContainer.size());
+        vecIndex = to_I32(_skeletonLinesContainer.size());
         _skeletonLinesContainer.push_back(vectorImpl<Line>());
     }
 

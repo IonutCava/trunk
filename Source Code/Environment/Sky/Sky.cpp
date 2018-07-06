@@ -48,7 +48,7 @@ bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     ResourceDescriptor skyboxTextures("SkyboxTextures");
     skyboxTextures.setResourceName("skybox_1.jpg, skybox_2.jpg, skybox_3.jpg, skybox_4.jpg, skybox_5.jpg, skybox_6.jpg");
     skyboxTextures.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    skyboxTextures.setEnumValue(to_const_uint(TextureType::TEXTURE_CUBE_MAP));
+    skyboxTextures.setEnumValue(to_const_U32(TextureType::TEXTURE_CUBE_MAP));
     skyboxTextures.setPropertyDescriptor<SamplerDescriptor>(skyboxSampler);
     _skybox = CreateResource<Texture>(_parentCache, skyboxTextures);
 
@@ -57,7 +57,7 @@ bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     ResourceDescriptor skybox("SkyBox");
     skybox.setFlag(true);  // no default material;
     skybox.setID(4); // resolution
-    skybox.setEnumValue(to_uint(radius)); // radius
+    skybox.setEnumValue(to_U32(radius)); // radius
     _sky = CreateResource<Sphere3D>(_parentCache, skybox);
     _sky->renderState().setDrawState(false);
 
@@ -76,10 +76,10 @@ bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
 }
 
 void Sky::postLoad(SceneGraphNode& sgn) {
-    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION);
+    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_U32(SGNComponent::ComponentType::NAVIGATION);
 
     assert(_sky != nullptr);
 
@@ -91,7 +91,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
 
         _skybox->flushTextureState();
         TextureData skyTextureData = _skybox->getData();
-        skyTextureData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
+        skyTextureData.setHandleLow(to_const_U32(ShaderProgram::TextureUsage::UNIT0));
         renderable->registerTextureDependency(skyTextureData);
     }
 

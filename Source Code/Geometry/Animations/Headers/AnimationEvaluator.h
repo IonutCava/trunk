@@ -79,7 +79,7 @@ class AnimEvaluator {
 
     
     inline U32 frameCount() const {
-        return to_uint(_transforms.size());
+        return to_U32(_transforms.size());
     }
 
     inline vectorImpl<vectorImplBest<mat4<F32>>>& transforms() {
@@ -91,19 +91,19 @@ class AnimEvaluator {
     }
 
     inline vectorImplBest<mat4<F32>>& transforms(const U32 frameIndex) {
-        assert(frameIndex < to_uint(_transforms.size()));
+        assert(frameIndex < to_U32(_transforms.size()));
         return _transforms[frameIndex];
     }
 
     inline const vectorImplBest<mat4<F32>>& transforms(const U32 frameIndex) const {
-        assert(frameIndex < to_uint(_transforms.size()));
+        assert(frameIndex < to_U32(_transforms.size()));
         return _transforms[frameIndex];
     }
 
     inline vectorImplBest<mat4<F32>>& transforms(const D64 elapsedTime,
                                                     I32& resultingFrameIndex) {
         resultingFrameIndex = frameIndexAt(elapsedTime);
-        return transforms(to_uint(resultingFrameIndex));
+        return transforms(to_U32(resultingFrameIndex));
     }
 
     inline vectorImplBest<mat4<F32>>& transforms(const D64 elapsedTime) {
@@ -114,7 +114,7 @@ class AnimEvaluator {
     inline const vectorImplBest<mat4<F32>>& transforms(const D64 elapsedTime,
                                                           I32& resultingFrameIndex) const {
         resultingFrameIndex = frameIndexAt(elapsedTime);
-        return transforms(to_uint(resultingFrameIndex));
+        return transforms(to_U32(resultingFrameIndex));
     }
 
     inline const vectorImplBest<mat4<F32>>& transforms(const D64 elapsedTime) const {

@@ -15,10 +15,10 @@
 
 namespace Divide {
 
-std::array<U8, to_const_uint(ShadowType::COUNT)> LightPool::_shadowLocation = { {
-    to_const_ubyte(ShaderProgram::TextureUsage::SHADOW_SINGLE),
-    to_const_ubyte(ShaderProgram::TextureUsage::SHADOW_LAYERED),
-    to_const_ubyte(ShaderProgram::TextureUsage::SHADOW_CUBE)
+std::array<U8, to_const_U32(ShadowType::COUNT)> LightPool::_shadowLocation = { {
+    to_const_U8(ShaderProgram::TextureUsage::SHADOW_SINGLE),
+    to_const_U8(ShaderProgram::TextureUsage::SHADOW_LAYERED),
+    to_const_U8(ShaderProgram::TextureUsage::SHADOW_CUBE)
 }};
 
 Light* LightPool::_currentShadowCastingLight = nullptr;
@@ -39,11 +39,11 @@ LightPool::LightPool(Scene& parentScene, GFXDevice& context)
     _lightTypeState.fill(true);
     // NORMAL holds general info about the currently active
     // lights: position, colour, etc.
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = nullptr;
+    _lightShaderBuffer[to_const_U32(ShaderBufferType::NORMAL)] = nullptr;
     // SHADOWS holds info about the currently active shadow
     // casting lights:
     // ViewProjection Matrices, View Space Position, etc
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = nullptr;
+    _lightShaderBuffer[to_const_U32(ShaderBufferType::SHADOW)] = nullptr;
 
     ParamHandler::instance().setParam<bool>(_ID("rendering.debug.displayShadowDebugInfo"), false);
 
@@ -73,14 +73,14 @@ void LightPool::init() {
     params._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
 
     // NORMAL holds general info about the currently active lights: position, colour, etc.
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = _context.newSB(params);
+    _lightShaderBuffer[to_const_U32(ShaderBufferType::NORMAL)] = _context.newSB(params);
 
     // SHADOWS holds info about the currently active shadow casting lights:
     // ViewProjection Matrices, View Space Position, etc
     // Should be SSBO (not UBO) to use std430 alignment. Structures should not be padded
     params._primitiveCount = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
     params._primitiveSizeInBytes = sizeof(Light::ShadowProperties);
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = _context.newSB(params);
+    _lightShaderBuffer[to_const_U32(ShaderBufferType::SHADOW)] = _context.newSB(params);
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
     lightImpostorShader.setThreadedLoading(false);
@@ -95,7 +95,7 @@ void LightPool::init() {
     iconImage.setPropertyDescriptor<SamplerDescriptor>(iconSampler);
     iconImage.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     iconImage.setResourceName("lightIcons.png");
-    iconImage.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
+    iconImage.setEnumValue(to_const_U32(TextureType::TEXTURE_2D));
     _lightIconsTexture = CreateResource<Texture>(_parentScene.resourceCache(), iconImage);
 
     _init = true;
@@ -127,7 +127,7 @@ bool LightPool::addLight(Light& light) {
     light.addShadowMapInfo(MemoryManager_NEW ShadowMapInfo(&light));
 
     const LightType type = light.getLightType();
-    const U32 lightTypeIdx = to_const_uint(type);
+    const U32 lightTypeIdx = to_const_U32(type);
 
     if (findLight(light.getGUID(), type) != std::end(_lights[lightTypeIdx])) {
 
@@ -145,13 +145,13 @@ bool LightPool::addLight(Light& light) {
 bool LightPool::removeLight(I64 lightGUID, LightType type) {
     Light::LightList::const_iterator it = findLight(lightGUID, type);
 
-    if (it == std::end(_lights[to_uint(type)])) {
+    if (it == std::end(_lights[to_U32(type)])) {
         Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_REMOVE_LIGHT")),
                          lightGUID);
         return false;
     }
 
-    _lights[to_uint(type)].erase(it);  // remove it from the map
+    _lights[to_U32(type)].erase(it);  // remove it from the map
     return true;
 }
 
@@ -209,7 +209,7 @@ void LightPool::bindShadowMaps(GFXDevice& context) {
 
 Light* LightPool::getLight(I64 lightGUID, LightType type) {
     Light::LightList::const_iterator it = findLight(lightGUID, type);
-    assert(it != std::end(_lights[to_uint(type)]));
+    assert(it != std::end(_lights[to_U32(type)]));
 
     return *it;
 }
@@ -231,7 +231,7 @@ void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewM
     _sortedLightProperties.resize(0);
     _sortedShadowProperties.resize(0);
 
-    for (U8 i = 0; i < to_const_uint(LightType::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_U32(LightType::COUNT); ++i) {
         _sortedLights.insert(std::end(_sortedLights), std::begin(_lights[i]), std::end(_lights[i]));
     }
 
@@ -249,7 +249,7 @@ void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewM
         vec3<F32> tempColour;
         for (Light* light : _sortedLights) {
             LightType type = static_cast<LightType>(light->getLightType());
-            I32 typeIndex = to_int(type);
+            I32 typeIndex = to_I32(type);
 
             if (!light->getEnabled() || !_lightTypeState[typeIndex]) {
                 continue;
@@ -277,7 +277,7 @@ void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewM
             }
             
            if (light->castsShadows() && _sortedShadowProperties.size() < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
-                temp._options.z = to_int(_sortedShadowProperties.size());
+                temp._options.z = to_I32(_sortedShadowProperties.size());
                 _sortedShadowProperties.emplace_back(light->getShadowProperties());
                 _sortedShadowCastingLights.emplace_back(light);
             }
@@ -297,8 +297,8 @@ void LightPool::uploadLightData(ShaderBufferLocation lightDataLocation,
     waitForTasks();
     uploadLightBuffers();
 
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->bind(lightDataLocation);
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->bind(shadowDataLocation);
+    _lightShaderBuffer[to_const_U32(ShaderBufferType::NORMAL)]->bind(lightDataLocation);
+    _lightShaderBuffer[to_const_U32(ShaderBufferType::SHADOW)]->bind(shadowDataLocation);
 }
 
 void LightPool::uploadLightBuffers() {
@@ -311,15 +311,15 @@ void LightPool::uploadLightBuffers() {
         lightShadowCount = std::min(lightShadowCount, static_cast<size_t>(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS));
 
         if (lightPropertyCount > 0) {
-            _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->updateData(0, lightPropertyCount, _sortedLightProperties.data());
+            _lightShaderBuffer[to_const_U32(ShaderBufferType::NORMAL)]->updateData(0, lightPropertyCount, _sortedLightProperties.data());
         } else {
-            _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->setData(nullptr);
+            _lightShaderBuffer[to_const_U32(ShaderBufferType::NORMAL)]->setData(nullptr);
         }
 
         if (lightShadowCount > 0) {
-            _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->updateData(0, lightShadowCount, _sortedShadowProperties.data());
+            _lightShaderBuffer[to_const_U32(ShaderBufferType::SHADOW)]->updateData(0, lightShadowCount, _sortedShadowProperties.data());
         } else {
-            _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->setData(nullptr);
+            _lightShaderBuffer[to_const_U32(ShaderBufferType::SHADOW)]->setData(nullptr);
         }
         _buffersUpdated = true;
     }
@@ -331,21 +331,21 @@ void LightPool::drawLightImpostors(RenderSubPassCmds& subPassesInOut) const {
     }
 
     assert(_lightImpostorShader);
-    const U32 directionalLightCount = _activeLightCount[to_const_uint(LightType::DIRECTIONAL)];
-    const U32 pointLightCount = _activeLightCount[to_const_uint(LightType::POINT)];
-    const U32 spotLightCount = _activeLightCount[to_const_uint(LightType::SPOT)];
+    const U32 directionalLightCount = _activeLightCount[to_const_U32(LightType::DIRECTIONAL)];
+    const U32 pointLightCount = _activeLightCount[to_const_U32(LightType::POINT)];
+    const U32 spotLightCount = _activeLightCount[to_const_U32(LightType::SPOT)];
     const U32 totalLightCount = directionalLightCount + pointLightCount + spotLightCount;
     if (totalLightCount > 0) {
         GenericDrawCommand pointsCmd;
         pointsCmd.primitiveType(PrimitiveType::API_POINTS);
-        pointsCmd.drawCount(to_ushort(totalLightCount));
+        pointsCmd.drawCount(to_U16(totalLightCount));
         pointsCmd.stateHash(_context.getDefaultStateBlock(true));
         pointsCmd.shaderProgram(_lightImpostorShader);
 
         RenderSubPassCmd newSubPass;
         newSubPass._textures.addTexture(TextureData(_lightIconsTexture->getTextureType(),
                                                     _lightIconsTexture->getHandle(),
-                                                    to_const_ubyte(ShaderProgram::TextureUsage::UNIT0)));
+                                                    to_const_U8(ShaderProgram::TextureUsage::UNIT0)));
 
         newSubPass._commands.push_back(pointsCmd);
         subPassesInOut.push_back(newSubPass);

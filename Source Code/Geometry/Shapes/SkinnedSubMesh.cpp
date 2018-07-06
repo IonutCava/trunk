@@ -32,7 +32,7 @@ void SkinnedSubMesh::postLoad(SceneGraphNode& sgn) {
         _boundingBoxesComputing.resize(animationCount);
         _boundingBoxes.resize(animationCount);
         for (vectorAlg::vecSize idx = 0; idx < animationCount; ++idx) {
-            _boundingBoxes.at(idx).resize(_parentAnimatorPtr->frameCount(to_int(idx)));
+            _boundingBoxes.at(idx).resize(_parentAnimatorPtr->frameCount(to_I32(idx)));
         }
     }
 

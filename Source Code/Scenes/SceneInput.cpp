@@ -55,7 +55,7 @@ void SceneInput::onPlayerAdd(U8 index) {
     // Keyboard + Mouse pairs have priority
     I32 numKBMousePairs = _context.kbMousePairCount();
     for (I32 i = 0; i < numKBMousePairs; ++i) {
-        Input::InputInterface::KBMousePair pair = _context.getKeyboardMousePair(to_ubyte(i));
+        Input::InputInterface::KBMousePair pair = _context.getKeyboardMousePair(to_U8(i));
 
         std::pair<I32, I32> deviceIndices(pair.first ? pair.first->getID() : -1,
                                           pair.second ? pair.second->getID() : -1);
@@ -168,7 +168,7 @@ bool SceneInput::onKeyDown(const Input::KeyEvent& arg) {
 
     PressReleaseActionCbks cbks;
     if (getKeyMapping(arg._key, cbks)) {
-        return handleCallbacks(cbks, InputParams(arg._deviceIndex, arg._deviceIndex, to_int(arg._key)), true);
+        return handleCallbacks(cbks, InputParams(arg._deviceIndex, arg._deviceIndex, to_I32(arg._key)), true);
     }
 
     return false;
@@ -182,7 +182,7 @@ bool SceneInput::onKeyUp(const Input::KeyEvent& arg) {
 
     PressReleaseActionCbks cbks;
     if (getKeyMapping(arg._key, cbks)) {
-        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_int(arg._key)), false);
+        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_I32(arg._key)), false);
     }
 
     return false;
@@ -194,7 +194,7 @@ bool SceneInput::joystickButtonPressed(const Input::JoystickEvent& arg,
     Input::Joystick joy = _context.joystick(arg._deviceIndex);
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::BUTTON_PRESS, button), cbks)) {
-        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_int(button)), true);
+        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_I32(button)), true);
     }
 
     return false;
@@ -207,7 +207,7 @@ bool SceneInput::joystickButtonReleased(const Input::JoystickEvent& arg,
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::BUTTON_PRESS, button), cbks)) {
-        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_int(button)), false);
+        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_I32(button)), false);
     }
 
     return false;
@@ -221,8 +221,8 @@ bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
         InputParams params(arg._deviceIndex,
                            arg._event.state.mAxes[axis].abs,
                            arg._event.state.mAxes[axis].rel,
-                           to_int(axis),
-                           to_int(joy));
+                           to_I32(axis),
+                           to_I32(joy));
         return handleCallbacks(cbks, params, true);
     }
 
@@ -262,9 +262,9 @@ bool SceneInput::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, Input::JoystickElement(Input::JoystickElementType::VECTOR_MOVE, index), cbks)) {
         InputParams params(arg._deviceIndex,
-                           to_int(arg._event.state.mVectors[index].x),
-                           to_int(arg._event.state.mVectors[index].y),
-                           to_int(arg._event.state.mVectors[index].z));
+                           to_I32(arg._event.state.mVectors[index].x),
+                           to_I32(arg._event.state.mVectors[index].y),
+                           to_I32(arg._event.state.mVectors[index].z));
         return handleCallbacks(cbks, params, true);
     }
 
@@ -297,7 +297,7 @@ bool SceneInput::mouseButtonPressed(const Input::MouseEvent& arg,
 
     PressReleaseActionCbks cbks;
     if (getMouseMapping(id, cbks)) {
-        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_int(id)), true);
+        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_I32(id)), true);
     }
 
     return false;
@@ -312,7 +312,7 @@ bool SceneInput::mouseButtonReleased(const Input::MouseEvent& arg,
 
     PressReleaseActionCbks cbks;
     if (getMouseMapping(id, cbks)) {
-        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_int(id)), false);
+        return handleCallbacks(cbks, InputParams(arg._deviceIndex, to_I32(id)), false);
     }
 
     return false;

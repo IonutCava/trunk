@@ -33,7 +33,7 @@
 namespace Divide {
 
 namespace {
-    vec2<F32> g_sunAngle(0.0f, Angle::DegreesToRadians(45.0f));
+    vec2<F32> g_sunAngle(0.0f, Angle::to_RADIANS(45.0f));
     bool g_direction = false;
     U64 elapsedGameTimeUs = 0;
 };
@@ -163,8 +163,8 @@ void WarScene::processTasks(const U64 deltaTime) {
         g_sunAngle += 0.000125f * (g_direction ? 1.0f : -1.0f);
 
         if (!IS_IN_RANGE_INCLUSIVE(g_sunAngle.y, 
-                                   Angle::Degrees(20.0f),
-                                   Angle::Degrees(55.0f))) {
+                                   Angle::DEGREES<F32>(20.0f),
+                                   Angle::DEGREES<F32>(55.0f))) {
             g_direction = !g_direction;
         }
 
@@ -322,13 +322,13 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
 }
 
 bool WarScene::load(const stringImpl& name) {
-    static const U32 lightMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                 to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                 to_const_uint(SGNComponent::ComponentType::RENDERING);
+    static const U32 lightMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                 to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                 to_const_U32(SGNComponent::ComponentType::RENDERING);
 
     static const U32 normalMask = lightMask |
-                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
+                                  to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
 
     // Load scene resources
     bool loadState = SCENE_LOAD(name, true, true);
@@ -416,13 +416,13 @@ bool WarScene::load(const stringImpl& name) {
             baseNode->get<NavigationComponent>()
             ->navMeshDetailOverride());
 
-        vec3<F32> position(to_float(currentPos.first), -0.01f, to_float(currentPos.second));
+        vec3<F32> position(to_F32(currentPos.first), -0.01f, to_F32(currentPos.second));
         pComp->setScale(baseNode->get<PhysicsComponent>()->getScale());
         pComp->setPosition(position);
 
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_1", currentName.c_str()));
-            tempLight.setEnumValue(to_const_uint(LightType::POINT));
+            tempLight.setEnumValue(to_const_U32(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
             std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
             light->setDrawImpostor(false);
@@ -436,7 +436,7 @@ bool WarScene::load(const stringImpl& name) {
         }
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_2", currentName.c_str()));
-            tempLight.setEnumValue(to_const_uint(LightType::POINT));
+            tempLight.setEnumValue(to_const_U32(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
             std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
             light->setDrawImpostor(false);
@@ -449,7 +449,7 @@ bool WarScene::load(const stringImpl& name) {
         }
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_spot_%s", currentName.c_str()));
-            tempLight.setEnumValue(to_const_uint(LightType::SPOT));
+            tempLight.setEnumValue(to_const_U32(LightType::SPOT));
             tempLight.setUserPtr(_lightPool);
             std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
             light->setDrawImpostor(false);
@@ -535,11 +535,11 @@ bool WarScene::load(const stringImpl& name) {
 
     std::shared_ptr<ParticleData> particles = 
         std::make_shared<ParticleData>(particleCount,
-                                       to_const_uint(ParticleData::Properties::PROPERTIES_POS) |
-                                       to_const_uint(ParticleData::Properties::PROPERTIES_VEL) |
-                                       to_const_uint(ParticleData::Properties::PROPERTIES_ACC) |
-                                       to_const_uint(ParticleData::Properties::PROPERTIES_COLOR) |
-                                       to_const_uint(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
+                                       to_const_U32(ParticleData::Properties::PROPERTIES_POS) |
+                                       to_const_U32(ParticleData::Properties::PROPERTIES_VEL) |
+                                       to_const_U32(ParticleData::Properties::PROPERTIES_ACC) |
+                                       to_const_U32(ParticleData::Properties::PROPERTIES_COLOR) |
+                                       to_const_U32(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
     particles->_textureFileName = "particle.DDS";
 
     std::shared_ptr<ParticleSource> particleSource =  std::make_shared<ParticleSource>(emitRate);
@@ -589,7 +589,7 @@ bool WarScene::load(const stringImpl& name) {
     for (U8 row = 0; row < 4; row++) {
         for (U8 col = 0; col < 4; col++) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%d_%d", row, col));
-            tempLight.setEnumValue(to_const_uint(LightType::POINT));
+            tempLight.setEnumValue(to_const_U32(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
             std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
             light->setDrawImpostor(false);
@@ -621,12 +621,12 @@ U16 WarScene::registerInputActions() {
     _input->addKeyMapping(Input::KeyCode::KC_TAB, actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, to_ushort(0), ""));
+    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, to_U16(0), ""));
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_1, actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, to_ushort(1), ""));
+    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::registerPoint, this, to_U16(1), ""));
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_2, actions);
     actionID++;

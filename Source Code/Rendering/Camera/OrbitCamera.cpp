@@ -77,13 +77,13 @@ void OrbitCamera::update(const U64 deltaTime) {
 
     if (/*trans->changedLastFrame() || */ _rotationDirty || true) {
         trans->getOrientation().getEuler(newTargetOrientation);
-        newTargetOrientation.yaw = to_float(M_PI) - newTargetOrientation.yaw;
+        newTargetOrientation.yaw = to_F32(M_PI) - newTargetOrientation.yaw;
         newTargetOrientation += _cameraRotation;
         Util::Normalize(newTargetOrientation, false);
         _rotationDirty = false;
     }
 
-    _orientation.fromEuler(newTargetOrientation, false);
+    _orientation.fromEuler(Angle::to_DEGREES(newTargetOrientation));
     _newEye = trans->getPosition() + _orientation * (_offsetDir * _curRadius);
     _viewMatrixDirty = true;
 }

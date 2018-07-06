@@ -11,7 +11,7 @@
 
 namespace Divide {
 
-std::array<ShadowMap::LayerUsageMask, to_const_uint(ShadowType::COUNT)> ShadowMap::_depthMapUsage;
+std::array<ShadowMap::LayerUsageMask, to_const_U32(ShadowType::COUNT)> ShadowMap::_depthMapUsage;
 
 
 ShadowMap::ShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera, ShadowType type)
@@ -33,24 +33,24 @@ ShadowMap::~ShadowMap()
 void ShadowMap::resetShadowMaps(GFXDevice& context) {
     ACKNOWLEDGE_UNUSED(context);
 
-    for (U32 i = 0; i < to_const_uint(ShadowType::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_U32(ShadowType::COUNT); ++i) {
         _depthMapUsage[i].fill(false);
     }
 }
 
 void ShadowMap::initShadowMaps(GFXDevice& context) {
-    std::array<U16, to_const_uint(ShadowType::COUNT)> resolutions;
+    std::array<U16, to_const_U32(ShadowType::COUNT)> resolutions;
     resolutions.fill(512);
     if (context.shadowDetailLevel() == RenderDetailLevel::ULTRA) {
         // Cap cubemap resolution
         resolutions.fill(2048);
-        resolutions[to_const_uint(ShadowType::CUBEMAP)] = 1024;
+        resolutions[to_const_U32(ShadowType::CUBEMAP)] = 1024;
     } else if (context.shadowDetailLevel() == RenderDetailLevel::HIGH) {
         resolutions.fill(1024);
     }
 
     RenderTargetHandle crtTarget;
-    for (U32 i = 0; i < to_const_uint(ShadowType::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_U32(ShadowType::COUNT); ++i) {
         switch (static_cast<ShadowType>(i)) {
             case ShadowType::SINGLE: {
                 SamplerDescriptor depthMapSampler;
@@ -125,13 +125,13 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
 }
 
 void ShadowMap::clearShadowMaps(GFXDevice& context) {
-    for (U32 i = 0; i < to_const_uint(ShadowType::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_U32(ShadowType::COUNT); ++i) {
         context.renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i), nullptr);
     }
 }
 
 void ShadowMap::bindShadowMaps(GFXDevice& context) {
-    for (U8 i = 0; i < to_const_ubyte(ShadowType::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_U8(ShadowType::COUNT); ++i) {
         RTAttachment::Type attachment
             = static_cast<ShadowType>(i) == ShadowType::LAYERED
                                           ? RTAttachment::Type::Colour
@@ -143,15 +143,15 @@ void ShadowMap::bindShadowMaps(GFXDevice& context) {
 }
 
 void ShadowMap::clearShadowMapBuffers(GFXDevice& context) {
-    for (U8 i = 0; i < to_const_ubyte(ShadowType::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_U8(ShadowType::COUNT); ++i) {
         context.renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).clear(RenderTarget::defaultPolicy());
     }
 }
 
 U16 ShadowMap::findDepthMapLayer(ShadowType shadowType) {
-    LayerUsageMask& usageMask = _depthMapUsage[to_uint(shadowType)];
+    LayerUsageMask& usageMask = _depthMapUsage[to_U32(shadowType)];
     U16 layer = std::numeric_limits<U16>::max();
-    for (U16 i = 0; i < to_const_ubyte(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS); ++i) {
+    for (U16 i = 0; i < to_const_U8(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS); ++i) {
         if (usageMask[i] == false) {
             layer = i;
             break;
@@ -162,11 +162,11 @@ U16 ShadowMap::findDepthMapLayer(ShadowType shadowType) {
 }
 
 RenderTargetID ShadowMap::getDepthMapID() {
-    return RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType()));
+    return RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
 }
 
 const RenderTargetID ShadowMap::getDepthMapID() const {
-    return RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType()));
+    return RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
 }
 
 RenderTarget& ShadowMap::getDepthMap() {
@@ -180,14 +180,14 @@ const RenderTarget& ShadowMap::getDepthMap() const {
 void ShadowMap::commitDepthMapLayer(ShadowType shadowType, U32 layer) {
     DIVIDE_ASSERT(layer < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS,
         "ShadowMap::commitDepthMapLayer error: Insufficient texture layers for shadow mapping");
-    LayerUsageMask& usageMask = _depthMapUsage[to_uint(shadowType)];
+    LayerUsageMask& usageMask = _depthMapUsage[to_U32(shadowType)];
     usageMask[layer] = true;
 }
 
 bool ShadowMap::freeDepthMapLayer(ShadowType shadowType, U32 layer) {
     DIVIDE_ASSERT(layer < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS,
         "ShadowMap::freeDepthMapLayer error: Invalid layer value");
-    LayerUsageMask& usageMask = _depthMapUsage[to_uint(shadowType)];
+    LayerUsageMask& usageMask = _depthMapUsage[to_U32(shadowType)];
     usageMask[layer] = false;
 
     return true;

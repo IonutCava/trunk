@@ -47,11 +47,11 @@ WaterPlane::~WaterPlane()
 }
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
-    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
 
     _plane->setCorner(Quad3D::CornerLocation::TOP_LEFT,     vec3<F32>(-_sideLength, 0, -_sideLength));
     _plane->setCorner(Quad3D::CornerLocation::TOP_RIGHT,    vec3<F32>( _sideLength, 0, -_sideLength));
@@ -101,8 +101,8 @@ void WaterPlane::setParams(F32 shininess, const vec2<F32>& noiseTile,
 void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,  SceneState& sceneState) {
     if (_paramsDirty) {
         RenderingComponent* rComp = sgn.get<RenderingComponent>();
-        for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
-            for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+        for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+            for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
                 const ShaderProgram_ptr& shader = rComp->getMaterialInstance()->getShaderInfo(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass))).getProgram();
                 shader->Uniform("_waterShininess", _shininess);
                 shader->Uniform("_noiseFactor", _noiseFactor);
@@ -129,7 +129,7 @@ void WaterPlane::initialiseDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand cmd;
     cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
     cmd.sourceBuffer(_plane->getGeometryVB());
-    cmd.cmd().indexCount = to_uint(_plane->getGeometryVB()->getIndexCount());
+    cmd.cmd().indexCount = to_U32(_plane->getGeometryVB()->getIndexCount());
     drawCommandsInOut.push_back(cmd);
 
     SceneNode::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
@@ -159,7 +159,7 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams) {
     params.target = renderParams._renderTarget;
     params.drawPolicy = params.doPrePass ? &RenderTarget::defaultPolicyKeepDepth() : &RenderTarget::defaultPolicy();
     params.pass = renderParams._passIndex;
-    params.clippingPlanes[to_uint(underwater ? g_reflectionClipID : g_refractionClipID)] = refractionPlane;
+    params.clippingPlanes[to_U32(underwater ? g_reflectionClipID : g_refractionClipID)] = refractionPlane;
     renderParams._context.parent().renderPassManager().doCustomPass(params);
 }
 
@@ -187,8 +187,8 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams) {
     params.target = renderParams._renderTarget;
     params.drawPolicy = params.doPrePass ? &RenderTarget::defaultPolicyKeepDepth() : &RenderTarget::defaultPolicy();
     params.pass = renderParams._passIndex;
-    params.clippingPlanes[to_uint(g_reflectionClipID)].active(true);
-    params.clippingPlanes[to_uint(underwater ? g_refractionClipID : g_reflectionClipID)] = reflectionPlane;
+    params.clippingPlanes[to_U32(g_reflectionClipID)].active(true);
+    params.clippingPlanes[to_U32(underwater ? g_refractionClipID : g_reflectionClipID)] = reflectionPlane;
     renderParams._context.parent().renderPassManager().doCustomPass(params);
 }
 

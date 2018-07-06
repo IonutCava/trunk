@@ -25,7 +25,7 @@ const EnvironmentProbeList& SceneEnvironmentProbePool::getNearestSorted() {
         };
 
         std::sort(std::begin(_sortedProbes), std::end(_sortedProbes), sortFunc);
-        U32 lowerLimit = std::min(Config::MAX_REFLECTIVE_PROBES_PER_PASS, to_uint(_sortedProbes.size()));
+        U32 lowerLimit = std::min(Config::MAX_REFLECTIVE_PROBES_PER_PASS, to_U32(_sortedProbes.size()));
         _sortedProbes.erase(std::begin(_sortedProbes) + lowerLimit, std::end(_sortedProbes));
         _isSorted = true;
     }

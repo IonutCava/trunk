@@ -41,7 +41,7 @@ void Session::HandleGeometryListOpCode(WorldPacket& p) {
         p >> version;
         data.name.push_back(name);
         data.modelName.push_back(modelname);
-        data.version.push_back(to_float(version));
+        data.version.push_back(to_F32(version));
     }
     bool updated = Patch::instance().compareData(data);
 

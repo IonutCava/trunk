@@ -173,13 +173,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Add the attachments to the render targets
     RenderTarget& screenTarget = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::ALBEDO));
-    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::NORMALS));
-    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::VELOCITY));
+    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, to_const_U8(ScreenTargets::ALBEDO));
+    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, to_const_U8(ScreenTargets::NORMALS));
+    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, to_const_U8(ScreenTargets::VELOCITY));
     screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0);
-    screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE());
-    screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::NORMALS), DefaultColours::WHITE());
-    screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::VELOCITY), DefaultColours::WHITE());
+    screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE());
+    screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_U8(ScreenTargets::NORMALS), DefaultColours::WHITE());
+    screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_U8(ScreenTargets::VELOCITY), DefaultColours::WHITE());
 
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
@@ -290,9 +290,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     WindowManager& winMgr = Application::instance().windowManager();
     winMgr.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
                              winMgr.getActiveWindow().getGUID(),
-                             to_int(renderResolution.width),
-                             to_int(renderResolution.height));
-    setBaseViewport(vec4<I32>(0, 0, to_int(renderResolution.width), to_int(renderResolution.height)));
+                             to_I32(renderResolution.width),
+                             to_I32(renderResolution.height));
+    setBaseViewport(vec4<I32>(0, 0, to_I32(renderResolution.width), to_I32(renderResolution.height)));
 
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
@@ -394,7 +394,7 @@ void GFXDevice::resizeHistory(U8 historySize) {
 
         ResourceDescriptor prevDepthTex(Util::StringFormat("PREV_DEPTH_%d", _prevDepthBuffers.size()));
         prevDepthTex.setPropertyDescriptor(srcDesc.getSampler());
-        prevDepthTex.setEnumValue(to_uint(srcDesc._type));
+        prevDepthTex.setEnumValue(to_U32(srcDesc._type));
         Texture_ptr tex = CreateResource<Texture>(parent().resourceCache(), prevDepthTex);
         assert(tex);
         Texture::TextureLoadInfo info;

@@ -48,7 +48,7 @@ void RTDrawMask::enableAll() {
 void RTDrawMask::disableAll() {
     _disabledDepth = _disabledStencil = true;
     _disabledColours.resize(std::numeric_limits<U8>::max());
-    std::iota(std::begin(_disabledColours), std::end(_disabledColours), to_ubyte(0));
+    std::iota(std::begin(_disabledColours), std::end(_disabledColours), to_U8(0));
 }
 
 
@@ -78,7 +78,7 @@ void RTDrawDescriptor::stateMask(U32 stateMask) {
     if (Config::Build::IS_DEBUG_BUILD) {
         auto validateMask = [stateMask]() -> U32 {
             U32 validMask = 0;
-            for (U32 stateIt = 1; stateIt <= to_const_uint(State::COUNT); ++stateIt) {
+            for (U32 stateIt = 1; stateIt <= to_const_U32(State::COUNT); ++stateIt) {
                 U32 bitState = toBit(stateIt);
                 if (BitCompare(stateMask, bitState)) {
                     SetBit(validMask, bitState);
@@ -97,15 +97,15 @@ void RTDrawDescriptor::stateMask(U32 stateMask) {
 }
 
 void RTDrawDescriptor::enableState(State state) {
-    SetBit(_stateMask, to_uint(state));
+    SetBit(_stateMask, to_U32(state));
 }
 
 void RTDrawDescriptor::disableState(State state) {
-    ClearBit(_stateMask, to_uint(state));
+    ClearBit(_stateMask, to_U32(state));
 }
 
 bool RTDrawDescriptor::isEnabledState(State state) const {
-    return BitCompare(_stateMask, to_uint(state));
+    return BitCompare(_stateMask, to_U32(state));
 }
 
 bool RTDrawDescriptor::operator==(const RTDrawDescriptor& other) const {

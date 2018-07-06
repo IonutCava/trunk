@@ -231,7 +231,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
         } break;
     }
 
-    U16 mipMaxLevel = to_ushort(img.mipCount());
+    U16 mipMaxLevel = to_U16(img.mipCount());
     
     if (!_descriptor._compressed) {
         if (_descriptor._samplerDescriptor.generateMipMaps()) {
@@ -253,6 +253,6 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
 }
 
 U16 Texture::computeMipCount(U16 width, U16 height) {
-    return to_ushort(std::floorf(std::log2f(std::fmaxf(to_float(width), to_float(height)))));
+    return to_U16(std::floorf(std::log2f(std::fmaxf(to_F32(width), to_F32(height)))));
 }
 };

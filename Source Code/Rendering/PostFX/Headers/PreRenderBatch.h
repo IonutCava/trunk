@@ -28,7 +28,7 @@ class PreRenderBatch {
     }
 
     inline PreRenderOperator& getOperator(FilterType type) {
-        const OperatorBatch& batch = _operators[to_uint(getOperatorSpace(type))];
+        const OperatorBatch& batch = _operators[to_U32(getOperatorSpace(type))];
         OperatorBatch::const_iterator it =
             std::find_if(std::cbegin(batch), std::cend(batch),
                 [type](PreRenderOperator* op) {
@@ -39,7 +39,7 @@ class PreRenderBatch {
     }
 
     inline const PreRenderOperator& getOperator(FilterType type) const {
-        const OperatorBatch& batch = _operators[to_uint(getOperatorSpace(type))];
+        const OperatorBatch& batch = _operators[to_U32(getOperatorSpace(type))];
         OperatorBatch::const_iterator it =
             std::find_if(std::cbegin(batch), std::cend(batch),
                 [type](PreRenderOperator* op) {
@@ -62,7 +62,7 @@ class PreRenderBatch {
 
   private:
     typedef vectorImpl<PreRenderOperator*> OperatorBatch;
-    OperatorBatch _operators[to_const_uint(FilterSpace::COUNT)];
+    OperatorBatch _operators[to_const_U32(FilterSpace::COUNT)];
 
     GFXDevice& _context;
     ResourceCache& _resCache;

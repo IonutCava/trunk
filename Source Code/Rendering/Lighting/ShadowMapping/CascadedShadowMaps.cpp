@@ -137,7 +137,7 @@ void CascadedShadowMaps::render(GFXDevice& context, U32 passIdx) {
     params.doPrePass = false;
     params.camera = _shadowCamera;
     params.stage = RenderStage::SHADOW;
-    params.target = RenderTargetID(RenderTargetUsage::SHADOW, to_uint(getShadowMapType()));
+    params.target = RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
     params.pass = passIdx;
 
     context.parent().renderPassManager().doCustomPass(params);
@@ -153,7 +153,7 @@ void CascadedShadowMaps::calculateSplitDepths(const Camera& cam) {
 
     F32 i_f = 1.0f, cascadeCount = (F32)_numSplits;
     _splitDepths[0] = nd;
-    for (U32 i = 1; i < to_uint(_numSplits); ++i, i_f += 1.0f)
+    for (U32 i = 1; i < to_U32(_numSplits); ++i, i_f += 1.0f)
     {
         _splitDepths[i] = Lerp(nd + (i_f / cascadeCount)*(fd - nd),  nd * std::powf(fd / nd, i_f / cascadeCount), _splitLogFactor);
     }

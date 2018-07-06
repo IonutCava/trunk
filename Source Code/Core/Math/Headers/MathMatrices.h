@@ -412,15 +412,15 @@ class mat3 {
     void getInverseTranspose(mat3 &ret) const;
 
     template<typename U>
-    void fromRotation(const vec3<U> &v, U angle, bool inDegrees = true);
+    void fromRotation(const vec3<U> &v, Angle::RADIANS<U> angle);
     template<typename U>
-    void fromRotation(U x, U y, U z, U angle, bool inDegrees = true);
+    void fromRotation(U x, U y, U z, Angle::RADIANS<U> angle);
     template<typename U>
-    void fromXRotation(U angle, bool inDegrees = true);
+    void fromXRotation(Angle::RADIANS<U> angle);
     template<typename U>
-    void fromYRotation(U angle, bool inDegrees = true);
+    void fromYRotation(Angle::RADIANS<U> angle);
     template<typename U>
-    void fromZRotation(U angle, bool inDegrees = true);
+    void fromZRotation(Angle::RADIANS<U> angle);
 
     // setScale replaces the main diagonal!
     template<typename U>
@@ -481,9 +481,9 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     mat4(U translationX, U translationY, U translationZ) noexcept;
     template<typename U>
-    mat4(const vec3<U> &axis, U angle, bool inDegrees = true) noexcept;
+    mat4(const vec3<U> &axis, Angle::RADIANS<U> angle) noexcept;
     template<typename U>
-    mat4(U x, U y, U z, U angle, bool inDegrees = true) noexcept;
+    mat4(U x, U y, U z, Angle::RADIANS<U> angle) noexcept;
     template<typename U>
     mat4(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up) noexcept;
     
@@ -605,13 +605,13 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     void getTransposeRotation(mat4 &ret) const;
 
     template<typename U>
-    void fromRotation(U x, U y, U z, U angle, bool inDegrees = true);
+    void fromRotation(U x, U y, U z, Angle::RADIANS<U> angle);
     template<typename U>
-    void fromXRotation(U angle, bool inDegrees = true);
+    void fromXRotation(Angle::RADIANS<U> angle);
     template<typename U>
-    void fromYRotation(U angle, bool inDegrees = true);
+    void fromYRotation(Angle::RADIANS<U> angle);
     template<typename U>
-    void fromZRotation(U angle, bool inDegrees = true);
+    void fromZRotation(Angle::RADIANS<U> angle);
 
     template<typename U>
     void setTranslation(const vec3<U> &v);

@@ -44,7 +44,7 @@ class SceneShaderData {
         vec4<F32> _otherData;
         vec4<F32> _otherData2;
         vec4<U32> _lightCountPerType;
-        //U32     _lightCountPerType[to_const_uint(LightType::COUNT)];
+        //U32     _lightCountPerType[to_const_U32(LightType::COUNT)];
     };
 
   public:
@@ -68,7 +68,7 @@ class SceneShaderData {
     }
 
     inline void elapsedTime(U32 timeMS) {
-        _bufferData._otherData.x = to_float(timeMS);
+        _bufferData._otherData.x = to_F32(timeMS);
     }
 
     inline void enableDebugRender(bool state) {
@@ -80,7 +80,7 @@ class SceneShaderData {
     }
 
     inline void setRendererFlag(U32 flag) {
-        _bufferData._otherData.w = to_float(flag);
+        _bufferData._otherData.w = to_F32(flag);
     }
 
     inline void deltaTime(F32 deltaTimeSeconds) {
@@ -88,12 +88,12 @@ class SceneShaderData {
     }
 
     inline void lightCount(LightType type, U32 lightCount) {
-        _bufferData._lightCountPerType[to_uint(type)] = lightCount;
+        _bufferData._lightCountPerType[to_U32(type)] = lightCount;
     }
 
     inline void detailLevel(RenderDetailLevel renderDetailLevel, RenderDetailLevel shadowDetailLevel) {
-        _bufferData._otherData2.y = to_float(renderDetailLevel);
-        _bufferData._otherData2.z = to_float(shadowDetailLevel);
+        _bufferData._otherData2.y = to_F32(renderDetailLevel);
+        _bufferData._otherData2.z = to_F32(shadowDetailLevel);
     }
 
     void uploadToGPU();

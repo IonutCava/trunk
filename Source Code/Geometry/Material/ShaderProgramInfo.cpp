@@ -27,6 +27,17 @@ ShaderProgramInfo& ShaderProgramInfo::operator=(const ShaderProgramInfo& other) 
     return *this;
 }
 
+bool ShaderProgramInfo::update() {
+    if (computeStage() == ShaderProgramInfo::BuildStage::COMPUTED) {
+        if (_shaderRef->getState() == ResourceState::RES_LOADED) {
+            computeStage(ShaderProgramInfo::BuildStage::READY);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 const ShaderProgram_ptr& ShaderProgramInfo::getProgram() const {
     return _shaderRef == nullptr ? ShaderProgram::defaultShader()
                                  : _shaderRef;

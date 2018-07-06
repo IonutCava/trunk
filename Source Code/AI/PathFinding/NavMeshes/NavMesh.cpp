@@ -357,9 +357,9 @@ bool NavigationMesh::generateMesh() {
 
     params.ch = cfg.ch;
     params.cs = cfg.cs;
-    params.walkableHeight = to_float(cfg.walkableHeight);
-    params.walkableRadius = to_float(cfg.walkableRadius);
-    params.walkableClimb  = to_float(cfg.walkableClimb);
+    params.walkableHeight = to_F32(cfg.walkableHeight);
+    params.walkableRadius = to_F32(cfg.walkableRadius);
+    params.walkableClimb  = to_F32(cfg.walkableClimb);
 
     params.tileX = 0;
     params.tileY = 0;
@@ -536,7 +536,7 @@ bool NavigationMesh::createPolyMesh(rcConfig& cfg, NavModelData& data,
     Console::printfn(
         "[RC_LOG_PROGRESS] Polymesh: %d vertices  %d polygons %5.2f ms\n",
         _polyMesh->nverts, _polyMesh->npolys,
-        to_float(ctx->getAccumulatedTime(RC_TIMER_TOTAL) / 1000.0f));
+        to_F32(ctx->getAccumulatedTime(RC_TIMER_TOTAL) / 1000.0f));
 
     return true;
 }
@@ -564,7 +564,7 @@ bool NavigationMesh::createNavigationMesh(dtNavMeshCreateParams& params) {
     }
 
     // Initialise all flags to something helpful.
-    for (U32 i = 0; i < to_uint(_tempNavMesh->getMaxTiles()); ++i) {
+    for (U32 i = 0; i < to_U32(_tempNavMesh->getMaxTiles()); ++i) {
         const dtMeshTile* tile = ((const dtNavMesh*)_tempNavMesh)->getTile(i);
 
         if (!tile->header) {
@@ -573,7 +573,7 @@ bool NavigationMesh::createNavigationMesh(dtNavMeshCreateParams& params) {
 
         const dtPolyRef base = _tempNavMesh->getPolyRefBase(tile);
 
-        for (U32 j = 0; j < to_uint(tile->header->polyCount); ++j) {
+        for (U32 j = 0; j < to_U32(tile->header->polyCount); ++j) {
             const dtPolyRef ref = base | j;
             U16 f = 0;
             _tempNavMesh->getPolyFlags(ref, &f);
@@ -691,7 +691,7 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
     }
 
     // Read tiles.
-    for (U32 i = 0; i < to_uint(header.numTiles); ++i) {
+    for (U32 i = 0; i < to_U32(header.numTiles); ++i) {
         NavMeshTileHeader tileHeader;
         fread(&tileHeader, sizeof(tileHeader), 1, fp);
         if (!tileHeader.tileRef || !tileHeader.dataSize) {
@@ -744,7 +744,7 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
     header.version = NAVMESHSET_VERSION;
     header.numTiles = 0;
 
-    for (U32 i = 0; i < to_uint(_navMesh->getMaxTiles()); ++i) {
+    for (U32 i = 0; i < to_U32(_navMesh->getMaxTiles()); ++i) {
         const dtMeshTile* tile = ((const dtNavMesh*)_navMesh)->getTile(i);
 
         if (!tile || !tile->header || !tile->dataSize) {
@@ -757,7 +757,7 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
     fwrite(&header, sizeof(NavMeshSetHeader), 1, fp);
 
     // Store tiles.
-    for (U32 i = 0; i < to_uint(_navMesh->getMaxTiles()); ++i) {
+    for (U32 i = 0; i < to_U32(_navMesh->getMaxTiles()); ++i) {
         const dtMeshTile* tile = ((const dtNavMesh*)_navMesh)->getTile(i);
 
         if (!tile || !tile->header || !tile->dataSize) {

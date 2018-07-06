@@ -7,7 +7,7 @@ namespace Divide {
 
 size_t PropertyDescriptor::getHash() const {
     size_t hash = 0;
-    Util::Hash_combine(hash, to_uint(_type));
+    Util::Hash_combine(hash, to_U32(_type));
     return hash;
 }
 

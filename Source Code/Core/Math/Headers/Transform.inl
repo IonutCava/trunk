@@ -89,15 +89,14 @@ inline void Transform::setScale(const vec3<F32>& scale) {
 
 /// Set the local orientation using the Axis-Angle system.
 /// The angle can be in either degrees(default) or radians
-inline void Transform::setRotation(const vec3<F32>& axis, F32 degrees, bool inDegrees) {
-    setRotation(Quaternion<F32>(axis, degrees, inDegrees));
+inline void Transform::setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) {
+    setRotation(Quaternion<F32>(axis, degrees));
 }
 
 /// Set the local orientation using the Euler system.
 /// The angles can be in either degrees(default) or radians
-inline void Transform::setRotation(F32 pitch, F32 yaw, F32 roll, bool inDegrees) {
-    setRotation(
-        Quaternion<F32>(pitch, yaw, roll, inDegrees));
+inline void Transform::setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) {
+    setRotation(Quaternion<F32>(pitch, yaw, roll));
 }
 
 /// Set the local orientation so that it matches the specified quaternion.
@@ -128,15 +127,15 @@ inline void Transform::scale(const vec3<F32>& axisFactors) {
 /// Apply the specified Axis-Angle rotation starting from the current
 /// orientation.
 /// The angles can be in either degrees(default) or radians
-inline void Transform::rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees) {
-    rotate(Quaternion<F32>(axis, degrees, inDegrees));
+inline void Transform::rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) {
+    rotate(Quaternion<F32>(axis, degrees));
 }
 
 /// Apply the specified Euler rotation starting from the current
 /// orientation.
 /// The angles can be in either degrees(default) or radians
-inline void Transform::rotate(F32 pitch, F32 yaw, F32 roll, bool inDegrees) {
-    rotate(Quaternion<F32>(pitch, yaw, roll, inDegrees));
+inline void Transform::rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) {
+    rotate(Quaternion<F32>(pitch, yaw, roll));
 }
 
 /// Apply the specified Quaternion rotation starting from the current orientation.
@@ -150,7 +149,7 @@ inline void Transform::rotateSlerp(const Quaternion<F32>& quat, const D64 deltaT
     _rebuildMatrix = true;
 
     WriteLock w_lock(_lock);
-    _transformValues._orientation.slerp(quat, to_float(deltaTime));
+    _transformValues._orientation.slerp(quat, to_F32(deltaTime));
     _transformValues._orientation.normalize();
 }
 
@@ -190,33 +189,33 @@ inline void Transform::scaleZ(const F32 ammount) {
 }
 /// Rotate on the X axis (Axis-Angle used) by the specified angle (either
 /// degrees or radians)
-inline void Transform::rotateX(const F32 angle, bool inDegrees) {
-    rotate(vec3<F32>(1, 0, 0), angle, inDegrees);
+inline void Transform::rotateX(const Angle::DEGREES<F32> angle) {
+    rotate(vec3<F32>(1, 0, 0), angle);
 }
 /// Rotate on the Y axis (Axis-Angle used) by the specified angle (either
 /// degrees or radians)
-inline void Transform::rotateY(const F32 angle, bool inDegrees) {
-    rotate(vec3<F32>(0, 1, 0), angle, inDegrees);
+inline void Transform::rotateY(const Angle::DEGREES<F32> angle) {
+    rotate(vec3<F32>(0, 1, 0), angle);
 }
 /// Rotate on the Z axis (Axis-Angle used) by the specified angle (either
 /// degrees or radians)
-inline void Transform::rotateZ(const F32 angle, bool inDegrees) {
-    rotate(vec3<F32>(0, 0, 1), angle, inDegrees);
+inline void Transform::rotateZ(const Angle::DEGREES<F32> angle) {
+    rotate(vec3<F32>(0, 0, 1), angle);
 }
 /// Set the rotation on the X axis (Axis-Angle used) by the specified angle
 /// (either degrees or radians)
-inline void Transform::setRotationX(const F32 angle, bool inDegrees) {
-    setRotation(vec3<F32>(1, 0, 0), angle, inDegrees);
+inline void Transform::setRotationX(const Angle::DEGREES<F32> angle) {
+    setRotation(vec3<F32>(1, 0, 0), angle);
 }
 /// Set the rotation on the Y axis (Axis-Angle used) by the specified angle
 /// (either degrees or radians)
-inline void Transform::setRotationY(const F32 angle, bool inDegrees) {
-    setRotation(vec3<F32>(0, 1, 0), angle, inDegrees);
+inline void Transform::setRotationY(const Angle::DEGREES<F32> angle) {
+    setRotation(vec3<F32>(0, 1, 0), angle);
 }
 /// Set the rotation on the Z axis (Axis-Angle used) by the specified angle
 /// (either degrees or radians)
-inline void Transform::setRotationZ(const F32 angle, bool inDegrees) {
-    setRotation(vec3<F32>(0, 0, 1), angle, inDegrees);
+inline void Transform::setRotationZ(const Angle::DEGREES<F32> angle) {
+    setRotation(vec3<F32>(0, 0, 1), angle);
 }
 
 /// Return the scale factor

@@ -55,12 +55,12 @@ void Character::update(const U64 deltaTime) {
     sourceDirection.y = 0.0f;
 
     _oldPosition.set(nodePhysicsComponent->getPosition());
-    _oldPosition.lerp(_curPosition, to_float(GFXDevice::getFrameInterpolationFactor()));
+    _oldPosition.lerp(_curPosition, to_F32(GFXDevice::getFrameInterpolationFactor()));
     nodePhysicsComponent->setPosition(_oldPosition);
     nodePhysicsComponent->rotateSlerp(
         nodePhysicsComponent->getOrientation() *
             RotationFromVToU(sourceDirection, _curVelocity),
-        to_float(GFXDevice::getFrameInterpolationFactor()));
+        to_F32(GFXDevice::getFrameInterpolationFactor()));
 }
 
 /// Just before we render the frame

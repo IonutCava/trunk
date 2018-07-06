@@ -103,7 +103,7 @@ void NetworkScene::disconnect(I64 btnGUID) {
 }
 
 bool NetworkScene::loadResources(bool continueOnErrors) {
-    _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
+    _sunAngle = vec2<F32>(0.0f, Angle::to_RADIANS(45.0f));
     _sunvector =
         vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
@@ -142,22 +142,22 @@ void NetworkScene::postLoadMainThread() {
 
     _GUI->addButton(
         _ID("getPing"), "ping me",
-        vec2<I32>(60, to_int(resolution.height / 1.1f)),
+        vec2<I32>(60, to_I32(resolution.height / 1.1f)),
         vec2<U32>(100, 25),
         DELEGATE_BIND(&NetworkScene::test, this, std::placeholders::_1));
     _GUI->addButton(
         _ID("disconnect"), "disconnect",
-        vec2<I32>(180, to_int(resolution.height / 1.1f)),
+        vec2<I32>(180, to_I32(resolution.height / 1.1f)),
         vec2<U32>(100, 25),
         DELEGATE_BIND(&NetworkScene::disconnect, this, std::placeholders::_1));
     _GUI->addButton(
         _ID("connect"), "connect",
-        vec2<I32>(300, to_int(resolution.height / 1.1f)),
+        vec2<I32>(300, to_I32(resolution.height / 1.1f)),
         vec2<U32>(100, 25),
         DELEGATE_BIND(&NetworkScene::connect, this, std::placeholders::_1));
     _GUI->addButton(
         _ID("patch"), "patch",
-        vec2<I32>(420, to_int(resolution.height / 1.1f)),
+        vec2<I32>(420, to_I32(resolution.height / 1.1f)),
         vec2<U32>(100, 25),
         DELEGATE_BIND(&NetworkScene::checkPatches, this, std::placeholders::_1));
 

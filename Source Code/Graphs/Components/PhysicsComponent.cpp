@@ -106,13 +106,13 @@ void PhysicsComponent::setRotation(const Quaternion<F32>& quat) {
     setTransformDirty(TransformType::ROTATION);
 }
 
-void PhysicsComponent::setRotation(const vec3<F32>& axis, F32 degrees,  bool inDegrees) {
-    _transformInterface->setRotation(axis, degrees, inDegrees);
+void PhysicsComponent::setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) {
+    _transformInterface->setRotation(axis, degrees);
     setTransformDirty(TransformType::ROTATION);
 }
 
-void PhysicsComponent::setRotation(F32 pitch, F32 yaw, F32 roll, bool inDegrees) {
-    _transformInterface->setRotation(pitch, yaw, roll, inDegrees);
+void PhysicsComponent::setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) {
+    _transformInterface->setRotation(pitch, yaw, roll);
     setTransformDirty(TransformType::ROTATION);
 }
 
@@ -126,13 +126,13 @@ void PhysicsComponent::scale(const vec3<F32>& axisFactors) {
     setTransformDirty(TransformType::SCALE);
 }
 
-void PhysicsComponent::rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees) {
-    _transformInterface->rotate(axis, degrees, inDegrees);
+void PhysicsComponent::rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) {
+    _transformInterface->rotate(axis, degrees);
     setTransformDirty(TransformType::ROTATION);
 }
 
-void PhysicsComponent::rotate(F32 pitch, F32 yaw, F32 roll, bool inDegrees) {
-    _transformInterface->rotate(pitch, yaw, roll, inDegrees);
+void PhysicsComponent::rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) {
+    _transformInterface->rotate(pitch, yaw, roll);
     setTransformDirty(TransformType::ROTATION);
 }
 
@@ -176,33 +176,33 @@ void PhysicsComponent::scaleZ(const F32 scale) {
     setTransformDirty(TransformType::SCALE);
 }
 
-void PhysicsComponent::rotateX(const F32 angle, bool inDegrees) {
-    _transformInterface->rotateX(angle, inDegrees);
+void PhysicsComponent::rotateX(const Angle::DEGREES<F32> angle) {
+    _transformInterface->rotateX(angle);
     setTransformDirty(TransformType::ROTATION);
 }
 
-void PhysicsComponent::rotateY(const F32 angle, bool inDegrees) {
-    _transformInterface->rotateY(angle, inDegrees);
+void PhysicsComponent::rotateY(const Angle::DEGREES<F32> angle) {
+    _transformInterface->rotateY(angle);
     setTransformDirty(TransformType::ROTATION);
 }
 
-void PhysicsComponent::rotateZ(const F32 angle, bool inDegrees) {
-    _transformInterface->rotateZ(angle, inDegrees);
+void PhysicsComponent::rotateZ(const Angle::DEGREES<F32> angle) {
+    _transformInterface->rotateZ(angle);
     setTransformDirty(TransformType::ROTATION);
 }
 
-void PhysicsComponent::setRotationX(const F32 angle, bool inDegrees) {
-    _transformInterface->setRotationX(angle, inDegrees);
+void PhysicsComponent::setRotationX(const Angle::DEGREES<F32> angle) {
+    _transformInterface->setRotationX(angle);
     setTransformDirty(TransformType::ROTATION);
 }
 
-void PhysicsComponent::setRotationY(const F32 angle, bool inDegrees) {
-    _transformInterface->setRotationY(angle, inDegrees);
+void PhysicsComponent::setRotationY(const Angle::DEGREES<F32> angle) {
+    _transformInterface->setRotationY(angle);
     setTransformDirty(TransformType::ROTATION);
 }
 
-void PhysicsComponent::setRotationZ(const F32 angle, bool inDegrees) {
-    _transformInterface->setRotationZ(angle, inDegrees);
+void PhysicsComponent::setRotationZ(const Angle::DEGREES<F32> angle) {
+    _transformInterface->setRotationZ(angle);
     setTransformDirty(TransformType::ROTATION);
 }
 
@@ -242,15 +242,16 @@ bool PhysicsComponent::popTransforms() {
 }
 
 bool PhysicsComponent::isParentTransformDirty() const {
-    SceneGraphNode_ptr parent = _parentSGN.getParent().lock();
-    while (parent != nullptr) {
-        PhysicsComponent* parentComp = parent->get<PhysicsComponent>();
-        if(parentComp->_dirtyInterp || parentComp->_dirty)
-        {
+    SceneGraphNode_cwptr parent = _parentSGN.getParent();
+    while (!parent.expired()) {
+        const SceneGraphNode_cptr& parentPtr = parent.lock();
+
+        PhysicsComponent* parentComp = parentPtr->get<PhysicsComponent>();
+        if(parentComp->dirty()) {
             return true;
         }
 
-        parent = parent->getParent().lock();
+        parent = parentPtr->getParent().lock();
     }
 
     return false;
@@ -262,6 +263,10 @@ void PhysicsComponent::clean(bool interp) {
     } else {
         _dirty = false;
     }
+}
+
+bool PhysicsComponent::dirty() const {
+    return _dirty || _dirtyInterp;
 }
 
 const mat4<F32>& PhysicsComponent::getMatrix() {
@@ -346,7 +351,7 @@ vec3<F32> PhysicsComponent::getLocalPosition(D64 interpolationFactor) const {
 
     return Lerp(_prevTransformValues._translation,
                 getLocalPosition(),
-                to_float(interpolationFactor));
+                to_F32(interpolationFactor));
 }
 
 vec3<F32> PhysicsComponent::getScale() const {
@@ -385,7 +390,7 @@ vec3<F32> PhysicsComponent::getLocalScale(D64 interpolationFactor) const {
 
     return Lerp(_prevTransformValues._scale,
                 getLocalScale(),
-                to_float(interpolationFactor));
+                to_F32(interpolationFactor));
 }
 
 /// Return the orientation quaternion
@@ -425,7 +430,7 @@ Quaternion<F32> PhysicsComponent::getLocalOrientation(D64 interpolationFactor) c
 
     return Slerp(_prevTransformValues._orientation,
                  getLocalOrientation(),
-                 to_float(interpolationFactor));
+                 to_F32(interpolationFactor));
 }
 
 bool PhysicsComponent::isUniformScaled() const {

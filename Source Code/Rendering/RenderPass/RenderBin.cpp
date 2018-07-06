@@ -76,9 +76,9 @@ RenderBin::RenderBin(GFXDevice& context,
     _renderBinStack.reserve(125);
 
     if(_rbType != +RenderBinType::RBT_OPAQUE &&  _rbType != +RenderBinType::RBT_TERRAIN)  {
-        SetBit(_binPropertyMask, to_const_uint(RenderBitProperty::TRANSLUCENT));
+        SetBit(_binPropertyMask, to_const_U32(RenderBitProperty::TRANSLUCENT));
     } else {
-        ClearBit(_binPropertyMask, to_const_uint(RenderBitProperty::TRANSLUCENT));
+        ClearBit(_binPropertyMask, to_const_U32(RenderBitProperty::TRANSLUCENT));
     }
 }
 
@@ -133,7 +133,7 @@ void RenderBin::refresh() {
 }
 
 void RenderBin::addNodeToBin(const SceneGraphNode& sgn, const RenderStagePass& renderStagePass, const vec3<F32>& eyePos) {
-    I32 keyA = to_uint(_renderBinStack.size() + 1);
+    I32 keyA = to_U32(_renderBinStack.size() + 1);
     I32 keyB = keyA;
 
     RenderingComponent* const renderable = sgn.get<RenderingComponent>();

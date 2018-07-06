@@ -69,7 +69,7 @@ void TenisScene::processTasks(const U64 deltaTime) {
         _GUI->modifyText(_ID("Message"), Util::StringFormat("Team %d won!", _scoreTeam1 == 10 ? 1 : 2));
     }
 
-    vec2<F32> _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
+    vec2<F32> _sunAngle = vec2<F32>(0.0f, Angle::to_RADIANS(45.0f));
     _sunvector =
         vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
@@ -358,11 +358,11 @@ bool TenisScene::deinitializeAI(bool continueOnErrors) {
 }
 
 bool TenisScene::loadResources(bool continueOnErrors) {
-    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
 
     // Create our ball
     ResourceDescriptor ballDescriptor("Tenis Ball");
@@ -393,22 +393,22 @@ void TenisScene::postLoadMainThread() {
     btn->setTooltip("Start a new game!");
 
     _GUI->addText(
-        _ID("Team1Score"), vec2<I32>(to_int(resolution.width - 250),
-            to_int(resolution.height / 1.3f)),
+        _ID("Team1Score"), vec2<I32>(to_I32(resolution.width - 250),
+            to_I32(resolution.height / 1.3f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(0, 192, 192, 255),
         Util::StringFormat("Team 1 Score: %d", 0));
 
     _GUI->addText(
-        _ID("Team2Score"), vec2<I32>(to_int(resolution.width - 250),
-            to_int(resolution.height / 1.5f)),
+        _ID("Team2Score"), vec2<I32>(to_I32(resolution.width - 250),
+            to_I32(resolution.height / 1.5f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(50, 192, 0, 255),
         Util::StringFormat("Team 2 Score: %d", 0));
 
     _GUI->addText(_ID("Message"),
-        vec2<I32>(to_int(resolution.width - 250),
-            to_int(resolution.height / 1.7f)),
+        vec2<I32>(to_I32(resolution.width - 250),
+            to_I32(resolution.height / 1.7f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(0, 255, 0, 255),
         "");

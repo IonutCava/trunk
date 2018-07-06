@@ -234,7 +234,7 @@ NavModelData mergeModels(NavModelData& a,
                        a.getTriCount() * 3;  // i like pointing at faces
         memcpy(bFacePt, b.getTris(), bFaceSize * sizeof(I32));
 
-        for (U32 i = 0; i < to_uint(bFaceSize); i++) {
+        for (U32 i = 0; i < to_U32(bFaceSize); i++) {
             *(bFacePt + i) += a.getVertCount();
         }
 
@@ -300,9 +300,9 @@ void addTriangle(NavModelData* modelData,
 
     I32* dst = &modelData->_triangles[modelData->getTriCount() * 3];
 
-    *dst++ = to_int(triangleIndices.x + triangleIndexOffset);
-    *dst++ = to_int(triangleIndices.y + triangleIndexOffset);
-    *dst++ = to_int(triangleIndices.z + triangleIndexOffset);
+    *dst++ = to_I32(triangleIndices.x + triangleIndexOffset);
+    *dst++ = to_I32(triangleIndices.y + triangleIndexOffset);
+    *dst++ = to_I32(triangleIndices.z + triangleIndexOffset);
 
     modelData->getAreaTypes().push_back(areaType);
     modelData->_triangleCount++;
@@ -318,19 +318,19 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         const SceneNode_ptr& sn = sgn.getNode();
 
         SceneNodeType nodeType = sn->getType();
-        U32 ignoredNodeType = to_const_uint(SceneNodeType::TYPE_ROOT) |
-                              to_const_uint(SceneNodeType::TYPE_LIGHT) |
-                              to_const_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
-                              to_const_uint(SceneNodeType::TYPE_TRIGGER) |
-                              to_const_uint(SceneNodeType::TYPE_SKY) |
-                              to_const_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
+        U32 ignoredNodeType = to_const_U32(SceneNodeType::TYPE_ROOT) |
+                              to_const_U32(SceneNodeType::TYPE_LIGHT) |
+                              to_const_U32(SceneNodeType::TYPE_PARTICLE_EMITTER) |
+                              to_const_U32(SceneNodeType::TYPE_TRIGGER) |
+                              to_const_U32(SceneNodeType::TYPE_SKY) |
+                              to_const_U32(SceneNodeType::TYPE_VEGETATION_GRASS);
 
-        U32 allowedNodeType = to_const_uint(SceneNodeType::TYPE_WATER) |
-                              to_const_uint(SceneNodeType::TYPE_OBJECT3D) |
-                              to_const_uint(SceneNodeType::TYPE_VEGETATION_TREES);
+        U32 allowedNodeType = to_const_U32(SceneNodeType::TYPE_WATER) |
+                              to_const_U32(SceneNodeType::TYPE_OBJECT3D) |
+                              to_const_U32(SceneNodeType::TYPE_VEGETATION_TREES);
 
-        if (!BitCompare(allowedNodeType, to_uint(nodeType))) {
-            if (!BitCompare(ignoredNodeType, to_uint(nodeType))) {
+        if (!BitCompare(allowedNodeType, to_U32(nodeType))) {
+            if (!BitCompare(ignoredNodeType, to_U32(nodeType))) {
                 Console::printfn(Locale::get(_ID("WARN_NAV_UNSUPPORTED")),
                                  sn->getName().c_str());
                 goto next;
@@ -380,7 +380,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         }
 
         Console::d_printfn(Locale::get(_ID("NAV_MESH_CURRENT_NODE")),
-                           sn->getName().c_str(), to_uint(level));
+                           sn->getName().c_str(), to_U32(level));
 
         U32 currentTriangleIndexOffset = outData.getVertCount();
 

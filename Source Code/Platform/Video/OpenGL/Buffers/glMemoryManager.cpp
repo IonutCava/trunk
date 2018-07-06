@@ -11,7 +11,7 @@ namespace GLUtil {
 static vectorImpl<VBO> g_globalVBOs;
 
 U32 VBO::getChunkCountForSize(size_t sizeInBytes) {
-    return to_uint(std::ceil(to_float(sizeInBytes) / MAX_VBO_CHUNK_SIZE_BYTES));
+    return to_U32(std::ceil(to_F32(sizeInBytes) / MAX_VBO_CHUNK_SIZE_BYTES));
 }
 
 VBO::VBO() : _handle(0),
@@ -169,7 +169,7 @@ U32 getVBOMemUsage(GLuint handle) {
 }
 
 U32 getVBOCount() {
-    return to_uint(g_globalVBOs.size());
+    return to_U32(g_globalVBOs.size());
 }
 
 void clearVBOs() {

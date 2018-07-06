@@ -106,10 +106,10 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
     }
 
     // Limit max joysticks to MAX_ALLOWED_JOYSTICKS
-    I32 numJoysticks = std::min(_pInputInterface->getNumberOfDevices(OIS::OISJoyStick), to_int(Joystick::COUNT));
+    I32 numJoysticks = std::min(_pInputInterface->getNumberOfDevices(OIS::OISJoyStick), to_I32(Joystick::COUNT));
 
     if (numJoysticks > 0) {
-        U32 entryNum = to_const_uint(Joystick::JOYSTICK_1);
+        U32 entryNum = to_const_U32(Joystick::JOYSTICK_1);
 
         for (I32 i = 0; i < numJoysticks; ++i) {
             OIS::JoyStick* joystick = static_cast<OIS::JoyStick*>(_pInputInterface->createInputObject(OIS::OISJoyStick, true));
@@ -325,7 +325,7 @@ JoystickElement  InputInterface::joystickElementByName(const stringImpl& element
     assert(Util::CompareIgnoreCase(buttonElements[0], "BUTTON"));
 
     I32 buttonId = Util::ConvertData<I32, std::string>(buttonElements[1].c_str());
-    return JoystickElement(JoystickElementType::BUTTON_PRESS, to_ubyte(buttonId));
+    return JoystickElement(JoystickElementType::BUTTON_PRESS, to_U8(buttonId));
 }
 
 OIS::KeyCode InputInterface::keyCodeByName(const stringImpl& name) {

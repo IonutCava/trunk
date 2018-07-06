@@ -29,7 +29,7 @@ GUIEditor::GUIEditor(PlatformContext& context, ResourceCache& cache)
     _deleteSelectionButton = nullptr;
 
     U32 transFieldCount =
-        to_const_uint(TransformFields::COUNT);
+        to_const_U32(TransformFields::COUNT);
 
     _toggleButtons.fill(0);
 
@@ -50,7 +50,7 @@ GUIEditor::GUIEditor(PlatformContext& context, ResourceCache& cache)
     }
 
     for (U32 i = 0; i < transFieldCount; ++i) {
-        _currentValues[i][to_uint(
+        _currentValues[i][to_U32(
             ControlFields::CONTROL_FIELD_GRANULARITY)] = 1.0;
     }
 }
@@ -111,8 +111,7 @@ void GUIEditor::TrackSelection() {
             node->get<PhysicsComponent>();
         const vec3<F32> &localPosition = selectionTransform->getPosition();
         const vec3<F32> &localScale = selectionTransform->getScale();
-        vec3<F32> localOrientation =
-            GetEuler(selectionTransform->getOrientation(), true);
+        vec3<F32> localOrientation(Angle::to_DEGREES(GetEuler(selectionTransform->getOrientation())));
 
         currentValues(TransformFields::TRANSFORM_POSITION,
                       ControlFields::CONTROL_FIELD_X) = localPosition.x;
@@ -136,11 +135,11 @@ void GUIEditor::TrackSelection() {
                       ControlFields::CONTROL_FIELD_Z) = localScale.z;
 
         for (U32 i = 0;
-             i < to_const_uint(TransformFields::COUNT);
+             i < to_const_U32(TransformFields::COUNT);
              ++i) {
             // Skip granularity
             for (U32 j = 0;
-                 j < to_const_uint(ControlFields::COUNT) - 1;
+                 j < to_const_U32(ControlFields::COUNT) - 1;
                  ++j) {
                 _valuesField[i][j]->setText(
                     CEGUI::PropertyHelper<F32>::toString(_currentValues[i][j]));
@@ -175,11 +174,11 @@ void GUIEditor::UpdateControls() {
 
     if (!hasValidTransform) {
         for (U32 i = 0;
-             i < to_const_uint(TransformFields::COUNT);
+             i < to_const_U32(TransformFields::COUNT);
              ++i) {
             // Skip granularity
             for (U32 j = 0;
-                 j < to_const_uint(ControlFields::COUNT) - 1;
+                 j < to_const_U32(ControlFields::COUNT) - 1;
                  ++j) {
                 _valuesField[i][j]->setText("N/A");
                 _valuesField[i][j]->setEnabled(false);
@@ -199,11 +198,11 @@ void GUIEditor::UpdateControls() {
         toggleButton(ToggleButtons::TOGGLE_SHADOW_MAPPING)->setSelected(false);
     } else {
         for (U32 i = 0;
-             i < to_const_uint(TransformFields::COUNT);
+             i < to_const_U32(TransformFields::COUNT);
              ++i) {
             // Skip granularity
             for (U32 j = 0;
-                 j < to_const_uint(ControlFields::COUNT) - 1;
+                 j < to_const_U32(ControlFields::COUNT) - 1;
                  ++j) {
                 _valuesField[i][j]->setText(
                     CEGUI::PropertyHelper<F32>::toString(_currentValues[i][j]));

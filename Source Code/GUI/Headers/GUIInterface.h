@@ -111,7 +111,7 @@ protected:
 protected:
     GUI* _context;
 
-    std::array<GUIMap, to_const_uint(GUIType::COUNT)> _guiElements;
+    std::array<GUIMap, to_const_U32(GUIType::COUNT)> _guiElements;
 
     vec2<U16> _resolutionCache;
 };

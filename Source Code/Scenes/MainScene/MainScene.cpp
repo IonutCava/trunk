@@ -140,14 +140,14 @@ bool MainScene::load(const stringImpl& name) {
     _sun.lock()->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     _currentSky = addSky();
 
-    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION);
+    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_U32(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_U32(SGNComponent::ComponentType::NAVIGATION);
 
     ResourceDescriptor infiniteWater("waterEntity");
-    infiniteWater.setID(to_uint(_baseCamera->getZPlanes().y));
+    infiniteWater.setID(to_U32(_baseCamera->getZPlanes().y));
     WaterPlane_ptr water = CreateResource<WaterPlane>(_resCache, infiniteWater);
     water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),  0.34f);
     _waterPlanes.push_back(_sceneGraph->getRoot().addNode(water, normalMask, PhysicsGroup::GROUP_IGNORE));
@@ -269,7 +269,7 @@ bool MainScene::loadResources(bool continueOnErrors) {
     _guiTimers.push_back(0.0);  // Fps
     _guiTimers.push_back(0.0);  // Time
 
-    _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));
+    _sunAngle = vec2<F32>(0.0f, Angle::to_RADIANS(45.0f));
     _sunvector =
         vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);

@@ -136,7 +136,7 @@ void SceneAnimator::save(PlatformContext& context, ByteBuffer& dataOut) const {
         saveSkeleton(dataOut, _skeleton);
     }
 
-    dataOut << to_uint(_bones.size());
+    dataOut << to_U32(_bones.size());
     for (Bone* bone : _bones) {
         dataOut << bone->name();
     }

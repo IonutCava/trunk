@@ -44,7 +44,7 @@ class TaskPool;
  */
 class Task : public GUIDWrapper, private NonCopyable {
    public:
-       static constexpr U16 MAX_CHILD_TASKS = to_const_ushort(std::numeric_limits<I8>::max());
+       static constexpr U16 MAX_CHILD_TASKS = to_const_U16(std::numeric_limits<I8>::max());
 
        enum class TaskPriority : U32 {
            DONT_CARE = 0,

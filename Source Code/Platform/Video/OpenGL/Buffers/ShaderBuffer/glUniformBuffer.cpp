@@ -154,7 +154,7 @@ void glUniformBuffer::addAtomicCounter(U32 sizeFactor) {
 }
 
 U32 glUniformBuffer::getAtomicCounter(U32 counterIndex) {
-    if (counterIndex >= to_uint(_atomicCounters.size())) {
+    if (counterIndex >= to_U32(_atomicCounters.size())) {
         return 0;
     }
 
@@ -165,7 +165,7 @@ U32 glUniformBuffer::getAtomicCounter(U32 counterIndex) {
 }
 
 void glUniformBuffer::bindAtomicCounter(U32 counterIndex, U32 bindIndex) {
-    if (counterIndex >= to_uint(_atomicCounters.size())) {
+    if (counterIndex >= to_U32(_atomicCounters.size())) {
         return;
     }
 
@@ -178,7 +178,7 @@ void glUniformBuffer::bindAtomicCounter(U32 counterIndex, U32 bindIndex) {
 }
 
 void glUniformBuffer::resetAtomicCounter(U32 counterIndex) {
-    if (counterIndex > to_uint(_atomicCounters.size())) {
+    if (counterIndex > to_U32(_atomicCounters.size())) {
         return;
     }
     constexpr U32 defaultValue = 0;

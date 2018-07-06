@@ -12,7 +12,7 @@ d3dTexture::d3dTexture(GFXDevice& context,
                        bool asyncLoad)
     : Texture(context, descriptorHash, name, resourceName, resourceLocation, type, asyncLoad)
 {
-    _type = d3dTextureTypeTable[to_uint(type)];
+    _type = d3dTextureTypeTable[to_U32(type)];
 }
 
 };
