@@ -41,6 +41,8 @@
 #define _RENDER_BIN_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
+#include "Platform/Video/Headers/RenderAPIEnums.h"
+
 #include <BetterEnums/include/enum.h>
 
 namespace Divide {
@@ -100,33 +102,31 @@ class RenderBin {
     explicit RenderBin(GFXDevice& context, RenderBinType rbType);
     ~RenderBin();
 
-    void sort(RenderingOrder::List renderOrder);
-    void sort(RenderingOrder::List renderOrder, const Task& parentTask);
-    void populateRenderQueue(RenderStagePass renderStagePass);
-    void postRender(const SceneRenderState& renderState, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut);
-    void refresh();
+    void sort(RenderStagePass stagePass, RenderingOrder::List renderOrder);
+    void sort(RenderStagePass stagePass, RenderingOrder::List renderOrder, const Task& parentTask);
+    void populateRenderQueue(RenderStagePass stagePass);
+    void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
+    void refresh(RenderStagePass stagePass);
 
     void addNodeToBin(const SceneGraphNode& sgn,
                       RenderStagePass renderStagePass,
                       const vec3<F32>& eyePos);
 
-    inline const RenderBinItem& getItem(U16 index) const {
-        assert(index < _renderBinStack.size());
-        return _renderBinStack[index];
-    }
+    const RenderBinItem& getItem(RenderStagePass stagePass, U16 index) const;
 
-    void getSortedNodes(vectorEASTL<SceneGraphNode*>& nodes) const;
+    void getSortedNodes(RenderStagePass stagePass, vectorEASTL<SceneGraphNode*>& nodes) const;
 
-    inline U16 getBinSize() const { return (U16)_renderBinStack.size(); }
+    U16 getBinSize(RenderStagePass stagePass) const;
+
+    bool empty(RenderStagePass stagePass) const;
 
     inline RenderBinType getType() const { return _rbType; }
-
-    inline bool empty() const { return getBinSize() == 0; }
 
    private:
     GFXDevice& _context;
     RenderBinType _rbType;
-    RenderBinStack _renderBinStack;
+
+    std::array<RenderBinStack, to_base(RenderStage::COUNT)> _renderBinStack;
 };
 
 };  // namespace Divide

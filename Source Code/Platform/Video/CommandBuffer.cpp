@@ -43,6 +43,8 @@ const std::type_info& CommandBuffer::getType(GFX::CommandType type) const {
         case GFX::CommandType::DRAW_IMGUI:            return typeid(DrawIMGUICommand);
         case GFX::CommandType::DISPATCH_COMPUTE:      return typeid(DispatchComputeCommand);
         case GFX::CommandType::SWITCH_WINDOW:         return typeid(SwitchWindowCommand);
+        case GFX::CommandType::EXTERNAL:              return typeid(ExternalCommand);
+            
     };
 
     return typeid(DrawCommand);
@@ -217,7 +219,8 @@ void CommandBuffer::clean() {
             case GFX::CommandType::DISPATCH_COMPUTE:
             case GFX::CommandType::DRAW_IMGUI:
             case GFX::CommandType::BLIT_RT:
-            case GFX::CommandType::SWITCH_WINDOW: {
+            case GFX::CommandType::SWITCH_WINDOW: 
+            case GFX::CommandType::EXTERNAL: {
             }break;
         };
 
@@ -312,7 +315,8 @@ bool CommandBuffer::validate() const {
                 case GFX::CommandType::BLIT_RT: {
                     needsDescriptorSets = true;
                 }break;
-                case GFX::CommandType::SWITCH_WINDOW: {
+                case GFX::CommandType::SWITCH_WINDOW:
+                case GFX::CommandType::EXTERNAL: {
                     // no requirements yet
                 }break;
             };

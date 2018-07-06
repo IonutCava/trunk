@@ -30,10 +30,10 @@ RenderQueue::~RenderQueue()
     _activeBins.clear();
 }
 
-U16 RenderQueue::getRenderQueueStackSize() const {
+U16 RenderQueue::getRenderQueueStackSize(RenderStagePass stagePass) const {
     U16 temp = 0;
     for (RenderBin* bin : _activeBins) {
-        temp += bin->getBinSize();
+        temp += bin->getBinSize(stagePass);
     }
     return temp;
 }
@@ -146,17 +146,17 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stag
     }
 }
 
-void RenderQueue::populateRenderQueues(RenderStagePass renderStagePass) {
+void RenderQueue::populateRenderQueues(RenderStagePass stagePass) {
     for (RenderBin* renderBin : _activeBins) {
-        if (!renderBin->empty()) {
-            renderBin->populateRenderQueue(renderStagePass);
+        if (!renderBin->empty(stagePass)) {
+            renderBin->populateRenderQueue(stagePass);
         }
     }
 }
 
-void RenderQueue::postRender(const SceneRenderState& renderState, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut) {
+void RenderQueue::postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
     for (RenderBin* renderBin : _activeBins) {
-        renderBin->postRender(renderState, renderStagePass, bufferInOut);
+        renderBin->postRender(renderState, stagePass, bufferInOut);
     }
 }
 
@@ -167,36 +167,37 @@ void RenderQueue::sort(RenderStagePass stagePass) {
     TaskPool& pool = _context.context().taskPool();
     TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     for (RenderBin* renderBin : _activeBins) {
-        if (!renderBin->empty()) {
+        if (!renderBin->empty(stagePass)) {
             RenderingOrder::List sortOrder = getSortOrder(stagePass, renderBin->getType());
 
-            if (renderBin->getBinSize() > threadBias) {
+            if (renderBin->getBinSize(stagePass) > threadBias) {
                 CreateTask(pool,
                            &sortTask,
-                            [renderBin, sortOrder](const Task& parentTask) {
-                                renderBin->sort(sortOrder, parentTask);
+                            [renderBin, sortOrder, stagePass](const Task& parentTask) {
+                                renderBin->sort(stagePass, sortOrder, parentTask);
                             }).startTask();
             } else {
-                renderBin->sort(sortOrder);
+                renderBin->sort(stagePass, sortOrder);
             }
         }
     }
     sortTask.startTask().wait();
 }
 
-void RenderQueue::refresh() {
+void RenderQueue::refresh(RenderStagePass stagePass) {
     for (RenderBin* renderBin : _activeBins) {
-        renderBin->refresh();
+        renderBin->refresh(stagePass);
     }
 }
 
-const RenderQueue::SortedQueues& RenderQueue::getSortedQueues() {
+RenderQueue::SortedQueues RenderQueue::getSortedQueues(RenderStagePass stagePass) const {
+    SortedQueues queues;
     for (RenderBin* renderBin : _activeBins) {
-        vectorEASTL<SceneGraphNode*>& nodes = _sortedQueues[renderBin->getType()._to_integral()];
-        renderBin->getSortedNodes(nodes);
+        vectorEASTL<SceneGraphNode*>& nodes = queues[renderBin->getType()._to_integral()];
+        renderBin->getSortedNodes(stagePass, nodes);
     }
 
-    return _sortedQueues;
+    return queues;
 }
 
 };

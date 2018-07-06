@@ -68,6 +68,7 @@ enum class CommandType : U8 {
     BEGIN_DEBUG_SCOPE,
     END_DEBUG_SCOPE,
     SWITCH_WINDOW,
+    EXTERNAL,
     COUNT
 };
 
@@ -202,6 +203,11 @@ struct DispatchComputeCommand final : Command<DispatchComputeCommand, CommandTyp
 
 struct SwitchWindowCommand final : Command<SwitchWindowCommand, CommandType::SWITCH_WINDOW> {
     I64 windowGUID = -1;
+};
+
+
+struct ExternalCommand final : Command<ExternalCommand, CommandType::EXTERNAL> {
+    std::function<void()> _cbk;
 };
 
 }; //namespace GFX

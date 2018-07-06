@@ -94,7 +94,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     _api(nullptr),
     _renderer(nullptr),
     _shaderComputeQueue(nullptr),
-    _commandBuildTimer(Time::ADD_TIMER("Command Generation Timer")),
     _clippingPlanes(Plane<F32>(0, 0, 0, 0))
 {
     // Hash values
@@ -135,8 +134,6 @@ GFXDevice::GFXDevice(Kernel& parent)
 
     _lastCommandCount.fill(0);
     _lastNodeCount.fill(0);
-
-    memset(_matricesData.data(), 0, sizeof(NodeData) * Config::MAX_VISIBLE_NODES);
 
     // Red X-axis
     _axisLines.push_back(
@@ -570,35 +567,23 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK<
 /// Based on RasterGrid implementation: http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
 void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) {
-    static bool firstRun = true;
-    static RTDrawDescriptor depthOnlyTarget;
-    static PipelineDescriptor pipelineDesc;
-    static GenericDrawCommand triangleCmd;
-    static Pipeline* pipeline;
-    static PushConstants constants;
+    // We use a special shader that downsamples the buffer
+    // We will use a state block that disables colour writes as we will render only a depth image,
+    // disables depth testing but allows depth writes
+    // Set the depth buffer as the currently active render target
+    RTDrawDescriptor depthOnlyTarget;
+    depthOnlyTarget.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
+    depthOnlyTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+    depthOnlyTarget.disableState(RTDrawDescriptor::State::CHANGE_VIEWPORT);
+    depthOnlyTarget.drawMask().disableAll();
+    depthOnlyTarget.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
 
-    if (firstRun) {
-        // We use a special shader that downsamples the buffer
-        // We will use a state block that disables colour writes as we will render only a depth image,
-        // disables depth testing but allows depth writes
-        // Set the depth buffer as the currently active render target
-        depthOnlyTarget.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
-        depthOnlyTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-        depthOnlyTarget.disableState(RTDrawDescriptor::State::CHANGE_VIEWPORT);
-        depthOnlyTarget.drawMask().disableAll();
-        depthOnlyTarget.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
+    RenderStateBlock HiZState;
+    HiZState.setZFunc(ComparisonFunction::ALWAYS);
 
-        RenderStateBlock HiZState;
-        HiZState.setZFunc(ComparisonFunction::ALWAYS);
-
-        pipelineDesc._stateHash = HiZState.getHash();
-        pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getID();
-
-        triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
-        triangleCmd._drawCount = 1;
-        pipeline = newPipeline(pipelineDesc);
-        firstRun = false;
-    }
+    PipelineDescriptor pipelineDesc;
+    pipelineDesc._stateHash = HiZState.getHash();
+    pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getID();
 
     // The depth buffer's resolution should be equal to the screen's resolution
     RenderTarget& screenTarget = _rtPool->renderTarget(depthBuffer);
@@ -631,7 +616,7 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
 
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = pipeline;
+    pipelineCmd._pipeline = newPipeline(pipelineDesc);
     GFX::EnqueueCommand(cmdBufferInOut, pipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
@@ -643,6 +628,11 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     GFX::SendPushConstantsCommand pushConstantsCommand;
     GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
     GFX::EndRenderSubPassCommand endRenderSubPassCmd;
+
+    GenericDrawCommand triangleCmd;
+    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
+    triangleCmd._drawCount = 1;
+
     // We skip the first level as that's our full resolution image
     while (dim) {
         if (level) {

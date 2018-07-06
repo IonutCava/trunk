@@ -16,6 +16,7 @@ DirectionalLight::DirectionalLight(ResourceCache& parentCache, size_t descriptor
 {
     // Down the Y and Z axis at DIRECTIONAL_LIGHT_DISTANCE units away;
     _positionAndRange.set(0, -1, -1, to_F32(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE));
+    _shadowProperties._lightDetails.y = to_U32(_csmSplitCount);
 }
 
 DirectionalLight::~DirectionalLight()

@@ -53,11 +53,13 @@ class NOINITVTABLE Renderer : public PlatformContextComponent {
     Renderer(PlatformContext& context, ResourceCache& cache, RendererType type);
     virtual ~Renderer();
 
-    virtual void preRender(RenderTarget& target,
+    virtual void preRender(RenderStagePass stagePass,
+                           RenderTarget& target,
                            LightPool& lightPool,
                            GFX::CommandBuffer& bufferInOut);
 
-    virtual void render(const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
+    virtual void render(RenderStagePass stagePass,
+                        const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
                         const SceneRenderState& sceneRenderState,
                         GFX::CommandBuffer& bufferInOut) = 0;
 

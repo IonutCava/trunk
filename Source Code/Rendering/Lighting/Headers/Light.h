@@ -55,6 +55,9 @@ class SceneRenderState;
 class Light : public SceneNode {
    public:
        struct ShadowProperties {
+           // x = light type
+           // y = csm split count
+           vec4<U32> _lightDetails;
            vec4<U32> _arrayOffset;
            /// light viewProjection matrices
            mat4<F32> _lightVP[Config::Lighting::MAX_SPLITS_PER_LIGHT];

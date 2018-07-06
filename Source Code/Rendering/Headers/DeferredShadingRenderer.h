@@ -48,21 +48,25 @@ class DeferredShadingRenderer : public Renderer {
     DeferredShadingRenderer(PlatformContext& context, ResourceCache& cache);
     ~DeferredShadingRenderer();
 
-    void preRender(RenderTarget& target,
+    void preRender(RenderStagePass stagePass,
+                   RenderTarget& target,
                    LightPool& lightPool,
                    GFX::CommandBuffer& bufferInOut) override;
 
-    void render(const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
+    void render(RenderStagePass stagePass,
+                const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
                 const SceneRenderState& sceneRenderState,
                 GFX::CommandBuffer& bufferInOut) override;
 
     void updateResolution(U16 width, U16 height) override;
 
    private:
-    void firstPass(const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
+    void firstPass(RenderStagePass stagePass,
+                   const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
                    const SceneRenderState& sceneRenderState,
                    GFX::CommandBuffer& bufferInOut);
-    void secondPass(const SceneRenderState& sceneRenderState,
+    void secondPass(RenderStagePass stagePass,
+                    const SceneRenderState& sceneRenderState,
                     GFX::CommandBuffer& bufferInOut);
 
    private:

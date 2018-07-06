@@ -16,13 +16,11 @@ int g_shadowTempInt = -2;
 #include "shadow_point.frag"
 #include "shadow_spot.frag"
 
-float getShadowFactor(in float fragDepth) {
-    int lightType = int(dvd_private_light._options.x);
-
-    switch (lightType) {
-        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(dvd_private_light._options.z, dvd_private_light._options.w, fragDepth);
-        //case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(dvd_private_light._options.z);
-        //case LIGHT_SPOT            : return applyShadowSpot(dvd_private_light._options.z); 
+float getShadowFactor(in int index, in float fragDepth, in uvec4 lightData) {
+    switch (lightData.x) {
+        /*case LIGHT_DIRECTIONAL     : return applyShadowDirectional(index, int(lightData.y), fragDepth);
+        case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(index);
+        case LIGHT_SPOT            : return applyShadowSpot(index);*/
     }
 
     return 1.0;
@@ -33,21 +31,10 @@ float shadow_loop(){
         return 1.0;
     }
 
-    float fragDepth = gl_FragCoord.z;
-
     float shadow = 1.0;
-    int offset = 0;
-    int shadowLights = 0;
-    for (int i = 0; i < MAX_LIGHT_TYPES; ++i) {
-        for (int j = 0; j < int(dvd_lightCountPerType[i]); ++j) {
-            int lightIndex = j + offset;
-            dvd_private_light = dvd_LightSource[lightIndex];
-            if (dvd_private_light._options.y == 1) {
-                shadow *= getShadowFactor(fragDepth);
-                shadowLights++;
-            }
-        }
-        offset += int(dvd_lightCountPerType[i]);
+    int count = int(dvd_ShadowSource.length());
+    for (int i = 0; i < count; ++i) {
+        shadow *= getShadowFactor(i, gl_FragCoord.z, dvd_ShadowSource[i]._lightDetails);
     }
 
     return saturate(shadow);

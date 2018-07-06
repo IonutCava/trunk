@@ -47,6 +47,8 @@ namespace Divide {
 
         ShaderBufferBinding();
         ShaderBufferBinding(ShaderBufferLocation slot,
+                            ShaderBuffer* buffer);
+        ShaderBufferBinding(ShaderBufferLocation slot,
                             ShaderBuffer* buffer,
                             const vec2<U32>& range);
         ShaderBufferBinding(ShaderBufferLocation slot,

@@ -409,7 +409,7 @@ protected:
                        const Texture_ptr& depthBuffer,
                        GFX::CommandBuffer& bufferInOut);
 
-    void buildDrawCommands(const BuildDrawCommandsParams& params);
+    void buildDrawCommands(const BuildDrawCommandsParams& params, GFX::CommandBuffer& bufferInOut);
 
     void constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut);
 
@@ -424,7 +424,17 @@ private:
 
     ErrorCode createAPIInstance();
 
-    NodeData& processVisibleNode(const SceneGraphNode& node, U32 dataIndex, const Camera& camera, const SceneRenderState& renderState, bool isOcclusionCullable);
+    struct VisibleNodeProcessParams {
+        RenderStage _stage = RenderStage::COUNT;
+        bool _isOcclusionCullable = true;
+        U32 _dataIndex = 0;
+        const Camera* _camera = nullptr;
+        const SceneRenderState* _sceneRenderState = nullptr;
+        SceneGraphNode* _node = nullptr;
+
+    };
+
+    NodeData processVisibleNode(const VisibleNodeProcessParams& state) const;
 
 private:
     std::unique_ptr<RenderAPIWrapper> _api;
@@ -495,9 +505,8 @@ protected:
     GFXShaderData _gpuBlock;
 
     typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;
-    DrawCommandList _drawCommandsCache;
+    std::array<DrawCommandList, to_base(RenderStage::COUNT)> _drawCommandsCache;
 
-    std::array<NodeData, Config::MAX_VISIBLE_NODES> _matricesData;
     std::array<U32, to_base(RenderStage::COUNT) - 1> _lastCommandCount;
     std::array<U32, to_base(RenderStage::COUNT) - 1> _lastNodeCount;
 
@@ -512,8 +521,6 @@ protected:
     GenericDrawCommand _defaultDrawCmd;
 
     MemoryPool<GenericDrawCommand> _commandPool;
-
-    Time::ProfileTimer& _commandBuildTimer;
 
     mutable SharedLock _descriptorSetPoolLock;
     mutable DescriptorSetPool _descriptorSetPool;

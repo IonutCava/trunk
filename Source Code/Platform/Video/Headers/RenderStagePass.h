@@ -44,12 +44,18 @@ struct RenderStagePass {
     {
     }
 
-    RenderStagePass(RenderStage stage, RenderPassType passType)
-        : _stage(stage),
-          _passType(passType)
+    RenderStagePass(RenderStage stage, RenderPassType passType) : RenderStagePass(stage, passType, 0)
     {
     }
 
+    RenderStagePass(RenderStage stage, RenderPassType passType, U8 variant)
+        : _stage(stage),
+          _passType(passType),
+          _variant(variant)
+    {
+    }
+
+    U8 _variant = 0;
     RenderStage _stage = RenderStage::COUNT;
     RenderPassType _passType = RenderPassType::COUNT;
 

@@ -20,10 +20,10 @@ Renderer::~Renderer()
 {
 }
 
-void Renderer::preRender(RenderTarget& target,
+void Renderer::preRender(RenderStagePass stagePass,
+                         RenderTarget& target,
                          LightPool& lightPool,
                          GFX::CommandBuffer& bufferInOut) {
-    lightPool.uploadLightData(ShaderBufferLocation::LIGHT_NORMAL,
-                              ShaderBufferLocation::LIGHT_SHADOW);
+    lightPool.uploadLightData(stagePass, ShaderBufferLocation::LIGHT_NORMAL, ShaderBufferLocation::LIGHT_SHADOW, bufferInOut);
 }
 };

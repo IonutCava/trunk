@@ -106,7 +106,6 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
 
    protected:
     virtual bool changeViewportInternal(const Rect<I32>& newViewport) = 0;
-    virtual void registerCommandBuffer(const ShaderBuffer& commandBuffer) const = 0;
 
     static GFXConfig _config;
 };

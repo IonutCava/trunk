@@ -146,10 +146,11 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
     _context.gfx().renderTargetPool().deallocateRT(_deferredBuffer);
 }
 
-void DeferredShadingRenderer::preRender(RenderTarget& target,
+void DeferredShadingRenderer::preRender(RenderStagePass stagePass,
+                                        RenderTarget& target,
                                         LightPool& lightPool,
                                         GFX::CommandBuffer& bufferInOut) {
-    Renderer::preRender(target, lightPool, bufferInOut);
+    Renderer::preRender(stagePass, target, lightPool, bufferInOut);
 
     Light::LightList& lights = lightPool.getLights(LightType::POINT);
 
@@ -184,14 +185,16 @@ void DeferredShadingRenderer::preRender(RenderTarget& target,
     GFX::EnqueueCommand(bufferInOut, endPixelBufferCmd);
 }
 
-void DeferredShadingRenderer::render(const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
+void DeferredShadingRenderer::render(RenderStagePass stagePass,
+                                     const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
                                      const SceneRenderState& sceneRenderState,
                                      GFX::CommandBuffer& bufferInOut) {
-    firstPass(renderCallback, sceneRenderState, bufferInOut);
-    secondPass(sceneRenderState, bufferInOut);
+    firstPass(stagePass, renderCallback, sceneRenderState, bufferInOut);
+    secondPass(stagePass, sceneRenderState, bufferInOut);
 }
 
-void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
+void DeferredShadingRenderer::firstPass(RenderStagePass stagePass,
+                                        const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
                                         const SceneRenderState& sceneRenderState,
                                         GFX::CommandBuffer& bufferInOut) {
     // Pass 1
@@ -207,7 +210,8 @@ void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<void, GFX::CommandBuf
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 }
 
-void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderState,
+void DeferredShadingRenderer::secondPass(RenderStagePass stagePass,
+                                         const SceneRenderState& sceneRenderState,
                                          GFX::CommandBuffer& bufferInOut) {
     // Pass 2
     // Draw a 2D fullscreen quad with lighting shader applied and all generated

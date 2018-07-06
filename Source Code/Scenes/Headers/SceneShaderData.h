@@ -43,7 +43,6 @@ class SceneShaderData {
         vec4<F32> _shadowingSettings;
         vec4<F32> _otherData;
         vec4<F32> _otherData2;
-        vec4<U32> _lightCountPerType;
         vec4<F32> _waterPositionsW/*[MAX_WATER_BODIES]*/;
         vec4<F32> _waterDetails/*[MAX_WATER_BODIES]*/;
     };
@@ -95,10 +94,6 @@ class SceneShaderData {
     inline void deltaTime(F32 deltaTimeSeconds) {
         _bufferData._otherData2.x = deltaTimeSeconds;
         _dirty = true;
-    }
-
-    inline void lightCount(LightType type, U32 lightCount) {
-        _bufferData._lightCountPerType[to_U32(type)] = lightCount;
     }
 
     inline void detailLevel(RenderDetailLevel renderDetailLevel, RenderDetailLevel shadowDetailLevel) {

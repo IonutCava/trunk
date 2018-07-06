@@ -17,6 +17,10 @@
 
 namespace Divide {
 
+namespace {
+    constexpr bool g_MultithreadedCommandGeneration = false;
+};
+
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
     : KernelComponent(parent),
       _context(context),
@@ -44,10 +48,10 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState) {
             &renderTarsk,
             [&rp, &buf, &sceneRenderState](const Task& parentTask) {
                 rp->render(sceneRenderState, buf);
-            }).startTask(TaskPriority::REALTIME);
+            }).startTask(g_MultithreadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
     }
 
-    renderTarsk.startTask(TaskPriority::REALTIME).wait();
+    renderTarsk.startTask(g_MultithreadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME).wait();
 
     
     //ToDo: Maybe handle this differently?
@@ -153,7 +157,8 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
                                                               stagePass,
                                                               *params._camera,
                                                               true,
-                                                              params._pass);
+                                                              params._pass,
+                                                              bufferInOut);
 
         if (params._target._usage != RenderTargetUsage::COUNT) {
            
@@ -202,7 +207,8 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
                                                           stagePass,
                                                           *params._camera,
                                                           !params._doPrePass,
-                                                          params._pass);
+                                                          params._pass,
+                                                          bufferInOut);
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
         bool drawToDepth = true;
@@ -290,7 +296,8 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
                                                           stagePass,
                                                           *params._camera,
                                                           false,
-                                                          params._pass);
+                                                          params._pass,
+                                                          bufferInOut);
 
     // Weighted Blended Order Independent Transparency
     for (U8 i = 0; i < /*2*/1; ++i) {

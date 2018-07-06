@@ -66,7 +66,7 @@ class NOINITVTABLE ShadowMap {
 
     /// Render the scene and save the frame to the shadow map
     virtual void render(U32 passIdx, GFX::CommandBuffer& bufferInOut) = 0;
-    /// Get the current shadow mapping tehnique
+    /// Get the current shadow mapping technique
     inline ShadowType getShadowMapType() const { return _shadowMapType; }
 
     RenderTarget& getDepthMap();

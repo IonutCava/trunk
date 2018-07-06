@@ -98,7 +98,7 @@ public:
 
     /*Base Scene Operations*/
     // generate a list of nodes to render
-    void updateVisibleNodes(RenderStagePass stage, bool refreshNodeData, U32 pass = 0);
+    void updateVisibleNodes(RenderStagePass stage, bool refreshNodeData, U32 pass, GFX::CommandBuffer& bufferInOut);
 
 
     inline void addSelectionCallback(const DELEGATE_CBK<void, U8, SceneGraphNode*>& selectionCallback) {
@@ -202,8 +202,10 @@ protected:
     void preRender(RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut);
     void postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
+    bool populateRenderQueue(RenderStagePass stagePass, const Camera& camera, bool doCulling, U32 passIndex, GFX::CommandBuffer& bufferInOut);
+
     bool generateShadowMaps(GFX::CommandBuffer& bufferInOut);
-    bool populateRenderQueue(RenderStagePass stagePass, const Camera& camera, bool doCulling, U32 passIndex);
+
     Camera* playerCamera() const;
     Camera* playerCamera(PlayerIndex idx) const;
     void currentPlayerPass(PlayerIndex idx);
@@ -353,8 +355,9 @@ class SceneManagerRenderPass {
                                     RenderStagePass stagePass,
                                     const Camera& camera,
                                     bool doCulling,
-                                    U32 passIndex) {
-        return mgr.populateRenderQueue(stagePass, camera, doCulling, passIndex);
+                                    U32 passIndex,
+                                    GFX::CommandBuffer& bufferInOut) {
+        return mgr.populateRenderQueue(stagePass, camera, doCulling, passIndex, bufferInOut);
     }
 
     static void preRender(Divide::SceneManager& mgr, RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {

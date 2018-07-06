@@ -23,10 +23,6 @@ ErrorCode DX_API::initRenderingAPI(I32 argc, char** argv, Configuration& config)
 
 void DX_API::closeRenderingAPI() {}
 
-void DX_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
-    ACKNOWLEDGE_UNUSED(commandBuffer);
-}
-
 void DX_API::beginFrame() {}
 
 void DX_API::endFrame() {}

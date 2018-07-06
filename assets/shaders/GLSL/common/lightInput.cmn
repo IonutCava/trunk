@@ -23,8 +23,8 @@ struct Light {
     vec4   _directionWV;
     /// x = light type: 0 - directional, 1  - point, 2 - spot
     /// y = casts shadows
-    /// z = shadow block index
-    /// w = if directional light : csm split count else : reserved
+    /// z = reserved
+    /// w = reserved
     ivec4  _options;
 };
 
@@ -40,6 +40,9 @@ layout(binding = BUFFER_LIGHT_INDICES, std430) coherent ACCESS buffer perTileLig
 
 #if defined(FRAG_SHADER)
 struct Shadow {
+    // x = light type
+    // y = csm split count
+    uvec4 _lightDetails;
     uvec4 _arrayOffset;
     mat4  _lightVP[MAX_SPLITS_PER_LIGHT];
     vec4  _lightPosition[MAX_SPLITS_PER_LIGHT];

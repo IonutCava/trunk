@@ -18,6 +18,12 @@ namespace Divide {
     }
 
     ShaderBufferBinding::ShaderBufferBinding(ShaderBufferLocation slot,
+                                             ShaderBuffer* buffer)
+        : ShaderBufferBinding(slot, buffer, vec2<U32>(0, 0))
+    {
+    }
+
+    ShaderBufferBinding::ShaderBufferBinding(ShaderBufferLocation slot,
                                              ShaderBuffer* buffer,
                                              const vec2<U32>& range)
         : ShaderBufferBinding(slot, buffer, range, std::make_pair(false, vec2<U32>(0u)))

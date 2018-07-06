@@ -52,7 +52,6 @@ public:
 protected:
     ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) override;
     void closeRenderingAPI() override;
-    void registerCommandBuffer(const ShaderBuffer& commandBuffer) const override;
     void beginFrame() override;
     void endFrame() override;
 

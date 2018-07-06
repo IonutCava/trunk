@@ -1,5 +1,8 @@
 -- Compute
 uniform uint maxNumLightsPerTile;
+uniform uint numDirLights;
+uniform uint numPointLights;
+uniform uint numSpotLights;
 
 #include "lightInput.cmn"
 
@@ -121,9 +124,6 @@ void main(void)
     maxZ = uintBitsToFloat(ldsZMax);
 
     // loop over the point lights and do a sphere vs. frustum intersection test
-    uint numDirLights = dvd_lightCountPerType[0];
-    uint numPointLights = dvd_lightCountPerType[1];
-    uint numSpotLights = dvd_lightCountPerType[2];
 
     uint lightIDXOffset = numDirLights;
     for (uint i = 0; i < numPointLights; i += NUM_THREADS_PER_TILE)

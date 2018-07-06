@@ -37,6 +37,7 @@
 #include "Scenes/Headers/SceneComponent.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Platform/Threading/Headers/Task.h"
+#include "Platform/Video/Headers/RenderStagePass.h"
 
 namespace Divide {
 
@@ -62,8 +63,8 @@ class LightPool : public SceneComponent {
           vec4<F32> _direction;
           /// x = light type: 0 - directional, 1 - point, 2 - spot
           /// y = casts shadows, 
-          /// z - shadow block index
-          /// w = if directional light : csm split count else : reserved
+          /// z - reserved
+          /// w = reserved
           vec4<I32> _options;
 
           inline void set(const LightProperties& other) {
@@ -77,12 +78,6 @@ class LightPool : public SceneComponent {
 
 
   public:
-    enum class ShaderBufferType : U8 {
-        NORMAL = 0,
-        SHADOW = 1,
-        COUNT
-    };
-
     explicit LightPool(Scene& parentScene, GFXDevice& context);
     ~LightPool();
 
@@ -101,17 +96,22 @@ class LightPool : public SceneComponent {
         return _lightTypeState[to_U32(type)];
     }
     /// Retrieve the number of active lights in the scene;
-    inline const U32 getActiveLightCount(LightType type) const { return _activeLightCount[to_U32(type)]; }
+    inline const U32 getActiveLightCount(RenderStagePass stagePass, LightType type) const {
+        return _activeLightCount[to_base(stagePass._stage)][to_U32(type)];
+    }
 
     bool clear();
     inline Light::LightList& getLights(LightType type) { return _lights[to_U32(type)]; }
     Light* getLight(I64 lightGUID, LightType type);
 
-    void prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
-    void uploadLightData(ShaderBufferLocation lightDataLocation,
-                         ShaderBufferLocation shadowDataLocation);
+    void prepareLightData(RenderStagePass stagePass,
+                          const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
+    void uploadLightData(RenderStagePass stagePass,
+                         ShaderBufferLocation lightDataLocation,
+                         ShaderBufferLocation shadowDataLocation,
+                         GFX::CommandBuffer& bufferInOut);
 
-    void drawLightImpostors(GFX::CommandBuffer& bufferInOut) const;
+    void drawLightImpostors(RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) const;
 
     static void idle();
     /// shadow mapping
@@ -142,7 +142,7 @@ class LightPool : public SceneComponent {
 
   protected:
     friend class SceneManager;
-    bool generateShadowMaps(SceneRenderState& sceneRenderState, GFX::CommandBuffer& bufferInOut);
+    bool generateShadowMaps(SceneRenderState& sceneRenderState, const Camera& playerCamera, GFX::CommandBuffer& bufferInOut);
 
     inline Light::LightList::const_iterator findLight(I64 GUID, LightType type) const {
         return std::find_if(std::begin(_lights[to_U32(type)]), std::end(_lights[to_U32(type)]),
@@ -153,33 +153,36 @@ class LightPool : public SceneComponent {
 
   private:
       void init();
-      void waitForTasks();
-      void uploadLightBuffers();
+      void waitForTasks(RenderStagePass stagePass);
+      void uploadLightBuffers(RenderStagePass stagePass);
 
   private:
+    typedef vector<LightProperties> LightPropertiesVec;
+    typedef vector<Light::ShadowProperties> LightShadowProperties;
+    typedef vector<Light*> LightVec;
+
+    std::array<std::array<U32, to_base(LightType::COUNT)>, to_base(RenderStage::COUNT)> _activeLightCount;
+    std::array<LightVec, to_base(RenderStage::COUNT)> _sortedLights;
+    std::array<LightPropertiesVec, to_base(RenderStage::COUNT)> _sortedLightProperties;
+    std::array<TaskHandle, to_base(RenderStage::COUNT)> _lightUpdateTask;
+
+    std::array<ShaderBuffer*, to_base(RenderStage::COUNT)> _lightShaderBuffer;
+    ShaderBuffer* _shadowBuffer;
+
+    std::array<bool, to_base(RenderStage::COUNT)> _buffersUpdated;
+
+    LightShadowProperties _sortedShadowProperties;
+
     GFXDevice& _context;
 
-    TaskHandle _lightUpdateTask;
-
-    bool _buffersUpdated;
     std::array<bool, to_base(LightType::COUNT)> _lightTypeState;
     std::array<Light::LightList, to_base(LightType::COUNT)> _lights;
     bool _init;
     Texture_ptr _lightIconsTexture;
     ShaderProgram_ptr _lightImpostorShader;
-    std::array<U32, to_base(LightType::COUNT)> _activeLightCount;
+    
 
-    std::array<ShaderBuffer*, to_base(ShaderBufferType::COUNT)>  _lightShaderBuffer;
-
-    typedef vector<LightProperties> LightPropertiesVec;
-    typedef vector<Light::ShadowProperties> LightShadowProperties;
-    typedef vector<Light*> LightVec;
-
-    LightVec _sortedLights;
-    LightVec _sortedShadowCastingLights;
-    LightPropertiesVec _sortedLightProperties;
-    LightShadowProperties _sortedShadowProperties;
-
+   
     Time::ProfileTimer& _shadowPassTimer;
 
     static bool _previewShadowMaps;

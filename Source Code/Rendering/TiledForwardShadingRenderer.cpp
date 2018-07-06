@@ -44,10 +44,11 @@ TiledForwardShadingRenderer::~TiledForwardShadingRenderer()
 {
 }
 
-void TiledForwardShadingRenderer::preRender(RenderTarget& target,
+void TiledForwardShadingRenderer::preRender(RenderStagePass stagePass,
+                                            RenderTarget& target,
                                             LightPool& lightPool,
                                             GFX::CommandBuffer& bufferInOut) {
-    Renderer::preRender(target, lightPool, bufferInOut);
+    Renderer::preRender(stagePass, target, lightPool, bufferInOut);
 
     _flag = getMaxNumLightsPerTile();
 
@@ -67,6 +68,10 @@ void TiledForwardShadingRenderer::preRender(RenderTarget& target,
     GFX::SendPushConstantsCommand sendPushConstantsCmd;
     PushConstants constants;
     constants.set("maxNumLightsPerTile", GFX::PushConstantType::UINT, _flag);
+    constants.set("numDirLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass, LightType::DIRECTIONAL));
+    constants.set("numPointLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass, LightType::POINT));
+    constants.set("numSpotLights", GFX::PushConstantType::UINT, lightPool.getActiveLightCount(stagePass, LightType::SPOT));
+
     sendPushConstantsCmd._constants = constants;
     GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);
 
@@ -79,7 +84,8 @@ void TiledForwardShadingRenderer::preRender(RenderTarget& target,
     GFX::EnqueueCommand(bufferInOut, computeCmd);
 }
 
-void TiledForwardShadingRenderer::render(const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
+void TiledForwardShadingRenderer::render(RenderStagePass stagePass,
+                                         const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
                                          const SceneRenderState& sceneRenderState,
                                          GFX::CommandBuffer& bufferInOut) {
     renderCallback(bufferInOut);

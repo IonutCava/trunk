@@ -31,6 +31,7 @@ Light::Light(ResourceCache& parentCache, size_t descriptorHash, const stringImpl
         _shadowProperties._floatValues[i].set(std::numeric_limits<F32>::max());
     }
     
+    _shadowProperties._lightDetails.x = to_U32(type);
     setDiffuseColour(DefaultColours::WHITE);
     setRange(1.0f);
 

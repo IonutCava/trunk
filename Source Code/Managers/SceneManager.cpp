@@ -416,17 +416,11 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _elapsedTime += deltaTimeUS;
     _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
 
-    LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
-
     // Shadow splits are only visible in debug builds
     _sceneData->enableDebugRender(ParamHandler::instance().getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo")));
     // Time, fog, etc
     _sceneData->elapsedTime(_elapsedTimeMS);
     _sceneData->deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
-    _sceneData->lightCount(LightType::DIRECTIONAL, lightPool->getActiveLightCount(LightType::DIRECTIONAL));
-    _sceneData->lightCount(LightType::POINT, lightPool->getActiveLightCount(LightType::POINT));
-    _sceneData->lightCount(LightType::SPOT, lightPool->getActiveLightCount(LightType::SPOT));
-
     _sceneData->setRendererFlag(_platformContext->gfx().getRenderer().getFlag());
     _sceneData->detailLevel(_platformContext->gfx().renderDetailLevel(), _platformContext->gfx().shadowDetailLevel());
     _sceneData->toggleShadowMapping(_platformContext->gfx().shadowDetailLevel() != RenderDetailLevel::OFF);
@@ -481,7 +475,7 @@ void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, Re
     const GFXDevice& gfx = _platformContext->gfx();
 
     LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
-    gfx.getRenderer().preRender(target, *lightPool, bufferInOut);
+    gfx.getRenderer().preRender(stagePass, target, *lightPool, bufferInOut);
 
     if (stagePass._stage == RenderStage::DISPLAY) {
         PostFX::instance().cacheDisplaySettings(gfx, camera);
@@ -506,7 +500,7 @@ bool SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
     Scene& activeScene = getActiveScene();
     LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
     assert(lightPool != nullptr);
-    return lightPool->generateShadowMaps(activeScene.renderState(), bufferInOut);
+    return lightPool->generateShadowMaps(activeScene.renderState(), *playerCamera(), bufferInOut);
 }
 
 Camera* SceneManager::playerCamera(PlayerIndex idx) const {
@@ -650,7 +644,7 @@ RenderPassCuller::VisibleNodeList& SceneManager::getVisibleNodesCache(RenderStag
     return _renderPassCuller->getNodeCache(stage);
 }
 
-void SceneManager::updateVisibleNodes(RenderStagePass stagePass, bool refreshNodeData, U32 pass) {
+void SceneManager::updateVisibleNodes(RenderStagePass stagePass, bool refreshNodeData, U32 pass, GFX::CommandBuffer& bufferInOut) {
     GFXDevice& gfx = _platformContext->gfx();
     RenderPassManager& mgr = parent().renderPassManager();
     RenderQueue& queue = mgr.getQueue();
@@ -659,7 +653,7 @@ void SceneManager::updateVisibleNodes(RenderStagePass stagePass, bool refreshNod
 
     if (refreshNodeData) {
         // Add all the visible nodes to the proper bins
-        queue.refresh();
+        queue.refresh(stagePass);
         const vec3<F32>& eyePos = playerCamera()->getEye();
         for (RenderPassCuller::VisibleNode& node : visibleNodes) {
             queue.addNodeToQueue(*node._node, stagePass, eyePos);
@@ -674,7 +668,7 @@ void SceneManager::updateVisibleNodes(RenderStagePass stagePass, bool refreshNod
 
     // Get all of the sorted render bins
     SceneRenderState& renderState = getActiveScene().renderState();
-    const RenderQueue::SortedQueues& sortedQueues = queue.getSortedQueues();
+    RenderQueue::SortedQueues sortedQueues = queue.getSortedQueues(stagePass);
 
     GFXDevice::BuildDrawCommandsParams params;
     params._sortedQueues = &sortedQueues;
@@ -684,14 +678,14 @@ void SceneManager::updateVisibleNodes(RenderStagePass stagePass, bool refreshNod
     params._camera = playerCamera();
     params._refreshNodeData = refreshNodeData;
 
-    gfx.buildDrawCommands(params);
+    gfx.buildDrawCommands(params, bufferInOut);
 }
 
-bool SceneManager::populateRenderQueue(RenderStagePass stagePass, const Camera& camera, bool doCulling, U32 passIndex) {
+bool SceneManager::populateRenderQueue(RenderStagePass stagePass, const Camera& camera, bool doCulling, U32 passIndex, GFX::CommandBuffer& bufferInOut) {
 
     if (stagePass._passType != RenderPassType::DEPTH_PASS && stagePass._passType != RenderPassType::OIT_PASS) {
         LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
-        lightPool->prepareLightData(camera.getEye(), camera.getViewMatrix());
+        lightPool->prepareLightData(stagePass, camera.getEye(), camera.getViewMatrix());
     }
 
     if (doCulling) {
@@ -699,14 +693,14 @@ bool SceneManager::populateRenderQueue(RenderStagePass stagePass, const Camera& 
         cullSceneGraph(stagePass);
     }
 
-    updateVisibleNodes(stagePass, doCulling, passIndex);
+    updateVisibleNodes(stagePass, doCulling, passIndex, bufferInOut);
 
     RenderQueue& queue = parent().renderPassManager().getQueue();
     if (getActiveScene().renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
         queue.populateRenderQueues(stagePass);
     }
 
-    return queue.getRenderQueueStackSize() > 0;
+    return queue.getRenderQueueStackSize(stagePass) > 0;
 
 }
 

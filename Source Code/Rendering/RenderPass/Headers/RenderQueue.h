@@ -52,12 +52,12 @@ class RenderQueue {
     RenderQueue(GFXDevice& context);
     ~RenderQueue();
 
-    void populateRenderQueues(RenderStagePass renderStagePass);
-    void postRender(const SceneRenderState& renderState, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut);
+    void populateRenderQueues(RenderStagePass stagePass);
+    void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void sort(RenderStagePass stagePass);
-    void refresh();
+    void refresh(RenderStagePass stagePass);
     void addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, const vec3<F32>& eyePos);
-    U16 getRenderQueueStackSize() const;
+    U16 getRenderQueueStackSize(RenderStagePass stagePass) const;
 
     inline RenderBin* getBin(RenderBinType rbType) {
         return _renderBins[rbType._to_integral()];
@@ -71,7 +71,7 @@ class RenderQueue {
         return _renderBins;
     }
 
-    const SortedQueues& getSortedQueues();
+    SortedQueues getSortedQueues(RenderStagePass stagePass) const;
 
   private:
     RenderingOrder::List getSortOrder(RenderStagePass stagePass, RenderBinType rbType);
@@ -83,7 +83,6 @@ class RenderQueue {
   private:
     GFXDevice& _context;
     RenderBinArray _renderBins;
-    SortedQueues   _sortedQueues;
     vector<RenderBin*> _activeBins;
 };
 

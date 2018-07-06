@@ -396,6 +396,12 @@ bool GL_API::initGLSW() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
+        "#define BUFFER_COMMANDS " +
+        to_stringImpl(to_base(ShaderBufferLocation::CMD_BUFFER)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
         "#define FORWARD_PLUS_TILE_RES " + to_stringImpl(Config::Lighting::FORWARD_PLUS_TILE_RES),
         lineOffsets);
 
@@ -997,12 +1003,16 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
 
                 makeTexturesResident(set->_textureData);
                 for (const ShaderBufferBinding& shaderBufCmd : set->_shaderBuffers) {
-                    shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
-                                                    shaderBufCmd._range.x,
-                                                    shaderBufCmd._range.y);
-                    if (shaderBufCmd._atomicCounter.first) {
-                        shaderBufCmd._buffer->bindAtomicCounter(shaderBufCmd._atomicCounter.second.x,
-                                                                shaderBufCmd._atomicCounter.second.y);
+                    if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
+                        registerCommandBuffer(*shaderBufCmd._buffer);
+                    } else {
+                        shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
+                                                        shaderBufCmd._range.x,
+                                                        shaderBufCmd._range.y);
+                        if (shaderBufCmd._atomicCounter.first) {
+                            shaderBufCmd._buffer->bindAtomicCounter(shaderBufCmd._atomicCounter.second.x,
+                                                                    shaderBufCmd._atomicCounter.second.y);
+                        }
                     }
                 }
             }break;
@@ -1074,6 +1084,11 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 const GFX::DispatchComputeCommand& crtCmd = commandBuffer.getCommand<GFX::DispatchComputeCommand>(cmd);
                 dispatchCompute(crtCmd._params);
             }break;
+
+            case GFX::CommandType::EXTERNAL: {
+                const GFX::ExternalCommand& crtCmd = commandBuffer.getCommand<GFX::ExternalCommand>(cmd);
+                crtCmd._cbk();
+            }
         };
     }
 

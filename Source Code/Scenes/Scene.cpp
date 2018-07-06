@@ -1213,7 +1213,7 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX
     }
     // Show NavMeshes
     _aiManager->debugDraw(bufferInOut, false);
-    _lightPool->drawLightImpostors(bufferInOut);
+    _lightPool->drawLightImpostors(stagePass, bufferInOut);
     _envProbePool->debugDraw(bufferInOut);
 }
 

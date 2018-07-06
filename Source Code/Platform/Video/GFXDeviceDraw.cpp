@@ -112,11 +112,11 @@ void GFXDevice::addToRenderQueue(RenderBinType queueType, const RenderPackage& p
 }
 
 /// Prepare the list of visible nodes for rendering
-GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U32 dataIndex, const Camera& camera, const SceneRenderState& renderState, bool isOcclusionCullable) {
-    NodeData& dataOut = _matricesData[dataIndex];
+GFXDevice::NodeData GFXDevice::processVisibleNode(const VisibleNodeProcessParams& state) const {
+    NodeData dataOut;
 
-    RenderingComponent* const renderable = node.get<RenderingComponent>();
-    TransformComponent* const transform  = node.get<TransformComponent>();
+    RenderingComponent* const renderable = state._node->get<RenderingComponent>();
+    TransformComponent* const transform  = state._node->get<TransformComponent>();
 
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
@@ -139,32 +139,30 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
         dataOut._normalMatrixWV.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
 
         // Calculate the normal matrix (world * view)
-        dataOut._normalMatrixWV *= camera.getViewMatrix();
+        dataOut._normalMatrixWV *= state._camera->getViewMatrix();
     }
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
-    if (renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS)) {
-        AnimationComponent* const animComp = node.get<AnimationComponent>();
+    if (state._sceneRenderState->isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS)) {
+        AnimationComponent* const animComp = state._node->get<AnimationComponent>();
         dataOut._normalMatrixWV.element(0, 3) = to_F32(animComp && animComp->playAnimations() ? animComp->boneCount() : 0);
     } else {
         dataOut._normalMatrixWV.element(0, 3) = 0.0f;
     }
-    dataOut._normalMatrixWV.setRow(3, node.get<BoundsComponent>()->getBoundingSphere().asVec4());
+    dataOut._normalMatrixWV.setRow(3, state._node->get<BoundsComponent>()->getBoundingSphere().asVec4());
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
     renderable->getRenderingProperties(dataOut._properties, dataOut._normalMatrixWV.element(1, 3), dataOut._normalMatrixWV.element(2, 3));
     // Get the colour matrix (diffuse, specular, etc.)
     renderable->getMaterialColourMatrix(dataOut._colourMatrix);
 
     //set properties.w to -1 to skip occlusion culling for the node
-    dataOut._properties.w = isOcclusionCullable ? 1.0f : -1.0f;
+    dataOut._properties.w = state._isOcclusionCullable ? 1.0f : -1.0f;
 
     return dataOut;
 }
 
-void GFXDevice::buildDrawCommands(const BuildDrawCommandsParams& params)
+void GFXDevice::buildDrawCommands(const BuildDrawCommandsParams& params, GFX::CommandBuffer& bufferInOut)
 {
-    Time::ScopedTimer timer(_commandBuildTimer);
-
     RenderPass::BufferData bufferData = *params._bufferData;
 
     if (params._refreshNodeData) {
@@ -172,26 +170,14 @@ void GFXDevice::buildDrawCommands(const BuildDrawCommandsParams& params)
         bufferData._lasNodeCount = 0;
     }
 
-    if (params._renderStagePass._stage == RenderStage::SHADOW) {
-        Light* shadowLight = LightPool::currentShadowCastingLight();
-        assert(shadowLight != nullptr);
-        if (!COMPARE(_gpuBlock._data._renderProperties.x, shadowLight->getShadowProperties()._arrayOffset.x)) {
-            _gpuBlock._data._renderProperties.x = to_F32(shadowLight->getShadowProperties()._arrayOffset.x);
-            _gpuBlock._needsUpload = true;
-        }
-        U8 shadowPasses = shadowLight->getLightType() == LightType::DIRECTIONAL
-                                                       ? shadowLight->getShadowMapInfo()->numLayers()
-                                                       : 1;
-        if (!COMPARE(_gpuBlock._data._renderProperties.y, to_F32(shadowPasses))) {
-            _gpuBlock._data._renderProperties.y = to_F32(shadowPasses);
-            _gpuBlock._needsUpload = true;
-        }
-    }
-
     U32 nodeCount = 0;
     U32 cmdCount = 0;
 
-    const RenderQueue::SortedQueues& sortedQueues = *params._sortedQueues;
+    U8 stageIndex = to_U8(params._renderStagePass._stage);
+    RenderQueue::SortedQueues sortedQueues = *params._sortedQueues;
+    vectorEASTL<NodeData> nodeData;
+    nodeData.reserve(sortedQueues.size() * Config::MAX_VISIBLE_NODES);
+
     for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
@@ -205,14 +191,20 @@ void GFXDevice::buildDrawCommands(const BuildDrawCommandsParams& params)
             if (pkg.isRenderable()) {
                 if (params._refreshNodeData) {
                     Attorney::RenderingCompGFXDevice::setDrawIDs(renderable, params._renderStagePass, cmdCount, nodeCount);
+                    VisibleNodeProcessParams processParams;
+                    processParams._camera = params._camera;
+                    processParams._node = node;
+                    processParams._isOcclusionCullable = pkg.isOcclusionCullable();
+                    processParams._dataIndex = nodeCount;
+                    processParams._sceneRenderState = params._sceneRenderState;
 
-                    processVisibleNode(*node, nodeCount, *params._camera, *params._sceneRenderState, pkg.isOcclusionCullable());
+                    nodeData.push_back(processVisibleNode(processParams));
 
                     for (I32 cmdIdx = 0; cmdIdx < pkg.drawCommandCount(); ++cmdIdx) {
                         const GFX::DrawCommand& cmd = pkg.drawCommand(cmdIdx);
                         for (const GenericDrawCommand& drawCmd : cmd._drawCommands) {
                             for (U32 i = 0; i < drawCmd._drawCount; ++i) {
-                                _drawCommandsCache[cmdCount++] = drawCmd._cmd;
+                                _drawCommandsCache[stageIndex][cmdCount++] = drawCmd._cmd;
                             }
                         }
                     }
@@ -229,18 +221,20 @@ void GFXDevice::buildDrawCommands(const BuildDrawCommandsParams& params)
         assert(cmdCount >= nodeCount);
         // If the buffer update required is large enough, just replace the entire thing
         if (nodeCount > Config::MAX_VISIBLE_NODES / 2) {
-            bufferData._renderData->writeData(_matricesData.data());
+            bufferData._renderData->writeData(nodeData.data());
         } else {
             // Otherwise, just update the needed range to save bandwidth
-            bufferData._renderData->writeData(0, nodeCount, _matricesData.data());
+            bufferData._renderData->writeData(0, nodeCount, nodeData.data());
         }
 
         ShaderBuffer& cmdBuffer = *bufferData._cmdBuffer;
-        cmdBuffer.writeData(_drawCommandsCache.data());
-        _api->registerCommandBuffer(cmdBuffer);
+        cmdBuffer.writeData(_drawCommandsCache[stageIndex].data());
 
-        // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
-        bufferData._renderData->bind(ShaderBufferLocation::NODE_INFO);
+        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        descriptorSetCmd._set = newDescriptorSet();
+        descriptorSetCmd._set->_shaderBuffers.emplace_back(ShaderBufferLocation::CMD_BUFFER, bufferData._cmdBuffer);
+        descriptorSetCmd._set->_shaderBuffers.emplace_back(ShaderBufferLocation::NODE_INFO, bufferData._renderData);
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
     }
 }
 
@@ -248,7 +242,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
                               const Texture_ptr& depthBuffer,
                               GFX::CommandBuffer& bufferInOut) {
 
-    static const U32 GROUP_SIZE_AABB = 64;
+    constexpr U32 GROUP_SIZE_AABB = 64;
 
     GFX::BindPipelineCommand bindPipelineCmd;
     PipelineDescriptor pipelineDescriptor;

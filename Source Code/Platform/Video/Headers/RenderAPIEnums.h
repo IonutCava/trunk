@@ -94,6 +94,7 @@ enum class ShaderBufferLocation : U8 {
     BONE_TRANSFORMS = 6,
     SCENE_DATA = 7,
     TERRAIN_DATA = 8,
+    CMD_BUFFER = 9,
     COUNT
 };
 

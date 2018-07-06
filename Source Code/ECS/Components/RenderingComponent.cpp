@@ -27,8 +27,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     : SGNComponent(parentSGN, "RENDERING"),
       _context(context),
       _lodLevel(0),
-      _commandIndex(0),
-      _commandOffset(0),
       _renderMask(0),
       _depthStateBlockHash(0),
       _shadowStateBlockHash(0),
@@ -37,7 +35,8 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
 {
-
+    _commandIndex.fill(0);
+    _commandOffset.fill(0);
     toggleRenderOption(RenderOptions::RENDER_GEOMETRY, true);
     toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
     toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, true);
@@ -390,8 +389,8 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         // Continue only for skinned 3D objects
         if (_parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
         {
-            bool renderSkeletonFlagInitialized = false;
-            bool renderParentSkeleton = parentStates.getTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, renderSkeletonFlagInitialized);
+            //bool renderSkeletonFlagInitialized = false;
+            //bool renderParentSkeleton = parentStates.getTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, renderSkeletonFlagInitialized);
             //if (!renderParentSkeleton || !renderSkeletonFlagInitialized) {
                 // Get the animation component of any submesh. They should be synced anyway.
                 AnimationComponent* childAnimComp = _parentSGN.get<AnimationComponent>();
@@ -488,8 +487,8 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass re
 void RenderingComponent::setDrawIDs(RenderStagePass renderStagePass,
                                     U32 cmdOffset,
                                     U32 cmdIndex) {
-    commandOffset(cmdOffset);
-    commandIndex(cmdIndex);
+    commandOffset(renderStagePass, cmdOffset);
+    commandIndex(renderStagePass, cmdIndex);
 
     std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
     
@@ -539,7 +538,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 
             if (pkg->drawCommandCount() > 0) {
                 pkg->isRenderable(true);
-                setDrawIDs(renderStagePass, commandOffset(), commandIndex());
+                setDrawIDs(renderStagePass, commandOffset(renderStagePass), commandIndex(renderStagePass));
             }
             if (Attorney::RenderPackageRenderingComponent::buildCommandBuffer(*pkg)) {
                 //rebuild detected -Ionut

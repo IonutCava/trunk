@@ -151,6 +151,9 @@ void Console::outThread() {
             ((entry._type == EntryType::Error && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
 
             for (const Console::ConsolePrintCallback& cbk : _guiConsoleCallbacks) {
+                if (!_running) {
+                    break;
+                }
                 cbk(entry);
             }
         } 

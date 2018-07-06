@@ -44,6 +44,17 @@ uint GetNumLightsInThisTile(uint nTileIndex)
     return nNumLightsInThisTile;
 }
 
+uint GetNumLights(int type) {
+    uint ret = 0;
+    int count = int(dvd_LightSource.length());
+    for (int i = 0; i < count; ++i) {
+        if (int(dvd_LightSource[i]._options.x) == type) {
+            ++ret;
+        }
+    }
+    return ret;
+}
+
 vec4 getPixelColour(const in vec2 texCoord) {
     //Occlusion culling visibility debug code
 #if defined(USE_HIZ_CULLING) && defined(DEBUG_HIZ_CULLING)
@@ -65,7 +76,7 @@ vec4 getPixelColour(const in vec2 texCoord) {
         // Apply all lighting contributions
         uint lightIdx;
         
-        uint directionalLightCount = dvd_lightCountPerType[LIGHT_DIRECTIONAL];
+        uint directionalLightCount = GetNumLights(LIGHT_DIRECTIONAL);
         // Directional lights
         for (lightIdx = 0; lightIdx < directionalLightCount; ++lightIdx) {
             getBRDFFactors(int(lightIdx), processedNormal, albedo.rgb, specular, reflectivity, lightColour, reflectionCoeff);
@@ -82,7 +93,7 @@ vec4 getPixelColour(const in vec2 texCoord) {
             getBRDFFactors(int(nLightIndex - 1 + offset), processedNormal, albedo.rgb, specular, reflectivity, lightColour, reflectionCoeff);
         }
 
-        offset = dvd_lightCountPerType[LIGHT_OMNIDIRECTIONAL];
+        offset = GetNumLights(LIGHT_OMNIDIRECTIONAL);
         // Spot lights
         // Moves past the first sentinel to get to the spot lights.
         nNextLightIndex = perTileLightIndices[++nIndex];

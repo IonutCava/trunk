@@ -130,9 +130,8 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     bool renderOptionEnabled(RenderOptions option) const;
     bool renderOptionsEnabled(U32 mask) const;
 
-    inline U32 commandIndex() const { return _commandIndex; }
-
-    inline U32 commandOffset() const { return _commandOffset; }
+    inline U32 commandIndex(RenderStagePass stagePass) const { return _commandIndex[to_base(stagePass._stage)]; }
+    inline U32 commandOffset(RenderStagePass stagePass) const { return _commandOffset[to_base(stagePass._stage)]; }
 
     ShaderProgram_ptr getDrawShader(RenderStagePass renderStagePass);
 
@@ -183,9 +182,8 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
                     U32 cmdOffset,
                     U32 cmdIndex);
 
-    inline void commandIndex(U32 index) { _commandIndex = index; }
-
-    inline void commandOffset(U32 offset) { _commandOffset = offset; }
+    inline void commandIndex(RenderStagePass stagePass, U32 index) { _commandIndex[to_base(stagePass._stage)] = index; }
+    inline void commandOffset(RenderStagePass stagePass, U32 offset) { _commandOffset[to_base(stagePass._stage)] = offset; }
 
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
     // and saves it in the appropriate material slot
@@ -212,8 +210,8 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
 
     /// LOD level is updated at every visibility check
     U8  _lodLevel;  ///<Relative to camera distance
-    U32 _commandIndex;
-    U32 _commandOffset;
+    std::array<U32, to_base(RenderStage::COUNT)> _commandIndex;
+    std::array<U32, to_base(RenderStage::COUNT)> _commandOffset;
     U32 _renderMask;
     TextureDataContainer _textureDependencies;
     std::array<std::unique_ptr<RenderPackage>, to_base(RenderStage::COUNT)> _renderData[to_base(RenderPassType::COUNT)];
