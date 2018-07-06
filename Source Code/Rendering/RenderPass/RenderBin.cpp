@@ -145,6 +145,7 @@ void RenderBin::populateRenderQueue(const RenderStagePass& renderStagePass) {
     // We need to apply different materials for each stage. As nodes are sorted, this should be very fast
     RenderBinType type = getType();
     _context.lockQueue(type);
+    _context.clearRenderQueue(type);
     for (const RenderBinItem& item : _renderBinStack) {
         _context.addToRenderQueue(type, Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStagePass));
     }

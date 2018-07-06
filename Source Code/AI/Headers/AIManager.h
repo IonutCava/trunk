@@ -86,10 +86,9 @@ class AIManager : public SceneComponent
         return nullptr;
     }
     /// Add a NavMesh
-    bool addNavMesh(AIEntity::PresetAgentRadius radius,
-                    Navigation::NavigationMesh* const navMesh);
-    Navigation::NavigationMesh* getNavMesh(
-        AIEntity::PresetAgentRadius radius) const {
+    bool addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* const navMesh);
+
+    Navigation::NavigationMesh* getNavMesh(AIEntity::PresetAgentRadius radius) const {
         NavMeshMap::const_iterator it = _navMeshes.find(radius);
         if (it != std::end(_navMeshes)) {
             return it->second;

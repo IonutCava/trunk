@@ -67,7 +67,7 @@ class AITeam : public GUIDWrapper {
     typedef hashMap<AIEntity*, F32> MemberVariable;
     typedef hashMap<I64, AIEntity*> TeamMap;
     typedef std::shared_ptr<Order> OrderPtr;
-    typedef vector<OrderPtr> OrderList;
+    typedef vectorEASTL<OrderPtr> OrderList;
    public:
     AITeam(U32 id, AIManager& parentManager);
     ~AITeam();
@@ -132,24 +132,24 @@ class AITeam : public GUIDWrapper {
     void removeCrowd(AIEntity::PresetAgentRadius radius);
 
    protected:
-    vector<AIEntity*> getEntityList() const;
+       vectorEASTL<AIEntity*> getEntityList() const;
 
     inline OrderList::iterator findOrder(const Order& order) {
         return findOrder(order.getID());
     }
 
     inline OrderList::iterator findOrder(U32 orderID) {
-        return vectorAlg::find_if(
-            std::begin(_orders), 
-            std::end(_orders),
+        return eastl::find_if(
+            eastl::begin(_orders), 
+            eastl::end(_orders),
             [&orderID](const OrderPtr& order) -> bool {
                 return orderID == order->getID();
             });
     }
 
-    inline vector<U32>::iterator findEnemyTeamEntry(U32 enemyTeamID) {
-        return vectorAlg::find_if(
-            std::begin(_enemyTeams), std::end(_enemyTeams),
+    inline vectorEASTL<U32>::iterator findEnemyTeamEntry(U32 enemyTeamID) {
+        return eastl::find_if(
+            eastl::begin(_enemyTeams), eastl::end(_enemyTeams),
             [&enemyTeamID](U32 id) -> bool { return id == enemyTeamID; });
     }
 
@@ -165,7 +165,7 @@ class AITeam : public GUIDWrapper {
     AITeamCrowd _aiTeamCrowd;
     mutable SharedLock _updateMutex;
     mutable SharedLock _crowdMutex;
-    vector<U32> _enemyTeams;
+    vectorEASTL<U32> _enemyTeams;
     OrderList _orders;
 };
 

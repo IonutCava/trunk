@@ -43,10 +43,13 @@ void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuff
         for (U32 idx = 0; idx < queueSize; ++idx) {
             subPassCmd.add(renderQueue.getCommandBuffer(idx));
         }
-        renderQueue.clear();
     }
 }
 
+
+void GFXDevice::clearRenderQueue(RenderBinType queueType) {
+    _renderQueues[queueType._to_integral()]->clear();
+}
 
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     commandBuffer.batch();

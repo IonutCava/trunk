@@ -58,12 +58,12 @@ void AITeam::removeCrowd(AIEntity::PresetAgentRadius radius) {
     _aiTeamCrowd.erase(it);
 }
 
-vector<AIEntity*> AITeam::getEntityList() const {
+vectorEASTL<AIEntity*> AITeam::getEntityList() const {
     //ToDo: Cache this? -Ionut
     ReadLock r2_lock(_updateMutex);
 
     U32 i = 0;
-    vector<AIEntity*> entities(_team.size(), nullptr);
+    vectorEASTL<AIEntity*> entities(_team.size(), nullptr);
     for (const AITeam::TeamMap::value_type& entity : _team) {
         entities[i++] = entity.second;
     }
@@ -79,7 +79,7 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
     }
     r1_lock.unlock();
 
-    vector<AIEntity*> entities = AITeam::getEntityList();
+    vectorEASTL<AIEntity*> entities = AITeam::getEntityList();
     for (AIEntity* entity : entities) {
         if (!Attorney::AIEntityAITeam::update(*entity, deltaTimeUS)) {
             return false;
@@ -110,7 +110,7 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
 }
 
 bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
-    vector<AIEntity*> entities = AITeam::getEntityList();
+    vectorEASTL<AIEntity*> entities = AITeam::getEntityList();
 
     U16 entityCount = to_U16(entities.size());
     if (entityCount <= g_entityThreadedThreashold) {
@@ -138,7 +138,7 @@ bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
 }
 
 bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
-    vector<AIEntity*> entities = AITeam::getEntityList();
+    vectorEASTL<AIEntity*> entities = AITeam::getEntityList();
 
     U16 entityCount = to_U16(entities.size());
     if (entityCount <= g_entityThreadedThreashold) {
@@ -166,7 +166,7 @@ bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
 }
 
 void AITeam::resetCrowd() {
-    vector<AIEntity*> entities = AITeam::getEntityList();
+    vectorEASTL<AIEntity*> entities = AITeam::getEntityList();
     for (AIEntity* entity : entities) {
         entity->resetCrowd();
     }
@@ -210,8 +210,8 @@ bool AITeam::addEnemyTeam(U32 enemyTeamID) {
 }
 
 bool AITeam::removeEnemyTeam(U32 enemyTeamID) {
-    vector<U32>::iterator it = findEnemyTeamEntry(enemyTeamID);
-    if (it != std::end(_enemyTeams)) {
+    vectorEASTL<U32>::iterator it = findEnemyTeamEntry(enemyTeamID);
+    if (it != eastl::end(_enemyTeams)) {
         WriteLock w_lock(_updateMutex);
         _enemyTeams.erase(it);
         return true;

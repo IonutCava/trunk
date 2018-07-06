@@ -317,6 +317,7 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
         drawCmd._drawCommands.push_back(drawCommand);
 
         GFX::EndRenderPassCommand endRenderPassOitCmd, endRenderPassCompCmd;
+
         // Step1: Draw translucent items into the accumulation and revealage buffers
         GFX::EnqueueCommand(bufferInOut, beginRenderPassOitCmd);
         _context.renderQueueToSubPasses(RenderBinType::RBT_TRANSLUCENT, bufferInOut);
@@ -360,7 +361,6 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     if (false) {
         woitPass(params, target, bufferInOut);
     }
-    
 }
 
 };

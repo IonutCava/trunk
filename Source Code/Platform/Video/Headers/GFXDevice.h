@@ -197,6 +197,7 @@ public:  // GPU interface
     U32  renderQueueSize(RenderBinType queueType);
     void addToRenderQueue(RenderBinType queueType, const RenderPackage& package);
     void renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuffer& commandsInOut);
+    void clearRenderQueue(RenderBinType queueType);
 
     void flushCommandBuffer(GFX::CommandBuffer& commandBuffer);
     void flushAndClearCommandBuffer(GFX::CommandBuffer& commandBuffer);
