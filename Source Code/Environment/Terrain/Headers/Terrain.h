@@ -116,8 +116,8 @@ protected:
 
 protected:
     friend class TerrainChunk;
-    inline void addDrawCommand(const VertexBuffer::DeferredDrawCommand& cmd) {
-        cmd._signedData == 0 ? _drawCommands[0].push_back(cmd) : _drawCommands[1].push_back(cmd);
+    inline void addDrawCommand(const GenericDrawCommand& cmd) {
+        cmd._lodIndex == 0 ? _drawCommands[0].push_back(cmd) : _drawCommands[1].push_back(cmd);
     }
     
 protected:
@@ -142,7 +142,7 @@ protected:
     Texture*          _underwaterDetailTex;
     F32               _underwaterDiffuseScale;
     vectorImpl<TerrainTextureLayer* > _terrainTextures;
-    vectorImpl<VertexBuffer::DeferredDrawCommand >  _drawCommands[2]; // one for LoD 0 and one for LoD > 0
+    vectorImpl<GenericDrawCommand >   _drawCommands[2]; // one for LoD 0 and one for LoD > 0
     ///Normal rendering state
     I64 _terrainRenderStateHash;
     ///Depth map rendering state

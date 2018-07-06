@@ -10,7 +10,7 @@
 
 GLuint GL_API::_activeVAOId = GL_INVALID_INDEX;
 GLuint GL_API::_activeFBId  = GL_INVALID_INDEX;
-GLuint GL_API::_activeBufferId[] = {GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX};
+GLuint GL_API::_activeBufferId[] = {GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX};
 GLuint GL_API::_activeTextureUnit = GL_INVALID_INDEX;
 GLuint GL_API::_activeTransformFeedback = GL_INVALID_INDEX;
 
@@ -42,6 +42,7 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
         setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0, forceAll);
         setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0, forceAll);
         setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0, forceAll);
+        setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0, forceAll);
         setActiveTransformFeedback(0, forceAll);
     }
 
@@ -150,6 +151,7 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint id, const bool force){
         case GL_SHADER_STORAGE_BUFFER : index = 3; break;
         case GL_ELEMENT_ARRAY_BUFFER  : index = 4; break;
         case GL_PIXEL_UNPACK_BUFFER   : index = 5; break;
+        case GL_DRAW_INDIRECT_BUFFER  : index = 6; break;
     };
 
     DIVIDE_ASSERT(index != -1, "GLStates error: attempted to bind an invalid buffer target!");
@@ -186,7 +188,11 @@ void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLuint rende
 }
 
 void GL_API::changeViewport(const vec4<I32>& newViewport) const {
-    glViewport(newViewport.x, newViewport.y, newViewport.z, newViewport.w);
+    if (Config::Profile::USE_1x1_VIEWPORT)
+        glViewport(newViewport.x, newViewport.y, 1, 1);
+    else
+        glViewport(newViewport.x, newViewport.y, newViewport.z, newViewport.w);
+
 }
 
 #ifndef SHOULD_TOGGLE

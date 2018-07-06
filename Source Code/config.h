@@ -71,7 +71,13 @@ namespace Config
     /// Use HW AA'ed lines
     const bool USE_HARDWARE_AA_LINES = true;
     /// Multi-draw causes some problems with profiling software (e.g. GPUPerfStudio2)
-    const bool BATCH_DRAW_COMMANDS = true;
+    const bool BATCH_DRAW_COMMANDS = false;
+    namespace Profile {
+        const bool DISABLE_SHADING = false;
+        const bool DISABLE_DRAWS = false;
+        const bool USE_1x1_VIEWPORT = false;
+        const bool USE_2x2_TEXTURES = false;
+    };
     namespace Lighting {
         /// How many lights should affect a single node
         const unsigned int MAX_LIGHTS_PER_SCENE_NODE = 4;

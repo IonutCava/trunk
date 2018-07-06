@@ -187,7 +187,9 @@ bool Material::computeShader(bool force, const RenderStage& renderStage){
 
         //the base shader is either for a Deferred Renderer or a Forward  one ...
         std::string shader = (deferredPassShader ? "DeferredShadingPass1" : (depthPassShader ? "depthPass" : "lighting"));
-  
+        if(Config::Profile::DISABLE_SHADING){
+            shader = "passThrough";
+        }
         if (depthPassShader) renderStage == Z_PRE_PASS_STAGE ? shader += ".PrePass" :  shader += ".Shadow";
  
         //What kind of effects do we need?

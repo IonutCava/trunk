@@ -311,10 +311,8 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, Mesh* parentMes
             if(currentIndice > highestInd) highestInd = currentIndice;
         }
 
-        vb->addTriangle(triangleTemp);
+        tempSubMesh->addTriangle(triangleTemp);
     }
-
-    vb->setIndiceLimits(vec2<U32>(lowestInd, highestInd), tempSubMesh->getLODcount() - 1);
 
     tempSubMesh->setGeometryPartitionId(vb->partitionBuffer(idxCount));
 
@@ -335,7 +333,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
     tempMaterial = CreateResource<Material>(ResourceDescriptor(materialName));
     if(skip) return tempMaterial;
 
-    // Compare load results with the standard succes value
+    // Compare load results with the standard success value
     aiReturn result = AI_SUCCESS;
 
     // default diffuse color

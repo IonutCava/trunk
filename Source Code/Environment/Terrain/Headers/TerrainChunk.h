@@ -71,8 +71,6 @@ private:
     QuadtreeNode*       _parentNode;
     Vegetation*         _vegetation;
     static U32          _chunkID;
-
-    VertexBuffer::DeferredDrawCommand _drawCommand;
 };
 
 #endif

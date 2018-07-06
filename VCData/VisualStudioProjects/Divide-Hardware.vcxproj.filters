@@ -711,5 +711,8 @@
     <Text Include="..\..\assets\shaders\GLSL\DepthRangesConstruct.glsl">
       <Filter>shaders\GLSL</Filter>
     </Text>
+    <Text Include="..\..\assets\shaders\GLSL\passThrough.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </Text>
   </ItemGroup>
 </Project>

@@ -53,18 +53,20 @@ public:
     Object3D* const object3D()                           const { return _model; }
     void            object3D(Object3D* const geometry)         { _model = geometry; }
     ///Buffer Data
-    VertexBuffer* const buffer()                           const { return _buffer; }
-    void                buffer(VertexBuffer* const buffer)       { _buffer = buffer; }
+    inline VertexBuffer* const buffer()                           const { return _buffer; }
+    inline void                buffer(VertexBuffer* const buffer)       { _buffer = buffer; }
+    inline void                deleteBuffer()                           { SAFE_DELETE(_buffer); }
     ///PreDraw checks
     bool preDraw()                   const {return _preDraw;}
     void preDraw(const bool preDraw)       {_preDraw = preDraw;}
     ///Draw Command
-    inline void addDeferredDrawCommand(const VertexBuffer::DeferredDrawCommand& drawCommand)       { _drawCommands.push_back(drawCommand);}
-    inline const vectorImpl<VertexBuffer::DeferredDrawCommand >& deferredDrawCommands()      const { return _drawCommands; }
-    inline void  clearDrawCommands() { _drawCommands.clear(); }
+    inline void  addDrawCommand(const GenericDrawCommand& drawCommand)      { _drawCommands.push_back(drawCommand);}
+    inline const vectorImpl<GenericDrawCommand >& drawCommands()      const { return _drawCommands; }
+    inline void  clearDrawCommands()                                        { _drawCommands.clear(); }
     ///State management
     inline I64  stateHash()              const { return _stateHash; }
     inline void stateHash(I64 hashValue)       { _stateHash = hashValue; }
+
 
 private:
     ///The actual geometry wrapper
@@ -78,7 +80,7 @@ private:
     ///Perform a preDraw operation on the model
     bool       _preDraw;
     ///The draw command associated with this render instance
-    vectorImpl<VertexBuffer::DeferredDrawCommand > _drawCommands;
+    vectorImpl<GenericDrawCommand > _drawCommands;
     ///The state hash associated with this render instance
     I64       _stateHash;
 };

@@ -39,6 +39,46 @@ typedef struct {
 } VideoModes;
 //FWD DECLARE CLASSES
 
+struct IndirectDrawCommand {
+    IndirectDrawCommand() : count(0), instanceCount(1), firstIndex(0), baseVertex(0), baseInstance(0) {}
+    U32  count;
+    U32  instanceCount;
+    U32  firstIndex;
+    U32  baseVertex;
+    U32  baseInstance;
+};
+
+struct GenericDrawCommand {
+    U8  _queryID;
+    U8  _lodIndex;
+    I64 _stateHash;
+    bool _drawToBuffer;
+    PrimitiveType _type;
+    IndirectDrawCommand _cmd;
+
+    inline void setLoD(U8 lod)              { _lodIndex = lod; }
+    inline void setQueryID(U8 queryID)      { _queryID = queryID; }
+    inline void setStateHash(I64 hashValue) { _stateHash = hashValue; }
+    inline void setDrawToBuffer(bool state) { _drawToBuffer = state; }
+    inline void setInstanceCount(U32 count) { _cmd.instanceCount = count; }
+
+    GenericDrawCommand() : GenericDrawCommand(TRIANGLE_STRIP, 0, 0)
+    {
+    }
+
+    GenericDrawCommand(const PrimitiveType& type, U32 firstIndex, U32 count, U32 instanceCount = 1) : _type(type),
+                                                                                                      _lodIndex(0),
+                                                                                                      _stateHash(0),
+                                                                                                      _queryID(0),
+                                                                                                      _drawToBuffer(false)
+                                                                    
+    {
+        _cmd.count = count;
+        _cmd.firstIndex = firstIndex;
+        _cmd.instanceCount = instanceCount;
+    }
+};
+
 class Light;
 class Shader;
 class Kernel;
@@ -102,7 +142,7 @@ protected:
     ///Platform specific cursor manipulation. Set's the cursor's location to the specified X and Y relative to the edge of the window
     virtual void setMousePosition(U16 x, U16 y) const = 0;
     virtual FrameBuffer*        newFB(bool multisampled) const = 0;
-    virtual VertexBuffer*       newVB(const PrimitiveType& type = TRIANGLES) const = 0;
+    virtual VertexBuffer*       newVB() const = 0;
     virtual ShaderBuffer*       newSB(const bool unbound = false) const = 0;
     virtual GenericVertexData*  newGVD(const bool persistentMapped = false) const = 0;
     virtual PixelBuffer*        newPB(const PBType& type = PB_TEXTURE_2D) const = 0;

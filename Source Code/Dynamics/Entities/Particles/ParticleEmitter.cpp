@@ -35,7 +35,7 @@ ParticleEmitter::ParticleEmitter() : SceneNode(TYPE_PARTICLE_EMITTER),
                                     _particleShader(nullptr),
                                     _particleDepthShader(nullptr)
 {
-
+    _drawCommand = GenericDrawCommand(TRIANGLE_STRIP, 0, 4, 1);
 }
 
 ParticleEmitter::~ParticleEmitter()
@@ -172,7 +172,9 @@ bool ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn){
 void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
     if(_particlesCurrentCount > 0 && _enabled && _created){
 		GFX_DEVICE.updateStates();
-        _particleGPUBuffer->Draw(GenericVertexData::GenericDrawCommand(TRIANGLE_STRIP, _particleStateBlockHash, 0, 4, _particlesCurrentCount));
+        _drawCommand.setStateHash(_particleStateBlockHash);
+        _drawCommand.setInstanceCount(_particlesCurrentCount);
+        _particleGPUBuffer->Draw(_drawCommand);
     }
 
     /*if(_drawImpostor)

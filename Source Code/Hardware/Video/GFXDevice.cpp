@@ -265,7 +265,7 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
     assert(instance->object3D() != nullptr);
     Object3D* model = instance->object3D();
 
-    if (model->getType() == Object3D::OBJECT_3D_PLACEHOLDER || model->getType() == Object3D::TEXT_3D){
+    if (model->getObjectType() == Object3D::OBJECT_3D_PLACEHOLDER || model->getObjectType() == Object3D::TEXT_3D){
         ERROR_FN(Locale::get("ERROR_GFX_INVALID_OBJECT_TYPE"), model->getName().c_str());
         //Text3D* text = dynamic_cast<Text3D*>(model);
         //drawText(text->getText(),text->getWidth(),text->getFont(),text->getHeight(),false,false);
@@ -297,8 +297,7 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
     assert(modelVB != nullptr);
 
     //Render our current vertex array object
-    modelVB->Draw(instance->deferredDrawCommands() , false);
-    instance->clearDrawCommands();
+    modelVB->Draw(instance->drawCommands() , false);
 
     if (transform) popWorldMatrix();
 }

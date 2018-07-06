@@ -229,6 +229,9 @@ bool glFrameBuffer::Create(GLushort width, GLushort height) {
     _width = width;
     _height = height;
 
+    if(Config::Profile::USE_2x2_TEXTURES)
+        _width = _height = 2;
+
     GL_API::setActiveFB(_frameBufferHandle, true, true);
 
     _colorBuffers.resize(0);

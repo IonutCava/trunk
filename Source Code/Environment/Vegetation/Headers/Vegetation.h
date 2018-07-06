@@ -26,6 +26,7 @@
 #include "Utility/Headers/ImageTools.h"
 #include "Graphs/Headers/SceneNode.h"
 #include "Hardware/Platform/Headers/Task.h"
+#include "Hardware/Video/Headers/RenderAPIWrapper.h"
 
 class Terrain;
 class Texture;
@@ -122,6 +123,8 @@ private:
     Task_ptr               _generateVegetation;
     ShaderBuffer*          _grassMatrices;
     static bool            _staticDataUpdated;
+    GenericDrawCommand     _cullDrawCommand;
+    GenericDrawCommand     _renderDrawCommand;
 };
 
 #endif

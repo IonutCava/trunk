@@ -69,17 +69,16 @@ protected:
     friend class DVDConverter;
     mat4<F32> _sceneRootMatrix;
     
-    inline void setGeometryPartitionId(size_t idx) { _geometryPartitionId = (U32)idx; }
     inline void setGeometryLimits(const vec3<F32>& min, const vec3<F32>& max) { _importBB.set(min, max);}
 
 protected:
     bool _visibleToNetwork;
     bool _render;
     U32 _id;
-    U32 _geometryPartitionId;
     Mesh* _parentMesh;
     SceneGraphNode* _parentMeshSGN;
     BoundingBox     _importBB;
+    GenericDrawCommand _drawCmd;
 };
 
 #endif

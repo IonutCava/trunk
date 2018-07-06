@@ -73,6 +73,7 @@ void Sky::postLoad(SceneGraphNode* const sgn){
     _skyGeom = sgn->addNode(_sky);
     _sky->getSceneNodeRenderState().setDrawState(false);
     _sky->setCustomShader(_skyShader);
+    _sky->renderInstance()->addDrawCommand(GenericDrawCommand());
 
     SceneNode::postLoad(sgn);
 }

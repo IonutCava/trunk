@@ -24,7 +24,7 @@
 #define _GENERIC_VERTEX_DATA_H
 #include <boost/noncopyable.hpp>
 #include "Utility/Headers/Vector.h"
-#include "Hardware/Video/Headers/RenderAPIEnums.h"
+#include "Hardware/Video/Headers/RenderAPIWrapper.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include "Managers/Headers/FrameListenerManager.h"
 /// This class is used to upload generic VB data to the GPU that can be rendered directly or instanced.
@@ -34,30 +34,6 @@
 class ShaderProgram;
 class GenericVertexData : private boost::noncopyable, public FrameListener {
 public:
-    struct GenericDrawCommand {
-        U32 _min;
-        U32 _max;
-        U8  _queryID;
-        I64 _stateHash;
-        U32 _instanceCount;
-        bool _drawToBuffer;
-        U8   _lod;
-        PrimitiveType _type;
-
-        inline void setLoD(U8 lod) { _lod = lod; }
-        GenericDrawCommand(const PrimitiveType& type, I64 stateHash, U32 min, U32 max, U32 instanceCount = 1,
-                           U8 queryID = 0, bool drawToBuffer = false) : _type(type),
-                                                                        _stateHash(stateHash),
-                                                                        _min(min),
-                                                                        _max(max),
-                                                                        _lod(0),
-                                                                        _queryID(queryID),
-                                                                        _drawToBuffer(drawToBuffer),                         
-                                                                        _instanceCount(instanceCount)
-                                                                    
-        {
-        }
-    };
 
     struct AttributeDescriptor {
         AttributeDescriptor() : _index(0), _divisor(0), _parentBuffer(0), 

@@ -44,25 +44,34 @@ public:
     };
 
     enum ObjectFlag {
-        OBJECT_FLAG_NONE = 0,
-        OBJECT_FLAG_SKINNED,
-        OBJECT_FLAG_PLACEHOLDER
+        OBJECT_FLAG_NONE         = toBit(0),
+        OBJECT_FLAG_SKINNED      = toBit(1),
+        OBJECT_FLAG_NO_VB        = toBit(2),
+        OBJECT_FLAG_PLACEHOLDER  = toBit(3)
     };
 
-    Object3D(const ObjectType& type = OBJECT_3D_PLACEHOLDER, const PrimitiveType& vbType = TRIANGLES,const ObjectFlag& flag = OBJECT_FLAG_NONE);
-    Object3D(const std::string& name,const ObjectType& type = OBJECT_3D_PLACEHOLDER,const PrimitiveType& vbType = TRIANGLES,const ObjectFlag& flag = OBJECT_FLAG_NONE);
+    Object3D(const ObjectType& type = OBJECT_3D_PLACEHOLDER, U32 flag = OBJECT_FLAG_NONE);
+    Object3D(const std::string& name, const ObjectType& type = OBJECT_3D_PLACEHOLDER, U32 flag = OBJECT_FLAG_NONE);
 
     virtual ~Object3D();
 
-    inline  VertexBuffer*   const getGeometryVB()   const {assert(_geometry != nullptr); return _geometry;}
-    inline  ObjectType            getType()         const {return _geometryType;}
-    inline  ObjectFlag            getFlag()         const {return _geometryFlag;}
+    virtual VertexBuffer*   const getGeometryVB()   const;
+    inline  ObjectType            getObjectType()   const {return _geometryType;}
+    inline  U32                   getFlagMask()     const {return _geometryFlagMask;}
     inline  RenderInstance* const renderInstance()  const {return _renderInstance;}
 
     virtual void  postLoad(SceneGraphNode* const sgn);
     virtual bool  onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
     virtual bool  updateAnimations(SceneGraphNode* const sgn) { return false; }
-    //virtual void  optimizeForDepth(bool state = true,bool force = false) {if(_geometry) _geometry->optimizeForDepth(state,force);}
+
+    inline void   setGeometryPartitionId(size_t idx) { _geometryPartitionId = (U32)idx; }
+
+    inline const vectorImpl<vec3<U32> >& getTriangles() const { return _geometryTriangles; }
+    inline void reserveTriangleCount(U32 size)                { _geometryTriangles.reserve(size); }
+    inline void addTriangle(const vec3<U32>& tri)             { _geometryTriangles.push_back(tri); }
+
+    //Create a list of triangles from the vertices + indices lists based on primitive type
+    bool computeTriangleList(bool force = false);
 
 protected:
     virtual	void  render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
@@ -72,11 +81,14 @@ protected:
 
 protected:
     bool		    _update;
+    U32             _geometryFlagMask;
+    U32             _geometryPartitionId;
     ObjectType      _geometryType;
-    ObjectFlag      _geometryFlag;
-    VertexBuffer*   _geometry;
     ///The actual render instance needed by the rendering API
     RenderInstance* _renderInstance;
+    /// 3 indices, pointing to position values, that form a triangle in the mesh.
+    /// used, for example, for cooking collision meshes
+    vectorImpl<vec3<U32> > _geometryTriangles;	
 };
 
 #endif

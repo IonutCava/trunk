@@ -77,7 +77,7 @@ protected:
     void flush();
 
     FrameBuffer*        newFB(bool multisampled) const;
-    VertexBuffer*       newVB(const PrimitiveType& type) const;
+    VertexBuffer*       newVB() const;
     PixelBuffer*        newPB(const PBType& type) const;
     GenericVertexData*  newGVD(const bool persistentMapped) const;
     ShaderBuffer*       newSB(const bool unbound = false) const;
@@ -195,7 +195,7 @@ private: //OpenGL specific:
     static glslopt_ctx* _GLSLOptContex;
     static GLuint _activeVAOId;
     static GLuint _activeFBId;
-    static GLuint _activeBufferId[6]; //< VB, IB, SB, TB, UB, PUB
+    static GLuint _activeBufferId[7]; //< VB, IB, SB, TB, UB, PUB, DIB
     static GLuint _activeTextureUnit;
     static GLuint _activeTransformFeedback;
     static Unordered_map<GLuint, vec4<GLfloat> > _prevClearColor;

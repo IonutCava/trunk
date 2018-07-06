@@ -49,8 +49,8 @@ FrameBuffer* GL_API::newFB(bool multisampled) const {
      return New glFrameBuffer(multisampled ? New glFrameBuffer() : nullptr);
 }
 
-VertexBuffer* GL_API::newVB(const PrimitiveType& type) const {
-    return New glVertexArray(type);
+VertexBuffer* GL_API::newVB() const {
+    return New glVertexArray();
 }
 
 PixelBuffer* GL_API::newPB(const PBType& type) const {

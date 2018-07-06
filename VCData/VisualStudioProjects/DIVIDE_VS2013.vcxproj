@@ -190,7 +190,7 @@
       <IgnoreSpecificDefaultLibraries>libcmtd.lib;libcpmtd.lib</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
-      <Profile>false</Profile>
+      <Profile>true</Profile>
       <LinkStatus>
       </LinkStatus>
       <Version>0.1.2</Version>
@@ -228,7 +228,7 @@
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <Profile>false</Profile>
+      <Profile>true</Profile>
       <LinkStatus>
       </LinkStatus>
     </Link>

@@ -15,6 +15,7 @@ glGenericVertexData::glGenericVertexData(bool persistentMapped) : GenericVertexD
     _numQueries  = 0;
     _currentWriteQuery = 0;
     _currentReadQuery = 0;
+    _indirectDrawBuffer = 0;
     for (U8 i = 0; i < 2; ++i){
         _feedbackQueries[i] = nullptr;
         _resultAvailable[i] = nullptr;
@@ -31,6 +32,9 @@ glGenericVertexData::~glGenericVertexData()
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
     }
+
+    glDeleteBuffers(1, &_indirectDrawBuffer);
+    _indirectDrawBuffer = 0;
 
     if (!_bufferObjects.empty()){
         glDeleteVertexArrays(GVD_USAGE_PLACEHOLDER, &_vertexArray[0]);
@@ -71,6 +75,7 @@ void glGenericVertexData::Create(U8 numBuffers, U8 numQueries){
 
     _bufferObjects.resize(numBuffers, 0);
     glGenBuffers(numBuffers, &_bufferObjects[0]);
+    glGenBuffers(1, &_indirectDrawBuffer);
 
     _numQueries = numQueries;
     for (U8 i = 0; i < 2; ++i){
@@ -127,14 +132,15 @@ void glGenericVertexData::BindFeedbackBufferRange(U32 buffer, size_t elementCoun
 
 void glGenericVertexData::Draw(const GenericDrawCommand& command) {
     DIVIDE_ASSERT(_currentShader != nullptr, "glGenericVertexData error: No draw shader specified for generic vertex data draw command!");
+    const IndirectDrawCommand& cmd = command._cmd;
 
-    if (command._instanceCount == 0) return;
+    if (cmd.instanceCount == 0) return;
 
     GFX_DEVICE.setStateBlock(command._stateHash);
     
     DIVIDE_ASSERT(_currentShader->isBound() && _currentShader->getId() != 0, "glGenericVertexData error: Draw shader state is not valid for the current draw operation!");
 
-    _currentShader->SetLOD(command._lod);
+    _currentShader->SetLOD(command._lodIndex);
     _currentShader->uploadNodeMatrices();
 
     bool feedbackActive = (command._drawToBuffer && !_feedbackBuffers.empty());
@@ -143,22 +149,29 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command) {
 
     SetAttributes(feedbackActive);
 
+    // Write query result to the primCount field of the indirect draw command
+    //glBindBuffer(GL_QUERY_BUFFER_AMD, _indirectDrawBuffer);
+    //glGetQueryObjectuiv(queryId, GL_QUERY_RESULT_AVAILABLE, BUFFER_OFFSET(offsetof(DrawArraysIndirectCommand, primCount)));
+    //GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
+    //glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(IndirectDrawCommand), &cmd, GL_DYNAMIC_COPY);
+
     if (feedbackActive){
        GL_API::setActiveTransformFeedback(_transformFeedback);
        glBeginTransformFeedback(glPrimitiveTypeTable[command._type]);
        glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][command._queryID]);
-    } 
 
-    if(command._instanceCount > 1) glDrawArraysInstanced(glPrimitiveTypeTable[command._type], command._min, command._max, command._instanceCount);
-    else                           glDrawArrays(glPrimitiveTypeTable[command._type], command._min, command._max);
+    }
+    
+    if(!Config::Profile::DISABLE_DRAWS)
+        glDrawArraysIndirect(glPrimitiveTypeTable[command._type], &cmd);
 
-    GL_API::registerDrawCall();
-
-    if (feedbackActive) {
+    if (feedbackActive){
         glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
         glEndTransformFeedback();
         _resultAvailable[_currentWriteQuery][command._queryID] = true;
     }
+   
+    GL_API::registerDrawCall();    
 }
 
 void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped) {

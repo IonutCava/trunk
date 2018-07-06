@@ -5,6 +5,7 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
+#include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 #include <Samples/PxToolkit/include/PxToolkit.h>
@@ -172,40 +173,35 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
     //if(group == GROUP_NON_COLLIDABLE)
     //   return true;
 
-    bool isSkinnedMesh = sNode->getType() == Object3D::SUBMESH ? 
-                         (node->getParent()->getNode<Object3D>()->getFlag() == Object3D::OBJECT_FLAG_SKINNED) : 
-                         false;
-                       
-    //Disabled for now - Ionut
-    isSkinnedMesh = false;
     if(!ok){
+    
+        sNode->computeTriangleList();
+        const vectorImpl<vec3<U32> >& triangles = sNode->getTriangles();
+
+        if(sNode->getTriangles().empty())
+            return false;
+ 
         VertexBuffer* nodeVB = sNode->getGeometryVB();
-        if(nodeVB->getPosition().empty())
-            return true;
-
-        if(nodeVB->getTriangles().empty()) {
-            nodeVB->computeTriangles(true);
-            if(!nodeVB->computeTriangleList())
-                return false;
-        }
-
+        if(sNode->getObjectType() == Object3D::SUBMESH)
+            nodeVB = node->getParent()->getNode<Object3D>()->getGeometryVB();
+        
         PxDefaultFileOutputStream stream(nodeName.c_str());
-        if(!isSkinnedMesh) {
-            PxTriangleMeshDesc meshDesc;
-            meshDesc.points.count     = (PxU32)nodeVB->getPosition().size();
-            meshDesc.points.stride    = sizeof(vec3<F32>);
-            meshDesc.points.data      = &nodeVB->getPosition()[0];
-            meshDesc.triangles.count  = (PxU32)nodeVB->getTriangles().size();
-            meshDesc.triangles.stride = 3*sizeof(U32);
-            meshDesc.triangles.data   = &nodeVB->getTriangles()[0];
-            //if(!nodeVB->usesLargeIndices())
-                //meshDesc.flags = PxMeshFlag::e16_BIT_INDICES;
+        
+        PxTriangleMeshDesc meshDesc;
+        meshDesc.points.count     = (PxU32)nodeVB->getPosition().size();
+        meshDesc.points.stride    = sizeof(vec3<F32>);
+        meshDesc.points.data      = &nodeVB->getPosition()[0];
+        meshDesc.triangles.count  = (PxU32)triangles.size();
+        meshDesc.triangles.stride = 3*sizeof(U32);
+        meshDesc.triangles.data   = &triangles.front();
+        //if(!nodeVB->usesLargeIndices())
+            //meshDesc.flags = PxMeshFlag::e16_BIT_INDICES;
 
-            if(!_cooking->cookTriangleMesh(meshDesc, stream)){
-                ERROR_FN(Locale::get("ERROR_COOK_TRIANGLE_MESH"));
-                return false;
-            }
+        if(!_cooking->cookTriangleMesh(meshDesc, stream)){
+            ERROR_FN(Locale::get("ERROR_COOK_TRIANGLE_MESH"));
+            return false;
         }
+        
 
     }else{
         PRINT_FN(Locale::get("COLLISION_MESH_LOADED_FROM_FILE"), nodeName.c_str());
@@ -213,14 +209,10 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
     
     PhysXSceneInterface* targetScene = dynamic_cast<PhysXSceneInterface* >(_targetScene);
     PhysXActor* tempActor = nullptr;
-    Transform* nodeTransform = nullptr;
-    if(sNode->getType() == Object3D::SUBMESH){
-        tempActor = targetScene->getOrCreateRigidActor(node->getParent()->getName());
-        nodeTransform = node->getParent()->getTransform();
-    }else{
-        tempActor = targetScene->getOrCreateRigidActor(node->getName());
-        nodeTransform = node->getTransform();
-    }
+    Transform* nodeTransform = sNode->getObjectType() == Object3D::SUBMESH ? node->getParent()->getTransform() : node->getTransform();
+
+    tempActor = targetScene->getOrCreateRigidActor(node->getName());
+    
     assert(tempActor != nullptr);
     assert(nodeTransform != nullptr);
     tempActor->_transform = nodeTransform;
@@ -239,35 +231,32 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
             tempActor->_isDynamic = true;
         }
 
-		if(!tempActor->_actor) {
-			SAFE_DELETE(tempActor);
-			return false;
-		}
+        if(!tempActor->_actor) {
+            SAFE_DELETE(tempActor);
+            return false;
+        }
 
         tempActor->_type = PxGeometryType::eTRIANGLEMESH;
         targetScene->addRigidActor(tempActor, false);
         nodeTransform->cleanPhysics();
     }
     
-	assert(tempActor->_actor);
+    assert(tempActor->_actor);
 
     physx::PxGeometry* geometry = nullptr;
-    if(!isSkinnedMesh){
-        PxDefaultFileInputData stream(nodeName.c_str());
-        physx::PxTriangleMesh* triangleMesh = _gPhysicsSDK->createTriangleMesh(stream);
-        if(!triangleMesh){
-            ERROR_FN(Locale::get("ERROR_CREATE_TRIANGLE_MESH"));
-            return false;
-        }
 
-        const vec3<F32>& scale = nodeTransform->getScale();
-        geometry = New PxTriangleMeshGeometry(triangleMesh, 
-                                              PxMeshScale(PxVec3(scale.x,scale.y,scale.z),
-                                              PxQuat(PxIdentity)));
-    }else{
-        const BoundingBox& maxBB = node->getBoundingBoxConst();
-        geometry = New PxBoxGeometry(maxBB.getWidth(),maxBB.getHeight(),maxBB.getDepth());
+    PxDefaultFileInputData stream(nodeName.c_str());
+    physx::PxTriangleMesh* triangleMesh = _gPhysicsSDK->createTriangleMesh(stream);
+    if(!triangleMesh){
+        ERROR_FN(Locale::get("ERROR_CREATE_TRIANGLE_MESH"));
+        return false;
     }
+
+    const vec3<F32>& scale = nodeTransform->getScale();
+    geometry = New PxTriangleMeshGeometry(triangleMesh, 
+                                            PxMeshScale(PxVec3(scale.x,scale.y,scale.z),
+                                            PxQuat(PxIdentity)));
+
 
     assert(geometry != nullptr);
 

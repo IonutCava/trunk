@@ -536,6 +536,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\assets\shaders\GLSL\DepthRangesConstruct.glsl" />
+    <Text Include="..\..\assets\shaders\GLSL\passThrough.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

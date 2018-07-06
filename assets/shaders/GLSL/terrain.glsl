@@ -41,8 +41,7 @@ smooth in float _waterDepth;
 
 out vec4 _colorOut;
 
-subroutine vec4 TerrainMappingType();
-subroutine uniform TerrainMappingType TerrainMappingRoutine;
+//subroutine vec4 TerrainMappingType();
 
 //subroutine(TerrainMappingType) 
 vec4 computeLightInfoLOD1Frag() {
@@ -59,6 +58,7 @@ vec4 computeLightInfoLOD0Frag() {
     return Phong(_texCoord, tbn, color);
 }
 
+
 vec4 CausticsColor() {
     return (texture(texWaterCaustics, _uv1) + texture(texWaterCaustics, _uv0)) * 0.5;
 }
@@ -71,11 +71,21 @@ vec4 UnderwaterColor() {
     return Phong(_texCoord, tbn, color);
 }
 
+vec4 UnderwaterMappingRoutine(){
+	return mix(CausticsColor(), UnderwaterColor(), _waterDepth);
+}
+
+//subroutine uniform TerrainMappingType TerrainMappingRoutine;
+
+vec4 TerrainMappingRoutine(){ // -- HACK - Ionut
+	return lodLevel == 0 ? computeLightInfoLOD0Frag() :  computeLightInfoLOD1Frag();
+}
+
 void main(void) {
     
-    vec4 color = mix(/*TerrainMappingRoutine()*/mix(computeLightInfoLOD0Frag(), computeLightInfoLOD1Frag(), lodLevel), 
-                     mix(CausticsColor(), UnderwaterColor(), _waterDepth), vec4(gl_ClipDistance[0] <= 0.0));
-    applyFog(color);
+   vec4 color = gl_ClipDistance[0] > 0.0 ? TerrainMappingRoutine() : UnderwaterMappingRoutine(); 
+   
+   applyFog(color);
     
-    _colorOut = color;
+   _colorOut = color;
 }

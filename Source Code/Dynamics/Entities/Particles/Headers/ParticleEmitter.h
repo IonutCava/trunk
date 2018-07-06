@@ -124,6 +124,8 @@ private:
     Texture* _particleTexture;
 
     ParticleEmitterDescriptor _descriptor;
+
+    GenericDrawCommand        _drawCommand;
 };
 
 #endif

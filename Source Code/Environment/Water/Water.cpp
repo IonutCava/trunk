@@ -41,6 +41,7 @@ void WaterPlane::postLoad(SceneGraphNode* const sgn){
     _planeSGN->setActive(false);
     _planeTransform = _planeSGN->getTransform();
     _plane->renderInstance()->transform(_planeTransform);
+    _plane->renderInstance()->addDrawCommand(GenericDrawCommand(TRIANGLE_STRIP, 0, 0));
     //The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
     getSceneNodeRenderState().addToDrawExclusionMask(SHADOW_STAGE);
 

@@ -22,7 +22,7 @@ TerrainChunk::TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const par
     memset(_lodIndOffset, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
     memset(_lodIndCount, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
 
-     _terrainVB = _parentTerrain->getGeometryVB();
+    _terrainVB = _parentTerrain->getGeometryVB();
 
     VegetationDetails vegDetails = _parentTerrain->_vegDetails;
     vegDetails.name += "_chunk_" + Util::toString(_chunkID);
@@ -125,11 +125,10 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
 void TerrainChunk::CreateDrawCommand(I8 lod) {
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
     if(lod > 0) lod--;
-    
-    _drawCommand._signedData = lod;
-    _drawCommand._cmd.firstIndex = _lodIndOffset[lod] + _chunkIndOffset;
-    _drawCommand._cmd.count = _lodIndCount[lod];
-    _parentTerrain->addDrawCommand(_drawCommand);
+        
+    GenericDrawCommand drawCommand(TRIANGLE_STRIP, _lodIndOffset[lod] + _chunkIndOffset, _lodIndCount[lod]);
+    drawCommand._lodIndex = lod;
+    _parentTerrain->addDrawCommand(drawCommand);
 }
 
 U8 TerrainChunk::getLoD() const { 

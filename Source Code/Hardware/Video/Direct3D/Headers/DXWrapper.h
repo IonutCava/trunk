@@ -57,7 +57,7 @@ protected:
 
     inline FrameBuffer*        newFB(bool multisampled)                      const { return New d3dRenderTarget(multisampled); }
     inline GenericVertexData*  newGVD(const bool persistentMapped = false)   const { return New d3dGenericVertexData(persistentMapped); }
-    inline VertexBuffer*       newVB(const PrimitiveType& type)              const { return New d3dVertexBuffer(type); }
+    inline VertexBuffer*       newVB()                                       const { return New d3dVertexBuffer(); }
     inline PixelBuffer*        newPB(const PBType& type)                     const { return New d3dPixelBuffer(type); }
     inline ShaderBuffer*       newSB(const bool unbound = false)             const { return New d3dConstantBuffer(unbound); }
     inline Texture*            newTextureArray(const bool flipped = false)   const { return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D_ARRAY], flipped); }

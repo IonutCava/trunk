@@ -39,7 +39,7 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn){
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
 
     U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionId);
-    U32 partitionCount = parentVB->getPartitionCount(_geometryPartitionId) + partitionOffset;
+    U32 partitionCount  = parentVB->getPartitionCount(_geometryPartitionId) + partitionOffset;
 
     AnimationComponent::boundingBoxPerFrame& animBB = animComp->getBBoxesForAnimation(animComp->animationIndex());
     

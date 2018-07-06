@@ -38,7 +38,7 @@
 
 class glVertexArray : public VertexBuffer {
 public:
-    glVertexArray(const PrimitiveType& type);
+    glVertexArray();
     ~glVertexArray();
 
     bool Create(bool staticDraw = true);
@@ -46,14 +46,13 @@ public:
 
     virtual bool SetActive();
 
-    void Draw(const DeferredDrawCommand& command, bool skipBind = false);
-    void Draw(const vectorImpl<DeferredDrawCommand>& commands, bool skipBind = false);
+    void Draw(const GenericDrawCommand& command, bool skipBind = false);
+    void Draw(const vectorImpl<GenericDrawCommand>& commands, bool skipBind = false);
 
     ///Never call Refresh() just queue it and the data will update before drawing
     inline bool queueRefresh() {_refreshQueued = true; return true;}
 
 protected:
-    bool computeTriangleList();
     /// If we have a shader, we create a VAO, if not, we use simple VB + IB. If that fails, use VA
     bool Refresh();
     /// Internally create the VB
@@ -66,10 +65,10 @@ protected:
 protected:
     U8 _prevLoD;
     GLenum _formatInternal;
-    GLenum _typeInternal;
     GLuint _IBid;
     GLuint _VBid;
     GLuint _VAOid;
+    GLuint _indirectDrawBuffer;
     GLuint _usage;
     bool _animationData;     ///< Used to bind an extra set of vertex attributes for bone indices and bone weights
     bool _refreshQueued;     ///< A refresh call might be called before "Create()". This should help with that

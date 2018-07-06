@@ -5,7 +5,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 
-Mesh::Mesh(ObjectFlag flag) : Object3D(MESH,TRIANGLES,flag),
+Mesh::Mesh(ObjectFlag flag) : Object3D(MESH,flag),
                               _visibleToNetwork(true),
                               _playAnimations(true),
                               _playAnimationsCurrent(false)
@@ -51,8 +51,11 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
         sgn->addNode(s, sgn->getName() + "_" + it);
         s->setParentMeshSGN(sgn);
     }
+    
+    for(U8 i = 0; i < Config::SCENE_NODE_LOD; ++i)
+        _drawCommands[i].reserve(_subMeshes.size());
 
-    _geometry->Create();
+    getGeometryVB()->Create();
 
     Object3D::postLoad(sgn);
 }
@@ -60,7 +63,7 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
 /// Called from SceneGraph "sceneUpdate"
 void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
 
-    if (getFlag() == OBJECT_FLAG_SKINNED) {
+    if (bitCompare(getFlagMask(), OBJECT_FLAG_SKINNED)) {
         bool playAnimation = (_playAnimations && ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"));
         if (playAnimation != _playAnimationsCurrent) {
             FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, sgn->getChildren()){
@@ -75,10 +78,11 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneStat
 
 
 void Mesh::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState) {
-
+    for(U8 i = 0; i < Config::SCENE_NODE_LOD; ++i)
+        _drawCommands[i].resize(0);
 }
 
-void Mesh::addDrawCommand(const VertexBuffer::DeferredDrawCommand& cmd, ShaderProgram* const shaderProgram){
-    _drawCommands[cmd._signedData].push_back(cmd); 
-    _geometry->setShaderProgram(shaderProgram);
+void Mesh::addDrawCommand(const GenericDrawCommand& cmd, ShaderProgram* const shaderProgram){
+    _drawCommands[cmd._lodIndex].push_back(cmd); 
+    getGeometryVB()->setShaderProgram(shaderProgram);
 }

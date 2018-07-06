@@ -7,14 +7,14 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-SubMesh::SubMesh(const std::string& name, ObjectFlag flag) : Object3D(name, SUBMESH, PrimitiveType_PLACEHOLDER, flag),
+SubMesh::SubMesh(const std::string& name, ObjectFlag flag) : Object3D(name, SUBMESH, flag | OBJECT_FLAG_NO_VB),
                                                              _visibleToNetwork(true),
                                                              _render(true),
                                                              _id(0),
-                                                             _geometryPartitionId(0),
                                                              _parentMesh(nullptr),
                                                              _parentMeshSGN(nullptr)
 {
+    _drawCmd = GenericDrawCommand(TRIANGLES, 0, 1);
 }
 
 SubMesh::~SubMesh()
@@ -37,20 +37,19 @@ void SubMesh::postLoad(SceneGraphNode* const sgn){
     //sgn->getTransform()->setTransforms(_localMatrix);
     /// If the mesh has animation data, use dynamic VB's if we use software skinning
     _renderInstance->buffer(_parentMesh->getGeometryVB());
-
+    VertexBuffer* vb = _parentMesh->getGeometryVB();
+    _drawCmd._cmd.firstIndex =  vb->getPartitionOffset(_geometryPartitionId);
+    _drawCmd._cmd.count =       vb->getPartitionCount(_geometryPartitionId);
     Object3D::postLoad(sgn);
 }
 
 void SubMesh::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
     assert(_parentMesh != nullptr);
-    VertexBuffer* vb = _parentMesh->getGeometryVB();
-    VertexBuffer::DeferredDrawCommand drawCmd;
-    drawCmd._cmd.count = vb->getPartitionCount(_geometryPartitionId);
-    drawCmd._cmd.firstIndex = vb->getPartitionOffset(_geometryPartitionId);
-    drawCmd._unsignedData = _geometryPartitionId;
-    drawCmd._lodIndex = getCurrentLOD();
-    _parentMesh->addDrawCommand(drawCmd, _drawShader);
-    _renderInstance->addDeferredDrawCommand(drawCmd);
+   
+    _drawCmd.setLoD(getCurrentLOD());
+    _parentMesh->addDrawCommand(_drawCmd, _drawShader);
 
+    _renderInstance->addDrawCommand(_drawCmd);
     Object3D::render(sgn, sceneRenderState);
+    _renderInstance->clearDrawCommands();
 }

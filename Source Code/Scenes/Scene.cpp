@@ -58,7 +58,7 @@ bool Scene::idle(){ //Called when application is idle
     if(!_modelDataArray.empty())
         loadXMLAssets(true);
 
-    if (_cookCollisionMeshesScheduled && _sceneGraph){
+    if (_cookCollisionMeshesScheduled && checkLoadFlag()){
         if(GFX_DEVICE.getFrameCount() > 1){
             _sceneGraph->getRoot()->getComponent<PhysicsComponent>()->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
@@ -316,7 +316,7 @@ PhysicsSceneInterface* Scene::createPhysicsImplementation(){
 }
 
 bool Scene::loadPhysics(bool continueOnErrors){
-    //Add a new physics scene (can be overriden in each scene for custom behaviour)
+    //Add a new physics scene (can be overridden in each scene for custom behavior)
     _physicsInterface = createPhysicsImplementation();
     PHYSICS_DEVICE.setPhysicsScene(_physicsInterface);
     //Initialize the physics scene

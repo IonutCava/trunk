@@ -18,34 +18,27 @@ vec3 getFinalTBN1(const in vec4 blendMap, const in uint index, const in vec4 nor
 }
 
 vec4 getFinalColor2(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
-    vec4 greenChannel = texture(texTileMaps[index], vec3(_texCoord * diffSize.g, 2));
-    return mix(getFinalColor1(blendMap, index, diffSize), greenChannel, blendMap.g);
+    return mix(getFinalColor1(blendMap, index, diffSize), texture(texTileMaps[index], vec3(_texCoord * diffSize.g, 2)), blendMap.g);
 }
 
 vec3 getFinalTBN2(const in vec4 blendMap, const in uint index, const in vec4 normSize){
-    vec3 greenChannel = texture(texTileMaps[index], vec3(_texCoord * normSize.g, 3)).rgb;
-    return mix(getFinalTBN1(blendMap, index, normSize), greenChannel, blendMap.g);
+    return mix(getFinalTBN1(blendMap, index, normSize), texture(texTileMaps[index], vec3(_texCoord * normSize.g, 3)).rgb, blendMap.g);
 }
 
 vec4 getFinalColor3(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
-    vec4 blueChannel = texture(texTileMaps[index], vec3(_texCoord * diffSize.b, 4));
-    return mix(getFinalColor2(blendMap, index, diffSize), blueChannel, blendMap.b);
+    return mix(getFinalColor2(blendMap, index, diffSize), texture(texTileMaps[index], vec3(_texCoord * diffSize.b, 4)), blendMap.b);
 }
 
 vec3 getFinalTBN3(const in vec4 blendMap, const in uint index, const in vec4 normSize){
-    vec3 blueChannel = texture(texTileMaps[index], vec3(_texCoord * normSize.b, 5)).rgb;
-    return mix(getFinalTBN2(blendMap, index, normSize), blueChannel, blendMap.b);
+    return mix(getFinalTBN2(blendMap, index, normSize), texture(texTileMaps[index], vec3(_texCoord * normSize.b, 5)).rgb, blendMap.b);
 }
 
 vec4 getFinalColor4(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
-    vec4 alphaChannel = texture(texTileMaps[index], vec3(_texCoord * diffSize.a, 6));
-    return mix(getFinalColor3(blendMap, index, diffSize), alphaChannel, blendMap.a);
+    return mix(getFinalColor3(blendMap, index, diffSize), texture(texTileMaps[index], vec3(_texCoord * diffSize.a, 6)), blendMap.a);
 }
 
 vec3 getFinalTBN4(const in vec4 blendMap, const in uint index, const in vec4 normSize){
-    vec3 alphaChannel = texture(texTileMaps[index], vec3(_texCoord * normSize.a, 7)).rgb;
-
-    return mix(getFinalTBN3(blendMap, index, normSize), alphaChannel, blendMap.a);
+    return mix(getFinalTBN3(blendMap, index, normSize), texture(texTileMaps[index], vec3(_texCoord * normSize.a, 7)).rgb, blendMap.a);
 }
 
 void getColorAndTBNNormal(inout vec4 color, inout vec3 tbn){
@@ -69,7 +62,7 @@ void getColorAndTBNNormal(inout vec4 color, inout vec3 tbn){
         tbn   += getFinalTBN4(blendMap, i, detailScale[i]);
 #endif
     }
-    color = clamp(color, vec4(0.0, 0.0, 0.0, 1.0), vec4(1.0));
+    color = clamp(color, vec4(0.0), vec4(1.0));
     tbn = normalize((2.0 * tbn - 1.0) / MAX_TEXTURE_LAYERS);
 }
 
@@ -89,6 +82,7 @@ void getColorNormal(inout vec4 color){
         color += getFinalColor4(blendMap, i, diffuseScale[i]);
 #endif
     }
+	color = clamp(color, vec4(0.0), vec4(1.0));
 }
 
 void getColorAndTBNUnderwater(inout vec4 color, inout vec3 tbn){

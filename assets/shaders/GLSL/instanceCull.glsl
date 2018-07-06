@@ -127,7 +127,7 @@ void main(void) {
     OrigData2 = instanceData2;
     OrigData3 = gl_InstanceID;
     //objectVisible = CullRoutine(OrigData.xyz);
-    objectVisible = cullType > 0 ? HiZOcclusionCull(OrigData.xyz) : InstanceCloudReduction(OrigData.xyz);
+    objectVisible = cullType > 0 ? (cullType > 1 ? HiZOcclusionCull(OrigData.xyz) : InstanceCloudReduction(OrigData.xyz)) : PassThrough(OrigData.xyz);
 }
 
 -- Geometry

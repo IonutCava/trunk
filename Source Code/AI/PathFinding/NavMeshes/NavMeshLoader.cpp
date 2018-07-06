@@ -28,9 +28,9 @@ namespace Navigation {
             while (!done && buf < bufEnd)   {
                 char c = *buf;
                 buf++;
-                // multirow
+                // multi row
                 switch (c)  {
-                    case '\\': cont = true; break; // multirow
+                    case '\\': cont = true; break; // multi row
                     case '\n': { if (start) break; done = true; } break;
                     case '\r': break;
                     case '\t':
@@ -300,7 +300,7 @@ namespace Navigation {
 
             if(nodeType == TYPE_OBJECT3D) {
                 U32 ignored3DObjectType = Object3D::MESH | Object3D::TEXT_3D | Object3D::FLYWEIGHT;
-                if(bitCompare(ignored3DObjectType, dynamic_cast<Object3D*>(sn)->getType())) goto next;
+                if(bitCompare(ignored3DObjectType, dynamic_cast<Object3D*>(sn)->getObjectType())) goto next;
             }
 
             MeshDetailLevel level = DETAIL_ABSOLUTE;
@@ -340,7 +340,8 @@ namespace Navigation {
                 const vectorImpl<vec3<F32> >& vertices  = geometry->getPosition();
                 if(vertices.empty()) return false;
                 
-                const vectorImpl<vec3<U32> >& triangles = geometry->getTriangles();
+                dynamic_cast<Object3D* >(sn)->computeTriangleList();
+                const vectorImpl<vec3<U32> >& triangles = dynamic_cast<Object3D* >(sn)->getTriangles();
                 if(nodeType != TYPE_OBJECT3D || (nodeType == TYPE_OBJECT3D && dynamic_cast<Object3D* >(sn)->getType() != Object3D::TERRAIN)){
                     mat4<F32> nodeTransform = sgn->getTransform()->getGlobalMatrix();
                     for (U32 i = 0; i < vertices.size(); ++i ){
@@ -376,7 +377,7 @@ namespace Navigation {
 
             PRINT_FN(Locale::get("NAV_MESH_ADD_NODE"), sn->getName().c_str());
 
-            //altough labels are bad, skipping here using them is the easiest solution to follow -Ionut
+            //although labels are bad, skipping here using them is the easiest solution to follow -Ionut
             next:;
             FOR_EACH(SceneGraphNode::NodeChildren::value_type& it,sgn->getChildren()){
                 if (!parse(it.second->getBoundingBoxConst(), outData, it.second))	return false;

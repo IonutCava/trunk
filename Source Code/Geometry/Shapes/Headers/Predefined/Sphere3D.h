@@ -29,25 +29,26 @@
 class Sphere3D : public Object3D {
 public:
     ///Change resolution to affect the spacing between vertices
-    Sphere3D(F32 radius, F32 resolution) : Object3D(SPHERE_3D,TRIANGLE_STRIP),
+    Sphere3D(F32 radius, F32 resolution) : Object3D(SPHERE_3D),
                                           _radius(radius),
                                           _resolution(resolution)
     {
         _dirty = true;
         _vertexCount = resolution * resolution;
-        _geometry->reservePositionCount(_vertexCount);
-        _geometry->reserveNormalCount(_vertexCount);
-        _geometry->getTexcoord().reserve(_vertexCount);
-        _geometry->reserveIndexCount(_vertexCount);
+        getGeometryVB()->reservePositionCount(_vertexCount);
+        getGeometryVB()->reserveNormalCount(_vertexCount);
+        getGeometryVB()->getTexcoord().reserve(_vertexCount);
+        getGeometryVB()->reserveIndexCount(_vertexCount);
         if(_vertexCount+1 > std::numeric_limits<U16>::max()){
-            _geometry->useLargeIndices(true);
+            getGeometryVB()->useLargeIndices(true);
         }
+        clean();
     }
 
     inline F32	  getRadius()     {return _radius;}
     inline F32    getResolution() {return _resolution;}
-    inline void   setRadius(F32 radius) {_radius = radius; _dirty = true; _geometry->queueRefresh();}
-    inline void   setResolution(F32 resolution) {_resolution = resolution; _dirty = true; _geometry->queueRefresh();}
+    inline void   setRadius(F32 radius) {_radius = radius; _dirty = true; getGeometryVB()->queueRefresh();}
+    inline void   setResolution(F32 resolution) {_resolution = resolution; _dirty = true; getGeometryVB()->queueRefresh();}
 
     virtual bool computeBoundingBox(SceneGraphNode* const sgn){
         if (sgn->getBoundingBoxConst().isComputed()) return true;
@@ -56,18 +57,23 @@ public:
     }
 
     bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
+        clean();
+        return Object3D::onDraw(sgn, currentStage);
+    }
+
+protected:
+    void clean(){
         if(_dirty){
             createSphere(_resolution,_resolution);
             _dirty = false;
         }
-        return Object3D::onDraw(sgn, currentStage);
     }
 
 private:
 
     //SuperBible stuff
     void createSphere(U32 slices, U32 stacks) {
-        _geometry->Reset();
+        getGeometryVB()->Reset();
         F32 drho = M_PI / (F32) stacks;
         F32 dtheta = 2.0f * M_PI / (F32) slices;
         F32 ds = 1.0f / (F32) slices;
@@ -97,34 +103,33 @@ private:
                 F32 y = ctheta * srho;
                 F32 z = crho;
 
-                _geometry->addPosition(vec3<F32>(x * _radius, y * _radius, z * _radius));
-                _geometry->getTexcoord().push_back(vec2<F32>(s,t));
-                _geometry->addNormal(vec3<F32>(x,y,z));
-                _geometry->addIndex(index++);
+                getGeometryVB()->addPosition(vec3<F32>(x * _radius, y * _radius, z * _radius));
+                getGeometryVB()->getTexcoord().push_back(vec2<F32>(s,t));
+                getGeometryVB()->addNormal(vec3<F32>(x,y,z));
+                getGeometryVB()->addIndex(index++);
 
                 x = stheta * srhodrho;
                 y = ctheta * srhodrho;
                 z = crhodrho;
                 s += ds;
 
-                _geometry->addPosition(vec3<F32>(x * _radius, y * _radius, z * _radius));
-                _geometry->getTexcoord().push_back(vec2<F32>(s,t - dt));
-                _geometry->addNormal(vec3<F32>(x,y,z));
-                _geometry->addIndex(index++);
+                getGeometryVB()->addPosition(vec3<F32>(x * _radius, y * _radius, z * _radius));
+                getGeometryVB()->getTexcoord().push_back(vec2<F32>(s,t - dt));
+                getGeometryVB()->addNormal(vec3<F32>(x,y,z));
+                getGeometryVB()->addIndex(index++);
             }
             t -= dt;
         }
 
         vec2<U32> indiceLimits;
-        for(i = 0 ; i < _geometry->getIndexCount(); i++){
-            if(indiceLimits.x > _geometry->getIndex(i))
-                indiceLimits.x = _geometry->getIndex(i);
-            if(indiceLimits.y < _geometry->getIndex(i))
-                indiceLimits.y = _geometry->getIndex(i);
+        for(i = 0 ; i < getGeometryVB()->getIndexCount(); i++){
+            if(indiceLimits.x > getGeometryVB()->getIndex(i))
+                indiceLimits.x = getGeometryVB()->getIndex(i);
+            if(indiceLimits.y < getGeometryVB()->getIndex(i))
+                indiceLimits.y = getGeometryVB()->getIndex(i);
         }
 
-        _geometry->setIndiceLimits(indiceLimits);
-        _geometry->Create();
+        getGeometryVB()->Create();
     }
 
 protected:

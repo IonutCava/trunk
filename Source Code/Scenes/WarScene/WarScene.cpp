@@ -135,7 +135,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
         else{
             AIManager::getInstance().addNavMesh(navMesh);
 #ifdef _DEBUG
-            //AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
+            AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
 #endif
         }
 

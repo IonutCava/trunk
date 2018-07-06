@@ -32,19 +32,18 @@ public:
     void Destroy() {}
 
     bool SetActive() {return true;}
-    void Draw(const DeferredDrawCommand& command, bool skipBind = false) {};
-    void Draw(const vectorImpl<DeferredDrawCommand>& commands, bool skipBind = false) {};
+    void Draw(const GenericDrawCommand& command, bool skipBind = false) {};
+    void Draw(const vectorImpl<GenericDrawCommand>& commands, bool skipBind = false) {};
 
     bool queueRefresh() {return Refresh();}
 
-    d3dVertexBuffer(PrimitiveType type) : VertexBuffer(type) {}
+    d3dVertexBuffer() : VertexBuffer() {}
     ~d3dVertexBuffer() {Destroy();}
 
 private:
     bool CreateInternal() {return true;}
     bool Refresh() {return true;}
     void checkStatus() {}
-    bool computeTriangleList() {return true;}
 };
 
 #endif

@@ -36,7 +36,7 @@ public:
                                                                _width(1.0f)
     {
         ///Dummy
-        _geometry->queueRefresh();
+        getGeometryVB()->queueRefresh();
     }
 
     inline std::string&  getText()    {return _text;}

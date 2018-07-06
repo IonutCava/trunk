@@ -85,6 +85,7 @@ protected:
 
 private:
     GLuint   _transformFeedback;
+    GLuint   _indirectDrawBuffer;
     GLuint   _numQueries;
     GLuint   _vertexArray[GVD_USAGE_PLACEHOLDER];
     bool*    _bufferSet;

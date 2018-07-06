@@ -88,7 +88,7 @@ public:
     inline FrameBuffer*        getRenderTarget(RenderTarget target) const  {return _renderTarget[target];}
 
     inline FrameBuffer*        newFB(bool multisampled = false)              const { return _api.newFB(multisampled); }
-    inline VertexBuffer*       newVB(const PrimitiveType& type = TRIANGLES)  const { return _api.newVB(type); }
+    inline VertexBuffer*       newVB()                                       const { return _api.newVB(); }
     inline PixelBuffer*        newPB(const PBType& type = PB_TEXTURE_2D)     const { return _api.newPB(type); }
     inline GenericVertexData*  newGVD(const bool persistentMapped)           const { return _api.newGVD(persistentMapped); }
     inline ShaderBuffer*       newSB(const bool unbound = false)             const { return _api.newSB(unbound); }
@@ -126,7 +126,7 @@ public:
            void drawPoints(U32 numPoints);
     ///Useful to perform pre-draw operations on the model if it's drawn outside the scenegraph
     void renderInstance(RenderInstance* const instance);
-    void renderInstanceCmd(RenderInstance* const instance, const VertexBuffer::DeferredDrawCommand& cmd);
+    void renderInstanceCmd(RenderInstance* const instance, const GenericDrawCommand& cmd);
     ///The render callback must update all visual information and populate the "RenderBin"'s!
     void render(const DELEGATE_CBK& renderFunction, const SceneRenderState& sceneRenderState);
     ///Sets the current render stage.

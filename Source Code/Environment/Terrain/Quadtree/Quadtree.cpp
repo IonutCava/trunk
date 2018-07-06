@@ -63,7 +63,7 @@ void Quadtree::Build(BoundingBox& terrainBBox, const vec2<U32>& HMsize, U32 minH
 
     _root->Build(0, vec2<U32>(0, 0), HMsize, minHMSize, parentTerrainSGN, _chunkCount);
 
-    VertexBuffer* groundVB = parentTerrainSGN->getNode<Terrain>()->getGeometryVB();
+    Terrain* terrain = parentTerrainSGN->getNode<Terrain>();
     // Generate index buffer
     const U32 terrainWidth = HMsize.x;
     const U32 terrainHeight = HMsize.y;
@@ -76,8 +76,8 @@ void Quadtree::Build(BoundingBox& terrainBBox, const vec2<U32>& HMsize, U32 minH
             firstTri.set(vertexIndex, vertexIndex + terrainWidth + 1, vertexIndex + 1);
             // Bottom triangle (T1)
             secondTri.set(vertexIndex, vertexIndex + terrainWidth, vertexIndex + terrainWidth + 1);
-            groundVB->addTriangle(firstTri);
-            groundVB->addTriangle(secondTri);
+            terrain->addTriangle(firstTri);
+            terrain->addTriangle(secondTri);
         }
     }
 }
