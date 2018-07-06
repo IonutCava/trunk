@@ -5,9 +5,8 @@
 
 namespace Divide {
 
-    std::shared_ptr<chaiscript::Module> create_chaiscript_stl_extra()
+    chaiscript::ModulePtr create_chaiscript_stl_extra()
     {
-
         auto module = std::make_shared<chaiscript::Module>();
         chaiscript::bootstrap::standard_library::list_type<std::list<chaiscript::Boxed_Value> >("List", *module);
         chaiscript::bootstrap::standard_library::vector_type<std::vector<uint16_t> >("u16vector", *module);
@@ -15,11 +14,11 @@ namespace Divide {
         return module;
     }
 
-    std::shared_ptr<chaiscript::Module> create_chaiscript_stdlib() {
+    chaiscript::ModulePtr create_chaiscript_stdlib() {
         return chaiscript::Std_Lib::library();
     }
 
-    std::shared_ptr<chaiscript::Module> create_chaiscript_bindings() {
+    chaiscript::ModulePtr create_chaiscript_bindings() {
         auto module = std::make_shared<chaiscript::Module>();
 
         return module;

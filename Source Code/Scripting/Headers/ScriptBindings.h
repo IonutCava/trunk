@@ -42,9 +42,9 @@ namespace Divide {
 
     #define ADD_FUN(Class, Name) module->add(chaiscript::fun(&Class::Name), #Name )
 
-    std::shared_ptr<chaiscript::Module> create_chaiscript_bindings();
-    std::shared_ptr<chaiscript::Module> create_chaiscript_stdlib();
-    std::shared_ptr<chaiscript::Module> create_chaiscript_stl_extra();
+    chaiscript::ModulePtr create_chaiscript_bindings();
+    chaiscript::ModulePtr create_chaiscript_stdlib();
+    chaiscript::ModulePtr create_chaiscript_stl_extra();
 
 }; //namespace Divide
 

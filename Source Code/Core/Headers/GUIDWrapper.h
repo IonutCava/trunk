@@ -66,9 +66,6 @@ class GUIDWrapper {
 
    private:
     static I64 generateGUID();
-
-    //ToDo: Remove this (rebuild some third party libs)
-    static int64_t _idGenerator;
 };
 
 };  // namespace Divide
