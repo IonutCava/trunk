@@ -28,6 +28,7 @@
 #pragma comment(lib, "OpenCL.lib")
 
 #ifdef _DEBUG
+#pragma comment(lib, "AntTweakBar64.lib")
 #pragma comment(lib, "DbgHelp.lib")
 
 #pragma comment(lib, "glbindingd.lib")

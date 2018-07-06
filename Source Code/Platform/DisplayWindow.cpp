@@ -12,6 +12,8 @@
 
 #include <SDL.h>
 
+#include <AntTweakBar/include/AntTweakBar.h>
+
 namespace Divide {
 DisplayWindow::DisplayWindow(WindowManager& context)
  : GUIDWrapper(),
@@ -83,6 +85,13 @@ void DisplayWindow::update() {
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
+        if (Config::USE_ANT_TWEAK_BAR) {
+            // send event to AntTweakBar
+            if (TwEventSDL(&event, SDL_MAJOR_VERSION, SDL_MINOR_VERSION) != 0) {
+                continue;
+            }
+        }
+
         switch (event.type)
         {
         case SDL_QUIT: {

@@ -33,6 +33,8 @@
 
 #include "RenderDoc-Manager/RenderDocManager.h"
 
+#include <AntTweakBar/include/AntTweakBar.h>
+
 namespace Divide {
 
 /// Create a display context using the selected API and create all of the needed
@@ -300,6 +302,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                              to_I32(renderResolution.height));
     setBaseViewport(vec4<I32>(0, 0, to_I32(renderResolution.width), to_I32(renderResolution.height)));
 
+    if (Config::USE_ANT_TWEAK_BAR) {
+        TwBar *myBar;
+        myBar = TwNewBar("NameOfMyTweakBar");
+        I32 myVar = 0;
+        TwAddVarRW(myBar, "NameOfMyVariable", TW_TYPE_INT32, &myVar, "");
+    }
+
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
 }
@@ -337,6 +346,10 @@ void GFXDevice::closeRenderingAPI() {
     _api.reset();
     if (!_graphicResources.empty()) {
         Console::errorfn(Locale::get(_ID("ERROR_GFX_LEAKED_RESOURCES")), _graphicResources.size());
+    }
+
+    if (Config::USE_ANT_TWEAK_BAR) {
+        TwTerminate();
     }
 }
 
@@ -380,6 +393,11 @@ void GFXDevice::endFrame(bool swapBuffers) {
     _api->setStateBlock(_defaultStateBlockHash);
     // Unbind shaders
     ShaderProgram::unbind();
+
+    if (Config::USE_ANT_TWEAK_BAR) {
+        TwDraw();
+    }
+
     _api->endFrame(swapBuffers);
 
     if (Config::ENABLE_GPU_VALIDATION) {

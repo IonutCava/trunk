@@ -30,6 +30,8 @@
 #include "Managers/Headers/FrameListenerManager.h"
 #include "Platform/Compute/Headers/OpenCLInterface.h"
 
+#include <AntTweakBar/include/AntTweakBar.h>
+
 namespace Divide {
 
 LoopTimingData::LoopTimingData() : _updateLoops(0),
@@ -759,8 +761,10 @@ void Kernel::onChangeWindowSize(U16 w, U16 h) {
 void Kernel::onChangeRenderResolution(U16 w, U16 h) const {
     Attorney::GFXDeviceKernel::onChangeRenderResolution(_platformContext->gfx(), w, h);
     _platformContext->gui().onChangeResolution(w, h);
-
     _sceneManager->onChangeResolution(w, h);
+    if (Config::USE_ANT_TWEAK_BAR) {
+        TwWindowSize(to_I32(w), to_I32(h));
+    }
 }
 
 ///--------------------------Input Management-------------------------------------///

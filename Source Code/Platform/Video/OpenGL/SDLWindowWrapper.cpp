@@ -22,6 +22,8 @@
 #include <CEGUI/CEGUI.h>
 #include <CEGUI/RendererModules/OpenGL/GL3Renderer.h>
 
+#include <AntTweakBar/include/AntTweakBar.h>
+
 #include <GLIM/glim.h>
 #include <chrono>
 #include <thread>
@@ -346,6 +348,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration&
     _GUIGLrenderer = &CEGUI::OpenGL3Renderer::create();
     _GUIGLrenderer->enableExtraStateSettings(config.gui.cegui.extraStates);
     CEGUI::System::create(*_GUIGLrenderer);
+
+    if (Config::USE_ANT_TWEAK_BAR) {
+        TwInit(TW_OPENGL_CORE, NULL);
+    }
 
     static const vec4<F32> clearColour = DefaultColours::DIVIDE_BLUE();
     glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
