@@ -108,6 +108,7 @@ class RenderBin {
     virtual void preRender(RenderStage renderStage);
     virtual void render(const SceneRenderState& renderState,
                         RenderStage renderStage,
+                        bool refreshNodeData,
                         U32 pass = 0);
     virtual void postRender(const SceneRenderState& renderState,
                             RenderStage renderStage);

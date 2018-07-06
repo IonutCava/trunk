@@ -278,7 +278,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport);
 
     void addToRenderQueue(const RenderPackage& package);
-    void flushRenderQueue(U32 pass = 0);
+    void flushRenderQueue(bool refreshNodeData, U32 pass = 0);
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc

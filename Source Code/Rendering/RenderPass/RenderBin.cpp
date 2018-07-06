@@ -158,6 +158,7 @@ void RenderBin::preRender(RenderStage renderStage) {}
 
 void RenderBin::render(const SceneRenderState& renderState,
                        RenderStage renderStage,
+                       bool refreshNodeData,
                        U32 pass) {
     GFXDevice& gfx = GFX_DEVICE;
     // We need to apply different materials for each stage. As nodes are sorted,
@@ -166,7 +167,7 @@ void RenderBin::render(const SceneRenderState& renderState,
         gfx.addToRenderQueue(Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));
     }
 
-    gfx.flushRenderQueue(pass);
+    gfx.flushRenderQueue(refreshNodeData, pass);
 }
 
 void RenderBin::postRender(const SceneRenderState& renderState, RenderStage renderStage) {

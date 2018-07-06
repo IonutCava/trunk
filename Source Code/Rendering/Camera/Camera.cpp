@@ -371,19 +371,17 @@ bool Camera::updateFrustum() {
     return true;
 }
 
-vec3<F32> Camera::unProject(const vec3<F32>& winCoords) const {
-    return unProject(winCoords, GFX_DEVICE.getCurrentViewport());
+vec3<F32> Camera::unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ) const {
+    return unProject(winCoordsX, winCoordsY, winCoordsZ, GFX_DEVICE.getCurrentViewport());
 }
 
-vec3<F32> Camera::unProject(const vec3<F32>& winCoords,
+vec3<F32> Camera::unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ,
                             const vec4<I32>& viewport) const {
-    mat4<F32> cameraVP = _frustum->_viewProjectionMatrixCache.getInverse();
-
-    vec4<F32> temp(winCoords, 1.0f);
+    vec4<F32> temp(winCoordsX, winCoordsY, winCoordsZ, 1.0f);
     temp.x = (temp.x - F32(viewport[0])) / F32(viewport[2]);
     temp.y = (temp.y - F32(viewport[1])) / F32(viewport[3]);
 
-    temp = cameraVP * (2.0f * temp - 1.0f);
+    temp = _frustum->_viewProjectionMatrixCache.getInverse() * (2.0f * temp - 1.0f);
     temp /= temp.w;
 
     return temp.xyz();
