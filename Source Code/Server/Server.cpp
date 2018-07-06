@@ -13,13 +13,12 @@ Server::~Server() {
     delete acceptor_;
 }
 
-void Server::init(U16 port, const stringImpl& broadcast_endpoint_address,
-                  bool debugOutput) {
+void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool debugOutput) {
     _debugOutput = debugOutput;
     try {
         tcp::endpoint listen_endpoint(tcp::v4(), port);
         udp::endpoint broadcast_endpoint(
-            boost::asio::ip::address::from_string(broadcast_endpoint_address),
+            boost::asio::ip::address::from_string(broadcast_endpoint_address.c_str()),
             port);
         acceptor_ = new tcp::acceptor(io_service_, listen_endpoint);
         subscriber_ptr bc(new udp_broadcaster(io_service_, broadcast_endpoint));

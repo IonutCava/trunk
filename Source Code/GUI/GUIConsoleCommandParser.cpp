@@ -137,7 +137,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
     stringImpl filename =
         ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) +
         "/" + args;
-    std::ifstream soundfile(filename);
+    std::ifstream soundfile(filename.c_str());
     if (soundfile) {
         // Check extensions (not really, musicwav.abc would still be valid, but
         // still ...)

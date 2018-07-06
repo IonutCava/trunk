@@ -153,7 +153,7 @@ void tcp_session_tpl::handle_write_file(const boost::system::error_code& ec) {
     boost::asio::streambuf request_;
     stringImpl filePath = _outputFileQueue.front();
     std::ifstream source_file;
-    source_file.open(filePath,
+    source_file.open(filePath.c_str(),
                      std::ios_base::binary | std::ios_base::ate);
     if (!source_file) {
         std::cout << "failed to open " << filePath << std::endl;

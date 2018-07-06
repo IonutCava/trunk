@@ -48,7 +48,7 @@ class ParticleVelocityFromPositionGenerator final : public ParticleGenerator {
                                           F32 maxScale)
         : _offset(offset), _minScale(minScale), _maxScale(maxScale) {}
 
-    void generate(vectorImpl<std::future<void>>& packagedTasks, 
+    void generate(TaskHandle& packagedTasksParent,
                   const U64 deltaTime,
                   ParticleData& p,
                   U32 startIndex,

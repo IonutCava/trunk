@@ -39,7 +39,7 @@ namespace Divide {
 class ParticleAttractorUpdater final : public ParticleUpdater {
    public:
     /// w = force
-    vectorImpl<vec4<F32>> _attractors;
+    vectorImplAligned<vec4<F32>> _attractors;
 
    public:
     ParticleAttractorUpdater() {}

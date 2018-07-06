@@ -164,7 +164,7 @@ U32 AnimationComponent::boneCount() const {
     return _animator != nullptr ? to_uint(_animator->boneCount()) : 0;
 }
 
-const vectorImpl<mat4<F32>>& AnimationComponent::transformsByIndex(U32 animationID, U32 index) const {
+const vectorImplAligned<mat4<F32>>& AnimationComponent::transformsByIndex(U32 animationID, U32 index) const {
     assert(_animator != nullptr);
 
     return _animator->transforms(animationID, index);

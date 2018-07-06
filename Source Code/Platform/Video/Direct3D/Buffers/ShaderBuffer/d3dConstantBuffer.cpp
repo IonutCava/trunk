@@ -3,6 +3,8 @@
 
 namespace Divide {
 
+IMPLEMENT_ALLOCATOR(d3dConstantBuffer, 0, 0)
+
 d3dConstantBuffer::d3dConstantBuffer(GFXDevice& context,
                                      const stringImpl& bufferName,
                                      const U32 ringBufferLength,

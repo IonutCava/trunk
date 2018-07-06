@@ -60,8 +60,7 @@ class GUIButton : public GUIElement {
 
     void draw() const;
     void setTooltip(const stringImpl& tooltipText);
-    void setFont(const stringImpl& fontName, const stringImpl& fontFileName,
-                 U32 size);
+    void setFont(const stringImpl& fontName, const stringImpl& fontFileName, U32 size);
     bool joystickButtonPressed(const CEGUI::EventArgs& /*e*/);
 
    protected:

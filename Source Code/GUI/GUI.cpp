@@ -162,7 +162,7 @@ bool GUI::init(const vec2<U16>& renderResolution) {
     rp = static_cast<CEGUI::DefaultResourceProvider*>(
         CEGUI::System::getSingleton().getResourceProvider());
     CEGUI::String CEGUIInstallSharePath(
-        ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")));
+        ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")).c_str());
     CEGUIInstallSharePath += "/GUI/";
     rp->setResourceGroupDirectory("schemes",
                                   CEGUIInstallSharePath + "schemes/");
@@ -200,13 +200,13 @@ bool GUI::init(const vec2<U16>& renderResolution) {
         "DejaVuSans-12-NoScale.font");
     _defaultGUIScheme =
         ParamHandler::instance().getParam<stringImpl>(_ID("GUI.defaultScheme"));
-    CEGUI::SchemeManager::getSingleton().createFromFile(_defaultGUIScheme + ".scheme");
+    CEGUI::SchemeManager::getSingleton().createFromFile((_defaultGUIScheme + ".scheme").c_str());
 
     _rootSheet = CEGUI::WindowManager::getSingleton().createWindow(
         "DefaultWindow", "root_window");
     _rootSheet->setMousePassThroughEnabled(true);
     CEGUI_DEFAULT_CTX.setRootWindow(_rootSheet);
-    CEGUI_DEFAULT_CTX.setDefaultTooltipType(_defaultGUIScheme + "/Tooltip");
+    CEGUI_DEFAULT_CTX.setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
     
     _rootSheet->setPixelAligned(false);
     assert(_console);

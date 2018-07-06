@@ -22,7 +22,7 @@ void GetPermutations(const stringImpl& inputString,
 
 bool IsNumber(const stringImpl& s) {
     F32 number;
-    if (std::istringstream(s) >> number) {
+    if (istringstreamImpl(s) >> number) {
         return !(number == 0 && s[0] != 0);
     }
     return false;
@@ -35,7 +35,7 @@ stringImpl GetTrailingCharacters(const stringImpl& input, size_t count) {
 }
 
 void ReadTextFile(const stringImpl& filePath, stringImpl& contentOut) {
-    std::ifstream inFile(filePath, std::ios::in);
+    std::ifstream inFile(filePath.c_str(), std::ios::in);
 
     if (!inFile.eof() && !inFile.fail())
     {
@@ -61,7 +61,7 @@ void WriteTextFile(const stringImpl& filePath, const stringImpl& content) {
     if (filePath.empty()) {
         return;
     }
-    std::ofstream outputFile(filePath, std::ios::out);
+    std::ofstream outputFile(filePath.c_str(), std::ios::out);
     outputFile << content;
     outputFile.close();
     assert(outputFile.good());
@@ -71,7 +71,7 @@ vectorImpl<stringImpl>& Split(const stringImpl& input, char delimiter,
                               vectorImpl<stringImpl>& elems) {
     stringImpl item;
     elems.resize(0);
-    std::istringstream ss(input);
+    istringstreamImpl ss(input);
     while (std::getline(ss, item, delimiter)) {
         vectorAlg::emplace_back(elems, item);
     }

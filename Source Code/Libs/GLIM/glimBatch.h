@@ -114,6 +114,8 @@ namespace NS_GLIM
         bool BeginRenderD3D11 (void);
         void RenderBatchD3D11 (bool bWireframe);
         void RenderBatchInstancedD3D11 (int iInstances, bool bWireframe);
+#else
+        void placeHolder();
 #endif
 
         // The currently generated primitive type as specified via 'Begin'

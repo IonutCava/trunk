@@ -45,8 +45,7 @@ class ShaderProgram;
 /// It is only a "buffer" for "vertex info" abstract of implementation. (e.g.:
 /// OGL uses a vertex array object for this)
 
-class NOINITVTABLE VertexBuffer : public VertexDataInterface
-{
+class NOINITVTABLE VertexBuffer : public VertexDataInterface {
    public:
     enum class VertexAttribute : U32 {
         ATTRIB_POSITION = 0,

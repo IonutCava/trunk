@@ -93,7 +93,7 @@ void Console::output(const char* text, const bool newline, const bool error) {
         _guiConsoleCallback(text, error);
     }
 
-    std::stringstream outStream;
+    stringstreamImpl outStream;
     decorate(outStream, text, newline, error);
 
     OutputEntry entry;

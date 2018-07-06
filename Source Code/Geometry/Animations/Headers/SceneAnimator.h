@@ -99,7 +99,7 @@ class SceneAnimator {
         return _animations[animationIndex]->frameIndexAt(dt);
     }
 
-    inline const vectorImpl<mat4<F32>>& transforms(I32 animationIndex, U32 index) const {
+    inline const vectorImplAligned<mat4<F32>>& transforms(I32 animationIndex, U32 index) const {
         return _animations[animationIndex]->transforms(index);
     }
 

@@ -2,7 +2,7 @@
 
 namespace Divide {
 
-void ParticleRoundGenerator::generate(vectorImpl<std::future<void>>& packagedTasks,
+void ParticleRoundGenerator::generate(TaskHandle& packagedTasksParent,
                                       const U64 deltaTime,
                                       ParticleData& p,
                                       U32 startIndex,

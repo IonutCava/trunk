@@ -94,7 +94,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -125,6 +125,7 @@
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_d$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(EngineLibraries)\boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
+      <Verbose>false</Verbose>
     </Lib>
     <PostBuildEvent>
       <Command>
@@ -136,7 +137,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -161,6 +162,7 @@
     <Lib>
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(EngineLibraries)\boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <Verbose>false</Verbose>
     </Lib>
     <PostBuildEvent>
       <Command>
@@ -172,7 +174,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -198,6 +200,7 @@
     <Lib>
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(EngineLibraries)\boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <Verbose>false</Verbose>
     </Lib>
     <PostBuildEvent>
       <Command>

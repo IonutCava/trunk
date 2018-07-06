@@ -460,16 +460,16 @@ bool LoadSave::loadScene(Scene& activeScene) {
     stringImpl savePath = path + "current_save.sav";
     stringImpl bakSavePath = path + "save.bak";
 
-    std::ifstream src(savePath, std::ios::binary);
+    std::ifstream src(savePath.c_str(), std::ios::binary);
     if (src.eof() || src.fail())
     {
         src.close();
-        std::ifstream srcBak(bakSavePath, std::ios::binary);
+        std::ifstream srcBak(bakSavePath.c_str(), std::ios::binary);
         if(srcBak.eof() || srcBak.fail()) {
             srcBak.close();
             return true;
         } else {
-            std::ofstream dst(savePath, std::ios::binary);
+            std::ofstream dst(savePath.c_str(), std::ios::binary);
             dst << srcBak.rdbuf();
             dst.close();
             srcBak.close();
@@ -488,10 +488,10 @@ bool LoadSave::saveScene(const Scene& activeScene) {
     stringImpl savePath = path + "current_save.sav";
     stringImpl bakSavePath = path + "save.bak";
 
-    std::ifstream src(savePath, std::ios::binary);
+    std::ifstream src(savePath.c_str(), std::ios::binary);
     if (!src.eof() && !src.fail())
     {
-        std::ofstream dst(bakSavePath, std::ios::out | std::ios::binary);
+        std::ofstream dst(bakSavePath.c_str(), std::ios::out | std::ios::binary);
         dst.clear();
         dst << src.rdbuf();
         dst.close();

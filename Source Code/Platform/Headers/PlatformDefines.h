@@ -712,10 +712,10 @@ void operator delete(void* p) noexcept;
 void* operator new[](size_t size);
 void operator delete[](void* p) noexcept;
 
-void* operator new(size_t size, const char* zFile, Divide::I32 nLine);
-void operator delete(void* ptr, const char* zFile, Divide::I32 nLine);
-void* operator new[](size_t size, const char* zFile, Divide::I32 nLine);
-void operator delete[](void* ptr, const char* zFile, Divide::I32 nLine);
+void* operator new(size_t size, const char* zFile, size_t nLine);
+void operator delete(void* ptr, const char* zFile, size_t nLine);
+void* operator new[](size_t size, const char* zFile, size_t nLine);
+void operator delete[](void* ptr, const char* zFile, size_t nLine);
 
 #define MemoryManager_NEW new (__FILE__, __LINE__)
 #endif
@@ -904,3 +904,11 @@ struct AtomicWrapper
 
 #endif
 
+#if !defined(AUTOMATIC_XALLOCATOR_INIT_DESTROY)
+#define AUTOMATIC_XALLOCATOR_INIT_DESTROY
+#endif
+
+// Modify the allocator values to TIGHTLY fit memory requirments
+// The application will assert if it requires more allocators than the specified nubmer
+// xallocator.cpp contains the number of allocators available
+#include <Allocator/Allocator.h>

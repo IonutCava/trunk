@@ -37,6 +37,7 @@
 namespace Divide {
 
 class d3dVertexBuffer : public VertexBuffer {
+    DECLARE_ALLOCATOR
    public:
     d3dVertexBuffer(GFXDevice& context);
 

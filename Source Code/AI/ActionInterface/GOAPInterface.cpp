@@ -6,7 +6,7 @@ namespace Divide {
 namespace AI {
 
 const char* GOAPFactName(GOAPFact fact) {
-    return std::to_string(fact).c_str();
+    return to_stringImpl(fact).c_str();
 }
 
 GOAPGoal::GOAPGoal(const stringImpl& name, U32 ID)

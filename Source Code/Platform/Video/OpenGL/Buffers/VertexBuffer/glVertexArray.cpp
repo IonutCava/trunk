@@ -13,6 +13,7 @@ glVertexArray::VAOMap glVertexArray::_VAOMap;
 vec3<U32> glVertexArray::_currentBindConfig;
 vec3<U32> glVertexArray::_tempConfig;
 
+IMPLEMENT_ALLOCATOR(glVertexArray, 0, 0)
 bool glVertexArray::setIfDifferentBindRange(U32 VBOid, U32 offset, U32 size) {
     _tempConfig.set(VBOid, offset, size);
     if (_tempConfig != _currentBindConfig) {

@@ -19,6 +19,9 @@
     <Filter Include="Utility\Headers">
       <UniqueIdentifier>{88ca22e3-d007-4de2-950f-50ae62ceb6aa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utility\Allocator">
+      <UniqueIdentifier>{d678c03a-01e2-4de5-b11c-c7abfa5ff74f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Server\Scenes\NetworkScene\Headers\tcp_session_impl.h">
@@ -42,6 +45,21 @@
     <ClInclude Include="..\..\Source Code\Server\Headers\Server.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\Allocator.h">
+      <Filter>Utility\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\DataTypes.h">
+      <Filter>Utility\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\Fault.h">
+      <Filter>Utility\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\stl_allocator.h">
+      <Filter>Utility\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\xallocator.h">
+      <Filter>Utility\Allocator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Server\main.cpp" />
@@ -57,5 +75,14 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Utility\EASTLImport.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\ByteBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\Allocator\Allocator.cpp">
+      <Filter>Utility\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Allocator\Fault.cpp">
+      <Filter>Utility\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Allocator\xallocator.cpp">
+      <Filter>Utility\Allocator</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

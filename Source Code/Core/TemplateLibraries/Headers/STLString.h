@@ -32,13 +32,28 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _STL_STRING_H_
 #define _STL_STRING_H_
 
+#include <Allocator/stl_allocator.h>
 #include <string>
+
 namespace stringAlg = std;
 
-typedef std::string stringImpl;
+typedef std::basic_string<char, std::char_traits<char>, stl_allocator<char> > stringImpl;
+typedef std::basic_string<wchar_t, std::char_traits<wchar_t>, stl_allocator<wchar_t> > wstringImpl;
+typedef std::basic_stringstream<char, std::char_traits<char>, stl_allocator<char> > stringstreamImpl;
+typedef std::basic_ostringstream<char, std::char_traits<char>, stl_allocator<char> > ostringstreamImpl;
+typedef std::basic_stringstream<wchar_t, std::char_traits<wchar_t>, stl_allocator<wchar_t> > wstringstreamImpl;
+typedef std::basic_ostringstream<wchar_t, std::char_traits<wchar_t>, stl_allocator<wchar_t> > wostringstreamImpl;
+typedef std::basic_istringstream<char, std::char_traits<char>, stl_allocator<char> > istringstreamImpl;
+typedef std::basic_istringstream<wchar_t, std::char_traits<wchar_t>, stl_allocator<wchar_t> > wistringstreamImpl;
+typedef std::basic_stringbuf<char, std::char_traits<char>, stl_allocator<char> > stringbufImpl;
+typedef std::basic_stringbuf<wchar_t, std::char_traits<wchar_t>, stl_allocator<wchar_t> > wstringbufImpl;
 
 namespace std {
     typedef size_t stringSize;
 };
 
+template<typename T>
+inline stringImpl to_stringImpl(T value) {
+    return stringImpl(std::to_string(value).c_str());
+}
 #endif //_STL_STRING_H_

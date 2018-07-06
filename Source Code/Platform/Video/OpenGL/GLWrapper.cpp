@@ -182,13 +182,13 @@ void GL_API::appendToShaderHeader(ShaderType type, const stringImpl& entry,
 
 /// Prepare our shader loading system
 bool GL_API::initShaders() {
-    static const std::string shaderVaryings[] = { "flat uint dvd_drawID;",
-                                                  "vec2 _texCoord;",
-                                                  "vec4 _vertexW;",
-                                                  "vec4 _vertexWV;",
-                                                  "vec3 _normalWV;",
-                                                  "vec3 _tangentWV;",
-                                                  "vec3 _bitangentWV;"
+    static const stringImpl shaderVaryings[] = { "flat uint dvd_drawID;",
+                                                 "vec2 _texCoord;",
+                                                 "vec4 _vertexW;",
+                                                 "vec4 _vertexWV;",
+                                                 "vec3 _normalWV;",
+                                                 "vec3 _tangentWV;",
+                                                 "vec3 _bitangentWV;"
                                                 };
     // Initialize GLSW
     GLint glswState = glswInit();
@@ -280,18 +280,18 @@ bool GL_API::initShaders() {
     appendToShaderHeader(
         ShaderType::COUNT,
         "const uint MAX_SPLITS_PER_LIGHT = " +
-        std::to_string(Config::Lighting::MAX_SPLITS_PER_LIGHT) + ";",
+        to_stringImpl(Config::Lighting::MAX_SPLITS_PER_LIGHT) + ";",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "const uint MAX_POSSIBLE_LIGHTS = " +
-        std::to_string(Config::Lighting::MAX_POSSIBLE_LIGHTS) + ";",
+        to_stringImpl(Config::Lighting::MAX_POSSIBLE_LIGHTS) + ";",
         lineOffsets);
 
     appendToShaderHeader(ShaderType::COUNT,
         "const int MAX_VISIBLE_NODES = " +
-        std::to_string(Config::MAX_VISIBLE_NODES) + ";",
+        to_stringImpl(Config::MAX_VISIBLE_NODES) + ";",
         lineOffsets);
 
     appendToShaderHeader(ShaderType::COUNT, "const float Z_TEST_SIGMA = 0.0001;", lineOffsets);
@@ -309,160 +309,160 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define MAX_CLIP_PLANES " + std::to_string(Config::MAX_CLIP_PLANES),
+        "#define MAX_CLIP_PLANES " + to_stringImpl(Config::MAX_CLIP_PLANES),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_SHADOW_CASTING_LIGHTS " +
-        std::to_string(
+        to_stringImpl(
         Config::Lighting::MAX_SHADOW_CASTING_LIGHTS),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_LIGHT_TYPES " +
-        std::to_string(to_const_uint(LightType::COUNT)),
+        to_stringImpl(to_const_uint(LightType::COUNT)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_GPU_BLOCK " +
-        std::to_string(to_const_uint(ShaderBufferLocation::GPU_BLOCK)),
+        to_stringImpl(to_const_uint(ShaderBufferLocation::GPU_BLOCK)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_GPU_COMMANDS " +
-        std::to_string(to_const_uint(ShaderBufferLocation::GPU_COMMANDS)),
+        to_stringImpl(to_const_uint(ShaderBufferLocation::GPU_COMMANDS)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_LIGHT_NORMAL " +
-        std::to_string(to_const_uint(ShaderBufferLocation::LIGHT_NORMAL)),
+        to_stringImpl(to_const_uint(ShaderBufferLocation::LIGHT_NORMAL)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_LIGHT_SHADOW " +
-        std::to_string(to_const_uint(ShaderBufferLocation::LIGHT_SHADOW)),
+        to_stringImpl(to_const_uint(ShaderBufferLocation::LIGHT_SHADOW)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_LIGHT_INDICES " +
-        std::to_string(to_const_uint(ShaderBufferLocation::LIGHT_INDICES)),
+        to_stringImpl(to_const_uint(ShaderBufferLocation::LIGHT_INDICES)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_NODE_INFO " +
-        std::to_string(to_const_uint(ShaderBufferLocation::NODE_INFO)),
+        to_stringImpl(to_const_uint(ShaderBufferLocation::NODE_INFO)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_SCENE_DATA " +
-        std::to_string(to_const_uint(ShaderBufferLocation::SCENE_DATA)),
+        to_stringImpl(to_const_uint(ShaderBufferLocation::SCENE_DATA)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define FORWARD_PLUS_TILE_RES " + std::to_string(Config::Lighting::FORWARD_PLUS_TILE_RES),
+        "#define FORWARD_PLUS_TILE_RES " + to_stringImpl(Config::Lighting::FORWARD_PLUS_TILE_RES),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define MAX_NUM_LIGHTS_PER_TILE " + std::to_string(Config::Lighting::FORWARD_PLUS_MAX_LIGHTS_PER_TILE),
+        "#define MAX_NUM_LIGHTS_PER_TILE " + to_stringImpl(Config::Lighting::FORWARD_PLUS_MAX_LIGHTS_PER_TILE),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define LIGHT_INDEX_BUFFER_SENTINEL " + std::to_string(Config::Lighting::FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL),
+        "#define LIGHT_INDEX_BUFFER_SENTINEL " + to_stringImpl(Config::Lighting::FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define MAX_TEXTURE_SLOTS " + std::to_string(GL_API::_maxTextureUnits),
+        "#define MAX_TEXTURE_SLOTS " + to_stringImpl(GL_API::_maxTextureUnits),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define MAX_TEXTURE_SLOTS " + std::to_string(GL_API::_maxTextureUnits),
+        "#define MAX_TEXTURE_SLOTS " + to_stringImpl(GL_API::_maxTextureUnits),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define MAX_TEXTURE_SLOTS " + std::to_string(GL_API::_maxTextureUnits),
+        "#define MAX_TEXTURE_SLOTS " + to_stringImpl(GL_API::_maxTextureUnits),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_UNIT0 " +
-            std::to_string(to_const_uint(ShaderProgram::TextureUsage::UNIT0)),
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::UNIT0)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_UNIT1 " +
-            std::to_string(to_const_uint(ShaderProgram::TextureUsage::UNIT1)),
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::UNIT1)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_NORMALMAP " +
-            std::to_string(to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)),
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_OPACITY " +
-            std::to_string(to_const_uint(ShaderProgram::TextureUsage::OPACITY)),
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::OPACITY)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_SPECULAR " +
-            std::to_string(to_const_uint(ShaderProgram::TextureUsage::SPECULAR)),
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::SPECULAR)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_PROJECTION " +
-            std::to_string(to_const_uint(ShaderProgram::TextureUsage::PROJECTION)),
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::PROJECTION)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_DEPTH_MAP " +
-        std::to_string(to_const_uint(ShaderProgram::TextureUsage::DEPTH)),
+        to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::DEPTH)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_REFLECTION " +
-            std::to_string(to_const_uint(ShaderProgram::TextureUsage::REFLECTION)),
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::REFLECTION)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_CUBE_MAP_ARRAY " +
-            std::to_string(
+            to_stringImpl(
                 to_uint(LightManager::instance().getShadowBindSlotOffset(ShadowType::CUBEMAP))),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_SINGLE_MAP_ARRAY " +
-            std::to_string(
+            to_stringImpl(
                 to_uint(LightManager::instance().getShadowBindSlotOffset(ShadowType::SINGLE))),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_LAYERED_MAP_ARRAY " +
-            std::to_string(
+            to_stringImpl(
                 to_uint(LightManager::instance().getShadowBindSlotOffset(ShadowType::LAYERED))),
         lineOffsets);
 
@@ -471,76 +471,76 @@ bool GL_API::initShaders() {
     // GLSL <-> VBO intercommunication
     appendToShaderHeader(ShaderType::VERTEX,
                          "const uint MAX_BONE_COUNT_PER_NODE = " +
-                             std::to_string(Config::MAX_BONE_COUNT_PER_NODE) +
+                             to_stringImpl(Config::MAX_BONE_COUNT_PER_NODE) +
                              ";",
                          lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "#define BUFFER_BONE_TRANSFORMS " +
-            std::to_string(to_const_uint(ShaderBufferLocation::BONE_TRANSFORMS)),
+            to_stringImpl(to_const_uint(ShaderBufferLocation::BONE_TRANSFORMS)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "#define DIRECTIONAL_LIGHT_DISTANCE_FACTOR " +
-        std::to_string(to_const_uint(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE)),
+        to_stringImpl(to_const_uint(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE)),
         lineOffsets);
 
     // Vertex data has a fixed format
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-            std::to_string(to_const_uint(AttribLocation::VERTEX_POSITION)) +
+            to_stringImpl(to_const_uint(AttribLocation::VERTEX_POSITION)) +
             ") in vec3 inVertexData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-            std::to_string(to_const_uint(AttribLocation::VERTEX_COLOR)) +
+            to_stringImpl(to_const_uint(AttribLocation::VERTEX_COLOR)) +
             ") in vec4 inColorData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-            std::to_string(to_const_uint(AttribLocation::VERTEX_NORMAL)) +
+            to_stringImpl(to_const_uint(AttribLocation::VERTEX_NORMAL)) +
             ") in float inNormalData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-            std::to_string(to_const_uint(AttribLocation::VERTEX_TEXCOORD)) +
+            to_stringImpl(to_const_uint(AttribLocation::VERTEX_TEXCOORD)) +
             ") in vec2 inTexCoordData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-            std::to_string(to_const_uint(AttribLocation::VERTEX_TANGENT)) +
+            to_stringImpl(to_const_uint(AttribLocation::VERTEX_TANGENT)) +
             ") in float inTangentData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-            std::to_string(to_const_uint(AttribLocation::VERTEX_BONE_WEIGHT)) +
+            to_stringImpl(to_const_uint(AttribLocation::VERTEX_BONE_WEIGHT)) +
             ") in vec4 inBoneWeightData;",
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-            std::to_string(to_const_uint(AttribLocation::VERTEX_BONE_INDICE)) +
+            to_stringImpl(to_const_uint(AttribLocation::VERTEX_BONE_INDICE)) +
             ") in uvec4 inBoneIndiceData;",
         lineOffsets);
     
     appendToShaderHeader(
         ShaderType::VERTEX,
         "layout(location = " +
-            std::to_string(to_const_uint(AttribLocation::VERTEX_WIDTH)) +
+            to_stringImpl(to_const_uint(AttribLocation::VERTEX_WIDTH)) +
             ") in uint inLineWidthData;",
         lineOffsets);
 
@@ -549,14 +549,14 @@ bool GL_API::initShaders() {
     appendToShaderHeader(ShaderType::VERTEX, "out PerVertexData{", lineOffsets);
     appendToShaderHeader(ShaderType::FRAGMENT, "in  PerVertexData{", lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "in  PerVertexData{", lineOffsets);
-    for (std::string entry : shaderVaryings) {
+    for (const stringImpl& entry : shaderVaryings) {
         appendToShaderHeader(ShaderType::VERTEX, "    " + entry, lineOffsets);
         appendToShaderHeader(ShaderType::FRAGMENT, "    " + entry, lineOffsets);
         appendToShaderHeader(ShaderType::GEOMETRY, "    " + entry, lineOffsets);
     }
     appendToShaderHeader(ShaderType::GEOMETRY, "} v_in[];", lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "out  PerVertexData{", lineOffsets);
-    for (std::string entry : shaderVaryings) {
+    for (const stringImpl& entry : shaderVaryings) {
         appendToShaderHeader(ShaderType::GEOMETRY, "    " + entry, lineOffsets);
     }
     appendToShaderHeader(ShaderType::GEOMETRY, "} g_out;", lineOffsets);

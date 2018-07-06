@@ -2,7 +2,7 @@
 
 namespace Divide {
 
-void ParticleVelocityGenerator::generate(vectorImpl<std::future<void>>& packagedTasks, 
+void ParticleVelocityGenerator::generate(TaskHandle& packagedTasksParent, 
                                          const U64 deltaTime,
                                          ParticleData& p,
                                          U32 startIndex,
@@ -16,14 +16,14 @@ void ParticleVelocityGenerator::generate(vectorImpl<std::future<void>>& packaged
                               ParticleData::g_threadPartitionSize,
                               [&](iter_t from, iter_t to)
     {
-        packagedTasks.push_back(
-            std::async(std::launch::async | std::launch::deferred,
-                       [from, to, min, max]() {
-                           std::for_each(from, to, [&](iter_t::value_type& velocity)
-                           {
-                               velocity.set(Random(min, max));
-                           });
-                      }));
-    });
+        packagedTasksParent.addChildTask(CreateTask(
+            [from, to, min, max](const std::atomic_bool& stopRequested) mutable
+            {
+                std::for_each(from, to, [&](iter_t::value_type& velocity)
+                {
+                    velocity.set(Random(min, max));
+                });
+            })._task)->startTask(Task::TaskPriority::HIGH);
+        });
 }
 };

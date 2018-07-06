@@ -167,6 +167,7 @@
     </Link>
     <Lib>
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_d$(TargetExt)</OutputFile>
+      <Verbose>false</Verbose>
     </Lib>
     <PostBuildEvent>
       <Command>
@@ -203,6 +204,7 @@
     </Link>
     <Lib>
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)$(TargetExt)</OutputFile>
+      <Verbose>false</Verbose>
     </Lib>
     <PostBuildEvent>
       <Command>
@@ -241,6 +243,7 @@
     </Link>
     <Lib>
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
+      <Verbose>false</Verbose>
     </Lib>
     <PostBuildEvent>
       <Command>

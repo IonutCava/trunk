@@ -34,7 +34,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         textureCountAlbedo = 0;
         textureCountDetail = 0;
 
-        layerOffsetStr = std::to_string(i);
+        layerOffsetStr = to_stringImpl(i);
         textureLayer = MemoryManager_NEW TerrainTextureLayer();
 
         ResourceDescriptor textureBlendMap("Terrain Blend Map_" + name +
@@ -167,9 +167,9 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     terrainMaterial->setShaderDefines("SKIP_TEXTURES");
     terrainMaterial->setShaderDefines("USE_SHADING_PHONG");
     terrainMaterial->setShaderDefines("MAX_TEXTURE_LAYERS " +
-        std::to_string(Attorney::TerrainLoader::textureLayerCount(*terrain)));
+        to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)));
     terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " +
-                                      std::to_string(textureCount));
+                                      to_stringImpl(textureCount));
     terrainMaterial->setShaderProgram("terrain", RenderStage::DISPLAY, true);
     terrainMaterial->setShaderProgram("terrain", RenderStage::REFLECTION, true);
     terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", RenderStage::SHADOW, true);

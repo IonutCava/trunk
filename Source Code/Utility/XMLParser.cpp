@@ -149,16 +149,17 @@ void saveTextureXML(const stringImpl &textureNode, Texture *texture,
     const SamplerDescriptor &sampler = texture->getCurrentSampler();
     WAIT_FOR_CONDITION(texture->getState() == ResourceState::RES_LOADED);
 
-    tree.put(textureNode + ".file", texture->getResourceLocation());
-    tree.put(textureNode + ".MapU", getWrapModeName(sampler.wrapU()));
-    tree.put(textureNode + ".MapV", getWrapModeName(sampler.wrapV()));
-    tree.put(textureNode + ".MapW", getWrapModeName(sampler.wrapW()));
-    tree.put(textureNode + ".minFilter", getFilterName(sampler.minFilter()));
-    tree.put(textureNode + ".magFilter", getFilterName(sampler.magFilter()));
-    tree.put(textureNode + ".anisotropy", to_uint(sampler.anisotropyLevel()));
+    std::string node(textureNode.c_str());
+    tree.put(node + ".file", texture->getResourceLocation());
+    tree.put(node + ".MapU", getWrapModeName(sampler.wrapU()));
+    tree.put(node + ".MapV", getWrapModeName(sampler.wrapV()));
+    tree.put(node + ".MapW", getWrapModeName(sampler.wrapW()));
+    tree.put(node + ".minFilter", getFilterName(sampler.minFilter()));
+    tree.put(node + ".magFilter", getFilterName(sampler.magFilter()));
+    tree.put(node + ".anisotropy", to_uint(sampler.anisotropyLevel()));
 
     if (!operation.empty()) {
-        tree.put(textureNode + ".operation", operation);
+        tree.put(node + ".operation", operation);
     }
 }
 
@@ -166,19 +167,20 @@ Texture *loadTextureXML(const stringImpl &textureNode,
                         const stringImpl &textureName) {
     stringImpl img_name(textureName.substr(textureName.find_last_of('/') + 1));
     stringImpl pathName(textureName.substr(0, textureName.rfind("/") + 1));
+    std::string node(textureNode.c_str());
 
     TextureWrap wrapU = getWrapMode(
-        pt.get<stringImpl>(textureNode + ".MapU", "REPEAT"));
+        pt.get<stringImpl>(node + ".MapU", "REPEAT"));
     TextureWrap wrapV = getWrapMode(
-        pt.get<stringImpl>(textureNode + ".MapV", "REPEAT"));
+        pt.get<stringImpl>(node + ".MapV", "REPEAT"));
     TextureWrap wrapW = getWrapMode(
-        pt.get<stringImpl>(textureNode + ".MapW", "REPEAT"));
+        pt.get<stringImpl>(node + ".MapW", "REPEAT"));
     TextureFilter minFilterValue =
-        getFilter(pt.get<stringImpl>(textureNode + ".minFilter", "LINEAR"));
+        getFilter(pt.get<stringImpl>(node + ".minFilter", "LINEAR"));
     TextureFilter magFilterValue =
-        getFilter(pt.get<stringImpl>(textureNode + ".magFilter", "LINEAR"));
+        getFilter(pt.get<stringImpl>(node + ".magFilter", "LINEAR"));
 
-    U8 anisotropy = to_ubyte(pt.get(textureNode + ".anisotropy", 0U));
+    U8 anisotropy = to_ubyte(pt.get(node + ".anisotropy", 0U));
 
     SamplerDescriptor sampDesc;
     sampDesc.setWrapMode(wrapU, wrapV, wrapW);
@@ -208,7 +210,7 @@ inline stringImpl getRendererTypeName(RendererType type) {
 stringImpl loadScripts(const stringImpl &file) {
     ParamHandler &par = ParamHandler::instance();
     Console::printfn(Locale::get(_ID("XML_LOAD_SCRIPTS")));
-    read_xml(file, pt);
+    read_xml(file.c_str(), pt);
     stringImpl activeScene("MainScene");
     par.setParam(_ID("testInt"), 2);
     par.setParam(_ID("testFloat"), 3.2f);
@@ -219,9 +221,9 @@ stringImpl loadScripts(const stringImpl &file) {
                  pt.get<stringImpl>("scenesLocation", "Scenes"));
     par.setParam(_ID("serverAddress"), pt.get<stringImpl>("server", "127.0.0.1"));
     loadConfig((par.getParam<stringImpl>(_ID("scriptLocation"), "XML") + "/" +
-                pt.get("config", "config.xml")));
-    read_xml(par.getParam<stringImpl>(_ID("scriptLocation"), "XML") + "/" +
-                 pt.get("startupScene", "scenes.xml"),
+                stringImpl(pt.get("config", "config.xml").c_str())));
+    read_xml(std::string(par.getParam<stringImpl>(_ID("scriptLocation"), "XML").c_str()) + "/" +
+             pt.get("startupScene", "scenes.xml"),
              pt);
     activeScene = pt.get("StartupScene", activeScene);
 
@@ -232,7 +234,7 @@ void loadConfig(const stringImpl &file) {
     ParamHandler &par = ParamHandler::instance();
     pt.clear();
     Console::printfn(Locale::get(_ID("XML_LOAD_CONFIG")), file.c_str());
-    read_xml(file, pt);
+    read_xml(file.c_str(), pt);
     par.setParam(_ID("locale"), pt.get("language", "enGB"));
     par.setParam(_ID("logFile"), pt.get("debug.logFile", "none"));
     par.setParam(_ID("memFile"), pt.get("debug.memFile", "none"));
@@ -317,9 +319,9 @@ void loadScene(const stringImpl &sceneName, SceneManager &sceneMgr) {
     ParamHandler &par = ParamHandler::instance();
     pt.clear();
     Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), sceneName.c_str());
-    stringImpl sceneLocation(
-        par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
-        par.getParam<stringImpl>(_ID("scenesLocation")) + "/" + sceneName);
+    std::string sceneLocation(
+        par.getParam<std::string>(_ID("scriptLocation")) + "/" +
+        par.getParam<std::string>(_ID("scenesLocation")) + "/" + sceneName.c_str());
     try {
         read_xml(sceneLocation + ".xml", pt);
     } catch (boost::property_tree::xml_parser_error &e) {
@@ -409,15 +411,15 @@ void loadScene(const stringImpl &sceneName, SceneManager &sceneMgr) {
         par.getParam<F32>(_ID("rendering.sceneState.fogColor.g")),
         par.getParam<F32>(_ID("rendering.sceneState.fogColor.b")));
 
-    loadTerrain(sceneLocation + "/" + pt.get("terrain", "terrain.xml"), scene);
-    loadGeometry(sceneLocation + "/" + pt.get("assets", "assets.xml"), scene);
+    loadTerrain((sceneLocation + "/" + pt.get("terrain", "terrain.xml")).c_str(), scene);
+    loadGeometry((sceneLocation + "/" + pt.get("assets", "assets.xml")).c_str(), scene);
 }
 
 void loadTerrain(const stringImpl &file, Scene *const scene) {
     U8 count = 0;
     pt.clear();
     Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), file.c_str());
-    read_xml(file, pt);
+    read_xml(file.c_str(), pt);
     ptree::iterator itTerrain;
     ptree::iterator itTexture;
     stringImpl assetLocation(
@@ -427,17 +429,17 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
     for (itTerrain = std::begin(pt.get_child("terrainList"));
          itTerrain != std::end(pt.get_child("terrainList")); ++itTerrain) {
         // The actual terrain name
-        stringImpl name = itTerrain->second.data();
+        std::string name = itTerrain->second.data();
         // The <name> tag for valid terrains or <xmlcomment> for comments
-        stringImpl tag = itTerrain->first.data();
+        std::string tag = itTerrain->first.data();
         // Check and skip commented terrain
         if (tag.find("<xmlcomment>") != stringImpl::npos) {
             continue;
         }
         // Load the rest of the terrain
         TerrainDescriptor *ter = CreateResource<TerrainDescriptor>(
-            ResourceDescriptor(name + "_descriptor"));
-        ter->addVariable("terrainName", name);
+            ResourceDescriptor((name + "_descriptor").c_str()));
+        ter->addVariable("terrainName", name.c_str());
         ter->addVariable("heightmap",
                          assetLocation + pt.get<stringImpl>(name + ".heightmap"));
         ter->addVariable("waterCaustics",
@@ -458,8 +460,8 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
         for (itTexture = std::begin(pt.get_child(name + ".textureLayers"));
              itTexture != std::end(pt.get_child(name + ".textureLayers"));
              ++itTexture, ++i) {
-            stringImpl layerName(itTexture->second.data());
-            stringImpl format(itTexture->first.data());
+            std::string layerName(itTexture->second.data());
+            std::string format(itTexture->first.data());
 
             if (format.find("<xmlcomment>") != stringImpl::npos) {
                 i--;
@@ -468,7 +470,7 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
 
             layerName = name + ".textureLayers." + format;
 
-            layerOffsetStr = std::to_string(i);
+            layerOffsetStr = to_stringImpl(i);
             temp = pt.get<stringImpl>(layerName + ".blendMap", "");
             DIVIDE_ASSERT(!temp.empty(), "Blend Map for terrain missing!");
             ter->addVariable("blendMap" + layerOffsetStr, assetLocation + temp);
@@ -586,7 +588,7 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
 void loadGeometry(const stringImpl &file, Scene *const scene) {
     pt.clear();
     Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
-    read_xml(file, pt);
+    read_xml(file.c_str(), pt);
     ptree::iterator it;
     stringImpl assetLocation =
         ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) +
@@ -595,13 +597,13 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
     if (boost::optional<ptree &> geometry = pt.get_child_optional("geometry")) {
         for (it = std::begin(pt.get_child("geometry"));
              it != std::end(pt.get_child("geometry")); ++it) {
-            stringImpl name(it->second.data());
-            stringImpl format(it->first.data());
+            std::string name(it->second.data());
+            std::string format(it->first.data());
             if (format.find("<xmlcomment>") != stringImpl::npos) {
                 continue;
             }
             FileData model;
-            model.ItemName = name;
+            model.ItemName = name.c_str();
             model.ModelName =  assetLocation + pt.get<stringImpl>(name + ".model");
             model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x", 1);
             model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y", 1);
@@ -670,13 +672,13 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
             pt.get_child_optional("vegetation")) {
         for (it = std::begin(pt.get_child("vegetation"));
              it != std::end(pt.get_child("vegetation")); ++it) {
-            stringImpl name = it->second.data();
-            stringImpl format = it->first.data();
+            std::string name = it->second.data();
+            std::string format = it->first.data();
             if (format.find("<xmlcomment>") != stringImpl::npos) {
                 continue;
             }
             FileData model;
-            model.ItemName = name;
+            model.ItemName = name.c_str();
             model.ModelName = assetLocation + pt.get<stringImpl>(name + ".model");
             model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
             model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
@@ -741,13 +743,13 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
             pt.get_child_optional("primitives")) {
         for (it = std::begin(pt.get_child("primitives"));
              it != std::end(pt.get_child("primitives")); ++it) {
-            stringImpl name(it->second.data());
-            stringImpl format(it->first.data());
+            std::string name(it->second.data());
+            std::string format(it->first.data());
             if (format.find("<xmlcomment>") != stringImpl::npos) {
                 continue;
             }
             FileData model;
-            model.ItemName = name;
+            model.ItemName = name.c_str();
             model.ModelName = pt.get<stringImpl>(name + ".model");
             model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
             model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
@@ -848,7 +850,7 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
 
     pt.clear();
     std::ifstream inp;
-    inp.open(materialFile, std::ifstream::in);
+    inp.open(materialFile.c_str(), std::ifstream::in);
 
     if (inp.fail()) {
         inp.clear(std::ios::failbit);
@@ -859,7 +861,7 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
     inp.close();
     bool skip = false;
     Console::printfn(Locale::get(_ID("XML_LOAD_MATERIAL")), matName.c_str());
-    read_xml(materialFile, pt);
+    read_xml(materialFile.c_str(), pt);
 
     stringImpl materialName =
         matName.substr(matName.rfind("/") + 1, matName.length());
@@ -899,14 +901,14 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
             pt.get_child_optional("diffuseTexture1")) {
         mat->setTexture(ShaderProgram::TextureUsage::UNIT0,
                         loadTextureXML("diffuseTexture1",
-                                       pt.get("diffuseTexture1.file", "none")));
+                                       pt.get("diffuseTexture1.file", "none").c_str()));
     }
 
     if (boost::optional<ptree &> child =
             pt.get_child_optional("diffuseTexture2")) {
         mat->setTexture(ShaderProgram::TextureUsage::UNIT1,
                         loadTextureXML("diffuseTexture2",
-                                       pt.get("diffuseTexture2.file", "none")),
+                                       pt.get("diffuseTexture2.file", "none").c_str()),
                         getTextureOperation(
                             pt.get<stringImpl>("diffuseTexture2.operation",
                                                "TEX_OP_MULTIPLY")));
@@ -915,7 +917,7 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
     if (boost::optional<ptree &> child = pt.get_child_optional("bumpMap")) {
         mat->setTexture(
             ShaderProgram::TextureUsage::NORMALMAP,
-            loadTextureXML("bumpMap", pt.get("bumpMap.file", "none")));
+            loadTextureXML("bumpMap", pt.get("bumpMap.file", "none").c_str()));
         if (child = pt.get_child_optional("bumpMap.method")) {
             mat->setBumpMethod(getBumpMethod(
                 pt.get<stringImpl>("bumpMap.method", "NORMAL")));
@@ -925,13 +927,13 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
     if (boost::optional<ptree &> child = pt.get_child_optional("opacityMap")) {
         mat->setTexture(
             ShaderProgram::TextureUsage::OPACITY,
-            loadTextureXML("opacityMap", pt.get("opacityMap.file", "none")));
+            loadTextureXML("opacityMap", pt.get("opacityMap.file", "none").c_str()));
     }
 
     if (boost::optional<ptree &> child = pt.get_child_optional("specularMap")) {
         mat->setTexture(
             ShaderProgram::TextureUsage::SPECULAR,
-            loadTextureXML("specularMap", pt.get("specularMap.file", "none")));
+            loadTextureXML("specularMap", pt.get("specularMap.file", "none").c_str()));
     }
 
     return mat;
@@ -1029,7 +1031,7 @@ void dumpMaterial(Material &mat) {
 
     FILE *xml = fopen(fileLocation.c_str(), "w");
     fclose(xml);
-    write_xml(fileLocation, pt_writer, std::locale(),
+    write_xml(fileLocation.c_str(), pt_writer, std::locale(),
               boost::property_tree::xml_writer_make_settings<ptree::key_type>(
                   '\t', 1));
 }

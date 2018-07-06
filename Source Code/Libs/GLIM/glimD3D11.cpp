@@ -348,6 +348,7 @@ namespace NS_GLIM
     }
 
 }
- 
+#else
+    void placeHolder() {} 
 #endif
 

@@ -39,7 +39,7 @@ class ParticleBoxGenerator final : public ParticleGenerator {
    public:
     ParticleBoxGenerator() {}
 
-    void generate(vectorImpl<std::future<void>>& packagedTasks,
+    void generate(TaskHandle& packagedTasksParent,
                   const U64 deltaTime,
                   ParticleData& p,
                   U32 startIndex,

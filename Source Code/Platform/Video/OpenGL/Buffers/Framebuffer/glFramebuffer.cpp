@@ -36,6 +36,7 @@ const char* getAttachmentName(AttachmentType type) {
 }
 };
 
+IMPLEMENT_ALLOCATOR(glFramebuffer, 0, 0)
 glFramebuffer::glFramebuffer(GFXDevice& context, bool useResolveBuffer)
     : Framebuffer(context, useResolveBuffer),
       _resolveBuffer(useResolveBuffer ? MemoryManager_NEW glFramebuffer(context)

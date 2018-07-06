@@ -34,6 +34,7 @@ namespace {
 
 stringImpl glShader::shaderAtomLocationPrefix[to_const_uint(ShaderType::COUNT) + 1];
 
+IMPLEMENT_ALLOCATOR(glShader, 0, 0);
 glShader::glShader(GFXDevice& context,
                    const stringImpl& name,
                    const ShaderType& type,
@@ -157,10 +158,10 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
     stringImpl include_file, include_string;
     ShaderManager& sMgr = ShaderManager::instance();
 
-    std::istringstream input(source);
+    istringstreamImpl input(source);
     while (std::getline(input, line)) {
         if (std::regex_search(line, matches, includePattern)) {
-            include_file = matches[1].str();
+            include_file = matches[1].str().c_str();
 
             I32 index = -1;
             // switch will throw warnings due to promotion to int

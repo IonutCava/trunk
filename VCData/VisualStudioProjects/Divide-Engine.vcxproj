@@ -142,6 +142,7 @@
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_d$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
+      <Verbose>false</Verbose>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -194,6 +195,7 @@
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
+      <Verbose>false</Verbose>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
@@ -240,6 +242,7 @@
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
+      <Verbose>false</Verbose>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -251,7 +254,6 @@
     <ClCompile Include="..\..\Source Code\Core\Math\MathClasses.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\MemoryManagement\TrackedObject.cpp" />
     <ClCompile Include="..\..\Source Code\Core\ProfileTimer.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp" />
@@ -376,7 +378,6 @@
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.inl" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Plane.h" />
-    <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\TrackedObject.h" />
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\Resource.h" />
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceCache.h" />
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceDescriptor.h" />

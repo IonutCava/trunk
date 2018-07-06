@@ -369,14 +369,14 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         if (i < 10) {
             baseNode = cylinder[1];
             currentMesh = cylinderMeshNW;
-            currentName = "Cylinder_NW_" + std::to_string((I32)i);
+            currentName = "Cylinder_NW_" + to_stringImpl((I32)i);
             currentPos.first = -200 + 40 * i + 50;
             currentPos.second = -200 + 40 * i + 50;
         }
         else if (i >= 10 && i < 20) {
             baseNode = cylinder[2];
             currentMesh = cylinderMeshNE;
-            currentName = "Cylinder_NE_" + std::to_string((I32)i);
+            currentName = "Cylinder_NE_" + to_stringImpl((I32)i);
             currentPos.first = 200 - 40 * (i % 10) - 50;
             currentPos.second = -200 + 40 * (i % 10) + 50;
             locationFlag = 1;
@@ -384,7 +384,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         else if (i >= 20 && i < 30) {
             baseNode = cylinder[3];
             currentMesh = cylinderMeshSW;
-            currentName = "Cylinder_SW_" + std::to_string((I32)i);
+            currentName = "Cylinder_SW_" + to_stringImpl((I32)i);
             currentPos.first = -200 + 40 * (i % 20) + 50;
             currentPos.second = 200 - 40 * (i % 20) - 50;
             locationFlag = 2;
@@ -392,7 +392,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         else {
             baseNode = cylinder[4];
             currentMesh = cylinderMeshSE;
-            currentName = "Cylinder_SE_" + std::to_string((I32)i);
+            currentName = "Cylinder_SE_" + to_stringImpl((I32)i);
             currentPos.first = 200 - 40 * (i % 30) - 50;
             currentPos.second = 200 - 40 * (i % 30) - 50;
             locationFlag = 3;

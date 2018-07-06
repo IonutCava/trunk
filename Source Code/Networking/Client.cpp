@@ -114,7 +114,7 @@ void Client::handle_read_file(const boost::system::error_code& ec,
               << ", tellg=" << request_stream.tellg() << std::endl;
     size_t pos = file_path.find_last_of('\\');
     if (pos != stringImpl::npos) file_path = file_path.substr(pos + 1);
-    _outputFile.open(file_path, std::ios_base::binary);
+    _outputFile.open(file_path.c_str(), std::ios_base::binary);
     if (!_outputFile) {
         std::cout << "failed to open " << file_path << std::endl;
         return;

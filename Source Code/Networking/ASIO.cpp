@@ -39,7 +39,7 @@ void ASIO::init(const stringImpl& address, const stringImpl& port) {
         _localClient = new Client(this, io_service_, _debugOutput);
         _work.reset(new boost::asio::io_service::work(io_service_));
         _localClient->start(
-            res.resolve(tcp::resolver::query(address, port)));
+            res.resolve(tcp::resolver::query(address.c_str(), port.c_str())));
         _thread = new std::thread([&] { io_service_.run(); });
         io_service_.poll();
         _connected = true;
@@ -71,7 +71,7 @@ void ASIO::sendPacket(WorldPacket& p) const {
 
     if (_debugOutput) {
         std::cout << "ASIO: sent opcode [ 0x"
-                  << std::to_string(p.opcode()) << "]" << std::endl;
+                  << to_stringImpl(p.opcode()) << "]" << std::endl;
     }
 }
 

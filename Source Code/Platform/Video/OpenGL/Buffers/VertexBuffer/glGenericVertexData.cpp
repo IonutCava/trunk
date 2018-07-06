@@ -8,6 +8,7 @@ namespace Divide {
 
 hashMapImpl<GLuint, glGenericVertexData::BufferBindConfig> glGenericVertexData::_bindConfigs;
 
+IMPLEMENT_ALLOCATOR(glGenericVertexData, 0, 0)
 bool glGenericVertexData::setIfDifferentBindRange(GLuint bindIndex, const BufferBindConfig& bindConfig) {
 
     // If this is a new index, this will just create a default config
@@ -48,10 +49,10 @@ glGenericVertexData::~glGenericVertexData() {
     if (!_bufferObjects.empty()) {
         for (U8 i = 0; i < _bufferObjects.size(); ++i) {
             if (_persistentMapped) {
-                _lockManagers[i]->WaitForLockedRange(0,
-                                                     _elementCount[i] * _elementSize[i] 
-                                                        * (_bufferIsRing[i] ? queueLength() : 1),
-                                                     true);
+                _lockManagers[i].WaitForLockedRange(0,
+                                                    _elementCount[i] * _elementSize[i] 
+                                                       * (_bufferIsRing[i] ? queueLength() : 1),
+                                                    true);
             }
             GLUtil::freeBuffer(_bufferObjects[i]._id, _bufferPersistentData[i]);
         }
@@ -157,10 +158,7 @@ void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     }
 
     if (_persistentMapped) {
-        _lockManagers.reserve(numBuffers);
-        for (U8 i = 0; i < numBuffers; ++i) {
-            _lockManagers.push_back(std::make_unique<glBufferLockManager>());
-        }
+        _lockManagers.resize(numBuffers);
     }
 }
 
@@ -235,7 +233,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
                 if (_bufferIsRing[i]) {
                     offset += bufferSize * queueReadIndex();
                 }
-                _lockManagers[i]->LockRange(offset, bufferSize, false);
+                _lockManagers[i].LockRange(offset, bufferSize, false);
             }
         }
     }
@@ -385,9 +383,8 @@ void glGenericVertexData::updateBuffer(U32 buffer,
         // copy that's ready for writing
         glNamedBufferSubData(_bufferObjects[buffer]._id, offset, dataCurrentSize, data);
     } else {
-        // Wait for the target part of the buffer to become available for
-        // writing
-        _lockManagers[buffer]->WaitForLockedRange(offset, dataCurrentSize, true);
+        // Wait for the target part of the buffer to become available for writing
+        _lockManagers[buffer].WaitForLockedRange(offset, dataCurrentSize, true);
         // Offset the data pointer by the required offset taking in account the
         // current data copy we are writing into
         bufferPtr dst = (U8*)_bufferPersistentData[buffer] + offset;

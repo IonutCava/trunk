@@ -36,8 +36,8 @@
 #include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
 namespace Divide {
-
 class glFramebuffer : public Framebuffer {
+    DECLARE_ALLOCATOR
    public:
     /// if resolveBuffer is not null, we add all of our attachments to it and
     /// initialize it with this buffer

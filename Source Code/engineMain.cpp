@@ -3,7 +3,14 @@
 
 namespace Divide {
 
+static void out_of_memory()
+{
+    assert(0);
+}
+
 int engineMain(int argc, char** argv) {
+    std::set_new_handler(out_of_memory);
+
     ErrorCode returnCode = ErrorCode::PLATFORM_INIT_ERROR;
     if (PlatformInit()) {
         std::ofstream stdConsole(OUTPUT_LOG_FILE,

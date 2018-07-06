@@ -58,7 +58,7 @@ Application::~Application()
                          to_int(std::ceil(sizeLeaked / 1024.0f)));
     }
     std::ofstream memLog;
-    memLog.open(_memLogBuffer);
+    memLog.open(_memLogBuffer.c_str());
     memLog << allocLog;
     memLog.close();
 #endif

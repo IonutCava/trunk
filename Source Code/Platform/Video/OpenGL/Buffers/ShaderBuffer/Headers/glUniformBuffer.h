@@ -41,6 +41,7 @@ namespace Divide {
 /// Base class for shader uniform blocks
 class glBufferLockManager;
 class glUniformBuffer final : public ShaderBuffer {
+    DECLARE_ALLOCATOR
    public:
      glUniformBuffer(GFXDevice& context,
                      const stringImpl &bufferName,

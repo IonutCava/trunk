@@ -2,7 +2,7 @@
 
 namespace Divide {
 
-void ParticleColorGenerator::generate(vectorImpl<std::future<void>>& packagedTasks,
+void ParticleColorGenerator::generate(TaskHandle& packagedTasksParent,
                                       const U64 deltaTime,
                                       ParticleData& p,
                                       U32 startIndex,
@@ -20,14 +20,13 @@ void ParticleColorGenerator::generate(vectorImpl<std::future<void>>& packagedTas
                                     ParticleData::g_threadPartitionSize,
                                     [&](iter_t_start from, iter_t_start to)
     {
-        packagedTasks.push_back(
-            std::async(std::launch::async | std::launch::deferred,
-                       [from, to, minStartCol, maxStartCol]() {
-                           std::for_each(from, to, [&](iter_t_start::value_type& color)
-                           {
-                               color.set(Random(minStartCol, maxStartCol));
-                           });
-                       }));
+        packagedTasksParent.addChildTask(CreateTask(
+            [from, to, minStartCol, maxStartCol](const std::atomic_bool& stopRequested) {
+                std::for_each(from, to, [&](iter_t_start::value_type& color)
+                {
+                    color.set(Random(minStartCol, maxStartCol));
+                });
+            })._task)->startTask(Task::TaskPriority::HIGH);
     });
 
     for_each_interval<iter_t_end>(std::begin(p._endColor) + startIndex,
@@ -35,14 +34,13 @@ void ParticleColorGenerator::generate(vectorImpl<std::future<void>>& packagedTas
                                   ParticleData::g_threadPartitionSize,
                                   [&](iter_t_end from, iter_t_end to)
     {
-        packagedTasks.push_back(
-            std::async(std::launch::async | std::launch::deferred,
-                       [from, to, minEndCol, maxEndCol]() {
-                           std::for_each(from, to, [&](iter_t_end::value_type& color)
-                           {
-                               color.set(Random(minEndCol, maxEndCol));
-                           });
-                       }));
+        packagedTasksParent.addChildTask(CreateTask(
+            [from, to, minEndCol, maxEndCol](const std::atomic_bool& stopRequested) {
+                std::for_each(from, to, [&](iter_t_end::value_type& color)
+                {
+                    color.set(Random(minEndCol, maxEndCol));
+                });
+            })._task)->startTask(Task::TaskPriority::HIGH);
     });
 }
 };

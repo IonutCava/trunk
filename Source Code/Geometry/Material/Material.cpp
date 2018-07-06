@@ -277,7 +277,7 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
     (!shader.empty()) ? info._shader = shader : info._shader = "NULL";
 
     ResourceDescriptor shaderDescriptor(info._shader);
-    std::stringstream ss;
+    stringstreamImpl ss;
     if (!info._shaderDefines.empty()) {
         for (stringImpl& shaderDefine : info._shaderDefines) {
             ss << shaderDefine;

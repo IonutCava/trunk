@@ -127,6 +127,11 @@ inline stringImpl ParamHandler::getParam(ULL paramID, stringImpl defaultValue) c
 }
 
 template <>
+inline std::string ParamHandler::getParam(ULL paramID, std::string defaultValue) const {
+    return getParam<stringImpl>(paramID, defaultValue.c_str()).c_str();
+}
+
+template <>
 inline void ParamHandler::setParam(ULL paramID, const stringImpl& value) {
     WriteLock w_lock(_mutex);
     ParamStringMap::iterator it = _paramsStr.find(paramID);
@@ -136,6 +141,11 @@ inline void ParamHandler::setParam(ULL paramID, const stringImpl& value) {
     } else {
         it->second = value;
     }
+}
+
+template <>
+inline void ParamHandler::setParam(ULL paramID, const std::string& value) {
+    setParam<stringImpl>(paramID, value.c_str());
 }
 
 template <>

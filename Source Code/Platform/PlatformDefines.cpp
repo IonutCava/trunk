@@ -11,7 +11,7 @@
 
 namespace Divide {
 namespace MemoryManager {
-void log_new(void* p, size_t size, const char* zFile, I32 nLine) {
+void log_new(void* p, size_t size, const char* zFile, size_t nLine) {
 #if defined(_DEBUG)
     if (MemoryTracker::Ready) {
          AllocTracer.Add( p, size, zFile, nLine );
@@ -90,24 +90,24 @@ void operator delete[](void* ptr) noexcept {
     free(ptr);
 }
 
-void* operator new(size_t size, const char* zFile, Divide::I32 nLine) {
+void* operator new(size_t size, const char* zFile, size_t nLine) {
     void* ptr = malloc(size);
     Divide::MemoryManager::log_new(ptr, size, zFile, nLine);
     return ptr;
 }
 
-void operator delete(void* ptr, const char* zFile, Divide::I32 nLine) {
+void operator delete(void* ptr, const char* zFile, size_t nLine) {
     Divide::MemoryManager::log_delete(ptr);
     free(ptr);
 }
 
-void* operator new[](size_t size, const char* zFile, Divide::I32 nLine) {
+void* operator new[](size_t size, const char* zFile, size_t nLine) {
     void* ptr = malloc(size);
     Divide::MemoryManager::log_new(ptr, size, zFile, nLine);
     return ptr;
 }
 
-void operator delete[](void* ptr, const char* zFile, Divide::I32 nLine) {
+void operator delete[](void* ptr, const char* zFile, size_t nLine) {
     Divide::MemoryManager::log_delete(ptr);
     free(ptr);
 }

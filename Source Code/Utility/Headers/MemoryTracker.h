@@ -43,24 +43,47 @@ class MemoryTracker {
    private:
     class Entry {
        public:
-        Entry(char const* file, I32 line, size_t size)
-            : _file(file), _line(line), _size(size) {}
-        Entry() : _file(""), _line(0), _size(0) {}
+        Entry(char const* file, size_t line, size_t size)
+            : _file(file),
+              _line(line),
+              _size(size)
+        {
+        }
 
-        inline char const* File() const { return _file; }
-        inline I32 Line() const { return _line; }
-        inline size_t Size() const { return _size; }
+        Entry()
+            : Entry("", 0, 0)
+        {
+        }
+
+        inline char const* File() const {
+            return _file;
+        }
+
+        inline size_t Line() const {
+            return _line;
+        }
+
+        inline size_t Size() const {
+            return _size;
+        }
 
        private:
         char const* _file;
-        I32 _line;
+        size_t _line;
         size_t _size;
     };
 
     class Lock {
        public:
-        Lock(MemoryTracker& tracer) : _tracer(tracer) { _tracer.lock(); }
-        ~Lock() { _tracer.unlock(); }
+        Lock(MemoryTracker& tracer) 
+            : _tracer(tracer)
+        {
+            _tracer.lock();
+        }
+        ~Lock()
+        {
+            _tracer.unlock();
+        }
 
        private:
         MemoryTracker& _tracer;
@@ -70,39 +93,37 @@ class MemoryTracker {
     friend class Lock;
 
    public:
-    MemoryTracker() {
-        _locked = false;
+    MemoryTracker()
+        : _locked(false)
+    {
         Ready = true;
     }
 
-    ~MemoryTracker() {
+    ~MemoryTracker()
+    {
         Ready = false;
         bool leakDetected = false;
         size_t sizeLeaked = 0;
         Dump(leakDetected, sizeLeaked);
     }
 
-    inline void Add(void* p, size_t size, char const* file, I32 line) {
-        if (_locked) {
-            return;
+    inline void Add(void* p, size_t size, char const* file, size_t line) {
+        if (!_locked) {
+            WriteLock w_lock(_mutex);
+            MemoryTracker::Lock lock(*this);
+            hashAlg::emplace(_map, p, Entry(file, line, size));
         }
-        WriteLock w_lock(_mutex);
-        MemoryTracker::Lock lock(*this);
-        hashAlg::emplace(_map, p, Entry(file, line, size));
     }
 
     inline void Remove(void* p) {
-        if (_locked) {
-            return;
-        }
-
-        if (!MemoryTracker::LogAllAllocations) 
-        {
-            WriteLock w_lock(_mutex);
-            MemoryTracker::Lock lock(*this);
-            iterator it = _map.find(p);
-            if (it != std::end(_map)) {
-                _map.erase(it);
+        if (!_locked) {
+            if (!MemoryTracker::LogAllAllocations) {
+                WriteLock w_lock(_mutex);
+                MemoryTracker::Lock lock(*this);
+                iterator it = _map.find(p);
+                if (it != std::end(_map)) {
+                    _map.erase(it);
+                }
             }
         }
     }
@@ -126,7 +147,7 @@ class MemoryTracker {
                 const Entry& entry = it->second;
                 output.append(entry.File());
                 output.append(", ");
-                output.append(std::to_string(entry.Line()));
+                output.append(to_stringImpl(entry.Line()).c_str());
                 output.append("\n");
                 sizeLeaked += entry.Size();
             }
@@ -140,8 +161,13 @@ class MemoryTracker {
     static bool LogAllAllocations;
 
    private:
-    inline void lock() { _locked = true; }
-    inline void unlock() { _locked = false; }
+    inline void lock() {
+        _locked = true;
+    }
+
+    inline void unlock() {
+        _locked = false;
+    }
 
    private:
     mutable SharedLock _mutex;

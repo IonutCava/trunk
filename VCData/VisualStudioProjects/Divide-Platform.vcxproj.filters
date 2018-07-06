@@ -289,6 +289,24 @@
     <ClInclude Include="..\..\Source Code\Platform\Headers\ConditionalWait.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\TrackedObject.h">
+      <Filter>Memory\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\Allocator.h">
+      <Filter>Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\DataTypes.h">
+      <Filter>Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\Fault.h">
+      <Filter>Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\stl_allocator.h">
+      <Filter>Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\xallocator.h">
+      <Filter>Memory\Allocator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -474,6 +492,24 @@
       <Filter>Video\Buffers\VertexBuffer</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\DisplayWindow.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\MemoryManagement\TrackedObject.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Allocator\Allocator.cpp">
+      <Filter>Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\VertexDataInterface.cpp">
+      <Filter>Video\Buffers\VertexBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\VertexBuffer\d3dGenericVertexData.cpp">
+      <Filter>Video\Direct3D\Buffers\VertexBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Allocator\Fault.cpp">
+      <Filter>Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Allocator\xallocator.cpp">
+      <Filter>Memory\Allocator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">
@@ -733,6 +769,15 @@
     </Filter>
     <Filter Include="Headers">
       <UniqueIdentifier>{70bee0bb-7a13-4d72-a546-e8738ba8e7d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory">
+      <UniqueIdentifier>{84a36a9f-381f-4c54-8412-5a5079811891}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory\Headers">
+      <UniqueIdentifier>{0d7d6351-5944-4da7-87da-f9a5fe30b001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory\Allocator">
+      <UniqueIdentifier>{38c73b66-f915-4e05-8d15-4eba41ee7587}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

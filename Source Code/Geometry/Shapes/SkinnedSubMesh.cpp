@@ -66,7 +66,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const std::atomic_bool& stopReque
     _boundingBoxesComputing.at(animationIndex) = true;
     _boundingBoxesAvailable.at(animationIndex) = false;
 
-    const vectorImpl<vectorImpl<mat4<F32>>>& currentAnimation = 
+    const vectorImpl<vectorImplAligned<mat4<F32>>>& currentAnimation =
         animComp->getAnimationByIndex(animationIndex).transforms();
 
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
@@ -80,7 +80,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const std::atomic_bool& stopReque
             return;
         }
         bb.reset();
-        const vectorImpl<mat4<F32> >& transforms = currentAnimation[i++];
+        const vectorImplAligned<mat4<F32> >& transforms = currentAnimation[i++];
         // loop through all vertex weights of all bones
         for (U32 j = 0; j < partitionCount; ++j) {
             U32 idx = parentVB->getIndex(j + partitionOffset);

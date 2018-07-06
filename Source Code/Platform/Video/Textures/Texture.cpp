@@ -48,7 +48,7 @@ void Texture::threadedLoad(const stringImpl& name) {
         info._type = _textureData._textureType;
 
         // Each texture face/layer must be in a comma separated list
-        std::stringstream textureLocationList(getResourceLocation());
+        stringstreamImpl textureLocationList(getResourceLocation());
         // We loop over every texture in the above list and store it in this
         // temporary string
         stringImpl currentTexture;

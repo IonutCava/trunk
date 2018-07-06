@@ -61,7 +61,6 @@ class ParticleSource {
    protected:
     F32 _emitRate;
     vectorImpl<std::shared_ptr<ParticleGenerator> > _particleGenerators;
-    vectorImpl<std::future<void>> _generatorTasks;
 };
 };
 #endif

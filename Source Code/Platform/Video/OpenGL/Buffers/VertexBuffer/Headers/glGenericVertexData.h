@@ -42,6 +42,7 @@
 namespace Divide {
 
 class glGenericVertexData : public GenericVertexData {
+    DECLARE_ALLOCATOR
     enum class GVDUsage : U32 {
         DRAW = 0,
         FDBCK = 1,
@@ -154,7 +155,7 @@ class glGenericVertexData : public GenericVertexData {
     vectorImpl<U32> _fdbkBindPoints;
     vectorImpl<GLUtil::AllocationHandle> _bufferObjects;
     std::array<GLuint, to_const_uint(GVDUsage::COUNT)> _vertexArray;
-    vectorImpl<std::unique_ptr<glBufferLockManager> > _lockManagers;
+    vectorImpl<glBufferLockManager > _lockManagers;
 
     static hashMapImpl<GLuint, BufferBindConfig> _bindConfigs;
 };

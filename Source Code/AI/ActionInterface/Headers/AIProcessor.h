@@ -63,7 +63,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
     void registerGoal(const GOAPGoal& goal);
     void registerGoalList(const GOAPGoalList& goalList);
 
-    virtual GOAPGoal* findGoal(const stringImpl& goalName) {
+    virtual GOAPGoal* findGoal(const std::string& goalName) {
         GOAPGoalList::iterator it;
         it = std::find_if(std::begin(_goals), std::end(_goals),
                           [&goalName](const GOAPGoal& goal) -> bool {
@@ -93,7 +93,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
     }
     /// Although we want the goal to be activated,
     /// it might not be the most relevant in the current scene state
-    inline bool activateGoal(const stringImpl& name) {
+    inline bool activateGoal(const std::string& name) {
         GOAPGoal* goal = findGoal(name);
         if (goal != nullptr) {
             _activeGoals.push_back(goal);
@@ -150,9 +150,9 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
             } else {
                 _planLog = "Plan Log: \n";
                 _planLog.append("\t OpenList: \n");
-                _planLog.append(_activeGoal->getOpenList());
+                _planLog.append(_activeGoal->getOpenList().c_str());
                 _planLog.append("\t ClosedList: \n");
-                _planLog.append(_activeGoal->getClosedList());
+                _planLog.append(_activeGoal->getClosedList().c_str());
                 invalidateCurrentPlan();
             }
         }
@@ -180,13 +180,13 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
         if (_activeGoal == nullptr) {
             return "no active goal!";
         }
-        stringImpl returnString("");
+        std::string returnString("");
         const GOAPPlan& plan = _activeGoal->getCurrentPlan();
         for (const GOAPAction* action : plan) {
             returnString.append(" - " + printActionStats(*action) + "\n");
         }
 
-        return returnString;
+        return returnString.c_str();
     }
 
     virtual void invalidateCurrentPlan() {
@@ -207,7 +207,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
 
     inline const stringImpl& getPlanLog() const { return _planLog; }
 
-    virtual const stringImpl& printActionStats(const GOAPAction& planStep) const;
+    virtual const std::string& printActionStats(const GOAPAction& planStep) const;
     virtual bool performActionStep(GOAPAction::operationsIterator step) = 0;
     virtual bool performAction(const GOAPAction& planStep) = 0;
     virtual bool processData(const U64 deltaTime) = 0;

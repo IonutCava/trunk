@@ -2,7 +2,7 @@
 
 namespace Divide {
 
-void ParticleSphereVelocityGenerator::generate(vectorImpl<std::future<void>>& packagedTasks, 
+void ParticleSphereVelocityGenerator::generate(TaskHandle& packagedTasksParent,
                                                const U64 deltaTime,
                                                ParticleData& p,
                                                U32 startIndex,

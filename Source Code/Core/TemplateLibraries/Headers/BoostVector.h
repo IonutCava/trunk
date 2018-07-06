@@ -33,11 +33,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _BOOST_VECTOR_H_
 
 #include <boost/container/vector.hpp>
+#include <Allocator/stl_allocator.h>
 
 namespace vectorAlg = boost;
 
 template<typename Type>
-using vectorImpl = boost::container::vector<Type>;
+using vectorImpl = boost::container::vector<Type, stl_allocator<Type>>;
+
+template <typename Type>
+using vectorImplAligned = boost::container::vector<Type>;
 
 namespace boost {
     typedef size_t vecSize;
@@ -46,6 +50,23 @@ namespace boost {
     inline void shrinkToFit(vectorImpl<T>& inputVector) {
         inputVector.shrink_to_fit();
     }
+
+    template <typename T, class... Args>
+    inline void emplace_back(vectorImpl<T>& inputVector,  Args&&... args) {
+        inputVector.emplace_back(std::forward<Args>(args)...);
+    }
+
+    template<typename T>
+    inline void shrinkToFit(vectorImplAligned<T>& inputVector) {
+        inputVector.shrink_to_fit();
+    }
+
+    template <typename T, class... Args>
+    inline void emplace_back(vectorImplAligned<T>& inputVector, Args&&... args) {
+        inputVector.emplace_back(std::forward<Args>(args)...);
+    }
+
+
 };
 
 #endif //_BOOST_VECTOR_H_

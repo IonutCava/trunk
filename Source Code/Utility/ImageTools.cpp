@@ -225,7 +225,7 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
 
 bool ImageData::loadDDS_NV(const stringImpl& filename) {
     nv_dds::CDDSImage image;
-    image.load(filename, _flip);
+    image.load(filename.c_str(), _flip);
     _alpha = image.get_components() == 4;
     switch(image.get_type()) {
         case nv_dds::TextureFlat:

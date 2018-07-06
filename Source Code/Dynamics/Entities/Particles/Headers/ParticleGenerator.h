@@ -34,7 +34,7 @@
 
 #include "ParticleData.h"
 #include "Core/Math/Headers/Quaternion.h"
-#include <future>
+#include "Core/Headers/TaskPool.h"
 
 namespace Divide {
 
@@ -43,7 +43,7 @@ class NOINITVTABLE ParticleGenerator {
     ParticleGenerator() {}
     virtual ~ParticleGenerator() {}
 
-    virtual void generate(vectorImpl<std::future<void>>& packagedTasks,
+    virtual void generate(TaskHandle& packagedTasksParent,
                           const U64 deltaTime,
                           ParticleData& p,
                           U32 startIndex,

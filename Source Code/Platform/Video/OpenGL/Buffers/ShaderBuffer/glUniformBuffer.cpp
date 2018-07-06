@@ -33,7 +33,7 @@ namespace {
         return false;
     }
 };
-
+IMPLEMENT_ALLOCATOR(glUniformBuffer, 0, 0)
 glUniformBuffer::glUniformBuffer(GFXDevice& context,
                                  const stringImpl& bufferName,
                                  const U32 ringBufferLength,
@@ -298,7 +298,7 @@ void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram,
         glGetActiveUniformName(prog, uniform_index, name_lengths[i], NULL,
                                &name[0]);
 
-        std::ostringstream details;
+        ostringstreamImpl details;
         details << std::setfill('0') << std::setw(4) << offsets[i] << ": "
                 << std::setfill(' ') << std::setw(5) << types[i] << " "
                 << name;

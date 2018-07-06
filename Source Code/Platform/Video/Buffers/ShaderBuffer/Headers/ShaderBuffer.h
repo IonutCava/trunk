@@ -40,6 +40,7 @@ class ShaderProgram;
 class NOINITVTABLE ShaderBuffer : protected GraphicsResource, 
                                   public RingBuffer,
                                   public GUIDWrapper {
+    DECLARE_ALLOCATOR
    public:
     explicit ShaderBuffer(GFXDevice& context, 
                           const stringImpl& bufferName,

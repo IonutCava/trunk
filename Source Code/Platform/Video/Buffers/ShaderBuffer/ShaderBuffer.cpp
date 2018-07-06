@@ -2,6 +2,7 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
+
     ShaderBuffer::ShaderBuffer(GFXDevice& context,
                                const stringImpl& bufferName,
                                const U32 ringBufferLength,

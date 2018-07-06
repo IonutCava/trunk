@@ -37,6 +37,7 @@
 namespace Divide {
 
 class glShader : public Shader {
+    DECLARE_ALLOCATOR
    public:
     glShader(GFXDevice& context,
              const stringImpl& name,

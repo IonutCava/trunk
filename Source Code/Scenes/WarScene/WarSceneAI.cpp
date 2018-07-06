@@ -511,7 +511,7 @@ void WarScene::startSimulation() {
         stringImpl info(
             "Can't reload the navigation mesh this soon.\n Please wait \\[ ");
         info.append(
-            std::to_string(Time::MicrosecondsToSeconds<I32>(diffTime)).c_str());
+            to_stringImpl(Time::MicrosecondsToSeconds<I32>(diffTime)).c_str());
         info.append(" ] seconds more!");
 
         _infoBox->setMessage(info);

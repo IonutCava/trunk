@@ -37,6 +37,7 @@
 namespace Divide {
 
 class d3dShader : public Shader {
+    DECLARE_ALLOCATOR
    public:
     d3dShader(GFXDevice& context, 
               const stringImpl& name,

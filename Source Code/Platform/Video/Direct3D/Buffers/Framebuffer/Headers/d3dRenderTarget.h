@@ -35,8 +35,9 @@
 #include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
 namespace Divide {
-
+    
 class d3dRenderTarget : public Framebuffer {
+    DECLARE_ALLOCATOR
    public:
     d3dRenderTarget(GFXDevice& context, bool multisampled);
     ~d3dRenderTarget();

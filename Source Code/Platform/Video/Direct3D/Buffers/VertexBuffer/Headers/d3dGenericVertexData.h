@@ -37,15 +37,11 @@
 namespace Divide {
 
 class d3dGenericVertexData : public GenericVertexData {
+    DECLARE_ALLOCATOR
    public:
-    d3dGenericVertexData(GFXDevice& context, bool persistentMapped, const U32 ringBufferLength)
-        : GenericVertexData(context, persistentMapped, ringBufferLength)
-    {
-    }
+    d3dGenericVertexData(GFXDevice& context, bool persistentMapped, const U32 ringBufferLength);
 
-    ~d3dGenericVertexData()
-    {
-    }
+    ~d3dGenericVertexData();
 
     void create(U8 numBuffers = 1, U8 numQueries = 1) {}
 

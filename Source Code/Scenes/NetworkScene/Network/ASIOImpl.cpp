@@ -24,7 +24,7 @@ void ASIOImpl::handlePacket(WorldPacket& p) {
         default:
             ParamHandler::instance().setParam(
                 _ID("serverResponse"),
-                "Unknown OpCode: [ 0x" + std::to_string(p.opcode()) + " ]");
+                "Unknown OpCode: [ 0x" + to_stringImpl(p.opcode()) + " ]");
             break;
     };
 }
@@ -35,7 +35,7 @@ void ASIOImpl::HandlePongOpCode(WorldPacket& p) {
     D32 result = Time::ElapsedMilliseconds() - time;
     ParamHandler::instance().setParam(
         _ID("serverResponse"), "Server says: Pinged with : " +
-                              std::to_string(floor(result + 0.5f)) +
+                              to_stringImpl(floor(result + 0.5f)) +
                               " ms latency");
 }
 

@@ -3,7 +3,7 @@
 
 namespace Divide {
 
-void ParticleBoxGenerator::generate(vectorImpl<std::future<void>>& packagedTasks, 
+void ParticleBoxGenerator::generate(TaskHandle& packagedTasksParent,
                                     const U64 deltaTime,
                                     ParticleData& p,
                                     U32 startIndex,
@@ -17,14 +17,14 @@ void ParticleBoxGenerator::generate(vectorImpl<std::future<void>>& packagedTasks
                               ParticleData::g_threadPartitionSize,
                               [&](iter_t from, iter_t to)
     {
-        packagedTasks.push_back(
-            std::async(std::launch::async | std::launch::deferred,
-                      [from, to, min, max]() {
-                          std::for_each(from, to, [min, max](iter_t::value_type& position)
-                          {
-                              position.xyz(Random(min, max));
-                          });
-                      }));
+        packagedTasksParent.addChildTask(CreateTask(
+            [from, to, min, max](const std::atomic_bool& stopRequested) mutable
+            {
+                std::for_each(from, to, [min, max](iter_t::value_type& position)
+                {
+                    position.xyz(Random(min, max));
+                });
+            })._task)->startTask(Task::TaskPriority::HIGH);
     });
 }
 

@@ -68,14 +68,14 @@ class GOAPGoal : public goap::WorldState {
 
     const GOAPPlan& getCurrentPlan() const;
 
-    stringImpl getOpenList() const {
-        stringImpl ret;
+    std::string getOpenList() const {
+        std::string ret;
         _planner.printOpenList(ret);
         return ret;
     }
 
-    stringImpl getClosedList() const {
-        stringImpl ret;
+    std::string getClosedList() const {
+        std::string ret;
         _planner.printClosedList(ret);
         return ret;
     }

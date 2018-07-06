@@ -1,6 +1,8 @@
 #include "Headers/d3dShaderProgram.h"
 
 namespace Divide {
+
+IMPLEMENT_ALLOCATOR(d3dShaderProgram, 0, 0);
 d3dShaderProgram::d3dShaderProgram(GFXDevice& context, bool asyncLoad) :
     ShaderProgram(context, asyncLoad)
 {
@@ -67,9 +69,9 @@ void d3dShaderProgram::Uniform(const char* ext, const vectorImpl<I32>& values) {
 void d3dShaderProgram::Uniform(const char* ext, const vectorImpl<F32>& values) {}
 void d3dShaderProgram::Uniform(const char* ext, const vectorImpl<vec2<F32> >& values) {}
 void d3dShaderProgram::Uniform(const char* ext, const vectorImpl<vec3<F32> >& values) {}
-void d3dShaderProgram::Uniform(const char* ext, const vectorImpl<vec4<F32> >& values) {}
+void d3dShaderProgram::Uniform(const char* ext, const vectorImplAligned<vec4<F32> >& values) {}
 void d3dShaderProgram::Uniform(const char* ext, const vectorImpl<mat3<F32> >& values, bool transpose) {}
-void d3dShaderProgram::Uniform(const char* ext, const vectorImpl<mat4<F32> >& values, bool transpose) {}
+void d3dShaderProgram::Uniform(const char* ext, const vectorImplAligned<mat4<F32> >& values, bool transpose) {}
 
 void d3dShaderProgram::Uniform(I32 location, U32 value) {}
 void d3dShaderProgram::Uniform(I32 location, I32 value) {}
@@ -86,9 +88,9 @@ void d3dShaderProgram::Uniform(I32 location, const vectorImpl<I32>& values) {}
 void d3dShaderProgram::Uniform(I32 location, const vectorImpl<F32>& values) {}
 void d3dShaderProgram::Uniform(I32 location, const vectorImpl<vec2<F32> >& values){}
 void d3dShaderProgram::Uniform(I32 location, const vectorImpl<vec3<F32> >& values) {}
-void d3dShaderProgram::Uniform(I32 location, const vectorImpl<vec4<F32> >& values) {}
+void d3dShaderProgram::Uniform(I32 location, const vectorImplAligned<vec4<F32> >& values) {}
 void d3dShaderProgram::Uniform(I32 location, const vectorImpl<mat3<F32> >& values, bool transpose) {}
-void d3dShaderProgram::Uniform(I32 location, const vectorImpl<mat4<F32> >& values, bool transpose) {}
+void d3dShaderProgram::Uniform(I32 location, const vectorImplAligned<mat4<F32> >& values, bool transpose) {}
 I32 d3dShaderProgram::getUniformLocation(const char* name) { return -1; }
 void d3dShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) {}
 

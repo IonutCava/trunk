@@ -17,7 +17,7 @@ void ByteBuffer::append(const U8 *src, size_t cnt) {
 
 
 bool ByteBuffer::dumpToFile(const stringImpl& fileName) const {
-    std::ofstream outputBuffer(fileName, std::ios::out | std::ios::binary);
+    std::ofstream outputBuffer(fileName.c_str(), std::ios::out | std::ios::binary);
     if (!outputBuffer.is_open()) {
         //return false;
     }
@@ -27,7 +27,7 @@ bool ByteBuffer::dumpToFile(const stringImpl& fileName) const {
 }
 
 bool ByteBuffer::loadFromFile(const stringImpl& fileName) {
-    std::ifstream fileBuffer(fileName, std::ios::in | std::ios::binary);
+    std::ifstream fileBuffer(fileName.c_str(), std::ios::in | std::ios::binary);
 
     if (!fileBuffer.eof() && !fileBuffer.fail())
     {

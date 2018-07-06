@@ -1,6 +1,7 @@
 #include "Headers/d3dVertexBuffer.h"
 
 namespace Divide {
+IMPLEMENT_ALLOCATOR(d3dVertexBuffer, 0, 0)
 d3dVertexBuffer::d3dVertexBuffer(GFXDevice& context)
     : VertexBuffer(context)
 {

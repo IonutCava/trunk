@@ -33,11 +33,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _STL_VECTOR_H_
 
 #include <vector>
+#include <Allocator/stl_allocator.h>
 
 namespace vectorAlg = std;
 
 template <typename Type>
-using vectorImpl = vectorAlg::vector<Type>;
+using vectorImpl = vectorAlg::vector<Type, stl_allocator<Type>>;
+
+template <typename Type>
+using vectorImplAligned = vectorAlg::vector<Type>;
 
 namespace std {
     typedef size_t vecSize;
@@ -52,6 +56,17 @@ namespace std {
 
     template <typename T, class... Args>
     inline void emplace_back(vectorImpl<T>& inputVector,
+        Args&&... args) {
+        inputVector.emplace_back(std::forward<Args>(args)...);
+    }
+
+    template <typename T>
+    inline void shrinkToFit(vectorImplAligned<T>& inputVector) {
+        inputVector.shrink_to_fit();
+    }
+
+    template <typename T, class... Args>
+    inline void emplace_back(vectorImplAligned<T>& inputVector,
         Args&&... args) {
         inputVector.emplace_back(std::forward<Args>(args)...);
     }

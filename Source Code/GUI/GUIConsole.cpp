@@ -52,7 +52,7 @@ void GUIConsole::CreateCEGUIWindow() {
     const stringImpl& layoutFile =
         ParamHandler::instance().getParam<stringImpl>(_ID("GUI.consoleLayout"));
     _consoleWindow =
-        CEGUI::WindowManager::getSingletonPtr()->loadLayoutFromFile(layoutFile);
+        CEGUI::WindowManager::getSingletonPtr()->loadLayoutFromFile(layoutFile.c_str());
 
     if (_consoleWindow) {
         // Add the Window to the GUI Root Sheet

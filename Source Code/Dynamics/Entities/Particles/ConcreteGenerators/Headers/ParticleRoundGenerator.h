@@ -47,7 +47,7 @@ class ParticleRoundGenerator final : public ParticleGenerator {
     ParticleRoundGenerator(const vec3<F32> &center, F32 radX, F32 radY)
         : _center(center), _radX(radX), _radY(radY) {}
 
-    void generate(vectorImpl<std::future<void>>& packagedTasks, 
+    void generate(TaskHandle& packagedTasksParent,
                   const U64 deltaTime,
                   ParticleData& p,
                   U32 startIndex,

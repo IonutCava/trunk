@@ -1,6 +1,8 @@
 #include "Headers/d3dShader.h"
 
 namespace Divide {
+
+IMPLEMENT_ALLOCATOR(d3dShader, 0, 0);
 d3dShader::d3dShader(GFXDevice& context,
                      const stringImpl& name,
                      const ShaderType& type,

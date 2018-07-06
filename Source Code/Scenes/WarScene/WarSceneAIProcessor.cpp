@@ -87,7 +87,7 @@ void WarSceneAIProcessor::reset()
 void WarSceneAIProcessor::initInternal() {
 #if defined(PRINT_AI_TO_FILE)
     _WarAIOutputStream.open(
-        Util::StringFormat("AILogs/%s_.txt", _entity->getName().c_str()),
+        Util::StringFormat("AILogs/%s_.txt", _entity->getName().c_str()).c_str(),
         std::ofstream::out | std::ofstream::trunc);
 #endif
 
@@ -849,7 +849,7 @@ bool WarSceneAIProcessor::performActionStep(
     return true;
 }
 
-const stringImpl& WarSceneAIProcessor::printActionStats(const GOAPAction& planStep) const {
+const std::string& WarSceneAIProcessor::printActionStats(const GOAPAction& planStep) const {
     PRINT("Action [ %s ]", planStep.name().c_str());
     return planStep.name();
 }
@@ -864,16 +864,16 @@ stringImpl WarSceneAIProcessor::toString(bool state) const {
     U32 enemyTeamID = 1 - ownTeamID;
 
     stringImpl ret(Util::StringFormat("Unit: [ %s ]\n", _entity->getName().c_str()));
-    ret +="--------------- Working memory state BEGIN ----------------------------\n";
-    ret += Util::StringFormat(
+    ret.append("--------------- Working memory state BEGIN ----------------------------\n");
+    ret.append(Util::StringFormat(
         "        Current position: - [ %4.1f , %4.1f, %4.1f]\n",
         _entity->getPosition().x, _entity->getPosition().y,
-        _entity->getPosition().z);
-    ret += Util::StringFormat(
+        _entity->getPosition().z));
+    ret.append(Util::StringFormat(
         "        Current destination: - [ %4.1f , %4.1f, %4.1f]\n",
         _entity->getDestination().x, _entity->getDestination().y,
-        _entity->getDestination().z);
-    ret += Util::StringFormat(
+        _entity->getDestination().z));
+    ret.append(Util::StringFormat(
         "        Flag Positions - OwnTeam : [ %4.1f , %4.1f, %4.1f] | Enemy Team : [ %4.1f , "
         "%4.1f, %4.1f]\n",
         _globalWorkingMemory._teamFlagPosition[ownTeamID].value().x,
@@ -881,61 +881,61 @@ stringImpl WarSceneAIProcessor::toString(bool state) const {
         _globalWorkingMemory._teamFlagPosition[ownTeamID].value().z,
         _globalWorkingMemory._teamFlagPosition[enemyTeamID].value().x,
         _globalWorkingMemory._teamFlagPosition[enemyTeamID].value().y,
-        _globalWorkingMemory._teamFlagPosition[enemyTeamID].value().z);
-    ret += Util::StringFormat(
+        _globalWorkingMemory._teamFlagPosition[enemyTeamID].value().z));
+    ret.append(Util::StringFormat(
         "        Flags at base - OwnTeam : [ %s ] | Enemy Team : [ %s ]\n",
         _globalWorkingMemory._flagsAtBase[ownTeamID].value() ? "true" : "false",
-        _globalWorkingMemory._flagsAtBase[enemyTeamID].value() ? "true" : "false");
-    ret += Util::StringFormat(
+        _globalWorkingMemory._flagsAtBase[enemyTeamID].value() ? "true" : "false"));
+    ret.append(Util::StringFormat(
         "        Flags carriers - OwnTeam : [ %s ] | Enemy Team : [ %s ]\n",
         _globalWorkingMemory._flagCarriers[ownTeamID].value() ? _globalWorkingMemory._flagCarriers[ownTeamID].value()->getName().c_str() : "none",
-        _globalWorkingMemory._flagCarriers[enemyTeamID].value() ? _globalWorkingMemory._flagCarriers[enemyTeamID].value()->getName().c_str() : "none");
-
-    
-    ret += Util::StringFormat(
+        _globalWorkingMemory._flagCarriers[enemyTeamID].value() ? _globalWorkingMemory._flagCarriers[enemyTeamID].value()->getName().c_str() : "none"));
+    ret.append(Util::StringFormat(
         "        Score - OwnTeam : [ %d ] | Enemy Team : [ %d ]\n",
         _globalWorkingMemory._score[ownTeamID].value(),
-        _globalWorkingMemory._score[enemyTeamID].value());
-    ret += Util::StringFormat(
+        _globalWorkingMemory._score[enemyTeamID].value()));
+    ret.append(Util::StringFormat(
         "        Has enemy flag: [ %s ]\n",
-        _localWorkingMemory._hasEnemyFlag.value() ? "true" : "false");
-    ret += Util::StringFormat(
+        _localWorkingMemory._hasEnemyFlag.value() ? "true" : "false"));
+    ret.append(Util::StringFormat(
         "        Enemy has flag: [ %s ]\n",
-        _localWorkingMemory._enemyHasFlag.value() ? "true" : "false");
-    ret += Util::StringFormat(
+        _localWorkingMemory._enemyHasFlag.value() ? "true" : "false"));
+    ret.append(Util::StringFormat(
         "        Is flag retriever: [ %s ]\n",
-        _localWorkingMemory._isFlagRetriever.value() ? "true" : "false");
-    ret += Util::StringFormat(
+        _localWorkingMemory._isFlagRetriever.value() ? "true" : "false"));
+    ret.append(Util::StringFormat(
         "        Flag retriever count - Own Team: [ %d ] Enemy Team: [ %d]\n",
         _globalWorkingMemory._flagRetrieverCount[ownTeamID].value(),
-        _globalWorkingMemory._flagRetrieverCount[enemyTeamID].value());
-    ret += Util::StringFormat(
+        _globalWorkingMemory._flagRetrieverCount[enemyTeamID].value()));
+    ret.append(Util::StringFormat(
         "       Team count - Own Team: [ %d ] Enemy Team: [ %d]\n",
         _globalWorkingMemory._teamAliveCount[ownTeamID].value(),
-        _globalWorkingMemory._teamAliveCount[enemyTeamID].value());
+        _globalWorkingMemory._teamAliveCount[enemyTeamID].value()));
     for (std::pair<GOAPFact, GOAPValue> var : worldState().vars_) {
-        ret += Util::StringFormat("        World state fact [ %s ] : [ %s ]\n",
+        ret.append(Util::StringFormat("        World state fact [ %s ] : [ %s ]\n",
                                   WarSceneFactName(var.first),
-                                  var.second ? "true" : "false");
+                                  var.second ? "true" : "false"));
     }
-    ret += "--------------- Working memory state END ----------------------------\n";
+    ret.append("--------------- Working memory state END ----------------------------\n");
 
     if (getActiveGoal()) {
         const GOAPAction* activeAction = getActiveAction();
         if (activeAction) {
-            ret += "Active action: " + activeAction->name() + "\n";
+            ret.append("Active action: ");
+            ret.append(activeAction->name().c_str());
+            ret.append("\n");
         }
     }
 
     SceneGraphNode_ptr enemy(_localWorkingMemory._currentTarget.value().lock());
     if (enemy) {
-        ret += "Active target: " + enemy->getName() + "\n";
+        ret.append("Active target: ");
+        ret.append(enemy->getName());
+        ret.append("\n");
     }
 
-    ret += _planStatus;
-
-    SceneGraphNode_ptr node = _entity->getUnitRef()->getBoundNode().lock();
-    ret += "\n";
+    ret.append(_planStatus);
+    ret.append("\n");
     return ret;
 }
 

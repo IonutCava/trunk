@@ -10,27 +10,27 @@ ptree pt;
 void loadScene(const stringImpl &sceneName) {
     pt.clear();
     std::cout << "XML: Loading scene [ " << sceneName << " ] " << std::endl;
-    read_xml("Scenes/" + sceneName + ".xml", pt);
+    read_xml(("Scenes/" + sceneName + ".xml").c_str(), pt);
     stringImpl assetLocation("Scenes/" + sceneName + "/");
-    loadGeometry(assetLocation + pt.get("assets", "assets.xml"));
+    loadGeometry(assetLocation + stringImpl(pt.get("assets", "assets.xml").c_str()));
 }
 
 void loadGeometry(const stringImpl &file) {
     pt.clear();
     std::cout << "XML: Loading Geometry: [ " << file << " ] " << std::endl;
-    read_xml(file, pt);
+    read_xml(file.c_str(), pt);
     ptree::iterator it;
     for (it = std::begin(pt.get_child("geometry"));
          it != std::end(pt.get_child("geometry")); ++it) {
-        stringImpl name(it->second.data());
-        stringImpl format(it->first.data());
+        std::string name(it->second.data());
+        std::string format(it->first.data());
 
         if (format.find("<xmlcomment>") != stringImpl::npos) {
             continue;
         }
 
         FileData model;
-        model.ItemName = name;
+        model.ItemName = name.c_str();
         model.ModelName = "Assets/";
         model.ModelName.append(pt.get<stringImpl>(name + ".model"));
         model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
@@ -48,13 +48,13 @@ void loadGeometry(const stringImpl &file) {
     }
     for (it = std::begin(pt.get_child("vegetation"));
          it != std::end(pt.get_child("vegetation")); ++it) {
-        stringImpl name(it->second.data());
-        stringImpl format(it->first.data());
+        std::string name(it->second.data());
+        std::string format(it->first.data());
         if (format.find("<xmlcomment>") != stringImpl::npos) {
             continue;
         }
         FileData model;
-        model.ItemName = name;
+        model.ItemName = name.c_str();
         model.ModelName = "Assets/";
         model.ModelName.append(pt.get<stringImpl>(name + ".model"));
         model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
@@ -75,13 +75,13 @@ void loadGeometry(const stringImpl &file) {
             pt.get_child_optional("primitives"))
         for (it = std::begin(pt.get_child("primitives"));
              it != std::end(pt.get_child("primitives")); ++it) {
-            stringImpl name(it->second.data());
-            stringImpl format(it->first.data());
+            std::string name(it->second.data());
+            std::string format(it->first.data());
             if (format.find("<xmlcomment>") != stringImpl::npos) {
                 continue;
             }
             FileData model;
-            model.ItemName = name;
+            model.ItemName = name.c_str();
             model.ModelName = pt.get<stringImpl>(name + ".model");
             model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
             model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");

@@ -35,11 +35,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define EA_COMPILER_HAS_MOVE_SEMANTICS
 #endif
 #include <EASTL/vector.h>
+#include <Allocator/stl_allocator.h>
 
 namespace vectorAlg = eastl;
 
 template <typename Type>
-using vectorImpl = vectorAlg::vector<Type>;
+using vectorImpl = vectorAlg::vector<Type, stl_allocator<Type>>;
+
+template <typename Type>
+using vectorImplAligned = vectorAlg::vector<Type>;
 
 namespace eastl {
     typedef eastl_size_t vecSize;
@@ -51,6 +55,17 @@ namespace eastl {
 
     template <typename T, class... Args>
     inline void emplace_back(vectorImpl<T>& inputVector,
+        Args&&... args) {
+        new (inputVector.push_back_uninitialized()) T(std::forward<Args>(args)...);
+    }
+
+    template <typename T>
+    inline void shrinkToFit(vectorImplAligned<T>& inputVector) {
+        inputVector.set_capacity(inputVector.size() * sizeof(T));
+    }
+
+    template <typename T, class... Args>
+    inline void emplace_back(vectorImplAligned<T>& inputVector,
         Args&&... args) {
         new (inputVector.push_back_uninitialized()) T(std::forward<Args>(args)...);
     }

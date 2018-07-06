@@ -15,6 +15,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\TrackedObject.h" />
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\Allocator.h" />
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\DataTypes.h" />
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\Fault.h" />
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\stl_allocator.h" />
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\xallocator.h" />
     <ClInclude Include="..\..\Source Code\Libs\GLIM\Declarations.h" />
     <ClInclude Include="..\..\Source Code\Libs\GLIM\glim.h" />
     <ClInclude Include="..\..\Source Code\Libs\GLIM\glimBatch.h" />
@@ -113,6 +119,10 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Textures\Headers\TextureDescriptor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\Core\MemoryManagement\TrackedObject.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\Allocator\Allocator.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\Allocator\Fault.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\Allocator\xallocator.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatch.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatchAttributes.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatchData.cpp" />
@@ -137,9 +147,11 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\Framebuffer\Framebuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\ShaderBuffer\ShaderBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\VertexBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\VertexDataInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\FrameBuffer\d3dRenderTarget.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\PixelBuffer\d3dPixelBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\ShaderBuffer\d3dConstantBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\VertexBuffer\d3dGenericVertexData.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\VertexBuffer\d3dVertexBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\d3dEnumTable.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\DXWrapper.cpp" />
@@ -308,7 +320,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
@@ -344,6 +356,7 @@
       </AdditionalDependencies>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
+      <Verbose>false</Verbose>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -352,7 +365,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
@@ -381,6 +394,7 @@
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)$(TargetExt)</OutputFile>
       <AdditionalDependencies>
       </AdditionalDependencies>
+      <Verbose>false</Verbose>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
@@ -389,7 +403,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -418,6 +432,7 @@
     </Link>
     <Lib>
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
+      <Verbose>false</Verbose>
     </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
