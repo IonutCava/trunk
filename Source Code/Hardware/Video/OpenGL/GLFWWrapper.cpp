@@ -135,15 +135,22 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 #if defined(_DEBUG) || defined(_PROFILE)
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);
 #endif
-
+    
     Divide::GLUtil::_initStacks();
-
     if(GFX_DEVICE.MSAAEnabled())
         glfwWindowHint(GLFW_SAMPLES, GFX_DEVICE.MSAASamples());
 
+    if (getId() == OpenGLES) {
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    }else{
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    }
+
     glfwWindowHint(GLFW_RESIZABLE,par.getParam<bool>("runtime.allowWindowResize",false));
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,3);
     ///32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
     glfwWindowHint(GLFW_RED_BITS,8);
     glfwWindowHint(GLFW_GREEN_BITS,8);
@@ -151,7 +158,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     glfwWindowHint(GLFW_ALPHA_BITS,8);
     glfwWindowHint(GLFW_DEPTH_BITS,24);
     glfwWindowHint(GLFW_STENCIL_BITS,8);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    
 
     //Store the main window ID for future reference
     // Open an OpenGL window; resolution is specified in the external XML files

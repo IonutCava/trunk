@@ -278,7 +278,7 @@ private:
 
     GFXDevice();
     ~GFXDevice();
-           void previewDepthBuffer();
+    void previewDepthBuffer();
 
 private:
     Camera*           _cubeCamera;

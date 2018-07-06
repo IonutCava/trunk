@@ -83,16 +83,16 @@ GFXDevice::~GFXDevice()
 }
 
 void GFXDevice::setApi(const RenderAPI& api){
-    switch (api)	{
-    default:
-    case OpenGL:    _api = GL_API::getOrCreateInstance();	break;
-    case Direct3D:	_api = DX_API::getOrCreateInstance();	break;
-
-    case GFX_RENDER_API_PLACEHOLDER:
-    case None:		{ ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API")); setApi(OpenGL); return; }
-    };
-
     _api.setId(api);
+    switch (api)	{
+        default:
+        case OpenGLES:
+        case OpenGL:    _api = GL_API::getOrCreateInstance();	break;
+        case Direct3D:	_api = DX_API::getOrCreateInstance();	break;
+
+        case GFX_RENDER_API_PLACEHOLDER:
+        case None:		{ ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API")); setApi(OpenGL); return; }
+    };
 }
 
 I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
@@ -145,12 +145,13 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
             _renderTarget[RENDER_TARGET_ANAGLYPH]->toggleDepthBuffer(true);
             _renderTarget[RENDER_TARGET_ANAGLYPH]->Create(resolution.width, resolution.height);
         }
+
+        _postFX.init(resolution);
+        add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
+        _kernel->getCameraMgr().addCameraUpdateListener(DELEGATE_BIND(&ShaderManager::updateCamera, DELEGATE_REF(_shaderManager)));
+        _kernel->getCameraMgr().addNewCamera("2DRenderCamera", _2DCamera);
     }
 
-    _postFX.init(resolution);
-    add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
-    _kernel->getCameraMgr().addCameraUpdateListener(DELEGATE_BIND(&ShaderManager::updateCamera, DELEGATE_REF(_shaderManager)));
-    _kernel->getCameraMgr().addNewCamera("2DRenderCamera", _2DCamera);
     return hardwareState;
 }
 
