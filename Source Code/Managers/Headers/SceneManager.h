@@ -210,6 +210,7 @@ private:
     /// visible in the current frame
     RenderPassCuller* _renderPassCuller;
 
+    TaskHandle _saveTask;
     PlayerIndex _currentPlayerPass;
     U32 _camUpdateListenerID;
     U32 _camChangeListenerID;

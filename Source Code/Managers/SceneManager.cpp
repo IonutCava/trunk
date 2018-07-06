@@ -216,6 +216,7 @@ bool SceneManager::unloadScene(Scene* scene) {
 
 void SceneManager::setActiveScene(Scene* const scene) {
     assert(scene != nullptr);
+    _saveTask.wait();
 
     Attorney::SceneManager::onRemoveActive(_scenePool->defaultSceneActive() ? _scenePool->defaultScene()
                                                                             : getActiveScene());
@@ -470,7 +471,13 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _saveTimer += deltaTimeUS;
 
     if (_saveTimer >= Time::SecondsToMicroseconds(5)) {
-        LoadSave::saveScene(activeScene);
+        _saveTask.wait();
+        _saveTask = CreateTask(*_platformContext,
+            [&activeScene](const Task& parentTask) {
+                LoadSave::saveScene(activeScene);
+            }
+        );
+        _saveTask.startTask();
         _saveTimer = 0ULL;
     }
 }

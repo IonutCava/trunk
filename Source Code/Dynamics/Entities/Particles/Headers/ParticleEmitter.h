@@ -115,8 +115,8 @@ class ParticleEmitter : public SceneNode {
     size_t _particleStateBlockHash;
     size_t _particleStateBlockHashDepth;
 
-    vectorImpl<TaskHandle> _bufferUpdate;
-    vectorImpl<TaskHandle> _bbUpdate;
+    TaskHandle _bufferUpdate;
+    TaskHandle _bbUpdate;
     ShaderProgram_ptr _particleShader;
     ShaderProgram_ptr _particleDepthShader;
     Texture_ptr _particleTexture;

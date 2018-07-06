@@ -263,6 +263,9 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     void onSizeChange(const SizeChangeParams& params) const;
 
    private:
+    TaskHandle _splashTask;
+    std::atomic_bool _splashScreenUpdating;
+
     std::unique_ptr<ResourceCache>     _resCache;
     std::unique_ptr<PlatformContext>   _platformContext;
     std::unique_ptr<SceneManager>      _sceneManager;

@@ -140,6 +140,11 @@ class Task : public GUIDWrapper, protected NonCopyable {
 
 // A task object may be used for multiple jobs
 struct TaskHandle {
+    explicit TaskHandle() noexcept
+        : TaskHandle(nullptr, -1)
+    {
+    }
+
     explicit TaskHandle(Task* task, I64 id)  noexcept
         : _task(task),
           _jobIdentifier(id)

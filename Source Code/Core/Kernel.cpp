@@ -36,11 +36,6 @@
 #include <AntTweakBar/include/AntTweakBar.h>
 
 namespace Divide {
-namespace {
-    vectorImpl<TaskHandle> s_splashTask;
-    std::atomic_bool s_splashScreenUpdating;
-
-};
 
 LoopTimingData::LoopTimingData() : _updateLoops(0),
                                    _previousTimeUS(0ULL),
@@ -101,20 +96,20 @@ Kernel::~Kernel()
 }
 
 void Kernel::startSplashScreen() {
-    if (s_splashScreenUpdating) {
+    if (_splashScreenUpdating) {
         return;
     }
 
-    s_splashScreenUpdating = true;
+    _splashScreenUpdating = true;
     Configuration& config = _platformContext->config();
     GUISplash splash(*_resCache, "divideLogo.jpg", config.runtime.splashScreen);
 
     // Load and render the splash screen
-    s_splashTask.emplace_back(CreateTask(*_platformContext,
+    _splashTask = CreateTask(*_platformContext,
         [this, &splash](const Task& /*task*/) {
         U64 previousTimeUS = 0;
         U64 currentTimeUS = Time::ElapsedMicroseconds(true);
-        while (s_splashScreenUpdating) {
+        while (_splashScreenUpdating) {
             U64 deltaTimeUS = currentTimeUS - previousTimeUS;
             previousTimeUS = currentTimeUS;
             _platformContext->beginFrame();
@@ -124,13 +119,13 @@ void Kernel::startSplashScreen() {
 
             break;
         }
-    }));
-    s_splashTask.back()._task->startTask(Task::TaskPriority::REALTIME/*HIGH*/);
+    });
+    _splashTask._task->startTask(Task::TaskPriority::REALTIME/*HIGH*/);
 }
 
 void Kernel::stopSplashScreen() {
-    s_splashScreenUpdating = false;
-    s_splashTask.back().wait();
+    _splashScreenUpdating = false;
+    _splashTask.wait();
 }
 
 void Kernel::idle() {

@@ -255,14 +255,14 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
 
     parallel_for(_context.parent().platformContext(), updateDistToCamera, aliveCount, 1000);
 
-    _bufferUpdate.emplace_back(CreateTask(_context.parent().platformContext(),
+    _bufferUpdate = CreateTask(_context.parent().platformContext(),
         [this, aliveCount, &renderStagePass](const Task& parentTask) {
         // invalidateCache means that the existing particle data is no longer partially sorted
         _particles->sort(true);
         _buffersDirty[to_U32(renderStagePass.stage())] = true;
-    }));
+    });
 
-    _bufferUpdate.back().startTask(Task::TaskPriority::HIGH);
+    _bufferUpdate.startTask(Task::TaskPriority::HIGH);
 }
 
 /// The onRender call will emit particles
@@ -270,11 +270,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
                                const SceneRenderState& sceneRenderState,
                                const RenderStagePass& renderStagePass) {
     if ( _enabled &&  getAliveParticleCount() > 0) {
-        for (TaskHandle& task : _bufferUpdate) {
-            task.wait();
-        }
-
-        _bufferUpdate.clear();
+        _bufferUpdate.wait();
 
         if (renderStagePass.pass() != RenderPassType::DEPTH_PASS && _buffersDirty[to_U32(renderStagePass.stage())]) {
             GenericVertexData& buffer = getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass());
@@ -341,11 +337,9 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
             up->update(g_updateInterval, data);
         }
 
-        for (TaskHandle& task : _bbUpdate) {
-            task.wait();
-        }
-        _bufferUpdate.clear();
-        _bbUpdate.emplace_back(CreateTask(_context.parent().platformContext(), 
+        _bbUpdate.wait();
+
+        _bbUpdate = CreateTask(_context.parent().platformContext(), 
               [this, aliveCount, averageEmitRate](const Task& parentTask)
         {
             _tempBB.reset();
@@ -353,8 +347,8 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
                 _tempBB.add(_particles->_position[i]);
             }
             setFlag(UpdateFlag::BOUNDS_CHANGED);
-        }));
-        _bbUpdate.back().startTask(Task::TaskPriority::HIGH);
+        });
+        _bbUpdate.startTask(Task::TaskPriority::HIGH);
     }
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
@@ -368,10 +362,7 @@ U32 ParticleEmitter::getAliveParticleCount() const {
 }
 
 void ParticleEmitter::updateBoundsInternal(SceneGraphNode& sgn) {
-    for (TaskHandle& task : _bbUpdate) {
-        task.wait();
-    }
-    _bufferUpdate.clear();
+    _bbUpdate.wait();
 
     U32 aliveCount = getAliveParticleCount();
     if (aliveCount > 2) {

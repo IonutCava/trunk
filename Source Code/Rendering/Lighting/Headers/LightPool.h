@@ -159,7 +159,7 @@ class LightPool : public SceneComponent {
   private:
     GFXDevice& _context;
 
-    vectorImpl<TaskHandle> _lightUpdateTask;
+    TaskHandle _lightUpdateTask;
 
     bool _buffersUpdated;
     std::array<bool, to_base(LightType::COUNT)> _lightTypeState;

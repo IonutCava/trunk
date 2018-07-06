@@ -220,10 +220,7 @@ Light* LightPool::getLight(I64 lightGUID, LightType type) {
 }
 
 void LightPool::waitForTasks() {
-    for (TaskHandle& task : _lightUpdateTask) {
-        task.wait();
-    }
-    _lightUpdateTask.clear();
+    _lightUpdateTask.wait();
 }
 
 void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
@@ -293,8 +290,8 @@ void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewM
     };
 
     // Sort all lights (Sort in parallel by type)
-    _lightUpdateTask.emplace_back(CreateTask(_context.parent().taskPool(), lightUpdate));
-    _lightUpdateTask.back().startTask(Task::TaskPriority::LOW, 0);
+    _lightUpdateTask = CreateTask(_context.parent().taskPool(), lightUpdate);
+    _lightUpdateTask.startTask(Task::TaskPriority::LOW, 0);
 }
 
 void LightPool::uploadLightData(ShaderBufferLocation lightDataLocation,
