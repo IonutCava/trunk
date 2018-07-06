@@ -337,6 +337,9 @@
     <ClInclude Include="..\..\Source Code\Libs\RenderDoc-Manager\RenderDocManager.h">
       <Filter>Video\RenderDocManager</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXShaderData.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -575,6 +578,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\RenderDoc-Manager\RenderDocManager.cpp">
       <Filter>Video\RenderDocManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\GFXShaderData.cpp">
+      <Filter>Video</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1026,6 +1032,12 @@
     </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\pbr.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\Source Code\Platform\Video\Headers\GFXShaderData.inl">
+      <Filter>Video\Headers</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\velocityCalc.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
   </ItemGroup>
 </Project>

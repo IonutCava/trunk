@@ -96,6 +96,7 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
     virtual bool create(U16 width, U16 height) = 0;
     virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest = true);
     virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index) const;
+    virtual const RTAttachment_ptr& getPrevFrameAttachment(RTAttachment::Type type, U8 index) const;
     virtual void destroy() = 0;
     /// Use by multilayered FB's
     virtual void drawToLayer(RTAttachment::Type type, U8 index, U32 layer, bool includeDepth = true) = 0;
@@ -128,6 +129,8 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
 
     U16 getWidth()  const;
     U16 getHeight() const;
+
+    virtual void onAttachmentsChanged() = 0;
 
    protected:
     virtual bool checkStatus() const = 0;

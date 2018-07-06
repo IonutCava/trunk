@@ -43,6 +43,8 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, const stringI
     _textureExtenalFlag.fill(false);
     _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFLECTION)] = true;
     _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFRACTION)] = true;
+    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::DEPTH)] = true;
+    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::DEPTH_PREV)] = true;
     defaultReflectionTexture(nullptr, 0);
     defaultRefractionTexture(nullptr, 0);
 

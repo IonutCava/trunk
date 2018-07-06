@@ -185,8 +185,7 @@ bool GL_API::initShaders() {
                                                  "vec4 _vertexWV;",
                                                  "vec3 _normalWV;",
                                                  "vec3 _tangentWV;",
-                                                 "vec3 _bitangentWV;",
-                                                 "vec2 _vertexVelocity;"
+                                                 "vec3 _bitangentWV;"
                                                 };
     // Initialize GLSW
     GLint glswState = glswInit();
@@ -395,6 +394,12 @@ bool GL_API::initShaders() {
         ShaderType::FRAGMENT,
         "#define TEXTURE_UNIT1 " +
             to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::UNIT1)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COMPUTE,
+        "#define TEXTURE_UNIT1 " +
+        to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::UNIT1)),
         lineOffsets);
 
     appendToShaderHeader(

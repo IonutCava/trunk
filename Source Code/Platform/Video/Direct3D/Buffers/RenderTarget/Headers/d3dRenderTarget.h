@@ -82,6 +82,8 @@ class d3dRenderTarget : public RenderTarget {
 
     void clear(const RTDrawDescriptor& drawPolicy) const override;
 
+    void onAttachmentsChanged() override;
+
    protected:
     bool checkStatus() const;
 };

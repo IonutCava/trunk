@@ -45,7 +45,7 @@ enum class RendererType : U32 {
 class LightPool;
 class ResourceCache;
 class PlatformContext;
-/// A n abstract renderer used to switch between different rendering techniques:
+/// An abstract renderer used to switch between different rendering techniques:
 /// TiledForwardShading, Deferred Shading, etc
 class NOINITVTABLE Renderer {
    public:

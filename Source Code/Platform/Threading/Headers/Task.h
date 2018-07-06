@@ -43,7 +43,7 @@ class TaskPool;
  */
 class Task : public GUIDWrapper, private NonCopyable {
    public:
-       static constexpr U16 MAX_CHILD_TASKS = 256;
+       static constexpr U16 MAX_CHILD_TASKS = to_const_ushort(std::numeric_limits<I8>::max());
 
        enum class TaskPriority : U32 {
            DONT_CARE = 0,
@@ -103,19 +103,20 @@ class Task : public GUIDWrapper, private NonCopyable {
         _jobIdentifier = jobIdentifier;
     }
 
-    void addChildTask(Task* task) {
-        task->_parentTask = this;
-        _childTasks[_childTaskCount++] = task;
-        assert(_childTaskCount < MAX_CHILD_TASKS);
-    }
+    void addChildTask(Task* task);
 
     void wait();
 
    protected:
     void run();
+    void runTaskWithGPUSync();
+    void runTaskWithDebugInfo();
+    void runTaskWithGPUSyncAndDebugInfo();
+
+    PoolTask getRunTask(TaskPriority priority, U32 taskFlags);
+
     void beginSyncGPU();
     void endSyncGPU();
-    void waitForChildren(bool yeld, I64 timeout);
 
    private:
     const Application& _application;
@@ -136,10 +137,7 @@ class Task : public GUIDWrapper, private NonCopyable {
 
     Task* _parentTask;
     std::array<Task*, MAX_CHILD_TASKS> _childTasks;
-    std::atomic_ushort _childTaskCount;
-
-
-    U32 _taskFlags;
+    std::atomic_short _childTaskCount;
 };
 
 // A task object may be used for multiple jobs

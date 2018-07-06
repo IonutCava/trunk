@@ -576,7 +576,7 @@ void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
     _taskPool.waitForAllTasks(true, true, true);
     SceneManager::onShutdown();
-    _sceneManager->destroy();
+    _sceneManager.reset();
     // release the scene
     Console::bindConsoleOutput(std::function<void(const char*, bool)>());
     _platformContext->gui().destroy();  /// Deactivate GUI 
@@ -587,7 +587,7 @@ void Kernel::shutdown() {
     _platformContext->pfx().closePhysicsAPI();
     Console::printfn(Locale::get(_ID("STOP_HARDWARE")));
     OpenCLInterface::instance().deinit();
-    _renderPassManager->destroy();
+    _renderPassManager.reset();
     _platformContext->sfx().closeAudioAPI();
     _platformContext->gfx().closeRenderingAPI();
     _platformContext->input().terminate();

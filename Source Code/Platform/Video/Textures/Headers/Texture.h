@@ -94,6 +94,10 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
                           const bufferPtr data,
                           const vec2<U16>& dimensions,
                           const vec2<U16>& mipLevels) = 0;
+
+    // Other must have same size!
+    virtual void copy(const Texture_ptr& other) = 0;
+
     /// Specify the sampler descriptor used to sample from this texture in the
     /// shaders
     inline void setCurrentSampler(const SamplerDescriptor& descriptor) {

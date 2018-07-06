@@ -84,6 +84,7 @@ class RTDrawDescriptor {
     inline RTDrawMask& drawMask() { return _drawMask; }
     inline const RTDrawMask& drawMask() const { return _drawMask; }
     inline U32 stateMask() const { return _stateMask; }
+
   protected:
     RTDrawMask _drawMask;
     U32 _stateMask;

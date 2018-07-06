@@ -92,21 +92,15 @@ void glFramebuffer::updateDescriptor(RTAttachment::Type type, U8 index) {
 
 }
 
-void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index ) {
-    const RTAttachment_ptr& attachment = _attachments.get(type, index);
-
-    if (!attachment->used() && !attachment->changed()) {
-        return;
-    }
-
+void glFramebuffer::initAttachment(const RTAttachment_ptr& attachment, RTAttachment::Type type, U8 index, U8 copyCount) {
     TextureDescriptor& texDescriptor = attachment->descriptor();
 
     assert(_width != 0 && _height != 0 && "glFramebuffer error: Invalid frame buffer dimensions!");
 
     attachment->mipMapLevel(0,
                             texDescriptor.getSampler().generateMipMaps()
-                                ? 1 + Texture::computeMipCount(_width, _height)
-                                : 1);
+                            ? 1 + Texture::computeMipCount(_width, _height)
+                            : 1);
 
     // check if we have a valid attachment
     if (attachment->used()) {
@@ -116,11 +110,12 @@ void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index ) {
             tex->resize(NULL, vec2<U16>(_width, _height), attachment->mipMapLevel());
         }
     } else {
-        ResourceDescriptor textureAttachment(Util::StringFormat("FBO_%s_Att_%s_%d_%d",
-                                                                _name.c_str(),
-                                                                getAttachmentName(type),
-                                                                index,
-                                                                getGUID()));
+        ResourceDescriptor textureAttachment(Util::StringFormat("FBO_%s_Att_%s_%d_%d_%d",
+                                             _name.c_str(),
+                                             getAttachmentName(type),
+                                             index,
+                                             copyCount,
+                                             getGUID()));
         textureAttachment.setThreadedLoading(false);
         textureAttachment.setPropertyDescriptor(texDescriptor.getSampler());
         textureAttachment.setEnumValue(to_uint(texDescriptor._type));
@@ -134,7 +129,6 @@ void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index ) {
         attachment->setTexture(tex);
     }
 
-    
     // Attach to frame buffer
     GLenum attachmentEnum;
     if (type == RTAttachment::Type::Depth) {
@@ -149,10 +143,24 @@ void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index ) {
     }
 
     attachment->binding(to_uint(attachmentEnum));
-       
+
     attachment->flagDirty();
     attachment->clearChanged();
     attachment->enabled(true);
+}
+
+void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index ) {
+    const RTAttachment_ptr& attachment = _attachments.get(type, index);
+
+    if (!attachment->used() && !attachment->changed()) {
+        return;
+    }
+
+    initAttachment(attachment, type, index, 0);
+    const RTAttachment_ptr& prevAttachment = _attachments.getPrevFrame(type, index);
+    if (prevAttachment != nullptr) {
+        initAttachment(prevAttachment, type, index, 1);
+    }
 }
 
 void glFramebuffer::toggleAttachment(RTAttachment::Type type, U8 index, bool state) {
@@ -386,15 +394,18 @@ void glFramebuffer::blitFrom(RenderTarget* inputFB,
 const RTAttachment& glFramebuffer::getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest) {
     if (_resolveBuffer) {
         resolve();
-        return _resolveBuffer->getAttachment(type, flushStateOnRequest);
+        return _resolveBuffer->getAttachment(type, index, flushStateOnRequest);
     }
 
-    const RTAttachment_ptr& att = _attachments.get(type, index);
-    if (flushStateOnRequest) {
-        att->flush();
+    return RenderTarget::getAttachment(type, index, flushStateOnRequest);
+}
+
+const RTAttachment_ptr& glFramebuffer::getPrevFrameAttachment(RTAttachment::Type type, U8 index) const {
+    if (_resolveBuffer) {
+        return _resolveBuffer->getPrevFrameAttachment(type, index);
     }
 
-    return *att;
+    return RenderTarget::getPrevFrameAttachment(type, index);
 }
 
 void glFramebuffer::bind(U8 unit, RTAttachment::Type type, U8 index, bool flushStateOnRequest) {
@@ -501,6 +512,17 @@ void glFramebuffer::resetAttachments() {
             if (_attachments.get(type, j)->dirty()) {
                 toggleAttachment(type, j, true);
                 _attachments.get(type, j)->clean();
+            }
+        }
+    }
+}
+
+void glFramebuffer::onAttachmentsChanged() {
+    for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
+        RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
+        for (U8 j = 0; j < _attachments.attachmentCount(type); ++j) {
+            if (_attachments.get(type, j)->used()) {
+                toggleAttachment(type, j, true);
             }
         }
     }

@@ -16,7 +16,7 @@ RenderTarget::RenderTarget(GFXDevice& context, const stringImpl& name)
       _depthValue(1.0),
       _name(name)
 {
-    _attachments.init(g_maxColourAttachments);
+    _attachments.init(this, g_maxColourAttachments);
 }
 
 RenderTarget::~RenderTarget()
@@ -31,11 +31,19 @@ void RenderTarget::addAttachment(const TextureDescriptor& descriptor,
 }
 
 const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest) {
-    return *_attachments.get(type, index);
+    RTAttachment&  att = *_attachments.get(type, index);
+    if (flushStateOnRequest) {
+        att.flush();
+    }
+    return att;
 }
 
 const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index) const {
     return *_attachments.get(type, index);
+}
+
+const RTAttachment_ptr& RenderTarget::getPrevFrameAttachment(RTAttachment::Type type, U8 index) const {
+    return _attachments.getPrevFrame(type, index);
 }
 
 void RenderTarget::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) {

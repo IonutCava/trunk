@@ -194,6 +194,7 @@ namespace GLUtil {
 GLuint _invalidObjectID = GL_INVALID_INDEX;
 SDL_GLContext _glRenderContext;
 thread_local SDL_GLContext _glSecondaryContext = nullptr;
+SharedLock _glSecondaryContextMutex;
 glVAOPool _vaoPool;
 
 /// this may not seem very efficient (or useful) but it saves a lot of

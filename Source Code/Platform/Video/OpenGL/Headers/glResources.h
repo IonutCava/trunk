@@ -153,6 +153,7 @@ void DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 extern GLuint _invalidObjectID;
 extern SDL_GLContext _glRenderContext;
 extern thread_local SDL_GLContext _glSecondaryContext;
+extern SharedLock _glSecondaryContextMutex;
 /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
 extern glVAOPool _vaoPool;
 void submitRenderCommand(const GenericDrawCommand& drawCommand,

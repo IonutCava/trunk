@@ -173,12 +173,7 @@ bool ParticleEmitter::unload() {
 }
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
-    RenderTarget& depthBuffer = _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    TextureData depthBufferData = depthBuffer.getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getData();
-    depthBufferData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::DEPTH));
-    sgn.get<RenderingComponent>()->registerTextureDependency(depthBufferData);
-
-    if (_particleTexture && _particleTexture->flushTextureState()) {
+if (_particleTexture && _particleTexture->flushTextureState()) {
         TextureData particleTextureData = _particleTexture->getData();
         particleTextureData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
         sgn.get<RenderingComponent>()->registerTextureDependency(particleTextureData);

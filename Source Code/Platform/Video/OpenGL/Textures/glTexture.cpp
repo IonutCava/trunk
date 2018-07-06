@@ -354,6 +354,19 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
     }
 }
 
+void glTexture::copy(const Texture_ptr& other) {
+
+    U32 numFaces = 1;
+    if (_textureData._textureType == TextureType::TEXTURE_CUBE_MAP ||
+        _textureData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+        numFaces = 6;
+    }
+
+    glCopyImageSubData(other->getData().getHandleHigh(), GLUtil::glTextureTypeTable[to_uint(other->getTextureType())], 0, 0, 0, 0,
+                       _textureData.getHandleHigh(), _type, 0, 0, 0, 0,
+                       getWidth(), getHeight(), _numLayers * numFaces);
+}
+
 bool glTexture::flushTextureState() {
     WAIT_FOR_CONDITION(getState() == ResourceState::RES_LOADED);
 

@@ -53,6 +53,9 @@ class glFramebuffer : public RenderTarget {
                                       U8 index,
                                       bool flushStateOnRequest = true) override;
 
+    const RTAttachment_ptr& getPrevFrameAttachment(RTAttachment::Type type,
+                                                   U8 index) const override;
+
     void drawToLayer(RTAttachment::Type type,
                      U8 index,
                      U32 layer,
@@ -89,6 +92,8 @@ class glFramebuffer : public RenderTarget {
                   bool blitColour = true,
                   bool blitDepth = false) override;
 
+    void onAttachmentsChanged() override;
+
    protected:
     void resolve();
     void clear(const RTDrawDescriptor& drawPolicy) const override;
@@ -96,6 +101,8 @@ class glFramebuffer : public RenderTarget {
     void resetAttachments();
 
     void initAttachment(RTAttachment::Type type, U8 index);
+    void initAttachment(const RTAttachment_ptr& attachment, RTAttachment::Type type, U8 index, U8 copyCount);
+
     void updateDescriptor(RTAttachment::Type type, U8 index);
 
     void resetMipMaps(const RTDrawDescriptor& drawPolicy);

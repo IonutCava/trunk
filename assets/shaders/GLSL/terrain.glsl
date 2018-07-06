@@ -26,7 +26,6 @@ void main(void){
     _uv1 = noiseUV + time2;
     _uv0.s -= time2;
 
-    VAR._vertexVelocity = vec2(0.0, 0.0);
 
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
 }
@@ -45,7 +44,6 @@ smooth in float _waterDepth;
 
 layout(location = 0) out vec4 _colourOut;
 layout(location = 1) out vec2 _normalOut;
-layout(location = 2) out vec2 _velocityOut;
 //subroutine vec4 TerrainMappingType();
 
 //subroutine(TerrainMappingType) 
@@ -83,5 +81,4 @@ vec4 TerrainMappingRoutine(){ // -- HACK - Ionut
 void main(void) {
    _colourOut = ToSRGB(applyFog(gl_ClipDistance[0] > 0.0 ? TerrainMappingRoutine() : UnderwaterMappingRoutine()));
    _normalOut = packNormal(processedNormal);
-   _velocityOut = VAR._vertexVelocity;
 }

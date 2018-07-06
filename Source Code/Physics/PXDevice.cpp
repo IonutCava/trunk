@@ -38,9 +38,11 @@ ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate) {
 }
 
 bool PXDevice::closePhysicsAPI() { 
-    DIVIDE_ASSERT(_api != nullptr,
-            "PXDevice error: closePhysicsAPI called without init!");
-        
+    if (_api == nullptr) {
+        Console::errorfn(Locale::get(_ID("ERROR_PFX_DEVICE_NO_INIT")));
+        return false;
+    }
+
     bool state = _api->closePhysicsAPI();
     _api.release();
 

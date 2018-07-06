@@ -51,4 +51,5 @@ void d3dRenderTarget::blitFrom(RenderTarget* inputFB,
 
 void d3dRenderTarget::clear(const RTDrawDescriptor& drawPolicy) const {}
 
+void d3dRenderTarget::onAttachmentsChanged() {}
 };

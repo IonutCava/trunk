@@ -1,12 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug2017|x64">
+      <Configuration>Debug2017</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DebugClang|x64">
+      <Configuration>DebugClang</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile2017|x64">
+      <Configuration>Profile2017</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Profile|x64">
       <Configuration>Profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release2017|x64">
+      <Configuration>Release2017</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
@@ -206,7 +222,26 @@
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141_clang_c2</PlatformToolset>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -220,13 +255,25 @@
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Profile2017|x64'">
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
@@ -236,7 +283,25 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">
+    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">
+    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IntDir>$(Configuration)_Game\</IntDir>
+    <TargetName>$(ProjectName)_d</TargetName>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">
+    <IntDir>$(Configuration)_Game\</IntDir>
+    <TargetName>$(ProjectName)_d</TargetName>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">
     <IntDir>$(Configuration)_Game\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
@@ -245,10 +310,17 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">
+    <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <OutDir>$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IntDir>$(Configuration)_Game\</IntDir>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">
     <IntDir>$(Configuration)_Game\</IntDir>
     <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
   </PropertyGroup>
@@ -305,7 +377,142 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(EngineLibraries)\boost\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503;4127;4996</DisableSpecificWarnings>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <OpenMPSupport>true</OpenMPSupport>
+      <ShowIncludes>false</ShowIncludes>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <StringPooling>true</StringPooling>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <SDLCheck>false</SDLCheck>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_d$(TargetExt)</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <Verbose>false</Verbose>
+    </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">
+    <ClCompile>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(EngineLibraries)\boost\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503;4127;4996</DisableSpecificWarnings>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <OpenMPSupport>true</OpenMPSupport>
+      <ShowIncludes>false</ShowIncludes>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <StringPooling>true</StringPooling>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Enabled</ExceptionHandling>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <SDLCheck>false</SDLCheck>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <CLanguageStandard>c99</CLanguageStandard>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_d$(TargetExt)</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <Verbose>false</Verbose>
+    </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(EngineLibraries)\boost\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>true</OpenMPSupport>
+      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ShowIncludes>false</ShowIncludes>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <StringPooling>true</StringPooling>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <SDLCheck>false</SDLCheck>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <OmitFramePointers>true</OmitFramePointers>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)$(TargetExt)</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <Verbose>false</Verbose>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Full</Optimization>

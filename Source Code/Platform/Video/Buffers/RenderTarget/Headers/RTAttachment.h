@@ -103,7 +103,7 @@ class RTAttachment {
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(RTAttachment);
 
-
+class RenderTarget;
 class RTAttachmentPool : public FrameListener {
     public:
         typedef std::array<vectorImpl<RTAttachment_ptr>, to_const_uint(RTAttachment::Type::COUNT)> AttachmentPool;
@@ -112,7 +112,7 @@ class RTAttachmentPool : public FrameListener {
         RTAttachmentPool();
         ~RTAttachmentPool();
 
-        void init(U8 colourAttCount);
+        void init(RenderTarget* parent, U8 colourAttCount);
 
         void add(RTAttachment::Type type,
                  U8 index,
@@ -121,10 +121,13 @@ class RTAttachmentPool : public FrameListener {
 
         RTAttachment_ptr& get(RTAttachment::Type type, U8 index);
         const RTAttachment_ptr& get(RTAttachment::Type type, U8 index) const;
-
+        const RTAttachment_ptr& getPrevFrame(RTAttachment::Type type, U8 index) const;
+        
         U8 attachmentCount(RTAttachment::Type type) const;
 
         void destroy();
+
+        void onClear();
 
     protected:
         bool frameEnded(const FrameEvent& evt) override;
@@ -138,6 +141,10 @@ class RTAttachmentPool : public FrameListener {
         AttachmentPool _attachmentHistory;
         vectorImpl<std::pair<RTAttachment::Type, U8>> _attachmentHistoryIndex;
         std::array < U8, to_const_uint(RTAttachment::Type::COUNT)> _attachmentCount;
+
+        bool _isFrameListener;
+
+        RenderTarget* _parent;
 };
 
 }; //namespace Divide

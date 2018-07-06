@@ -58,14 +58,13 @@ void TaskPool::flushCallbackQueue()
 void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear) {
     bool finished = _workerThreadCount == 0;
     while (!finished) {
-        finished = true;
         std::unique_lock<std::mutex> lk(_taskStateLock);
-        for (bool state : _taskStates) {
-            if (state) {
-                finished = false;
-                break;
-            }
-        }
+        // Possible race condition. Try to set all child states to false as well!
+        finished = std::find_if(std::cbegin(_taskStates),
+                                std::cend(_taskStates),
+                                [](bool entry) {
+                                    return entry == true;
+                                }) == std::cend(_taskStates);
         if (yeld) {
             std::this_thread::yield();
         }

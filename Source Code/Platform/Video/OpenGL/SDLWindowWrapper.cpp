@@ -397,20 +397,25 @@ void GL_API::closeRenderingAPI() {
 void GL_API::syncToThread(const std::thread::id& threadID) {
     ACKNOWLEDGE_UNUSED(threadID);
     if (glbinding::getCurrentContext() == 0) {
-        // This also makes the context current
-        assert(GLUtil::_glSecondaryContext == nullptr && "GL_API::syncToThread: double init context for current thread!");
-        bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::_glSecondaryContext);
-        assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
-        ACKNOWLEDGE_UNUSED(ctxFound);
-        SDL_GL_MakeCurrent(_mainRenderWindow->getRawWindow(), GLUtil::_glSecondaryContext);
-        glbinding::Binding::initialize(false);
-        // Enable OpenGL debug callbacks for this context as well
-        if (Config::ENABLE_GPU_VALIDATION) {
-            glEnable(GL_DEBUG_OUTPUT);
-            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-            // Debug callback in a separate thread requires a flag to distinguish it
-            // from the main thread's callbacks
-            glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, GLUtil::_glSecondaryContext);
+        // Double check so that we don't run into a race condition!
+        UpgradableReadLock r_lock(GLUtil::_glSecondaryContextMutex);
+        if (glbinding::getCurrentContext() == 0) {
+            UpgradeToWriteLock w_lock(r_lock);
+            // This also makes the context current
+            assert(GLUtil::_glSecondaryContext == nullptr && "GL_API::syncToThread: double init context for current thread!");
+            bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::_glSecondaryContext);
+            assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
+            ACKNOWLEDGE_UNUSED(ctxFound);
+            SDL_GL_MakeCurrent(_mainRenderWindow->getRawWindow(), GLUtil::_glSecondaryContext);
+            glbinding::Binding::initialize(false);
+            // Enable OpenGL debug callbacks for this context as well
+            if (Config::ENABLE_GPU_VALIDATION) {
+                glEnable(GL_DEBUG_OUTPUT);
+                glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+                // Debug callback in a separate thread requires a flag to distinguish it
+                // from the main thread's callbacks
+                glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, GLUtil::_glSecondaryContext);
+            }
         }
     }
 }

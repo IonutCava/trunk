@@ -380,7 +380,7 @@ const mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) const {
 
 /// Update the internal GPU data buffer with the clip plane values
 void GFXDevice::updateClipPlanes() {
-    GPUBlock::GPUData& data = _gpuBlock._data;
+    GFXShaderData::GPUData& data = _gpuBlock._data;
     for (U8 i = 0; i < to_const_ubyte(Frustum::FrustPlane::COUNT); ++i) {
         data._clipPlanes[i].set(_clippingPlanes[i].getEquation());
     }
@@ -405,7 +405,7 @@ void GFXDevice::renderFromCamera(Camera& camera) {
 
     camera.updateLookAt();
     // Tell the Rendering API to draw from our desired PoV
-    GPUBlock::GPUData& data = _gpuBlock._data;
+    GFXShaderData::GPUData& data = _gpuBlock._data;
 
     const mat4<F32>& viewMatrix = camera.getViewMatrix();
     const mat4<F32>& projMatrix = camera.getProjectionMatrix();

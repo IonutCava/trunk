@@ -104,14 +104,16 @@ vec3 normalLinearBlend(in vec3 n1, in vec3 n2) {
 }
 
 vec3 normalOverlayBlend(in vec3 n1, in vec3 n2) {
-    n1 = texture2D(base_map,   uv).xyz;
+    /*n1 = texture2D(base_map,   uv).xyz;
     n2 = texture2D(detail_map, uv).xyz;
 
     vec3 n(overlay(n1.x, n2.x),
            overlay(n1.y, n2.y),
            overlay(n1.z, n2.z));
 
-    return normalize(n*2.0 - 1.0);
+    return normalize(n*2.0 - 1.0);*/
+
+    return normalLinearBlend(n1, n2);
 }
 
 vec3 normalPartialDerivativesBlend(in vec3 n1, in vec3 n2) {

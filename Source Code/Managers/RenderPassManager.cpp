@@ -4,8 +4,13 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
+
+namespace {
+    const U32 g_VelocityCalcWorkGroupSize = 16;
+};
 
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
     : KernelComponent(parent),
@@ -22,6 +27,10 @@ RenderPassManager::~RenderPassManager()
 bool RenderPassManager::init() {
     if (_renderQueue == nullptr) {
         _renderQueue = MemoryManager_NEW RenderQueue(_context);
+        ResourceDescriptor shader("velocityCalc");
+        shader.setThreadedLoading(false);
+        shader.setPropertyList(Util::StringFormat("WORK_GROUP_SIZE %d,", g_VelocityCalcWorkGroupSize));
+        _velocityCalcProgram = CreateResource<ShaderProgram>(parent().resourceCache(), shader);
         return true;
     }
 
@@ -173,9 +182,11 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             RenderTarget& target = _context.renderTarget(params.target);
             _context.constructHIZ(target);
 
+            const Texture_ptr& depthBufferTexture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+
             if (params.occlusionCull) {
                 RenderPass::BufferData& bufferData = getBufferData(params.stage, params.pass);
-                _context.occlusionCull(bufferData, target.getAttachment(RTAttachment::Type::Depth, 0).asTexture());
+                _context.occlusionCull(bufferData, depthBufferTexture);
             }
         }
     }
@@ -206,13 +217,39 @@ void RenderPassManager::doCustomPass(PassParams& params) {
         cmd._renderTarget = params.target;
         cmd._renderTargetDescriptor = drawPolicy;
         _context.renderQueueToSubPasses(cmd);
+
         RenderSubPassCmds postRenderSubPasses(1);
         Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, params.stage, postRenderSubPasses);
         cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(postRenderSubPasses), std::cend(postRenderSubPasses));
+
         commandBuffer.push_back(cmd);
+
         cleanCommandBuffer(commandBuffer);
         _context.flushCommandBuffer(commandBuffer);
         commandBuffer.resize(0);
+
+        if (params.velocityCalc) {
+            RenderTarget& target = _context.renderTarget(params.target);
+            const Texture_ptr& velocityTexture = target.getAttachment(RTAttachment::Type::Colour, 2).asTexture();
+            if (velocityTexture) {
+                const Texture_ptr& depthBufferTexture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+                const RTAttachment_ptr& prevDepthBuffer = target.getPrevFrameAttachment(RTAttachment::Type::Depth, 0);
+                const Texture_ptr& prevDepthTexture = prevDepthBuffer && prevDepthBuffer->asTexture() ? prevDepthBuffer->asTexture()
+                                                                                                      : depthBufferTexture;
+                // Bind the depth buffers
+                depthBufferTexture->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), 0);
+                prevDepthTexture->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH_PREV), 0);
+                velocityTexture->bindLayer(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), 0, 0, false, false, true);
+
+
+                _velocityCalcProgram->bind();
+                _velocityCalcProgram->DispatchCompute((velocityTexture->getWidth() + g_VelocityCalcWorkGroupSize - 1) / g_VelocityCalcWorkGroupSize,
+                                                      (velocityTexture->getHeight() + g_VelocityCalcWorkGroupSize - 1) / g_VelocityCalcWorkGroupSize,
+                                                      1);
+                _velocityCalcProgram->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::TEXTURE);
+            }
+        }
+
     }
 }
 

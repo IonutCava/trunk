@@ -68,6 +68,8 @@ class glTexture final : public Texture {
                   const vec2<U16>& dimensions,
                   const vec2<U16>& mipLevels) override;
 
+    void copy(const Texture_ptr& other) override;
+
     bool flushTextureState() override;
 
    protected:

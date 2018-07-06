@@ -83,7 +83,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // It should translate to (as seen by OpenGL) a uniform buffer without persistent mapping.
     // (Many small updates with BufferSubData are recommended with the target usage of the buffer)
     _gfxDataBuffer = newSB(1, false, false, BufferUpdateFrequency::OFTEN);
-    _gfxDataBuffer->create(1, sizeof(GPUBlock));
+    _gfxDataBuffer->create(1, sizeof(GFXShaderData::GPUData));
     _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
@@ -167,7 +167,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     RenderTarget& screenTarget = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, 0, false);
     screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, 1, false);
-    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, 2, true);
+    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, 2, false);
     screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0, true);
     screenTarget.setClearColour(RTAttachment::Type::Colour, 0, DefaultColours::DIVIDE_BLUE());
     screenTarget.setClearColour(RTAttachment::Type::Colour, 1, DefaultColours::WHITE());

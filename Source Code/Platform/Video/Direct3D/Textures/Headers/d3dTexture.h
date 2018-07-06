@@ -74,6 +74,9 @@ class d3dTexture final : public Texture {
                   const bufferPtr data,
                   const vec2<U16>& dimensions,
                   const vec2<U16>& mipLevels) override {}
+
+    void copy(const Texture_ptr& other) override {}
+
    private:
     U32 _type;
 };

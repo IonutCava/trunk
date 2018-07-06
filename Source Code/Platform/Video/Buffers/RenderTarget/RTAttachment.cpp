@@ -100,25 +100,48 @@ void RTAttachment::binding(U32 binding) {
     _binding = binding;
 }
 
-RTAttachmentPool::RTAttachmentPool() : FrameListener()
+RTAttachmentPool::RTAttachmentPool()
+    : FrameListener("RTAttachmentPool"),
+      _isFrameListener(false)
 {
     _attachmentCount.fill(0);
 }
 
 RTAttachmentPool::~RTAttachmentPool()
 {
+    if (_isFrameListener) {
+        UNREGISTER_FRAME_LISTENER(this);
+    }
 }
 
 bool RTAttachmentPool::frameEnded(const FrameEvent& evt) {
+    static const bool useTextureCopyMethod = true;
+
+    bool change = false;
     for (const std::pair<RTAttachment::Type, U8> &entry : _attachmentHistoryIndex) {
-        std::swap(getInternal(_attachment, entry.first, entry.second),
-                  getInternal(_attachmentHistory, entry.first, entry.second));
+        RTAttachment_ptr& crt = getInternal(_attachment, entry.first, entry.second);
+        RTAttachment_ptr& prev = getInternal(_attachmentHistory, entry.first, entry.second);
+        if (useTextureCopyMethod) {
+            prev->asTexture()->copy(crt->asTexture());
+        } else {
+            change = true;
+        }
+    }
+
+    if (!useTextureCopyMethod) {
+        if (change) {
+            _parent->onAttachmentsChanged();
+        }
     }
 
     return true;
 }
 
-void RTAttachmentPool::init(U8 colourAttCount) {
+void RTAttachmentPool::onClear() {
+
+}
+
+void RTAttachmentPool::init(RenderTarget* parent, U8 colourAttCount) {
     _attachment[to_const_uint(RTAttachment::Type::Colour)].resize(colourAttCount, nullptr);
     _attachment[to_const_uint(RTAttachment::Type::Depth)].resize(1, nullptr);
     _attachment[to_const_uint(RTAttachment::Type::Stencil)].resize(1, nullptr);
@@ -126,6 +149,8 @@ void RTAttachmentPool::init(U8 colourAttCount) {
     _attachmentHistory[to_const_uint(RTAttachment::Type::Colour)].resize(colourAttCount, nullptr);
     _attachmentHistory[to_const_uint(RTAttachment::Type::Depth)].resize(1, nullptr);
     _attachmentHistory[to_const_uint(RTAttachment::Type::Stencil)].resize(1, nullptr);
+
+    _parent = parent;
 }
 
 void RTAttachmentPool::add(RTAttachment::Type type,
@@ -147,6 +172,11 @@ void RTAttachmentPool::add(RTAttachment::Type type,
         ptrPrev->fromDescriptor(descriptor);
 
         _attachmentHistoryIndex.emplace_back(type, index);
+
+        if (!_isFrameListener) {
+            REGISTER_FRAME_LISTENER(this, 6);
+            _isFrameListener = true;
+        }
     }
 }
 
@@ -204,10 +234,19 @@ const RTAttachment_ptr& RTAttachmentPool::get(RTAttachment::Type type, U8 index)
     return getInternal(_attachment, type, index);
 }
 
+const RTAttachment_ptr& RTAttachmentPool::getPrevFrame(RTAttachment::Type type, U8 index) const {
+    return getInternal(_attachmentHistory, type, index);
+}
+
 void RTAttachmentPool::destroy() {
     for (vectorImpl<RTAttachment_ptr>& attachmentEntry : _attachment) {
         attachmentEntry.clear();
     }
+
+    for (const std::pair<RTAttachment::Type, U8> &entry : _attachmentHistoryIndex) {
+        getInternal(_attachmentHistory, entry.first, entry.second).reset();
+    }
+    _attachmentHistoryIndex.clear();
 }
 
 U8 RTAttachmentPool::attachmentCount(RTAttachment::Type type) const {

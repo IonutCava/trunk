@@ -34,21 +34,6 @@
 
 namespace Divide {
 
-inline F32 GFXDevice::GPUBlock::GPUData::aspectRatio() const {
-    return _cameraPosition.w;
-}
-
-inline vec2<F32> GFXDevice::GPUBlock::GPUData::currentZPlanes() const {
-    return _ZPlanesCombined.xy();
-}
-
-inline F32 GFXDevice::GPUBlock::GPUData::FoV() const {
-    return _renderProperties.z;
-}
-
-inline F32 GFXDevice::GPUBlock::GPUData::tanHFoV() const {
-    return _renderProperties.w;
-}
 
 inline void 
 GFXDevice::NodeData::set(const GFXDevice::NodeData& other) {
@@ -58,7 +43,7 @@ GFXDevice::NodeData::set(const GFXDevice::NodeData& other) {
     this->_properties.set(other._properties);
 }
 
-inline const GFXDevice::GPUBlock::GPUData&
+inline const GFXShaderData::GPUData&
 GFXDevice::renderingData() const {
     return _gpuBlock._data;
 }

@@ -36,6 +36,7 @@
 
 #include "GFXState.h"
 #include "GFXRTPool.h"
+#include "GFXShaderData.h"
 #include "ScopedStates.h"
 #include "RenderPackage.h"
 #include "GenericCommandPool.h"
@@ -126,59 +127,6 @@ public:
         void set(const NodeData& other);
     };
 
-public:  // GPU specific data
-
-    struct GPUBlock {
-        GPUBlock() : _needsUpload(true),
-            _data(GPUData())
-        {
-        }
-
-        struct GPUData {
-            GPUData()
-            {
-                _ProjectionMatrix.identity();
-                _InvProjectionMatrix.identity();
-                _ViewMatrix.identity();
-                _ViewProjectionMatrix.identity();
-                _cameraPosition.set(0.0f);
-                _ViewPort.set(1.0f);
-                _ZPlanesCombined.set(1.0f, 1.1f, 1.0f, 1.1f);
-                _invScreenDimension.set(1.0f);
-                _renderProperties.set(0.0f);
-                for (U8 i = 0; i < to_const_ubyte(Frustum::FrustPlane::COUNT); ++i) {
-                    _frustumPlanes[i].set(0.0f);
-                }
-                for (U8 i = 0; i < to_const_ubyte(Frustum::FrustPlane::COUNT); ++i) {
-                    _frustumPlanes[i].set(1.0f);
-                }
-            }
-
-            mat4<F32> _ProjectionMatrix;
-            mat4<F32> _InvProjectionMatrix;
-            mat4<F32> _ViewMatrix;
-            mat4<F32> _ViewProjectionMatrix;
-            vec4<F32> _cameraPosition; // xyz - position, w - aspect ratio
-            vec4<F32> _ViewPort;
-            vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
-            vec4<F32> _invScreenDimension; //xy - dims, zw - reserved;
-            vec4<F32> _renderProperties;
-            vec4<F32> _frustumPlanes[to_const_uint(Frustum::FrustPlane::COUNT)];
-            vec4<F32> _clipPlanes[to_const_uint(Frustum::FrustPlane::COUNT)];
-
-            inline F32 aspectRatio() const;
-            inline vec2<F32> currentZPlanes() const;
-            inline F32 FoV() const;
-            inline F32 tanHFoV() const;
-
-        } _data;
-
-        mat4<F32> _viewMatrixInv;
-        mat4<F32> _viewProjMatrixInv;
-
-        bool _needsUpload = true;
-    };
-
 public:  // GPU interface
     explicit GFXDevice(Kernel& parent);
     ~GFXDevice();
@@ -248,7 +196,7 @@ public:  // GPU interface
     /// Alternative to the normal version of getMatrix
     inline const mat4<F32>& getMatrix(const MATRIX& mode) const;
     /// Access (Read Only) rendering data used by the GFX
-    inline const GPUBlock::GPUData& renderingData() const;
+    inline const GFXShaderData::GPUData& renderingData() const;
     /// Register a function to be called in the 2D rendering fase of the GFX Flush
     /// routine. Use callOrder for sorting purposes
     inline void add2DRenderFunction(const GUID_DELEGATE_CBK& callback, U32 callOrder);
@@ -404,6 +352,7 @@ protected:
 
     void occlusionCull(const RenderPass::BufferData& bufferData,
         const Texture_ptr& depthBuffer);
+
     void buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNodes,
         SceneRenderState& sceneRenderState,
         RenderPass::BufferData& bufferData,
@@ -496,7 +445,7 @@ protected:
     /// Current viewport stack
     ViewportStack _viewport;
 
-    GPUBlock _gpuBlock;
+    GFXShaderData _gpuBlock;
 
     DrawCommandList _drawCommandsCache;
     std::array<NodeData, Config::MAX_VISIBLE_NODES> _matricesData;
