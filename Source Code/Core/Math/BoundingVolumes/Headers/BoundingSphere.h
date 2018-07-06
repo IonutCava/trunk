@@ -50,6 +50,8 @@ class BoundingSphere {
 
     void fromBoundingBox(const BoundingBox& bBox);
     void fromBoundingSphere(const BoundingSphere& bSphere);
+    bool containsPoint(const vec3<F32>& point) const;
+    bool containsBoundingBox(const BoundingBox& AABB) const;
 
     // https://code.google.com/p/qe3e/source/browse/trunk/src/BoundingSphere.h?r=28
     void add(const BoundingSphere& bSphere);

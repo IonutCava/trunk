@@ -204,6 +204,11 @@ const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderSta
     return visibleNodes;
 }
 
+RenderPassCuller::VisibleNodeList& 
+SceneManager::getVisibleNodesCache(RenderStage stage) {
+    return _renderPassCuller->getNodeCache(stage);
+}
+
 void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass) {
     RenderQueue& queue = _renderPassManager->getQueue();
 

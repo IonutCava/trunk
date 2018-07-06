@@ -144,20 +144,21 @@ class SceneGraphNode : public GUIDWrapper,
     /// Find a child Node using the given name (either SGN name or SceneNode name)
     SceneGraphNode_wptr findChild(const stringImpl& name, bool sceneNodeName = false);
     /// Find the graph nodes whom's bounding boxes intersects the given ray
-    void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_wptr>& selectionHits);
+    void intersect(const Ray& ray, F32 start, F32 end,
+                   vectorImpl<SceneGraphNode_wptr>& selectionHits, bool recursive = true);
 
     /// Selection helper functions
     void setSelectionFlag(SelectionFlag flag);
     inline SelectionFlag getSelectionFlag() const { return _selectionFlag; }
 
+    void setSelectable(const bool state);
     inline bool isSelectable() const { return _isSelectable; }
-    inline void setSelectable(const bool state) { _isSelectable = state; }
 
     const stringImpl& getName() const { return _name; }
     /*Node Management*/
 
     /*Parent <-> Children*/
-    inline SceneGraphNode* getParent() const {
+    inline SceneGraphNode_wptr getParent() const {
         return _parent;
     }
 
@@ -289,7 +290,7 @@ class SceneGraphNode : public GUIDWrapper,
 
    private:
     SceneNode* _node;
-    SceneGraphNode* _parent;
+    SceneGraphNode_wptr _parent;
     std::atomic<bool> _active;
     std::atomic<bool> _boundingBoxDirty;
     U32 _bbAddExclusionList;

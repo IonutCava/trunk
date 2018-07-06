@@ -32,7 +32,7 @@
 #ifndef _SCENE_GRAPH_H_
 #define _SCENE_GRAPH_H_
 
-#include "SceneGraphNode.h"
+#include "Octree.h"
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Rendering/Headers/FrameListener.h"
@@ -55,15 +55,15 @@ class SceneGraph : private NonCopyable, public FrameListener {
     void unload();
 
     inline const SceneGraphNode& getRoot() const {
-        return _root;
+        return *_root;
     }
 
     inline SceneGraphNode& getRoot() {
-        return _root;
+        return *_root;
     }
 
     inline SceneGraphNode_wptr findNode(const stringImpl& name, bool sceneNodeName = false) {
-        return _root.findNode(name, sceneNodeName);
+        return _root->findNode(name, sceneNodeName);
     }
 
     /// Update all nodes. Called from "updateSceneState" from class Scene
@@ -84,8 +84,9 @@ class SceneGraph : private NonCopyable, public FrameListener {
     bool frameEnded(const FrameEvent& evt);
 
    private:
+    Octree* _octree;
     SceneRoot* _rootNode;
-    SceneGraphNode _root;
+    SceneGraphNode_ptr _root;
     vectorImpl<SceneGraphNode_wptr> _pendingDeletionNodes;
 };
 

@@ -530,6 +530,9 @@
     <ClCompile Include="..\..\Source Code\Geometry\Importer\MeshImporter.cpp">
       <Filter>Geometry\Importer</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Graphs\Octree.cpp">
+      <Filter>Graphs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -626,9 +629,6 @@
       <Filter>Graphs\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNode.h">
-      <Filter>Graphs\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Graphs\Headers\SpatialGraph.h">
       <Filter>Graphs\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\Light.h">
@@ -936,6 +936,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\MeshImporter.h">
       <Filter>Geometry\Importer\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Graphs\Headers\Octree.h">
+      <Filter>Graphs\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

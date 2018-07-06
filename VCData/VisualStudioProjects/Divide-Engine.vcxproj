@@ -272,6 +272,7 @@
     <ClCompile Include="..\..\Source Code\Graphs\Components\PhysicsComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\RenderingComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\SGNComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\Graphs\Octree.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SceneNodeRenderState.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIFormattedListBox.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIInput.cpp" />
@@ -486,7 +487,7 @@
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneGraph.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneGraphNode.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNode.h" />
-    <ClInclude Include="..\..\Source Code\Graphs\Headers\SpatialGraph.h" />
+    <ClInclude Include="..\..\Source Code\Graphs\Headers\Octree.h" />
     <ClInclude Include="..\..\Source Code\config.h" />
     <ClInclude Include="..\..\Source Code\readme.h" />
   </ItemGroup>

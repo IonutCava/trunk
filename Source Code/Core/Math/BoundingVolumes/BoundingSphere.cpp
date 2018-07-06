@@ -36,6 +36,27 @@ void BoundingSphere::operator=(const BoundingSphere& s) {
     this->_radius = s._radius;
 }
 
+bool BoundingSphere::containsBoundingBox(const BoundingBox& AABB) const {
+    bool inside = true;
+    const vec3<F32>* points = AABB.getPoints();
+
+    for (U8 i = 0; i < 8; ++i) {
+        if (containsPoint(points[i]))
+        {
+            inside = false;
+            break;
+        }
+    }
+
+    return inside;
+    
+}
+
+bool BoundingSphere::containsPoint(const vec3<F32>& point) const {
+    F32 distanceSQ = _center.distanceSquared(point);
+    return distanceSQ <= (_radius * _radius);
+}
+
 bool BoundingSphere::collision(const BoundingSphere& sphere2) const {
     return (this->_center.distance(sphere2._center) <=
            (this->_radius + sphere2._radius));

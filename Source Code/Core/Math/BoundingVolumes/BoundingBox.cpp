@@ -1,4 +1,5 @@
 #include "Headers/BoundingBox.h"
+#include "Headers/BoundingSphere.h"
 
 namespace Divide {
 
@@ -50,6 +51,27 @@ void BoundingBox::operator=(const BoundingBox& b) {
     this->_oldMatrix.set(b._oldMatrix);
     this->_pointsDirty = true;
     memcpy(_points, b._points, sizeof(vec3<F32>) * 8);
+}
+
+bool BoundingBox::containsBox(const BoundingBox& AABB2) const {
+    return _max.x <= AABB2._max.x &&
+           _max.y <= AABB2._max.y &&
+           _max.z <= AABB2._max.z &&
+           _min.x >= AABB2._min.x &&
+           _min.y >= AABB2._min.y &&
+           _min.z >= AABB2._min.z;
+}
+
+bool BoundingBox::containsSphere(const BoundingSphere& bSphere) const {
+    const vec3<F32>& center = bSphere.getCenter();
+    F32 radius = bSphere.getRadius();
+
+    return center.x - _min.x > radius &&
+           center.y - _min.y > radius &&
+           center.z - _min.z > radius &&
+           _max.x - center.x > radius &&
+           _max.y - center.y > radius &&
+           _max.z - center.z > radius;
 }
 
 bool BoundingBox::collision(const BoundingBox& AABB2) const {

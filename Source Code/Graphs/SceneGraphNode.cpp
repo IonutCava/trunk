@@ -34,7 +34,6 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
       _isSelectable(false),
       _sorted(false),
       _boundingBoxDirty(true),
-      _parent(nullptr),
       _updateTimer(Time::ElapsedMilliseconds()),
       _bbAddExclusionList(0),
       _usageContext(UsageContext::NODE_DYNAMIC),
@@ -73,7 +72,7 @@ void SceneGraphNode::usageContext(const UsageContext& newContext) {
 /// If we are destroying the current graph node
 SceneGraphNode::~SceneGraphNode()
 {
-    if (getParent()) {
+    if (getParent().lock()) {
         Attorney::SceneGraphSGN::onNodeDestroy(GET_ACTIVE_SCENEGRAPH(), *this);
     }
     Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")),
@@ -96,8 +95,9 @@ void SceneGraphNode::addBoundingBox(const BoundingBox& bb,
                                     const SceneNodeType& type) {
     if (!BitCompare(_bbAddExclusionList, to_uint(type))) {
         _boundingBox.add(bb);
-        if (_parent) {
-            _parent->getBoundingBox().setComputed(false);
+        SceneGraphNode_ptr parentPtr = _parent.lock();
+        if (parentPtr) {
+            parentPtr->getBoundingBox().setComputed(false);
         }
     }
 }
@@ -109,17 +109,18 @@ void SceneGraphNode::useDefaultTransform(const bool state) {
 /// Change current SceneGraphNode's parent
 void SceneGraphNode::setParent(SceneGraphNode& parent) {
     assert(parent.getGUID() != getGUID());
-    if (_parent) {
-        if (*_parent == parent) {
+    SceneGraphNode_ptr parentPtr = _parent.lock();
+    if (parentPtr) {
+        if (*parentPtr == parent) {
             return;
         }
         // Remove us from the old parent's children map
-        _parent->removeNode(getName(), false);
+        parentPtr->removeNode(getName(), false);
     }
     // Set the parent pointer to the new parent
-    _parent = &parent;
+    _parent = parent.shared_from_this();
     // Add ourselves in the new parent's children map
-    _parent->addNode(shared_from_this());
+    parent.addNode(shared_from_this());
     // That's it. Parent Transforms will be updated in the next render pass;
 }
 
@@ -248,14 +249,18 @@ SceneGraphNode_wptr SceneGraphNode::findNode(const stringImpl& name,  bool scene
 void SceneGraphNode::intersect(const Ray& ray,
                                F32 start,
                                F32 end,
-                               vectorImpl<SceneGraphNode_wptr>& selectionHits) {
+                               vectorImpl<SceneGraphNode_wptr>& selectionHits,
+                               bool recursive) {
+
     if (isSelectable() && _boundingBox.intersect(ray, start, end)) {
         selectionHits.push_back(shared_from_this());
     }
 
-    U32 childCount = getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        getChild(i, childCount).intersect(ray, start, end, selectionHits);
+    if (recursive) {
+        U32 childCount = getChildCount();
+        for (U32 i = 0; i < childCount; ++i) {
+            getChild(i, childCount).intersect(ray, start, end, selectionHits);
+        }
     }
 }
 
@@ -264,6 +269,14 @@ void SceneGraphNode::setSelectionFlag(SelectionFlag flag) {
     U32 childCount = getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
         getChild(i, childCount).setSelectionFlag(flag);
+    }
+}
+
+void SceneGraphNode::setSelectable(const bool state) {
+    _isSelectable = state;
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        getChild(i, childCount).setSelectable(state);
     }
 }
 
@@ -379,8 +392,9 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
               bbUpdated = updateBoundingBoxTransform(pComp->getWorldMatrix());
         //}
         if (bbUpdated) {
-            if (_parent) {
-                _parent->getBoundingBox().setComputed(false);
+            SceneGraphNode_ptr parentPtr = _parent.lock();
+            if (parentPtr) {
+                parentPtr->getBoundingBox().setComputed(false);
             }
         }
         RenderingComponent* renderComp = getComponent<RenderingComponent>();

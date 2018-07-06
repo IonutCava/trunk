@@ -171,11 +171,11 @@ class PhysicsComponent : public SGNComponent {
     }
 
     /// Return the scale factor
-    const vec3<F32>& getScale(D32 interpolationFactor = 1.0, const bool local = false);
+    vec3<F32> getScale(D32 interpolationFactor = 1.0, const bool local = false) const;
     /// Return the position
-    const vec3<F32>& getPosition(D32 interpolationFactor = 1.0, const bool local = false);
+    vec3<F32> getPosition(D32 interpolationFactor = 1.0, const bool local = false) const;
     /// Return the orientation quaternion
-    const Quaternion<F32>& getOrientation(D32 interpolationFactor = 1.0, const bool local = false);
+    Quaternion<F32> getOrientation(D32 interpolationFactor = 1.0, const bool local = false) const;
 
     void pushTransforms();
     bool popTransforms();
@@ -197,19 +197,23 @@ class PhysicsComponent : public SGNComponent {
 
    private:
     void setTransformDirty(TransformType type);
+    void getWorldMatrixNonInterp(mat4<F32>& matOut, const bool local = false, bool dirty = false) const;
+    void getWorldMatrixInterp(mat4<F32>& matOut, D32 interpolationFactor, bool dirty = false) const;
 
    protected:
-    bool _dirty;
     PhysicsAsset* _physicsAsset;
     PhysicsGroup _physicsCollisionGroup;
     Transform* _transform;
     TransformValues _prevTransformValues;
-    TransformValues _cacheTransformValues;
     typedef std::stack<TransformValues> TransformStack;
     TransformStack _transformStack;
     TransformMask _transformUpdatedMask;
     /// Transform cache values
+    bool _dirty;
     mat4<F32> _worldMatrix;
+    bool _dirtyInterp;
+    D32  _prevInterpValue;
+    mat4<F32> _worldMatrixInterp;
 };
 
 namespace Attorney {

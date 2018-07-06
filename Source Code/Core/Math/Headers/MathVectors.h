@@ -147,7 +147,10 @@ class vec2 {
     vec2(const vec4<T> &_v) : vec2(_v.xy())
     {
     }
-
+    bool operator>(const vec2 &v) const { return x > v.x && y > v.y; }
+    bool operator<(const vec2 &v) const { return x < v.x && y < v.y; }
+    bool operator<=(const vec2 &v) const { return *this < v || *this == v; }
+    bool operator>=(const vec2 &v) const { return *this > v || *this == v; }
     bool operator==(const vec2 &v) const { return this->compare(v); }
     bool operator!=(const vec2 &v) const { return !(*this == v); }
     vec2 &operator=(T _f) {
@@ -352,6 +355,10 @@ class vec3 {
     {
     }
 
+    bool operator>(const vec3 &v) const { return x > v.x && y > v.y && z > v.z; }
+    bool operator<(const vec3 &v) const { return x < v.x && y < v.y && z < v.z; }
+    bool operator<=(const vec3 &v) const { return *this < v || *this == v; }
+    bool operator>=(const vec3 &v) const { return *this > v || *this == v; }
     bool operator!=(const vec3 &v) const { return !(*this == v); }
     bool operator==(const vec3 &v) const { return this->compare(v); }
     vec3 &operator=(T _f) {
@@ -621,6 +628,10 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     {
     }
 
+    bool operator>(const vec4 &v) const { return x > v.x && y > v.y && z > v.z && w > v.w; }
+    bool operator<(const vec4 &v) const { return x < v.x && y < v.y && z < v.z && w < v.w; }
+    bool operator<=(const vec4 &v) const { return *this < v || *this == v; }
+    bool operator>=(const vec4 &v) const { return *this > v || *this == v; }
     bool operator==(const vec4 &v) const { return this->compare(v); }
     bool operator!=(const vec4 &v) const { return !(*this == v); }
     vec4 &operator=(T _f) { this->set(_f); }

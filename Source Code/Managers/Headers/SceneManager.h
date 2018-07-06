@@ -155,6 +155,8 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
         return _sceneData;
     }
 
+    RenderPassCuller::VisibleNodeList& getVisibleNodesCache(RenderStage stage);
+
   public:  /// Input
     /// Key pressed
     bool onKeyDown(const Input::KeyEvent& key);

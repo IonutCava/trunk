@@ -728,21 +728,28 @@ void Scene::findHoverTarget() {
     vec3<F32> endRay = renderState().getCameraConst().unProject(mouseX, mouseY, 1.0f);
     // see if we select another one
     _sceneSelectionCandidates.clear();
-    // Cast the picking ray and find items between the nearPlane (with an
-    // offset) and limit the range to half of the far plane
-    _sceneGraph.intersect(Ray(startRay, startRay.direction(endRay)),
-                          zPlanes.x + 0.5f,
-                          zPlanes.y * 1.5f,
-                          _sceneSelectionCandidates);
+    // get the list of visible nodes (use Z_PRE_PASS because the nodes are sorted by depth, front to back)
+    RenderPassCuller::VisibleNodeList& nodes = SceneManager::getInstance().getVisibleNodesCache(RenderStage::Z_PRE_PASS);
+
+    // Cast the picking ray and find items between the nearPlane and far Plane
+    Ray mouseRay(startRay, startRay.direction(endRay));
+    for (SceneGraphNode_wptr node : nodes) {
+        SceneGraphNode_ptr nodePtr = node.lock();
+        if (nodePtr) {
+            nodePtr->intersect(mouseRay, zPlanes.x, zPlanes.y, _sceneSelectionCandidates, false);                   
+        }
+    }
 
     if (!_sceneSelectionCandidates.empty()) {
-        std::sort(std::begin(_sceneSelectionCandidates),
-                  std::end(_sceneSelectionCandidates),
-                  selectionQueueDistanceFrontToBack(renderState().getCameraConst().getEye()));
-
         _currentHoverTarget = _sceneSelectionCandidates.front();
+        SceneNode* node = _currentHoverTarget.lock()->getNode();
+        if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
+            if (static_cast<Object3D*>(node)->getObjectType() == Object3D::ObjectType::SUBMESH) {
+                _currentHoverTarget = _currentHoverTarget.lock()->getParent();
+            }
+        }
 
-        SceneGraphNode_ptr target(_currentHoverTarget.lock());
+        SceneGraphNode_ptr target = _currentHoverTarget.lock();
         if (target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
             target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_HOVER);
         }

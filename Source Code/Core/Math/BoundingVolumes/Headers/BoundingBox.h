@@ -37,6 +37,7 @@
 
 namespace Divide {
 
+class BoundingSphere;
 class BoundingBox : public GUIDWrapper {
    public:
     BoundingBox();
@@ -49,6 +50,8 @@ class BoundingBox : public GUIDWrapper {
     void operator=(const BoundingBox& b);
 
     bool containsPoint(const vec3<F32>& point) const;
+    bool containsBox(const BoundingBox& AABB2) const;
+    bool containsSphere(const BoundingSphere& bSphere) const;
 
     bool collision(const BoundingBox& AABB2) const;
 

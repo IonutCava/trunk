@@ -517,6 +517,12 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         this->setScale(scale);
     }
 
+    mat4(const vec3<T> &translation, const vec3<T> &scale, const mat4<T>& rotation) : mat4() {
+        this->setScale(scale);
+        this->set(*this * rotation);
+        this->setTranslation(translation);
+    }
+
     mat4(const vec3<T> &translation)
         : mat4(translation.x, translation.y, translation.z) {}
 

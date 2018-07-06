@@ -21,8 +21,7 @@ Transform::~Transform()
 {
 }
 
-bool Transform::getMatrix(mat4<F32>& matOut) {
-    bool wasRebuilt = false;
+const mat4<F32>& Transform::getMatrix(bool& wasRebuilt) {
     if (_dirty) {
         WriteLock w_lock(_lock);
         if (_rebuildMatrix) {
@@ -40,8 +39,7 @@ bool Transform::getMatrix(mat4<F32>& matOut) {
         wasRebuilt = true;
     }
 
-    matOut.set(_worldMatrix);
-    return wasRebuilt;
+    return _worldMatrix;
 }
 
 void Transform::identity() {

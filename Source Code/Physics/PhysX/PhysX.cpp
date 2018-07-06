@@ -223,7 +223,7 @@ void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
 
         VertexBuffer* nodeVB = sNode->getGeometryVB();
         if (sNode->getObjectType() == Object3D::ObjectType::SUBMESH) {
-            SceneGraphNode* grandParent = node.getParent();
+            SceneGraphNode_ptr grandParent = node.getParent().lock();
             nodeVB = grandParent->getNode<Object3D>()->getGeometryVB();
         }
 

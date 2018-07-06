@@ -17,22 +17,24 @@ namespace {
 
 SceneGraph::SceneGraph() : FrameListener(),
                            _rootNode(MemoryManager_NEW SceneRoot()),
-                           _root(*_rootNode, "ROOT")
+                           _root(std::make_shared<SceneGraphNode>(*_rootNode, "ROOT")),
+                           _octree(nullptr)
 {
     REGISTER_FRAME_LISTENER(this, 1);
 
-    _root.setBBExclusionMask(
+    _root->setBBExclusionMask(
         to_uint(SceneNodeType::TYPE_SKY) |
         to_uint(SceneNodeType::TYPE_LIGHT) |
         to_uint(SceneNodeType::TYPE_TRIGGER) |
         to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
         to_uint(SceneNodeType::TYPE_VEGETATION_GRASS) |
         to_uint(SceneNodeType::TYPE_VEGETATION_TREES));
-    onNodeAdd(_root);
+    onNodeAdd(*_root);
 }
 
 SceneGraph::~SceneGraph()
 { 
+    MemoryManager::DELETE(_octree);
     UNREGISTER_FRAME_LISTENER(this);
     Console::d_printfn(Locale::get(_ID("DELETE_SCENEGRAPH")));
     // Should recursively delete the entire scene graph
@@ -42,8 +44,8 @@ SceneGraph::~SceneGraph()
 void SceneGraph::unload()
 {
     U32 childCount = 0;
-    while((childCount = _root.getChildCount()) != 0) {
-        _root.removeNode(_root.getChild(childCount - 1, childCount), true);
+    while((childCount = _root->getChildCount()) != 0) {
+        _root->removeNode(_root->getChild(childCount - 1, childCount), true);
     }
 }
 
@@ -52,7 +54,7 @@ bool SceneGraph::frameStarted(const FrameEvent& evt) {
 }
 
 bool SceneGraph::frameEnded(const FrameEvent& evt) {
-    _root.frameEnded();
+    _root->frameEnded();
     return true;
 }
 
@@ -90,7 +92,7 @@ void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
         return;
     }
     if (deleteOnAdd) {
-        SceneGraphNode* parent = sgn->getParent();
+        SceneGraphNode_ptr parent = sgn->getParent().lock();
         if (parent) {
             parent->removeNode(sgn->getName(), false);
         }
@@ -103,11 +105,11 @@ void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
 }
 
 void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
-    _root.sceneUpdate(deltaTime, sceneState);
+    _root->sceneUpdate(deltaTime, sceneState);
 }
 
 void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_wptr>& selectionHits) {
-    _root.intersect(ray, start, end, selectionHits);
+    _root->intersect(ray, start, end, selectionHits);
 }
 
 };
