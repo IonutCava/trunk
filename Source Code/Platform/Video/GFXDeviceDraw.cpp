@@ -249,14 +249,14 @@ void GFXDevice::blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& tar
     GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
     GFX::CommandBuffer& buffer = sBuffer();
 
-    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = targetID;
     beginRenderPassCmd._name = "BLIT_TO_RENDER_TARGET";
     GFX::EnqueueCommand(buffer, beginRenderPassCmd);
 
     blitToBuffer(targetViewport, buffer);
 
-    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::EndRenderPassCommand endRenderPassCmd = {};
     GFX::EnqueueCommand(buffer, endRenderPassCmd);
 
     flushCommandBuffer(buffer);
@@ -267,38 +267,38 @@ void GFXDevice::blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer
         RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
         TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->getData();
 
-        GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+        GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
         beginDebugScopeCmd._scopeID = 12345;
         beginDebugScopeCmd._scopeName = "Flush Display";
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
         drawTextureInViewport(texData, targetViewport, bufferInOut);
 
-        GFX::EndDebugScopeCommand endDebugScopeCommand;
+        GFX::EndDebugScopeCommand endDebugScopeCommand = {};
         GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
     }
     {
-        GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+        GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
         beginDebugScopeCmd._scopeID = 123456;
         beginDebugScopeCmd._scopeName = "Render GUI";
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
         _parent.platformContext().gui().draw(*this, bufferInOut);
 
-        GFX::EndDebugScopeCommand endDebugScopeCommand;
+        GFX::EndDebugScopeCommand endDebugScopeCommand = {};
         GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
     }
 
     if (Config::Build::IS_DEBUG_BUILD)
     {
-        GFX::BeginDebugScopeCommand beginDebugScopeCmd;
-        beginDebugScopeCmd._scopeID = 123456;
+        GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
+        beginDebugScopeCmd._scopeID = 1234567;
         beginDebugScopeCmd._scopeName = "Render Debug Views";
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
         renderDebugViews(bufferInOut);
 
-        GFX::EndDebugScopeCommand endDebugScopeCommand;
+        GFX::EndDebugScopeCommand endDebugScopeCommand = {};
         GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
     }
 }

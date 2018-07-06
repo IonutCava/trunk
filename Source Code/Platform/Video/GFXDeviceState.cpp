@@ -136,7 +136,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     U8 msaaSamples = _parent.platformContext().config().rendering.msaaSamples;
 
     TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS,
-                                       GFXImageFormat::RGBA16F,
+                                       GFXImageFormat::RGB16F,
                                        GFXDataFormat::FLOAT_16);
 
     TextureDescriptor normalAndVelocityDescriptor(TextureType::TEXTURE_2D_MS,
@@ -147,21 +147,18 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                                       GFXImageFormat::DEPTH_COMPONENT32F,
                                       GFXDataFormat::FLOAT_32);
 
-    SamplerDescriptor screenSampler;
-    screenSampler.setFilters(TextureFilter::NEAREST);
-    screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    SamplerDescriptor defaultSampler;
+    defaultSampler.setFilters(TextureFilter::NEAREST);
+    defaultSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
 
-    SamplerDescriptor depthSampler;
-    depthSampler.setFilters(TextureFilter::NEAREST);
-    depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
 
-    screenDescriptor.setSampler(screenSampler);
+    screenDescriptor.setSampler(defaultSampler);
     screenDescriptor.msaaSamples(msaaSamples);
 
-    depthDescriptor.setSampler(depthSampler);
+    depthDescriptor.setSampler(defaultSampler);
     depthDescriptor.msaaSamples(msaaSamples);
 
-    normalAndVelocityDescriptor.setSampler(screenSampler);
+    normalAndVelocityDescriptor.setSampler(defaultSampler);
     normalAndVelocityDescriptor.msaaSamples(msaaSamples);
 
     {
@@ -183,7 +180,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         // Screen FB should use MSAA if available
         _rtPool->allocateRT(RenderTargetUsage::SCREEN, screenDesc);
     }
-    
 
     {
         TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D,

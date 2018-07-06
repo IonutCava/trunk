@@ -140,24 +140,24 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
         I32 viewportHeight = to_I32(viewportWidth / aspectRatio);
         Rect<I32> viewport(screenWidth - viewportWidth, 0, viewportWidth, viewportHeight);
 
-        PipelineDescriptor pipelineDesc;
+        PipelineDescriptor pipelineDesc = {};
         pipelineDesc._stateHash = _defaultStateBlockHash;
 
-        GenericDrawCommand triangleCmd;
+        GenericDrawCommand triangleCmd = {};
         triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
         triangleCmd._drawCount = 1;
 
         vectorFast <std::pair<stringImpl, Rect<I32>>> labelStack;
 
         Rect<I32> crtViewport = getCurrentViewport();
-        GFX::SetViewportCommand setViewport;
-        GFX::SendPushConstantsCommand pushConstants;
-        GFX::BindPipelineCommand bindPipeline;
-        GFX::BindDescriptorSetsCommand bindDescriptorSets;
-        GFX::DrawCommand drawCommand;
+        GFX::SetViewportCommand setViewport = {};
+        GFX::SendPushConstantsCommand pushConstants = {};
+        GFX::BindPipelineCommand bindPipeline = {};
+        GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
+        GFX::DrawCommand drawCommand = {};
         drawCommand._drawCommands.push_back(triangleCmd);
 
-        for (U8 idx = 0; idx < to_U8(_debugViews.size()); ++idx) {
+        for (I16 idx = 0; idx < to_I16(_debugViews.size()); ++idx) {
             DebugView& view = *_debugViews[idx];
 
             if (!view._enabled) {
