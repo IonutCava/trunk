@@ -254,8 +254,8 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b) {
             message = "Team 1 scored!";
             _scoreTeam1++;
         }
-        U8 score1 = _scoreTeam1;
-        U8 score2 = _scoreTeam2;
+        I32 score1 = _scoreTeam1;
+        I32 score2 = _scoreTeam2;
         _GUI->modifyText("Team1Score", "Team 1 Score: %d", score1);
         _GUI->modifyText("Team2Score", "Team 2 Score: %d", score2);
         _GUI->modifyText("Message", (char*)message.c_str());

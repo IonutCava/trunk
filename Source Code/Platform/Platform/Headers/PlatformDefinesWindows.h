@@ -52,10 +52,6 @@
 #define NOINITVTABLE __declspec(novtable)
 #endif  //NOINITVTABLE
 
-#ifndef THREAD_LOCAL
-#define THREAD_LOCAL __declspec(thread)
-#endif //THREAD_LOCAL
-
 #ifndef FORCE_INLINE
 #define FORCE_INLINE __forceinline
 #endif //FORCE_INLINE
@@ -73,18 +69,15 @@
 #define WIN32
 #endif
 
-#undef strdup
+#ifdef strdup
 #define strdup _strdup
 #endif
 
 LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-#ifdef FORCE_HIGHPERFORMANCE_GPU
-extern "C" {
-_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-_declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
-}
-#endif
+#ifndef thread_local
+#define thread_local __declspec( thread )
+#endif //thread_local
 
 namespace Divide {
     struct SysInfo {

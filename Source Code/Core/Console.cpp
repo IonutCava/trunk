@@ -5,12 +5,13 @@
 #include <iomanip>
 #include <stdarg.h>
 #include <thread>
+#include <iostream>
 
 namespace Divide {
 
 std::atomic<int> Console::_bufferEntryCount = 0;
 bool Console::_timestamps = false;
-boost::mutex Console::io_mutex;
+std::mutex Console::io_mutex;
 Console::consolePrintCallback Console::_guiConsoleCallback;
 
 //! Do not remove the following license without express permission granted bu
@@ -52,7 +53,7 @@ void Console::printCopyrightNotice() {
 }
 
 const char* Console::formatText(const char* format, ...) {
-    THREAD_LOCAL static char textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE + 1];
+    thread_local static char textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE + 1];
     va_list args;
     va_start(args, format);
     assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);
@@ -64,7 +65,7 @@ const char* Console::formatText(const char* format, ...) {
 
 const char* Console::output(std::ostream& outStream, const char* text,
                             const bool newline, const bool error) {
-    boost::mutex::scoped_lock lock(io_mutex);
+    std::lock_guard<std::mutex> lock(io_mutex);
     if (_timestamps) {
         outStream << "[ " << std::setprecision(2) << Time::ElapsedSeconds(true)
                   << " ] ";
@@ -95,7 +96,7 @@ const char* Console::output(const char* text, const bool newline, const bool err
 }
 
 void Console::flush() {
-    boost::mutex::scoped_lock lock(io_mutex);
+    std::lock_guard<std::mutex> lock(io_mutex);
     std::cerr << std::flush;
     std::cout << std::flush;
 }

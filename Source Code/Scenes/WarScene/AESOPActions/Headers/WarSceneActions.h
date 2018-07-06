@@ -72,8 +72,7 @@ inline const char* WarSceneFactName(GOAPFact fact) {
             return "IDLING";
         case Fact::ENEMY_DEAD:
             return "ENEMY DEAD";
-        default:
-            return "ERROR!";
+        default:break;
     };
     return GOAPFactName(fact);
 };
