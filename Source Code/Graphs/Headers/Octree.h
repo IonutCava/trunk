@@ -76,12 +76,13 @@ class Octree : public std::enable_shared_from_this<Octree> {
         bool isStatic(const SceneGraphNode& node) const;
         vectorImpl<IntersectionRecord> getIntersection(const Frustum& frustum, U32 typeFilterMask) const;
         vectorImpl<IntersectionRecord> getIntersection(const Ray& intersectRay, F32 start, F32 end, U32 typeFilterMask) const;
-        vectorImpl<IntersectionRecord> getIntersection(vectorImpl<SceneGraphNode_wptr>& parentObjects, U32 typeFilterMask) const;
+
+        void updateIntersectionCache(vectorImpl<SceneGraphNode_wptr>& parentObjects, U32 typeFilterMask);
         
         void handleIntersection(IntersectionRecord intersection) const;
-        IntersectionRecord getIntersection(SceneGraphNode& node, const Frustum& frustum) const;
-        IntersectionRecord getIntersection(SceneGraphNode& node1, SceneGraphNode& node2) const;
-        IntersectionRecord getIntersection(SceneGraphNode& node, const Ray& intersectRay, F32 start, F32 end) const;
+        bool getIntersection(SceneGraphNode& node, const Frustum& frustum, IntersectionRecord& irOut) const;
+        bool getIntersection(SceneGraphNode& node1, SceneGraphNode& node2, IntersectionRecord& irOut) const;
+        bool getIntersection(SceneGraphNode& node, const Ray& intersectRay, F32 start, F32 end, IntersectionRecord& irOut) const;
         
 
     private:
@@ -95,10 +96,10 @@ class Octree : public std::enable_shared_from_this<Octree> {
         std::array<std::shared_ptr<Octree>, 8> _childNodes;
         vectorImpl<SceneGraphNode_wptr> _movedObjects;
 
+        vectorImpl<IntersectionRecord> _intersectionsCache;
         static std::queue<SceneGraphNode_wptr> _pendingInsertion;
         static bool _treeReady;
         static bool _treeBuilt;
-            
 };
 
 };  // namespace Divide

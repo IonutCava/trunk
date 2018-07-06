@@ -103,6 +103,7 @@ class SceneGraph : private NonCopyable, public FrameListener {
     SceneRoot* _rootNode;
     SceneGraphNode_ptr _root;
     std::shared_ptr<Octree> _octree;
+    std::atomic_bool _octreeUpdating;
     vectorImpl<SceneGraphNode_wptr> _allNodes;
     vectorImpl<SceneGraphNode_wptr> _pendingDeletionNodes;
 };

@@ -37,6 +37,7 @@ SceneGraph::SceneGraph() : FrameListener(),
                          to_const_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
 
     _octree.reset(new Octree(octreeNodeMask));
+    _octreeUpdating = false;
 }
 
 SceneGraph::~SceneGraph()
@@ -90,6 +91,7 @@ void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
     _allNodes.push_back(newNode.shared_from_this());
 
     if (_loadComplete) {
+        WAIT_FOR_CONDITION(!_octreeUpdating);
         _octreeChanged = _octree->addNode(newNode.shared_from_this());
     }
 }
@@ -132,10 +134,19 @@ void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
 void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _root->sceneUpdate(deltaTime, sceneState);
     if (_loadComplete) {
-        if (_octreeChanged) {
-            _octree->updateTree();
-        }
-        _octree->update(deltaTime);
+        Application::getInstance().getKernel().AddTask(
+            [this, deltaTime](const std::atomic_bool& stopRequested) mutable
+            {
+                _octreeUpdating = true;
+                if (_octreeChanged) {
+                    _octree->updateTree();
+                }
+                _octree->update(deltaTime);
+            },
+            [this]() mutable
+            {
+                _octreeUpdating = false;
+            })._task->startTask(Task::TaskPriority::REALTIME);
     }
 }
 
@@ -147,6 +158,7 @@ void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneG
     _root->intersect(ray, start, end, selectionHits);
 
     /*if (_loadComplete) {
+        WAIT_FOR_CONDITION(!_octreeUpdating);
         U32 filter = to_const_uint(SceneNodeType::TYPE_OBJECT3D);
         SceneGraphNode_ptr collision = _octree->nearestIntersection(ray, start, end, filter)._intersectedObject1.lock();
         if (collision) {

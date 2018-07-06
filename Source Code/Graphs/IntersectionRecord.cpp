@@ -29,6 +29,15 @@ IntersectionRecord::IntersectionRecord(SceneGraphNode_wptr hitObject) :
 {
 }
 
+void IntersectionRecord::reset() 
+{
+    _ray.identity();
+    _hasHit = false;
+    _distance = std::numeric_limits<D32>::max();
+    _intersectedObject1.reset();
+    _intersectedObject2.reset();
+}
+
 bool IntersectionRecord::operator==(const IntersectionRecord& otherRecord)
 {
     SceneGraphNode_ptr node11 = _intersectedObject1.lock();

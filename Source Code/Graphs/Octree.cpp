@@ -132,10 +132,10 @@ void Octree::update(const U64 deltaTime) {
 
     // root node
     if (_parent == nullptr) {
-        vectorImpl<SceneGraphNode_wptr> parentNodes;
-        vectorImpl<IntersectionRecord> irList = getIntersection(parentNodes, _nodeMask);
+        vectorImpl<SceneGraphNode_wptr> temp;
+        updateIntersectionCache(temp, _nodeMask);
 
-        for(IntersectionRecord ir : irList) {
+        for(IntersectionRecord ir : _intersectionsCache) {
             handleIntersection(ir);
         }
     }
@@ -464,8 +464,8 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U
         }
 
         //test for intersection
-        IntersectionRecord ir = getIntersection(*obj, frustum);
-        if (!ir.isEmpty()) {
+        IntersectionRecord ir;
+        if (getIntersection(*obj, frustum, ir)) {
             ret.push_back(ir);
         }
     }
@@ -504,8 +504,8 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, 
         }
 
         if (obj->get<BoundsComponent>()->getBoundingBox().intersect(intersectRay, start, end)) {
-            IntersectionRecord ir = getIntersection(*obj, intersectRay, start, end);
-            if (!ir.isEmpty()) {
+            IntersectionRecord ir;
+            if (getIntersection(*obj, intersectRay, start, end, ir)) {
                 ret.push_back(ir);
             }
         }
@@ -522,9 +522,9 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, 
     return ret;
 }
 
-vectorImpl<IntersectionRecord> Octree::getIntersection(vectorImpl<SceneGraphNode_wptr>& parentObjects, U32 typeFilterMask) const
+void Octree::updateIntersectionCache(vectorImpl<SceneGraphNode_wptr>& parentObjects, U32 typeFilterMask)
 {
-    vectorImpl<IntersectionRecord> intersections;
+    _intersectionsCache.resize(0);
     //assume all parent objects have already been processed for collisions against each other.
     //check all parent objects against all objects in our local node
     for(SceneGraphNode_wptr pObjPtr : parentObjects)
@@ -537,17 +537,17 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(vectorImpl<SceneGraphNode
             assert(obj);
             //We let the two objects check for collision against each other. They can figure out how to do the coarse and granular checks.
             //all we're concerned about is whether or not a collision actually happened.
-            IntersectionRecord ir = getIntersection(*pObj, *obj);
-            if (!ir.isEmpty()) {
+            IntersectionRecord ir;
+            if (getIntersection(*pObj, *obj, ir)) {
                 bool found = false;
-                for (IntersectionRecord& irTemp : intersections) {
+                for (IntersectionRecord& irTemp : _intersectionsCache) {
                     if (irTemp == ir) {
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
-                    intersections.push_back(ir);
+                    _intersectionsCache.push_back(ir);
                 }
             }
         }
@@ -566,9 +566,9 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(vectorImpl<SceneGraphNode
                     continue;
                 }
 
-                IntersectionRecord ir = getIntersection(*lObj1, *lObj2);
-                if (!ir.isEmpty()) {
-                    intersections.push_back(ir);
+                IntersectionRecord ir;
+                if (getIntersection(*lObj1, *lObj2, ir)) {
+                    _intersectionsCache.push_back(ir);
                 }
             }
 
@@ -589,12 +589,11 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(vectorImpl<SceneGraphNode
     for (U8 i = 0; i < 8; ++i) {
         if (_activeNodes[i]) {
             assert(_childNodes[i]);
-            vectorImpl<IntersectionRecord> hitList = _childNodes[i]->getIntersection(parentObjects, typeFilterMask);
-            intersections.insert(std::cend(intersections), std::cbegin(hitList), std::cend(hitList));
+            _childNodes[i]->updateIntersectionCache(parentObjects, typeFilterMask);
+            const vectorImpl<IntersectionRecord>& hitList = _childNodes[i]->_intersectionsCache;
+            _intersectionsCache.insert(std::cend(_intersectionsCache), std::cbegin(hitList), std::cend(hitList));
         }
     }
-
-    return intersections;
 }
 
 /// This gives you a list of every intersection record created with the intersection ray
@@ -665,45 +664,51 @@ bool Octree::isStatic(const SceneGraphNode& node) const {
     return node.usageContext() == SceneGraphNode::UsageContext::NODE_STATIC;
 }
 
-IntersectionRecord Octree::getIntersection(SceneGraphNode& node, const Frustum& frustum) const {
+bool Octree::getIntersection(SceneGraphNode& node, const Frustum& frustum, IntersectionRecord& irOut) const {
     const BoundingBox& bb = node.get<BoundsComponent>()->getBoundingBox();
 
     if (frustum.ContainsBoundingBox(bb) != Frustum::FrustCollision::FRUSTUM_OUT) {
-        IntersectionRecord ir(node.shared_from_this());
-        ir._treeNode = shared_from_this();
-        return ir;
+        irOut.reset();
+        irOut._intersectedObject1 = node.shared_from_this();
+        irOut._treeNode = shared_from_this();
+        irOut._hasHit = true;
+        return true;
     }
 
-    return IntersectionRecord();
+    return false;
 }
 
-IntersectionRecord Octree::getIntersection(SceneGraphNode& node1, SceneGraphNode& node2) const {
+bool Octree::getIntersection(SceneGraphNode& node1, SceneGraphNode& node2, IntersectionRecord& irOut) const {
     if (node1.getGUID() != node2.getGUID()) {
         BoundsComponent* bComp1 = node1.get<BoundsComponent>();
         BoundsComponent* bComp2 = node2.get<BoundsComponent>();
         if (bComp1->getBoundingSphere().collision(bComp2->getBoundingSphere())) {
             if (bComp1->getBoundingBox().collision(bComp2->getBoundingBox())) {
-                IntersectionRecord ir(node1.shared_from_this());
-                ir._intersectedObject2 = node2.shared_from_this();
-                ir._treeNode = shared_from_this();
-                return ir;
+                irOut.reset();
+                irOut._intersectedObject1 = node1.shared_from_this();
+                irOut._intersectedObject2 = node2.shared_from_this();
+                irOut._treeNode = shared_from_this();
+                irOut._hasHit = true;
+                return true;
             }
         }
     }
 
-    return IntersectionRecord();
+    return false;
 }
 
-IntersectionRecord Octree::getIntersection(SceneGraphNode& node, const Ray& intersectRay, F32 start, F32 end) const {
+bool Octree::getIntersection(SceneGraphNode& node, const Ray& intersectRay, F32 start, F32 end, IntersectionRecord& irOut) const {
     const BoundingBox& bb = node.get<BoundsComponent>()->getBoundingBox();
-    IntersectionRecord ir;
     if (bb.intersect(intersectRay, start, end)) {
-        ir._intersectedObject1 = node.shared_from_this();
-        ir._ray = intersectRay;
-        ir._treeNode = shared_from_this();
+        irOut.reset();
+        irOut._intersectedObject1 = node.shared_from_this();
+        irOut._ray = intersectRay;
+        irOut._treeNode = shared_from_this();
+        irOut._hasHit = true;
+        return true;
     }
 
-    return ir;
+    return false;
 }
 
 }; //namespace Divide

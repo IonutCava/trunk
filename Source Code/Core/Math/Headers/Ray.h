@@ -52,22 +52,32 @@ class Ray {
     {
     }
 
-    Ray(const vec3<F32> &o, const vec3<F32> &d) {
-        origin = o;
-        direction = d;
-        inv_direction = vec3<F32>(1 / d.x, 1 / d.y, 1 / d.z);
-        sign[0] = (inv_direction.x < 0);
-        sign[1] = (inv_direction.y < 0);
-        sign[2] = (inv_direction.z < 0);
+    Ray(const vec3<F32> &o, const vec3<F32> &d)
+    {
+        set(o, d);
     }
 
-    Ray(const Ray &r) {
-        origin = r.origin;
-        direction = r.direction;
-        inv_direction = r.inv_direction;
+    Ray(const Ray &r)
+    {
+        origin.set(r.origin);
+        direction.set(r.direction);
+        inv_direction.set(r.inv_direction);
         sign[0] = r.sign[0];
         sign[1] = r.sign[1];
         sign[2] = r.sign[2];
+    }
+
+    inline void identity() {
+        set(VECTOR3_ZERO, WORLD_Y_AXIS);
+    }
+
+    inline void set(const vec3<F32> &o, const vec3<F32> &d) {
+        origin.set(o);
+        direction.set(d);
+        inv_direction.set(1.0f / d.x, 1.0f / d.y, 1.0f / d.z);
+        sign[0] = (inv_direction.x < 0.0f);
+        sign[1] = (inv_direction.y < 0.0f);
+        sign[2] = (inv_direction.z < 0.0f);
     }
 
     vec3<F32> origin;

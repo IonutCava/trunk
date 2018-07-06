@@ -52,6 +52,9 @@ class IntersectionRecord
     /// Creates a new intersection record indicating whether there was a hit or not and the object which was hit.
     IntersectionRecord(SceneGraphNode_wptr hitObject);
 
+    /// Reset all information contained by this record
+    void reset();
+
     /// This is the exact point in 3D space which has an intersection.
     vec3<F32> _position;
     /// This is the normal of the surface at the point of intersection

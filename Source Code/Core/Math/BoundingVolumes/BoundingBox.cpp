@@ -92,7 +92,7 @@ bool BoundingBox::collision(const BoundingSphere& bSphere) const {
     return dmin <= std::pow(bSphere.getRadius(), 2);
 }
 
-/// Optimized method
+/// Optimized method: http://www.cs.utah.edu/~awilliam/box/box.pdf
 bool BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const {
     // ReadLock r_lock(_lock);
     const vec3<F32> bounds[] = {_min, _max};
@@ -102,19 +102,32 @@ bool BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const {
     F32 ty_min = (bounds[r.sign[1]].y - r.origin.y) * r.inv_direction.y;
     F32 ty_max = (bounds[1 - r.sign[1]].y - r.origin.y) * r.inv_direction.y;
 
-    if ((t_min > ty_max) || (ty_min > t_max)) return false;
+    if ((t_min > ty_max) || (ty_min > t_max)) {
+        return false;
+    }
 
-    if (ty_min > t_min) t_min = ty_min;
-    if (ty_max < t_max) t_max = ty_max;
+    if (ty_min > t_min){
+         t_min = ty_min;
+    }
+
+    if (ty_max < t_max) {
+        t_max = ty_max;
+    }
 
     F32 tz_min = (bounds[r.sign[2]].z - r.origin.z) * r.inv_direction.z;
     F32 tz_max = (bounds[1 - r.sign[2]].z - r.origin.z) * r.inv_direction.z;
 
-    if ((t_min > tz_max) || (tz_min > t_max)) return false;
+    if ((t_min > tz_max) || (tz_min > t_max)) {
+        return false;
+    }
 
-    if (tz_min > t_min) t_min = tz_min;
-    if (tz_max < t_max) t_max = tz_max;
+    if (tz_min > t_min) {
+        t_min = tz_min;
+    }
 
+    if (tz_max < t_max) {
+        t_max = tz_max;
+    }
     return ((t_min < t1) && (t_max > t0));
 }
 
