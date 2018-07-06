@@ -155,10 +155,11 @@ class Terrain : public Object3D {
 
    protected:
     ShaderBuffer* _shaderData;
-
     VegetationDetails _vegDetails;
 
     U32 _chunkSize;
+    vec3<F32> _offsetPosition;
+    vec2<F32> _altitudeRange;
     vec2<U16> _terrainDimensions;
     Quadtree _terrainQuadtree;
 
@@ -229,9 +230,18 @@ class TerrainLoader {
         return terrain._terrainDimensions;
     }
 
+    static vec3<F32>& offsetPosition(Terrain& terrain) {
+        return terrain._offsetPosition;
+    }
+
+    static vec2<F32>& altitudeRange(Terrain& terrain) {
+        return terrain._altitudeRange;
+    }
+
     static vec2<F32>& scaleFactor(Terrain& terrain) {
         return terrain._terrainScaleFactor;
     }
+
     static U32& chunkSize(Terrain& terrain) { return terrain._chunkSize; }
 
     friend class Divide::TerrainLoader;

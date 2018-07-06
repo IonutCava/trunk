@@ -64,8 +64,9 @@ void MainScene::processInput(U8 playerIndex, const U64 deltaTime) {
                            ter->getDimensions().height * 0.5f * -1.0f,
                            ter->getDimensions().height * 0.5f);
 
-                terrainHeight =
-                    ter->getPositionFromGlobal(eyePosition.x, eyePosition.z).y;
+                vec3<F32> position = terrainNode.lock()->get<PhysicsComponent>()->getWorldMatrix() *
+                                     ter->getPositionFromGlobal(eyePosition.x, eyePosition.z);
+                terrainHeight = position.y;
                 if (!IS_ZERO(terrainHeight)) {
                     eyePosition.y = terrainHeight + 1.85f;
                     cam.setEye(eyePosition);

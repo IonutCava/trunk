@@ -335,13 +335,18 @@ class vec2 {
     /// set the 2 components of the vector back to 0
     inline void reset() { this->set((T)0); }
     /// return the vector's length
-    inline T length() const { return Divide::Sqrt(this->x * this->x + this->y * this->y); }
+    inline T length() const { return Divide::Sqrt(lengthSquared()); }
+    inline T lengthSquared() const;
     /// return the angle defined by the 2 components
     inline T angle() const { return (T)std::atan2(this->y, this->x); }
     /// return the angle defined by the 2 components
     inline T angle(const vec2 &v) const {
         return (T)std::atan2(v.y - this->y, v.x - this->x);
     }
+    /// compute the vector's distance to another specified vector
+    inline T distance(const vec2 &v, bool absolute = true) const;
+    /// compute the vector's squared distance to another specified vector
+    inline T distanceSquared(const vec2 &v) const;
     /// convert the vector to unit length
     inline void normalize();
     /// round both values
@@ -684,7 +689,7 @@ class vec3 {
     /// returns the angle in radians between '*this' and 'v'
     inline T angle(vec3 &v) const;
     /// compute the vector's distance to another specified vector
-    inline T distance(const vec3 &v) const;
+    inline T distance(const vec3 &v, bool absolute = true) const;
     /// compute the vector's squared distance to another specified vector
     inline T distanceSquared(const vec3 &v) const;
     /// transform the vector to unit length

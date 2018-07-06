@@ -290,11 +290,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     ResourceDescriptor infinitePlane("infinitePlane");
     infinitePlane.setFlag(true);  // No default material
 
-    vec2<F32>& terrainScaleFactor =
-        Attorney::TerrainLoader::scaleFactor(*terrain);
-
     Attorney::TerrainLoader::chunkSize(*terrain) = terrainDescriptor->getChunkSize();
-    terrainScaleFactor.set(terrainDescriptor->getScale());
 
     const vec2<U16>& terrainDimensions = terrainDescriptor->getDimensions();
     
@@ -304,9 +300,12 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
 
     stringImpl terrainRawFile(terrainDescriptor->getVariable("heightmap"));
 
-    vec2<U16>& dimensions = Attorney::TerrainLoader::dimensions(*terrain);
     Attorney::TerrainLoader::dimensions(*terrain).set(heightmapWidth, heightmapHeight);
+    Attorney::TerrainLoader::scaleFactor(*terrain).set(terrainDescriptor->getScale());
+    Attorney::TerrainLoader::offsetPosition(*terrain).set(terrainDescriptor->getPosition());
+    Attorney::TerrainLoader::altitudeRange(*terrain).set(terrainDescriptor->getAltitudeRange());
 
+    vec2<U16>& dimensions = Attorney::TerrainLoader::dimensions(*terrain);
     if (dimensions.x % 2 == 0) {
         dimensions.x++;
     }
@@ -320,17 +319,14 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     F32 minAltitude = terrainDescriptor->getAltitudeRange().x;
     F32 maxAltitude = terrainDescriptor->getAltitudeRange().y;
 
+
+
     BoundingBox& terrainBB = Attorney::TerrainLoader::boundingBox(*terrain);
     terrainBB.set(vec3<F32>(-terrainWidth * 0.5f, minAltitude, -terrainHeight * 0.5f),
                   vec3<F32>(terrainWidth * 0.5f, maxAltitude, terrainHeight * 0.5f));
 
-    terrainBB.translate(terrainDescriptor->getPosition());
-    terrainBB.multiply(vec3<F32>(terrainScaleFactor.x, terrainScaleFactor.y,
-                                 terrainScaleFactor.x));
-
     const vec3<F32>& bMin = terrainBB.getMin();
     const vec3<F32>& bMax = terrainBB.getMax();
-    F32 yOffset = terrainDescriptor->getPosition().y;
 
     stringImpl cacheLocation(terrainMapLocation + terrainRawFile + ".cache");
     STUBBED("ToDo: Move image data into the ByteBuffer as well to avoid reading height data from images each time we load the terrain! -Ionut");
@@ -338,7 +334,6 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     ByteBuffer terrainCache;
     if (!terrainCache.loadFromFile(cacheLocation)) {
         F32 altitudeRange = maxAltitude - minAltitude;
-        F32 yScaleFactor = terrainScaleFactor.y;
 
         vectorImpl<U16> heightValues;
         if (terrainDescriptor->is16Bit()) {
@@ -384,9 +379,9 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                                                 j < to_I32(heightmapHeight) ? j : j - 1,
                                                 heightmapWidth);
 
-                    vec3<F32> vertexData(bMin.x + (to_F32(i)) * (bMax.x - bMin.x) / (terrainWidth - 1),                           // X
-                                        ((minAltitude + altitudeRange * (heightValues[idxIMG] / fMax)) * yScaleFactor) + yOffset, // Y
-                                        bMin.z + (to_F32(j)) * (bMax.z - bMin.z) / (terrainHeight - 1));                          // Z
+                    vec3<F32> vertexData(bMin.x + (to_F32(i)) * (bMax.x - bMin.x) / (terrainWidth - 1),   // X
+                                         minAltitude + altitudeRange * (heightValues[idxIMG] / fMax),     // Y
+                                         bMin.z + (to_F32(j)) * (bMax.z - bMin.z) / (terrainHeight - 1)); // Z
                     #pragma omp critical
                     {
                         terrain->_physicsVerts[idxHM]._position.set(vertexData);
@@ -405,12 +400,12 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                                                 j < to_I32(heightmapHeight) ? j : j - 1,
                                                 heightmapWidth);
 
-                    F32 h = ((heightValues[idxIMG * 3 + 0] +
-                              heightValues[idxIMG * 3 + 1] +
-                              heightValues[idxIMG * 3 + 2]) / 3.0f) / byteMax;
+                    F32 heightValue = ((heightValues[idxIMG * 3 + 0] +
+                                        heightValues[idxIMG * 3 + 1] +
+                                        heightValues[idxIMG * 3 + 2]) / 3.0f);
 
                     vec3<F32> vertexData(bMin.x + (to_F32(i)) * (bMax.x - bMin.x) / (terrainWidth - 1),   //X
-                                         ((minAltitude + altitudeRange * h) * yScaleFactor) + yOffset,    //Y
+                                         minAltitude + altitudeRange * (heightValue / byteMax),           //Y
                                          bMin.z + (to_F32(j)) * (bMax.z - bMin.z) / (terrainHeight - 1)); //Z
 
                     
@@ -501,7 +496,10 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
         terrainCache >> terrain->_physicsVerts;
     }
 
-    Test::init(terrain->getGeometryVB());
+    VertexBuffer* vb = terrain->getGeometryVB();
+    Test::init(vb);
+    vb->keepData(false);
+    vb->create(true);
 
     initializeVegetation(terrain, terrainDescriptor);
     Attorney::TerrainLoader::buildQuadtree(*terrain);
@@ -512,7 +510,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     ShaderProgram_ptr planeDepthShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), planeShaderDesc);
     Quad3D_ptr plane = CreateResource<Quad3D>(terrain->parentResourceCache(), infinitePlane);
     // our bottom plane is placed at the bottom of our water entity
-    F32 height = bMin.y + yOffset;
+    F32 height = bMin.y;
     F32 farPlane = 2.0f * terrainBB.getWidth();
 
     plane->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(-farPlane * 1.5f, height, -farPlane * 1.5f));

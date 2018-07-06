@@ -62,7 +62,8 @@ public:
         RENDER_NO_RASTERIZE = toBit(5),
         RENDER_INDIRECT = toBit(6),
         RENDER_TESSELLATED = toBit(7),
-        COUNT = 5
+        QUERY_PRIMITIVE_COUNT = toBit(8),
+        COUNT = 9
     };
 
 private:
@@ -96,6 +97,8 @@ public:
     void disableOption(RenderOptions option);
     void toggleOption(RenderOptions option);
     void toggleOption(RenderOptions option, const bool state);
+
+    inline U32  renderMask() const { return _renderOptions; }
 
     inline void LoD(U8 lod)                                           { _lodIndex = lod; }
     inline void drawCount(U16 count)                                  { _drawCount = count; }

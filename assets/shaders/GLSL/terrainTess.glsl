@@ -16,8 +16,6 @@ layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_Terra
     TerrainNodeData dvd_TerrainData[];
 };
 
-float tileScale = 0.0;
-
 vec2 calcTerrainTexCoord(in vec4 pos)
 {
     return vec2(abs(pos.x - TerrainOrigin.x) / TerrainWidth, abs(pos.z - TerrainOrigin.z) / TerrainLength);
@@ -28,12 +26,10 @@ void main(void)
     computeData();
 
     vec4 posAndScale = dvd_TerrainData[VAR.dvd_drawID]._positionAndTileScale;
-    tileScale = posAndScale.w;
-    vec4 offset = vec4(posAndScale.xyz, 0.0);
 
-    vec4 patchPosition = vec4(dvd_Vertex.xyz * tileScale, 1.0);
+    vec4 patchPosition = vec4(dvd_Vertex.xyz * posAndScale.w, 1.0);
 
-    vec4 p = dvd_WorldMatrix(VAR.dvd_instanceID) * (patchPosition + offset);
+    vec4 p = dvd_WorldMatrix(VAR.dvd_instanceID) * vec4(patchPosition + vec4(posAndScale.xyz, 0.0));
 
     // Calcuate texture coordantes (u,v) relative to entire terrain
     VAR._texCoord = calcTerrainTexCoord(p);
@@ -48,7 +44,8 @@ void main(void)
 
 layout(binding = TEXTURE_OPACITY)   uniform sampler2D TexTerrainHeight;
 
-uniform float TerrainHeightOffset = 2000.0f;
+uniform float MinHeight;
+uniform float HeightRange;
 
 struct TerrainNodeData {
     vec4 _positionAndTileScale;
@@ -60,12 +57,6 @@ layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_Terra
     TerrainNodeData dvd_TerrainData[];
 };
 
-
-float tscale_negx = 0.0;
-float tscale_negz = 0.0;
-float tscale_posx = 0.0;
-float tscale_posz = 0.0;
-
 //
 // Outputs
 //
@@ -74,7 +65,6 @@ layout(vertices = 4) out;
 patch out float gl_TessLevelOuter[4];
 patch out float gl_TessLevelInner[2];
 
-out vec2 tcs_terrainTexCoord[];
 out float tcs_tessLevel[];
 
 /**
@@ -82,10 +72,10 @@ out float tcs_tessLevel[];
 */
 float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 {
-    vec4 samp = texture(TexTerrainHeight, t0);
-    p0.y = samp[0] * TerrainHeightOffset;
-    samp = texture(TexTerrainHeight, t1);
-    p1.y = samp[0] * TerrainHeightOffset;
+    float sampleHeight = texture(TexTerrainHeight, t0).r;
+    p0.y = MinHeight + HeightRange * sampleHeight;
+    sampleHeight = texture(TexTerrainHeight, t1).r;
+    p1.y = MinHeight + HeightRange * sampleHeight;
 
     mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
 
@@ -133,10 +123,10 @@ float dlodSphere(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 {
     float g_tessellatedTriWidth = 10.0;
 
-    vec4 samp = texture(TexTerrainHeight, t0);
-    p0.y = samp[0] * TerrainHeightOffset;
-    samp = texture(TexTerrainHeight, t1);
-    p1.y = samp[0] * TerrainHeightOffset;
+    float sampleHeight = texture(TexTerrainHeight, t0).r;
+    p0.y = MinHeight + HeightRange * sampleHeight;
+    sampleHeight = texture(TexTerrainHeight, t1).r;
+    p1.y = MinHeight + HeightRange * sampleHeight;
 
 
     mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
@@ -189,25 +179,32 @@ float dlodSphere(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 
 void main(void)
 {
-    tscale_negx = dvd_TerrainData[VAR.dvd_drawID]._tScale.x;
-    tscale_negz = dvd_TerrainData[VAR.dvd_drawID]._tScale.y;
-    tscale_posx = dvd_TerrainData[VAR.dvd_drawID]._tScale.z;
-    tscale_posz = dvd_TerrainData[VAR.dvd_drawID]._tScale.w;
-
     // Outer tessellation level
-    gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, tcs_terrainTexCoord[3], tcs_terrainTexCoord[0]);
-    gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, tcs_terrainTexCoord[0], tcs_terrainTexCoord[1]);
-    gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, tcs_terrainTexCoord[1], tcs_terrainTexCoord[2]);
-    gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, tcs_terrainTexCoord[2], tcs_terrainTexCoord[3]);
+    gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
+    gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
+    gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
+    gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
 
-    if (tscale_negx == 2.0)
+    float tscale_negx = dvd_TerrainData[VAR.dvd_drawID]._tScale.x;
+    float tscale_negz = dvd_TerrainData[VAR.dvd_drawID]._tScale.y;
+    float tscale_posx = dvd_TerrainData[VAR.dvd_drawID]._tScale.z;
+    float tscale_posz = dvd_TerrainData[VAR.dvd_drawID]._tScale.w;
+
+    if (tscale_negx == 2.0) {
         gl_TessLevelOuter[0] = max(2.0, gl_TessLevelOuter[0] * 0.5);
-    if (tscale_negz == 2.0)
+    }
+
+    if (tscale_negz == 2.0) {
         gl_TessLevelOuter[1] = max(2.0, gl_TessLevelOuter[1] * 0.5);
-    if (tscale_posx == 2.0)
+    }
+
+    if (tscale_posx == 2.0) {
         gl_TessLevelOuter[2] = max(2.0, gl_TessLevelOuter[2] * 0.5);
-    if (tscale_posz == 2.0)
+    }
+
+    if (tscale_posz == 2.0) {
         gl_TessLevelOuter[3] = max(2.0, gl_TessLevelOuter[3] * 0.5);
+    }
 
     // Inner tessellation level
     gl_TessLevelInner[0] = 0.5 * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
@@ -238,8 +235,8 @@ layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_Terra
     TerrainNodeData dvd_TerrainData[];
 };
 
-
-uniform float TerrainHeightOffset = 2000.0;
+uniform float MinHeight;
+uniform float HeightRange;
 
 //
 // Inputs
@@ -277,8 +274,8 @@ void main()
     vec2 terrainTexCoord = interpolate2(VAR[0]._texCoord, VAR[1]._texCoord, VAR[2]._texCoord, VAR[3]._texCoord);
 
     // Sample the heightmap and offset y position of vertex
-    vec4 samp = texture(TexTerrainHeight, terrainTexCoord);
-    gl_Position.y = samp[0] * TerrainHeightOffset;
+    float sampleHeight = texture(TexTerrainHeight, terrainTexCoord).r;
+    gl_Position.y = MinHeight + HeightRange * sampleHeight;
 
     // Project the vertex to clip space and send it along
     vec3 offset = dvd_TerrainData[VAR[0].dvd_drawID]._positionAndTileScale.xyz;
@@ -360,10 +357,10 @@ void main(void)
         EmitVertex();
     }
 
+    PassData(0);
     // This closes the the triangle
     gl_Position = gl_in[0].gl_Position;
     gs_edgeDist = vec3(ha, 0, 0);
-    _out._texCoord = VAR[0]._texCoord;
 
     gs_wireColor = wireColor;
     EmitVertex();
@@ -383,11 +380,11 @@ layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_Terra
     TerrainNodeData dvd_TerrainData[];
 };
 
-float tileScale = dvd_TerrainData[VAR.dvd_drawID]._positionAndTileScale.w;
+float tileScale = 0.0;
 
 uniform float ToggleWireframe = 1.0;
 
-layout(binding = TEXTURE_OPACITY)   uniform sampler2D TexTerrainHeight;
+layout(binding = TEXTURE_OPACITY) uniform sampler2D TexTerrainHeight;
 
 //
 // Inputs
@@ -404,8 +401,10 @@ layout(location = 2) out vec2 _velocityOut;
 
 void main(void)
 {
-    //vec4 color = vec4(mix(0.0, 1.0, tileScale / 1000.0), mix(1.0, 0.0, tileScale / 1000.0), 0.0, 1.0);
-    vec4 color = vec4(1.0, 0.0, 0.0, 1.0);// texture(TexTerrainHeight, VAR._texCoord);
+    tileScale = dvd_TerrainData[VAR.dvd_drawID]._positionAndTileScale.w;
+
+    vec4 color = vec4(mix(0.0, 1.0, tileScale / 1000.0), mix(1.0, 0.0, tileScale / 1000.0), 0.0, 1.0);
+    //vec4 color = vec4(0.0, 0.4, 0.0, 1.0);// texture(TexTerrainHeight, VAR._texCoord);
 
     // Wireframe junk
     float d = min(gs_edgeDist.x, gs_edgeDist.y);
@@ -414,8 +413,9 @@ void main(void)
     float LineWidth = 0.75;
     float mixVal = smoothstep(LineWidth - 1, LineWidth + 1, d);
 
-    if (ToggleWireframe == 1.0)
+    if (ToggleWireframe == 1.0) {
         _colourOut = mix(gs_wireColor, color, mixVal);
-    else
+    } else {
         _colourOut = color;
+    }
 }

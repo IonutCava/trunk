@@ -108,15 +108,15 @@ void GenericDrawCommand::renderMask(U32 mask) {
 }
 
 bool GenericDrawCommand::isEnabledOption(RenderOptions option) const {
-    return BitCompare(_renderOptions, to_base(option));
+    return BitCompare(_renderOptions, to_U32(option));
 }
 
 void GenericDrawCommand::enableOption(RenderOptions option) {
-    SetBit(_renderOptions, to_base(option));
+    SetBit(_renderOptions, to_U32(option));
 }
 
 void GenericDrawCommand::disableOption(RenderOptions option) {
-    ClearBit(_renderOptions, to_base(option));
+    ClearBit(_renderOptions, to_U32(option));
 }
 
 void GenericDrawCommand::toggleOption(RenderOptions option) {

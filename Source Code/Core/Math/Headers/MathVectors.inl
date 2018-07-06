@@ -203,6 +203,28 @@ inline vec4<T> operator*(T fl, const vec4<T> &v) {
 *  vec2 inline definitions
 */
 
+/// return the squared distance of the vector
+template <typename T>
+inline T vec2<T>::lengthSquared() const {
+    return this->x * this->x + this->y * this->y;
+}
+
+/// compute the vector's distance to another specified vector
+template <typename T>
+inline T vec2<T>::distance(const vec2 &v, bool absolute) const {
+    T distanceSQ = distanceSquared(v);
+
+    return absolute ? std::abs(Divide::Sqrt(distanceSQ))
+                    : distanceSQ > EPSILON_F32 ? Divide::Sqrt(distanceSQ) : 0;
+}
+
+/// compute the vector's squared distance to another specified vector
+template <typename T>
+inline T vec2<T>::distanceSquared(const vec2 &v) const {
+    return ((v.x - this->x) * (v.x - this->x)) +
+           ((v.y - this->y) * (v.y - this->y));
+}
+
 /// convert the vector to unit length
 template <typename T>
 inline void vec2<T>::normalize() {
@@ -371,17 +393,21 @@ inline T vec3<T>::dot(const vec3 &v) const {
 
 /// compute the vector's distance to another specified vector
 template <typename T>
-inline T vec3<T>::distance(const vec3 &v) const {
-    T distanceSQ = ((v.x - this->x) * (v.x - this->x)) +
-                   ((v.y - this->y) * (v.y - this->y)) +
-                   ((v.z - this->z) * (v.z - this->z));
-    return distanceSQ > EPSILON_F32 ? std::sqrt(distanceSQ) : 0;
+inline T vec3<T>::distance(const vec3 &v, bool absolute) const {
+    T distanceSQ = distanceSquared(v);
+
+    return absolute ? std::abs(Divide::Sqrt(distanceSQ))
+                    : distanceSQ > EPSILON_F32 ? Divide::Sqrt(distanceSQ) : 0;
 }
+
 /// compute the vector's squared distance to another specified vector
 template <typename T>
 inline T vec3<T>::distanceSquared(const vec3 &v) const {
-    return (*this - v).lengthSquared();
+    return ((v.x - this->x) * (v.x - this->x)) +
+           ((v.y - this->y) * (v.y - this->y)) +
+           ((v.z - this->z) * (v.z - this->z));
 }
+
 /// returns the angle in radians between '*this' and 'v'
 template <typename T>
 inline T vec3<T>::angle(vec3 &v) const {

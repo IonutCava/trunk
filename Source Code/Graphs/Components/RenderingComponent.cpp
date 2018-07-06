@@ -573,6 +573,23 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, const RenderStageP
     }
 }
 
+U32 RenderingComponent::renderMask(U32 baseMask) const {
+    if (renderGeometry()) {
+        SetBit(baseMask, to_base(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
+    }
+    if (renderWireframe()) {
+        SetBit(baseMask, to_base(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
+    }
+    if (renderBoundingBox()) {
+        SetBit(baseMask, to_base(GenericDrawCommand::RenderOptions::RENDER_BOUNDS_AABB));
+    }
+    if (renderBoundingSphere()) {
+        SetBit(baseMask, to_base(GenericDrawCommand::RenderOptions::RENDER_BOUNDS_SPHERE));
+    }
+
+    return baseMask;
+}
+
 void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass) {
     _preDrawPass = canDraw(renderStagePass) && _parentSGN.prepareDraw(sceneRenderState, renderStagePass);
 }
@@ -584,7 +601,7 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, con
     if (_preDrawPass)
     {
         for (GenericDrawCommand& cmd : pkg._drawCommands) {
-            cmd.renderMask(renderMask());
+            cmd.renderMask(renderMask(cmd.renderMask()));
             cmd.stateHash(getDrawStateHash(renderStagePass));
             cmd.shaderProgram(getDrawShader(renderStagePass));
         }

@@ -11,7 +11,8 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
       _paused(true),
       _texture(nullptr),
       _drawShader(nullptr),
-      _stateHash(0)
+      _stateHash(0),
+      _primitivesGenerated(0)
 {
 }
 

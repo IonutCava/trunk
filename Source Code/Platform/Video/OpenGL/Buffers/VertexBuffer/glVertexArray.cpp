@@ -437,7 +437,18 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
         GL_API::setPatchVertexCount(command.patchVertexCount());
     }
 
+    //SLOOOOW
+    GLuint query = 0;
+    bool queryPrimitives = command.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_PRIMITIVE_COUNT);
+    if (queryPrimitives) {
+        glGenQueries(1, &query);
+        glBeginQuery(GL_PRIMITIVES_GENERATED, query);
+    }
     GLUtil::submitRenderCommand(command, useCmdBuffer, _formatInternal, _IBid);
+    if (queryPrimitives) {
+        glEndQuery(GL_PRIMITIVES_GENERATED);
+        glGetQueryObjectiv(query, GL_QUERY_RESULT, &_primitivesGenerated);
+    }
 }
 
 /// Activate and set all of the required vertex attributes.

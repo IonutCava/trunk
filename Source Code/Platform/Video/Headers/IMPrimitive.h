@@ -79,6 +79,11 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 
     virtual void drawShader(const ShaderProgram_ptr& shaderProgram);
     virtual void draw(const GenericDrawCommand& command) = 0;
+
+    inline I32 getLastDrawPrimitiveCount() const override {
+        return _primitivesGenerated;
+    }
+
     virtual void beginBatch(bool reserveBuffers, 
                             unsigned int vertexCount,
                             unsigned int attributeCount) = 0;
@@ -159,6 +164,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     Texture* _texture;
 
    protected:
+    I32 _primitivesGenerated;
     // render in wireframe mode
     bool _forceWireframe;
 

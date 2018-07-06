@@ -62,6 +62,10 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
 
     virtual void draw(const GenericDrawCommand& command) = 0;
 
+    inline I32 getLastDrawPrimitiveCount() const override {
+        return _primitivesGenerated;
+    }
+
     /// When reading and writing to the same buffer, we use a round-robin
     /// approach and
     /// offset the reading and writing to multiple copies of the data
@@ -91,6 +95,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     AttributeDescriptor& fdbkAttribDescriptor(U32 attribIndex);
 
    protected:
+    I32 _primitivesGenerated;
     typedef hashMapImpl<U32, AttributeDescriptor> attributeMap;
     bool _doubleBufferedQuery;
     vectorImpl<std::pair<U32 /*buffer*/, U32/*bind point*/>> _feedbackBuffers;

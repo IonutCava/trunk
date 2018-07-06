@@ -120,22 +120,7 @@ class RenderingComponent : public SGNComponent {
     inline bool isVisible() const { return _isVisible; }
     inline void setVisible(bool state) { _isVisible = state; }
 
-    inline U32 renderMask() const {
-        U32 mask = 0;
-        if (renderGeometry()) {
-            SetBit(mask, to_base(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
-        }
-        if (renderWireframe()) {
-            SetBit(mask, to_base(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
-        }
-        if (renderBoundingBox()) {
-            SetBit(mask, to_base(GenericDrawCommand::RenderOptions::RENDER_BOUNDS_AABB));
-        }
-        if (renderBoundingSphere()) {
-            SetBit(mask, to_base(GenericDrawCommand::RenderOptions::RENDER_BOUNDS_SPHERE));
-        }
-        return mask;
-    }
+    U32 renderMask(U32 baseMask) const;
 
     void castsShadows(const bool state);
     void receivesShadows(const bool state);

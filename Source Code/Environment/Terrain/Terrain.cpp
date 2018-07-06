@@ -24,7 +24,6 @@ namespace {
 namespace Test {
     bool treeDirty = true;
 
-    typedef struct terrainNode_t terrainNode_t;
     struct terrainNode_t {
         vec3<F32> origin;
         vec2<F32> dimensions;
@@ -62,8 +61,10 @@ namespace Test {
     */
     terrainNode_t* createNode(terrainNode_t *parent, U8 type, F32 x, F32 y, F32 z, F32 width, F32 height)
     {
-        if (numTerrainNodes >= Terrain::MAX_RENDER_NODES)
-            return NULL;
+        if (numTerrainNodes >= Terrain::MAX_RENDER_NODES) {
+            return nullptr;
+        }
+
         numTerrainNodes++;
 
         terrainTreeTail++;
@@ -75,10 +76,10 @@ namespace Test {
         terrainTreeTail->tscale_posx = 1.0;
         terrainTreeTail->tscale_posz = 1.0;
         terrainTreeTail->p = parent;
-        terrainTreeTail->n = NULL;
-        terrainTreeTail->s = NULL;
-        terrainTreeTail->e = NULL;
-        terrainTreeTail->w = NULL;
+        terrainTreeTail->n = nullptr;
+        terrainTreeTail->s = nullptr;
+        terrainTreeTail->e = nullptr;
+        terrainTreeTail->w = nullptr;
         return terrainTreeTail;
     }
 
@@ -99,7 +100,7 @@ namespace Test {
     bool checkDivide(const vec3<F32>& camPos, terrainNode_t *node)
     {
         // Distance from current origin to camera
-        F32 d = std::abs(std::sqrtf(std::pow(camPos.x - node->origin[0], 2.0f) + std::pow(camPos.z - node->origin[2], 2.0f)));
+        F32 d = camPos.xz().distance(node->origin.xz());
 
         // Check base case:
         // Distance to camera is greater than twice the length of the diagonal
@@ -132,33 +133,32 @@ namespace Test {
         node->c4 = createNode(node, 4u, node->origin.x - 0.5f * w_new, node->origin.y, node->origin.z + 0.5f * h_new, w_new, h_new);
 
         // Assign neighbors
-        if (node->type == 1)
-        {
-            node->e = node->p->c2;
-            node->n = node->p->c4;
-        }
-        else if (node->type == 2)
-        {
-            node->w = node->p->c1;
-            node->n = node->p->c3;
-        }
-        else if (node->type == 3)
-        {
-            node->s = node->p->c2;
-            node->w = node->p->c4;
-        }
-        else if (node->type == 4)
-        {
-            node->s = node->p->c1;
-            node->e = node->p->c3;
-        }
+        switch (node->type) {
+            case 1: {
+                node->e = node->p->c2;
+                node->n = node->p->c4;
+            } break;
+            case 2: {
+                node->w = node->p->c1;
+                node->n = node->p->c3;
+            } break;
+            case 3: {
+                node->s = node->p->c2;
+                node->w = node->p->c4;
+            } break;
+            case 4: {
+                node->s = node->p->c1;
+                node->e = node->p->c3;
+            }break;
+            default:
+                break;
+        };
 
         // Check if each of these four child nodes will be subdivided.
-        bool div1, div2, div3, div4;
-        div1 = checkDivide(camPos, node->c1);
-        div2 = checkDivide(camPos, node->c2);
-        div3 = checkDivide(camPos, node->c3);
-        div4 = checkDivide(camPos, node->c4);
+        bool div1 = checkDivide(camPos, node->c1);
+        bool div2 = checkDivide(camPos, node->c2);
+        bool div3 = checkDivide(camPos, node->c3);
+        bool div4 = checkDivide(camPos, node->c4);
 
         if (div1) {
             terrain_divideNode(camPos, node->c1);
@@ -190,11 +190,11 @@ namespace Test {
         terrainTree->tscale_negz = 1.0;
         terrainTree->tscale_posx = 1.0;
         terrainTree->tscale_posz = 1.0;
-        terrainTree->p = NULL;
-        terrainTree->n = NULL;
-        terrainTree->s = NULL;
-        terrainTree->e = NULL;
-        terrainTree->w = NULL;
+        terrainTree->p = nullptr;
+        terrainTree->n = nullptr;
+        terrainTree->s = nullptr;
+        terrainTree->e = nullptr;
+        terrainTree->w = nullptr;
 
         // Recursively subdivide the terrain
         terrain_divideNode(camPos, terrainTree);
@@ -205,7 +205,7 @@ namespace Test {
     */
     void terrain_init()
     {
-        terrainTree = (terrainNode_t*)malloc(Terrain::MAX_RENDER_NODES * sizeof(terrainNode_t));
+        terrainTree = MemoryManager_NEW terrainNode_t[Terrain::MAX_RENDER_NODES];
         terrain_clearTree();
     }
 
@@ -214,9 +214,8 @@ namespace Test {
     */
     void terrain_shutdown()
     {
-        free(terrainTree);
-        terrainTree = NULL;
-        terrainTreeTail = NULL;
+        MemoryManager::DELETE_ARRAY(terrainTree);
+        terrainTreeTail = nullptr;
     }
 
     /**
@@ -226,20 +225,23 @@ namespace Test {
     */
     terrainNode_t *find(terrainNode_t* n, F32 x, F32 z)
     {
-        if (n->origin[0] == x && n->origin[2] == z)
+        if (COMPARE(n->origin.x, x) && COMPARE(n->origin.z, z)) {
             return n;
+        }
 
-        if (n->c1 == NULL && n->c2 == NULL && n->c3 == NULL && n->c4 == NULL)
+        if (!n->c1 && !n->c2 && !n->c3 && !n->c4) {
             return n;
-
-        if (n->origin[0] >= x && n->origin[2] >= z && n->c1)
+        }
+        
+        if (IS_GEQUAL(n->origin.x, x) && IS_GEQUAL(n->origin.z, z) && n->c1) {
             return find(n->c1, x, z);
-        else if (n->origin[0] <= x && n->origin[2] >= z && n->c2)
+        } else if (IS_LEQUAL(n->origin.x, x) && IS_GEQUAL(n->origin.z, z) && n->c2) {
             return find(n->c2, x, z);
-        else if (n->origin[0] <= x && n->origin[2] <= z && n->c3)
+        } else if (IS_LEQUAL(n->origin.x, x) && IS_LEQUAL(n->origin.z, z) && n->c3) {
             return find(n->c3, x, z);
-        else if (n->origin[0] >= x && n->origin[2] <= z && n->c4)
+        } else if (IS_GEQUAL(n->origin.x, x) && IS_LEQUAL(n->origin.z, z) && n->c4) {
             return find(n->c4, x, z);
+        }
 
         return n;
     }
@@ -252,94 +254,101 @@ namespace Test {
         terrainNode_t *t;
 
         // Positive Z (north)
-        t = find(terrainTree, node->origin.x, node->origin.z + 1 + node->dimensions.width / 2.0f);
+        t = find(terrainTree, node->origin.x, node->origin.z + 1 + node->dimensions.width * 0.5f);
         if (t->dimensions.width > node->dimensions.width) {
             node->tscale_posz = 2.0;
         }
 
         // Positive X (east)
-        t = find(terrainTree, node->origin.x + 1 + node->dimensions.width / 2.0f, node->origin.z);
+        t = find(terrainTree, node->origin.x + 1 + node->dimensions.width * 0.5f, node->origin.z);
         if (t->dimensions.width > node->dimensions.width) {
             node->tscale_posx = 2.0;
         }
 
         // Negative Z (south)
-        t = find(terrainTree, node->origin.x, node->origin.z - 1 - node->dimensions.width / 2.0f);
+        t = find(terrainTree, node->origin.x, node->origin.z - 1 - node->dimensions.width * 0.5f);
         if (t->dimensions.width > node->dimensions.width) {
             node->tscale_negz = 2.0;
         }
 
         // Negative X (west)
-        t = find(terrainTree, node->origin.x - 1 - node->dimensions.width / 2.0f, node->origin.z);
+        t = find(terrainTree, node->origin.x - 1 - node->dimensions.width * 0.5f, node->origin.z);
         if (t->dimensions.width > node->dimensions.width) {
             node->tscale_negx = 2.0;
         }
     }
 
-    /**
-    * Pushes a node (patch) to the GPU to be drawn.
-    * note: height parameter is here but not used. currently only dealing with square terrains (width is used only)
-    */
-
     struct NodeData {
+        inline void set(const vec3<F32>& nodeOrigin,
+                        F32 tileScale,
+                        F32 tileScaleNegX,
+                        F32 tileScaleNegZ,
+                        F32 tileScalePosX,
+                        F32 tileScalePosZ)
+        {
+            _positionAndTileScale.set(nodeOrigin, tileScale);
+            _tScale.set(tileScaleNegX, tileScaleNegZ, tileScalePosX, tileScalePosZ);
+        }
+
         vec4<F32> _positionAndTileScale;
         vec4<F32> _tScale;
     };
 
-    void terrain_renderNode(terrainNode_t *node, vectorImpl<NodeData>& data)
-    {
-        // Calculate the tess scale factor
-        calcTessScale(node);
-
-        data.push_back({ vec4<F32>(node->origin,
-                                   0.5f * node->dimensions.width),
-                         vec4<F32>(node->tscale_negx,
-                                   node->tscale_negz,
-                                   node->tscale_posx,
-                                   node->tscale_posz)});
-    }
+    std::array<Test::NodeData, Terrain::MAX_RENDER_NODES> _terrainRenderData;
 
     I32 maxRenderDepth = 1;
     I32 renderDepth = 0;
 
     /**
+    * Pushes a node (patch) to the GPU to be drawn.
+    * note: height parameter is here but not used. currently only dealing with square terrains (width is used only)
+    */
+    void terrain_renderNode(terrainNode_t *node)
+    {
+        // Calculate the tess scale factor
+        calcTessScale(node);
+
+        _terrainRenderData[renderDepth].set(node->origin,
+                                            0.5f * node->dimensions.width,
+                                            node->tscale_negx,
+                                            node->tscale_negz,
+                                            node->tscale_posx,
+                                            node->tscale_posz);
+    }
+
+    /**
     * Traverses the terrain quadtree to draw nodes with no children.
     */
-    void terrain_renderRecursive(terrainNode_t *node, vectorImpl<NodeData>& data)
+    void terrain_renderRecursive(terrainNode_t *node)
     {
-        //if (renderDepth >= maxRenderDepth)
-        //	return;
+        //if (renderDepth >= maxRenderDepth) {
+        //    return;
+        //}
 
         // If all children are null, render this node
         if (!node->c1 && !node->c2 && !node->c3 && !node->c4)
         {
-            terrain_renderNode(node, data);
+            terrain_renderNode(node);
             renderDepth++;
             return;
         }
 
         // Otherwise, recruse to the children.
-        // Note: we're checking if the child exists. Theoretically, with our algorithm,
-        // either all the children are null or all the children are not null.
-        // There shouldn't be any other cases, but we check here for safety.
-        if (node->c1)
-            terrain_renderRecursive(node->c1, data);
-        if (node->c2)
-            terrain_renderRecursive(node->c2, data);
-        if (node->c3)
-            terrain_renderRecursive(node->c3, data);
-        if (node->c4)
-            terrain_renderRecursive(node->c4, data);
+        if (node->c1) {
+            terrain_renderRecursive(node->c1);
+            terrain_renderRecursive(node->c2);
+            terrain_renderRecursive(node->c3);
+            terrain_renderRecursive(node->c4);
+        }
     }
 
     /**
     * Draw the terrrain.
     */
-    void terrain_render(vectorImpl<NodeData>& data)
+    void terrain_render()
     {
         renderDepth = 0;
-
-        terrain_renderRecursive(terrainTree, data);
+        terrain_renderRecursive(terrainTree);
     }
 
 };
@@ -351,7 +360,8 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
       _drawBBoxes(false),
       _underwaterDiffuseScale(100.0f),
       _chunkSize(1),
-      _waterHeight(0.0f)
+      _waterHeight(0.0f),
+      _altitudeRange(0.0f, 1.0f)
 {
 }
 
@@ -374,10 +384,10 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
     SceneGraphNode_ptr planeSGN(sgn.addNode(_plane, normalMask, PhysicsGroup::GROUP_STATIC));
     planeSGN->setActive(false);
-    for (TerrainChunk* chunk : _terrainChunks) {
+    //for (TerrainChunk* chunk : _terrainChunks) {
         //SceneGraphNode_ptr vegetation = sgn.addNode(Attorney::TerrainChunkTerrain::getVegetation(*chunk), normalMask);
         //vegetation->lockVisibility(true);
-    }
+    //}
     // Skip Object3D::load() to avoid triangle list computation (extremely expensive)!!!
 
     ShaderBufferParams params;
@@ -391,6 +401,8 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
                                                         vec2<U32>(0, Terrain::MAX_RENDER_NODES),
                                                         *_shaderData);
+
+    sgn.get<PhysicsComponent>()->setPosition(_offsetPosition);
 
     Test::terrain_init();
     SceneNode::postLoad(sgn);
@@ -483,6 +495,7 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
     cmd.primitiveType(PrimitiveType::PATCH);
     cmd.enableOption(GenericDrawCommand::RenderOptions::RENDER_TESSELLATED);
     cmd.sourceBuffer(getGeometryVB());
+    cmd.patchVertexCount(4);
     cmd.cmd().indexCount = getGeometryVB()->getIndexCount();
     drawCommandsInOut.push_back(cmd);
 
@@ -518,12 +531,18 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
                                  const SceneRenderState& sceneRenderState,
                                  GenericDrawCommands& drawCommandsInOut) {
 
+    F32 minAltitude = _altitudeRange.x;
+    F32 altitudeRange = _altitudeRange.y - _altitudeRange.x;
+
     //_context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, Plane<F32>(WORLD_Y_AXIS, _waterHeight));
     //drawCommandsInOut.front().shaderProgram()->Uniform("dvd_waterHeight", _waterHeight);
-    drawCommandsInOut.front().shaderProgram()->Uniform("TerrainOrigin", vec3<F32>(-to_F32(_terrainDimensions.width) / 2.0f, -1024.0f / 2.0f, -to_F32(_terrainDimensions.height) / 2.0f));
-    drawCommandsInOut.front().shaderProgram()->Uniform("TerrainHeightOffset", 1024.0f);
+    drawCommandsInOut.front().shaderProgram()->Uniform("TerrainOrigin", vec3<F32>(-(_terrainDimensions.width * 0.5f), 0.0f, -(_terrainDimensions.height * 0.5f)));
+    drawCommandsInOut.front().shaderProgram()->Uniform("MinHeight", minAltitude);
+    drawCommandsInOut.front().shaderProgram()->Uniform("HeightRange", altitudeRange);
     drawCommandsInOut.front().shaderProgram()->Uniform("TerrainLength", to_F32(_terrainDimensions.height));
     drawCommandsInOut.front().shaderProgram()->Uniform("TerrainWidth", to_F32(_terrainDimensions.width));
+    drawCommandsInOut.front().enableOption(GenericDrawCommand::RenderOptions::RENDER_TESSELLATED);
+
     if (Test::treeDirty) {
         Test::terrain_createTree(Camera::activeCamera()->getEye(),
                                  vec3<F32>(0),
@@ -531,11 +550,14 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
         Test::treeDirty = false;
     }
 
-    vectorImpl<Test::NodeData> data;
-    Test::terrain_render(data);
-    drawCommandsInOut.front().drawCount(data.size());
-
-    _shaderData->updateData(0, data.size(), data.data());
+    Test::terrain_render();
+    drawCommandsInOut.front().drawCount(to_U16(Test::renderDepth));
+    STUBBED("This may cause stalls. Profile! -Ionut");
+#if 0
+    _shaderData->updateData(0, Test::renderDepth, Test::_terrainRenderData.data());
+#else
+    _shaderData->setData(Test::_terrainRenderData.data());
+#endif
 
     if (renderStagePass._stage == RenderStage::DISPLAY) {
         // draw infinite plane

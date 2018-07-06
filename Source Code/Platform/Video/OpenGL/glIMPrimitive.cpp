@@ -92,9 +92,22 @@ void glIMPrimitive::draw(const GenericDrawCommand& command) {
     // Upload the primitive's world matrix to the shader
     command.shaderProgram()->Uniform(_shaderWorldMatrix, worldMatrix());
 
+    GLuint query = 0;
+    bool queryPrimitives = command.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_PRIMITIVE_COUNT);
+
+    if (queryPrimitives) {
+        glGenQueries(1, &query);
+        glBeginQuery(GL_PRIMITIVES_GENERATED, query);
+    }
+
     _imInterface->RenderBatchInstanced(command.cmd().primCount,
                                        command.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
-   
+
+    if (queryPrimitives) {
+        glEndQuery(GL_PRIMITIVES_GENERATED);
+        glGetQueryObjectiv(query, GL_QUERY_RESULT, &_primitivesGenerated);
+    }
+
     // Call any "postRender" function the primitive may have attached
     resetStates();
 }

@@ -4,7 +4,8 @@ namespace Divide {
 
 GenericVertexData::GenericVertexData(GFXDevice& context, const U32 ringBufferLength)
   : VertexDataInterface(context),
-    RingBuffer(ringBufferLength)
+    RingBuffer(ringBufferLength),
+    _primitivesGenerated(0)
 {
     _doubleBufferedQuery = true;
 }
