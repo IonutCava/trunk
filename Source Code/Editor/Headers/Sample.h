@@ -36,83 +36,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Headers/PlatformDefines.h"
 #include "Rendering/Headers/FrameListener.h"
 
-#include "Widgets/Headers/ImWindowManagerDivide.h"
-
 namespace Divide {
-using namespace ImWindow;
 
-class StyleEditorWindow : public ImwWindow
-{
-  public:
-    StyleEditorWindow();
-    void OnGui();
-};
+    void Init(ImTextureID texture1, ImTextureID texture2, ImTextureID dockTexture);
+    void Resize(int w, int h);
+    void Draw();
 
-
-class NodeWindow : public ImwWindow
-{
-  public:
-    NodeWindow();
-    virtual void OnGui();
-};
-
-class MyStatusBar : public ImwStatusBar
-{
-  public:
-    MyStatusBar();
-    virtual void OnStatusBar();
-
-    float m_fTime;
-};
-
-class MyToolBar : public ImwToolBar
-{
-  public:
-    MyToolBar();
-    virtual void OnToolBar();
-};
-
-class MyMenu : public ImwMenu
-{
-  public:
-    MyMenu();
-
-    virtual void OnMenu();
-};
-
-class MyImwWindow3 : public ImwWindow
-{
-  public:
-    MyImwWindow3(const char* pTitle = "MyImwWindow3");
-    virtual void OnGui();
-};
-
-class MyImwWindow2 : public ImwWindow
-{
-  public:
-    MyImwWindow2(const char* pTitle = "MyImwWindow2");
-    virtual void OnGui();
-};
-
-class MyImwWindowFillSpace : public ImwWindow
-{
-  public:
-    MyImwWindowFillSpace();
-    virtual void OnGui();
-};
-
-class MyImwWindow : public ImwWindow, ImwMenu
-{
-  public:
-    MyImwWindow(const char* pTitle = "MyImwWindow");
-    virtual void OnGui();
-    virtual void OnContextMenu();
-    virtual void OnMenu();
-
-    char m_pText[512];
-};
-
-void InitSample();
 }; //namespace Divide
 
 #endif //_DIVIDE_EDITOR_SAMPLE_H_

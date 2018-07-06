@@ -50,6 +50,8 @@ class glTexture final : public Texture,
                        const TextureDescriptor& texDescriptor);
     ~glTexture();
 
+    bool resourceLoadComplete() override;
+
     bool unload() override;
 
     void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) override;
@@ -70,10 +72,12 @@ class glTexture final : public Texture,
 
     void setCurrentSampler(const SamplerDescriptor& descriptor) override;
 
+
+    void refreshMipMaps(bool immediate) override;
+
    protected:
     void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) override;
     void reserveStorage();
-    void updateMipMaps(bool force = false);
 
     void loadDataCompressed(const TextureLoadInfo& info,
                             const vectorImpl<ImageTools::ImageLayer>& imageLayers);
@@ -82,8 +86,6 @@ class glTexture final : public Texture,
                               bufferPtr data);
 
     void setMipRangeInternal(U16 base, U16 max);
-
-    bool flushTextureState();
 
    private:
     GLenum _type;

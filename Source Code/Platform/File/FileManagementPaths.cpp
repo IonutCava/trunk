@@ -23,6 +23,12 @@ namespace Paths {
     stringImpl g_fontsPath;
     stringImpl g_localisationPath;
 
+    namespace Editor {
+        stringImpl g_saveLocation;
+        stringImpl g_tabLayoutFile;
+        stringImpl g_panelLayoutFile;
+    };
+
     namespace Scripts {
         stringImpl g_scriptsLocation;
         stringImpl g_scriptsAtomsLocation;
@@ -82,6 +88,10 @@ namespace Paths {
         g_localisationPath = stringImpl("localisation/");
         Scripts::g_scriptsLocation = stringImpl(g_assetsLocation + "scripts/");
         Scripts::g_scriptsAtomsLocation = stringImpl(Scripts::g_scriptsLocation + "atoms/");
+
+        Editor::g_saveLocation = stringImpl("Editor/");
+        Editor::g_tabLayoutFile = stringImpl("Tabs.layout");
+        Editor::g_panelLayoutFile = stringImpl("Panels.layout");
 
         Shaders::g_cacheLocation = stringImpl("shaderCache/");
         Shaders::g_cacheLocationText = stringImpl(Shaders::g_cacheLocation + "Text/");

@@ -255,6 +255,8 @@ public:
 
     void* userPtr;                                  // yours
 
+    static ImTextureID CheckersTexID();
+
 protected:
 	struct StbImage* is;
 

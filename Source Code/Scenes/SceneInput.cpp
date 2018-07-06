@@ -280,7 +280,7 @@ bool SceneInput::mouseMoved(const Input::MouseEvent& arg) {
     constexpr I32 moveTolerance = 2;
 
     SceneStatePerPlayer& state = _parentScene.state().playerState(arg._deviceIndex);
-    state.aimPos(vec2<I32>(arg._event.state.X.abs, arg._event.state.Y.abs));
+    state.aimPos(vec2<I32>(arg.X().abs, arg.Y().abs));
 
     if (state.cameraLockedToMouse()) {
         if (state.aimDelta().x < -moveTolerance) {
@@ -303,7 +303,7 @@ bool SceneInput::mouseButtonPressed(const Input::MouseEvent& arg,
 
     if (g_recordInput) {
         vectorAlg::emplace_back(_mouseBtnLog[arg._deviceIndex],
-            vectorAlg::make_tuple(id, Input::InputState::PRESSED, vec2<I32>(arg._event.state.X.abs, arg._event.state.Y.abs)));
+            vectorAlg::make_tuple(id, Input::InputState::PRESSED, vec2<I32>(arg.X().abs, arg.Y().abs)));
     }
 
     PressReleaseActionCbks cbks;
@@ -318,7 +318,7 @@ bool SceneInput::mouseButtonReleased(const Input::MouseEvent& arg,
                                      Input::MouseButton id) {
     if (g_recordInput) {
         vectorAlg::emplace_back(_mouseBtnLog[arg._deviceIndex],
-                                vectorAlg::make_tuple(id, Input::InputState::RELEASED, vec2<I32>(arg._event.state.X.abs, arg._event.state.Y.abs)));
+                                vectorAlg::make_tuple(id, Input::InputState::RELEASED, vec2<I32>(arg.X().abs, arg.Y().abs)));
     }
 
     PressReleaseActionCbks cbks;

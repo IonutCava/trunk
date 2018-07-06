@@ -140,6 +140,10 @@ void Kernel::idle() {
 
     bool freezeLoopTime = ParamHandler::instance().getParam(_ID("freezeLoopTime"), false);
 
+    if (Config::Build::ENABLE_EDITOR) {
+        freezeLoopTime |= _platformContext->editor().shouldPauseSimulation();
+    }
+
     if (_timingData.freezeTime(freezeLoopTime)) {
         _platformContext->app().mainLoopPaused(freezeLoopTime);
     }
@@ -824,12 +828,14 @@ bool Kernel::mouseMoved(const Input::MouseEvent& arg) {
     if (!_platformContext->gui().mouseMoved(arg)) {
         return _sceneManager->mouseMoved(arg);
     }
+    
     // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::mouseButtonPressed(const Input::MouseEvent& arg,
                                 Input::MouseButton button) {
+    
     if (Config::Build::ENABLE_EDITOR) {
         if (_platformContext->editor().mouseButtonPressed(arg, button)) {
             return true;
@@ -839,13 +845,14 @@ bool Kernel::mouseButtonPressed(const Input::MouseEvent& arg,
     if (!_platformContext->gui().mouseButtonPressed(arg, button)) {
         return _sceneManager->mouseButtonPressed(arg, button);
     }
-
+    
     // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::mouseButtonReleased(const Input::MouseEvent& arg,
                                  Input::MouseButton button) {
+    
     if (Config::Build::ENABLE_EDITOR) {
         if (_platformContext->editor().mouseButtonReleased(arg, button)) {
             return true;

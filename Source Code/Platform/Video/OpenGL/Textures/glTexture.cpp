@@ -111,11 +111,14 @@ void glTexture::resize(const bufferPtr ptr,
     loadData(info, ptr, dimensions);
 }
 
-void glTexture::updateMipMaps(bool force) {
-    if (force || (_mipMapsDirty && _descriptor.automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps())) {
-        glGenerateTextureMipmap(_textureData.getHandle());
+void glTexture::refreshMipMaps(bool immediate) {
+    if (_descriptor.automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
+        if (immediate) {
+            glGenerateTextureMipmap(_textureData.getHandle());
+        } else {
+            GL_API::queueComputeMipMap(_textureData.getHandle());
+        }
     }
-    Texture::updateMipMaps(force);
 }
 
 void glTexture::reserveStorage() {
@@ -257,7 +260,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
     }
 
     // Loading from file usually involves data that doesn't change, so call this here.
-    updateMipMaps();
+    refreshMipMaps(true);
 
     assert(_width > 0 && _height > 0 && "glTexture error: Invalid texture dimensions!");
 }
@@ -316,11 +319,6 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
                 break;
         }
     };
-    _mipMapsDirty = true;
-
-    if (numMips == 1) {
-        updateMipMaps();
-    }
 }
 
 void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data) {
@@ -333,12 +331,10 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
         switch (_textureData._textureType) {
             case TextureType::TEXTURE_1D: {
                 glTextureSubImage1D(handle, 0, 0, _width, format, type, data);
-                _mipMapsDirty = true;
             } break;
             case TextureType::TEXTURE_2D:
             case TextureType::TEXTURE_2D_MS: {
                 glTextureSubImage2D(handle, 0, 0, 0, _width, _height, format, type, data);
-                _mipMapsDirty = true;
             } break;
 
             case TextureType::TEXTURE_3D:
@@ -347,12 +343,9 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
             case TextureType::TEXTURE_CUBE_MAP:
             case TextureType::TEXTURE_CUBE_ARRAY: {
                 glTextureSubImage3D(handle, 0, 0, 0, (info._cubeMapCount * 6) + info._layerIndex, _width, _height, 1, format, type, data);
-                _mipMapsDirty = info._layerIndex == _numLayers - 1;
             } break;
         }
     }
-
-    updateMipMaps();
 
     if (!Config::USE_GPU_THREADED_LOADING) {
         if (GFXDevice::getGPUVendor() == GPUVendor::NVIDIA) {
@@ -405,21 +398,17 @@ void glTexture::setCurrentSampler(const SamplerDescriptor& descriptor) {
     GL_API::getOrCreateSamplerObject(descriptor);
 }
 
-bool glTexture::flushTextureState() {
+bool glTexture::resourceLoadComplete() {
     if (_lockManager) {
         WAIT_FOR_CONDITION(getState() == ResourceState::RES_LOADED);
         _lockManager->Wait(true);
         MemoryManager::DELETE(_lockManager);
     }
 
-    updateMipMaps();
-
-    return true;
+    return Texture::resourceLoadComplete();
 }
 
 void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) {
-    flushTextureState();
-
     GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
                             : (write ? GL_WRITE_ONLY : GL_NONE);
     GL_API::bindTextureImage(slot, _textureData.getHandle(), level, layered, layer, access, 

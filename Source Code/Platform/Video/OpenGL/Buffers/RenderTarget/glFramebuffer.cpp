@@ -194,7 +194,7 @@ void glFramebuffer::resolve() {
         toggleAttachments(RenderTarget::defaultPolicy());
         _resolveBuffer->blitFrom(this, hasColour(), hasDepth());
     }
-
+    
     _resolved = true;
 }
 
@@ -464,7 +464,7 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const vectorImpl<R
                 } else {
                     glClearNamedFramebufferuiv(_framebufferHandle, GL_COLOR, buffer, Util::ToUIntColour(att->clearColour())._v);
                 }
-                att->texture()->refreshMipMaps();
+                att->texture()->refreshMipMaps(false);
                 _context.registerDrawCall();
             }
         }
@@ -472,7 +472,7 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const vectorImpl<R
 
     if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER) && hasDepth()) {
         glClearNamedFramebufferfv(_framebufferHandle, GL_DEPTH, 0, &_descriptor._depthValue);
-        _attachmentPool->get(RTAttachmentType::Depth, 0)->texture()->refreshMipMaps();
+        _attachmentPool->get(RTAttachmentType::Depth, 0)->texture()->refreshMipMaps(false);
         _context.registerDrawCall();
     }
 }

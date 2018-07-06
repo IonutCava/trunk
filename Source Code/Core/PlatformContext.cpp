@@ -82,7 +82,7 @@ DisplayWindow& PlatformContext::activeWindow() {
 }
 
 Kernel& PlatformContext::kernel() {
-    return app().kernel();
+    return _kernel;
 }
 
 }; //namespace Divide

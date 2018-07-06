@@ -113,7 +113,13 @@ template <typename T>
 T CLAMPED(const T& n, const T min, const T max);
 
 template <typename T>
-T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max);
+T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max, D64& slopeOut);
+
+template <typename T>
+T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max) {
+    D64 slope = 0.0;
+    return MAP(input, in_min, in_max, out_min, out_max, slope);
+}
 
 U32 nextPOW2(U32 n);
 

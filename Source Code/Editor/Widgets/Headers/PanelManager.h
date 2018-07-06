@@ -36,35 +36,97 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
+    namespace Attorney {
+        class PanelManagerWidgets;
+    };
+
+    class TabbedWindow;
+    class PanelManagerPane;
+    class ResourceCache;
     FWD_DECLARE_MANAGED_CLASS(Texture);
     class PanelManager : public PlatformContextComponent {
-        protected:
+        friend class Attorney::PanelManagerWidgets;
+
+      protected:
         enum class TextureUsage : U8 {
             Tile = 0,
             Numbers,
             Dock,
             COUNT
         };
+
+        enum class PanelPositions : U8 {
+            TOP = 0,
+            LEFT,
+            RIGHT,
+            BOTTOM,
+            CENTER,
+            COUNT
+        };
+
       public:
         PanelManager(PlatformContext& context);
         ~PanelManager();
 
+        bool loadFromFile();
+        bool saveToFile();
+
         void init();
         void destroy();
-        void draw();
+        void idle();
+        void draw(const U64 deltaTime);
         void resize(int w, int h);
         void drawDockedWindows(ImGui::PanelManagerWindowData& wd);
+        void setPanelManagerBoundsToIncludeMainMenuIfPresent(int displayX = -1, int displayY = -1);
+
+        inline ImGui::PanelManager& ImGuiPanelManager() { return *_manager; }
+
+        inline bool simulationPauseRequested() const { return _simulationPaused != nullptr && *_simulationPaused; }
 
       protected:
         float calcMainMenuHeight();
+        void drawIMGUISample();
+        void drawIMGUIDebug();
 
-        void  setPanelManagerBoundsToIncludeMainMenuIfPresent(int displayX = -1, int displayY = -1);
+      protected:
+        static void drawDockedTabWindows(ImGui::PanelManagerWindowData& wd);
+
       protected:
         bool* _showMainMenuBar;
         bool* _showCentralWindow;
+        bool* _simulationPaused;
+
+        U64 _deltaTime;
+        stringImpl _saveFile;
         std::array<Texture_ptr, to_base(TextureUsage::COUNT)> _textures;
         std::unique_ptr<ImGui::PanelManager> _manager;
+
+        std::array<std::unique_ptr<TabbedWindow>, to_base(PanelPositions::COUNT)> _tabbedWindows;
+        // No center toolbar
+        std::array<std::unique_ptr<PanelManagerPane>, to_base(PanelPositions::COUNT) - 1> _toolbars;
+
+     public:
+        static ResourceCache* s_globalCache;
+        static hashMapImpl<U32, Texture_ptr> s_imageEditorCache;
     }; //class PanelManager
+
+
+    namespace Attorney {
+        class PanelManagerWidgets {
+          private:
+            static ImGui::PanelManager& internalManager(Divide::PanelManager& mgr) {
+                return *mgr._manager;
+            }
+
+            static void drawDockedTabWindows(ImGui::PanelManagerWindowData& wd) {
+                PanelManager::drawDockedTabWindows(wd);
+            }
+
+            friend class Divide::TabbedWindow;
+            friend class Divide::PanelManagerPane;
+        };
+    };
+
 }; //namespace Divide
 
 #endif //_DIVIDE_EDITOR_PANEL_MANAGER_H_

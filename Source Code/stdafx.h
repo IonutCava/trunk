@@ -152,6 +152,12 @@ typedef std::any AnyParam;
 
 #include <ConcurrentQueue/concurrentqueue.h>
 
+#ifndef YES_IMGUIMINIGAMES
+#define YES_IMGUIMINIGAMES
+#endif
+#ifndef YES_IMGUIIMAGEEDITOR
+#define YES_IMGUIIMAGEEDITOR
+#endif
 #include <imgui.h>
 
 #include "Platform/Threading/Headers/SharedMutex.h"

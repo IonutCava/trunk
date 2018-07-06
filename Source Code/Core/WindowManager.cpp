@@ -174,7 +174,7 @@ U32 WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& e
             _windows.pop_back();
             MemoryManager::SAFE_DELETE(window);
         }
-        _windows[ret]->clearColour(descriptor.clearColour);
+        _windows[ret]->clearColour(descriptor.clearColour, true);
     }
 
     return ret;

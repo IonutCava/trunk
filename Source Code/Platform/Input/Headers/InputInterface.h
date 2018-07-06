@@ -102,6 +102,7 @@ public:
 
 protected:
     inline KeyEvent& getKeyRef(U32 index) { return _keys[index]; }
+    inline DisplayWindow& parentWindow() { return _parent; }
 
 protected:
     DisplayWindow& _parent;
@@ -131,6 +132,10 @@ namespace Attorney {
     private:
         static KeyEvent& getKeyRef(InputInterface& input, U32 index) {
             return input.getKeyRef(index);
+        }
+
+        static DisplayWindow& parentWindow(InputInterface& input) {
+            return input.parentWindow();
         }
 
         friend class Divide::Input::EventHandler;

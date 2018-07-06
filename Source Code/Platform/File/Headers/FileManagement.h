@@ -57,6 +57,12 @@ namespace Paths {
     extern stringImpl g_GUILocation;
     extern stringImpl g_fontsPath;
     extern stringImpl g_localisationPath;
+    
+    namespace Editor {
+        extern stringImpl g_saveLocation;
+        extern stringImpl g_tabLayoutFile;
+        extern stringImpl g_panelLayoutFile;
+    };
 
     namespace Scripts {
         extern stringImpl g_scriptsLocation;
@@ -99,6 +105,7 @@ namespace Paths {
     // use command regex pattern
     extern std::regex g_usePattern;
 
+    
     void initPaths(const SysInfo& info);
     void updatePaths(const PlatformContext& context);
 };

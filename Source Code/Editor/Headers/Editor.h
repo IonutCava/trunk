@@ -32,9 +32,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _DIVIDE_EDITOR_H_
 #define _DIVIDE_EDITOR_H_
 
-#include "Core/Headers/PlatformContextComponent.h"
+#include "Core/Math/Headers/MathVectors.h"
 #include "Core/Time/Headers/ProfileTimer.h"
-#include "Platform/Headers/PlatformDefines.h"
+#include "Core/Headers/PlatformContextComponent.h"
+
 #include "Rendering/Headers/FrameListener.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
@@ -43,6 +44,7 @@ namespace Divide {
 
 namespace Attorney {
     class EditorWindowManager;
+    class EditorPanelManager;
 };
 
 class PanelManager;
@@ -57,9 +59,29 @@ class Editor : public PlatformContextComponent,
                public Input::InputAggregatorInterface {
 
     friend class Attorney::EditorWindowManager;
+    friend class Attorney::EditorPanelManager;
 
   public:
-    explicit Editor(PlatformContext& context);
+    // Basically, the IMGUI default themes
+    enum class Theme : U8 {
+        IMGUI_Default = 0,
+        IMGUI_Default_Dark,
+        Gray,
+        OSX,
+        Dark_Opaque,
+        OSX_Opaque,
+        Soft,
+        Edin_Black,
+        Edin_White,
+        Maya,
+        COUNT
+    };
+
+  public:
+    explicit Editor(PlatformContext& context,
+                    Theme theme = Theme::OSX_Opaque,
+                    Theme lostFocusTheme = Theme::OSX,
+                    Theme dimmedTheme = Theme::Gray);
     ~Editor();
 
     bool init();
@@ -69,6 +91,10 @@ class Editor : public PlatformContextComponent,
 
     void toggle(const bool state);
     bool running() const;
+
+    bool shouldPauseSimulation() const;
+
+    inline const vec4<I32>& getScenePreviewRect() const { return _scenePreviewRect; }
 
   protected: //frame listener
     bool frameStarted(const FrameEvent& evt);
@@ -103,16 +129,29 @@ class Editor : public PlatformContextComponent,
     void OnFocus(bool bHasFocus);
     void OnSize(int iWidth, int iHeight);
     void OnUTF8(const char* text);
+    void dim(bool hovered, bool focused);
+    bool toggleScenePreview(bool state);
+    void setScenePreviewRect(const vec4<I32>& rect, bool hovered);
 
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, I64 windowGUID);
 
   private:
+    Theme _currentTheme;
+    Theme _currentLostFocusTheme;
+    Theme _currentDimmedTheme;
+
+    vec4<I32> _scenePreviewRect;
+
     I64 _activeWindowGUID = -1;
     std::unique_ptr<ImwWindowManagerDivide> _windowManager;
     std::unique_ptr<PanelManager> _panelManager;
 
     bool              _running;
+    bool              _sceneHovered;
+    bool              _sceneWasHovered;
+    bool              _scenePreviewFocused;
+    bool              _scenePreviewWasFocused;
     DisplayWindow*    _mainWindow;
     Texture_ptr       _fontTexture;
     ShaderProgram_ptr _imguiProgram;
@@ -130,6 +169,16 @@ namespace Attorney {
         }
 
         friend class Divide::ImwWindowManagerDivide;
+    };
+
+    class EditorPanelManager {
+        //private:
+        public: //ToDo: fix this -Ionut
+        static void setScenePreviewRect(Editor& editor, const vec4<I32>& rect, bool hovered) {
+            editor.setScenePreviewRect(rect, hovered);
+        }
+
+        friend class Divide::PanelManager;
     };
 };
 

@@ -36,6 +36,17 @@ TEST(TimeDownCast)
     CHECK_EQUAL(secondsToNanoResult, secondsToNano);
 }
 
+TEST(MapTest)
+{
+    constexpr U32 in_min = 0;
+    constexpr U32 in_max = 100;
+    constexpr U32 out_min = 0;
+    constexpr U32 out_max = 10;
+    constexpr U32 in = 20;
+    constexpr U32 result = 2;
+    CHECK_EQUAL(result, MAP(in, in_min, in_max, out_min, out_max));
+}
+
 TEST(TimeUpCast)
 {
     constexpr U32 secondsResult = 4;

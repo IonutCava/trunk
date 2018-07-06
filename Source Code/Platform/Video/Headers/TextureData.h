@@ -73,7 +73,7 @@ public:
     }
 
     /// ID
-    inline U32 getHandle() const {
+    inline const U32& getHandle() const {
         return _textureHandle;
     }
 

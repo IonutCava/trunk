@@ -888,7 +888,7 @@ void GL_API::drawIMGUI(ImDrawData* data) {
                 if (pcmd->UserCallback) {
                     pcmd->UserCallback(cmd_list, pcmd);
                 } else {
-                    GL_API::bindTexture(0, (GLuint)(intptr_t)pcmd->TextureId);
+                    GL_API::bindTexture(0, (GLuint)((intptr_t)pcmd->TextureId));
                     GL_API::setScissor((I32)pcmd->ClipRect.x,
                                        (I32)(s_activeViewport.w - pcmd->ClipRect.w),
                                        (I32)(pcmd->ClipRect.z - pcmd->ClipRect.x),

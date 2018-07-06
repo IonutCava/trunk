@@ -191,8 +191,19 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
     
     if (Config::Build::ENABLE_EDITOR) {
+        SamplerDescriptor editorSampler;
+        editorSampler.setFilters(TextureFilter::LINEAR_MIPMAP_LINEAR);
+        editorSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+        editorSampler.setAnisotropy(0);
+
+        TextureDescriptor editorDescriptor(TextureType::TEXTURE_2D,
+                                           GFXImageFormat::RGB8,
+                                           GFXDataFormat::UNSIGNED_BYTE);
+        editorDescriptor.toggleAutomaticMipMapGeneration(true);
+        editorDescriptor.setSampler(editorSampler);
+
         vectorImpl<RTAttachmentDescriptor> attachments = {
-            { screenDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE }
+            { editorDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE }
         };
 
         RenderTargetDescriptor editorDesc = {};

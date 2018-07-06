@@ -76,8 +76,11 @@ namespace Divide {
         return _opacity;
     }
 
-    inline void DisplayWindow::clearColour(const vec4<F32>& colour) {
+    inline void DisplayWindow::clearColour(const vec4<F32>& colour, bool force) {
         _clearColour.set(colour);
+        if (force) {
+            _clearColourOriginal.set(colour);
+        }
     }
 
     inline vec4<F32>& DisplayWindow::clearColour() {
@@ -86,6 +89,14 @@ namespace Divide {
 
     inline const vec4<F32>& DisplayWindow::clearColour() const {
         return _clearColour;
+    }
+
+    inline vec4<F32>& DisplayWindow::originalClearColour() {
+        return _clearColourOriginal;
+    }
+
+    inline const vec4<F32>& DisplayWindow::originalClearColour() const {
+        return _clearColourOriginal;
     }
 
     inline bool DisplayWindow::minimized() const {
@@ -134,6 +145,14 @@ namespace Divide {
 
     inline void DisplayWindow::destroyCbk(const DELEGATE_CBK<void>& destroyCbk) {
         _destroyCbk = destroyCbk;
+    }
+
+    inline bool DisplayWindow::warp() const {
+        return _warp;
+    }
+
+    inline const vec4<I32>& DisplayWindow::warpRect() const {
+        return _warpRect;
     }
 }; //namespace Divide
 

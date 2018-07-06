@@ -24,15 +24,30 @@
 namespace Divide {
 
 namespace {
-    bool show_test_window = true;
-    bool show_another_window = false;
-    I32 window_opacity = 255;
-    I32 previous_window_opacity = 255;
+    std::array<int, to_base(Editor::Theme::COUNT)> imguiThemeMap = {
+        ImGuiStyle_Default,
+        ImGuiStyle_DefaultDark,
+        ImGuiStyle_Gray,
+        ImGuiStyle_OSX,
+        ImGuiStyle_DarkOpaque,
+        ImGuiStyle_OSXOpaque,
+        ImGuiStyle_Soft,
+        ImGuiStyle_EdinBlack,
+        ImGuiStyle_EdinWhite,
+        ImGuiStyle_Maya
+    };
 };
 
-Editor::Editor(PlatformContext& context)
+Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Theme dimmedTheme)
     : PlatformContextComponent(context),
+      _currentTheme(theme),
+      _currentLostFocusTheme(lostFocusTheme),
+      _currentDimmedTheme(dimmedTheme),
       _running(false),
+      _sceneHovered(false),
+      _sceneWasHovered(false),
+      _scenePreviewFocused(false),
+      _scenePreviewWasFocused(false),
       _activeWindowGUID(-1),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
@@ -52,13 +67,7 @@ Editor::~Editor()
 }
 
 void Editor::idle() {
-    CLAMP(window_opacity, 0, 255);
-    if (window_opacity != previous_window_opacity) {
-        if (_mainWindow != nullptr) {
-            _mainWindow->opacity(to_U8(window_opacity));
-        }
-        previous_window_opacity = window_opacity;
-    }
+    _panelManager->idle();
 }
 
 bool Editor::init() {
@@ -100,6 +109,14 @@ bool Editor::init() {
     shaderDescriptor.setThreadedLoading(false);
     _imguiProgram = CreateResource<ShaderProgram>(_context.gfx().parent().resourceCache(), shaderDescriptor);
 
+    _mainWindow = &context().app().windowManager().getWindow(0u);
+    _mainWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); OnClose();});
+    _mainWindow->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) { OnFocus(args._flag);});
+    _mainWindow->addEventListener(WindowEvent::RESIZED, [this](const DisplayWindow::WindowEventArgs& args) { OnSize(args.x, args.y);});
+    _mainWindow->addEventListener(WindowEvent::TEXT, [this](const DisplayWindow::WindowEventArgs& args) { OnUTF8(args._text);});
+    _activeWindowGUID = _mainWindow->getGUID();
+    vec2<I32> size(_mainWindow->getDimensions());
+
     io.KeyMap[ImGuiKey_Tab] = Input::KeyCode::KC_TAB;
     io.KeyMap[ImGuiKey_LeftArrow] = Input::KeyCode::KC_LEFT;
     io.KeyMap[ImGuiKey_RightArrow] = Input::KeyCode::KC_RIGHT;
@@ -123,18 +140,13 @@ bool Editor::init() {
     io.GetClipboardTextFn = GetClipboardText;
     io.ClipboardUserData = nullptr;
     io.RenderDrawListsFn = nullptr;
-
-    _mainWindow = &context().app().windowManager().getWindow(0u);
-    _mainWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); OnClose();});
-    _mainWindow->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) { OnFocus(args._flag);});
-    _mainWindow->addEventListener(WindowEvent::RESIZED, [this](const DisplayWindow::WindowEventArgs& args) { OnSize(args.x, args.y);});
-    _mainWindow->addEventListener(WindowEvent::TEXT, [this](const DisplayWindow::WindowEventArgs& args) { OnUTF8(args._text);});
-    _activeWindowGUID = _mainWindow->getGUID();
-
-    vec2<I32> size(_mainWindow->getDimensions());
+    io.DisplaySize = ImVec2((float)size.width, (float)size.height);
 
     _panelManager->init();
     OnSize(size.w, size.h);
+
+    ImGui::ResetStyle(imguiThemeMap[to_base(_currentTheme)]);
+
 #if !defined(DISABLE_IMWINDOW)
     if (_windowManager->Init()) {
         InitSample();
@@ -156,10 +168,17 @@ void Editor::close() {
 
 void Editor::toggle(const bool state) {
     _running = state;
+    if (!state) {
+        toggleScenePreview(false);
+    }
 }
 
 bool Editor::running() const {
     return _running;
+}
+
+bool Editor::shouldPauseSimulation() const {
+    return _panelManager && _panelManager->simulationPauseRequested();
 }
 
 void Editor::update(const U64 deltaTimeUS) {
@@ -213,6 +232,8 @@ void Editor::update(const U64 deltaTimeUS) {
         if (io.WantMoveMouse) {
             context().app().windowManager().setCursorPosition((int)io.MousePos.x, (int)io.MousePos.y);
         }
+
+        //_scenePreviewRect = _platform
     }
 }
 
@@ -250,37 +271,7 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
 #endif
     {
         ImGui::NewFrame();
-
-        _panelManager->draw();
-
-        static float f = 0.0f;
-        ImGui::Text("Hello, world!");
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-        ImGui::SliderInt("Opacity", &window_opacity, 0, 255);
-        ImGui::ColorEdit4("clear color", _mainWindow->clearColour()._v);
-        if (ImGui::Button("Test Window")) show_test_window ^= 1;
-        if (ImGui::Button("Another Window")) show_another_window ^= 1;
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::Text("Time since last frame %.3f ms", Time::MicrosecondsToMilliseconds<float>(evt._timeSinceLastFrameUS));
-        if (ImGui::Button("Toggle cursor")) {
-            ImGuiIO& io = ImGui::GetIO();
-            io.MouseDrawCursor = !io.MouseDrawCursor;
-        }
-        // 2. Show another simple window. In most cases you will use an explicit Begin/End pair to name the window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);
-            ImGui::Text("Hello from another window!");
-            ImGui::End();
-        }
-
-        // 3. Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow().
-        if (show_test_window)
-        {
-            ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
-            ImGui::ShowTestWindow(&show_test_window);
-        }
-
+        _panelManager->draw(evt._timeSinceLastFrameUS);
         ImGui::Render();
         renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID());
         return true;
@@ -379,9 +370,36 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID)
     _context.gfx().flushCommandBuffer(buffer);
 }
 
+void Editor::dim(bool hovered, bool focused) {
+    ImGui::ResetStyle(imguiThemeMap[focused ? to_base(_currentDimmedTheme)
+                                            : hovered ? to_base(_currentLostFocusTheme)
+                                                      : to_base(_currentTheme)]);
+}
+
+bool Editor::toggleScenePreview(bool state) {
+    state = state ? _sceneHovered : false;
+    if (_scenePreviewFocused != state) {
+        _scenePreviewWasFocused = _scenePreviewFocused;
+        _scenePreviewFocused = state;
+        _mainWindow->warp(_scenePreviewFocused, _scenePreviewRect);
+        dim(_sceneHovered, _scenePreviewFocused);
+    }
+
+    return _scenePreviewFocused;
+}
+
+void Editor::setScenePreviewRect(const vec4<I32>& rect, bool hovered) {
+    if (_sceneWasHovered != hovered) {
+        _sceneWasHovered = _sceneHovered;
+        _sceneHovered = hovered;
+        dim(_sceneHovered, _scenePreviewFocused);
+    }
+    _scenePreviewRect.set(rect);
+}
+
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
-    if (!_running) {
+    if (!_running || _scenePreviewFocused) {
         return false;
     }
 
@@ -393,6 +411,7 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
     io.KeyAlt = key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU;
     io.KeySuper = false;
 
+    
     bool ret = ImGui::GetIO().WantCaptureKeyboard;
 #if !defined(DISABLE_IMWINDOW)
     ret = ret || _windowManager->HasWantCaptureKeyboard()
@@ -402,7 +421,7 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
 
 /// Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
-    if (!_running) {
+    if (!_running || _scenePreviewFocused) {
         return false;
     }
 
@@ -437,24 +456,29 @@ bool Editor::mouseMoved(const Input::MouseEvent& arg) {
     }
 
     ImGuiIO& io = ImGui::GetIO();
-    io.MousePos = ImVec2((float)arg._event.state.X.abs,
-                         (float)arg._event.state.Y.abs);
-    io.MouseWheel += (float)arg._event.state.Z.rel / 60.0f;
+    io.MousePos = ImVec2((float)arg.X(false).abs,
+                         (float)arg.Y(false).abs);
+    io.MouseWheel += (float)arg.Z(false).rel / 60.0f;
 
-    bool ret = ImGui::GetIO().WantCaptureMouse;
+    if (!_scenePreviewFocused) {
+        bool ret = ImGui::GetIO().WantCaptureMouse;
 #if !defined(DISABLE_IMWINDOW)
-    ret = ret || _windowManager->HasWantCaptureMouse()
+        ret = ret || _windowManager->HasWantCaptureMouse()
 #endif
-    return ret;
+        return ret;
+    }
+
+    return false;
 }
 
 /// Mouse button pressed: return true if input was consumed
 bool Editor::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) {
-    if (!_running) {
+    ACKNOWLEDGE_UNUSED(arg);
+
+    if (!_running || _scenePreviewFocused) {
         return false;
     }
 
-    ACKNOWLEDGE_UNUSED(arg);
     ImGuiIO& io = ImGui::GetIO();
     io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = true;
 
@@ -467,78 +491,93 @@ bool Editor::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton
 
 /// Mouse button released: return true if input was consumed
 bool Editor::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) {
-    if (!_running) {
+    ACKNOWLEDGE_UNUSED(arg);
+
+    if (button == OIS::MB_Left) {
+        toggleScenePreview(_running);
+    }
+
+    if (!_running ) {
         return false;
     }
 
-    ACKNOWLEDGE_UNUSED(arg);
     ImGuiIO& io = ImGui::GetIO();
     io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = false;
 
-    bool ret = ImGui::GetIO().WantCaptureMouse;
+    if (!_scenePreviewFocused) {
+        bool ret = ImGui::GetIO().WantCaptureMouse;
 #if !defined(DISABLE_IMWINDOW)
-    ret = ret || _windowManager->HasWantCaptureMouse()
+        ret = ret || _windowManager->HasWantCaptureMouse()
 #endif
-    return ret;
+            return ret;
+    }
+
+    return false;
 }
 
 bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg, Input::JoystickButton button) {
-    if (!_running) {
+    ACKNOWLEDGE_UNUSED(arg);
+    ACKNOWLEDGE_UNUSED(button);
+
+    if (!_running || _scenePreviewFocused) {
         return false;
     }
 
-    ACKNOWLEDGE_UNUSED(arg);
-    ACKNOWLEDGE_UNUSED(button);
     return false;
 }
 
 bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg, Input::JoystickButton button) {
-    if (!_running) {
+    ACKNOWLEDGE_UNUSED(arg);
+    ACKNOWLEDGE_UNUSED(button);
+
+    if (!_running || _scenePreviewFocused) {
         return false;
     }
 
-    ACKNOWLEDGE_UNUSED(arg);
-    ACKNOWLEDGE_UNUSED(button);
     return false;
 }
 
 bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg, I8 axis) {
-    if (!_running) {
+    ACKNOWLEDGE_UNUSED(arg);
+    ACKNOWLEDGE_UNUSED(axis);
+
+    if (!_running || _scenePreviewFocused) {
         return false;
     }
 
-    ACKNOWLEDGE_UNUSED(arg);
-    ACKNOWLEDGE_UNUSED(axis);
     return false;
 }
 
 bool Editor::joystickPovMoved(const Input::JoystickEvent &arg, I8 pov) {
-    if (!_running) {
+    ACKNOWLEDGE_UNUSED(arg);
+    ACKNOWLEDGE_UNUSED(pov);
+
+    if (!_running || _scenePreviewFocused) {
         return false;
     }
 
-    ACKNOWLEDGE_UNUSED(arg);
-    ACKNOWLEDGE_UNUSED(pov);
     return false;
 }
 
 bool Editor::joystickSliderMoved(const Input::JoystickEvent &arg, I8 index) {
-    if (!_running) {
+    ACKNOWLEDGE_UNUSED(arg);
+    ACKNOWLEDGE_UNUSED(index);
+
+    if (!_running || _scenePreviewFocused) {
         return false;
     }
 
-    ACKNOWLEDGE_UNUSED(arg);
-    ACKNOWLEDGE_UNUSED(index);
     return false;
 }
 
 bool Editor::joystickvector3Moved(const Input::JoystickEvent &arg, I8 index) {
-    if (!_running) {
+    ACKNOWLEDGE_UNUSED(arg);
+    ACKNOWLEDGE_UNUSED(index);
+
+    if (!_running || _scenePreviewFocused) {
         return false;
     }
 
-    ACKNOWLEDGE_UNUSED(arg);
-    ACKNOWLEDGE_UNUSED(index);
     return false;
 }
 

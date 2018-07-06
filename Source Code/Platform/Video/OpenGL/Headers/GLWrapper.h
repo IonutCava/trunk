@@ -46,6 +46,8 @@
 #include "Platform/Video/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVAOPool.h"
 
+#include <unordered_set>
+
 struct glslopt_ctx;
 struct FONScontext;
 struct ImDrawData;
@@ -152,6 +154,8 @@ public:
     /// Makes sure that the calling thread has a valid GL context. If not, a new one is created.
     static void createOrValidateContextForCurrentThread(GFXDevice& context);
 
+    /// Queue a mipmap recalculation
+    static void queueComputeMipMap(GLuint textureHandle);
     /// Enable or disable primitive restart and ensure that the correct index size is used
     static void togglePrimitiveRestart(bool state);
     /// Enable or disable primitive rasterization
@@ -389,6 +393,9 @@ private:
 
     typedef std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS> imageBoundMapDef;
     static imageBoundMapDef s_imageBoundMap;
+
+    static SharedLock s_mipmapQueueLock;
+    static std::unordered_set<GLuint> s_mipmapQueue;
 
     /// /*texture slot*/ /*sampler handle*/
     typedef std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;

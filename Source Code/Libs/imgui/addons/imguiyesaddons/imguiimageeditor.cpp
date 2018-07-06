@@ -7104,6 +7104,8 @@ ImTextureID ImageEditor::getClonedImageTexID(bool useMipmapsIfPossible,bool wrap
     return texID;
 }
 
+ImTextureID ImageEditor::CheckersTexID() { return CheckersTexID; }
+
 void ImageEditor::Destroy() {StbImage::Destroy();}
 
 #if (!defined(IMGUITABWINDOW_H_) || defined(IMGUIIMAGEEDITOR_NO_TABLABEL))

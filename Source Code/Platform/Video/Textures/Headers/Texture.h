@@ -127,12 +127,12 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     inline bool hasTransparency() const { return _hasTransparency; }
     /// Get the type of the texture
     inline TextureType getTextureType() const { return _textureData._textureType; }
-    /// Force a full refresh of the mip chain on the next texture bind
-    inline void refreshMipMaps() { _mipMapsDirty = true; }
 
     const TextureDescriptor& getDescriptor() const { return _descriptor; }
 
     static U16 computeMipCount(U16 width, U16 height);
+
+    virtual void refreshMipMaps(bool immediate) = 0;
 
    protected:
     /// Use STB/NV_DDS to load a file into a Texture Object
@@ -140,8 +140,6 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     /// Load texture data using the specified file name
     virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
     virtual void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback);
-    /// Force a refresh of the entire mipmap chain
-    virtual void updateMipMaps(bool force = false) { ACKNOWLEDGE_UNUSED(force); _mipMapsDirty = false; }
 
     virtual void validateDescriptor();
 
@@ -150,7 +148,6 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     U16 _width;
     U16 _height;
     bool _flipped;
-    bool _mipMapsDirty;
     bool _hasTransparency;
     bool _hasTranslucency;
     bool _asyncLoad;

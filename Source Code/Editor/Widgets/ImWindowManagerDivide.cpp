@@ -40,7 +40,7 @@ void ImwWindowManagerDivide::update(const U64 deltaTimeUS) {
 ImVec2 ImwWindowManagerDivide::GetCursorPos()
 {
     vec2<I32> cursorPos = _parent.context().app().windowManager().getCursorPosition();
-    return ImVec2(cursorPos.x, cursorPos.y);
+    return ImVec2((float)cursorPos.x, (float)cursorPos.y);
 }
 
 bool ImwWindowManagerDivide::IsLeftClickDown()

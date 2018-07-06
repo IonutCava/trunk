@@ -45,6 +45,8 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
    _minimized(false),
    _maximized(false),
    _hidden(true),
+   _warp(false),
+   _warpRect(-1),
    _opacity(255),
    _type(WindowType::COUNT),
    _previousType(WindowType::COUNT),
@@ -489,12 +491,12 @@ bool DisplayWindow::mouseMoved(const Input::MouseEvent& arg) {
     DisplayWindow::WindowEventArgs args;
     args._windowGUID = getGUID();
 
-    if (arg._event.state.Z.rel != 0) {
-        args._mod = arg._event.state.Z.rel / 60;
+    if (arg.Z().rel != 0) {
+        args._mod = arg.Z().rel / 60;
         notifyListeners(WindowEvent::MOUSE_WHEEL, args);
     } else {
-        args.x = arg._event.state.X.abs;
-        args.y = arg._event.state.Y.abs;
+        args.x = arg.X().abs;
+        args.y = arg.Y().abs;
         notifyListeners(WindowEvent::MOUSE_MOVE, args);
     }
 
@@ -521,6 +523,13 @@ bool DisplayWindow::mouseButtonReleased(const Input::MouseEvent& arg, Input::Mou
     notifyListeners(WindowEvent::MOUSE_BUTTON, args);
 
     return _context.app().kernel().mouseButtonReleased(arg, button);
+}
+
+void DisplayWindow::warp(bool state, const vec4<I32>& rect) {
+    _warp = state;
+    if (_warp) {
+        _warpRect.set(rect);
+    }
 }
 
 }; //namespace Divide

@@ -318,8 +318,7 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     }
 
     GUIEvent event;
-    event.mousePoint.x = to_F32(arg._event.state.X.abs);
-    event.mousePoint.y = to_F32(arg._event.state.Y.abs);
+    event.mousePoint.set(arg.X().abs, arg.Y().abs);
 
     if (GUIInterface::mouseMoved(event)) {
         return true;

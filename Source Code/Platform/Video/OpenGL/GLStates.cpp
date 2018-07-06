@@ -70,6 +70,8 @@ size_t GL_API::s_currentStateBlockHash = 0;
 size_t GL_API::s_previousStateBlockHash = 0;
 GL_API::textureBoundMapDef GL_API::s_textureBoundMap;
 GL_API::imageBoundMapDef GL_API::s_imageBoundMap;
+SharedLock GL_API::s_mipmapQueueLock;
+std::unordered_set<GLuint> GL_API::s_mipmapQueue;
 GL_API::samplerBoundMapDef GL_API::s_samplerBoundMap;
 GL_API::samplerObjectMap GL_API::s_samplerMap;
 SharedLock GL_API::s_samplerMapLock;
@@ -446,6 +448,17 @@ bool GL_API::bindTextures(GLushort unitOffset,
     {
         GL_API::bindSamplers(unitOffset, textureCount, samplerHandles);
 
+        if (textureHandles != nullptr) {
+            UpgradableReadLock ur_lock(s_mipmapQueueLock);
+            for (GLuint i = 0; i < textureCount; ++i) {
+                GLuint handle = textureHandles[i];
+                if (s_mipmapQueue.find(handle) != std::cend(s_mipmapQueue)) {
+                    glGenerateTextureMipmap(handle);
+                    UpgradeToWriteLock w_lock(ur_lock);
+                    s_mipmapQueue.erase(handle);
+                }
+            }
+        }
         if (textureCount == 1) {
             GLuint& crtHandle = s_textureBoundMap[unitOffset];
             GLuint targetHandle = textureHandles ? textureHandles[0] : 0u;
@@ -468,6 +481,11 @@ bool GL_API::bindTextures(GLushort unitOffset,
     }
 
     return false;
+}
+
+void GL_API::queueComputeMipMap(GLuint textureHandle) {
+    WriteLock w_lock(s_mipmapQueueLock);
+    s_mipmapQueue.insert(textureHandle);
 }
 
 // Bind a texture specified by a GL handle and GL type to the specified unit

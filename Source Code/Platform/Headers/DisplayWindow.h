@@ -150,9 +150,11 @@ public:
            void opacity(U8 opacity);
     inline U8   opacity() const;
 
-    inline void clearColour(const vec4<F32>& colour);
+    inline void clearColour(const vec4<F32>& colour, bool force = false);
     inline vec4<F32>& clearColour();
     inline const vec4<F32>& clearColour() const;
+    inline vec4<F32>& originalClearColour();
+    inline const vec4<F32>& originalClearColour() const;
 
     void setDimensions(U16 dimensionX, U16 dimensionY);
     void setDimensions(const vec2<U16>& dimensions);
@@ -185,6 +187,11 @@ public:
     void notifyListeners(WindowEvent event, const WindowEventArgs& args);
 
     inline void destroyCbk(const DELEGATE_CBK<void>& destroyCbk);
+
+
+    inline bool warp() const;
+    inline const vec4<I32>& warpRect() const;
+    void warp(bool state, const vec4<I32>& rect = vec4<I32>(-1));
 
 private:
     void restore();
@@ -240,12 +247,16 @@ private:
     /// Did we resize the window via an OS call?
     bool _externalResizeEvent;
 
+    bool _warp;
+    vec4<I32> _warpRect;
+
     U8 _opacity;
     vec2<I32> _windowPosition;
     vec2<U16> _prevDimensions;
     vec2<U16> _windowDimensions;
     vec2<U16> _windowDrawableArea;
     vec4<F32> _clearColour;
+    vec4<F32> _clearColourOriginal;
     typedef vectorImpl<EventListener> EventListeners;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
 

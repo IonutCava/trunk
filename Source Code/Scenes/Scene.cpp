@@ -970,9 +970,7 @@ bool Scene::mouseMoved(const Input::MouseEvent& arg) {
     PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
 
     Camera& cam = _scenePlayers[idx]->getCamera();
-    if (cam.moveRelative(vec3<I32>(arg._event.state.X.rel,
-                                   arg._event.state.Y.rel,
-                                   arg._event.state.Z.rel)))
+    if (cam.moveRelative(arg.relativePos()))
     {
         if (cam.getType() == Camera::CameraType::THIRD_PERSON) {
             _context.app().windowManager().snapCursorToCenter();

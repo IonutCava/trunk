@@ -32,7 +32,7 @@
 #ifndef _INPUT_AGGREGATOR_INIT_H_
 #define _INPUT_AGGREGATOR_INIT_H_
 
-#include "Platform/Headers/PlatformDataTypes.h"
+#include "Core/Math/Headers/MathVectors.h"
 #include <OIS.h>
 
 namespace Divide {
@@ -74,6 +74,19 @@ struct InputEvent {
 struct MouseEvent : public InputEvent {
     explicit MouseEvent(U8 deviceIndex, const OIS::MouseEvent& arg);
 
+    OIS::Axis X(bool warped = true) const;
+    OIS::Axis Y(bool warped = true) const;
+    OIS::Axis Z(bool warped = true) const;
+
+    vec3<I32> relativePos(bool warped = true) const;
+    vec3<I32> absolutePos(bool warped = true) const;
+
+    void warp(bool state, const vec4<I32>& rect = vec4<I32>(-1));
+
+    
+ private:
+    bool _warp;
+    vec4<I32> _rect;
     const OIS::MouseEvent& _event;
 };
 
