@@ -75,7 +75,7 @@ class EventHandler : public OIS::KeyListener,
     /// Joystick button released - Engine: return true if input was consumed
     bool joystickButtonReleased(const JoystickEvent& arg, JoystickButton button);
     /// Joystick button released - OIS
-    bool joystickButtonReleased(const OIS::JoyStickEvent& arg, JoystickButton button) override;
+    bool buttonReleased(const OIS::JoyStickEvent& arg, JoystickButton button) override;
     /// Joystick axis change - Engine: return true if input was consumed
     bool joystickAxisMoved(const JoystickEvent& arg, I8 axis);
     /// Joystick axis change - OIS

@@ -151,6 +151,10 @@ public:
            void opacity(U8 opacity);
     inline U8   opacity() const;
 
+    inline void clearColour(const vec4<F32>& colour);
+    inline vec4<F32>& clearColour();
+    inline const vec4<F32>& clearColour() const;
+
     void setDimensions(U16 dimensionX, U16 dimensionY);
     void setDimensions(const vec2<U16>& dimensions);
 
@@ -180,6 +184,8 @@ public:
 
     void handleEvent(SDL_Event event);
     void notifyListeners(WindowEvent event, const WindowEventArgs& args);
+
+    inline void destroyCbk(const DELEGATE_CBK<void>& destroyCbk);
 
 private:
     void restore();
@@ -224,8 +230,7 @@ private:
     WindowType _previousType;
     WindowType _queuedType;
     bool _swapBuffers;
-    /// this is false if the window/application lost focus (e.g. clicked another
-    /// window, alt + tab, etc)
+    /// this is false if the window/application lost focus (e.g. clicked another window, alt + tab, etc)
     bool _hasFocus;
     bool _minimized;
     bool _maximized;
@@ -241,12 +246,15 @@ private:
     vec2<U16> _prevDimensions;
     vec2<U16> _windowDimensions;
     vec2<U16> _windowDrawableArea;
-
+    vec4<F32> _clearColour;
     typedef vectorImpl<EventListener> EventListeners;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
 
     std::unique_ptr<Input::InputInterface> _inputHandler;
     Uint32 _windowID;
+
+    DELEGATE_CBK<void> _destroyCbk;
+
     // Varies from OS to OS
     WindowHandle _handle;
 

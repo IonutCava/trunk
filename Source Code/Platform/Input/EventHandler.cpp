@@ -42,7 +42,7 @@ bool EventHandler::joystickButtonReleased(const JoystickEvent &arg, JoystickButt
     return _eventListener.joystickButtonReleased(arg, button);
 }
 
-bool EventHandler::joystickButtonReleased(const OIS::JoyStickEvent& arg, JoystickButton button) {
+bool EventHandler::buttonReleased(const OIS::JoyStickEvent& arg, JoystickButton button) {
     return joystickButtonReleased(JoystickEvent(to_U8(arg.device->getID()), arg), button);
 }
 

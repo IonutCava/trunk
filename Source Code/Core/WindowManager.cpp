@@ -87,9 +87,17 @@ ErrorCode WindowManager::init(PlatformContext& context,
 
     WindowDescriptor descriptor;
     descriptor.dimensions = initialResolution;
-    descriptor.fullscreen = startFullScreen;
     descriptor.targetDisplay = targetDisplayIndex;
     descriptor.title = _context->config().title;
+
+    SetBit(descriptor.flags, WindowDescriptor::Flags::HIDDEN);
+
+    if (startFullScreen) {
+        SetBit(descriptor.flags, WindowDescriptor::Flags::FULLSCREEN);
+    }
+    if (!_context->config().runtime.windowResizable) {
+        ClearBit(descriptor.flags, WindowDescriptor::Flags::RESIZEABLE);
+    }
 
     ErrorCode err = ErrorCode::NO_ERR;
 
@@ -130,7 +138,7 @@ void WindowManager::close() {
     for (DisplayWindow* window : _windows) {
         window->destroyWindow();
     }
-
+    _windows.clear();
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
@@ -141,8 +149,24 @@ U32 WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& e
     if (window != nullptr) {
         ret = to_U32(_windows.size());
         _windows.emplace_back(window);
-        err = _windows[ret]->init(_apiFlags,
-                                  descriptor.fullscreen ? WindowType::FULLSCREEN : WindowType::WINDOW,
+
+        U32 mainWindowFlags = _apiFlags;
+        if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::RESIZEABLE))) {
+            mainWindowFlags |= SDL_WINDOW_RESIZABLE;
+        }
+        if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::ALLOW_HIGH_DPI))) {
+            mainWindowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
+        }
+        if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::HIDDEN))) {
+            mainWindowFlags |= SDL_WINDOW_HIDDEN;
+        }
+        if (!BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::DECORATED))) {
+            mainWindowFlags |= SDL_WINDOW_BORDERLESS;
+        }
+        bool fullscreen = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::FULLSCREEN));
+
+        err = _windows[ret]->init(mainWindowFlags,
+                                  fullscreen ? WindowType::FULLSCREEN : WindowType::WINDOW,
                                   descriptor.dimensions,
                                   descriptor.title.c_str());
 
@@ -150,12 +174,17 @@ U32 WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& e
             _windows.pop_back();
             MemoryManager::SAFE_DELETE(window);
         }
+        _windows[ret]->clearColour(descriptor.clearColour);
     }
 
     return ret;
 }
 
 bool WindowManager::destroyWindow(DisplayWindow*& window) {
+    if (window == nullptr) {
+        return true;
+    }
+
     SDL_HideWindow(window->getRawWindow());
     I64 targetGUID = window->getGUID();
     if (window->destroyWindow() == ErrorCode::NO_ERR) {
@@ -324,12 +353,6 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
         windowFlags |= SDL_WINDOW_OPENGL;
     } 
 
-    windowFlags |= SDL_WINDOW_HIDDEN;
-    windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
-    if (_context->config().runtime.windowResizable) {
-        windowFlags |= SDL_WINDOW_RESIZABLE;
-    }
-
     return windowFlags;
 }
 
@@ -401,7 +424,8 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
             if (_mainWindowGUID == winGUID) {
                 handleWindowEvent(WindowEvent::APP_QUIT, -1, -1, -1);
             } else {
-                for (DisplayWindow* win : _windows) {
+                
+                for (DisplayWindow*& win : _windows) {
                     if (win->getGUID() == winGUID) {
                         if (!destroyWindow(win)) {
                             Console::errorfn(Locale::get(_ID("WINDOW_CLOSE_EVENT_ERROR")), winGUID);

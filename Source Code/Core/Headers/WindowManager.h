@@ -33,16 +33,26 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORE_WINDOW_MANAGER_H_
 
 #include "Platform/Headers/DisplayWindow.h"
+#include "Utility/Headers/Colours.h"
 
 namespace Divide {
 
 enum class RenderAPI : U32;
 
 struct WindowDescriptor {
+    enum class Flags : U8 {
+        FULLSCREEN = toBit(1),
+        DECORATED = toBit(2),
+        RESIZEABLE = toBit(3),
+        HIDDEN = toBit(4),
+        ALLOW_HIGH_DPI = toBit(5)
+    };
+
     U32 targetDisplay = 0;
     stringImpl title;
     vec2<U16> dimensions;
-    bool fullscreen = false;
+    vec4<F32> clearColour = DefaultColours::DIVIDE_BLUE;
+    U32 flags = to_base(Flags::DECORATED) | to_base(Flags::RESIZEABLE) | to_base(Flags::ALLOW_HIGH_DPI);
 };
 
 class PlatformContext;

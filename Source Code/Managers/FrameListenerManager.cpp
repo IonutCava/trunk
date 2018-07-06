@@ -167,12 +167,12 @@ void FrameListenerManager::createEvent(const U64 currentTimeUS, FrameEventType t
     evt._type = type;
 }
 
-D64 FrameListenerManager::calculateEventTime(const D64 currentTimeUS, FrameEventType type) {
+U64 FrameListenerManager::calculateEventTime(const U64 currentTimeUS, FrameEventType type) {
     EventTimeMap& times = _eventTimers[to_U32(type)];
     times.push_back(currentTimeUS);
 
     if (times.size() == 1) {
-        return 0.0;
+        return 0;
     }
 
     EventTimeMap::const_iterator it = std::cbegin(times);

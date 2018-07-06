@@ -60,6 +60,7 @@ vec4<U8> GL_API::s_blendColour = vec4<U8>(0u);
 vec4<I32> GL_API::s_activeViewport = vec4<I32>(-1);
 vec4<I32> GL_API::s_previousViewport = vec4<I32>(-1);
 vec4<I32> GL_API::s_activeScissor = vec4<I32>(-1);
+vec4<F32> GL_API::s_activeClearColour = DefaultColours::DIVIDE_BLUE;
 GLfloat GL_API::s_depthFarVal = 1.0f;
 bool GL_API::s_primitiveRestartEnabled = false;
 bool GL_API::s_rasterizationEnabled = true;
@@ -144,14 +145,9 @@ void GL_API::clearStates() {
     s_activeViewport.set(-1);
     s_previousViewport.set(-1);
     s_activeScissor.set(-1);
+    s_activeClearColour.set(DefaultColours::DIVIDE_BLUE);
 
     Attorney::GLAPIShaderProgram::unbind();
-
-    glClearColor(DefaultColours::DIVIDE_BLUE.r,
-                    DefaultColours::DIVIDE_BLUE.g,
-                    DefaultColours::DIVIDE_BLUE.b,
-                    DefaultColours::DIVIDE_BLUE.a);
-
 }
 
 /// Pixel pack alignment is usually changed by textures, PBOs, etc
@@ -758,6 +754,16 @@ bool GL_API::restoreViewport() {
                           GL_API::s_previousViewport.y,
                           GL_API::s_previousViewport.z,
                           GL_API::s_previousViewport.w);
+}
+
+bool GL_API::setClearColour(const vec4<F32>& colour) {
+    if (colour != GL_API::s_activeClearColour) {
+        glClearColor(colour.r, colour.g, colour.b, colour.a);
+        GL_API::s_activeClearColour.set(colour);
+        return true;
+    }
+
+    return false;
 }
 
 bool GL_API::setScissor(I32 x, I32 y, I32 width, I32 height) {

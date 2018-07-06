@@ -24,13 +24,12 @@ namespace Divide {
 namespace {
     bool show_test_window = true;
     bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
 };
 
 Editor::Editor(PlatformContext& context)
     : PlatformContextComponent(context),
       _running(false),
+      _activeWindowGUID(-1),
       _editorTimer(Time::ADD_TIMER("Main Editor Timer")),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
@@ -120,6 +119,7 @@ bool Editor::init() {
     _mainWindow->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) { OnFocus(args._flag);});
     _mainWindow->addEventListener(WindowEvent::RESIZED_INTERNAL, [this](const DisplayWindow::WindowEventArgs& args) { OnSize(args.x, args.y);});
     _mainWindow->addEventListener(WindowEvent::TEXT, [this](const DisplayWindow::WindowEventArgs& args) { OnUTF8(args._text);});
+    _activeWindowGUID = _mainWindow->getGUID();
 
     vec2<I32> size(_mainWindow->getDimensions());
 
@@ -228,7 +228,7 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
         static float f = 0.0f;
         ImGui::Text("Hello, world!");
         ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-        ImGui::ColorEdit3("clear color", (float*)&clear_color);
+        ImGui::ColorEdit4("clear color", _mainWindow->clearColour()._v);
         if (ImGui::Button("Test Window")) show_test_window ^= 1;
         if (ImGui::Button("Another Window")) show_another_window ^= 1;
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -271,7 +271,7 @@ bool Editor::frameEnded(const FrameEvent& evt) {
     return true;
 }
 
-// Needs to be rendered immediately. *IM*GUI. IMGUI::NewFrae invalidates this data
+// Needs to be rendered immediately. *IM*GUI. IMGUI::NewFrame invalidates this data
 void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
@@ -282,7 +282,12 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID)
         return;
     }
 
-    bool switchWindow = windowGUID != _mainWindow->getGUID();
+    I64 previousGUID = -1;
+    bool switchWindow = windowGUID != _activeWindowGUID;
+    if (switchWindow) {
+        previousGUID = _activeWindowGUID;
+        _activeWindowGUID = windowGUID;
+    }
 
     pDrawData->ScaleClipRects(io.DisplayFramebufferScale);
 
@@ -305,7 +310,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID)
 
     if (switchWindow) {
         GFX::SwitchWindowCommand switchWindowCmd;
-        switchWindowCmd.windowGUID = windowGUID;
+        switchWindowCmd.windowGUID = _activeWindowGUID;
         GFX::AddSwitchWindow(buffer, switchWindowCmd);
     }
 
@@ -335,7 +340,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID)
 
     if (switchWindow) {
         GFX::SwitchWindowCommand switchWindowCmd;
-        switchWindowCmd.windowGUID = _mainWindow->getGUID();
+        switchWindowCmd.windowGUID = previousGUID;
         GFX::AddSwitchWindow(buffer, switchWindowCmd);
     }
 

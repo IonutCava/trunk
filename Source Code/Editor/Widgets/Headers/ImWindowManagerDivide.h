@@ -55,8 +55,8 @@ class ImwWindowManagerDivide : public ImWindow::ImwWindowManager
     void renderDrawList(ImDrawData* pDrawData, I64 windowGUID);
 
   protected:
-    void registerWindow(ImwWindowDivide* window);
-    void unregisterWindow(ImwWindowDivide* window);
+    void onCreateWindow(ImwWindowDivide* window);
+    void onDestroyWindow(ImwWindowDivide* window);
 
     virtual bool CanCreateMultipleWindow() { return true; }
 
@@ -73,11 +73,11 @@ class ImwWindowManagerDivide : public ImWindow::ImwWindowManager
 namespace Attorney {
     class WindowManagerWindow {
       private:
-      static void registerWindow(ImwWindowManagerDivide& mgr, ImwWindowDivide* window) {
-          mgr.registerWindow(window);
+      static void onCreateWindow(ImwWindowManagerDivide& mgr, ImwWindowDivide* window) {
+          mgr.onCreateWindow(window);
       }
-      static void unregisterWindow(ImwWindowManagerDivide& mgr, ImwWindowDivide* window) {
-          mgr.unregisterWindow(window);
+      static void onDestroyWindow(ImwWindowManagerDivide& mgr, ImwWindowDivide* window) {
+          mgr.onDestroyWindow(window);
       }
       friend class Divide::ImwWindowDivide;
     };

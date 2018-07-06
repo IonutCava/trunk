@@ -52,6 +52,7 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
    _sdlWindow(nullptr),
    _internalMoveEvent(false),
    _externalResizeEvent(false),
+   _clearColour(DefaultColours::DIVIDE_BLUE),
    _windowID(std::numeric_limits<Uint32>::max()),
    _inputHandler(std::make_unique<Input::InputInterface>(*this))
 {
@@ -62,11 +63,16 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
 
 DisplayWindow::~DisplayWindow() 
 {
-    destroyWindow();
+   destroyWindow();
 }
 
 ErrorCode DisplayWindow::destroyWindow() {
+
     if (_type != WindowType::COUNT && _sdlWindow != nullptr) {
+        if (_destroyCbk) {
+            _destroyCbk();
+        }
+
         _inputHandler->terminate();
         SDL_DestroyWindow(_sdlWindow);
         _sdlWindow = nullptr;
@@ -151,9 +157,9 @@ void DisplayWindow::handleEvent(SDL_Event event) {
             args._flag = true;
             notifyListeners(WindowEvent::GAINED_FOCUS, args);
             _parent.handleWindowEvent(WindowEvent::GAINED_FOCUS,
-                getGUID(),
-                event.window.data1,
-                event.window.data2);
+                                      getGUID(),
+                                      event.window.data1,
+                                      event.window.data2);
         } break;
         case SDL_WINDOWEVENT_LEAVE:
         case SDL_WINDOWEVENT_FOCUS_LOST: {

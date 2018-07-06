@@ -76,6 +76,18 @@ namespace Divide {
         return _opacity;
     }
 
+    inline void DisplayWindow::clearColour(const vec4<F32>& colour) {
+        _clearColour.set(colour);
+    }
+
+    inline vec4<F32>& DisplayWindow::clearColour() {
+        return _clearColour;
+    }
+
+    inline const vec4<F32>& DisplayWindow::clearColour() const {
+        return _clearColour;
+    }
+
     inline bool DisplayWindow::minimized() const {
         return _minimized;
     }
@@ -120,6 +132,9 @@ namespace Divide {
         return *_inputHandler;
     }
 
+    inline void DisplayWindow::destroyCbk(const DELEGATE_CBK<void>& destroyCbk) {
+        _destroyCbk = destroyCbk;
+    }
 }; //namespace Divide
 
 #endif //_DISPLAY_WINDOW_INL_

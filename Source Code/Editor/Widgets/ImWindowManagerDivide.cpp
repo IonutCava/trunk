@@ -47,15 +47,16 @@ void ImwWindowManagerDivide::renderDrawList(ImDrawData* pDrawData, I64 windowGUI
     Attorney::EditorWindowManager::renderDrawList(_parent, pDrawData, windowGUID);
 }
 
-void ImwWindowManagerDivide::registerWindow(ImwWindowDivide* window) {
+void ImwWindowManagerDivide::onCreateWindow(ImwWindowDivide* window) {
     ACKNOWLEDGE_UNUSED(window);
 
     ++_windowCount;
 }
 
-void ImwWindowManagerDivide::unregisterWindow(ImwWindowDivide* window) {
-    if (!window->isMainWindow()) {
-        _parent.context().app().windowManager().destroyWindow(window->nativeWindow());
+void ImwWindowManagerDivide::onDestroyWindow(ImwWindowDivide* window) {
+    if (!window->isMainWindow() && window->nativeWindow()) {
+        DisplayWindow* windowPtr = window->nativeWindow();
+        _parent.context().app().windowManager().destroyWindow(windowPtr);
     }
     --_windowCount;
 }

@@ -254,6 +254,11 @@ public:
         setScissor(newScissorRect.x, newScissorRect.y, newScissorRect.z, newScissorRect.w);
     }
 
+    static bool setClearColour(const vec4<F32>& colour);
+    inline static bool setClearColour(const vec4<U8>& colour) {
+        return setClearColour(Util::ToFloatColour(colour));
+    }
+
     /// Change the current viewport area. Redundancy check is performed in GFXDevice class
     static bool changeViewport(I32 x, I32 y, I32 width, I32 height);
     inline static bool changeViewport(const vec4<I32>& newViewport) {
@@ -355,6 +360,8 @@ private:
     static vec4<I32> s_activeViewport;
     static vec4<I32> s_previousViewport;
     static vec4<I32> s_activeScissor;
+    static vec4<F32> s_activeClearColour;
+
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;
 

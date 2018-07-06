@@ -67,6 +67,8 @@ class ImwWindowDivide : public ImWindow::ImwPlatformWindow, public PlatformConte
     inline DisplayWindow*& nativeWindow() { return _pWindow; }
 
   protected:
+    void onDestroyPlatformWindow();
+
     virtual void PreUpdate() override;
     virtual void Render() override;
 

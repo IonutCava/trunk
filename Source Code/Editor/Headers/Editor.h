@@ -107,6 +107,7 @@ class Editor : public PlatformContextComponent,
     void renderDrawList(ImDrawData* pDrawData, I64 windowGUID);
 
   private:
+    I64 _activeWindowGUID = -1;
     std::unique_ptr<ImwWindowManagerDivide> _windowManager;
 
     bool              _running;

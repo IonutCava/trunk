@@ -17,12 +17,16 @@ ImwWindowDivide::ImwWindowDivide(ImwWindowManagerDivide& parent, PlatformContext
     , _isMainWindow(false)
     , _windowGUID(-1)
 {
-    Attorney::WindowManagerWindow::registerWindow(_parent, this);
+    Attorney::WindowManagerWindow::onCreateWindow(_parent, this);
 }
 
 ImwWindowDivide::~ImwWindowDivide()
 {
-    Attorney::WindowManagerWindow::unregisterWindow(_parent, this);
+    Attorney::WindowManagerWindow::onDestroyWindow(_parent, this);
+}
+
+void ImwWindowDivide::onDestroyPlatformWindow() {
+    _pWindow = nullptr;
 }
 
 bool ImwWindowDivide::Init(ImwPlatformWindow* parent)
@@ -31,10 +35,17 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* parent)
 
     if (pMainDivide != nullptr) {
         WindowDescriptor descriptor;
-        descriptor.fullscreen = false;
         descriptor.title = "ImWindow";
         descriptor.targetDisplay = 0;
         descriptor.dimensions.set(_context.config().runtime.resolution);
+        descriptor.clearColour.set(DefaultColours::RED);
+        SetBit(descriptor.flags, to_base(WindowDescriptor::Flags::HIDDEN));
+
+        if (GetType() != ImWindow::E_PLATFORM_WINDOW_TYPE_MAIN && 
+            GetType() != ImWindow::E_PLATFORM_WINDOW_TYPE_SECONDARY)
+        {
+            ClearBit(descriptor.flags, to_base(WindowDescriptor::Flags::DECORATED));
+        }
 
         ErrorCode err = ErrorCode::NO_ERR;
         U32 idx = _context.app().windowManager().createWindow(descriptor, err);
@@ -47,6 +58,8 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* parent)
         _pWindow = &_context.app().windowManager().getWindow(0u);
         _isMainWindow = true;
     }
+    _pWindow->destroyCbk([this]() { onDestroyPlatformWindow();} );
+
     SetState();
     ImGuiIO& io = ImGui::GetIO();
     io.RenderDrawListsFn = nullptr;
@@ -63,14 +76,19 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* parent)
     _pWindow->addEventListener(WindowEvent::MOUSE_WHEEL, [this](const DisplayWindow::WindowEventArgs& args) { OnMouseWheel(args._mod);});
     _pWindow->addEventListener(WindowEvent::KEY_PRESS, [this](const DisplayWindow::WindowEventArgs& args) { OnKey(args._key, args._flag);});
     _pWindow->addEventListener(WindowEvent::TEXT, [this](const DisplayWindow::WindowEventArgs& args) { OnUTF8(args._text);});
-    // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array that we will update during the application lifetime.
+    if (GetType() == ImWindow::E_PLATFORM_WINDOW_TYPE_DRAG_PREVIEW) {
+        //_pWindow->opacity(128);
+    }
 
     return true;
 }
 
 ImVec2 ImwWindowDivide::GetPosition() const
 {
-    return ImVec2(_pWindow->getPosition());
+    if (_pWindow != nullptr) {
+        return ImVec2(_pWindow->getPosition());
+    }
+    return ImVec2(1.0f, 1.0f);
 }
 
 ImVec2 ImwWindowDivide::GetSize() const
@@ -85,40 +103,59 @@ ImVec2 ImwWindowDivide::GetDrawableSize() const
 
 bool ImwWindowDivide::IsWindowMaximized() const
 {
-    return _pWindow->maximized();
+    if (_pWindow != nullptr) {
+        return _pWindow->maximized();
+    }
+    return false;
 }
 
 bool ImwWindowDivide::IsWindowMinimized() const {
-    return _pWindow->minimized();
+    if (_pWindow != nullptr) {
+        return _pWindow->minimized();
+    } 
+
+    return false;
 }
 
 void ImwWindowDivide::Show(bool bShow) {
-    _pWindow->hidden(!bShow);
+    if (_pWindow != nullptr) {
+        _pWindow->hidden(!bShow);
+    }
 }
 
 void ImwWindowDivide::SetSize(int iWidth, int iHeight)
 {
-    _pWindow->setDimensions(to_U16(iWidth), to_U16(iHeight));
+    if (_pWindow != nullptr) {
+        _pWindow->setDimensions(to_U16(iWidth), to_U16(iHeight));
+    }
 }
 
 void ImwWindowDivide::SetPosition(int iX, int iY)
 {
-    _pWindow->setPosition(iX, iY);
+    if (_pWindow != nullptr) {
+        _pWindow->setPosition(iX, iY);
+    }
 }
 
 void ImwWindowDivide::SetWindowMaximized(bool bMaximized)
 {
-    _pWindow->maximized(bMaximized);
+    if (_pWindow != nullptr) {
+        _pWindow->maximized(bMaximized);
+    }
 }
 
 void ImwWindowDivide::SetWindowMinimized()
 {
-    _pWindow->minimized(true);
+    if (_pWindow != nullptr) {
+        _pWindow->minimized(true);
+    }
 }
 
 void ImwWindowDivide::SetTitle(const char* pTitle)
 {
-    _pWindow->title(pTitle);
+    if (_pWindow != nullptr) {
+        _pWindow->title(pTitle);
+    }
 }
 
 void ImwWindowDivide::PreUpdate()
@@ -157,9 +194,11 @@ void ImwWindowDivide::OnSize(int iWidth, int iHeight)
 {
     ACKNOWLEDGE_UNUSED(iWidth);
     ACKNOWLEDGE_UNUSED(iHeight);
-    _size = ImVec2(_pWindow->getDimensions());
-    vec2<U16> display_size = _pWindow->getDrawableSize();
-    _drawableSize = ImVec2(_size.x > 0 ? ((float)display_size.w / _size.x) : 0, _size.y > 0 ? ((float)display_size.h / _size.y) : 0);
+    if (_pWindow != nullptr) {
+        _size = ImVec2(_pWindow->getDimensions());
+        vec2<U16> display_size = _pWindow->getDrawableSize();
+        _drawableSize = ImVec2(_size.x > 0 ? ((float)display_size.w / _size.x) : 0, _size.y > 0 ? ((float)display_size.h / _size.y) : 0);
+    }
 }
 
 void ImwWindowDivide::OnMouseButton(int iButton, bool bDown)

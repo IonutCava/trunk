@@ -109,6 +109,7 @@ void GL_API::beginFrame() {
     for (U32 i = 0; i < windowCount; ++i) {
         const DisplayWindow& window = winMgr.getWindow(i);
         if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
+            GL_API::setClearColour(window.clearColour());
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /* | GL_STENCIL_BUFFER_BIT*/);
         }
     }
@@ -866,7 +867,8 @@ void GL_API::drawIMGUI(ImDrawData* data) {
     GL_API::setActiveVAO(s_imguiVAO);
 #endif
     if (data != nullptr && data->Valid) {
-        
+        //glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE);
+
         GenericDrawCommand cmd(PrimitiveType::TRIANGLES, 0, 0);
         for (int n = 0; n < data->CmdListsCount; n++) {
             const ImDrawList* cmd_list = data->CmdLists[n];
@@ -908,6 +910,7 @@ void GL_API::drawIMGUI(ImDrawData* data) {
 #endif
             }
         }
+        //glClipControl(GL_LOWER_LEFT, GL_NEGATIVE_ONE_TO_ONE);
     }
 }
 
