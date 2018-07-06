@@ -32,11 +32,9 @@ public:
 	WaterPlane();
 	~WaterPlane(){}
 
-	/// Resource inherited "load"
-	bool load(const std::string& name);
-
 	/// Resource inherited "unload"
 	bool unload();
+	bool setInitialData(const std::string& name);
 
 	/// General SceneNode stuff
 	void onDraw();
@@ -57,6 +55,13 @@ public:
 	/// Used for many things, such as culling switches, and underwater effects
 	bool isCameraUnderWater();
 
+protected:
+	template<typename T>
+	friend class ImplResourceLoader;
+	inline void setWaterNormalMap(Texture2D* const waterNM){_texture = waterNM;}
+	inline void setShaderProgram(ShaderProgram* const shaderProg){_shader = shaderProg;}
+	inline void setGeometry(Quad3D* const waterPlane){_plane = waterPlane;}
+
 private:
 	/// Bounding Box computation overwrite from SceneNode
 	bool computeBoundingBox(SceneGraphNode* const sgn);
@@ -73,7 +78,6 @@ private:
 	Transform*         _planeTransform;
 	SceneGraphNode*    _node;
 	SceneGraphNode*    _planeSGN;
-	RenderStateBlock*  _waterStateBlock;
-
 };
+
 #endif

@@ -15,21 +15,23 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RESOURCE_H_
-#define RESOURCE_H_
+#ifndef _RESOURCE_H_
+#define _RESOURCE_H_
 
 #include "core.h"
 #include "Core/MemoryManagement/Headers/TrackedObject.h"
 
-class Resource : public TrackedObject, private boost::noncopyable {
+class Resource : public TrackedObject {
 
 public:
-	Resource() : TrackedObject(),  _name("default"){}
-	Resource(std::string name) :TrackedObject(), _name(name){}
+	Resource() : TrackedObject(),  _name("default"),
+								   _loadingComplete(false){}
+
+	Resource(const std::string& name) :TrackedObject(), _name(name),
+							   					        _loadingComplete(false){}
 	virtual ~Resource() {}
 
 	///Loading and unloading interface
-	virtual bool load(const std::string& name) = 0;
 	virtual bool unload() = 0;
 
 	///Name management
@@ -40,9 +42,18 @@ public:
 	const std::string& getResourceLocation() {return _resourceLocation;}
 	void setResourceLocation(const std::string& resourceLocation) {_resourceLocation = resourceLocation;}
 
+	inline bool isLoaded() {return _loadingComplete;}
+
+protected:
+	template<typename T>
+	friend class ImplResourceLoader;
+	///Use this as a callback for multi-threaded loading;
+	virtual bool setInitialData(const std::string& name) {_loadingComplete = true; return true;}
+
 protected:
 	std::string	 _name;
 	std::string  _resourceLocation; ///< Physical file location
+	bool _loadingComplete;
 };
 
 enum GEOMETRY_TYPE {

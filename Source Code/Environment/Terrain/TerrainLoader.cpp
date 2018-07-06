@@ -7,95 +7,37 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Managers/Headers/CameraManager.h"
 
-using namespace std;
-
 #define COORD(x,y,w)	((y)*(w)+(x))
 
 bool Terrain::unload(){
-	_terrainWidth = 0;
-	_terrainHeight = 0;
 
 	SAFE_DELETE(_terrainQuadtree);
 	SAFE_DELETE(_groundVBO);
 	SAFE_DELETE(_terrainRenderState);
 	SAFE_DELETE(_veg);
 
-	for(U8 i = 0; i < _terrainTextures.size(); i++){
-		RemoveResource(_terrainTextures[i]);
+	assert(!_terrainTextures.empty());
+	for_each(TerrainTextureMap::value_type& it, _terrainTextures){
+		if(it.second != NULL){///Remember kids, alpha channel is optional ;) -Ionut
+			RemoveResource(it.second);
+		}
 	}
 	_terrainTextures.clear();
-	RemoveResource(_terrainDiffuseMap);
 
-	if(!_groundVBO)
-		return SceneNode::unload(); 
-	else return false;
-}
-
-bool Terrain::load(const string& name){
-	_name = name;
-	std::vector<TerrainDescriptor*>& terrains = SceneManager::getInstance().getActiveScene()->getTerrainInfoArray();
-	PRINT_FN("Loading terrain [ %s ]",name.c_str());
-
-	TerrainDescriptor* terrain = NULL;
-	for(U8 i = 0; i < terrains.size(); i++)
-		if(name.compare(terrains[i]->getVariable("terrainName")) == 0){
-			terrain = terrains[i];
-			break;
-		}
-	if(!terrain) return false;
-
-	bool state = false;
-
-	state = loadVisualResources(terrain);
-	if(state){
-		state =	loadThreadedResources(terrain);
-	}
-
-	if(state){
-		PRINT_FN("Loading Terrain [ %s ] OK", _name.c_str());
-		return true;
-	}
-	
-	ERROR_FN("Error loading terrain [ %s ]", _name.c_str());
-	return false;
+	return SceneNode::unload(); 
 }
 
 /// Visual resources must be loaded in the rendering thread to gain acces to the current graphic context
-bool Terrain::loadVisualResources(TerrainDescriptor* const terrain){
-	ResourceDescriptor terrainMaterial("terrainMaterial");
-	setMaterial(CreateResource<Material>(terrainMaterial));
-	getMaterial()->setDiffuse(vec4<F32>(1.0f, 1.0f, 1.0f, 1.0f));
-	getMaterial()->setSpecular(vec4<F32>(1.0f, 1.0f, 1.0f, 1.0f));
-	getMaterial()->setShininess(50.0f);
-	getMaterial()->setShaderProgram("terrain");
+void Terrain::loadVisualResources(){
 
-	ResourceDescriptor textureNormalMap("Terrain Normal Map");
-	textureNormalMap.setResourceLocation(terrain->getVariable("normalMap"));
-	ResourceDescriptor textureRedTexture("Terrain Red Texture");
-	textureRedTexture.setResourceLocation(terrain->getVariable("redTexture"));
-	ResourceDescriptor textureGreenTexture("Terrain Green Texture");
-	textureGreenTexture.setResourceLocation(terrain->getVariable("greenTexture"));
-	ResourceDescriptor textureBlueTexture("Terrain Blue Texture");
-	textureBlueTexture.setResourceLocation(terrain->getVariable("blueTexture"));
-	string alphaTextureFile = terrain->getVariable("alphaTexture");
-	ResourceDescriptor textureWaterCaustics("Terrain Water Caustics");
-	textureWaterCaustics.setResourceLocation(terrain->getVariable("waterCaustics"));
-	ResourceDescriptor textureTextureMap("Terrain Texture Map");
-	textureTextureMap.setResourceLocation(terrain->getVariable("textureMap"));
-  	_terrainDiffuseMap = CreateResource<Texture>(textureTextureMap);
-	_terrainDiffuseMap->setTextureWrap(Texture::TextureWrap_Repeat,
-									   Texture::TextureWrap_Repeat,
-									   Texture::TextureWrap_Repeat);
-	_terrainTextures.push_back(CreateResource<Texture>(textureNormalMap));
-	_terrainTextures.push_back(CreateResource<Texture>(textureWaterCaustics));
-	_terrainTextures.push_back(CreateResource<Texture>(textureRedTexture));
-	_terrainTextures.push_back(CreateResource<Texture>(textureGreenTexture));
-	_terrainTextures.push_back(CreateResource<Texture>(textureBlueTexture));
-	if(alphaTextureFile.compare(ParamHandler::getInstance().getParam<string>("assetsLocation") + "/none") != 0){
+
+	_terrainTextures[TERRAIN_TEXTURE_DIFFUSE]->setTextureWrap(Texture::TextureWrap_Repeat,
+															  Texture::TextureWrap_Repeat,
+															  Texture::TextureWrap_Repeat);
+
+
+	if(_terrainTextures[TERRAIN_TEXTURE_ALPHA] != NULL){
 		_alphaTexturePresent = true;
-		ResourceDescriptor textureAlphaTexture("Terrain Alpha Texture");
-		textureAlphaTexture.setResourceLocation(alphaTextureFile);
-		_terrainTextures.push_back(CreateResource<Texture>(textureAlphaTexture));
 	}
 
 	///Generate a render state
@@ -106,11 +48,6 @@ bool Terrain::loadVisualResources(TerrainDescriptor* const terrain){
 
 	///For now, terrain doesn't cast shadows
 	addToDrawExclusionMask(SHADOW_STAGE);
-
-	if(_terrainRenderState){
-		return true;
-	}
-	return false;
 }
 
 bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
@@ -239,8 +176,8 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 	infinitePlane.setFlag(true); //No default material
 	_plane = CreateResource<Quad3D>(infinitePlane);
 
-	F32 depth = SceneManager::getInstance().getActiveScene()->getWaterDepth();
-	F32 height = SceneManager::getInstance().getActiveScene()->getWaterLevel()- depth;
+	F32 depth = GET_ACTIVE_SCENE()->getWaterDepth();
+	F32 height = GET_ACTIVE_SCENE()->getWaterLevel()- depth;
 	const vec3<F32>& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
 	_farPlane = 2.0f * ParamHandler::getInstance().getParam<F32>("zFar");
 	_plane->setCorner(Quad3D::TOP_LEFT, vec3<F32>(eyePos.x - _farPlane, height, eyePos.z - _farPlane));
@@ -253,7 +190,7 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 
 void Terrain::postLoad(SceneGraphNode* const sgn){
 	
-	if(!_loaded) {
+	if(!isLoaded()) {
 		sgn->setActive(false);
 	}
 	_node = sgn;
@@ -272,7 +209,7 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
 		s->Uniform("diffuse_scale", 100.0f);
 		s->Uniform("bbox_min", _boundingBox.getMin());
 		s->Uniform("bbox_max", _boundingBox.getMax());
-		s->Uniform("water_height", SceneManager::getInstance().getActiveScene()->getWaterLevel());
+		s->Uniform("water_height", GET_ACTIVE_SCENE()->getWaterLevel());
 		s->Uniform("enable_shadow_mapping", ParamHandler::getInstance().getParam<bool>("enableShadows"));
 	s->unbind();
 	
@@ -288,7 +225,7 @@ bool Terrain::computeBoundingBox(SceneGraphNode* const sgn){
 }
 
 void Terrain::initializeVegetation(TerrainDescriptor* terrain) {	
-	vector<Texture2D*> grass;
+	std::vector<Texture2D*> grass;
 	ResourceDescriptor grassBillboard1("Grass Billboard 1");
 	grassBillboard1.setResourceLocation(terrain->getVariable("grassBillboard1"));
 	ResourceDescriptor grassBillboard2("Grass Billboard 2");
@@ -310,4 +247,22 @@ void Terrain::initializeVegetation(TerrainDescriptor* terrain) {
 				  "grass");
 	toggleVegetation(true);
 	 _veg->initialize(_grassShader,_name);
+}
+
+
+void Terrain::addTexture(TERRAIN_TEXTURE_USAGE channel, Texture2D* const texture) {
+	assert(texture != NULL);
+	std::pair<TerrainTextureMap::iterator, bool > result;
+	//Try and add it to the map
+	result = _terrainTextures.insert(std::make_pair(channel,texture));
+	//If we had a collision (same name?)
+	if(!result.second){
+		if((result.first)->second){
+			UNREGISTER_TRACKED_DEPENDENCY(dynamic_cast<TrackedObject*>((result.first)->second));
+			RemoveResource((result.first)->second); 
+		}
+		//And add this one instead
+		(result.first)->second = texture;
+	}
+	REGISTER_TRACKED_DEPENDENCY(dynamic_cast<TrackedObject*>(texture));
 }

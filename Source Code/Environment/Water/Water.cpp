@@ -6,35 +6,12 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/RenderStateBlock.h"
 
-using namespace std;
-
 WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<I32>(2048,2048)), 
 						   _plane(NULL),_texture(NULL), _shader(NULL),_planeTransform(NULL),
-						   _node(NULL),_planeSGN(NULL),_waterStateBlock(NULL),_waterLevel(0){}
+						   _node(NULL),_planeSGN(NULL),_waterLevel(0){}
 
-bool WaterPlane::load(const std::string& name){
-	ResourceDescriptor waterTexture("waterTexture");
-	ResourceDescriptor waterShader("water");
-	ResourceDescriptor waterPlane("waterPlane");
-	waterTexture.setResourceLocation(ParamHandler::getInstance().getParam<string>("assetsLocation")+"/misc_images/terrain_water_NM.jpg");
-	waterPlane.setFlag(true); //No default material
-	//The material is responsible for the destruction of the textures and shaders it receives!!!!
-	_texture = CreateResource<Texture2D>(waterTexture);
-	_shader = CreateResource<ShaderProgram>(waterShader);
-	_plane = CreateResource<Quad3D>(waterPlane);
+bool WaterPlane::setInitialData(const std::string& name){
 	if(!_texture && !_shader && !_plane) return false;
-	ResourceDescriptor waterMaterial("waterMaterial");
-	setMaterial(CreateResource<Material>(waterMaterial));
-	assert(getMaterial() != NULL);
-	getMaterial()->setTexture(Material::TEXTURE_BASE, _texture);
-	getMaterial()->setShaderProgram(_shader->getName());
-
-	RenderStateBlockDescriptor waterMatDesc = getMaterial()->getRenderState(FINAL_STAGE)->getDescriptor();
-	waterMatDesc.setCullMode(CULL_MODE_None);
-	waterMatDesc.setBlend(true, BLEND_PROPERTY_SrcAlpha, BLEND_PROPERTY_InvSrcAlpha);
-	_waterStateBlock = getMaterial()->setRenderStateBlock(waterMatDesc,FINAL_STAGE);
-
-	_name = name; //optional
 
 	_shader->bind();
 		_shader->Uniform("water_shininess",50.0f );
@@ -49,7 +26,8 @@ bool WaterPlane::load(const std::string& name){
 	_plane->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(eyePos.x - _farPlane, 0, eyePos.z + _farPlane));
 	_plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(eyePos.x + _farPlane, 0, eyePos.z + _farPlane));
 	_plane->setDrawState(false);
-	
+
+
 	return true;
 }
 
@@ -65,8 +43,8 @@ void WaterPlane::postLoad(SceneGraphNode* const sgn){
 bool WaterPlane::computeBoundingBox(SceneGraphNode* const sgn){
 	BoundingBox& bb = _node->getBoundingBox();
 	if(bb.isComputed()) return true;
-	_waterLevel = SceneManager::getInstance().getActiveScene()->getWaterLevel();
-	F32 waterDepth = SceneManager::getInstance().getActiveScene()->getWaterDepth();
+	_waterLevel = GET_ACTIVE_SCENE()->getWaterLevel();
+	F32 waterDepth = GET_ACTIVE_SCENE()->getWaterDepth();
 	bb.set(vec3<F32>(-_farPlane,_waterLevel - waterDepth, -_farPlane),vec3<F32>(_farPlane, _waterLevel, _farPlane));
 	_planeSGN->getBoundingBox().Add(bb);
 	PRINT_FN("Water plane height placement: %f", bb.getMax().y);
@@ -104,7 +82,7 @@ void WaterPlane::onDraw(){
 
 void WaterPlane::prepareMaterial(SceneGraphNode const* const sgn){
 	
-	SET_STATE_BLOCK(_waterStateBlock);
+	SET_STATE_BLOCK(getMaterial()->getRenderState(FINAL_STAGE));
 
 	GFX_DEVICE.setMaterial(getMaterial());
 	

@@ -9,9 +9,9 @@
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Animations/Headers/AnimationUtils.h"
-using namespace std;
 
-Mesh* DVDConverter::load(const string& file){	
+Mesh* DVDConverter::load(const std::string& file){	
+
 	Mesh* tempMesh = New Mesh();
 	_fileLocation = file;
 	_modelName = _fileLocation.substr( _fileLocation.find_last_of( '/' ) + 1 );
@@ -53,7 +53,8 @@ Mesh* DVDConverter::load(const string& file){
 
 		if(s){
 			if(s->getRefCount() == 1){
-				Material* m = loadSubMeshMaterial(_aiScenePointer->mMaterials[_aiScenePointer->mMeshes[n]->mMaterialIndex],string(s->getName()+ "_material"));
+				Material* m = loadSubMeshMaterial(_aiScenePointer->mMaterials[_aiScenePointer->mMeshes[n]->mMaterialIndex],
+												   std::string(s->getName()+ "_material"));
 				s->setMaterial(m);
 				m->setHardwareSkinning(s->_hasAnimations);
 			}//else the Resource manager created a copy of the material
@@ -67,7 +68,8 @@ Mesh* DVDConverter::load(const string& file){
 }
 
 SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
-	string temp;
+
+	std::string temp;
 	char a;
 
 	for(U16 j = 0; j < source->mName.length; j++){
@@ -183,7 +185,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 }
 
 /// Load the material for the current SubMesh
-Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const string& materialName){
+Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std::string& materialName) {
 
 	/// See if the material already exists in a cooked state (XML file)
 	Material* tempMaterial = XML::loadMaterial(materialName);
@@ -305,13 +307,13 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const stri
 									mode);
 		if(result != AI_SUCCESS) break;
 		/// get full path
-		string path = tName.data;
+		std::string path = tName.data;
 		/// get only image name
-		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
+		std::string img_name = path.substr( path.find_last_of( '/' ) + 1 );
 		/// try to find a path name
-		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+		std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		/// look in default texture folder
-		path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
+		path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
 		/// if we have a name and an extension
 		if(!img_name.substr(img_name.find_first_of(".")).empty()){
 			/// Is this the base texture or the secondary?
@@ -336,12 +338,12 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const stri
 
 	result = source->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
 	if(result == AI_SUCCESS){
-		string path = tName.data;
-		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-		path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
+		std::string path = tName.data;
+		std::string img_name = path.substr( path.find_last_of( '/' ) + 1 );
+		path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
 
-		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
-		if(img_name.rfind('.') !=  string::npos){
+		std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+		if(img_name.rfind('.') !=  std::string::npos){
 
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
@@ -355,11 +357,11 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const stri
 	}//endif
 	result = source->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
 	if(result == AI_SUCCESS){
-		string path = tName.data;
-		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-		path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
-		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
-		if(img_name.rfind('.') !=  string::npos){
+		std::string path = tName.data;
+		std::string img_name = path.substr( path.find_last_of( '/' ) + 1 );
+		path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
+		std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+		if(img_name.rfind('.') !=  std::string::npos){
 
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
@@ -373,13 +375,13 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const stri
 	}//endif
 	result = source->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
 	if(result == AI_SUCCESS){
-		string path = tName.data;
-		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+		std::string path = tName.data;
+		std::string img_name = path.substr( path.find_last_of( '/' ) + 1 );
+		std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 
-		path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
+		path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
 		
-		if(img_name.rfind('.') !=  string::npos){
+		if(img_name.rfind('.') !=  std::string::npos){
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
@@ -407,13 +409,13 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const stri
 
 	result = source->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
 	if(result == AI_SUCCESS){
-		string path = tName.data;
-		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+		std::string path = tName.data;
+		std::string img_name = path.substr( path.find_last_of( '/' ) + 1 );
+		std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 
-		path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
+		path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
 
-		if(img_name.rfind('.') !=  string::npos){
+		if(img_name.rfind('.') !=  std::string::npos){
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);

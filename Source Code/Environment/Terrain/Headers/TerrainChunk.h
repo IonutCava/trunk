@@ -21,8 +21,6 @@
 #include "core.h"
 #include "Hardware/Video/GFXDevice.h"
 
-using namespace std;
-
 #define TERRAIN_CHUNKS_LOD 3
 
 #define TERRAIN_CHUNK_LOD0	100.0f

@@ -58,7 +58,6 @@ public:
 	void onDraw();
 
 	///SceneNode concrete implementations
-	bool load(const std::string& name);
 	bool unload();
 	void postLoad(SceneGraphNode* const sgn);	
 

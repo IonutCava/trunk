@@ -48,7 +48,7 @@ void SceneNode::postDraw(){
 bool SceneNode::isInView(bool distanceCheck,BoundingBox& boundingBox){
 
 	Frustum& frust = Frustum::getInstance();
-	Scene* activeScene = SceneManager::getInstance().getActiveScene();
+	Scene* activeScene = GET_ACTIVE_SCENE();
 	vec3<F32> center = boundingBox.getCenter();
 	F32 radius = (boundingBox.getMax()-center).length();	
 	F32 halfExtent = boundingBox.getHalfExtent().length();
@@ -99,8 +99,8 @@ void SceneNode::setMaterial(Material* m){
 		REGISTER_TRACKED_DEPENDENCY(_material);
 	}else{ //if we receive a null material, the we need to remove this node's material
 		if(_material){
-			RemoveResource(_material);
 			UNREGISTER_TRACKED_DEPENDENCY(_material);
+			RemoveResource(_material);
 		}
 	}
 }
@@ -119,7 +119,7 @@ void SceneNode::prepareMaterial(SceneGraphNode const* const sgn){
 	GFX_DEVICE.setMaterial(_material);
 
 	ShaderProgram* s = _material->getShaderProgram();
-	Scene* activeScene = SceneManager::getInstance().getActiveScene();
+	Scene* activeScene = GET_ACTIVE_SCENE();
 
 	Texture2D* baseTexture = _material->getTexture(Material::TEXTURE_BASE);
 	Texture2D* bumpTexture = _material->getTexture(Material::TEXTURE_BUMP);

@@ -1,18 +1,17 @@
 #include "Headers/AITenisScene.h"
 #include "Headers/AITenisSceneAIActionList.h"
 
-#include "Environment/Sky/Headers/Sky.h"
-#include "Managers/Headers/CameraManager.h"
-#include "Managers/Headers/AIManager.h"
-#include "Managers/Headers/SceneManager.h"
-#include "Rendering/Headers/Frustum.h"
-#include "GUI/Headers/GUI.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
+#include "Managers/Headers/CameraManager.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Environment/Sky/Headers/Sky.h"
+#include "Managers/Headers/AIManager.h"
+#include "Rendering/Headers/Frustum.h"
+#include "GUI/Headers/GUI.h"
 
-using namespace std;
 
 //begin copy-paste: randarea scenei
 void AITenisScene::render(){
@@ -76,7 +75,7 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 
 	if(getEvents().empty()) return;
 	bool updated = false;
-	string mesaj;
+	std::string mesaj;
 
 	///Shortcut to the scene graph nodes containing our agents
 	SceneGraphNode* Player1 = _sceneGraph->findNode("Player1");
@@ -225,7 +224,8 @@ void AITenisScene::processInput(){
 	}
 }
 
-bool AITenisScene::load(const string& name){
+bool AITenisScene::load(const std::string& name){
+
 	setInitialData();
 
 	bool state = false;
@@ -246,7 +246,7 @@ bool AITenisScene::load(const string& name){
 	//------------------------ Load up game elements -----------------------------///
 	_net = _sceneGraph->findNode("Net");
 	_floor = _sceneGraph->findNode("Floor");
-	_floor->getNode()->getMaterial()->setCastsShadows(false);
+	_floor->getNode<SceneNode>()->getMaterial()->setCastsShadows(false);
 
 	state = loadEvents(true);
 	return state;

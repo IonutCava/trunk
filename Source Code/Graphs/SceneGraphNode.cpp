@@ -74,7 +74,7 @@ void SceneGraphNode::print(){
 		i++;
 	}
 	//get out material's name
-	Material* mat = getNode()->getMaterial();
+	Material* mat = _node->getMaterial();
 	//Some strings to hold the names of our material and shader
 	std::string material("none"),shader("none");
 	//If we have a material
@@ -88,7 +88,7 @@ void SceneGraphNode::print(){
 		}
 	}
 	//Print our current node's information
-	PRINT_FN("%s (Resource: %s, Material: %s (Shader: %s) )", getName().c_str(),getNode()->getName().c_str(),material.c_str(),shader.c_str());
+	PRINT_FN("%s (Resource: %s, Material: %s (Shader: %s) )", getName().c_str(),_node->getName().c_str(),material.c_str(),shader.c_str());
 	//Repeat for each child, but prefix it with the appropriate number of dashes
 	//Based on our ancestor counting earlier
 	for_each(NodeChildren::value_type& it, _children){
@@ -115,10 +115,8 @@ void SceneGraphNode::setParent(SceneGraphNode* parent) {
 	result = _parent->getChildren().insert(std::make_pair(getName(),this));
 	//If we had a collision (same name?)
 	if(!result.second){
-		//delete the old SceneGraphNode
-		delete (result.first)->second; 
-		//And add this one instead
-		(result.first)->second = this;
+		///delete the old SceneGraphNode and add this one instead
+		SAFE_UPDATE((result.first)->second,this);
 	}
 	//That's it. Parent Transforms will be updated in the next render pass;
 }
@@ -216,8 +214,7 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
 
 //This updates the SceneGraphNode's transform by deleting the old one first
 void SceneGraphNode::setTransform(Transform* const t) {
-	delete _transform; 
-	_transform = t;
+	SAFE_UPDATE(_transform,t); 
 }
 
 //Get the node's transform
@@ -231,14 +228,3 @@ Transform* const SceneGraphNode::getTransform(){
 	}
 	return _transform;
 }
-
-template<class T>
-T* SceneGraphNode::getNode(){return dynamic_cast<T>(_node);}
-template<>
-WaterPlane* SceneGraphNode::getNode<WaterPlane>(){ return dynamic_cast<WaterPlane*>(_node); }
-template<>
-Terrain* SceneGraphNode::getNode<Terrain>(){ return dynamic_cast<Terrain*>(_node); }
-template<>
-Light* SceneGraphNode::getNode<Light>(){ return dynamic_cast<Light*>(_node); }
-template<>
-Object3D* SceneGraphNode::getNode<Object3D>(){ return dynamic_cast<Object3D*>(_node); }

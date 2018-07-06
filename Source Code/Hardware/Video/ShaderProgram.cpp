@@ -25,7 +25,7 @@ ShaderProgram::~ShaderProgram(){
 	_shaders.clear();
 }
 
-bool ShaderProgram::load(const std::string& name){
+bool ShaderProgram::generateHWResource(const std::string& name){
 	_name = name;
 	//Apply global shader values valid throughout application runtime:
 	this->bind();
@@ -33,7 +33,7 @@ bool ShaderProgram::load(const std::string& name){
 		this->UniformTexture("texDepthMapFromLight1",9);
 		this->UniformTexture("texDepthMapFromLight2",10);
 	this->unbind();
-	return true;
+	return HardwareResource::generateHWResource(name);
 }
 
 void ShaderProgram::bind(){

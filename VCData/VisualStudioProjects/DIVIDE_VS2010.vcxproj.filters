@@ -463,9 +463,6 @@
     <ClCompile Include="..\..\Source Code\Utility\Event.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Utility\Guardian.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Utility\ImageTools.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -911,11 +908,14 @@
     <ClCompile Include="..\..\Source Code\Core\Resources\ResourceCache.cpp">
       <Filter>Core\Resources</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Managers\BaseCache.cpp">
-      <Filter>Managers</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\MemoryManagement\TrackedObject.cpp">
       <Filter>Core\MemoryManagement</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Utility\Kernel.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ParticleEmitterLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -971,9 +971,6 @@
       <Filter>Utility\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\Event.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\Guardian.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\ImageTools.h">
@@ -1438,9 +1435,6 @@
     <ClInclude Include="..\..\Source Code\Hardware\Platform\PlatformDefines.h">
       <Filter>Hardware\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Platform\Threading.h">
-      <Filter>Hardware\Platform</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\Resource.h">
       <Filter>Core\Resources\Headers</Filter>
     </ClInclude>
@@ -1454,14 +1448,23 @@
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceCache.h">
       <Filter>Core\Resources\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Managers\Headers\BaseCache.h">
-      <Filter>Managers\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\SmartPointer.h">
       <Filter>Core\MemoryManagement\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\TrackedObject.h">
       <Filter>Core\MemoryManagement\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\Kernel.h">
+      <Filter>Utility\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\HardwareResource.h">
+      <Filter>Core\Resources\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Platform\Mutex.h">
+      <Filter>Hardware\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Platform\Thread.h">
+      <Filter>Hardware\Platform</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

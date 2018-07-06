@@ -15,11 +15,10 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef THREAD_H_
-#define THREAD_H_
+#ifndef _MUTEX_X_
+#define _MUTEX_X_
 
-#include <boost/thread/thread.hpp>
-#include <boost/thread/locks.hpp>
+#include "Thread.h"
 
 ///Thread safety optimised for multiple-reades, single write
 typedef boost::shared_mutex Lock;

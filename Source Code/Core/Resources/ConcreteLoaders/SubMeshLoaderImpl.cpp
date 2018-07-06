@@ -5,7 +5,7 @@ SubMesh* ImplResourceLoader<SubMesh>::operator()(){
 
 	SubMesh* ptr = New SubMesh(_descriptor.getName());
 
-	if(!ptr->load(_descriptor.getName())) return NULL;
+	if(!load(ptr,_descriptor.getName())) return NULL;
 	if(_descriptor.getFlag()){
 		ptr->useDefaultMaterial(false);
 		ptr->setMaterial(NULL);
@@ -14,3 +14,5 @@ SubMesh* ImplResourceLoader<SubMesh>::operator()(){
 
 	return ptr;
 }
+
+DEFAULT_LOADER_IMPL(SubMesh)

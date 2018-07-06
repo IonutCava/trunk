@@ -33,7 +33,6 @@ public:
 
 	~AudioDescriptor() {}
 
-	bool  load(const std::string& name) {_name = name; return true;}
 	bool  unload() {return true;}
 
 	inline bool& isLooping()  {return _isLooping;}

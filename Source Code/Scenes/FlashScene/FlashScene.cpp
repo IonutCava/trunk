@@ -2,7 +2,6 @@
 #include "GUI/Headers/GUI.h"
 #include "Managers/Headers/CameraManager.h"
 
-using namespace std;
 
 void FlashScene::render(){
 	
@@ -38,7 +37,8 @@ void FlashScene::processEvents(F32 time){
 	}
 }
 
-bool FlashScene::load(const string& name){
+bool FlashScene::load(const std::string& name){
+
 	setInitialData();
 	bool state = false;
 	addDefaultLight();

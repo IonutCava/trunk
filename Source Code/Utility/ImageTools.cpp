@@ -6,12 +6,10 @@
 #include "IL/ilu.h"
 #include "IL/ilut.h"
 #include "Hardware/Video/GFXDevice.h"
-using namespace std;
 
 namespace ImageTools {
 
-U8* OpenImagePPM(const string& filename, U16& w, U16& h, U8& d, U32& t, U32& ilTexture,bool flip)
-{
+U8* OpenImagePPM(const std::string& filename, U16& w, U16& h, U8& d, U32& t, U32& ilTexture,bool flip) {
 
 	char head[70];
 	I8 i;
@@ -58,10 +56,9 @@ U8* OpenImagePPM(const string& filename, U16& w, U16& h, U8& d, U32& t, U32& ilT
 	return img;
 }
 
-U8* OpenImageDevIL(const string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture, bool& alpha, bool flip)
-{
-	static bool first = true;
+U8* OpenImageDevIL(const std::string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture, bool& alpha, bool flip) {
 
+	static bool first = true;
 
 	if(first) {
 		first = false;
@@ -149,8 +146,9 @@ U8* OpenImageDevIL(const string& filename, U16& w, U16& h, U8& d, U32& t,U32& il
 }
 
 
-U8* OpenImage(const string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture,bool& alpha,bool flip){
-	if(filename.find(".ppm") != string::npos){
+U8* OpenImage(const std::string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture,bool& alpha,bool flip) {
+
+	if(filename.find(".ppm") != std::string::npos){
 		alpha = false;
 		return OpenImagePPM(filename, w, h, d,t,ilTexture,flip);
 	}else 
@@ -158,7 +156,7 @@ U8* OpenImage(const string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTextu
 	return NULL;
 }
 
-void OpenImage(const string& filename, ImageData& img, bool& alpha){
+void OpenImage(const std::string& filename, ImageData& img, bool& alpha){
 	
 	img.name = filename;
 	img.data = OpenImage(filename, img.w, img.h, img.d, img.type,img.ilTexture,alpha,img._flip);
@@ -184,11 +182,11 @@ void ImageData::resize(U16 width, U16 height){
 }
 
 
-I8 saveToTGA(	char 		*filename, 
-		U16	width, 
-		U16	height, 
-		U8	pixelDepth,
-		U8	*imageData) {
+I8 saveToTGA(char *filename, 
+			 U16 width, 
+			 U16 height, 
+			 U8	 pixelDepth,
+			 U8	*imageData) {
 
 	U8 cGarbage = 0, type,mode,aux;
 	I16 iGarbage = 0;
@@ -243,12 +241,13 @@ I8 saveToTGA(	char 		*filename,
 	return(0);
 }
 
-// saves a series of files with names "filenameX.tga"
-I8 SaveSeries(char		*filename, 
-			 U16		width, 
-			 U16		height, 
-			 U8	pixelDepth,
-			 U8	*imageData) {
+/// saves a series of files with names "filenameX.tga"
+I8 SaveSeries(char *filename, 
+			  U16 width, 
+			  U16 height, 
+			  U8  pixelDepth,
+			  U8 *imageData) {
+
 	static I8 savedImages=0;
 	char *newFilename;
 	I8 status;

@@ -8,7 +8,7 @@ using namespace OIS;
 EventHandler::EventHandler(InputManagerInterface* pApp)
 : _pApplication(pApp), _pJoystickMgr(NULL), _pEffectMgr(NULL)
 {
-	_activeScene = SceneManager::getInstance().getActiveScene();
+	_activeScene = GET_ACTIVE_SCENE();
 }
 
 void EventHandler::initialize(JoystickManager* pJoystickMgr, EffectManager* pEffectMgr){

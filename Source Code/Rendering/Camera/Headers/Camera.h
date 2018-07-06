@@ -52,7 +52,6 @@ public:
 	inline F32 getAngleX()				 const	{return fAngleX;}
 	inline F32 getAngleY()				 const	{return fAngleY;}
 
-	virtual bool load(const std::string& name) {return true;}
 	virtual bool unload() {return true;}
 
 	///Add an event listener called after every RenderLookAt or RenderLookAtCube call

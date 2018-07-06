@@ -19,8 +19,8 @@
 #include <boost/property_tree/xml_parser.hpp>
 class Material;
 class Texture;
-namespace XML
-{
+
+namespace XML {
 
 	///Parent Function
 	void loadScripts(const std::string &file);
@@ -34,6 +34,6 @@ namespace XML
 	void dumpMaterial(Material* const mat);
 	///ToDo: ....... Add more
 
-	Material* loadMaterialXML(const std::string &location);
-	Texture*  loadTextureXML(const std::string& textureName);
+	Material* loadMaterialXML(const std::string& location);
+	Texture*  loadTextureXML(const  std::string& textureName);
 }

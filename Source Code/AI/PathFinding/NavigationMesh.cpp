@@ -70,7 +70,7 @@ namespace Navigation {
 		if(sgn){
 			_sgn = sgn;
 		}else{	/// use root node
-			_sgn = SceneManager::getInstance().getActiveScene()->getSceneGraph()->getRoot();
+			_sgn = GET_ACTIVE_SCENE()->getSceneGraph()->getRoot();
 		}
 
 		if(_buildThreaded)

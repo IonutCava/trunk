@@ -21,8 +21,6 @@
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
 
-using namespace std;
-
 void GFXDevice::setApi(RENDER_API api){
 
 	switch(api)	{
@@ -142,7 +140,7 @@ void GFXDevice::processRenderQueue(){
 	_renderBinCount = RenderQueue::getInstance().getRenderQueueStackSize();
 	///Draw the entire queue;
 	///Limited to 65536 (2^16) items per queue pass!
-	if(SceneManager::getInstance().getActiveScene()->drawObjects()){
+	if(GET_ACTIVE_SCENE()->drawObjects()){
 		for(U16 i = 0; i < _renderBinCount; i++){
 			//Get the current scene node
 			sgn = RenderQueue::getInstance().getItem(i)._node;
@@ -151,7 +149,7 @@ void GFXDevice::processRenderQueue(){
 			///Get it's transform
 			t = sgn->getTransform();
 			///And it's attached SceneNode
-			sn = sgn->getNode();
+			sn = sgn->getNode<SceneNode>();
 			///Validate the SceneNode
 			assert(sn);
 			///Call any pre-draw operations on the SceneNode (refresh VBO, update materials, etc)
@@ -215,8 +213,8 @@ void GFXDevice::processRenderQueue(){
 
         ///Dump render states
 		///Draw all BBoxes
-		_drawBBoxes = SceneManager::getInstance().getActiveScene()->drawBBox();
-		_drawSkeleton = SceneManager::getInstance().getActiveScene()->drawSkeletons();
+		_drawBBoxes = GET_ACTIVE_SCENE()->drawBBox();
+		_drawSkeleton = GET_ACTIVE_SCENE()->drawSkeletons();
 		for(U16 i = 0; i < _renderBinCount; i++){
 			///Get the current scene node
 			sgn = RenderQueue::getInstance().getItem(i)._node;
@@ -225,15 +223,15 @@ void GFXDevice::processRenderQueue(){
 			///Draw the bounding box if it's always on or if the scene demands it
 			///Terrain handles bounding boxes diferrently
 			if(bb.getVisibility() || _drawBBoxes){
-				sgn->getNode()->drawBoundingBox(sgn);
+				sgn->getNode<SceneNode>()->drawBoundingBox(sgn);
 			}
 			if(_drawSkeleton){
-				if(sgn->getNode()->getType() == TYPE_OBJECT3D){
-					Object3D* obj = dynamic_cast<Object3D*>(sgn->getNode());
+				if(sgn->getNode<SceneNode>()->getType() == TYPE_OBJECT3D){
+					Object3D* obj = sgn->getNode<Object3D>();
 					assert(obj != NULL);
 					/// For SubMesh objects
 					if(obj->getType() == SUBMESH){
-						dynamic_cast<SubMesh*>(obj)->renderSkeleton();
+						dynamic_cast<SubMesh*>(obj)->renderSkeleton(sgn);
 					}
 				}
 			}
@@ -249,7 +247,7 @@ void GFXDevice::renderInViewport(const vec4<F32>& rect, boost::function0<void> c
 void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap, const vec3<F32>& pos, boost::function0<void> callback){
 	///Don't need to override cubemap rendering callback
 	if(callback.empty()){
-		SceneGraph* sg = SceneManager::getInstance().getActiveScene()->getSceneGraph();
+		SceneGraph* sg = GET_ACTIVE_SCENE()->getSceneGraph();
 		///Default case is that everything is reflected
 		callback = boost::bind(boost::bind(&SceneGraph::render, sg));
 	}

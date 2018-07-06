@@ -1,18 +1,16 @@
 #include "Headers/WarScene.h"
 #include "Headers/WarSceneAIActionList.h"
 
-#include "Environment/Sky/Headers/Sky.h"
-#include "Managers/Headers/CameraManager.h"
-#include "Managers/Headers/AIManager.h"
-#include "Managers/Headers/SceneManager.h"
-#include "Rendering/Headers/Frustum.h"
-#include "GUI/Headers/GUI.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
-
-using namespace std;
+#include "Managers/Headers/CameraManager.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Environment/Sky/Headers/Sky.h"
+#include "Managers/Headers/AIManager.h"
+#include "Rendering/Headers/Frustum.h"
+#include "GUI/Headers/GUI.h"
 
 //begin copy-paste: randarea scenei
 void WarScene::render(){
@@ -63,7 +61,7 @@ void WarScene::processSimulation(boost::any a, CallbackParam b){
 
 	if(getEvents().empty()) return;
 	bool updated = false;
-	string mesaj;
+	std::string mesaj;
 	SceneGraphNode* Soldier1 = _sceneGraph->findNode("Soldier1");
 
 	assert(Soldier1);assert(_groundPlaceholder);
@@ -86,7 +84,8 @@ void WarScene::processInput(){
 	}
 }
 
-bool WarScene::load(const string& name){
+bool WarScene::load(const std::string& name){
+
 	setInitialData();
 
 	bool state = false;
@@ -109,7 +108,7 @@ bool WarScene::load(const string& name){
 
 	//------------------------ Restul elementelor jocului -----------------------------///
 	_groundPlaceholder = _sceneGraph->findNode("Ground_placeholder");
-	_groundPlaceholder->getNode()->getMaterial()->setCastsShadows(false);
+	_groundPlaceholder->getNode<SceneNode>()->getMaterial()->setCastsShadows(false);
 
 	state = loadEvents(true);
 	return state;

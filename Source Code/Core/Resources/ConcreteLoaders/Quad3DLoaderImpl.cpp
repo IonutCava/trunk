@@ -6,7 +6,7 @@ Quad3D* ImplResourceLoader<Quad3D>::operator()(){
 	Quad3D* ptr = New Quad3D();
 	
 	if(!ptr) return NULL;
-	if(!ptr->load(_descriptor.getName())) return NULL;
+	if(!load(ptr,_descriptor.getName())) return NULL;
 
 	if(_descriptor.getFlag()){
 		ptr->useDefaultMaterial(false);
@@ -15,3 +15,5 @@ Quad3D* ImplResourceLoader<Quad3D>::operator()(){
 
 	return ptr;
 }
+
+DEFAULT_LOADER_IMPL(Quad3D)

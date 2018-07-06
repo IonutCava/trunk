@@ -25,8 +25,9 @@ class ResourceLoader : private boost::noncopyable {
 
 public:
 	ResourceLoader(const ResourceDescriptor& descriptor) : _descriptor(descriptor) {}
+
 	virtual Resource* operator()() = 0;
-	
+
 protected:
 	ResourceDescriptor _descriptor;
 };
@@ -37,6 +38,21 @@ class ImplResourceLoader : public ResourceLoader {
 public:
 	ImplResourceLoader(const ResourceDescriptor& descriptor)  : ResourceLoader(descriptor) {}
 	ResourceType* operator()();
+
+protected:
+	virtual bool load(ResourceType* const res, const std::string& name);
 };
 
+#define DEFAULT_LOADER_IMPL(X)	template<> \
+								bool ImplResourceLoader<X>::load(X* const res, const std::string& name){ \
+									return res->setInitialData(name);\
+								}
+
+#define DEFAULT_HW_LOADER_IMPL(X) template<> \
+								  bool ImplResourceLoader<X>::load(X* const res, const std::string& name){ \
+									if(res->setInitialData(name)){\
+										return res->generateHWResource(name); \
+									} \
+									return false; \
+								  }
 #endif

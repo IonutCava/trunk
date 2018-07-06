@@ -1,12 +1,10 @@
-#include "Headers/Guardian.h"
+#include "Headers/Kernel.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Headers/XMLParser.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Dynamics/Physics/Headers/PXDevice.h"
 
-using namespace std;
-
-void Guardian::LoadApplication(const string& entryPoint){
+void Kernel::LoadApplication(const std::string& entryPoint){
 	Application& app = Application::getInstance();
 	///Target FPS is 60. So all movement is capped around that value
 	Framerate::getInstance().Init(60);
@@ -15,9 +13,9 @@ void Guardian::LoadApplication(const string& entryPoint){
 	//Initialize application window and hardware devices
 	XML::loadScripts(entryPoint); //ToDo: This should be moved in each scene constructor! - Ionut Cava
 	app.Initialize();
-	LoadSettings(); //ToDo: This should be moved up so that it is the first instruction Guardian executes! - Ionut Cava
+	LoadSettings(); //ToDo: This should be moved up so that it is the first instruction Kernel executes! - Ionut Cava
 	PRINT_FN("Initializing the rendering engine");
-	SceneManager::getInstance().load(string(""));
+	SceneManager::getInstance().load(std::string(""));
 	PRINT_FN("Initial data loaded ... ");
 	PRINT_FN("Creating AI entities ...");
 	SceneManager::getInstance().initializeAI(true);
@@ -29,7 +27,7 @@ void Guardian::LoadApplication(const string& entryPoint){
 	_closing = false;
 }
 
-void Guardian::TerminateApplication(){
+void Kernel::TerminateApplication(){
 
 	SceneManager::getInstance().deinitializeAI(true);
 	SceneManager::getInstance().DestroyInstance();
@@ -37,13 +35,13 @@ void Guardian::TerminateApplication(){
 	PRINT_FN("Application shutdown complete!");
 }
 
-void Guardian::LoadSettings()
-{
+void Kernel::LoadSettings() {
+
 	ParamHandler &par = ParamHandler::getInstance();
     
-	string mem = par.getParam<string>("memFile");
-	string log = par.getParam<string>("logFile");
-	XML::loadMaterialXML(par.getParam<string>("scriptLocation")+"/defaultMaterial");
+	std::string mem = par.getParam<std::string>("memFile");
+	std::string log = par.getParam<std::string>("logFile");
+	XML::loadMaterialXML(par.getParam<std::string>("scriptLocation")+"/defaultMaterial");
 	if(mem.compare("none") != 0) myfile.open(mem.c_str());
 	else myfile.open("mem.log");
 

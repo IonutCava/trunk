@@ -26,7 +26,6 @@ public:
 	glShaderProgram();
 	~glShaderProgram();
 
-	bool load(const std::string& name);
 	bool unload(){unbind(); return true;}
 	void bind();
 	void unbind();
@@ -58,9 +57,9 @@ private:
 
 private:
 	unordered_map<std::string, I32 > _shaderVars;
-	bool _loaded;
 
 protected:
+	bool generateHWResource(const std::string& name);
 	void validate();
 	void link();
 };

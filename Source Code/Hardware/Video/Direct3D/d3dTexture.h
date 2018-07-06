@@ -27,7 +27,7 @@ public:
 	d3dTexture(U32 type, bool flipped = false) : Texture(flipped), _type(type) {}
 	~d3dTexture() {}
 
-	bool load(const std::string& name){return true;}
+	bool generateHWResource(const std::string& name){return true;}
 	bool unload() {Destroy(); return true;}
 
 	void Bind(U16 unit){}
@@ -40,7 +40,6 @@ private:
 	void Bind() const {}
 	void Unbind() const {}
 	void Destroy() {}
-	void Gen(){}
 
 private:
 	U32 _type;

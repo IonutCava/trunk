@@ -35,11 +35,6 @@ void Trigger::setParams( Event_ptr triggeredEvent, const vec3<F32>& triggerPosit
    	_triggeredEvent.swap(triggeredEvent);
 }
 
-bool Trigger::load(const std::string& name){
-	setName(name);
-	return true;
-}
-
 bool Trigger::unload(){
 	if(_triggerImpostor){
 		_triggerSGN->removeNode(_impostorSGN);

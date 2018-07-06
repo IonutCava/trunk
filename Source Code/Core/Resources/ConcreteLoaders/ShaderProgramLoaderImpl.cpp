@@ -14,7 +14,9 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
 		ptr->setResourceLocation(_descriptor.getResourceLocation());
 
 	if(!ptr) return NULL;
-	if(!ptr->load(_descriptor.getName())) return NULL;
+	if(!load(ptr,_descriptor.getName())) return NULL;
 
 	return ptr;
 }
+
+DEFAULT_HW_LOADER_IMPL(ShaderProgram)

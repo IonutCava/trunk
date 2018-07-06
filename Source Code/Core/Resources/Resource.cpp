@@ -1,5 +1,5 @@
 #include "Headers/Resource.h"
-#include "Utility/Headers/Guardian.h"
+#include "Utility/Headers/Kernel.h"
 
 U32 maxAlloc = 0;
 char* zMaxFile = "";
@@ -12,8 +12,8 @@ void* operator new(size_t t ,char* zFile, I32 nLine){
 		nMaxLine = nLine;
 	}
 
-	if(Guardian::getInstance().myfile.is_open())
-		Guardian::getInstance().myfile << "[ "<< GETTIME()
+	if(Kernel::getInstance().myfile.is_open())
+		Kernel::getInstance().myfile << "[ "<< GETTIME()
 									   << " ] : New allocation: " << t << " IN: \""
 									   << zFile << "\" at line: " << nLine << "." << std::endl
 									   << "\t Max Allocation: ["  << maxAlloc << "] in file: \""

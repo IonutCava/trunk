@@ -745,11 +745,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Source Code\Utility\Guardian.cpp"
+				RelativePath="..\..\Source Code\Utility\ImageTools.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Source Code\Utility\ImageTools.cpp"
+				RelativePath="..\..\Source Code\Utility\Kernel.cpp"
 				>
 			</File>
 			<File
@@ -772,11 +772,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Utility\Headers\Guardian.h"
+					RelativePath="..\..\Source Code\Utility\Headers\ImageTools.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\Utility\Headers\ImageTools.h"
+					RelativePath="..\..\Source Code\Utility\Headers\Kernel.h"
 					>
 				</File>
 				<File
@@ -817,10 +817,6 @@
 				</File>
 				<File
 					RelativePath="..\..\Source Code\Core\Headers\Singleton.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Core\Headers\Thread.h"
 					>
 				</File>
 			</Filter>
@@ -875,6 +871,10 @@
 					Name="Headers"
 					>
 					<File
+						RelativePath="..\..\Source Code\Core\Resources\Headers\HardwareResource.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\Source Code\Core\Resources\Headers\Resource.h"
 						>
 					</File>
@@ -912,6 +912,10 @@
 					</File>
 					<File
 						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\MeshLoaderImpl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Resources\ConcreteLoaders\ParticleEmitterLoaderImpl.cpp"
 						>
 					</File>
 					<File
@@ -1555,6 +1559,10 @@
 					RelativePath="..\..\Source Code\Hardware\Platform\PlatformDefines.h"
 					>
 				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Platform\Thread.h"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -1562,10 +1570,6 @@
 			>
 			<File
 				RelativePath="..\..\Source Code\Managers\AIManager.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Source Code\Managers\BaseCache.cpp"
 				>
 			</File>
 			<File
@@ -1593,10 +1597,6 @@
 				>
 				<File
 					RelativePath="..\..\Source Code\Managers\Headers\AIManager.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Managers\Headers\BaseCache.h"
 					>
 				</File>
 				<File

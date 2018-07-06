@@ -7,8 +7,6 @@
 #include "Managers/Headers/CameraManager.h"
 #include "Environment/Sky/Headers/Sky.h"
 
-using namespace std;
-
 void NetworkScene::render(){
 
 	_sceneGraph->render();
@@ -30,6 +28,7 @@ void NetworkScene::preRender(){
 }
 
 void NetworkScene::processInput(){
+
 	Scene::processInput();
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	moveFB  = Application::getInstance().moveFB;
@@ -43,43 +42,40 @@ void NetworkScene::processInput(){
 	if(moveLR)	cam->PlayerMoveStrafe(moveLR * (Framerate::getInstance().getSpeedfactor()/5));
 }
 
-void NetworkScene::processEvents(F32 time)
-{
+void NetworkScene::processEvents(F32 time){
+
 	F32 FpsDisplay = 0.3f;
 	F32 TimeDisplay = 0.01f;
 	F32 ServerPing = 1.0f;
-	if (time - _eventTimers[0] >= FpsDisplay)
-	{
+	if (time - _eventTimers[0] >= FpsDisplay){
 		
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
 		_eventTimers[0] += FpsDisplay;
 	}
     
 	
-	if (time - _eventTimers[1] >= TimeDisplay)
-	{
+	if (time - _eventTimers[1] >= TimeDisplay){ 
 		GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", time);
 		_eventTimers[1] += TimeDisplay;
 	}
 
-	if (time - _eventTimers[2] >= ServerPing)
-	{
-		GUI::getInstance().modifyText("statusText", (char*)_paramHandler.getParam<string>("asioStatus").c_str());
-		GUI::getInstance().modifyText("serverMessage",(char*)_paramHandler.getParam<string>("serverResponse").c_str());
+	if (time - _eventTimers[2] >= ServerPing){
+
+		GUI::getInstance().modifyText("statusText", (char*)_paramHandler.getParam<std::string>("asioStatus").c_str());
+		GUI::getInstance().modifyText("serverMessage",(char*)_paramHandler.getParam<std::string>("serverResponse").c_str());
 		_eventTimers[2] += ServerPing;
 	}
 
 }
 
-void NetworkScene::checkPatches()
-{
+void NetworkScene::checkPatches(){
+
 	if(ModelDataArray.empty()) return;
 	WorldPacket p(CMSG_GEOMETRY_LIST);
-	p << string("NetworkScene");
+	p << std::string("NetworkScene");
 	p << ModelDataArray.size();
 
-	for(vector<FileData>::iterator _iter = ModelDataArray.begin(); _iter != ModelDataArray.end(); ++_iter)
-	{
+	for(std::vector<FileData>::iterator _iter = ModelDataArray.begin(); _iter != ModelDataArray.end(); ++_iter)	{
 		p << (*_iter).ItemName;
 		p << (*_iter).ModelName;
 		p << (*_iter).version;
@@ -87,14 +83,15 @@ void NetworkScene::checkPatches()
 	ASIO::getInstance().sendPacket(p);
 }
 
-bool NetworkScene::load(const string& name){
+bool NetworkScene::load(const std::string& name){
+
 	setInitialData();
 	_GFX.resizeWindow(640,384);
-	ASIO::getInstance().init(_paramHandler.getParam<string>("serverAddress"),string("443"));
+	ASIO::getInstance().init(_paramHandler.getParam<std::string>("serverAddress"),std::string("443"));
 
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f;
 	bool state = loadResources(true);
-	_paramHandler.setParam("serverResponse",string("waiting"));
+	_paramHandler.setParam("serverResponse",std::string("waiting"));
 	addDefaultLight();
 	CameraManager::getInstance().getActiveCamera()->setEye(vec3<F32>(0,30,-30));
 	return state;
@@ -105,23 +102,23 @@ bool NetworkScene::unload(){
 	return Scene::unload();
 }
 
-void NetworkScene::test()
-{
+void NetworkScene::test(){
+
 	WorldPacket p(CMSG_PING);
 	p << GETMSTIME();
 	ASIO::getInstance().sendPacket(p);
 }
 
-void NetworkScene::connect()
-{
-	GUI::getInstance().modifyText("statusText",(char*)string("Connecting to server ...").c_str());
-	ASIO::getInstance().connect(_paramHandler.getParam<string>("serverAddress"),string("433"));
+void NetworkScene::connect(){
+
+	GUI::getInstance().modifyText("statusText",(char*)std::string("Connecting to server ...").c_str());
+	ASIO::getInstance().connect(_paramHandler.getParam<std::string>("serverAddress"),std::string("433"));
 }
 
 void NetworkScene::disconnect()
 {
 	if(!ASIO::getInstance().isConnected())
-		GUI::getInstance().modifyText("statusText",(char*)string("Disconnecting to server ...").c_str());
+		GUI::getInstance().modifyText("statusText",(char*)std::string("Disconnecting to server ...").c_str());
 	ASIO::getInstance().disconnect();
 }
 

@@ -10,8 +10,7 @@ U8 AIManager::tick(){
 bool AIManager::addEntity(AIEntity* entity){
 	WriteLock w_lock(_updateMutex);
 	if(_aiEntities.find(entity->_GUID) != _aiEntities.end()){
-		delete _aiEntities[entity->_GUID];
-		_aiEntities[entity->_GUID] = entity;
+		SAFE_UPDATE(_aiEntities[entity->_GUID], entity);
 	}else{
 		_aiEntities.insert(std::make_pair(entity->_GUID,entity));
 	}

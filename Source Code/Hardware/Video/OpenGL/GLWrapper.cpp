@@ -6,7 +6,6 @@
 #include "GUI/Headers/GUIFlash.h"
 #include "GUI/Headers/GUIButton.h"
 #include "GUI/Headers/GUIConsole.h"
-#include "Utility/Headers/Guardian.h"
 #include "Core/Headers/Application.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Core/Headers/ParamHandler.h"
@@ -19,7 +18,6 @@
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 #include "Managers/Headers/CameraManager.h"
 #include "Rendering/Headers/Frustum.h"
-using namespace std;
 
 #define USE_FREEGLUT
 bool _applicationClosing = false;
@@ -106,7 +104,7 @@ void GL_API::initHardware(){
 	ParamHandler& par = ParamHandler::getInstance();
 	I32   argc   = 1; 
 	//The Application's title can be set in the "config.xml" file, so no explanation here needed
-	char *argv[] = {(char*)par.getParam<string>("appTitle").c_str(), NULL};
+	char *argv[] = {(char*)par.getParam<std::string>("appTitle").c_str(), NULL};
 	//Using freeglut, because ... why not? Crossplatform window creation in a single line? Sure
     glutInit(&argc, argv);
 	//So, if someone selected High detail level, try to use pure 3.x API
@@ -125,7 +123,7 @@ void GL_API::initHardware(){
 	glutInitWindowPosition(10,50);
 	//For a posibile multi-window support (as seen the the OBJ PhysX Simulator video
 	//Store the main window ID for future reference
-	_windowId = glutCreateWindow(par.getParam<string>("appTitle").c_str());
+	_windowId = glutCreateWindow(par.getParam<std::string>("appTitle").c_str());
 	Application::getInstance().setMainWindowId(_windowId);
 	//Everything is set up as needed, so initialize the OpenGL API
 	U32 err = glewInit();
@@ -444,7 +442,8 @@ void GL_API::drawButton(GUIElement* const button){
 		 *	If the cursor is currently over the button we offset the text string and draw a shadow
 		 */
 		if(!t){/* delete t;*/
-			t = new GUIText(string("1"),b->_text,vec2<F32>(fontx,fonty),GLUT_BITMAP_HELVETICA_10,vec3<F32>(0,0,0));
+			t = new GUIText(std::string("1"),b->_text,vec2<F32>(fontx,fonty),
+							GLUT_BITMAP_HELVETICA_10,vec3<F32>(0,0,0));
 		}
 		t->_text = b->_text;
 		if(b->_highlight){

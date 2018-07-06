@@ -21,15 +21,16 @@
 #ifndef TRACKED_OBJECT_H_
 #define TRACKED_OBJECT_H_
 #include <list>
+#include <boost/noncopyable.hpp>
 ///A tracked object takes car of it's own reference counting and knows it's own size
 ///It also schedules it's own deletion (a pompous name for a smart pointer)
-class TrackedObject {
+class TrackedObject : private boost::noncopyable  {
   
     public:
 	  ///Increase reference count
 	  void AddRef();
 	  ///Decrease reference count
-	  void Release();
+	  bool SubRef();
 	  ///Add object dependency (dependent objects are ref counted with the parent object)
 	  void addDependency(TrackedObject* obj);
 	  ///Remove an object dependency
@@ -57,7 +58,7 @@ class TrackedObject {
 //define a quickmacro to make things easier on derived classes
 #define AUTO_SIZE unsigned long size(){return sizeof(*this);}
 ///Registering a dependency
-#define REGISTER_TRACKED_DEPENDENCY(X)   this->addDependency(X); PRINT_FN("DEP [ %s ] TO [ %s ]",this->getName().c_str(), X->getName().c_str());
+#define REGISTER_TRACKED_DEPENDENCY(X)   this->addDependency(X);
 #define UNREGISTER_TRACKED_DEPENDENCY(X) this->removeDependency(X);
 
 #endif

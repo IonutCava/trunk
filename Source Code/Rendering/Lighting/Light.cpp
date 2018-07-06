@@ -31,7 +31,7 @@ Light::Light(U8 slot, F32 radius) : SceneNode(TYPE_LIGHT),    _slot(slot),
 
 	///Shadow Mapping disabled for deferred renderer
 	if(!GFX_DEVICE.getDeferredRendering()){
-		SceneGraph* sg = SceneManager::getInstance().getActiveScene()->getSceneGraph();
+		SceneGraph* sg = GET_ACTIVE_SCENE()->getSceneGraph();
 		setShadowMappingCallback(boost::bind(&SceneGraph::render, sg));
 	}
 	_dirty = true;
@@ -54,11 +54,6 @@ bool Light::unload(){
 		SAFE_DELETE(_impostor);
 	}
 	return SceneNode::unload();
-}
-
-bool Light::load(const std::string& name){
-	setName(name);
-	return true;
 }
 
 void Light::postLoad(SceneGraphNode* const sgn) {

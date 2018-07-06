@@ -59,7 +59,7 @@ void SceneGraphNode::updateTransforms(){
 //Previous attempts have proven buggy
 void SceneGraphNode::updateVisualInformation(){
 	//Hold a pointer to the current active scene
-	Scene* curentScene = SceneManager::getInstance().getActiveScene();
+	Scene* curentScene = GET_ACTIVE_SCENE();
 	//No point in updating visual information if the scene disabled object rendering 
 	//or rendering of their bounding boxes
 	if(!curentScene->drawObjects() && !curentScene->drawBBox()) return;

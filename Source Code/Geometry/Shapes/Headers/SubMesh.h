@@ -61,7 +61,6 @@ public:
 
 	~SubMesh();
 
-	bool load(const std::string& name) {return true;}
 	bool unload() { return SceneNode::unload(); }
 
 	bool computeBoundingBox(SceneGraphNode* const sgn);
@@ -81,7 +80,7 @@ public:
 
 	void sceneUpdate(D32 sceneTime);
 	bool createAnimatorFromScene(const aiScene* scene,U8 subMeshPointer);
-	void renderSkeleton();
+	void renderSkeleton(SceneGraphNode* const sgn);
 	void updateBBatCurrentFrame(SceneGraphNode* const sgn);
 
 	inline void setSceneMatrix(const mat4<F32>& sceneMatrix){ _sceneRootMatrix = sceneMatrix; }

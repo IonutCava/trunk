@@ -4,8 +4,6 @@
 #include "Hardware/Video/Texture.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Hardware/Video/RenderStateBlock.h"
-#include "Utility/Headers/XMLParser.h"
-
 
 
 Material::Material() : Resource(),
@@ -100,8 +98,8 @@ RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor
 void Material::setTexture(TextureUsage textureUsage, Texture2D* const texture, TextureOperation op) {
 	boost::unique_lock< boost::mutex > lock_access_here(_materialMutex);
 	if(_textures[textureUsage]){
-		RemoveResource(_textures[textureUsage]);
 		UNREGISTER_TRACKED_DEPENDENCY(_textures[textureUsage]);
+		RemoveResource(_textures[textureUsage]);
 	}else{
 		//if we add a new type of texture
 		_computedLightShaders = false; //recompute shaders on texture change
@@ -164,7 +162,7 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader){
 		}
 	}
 
-	(!shader.empty()) ? _shader = shader : _shader = "NULL";
+	(!shader.empty()) ? _shader = shader : _shader = "NULL_SHADER";
 
 	_shaderRef = static_cast<ShaderProgram* >(FindResource(_shader));
 	if(!_shaderRef){
@@ -175,15 +173,6 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader){
 	_computedLightShaders = true;
 	_shaderProgramChanged = true;
 	return _shaderRef;
-}
-
-ShaderProgram* const Material::getShaderProgram(){
-	return _shaderRef;
-}
-
-Texture2D* const  Material::getTexture(TextureUsage textureUsage)  {
-	boost::mutex::scoped_lock(_materialMutex);
-	return _textures[textureUsage];
 }
 
 ///If the current material doesn't have a shader associated with it, then add the default ones.
@@ -223,17 +212,12 @@ void Material::computeLightShaders(){
 bool Material::unload(){
 	for_each(textureMap::value_type& iter , _textures){
 		if(iter.second){
-			RemoveResource(iter.second);
 			UNREGISTER_TRACKED_DEPENDENCY(iter.second);
+			RemoveResource(iter.second);
 		}
 	}
 	_textures.clear();
 	return true;
-}
-
-void Material::dumpToXML(){
-	//if(getName().compare("defaultMaterial") == 0) return;
-	XML::dumpMaterial(this);
 }
 
 void Material::setDoubleSided(bool state) {

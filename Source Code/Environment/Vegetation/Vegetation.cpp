@@ -1,6 +1,5 @@
 #include "Headers\Vegetation.h"
 
-#include "Utility/Headers/Guardian.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Environment/Terrain/Quadtree/Headers/Quadtree.h"
@@ -26,11 +25,11 @@ Vegetation::~Vegetation(){
 	PRINT_FN("... destruction complete!");
 }
 
-void Vegetation::initialize(const string& grassShader,const string& terrainName)
+void Vegetation::initialize(const std::string& grassShader,const std::string& terrainName)
 {
 	_grassShader  = CreateResource<ShaderProgram>(ResourceDescriptor(grassShader));
 	_grassDensity = _grassDensity/_billboardCount;
-	_terrain = SceneManager::getInstance().getActiveScene()->getSceneGraph()->findNode(terrainName);
+	_terrain = GET_ACTIVE_SCENE()->getSceneGraph()->findNode(terrainName);
 	assert(_terrain);
 	for(U8 i = 0 ; i < _billboardCount; i++) _success = generateGrass(i);
 	if(_success) _success = generateTrees();
@@ -49,7 +48,7 @@ void Vegetation::draw(bool drawInReflection){
 	if(!_render || !_success) return;
 	if(GFX_DEVICE.getRenderStage() == SHADOW_STAGE) return;
 
-	Scene* activeScene = SceneManager::getInstance().getActiveScene();
+	Scene* activeScene = GET_ACTIVE_SCENE();
 	_windX = activeScene->getWindDirX();
 	_windZ = activeScene->getWindDirZ();
 	_windS = activeScene->getWindSpeed();
@@ -114,7 +113,7 @@ bool Vegetation::generateGrass(U32 index){
 		_grassSize = (F32)(map_color.g+1) / (256 / _grassScale);
 		vec3<F32> P = _terrain->getNode<Terrain>()->getPosition(x, y);
 		P.y -= 0.075f;
-		if(P.y < SceneManager::getInstance().getActiveScene()->getWaterLevel()){
+		if(P.y < GET_ACTIVE_SCENE()->getWaterLevel()){
 			k--;
 			continue;
 		}
@@ -167,9 +166,9 @@ bool Vegetation::generateGrass(U32 index){
 
 bool Vegetation::generateTrees(){
 	//--> Unique position generation
-	vector<vec3<F32> > positions;
+	std::vector<vec3<F32> > positions;
 	//<-- End unique position generation
-	vector<FileData>& DA = SceneManager::getInstance().getActiveScene()->getVegetationDataArray();
+	std::vector<FileData>& DA = GET_ACTIVE_SCENE()->getVegetationDataArray();
 	if(DA.empty()){
 		ERROR_F("Vegetation: Insufficient base geometry for tree generation. Skipping!\n");
 		return true;
@@ -187,7 +186,7 @@ bool Vegetation::generateTrees(){
 		
 		vec3<F32> P = _terrain->getNode<Terrain>()->getPosition(((F32)map_x)/_map.w, ((F32)map_y)/_map.h);
 		P.y -= 0.2f;
-		if(P.y < SceneManager::getInstance().getActiveScene()->getWaterLevel()){
+		if(P.y < GET_ACTIVE_SCENE()->getWaterLevel()){
 			k--;
 			continue;
 		}

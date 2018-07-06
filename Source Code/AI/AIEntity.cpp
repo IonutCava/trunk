@@ -35,21 +35,17 @@ Sensor* AIEntity::getSensor(SENSOR_TYPE type){
 }
 
 bool AIEntity::addSensor(SENSOR_TYPE type, Sensor* sensor){
-	if(_sensorList.find(type) != _sensorList.end()){
-		delete _sensorList[type];
-	}
 	sensor->updatePosition(_node->getTransform()->getPosition());
-	_sensorList[type] = sensor;
+	if(_sensorList.find(type) != _sensorList.end()){
+		SAFE_UPDATE(_sensorList[type], sensor);
+	}
 	return true;
 }
 
 
 bool AIEntity::addActionProcessor(ActionList* actionProcessor){
 	WriteLock w_lock(_updateMutex);
-	if(_actionProcessor){
-		delete _actionProcessor;
-	}
-	_actionProcessor = actionProcessor;
+	SAFE_UPDATE(_actionProcessor, actionProcessor);
 	_actionProcessor->addEntityRef(this);
 	return true;
 }

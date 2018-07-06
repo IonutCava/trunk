@@ -20,17 +20,27 @@ Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
 	_terrainHeight(0),
 	_groundVBO(NULL),
 	_terrainQuadtree(New Quadtree()),
-	_loaded(false),
 	_plane(NULL),
 	_drawInReflection(false),
 	_drawBBoxes(false),
-	_terrainDiffuseMap(NULL),
 	_veg(NULL),
 	_planeTransform(NULL),
 	_node(NULL),
 	_planeSGN(NULL),
 	_terrainRenderState(NULL)
-{}
+{
+	
+	_terrainTextures[TERRAIN_TEXTURE_DIFFUSE]   = NULL;
+	_terrainTextures[TERRAIN_TEXTURE_NORMALMAP] = NULL;
+	_terrainTextures[TERRAIN_TEXTURE_CAUSTICS]  = NULL;
+	_terrainTextures[TERRAIN_TEXTURE_RED]       = NULL;
+	_terrainTextures[TERRAIN_TEXTURE_GREEN]     = NULL;
+	_terrainTextures[TERRAIN_TEXTURE_BLUE]      = NULL;
+}
+
+Terrain::~Terrain() 
+{
+}
 
 
 void Terrain::prepareMaterial(SceneGraphNode const* const sgn){
@@ -39,12 +49,12 @@ void Terrain::prepareMaterial(SceneGraphNode const* const sgn){
 	SET_STATE_BLOCK(_terrainRenderState);
 	GFX_DEVICE.setMaterial(getMaterial());
 
-	_terrainDiffuseMap->Bind(0);
-	_terrainTextures[0]->Bind(1); //Normal Map
-	_terrainTextures[1]->Bind(2); //Water Caustics
-	_terrainTextures[2]->Bind(3); //AlphaMap: RED
-	_terrainTextures[3]->Bind(4); //AlphaMap: GREEN
-	_terrainTextures[4]->Bind(5); //AlphaMap: BLUE
+	_terrainTextures[TERRAIN_TEXTURE_DIFFUSE]->Bind(0);
+	_terrainTextures[TERRAIN_TEXTURE_NORMALMAP]->Bind(1);
+	_terrainTextures[TERRAIN_TEXTURE_CAUSTICS]->Bind(2); //Water Caustics
+	_terrainTextures[TERRAIN_TEXTURE_RED]->Bind(3);      //AlphaMap: RED
+	_terrainTextures[TERRAIN_TEXTURE_GREEN]->Bind(4);    //AlphaMap: GREEN
+	_terrainTextures[TERRAIN_TEXTURE_BLUE]->Bind(5);     //AlphaMap: BLUE
 
 	terrainShader->bind();
 
@@ -55,21 +65,22 @@ void Terrain::prepareMaterial(SceneGraphNode const* const sgn){
 	terrainShader->UniformTexture("texDiffuse0", 3);
 	terrainShader->UniformTexture("texDiffuse1", 4);
 	terrainShader->UniformTexture("texDiffuse2", 5);
+
 	if(_alphaTexturePresent){
-		_terrainTextures[5]->Bind(6); //AlphaMap: Alpha
+		_terrainTextures[TERRAIN_TEXTURE_ALPHA]->Bind(6); //AlphaMap: Alpha
 		terrainShader->UniformTexture("texDiffuse3",6);
 	}
 }
 
 void Terrain::releaseMaterial(){
 
-	if(_alphaTexturePresent) _terrainTextures[5]->Unbind(6);
-	_terrainTextures[4]->Unbind(5);
-	_terrainTextures[3]->Unbind(4);
-	_terrainTextures[2]->Unbind(3);
-	_terrainTextures[1]->Unbind(2);
-	_terrainTextures[0]->Unbind(1);
-	_terrainDiffuseMap->Unbind(0);
+	if(_alphaTexturePresent) _terrainTextures[TERRAIN_TEXTURE_ALPHA]->Unbind(6);
+	_terrainTextures[TERRAIN_TEXTURE_BLUE]->Unbind(5);
+	_terrainTextures[TERRAIN_TEXTURE_GREEN]->Unbind(4);
+	_terrainTextures[TERRAIN_TEXTURE_RED]->Unbind(3);
+	_terrainTextures[TERRAIN_TEXTURE_CAUSTICS]->Unbind(2);
+	_terrainTextures[TERRAIN_TEXTURE_NORMALMAP]->Unbind(1);
+	_terrainTextures[TERRAIN_TEXTURE_DIFFUSE]->Unbind(0);
 }
 
 void Terrain::render(SceneGraphNode* const sgn){

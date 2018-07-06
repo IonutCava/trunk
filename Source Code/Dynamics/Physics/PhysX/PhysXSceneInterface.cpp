@@ -73,7 +73,7 @@ void PhysXSceneInterface::updateActor(PxRigidActor* actor){
    while (nShapes--){ 
       updateShape(shapes[nShapes], t); 
    } 
-   delete [] shapes;
+   SAFE_DELETE_ARRAY(shapes);
 }
 
 void PhysXSceneInterface::updateShape(PxShape* shape, Transform* t){
@@ -162,7 +162,8 @@ void PhysXSceneInterface::addToSceneGraph(PxRigidActor* actor){
 		   }
 		}break;
 	} 
-    delete [] shapes;
+    SAFE_DELETE_ARRAY(shapes);
+
 	if(actorGeometry){
 		_creationMutex.lock();
 		SceneGraphNode* tempNode = _parentScene->addGeometry(actorGeometry);

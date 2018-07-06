@@ -20,13 +20,12 @@
 
 #include "ResourceLoader.h"
 #include "ResourceDescriptor.h"
-#include "Managers/Headers/BaseCache.h" 
 
 ///Resource Cache responsibilities:
 /// - keep track of already loaded resources
 /// - load new resources using apropriate resource loader and store them in cache
 /// - remove resources by name / pointer or remove all
-DEFINE_SINGLETON_EXT1( ResourceCache, BaseCache )
+DEFINE_SINGLETON( ResourceCache )
 
 public:
 	///Each resource entity should have a 'resource name'Loader implementation.
@@ -46,24 +45,31 @@ public:
 		return ptr;
 	}
 
+	Resource* const find(const std::string& name);
+	bool scheduleDeletion(Resource* resource, bool force = false);
 	void add(const std::string& name, Resource* const resource);
 
 protected:
-	~ResourceCache() {
-		PRINT_FN("Destroying resource cache ...");
-		PRINT_FN("Deleting resource cache ...");
-	}
+	~ResourceCache();
+	///Empty the entire cache of resources
+	void Destroy();
 	///this method handles cache lookups and reference counting
 	Resource* loadResource(const std::string& name);
+	///unload a single resource and pend deletion
+	bool remove(Resource* const resource,bool force);
 	///multithreaded resource creation
 	Lock _creationMutex;
+
+	typedef unordered_map<std::string, Resource*> ResourceMap;
+	ResourceMap _resDB;
+
+
 
 END_SINGLETON
 
 template<class T>
 inline void RemoveResource(T*& resource, bool force = false){
-	if(ResourceCache::getInstance().remove(resource,force)){
-		ResourceCache::getInstance().eraseEntry(resource->getName());
+	if(ResourceCache::getInstance().scheduleDeletion(resource,force)){
 		SAFE_DELETE(resource);
 	}
 }

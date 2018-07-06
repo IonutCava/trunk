@@ -5,7 +5,7 @@
 bool Texture::_generateMipmaps = true;
 unordered_map<U8, U32> Texture::textureBoundMap;
 
-Texture::Texture(bool flipped) : Resource(),
+Texture::Texture(bool flipped) : HardwareResource(),
 								_flipped(flipped),
 								_minFilter(LINEAR_MIPMAP_LINEAR),
 								_magFilter(LINEAR_MIPMAP_LINEAR),

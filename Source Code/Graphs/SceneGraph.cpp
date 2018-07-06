@@ -19,7 +19,7 @@ void SceneGraph::update(){
 void SceneGraph::render(){
 
 	if(!_scene){
-		_scene = SceneManager::getInstance().getActiveScene();
+		_scene = GET_ACTIVE_SCENE();
 	}
 	ParamHandler& par = ParamHandler::getInstance();
 	update(); ///< Call the very first update and the last one to take place before "processRenderQueue"

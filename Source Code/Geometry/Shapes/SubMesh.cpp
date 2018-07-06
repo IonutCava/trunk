@@ -148,10 +148,11 @@ void SubMesh::updateAnimations(D32 timeIndex){
 	}
 
 }
-void SubMesh::renderSkeleton(){
+void SubMesh::renderSkeleton(SceneGraphNode* const sgn){
 	// update possible animation
 	if(_renderSkeleton) {
 		assert(_animator != NULL);
+		_animator->setGlobalMatrix(sgn->getTransform()->getGlobalMatrix());
 		_animator->RenderSkeleton(_deltaTime);
 	}
 }

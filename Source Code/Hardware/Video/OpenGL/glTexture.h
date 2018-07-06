@@ -24,10 +24,9 @@
 class glTexture : public Texture {
 
 public:
-	glTexture(U32 type, bool flipped = false) : Texture(flipped), _type(type) {}
-	~glTexture() {}
+	glTexture(U32 type, bool flipped = false);
+	~glTexture();
 
-	bool load(const std::string& name);
 	bool unload() {Destroy(); return true;}
 
 	void Bind(U16 unit);
@@ -35,12 +34,14 @@ public:
 
 	void LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d);
 
+protected:
+	bool generateHWResource(const std::string& name);
+
 private:
 
 	void Bind() const;
 	void Unbind() const;
 	void Destroy();
-	void Gen();
 
 private:
 	U32 _type;

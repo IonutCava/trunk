@@ -1,7 +1,7 @@
 #include "Headers/Application.h"
 
 #include "GUI/Headers/GUI.h"
-#include "Utility/Headers/Guardian.h"
+#include "Utility/Headers/Kernel.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/CameraManager.h"
 #include "Managers/Headers/LightManager.h"
@@ -34,7 +34,7 @@ Application::Application() :
 	 angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
 	 mainWindowId = -1;
 	 _previewDepthMaps = false;
-	 CameraManager::getInstance().add("defaultCamera",_camera);
+	 CameraManager::getInstance().addNewCamera("defaultCamera",_camera);
 	 ///If camera has been updated
 	 _camera->addUpdateListener(boost::bind(&LightManager::update, ///< force all lights to update
 										    boost::ref(LightManager::getInstance()),true));
@@ -123,7 +123,7 @@ void Application::Deinitialize(){
 	PRINT_FN("Closing application!");
 	PHYSICS_DEVICE.exitPhysics();
 	PostFX::getInstance().DestroyInstance();
-	Guardian::getInstance().TerminateApplication(); ///Free resources
+	Kernel::getInstance().TerminateApplication(); ///Free resources
 	PRINT_FN("Closing hardware interface(GFX,SFX,PhysX, input,network) engine ...");
 	_SFX.closeAudioApi();
 	_SFX.DestroyInstance();

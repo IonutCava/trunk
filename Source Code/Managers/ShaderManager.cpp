@@ -60,8 +60,7 @@ I8  ShaderManager::shaderFileWrite(char *atomName, char *s){
 void ShaderManager::removeShader(Shader* s){
 	std::string name = s->getName();
 	if(_shaders.find(name) != _shaders.end()){
-		s->Release();
-		if(s->getRefCount() == 0){
+		if(s->SubRef()){
 			SAFE_DELETE(_shaders[name]);
 			_shaders.erase(name);
 		}
@@ -84,8 +83,7 @@ Shader* ShaderManager::loadShader(const std::string& name, const std::string& so
 	}
 	s = GFX_DEVICE.newShader(name, type);
 	if(!s->load(source)){
-		delete s;
-		s = NULL;
+		SAFE_DELETE(s);
 	}else{
 		_shaders.insert(std::make_pair(name,s));
 	}
@@ -94,9 +92,10 @@ Shader* ShaderManager::loadShader(const std::string& name, const std::string& so
 
 bool ShaderManager::unbind(){
 	if(!_nullShader){
-		_nullShader = static_cast<ShaderProgram* >(FindResource("NULL"));
+		_nullShader = static_cast<ShaderProgram* >(FindResource("NULL_SHADER"));
 		if(!_nullShader){
-			_nullShader = CreateResource<ShaderProgram>(ResourceDescriptor("NULL"));
+			_nullShader = CreateResource<ShaderProgram>(ResourceDescriptor("NULL_SHADER"));
+			///the null shader should never be NULL!!!!
 			assert(_nullShader != NULL); //LoL -Ionut
 		}
 	}

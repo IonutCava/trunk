@@ -21,13 +21,6 @@ ParticleEmitter::ParticleEmitter() : SceneNode(TYPE_PARTICLE_EMITTER),
 ParticleEmitter::~ParticleEmitter(){
 }
 
-
-///SceneNode concrete implementations
-bool ParticleEmitter::load(const std::string& name){
-	setName(name);
-	return true;
-}
-
 bool ParticleEmitter::unload(){
 	if(_impostor){
 		_particleEmitterSGN->removeNode(_impostorSGN);

@@ -19,6 +19,7 @@
 #define _MATERIAL_H_
 
 #include "core.h"
+#include "Utility/Headers/XMLParser.h"
 #include "Core/Resources/Headers/Resource.h"
 
 
@@ -84,7 +85,6 @@ public:
   Material();
   ~Material();
 
-  bool load(const std::string& name) {_name = name; return true;}
   bool unload();
 
   inline void setHardwareSkinning(bool state)    {_hardwareSkinning = state;}
@@ -111,11 +111,11 @@ public:
   inline F32   getOpacityValue()    {return _opacity;}
   inline U8    getTextureCount()    {return _textures.size();}
 
-  inline ShadingMode             getShadingMode()                          {return _shadingMode;}
-  inline RenderStateBlock*       getRenderState(RENDER_STAGE currentStage) {return _defaultRenderStates[currentStage];}
+  inline ShadingMode             getShadingMode()                               {return _shadingMode;}
+  inline RenderStateBlock*       getRenderState(RENDER_STAGE currentStage)      {return _defaultRenderStates[currentStage];}
   inline U32               const getTextureOperation(TextureUsage textureUsage) {return _textureOperationTable[_operations[textureUsage]];}
-         Texture2D*	       const getTexture(TextureUsage textureUsage);
-         ShaderProgram*    const getShaderProgram();
+  inline Texture2D*	       const getTexture(TextureUsage textureUsage)          {return _textures[textureUsage];}
+  inline ShaderProgram*    const getShaderProgram()                             {return _shaderRef;}
 
   inline bool isDirty()       {return _dirty;}
   inline bool isDoubleSided() {return _doubleSided;}
@@ -134,7 +134,7 @@ public:
   TextureOperation getTextureOperation(U32 op);
 
   void computeLightShaders(); //Set shaders;
-  void dumpToXML();
+  inline void dumpToXML() {XML::dumpMaterial(this);}
 
 private:
   vec4<F32> _diffuse;           /* diffuse component */

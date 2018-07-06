@@ -52,16 +52,19 @@ public:
 	void updateVisualInformation();
 	/// Called from SceneGraph "sceneUpdate"
 	void sceneUpdate(D32 sceneTime);
-/*Node Management*/
-template<class T>
-       T*                     getNode();
-inline SceneNode*             getNode() {return _node;}
-       SceneGraphNode*        addNode(SceneNode* const node,const std::string& name = "");
-	   void			          removeNode(SceneGraphNode* node);
-	   ///Find a node in the graph based on the SceneGraphNode's name
-	   ///If sceneNodeName = true, find a node in the graph based on the SceneNode's name
-	   SceneGraphNode*        findNode(const std::string& name, bool sceneNodeName = false);
-const  std::string&           getName(){return _name;}
+	/*Node Management*/
+	template<class T>
+	///Always use the level of redirection needed to reduce virtual function overhead
+	///Use getNode<SceneNode> if you need material properties for ex. or getNode<SubMesh> for animation transforms
+	inline T* getNode() {assert(_node != NULL); return dynamic_cast<T*>(_node);}
+
+    SceneGraphNode* addNode(SceneNode* const node,const std::string& name = "");
+	void			removeNode(SceneGraphNode* node);
+	///Find a node in the graph based on the SceneGraphNode's name
+	///If sceneNodeName = true, find a node in the graph based on the SceneNode's name
+	SceneGraphNode* findNode(const std::string& name, bool sceneNodeName = false);
+
+const  std::string& getName(){return _name;}
 /*Node Management*/
 
 /*Parent <-> Children*/

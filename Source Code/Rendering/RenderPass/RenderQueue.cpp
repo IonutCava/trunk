@@ -7,7 +7,7 @@ RenderQueueItem::RenderQueueItem(P32 sortKey, SceneGraphNode *node ) : _node( no
 																	   _sortKey( sortKey ) {
 	/// Defaulting to a null state hash
 	_stateHash = 0;
-	Material* mat = _node->getNode()->getMaterial();
+	Material* mat = _node->getNode<SceneNode>()->getMaterial();
 	/// If we have a material
 	if(mat){
 		/// Sort by state hash depending on the current rendering stage
@@ -74,8 +74,8 @@ struct RenderQueueDistanceBacktoFront{
 		F32 dist_a = a._node->getBoundingBox().nearestDistanceFromPoint(eye);
 		F32 dist_b = b._node->getBoundingBox().nearestDistanceFromPoint(eye);
 		///ToDo: REMOVE WATER DISTANCE CHECK HACK!!!!!!
-		if(a._node->getNode()->getType() == TYPE_WATER) return true;
-		if(b._node->getNode()->getType() == TYPE_WATER) return false;
+		if(a._node->getNode<SceneNode>()->getType() == TYPE_WATER) return true;
+		if(b._node->getNode<SceneNode>()->getType() == TYPE_WATER) return false;
 		return dist_a < dist_b;
 	}
 };
@@ -107,12 +107,12 @@ void RenderQueue::sort(){
 void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn){
 	assert(sgn != NULL);
 	WriteLock w_lock(_renderQueueGetMutex);
-	if(sgn->getNode()){
+	if(sgn->getNode<SceneNode>()){
 		P32 key;
-		Material* nodeMaterial = sgn->getNode()->getMaterial();
+		Material* nodeMaterial = sgn->getNode<SceneNode>()->getMaterial();
 		if(nodeMaterial){
 			key = nodeMaterial->getMaterialId();
-			if(sgn->getNode()->getMaterial()->isTranslucent() || sgn->getNode()->getType() == TYPE_WATER){
+			if(sgn->getNode<SceneNode>()->getMaterial()->isTranslucent() || sgn->getNode<SceneNode>()->getType() == TYPE_WATER){
 				_translucentStack.push_back(RenderQueueItem(key,sgn));
 			}else{
 				_opaqueStack.push_back(RenderQueueItem(key,sgn));

@@ -41,8 +41,7 @@ class Mesh : public Object3D {
 public:
 	Mesh() : Object3D(MESH), _visibleToNetwork(true),
 							 _playAnimations(true),
-							 _hasAnimations(false),
-							 _loaded(false)
+							 _hasAnimations(false)
 	{
 		_refreshVBO = false;
 	}
@@ -55,8 +54,6 @@ public:
 	void updateTransform(SceneGraphNode* const sgn);
 	inline std::vector<std::string>&   getSubMeshes()   {return _subMeshes;}
 	inline bool hasAnimations() {return _hasAnimations;}
-
-	bool load(const std::string& name) {_name = name;	return true; }
 
 	void postLoad(SceneGraphNode* const sgn);
 	inline void render(SceneGraphNode* const sgn){};
@@ -73,7 +70,7 @@ protected:
 
 	void computeNormals(){}
 	void computeTangents(){}	
-	bool						 _visibleToNetwork, _loaded;
+	bool						 _visibleToNetwork;
 	bool                         _playAnimations;
 	bool                         _hasAnimations;
 	std::vector<std::string >	 _subMeshes;

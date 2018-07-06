@@ -6,7 +6,9 @@ TerrainDescriptor* ImplResourceLoader<TerrainDescriptor>::operator()(){
 	TerrainDescriptor* ptr = New TerrainDescriptor();
 
 	assert(ptr != NULL);
-	if(!ptr->load(_descriptor.getName())) return NULL;
+	if(!load(ptr,_descriptor.getName())) return NULL;
 
 	return ptr;
 }
+
+DEFAULT_LOADER_IMPL(TerrainDescriptor)

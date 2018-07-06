@@ -18,15 +18,14 @@
 #ifndef _SHADER_HANDLER_H_
 #define _SHADER_HANDLER_H_
 
-#include "Core/Resources/Headers/Resource.h"
-#include <assimp/anim.h>
+#include "Core/Resources/Headers/HardwareResource.h"
+
 class Shader;
 enum SHADER_TYPE;
-class ShaderProgram : public Resource {
+class ShaderProgram : public HardwareResource {
 
 public:
-	virtual bool load(const std::string& name);
-	
+
 	virtual void bind();
 	virtual void unbind();
 	
@@ -34,6 +33,7 @@ public:
 
 	virtual void attachShader(Shader* shader) = 0;
 	std::vector<Shader* > getShaders(SHADER_TYPE type);
+
 	///Attributes
 	virtual void Attribute(const std::string& ext, D32 value) = 0;
 	virtual void Attribute(const std::string& ext, F32 value) = 0 ;
@@ -60,12 +60,17 @@ public:
 	inline void commit() {if(!_compiled) {link(); validate();}}
 
 	inline bool isBound() {return _bound;}
+
 protected:
+	ShaderProgram() : HardwareResource(), _compiled(false), _shaderProgramId(-1) {}
+
 	virtual void validate() = 0;
 	virtual void link() = 0;
-	ShaderProgram() : Resource(), _compiled(false) {}
-	
-	static bool checkBinding(U32 newShaderProgramId);
+	template<typename T>
+	friend class ImplResourceLoader;
+	virtual bool generateHWResource(const std::string& name);
+	static  bool checkBinding(U32 newShaderProgramId);
+
 protected:
 	bool _compiled;
 	bool _bound;

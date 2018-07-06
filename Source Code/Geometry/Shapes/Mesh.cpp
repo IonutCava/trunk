@@ -2,8 +2,6 @@
 #include "Headers/SubMesh.h"
 #include "Managers/Headers/SceneManager.h"
 
-using namespace std;
-
 void Mesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 	if(!ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")) return;
 	if(sgn->updateBB()){
@@ -49,12 +47,11 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
 		}
 	}
 	Object3D::postLoad(sgn);
-	_loaded = true;
 }
 
 void Mesh::onDraw(){
 
-	if(!_loaded) return;
+	if(!isLoaded()) return;
 	_playAnimations = ParamHandler::getInstance().getParam<bool>("mesh.playAnimations");
 	Object3D::onDraw();
 }

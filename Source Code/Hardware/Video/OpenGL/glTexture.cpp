@@ -3,12 +3,16 @@
 #include "core.h"
 #include "glTexture.h"
 #include "Hardware/Video/GFXDevice.h"
-using namespace std;
 
-bool glTexture::load(const string& name){
-	PRINT_FN("Loading Texture File [ %s ]",name.c_str());
-	Gen();
-	if(_handle == 0)	return false;
+glTexture::glTexture(U32 type, bool flipped) : Texture(flipped), _type(type) {}
+
+glTexture::~glTexture(){}
+
+bool glTexture::generateHWResource(const std::string& name) {
+
+	Destroy();
+	glGenTextures(1, &_handle);
+	if(_handle == 0) return false;
 
 	Bind();
 	glWrapTable[TextureWrap_Repeat] = GL_REPEAT;
@@ -40,8 +44,8 @@ bool glTexture::load(const string& name){
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, glWrapTable[/*_wrapW*/TextureWrap_Clamp]);
 
 		I8 i=0;
-		stringstream ss( name );
-		string it;
+		std::stringstream ss( name );
+		std::string it;
 		while(std::getline(ss, it, ' ')) {
 			if(!LoadFile(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, it))
 				return false;
@@ -50,11 +54,11 @@ bool glTexture::load(const string& name){
 	}
 
 	Unbind();
-	return true;
+	return Texture::generateHWResource(name);
 }
 
-void glTexture::LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d)
-{
+void glTexture::LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d) {
+
 	///If the current texture is a 2D one, than converting it to n^2 by n^2 dimensions will result in faster
 	///rendering for the cost of a slightly higher loading overhead
 	///The conversion code is based on the glmimg code from the glm library;
@@ -78,8 +82,7 @@ void glTexture::LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d)
     
 		if((w != xSize2) || (h != ySize2)) {
 			U8* rdata = New U8[xSize2*ySize2*d];
-			gluScaleImage(d==3?GL_RGB:GL_RGBA, w, h,GL_UNSIGNED_BYTE, img,
-									   xSize2, ySize2, GL_UNSIGNED_BYTE, rdata);
+			gluScaleImage(d==3?GL_RGB:GL_RGBA, w, h,GL_UNSIGNED_BYTE, img, xSize2, ySize2, GL_UNSIGNED_BYTE, rdata);
 			delete[] img;
 			img = rdata;
 			w = xSize2; h = ySize2;
@@ -102,24 +105,18 @@ void glTexture::LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d)
 	glTexImage2D(target, 0, depth, w, h, 0, depth, GL_UNSIGNED_BYTE, img);
 }
 
-
-void glTexture::Gen()
-{
-	Destroy();
-	glGenTextures(1, &_handle);
-}
-
-
 void glTexture::Destroy(){
 	glDeleteTextures(1, &_handle);
 }
 
 void glTexture::Bind() const {
+
 	glBindTexture(_type, _handle);
 	Texture::Bind();
 }
 
 void glTexture::Bind(U16 unit)  {
+
 	if(checkBinding(unit,_handle)){ //prevent double bind
 		glActiveTexture(GL_TEXTURE0+unit);
 		glEnable(_type);

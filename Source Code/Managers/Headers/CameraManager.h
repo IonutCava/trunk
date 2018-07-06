@@ -15,23 +15,27 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "core.h"
 #ifndef _CAMERA_MANAGER_H
 #define _CAMERA_MANAGER_H
 
-#include "BaseCache.h"
+#include "core.h"
 #include "Rendering/Camera/Headers/Camera.h"
 
-class FreeFlyCamera;
-DEFINE_SINGLETON_EXT1(CameraManager,BaseCache)
+DEFINE_SINGLETON(CameraManager)
+typedef unordered_map<std::string, Camera*> CameraPool;
 
 public:
 	Camera* const getActiveCamera();
 	void setActiveCamera(const std::string& name);
+	void addNewCamera(const std::string& cameraName, Camera* const camera);
 
 private:
-	CameraManager() {_camera = NULL;}
+	CameraManager();
+	~CameraManager();
+
+private:
 	Camera* _camera;
+	CameraPool _cameraPool;
 
 END_SINGLETON
 

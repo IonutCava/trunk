@@ -1,5 +1,4 @@
 #include "Headers/TerrainChunk.h"
-#include "Utility/Headers/Guardian.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Graphs/Headers/SceneGraph.h"
@@ -10,7 +9,7 @@ void TerrainChunk::Load(U8 depth, vec2<U32> pos, vec2<U32> HMsize){
 
 	for(U8 i=0; i < TERRAIN_CHUNKS_LOD; i++)
 		ComputeIndicesArray(i, depth, pos, HMsize);
-	_grassVisibility = SceneManager::getInstance().getActiveScene()->getGrassVisibility();
+	_grassVisibility = GET_ACTIVE_SCENE()->getGrassVisibility();
 }
 
 
@@ -20,7 +19,7 @@ void TerrainChunk::addTree(const vec4<F32>& pos,F32 scale, const FileData& tree,
 	model.setFlag(true);
 	Mesh* tempTree = CreateResource<Mesh>(model);
 	if(tempTree){
-		stringstream ss; ss << "_" << tempTree->getRefCount();
+		std::stringstream ss; ss << "_" << tempTree->getRefCount();
 		std::string treeName(tempTree->getName()+ss.str());
 		ss.clear();
 		SceneGraphNode* treeNode = parentNode->addNode(tempTree,treeName);
@@ -31,7 +30,7 @@ void TerrainChunk::addTree(const vec4<F32>& pos,F32 scale, const FileData& tree,
 		treeTransform->translate(vec3<F32>(pos));
 		for_each(SceneGraphNode::NodeChildren::value_type& it, treeNode->getChildren()){
 			assert(it.second);
-			Material* m = (it.second)->getNode()->getMaterial();
+			Material* m = (it.second)->getNode<SceneNode>()->getMaterial();
 			if(m){
 				if(m->getTexture(Material::TEXTURE_BUMP)){
 					m->setShaderProgram("tree.Bump");

@@ -8,7 +8,6 @@
 #include "GUI/Headers/GUI.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
-using namespace std;
 
 //vec4<F32> _lightPosition(0,16,6,0.0);
 
@@ -68,7 +67,7 @@ void PingPongScene::serveBall(){
 void PingPongScene::test(boost::any a, CallbackParam b){
 	if(getEvents().empty()) return;
 	bool updated = false;
-	string message;
+	std::string message;
 	Transform* ballTransform = _ballSGN->getTransform();
 	vec3<F32> ballPosition  = ballTransform->getPosition();
 
@@ -212,7 +211,8 @@ void PingPongScene::processInput(){
 	}
 }
 
-bool PingPongScene::load(const string& name){
+bool PingPongScene::load(const std::string& name){
+
 	setInitialData();
 	bool state = false;
 	///Add a light

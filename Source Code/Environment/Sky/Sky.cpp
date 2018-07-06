@@ -8,8 +8,6 @@
 #include "Hardware/Video/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
-using namespace std;
-
 Sky::Sky() : _skyShader(NULL), _skybox(NULL), _init(false), _exclusionMask(0){}
 
 Sky::~Sky(){
@@ -20,19 +18,19 @@ Sky::~Sky(){
 
 bool Sky::load() {
 	if(_init) return false;
-   	string location = ParamHandler::getInstance().getParam<string>("assetsLocation")+"/misc_images/";
+   	std::string location = ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/misc_images/";
 	ResourceDescriptor skybox("SkyBox");
 	skybox.setFlag(true); //no default material;
 	_sky = CreateResource<Sphere3D>(skybox);
 	_sky->setResolution(4);
-	_skyNode = SceneManager::getInstance().getActiveScene()->getSceneGraph()->getRoot()->addNode(_sky);
+	_skyNode = GET_ACTIVE_SCENE()->getSceneGraph()->getRoot()->addNode(_sky);
 	_sky->setDrawState(false);
 	ResourceDescriptor sun("Sun");
 	sun.setFlag(true);
 	_sun = CreateResource<Sphere3D>(sun);
 	_sun->setResolution(16);
 	_sun->setRadius(0.1f);
-	_sunNode = SceneManager::getInstance().getActiveScene()->getSceneGraph()->getRoot()->addNode(_sun);
+	_sunNode = GET_ACTIVE_SCENE()->getSceneGraph()->getRoot()->addNode(_sun);
 	_sun->setDrawState(false);
 	ResourceDescriptor skyboxTextures("SkyboxTextures");
 	skyboxTextures.setResourceLocation(location+"skybox_2.jpg "+ location+"skybox_1.jpg "+

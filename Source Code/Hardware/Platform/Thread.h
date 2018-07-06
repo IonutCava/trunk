@@ -18,4 +18,8 @@
 #ifndef _THREAD_H_
 #define _THREAD_H_
 
+#include "threadpool.hpp"
+#include <boost/thread/thread.hpp>
+#include <boost/thread/locks.hpp>
+
 #endif

@@ -4,7 +4,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
-using namespace std;
+
 
 void DX_API::initHardware()
 {

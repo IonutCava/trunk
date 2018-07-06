@@ -28,8 +28,8 @@ public:
 									  _font(((void *)0x0000)/*GLUT_STROKE_ROMAN*/)
 									  {}
 	
-	inline bool load(const std::string &name) {_name = name; _text = name; return true;}
 
+	inline bool setInitialData(const std::string& name) {_text = name; return true;}
 	inline std::string&  getText()    {return _text;}
 	inline void*		 getFont()    {return _font;}
 	inline F32&			 getWidth()   {return _width;}

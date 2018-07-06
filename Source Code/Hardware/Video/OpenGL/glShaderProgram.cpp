@@ -10,17 +10,15 @@
 #include "Managers/Headers/ShaderManager.h"
 #include <boost/algorithm/string.hpp>
 
-using namespace std;
-glShaderProgram::glShaderProgram() : ShaderProgram(),
-								     _loaded(false){
-		_shaderProgramId = glCreateProgram();
-}
+glShaderProgram::glShaderProgram() : ShaderProgram() {}
 
 glShaderProgram::~glShaderProgram() {
-	for_each(Shader* s, _shaders){
-		glDetachShader(_shaderProgramId, s->getShaderId());
+	if(_shaderProgramId != -1){
+		for_each(Shader* s, _shaders){
+			glDetachShader(_shaderProgramId, s->getShaderId());
+		}
+  		glDeleteProgram(_shaderProgramId);
 	}
-  	glDeleteProgram(_shaderProgramId);
 }
 
 void glShaderProgram::validate() {
@@ -51,23 +49,27 @@ void glShaderProgram::attachShader(Shader *shader){
 
 /// Creation of a new shader program.
 /// Pass in a shader token and use glsw to load the corresponding effects
-bool glShaderProgram::load(const string& name){
+bool glShaderProgram::generateHWResource(const std::string& name){
 	///Set the name and compilation state
 	_name = name;
 	_compiled = false;
+	bool loaded = false;
+
 	///NULL shader means use shaderProgram(0)
-	if(name.compare("NULL") == 0){
-		glDeleteProgram(_shaderProgramId);
+	if(name.compare("NULL_SHADER") == 0){
 		_shaderProgramId = 0;
-		_loaded = true;
-		return _loaded;
+		loaded = true;
+		return true;
 	}
+
 	///If this program wasn't previously loaded (unload first to load again)
-	if(!_loaded){
+	if(!loaded){
+		///Create a new program
+		_shaderProgramId = glCreateProgram();
 		///Init glsw library
 		glswInit();
 		///Use the specified shader path
-	    glswSetPath(string(getResourceLocation()+"GLSL/").c_str(), ".glsl");
+	    glswSetPath(std::string(getResourceLocation()+"GLSL/").c_str(), ".glsl");
 		glswAddDirectiveToken("", "#version 120\n/*“Copyright 2009-2012 DIVIDE-Studio”*/");
 		///Split the shader name to get the effect file name and the effect properties 
 		std::string shaderName = name.substr(0,name.find_first_of("."));
@@ -76,12 +78,12 @@ bool glShaderProgram::load(const string& name){
 		///The rest of the shader properties are added later
 		size_t propPositionVertex = name.find_first_of(",");
 		size_t propPosition = name.find_first_of(".");
-		if(propPosition !=string::npos){
+		if(propPosition != std::string::npos){
 			shaderProperties = "."+ name.substr(propPosition+1,propPositionVertex-propPosition-1);
 		}
 	
 		std::string vertexProperties;
-		if(propPositionVertex !=string::npos){
+		if(propPositionVertex != std::string::npos){
 			vertexProperties = "."+name.substr(propPositionVertex+1);
 		}
 		
@@ -169,14 +171,12 @@ bool glShaderProgram::load(const string& name){
 		commit();
 		///Shut down glsw and clean memory
 		glswShutdown();
-		_loaded = true;
+		loaded = true;
 	}
-	if(_loaded){
-		return ShaderProgram::load(name);
+	if(loaded){
+		return ShaderProgram::generateHWResource(name);
 	}
 	return false;
-		
-	 _loaded;
 }
 
 bool glShaderProgram::flushLocCache(){
@@ -218,9 +218,13 @@ void glShaderProgram::link(){
 }
 
 void glShaderProgram::bind() {
-	if(checkBinding(_shaderProgramId)){ //prevent double bind
+	///If we did not create the hardware resource, do not try and bind it, as it is invalid
+	if(_shaderProgramId == -1) return; 
+	///prevent double bind
+	if(checkBinding(_shaderProgramId)){
 		GLCheck(glUseProgram(_shaderProgramId));
-		ShaderProgram::bind(); //send default uniforms to GPU;
+		///send default uniforms to GPU;
+		ShaderProgram::bind();
 	}
 }
 
@@ -267,35 +271,35 @@ void glShaderProgram::Attribute(const std::string& ext, const vec4<F32>& value){
 }
 
 
-void glShaderProgram::Uniform(const string& ext, I32 value){
+void glShaderProgram::Uniform(const std::string& ext, I32 value){
 	I32 loc = cachedLoc(ext);
 	if(loc != -1){
 		GLCheck(glUniform1i(loc, value));
 	}
 }
 
-void glShaderProgram::Uniform(const string& ext, F32 value){
+void glShaderProgram::Uniform(const std::string& ext, F32 value){
 	I32 loc = cachedLoc(ext);
 	if(loc != -1){
 		GLCheck(glUniform1f(loc, value));
 	}
 }
 
-void glShaderProgram::Uniform(const string& ext, const vec2<F32>& value){
+void glShaderProgram::Uniform(const std::string& ext, const vec2<F32>& value){
 	I32 loc = cachedLoc(ext);
 	if(loc != -1){
 		GLCheck(glUniform2fv(loc, 1, value));
 	}
 }
 
-void glShaderProgram::Uniform(const string& ext, const vec3<F32>& value){
+void glShaderProgram::Uniform(const std::string& ext, const vec3<F32>& value){
 	I32 loc = cachedLoc(ext);
 	if(loc != -1){
 		GLCheck(glUniform3fv(loc, 1, value));
 	}
 }
 
-void glShaderProgram::Uniform(const string& ext, const vec4<F32>& value){
+void glShaderProgram::Uniform(const std::string& ext, const vec4<F32>& value){
 	I32 loc = cachedLoc(ext);
 	if(loc != -1){
 		GLCheck(glUniform4fv(loc, 1, value));
@@ -316,7 +320,7 @@ void glShaderProgram::Uniform(const std::string& ext, const mat4<F32>& value, bo
 	}
 }
 
-void glShaderProgram::Uniform(const std::string& ext, const vector<mat4<F32> >& values, bool rowMajor){
+void glShaderProgram::Uniform(const std::string& ext, const std::vector<mat4<F32> >& values, bool rowMajor){
 	I32 loc = cachedLoc(ext);
 	if(loc != -1){
 		GLCheck(glUniformMatrix4fv(loc,values.size(), rowMajor,values[0]));

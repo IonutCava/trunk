@@ -9,7 +9,7 @@
 #include "GUI/Headers/GUI.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
-using namespace std;
+
 
 bool MainScene::updateLights(){
 	Light* light = LightManager::getInstance().getLight(0);
@@ -108,7 +108,8 @@ void MainScene::processEvents(F32 time){
 	}
 }
 
-bool MainScene::load(const string& name){
+bool MainScene::load(const std::string& name){
+
 	setInitialData();
 	bool state = false;
 	 _mousePressed = false;
@@ -236,14 +237,14 @@ bool MainScene::loadResources(bool continueOnErrors){
 							0.0f );
 
 
-	Event_ptr boxMove(New Event(30,true,false,boost::bind(&MainScene::test,this,string("test"),TYPE_STRING)));
+	Event_ptr boxMove(New Event(30,true,false,boost::bind(&MainScene::test,this,std::string("test"),TYPE_STRING)));
 	addEvent(boxMove);
 	ResourceDescriptor backgroundMusic("background music");
-	backgroundMusic.setResourceLocation(_paramHandler.getParam<string>("assetsLocation")+"/music/background_music.ogg");
+	backgroundMusic.setResourceLocation(_paramHandler.getParam<std::string>("assetsLocation")+"/music/background_music.ogg");
 	backgroundMusic.setFlag(true);
 
 	ResourceDescriptor beepSound("beep sound");
-	beepSound.setResourceLocation(_paramHandler.getParam<string>("assetsLocation")+"/sounds/beep.wav");
+	beepSound.setResourceLocation(_paramHandler.getParam<std::string>("assetsLocation")+"/sounds/beep.wav");
 	beepSound.setFlag(false);
 	_backgroundMusic = CreateResource<AudioDescriptor>(backgroundMusic);
 	_beep = CreateResource<AudioDescriptor>(beepSound);

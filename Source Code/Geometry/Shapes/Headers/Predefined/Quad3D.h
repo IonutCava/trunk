@@ -69,8 +69,6 @@ public:
 	   //computeTangents();
 	}
 
-	bool load(const std::string &name) { _name = name; return true; }
-
 	enum CornerLocation{
 		TOP_LEFT,
 		TOP_RIGHT,

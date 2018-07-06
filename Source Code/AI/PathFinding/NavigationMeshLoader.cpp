@@ -272,7 +272,7 @@ namespace Navigation {
 			if (modelData->tri_ct)
 				memcpy(nv, modelData->tris, modelData->tri_ct*3*sizeof(int));
 			if( modelData->tris )
-				delete [] modelData->tris;
+				SAFE_DELETE_ARRAY(modelData->tris);
 			modelData->tris = nv;
 		}
 

@@ -84,22 +84,16 @@ namespace Navigation {
 		void clear(bool del = true)  {
 			vert_ct = 0;
 			tri_ct = 0;
-			if(verts)
-				if(del)
-					delete [] verts;
-			verts = 0;
+			if(del)	SAFE_DELETE_ARRAY(verts)
+			else verts = 0;
 			vert_cap = 0;
 			vert_ct = 0;
-			if(tris)
-				if(del)
-					delete [] tris;
-			tris = 0;
+			if(del)	SAFE_DELETE_ARRAY(tris)
+			else tris = 0;
 			tri_cap = 0;
 			tri_ct = 0;
-			if(normals)
-				if(del)
-					delete [] normals;
-			normals = 0;
+			if(del)	SAFE_DELETE_ARRAY(normals)
+			else normals = 0;
 		}
 
 		F32* verts;

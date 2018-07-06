@@ -1,35 +1,36 @@
 #include "Headers/XMLParser.h"
-#include "Headers/Guardian.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/Application.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 #include "SceneList.h"
-using namespace std;
 
-namespace XML
-{
+namespace XML {
+
 	ParamHandler &par = ParamHandler::getInstance();
 	using boost::property_tree::ptree;
 	ptree pt;
 	std::string activeScene("MainScene");
-	void loadScripts(const string& file){
+
+	void loadScripts(const std::string& file){
+
 		PRINT_FN("XML: Loading Scripts!");
 		read_xml(file,pt);
 		par.setParam("scriptLocation",pt.get("scriptLocation","XML"));
 		par.setParam("assetsLocation",pt.get("assets","Assets"));
 		par.setParam("scenesLocation",pt.get("scenes","Scenes"));
 		par.setParam("serverAddress",pt.get("server","127.0.0.1"));
-		loadConfig(par.getParam<string>("scriptLocation") + "/" + pt.get("config","config.xml"));
+		loadConfig(par.getParam<std::string>("scriptLocation") + "/" + pt.get("config","config.xml"));
 
-		read_xml(par.getParam<string>("scriptLocation") + "/" +
-			     par.getParam<string>("scenesLocation") + "/Scenes.xml",pt);
+		read_xml(par.getParam<std::string>("scriptLocation") + "/" +
+			     par.getParam<std::string>("scenesLocation") + "/Scenes.xml",pt);
 		activeScene = pt.get("MainScene",activeScene);
 		loadScene(activeScene); 
 		
 	}
 
-	void loadConfig(const string& file){
+	void loadConfig(const std::string& file) {
+
 		pt.clear();
 		PRINT_F("XML: Loading Configuration settings file: [ %s ]\n", file.c_str());
 		read_xml(file,pt);
@@ -70,13 +71,14 @@ namespace XML
 		par.setParam("mesh.playAnimations",pt.get("mesh.playAnimations",true));
 	}
 
-	void loadScene(const string& sceneName){
+	void loadScene(const std::string& sceneName) {
+
 		pt.clear();
 		SceneManager& scnMGR = SceneManager::getInstance();
 		PRINT_F("XML: Loading scene [ %s ]\n", sceneName.c_str());
 		try{
-			read_xml(par.getParam<string>("scriptLocation") + "/" +
-				     par.getParam<string>("scenesLocation") + "/" +
+			read_xml(par.getParam<std::string>("scriptLocation") + "/" +
+				     par.getParam<std::string>("scenesLocation") + "/" +
 					 sceneName + ".xml", pt);
 		}catch(	boost::property_tree::xml_parser_error & e ){
 			ERROR_FN("Invalid Scene!. Could not find [ %s ]",sceneName.c_str());
@@ -105,8 +107,8 @@ namespace XML
 
 		scene->getWaterLevel() = pt.get("water.waterLevel",RAND_MAX);
 		scene->getWaterDepth() = pt.get("water.waterDepth",-75);
-		std::string sceneLocation = par.getParam<string>("scriptLocation") + "/" + 
-				                    par.getParam<string>("scenesLocation") + "/" + sceneName + "/";
+		std::string sceneLocation = par.getParam<std::string>("scriptLocation") + "/" + 
+				                    par.getParam<std::string>("scenesLocation") + "/" + sceneName + "/";
 
 		loadTerrain(sceneLocation   + pt.get("terrain","terrain.xml"));
 		loadGeometry(sceneLocation  + pt.get("assets","assets.xml"));
@@ -114,33 +116,34 @@ namespace XML
 
 
 
-	void loadTerrain(const string &file){
+	void loadTerrain(const std::string &file) {
+
 		pt.clear();
 		PRINT_F("XML: Loading terrain: [ %s ]\n",file.c_str());
 		read_xml(file,pt);
 		ptree::iterator it;
-		string assetLocation = ParamHandler::getInstance().getParam<string>("assetsLocation") + "/"; 
+		std::string assetLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/"; 
 		for (it = pt.get_child("terrainList").begin(); it != pt.get_child("terrainList").end(); ++it )	{
-			string name = it->second.data(); //The actual terrain name
-			string tag = it->first.data();   //The <name> tag for valid terrains or <xmlcomment> for comments
+			std::string name = it->second.data(); //The actual terrain name
+			std::string tag = it->first.data();   //The <name> tag for valid terrains or <xmlcomment> for comments
 			//Check and skip commented terrain
-			if(tag.find("<xmlcomment>") != string::npos) continue;
+			if(tag.find("<xmlcomment>") != std::string::npos) continue;
 			//Load the rest of the terrain
 			TerrainDescriptor* ter = CreateResource<TerrainDescriptor>(name+"_descriptor");
 			ter->addVariable("terrainName",name);
-			ter->addVariable("heightmap",assetLocation + pt.get<string>(name + ".heightmap"));
-			ter->addVariable("textureMap",assetLocation + pt.get<string>(name + ".textures.map"));
-			ter->addVariable("redTexture",assetLocation + pt.get<string>(name + ".textures.red"));
-			ter->addVariable("greenTexture",assetLocation + pt.get<string>(name + ".textures.green"));
-			ter->addVariable("blueTexture",assetLocation + pt.get<string>(name + ".textures.blue"));
-			ter->addVariable("alphaTexture",assetLocation + pt.get<string>(name + ".textures.alpha","none"));
-			ter->addVariable("normalMap",assetLocation + pt.get<string>(name + ".textures.normalMap"));
-			ter->addVariable("waterCaustics",assetLocation + pt.get<string>(name + ".textures.waterCaustics"));
-			ter->addVariable("grassMap",assetLocation + pt.get<string>(name + ".vegetation.map"));
-			ter->addVariable("grassBillboard1",assetLocation + pt.get<string>(name + ".vegetation.grassBillboard1"));
-			ter->addVariable("grassBillboard2",assetLocation + pt.get<string>(name + ".vegetation.grassBillboard2"));
-			ter->addVariable("grassBillboard3",assetLocation + pt.get<string>(name + ".vegetation.grassBillboard3"));
-			//ter->addVariable("grassBillboard1",pt.get<string>(name + ".vegetation.grassBillboard1"));
+			ter->addVariable("heightmap",assetLocation + pt.get<std::string>(name + ".heightmap"));
+			ter->addVariable("textureMap",assetLocation + pt.get<std::string>(name + ".textures.map"));
+			ter->addVariable("redTexture",assetLocation + pt.get<std::string>(name + ".textures.red"));
+			ter->addVariable("greenTexture",assetLocation + pt.get<std::string>(name + ".textures.green"));
+			ter->addVariable("blueTexture",assetLocation + pt.get<std::string>(name + ".textures.blue"));
+			ter->addVariable("alphaTexture",assetLocation + pt.get<std::string>(name + ".textures.alpha","none"));
+			ter->addVariable("normalMap",assetLocation + pt.get<std::string>(name + ".textures.normalMap"));
+			ter->addVariable("waterCaustics",assetLocation + pt.get<std::string>(name + ".textures.waterCaustics"));
+			ter->addVariable("grassMap",assetLocation + pt.get<std::string>(name + ".vegetation.map"));
+			ter->addVariable("grassBillboard1",assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard1"));
+			ter->addVariable("grassBillboard2",assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard2"));
+			ter->addVariable("grassBillboard3",assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard3"));
+			//ter->addVariable("grassBillboard1",pt.get<std::string>(name + ".vegetation.grassBillboard1"));
 			ter->setGrassDensity(pt.get<U32>(name + ".vegetation.<xmlattr>.grassDensity"));
 			ter->setTreeDensity(pt.get<U16>(name + ".vegetation.<xmlattr>.treeDensity"));
 			ter->setGrassScale(pt.get<F32>(name + ".vegetation.<xmlattr>.grassScale"));
@@ -161,22 +164,22 @@ namespace XML
 		PRINT_F("XML: Number of terrains to load: %d\n",SceneManager::getInstance().getNumberOfTerrains());
 	}
 
-	void loadGeometry(const string &file)
-	{
+	void loadGeometry(const std::string &file) 	{
+
 		pt.clear();
 		PRINT_F("XML: Loading Geometry: [ %s ]\n",file.c_str());
 		read_xml(file,pt);
 		ptree::iterator it;
-		string assetLocation = ParamHandler::getInstance().getParam<string>("assetsLocation")+"/";
+		std::string assetLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/";
+
 		if(boost::optional<ptree &> geometry = pt.get_child_optional("geometry"))
-		for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); ++it )
-		{
-			string name = it->second.data();
-			string format = it->first.data();
-			if(format.find("<xmlcomment>") != string::npos) continue;
+		for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); ++it ) 	{
+			std::string name = it->second.data();
+			std::string format = it->first.data();
+			if(format.find("<xmlcomment>") != std::string::npos) continue;
 			FileData model;
 			model.ItemName = name;
-			model.ModelName  = assetLocation + pt.get<string>(name + ".model");
+			model.ModelName  = assetLocation + pt.get<std::string>(name + ".model");
 			model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x",1);
 			model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y",1);
 			model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z",1);
@@ -190,15 +193,16 @@ namespace XML
 			model.version = pt.get<F32>(name + ".version");
 			SceneManager::getInstance().addModel(model);
 		}
+
 		if(boost::optional<ptree &> vegetation = pt.get_child_optional("vegetation"))
-		for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); ++it )
-		{
-			string name = it->second.data();
-			string format = it->first.data();
-			if(format.find("<xmlcomment>") != string::npos) continue;
+		for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); ++it ) {
+
+			std::string name = it->second.data();
+			std::string format = it->first.data();
+			if(format.find("<xmlcomment>") != std::string::npos) continue;
 			FileData model;
 			model.ItemName = name;
-			model.ModelName  = assetLocation + pt.get<string>(name + ".model");
+			model.ModelName  = assetLocation + pt.get<std::string>(name + ".model");
 			model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
 			model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
 			model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
@@ -212,16 +216,17 @@ namespace XML
 			model.version = pt.get<F32>(name + ".version");
 			SceneManager::getInstance().addModel(model);
 		}
+
 		if(boost::optional<ptree &> primitives = pt.get_child_optional("primitives"))
-		for (it = pt.get_child("primitives").begin(); it != pt.get_child("primitives").end(); ++it )
-		{
-			string name = it->second.data();
-			string format = it->first.data();
-			if(format.find("<xmlcomment>") != string::npos) continue;
+		for (it = pt.get_child("primitives").begin(); it != pt.get_child("primitives").end(); ++it ) {
+
+			std::string name = it->second.data();
+			std::string format = it->first.data();
+			if(format.find("<xmlcomment>") != std::string::npos) continue;
 
 			FileData model;
 			model.ItemName = name;
-			model.ModelName = pt.get<string>(name + ".model");
+			model.ModelName = pt.get<std::string>(name + ".model");
 			model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
 			model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
 			model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
@@ -236,18 +241,14 @@ namespace XML
 			model.color.b    = pt.get<F32>(name + ".color.<xmlattr>.b");
 			/*The data variable stores a float variable (not void*) that can represent anything you want*/
 			/*For Text3D, it's the line width and for Box3D it's the edge length*/
-			if(model.ModelName.compare("Text3D") == 0)
-			{
+			if(model.ModelName.compare("Text3D") == 0){
 				model.data = pt.get<F32>(name + ".lineWidth");
-				model.data2 = pt.get<string>(name + ".text");
-			}
-			else if(model.ModelName.compare("Box3D") == 0)
+				model.data2 = pt.get<std::string>(name + ".text");
+			}else if(model.ModelName.compare("Box3D") == 0)
 				model.data = pt.get<F32>(name + ".size");
-
 			else if(model.ModelName.compare("Sphere3D") == 0)
 				model.data = pt.get<F32>(name + ".radius");
-			else
-				model.data = 0;
+			else model.data = 0;
 			
 			model.type = PRIMITIVE;
 			model.version = pt.get<F32>(name + ".version");
@@ -255,29 +256,29 @@ namespace XML
 		}
 	}
 
-	Material* loadMaterial(const string &file){
+	Material* loadMaterial(const std::string &file){
 	
-		string location = par.getParam<string>("scriptLocation") + "/" + 
-				                    par.getParam<string>("scenesLocation") + "/" +
-									par.getParam<string>("currentScene") + "/materials/";
+		std::string location = par.getParam<std::string>("scriptLocation") + "/" + 
+				                    par.getParam<std::string>("scenesLocation") + "/" +
+									par.getParam<std::string>("currentScene") + "/materials/";
 
 		return loadMaterialXML(location+file);
 		
 	}
 
-	Material* loadMaterialXML(const string &matName){
+	Material* loadMaterialXML(const std::string &matName){
 		pt.clear();
-		ifstream inp;
-		inp.open(string(matName+".xml").c_str(), ifstream::in);
+		std::ifstream inp;
+		inp.open(std::string(matName+".xml").c_str(), std::ifstream::in);
 		inp.close();
 		if(inp.fail()){
-			inp.clear(ios::failbit);
+			inp.clear(std::ios::failbit);
 			return NULL;
 		}
 		bool skip = false;
 		PRINT_FN("Loading material from XML file [ %s ]",matName.c_str());
 		read_xml(matName+".xml",pt);
-		string materialName = matName.substr(matName.rfind("/")+1,matName.length());
+		std::string materialName = matName.substr(matName.rfind("/")+1,matName.length());
 		if(FindResource(materialName)) skip = true;
 		Material* mat = CreateResource<Material>(ResourceDescriptor(materialName));
 		if(skip) return mat;
@@ -319,7 +320,7 @@ namespace XML
 							mat->getTextureOperation(pt.get("specularMap.operation",0)));
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("shaderProgram")){
-			mat->setShaderProgram(pt.get("shaderProgram.effect","NULL"));
+			mat->setShaderProgram(pt.get("shaderProgram.effect","NULL_SHADER"));
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("shadows")){
 			mat->setCastsShadows(pt.get<bool>("shadows.castsShadows", true));
@@ -333,11 +334,11 @@ namespace XML
 		std::string file = mat->getName();
 		file = file.substr(file.rfind("/")+1,file.length());
 
-		std::string location = par.getParam<string>("scriptLocation") + "/" + 
-				                    par.getParam<string>("scenesLocation") + "/" +
-									par.getParam<string>("currentScene") + "/materials/";
+		std::string location = par.getParam<std::string>("scriptLocation") + "/" + 
+				                    par.getParam<std::string>("scenesLocation") + "/" +
+									par.getParam<std::string>("currentScene") + "/materials/";
 		
-		string fileLocation = location +  file + ".xml";
+		std::string fileLocation = location +  file + ".xml";
 		if(!mat->isDirty()) return;
 		pt.clear();
 		pt.put("material.name",file);

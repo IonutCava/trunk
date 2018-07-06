@@ -6,10 +6,11 @@ Trigger* ImplResourceLoader<Trigger>::operator()(){
 	Trigger* ptr = New Trigger();
 
 	if(!ptr) return NULL;
-	if(!ptr->load(_descriptor.getName())) return NULL;
+	if(!load(ptr,_descriptor.getName())) return NULL;
 	ptr->useDefaultMaterial(false);
 	ptr->setMaterial(NULL);
 
 	return ptr;
 }
 
+DEFAULT_LOADER_IMPL(Trigger)

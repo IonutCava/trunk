@@ -26,7 +26,6 @@ public:
 	d3dShaderProgram(){};
 	~d3dShaderProgram(){};
 
-	bool load(const std::string& name){return true;}
 	bool unload(){unbind(); return true;}
 	void bind(){}
 	void unbind(){}
@@ -58,9 +57,9 @@ private:
 
 private:
 	unordered_map<char*, I32 > _shaderVars;
-	bool _loaded;
 
 protected:
+	inline bool generateHWResource(const std::string& name){return ShaderProgram::generateHWResource(name);}
 	void validate(){}
 	void link(){}
 };

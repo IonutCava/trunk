@@ -27,7 +27,6 @@ public:
 	TerrainDescriptor() :  Resource(), _active(false){}
 	~TerrainDescriptor() {_variables.clear();}
 
-	bool  load(const std::string& name) {_name = name; return true;}
 	bool  unload() {return true;}
 
 	void addVariable(const std::string& name, const std::string& value){

@@ -70,17 +70,15 @@ std::string glShader::preprocessIncludes( const std::string& source, const std::
 		ERROR_FN("glShader: Header inclusion depth limit reached, might be caused by cyclic header inclusion");
 	}
 
-	using namespace std;
-
 	static const boost::regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
-	stringstream input;
-	stringstream output;
+	std::stringstream input;
+	std::stringstream output;
 	input << source;
 
 	size_t line_number = 1;
 	boost::smatch matches;
 
-	string line;
+	std::string line;
 	while(std::getline(input,line))	{
 
 		if (boost::regex_search(line, matches, re))	{
@@ -88,25 +86,25 @@ std::string glShader::preprocessIncludes( const std::string& source, const std::
 			std::string include_file = matches[1];
 			std::string include_string;
 			std::string loc;
-			if(include_file.find("frag") != string::npos){
+			if(include_file.find("frag") != std::string::npos){
 				loc =  "fragmentAtoms";
-			}else if(include_file.find("vert") != string::npos){
+			}else if(include_file.find("vert") != std::string::npos){
 				loc =  "vertexAtoms";
-			}else if(include_file.find("geom") != string::npos){
+			}else if(include_file.find("geom") != std::string::npos){
 				loc =  "geometryAtoms";
-			}else if(include_file.find("tess") != string::npos){
+			}else if(include_file.find("tess") != std::string::npos){
 				loc =  "tessellationAtoms";
 			}
 			ParamHandler& par = ParamHandler::getInstance();
-			include_string = ShaderManager::getInstance().shaderFileRead(include_file,par.getParam<string>("assetsLocation") + "/" + par.getParam<string>("shaderLocation")+"/GLSL/"+loc);
+			include_string = ShaderManager::getInstance().shaderFileRead(include_file,par.getParam<std::string>("assetsLocation") + "/" + par.getParam<std::string>("shaderLocation")+"/GLSL/"+loc);
 			if(include_string.empty()){
-				stringstream str;
+				std::stringstream str;
 				str <<  getName() <<"(" << line_number << ") : fatal error: cannot open include file " << include_file;
 				ERROR_FN("glShader: %s",str.str());
 			}
-			output << preprocessIncludes(include_string, include_file, level + 1) << endl;
+			output << preprocessIncludes(include_string, include_file, level + 1) << std::endl;
 		}else{
-			output <<  line << endl;
+			output <<  line << std::endl;
 		}
 		++line_number;
 	}

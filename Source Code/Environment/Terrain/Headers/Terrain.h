@@ -31,12 +31,24 @@ class TerrainDescriptor;
 class VertexBufferObject;
 
 class Terrain : public SceneNode {
+
+   enum TERRAIN_TEXTURE_USAGE{
+	  TERRAIN_TEXTURE_DIFFUSE = 0,
+	  TERRAIN_TEXTURE_NORMALMAP = 1,
+	  TERRAIN_TEXTURE_CAUSTICS = 2,
+	  TERRAIN_TEXTURE_RED = 3,
+	  TERRAIN_TEXTURE_GREEN = 4,
+	  TERRAIN_TEXTURE_BLUE = 5,
+	  TERRAIN_TEXTURE_ALPHA = 6
+  };
+
+  typedef unordered_map<TERRAIN_TEXTURE_USAGE, Texture2D*> TerrainTextureMap;
+
 public:
 
 	Terrain();
-	~Terrain() {}
+	~Terrain();
 
-	bool load(const std::string& name);
 	bool unload();
 	
 	void drawGround() const;
@@ -54,8 +66,6 @@ public:
 	vec3<F32>  getNormal(F32 x_clampf, F32 z_clampf) const;
 	vec3<F32>  getTangent(F32 x_clampf, F32 z_clampf) const;
 	vec2<F32>  getDimensions(){return vec2<F32>((F32)_terrainWidth, (F32)_terrainHeight);}
-
-	inline void  setLoaded(bool state) {_loaded = state;}
 	void  postLoad(SceneGraphNode* const sgn);	
 
 	inline Vegetation* const getVegetation() const {return _veg;}
@@ -71,9 +81,13 @@ public:
 	bool computeBoundingBox(SceneGraphNode* const sgn);
 	inline bool isInView(bool distanceCheck,BoundingBox& boundingBox) {return true;}
 
-private:
+	void addTexture(TERRAIN_TEXTURE_USAGE channel, Texture2D* const texture);
+	inline Texture2D* getTexture(TERRAIN_TEXTURE_USAGE channel) {return _terrainTextures[channel];}
 
-	bool loadVisualResources(TerrainDescriptor* const terrain);
+protected:
+	template<typename T>
+	friend class ImplResourceLoader;
+	void loadVisualResources();
 	bool loadThreadedResources(TerrainDescriptor* const terrain);
 
 private:
@@ -81,13 +95,14 @@ private:
 	U16						_terrainWidth, _terrainHeight;
 	Quadtree*				_terrainQuadtree;
 	VertexBufferObject*		_groundVBO;
-	
+
 	F32 terrainScaleFactor, _terrainHeightScaleFactor;
-	bool _drawInReflection,_loaded;
+
+	bool _drawInReflection;
 	bool _alphaTexturePresent;
 	bool _drawBBoxes;
-	std::vector<Texture2D*>	_terrainTextures;
-	Texture2D*				_terrainDiffuseMap;
+
+	TerrainTextureMap       _terrainTextures;
 	Vegetation*             _veg;
 	std::string             _grassShader;
 	BoundingBox             _boundingBox;

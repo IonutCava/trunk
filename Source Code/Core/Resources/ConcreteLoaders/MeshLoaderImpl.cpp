@@ -7,7 +7,7 @@ Mesh* ImplResourceLoader<Mesh>::operator()(){
 	Mesh* ptr = DVDConverter::getInstance().load(_descriptor.getResourceLocation());
 	
 	if(!ptr) return NULL;
-	if(!ptr->load(_descriptor.getName())) return NULL;
+	if(!load(ptr,_descriptor.getName())) return NULL;
 	if(_descriptor.getFlag()){
 		ptr->useDefaultMaterial(false);
 		ptr->setMaterial(NULL);
@@ -16,3 +16,5 @@ Mesh* ImplResourceLoader<Mesh>::operator()(){
 
 	return ptr;
 }
+
+DEFAULT_LOADER_IMPL(Mesh)

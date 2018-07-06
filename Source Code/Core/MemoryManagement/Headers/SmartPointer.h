@@ -39,20 +39,20 @@ public:
 
    //Destructor
    ~ResPointer()  {
-      if(obj)obj->Release();
+      subRef();
    }
 
    //Assignement operators - assigning a plain pointer
    inline operator =(T *o) {
-      if(obj)obj->Release();
+      subRef();
       obj=o;
-      if(obj)obj->AddRef();
+      addRef();
    }
    //Assigning another smart pointer
    inline operator =(const ResPointer<T> &p)  {
-      if(obj)obj->Release();
+      subRef();
       obj=p.obj;
-      if(obj)obj->AddRef();
+      addRef();
    }
 
    //Access as a reference
@@ -86,6 +86,22 @@ public:
    inline bool operator ==(const T* o) const   {
       return (obj==o);
    }
+private:
+  inline void addRef() {
+        // Only change if non-null
+        if (obj) obj->addRef();
+  }
+
+  inline void subRef() {
+        // Only change if non-null
+        if (obj) {
+			// Subtract and test if this was the last pointer.
+			if (obj->subRef()) {
+				delete obj;
+				obj=0;
+			}
+        }
+  }
 
 protected:
    T* obj;

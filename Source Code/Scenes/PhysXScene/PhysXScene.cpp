@@ -4,7 +4,6 @@
 #include "GUI/Headers/GUI.h"
 #include "Environment/Sky/Headers/Sky.h"
 #include "Managers/Headers/CameraManager.h"
-using namespace std;
 
 //begin copy-paste: randarea scenei
 void PhysXScene::render(){
@@ -52,7 +51,8 @@ void PhysXScene::processInput(){
 	}
 }
 
-bool PhysXScene::load(const string& name){
+bool PhysXScene::load(const std::string& name){
+
 	setInitialData();
 	bool state = false;
 	//Adaugam o lumina

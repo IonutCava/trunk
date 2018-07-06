@@ -15,20 +15,20 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "core.h"
+
 #ifndef _SCENE_MANAGER_H
 #define _SCENE_MANAGER_H
-
+#include "core.h"
 #include "Scenes/Headers/Scene.h"
 
-DEFINE_SINGLETON_EXT1(SceneManager,BaseCache)
+DEFINE_SINGLETON(SceneManager)
 
 public:
 	Scene* loadScene(const std::string& name);
 	void   registerScene(Scene* scenePointer);
 
-	inline Scene* getActiveScene()             { return _scene; }
-	inline void   setActiveScene(Scene* scene) { if(_scene) delete _scene; _scene = scene; }
+	inline Scene* getActiveScene()                   { return _scene; }
+	inline void   setActiveScene(Scene* const scene) { SAFE_UPDATE(_scene, scene); }
 
 	/*Base Scene Operations*/
 	void render(RENDER_STAGE stage);
@@ -54,10 +54,10 @@ public:
 	inline std::vector<FileData>& getVegetationDataArray() { return _scene->getVegetationDataArray(); }
    
 	
-	inline void addModel(FileData& model)             { _scene->addModel(model); }
-	inline void addTerrain(TerrainDescriptor* ter)    { _scene->addTerrain(ter); }
-	inline void addPatch(std::vector<FileData>& data) { _scene->addPatch(data); }
-	inline void toggleSkeletons()                     { _scene->drawSkeletons(!_scene->drawSkeletons()); }
+	inline void addModel(FileData& model)                    { _scene->addModel(model); }
+	inline void addTerrain(TerrainDescriptor* const  ter)    { _scene->addTerrain(ter); }
+	inline void addPatch(std::vector<FileData>& data)        { _scene->addPatch(data); }
+	inline void toggleSkeletons()                            { _scene->drawSkeletons(!_scene->drawSkeletons()); }
 		   void toggleBoundingBoxes();	
 
 	void findSelection(U32 x, U32 y);
@@ -69,12 +69,17 @@ private:
 	~SceneManager();
 	Scene* _scene;
     Object3D* _currentSelection;
-	unordered_map<std::string, Scene*> _sceneMap;
+	typedef unordered_map<std::string, Scene*> SceneMap;
+	SceneMap _sceneMap;
 
 END_SINGLETON
 
 inline void REGISTER_SCENE(Scene* const scene){
 	SceneManager::getInstance().registerScene(scene);
+}
+
+inline Scene* GET_ACTIVE_SCENE() {
+	return SceneManager::getInstance().getActiveScene();
 }
 
 #endif

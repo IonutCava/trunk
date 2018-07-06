@@ -68,8 +68,6 @@ public:
 		_refreshVBO = true;
 	}
 
-	inline bool load(const std::string &name) {_name = name; return true;}
-
 	inline F32 getSize()    {return _size;}
 
 	inline void  setSize(F32 size) {

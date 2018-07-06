@@ -2,8 +2,7 @@
 
 #include "ASIO.h"
 #include "GUI/Headers/GUI.h"
-//#include "GUI/Headers/GUIConsole.h"
-#include "Utility/Headers/Guardian.h"
+#include "GUI/Headers/GUIConsole.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Managers/Headers/SceneManager.h" //Object selection
 #include "Managers/Headers/AIManager.h"
@@ -15,9 +14,6 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
-using namespace std;
-
-
 bool Scene::clean(){ //Called when application is idle
 	if(_sceneGraph){
 		if(_sceneGraph->getRoot()->getChildren().empty()) return false;
@@ -25,24 +21,20 @@ bool Scene::clean(){ //Called when application is idle
 
 	bool _updated = false;
 	if(!PendingDataArray.empty())
-	for(vector<FileData>::iterator iter = PendingDataArray.begin(); iter != PendingDataArray.end(); ++iter)
-	{
-		if(!loadModel(*iter))
-		{
+	for(std::vector<FileData>::iterator iter = PendingDataArray.begin(); iter != PendingDataArray.end(); ++iter) {
+
+		if(!loadModel(*iter)){
+
 			WorldPacket p(CMSG_REQUEST_GEOMETRY);
 			p << (*iter).ModelName;
 			ASIO::getInstance().sendPacket(p);
 			while(!loadModel(*iter)){
 				PRINT_FN("Waiting for file .. ");
 			}
-		}
-		else
-		{
-			vector<FileData>::iterator iter2;
-			for(iter2 = ModelDataArray.begin(); iter2 != ModelDataArray.end(); ++iter2)
-			{
-				if((*iter2).ItemName.compare((*iter).ItemName) == 0)
-				{
+		}else{
+			std::vector<FileData>::iterator iter2;
+			for(iter2 = ModelDataArray.begin(); iter2 != ModelDataArray.end(); ++iter2)	{
+				if((*iter2).ItemName.compare((*iter).ItemName) == 0){
 					ModelDataArray.erase(iter2);
 					ModelDataArray.push_back(*iter);
 					PendingDataArray.erase(iter);
@@ -57,7 +49,7 @@ bool Scene::clean(){ //Called when application is idle
 	return true;
 }
 
-void Scene::addPatch(vector<FileData>& data){
+void Scene::addPatch(std::vector<FileData>& data){
 	/*for(vector<FileData>::iterator iter = data.begin(); iter != data.end(); iter++)
 	{
 		for(unordered_map<string,Object3D*>::iterator iter2 = GeometryArray.begin(); iter2 != GeometryArray.end(); iter2++)
@@ -74,7 +66,7 @@ void Scene::addPatch(vector<FileData>& data){
 
 
 void Scene::setInitialData(){
-	for(vector<FileData>::iterator it = ModelDataArray.begin(); it != ModelDataArray.end();){
+	for(std::vector<FileData>::iterator it = ModelDataArray.begin(); it != ModelDataArray.end();){
 		//vegetation is loaded elsewhere
 		if((*it).type == VEGETATION){
 			VegetationDataArray.push_back(*it);
@@ -159,7 +151,8 @@ void Scene::addLight(Light* const lightItem){
 }
 
 Light* Scene::addDefaultLight(){
-	stringstream ss; ss << LightManager::getInstance().getLights().size();
+
+	std::stringstream ss; ss << LightManager::getInstance().getLights().size();
 	ResourceDescriptor defaultLight("Default omni light "+ss.str());
 	defaultLight.setId(0); //descriptor ID is not the same as light ID. This is the light's slot!!
 	defaultLight.setResourceLocation("root");

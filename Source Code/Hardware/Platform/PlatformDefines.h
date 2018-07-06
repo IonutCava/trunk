@@ -23,23 +23,15 @@
 #define FLOAT_COMPARE(X,Y) (fabs(X - Y) < TEST_EPSILON)
 #define FLOAT_COMPARE_TOLERANCE(X,Y,TOLERANCE) (fabs(X - Y) < TOLERANCE)
 
-#ifdef _DEBUG
-#define SAFE_DELETE(R)	     	if(R){ delete R; R=NULL; }
-#define SAFE_DELETE_ARRAY(R)	if(R){ delete [] R; R=NULL; }
-#define SAFE_DELETE_VECTOR(R)   for(size_t r_iter(0); r_iter< R.size(); r_iter++){ delete R[r_iter]; }
-#else
-#define SAFE_DELETE(R)	     	if(R){ delete R; R=NULL; }
-#define SAFE_DELETE_ARRAY(R)	if(R){ delete [] R; R=NULL; }
-#define SAFE_DELETE_VECTOR(R)   for(size_t r_iter(0); r_iter< R.size(); r_iter++){ delete R[r_iter]; }
-#endif
+#define SAFE_DELETE(R)	           if(R){ delete R; R=NULL; }
+#define SAFE_DELETE_ARRAY(R)	   if(R){ delete [] R; R=NULL; }
+#define SAFE_DELETE_CHECK(R)       if(R){ delete R; R=NULL; return true;}else{return false;}
+#define SAFE_DELETE_ARRAY_CHECK(R) if(R){ delete [] R; R=NULL; return true;}else{return false;}
+#define SAFE_DELETE_VECTOR(R)      for(size_t r_iter(0); r_iter< R.size(); r_iter++){ delete R[r_iter]; }
+#define SAFE_UPDATE(OLD,NEW)       if(OLD || NEW){ delete OLD; OLD=NEW;} ///OLD or NEW check is kinda' useless, but it's there for consistency
 
-#define SAFE_DELETE_CHECK(R)    if(R){ delete R; R=NULL; return true;}else{return false;}
-#define SAFE_DELETE_ARRAY_CHECK(R)    if(R){ delete [] R; R=NULL; return true;}else{return false;}
 typedef struct packed_int {
-		 U8 b0;
-		 U8 b1;
-		 U8 b2;
-		 U8 b3;
+	U8 b0; U8 b1; U8 b2; U8 b3;
 } packed_int;
 
 typedef union {

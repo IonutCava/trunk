@@ -39,7 +39,7 @@ namespace Util {
 	class Quaternion;
 
 	template<class T>
-	inline std::string toString(T data){
+	inline std::string toString(const T& data){
 		std::stringstream s;
 		s << data;
 		return s.str();

@@ -18,7 +18,7 @@
 #include "core.h"
 
 ///Simple class that initializes our app, read XML settings and frees resources on shutdown
-DEFINE_SINGLETON( Guardian )
+DEFINE_SINGLETON( Kernel )
 
 
 public:

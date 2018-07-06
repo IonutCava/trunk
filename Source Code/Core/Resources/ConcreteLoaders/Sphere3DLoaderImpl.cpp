@@ -6,7 +6,7 @@ Sphere3D* ImplResourceLoader<Sphere3D>::operator()(){
 	Sphere3D* ptr = New Sphere3D(1,32);
 
 	if(!ptr) return NULL;
-	if(!ptr->load(_descriptor.getName())) return NULL;
+	if(!load(ptr,_descriptor.getName())) return NULL;
 
 	if(_descriptor.getFlag()){
 		ptr->useDefaultMaterial(false);
@@ -15,3 +15,5 @@ Sphere3D* ImplResourceLoader<Sphere3D>::operator()(){
 
 	return ptr;
 }
+
+DEFAULT_LOADER_IMPL(Sphere3D)

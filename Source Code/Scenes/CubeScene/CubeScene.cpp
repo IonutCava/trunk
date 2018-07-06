@@ -4,8 +4,6 @@
 #include "GUI/Headers/GUI.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
-using namespace std;
-
 void CubeScene::render(){
 
 	GUI& gui = GUI::getInstance();
@@ -158,7 +156,8 @@ void CubeScene::processInput(){
 
 }
 
-bool CubeScene::load(const string& name){	
+bool CubeScene::load(const std::string& name){	
+
 	_GFX.setDeferredRendering(true);
 	setInitialData(); 
 	bool state = loadResources(true);	
@@ -179,7 +178,7 @@ bool CubeScene::loadResources(bool continueOnErrors){
 	for(U8 row=0; row<3; row++)
 		for(U8 col=0; col < 10; col++){
 			U8 lightId = (U8)(row*10+col);
-			stringstream ss; ss << (U32)lightId;
+			std::stringstream ss; ss << (U32)lightId;
 			ResourceDescriptor tempLight("Light Deferred " + ss.str());
 			tempLight.setId(lightId);
 			Light* light = CreateResource<Light>(tempLight);

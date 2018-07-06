@@ -5,40 +5,45 @@
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "SceneList.h"
 
-using namespace std;
-
 SceneManager::SceneManager() : _scene(NULL), _currentSelection(NULL){}
+
 SceneManager::~SceneManager(){
 	PRINT_FN("Deleting Scene Manager ...");
 	PRINT_FN("Removing all scenes and destroying scene manager ...");
+	SceneMap::iterator& it = _sceneMap.begin();
+	for_each(SceneMap::value_type& it, _sceneMap){
+		it.second->unload();
+		SAFE_DELETE(it.second);
+	}
+	_sceneMap.clear();
 }
 
-Scene* SceneManager::loadScene(const string& name){
+Scene* SceneManager::loadScene(const std::string& name){
 	Scene* scene = NULL;
 	if(name.compare("MainScene") == 0){
 		scene = New MainScene();
-		_resDB.insert(make_pair("MainScene", scene ));	
+		_sceneMap.insert(std::make_pair("MainScene", scene ));	
 	}else if(name.compare("CubeScene") == 0){
 		scene = New CubeScene();
-		_resDB.insert(make_pair("CubeScene", scene));
+		_sceneMap.insert(std::make_pair("CubeScene", scene));
 	}else if(name.compare("NetworkScene") == 0){
 		scene = New NetworkScene();
-		_resDB.insert(make_pair("NetworkScene", scene));
+		_sceneMap.insert(std::make_pair("NetworkScene", scene));
 	}else if(name.compare("PingPongScene") == 0){
 		scene = New PingPongScene();
-		_resDB.insert(make_pair("PingPongScene", scene));
+		_sceneMap.insert(std::make_pair("PingPongScene", scene));
 	}else if(name.compare("FlashScene") == 0){
 		scene = New FlashScene();
-		_resDB.insert(make_pair("FlashScene", scene));
+		_sceneMap.insert(std::make_pair("FlashScene", scene));
 	}else if(name.compare("AITenisScene") == 0){
 		scene = New AITenisScene();
-		_resDB.insert(make_pair("AITenisScene", scene));
+		_sceneMap.insert(std::make_pair("AITenisScene", scene));
 	}else if(name.compare("PhysXScene") == 0){
 		scene = New PhysXScene();
-		_resDB.insert(make_pair("PhysXScene", scene));
+		_sceneMap.insert(std::make_pair("PhysXScene", scene));
 	}else if(name.compare("WarScene") == 0){
 		scene = New WarScene();
-		_resDB.insert(make_pair("WarScene", scene));
+		_sceneMap.insert(std::make_pair("WarScene", scene));
 	}else{
 		scene = NULL;
 	}
@@ -48,15 +53,13 @@ Scene* SceneManager::loadScene(const string& name){
 void SceneManager::registerScene(Scene* scenePointer){
 	assert(scenePointer != NULL);
 	std::pair<unordered_map<std::string, Scene*>::iterator, bool > result;
-	//try and add the new scene
+	///try and add the new scene
 	result = _sceneMap.insert(std::make_pair(scenePointer->getName(), scenePointer));
-	//if we fail ...
+	///if we fail ...
 	if(!result.second){
-		//unload and delete the old scene with the same name
+		///unload and delete the old scene with the same name and register the new one
 		(result.first)->second->unload();
-		delete (result.first)->second;
-		//and register the new one
-		(result.first)->second = scenePointer;
+		SAFE_UPDATE((result.first)->second, scenePointer);
 	}
 }
 
@@ -171,7 +174,7 @@ void SceneManager::findSelection(U32 x, U32 y){
 	/*Ray r(origin,dir);
 	_currentSelection = NULL;
 	for(unordered_map<string, Object3D* >::iterator it = getGeometryArray().begin(); 
-													 it != getGeometryArray().end(); it++){
+													 it != getGeometryArray().end(); ++it){
 		assert(it->second != NULL);
 		(it->second)->setSelected(false);
 		
