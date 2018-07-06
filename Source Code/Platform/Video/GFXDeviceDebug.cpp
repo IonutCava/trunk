@@ -107,7 +107,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
         if (HiZPtr) {
             //HiZ preview
             I32 LoDLevel = 0;
-            if (Config::USE_HIZ_CULLING && Config::USE_Z_PRE_PASS) {
+            if (Config::USE_HIZ_CULLING) {
                 LoDLevel = to_I32(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) %
                     (screenRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
             }

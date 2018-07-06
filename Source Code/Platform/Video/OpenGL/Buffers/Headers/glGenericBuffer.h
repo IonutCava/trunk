@@ -45,6 +45,8 @@ struct BufferParams {
           _elementSizeInBytes(0),
           _frequency(BufferUpdateFrequency::ONCE),
           _data(nullptr),
+          _zeroMem(false),
+          _forcePersistentMap(false),
           _name("")
     {
     }
@@ -55,6 +57,8 @@ struct BufferParams {
     size_t _elementSizeInBytes;
     BufferUpdateFrequency _frequency;
     bufferPtr   _data;
+    bool        _zeroMem;
+    bool        _forcePersistentMap;
     const char* _name;
 };
 
@@ -70,6 +74,10 @@ class glGenericBuffer {
 
       GLuint bufferHandle() const;
       
+      void zeroMem(GLuint ringWriteOffset);
+
+      void clearData(GLuint ringWriteOffset);
+
       void writeData(GLuint elementCount,
                      GLuint elementOffset,
                      GLuint ringWriteOffset,

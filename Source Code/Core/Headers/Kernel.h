@@ -60,6 +60,9 @@ enum class RenderStage : U8;
 
 struct FrameEvent;
 
+/// Application update rate
+constexpr U32 TICKS_PER_SECOND = Config::TARGET_FRAME_RATE / Config::TICK_DIVISOR;
+
 class LoopTimingData {
   public:
     LoopTimingData();
@@ -73,7 +76,7 @@ class LoopTimingData {
 
         // In case we break in the debugger
         if (_currentTimeDeltaUS > Time::SecondsToMicroseconds(1)) {
-            _currentTimeDeltaUS = Time::SecondsToMicroseconds(1) / Config::TICKS_PER_SECOND;
+            _currentTimeDeltaUS = Time::SecondsToMicroseconds(1) / TICKS_PER_SECOND;
             _previousTimeUS = _currentTimeUS - _currentTimeDeltaUS;
         }
     }

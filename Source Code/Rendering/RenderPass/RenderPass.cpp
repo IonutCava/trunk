@@ -80,7 +80,7 @@ RenderPass::BufferData::BufferData(GFXDevice& context, I32 index)
     bufferDescriptor._primitiveSizeInBytes = sizeof(IndirectDrawCommand);
     bufferDescriptor._name = Util::StringFormat("CMD_DATA_%d", index).c_str();
     _cmdBuffer = context.newSB(bufferDescriptor);
-    _cmdBuffer->addAtomicCounter(3);
+    _cmdBuffer->addAtomicCounter(5);
 }
 
 RenderPass::BufferData::~BufferData()
@@ -170,7 +170,7 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
             params._stage = _stageFlag;
             params._target = RenderTargetID(RenderTargetUsage::SCREEN);
             params._pass = 0;
-            params._doPrePass = Config::USE_Z_PRE_PASS && screenRT.getAttachment(RTAttachmentType::Depth, 0).used();
+            params._doPrePass = screenRT.getAttachment(RTAttachmentType::Depth, 0).used();
             _parent.doCustomPass(params, bufferInOut);
 
             GFX::EndDebugScopeCommand endDebugScopeCmd;

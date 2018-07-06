@@ -48,8 +48,8 @@ class glBufferLockManager;
 class glUniformBuffer final : public ShaderBuffer {
     USE_CUSTOM_ALLOCATOR
    public:
-     glUniformBuffer(GFXDevice& context,
-                     const ShaderBufferDescriptor& descriptor);
+    glUniformBuffer(GFXDevice& context,
+                    const ShaderBufferDescriptor& descriptor);
     ~glUniformBuffer();
 
     void readData(ptrdiff_t offsetElementCount,

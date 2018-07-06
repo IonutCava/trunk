@@ -61,7 +61,7 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
                                   Config::USE_THREADED_COMMAND_GENERATION);     // For ease-of-use
                                 
 
-    if (!usePersistentMapping) {
+    if (!usePersistentMapping && !params._forcePersistentMap) {
         GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, params._initialData, params._name);
     } else {
         gl::BufferStorageMask storageMask = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
@@ -74,6 +74,10 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
         _mappedBuffer = GLUtil::createAndAllocPersistentBuffer(_alignedSize, storageMask, accessMask, _handle, params._initialData, params._name);
 
         assert(_mappedBuffer != nullptr && "PersistentBuffer::Create error: Can't mapped persistent buffer!");
+    }
+
+    if (params._zeroMem) {
+        zeroMem(0, _alignedSize);
     }
 }
 
@@ -127,11 +131,10 @@ void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bu
                      data,
                      rangeInBytes);
     } else {
+        clearData(offsetInBytes, rangeInBytes);
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
-            glInvalidateBufferData(_handle);
             glNamedBufferData(_handle, _alignedSize, data, _usage);
         } else {
-            glInvalidateBufferSubData(_handle, offsetInBytes, rangeInBytes);
             glNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);
         }
     }
@@ -146,4 +149,29 @@ void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const buf
     }
 }
 
+void glBufferImpl::clearData(size_t offsetInBytes, size_t rangeInBytes) {
+    if (_mappedBuffer) {
+        waitRange(offsetInBytes, rangeInBytes, true);
+        std::memset(((Byte*)_mappedBuffer) + offsetInBytes, 0, rangeInBytes);
+    } else {
+        if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
+            glInvalidateBufferData(_handle);
+        } else {
+            glInvalidateBufferSubData(_handle, offsetInBytes, rangeInBytes);
+        }
+    }
+}
+
+void glBufferImpl::zeroMem(size_t offsetInBytes, size_t rangeInBytes) {
+    if (_mappedBuffer) {
+        clearData(offsetInBytes, rangeInBytes);
+    } else {
+        vector<Byte> newData(rangeInBytes, 0);
+        if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
+            glNamedBufferData(_handle, _alignedSize, newData.data(), _usage);
+        } else {
+            glNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, newData.data());
+        }
+    }
+}
 }; //namespace Divide

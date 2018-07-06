@@ -19,6 +19,8 @@ glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
     implParams._target = params._usage;
     implParams._name = params._name;
     implParams._initialData = params._data;
+    implParams._zeroMem = params._zeroMem;
+    implParams._forcePersistentMap = params._forcePersistentMap;
 
     _buffer = MemoryManager_NEW glBufferImpl(context, implParams);
 
@@ -85,6 +87,29 @@ void glGenericBuffer::lockData(GLuint elementCount,
     }
 
     _buffer->lockRange(offsetInBytes, rangeInBytes);
+}
+
+void glGenericBuffer::clearData(GLuint ringWriteOffset)
+{
+    size_t rangeInBytes = _elementCount * _elementSize;
+    size_t offsetInBytes = 0;
+
+    if (_ringSizeFactor > 1) {
+        offsetInBytes += rangeInBytes * ringWriteOffset;
+    }
+
+    _buffer->clearData(offsetInBytes, rangeInBytes);
+}
+
+void glGenericBuffer::zeroMem(GLuint ringWriteOffset) {
+    size_t rangeInBytes = _elementCount * _elementSize;
+    size_t offsetInBytes = 0;
+
+    if (_ringSizeFactor > 1) {
+        offsetInBytes += rangeInBytes * ringWriteOffset;
+    }
+
+    _buffer->zeroMem(offsetInBytes, rangeInBytes);
 }
 
 GLintptr glGenericBuffer::getBindOffset(GLuint ringReadOffset)

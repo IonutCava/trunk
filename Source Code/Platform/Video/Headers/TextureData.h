@@ -93,15 +93,18 @@ class TextureDataContainer {
       const vectorEASTL<eastl::pair<TextureData, U8>>& textures() const;
       void clear(bool clearMemory = false);
 
-      inline bool operator==(const TextureDataContainer &other) const {
-          return _textures == other._textures;
+      FORCE_INLINE bool operator==(const TextureDataContainer &other) const {
+          return _textureCount == other._textureCount &&
+                 _textures == other._textures;
       }
 
-      inline bool operator!=(const TextureDataContainer &other) const {
-          return _textures != other._textures;
+      FORCE_INLINE bool operator!=(const TextureDataContainer &other) const {
+          return _textureCount != other._textureCount ||
+                 _textures != other._textures;
       }
 
     private:
+      size_t _textureCount = 0;
       vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>> _textures;
 };
 

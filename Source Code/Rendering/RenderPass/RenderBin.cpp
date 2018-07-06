@@ -118,6 +118,8 @@ void RenderBin::sort(RenderStage stage, RenderingOrder::List renderOrder, const 
 
 void RenderBin::getSortedNodes(RenderStage stage, vectorEASTL<SceneGraphNode*>& nodes, U16& countOut) const {
     nodes.resize(0);
+    nodes.reserve(getBinSize(stage));
+
     for (const RenderBinItem& item : _renderBinStack[to_base(stage)]) {
         nodes.push_back(&(item._renderable->getSGN()));
         ++countOut;

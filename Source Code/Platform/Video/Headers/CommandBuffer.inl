@@ -134,12 +134,12 @@ inline bool CommandBuffer::tryMergeCommands(DrawCommand* prevCommand, DrawComman
 
 template<>
 inline bool CommandBuffer::tryMergeCommands(BindDescriptorSetsCommand* prevCommand, BindDescriptorSetsCommand* crtCommand) const {
-    return prevCommand->_set->merge(*crtCommand->_set);
+    return Merge(*prevCommand->_set, *crtCommand->_set);
 }
 
 template<>
 inline bool CommandBuffer::tryMergeCommands(SendPushConstantsCommand* prevCommand, SendPushConstantsCommand* crtCommand) const {
-    return prevCommand->_constants.merge(crtCommand->_constants);
+    return Merge(prevCommand->_constants, crtCommand->_constants);
 }
 
 template<typename T>

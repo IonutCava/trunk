@@ -23,6 +23,7 @@ namespace Divide {
 namespace {
     thread_local vectorEASTL<GFXDevice::NodeData> g_nodeData;
     thread_local vectorEASTL<IndirectDrawCommand> g_drawCommands;
+    thread_local RenderQueue::SortedQueues g_sortedQueues;
 };
 
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
@@ -225,11 +226,11 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassPar
     const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
 
     U16 queueSize = 0;
-    RenderQueue::SortedQueues sortedQueues = getQueue().getSortedQueues(stagePass._stage, queueSize);
+    getQueue().getSortedQueues(stagePass._stage, g_sortedQueues, queueSize);
 
     const mat4<F32>& viewMatrix = params._camera->getViewMatrix();
     g_nodeData.resize(0);
-    g_nodeData.reserve(sortedQueues.size() * Config::MAX_VISIBLE_NODES);
+    g_nodeData.reserve(queueSize * Config::MAX_VISIBLE_NODES);
 
     g_drawCommands.resize(0);
     g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);
@@ -237,7 +238,7 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassPar
     g_drawCommands.resize(0);
     g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);
 
-    for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
+    for (const vectorEASTL<SceneGraphNode*>& queue : g_sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
             Attorney::RenderingCompRenderPass::setDataIndex(renderable, to_U32(g_nodeData.size()));
@@ -282,8 +283,8 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
     const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
 
     U16 queueSize = 0;
-    RenderQueue::SortedQueues sortedQueues = getQueue().getSortedQueues(stagePass._stage, queueSize);
-    for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
+    getQueue().getSortedQueues(stagePass._stage, g_sortedQueues, queueSize);
+    for (const vectorEASTL<SceneGraphNode*>& queue : g_sortedQueues) {
         for (SceneGraphNode* node : queue) {
             Attorney::RenderingCompRenderPass::prepareDrawPackage(*node->get<RenderingComponent>(), *params._camera, sceneRenderState, stagePass);
         }

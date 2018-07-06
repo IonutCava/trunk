@@ -57,7 +57,7 @@ void AIManager::destroy() {
 }
 
 void AIManager::update(const U64 deltaTimeUS) {
-    static const U64 updateFreqUS = Time::SecondsToMicroseconds(1) / Config::AI_THREAD_UPDATE_TICKS_PER_SECOND;
+     constexpr U64 updateFreqUS = Time::SecondsToMicroseconds(1) / (Config::TARGET_FRAME_RATE / Config::TICK_DIVISOR);
 
     _currentTimeUS += deltaTimeUS;
     if (_currentTimeUS >= _previousTimeUS + updateFreqUS && !shouldStop()) {

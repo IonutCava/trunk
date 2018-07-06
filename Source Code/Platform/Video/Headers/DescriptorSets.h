@@ -65,24 +65,31 @@ namespace Divide {
                  const vec2<U16>& range,
                  const std::pair<bool, vec2<U32>>& atomicCounter);
 
-        bool operator==(const ShaderBufferBinding& other) const;
-        bool operator!=(const ShaderBufferBinding& other) const;
+        FORCE_INLINE bool operator==(const ShaderBufferBinding& other) const {
+            return _binding == other._binding &&
+                   _range == other._range &&
+                   _buffer == other._buffer;
+        }
+
+        FORCE_INLINE bool operator!=(const ShaderBufferBinding& other) const {
+            return _binding != other._binding ||
+                   _range != other._range ||
+                   _buffer != other._buffer;
+        }
     };
 
     typedef vectorEASTL<ShaderBufferBinding> ShaderBufferList;
 
     struct DescriptorSet {
-        DescriptorSet(const DescriptorSet& other) = default;
-        DescriptorSet& operator=(const DescriptorSet& other) = default;
-        DescriptorSet(DescriptorSet&& other) = default;
-        DescriptorSet& operator=(DescriptorSet&& other) = default;
+        FORCE_INLINE bool operator==(const DescriptorSet &other) const {
+            return _shaderBuffers == other._shaderBuffers &&
+                   _textureData == other._textureData;
+        }
 
-        ~DescriptorSet();
-
-        bool merge(const DescriptorSet &other);
-
-        bool operator==(const DescriptorSet &other) const;
-        bool operator!=(const DescriptorSet &other) const;
+        FORCE_INLINE bool operator!=(const DescriptorSet &other) const {
+            return _shaderBuffers != other._shaderBuffers ||
+                   _textureData != other._textureData;
+        }
 
         //This needs a lot more work!
         ShaderBufferList _shaderBuffers;
@@ -92,8 +99,10 @@ namespace Divide {
         template<typename T, size_t BlockSize>
         friend class MemoryPool;
         friend struct DeleteDescriptorSet;
-        DescriptorSet();
+        DescriptorSet() = default;
     };
+
+    bool Merge(DescriptorSet &lhs, const DescriptorSet &rhs);
 
     typedef MemoryPool<DescriptorSet, 1024> DescriptorSetPool;
 

@@ -42,6 +42,8 @@ struct BufferImplParams {
           _frequency(BufferUpdateFrequency::ONCE),
           _dataSizeInBytes(0),
           _initialData(NULL),
+          _zeroMem(false),
+          _forcePersistentMap(false),
           _name(nullptr)
     {
     }
@@ -50,6 +52,8 @@ struct BufferImplParams {
     BufferUpdateFrequency _frequency;
     size_t _dataSizeInBytes;
     bufferPtr _initialData;
+    bool _zeroMem;
+    bool _forcePersistentMap;
     const char* _name;
 };
 
@@ -67,6 +71,8 @@ public:
 
     void writeData(size_t offsetInBytes, size_t rangeInBytes, bufferPtr data);
     void readData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data);
+    void clearData(size_t offsetInBytes, size_t rangeInBytes);
+    void zeroMem(size_t offsetInBytes, size_t rangeInBytes);
 
 protected:
     GLenum _target;

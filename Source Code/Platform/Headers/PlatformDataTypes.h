@@ -285,28 +285,28 @@ struct resolve_uac : public resolve_uac2<typename promote<A>::type,
 };
 
 template <typename A, typename B>
-typename resolve_uac<A, B>::return_type add(const A& a, const B& b) noexcept
+constexpr typename resolve_uac<A, B>::return_type add(const A& a, const B& b) noexcept
 {
     return a + b;
 }
 
 
 template <typename A, typename B>
-typename resolve_uac<A, B>::return_type substract(const A& a, const B& b) noexcept
+constexpr typename resolve_uac<A, B>::return_type substract(const A& a, const B& b) noexcept
 {
     return a - b;
 }
 
 
 template <typename A, typename B>
-typename resolve_uac<A, B>::return_type divide(const A& a, const B& b) noexcept
+constexpr typename resolve_uac<A, B>::return_type divide(const A& a, const B& b) noexcept
 {
     return a / b;
 }
 
 
 template <typename A, typename B>
-typename resolve_uac<A, B>::return_type multiply(const A& a, const B& b) noexcept
+constexpr typename resolve_uac<A, B>::return_type multiply(const A& a, const B& b) noexcept
 {
     return a * b;
 }

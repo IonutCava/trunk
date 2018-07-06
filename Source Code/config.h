@@ -69,15 +69,9 @@ constexpr unsigned int TARGET_FRAME_RATE = 60;
 /// Application update rate divisor (how many many times should we update our state per second)
 /// e.g. For TARGET_FRAME_RATE = 60, TICK_DIVISOR = 2 => update at 30Hz, render at 60Hz.
 constexpr unsigned int TICK_DIVISOR = 2;
-/// Application update rate
-constexpr unsigned int TICKS_PER_SECOND = TARGET_FRAME_RATE / TICK_DIVISOR;
 /// Maximum frameskip
 constexpr unsigned int MAX_FRAMESKIP = 3;
-constexpr unsigned long long MAX_SKIP_TICKS_PER_SECOND = TICKS_PER_SECOND;
-/// AI update frequency
-constexpr unsigned int AI_THREAD_UPDATE_TICKS_PER_SECOND = TICKS_PER_SECOND;
-/// The minimum threshold needed for a threaded loop to use sleep
-/// Update intervals bellow this threshold will not use sleep!
+/// The minimum threshold needed for a threaded loop to use sleep. Update intervals bellow this threshold will not use sleep!
 constexpr unsigned int MIN_SLEEP_THRESHOLD_MS = 5;
 /// Minimum required RAM size (in bytes) for the current build
 constexpr unsigned int REQUIRED_RAM_SIZE = 2 * 1024 * 1024; //2Gb
@@ -86,13 +80,9 @@ constexpr unsigned int MAX_POOLED_TASKS = 16384;
 /// Toggle multi-threaded resource loading on or off
 constexpr bool USE_GPU_THREADED_LOADING = true;
 /// Toggle multi-threaded command generation
-constexpr bool USE_THREADED_COMMAND_GENERATION = true;
+constexpr bool USE_THREADED_COMMAND_GENERATION = false;
 /// Run all threaded tasks in a serial fashion. (used to debug multi-threaded related bugs)
 constexpr bool USE_SINGLE_THREADED_TASK_POOLS = false;
-/// Maximum number of instances of a single mesh with a single draw call
-constexpr unsigned int MAX_INSTANCE_COUNT = 512;
-/// Maximum number of points that can be sent to the GPU per batch
-constexpr unsigned int MAX_POINTS_PER_BATCH = static_cast<unsigned int>(1 << 31);
 /// Maximum number of bones available per node
 constexpr unsigned int MAX_BONE_COUNT_PER_NODE = 256;
 /// Estimated maximum number of visible objects per render pass (this includes debug primitives)
@@ -149,16 +139,10 @@ constexpr unsigned int TERRAIN_LOD1 = 400;
 constexpr bool USE_SEPARATE_SHADER_OBJECTS = false;
 /// Use HW AA'ed lines
 constexpr bool USE_HARDWARE_AA_LINES = true;
-/// Multi-draw causes some problems with profiling software (e.g.
-/// GPUPerfStudio2)
-constexpr bool BATCH_DRAW_COMMANDS = false;
 /// If true, Hi-Z based occlusion culling is used
 constexpr bool USE_HIZ_CULLING = true;
 /// If true, Hi-Z culling is disabled and potentially culled nodes are drawn in bright red and double in size
 constexpr bool DEBUG_HIZ_CULLING = false;
-/// If true, the depth pass acts as a zPrePass for the main draw pass as well
-/// If false, the main draw pass will clear the depth buffer and populate a new one instead
-constexpr bool USE_Z_PRE_PASS = true;
 
 /// Compute related options
 namespace Compute {

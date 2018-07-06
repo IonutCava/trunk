@@ -3,15 +3,6 @@
 #include "Headers/DescriptorSets.h"
 
 namespace Divide {
-    DescriptorSet::DescriptorSet() {
-
-    }
-
-    DescriptorSet::~DescriptorSet() {
-
-    }
-
-
     ShaderBufferBinding::ShaderBufferBinding()
         : ShaderBufferBinding(ShaderBufferLocation::COUNT, nullptr, vec2<U32>(0, 0))
     {
@@ -62,40 +53,18 @@ namespace Divide {
         _range.set(range);
     }
 
-    bool ShaderBufferBinding::operator==(const ShaderBufferBinding& other) const {
-        return _binding == other._binding &&
-               _buffer == other._buffer &&
-               _range == other._range;
-    }
-
-    bool ShaderBufferBinding::operator!=(const ShaderBufferBinding& other) const {
-        return _binding != other._binding ||
-               _buffer != other._buffer ||
-               _range != other._range;
-    }
-
-    bool DescriptorSet::operator==(const DescriptorSet &other) const {
-        return _shaderBuffers == other._shaderBuffers &&
-               _textureData == other._textureData;
-    }
-
-    bool DescriptorSet::operator!=(const DescriptorSet &other) const {
-        return _shaderBuffers != other._shaderBuffers ||
-               _textureData != other._textureData;
-    }
-
-    bool DescriptorSet::merge(const DescriptorSet &other) {
+    bool Merge(DescriptorSet &lhs, const DescriptorSet &rhs) {
         // Check stage
-        for (const ShaderBufferBinding& ourBinding : _shaderBuffers) {
-            for (const ShaderBufferBinding& otherBinding : other._shaderBuffers) {
+        for (const ShaderBufferBinding& ourBinding : lhs._shaderBuffers) {
+            for (const ShaderBufferBinding& otherBinding : rhs._shaderBuffers) {
                 // Make sure the bindings are different
                 if (ourBinding._binding == otherBinding._binding) {
                     return false;
                 }
             }
         }
-        auto ourTextureData = _textureData.textures();
-        auto otherTextureData = other._textureData.textures();
+        auto ourTextureData = lhs._textureData.textures();
+        auto otherTextureData = rhs._textureData.textures();
 
         for (const eastl::pair<TextureData, U8>& ourTexture : ourTextureData) {
             for (const eastl::pair<TextureData, U8>& otherTexture : otherTextureData) {
@@ -107,12 +76,12 @@ namespace Divide {
         }
 
         // Merge stage
-        _shaderBuffers.insert(eastl::cend(_shaderBuffers),
-            eastl::cbegin(other._shaderBuffers),
-            eastl::cend(other._shaderBuffers));
+        lhs._shaderBuffers.insert(eastl::cend(lhs._shaderBuffers),
+                                  eastl::cbegin(rhs._shaderBuffers),
+                                  eastl::cend(rhs._shaderBuffers));
 
         // The incoming texture data is either identical or new at this point, so only insert unique items
-        insert_unique(_textureData.textures(), other._textureData.textures());
+        insert_unique(lhs._textureData.textures(), rhs._textureData.textures());
         return true;
     }
 }; //namespace Divide

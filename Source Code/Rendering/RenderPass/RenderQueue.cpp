@@ -193,14 +193,11 @@ void RenderQueue::refresh(RenderStage stage) {
     }
 }
 
-RenderQueue::SortedQueues RenderQueue::getSortedQueues(RenderStage stage, U16& countOut) const {
-    SortedQueues queues;
+void RenderQueue::getSortedQueues(RenderStage stage, SortedQueues& queuesOut, U16& countOut) const {
     for (RenderBin* renderBin : _activeBins) {
-        vectorEASTL<SceneGraphNode*>& nodes = queues[renderBin->getType()._to_integral()];
+        vectorEASTL<SceneGraphNode*>& nodes = queuesOut[renderBin->getType()._to_integral()];
         renderBin->getSortedNodes(stage, nodes, countOut);
     }
-
-    return queues;
 }
 
 };

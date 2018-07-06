@@ -326,50 +326,50 @@ namespace Time {
 /// Return the passed param without any modification
 /// Used only for emphasis
 template <typename T>
-T Seconds(const T a);
+constexpr T Seconds(const T a);
 template <typename T>
-T Milliseconds(const T a);
+constexpr T Milliseconds(const T a);
 template <typename T>
-T Microseconds(const T a);
+constexpr T Microseconds(const T a);
 template <typename T>
-T Nanoseconds(const T a);
+constexpr T Nanoseconds(const T a);
 
 template <typename T, typename U>
-T Seconds(const U a);
+constexpr T Seconds(const U a);
 template <typename T, typename U>
-T Milliseconds(const U a);
+constexpr T Milliseconds(const U a);
 template <typename T, typename U>
-T Microseconds(const U a);
+constexpr T Microseconds(const U a);
 template <typename T, typename U>
-T Nanoseconds(const U a);
+constexpr T Nanoseconds(const U a);
 
 template <typename T = D64, typename U>
-T NanosecondsToSeconds(const U a) noexcept;
+constexpr T NanosecondsToSeconds(const U a) noexcept;
 template <typename T = D64, typename U>
-T NanosecondsToMilliseconds(const U a) noexcept;
+constexpr T NanosecondsToMilliseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T NanosecondsToMicroseconds(const U a) noexcept;
+constexpr T NanosecondsToMicroseconds(const U a) noexcept;
 
 template <typename T = D64, typename U>
-T MicrosecondsToSeconds(const U a) noexcept;
+constexpr T MicrosecondsToSeconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T MicrosecondsToMilliseconds(const U a) noexcept;
+constexpr T MicrosecondsToMilliseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T MicrosecondsToNanoseconds(const U a) noexcept;
+constexpr T MicrosecondsToNanoseconds(const U a) noexcept;
 
 template <typename T = D64, typename U>
-T MillisecondsToSeconds(const U a) noexcept;
+constexpr T MillisecondsToSeconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T MillisecondsToMicroseconds(const U a) noexcept;
+constexpr T MillisecondsToMicroseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T MillisecondsToNanoseconds(const U a) noexcept;
+constexpr T MillisecondsToNanoseconds(const U a) noexcept;
 
 template <typename T = D64, typename U>
-T SecondsToMilliseconds(const U a) noexcept;
+constexpr T SecondsToMilliseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T SecondsToMicroseconds(const U a) noexcept;
+constexpr T SecondsToMicroseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-T SecondsToNanoseconds(const U a) noexcept;
+constexpr T SecondsToNanoseconds(const U a) noexcept;
 
 };  // namespace Time
 

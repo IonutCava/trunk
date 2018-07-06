@@ -174,7 +174,7 @@ void Kernel::onLoop() {
 
             U64 deltaTimeUS = 0ULL;
             if (!_timingData.freezeTime()) {
-                deltaTimeUS = Config::USE_FIXED_TIMESTEP ? Time::SecondsToMicroseconds(1) / Config::TICKS_PER_SECOND
+                deltaTimeUS = Config::USE_FIXED_TIMESTEP ? Time::SecondsToMicroseconds(1) / TICKS_PER_SECOND
                                                          : _timingData.currentTimeDeltaUS();
             }
 

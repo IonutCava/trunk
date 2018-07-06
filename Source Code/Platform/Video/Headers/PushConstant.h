@@ -161,16 +161,16 @@ namespace GFX {
         void clear();
 
         inline bool operator==(const PushConstant& rhs) const {
-            return _bindingHash == rhs._bindingHash &&
-                   _type == rhs._type &&
+            return _type == rhs._type &&
                    _flag == rhs._flag &&
+                   _bindingHash == rhs._bindingHash &&
                    _buffer == rhs._buffer;
         }
 
         inline bool operator!=(const PushConstant& rhs) const {
-            return _bindingHash != rhs._bindingHash ||
-                   _type != rhs._type ||
+            return _type != rhs._type || 
                    _flag != rhs._flag ||
+                   _bindingHash != rhs._bindingHash ||
                    _buffer != rhs._buffer;
         }
 

@@ -709,102 +709,102 @@ constexpr T Pico(const U a) {
 namespace Time {
 
 template <typename T>
-T Seconds(const T a) {
+constexpr T Seconds(const T a) {
     return a;
 }
 
 template <typename T>
-T Milliseconds(const T a) {
+constexpr T Milliseconds(const T a) {
     return a;
 }
 
 template <typename T>
-T Microseconds(const T a) {
+constexpr T Microseconds(const T a) {
     return a;
 }
 
 template <typename T>
-T Nanoseconds(const T a) {
+constexpr T Nanoseconds(const T a) {
     return a;
 }
 
 template <typename T, typename U>
-T Seconds(const U a) {
+constexpr T Seconds(const U a) {
     return static_cast<T>(a);
 }
 
 template <typename T, typename U>
-T Milliseconds(const U a) {
+constexpr T Milliseconds(const U a) {
     return static_cast<T>(a);
 }
 
 template <typename T, typename U>
-T Microseconds(const U a) {
+constexpr T Microseconds(const U a) {
     return static_cast<T>(a);
 }
 
 template <typename T, typename U>
-T Nanoseconds(const U a) {
+constexpr T Nanoseconds(const U a) {
     return static_cast<T>(a);
 }
 
 template <typename T, typename U>
-T NanosecondsToSeconds(const U a) noexcept {
+constexpr T NanosecondsToSeconds(const U a) noexcept {
     return Metric::Nano<T, U>(a);
 }
 
 template <typename T, typename U>
-T NanosecondsToMilliseconds(const U a) noexcept {
+constexpr T NanosecondsToMilliseconds(const U a) noexcept {
     return Metric::Micro<T, U>(a);
 }
 
 template <typename T, typename U>
-T NanosecondsToMicroseconds(const U a) noexcept {
+constexpr T NanosecondsToMicroseconds(const U a) noexcept {
     return Metric::Milli<T, U>(a);
 }
 
 template <typename T, typename U>
-T MicrosecondsToSeconds(const U a) noexcept {
+constexpr T MicrosecondsToSeconds(const U a) noexcept {
     return Metric::Micro<T, U>(a);
 }
 
 template <typename T, typename U>
-T MicrosecondsToMilliseconds(const U a) noexcept {
+constexpr T MicrosecondsToMilliseconds(const U a) noexcept {
     return Metric::Milli<T, U>(a);
 }
 
 template <typename T, typename U>
-T MicrosecondsToNanoseconds(const U a) noexcept {
+constexpr T MicrosecondsToNanoseconds(const U a) noexcept {
     return Metric::Kilo<T, U>(a);
 }
 
 template <typename T, typename U>
-T MillisecondsToSeconds(const U a) noexcept {
+constexpr T MillisecondsToSeconds(const U a) noexcept {
     return Metric::Milli<T, U>(a);
 }
 
 template <typename T, typename U>
-T MillisecondsToMicroseconds(const U a) noexcept {
+constexpr T MillisecondsToMicroseconds(const U a) noexcept {
     return Metric::Kilo<T, U>(a);
 }
 
 template <typename T, typename U>
-T MillisecondsToNanoseconds(const U a) noexcept {
+constexpr T MillisecondsToNanoseconds(const U a) noexcept {
     return Metric::Mega<T, U>(a);
 }
 
 template <typename T, typename U>
-T SecondsToMilliseconds(const U a) noexcept {
+constexpr T SecondsToMilliseconds(const U a) noexcept {
     return Metric::Kilo<T, U>(a);
 }
 
 template <typename T, typename U>
-T SecondsToMicroseconds(const U a) noexcept {
+constexpr T SecondsToMicroseconds(const U a) noexcept {
     return Metric::Mega<T, U>(a);
 }
 
 template <typename T, typename U>
-T SecondsToNanoseconds(const U a) noexcept {
+constexpr T SecondsToNanoseconds(const U a) noexcept {
     return Metric::Giga<T, U>(a);
 }
 
