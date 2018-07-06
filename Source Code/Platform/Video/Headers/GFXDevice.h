@@ -157,11 +157,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc
     inline RenderStage setRenderStage(RenderStage stage);
-    /// Checks if the current rendering stage is any of the stages defined in
-    /// renderStageMask
-    ///@param renderStageMask Is a bitmask of the stages we whish to check if active
-    inline bool isCurrentRenderStage(U32 renderStageMask);
-    inline bool isCurrentRenderStage(RenderStage renderStage);
+    inline bool isDepthStage() const;
+
     void setRenderer(RendererType rendererType);
     Renderer& getRenderer() const;
 

@@ -113,7 +113,7 @@ void RenderBin::sort(const RenderStage& currentRenderStage) {
     switch (_renderOrder) {
         default:
         case RenderingOrder::List::BY_STATE: {
-            if (GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
+            if (GFX_DEVICE.isDepthStage()) {
                 std::sort(std::begin(_renderBinStack),
                           std::end(_renderBinStack),
                           RenderQueueDistanceFrontToBack());

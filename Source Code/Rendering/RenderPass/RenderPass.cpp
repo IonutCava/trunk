@@ -19,7 +19,7 @@ void RenderPass::render(const SceneRenderState& renderState,
                         const SceneGraph& activeSceneGraph) {
     RenderStage currentStage = GFX_DEVICE.getRenderStage();
     
-    bool isDisplayStage = GFX_DEVICE.isCurrentRenderStage(RenderStage::DISPLAY_STAGE);
+    bool isDisplayStage =  currentStage == RenderStage::DISPLAY_STAGE;
 
     RenderQueue& renderQueue = RenderQueue::getInstance();
     if (isDisplayStage) {
@@ -30,8 +30,8 @@ void RenderPass::render(const SceneRenderState& renderState,
     // Draw the entire queue;
     // Limited to 65536 (2^16) items per queue pass!
     if (renderState.objectState() != SceneRenderState::ObjectRenderState::NO_DRAW) {
-        if (GFX_DEVICE.isCurrentRenderStage(to_uint(RenderStage::DISPLAY_STAGE) | 
-                                            to_uint(RenderStage::REFLECTION_STAGE)) &&
+        if ((currentStage == RenderStage::DISPLAY_STAGE ||
+            currentStage == RenderStage::REFLECTION_STAGE) &&
             renderBinCount > 0) {
             LightManager::getInstance().bindDepthMaps();
         }

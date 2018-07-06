@@ -170,7 +170,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         std::to_string(TerrainLoaderAttorney::textureLayerCount(*terrain)));
     terrainMaterial->addShaderDefines("CURRENT_TEXTURE_COUNT " +
                                       std::to_string(textureCount));
-    terrainMaterial->setShaderProgram("terrain", RenderStage::FINAL_STAGE, true);
+    terrainMaterial->setShaderProgram("terrain", RenderStage::DISPLAY_STAGE, true);
     terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", RenderStage::SHADOW_STAGE,
                                       true);
     terrainMaterial->setShaderProgram("depthPass.PrePass.Terrain",

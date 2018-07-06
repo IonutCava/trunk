@@ -167,25 +167,12 @@ class TextureData {
     public:
     TextureData()
         : _textureType(TextureType::TEXTURE_2D),
-            _textureHandle(0)
+          _textureHandle(0)
     {
-    }
-
-    TextureData(const TextureData& old)
-    {
-        _textureType = old._textureType;
-        _textureHandle.store(old._textureHandle);
-        _samplerHash = old._samplerHash;
-    }
-
-    void operator=(const TextureData& old) {
-        _textureType = old._textureType;
-        _textureHandle.store(old._textureHandle);
-        _samplerHash = old._samplerHash;
     }
 
     inline void setHandleHigh(U32 handle) {
-        _textureHandle.store((U64)handle << 32);
+        _textureHandle = (U64)handle << 32 | getHandleLow();
     }
 
     inline U32 getHandleHigh() const {
@@ -197,8 +184,7 @@ class TextureData {
     }
 
     inline void setHandleLow(U32 handle) {
-        U64 handleCrt = _textureHandle;
-        _textureHandle = handleCrt | handle;
+        _textureHandle |= handle;
     }
 
     inline U32 getHandleLow() const{
@@ -210,7 +196,7 @@ class TextureData {
     }
 
     inline void setHandle(U64 handle) {
-        _textureHandle.store(handle);
+        _textureHandle = handle;
     }
         
     inline void getHandle(U64& handle) const {
@@ -221,7 +207,7 @@ class TextureData {
     size_t _samplerHash;
 
 private:
-    std::atomic<U64> _textureHandle;
+    U64  _textureHandle;
 };
 
 typedef vectorImpl<TextureData> TextureDataContainer;

@@ -126,7 +126,6 @@ DeferredShadingRenderer::~DeferredShadingRenderer() {
 void DeferredShadingRenderer::processVisibleNodes(
     const vectorImpl<SceneGraphNode*>& visibleNodes,
     const GFXDevice::GPUBlock& gpuBlock) {
-    GFX_DEVICE.setRenderStage(RenderStage::DEFERRED_STAGE);
 
     Light::LightMap& lights = LightManager::getInstance().getLights();
     if (lights.size() != _cachedLightCount) {

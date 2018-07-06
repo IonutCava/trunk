@@ -34,10 +34,6 @@
 
 #include "Platform/DataTypes/Headers/PlatformDefines.h"
 
-#ifndef toBit
-#define toBit(X) (1 << (X))
-#endif
-
 namespace Divide {
 
 /// State the various attribute locations to use in shaders with VAO/VB's
@@ -86,16 +82,11 @@ enum class CurrentContext : U32 {
 };
 
 enum class RenderStage : U32 {
-    DEFERRED_STAGE = toBit(1),
-    SHADOW_STAGE = toBit(2),
-    REFLECTION_STAGE = toBit(3),
-    FINAL_STAGE = toBit(4),
-    Z_PRE_PASS_STAGE = toBit(5),
-    // Place all stages above this
-    INVALID_STAGE = toBit(6),
-    // Special composite stages go here
-    DISPLAY_STAGE = DEFERRED_STAGE | FINAL_STAGE,
-    DEPTH_STAGE = SHADOW_STAGE | Z_PRE_PASS_STAGE
+    SHADOW_STAGE = 0,
+    REFLECTION_STAGE = 1,
+    DISPLAY_STAGE = 2,
+    Z_PRE_PASS_STAGE = 3,
+    COUNT = 4
 };
 
 enum class ClipPlaneIndex : U32 {

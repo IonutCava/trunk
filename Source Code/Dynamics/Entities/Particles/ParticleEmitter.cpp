@@ -206,7 +206,7 @@ void ParticleEmitter::getDrawCommands(
         sgn.getComponent<RenderingComponent>()->renderWireframe());
     _drawCommand.stateHash(_particleStateBlockHash);
     _drawCommand.instanceCount(particleCount);
-    _drawCommand.shaderProgram(currentRenderStage == RenderStage::FINAL_STAGE
+    _drawCommand.shaderProgram(currentRenderStage == RenderStage::DISPLAY_STAGE
                                    ? _particleShader
                                    : _particleDepthShader);
     _drawCommand.sourceBuffer(_particleGPUBuffer);

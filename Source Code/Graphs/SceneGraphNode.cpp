@@ -344,8 +344,7 @@ bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
                                  const RenderStage& renderStage) {
     if (_reset[renderStage]) {
         _reset[renderStage] = false;
-        if (getParent() &&
-            !GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
+        if (getParent() && !GFX_DEVICE.isDepthStage()) {
             for (SceneGraphNode::NodeChildren::value_type& it :
                  getParent()->getChildren()) {
                 if (it.second->getComponent<AnimationComponent>()) {

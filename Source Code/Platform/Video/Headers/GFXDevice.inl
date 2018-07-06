@@ -42,17 +42,11 @@ inline void GFXDevice::renderInViewport(const vec4<I32>& rect,
     callback();
 }
 
-/// Compare the current render stage flag with the given mask
-inline bool GFXDevice::isCurrentRenderStage(U32 renderStageMask) {
-    DIVIDE_ASSERT(
-        (renderStageMask & ~(to_uint(RenderStage::INVALID_STAGE) - 1)) == 0,
-        "GFXDevice error: render stage query received an invalid bitmask!");
-    return bitCompare(renderStageMask, to_uint(_renderStage));
+inline bool GFXDevice::isDepthStage() const {
+    return _renderStage == RenderStage::SHADOW_STAGE ||
+           _renderStage == RenderStage::Z_PRE_PASS_STAGE;
 }
 
-inline bool GFXDevice::isCurrentRenderStage(RenderStage renderStage) {
-    return isCurrentRenderStage(to_uint(renderStage));
-}
 /// Change the width of rendered lines to the specified value
 inline void GFXDevice::setLineWidth(F32 width) {
     _previousLineWidth = _currentLineWidth;

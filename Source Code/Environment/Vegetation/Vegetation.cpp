@@ -116,8 +116,8 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     vegMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     vegMaterial->setShininess(5.0f);
     vegMaterial->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
-    vegMaterial->addShaderDefines("SKIP_TEXTURES");
-    vegMaterial->setShaderProgram(_grassShaderName, RenderStage::FINAL_STAGE,
+    vegMaterial->setShaderDefines("SKIP_TEXTURES");
+    vegMaterial->setShaderProgram(_grassShaderName, RenderStage::DISPLAY_STAGE,
                                   true);
     vegMaterial->setShaderProgram(_grassShaderName + ".Shadow",
                                   RenderStage::SHADOW_STAGE, true);
@@ -225,7 +225,7 @@ void Vegetation::uploadGrassData() {
     for (U8 i = 0; i < 3; ++i) {
         ShaderProgram* const shaderProg =
             mat->getShaderInfo(i == 0
-                                   ? RenderStage::FINAL_STAGE
+                                   ? RenderStage::DISPLAY_STAGE
                                    : (i == 1 ? RenderStage::SHADOW_STAGE
                                              : RenderStage::Z_PRE_PASS_STAGE))
                 .getProgram();
@@ -317,7 +317,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
                 sgn.getComponent<RenderingComponent>()->getMaterialInstance();
             for (U8 i = 0; i < 3; ++i) {
                 RenderStage stage =
-                    (i == 0 ? RenderStage::FINAL_STAGE
+                    (i == 0 ? RenderStage::DISPLAY_STAGE
                             : (i == 1 ? RenderStage::SHADOW_STAGE : RenderStage::Z_PRE_PASS_STAGE));
                 mat->getShaderInfo(stage).getProgram()->Uniform(
                     "grassScale", /* _grassSize*/ 1.0f);
@@ -440,7 +440,7 @@ bool Vegetation::onDraw(SceneGraphNode& sgn, const RenderStage& renderStage) {
     return !(!_render || !_success || !_threadedLoadComplete ||
              _terrainChunk->getLoD() > 0 ||
              (LightManager::getInstance().currentShadowPass() > 0 &&
-              GFX_DEVICE.isCurrentRenderStage(RenderStage::SHADOW_STAGE)));
+              renderStage == RenderStage::SHADOW_STAGE));
 }
 
 void Vegetation::generateTrees() {

@@ -105,7 +105,7 @@ void Sky::getDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand cmd;
     cmd.renderWireframe(
         sgn.getComponent<RenderingComponent>()->renderWireframe());
-    cmd.stateHash(GFX_DEVICE.isCurrentRenderStage(RenderStage::REFLECTION_STAGE)
+    cmd.stateHash(currentRenderStage == RenderStage::REFLECTION_STAGE
                       ? _skyboxRenderStateReflectedHash
                       : _skyboxRenderStateHash);
     cmd.shaderProgram(_skyShader);

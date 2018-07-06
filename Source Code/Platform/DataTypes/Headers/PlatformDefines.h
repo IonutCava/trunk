@@ -123,6 +123,7 @@ template<typename T>
 constexpr T toBit(T X) {
     return 1 << X;
 }
+
 /* See
 
 http://randomascii.wordpress.com/2012/01/11/tricks-with-the-floating-point-format/

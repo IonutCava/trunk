@@ -267,16 +267,17 @@ class Material : public Resource {
     /// The above strings becomes, in the shader:
     ///#define MAX_LIGHT_COUNT 4
     ///#define MAX_SHADOW_CASTERS 2
-    inline void addShaderDefines(RenderStage renderStage,
+    inline void setShaderDefines(RenderStage renderStage,
                                  const stringImpl& shaderDefines) {
-        _shaderInfo[renderStage]._shaderDefines.push_back(shaderDefines);
+        _shaderInfo[to_uint(renderStage)]._shaderDefines.push_back(
+            shaderDefines);
     }
 
-    inline void addShaderDefines(const stringImpl& shaderDefines) {
-        addShaderDefines(RenderStage::FINAL_STAGE, shaderDefines);
-        addShaderDefines(RenderStage::Z_PRE_PASS_STAGE, shaderDefines);
-        addShaderDefines(RenderStage::SHADOW_STAGE, shaderDefines);
-        addShaderDefines(RenderStage::REFLECTION_STAGE, shaderDefines);
+    inline void setShaderDefines(const stringImpl& shaderDefines) {
+        setShaderDefines(RenderStage::DISPLAY_STAGE, shaderDefines);
+        setShaderDefines(RenderStage::Z_PRE_PASS_STAGE, shaderDefines);
+        setShaderDefines(RenderStage::SHADOW_STAGE, shaderDefines);
+        setShaderDefines(RenderStage::REFLECTION_STAGE, shaderDefines);
     }
 
     /// toggle multi-threaded shader loading on or off for this material
@@ -290,7 +291,7 @@ class Material : public Resource {
     inline void setShaderProgram(
         const stringImpl& shader, const bool computeOnAdd,
         const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>()) {
-        setShaderProgram(shader, RenderStage::FINAL_STAGE, computeOnAdd,
+        setShaderProgram(shader, RenderStage::DISPLAY_STAGE, computeOnAdd,
                          shaderCompileCallback);
         setShaderProgram(shader, RenderStage::Z_PRE_PASS_STAGE, computeOnAdd,
                          shaderCompileCallback);
@@ -324,7 +325,7 @@ class Material : public Resource {
         return _textures[to_uint(textureUsage)];
     }
     ShaderInfo& getShaderInfo(
-        RenderStage renderStage = RenderStage::FINAL_STAGE);
+        RenderStage renderStage = RenderStage::DISPLAY_STAGE);
 
     inline const TextureOperation& getTextureOperation() const {
         return _operation;
@@ -376,32 +377,28 @@ class Material : public Resource {
     static bool _shaderQueueLocked;
     static bool _serializeShaderLoad;
 
-    std::queue<std::tuple<RenderStage, ResourceDescriptor, DELEGATE_CBK<>>>
+    std::queue<std::tuple<U32, ResourceDescriptor, DELEGATE_CBK<>>>
         _shaderComputeQueue;
     ShadingMode _shadingMode;
-    stringImpl
-        _shaderModifier;  //<use for special shader tokens, such as "Tree"
+    /// use for special shader tokens, such as "Tree"
+    stringImpl _shaderModifier;
     vectorImpl<TranslucencySource> _translucencySource;
-    F32 _parallaxFactor;  //< parallax/relief factor (higher value > more
-    // pronounced effect)
+    /// parallax/relief factor (higher value > more pronounced effect)
+    F32 _parallaxFactor;
     bool _dirty;
     bool _dumpToFile;
     bool _translucencyCheck;
-    bool _useAlphaTest;  //< use discard if true / blend if otherwise
+    /// use discard if true / blend if otherwise
+    bool _useAlphaTest;
     bool _doubleSided;
-    bool _hardwareSkinning;  ///< Use shaders that have bone transforms
-    /// implemented
-    typedef hashMapImpl<RenderStage, ShaderInfo> shaderInfoMap;
-    shaderInfoMap _shaderInfo;
+    /// Use shaders that have bone transforms implemented
+    bool _hardwareSkinning;
+    ShaderInfo _shaderInfo[to_const_uint(RenderStage::COUNT)];
+    size_t _defaultRenderStates[to_const_uint(RenderStage::COUNT)];
 
     bool _shaderThreadedLoad;
-    bool _computedShaderTextures;  //<if we should recompute only fragment
-    // shader on texture change
-    /// use this map to add more render states mapped to a specific state
-    /// 3 render state's: Normal, reflection and shadow
-    typedef hashMapImpl<RenderStage, size_t /*renderStateBlockHash*/>
-        renderStateBlockMap;
-    renderStateBlockMap _defaultRenderStates;
+    /// if we should recompute only fragment
+    bool _computedShaderTextures;
 
     /// use this map to add textures to the material
     vectorImpl<Texture*> _textures;

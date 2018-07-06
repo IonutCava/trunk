@@ -122,7 +122,7 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     if (_paramsDirty) {
         RenderingComponent* rComp = sgn.getComponent<RenderingComponent>();
         ShaderProgram* shader = rComp->getMaterialInstance()
-                                    ->getShaderInfo(RenderStage::FINAL_STAGE)
+                                    ->getShaderInfo(RenderStage::DISPLAY_STAGE)
                                     .getProgram();
         shader->Uniform("_waterShininess", _shininess);
         shader->Uniform("_noiseFactor", _noiseFactor);
@@ -144,7 +144,7 @@ bool WaterPlane::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
         return false;
     }
 
-    if (!GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
+    if (!GFX_DEVICE.isDepthStage()) {
         TextureDescriptor::AttachmentType att =
             TextureDescriptor::AttachmentType::Color0;
         RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
@@ -163,18 +163,18 @@ void WaterPlane::getDrawCommands(
     SceneGraphNode& sgn, const RenderStage& currentRenderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-    bool depthPass = GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE);
+    bool depthPass = GFX_DEVICE.isDepthStage();
     RenderingComponent* const renderable =
         sgn.getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
     ShaderProgram* drawShader =
-        renderable->getDrawShader(depthPass ? RenderStage::Z_PRE_PASS_STAGE : RenderStage::FINAL_STAGE);
+        renderable->getDrawShader(depthPass ? RenderStage::Z_PRE_PASS_STAGE : RenderStage::DISPLAY_STAGE);
     drawShader->Uniform("underwater", _cameraUnderWater);
     GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 0);
     cmd.renderWireframe(renderable->renderWireframe());
     cmd.stateHash(
-        renderable->getMaterialInstance()->getRenderStateBlock(RenderStage::FINAL_STAGE));
+        renderable->getMaterialInstance()->getRenderStateBlock(RenderStage::DISPLAY_STAGE));
     cmd.shaderProgram(drawShader);
     cmd.sourceBuffer(_plane->getGeometryVB());
     drawCommandsOut.push_back(cmd);
@@ -210,7 +210,7 @@ void WaterPlane::updateRefraction() {
     _refractionRendering = true;
     // If we are above water, process the plane's reflection. If we are below,
     // we render the scene normally
-    RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(RenderStage::FINAL_STAGE);
+    RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(RenderStage::DISPLAY_STAGE);
     GFX_DEVICE.toggleClipPlane(_refractionPlaneID, true);
     _cameraMgr.getActiveCamera()->renderLookAt();
     // bind the refractive texture
@@ -234,7 +234,7 @@ void WaterPlane::updateReflection() {
         _reflectionRendering = true;
 
         RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(
-            _cameraUnderWater ? RenderStage::FINAL_STAGE : RenderStage::REFLECTION_STAGE);
+            _cameraUnderWater ? RenderStage::DISPLAY_STAGE : RenderStage::REFLECTION_STAGE);
         GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, true);
 
         _cameraUnderWater ? _cameraMgr.getActiveCamera()->renderLookAt()

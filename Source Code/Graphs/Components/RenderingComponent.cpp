@@ -267,9 +267,8 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
         return 0L;
     }
 
-    bool depthPass = GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE);
-    bool shadowStage =
-        GFX_DEVICE.isCurrentRenderStage(RenderStage::SHADOW_STAGE);
+    bool depthPass = GFX_DEVICE.isDepthStage();
+    bool shadowStage = GFX_DEVICE.getRenderStage() == RenderStage::SHADOW_STAGE;
 
     if (!_materialInstance && depthPass) {
         return shadowStage
@@ -277,14 +276,13 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
                    : _parentSGN.getNode()->renderState().getDepthStateBlock();
     }
 
-    bool reflectionStage =
-        GFX_DEVICE.isCurrentRenderStage(RenderStage::REFLECTION_STAGE);
+    bool reflectionStage = GFX_DEVICE.getRenderStage() == RenderStage::REFLECTION_STAGE);
 
     return _materialInstance->getRenderStateBlock(
         depthPass ? (shadowStage ? RenderStage::SHADOW_STAGE
                                  : RenderStage::Z_PRE_PASS_STAGE)
                   : (reflectionStage ? RenderStage::REFLECTION_STAGE
-                                     : RenderStage::FINAL_STAGE));
+                                     : RenderStage::DISPLAY_STAGE));
 }
 
 vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
@@ -320,7 +318,7 @@ void RenderingComponent::inViewCallback() {
         bool isTranslucent =
             mat->isTranslucent()
                 ? (mat->useAlphaTest() ||
-                   GFX_DEVICE.isCurrentRenderStage(RenderStage::SHADOW_STAGE))
+                   GFX_DEVICE.getRenderStage() == RenderStage::SHADOW_STAGE)
                 : false;
         _materialPropertyMatrix.setCol(
             1, vec4<F32>(

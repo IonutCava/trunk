@@ -232,7 +232,7 @@ void LightManager::togglePreviewShadowMaps() {
     _previewShadowMaps = !_previewShadowMaps;
     // Stop if we have shadows disabled
     if (!_shadowMapsEnabled ||
-        !GFX_DEVICE.isCurrentRenderStage(RenderStage::DISPLAY_STAGE)) {
+        GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY_STAGE) {
         return;
     }
 
@@ -249,7 +249,7 @@ void LightManager::previewShadowMaps(Light* light) {
 #ifdef _DEBUG
     // Stop if we have shadows disabled
     if (!_shadowMapsEnabled || !_previewShadowMaps ||
-        !GFX_DEVICE.isCurrentRenderStage(RenderStage::DISPLAY_STAGE)) {
+        GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY_STAGE) {
         return;
     }
     if (!light) {

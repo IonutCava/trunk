@@ -78,7 +78,7 @@ void Terrain::buildQuadtree() {
     for (U8 i = 0; i < 3; ++i) {
         ShaderProgram* const drawShader =
             mat->getShaderInfo(i == 0
-                                   ? RenderStage::FINAL_STAGE
+                                   ? RenderStage::DISPLAY_STAGE
                                    : (i == 1 ? RenderStage::SHADOW_STAGE
                                              : RenderStage::Z_PRE_PASS_STAGE))
                 .getProgram();
@@ -154,7 +154,7 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     size_t drawStateHash = 0;
 
-    if (currentRenderStage == RenderStage::DEPTH_STAGE) {
+    if (GFX_DEVICE.isDepthStage()) {
         drawStateHash = currentRenderStage == RenderStage::Z_PRE_PASS_STAGE
                             ? _terrainRenderStateHash
                             : _terrainDepthRenderStateHash;
@@ -170,7 +170,7 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
 
     ShaderProgram* drawShader = renderable->getDrawShader(
         currentRenderStage == RenderStage::REFLECTION_STAGE
-            ? RenderStage::FINAL_STAGE
+            ? RenderStage::DISPLAY_STAGE
             : currentRenderStage);
 
     if (_terrainInView) {
@@ -195,9 +195,8 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
     }
 
     // draw infinite plane
-    if (GFX_DEVICE.isCurrentRenderStage(
-            to_uint(RenderStage::FINAL_STAGE) |
-            to_uint(RenderStage::Z_PRE_PASS_STAGE)) &&
+    if ((GFX_DEVICE.getRenderStage() == RenderStage::DISPLAY_STAGE ||
+         GFX_DEVICE.getRenderStage() == RenderStage::Z_PRE_PASS_STAGE) &&
         _planeInView) {
         GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 1);
         cmd.renderWireframe(renderable->renderWireframe());

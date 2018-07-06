@@ -82,7 +82,7 @@ class RenderingComponent : public SGNComponent {
     void lodLevel(U8 LoD);
 
     ShaderProgram* const getDrawShader(
-        RenderStage renderStage = RenderStage::FINAL_STAGE);
+        RenderStage renderStage = RenderStage::DISPLAY_STAGE);
     size_t getDrawStateHash(RenderStage renderStage);
 
     inline void getMaterialColorMatrix(mat4<F32>& matOut) const {

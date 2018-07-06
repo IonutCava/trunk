@@ -519,7 +519,7 @@ void Scene::debugDraw(const RenderStage& stage) {
         }
     }
 #endif
-    if (GFX_DEVICE.isCurrentRenderStage(RenderStage::DISPLAY_STAGE)) {
+    if (stage == RenderStage::DISPLAY_STAGE) {
         // Draw bounding boxes, skeletons, axis gizmo, etc.
         GFX_DEVICE.debugDraw(renderState());
         // Show NavMeshes

@@ -58,14 +58,14 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
     waterMat->dumpToFile(false);
     waterMat->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
     waterMat->setTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0, waterNM);
-    waterMat->setShaderProgram(waterShaderProgram->getName(), RenderStage::FINAL_STAGE,
+    waterMat->setShaderProgram(waterShaderProgram->getName(), RenderStage::DISPLAY_STAGE,
                                true);
     waterMat->setShaderProgram("depthPass.PrePass", RenderStage::Z_PRE_PASS_STAGE, true);
 
     RenderStateBlockDescriptor waterMatDesc(GFX_DEVICE.getStateBlockDescriptor(
-        waterMat->getRenderStateBlock(RenderStage::FINAL_STAGE)));
+        waterMat->getRenderStateBlock(RenderStage::DISPLAY_STAGE)));
     waterMatDesc.setCullMode(CullMode::CULL_MODE_NONE);
-    waterMat->setRenderStateBlock(waterMatDesc, RenderStage::FINAL_STAGE);
+    waterMat->setRenderStateBlock(waterMatDesc, RenderStage::DISPLAY_STAGE);
 
     return true;
 }

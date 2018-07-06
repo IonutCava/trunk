@@ -275,11 +275,9 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
 }
 
 void Kernel::renderScene() {
-    RenderStage stage = (_GFX.getRenderer().getType() != RendererType::RENDERER_FORWARD_PLUS)
-                            ? RenderStage::DEFERRED_STAGE
-                            : RenderStage::FINAL_STAGE;
-    bool postProcessing =
-        (stage != RenderStage::DEFERRED_STAGE && _GFX.postProcessingEnabled());
+    //HACK: postprocessing not working with deffered rendering! -Ionut
+    bool postProcessing = _GFX.getRenderer().getType() != RendererType::RENDERER_DEFERRED_SHADING &&
+                          _GFX.postProcessingEnabled();
 
     if (_GFX.anaglyphEnabled() && postProcessing) {
         renderSceneAnaglyph();
@@ -290,7 +288,7 @@ void Kernel::renderScene() {
     depthPassPolicy._depthOnly = true;
     colorPassPolicy._colorOnly = true;
 
-    /// Lock the render pass manager because the Z_PRE_PASS and the FINAL_STAGE
+    /// Lock the render pass manager because the Z_PRE_PASS and the DISPLAY_STAGE
     /// pass must render
     /// the exact same geometry
     RenderPassManager::getInstance().lock();
@@ -307,7 +305,7 @@ void Kernel::renderScene() {
             ->Begin(Framebuffer::defaultPolicy());
     }
 
-    _sceneMgr.render(stage, *this);
+    _sceneMgr.render(RenderStage::DISPLAY_STAGE, *this);
 
     if (postProcessing) {
         _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)->End();
@@ -318,10 +316,6 @@ void Kernel::renderScene() {
 }
 
 void Kernel::renderSceneAnaglyph() {
-    RenderStage stage = (_GFX.getRenderer().getType() != RendererType::RENDERER_FORWARD_PLUS)
-                            ? RenderStage::DEFERRED_STAGE
-                            : RenderStage::FINAL_STAGE;
-
     Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
     depthPassPolicy._depthOnly = true;
     colorPassPolicy._colorOnly = true;
@@ -340,7 +334,7 @@ void Kernel::renderSceneAnaglyph() {
     // first screen buffer
     _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
         ->Begin(Framebuffer::defaultPolicy());
-    SceneManager::getInstance().render(stage, *this);
+    SceneManager::getInstance().render(RenderStage::DISPLAY_STAGE, *this);
     _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)->End();
 
     RenderPassManager::getInstance().unlock();
@@ -357,7 +351,7 @@ void Kernel::renderSceneAnaglyph() {
     // second screen buffer
     _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_ANAGLYPH)
         ->Begin(Framebuffer::defaultPolicy());
-    SceneManager::getInstance().render(stage, *this);
+    SceneManager::getInstance().render(RenderStage::DISPLAY_STAGE, *this);
     _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_ANAGLYPH)->End();
 
     RenderPassManager::getInstance().unlock();
@@ -484,7 +478,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _cameraMgr->pushActiveCamera(camera);
 
     // Load and render the splash screen
-    _GFX.setRenderStage(RenderStage::FINAL_STAGE);
+    _GFX.setRenderStage(RenderStage::DISPLAY_STAGE);
     _GFX.beginFrame();
     GUISplash("divideLogo.jpg", vec2<U16>(400, 300)).render();
     _GFX.endFrame();

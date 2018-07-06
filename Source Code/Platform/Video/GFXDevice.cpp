@@ -50,7 +50,7 @@ F32 _anaglyphIOD = -0.01f;
 };
 
 GFXDevice::GFXDevice()
-    : _api(nullptr), _renderStage(RenderStage::INVALID_STAGE) {
+    : _api(nullptr), _renderStage(RenderStage::COUNT) {
     // Hash values
     _state2DRenderingHash = 0;
     _defaultStateBlockHash = 0;
