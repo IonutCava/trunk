@@ -469,6 +469,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     GPUBlock _gpuBlock;
 
     vectorImpl<NodeData> _matricesData;
+    vectorImpl<IndirectDrawCommand> _drawCommandsCache;
 
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;

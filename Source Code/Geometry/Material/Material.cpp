@@ -65,8 +65,8 @@ Material::Material()
         hashAlg::makePair(RenderStage::SHADOW_STAGE,
                           GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor)));
 
-
-    _textureData.reserve(ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 16));
+    _textureData.reserve(ParamHandler::getInstance().getParam<I32>(
+        "rendering.maxTextureSlots", 16));
 
     _computedShaderTextures = false;
 }

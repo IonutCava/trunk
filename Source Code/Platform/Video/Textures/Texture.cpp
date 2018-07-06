@@ -18,6 +18,7 @@ Texture::Texture(TextureType type, const bool flipped)
 {
     _width = _height = 0;
     _textureData._textureType = type;
+    _textureData._samplerHash = _samplerDescriptor.getHash();
 }
 
 Texture::~Texture()
@@ -139,7 +140,7 @@ bool Texture::LoadFile(U32 target, const stringImpl& name) {
     // Create a new Rendering API-dependent texture object
     GFXImageFormat internalFormat = GFXImageFormat::RGB8;
     // Select the proper color space internal format
-    bool srgb = _textureData._samplerDescriptor.srgb();
+    bool srgb = _samplerDescriptor.srgb();
     // We only support 8 bit per pixel, 1/2/3/4 channel textures
     switch (img.format()) {
         case GFXImageFormat::RED:

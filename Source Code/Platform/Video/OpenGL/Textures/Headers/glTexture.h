@@ -63,7 +63,6 @@ class glTexture : public Texture {
     GLenum _format;
     GLenum _internalFormat;
     std::atomic_bool _allocatedStorage;
-    size_t _samplerHash;
     GLushort _mipMaxLevel;
     GLushort _mipMinLevel;
 };

@@ -716,24 +716,31 @@ void GFXDevice::buildDrawCommands(
         return;
     }
     vectorAlg::vecSize nodeCount = visibleNodes.size();
-    vectorImpl<IndirectDrawCommand> drawCommands;
-    drawCommands.resize(nodeCount + 1);
+    _drawCommandsCache.resize(nodeCount + 1);
     // Loop over the list of nodes
     for (vectorAlg::vecSize i = 0; i < nodeCount; ++i) {
-        SceneGraphNode* const crtNode = visibleNodes[i];
         RenderingComponent* const renderable =
-            crtNode->getComponent<RenderingComponent>();
-        if (!renderable) {
-            continue;
-        }
-        const vectorImpl<GenericDrawCommand>& nodeDrawCommands =
-            renderable->getDrawCommands(1 + i, sceneRenderState,
-                                        getRenderStage());
-        for (const GenericDrawCommand& cmd : nodeDrawCommands) {
-            drawCommands[cmd.cmd().baseInstance] = cmd.cmd();
+            visibleNodes[i]->getComponent<RenderingComponent>();
+        if (renderable) {
+            const vectorImpl<GenericDrawCommand>& nodeDrawCommands =
+                renderable->getDrawCommands(sceneRenderState, getRenderStage());
+
+            vectorAlg::vecSize temp = 0;
+            vectorAlg::vecSize index = 0;
+            for (const GenericDrawCommand& cmd : nodeDrawCommands) {
+                index = 1 + i + temp++;
+                IndirectDrawCommand& tempCmd = _drawCommandsCache[index];
+                tempCmd = cmd.cmd();
+                tempCmd.baseInstance = static_cast<U32>(index);
+            }
         }
     }
-    uploadDrawCommands(drawCommands);
+
+    DIVIDE_ASSERT(_drawCommandsCache.size() == _matricesData.size(),
+                  "GFXDevice::buildDrawCommands error: Command count does not "
+                  "match uploaded data count");
+
+    uploadDrawCommands(_drawCommandsCache);
 }
 
 /// Depending on the context, either immediately call the function, or pass it

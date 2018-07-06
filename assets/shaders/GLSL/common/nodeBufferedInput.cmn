@@ -1,12 +1,7 @@
 #ifndef _NODE_BUFFERED_INPUT_CMN_
 #define _NODE_BUFFERED_INPUT_CMN_
 
-//flat VARYING uint dvd_drawID;
-#if defined(VERT_SHADER)
-flat out int dvd_drawID;
-#elif defined(FRAG_SHADER)
-flat in int dvd_drawID;
-#endif
+flat VARYING uint dvd_drawID;
 
 struct NodeData {
     mat4 _matrix1;

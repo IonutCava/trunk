@@ -57,18 +57,18 @@ class Texture : public HardwareResource {
        {
            _textureType = old._textureType;
            _textureHandle.store(old._textureHandle);
-           _samplerDescriptor = old._samplerDescriptor;
+           _samplerHash = old._samplerHash;
        }
 
        void operator=(const TextureData& old) {
            _textureType = old._textureType;
            _textureHandle.store(old._textureHandle);
-           _samplerDescriptor = old._samplerDescriptor;
+           _samplerHash = old._samplerHash;
        }
 
        TextureType _textureType;
        std::atomic<U32> _textureHandle;
-       SamplerDescriptor _samplerDescriptor;
+       size_t _samplerHash;
    };
 
    public:
@@ -88,14 +88,15 @@ class Texture : public HardwareResource {
     /// shaders
     inline void setCurrentSampler(const SamplerDescriptor& descriptor) {
         // This can be called at any time
-        _textureData._samplerDescriptor = descriptor;
+        _samplerDescriptor = descriptor;
+        _textureData._samplerHash = descriptor.getHash();
         // The sampler will be updated before the next bind call and used in
         // that bind
         _samplerDirty = true;
     }
     /// Get the sampler descriptor used by this texture
     inline const SamplerDescriptor& getCurrentSampler() const {
-        return _textureData._samplerDescriptor;
+        return _samplerDescriptor;
     }
 
     inline TextureData& getData() {
@@ -148,6 +149,7 @@ class Texture : public HardwareResource {
     bool _power2Size;
     mat4<F32> _transformMatrix;
     TextureData  _textureData;
+    SamplerDescriptor _samplerDescriptor;
 };
 
 };  // namespace Divide
