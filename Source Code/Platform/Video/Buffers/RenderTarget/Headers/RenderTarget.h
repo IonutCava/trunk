@@ -39,6 +39,12 @@
 namespace Divide {
     constexpr U32 RT_MAX_ATTACHMENTS = 32;
 
+class GFXRTPool;
+
+namespace Attorney {
+    class RenderTargetRTPool;
+};
+
 struct RenderTargetID {
     RenderTargetID() : RenderTargetID(RenderTargetUsage::COUNT)
     {
@@ -85,6 +91,8 @@ struct RenderTargetDescriptor {
 };
 
 class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
+    friend class Attorney::RenderTargetRTPool;
+
    public:
     enum class RenderTargetUsage : U32 {
         RT_READ_WRITE = 0,
@@ -112,8 +120,6 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     // This call sets the target mip level to write to
     // If an attachment does not support the specified mip level, it will be DISABLED to avoid completeness errors
     virtual void setMipLevel(U16 writeLevel) = 0;
-    virtual void begin(const RTDrawDescriptor& drawPolicy) = 0;
-    virtual void end() = 0;
     virtual void bind(U8 unit, RTAttachmentType type, U8 index) = 0;
     virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) = 0;
     virtual void blitFrom(RenderTarget* inputFB, bool blitColour = true, bool blitDepth = false) = 0;
@@ -132,15 +138,30 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     const stringImpl& getName() const;
 
    protected:
-    RTAttachmentPool* _attachmentPool;
-    RenderTargetDescriptor _descriptor;
+    virtual void begin(const RTDrawDescriptor& drawPolicy) = 0;
+    virtual void end() = 0;
 
    protected:
-    static RTDrawDescriptor s_policyDefault;
-    static RTDrawDescriptor s_policyKeepDepth;
-    static RTDrawDescriptor s_policyDepthOnly;
+    RTAttachmentPool* _attachmentPool;
+    RenderTargetDescriptor _descriptor;
 };
 
+namespace Attorney {
+    class RenderTargetRTPool {
+    private:
+        static void begin(RenderTarget& rt, const RTDrawDescriptor& drawPolicy) {
+            rt.begin(drawPolicy);
+        }
+
+        static void end(RenderTarget& rt) {
+            rt.end();
+        }
+
+        friend class Divide::GFXRTPool;
+    };
+};  // namespace Attorney
+
 };  // namespace Divide
+
 
 #endif //_RENDER_TARGET_H_

@@ -152,54 +152,31 @@ void cleanCommandBuffer(CommandBuffer& cmdBuffer) {
     }
 }
 
-void RenderPassManager::doCustomPass(PassParams& params) {
-    static CommandBuffer commandBuffer;
 
+RenderPassCmd RenderPassManager::prePass(const PassParams& params, const RenderTarget& target) {
     static const vectorImpl<RenderBinType> depthExclusionList
     {
         RenderBinType::RBT_DECAL,
         RenderBinType::RBT_TRANSLUCENT
     };
 
-    static const vectorImpl<RenderBinType> shadowExclusionList
-    {
-        RenderBinType::RBT_DECAL,
-        RenderBinType::RBT_SKY,
-        RenderBinType::RBT_TRANSLUCENT
-    };
+    GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): PrePass", TypeUtil::renderStageToString(params.stage)), 0);
+    RenderPassCmd cmd;
 
-    commandBuffer.resize(0);
+    // PrePass requires a depth buffer
+    bool doPrePass = params.doPrePass && target.getAttachment(RTAttachmentType::Depth, 0).used();
 
+    if (doPrePass) {
+        SceneManager& sceneManager = parent().sceneManager();
 
-    // step1: cull nodes for current camera and pass
-    SceneManager& mgr = parent().sceneManager();
-
-    // Tell the Rendering API to draw from our desired PoV
-    _context.renderFromCamera(*params.camera);
-    _context.setClipPlanes(params.clippingPlanes);
-    
-    if (params.doPrePass) {
-        RenderTarget& target = _context.renderTarget(params.target);
-        if (!target.getAttachment(RTAttachmentType::Depth, 0).used()) {
-            params.doPrePass = false;
-        }
-    }
-
-    if (params.doPrePass) {
         _context.setRenderStagePass(RenderStagePass(params.stage, RenderPassType::DEPTH_PASS));
 
-        GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): PrePass", TypeUtil::renderStageToString(params.stage)), 0);
-
-        Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
+        Attorney::SceneManagerRenderPass::populateRenderQueue(sceneManager,
                                                               *params.camera,
                                                               true,
                                                               params.pass);
 
         if (params.target._usage != RenderTargetUsage::COUNT) {
-            RenderTarget& target = _context.renderTarget(params.target);
-            const Texture_ptr& depthBufferTexture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
-
-            RenderPassCmd cmd;
             cmd._renderTargetDescriptor = RenderTarget::defaultPolicyDepthOnly();
             if (params.bindTargets) {
                 cmd._renderTarget = params.target;
@@ -209,8 +186,8 @@ void RenderPassManager::doCustomPass(PassParams& params) {
 
             for (U32 i = 0; i < binCount; ++i) {
                 if (std::find(std::begin(depthExclusionList),
-                              std::end(depthExclusionList),
-                              RenderBinType::_from_integral(i)) == std::cend(depthExclusionList))
+                    std::end(depthExclusionList),
+                    RenderBinType::_from_integral(i)) == std::cend(depthExclusionList))
                 {
                     if (i != to_U32(RenderBinType::RBT_TRANSLUCENT)) {
                         _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), binCmds[i]);
@@ -221,33 +198,39 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(binCmds), std::cend(binCmds));
 
             RenderSubPassCmds postRenderSubPasses(1);
-            Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, postRenderSubPasses);
+            Attorney::SceneManagerRenderPass::postRender(sceneManager, *params.camera, postRenderSubPasses);
             cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(postRenderSubPasses), std::cend(postRenderSubPasses));
-            commandBuffer.push_back(cmd);
-            cleanCommandBuffer(commandBuffer);
-            
-            _context.flushCommandBuffer(commandBuffer);
-            commandBuffer.resize(0);
-
-            if (params.occlusionCull) {
-                _context.constructHIZ(target);
-                _context.occlusionCull(getBufferData(params.stage, params.pass), depthBufferTexture);
-            }
         }
     }
 
-    _context.setRenderStagePass(RenderStagePass(params.stage, RenderPassType::COLOUR_PASS));
+    return cmd;
+}
+
+RenderPassCmd RenderPassManager::mainPass(const PassParams& params, RenderTarget& target) {
+    static const vectorImpl<RenderBinType> shadowExclusionList
+    {
+        RenderBinType::RBT_DECAL,
+        RenderBinType::RBT_SKY,
+        RenderBinType::RBT_TRANSLUCENT
+    };
+    constexpr U32 binCount = to_U32(RenderBinType::COUNT);
+
+
     GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): RenderPass", TypeUtil::renderStageToString(params.stage)), 1);
 
-    // step3: do renderer pass 1: light cull for Forward+ / G-buffer creation for Deferred
-    Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
+    RenderPassCmd cmd;
+    SceneManager& sceneManager = parent().sceneManager();
+
+    _context.setRenderStagePass(RenderStagePass(params.stage, RenderPassType::COLOUR_PASS));
+    Attorney::SceneManagerRenderPass::populateRenderQueue(sceneManager,
                                                           *params.camera,
                                                           !params.doPrePass,
                                                           params.pass);
+
     if (params.target._usage != RenderTargetUsage::COUNT) {
         bool drawToDepth = true;
         if (params.stage != RenderStage::SHADOW) {
-            Attorney::SceneManagerRenderPass::preRender(mgr, *params.camera, _context.renderTarget(params.target));
+            Attorney::SceneManagerRenderPass::preRender(sceneManager, *params.camera, target);
             if (params.doPrePass) {
                 drawToDepth = Config::DEBUG_HIZ_CULLING;
             }
@@ -255,143 +238,168 @@ void RenderPassManager::doCustomPass(PassParams& params) {
 
         if (params.stage == RenderStage::DISPLAY) {
             // Bind the depth buffers
-            RenderTarget& target = _context.renderTarget(params.target);
             const Texture_ptr& depthBufferTexture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
             depthBufferTexture->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
 
-            const RTAttachment& velocityAttachment = target.getAttachment(RTAttachmentType::Colour,
-                                                                          to_U8(GFXDevice::ScreenTargets::VELOCITY));
+            const RTAttachment& velocityAttachment = target.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::VELOCITY));
             if (velocityAttachment.used()) {
                 const Texture_ptr& prevDepthTexture = _context.getPrevDepthBuffer();
                 (prevDepthTexture ? prevDepthTexture : depthBufferTexture)->bind(to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
             }
         }
 
-        RTDrawDescriptor& drawPolicy = params.drawPolicy ? *params.drawPolicy
-                                                         : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyKeepDepth()
-                                                                                       : RenderTarget::defaultPolicy());
-        drawPolicy.drawMask().setEnabled(RTAttachmentType::Depth,  0, drawToDepth);
+        RTDrawDescriptor& drawPolicy = 
+            params.drawPolicy ? *params.drawPolicy
+                              : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyKeepDepth()
+                                                            : RenderTarget::defaultPolicy());
 
-        RenderPassCmd cmd;
+        drawPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, drawToDepth);
+
         if (params.bindTargets) {
             cmd._renderTarget = params.target;
         }
+
         cmd._renderTargetDescriptor = drawPolicy;
 
-        U32 binCount = to_U32(RenderBinType::COUNT);
         RenderSubPassCmds binCmds(binCount);
 
         if (params.stage == RenderStage::SHADOW) {
             for (U32 i = 0; i < binCount; ++i) {
                 if (std::find(std::begin(shadowExclusionList),
-                    std::end(shadowExclusionList),
-                    RenderBinType::_from_integral(i)) == std::cend(shadowExclusionList))
+                              std::end(shadowExclusionList),
+                               RenderBinType::_from_integral(i)) == std::cend(shadowExclusionList))
                 {
                     if (i != to_U32(RenderBinType::RBT_TRANSLUCENT)) {
                         _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), binCmds[i]);
                     }
                 }
             }
-        }  else {
+        } else {
             for (U32 i = 0; i < binCount; ++i) {
                 if (i != to_U32(RenderBinType::RBT_TRANSLUCENT)) {
                     _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), binCmds[i]);
                 }
             }
-            
+
         }
 
         cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(binCmds), std::cend(binCmds));
 
         RenderSubPassCmds postRenderSubPasses(1);
-        Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, postRenderSubPasses);
+        Attorney::SceneManagerRenderPass::postRender(sceneManager, *params.camera, postRenderSubPasses);
         cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(postRenderSubPasses), std::cend(postRenderSubPasses));
 
-        if (params.stage == RenderStage::DISPLAY ) {
+        if (params.stage == RenderStage::DISPLAY) {
             /// These should be OIT rendered as well since things like debug nav meshes have translucency
             RenderSubPassCmds debugDrawSubPasses(1);
-            Attorney::SceneManagerRenderPass::debugDraw(mgr, *params.camera, debugDrawSubPasses);
+            Attorney::SceneManagerRenderPass::debugDraw(sceneManager, *params.camera, debugDrawSubPasses);
             cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(debugDrawSubPasses), std::cend(debugDrawSubPasses));
         }
+    }
 
-        commandBuffer.push_back(cmd);
+    return cmd;
+}
 
-        cleanCommandBuffer(commandBuffer);
+std::pair<RenderPassCmd /*Accumulation*/, RenderPassCmd/*Composition*/>
+RenderPassManager::woitPass(const PassParams& params, const RenderTarget& target) {
+    static bool init = false;
+    static RenderPassCmd compCmd;
+    static RTDrawDescriptor noClearPolicy;
+    static RenderSubPassCmd compSubPass;
+    static RenderPassCmd oitCmd;
+
+    // Weighted Blended Order Independent Transparency
+    if (_context.renderQueueSize(RenderBinType::RBT_TRANSLUCENT) > 0) {
+
+        if (!init) {
+            oitCmd._renderTarget = RenderTargetID(RenderTargetUsage::OIT);
+            RTBlendState& state0 = oitCmd._renderTargetDescriptor.blendState(0);
+            RTBlendState& state1 = oitCmd._renderTargetDescriptor.blendState(1);
+
+            state0._blendEnable = true;
+            state0._blendProperties._blendSrc = BlendProperty::ONE;
+            state0._blendProperties._blendDest = BlendProperty::ONE;
+            state0._blendProperties._blendOp = BlendOperation::ADD;
+
+            state1._blendEnable = true;
+            state1._blendProperties._blendSrc = BlendProperty::ZERO;
+            state1._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
+            state1._blendProperties._blendOp = BlendOperation::ADD;
+
+            // Don't clear depth & colours and do not write to the depth buffer
+            noClearPolicy.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+            noClearPolicy.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
+            noClearPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
+            noClearPolicy.blendState(0)._blendEnable = true;
+            noClearPolicy.blendState(0)._blendProperties._blendSrc = BlendProperty::SRC_ALPHA;
+            noClearPolicy.blendState(0)._blendProperties._blendDest = BlendProperty::INV_SRC_ALPHA;
+
+            compCmd._renderTarget = RenderTargetID(RenderTargetUsage::SCREEN);
+            compCmd._renderTargetDescriptor = noClearPolicy;
+            PipelineDescriptor pipelineDescriptor;
+            pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
+            pipelineDescriptor._shaderProgram = _OITCompositionShader;
+
+            GenericDrawCommand drawCommand;
+            drawCommand.primitiveType(PrimitiveType::TRIANGLES);
+            drawCommand.drawCount(1);
+            drawCommand.pipeline(_context.newPipeline(pipelineDescriptor));
+
+            compSubPass._commands.push_back(drawCommand);
+
+            init = true;
+        } else {
+            oitCmd._subPassCmds.resize(0);
+            compCmd._subPassCmds.resize(0);
+        }
+
+        // Step1: Draw translucent items into the accumulation and revealage buffers
+        RenderSubPassCmd subPass;
+        _context.renderQueueToSubPasses(RenderBinType::RBT_TRANSLUCENT, subPass);
+        oitCmd._subPassCmds.insert(std::cend(oitCmd._subPassCmds), subPass);
+
+        // Step2: Composition pass
+        TextureData accum = _context.renderTargetPool().renderTarget(oitCmd._renderTarget).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ACCUMULATION)).texture()->getData();
+        TextureData revealage = _context.renderTargetPool().renderTarget(oitCmd._renderTarget).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->getData();
+        accum.setHandleHigh(0);
+        revealage.setHandleHigh(1);
+        compSubPass._textures.addTexture(accum);
+        compSubPass._textures.addTexture(revealage);
+
+        compCmd._subPassCmds.push_back(compSubPass);
+    }
+
+    return std::make_pair(oitCmd, compCmd);
+}
+
+void RenderPassManager::doCustomPass(PassParams& params) {
+    static CommandBuffer commandBuffer;
+
+    commandBuffer.resize(0);
+
+    // Tell the Rendering API to draw from our desired PoV
+    _context.renderFromCamera(*params.camera);
+    _context.setClipPlanes(params.clippingPlanes);
+
+    RenderTarget& target = _context.renderTargetPool().renderTarget(params.target);
+
+    commandBuffer.push_back(prePass(params, target));
+    cleanCommandBuffer(commandBuffer);
+
+    if (!commandBuffer.empty()) {
         _context.flushCommandBuffer(commandBuffer);
-        commandBuffer.resize(0);
-
-        // Weighted Blended Order Independent Transparency
-        if (_context.renderQueueSize(RenderBinType::RBT_TRANSLUCENT) > 0)
-        {
-            static bool init = false;
-            static RenderPassCmd oitCmd;
-            static RenderPassCmd compCmd;
-            static RTDrawDescriptor noClearPolicy;
-            static RenderSubPassCmd compSubPass;
-
-            if (!init) {
-                oitCmd._renderTarget = RenderTargetID(RenderTargetUsage::OIT);
-                RTBlendState& state0 = oitCmd._renderTargetDescriptor.blendState(0);
-                RTBlendState& state1 = oitCmd._renderTargetDescriptor.blendState(1);
-
-                state0._blendEnable = true;
-                state0._blendProperties._blendSrc = BlendProperty::ONE;
-                state0._blendProperties._blendDest = BlendProperty::ONE;
-                state0._blendProperties._blendOp = BlendOperation::ADD;
-
-                state1._blendEnable = true;
-                state1._blendProperties._blendSrc = BlendProperty::ZERO;
-                state1._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
-                state1._blendProperties._blendOp = BlendOperation::ADD;
-
-                // Don't clear depth & colours and do not write to the depth buffer
-                noClearPolicy.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-                noClearPolicy.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
-                noClearPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
-                noClearPolicy.blendState(0)._blendEnable = true;
-                noClearPolicy.blendState(0)._blendProperties._blendSrc = BlendProperty::SRC_ALPHA;
-                noClearPolicy.blendState(0)._blendProperties._blendDest = BlendProperty::INV_SRC_ALPHA;
-
-                compCmd._renderTarget = RenderTargetID(RenderTargetUsage::SCREEN);
-                compCmd._renderTargetDescriptor = noClearPolicy;
-                PipelineDescriptor pipelineDescriptor;
-                pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
-                pipelineDescriptor._shaderProgram = _OITCompositionShader;
-
-                GenericDrawCommand drawCommand;
-                drawCommand.primitiveType(PrimitiveType::TRIANGLES);
-                drawCommand.drawCount(1);
-                drawCommand.pipeline(_context.newPipeline(pipelineDescriptor));
-
-                compSubPass._commands.push_back(drawCommand);
-
-                init = true;
-            } else {
-                oitCmd._subPassCmds.resize(0);
-                compCmd._subPassCmds.resize(0);
-            }
-
-            // Step1: Draw translucent items into the accumulation and revealage buffers
-            RenderSubPassCmd& subPass = binCmds[to_base(RenderBinType::RBT_TRANSLUCENT)];
-            _context.renderQueueToSubPasses(RenderBinType::RBT_TRANSLUCENT, subPass);
-            oitCmd._subPassCmds.insert(std::cend(cmd._subPassCmds), subPass);
-            commandBuffer.push_back(oitCmd);
-
-            // Step2: Composition pass
-            TextureData accum = _context.renderTarget(oitCmd._renderTarget).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ACCUMULATION)).texture()->getData();
-            TextureData revealage = _context.renderTarget(oitCmd._renderTarget).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->getData();
-            accum.setHandleHigh(0);
-            revealage.setHandleHigh(1);
-            compSubPass._textures.addTexture(accum);
-            compSubPass._textures.addTexture(revealage);
-            
-            compCmd._subPassCmds.push_back(compSubPass);
-
-            commandBuffer.push_back(compCmd);
-            _context.flushCommandBuffer(commandBuffer);
-            commandBuffer.resize(0);
+        if (params.occlusionCull) {
+            _context.constructHIZ(params.target);
+            _context.occlusionCull(getBufferData(params.stage, params.pass), target.getAttachment(RTAttachmentType::Depth, 0).texture());
         }
     }
+
+    commandBuffer.push_back(mainPass(params, target));
+    std::pair<RenderPassCmd, RenderPassCmd> woit = woitPass(params, target);
+    commandBuffer.push_back(woit.first);
+    commandBuffer.push_back(woit.second);
+    cleanCommandBuffer(commandBuffer);
+    _context.flushCommandBuffer(commandBuffer);
 }
 
 };

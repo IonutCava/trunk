@@ -115,7 +115,7 @@ protected:
     /// Sets the current state block to the one passed as a param
     size_t setStateBlock(size_t stateBlockHash) override;
 
-    void flushCommandBuffer(const CommandBuffer& commandBuffer) override;
+    void flushCommandBuffer(CommandBuffer& commandBuffer) override;
 
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds

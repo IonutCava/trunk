@@ -37,29 +37,29 @@ void GFXDevice::renderDebugViews() {
 
             DebugView_ptr HiZ = std::make_shared<DebugView>();
             HiZ->_shader = _previewDepthMapShader;
-            HiZ->_texture = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
+            HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
             HiZ->_shaderData._floatValues.push_back(std::make_pair("lodLevel", to_F32(HiZ->_texture->getMaxMipLevel() - 1)));
 
             DebugView_ptr DepthPreview = std::make_shared<DebugView>();
             DepthPreview->_shader = _previewDepthMapShader;
-            DepthPreview->_texture = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
+            DepthPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
             DepthPreview->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
 
             DebugView_ptr NormalPreview = std::make_shared<DebugView>();
             NormalPreview->_shader = _renderTargetDraw;
-            NormalPreview->_texture = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS)).texture();
+            NormalPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS)).texture();
             NormalPreview->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
             NormalPreview->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", true));
 
             DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
             VelocityPreview->_shader = _renderTargetDraw;
-            VelocityPreview->_texture = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY)).texture();
+            VelocityPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY)).texture();
             VelocityPreview->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
             VelocityPreview->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
 
             DebugView_ptr AlphaAccumulation = std::make_shared<DebugView>();
             AlphaAccumulation->_shader = _renderTargetDraw;
-            AlphaAccumulation->_texture = renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
+            AlphaAccumulation->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
             AlphaAccumulation->_shaderData._boolValues.push_back(std::make_pair("linearSpace", true));
             AlphaAccumulation->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
 
@@ -71,12 +71,14 @@ void GFXDevice::renderDebugViews() {
             HiZPtr = HiZ.get();
         }
 
+        RenderTarget& screenRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+
         if (HiZPtr) {
             //HiZ preview
             I32 LoDLevel = 0;
             if (Config::USE_HIZ_CULLING && Config::USE_Z_PRE_PASS) {
                 LoDLevel = to_I32(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) %
-                    (renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
+                    (screenRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
             }
             HiZPtr->_shaderData._floatValues[0].second = to_F32(LoDLevel);
         }
@@ -90,7 +92,6 @@ void GFXDevice::renderDebugViews() {
             rowCount++;
         }
 
-        RenderTarget& screenRT = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
         U16 screenWidth = std::max(screenRT.getWidth(), to_U16(1280));
         U16 screenHeight = std::max(screenRT.getHeight(), to_U16(720));
         F32 aspectRatio = to_F32(screenWidth) / screenHeight;
@@ -187,7 +188,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
             // Apply the inverse view matrix so that it cancels out in the shader
             // Submit the draw command, rendering it in a tiny viewport in the lower
             // right corner
-            U16 windowWidth = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getWidth();
+            U16 windowWidth = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getWidth();
             _axisGizmo->fromLines(_axisLines, vec4<I32>(windowWidth - 120, 8, 128, 128));
         
             // We need to transform the gizmo so that it always remains axis aligned

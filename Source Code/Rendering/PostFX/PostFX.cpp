@@ -153,13 +153,13 @@ void PostFX::apply() {
     _underwaterTexture->bind(to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
     _noise->bind(to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
     _screenBorder->bind(to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
-    RenderTarget& screenRT = _gfx->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    RenderTarget& screenRT = _gfx->renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     Texture_ptr depth = screenRT.getAttachment(RTAttachmentType::Depth, 0).texture();
     depth->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
 
-    screenRT.begin(_postFXTarget);
+    _gfx->renderTargetPool().drawToTargetBegin(RenderTargetID(RenderTargetUsage::SCREEN), _postFXTarget);
         _gfx->draw(_drawCommand);
-    screenRT.end();
+    _gfx->renderTargetPool().drawToTargetEnd();
 }
 
 void PostFX::idle(const Configuration& config) {

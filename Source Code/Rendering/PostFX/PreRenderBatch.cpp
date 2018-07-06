@@ -35,16 +35,16 @@ void PreRenderBatch::destroy() {
         batch.clear();
     }
     
-    _context.deallocateRT(_previousLuminance);
-    _context.deallocateRT(_currentLuminance);
-    _context.deallocateRT(_postFXOutput);
+    _context.renderTargetPool().deallocateRT(_previousLuminance);
+    _context.renderTargetPool().deallocateRT(_currentLuminance);
+    _context.renderTargetPool().deallocateRT(_postFXOutput);
 }
 
 void PreRenderBatch::init(RenderTargetID renderTarget) {
     assert(_postFXOutput._targetID._usage == RenderTargetUsage::COUNT);
     _renderTarget = renderTarget;
 
-    const RenderTarget& rt = inputRT();
+    const RenderTarget& rt = *inputRT()._rt;
 
     SamplerDescriptor screenSampler;
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
@@ -67,7 +67,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
         desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
 
-        _postFXOutput = _context.allocateRT(desc);
+        _postFXOutput = _context.renderTargetPool().allocateRT(desc);
     }
 
     SamplerDescriptor lumaSampler;
@@ -93,7 +93,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
         desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
 
-        _currentLuminance = _context.allocateRT(desc);
+        _currentLuminance = _context.renderTargetPool().allocateRT(desc);
     }
     lumaSampler.setFilters(TextureFilter::LINEAR);
     lumaDescriptor.setSampler(lumaSampler);
@@ -108,7 +108,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
         desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
 
-        _previousLuminance = _context.allocateRT(desc);
+        _previousLuminance = _context.renderTargetPool().allocateRT(desc);
     }
 
     // Order is very important!
@@ -154,12 +154,12 @@ void PreRenderBatch::idle(const Configuration& config) {
     }
 }
 
-RenderTarget& PreRenderBatch::inputRT() const {
-    return _context.renderTarget(_renderTarget);
+RenderTargetHandle PreRenderBatch::inputRT() const {
+    return RenderTargetHandle(_renderTarget, &_context.renderTargetPool().renderTarget(_renderTarget));
 }
 
-RenderTarget& PreRenderBatch::outputRT() const {
-    return *_postFXOutput._rt;
+RenderTargetHandle& PreRenderBatch::outputRT() {
+    return _postFXOutput;
 }
 
 void PreRenderBatch::execute(const FilterStack& stack) {
@@ -176,14 +176,14 @@ void PreRenderBatch::execute(const FilterStack& stack) {
     if (_adaptiveExposureControl) {
         // Compute Luminance
         // Step 1: Luminance calc
-        inputRT().bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
+        inputRT()._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
         _previousLuminance._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachmentType::Colour, 0);
 
-        _currentLuminance._rt->begin(RenderTarget::defaultPolicy());
+        _context.renderTargetPool().drawToTargetBegin(_currentLuminance._targetID);
             pipelineDescriptor._shaderProgram = _luminanceCalc;
             triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
             _context.draw(triangleCmd);
-        _currentLuminance._rt->end();
+        _context.renderTargetPool().drawToTargetEnd();
 
         // Use previous luminance to control adaptive exposure
         _previousLuminance._rt->blitFrom(_currentLuminance._rt);
@@ -197,17 +197,17 @@ void PreRenderBatch::execute(const FilterStack& stack) {
     }
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
-    inputRT().bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
+    inputRT()._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
 
     if (_adaptiveExposureControl) {
         _currentLuminance._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachmentType::Colour, 0);
     }
 
-    _postFXOutput._rt->begin(RenderTarget::defaultPolicy());
+    _context.renderTargetPool().drawToTargetBegin(_postFXOutput._targetID);
         pipelineDescriptor._shaderProgram = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap);
         triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
         _context.draw(triangleCmd);
-    _postFXOutput._rt->end();
+    _context.renderTargetPool().drawToTargetEnd();
 
     // Execute all LDR based operators
     for (PreRenderOperator* op : ldrBatch) {

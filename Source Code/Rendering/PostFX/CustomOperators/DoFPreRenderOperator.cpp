@@ -15,16 +15,16 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
     : PreRenderOperator(context, parent, cache, FilterType::FILTER_DEPTH_OF_FIELD)
 {
     vectorImpl<RTAttachmentDescriptor> att = {
-        { parent.inputRT().getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour },
+        { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour },
     };
 
     RenderTargetDescriptor desc = {};
     desc._name = "DoF";
-    desc._resolution = vec2<U16>(parent.inputRT().getWidth(), parent.inputRT().getHeight());
+    desc._resolution = vec2<U16>(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
     desc._attachmentCount = to_U8(att.size());
     desc._attachments = att.data();
 
-    _samplerCopy = _context.allocateRT(desc);
+    _samplerCopy = _context.renderTargetPool().allocateRT(desc);
 
     ResourceDescriptor dof("DepthOfField");
     dof.setThreadedLoading(false);

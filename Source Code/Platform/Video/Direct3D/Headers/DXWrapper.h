@@ -59,7 +59,7 @@ protected:
     void drawText(const vectorImpl<GUITextBatchEntry>& batch) override;
     bool draw(const GenericDrawCommand& cmd);
 
-    void flushCommandBuffer(const CommandBuffer& commandBuffer) override;
+    void flushCommandBuffer(CommandBuffer& commandBuffer) override;
 
     void updateClipPlanes() override;
 

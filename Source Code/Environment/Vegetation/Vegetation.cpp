@@ -345,7 +345,7 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
         _cullShader->Uniform("cullType",
                              /*queryID*/ to_base(CullType::INSTANCE_CLOUD_REDUCTION));
 
-        _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).bind(0, RTAttachmentType::Depth, 0);
+        _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).bind(0, RTAttachmentType::Depth, 0);
         buffer->bindFeedbackBufferRange(to_base(BufferUsage::CulledPositionBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);

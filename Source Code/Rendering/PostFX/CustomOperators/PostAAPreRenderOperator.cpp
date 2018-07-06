@@ -20,16 +20,16 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
       _idleCount(0)
 {
     vectorImpl<RTAttachmentDescriptor> att = {
-        { parent.inputRT().getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour },
+        { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour },
     };
 
     RenderTargetDescriptor desc = {};
     desc._name = "PostAA";
-    desc._resolution = vec2<U16>(parent.inputRT().getWidth(), parent.inputRT().getHeight());
+    desc._resolution = vec2<U16>(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
     desc._attachmentCount = to_U8(att.size());
     desc._attachments = att.data();
 
-    _samplerCopy = _context.allocateRT(desc);
+    _samplerCopy = _context.renderTargetPool().allocateRT(desc);
 
     
     ResourceDescriptor fxaa("FXAA");
@@ -67,13 +67,13 @@ void PostAAPreRenderOperator::reshape(U16 width, U16 height) {
 /// This is tricky as we use our screen as both input and output
 void PostAAPreRenderOperator::execute() {
     STUBBED("ToDo: Move PostAA to compute shaders to avoid a blit and RT swap. -Ionut");
-    RenderTarget& ldrTarget = _parent.outputRT();
+    RenderTargetHandle ldrTarget = _parent.outputRT();
 
-    _samplerCopy._rt->blitFrom(&ldrTarget);
+    _samplerCopy._rt->blitFrom(ldrTarget._rt);
     _samplerCopy._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
 
     // Apply FXAA/SMAA to the specified render target
-    ldrTarget.begin(RenderTarget::defaultPolicy());
+    _context.renderTargetPool().drawToTargetBegin(ldrTarget._targetID);
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
         pipelineDescriptor._shaderProgram = (_useSMAA ? _smaa : _fxaa);
@@ -84,7 +84,7 @@ void PostAAPreRenderOperator::execute() {
         pointsCmd.pipeline(_context.newPipeline(pipelineDescriptor));
 
         _context.draw(pointsCmd);
-    ldrTarget.end();
+    _context.renderTargetPool().drawToTargetEnd();
 }
 
 };

@@ -99,6 +99,7 @@ namespace Attorney {
     class GFXDeviceKernel;
     class GFXDeviceRenderer;
     class GFXDeviceGraphicsResource;
+    class GFXDeviceGFXRTPool;
     class KernelApplication;
 };
 
@@ -121,6 +122,7 @@ class GFXDevice : public KernelComponent {
     friend class Attorney::GFXDeviceKernel;
     friend class Attorney::GFXDeviceRenderer;
     friend class Attorney::GFXDeviceGraphicsResource;
+    friend class Attorney::GFXDeviceGFXRTPool;
 
 protected:
     typedef std::stack<vec4<I32>> ViewportStack;
@@ -208,7 +210,7 @@ public:  // GPU interface
     U32  renderQueueSize(RenderBinType queueType);
     void addToRenderQueue(RenderBinType queueType, const RenderPackage& package);
     void renderQueueToSubPasses(RenderBinType queueType, RenderSubPassCmd& commandsInOut);
-    void flushCommandBuffer(const CommandBuffer& commandBuffer);
+    void flushCommandBuffer(CommandBuffer& commandBuffer);
 
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
@@ -316,24 +318,12 @@ public:  // Accessors and Mutators
         return _prevDepthBuffers[_historyIndex];
     }
 
-    inline RenderTarget& renderTarget(RenderTargetID target) {
-        return _rtPool->renderTarget(target);
+    inline GFXRTPool& renderTargetPool() {
+        return *_rtPool;
     }
 
-    inline void renderTarget(RenderTargetID target, RenderTarget* newTarget) {
-        _rtPool->set(target, newTarget);
-    }
-
-    inline RenderTargetHandle allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor) {
-        return _rtPool->add(targetUsage, newRT(descriptor));
-    }
-
-    inline RenderTargetHandle allocateRT(const RenderTargetDescriptor& descriptor) {
-        return allocateRT(RenderTargetUsage::OTHER, descriptor);
-    }
-
-    inline bool deallocateRT(RenderTargetHandle& handle) {
-        return _rtPool->remove(handle);
+    inline const GFXRTPool& renderTargetPool() const {
+        return *_rtPool;
     }
 
     RenderDetailLevel shadowDetailLevel() const { return _shadowDetailLevel; }
@@ -403,7 +393,6 @@ public:  // Direct API calls
     }
 
 protected:
-    friend class GFXRTPool;
     RenderTarget* newRT(const RenderTargetDescriptor& descriptor) const;
 
     void drawDebugFrustum(RenderSubPassCmds& subPassesInOut);
@@ -440,7 +429,7 @@ protected:
                            bool refreshNodeData);
 
     bool batchCommands(GenericDrawCommands& commands) const;
-    void constructHIZ(RenderTarget& depthBuffer);
+    void constructHIZ(RenderTargetID depthBuffer);
 
     RenderAPIWrapper& getAPIImpl() { return *_api; }
     const RenderAPIWrapper& getAPIImpl() const { return *_api; }
@@ -633,6 +622,15 @@ namespace Attorney {
 
         friend class Divide::GL_API;
         friend class Divide::DX_API;
+    };
+
+    class GFXDeviceGFXRTPool {
+        private:
+        static RenderTarget* newRT(GFXDevice& device, const RenderTargetDescriptor& descriptor) {
+            return device.newRT(descriptor);
+        };
+
+        friend class Divide::GFXRTPool;
     };
 };  // namespace Attorney
 };  // namespace Divide

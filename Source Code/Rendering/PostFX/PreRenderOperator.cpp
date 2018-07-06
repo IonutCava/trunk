@@ -23,7 +23,7 @@ PreRenderOperator::PreRenderOperator(GFXDevice& context, PreRenderBatch& parent,
 
 PreRenderOperator::~PreRenderOperator()
 {
-    _context.deallocateRT(_samplerCopy);
+    _context.renderTargetPool().deallocateRT(_samplerCopy);
 }
 
 void PreRenderOperator::cacheDisplaySettings(const GFXDevice& context) {

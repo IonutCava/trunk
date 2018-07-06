@@ -7,23 +7,35 @@
 
 namespace Divide {
 
-namespace {
-    bool g_policiesInitialised = false;
-};
-
-RTDrawDescriptor RenderTarget::s_policyDefault;
-RTDrawDescriptor RenderTarget::s_policyKeepDepth;
-RTDrawDescriptor RenderTarget::s_policyDepthOnly;
-
 RTDrawDescriptor& RenderTarget::defaultPolicy() {
+    static RTDrawDescriptor s_policyDefault;
+
     return s_policyDefault;
 }
 
 RTDrawDescriptor& RenderTarget::defaultPolicyKeepDepth() {
+    static RTDrawDescriptor s_policyKeepDepth;
+    static bool s_policyInitialised = false;
+
+    if (!s_policyInitialised) {
+        s_policyKeepDepth.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+        s_policyInitialised = true;
+    }
+
     return s_policyKeepDepth;
 }
 
 RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
+    static RTDrawDescriptor s_policyDepthOnly;
+    static bool s_policyInitialised = false;
+
+    if (!s_policyInitialised) {
+        s_policyDepthOnly.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
+        s_policyDepthOnly.drawMask().disableAll();
+        s_policyDepthOnly.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
+        s_policyInitialised = true;
+    }
+
     return s_policyDepthOnly;
 }
 
@@ -32,15 +44,6 @@ RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& des
       GraphicsResource(context, getGUID()),
       _descriptor(descriptor)
 {
-    if (!g_policiesInitialised) {
-        s_policyKeepDepth.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-
-        s_policyDepthOnly.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
-        s_policyDepthOnly.drawMask().disableAll();
-        s_policyDepthOnly.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
-        g_policiesInitialised = true;
-    }
-
     if (Config::Profile::USE_2x2_TEXTURES) {
         _descriptor._resolution.set(2u);
     }

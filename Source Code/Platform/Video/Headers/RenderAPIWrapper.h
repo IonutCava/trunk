@@ -91,7 +91,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual size_t setStateBlock(size_t stateBlockHash) = 0;
     virtual bool draw(const GenericDrawCommand& cmd) = 0;
 
-    virtual void flushCommandBuffer(const CommandBuffer& commandBuffer) = 0;
+    virtual void flushCommandBuffer(CommandBuffer& commandBuffer) = 0;
 
    protected:
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;

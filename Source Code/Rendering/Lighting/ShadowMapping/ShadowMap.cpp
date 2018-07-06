@@ -14,7 +14,7 @@
 namespace Divide {
 
 std::array<ShadowMap::LayerUsageMask, to_base(ShadowType::COUNT)> ShadowMap::_depthMapUsage;
-
+vectorImpl<RenderTargetHandle> ShadowMap::s_shadowMaps;
 
 ShadowMap::ShadowMap(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras, ShadowType type)
     : _context(context),
@@ -78,7 +78,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 desc._attachmentCount = to_U8(att.size());
                 desc._attachments = att.data();
 
-                crtTarget = context.allocateRT(RenderTargetUsage::SHADOW, desc);
+                crtTarget = context.renderTargetPool().allocateRT(RenderTargetUsage::SHADOW, desc);
             } break;
 
             case ShadowType::LAYERED: {
@@ -118,7 +118,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 desc._attachmentCount = to_U8(att.size());
                 desc._attachments = att.data();
 
-                crtTarget = context.allocateRT(RenderTargetUsage::SHADOW, desc);
+                crtTarget = context.renderTargetPool().allocateRT(RenderTargetUsage::SHADOW, desc);
 
             } break;
 
@@ -146,8 +146,10 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 desc._attachmentCount = to_U8(att.size());
                 desc._attachments = att.data();
 
-                crtTarget = context.allocateRT(RenderTargetUsage::SHADOW, desc);
+                crtTarget = context.renderTargetPool().allocateRT(RenderTargetUsage::SHADOW, desc);
             } break;
+
+            s_shadowMaps.push_back(crtTarget);
         };
 
         _depthMapUsage[i].fill(false);
@@ -155,9 +157,10 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
 }
 
 void ShadowMap::clearShadowMaps(GFXDevice& context) {
-    for (U32 i = 0; i < to_base(ShadowType::COUNT); ++i) {
-        context.renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i), nullptr);
+    for (RenderTargetHandle& handle : s_shadowMaps) {
+        context.renderTargetPool().deallocateRT(handle);
     }
+    s_shadowMaps.clear();
 }
 
 void ShadowMap::bindShadowMaps(GFXDevice& context) {
@@ -168,7 +171,7 @@ void ShadowMap::bindShadowMaps(GFXDevice& context) {
                                           : RTAttachmentType::Depth;
 
         U8 bindSlot = LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i));
-        context.renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).bind(bindSlot, attachment, 0);
+        context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).bind(bindSlot, attachment, 0);
     }
 }
 
@@ -200,11 +203,11 @@ const RenderTargetID ShadowMap::getDepthMapID() const {
 }
 
 RenderTarget& ShadowMap::getDepthMap() {
-    return _context.renderTarget(getDepthMapID());
+    return _context.renderTargetPool().renderTarget(getDepthMapID());
 }
 
 const RenderTarget& ShadowMap::getDepthMap() const {
-    return _context.renderTarget(getDepthMapID());
+    return _context.renderTargetPool().renderTarget(getDepthMapID());
 }
 
 void ShadowMap::commitDepthMapLayer(ShadowType shadowType, U32 layer) {

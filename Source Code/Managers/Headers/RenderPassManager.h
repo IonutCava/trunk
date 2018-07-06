@@ -98,6 +98,12 @@ public:
     void doCustomPass(PassParams& params);
 
 private:
+
+    RenderPassCmd prePass(const PassParams& params, const RenderTarget& target);
+    RenderPassCmd mainPass(const PassParams& params, RenderTarget& target);
+    std::pair<RenderPassCmd /*Accumulation*/, RenderPassCmd/*Composition*/>
+        woitPass(const PassParams& params, const RenderTarget& target);
+
     RenderPass* getPassForStage(RenderStage renderStage) const;
 
 private:

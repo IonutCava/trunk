@@ -64,9 +64,10 @@ void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, RenderSubPassCmd
     }
 }
 
-void GFXDevice::flushCommandBuffer(const CommandBuffer& commandBuffer) {
+void GFXDevice::flushCommandBuffer(CommandBuffer& commandBuffer) {
     uploadGPUBlock();
     _api->flushCommandBuffer(commandBuffer);
+    commandBuffer.resize(0);
 }
 
 void GFXDevice::lockQueue(RenderBinType type) {
@@ -338,7 +339,7 @@ void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
     triangleCmd.drawCount(1);
     triangleCmd.pipeline(newPipeline(pipelineDescriptor));
 
-    RenderTarget& screen = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     screen.bind(to_U8(ShaderProgram::TextureUsage::UNIT0),
                 RTAttachmentType::Colour,
                 to_U8(ScreenTargets::ALBEDO));

@@ -88,12 +88,12 @@ void EnvironmentProbe::onStartup(GFXDevice& context) {
     desc._attachmentCount = to_U8(att.size());
     desc._attachments = att.data();
 
-    s_reflection = context.allocateRT(RenderTargetUsage::ENVIRONMENT, desc);
+    s_reflection = context.renderTargetPool().allocateRT(RenderTargetUsage::ENVIRONMENT, desc);
 }
 
 void EnvironmentProbe::onShutdown(GFXDevice& context)
 {
-    context.deallocateRT(s_reflection);
+    context.renderTargetPool().deallocateRT(s_reflection);
 }
 
 U16 EnvironmentProbe::allocateSlice() {

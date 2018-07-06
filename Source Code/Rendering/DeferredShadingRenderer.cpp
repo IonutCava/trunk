@@ -77,7 +77,7 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
         att.push_back(RTAttachmentDescriptor{ gBuffer[i], RTAttachmentType::Colour, i, (i == 0 ? DefaultColours::BLACK() : DefaultColours::WHITE()) });
     }
 
-    _deferredBuffer = _context.gfx().allocateRT(desc);
+    _deferredBuffer = _context.gfx().renderTargetPool().allocateRT(desc);
 
     ResourceDescriptor mrtPreviewSmall("MRT RenderQuad SmallPreview");
     mrtPreviewSmall.setFlag(true);  // no default material
@@ -98,7 +98,7 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
     _context.gfx().shadowDetailLevel(RenderDetailLevel::OFF);
 
-    RenderTarget& screenRT = _context.gfx().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    RenderTarget& screenRT = _context.gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
     U16 width = screenRT.getWidth();
     U16 height = screenRT.getHeight();
@@ -132,7 +132,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
 {
     Console::printfn(Locale::get(_ID("DEFERRED_RT_DELETE")));
     _renderQuads.clear();
-    _context.gfx().deallocateRT(_deferredBuffer);
+    _context.gfx().renderTargetPool().deallocateRT(_deferredBuffer);
 }
 
 void DeferredShadingRenderer::preRender(RenderTarget& target, LightPool& lightPool) {
@@ -174,9 +174,9 @@ void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<void>& renderCallback
                                         const SceneRenderState& sceneRenderState) {
     // Pass 1
     // Draw the geometry, saving parameters into the buffer
-    _deferredBuffer._rt->begin(RenderTarget::defaultPolicy());
-    renderCallback();
-    _deferredBuffer._rt->end();
+    _context.gfx().renderTargetPool().drawToTargetBegin(_deferredBuffer._targetID);
+        renderCallback();
+    _context.gfx().renderTargetPool().drawToTargetEnd();
 }
 
 void DeferredShadingRenderer::secondPass(

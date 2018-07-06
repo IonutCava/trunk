@@ -117,46 +117,46 @@ constexpr auto to_base(const Type value) -> typename std::underlying_type<Type>:
 }
 
 template <typename T>
-U32 to_U32(const T value) {
+constexpr U32 to_U32(const T value) {
     return static_cast<U32>(value);
 }
 
 template <typename T>
-U16 to_U16(const T value) {
+constexpr U16 to_U16(const T value) {
     return static_cast<U16>(value);
 }
 
 template <typename T>
-U8 to_U8(const T value) {
+constexpr U8 to_U8(const T value) {
     return static_cast<U8>(value);
 }
 
 template <typename T>
-I32 to_I32(const T value) {
+constexpr I32 to_I32(const T value) {
     return static_cast<I32>(value);
 }
 
 template <typename T>
-I16 to_I16(const T value) {
+constexpr I16 to_I16(const T value) {
     return static_cast<I16>(value);
 }
 
 template <typename T>
-I8 to_I8(const T value) {
+constexpr I8 to_I8(const T value) {
     return static_cast<I8>(value);
 }
 template <typename T>
-F32 to_F32(const T value) {
+constexpr F32 to_F32(const T value) {
     return static_cast<F32>(value);
 }
 
 template <typename T>
-D64 to_D64(const T value) {
+constexpr D64 to_D64(const T value) {
     return static_cast<D64>(value);
 }
 
 template<typename T>
-D128 to_D128(const T value) {
+constexpr D128 to_D128(const T value) {
     return static_cast<D128>(value);
 }
 

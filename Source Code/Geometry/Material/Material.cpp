@@ -294,10 +294,10 @@ void Material::updateReflectionIndex(ReflectorType type, I32 index) {
     _reflectionIndex = index;
     if (_reflectionIndex > -1) {
         RenderTarget& reflectionTarget =
-            _context.renderTarget(RenderTargetID(type == ReflectorType::PLANAR_REFLECTOR
-                                                       ? RenderTargetUsage::REFLECTION_PLANAR
-                                                       : RenderTargetUsage::REFLECTION_CUBE,
-                                  index));
+            _context.renderTargetPool().renderTarget(RenderTargetID(type == ReflectorType::PLANAR_REFLECTOR
+                                                                          ? RenderTargetUsage::REFLECTION_PLANAR
+                                                                          : RenderTargetUsage::REFLECTION_CUBE,
+                                                     index));
         const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
         setTexture(type == ReflectorType::PLANAR_REFLECTOR
                          ? ShaderProgram::TextureUsage::REFLECTION_PLANAR
@@ -315,10 +315,10 @@ void Material::updateRefractionIndex(ReflectorType type, I32 index) {
     _refractionIndex = index;
     if (_refractionIndex > -1) {
         RenderTarget& refractionTarget =
-            _context.renderTarget(RenderTargetID(type == ReflectorType::PLANAR_REFLECTOR
-                                                       ? RenderTargetUsage::REFRACTION_PLANAR
-                                                       : RenderTargetUsage::REFRACTION_CUBE,
-                                  index));
+            _context.renderTargetPool().renderTarget(RenderTargetID(type == ReflectorType::PLANAR_REFLECTOR
+                                                                          ? RenderTargetUsage::REFRACTION_PLANAR
+                                                                          : RenderTargetUsage::REFRACTION_CUBE,
+                                                     index));
         const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
         setTexture(type == ReflectorType::PLANAR_REFLECTOR
                          ? ShaderProgram::TextureUsage::REFRACTION_PLANAR

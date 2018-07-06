@@ -791,16 +791,18 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 /// Text rendering is handled exclusively by Mikko Mononen's FontStash library (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
 void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
-    static BlendingProperties textBlend;
-    textBlend._blendSrc = BlendProperty::SRC_ALPHA;
-    textBlend._blendDest = BlendProperty::INV_SRC_ALPHA;
+    static vec4<U8> textBlendColour(Util::ToByteColour(DefaultColours::DIVIDE_BLUE()));
 
-    GL_API::setBlending(0, true, textBlend, Util::ToByteColour(DefaultColours::DIVIDE_BLUE()));
+    static BlendingProperties textBlendProperties{
+        BlendProperty::SRC_ALPHA,
+        BlendProperty::INV_SRC_ALPHA
+    };
 
     GFX::ScopedDebugMessage(_context, "OpenGL render text start!", 2);
 
-    const RenderTarget& screenRT = _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    U16 height = screenRT.getHeight();
+    GL_API::setBlending(0, true, textBlendProperties, textBlendColour);
+
+    U16 height = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getHeight();
         
     fonsClearState(_fonsContext);
     for (const GUITextBatchEntry& entry : batch)
@@ -836,9 +838,9 @@ void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
                              position.y - (lh * i),
                              text[i].c_str(),
                              nullptr);
-                // Register each label rendered as a draw call
-                _context.registerDrawCall();
             }
+            // Register each label rendered as a draw call
+            _context.registerDrawCalls(to_U32(lineCount));
         }
     }
 }
@@ -875,14 +877,10 @@ bool GL_API::draw(const GenericDrawCommand& cmd) {
     return false;
 }
 
-void GL_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {
+void GL_API::flushCommandBuffer(CommandBuffer& commandBuffer) {
     U32 drawCallCount = 0;
     for (const RenderPassCmd& pass : commandBuffer) {
-        RenderTarget* target = nullptr; 
-        if (pass._renderTarget._usage != RenderTargetUsage::COUNT) {
-            target = &_context.renderTarget(pass._renderTarget);
-            target->begin(pass._renderTargetDescriptor);
-        }
+        _context.renderTargetPool().drawToTargetBegin(pass._renderTarget, pass._renderTargetDescriptor);
 
         for (const RenderSubPassCmd& subPass : pass._subPassCmds) {
             makeTexturesResident(subPass._textures);
@@ -904,9 +902,7 @@ void GL_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {
             }
         }
 
-        if (target != nullptr) {
-            target->end();
-        }
+        _context.renderTargetPool().drawToTargetEnd();
     }
 
     _context.registerDrawCalls(drawCallCount);

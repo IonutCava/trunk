@@ -681,7 +681,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
 
     if (Config::Build::IS_DEBUG_BUILD) {
         GFXDevice::DebugView_ptr& viewPtr = _debugViews[0][reflectionIndex];
-        RenderTarget& target = _context.renderTarget(reflectRTID);
+        const RenderTarget& target = _context.renderTargetPool().renderTarget(reflectRTID);
         if (!viewPtr) {
             viewPtr = std::make_shared<GFXDevice::DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
@@ -759,7 +759,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
 
     if (Config::Build::IS_DEBUG_BUILD) {
         GFXDevice::DebugView_ptr& viewPtr = _debugViews[1][refractionIndex];
-        RenderTarget& target = _context.renderTarget(refractRTID);
+        const RenderTarget& target = _context.renderTargetPool().renderTarget(refractRTID);
 
         if (!viewPtr) {
             viewPtr = std::make_shared<GFXDevice::DebugView>();

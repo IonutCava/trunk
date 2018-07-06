@@ -22,7 +22,7 @@ TiledForwardShadingRenderer::TiledForwardShadingRenderer(PlatformContext& contex
     cullShaderDesc.setThreadedLoading(false);
     _lightCullComputeShader = CreateResource<ShaderProgram>(cache, cullShaderDesc);
 
-    RenderTarget& screenRT = _context.gfx().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    RenderTarget& screenRT = _context.gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
     updateResolution(screenRT.getWidth(), screenRT.getHeight());
 

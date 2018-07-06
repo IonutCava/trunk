@@ -48,6 +48,17 @@ protected:
     ~GFXRTPool();
 
     void resizeTargets(RenderTargetUsage target, U16 width, U16 height);
+    void clear();
+    void set(RenderTargetID target, RenderTarget* newTarget);
+    RenderTargetHandle add(RenderTargetUsage targetUsage, RenderTarget* newTarget);
+    bool remove(RenderTargetHandle& handle);
+
+    inline void set(const RenderTargetHandle& handle, RenderTarget* newTarget) {
+        set(handle._targetID, newTarget);
+    }
+
+public:
+    RenderTargetHandle allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor);
 
     inline RenderTarget& renderTarget(const RenderTargetHandle& handle) {
         return renderTarget(handle._targetID);
@@ -55,6 +66,10 @@ protected:
 
     inline const RenderTarget& renderTarget(const RenderTargetHandle& handle) const {
         return renderTarget(handle._targetID);
+    }
+
+    inline RenderTarget& activeRenderTarget() {
+        return *_activeRenderTarget;
     }
 
     inline RenderTarget& renderTarget(RenderTargetID target) {
@@ -68,21 +83,37 @@ protected:
     inline vectorImpl<RenderTarget*>& renderTargets(RenderTargetUsage target) {
         return _renderTargets[to_U32(target)];
     }
-
-    inline void set(const RenderTargetHandle& handle, RenderTarget* newTarget) {
-        set(handle._targetID, newTarget);
+    
+    inline void drawToTargetBegin(RenderTargetID target, const RTDrawDescriptor& drawPolicy = RenderTarget::defaultPolicy()) {
+        if (target._usage != RenderTargetUsage::COUNT) {
+            _activeRenderTarget = &renderTarget(target);
+            Attorney::RenderTargetRTPool::begin(*_activeRenderTarget, drawPolicy);
+        } else {
+            if (_activeRenderTarget != nullptr) {
+                Attorney::RenderTargetRTPool::end(*_activeRenderTarget);
+                _activeRenderTarget = nullptr;
+            }
+        }
     }
 
-    void clear();
-    void set(RenderTargetID target, RenderTarget* newTarget);
-    RenderTargetHandle add(RenderTargetUsage targetUsage, RenderTarget* newTarget);
-    bool remove(RenderTargetHandle& handle);
+    inline void drawToTargetEnd() {
+        drawToTargetBegin(RenderTargetID(RenderTargetUsage::COUNT));
+    }
+
+    inline RenderTargetHandle allocateRT(const RenderTargetDescriptor& descriptor) {
+        return allocateRT(RenderTargetUsage::OTHER, descriptor);
+    }
+
+    inline bool deallocateRT(RenderTargetHandle& handle) {
+        return remove(handle);
+    }
 
 protected:
     SET_SAFE_DELETE_FRIEND
 
     GFXDevice& _parent;
     RenderTargets _renderTargets;
+    RenderTarget* _activeRenderTarget;
 };
 }; //namespace Divide
 

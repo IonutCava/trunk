@@ -18,10 +18,10 @@ namespace Divide {
 BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
     : PreRenderOperator(context, parent, cache, FilterType::FILTER_BLOOM)
 {
-    vec2<U16> res(parent.inputRT().getWidth(), parent.inputRT().getHeight());
+    vec2<U16> res(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
 
     vectorImpl<RTAttachmentDescriptor> att = {
-        { parent.inputRT().getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour, 0, DefaultColours::BLACK() },
+        { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour, 0, DefaultColours::BLACK() },
     };
 
     RenderTargetDescriptor desc = {};
@@ -30,13 +30,13 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     desc._attachments = att.data();
 
     desc._name = "Bloom_Blur_0";
-    _bloomBlurBuffer[0] = _context.allocateRT(desc);
+    _bloomBlurBuffer[0] = _context.renderTargetPool().allocateRT(desc);
     desc._name = "Bloom_Blur_1";
-    _bloomBlurBuffer[1] = _context.allocateRT(desc);
+    _bloomBlurBuffer[1] = _context.renderTargetPool().allocateRT(desc);
 
     desc._name = "Bloom";
     desc._resolution = vec2<U16>(to_U16(res.w / 4.0f), to_U16(res.h / 4.0f));
-    _bloomOutput = _context.allocateRT(desc);
+    _bloomOutput = _context.renderTargetPool().allocateRT(desc);
 
     ResourceDescriptor bloomCalc("bloom.BloomCalc");
     bloomCalc.setThreadedLoading(false);
@@ -56,9 +56,9 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
 }
 
 BloomPreRenderOperator::~BloomPreRenderOperator() {
-    _context.deallocateRT(_bloomOutput);
-    _context.deallocateRT(_bloomBlurBuffer[0]);
-    _context.deallocateRT(_bloomBlurBuffer[1]);
+    _context.renderTargetPool().deallocateRT(_bloomOutput);
+    _context.renderTargetPool().deallocateRT(_bloomBlurBuffer[0]);
+    _context.renderTargetPool().deallocateRT(_bloomBlurBuffer[1]);
 }
 
 void BloomPreRenderOperator::idle(const Configuration& config) {
@@ -86,45 +86,48 @@ void BloomPreRenderOperator::execute() {
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
 
-    RenderTarget* screen = &_parent.inputRT();
+    RenderTargetHandle screen = _parent.inputRT();
 
      // Step 1: generate bloom
-    screen->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0); //screen
+    screen._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0); //screen
 
     // render all of the "bright spots"
-    _bloomOutput._rt->begin(RenderTarget::defaultPolicy());
+    _context.renderTargetPool().drawToTargetBegin(_bloomOutput._targetID);
         pipelineDescriptor._shaderProgram = _bloomCalc;
         triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
         _context.draw(triangleCmd);
-    _bloomOutput._rt->end();
+    _context.renderTargetPool().drawToTargetEnd();
 
     // Step 2: blur bloom
     _blur->bind();
     // Blur horizontally
     _blur->SetSubroutine(ShaderType::FRAGMENT, _horizBlur);
     _bloomOutput._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
-    _bloomBlurBuffer[0]._rt->begin(RenderTarget::defaultPolicy());
+
+    _context.renderTargetPool().drawToTargetBegin(_bloomBlurBuffer[0]._targetID);
         pipelineDescriptor._shaderProgram = _blur;
         triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
         _context.draw(triangleCmd);
-    _bloomBlurBuffer[0]._rt->end();
+    _context.renderTargetPool().drawToTargetEnd();
 
     // Blur vertically (recycle the render target. We have a copy)
     _blur->SetSubroutine(ShaderType::FRAGMENT, _vertBlur);
     _bloomBlurBuffer[0]._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
-    _bloomBlurBuffer[1]._rt->begin(RenderTarget::defaultPolicy());
+    
+    _context.renderTargetPool().drawToTargetBegin(_bloomBlurBuffer[1]._targetID);
         _context.draw(triangleCmd);
-    _bloomBlurBuffer[1]._rt->end();
+    _context.renderTargetPool().drawToTargetEnd();
         
     // Step 3: apply bloom
-    _bloomBlurBuffer[0]._rt->blitFrom(screen);
+    _bloomBlurBuffer[0]._rt->blitFrom(screen._rt);
     _bloomBlurBuffer[0]._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0); //Screen
     _bloomBlurBuffer[1]._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachmentType::Colour, 0); //Bloom
-    screen->begin(_screenOnlyDraw);
+    
+    _context.renderTargetPool().drawToTargetBegin(screen._targetID, _screenOnlyDraw);
         pipelineDescriptor._shaderProgram = _bloomApply;
         triangleCmd.pipeline(_context.newPipeline(pipelineDescriptor));
         _context.draw(triangleCmd);
-    screen->end();
+    _context.renderTargetPool().drawToTargetEnd();
 }
 
 void BloomPreRenderOperator::debugPreview(U8 slot) const {

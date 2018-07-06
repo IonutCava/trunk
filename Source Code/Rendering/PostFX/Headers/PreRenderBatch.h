@@ -20,8 +20,8 @@ class PreRenderBatch {
 
     void bindOutput(U8 slot);
 
-    RenderTarget& inputRT() const;
-    RenderTarget& outputRT() const;
+    RenderTargetHandle inputRT() const;
+    RenderTargetHandle& outputRT();
 
     inline void toggleAdaptivExposure(const bool state) {
         _adaptiveExposureControl = state;

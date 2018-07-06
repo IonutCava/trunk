@@ -78,14 +78,14 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
     desc._attachmentCount = to_U8(att.size());
     desc._attachments = att.data();
 
-    _blurBuffer = _context.allocateRT(desc);
+    _blurBuffer = _context.renderTargetPool().allocateRT(desc);
 
     STUBBED("Migrate to this: http://www.ogldev.org/www/tutorial49/tutorial49.html");
 }
 
 CascadedShadowMaps::~CascadedShadowMaps()
 {
-    _context.deallocateRT(_blurBuffer);
+    _context.renderTargetPool().deallocateRT(_blurBuffer);
 }
 
 void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
@@ -139,15 +139,16 @@ void CascadedShadowMaps::render(U32 passIdx) {
     params.pass = passIdx;
     params.bindTargets = false;
 
-    RenderTarget& target = _context.renderTarget(params.target);
+    RenderTarget& target = _context.renderTargetPool().renderTarget(params.target);
 
-    target.begin(RenderTarget::defaultPolicy());
+    
+    _context.renderTargetPool().drawToTargetBegin(params.target);
     for (U8 i = 0; i < _numSplits; ++i) {
         target.drawToLayer(RTAttachmentType::Colour, 0, to_U16(i + getArrayOffset()));
         params.camera = _shadowCameras[i];
         _context.parent().renderPassManager().doCustomPass(params);
     }
-    target.end();
+    _context.renderTargetPool().drawToTargetEnd();
     postRender();
 }
 
@@ -252,20 +253,21 @@ void CascadedShadowMaps::postRender() {
     _blurDepthMapShader->Uniform("layerOffsetWrite", 0);
 
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
-    _blurBuffer._rt->begin(RenderTarget::defaultPolicy());
-    depthMap.bind(0, RTAttachmentType::Colour, 0);
+
+    _context.renderTargetPool().drawToTargetBegin(_blurBuffer._targetID);
+        depthMap.bind(0, RTAttachmentType::Colour, 0);
         _context.draw(pointsCmd);
-    depthMap.end();
+    _context.renderTargetPool().drawToTargetEnd();
 
     // Blur vertically
     _blurDepthMapShader->Uniform("layerOffsetRead", 0);
     _blurDepthMapShader->Uniform("layerOffsetWrite", (I32)getArrayOffset());
 
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _vertBlur);
-    depthMap.begin(RenderTarget::defaultPolicy());
-    _blurBuffer._rt->bind(0, RTAttachmentType::Colour, 0);
+    _context.renderTargetPool().drawToTargetBegin(getDepthMapID());
+        _blurBuffer._rt->bind(0, RTAttachmentType::Colour, 0);
         _context.draw(pointsCmd);
-    depthMap.end();
+    _context.renderTargetPool().drawToTargetEnd();
 }
 
 };

@@ -45,7 +45,7 @@ bool DX_API::draw(const GenericDrawCommand& cmd) {
     return false;
 }
 
-void DX_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {
+void DX_API::flushCommandBuffer(CommandBuffer& commandBuffer) {
     ACKNOWLEDGE_UNUSED(commandBuffer);
 }
 

@@ -97,6 +97,8 @@ class NOINITVTABLE ShadowMap {
     Light* _light;
     const ShadowCameraPool& _shadowCameras;
     bool _init;
+
+    static vectorImpl<RenderTargetHandle> s_shadowMaps;
 };
 
 class ShadowMapInfo {

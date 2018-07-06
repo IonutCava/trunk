@@ -177,7 +177,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
 
     // Only the first colour attachment or the depth attachment is used for now
     // and it must be a cube map texture
-    RenderTarget& cubeMapTarget = renderTarget(cubeMap);
+    RenderTarget& cubeMapTarget = _rtPool->renderTarget(cubeMap);
     const RTAttachment& colourAttachment = cubeMapTarget.getAttachment(RTAttachmentType::Colour, 0);
     const RTAttachment& depthAttachment = cubeMapTarget.getAttachment(RTAttachmentType::Depth, 0);
     // Colour attachment takes precedent over depth attachment
@@ -215,8 +215,10 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     camera->setProjection(1.0f, 90.0f, zPlanes);
     // Set the desired render stage, remembering the previous one
     const RenderStagePass& prevRenderStage = setRenderStagePass(stagePass);
+
     // Enable our render target
-    cubeMapTarget.begin(RenderTarget::defaultPolicy());
+    _rtPool->drawToTargetBegin(cubeMap);
+
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
 
     RenderPassManager& passMgr = parent().renderPassManager();
@@ -242,7 +244,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     }
 
     // Resolve our render target
-    cubeMapTarget.end();
+    _rtPool->drawToTargetEnd();
     // Return to our previous rendering stage
     setRenderStagePass(prevRenderStage);
 }
@@ -259,7 +261,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
         camera = _dualParaboloidCamera;
     }
 
-    RenderTarget& paraboloidTarget = renderTarget(targetBuffer);
+    RenderTarget& paraboloidTarget = _rtPool->renderTarget(targetBuffer);
     const RTAttachment& colourAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Colour, 0);
     const RTAttachment& depthAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Depth, 0);
     // Colour attachment takes precedent over depth attachment
@@ -294,8 +296,9 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     params.target = targetBuffer;
     params.bindTargets = false;
     // Enable our render target
-    paraboloidTarget.begin(RenderTarget::defaultPolicy());
-        for (U8 i = 0; i < 2; ++i) {
+
+    _rtPool->drawToTargetBegin(targetBuffer);
+    for (U8 i = 0; i < 2; ++i) {
             paraboloidTarget.drawToLayer(hasColour ? RTAttachmentType::Colour
                                                    : RTAttachmentType::Depth,
                                          0,
@@ -307,7 +310,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
             params.pass = passIndex + i;
             passMgr.doCustomPass(params);
         }
-    paraboloidTarget.end();
+    _rtPool->drawToTargetEnd();
     // Return to our previous rendering stage
     setRenderStagePass(prevRenderStage);
 }
@@ -370,7 +373,7 @@ void GFXDevice::toggleFullScreen() {
 
 /// The main entry point for any resolution change request
 void GFXDevice::onChangeResolution(U16 w, U16 h) {
-    RenderTarget& screenRT = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    RenderTarget& screenRT = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     // Update resolution only if it's different from the current one.
     // Avoid resolution change on minimize so we don't thrash render targets
     if ((w == screenRT.getWidth() &&
@@ -620,7 +623,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK<
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
 /// Based on RasterGrid implementation: http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
-void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
+void GFXDevice::constructHIZ(RenderTargetID depthBuffer) {
     static bool firstRun = true;
     static RTDrawDescriptor depthOnlyTarget;
     static PipelineDescriptor pipelineDesc;
@@ -651,7 +654,7 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     }
 
     // The depth buffer's resolution should be equal to the screen's resolution
-    RenderTarget& screenTarget = depthBuffer;
+    RenderTarget& screenTarget = _rtPool->renderTarget(depthBuffer);
     U16 width = screenTarget.getWidth();
     U16 height = screenTarget.getHeight();
     U16 level = 0;
@@ -671,7 +674,8 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     }
 
     depth->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
-    screenTarget.begin(depthOnlyTarget);
+
+    _rtPool->drawToTargetBegin(depthBuffer, depthOnlyTarget);
     // We skip the first level as that's our full resolution image
 
     while (dim) {
@@ -697,7 +701,7 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
 
     updateViewportInternal(previousViewport);
     // Unbind the render target
-    screenTarget.end();
+    _rtPool->drawToTargetEnd();
 }
 
 Renderer& GFXDevice::getRenderer() const {
@@ -736,7 +740,7 @@ const ShaderComputeQueue& GFXDevice::shaderComputeQueue() const {
 /// Extract the pixel data from the main render target's first colour attachment and save it as a TGA image
 void GFXDevice::Screenshot(const stringImpl& filename) {
     // Get the screen's resolution
-    RenderTarget& screenRT = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    RenderTarget& screenRT = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     U16 width = screenRT.getWidth();
     U16 height = screenRT.getHeight();
     // Allocate sufficiently large buffers to hold the pixel data

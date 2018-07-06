@@ -12,7 +12,8 @@ namespace {
 };
 
 GFXRTPool::GFXRTPool(GFXDevice& parent)
-    : _parent(parent)
+    : _parent(parent),
+      _activeRenderTarget(nullptr)
 {
     _renderTargets[to_U32(RenderTargetUsage::SCREEN)].resize(1, nullptr);
     _renderTargets[to_U32(RenderTargetUsage::OIT)].resize(1, nullptr);
@@ -82,6 +83,10 @@ bool GFXRTPool::remove(RenderTargetHandle& handle) {
 
     handle = RenderTargetHandle();
     return state;
+}
+
+RenderTargetHandle GFXRTPool::allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor) {
+    return add(targetUsage, Attorney::GFXDeviceGFXRTPool::newRT(_parent, descriptor));
 }
 
 }; //namespace Divide

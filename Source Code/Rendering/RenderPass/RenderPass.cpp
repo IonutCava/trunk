@@ -153,7 +153,7 @@ void RenderPass::render(SceneRenderState& renderState) {
         case RenderStage::DISPLAY: {
             GFX::ScopedDebugMessage msg(_context, "Display Render Stage", 0);
 
-            const RenderTarget& screenRT = _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+            const RenderTarget& screenRT = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
             RenderPassManager::PassParams params;
             params.occlusionCull = Config::USE_HIZ_CULLING;
             params.camera = Attorney::SceneManagerRenderPass::getActiveCamera(_parent.parent().sceneManager());

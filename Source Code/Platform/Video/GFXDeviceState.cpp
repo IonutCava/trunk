@@ -189,7 +189,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         // Our default render targets hold the screen buffer, depth buffer, and a special, on demand,
         // down-sampled version of the depth buffer
         // Screen FB should use MSAA if available
-        allocateRT(RenderTargetUsage::SCREEN, screenDesc);
+        _rtPool->allocateRT(RenderTargetUsage::SCREEN, screenDesc);
     }
     {
         TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D,
@@ -218,7 +218,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         oitDesc._attachmentCount = to_U8(attachments.size());
         oitDesc._attachments = attachments.data();
 
-        allocateRT(RenderTargetUsage::OIT, oitDesc);
+        _rtPool->allocateRT(RenderTargetUsage::OIT, oitDesc);
     }
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
@@ -262,13 +262,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
             refDesc._name = Util::StringFormat("Reflection_Planar_%d", i);
 
-            tempHandle = allocateRT(RenderTargetUsage::REFLECTION_PLANAR, refDesc);
+            tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFLECTION_PLANAR, refDesc);
         }
 
         for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
             refDesc._name = Util::StringFormat("Refraction_Planar_%d", i);
 
-            tempHandle = allocateRT(RenderTargetUsage::REFRACTION_PLANAR, refDesc);
+            tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFRACTION_PLANAR, refDesc);
         }
 
     }
@@ -284,11 +284,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         refDesc._attachments = attachments.data();
 
         refDesc._name = "Reflection_Cube_Array";
-        tempHandle = allocateRT(RenderTargetUsage::REFLECTION_CUBE, refDesc);
+        tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFLECTION_CUBE, refDesc);
 
         refDesc._name = "Refraction_Cube_Array";
 
-        tempHandle = allocateRT(RenderTargetUsage::REFRACTION_CUBE, refDesc);
+        tempHandle = _rtPool->allocateRT(RenderTargetUsage::REFRACTION_CUBE, refDesc);
     }
 
     // Initialized our HierarchicalZ construction shader (takes a depth
@@ -461,7 +461,7 @@ void GFXDevice::resizeHistory(U8 historySize) {
     }
 
     while (_prevDepthBuffers.size() < historySize) {
-        const Texture_ptr& src = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
+        const Texture_ptr& src = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
 
         ResourceDescriptor prevDepthTex(Util::StringFormat("PREV_DEPTH_%d", _prevDepthBuffers.size()));
         prevDepthTex.setPropertyDescriptor(src->getDescriptor());
@@ -478,7 +478,7 @@ void GFXDevice::resizeHistory(U8 historySize) {
 
 void GFXDevice::historyIndex(U8 index, bool copyPrevious) {
     if (copyPrevious) {
-        getPrevDepthBuffer()->copy(renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture());
+        getPrevDepthBuffer()->copy(_rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture());
     }
 
     _historyIndex = index;
