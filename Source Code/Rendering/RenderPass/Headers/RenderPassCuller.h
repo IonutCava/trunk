@@ -94,10 +94,11 @@ class RenderPassCuller {
                         VisibleNodeList& nodes);
 
     U32 stageToCacheIndex(RenderStage stage) const;
+
    protected:
-    CullingFunction _cullingFunction;
-    vectorImpl<VisibleNodeList> _perThreadNodeList;
+    std::array<CullingFunction, to_const_uint(RenderStage::COUNT)> _cullingFunction;
     std::array<VisibleNodeList, to_const_uint(RenderStage::COUNT)> _visibleNodes;
+    std::array<vectorImpl<VisibleNodeList>, to_const_uint(RenderStage::COUNT)> _perThreadNodeList;
 };
 
 };  // namespace Divide

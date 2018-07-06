@@ -1,6 +1,9 @@
 #include "Headers/VertexBuffer.h"
 
 namespace Divide {
+
+std::array<VertexBuffer::AttribFlags, to_const_uint(RenderStage::COUNT)> VertexBuffer::_attribMaskPerStage;
+
 VertexBuffer::VertexBuffer(GFXDevice& context)
     : VertexDataInterface(context),
      _format(GFXDataFormat::UNSIGNED_SHORT),

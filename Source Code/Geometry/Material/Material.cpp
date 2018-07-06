@@ -54,6 +54,7 @@ Material::Material(const stringImpl& name)
     RenderStateBlock stateDescriptor;
     stateDescriptor.setZFunc(ComparisonFunction::LEQUAL);
     setRenderStateBlock(stateDescriptor.getHash(), RenderStage::DISPLAY);
+    setRenderStateBlock(stateDescriptor.getHash(), RenderStage::REFRACTION);
     /// the reflection descriptor is the same as the normal descriptor
     RenderStateBlock reflectorDescriptor(stateDescriptor);
     setRenderStateBlock(reflectorDescriptor.getHash(), RenderStage::REFLECTION);
@@ -315,9 +316,8 @@ bool Material::canDraw(RenderStage renderStage) {
 void Material::updateReflectionIndex(I32 index) {
     _reflectionIndex = index;
     if (_reflectionIndex > -1) {
-        GFXDevice::RenderTargetWrapper& reflectionTarget = GFX_DEVICE.reflectionTarget(index);
-        assert(reflectionTarget._target != nullptr);
-        const Texture_ptr& refTex = reflectionTarget._target->getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+        RenderTarget& reflectionTarget = GFX_DEVICE.renderTarget(RenderTargetID::REFLECTION, index);
+        const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
         setTexture(ShaderProgram::TextureUsage::REFLECTION, refTex);
     } else {
         setTexture(ShaderProgram::TextureUsage::REFLECTION, nullptr);
@@ -327,9 +327,8 @@ void Material::updateReflectionIndex(I32 index) {
 void Material::updateRefractionIndex(I32 index) {
     _refractionIndex = index;
     if (_refractionIndex > -1) {
-        GFXDevice::RenderTargetWrapper& refractionTarget = GFX_DEVICE.refractionTarget(index);
-        assert(refractionTarget._target != nullptr);
-        const Texture_ptr& refTex = refractionTarget._target->getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+        RenderTarget& refractionTarget = GFX_DEVICE.renderTarget(RenderTargetID::REFRACTION, index);
+        const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
         setTexture(ShaderProgram::TextureUsage::REFRACTION, refTex);
     } else {
         setTexture(ShaderProgram::TextureUsage::REFRACTION, nullptr);
@@ -338,8 +337,7 @@ void Material::updateRefractionIndex(I32 index) {
 
 /// If the current material doesn't have a shader associated with it, then add
 /// the default ones.
-bool Material::computeShader(RenderStage renderStage,
-                             const bool computeOnAdd){
+bool Material::computeShader(RenderStage renderStage, const bool computeOnAdd){
 
     ShaderInfo& info = _shaderInfo[to_uint(renderStage)];
     if (info._shaderCompStage ==

@@ -50,8 +50,8 @@ class BloomPreRenderOperator : public PreRenderOperator {
     void debugPreview(U8 slot) const;
 
    private:
-    RenderTarget* _bloomOutput;
-    RenderTarget* _bloomBlurBuffer[2];
+    RenderTargetHandle _bloomOutput;
+    RenderTargetHandle _bloomBlurBuffer[2];
 
     ShaderProgram_ptr _blur;
     ShaderProgram_ptr _bloomCalc;

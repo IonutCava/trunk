@@ -112,13 +112,14 @@ RenderPass::BufferDataPool::~BufferDataPool()
 }
 
 RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(U32 pass, I32 idx) {
+    assert(idx >= 0);
+
     return *_buffers[pass][idx];
 }
 
 RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<RenderStage> passStageFlags)
     : _sortKey(sortKey),
       _name(name),
-      _useZPrePass(Config::USE_Z_PRE_PASS),
       _stageFlags(passStageFlags)
 {
     _lastTotalBinSize = 0;
@@ -132,13 +133,10 @@ RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<Render
     _depthOnly._drawMask.disableAll();
     _depthOnly._drawMask.enabled(RTAttachment::Type::Depth, 0);
 
-    // Disable pre-pass for HIZ debugging to be able to render "culled" nodes properly
-    if (Config::DEBUG_HIZ_CULLING) {
-        _useZPrePass = false;
-    }
-
     std::pair<U32, U32> renderPassInfo = getRenderPassInfoForStages(_stageFlags);
     _passBuffers = MemoryManager_NEW BufferDataPool(renderPassInfo.first, renderPassInfo.second);
+
+    _drawCommandsCache.reserve(Config::MAX_VISIBLE_NODES);
 }
 
 RenderPass::~RenderPass() 
@@ -148,6 +146,10 @@ RenderPass::~RenderPass()
 
 RenderPass::BufferData&  RenderPass::getBufferData(U32 pass, I32 idx) {
     return _passBuffers->getBufferData(pass, idx);
+}
+
+void RenderPass::generateDrawCommands() {
+    _drawCommandsCache.resize(0);
 }
 
 void RenderPass::render(SceneRenderState& renderState) {
@@ -164,6 +166,7 @@ void RenderPass::render(SceneRenderState& renderState) {
         switch(stageFlag) {
             case RenderStage::Z_PRE_PASS:
             case RenderStage::DISPLAY: {
+                Attorney::SceneRenderStateRenderPass::currentStagePass(renderState, 0);
                 renderer.render(
                     [stageFlag, refreshNodeData, &mgr]() {
                         mgr.renderVisibleNodes(stageFlag, refreshNodeData);
@@ -174,7 +177,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                 Attorney::SceneManagerRenderPass::generateShadowMaps(mgr);
             } break;
             case RenderStage::REFLECTION: {
-                // Get list of reflective and refractive nodes from the scene manager
+                // Get list of reflective nodes from the scene manager
                 const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedReflectiveNodes();
 
                 // While in budget, update reflections
@@ -183,7 +186,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                     SceneGraphNode_cptr nodePtr = node.second.lock();
                     RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
                     if (ReflectionUtil::isInBudget()) {
-                        Attorney::SceneRenderStateRenderPass::reflectorIndex(renderState, ReflectionUtil::currentEntry());
+                        Attorney::SceneRenderStateRenderPass::currentStagePass(renderState, ReflectionUtil::currentEntry());
 
                         PhysicsComponent* const pComp = nodePtr->get<PhysicsComponent>();
                         Attorney::RenderingCompRenderPass::updateReflection(*rComp, 
@@ -195,13 +198,19 @@ void RenderPass::render(SceneRenderState& renderState) {
                         Attorney::RenderingCompRenderPass::clearReflection(*rComp);
                     }
                 }
-                
+            } break;
+            case RenderStage::REFRACTION: {
+                // Get list of refractive nodes from the scene manager
+                const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedRefractiveNodes();
+
                 // While in budget, update refractions
                 RefractionUtil::resetBudget();
                 for (const RenderPassCuller::VisibleNode& node : nodeCache) {
                     SceneGraphNode_cptr nodePtr = node.second.lock();
                     RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
                     if (RefractionUtil::isInBudget()) {
+                        Attorney::SceneRenderStateRenderPass::currentStagePass(renderState, RefractionUtil::currentEntry());
+
                         PhysicsComponent* const pComp = nodePtr->get<PhysicsComponent>();
                         Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
                                                                              RefractionUtil::currentEntry(),
@@ -236,19 +245,20 @@ bool RenderPass::preRender(SceneRenderState& renderState, U32 pass) {
             if (Config::USE_HIZ_CULLING) {
                 GFX.occlusionCull(RenderPassManager::instance().getBufferData(RenderStage::DISPLAY, 0, 0));
             }
-            if (_useZPrePass) {
+            if (Config::USE_Z_PRE_PASS && !Config::DEBUG_HIZ_CULLING) {
                 GFX.toggleDepthWrites(false);
             }
-            GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->begin(_useZPrePass ? _noDepthClear
-                                                                                               : RenderTarget::defaultPolicy());
+            GFX.renderTarget(RenderTargetID::SCREEN).begin((Config::USE_Z_PRE_PASS && !Config::DEBUG_HIZ_CULLING) ? _noDepthClear
+                                                                                                                  : RenderTarget::defaultPolicy());
         } break;
+        case RenderStage::REFRACTION: 
         case RenderStage::REFLECTION: {
             bindShadowMaps = true;
         } break;
         case RenderStage::SHADOW: {
         } break;
         case RenderStage::Z_PRE_PASS: {
-            GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->begin(_depthOnly);
+            GFX.renderTarget(RenderTargetID::SCREEN).begin(_depthOnly);
         } break;
     };
     
@@ -270,15 +280,13 @@ bool RenderPass::postRender(SceneRenderState& renderState, U32 pass) {
     switch (_stageFlags[pass]) {
         case RenderStage::DISPLAY:
         case RenderStage::Z_PRE_PASS: {
-            GFXDevice::RenderTargetWrapper& renderTarget = GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN);
-            renderTarget._target->end();
+            GFX.renderTarget(RenderTargetID::SCREEN).end();
 
             if (_stageFlags[pass] == RenderStage::Z_PRE_PASS) {
                 GFX.constructHIZ();
                 Attorney::SceneManagerRenderPass::preRender(SceneManager::instance());
-                renderTarget.cacheSettings();
             } else {
-                if (_useZPrePass) {
+                if (Config::USE_Z_PRE_PASS && !Config::DEBUG_HIZ_CULLING) {
                     GFX.toggleDepthWrites(true);
                 }
             }
@@ -303,6 +311,10 @@ std::pair<U32, U32> RenderPass::getRenderPassInfoForStages(const vectorImpl<Rend
             maxPasses = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
             maxStages = 6u; // number of cube faces
         }; break;
+        case RenderStage::REFRACTION: {
+            maxPasses = Config::MAX_REFRACTIVE_NODES_IN_VIEW;
+            maxStages = 1u;
+        } break;
         case RenderStage::SHADOW: {
             maxPasses = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
             // Either CSM or cube map will have the highest stage count.

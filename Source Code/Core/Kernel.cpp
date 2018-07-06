@@ -446,9 +446,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
-    RenderPassManager::instance().addRenderPass("environmentPass", 0, { RenderStage::REFLECTION });
-    RenderPassManager::instance().addRenderPass("shadowPass", 1, { RenderStage::SHADOW });
-    RenderPassManager::instance().addRenderPass("displayStage", 2, { RenderStage::Z_PRE_PASS, RenderStage::DISPLAY });
+    RenderPassManager::instance().addRenderPass("shadowPass", 0, { RenderStage::SHADOW });
+    RenderPassManager::instance().addRenderPass("reflectionPass", 1, { RenderStage::REFLECTION });
+    RenderPassManager::instance().addRenderPass("refractionPass", 2, { RenderStage::REFRACTION });
+    RenderPassManager::instance().addRenderPass("displayStage", 3, { RenderStage::Z_PRE_PASS, RenderStage::DISPLAY });
 
     Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
 

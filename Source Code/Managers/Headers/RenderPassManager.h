@@ -60,10 +60,10 @@ DEFINE_SINGLETON(RenderPassManager)
     }
 
     RenderPass::BufferData&
-    getBufferData(RenderStage renderStage, U32 pass, U32 stage);
+    getBufferData(RenderStage renderStage, I32 pass, U32 stage);
 
     const RenderPass::BufferData&
-    getBufferData(RenderStage renderStage, U32 pass, U32 stage) const;
+    getBufferData(RenderStage renderStage, I32 pass, U32 stage) const;
 
   private:
     RenderPassManager();

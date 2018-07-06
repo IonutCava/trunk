@@ -63,10 +63,10 @@ class PreRenderBatch {
     bool _adaptiveExposureControl;
 
     PreRenderOperator* _debugOperator;
-    RenderTarget* _postFXOutput;
     RenderTarget* _renderTarget;
-    RenderTarget* _previousLuminance;
-    RenderTarget* _currentLuminance;
+    RenderTargetHandle _postFXOutput;
+    RenderTargetHandle _previousLuminance;
+    RenderTargetHandle _currentLuminance;
     ShaderProgram_ptr _toneMap;
     ShaderProgram_ptr _toneMapAdaptive;
     ShaderProgram_ptr _luminanceCalc;

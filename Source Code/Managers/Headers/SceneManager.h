@@ -79,6 +79,11 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStage stage);
     // get the full list of reflective nodes
     const RenderPassCuller::VisibleNodeList& getSortedReflectiveNodes();
+    // get the full list of refractive nodes
+    const RenderPassCuller::VisibleNodeList& getSortedRefractiveNodes();
+
+    const RenderPassCuller::VisibleNodeList&
+        getSortedCulledNodes(std::function<bool(const RenderPassCuller::VisibleNode&)> cullingFunction);
 
     void onLostFocus();
     /// Check if the scene was loaded properly
@@ -170,7 +175,7 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     U64 _saveTimer;
     Renderer* _renderer;
     Material_ptr _defaultMaterial;
-    RenderPassCuller::VisibleNodeList _reflectiveNodesCache;
+    RenderPassCuller::VisibleNodeList _tempNodesCache;
     Time::ProfileTimer& _sceneGraphCullTimer;
 
     struct SwitchSceneTarget {

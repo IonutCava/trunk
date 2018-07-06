@@ -89,6 +89,10 @@ DEFINE_SINGLETON(PostFX)
     // waitDurationMS is the ammount of time to wait before fading back in
     void setFadeOutIn(const vec4<U8>& targetColour, D64 durationMS, D64 waitDurationMS);
     void setFadeOutIn(const vec4<U8>& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS);
+
+    inline void cacheDisplaySettings(const GFXDevice& context) {
+        PreRenderOperator::cacheDisplaySettings(context);
+    }
   private:
     bool _enableNoise;
     bool _enableVignette;

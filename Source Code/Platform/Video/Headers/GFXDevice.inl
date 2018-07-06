@@ -176,13 +176,6 @@ GFXDevice::RenderQueue::unlock() {
     _locked = false;
 }
 
-inline void
-GFXDevice::RenderTargetWrapper::cacheSettings() {
-    _renderSettings._aspectRatio = GFX_DEVICE.renderingData().aspectRatio();
-    _renderSettings._zPlanes.set(GFX_DEVICE.renderingData().currentZPlanes());
-    GFX_DEVICE.getMatrix(MATRIX::PROJECTION, _renderSettings._projectionMatrix);
-    GFX_DEVICE.getMatrix(MATRIX::VIEW, _renderSettings._viewMatrix);
-}
 
 inline const GFXDevice::GPUBlock::GPUData&
 GFXDevice::renderingData() const {
@@ -284,10 +277,10 @@ GFXDevice::resetClipPlanes() {
     _api->updateClipPlanes();
 }
 /// Alternative to the normal version of getMatrix
-inline const mat4<F32>& 
-GFXDevice::getMatrix(const MATRIX& mode) {
-    getMatrix(mode, _mat4Cache);
-    return _mat4Cache;
+inline mat4<F32> GFXDevice::getMatrix(const MATRIX& mode) const {
+    mat4<F32> ret;
+    getMatrix(mode, ret);
+    return ret;
 }
 
 /// Submit multiple draw commands that use the same source buffer (e.g. terrain or batched meshes)

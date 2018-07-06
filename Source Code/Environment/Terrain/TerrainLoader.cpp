@@ -172,6 +172,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
                                       to_stringImpl(textureCount));
     terrainMaterial->setShaderProgram("terrain", RenderStage::DISPLAY, true);
     terrainMaterial->setShaderProgram("terrain", RenderStage::REFLECTION, true);
+    terrainMaterial->setShaderProgram("terrain", RenderStage::REFRACTION, true);
     terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", RenderStage::SHADOW, true);
     terrainMaterial->setShaderProgram("depthPass.PrePass.Terrain", RenderStage::Z_PRE_PASS, true);
 

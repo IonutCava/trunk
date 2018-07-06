@@ -448,9 +448,11 @@ bool glShaderProgram::load() {
 
                 stringImpl sourceCode;
                 if (Config::USE_SHADER_TEXT_CACHE) {
+#if !defined(ENABLE_GPU_VALIDATION)
                     ShaderProgram::shaderFileRead(glShader::CACHE_LOCATION_TEXT + shaderCompileName,
                                                   true,
                                                   sourceCode);
+#endif
                 }
 
                 if (sourceCode.empty()) {

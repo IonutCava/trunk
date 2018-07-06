@@ -84,10 +84,10 @@ class WaterPlane : public SceneNode {
     void updateBoundsInternal(SceneGraphNode& sgn) override;
     void updateReflection(const SceneGraphNode& sgn,
                           const SceneRenderState& sceneRenderState,
-                          GFXDevice::RenderTargetWrapper& renderTarget);
+                          RenderTarget& renderTarget);
     void updateRefraction(const SceneGraphNode& sgn,
                           const SceneRenderState& sceneRenderState,
-                          GFXDevice::RenderTargetWrapper& renderTarget);
+                          RenderTarget& renderTarget);
     bool cameraUnderwater(const SceneGraphNode& sgn, const SceneRenderState& sceneRenderState);
 
    private:

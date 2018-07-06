@@ -42,13 +42,14 @@ void GFXDevice::previewDepthBuffer() {
     triangleCmd.stateHash(_defaultStateNoDepthHash);
     triangleCmd.shaderProgram(_previewDepthMapShader);
 
-    U16 screenWidth = std::max(_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getWidth(), to_const_ushort(768));
-    RenderTarget* rt = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target;
-    rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
+    U16 screenWidth = std::max(renderTarget(RenderTargetID::SCREEN).getWidth(), to_const_ushort(768));
+    RenderTarget& rt = renderTarget(RenderTargetID::SCREEN);
+    rt.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
     {
         //HiZ preview
-        _previewDepthMapShader->Uniform("lodLevel", to_float(to_uint((Time::ElapsedMilliseconds() / 750.0)) % 
-                                                             (rt->getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getMaxMipLevel() - 1)));
+        _previewDepthMapShader->Uniform("lodLevel",
+                                        to_float(to_uint((Time::ElapsedMilliseconds() / 750.0)) % 
+                                        (rt.getAttachment(RTAttachment::Type::Depth, 0).asTexture()->getMaxMipLevel() - 1)));
         GFX::ScopedViewport viewport(screenWidth - 256, 0, 256, 256);
         draw(triangleCmd);
     }
@@ -60,9 +61,8 @@ void GFXDevice::previewDepthBuffer() {
     }
     {
         //Normals preview
-        _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target
-            ->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                   RTAttachment::Type::Colour, 1);
+        renderTarget(RenderTargetID::SCREEN).bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
+                                                  RTAttachment::Type::Colour, 1);
 
         GFX::ScopedViewport viewport(screenWidth - 768, 0, 256, 256);
         _renderTargetDraw->Uniform("linearSpace", false);
@@ -139,7 +139,7 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     // Apply the inverse view matrix so that it cancels out in the shader
     // Submit the draw command, rendering it in a tiny viewport in the lower
     // right corner
-    U16 windowWidth = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getWidth();
+    U16 windowWidth = renderTarget(RenderTargetID::SCREEN).getWidth();
     _axisGizmo->fromLines(_axisLines, vec4<I32>(windowWidth - 120, 8, 128, 128));
 }
 };

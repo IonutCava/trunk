@@ -25,7 +25,7 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     ResourceDescriptor deferred("DeferredShadingPass2");
     deferred.setThreadedLoading(false);
     _deferredShader = CreateResource<ShaderProgram>(deferred);
-    _deferredBuffer = GFX_DEVICE.newRT();
+    _deferredBuffer = GFX_DEVICE.allocateRT(false);
 
     ResourceDescriptor deferredPreview("deferredPreview");
     deferredPreview.setThreadedLoading(false);
@@ -49,12 +49,12 @@ DeferredShadingRenderer::DeferredShadingRenderer()
         gBuffer[i].setSampler(gBufferSampler);
     }
 
-    _deferredBuffer->addAttachment(gBuffer[0], RTAttachment::Type::Colour, 0);
-    _deferredBuffer->addAttachment(gBuffer[1], RTAttachment::Type::Colour, 1);
-    _deferredBuffer->addAttachment(gBuffer[2], RTAttachment::Type::Colour, 2);
-    _deferredBuffer->addAttachment(gBuffer[3], RTAttachment::Type::Colour, 3);
-    _deferredBuffer->useAutoDepthBuffer(true);
-    _deferredBuffer->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
+    _deferredBuffer._rt->addAttachment(gBuffer[0], RTAttachment::Type::Colour, 0);
+    _deferredBuffer._rt->addAttachment(gBuffer[1], RTAttachment::Type::Colour, 1);
+    _deferredBuffer._rt->addAttachment(gBuffer[2], RTAttachment::Type::Colour, 2);
+    _deferredBuffer._rt->addAttachment(gBuffer[3], RTAttachment::Type::Colour, 3);
+    _deferredBuffer._rt->useAutoDepthBuffer(true);
+    _deferredBuffer._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
     ResourceDescriptor mrtPreviewSmall("MRT RenderQuad SmallPreview");
     mrtPreviewSmall.setFlag(true);  // no default material
     ResourceDescriptor mrt("MRT RenderQuad");
@@ -75,8 +75,8 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
     par.setParam(_ID("rendering.enableShadows"), false);
 
-    U16 width = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->getWidth();
-    U16 height = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->getHeight();
+    U16 width = GFX_DEVICE.renderTarget(RenderTargetID::SCREEN).getWidth();
+    U16 height = GFX_DEVICE.renderTarget(RenderTargetID::SCREEN).getHeight();
 
     updateResolution(width, height);
 
@@ -107,7 +107,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
 {
     Console::printfn(Locale::get(_ID("DEFERRED_RT_DELETE")));
     _renderQuads.clear();
-    MemoryManager::DELETE(_deferredBuffer);
+    GFX_DEVICE.deallocateRT(_deferredBuffer);
     MemoryManager::DELETE(_lightTexture);
 }
 
@@ -150,9 +150,9 @@ void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<>& renderCallback,
                                         const SceneRenderState& sceneRenderState) {
     // Pass 1
     // Draw the geometry, saving parameters into the buffer
-    _deferredBuffer->begin(RenderTarget::defaultPolicy());
+    _deferredBuffer._rt->begin(RenderTarget::defaultPolicy());
     renderCallback();
-    _deferredBuffer->end();
+    _deferredBuffer._rt->end();
 }
 
 void DeferredShadingRenderer::secondPass(
@@ -162,10 +162,10 @@ void DeferredShadingRenderer::secondPass(
     // textures bound to that shader
     GFX::Scoped2DRendering scoped2D(true);
 
-    _deferredBuffer->bind(0, RTAttachment::Type::Colour, 0);
-    _deferredBuffer->bind(1, RTAttachment::Type::Colour, 1);
-    _deferredBuffer->bind(2, RTAttachment::Type::Colour, 2);
-    _deferredBuffer->bind(3, RTAttachment::Type::Colour, 3);
+    _deferredBuffer._rt->bind(0, RTAttachment::Type::Colour, 0);
+    _deferredBuffer._rt->bind(1, RTAttachment::Type::Colour, 1);
+    _deferredBuffer._rt->bind(2, RTAttachment::Type::Colour, 2);
+    _deferredBuffer._rt->bind(3, RTAttachment::Type::Colour, 3);
     _lightTexture->bind(4);
 
     GenericDrawCommand cmd;
@@ -217,7 +217,7 @@ void DeferredShadingRenderer::secondPass(
 }
 
 void DeferredShadingRenderer::updateResolution(U16 width, U16 height) {
-    _deferredBuffer->create(width, height);
+    _deferredBuffer._rt->create(width, height);
 
     F32 widthF = to_float(width);
     F32 heightF = to_float(height);

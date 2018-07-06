@@ -113,44 +113,11 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     ErrorCode initRenderingAPI(I32 argc, char** argv) override;
     /// Clear everything that was setup in initRenderingAPI()
     void closeRenderingAPI() override;
-    /// Prepare our shader loading system
-    bool initShaders() override;
-    /// Revert everything that was set up in "initShaders()"
-    bool deInitShaders() override;
     /// Prepare the GPU for rendering a frame
     void beginFrame() override;
     /// Finish rendering the current frame
     void endFrame(bool swapBuffers) override;
-    /// Create and return a new IM emulation primitive. The callee is responsible
-    /// for it's deletion!
-    IMPrimitive* newIMP(GFXDevice& context) const override;
-    /// Create and return a new framebuffer. The callee is responsible for it's
-    /// deletion!
-    RenderTarget* newRT(GFXDevice& context, bool multisampled) const override;
-    /// Create and return a new vertex array (VAO + VB + IB). The callee is
-    /// responsible for it's deletion!
-    VertexBuffer* newVB(GFXDevice& context) const override;
-    /// Create and return a new pixel buffer using the requested format. The callee
-    /// is responsible for it's deletion!
-    PixelBuffer* newPB(GFXDevice& context, const PBType& type) const override;
-    /// Create and return a new generic vertex data object
-    /// The callee is responsible for it's deletion!
-    GenericVertexData* newGVD(GFXDevice& context, const U32 ringBufferLength = 1) const override;
-    /// Create and return a new shader buffer. The callee is responsible for it's deletion!
-    /// The OpenGL implementation creates either an 'Uniform Buffer Object' if unbound is false
-    /// or a 'Shader Storage Block Object' otherwise
-    ShaderBuffer* newSB(GFXDevice& context,
-                        const U32 ringBufferLength = 1,
-                        const bool unbound = false,
-                        const bool persistentMapped = true,
-                        BufferUpdateFrequency frequency =
-                            BufferUpdateFrequency::ONCE) const override;
-    /// Create and return a new texture. The callee is responsible for it's deletion!
-    Texture* newTexture(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, TextureType type, bool asyncLoad) const override;
-    /// Create and return a new shader program.
-    /// The callee is responsible for it's deletion!
-    ShaderProgram* newShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) const override;
-
+  
     inline void toggleDepthWrites(bool state) override {
         glDepthMask(state ? GL_TRUE : GL_FALSE);
     }
@@ -270,6 +237,11 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
                                  GLsizei stride);
 
   private:
+    /// Prepare our shader loading system
+    bool initShaders();
+    /// Revert everything that was set up in "initShaders()"
+    bool deInitShaders();
+
     ErrorCode createGLContext(const DisplayWindow& window);
     ErrorCode destroyGLContext();
     /// FontStash library initialization

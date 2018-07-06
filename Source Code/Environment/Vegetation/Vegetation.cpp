@@ -322,8 +322,10 @@ U32 Vegetation::getQueryID() {
             return 0;
         case RenderStage::REFLECTION:
             return 1;
-        default:
+        case RenderStage::REFRACTION:
             return 2;
+        default:
+            return 3;
     };
 }
 
@@ -358,8 +360,7 @@ void Vegetation::gpuCull() {
                              /*queryID*/ to_const_uint(CullType::INSTANCE_CLOUD_REDUCTION));
 
         GFX::ScopedRasterizer scoped2D(false);
-        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target
-            ->bind(0, RTAttachment::Type::Depth, 0);
+        GFX_DEVICE.renderTarget(RenderTargetID::SCREEN).bind(0, RTAttachment::Type::Depth, 0);
         buffer->bindFeedbackBufferRange(to_const_uint(BufferUsage::CulledPositionBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);

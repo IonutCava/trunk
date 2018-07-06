@@ -203,6 +203,7 @@ class TerrainLoader {
                                      size_t depthStateHash) {
         terrain._terrainStateHash[to_const_uint(RenderStage::DISPLAY)] = normalStateHash;
         terrain._terrainStateHash[to_const_uint(RenderStage::Z_PRE_PASS)] = normalStateHash;
+        terrain._terrainStateHash[to_const_uint(RenderStage::REFRACTION)] = normalStateHash;
         terrain._terrainStateHash[to_const_uint(RenderStage::REFLECTION)] = reflectionStateHash;
         terrain._terrainStateHash[to_const_uint(RenderStage::SHADOW)] = depthStateHash;
     }

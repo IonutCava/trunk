@@ -46,7 +46,8 @@ void RenderPassCuller::clear() {
 U32 RenderPassCuller::stageToCacheIndex(RenderStage stage) const {
     switch (stage) {
         case RenderStage::REFLECTION:  return 1;
-        case RenderStage::SHADOW:  return 2;
+        case RenderStage::REFRACTION: return 2;
+        case RenderStage::SHADOW:  return 3;
     };
 
     return 0;
@@ -82,15 +83,16 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
                                    const CullingFunction& cullingFunction)
 {
     VisibleNodeList& nodeCache = getNodeCache(stage);
+    vectorImpl<VisibleNodeList>& nodeList = _perThreadNodeList[to_uint(stage)];
     nodeCache.resize(0);
     const SceneRenderState& renderState = sceneState.renderState();
     if (renderState.drawGeometry()) {
-        _cullingFunction = cullingFunction;
+        _cullingFunction[to_uint(stage)] = cullingFunction;
         // No point in updating visual information if the scene disabled object
         // rendering or rendering of their bounding boxes
         SceneGraphNode& root = sceneGraph.getRoot();
         U32 childCount = root.getChildCount();
-        _perThreadNodeList.resize(childCount);
+        nodeList.resize(childCount);
         const Camera& camera = renderState.getCameraConst();
         F32 cullMaxDistance = sceneState.generalVisibility();
         parallel_for(DELEGATE_BIND(&RenderPassCuller::frumstumPartitionCuller,
@@ -106,8 +108,8 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
                      g_nodesPerCullingPartition,
                      Task::TaskPriority::MAX);
 
-        for (VisibleNodeList& nodeList : _perThreadNodeList) {
-            for (VisibleNode& ptr : nodeList) {
+        for (VisibleNodeList& nodeListEntry : nodeList) {
+            for (VisibleNode& ptr : nodeListEntry) {
                 nodeCache.push_back(ptr);
             }
         }
@@ -137,7 +139,7 @@ void RenderPassCuller::frustumCullNode(const std::atomic_bool&stopRequested,
                                        U32 nodeListIndex,
                                        bool clearList)
 {
-    VisibleNodeList& nodes = _perThreadNodeList[nodeListIndex];
+    VisibleNodeList& nodes = _perThreadNodeList[to_uint(currentStage)][nodeListIndex];
     if (clearList) {
         nodes.resize(0);
     }
@@ -148,7 +150,7 @@ void RenderPassCuller::frustumCullNode(const std::atomic_bool&stopRequested,
 
     isVisible = isVisible &&
                 currentNode.isActive() &&
-                !_cullingFunction(currentNode) &&
+                !_cullingFunction[to_uint(currentStage)](currentNode) &&
                 !currentNode.cullNode(currentCamera, cullMaxDistance, currentStage, collisionResult);
 
     if (isVisible && !stopRequested) {
@@ -179,7 +181,7 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderS
         if (!(currentStage == RenderStage::SHADOW &&
               !currentNode.get<RenderingComponent>()->castsShadows())) {
         
-            if (child->isActive() && !_cullingFunction(*child)) {
+            if (child->isActive() && !_cullingFunction[to_uint(currentStage)](*child)) {
                 vectorAlg::emplace_back(nodes, 0, child);
                 addAllChildren(*child, currentStage, nodes);
             }

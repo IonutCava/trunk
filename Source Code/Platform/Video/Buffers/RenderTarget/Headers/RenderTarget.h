@@ -45,10 +45,13 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
         RT_WRITE_ONLY = 2
     };
 
-   public:
+   protected:
+    SET_DELETE_FRIEND
+
     RenderTarget(GFXDevice& context, bool multiSample);
     virtual ~RenderTarget();
 
+   public:
     static RTDrawDescriptor& defaultPolicy();
 
     // Enable/Disable the presence of a depth renderbuffer

@@ -102,12 +102,12 @@ void PostFX::init() {
      borderTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
      _screenBorder = CreateResource<Texture>(borderTexture);
 
-     _preRenderBatch.init(_gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target);
+     _preRenderBatch.init(&_gfx->renderTarget(RenderTargetID::SCREEN));
     PreRenderOperator& SSAOOp = _preRenderBatch.getOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
-    SSAOOp.addInputFB(_gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target);
+    SSAOOp.addInputFB(&_gfx->renderTarget(RenderTargetID::SCREEN));
 
     PreRenderOperator& DOFOp = _preRenderBatch.getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
-    DOFOp.addInputFB(_gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target);
+    DOFOp.addInputFB(&_gfx->renderTarget(RenderTargetID::SCREEN));
     
     _noiseTimer = 0.0;
     _tickInterval = 1.0f / 24.0f;
@@ -143,14 +143,14 @@ void PostFX::apply() {
     _noise->bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
     _screenBorder->bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
 
-    _gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->begin(_postFXTarget);
+    _gfx->renderTarget(RenderTargetID::SCREEN).begin(_postFXTarget);
         GenericDrawCommand triangleCmd;
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
         triangleCmd.stateHash(_gfx->getDefaultStateBlock(true));
         triangleCmd.shaderProgram(_postProcessingShader);
         _gfx->draw(triangleCmd);
-    _gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._target->end();
+    _gfx->renderTarget(RenderTargetID::SCREEN).end();
 }
 
 void PostFX::idle() {

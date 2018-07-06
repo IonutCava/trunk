@@ -12,9 +12,9 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(RenderTarget* hdrTarget, Render
       _useSMAA(false),
       _postAASamples(0)
 {
-    _samplerCopy = GFX_DEVICE.newRT();
-    _samplerCopy->addAttachment(_ldrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
-    _samplerCopy->useAutoDepthBuffer(false);
+    _samplerCopy = GFX_DEVICE.allocateRT(false);
+    _samplerCopy._rt->addAttachment(_ldrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
+    _samplerCopy._rt->useAutoDepthBuffer(false);
 
     ResourceDescriptor fxaa("FXAA");
     fxaa.setThreadedLoading(false);
@@ -45,8 +45,8 @@ void PostAAPreRenderOperator::reshape(U16 width, U16 height) {
 
 /// This is tricky as we use our screen as both input and output
 void PostAAPreRenderOperator::execute() {
-    _samplerCopy->blitFrom(_ldrTarget);
-    _samplerCopy->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
+    _samplerCopy._rt->blitFrom(_ldrTarget);
+    _samplerCopy._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
 
     // Apply FXAA/SMAA to the specified render target
     _ldrTarget->begin(RenderTarget::defaultPolicy());

@@ -6,12 +6,11 @@ layout(binding = SHADOW_CUBE_MAP_ARRAY)    uniform samplerCubeArrayShadow  texDe
 layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDepthMapFromLightArray;
 
 
-#if defined(_DEBUG)
 #define DEBUG_SHADOWMAPPING
 //#define DEBUG_SHADOWSPLITS
+
 // set this to whatever (current cascade, current depth comparison result, anything)
-int _shadowTempInt = -2;
-#endif
+int g_shadowTempInt = -2;
 
 #include "shadow_directional.frag"
 #include "shadow_point.frag"

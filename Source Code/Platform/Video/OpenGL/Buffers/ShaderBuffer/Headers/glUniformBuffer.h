@@ -88,7 +88,6 @@ class glUniformBuffer final : public ShaderBuffer {
         GLuint _handle;
         GLuint _sizeFactor;
         GLuint _writeHead;
-        GLuint _readHead;
     };
 
     glBufferImpl* _buffer;

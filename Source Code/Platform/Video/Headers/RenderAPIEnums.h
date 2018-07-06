@@ -87,8 +87,9 @@ enum class CurrentContext : U32 {
 enum class RenderStage : U32 {
     SHADOW = 0,
     REFLECTION = 1,
-    DISPLAY = 2,
-    Z_PRE_PASS = 3,
+    REFRACTION = 2,
+    DISPLAY = 3,
+    Z_PRE_PASS = 4,
     COUNT
 };
 

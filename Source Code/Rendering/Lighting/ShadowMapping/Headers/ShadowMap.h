@@ -63,7 +63,8 @@ class NOINITVTABLE ShadowMap {
     /// Get the current shadow mapping tehnique
     inline ShadowType getShadowMapType() const { return _shadowMapType; }
 
-    inline RenderTarget* getDepthMap() { return _depthMaps[to_uint(getShadowMapType())]; }
+    RenderTarget& getDepthMap();
+    const RenderTarget& getDepthMap() const;
 
     inline U32 getArrayOffset() const {
         return _arrayOffset;
@@ -84,8 +85,6 @@ class NOINITVTABLE ShadowMap {
     vec4<I32> getViewportForRow(U32 rowIndex) const;
 
    protected:
-    /// The depth maps. Using 1 array for each type: CSM, Cube and single
-    static std::array<RenderTarget*, to_const_uint(ShadowType::COUNT)> _depthMaps;
     typedef std::array<bool, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> LayerUsageMask;
     static std::array<LayerUsageMask, to_const_uint(ShadowType::COUNT)> _depthMapUsage;
 

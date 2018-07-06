@@ -12,7 +12,6 @@
 
 namespace Divide {
 
-std::array<RenderTarget*, to_const_uint(ShadowType::COUNT)> ShadowMap::_depthMaps;
 std::array<ShadowMap::LayerUsageMask, to_const_uint(ShadowType::COUNT)> ShadowMap::_depthMapUsage;
 
 void ShadowMap::resetShadowMaps() {
@@ -32,6 +31,7 @@ void ShadowMap::initShadowMaps() {
         resolutions.fill(1024);
     }
 
+    RenderTargetHandle crtTarget;
     for (U32 i = 0; i < to_const_uint(ShadowType::COUNT); ++i) {
         switch (static_cast<ShadowType>(i)) {
             case ShadowType::SINGLE: {
@@ -48,8 +48,8 @@ void ShadowMap::initShadowMaps() {
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.setSampler(depthMapSampler);
 
-                _depthMaps[i] = GFX_DEVICE.newRT();
-                _depthMaps[i]->addAttachment(depthMapDescriptor, RTAttachment::Type::Depth, 0);
+                crtTarget = GFX_DEVICE.allocateRT(RenderTargetID::SHADOW, false);
+                crtTarget._rt->addAttachment(depthMapDescriptor, RTAttachment::Type::Depth, 0);
             } break;
 
             case ShadowType::LAYERED: {
@@ -65,9 +65,9 @@ void ShadowMap::initShadowMaps() {
                                                  Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.setSampler(depthMapSampler);
 
-                _depthMaps[i] = GFX_DEVICE.newRT(false);
-                _depthMaps[i]->addAttachment(depthMapDescriptor, RTAttachment::Type::Colour, 0);
-                _depthMaps[i]->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
+                crtTarget = GFX_DEVICE.allocateRT(RenderTargetID::SHADOW, false);
+                crtTarget._rt->addAttachment(depthMapDescriptor, RTAttachment::Type::Colour, 0);
+                crtTarget._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
             } break;
 
             case ShadowType::CUBEMAP: {
@@ -84,19 +84,20 @@ void ShadowMap::initShadowMaps() {
                 depthMapDescriptor.setSampler(depthMapSampler);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
-                _depthMaps[i] = GFX_DEVICE.newRT();
-                _depthMaps[i]->addAttachment(depthMapDescriptor, RTAttachment::Type::Depth, 0);
+                crtTarget = GFX_DEVICE.allocateRT(RenderTargetID::SHADOW, false);
+                crtTarget._rt->addAttachment(depthMapDescriptor, RTAttachment::Type::Depth, 0);
             } break;
         };
 
-        _depthMaps[i]->create(resolutions[i], resolutions[i]);
+        crtTarget._rt->create(resolutions[i], resolutions[i]);
+
         _depthMapUsage[i].fill(false);
     }
 }
 
 void ShadowMap::clearShadowMaps() {
     for (U32 i = 0; i < to_const_uint(ShadowType::COUNT); ++i) {
-        MemoryManager::DELETE(_depthMaps[i]);
+        GFX_DEVICE.renderTarget(RenderTargetID::SHADOW, i, nullptr);
     }
 }
 
@@ -106,13 +107,15 @@ void ShadowMap::bindShadowMaps() {
             = static_cast<ShadowType>(i) == ShadowType::LAYERED
                                           ? RTAttachment::Type::Colour
                                           : RTAttachment::Type::Depth;
-        _depthMaps[i]->bind(LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i)), attachment, 0);
+
+        U8 bindSlot = LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i));
+        GFX_DEVICE.renderTarget(RenderTargetID::SHADOW, i).bind(bindSlot, attachment, 0);
     }
 }
 
 void ShadowMap::clearShadowMapBuffers() {
     for (U8 i = 0; i < to_const_ubyte(ShadowType::COUNT); ++i) {
-        _depthMaps[i]->clear(RenderTarget::defaultPolicy());
+        GFX_DEVICE.renderTarget(RenderTargetID::SHADOW, i).clear(RenderTarget::defaultPolicy());
     }
 }
 
@@ -127,6 +130,14 @@ U32 ShadowMap::findDepthMapLayer(ShadowType shadowType) {
     }
 
     return layer;
+}
+
+RenderTarget& ShadowMap::getDepthMap() {
+    return GFX_DEVICE.renderTarget(RenderTargetID::SHADOW, to_uint(getShadowMapType()));
+}
+
+const RenderTarget& ShadowMap::getDepthMap() const {
+    return GFX_DEVICE.renderTarget(RenderTargetID::SHADOW, to_uint(getShadowMapType()));
 }
 
 void ShadowMap::commitDepthMapLayer(ShadowType shadowType, U32 layer) {

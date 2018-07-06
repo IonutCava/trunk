@@ -35,6 +35,7 @@
 #include "config.h"
 
 #include "GFXState.h"
+#include "GFXRTPool.h"
 #include "ScopedStates.h"
 #include "GenericCommandPool.h"
 
@@ -62,8 +63,12 @@ class Light;
 class Camera;
 class PostFX;
 class Quad3D;
+class Texture;
 class Object3D;
 class Renderer;
+class IMPrimitive;
+class PixelBuffer;
+class VertexBuffer;
 class SceneGraphNode;
 class SceneRenderState;
 
@@ -190,39 +195,6 @@ DEFINE_SINGLETON(GFXDevice)
        vectorImpl<RenderPackage> _packages;
    };
 
-   struct DisplaySettings {
-       F32 _aspectRatio;
-       F32 _FoV;
-       F32 _tanHFoV;
-       vec2<F32> _zPlanes;
-       mat4<F32> _projectionMatrix;
-       mat4<F32> _viewMatrix;
-
-       DisplaySettings()
-       {
-           _aspectRatio = 1.0f;
-           _FoV = 90;
-           _tanHFoV = std::tan(_FoV * 0.5f);
-           _zPlanes.set(0.1f, 1.0f);
-       }
-   };
-
-   struct RenderTargetWrapper {
-       RenderTarget* _target;
-       DisplaySettings _renderSettings;
-
-       RenderTargetWrapper() : _target(nullptr)
-       {
-       }
-
-       void cacheSettings();
-   };
-
-   enum class RenderTargetID : U32 {
-       SCREEN = 0,
-       COUNT
-   };
-
    // Enough to hold a cubemap (e.g. environment stage has 6 passes)
    static const U32 MAX_PASSES_PER_STAGE = 6;
 
@@ -344,9 +316,9 @@ DEFINE_SINGLETON(GFXDevice)
                                    const vec2<F32>& zPlanes,
                                    RenderStage renderStage);
                                      
-    void getMatrix(const MATRIX& mode, mat4<F32>& mat);
+    void getMatrix(const MATRIX& mode, mat4<F32>& mat) const;
     /// Alternative to the normal version of getMatrix
-    inline const mat4<F32>& getMatrix(const MATRIX& mode);
+    inline mat4<F32> getMatrix(const MATRIX& mode) const;
     /// Access (Read Only) rendering data used by the GFX
     inline const GPUBlock::GPUData& renderingData() const;
     /// Register a function to be called in the 2D rendering fase of the GFX Flush
@@ -402,18 +374,24 @@ DEFINE_SINGLETON(GFXDevice)
         return (noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash);
     }
 
-    inline RenderTargetWrapper& getRenderTarget(RenderTargetID target) {
-        return _renderTarget[to_uint(target)];
-    }
-    
-    inline RenderTargetWrapper& reflectionTarget(I32 index) {
-        assert(index < _reflectionTarget.size());
-        return _reflectionTarget[index];
+    inline RenderTarget& renderTarget(RenderTargetID target, U32 index = 0) {
+        return _rtPool.renderTarget(target, index);
     }
 
-    inline RenderTargetWrapper& refractionTarget(I32 index) {
-        assert(index < _refractionTarget.size());
-        return _refractionTarget[index];
+    inline void renderTarget(RenderTargetID target, U32 index, RenderTarget* newTarget) {
+        _rtPool.set(target, index, newTarget);
+    }
+
+    inline RenderTargetHandle allocateRT(RenderTargetID targetID, bool multisampled) {
+        return _rtPool.add(targetID, newRT(multisampled));
+    }
+
+    inline RenderTargetHandle allocateRT(bool multisampled) {
+        return allocateRT(RenderTargetID::OTHER, multisampled);
+    }
+
+    inline bool deallocateRT(RenderTargetHandle& handle) {
+        return _rtPool.remove(handle);
     }
 
     RenderDetailLevel shadowDetailLevel() const { return _shadowDetailLevel; }
@@ -438,44 +416,26 @@ DEFINE_SINGLETON(GFXDevice)
                        bool useIndirectRender = false);
 
     inline void submitCommands(const vectorImpl<GenericDrawCommand>& cmds,
-                               bool useIndirectRender = false);
-  public:  // Direct API calls
-    /// Hardware specific shader preps (e.g.: OpenGL: init/deinit GLSL-OPT and GLSW)
-    inline bool initShaders() { return _api->initShaders(); }
-
-    inline bool deInitShaders() { return _api->deInitShaders(); }
-
-    inline RenderTarget* newRT(bool multisampled = false) {
-        return _api->newRT(*this, multisampled);
-    }
-
-    inline VertexBuffer* newVB() {
-        return _api->newVB(*this);
-    }
-
-    inline PixelBuffer* newPB(const PBType& type = PBType::PB_TEXTURE_2D) {
-        return _api->newPB(*this, type);
-    }
-
-    inline GenericVertexData* newGVD(const U32 ringBufferLength) {
-        return _api->newGVD(*this, ringBufferLength);
-    }
-
-    inline Texture* newTexture(const stringImpl& name, const stringImpl& resourceLocation, TextureType type, bool asyncLoad) {
-        return _api->newTexture(*this, name, resourceLocation, type, asyncLoad);
-    }
-
-    inline ShaderProgram* newShaderProgram(const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) {
-        return _api->newShaderProgram(*this, name, resourceLocation, asyncLoad);
-    }
-    
-    inline ShaderBuffer* newSB(const U32 ringBufferLength = 1,
+                               bool useIndirectRender = false); 
+  public:
+      IMPrimitive*       newIMP() const;
+      VertexBuffer*      newVB() const;
+      PixelBuffer*       newPB(PBType type = PBType::PB_TEXTURE_2D) const;
+      GenericVertexData* newGVD(const U32 ringBufferLength) const;
+      Texture*           newTexture(const stringImpl& name,
+                                    const stringImpl& resourceLocation,
+                                    TextureType type,
+                                    bool asyncLoad) const;
+      ShaderProgram*     newShaderProgram(const stringImpl& name,
+                                          const stringImpl& resourceLocation,
+                                          bool asyncLoad) const;
+      ShaderBuffer*      newSB(const U32 ringBufferLength = 1,
                                const bool unbound = false,
                                const bool persistentMapped = true,
                                BufferUpdateFrequency frequency =
-                                   BufferUpdateFrequency::ONCE) {
-        return _api->newSB(*this, ringBufferLength, unbound, persistentMapped, frequency);
-    }
+                                     BufferUpdateFrequency::ONCE) const;
+  public:  // Direct API calls
+
 
     inline U64 getFrameDurationGPU() {
         return _api->getFrameDurationGPU();
@@ -488,6 +448,8 @@ DEFINE_SINGLETON(GFXDevice)
     }
 
   protected:
+    RenderTarget* newRT(bool multisampled) const;
+
     void setBaseViewport(const vec4<I32>& viewport);
 
     inline void drawText(const TextLabel& text,
@@ -577,9 +539,7 @@ DEFINE_SINGLETON(GFXDevice)
     GPUVendor _GPUVendor;
     GPUState _state;
     /* Rendering buffers*/
-    std::array<RenderTargetWrapper, to_const_uint(RenderTargetID::COUNT)> _renderTarget;
-    std::array<RenderTargetWrapper, Config::MAX_REFLECTIVE_NODES_IN_VIEW> _reflectionTarget;
-    std::array<RenderTargetWrapper, Config::MAX_REFRACTIVE_NODES_IN_VIEW> _refractionTarget;
+    GFXRTPool _rtPool;
     /*State management */
     RenderStateMap _stateBlockMap;
     bool _stateBlockByDescription;
@@ -608,8 +568,6 @@ DEFINE_SINGLETON(GFXDevice)
     ShaderProgram_ptr _HIZCullProgram;
     ShaderProgram_ptr _displayShader;
 
-    /// getMatrix cache
-    mat4<F32> _mat4Cache;
     /// Quality settings
     RenderDetailLevel _shadowDetailLevel;
 

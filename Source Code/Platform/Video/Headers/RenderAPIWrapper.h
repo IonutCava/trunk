@@ -341,15 +341,6 @@ private:
 typedef vectorImpl<TextureData> TextureDataContainer;
 typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;
 
-enum class ShaderType : U32;
-class Texture;
-class TextureData;
-class IMPrimitive;
-class PixelBuffer;
-class RenderTarget;
-class ShaderBuffer;
-class VertexBuffer;
-class ShaderProgram;
 
 class RingBuffer {
     public:
@@ -403,6 +394,7 @@ class RingBuffer {
 
 };
 
+class ShaderBuffer;
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
    protected:
@@ -412,28 +404,9 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual void beginFrame() = 0;
     /// Clear shaders, restore active texture units, etc
     virtual void endFrame(bool swapBuffers) = 0;
-    virtual IMPrimitive* newIMP(GFXDevice& context) const = 0;
-    virtual RenderTarget* newRT(GFXDevice& context, bool multisampled) const = 0;
-    virtual VertexBuffer* newVB(GFXDevice& context) const = 0;
-    virtual ShaderBuffer* newSB(GFXDevice& context,
-                                const U32 ringBufferLength = 1,
-                                const bool unbound = false,
-                                const bool persistentMapped = true,
-                                BufferUpdateFrequency frequency =
-                                    BufferUpdateFrequency::ONCE) const = 0;
-    virtual GenericVertexData* newGVD(GFXDevice& context, 
-                                      const U32 ringBufferLength = 1) const = 0;
-    virtual PixelBuffer* newPB(GFXDevice& context,
-                               const PBType& type = PBType::PB_TEXTURE_2D) const = 0;
-    virtual Texture* newTexture(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, TextureType type, bool asyncLoad) const = 0;
-    virtual ShaderProgram* newShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) const = 0;
-
-    virtual bool initShaders() = 0;
-    virtual bool deInitShaders() = 0;
 
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv) = 0;
     virtual void closeRenderingAPI() = 0;
-
 
     virtual void toggleDepthWrites(bool state) = 0;
     virtual void toggleRasterization(bool state) = 0;

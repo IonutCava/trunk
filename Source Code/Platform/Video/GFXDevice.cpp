@@ -19,8 +19,6 @@
 
 namespace Divide {
 
-std::array<VertexBuffer::AttribFlags, to_const_uint(RenderStage::COUNT)> VertexBuffer::_attribMaskPerStage;
-
 GFXDevice::GFXDevice()
     : _api(nullptr), 
     _commandPool(Config::MAX_DRAW_COMMANDS_IN_FLIGHT),
@@ -69,18 +67,7 @@ GFXDevice::GFXDevice()
     _API_ID = RenderAPI::COUNT;
     // Clipping planes
     _clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0, 0, 0, 0));
-    // Render targets
-    for (RenderTargetWrapper& renderTarget : _renderTarget) {
-        renderTarget._target = nullptr;
-    }
-    for (RenderTargetWrapper& renderTarget : _reflectionTarget) {
-        renderTarget._target = nullptr;
-    }
-    for (RenderTargetWrapper& renderTarget : _refractionTarget) {
-        renderTarget._target = nullptr;
-    }
     // To allow calls to "setBaseViewport"
-    
     _viewport.push(vec4<I32>(-1));
 
     _lastCommandCount.fill(0);
@@ -348,24 +335,20 @@ void GFXDevice::toggleFullScreen() {
 
 /// The main entry point for any resolution change request
 void GFXDevice::onChangeResolution(U16 w, U16 h) {
-    // Make sure we are in a valid state that allows resolution updates
-    if (_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target != nullptr) {
-        // Update resolution only if it's different from the current one.
-        // Avoid resolution change on minimize so we don't thrash render targets
-        if ((w == _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getWidth() &&
-             h == _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getHeight()) ||
-           !(w > 1 && h > 1)) {
-            return;
-        }
-        // Update render targets with the new resolution
-        for (U32 i = 0; i < to_const_uint(RenderTargetID::COUNT); ++i) {
-            RenderTarget* renderTarget = _renderTarget[i]._target;
-            if (renderTarget) {
-                renderTarget->create(w, h);
-            }
+    // Update resolution only if it's different from the current one.
+    // Avoid resolution change on minimize so we don't thrash render targets
+    if ((w == renderTarget(RenderTargetID::SCREEN).getWidth() &&
+         h == renderTarget(RenderTargetID::SCREEN).getHeight()) ||
+        !(w > 1 && h > 1)) {
+        return;
+    }
+    // Update render targets with the new resolution
+    for (RenderTarget* rt : _rtPool.renderTargets(RenderTargetID::SCREEN)) {
+        if (rt) {
+            rt->create(w, h);
         }
     }
-
+    
     // Update post-processing render targets and buffers
     PostFX::instance().updateResolution(w, h);
     _gpuBlock._data._invScreenDimension.xy(1.0f / w, 1.0f / h);
@@ -375,7 +358,7 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
 }
 
 /// Return a GFXDevice specific matrix or a derivative of it
-void GFXDevice::getMatrix(const MATRIX& mode, mat4<F32>& mat) {
+void GFXDevice::getMatrix(const MATRIX& mode, mat4<F32>& mat) const{
     // The matrix names are self-explanatory
     if (mode == MATRIX::VIEW_PROJECTION) {
         mat.set(_gpuBlock._data._ViewProjectionMatrix);
@@ -652,14 +635,14 @@ void GFXDevice::constructHIZ() {
     };
 
     // The depth buffer's resolution should be equal to the screen's resolution
-    RenderTarget* screenTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target;
-    U16 width = screenTarget->getWidth();
-    U16 height = screenTarget->getHeight();
+    RenderTarget& screenTarget = renderTarget(RenderTargetID::SCREEN);
+    U16 width = screenTarget.getWidth();
+    U16 height = screenTarget.getHeight();
     // Bind the depth texture to the first texture unit
-    screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
+    screenTarget.bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
 
 
-    screenTarget->begin(depthOnlyTarget);
+    screenTarget.begin(depthOnlyTarget);
     // Calculate the number of mipmap levels we need to generate
     U32 numLevels = 1 + to_uint(floorf(log2f(fmaxf(to_float(width),
                                                    to_float(height)))));
@@ -679,16 +662,16 @@ void GFXDevice::constructHIZ() {
         // Update the viewport with the new resolution
         updateViewportInternal(setAndGetHalfViewport(currentViewport));
         // Bind next mip level for rendering but first restrict fetches only to previous level
-        screenTarget->setMipLevel(i - 1, i - 1, i, RTAttachment::Type::Depth, 0);
+        screenTarget.setMipLevel(i - 1, i - 1, i, RTAttachment::Type::Depth, 0);
         // Dummy draw command as the full screen quad is generated completely in the vertex shader
         draw(triangleCmd);
     }
 
     updateViewportInternal(previousViewport);
     // Reset mipmap level range for the depth buffer
-    screenTarget->resetMipLevel(RTAttachment::Type::Depth, 0);
+    screenTarget.resetMipLevel(RTAttachment::Type::Depth, 0);
     // Unbind the render target
-    screenTarget->end();
+    screenTarget.end();
 }
 
 /// Find an unused primitive object or create a new one and return it
@@ -709,7 +692,7 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
 
     } else {
         // If we do not have a valid zombie, we create a new primitive
-        tempPriv = _api->newIMP(*this);
+        tempPriv = newIMP();
         // And add it to our container. The GFXDevice class is responsible for deleting these!
         UpgradeToWriteLock w_lock(ur_lock);
         _imInterfaces.push_back(tempPriv);
@@ -724,14 +707,13 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
 /// and save it as a TGA image
 void GFXDevice::Screenshot(const stringImpl& filename) {
     // Get the screen's resolution
-    U16 width = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getWidth();
-    U16 height = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->getHeight();
+    U16 width = renderTarget(RenderTargetID::SCREEN).getWidth();
+    U16 height = renderTarget(RenderTargetID::SCREEN).getHeight();
     // Allocate sufficiently large buffers to hold the pixel data
     U32 bufferSize = width * height * 4;
     U8* imageData = MemoryManager_NEW U8[bufferSize];
     // Read the pixels from the main render target (RGBA16F)
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->readData(
-        GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, imageData);
+    renderTarget(RenderTargetID::SCREEN).readData(GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, imageData);
     // Save to file
     ImageTools::SaveSeries(filename,
                            vec2<U16>(width, height),
@@ -740,4 +722,5 @@ void GFXDevice::Screenshot(const stringImpl& filename) {
     // Delete local buffers
     MemoryManager::DELETE_ARRAY(imageData);
 }
+
 };

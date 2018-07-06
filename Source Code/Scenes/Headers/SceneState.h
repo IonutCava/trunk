@@ -186,15 +186,10 @@ class SceneRenderState : public SceneComponent {
         _gizmoState = newState;
     }
 
-
-    inline I32 currentShadowLightIndex() {
-        return _currentShadowLightIndex;
+    inline I32 currentStagePass() {
+        return _currentStagePass;
     }
-
-    inline I32 currentReflectorIndex() {
-        return _currentReflectorIndex;
-    }
-
+    
     inline GizmoState gizmoState() const {
         return _gizmoState;
     }
@@ -221,13 +216,10 @@ class SceneRenderState : public SceneComponent {
         _playAnimations = state; 
     }
 
-    inline void currentShadowLightIndex(I32 idx) {
-        _currentShadowLightIndex = idx;
+    inline void currentStagePass(I32 idx) {
+        _currentStagePass = idx;
     }
 
-    inline void currentReflectorIndex(I32 idx) {
-        _currentReflectorIndex = idx;
-    }
    protected:
     bool _drawBB;
     bool _debugDrawLines;
@@ -240,8 +232,7 @@ class SceneRenderState : public SceneComponent {
     bool _drawWireframe;
     bool _drawOctreeRegions;
 
-    I32 _currentShadowLightIndex;
-    I32 _currentReflectorIndex;
+    I32 _currentStagePass;
 
     GizmoState _gizmoState;
     CameraManager* _cameraMgr;
@@ -391,9 +382,9 @@ class SceneRenderStateScene {
 
 class SceneRenderStateLightPool {
    private:
-    static void shadowLightIndex(SceneRenderState& sceneRenderState,
-                                 I32 shadowLightIndex) {
-        sceneRenderState.currentShadowLightIndex(shadowLightIndex);                                    
+    static void currentStagePass(SceneRenderState& sceneRenderState,
+                                 I32 currentStagePass) {
+        sceneRenderState.currentStagePass(currentStagePass);
     }
 
     friend class Divide::LightPool;
@@ -401,9 +392,9 @@ class SceneRenderStateLightPool {
 
 class SceneRenderStateRenderPass {
    private:
-    static void reflectorIndex(SceneRenderState& sceneRenderState,
-                               I32 reflectorIndex) {
-        sceneRenderState.currentReflectorIndex(reflectorIndex);
+    static void currentStagePass(SceneRenderState& sceneRenderState,
+                                 I32 currentStagePass) {
+        sceneRenderState.currentStagePass(currentStagePass);
     }
 
     friend class Divide::RenderPass;

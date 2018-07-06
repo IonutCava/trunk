@@ -29,11 +29,11 @@ void CubeShadowMap::init(ShadowMapInfo* const smi) {
 }
 
 void CubeShadowMap::render(SceneRenderState& renderState) {
-    GFX_DEVICE.generateCubeMap(*getDepthMap(),
-                                _arrayOffset,
-                                _light->getPosition(),
-                                vec2<F32>(0.1f, _light->getRange()),
-                                RenderStage::SHADOW);
+    GFX_DEVICE.generateCubeMap(getDepthMap(),
+                               _arrayOffset,
+                               _light->getPosition(),
+                               vec2<F32>(0.1f, _light->getRange()),
+                               RenderStage::SHADOW);
 }
 
 void CubeShadowMap::previewShadowMaps(U32 rowIndex) {
@@ -43,7 +43,7 @@ void CubeShadowMap::previewShadowMaps(U32 rowIndex) {
 
     const vec4<I32> viewport = getViewportForRow(rowIndex);
 
-    getDepthMap()->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
+    getDepthMap().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
     _previewDepthMapShader->Uniform("layer", _arrayOffset);
 
     GenericDrawCommand triangleCmd;

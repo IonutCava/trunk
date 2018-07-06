@@ -77,7 +77,7 @@ class CascadedShadowMaps : public ShadowMap {
     RTDrawDescriptor* _renderPolicy;
     /// Shortcut for the owning directional light
     DirectionalLight* _dirLight;
-    RenderTarget* _blurBuffer;
+    RenderTargetHandle _blurBuffer;
     vectorImpl<vec3<F32> > _frustumCornersVS;
     vectorImpl<vec3<F32> > _frustumCornersWS;
     vectorImpl<vec3<F32> > _frustumCornersLS;

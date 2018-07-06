@@ -539,6 +539,9 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIInterface.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderOperator.cpp">
+      <Filter>Rendering\PostFX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">

@@ -87,6 +87,9 @@ inline const char* getErrorCodeName(ErrorCode code) {
         case ErrorCode::GLBINGING_INIT_ERROR: {
             return "GLBinding failed to initialize";
         };
+        case ErrorCode::GLSL_INIT_ERROR: {
+            return "GLSL pre-init failed";
+        };
         case ErrorCode::GL_OLD_HARDWARE: {
             return "Current hardware does not support the minimum OpenGL "
                    "features required";

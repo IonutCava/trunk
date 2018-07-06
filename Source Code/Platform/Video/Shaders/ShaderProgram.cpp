@@ -200,7 +200,6 @@ void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sour
 }
 
 void ShaderProgram::initStaticData() {
-    GFX_DEVICE.initShaders();
     // Create an immediate mode rendering shader that simulates the fixed function pipeline
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
     immediateModeShader.setThreadedLoading(false);
@@ -218,7 +217,6 @@ void ShaderProgram::destroyStaticData() {
     _shaderPrograms.clear();
     _nullShader.reset();
     _imShader.reset();
-    GFX_DEVICE.deInitShaders();
 }
 
 bool ShaderProgram::updateAll(const U64 deltaTime) {

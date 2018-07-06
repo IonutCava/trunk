@@ -261,6 +261,7 @@ class Material : public Resource, public FrameListener {
         addShaderModifier(RenderStage::Z_PRE_PASS, shaderModifier);
         addShaderModifier(RenderStage::SHADOW, shaderModifier);
         addShaderModifier(RenderStage::REFLECTION, shaderModifier);
+        addShaderModifier(RenderStage::REFRACTION, shaderModifier);
     }
 
     /// Shader defines, separated by commas, are added to the generated shader
@@ -283,6 +284,7 @@ class Material : public Resource, public FrameListener {
         setShaderDefines(RenderStage::Z_PRE_PASS, shaderDefines);
         setShaderDefines(RenderStage::SHADOW, shaderDefines);
         setShaderDefines(RenderStage::REFLECTION, shaderDefines);
+        setShaderDefines(RenderStage::REFRACTION, shaderDefines);
     }
 
     /// toggle multi-threaded shader loading on or off for this material
@@ -302,6 +304,7 @@ class Material : public Resource, public FrameListener {
         setShaderProgram(shader, RenderStage::Z_PRE_PASS, computeOnAdd);
         setShaderProgram(shader, RenderStage::SHADOW, computeOnAdd);
         setShaderProgram(shader, RenderStage::REFLECTION, computeOnAdd);
+        setShaderProgram(shader, RenderStage::REFRACTION, computeOnAdd);
     }
 
     inline void setRenderStateBlock(size_t renderStateBlockHash,

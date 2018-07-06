@@ -47,10 +47,6 @@ void DX_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {}
 
 void DX_API::draw(const GenericDrawCommand& cmd) {}
 
-bool DX_API::initShaders() { return true; }
-
-bool DX_API::deInitShaders() { return true; }
-
 void DX_API::syncToThread(std::thread::id threadID) {}
 
 void DX_API::activateStateBlock(const RenderStateBlock& newBlock,

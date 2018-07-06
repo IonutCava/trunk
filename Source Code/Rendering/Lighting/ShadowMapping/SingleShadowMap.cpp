@@ -38,9 +38,9 @@ void SingleShadowMap::render(SceneRenderState& renderState) {
     renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
     _shadowCamera->renderLookAt();
 
-    getDepthMap()->begin(RenderTarget::defaultPolicy());
+    getDepthMap().begin(RenderTarget::defaultPolicy());
         SceneManager::instance().renderVisibleNodes(RenderStage::SHADOW, true);
-    getDepthMap()->end();
+    getDepthMap().end();
     renderState.getCameraMgr().popActiveCamera();
 }
 
@@ -51,7 +51,7 @@ void SingleShadowMap::previewShadowMaps(U32 rowIndex) {
 
     const vec4<I32> viewport = getViewportForRow(rowIndex);
 
-    getDepthMap()->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
+    getDepthMap().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Depth, 0);
     _previewDepthMapShader->Uniform("layer", _arrayOffset);
 
     GFX::ScopedViewport sViewport(viewport);

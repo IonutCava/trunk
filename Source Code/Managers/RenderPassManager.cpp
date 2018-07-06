@@ -1,4 +1,6 @@
 #include "Headers/RenderPassManager.h"
+
+#include "Core/Headers/TaskPool.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 namespace Divide {
@@ -18,6 +20,21 @@ RenderPassManager::~RenderPassManager()
 }
 
 void RenderPassManager::render(SceneRenderState& sceneRenderState) {
+    // Attempt to build draw commands in parallel
+    TaskHandle renderCommandTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
+    for (RenderPass* rp : _renderPasses)
+    {
+        renderCommandTask.addChildTask(CreateTask(
+            [rp](const std::atomic_bool& stopRequested) mutable
+            {
+                rp->generateDrawCommands();
+            })._task
+            )->startTask(Task::TaskPriority::HIGH);
+    }
+    
+    renderCommandTask.startTask(Task::TaskPriority::HIGH);
+    renderCommandTask.wait();
+
     for (RenderPass* rp : _renderPasses) {
         rp->render(sceneRenderState);
     }
@@ -66,12 +83,12 @@ RenderPass* RenderPassManager::getPassForStage(RenderStage renderStage) const {
 }
 
 const RenderPass::BufferData& 
-RenderPassManager::getBufferData(RenderStage renderStage, U32 pass, U32 stage) const {
+RenderPassManager::getBufferData(RenderStage renderStage, I32 pass, U32 stage) const {
     return getPassForStage(renderStage)->getBufferData(pass, stage);
 }
 
 RenderPass::BufferData&
-RenderPassManager::getBufferData(RenderStage renderStage, U32 pass, U32 stage) {
+RenderPassManager::getBufferData(RenderStage renderStage, I32 pass, U32 stage) {
     return getPassForStage(renderStage)->getBufferData(pass, stage);
 }
 

@@ -319,6 +319,9 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\Headers\glGenericBuffer.h">
       <Filter>Video\OpenGL\Buffers\VertexBuffer\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXRTPool.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -539,6 +542,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glGenericBuffer.cpp">
       <Filter>Video\OpenGL\Buffers\VertexBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\GFXRTPool.cpp">
+      <Filter>Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\GFXDeviceObjects.cpp">
+      <Filter>Video</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

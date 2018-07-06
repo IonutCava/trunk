@@ -37,6 +37,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+struct RTDrawDescriptorHandle {
+    RTDrawDescriptorHandle() : _handle(0)
+    {
+    }
+
+    U32 _handle;
+};
+
 class RTDrawMask {
   public:
     RTDrawMask();

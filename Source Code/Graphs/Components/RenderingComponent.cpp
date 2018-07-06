@@ -494,6 +494,7 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
     bool shadowStage = renderStage == RenderStage::SHADOW;
     bool depthPass = renderStage == RenderStage::Z_PRE_PASS || shadowStage;
     bool reflectionStage = renderStage == RenderStage::REFLECTION;
+    bool refractionStage = renderStage == RenderStage::REFRACTION;
 
     if (!_materialInstance && depthPass) {
         
@@ -505,7 +506,8 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
     RenderStage blockStage = depthPass ? (shadowStage ? RenderStage::SHADOW
                                                       : RenderStage::Z_PRE_PASS)
                                        : (reflectionStage ? RenderStage::REFLECTION
-                                                          : RenderStage::DISPLAY);
+                                                          : refractionStage ? RenderStage::REFRACTION
+                                                                            : RenderStage::DISPLAY);
     I32 variant = 0;
     if (shadowStage) {
         LightType type = LightPool::currentShadowCastingLight()->getLightType();
@@ -551,7 +553,7 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
                                     ? cameraDistanceSQ > SCENE_NODE_LOD1_SQ ? 2 : 1
                                     : 0;
             U8 minLoD = to_ubyte(_parentSGN.getNode()->getLODcount() - 1);
-            _lodLevel = renderStage == RenderStage::REFLECTION
+            _lodLevel = (renderStage == RenderStage::REFLECTION || renderStage == RenderStage::REFRACTION)
                                     ? minLoD
                                     : std::min(minLoD, std::max(lodLevelTemp, to_ubyte(0)));
 
@@ -618,15 +620,16 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
 
     mat->updateReflectionIndex(reflectionIndex);
 
-    GFXDevice::RenderTargetWrapper& reflectionTarget = GFX_DEVICE.reflectionTarget(reflectionIndex);
-    assert(reflectionTarget._target != nullptr);
+    RenderTarget& reflectionTarget = GFX_DEVICE.renderTarget(RenderTargetID::REFLECTION, reflectionIndex);
 
     if (_reflectionCallback) {
         _reflectionCallback(_parentSGN, renderState, reflectionTarget);
     } else {
         const vec2<F32>& camZPlanes = renderState.getCameraConst().getZPlanes();
 
-        GFX_DEVICE.generateCubeMap(*reflectionTarget._target, 0, camPos,
+        GFX_DEVICE.generateCubeMap(reflectionTarget,
+                                   0,
+                                   camPos,
                                    vec2<F32>(camZPlanes.x, camZPlanes.y * 0.25f),
                                    RenderStage::REFLECTION);
     }
@@ -668,9 +671,9 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
 
     mat->updateRefractionIndex(refractionIndex);
 
-    GFXDevice::RenderTargetWrapper& refractionTarget = GFX_DEVICE.refractionTarget(refractionIndex);
-    assert(refractionTarget._target != nullptr);
-    _refractionCallback(_parentSGN, renderState, refractionTarget);
+    _refractionCallback(_parentSGN,
+                        renderState,
+                        GFX_DEVICE.renderTarget(RenderTargetID::REFRACTION, refractionIndex));
 
     return true;
 }

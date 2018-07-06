@@ -33,6 +33,8 @@
 #define _RENDERING_RENDER_PASS_RENDERPASS_H_
 
 #include "Platform/Headers/PlatformDefines.h"
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
+
 namespace Divide {
 
 class SceneGraph;
@@ -70,6 +72,7 @@ class RenderPass : private NonCopyable {
     RenderPass(stringImpl name, U8 sortKey, std::initializer_list<RenderStage> passStageFlags);
     ~RenderPass();
 
+    void generateDrawCommands();
     void render(SceneRenderState& renderState);
     inline U8 sortKey() const { return _sortKey; }
     inline U16 getLastTotalBinSize() const { return _lastTotalBinSize; }
@@ -89,13 +92,15 @@ class RenderPass : private NonCopyable {
     bool postRender(SceneRenderState& renderState, U32 pass);
 
     std::pair<U32, U32> getRenderPassInfoForStages(const vectorImpl<RenderStage>& stages) const;
+
    private:
     U8 _sortKey;
     stringImpl _name;
-    bool _useZPrePass;
     U16 _lastTotalBinSize;
     vectorImpl<RenderStage> _stageFlags;
     BufferDataPool* _passBuffers;
+
+    vectorImpl<GenericDrawCommand> _drawCommandsCache;
 };
 
 };  // namespace Divide

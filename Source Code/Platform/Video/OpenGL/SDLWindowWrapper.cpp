@@ -112,6 +112,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
 
     SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glRenderContext);
     glbinding::Binding::initialize();
+    if (glbinding::getCurrentContext() == 0) {
+        return ErrorCode::GLBINGING_INIT_ERROR;
+    }
+
     glbinding::Binding::useCurrentContext();
 
     // OpenGL has a nifty error callback system, available in every build
@@ -304,14 +308,23 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     static const vec4<F32> clearColour = DefaultColours::DIVIDE_BLUE();
     glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
 
-    // That's it. Everything should be ready for draw calls
-    Console::printfn(Locale::get(_ID("START_OGL_API_OK")));
+    // Preare shader headers and various shader related states
+    if (initShaders()) {
+        // That's it. Everything should be ready for draw calls
+        Console::printfn(Locale::get(_ID("START_OGL_API_OK")));
 
-    return ErrorCode::NO_ERR;
+        return ErrorCode::NO_ERR;
+    }
+
+    return ErrorCode::GLSL_INIT_ERROR;
 }
 
 /// Clear everything that was setup in initRenderingAPI()
 void GL_API::closeRenderingAPI() {
+    if (!deInitShaders()) {
+        DIVIDE_UNEXPECTED_CALL("GLSL failed to shutdown!");
+    }
+
     CEGUI::OpenGL3Renderer::destroy(*_GUIGLrenderer);
     _GUIGLrenderer = nullptr;
     // Destroy sampler objects

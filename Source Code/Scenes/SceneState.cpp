@@ -26,8 +26,7 @@ SceneRenderState::SceneRenderState(Scene& parentScene)
       _debugDrawLines(false),
       _debugDrawTargetLines(false),
       _playAnimations(true),
-      _currentShadowLightIndex(-1),
-      _currentReflectorIndex(-1)
+      _currentStagePass(-1)
 {
     _gizmoState = GizmoState::NO_GIZMO;
     _cameraMgr = &Application::instance().kernel().getCameraMgr();

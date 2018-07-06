@@ -34,13 +34,6 @@
 
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
-#include "Platform/Video/Direct3D/Buffers/RenderTarget/Headers/d3dRenderTarget.h"
-#include "Platform/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dVertexBuffer.h"
-#include "Platform/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dGenericVertexData.h"
-#include "Platform/Video/Direct3D/Buffers/ShaderBuffer/Headers/d3dConstantBuffer.h"
-#include "Platform/Video/Direct3D/Buffers/PixelBuffer/Headers/d3dPixelBuffer.h"
-#include "Platform/Video/Direct3D/Shaders/Headers/d3dShaderProgram.h"
-#include "Platform/Video/Direct3D/Textures/Headers/d3dTexture.h"
 #include "Platform/Video/Direct3D/Headers/d3dEnumTable.h"
 
 namespace Divide {
@@ -58,49 +51,6 @@ DEFINE_SINGLETON_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     bool makeTextureResident(const TextureData& textureData) override;
     void beginFrame() override;
     void endFrame(bool swapBuffers) override;
-
-    inline ShaderBuffer* newSB(GFXDevice& context,
-                               const U32 ringBufferLength = 1,
-                               const bool unbound = false,
-                               const bool persistentMapped = true,
-                               BufferUpdateFrequency frequency =
-                                   BufferUpdateFrequency::ONCE) const override {
-        return MemoryManager_NEW d3dConstantBuffer(context,
-                                                   ringBufferLength,
-                                                   unbound,
-                                                   persistentMapped,
-                                                   frequency);
-    }
-
-    inline IMPrimitive* newIMP(GFXDevice& context) const override { return nullptr; }
-
-    inline RenderTarget* newRT(GFXDevice& context, bool multisampled) const override {
-        return MemoryManager_NEW d3dRenderTarget(context, multisampled);
-    }
-
-    inline GenericVertexData* newGVD(GFXDevice& context,
-                                     const U32 ringBufferLength = 1) const override {
-        return MemoryManager_NEW d3dGenericVertexData(context, ringBufferLength);
-    }
-
-    inline VertexBuffer* newVB(GFXDevice& context) const override {
-        return MemoryManager_NEW d3dVertexBuffer(context);
-    }
-
-    inline PixelBuffer* newPB(GFXDevice& context, const PBType& type) const override {
-        return MemoryManager_NEW d3dPixelBuffer(context, type);
-    }
-
-    inline Texture* newTexture(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, TextureType type, bool asyncLoad) const override {
-        return MemoryManager_NEW d3dTexture(context, name, resourceLocation, type, asyncLoad);
-    }
-
-    inline ShaderProgram* newShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) const override {
-        return MemoryManager_NEW d3dShaderProgram(context, name, resourceLocation, asyncLoad);
-    }
-
-    bool initShaders() override;
-    bool deInitShaders() override;
 
     void toggleDepthWrites(bool state) override;
     void toggleRasterization(bool state) override;

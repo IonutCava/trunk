@@ -216,7 +216,6 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
             LoadSave::loadScene(*loadedScene);
             setActiveScene(loadedScene);
 
-            _reflectiveNodesCache.clear();
             _renderPassCuller->clear();
             
         })._task->startTask(threaded ? Task::TaskPriority::HIGH
@@ -303,6 +302,7 @@ void SceneManager::preRender() {
     LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
     lightPool->updateAndUploadLightData(activeScene.renderState().getCameraConst().getEye(), GFX_DEVICE.getMatrix(MATRIX::VIEW));
     getRenderer().preRender(*lightPool);
+    PostFX::instance().cacheDisplaySettings(GFX_DEVICE);
 }
 
 bool SceneManager::generateShadowMaps() {
@@ -312,17 +312,8 @@ bool SceneManager::generateShadowMaps() {
     return lightPool->generateShadowMaps(activeScene.renderState());
 }
 
-const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes() {
-    auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        SceneGraphNode_cptr sgnNode = node.second.lock();
-        if (sgnNode->getNode()->getType() != SceneNodeType::TYPE_OBJECT3D) {
-            return true;
-        } else {
-            return sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::FLYWEIGHT;
-        }
-        return false;
-    };
-
+const RenderPassCuller::VisibleNodeList&
+SceneManager::getSortedCulledNodes(std::function<bool(const RenderPassCuller::VisibleNode&)> cullingFunction) {
     const SceneRenderState& renderState = getActiveScene().state().renderState();
     const vec3<F32>& camPos = renderState.getCameraConst().getEye();
 
@@ -330,30 +321,66 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes(
     RenderPassCuller::VisibleNodeList& nodeCache = getVisibleNodesCache(RenderStage::Z_PRE_PASS);
 
     RenderPassCuller::VisibleNodeList waterNodes;
-    _reflectiveNodesCache.resize(0);
-    for (RenderPassCuller::VisibleNode& node : nodeCache) {
-        SceneGraphNode_cptr sgnNode = node.second.lock();
-        if (sgnNode->getNode()->getType() != SceneNodeType::TYPE_WATER) {
-            _reflectiveNodesCache.push_back(node);
-        } else {
-            waterNodes.push_back(node);
-        }
-    }
+    _tempNodesCache.resize(0);
+    _tempNodesCache.insert(std::begin(_tempNodesCache), std::begin(nodeCache), std::end(nodeCache));
 
     // Cull nodes that are not valid reflection targets
-    _reflectiveNodesCache.erase(std::remove_if(std::begin(_reflectiveNodesCache),
-                                std::end(_reflectiveNodesCache),
-                                cullingFunction),
-                                std::end(_reflectiveNodesCache));
+    _tempNodesCache.erase(std::remove_if(std::begin(_tempNodesCache),
+                                         std::end(_tempNodesCache),
+                                         cullingFunction),
+                                         std::end(_tempNodesCache));
 
     // Sort the nodes from front to back
-    std::sort(std::begin(_reflectiveNodesCache),
-              std::end(_reflectiveNodesCache),
+    std::sort(std::begin(_tempNodesCache),
+              std::end(_tempNodesCache),
               VisibleNodesFrontToBack(camPos));
-    _reflectiveNodesCache.insert(std::begin(_reflectiveNodesCache), std::begin(waterNodes), std::end(waterNodes));
 
-    return _reflectiveNodesCache;
+    return _tempNodesCache;
 }
+
+const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes() {
+    auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
+        SceneGraphNode_cptr sgnNode = node.second.lock();
+        if (sgnNode->getNode()->getType() != SceneNodeType::TYPE_OBJECT3D &&
+            sgnNode->getNode()->getType() != SceneNodeType::TYPE_WATER) {
+            return true;
+        } else {
+            if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
+                return sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::FLYWEIGHT;
+            }
+        }
+        //if (not reflective) {
+        //    return true;
+        //}
+
+        return false;
+    };
+
+    return getSortedCulledNodes(cullingFunction);
+}
+
+const RenderPassCuller::VisibleNodeList& SceneManager::getSortedRefractiveNodes() {
+    auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
+        SceneGraphNode_cptr sgnNode = node.second.lock();
+        if (sgnNode->getNode()->getType() != SceneNodeType::TYPE_OBJECT3D &&
+            sgnNode->getNode()->getType() != SceneNodeType::TYPE_WATER) {
+            return true;
+        }
+        else {
+            if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
+                return sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::FLYWEIGHT;
+            }
+        }
+        //if (not refractive) {
+        //    return true;
+        //}
+
+        return false;
+    };
+
+    return getSortedCulledNodes(cullingFunction);
+}
+
 
 const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage) {
     Scene& activeScene = getActiveScene();
@@ -439,14 +466,9 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U
     );
 
     SceneRenderState& renderState = activeScene.renderState();
-    I32 stagePass = 0;
-    if (stage == RenderStage::REFLECTION) {
-        stagePass = renderState.currentReflectorIndex();
-    } else if (stage == RenderStage::SHADOW) {
-        stagePass = renderState.currentShadowLightIndex();
-    }
+    RenderPass::BufferData& bufferData = 
+        RenderPassManager::instance().getBufferData(stage, renderState.currentStagePass(), pass);
 
-    RenderPass::BufferData& bufferData = RenderPassManager::instance().getBufferData(stage, stagePass, pass);
     GFX_DEVICE.buildDrawCommands(visibleNodes, renderState, bufferData, refreshNodeData);
 }
 

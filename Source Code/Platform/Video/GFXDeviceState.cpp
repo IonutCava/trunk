@@ -18,16 +18,9 @@
 
 namespace Divide {
 
-namespace {
-    std::array<U32, to_const_uint(RenderStage::COUNT)> g_shaderBuffersPerStageCount;
-};
-
 /// Create a display context using the selected API and create all of the needed
 /// primitives needed for frame rendering
 ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& renderResolution) {
-    g_shaderBuffersPerStageCount.fill(1);
-    g_shaderBuffersPerStageCount[to_const_uint(RenderStage::REFLECTION)] = 6;
-    g_shaderBuffersPerStageCount[to_const_uint(RenderStage::SHADOW)] = 6;
 
     ErrorCode hardwareState = createAPIInstance();
     if (hardwareState == ErrorCode::NO_ERR) {
@@ -121,7 +114,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // special, on demand,
     // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target = newRT(true);
+    allocateRT(RenderTargetID::SCREEN, true);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -152,13 +145,14 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     normalDescriptor.setSampler(screenSampler);
     
     // Add the attachments to the render targets
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(screenDescriptor, RTAttachment::Type::Colour, 0);
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(normalDescriptor, RTAttachment::Type::Colour, 1);
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0);
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::DIVIDE_BLUE());
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->setClearColour(RTAttachment::Type::Colour, 1, DefaultColours::WHITE());
+    RenderTarget& screenTarget = renderTarget(RenderTargetID::SCREEN, 0);
+    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, 0);
+    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, 1);
+    screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0);
+    screenTarget.setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::DIVIDE_BLUE());
+    screenTarget.setClearColour(RTAttachment::Type::Colour, 1, DefaultColours::WHITE());
 
-    _activeRenderTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target;
+    _activeRenderTarget = &screenTarget;
 
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
@@ -170,25 +164,23 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                                             GFXDataFormat::FLOAT_16);
     environmentDescriptor.setSampler(reflectionSampler);
 
-    for (RenderTargetWrapper& target : _reflectionTarget) {
-        RenderTarget*& buffer = target._target;
-
-        buffer = newRT(false);
-        buffer->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
-        buffer->useAutoDepthBuffer(true);
-        buffer->create(Config::REFLECTION_TARGET_RESOLUTION);
-        buffer->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
+    RenderTargetHandle tempHandle;
+    for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
+        tempHandle = allocateRT(RenderTargetID::REFLECTION, false);
+        tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
+        tempHandle._rt->useAutoDepthBuffer(true);
+        tempHandle._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
+        tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }
-    for (RenderTargetWrapper& target : _refractionTarget) {
-        RenderTarget*& buffer = target._target;
 
-        buffer = newRT(false);
-        buffer->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
-        buffer->useAutoDepthBuffer(true);
-        buffer->create(Config::REFRACTION_TARGET_RESOLUTION);
-        buffer->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
+    for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
+        tempHandle = allocateRT(RenderTargetID::REFRACTION, false);
+        tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
+        tempHandle._rt->useAutoDepthBuffer(true);
+        tempHandle._rt->create(Config::REFRACTION_TARGET_RESOLUTION);
+        tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
     }
-    
+
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)
     _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
@@ -255,16 +247,7 @@ void GFXDevice::closeRenderingAPI() {
 
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
-    // Delete all of our rendering targets
-    for (RenderTargetWrapper& renderTarget : _renderTarget) {
-        MemoryManager::DELETE(renderTarget._target);
-    }
-    for (RenderTargetWrapper& renderTarget : _reflectionTarget) {
-        MemoryManager::DELETE(renderTarget._target);
-    }
-    for (RenderTargetWrapper& renderTarget : _refractionTarget) {
-        MemoryManager::DELETE(renderTarget._target);
-    }
+    _rtPool.clear();
     _previewDepthMapShader.reset();
     _renderTargetDraw.reset();
     _HIZConstructProgram.reset();

@@ -346,6 +346,7 @@
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\SSAOPreRenderOperator.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PostFX.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderBatch.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderOperator.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBin.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPass.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPassCuller.cpp" />

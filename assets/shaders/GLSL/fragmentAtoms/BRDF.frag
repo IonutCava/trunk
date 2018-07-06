@@ -156,9 +156,9 @@ vec4 getPixelColour(const in vec2 texCoord, in vec3 normalWV) {
     // Apply shadowing
     colour *= mix(1.0, shadow_loop(), dvd_shadowMapping);
 
-#if defined(_DEBUG) && defined(DEBUG_SHADOWMAPPING)
+#if defined(DEBUG_SHADOWMAPPING)
     if (dvd_showDebugInfo == 1) {
-        switch (_shadowTempInt){
+        switch (g_shadowTempInt){
 #if defined(DEBUG_SHADOWSPLITS)
             case -1: colour = vec3(1.0); break;
             case  0: colour = vec3(1.0, 0.0, 0.0); break;

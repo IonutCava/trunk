@@ -10,9 +10,9 @@ namespace Divide {
 DoFPreRenderOperator::DoFPreRenderOperator(RenderTarget* hdrTarget, RenderTarget* ldrTarget)
     : PreRenderOperator(FilterType::FILTER_DEPTH_OF_FIELD, hdrTarget, ldrTarget)
 {
-    _samplerCopy = GFX_DEVICE.newRT();
-    _samplerCopy->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
-    _samplerCopy->useAutoDepthBuffer(false);
+    _samplerCopy = GFX_DEVICE.allocateRT(false);
+    _samplerCopy._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
+    _samplerCopy._rt->useAutoDepthBuffer(false);
 
     ResourceDescriptor dof("DepthOfField");
     dof.setThreadedLoading(false);
@@ -33,8 +33,8 @@ void DoFPreRenderOperator::reshape(U16 width, U16 height) {
 void DoFPreRenderOperator::execute() {
     // Copy current screen
     /*
-    _samplerCopy->blitFrom(_hdrTarget);
-    _samplerCopy->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // screenFB
+    _samplerCopy._rt->blitFrom(_hdrTarget);
+    _samplerCopy._rt->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);  // screenFB
     _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Depth, 0);  // depthFB
         
     _hdrTarget->begin(_screenOnlyDraw);

@@ -332,9 +332,8 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData) {
     bufferData._cmdBuffer->bind(ShaderBufferLocation::GPU_COMMANDS);
     bufferData._cmdBuffer->bindAtomicCounter();
 
-    RenderTarget* screenTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target;
-
-    screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
+    renderTarget(RenderTargetID::SCREEN).bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
+                                              RTAttachment::Type::Depth, 0);
 
     U32 cmdCount = bufferData._lastCommandCount;
     _HIZCullProgram->bind();

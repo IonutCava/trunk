@@ -47,8 +47,8 @@ class SSAOPreRenderOperator : public PreRenderOperator {
     void debugPreview(U8 slot) const;
 
    private:
-    RenderTarget* _ssaoOutput;
-    RenderTarget* _ssaoOutputBlurred;
+    RenderTargetHandle _ssaoOutput;
+    RenderTargetHandle _ssaoOutputBlurred;
     ShaderProgram_ptr _ssaoGenerateShader;
     ShaderProgram_ptr _ssaoApplyShader;
     ShaderProgram_ptr _ssaoBlurShader;

@@ -27,15 +27,12 @@ float chebyshevUpperBound(vec2 moments, float depth, float minVariance) {
 float applyShadowDirectional(int shadowIndex, int splitCount, in float fragDepth) {
 
     Shadow currentShadowSource  = dvd_ShadowSource[shadowIndex];
-#   if !defined(_DEBUG)
-      int _shadowTempInt = -2;
-#   endif
-    
+
     // find the appropriate depth map to look up in based on the depth of this fragment
-    _shadowTempInt = 0;
+    g_shadowTempInt = 0;
     for (int i = 0; i < splitCount; ++i) {
         if (fragDepth > currentShadowSource._floatValues[i].x)      {
-            _shadowTempInt = i + 1;
+            g_shadowTempInt = i + 1;
         }
     }
     
@@ -45,21 +42,21 @@ float applyShadowDirectional(int shadowIndex, int splitCount, in float fragDepth
                                    LT(7), LT(7), LT(7), LT(7), LT(7), LT(7), LT(7), LT(7)};
     // Ensure that every fragment in the quad choses the same split so that derivatives
     // will be meaningful for proper texture filtering and LOD selection.
-    int SplitPow = 1 << _shadowTempInt;
+    int SplitPow = 1 << g_shadowTempInt;
     int SplitX = int(abs(dFdx(SplitPow)));
     int SplitY = int(abs(dFdy(SplitPow)));
     int SplitXY = int(abs(dFdx(SplitY)));
     int SplitMax = max(SplitXY, max(SplitX, SplitY));
-    _shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : _shadowTempInt;
+    g_shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : g_shadowTempInt;
 
-    if (_shadowTempInt < 0 || _shadowTempInt > splitCount) {
+    if (g_shadowTempInt < 0 || g_shadowTempInt > splitCount) {
         return 1.0;
     }
 
-    vec4 sc = currentShadowSource._lightVP[_shadowTempInt] * VAR._vertexW;
+    vec4 sc = currentShadowSource._lightVP[g_shadowTempInt] * VAR._vertexW;
     vec3 scPostW = sc.xyz / sc.w;
     if (!(sc.w <= 0.0f || (scPostW.x < 0 || scPostW.y < 0) || (scPostW.x >= 1 || scPostW.y >= 1))){
-        float layer = float(_shadowTempInt + currentShadowSource._arrayOffset.x);
+        float layer = float(g_shadowTempInt + currentShadowSource._arrayOffset.x);
 
         vec2 moments = texture(texDepthMapFromLightArray, vec3(scPostW.xy, layer)).rg;
        
@@ -70,7 +67,7 @@ float applyShadowDirectional(int shadowIndex, int splitCount, in float fragDepth
         //             clamp(((gl_FragCoord.z + dvd_shadowingSettings.z) - dvd_shadowingSettings.w) / dvd_shadowingSettings.z, 0.0, 1.0));
         return reduceLightBleeding(chebyshevUpperBound(moments, scPostW.z, dvd_shadowingSettings.y), 0.1);
     }
-
+    
     return 1.0;
 }
 

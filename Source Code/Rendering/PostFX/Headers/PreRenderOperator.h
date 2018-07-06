@@ -45,8 +45,7 @@ class NOINITVTABLE PreRenderOperator {
     PreRenderOperator(FilterType operatorType, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
         :  _operatorType(operatorType),
            _hdrTarget(hdrTarget),
-           _ldrTarget(ldrTarget),
-           _samplerCopy(nullptr)
+           _ldrTarget(ldrTarget)
     {
         _screenOnlyDraw._drawMask.disableAll();
         _screenOnlyDraw._drawMask.enabled(RTAttachment::Type::Colour, 0);
@@ -54,15 +53,15 @@ class NOINITVTABLE PreRenderOperator {
 
     virtual ~PreRenderOperator() 
     {
-        MemoryManager::DELETE(_samplerCopy);
+        GFX_DEVICE.deallocateRT(_samplerCopy);
     }
 
     virtual void idle() = 0;
     virtual void execute() = 0;
 
     virtual void reshape(U16 width, U16 height) {
-        if (_samplerCopy) {
-            _samplerCopy->create(width, height);
+        if (_samplerCopy._rt) {
+            _samplerCopy._rt->create(width, height);
         }
     }
 
@@ -81,14 +80,21 @@ class NOINITVTABLE PreRenderOperator {
         return _hdrTarget;
     }
 
+    static void cacheDisplaySettings(const GFXDevice& context);
+
    protected:
     RenderTarget* _hdrTarget;
     RenderTarget* _ldrTarget;
-    RenderTarget* _samplerCopy;
+    RenderTargetHandle _samplerCopy;
 
     RTDrawDescriptor _screenOnlyDraw;
     FilterType  _operatorType;
     vectorImpl<RenderTarget*> _inputFB;
+
+    static F32 s_mainCamAspectRatio;
+    static vec2<F32> s_mainCamZPlanes;
+    static mat4<F32> s_mainCamViewMatrixCache;
+    static mat4<F32> s_mainCamProjectionMatrixCache;
 };
 
 };  // namespace Divide
