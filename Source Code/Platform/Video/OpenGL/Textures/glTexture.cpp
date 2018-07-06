@@ -282,7 +282,6 @@ void glTexture::loadData(const TextureLoadInfo& info,
         }
     }
     
-    glGenerateTextureMipmap(_textureData.getHandleHigh());
     _mipMapsDirty = false;
 
     DIVIDE_ASSERT(_width > 0 && _height > 0,

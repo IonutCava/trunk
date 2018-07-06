@@ -47,7 +47,7 @@ out vec4 _colorOut;
 vec4 computeLightInfoLOD1Frag() {
     vec4 color = vec4(0.0);
     getColorNormal(color);
-    return getPixelColor(VAR._texCoord, VAR._normalWV, color);
+    return getPixelColor(VAR._texCoord, VAR._normalWV);
 }
 
 //subroutine(TerrainMappingType)
@@ -55,7 +55,7 @@ vec4 computeLightInfoLOD0Frag() {
     vec4 color = vec4(0.0);
     vec3 tbn = vec3(0.0);
     getColorAndTBNNormal(color, tbn);
-    return getPixelColor(VAR._texCoord, tbn, color);
+    return getPixelColor(VAR._texCoord, tbn);
 }
 
 
@@ -68,7 +68,7 @@ vec4 UnderwaterColor() {
     vec3 tbn = vec3(0.0);
     getColorAndTBNUnderwater(color, tbn);
 
-    return getPixelColor(VAR._texCoord, tbn, color);
+    return getPixelColor(VAR._texCoord, tbn);
 }
 
 vec4 UnderwaterMappingRoutine(){

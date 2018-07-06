@@ -140,20 +140,20 @@ bool Terrain::getDrawCommands(SceneGraphNode& sgn,
     cmd.sourceBuffer(getGeometryVB());
 
     
-        vectorImpl<vec3<U32>> chunkData;
-        chunkData.reserve(_terrainQuadtree.getChunkCount());
-        _terrainQuadtree.getChunkBufferData(sceneRenderState, chunkData);
-        std::sort(std::begin(chunkData), std::end(chunkData),
-                  [](const vec3<U32>& a, const vec3<U32>& b) {
-                      // LoD comparison
-                      return a.z < b.z; 
-                  });
-        for (vec3<U32>& cmdData : chunkData) {
-            cmd.cmd().firstIndex = cmdData.x;
-            cmd.cmd().indexCount = cmdData.y;
-            cmd.LoD(to_byte(cmdData.z));
-            drawCommandsOut.push_back(cmd);
-        }
+    vectorImpl<vec3<U32>> chunkData;
+    chunkData.reserve(_terrainQuadtree.getChunkCount());
+    _terrainQuadtree.getChunkBufferData(sceneRenderState, chunkData);
+    std::sort(std::begin(chunkData), std::end(chunkData),
+                [](const vec3<U32>& a, const vec3<U32>& b) {
+                    // LoD comparison
+                    return a.z < b.z; 
+                });
+    for (vec3<U32>& cmdData : chunkData) {
+        cmd.cmd().firstIndex = cmdData.x;
+        cmd.cmd().indexCount = cmdData.y;
+        cmd.LoD(to_byte(cmdData.z));
+        drawCommandsOut.push_back(cmd);
+    }
     
 
     // draw infinite plane

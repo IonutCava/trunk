@@ -78,8 +78,13 @@ WaterPlane::~WaterPlane()
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
     sgn.addNode(*_plane);
+
+    bool reflectorBuilt = Reflector::build();
+    DIVIDE_ASSERT(reflectorBuilt, Locale::get(_ID("ERROR_REFLECTOR_INIT_FB")));
+
     TextureDescriptor::AttachmentType att = TextureDescriptor::AttachmentType::Color0;
     RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
+    
     TextureData reflectionData = _reflectedTexture->getAttachment(att)->getData();
     TextureData refractionData = _refractionTexture->getAttachment(att)->getData();
     reflectionData.setHandleLow(1);
@@ -93,6 +98,8 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     _waterDepth = GET_ACTIVE_SCENE().state().waterDepth();
     planeSGN.getComponent<PhysicsComponent>()->setPositionY(_waterLevel);
     
+    updatePlaneEquation();
+
     SceneNode::postLoad(sgn);
 }
 
@@ -168,7 +175,6 @@ bool WaterPlane::getDrawCommands(SceneGraphNode& sgn,
 
     drawShader->Uniform("underwater", _cameraUnderWater);
 
-    drawCommandsOut.resize(1);
     GenericDrawCommand& cmd = drawCommandsOut.front();
     cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
     cmd.renderGeometry(renderable->renderGeometry());
@@ -182,11 +188,6 @@ bool WaterPlane::getDrawCommands(SceneGraphNode& sgn,
 
 
 bool WaterPlane::getDrawState(RenderStage currentStage) {
-    // Wait for the Reflector to update
-    if (!_createdFB) {
-        return false;
-    }
-
     // Make sure we are not drawing our self unless this is desired
     if ((currentStage == RenderStage::REFLECTION || _reflectionRendering ||
          _refractionRendering) &&
@@ -233,7 +234,7 @@ void WaterPlane::updateReflection() {
 
     RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(
         _cameraUnderWater ? RenderStage::DISPLAY : RenderStage::REFLECTION);
-    GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, true);
+    GFX_DEVICE.toggleClipPlane(getReflectionPlaneID(), true);
 
     _cameraUnderWater ? _cameraMgr.getActiveCamera().renderLookAt()
                       : _cameraMgr.getActiveCamera().renderLookAtReflected(
@@ -243,7 +244,7 @@ void WaterPlane::updateReflection() {
     _renderCallback();  //< render to the reflective texture
     _reflectedTexture->end();
 
-    GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, false);
+    GFX_DEVICE.toggleClipPlane(getReflectionPlaneID(), false);
     GFX_DEVICE.setRenderStage(prevRenderStage);
 
     _reflectionRendering = false;
@@ -263,8 +264,8 @@ void WaterPlane::updatePlaneEquation() {
     _reflectionPlaneID = ClipPlaneIndex::CLIP_PLANE_0;
     _refractionPlaneID = ClipPlaneIndex::CLIP_PLANE_1;
 
-    GFX_DEVICE.setClipPlane(_reflectionPlaneID, _reflectionPlane);
-    GFX_DEVICE.setClipPlane(_refractionPlaneID, _refractionPlane);
+    GFX_DEVICE.setClipPlane(getReflectionPlaneID(), _reflectionPlane);
+    GFX_DEVICE.setClipPlane(getRefractionPlaneID(), _refractionPlane);
 
     _dirty = true;
 }

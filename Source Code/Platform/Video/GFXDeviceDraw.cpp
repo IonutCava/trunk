@@ -153,7 +153,9 @@ void GFXDevice::addToRenderQueue(U32 binPropertyMask, const RenderPackage& packa
     if (!package.isRenderable()) {
         return;
     }
+
     bool isTranslucent = BitCompare(binPropertyMask, to_uint(RenderBitProperty::TRANSLUCENT));
+    ACKNOWLEDGE_UNUSED(isTranslucent);
 
     if (!_renderQueue.empty()) {
         RenderPackage& previous = _renderQueue.back();

@@ -167,8 +167,8 @@ F32 BoundingBox::nearestDistanceFromPointSquared(const vec3<F32>& pos) const {
     const vec3<F32>& center = getCenter();
     const vec3<F32>& hextent = getHalfExtent();
     _cacheVector.set(std::max(0.0f, std::fabsf(pos.x - center.x) - hextent.x),
-                        std::max(0.0f, std::fabsf(pos.y - center.y) - hextent.y),
-                        std::max(0.0f, std::fabsf(pos.z - center.z) - hextent.z));
+                     std::max(0.0f, std::fabsf(pos.y - center.y) - hextent.y),
+                     std::max(0.0f, std::fabsf(pos.z - center.z) - hextent.z));
     return _cacheVector.lengthSquared();
 }
 

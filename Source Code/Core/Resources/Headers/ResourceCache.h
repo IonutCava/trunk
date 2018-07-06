@@ -56,9 +56,8 @@ DEFINE_SINGLETON(ResourceCache)
         /// If the cache did not contain our resource ...
         if (!ptr) {
             /// ...aquire the resource's loader
-            ImplResourceLoader<T> assetLoader(descriptor);
             /// and get our resource as the loader creates it
-            ptr = assetLoader();
+            ptr = ImplResourceLoader<T>(descriptor)();
             if (ptr) {
                 ptr->setState(ResourceState::RES_LOADED);
                 /// validate it's integrity and add it to the cache

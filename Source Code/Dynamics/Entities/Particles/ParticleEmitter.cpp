@@ -14,8 +14,9 @@
 namespace Divide {
 
 namespace {
+    const U32 bufferSizeFactor = 5;
     U32 _readOffset = 0;
-    U32 _writeOffset = 4;
+    U32 _writeOffset = bufferSizeFactor - 1;
 }
 
 ParticleEmitter::ParticleEmitter()
@@ -28,9 +29,8 @@ ParticleEmitter::ParticleEmitter()
       _particleTexture(nullptr),
       _particleShader(nullptr),
       _particleGPUBuffer(nullptr),
-      _particleDepthShader(nullptr) {
-    _readOffset = 0;
-    _writeOffset = 4;
+      _particleDepthShader(nullptr)
+{
 }
 
 ParticleEmitter::~ParticleEmitter() { 
@@ -53,11 +53,9 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
          0.5f,  0.5f, 0.0f,
     };
 
-    _particleGPUBuffer->setBuffer(0, 12, sizeof(F32), 1, particleQuad, false,
-                                  false, true);
+    _particleGPUBuffer->setBuffer(0, 12, sizeof(F32), 1, particleQuad, false, false, true);
     _particleGPUBuffer->getDrawAttribDescriptor(
-                            to_uint(
-                                AttribLocation::VERTEX_POSITION))
+                            to_uint(AttribLocation::VERTEX_POSITION))
         .set(0, 0, 3, false, 0, 0, GFXDataFormat::FLOAT_32);
 
     updateData(particleData);
@@ -99,8 +97,15 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
 
     U32 particleCount = _particles->totalCount();
 
-    _particleGPUBuffer->setBuffer(1, particleCount * 5, 4 * sizeof(F32), 1, NULL, true, true, true);
-    _particleGPUBuffer->setBuffer(2, particleCount * 5, 4 * sizeof(U8), 1, NULL, true, true, true);
+    _particleGPUBuffer->setBuffer(1,
+                                  particleCount * bufferSizeFactor,
+                                  4 * sizeof(F32),
+                                  1, NULL, true, true, true);
+
+    _particleGPUBuffer->setBuffer(2,
+                                  particleCount * bufferSizeFactor,
+                                  4 * sizeof(U8),
+                                  1, NULL, true, true, true);
 
     _particleGPUBuffer->getDrawAttribDescriptor(13)
         .set(1, 1, 4, false, 4 * sizeof(F32), 0, GFXDataFormat::FLOAT_32);
@@ -252,8 +257,8 @@ void ParticleEmitter::uploadToGPU() {
     _particleGPUBuffer->getDrawAttribDescriptor(to_uint(AttribLocation::VERTEX_COLOR))
         .set(2, 1, 4, true, 4 * sizeof(U8), readOffset, GFXDataFormat::UNSIGNED_BYTE);
 
-    _writeOffset = (_writeOffset + 1) % 5;
-    _readOffset = (_readOffset + 1) % 5;
+    _writeOffset = (_writeOffset + 1) % bufferSizeFactor;
+    _readOffset = (_readOffset + 1) % bufferSizeFactor;
 
     _uploaded = true;
 }

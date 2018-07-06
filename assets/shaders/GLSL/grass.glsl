@@ -19,6 +19,7 @@ flat out int _arrayLayer;
 
 void main()
 {
+    VAR.dvd_drawID = gl_BaseInstanceARB;
     vec3 posOffset = positionOffsets[gl_VertexID];
     _arrayLayer = int(instanceData.w);
     VAR._texCoord = texCoordOffsets[gl_VertexID];
@@ -32,8 +33,9 @@ void main()
     dvd_Normal = vec3(1.0, 1.0, 1.0);
     VAR._normalWV = dvd_NormalMatrixWV() * dvd_Normal;
 
-    if (posOffset.y > 0.75) 
+    if (posOffset.y > 0.75) {
         computeFoliageMovementGrass(VAR._vertexW);
+    }
 
     setClipPlanes(VAR._vertexW);
 
@@ -48,16 +50,17 @@ void main()
 
 flat in int _arrayLayer;
 layout(location = 0) out vec4 _colorOut;
-layout(location = 1) out vec4 _normalsOut;
+layout(location = 1) out vec3 _normalsOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
     vec4 color = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
-    if (color.a < ALPHA_DISCARD_THRESHOLD) discard;
-
-    //color = getPixelColor(VAR._texCoord, VAR._normalWV, color);
-    _colorOut = applyFog(color);
+    if (color.a < ALPHA_DISCARD_THRESHOLD) {
+        discard;
+    }
+    //color = getPixelColor(VAR._texCoord, VAR._normalWV);
+    _colorOut = ToSRGB(applyFog(color));
     _normalsOut = normalize(f_in._normalWV);
 }
 

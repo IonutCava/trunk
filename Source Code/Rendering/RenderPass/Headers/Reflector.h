@@ -79,15 +79,13 @@ class NOINITVTABLE Reflector : public FrameListener {
 
     void togglePreviewReflection() { _previewReflection = !_previewReflection; }
 
-   private:
-    /// Create FB
-    bool build();
-
    protected:
     /// This is inherited from FrameListener and is used to queue up reflection
     /// on every frame start
     bool framePreRenderEnded(const FrameEvent& evt);
     virtual void previewReflection();
+    /// Create FB
+    bool build();
 
    protected:
     ReflectorType _type;
@@ -107,8 +105,6 @@ class NOINITVTABLE Reflector : public FrameListener {
     ShaderProgram* _previewReflectionShader;
     /// used for render exclusion. Do not render self in own reflection
     bool _updateSelf;
-    /// Have we initialized our FB?
-    bool _createdFB;
 };
 
 };  // namespace Divide

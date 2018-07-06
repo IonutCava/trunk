@@ -15,8 +15,8 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
     SamplerDescriptor defaultSampler;
     defaultSampler.setWrapMode(TextureWrap::REPEAT);
     defaultSampler.toggleMipMaps(false);
+    ResourceDescriptor waterShader("water");
     ResourceDescriptor waterMaterial("waterMaterial_" + name);
-    ResourceDescriptor waterShader("water_" + name);
     ResourceDescriptor waterTexture("waterTexture_" + name);
     ResourceDescriptor waterTextureDUDV("waterTextureDUDV_" + name);
     waterTexture.setResourceLocation(

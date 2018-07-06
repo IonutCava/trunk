@@ -25,11 +25,10 @@ TerrainChunk::TerrainChunk(Terrain* const parentTerrain,
 
     _terrainVB = parentTerrain->getGeometryVB();
 
-    VegetationDetails& vegDetails =
-        Attorney::TerrainChunk::vegetationDetails(*parentTerrain);
+    VegetationDetails& vegDetails =  Attorney::TerrainChunk::vegetationDetails(*parentTerrain);
     vegDetails.name += "_chunk_" + std::to_string(_chunkID);
-    _vegetation = MemoryManager_NEW Vegetation(
-        vegDetails);  //<Deleted by the sceneGraph on "unload"
+    //<Deleted by the sceneGraph on "unload"
+    _vegetation = MemoryManager_NEW Vegetation(vegDetails);  
     _vegetation->renderState().useDefaultMaterial(false);
     _vegetation->setMaterialTpl(nullptr);
     assert(_vegetation != nullptr);
@@ -44,6 +43,7 @@ TerrainChunk::~TerrainChunk() {
     _lodIndCount.fill(0);
     _chunkIndOffset = 0;
     _terrainVB = nullptr;
+    _vegetation = nullptr;
 }
 
 void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, U32 minHMSize,

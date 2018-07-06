@@ -19,7 +19,6 @@ Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution)
       _updateTimer(0),
       _updateInterval(45),  /// 45 milliseconds?
       _reflectedTexture(nullptr),
-      _createdFB(false),
       _updateSelf(false),
       _excludeSelfReflection(true),
       _previewReflection(false) {
@@ -47,13 +46,7 @@ bool Reflector::framePreRenderEnded(const FrameEvent& evt) {
         return true;
     }
     _updateTimer += _updateInterval;
-    if (!_createdFB) {
-        if (!build()) {
-            // Something wrong. Exit application!
-            Console::errorfn(Locale::get(_ID("ERROR_REFLECTOR_INIT_FB")));
-            return false;
-        }
-    }
+
     // We should never have an invalid FB
     assert(_reflectedTexture != nullptr);
     // mark ourselves as reflection target only if we do not wish to reflect
@@ -83,9 +76,9 @@ bool Reflector::build() {
     _reflectedTexture->addAttachment(reflectionDescriptor,
                                      TextureDescriptor::AttachmentType::Color0);
     _reflectedTexture->useAutoDepthBuffer(true);
-    _createdFB = _reflectedTexture->create(_resolution.x, _resolution.y);
+    _reflectedTexture->create(_resolution.x, _resolution.y);
 
-    return _createdFB;
+    return true;
 }
 
 void Reflector::previewReflection() {

@@ -20,7 +20,8 @@ flat out int objectVisible;
 uniform uint cullType = 0;
 
 int occlusionCull() {
-    if (distance(dvd_ViewMatrix * vec4(position, 1.0), vec4(0.0, 0.0, 0.0, 1.0)) > dvd_visibilityDistance) {
+    if (distance(dvd_ViewMatrix * vec4(OrigData0.xyz, 1.0), 
+         vec4(0.0, 0.0, 0.0, 1.0)) > dvd_visibilityDistance) {
         return 0;
     }
 

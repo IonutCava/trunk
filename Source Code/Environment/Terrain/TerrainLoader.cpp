@@ -2,6 +2,7 @@
 #include "Headers/TerrainLoader.h"
 #include "Headers/TerrainDescriptor.h"
 
+#include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/SceneManager.h"
@@ -230,10 +231,8 @@ bool TerrainLoader::loadThreadedResources(
     Terrain* terrain, TerrainDescriptor* terrainDescriptor) {
     ResourceDescriptor infinitePlane("infinitePlane");
     infinitePlane.setFlag(true);  // No default material
-    Quad3D* planePtr = Attorney::TerrainLoader::plane(*terrain);
     F32& farPlane = Attorney::TerrainLoader::farPlane(*terrain);
-    planePtr = CreateResource<Quad3D>(infinitePlane);
-    Quad3D& plane = *planePtr;
+    Quad3D& plane = *CreateResource<Quad3D>(infinitePlane);
     // our bottom plane is placed at the bottom of our water entity
     F32 height = GET_ACTIVE_SCENE().state().waterLevel() -
                  GET_ACTIVE_SCENE().state().waterDepth();
@@ -253,7 +252,8 @@ bool TerrainLoader::loadThreadedResources(
     plane.setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT,
                     vec3<F32>(farPlane * 1.5f, height, farPlane * 1.5f));
 
-    VertexBuffer* groundVB = terrain->getGeometryVB();
+    Attorney::TerrainLoader::plane(*terrain, &plane);
+
     vec2<F32>& terrainScaleFactor =
         Attorney::TerrainLoader::scaleFactor(*terrain);
 
@@ -266,9 +266,10 @@ bool TerrainLoader::loadThreadedResources(
     U16 heightmapWidth = terrainDimensions.width;
     U16 heightmapHeight = terrainDimensions.height;
     vectorImpl<U16> heightValues;
+    stringImpl terrainName(terrainDescriptor->getVariable("terrainName"));
+    stringImpl terrainRawFile(terrainDescriptor->getVariable("heightmap"));
     if (terrainDescriptor->is16Bit()) {
         assert(heightmapWidth != 0 && heightmapHeight != 0);
-        stringImpl terrainRawFile(terrainDescriptor->getVariable("heightmap"));
         // only raw files for 16 bit support
         assert(terrainRawFile.substr(terrainRawFile.length() - 4,
                                      terrainRawFile.length()).compare(".raw") ==
@@ -293,7 +294,7 @@ bool TerrainLoader::loadThreadedResources(
         MemoryManager::DELETE_ARRAY(dataTemp);
     } else {
         ImageTools::ImageData img;
-        ImageTools::ImageDataInterface::CreateImageData(terrainDescriptor->getVariable("heightmap"), img);
+        ImageTools::ImageDataInterface::CreateImageData(terrainRawFile, img);
         assert(terrainDimensions == img.dimensions());
         // data will be destroyed when img gets out of scope
         const U8* data = (const U8*)img.data();
@@ -320,7 +321,6 @@ bool TerrainLoader::loadThreadedResources(
     F32 maxAltitude = terrainDescriptor->getAltitudeRange().y;
     F32 altitudeRange = maxAltitude - minAltitude;
 
-    groundVB->resizeVertexCount(terrainWidth * terrainHeight);
 
     BoundingBox& terrainBB = Attorney::TerrainLoader::boundingBox(*terrain);
 
@@ -335,127 +335,141 @@ bool TerrainLoader::loadThreadedResources(
     const vec3<F32>& bMin = terrainBB.getMin();
     const vec3<F32>& bMax = terrainBB.getMax();
     F32 yScaleFactor = terrainScaleFactor.y;
-    // scale and translate all height by half to convert from 0-255 (0-65335) to
-    // -127 - 128 (-32767 - 32768)
-    if (terrainDescriptor->is16Bit()) {
-#pragma omp parallel for
-        for (I32 j = 0; j < terrainHeight; j++) {
-            for (I32 i = 0; i < terrainWidth; i++) {
-                U32 idxHM = TER_COORD(i, j, terrainWidth);
 
-                F32 x = bMin.x + (to_float(i)) * (bMax.x - bMin.x) / (terrainWidth - 1);
-                F32 z = bMin.z + (to_float(j)) * (bMax.z - bMin.z) / (terrainHeight - 1);
+    VertexBuffer* groundVB = terrain->getGeometryVB();
 
-                U32 idxIMG = TER_COORD<U32>(
-                    i < to_int(heightmapWidth) ? i : i - 1,
-                    j < to_int(heightmapHeight) ? j : j - 1, heightmapWidth);
+    stringImpl cacheLocation(terrainDescriptor->getVariable("heightmap"));
+    cacheLocation += ".cache";
 
-                F32 y = minAltitude + altitudeRange * to_float(heightValues[idxIMG]) / 65536.0f;
-                y *= yScaleFactor;
-                y += yOffset;
-#pragma omp critical
-                { groundVB->modifyPositionValue(idxHM, x, y, z); }
+    ByteBuffer terrainCache;
+    if (!terrainCache.loadFromFile(cacheLocation) ||
+        !groundVB->deserialize(terrainCache)) {
+        groundVB->resizeVertexCount(terrainWidth * terrainHeight);
+        // scale and translate all height by half to convert from 0-255 (0-65335) to
+        // -127 - 128 (-32767 - 32768)
+        if (terrainDescriptor->is16Bit()) {
+    #pragma omp parallel for
+            for (I32 j = 0; j < terrainHeight; j++) {
+                for (I32 i = 0; i < terrainWidth; i++) {
+                    U32 idxHM = TER_COORD(i, j, terrainWidth);
+
+                    F32 x = bMin.x + (to_float(i)) * (bMax.x - bMin.x) / (terrainWidth - 1);
+                    F32 z = bMin.z + (to_float(j)) * (bMax.z - bMin.z) / (terrainHeight - 1);
+
+                    U32 idxIMG = TER_COORD<U32>(
+                        i < to_int(heightmapWidth) ? i : i - 1,
+                        j < to_int(heightmapHeight) ? j : j - 1, heightmapWidth);
+
+                    F32 y = minAltitude + altitudeRange * to_float(heightValues[idxIMG]) / 65536.0f;
+                    y *= yScaleFactor;
+                    y += yOffset;
+    #pragma omp critical
+                    { groundVB->modifyPositionValue(idxHM, x, y, z); }
+                }
+            }
+        } else {
+    #pragma omp parallel for
+            for (I32 j = 0; j < terrainHeight; j++) {
+                for (I32 i = 0; i < terrainWidth; i++) {
+                    U32 idxHM = TER_COORD(i, j, terrainWidth);
+                    vec3<F32> vertexData;
+
+                    vertexData.x =
+                        bMin.x + (to_float(i)) * (bMax.x - bMin.x) / (terrainWidth - 1);
+                    vertexData.z =
+                        bMin.z + (to_float(j)) * (bMax.z - bMin.z) / (terrainHeight - 1);
+
+                    U32 idxIMG = TER_COORD<U32>(
+                        i < to_int(heightmapWidth) ? i : i - 1,
+                        j < to_int(heightmapHeight) ? j : j - 1, heightmapWidth);
+
+                    F32 h = to_float(heightValues[idxIMG * 3 + 0] +
+                                     heightValues[idxIMG * 3 + 1] +
+                                     heightValues[idxIMG * 3 + 2]) /
+                            3.0f;
+
+                    vertexData.y = minAltitude + altitudeRange * h / 255.0f;
+                    vertexData.y *= yScaleFactor;
+                    vertexData.y += yOffset;
+    #pragma omp critical
+                    { groundVB->modifyPositionValue(idxHM, vertexData); }
+                }
             }
         }
-    } else {
-#pragma omp parallel for
-        for (I32 j = 0; j < terrainHeight; j++) {
-            for (I32 i = 0; i < terrainWidth; i++) {
-                U32 idxHM = TER_COORD(i, j, terrainWidth);
-                vec3<F32> vertexData;
 
-                vertexData.x =
-                    bMin.x + (to_float(i)) * (bMax.x - bMin.x) / (terrainWidth - 1);
-                vertexData.z =
-                    bMin.z + (to_float(j)) * (bMax.z - bMin.z) / (terrainHeight - 1);
+        heightValues.clear();
 
-                U32 idxIMG = TER_COORD<U32>(
-                    i < to_int(heightmapWidth) ? i : i - 1,
-                    j < to_int(heightmapHeight) ? j : j - 1, heightmapWidth);
+        I32 offset = 2;
+        vec3<F32> vU, vV, vUV;
+        U32 idx = 0, idx0 = 0, idx1 = 0;
+        for (I32 j = offset; j < terrainHeight - offset; j++) {
+            for (I32 i = offset; i < terrainWidth - offset; i++) {
+                idx = TER_COORD(i, j, terrainWidth);
 
-                F32 h = to_float(heightValues[idxIMG * 3 + 0] +
-                                 heightValues[idxIMG * 3 + 1] +
-                                 heightValues[idxIMG * 3 + 2]) /
-                        3.0f;
-
-                vertexData.y = minAltitude + altitudeRange * h / 255.0f;
-                vertexData.y *= yScaleFactor;
-                vertexData.y += yOffset;
-#pragma omp critical
-                { groundVB->modifyPositionValue(idxHM, vertexData); }
+                vU.set(groundVB->getPosition(TER_COORD(i + offset, j + 0, terrainWidth)) -
+                       groundVB->getPosition(TER_COORD(i - offset, j + 0, terrainWidth)));
+                vV.set(groundVB->getPosition(TER_COORD(i + 0, j + offset, terrainWidth)) -
+                       groundVB->getPosition(TER_COORD(i + 0, j - offset, terrainWidth)));
+                vUV.cross(vV, vU);
+                vUV.normalize();
+                groundVB->modifyNormalValue(idx, vUV);
+                vU = -vU;
+                vU.normalize();
+                groundVB->modifyTangentValue(idx, vU);
             }
         }
-    }
 
-    heightValues.clear();
+        vec3<F32> normal, tangent;
+        for (I32 j = 0; j < offset; j++) {
+            for (I32 i = 0; i < terrainWidth; i++) {
+                idx0 = TER_COORD(i, j, terrainWidth);
+                idx1 = TER_COORD(i, offset, terrainWidth);
 
-    I32 offset = 2;
-    vec3<F32> vU, vV, vUV;
-    U32 idx = 0, idx0 = 0, idx1 = 0;
-    for (I32 j = offset; j < terrainHeight - offset; j++) {
-        for (I32 i = offset; i < terrainWidth - offset; i++) {
-            idx = TER_COORD(i, j, terrainWidth);
+                normal.set(groundVB->getNormal(idx1));
+                tangent.set(groundVB->getTangent(idx1));
 
-            vU.set(groundVB->getPosition(TER_COORD(i + offset, j + 0, terrainWidth)) -
-                   groundVB->getPosition(TER_COORD(i - offset, j + 0, terrainWidth)));
-            vV.set(groundVB->getPosition(TER_COORD(i + 0, j + offset, terrainWidth)) -
-                   groundVB->getPosition(TER_COORD(i + 0, j - offset, terrainWidth)));
-            vUV.cross(vV, vU);
-            vUV.normalize();
-            groundVB->modifyNormalValue(idx, vUV);
-            vU = -vU;
-            vU.normalize();
-            groundVB->modifyTangentValue(idx, vU);
+                groundVB->modifyNormalValue(idx0, normal);
+                groundVB->modifyTangentValue(idx0, tangent);
+
+                idx0 = TER_COORD(i, terrainHeight - 1 - j, terrainWidth);
+                idx1 = TER_COORD(i, terrainHeight - 1 - offset, terrainWidth);
+
+                normal.set(groundVB->getNormal(idx1));
+                tangent.set(groundVB->getTangent(idx1));
+
+                groundVB->modifyNormalValue(idx0, normal);
+                groundVB->modifyTangentValue(idx0, tangent);
+            }
         }
-    }
 
-    vec3<F32> normal, tangent;
-    for (I32 j = 0; j < offset; j++) {
-        for (I32 i = 0; i < terrainWidth; i++) {
-            idx0 = TER_COORD(i, j, terrainWidth);
-            idx1 = TER_COORD(i, offset, terrainWidth);
+        for (I32 i = 0; i < offset; i++) {
+            for (I32 j = 0; j < terrainHeight; j++) {
+                idx0 = TER_COORD(i, j, terrainWidth);
+                idx1 = TER_COORD(offset, j, terrainWidth);
 
-            normal.set(groundVB->getNormal(idx1));
-            tangent.set(groundVB->getTangent(idx1));
+                normal.set(groundVB->getNormal(idx1));
+                tangent.set(groundVB->getTangent(idx1));
 
-            groundVB->modifyNormalValue(idx0, normal);
-            groundVB->modifyTangentValue(idx0, tangent);
+                groundVB->modifyNormalValue(idx0, normal);
+                groundVB->modifyTangentValue(idx0, tangent);
 
-            idx0 = TER_COORD(i, terrainHeight - 1 - j, terrainWidth);
-            idx1 = TER_COORD(i, terrainHeight - 1 - offset, terrainWidth);
+                idx0 = TER_COORD(terrainWidth - 1 - i, j, terrainWidth);
+                idx1 = TER_COORD(terrainWidth - 1 - offset, j, terrainWidth);
 
-            normal.set(groundVB->getNormal(idx1));
-            tangent.set(groundVB->getTangent(idx1));
+                normal.set(groundVB->getNormal(idx1));
+                tangent.set(groundVB->getTangent(idx1));
 
-            groundVB->modifyNormalValue(idx0, normal);
-            groundVB->modifyTangentValue(idx0, tangent);
+                groundVB->modifyNormalValue(idx0, normal);
+                groundVB->modifyTangentValue(idx0, tangent);
+            }
         }
-    }
-
-    for (I32 i = 0; i < offset; i++) {
-        for (I32 j = 0; j < terrainHeight; j++) {
-            idx0 = TER_COORD(i, j, terrainWidth);
-            idx1 = TER_COORD(offset, j, terrainWidth);
-
-            normal.set(groundVB->getNormal(idx1));
-            tangent.set(groundVB->getTangent(idx1));
-
-            groundVB->modifyNormalValue(idx0, normal[idx1]);
-            groundVB->modifyTangentValue(idx0, tangent[idx1]);
-
-            idx0 = TER_COORD(terrainWidth - 1 - i, j, terrainWidth);
-            idx1 = TER_COORD(terrainWidth - 1 - offset, j, terrainWidth);
-
-            normal.set(groundVB->getNormal(idx1));
-            tangent.set(groundVB->getTangent(idx1));
-
-            groundVB->modifyNormalValue(idx0, normal[idx1]);
-            groundVB->modifyTangentValue(idx0, tangent[idx1]);
+        if (groundVB->serialize(terrainCache)) {
+            terrainCache.dumpToFile(cacheLocation);
         }
     }
     groundVB->create();
-    Attorney::TerrainLoader::buildQuadtree(*terrain);
     initializeVegetation(terrain, terrainDescriptor);
+    Attorney::TerrainLoader::buildQuadtree(*terrain);
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")),
                      terrain->getName().c_str());
     return true;
@@ -474,23 +488,25 @@ void TerrainLoader::initializeVegetation(Terrain* terrain,
 
     currentImage = terrainDescriptor->getVariable("grassBillboard2");
     if (!currentImage.empty()) {
-        textureLocation += " " + currentImage;
+        textureLocation += "," + currentImage;
         textureCount++;
     }
 
     currentImage = terrainDescriptor->getVariable("grassBillboard3");
     if (!currentImage.empty()) {
-        textureLocation += " " + currentImage;
+        textureLocation += "," + currentImage;
         textureCount++;
     }
 
     currentImage = terrainDescriptor->getVariable("grassBillboard4");
     if (!currentImage.empty()) {
-        textureLocation += " " + currentImage;
+        textureLocation += "," + currentImage;
         textureCount++;
     }
 
-    if (textureCount == 0) return;
+    if (textureCount == 0){
+        return;
+    }
 
     SamplerDescriptor grassSampler;
     grassSampler.setAnisotropy(0);
