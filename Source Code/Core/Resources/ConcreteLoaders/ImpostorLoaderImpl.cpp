@@ -2,6 +2,7 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
 

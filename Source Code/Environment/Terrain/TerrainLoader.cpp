@@ -4,6 +4,8 @@
 
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
+
 #include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"

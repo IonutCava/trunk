@@ -4,6 +4,7 @@
 
 #include "Core/Headers/TaskPool.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Graphs/Headers/SceneGraphNode.h"

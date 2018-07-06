@@ -33,8 +33,6 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     _horizBlur = 0;
     _vertBlur = 0;
     _renderPolicy = MemoryManager_NEW RTDrawDescriptor(RenderTarget::defaultPolicy());
-    _renderPolicy->_clearDepthBufferOnBind = true;
-    _renderPolicy->_clearColourBuffersOnBind = true;
 
     ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
     shadowPreviewShader.setThreadedLoading(false);

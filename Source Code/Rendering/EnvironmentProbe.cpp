@@ -1,8 +1,9 @@
 #include "Headers/EnvironmentProbe.h"
 
 #include "Dynamics/Entities/Headers/Impostor.h"
-#include "Platform/Video/Headers/IMPrimitive.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Platform/Video/Headers/IMPrimitive.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {

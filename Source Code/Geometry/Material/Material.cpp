@@ -7,6 +7,7 @@
 #include "Utility/Headers/Localization.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 
 #include "Core/Headers/Console.h"
 

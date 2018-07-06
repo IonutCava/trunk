@@ -9,6 +9,7 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Headers/EnvironmentProbe.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"

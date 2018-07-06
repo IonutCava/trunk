@@ -2,6 +2,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Environment/Water/Headers/Water.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
 
 namespace Divide {
